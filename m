@@ -1,47 +1,73 @@
 From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH 03/14] cpufreq: Add support for per-policy driver data
-Date: Wed, 9 Jul 2014 10:33:21 -0400
-Message-ID: <53BD52B1.4060608@ti.com>
-References: <cover.1404231535.git.viresh.kumar@linaro.org> <0614df495e361dd23ebe2d4e4ee3d40cb23948da.1404231535.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 02/14] clk: Create of_clk_shared_by_cpus()
+Date: Wed, 9 Jul 2014 10:38:34 -0400
+Message-ID: <53BD53EA.8050708@ti.com>
+References: <cover.1404231535.git.viresh.kumar@linaro.org> <5f7164d789e87c62d722b575980c92dfd0504334.1404231535.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <0614df495e361dd23ebe2d4e4ee3d40cb23948da.1404231535.git.viresh.kumar@linaro.org>
+In-Reply-To: <5f7164d789e87c62d722b575980c92dfd0504334.1404231535.git.viresh.kumar@linaro.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, shawn.guo@linaro.org
-Cc: nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, t.figa@samsung.com, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, thomas.ab@samsung.com, arvind.chauhan@arm.com, spk.linux@gmail.com
+Cc: nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, t.figa@samsung.com, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, thomas.ab@samsung.com, arvind.chauhan@arm.com, spk.linux@gmail.com, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
++ Lorenzo
+
 On Tuesday 01 July 2014 12:32 PM, Viresh Kumar wrote:
-> Drivers supporting multiple clusters or multiple 'struct cpufreq_policy'
-> instances may need to keep per-policy data. If the core doesn't support them,
-> they might do it in the most unoptimized way: 'per-cpu' data.
+> Create a new routine of_clk_shared_by_cpus() that finds if clock lines are
+> shared between two CPUs. This is verified by comparing "clocks" property from
+> CPU's DT node.
 > 
-> This patch adds another field in 'struct cpufreq_policy': 'driver_data'. It
-> isn't accessed by core and is for driver's internal use.
+> Returns 1 if clock line is shared between them, 0 if clock isn't shared and
+> return appropriate errors in case nodes/properties are missing.
 > 
+> Cc: Mike Turquette <mturquette@linaro.org>
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  include/linux/cpufreq.h | 3 +++
->  1 file changed, 3 insertions(+)
+>  drivers/clk/clk.c   | 56 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/clk.h |  6 ++++++
+>  2 files changed, 62 insertions(+)
 > 
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index ec4112d..d4b1108 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -112,6 +112,9 @@ struct cpufreq_policy {
->  	spinlock_t		transition_lock;
->  	wait_queue_head_t	transition_wait;
->  	struct task_struct	*transition_task; /* Task which is doing the transition */
-> +
-> +	/* For cpufreq driver's internal use */
-> +	void			*driver_data;
->  };
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> index 8b73ede..497735c 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -10,6 +10,7 @@
+>   */
 >  
-Minor comment for consistency either maintain same commenting style
-for the above structure (description after the variable) or may
-be clean up the comments in another patch.
+>  #include <linux/clk-private.h>
+> +#include <linux/cpu.h>
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
+>  #include <linux/spinlock.h>
+> @@ -2528,6 +2529,61 @@ const char *of_clk_get_parent_name(struct device_node *np, int index)
+>  }
+>  EXPORT_SYMBOL_GPL(of_clk_get_parent_name);
+>  
+> +/**
+> + * of_clk_shared_by_cpus - Finds if clock line is shared between CPUs
+> + * @cpu1, cpu2: CPU numbers
+> + *
+> + * Finds if clock lines are shared by two CPUs. This is verified by comparing
+> + * "clocks" property from CPU's DT node.
+> + *
+> + * Returns 1 if clock line is shared between them, 0 if clock isn't shared.
+> + * Return appropriate errors in case some requirements aren't met.
+> + */
+> +int of_clk_shared_by_cpus(int cpu1, int cpu2)
+
+I might be wrong but this API seems to bit short cited. We should probably
+handle it bit better since there are more cases instead of just checking CPU
+tuple. More than two CPUs may share the clock so discovering that in one iteration
+is better. I also think this is closely related to CPU topology.
+
+- CPUs part of 'a cluster' shares same clock.
+- Multiple clusters may share same clock
+- Every CPU might be clocked from separate PLL.
+
+What you say ?
 
 Regards,
 Santosh
