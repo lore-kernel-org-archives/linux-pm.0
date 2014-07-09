@@ -1,57 +1,43 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] GPIO button wth wakeup attribute is supposed to wake the system up
-Date: Wed, 09 Jul 2014 14:45:15 +0200
-Message-ID: <4301161.i6ArOLmcsg@vostro.rjw.lan>
-References: <53A2340D.9030503@linux.intel.com> <18261725.84uqcyZ8CE@vostro.rjw.lan> <20140709005434.GB14935@core.coreip.homeip.net>
+Subject: Re: [GIT PULL] APM
+Date: Wed, 09 Jul 2014 15:06:05 +0200
+Message-ID: <4408247.pmWxYMZ0FB@vostro.rjw.lan>
+References: <alpine.LNX.2.00.1407071759200.1655@pobox.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140709005434.GB14935@core.coreip.homeip.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Li, Aubrey" <aubrey.li@linux.intel.com>
-Cc: "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:56607 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751313AbaGIMr7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jul 2014 08:47:59 -0400
+In-Reply-To: <alpine.LNX.2.00.1407071759200.1655@pobox.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-pm@vger.kernel.org
 
-On Tuesday, July 08, 2014 05:54:35 PM Dmitry Torokhov wrote:
-> On Wed, Jul 09, 2014 at 02:59:33AM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, July 08, 2014 05:15:06 PM Dmitry Torokhov wrote:
-> > > On Wed, Jul 09, 2014 at 01:06:07AM +0200, Rafael J. Wysocki wrote:
-
-[cut]
-
-> > > 
-> > > When device driver marks IRQ as a wakeup source I believe it is prepared
-> > > to handle it (or it would shut it off explicitly).
-> > 
-> > I can agree with that.
-> > 
-> > Are you suggesting that __disable_irq() should check irq_data for
-> > IRQD_WAKEUP_STATE and skip the IRQ (in the 'suspend' case) if that is set?
+On Monday, July 07, 2014 08:56:18 PM Jiri Kosina wrote:
+> Rafael,
 > 
-> Yes, something like that.
+> please pull
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jikos/apm.git for-next
+> 
+> into linux-pm to obtain simple cleanup for APM driver from Jean Delvare. 
+> Thanks.
 
-OK
+Pulled, thanks!
 
-Aubrey, can you please check if the appended patch helps on the T100?
+> ----------------------------------------------------------------
+> Jean Delvare (1):
+>       x86, apm: Remove unused variable
+> 
+>  arch/x86/kernel/apm_32.c | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> 
 
-Rafael
-
----
- kernel/irq/manage.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-pm/kernel/irq/manage.c
-===================================================================
---- linux-pm.orig/kernel/irq/manage.c
-+++ linux-pm/kernel/irq/manage.c
-@@ -385,7 +385,8 @@ setup_affinity(unsigned int irq, struct
- void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
- {
- 	if (suspend) {
--		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND))
-+		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND)
-+		    || irqd_has_set(&desc->irq_data, IRQD_WAKEUP_STATE))
- 			return;
- 		desc->istate |= IRQS_SUSPENDED;
- 	}
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
