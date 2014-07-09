@@ -1,70 +1,57 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 05/13] thermal: rcar: Document SoC-specific bindings
-Date: Wed,  9 Jul 2014 14:23:35 +0200
-Message-ID: <1404908623-909-6-git-send-email-geert+renesas@glider.be>
-References: <1404908623-909-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1404908623-909-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] GPIO button wth wakeup attribute is supposed to wake the system up
+Date: Wed, 09 Jul 2014 14:45:15 +0200
+Message-ID: <4301161.i6ArOLmcsg@vostro.rjw.lan>
+References: <53A2340D.9030503@linux.intel.com> <18261725.84uqcyZ8CE@vostro.rjw.lan> <20140709005434.GB14935@core.coreip.homeip.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140709005434.GB14935@core.coreip.homeip.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Li, Aubrey" <aubrey.li@linux.intel.com>
+Cc: "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The documentation only mentioned the generic fallback compatible property.
-Add the missing SoC-specific compatible properties, some of which are
-already in use.
+On Tuesday, July 08, 2014 05:54:35 PM Dmitry Torokhov wrote:
+> On Wed, Jul 09, 2014 at 02:59:33AM +0200, Rafael J. Wysocki wrote:
+> > On Tuesday, July 08, 2014 05:15:06 PM Dmitry Torokhov wrote:
+> > > On Wed, Jul 09, 2014 at 01:06:07AM +0200, Rafael J. Wysocki wrote:
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org
+[cut]
+
+> > > 
+> > > When device driver marks IRQ as a wakeup source I believe it is prepared
+> > > to handle it (or it would shut it off explicitly).
+> > 
+> > I can agree with that.
+> > 
+> > Are you suggesting that __disable_irq() should check irq_data for
+> > IRQD_WAKEUP_STATE and skip the IRQ (in the 'suspend' case) if that is set?
+> 
+> Yes, something like that.
+
+OK
+
+Aubrey, can you please check if the appended patch helps on the T100?
+
+Rafael
+
 ---
- .../devicetree/bindings/thermal/rcar-thermal.txt       | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+ kernel/irq/manage.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
-index 28ef498a66e5..0ef00be44b01 100644
---- a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
-@@ -1,7 +1,13 @@
- * Renesas R-Car Thermal
- 
- Required properties:
--- compatible		: "renesas,rcar-thermal"
-+- compatible		: "renesas,thermal-<soctype>", "renesas,rcar-thermal"
-+			  as fallback.
-+			  Examples with soctypes are:
-+			    - "renesas,thermal-r8a73a4" (R-Mobile AP6)
-+			    - "renesas,thermal-r8a7779" (R-Car H1)
-+			    - "renesas,thermal-r8a7790" (R-Car H2)
-+			    - "renesas,thermal-r8a7791" (R-Car M2)
- - reg			: Address range of the thermal registers.
- 			  The 1st reg will be recognized as common register
- 			  if it has "interrupts".
-@@ -12,18 +18,18 @@ Option properties:
- 
- Example (non interrupt support):
- 
--thermal@e61f0100 {
--	compatible = "renesas,rcar-thermal";
--	reg = <0xe61f0100 0x38>;
-+thermal@ffc48000 {
-+	compatible = "renesas,thermal-r8a7779", "renesas,rcar-thermal";
-+	reg = <0xffc48000 0x38>;
- };
- 
- Example (interrupt support):
- 
- thermal@e61f0000 {
--	compatible = "renesas,rcar-thermal";
-+	compatible = "renesas,thermal-r8a73a4", "renesas,rcar-thermal";
- 	reg = <0xe61f0000 0x14
- 		0xe61f0100 0x38
- 		0xe61f0200 0x38
- 		0xe61f0300 0x38>;
--	interrupts = <0 69 4>;
-+	interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
- };
--- 
-1.9.1
-
+Index: linux-pm/kernel/irq/manage.c
+===================================================================
+--- linux-pm.orig/kernel/irq/manage.c
++++ linux-pm/kernel/irq/manage.c
+@@ -385,7 +385,8 @@ setup_affinity(unsigned int irq, struct
+ void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
+ {
+ 	if (suspend) {
+-		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND))
++		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND)
++		    || irqd_has_set(&desc->irq_data, IRQD_WAKEUP_STATE))
+ 			return;
+ 		desc->istate |= IRQS_SUSPENDED;
+ 	}
