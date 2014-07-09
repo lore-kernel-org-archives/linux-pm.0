@@ -1,75 +1,47 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: A question about PCI suspend-resume functionallity
-Date: Wed, 9 Jul 2014 10:18:56 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1407091008350.873-100000@iolanthe.rowland.org>
-References: <4712771.pPjooVqFXc@vostro.rjw.lan>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH 03/14] cpufreq: Add support for per-policy driver data
+Date: Wed, 9 Jul 2014 10:33:21 -0400
+Message-ID: <53BD52B1.4060608@ti.com>
+References: <cover.1404231535.git.viresh.kumar@linaro.org> <0614df495e361dd23ebe2d4e4ee3d40cb23948da.1404231535.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:49008 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751778AbaGIOS5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jul 2014 10:18:57 -0400
-In-Reply-To: <4712771.pPjooVqFXc@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <0614df495e361dd23ebe2d4e4ee3d40cb23948da.1404231535.git.viresh.kumar@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, shawn.guo@linaro.org
+Cc: nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, t.figa@samsung.com, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, thomas.ab@samsung.com, arvind.chauhan@arm.com, spk.linux@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Igor Bezukh <Igor@galilsoft.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Wed, 9 Jul 2014, Rafael J. Wysocki wrote:
-
-> On Tuesday, July 08, 2014 02:47:03 PM Bjorn Helgaas wrote:
-> > [+cc linux-pm]
-> > 
-> > On Tue, Jul 8, 2014 at 9:39 AM, Igor Bezukh <Igor@galilsoft.com> wrote:
-> > > Hi,
-> > >
-> > >
-> > > We are testing Intel Gigabit adapter driver (igb) under Fedora 20, kernel 3.14.4 for the following use-case:
-> > >
-> > > (*) Adapter is connected to the PCIE slot
-> > > (*) We put the system under suspend by running pm-suspend from user-space
-> > > (*) Remove the adapter from the PCIE slot
-> > > (*) Wake up the system
-> > >
-> > > Currenlty, we got kernel panics and the system got stuck.
-> > >
-> > > My question is - does the PCI subsystem logic calls the driver remove function when driver resume function returns with error code?
-> > >
-> > > Or should I implement the call to igb_remove from igb_resume in the Intel driver?
-> > 
-> > I don't know what the best design is here.  I suspect that when we
-> > resume, we should re-enumerate the PCI topology to see if anything
-> > changed, but I don't think we do that.  I think there *is* something
-> > like that for ACPI -- the BIOS can send a Bus Check notification on
-> > resume if it knows something has changed.
+On Tuesday 01 July 2014 12:32 PM, Viresh Kumar wrote:
+> Drivers supporting multiple clusters or multiple 'struct cpufreq_policy'
+> instances may need to keep per-policy data. If the core doesn't support them,
+> they might do it in the most unoptimized way: 'per-cpu' data.
 > 
-> In ACPI we wait for system resume to complete and handle the notifications
-> then.  Calling .remove() callbacks from drivers during system resume doesn't
-> really work, especially if they happen too early (e.g. during the "noirq resume"
-> stage).
-
-USB uses a similar approach.  Hot-unplugs are handled by the khubd 
-thread, which is freezable and therefore doesn't run until after the 
-system is resumed.
-
-> > But my guess is that if you
-> > remove an adapter below a switch that is powered down because the
-> > system is suspended, the interrupt we would normally get is lost
-> > forever.
-> > 
-> > It doesn't seem like something that should be solved in the driver,
-> > because you could just as easily have *added* a device while
-> > suspended, and the core has to re-enumerate to find that.
+> This patch adds another field in 'struct cpufreq_policy': 'driver_data'. It
+> isn't accessed by core and is for driver's internal use.
 > 
-> The driver's system resume callbacks need to be able to cope with
-> missing devices.
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  include/linux/cpufreq.h | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index ec4112d..d4b1108 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -112,6 +112,9 @@ struct cpufreq_policy {
+>  	spinlock_t		transition_lock;
+>  	wait_queue_head_t	transition_wait;
+>  	struct task_struct	*transition_task; /* Task which is doing the transition */
+> +
+> +	/* For cpufreq driver's internal use */
+> +	void			*driver_data;
+>  };
+>  
+Minor comment for consistency either maintain same commenting style
+for the above structure (description after the variable) or may
+be clean up the comments in another patch.
 
-In the USB stack, the subsystem core resume code checks to see if a
-device has been unplugged before the driver's ->resume callback is
-invoked.  If a device is gone, the driver callback is skipped.  Thus
-drivers don't have to worry about trying to resume a device that has
-been unplugged.
-
-Alan Stern
-
+Regards,
+Santosh
