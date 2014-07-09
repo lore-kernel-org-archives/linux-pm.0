@@ -1,57 +1,58 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: Re: [PATCHv2 0/8] devfreq: exynos4: Support dt and use common
- ppmu driver
-Date: Wed, 09 Jul 2014 15:06:28 +0200
-Message-ID: <53BD3E54.3030205@collabora.com>
-References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com> <5323432E.5060005@samsung.com> <532656B1.2010907@samsung.com>
+From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RESEND PATCH 0/6] thermal: sti: Add new Thermal driver
+Date: Wed, 09 Jul 2014 21:19:24 +0800
+Message-ID: <1404911964.28592.4.camel@rzhang1-toshiba>
+References: <1401980819-19962-1-git-send-email-lee.jones@linaro.org>
+	 <20140624092309.GD13803@lee--X1> <20140709120823.GA32573@lee--X1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	format=flowed
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <532656B1.2010907@samsung.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Tomasz Figa <t.figa@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Thierry Reding <treding@nvidia.com>, Stephen Warren <swarren@nvidia.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20140709120823.GA32573@lee--X1>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-F5mvAk5X5gdBDgjK7y7TUQ@public.gmane.org, ajitpal.singh-qxv4g6HH51o@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, maxime.coquelin-qxv4g6HH51o@public.gmane.org, patrice.chotard-qxv4g6HH51o@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/17/2014 02:58 AM, Chanwoo Choi wrote:
-> Hi Tomasz,
->
-> On 03/15/2014 02:58 AM, Tomasz Figa wrote:
->>
->> However, this driver, even after applying your series, is still far
->> from a state that would allow it to be enabled. The most important
->> issue is direct access to CMU registers, based on static mapping,
->> which is not allowed on multiplatform kernels and
->> multiplatform-awareness for drivers is currently a must.
->>
->> To allow this driver to be enabled, it needs to be converted to use
->> common clock framework functions to configure all clocks, e.g.
->> clk_set_rate(), clk_set_parent(), etc., without accessing CMU
->> registers directly.
->>
->> Of course as long as the driver is effectively unusable, to keep
->> development, we can proceed with refactoring it step-by-step and
->> your series would be basically the first step, after addressing the
->> review comments.
->>
->
-> I agree your opinion. When setting frequency of memory bus, this
-> driver access directly to CMU registers. I know it should be modified
-> by using common clk framework as your comment.
->
-> I'll send patch set about using common clk framework instead of CMU
-> register based on static mapping after finished the review and apply
-> of this patch set as next step.
+On Wed, 2014-07-09 at 13:08 +0100, Lee Jones wrote:
+> On Tue, 24 Jun 2014, Lee Jones wrote:
+> 
+> > > I'm re-sending this set, as one of the maintainers' email addresses
+> > > is incorrect in the MAINTAINERS file.
+> > > 
+> > > This patchset adds full support for 2 types of Thermal Controllers
+> > > produced by STMicroelectronics.  One is a more traditional memory
+> > > mapped variant, the other is controlled solely by system configuration
+> > > registers.
+> > 
+> > Any thing from the Thermal guys? Has this set fallen through the gaps?
+> 
+> Anything at all?  It's been well over a month now.
+> 
+Well, for the soc thermal drivers, I'd prefer to take them via Eduardo,
+but as we didn't get any feedback from Eduardo, I will take them.
 
-Hi Chanwoo,
+thanks,
+rui
+> > >  Documentation/devicetree/bindings/thermal/st-thermal.txt |  42 ++++++++++++++++
+> > >  arch/arm/boot/dts/stih416.dtsi                           |  18 +++++++
+> > >  arch/arm/configs/multi_v7_defconfig                      |   2 +
+> > >  drivers/thermal/Kconfig                                  |   5 ++
+> > >  drivers/thermal/Makefile                                 |   1 +
+> > >  drivers/thermal/st/Kconfig                               |  12 +++++
+> > >  drivers/thermal/st/Makefile                              |   3 ++
+> > >  drivers/thermal/st/st_thermal.c                          | 313 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> > > ++++++++++++++++++++++++++++
+> > >  drivers/thermal/st/st_thermal.h                          | 104 ++++++++++++++++++++++++++++++++++++++
+> > >  drivers/thermal/st/st_thermal_memmap.c                   | 209 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> > >  drivers/thermal/st/st_thermal_syscfg.c                   | 179 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> > >  11 files changed, 888 insertions(+)
+> > > 
+> > 
+> 
 
-any news on this?
 
-I would love to test this devfreq driver with the clk_set_floor_rate API 
-I'm adding to the common clk framework.
-
-Regards,
-
-Tomeu
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
