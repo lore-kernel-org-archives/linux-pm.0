@@ -1,37 +1,27 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 03/14] cpufreq: Add support for per-policy driver data
-Date: Wed, 9 Jul 2014 20:37:41 +0530
-Message-ID: <CAKohpo=YQwjbDRec6Sj1JbjL-0GbKmzBUxtRY610bHe0suKt6A@mail.gmail.com>
+Subject: Re: [PATCH 04/14] cpufreq: cpu0: Add Module Author
+Date: Wed, 9 Jul 2014 20:38:24 +0530
+Message-ID: <CAKohpomWizkJh-=S1BXKLLM1u891VCmJASxmoSVF+Qy7VMy8Fg@mail.gmail.com>
 References: <cover.1404231535.git.viresh.kumar@linaro.org>
-	<0614df495e361dd23ebe2d4e4ee3d40cb23948da.1404231535.git.viresh.kumar@linaro.org>
-	<53BD52B1.4060608@ti.com>
+	<bc183ef08321e2699a0834d545bade9c7f7d7fcc.1404231535.git.viresh.kumar@linaro.org>
+	<53BD54BC.7080608@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53BD52B1.4060608@ti.com>
+In-Reply-To: <53BD54BC.7080608@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Santosh Shilimkar <santosh.shilimkar@ti.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Nishanth Menon <nm@ti.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas P Abraham <thomas.ab@samsung.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Sachin Kamat <spk.linux@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 9 July 2014 20:03, Santosh Shilimkar <santosh.shilimkar@ti.com> wrote:
->> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
->> index ec4112d..d4b1108 100644
->> --- a/include/linux/cpufreq.h
->> +++ b/include/linux/cpufreq.h
->> @@ -112,6 +112,9 @@ struct cpufreq_policy {
->>       spinlock_t              transition_lock;
->>       wait_queue_head_t       transition_wait;
->>       struct task_struct      *transition_task; /* Task which is doing the transition */
->> +
->> +     /* For cpufreq driver's internal use */
->> +     void                    *driver_data;
->>  };
->>
-> Minor comment for consistency either maintain same commenting style
-> for the above structure (description after the variable) or may
-> be clean up the comments in another patch.
+On 9 July 2014 20:12, Santosh Shilimkar <santosh.shilimkar@ti.com> wrote:
+> Not related to this patch but I think its time to change
+> the name of this driver. I never liked this 'cpufreq-cpu0.c'
+> and already mentioned that during the reviews of this
+> driver.
+>
+> Not sure if there are still sentiments about it but
+> considering the additional functionality coming in,
+> the name will definitely miss-leading.
 
-Adding these to the end of variable makes it take multiple lines as we need
-to break after 80 columns. And both the styles are already mixed
-in existing file. So, would fix it separately in case I go for it :)
+Check last patch, its called cpufreq-generic now.
