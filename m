@@ -1,13 +1,13 @@
 From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: [PATCHv2 12/17] cpuidle: mvebu: make the cpuidle driver capable of handling multiple SoCs
-Date: Wed,  9 Jul 2014 15:40:16 +0200
-Message-ID: <1404913221-17343-13-git-send-email-thomas.petazzoni@free-electrons.com>
+Subject: [PATCHv2 06/17] ARM: mvebu: make the cpuidle initialization more generic
+Date: Wed,  9 Jul 2014 15:40:10 +0200
+Message-ID: <1404913221-17343-7-git-send-email-thomas.petazzoni@free-electrons.com>
 References: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:47377 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:47333 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755749AbaGINkp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jul 2014 09:40:45 -0400
+	with ESMTP id S1756022AbaGINki (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jul 2014 09:40:38 -0400
 In-Reply-To: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -16,200 +16,72 @@ Cc: Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior 
 
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
 
-In order to prepare the add of new SoCs supports for this cpuidle
-driver, this patch extends the platform_data understood by the
-cpuidle-mvebu-v7 driver to contain a "type" identifying which specific
-SoC the cpuidle driver is being probed for. It will be used by the
-cpuidle driver to know the list of states for the current SoC.
+In preparation to the addition of the cpuidle support for more SoCs,
+this patch moves the Armada XP specific initialization to a separate
+function.
 
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 ---
- arch/arm/mach-mvebu/pmsu.c         | 20 +++++++++++++-------
- drivers/cpuidle/cpuidle-mvebu-v7.c | 32 ++++++++++++++++++++------------
- include/linux/mvebu-v7-cpuidle.h   | 26 ++++++++++++++++++++++++++
- 3 files changed, 59 insertions(+), 19 deletions(-)
- create mode 100644 include/linux/mvebu-v7-cpuidle.h
+ arch/arm/mach-mvebu/pmsu.c | 32 ++++++++++++++++++++------------
+ 1 file changed, 20 insertions(+), 12 deletions(-)
 
 diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-index 802edc8..0a24073 100644
+index 501d450..e976c3e 100644
 --- a/arch/arm/mach-mvebu/pmsu.c
 +++ b/arch/arm/mach-mvebu/pmsu.c
-@@ -19,10 +19,12 @@
- #define pr_fmt(fmt) "mvebu-pmsu: " fmt
- 
- #include <linux/cpu_pm.h>
-+#include <linux/cpuidle.h>
- #include <linux/init.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
- #include <linux/mbus.h>
-+#include <linux/mvebu-v7-cpuidle.h>
- #include <linux/of_address.h>
- #include <linux/platform_device.h>
- #include <linux/resource.h>
-@@ -75,10 +77,6 @@ extern void armada_370_xp_cpu_resume(void);
- 
- static void *mvebu_cpu_resume;
- 
--static struct platform_device mvebu_v7_cpuidle_device = {
--	.name = "cpuidle-mvebu-v7",
--};
--
- static struct of_device_id of_pmsu_table[] = {
- 	{ .compatible = "marvell,armada-370-pmsu", },
- 	{ .compatible = "marvell,armada-370-xp-pmsu", },
-@@ -325,17 +323,25 @@ static struct notifier_block mvebu_v7_cpu_pm_notifier = {
+@@ -311,31 +311,39 @@ static struct notifier_block mvebu_v7_cpu_pm_notifier = {
  	.notifier_call = mvebu_v7_cpu_pm_notify,
  };
  
--static int __init armada_xp_cpuidle_init(void)
-+static struct mvebu_v7_cpuidle armada_xp_cpuidle = {
-+	.type = CPUIDLE_ARMADA_XP,
-+	.cpu_suspend = armada_370_xp_cpu_suspend,
-+};
-+
-+static struct platform_device mvebu_v7_cpuidle_device = {
-+	.name = "cpuidle-mvebu-v7",
-+};
-+
-+static __init int armada_xp_cpuidle_init(void)
+-static int __init mvebu_v7_cpu_pm_init(void)
++static int __init armada_xp_cpuidle_init(void)
  {
  	struct device_node *np;
+ 
+-	/*
+-	 * Check that all the requirements are available to enable
+-	 * cpuidle. So far, it is only supported on Armada XP, cpuidle
+-	 * needs the coherency fabric and the PMSU enabled
+-	 */
+-
+-	if (!of_machine_is_compatible("marvell,armadaxp"))
+-		return 0;
 -
  	np = of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric");
  	if (!np)
- 		return -ENODEV;
+-		return 0;
++		return -ENODEV;
  	of_node_put(np);
  
- 	mvebu_cpu_resume = armada_370_xp_cpu_resume;
--	mvebu_v7_cpuidle_device.dev.platform_data = armada_370_xp_cpu_suspend;
-+	mvebu_v7_cpuidle_device.dev.platform_data = &armada_xp_cpuidle;
- 
- 	return 0;
- }
-diff --git a/drivers/cpuidle/cpuidle-mvebu-v7.c b/drivers/cpuidle/cpuidle-mvebu-v7.c
-index 302596e..82c545bb 100644
---- a/drivers/cpuidle/cpuidle-mvebu-v7.c
-+++ b/drivers/cpuidle/cpuidle-mvebu-v7.c
-@@ -16,15 +16,15 @@
- #include <linux/cpu_pm.h>
- #include <linux/cpuidle.h>
- #include <linux/module.h>
-+#include <linux/mvebu-v7-cpuidle.h>
- #include <linux/of.h>
- #include <linux/suspend.h>
- #include <linux/platform_device.h>
- #include <asm/cpuidle.h>
- 
--#define MVEBU_V7_MAX_STATES	3
- #define MVEBU_V7_FLAG_DEEP_IDLE	0x10000
- 
--static int (*mvebu_v7_cpu_suspend)(int);
-+static struct mvebu_v7_cpuidle *pcpuidle;
- 
- static int mvebu_v7_enter_idle(struct cpuidle_device *dev,
- 				struct cpuidle_driver *drv,
-@@ -32,12 +32,13 @@ static int mvebu_v7_enter_idle(struct cpuidle_device *dev,
- {
- 	int ret;
- 	bool deepidle = false;
++	mvebu_v7_cpuidle_device.dev.platform_data = armada_370_xp_cpu_suspend;
 +
- 	cpu_pm_enter();
- 
- 	if (drv->states[index].flags & MVEBU_V7_FLAG_DEEP_IDLE)
- 		deepidle = true;
- 
--	ret = mvebu_v7_cpu_suspend(deepidle);
-+	ret = pcpuidle->cpu_suspend(deepidle);
- 	if (ret)
- 		return ret;
- 
-@@ -46,8 +47,8 @@ static int mvebu_v7_enter_idle(struct cpuidle_device *dev,
- 	return index;
- }
- 
--static struct cpuidle_driver mvebu_v7_idle_driver = {
--	.name			= "mvebu_v7_idle",
-+static struct cpuidle_driver armadaxp_cpuidle_driver = {
-+	.name			= "armada_xp_idle",
- 	.states[0]		= ARM_CPUIDLE_WFI_STATE,
- 	.states[1]		= {
- 		.enter			= mvebu_v7_enter_idle,
-@@ -55,7 +56,7 @@ static struct cpuidle_driver mvebu_v7_idle_driver = {
- 		.power_usage		= 50,
- 		.target_residency	= 100,
- 		.flags			= CPUIDLE_FLAG_TIME_VALID,
--		.name			= "MV CPU IDLE",
-+		.name			= "Idle",
- 		.desc			= "CPU power down",
- 	},
- 	.states[2]		= {
-@@ -63,19 +64,26 @@ static struct cpuidle_driver mvebu_v7_idle_driver = {
- 		.exit_latency		= 100,
- 		.power_usage		= 5,
- 		.target_residency	= 1000,
--		.flags			= CPUIDLE_FLAG_TIME_VALID |
--						MVEBU_V7_FLAG_DEEP_IDLE,
--		.name			= "MV CPU DEEP IDLE",
-+		.flags			= (CPUIDLE_FLAG_TIME_VALID |
-+					   MVEBU_V7_FLAG_DEEP_IDLE),
-+		.name			= "Deep idle",
- 		.desc			= "CPU and L2 Fabric power down",
- 	},
--	.state_count = MVEBU_V7_MAX_STATES,
-+	.state_count = 3,
- };
- 
- static int mvebu_v7_cpuidle_probe(struct platform_device *pdev)
- {
-+	struct cpuidle_driver *drv;
++	return 0;
++}
 +
-+	pcpuidle = pdev->dev.platform_data;
++static int __init mvebu_v7_cpu_pm_init(void)
++{
++	struct device_node *np;
++	int ret;
 +
-+	if (pcpuidle->type == CPUIDLE_ARMADA_XP)
-+		drv = &armadaxp_cpuidle_driver;
+ 	np = of_find_matching_node(NULL, of_pmsu_table);
+ 	if (!np)
+ 		return 0;
+ 	of_node_put(np);
+ 
++	if (of_machine_is_compatible("marvell,armadaxp"))
++		ret = armada_xp_cpuidle_init();
 +	else
-+		return -EINVAL;
++		return 0;
++
++	if (ret)
++		return ret;
++
+ 	mvebu_v7_pmsu_enable_l2_powerdown_onidle();
+-	mvebu_v7_cpuidle_device.dev.platform_data = armada_370_xp_cpu_suspend;
+ 	platform_device_register(&mvebu_v7_cpuidle_device);
+ 	cpu_pm_register_notifier(&mvebu_v7_cpu_pm_notifier);
  
--	mvebu_v7_cpu_suspend = (void *)(pdev->dev.platform_data);
--	return cpuidle_register(&mvebu_v7_idle_driver, NULL);
-+	return cpuidle_register(drv, NULL);
- }
- 
- static struct platform_driver mvebu_v7_cpuidle_plat_driver = {
-diff --git a/include/linux/mvebu-v7-cpuidle.h b/include/linux/mvebu-v7-cpuidle.h
-new file mode 100644
-index 0000000..00fde86
---- /dev/null
-+++ b/include/linux/mvebu-v7-cpuidle.h
-@@ -0,0 +1,26 @@
-+/*
-+ * Marvell EBU cpuidle defintion
-+ *
-+ * Copyright (C) 2014 Marvell
-+ *
-+ * Gregory CLEMENT <gregory.clement@free-electrons.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
-+ *
-+ */
-+
-+#ifndef __LINUX_MVEBU_V7_CPUIDLE_H__
-+#define __LINUX_MVEBU_V7_CPUIDLE_H__
-+
-+enum mvebu_v7_cpuidle_types {
-+	CPUIDLE_ARMADA_XP,
-+};
-+
-+struct mvebu_v7_cpuidle {
-+	int type;
-+	int (*cpu_suspend)(unsigned long deepidle);
-+};
-+
-+#endif
 -- 
 2.0.0
 
