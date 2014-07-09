@@ -1,39 +1,79 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 09/14] cpufreq: cpu0: Move per-cluster initialization code
- to ->init()
-Date: Wed, 9 Jul 2014 21:03:36 +0530
-Message-ID: <CAKohpokAkCyBU8k7SBytfk_aszW+sumyLpf137iN7Jk3gi3vwg@mail.gmail.com>
-References: <cover.1404231535.git.viresh.kumar@linaro.org>
-	<b26946cc4573904cd1ef0212ad053a983b547c23.1404231535.git.viresh.kumar@linaro.org>
-	<53BD576F.2010408@ti.com>
-	<CAKohpokz4eyw86Uxp_aA=9T9x-X=kTV=_=zx4dEuC2ZyR=3pKw@mail.gmail.com>
-	<53BD5F0C.2050509@ti.com>
-	<CAKohpokOMs3V250wyWB=wdW6SQEcj+RUQaQZk5MYikUKqF6Nsg@mail.gmail.com>
-	<53BD5FE8.5040500@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: [PATCHv3 0/7] cpufreq support for Marvell Armada XP
+Date: Wed,  9 Jul 2014 17:45:08 +0200
+Message-ID: <1404920715-19834-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f42.google.com ([209.85.219.42]:56012 "EHLO
-	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756260AbaGIPdg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jul 2014 11:33:36 -0400
-Received: by mail-oa0-f42.google.com with SMTP id n16so547445oag.1
-        for <linux-pm@vger.kernel.org>; Wed, 09 Jul 2014 08:33:36 -0700 (PDT)
-In-Reply-To: <53BD5FE8.5040500@ti.com>
+Received: from top.free-electrons.com ([176.31.233.9]:49239 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756142AbaGIPpU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jul 2014 11:45:20 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Nishanth Menon <nm@ti.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas P Abraham <thomas.ab@samsung.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Sachin Kamat <spk.linux@gmail.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Mike Turquette <mturquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-On 9 July 2014 20:59, Santosh Shilimkar <santosh.shilimkar@ti.com> wrote:
-> On Wednesday 09 July 2014 11:27 AM, Viresh Kumar wrote:
->> On 9 July 2014 20:56, Santosh Shilimkar <santosh.shilimkar@ti.com> wrote:
->>>>> We still *don't* support platforms with separate clock/voltage lines for CPUs.
->>>>> This would be done in a separate patch.
->>
->> Probably s/separate/later would be enough to make you happy ?
->>
-> For reviewer, its easy if this later is "in the current series" or
-> really a "later" series.
+Mike, Viresh, Rafael, Jason, Gregory, Andrew, Sebastian,
 
-As you say  BOSS :)
+Here is the third version of the patches adding cpufreq support for
+the Marvell Armada XP processor.
+
+Changes since v2
+================
+
+ - As suggested by Stephen Boyd, instead of using a new clock notifier
+   that somewhat "hides" the dependency of the clk-cpu clock driver on
+   the PMSU, use a direct call from the clk-cpu driver to the PMSU
+   driver.
+
+ - Add a comment that explains why the OPP are not removed on failure
+   in the PMSU code initializing the cpufreq logic, in answer to the
+   review from Ezequiel Garcia.
+
+Changes since v1
+================
+
+ - Rework the patch series to use the generalized cpufreq-cpu0
+   (renamed cpufreq-generic) driver instead of having an Armada XP
+   specific cpufreq driver. This was suggested by Viresh
+   Kumar. Basically, it only involved adding a "clock-latency"
+   property in the DT, and changing the PMSU code to register the two
+   OPPs supported by each CPU, and registering the "cpufreq-generic"
+   platform device instead of the "armadaxp-cpufreq" one.
+
+Jason, this patch series is based on 3.16-rc3, but it applies fine
+even with mvebu/fixes and mvebu/soc merged (which contain some PMSU
+changes), so I haven't based the patch series on those branches. To
+_work_, the code needs the new cpufreq-generic driver which is pending
+in Viresh Kumar's tree for 3.17, but there is no build dependency.
+
+Thanks,
+
+Thomas
+
+Thomas Petazzoni (7):
+  ARM: mvebu: ensure CPU clocks are enabled
+  ARM: mvebu: extend PMSU code to support dynamic frequency scaling
+  clk: mvebu: extend clk-cpu for dynamic frequency scaling
+  ARM: mvebu: update Armada XP DT for dynamic frequency scaling
+  ARM: mvebu: allow enabling of cpufreq on Armada XP
+  ARM: mvebu: update mvebu_v7_defconfig with cpufreq support
+  ARM: configs: add cpufreq-generic in multi_v7_defconfig
+
+ .../devicetree/bindings/clock/mvebu-cpu-clock.txt  |   5 +-
+ arch/arm/boot/dts/armada-xp-mv78230.dtsi           |   2 +
+ arch/arm/boot/dts/armada-xp-mv78260.dtsi           |   2 +
+ arch/arm/boot/dts/armada-xp-mv78460.dtsi           |   4 +
+ arch/arm/boot/dts/armada-xp.dtsi                   |   2 +-
+ arch/arm/configs/multi_v7_defconfig                |   1 +
+ arch/arm/configs/mvebu_v7_defconfig                |   2 +
+ arch/arm/mach-mvebu/Kconfig                        |   1 +
+ arch/arm/mach-mvebu/platsmp.c                      |   1 +
+ arch/arm/mach-mvebu/pmsu.c                         | 162 +++++++++++++++++++++
+ drivers/clk/mvebu/clk-cpu.c                        |  80 +++++++++-
+ include/linux/mvebu-pmsu.h                         |  20 +++
+ 12 files changed, 274 insertions(+), 8 deletions(-)
+ create mode 100644 include/linux/mvebu-pmsu.h
+
+-- 
+2.0.0
+
