@@ -1,86 +1,70 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [PATCH] epoll_ctl.2: minor clarification concerning when a WAKEUP event is "processes"
-Date: Wed, 09 Jul 2014 14:37:08 +0200
-Message-ID: <4463815.T873Vrf1pJ@vostro.rjw.lan>
-References: <20140706190351.423e9a93@notabene.brown> <20140707210157.1aa38ed0@notabene.brown> <20140709133746.70d0dffb@notabene.brown>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-man-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20140709133746.70d0dffb-wvvUuzkyo1EYVZTmpyfIwg@public.gmane.org>
-Sender: linux-man-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: NeilBrown <neilb-l3A5Bk7waGM@public.gmane.org>
-Cc: "Michael Kerrisk (man-pages)" <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 05/13] thermal: rcar: Document SoC-specific bindings
+Date: Wed,  9 Jul 2014 14:23:35 +0200
+Message-ID: <1404908623-909-6-git-send-email-geert+renesas@glider.be>
+References: <1404908623-909-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1404908623-909-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 09, 2014 01:37:46 PM NeilBrown wrote:
-> 
-> --Sig_/BvtUQvnWLsVQBetw73gPkyQ
-> Content-Type: text/plain; charset=US-ASCII
-> Content-Transfer-Encoding: quoted-printable
-> 
-> 
-> I guess it should be obvious, but it never hurts to be explicit.
-> When the epoll file descriptor is closed all events are assumed
-> to be "processed".
-> Also if the event is removed with EPOLL_CTL_DEL or the EPOLLWAKEUP
-> flag is removed with EPOLL_CTL_MOD the event will be "processed".
-> 
-> 
-> Signed-off-by: NeilBrown <neilb-l3A5Bk7waGM@public.gmane.org>
+The documentation only mentioned the generic fallback compatible property.
+Add the missing SoC-specific compatible properties, some of which are
+already in use.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org
+---
+ .../devicetree/bindings/thermal/rcar-thermal.txt       | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
-> diff --git a/man2/epoll_ctl.2 b/man2/epoll_ctl.2
-> index 2936bc7e97f7..74a09b6c276b 100644
-> --- a/man2/epoll_ctl.2
-> +++ b/man2/epoll_ctl.2
-> @@ -173,7 +173,14 @@ until the next call to
->  .BR epoll_wait (2)
->  on the same
->  .BR epoll (7)
-> -file descriptor.
-> +file descriptor,
-> +the closure of that file descriptor,
-> +the removal of the event file descriptor with
-> +.BR EPOLL_CTL_DEL ,
-> +or the clearing of
-> +.B EPOLLWAKEUP
-> +for the event file descriptor with
-> +.BR EPOLL_CTL_MOD .
->  See also BUGS.
->  .SH RETURN VALUE
->  When successful,
-> 
-> --Sig_/BvtUQvnWLsVQBetw73gPkyQ
-> Content-Type: application/pgp-signature; name=signature.asc
-> Content-Disposition: attachment; filename=signature.asc
-> 
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v2.0.22 (GNU/Linux)
-> 
-> iQIVAwUBU7y5Cjnsnt1WYoG5AQJjuQ/+JshOD5nn4wRh83j+QK8Y1ff1Fynw2jh4
-> vWGGdF/XdEyJgagnFuIuVHHmn0yyGvGYE8xFzgtBJqs12O6+7AshRUXtCSjr6f7r
-> kwa4dZQvwDMr0SchoIsftexZJJPQOE7zxDwm7jjk7682/VoePbCtXHUnVUM3G6Hl
-> 5n/11WDocetHFztj95lIF8KIQZ98Q7ZOETvdxnZXIvBtxxaPLVdOS/a7d8q2bcP3
-> /rvM+JyA0SnUx3ZFTbqYWmUk/WWDjXhBEwt5fSqqph4zOT7sxjCH1kmap1MV4ej2
-> ZzQ5rgecQDL+YAJTLYNKeDCeYpGQYVDNUK4oLq5ofsNLcump3jAlnUfmB96ifD7h
-> iXxWExv9r1Zk3aS//ZRgFQuGas+w23wklEjaavwQFt9S0aoS6zmcsSWpucyvpYCW
-> JOguVvqO4qphadh1gfOhWEpYVgD9AhADqICLymwcVAphYq/TenRqFPv7UdbcBE0l
-> vDM5D8R0bLrcHLheA2YWwwxTDdZo49D08Pf7RopKbnoMxmwpoxRdkYiJ/n981wgR
-> 4S3FQgSAD+wsI87kwkf0uU3YXT5IYrMt5VoaQZysDTC1ryPuHn4JPexw0YRDOd7l
-> D+SSounos3jqMTVsmKolA84pSMmEcPwQ0624QHouWWkGVlcApIw2xDgr1c6TYzPq
-> s/V/0SXPztU=
-> =8PYy
-> -----END PGP SIGNATURE-----
-> 
-> --Sig_/BvtUQvnWLsVQBetw73gPkyQ--
-> 
-
+diff --git a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+index 28ef498a66e5..0ef00be44b01 100644
+--- a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+@@ -1,7 +1,13 @@
+ * Renesas R-Car Thermal
+ 
+ Required properties:
+-- compatible		: "renesas,rcar-thermal"
++- compatible		: "renesas,thermal-<soctype>", "renesas,rcar-thermal"
++			  as fallback.
++			  Examples with soctypes are:
++			    - "renesas,thermal-r8a73a4" (R-Mobile AP6)
++			    - "renesas,thermal-r8a7779" (R-Car H1)
++			    - "renesas,thermal-r8a7790" (R-Car H2)
++			    - "renesas,thermal-r8a7791" (R-Car M2)
+ - reg			: Address range of the thermal registers.
+ 			  The 1st reg will be recognized as common register
+ 			  if it has "interrupts".
+@@ -12,18 +18,18 @@ Option properties:
+ 
+ Example (non interrupt support):
+ 
+-thermal@e61f0100 {
+-	compatible = "renesas,rcar-thermal";
+-	reg = <0xe61f0100 0x38>;
++thermal@ffc48000 {
++	compatible = "renesas,thermal-r8a7779", "renesas,rcar-thermal";
++	reg = <0xffc48000 0x38>;
+ };
+ 
+ Example (interrupt support):
+ 
+ thermal@e61f0000 {
+-	compatible = "renesas,rcar-thermal";
++	compatible = "renesas,thermal-r8a73a4", "renesas,rcar-thermal";
+ 	reg = <0xe61f0000 0x14
+ 		0xe61f0100 0x38
+ 		0xe61f0200 0x38
+ 		0xe61f0300 0x38>;
+-	interrupts = <0 69 4>;
++	interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
+ };
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
---
-To unsubscribe from this list: send the line "unsubscribe linux-man" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+1.9.1
+
