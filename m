@@ -1,58 +1,51 @@
-From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [RESEND PATCH 0/6] thermal: sti: Add new Thermal driver
-Date: Wed, 09 Jul 2014 21:19:24 +0800
-Message-ID: <1404911964.28592.4.camel@rzhang1-toshiba>
-References: <1401980819-19962-1-git-send-email-lee.jones@linaro.org>
-	 <20140624092309.GD13803@lee--X1> <20140709120823.GA32573@lee--X1>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20140709120823.GA32573@lee--X1>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-F5mvAk5X5gdBDgjK7y7TUQ@public.gmane.org, ajitpal.singh-qxv4g6HH51o@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, maxime.coquelin-qxv4g6HH51o@public.gmane.org, patrice.chotard-qxv4g6HH51o@public.gmane.org
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: [PATCHv2 02/17] ARM: mvebu: sort the #include of pmsu.c in alphabetic order
+Date: Wed,  9 Jul 2014 15:40:06 +0200
+Message-ID: <1404913221-17343-3-git-send-email-thomas.petazzoni@free-electrons.com>
+References: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:47298 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756022AbaGINkd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jul 2014 09:40:33 -0400
+In-Reply-To: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>
+Cc: Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-On Wed, 2014-07-09 at 13:08 +0100, Lee Jones wrote:
-> On Tue, 24 Jun 2014, Lee Jones wrote:
-> 
-> > > I'm re-sending this set, as one of the maintainers' email addresses
-> > > is incorrect in the MAINTAINERS file.
-> > > 
-> > > This patchset adds full support for 2 types of Thermal Controllers
-> > > produced by STMicroelectronics.  One is a more traditional memory
-> > > mapped variant, the other is controlled solely by system configuration
-> > > registers.
-> > 
-> > Any thing from the Thermal guys? Has this set fallen through the gaps?
-> 
-> Anything at all?  It's been well over a month now.
-> 
-Well, for the soc thermal drivers, I'd prefer to take them via Eduardo,
-but as we didn't get any feedback from Eduardo, I will take them.
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
 
-thanks,
-rui
-> > >  Documentation/devicetree/bindings/thermal/st-thermal.txt |  42 ++++++++++++++++
-> > >  arch/arm/boot/dts/stih416.dtsi                           |  18 +++++++
-> > >  arch/arm/configs/multi_v7_defconfig                      |   2 +
-> > >  drivers/thermal/Kconfig                                  |   5 ++
-> > >  drivers/thermal/Makefile                                 |   1 +
-> > >  drivers/thermal/st/Kconfig                               |  12 +++++
-> > >  drivers/thermal/st/Makefile                              |   3 ++
-> > >  drivers/thermal/st/st_thermal.c                          | 313 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> > > ++++++++++++++++++++++++++++
-> > >  drivers/thermal/st/st_thermal.h                          | 104 ++++++++++++++++++++++++++++++++++++++
-> > >  drivers/thermal/st/st_thermal_memmap.c                   | 209 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> > >  drivers/thermal/st/st_thermal_syscfg.c                   | 179 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> > >  11 files changed, 888 insertions(+)
-> > > 
-> > 
-> 
+Sorting the headers in alphabetic order will help to reduce conflicts
+when adding new headers later.
 
+Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+---
+ arch/arm/mach-mvebu/pmsu.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
+index 5fda549..9e18cce 100644
+--- a/arch/arm/mach-mvebu/pmsu.c
++++ b/arch/arm/mach-mvebu/pmsu.c
+@@ -19,13 +19,13 @@
+ #define pr_fmt(fmt) "mvebu-pmsu: " fmt
+ 
+ #include <linux/cpu_pm.h>
+-#include <linux/kernel.h>
+ #include <linux/init.h>
+-#include <linux/of_address.h>
+ #include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/of_address.h>
+ #include <linux/platform_device.h>
+-#include <linux/smp.h>
+ #include <linux/resource.h>
++#include <linux/smp.h>
+ #include <asm/cacheflush.h>
+ #include <asm/cp15.h>
+ #include <asm/smp_plat.h>
+-- 
+2.0.0
+
