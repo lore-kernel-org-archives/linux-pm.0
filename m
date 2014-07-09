@@ -1,41 +1,82 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: A question about PCI suspend-resume functionallity
-Date: Wed, 9 Jul 2014 12:26:57 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1407091218170.873-100000@iolanthe.rowland.org>
-References: <CAErSpo7_sWKCT6gdv-U=2miyT4+XGtGa-TBP8ueunS_fgvJr9Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v3 1/4] ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by
+ static inlines
+Date: Wed, 09 Jul 2014 19:17:51 +0200
+Message-ID: <1404926274-18411-2-git-send-email-b.zolnierkie@samsung.com>
+References: <1404926274-18411-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:49179 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751778AbaGIQ06 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jul 2014 12:26:58 -0400
-In-Reply-To: <CAErSpo7_sWKCT6gdv-U=2miyT4+XGtGa-TBP8ueunS_fgvJr9Q@mail.gmail.com>
+Received: from mailout2.samsung.com ([203.254.224.25]:14297 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754666AbaGIRSz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jul 2014 13:18:55 -0400
+In-reply-to: <1404926274-18411-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Igor Bezukh <Igor@galilsoft.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
 
-On Wed, 9 Jul 2014, Bjorn Helgaas wrote:
+Replace EXYNOS_BOOT_VECTOR_ADDR and EXYNOS_BOOT_VECTOR_FLAG macros
+by exynos_boot_vector_addr() and exynos_boot_vector_flag() static
+inlines.
 
-> > In the USB stack, the subsystem core resume code checks to see if a
-> > device has been unplugged before the driver's ->resume callback is
-> > invoked.  If a device is gone, the driver callback is skipped.  Thus
-> > drivers don't have to worry about trying to resume a device that has
-> > been unplugged.
-> 
-> I assume that you do want to call the driver's ->remove method to free
-> any per-device state.  Do USB drivers just have to be smart enough to
-> do that without touching the device?
+This patch shouldn't cause any functionality changes.
 
-Not quite how I'd describe it.  They have to be smart enough for the
-remove routine to run correctly even if the device is already gone --
-_any_ driver for a hot-unpluggable device has to be like this.
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+v3:
+- added Acked-by from Daniel
 
-Obviously no driver can touch a device that is gone.  But it can
-try.  If a USB driver tries to touch a device that has been unplugged,
-the corresponding function call just returns an error.  It doesn't
-crash.
+ arch/arm/mach-exynos/pm.c | 28 ++++++++++++++++++++--------
+ 1 file changed, 20 insertions(+), 8 deletions(-)
 
-Alan Stern
+diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+index ed20318..c722454 100644
+--- a/arch/arm/mach-exynos/pm.c
++++ b/arch/arm/mach-exynos/pm.c
+@@ -167,12 +167,23 @@ int exynos_cluster_power_state(int cluster)
+ 			S5P_CORE_LOCAL_PWR_EN);
+ }
+ 
+-#define EXYNOS_BOOT_VECTOR_ADDR	(samsung_rev() == EXYNOS4210_REV_1_1 ? \
+-			S5P_INFORM7 : (samsung_rev() == EXYNOS4210_REV_1_0 ? \
+-			(sysram_base_addr + 0x24) : S5P_INFORM0))
+-#define EXYNOS_BOOT_VECTOR_FLAG	(samsung_rev() == EXYNOS4210_REV_1_1 ? \
+-			S5P_INFORM6 : (samsung_rev() == EXYNOS4210_REV_1_0 ? \
+-			(sysram_base_addr + 0x20) : S5P_INFORM1))
++static inline void __iomem *exynos_boot_vector_addr(void)
++{
++	if (samsung_rev() == EXYNOS4210_REV_1_1)
++		return S5P_INFORM7;
++	else if (samsung_rev() == EXYNOS4210_REV_1_0)
++		return sysram_base_addr + 0x24;
++	return S5P_INFORM0;
++}
++
++static inline void __iomem *exynos_boot_vector_flag(void)
++{
++	if (samsung_rev() == EXYNOS4210_REV_1_1)
++		return S5P_INFORM6;
++	else if (samsung_rev() == EXYNOS4210_REV_1_0)
++		return sysram_base_addr + 0x20;
++	return S5P_INFORM1;
++}
+ 
+ #define S5P_CHECK_AFTR  0xFCBA0D10
+ #define S5P_CHECK_SLEEP 0x00000BAD
+@@ -185,8 +196,9 @@ static void exynos_set_wakeupmask(long mask)
+ 
+ static void exynos_cpu_set_boot_vector(long flags)
+ {
+-	__raw_writel(virt_to_phys(exynos_cpu_resume), EXYNOS_BOOT_VECTOR_ADDR);
+-	__raw_writel(flags, EXYNOS_BOOT_VECTOR_FLAG);
++	__raw_writel(virt_to_phys(exynos_cpu_resume),
++		     exynos_boot_vector_addr());
++	__raw_writel(flags, exynos_boot_vector_flag());
+ }
+ 
+ void exynos_enter_aftr(void)
+-- 
+1.8.2.3
 
