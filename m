@@ -1,49 +1,82 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
-Date: Wed, 09 Jul 2014 10:41:35 -0700
-Message-ID: <53BD7ECF.8010408@codeaurora.org>
-References: <cover.1404231535.git.viresh.kumar@linaro.org> <CAKohpomRttWnCBGEpR3cVsGYniJSnjWUnvtbg21AiYyrUnDjGw@mail.gmail.com> <53B4B0B3.9080000@codeaurora.org> <CAKohponRv6+rzJnO4cYFhXn6On1+4-KoxFSA2iU_nz130gvsug@mail.gmail.com> <20140703221609.11380.6884@quantum> <CAKohpomNv_xvcmx03pb8nj=3O33Qt-2Dj2B1q3U46mv5EBtUjA@mail.gmail.com> <CAKohpo=Z5gEHOC5q40q8dfQfoNP5-WyhjG1arV99zJiG2c+6Xg@mail.gmail.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: A question about PCI suspend-resume functionallity
+Date: Wed, 9 Jul 2014 13:24:20 -0600
+Message-ID: <CAErSpo5+sGgYpYnF2GzO7Vu9hxJegS025DyYBTkXqgzBOKWE8w@mail.gmail.com>
+References: <4712771.pPjooVqFXc@vostro.rjw.lan> <Pine.LNX.4.44L0.1407091008350.873-100000@iolanthe.rowland.org>
+ <CAErSpo7_sWKCT6gdv-U=2miyT4+XGtGa-TBP8ueunS_fgvJr9Q@mail.gmail.com> <2305679.jnRnK08iSm@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=Z5gEHOC5q40q8dfQfoNP5-WyhjG1arV99zJiG2c+6Xg@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Shawn Guo <shawn.guo@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Rob Herring <rob.herring@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Simon Horman <horms@verge.net.au>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <2305679.jnRnK08iSm@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Igor Bezukh <Igor@galilsoft.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/07/14 21:50, Viresh Kumar wrote:
-> On 4 July 2014 09:51, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> Yeah, having something like what you suggested from DT is the perfect
->> solution to get over this. The only reason why I am not touching that here
->> is to not delay other patches just because of that.
+On Wed, Jul 9, 2014 at 10:35 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, July 09, 2014 09:55:24 AM Bjorn Helgaas wrote:
+>> On Wed, Jul 9, 2014 at 8:18 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+>> > On Wed, 9 Jul 2014, Rafael J. Wysocki wrote:
+>> >
+>> >> On Tuesday, July 08, 2014 02:47:03 PM Bjorn Helgaas wrote:
+>> >> > [+cc linux-pm]
+>> >> >
+>> >> > On Tue, Jul 8, 2014 at 9:39 AM, Igor Bezukh <Igor@galilsoft.com> wrote:
+>> >> > > Hi,
+>> >> > >
+>> >> > >
+>> >> > > We are testing Intel Gigabit adapter driver (igb) under Fedora 20, kernel 3.14.4 for the following use-case:
+>> >> > >
+>> >> > > (*) Adapter is connected to the PCIE slot
+>> >> > > (*) We put the system under suspend by running pm-suspend from user-space
+>> >> > > (*) Remove the adapter from the PCIE slot
+>> >> > > (*) Wake up the system
+>> >> > >
+>> >> > > Currenlty, we got kernel panics and the system got stuck.
+>> >> > >
+>> >> > > My question is - does the PCI subsystem logic calls the driver remove function when driver resume function returns with error code?
+>> >> > >
+>> >> > > Or should I implement the call to igb_remove from igb_resume in the Intel driver?
 >>
->> There are separate threads going on for that and probably somebody
->> else was trying to push for that.
+>> >> ...
+>> >> The driver's system resume callbacks need to be able to cope with
+>> >> missing devices.
 >>
->> That's it, nothing more. I would definitely like to use those bindings instead
->>  of the crazy routines we are trying here, once that is finalized :)
-> Do we have some kind of agreement for this temporary solution? Anyways
-> I will kick the other thread again to resolve the bindings soon.
+>> Based on this, it sounds like igb_resume() should call igb_remove()
+>> when it figures out the device is missing.
 >
-> @Stephen: Do you still want find_rate_changer() stuff in this series only
-> and or this can go into 3.17 without anymore changes and lets finalize
-> the bindings Mike suggested and then update this code?
+> I wouldn't say so.  igb_resume() should not crash when the device is missing
+> and should just handle that situation cleanly.  Obviously it is not its role
+> to remove the device from the hierarchy.
+
+OK, that makes sense.
+
+However, I don't know of anything in the PCI core that will notice
+that the device has disappeared, so I doubt it will be removed from
+the hierarchy.  I think that means the slot will become unusable until
+a reboot, because the original device is gone and we can't add a new
+one because the original one is still in the hierarchy.  That's not
+very good, but it is better than a panic.
+
+>> That might be the best we can do right now, but it doesn't sound like
+>> a general-purpose solution.  Detecting device removal sounds like a
+>> core function, not a driver function.  It doesn't seem like drivers
+>> should have to implement ->resume just to deal with this case.
 >
+> No, they shouldn't.  They just need to be able to cope with missing devices
+> cleanly.
 >
+> Devices (and PCI devices in particular) can go away at any time, including
+> during system resume, without notice anyway and drivers need to be able to
+> cope with that regardless.
+>
+> The notification can actually come in *after* the device has gone in any
+> case and then whoever gets the notification should handle the device
+> removal. That is not the driver in particular, but in the meantime
+> the driver should still work without crashing.
 
-Finding the rate change is not necessary for me. I don't imagine my code
-will be getting into 3.17 anyway though so I'm no in a rush to merge
-anything immediately.
+Yep.  So the panic Igor is seeing is probably an igb_resume() problem,
+but after that's fixed, we'll probably trip over the PCI bug about not
+handling the remove.
 
-I still prefer the common clock framework API. If we go ahead with the
-find_rate_changer() stuff we've pretty well insulated this driver from
-any DTisms, which is nice. The only thing left would be
-transition-latency and voltage-tolerance, but those are already optional
-so you really don't need to even run on a DT enabled platform to use
-this code.
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+Bjorn
