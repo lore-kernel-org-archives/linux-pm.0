@@ -1,92 +1,44 @@
-From: "Srivatsa S. Bhat" <srivatsa@MIT.EDU>
-Subject: Re: [PATCH] cpufreq: move policy kobj to policy->cpu at resume
-Date: Thu, 10 Jul 2014 16:45:58 +0530
-Message-ID: <53BE75EE.6010200@mit.edu>
-References: <3b19a388891fe997c6c7bc14463453c27312edfa.1404968266.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 07/14] cpufreq: cpu0: OPPs can be populated at runtime
+Date: Thu, 10 Jul 2014 16:49:52 +0530
+Message-ID: <CAKohpo=KUktq8XJv7Ayis1Q3ik+Wh3wb8wN6VpRAtOsbbv9XCw@mail.gmail.com>
+References: <cover.1404231535.git.viresh.kumar@linaro.org>
+	<1ba7771e910084cd0820c19ca5994fe1b3d6451d.1404231535.git.viresh.kumar@linaro.org>
+	<53BD5564.2060704@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from dmz-mailsec-scanner-5.mit.edu ([18.7.68.34]:64418 "EHLO
-	dmz-mailsec-scanner-5.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751021AbaGJLSE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jul 2014 07:18:04 -0400
-In-Reply-To: <3b19a388891fe997c6c7bc14463453c27312edfa.1404968266.git.viresh.kumar@linaro.org>
+Received: from mail-oa0-f46.google.com ([209.85.219.46]:54758 "EHLO
+	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbaGJLTx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jul 2014 07:19:53 -0400
+Received: by mail-oa0-f46.google.com with SMTP id m1so3707900oag.5
+        for <linux-pm@vger.kernel.org>; Thu, 10 Jul 2014 04:19:53 -0700 (PDT)
+In-Reply-To: <53BD5564.2060704@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arvind.chauhan@arm.com, skannan@codeaurora.org, ybu@qti.qualcomm.com, Stable <stable@vger.kernel.org>
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Nishanth Menon <nm@ti.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas P Abraham <thomas.ab@samsung.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Sachin Kamat <spk.linux@gmail.com>
 
-On 07/10/2014 10:49 AM, Viresh Kumar wrote:
-> This is only relevant to implementations with multiple clusters, where clusters
-> have separate clock lines but all CPUs within a cluster share it.
-> 
-> Consider a dual cluster platform with 2 cores per cluster. During suspend we
-> start offlining CPUs from 1 to 3. When CPU2 is remove, policy->kobj would be
-> moved to CPU3 and when CPU3 goes down we wouldn't free policy or its kobj.
-> 
-> Now on resume, we will get CPU2 before CPU3 and will call __cpufreq_add_dev().
-> We will recover the old policy and update policy->cpu from 3 to 2 from
-> update_policy_cpu().
-> 
-> But the kobj is still tied to CPU3 and wasn't moved to CPU2. We wouldn't create
-> a link for CPU2, but would try that while bringing CPU3 online. Which will
-> report errors as CPU3 already has kobj assigned to it.
-> 
-> This bug got introduced with commit 42f921a, which overlooked this scenario.
-> 
-> To fix this, lets move kobj to the new policy->cpu while bringing first CPU of a
-> cluster back.
-> 
-> Fixes: ("42f921a cpufreq: remove sysfs files for CPUs which failed to come back after resume")
-> Cc: Stable <stable@vger.kernel.org> # 3.13+
-> Reported-by: Bu Yitian <ybu@qti.qualcomm.com>
-> Reported-by: Saravana Kannan <skannan@codeaurora.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
+On 9 July 2014 20:14, Santosh Shilimkar <santosh.shilimkar@ti.com> wrote:
+> Assuming you are updating bidnings as suggested by Stephen,
+> patch looks good to me.
+> Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
 
-Looks good to me. But I think it would be better to move the invocation of
-kobject_move() to update_policy_cpu() itself, so that update_policy_cpu()
-will do all the work involved in updating the policy->cpu, as its name suggests.
+Why do you still have a separate cpufreq driver for omap?
+Would this patch help getting that out?
 
-With that small nit,
+I see this for omap:
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa@mit.edu>
+static inline void omap_init_cpufreq(void)
+{
+        struct platform_device_info devinfo = { };
 
-Regards,
-Srivatsa S. Bhat
+        if (!of_have_populated_dt())
+                devinfo.name = "omap-cpufreq";
+        else
+                devinfo.name = "cpufreq-generic";
+        platform_device_register_full(&devinfo);
+}
 
-> Hi Rafael,
-> 
-> This is for 3.16 release, please take it once Yitian/Saravana test this out.
-> 
-> @Yitian/Saravana: Sorry of overlooking this when both of you reported this
-> first. I (and Srivatsa as well) was damn sure that this scenario is taken into
-> account in current code and a close look proved that wrong.
-> 
-> I couldn't test it out, can any of you please see if it fixes things for you?
-> 
->  drivers/cpufreq/cpufreq.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 62259d2..6f02485 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1153,10 +1153,12 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
->  	 * the creation of a brand new one. So we need to perform this update
->  	 * by invoking update_policy_cpu().
->  	 */
-> -	if (recover_policy && cpu != policy->cpu)
-> +	if (recover_policy && cpu != policy->cpu) {
->  		update_policy_cpu(policy, cpu);
-> -	else
-> +		WARN_ON(kobject_move(&policy->kobj, &dev->kobj));
-> +	} else {
->  		policy->cpu = cpu;
-> +	}
->  
->  	cpumask_copy(policy->cpus, cpumask_of(cpu));
->  
-> 
-
+and it makes me believe that you were just waiting for this patch?
