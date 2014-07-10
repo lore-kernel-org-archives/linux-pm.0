@@ -1,38 +1,121 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH] cpufreq: report driver's successful {un}registration
-Date: Thu, 10 Jul 2014 16:16:03 +0200
-Message-ID: <20140710141603.GH2970@pd.tnic>
-References: <9e68cba2bf41923630ea93de7c3d17637f175895.1403772686.git.viresh.kumar@linaro.org>
- <20140710114828.GA3254@pd.tnic>
- <CAKohpom0Qwbj5Ma_zCE5juk=1JjbBDLZJcBXZMgnkDVPiTvRCA@mail.gmail.com>
- <20140710115934.GF2970@pd.tnic>
- <CAKohpok0M1_khYB=AobfAuPM9Tf8wi63K5o6NCQ+sC=STP5HMw@mail.gmail.com>
- <20140710140704.GG2970@pd.tnic>
- <CAKohpok-ZdxJMCsLMGVA1yhmCjQyTwhCTu7PuXU47wpLQQyxEg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: [RFC PATCH v5 00/10] The power allocator thermal governor
+Date: Thu, 10 Jul 2014 15:18:38 +0100
+Message-ID: <1405001928-12697-1-git-send-email-javi.merino@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([78.46.96.112]:34287 "EHLO mail.skyhub.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751517AbaGJOQL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Jul 2014 10:16:11 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKohpok-ZdxJMCsLMGVA1yhmCjQyTwhCTu7PuXU47wpLQQyxEg@mail.gmail.com>
+Received: from service87.mimecast.com ([91.220.42.44]:43656 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752910AbaGJOTG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jul 2014 10:19:06 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>
 
-On Thu, Jul 10, 2014 at 07:43:07PM +0530, Viresh Kumar wrote:
-> But I faced the issue when I had to see some test reports from the
-> automated stuff and wanted to see if cpufreq is up and running.
+Hi linux-pm,
 
-Sorry, this is a very specialized usage to enforce meaningless spew in
-dmesg on *everybody*. Fix your tests instead.
+The power allocator governor allocates device power to control
+temperature.  This requires transforming performance requests into
+requested power, which we do with the aid of power models.  Patch 7
+(thermal: add a basic cpu power actor) implements a simple power model
+for cpus.  The division of power between the actors ensures that power
+is allocated where it is needed the most, based on the current
+workload.
 
--- 
-Regards/Gruss,
-    Boris.
+Patches 1-3 adds array printing helpers to ftrace, which we then use
+in patch 9.  Patch 4 is a generic documentation of the current thermal
+framework and can be merged separately.
 
-Sent from a fat crate under my desk. Formatting is fine.
---
+Changes since v4:
+  - Add more tracing
+  - Document some of the limitations of the power allocator governor
+  - Export the power_actor API and move power_actor.h to include/linux
+
+Changes since v3:
+  - Use tz->passive to poll faster when the first trip point is hit.
+  - Don't make a special directory for power_actors
+  - Add a DT property for sustainable-power
+  - Simplify the static power interface and pass the current thermal
+    zone in every power_actor_ops to remove the controversial
+    enum power_actor_types
+  - Use locks with the actor_list list
+  - Use cpufreq_get() to get the frequency of the cpu instead of
+    using the notifiers.
+  - Remove the prompt for THERMAL_POWER_ACTOR_CPU when configuring
+    the kernel
+
+Changes since v2:
+  - Changed the PI controller into a PID controller
+  - Added static power to the cpu power model
+  - tz parameter max_dissipatable_power renamed to sustainable_power
+  - Register the cpufreq cooling device as part of the
+    power_cpu_actor registration.
+
+Changes since v1:
+  - Fixed finding cpufreq cooling devices in cpufreq_frequency_change()
+  - Replaced the cooling device interface with a separate power actor
+    API
+  - Addressed most of Eduardo's comments
+  - Incorporated ftrace support for bitmask to trace cpumasks
+
+Todo:
+  - Rethink the use of trip points and make it less intrusive
+  - Let platforms override the power allocator governor parameters
+  - Provide scripts to evaluate the proposal
+  - Let the governor operate on cooling devices as well
+
+Cheers,
+Javi & Punit
+
+Dave Martin (1):
+  tracing: Add array printing helpers
+
+Javi Merino (8):
+  tools lib traceevent: Generalize numeric argument
+  tools lib traceevent: Add support for __print_u{8,16,32,64}_array()
+  thermal: document struct thermal_zone_device and thermal_governor
+  thermal: let governors have private data for each thermal zone
+  thermal: introduce the Power Actor API
+  thermal: add a basic cpu power actor
+  thermal: introduce the Power Allocator governor
+  thermal: add trace events to the power allocator governor
+
+Punit Agrawal (1):
+  of: thermal: Introduce sustainable power for a thermal zone
+
+ .../devicetree/bindings/thermal/thermal.txt        |   4 +
+ Documentation/thermal/power_actor.txt              | 181 ++++++++
+ Documentation/thermal/power_allocator.txt          |  61 +++
+ drivers/thermal/Kconfig                            |  23 +
+ drivers/thermal/Makefile                           |   5 +
+ drivers/thermal/cpu_actor.c                        | 501 +++++++++++++++++=
+++++
+ drivers/thermal/of-thermal.c                       |   4 +
+ drivers/thermal/power_actor.c                      |  70 +++
+ drivers/thermal/power_allocator.c                  | 485 +++++++++++++++++=
++++
+ drivers/thermal/thermal_core.c                     |  90 +++-
+ drivers/thermal/thermal_core.h                     |   8 +
+ include/linux/ftrace_event.h                       |   9 +
+ include/linux/power_actor.h                        |  86 ++++
+ include/linux/thermal.h                            |  63 ++-
+ include/trace/events/thermal_power_allocator.h     | 138 ++++++
+ include/trace/ftrace.h                             |  17 +
+ kernel/trace/trace_output.c                        |  55 +++
+ tools/lib/traceevent/event-parse.c                 |  88 +++-
+ tools/lib/traceevent/event-parse.h                 |   8 +-
+ 19 files changed, 1865 insertions(+), 31 deletions(-)
+ create mode 100644 Documentation/thermal/power_actor.txt
+ create mode 100644 Documentation/thermal/power_allocator.txt
+ create mode 100644 drivers/thermal/cpu_actor.c
+ create mode 100644 drivers/thermal/power_actor.c
+ create mode 100644 drivers/thermal/power_allocator.c
+ create mode 100644 include/linux/power_actor.h
+ create mode 100644 include/trace/events/thermal_power_allocator.h
+
+--=20
+1.9.1
+
+
