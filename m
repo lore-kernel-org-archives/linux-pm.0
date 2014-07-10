@@ -1,7 +1,7 @@
 From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Subject: [PATCH 13/13] ARM: tegra: Add entries for cpufreq on Tegra124
-Date: Fri, 11 Jul 2014 00:42:49 +0300
-Message-ID: <1405028569-14253-14-git-send-email-ttynkkynen@nvidia.com>
+Subject: [PATCH 09/13] ARM: tegra: Add the DFLL to Tegra124 device tree
+Date: Fri, 11 Jul 2014 00:42:45 +0300
+Message-ID: <1405028569-14253-10-git-send-email-ttynkkynen@nvidia.com>
 References: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,31 +12,46 @@ To: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@
 Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-The Tegra124 cpufreq driver relies on certain clocks being present
-in the /cpus/cpu@0 node.
+The DFLL clocksource is a separate IP block from the usual
+clock-and-reset controller, so it gets its own device tree node.
 
 Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 ---
- arch/arm/boot/dts/tegra124.dtsi | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/arm/boot/dts/tegra124.dtsi | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
 diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegra124.dtsi
-index 582a0e2..5e290bf 100644
+index 7cc535b..582a0e2 100644
 --- a/arch/arm/boot/dts/tegra124.dtsi
 +++ b/arch/arm/boot/dts/tegra124.dtsi
-@@ -776,6 +776,13 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a15";
- 			reg = <0>;
-+
-+			clocks = <&tegra_car TEGRA124_CLK_CCLK_G>,
-+				 <&tegra_car TEGRA124_CLK_CCLK_LP>,
-+				 <&tegra_car TEGRA124_CLK_PLL_X>,
-+				 <&tegra_car TEGRA124_CLK_PLL_P>,
-+				 <&dfll>;
-+			clock-names = "cpu_g", "cpu_lp", "pll_x", "pll_p", "dfll";
- 		};
+@@ -534,6 +534,28 @@
+ 		status = "disabled";
+ 	};
  
- 		cpu@1 {
++	dfll: dfll@0,70110000 {
++		compatible = "nvidia,tegra124-dfll";
++		reg = <0 0x70110000 0 0x100>, /* DFLL control */
++		      <0 0x70110000 0 0x100>, /* I2C output control */
++		      <0 0x70110100 0 0x100>, /* Integrated I2C controller */
++		      <0 0x70110200 0 0x100>; /* Look-up table RAM */
++		interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&tegra_car TEGRA124_CLK_DFLL_SOC>,
++			 <&tegra_car TEGRA124_CLK_DFLL_REF>,
++			 <&tegra_car TEGRA124_CLK_I2C5>;
++		clock-names = "soc", "ref", "i2c";
++		#clock-cells = <0>;
++		clock-output-names = "dfllCPU_out";
++		nvidia,sample-rate = <12500>;
++		nvidia,droop-ctrl = <0x00000f00>;
++		nvidia,force-mode = <1>;
++		nvidia,cf = <10>;
++		nvidia,ci = <0>;
++		nvidia,cg = <2>;
++		status = "disabled";
++	};
++
+ 	ahub@0,70300000 {
+ 		compatible = "nvidia,tegra124-ahub";
+ 		reg = <0x0 0x70300000 0x0 0x200>,
 -- 
 1.8.1.5
