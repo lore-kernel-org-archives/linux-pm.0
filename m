@@ -1,27 +1,98 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: move policy kobj to policy->cpu at resume
-Date: Thu, 10 Jul 2014 16:50:47 +0530
-Message-ID: <CAKohpokb3S3czYB46JsDYggYBYi34CmRhjNGVJDO3wtLV7xGzQ@mail.gmail.com>
-References: <3b19a388891fe997c6c7bc14463453c27312edfa.1404968266.git.viresh.kumar@linaro.org>
-	<53BE75EE.6010200@mit.edu>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: A question about PCI suspend-resume functionallity
+Date: Thu, 10 Jul 2014 13:39:45 +0200
+Message-ID: <3238200.k7ZdWYUy1n@vostro.rjw.lan>
+References: <4712771.pPjooVqFXc@vostro.rjw.lan> <2305679.jnRnK08iSm@vostro.rjw.lan> <CAErSpo5+sGgYpYnF2GzO7Vu9hxJegS025DyYBTkXqgzBOKWE8w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f172.google.com ([209.85.214.172]:42888 "EHLO
-	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751285AbaGJLUs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jul 2014 07:20:48 -0400
-Received: by mail-ob0-f172.google.com with SMTP id wn1so813901obc.17
-        for <linux-pm@vger.kernel.org>; Thu, 10 Jul 2014 04:20:47 -0700 (PDT)
-In-Reply-To: <53BE75EE.6010200@mit.edu>
+Received: from v094114.home.net.pl ([79.96.170.134]:51134 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750958AbaGJLVi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jul 2014 07:21:38 -0400
+In-Reply-To: <CAErSpo5+sGgYpYnF2GzO7Vu9hxJegS025DyYBTkXqgzBOKWE8w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa@mit.edu>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Saravana Kannan <skannan@codeaurora.org>, "Bu, Yitian" <ybu@qti.qualcomm.com>, Stable <stable@vger.kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Igor Bezukh <Igor@galilsoft.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 10 July 2014 16:45, Srivatsa S. Bhat <srivatsa@mit.edu> wrote:
-> Looks good to me. But I think it would be better to move the invocation of
-> kobject_move() to update_policy_cpu() itself, so that update_policy_cpu()
-> will do all the work involved in updating the policy->cpu, as its name suggests.
+On Wednesday, July 09, 2014 01:24:20 PM Bjorn Helgaas wrote:
+> On Wed, Jul 9, 2014 at 10:35 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Wednesday, July 09, 2014 09:55:24 AM Bjorn Helgaas wrote:
+> >> On Wed, Jul 9, 2014 at 8:18 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> >> > On Wed, 9 Jul 2014, Rafael J. Wysocki wrote:
+> >> >
+> >> >> On Tuesday, July 08, 2014 02:47:03 PM Bjorn Helgaas wrote:
+> >> >> > [+cc linux-pm]
+> >> >> >
+> >> >> > On Tue, Jul 8, 2014 at 9:39 AM, Igor Bezukh <Igor@galilsoft.com> wrote:
+> >> >> > > Hi,
+> >> >> > >
+> >> >> > >
+> >> >> > > We are testing Intel Gigabit adapter driver (igb) under Fedora 20, kernel 3.14.4 for the following use-case:
+> >> >> > >
+> >> >> > > (*) Adapter is connected to the PCIE slot
+> >> >> > > (*) We put the system under suspend by running pm-suspend from user-space
+> >> >> > > (*) Remove the adapter from the PCIE slot
+> >> >> > > (*) Wake up the system
+> >> >> > >
+> >> >> > > Currenlty, we got kernel panics and the system got stuck.
+> >> >> > >
+> >> >> > > My question is - does the PCI subsystem logic calls the driver remove function when driver resume function returns with error code?
+> >> >> > >
+> >> >> > > Or should I implement the call to igb_remove from igb_resume in the Intel driver?
+> >>
+> >> >> ...
+> >> >> The driver's system resume callbacks need to be able to cope with
+> >> >> missing devices.
+> >>
+> >> Based on this, it sounds like igb_resume() should call igb_remove()
+> >> when it figures out the device is missing.
+> >
+> > I wouldn't say so.  igb_resume() should not crash when the device is missing
+> > and should just handle that situation cleanly.  Obviously it is not its role
+> > to remove the device from the hierarchy.
+> 
+> OK, that makes sense.
+> 
+> However, I don't know of anything in the PCI core that will notice
+> that the device has disappeared, so I doubt it will be removed from
+> the hierarchy.
 
-Its called from remove path as well ..
+If we don't get a notification via ACPI or PCIe hotplug or anything,
+then no, it won't be removed automatically.
+
+However, it still can be removed manually via sysfs, can't it?
+
+> I think that means the slot will become unusable until
+> a reboot, because the original device is gone and we can't add a new
+> one because the original one is still in the hierarchy.  That's not
+> very good, but it is better than a panic.
+> 
+> >> That might be the best we can do right now, but it doesn't sound like
+> >> a general-purpose solution.  Detecting device removal sounds like a
+> >> core function, not a driver function.  It doesn't seem like drivers
+> >> should have to implement ->resume just to deal with this case.
+> >
+> > No, they shouldn't.  They just need to be able to cope with missing devices
+> > cleanly.
+> >
+> > Devices (and PCI devices in particular) can go away at any time, including
+> > during system resume, without notice anyway and drivers need to be able to
+> > cope with that regardless.
+> >
+> > The notification can actually come in *after* the device has gone in any
+> > case and then whoever gets the notification should handle the device
+> > removal. That is not the driver in particular, but in the meantime
+> > the driver should still work without crashing.
+> 
+> Yep.  So the panic Igor is seeing is probably an igb_resume() problem,
+> but after that's fixed, we'll probably trip over the PCI bug about not
+> handling the remove.
+
+If there's any kind of notification coming in either before of after the event,
+we should act on it and remove the device.  It's a bug if we don't I'd say.
+
+Rafael
+
