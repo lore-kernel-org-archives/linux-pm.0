@@ -1,129 +1,126 @@
-From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Subject: [PATCH 01/13] clk: tegra: Add binding for the Tegra124 DFLL
- clocksource
-Date: Fri, 11 Jul 2014 00:42:37 +0300
-Message-ID: <1405028569-14253-2-git-send-email-ttynkkynen@nvidia.com>
+From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH 10/13] ARM: tegra: Enable the DFLL on the Jetson TK1
+Date: Fri, 11 Jul 2014 00:42:46 +0300
+Message-ID: <1405028569-14253-11-git-send-email-ttynkkynen@nvidia.com>
 References: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Viresh Kumar <viresh.kumar@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Content-Type: text/plain
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1405028569-14253-1-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The DFLL is the main clocksource for the fast CPU cluster on Tegra124
-and also provides automatic CPU rail voltage scaling as well. The DFLL
-is a separate IP block from the usual Tegra124 clock-and-reset
-controller, so it gets its own node in the device tree.
+Add the board-specific properties of the DFLL for the Jetson TK1 board.
+On this board, the DFLL will take control of the sd0 regulator on the
+on-board AS3722 PMIC.
 
-Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
- .../bindings/clock/nvidia,tegra124-dfll.txt        | 86 ++++++++++++++++++++++
- 1 file changed, 86 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts | 83 ++++++++++++++++++++++++++++++-
+ 1 file changed, 82 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
-new file mode 100644
-index 0000000..cf89802
---- /dev/null
-+++ b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
-@@ -0,0 +1,86 @@
-+NVIDIA Tegra124 DFLL FCPU clocksource
+diff --git a/arch/arm/boot/dts/tegra124-jetson-tk1.dts b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+index 89a772d..2dfd516 100644
+--- a/arch/arm/boot/dts/tegra124-jetson-tk1.dts
++++ b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+@@ -1453,7 +1453,7 @@
+ 				vin-ldo9-10-supply = <&vdd_5v0_sys>;
+ 				vin-ldo11-supply = <&vdd_3v3_run>;
+ 
+-				sd0 {
++				vdd_cpu: sd0 {
+ 					regulator-name = "+VDD_CPU_AP";
+ 					regulator-min-microvolt = <700000>;
+ 					regulator-max-microvolt = <1400000>;
+@@ -1636,6 +1636,87 @@
+ 		non-removable;
+ 	};
+ 
++	dfll@0,70110000 {
++		status = "okay";
++		vdd_cpu-supply = <&vdd_cpu>;
++		nvidia,i2c-fs-rate = <400000>;
++		nvidia,pmic-i2c-address = <0x40>;
++		nvidia,pmic-i2c-voltage-register = <0x00>;
 +
-+This binding uses the common clock binding:
-+Documentation/devicetree/bindings/clock/clock-bindings.txt
++		nvidia,pmic-voltage-table =
++			<0x1e 700000>,
++			<0x1f 710000>,
++			<0x20 720000>,
++			<0x21 730000>,
++			<0x22 740000>,
++			<0x23 750000>,
++			<0x24 760000>,
++			<0x25 770000>,
++			<0x26 780000>,
++			<0x27 790000>,
++			<0x28 800000>,
++			<0x29 810000>,
++			<0x2a 820000>,
++			<0x2b 830000>,
++			<0x2c 840000>,
++			<0x2d 850000>,
++			<0x2e 860000>,
++			<0x2f 870000>,
++			<0x30 880000>,
++			<0x31 890000>,
++			<0x32 900000>,
++			<0x33 910000>,
++			<0x34 920000>,
++			<0x35 930000>,
++			<0x36 940000>,
++			<0x37 950000>,
++			<0x38 960000>,
++			<0x39 970000>,
++			<0x3a 980000>,
++			<0x3b 990000>,
++			<0x3c 1000000>,
++			<0x3d 1010000>,
++			<0x3e 1020000>,
++			<0x3f 1030000>,
++			<0x40 1040000>,
++			<0x41 1050000>,
++			<0x42 1060000>,
++			<0x43 1070000>,
++			<0x44 1080000>,
++			<0x45 1090000>,
++			<0x46 1100000>,
++			<0x47 1110000>,
++			<0x48 1120000>,
++			<0x49 1130000>,
++			<0x4a 1140000>,
++			<0x4b 1150000>,
++			<0x4c 1160000>,
++			<0x4d 1170000>,
++			<0x4e 1180000>,
++			<0x4f 1190000>,
++			<0x50 1200000>,
++			<0x51 1210000>,
++			<0x52 1220000>,
++			<0x53 1230000>,
++			<0x54 1240000>,
++			<0x55 1250000>,
++			<0x56 1260000>,
++			<0x57 1270000>,
++			<0x58 1280000>,
++			<0x59 1290000>,
++			<0x5a 1300000>,
++			<0x5b 1310000>,
++			<0x5c 1320000>,
++			<0x5d 1330000>,
++			<0x5e 1340000>,
++			<0x5f 1350000>,
++			<0x60 1360000>,
++			<0x61 1370000>,
++			<0x62 1380000>,
++			<0x63 1390000>,
++			<0x64 1400000>;
++	};
 +
-+The DFLL IP block on Tegra is a root clocksource designed for clocking
-+the fast CPU cluster. It consists of a free-running voltage controlled
-+oscillator connected to the CPU voltage rail (VDD_CPU), and a closed loop
-+control module that will automatically adjust the VDD_CPU voltage by
-+communicating with an off-chip PMIC either via an I2C bus or via PWM signals.
-+
-+Required properties:
-+- compatible : should be "nvidia,tegra124-dfll-fcpu"
-+- reg : Defines the following set of registers, in the order listed:
-+        - registers for the DFLL control logic.
-+        - registers for the I2C output logic.
-+        - registers for the integrated I2C master controller.
-+        - look-up table RAM for voltage register values.
-+- interrupts: Should contain the DFLL block interrupt.
-+- clocks: Must contain an entry for each entry in clock-names.
-+  See ../clocks/clock-bindings.txt for details.
-+- clock-names: Must include the following entries:
-+  - soc: Clock source for the DFLL control logic.
-+  - ref: The closed loop reference clock
-+  - i2c: Clock source for the integrated I2C master.
-+- #clock-cells: Must be 0.
-+- clock-output-names: Name of the clock output.
-+- vdd_cpu-supply: Regulator for the CPU voltage rail that the DFLL
-+  hardware will start controlling.
-+
-+Required properties for the control loop parameters:
-+- nvidia,sample-rate: Sample rate of the DFLL control loop.
-+- nvidia,droop-ctrl: See the register CL_DVFS_DROOP_CTRL in the TRM.
-+- nvidia,force-mode: See the field DFLL_PARAMS_FORCE_MODE in the TRM.
-+- nvidia,cf: Numeric value, see the field DFLL_PARAMS_CF_PARAM in the TRM.
-+- nvidia,ci: Numeric value, see the field DFLL_PARAMS_CI_PARAM in the TRM.
-+- nvidia,cg: Numeric value, see the field DFLL_PARAMS_CG_PARAM in the TRM.
-+- nvidia,cg-scale: Boolean value, see the field DFLL_PARAMS_CG_SCALE in the TRM.
-+
-+Required properties for I2C mode:
-+- nvidia,pmic-i2c-address: I2C address of the PMIC that controls the VDD_CPU
-+  voltage.
-+- nvidia,i2c-10-bit-addresses: Boolean, whether to use 10-bit I2C addressing.
-+- nvidia,pmic-i2c-voltage-register: Register of the PMIC that controls the
-+  VDD_CPU voltage.
-+- nvidia,i2c-fs-rate: I2C transfer rate, if using FS mode.
-+- nvidia,pmic-voltage-table: Array of 2-tuples.  Each entry should have the
-+  form <register-value voltage-in-uV>, indicating the register value that
-+  needs to be programmed to the PMIC for changing the VDD_CPU voltage to
-+  the specified voltage. The table must be in ascending order by the voltage.
-+
-+Example:
-+
-+dfll@0,70110000 {
-+        compatible = "nvidia,tegra124-dfll";
-+        reg = <0 0x70110000 0 0x100>, /* DFLL control */
-+              <0 0x70110000 0 0x100>, /* I2C output control */
-+              <0 0x70110100 0 0x100>, /* Integrated I2C controller */
-+              <0 0x70110200 0 0x100>; /* Look-up table RAM */
-+        interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
-+        clocks = <&tegra_car TEGRA124_CLK_DFLL_SOC>,
-+                 <&tegra_car TEGRA124_CLK_DFLL_REF>,
-+                 <&tegra_car TEGRA124_CLK_I2C5>;
-+        clock-names = "soc", "ref", "i2c";
-+        #clock-cells = <0>;
-+        clock-output-names = "dfllCPU_out";
-+        vdd_cpu-supply = <&vdd_cpu>;
-+        status = "okay";
-+
-+        nvidia,sample-rate = <12500>;
-+        nvidia,droop-ctrl = <0x00000f00>;
-+        nvidia,force-mode = <1>;
-+        nvidia,cf = <10>;
-+        nvidia,ci = <0>;
-+        nvidia,cg = <2>;
-+
-+        nvidia,i2c-fs-rate = <400000>;
-+        nvidia,pmic-i2c-address = <0x40>;
-+        nvidia,pmic-i2c-voltage-register = <0x00>;
-+        nvidia,pmic-voltage-table =
-+                <0x1e 700000>,
-+                <0x1f 710000>,
-+                  /* etc... */
-+                <0x63 1390000>,
-+                <0x64 1400000>;
-+};
+ 	ahub@0,70300000 {
+ 		i2s@0,70301100 {
+ 			status = "okay";
 -- 
 1.8.1.5
