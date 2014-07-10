@@ -1,114 +1,74 @@
-From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Subject: [PATCH 05/13] clk: tegra: Add DFLL DVCO reset control for Tegra124
-Date: Fri, 11 Jul 2014 00:42:41 +0300
-Message-ID: <1405028569-14253-6-git-send-email-ttynkkynen@nvidia.com>
-References: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: A question about PCI suspend-resume functionallity
+Date: Thu, 10 Jul 2014 16:12:14 -0600
+Message-ID: <CAErSpo5hT6e1vevY+fCake6axEGQCSajtm02Faf_GBg9U652Xg@mail.gmail.com>
+References: <4712771.pPjooVqFXc@vostro.rjw.lan> <2305679.jnRnK08iSm@vostro.rjw.lan>
+ <CAErSpo5+sGgYpYnF2GzO7Vu9hxJegS025DyYBTkXqgzBOKWE8w@mail.gmail.com> <3238200.k7ZdWYUy1n@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org, Paul Walmsley <pwalmsley@nvidia.com>, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <3238200.k7ZdWYUy1n@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Igor Bezukh <Igor@galilsoft.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Paul Walmsley <pwalmsley@nvidia.com>
+On Thu, Jul 10, 2014 at 5:39 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, July 09, 2014 01:24:20 PM Bjorn Helgaas wrote:
+>> On Wed, Jul 9, 2014 at 10:35 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > On Wednesday, July 09, 2014 09:55:24 AM Bjorn Helgaas wrote:
+>> >> On Wed, Jul 9, 2014 at 8:18 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+>> >> > On Wed, 9 Jul 2014, Rafael J. Wysocki wrote:
+>> >> >
+>> >> >> On Tuesday, July 08, 2014 02:47:03 PM Bjorn Helgaas wrote:
+>> >> >> > [+cc linux-pm]
+>> >> >> >
+>> >> >> > On Tue, Jul 8, 2014 at 9:39 AM, Igor Bezukh <Igor@galilsoft.com> wrote:
+>> >> >> > > Hi,
+>> >> >> > >
+>> >> >> > >
+>> >> >> > > We are testing Intel Gigabit adapter driver (igb) under Fedora 20, kernel 3.14.4 for the following use-case:
+>> >> >> > >
+>> >> >> > > (*) Adapter is connected to the PCIE slot
+>> >> >> > > (*) We put the system under suspend by running pm-suspend from user-space
+>> >> >> > > (*) Remove the adapter from the PCIE slot
+>> >> >> > > (*) Wake up the system
+>> >> >> > >
+>> >> >> > > Currenlty, we got kernel panics and the system got stuck.
+>> >> >> > >
+>> >> >> > > My question is - does the PCI subsystem logic calls the driver remove function when driver resume function returns with error code?
+>> >> >> > >
+>> >> >> > > Or should I implement the call to igb_remove from igb_resume in the Intel driver?
+>> >>
+>> >> >> ...
+>> >> >> The driver's system resume callbacks need to be able to cope with
+>> >> >> missing devices.
+>> >>
+>> >> Based on this, it sounds like igb_resume() should call igb_remove()
+>> >> when it figures out the device is missing.
+>> >
+>> > I wouldn't say so.  igb_resume() should not crash when the device is missing
+>> > and should just handle that situation cleanly.  Obviously it is not its role
+>> > to remove the device from the hierarchy.
+>>
+>> OK, that makes sense.
+>>
+>> However, I don't know of anything in the PCI core that will notice
+>> that the device has disappeared, so I doubt it will be removed from
+>> the hierarchy.
+>
+> If we don't get a notification via ACPI or PCIe hotplug or anything,
+> then no, it won't be removed automatically.
+>
+> However, it still can be removed manually via sysfs, can't it?
 
-The DVCO present in the DFLL IP block has a separate reset line,
-exposed via the CAR IP block.  This reset line is asserted upon SoC
-reset.  Unless something (such as the DFLL driver) deasserts this
-line, the DVCO will not oscillate, although reads and writes to the
-DFLL IP block will complete.
+Yes, I would think so.  So I guess there's a workaround at least.
 
-Thanks to Aleksandr Frid <afrid@nvidia.com> for identifying this and
-saving hours of debugging time.
+Igor, can you test this scenario (after fixing igb_resume() so it
+doesn't crash when the device is missing)?  I.e., suspend the system,
+remove the adapter, resume the system, then do an "lspci" to see if
+the kernel thinks the adapter is still there, then put an adapter in
+the slot again (either hot-add if the the slot supports it, or
+suspend/add/resume)?
 
-Signed-off-by: Paul Walmsley <pwalmsley@nvidia.com>
-[ttynkkynen: ported to tegra124 from tegra114]
-Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
----
- drivers/clk/tegra/clk-tegra124.c | 47 ++++++++++++++++++++++++++++++++++++++++
- drivers/clk/tegra/clk.h          |  3 +++
- 2 files changed, 50 insertions(+)
-
-diff --git a/drivers/clk/tegra/clk-tegra124.c b/drivers/clk/tegra/clk-tegra124.c
-index 80efe51..77fbf38 100644
---- a/drivers/clk/tegra/clk-tegra124.c
-+++ b/drivers/clk/tegra/clk-tegra124.c
-@@ -31,6 +31,9 @@
- #define CLK_SOURCE_CSITE 0x1d4
- #define CLK_SOURCE_EMC 0x19c
- 
-+#define RST_DFLL_DVCO			0x2f4
-+#define DVFS_DFLL_RESET_SHIFT		0
-+
- #define PLLC_BASE 0x80
- #define PLLC_OUT 0x84
- #define PLLC_MISC2 0x88
-@@ -1378,6 +1381,50 @@ static void __init tegra124_clock_apply_init_table(void)
- 	tegra_init_from_table(init_table, clks, TEGRA124_CLK_CLK_MAX);
- }
- 
-+/**
-+ * tegra124_car_barrier - wait for pending writes to the CAR to complete
-+ *
-+ * Wait for any outstanding writes to the CAR MMIO space from this CPU
-+ * to complete before continuing execution.  No return value.
-+ */
-+static void tegra124_car_barrier(void)
-+{
-+	readl_relaxed(clk_base + RST_DFLL_DVCO);
-+}
-+
-+/**
-+ * tegra124_clock_assert_dfll_dvco_reset - assert the DFLL's DVCO reset
-+ *
-+ * Assert the reset line of the DFLL's DVCO.  No return value.
-+ */
-+void tegra124_clock_assert_dfll_dvco_reset(void)
-+{
-+	u32 v;
-+
-+	v = readl_relaxed(clk_base + RST_DFLL_DVCO);
-+	v |= (1 << DVFS_DFLL_RESET_SHIFT);
-+	writel_relaxed(v, clk_base + RST_DFLL_DVCO);
-+	tegra124_car_barrier();
-+}
-+EXPORT_SYMBOL(tegra124_clock_assert_dfll_dvco_reset);
-+
-+/**
-+ * tegra124_clock_deassert_dfll_dvco_reset - deassert the DFLL's DVCO reset
-+ *
-+ * Deassert the reset line of the DFLL's DVCO, allowing the DVCO to
-+ * operate.  No return value.
-+ */
-+void tegra124_clock_deassert_dfll_dvco_reset(void)
-+{
-+	u32 v;
-+
-+	v = readl_relaxed(clk_base + RST_DFLL_DVCO);
-+	v &= ~(1 << DVFS_DFLL_RESET_SHIFT);
-+	writel_relaxed(v, clk_base + RST_DFLL_DVCO);
-+	tegra124_car_barrier();
-+}
-+EXPORT_SYMBOL(tegra124_clock_deassert_dfll_dvco_reset);
-+
- static void __init tegra124_clock_init(struct device_node *np)
- {
- 	struct device_node *node;
-diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
-index 16ec8d6..4b3f3d0 100644
---- a/drivers/clk/tegra/clk.h
-+++ b/drivers/clk/tegra/clk.h
-@@ -627,6 +627,9 @@ void tegra114_clock_tune_cpu_trimmers_init(void);
- void tegra114_clock_assert_dfll_dvco_reset(void);
- void tegra114_clock_deassert_dfll_dvco_reset(void);
- 
-+void tegra124_clock_assert_dfll_dvco_reset(void);
-+void tegra124_clock_deassert_dfll_dvco_reset(void);
-+
- typedef void (*tegra_clk_apply_init_table_func)(void);
- extern tegra_clk_apply_init_table_func tegra_clk_apply_init_table;
- 
--- 
-1.8.1.5
+Bjorn
