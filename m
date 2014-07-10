@@ -1,7 +1,7 @@
 From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Subject: [PATCH 11/13] cpufreq: tegra124: Add device tree bindings
-Date: Fri, 11 Jul 2014 00:42:47 +0300
-Message-ID: <1405028569-14253-12-git-send-email-ttynkkynen@nvidia.com>
+Subject: [PATCH 13/13] ARM: tegra: Add entries for cpufreq on Tegra124
+Date: Fri, 11 Jul 2014 00:42:49 +0300
+Message-ID: <1405028569-14253-14-git-send-email-ttynkkynen@nvidia.com>
 References: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,58 +12,31 @@ To: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@
 Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-The cpufreq driver for Tegra124 will be a different one than the old
-Tegra20 cpufreq driver (tegra-cpufreq), which does not use the device
-tree.
+The Tegra124 cpufreq driver relies on certain clocks being present
+in the /cpus/cpu@0 node.
 
 Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 ---
- .../bindings/cpufreq/tegra124-cpufreq.txt          | 37 ++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
+ arch/arm/boot/dts/tegra124.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
-new file mode 100644
-index 0000000..6f3f608
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
-@@ -0,0 +1,37 @@
-+Tegra124 CPU frequency scaling driver bindings
-+----------------------------------------------
+diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegra124.dtsi
+index 582a0e2..5e290bf 100644
+--- a/arch/arm/boot/dts/tegra124.dtsi
++++ b/arch/arm/boot/dts/tegra124.dtsi
+@@ -776,6 +776,13 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a15";
+ 			reg = <0>;
 +
-+Both required and optional properties listed below must be defined
-+under node /cpus/cpu@0.
-+
-+Required properties:
-+- clocks: Must contain an entry for each entry in clock-names.
-+  See ../clocks/clock-bindings.txt for details.
-+- clock-names: Must include the following entries:
-+  - cpu_g: Clock mux for the fast CPU cluster.
-+  - cpu_lp: Clock mux for the low-power CPU cluster.
-+  - pll_x: Fast PLL clocksource.
-+  - pll_p: Auxiliary PLL used during fast PLL rate changes.
-+  - dfll: Fast DFLL clocksource that also automatically scales CPU voltage.
-+
-+Example:
-+--------
-+cpus {
-+	#address-cells = <1>;
-+	#size-cells = <0>;
-+
-+	cpu@0 {
-+		device_type = "cpu";
-+		compatible = "arm,cortex-a15";
-+		reg = <0>;
-+
-+		clocks = <&tegra_car TEGRA124_CLK_CCLK_G>,
-+			 <&tegra_car TEGRA124_CLK_CCLK_LP>,
-+			 <&tegra_car TEGRA124_CLK_PLL_X>,
-+			 <&tegra_car TEGRA124_CLK_PLL_P>,
-+			 <&dfll>;
-+		clock-names = "cpu_g", "cpu_lp", "pll_x", "pll_p", "dfll";
-+	};
-+
-+	<...>
-+};
++			clocks = <&tegra_car TEGRA124_CLK_CCLK_G>,
++				 <&tegra_car TEGRA124_CLK_CCLK_LP>,
++				 <&tegra_car TEGRA124_CLK_PLL_X>,
++				 <&tegra_car TEGRA124_CLK_PLL_P>,
++				 <&dfll>;
++			clock-names = "cpu_g", "cpu_lp", "pll_x", "pll_p", "dfll";
+ 		};
+ 
+ 		cpu@1 {
 -- 
 1.8.1.5
