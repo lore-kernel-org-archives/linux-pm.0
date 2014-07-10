@@ -1,133 +1,222 @@
-From: "Bu, Yitian" <ybu@qti.qualcomm.com>
-Subject: Re: [PATCH V2] cpufreq: move policy kobj to policy->cpu at resume
-Date: Thu, 10 Jul 2014 15:12:47 +0000
-Message-ID: <D51F586F-EA6C-4BAF-8CFC-8E7BB5719423@qti.qualcomm.com>
-References: <1eff59d9b51f8ade67bc1cf9f10683f9463ec9f6.1404996041.git.viresh.kumar@linaro.org>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC PATCH v5 01/10] tracing: Add array printing helpers
+Date: Thu, 10 Jul 2014 11:40:10 -0400
+Message-ID: <20140710114010.4d7b2d77@gandalf.local.home>
+References: <1405001928-12697-1-git-send-email-javi.merino@arm.com>
+	<1405001928-12697-2-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1eff59d9b51f8ade67bc1cf9f10683f9463ec9f6.1404996041.git.viresh.kumar@linaro.org>
-Content-Language: zh-CN
-Sender: stable-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arvind.chauhan@arm.com" <arvind.chauhan@arm.com>, "srivatsa@mit.edu" <srivatsa@mit.edu>, "skannan@codeaurora.org" <skannan@codeaurora.org>, Stable <stable@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cdptpa-outbound-snat.email.rr.com ([107.14.166.228]:13402 "EHLO
+	cdptpa-oedge-vip.email.rr.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750945AbaGJPkV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jul 2014 11:40:21 -0400
+In-Reply-To: <1405001928-12697-2-git-send-email-javi.merino@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, broonie@kernel.org, Dave Martin <Dave.Martin@arm.com>, Ingo Molnar <mingo@redhat.com>
 
-DQoNCj4g1NogMjAxNMTqN9TCMTDI1aOsMjA6NDGjrCJWaXJlc2ggS3VtYXIiIDx2aXJlc2gua3Vt
-YXJAbGluYXJvLm9yZz4g0LS1wKO6DQo+IA0KPiBUaGlzIGlzIG9ubHkgcmVsZXZhbnQgdG8gaW1w
-bGVtZW50YXRpb25zIHdpdGggbXVsdGlwbGUgY2x1c3RlcnMsIHdoZXJlIGNsdXN0ZXJzDQo+IGhh
-dmUgc2VwYXJhdGUgY2xvY2sgbGluZXMgYnV0IGFsbCBDUFVzIHdpdGhpbiBhIGNsdXN0ZXIgc2hh
-cmUgaXQuDQo+IA0KPiBDb25zaWRlciBhIGR1YWwgY2x1c3RlciBwbGF0Zm9ybSB3aXRoIDIgY29y
-ZXMgcGVyIGNsdXN0ZXIuIER1cmluZyBzdXNwZW5kIHdlDQo+IHN0YXJ0IG9mZmxpbmluZyBDUFVz
-IGZyb20gMSB0byAzLiBXaGVuIENQVTIgaXMgcmVtb3ZlLCBwb2xpY3ktPmtvYmogd291bGQgYmUN
-Cj4gbW92ZWQgdG8gQ1BVMyBhbmQgd2hlbiBDUFUzIGdvZXMgZG93biB3ZSB3b3VsZG4ndCBmcmVl
-IHBvbGljeSBvciBpdHMga29iai4NCj4gDQo+IE5vdyBvbiByZXN1bWUsIHdlIHdpbGwgZ2V0IENQ
-VTIgYmVmb3JlIENQVTMgYW5kIHdpbGwgY2FsbCBfX2NwdWZyZXFfYWRkX2RldigpLg0KPiBXZSB3
-aWxsIHJlY292ZXIgdGhlIG9sZCBwb2xpY3kgYW5kIHVwZGF0ZSBwb2xpY3ktPmNwdSBmcm9tIDMg
-dG8gMiBmcm9tDQo+IHVwZGF0ZV9wb2xpY3lfY3B1KCkuDQo+IA0KPiBCdXQgdGhlIGtvYmogaXMg
-c3RpbGwgdGllZCB0byBDUFUzIGFuZCB3YXNuJ3QgbW92ZWQgdG8gQ1BVMi4gV2Ugd291bGRuJ3Qg
-Y3JlYXRlDQo+IGEgbGluayBmb3IgQ1BVMiwgYnV0IHdvdWxkIHRyeSB0aGF0IHdoaWxlIGJyaW5n
-aW5nIENQVTMgb25saW5lLiBXaGljaCB3aWxsDQo+IHJlcG9ydCBlcnJvcnMgYXMgQ1BVMyBhbHJl
-YWR5IGhhcyBrb2JqIGFzc2lnbmVkIHRvIGl0Lg0KPiANCj4gVGhpcyBidWcgZ290IGludHJvZHVj
-ZWQgd2l0aCBjb21taXQgNDJmOTIxYSwgd2hpY2ggb3Zlcmxvb2tlZCB0aGlzIHNjZW5hcmlvLg0K
-PiANCj4gVG8gZml4IHRoaXMsIGxldHMgbW92ZSBrb2JqIHRvIHRoZSBuZXcgcG9saWN5LT5jcHUg
-d2hpbGUgYnJpbmdpbmcgZmlyc3QgQ1BVIG9mIGENCj4gY2x1c3RlciBiYWNrLiBXZSBhbHJlYWR5
-IGhhdmUgdXBkYXRlX3BvbGljeV9jcHUoKSByb3V0aW5lIHdoaWNoIGNhbiBiZSB1cGRhdGVkDQo+
-IHdpdGggdGhpcyBjaGFuZ2UuIFRoYXQgd291bGQgZ2V0IHJpZCBvZiB0aGUgY3B1ZnJlcV9ub21p
-bmF0ZV9uZXdfcG9saWN5X2NwdSgpIGFzDQo+IHVwZGF0ZV9wb2xpY3lfY3B1KCkgaXMgYWxzbyBj
-YWxsZWQgb24gQ1BVIHJlbW92YWwuDQo+IA0KPiBUbyBhY2hpZXZlIHRoYXQgd2UgYWRkIGFub3Ro
-ZXIgcGFyYW1ldGVyIHRvIHVwZGF0ZV9wb2xpY3lfY3B1KCkgYXMgY3B1X2RldiBpcw0KPiBwcmVz
-ZW50IHdpdGggYm90aCB0aGUgY2FsbGVycy4NCj4gDQo+IEZpeGVzOiAoIjQyZjkyMWEgY3B1ZnJl
-cTogcmVtb3ZlIHN5c2ZzIGZpbGVzIGZvciBDUFVzIHdoaWNoIGZhaWxlZCB0byBjb21lIGJhY2sg
-YWZ0ZXIgcmVzdW1lIikNCj4gQ2M6IFN0YWJsZSA8c3RhYmxlQHZnZXIua2VybmVsLm9yZz4gIyAz
-LjEzKw0KPiBSZXBvcnRlZC1ieTogQnUgWWl0aWFuIDx5YnVAcXRpLnF1YWxjb21tLmNvbT4NCj4g
-UmVwb3J0ZWQtYnk6IFNhcmF2YW5hIEthbm5hbiA8c2thbm5hbkBjb2RlYXVyb3JhLm9yZz4NCj4g
-U2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4NCj4g
-LS0tDQo+IFYxLT5WMjogTW92ZSBrb2JqZWN0X21vdmUoKSBjYWxsIHRvIHVwZGF0ZV9wb2xpY3lf
-Y3B1KCksIHdoaWNoIG1ha2VzDQo+IGNwdWZyZXFfbm9taW5hdGVfbmV3X3BvbGljeV9jcHUoKSBh
-bG1vc3QgZW1wdHkuIFNvIHdlIHJlbW92ZSBpdCBjb21wbGV0ZWx5Lg0KPiANCj4gQFlpdGlhbjog
-U29ycnksIGJ1dCB5b3UgbmVlZCB0byB0ZXN0IHRoaXMgYWdhaW4gYXMgdGhlcmUgd2VyZSBlbm91
-Z2gNCj4gbW9kaWZpY2F0aW9ucyBpbiBWMi4NCj4gDQoNClNvcnJ5LCBJIGRvbid0IGhhdmUgbGF0
-ZXN0IGtlcm5lbCB0byB0ZXN0IHRoaXMgcGF0Y2guLi4NCldoYXQgSSBhbSB1c2luZyBpcyAzLjEw
-LCB0aGlzIHBhdGNoIHNlZW1zIHRvbyBiaWcgdG8gbWFudWFsbHkgYXBwbHkgdG8gMy4xMC4NCg0K
-DQo+IGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgfCA3MyArKysrKysrKysrKysrKysrKysrKysr
-Ky0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiAxIGZpbGUgY2hhbmdlZCwgMzYgaW5zZXJ0aW9u
-cygrKSwgMzcgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVx
-L2NwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMNCj4gaW5kZXggNjIyNTlkMi4u
-YzgxZDllYzYgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMNCj4gKysr
-IGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYw0KPiBAQCAtMTA3NiwxMCArMTA3NiwyMCBAQCBz
-dGF0aWMgdm9pZCBjcHVmcmVxX3BvbGljeV9mcmVlKHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9s
-aWN5KQ0KPiAgICBrZnJlZShwb2xpY3kpOw0KPiB9DQo+IA0KPiAtc3RhdGljIHZvaWQgdXBkYXRl
-X3BvbGljeV9jcHUoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3ksIHVuc2lnbmVkIGludCBj
-cHUpDQo+ICtzdGF0aWMgaW50IHVwZGF0ZV9wb2xpY3lfY3B1KHN0cnVjdCBjcHVmcmVxX3BvbGlj
-eSAqcG9saWN5LCB1bnNpZ25lZCBpbnQgY3B1LA0KPiArICAgICAgICAgICAgICAgICBzdHJ1Y3Qg
-ZGV2aWNlICpjcHVfZGV2KQ0KPiB7DQo+ICsgICAgaW50IHJldDsNCj4gKw0KPiAgICBpZiAoV0FS
-Tl9PTihjcHUgPT0gcG9saWN5LT5jcHUpKQ0KPiAtICAgICAgICByZXR1cm47DQo+ICsgICAgICAg
-IHJldHVybiAwOw0KPiArDQo+ICsgICAgLyogTW92ZSBrb2JqZWN0IHRvIHRoZSBuZXcgcG9saWN5
-LT5jcHUgKi8NCj4gKyAgICByZXQgPSBrb2JqZWN0X21vdmUoJnBvbGljeS0+a29iaiwgJmNwdV9k
-ZXYtPmtvYmopOw0KPiArICAgIGlmIChyZXQpIHsNCj4gKyAgICAgICAgcHJfZXJyKCIlczogRmFp
-bGVkIHRvIG1vdmUga29iajogJWRcbiIsIF9fZnVuY19fLCByZXQpOw0KPiArICAgICAgICByZXR1
-cm4gcmV0Ow0KPiArICAgIH0NCj4gDQo+ICAgIGRvd25fd3JpdGUoJnBvbGljeS0+cndzZW0pOw0K
-PiANCj4gQEAgLTEwOTAsNiArMTEwMCw4IEBAIHN0YXRpYyB2b2lkIHVwZGF0ZV9wb2xpY3lfY3B1
-KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5LCB1bnNpZ25lZCBpbnQgY3B1KQ0KPiANCj4g
-ICAgYmxvY2tpbmdfbm90aWZpZXJfY2FsbF9jaGFpbigmY3B1ZnJlcV9wb2xpY3lfbm90aWZpZXJf
-bGlzdCwNCj4gICAgICAgICAgICBDUFVGUkVRX1VQREFURV9QT0xJQ1lfQ1BVLCBwb2xpY3kpOw0K
-PiArDQo+ICsgICAgcmV0dXJuIDA7DQo+IH0NCj4gDQo+IHN0YXRpYyBpbnQgX19jcHVmcmVxX2Fk
-ZF9kZXYoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3Qgc3Vic3lzX2ludGVyZmFjZSAqc2lmKQ0K
-PiBAQCAtMTE1NCw3ICsxMTY2LDcgQEAgc3RhdGljIGludCBfX2NwdWZyZXFfYWRkX2RldihzdHJ1
-Y3QgZGV2aWNlICpkZXYsIHN0cnVjdCBzdWJzeXNfaW50ZXJmYWNlICpzaWYpDQo+ICAgICAqIGJ5
-IGludm9raW5nIHVwZGF0ZV9wb2xpY3lfY3B1KCkuDQo+ICAgICAqLw0KPiAgICBpZiAocmVjb3Zl
-cl9wb2xpY3kgJiYgY3B1ICE9IHBvbGljeS0+Y3B1KQ0KPiAtICAgICAgICB1cGRhdGVfcG9saWN5
-X2NwdShwb2xpY3ksIGNwdSk7DQo+ICsgICAgICAgIFdBUk5fT04odXBkYXRlX3BvbGljeV9jcHUo
-cG9saWN5LCBjcHUsIGRldikpOw0KPiAgICBlbHNlDQo+ICAgICAgICBwb2xpY3ktPmNwdSA9IGNw
-dTsNCj4gDQo+IEBAIC0xMzA3LDM4ICsxMzE5LDExIEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9hZGRf
-ZGV2KHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IHN1YnN5c19pbnRlcmZhY2UgKnNpZikNCj4g
-ICAgcmV0dXJuIF9fY3B1ZnJlcV9hZGRfZGV2KGRldiwgc2lmKTsNCj4gfQ0KPiANCj4gLXN0YXRp
-YyBpbnQgY3B1ZnJlcV9ub21pbmF0ZV9uZXdfcG9saWN5X2NwdShzdHJ1Y3QgY3B1ZnJlcV9wb2xp
-Y3kgKnBvbGljeSwNCj4gLSAgICAgICAgICAgICAgICAgICAgICAgdW5zaWduZWQgaW50IG9sZF9j
-cHUpDQo+IC17DQo+IC0gICAgc3RydWN0IGRldmljZSAqY3B1X2RldjsNCj4gLSAgICBpbnQgcmV0
-Ow0KPiAtDQo+IC0gICAgLyogZmlyc3Qgc2libGluZyBub3cgb3ducyB0aGUgbmV3IHN5c2ZzIGRp
-ciAqLw0KPiAtICAgIGNwdV9kZXYgPSBnZXRfY3B1X2RldmljZShjcHVtYXNrX2FueV9idXQocG9s
-aWN5LT5jcHVzLCBvbGRfY3B1KSk7DQo+IC0NCj4gLSAgICBzeXNmc19yZW1vdmVfbGluaygmY3B1
-X2Rldi0+a29iaiwgImNwdWZyZXEiKTsNCj4gLSAgICByZXQgPSBrb2JqZWN0X21vdmUoJnBvbGlj
-eS0+a29iaiwgJmNwdV9kZXYtPmtvYmopOw0KPiAtICAgIGlmIChyZXQpIHsNCj4gLSAgICAgICAg
-cHJfZXJyKCIlczogRmFpbGVkIHRvIG1vdmUga29iajogJWRcbiIsIF9fZnVuY19fLCByZXQpOw0K
-PiAtDQo+IC0gICAgICAgIGRvd25fd3JpdGUoJnBvbGljeS0+cndzZW0pOw0KPiAtICAgICAgICBj
-cHVtYXNrX3NldF9jcHUob2xkX2NwdSwgcG9saWN5LT5jcHVzKTsNCj4gLSAgICAgICAgdXBfd3Jp
-dGUoJnBvbGljeS0+cndzZW0pOw0KPiAtDQo+IC0gICAgICAgIHJldCA9IHN5c2ZzX2NyZWF0ZV9s
-aW5rKCZjcHVfZGV2LT5rb2JqLCAmcG9saWN5LT5rb2JqLA0KPiAtICAgICAgICAgICAgICAgICAg
-ICAiY3B1ZnJlcSIpOw0KPiAtDQo+IC0gICAgICAgIHJldHVybiAtRUlOVkFMOw0KPiAtICAgIH0N
-Cj4gLQ0KPiAtICAgIHJldHVybiBjcHVfZGV2LT5pZDsNCj4gLX0NCj4gLQ0KPiBzdGF0aWMgaW50
-IF9fY3B1ZnJlcV9yZW1vdmVfZGV2X3ByZXBhcmUoc3RydWN0IGRldmljZSAqZGV2LA0KPiAgICAg
-ICAgICAgICAgICAgICAgc3RydWN0IHN1YnN5c19pbnRlcmZhY2UgKnNpZikNCj4gew0KPiAgICB1
-bnNpZ25lZCBpbnQgY3B1ID0gZGV2LT5pZCwgY3B1czsNCj4gLSAgICBpbnQgbmV3X2NwdSwgcmV0
-Ow0KPiArICAgIGludCByZXQ7DQo+ICAgIHVuc2lnbmVkIGxvbmcgZmxhZ3M7DQo+ICAgIHN0cnVj
-dCBjcHVmcmVxX3BvbGljeSAqcG9saWN5Ow0KPiANCj4gQEAgLTEzNzgsMTQgKzEzNjMsMjggQEAg
-c3RhdGljIGludCBfX2NwdWZyZXFfcmVtb3ZlX2Rldl9wcmVwYXJlKHN0cnVjdCBkZXZpY2UgKmRl
-diwNCj4gICAgaWYgKGNwdSAhPSBwb2xpY3ktPmNwdSkgew0KPiAgICAgICAgc3lzZnNfcmVtb3Zl
-X2xpbmsoJmRldi0+a29iaiwgImNwdWZyZXEiKTsNCj4gICAgfSBlbHNlIGlmIChjcHVzID4gMSkg
-ew0KPiAtICAgICAgICBuZXdfY3B1ID0gY3B1ZnJlcV9ub21pbmF0ZV9uZXdfcG9saWN5X2NwdShw
-b2xpY3ksIGNwdSk7DQo+IC0gICAgICAgIGlmIChuZXdfY3B1ID49IDApIHsNCj4gLSAgICAgICAg
-ICAgIHVwZGF0ZV9wb2xpY3lfY3B1KHBvbGljeSwgbmV3X2NwdSk7DQo+ICsgICAgICAgIC8qIE5v
-bWluYXRlIG5ldyBDUFUgKi8NCj4gKyAgICAgICAgaW50IG5ld19jcHUgPSBjcHVtYXNrX2FueV9i
-dXQocG9saWN5LT5jcHVzLCBjcHUpOw0KPiArICAgICAgICBzdHJ1Y3QgZGV2aWNlICpjcHVfZGV2
-ID0gZ2V0X2NwdV9kZXZpY2UobmV3X2NwdSk7DQo+IA0KPiAtICAgICAgICAgICAgaWYgKCFjcHVm
-cmVxX3N1c3BlbmRlZCkNCj4gLSAgICAgICAgICAgICAgICBwcl9kZWJ1ZygiJXM6IHBvbGljeSBL
-b2JqZWN0IG1vdmVkIHRvIGNwdTogJWQgZnJvbTogJWRcbiIsDQo+IC0gICAgICAgICAgICAgICAg
-ICAgICBfX2Z1bmNfXywgbmV3X2NwdSwgY3B1KTsNCj4gKyAgICAgICAgc3lzZnNfcmVtb3ZlX2xp
-bmsoJmNwdV9kZXYtPmtvYmosICJjcHVmcmVxIik7DQo+ICsgICAgICAgIHJldCA9IHVwZGF0ZV9w
-b2xpY3lfY3B1KHBvbGljeSwgbmV3X2NwdSwgY3B1X2Rldik7DQo+ICsgICAgICAgIGlmIChyZXQp
-IHsNCj4gKyAgICAgICAgICAgIC8qDQo+ICsgICAgICAgICAgICAgKiBUbyBzdXByZXNzIGNvbXBp
-bGF0aW9uIHdhcm5pbmcgYWJvdXQgcmV0dXJuIHZhbHVlIG9mDQo+ICsgICAgICAgICAgICAgKiBz
-eXNmc19jcmVhdGVfbGluaygpLg0KPiArICAgICAgICAgICAgICovDQo+ICsgICAgICAgICAgICBp
-bnQgdGVtcDsNCj4gKw0KPiArICAgICAgICAgICAgLyogQ3JlYXRlIGxpbmsgYWdhaW4gaWYgd2Ug
-ZmFpbGVkLiAqLw0KPiArICAgICAgICAgICAgdGVtcCA9IHN5c2ZzX2NyZWF0ZV9saW5rKCZjcHVf
-ZGV2LT5rb2JqLCAmcG9saWN5LT5rb2JqLA0KPiArICAgICAgICAgICAgICAgICAgICAgICAgICJj
-cHVmcmVxIik7DQo+ICsgICAgICAgICAgICByZXR1cm4gcmV0Ow0KPiAgICAgICAgfQ0KPiArDQo+
-ICsgICAgICAgIGlmICghY3B1ZnJlcV9zdXNwZW5kZWQpDQo+ICsgICAgICAgICAgICBwcl9kZWJ1
-ZygiJXM6IHBvbGljeSBLb2JqZWN0IG1vdmVkIHRvIGNwdTogJWQgZnJvbTogJWRcbiIsDQo+ICsg
-ICAgICAgICAgICAgICAgIF9fZnVuY19fLCBuZXdfY3B1LCBjcHUpOw0KPiAgICB9IGVsc2UgaWYg
-KGNwdWZyZXFfZHJpdmVyLT5zdG9wX2NwdSAmJiBjcHVmcmVxX2RyaXZlci0+c2V0cG9saWN5KSB7
-DQo+ICAgICAgICBjcHVmcmVxX2RyaXZlci0+c3RvcF9jcHUocG9saWN5KTsNCj4gICAgfQ0KPiAt
-LSANCj4gMi4wLjAucmMyDQo+IA0K
+On Thu, 10 Jul 2014 15:18:39 +0100
+"Javi Merino" <javi.merino@arm.com> wrote:
+
+> From: Dave Martin <Dave.Martin@arm.com>
+> 
+> If a trace event contains an array, there is currently no standard
+> way to format this for text output.  Drivers are currently hacking
+> around this by a) local hacks that use the trace_seq functionailty
+> directly, or b) just not printing that information.  For fixed size
+> arrays, formatting of the elements can be open-coded, but this gets
+> cumbersome for arrays of non-trivial size.
+> 
+> These approaches result in non-standard content of the event format
+> description delivered to userspace, so userland tools needs to be
+> taught to understand and parse each array printing method
+> individually.
+> 
+> This patch implements common __print_<type>_array() helpers that
+> tracepoint implementations can use instead of reinventing them.  A
+> simple C-style syntax is used to delimit the array and its elements
+> {like,this}.
+> 
+> So that the helpers can be used with large static arrays as well as
+> dynamic arrays, they take a pointer and element count: they can be
+> used with __get_dynamic_array() for use with dynamic arrays.
+
+Note, please base any patches like this on my for-next branch, because
+I have moved the trace_seq code out of trace_print.c.  Although, I need
+to analyze this a little bit more to see if these still belong in
+trace_print.c or if they should go into trace_seq.c.
+
+My repo is at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-trace.git
+
+
+
+> 
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Signed-off-by: Dave Martin <Dave.Martin@arm.com>
+> ---
+>  include/linux/ftrace_event.h |  9 ++++++++
+>  include/trace/ftrace.h       | 17 ++++++++++++++
+>  kernel/trace/trace_output.c  | 55 ++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 81 insertions(+)
+> 
+> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> index cff3106ffe2c..919f21a3420b 100644
+> --- a/include/linux/ftrace_event.h
+> +++ b/include/linux/ftrace_event.h
+> @@ -44,6 +44,15 @@ const char *ftrace_print_bitmask_seq(struct trace_seq *p, void *bitmask_ptr,
+>  const char *ftrace_print_hex_seq(struct trace_seq *p,
+>  				 const unsigned char *buf, int len);
+>  
+> +const char *ftrace_print_u8_array_seq(struct trace_seq *p,
+> +				      const u8 *buf, int count);
+> +const char *ftrace_print_u16_array_seq(struct trace_seq *p,
+> +				       const u16 *buf, int count);
+> +const char *ftrace_print_u32_array_seq(struct trace_seq *p,
+> +				       const u32 *buf, int count);
+> +const char *ftrace_print_u64_array_seq(struct trace_seq *p,
+> +				       const u64 *buf, int count);
+> +
+>  struct trace_iterator;
+>  struct trace_event;
+>  
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index 26b4f2e13275..15bc5d417aea 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -263,6 +263,19 @@
+>  #undef __print_hex
+>  #define __print_hex(buf, buf_len) ftrace_print_hex_seq(p, buf, buf_len)
+>  
+> +#undef __print_u8_array
+> +#define __print_u8_array(array, count)			\
+> +	ftrace_print_u8_array_seq(p, array, count)
+> +#undef __print_u16_array
+> +#define __print_u16_array(array, count)			\
+> +	ftrace_print_u16_array_seq(p, array, count)
+> +#undef __print_u32_array
+> +#define __print_u32_array(array, count)			\
+> +	ftrace_print_u32_array_seq(p, array, count)
+> +#undef __print_u64_array
+> +#define __print_u64_array(array, count)			\
+> +	ftrace_print_u64_array_seq(p, array, count)
+
+print_hex_seq() is still in trace_output.c, so perhaps it is fine to
+keep these there too.
+
+> +
+>  #undef DECLARE_EVENT_CLASS
+>  #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)	\
+>  static notrace enum print_line_t					\
+> @@ -676,6 +689,10 @@ static inline void ftrace_test_probe_##call(void)			\
+>  #undef __get_dynamic_array_len
+>  #undef __get_str
+>  #undef __get_bitmask
+> +#undef __print_u8_array
+> +#undef __print_u16_array
+> +#undef __print_u32_array
+> +#undef __print_u64_array
+>  
+>  #undef TP_printk
+>  #define TP_printk(fmt, args...) "\"" fmt "\", "  __stringify(args)
+> diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+> index f3dad80c20b2..b46238e75523 100644
+> --- a/kernel/trace/trace_output.c
+> +++ b/kernel/trace/trace_output.c
+> @@ -454,6 +454,61 @@ ftrace_print_hex_seq(struct trace_seq *p, const unsigned char *buf, int buf_len)
+>  }
+>  EXPORT_SYMBOL(ftrace_print_hex_seq);
+>  
+> +static const char *
+> +ftrace_print_array_seq(struct trace_seq *p, const void *buf, int buf_len,
+> +		       bool (*iterator)(struct trace_seq *p, const char *prefix,
+> +					const void **buf, int *buf_len))
+> +{
+> +	const char *ret = p->buffer + p->len;
+
+There is now a helper in my for-next branch that removes the above open
+coded code:
+
+	const char *ret = trace_seq_buffer_ptr(p);
+
+> +	const char *prefix = "";
+> +
+> +	trace_seq_putc(p, '{');
+> +
+> +	if (iterator(p, prefix, &buf, &buf_len)) {
+> +		prefix = ",";
+> +
+> +		while (iterator(p, prefix, &buf, &buf_len))
+
+The above doesn't even need the prefix variable. But I would keep it
+and remove the if and have this:
+
+	while (iterator(p, prefix, &buf, &buf_len))
+		prefix = ",";
+
+and hope gcc just optimizes it. This is not a critical path, don't
+micro optimize it and make the code more complex than need be,
+especially when gcc should be smart enough to optimize it for you.
+
+> +			;
+> +	}
+> +
+> +	trace_seq_putc(p, '}');
+> +	trace_seq_putc(p, 0);
+
+trace_seq is only one page in size, which should be enough. I'm
+wondering if we should check the return status of all the trace_seq()
+calls and return an error.
+
+> +
+> +	return ret;
+> +}
+> +
+> +#define DEFINE_PRINT_ARRAY(type, printk_type, format)			\
+> +static bool								\
+> +ftrace_print_array_iterator_##type(struct trace_seq *p, const char *prefix, \
+> +				   const void **buf, int *buf_len)	\
+> +{									\
+> +	const type *__src = *buf;					\
+> +									\
+> +	if (*buf_len < sizeof(*__src))					\
+> +		return false;						\
+> +									\
+> +	trace_seq_printf(p, "%s" format, prefix, (printk_type)*__src++); \
+> +									\
+> +	*buf = __src;							\
+> +	*buf_len -= sizeof(*__src);					\
+> +									\
+> +	return true;							\
+> +}									\
+> +									\
+> +const char *ftrace_print_##type##_array_seq(				\
+> +	struct trace_seq *p, const type *buf, int count)		\
+> +{									\
+> +	return ftrace_print_array_seq(p, buf, (count) * sizeof(type),	\
+> +				      ftrace_print_array_iterator_##type); \
+> +}									\
+> +									\
+> +EXPORT_SYMBOL(ftrace_print_##type##_array_seq);
+> +
+> +DEFINE_PRINT_ARRAY(u8, unsigned int, "0x%x")
+
+Why not "unsigned char"?
+
+> +DEFINE_PRINT_ARRAY(u16, unsigned int, "0x%x")
+
+Why not "unsigned short"?
+
+> +DEFINE_PRINT_ARRAY(u32, unsigned int, "0x%x")
+> +DEFINE_PRINT_ARRAY(u64, unsigned long long, "0x%llx")
+> +
+>  int ftrace_raw_output_prep(struct trace_iterator *iter,
+>  			   struct trace_event *trace_event)
+>  {
+
+-- Steve
