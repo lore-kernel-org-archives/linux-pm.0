@@ -1,233 +1,147 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH V2] cpufreq: move policy kobj to policy->cpu at resume
-Date: Thu, 10 Jul 2014 12:26:16 -0700
-Message-ID: <53BEE8D8.6080103@codeaurora.org>
-References: <1eff59d9b51f8ade67bc1cf9f10683f9463ec9f6.1404996041.git.viresh.kumar@linaro.org> <D51F586F-EA6C-4BAF-8CFC-8E7BB5719423@qti.qualcomm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI and power management fixes for v3.16-rc5
+Date: Thu, 10 Jul 2014 22:14:24 +0200
+Message-ID: <CAJZ5v0ifZDGWPtu0GF0ddKGXJPujV34_-R2++1R_PfeV0fcRbA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <D51F586F-EA6C-4BAF-8CFC-8E7BB5719423@qti.qualcomm.com>
-Sender: stable-owner@vger.kernel.org
-To: "Bu, Yitian" <ybu@qti.qualcomm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arvind.chauhan@arm.com" <arvind.chauhan@arm.com>, "srivatsa@mit.edu" <srivatsa@mit.edu>, Stable <stable@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f47.google.com ([209.85.219.47]:40177 "EHLO
+	mail-oa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751114AbaGJUOZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jul 2014 16:14:25 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 07/10/2014 08:12 AM, Bu, Yitian wrote:
->=20
->=20
->> =D4=DA 2014=C4=EA7=D4=C210=C8=D5=A3=AC20:41=A3=AC"Viresh Kumar" <vir=
-esh.kumar@linaro.org> =D0=B4=B5=C0=A3=BA
->>
->> This is only relevant to implementations with multiple clusters, whe=
-re clusters
->> have separate clock lines but all CPUs within a cluster share it.
->>
->> Consider a dual cluster platform with 2 cores per cluster. During su=
-spend we
->> start offlining CPUs from 1 to 3. When CPU2 is remove, policy->kobj =
-would be
->> moved to CPU3 and when CPU3 goes down we wouldn't free policy or its=
- kobj.
->>
->> Now on resume, we will get CPU2 before CPU3 and will call __cpufreq_=
-add_dev().
->> We will recover the old policy and update policy->cpu from 3 to 2 fr=
-om
->> update_policy_cpu().
->>
->> But the kobj is still tied to CPU3 and wasn't moved to CPU2. We woul=
-dn't create
->> a link for CPU2, but would try that while bringing CPU3 online. Whic=
-h will
->> report errors as CPU3 already has kobj assigned to it.
->>
->> This bug got introduced with commit 42f921a, which overlooked this s=
-cenario.
->>
->> To fix this, lets move kobj to the new policy->cpu while bringing fi=
-rst CPU of a
->> cluster back. We already have update_policy_cpu() routine which can =
-be updated
->> with this change. That would get rid of the cpufreq_nominate_new_pol=
-icy_cpu() as
->> update_policy_cpu() is also called on CPU removal.
->>
->> To achieve that we add another parameter to update_policy_cpu() as c=
-pu_dev is
->> present with both the callers.
->>
->> Fixes: ("42f921a cpufreq: remove sysfs files for CPUs which failed t=
-o come back after resume")
->> Cc: Stable <stable@vger.kernel.org> # 3.13+
->> Reported-by: Bu Yitian <ybu@qti.qualcomm.com>
->> Reported-by: Saravana Kannan <skannan@codeaurora.org>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->> V1->V2: Move kobject_move() call to update_policy_cpu(), which makes
->> cpufreq_nominate_new_policy_cpu() almost empty. So we remove it comp=
-letely.
->>
->> @Yitian: Sorry, but you need to test this again as there were enough
->> modifications in V2.
->>
->=20
-> Sorry, I don't have latest kernel to test this patch...
-> What I am using is 3.10, this patch seems too big to manually apply t=
-o 3.10.
+Hi Linus,
 
-Even though our kernel is 3.10, I believe we have pulled in all cpufreq
-up to 3.14. So, if you have time, you could pull in rest of the cpufreq
-changes and test it out. For our tree, maybe the v1 patch would be
-sufficient?
+Please pull from
 
--Saravana
->=20
->=20
->> drivers/cpufreq/cpufreq.c | 73 +++++++++++++++++++++++--------------=
-----------
->> 1 file changed, 36 insertions(+), 37 deletions(-)
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index 62259d2..c81d9ec6 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -1076,10 +1076,20 @@ static void cpufreq_policy_free(struct cpufr=
-eq_policy *policy)
->>     kfree(policy);
->> }
->>
->> -static void update_policy_cpu(struct cpufreq_policy *policy, unsign=
-ed int cpu)
->> +static int update_policy_cpu(struct cpufreq_policy *policy, unsigne=
-d int cpu,
->> +                 struct device *cpu_dev)
->> {
->> +    int ret;
->> +
->>     if (WARN_ON(cpu =3D=3D policy->cpu))
->> -        return;
->> +        return 0;
->> +
->> +    /* Move kobject to the new policy->cpu */
->> +    ret =3D kobject_move(&policy->kobj, &cpu_dev->kobj);
->> +    if (ret) {
->> +        pr_err("%s: Failed to move kobj: %d\n", __func__, ret);
->> +        return ret;
->> +    }
->>
->>     down_write(&policy->rwsem);
->>
->> @@ -1090,6 +1100,8 @@ static void update_policy_cpu(struct cpufreq_p=
-olicy *policy, unsigned int cpu)
->>
->>     blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
->>             CPUFREQ_UPDATE_POLICY_CPU, policy);
->> +
->> +    return 0;
->> }
->>
->> static int __cpufreq_add_dev(struct device *dev, struct subsys_inter=
-face *sif)
->> @@ -1154,7 +1166,7 @@ static int __cpufreq_add_dev(struct device *de=
-v, struct subsys_interface *sif)
->>      * by invoking update_policy_cpu().
->>      */
->>     if (recover_policy && cpu !=3D policy->cpu)
->> -        update_policy_cpu(policy, cpu);
->> +        WARN_ON(update_policy_cpu(policy, cpu, dev));
->>     else
->>         policy->cpu =3D cpu;
->>
->> @@ -1307,38 +1319,11 @@ static int cpufreq_add_dev(struct device *de=
-v, struct subsys_interface *sif)
->>     return __cpufreq_add_dev(dev, sif);
->> }
->>
->> -static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *p=
-olicy,
->> -                       unsigned int old_cpu)
->> -{
->> -    struct device *cpu_dev;
->> -    int ret;
->> -
->> -    /* first sibling now owns the new sysfs dir */
->> -    cpu_dev =3D get_cpu_device(cpumask_any_but(policy->cpus, old_cp=
-u));
->> -
->> -    sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
->> -    ret =3D kobject_move(&policy->kobj, &cpu_dev->kobj);
->> -    if (ret) {
->> -        pr_err("%s: Failed to move kobj: %d\n", __func__, ret);
->> -
->> -        down_write(&policy->rwsem);
->> -        cpumask_set_cpu(old_cpu, policy->cpus);
->> -        up_write(&policy->rwsem);
->> -
->> -        ret =3D sysfs_create_link(&cpu_dev->kobj, &policy->kobj,
->> -                    "cpufreq");
->> -
->> -        return -EINVAL;
->> -    }
->> -
->> -    return cpu_dev->id;
->> -}
->> -
->> static int __cpufreq_remove_dev_prepare(struct device *dev,
->>                     struct subsys_interface *sif)
->> {
->>     unsigned int cpu =3D dev->id, cpus;
->> -    int new_cpu, ret;
->> +    int ret;
->>     unsigned long flags;
->>     struct cpufreq_policy *policy;
->>
->> @@ -1378,14 +1363,28 @@ static int __cpufreq_remove_dev_prepare(stru=
-ct device *dev,
->>     if (cpu !=3D policy->cpu) {
->>         sysfs_remove_link(&dev->kobj, "cpufreq");
->>     } else if (cpus > 1) {
->> -        new_cpu =3D cpufreq_nominate_new_policy_cpu(policy, cpu);
->> -        if (new_cpu >=3D 0) {
->> -            update_policy_cpu(policy, new_cpu);
->> +        /* Nominate new CPU */
->> +        int new_cpu =3D cpumask_any_but(policy->cpus, cpu);
->> +        struct device *cpu_dev =3D get_cpu_device(new_cpu);
->>
->> -            if (!cpufreq_suspended)
->> -                pr_debug("%s: policy Kobject moved to cpu: %d from:=
- %d\n",
->> -                     __func__, new_cpu, cpu);
->> +        sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
->> +        ret =3D update_policy_cpu(policy, new_cpu, cpu_dev);
->> +        if (ret) {
->> +            /*
->> +             * To supress compilation warning about return value of
->> +             * sysfs_create_link().
->> +             */
->> +            int temp;
->> +
->> +            /* Create link again if we failed. */
->> +            temp =3D sysfs_create_link(&cpu_dev->kobj, &policy->kob=
-j,
->> +                         "cpufreq");
->> +            return ret;
->>         }
->> +
->> +        if (!cpufreq_suspended)
->> +            pr_debug("%s: policy Kobject moved to cpu: %d from: %d\=
-n",
->> +                 __func__, new_cpu, cpu);
->>     } else if (cpufreq_driver->stop_cpu && cpufreq_driver->setpolicy=
-) {
->>         cpufreq_driver->stop_cpu(policy);
->>     }
->> --=20
->> 2.0.0.rc2
->>
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.16-rc5
+
+to receive ACPI and power management fixes for v3.16-rc5
+with top-most commit 2091044299e9bc3340d845301b13bd92d6c10993
+
+ Merge branch 'pm-cpufreq'
+
+on top of commit cd3de83f147601356395b57a8673e9c5ff1e59d1
+
+ Linux 3.16-rc4
+
+These are a few regression fixes for ACPI device enumeration and
+resources management, intel_pstate and cpufreq, a revert of an
+ACPI commit removing user space interfaces in /proc that we
+incorrectly thought were not used any more, fixes for some
+long-standing concurrency issues in the ACPI EC driver, two ACPI
+battery driver fixes, stable-candidate fixes for intel_pstate, an
+ACPI-related fix for i915 and two new ACPI video blacklist entries
+for Win8-oriented BIOSes.
+
+Specifics:
+
+ - Missing device ID for ACPI enumeration of PNP devices that we
+   overlooked during the recent rework of that code from Zhang Rui.
+
+ - Fix for a problem introduced during the 3.14 cycle in the ACPI
+   device resources management code and causing it to reject all
+   resources of length 0 although some of them are actually valid
+   which affects serial ports detection on a number of systems.
+   From Andy Whitcroft.
+
+ - intel_pstate fix for a boot problem on some BayTrail-based
+   systems introduced by a previous fix related to that platform
+   during the 3.13 cycle from Dirk Brandewie.
+
+ - Revert of a 3.13 commit that removed the ACPI AC /proc interface
+   which turns out to be still needed by some old utilities (kpowersave
+   from kde 3.5.10 in particular) from Lan Tianyu.
+
+ - cpufreq build fix for the davinci ARM platform from Prabhakar Lad
+   (the breakage was introduced during the 3.10 cycle).
+
+ - ACPI-related i915 fix preventing firmware on some Thinkpad laptops
+   from setting backlight levels incorrectly during AC plug/unplug.
+   From Aaron Lu.
+
+ - Fixes for two nasty race conditions in the ACPI embedded controller
+   driver that may be responsible for a number of past bug reports
+   related to the EC from Lv Zhang and a fix for two memory leaks in
+   error code paths in that driver from Colin Ian King.
+
+ - Fixes for a couple of corner-case issues in the intel_pstate
+   driver (all candidates for -stable) from Dirk Brandewie and
+   Vincent Minet.
+
+ - Fixes for two corner-case issues in the ACPI battery driver
+   from Josef Gajdusek and Lan Tianyu.
+
+ - Two new ACPI video blacklist entries for Acer TravelMate B113
+   and Dell Inspiron 5737 from Edward Lin and Martin Kepplinger.
+
+Thanks!
 
 
---=20
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora For=
-um,
-hosted by The Linux Foundation
+---------------
+
+Aaron Lu (1):
+      ACPI / i915: ignore firmware requests for backlight change
+
+Andy Whitcroft (1):
+      ACPI / resources: only reject zero length resources based at address zero
+
+Colin Ian King (1):
+      ACPI / EC: Free saved_ec on error exit path
+
+Dirk Brandewie (3):
+      intel_pstate: Fix setting VID
+      intel_pstate: don't touch turbo bit if turbo disabled or unavailable.
+      intel_pstate: Update documentation of {max,min}_perf_pct sysfs files
+
+Edward Lin (1):
+      ACPI / video: Add Dell Inspiron 5737 to the blacklist
+
+Josef Gajdusek (1):
+      ACPI / battery: fix wrong value of capacity_now reported when
+fully charged
+
+Lan Tianyu (2):
+      Revert "ACPI / AC: Remove AC's proc directory."
+      ACPI / battery: Retry to get battery information if failed during probing
+
+Lv Zheng (6):
+      ACPI / EC: Avoid race condition related to advance_transaction()
+      ACPI / EC: Add asynchronous command byte write support
+      ACPI / EC: Remove duplicated ec_wait_ibf0() waiter
+      ACPI / EC: Fix race condition in ec_transaction_completed()
+      ACPI / EC: Update revision due to recent changes
+      ACPI / EC: Add detailed fields debugging support of EC_SC(R).
+
+Martin Kepplinger (1):
+      ACPI / video: Add Acer TravelMate B113 to native backlight blacklist
+
+Prabhakar Lad (1):
+      cpufreq: Makefile: fix compilation for davinci platform
+
+Vincent Minet (1):
+      intel_pstate: Set CPU number before accessing MSRs
+
+Zhang Rui (1):
+      ACPI / PNP: add soc_button_array device ID to PNP IDs list
+
+---------------
+
+ Documentation/cpu-freq/intel-pstate.txt |   7 +-
+ drivers/acpi/ac.c                       | 130 ++++++++++++++++++++++++-
+ drivers/acpi/acpi_pnp.c                 |   2 +
+ drivers/acpi/battery.c                  |  41 +++++++-
+ drivers/acpi/ec.c                       | 164 +++++++++++++++++---------------
+ drivers/acpi/resource.c                 |  10 +-
+ drivers/acpi/video.c                    |  11 ++-
+ drivers/acpi/video_detect.c             |   8 ++
+ drivers/cpufreq/Makefile                |   2 +-
+ drivers/cpufreq/intel_pstate.c          |  35 ++++---
+ drivers/gpu/drm/i915/intel_opregion.c   |   9 ++
+ include/acpi/video.h                    |   2 +
+ 12 files changed, 317 insertions(+), 104 deletions(-)
