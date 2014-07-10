@@ -1,37 +1,79 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Subject: [PATCH] powernow-k6: support 350MHz cpu
-Date: Wed, 9 Jul 2014 17:19:04 -0400 (EDT)
-Message-ID: <alpine.LRH.2.02.1407091717460.6236@file01.intranet.prod.int.rdu2.redhat.com>
+From: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Subject: Re: [PATCH] GPIO button wth wakeup attribute is supposed to wake
+ the system up
+Date: Thu, 10 Jul 2014 10:27:46 +0800
+Message-ID: <53BDFA22.2000409@linux.intel.com>
+References: <53A2340D.9030503@linux.intel.com> <18261725.84uqcyZ8CE@vostro.rjw.lan> <20140709005434.GB14935@core.coreip.homeip.net> <4301161.i6ArOLmcsg@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:6232 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751431AbaGIVTJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Jul 2014 17:19:09 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <4301161.i6ArOLmcsg@vostro.rjw.lan>
+Sender: linux-input-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
 
-There exists 350MHz K6-2E+ cpu, so add it to the usual frequency table.
+On 2014/7/9 20:45, Rafael J. Wysocki wrote:
+> On Tuesday, July 08, 2014 05:54:35 PM Dmitry Torokhov wrote:
+>> On Wed, Jul 09, 2014 at 02:59:33AM +0200, Rafael J. Wysocki wrote:
+>>> On Tuesday, July 08, 2014 05:15:06 PM Dmitry Torokhov wrote:
+>>>> On Wed, Jul 09, 2014 at 01:06:07AM +0200, Rafael J. Wysocki wrote:
+> 
+> [cut]
+> 
+>>>>
+>>>> When device driver marks IRQ as a wakeup source I believe it is prepared
+>>>> to handle it (or it would shut it off explicitly).
+>>>
+>>> I can agree with that.
+>>>
+>>> Are you suggesting that __disable_irq() should check irq_data for
+>>> IRQD_WAKEUP_STATE and skip the IRQ (in the 'suspend' case) if that is set?
+>>
+>> Yes, something like that.
+> 
+> OK
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Cc: stable@vger.kernel.org
+Many thanks to you both for the discussion.
+> 
+> Aubrey, can you please check if the appended patch helps on the T100?
 
----
- drivers/cpufreq/powernow-k6.c |    1 +
- 1 file changed, 1 insertion(+)
+I verified this patch on T100, it works as expected, freeze can be waken
+up by reverting my patch and applying this one.
 
-Index: linux-3.16-rc4/drivers/cpufreq/powernow-k6.c
-===================================================================
---- linux-3.16-rc4.orig/drivers/cpufreq/powernow-k6.c	2014-07-09 15:15:29.000000000 +0200
-+++ linux-3.16-rc4/drivers/cpufreq/powernow-k6.c	2014-07-09 15:15:44.000000000 +0200
-@@ -55,6 +55,7 @@ static const struct {
- 	unsigned freq;
- 	unsigned mult;
- } usual_frequency_table[] = {
-+	{ 350000, 35 },	// 100   * 3.5
- 	{ 400000, 40 },	// 100   * 4
- 	{ 450000, 45 }, // 100   * 4.5
- 	{ 475000, 50 }, //  95   * 5
+Is this a final solution?
+
+Thanks,
+-Aubrey
+
+> 
+> Rafael
+> 
+> ---
+>  kernel/irq/manage.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> Index: linux-pm/kernel/irq/manage.c
+> ===================================================================
+> --- linux-pm.orig/kernel/irq/manage.c
+> +++ linux-pm/kernel/irq/manage.c
+> @@ -385,7 +385,8 @@ setup_affinity(unsigned int irq, struct
+>  void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
+>  {
+>  	if (suspend) {
+> -		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND))
+> +		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND)
+> +		    || irqd_has_set(&desc->irq_data, IRQD_WAKEUP_STATE))
+>  			return;
+>  		desc->istate |= IRQS_SUSPENDED;
+>  	}
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+
