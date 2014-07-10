@@ -1,52 +1,35 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH] cpufreq: kirkwood: Reinstate cpufreq driver for
- ARCH_KIRKWOOD
-Date: Thu, 10 Jul 2014 15:58:59 +0200
-Message-ID: <20140710135859.GL21833@lunn.ch>
-References: <1404987355.23201.65.camel@samson1.armitage.org.uk>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH] cpufreq: report driver's successful {un}registration
+Date: Thu, 10 Jul 2014 16:07:04 +0200
+Message-ID: <20140710140704.GG2970@pd.tnic>
+References: <9e68cba2bf41923630ea93de7c3d17637f175895.1403772686.git.viresh.kumar@linaro.org>
+ <20140710114828.GA3254@pd.tnic>
+ <CAKohpom0Qwbj5Ma_zCE5juk=1JjbBDLZJcBXZMgnkDVPiTvRCA@mail.gmail.com>
+ <20140710115934.GF2970@pd.tnic>
+ <CAKohpok0M1_khYB=AobfAuPM9Tf8wi63K5o6NCQ+sC=STP5HMw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vps0.lunn.ch ([178.209.37.122]:45516 "EHLO vps0.lunn.ch"
+Received: from mail.skyhub.de ([78.46.96.112]:40166 "EHLO mail.skyhub.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752494AbaGJODp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Jul 2014 10:03:45 -0400
+	id S1751134AbaGJOHM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Jul 2014 10:07:12 -0400
 Content-Disposition: inline
-In-Reply-To: <1404987355.23201.65.camel@samson1.armitage.org.uk>
+In-Reply-To: <CAKohpok0M1_khYB=AobfAuPM9Tf8wi63K5o6NCQ+sC=STP5HMw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Quentin Armitage <quentin@armitage.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>
 
-On Thu, Jul 10, 2014 at 11:15:55AM +0100, Quentin Armitage wrote:
-> Commit ff1f0018cf66080d8e6f59791e552615648a033a ("drivers: Enable
-> building of Kirkwood drivers for mach-mvebu") added Kirkwood into
-> mach-mvebu, adding MACH_KIRKWOOD to ARCH_KIRKWOOD in the KConfig files.
-> 
-> The change for ARM_KIRKWOOD_CPUFREQ replaced ARCH_KIRKWOOD with
-> MACH_KIRKWOOD, whereas all the other changes were ARCH_KIRKWOOD ||
-> MACH_KIRKWOOD.
-> 
-> As a consequence of this change, the cpufreq driver is no longer enabled
-> for ARCH_KIRKWOOD. This patch reinstates ARM_KIRKWOOD_CPUFREQ for
-> ARCH_KIRKWOOD.
-> 
-> Signed-off-by: Quentin Armitage <quentin@armitage.org.uk>
-> ---
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index ebac671..24778f0 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -118,7 +118,7 @@ config ARM_INTEGRATOR
->           If in doubt, say Y.
-> 
->  config ARM_KIRKWOOD_CPUFREQ
-> -       def_bool MACH_KIRKWOOD
-> +       def_bool ARCH_KIRKWOOD || MACH_KIRKWOOD
->         help
->           This adds the CPUFreq driver for Marvell Kirkwood
->           SoCs.
+On Thu, Jul 10, 2014 at 05:38:23PM +0530, Viresh Kumar wrote:
+> The problem with that is: CPUFreq may not be compiled in at all and we
+> wouldn't know the difference between success and absence.
 
-Acked-by: Andrew Lunn <andrew@lunn.ch>
+Of course you would: /sys/devices/system/cpu/cpufreq/
 
-	  Andrew  
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
