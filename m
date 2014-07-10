@@ -1,305 +1,133 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: [RFC PATCH v5 09/10] thermal: add trace events to the power allocator governor
-Date: Thu, 10 Jul 2014 15:18:47 +0100
-Message-ID: <1405001928-12697-10-git-send-email-javi.merino@arm.com>
-References: <1405001928-12697-1-git-send-email-javi.merino@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1405001928-12697-1-git-send-email-javi.merino@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
+From: "Bu, Yitian" <ybu@qti.qualcomm.com>
+Subject: Re: [PATCH V2] cpufreq: move policy kobj to policy->cpu at resume
+Date: Thu, 10 Jul 2014 15:12:47 +0000
+Message-ID: <D51F586F-EA6C-4BAF-8CFC-8E7BB5719423@qti.qualcomm.com>
+References: <1eff59d9b51f8ade67bc1cf9f10683f9463ec9f6.1404996041.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1eff59d9b51f8ade67bc1cf9f10683f9463ec9f6.1404996041.git.viresh.kumar@linaro.org>
+Content-Language: zh-CN
+Sender: stable-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arvind.chauhan@arm.com" <arvind.chauhan@arm.com>, "srivatsa@mit.edu" <srivatsa@mit.edu>, "skannan@codeaurora.org" <skannan@codeaurora.org>, Stable <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add trace events for the power allocator governor and the power actor
-interface of the cpu cooling device.
-
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
----
- drivers/thermal/cpu_actor.c                    |  17 ++-
- drivers/thermal/power_allocator.c              |  22 +++-
- include/trace/events/thermal_power_allocator.h | 138 +++++++++++++++++++++=
-++++
- 3 files changed, 173 insertions(+), 4 deletions(-)
- create mode 100644 include/trace/events/thermal_power_allocator.h
-
-diff --git a/drivers/thermal/cpu_actor.c b/drivers/thermal/cpu_actor.c
-index 45ea4fa92ea0..b5ed2e80e288 100644
---- a/drivers/thermal/cpu_actor.c
-+++ b/drivers/thermal/cpu_actor.c
-@@ -28,6 +28,8 @@
- #include <linux/printk.h>
- #include <linux/slab.h>
-=20
-+#include <trace/events/thermal_power_allocator.h>
-+
- /**
-  * struct power_table - frequency to power conversion
-  * @frequency:=09frequency in KHz
-@@ -184,11 +186,12 @@ static u32 get_static_power(struct cpu_actor *cpu_act=
-or,
-  */
- static u32 get_dynamic_power(struct cpu_actor *cpu_actor, unsigned long fr=
-eq)
- {
--=09int cpu;
--=09u32 power =3D 0, raw_cpu_power, total_load =3D 0;
-+=09int i, cpu;
-+=09u32 power =3D 0, raw_cpu_power, total_load =3D 0, load_cpu[NR_CPUS];
-=20
- =09raw_cpu_power =3D cpu_freq_to_power(cpu_actor, freq);
-=20
-+=09i =3D 0;
- =09for_each_cpu(cpu, &cpu_actor->cpumask) {
- =09=09u32 load;
-=20
-@@ -198,8 +201,15 @@ static u32 get_dynamic_power(struct cpu_actor *cpu_act=
-or, unsigned long freq)
- =09=09load =3D get_load(cpu_actor, cpu);
- =09=09power +=3D (raw_cpu_power * load) / 100;
- =09=09total_load +=3D load;
-+=09=09load_cpu[i] =3D load;
-+
-+=09=09i++;
- =09}
-=20
-+=09trace_thermal_power_actor_cpu_get_dyn_power(&cpu_actor->cpumask, freq,
-+=09=09=09=09=09=09raw_cpu_power, load_cpu, i,
-+=09=09=09=09=09=09power);
-+
- =09cpu_actor->last_load =3D total_load;
-=20
- =09return power;
-@@ -296,6 +306,9 @@ static int cpu_set_power(struct power_actor *actor,
- =09=09return -EINVAL;
- =09}
-=20
-+=09trace_thermal_power_actor_cpu_limit(&cpu_actor->cpumask, target_freq,
-+=09=09=09=09=09cdev_state, power);
-+
- =09return cdev->ops->set_cur_state(cdev, cdev_state);
- }
-=20
-diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allo=
-cator.c
-index eb1797cd859b..e6793d6d1288 100644
---- a/drivers/thermal/power_allocator.c
-+++ b/drivers/thermal/power_allocator.c
-@@ -20,6 +20,9 @@
- #include <linux/slab.h>
- #include <linux/thermal.h>
-=20
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/thermal_power_allocator.h>
-+
- #include "thermal_core.h"
-=20
- #define FRAC_BITS 8
-@@ -133,7 +136,14 @@ static u32 pid_controller(struct thermal_zone_device *=
-tz,
- =09/* feed-forward the known sustainable dissipatable power */
- =09power_range =3D tz->tzp->sustainable_power + frac_to_int(power_range);
-=20
--=09return clamp(power_range, (s64)0, (s64)max_allocatable_power);
-+=09power_range =3D clamp(power_range, (s64)0, (s64)max_allocatable_power);
-+
-+=09trace_thermal_power_allocator_pid(frac_to_int(err),
-+=09=09=09=09=09frac_to_int(params->err_integral),
-+=09=09=09=09=09frac_to_int(p), frac_to_int(i),
-+=09=09=09=09=09frac_to_int(d), power_range);
-+
-+=09return power_range;
- }
-=20
- /**
-@@ -214,7 +224,7 @@ static int allocate_power(struct thermal_zone_device *t=
-z,
- =09struct power_actor *actor;
- =09u32 *req_power, *max_power, *granted_power;
- =09u32 total_req_power, max_allocatable_power;
--=09u32 power_range;
-+=09u32 total_granted_power, power_range;
- =09int i, num_actors, ret =3D 0;
-=20
- =09mutex_lock(&tz->lock);
-@@ -265,12 +275,20 @@ static int allocate_power(struct thermal_zone_device =
-*tz,
- =09divvy_up_power(req_power, max_power, num_actors, total_req_power,
- =09=09power_range, granted_power);
-=20
-+=09total_granted_power =3D 0;
- =09i =3D 0;
- =09list_for_each_entry_rcu(actor, &actor_list, actor_node) {
- =09=09actor->ops->set_power(actor, tz, granted_power[i]);
-+=09=09total_granted_power +=3D granted_power[i];
-+
- =09=09i++;
- =09}
-=20
-+=09trace_thermal_power_allocator(req_power, total_req_power, granted_power=
-,
-+=09=09=09=09total_granted_power, num_actors, power_range,
-+=09=09=09=09max_allocatable_power, current_temp,
-+=09=09=09=09(s32)control_temp - (s32)current_temp);
-+
- =09devm_kfree(&tz->device, granted_power);
- free_max_power:
- =09devm_kfree(&tz->device, max_power);
-diff --git a/include/trace/events/thermal_power_allocator.h b/include/trace=
-/events/thermal_power_allocator.h
-new file mode 100644
-index 000000000000..9140cec55c63
---- /dev/null
-+++ b/include/trace/events/thermal_power_allocator.h
-@@ -0,0 +1,138 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM thermal_power_allocator
-+
-+#if !defined(_TRACE_THERMAL_POWER_ALLOCATOR_H) || defined(TRACE_HEADER_MUL=
-TI_READ)
-+#define _TRACE_THERMAL_POWER_ALLOCATOR_H
-+
-+#include <linux/tracepoint.h>
-+
-+TRACE_EVENT(thermal_power_allocator,
-+=09TP_PROTO(u32 *req_power, u32 total_req_power, u32 *granted_power,
-+=09=09u32 total_granted_power, size_t num_actors, u32 power_range,
-+=09=09u32 max_allocatable_power, unsigned long current_temp,
-+=09=09s32 delta_temp),
-+=09TP_ARGS(req_power, total_req_power, granted_power, total_granted_power,
-+=09=09num_actors, power_range, max_allocatable_power, current_temp,
-+=09=09delta_temp),
-+=09TP_STRUCT__entry(
-+=09=09__dynamic_array(u32,   req_power, num_actors    )
-+=09=09__field(u32,           total_req_power          )
-+=09=09__dynamic_array(u32,   granted_power, num_actors)
-+=09=09__field(u32,           total_granted_power      )
-+=09=09__field(size_t,        num_actors               )
-+=09=09__field(u32,           power_range              )
-+=09=09__field(u32,           max_allocatable_power    )
-+=09=09__field(unsigned long, current_temp             )
-+=09=09__field(s32,           delta_temp               )
-+=09),
-+=09TP_fast_assign(
-+=09=09memcpy(__get_dynamic_array(req_power), req_power,
-+=09=09=09num_actors * sizeof(*req_power));
-+=09=09__entry->total_req_power =3D total_req_power;
-+=09=09memcpy(__get_dynamic_array(granted_power), granted_power,
-+=09=09=09num_actors * sizeof(*granted_power));
-+=09=09__entry->total_granted_power =3D total_granted_power;
-+=09=09__entry->num_actors =3D num_actors;
-+=09=09__entry->power_range =3D power_range;
-+=09=09__entry->max_allocatable_power =3D max_allocatable_power;
-+=09=09__entry->current_temp =3D current_temp;
-+=09=09__entry->delta_temp =3D delta_temp;
-+=09),
-+
-+=09TP_printk("req_power=3D{%s} total_req_power=3D%u granted_power=3D{%s} t=
-otal_granted_power=3D%u power_range=3D%u max_allocatable_power=3D%u current=
-_temperature=3D%lu delta_temperature=3D%d",
-+=09=09__print_u32_array(__get_dynamic_array(req_power),
-+=09=09=09=09__entry->num_actors),
-+=09=09__entry->total_req_power,
-+=09=09__print_u32_array(__get_dynamic_array(granted_power),
-+=09=09=09=09__entry->num_actors),
-+=09=09__entry->total_granted_power, __entry->power_range,
-+=09=09__entry->max_allocatable_power, __entry->current_temp,
-+=09=09__entry->delta_temp)
-+);
-+
-+TRACE_EVENT(thermal_power_allocator_pid,
-+=09TP_PROTO(s32 err, s32 err_integral, s64 p, s64 i, s64 d, s32 output),
-+=09TP_ARGS(err, err_integral, p, i, d, output),
-+=09TP_STRUCT__entry(
-+=09=09__field(s32, err         )
-+=09=09__field(s32, err_integral)
-+=09=09__field(s64, p           )
-+=09=09__field(s64, i           )
-+=09=09__field(s64, d           )
-+=09=09__field(s32, output      )
-+=09),
-+=09TP_fast_assign(
-+=09=09__entry->err =3D err;
-+=09=09__entry->err_integral =3D err_integral;
-+=09=09__entry->p =3D p;
-+=09=09__entry->i =3D i;
-+=09=09__entry->d =3D d;
-+=09=09__entry->output =3D output;
-+=09),
-+
-+=09TP_printk("err=3D%d err_integral=3D%d p=3D%lld i=3D%lld d=3D%lld output=
-=3D%d",
-+=09=09__entry->err, __entry->err_integral,
-+=09=09__entry->p, __entry->i, __entry->d, __entry->output)
-+);
-+
-+TRACE_EVENT(thermal_power_actor_cpu_get_dyn_power,
-+=09TP_PROTO(const struct cpumask *cpus, unsigned long freq,
-+=09=09u32 raw_cpu_power, u32 *load, size_t load_len, u32 power),
-+
-+=09TP_ARGS(cpus, freq, raw_cpu_power, load, load_len, power),
-+
-+=09TP_STRUCT__entry(
-+=09=09__bitmask(cpumask, num_possible_cpus())
-+=09=09__field(unsigned long, freq          )
-+=09=09__field(u32,           raw_cpu_power )
-+=09=09__dynamic_array(u32,   load, load_len)
-+=09=09__field(size_t,        load_len      )
-+=09=09__field(u32,           power         )
-+=09),
-+
-+=09TP_fast_assign(
-+=09=09__assign_bitmask(cpumask, cpumask_bits(cpus),
-+=09=09=09=09num_possible_cpus());
-+=09=09__entry->freq =3D freq;
-+=09=09__entry->raw_cpu_power =3D raw_cpu_power;
-+=09=09memcpy(__get_dynamic_array(load), load,
-+=09=09=09load_len * sizeof(*load));
-+=09=09__entry->load_len =3D load_len;
-+=09=09__entry->power =3D power;
-+=09),
-+
-+=09TP_printk("cpus=3D%s freq=3D%lu raw_cpu_power=3D%d load=3D{%s} power=3D=
-%d",
-+=09=09__get_bitmask(cpumask), __entry->freq, __entry->raw_cpu_power,
-+=09=09__print_u32_array(__get_dynamic_array(load), __entry->load_len),
-+=09=09__entry->power)
-+);
-+
-+TRACE_EVENT(thermal_power_actor_cpu_limit,
-+=09TP_PROTO(const struct cpumask *cpus, unsigned int freq,
-+=09=09unsigned long cdev_state, u32 power),
-+
-+=09TP_ARGS(cpus, freq, cdev_state, power),
-+
-+=09TP_STRUCT__entry(
-+=09=09__bitmask(cpumask, num_possible_cpus())
-+=09=09__field(unsigned int,  freq      )
-+=09=09__field(unsigned long, cdev_state)
-+=09=09__field(u32,           power     )
-+=09),
-+
-+=09TP_fast_assign(
-+=09=09__assign_bitmask(cpumask, cpumask_bits(cpus),
-+=09=09=09=09num_possible_cpus());
-+=09=09__entry->freq =3D freq;
-+=09=09__entry->cdev_state =3D cdev_state;
-+=09=09__entry->power =3D power;
-+=09),
-+
-+=09TP_printk("cpus=3D%s freq=3D%u cdev_state=3D%lu power=3D%u",
-+=09=09__get_bitmask(cpumask), __entry->freq, __entry->cdev_state,
-+=09=09__entry->power)
-+);
-+#endif /* _TRACE_THERMAL_POWER_ALLOCATOR_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
---=20
-1.9.1
+DQoNCj4g1NogMjAxNMTqN9TCMTDI1aOsMjA6NDGjrCJWaXJlc2ggS3VtYXIiIDx2aXJlc2gua3Vt
+YXJAbGluYXJvLm9yZz4g0LS1wKO6DQo+IA0KPiBUaGlzIGlzIG9ubHkgcmVsZXZhbnQgdG8gaW1w
+bGVtZW50YXRpb25zIHdpdGggbXVsdGlwbGUgY2x1c3RlcnMsIHdoZXJlIGNsdXN0ZXJzDQo+IGhh
+dmUgc2VwYXJhdGUgY2xvY2sgbGluZXMgYnV0IGFsbCBDUFVzIHdpdGhpbiBhIGNsdXN0ZXIgc2hh
+cmUgaXQuDQo+IA0KPiBDb25zaWRlciBhIGR1YWwgY2x1c3RlciBwbGF0Zm9ybSB3aXRoIDIgY29y
+ZXMgcGVyIGNsdXN0ZXIuIER1cmluZyBzdXNwZW5kIHdlDQo+IHN0YXJ0IG9mZmxpbmluZyBDUFVz
+IGZyb20gMSB0byAzLiBXaGVuIENQVTIgaXMgcmVtb3ZlLCBwb2xpY3ktPmtvYmogd291bGQgYmUN
+Cj4gbW92ZWQgdG8gQ1BVMyBhbmQgd2hlbiBDUFUzIGdvZXMgZG93biB3ZSB3b3VsZG4ndCBmcmVl
+IHBvbGljeSBvciBpdHMga29iai4NCj4gDQo+IE5vdyBvbiByZXN1bWUsIHdlIHdpbGwgZ2V0IENQ
+VTIgYmVmb3JlIENQVTMgYW5kIHdpbGwgY2FsbCBfX2NwdWZyZXFfYWRkX2RldigpLg0KPiBXZSB3
+aWxsIHJlY292ZXIgdGhlIG9sZCBwb2xpY3kgYW5kIHVwZGF0ZSBwb2xpY3ktPmNwdSBmcm9tIDMg
+dG8gMiBmcm9tDQo+IHVwZGF0ZV9wb2xpY3lfY3B1KCkuDQo+IA0KPiBCdXQgdGhlIGtvYmogaXMg
+c3RpbGwgdGllZCB0byBDUFUzIGFuZCB3YXNuJ3QgbW92ZWQgdG8gQ1BVMi4gV2Ugd291bGRuJ3Qg
+Y3JlYXRlDQo+IGEgbGluayBmb3IgQ1BVMiwgYnV0IHdvdWxkIHRyeSB0aGF0IHdoaWxlIGJyaW5n
+aW5nIENQVTMgb25saW5lLiBXaGljaCB3aWxsDQo+IHJlcG9ydCBlcnJvcnMgYXMgQ1BVMyBhbHJl
+YWR5IGhhcyBrb2JqIGFzc2lnbmVkIHRvIGl0Lg0KPiANCj4gVGhpcyBidWcgZ290IGludHJvZHVj
+ZWQgd2l0aCBjb21taXQgNDJmOTIxYSwgd2hpY2ggb3Zlcmxvb2tlZCB0aGlzIHNjZW5hcmlvLg0K
+PiANCj4gVG8gZml4IHRoaXMsIGxldHMgbW92ZSBrb2JqIHRvIHRoZSBuZXcgcG9saWN5LT5jcHUg
+d2hpbGUgYnJpbmdpbmcgZmlyc3QgQ1BVIG9mIGENCj4gY2x1c3RlciBiYWNrLiBXZSBhbHJlYWR5
+IGhhdmUgdXBkYXRlX3BvbGljeV9jcHUoKSByb3V0aW5lIHdoaWNoIGNhbiBiZSB1cGRhdGVkDQo+
+IHdpdGggdGhpcyBjaGFuZ2UuIFRoYXQgd291bGQgZ2V0IHJpZCBvZiB0aGUgY3B1ZnJlcV9ub21p
+bmF0ZV9uZXdfcG9saWN5X2NwdSgpIGFzDQo+IHVwZGF0ZV9wb2xpY3lfY3B1KCkgaXMgYWxzbyBj
+YWxsZWQgb24gQ1BVIHJlbW92YWwuDQo+IA0KPiBUbyBhY2hpZXZlIHRoYXQgd2UgYWRkIGFub3Ro
+ZXIgcGFyYW1ldGVyIHRvIHVwZGF0ZV9wb2xpY3lfY3B1KCkgYXMgY3B1X2RldiBpcw0KPiBwcmVz
+ZW50IHdpdGggYm90aCB0aGUgY2FsbGVycy4NCj4gDQo+IEZpeGVzOiAoIjQyZjkyMWEgY3B1ZnJl
+cTogcmVtb3ZlIHN5c2ZzIGZpbGVzIGZvciBDUFVzIHdoaWNoIGZhaWxlZCB0byBjb21lIGJhY2sg
+YWZ0ZXIgcmVzdW1lIikNCj4gQ2M6IFN0YWJsZSA8c3RhYmxlQHZnZXIua2VybmVsLm9yZz4gIyAz
+LjEzKw0KPiBSZXBvcnRlZC1ieTogQnUgWWl0aWFuIDx5YnVAcXRpLnF1YWxjb21tLmNvbT4NCj4g
+UmVwb3J0ZWQtYnk6IFNhcmF2YW5hIEthbm5hbiA8c2thbm5hbkBjb2RlYXVyb3JhLm9yZz4NCj4g
+U2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4NCj4g
+LS0tDQo+IFYxLT5WMjogTW92ZSBrb2JqZWN0X21vdmUoKSBjYWxsIHRvIHVwZGF0ZV9wb2xpY3lf
+Y3B1KCksIHdoaWNoIG1ha2VzDQo+IGNwdWZyZXFfbm9taW5hdGVfbmV3X3BvbGljeV9jcHUoKSBh
+bG1vc3QgZW1wdHkuIFNvIHdlIHJlbW92ZSBpdCBjb21wbGV0ZWx5Lg0KPiANCj4gQFlpdGlhbjog
+U29ycnksIGJ1dCB5b3UgbmVlZCB0byB0ZXN0IHRoaXMgYWdhaW4gYXMgdGhlcmUgd2VyZSBlbm91
+Z2gNCj4gbW9kaWZpY2F0aW9ucyBpbiBWMi4NCj4gDQoNClNvcnJ5LCBJIGRvbid0IGhhdmUgbGF0
+ZXN0IGtlcm5lbCB0byB0ZXN0IHRoaXMgcGF0Y2guLi4NCldoYXQgSSBhbSB1c2luZyBpcyAzLjEw
+LCB0aGlzIHBhdGNoIHNlZW1zIHRvbyBiaWcgdG8gbWFudWFsbHkgYXBwbHkgdG8gMy4xMC4NCg0K
+DQo+IGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgfCA3MyArKysrKysrKysrKysrKysrKysrKysr
+Ky0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiAxIGZpbGUgY2hhbmdlZCwgMzYgaW5zZXJ0aW9u
+cygrKSwgMzcgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVx
+L2NwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMNCj4gaW5kZXggNjIyNTlkMi4u
+YzgxZDllYzYgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMNCj4gKysr
+IGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYw0KPiBAQCAtMTA3NiwxMCArMTA3NiwyMCBAQCBz
+dGF0aWMgdm9pZCBjcHVmcmVxX3BvbGljeV9mcmVlKHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9s
+aWN5KQ0KPiAgICBrZnJlZShwb2xpY3kpOw0KPiB9DQo+IA0KPiAtc3RhdGljIHZvaWQgdXBkYXRl
+X3BvbGljeV9jcHUoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3ksIHVuc2lnbmVkIGludCBj
+cHUpDQo+ICtzdGF0aWMgaW50IHVwZGF0ZV9wb2xpY3lfY3B1KHN0cnVjdCBjcHVmcmVxX3BvbGlj
+eSAqcG9saWN5LCB1bnNpZ25lZCBpbnQgY3B1LA0KPiArICAgICAgICAgICAgICAgICBzdHJ1Y3Qg
+ZGV2aWNlICpjcHVfZGV2KQ0KPiB7DQo+ICsgICAgaW50IHJldDsNCj4gKw0KPiAgICBpZiAoV0FS
+Tl9PTihjcHUgPT0gcG9saWN5LT5jcHUpKQ0KPiAtICAgICAgICByZXR1cm47DQo+ICsgICAgICAg
+IHJldHVybiAwOw0KPiArDQo+ICsgICAgLyogTW92ZSBrb2JqZWN0IHRvIHRoZSBuZXcgcG9saWN5
+LT5jcHUgKi8NCj4gKyAgICByZXQgPSBrb2JqZWN0X21vdmUoJnBvbGljeS0+a29iaiwgJmNwdV9k
+ZXYtPmtvYmopOw0KPiArICAgIGlmIChyZXQpIHsNCj4gKyAgICAgICAgcHJfZXJyKCIlczogRmFp
+bGVkIHRvIG1vdmUga29iajogJWRcbiIsIF9fZnVuY19fLCByZXQpOw0KPiArICAgICAgICByZXR1
+cm4gcmV0Ow0KPiArICAgIH0NCj4gDQo+ICAgIGRvd25fd3JpdGUoJnBvbGljeS0+cndzZW0pOw0K
+PiANCj4gQEAgLTEwOTAsNiArMTEwMCw4IEBAIHN0YXRpYyB2b2lkIHVwZGF0ZV9wb2xpY3lfY3B1
+KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5LCB1bnNpZ25lZCBpbnQgY3B1KQ0KPiANCj4g
+ICAgYmxvY2tpbmdfbm90aWZpZXJfY2FsbF9jaGFpbigmY3B1ZnJlcV9wb2xpY3lfbm90aWZpZXJf
+bGlzdCwNCj4gICAgICAgICAgICBDUFVGUkVRX1VQREFURV9QT0xJQ1lfQ1BVLCBwb2xpY3kpOw0K
+PiArDQo+ICsgICAgcmV0dXJuIDA7DQo+IH0NCj4gDQo+IHN0YXRpYyBpbnQgX19jcHVmcmVxX2Fk
+ZF9kZXYoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3Qgc3Vic3lzX2ludGVyZmFjZSAqc2lmKQ0K
+PiBAQCAtMTE1NCw3ICsxMTY2LDcgQEAgc3RhdGljIGludCBfX2NwdWZyZXFfYWRkX2RldihzdHJ1
+Y3QgZGV2aWNlICpkZXYsIHN0cnVjdCBzdWJzeXNfaW50ZXJmYWNlICpzaWYpDQo+ICAgICAqIGJ5
+IGludm9raW5nIHVwZGF0ZV9wb2xpY3lfY3B1KCkuDQo+ICAgICAqLw0KPiAgICBpZiAocmVjb3Zl
+cl9wb2xpY3kgJiYgY3B1ICE9IHBvbGljeS0+Y3B1KQ0KPiAtICAgICAgICB1cGRhdGVfcG9saWN5
+X2NwdShwb2xpY3ksIGNwdSk7DQo+ICsgICAgICAgIFdBUk5fT04odXBkYXRlX3BvbGljeV9jcHUo
+cG9saWN5LCBjcHUsIGRldikpOw0KPiAgICBlbHNlDQo+ICAgICAgICBwb2xpY3ktPmNwdSA9IGNw
+dTsNCj4gDQo+IEBAIC0xMzA3LDM4ICsxMzE5LDExIEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9hZGRf
+ZGV2KHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IHN1YnN5c19pbnRlcmZhY2UgKnNpZikNCj4g
+ICAgcmV0dXJuIF9fY3B1ZnJlcV9hZGRfZGV2KGRldiwgc2lmKTsNCj4gfQ0KPiANCj4gLXN0YXRp
+YyBpbnQgY3B1ZnJlcV9ub21pbmF0ZV9uZXdfcG9saWN5X2NwdShzdHJ1Y3QgY3B1ZnJlcV9wb2xp
+Y3kgKnBvbGljeSwNCj4gLSAgICAgICAgICAgICAgICAgICAgICAgdW5zaWduZWQgaW50IG9sZF9j
+cHUpDQo+IC17DQo+IC0gICAgc3RydWN0IGRldmljZSAqY3B1X2RldjsNCj4gLSAgICBpbnQgcmV0
+Ow0KPiAtDQo+IC0gICAgLyogZmlyc3Qgc2libGluZyBub3cgb3ducyB0aGUgbmV3IHN5c2ZzIGRp
+ciAqLw0KPiAtICAgIGNwdV9kZXYgPSBnZXRfY3B1X2RldmljZShjcHVtYXNrX2FueV9idXQocG9s
+aWN5LT5jcHVzLCBvbGRfY3B1KSk7DQo+IC0NCj4gLSAgICBzeXNmc19yZW1vdmVfbGluaygmY3B1
+X2Rldi0+a29iaiwgImNwdWZyZXEiKTsNCj4gLSAgICByZXQgPSBrb2JqZWN0X21vdmUoJnBvbGlj
+eS0+a29iaiwgJmNwdV9kZXYtPmtvYmopOw0KPiAtICAgIGlmIChyZXQpIHsNCj4gLSAgICAgICAg
+cHJfZXJyKCIlczogRmFpbGVkIHRvIG1vdmUga29iajogJWRcbiIsIF9fZnVuY19fLCByZXQpOw0K
+PiAtDQo+IC0gICAgICAgIGRvd25fd3JpdGUoJnBvbGljeS0+cndzZW0pOw0KPiAtICAgICAgICBj
+cHVtYXNrX3NldF9jcHUob2xkX2NwdSwgcG9saWN5LT5jcHVzKTsNCj4gLSAgICAgICAgdXBfd3Jp
+dGUoJnBvbGljeS0+cndzZW0pOw0KPiAtDQo+IC0gICAgICAgIHJldCA9IHN5c2ZzX2NyZWF0ZV9s
+aW5rKCZjcHVfZGV2LT5rb2JqLCAmcG9saWN5LT5rb2JqLA0KPiAtICAgICAgICAgICAgICAgICAg
+ICAiY3B1ZnJlcSIpOw0KPiAtDQo+IC0gICAgICAgIHJldHVybiAtRUlOVkFMOw0KPiAtICAgIH0N
+Cj4gLQ0KPiAtICAgIHJldHVybiBjcHVfZGV2LT5pZDsNCj4gLX0NCj4gLQ0KPiBzdGF0aWMgaW50
+IF9fY3B1ZnJlcV9yZW1vdmVfZGV2X3ByZXBhcmUoc3RydWN0IGRldmljZSAqZGV2LA0KPiAgICAg
+ICAgICAgICAgICAgICAgc3RydWN0IHN1YnN5c19pbnRlcmZhY2UgKnNpZikNCj4gew0KPiAgICB1
+bnNpZ25lZCBpbnQgY3B1ID0gZGV2LT5pZCwgY3B1czsNCj4gLSAgICBpbnQgbmV3X2NwdSwgcmV0
+Ow0KPiArICAgIGludCByZXQ7DQo+ICAgIHVuc2lnbmVkIGxvbmcgZmxhZ3M7DQo+ICAgIHN0cnVj
+dCBjcHVmcmVxX3BvbGljeSAqcG9saWN5Ow0KPiANCj4gQEAgLTEzNzgsMTQgKzEzNjMsMjggQEAg
+c3RhdGljIGludCBfX2NwdWZyZXFfcmVtb3ZlX2Rldl9wcmVwYXJlKHN0cnVjdCBkZXZpY2UgKmRl
+diwNCj4gICAgaWYgKGNwdSAhPSBwb2xpY3ktPmNwdSkgew0KPiAgICAgICAgc3lzZnNfcmVtb3Zl
+X2xpbmsoJmRldi0+a29iaiwgImNwdWZyZXEiKTsNCj4gICAgfSBlbHNlIGlmIChjcHVzID4gMSkg
+ew0KPiAtICAgICAgICBuZXdfY3B1ID0gY3B1ZnJlcV9ub21pbmF0ZV9uZXdfcG9saWN5X2NwdShw
+b2xpY3ksIGNwdSk7DQo+IC0gICAgICAgIGlmIChuZXdfY3B1ID49IDApIHsNCj4gLSAgICAgICAg
+ICAgIHVwZGF0ZV9wb2xpY3lfY3B1KHBvbGljeSwgbmV3X2NwdSk7DQo+ICsgICAgICAgIC8qIE5v
+bWluYXRlIG5ldyBDUFUgKi8NCj4gKyAgICAgICAgaW50IG5ld19jcHUgPSBjcHVtYXNrX2FueV9i
+dXQocG9saWN5LT5jcHVzLCBjcHUpOw0KPiArICAgICAgICBzdHJ1Y3QgZGV2aWNlICpjcHVfZGV2
+ID0gZ2V0X2NwdV9kZXZpY2UobmV3X2NwdSk7DQo+IA0KPiAtICAgICAgICAgICAgaWYgKCFjcHVm
+cmVxX3N1c3BlbmRlZCkNCj4gLSAgICAgICAgICAgICAgICBwcl9kZWJ1ZygiJXM6IHBvbGljeSBL
+b2JqZWN0IG1vdmVkIHRvIGNwdTogJWQgZnJvbTogJWRcbiIsDQo+IC0gICAgICAgICAgICAgICAg
+ICAgICBfX2Z1bmNfXywgbmV3X2NwdSwgY3B1KTsNCj4gKyAgICAgICAgc3lzZnNfcmVtb3ZlX2xp
+bmsoJmNwdV9kZXYtPmtvYmosICJjcHVmcmVxIik7DQo+ICsgICAgICAgIHJldCA9IHVwZGF0ZV9w
+b2xpY3lfY3B1KHBvbGljeSwgbmV3X2NwdSwgY3B1X2Rldik7DQo+ICsgICAgICAgIGlmIChyZXQp
+IHsNCj4gKyAgICAgICAgICAgIC8qDQo+ICsgICAgICAgICAgICAgKiBUbyBzdXByZXNzIGNvbXBp
+bGF0aW9uIHdhcm5pbmcgYWJvdXQgcmV0dXJuIHZhbHVlIG9mDQo+ICsgICAgICAgICAgICAgKiBz
+eXNmc19jcmVhdGVfbGluaygpLg0KPiArICAgICAgICAgICAgICovDQo+ICsgICAgICAgICAgICBp
+bnQgdGVtcDsNCj4gKw0KPiArICAgICAgICAgICAgLyogQ3JlYXRlIGxpbmsgYWdhaW4gaWYgd2Ug
+ZmFpbGVkLiAqLw0KPiArICAgICAgICAgICAgdGVtcCA9IHN5c2ZzX2NyZWF0ZV9saW5rKCZjcHVf
+ZGV2LT5rb2JqLCAmcG9saWN5LT5rb2JqLA0KPiArICAgICAgICAgICAgICAgICAgICAgICAgICJj
+cHVmcmVxIik7DQo+ICsgICAgICAgICAgICByZXR1cm4gcmV0Ow0KPiAgICAgICAgfQ0KPiArDQo+
+ICsgICAgICAgIGlmICghY3B1ZnJlcV9zdXNwZW5kZWQpDQo+ICsgICAgICAgICAgICBwcl9kZWJ1
+ZygiJXM6IHBvbGljeSBLb2JqZWN0IG1vdmVkIHRvIGNwdTogJWQgZnJvbTogJWRcbiIsDQo+ICsg
+ICAgICAgICAgICAgICAgIF9fZnVuY19fLCBuZXdfY3B1LCBjcHUpOw0KPiAgICB9IGVsc2UgaWYg
+KGNwdWZyZXFfZHJpdmVyLT5zdG9wX2NwdSAmJiBjcHVmcmVxX2RyaXZlci0+c2V0cG9saWN5KSB7
+DQo+ICAgICAgICBjcHVmcmVxX2RyaXZlci0+c3RvcF9jcHUocG9saWN5KTsNCj4gICAgfQ0KPiAt
+LSANCj4gMi4wLjAucmMyDQo+IA0K
