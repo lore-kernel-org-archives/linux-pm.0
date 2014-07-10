@@ -1,51 +1,52 @@
-From: Quentin Armitage <quentin@armitage.org.uk>
-Subject: [PATCH] cpufreq: kirkwood: Reinstate cpufreq driver for
- ARCH_KIRKWOOD
-Date: Thu, 10 Jul 2014 11:15:55 +0100
-Message-ID: <1404987355.23201.65.camel@samson1.armitage.org.uk>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] GPIO button wth wakeup attribute is supposed to wake the system up
+Date: Thu, 10 Jul 2014 13:27:02 +0200
+Message-ID: <1614271.1peg23gJZx@vostro.rjw.lan>
+References: <53A2340D.9030503@linux.intel.com> <4301161.i6ArOLmcsg@vostro.rjw.lan> <53BDFA22.2000409@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from rslrsmtp2.opaltelecom.net ([62.24.128.202]:11041 "EHLO
-	iprslrsmtp2msp.cpwnetworks.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750966AbaGJK1d (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jul 2014 06:27:33 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <53BDFA22.2000409@linux.intel.com>
+Sender: linux-input-owner@vger.kernel.org
+To: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>
 
-Commit ff1f0018cf66080d8e6f59791e552615648a033a ("drivers: Enable
-building of Kirkwood drivers for mach-mvebu") added Kirkwood into
-mach-mvebu, adding MACH_KIRKWOOD to ARCH_KIRKWOOD in the KConfig files.
+On Thursday, July 10, 2014 10:27:46 AM Li, Aubrey wrote:
+> On 2014/7/9 20:45, Rafael J. Wysocki wrote:
+> > On Tuesday, July 08, 2014 05:54:35 PM Dmitry Torokhov wrote:
+> >> On Wed, Jul 09, 2014 at 02:59:33AM +0200, Rafael J. Wysocki wrote:
+> >>> On Tuesday, July 08, 2014 05:15:06 PM Dmitry Torokhov wrote:
+> >>>> On Wed, Jul 09, 2014 at 01:06:07AM +0200, Rafael J. Wysocki wrote:
+> > 
+> > [cut]
+> > 
+> >>>>
+> >>>> When device driver marks IRQ as a wakeup source I believe it is prepared
+> >>>> to handle it (or it would shut it off explicitly).
+> >>>
+> >>> I can agree with that.
+> >>>
+> >>> Are you suggesting that __disable_irq() should check irq_data for
+> >>> IRQD_WAKEUP_STATE and skip the IRQ (in the 'suspend' case) if that is set?
+> >>
+> >> Yes, something like that.
+> > 
+> > OK
+> 
+> Many thanks to you both for the discussion.
+> > 
+> > Aubrey, can you please check if the appended patch helps on the T100?
+> 
+> I verified this patch on T100, it works as expected, freeze can be waken
+> up by reverting my patch and applying this one.
 
-The change for ARM_KIRKWOOD_CPUFREQ replaced ARCH_KIRKWOOD with
-MACH_KIRKWOOD, whereas all the other changes were ARCH_KIRKWOOD ||
-MACH_KIRKWOOD.
+Thanks!
 
-As a consequence of this change, the cpufreq driver is no longer enabled
-for ARCH_KIRKWOOD. This patch reinstates ARM_KIRKWOOD_CPUFREQ for
-ARCH_KIRKWOOD.
+> Is this a final solution?
 
-Signed-off-by: Quentin Armitage <quentin@armitage.org.uk>
----
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index ebac671..24778f0 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -118,7 +118,7 @@ config ARM_INTEGRATOR
-          If in doubt, say Y.
+I hope so.  I'll resend it with a proper changelog later today.
 
- config ARM_KIRKWOOD_CPUFREQ
--       def_bool MACH_KIRKWOOD
-+       def_bool ARCH_KIRKWOOD || MACH_KIRKWOOD
-        help
-          This adds the CPUFreq driver for Marvell Kirkwood
-          SoCs.
- 
-
-
-
-
+Rafael
 
