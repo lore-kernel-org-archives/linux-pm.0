@@ -1,52 +1,92 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] GPIO button wth wakeup attribute is supposed to wake the system up
-Date: Thu, 10 Jul 2014 13:27:02 +0200
-Message-ID: <1614271.1peg23gJZx@vostro.rjw.lan>
-References: <53A2340D.9030503@linux.intel.com> <4301161.i6ArOLmcsg@vostro.rjw.lan> <53BDFA22.2000409@linux.intel.com>
+From: "Srivatsa S. Bhat" <srivatsa@MIT.EDU>
+Subject: Re: [PATCH] cpufreq: move policy kobj to policy->cpu at resume
+Date: Thu, 10 Jul 2014 16:45:58 +0530
+Message-ID: <53BE75EE.6010200@mit.edu>
+References: <3b19a388891fe997c6c7bc14463453c27312edfa.1404968266.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <53BDFA22.2000409@linux.intel.com>
-Sender: linux-input-owner@vger.kernel.org
-To: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from dmz-mailsec-scanner-5.mit.edu ([18.7.68.34]:64418 "EHLO
+	dmz-mailsec-scanner-5.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751021AbaGJLSE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jul 2014 07:18:04 -0400
+In-Reply-To: <3b19a388891fe997c6c7bc14463453c27312edfa.1404968266.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arvind.chauhan@arm.com, skannan@codeaurora.org, ybu@qti.qualcomm.com, Stable <stable@vger.kernel.org>
 
-On Thursday, July 10, 2014 10:27:46 AM Li, Aubrey wrote:
-> On 2014/7/9 20:45, Rafael J. Wysocki wrote:
-> > On Tuesday, July 08, 2014 05:54:35 PM Dmitry Torokhov wrote:
-> >> On Wed, Jul 09, 2014 at 02:59:33AM +0200, Rafael J. Wysocki wrote:
-> >>> On Tuesday, July 08, 2014 05:15:06 PM Dmitry Torokhov wrote:
-> >>>> On Wed, Jul 09, 2014 at 01:06:07AM +0200, Rafael J. Wysocki wrote:
-> > 
-> > [cut]
-> > 
-> >>>>
-> >>>> When device driver marks IRQ as a wakeup source I believe it is prepared
-> >>>> to handle it (or it would shut it off explicitly).
-> >>>
-> >>> I can agree with that.
-> >>>
-> >>> Are you suggesting that __disable_irq() should check irq_data for
-> >>> IRQD_WAKEUP_STATE and skip the IRQ (in the 'suspend' case) if that is set?
-> >>
-> >> Yes, something like that.
-> > 
-> > OK
+On 07/10/2014 10:49 AM, Viresh Kumar wrote:
+> This is only relevant to implementations with multiple clusters, where clusters
+> have separate clock lines but all CPUs within a cluster share it.
 > 
-> Many thanks to you both for the discussion.
-> > 
-> > Aubrey, can you please check if the appended patch helps on the T100?
+> Consider a dual cluster platform with 2 cores per cluster. During suspend we
+> start offlining CPUs from 1 to 3. When CPU2 is remove, policy->kobj would be
+> moved to CPU3 and when CPU3 goes down we wouldn't free policy or its kobj.
 > 
-> I verified this patch on T100, it works as expected, freeze can be waken
-> up by reverting my patch and applying this one.
+> Now on resume, we will get CPU2 before CPU3 and will call __cpufreq_add_dev().
+> We will recover the old policy and update policy->cpu from 3 to 2 from
+> update_policy_cpu().
+> 
+> But the kobj is still tied to CPU3 and wasn't moved to CPU2. We wouldn't create
+> a link for CPU2, but would try that while bringing CPU3 online. Which will
+> report errors as CPU3 already has kobj assigned to it.
+> 
+> This bug got introduced with commit 42f921a, which overlooked this scenario.
+> 
+> To fix this, lets move kobj to the new policy->cpu while bringing first CPU of a
+> cluster back.
+> 
+> Fixes: ("42f921a cpufreq: remove sysfs files for CPUs which failed to come back after resume")
+> Cc: Stable <stable@vger.kernel.org> # 3.13+
+> Reported-by: Bu Yitian <ybu@qti.qualcomm.com>
+> Reported-by: Saravana Kannan <skannan@codeaurora.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
-Thanks!
+Looks good to me. But I think it would be better to move the invocation of
+kobject_move() to update_policy_cpu() itself, so that update_policy_cpu()
+will do all the work involved in updating the policy->cpu, as its name suggests.
 
-> Is this a final solution?
+With that small nit,
 
-I hope so.  I'll resend it with a proper changelog later today.
+Reviewed-by: Srivatsa S. Bhat <srivatsa@mit.edu>
 
-Rafael
+Regards,
+Srivatsa S. Bhat
+
+> Hi Rafael,
+> 
+> This is for 3.16 release, please take it once Yitian/Saravana test this out.
+> 
+> @Yitian/Saravana: Sorry of overlooking this when both of you reported this
+> first. I (and Srivatsa as well) was damn sure that this scenario is taken into
+> account in current code and a close look proved that wrong.
+> 
+> I couldn't test it out, can any of you please see if it fixes things for you?
+> 
+>  drivers/cpufreq/cpufreq.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 62259d2..6f02485 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1153,10 +1153,12 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>  	 * the creation of a brand new one. So we need to perform this update
+>  	 * by invoking update_policy_cpu().
+>  	 */
+> -	if (recover_policy && cpu != policy->cpu)
+> +	if (recover_policy && cpu != policy->cpu) {
+>  		update_policy_cpu(policy, cpu);
+> -	else
+> +		WARN_ON(kobject_move(&policy->kobj, &dev->kobj));
+> +	} else {
+>  		policy->cpu = cpu;
+> +	}
+>  
+>  	cpumask_copy(policy->cpus, cpumask_of(cpu));
+>  
+> 
 
