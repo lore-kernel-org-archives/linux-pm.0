@@ -1,25 +1,33 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Borislav Petkov <bp@alien8.de>
 Subject: Re: [PATCH] cpufreq: report driver's successful {un}registration
-Date: Thu, 10 Jul 2014 17:21:43 +0530
-Message-ID: <CAKohpom0Qwbj5Ma_zCE5juk=1JjbBDLZJcBXZMgnkDVPiTvRCA@mail.gmail.com>
+Date: Thu, 10 Jul 2014 13:59:34 +0200
+Message-ID: <20140710115934.GF2970@pd.tnic>
 References: <9e68cba2bf41923630ea93de7c3d17637f175895.1403772686.git.viresh.kumar@linaro.org>
-	<20140710114828.GA3254@pd.tnic>
+ <20140710114828.GA3254@pd.tnic>
+ <CAKohpom0Qwbj5Ma_zCE5juk=1JjbBDLZJcBXZMgnkDVPiTvRCA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140710114828.GA3254@pd.tnic>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.skyhub.de ([78.46.96.112]:49059 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751394AbaGJL7m (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Jul 2014 07:59:42 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKohpom0Qwbj5Ma_zCE5juk=1JjbBDLZJcBXZMgnkDVPiTvRCA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>
 
-On 10 July 2014 17:18, Borislav Petkov <bp@alien8.de> wrote:
-> On Thu, Jun 26, 2014 at 02:21:30PM +0530, Viresh Kumar wrote:
->> We do report driver's successful {un}registration from cpufreq core, but is done
->> with pr_debug() and so this doesn't appear in boot logs.
->>
->> Convert this to pr_info() to make it visible in logs.
->
-> And we want this because...?
+On Thu, Jul 10, 2014 at 05:21:43PM +0530, Viresh Kumar wrote:
+> So that it appears in boot logs and we know cpufreq registered properly.
 
-So that it appears in boot logs and we know cpufreq registered properly.
+So flip that logic: Don't say anything in the success case and issue an
+error only when it failed. Like the rest of the code does it.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
