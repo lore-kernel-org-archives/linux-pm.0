@@ -1,7 +1,7 @@
 From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Subject: [PATCH 08/13] clk: tegra: Add the DFLL as a possible parent of the cclk_g clock
-Date: Fri, 11 Jul 2014 00:42:44 +0300
-Message-ID: <1405028569-14253-9-git-send-email-ttynkkynen@nvidia.com>
+Subject: [PATCH 11/13] cpufreq: tegra124: Add device tree bindings
+Date: Fri, 11 Jul 2014 00:42:47 +0300
+Message-ID: <1405028569-14253-12-git-send-email-ttynkkynen@nvidia.com>
 References: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,28 +12,58 @@ To: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@
 Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-The DFLL clocksource was missing from the list of possible parents for
-the fast CPU cluster. Add it to the list.
+The cpufreq driver for Tegra124 will be a different one than the old
+Tegra20 cpufreq driver (tegra-cpufreq), which does not use the device
+tree.
 
 Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 ---
- drivers/clk/tegra/clk-tegra-super-gen4.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ .../bindings/cpufreq/tegra124-cpufreq.txt          | 37 ++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
 
-diff --git a/drivers/clk/tegra/clk-tegra-super-gen4.c b/drivers/clk/tegra/clk-tegra-super-gen4.c
-index feb3201..f1f4410 100644
---- a/drivers/clk/tegra/clk-tegra-super-gen4.c
-+++ b/drivers/clk/tegra/clk-tegra-super-gen4.c
-@@ -44,7 +44,9 @@ static const char *sclk_parents[] = { "clk_m", "pll_c_out1", "pll_p_out4",
- 
- static const char *cclk_g_parents[] = { "clk_m", "pll_c", "clk_32k", "pll_m",
- 					"pll_p", "pll_p_out4", "unused",
--					"unused", "pll_x" };
-+					"unused", "pll_x", "unused", "unused",
-+					"unused", "unused", "unused", "unused",
-+					"dfllCPU_out" };
- 
- static const char *cclk_lp_parents[] = { "clk_m", "pll_c", "clk_32k", "pll_m",
- 					 "pll_p", "pll_p_out4", "unused",
+diff --git a/Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
+new file mode 100644
+index 0000000..6f3f608
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
+@@ -0,0 +1,37 @@
++Tegra124 CPU frequency scaling driver bindings
++----------------------------------------------
++
++Both required and optional properties listed below must be defined
++under node /cpus/cpu@0.
++
++Required properties:
++- clocks: Must contain an entry for each entry in clock-names.
++  See ../clocks/clock-bindings.txt for details.
++- clock-names: Must include the following entries:
++  - cpu_g: Clock mux for the fast CPU cluster.
++  - cpu_lp: Clock mux for the low-power CPU cluster.
++  - pll_x: Fast PLL clocksource.
++  - pll_p: Auxiliary PLL used during fast PLL rate changes.
++  - dfll: Fast DFLL clocksource that also automatically scales CPU voltage.
++
++Example:
++--------
++cpus {
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	cpu@0 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a15";
++		reg = <0>;
++
++		clocks = <&tegra_car TEGRA124_CLK_CCLK_G>,
++			 <&tegra_car TEGRA124_CLK_CCLK_LP>,
++			 <&tegra_car TEGRA124_CLK_PLL_X>,
++			 <&tegra_car TEGRA124_CLK_PLL_P>,
++			 <&dfll>;
++		clock-names = "cpu_g", "cpu_lp", "pll_x", "pll_p", "dfll";
++	};
++
++	<...>
++};
 -- 
 1.8.1.5
