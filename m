@@ -1,89 +1,72 @@
-From: Jason Baron <jbaron@akamai.com>
-Subject: [PATCH] intel_idle: use static_key to optimize idle enter/exit paths
-Date: Fri, 11 Jul 2014 17:54:58 +0000 (GMT)
-Message-ID: <20140711175458.6793B2029@prod-mail-relay06.akamai.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: lenb@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 2/2] cpufreq: ondemand: Eliminate the deadband effect
+Date: Fri, 11 Jul 2014 20:34:14 +0200
+Message-ID: <20140711183414.GA18951@amd.pavel.ucw.cz>
+References: <1404147574-17422-1-git-send-email-stratosk@semaphore.gr>
+ <1404147574-17422-3-git-send-email-stratosk@semaphore.gr>
+ <20140711165710.GA18033@amd.pavel.ucw.cz>
+ <53C01F15.2090702@semaphore.gr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36891 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752261AbaGKSeR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Jul 2014 14:34:17 -0400
+Content-Disposition: inline
+In-Reply-To: <53C01F15.2090702@semaphore.gr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-If 'arat' is set in the cpuflags, we can avoid the checks for entering/exiting
-the tick broadcast code entirely. It would seem that this is a hot enough code
-path to make this worthwhile. I ran a few hackbench runs, and consistenly see
-reduced branches and cycles.
+On Fri 2014-07-11 20:29:57, Stratos Karafotis wrote:
+> Hi Pavel!
+>=20
+> On 11/07/2014 07:57 =CE=BC=CE=BC, Pavel Machek wrote:
+> > Hi!
+> >=20
+> >> Tested on Intel i7-3770 CPU @ 3.40GHz and on ARM quad core 1500MHz=
+ Krait
+> >> (Android smartphone).
+> >> Benchmarks on Intel i7 shows a performance improvement on low and =
+medium
+> >> work loads with lower power consumption. Specifics:
+> >>
+> >> Phoronix Linux Kernel Compilation 3.1:
+> >> Time: -0.40%, energy: -0.07%
+> >> Phoronix Apache:
+> >> Time: -4.98%, energy: -2.35%
+> >> Phoronix FFMPEG:
+> >> Time: -6.29%, energy: -4.02%
+> >=20
+> > Hmm. Intel i7 should be race-to-idle machine. So basically rule lik=
+e
+> > if (load > 0) go to max frequency else go to lowest frequency would=
+ do
+> > the right thing in your test, right?
+>=20
+> I don't think that "if (load > 0) go to max" will work even on i7.
+> For low load this will have impact on energy consumption.
 
-Signed-off-by: Jason Baron <jbaron@akamai.com>
----
- drivers/idle/intel_idle.c | 29 ++++++++++++++++++++---------
- 1 file changed, 20 insertions(+), 9 deletions(-)
+Are you sure? CPU frequency should not matter on idle CPU.
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 4d140bb..61e965c 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -80,6 +80,8 @@ static unsigned int mwait_substates;
- #define LAPIC_TIMER_ALWAYS_RELIABLE 0xFFFFFFFF
- /* Reliable LAPIC Timer States, bit 1 for C1 etc.  */
- static unsigned int lapic_timer_reliable_states = (1 << 1);	 /* Default to only C1 */
-+/* if arat is set no sense in checking on each c-state transition */
-+static struct static_key lapic_timer_unreliable __read_mostly;
- 
- struct idle_cpu {
- 	struct cpuidle_state *state_table;
-@@ -507,12 +509,10 @@ static int intel_idle(struct cpuidle_device *dev,
- {
- 	unsigned long ecx = 1; /* break on interrupt flag */
- 	struct cpuidle_state *state = &drv->states[index];
--	unsigned long eax = flg2MWAIT(state->flags);
--	unsigned int cstate;
-+	unsigned long uninitialized_var(eax);
-+	unsigned int uninitialized_var(cstate);
- 	int cpu = smp_processor_id();
- 
--	cstate = (((eax) >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK) + 1;
--
- 	/*
- 	 * leave_mm() to avoid costly and often unnecessary wakeups
- 	 * for flushing the user TLB's associated with the active mm.
-@@ -520,13 +520,22 @@ static int intel_idle(struct cpuidle_device *dev,
- 	if (state->flags & CPUIDLE_FLAG_TLB_FLUSHED)
- 		leave_mm(cpu);
- 
--	if (!(lapic_timer_reliable_states & (1 << (cstate))))
--		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
-+	if (static_key_false(&lapic_timer_unreliable)) {
-+		eax = flg2MWAIT(state->flags);
-+		cstate = (((eax) >> MWAIT_SUBSTATE_SIZE) &
-+					MWAIT_CSTATE_MASK) + 1;
-+		if (!(lapic_timer_reliable_states & (1 << (cstate))))
-+			clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
-+					   &cpu);
-+	}
- 
- 	mwait_idle_with_hints(eax, ecx);
- 
--	if (!(lapic_timer_reliable_states & (1 << (cstate))))
--		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
-+	if (static_key_false(&lapic_timer_unreliable)) {
-+		if (!(lapic_timer_reliable_states & (1 << (cstate))))
-+			clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
-+					   &cpu);
-+	}
- 
- 	return index;
- }
-@@ -702,8 +711,10 @@ static int __init intel_idle_probe(void)
- 
- 	if (boot_cpu_has(X86_FEATURE_ARAT))	/* Always Reliable APIC Timer */
- 		lapic_timer_reliable_states = LAPIC_TIMER_ALWAYS_RELIABLE;
--	else
-+	else {
-+		static_key_slow_inc(&lapic_timer_unreliable);
- 		on_each_cpu(__setup_broadcast_timer, (void *)true, 1);
-+	}
- 
- 	pr_debug(PREFIX "v" INTEL_IDLE_VERSION
- 		" model 0x%X\n", boot_cpu_data.x86_model);
--- 
-1.8.2.rc2
+(Can you try to modify your code and rerun for example the apache
+test?)
+
+> > So... should we do that, or do we need better benchmark?
+>=20
+> I'm sorry. I'm not sure I understood exactly what do you mean by "bet=
+ter
+> benchmark".
+
+I believe that any increase of frequency in frequency will make the
+benchmarks you qouted better (on i7). Actually, you can probably just
+select performance governor...?
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
