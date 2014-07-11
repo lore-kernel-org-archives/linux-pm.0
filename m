@@ -1,137 +1,116 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH 2/2] cpufreq: ondemand: Eliminate the deadband effect
-Date: Fri, 11 Jul 2014 22:37:01 +0300
-Message-ID: <53C03CDD.5020701@semaphore.gr>
-References: <1404147574-17422-1-git-send-email-stratosk@semaphore.gr> <1404147574-17422-3-git-send-email-stratosk@semaphore.gr> <20140711165710.GA18033@amd.pavel.ucw.cz> <53C01F15.2090702@semaphore.gr> <20140711183414.GA18951@amd.pavel.ucw.cz>
+From: Brian W Hart <hartb@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: make table sentinal macros unsigned to match use
+Date: Fri, 11 Jul 2014 17:06:30 -0500
+Message-ID: <20140711220630.GA5697@oc3347516403.ibm.com>
+References: <20140627210939.GB24604@oc3347516403.ibm.com>
+ <CAKohpo=qB3nB+ZNKE4Y94m6gPWZZ4YZEU_WOA=s5DB8apxUQGQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140711183414.GA18951@amd.pavel.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=qB3nB+ZNKE4Y94m6gPWZZ4YZEU_WOA=s5DB8apxUQGQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>, Stratos Karafotis <stratosk@semaphore.gr>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/07/2014 09:34 =CE=BC=CE=BC, Pavel Machek wrote:
-> On Fri 2014-07-11 20:29:57, Stratos Karafotis wrote:
->> Hi Pavel!
->>
->> On 11/07/2014 07:57 =CE=BC=CE=BC, Pavel Machek wrote:
->>> Hi!
->>>
->>>> Tested on Intel i7-3770 CPU @ 3.40GHz and on ARM quad core 1500MHz=
- Krait
->>>> (Android smartphone).
->>>> Benchmarks on Intel i7 shows a performance improvement on low and =
-medium
->>>> work loads with lower power consumption. Specifics:
->>>>
->>>> Phoronix Linux Kernel Compilation 3.1:
->>>> Time: -0.40%, energy: -0.07%
->>>> Phoronix Apache:
->>>> Time: -4.98%, energy: -2.35%
->>>> Phoronix FFMPEG:
->>>> Time: -6.29%, energy: -4.02%
->>>
->>> Hmm. Intel i7 should be race-to-idle machine. So basically rule lik=
-e
->>> if (load > 0) go to max frequency else go to lowest frequency would=
- do
->>> the right thing in your test, right?
->>
->> I don't think that "if (load > 0) go to max" will work even on i7.
->> For low load this will have impact on energy consumption.
+On Mon, Jun 30, 2014 at 10:25:20AM +0530, Viresh Kumar wrote:
+> On 28 June 2014 02:39, Brian W Hart <hartb@linux.vnet.ibm.com> wrote:
+> > Commit 5eeaf1f18973 (cpufreq: Fix build error on some platforms tha=
+t
+> > use cpufreq_for_each_*) moved function cpufreq_next_valid() to a pu=
+blic
+> > header.  Warnings are now generated when objects including that hea=
+der
+> > are built with -Wsign-compare (as an out-of-tree module might be):
+> >
+> > .../include/linux/cpufreq.h: In function =E2=80=98cpufreq_next_vali=
+d=E2=80=99:
+> > .../include/linux/cpufreq.h:519:27: warning: comparison between sig=
+ned
+> > and unsigned integer expressions [-Wsign-compare]
+> >   while ((*pos)->frequency !=3D CPUFREQ_TABLE_END)
+> >                            ^
+> > .../include/linux/cpufreq.h:520:25: warning: comparison between sig=
+ned
+> > and unsigned integer expressions [-Wsign-compare]
+> >    if ((*pos)->frequency !=3D CPUFREQ_ENTRY_INVALID)
+> >                          ^
+> >
+> > Constants CPUFREQ_ENTRY_INVALID and CPUFREQ_TABLE_END are signed, b=
+ut
+> > are used with unsigned member 'frequency' of cpufreq_frequency_tabl=
+e.
+> > Update the macro definitions to be explicitly unsigned to match the=
+ir
+> > use.
+> >
+> > This also corrects potentially wrong behavior of clk_rate_table_ite=
+r()
+> > if unsigned long is wider than usigned int.
+> >
+> > Signed-off-by: Brian W Hart <hartb@linux.vnet.ibm.com>
+> > ---
+> > These macros are fairly broadly used in the kernel so I was bit lee=
+ry
+> > of changing them, but after inspection I think it's fine.  I found =
+102
+> > uses of the macros, of which:
+> >
+> > 99 are uses with cpufreq_frequency_table.frequency (95) or with loc=
+al
+> >    variables of the same type as frequency (4).  These should be ju=
+st
+> >    fine with this change--we're just making explicit a conversion t=
+hat
+> >    was previously implicit.
+> >
+> >  2 are uses with a local variable of different type (unsigned long)=
+ than
+> >    'frequency' (in drivers/sh/clk/core.c).  One of these uses is sa=
+fe;
+> >    the other (in clk_rate_table_iter()) is broken if unsigned long
+> >    is wider than unsigned int.  As a side-effect, this patch correc=
+ts
+> >    the potential misbehavior there.
+> >
+> >  1 is a use in macro cpufreq_for_each_entry() with what _should_ be=
+ the
+> >    frequency member of a cpufreq_frequency_table, provided the call=
+er it
+> >    well-behaved.  There are 18 callers of this macro; all are well-=
+behaved.
+> >    So these should also be safe.
 >=20
-> Are you sure? CPU frequency should not matter on idle CPU.
-
-Even on a totally idle CPU there will be a small impact because of leak=
-age
-current (thanks to Dirk Brandewie for this info).
-
-This simple test on a nearly idle system shows this:
-
-[root@albert cpufreq]# for CPUFREQ in /sys/devices/system/cpu/cpu*/cpuf=
-req/scaling_governor; do [ -f $CPUFREQ ] || continue; echo -n performan=
-ce > $CPUFREQ; done
-[root@albert cpufreq]# /home/stratosk/kernels/linux-pm/tools/power/x86/=
-turbostat/turbostat -J sleep 20
-    Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c=
-3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7   Pkg=
-_J   Cor_J   GFX_J   time
-       -       -       2    0.06    2712    3392       0    0.30    0.0=
-0   99.63    0.00      34      34    8.09    0.00   81.94    0.00  380.=
-41   14.51    1.64   20.00
-       0       0       0    0.02    1891    3392       0    0.09    0.0=
-0   99.88    0.00      34      34    8.09    0.00   81.94    0.00  380.=
-41   14.51    1.64   20.00
-       0       4       1    0.04    3006    3392       0    0.07
-       1       1       1    0.04    2501    3392       0    0.62    0.0=
-0   99.33    0.00      34
-       1       5       0    0.01    2346    3392       0    0.66
-       2       2       0    0.01    1996    3392       0    0.44    0.0=
-0   99.55    0.00      34
-       2       6       4    0.18    2278    3392       0    0.26
-       3       3       5    0.15    3449    3392       0    0.07    0.0=
-1   99.77    0.00      34
-       3       7       0    0.01    1839    3392       0    0.21
-20.000899 sec
-[root@albert cpufreq]# ^C
-[root@albert cpufreq]# for CPUFREQ in /sys/devices/system/cpu/cpu*/cpuf=
-req/scaling_governor; do [ -f $CPUFREQ ] || continue; echo -n ondemand =
-> $CPUFREQ; done
-[root@albert cpufreq]# /home/stratosk/kernels/linux-pm/tools/power/x86/=
-turbostat/turbostat -J sleep 20
-    Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c=
-3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7   Pkg=
-_J   Cor_J   GFX_J   time
-       -       -       2    0.09    1693    3392       0    0.35    0.0=
-1   99.55    0.00      35      36    8.33    0.00   84.31    0.00  377.=
-68   12.23    1.15   20.00
-       0       0       1    0.08    1603    3392       0    0.13    0.0=
-0   99.79    0.00      35      36    8.33    0.00   84.31    0.00  377.=
-68   12.23    1.15   20.00
-       0       4       1    0.08    1646    3392       0    0.13
-       1       1       1    0.06    1647    3392       0    0.66    0.0=
-0   99.28    0.00      35
-       1       5       0    0.01    1611    3392       0    0.71
-       2       2       0    0.02    1617    3392       0    0.50    0.0=
-2   99.46    0.00      35
-       2       6       4    0.22    1764    3392       0    0.30
-       3       3       4    0.25    1701    3392       0    0.07    0.0=
-0   99.68    0.00      35
-       3       7       0    0.01    1602    3392       0    0.31
-20.001580 sec
-
-
-So, for low loads the impact will be higher.
-This is the reason that the intel_pstate driver don't use 'performance'
-and try to request a low P state when there is no load.
-
-> (Can you try to modify your code and rerun for example the apache
-> test?)
-
-Yes, I can do the apache test if the above example is not enough.
-
->>> So... should we do that, or do we need better benchmark?
->>
->> I'm sorry. I'm not sure I understood exactly what do you mean by "be=
-tter
->> benchmark".
+> I would have moved some of it to logs, they look good.
 >=20
-> I believe that any increase of frequency in frequency will make the
-> benchmarks you qouted better (on i7). Actually, you can probably just
-> select performance governor...?
+> >  include/linux/cpufreq.h |    4 ++--
+> >  1 files changed, 2 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> > index ec4112d..8f8ae95 100644
+> > --- a/include/linux/cpufreq.h
+> > +++ b/include/linux/cpufreq.h
+> > @@ -482,8 +482,8 @@ extern struct cpufreq_governor cpufreq_gov_cons=
+ervative;
+> >   *****************************************************************=
+****/
+> >
+> >  /* Special Values of .frequency field */
+> > -#define CPUFREQ_ENTRY_INVALID  ~0
+> > -#define CPUFREQ_TABLE_END      ~1
+> > +#define CPUFREQ_ENTRY_INVALID  ~0u
+> > +#define CPUFREQ_TABLE_END      ~1u
+> >  /* Special Values of .flags field */
+> >  #define CPUFREQ_BOOST_FREQ     (1 << 0)
+>=20
+> Thanks.
+>=20
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Maybe in benchmarks where the CPU load is high. But definitely not, in =
-mp3
-decoding and idle system test.
+I haven't seen this appear in the linux-pm tree yet. Is there anything
+further needed on my part--aside from patience?
 
-The point is, as you mentioned, more tests and of course on other CPUs.
-Unfortunately, I can test only on i7 and krait as mentioned in changelo=
-g.
-I will happily run any test you would like for more info.
-
-
-Thanks,
-Stratos
+Thank you,
+brian
