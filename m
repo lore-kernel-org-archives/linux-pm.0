@@ -1,29 +1,37 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 12/13] cpufreq: Add cpufreq driver for Tegra124
-Date: Fri, 11 Jul 2014 20:07:42 +0530
-Message-ID: <CAKohpon_YKkRP+iYnUaE14fKmcSx_SfWVHPiA48BGiPTCPHTKA@mail.gmail.com>
-References: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com>
-	<1405028569-14253-13-git-send-email-ttynkkynen@nvidia.com>
-	<CAKohpom9ORXFiUU4=V+CxgN0ZOFLMEhEjHiU8HsYUYDybNXgHQ@mail.gmail.com>
-	<53BFF132.3020700@nvidia.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v2 00/12] Remove mach-kirkwood
+Date: Fri, 11 Jul 2014 10:52:03 -0400
+Message-ID: <20140711145203.GD27706@htj.dyndns.org>
+References: <1405028192-9623-1-git-send-email-andrew@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <53BFF132.3020700-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-leds-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1405028192-9623-1-git-send-email-andrew@lunn.ch>
+Sender: linux-leds-owner@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Jason Cooper <jason@lakedaemon.net>, linux ARM <linux-arm-kernel@lists.infradead.org>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, Kishon Vijay Abraham I <kishon@ti.com>, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11 July 2014 19:44, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> Sure, I can do the CPU clock parent change first and then instantiate the
-> cpufreq-cpu0 driver, like highbank-cpufreq. That'll depend on the patch
-> 'cpufreq: cpu0: OPPs can be populated at runtime' from your 'Extend support
-> beyond CPU0' series though, any idea when that patch will land in?
+On Thu, Jul 10, 2014 at 11:36:20PM +0200, Andrew Lunn wrote:
+> This patchset removes arch/arm/mach-kirkwood.  This SoCs is now
+> supported in arch/arm/mach-mvebu using device tree.
+> 
+> V1 of this patchset also removed mach-dove. However it has been
+> decided to leave it alone for a while to aid some developers get out
+> of tree patches merged.
+>                                                                          
+> Change the dependencies for a number of drivers, either to use
+> ARCH_MVEBU where the drivers are generic, or MACH_KIRKWOOD and where
+> the drivers are specific to the SoC.
+> 
+> Once Jason Cooper has Acked these patches, we would prefer that
+> individual subsystem maintainers take these patches through their own
+> trees.
 
-So, after your mail I had a chat with Rafael. As this patch happens to be a
-fix, we will try to take it into 3.16 only (I am going to send few patches out
-of that series separately in few mins). Otherwise 3.17 is where most of it
-should go.
+Please let me know when I can take the libata part.
 
-Thanks for your agreement to make our life easier :)
+Thanks.
+
+-- 
+tejun
