@@ -1,97 +1,56 @@
-From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: Re: [PATCH 10/13] ARM: tegra: Enable the DFLL on the Jetson TK1
-Date: Fri, 11 Jul 2014 10:14:42 +0300
-Message-ID: <53BF8EE2.4070702@nvidia.com>
-References: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com> <1405028569-14253-11-git-send-email-ttynkkynen@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:16361 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbaGKHOq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Jul 2014 03:14:46 -0400
-In-Reply-To: <1405028569-14253-11-git-send-email-ttynkkynen@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [RFC Patch V1 17/30] mm, intel_powerclamp: Use cpu_to_mem()/numa_mem_id() to support memoryless node
+Date: Fri, 11 Jul 2014 15:37:34 +0800
+Message-ID: <1405064267-11678-18-git-send-email-jiang.liu@linux.intel.com>
+References: <1405064267-11678-1-git-send-email-jiang.liu@linux.intel.com>
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1405064267-11678-1-git-send-email-jiang.liu@linux.intel.com>
+Sender: owner-linux-mm@kvack.org
+To: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, David Rientjes <rientjes@google.com>, Mike Galbraith <umgwanakikbuti@gmail.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, Tony Luck <tony.luck@intel.com>, linux-mm@kvack.org, linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tuomas Tynkkynen <ttynkkynen@nvidia.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-It might look nicer if the voltage table was in a separate file. A bit 
-of a border case, maybe.
+When CONFIG_HAVE_MEMORYLESS_NODES is enabled, cpu_to_node()/numa_node_id()
+may return a node without memory, and later cause system failure/panic
+when calling kmalloc_node() and friends with returned node id.
+So use cpu_to_mem()/numa_mem_id() instead to get the nearest node with
+memory for the/current cpu.
 
-On 11/07/14 00:42, Tuomas Tynkkynen wrote:
-> ...
-> +		nvidia,pmic-voltage-table =
-> +			<0x1e 700000>,
-> +			<0x1f 710000>,
-> +			<0x20 720000>,
-> +			<0x21 730000>,
-> +			<0x22 740000>,
-> +			<0x23 750000>,
-> +			<0x24 760000>,
-> +			<0x25 770000>,
-> +			<0x26 780000>,
-> +			<0x27 790000>,
-> +			<0x28 800000>,
-> +			<0x29 810000>,
-> +			<0x2a 820000>,
-> +			<0x2b 830000>,
-> +			<0x2c 840000>,
-> +			<0x2d 850000>,
-> +			<0x2e 860000>,
-> +			<0x2f 870000>,
-> +			<0x30 880000>,
-> +			<0x31 890000>,
-> +			<0x32 900000>,
-> +			<0x33 910000>,
-> +			<0x34 920000>,
-> +			<0x35 930000>,
-> +			<0x36 940000>,
-> +			<0x37 950000>,
-> +			<0x38 960000>,
-> +			<0x39 970000>,
-> +			<0x3a 980000>,
-> +			<0x3b 990000>,
-> +			<0x3c 1000000>,
-> +			<0x3d 1010000>,
-> +			<0x3e 1020000>,
-> +			<0x3f 1030000>,
-> +			<0x40 1040000>,
-> +			<0x41 1050000>,
-> +			<0x42 1060000>,
-> +			<0x43 1070000>,
-> +			<0x44 1080000>,
-> +			<0x45 1090000>,
-> +			<0x46 1100000>,
-> +			<0x47 1110000>,
-> +			<0x48 1120000>,
-> +			<0x49 1130000>,
-> +			<0x4a 1140000>,
-> +			<0x4b 1150000>,
-> +			<0x4c 1160000>,
-> +			<0x4d 1170000>,
-> +			<0x4e 1180000>,
-> +			<0x4f 1190000>,
-> +			<0x50 1200000>,
-> +			<0x51 1210000>,
-> +			<0x52 1220000>,
-> +			<0x53 1230000>,
-> +			<0x54 1240000>,
-> +			<0x55 1250000>,
-> +			<0x56 1260000>,
-> +			<0x57 1270000>,
-> +			<0x58 1280000>,
-> +			<0x59 1290000>,
-> +			<0x5a 1300000>,
-> +			<0x5b 1310000>,
-> +			<0x5c 1320000>,
-> +			<0x5d 1330000>,
-> +			<0x5e 1340000>,
-> +			<0x5f 1350000>,
-> +			<0x60 1360000>,
-> +			<0x61 1370000>,
-> +			<0x62 1380000>,
-> +			<0x63 1390000>,
-> +			<0x64 1400000>;
- > ...
+If CONFIG_HAVE_MEMORYLESS_NODES is disabled, cpu_to_mem()/numa_mem_id()
+is the same as cpu_to_node()/numa_node_id().
+
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+---
+ drivers/thermal/intel_powerclamp.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index 95cb7fc20e17..9d9be8cd1b50 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -531,7 +531,7 @@ static int start_power_clamp(void)
+ 
+ 		thread = kthread_create_on_node(clamp_thread,
+ 						(void *) cpu,
+-						cpu_to_node(cpu),
++						cpu_to_mem(cpu),
+ 						"kidle_inject/%ld", cpu);
+ 		/* bind to cpu here */
+ 		if (likely(!IS_ERR(thread))) {
+@@ -582,7 +582,7 @@ static int powerclamp_cpu_callback(struct notifier_block *nfb,
+ 	case CPU_ONLINE:
+ 		thread = kthread_create_on_node(clamp_thread,
+ 						(void *) cpu,
+-						cpu_to_node(cpu),
++						cpu_to_mem(cpu),
+ 						"kidle_inject/%lu", cpu);
+ 		if (likely(!IS_ERR(thread))) {
+ 			kthread_bind(thread, cpu);
+-- 
+1.7.10.4
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
