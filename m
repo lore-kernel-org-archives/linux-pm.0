@@ -1,65 +1,78 @@
-From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH 01/13] clk: tegra: Add binding for the Tegra124 DFLL clocksource
-Date: Fri, 11 Jul 2014 20:21:27 +0300
-Message-ID: <53C01D17.2050906@nvidia.com>
-References: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com>	<1405028569-14253-2-git-send-email-ttynkkynen@nvidia.com>	<CAL1qeaFF0ZpUFovxTuLXrBPRg2Lbf-754Z=ztD5HFZPbfnDsAw@mail.gmail.com>	<53C01558.3090607@nvidia.com> <CAL1qeaHETQ7kSGNjPiwi_9WNMtr9qZp0KwjZCCxY29+_N4AcuA@mail.gmail.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH 2/2] cpufreq: ondemand: Eliminate the deadband effect
+Date: Fri, 11 Jul 2014 20:29:57 +0300
+Message-ID: <53C01F15.2090702@semaphore.gr>
+References: <1404147574-17422-1-git-send-email-stratosk@semaphore.gr> <1404147574-17422-3-git-send-email-stratosk@semaphore.gr> <20140711165710.GA18033@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAL1qeaHETQ7kSGNjPiwi_9WNMtr9qZp0KwjZCCxY29+_N4AcuA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Andrew Bresticker <abrestic-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from sema.semaphore.gr ([78.46.194.137]:60019 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752072AbaGKRaA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Jul 2014 13:30:00 -0400
+In-Reply-To: <20140711165710.GA18033@amd.pavel.ucw.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+Hi Pavel!
 
-
-On 11/07/14 20:08, Andrew Bresticker wrote:
-> On Fri, Jul 11, 2014 at 9:48 AM, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+On 11/07/2014 07:57 =CE=BC=CE=BC, Pavel Machek wrote:
+> Hi!
+>=20
+>> Tested on Intel i7-3770 CPU @ 3.40GHz and on ARM quad core 1500MHz K=
+rait
+>> (Android smartphone).
+>> Benchmarks on Intel i7 shows a performance improvement on low and me=
+dium
+>> work loads with lower power consumption. Specifics:
 >>
->>
->> On 11/07/14 19:28, Andrew Bresticker wrote:
->>>
->>> On Thu, Jul 10, 2014 at 2:42 PM, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->>> wrote:
->>>>
->>>> The DFLL is the main clocksource for the fast CPU cluster on Tegra124
->>>> and also provides automatic CPU rail voltage scaling as well. The DFLL
->>>> is a separate IP block from the usual Tegra124 clock-and-reset
->>>> controller, so it gets its own node in the device tree.
->>>
->>>
->>>> diff --git
->>>> a/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
->>>> b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
->>>
->>>
->>>> +- nvidia,pmic-voltage-table: Array of 2-tuples.  Each entry should have
->>>> the
->>>> +  form <register-value voltage-in-uV>, indicating the register value
->>>> that
->>>> +  needs to be programmed to the PMIC for changing the VDD_CPU voltage to
->>>> +  the specified voltage. The table must be in ascending order by the
->>>> voltage.
->>>
->>>
->>> Instead of listing the register values for each voltage in the DT,
->>> can't you use regulator_list_voltage() to create this map?
->>>
->>
->> I don't see a way to get the register values that way, unless we assume that
->> the mapping is linear and doesn't have holes.
->
-> Hmm... I guess if you don't assume it's linear and continuous you'd
-> have to iterate over all 256 selectors.
->
+>> Phoronix Linux Kernel Compilation 3.1:
+>> Time: -0.40%, energy: -0.07%
+>> Phoronix Apache:
+>> Time: -4.98%, energy: -2.35%
+>> Phoronix FFMPEG:
+>> Time: -6.29%, energy: -4.02%
+>=20
+> Hmm. Intel i7 should be race-to-idle machine. So basically rule like
+> if (load > 0) go to max frequency else go to lowest frequency would d=
+o
+> the right thing in your test, right?
 
-I don't think we can assume that each selector maps to a concrete 
-register value, though I'm not sure. include/linux/regulator/driver.h 
-documents for @list_voltage "Selectors range from zero to one less 
-regulator_desc.n_voltages." but maybe the consumer API could take 
-different values.
+I don't think that "if (load > 0) go to max" will work even on i7.
+=46or low load this will have impact on energy consumption.
+On my tests, a simple mp3 decoding (very low load on my machine) have n=
+o
+difference with and without this patch.
 
--- 
-nvpublic
+> So... should we do that, or do we need better benchmark?
+
+I'm sorry. I'm not sure I understood exactly what do you mean by "bette=
+r
+benchmark".
+Of course, we should do as many benchmarks as we can.
+I usually do these 5 sets of benchmarks on my i7 that IMHO give a good
+indication about the changes in different CPU loads.
+
+1) Linux kernel compilation (about 85% busy CPU)
+2) Apache (about 32% busy CPU)
+3) ffmpeg (about 24% busy CPU)
+4) mp3 decoding (about 0.3% CPU)
+5) Idle system (about 0.06% CPU)
+
+The patch was also tested on a Android smartphone (kernel 3.4). The ker=
+nel
+distributed to 1000+ users.
+Unfortunately I have no benchmarks, but no regressions reported on
+consumption. Actually, there reports for better performance and
+lower power consumption, but of course we can't rely on these reports. =
+:)
+
+
+Thanks for your comments!
+
+Stratos
+
+
