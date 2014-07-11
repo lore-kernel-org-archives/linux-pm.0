@@ -1,74 +1,151 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: A question about PCI suspend-resume functionallity
-Date: Thu, 10 Jul 2014 16:12:14 -0600
-Message-ID: <CAErSpo5hT6e1vevY+fCake6axEGQCSajtm02Faf_GBg9U652Xg@mail.gmail.com>
-References: <4712771.pPjooVqFXc@vostro.rjw.lan> <2305679.jnRnK08iSm@vostro.rjw.lan>
- <CAErSpo5+sGgYpYnF2GzO7Vu9hxJegS025DyYBTkXqgzBOKWE8w@mail.gmail.com> <3238200.k7ZdWYUy1n@vostro.rjw.lan>
+From: "Bu, Yitian" <ybu@qti.qualcomm.com>
+Subject: Re: [PATCH V2] cpufreq: move policy kobj to policy->cpu at resume
+Date: Fri, 11 Jul 2014 00:16:37 +0000
+Message-ID: <3D957836-276E-4B8D-B1A7-ABAFFFCE2242@qti.qualcomm.com>
+References: <1eff59d9b51f8ade67bc1cf9f10683f9463ec9f6.1404996041.git.viresh.kumar@linaro.org>
+ <D51F586F-EA6C-4BAF-8CFC-8E7BB5719423@qti.qualcomm.com>,<53BEE8D8.6080103@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <3238200.k7ZdWYUy1n@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Igor Bezukh <Igor@galilsoft.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <53BEE8D8.6080103@codeaurora.org>
+Content-Language: zh-CN
+Sender: stable-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arvind.chauhan@arm.com" <arvind.chauhan@arm.com>, "srivatsa@mit.edu" <srivatsa@mit.edu>, Stable <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 10, 2014 at 5:39 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, July 09, 2014 01:24:20 PM Bjorn Helgaas wrote:
->> On Wed, Jul 9, 2014 at 10:35 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Wednesday, July 09, 2014 09:55:24 AM Bjorn Helgaas wrote:
->> >> On Wed, Jul 9, 2014 at 8:18 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
->> >> > On Wed, 9 Jul 2014, Rafael J. Wysocki wrote:
->> >> >
->> >> >> On Tuesday, July 08, 2014 02:47:03 PM Bjorn Helgaas wrote:
->> >> >> > [+cc linux-pm]
->> >> >> >
->> >> >> > On Tue, Jul 8, 2014 at 9:39 AM, Igor Bezukh <Igor@galilsoft.com> wrote:
->> >> >> > > Hi,
->> >> >> > >
->> >> >> > >
->> >> >> > > We are testing Intel Gigabit adapter driver (igb) under Fedora 20, kernel 3.14.4 for the following use-case:
->> >> >> > >
->> >> >> > > (*) Adapter is connected to the PCIE slot
->> >> >> > > (*) We put the system under suspend by running pm-suspend from user-space
->> >> >> > > (*) Remove the adapter from the PCIE slot
->> >> >> > > (*) Wake up the system
->> >> >> > >
->> >> >> > > Currenlty, we got kernel panics and the system got stuck.
->> >> >> > >
->> >> >> > > My question is - does the PCI subsystem logic calls the driver remove function when driver resume function returns with error code?
->> >> >> > >
->> >> >> > > Or should I implement the call to igb_remove from igb_resume in the Intel driver?
->> >>
->> >> >> ...
->> >> >> The driver's system resume callbacks need to be able to cope with
->> >> >> missing devices.
->> >>
->> >> Based on this, it sounds like igb_resume() should call igb_remove()
->> >> when it figures out the device is missing.
->> >
->> > I wouldn't say so.  igb_resume() should not crash when the device is missing
->> > and should just handle that situation cleanly.  Obviously it is not its role
->> > to remove the device from the hierarchy.
->>
->> OK, that makes sense.
->>
->> However, I don't know of anything in the PCI core that will notice
->> that the device has disappeared, so I doubt it will be removed from
->> the hierarchy.
->
-> If we don't get a notification via ACPI or PCIe hotplug or anything,
-> then no, it won't be removed automatically.
->
-> However, it still can be removed manually via sysfs, can't it?
-
-Yes, I would think so.  So I guess there's a workaround at least.
-
-Igor, can you test this scenario (after fixing igb_resume() so it
-doesn't crash when the device is missing)?  I.e., suspend the system,
-remove the adapter, resume the system, then do an "lspci" to see if
-the kernel thinks the adapter is still there, then put an adapter in
-the slot again (either hot-add if the the slot supports it, or
-suspend/add/resume)?
-
-Bjorn
+DQoNCj4g1NogMjAxNMTqN9TCMTHI1aOsMzoyNqOsIlNhcmF2YW5hIEthbm5hbiIgPHNrYW5uYW5A
+Y29kZWF1cm9yYS5vcmc+INC0tcCjug0KPiANCj4+IE9uIDA3LzEwLzIwMTQgMDg6MTIgQU0sIEJ1
+LCBZaXRpYW4gd3JvdGU6DQo+PiANCj4+IA0KPj4+INTaIDIwMTTE6jfUwjEwyNWjrDIwOjQxo6wi
+VmlyZXNoIEt1bWFyIiA8dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+INC0tcCjug0KPj4+IA0KPj4+
+IFRoaXMgaXMgb25seSByZWxldmFudCB0byBpbXBsZW1lbnRhdGlvbnMgd2l0aCBtdWx0aXBsZSBj
+bHVzdGVycywgd2hlcmUgY2x1c3RlcnMNCj4+PiBoYXZlIHNlcGFyYXRlIGNsb2NrIGxpbmVzIGJ1
+dCBhbGwgQ1BVcyB3aXRoaW4gYSBjbHVzdGVyIHNoYXJlIGl0Lg0KPj4+IA0KPj4+IENvbnNpZGVy
+IGEgZHVhbCBjbHVzdGVyIHBsYXRmb3JtIHdpdGggMiBjb3JlcyBwZXIgY2x1c3Rlci4gRHVyaW5n
+IHN1c3BlbmQgd2UNCj4+PiBzdGFydCBvZmZsaW5pbmcgQ1BVcyBmcm9tIDEgdG8gMy4gV2hlbiBD
+UFUyIGlzIHJlbW92ZSwgcG9saWN5LT5rb2JqIHdvdWxkIGJlDQo+Pj4gbW92ZWQgdG8gQ1BVMyBh
+bmQgd2hlbiBDUFUzIGdvZXMgZG93biB3ZSB3b3VsZG4ndCBmcmVlIHBvbGljeSBvciBpdHMga29i
+ai4NCj4+PiANCj4+PiBOb3cgb24gcmVzdW1lLCB3ZSB3aWxsIGdldCBDUFUyIGJlZm9yZSBDUFUz
+IGFuZCB3aWxsIGNhbGwgX19jcHVmcmVxX2FkZF9kZXYoKS4NCj4+PiBXZSB3aWxsIHJlY292ZXIg
+dGhlIG9sZCBwb2xpY3kgYW5kIHVwZGF0ZSBwb2xpY3ktPmNwdSBmcm9tIDMgdG8gMiBmcm9tDQo+
+Pj4gdXBkYXRlX3BvbGljeV9jcHUoKS4NCj4+PiANCj4+PiBCdXQgdGhlIGtvYmogaXMgc3RpbGwg
+dGllZCB0byBDUFUzIGFuZCB3YXNuJ3QgbW92ZWQgdG8gQ1BVMi4gV2Ugd291bGRuJ3QgY3JlYXRl
+DQo+Pj4gYSBsaW5rIGZvciBDUFUyLCBidXQgd291bGQgdHJ5IHRoYXQgd2hpbGUgYnJpbmdpbmcg
+Q1BVMyBvbmxpbmUuIFdoaWNoIHdpbGwNCj4+PiByZXBvcnQgZXJyb3JzIGFzIENQVTMgYWxyZWFk
+eSBoYXMga29iaiBhc3NpZ25lZCB0byBpdC4NCj4+PiANCj4+PiBUaGlzIGJ1ZyBnb3QgaW50cm9k
+dWNlZCB3aXRoIGNvbW1pdCA0MmY5MjFhLCB3aGljaCBvdmVybG9va2VkIHRoaXMgc2NlbmFyaW8u
+DQo+Pj4gDQo+Pj4gVG8gZml4IHRoaXMsIGxldHMgbW92ZSBrb2JqIHRvIHRoZSBuZXcgcG9saWN5
+LT5jcHUgd2hpbGUgYnJpbmdpbmcgZmlyc3QgQ1BVIG9mIGENCj4+PiBjbHVzdGVyIGJhY2suIFdl
+IGFscmVhZHkgaGF2ZSB1cGRhdGVfcG9saWN5X2NwdSgpIHJvdXRpbmUgd2hpY2ggY2FuIGJlIHVw
+ZGF0ZWQNCj4+PiB3aXRoIHRoaXMgY2hhbmdlLiBUaGF0IHdvdWxkIGdldCByaWQgb2YgdGhlIGNw
+dWZyZXFfbm9taW5hdGVfbmV3X3BvbGljeV9jcHUoKSBhcw0KPj4+IHVwZGF0ZV9wb2xpY3lfY3B1
+KCkgaXMgYWxzbyBjYWxsZWQgb24gQ1BVIHJlbW92YWwuDQo+Pj4gDQo+Pj4gVG8gYWNoaWV2ZSB0
+aGF0IHdlIGFkZCBhbm90aGVyIHBhcmFtZXRlciB0byB1cGRhdGVfcG9saWN5X2NwdSgpIGFzIGNw
+dV9kZXYgaXMNCj4+PiBwcmVzZW50IHdpdGggYm90aCB0aGUgY2FsbGVycy4NCj4+PiANCj4+PiBG
+aXhlczogKCI0MmY5MjFhIGNwdWZyZXE6IHJlbW92ZSBzeXNmcyBmaWxlcyBmb3IgQ1BVcyB3aGlj
+aCBmYWlsZWQgdG8gY29tZSBiYWNrIGFmdGVyIHJlc3VtZSIpDQo+Pj4gQ2M6IFN0YWJsZSA8c3Rh
+YmxlQHZnZXIua2VybmVsLm9yZz4gIyAzLjEzKw0KPj4+IFJlcG9ydGVkLWJ5OiBCdSBZaXRpYW4g
+PHlidUBxdGkucXVhbGNvbW0uY29tPg0KPj4+IFJlcG9ydGVkLWJ5OiBTYXJhdmFuYSBLYW5uYW4g
+PHNrYW5uYW5AY29kZWF1cm9yYS5vcmc+DQo+Pj4gU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFy
+IDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4NCj4+PiAtLS0NCj4+PiBWMS0+VjI6IE1vdmUga29i
+amVjdF9tb3ZlKCkgY2FsbCB0byB1cGRhdGVfcG9saWN5X2NwdSgpLCB3aGljaCBtYWtlcw0KPj4+
+IGNwdWZyZXFfbm9taW5hdGVfbmV3X3BvbGljeV9jcHUoKSBhbG1vc3QgZW1wdHkuIFNvIHdlIHJl
+bW92ZSBpdCBjb21wbGV0ZWx5Lg0KPj4+IA0KPj4+IEBZaXRpYW46IFNvcnJ5LCBidXQgeW91IG5l
+ZWQgdG8gdGVzdCB0aGlzIGFnYWluIGFzIHRoZXJlIHdlcmUgZW5vdWdoDQo+Pj4gbW9kaWZpY2F0
+aW9ucyBpbiBWMi4NCj4+IA0KPj4gU29ycnksIEkgZG9uJ3QgaGF2ZSBsYXRlc3Qga2VybmVsIHRv
+IHRlc3QgdGhpcyBwYXRjaC4uLg0KPj4gV2hhdCBJIGFtIHVzaW5nIGlzIDMuMTAsIHRoaXMgcGF0
+Y2ggc2VlbXMgdG9vIGJpZyB0byBtYW51YWxseSBhcHBseSB0byAzLjEwLg0KPiANCj4gRXZlbiB0
+aG91Z2ggb3VyIGtlcm5lbCBpcyAzLjEwLCBJIGJlbGlldmUgd2UgaGF2ZSBwdWxsZWQgaW4gYWxs
+IGNwdWZyZXENCj4gdXAgdG8gMy4xNC4gU28sIGlmIHlvdSBoYXZlIHRpbWUsIHlvdSBjb3VsZCBw
+dWxsIGluIHJlc3Qgb2YgdGhlIGNwdWZyZXENCj4gY2hhbmdlcyBhbmQgdGVzdCBpdCBvdXQuIEZv
+ciBvdXIgdHJlZSwgbWF5YmUgdGhlIHYxIHBhdGNoIHdvdWxkIGJlDQo+IHN1ZmZpY2llbnQ/DQo+
+IA0KPiAtU2FyYXZhbmENCg0KVjEgcGF0Y2ggaXMgc3VmZmljaWVudCwgd2hpY2ggaXMgdGhlIHNh
+bWUgYXMgbXkgb3JpZ2luYWwgcGF0Y2guDQpJIGhhdmUgYWxyZWFkeSB2ZXJpZmllZCB0aGUgVjEg
+cGF0Y2ggYW5kIGl0IHdvcmtzLg0KDQoNCj4+IA0KPj4gDQo+Pj4gZHJpdmVycy9jcHVmcmVxL2Nw
+dWZyZXEuYyB8IDczICsrKysrKysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tDQo+Pj4gMSBmaWxlIGNoYW5nZWQsIDM2IGluc2VydGlvbnMoKyksIDM3IGRlbGV0aW9ucygt
+KQ0KPj4+IA0KPj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIGIvZHJp
+dmVycy9jcHVmcmVxL2NwdWZyZXEuYw0KPj4+IGluZGV4IDYyMjU5ZDIuLmM4MWQ5ZWM2IDEwMDY0
+NA0KPj4+IC0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMNCj4+PiArKysgYi9kcml2ZXJz
+L2NwdWZyZXEvY3B1ZnJlcS5jDQo+Pj4gQEAgLTEwNzYsMTAgKzEwNzYsMjAgQEAgc3RhdGljIHZv
+aWQgY3B1ZnJlcV9wb2xpY3lfZnJlZShzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkNCj4+
+PiAgICBrZnJlZShwb2xpY3kpOw0KPj4+IH0NCj4+PiANCj4+PiAtc3RhdGljIHZvaWQgdXBkYXRl
+X3BvbGljeV9jcHUoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3ksIHVuc2lnbmVkIGludCBj
+cHUpDQo+Pj4gK3N0YXRpYyBpbnQgdXBkYXRlX3BvbGljeV9jcHUoc3RydWN0IGNwdWZyZXFfcG9s
+aWN5ICpwb2xpY3ksIHVuc2lnbmVkIGludCBjcHUsDQo+Pj4gKyAgICAgICAgICAgICAgICAgc3Ry
+dWN0IGRldmljZSAqY3B1X2RldikNCj4+PiB7DQo+Pj4gKyAgICBpbnQgcmV0Ow0KPj4+ICsNCj4+
+PiAgICBpZiAoV0FSTl9PTihjcHUgPT0gcG9saWN5LT5jcHUpKQ0KPj4+IC0gICAgICAgIHJldHVy
+bjsNCj4+PiArICAgICAgICByZXR1cm4gMDsNCj4+PiArDQo+Pj4gKyAgICAvKiBNb3ZlIGtvYmpl
+Y3QgdG8gdGhlIG5ldyBwb2xpY3ktPmNwdSAqLw0KPj4+ICsgICAgcmV0ID0ga29iamVjdF9tb3Zl
+KCZwb2xpY3ktPmtvYmosICZjcHVfZGV2LT5rb2JqKTsNCj4+PiArICAgIGlmIChyZXQpIHsNCj4+
+PiArICAgICAgICBwcl9lcnIoIiVzOiBGYWlsZWQgdG8gbW92ZSBrb2JqOiAlZFxuIiwgX19mdW5j
+X18sIHJldCk7DQo+Pj4gKyAgICAgICAgcmV0dXJuIHJldDsNCj4+PiArICAgIH0NCj4+PiANCj4+
+PiAgICBkb3duX3dyaXRlKCZwb2xpY3ktPnJ3c2VtKTsNCj4+PiANCj4+PiBAQCAtMTA5MCw2ICsx
+MTAwLDggQEAgc3RhdGljIHZvaWQgdXBkYXRlX3BvbGljeV9jcHUoc3RydWN0IGNwdWZyZXFfcG9s
+aWN5ICpwb2xpY3ksIHVuc2lnbmVkIGludCBjcHUpDQo+Pj4gDQo+Pj4gICAgYmxvY2tpbmdfbm90
+aWZpZXJfY2FsbF9jaGFpbigmY3B1ZnJlcV9wb2xpY3lfbm90aWZpZXJfbGlzdCwNCj4+PiAgICAg
+ICAgICAgIENQVUZSRVFfVVBEQVRFX1BPTElDWV9DUFUsIHBvbGljeSk7DQo+Pj4gKw0KPj4+ICsg
+ICAgcmV0dXJuIDA7DQo+Pj4gfQ0KPj4+IA0KPj4+IHN0YXRpYyBpbnQgX19jcHVmcmVxX2FkZF9k
+ZXYoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3Qgc3Vic3lzX2ludGVyZmFjZSAqc2lmKQ0KPj4+
+IEBAIC0xMTU0LDcgKzExNjYsNyBAQCBzdGF0aWMgaW50IF9fY3B1ZnJlcV9hZGRfZGV2KHN0cnVj
+dCBkZXZpY2UgKmRldiwgc3RydWN0IHN1YnN5c19pbnRlcmZhY2UgKnNpZikNCj4+PiAgICAgKiBi
+eSBpbnZva2luZyB1cGRhdGVfcG9saWN5X2NwdSgpLg0KPj4+ICAgICAqLw0KPj4+ICAgIGlmIChy
+ZWNvdmVyX3BvbGljeSAmJiBjcHUgIT0gcG9saWN5LT5jcHUpDQo+Pj4gLSAgICAgICAgdXBkYXRl
+X3BvbGljeV9jcHUocG9saWN5LCBjcHUpOw0KPj4+ICsgICAgICAgIFdBUk5fT04odXBkYXRlX3Bv
+bGljeV9jcHUocG9saWN5LCBjcHUsIGRldikpOw0KPj4+ICAgIGVsc2UNCj4+PiAgICAgICAgcG9s
+aWN5LT5jcHUgPSBjcHU7DQo+Pj4gDQo+Pj4gQEAgLTEzMDcsMzggKzEzMTksMTEgQEAgc3RhdGlj
+IGludCBjcHVmcmVxX2FkZF9kZXYoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3Qgc3Vic3lzX2lu
+dGVyZmFjZSAqc2lmKQ0KPj4+ICAgIHJldHVybiBfX2NwdWZyZXFfYWRkX2RldihkZXYsIHNpZik7
+DQo+Pj4gfQ0KPj4+IA0KPj4+IC1zdGF0aWMgaW50IGNwdWZyZXFfbm9taW5hdGVfbmV3X3BvbGlj
+eV9jcHUoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3ksDQo+Pj4gLSAgICAgICAgICAgICAg
+ICAgICAgICAgdW5zaWduZWQgaW50IG9sZF9jcHUpDQo+Pj4gLXsNCj4+PiAtICAgIHN0cnVjdCBk
+ZXZpY2UgKmNwdV9kZXY7DQo+Pj4gLSAgICBpbnQgcmV0Ow0KPj4+IC0NCj4+PiAtICAgIC8qIGZp
+cnN0IHNpYmxpbmcgbm93IG93bnMgdGhlIG5ldyBzeXNmcyBkaXIgKi8NCj4+PiAtICAgIGNwdV9k
+ZXYgPSBnZXRfY3B1X2RldmljZShjcHVtYXNrX2FueV9idXQocG9saWN5LT5jcHVzLCBvbGRfY3B1
+KSk7DQo+Pj4gLQ0KPj4+IC0gICAgc3lzZnNfcmVtb3ZlX2xpbmsoJmNwdV9kZXYtPmtvYmosICJj
+cHVmcmVxIik7DQo+Pj4gLSAgICByZXQgPSBrb2JqZWN0X21vdmUoJnBvbGljeS0+a29iaiwgJmNw
+dV9kZXYtPmtvYmopOw0KPj4+IC0gICAgaWYgKHJldCkgew0KPj4+IC0gICAgICAgIHByX2Vycigi
+JXM6IEZhaWxlZCB0byBtb3ZlIGtvYmo6ICVkXG4iLCBfX2Z1bmNfXywgcmV0KTsNCj4+PiAtDQo+
+Pj4gLSAgICAgICAgZG93bl93cml0ZSgmcG9saWN5LT5yd3NlbSk7DQo+Pj4gLSAgICAgICAgY3B1
+bWFza19zZXRfY3B1KG9sZF9jcHUsIHBvbGljeS0+Y3B1cyk7DQo+Pj4gLSAgICAgICAgdXBfd3Jp
+dGUoJnBvbGljeS0+cndzZW0pOw0KPj4+IC0NCj4+PiAtICAgICAgICByZXQgPSBzeXNmc19jcmVh
+dGVfbGluaygmY3B1X2Rldi0+a29iaiwgJnBvbGljeS0+a29iaiwNCj4+PiAtICAgICAgICAgICAg
+ICAgICAgICAiY3B1ZnJlcSIpOw0KPj4+IC0NCj4+PiAtICAgICAgICByZXR1cm4gLUVJTlZBTDsN
+Cj4+PiAtICAgIH0NCj4+PiAtDQo+Pj4gLSAgICByZXR1cm4gY3B1X2Rldi0+aWQ7DQo+Pj4gLX0N
+Cj4+PiAtDQo+Pj4gc3RhdGljIGludCBfX2NwdWZyZXFfcmVtb3ZlX2Rldl9wcmVwYXJlKHN0cnVj
+dCBkZXZpY2UgKmRldiwNCj4+PiAgICAgICAgICAgICAgICAgICAgc3RydWN0IHN1YnN5c19pbnRl
+cmZhY2UgKnNpZikNCj4+PiB7DQo+Pj4gICAgdW5zaWduZWQgaW50IGNwdSA9IGRldi0+aWQsIGNw
+dXM7DQo+Pj4gLSAgICBpbnQgbmV3X2NwdSwgcmV0Ow0KPj4+ICsgICAgaW50IHJldDsNCj4+PiAg
+ICB1bnNpZ25lZCBsb25nIGZsYWdzOw0KPj4+ICAgIHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9s
+aWN5Ow0KPj4+IA0KPj4+IEBAIC0xMzc4LDE0ICsxMzYzLDI4IEBAIHN0YXRpYyBpbnQgX19jcHVm
+cmVxX3JlbW92ZV9kZXZfcHJlcGFyZShzdHJ1Y3QgZGV2aWNlICpkZXYsDQo+Pj4gICAgaWYgKGNw
+dSAhPSBwb2xpY3ktPmNwdSkgew0KPj4+ICAgICAgICBzeXNmc19yZW1vdmVfbGluaygmZGV2LT5r
+b2JqLCAiY3B1ZnJlcSIpOw0KPj4+ICAgIH0gZWxzZSBpZiAoY3B1cyA+IDEpIHsNCj4+PiAtICAg
+ICAgICBuZXdfY3B1ID0gY3B1ZnJlcV9ub21pbmF0ZV9uZXdfcG9saWN5X2NwdShwb2xpY3ksIGNw
+dSk7DQo+Pj4gLSAgICAgICAgaWYgKG5ld19jcHUgPj0gMCkgew0KPj4+IC0gICAgICAgICAgICB1
+cGRhdGVfcG9saWN5X2NwdShwb2xpY3ksIG5ld19jcHUpOw0KPj4+ICsgICAgICAgIC8qIE5vbWlu
+YXRlIG5ldyBDUFUgKi8NCj4+PiArICAgICAgICBpbnQgbmV3X2NwdSA9IGNwdW1hc2tfYW55X2J1
+dChwb2xpY3ktPmNwdXMsIGNwdSk7DQo+Pj4gKyAgICAgICAgc3RydWN0IGRldmljZSAqY3B1X2Rl
+diA9IGdldF9jcHVfZGV2aWNlKG5ld19jcHUpOw0KPj4+IA0KPj4+IC0gICAgICAgICAgICBpZiAo
+IWNwdWZyZXFfc3VzcGVuZGVkKQ0KPj4+IC0gICAgICAgICAgICAgICAgcHJfZGVidWcoIiVzOiBw
+b2xpY3kgS29iamVjdCBtb3ZlZCB0byBjcHU6ICVkIGZyb206ICVkXG4iLA0KPj4+IC0gICAgICAg
+ICAgICAgICAgICAgICBfX2Z1bmNfXywgbmV3X2NwdSwgY3B1KTsNCj4+PiArICAgICAgICBzeXNm
+c19yZW1vdmVfbGluaygmY3B1X2Rldi0+a29iaiwgImNwdWZyZXEiKTsNCj4+PiArICAgICAgICBy
+ZXQgPSB1cGRhdGVfcG9saWN5X2NwdShwb2xpY3ksIG5ld19jcHUsIGNwdV9kZXYpOw0KPj4+ICsg
+ICAgICAgIGlmIChyZXQpIHsNCj4+PiArICAgICAgICAgICAgLyoNCj4+PiArICAgICAgICAgICAg
+ICogVG8gc3VwcmVzcyBjb21waWxhdGlvbiB3YXJuaW5nIGFib3V0IHJldHVybiB2YWx1ZSBvZg0K
+Pj4+ICsgICAgICAgICAgICAgKiBzeXNmc19jcmVhdGVfbGluaygpLg0KPj4+ICsgICAgICAgICAg
+ICAgKi8NCj4+PiArICAgICAgICAgICAgaW50IHRlbXA7DQo+Pj4gKw0KPj4+ICsgICAgICAgICAg
+ICAvKiBDcmVhdGUgbGluayBhZ2FpbiBpZiB3ZSBmYWlsZWQuICovDQo+Pj4gKyAgICAgICAgICAg
+IHRlbXAgPSBzeXNmc19jcmVhdGVfbGluaygmY3B1X2Rldi0+a29iaiwgJnBvbGljeS0+a29iaiwN
+Cj4+PiArICAgICAgICAgICAgICAgICAgICAgICAgICJjcHVmcmVxIik7DQo+Pj4gKyAgICAgICAg
+ICAgIHJldHVybiByZXQ7DQo+Pj4gICAgICAgIH0NCj4+PiArDQo+Pj4gKyAgICAgICAgaWYgKCFj
+cHVmcmVxX3N1c3BlbmRlZCkNCj4+PiArICAgICAgICAgICAgcHJfZGVidWcoIiVzOiBwb2xpY3kg
+S29iamVjdCBtb3ZlZCB0byBjcHU6ICVkIGZyb206ICVkXG4iLA0KPj4+ICsgICAgICAgICAgICAg
+ICAgIF9fZnVuY19fLCBuZXdfY3B1LCBjcHUpOw0KPj4+ICAgIH0gZWxzZSBpZiAoY3B1ZnJlcV9k
+cml2ZXItPnN0b3BfY3B1ICYmIGNwdWZyZXFfZHJpdmVyLT5zZXRwb2xpY3kpIHsNCj4+PiAgICAg
+ICAgY3B1ZnJlcV9kcml2ZXItPnN0b3BfY3B1KHBvbGljeSk7DQo+Pj4gICAgfQ0KPj4+IC0tIA0K
+Pj4+IDIuMC4wLnJjMg0KPiANCj4gDQo+IC0tIA0KPiBUaGUgUXVhbGNvbW0gSW5ub3ZhdGlvbiBD
+ZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIgb2YgdGhlIENvZGUgQXVyb3JhIEZvcnVtLA0KPiBob3N0
+ZWQgYnkgVGhlIExpbnV4IEZvdW5kYXRpb24NCg==
