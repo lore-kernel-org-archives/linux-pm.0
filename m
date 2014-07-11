@@ -1,37 +1,87 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v2 00/12] Remove mach-kirkwood
-Date: Fri, 11 Jul 2014 10:52:03 -0400
-Message-ID: <20140711145203.GD27706@htj.dyndns.org>
-References: <1405028192-9623-1-git-send-email-andrew@lunn.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-leds-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1405028192-9623-1-git-send-email-andrew@lunn.ch>
-Sender: linux-leds-owner@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Jason Cooper <jason@lakedaemon.net>, linux ARM <linux-arm-kernel@lists.infradead.org>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, Kishon Vijay Abraham I <kishon@ti.com>, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH Resend] cpufreq: cpu0: OPPs can be populated at runtime
+Date: Fri, 11 Jul 2014 20:24:19 +0530
+Message-ID: <ba4ef31af64ef475c050d51bd04f3a93f0efc402.1405090205.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:37529 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752193AbaGKOye (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Jul 2014 10:54:34 -0400
+Received: by mail-pd0-f176.google.com with SMTP id ft15so1519878pdb.7
+        for <linux-pm@vger.kernel.org>; Fri, 11 Jul 2014 07:54:34 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arvind.chauhan@arm.com, ttynkkynen@nvidia.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thu, Jul 10, 2014 at 11:36:20PM +0200, Andrew Lunn wrote:
-> This patchset removes arch/arm/mach-kirkwood.  This SoCs is now
-> supported in arch/arm/mach-mvebu using device tree.
-> 
-> V1 of this patchset also removed mach-dove. However it has been
-> decided to leave it alone for a while to aid some developers get out
-> of tree patches merged.
->                                                                          
-> Change the dependencies for a number of drivers, either to use
-> ARCH_MVEBU where the drivers are generic, or MACH_KIRKWOOD and where
-> the drivers are specific to the SoC.
-> 
-> Once Jason Cooper has Acked these patches, we would prefer that
-> individual subsystem maintainers take these patches through their own
-> trees.
+OPPs can be populated statically, via DT, or added at run time with
+dev_pm_opp_add().
 
-Please let me know when I can take the libata part.
+While this driver handles the first case correctly, it would fail to populate
+OPPs added at runtime. Because call to of_init_opp_table() would fail as there
+are no OPPs in DT and probe will return early.
 
-Thanks.
+To fix this, remove error checking and call dev_pm_opp_init_cpufreq_table()
+unconditionally.
 
+Update bindings as well.
+
+Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
+Tested-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Hi Rafael,
+
+This was earlier sent as part of: https://lkml.org/lkml/2014/7/1/358 series. But
+actually is an fix and can (should?) be pushed for 3.16.
+
+Rest of the patches from that series are cleanups/updates and so can go in
+3.17.
+
+Please see if you can take it for 3.16.
+
+ Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt | 6 ++++--
+ drivers/cpufreq/cpufreq-cpu0.c                             | 7 ++-----
+ 2 files changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+index f055515..366690c 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+@@ -8,10 +8,12 @@ Both required and optional properties listed below must be defined
+ under node /cpus/cpu@0.
+ 
+ Required properties:
+-- operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt
+-  for details
++- None
+ 
+ Optional properties:
++- operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt for
++  details. OPPs *must* be supplied either via DT, i.e. this property, or
++  populated at runtime.
+ - clock-latency: Specify the possible maximum transition latency for clock,
+   in unit of nanoseconds.
+ - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index ee1ae30..86beda9 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -152,11 +152,8 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 		goto out_put_reg;
+ 	}
+ 
+-	ret = of_init_opp_table(cpu_dev);
+-	if (ret) {
+-		pr_err("failed to init OPP table: %d\n", ret);
+-		goto out_put_clk;
+-	}
++	/* OPPs might be populated at runtime, don't check for error here */
++	of_init_opp_table(cpu_dev);
+ 
+ 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+ 	if (ret) {
 -- 
-tejun
+2.0.0.rc2
+
