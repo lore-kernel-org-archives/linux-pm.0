@@ -1,32 +1,61 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 12/13] cpufreq: Add cpufreq driver for Tegra124
-Date: Fri, 11 Jul 2014 10:05:56 +0530
-Message-ID: <CAKohpom9ORXFiUU4=V+CxgN0ZOFLMEhEjHiU8HsYUYDybNXgHQ@mail.gmail.com>
-References: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com>
-	<1405028569-14253-13-git-send-email-ttynkkynen@nvidia.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: move policy kobj to policy->cpu at resume
+Date: Fri, 11 Jul 2014 11:31:49 +0530
+Message-ID: <CAKohpo=BFtwGoj5WhnahvETGrosRkwjBYPWGfn0FBdskJP=XXg@mail.gmail.com>
+References: <3b19a388891fe997c6c7bc14463453c27312edfa.1404968266.git.viresh.kumar@linaro.org>
+	<53BE75EE.6010200@mit.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1405028569-14253-13-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <53BE75EE.6010200@mit.edu>
+Sender: stable-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa@mit.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Saravana Kannan <skannan@codeaurora.org>, "Bu, Yitian" <ybu@qti.qualcomm.com>, Stable <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Tuomas,
-
-On 11 July 2014 03:12, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> Add a new cpufreq driver for Tegra124. Instead of using the PLLX as
-> the CPU clocksource, switch immediately to the DFLL. It allows the use
-> of higher clock rates, and will automatically scale the CPU voltage as
-> well. We also rely on the DFLL driver to determine the CPU clock
-> frequencies that the chip supports, so that we can directly build a
-> cpufreq table with the OPP library helper dev_pm_opp_init_cpufreq_table.
+On 10 July 2014 16:45, Srivatsa S. Bhat <srivatsa@mit.edu> wrote:
+> Looks good to me. But I think it would be better to move the invocation of
+> kobject_move() to update_policy_cpu() itself, so that update_policy_cpu()
+> will do all the work involved in updating the policy->cpu, as its name suggests.
 >
-> This driver is a completely independent of the old cpufreq driver
-> (tegra-cpufreq), which is only used on Tegra20.
+> With that small nit,
 >
-> Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> Reviewed-by: Srivatsa S. Bhat <srivatsa@mit.edu>
 
-Please reuse cpufreq-cpu0 instead of adding a new driver. Similar
-is being adopted by all platforms now: krait, mvebu, etc..
+Hi Rafael,
+
+I had a chat with Srivatsa about this patch and the V2 version which
+people aren't able to test yet.
+
+I proposed that we take this patch as is and hold V2 for some time.
+- V2 wouldn't apply cleanly to stable kernels for sure
+- V2 isn't yet tested and V1 is.
+- Saravana already proposed a patch which would remove most of what
+  V2 is adding: http://www.spinics.net/lists/arm-kernel/msg346604.html
+
+Our chats:
+
+<vireshk> srivatsa, http://www.spinics.net/lists/arm-kernel/msg346604.html
+<srivatsa> vireshk, thanks for the pointer.. will try to take a look
+by tonight..
+
+<vireshk> srivatsa, Because saravana is actually looking to change much of
+                the stuff, what about dropping the V2 fix that I sent
+yesterday and
+                take V1 only for now?
+<vireshk> srivatsa, As V1 would apply cleanly over stable kernels as well
+<srivatsa> vireshk, sure, no problem... perhaps you can make the code
+                 reorganization of the kobject_move as a separate
+patch and submit
+                 it for merge window instead of -rc
+<vireshk> srivatsa, I was even thinking of that as well
+<vireshk> Have two patches, only first one for rc and second one for
+next release
+<vireshk> srivatsa, But the second patch would be overwritten by Saravanna,
+                so might not be of any use
+<srivatsa> vireshk, ah, i see.. in that case, we can hold off on the
+second patch for
+                 now.. just v1 should do..
+
+
+What do you say?
