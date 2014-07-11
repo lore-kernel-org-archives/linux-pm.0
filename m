@@ -1,151 +1,589 @@
-From: "Bu, Yitian" <ybu@qti.qualcomm.com>
-Subject: Re: [PATCH V2] cpufreq: move policy kobj to policy->cpu at resume
-Date: Fri, 11 Jul 2014 00:16:37 +0000
-Message-ID: <3D957836-276E-4B8D-B1A7-ABAFFFCE2242@qti.qualcomm.com>
-References: <1eff59d9b51f8ade67bc1cf9f10683f9463ec9f6.1404996041.git.viresh.kumar@linaro.org>
- <D51F586F-EA6C-4BAF-8CFC-8E7BB5719423@qti.qualcomm.com>,<53BEE8D8.6080103@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <53BEE8D8.6080103@codeaurora.org>
-Content-Language: zh-CN
-Sender: stable-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arvind.chauhan@arm.com" <arvind.chauhan@arm.com>, "srivatsa@mit.edu" <srivatsa@mit.edu>, Stable <stable@vger.kernel.org>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: [PATCH v2] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
+Date: Thu, 10 Jul 2014 21:18:07 -0700
+Message-ID: <1405052287-4744-1-git-send-email-skannan@codeaurora.org>
+References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1404959850-11617-1-git-send-email-skannan@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Poynor <toddpoynor@google.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Saravana Kannan <skannan@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4g1NogMjAxNMTqN9TCMTHI1aOsMzoyNqOsIlNhcmF2YW5hIEthbm5hbiIgPHNrYW5uYW5A
-Y29kZWF1cm9yYS5vcmc+INC0tcCjug0KPiANCj4+IE9uIDA3LzEwLzIwMTQgMDg6MTIgQU0sIEJ1
-LCBZaXRpYW4gd3JvdGU6DQo+PiANCj4+IA0KPj4+INTaIDIwMTTE6jfUwjEwyNWjrDIwOjQxo6wi
-VmlyZXNoIEt1bWFyIiA8dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+INC0tcCjug0KPj4+IA0KPj4+
-IFRoaXMgaXMgb25seSByZWxldmFudCB0byBpbXBsZW1lbnRhdGlvbnMgd2l0aCBtdWx0aXBsZSBj
-bHVzdGVycywgd2hlcmUgY2x1c3RlcnMNCj4+PiBoYXZlIHNlcGFyYXRlIGNsb2NrIGxpbmVzIGJ1
-dCBhbGwgQ1BVcyB3aXRoaW4gYSBjbHVzdGVyIHNoYXJlIGl0Lg0KPj4+IA0KPj4+IENvbnNpZGVy
-IGEgZHVhbCBjbHVzdGVyIHBsYXRmb3JtIHdpdGggMiBjb3JlcyBwZXIgY2x1c3Rlci4gRHVyaW5n
-IHN1c3BlbmQgd2UNCj4+PiBzdGFydCBvZmZsaW5pbmcgQ1BVcyBmcm9tIDEgdG8gMy4gV2hlbiBD
-UFUyIGlzIHJlbW92ZSwgcG9saWN5LT5rb2JqIHdvdWxkIGJlDQo+Pj4gbW92ZWQgdG8gQ1BVMyBh
-bmQgd2hlbiBDUFUzIGdvZXMgZG93biB3ZSB3b3VsZG4ndCBmcmVlIHBvbGljeSBvciBpdHMga29i
-ai4NCj4+PiANCj4+PiBOb3cgb24gcmVzdW1lLCB3ZSB3aWxsIGdldCBDUFUyIGJlZm9yZSBDUFUz
-IGFuZCB3aWxsIGNhbGwgX19jcHVmcmVxX2FkZF9kZXYoKS4NCj4+PiBXZSB3aWxsIHJlY292ZXIg
-dGhlIG9sZCBwb2xpY3kgYW5kIHVwZGF0ZSBwb2xpY3ktPmNwdSBmcm9tIDMgdG8gMiBmcm9tDQo+
-Pj4gdXBkYXRlX3BvbGljeV9jcHUoKS4NCj4+PiANCj4+PiBCdXQgdGhlIGtvYmogaXMgc3RpbGwg
-dGllZCB0byBDUFUzIGFuZCB3YXNuJ3QgbW92ZWQgdG8gQ1BVMi4gV2Ugd291bGRuJ3QgY3JlYXRl
-DQo+Pj4gYSBsaW5rIGZvciBDUFUyLCBidXQgd291bGQgdHJ5IHRoYXQgd2hpbGUgYnJpbmdpbmcg
-Q1BVMyBvbmxpbmUuIFdoaWNoIHdpbGwNCj4+PiByZXBvcnQgZXJyb3JzIGFzIENQVTMgYWxyZWFk
-eSBoYXMga29iaiBhc3NpZ25lZCB0byBpdC4NCj4+PiANCj4+PiBUaGlzIGJ1ZyBnb3QgaW50cm9k
-dWNlZCB3aXRoIGNvbW1pdCA0MmY5MjFhLCB3aGljaCBvdmVybG9va2VkIHRoaXMgc2NlbmFyaW8u
-DQo+Pj4gDQo+Pj4gVG8gZml4IHRoaXMsIGxldHMgbW92ZSBrb2JqIHRvIHRoZSBuZXcgcG9saWN5
-LT5jcHUgd2hpbGUgYnJpbmdpbmcgZmlyc3QgQ1BVIG9mIGENCj4+PiBjbHVzdGVyIGJhY2suIFdl
-IGFscmVhZHkgaGF2ZSB1cGRhdGVfcG9saWN5X2NwdSgpIHJvdXRpbmUgd2hpY2ggY2FuIGJlIHVw
-ZGF0ZWQNCj4+PiB3aXRoIHRoaXMgY2hhbmdlLiBUaGF0IHdvdWxkIGdldCByaWQgb2YgdGhlIGNw
-dWZyZXFfbm9taW5hdGVfbmV3X3BvbGljeV9jcHUoKSBhcw0KPj4+IHVwZGF0ZV9wb2xpY3lfY3B1
-KCkgaXMgYWxzbyBjYWxsZWQgb24gQ1BVIHJlbW92YWwuDQo+Pj4gDQo+Pj4gVG8gYWNoaWV2ZSB0
-aGF0IHdlIGFkZCBhbm90aGVyIHBhcmFtZXRlciB0byB1cGRhdGVfcG9saWN5X2NwdSgpIGFzIGNw
-dV9kZXYgaXMNCj4+PiBwcmVzZW50IHdpdGggYm90aCB0aGUgY2FsbGVycy4NCj4+PiANCj4+PiBG
-aXhlczogKCI0MmY5MjFhIGNwdWZyZXE6IHJlbW92ZSBzeXNmcyBmaWxlcyBmb3IgQ1BVcyB3aGlj
-aCBmYWlsZWQgdG8gY29tZSBiYWNrIGFmdGVyIHJlc3VtZSIpDQo+Pj4gQ2M6IFN0YWJsZSA8c3Rh
-YmxlQHZnZXIua2VybmVsLm9yZz4gIyAzLjEzKw0KPj4+IFJlcG9ydGVkLWJ5OiBCdSBZaXRpYW4g
-PHlidUBxdGkucXVhbGNvbW0uY29tPg0KPj4+IFJlcG9ydGVkLWJ5OiBTYXJhdmFuYSBLYW5uYW4g
-PHNrYW5uYW5AY29kZWF1cm9yYS5vcmc+DQo+Pj4gU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFy
-IDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4NCj4+PiAtLS0NCj4+PiBWMS0+VjI6IE1vdmUga29i
-amVjdF9tb3ZlKCkgY2FsbCB0byB1cGRhdGVfcG9saWN5X2NwdSgpLCB3aGljaCBtYWtlcw0KPj4+
-IGNwdWZyZXFfbm9taW5hdGVfbmV3X3BvbGljeV9jcHUoKSBhbG1vc3QgZW1wdHkuIFNvIHdlIHJl
-bW92ZSBpdCBjb21wbGV0ZWx5Lg0KPj4+IA0KPj4+IEBZaXRpYW46IFNvcnJ5LCBidXQgeW91IG5l
-ZWQgdG8gdGVzdCB0aGlzIGFnYWluIGFzIHRoZXJlIHdlcmUgZW5vdWdoDQo+Pj4gbW9kaWZpY2F0
-aW9ucyBpbiBWMi4NCj4+IA0KPj4gU29ycnksIEkgZG9uJ3QgaGF2ZSBsYXRlc3Qga2VybmVsIHRv
-IHRlc3QgdGhpcyBwYXRjaC4uLg0KPj4gV2hhdCBJIGFtIHVzaW5nIGlzIDMuMTAsIHRoaXMgcGF0
-Y2ggc2VlbXMgdG9vIGJpZyB0byBtYW51YWxseSBhcHBseSB0byAzLjEwLg0KPiANCj4gRXZlbiB0
-aG91Z2ggb3VyIGtlcm5lbCBpcyAzLjEwLCBJIGJlbGlldmUgd2UgaGF2ZSBwdWxsZWQgaW4gYWxs
-IGNwdWZyZXENCj4gdXAgdG8gMy4xNC4gU28sIGlmIHlvdSBoYXZlIHRpbWUsIHlvdSBjb3VsZCBw
-dWxsIGluIHJlc3Qgb2YgdGhlIGNwdWZyZXENCj4gY2hhbmdlcyBhbmQgdGVzdCBpdCBvdXQuIEZv
-ciBvdXIgdHJlZSwgbWF5YmUgdGhlIHYxIHBhdGNoIHdvdWxkIGJlDQo+IHN1ZmZpY2llbnQ/DQo+
-IA0KPiAtU2FyYXZhbmENCg0KVjEgcGF0Y2ggaXMgc3VmZmljaWVudCwgd2hpY2ggaXMgdGhlIHNh
-bWUgYXMgbXkgb3JpZ2luYWwgcGF0Y2guDQpJIGhhdmUgYWxyZWFkeSB2ZXJpZmllZCB0aGUgVjEg
-cGF0Y2ggYW5kIGl0IHdvcmtzLg0KDQoNCj4+IA0KPj4gDQo+Pj4gZHJpdmVycy9jcHVmcmVxL2Nw
-dWZyZXEuYyB8IDczICsrKysrKysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tDQo+Pj4gMSBmaWxlIGNoYW5nZWQsIDM2IGluc2VydGlvbnMoKyksIDM3IGRlbGV0aW9ucygt
-KQ0KPj4+IA0KPj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIGIvZHJp
-dmVycy9jcHVmcmVxL2NwdWZyZXEuYw0KPj4+IGluZGV4IDYyMjU5ZDIuLmM4MWQ5ZWM2IDEwMDY0
-NA0KPj4+IC0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMNCj4+PiArKysgYi9kcml2ZXJz
-L2NwdWZyZXEvY3B1ZnJlcS5jDQo+Pj4gQEAgLTEwNzYsMTAgKzEwNzYsMjAgQEAgc3RhdGljIHZv
-aWQgY3B1ZnJlcV9wb2xpY3lfZnJlZShzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkNCj4+
-PiAgICBrZnJlZShwb2xpY3kpOw0KPj4+IH0NCj4+PiANCj4+PiAtc3RhdGljIHZvaWQgdXBkYXRl
-X3BvbGljeV9jcHUoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3ksIHVuc2lnbmVkIGludCBj
-cHUpDQo+Pj4gK3N0YXRpYyBpbnQgdXBkYXRlX3BvbGljeV9jcHUoc3RydWN0IGNwdWZyZXFfcG9s
-aWN5ICpwb2xpY3ksIHVuc2lnbmVkIGludCBjcHUsDQo+Pj4gKyAgICAgICAgICAgICAgICAgc3Ry
-dWN0IGRldmljZSAqY3B1X2RldikNCj4+PiB7DQo+Pj4gKyAgICBpbnQgcmV0Ow0KPj4+ICsNCj4+
-PiAgICBpZiAoV0FSTl9PTihjcHUgPT0gcG9saWN5LT5jcHUpKQ0KPj4+IC0gICAgICAgIHJldHVy
-bjsNCj4+PiArICAgICAgICByZXR1cm4gMDsNCj4+PiArDQo+Pj4gKyAgICAvKiBNb3ZlIGtvYmpl
-Y3QgdG8gdGhlIG5ldyBwb2xpY3ktPmNwdSAqLw0KPj4+ICsgICAgcmV0ID0ga29iamVjdF9tb3Zl
-KCZwb2xpY3ktPmtvYmosICZjcHVfZGV2LT5rb2JqKTsNCj4+PiArICAgIGlmIChyZXQpIHsNCj4+
-PiArICAgICAgICBwcl9lcnIoIiVzOiBGYWlsZWQgdG8gbW92ZSBrb2JqOiAlZFxuIiwgX19mdW5j
-X18sIHJldCk7DQo+Pj4gKyAgICAgICAgcmV0dXJuIHJldDsNCj4+PiArICAgIH0NCj4+PiANCj4+
-PiAgICBkb3duX3dyaXRlKCZwb2xpY3ktPnJ3c2VtKTsNCj4+PiANCj4+PiBAQCAtMTA5MCw2ICsx
-MTAwLDggQEAgc3RhdGljIHZvaWQgdXBkYXRlX3BvbGljeV9jcHUoc3RydWN0IGNwdWZyZXFfcG9s
-aWN5ICpwb2xpY3ksIHVuc2lnbmVkIGludCBjcHUpDQo+Pj4gDQo+Pj4gICAgYmxvY2tpbmdfbm90
-aWZpZXJfY2FsbF9jaGFpbigmY3B1ZnJlcV9wb2xpY3lfbm90aWZpZXJfbGlzdCwNCj4+PiAgICAg
-ICAgICAgIENQVUZSRVFfVVBEQVRFX1BPTElDWV9DUFUsIHBvbGljeSk7DQo+Pj4gKw0KPj4+ICsg
-ICAgcmV0dXJuIDA7DQo+Pj4gfQ0KPj4+IA0KPj4+IHN0YXRpYyBpbnQgX19jcHVmcmVxX2FkZF9k
-ZXYoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3Qgc3Vic3lzX2ludGVyZmFjZSAqc2lmKQ0KPj4+
-IEBAIC0xMTU0LDcgKzExNjYsNyBAQCBzdGF0aWMgaW50IF9fY3B1ZnJlcV9hZGRfZGV2KHN0cnVj
-dCBkZXZpY2UgKmRldiwgc3RydWN0IHN1YnN5c19pbnRlcmZhY2UgKnNpZikNCj4+PiAgICAgKiBi
-eSBpbnZva2luZyB1cGRhdGVfcG9saWN5X2NwdSgpLg0KPj4+ICAgICAqLw0KPj4+ICAgIGlmIChy
-ZWNvdmVyX3BvbGljeSAmJiBjcHUgIT0gcG9saWN5LT5jcHUpDQo+Pj4gLSAgICAgICAgdXBkYXRl
-X3BvbGljeV9jcHUocG9saWN5LCBjcHUpOw0KPj4+ICsgICAgICAgIFdBUk5fT04odXBkYXRlX3Bv
-bGljeV9jcHUocG9saWN5LCBjcHUsIGRldikpOw0KPj4+ICAgIGVsc2UNCj4+PiAgICAgICAgcG9s
-aWN5LT5jcHUgPSBjcHU7DQo+Pj4gDQo+Pj4gQEAgLTEzMDcsMzggKzEzMTksMTEgQEAgc3RhdGlj
-IGludCBjcHVmcmVxX2FkZF9kZXYoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3Qgc3Vic3lzX2lu
-dGVyZmFjZSAqc2lmKQ0KPj4+ICAgIHJldHVybiBfX2NwdWZyZXFfYWRkX2RldihkZXYsIHNpZik7
-DQo+Pj4gfQ0KPj4+IA0KPj4+IC1zdGF0aWMgaW50IGNwdWZyZXFfbm9taW5hdGVfbmV3X3BvbGlj
-eV9jcHUoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3ksDQo+Pj4gLSAgICAgICAgICAgICAg
-ICAgICAgICAgdW5zaWduZWQgaW50IG9sZF9jcHUpDQo+Pj4gLXsNCj4+PiAtICAgIHN0cnVjdCBk
-ZXZpY2UgKmNwdV9kZXY7DQo+Pj4gLSAgICBpbnQgcmV0Ow0KPj4+IC0NCj4+PiAtICAgIC8qIGZp
-cnN0IHNpYmxpbmcgbm93IG93bnMgdGhlIG5ldyBzeXNmcyBkaXIgKi8NCj4+PiAtICAgIGNwdV9k
-ZXYgPSBnZXRfY3B1X2RldmljZShjcHVtYXNrX2FueV9idXQocG9saWN5LT5jcHVzLCBvbGRfY3B1
-KSk7DQo+Pj4gLQ0KPj4+IC0gICAgc3lzZnNfcmVtb3ZlX2xpbmsoJmNwdV9kZXYtPmtvYmosICJj
-cHVmcmVxIik7DQo+Pj4gLSAgICByZXQgPSBrb2JqZWN0X21vdmUoJnBvbGljeS0+a29iaiwgJmNw
-dV9kZXYtPmtvYmopOw0KPj4+IC0gICAgaWYgKHJldCkgew0KPj4+IC0gICAgICAgIHByX2Vycigi
-JXM6IEZhaWxlZCB0byBtb3ZlIGtvYmo6ICVkXG4iLCBfX2Z1bmNfXywgcmV0KTsNCj4+PiAtDQo+
-Pj4gLSAgICAgICAgZG93bl93cml0ZSgmcG9saWN5LT5yd3NlbSk7DQo+Pj4gLSAgICAgICAgY3B1
-bWFza19zZXRfY3B1KG9sZF9jcHUsIHBvbGljeS0+Y3B1cyk7DQo+Pj4gLSAgICAgICAgdXBfd3Jp
-dGUoJnBvbGljeS0+cndzZW0pOw0KPj4+IC0NCj4+PiAtICAgICAgICByZXQgPSBzeXNmc19jcmVh
-dGVfbGluaygmY3B1X2Rldi0+a29iaiwgJnBvbGljeS0+a29iaiwNCj4+PiAtICAgICAgICAgICAg
-ICAgICAgICAiY3B1ZnJlcSIpOw0KPj4+IC0NCj4+PiAtICAgICAgICByZXR1cm4gLUVJTlZBTDsN
-Cj4+PiAtICAgIH0NCj4+PiAtDQo+Pj4gLSAgICByZXR1cm4gY3B1X2Rldi0+aWQ7DQo+Pj4gLX0N
-Cj4+PiAtDQo+Pj4gc3RhdGljIGludCBfX2NwdWZyZXFfcmVtb3ZlX2Rldl9wcmVwYXJlKHN0cnVj
-dCBkZXZpY2UgKmRldiwNCj4+PiAgICAgICAgICAgICAgICAgICAgc3RydWN0IHN1YnN5c19pbnRl
-cmZhY2UgKnNpZikNCj4+PiB7DQo+Pj4gICAgdW5zaWduZWQgaW50IGNwdSA9IGRldi0+aWQsIGNw
-dXM7DQo+Pj4gLSAgICBpbnQgbmV3X2NwdSwgcmV0Ow0KPj4+ICsgICAgaW50IHJldDsNCj4+PiAg
-ICB1bnNpZ25lZCBsb25nIGZsYWdzOw0KPj4+ICAgIHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9s
-aWN5Ow0KPj4+IA0KPj4+IEBAIC0xMzc4LDE0ICsxMzYzLDI4IEBAIHN0YXRpYyBpbnQgX19jcHVm
-cmVxX3JlbW92ZV9kZXZfcHJlcGFyZShzdHJ1Y3QgZGV2aWNlICpkZXYsDQo+Pj4gICAgaWYgKGNw
-dSAhPSBwb2xpY3ktPmNwdSkgew0KPj4+ICAgICAgICBzeXNmc19yZW1vdmVfbGluaygmZGV2LT5r
-b2JqLCAiY3B1ZnJlcSIpOw0KPj4+ICAgIH0gZWxzZSBpZiAoY3B1cyA+IDEpIHsNCj4+PiAtICAg
-ICAgICBuZXdfY3B1ID0gY3B1ZnJlcV9ub21pbmF0ZV9uZXdfcG9saWN5X2NwdShwb2xpY3ksIGNw
-dSk7DQo+Pj4gLSAgICAgICAgaWYgKG5ld19jcHUgPj0gMCkgew0KPj4+IC0gICAgICAgICAgICB1
-cGRhdGVfcG9saWN5X2NwdShwb2xpY3ksIG5ld19jcHUpOw0KPj4+ICsgICAgICAgIC8qIE5vbWlu
-YXRlIG5ldyBDUFUgKi8NCj4+PiArICAgICAgICBpbnQgbmV3X2NwdSA9IGNwdW1hc2tfYW55X2J1
-dChwb2xpY3ktPmNwdXMsIGNwdSk7DQo+Pj4gKyAgICAgICAgc3RydWN0IGRldmljZSAqY3B1X2Rl
-diA9IGdldF9jcHVfZGV2aWNlKG5ld19jcHUpOw0KPj4+IA0KPj4+IC0gICAgICAgICAgICBpZiAo
-IWNwdWZyZXFfc3VzcGVuZGVkKQ0KPj4+IC0gICAgICAgICAgICAgICAgcHJfZGVidWcoIiVzOiBw
-b2xpY3kgS29iamVjdCBtb3ZlZCB0byBjcHU6ICVkIGZyb206ICVkXG4iLA0KPj4+IC0gICAgICAg
-ICAgICAgICAgICAgICBfX2Z1bmNfXywgbmV3X2NwdSwgY3B1KTsNCj4+PiArICAgICAgICBzeXNm
-c19yZW1vdmVfbGluaygmY3B1X2Rldi0+a29iaiwgImNwdWZyZXEiKTsNCj4+PiArICAgICAgICBy
-ZXQgPSB1cGRhdGVfcG9saWN5X2NwdShwb2xpY3ksIG5ld19jcHUsIGNwdV9kZXYpOw0KPj4+ICsg
-ICAgICAgIGlmIChyZXQpIHsNCj4+PiArICAgICAgICAgICAgLyoNCj4+PiArICAgICAgICAgICAg
-ICogVG8gc3VwcmVzcyBjb21waWxhdGlvbiB3YXJuaW5nIGFib3V0IHJldHVybiB2YWx1ZSBvZg0K
-Pj4+ICsgICAgICAgICAgICAgKiBzeXNmc19jcmVhdGVfbGluaygpLg0KPj4+ICsgICAgICAgICAg
-ICAgKi8NCj4+PiArICAgICAgICAgICAgaW50IHRlbXA7DQo+Pj4gKw0KPj4+ICsgICAgICAgICAg
-ICAvKiBDcmVhdGUgbGluayBhZ2FpbiBpZiB3ZSBmYWlsZWQuICovDQo+Pj4gKyAgICAgICAgICAg
-IHRlbXAgPSBzeXNmc19jcmVhdGVfbGluaygmY3B1X2Rldi0+a29iaiwgJnBvbGljeS0+a29iaiwN
-Cj4+PiArICAgICAgICAgICAgICAgICAgICAgICAgICJjcHVmcmVxIik7DQo+Pj4gKyAgICAgICAg
-ICAgIHJldHVybiByZXQ7DQo+Pj4gICAgICAgIH0NCj4+PiArDQo+Pj4gKyAgICAgICAgaWYgKCFj
-cHVmcmVxX3N1c3BlbmRlZCkNCj4+PiArICAgICAgICAgICAgcHJfZGVidWcoIiVzOiBwb2xpY3kg
-S29iamVjdCBtb3ZlZCB0byBjcHU6ICVkIGZyb206ICVkXG4iLA0KPj4+ICsgICAgICAgICAgICAg
-ICAgIF9fZnVuY19fLCBuZXdfY3B1LCBjcHUpOw0KPj4+ICAgIH0gZWxzZSBpZiAoY3B1ZnJlcV9k
-cml2ZXItPnN0b3BfY3B1ICYmIGNwdWZyZXFfZHJpdmVyLT5zZXRwb2xpY3kpIHsNCj4+PiAgICAg
-ICAgY3B1ZnJlcV9kcml2ZXItPnN0b3BfY3B1KHBvbGljeSk7DQo+Pj4gICAgfQ0KPj4+IC0tIA0K
-Pj4+IDIuMC4wLnJjMg0KPiANCj4gDQo+IC0tIA0KPiBUaGUgUXVhbGNvbW0gSW5ub3ZhdGlvbiBD
-ZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIgb2YgdGhlIENvZGUgQXVyb3JhIEZvcnVtLA0KPiBob3N0
-ZWQgYnkgVGhlIExpbnV4IEZvdW5kYXRpb24NCg==
+The CPUfreq driver moves the cpufreq policy ownership between CPUs when
+CPUs within a cluster (CPUs sharing same policy) go ONLINE/OFFLINE. When
+moving policy ownership between CPUs, it also moves the cpufreq sysfs
+directory between CPUs and also fixes up the symlinks of the other CPUs in
+the cluster.
+
+Also, when all the CPUs in a cluster go OFFLINE, all the sysfs nodes and
+directories are deleted, the kobject is released and the policy is freed.
+And when the first CPU in a cluster comes up, the policy is reallocated and
+initialized, kobject is acquired, the sysfs nodes are created or symlinked,
+etc.
+
+All these steps end up creating unnecessarily complicated code and locking.
+There's no real benefit to adding/removing/moving the sysfs nodes and the
+policy between CPUs. Other per CPU sysfs directories like power and cpuidle
+are left alone during hotplug. So there's some precedence to what this
+patch is trying to do.
+
+This patch simplifies a lot of the code and locking by removing the
+adding/removing/moving of policy/sysfs/kobj and just leaves the cpufreq
+directory and policy in place irrespective of whether the CPUs are
+ONLINE/OFFLINE.
+
+Leaving the policy, sysfs and kobject in place also brings these additional
+benefits:
+* Faster suspend/resume.
+* Faster hotplug.
+* Sysfs file permissions maintained across hotplug without userspace
+  workarounds.
+* Policy settings and governor tunables maintained across suspend/resume
+  and hotplug.
+* Cpufreq stats would be maintained across hotplug for all CPUs and can be
+  queried even after CPU goes OFFLINE.
+
+Change-Id: I39c395e1fee8731880c0fd7c8a9c1d83e2e4b8d0
+Tested-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+---
+
+Preliminary testing has been done. cpufreq directories are getting created
+properly. Online/offline of CPUs work. Policies remain unmodifiable from
+userspace when all policy CPUs are offline.
+
+Error handling code has NOT been updated.
+
+I've added a bunch of FIXME comments next to where I'm not sure about the
+locking in the existing code. I believe most of the try_lock's were present
+to prevent a deadlock between sysfs lock and the cpufreq locks. Now that
+the sysfs entries are not touched after creating them, we should be able to
+replace most/all of these try_lock's with a normal lock.
+
+This patch has more room for code simplification, but I would like to get
+some acks for the functionality and this code before I do further
+simplification.
+
+I should also be able to remove get_online_cpus() in the store function and
+replace it with just a check for policy->governor_enabled. That should
+theoretically reduce some contention between cpufreq stats check and
+hotplug of unrelated CPUs.
+
+Appreciate all the feedback.
+
+Thanks,
+Saravana
+
+ drivers/cpufreq/cpufreq.c | 331 ++++++++++------------------------------------
+ 1 file changed, 69 insertions(+), 262 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 62259d2..e350b15 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -859,16 +859,16 @@ void cpufreq_sysfs_remove_file(const struct attribute *attr)
+ }
+ EXPORT_SYMBOL(cpufreq_sysfs_remove_file);
+ 
+-/* symlink affected CPUs */
++/* symlink related CPUs */
+ static int cpufreq_add_dev_symlink(struct cpufreq_policy *policy)
+ {
+-	unsigned int j;
++	unsigned int j, first_cpu = cpumask_first(policy->related_cpus);
+ 	int ret = 0;
+ 
+-	for_each_cpu(j, policy->cpus) {
++	for_each_cpu(j, policy->related_cpus) {
+ 		struct device *cpu_dev;
+ 
+-		if (j == policy->cpu)
++		if (j == first_cpu)
+ 			continue;
+ 
+ 		pr_debug("Adding link for CPU: %u\n", j);
+@@ -881,12 +881,16 @@ static int cpufreq_add_dev_symlink(struct cpufreq_policy *policy)
+ 	return ret;
+ }
+ 
+-static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
+-				     struct device *dev)
++static int cpufreq_add_dev_interface(struct cpufreq_policy *policy)
+ {
+ 	struct freq_attr **drv_attr;
++	struct device *dev;
+ 	int ret = 0;
+ 
++	dev = get_cpu_device(cpumask_first(policy->related_cpus));
++	if (!dev)
++		return -EINVAL;
++
+ 	/* prepare interface data */
+ 	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
+ 				   &dev->kobj, "cpufreq");
+@@ -961,60 +965,53 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+ }
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
+-				  unsigned int cpu, struct device *dev)
++static int cpufreq_change_policy_cpus(struct cpufreq_policy *policy,
++				  unsigned int cpu, bool add)
+ {
+ 	int ret = 0;
+-	unsigned long flags;
++	unsigned int cpus;
+ 
+-	if (has_target()) {
++	down_write(&policy->rwsem);
++	cpus = cpumask_weight(policy->cpus);
++	if (has_target() && cpus > 0) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 		if (ret) {
+ 			pr_err("%s: Failed to stop governor\n", __func__);
+-			return ret;
++			goto unlock;
+ 		}
+ 	}
+ 
+-	down_write(&policy->rwsem);
+-
+-	write_lock_irqsave(&cpufreq_driver_lock, flags);
+-
+-	cpumask_set_cpu(cpu, policy->cpus);
+-	per_cpu(cpufreq_cpu_data, cpu) = policy;
+-	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
++	if (add)
++		cpumask_set_cpu(cpu, policy->cpus);
++	else
++		cpumask_clear_cpu(cpu, policy->cpus);
+ 
+-	up_write(&policy->rwsem);
++	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
++					CPUFREQ_UPDATE_POLICY_CPU, policy);
+ 
+-	if (has_target()) {
++	cpus = cpumask_weight(policy->cpus);
++	policy->cpu = cpumask_first(policy->cpus);
++	if (has_target() && cpus > 0) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+ 		if (!ret)
+ 			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+ 
+ 		if (ret) {
+ 			pr_err("%s: Failed to start governor\n", __func__);
+-			return ret;
++			goto unlock;
+ 		}
+ 	}
+ 
+-	return sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+-}
+-#endif
+-
+-static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
+-{
+-	struct cpufreq_policy *policy;
+-	unsigned long flags;
+-
+-	read_lock_irqsave(&cpufreq_driver_lock, flags);
+-
+-	policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
+-
+-	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
++	if (cpus < 1 && cpufreq_driver->stop_cpu && cpufreq_driver->setpolicy) {
++		cpufreq_driver->stop_cpu(policy);
++	}
+ 
+-	policy->governor = NULL;
++unlock:
++	up_write(&policy->rwsem);
+ 
+-	return policy;
++	return ret;
+ }
++#endif
+ 
+ static struct cpufreq_policy *cpufreq_policy_alloc(void)
+ {
+@@ -1076,22 +1073,6 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+ 	kfree(policy);
+ }
+ 
+-static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+-{
+-	if (WARN_ON(cpu == policy->cpu))
+-		return;
+-
+-	down_write(&policy->rwsem);
+-
+-	policy->last_cpu = policy->cpu;
+-	policy->cpu = cpu;
+-
+-	up_write(&policy->rwsem);
+-
+-	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+-			CPUFREQ_UPDATE_POLICY_CPU, policy);
+-}
+-
+ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ {
+ 	unsigned int j, cpu = dev->id;
+@@ -1099,9 +1080,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	struct cpufreq_policy *policy;
+ 	unsigned long flags;
+ 	bool recover_policy = cpufreq_suspended;
+-#ifdef CONFIG_HOTPLUG_CPU
+-	struct cpufreq_policy *tpolicy;
+-#endif
+ 
+ 	if (cpu_is_offline(cpu))
+ 		return 0;
+@@ -1111,55 +1089,28 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ #ifdef CONFIG_SMP
+ 	/* check whether a different CPU already registered this
+ 	 * CPU because it is in the same boat. */
++	/* FIXME: This probably needs fixing to avoid "try lock" from
++	 * returning NULL. Also, change to likely() */
+ 	policy = cpufreq_cpu_get(cpu);
+ 	if (unlikely(policy)) {
++		cpufreq_change_policy_cpus(policy, cpu, true);
+ 		cpufreq_cpu_put(policy);
+ 		return 0;
+ 	}
+ #endif
+ 
++	/* FIXME: Is returning 0 the right thing to do?! Existing code */
+ 	if (!down_read_trylock(&cpufreq_rwsem))
+ 		return 0;
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-	/* Check if this cpu was hot-unplugged earlier and has siblings */
+-	read_lock_irqsave(&cpufreq_driver_lock, flags);
+-	list_for_each_entry(tpolicy, &cpufreq_policy_list, policy_list) {
+-		if (cpumask_test_cpu(cpu, tpolicy->related_cpus)) {
+-			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-			ret = cpufreq_add_policy_cpu(tpolicy, cpu, dev);
+-			up_read(&cpufreq_rwsem);
+-			return ret;
+-		}
+-	}
+-	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-#endif
+-
+-	/*
+-	 * Restore the saved policy when doing light-weight init and fall back
+-	 * to the full init if that fails.
+-	 */
+-	policy = recover_policy ? cpufreq_policy_restore(cpu) : NULL;
+-	if (!policy) {
+-		recover_policy = false;
+-		policy = cpufreq_policy_alloc();
+-		if (!policy)
+-			goto nomem_out;
+-	}
+-
+-	/*
+-	 * In the resume path, since we restore a saved policy, the assignment
+-	 * to policy->cpu is like an update of the existing policy, rather than
+-	 * the creation of a brand new one. So we need to perform this update
+-	 * by invoking update_policy_cpu().
+-	 */
+-	if (recover_policy && cpu != policy->cpu)
+-		update_policy_cpu(policy, cpu);
+-	else
+-		policy->cpu = cpu;
++	/* If we get this far, this is the first time we are adding the
++	 * policy */
++	policy = cpufreq_policy_alloc();
++	if (!policy)
++		goto nomem_out;
++	policy->cpu = cpu;
+ 
+ 	cpumask_copy(policy->cpus, cpumask_of(cpu));
+-
+ 	init_completion(&policy->kobj_unregister);
+ 	INIT_WORK(&policy->update, handle_update);
+ 
+@@ -1175,20 +1126,19 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	/* related cpus should atleast have policy->cpus */
+ 	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+ 
++	/* Weed out impossible CPUs. */
++	cpumask_and(policy->related_cpus, policy->related_cpus,
++			cpu_possible_mask);
++
+ 	/*
+ 	 * affected cpus must always be the one, which are online. We aren't
+ 	 * managing offline cpus here.
+ 	 */
+ 	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
+ 
+-	if (!recover_policy) {
+-		policy->user_policy.min = policy->min;
+-		policy->user_policy.max = policy->max;
+-	}
+-
+ 	down_write(&policy->rwsem);
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
+-	for_each_cpu(j, policy->cpus)
++	for_each_cpu(j, policy->related_cpus)
+ 		per_cpu(cpufreq_cpu_data, j) = policy;
+ 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+@@ -1243,13 +1193,11 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+ 				     CPUFREQ_START, policy);
+ 
+-	if (!recover_policy) {
+-		ret = cpufreq_add_dev_interface(policy, dev);
+-		if (ret)
+-			goto err_out_unregister;
+-		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+-				CPUFREQ_CREATE_POLICY, policy);
+-	}
++	ret = cpufreq_add_dev_interface(policy);
++	if (ret)
++		goto err_out_unregister;
++	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
++			CPUFREQ_CREATE_POLICY, policy);
+ 
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	list_add(&policy->policy_list, &cpufreq_policy_list);
+@@ -1257,10 +1205,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 
+ 	cpufreq_init_policy(policy);
+ 
+-	if (!recover_policy) {
+-		policy->user_policy.policy = policy->policy;
+-		policy->user_policy.governor = policy->governor;
+-	}
+ 	up_write(&policy->rwsem);
+ 
+ 	kobject_uevent(&policy->kobj, KOBJ_ADD);
+@@ -1307,100 +1251,16 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	return __cpufreq_add_dev(dev, sif);
+ }
+ 
+-static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *policy,
+-					   unsigned int old_cpu)
+-{
+-	struct device *cpu_dev;
+-	int ret;
+-
+-	/* first sibling now owns the new sysfs dir */
+-	cpu_dev = get_cpu_device(cpumask_any_but(policy->cpus, old_cpu));
+-
+-	sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+-	ret = kobject_move(&policy->kobj, &cpu_dev->kobj);
+-	if (ret) {
+-		pr_err("%s: Failed to move kobj: %d\n", __func__, ret);
+-
+-		down_write(&policy->rwsem);
+-		cpumask_set_cpu(old_cpu, policy->cpus);
+-		up_write(&policy->rwsem);
+-
+-		ret = sysfs_create_link(&cpu_dev->kobj, &policy->kobj,
+-					"cpufreq");
+-
+-		return -EINVAL;
+-	}
+-
+-	return cpu_dev->id;
+-}
+-
+-static int __cpufreq_remove_dev_prepare(struct device *dev,
+-					struct subsys_interface *sif)
++static int __cpufreq_remove_dev(struct device *dev,
++				struct subsys_interface *sif)
+ {
+-	unsigned int cpu = dev->id, cpus;
+-	int new_cpu, ret;
++	unsigned int cpu = dev->id;
++	int ret = 0;
+ 	unsigned long flags;
+ 	struct cpufreq_policy *policy;
+ 
+ 	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
+ 
+-	write_lock_irqsave(&cpufreq_driver_lock, flags);
+-
+-	policy = per_cpu(cpufreq_cpu_data, cpu);
+-
+-	/* Save the policy somewhere when doing a light-weight tear-down */
+-	if (cpufreq_suspended)
+-		per_cpu(cpufreq_cpu_data_fallback, cpu) = policy;
+-
+-	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-
+-	if (!policy) {
+-		pr_debug("%s: No cpu_data found\n", __func__);
+-		return -EINVAL;
+-	}
+-
+-	if (has_target()) {
+-		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+-		if (ret) {
+-			pr_err("%s: Failed to stop governor\n", __func__);
+-			return ret;
+-		}
+-	}
+-
+-	if (!cpufreq_driver->setpolicy)
+-		strncpy(per_cpu(cpufreq_cpu_governor, cpu),
+-			policy->governor->name, CPUFREQ_NAME_LEN);
+-
+-	down_read(&policy->rwsem);
+-	cpus = cpumask_weight(policy->cpus);
+-	up_read(&policy->rwsem);
+-
+-	if (cpu != policy->cpu) {
+-		sysfs_remove_link(&dev->kobj, "cpufreq");
+-	} else if (cpus > 1) {
+-		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu);
+-		if (new_cpu >= 0) {
+-			update_policy_cpu(policy, new_cpu);
+-
+-			if (!cpufreq_suspended)
+-				pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
+-					 __func__, new_cpu, cpu);
+-		}
+-	} else if (cpufreq_driver->stop_cpu && cpufreq_driver->setpolicy) {
+-		cpufreq_driver->stop_cpu(policy);
+-	}
+-
+-	return 0;
+-}
+-
+-static int __cpufreq_remove_dev_finish(struct device *dev,
+-				       struct subsys_interface *sif)
+-{
+-	unsigned int cpu = dev->id, cpus;
+-	int ret;
+-	unsigned long flags;
+-	struct cpufreq_policy *policy;
+-
+ 	read_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	policy = per_cpu(cpufreq_cpu_data, cpu);
+ 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+@@ -1410,56 +1270,11 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+ 		return -EINVAL;
+ 	}
+ 
+-	down_write(&policy->rwsem);
+-	cpus = cpumask_weight(policy->cpus);
+-
+-	if (cpus > 1)
+-		cpumask_clear_cpu(cpu, policy->cpus);
+-	up_write(&policy->rwsem);
+-
+-	/* If cpu is last user of policy, free policy */
+-	if (cpus == 1) {
+-		if (has_target()) {
+-			ret = __cpufreq_governor(policy,
+-					CPUFREQ_GOV_POLICY_EXIT);
+-			if (ret) {
+-				pr_err("%s: Failed to exit governor\n",
+-				       __func__);
+-				return ret;
+-			}
+-		}
+-
+-		if (!cpufreq_suspended)
+-			cpufreq_policy_put_kobj(policy);
+-
+-		/*
+-		 * Perform the ->exit() even during light-weight tear-down,
+-		 * since this is a core component, and is essential for the
+-		 * subsequent light-weight ->init() to succeed.
+-		 */
+-		if (cpufreq_driver->exit)
+-			cpufreq_driver->exit(policy);
+-
+-		/* Remove policy from list of active policies */
+-		write_lock_irqsave(&cpufreq_driver_lock, flags);
+-		list_del(&policy->policy_list);
+-		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-
+-		if (!cpufreq_suspended)
+-			cpufreq_policy_free(policy);
+-	} else if (has_target()) {
+-		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+-		if (!ret)
+-			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+-
+-		if (ret) {
+-			pr_err("%s: Failed to start governor\n", __func__);
+-			return ret;
+-		}
+-	}
++#ifdef CONFIG_HOTPLUG_CPU
++	ret = cpufreq_change_policy_cpus(policy, cpu, false);
++#endif
+ 
+-	per_cpu(cpufreq_cpu_data, cpu) = NULL;
+-	return 0;
++	return ret;
+ }
+ 
+ /**
+@@ -1475,10 +1290,7 @@ static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+ 	if (cpu_is_offline(cpu))
+ 		return 0;
+ 
+-	ret = __cpufreq_remove_dev_prepare(dev, sif);
+-
+-	if (!ret)
+-		ret = __cpufreq_remove_dev_finish(dev, sif);
++	ret = __cpufreq_remove_dev(dev, sif);
+ 
+ 	return ret;
+ }
+@@ -2141,7 +1953,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 				struct cpufreq_policy *new_policy)
+ {
+ 	struct cpufreq_governor *old_gov;
+-	int ret;
++	int ret = 0;
+ 
+ 	pr_debug("setting new policy for CPU %u: %u - %u kHz\n",
+ 		 new_policy->cpu, new_policy->min, new_policy->max);
+@@ -2226,7 +2038,9 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 
+  out:
+ 	pr_debug("governor: change or update limits\n");
+-	return __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
++	if (policy->governor_enabled)
++		ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
++	return ret;
+ }
+ 
+ /**
+@@ -2295,19 +2109,12 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
+ 	if (dev) {
+ 		switch (action & ~CPU_TASKS_FROZEN) {
+ 		case CPU_ONLINE:
++		case CPU_DOWN_FAILED:
+ 			__cpufreq_add_dev(dev, NULL);
+ 			break;
+ 
+ 		case CPU_DOWN_PREPARE:
+-			__cpufreq_remove_dev_prepare(dev, NULL);
+-			break;
+-
+-		case CPU_POST_DEAD:
+-			__cpufreq_remove_dev_finish(dev, NULL);
+-			break;
+-
+-		case CPU_DOWN_FAILED:
+-			__cpufreq_add_dev(dev, NULL);
++			__cpufreq_remove_dev(dev, NULL);
+ 			break;
+ 		}
+ 	}
+-- 
+1.8.2.1
+
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
