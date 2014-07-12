@@ -1,37 +1,44 @@
-From: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
-Subject: [PATCH] cpuidle: fix permission for driver name sysfs node
-Date: Sat, 12 Jul 2014 19:29:22 +0600
-Message-ID: <1405171762-31119-1-git-send-email-meraj.enigma@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: sa1110: set memory type for h3600
+Date: Sat, 12 Jul 2014 20:15:21 +0530
+Message-ID: <CAKohpon090a+cv6ZzTz7ziZkFxw__xJ4F7PGYKWMMJEE=OHizQ@mail.gmail.com>
+References: <1405158213-14679-1-git-send-email-linus.walleij@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f179.google.com ([209.85.192.179]:49486 "EHLO
-	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751119AbaGLN3p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Jul 2014 09:29:45 -0400
+Received: from mail-oa0-f50.google.com ([209.85.219.50]:63182 "EHLO
+	mail-oa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752891AbaGLOpW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Jul 2014 10:45:22 -0400
+Received: by mail-oa0-f50.google.com with SMTP id g18so2489376oah.37
+        for <linux-pm@vger.kernel.org>; Sat, 12 Jul 2014 07:45:21 -0700 (PDT)
+In-Reply-To: <1405158213-14679-1-git-send-email-linus.walleij@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-cpuidle driver name sysfs node is read-only. So permission should be 0444.
+On 12 July 2014 15:13, Linus Walleij <linus.walleij@linaro.org> wrote:
+> The Compaq iPAQ h3600 also has the K4S281632b-1H memory type.
+> Verified by prying apart a broken board.
+>
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+> ---
+>  drivers/cpufreq/sa1110-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
+> index 546376719d8f..b5befc211172 100644
+> --- a/drivers/cpufreq/sa1110-cpufreq.c
+> +++ b/drivers/cpufreq/sa1110-cpufreq.c
+> @@ -349,7 +349,7 @@ static int __init sa1110_clk_init(void)
+>                         name = "K4S641632D";
+>                 if (machine_is_h3100())
+>                         name = "KM416S4030CT";
+> -               if (machine_is_jornada720())
+> +               if (machine_is_jornada720() || machine_is_h3600())
+>                         name = "K4S281632B-1H";
+>                 if (machine_is_nanoengine())
+>                         name = "MT48LC8M16A2TG-75";
 
-Signed-off-by: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
----
- drivers/cpuidle/sysfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index efe2f17..97c5903 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -445,7 +445,7 @@ static void cpuidle_remove_state_sysfs(struct cpuidle_device *device)
- 
- #define define_one_driver_ro(_name, show)                       \
- 	static struct cpuidle_driver_attr attr_driver_##_name = \
--		__ATTR(_name, 0644, show, NULL)
-+		__ATTR(_name, 0444, show, NULL)
- 
- struct cpuidle_driver_kobj {
- 	struct cpuidle_driver *drv;
--- 
-1.9.1
-
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
