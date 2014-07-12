@@ -1,116 +1,128 @@
-From: Brian W Hart <hartb@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: make table sentinal macros unsigned to match use
-Date: Fri, 11 Jul 2014 17:06:30 -0500
-Message-ID: <20140711220630.GA5697@oc3347516403.ibm.com>
-References: <20140627210939.GB24604@oc3347516403.ibm.com>
- <CAKohpo=qB3nB+ZNKE4Y94m6gPWZZ4YZEU_WOA=s5DB8apxUQGQ@mail.gmail.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v2] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
+Date: Fri, 11 Jul 2014 19:44:58 -0700
+Message-ID: <53C0A12A.2060204@codeaurora.org>
+References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org> <1405052287-4744-1-git-send-email-skannan@codeaurora.org> <CAKohponB9feyh50p+dL5hyU1ffHAzHU59G-sYCrCm1AbHQe9hw@mail.gmail.com> <2f549e6e4871ccf2a94dd4c8872c7a0b.squirrel@www.codeaurora.org> <CAKohpokhmj1OkCRj=X+Q7eYiun8fsqD2dpEt66VKYnqo3dENVA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpo=qB3nB+ZNKE4Y94m6gPWZZ4YZEU_WOA=s5DB8apxUQGQ@mail.gmail.com>
+In-Reply-To: <CAKohpokhmj1OkCRj=X+Q7eYiun8fsqD2dpEt66VKYnqo3dENVA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>, Stratos Karafotis <stratosk@semaphore.gr>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 30, 2014 at 10:25:20AM +0530, Viresh Kumar wrote:
-> On 28 June 2014 02:39, Brian W Hart <hartb@linux.vnet.ibm.com> wrote:
-> > Commit 5eeaf1f18973 (cpufreq: Fix build error on some platforms tha=
-t
-> > use cpufreq_for_each_*) moved function cpufreq_next_valid() to a pu=
-blic
-> > header.  Warnings are now generated when objects including that hea=
-der
-> > are built with -Wsign-compare (as an out-of-tree module might be):
-> >
-> > .../include/linux/cpufreq.h: In function =E2=80=98cpufreq_next_vali=
-d=E2=80=99:
-> > .../include/linux/cpufreq.h:519:27: warning: comparison between sig=
-ned
-> > and unsigned integer expressions [-Wsign-compare]
-> >   while ((*pos)->frequency !=3D CPUFREQ_TABLE_END)
-> >                            ^
-> > .../include/linux/cpufreq.h:520:25: warning: comparison between sig=
-ned
-> > and unsigned integer expressions [-Wsign-compare]
-> >    if ((*pos)->frequency !=3D CPUFREQ_ENTRY_INVALID)
-> >                          ^
-> >
-> > Constants CPUFREQ_ENTRY_INVALID and CPUFREQ_TABLE_END are signed, b=
-ut
-> > are used with unsigned member 'frequency' of cpufreq_frequency_tabl=
-e.
-> > Update the macro definitions to be explicitly unsigned to match the=
-ir
-> > use.
-> >
-> > This also corrects potentially wrong behavior of clk_rate_table_ite=
-r()
-> > if unsigned long is wider than usigned int.
-> >
-> > Signed-off-by: Brian W Hart <hartb@linux.vnet.ibm.com>
-> > ---
-> > These macros are fairly broadly used in the kernel so I was bit lee=
-ry
-> > of changing them, but after inspection I think it's fine.  I found =
-102
-> > uses of the macros, of which:
-> >
-> > 99 are uses with cpufreq_frequency_table.frequency (95) or with loc=
-al
-> >    variables of the same type as frequency (4).  These should be ju=
-st
-> >    fine with this change--we're just making explicit a conversion t=
-hat
-> >    was previously implicit.
-> >
-> >  2 are uses with a local variable of different type (unsigned long)=
- than
-> >    'frequency' (in drivers/sh/clk/core.c).  One of these uses is sa=
-fe;
-> >    the other (in clk_rate_table_iter()) is broken if unsigned long
-> >    is wider than unsigned int.  As a side-effect, this patch correc=
-ts
-> >    the potential misbehavior there.
-> >
-> >  1 is a use in macro cpufreq_for_each_entry() with what _should_ be=
- the
-> >    frequency member of a cpufreq_frequency_table, provided the call=
-er it
-> >    well-behaved.  There are 18 callers of this macro; all are well-=
-behaved.
-> >    So these should also be safe.
->=20
-> I would have moved some of it to logs, they look good.
->=20
-> >  include/linux/cpufreq.h |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> > index ec4112d..8f8ae95 100644
-> > --- a/include/linux/cpufreq.h
-> > +++ b/include/linux/cpufreq.h
-> > @@ -482,8 +482,8 @@ extern struct cpufreq_governor cpufreq_gov_cons=
-ervative;
-> >   *****************************************************************=
-****/
-> >
-> >  /* Special Values of .frequency field */
-> > -#define CPUFREQ_ENTRY_INVALID  ~0
-> > -#define CPUFREQ_TABLE_END      ~1
-> > +#define CPUFREQ_ENTRY_INVALID  ~0u
-> > +#define CPUFREQ_TABLE_END      ~1u
-> >  /* Special Values of .flags field */
-> >  #define CPUFREQ_BOOST_FREQ     (1 << 0)
->=20
-> Thanks.
->=20
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 07/11/2014 03:52 AM, Viresh Kumar wrote:
 
-I haven't seen this appear in the linux-pm tree yet. Is there anything
-further needed on my part--aside from patience?
+Just responding to one comment. The one about policy->cpu.
 
-Thank you,
-brian
+>
+>>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>
+>>>>   static int cpufreq_add_dev_symlink(struct cpufreq_policy *policy)
+>>>>   {
+>>>> -       unsigned int j;
+>>>> +       unsigned int j, first_cpu = cpumask_first(policy->related_cpus);
+>>>>          int ret = 0;
+>>>>
+>>>> -       for_each_cpu(j, policy->cpus) {
+>>>> +       for_each_cpu(j, policy->related_cpus) {
+>>>>                  struct device *cpu_dev;
+>>>>
+>>>> -               if (j == policy->cpu)
+>>>> +               if (j == first_cpu)
+>>>
+>>> why?
+>>
+>> The first CPU is a cluster always own the real nodes.
+>
+> What I meant was, why not use policy->cpu?
+>
+>>>> +static int cpufreq_add_dev_interface(struct cpufreq_policy *policy)
+>>>>   {
+>>>>          struct freq_attr **drv_attr;
+>>>> +       struct device *dev;
+>>>>          int ret = 0;
+>>>>
+>>>> +       dev = get_cpu_device(cpumask_first(policy->related_cpus));
+>>>> +       if (!dev)
+>>>> +               return -EINVAL;
+>>>> +
+>>>
+>>> Why?
+>>
+>> I'm just always adding the real nodes to the first CPU in a cluster
+>> independent of which CPU gets added first. Makes it easier to know which
+>> ones to symlink. See comment next to policy->cpu for full context.
+>
+> Yeah, and that is the order in which CPUs will boot and cpufreq_add_dev()
+> will be called. So, isn't policy->cpu the right CPU always?
+
+No, the "first" cpu in a cluster doesn't need to be the first one to be 
+added. An example is 2x2 cluster system where the system is booted with 
+max cpus = 2 and then cpu3 could be onlined first by userspace.
+
+>
+>>>> -       if (has_target()) {
+>>>> +       cpus = cpumask_weight(policy->cpus);
+>>>> +       policy->cpu = cpumask_first(policy->cpus);
+>>>
+>>> why update it at all? Also, as per your logic what if cpus == 0?
+>>
+>> Yeah, I didn't write it this way at first. But the governors are making
+>> the assumption that policy->cpu is always an online CPU. So, they try to
+>
+> Are you sure? I had a quick look and failed to see that..
+>
+>> queue work there and use data structs of that CPU (even if they free it in
+>> the STOP event since it went offline).
+>
+> So, it queues work on all policy->cpus, not policy->cpu.
+> And the data structures
+> are just allocated with a CPU number, its fine if its offline.
+>
+> And where are we freeing that stuff in STOP ?
+>
+> Sorry if I am really really tired and couldn't read it correctly.
+
+Yeah, it is pretty convolution. But pretty much anywhere in the gov code 
+where policy->cpu is used could cause this. The specific crash I hit was 
+in this code:
+
+static void od_dbs_timer(struct work_struct *work)
+{
+	struct od_cpu_dbs_info_s *dbs_info =
+		container_of(work, struct od_cpu_dbs_info_s, cdbs.work.work);
+	unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
+
+======= CPU is policy->cpu here.
+
+	struct od_cpu_dbs_info_s *core_dbs_info = &per_cpu(od_cpu_dbs_info,
+			cpu);
+
+======= Picks the per CPU struct of an offline CPU
+
+<snip>
+
+	mutex_lock(&core_dbs_info->cdbs.timer_mutex);
+
+======= Dies trying to lock a destroyed mutex
+
+>
+>> Another option is to leave policy->cpu unchanged and then fix all the
+>> governors. But this patch would get even more complicated. So, we can
+>> leave this as is, or fix that up in a separate patch.
+>
+> Since we are simplifying it here, I think we should NOT change policy->cpu
+> at all. It will make life simple (probably).
+
+I agree, but then I would have to fix up the governors. In the interest 
+of keeping this patch small. I'll continue with what I'm doing and fix 
+it up in another patch.
+
+-Saravana
+
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
