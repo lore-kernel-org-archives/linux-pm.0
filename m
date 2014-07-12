@@ -1,48 +1,42 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: sa1110: set memory type for h3600
-Date: Sat, 12 Jul 2014 20:16:19 +0530
-Message-ID: <CAKohpomTodNYO+FBAYvBGK3TPeteb4Ko0cdM94v066P4cmk7ow@mail.gmail.com>
-References: <1405158213-14679-1-git-send-email-linus.walleij@linaro.org>
-	<CAKohpon090a+cv6ZzTz7ziZkFxw__xJ4F7PGYKWMMJEE=OHizQ@mail.gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH 0/2] cpufreq: ondemand: Eliminate the deadband effect
+Date: Sat, 12 Jul 2014 08:45:09 -0700
+Message-ID: <000001cf9de8$43925230$cab6f690$@net>
+References: <1404147574-17422-1-git-send-email-stratosk@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f50.google.com ([209.85.219.50]:42672 "EHLO
-	mail-oa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753447AbaGLOqT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Jul 2014 10:46:19 -0400
-Received: by mail-oa0-f50.google.com with SMTP id g18so2489863oah.37
-        for <linux-pm@vger.kernel.org>; Sat, 12 Jul 2014 07:46:19 -0700 (PDT)
-In-Reply-To: <CAKohpon090a+cv6ZzTz7ziZkFxw__xJ4F7PGYKWMMJEE=OHizQ@mail.gmail.com>
+Received: from cmta2.telus.net ([209.171.16.75]:56523 "EHLO cmta2.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751473AbaGLPpL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 12 Jul 2014 11:45:11 -0400
+In-Reply-To: <1404147574-17422-1-git-send-email-stratosk@semaphore.gr>
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: 'Stratos Karafotis' <stratosk@semaphore.gr>, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Fixing Rafael's id
 
-On 12 July 2014 20:15, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 12 July 2014 15:13, Linus Walleij <linus.walleij@linaro.org> wrote:
->> The Compaq iPAQ h3600 also has the K4S281632b-1H memory type.
->> Verified by prying apart a broken board.
->>
->> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
->> ---
->>  drivers/cpufreq/sa1110-cpufreq.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
->> index 546376719d8f..b5befc211172 100644
->> --- a/drivers/cpufreq/sa1110-cpufreq.c
->> +++ b/drivers/cpufreq/sa1110-cpufreq.c
->> @@ -349,7 +349,7 @@ static int __init sa1110_clk_init(void)
->>                         name = "K4S641632D";
->>                 if (machine_is_h3100())
->>                         name = "KM416S4030CT";
->> -               if (machine_is_jornada720())
->> +               if (machine_is_jornada720() || machine_is_h3600())
->>                         name = "K4S281632B-1H";
->>                 if (machine_is_nanoengine())
->>                         name = "MT48LC8M16A2TG-75";
+On 2014.07.30 10:00 Stratos Karafotis wrote:
+
+> This patchset changes slightly the calculation of target frequency to
+> eliminate the deadband effect (explained in patch 2 changelog) that it
+> seems to slow down the CPU in low and medium loads.
 >
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Patch 1 introduces a new relation (RELATION_C) for the next frequency
+> selection, which chooses the closest frequency to target.
+>
+> Patch 2 is the actual change to ondemand governor.
+
+> You may find graphs with the 'deadband' effect and benchmark results:
+> https://docs.google.com/spreadsheets/d/16kDBh5lyc6YvBnoS1hUa1t2O38z0xrWvaEj5XtJ8auw/edit#gid=2072493052
+
+I did the same benchmark tests before (without) and after (with) this patch set on my i7-2600K system.
+I added the results, which are similar to Stratos', under a new "benchmark" tab on the spreadsheet.
+
+... Doug
+
+
