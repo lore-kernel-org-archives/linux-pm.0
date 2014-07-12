@@ -1,38 +1,40 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v2] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
-Date: Fri, 11 Jul 2014 20:06:48 -0700
-Message-ID: <53C0A648.9080909@codeaurora.org>
-References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org> <1405052287-4744-1-git-send-email-skannan@codeaurora.org> <CAKohponB9feyh50p+dL5hyU1ffHAzHU59G-sYCrCm1AbHQe9hw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAKohponB9feyh50p+dL5hyU1ffHAzHU59G-sYCrCm1AbHQe9hw@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: [PATCH] cpufreq: sa1110: set memory type for h3600
+Date: Sat, 12 Jul 2014 11:43:33 +0200
+Message-ID: <1405158213-14679-1-git-send-email-linus.walleij@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f48.google.com ([74.125.82.48]:35249 "EHLO
+	mail-wg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752219AbaGLJnq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Jul 2014 05:43:46 -0400
+Received: by mail-wg0-f48.google.com with SMTP id x13so2120298wgg.7
+        for <linux-pm@vger.kernel.org>; Sat, 12 Jul 2014 02:43:43 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>
 
-On 07/10/2014 11:19 PM, Viresh Kumar wrote:
+The Compaq iPAQ h3600 also has the K4S281632b-1H memory type.
+Verified by prying apart a broken board.
 
->
-> Please make sure you take care of these issues:
-> - suspend/resume
-> - hotplug
-> - module insert/remove
-Ok, I was just at the current code. Does cpufreq_unregister_driver() 
-even really work correctly as it stands?
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ drivers/cpufreq/sa1110-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-It doesn't even seem to stop any of the governors/policies before it 
-just set the cpufreq_driver pointer to NULL.
-
-So, technically my v2 patch doesn't even make anything worse when it 
-comes to unregistering the cpufreq driver.
-
-Similar issues for unregister_governor too!
-
--Saravana
-
+diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
+index 546376719d8f..b5befc211172 100644
+--- a/drivers/cpufreq/sa1110-cpufreq.c
++++ b/drivers/cpufreq/sa1110-cpufreq.c
+@@ -349,7 +349,7 @@ static int __init sa1110_clk_init(void)
+ 			name = "K4S641632D";
+ 		if (machine_is_h3100())
+ 			name = "KM416S4030CT";
+-		if (machine_is_jornada720())
++		if (machine_is_jornada720() || machine_is_h3600())
+ 			name = "K4S281632B-1H";
+ 		if (machine_is_nanoengine())
+ 			name = "MT48LC8M16A2TG-75";
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+1.9.3
+
