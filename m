@@ -1,19 +1,30 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
 Subject: Re: [PATCH] thermal: samsung: Add TMU support for Exynos3250 SoC
-Date: Mon, 14 Jul 2014 08:49:15 +0900
-Message-ID: <53C31AFB.8080604@samsung.com>
+Date: Mon, 14 Jul 2014 08:55:02 +0900
+Message-ID: <53C31C56.2060104@samsung.com>
 References: <1404174799-8969-1-git-send-email-cw00.choi@samsung.com>
  <53BCB05C.4080605@samsung.com>
  <CADGdYn5BWKOtZb2MLy6vT0L+HC2nfhzzYjFPmzMMcLCpEx4+dw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:18465 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751014AbaGMXzG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 13 Jul 2014 19:55:06 -0400
 In-reply-to: <CADGdYn5BWKOtZb2MLy6vT0L+HC2nfhzzYjFPmzMMcLCpEx4+dw@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Amit Kachhap <amit.kachhap@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, "Valentin, Eduardo" <eduardo.valentin@ti.com>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Amit Kachhap <amit.kachhap@gmail.com>, edubezval@gmail.com
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, "Valentin, Eduardo" <eduardo.valentin@ti.com>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>
+
+Dear Eduardo,
+
+Could you please review or pick this patch?
+
+Best Regards,
+Chanwoo Choi
 
 On 07/10/2014 12:36 PM, Amit Kachhap wrote:
 > On Wed, Jul 9, 2014 at 8:30 AM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
@@ -29,12 +40,6 @@ On 07/10/2014 12:36 PM, Amit Kachhap wrote:
 > 
 > Changes look fine to me.
 > Reviewed-by: Amit Daniel Kachhap<amit.daniel@samsung.com>
-
-Thanks for your review.
-
-Best Regards,
-Chanwoo Choi
-
 > 
 >>> ---
 >>>  .../devicetree/bindings/thermal/exynos-thermal.txt |  1 +
@@ -240,3 +245,4 @@ Chanwoo Choi
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > Please read the FAQ at  http://www.tux.org/lkml/
 > 
+
