@@ -1,50 +1,39 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH 0/2] cpufreq: ondemand: Eliminate the deadband effect
-Date: Sun, 13 Jul 2014 19:54:43 +0300
-Message-ID: <53C2B9D3.6040500@semaphore.gr>
-References: <1404147574-17422-1-git-send-email-stratosk@semaphore.gr> <000001cf9de8$43925230$cab6f690$@net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Nicolas Del Piano <ndel314@gmail.com>
+Subject: [PATCH] Cpufreq: ARM IMX6Q: Select PM_OPP
+Date: Sun, 13 Jul 2014 18:59:00 -0300
+Message-ID: <1405288740-3986-1-git-send-email-ndel314@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:35984 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753903AbaGMQyt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 13 Jul 2014 12:54:49 -0400
-In-Reply-To: <000001cf9de8$43925230$cab6f690$@net>
+Received: from mail-yk0-f169.google.com ([209.85.160.169]:49027 "EHLO
+	mail-yk0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbaGMV7l (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 13 Jul 2014 17:59:41 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ezequiel@vanguardiasur.com.ar, Nicolas Del Piano <ndel314@gmail.com>
 
-Hi Doug,
+PM_OPP is a library used by several of the existing cpufreq drivers.
+ARM IMX6Q cpufreq driver uses this library for its functionality.
+Thus, it should be selected in Kconfig.
 
-On 12/07/2014 06:45 =CE=BC=CE=BC, Doug Smythies wrote:
->=20
-> On 2014.07.30 10:00 Stratos Karafotis wrote:
->=20
->> This patchset changes slightly the calculation of target frequency t=
-o
->> eliminate the deadband effect (explained in patch 2 changelog) that =
-it
->> seems to slow down the CPU in low and medium loads.
->>
->> Patch 1 introduces a new relation (RELATION_C) for the next frequenc=
-y
->> selection, which chooses the closest frequency to target.
->>
->> Patch 2 is the actual change to ondemand governor.
->=20
->> You may find graphs with the 'deadband' effect and benchmark results=
-:
->> https://docs.google.com/spreadsheets/d/16kDBh5lyc6YvBnoS1hUa1t2O38z0=
-xrWvaEj5XtJ8auw/edit#gid=3D2072493052
->=20
-> I did the same benchmark tests before (without) and after (with) this=
- patch set on my i7-2600K system.
-> I added the results, which are similar to Stratos', under a new "benc=
-hmark" tab on the spreadsheet.
+Reported-by: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
+Signed-off-by: Nicolas Del Piano <ndel314@gmail.com>
+---
+ drivers/cpufreq/Kconfig.arm |    1 +
+ 1 file changed, 1 insertion(+)
 
-Thank you very much for your benchmarks!
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index ebac671..8c5cf4b 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -104,6 +104,7 @@ config ARM_IMX6Q_CPUFREQ
+ 	tristate "Freescale i.MX6 cpufreq support"
+ 	depends on ARCH_MXC
+ 	depends on REGULATOR_ANATOP
++	select PM_OPP
+ 	help
+ 	  This adds cpufreq driver support for Freescale i.MX6 series SoCs.
+ 
+-- 
+1.7.9.5
 
-Stratos
