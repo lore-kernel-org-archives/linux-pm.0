@@ -1,59 +1,41 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH] thermal: of: look for sensor driver parent node if
- device node missing
-Date: Mon, 14 Jul 2014 14:04:55 +0200
-Message-ID: <1405339495.4627.3.camel@weser.hi.pengutronix.de>
-References: <1405336354-31310-1-git-send-email-ldewangan@nvidia.com>
+From: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
+Subject: Re: [PATCH] Cpufreq: ARM IMX6Q: Select PM_OPP
+Date: Mon, 14 Jul 2014 09:43:36 -0300
+Message-ID: <20140714124336.GA1763@arch.cereza>
+References: <1405288740-3986-1-git-send-email-ndel314@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:35650 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753305AbaGNMGr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jul 2014 08:06:47 -0400
-In-Reply-To: <1405336354-31310-1-git-send-email-ldewangan@nvidia.com>
+Received: from mail-yh0-f46.google.com ([209.85.213.46]:50460 "EHLO
+	mail-yh0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754398AbaGNMo2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jul 2014 08:44:28 -0400
+Received: by mail-yh0-f46.google.com with SMTP id a41so193816yho.5
+        for <linux-pm@vger.kernel.org>; Mon, 14 Jul 2014 05:44:28 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1405288740-3986-1-git-send-email-ndel314@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laxman Dewangan <ldewangan@nvidia.com>
-Cc: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Nicolas Del Piano <ndel314@gmail.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Am Montag, den 14.07.2014, 16:42 +0530 schrieb Laxman Dewangan:
-> There are some mfd devices which supports junction thermal interrupt
-> like ams,AS3722. The DT binding of these devices are defined as the
-> flat and drivers for sub module of such devices are registered as
-> the mfd_add_devices. In this method, the sub devices registered as
-> platform driver and these do not have the of_node pointer on their
-> device structure. In this case, use the parent of_node pointer to
-> get the required of_node pointer.
+Nico,
+
+On 13 Jul 06:59 PM, Nicolas Del Piano wrote:
+> PM_OPP is a library used by several of the existing cpufreq drivers.
+> ARM IMX6Q cpufreq driver uses this library for its functionality.
+> Thus, it should be selected in Kconfig.
 > 
-> Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
-> ---
->  drivers/thermal/of-thermal.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 04b1be7..85a7d71 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -396,6 +396,8 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
->  		return ERR_PTR(-EINVAL);
->  
->  	sensor_np = dev->of_node;
-> +	if (!sensor_np && dev->parent)
-> +		sensor_np = dev->parent->of_node;
->  
->  	for_each_child_of_node(np, child) {
->  		struct of_phandle_args sensor_specs;
+> Reported-by: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
+> Signed-off-by: Nicolas Del Piano <ndel314@gmail.com>
 
-This seems like the wrong way around. If the MFD has subdev information
-stored in the parent node it should be the MFD drivers responsibility to
-populate the subdev of_node with its own node. The subdev should not be
-forced to make such possible unsafe assumptions.
+Thanks for the patch. I have just a very minor nitpick to comment;
+if you run a git log, you'll see the subject should be:
 
-Regards,
-Lucas
+"cpufreq: imx6q: Select PM_OPP"
+
+In general, it's better to see the recent commits to find out how to write
+the commit title; each driver can have its own style.
 -- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
-
+Ezequiel Garcia, VanguardiaSur
+www.vanguardiasur.com.ar
