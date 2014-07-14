@@ -1,46 +1,143 @@
-From: Daniel Drake <drake@endlessm.com>
-Subject: Re: [PATCH v3 0/4] ARM: EXYNOS: cpuidle: fix AFTR mode on boards with
- secure firmware enabled
-Date: Mon, 14 Jul 2014 16:41:25 +0100
-Message-ID: <CAD8Lp46mp-tHcwGpFd0YHRDE4pKWDoPpUvu-Y0QzxSi-jnYtWg@mail.gmail.com>
-References: <1404926274-18411-1-git-send-email-b.zolnierkie@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpuidle: Fix Coding style reported by checkpatch.pl
+Date: Mon, 14 Jul 2014 20:08:13 +0200
+Message-ID: <3820825.ei0ZJkn3Cj@vostro.rjw.lan>
+References: <1403261865-7472-1-git-send-email-pramod.gurav.etc@gmail.com> <CAMf-jSm=YK4AN9-enh_8F4DYf-JGpv_=FRYdgYTt5P_EvSsE8g@mail.gmail.com> <CAMf-jSmvVL9BwkiqmS0Ep+MhZHERXsV_E8vHKdthM7hmnd9Fkg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f46.google.com ([74.125.82.46]:62709 "EHLO
-	mail-wg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755709AbaGNPl1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jul 2014 11:41:27 -0400
-Received: by mail-wg0-f46.google.com with SMTP id m15so4315301wgh.17
-        for <linux-pm@vger.kernel.org>; Mon, 14 Jul 2014 08:41:25 -0700 (PDT)
-In-Reply-To: <1404926274-18411-1-git-send-email-b.zolnierkie@samsung.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:52433 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751148AbaGNRuA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jul 2014 13:50:00 -0400
+In-Reply-To: <CAMf-jSmvVL9BwkiqmS0Ep+MhZHERXsV_E8vHKdthM7hmnd9Fkg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+To: pramod gurav <pramod.gurav.etc@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Hi Bartlomiej,
+On Monday, July 14, 2014 12:40:24 PM pramod gurav wrote:
+> Hi Rafael,
+> 
+> Can we consider these changes if there are  no issues with this?
 
-On Wed, Jul 9, 2014 at 6:17 PM, Bartlomiej Zolnierkiewicz
-<b.zolnierkie@samsung.com> wrote:
-> This patch series adds support for AFTR idle mode on boards with
-> secure firmware enabled and allows EXYNOS cpuidle driver usage on
-> Exynos4x12 SoCs.
->
-> It has been tested on Trats2 board (using Exynos4412 SoC with secure
-> firmware enabled) on which AFTR mode reduces power consumption by ~12%
-> when EXYNOS cpuidle driver is enabled (in both cases the default
-> exynos_defconfig config is used and CPU1-3 are offlined).
+Well, are you "fixing" checkpatch.pl warnings just for the sake of
+this or is there a deeper reason?
 
-Thanks for this, I have tested it on ODROID-U2.
+Rafael
 
-I don't have any equipment to measure the power usage, but after
-offlining CPUs 1,2,3 via sysfs "online" file, a printk I added
-confirms that the system is going to enter aftr mode, and system
-stability seems as good as ever.
 
-Is there any automatic way that the cpus should be offlined, or is the
-intention that it must be done "by hand" like this?
+> On Fri, Jun 20, 2014 at 4:28 PM, pramod gurav
+> <pramod.gurav.etc@gmail.com> wrote:
+> > +linux-pm
+> >
+> > On Fri, Jun 20, 2014 at 4:27 PM, Pramod Gurav
+> > <pramod.gurav.etc@gmail.com> wrote:
+> >> Fixed: ERROR: do not use assignment in if condition
+> >> Fixed: WARNING: EXPORT_SYMBOL should immediately follow its function
+> >> Fixed: WARNING: line over 80 characters in a comment
+> >>
+> >> CC: Rafael J. Wysocki <rjw@rjwysocki.net>
+> >> CC: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >>
+> >> Signed-off-by: Pramod Gurav <pramod.gurav.etc@gmail.com>
+> >> ---
+> >>  drivers/cpuidle/cpuidle.c |   18 ++++++++----------
+> >>  1 file changed, 8 insertions(+), 10 deletions(-)
+> >>
+> >> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> >> index 8236746..2c8752e 100644
+> >> --- a/drivers/cpuidle/cpuidle.c
+> >> +++ b/drivers/cpuidle/cpuidle.c
+> >> @@ -179,7 +179,9 @@ void cpuidle_reflect(struct cpuidle_device *dev, int index)
+> >>  void cpuidle_install_idle_handler(void)
+> >>  {
+> >>         if (enabled_devices) {
+> >> -               /* Make sure all changes finished before we switch to new idle */
+> >> +               /*
+> >> +                * Make sure all changes finished before we switch to new idle
+> >> +                */
+> >>                 smp_wmb();
+> >>                 initialized = 1;
+> >>         }
+> >> @@ -204,7 +206,6 @@ void cpuidle_pause_and_lock(void)
+> >>         mutex_lock(&cpuidle_lock);
+> >>         cpuidle_uninstall_idle_handler();
+> >>  }
+> >> -
+> >>  EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
+> >>
+> >>  /**
+> >> @@ -215,7 +216,6 @@ void cpuidle_resume_and_unlock(void)
+> >>         cpuidle_install_idle_handler();
+> >>         mutex_unlock(&cpuidle_lock);
+> >>  }
+> >> -
+> >>  EXPORT_SYMBOL_GPL(cpuidle_resume_and_unlock);
+> >>
+> >>  /* Currently used in suspend/resume path to suspend cpuidle */
+> >> @@ -267,9 +267,11 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
+> >>         if (ret)
+> >>                 return ret;
+> >>
+> >> -       if (cpuidle_curr_governor->enable &&
+> >> -           (ret = cpuidle_curr_governor->enable(drv, dev)))
+> >> -               goto fail_sysfs;
+> >> +       if (cpuidle_curr_governor->enable) {
+> >> +               ret = cpuidle_curr_governor->enable(drv, dev);
+> >> +               if (ret)
+> >> +                       goto fail_sysfs;
+> >> +       }
+> >>
+> >>         smp_wmb();
+> >>
+> >> @@ -283,7 +285,6 @@ fail_sysfs:
+> >>
+> >>         return ret;
+> >>  }
+> >> -
+> >>  EXPORT_SYMBOL_GPL(cpuidle_enable_device);
+> >>
+> >>  /**
+> >> @@ -311,7 +312,6 @@ void cpuidle_disable_device(struct cpuidle_device *dev)
+> >>         cpuidle_remove_device_sysfs(dev);
+> >>         enabled_devices--;
+> >>  }
+> >> -
+> >>  EXPORT_SYMBOL_GPL(cpuidle_disable_device);
+> >>
+> >>  static void __cpuidle_unregister_device(struct cpuidle_device *dev)
+> >> @@ -399,7 +399,6 @@ out_unregister:
+> >>         __cpuidle_unregister_device(dev);
+> >>         goto out_unlock;
+> >>  }
+> >> -
+> >>  EXPORT_SYMBOL_GPL(cpuidle_register_device);
+> >>
+> >>  /**
+> >> @@ -423,7 +422,6 @@ void cpuidle_unregister_device(struct cpuidle_device *dev)
+> >>
+> >>         cpuidle_resume_and_unlock();
+> >>  }
+> >> -
+> >>  EXPORT_SYMBOL_GPL(cpuidle_unregister_device);
+> >>
+> >>  /**
+> >> --
+> >> 1.7.9.5
+> >>
+> >
+> >
+> >
+> > --
+> > Thanks and Regards
+> > Pramod
+> 
+> 
+> 
+> 
 
-Thanks,
-Daniel
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
