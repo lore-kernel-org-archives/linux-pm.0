@@ -1,108 +1,224 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] cpuidle/idle: move idle traces to cpuidle_enter_state
-Date: Mon, 14 Jul 2014 22:07:16 +0200
-Message-ID: <20140714200716.GQ9918@twins.programming.kicks-ass.net>
-References: <1404293458-9799-1-git-send-email-sandeep.tripathy@linaro.org>
- <53B81D94.6000404@linaro.org>
- <1602555.3nqafCzk86@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / sleep: Simplify sleep states sysfs interface code
+Date: Mon, 14 Jul 2014 22:37:07 +0200
+Message-ID: <1643406.eWpK0Q1mYZ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="uI9S8aIOhfZRGnE0"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:37065 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756940AbaGNUHb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jul 2014 16:07:31 -0400
-Content-Disposition: inline
-In-Reply-To: <1602555.3nqafCzk86@vostro.rjw.lan>
+Received: from v094114.home.net.pl ([79.96.170.134]:51692 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754870AbaGNUSy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jul 2014 16:18:54 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Sandeep Tripathy <sandeep.tripathy@linaro.org>, rostedt@goodmis.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---uI9S8aIOhfZRGnE0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Simplify the sleep states sysfs interface /sys/power/state code by
+redefining pm_states[] as an array of pointers to constant strings
+such that only the entries corresponding to valid states are set.
 
-On Mon, Jul 14, 2014 at 09:47:46PM +0200, Rafael J. Wysocki wrote:
-> On Saturday, July 05, 2014 05:45:24 PM Daniel Lezcano wrote:
-> > On 07/02/2014 11:30 AM, Sandeep Tripathy wrote:
-> > >   idle_exit event is the first event after a core exits
-> > > idle state.=20
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/power/main.c         |   21 +++++++++++----------
+ kernel/power/power.h        |    7 +------
+ kernel/power/suspend.c      |   34 ++++++++++++++--------------------
+ kernel/power/suspend_test.c |   12 ++++++------
+ 4 files changed, 32 insertions(+), 42 deletions(-)
 
-This
+Index: linux-pm/kernel/power/power.h
+===================================================================
+--- linux-pm.orig/kernel/power/power.h
++++ linux-pm/kernel/power/power.h
+@@ -178,13 +178,8 @@ extern void swsusp_show_speed(struct tim
+ 				unsigned int, char *);
+ 
+ #ifdef CONFIG_SUSPEND
+-struct pm_sleep_state {
+-	const char *label;
+-	suspend_state_t state;
+-};
+-
+ /* kernel/power/suspend.c */
+-extern struct pm_sleep_state pm_states[];
++extern const char *pm_states[];
+ 
+ extern int suspend_devices_and_enter(suspend_state_t state);
+ #else /* !CONFIG_SUSPEND */
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -31,11 +31,8 @@
+ 
+ #include "power.h"
+ 
+-struct pm_sleep_state pm_states[PM_SUSPEND_MAX] = {
+-	[PM_SUSPEND_FREEZE] = { .label = "freeze", .state = PM_SUSPEND_FREEZE },
+-	[PM_SUSPEND_STANDBY] = { .label = "standby", },
+-	[PM_SUSPEND_MEM] = { .label = "mem", },
+-};
++static const char *pm_labels[] = { "mem", "standby", "freeze", };
++const char *pm_states[PM_SUSPEND_MAX];
+ 
+ static const struct platform_suspend_ops *suspend_ops;
+ static const struct platform_freeze_ops *freeze_ops;
+@@ -97,10 +94,7 @@ static bool relative_states;
+ static int __init sleep_states_setup(char *str)
+ {
+ 	relative_states = !strncmp(str, "1", 1);
+-	if (relative_states) {
+-		pm_states[PM_SUSPEND_MEM].state = PM_SUSPEND_FREEZE;
+-		pm_states[PM_SUSPEND_FREEZE].state = 0;
+-	}
++	pm_states[PM_SUSPEND_FREEZE] = pm_labels[relative_states ? 0 : 2];
+ 	return 1;
+ }
+ 
+@@ -113,20 +107,20 @@ __setup("relative_sleep_states=", sleep_
+ void suspend_set_ops(const struct platform_suspend_ops *ops)
+ {
+ 	suspend_state_t i;
+-	int j = PM_SUSPEND_MAX - 1;
++	int j = 0;
+ 
+ 	lock_system_sleep();
+ 
+ 	suspend_ops = ops;
+ 	for (i = PM_SUSPEND_MEM; i >= PM_SUSPEND_STANDBY; i--)
+-		if (valid_state(i))
+-			pm_states[j--].state = i;
+-		else if (!relative_states)
+-			pm_states[j--].state = 0;
+-
+-	pm_states[j--].state = PM_SUSPEND_FREEZE;
+-	while (j >= PM_SUSPEND_MIN)
+-		pm_states[j--].state = 0;
++		if (valid_state(i)) {
++			pm_states[i] = pm_labels[j++];
++		} else if (!relative_states) {
++			pm_states[i] = NULL;
++			j++;
++		}
++
++	pm_states[PM_SUSPEND_FREEZE] = pm_labels[j];
+ 
+ 	unlock_system_sleep();
+ }
+@@ -395,7 +389,7 @@ static int enter_state(suspend_state_t s
+ 	printk("done.\n");
+ 	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+ 
+-	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state].label);
++	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
+ 	error = suspend_prepare(state);
+ 	if (error)
+ 		goto Unlock;
+@@ -404,7 +398,7 @@ static int enter_state(suspend_state_t s
+ 		goto Finish;
+ 
+ 	trace_suspend_resume(TPS("suspend_enter"), state, false);
+-	pr_debug("PM: Entering %s sleep\n", pm_states[state].label);
++	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
+ 	pm_restrict_gfp_mask();
+ 	error = suspend_devices_and_enter(state);
+ 	pm_restore_gfp_mask();
+Index: linux-pm/kernel/power/main.c
+===================================================================
+--- linux-pm.orig/kernel/power/main.c
++++ linux-pm/kernel/power/main.c
+@@ -296,8 +296,8 @@ static ssize_t state_show(struct kobject
+ 	suspend_state_t i;
+ 
+ 	for (i = PM_SUSPEND_MIN; i < PM_SUSPEND_MAX; i++)
+-		if (pm_states[i].state)
+-			s += sprintf(s,"%s ", pm_states[i].label);
++		if (pm_states[i])
++			s += sprintf(s,"%s ", pm_states[i]);
+ 
+ #endif
+ 	if (hibernation_available())
+@@ -311,8 +311,7 @@ static ssize_t state_show(struct kobject
+ static suspend_state_t decode_state(const char *buf, size_t n)
+ {
+ #ifdef CONFIG_SUSPEND
+-	suspend_state_t state = PM_SUSPEND_MIN;
+-	struct pm_sleep_state *s;
++	suspend_state_t state;
+ #endif
+ 	char *p;
+ 	int len;
+@@ -325,10 +324,12 @@ static suspend_state_t decode_state(cons
+ 		return PM_SUSPEND_MAX;
+ 
+ #ifdef CONFIG_SUSPEND
+-	for (s = &pm_states[state]; state < PM_SUSPEND_MAX; s++, state++)
+-		if (s->state && len == strlen(s->label)
+-		    && !strncmp(buf, s->label, len))
+-			return s->state;
++	for (state = PM_SUSPEND_MIN; state < PM_SUSPEND_MAX; state++) {
++		const char *label = pm_states[state];
++
++		if (label && len == strlen(label) && !strncmp(buf, label, len))
++			return state;
++	}
+ #endif
+ 
+ 	return PM_SUSPEND_ON;
+@@ -446,8 +447,8 @@ static ssize_t autosleep_show(struct kob
+ 
+ #ifdef CONFIG_SUSPEND
+ 	if (state < PM_SUSPEND_MAX)
+-		return sprintf(buf, "%s\n", pm_states[state].state ?
+-					pm_states[state].label : "error");
++		return sprintf(buf, "%s\n", pm_states[state] ?
++					pm_states[state] : "error");
+ #endif
+ #ifdef CONFIG_HIBERNATION
+ 	return sprintf(buf, "disk\n");
+Index: linux-pm/kernel/power/suspend_test.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend_test.c
++++ linux-pm/kernel/power/suspend_test.c
+@@ -92,13 +92,13 @@ static void __init test_wakealarm(struct
+ 	}
+ 
+ 	if (state == PM_SUSPEND_MEM) {
+-		printk(info_test, pm_states[state].label);
++		printk(info_test, pm_states[state]);
+ 		status = pm_suspend(state);
+ 		if (status == -ENODEV)
+ 			state = PM_SUSPEND_STANDBY;
+ 	}
+ 	if (state == PM_SUSPEND_STANDBY) {
+-		printk(info_test, pm_states[state].label);
++		printk(info_test, pm_states[state]);
+ 		status = pm_suspend(state);
+ 	}
+ 	if (status < 0)
+@@ -141,8 +141,8 @@ static int __init setup_test_suspend(cha
+ 	/* "=mem" ==> "mem" */
+ 	value++;
+ 	for (i = PM_SUSPEND_MIN; i < PM_SUSPEND_MAX; i++)
+-		if (!strcmp(pm_states[i].label, value)) {
+-			test_state = pm_states[i].state;
++		if (!strcmp(pm_states[i], value)) {
++			test_state = i;
+ 			return 0;
+ 		}
+ 
+@@ -162,8 +162,8 @@ static int __init test_suspend(void)
+ 	/* PM is initialized by now; is that state testable? */
+ 	if (test_state == PM_SUSPEND_ON)
+ 		goto done;
+-	if (!pm_states[test_state].state) {
+-		printk(warn_bad_state, pm_states[test_state].label);
++	if (!pm_states[test_state]) {
++		printk(warn_bad_state, pm_states[test_state]);
+ 		goto done;
+ 	}
+ 
 
-> > > So this should be traced before local irq
-> > > is ebabled.=20
-
-does not follow, interrupt state does not correlate to events or not.
-
-> > > Likewise idle_entry is the last event before
-> > > a core enters idle state. This will ease visualising the
-> > > cpu idle state from kernel traces.
-> > >
-> > > Signed-off-by: Sandeep Tripathy <sandeep.tripathy@linaro.org>
-> >=20
-> > Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->=20
-> I'm going to take this for 3.17.
->=20
-> Peter, will there be any problems with it if I take it?
-
-don't think so, if there's anything, I'll fix it up.
-
-> > > ---
-> > >   drivers/cpuidle/cpuidle.c | 3 +++
-> > >   kernel/sched/idle.c       | 4 ----
-> > >   2 files changed, 3 insertions(+), 4 deletions(-)
-> > >
-> > > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> > > index 8236746..97680d0 100644
-> > > --- a/drivers/cpuidle/cpuidle.c
-> > > +++ b/drivers/cpuidle/cpuidle.c
-> > > @@ -99,12 +99,15 @@ int cpuidle_enter_state(struct cpuidle_device *de=
-v, struct cpuidle_driver *drv,
-> > >   	ktime_t time_start, time_end;
-> > >   	s64 diff;
-> > >
-> > > +	trace_cpu_idle_rcuidle(index, dev->cpu);
-> > >   	time_start =3D ktime_get();
-> > >
-> > >   	entered_state =3D target_state->enter(dev, drv, index);
-> > >
-> > >   	time_end =3D ktime_get();
-> > >
-> > > +	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
-
-If someone were to instrument ktime_get() the changelog is obviously
-fail. Now I appreciate that instrumenting the timing infrastructure
-might be challenging .. :-)
-
-And I suppose the 'assumption' is that the target_state->enter()
-function does not entail 'tracing' ? Is it made sure that these
-functions do not generate __mcount or other function tracer stubs etc. ?
-
---uI9S8aIOhfZRGnE0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTxDh0AAoJEHZH4aRLwOS6wCUQAKILnibMMXdiz2adZ6YJZ9Hc
-7YyQy7dGcMnSVdhP0HnBYTgvaahS9G2yIvOkBG31VCfhQ+rtQTHgjJi5ip1Fbw7j
-paIONTsruET3NIGNFiJfS4vNMkuVrG25mabEl4Aw2jndFKLkD8MSCZptYS9thKO8
-s1D0YWynvE/Q9VtitHNp4nAAHQ4uOag4uM4UhlWSDpeVvqvz0BepXORtxwFf5r3+
-mSNofQr/pimTIp6rOul+chsGkTvJ+bc3I92q2DfHCk9A0FzMn0yV6Pupj6JWOZ/x
-wcdj0kA2InzCtIK/gP8YnFUozYbrzogQ85OPAtTV7w1YqtQZSgpZUmxVU+YoqiGw
-Xi7PMoGyOKY6XA+iFUQ9O7oEcddbSAcDfNosjzXoJFAIokuHnHV8Rc2f8OxOYlO+
-7IOUVTpBnqk/fqUAaGfJW/zUAl0Is/9k20nVhLddXhZnVk6zi5KY4WyVK5mN448a
-pF3PJBPlY0InCXwbAlQwxm1vf8vOKwOWPCw7SOlWEjYAPJYce8ezQLMngIaerKkT
-LgvTphlX3v2R4DnwosCNDjnN7pFXV1yI2SXCGc1bAPXnYH7wn36+u6Wax1bF4EDe
-bZdyP4MKKp7ejkKs4l9uN65nUsa7sveugVB8EhQ7S5m0wjXc61OcfezU9lDDiLm0
-zp8zBtnXF+jeinB3XXmV
-=W7FZ
------END PGP SIGNATURE-----
-
---uI9S8aIOhfZRGnE0--
