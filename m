@@ -1,143 +1,85 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpuidle: Fix Coding style reported by checkpatch.pl
-Date: Mon, 14 Jul 2014 20:08:13 +0200
-Message-ID: <3820825.ei0ZJkn3Cj@vostro.rjw.lan>
-References: <1403261865-7472-1-git-send-email-pramod.gurav.etc@gmail.com> <CAMf-jSm=YK4AN9-enh_8F4DYf-JGpv_=FRYdgYTt5P_EvSsE8g@mail.gmail.com> <CAMf-jSmvVL9BwkiqmS0Ep+MhZHERXsV_E8vHKdthM7hmnd9Fkg@mail.gmail.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v2] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
+Date: Mon, 14 Jul 2014 12:08:24 -0700
+Message-ID: <53C42AA8.8010107@codeaurora.org>
+References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org> <1405052287-4744-1-git-send-email-skannan@codeaurora.org> <CAKohponB9feyh50p+dL5hyU1ffHAzHU59G-sYCrCm1AbHQe9hw@mail.gmail.com> <2f549e6e4871ccf2a94dd4c8872c7a0b.squirrel@www.codeaurora.org> <CAKohpokhmj1OkCRj=X+Q7eYiun8fsqD2dpEt66VKYnqo3dENVA@mail.gmail.com> <53C0A12A.2060204@codeaurora.org> <CAKohpon9en_VnSx+CVydPsWBHtArvmazn0hrodrRJt9jgOa0-g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52433 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751148AbaGNRuA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jul 2014 13:50:00 -0400
-In-Reply-To: <CAMf-jSmvVL9BwkiqmS0Ep+MhZHERXsV_E8vHKdthM7hmnd9Fkg@mail.gmail.com>
+Received: from smtp.codeaurora.org ([198.145.11.231]:59525 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518AbaGNTI1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jul 2014 15:08:27 -0400
+In-Reply-To: <CAKohpon9en_VnSx+CVydPsWBHtArvmazn0hrodrRJt9jgOa0-g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: pramod gurav <pramod.gurav.etc@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
 
-On Monday, July 14, 2014 12:40:24 PM pramod gurav wrote:
-> Hi Rafael,
-> 
-> Can we consider these changes if there are  no issues with this?
+On 07/13/2014 11:09 PM, Viresh Kumar wrote:
+> On 12 July 2014 08:14, Saravana Kannan <skannan@codeaurora.org> wrote:
+>
+>>>> I'm just always adding the real nodes to the first CPU in a cluster
+>>>> independent of which CPU gets added first. Makes it easier to know which
+>>>> ones to symlink. See comment next to policy->cpu for full context.
+>>>
+>>>
+>>> Yeah, and that is the order in which CPUs will boot and cpufreq_add_dev()
+>>> will be called. So, isn't policy->cpu the right CPU always?
+>>
+>>
+>> No, the "first" cpu in a cluster doesn't need to be the first one to be
+>> added. An example is 2x2 cluster system where the system is booted with max
+>> cpus = 2 and then cpu3 could be onlined first by userspace.
+>
+> Because we are getting rid of much of the complexity now, I do not want
+> policy->cpu to keep changing. Just fix it up to the cpu for which the policy
+> gets created first. That's it. No more changes required. It doesn't matter at
+> userspace which cpu owns it as symlinks would anyway duplicate it under
+> every cpu.
 
-Well, are you "fixing" checkpatch.pl warnings just for the sake of
-this or is there a deeper reason?
+I think you missed one my of comments in the email. I agree with what 
+you are saying here. I'll just do it as a separate patch to keep this 
+one simpler. I don't want to touch all the governors and other potential 
+uses of policy->cpu in this patch.
 
-Rafael
+>> Yeah, it is pretty convolution. But pretty much anywhere in the gov code
+>> where policy->cpu is used could cause this. The specific crash I hit was in
+>> this code:
+>>
+>> static void od_dbs_timer(struct work_struct *work)
+>> {
+>>          struct od_cpu_dbs_info_s *dbs_info =
+>>                  container_of(work, struct od_cpu_dbs_info_s,
+>> cdbs.work.work);
+>>          unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
+>>
+>> ======= CPU is policy->cpu here.
+>>
+>>          struct od_cpu_dbs_info_s *core_dbs_info = &per_cpu(od_cpu_dbs_info,
+>>                          cpu);
+>>
+>> ======= Picks the per CPU struct of an offline CPU
+>>
+>> <snip>
+>>
+>>          mutex_lock(&core_dbs_info->cdbs.timer_mutex);
+>>
+>> ======= Dies trying to lock a destroyed mutex
+>
+> I am still not getting it. Why would we get into this if policy->cpu is fixed
+> once at boot ?
+>
 
+Yeah, it definitely crashes if policy->cpu if an offline cpu. Because 
+the mutex would be uninitialized if it's stopped after boot or it would 
+never have been initialized (depending on how you fix policy->cpu at boot).
 
-> On Fri, Jun 20, 2014 at 4:28 PM, pramod gurav
-> <pramod.gurav.etc@gmail.com> wrote:
-> > +linux-pm
-> >
-> > On Fri, Jun 20, 2014 at 4:27 PM, Pramod Gurav
-> > <pramod.gurav.etc@gmail.com> wrote:
-> >> Fixed: ERROR: do not use assignment in if condition
-> >> Fixed: WARNING: EXPORT_SYMBOL should immediately follow its function
-> >> Fixed: WARNING: line over 80 characters in a comment
-> >>
-> >> CC: Rafael J. Wysocki <rjw@rjwysocki.net>
-> >> CC: Daniel Lezcano <daniel.lezcano@linaro.org>
-> >>
-> >> Signed-off-by: Pramod Gurav <pramod.gurav.etc@gmail.com>
-> >> ---
-> >>  drivers/cpuidle/cpuidle.c |   18 ++++++++----------
-> >>  1 file changed, 8 insertions(+), 10 deletions(-)
-> >>
-> >> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> >> index 8236746..2c8752e 100644
-> >> --- a/drivers/cpuidle/cpuidle.c
-> >> +++ b/drivers/cpuidle/cpuidle.c
-> >> @@ -179,7 +179,9 @@ void cpuidle_reflect(struct cpuidle_device *dev, int index)
-> >>  void cpuidle_install_idle_handler(void)
-> >>  {
-> >>         if (enabled_devices) {
-> >> -               /* Make sure all changes finished before we switch to new idle */
-> >> +               /*
-> >> +                * Make sure all changes finished before we switch to new idle
-> >> +                */
-> >>                 smp_wmb();
-> >>                 initialized = 1;
-> >>         }
-> >> @@ -204,7 +206,6 @@ void cpuidle_pause_and_lock(void)
-> >>         mutex_lock(&cpuidle_lock);
-> >>         cpuidle_uninstall_idle_handler();
-> >>  }
-> >> -
-> >>  EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
-> >>
-> >>  /**
-> >> @@ -215,7 +216,6 @@ void cpuidle_resume_and_unlock(void)
-> >>         cpuidle_install_idle_handler();
-> >>         mutex_unlock(&cpuidle_lock);
-> >>  }
-> >> -
-> >>  EXPORT_SYMBOL_GPL(cpuidle_resume_and_unlock);
-> >>
-> >>  /* Currently used in suspend/resume path to suspend cpuidle */
-> >> @@ -267,9 +267,11 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
-> >>         if (ret)
-> >>                 return ret;
-> >>
-> >> -       if (cpuidle_curr_governor->enable &&
-> >> -           (ret = cpuidle_curr_governor->enable(drv, dev)))
-> >> -               goto fail_sysfs;
-> >> +       if (cpuidle_curr_governor->enable) {
-> >> +               ret = cpuidle_curr_governor->enable(drv, dev);
-> >> +               if (ret)
-> >> +                       goto fail_sysfs;
-> >> +       }
-> >>
-> >>         smp_wmb();
-> >>
-> >> @@ -283,7 +285,6 @@ fail_sysfs:
-> >>
-> >>         return ret;
-> >>  }
-> >> -
-> >>  EXPORT_SYMBOL_GPL(cpuidle_enable_device);
-> >>
-> >>  /**
-> >> @@ -311,7 +312,6 @@ void cpuidle_disable_device(struct cpuidle_device *dev)
-> >>         cpuidle_remove_device_sysfs(dev);
-> >>         enabled_devices--;
-> >>  }
-> >> -
-> >>  EXPORT_SYMBOL_GPL(cpuidle_disable_device);
-> >>
-> >>  static void __cpuidle_unregister_device(struct cpuidle_device *dev)
-> >> @@ -399,7 +399,6 @@ out_unregister:
-> >>         __cpuidle_unregister_device(dev);
-> >>         goto out_unlock;
-> >>  }
-> >> -
-> >>  EXPORT_SYMBOL_GPL(cpuidle_register_device);
-> >>
-> >>  /**
-> >> @@ -423,7 +422,6 @@ void cpuidle_unregister_device(struct cpuidle_device *dev)
-> >>
-> >>         cpuidle_resume_and_unlock();
-> >>  }
-> >> -
-> >>  EXPORT_SYMBOL_GPL(cpuidle_unregister_device);
-> >>
-> >>  /**
-> >> --
-> >> 1.7.9.5
-> >>
-> >
-> >
-> >
-> > --
-> > Thanks and Regards
-> > Pramod
-> 
-> 
-> 
-> 
+Look at this snippet on the actual tree and it should be pretty evident.
+
+-Saravana
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
