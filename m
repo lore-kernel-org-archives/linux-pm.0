@@ -1,80 +1,46 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [RESEND PATCH 0/6] thermal: sti: Add new Thermal driver
-Date: Mon, 14 Jul 2014 15:27:03 +0100
-Message-ID: <20140714142703.GC3993@lee--X1>
-References: <1401980819-19962-1-git-send-email-lee.jones@linaro.org>
- <20140624092309.GD13803@lee--X1>
- <20140709120823.GA32573@lee--X1>
- <1404911964.28592.4.camel@rzhang1-toshiba>
- <20140709134646.GB479@lee--X1>
- <20140714130824.GA3993@lee--X1>
- <1405347277.28592.25.camel@rzhang1-toshiba>
+From: Daniel Drake <drake@endlessm.com>
+Subject: Re: [PATCH v3 0/4] ARM: EXYNOS: cpuidle: fix AFTR mode on boards with
+ secure firmware enabled
+Date: Mon, 14 Jul 2014 16:41:25 +0100
+Message-ID: <CAD8Lp46mp-tHcwGpFd0YHRDE4pKWDoPpUvu-Y0QzxSi-jnYtWg@mail.gmail.com>
+References: <1404926274-18411-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f175.google.com ([209.85.223.175]:48841 "EHLO
-	mail-ie0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754648AbaGNO1J (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jul 2014 10:27:09 -0400
-Received: by mail-ie0-f175.google.com with SMTP id x19so3364499ier.34
-        for <linux-pm@vger.kernel.org>; Mon, 14 Jul 2014 07:27:09 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1405347277.28592.25.camel@rzhang1-toshiba>
+Received: from mail-wg0-f46.google.com ([74.125.82.46]:62709 "EHLO
+	mail-wg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755709AbaGNPl1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jul 2014 11:41:27 -0400
+Received: by mail-wg0-f46.google.com with SMTP id m15so4315301wgh.17
+        for <linux-pm@vger.kernel.org>; Mon, 14 Jul 2014 08:41:25 -0700 (PDT)
+In-Reply-To: <1404926274-18411-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, ajitpal.singh@st.com, edubezval@gmail.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, maxime.coquelin@st.com, patrice.chotard@st.com
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-On Mon, 14 Jul 2014, Zhang Rui wrote:
+Hi Bartlomiej,
 
-> On Mon, 2014-07-14 at 14:08 +0100, Lee Jones wrote:
-> > On Wed, 09 Jul 2014, Lee Jones wrote:
-> > > On Wed, 09 Jul 2014, Zhang Rui wrote:
-> > > > On Wed, 2014-07-09 at 13:08 +0100, Lee Jones wrote:
-> > > > > On Tue, 24 Jun 2014, Lee Jones wrote:
-> > > > >=20
-> > > > > > > I'm re-sending this set, as one of the maintainers' email=
- addresses
-> > > > > > > is incorrect in the MAINTAINERS file.
-> > > > > > >=20
-> > > > > > > This patchset adds full support for 2 types of Thermal Co=
-ntrollers
-> > > > > > > produced by STMicroelectronics.  One is a more traditiona=
-l memory
-> > > > > > > mapped variant, the other is controlled solely by system =
-configuration
-> > > > > > > registers.
-> > > > > >=20
-> > > > > > Any thing from the Thermal guys? Has this set fallen throug=
-h the gaps?
-> > > > >=20
-> > > > > Anything at all?  It's been well over a month now.
-> > > > >=20
-> > > > Well, for the soc thermal drivers, I'd prefer to take them via =
-Eduardo,
-> > > > but as we didn't get any feedback from Eduardo, I will take the=
-m.
-> > >=20
-> > > Thanks Rui.
-> > >=20
-> > > So have you taken all 4 "thermal: sti: *" patches?
-> >=20
-> > Have you taken these yet?
-> Not yet.
-> will do tomorrow.
+On Wed, Jul 9, 2014 at 6:17 PM, Bartlomiej Zolnierkiewicz
+<b.zolnierkie@samsung.com> wrote:
+> This patch series adds support for AFTR idle mode on boards with
+> secure firmware enabled and allows EXYNOS cpuidle driver usage on
+> Exynos4x12 SoCs.
+>
+> It has been tested on Trats2 board (using Exynos4412 SoC with secure
+> firmware enabled) on which AFTR mode reduces power consumption by ~12%
+> when EXYNOS cpuidle driver is enabled (in both cases the default
+> exynos_defconfig config is used and CPU1-3 are offlined).
 
-Perfect, thanks for the update.
+Thanks for this, I have tested it on ODROID-U2.
 
-> >   I notice that these aren't in -next yet.
-> >=20
-> > > The ARM ones should go through Maxime.
-> >=20
->=20
->=20
+I don't have any equipment to measure the power usage, but after
+offlining CPUs 1,2,3 via sysfs "online" file, a printk I added
+confirms that the system is going to enter aftr mode, and system
+stability seems as good as ever.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Is there any automatic way that the cpus should be offlined, or is the
+intention that it must be done "by hand" like this?
+
+Thanks,
+Daniel
