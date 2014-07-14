@@ -1,39 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
-Date: Mon, 14 Jul 2014 11:43:24 +0530
-Message-ID: <CAKohpokdvtPj7jg88mon+EnHRCbUF7nqFWvmkFEMVh5WRzSS5A@mail.gmail.com>
-References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org>
-	<1405052287-4744-1-git-send-email-skannan@codeaurora.org>
-	<CAKohponB9feyh50p+dL5hyU1ffHAzHU59G-sYCrCm1AbHQe9hw@mail.gmail.com>
-	<53C0A648.9080909@codeaurora.org>
+From: Nick Krause <xerofoify@gmail.com>
+Subject: Re: [PATCH] cpufreq: Fix latency for cpufreq_info
+Date: Mon, 14 Jul 2014 02:25:29 -0400
+Message-ID: <CAPDOMVj657n5eAztm_5Oogxn1j7v6faykqdJefs6MjD36sdBHg@mail.gmail.com>
+References: <1405314104-9688-1-git-send-email-xerofoify@gmail.com>
+	<CAKohpokxmrFz+4x+V3MeEuKgnzQoETWLA_0aZHhhE6=+MvQP1Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <53C0A648.9080909@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f177.google.com ([209.85.220.177]:48960 "EHLO
+	mail-vc0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752048AbaGNGZa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jul 2014 02:25:30 -0400
+In-Reply-To: <CAKohpokxmrFz+4x+V3MeEuKgnzQoETWLA_0aZHhhE6=+MvQP1Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 12 July 2014 08:36, Saravana Kannan <skannan@codeaurora.org> wrote:
-> On 07/10/2014 11:19 PM, Viresh Kumar wrote:
->
+On Mon, Jul 14, 2014 at 2:10 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 14 July 2014 10:31, Nicholas Krause <xerofoify@gmail.com> wrote:
+>> This fixes the latency for the cpufreq policy to 1 million nanoseconds
+>> that calls the function pxa_cpu_init for the member of the structure
+>> called cpuinfo.transition_latency.
 >>
->> Please make sure you take care of these issues:
->> - suspend/resume
->> - hotplug
->> - module insert/remove
+>> Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
+>> ---
+>>  drivers/cpufreq/pxa2xx-cpufreq.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
+>> index e24269a..e08bb98 100644
+>> --- a/drivers/cpufreq/pxa2xx-cpufreq.c
+>> +++ b/drivers/cpufreq/pxa2xx-cpufreq.c
+>> @@ -372,7 +372,7 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
+>>         init_sdram_rows();
+>>
+>>         /* set default policy and cpuinfo */
+>> -       policy->cpuinfo.transition_latency = 1000; /* FIXME: 1 ms, assumed */
+>> +       policy->cpuinfo.transition_latency = 1000, 000;
 >
-> Ok, I was just at the current code. Does cpufreq_unregister_driver() even
-> really work correctly as it stands?
+> Have you tried testing this at all? This patch wouldn't change anything.
+> Still 1000 will get assigned to latency :)
 >
-> It doesn't even seem to stop any of the governors/policies before it just
-> set the cpufreq_driver pointer to NULL.
->
-> So, technically my v2 patch doesn't even make anything worse when it comes
-> to unregistering the cpufreq driver.
-
-Are you really sure about this? I have tested this *myself* earlier..
-
-subsys_interface_unregister() should take care of stopping/freeing governor
-stuff..
+> Get rid of the comma.
+Sure , sorry about the comma. I am resending this patch to you fixed.
+Cheers Nick
