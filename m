@@ -1,53 +1,93 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v2] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
-Date: Mon, 14 Jul 2014 12:10:21 -0700
-Message-ID: <53C42B1D.8070301@codeaurora.org>
-References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org> <1405052287-4744-1-git-send-email-skannan@codeaurora.org> <CAKohponB9feyh50p+dL5hyU1ffHAzHU59G-sYCrCm1AbHQe9hw@mail.gmail.com> <53C0A648.9080909@codeaurora.org> <CAKohpokdvtPj7jg88mon+EnHRCbUF7nqFWvmkFEMVh5WRzSS5A@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpuidle/idle: move idle traces to cpuidle_enter_state
+Date: Mon, 14 Jul 2014 21:47:46 +0200
+Message-ID: <1602555.3nqafCzk86@vostro.rjw.lan>
+References: <1404293458-9799-1-git-send-email-sandeep.tripathy@linaro.org> <53B81D94.6000404@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokdvtPj7jg88mon+EnHRCbUF7nqFWvmkFEMVh5WRzSS5A@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64369 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754870AbaGNT3e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jul 2014 15:29:34 -0400
+In-Reply-To: <53B81D94.6000404@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Sandeep Tripathy <sandeep.tripathy@linaro.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: rostedt@goodmis.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
 
-On 07/13/2014 11:13 PM, Viresh Kumar wrote:
-> On 12 July 2014 08:36, Saravana Kannan <skannan@codeaurora.org> wrote:
->> On 07/10/2014 11:19 PM, Viresh Kumar wrote:
->>
->>>
->>> Please make sure you take care of these issues:
->>> - suspend/resume
->>> - hotplug
->>> - module insert/remove
->>
->> Ok, I was just at the current code. Does cpufreq_unregister_driver() even
->> really work correctly as it stands?
->>
->> It doesn't even seem to stop any of the governors/policies before it just
->> set the cpufreq_driver pointer to NULL.
->>
->> So, technically my v2 patch doesn't even make anything worse when it comes
->> to unregistering the cpufreq driver.
->
-> Are you really sure about this? I have tested this *myself* earlier..
->
-> subsys_interface_unregister() should take care of stopping/freeing governor
-> stuff..
->
+On Saturday, July 05, 2014 05:45:24 PM Daniel Lezcano wrote:
+> On 07/02/2014 11:30 AM, Sandeep Tripathy wrote:
+> >   idle_exit event is the first event after a core exits
+> > idle state. So this should be traced before local irq
+> > is ebabled. Likewise idle_entry is the last event before
+> > a core enters idle state. This will ease visualising the
+> > cpu idle state from kernel traces.
+> >
+> > Signed-off-by: Sandeep Tripathy <sandeep.tripathy@linaro.org>
+> 
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-I was asking this question based on looking at the code. Didn't actually 
-try it -- sent it just before being done for the day. I didn't know 
-about the subsys_interface_unregister() coming into play here. I'll take 
-a look.
+I'm going to take this for 3.17.
 
-Thanks for the pointer.
+Peter, will there be any problems with it if I take it?
 
--Saravana
+Rafael
 
+
+> > ---
+> >   drivers/cpuidle/cpuidle.c | 3 +++
+> >   kernel/sched/idle.c       | 4 ----
+> >   2 files changed, 3 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> > index 8236746..97680d0 100644
+> > --- a/drivers/cpuidle/cpuidle.c
+> > +++ b/drivers/cpuidle/cpuidle.c
+> > @@ -99,12 +99,15 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+> >   	ktime_t time_start, time_end;
+> >   	s64 diff;
+> >
+> > +	trace_cpu_idle_rcuidle(index, dev->cpu);
+> >   	time_start = ktime_get();
+> >
+> >   	entered_state = target_state->enter(dev, drv, index);
+> >
+> >   	time_end = ktime_get();
+> >
+> > +	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+> > +
+> >   	if (!cpuidle_state_is_coupled(dev, drv, entered_state))
+> >   		local_irq_enable();
+> >
+> > diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> > index 8f4390a..07c446a 100644
+> > --- a/kernel/sched/idle.c
+> > +++ b/kernel/sched/idle.c
+> > @@ -141,7 +141,6 @@ static int cpuidle_idle_call(void)
+> >   					&dev->cpu);
+> >
+> >   			if (!ret) {
+> > -				trace_cpu_idle_rcuidle(next_state, dev->cpu);
+> >
+> >   				/*
+> >   				 * Enter the idle state previously
+> > @@ -154,9 +153,6 @@ static int cpuidle_idle_call(void)
+> >   				entered_state = cpuidle_enter(drv, dev,
+> >   							      next_state);
+> >
+> > -				trace_cpu_idle_rcuidle(PWR_EVENT_EXIT,
+> > -						       dev->cpu);
+> > -
+> >   				if (broadcast)
+> >   					clockevents_notify(
+> >   						CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+> >
+> 
+> 
+> 
 
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
