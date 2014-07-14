@@ -1,8 +1,8 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 Subject: Re: [PATCH 01/13] clk: tegra: Add binding for the Tegra124 DFLL
  clocksource
-Date: Mon, 14 Jul 2014 10:12:33 +0100
-Message-ID: <20140714091233.GC6800@sirena.org.uk>
+Date: Mon, 14 Jul 2014 11:24:35 +0200
+Message-ID: <20140714092434.GA9755@ulmo>
 References: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com>
  <1405028569-14253-2-git-send-email-ttynkkynen@nvidia.com>
  <CAL1qeaFF0ZpUFovxTuLXrBPRg2Lbf-754Z=ztD5HFZPbfnDsAw@mail.gmail.com>
@@ -10,59 +10,81 @@ References: <1405028569-14253-1-git-send-email-ttynkkynen@nvidia.com>
  <CAL1qeaHETQ7kSGNjPiwi_9WNMtr9qZp0KwjZCCxY29+_N4AcuA@mail.gmail.com>
  <53C01D17.2050906@nvidia.com>
  <20140714083854.GO2081@ulmo>
+ <20140714091233.GC6800@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Izn7cH1Com+I3R9J"
+	protocol="application/pgp-signature"; boundary="+HP7ph2BbKc20aGI"
 Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20140714083854.GO2081@ulmo>
+In-Reply-To: <20140714091233.GC6800-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
 Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 Cc: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Andrew Bresticker <abrestic-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---Izn7cH1Com+I3R9J
+--+HP7ph2BbKc20aGI
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jul 14, 2014 at 10:38:56AM +0200, Thierry Reding wrote:
-> On Fri, Jul 11, 2014 at 08:21:27PM +0300, Tuomas Tynkkynen wrote:
+On Mon, Jul 14, 2014 at 10:12:33AM +0100, Mark Brown wrote:
+> On Mon, Jul 14, 2014 at 10:38:56AM +0200, Thierry Reding wrote:
+> > On Fri, Jul 11, 2014 at 08:21:27PM +0300, Tuomas Tynkkynen wrote:
+>=20
+> > > I don't think we can assume that each selector maps to a concrete reg=
+ister
+> > > value, though I'm not sure. include/linux/regulator/driver.h document=
+s for
+> > > @list_voltage "Selectors range from zero to one less
+> > > regulator_desc.n_voltages." but maybe the consumer API could take dif=
+ferent
+> > > values.
+>=20
+> > I don't think the regulator API makes any guarantees that the selector
+> > corresponds to a register value. Adding Mark Brown, maybe he can help
+> > figure out the best way to do this.
+>=20
+> The selector value is opaque, it's entirely up to the driver to define
+> it.  If you could tell me what "this" is I might be able to advise on
+> how to do it.
 
-> > I don't think we can assume that each selector maps to a concrete register
-> > value, though I'm not sure. include/linux/regulator/driver.h documents for
-> > @list_voltage "Selectors range from zero to one less
-> > regulator_desc.n_voltages." but maybe the consumer API could take different
-> > values.
+Tegra124 (and later, also some earlier variants) have this DFLL clock
+that can program a PMIC automatically depending on the CPU frequency.
+This DT binding did propose putting this into device tree as a table of
+<frequency value> pairs where the frequency corresponds to the CPU
+frequency and the value is the register value to be programmed into the
+PMIC by the DFLL hardware (there are two additional properties to define
+the slave address and the register offset).
 
-> I don't think the regulator API makes any guarantees that the selector
-> corresponds to a register value. Adding Mark Brown, maybe he can help
-> figure out the best way to do this.
+Andrew proposed that this table could instead be built by using
+regulator_list_voltage() instead. However, due to the fact that the DFLL
+hardware needs to know the immediate value to write into a register, the
+requirement would be for a 1:1 mapping between selector and register
+value. Given that the API needs to cover the general case I don't see
+how it could practically ensure this.
 
-The selector value is opaque, it's entirely up to the driver to define
-it.  If you could tell me what "this" is I might be able to advise on
-how to do it.
+Thierry
 
---Izn7cH1Com+I3R9J
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+--+HP7ph2BbKc20aGI
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBAgAGBQJTw57+AAoJELSic+t+oim9AGsP/RZe8JPihANdv/oeybcpori8
-i2DpTFTqDeqbjE6YqHLCjBuQdHAwr+liAFnYyuaYOy1mIymqufXZw+oiUX9jNraW
-LOXJuq8pU1z+nJvjBgQVNsy8t6lScak1IpLYmA8N2wpL2AMtlBqnKCyxs1OZloYF
-3TXHwfPGZ9cQrONrYAHSEEpX+xkBZ0NSc9VaCwwEC+DR9jc8ODXj/bJkBp9JXrZm
-jHLGl4p5H8IvIKQSxp1iFc/lDkNgobzTEV/I+n2NksyVRqYRZaHlMOzzzT6u/jyf
-8bJqjFe0gg982lBs8j07yWG6hgralBiC98nvlS1zunuXepM0Nge9IO6gsycd31qJ
-CD0RabiwRSlJGlliSiePNNDDH7pzO8bDq1NuG2SijnZq2YvP2kN2z6xu4x8q+YpJ
-h/c2i3/Y5rBeliT5LcukoIKicc6QAuKP2lZUWA2aZWcGHgUDHhivE6ibjkaFwco5
-GQSZ63psaIbJINtVKeWbkFtswwGeGxPdgK5I3qEcoRnEfn/Aala4XmorgpV90seL
-OnrWFOdjZuTDYHmr3SKoRs48u74Bt4Ce2Fq1rAgeltXfiRff1exiwYcoupUx9pkQ
-INA/P9TAguSJBy0hj4/zBMtZObsp9T/T89gliTf8v/yBo5+N9l4xQNJakq9muS4P
-jBg4x2lRrdNC/7a/Qpn9
-=oEVi
+iQIcBAEBAgAGBQJTw6HSAAoJEN0jrNd/PrOhbFwP/03tePNKsD5IznjxmNgv6AMm
+uot8qEnBu6iDp29m/HYArNbmtbsmpvVPiYdmV26DkpT21YP8qokTEmvKHwKSJ9gV
+zeZlVKUXIRf04NfZLttOxWkQYIm3rx4WLlszJa4HE6i9K/bBKqrIgemffLW7aq54
+vlDYd6QMOM6fIEJUk6+tZ5LyhwVhuiNFOJWVt+onhI0bxAMU+oiHCD//z82JXNQq
+Je05gDP0KqGUtM7xjDrCH0c+pQ1OVcUK1veDAmuvSJvlR3Rlf6fLn4lKlKwSSEqj
+nHAtUdoDvqIrFj5KISWpuYkrkk4K6Kg0PQ4Ux/ojWEqoecAzKCnhIgzW2IL3tIUA
+16tq6tn6pc6CGSchljYNG0P2zxmweBROtzPL0rBSCmxT052mK1+G6RXNMGE8dpie
+U+XuXYxlweGxMVJk1OIUAg/Y2o4EBz6LUjcpmOGuB3YqeJ9qV2bD9kKQadHtYSl7
+dvt1ZFdaYA6iHrFZYJ/k1QvmNey4b5sri4vTJ7d9PDJBPL07xsljDx83nXMFoC+Y
+XI2GVaA2/pbsce5CTSzBcaWMp6ipaMrb6WrOsYO3b52VBELOZhO5ix54W2kZykTC
+3zFh6OGqZJAXfULF7nRi/Q6IC0dVuipIHCuZIRhfvEilE0sad1zszCTtFTM/HE+v
+m8SKSlf9hUiGbK7D+iHH
+=8il+
 -----END PGP SIGNATURE-----
 
---Izn7cH1Com+I3R9J--
+--+HP7ph2BbKc20aGI--
