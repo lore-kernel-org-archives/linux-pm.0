@@ -1,95 +1,72 @@
-From: "Srivatsa S. Bhat" <srivatsa@MIT.EDU>
-Subject: Re: [PATCH v2] cpufreq: Don't destroy/realloc policy/sysfs on
- hotplug/suspend
-Date: Tue, 15 Jul 2014 12:28:54 +0530
-Message-ID: <53C4D12E.3040807@mit.edu>
-References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org>
- <1405052287-4744-1-git-send-email-skannan@codeaurora.org>
- <CAKohponB9feyh50p+dL5hyU1ffHAzHU59G-sYCrCm1AbHQe9hw@mail.gmail.com>
- <2f549e6e4871ccf2a94dd4c8872c7a0b.squirrel@www.codeaurora.org>
- <CAKohpokhmj1OkCRj=X+Q7eYiun8fsqD2dpEt66VKYnqo3dENVA@mail.gmail.com>
- <53C0A12A.2060204@codeaurora.org>
- <CAKohpon9en_VnSx+CVydPsWBHtArvmazn0hrodrRJt9jgOa0-g@mail.gmail.com>
- <53C42AA8.8010107@codeaurora.org>
- <CAKohpomkqbHZo9KrJMSwsEKGt6+Ac2Fg2X0+S7ZAo=OzhAc45g@mail.gmail.com>
- <53C4BDFB.70707@codeaurora.org>
+From: Alexander Stein <alexander.stein@systec-electronic.com>
+Subject: PM freeze does not work on AT91
+Date: Tue, 15 Jul 2014 10:07:09 +0200
+Message-ID: <3082229.H5zoEYePBM@ws-stein>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <53C4BDFB.70707@codeaurora.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Saravana Kannan <skannan@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Todd Poynor <toddpoynor@google.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from webbox1416.server-home.net ([77.236.96.61]:33928 "EHLO
+	webbox1416.server-home.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756256AbaGOIKP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Jul 2014 04:10:15 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-On 07/15/2014 11:06 AM, Saravana Kannan wrote:
-> On 07/14/2014 09:35 PM, Viresh Kumar wrote:
->> On 15 July 2014 00:38, Saravana Kannan <skannan@codeaurora.org> wrote:
->>> Yeah, it definitely crashes if policy->cpu if an offline cpu. Because
->>> the
->>> mutex would be uninitialized if it's stopped after boot or it would
->>> never
->>> have been initialized (depending on how you fix policy->cpu at boot).
->>>
->>> Look at this snippet on the actual tree and it should be pretty evident.
->>
->> Yeah, I missed it. So the problem is we initialize timer_mutex's for
->> policy->cpus. So we need to do that just for policy->cpu and also we
->> don't
->> need a per-cpu timer_mutex anymore.
->>
-> 
-> Btw, I tried to take a stab at removing any assumption in cpufreq code
-> about policy->cpu being ONLINE.
+Hi,
 
-Wait, allowing an offline CPU to be the policy->cpu (i.e., the CPU which is
-considered as the master of the policy/group) is just absurd. If there is
-no leader, there is no army. We should NOT sacrifice sane semantics for the
-sake of simplifying the code.
+I tried using the PM features in linux on my at91sam9263 custom board. Using 'echo mem > state' and 'echo standby > mem' works in general. But when using 'echo freeze > state' I get the following oops.
 
-> There are 160 instances of those of with
-> 23 are in cpufreq.c
->
+sh-3.2:/sys/power# echo freeze > state
+[   22.559000] PM: Syncing filesystems ... done.
+[   23.073000] Freezing user space processes ... (elapsed 0.001 seconds) done.
+[   23.092000] Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
+[   23.101000] Unable to handle kernel NULL pointer dereference at virtual address 00000000
+[   23.109000] pgd = c283c000
+[   23.112000] [00000000] *pgd=23384831, *pte=00000000, *ppte=00000000
+[   23.118000] Internal error: Oops: 17 [#1] PREEMPT ARM
+[   23.118000] Modules linked in:
+[   23.118000] CPU: 0 PID: 106 Comm: sh Not tainted 3.16.0-rc5+ #3
+[   23.118000] task: c3369c00 ti: c33e0000 task.ti: c33e0000
+[   23.118000] PC is at suspend_devices_and_enter+0x6c/0x32c
+[   23.118000] LR is at pm_suspend+0x160/0x27c
+[   23.118000] pc : [<c004111c>]    lr : [<c004153c>]    psr: 60000013
+[   23.118000] sp : c33e1eb8  ip : 000008e0  fp : 00000000
+[   23.118000] r10: c280480c  r9 : c2804800  r8 : 00000007
+[   23.118000] r7 : c05527f8  r6 : 00000001  r5 : 00000001  r4 : c056ca00
+[   23.118000] r3 : 00000000  r2 : 01ffff3f  r1 : 60000013  r0 : 00000001
+[   23.118000] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
+[   23.118000] Control: 0005317f  Table: 2283c000  DAC: 00000015
+[   23.118000] Process sh (pid: 106, stack limit = 0xc33e01c0)
+[   23.118000] Stack: (0xc33e1eb8 to 0xc33e2000)
+[   23.118000] 1ea0:                                                       00000000 c0391454
+[   23.118000] 1ec0: c049e549 c33e1edc 60000013 c33e1edc 00000000 c056ca00 00000000 00000001
+[   23.118000] 1ee0: c05527f8 00000007 c2804800 c004153c c055e2bc c3064000 00000007 c282a0c0
+[   23.118000] 1f00: c33e1f80 c0040304 c3064000 c282a0c0 c282a0c0 c01abd94 00000007 c00f0e54
+[   23.118000] 1f20: c00f0e18 00000000 00000000 c00f0050 00000000 00000000 c33c93c0 b6fa6000
+[   23.118000] 1f40: c33e1f80 00000007 00000007 b6fa6000 00000000 c009a19c c33c93c0 b6fa6000
+[   23.118000] 1f60: 00000007 00000000 00000000 c33c93c0 c33c93c0 00000007 b6fa6000 c009a70c
+[   23.118000] 1f80: 00000000 00000000 00000007 00000007 b6fa6000 b6f76b38 00000004 c0009764
+[   23.118000] 1fa0: c33e0000 c0009600 00000007 b6fa6000 00000001 b6fa6000 00000007 00000000
+[   23.118000] 1fc0: 00000007 b6fa6000 b6f76b38 00000004 00000007 b6fa6000 00000007 00000000
+[   23.118000] 1fe0: 00000000 be83ba9c b6eaeadc b6f0317c 60000010 00000001 00000000 00000000
+[   23.118000] [<c004111c>] (suspend_devices_and_enter) from [<c004153c>] (pm_suspend+0x160/0x27c)
+[   23.118000] [<c004153c>] (pm_suspend) from [<c0040304>] (state_store+0x40/0x68)
+[   23.118000] [<c0040304>] (state_store) from [<c01abd94>] (kobj_attr_store+0x14/0x20)
+[   23.118000] [<c01abd94>] (kobj_attr_store) from [<c00f0e54>] (sysfs_kf_write+0x3c/0x48)
+[   23.118000] [<c00f0e54>] (sysfs_kf_write) from [<c00f0050>] (kernfs_fop_write+0x100/0x158)
+[   23.118000] [<c00f0050>] (kernfs_fop_write) from [<c009a19c>] (vfs_write+0xb4/0x188)
+[   23.118000] [<c009a19c>] (vfs_write) from [<c009a70c>] (SyS_write+0x3c/0x7c)
+[   23.118000] [<c009a70c>] (SyS_write) from [<c0009600>] (ret_fast_syscall+0x0/0x2c)
+[   23.118000] Code: eafffff3 1afffff2 e59f32ac e5933008 (e5933000)
+[   23.358000] ---[ end trace 9206ef60cdd758d9 ]---
 
-And that explains why. It is just *natural* to assume that the CPUs governed
-by a policy are online. Especially so for the CPU which is supposed to be
-the policy leader. Let us please not change that - it will become
-counter-intuitive if we do so. [ The other reason is that physical hotplug
-is also possible on some systems... in that case your code might make a CPU
-which is not even present (but possible) as the policy->cpu.. and great 'fun'
-will ensue after that ;-( ]
+The systems hangs here now.
+It seems that freeze_ops is used without beeing checked if non-NULL. Unfortunately the attached doesn't work. The system freezes but it cannot be woken up, e.g. with attached GPIO keys. The latter works when using mem or standby.
+AFAICS only ACPI based systems support those freeze ops, maybe it is reasonable to restrict freeze to those systems?
 
-The goal of this patchset should be to just de-couple the sysfs files/ownership
-from the policy->cpu to an extent where it doesn't matter who owns those
-files, and probably make it easier to do CPU hotplug without having to
-destroy and recreate the files on every hotplug operation.
+Best regards,
+Alexander
 
-This is exactly why the _implementation_ matters in this particular case -
-if we can't achieve the simplification by keeping sane semantics, then we
-shouldn't do the simplification!
-
-That said, I think we should keep trying - we haven't exhausted all ideas
-yet :-)
-
-Regards,
-Srivatsa S. Bhat
-
-> So, even if we are sure cpufreq.c is fine, it's 137 other uses spread
-> across all the other files. I definitely don't want to try and fix those
-> as part of this patch. Way too risky and hard to get the test coverage
-> it would need. Even some of the acpi cpufreq drivers seem to be making
-> this assumption.
-> 
-> Btw, I think v3 is done. I did some testing and it was fine. But made
-> some minor changes. Will test tomorrow to make sure I didn't break
-> anything with the minor changes and then send them out.
-> 
