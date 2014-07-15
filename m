@@ -1,289 +1,93 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH v3] ARM: EXYNOS: Fix suspend/resume sequences
-Date: Tue, 15 Jul 2014 16:26:34 +0200
-Message-ID: <53C53A1A.6060701@samsung.com>
-References: <53C51B57.9040404@samsung.com>
- <1405434287-22710-1-git-send-email-t.figa@samsung.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 05/13] thermal: rcar: Document SoC-specific bindings
+Date: Tue, 15 Jul 2014 22:48:55 +0800
+Message-ID: <1405435735.28592.50.camel@rzhang1-toshiba>
+References: <1404908623-909-1-git-send-email-geert+renesas@glider.be>
+	 <1404908623-909-6-git-send-email-geert+renesas@glider.be>
+	 <20140711091358.GK12420@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1405434287-22710-1-git-send-email-t.figa@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Chander Kashyap <k.chander@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:43050 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751395AbaGOOtX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Jul 2014 10:49:23 -0400
+In-Reply-To: <20140711091358.GK12420@verge.net.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, kuninori.morimoto.gx@renesas.com
 
-Forgot to CC Daniel and linux-pm. Sorry for the noise.
+On Fri, 2014-07-11 at 11:13 +0200, Simon Horman wrote:
+> On Wed, Jul 09, 2014 at 02:23:35PM +0200, Geert Uytterhoeven wrote:
+> > The documentation only mentioned the generic fallback compatible property.
+> > Add the missing SoC-specific compatible properties, some of which are
+> > already in use.
+> > 
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > Cc: Zhang Rui <rui.zhang@intel.com>
+> > Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+> > Cc: linux-pm@vger.kernel.org
+> 
+> Acked-by: Simon Horman <horms+renesas@verge.net.au>
 
-On 15.07.2014 16:24, Tomasz Figa wrote:
-> Due to recent consolidation of Exynos suspend and cpuidle code, some
-> parts of suspend and resume sequences are executed two times, once from
-> exynos_pm_syscore_ops and then from exynos_cpu_pm_notifier() and thus it
-> breaks suspend, at least on Exynos4-based boards. In addition, simple
-> core power down from a cpuidle driver could, in case of CPU 0 could
-> result in calling functions that are specific to suspend and deeper idle
-> states.
+Kuninori,
+
+what' your opinion of this patch?
+
+thanks,
+rui
 > 
-> This patch fixes the issue by moving those operations outside the CPU PM
-> notifier into suspend and AFTR code paths. This leads to a bit of code
-> duplication, but allows additional code simplification, so in the end
-> more code is removed than added.
-> 
-> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-> ---
->  arch/arm/mach-exynos/pm.c        | 164 ++++++++++++++++++---------------------
->  drivers/cpuidle/cpuidle-exynos.c |  25 +-----
->  2 files changed, 80 insertions(+), 109 deletions(-)
-> 
-> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-> index 202ca73..e3b04b4 100644
-> --- a/arch/arm/mach-exynos/pm.c
-> +++ b/arch/arm/mach-exynos/pm.c
-> @@ -176,26 +176,6 @@ int exynos_cluster_power_state(int cluster)
->  #define S5P_CHECK_AFTR  0xFCBA0D10
->  #define S5P_CHECK_SLEEP 0x00000BAD
->  
-> -/* Ext-GIC nIRQ/nFIQ is the only wakeup source in AFTR */
-> -static void exynos_set_wakeupmask(long mask)
-> -{
-> -	__raw_writel(mask, S5P_WAKEUP_MASK);
-> -}
-> -
-> -static void exynos_cpu_set_boot_vector(long flags)
-> -{
-> -	__raw_writel(virt_to_phys(exynos_cpu_resume), EXYNOS_BOOT_VECTOR_ADDR);
-> -	__raw_writel(flags, EXYNOS_BOOT_VECTOR_FLAG);
-> -}
-> -
-> -void exynos_enter_aftr(void)
-> -{
-> -	exynos_set_wakeupmask(0x0000ff3e);
-> -	exynos_cpu_set_boot_vector(S5P_CHECK_AFTR);
-> -	/* Set value of power down register for aftr mode */
-> -	exynos_sys_powerdown_conf(SYS_AFTR);
-> -}
-> -
->  /* For Cortex-A9 Diagnostic and Power control register */
->  static unsigned int save_arm_register[2];
->  
-> @@ -235,6 +215,82 @@ static void exynos_cpu_restore_register(void)
->  		      : "cc");
->  }
->  
-> +static void exynos_pm_central_suspend(void)
-> +{
-> +	unsigned long tmp;
-> +
-> +	/* Setting Central Sequence Register for power down mode */
-> +	tmp = __raw_readl(S5P_CENTRAL_SEQ_CONFIGURATION);
-> +	tmp &= ~S5P_CENTRAL_LOWPWR_CFG;
-> +	__raw_writel(tmp, S5P_CENTRAL_SEQ_CONFIGURATION);
-> +}
-> +
-> +static int exynos_pm_central_resume(void)
-> +{
-> +	unsigned long tmp;
-> +
-> +	/*
-> +	 * If PMU failed while entering sleep mode, WFI will be
-> +	 * ignored by PMU and then exiting cpu_do_idle().
-> +	 * S5P_CENTRAL_LOWPWR_CFG bit will not be set automatically
-> +	 * in this situation.
-> +	 */
-> +	tmp = __raw_readl(S5P_CENTRAL_SEQ_CONFIGURATION);
-> +	if (!(tmp & S5P_CENTRAL_LOWPWR_CFG)) {
-> +		tmp |= S5P_CENTRAL_LOWPWR_CFG;
-> +		__raw_writel(tmp, S5P_CENTRAL_SEQ_CONFIGURATION);
-> +		/* clear the wakeup state register */
-> +		__raw_writel(0x0, S5P_WAKEUP_STAT);
-> +		/* No need to perform below restore code */
-> +		return -1;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +/* Ext-GIC nIRQ/nFIQ is the only wakeup source in AFTR */
-> +static void exynos_set_wakeupmask(long mask)
-> +{
-> +	__raw_writel(mask, S5P_WAKEUP_MASK);
-> +}
-> +
-> +static void exynos_cpu_set_boot_vector(long flags)
-> +{
-> +	__raw_writel(virt_to_phys(exynos_cpu_resume), EXYNOS_BOOT_VECTOR_ADDR);
-> +	__raw_writel(flags, EXYNOS_BOOT_VECTOR_FLAG);
-> +}
-> +
-> +static int exynos_aftr_finisher(unsigned long flags)
-> +{
-> +	exynos_set_wakeupmask(0x0000ff3e);
-> +	exynos_cpu_set_boot_vector(S5P_CHECK_AFTR);
-> +	/* Set value of power down register for aftr mode */
-> +	exynos_sys_powerdown_conf(SYS_AFTR);
-> +	cpu_do_idle();
-> +
-> +	return 0;
-> +}
-> +
-> +void exynos_enter_aftr(void)
-> +{
-> +	cpu_pm_enter();
-> +
-> +	exynos_pm_central_suspend();
-> +	if (read_cpuid_part_number() == ARM_CPU_PART_CORTEX_A9)
-> +		exynos_cpu_save_register();
-> +
-> +	cpu_suspend(0, exynos_aftr_finisher);
-> +
-> +	if (read_cpuid_part_number() == ARM_CPU_PART_CORTEX_A9) {
-> +		scu_enable(S5P_VA_SCU);
-> +		exynos_cpu_restore_register();
-> +	}
-> +
-> +	exynos_pm_central_resume();
-> +
-> +	cpu_pm_exit();
-> +}
-> +
->  static int exynos_cpu_suspend(unsigned long arg)
->  {
->  #ifdef CONFIG_CACHE_L2X0
-> @@ -279,16 +335,6 @@ static void exynos_pm_prepare(void)
->  	__raw_writel(virt_to_phys(exynos_cpu_resume), S5P_INFORM0);
->  }
->  
-> -static void exynos_pm_central_suspend(void)
-> -{
-> -	unsigned long tmp;
-> -
-> -	/* Setting Central Sequence Register for power down mode */
-> -	tmp = __raw_readl(S5P_CENTRAL_SEQ_CONFIGURATION);
-> -	tmp &= ~S5P_CENTRAL_LOWPWR_CFG;
-> -	__raw_writel(tmp, S5P_CENTRAL_SEQ_CONFIGURATION);
-> -}
-> -
->  static int exynos_pm_suspend(void)
->  {
->  	unsigned long tmp;
-> @@ -306,29 +352,6 @@ static int exynos_pm_suspend(void)
->  	return 0;
->  }
->  
-> -static int exynos_pm_central_resume(void)
-> -{
-> -	unsigned long tmp;
-> -
-> -	/*
-> -	 * If PMU failed while entering sleep mode, WFI will be
-> -	 * ignored by PMU and then exiting cpu_do_idle().
-> -	 * S5P_CENTRAL_LOWPWR_CFG bit will not be set automatically
-> -	 * in this situation.
-> -	 */
-> -	tmp = __raw_readl(S5P_CENTRAL_SEQ_CONFIGURATION);
-> -	if (!(tmp & S5P_CENTRAL_LOWPWR_CFG)) {
-> -		tmp |= S5P_CENTRAL_LOWPWR_CFG;
-> -		__raw_writel(tmp, S5P_CENTRAL_SEQ_CONFIGURATION);
-> -		/* clear the wakeup state register */
-> -		__raw_writel(0x0, S5P_WAKEUP_STAT);
-> -		/* No need to perform below restore code */
-> -		return -1;
-> -	}
-> -
-> -	return 0;
-> -}
-> -
->  static void exynos_pm_resume(void)
->  {
->  	if (exynos_pm_central_resume())
-> @@ -431,45 +454,10 @@ static const struct platform_suspend_ops exynos_suspend_ops = {
->  	.valid		= suspend_valid_only_mem,
->  };
->  
-> -static int exynos_cpu_pm_notifier(struct notifier_block *self,
-> -				  unsigned long cmd, void *v)
-> -{
-> -	int cpu = smp_processor_id();
-> -
-> -	switch (cmd) {
-> -	case CPU_PM_ENTER:
-> -		if (cpu == 0) {
-> -			exynos_pm_central_suspend();
-> -			if (read_cpuid_part_number() == ARM_CPU_PART_CORTEX_A9)
-> -				exynos_cpu_save_register();
-> -		}
-> -		break;
-> -
-> -	case CPU_PM_EXIT:
-> -		if (cpu == 0) {
-> -			if (read_cpuid_part_number() ==
-> -					ARM_CPU_PART_CORTEX_A9) {
-> -				scu_enable(S5P_VA_SCU);
-> -				exynos_cpu_restore_register();
-> -			}
-> -			exynos_pm_central_resume();
-> -		}
-> -		break;
-> -	}
-> -
-> -	return NOTIFY_OK;
-> -}
-> -
-> -static struct notifier_block exynos_cpu_pm_notifier_block = {
-> -	.notifier_call = exynos_cpu_pm_notifier,
-> -};
-> -
->  void __init exynos_pm_init(void)
->  {
->  	u32 tmp;
->  
-> -	cpu_pm_register_notifier(&exynos_cpu_pm_notifier_block);
-> -
->  	/* Platform-specific GIC callback */
->  	gic_arch_extn.irq_set_wake = exynos_irq_set_wake;
->  
-> diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
-> index 7c01512..ba9b34b 100644
-> --- a/drivers/cpuidle/cpuidle-exynos.c
-> +++ b/drivers/cpuidle/cpuidle-exynos.c
-> @@ -20,25 +20,6 @@
->  
->  static void (*exynos_enter_aftr)(void);
->  
-> -static int idle_finisher(unsigned long flags)
-> -{
-> -	exynos_enter_aftr();
-> -	cpu_do_idle();
-> -
-> -	return 1;
-> -}
-> -
-> -static int exynos_enter_core0_aftr(struct cpuidle_device *dev,
-> -				struct cpuidle_driver *drv,
-> -				int index)
-> -{
-> -	cpu_pm_enter();
-> -	cpu_suspend(0, idle_finisher);
-> -	cpu_pm_exit();
-> -
-> -	return index;
-> -}
-> -
->  static int exynos_enter_lowpower(struct cpuidle_device *dev,
->  				struct cpuidle_driver *drv,
->  				int index)
-> @@ -51,8 +32,10 @@ static int exynos_enter_lowpower(struct cpuidle_device *dev,
->  
->  	if (new_index == 0)
->  		return arm_cpuidle_simple_enter(dev, drv, new_index);
-> -	else
-> -		return exynos_enter_core0_aftr(dev, drv, new_index);
-> +
-> +	exynos_enter_aftr();
-> +
-> +	return new_index;
->  }
->  
->  static struct cpuidle_driver exynos_idle_driver = {
-> 
+> > ---
+> >  .../devicetree/bindings/thermal/rcar-thermal.txt       | 18 ++++++++++++------
+> >  1 file changed, 12 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+> > index 28ef498a66e5..0ef00be44b01 100644
+> > --- a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+> > +++ b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+> > @@ -1,7 +1,13 @@
+> >  * Renesas R-Car Thermal
+> >  
+> >  Required properties:
+> > -- compatible		: "renesas,rcar-thermal"
+> > +- compatible		: "renesas,thermal-<soctype>", "renesas,rcar-thermal"
+> > +			  as fallback.
+> > +			  Examples with soctypes are:
+> > +			    - "renesas,thermal-r8a73a4" (R-Mobile AP6)
+> > +			    - "renesas,thermal-r8a7779" (R-Car H1)
+> > +			    - "renesas,thermal-r8a7790" (R-Car H2)
+> > +			    - "renesas,thermal-r8a7791" (R-Car M2)
+> >  - reg			: Address range of the thermal registers.
+> >  			  The 1st reg will be recognized as common register
+> >  			  if it has "interrupts".
+> > @@ -12,18 +18,18 @@ Option properties:
+> >  
+> >  Example (non interrupt support):
+> >  
+> > -thermal@e61f0100 {
+> > -	compatible = "renesas,rcar-thermal";
+> > -	reg = <0xe61f0100 0x38>;
+> > +thermal@ffc48000 {
+> > +	compatible = "renesas,thermal-r8a7779", "renesas,rcar-thermal";
+> > +	reg = <0xffc48000 0x38>;
+> >  };
+> >  
+> >  Example (interrupt support):
+> >  
+> >  thermal@e61f0000 {
+> > -	compatible = "renesas,rcar-thermal";
+> > +	compatible = "renesas,thermal-r8a73a4", "renesas,rcar-thermal";
+> >  	reg = <0xe61f0000 0x14
+> >  		0xe61f0100 0x38
+> >  		0xe61f0200 0x38
+> >  		0xe61f0300 0x38>;
+> > -	interrupts = <0 69 4>;
+> > +	interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
+> >  };
+> > -- 
+> > 1.9.1
+> > 
+
+
