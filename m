@@ -1,96 +1,289 @@
-From: Riku Voipio <riku.voipio@linaro.org>
-Subject: Re: [PATCH v2] thermal: allow building dove_thermal with mvebu
-Date: Tue, 15 Jul 2014 17:00:16 +0300
-Message-ID: <CAAqcGHnD-u07QC66O11eOEuF0yxYh0k8anREKnQP_UQF=ab5vg@mail.gmail.com>
-References: <1401452899-13952-1-git-send-email-riku.voipio@linaro.org>
-	<1401537027-32291-1-git-send-email-riku.voipio@linaro.org>
-	<5389D110.8020606@gmail.com>
-	<CAAqcGHkcnm_JjyzWewEcdGuGyyBwtDT_6EWxFzKSqS7NEUaerA@mail.gmail.com>
-	<1404180277.8366.14.camel@rzhang1-toshiba>
-	<53B27670.4000702@gmail.com>
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: Re: [PATCH v3] ARM: EXYNOS: Fix suspend/resume sequences
+Date: Tue, 15 Jul 2014 16:26:34 +0200
+Message-ID: <53C53A1A.6060701@samsung.com>
+References: <53C51B57.9040404@samsung.com>
+ <1405434287-22710-1-git-send-email-t.figa@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f52.google.com ([209.85.192.52]:54510 "EHLO
-	mail-qg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbaGOOAS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Jul 2014 10:00:18 -0400
-Received: by mail-qg0-f52.google.com with SMTP id f51so4844133qge.11
-        for <linux-pm@vger.kernel.org>; Tue, 15 Jul 2014 07:00:17 -0700 (PDT)
-In-Reply-To: <53B27670.4000702@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1405434287-22710-1-git-send-email-t.figa@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-samsung-soc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Chander Kashyap <k.chander@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, andrew@lunn.ch, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
 
-On 1 July 2014 11:50, Sebastian Hesselbarth
-<sebastian.hesselbarth@gmail.com> wrote:
-> On 07/01/2014 04:04 AM, Zhang Rui wrote:
+Forgot to CC Daniel and linux-pm. Sorry for the noise.
 
->> Can anybody tell me the relationship between ARCH_DOVE and MARC_DOVE,
->> and which one should be the proper fix please?
-
-> Rui,
-
-> ARCH_DOVE represents legacy, non-DT arch/arm/mach-dove while
-> MACH_DOVE is DT-only Dove in arch/arm/mach-mvebu.
-
-> The idea was to have both, legacy and DT-only Dove, for some
-> cycles to allow us to finalize the DT transition.
-
-> Due to a justified request of Russell, we will keep legacy
-> mach-dove for a while longer.
-
-> The correct patch is the one below, adding both MACH_DOVE and ARCH_DOVE
-> to DOVE_THERMAL.
-
-Here on patchwork:
-
-https://patches.linaro.org/31238/
-
-It would be really nice to get it to 3.16 since Sebastians original
-patch already slipped from 3.15 :(
-
-Riku
-
-
-> Sebastian
->
->> Eduardo,
->> I would queue the proper patch for next rc, what's your opinion?
->>
->>>> [1] https://lkml.kernel.org/r/1395295065.3571.10.camel@rzhang1-mobl4
->>>>
->>>>> v2: non-ascii char creeped in somehow
->>>>>
->>>>> Signed-off-by: Riku Voipio <riku.voipio@linaro.org>
->>>>> Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
->>>>> Cc: Zhang Rui <rui.zhang@intel.com>
->>>>> Cc: Eduardo Valentin <edubezval@gmail.com>
->>>>> Cc: linux-pm@vger.kernel.org
->>>>> Cc: linux-arm-kernel@lists.infradead.org
->>>>> ---
->>>>>   drivers/thermal/Kconfig | 2 +-
->>>>>   1 file changed, 1 insertion(+), 1 deletion(-)
->>>>>
->>>>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->>>>> index 2d51912..5783c72 100644
->>>>> --- a/drivers/thermal/Kconfig
->>>>> +++ b/drivers/thermal/Kconfig
->>>>> @@ -151,7 +151,7 @@ config KIRKWOOD_THERMAL
->>>>>
->>>>>   config DOVE_THERMAL
->>>>>        tristate "Temperature sensor on Marvell Dove SoCs"
->>>>> -     depends on ARCH_DOVE
->>>>> +     depends on ARCH_DOVE || MACH_DOVE
->>>>>        depends on OF
->>>>>        help
->>>>>          Support for the Dove thermal sensor driver in the Linux
->>>
->>> thermal
->>>>>
->>>>>
->>>>
->>
->>
->
+On 15.07.2014 16:24, Tomasz Figa wrote:
+> Due to recent consolidation of Exynos suspend and cpuidle code, some
+> parts of suspend and resume sequences are executed two times, once from
+> exynos_pm_syscore_ops and then from exynos_cpu_pm_notifier() and thus it
+> breaks suspend, at least on Exynos4-based boards. In addition, simple
+> core power down from a cpuidle driver could, in case of CPU 0 could
+> result in calling functions that are specific to suspend and deeper idle
+> states.
+> 
+> This patch fixes the issue by moving those operations outside the CPU PM
+> notifier into suspend and AFTR code paths. This leads to a bit of code
+> duplication, but allows additional code simplification, so in the end
+> more code is removed than added.
+> 
+> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+> ---
+>  arch/arm/mach-exynos/pm.c        | 164 ++++++++++++++++++---------------------
+>  drivers/cpuidle/cpuidle-exynos.c |  25 +-----
+>  2 files changed, 80 insertions(+), 109 deletions(-)
+> 
+> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+> index 202ca73..e3b04b4 100644
+> --- a/arch/arm/mach-exynos/pm.c
+> +++ b/arch/arm/mach-exynos/pm.c
+> @@ -176,26 +176,6 @@ int exynos_cluster_power_state(int cluster)
+>  #define S5P_CHECK_AFTR  0xFCBA0D10
+>  #define S5P_CHECK_SLEEP 0x00000BAD
+>  
+> -/* Ext-GIC nIRQ/nFIQ is the only wakeup source in AFTR */
+> -static void exynos_set_wakeupmask(long mask)
+> -{
+> -	__raw_writel(mask, S5P_WAKEUP_MASK);
+> -}
+> -
+> -static void exynos_cpu_set_boot_vector(long flags)
+> -{
+> -	__raw_writel(virt_to_phys(exynos_cpu_resume), EXYNOS_BOOT_VECTOR_ADDR);
+> -	__raw_writel(flags, EXYNOS_BOOT_VECTOR_FLAG);
+> -}
+> -
+> -void exynos_enter_aftr(void)
+> -{
+> -	exynos_set_wakeupmask(0x0000ff3e);
+> -	exynos_cpu_set_boot_vector(S5P_CHECK_AFTR);
+> -	/* Set value of power down register for aftr mode */
+> -	exynos_sys_powerdown_conf(SYS_AFTR);
+> -}
+> -
+>  /* For Cortex-A9 Diagnostic and Power control register */
+>  static unsigned int save_arm_register[2];
+>  
+> @@ -235,6 +215,82 @@ static void exynos_cpu_restore_register(void)
+>  		      : "cc");
+>  }
+>  
+> +static void exynos_pm_central_suspend(void)
+> +{
+> +	unsigned long tmp;
+> +
+> +	/* Setting Central Sequence Register for power down mode */
+> +	tmp = __raw_readl(S5P_CENTRAL_SEQ_CONFIGURATION);
+> +	tmp &= ~S5P_CENTRAL_LOWPWR_CFG;
+> +	__raw_writel(tmp, S5P_CENTRAL_SEQ_CONFIGURATION);
+> +}
+> +
+> +static int exynos_pm_central_resume(void)
+> +{
+> +	unsigned long tmp;
+> +
+> +	/*
+> +	 * If PMU failed while entering sleep mode, WFI will be
+> +	 * ignored by PMU and then exiting cpu_do_idle().
+> +	 * S5P_CENTRAL_LOWPWR_CFG bit will not be set automatically
+> +	 * in this situation.
+> +	 */
+> +	tmp = __raw_readl(S5P_CENTRAL_SEQ_CONFIGURATION);
+> +	if (!(tmp & S5P_CENTRAL_LOWPWR_CFG)) {
+> +		tmp |= S5P_CENTRAL_LOWPWR_CFG;
+> +		__raw_writel(tmp, S5P_CENTRAL_SEQ_CONFIGURATION);
+> +		/* clear the wakeup state register */
+> +		__raw_writel(0x0, S5P_WAKEUP_STAT);
+> +		/* No need to perform below restore code */
+> +		return -1;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/* Ext-GIC nIRQ/nFIQ is the only wakeup source in AFTR */
+> +static void exynos_set_wakeupmask(long mask)
+> +{
+> +	__raw_writel(mask, S5P_WAKEUP_MASK);
+> +}
+> +
+> +static void exynos_cpu_set_boot_vector(long flags)
+> +{
+> +	__raw_writel(virt_to_phys(exynos_cpu_resume), EXYNOS_BOOT_VECTOR_ADDR);
+> +	__raw_writel(flags, EXYNOS_BOOT_VECTOR_FLAG);
+> +}
+> +
+> +static int exynos_aftr_finisher(unsigned long flags)
+> +{
+> +	exynos_set_wakeupmask(0x0000ff3e);
+> +	exynos_cpu_set_boot_vector(S5P_CHECK_AFTR);
+> +	/* Set value of power down register for aftr mode */
+> +	exynos_sys_powerdown_conf(SYS_AFTR);
+> +	cpu_do_idle();
+> +
+> +	return 0;
+> +}
+> +
+> +void exynos_enter_aftr(void)
+> +{
+> +	cpu_pm_enter();
+> +
+> +	exynos_pm_central_suspend();
+> +	if (read_cpuid_part_number() == ARM_CPU_PART_CORTEX_A9)
+> +		exynos_cpu_save_register();
+> +
+> +	cpu_suspend(0, exynos_aftr_finisher);
+> +
+> +	if (read_cpuid_part_number() == ARM_CPU_PART_CORTEX_A9) {
+> +		scu_enable(S5P_VA_SCU);
+> +		exynos_cpu_restore_register();
+> +	}
+> +
+> +	exynos_pm_central_resume();
+> +
+> +	cpu_pm_exit();
+> +}
+> +
+>  static int exynos_cpu_suspend(unsigned long arg)
+>  {
+>  #ifdef CONFIG_CACHE_L2X0
+> @@ -279,16 +335,6 @@ static void exynos_pm_prepare(void)
+>  	__raw_writel(virt_to_phys(exynos_cpu_resume), S5P_INFORM0);
+>  }
+>  
+> -static void exynos_pm_central_suspend(void)
+> -{
+> -	unsigned long tmp;
+> -
+> -	/* Setting Central Sequence Register for power down mode */
+> -	tmp = __raw_readl(S5P_CENTRAL_SEQ_CONFIGURATION);
+> -	tmp &= ~S5P_CENTRAL_LOWPWR_CFG;
+> -	__raw_writel(tmp, S5P_CENTRAL_SEQ_CONFIGURATION);
+> -}
+> -
+>  static int exynos_pm_suspend(void)
+>  {
+>  	unsigned long tmp;
+> @@ -306,29 +352,6 @@ static int exynos_pm_suspend(void)
+>  	return 0;
+>  }
+>  
+> -static int exynos_pm_central_resume(void)
+> -{
+> -	unsigned long tmp;
+> -
+> -	/*
+> -	 * If PMU failed while entering sleep mode, WFI will be
+> -	 * ignored by PMU and then exiting cpu_do_idle().
+> -	 * S5P_CENTRAL_LOWPWR_CFG bit will not be set automatically
+> -	 * in this situation.
+> -	 */
+> -	tmp = __raw_readl(S5P_CENTRAL_SEQ_CONFIGURATION);
+> -	if (!(tmp & S5P_CENTRAL_LOWPWR_CFG)) {
+> -		tmp |= S5P_CENTRAL_LOWPWR_CFG;
+> -		__raw_writel(tmp, S5P_CENTRAL_SEQ_CONFIGURATION);
+> -		/* clear the wakeup state register */
+> -		__raw_writel(0x0, S5P_WAKEUP_STAT);
+> -		/* No need to perform below restore code */
+> -		return -1;
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+>  static void exynos_pm_resume(void)
+>  {
+>  	if (exynos_pm_central_resume())
+> @@ -431,45 +454,10 @@ static const struct platform_suspend_ops exynos_suspend_ops = {
+>  	.valid		= suspend_valid_only_mem,
+>  };
+>  
+> -static int exynos_cpu_pm_notifier(struct notifier_block *self,
+> -				  unsigned long cmd, void *v)
+> -{
+> -	int cpu = smp_processor_id();
+> -
+> -	switch (cmd) {
+> -	case CPU_PM_ENTER:
+> -		if (cpu == 0) {
+> -			exynos_pm_central_suspend();
+> -			if (read_cpuid_part_number() == ARM_CPU_PART_CORTEX_A9)
+> -				exynos_cpu_save_register();
+> -		}
+> -		break;
+> -
+> -	case CPU_PM_EXIT:
+> -		if (cpu == 0) {
+> -			if (read_cpuid_part_number() ==
+> -					ARM_CPU_PART_CORTEX_A9) {
+> -				scu_enable(S5P_VA_SCU);
+> -				exynos_cpu_restore_register();
+> -			}
+> -			exynos_pm_central_resume();
+> -		}
+> -		break;
+> -	}
+> -
+> -	return NOTIFY_OK;
+> -}
+> -
+> -static struct notifier_block exynos_cpu_pm_notifier_block = {
+> -	.notifier_call = exynos_cpu_pm_notifier,
+> -};
+> -
+>  void __init exynos_pm_init(void)
+>  {
+>  	u32 tmp;
+>  
+> -	cpu_pm_register_notifier(&exynos_cpu_pm_notifier_block);
+> -
+>  	/* Platform-specific GIC callback */
+>  	gic_arch_extn.irq_set_wake = exynos_irq_set_wake;
+>  
+> diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
+> index 7c01512..ba9b34b 100644
+> --- a/drivers/cpuidle/cpuidle-exynos.c
+> +++ b/drivers/cpuidle/cpuidle-exynos.c
+> @@ -20,25 +20,6 @@
+>  
+>  static void (*exynos_enter_aftr)(void);
+>  
+> -static int idle_finisher(unsigned long flags)
+> -{
+> -	exynos_enter_aftr();
+> -	cpu_do_idle();
+> -
+> -	return 1;
+> -}
+> -
+> -static int exynos_enter_core0_aftr(struct cpuidle_device *dev,
+> -				struct cpuidle_driver *drv,
+> -				int index)
+> -{
+> -	cpu_pm_enter();
+> -	cpu_suspend(0, idle_finisher);
+> -	cpu_pm_exit();
+> -
+> -	return index;
+> -}
+> -
+>  static int exynos_enter_lowpower(struct cpuidle_device *dev,
+>  				struct cpuidle_driver *drv,
+>  				int index)
+> @@ -51,8 +32,10 @@ static int exynos_enter_lowpower(struct cpuidle_device *dev,
+>  
+>  	if (new_index == 0)
+>  		return arm_cpuidle_simple_enter(dev, drv, new_index);
+> -	else
+> -		return exynos_enter_core0_aftr(dev, drv, new_index);
+> +
+> +	exynos_enter_aftr();
+> +
+> +	return new_index;
+>  }
+>  
+>  static struct cpuidle_driver exynos_idle_driver = {
+> 
