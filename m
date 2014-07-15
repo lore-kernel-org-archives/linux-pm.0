@@ -1,165 +1,65 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH 2/2] cpuidle: Exynos: fix cpuidle for all states
-Date: Tue, 15 Jul 2014 19:41:04 +0200
-Message-ID: <53C567B0.6020009@samsung.com>
-References: <1404225158-8453-1-git-send-email-k.chander@samsung.com>
- <1404225158-8453-3-git-send-email-k.chander@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1404225158-8453-3-git-send-email-k.chander@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Chander Kashyap <k.chander@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
-Cc: daniel.lezcano@linaro.org, kgene.kim@samsung.com, linux-pm@vger.kernel.org
+From: Abhilash Kesavan <a.kesavan@samsung.com>
+Subject: [PATCH v3 0/7]  Devfreq support for Exynos5250/5420
+Date: Wed, 16 Jul 2014 00:03:26 +0530
+Message-ID: <1405449206-26146-1-git-send-email-a.kesavan@samsung.com>
+References: <1400779322-4410-1-git-send-email-a.kesavan@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:48032 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754038AbaGOSdm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Jul 2014 14:33:42 -0400
+In-Reply-To: <1400779322-4410-1-git-send-email-a.kesavan@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, linux-pm@vger.kernel.org, kgene.kim@samsung.com
+Cc: rjw@sisk.pl, t.figa@samsung.com, kesavan.abhilash@gmail.com, devicetree@vger.kernel.org
 
-Hi Chander,
+This patchset adds devfreq support on Exynos5250 and Exynos5420.
+The patches add the missing INT clock support for exynos5250 and
+also add a new 5420 driver. We also have patches which add the
+PPMU node and fix a typo in the exynos5250 driver.
 
-Please see my comments inline.
+Changes since RFC v1:
+	- Exynos5420 support has been added to the existent Exynos5250
+	  driver itself.
+	- Rebased on Chanwoo Choi's devfreq consolidation patchset.
+	- Removed unused clocks from the clock list
+	- Used the PPMU nodes with different compatible strings to
+	  differentiate between exynos5250 and exynos5420.
+Changes since RFC v2:
+	- Re-based on the latest devfreq/samsung clock tree.
+	- Fixed comment from Sergei Shtylyov.
 
-On 01.07.2014 16:32, Chander Kashyap wrote:
-> Pre/post platform specific cpuidle operations are handled by pm_notifier.
-> But these operations are not same for all cpuidle states. Handle this by
-> moving cpuidle specific code from pm_notifier to cpuidle specific function.
-> 
-> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
-> ---
->  arch/arm/mach-exynos/common.h    |    2 +-
->  arch/arm/mach-exynos/pm.c        |   45 ++++++++++----------------------------
->  drivers/cpuidle/cpuidle-exynos.c |    7 ++++--
->  3 files changed, 17 insertions(+), 37 deletions(-)
-> 
-> diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
-> index 1ee9176..7769f58 100644
-> --- a/arch/arm/mach-exynos/common.h
-> +++ b/arch/arm/mach-exynos/common.h
-> @@ -166,7 +166,7 @@ extern int  exynos_cpu_power_state(int cpu);
->  extern void exynos_cluster_power_down(int cluster);
->  extern void exynos_cluster_power_up(int cluster);
->  extern int  exynos_cluster_power_state(int cluster);
-> -extern void exynos_enter_aftr(void);
-> +extern void exynos_enter_aftr(int entering_idle);
->  
->  extern void s5p_init_cpu(void __iomem *cpuid_addr);
->  extern unsigned int samsung_rev(void);
-> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-> index a092cc3..328644f 100644
-> --- a/arch/arm/mach-exynos/pm.c
-> +++ b/arch/arm/mach-exynos/pm.c
-> @@ -188,14 +188,6 @@ static void exynos_cpu_set_boot_vector(long flags)
->  	__raw_writel(flags, EXYNOS_BOOT_VECTOR_FLAG);
->  }
->  
-> -void exynos_enter_aftr(void)
-> -{
-> -	exynos_set_wakeupmask(0x0000ff3e);
-> -	exynos_cpu_set_boot_vector(S5P_CHECK_AFTR);
-> -	/* Set value of power down register for aftr mode */
-> -	exynos_sys_powerdown_conf(SYS_AFTR);
-> -}
-> -
->  static int exynos_cpu_suspend(unsigned long arg)
->  {
->  #ifdef CONFIG_CACHE_L2X0
-> @@ -386,40 +378,25 @@ static const struct platform_suspend_ops exynos_suspend_ops = {
->  	.valid		= suspend_valid_only_mem,
->  };
->  
-> -static int exynos_cpu_pm_notifier(struct notifier_block *self,
-> -				  unsigned long cmd, void *v)
-> +void exynos_enter_aftr(int entering_idle)
->  {
-> -	int cpu = smp_processor_id();
-> -
-> -	switch (cmd) {
-> -	case CPU_PM_ENTER:
-> -		if (cpu == 0)
-> -			exynos_pm_central_suspend();
-> -		break;
-> -
-> -	case CPU_PM_EXIT:
-> -		if (cpu == 0) {
-> -			if (read_cpuid_part_number() ==
-> -					ARM_CPU_PART_CORTEX_A9)
-> -				scu_enable(S5P_VA_SCU);
-> -			exynos_pm_central_resume();
-> -		}
-> -		break;
-> +	if (entering_idle) {
-> +		exynos_set_wakeupmask(0x0000ff3e);
-> +		exynos_cpu_set_boot_vector(S5P_CHECK_AFTR);
-> +		/* Set value of power down register for aftr mode */
-> +		exynos_sys_powerdown_conf(SYS_AFTR);
-> +		exynos_pm_central_suspend();
-> +	} else {
-> +		if (scu_a9_has_base())
-> +			scu_enable(S5P_VA_SCU);
-> +		exynos_pm_central_resume();
+The patches have been tested on Exynos5250 based Snow board and Exynos5420
+based Peach-Pit boards. They have been prepared on linux-next(20140714) with
+the samsung clk-next branch merged[1].
 
-Hmm. This is not very readable. Basically you have two functions that do
-completely different things packed into one function. I would suggest
-moving the calls to cpu_pm_enter/exit() and everything in between to
-this function then you wouldn't need anything like this and the whole
-low level logic would be in one place.
+[1] //git.kernel.org/pub/scm/linux/kernel/git/tfiga/samsung-clk.git
 
->  	}
-> -
-> -	return NOTIFY_OK;
->  }
->  
-> -static struct notifier_block exynos_cpu_pm_notifier_block = {
-> -	.notifier_call = exynos_cpu_pm_notifier,
-> -};
-> -
->  void __init exynos_pm_init(void)
->  {
->  	u32 tmp;
->  
-> -	cpu_pm_register_notifier(&exynos_cpu_pm_notifier_block);
-> -
->  	/* Platform-specific GIC callback */
->  	gic_arch_extn.irq_set_wake = exynos_irq_set_wake;
->  
-> diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
-> index 7c01512..1196ca7 100644
-> --- a/drivers/cpuidle/cpuidle-exynos.c
-> +++ b/drivers/cpuidle/cpuidle-exynos.c
-> @@ -18,11 +18,10 @@
->  #include <asm/suspend.h>
->  #include <asm/cpuidle.h>
->  
-> -static void (*exynos_enter_aftr)(void);
-> +static void (*exynos_enter_aftr)(int);
->  
->  static int idle_finisher(unsigned long flags)
->  {
-> -	exynos_enter_aftr();
->  	cpu_do_idle();
->  
->  	return 1;
-> @@ -32,8 +31,12 @@ static int exynos_enter_core0_aftr(struct cpuidle_device *dev,
->  				struct cpuidle_driver *drv,
->  				int index)
->  {
-> +	int entering_idle = true;
->  	cpu_pm_enter();
-> +	exynos_enter_aftr(entering_idle);
->  	cpu_suspend(0, idle_finisher);
-> +	entering_idle = false;
-> +	exynos_enter_aftr(entering_idle);
+Abhilash Kesavan (3):
+  ARM: dts: Add PPMU device tree support for Exynos5250
+  ARM: dts: Add PPMU device tree support for Exynos5420
+  PM / devfreq: exynos: Fix typo in macro
 
-This doesn't look good. Couldn't you just have called it with constant
-arguments? E.g.
+Andrew Bresticker (2):
+  clk: exynos5250: add aliases for clocks used by devfreq
+  PM / devfreq: exynos5250: migrate to common-clock
 
-	exynos_enter_aftr(true);
-	[...]
-	exynos_enter_aftr(false);
+Arjun.K.V (2):
+  clk: exynos5420: Add aliases for clocks used by devfreq
+  PM / devfreq: Add devfreq driver for Exynos5420
 
-Well, sorry for late comments, I have missed this series, probably
-because I'm not on Cc list. Anyway, since this patch will need to be
-respun anyway, maybe it would be better to use the one I just posted
-today, which IMHO is a bit cleaner.
+ .../bindings/arm/exynos/ppmu-exynos5.txt           |   26 +
+ arch/arm/boot/dts/exynos5250.dtsi                  |    8 +
+ arch/arm/boot/dts/exynos5420.dtsi                  |    7 +
+ drivers/clk/samsung/clk-exynos5250.c               |   25 +-
+ drivers/clk/samsung/clk-exynos5420.c               |   73 ++-
+ drivers/devfreq/Kconfig                            |   10 +-
+ drivers/devfreq/exynos/exynos5_bus.c               |  665 +++++++++++++++++---
+ drivers/devfreq/exynos/exynos_ppmu.h               |    2 +-
+ 8 files changed, 702 insertions(+), 114 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
 
-Best regards,
-Tomasz
+-- 
+1.7.9.5
+
