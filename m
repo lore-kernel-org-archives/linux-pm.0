@@ -1,42 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
-Date: Tue, 15 Jul 2014 11:22:40 +0530
-Message-ID: <CAKohpo=y4KiTrTxvacyN7cbuaOJBXa-hyg+kmyV7V-0nCRZkkg@mail.gmail.com>
-References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org>
-	<1405052287-4744-1-git-send-email-skannan@codeaurora.org>
-	<CAKohponB9feyh50p+dL5hyU1ffHAzHU59G-sYCrCm1AbHQe9hw@mail.gmail.com>
-	<2f549e6e4871ccf2a94dd4c8872c7a0b.squirrel@www.codeaurora.org>
-	<CAKohpokhmj1OkCRj=X+Q7eYiun8fsqD2dpEt66VKYnqo3dENVA@mail.gmail.com>
-	<53C0A12A.2060204@codeaurora.org>
-	<CAKohpon9en_VnSx+CVydPsWBHtArvmazn0hrodrRJt9jgOa0-g@mail.gmail.com>
-	<53C42AA8.8010107@codeaurora.org>
-	<CAKohpomkqbHZo9KrJMSwsEKGt6+Ac2Fg2X0+S7ZAo=OzhAc45g@mail.gmail.com>
-	<53C4BDFB.70707@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <53C4BDFB.70707@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
+From: Takashi Iwai <tiwai@suse.de>
+Subject: [PATCH] PM / sleep: Fix request_firmware() error at resume
+Date: Tue, 15 Jul 2014 08:51:27 +0200
+Message-ID: <1405407087-19493-1-git-send-email-tiwai@suse.de>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 15 July 2014 11:06, Saravana Kannan <skannan@codeaurora.org> wrote:
-> Btw, I tried to take a stab at removing any assumption in cpufreq code about
-> policy->cpu being ONLINE. There are 160 instances of those of with 23 are in
-> cpufreq.c
->
-> So, even if we are sure cpufreq.c is fine, it's 137 other uses spread across
-> all the other files. I definitely don't want to try and fix those as part of
-> this patch. Way too risky and hard to get the test coverage it would need.
-> Even some of the acpi cpufreq drivers seem to be making this assumption.
+The commit [247bc037: PM / Sleep: Mitigate race between the freezer
+and request_firmware()] introduced the finer state control, but it
+also leads to a new bug; for example, a bug report regarding the
+firmware loading of intel BT device at suspend/resume:
+  https://bugzilla.novell.com/show_bug.cgi?id=873790
 
-Hmm, yeah that would be an issue. So this is what you should do now:
-- Left policy->cpu as it is, i.e. updated only when policy->cpu goes down.
-- Just make sure sysfs nodes are untouched when any cpu goes down
+The root cause seems to be a small window between the process resume
+and the clear of usermodehelper lock.  The request_firmware() function
+checks the UMH lock and gives up when it's in UMH_DISABLE state.  This
+is for avoiding the invalid  f/w loading during suspend/resume phase.
+The problem is, however, that usermodehelper_enable() is called at the
+end of thaw_processes().  Thus, a thawed process in between can kick
+off the f/w loader code path (in this case, via btusb_setup_intel())
+even before the call of usermodehelper_enable().  Then
+usermodehelper_read_trylock() returns an error and request_firmware()
+spews WARN_ON() in the end.
 
-> Btw, I think v3 is done. I did some testing and it was fine. But made some
-> minor changes. Will test tomorrow to make sure I didn't break anything with
-> the minor changes and then send them out.
+This oneliner patch fixes the issue just by setting to UMH_FREEZING
+state again before restarting tasks, so that the call of
+request_firmware() will be blocked until the end of this function
+instead of returning an error.
 
-Ok, just comply to the above comments.
+Bugzilla: https://bugzilla.novell.com/show_bug.cgi?id=873790
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+---
+ kernel/power/process.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index 0ca8d83e2369..4ee194eb524b 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -186,6 +186,7 @@ void thaw_processes(void)
+ 
+ 	printk("Restarting tasks ... ");
+ 
++	__usermodehelper_set_disable_depth(UMH_FREEZING);
+ 	thaw_workqueues();
+ 
+ 	read_lock(&tasklist_lock);
+-- 
+2.0.1
