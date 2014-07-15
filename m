@@ -1,65 +1,96 @@
-From: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
-Subject: Re: [PATCH] cpuidle: fix permission for driver name sysfs node
-Date: Tue, 15 Jul 2014 19:24:14 +0600
-Message-ID: <CAHu9=sNfVU3fwZjVwLK6qPEgcwrdkDegsTQfUgUTi6qNhBUwcw@mail.gmail.com>
-References: <1405171762-31119-1-git-send-email-meraj.enigma@gmail.com>
- <CAHu9=sPxG49pCn10WTErHEV3ZZSF70+7ekZWJ-1+dd3Df8i8Wg@mail.gmail.com> <2350821.Beygah9hYC@vostro.rjw.lan>
+From: Riku Voipio <riku.voipio@linaro.org>
+Subject: Re: [PATCH v2] thermal: allow building dove_thermal with mvebu
+Date: Tue, 15 Jul 2014 17:00:16 +0300
+Message-ID: <CAAqcGHnD-u07QC66O11eOEuF0yxYh0k8anREKnQP_UQF=ab5vg@mail.gmail.com>
+References: <1401452899-13952-1-git-send-email-riku.voipio@linaro.org>
+	<1401537027-32291-1-git-send-email-riku.voipio@linaro.org>
+	<5389D110.8020606@gmail.com>
+	<CAAqcGHkcnm_JjyzWewEcdGuGyyBwtDT_6EWxFzKSqS7NEUaerA@mail.gmail.com>
+	<1404180277.8366.14.camel@rzhang1-toshiba>
+	<53B27670.4000702@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:59624 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758825AbaGONYf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Jul 2014 09:24:35 -0400
-In-Reply-To: <2350821.Beygah9hYC@vostro.rjw.lan>
+Received: from mail-qg0-f52.google.com ([209.85.192.52]:54510 "EHLO
+	mail-qg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbaGOOAS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Jul 2014 10:00:18 -0400
+Received: by mail-qg0-f52.google.com with SMTP id f51so4844133qge.11
+        for <linux-pm@vger.kernel.org>; Tue, 15 Jul 2014 07:00:17 -0700 (PDT)
+In-Reply-To: <53B27670.4000702@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, andrew@lunn.ch, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
 
-Thanks. Its not actually :).
+On 1 July 2014 11:50, Sebastian Hesselbarth
+<sebastian.hesselbarth@gmail.com> wrote:
+> On 07/01/2014 04:04 AM, Zhang Rui wrote:
 
-On Tue, Jul 15, 2014 at 6:28 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, July 15, 2014 11:16:40 AM Mohammad Merajul Islam Molla wrote:
->> Hi Rafael/Daniel,
+>> Can anybody tell me the relationship between ARCH_DOVE and MARC_DOVE,
+>> and which one should be the proper fix please?
+
+> Rui,
+
+> ARCH_DOVE represents legacy, non-DT arch/arm/mach-dove while
+> MACH_DOVE is DT-only Dove in arch/arm/mach-mvebu.
+
+> The idea was to have both, legacy and DT-only Dove, for some
+> cycles to allow us to finalize the DT transition.
+
+> Due to a justified request of Russell, we will keep legacy
+> mach-dove for a while longer.
+
+> The correct patch is the one below, adding both MACH_DOVE and ARCH_DOVE
+> to DOVE_THERMAL.
+
+Here on patchwork:
+
+https://patches.linaro.org/31238/
+
+It would be really nice to get it to 3.16 since Sebastians original
+patch already slipped from 3.15 :(
+
+Riku
+
+
+> Sebastian
+>
+>> Eduardo,
+>> I would queue the proper patch for next rc, what's your opinion?
 >>
->> Did you get a chance to review the patch?
+>>>> [1] https://lkml.kernel.org/r/1395295065.3571.10.camel@rzhang1-mobl4
+>>>>
+>>>>> v2: non-ascii char creeped in somehow
+>>>>>
+>>>>> Signed-off-by: Riku Voipio <riku.voipio@linaro.org>
+>>>>> Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+>>>>> Cc: Zhang Rui <rui.zhang@intel.com>
+>>>>> Cc: Eduardo Valentin <edubezval@gmail.com>
+>>>>> Cc: linux-pm@vger.kernel.org
+>>>>> Cc: linux-arm-kernel@lists.infradead.org
+>>>>> ---
+>>>>>   drivers/thermal/Kconfig | 2 +-
+>>>>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>>>>
+>>>>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>>>>> index 2d51912..5783c72 100644
+>>>>> --- a/drivers/thermal/Kconfig
+>>>>> +++ b/drivers/thermal/Kconfig
+>>>>> @@ -151,7 +151,7 @@ config KIRKWOOD_THERMAL
+>>>>>
+>>>>>   config DOVE_THERMAL
+>>>>>        tristate "Temperature sensor on Marvell Dove SoCs"
+>>>>> -     depends on ARCH_DOVE
+>>>>> +     depends on ARCH_DOVE || MACH_DOVE
+>>>>>        depends on OF
+>>>>>        help
+>>>>>          Support for the Dove thermal sensor driver in the Linux
+>>>
+>>> thermal
+>>>>>
+>>>>>
+>>>>
+>>
+>>
 >
-> We will review it.  Why is this urgent?
->
-> Rafael
->
->
->> On Sat, Jul 12, 2014 at 7:29 PM, Mohammad Merajul Islam Molla
->> <meraj.enigma@gmail.com> wrote:
->> > cpuidle driver name sysfs node is read-only. So permission should be 0444.
->> >
->> > Signed-off-by: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
->> > ---
->> >  drivers/cpuidle/sysfs.c | 2 +-
->> >  1 file changed, 1 insertion(+), 1 deletion(-)
->> >
->> > diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
->> > index efe2f17..97c5903 100644
->> > --- a/drivers/cpuidle/sysfs.c
->> > +++ b/drivers/cpuidle/sysfs.c
->> > @@ -445,7 +445,7 @@ static void cpuidle_remove_state_sysfs(struct cpuidle_device *device)
->> >
->> >  #define define_one_driver_ro(_name, show)                       \
->> >         static struct cpuidle_driver_attr attr_driver_##_name = \
->> > -               __ATTR(_name, 0644, show, NULL)
->> > +               __ATTR(_name, 0444, show, NULL)
->> >
->> >  struct cpuidle_driver_kobj {
->> >         struct cpuidle_driver *drv;
->> > --
->> > 1.9.1
->> >
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
