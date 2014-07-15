@@ -1,63 +1,69 @@
-From: Alexander Stein <alexander.stein@systec-electronic.com>
-Subject: Re: [PATCH] PM / sleep / irq: Do not suspend wakeup interrupts
-Date: Tue, 15 Jul 2014 14:22:25 +0200
-Message-ID: <2067046.JFGH9LUctP@ws-stein>
-References: <53A2340D.9030503@linux.intel.com> <1614271.1peg23gJZx@vostro.rjw.lan> <4679574.kGUnqAuNl9@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / sleep: Fix request_firmware() error at resume
+Date: Tue, 15 Jul 2014 14:47:13 +0200
+Message-ID: <3026958.0fOrQtDZlF@vostro.rjw.lan>
+References: <1405407087-19493-1-git-send-email-tiwai@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <4679574.kGUnqAuNl9@vostro.rjw.lan>
-Sender: linux-input-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Li, Aubrey" <aubrey.li@linux.intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:61513 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758714AbaGOM27 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Jul 2014 08:28:59 -0400
+In-Reply-To: <1405407087-19493-1-git-send-email-tiwai@suse.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thursday 10 July 2014 23:37:54, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tuesday, July 15, 2014 08:51:27 AM Takashi Iwai wrote:
+> The commit [247bc037: PM / Sleep: Mitigate race between the freezer
+> and request_firmware()] introduced the finer state control, but it
+> also leads to a new bug; for example, a bug report regarding the
+> firmware loading of intel BT device at suspend/resume:
+>   https://bugzilla.novell.com/show_bug.cgi?id=873790
 > 
-> If an IRQ has been configured for wakeup via enable_irq_wake(), the
-> driver who has done that must be prepared for receiving interrupts
-> after suspend_device_irqs() has returned, so there is no need to
-> "suspend" such IRQs.  Moreover, if drivers using enable_irq_wake()
-> actually want to receive interrupts after suspend_device_irqs() has
-> returned, they need to add IRQF_NO_SUSPEND to the IRQ flags while
-> requesting the IRQs, which shouldn't be necessary (it also goes a bit
-> too far, as IRQF_NO_SUSPEND causes the IRQ to be ignored by
-> suspend_device_irqs() all the time regardless of whether or not it
-> has been configured for signaling wakeup).
+> The root cause seems to be a small window between the process resume
+> and the clear of usermodehelper lock.  The request_firmware() function
+> checks the UMH lock and gives up when it's in UMH_DISABLE state.  This
+> is for avoiding the invalid  f/w loading during suspend/resume phase.
+> The problem is, however, that usermodehelper_enable() is called at the
+> end of thaw_processes().  Thus, a thawed process in between can kick
+> off the f/w loader code path (in this case, via btusb_setup_intel())
+> even before the call of usermodehelper_enable().  Then
+> usermodehelper_read_trylock() returns an error and request_firmware()
+> spews WARN_ON() in the end.
 > 
-> For the above reasons, make __disable_irq() ignore IRQ descriptors
-> with IRQD_WAKEUP_STATE set when its suspend argument is true which
-> effectively causes them to behave like IRQs with IRQF_NO_SUSPEND
-> set.
+> This oneliner patch fixes the issue just by setting to UMH_FREEZING
+> state again before restarting tasks, so that the call of
+> request_firmware() will be blocked until the end of this function
+> instead of returning an error.
 > 
-> This also allows IRQs configured for wakeup via enable_irq_wake()
-> to work as wakeup interrupts for the "freeze" (suspend-to-idle)
-> sleep mode automatically just like for any other sleep states.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Bugzilla: https://bugzilla.novell.com/show_bug.cgi?id=873790
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+Applied, thanks for fixing this up!
+
 > ---
->  kernel/irq/manage.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  kernel/power/process.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> Index: linux-pm/kernel/irq/manage.c
-> ===================================================================
-> --- linux-pm.orig/kernel/irq/manage.c
-> +++ linux-pm/kernel/irq/manage.c
-> @@ -385,7 +385,8 @@ setup_affinity(unsigned int irq, struct
->  void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
->  {
->  	if (suspend) {
-> -		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND))
-> +		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND)
-> +		    || irqd_has_set(&desc->irq_data, IRQD_WAKEUP_STATE))
->  			return;
->  		desc->istate |= IRQS_SUSPENDED;
->  	}
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index 0ca8d83e2369..4ee194eb524b 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -186,6 +186,7 @@ void thaw_processes(void)
+>  
+>  	printk("Restarting tasks ... ");
+>  
+> +	__usermodehelper_set_disable_depth(UMH_FREEZING);
+>  	thaw_workqueues();
+>  
+>  	read_lock(&tasklist_lock);
+> 
 
-Nice, this fixes my wakeup problem from freeze using gpio-keys. Unfortunately my SPI-attached touchscreen controller cannot be used for wakeup from freeze. Using it to wakeup from mem does work instead. Any ideas what might be wrong in this case?
-
-Best regards,
-Alexander
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
