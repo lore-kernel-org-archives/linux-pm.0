@@ -1,31 +1,158 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
-Date: Tue, 15 Jul 2014 10:05:19 +0530
-Message-ID: <CAKohpomkqbHZo9KrJMSwsEKGt6+Ac2Fg2X0+S7ZAo=OzhAc45g@mail.gmail.com>
-References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org>
-	<1405052287-4744-1-git-send-email-skannan@codeaurora.org>
-	<CAKohponB9feyh50p+dL5hyU1ffHAzHU59G-sYCrCm1AbHQe9hw@mail.gmail.com>
-	<2f549e6e4871ccf2a94dd4c8872c7a0b.squirrel@www.codeaurora.org>
-	<CAKohpokhmj1OkCRj=X+Q7eYiun8fsqD2dpEt66VKYnqo3dENVA@mail.gmail.com>
-	<53C0A12A.2060204@codeaurora.org>
-	<CAKohpon9en_VnSx+CVydPsWBHtArvmazn0hrodrRJt9jgOa0-g@mail.gmail.com>
-	<53C42AA8.8010107@codeaurora.org>
+From: pramod gurav <pramod.gurav.etc@gmail.com>
+Subject: Re: [PATCH] cpuidle: Fix Coding style reported by checkpatch.pl
+Date: Tue, 15 Jul 2014 10:42:11 +0530
+Message-ID: <CAMf-jS=gqH4h2d=P3EUtG=KSfBdHyzgeoBBAO6uJnYEX-tMW8A@mail.gmail.com>
+References: <1403261865-7472-1-git-send-email-pramod.gurav.etc@gmail.com>
+	<CAMf-jSm=YK4AN9-enh_8F4DYf-JGpv_=FRYdgYTt5P_EvSsE8g@mail.gmail.com>
+	<CAMf-jSmvVL9BwkiqmS0Ep+MhZHERXsV_E8vHKdthM7hmnd9Fkg@mail.gmail.com>
+	<3820825.ei0ZJkn3Cj@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <53C42AA8.8010107@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f42.google.com ([209.85.215.42]:53121 "EHLO
+	mail-la0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbaGOFMN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Jul 2014 01:12:13 -0400
+In-Reply-To: <3820825.ei0ZJkn3Cj@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 15 July 2014 00:38, Saravana Kannan <skannan@codeaurora.org> wrote:
-> Yeah, it definitely crashes if policy->cpu if an offline cpu. Because the
-> mutex would be uninitialized if it's stopped after boot or it would never
-> have been initialized (depending on how you fix policy->cpu at boot).
+On Mon, Jul 14, 2014 at 11:38 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, July 14, 2014 12:40:24 PM pramod gurav wrote:
+>> Hi Rafael,
+>>
+>> Can we consider these changes if there are  no issues with this?
 >
-> Look at this snippet on the actual tree and it should be pretty evident.
+> Well, are you "fixing" checkpatch.pl warnings just for the sake of
+> this or is there a deeper reason?
+>
 
-Yeah, I missed it. So the problem is we initialize timer_mutex's for
-policy->cpus. So we need to do that just for policy->cpu and also we don't
-need a per-cpu timer_mutex anymore.
+I was browsing through the source code and found couple of them. Then
+ran checkpatch.pl to see if there are more. And thought the error
+"Fixed: ERROR: do not use assignment in if condition" must be fixed.
+Otherwise there is no reason.
+
+> Rafael
+>
+>
+>> On Fri, Jun 20, 2014 at 4:28 PM, pramod gurav
+>> <pramod.gurav.etc@gmail.com> wrote:
+>> > +linux-pm
+>> >
+>> > On Fri, Jun 20, 2014 at 4:27 PM, Pramod Gurav
+>> > <pramod.gurav.etc@gmail.com> wrote:
+>> >> Fixed: ERROR: do not use assignment in if condition
+>> >> Fixed: WARNING: EXPORT_SYMBOL should immediately follow its function
+>> >> Fixed: WARNING: line over 80 characters in a comment
+>> >>
+>> >> CC: Rafael J. Wysocki <rjw@rjwysocki.net>
+>> >> CC: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> >>
+>> >> Signed-off-by: Pramod Gurav <pramod.gurav.etc@gmail.com>
+>> >> ---
+>> >>  drivers/cpuidle/cpuidle.c |   18 ++++++++----------
+>> >>  1 file changed, 8 insertions(+), 10 deletions(-)
+>> >>
+>> >> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>> >> index 8236746..2c8752e 100644
+>> >> --- a/drivers/cpuidle/cpuidle.c
+>> >> +++ b/drivers/cpuidle/cpuidle.c
+>> >> @@ -179,7 +179,9 @@ void cpuidle_reflect(struct cpuidle_device *dev, int index)
+>> >>  void cpuidle_install_idle_handler(void)
+>> >>  {
+>> >>         if (enabled_devices) {
+>> >> -               /* Make sure all changes finished before we switch to new idle */
+>> >> +               /*
+>> >> +                * Make sure all changes finished before we switch to new idle
+>> >> +                */
+>> >>                 smp_wmb();
+>> >>                 initialized = 1;
+>> >>         }
+>> >> @@ -204,7 +206,6 @@ void cpuidle_pause_and_lock(void)
+>> >>         mutex_lock(&cpuidle_lock);
+>> >>         cpuidle_uninstall_idle_handler();
+>> >>  }
+>> >> -
+>> >>  EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
+>> >>
+>> >>  /**
+>> >> @@ -215,7 +216,6 @@ void cpuidle_resume_and_unlock(void)
+>> >>         cpuidle_install_idle_handler();
+>> >>         mutex_unlock(&cpuidle_lock);
+>> >>  }
+>> >> -
+>> >>  EXPORT_SYMBOL_GPL(cpuidle_resume_and_unlock);
+>> >>
+>> >>  /* Currently used in suspend/resume path to suspend cpuidle */
+>> >> @@ -267,9 +267,11 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
+>> >>         if (ret)
+>> >>                 return ret;
+>> >>
+>> >> -       if (cpuidle_curr_governor->enable &&
+>> >> -           (ret = cpuidle_curr_governor->enable(drv, dev)))
+>> >> -               goto fail_sysfs;
+>> >> +       if (cpuidle_curr_governor->enable) {
+>> >> +               ret = cpuidle_curr_governor->enable(drv, dev);
+>> >> +               if (ret)
+>> >> +                       goto fail_sysfs;
+>> >> +       }
+>> >>
+>> >>         smp_wmb();
+>> >>
+>> >> @@ -283,7 +285,6 @@ fail_sysfs:
+>> >>
+>> >>         return ret;
+>> >>  }
+>> >> -
+>> >>  EXPORT_SYMBOL_GPL(cpuidle_enable_device);
+>> >>
+>> >>  /**
+>> >> @@ -311,7 +312,6 @@ void cpuidle_disable_device(struct cpuidle_device *dev)
+>> >>         cpuidle_remove_device_sysfs(dev);
+>> >>         enabled_devices--;
+>> >>  }
+>> >> -
+>> >>  EXPORT_SYMBOL_GPL(cpuidle_disable_device);
+>> >>
+>> >>  static void __cpuidle_unregister_device(struct cpuidle_device *dev)
+>> >> @@ -399,7 +399,6 @@ out_unregister:
+>> >>         __cpuidle_unregister_device(dev);
+>> >>         goto out_unlock;
+>> >>  }
+>> >> -
+>> >>  EXPORT_SYMBOL_GPL(cpuidle_register_device);
+>> >>
+>> >>  /**
+>> >> @@ -423,7 +422,6 @@ void cpuidle_unregister_device(struct cpuidle_device *dev)
+>> >>
+>> >>         cpuidle_resume_and_unlock();
+>> >>  }
+>> >> -
+>> >>  EXPORT_SYMBOL_GPL(cpuidle_unregister_device);
+>> >>
+>> >>  /**
+>> >> --
+>> >> 1.7.9.5
+>> >>
+>> >
+>> >
+>> >
+>> > --
+>> > Thanks and Regards
+>> > Pramod
+>>
+>>
+>>
+>>
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+
+
+
+-- 
+Thanks and Regards
+Pramod
