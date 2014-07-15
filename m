@@ -1,51 +1,51 @@
-From: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
-Subject: Re: [PATCH] cpuidle: fix permission for driver name sysfs node
-Date: Tue, 15 Jul 2014 11:16:40 +0600
-Message-ID: <CAHu9=sPxG49pCn10WTErHEV3ZZSF70+7ekZWJ-1+dd3Df8i8Wg@mail.gmail.com>
-References: <1405171762-31119-1-git-send-email-meraj.enigma@gmail.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v2] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
+Date: Mon, 14 Jul 2014 22:36:59 -0700
+Message-ID: <53C4BDFB.70707@codeaurora.org>
+References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org> <1405052287-4744-1-git-send-email-skannan@codeaurora.org> <CAKohponB9feyh50p+dL5hyU1ffHAzHU59G-sYCrCm1AbHQe9hw@mail.gmail.com> <2f549e6e4871ccf2a94dd4c8872c7a0b.squirrel@www.codeaurora.org> <CAKohpokhmj1OkCRj=X+Q7eYiun8fsqD2dpEt66VKYnqo3dENVA@mail.gmail.com> <53C0A12A.2060204@codeaurora.org> <CAKohpon9en_VnSx+CVydPsWBHtArvmazn0hrodrRJt9jgOa0-g@mail.gmail.com> <53C42AA8.8010107@codeaurora.org> <CAKohpomkqbHZo9KrJMSwsEKGt6+Ac2Fg2X0+S7ZAo=OzhAc45g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f179.google.com ([209.85.192.179]:54528 "EHLO
-	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751093AbaGOFRB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Jul 2014 01:17:01 -0400
-In-Reply-To: <1405171762-31119-1-git-send-email-meraj.enigma@gmail.com>
+Received: from smtp.codeaurora.org ([198.145.11.231]:56064 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756004AbaGOFhB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Jul 2014 01:37:01 -0400
+In-Reply-To: <CAKohpomkqbHZo9KrJMSwsEKGt6+Ac2Fg2X0+S7ZAo=OzhAc45g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
 
-Hi Rafael/Daniel,
+On 07/14/2014 09:35 PM, Viresh Kumar wrote:
+> On 15 July 2014 00:38, Saravana Kannan <skannan@codeaurora.org> wrote:
+>> Yeah, it definitely crashes if policy->cpu if an offline cpu. Because the
+>> mutex would be uninitialized if it's stopped after boot or it would never
+>> have been initialized (depending on how you fix policy->cpu at boot).
+>>
+>> Look at this snippet on the actual tree and it should be pretty evident.
+>
+> Yeah, I missed it. So the problem is we initialize timer_mutex's for
+> policy->cpus. So we need to do that just for policy->cpu and also we don't
+> need a per-cpu timer_mutex anymore.
+>
 
-Did you get a chance to review the patch?
+Btw, I tried to take a stab at removing any assumption in cpufreq code 
+about policy->cpu being ONLINE. There are 160 instances of those of with 
+23 are in cpufreq.c
 
---
-Thanks,
--Meraj
+So, even if we are sure cpufreq.c is fine, it's 137 other uses spread 
+across all the other files. I definitely don't want to try and fix those 
+as part of this patch. Way too risky and hard to get the test coverage 
+it would need. Even some of the acpi cpufreq drivers seem to be making 
+this assumption.
 
-On Sat, Jul 12, 2014 at 7:29 PM, Mohammad Merajul Islam Molla
-<meraj.enigma@gmail.com> wrote:
-> cpuidle driver name sysfs node is read-only. So permission should be 0444.
->
-> Signed-off-by: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
-> ---
->  drivers/cpuidle/sysfs.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-> index efe2f17..97c5903 100644
-> --- a/drivers/cpuidle/sysfs.c
-> +++ b/drivers/cpuidle/sysfs.c
-> @@ -445,7 +445,7 @@ static void cpuidle_remove_state_sysfs(struct cpuidle_device *device)
->
->  #define define_one_driver_ro(_name, show)                       \
->         static struct cpuidle_driver_attr attr_driver_##_name = \
-> -               __ATTR(_name, 0644, show, NULL)
-> +               __ATTR(_name, 0444, show, NULL)
->
->  struct cpuidle_driver_kobj {
->         struct cpuidle_driver *drv;
-> --
-> 1.9.1
->
+Btw, I think v3 is done. I did some testing and it was fine. But made 
+some minor changes. Will test tomorrow to make sure I didn't break 
+anything with the minor changes and then send them out.
+
+-Saravana
+
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
