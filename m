@@ -1,93 +1,100 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 05/13] thermal: rcar: Document SoC-specific bindings
-Date: Tue, 15 Jul 2014 22:48:55 +0800
-Message-ID: <1405435735.28592.50.camel@rzhang1-toshiba>
-References: <1404908623-909-1-git-send-email-geert+renesas@glider.be>
-	 <1404908623-909-6-git-send-email-geert+renesas@glider.be>
-	 <20140711091358.GK12420@verge.net.au>
+From: skannan@codeaurora.org
+Subject: Re: [PATCH v2] cpufreq: Don't destroy/realloc policy/sysfs on
+ hotplug/suspend
+Date: Tue, 15 Jul 2014 17:35:27 -0000
+Message-ID: <03e76981eb3d84e8397a39616ac0cfa1.squirrel@www.codeaurora.org>
+References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org>
+    <1405052287-4744-1-git-send-email-skannan@codeaurora.org>
+    <CAKohponB9feyh50p+dL5hyU1ffHAzHU59G-sYCrCm1AbHQe9hw@mail.gmail.com>
+    <2f549e6e4871ccf2a94dd4c8872c7a0b.squirrel@www.codeaurora.org>
+    <CAKohpokhmj1OkCRj=X+Q7eYiun8fsqD2dpEt66VKYnqo3dENVA@mail.gmail.com>
+    <53C0A12A.2060204@codeaurora.org>
+    <CAKohpon9en_VnSx+CVydPsWBHtArvmazn0hrodrRJt9jgOa0-g@mail.gmail.com>
+    <53C42AA8.8010107@codeaurora.org>
+    <CAKohpomkqbHZo9KrJMSwsEKGt6+Ac2Fg2X0+S7ZAo=OzhAc45g@mail.gmail.com>
+    <53C4BDFB.70707@codeaurora.org> <53C4D12E.3040807@mit.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:43050 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751395AbaGOOtX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 15 Jul 2014 10:49:23 -0400
-In-Reply-To: <20140711091358.GK12420@verge.net.au>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <53C4D12E.3040807@mit.edu>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa@MIT.EDU>
+Cc: Saravana Kannan <skannan@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, kuninori.morimoto.gx@renesas.com
-
-On Fri, 2014-07-11 at 11:13 +0200, Simon Horman wrote:
-> On Wed, Jul 09, 2014 at 02:23:35PM +0200, Geert Uytterhoeven wrote:
-> > The documentation only mentioned the generic fallback compatible property.
-> > Add the missing SoC-specific compatible properties, some of which are
-> > already in use.
-> > 
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <eduardo.valentin@ti.com>
-> > Cc: linux-pm@vger.kernel.org
-> 
-> Acked-by: Simon Horman <horms+renesas@verge.net.au>
-
-Kuninori,
-
-what' your opinion of this patch?
-
-thanks,
-rui
-> 
-> > ---
-> >  .../devicetree/bindings/thermal/rcar-thermal.txt       | 18 ++++++++++++------
-> >  1 file changed, 12 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
-> > index 28ef498a66e5..0ef00be44b01 100644
-> > --- a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
-> > +++ b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
-> > @@ -1,7 +1,13 @@
-> >  * Renesas R-Car Thermal
-> >  
-> >  Required properties:
-> > -- compatible		: "renesas,rcar-thermal"
-> > +- compatible		: "renesas,thermal-<soctype>", "renesas,rcar-thermal"
-> > +			  as fallback.
-> > +			  Examples with soctypes are:
-> > +			    - "renesas,thermal-r8a73a4" (R-Mobile AP6)
-> > +			    - "renesas,thermal-r8a7779" (R-Car H1)
-> > +			    - "renesas,thermal-r8a7790" (R-Car H2)
-> > +			    - "renesas,thermal-r8a7791" (R-Car M2)
-> >  - reg			: Address range of the thermal registers.
-> >  			  The 1st reg will be recognized as common register
-> >  			  if it has "interrupts".
-> > @@ -12,18 +18,18 @@ Option properties:
-> >  
-> >  Example (non interrupt support):
-> >  
-> > -thermal@e61f0100 {
-> > -	compatible = "renesas,rcar-thermal";
-> > -	reg = <0xe61f0100 0x38>;
-> > +thermal@ffc48000 {
-> > +	compatible = "renesas,thermal-r8a7779", "renesas,rcar-thermal";
-> > +	reg = <0xffc48000 0x38>;
-> >  };
-> >  
-> >  Example (interrupt support):
-> >  
-> >  thermal@e61f0000 {
-> > -	compatible = "renesas,rcar-thermal";
-> > +	compatible = "renesas,thermal-r8a73a4", "renesas,rcar-thermal";
-> >  	reg = <0xe61f0000 0x14
-> >  		0xe61f0100 0x38
-> >  		0xe61f0200 0x38
-> >  		0xe61f0300 0x38>;
-> > -	interrupts = <0 69 4>;
-> > +	interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
-> >  };
-> > -- 
-> > 1.9.1
-> > 
 
 
+Srivatsa S. Bhat wrote:
+> On 07/15/2014 11:06 AM, Saravana Kannan wrote:
+>> On 07/14/2014 09:35 PM, Viresh Kumar wrote:
+>>> On 15 July 2014 00:38, Saravana Kannan <skannan@codeaurora.org> wrote:
+>>>> Yeah, it definitely crashes if policy->cpu if an offline cpu. Because
+>>>> the
+>>>> mutex would be uninitialized if it's stopped after boot or it would
+>>>> never
+>>>> have been initialized (depending on how you fix policy->cpu at boot).
+>>>>
+>>>> Look at this snippet on the actual tree and it should be pretty
+>>>> evident.
+>>>
+>>> Yeah, I missed it. So the problem is we initialize timer_mutex's for
+>>> policy->cpus. So we need to do that just for policy->cpu and also we
+>>> don't
+>>> need a per-cpu timer_mutex anymore.
+>>>
+>>
+>> Btw, I tried to take a stab at removing any assumption in cpufreq code
+>> about policy->cpu being ONLINE.
+>
+> Wait, allowing an offline CPU to be the policy->cpu (i.e., the CPU which
+> is
+> considered as the master of the policy/group) is just absurd. If there is
+> no leader, there is no army. We should NOT sacrifice sane semantics for
+> the
+> sake of simplifying the code.
+>
+>> There are 160 instances of those of with
+>> 23 are in cpufreq.c
+>>
+>
+> And that explains why. It is just *natural* to assume that the CPUs
+> governed
+> by a policy are online. Especially so for the CPU which is supposed to be
+> the policy leader. Let us please not change that - it will become
+> counter-intuitive if we do so. [ The other reason is that physical hotplug
+> is also possible on some systems... in that case your code might make a
+> CPU
+> which is not even present (but possible) as the policy->cpu.. and great
+> 'fun'
+> will ensue after that ;-( ]
+>
+> The goal of this patchset should be to just de-couple the sysfs
+> files/ownership
+> from the policy->cpu to an extent where it doesn't matter who owns those
+> files, and probably make it easier to do CPU hotplug without having to
+> destroy and recreate the files on every hotplug operation.
+>
+> This is exactly why the _implementation_ matters in this particular case -
+> if we can't achieve the simplification by keeping sane semantics, then we
+> shouldn't do the simplification!
+>
+> That said, I think we should keep trying - we haven't exhausted all ideas
+> yet :-)
+>
+
+I don't think we disagree. To summarize this topic: I tried to keep the
+policy->cpu an actual online CPU so as to not break existing semantics in
+this patch. Viresh asked "why not fix it at boot?". My response was to
+keep it an online CPU and give it a shot in a separate patch if we really
+want that. It's too risky to do that in this patch and also not a
+mandatory change for this patch.
+
+I think we can work out the details on the need to fixing policy->cpu at
+boot and whether there's even a need for policy->cpu (when we already have
+policy->cpus) in a separate thread after the dust settles on this one?
+
+-Saravana
+
+-- 
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
