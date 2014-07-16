@@ -1,65 +1,51 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH 2/8] cpufreq: add driver for Armada XP
-Date: Wed, 16 Jul 2014 17:47:41 +0200
-Message-ID: <20140716174741.0399e9f8@free-electrons.com>
-References: <1404467103-29644-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<1404467103-29644-3-git-send-email-thomas.petazzoni@free-electrons.com>
-	<CAKohponuvPd1kWDdB66kxd8TxxYqQ219jCq2D2RGhMHAuZTSWA@mail.gmail.com>
-	<20140716160256.7e8dbccf@free-electrons.com>
-	<CAKohpomaYfuq0CR5xsf73obTbXsxdBtHToLsNWcW2NQcCd5LUw@mail.gmail.com>
-	<20140716172811.2289a64c@free-electrons.com>
-	<CAKohpok6-_7aQ1RxSJKLo1idc777LHWLVM=tjtTLOzZjeAUpjw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
+Date: Wed, 16 Jul 2014 21:31:54 +0530
+Message-ID: <CAKohpo=bUMKa752fBXZTb0WPYMfJtuR5uk7z-YaXYV63fhJWtg@mail.gmail.com>
+References: <cover.1404231535.git.viresh.kumar@linaro.org>
+	<CAKohpomRttWnCBGEpR3cVsGYniJSnjWUnvtbg21AiYyrUnDjGw@mail.gmail.com>
+	<53B4B0B3.9080000@codeaurora.org>
+	<CAKohponRv6+rzJnO4cYFhXn6On1+4-KoxFSA2iU_nz130gvsug@mail.gmail.com>
+	<20140703221609.11380.6884@quantum>
+	<CAKohpomNv_xvcmx03pb8nj=3O33Qt-2Dj2B1q3U46mv5EBtUjA@mail.gmail.com>
+	<CAKohpo=Z5gEHOC5q40q8dfQfoNP5-WyhjG1arV99zJiG2c+6Xg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:36263 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964942AbaGPPro (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 11:47:44 -0400
-In-Reply-To: <CAKohpok6-_7aQ1RxSJKLo1idc777LHWLVM=tjtTLOzZjeAUpjw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=Z5gEHOC5q40q8dfQfoNP5-WyhjG1arV99zJiG2c+6Xg@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Shawn Guo <shawn.guo@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Rob Herring <rob.herring@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Simon Horman <horms@verge.net.au>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-Dear Viresh Kumar,
+Cc'ing Thomas,
 
-On Wed, 16 Jul 2014 21:02:29 +0530, Viresh Kumar wrote:
+On 8 July 2014 10:20, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 4 July 2014 09:51, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> Yeah, having something like what you suggested from DT is the perfect
+>> solution to get over this. The only reason why I am not touching that here
+>> is to not delay other patches just because of that.
+>>
+>> There are separate threads going on for that and probably somebody
+>> else was trying to push for that.
+>>
+>> That's it, nothing more. I would definitely like to use those bindings instead
+>>  of the crazy routines we are trying here, once that is finalized :)
+>
+> Do we have some kind of agreement for this temporary solution? Anyways
+> I will kick the other thread again to resolve the bindings soon.
 
-> > Would be good to have this soon, since the 3.17 merge window is
-> > approaching. You asked me to use this cpufreq-generic driver instead of
-> > a custom cpufreq driver, and I did the work to do that. So now I clearly
-> > hope that cpufreq-generic will be merged in 3.17.
-> 
-> Yeah, I have already pinged Rafael few days back on this. He came back
-> from holidays last week and this is what he told me:
-> 
-> Jul 11 19:58:34 <vireshk> rafael, when are you going to pick stuff for 3.17?
-> Jul 11 19:59:11 <rafael> vireshk: next week i suppose
+Hi Mike/Rafael,
 
-Ok.
+Thomas has a dependency on the patch adding "find_siblings()":
+http://www.spinics.net/lists/arm-kernel/msg348080.html
 
-> Do you depend on this patch btw?
-> 
-> https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg675398.html
-> 
-> Actually there had been some objections to comparing clocks this way and
-> we *might* hold this off, unless the bindings are finalized. Will get all other
-> patches merged though.
+Would it be fine to get this temporary solution (Only within cpufreq-cpu0
+file, so that it doesn't become an API) for now and updating it later once
+bindings are closed?
 
-I'm not sure to fully understand what this patch is doing, but I
-believe I depend on it. My system has one clock for each CPU, and
-therefore each CPU has a separately controllable frequency. See
-http://git.infradead.org/linux-mvebu.git/blob/3843607838cc5436d02a6771e661969a54c2fee0:/arch/arm/boot/dts/armada-xp-mv78460.dtsi#l30
-for the Device Tree part describing the CPUs. So the existing
-cpufreq-cpu0 (as of 3.16) doesn't work because it assumes there is one
-single clock controlling the frequency.
+I have tried pinging on the other thread as well, but no one replied.
+And it looks those bindings are going to take some time to settle.
 
-Best regards,
-
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+--
+viresh
