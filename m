@@ -1,67 +1,78 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 01/13] clk: tegra: Add binding for the Tegra124 DFLL
- clocksource
-Date: Tue, 15 Jul 2014 23:52:52 +0100
-Message-ID: <20140715225252.GD17528@sirena.org.uk>
-References: <1405028569-14253-2-git-send-email-ttynkkynen@nvidia.com>
- <CAL1qeaFF0ZpUFovxTuLXrBPRg2Lbf-754Z=ztD5HFZPbfnDsAw@mail.gmail.com>
- <53C01558.3090607@nvidia.com>
- <CAL1qeaHETQ7kSGNjPiwi_9WNMtr9qZp0KwjZCCxY29+_N4AcuA@mail.gmail.com>
- <53C01D17.2050906@nvidia.com>
- <20140714083854.GO2081@ulmo>
- <20140714091233.GC6800@sirena.org.uk>
- <20140714092434.GA9755@ulmo>
- <20140714102203.GD6800@sirena.org.uk>
- <53C58DCB.90502@nvidia.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / sleep / irq: Do not suspend wakeup interrupts
+Date: Wed, 16 Jul 2014 02:45:35 +0200
+Message-ID: <2263851.c6Khxbl5Dm@vostro.rjw.lan>
+References: <53A2340D.9030503@linux.intel.com> <1776825.8kf9TZPye4@vostro.rjw.lan> <1983952.dL0Czm4hJT@ws-stein>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="/unnNtmY43mpUSKx"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <53C58DCB.90502-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrew Bresticker <abrestic-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:57219 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755932AbaGPA1U (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Jul 2014 20:27:20 -0400
+In-Reply-To: <1983952.dL0Czm4hJT@ws-stein>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alexander Stein <alexander.stein@systec-electronic.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "Li, Aubrey" <aubrey.li@linux.intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>
 
+On Tuesday, July 15, 2014 02:36:46 PM Alexander Stein wrote:
+> On Tuesday 15 July 2014 14:50:28, Rafael J. Wysocki wrote:
+> > On Tuesday, July 15, 2014 02:22:25 PM Alexander Stein wrote:
+> > > On Thursday 10 July 2014 23:37:54, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > 
+> > > > If an IRQ has been configured for wakeup via enable_irq_wake(), the
+> > > > driver who has done that must be prepared for receiving interrupts
+> > > > after suspend_device_irqs() has returned, so there is no need to
+> > > > "suspend" such IRQs.  Moreover, if drivers using enable_irq_wake()
+> > > > actually want to receive interrupts after suspend_device_irqs() has
+> > > > returned, they need to add IRQF_NO_SUSPEND to the IRQ flags while
+> > > > requesting the IRQs, which shouldn't be necessary (it also goes a bit
+> > > > too far, as IRQF_NO_SUSPEND causes the IRQ to be ignored by
+> > > > suspend_device_irqs() all the time regardless of whether or not it
+> > > > has been configured for signaling wakeup).
+> > > > 
+> > > > For the above reasons, make __disable_irq() ignore IRQ descriptors
+> > > > with IRQD_WAKEUP_STATE set when its suspend argument is true which
+> > > > effectively causes them to behave like IRQs with IRQF_NO_SUSPEND
+> > > > set.
+> > > > 
+> > > > This also allows IRQs configured for wakeup via enable_irq_wake()
+> > > > to work as wakeup interrupts for the "freeze" (suspend-to-idle)
+> > > > sleep mode automatically just like for any other sleep states.
+> > > > 
+> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > ---
+> > > >  kernel/irq/manage.c |    3 ++-
+> > > >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > > > 
+> > > > Index: linux-pm/kernel/irq/manage.c
+> > > > ===================================================================
+> > > > --- linux-pm.orig/kernel/irq/manage.c
+> > > > +++ linux-pm/kernel/irq/manage.c
+> > > > @@ -385,7 +385,8 @@ setup_affinity(unsigned int irq, struct
+> > > >  void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
+> > > >  {
+> > > >  	if (suspend) {
+> > > > -		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND))
+> > > > +		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND)
+> > > > +		    || irqd_has_set(&desc->irq_data, IRQD_WAKEUP_STATE))
+> > > >  			return;
+> > > >  		desc->istate |= IRQS_SUSPENDED;
+> > > >  	}
+> > > 
+> > > Nice, this fixes my wakeup problem from freeze using gpio-keys. Unfortunately my SPI-attached touchscreen controller cannot be used for wakeup from freeze. Using it to wakeup from mem does work instead. Any ideas what might be wrong in this case?
+> > 
+> > Not without looking at the code in question.
+> > 
+> > One guess would be a missing call to enable_irq_wake().
+> 
+> No, ads7846.c does call 'enable_irq_wake(ts->spi->irq)'. So is this a platform or driver specific problem?
 
---/unnNtmY43mpUSKx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Well, both code paths are identical from the driver's perspective, so I'd bet
+on the platform, but that's only a guess at this point.
 
-On Tue, Jul 15, 2014 at 11:23:39PM +0300, Tuomas Tynkkynen wrote:
+Rafael
 
-> That sounds indeed useful for this case. How'd the following interface
-> sound for the register offset / selector-to-register-value conversion?
-> The I2C address would be a bit trickier to get as it would touch the
-> regmap stuff as well, but perhaps it would be a good idea to have a
-> phandle to the I2C device itself, and then parse the reg field for
-> the address.
-
-This looks fine, can you submit properly please?  For the I2C address
-why not just have an interface to get the regmap and then provide a way
-to get the underlying device back from the regmap?
-
---/unnNtmY43mpUSKx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBAgAGBQJTxbC7AAoJELSic+t+oim94DsP/3hee0clNxB4r6hBhDawbuBR
-ioR6YThPt82r79ST9ZKqgpkwcmGGjZura4HxaMb/ViPJJCsck3V0HgfJATp4/quC
-qyBxYT4v/OhZTT/GWld1YB3uk6HG+P5nXqgBBFi1NJbnueXvHFwotRjpMepsRR3p
-JSLZOCQ3AYztf6SZkfwiaysIi/n93MEMMNKz2uH9dSQjbE8dyVF2qPy+lxtchwMy
-sj2ndUslH9GBaJC4jZcHVWr236SGTguZiPpukgNVNYWTp6g70Vpl0SmRZcIIH5xT
-ksQnAiwoxrgAlWdFLFTGHUAW67HWcVi02QJh01wEyFI3fHiu0pF1/74V2WSRK2Vx
-deMW3eC9FuqvENsJ5sfGaDkvCTduNsYehiWpoPl5QMJEtWgA314Foscg841NxTr9
-QzXoT1DvfHkKVOew+pgXsWhYzg0aazZq+GpxTabcuvQZ+60Zf6tnSyE/u3zCMcfl
-UD9DjqaRbt9ZoJfhRC15VsI+eEiUOI2SMN2ZvvoU/IPIk/Ed3gPVj1t/m+5ZHXXc
-A4tZAc7tK1UO2JS15fVvEmWpqv8lxK29xT8Y+fNrixwdBmwhBgsRdQnJjc9liJbV
-r7p6wBWbw5DEQwt8o+5Hy+kj0G2Z5t5PKWXA5q9Je3wOkhTFqWvMz97Q0NqE9A5b
-MsZQFoed22IyuNUuDhtW
-=RoQC
------END PGP SIGNATURE-----
-
---/unnNtmY43mpUSKx--
