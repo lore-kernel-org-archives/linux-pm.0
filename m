@@ -1,100 +1,180 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH v3 5/7] PM / devfreq: exynos5250: migrate to common-clock
-Date: Wed, 16 Jul 2014 13:03:40 +0200
-Message-ID: <53C65C0C.10200@samsung.com>
-References: <1400779322-4410-6-git-send-email-a.kesavan@samsung.com>
- <1405449332-26350-1-git-send-email-a.kesavan@samsung.com>
+From: "Srivatsa S. Bhat" <srivatsa@MIT.EDU>
+Subject: Re: [PATCH v3 1/2] cpufreq: Don't destroy/realloc policy/sysfs on
+ hotplug/suspend
+Date: Wed, 16 Jul 2014 16:46:19 +0530
+Message-ID: <53C65F03.1050609@mit.edu>
+References: <1405464473-3916-1-git-send-email-skannan@codeaurora.org>	<1405464473-3916-2-git-send-email-skannan@codeaurora.org> <CAKohpok2hzwDLy77CZJ+7pHV-Nj4XTviJxVeXQYJRYtKXME00w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:35506 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751016AbaGPLET (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 07:04:19 -0400
-In-reply-to: <1405449332-26350-1-git-send-email-a.kesavan@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpok2hzwDLy77CZJ+7pHV-Nj4XTviJxVeXQYJRYtKXME00w@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Abhilash Kesavan <a.kesavan@samsung.com>, myungjoo.ham@samsung.com, linux-pm@vger.kernel.org, kgene.kim@samsung.com
-Cc: rjw@sisk.pl, kesavan.abhilash@gmail.com, devicetree@vger.kernel.org
 
-Hi Abhilash, Andrew,
-
-Please see my comments inline.
-
-On 15.07.2014 20:35, Abhilash Kesavan wrote:
-> From: Andrew Bresticker <abrestic@chromium.org>
+On 07/16/2014 01:54 PM, Viresh Kumar wrote:
+> On 16 July 2014 04:17, Saravana Kannan <skannan@codeaurora.org> wrote:
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
 > 
-> Use the common-clock framework to scale frequencies for the various
-> peripheral clocks on the Exynos5250.
+>> +/* symlink related CPUs */
+>> +static int cpufreq_dev_symlink(struct cpufreq_policy *policy, bool add)
+>>  {
+>> -       unsigned int j;
+>> +       unsigned int j, first_cpu = cpumask_first(policy->related_cpus);
 > 
-> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
-> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
-> ---
->  drivers/devfreq/exynos/exynos5_bus.c |  131 ++++++++++++++++++++++++++++++----
->  1 file changed, 119 insertions(+), 12 deletions(-)
+> The CPU which came first should get the ownership by default, instead
+> of the first one in the mask.
+> 
+> Normally at boot, all CPUs come up first and then only cpufreq init starts.
+> But in case all other CPUs fail to come up, then policy->cpu *might* point
+> to a failed cpu.
+> 
+> And so, we should simply use policy->cpu here instead of finding the
+> first one in the mask.
+> 
+> Also, its not the duty of this routine to find which one is the policy cpu as
+> that is done by __cpufreq_add_dev(). And so in case we need to make
+> first cpu of a mask as policy->cpu, it should be done in __cpufreq_add_dev()
+> and not here. This one should just follow the orders :)
+> 
+> @Srivatsa: What happens to the sysfs directory if a CPU fails to come up?
+> Is it exactly similar to how it happens in hotplug? i.e. we do have a directory
+> there?
+> 
 
-[snip]
+Short answer: If the sysfs directory has already been created by cpufreq,
+then yes, it will remain as it is. However, if the online operation failed
+before that, then cpufreq won't know about that CPU at all, and no file will
+be created.
 
-> +
->  static struct int_bus_opp_table exynos5_int_opp_table[] = {
->  	{LV_0, 266000, 1025000},
->  	{LV_1, 200000, 1025000},
-> @@ -75,6 +85,98 @@ static struct int_bus_opp_table exynos5_int_opp_table[] = {
->  	{0, 0, 0},
->  };
->  
-> +static struct int_clk_table aclk_166[] = {
-> +	{LV_0, 167000},
-> +	{LV_1, 111000},
-> +	{LV_2,  84000},
-> +	{LV_3,  84000},
-> +	{LV_4,  42000},
-> +};
+Long answer:
+The existing cpufreq code does all its work (including creating the sysfs
+directories etc) at the CPU_ONLINE stage. This stage is not expected to fail
+(in fact even the core CPU hotplug code in kernel/cpu.c doesn't care for
+error returns at this point). So if a CPU fails to come up in earlier stages
+itself (such as CPU_UP_PREPARE), then cpufreq won't even hear about that CPU,
+and hence no sysfs files will be created/linked. However, if the CPU bringup
+operation fails during the CPU_ONLINE stage after the cpufreq's notifier has
+been invoked, then we do nothing about it and the cpufreq sysfs files will
+remain.
 
-[snip]
+>>         int ret = 0;
+>>
+>> -       for_each_cpu(j, policy->cpus) {
+>> +       for_each_cpu(j, policy->related_cpus) {
+>>                 struct device *cpu_dev;
+>>
 
-> +static struct int_clk_table aclk_300_gscl[] = {
-> +	{LV_0, 267000},
-> +	{LV_1, 267000},
-> +	{LV_2, 267000},
-> +	{LV_3, 200000},
-> +	{LV_4, 100000},
-> +};
+[...]
 
-Shouldn't you manage this using OPP framework and parse this from DT?
+>> @@ -961,60 +967,58 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+>>  }
+>>
+>>  #ifdef CONFIG_HOTPLUG_CPU
+> 
+> @Srivatsa: I will try this but you also take care of this. These
+> ifdefs might go wrong,
+> i.e. we are surely using it in the current patch without HOTPLUG as well. See
+> cpufreq_add_dev()..
+> 
 
-> +
-> +#define EXYNOS5_INT_CLK(name, tbl) {		\
-> +	.clk_name = name,			\
-> +	.freq_table = tbl,			\
-> +}
+Yeah, looks suspicious.
 
-[snip]
+> Also, how does suspend/resume work without CONFIG_HOTPLUG_CPU ?
+> What's the sequence of events?
+> 
 
-> @@ -320,16 +427,16 @@ static int exynos5_busfreq_int_probe(struct platform_device *pdev)
->  	rcu_read_unlock();
->  	data->curr_freq = initial_freq;
->  
-> -	err = clk_set_rate(data->int_clk, initial_freq * 1000);
-> +	err = exynos5_int_setvolt(data, initial_volt);
-> +	if (err)
-> +		return err;
-> +
-> +	err = exynos5_int_set_rate(data, initial_freq);
->  	if (err) {
->  		dev_err(dev, "Failed to set initial frequency\n");
->  		return err;
->  	}
->  
-> -	err = exynos5_int_setvolt(data, initial_volt);
-> -	if (err)
-> -		return err;
-> -
+Well, CONFIG_SUSPEND doesn't have an explicit dependency on HOTPLUG_CPU, but
+SMP systems usually use CONFIG_PM_SLEEP_SMP, which sets CONFIG_HOTPLUG_CPU.
+(I guess the reason why CONFIG_SUSPEND doesn't depend on HOTPLUG_CPU is
+because suspend is possible even on uniprocessor systems and hence the
+Kconfig dependency wasn't really justified).
 
-Whether voltage or rate should be set first depends on current settings
-and initial_{freq,volt}. Also it might be more convenient to simply call
-exynos5_busfreq_int_target() here.
+>> -static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
+>> -                                 unsigned int cpu, struct device *dev)
+>> +static int cpufreq_change_policy_cpus(struct cpufreq_policy *policy,
+>> +                                 unsigned int cpu, bool add)
 
-Best regards,
-Tomasz
+[...]
+
+>> -
+>> -       if (!cpufreq_driver->setpolicy)
+>> -               strncpy(per_cpu(cpufreq_cpu_governor, cpu),
+>> -                       policy->governor->name, CPUFREQ_NAME_LEN);
+> 
+> Where is this gone? There are several instances of code just being
+> removed, this is the third one. Its really really tough to catch these
+> in this big of a patch. Believe me.
+> 
+> You have to break this patch into multiple ones, see this on how to
+> break even simplest of the changes into multiple patches:
+> https://lkml.org/lkml/2013/9/6/400
+> 
+> Its just impossible to catch bugs that you might have introduced here due
+> to the size of this patch. And its taking a LOT of time for me to review this.
+> As I have to keep diff in one tab, new cpufreq.c in one and the old cpufreq.c
+> in one and then compare..
+> 
+
+True, this is still a pretty huge chunk. Saravana, at this stage, don't worry
+about making cpufreq work properly in each and every patch. Just ensure that
+every patch builds fine; that should be good enough. I hope this will help you
+in splitting up the patches further.
+
+One other thing: your changelog contains what we usually write in a cover-
+letter - *very* high-level goals of the patch. Ideally, you should explain
+the subtle details and the non-obvious decisions or trade-offs that you have
+made at various places in the code. Otherwise it becomes very hard to follow
+your thought-flow just by looking at the patch. So please split up the patch
+further and also make the changelogs useful to review the patch :-)
+
+The link that Viresh gave above also did a lot of code reorganization in
+cpufreq, so it should give you a good example of how to proceed.
+
+[...]
+
+>>                         __cpufreq_add_dev(dev, NULL);
+>>                         break;
+>>
+>>                 case CPU_DOWN_PREPARE:
+>> -                       __cpufreq_remove_dev_prepare(dev, NULL);
+>> -                       break;
+>> -
+>> -               case CPU_POST_DEAD:
+>> -                       __cpufreq_remove_dev_finish(dev, NULL);
+>> -                       break;
+>> -
+>> -               case CPU_DOWN_FAILED:
+>> -                       __cpufreq_add_dev(dev, NULL);
+>> +                       __cpufreq_remove_dev(dev, NULL);
+> 
+> @Srivatsa: You might want to have a look at this, remove sequence was
+> separated for some purpose and I am just not able to concentrate enough
+> to think of that, just too many cases running in my mind :)
+> 
+
+Yeah, we had split it into _remove_dev_prepare() and _remove_dev_finish()
+to avoid a few potential deadlocks. We wanted to call _remove_dev_prepare()
+in the DOWN_PREPARE stage and then call _remove_dev_finish() (which waits
+for the kobject refcount to drop) in the POST_DEAD stage. That is, we wanted
+to do the kobject cleanup after releasing the hotplug lock, and POST_DEAD stage
+was well-suited for that.
+
+Commit 1aee40ac9c8 (cpufreq: Invoke __cpufreq_remove_dev_finish() after
+releasing cpu_hotplug.lock) explains this in detail. Saravana, please take a
+look at that reasoning and ensure that your patch doesn't re-introduce those
+deadlock possibilities!
+
+>>                         break;
+>>                 }
+>>         }
+> 
+> I am still not sure if everything will work as expected as I seriously doubt
+> my reviewing capabilities. There might be corner cases which I am still
+> missing.
+> 
+
+Regards,
+Srivatsa S. Bhat
