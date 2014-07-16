@@ -1,61 +1,87 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCHv2 00/17] cpuidle for Marvell Armada 370 and 38x
-Date: Thu, 17 Jul 2014 00:18:38 +0200
-Message-ID: <2328587.KMSy5tvnCr@vostro.rjw.lan>
-References: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com> <20140713222223.GH13108@titan.lakedaemon.net>
+Subject: Re: [RFC] Add "rpm_not_supported" flag
+Date: Thu, 17 Jul 2014 00:40:23 +0200
+Message-ID: <1908592.0t6juNfLFj@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1407021002380.874-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64933 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:61029 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752645AbaGPWAW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 18:00:22 -0400
-In-Reply-To: <20140713222223.GH13108@titan.lakedaemon.net>
+	with SMTP id S1752085AbaGPWWK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 18:22:10 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1407021002380.874-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jason Cooper <jason@lakedaemon.net>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+To: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
 
-On Sunday, July 13, 2014 06:22:23 PM Jason Cooper wrote:
-> Rafael, Daniel,
-> 
-> On Wed, Jul 09, 2014 at 03:40:04PM +0200, Thomas Petazzoni wrote:
-> > Hello,
-> > 
-> > Here comes the second version of the cpuidle support for Armada 370
-> > and Armada 38x. This series has been tested on the following
-> > configurations:
-> > 
-> >  * Armada XP, LE and BE, to verify that the existing, SMP, cpuidle and
-> >    CPU hotplug functionalities are still working.
-> > 
-> >  * Armada 375, Z1 and A0, LE and BE, to verify that the existing SMP
-> >    functionality is still working (SMP support on Armada 375 Z1 is
-> >    affected by this series).
-> > 
-> >  * Armada 370, LE and BE, to verify that the newly introduced cpuidle
-> >    functionality is working fine.
-> > 
-> >  * Armada 38x, LE and BE, to verify that the existing SMP
-> >    functionality, and the newly introduced cpuidle functionality is
-> >    working fine.
-> > 
-> > We are hoping to see this patch series merged for 3.17.
-> > 
-> > Most patches are touching only arch/arm/mach-mvebu/ code so they
-> > should be handled by the mvebu maintainers. However, patches 11-14 are
-> > touching the mvebu cpuidle driver, with a possible issue on patch 11,
-> > which touches both the cpuidle driver and the mach-mvebu code in order
-> > to rename the driver without breaking functionality (if needed, we can
-> > decide to split the commits, it would break functionality temporarly,
-> > but not buildability).
-> 
-> Would one or both of you mind Acking this series so we can keep it
-> together?
+That took me much more time than I had hoped, sorry about that.
 
-While I don't see anything obviously wrong in it, I'd like Daniel to look
-at them too from the ARM perspective.
+On Wednesday, July 02, 2014 10:27:06 AM Alan Stern wrote:
+> On Wed, 2 Jul 2014, Rafael J. Wysocki wrote:
+> 
+> > > Then you have no other objections to the patch?
+> > 
+> > My concern still is that it will be confusing, because people won't read the
+> > documentation carefully enough and will confuse "runtime PM never used" with
+> > "hardware can't do PM".  I'm not sure how to make that more clear, though.
+> 
+> I could emphasize that distinction a little more strongly in the 
+> documentation.
+
+So it looks like we'd like to cover the "enabled but always active" case for
+runtime PM of a device?
+
+> > Also we have the no_callbacks flag and I wonder if/how it is related to the
+> > new one.  Do we still need both?
+> 
+> They mean different things.  The no_callbacks flag is used when we want 
+> the PM core to think the device can be in RPM_SUSPENDED at times (it is 
+> "logically suspended").  rpm_not_supported is used when we want the PM 
+> core to think the device must always be in RPM_ACTIVE.
+> 
+> > In addition to that, I think that "hardware can't do PM" should apply to the
+> > handling of system suspend resume too.
+> 
+> Maybe.  For the use case Dan Williams and I are working on, it doesn't 
+> matter; for other cases it might matter.  That's why I named the flag 
+> "rpm_not_supported" -- it applies specifically to runtime PM, not 
+> system PM.
+
+Maybe it'd be better to call the flag always_active and make rpm_suspend()
+and rpm_resume() react to it accordingly?
+
+So before enabling runtime PM the driver will set always_active and that will
+mean the device cannot be suspended.  And we could add a separate sysfs
+attribute for that instead of re-purposing the status thing, if needed
+(I'm not sure about that, however).
+
+> Here's a brief summary of the story behind this patch...
+> 
+> At one point, I suggested to Dan that instead of doing something
+> special for these devices, we could simply have the runtime_suspend()
+> routine always return -EBUSY.  He didn't like that idea because then
+> the user would see the device was never powering down but would have no
+> idea why.  The rpm_not_supported flag provides this information to the
+> user by causing the power/runtime_status attribute to say "not
+> supported".  (Although to be entirely fair, we could just put a message
+> in the kernel log during probe if the hardware doesn't support runtime
+> suspend.)
+> 
+> Instead, Dan introduced a messy PM QoS mechanism in commit
+> e3d105055525.  I didn't like that approach, but Greg merged it before I
+> objected.
+
+That really looks a bit like a hack to me to be honest.
+
+Greg, what's your plan toward this?
+
+> Do you have any suggestions?
+
+We could use an "always_active" type of flag for that, but I'm not sure how
+much value to the user that will bring.
 
 Rafael
 
