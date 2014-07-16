@@ -1,51 +1,80 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH v3 3/7] ARM: dts: Add PPMU device tree support for
- Exynos5250
-Date: Wed, 16 Jul 2014 12:56:50 +0200
-Message-ID: <53C65A72.7000406@samsung.com>
-References: <1400779322-4410-4-git-send-email-a.kesavan@samsung.com>
- <1405449266-26267-1-git-send-email-a.kesavan@samsung.com>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 01/13] clk: tegra: Add binding for the Tegra124 DFLL
+ clocksource
+Date: Wed, 16 Jul 2014 12:00:12 +0100
+Message-ID: <20140716110012.GL17528@sirena.org.uk>
+References: <53C01558.3090607@nvidia.com>
+ <CAL1qeaHETQ7kSGNjPiwi_9WNMtr9qZp0KwjZCCxY29+_N4AcuA@mail.gmail.com>
+ <53C01D17.2050906@nvidia.com>
+ <20140714083854.GO2081@ulmo>
+ <20140714091233.GC6800@sirena.org.uk>
+ <20140714092434.GA9755@ulmo>
+ <20140714102203.GD6800@sirena.org.uk>
+ <53C58DCB.90502@nvidia.com>
+ <20140715225252.GD17528@sirena.org.uk>
+ <20140716080133.GI7978@ulmo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:35093 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751160AbaGPK53 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 06:57:29 -0400
-In-reply-to: <1405449266-26267-1-git-send-email-a.kesavan@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="+PbGPm1eXpwOoWkI"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20140716080133.GI7978@ulmo>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Andrew Bresticker <abrestic-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Abhilash Kesavan <a.kesavan@samsung.com>, myungjoo.ham@samsung.com, linux-pm@vger.kernel.org, kgene.kim@samsung.com
-Cc: rjw@sisk.pl, kesavan.abhilash@gmail.com, devicetree@vger.kernel.org
 
-Actually one more comment.
 
-On 15.07.2014 20:34, Abhilash Kesavan wrote:
+--+PbGPm1eXpwOoWkI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-[snip]
+On Wed, Jul 16, 2014 at 10:01:34AM +0200, Thierry Reding wrote:
+> On Tue, Jul 15, 2014 at 11:52:52PM +0100, Mark Brown wrote:
 
-> diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
-> index 834fb5a..5284f00 100644
-> --- a/arch/arm/boot/dts/exynos5250.dtsi
-> +++ b/arch/arm/boot/dts/exynos5250.dtsi
-> @@ -778,4 +778,12 @@
->  		clocks = <&clock CLK_SSS>;
->  		clock-names = "secss";
->  	};
-> +
-> +	ppmu@10C40000 {
-> +		compatible = "samsung,exynos5250-int-busfreq";
-> +		reg = <0x10C40000 0x2000	/* PPMU_DDR_C */
-> +		       0x10C50000 0x2000	/* PPMU_DDR_L */
-> +		       0x10CB0000 0x2000	/* PPMU_DDR_R */
-> +		       0x13660000 0x2000>;	/* PPMU_RIGHT */
-> +	};
->  };
-> 
+> > This looks fine, can you submit properly please?  For the I2C address
+> > why not just have an interface to get the regmap and then provide a way
+> > to get the underlying device back from the regmap?
 
-Please separate patches adding the binding from patches modifying device
-tree sources. Those are two logically separate changes.
+> Is it mandatory for regulators to use regmap? Also I'm not sure how this
 
-Best regards,
-Tomasz
+No, but this is for a limited subset of devices that the hardware knows
+how to write to directly which means that they're restricted to things
+that can be supported with regmap (or already know how to interact with
+the hardware and don't need this interface at all).  The proposed patch
+already relies on regmap - it's passing back the information the regmap
+helpers use.
+
+> will work with MFDs, since the device may not be the actual bus device,
+> but rather a child of the MFD (and what we want access to is the MFD).
+
+> Perhaps for regmaps that would work in most cases since MFDs seem to
+> aften share the regmap with their children. However, the code in
+> regulator_register() at least indicates that even then it's possible to
+> have a regmap in children that's different from the top-level MFD.
+
+Right, drivers can say exactly which regmap to use.
+
+--+PbGPm1eXpwOoWkI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJTxls5AAoJELSic+t+oim9vC0P/1ga+B2y7WfWBEoc0bRFCC2W
+UO0bq9GC1ygvBdsDGjqMzxAUQdJjk0wgjTe3ZgY+suhiUbE+YgH/bXdh1HI40pbP
+n3oW32wBKgxuaqmrn1aitm/owiD96nzhK3aWb458EoRFQ1XpvRfmiON1By31Yorx
+wkoVWG1TK3D82GNLrqyXBprgFFABQS9DI3gg7nrFICv2v4wGzrAK/xUFZbBjyFuY
+vcZRy4fhmGx+lEd1pr2MNnynwD4acLSjQuqdWddLvrR8fu4kuKbMijZOWY251Yq+
+4oyTJ7yPhNc4uuNDSYNbX4RiKsecOEPaqixLsBYJWZrlw/KOeLbkPCWqZA+bfIJ7
+sBtwC8+lgfarYtztcIZtJe9wkXLM4TW4w+17OrrjhhK2ACF116pyTF91sPdFeKTl
+AuUGoqnyTvdW+o+aOFvVE2nCICJCLMErP4qOQjzl/6UnvNfsG0Ws8gjnChKEWkDS
+oVNHc9lUuN5/njQURrc+EJno/N4n4qTE15T5Atn5bFjpKHvQgt+REKWd0GtEVKJR
+Un0b3PAgEBRzARd1XBXROMEzc2TokimTDFXpaZXw2vdjw2eO4lSfVvV4FEQjMCHh
+3OmJ9WnTxeCd/lmsQk5JagEOqYTWZE1x1Ur7P3mali7VzDRC85mGFF6uOxYkgMKY
+A/Oihci0OXH8pNi2lC+n
+=ebZh
+-----END PGP SIGNATURE-----
+
+--+PbGPm1eXpwOoWkI--
