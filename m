@@ -1,45 +1,33 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
-Date: Wed, 16 Jul 2014 23:18:52 +0200
-Message-ID: <1450785.beFNo3ByBF@vostro.rjw.lan>
-References: <cover.1404231535.git.viresh.kumar@linaro.org> <CAKohpo=Z5gEHOC5q40q8dfQfoNP5-WyhjG1arV99zJiG2c+6Xg@mail.gmail.com> <CAKohpo=bUMKa752fBXZTb0WPYMfJtuR5uk7z-YaXYV63fhJWtg@mail.gmail.com>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: Power-managing devices that are not of interest at some point
+ in time
+Date: Wed, 16 Jul 2014 23:36:05 +0200
+Message-ID: <1405546565.23419.3.camel@linux-fkkt.site>
+References: <Pine.LNX.4.44L0.1407161400150.1028-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=bUMKa752fBXZTb0WPYMfJtuR5uk7z-YaXYV63fhJWtg@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1407161400150.1028-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mike Turquette <mturquette@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Shawn Guo <shawn.guo@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Rob Herring <rob.herring@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Simon Horman <horms@verge.net.au>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Dmitry Torokhov <dtor@google.com>, Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 16, 2014 09:31:54 PM Viresh Kumar wrote:
-> Cc'ing Thomas,
+On Wed, 2014-07-16 at 14:08 -0400, Alan Stern wrote:
+> > I am not so much concerned about userspace, but about reusing of as
+> > much of existing PM framework in the drivers. Right now it is very
+> > hard to correctly track dependencies between general open/close,
+> > system suspend/resume, and various runtime-PM transitions. Adding
+> yet
+> > another PM mechanism into the mix will just add more complexity.
 > 
-> On 8 July 2014 10:20, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 4 July 2014 09:51, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> Yeah, having something like what you suggested from DT is the perfect
-> >> solution to get over this. The only reason why I am not touching that here
-> >> is to not delay other patches just because of that.
-> >>
-> >> There are separate threads going on for that and probably somebody
-> >> else was trying to push for that.
-> >>
-> >> That's it, nothing more. I would definitely like to use those bindings instead
-> >>  of the crazy routines we are trying here, once that is finalized :)
-> >
-> > Do we have some kind of agreement for this temporary solution? Anyways
-> > I will kick the other thread again to resolve the bindings soon.
-> 
-> Hi Mike/Rafael,
-> 
-> Thomas has a dependency on the patch adding "find_siblings()":
-> http://www.spinics.net/lists/arm-kernel/msg348080.html
-> 
-> Would it be fine to get this temporary solution (Only within cpufreq-cpu0
-> file, so that it doesn't become an API) for now and updating it later once
-> bindings are closed?
+> Would it make sense to unbind the drivers for these devices when the 
+> lid is closed?  With the drivers gone, there would naturally be no 
 
-I don't like that idea, but I wonder what other people think.
+No, because I don't want settings of my devices to disappear.
+You can do that only for stateless devices. And I doubt you can
+tell in general which devices are stateless.
 
-Rafael
+	Regards
+		Oliver
