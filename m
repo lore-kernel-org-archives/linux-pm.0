@@ -1,49 +1,61 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v3 1/2] cpufreq: Don't destroy/realloc policy/sysfs on
- hotplug/suspend
-Date: Wed, 16 Jul 2014 14:45:21 -0700
-Message-ID: <53C6F271.6070707@codeaurora.org>
-References: <1405464473-3916-1-git-send-email-skannan@codeaurora.org> <1405464473-3916-2-git-send-email-skannan@codeaurora.org> <CAKohpok2hzwDLy77CZJ+7pHV-Nj4XTviJxVeXQYJRYtKXME00w@mail.gmail.com> <53C6DFAD.8030109@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCHv2 00/17] cpuidle for Marvell Armada 370 and 38x
+Date: Thu, 17 Jul 2014 00:18:38 +0200
+Message-ID: <2328587.KMSy5tvnCr@vostro.rjw.lan>
+References: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com> <20140713222223.GH13108@titan.lakedaemon.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:42850 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751024AbaGPVp2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 17:45:28 -0400
-In-Reply-To: <53C6DFAD.8030109@codeaurora.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64933 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752645AbaGPWAW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 18:00:22 -0400
+In-Reply-To: <20140713222223.GH13108@titan.lakedaemon.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "Srivatsa S . Bhat" <srivatsa@mit.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
+To: Jason Cooper <jason@lakedaemon.net>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 
-On 07/16/2014 01:25 PM, Saravana Kannan wrote:
-> On 07/16/2014 01:24 AM, Viresh Kumar wrote:
->> On 16 July 2014 04:17, Saravana Kannan <skannan@codeaurora.org> wrote:
->>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->>
->>> @@ -1110,9 +1092,10 @@ static int __cpufreq_add_dev(struct device
->>> *dev, struct subsys_interface *sif)
->>>
->>>   #ifdef CONFIG_SMP
->>>          /* check whether a different CPU already registered this
->>> -        * CPU because it is in the same boat. */
->>> +        * CPU because it is one of the related CPUs. */
->>>          policy = cpufreq_cpu_get(cpu);
->>> -       if (unlikely(policy)) {
->>> +       if (policy) {
->>> +               cpufreq_change_policy_cpus(policy, cpu, true);
->>
->> This is just a waste of time at boot as ... (see below)
->
-> Why? Please explain.
->
+On Sunday, July 13, 2014 06:22:23 PM Jason Cooper wrote:
+> Rafael, Daniel,
+> 
+> On Wed, Jul 09, 2014 at 03:40:04PM +0200, Thomas Petazzoni wrote:
+> > Hello,
+> > 
+> > Here comes the second version of the cpuidle support for Armada 370
+> > and Armada 38x. This series has been tested on the following
+> > configurations:
+> > 
+> >  * Armada XP, LE and BE, to verify that the existing, SMP, cpuidle and
+> >    CPU hotplug functionalities are still working.
+> > 
+> >  * Armada 375, Z1 and A0, LE and BE, to verify that the existing SMP
+> >    functionality is still working (SMP support on Armada 375 Z1 is
+> >    affected by this series).
+> > 
+> >  * Armada 370, LE and BE, to verify that the newly introduced cpuidle
+> >    functionality is working fine.
+> > 
+> >  * Armada 38x, LE and BE, to verify that the existing SMP
+> >    functionality, and the newly introduced cpuidle functionality is
+> >    working fine.
+> > 
+> > We are hoping to see this patch series merged for 3.17.
+> > 
+> > Most patches are touching only arch/arm/mach-mvebu/ code so they
+> > should be handled by the mvebu maintainers. However, patches 11-14 are
+> > touching the mvebu cpuidle driver, with a possible issue on patch 11,
+> > which touches both the cpuidle driver and the mach-mvebu code in order
+> > to rename the driver without breaking functionality (if needed, we can
+> > decide to split the commits, it would break functionality temporarly,
+> > but not buildability).
+> 
+> Would one or both of you mind Acking this series so we can keep it
+> together?
 
-Nevermind. Figured what you meant. I just need to improve the "if" check.
+While I don't see anything obviously wrong in it, I'd like Daniel to look
+at them too from the ARM perspective.
 
--Saravana
+Rafael
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
