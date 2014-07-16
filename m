@@ -1,150 +1,50 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v3 1/2] cpufreq: Don't destroy/realloc policy/sysfs on
- hotplug/suspend
-Date: Tue, 15 Jul 2014 17:28:40 -0700
-Message-ID: <53C5C738.5040705@codeaurora.org>
-References: <1405464473-3916-1-git-send-email-skannan@codeaurora.org> <1405464473-3916-2-git-send-email-skannan@codeaurora.org>
+From: Patrik Fimml <patrikf@chromium.org>
+Subject: Power-managing devices that are not of interest at some point in time
+Date: Tue, 15 Jul 2014 18:32:06 -0700
+Message-ID: <20140716013206.GA13409@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1405464473-3916-2-git-send-email-skannan@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Poynor <toddpoynor@google.com>, "Srivatsa S . Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@codeaurora.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-input-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-input-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dmitry Torokhov <dtor@google.com>, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-One preemptive comment.
+(Re-sending with correct mailing list addresses.)
 
-On 07/15/2014 03:47 PM, Saravana Kannan wrote:
-> The CPUfreq core moves the cpufreq policy ownership between CPUs when CPUs
-> within a cluster (CPUs sharing same policy) go ONLINE/OFFLINE. When moving
-> policy ownership between CPUs, it also moves the cpufreq sysfs directory
-> between CPUs and also fixes up the symlinks of the other CPUs in the
-> cluster.
->
-> Also, when all the CPUs in a cluster go OFFLINE, all the sysfs nodes and
-> directories are deleted, the kobject is released and the policy is freed.
-> And when the first CPU in a cluster comes up, the policy is reallocated and
-> initialized, kobject is acquired, the sysfs nodes are created or symlinked,
-> etc.
->
-> All these steps end up creating unnecessarily complicated code and locking.
-> There's no real benefit to adding/removing/moving the sysfs nodes and the
-> policy between CPUs. Other per CPU sysfs directories like power and cpuidle
-> are left alone during hotplug. So there's some precedence to what this
-> patch is trying to do.
->
-> This patch simplifies a lot of the code and locking by removing the
-> adding/removing/moving of policy/sysfs/kobj and just leaves the cpufreq
-> directory and policy in place irrespective of whether the CPUs are
-> ONLINE/OFFLINE.
->
-> Leaving the policy, sysfs and kobject in place also brings these additional
-> benefits:
-> * Faster suspend/resume
-> * Faster hotplug
-> * Sysfs file permissions maintained across hotplug
-> * Policy settings and governor tunables maintained across hotplug
-> * Cpufreq stats would be maintained across hotplug for all CPUs and can be
->    queried even after CPU goes OFFLINE
->
-> Tested-by: Stephen Boyd <sboyd@codeaurora.org>
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> ---
->   drivers/cpufreq/cpufreq.c | 388 +++++++++++++---------------------------------
->   1 file changed, 107 insertions(+), 281 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 62259d2..a0a2ec2 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
+Hi,
 
-<SNIP>
+When the lid of a laptop is closed, certain devices can no longer
+provide interesting input or will even produce bogus input, such as:
 
-> @@ -961,60 +967,58 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
->   }
->
->   #ifdef CONFIG_HOTPLUG_CPU
-> -static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
-> -				  unsigned int cpu, struct device *dev)
-> +static int cpufreq_change_policy_cpus(struct cpufreq_policy *policy,
-> +				  unsigned int cpu, bool add)
->   {
->   	int ret = 0;
-> -	unsigned long flags;
-> +	unsigned int cpus, pcpu;
->
-> -	if (has_target()) {
-> +	down_write(&policy->rwsem);
-> +
-> +	cpus = !cpumask_empty(policy->cpus);
-> +	if (has_target() && cpus) {
->   		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
->   		if (ret) {
->   			pr_err("%s: Failed to stop governor\n", __func__);
-> -			return ret;
-> +			goto unlock;
->   		}
->   	}
->
+- input devices: touchscreen, touchpad, keyboard
+- sensors: ambient light sensor, accelerometer, magnetometer
+- a video camera mounted on the lid
+- display backlight
 
-<SNIP>
+Various workarounds cover some of these cases, and we have some ugly
+hacks in ChromeOS to make things work. It would be nice if a userspace
+power management daemon could listen to the lid-close event, and then
+have a way to temporarily power off these devices, potentially through
+sysfs.
 
-> +	if (add)
-> +		cpumask_set_cpu(cpu, policy->cpus);
-> +	else
-> +		cpumask_clear_cpu(cpu, policy->cpus);
->
-> -	up_write(&policy->rwsem);
-> +	pcpu = cpumask_first(policy->cpus);
-> +	if (pcpu < nr_cpu_ids && policy->cpu != pcpu) {
-> +		policy->last_cpu = policy->cpu;
-> +		policy->cpu = pcpu;
-> +		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-> +					CPUFREQ_UPDATE_POLICY_CPU, policy);
-> +	}
->
-> -	if (has_target()) {
-> +	cpus = !cpumask_empty(policy->cpus);
-> +	if (has_target() && cpus) {
->   		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
->   		if (!ret)
->   			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
->
->   		if (ret) {
->   			pr_err("%s: Failed to start governor\n", __func__);
-> -			return ret;
-> +			goto unlock;
->   		}
->   	}
->
+I've been discussing this with Dmitry and Benson (cc'd), and we've been
+wondering whether we could come up with a generic solution that could
+benefit multiple device classes.
 
-<SNIP>
+There's some overlap with runtime PM here. The action to be taken in
+such a situation would probably be similar to a runtime suspend. The
+match is not perfect though, since devices with more than two power
+states might want to enter different states depending on the situation.
 
-> +	if (!cpus && cpufreq_driver->stop_cpu && cpufreq_driver->setpolicy) {
-> +		cpufreq_driver->stop_cpu(policy);
-> +	}
->
+It's somewhat difficult to get the semantics right, since handles to
+such devices might still be open. It might be easier to implement
+behavior specific to device classes. On the other hand, it would be nice
+to have a uniform way of shutting devices down, and not introduce
+another possible path for a device to enter a power-saving state.
 
-Viresh, I tried your suggestion (and my initial thought too) to combine 
-this as an if/else with the previous if. But the indentation got nasty 
-and made it hard to read. I'm sure the compiler will optimize it. So, I 
-would prefer to leave it this way.
+Rafael, can you give us your opinion on this?
 
-
-> -	policy->governor = NULL;
-> +unlock:
-> +	up_write(&policy->rwsem);
->
-> -	return policy;
-> +	return ret;
->   }
-> +#endif
->
-
--Saravana
-
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+Kind regards,
+Patrik
