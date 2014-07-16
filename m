@@ -1,84 +1,58 @@
-From: "Srivatsa S. Bhat" <srivatsa@MIT.EDU>
-Subject: Re: [PATCH v3 1/2] cpufreq: Don't destroy/realloc policy/sysfs on
- hotplug/suspend
-Date: Wed, 16 Jul 2014 23:34:41 +0530
-Message-ID: <53C6BEB9.6090503@mit.edu>
-References: <1405464473-3916-1-git-send-email-skannan@codeaurora.org>	<1405464473-3916-2-git-send-email-skannan@codeaurora.org>	<CAKohpok2hzwDLy77CZJ+7pHV-Nj4XTviJxVeXQYJRYtKXME00w@mail.gmail.com>	<53C65F03.1050609@mit.edu> <CAKohpomKF_TvpPZzEwocOK33RKnLWLtE2cPK6hk7YuhTVaNg2g@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Power-managing devices that are not of interest at some point
+ in time
+Date: Wed, 16 Jul 2014 14:08:09 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1407161400150.1028-100000@iolanthe.rowland.org>
+References: <CAE_wzQ82xsuDQrw8Q6auoG9fowr4VZkcUgciPXe2s9PTAmJ=RA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomKF_TvpPZzEwocOK33RKnLWLtE2cPK6hk7YuhTVaNg2g@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:58869 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965730AbaGPSIL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 14:08:11 -0400
+In-Reply-To: <CAE_wzQ82xsuDQrw8Q6auoG9fowr4VZkcUgciPXe2s9PTAmJ=RA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dmitry Torokhov <dtor@google.com>
+Cc: Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 07/16/2014 06:43 PM, Viresh Kumar wrote:
-> On 16 July 2014 16:46, Srivatsa S. Bhat <srivatsa@mit.edu> wrote:
->> Short answer: If the sysfs directory has already been created by cpufreq,
->> then yes, it will remain as it is. However, if the online operation failed
->> before that, then cpufreq won't know about that CPU at all, and no file will
->> be created.
->>
->> Long answer:
->> The existing cpufreq code does all its work (including creating the sysfs
->> directories etc) at the CPU_ONLINE stage. This stage is not expected to fail
->> (in fact even the core CPU hotplug code in kernel/cpu.c doesn't care for
->> error returns at this point). So if a CPU fails to come up in earlier stages
->> itself (such as CPU_UP_PREPARE), then cpufreq won't even hear about that CPU,
->> and hence no sysfs files will be created/linked. However, if the CPU bringup
->> operation fails during the CPU_ONLINE stage after the cpufreq's notifier has
->> been invoked, then we do nothing about it and the cpufreq sysfs files will
->> remain.
+On Wed, 16 Jul 2014, Dmitry Torokhov wrote:
+
+> > The general design of Linux's runtime PM is that the PM core tells
+> > drivers when their devices are no longer being used, and it's up to the
+> > driver to select an appropriate low-power state.  That philosophy
+> > doesn't fit well with the problem you want to solve, because you want
+> > to turn off devices even when they _are_ still in use.
 > 
-> In short, the problem I mentioned before this para is genuine. And setting
-> policy->cpu to the first cpu of a mask is indeed a bad idea.
+> This does not sound quite right to me. We can tell PM core when
+> devices absolutely can not go to low power mode, but certain devices
+> can go into lower power state and wake up themselves even if there are
+> users: i.e. mice and keyboards with autosuspend. I guess it depends
+> what you define as being "in use".
+
+True.  Right now the PM core relies on subsystems and drivers to tell 
+it when a device is or isn't in use.
+
+> > A separate sysfs interface might work out better.
+> >
 > 
->>> Also, how does suspend/resume work without CONFIG_HOTPLUG_CPU ?
->>> What's the sequence of events?
->>>
->>
->> Well, CONFIG_SUSPEND doesn't have an explicit dependency on HOTPLUG_CPU, but
->> SMP systems usually use CONFIG_PM_SLEEP_SMP, which sets CONFIG_HOTPLUG_CPU.
-> 
-> I read usually as *optional*
-> 
->> (I guess the reason why CONFIG_SUSPEND doesn't depend on HOTPLUG_CPU is
->> because suspend is possible even on uniprocessor systems and hence the
->> Kconfig dependency wasn't really justified).
-> 
-> Again the same question, how do we suspend when HOTPLUG is disabled?
-> 
+> I am not so much concerned about userspace, but about reusing of as
+> much of existing PM framework in the drivers. Right now it is very
+> hard to correctly track dependencies between general open/close,
+> system suspend/resume, and various runtime-PM transitions. Adding yet
+> another PM mechanism into the mix will just add more complexity.
 
->From what I understand, if you disable HOTPLUG_CPU and enable CONFIG_SUSPEND
-and try suspend/resume on an SMP system, the disable_nonboot_cpus() call will
-return silently without doing anything. Thus, suspend will fail silently and
-the system might have trouble resuming.
+Would it make sense to unbind the drivers for these devices when the 
+lid is closed?  With the drivers gone, there would naturally be no I/O 
+interactions with the hardware and the class devices would disappear.
 
-But surprisingly we have never had such bug reports so far! Most probably this
-is because PM_SLEEP_SMP has a default of y (which in turn selects HOTPLUG_CPU):
+The respective subsystems could then use their own runtime PM
+mechanisms to power down the driverless devices.  (Except for PCI,
+unfortunately, which has a policy of leaving driverless devices at full
+power.  I was told this is a relic from the days before in-kernel mode
+switching for displays was common, when user programs like the X server
+would drive displays directly, without using a kernel driver.)
 
-config PM_SLEEP_SMP
-        def_bool y
-        depends on SMP
-        depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
-        depends on PM_SLEEP
-        select HOTPLUG_CPU
+Alan Stern
 
-So I guess nobody really tried turning this off on SMP systems and then trying
-suspend. Then I started looking at the git history and wondered where this
-Kconfig dependency between SUSPEND and SMP<->HOTPLUG_CPU got messed up. But
-instead I found that the initial commit itself didn't get the dependency right.
-
-Commit 296699de6bdc (Introduce CONFIG_SUSPEND for suspend-to-Ram and standby)
-introduced all the Kconfig options, and it indeed mentions this in the
-changelog: "Make HOTPLUG_CPU be selected automatically if SUSPEND or
-HIBERNATION has been chosen and the kernel is intended for SMP systems". But
-unfortunately, the code didn't get it right because it made CONFIG_SUSPEND
-depend on SUSPEND_SMP_POSSIBLE instead of SUSPEND_SMP.
-
-In other words, we have had this incorrect dependency all the time!
-
-Regards,
-Srivatsa S. Bhat
