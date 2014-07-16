@@ -1,44 +1,82 @@
-From: Kevin Cernekee <cernekee@gmail.com>
-Subject: Re: Power-managing devices that are not of interest at some point in time
-Date: Wed, 16 Jul 2014 11:55:16 -0700
-Message-ID: <CAJiQ=7CorBMaO80xcEx4ygYFDJxxav_yyPs2jegKo3vrX1REHA@mail.gmail.com>
-References: <CAE_wzQ82xsuDQrw8Q6auoG9fowr4VZkcUgciPXe2s9PTAmJ=RA@mail.gmail.com>
- <Pine.LNX.4.44L0.1407161400150.1028-100000@iolanthe.rowland.org>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v3 1/2] cpufreq: Don't destroy/realloc policy/sysfs on
+ hotplug/suspend
+Date: Wed, 16 Jul 2014 12:19:37 -0700
+Message-ID: <53C6D049.7000705@codeaurora.org>
+References: <1405464473-3916-1-git-send-email-skannan@codeaurora.org>
+ <1405464473-3916-2-git-send-email-skannan@codeaurora.org>
+ <53C5C738.5040705@codeaurora.org>
+ <CAKohpomt34NcMH=H5L_fhf-6R6p27_h=aCNcpT6T12u35d=Z+w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f175.google.com ([209.85.216.175]:42848 "EHLO
-	mail-qc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754884AbaGPSzh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 14:55:37 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1407161400150.1028-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAKohpomt34NcMH=H5L_fhf-6R6p27_h=aCNcpT6T12u35d=Z+w@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Srivatsa S . Bhat" <srivatsa@mit.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Todd Poynor <toddpoynor@google.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Dmitry Torokhov <dtor@google.com>, Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benson Leung <bleung@google.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wed, Jul 16, 2014 at 11:08 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
->> I am not so much concerned about userspace, but about reusing of as
->> much of existing PM framework in the drivers. Right now it is very
->> hard to correctly track dependencies between general open/close,
->> system suspend/resume, and various runtime-PM transitions. Adding yet
->> another PM mechanism into the mix will just add more complexity.
+On 07/16/2014 01:30 AM, Viresh Kumar wrote:
+> On 16 July 2014 05:58, Saravana Kannan <skannan@codeaurora.org> wrote:
+>>> +       if (!cpus && cpufreq_driver->stop_cpu &&
+>>> cpufreq_driver->setpolicy) {
+>>> +               cpufreq_driver->stop_cpu(policy);
+>>> +       }
+>>>
+>>
+>> Viresh, I tried your suggestion (and my initial thought too) to combine this
+>> as an if/else with the previous if. But the indentation got nasty and made
+>> it hard to read. I'm sure the compiler will optimize it. So, I would prefer
+>> to leave it this way.
 >
-> Would it make sense to unbind the drivers for these devices when the
-> lid is closed?  With the drivers gone, there would naturally be no I/O
-> interactions with the hardware and the class devices would disappear.
+> Okay, I gave that comment again :)
+>
+> Try this:
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index f72b2b7..092a0ba 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -991,8 +991,10 @@ static int cpufreq_change_policy_cpus(struct
+> cpufreq_policy *policy,
+>                                          CPUFREQ_UPDATE_POLICY_CPU, policy);
+>          }
+>
+> -       cpus = !cpumask_empty(policy->cpus);
+> -       if (has_target() && cpus) {
+> +       if (!cpumask_empty(policy->cpus)) {
+> +               if (!has_target())
+> +                       goto unlock;
+> +
+>                  ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+>                  if (!ret)
+>                          ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+> @@ -1001,9 +1003,7 @@ static int cpufreq_change_policy_cpus(struct
+> cpufreq_policy *policy,
+>                          pr_err("%s: Failed to start governor\n", __func__);
+>                          goto unlock;
+>                  }
+> -       }
+> -
+> -       if (!cpus && cpufreq_driver->stop_cpu && cpufreq_driver->setpolicy) {
+> +       } else if (cpufreq_driver->stop_cpu && cpufreq_driver->setpolicy) {
+>                  cpufreq_driver->stop_cpu(policy);
+>          }
+>
 
-FWIW, per your earlier recommendation[1], that is the approach that my
-group has been using to disable various host controllers when Linux is
-running (not suspended) but certain power-hungry peripherals are not
-needed.  It has mostly worked out OK; each driver typically implements
-its own special PHY init/shutdown procedure, and calls into the common
-clk_* functions to enable/disable the appropriate clocks.
+Not bad :) I'll take it.
 
-Obviously the application needs to be able to cope with disappearing
-devices, and you wouldn't want to have any filesystems mounted on top
-of them when the unbind event happens.
+-Saravana
 
-Our devices are on an SoC's internal bus, not PCI.
-
-[1] http://lists.linuxfoundation.org/pipermail/linux-pm/2012-April/033976.html
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
