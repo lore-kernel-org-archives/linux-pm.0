@@ -1,58 +1,52 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Power-managing devices that are not of interest at some point
- in time
-Date: Wed, 16 Jul 2014 14:08:09 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1407161400150.1028-100000@iolanthe.rowland.org>
-References: <CAE_wzQ82xsuDQrw8Q6auoG9fowr4VZkcUgciPXe2s9PTAmJ=RA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Sebastian Reichel <sre@kernel.org>
+Subject: [PATCHv2] MAINTAINERS: power_supply: update maintainership
+Date: Wed, 16 Jul 2014 20:14:30 +0200
+Message-ID: <1405534470-7888-1-git-send-email-sre@kernel.org>
+References: <1402759929-15418-1-git-send-email-sre@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:58869 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965730AbaGPSIL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 14:08:11 -0400
-In-Reply-To: <CAE_wzQ82xsuDQrw8Q6auoG9fowr4VZkcUgciPXe2s9PTAmJ=RA@mail.gmail.com>
+Received: from ring0.de ([5.45.105.125]:40577 "EHLO ring0.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932418AbaGPSOt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 16 Jul 2014 14:14:49 -0400
+In-Reply-To: <1402759929-15418-1-git-send-email-sre@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dtor@google.com>
-Cc: Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
 
-On Wed, 16 Jul 2014, Dmitry Torokhov wrote:
+Take over maintanence for orphaned power supply subsystem
+and assign linux-pm@vger.kernel.org as mailing list.
 
-> > The general design of Linux's runtime PM is that the PM core tells
-> > drivers when their devices are no longer being used, and it's up to the
-> > driver to select an appropriate low-power state.  That philosophy
-> > doesn't fit well with the problem you want to solve, because you want
-> > to turn off devices even when they _are_ still in use.
-> 
-> This does not sound quite right to me. We can tell PM core when
-> devices absolutely can not go to low power mode, but certain devices
-> can go into lower power state and wake up themselves even if there are
-> users: i.e. mice and keyboards with autosuspend. I guess it depends
-> what you define as being "in use".
+Signed-off-by: Sebastian Reichel <sre@kernel.org>
+---
+Changes since PATCHv1 [0]:
+ * Add linux-pm@vger.kernel.org as mailing list for
+   the power supply subsystem
+ * Do not change the git tree
+   (I will get access to the tree on infradead.org)
+ * Do not remove existing maintainers
+   (So that they can can take over again when they return)
 
-True.  Right now the PM core relies on subsystems and drivers to tell 
-it when a device is or isn't in use.
+[0] https://lkml.org/lkml/2014/6/14/89
+---
+ MAINTAINERS | 2 ++
+ 1 file changed, 2 insertions(+)
 
-> > A separate sysfs interface might work out better.
-> >
-> 
-> I am not so much concerned about userspace, but about reusing of as
-> much of existing PM framework in the drivers. Right now it is very
-> hard to correctly track dependencies between general open/close,
-> system suspend/resume, and various runtime-PM transitions. Adding yet
-> another PM mechanism into the mix will just add more complexity.
-
-Would it make sense to unbind the drivers for these devices when the 
-lid is closed?  With the drivers gone, there would naturally be no I/O 
-interactions with the hardware and the class devices would disappear.
-
-The respective subsystems could then use their own runtime PM
-mechanisms to power down the driverless devices.  (Except for PCI,
-unfortunately, which has a policy of leaving driverless devices at full
-power.  I was told this is a relic from the days before in-kernel mode
-switching for displays was common, when user programs like the X server
-would drive displays directly, without using a kernel driver.)
-
-Alan Stern
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6c484ac..14e227b 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6928,8 +6928,10 @@ F:	include/linux/timer*
+ F:	kernel/*timer*
+ 
+ POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS
++M:	Sebastian Reichel <sre@kernel.org>
+ M:	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+ M:	David Woodhouse <dwmw2@infradead.org>
++L:	linux-pm@vger.kernel.org
+ T:	git git://git.infradead.org/battery-2.6.git
+ S:	Maintained
+ F:	include/linux/power_supply.h
+-- 
+2.0.1
 
