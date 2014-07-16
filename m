@@ -1,62 +1,85 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH 2/8] cpufreq: add driver for Armada XP
-Date: Wed, 16 Jul 2014 16:02:56 +0200
-Message-ID: <20140716160256.7e8dbccf@free-electrons.com>
-References: <1404467103-29644-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<1404467103-29644-3-git-send-email-thomas.petazzoni@free-electrons.com>
-	<CAKohponuvPd1kWDdB66kxd8TxxYqQ219jCq2D2RGhMHAuZTSWA@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Power-managing devices that are not of interest at some point
+ in time
+Date: Wed, 16 Jul 2014 10:17:45 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1407161006260.1028-100000@iolanthe.rowland.org>
+References: <20140716013206.GA13409@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:35200 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964814AbaGPODA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 10:03:00 -0400
-In-Reply-To: <CAKohponuvPd1kWDdB66kxd8TxxYqQ219jCq2D2RGhMHAuZTSWA@mail.gmail.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:56760 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965075AbaGPORq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 10:17:46 -0400
+In-Reply-To: <20140716013206.GA13409@google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+To: Patrik Fimml <patrikf@chromium.org>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Torokhov <dtor@google.com>, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Dear Viresh Kumar,
+On Tue, 15 Jul 2014, Patrik Fimml wrote:
 
-On Fri, 4 Jul 2014 15:25:35 +0530, Viresh Kumar wrote:
-> On 4 July 2014 15:14, Thomas Petazzoni
-> <thomas.petazzoni@free-electrons.com> wrote:
-> > This commit adds a simple cpufreq driver for the Armada XP SoC, which
-> > has one separately controllable clock for each CPU. For this reason,
-> > the existing cpufreq-cpu0 generic driver cannot be used because it
-> > currently assumes that there is only one clock controlling the
-> > frequency of all CPUs.
-> >
-> > There are on-going discussions on extending the cpufreq-cpu0 to cover
-> > the case of having one clock for each CPU, but there are still some
-> > unresolved issues to get this extended cpufreq-cpu0 driver merged.
+> (Re-sending with correct mailing list addresses.)
 > 
-> Exactly, and those changes would get merged in one form or the other.
-> Surely in 3.17 atleast, if not 3.16 as we are already reaching rc4..
+> Hi,
 > 
-> So, it would be great if you can test on top of those changes to see if
-> something isn't solved for your platform yet?
+> When the lid of a laptop is closed, certain devices can no longer
+> provide interesting input or will even produce bogus input, such as:
 > 
-> git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/cpu0-krait-v3
+> - input devices: touchscreen, touchpad, keyboard
 
-Are these changes in linux-next ? The mvebu maintainer Jason Cooper has
-pulled the cpufreq support for Armada XP, so it will appear in
-linux-next tomorrow. It would be good of the cpufreq-generic driver
-improvements (to support one clock per CPU) were also part of
-linux-next so that we could test that the combination works as expected
-(of course, I did test locally, but I'd like to ensure it still works
-in linux-next).
+Just to be clear: The laptop's internal keyboard can't be used, but
+external keyboards can.  The same goes for touchscreens and touchpads.
 
-Could you get your tree in linux-next, or get your patches merged by
-Rafael in his linux-next branch so that they will appear in linux-next ?
+> - sensors: ambient light sensor, accelerometer, magnetometer
 
-Thanks,
+Why can't the accelerometer or magnetometer be used when the lid is 
+closed?
 
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+> - a video camera mounted on the lid
+> - display backlight
+
+I can think of one possible use for a video camera mounted inside the
+lid.  It's the modern analog of the age-old question: Does the
+refrigerator light go out when the door is closed?  Using the video
+camera, users will be able to check whether the display backlight goes
+out when the lid is closed.  :-)
+
+> Various workarounds cover some of these cases, and we have some ugly
+> hacks in ChromeOS to make things work. It would be nice if a userspace
+> power management daemon could listen to the lid-close event, and then
+> have a way to temporarily power off these devices, potentially through
+> sysfs.
+
+Isn't it common for laptops to go into system suspend when the lid is 
+closed?
+
+> I've been discussing this with Dmitry and Benson (cc'd), and we've been
+> wondering whether we could come up with a generic solution that could
+> benefit multiple device classes.
+> 
+> There's some overlap with runtime PM here. The action to be taken in
+> such a situation would probably be similar to a runtime suspend. The
+> match is not perfect though, since devices with more than two power
+> states might want to enter different states depending on the situation.
+> 
+> It's somewhat difficult to get the semantics right, since handles to
+> such devices might still be open. It might be easier to implement
+> behavior specific to device classes. On the other hand, it would be nice
+> to have a uniform way of shutting devices down, and not introduce
+> another possible path for a device to enter a power-saving state.
+
+What's the difference between shutting a device down and entering a 
+power-saving state?  That is, why shouldn't the first be considered an 
+example of the second?
+
+The general design of Linux's runtime PM is that the PM core tells
+drivers when their devices are no longer being used, and it's up to the
+driver to select an appropriate low-power state.  That philosophy
+doesn't fit well with the problem you want to solve, because you want
+to turn off devices even when they _are_ still in use.
+
+A separate sysfs interface might work out better.
+
+Alan Stern
+
