@@ -1,112 +1,72 @@
 From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Subject: Re: [PATCH v3 5/7] PM / devfreq: exynos5250: migrate to common-clock
-Date: Wed, 16 Jul 2014 23:30:32 +0530
-Message-ID: <CAM4voakROn7-J7Gu0u3NA=6yVUAqjNZ3TFkL8wjmreWAhhBXOA@mail.gmail.com>
-References: <1400779322-4410-6-git-send-email-a.kesavan@samsung.com>
-	<1405449332-26350-1-git-send-email-a.kesavan@samsung.com>
-	<53C65C0C.10200@samsung.com>
+Subject: Re: [PATCH v3 3/7] ARM: dts: Add PPMU device tree support for Exynos5250
+Date: Wed, 16 Jul 2014 23:30:52 +0530
+Message-ID: <CAM4voa=Z0BEH1JXPM6p2_do8xPZvb0gRvE7JyTmNRG9jHCyoyw@mail.gmail.com>
+References: <1400779322-4410-4-git-send-email-a.kesavan@samsung.com>
+	<1405449266-26267-1-git-send-email-a.kesavan@samsung.com>
+	<53C65A2C.8010504@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f49.google.com ([209.85.216.49]:49426 "EHLO
-	mail-qa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752329AbaGPSAd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 14:00:33 -0400
-In-Reply-To: <53C65C0C.10200@samsung.com>
+Received: from mail-qc0-f177.google.com ([209.85.216.177]:34812 "EHLO
+	mail-qc0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752329AbaGPSAx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 14:00:53 -0400
+In-Reply-To: <53C65A2C.8010504@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Tomasz Figa <t.figa@samsung.com>
-Cc: "myungjoo.ham" <myungjoo.ham@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, devicetree <devicetree@vger.kernel.org>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>
+Cc: "myungjoo.ham" <myungjoo.ham@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, devicetree <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>
 
 Hi Tomasz,
 
-On Wed, Jul 16, 2014 at 4:33 PM, Tomasz Figa <t.figa@samsung.com> wrote:
-> Hi Abhilash, Andrew,
+On Wed, Jul 16, 2014 at 4:25 PM, Tomasz Figa <t.figa@samsung.com> wrote:
+> Hi Abhilash,
 >
-> Please see my comments inline.
+> Please see my comments inline. Also CCing some DT maintainers.
 >
-> On 15.07.2014 20:35, Abhilash Kesavan wrote:
->> From: Andrew Bresticker <abrestic@chromium.org>
+> On 15.07.2014 20:34, Abhilash Kesavan wrote:
+>> PPMU is required by the exynos5250 devfreq driver. Add a device
+>> tree node for it.
 >>
->> Use the common-clock framework to scale frequencies for the various
->> peripheral clocks on the Exynos5250.
->>
->> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
 >> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
 >> ---
->>  drivers/devfreq/exynos/exynos5_bus.c |  131 ++++++++++++++++++++++++++++++----
->>  1 file changed, 119 insertions(+), 12 deletions(-)
->
-> [snip]
->
->> +
->>  static struct int_bus_opp_table exynos5_int_opp_table[] = {
->>       {LV_0, 266000, 1025000},
->>       {LV_1, 200000, 1025000},
->> @@ -75,6 +85,98 @@ static struct int_bus_opp_table exynos5_int_opp_table[] = {
->>       {0, 0, 0},
->>  };
+>>  .../bindings/arm/exynos/ppmu-exynos5.txt           |   26 ++++++++++++++++++++
+>>  arch/arm/boot/dts/exynos5250.dtsi                  |    8 ++++++
+>>  2 files changed, 34 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
 >>
->> +static struct int_clk_table aclk_166[] = {
->> +     {LV_0, 167000},
->> +     {LV_1, 111000},
->> +     {LV_2,  84000},
->> +     {LV_3,  84000},
->> +     {LV_4,  42000},
->> +};
->
-> [snip]
->
->> +static struct int_clk_table aclk_300_gscl[] = {
->> +     {LV_0, 267000},
->> +     {LV_1, 267000},
->> +     {LV_2, 267000},
->> +     {LV_3, 200000},
->> +     {LV_4, 100000},
->> +};
->
-> Shouldn't you manage this using OPP framework and parse this from DT?
-OK, one of the questions I had was about the handling of virtual INT
-bus levels (frequencies and voltages). I have consolidated my
-understanding of how the bindings should look and questions I had in
-the driver thread.
->
+>> diff --git a/Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt b/Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
+>> new file mode 100644
+>> index 0000000..a6a2eba
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
+>> @@ -0,0 +1,26 @@
+>> +Exynos PPMU driver
+>> +-------------------
 >> +
->> +#define EXYNOS5_INT_CLK(name, tbl) {         \
->> +     .clk_name = name,                       \
->> +     .freq_table = tbl,                      \
->> +}
->
-> [snip]
->
->> @@ -320,16 +427,16 @@ static int exynos5_busfreq_int_probe(struct platform_device *pdev)
->>       rcu_read_unlock();
->>       data->curr_freq = initial_freq;
->>
->> -     err = clk_set_rate(data->int_clk, initial_freq * 1000);
->> +     err = exynos5_int_setvolt(data, initial_volt);
->> +     if (err)
->> +             return err;
+>> +Performance events are primitive values used to get performance data. These
+>> +events provide information about the behavior of the SoC that can be used
+>> +when analyzing system performance. These events are made visible using the
+>> +PPMU logic.
+>> +Exynos PPMU driver is used by the exynos5 devfreq drivers to control the
+>> +bus frequency/voltage.
 >> +
->> +     err = exynos5_int_set_rate(data, initial_freq);
->>       if (err) {
->>               dev_err(dev, "Failed to set initial frequency\n");
->>               return err;
->>       }
->>
->> -     err = exynos5_int_setvolt(data, initial_volt);
->> -     if (err)
->> -             return err;
->> -
+>> +Required properties:
+>> +- compatible: "samsung,exynos5250-int-busfreq", "samsung,exynos5420-int-busfreq"
 >
-> Whether voltage or rate should be set first depends on current settings
-> and initial_{freq,volt}. Also it might be more convenient to simply call
-> exynos5_busfreq_int_target() here.
-Wouldn't setting voltage first always be safe ? Yes, just calling
-target would be better. Will modify.
-
-Regards,
-Abhilash
+> If this is a binding for PPMU, shouldn't the compatible string contain
+> the "ppmu" string too? E.g. "samsung,exynos5250-ppmu",
+> "samsung,exynos5420-ppmu".
+>
+>> +- reg:
+>> +     * physical base address of the PPMUs (e.g DDR, Right Bus, Left bus etc)
+>> +     and length of memory mapped region.
+>
+> Since PPMU are separate IP blocks, they should have their own device
+> nodes with only address ranges of their own. Representing all PPMUs in
+> the SoC with a single node is incorrect.
+OK, I will re-work this.
 >
 > Best regards,
 > Tomasz
