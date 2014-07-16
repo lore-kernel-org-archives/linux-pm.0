@@ -1,44 +1,45 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCHv2] MAINTAINERS: power_supply: update maintainership
-Date: Wed, 16 Jul 2014 23:09:43 +0200
-Message-ID: <2379427.RLSFhHFNJo@vostro.rjw.lan>
-References: <1402759929-15418-1-git-send-email-sre@kernel.org> <1405534470-7888-1-git-send-email-sre@kernel.org> <CALT56yMYikeGUnjPyWzAeAqCET4Nky3aK7LZ8QAJMowXeygOXw@mail.gmail.com>
+Subject: Re: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
+Date: Wed, 16 Jul 2014 23:18:52 +0200
+Message-ID: <1450785.beFNo3ByBF@vostro.rjw.lan>
+References: <cover.1404231535.git.viresh.kumar@linaro.org> <CAKohpo=Z5gEHOC5q40q8dfQfoNP5-WyhjG1arV99zJiG2c+6Xg@mail.gmail.com> <CAKohpo=bUMKa752fBXZTb0WPYMfJtuR5uk7z-YaXYV63fhJWtg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:65459 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751979AbaGPUv2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 16:51:28 -0400
-In-Reply-To: <CALT56yMYikeGUnjPyWzAeAqCET4Nky3aK7LZ8QAJMowXeygOXw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=bUMKa752fBXZTb0WPYMfJtuR5uk7z-YaXYV63fhJWtg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Mike Turquette <mturquette@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Shawn Guo <shawn.guo@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Rob Herring <rob.herring@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Simon Horman <horms@verge.net.au>
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>
 
-On Thursday, July 17, 2014 12:21:03 AM Dmitry Eremin-Solenikov wrote:
-> Hello,
+On Wednesday, July 16, 2014 09:31:54 PM Viresh Kumar wrote:
+> Cc'ing Thomas,
 > 
-> On Wed, Jul 16, 2014 at 10:14 PM, Sebastian Reichel <sre@kernel.org> wrote:
-> > Take over maintanence for orphaned power supply subsystem
-> > and assign linux-pm@vger.kernel.org as mailing list.
+> On 8 July 2014 10:20, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 4 July 2014 09:51, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >> Yeah, having something like what you suggested from DT is the perfect
+> >> solution to get over this. The only reason why I am not touching that here
+> >> is to not delay other patches just because of that.
+> >>
+> >> There are separate threads going on for that and probably somebody
+> >> else was trying to push for that.
+> >>
+> >> That's it, nothing more. I would definitely like to use those bindings instead
+> >>  of the crazy routines we are trying here, once that is finalized :)
 > >
-> > Signed-off-by: Sebastian Reichel <sre@kernel.org>
-> > ---
-> > Changes since PATCHv1 [0]:
-> >  * Add linux-pm@vger.kernel.org as mailing list for
-> >    the power supply subsystem
-> >  * Do not change the git tree
-> >    (I will get access to the tree on infradead.org)
-> >  * Do not remove existing maintainers
-> >    (So that they can can take over again when they return)
+> > Do we have some kind of agreement for this temporary solution? Anyways
+> > I will kick the other thread again to resolve the bindings soon.
 > 
-> Acked-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> Hi Mike/Rafael,
+> 
+> Thomas has a dependency on the patch adding "find_siblings()":
+> http://www.spinics.net/lists/arm-kernel/msg348080.html
+> 
+> Would it be fine to get this temporary solution (Only within cpufreq-cpu0
+> file, so that it doesn't become an API) for now and updating it later once
+> bindings are closed?
 
-OK
-
-I suppose everyone involved will be fine if I take this for 3.17?
+I don't like that idea, but I wonder what other people think.
 
 Rafael
-
