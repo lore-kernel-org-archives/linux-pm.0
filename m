@@ -1,80 +1,100 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 01/13] clk: tegra: Add binding for the Tegra124 DFLL
- clocksource
-Date: Wed, 16 Jul 2014 12:00:12 +0100
-Message-ID: <20140716110012.GL17528@sirena.org.uk>
-References: <53C01558.3090607@nvidia.com>
- <CAL1qeaHETQ7kSGNjPiwi_9WNMtr9qZp0KwjZCCxY29+_N4AcuA@mail.gmail.com>
- <53C01D17.2050906@nvidia.com>
- <20140714083854.GO2081@ulmo>
- <20140714091233.GC6800@sirena.org.uk>
- <20140714092434.GA9755@ulmo>
- <20140714102203.GD6800@sirena.org.uk>
- <53C58DCB.90502@nvidia.com>
- <20140715225252.GD17528@sirena.org.uk>
- <20140716080133.GI7978@ulmo>
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: Re: [PATCH v3 5/7] PM / devfreq: exynos5250: migrate to common-clock
+Date: Wed, 16 Jul 2014 13:03:40 +0200
+Message-ID: <53C65C0C.10200@samsung.com>
+References: <1400779322-4410-6-git-send-email-a.kesavan@samsung.com>
+ <1405449332-26350-1-git-send-email-a.kesavan@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+PbGPm1eXpwOoWkI"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20140716080133.GI7978@ulmo>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Andrew Bresticker <abrestic-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:35506 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751016AbaGPLET (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 07:04:19 -0400
+In-reply-to: <1405449332-26350-1-git-send-email-a.kesavan@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Abhilash Kesavan <a.kesavan@samsung.com>, myungjoo.ham@samsung.com, linux-pm@vger.kernel.org, kgene.kim@samsung.com
+Cc: rjw@sisk.pl, kesavan.abhilash@gmail.com, devicetree@vger.kernel.org
 
+Hi Abhilash, Andrew,
 
---+PbGPm1eXpwOoWkI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Please see my comments inline.
 
-On Wed, Jul 16, 2014 at 10:01:34AM +0200, Thierry Reding wrote:
-> On Tue, Jul 15, 2014 at 11:52:52PM +0100, Mark Brown wrote:
+On 15.07.2014 20:35, Abhilash Kesavan wrote:
+> From: Andrew Bresticker <abrestic@chromium.org>
+> 
+> Use the common-clock framework to scale frequencies for the various
+> peripheral clocks on the Exynos5250.
+> 
+> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
+> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
+> ---
+>  drivers/devfreq/exynos/exynos5_bus.c |  131 ++++++++++++++++++++++++++++++----
+>  1 file changed, 119 insertions(+), 12 deletions(-)
 
-> > This looks fine, can you submit properly please?  For the I2C address
-> > why not just have an interface to get the regmap and then provide a way
-> > to get the underlying device back from the regmap?
+[snip]
 
-> Is it mandatory for regulators to use regmap? Also I'm not sure how this
+> +
+>  static struct int_bus_opp_table exynos5_int_opp_table[] = {
+>  	{LV_0, 266000, 1025000},
+>  	{LV_1, 200000, 1025000},
+> @@ -75,6 +85,98 @@ static struct int_bus_opp_table exynos5_int_opp_table[] = {
+>  	{0, 0, 0},
+>  };
+>  
+> +static struct int_clk_table aclk_166[] = {
+> +	{LV_0, 167000},
+> +	{LV_1, 111000},
+> +	{LV_2,  84000},
+> +	{LV_3,  84000},
+> +	{LV_4,  42000},
+> +};
 
-No, but this is for a limited subset of devices that the hardware knows
-how to write to directly which means that they're restricted to things
-that can be supported with regmap (or already know how to interact with
-the hardware and don't need this interface at all).  The proposed patch
-already relies on regmap - it's passing back the information the regmap
-helpers use.
+[snip]
 
-> will work with MFDs, since the device may not be the actual bus device,
-> but rather a child of the MFD (and what we want access to is the MFD).
+> +static struct int_clk_table aclk_300_gscl[] = {
+> +	{LV_0, 267000},
+> +	{LV_1, 267000},
+> +	{LV_2, 267000},
+> +	{LV_3, 200000},
+> +	{LV_4, 100000},
+> +};
 
-> Perhaps for regmaps that would work in most cases since MFDs seem to
-> aften share the regmap with their children. However, the code in
-> regulator_register() at least indicates that even then it's possible to
-> have a regmap in children that's different from the top-level MFD.
+Shouldn't you manage this using OPP framework and parse this from DT?
 
-Right, drivers can say exactly which regmap to use.
+> +
+> +#define EXYNOS5_INT_CLK(name, tbl) {		\
+> +	.clk_name = name,			\
+> +	.freq_table = tbl,			\
+> +}
 
---+PbGPm1eXpwOoWkI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+[snip]
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+> @@ -320,16 +427,16 @@ static int exynos5_busfreq_int_probe(struct platform_device *pdev)
+>  	rcu_read_unlock();
+>  	data->curr_freq = initial_freq;
+>  
+> -	err = clk_set_rate(data->int_clk, initial_freq * 1000);
+> +	err = exynos5_int_setvolt(data, initial_volt);
+> +	if (err)
+> +		return err;
+> +
+> +	err = exynos5_int_set_rate(data, initial_freq);
+>  	if (err) {
+>  		dev_err(dev, "Failed to set initial frequency\n");
+>  		return err;
+>  	}
+>  
+> -	err = exynos5_int_setvolt(data, initial_volt);
+> -	if (err)
+> -		return err;
+> -
 
-iQIcBAEBAgAGBQJTxls5AAoJELSic+t+oim9vC0P/1ga+B2y7WfWBEoc0bRFCC2W
-UO0bq9GC1ygvBdsDGjqMzxAUQdJjk0wgjTe3ZgY+suhiUbE+YgH/bXdh1HI40pbP
-n3oW32wBKgxuaqmrn1aitm/owiD96nzhK3aWb458EoRFQ1XpvRfmiON1By31Yorx
-wkoVWG1TK3D82GNLrqyXBprgFFABQS9DI3gg7nrFICv2v4wGzrAK/xUFZbBjyFuY
-vcZRy4fhmGx+lEd1pr2MNnynwD4acLSjQuqdWddLvrR8fu4kuKbMijZOWY251Yq+
-4oyTJ7yPhNc4uuNDSYNbX4RiKsecOEPaqixLsBYJWZrlw/KOeLbkPCWqZA+bfIJ7
-sBtwC8+lgfarYtztcIZtJe9wkXLM4TW4w+17OrrjhhK2ACF116pyTF91sPdFeKTl
-AuUGoqnyTvdW+o+aOFvVE2nCICJCLMErP4qOQjzl/6UnvNfsG0Ws8gjnChKEWkDS
-oVNHc9lUuN5/njQURrc+EJno/N4n4qTE15T5Atn5bFjpKHvQgt+REKWd0GtEVKJR
-Un0b3PAgEBRzARd1XBXROMEzc2TokimTDFXpaZXw2vdjw2eO4lSfVvV4FEQjMCHh
-3OmJ9WnTxeCd/lmsQk5JagEOqYTWZE1x1Ur7P3mali7VzDRC85mGFF6uOxYkgMKY
-A/Oihci0OXH8pNi2lC+n
-=ebZh
------END PGP SIGNATURE-----
+Whether voltage or rate should be set first depends on current settings
+and initial_{freq,volt}. Also it might be more convenient to simply call
+exynos5_busfreq_int_target() here.
 
---+PbGPm1eXpwOoWkI--
+Best regards,
+Tomasz
