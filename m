@@ -1,59 +1,40 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v3 1/2] cpufreq: Don't destroy/realloc policy/sysfs on
- hotplug/suspend
-Date: Wed, 16 Jul 2014 12:56:58 -0700
-Message-ID: <53C6D90A.1000402@codeaurora.org>
-References: <1405464473-3916-1-git-send-email-skannan@codeaurora.org> <1405464473-3916-2-git-send-email-skannan@codeaurora.org> <CAKohpok2hzwDLy77CZJ+7pHV-Nj4XTviJxVeXQYJRYtKXME00w@mail.gmail.com> <53C65F03.1050609@mit.edu> <CAKohpomKF_TvpPZzEwocOK33RKnLWLtE2cPK6hk7YuhTVaNg2g@mail.gmail.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [PATCHv2] MAINTAINERS: power_supply: update maintainership
+Date: Thu, 17 Jul 2014 00:21:03 +0400
+Message-ID: <CALT56yMYikeGUnjPyWzAeAqCET4Nky3aK7LZ8QAJMowXeygOXw@mail.gmail.com>
+References: <1402759929-15418-1-git-send-email-sre@kernel.org>
+	<1405534470-7888-1-git-send-email-sre@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomKF_TvpPZzEwocOK33RKnLWLtE2cPK6hk7YuhTVaNg2g@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Srivatsa S. Bhat" <srivatsa@mit.edu>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1405534470-7888-1-git-send-email-sre@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, David Woodhouse <dwmw2@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/16/2014 06:13 AM, Viresh Kumar wrote:
-> On 16 July 2014 16:46, Srivatsa S. Bhat <srivatsa@mit.edu> wrote:
->> Short answer: If the sysfs directory has already been created by cpufreq,
->> then yes, it will remain as it is. However, if the online operation failed
->> before that, then cpufreq won't know about that CPU at all, and no file will
->> be created.
->>
->> Long answer:
->> The existing cpufreq code does all its work (including creating the sysfs
->> directories etc) at the CPU_ONLINE stage. This stage is not expected to fail
->> (in fact even the core CPU hotplug code in kernel/cpu.c doesn't care for
->> error returns at this point). So if a CPU fails to come up in earlier stages
->> itself (such as CPU_UP_PREPARE), then cpufreq won't even hear about that CPU,
->> and hence no sysfs files will be created/linked. However, if the CPU bringup
->> operation fails during the CPU_ONLINE stage after the cpufreq's notifier has
->> been invoked, then we do nothing about it and the cpufreq sysfs files will
->> remain.
+Hello,
+
+On Wed, Jul 16, 2014 at 10:14 PM, Sebastian Reichel <sre@kernel.org> wrote:
+> Take over maintanence for orphaned power supply subsystem
+> and assign linux-pm@vger.kernel.org as mailing list.
 >
-> In short, the problem I mentioned before this para is genuine. And setting
-> policy->cpu to the first cpu of a mask is indeed a bad idea.
+> Signed-off-by: Sebastian Reichel <sre@kernel.org>
+> ---
+> Changes since PATCHv1 [0]:
+>  * Add linux-pm@vger.kernel.org as mailing list for
+>    the power supply subsystem
+>  * Do not change the git tree
+>    (I will get access to the tree on infradead.org)
+>  * Do not remove existing maintainers
+>    (So that they can can take over again when they return)
 
-No it's not. All the cpu*/ directories for all possible CPUs will be 
-there whether a CPU is online/offline. Which is why I also weed out 
-impossible CPUs, but you said the driver shouldn't be passing impossible 
-CPUs anyway. I'm just picking one directory to put the real cpufreq 
-directory under. So, the code as-is is definitely not broken.
+Acked-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 
-Sure, I can pick the first cpu that comes online to decide where to put 
-the real sysfs cpufreq directory, but then I have to keep track of that 
-in a separate field when it's time to remove it when the cpufreq driver 
-is unregistered. It's yet another pointless thing to keep track. And no, 
-we shouldn't be moving sysfs directory to stay with only an online 
-directory. That's the thing this patch is trying to simplify.
+>
+> [0] https://lkml.org/lkml/2014/6/14/89
 
-So, I think using the first cpu in related CPUs will always work. If 
-there's any disagreement, I think it's purely a personal preference over 
-adding another field vs calling cpumask_first()
-
--Saravana
 
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+With best wishes
+Dmitry
