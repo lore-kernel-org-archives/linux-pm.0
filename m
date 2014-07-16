@@ -1,48 +1,37 @@
-From: Benson Leung <bleung@chromium.org>
-Subject: Re: Power-managing devices that are not of interest at some point in time
-Date: Wed, 16 Jul 2014 10:12:23 -0700
-Message-ID: <CANLzEkum3xM5iqXr7W3C0rxWa1SC56Q2hv7aHvut2rOvV098aQ@mail.gmail.com>
-References: <20140716013206.GA13409@google.com>
-	<Pine.LNX.4.44L0.1407161006260.1028-100000@iolanthe.rowland.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] PM / devfreq: Allocate memory using the right data type
+Date: Wed, 16 Jul 2014 10:21:13 -0700
+Message-ID: <53C6B489.3040001@codeaurora.org>
+References: <1405480243-25915-1-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1407161006260.1028-100000@iolanthe.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Torokhov <dtor@google.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1405480243-25915-1-git-send-email-skannan@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Suman Tatiraju <sumant@codeaurora.org>, linux-pm@vger.kernel.org, stable@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 16, 2014 at 7:17 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+On 07/15/14 20:10, Saravana Kannan wrote:
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 65eed38..349e28ea 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -483,9 +483,10 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>  						devfreq->profile->max_state *
+>  						devfreq->profile->max_state,
+>  						GFP_KERNEL);
+> -	devfreq->time_in_state = devm_kzalloc(dev, sizeof(unsigned int) *
+> -						devfreq->profile->max_state,
+> -						GFP_KERNEL);
+> +	devfreq->time_in_state = devm_kzalloc(dev,
+> +					sizeof(*(devfreq->time_in_state)) *
+> +					devfreq->profile->max_state,
+> +					GFP_KERNEL);
 
->> Various workarounds cover some of these cases, and we have some ugly
->> hacks in ChromeOS to make things work. It would be nice if a userspace
->> power management daemon could listen to the lid-close event, and then
->> have a way to temporarily power off these devices, potentially through
->> sysfs.
->
-> Isn't it common for laptops to go into system suspend when the lid is
-> closed?
-
-It's common, but it does not cover all possible cases. As was
-mentioned by Dmitry, the user may dock his laptop, close his lid and
-use external display, keyboard, and mouse. In that case, the internal
-devices should be disabled or else they may send bogus input when the
-laptop's B panel couples with the touchpad, for example.
-
-Even in the case where system suspend happens, we don't want to depend
-on that state change to disable these devices. It may take some time
-before the system enters suspend, and in the meantime the input
-devices with the lid closed may inadvertently cancel suspend by
-generating a pm_wakeup_event(), which is not what we want.
-
-Other scenarios outside of lid close where such a feature would be
-helpful would be for transforming form-factors such as Yoga style
-laptops where the screen can fold back into tablet mode, and the C
-panel touchpad and keyboard should be disabled.
-
+We could use devm_kcalloc() here too.
 
 -- 
-Benson Leung
-Software Engineer, Chrom* OS
-bleung@chromium.org
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
