@@ -1,53 +1,82 @@
-From: "Srivatsa S. Bhat" <srivatsa@MIT.EDU>
-Subject: Re: [PATCH v2] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
-Date: Wed, 16 Jul 2014 13:19:39 +0530
-Message-ID: <53C62E93.8010307@mit.edu>
-References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org>	<1405052287-4744-1-git-send-email-skannan@codeaurora.org>	<CAKohponB9feyh50p+dL5hyU1ffHAzHU59G-sYCrCm1AbHQe9hw@mail.gmail.com>	<2f549e6e4871ccf2a94dd4c8872c7a0b.squirrel@www.codeaurora.org>	<CAKohpokhmj1OkCRj=X+Q7eYiun8fsqD2dpEt66VKYnqo3dENVA@mail.gmail.com>	<53C0A12A.2060204@codeaurora.org>	<CAKohpon9en_VnSx+CVydPsWBHtArvmazn0hrodrRJt9jgOa0-g@mail.gmail.com>	<53C42AA8.8010107@codeaurora.org>	<CAKohpomkqbHZo9KrJMSwsEKGt6+Ac2Fg2X0+S7ZAo=OzhAc45g@mail.gmail.com>	<53C4BDFB.70707@codeaurora.org>	<53C4D12E.3040807@mit.edu> <CAKohpon8zDP3hVFMQV4CO2zOkb-AwnDws8xW=H8Hm4=gW=8FGQ@mail.gmail.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH 01/13] clk: tegra: Add binding for the Tegra124 DFLL
+ clocksource
+Date: Wed, 16 Jul 2014 10:01:34 +0200
+Message-ID: <20140716080133.GI7978@ulmo>
+References: <CAL1qeaFF0ZpUFovxTuLXrBPRg2Lbf-754Z=ztD5HFZPbfnDsAw@mail.gmail.com>
+ <53C01558.3090607@nvidia.com>
+ <CAL1qeaHETQ7kSGNjPiwi_9WNMtr9qZp0KwjZCCxY29+_N4AcuA@mail.gmail.com>
+ <53C01D17.2050906@nvidia.com>
+ <20140714083854.GO2081@ulmo>
+ <20140714091233.GC6800@sirena.org.uk>
+ <20140714092434.GA9755@ulmo>
+ <20140714102203.GD6800@sirena.org.uk>
+ <53C58DCB.90502@nvidia.com>
+ <20140715225252.GD17528@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="G3juXO9GfR42w+sw"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from dmz-mailsec-scanner-6.mit.edu ([18.7.68.35]:59265 "EHLO
-	dmz-mailsec-scanner-6.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758364AbaGPHvl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 03:51:41 -0400
-In-Reply-To: <CAKohpon8zDP3hVFMQV4CO2zOkb-AwnDws8xW=H8Hm4=gW=8FGQ@mail.gmail.com>
+Received: from mail-wi0-f171.google.com ([209.85.212.171]:56541 "EHLO
+	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756608AbaGPIBr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 04:01:47 -0400
+Content-Disposition: inline
+In-Reply-To: <20140715225252.GD17528@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Andrew Bresticker <abrestic@chromium.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Viresh Kumar <viresh.kumar@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 07/16/2014 11:14 AM, Viresh Kumar wrote:
-> On 15 July 2014 12:28, Srivatsa S. Bhat <srivatsa@mit.edu> wrote:
->> Wait, allowing an offline CPU to be the policy->cpu (i.e., the CPU which is
->> considered as the master of the policy/group) is just absurd.
-> 
-> Yeah, that was as Absurd as I am :)
-> 
 
-I have had my own share of silly ideas over the years; so don't worry, we are
-all in the same boat ;-)
+--G3juXO9GfR42w+sw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->> The goal of this patchset should be to just de-couple the sysfs files/ownership
->> from the policy->cpu to an extent where it doesn't matter who owns those
->> files, and probably make it easier to do CPU hotplug without having to
->> destroy and recreate the files on every hotplug operation.
-> 
-> I went to that Absurd idea because we thought we can skip playing with
-> the sysfs nodes on suspend/hotplug.
-> 
-> And if policy->cpu keeps changing with hotplug, we *may* have to keep
-> sysfs stuff moving as well. One way to avoid that is by using something
-> like: policy->sysfs_cpu, but wasn't sure if that's the right path to follow.
->
+On Tue, Jul 15, 2014 at 11:52:52PM +0100, Mark Brown wrote:
+> On Tue, Jul 15, 2014 at 11:23:39PM +0300, Tuomas Tynkkynen wrote:
+>=20
+> > That sounds indeed useful for this case. How'd the following interface
+> > sound for the register offset / selector-to-register-value conversion?
+> > The I2C address would be a bit trickier to get as it would touch the
+> > regmap stuff as well, but perhaps it would be a good idea to have a
+> > phandle to the I2C device itself, and then parse the reg field for
+> > the address.
+>=20
+> This looks fine, can you submit properly please?  For the I2C address
+> why not just have an interface to get the regmap and then provide a way
+> to get the underlying device back from the regmap?
 
-Hmm, I understand.. Even I don't have any suggestions as of now, since I
-haven't spent enough time thinking of alternatives yet.
+Is it mandatory for regulators to use regmap? Also I'm not sure how this
+will work with MFDs, since the device may not be the actual bus device,
+but rather a child of the MFD (and what we want access to is the MFD).
+Perhaps for regmaps that would work in most cases since MFDs seem to
+aften share the regmap with their children. However, the code in
+regulator_register() at least indicates that even then it's possible to
+have a regmap in children that's different from the top-level MFD.
 
-> Lets see what Saravana's new patchset has for us :)
-> 
+Thierry
 
-Yep :-)
+--G3juXO9GfR42w+sw
+Content-Type: application/pgp-signature
 
-Regards,
-Srivatsa S. Bhat
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJTxjFdAAoJEN0jrNd/PrOh9DwP/3dzscoXYXMEY5bwISYqlh72
+OAspRRFCWc5DIrmpKCnzZQq8Z/BguxD4Qf3xWpkllLkpGJHJVa4489gPBOLQrxPa
+tR0t4fYHFxs4GT1m+LmuLH+yNArhEFcTZI+N7aWB2O+G4s8lvFJPZdVM604GZjXB
+9h8CkCyMnNZHRoOKKUt7bFNZ7xXaeV8NghmXUGIXPvqmUIjkzC5z+kNzYUsR6bPb
+cx6UJRYkf73IPyd983R57YW/E1mK9Vbz/6rCnfipqcpzHOpOB+n7aniecoe0bYOD
+KMHLtySu5IhYow1aNnJFdjKSZakVfnBqD1bgbIe+mCFGOUvlASux7TplreZkL0ST
+udY8m7cPyAATI/nL/FIR9cYcxVPJa68+oXeuu+iqTFuPEEAnUwvup+5njS9+u7cm
+0ke7hwJwIeGfDjdjkybgacCkf1HWXCkpayfubDpxdpmPf9aI8K1rmb+woHwo9sGs
+rstVQVMhg8HpYJnk2UiYGWUAg2C79RC4ZUT3LVDKUkGh69fpbvhTyyP2TqCBNIW7
+4fzCH9HBEmgrBnqcm7Z+s5MTuiZfuD5S3a5KAEM8vE0kvGnv/wJWOxfz51L/1Cd0
+4HNK5fneKpCx302+5D/ijPdgMF6zQ37wz9Rbe4nGZ2ZkR5L0zcPDe1WeYLy8sNSg
+WbSGZw8byksVNMXM2b9H
+=RhIM
+-----END PGP SIGNATURE-----
+
+--G3juXO9GfR42w+sw--
