@@ -1,79 +1,207 @@
 From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v3 1/2] cpufreq: Don't destroy/realloc policy/sysfs on
- hotplug/suspend
-Date: Wed, 16 Jul 2014 12:19:37 -0700
-Message-ID: <53C6D049.7000705@codeaurora.org>
-References: <1405464473-3916-1-git-send-email-skannan@codeaurora.org>
- <1405464473-3916-2-git-send-email-skannan@codeaurora.org>
- <53C5C738.5040705@codeaurora.org>
- <CAKohpomt34NcMH=H5L_fhf-6R6p27_h=aCNcpT6T12u35d=Z+w@mail.gmail.com>
+Subject: Re: [PATCH v3 2/2] cpufreq: Simplify and fix mutual exclusion with
+ hotplug
+Date: Wed, 16 Jul 2014 12:34:22 -0700
+Message-ID: <53C6D3BE.5070505@codeaurora.org>
+References: <1405464473-3916-1-git-send-email-skannan@codeaurora.org> <1405464473-3916-3-git-send-email-skannan@codeaurora.org> <CAKohpomuo-=fox=1rNZOgvy+COyWYexcP2J9NRFJqmTK6MLOjA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAKohpomt34NcMH=H5L_fhf-6R6p27_h=aCNcpT6T12u35d=Z+w@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Srivatsa S . Bhat" <srivatsa@mit.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Todd Poynor <toddpoynor@google.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.11.231]:60643 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732AbaGPTeZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 15:34:25 -0400
+In-Reply-To: <CAKohpomuo-=fox=1rNZOgvy+COyWYexcP2J9NRFJqmTK6MLOjA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "Srivatsa S . Bhat" <srivatsa@mit.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
 
-On 07/16/2014 01:30 AM, Viresh Kumar wrote:
-> On 16 July 2014 05:58, Saravana Kannan <skannan@codeaurora.org> wrote:
->>> +       if (!cpus && cpufreq_driver->stop_cpu &&
->>> cpufreq_driver->setpolicy) {
->>> +               cpufreq_driver->stop_cpu(policy);
->>> +       }
->>>
+On 07/16/2014 01:48 AM, Viresh Kumar wrote:
+> On 16 July 2014 04:17, Saravana Kannan <skannan@codeaurora.org> wrote:
+>
+> Again, just too many things in a single patch. That's not acceptable.
+> Few of these might be bug fixes, which must go in before any other updates.
+> And so it must have been added as first patch.
+>
+> Even the other stuff you are trying to fix (by checking policy->cpus) should go
+> before 1/2, otherwise 1/2 will actually break things inbetween, i.e. show values
+> even when no CPUs of a cluster are online.
+
+Well, it's no worse that what it does today. The existing code actually 
+causes a crash when you try to show while hotplugging a CPU. I'm keeping 
+the 1/2 as small as possible. You clearly want to smaller, so I don't 
+want to add this to that.
+
+Also, the current add/remove path is complicated with many cases. So, 
+I'm not comfortable saying I'm sure policy->cpus check would be 
+sufficient. I'm willing to throw out this change if you think this is 
+still wrong when it comes after 1/2.
+
+>> Since we no longer alloc and destroy/freeze policy and sysfs nodes during
+>> hotplug and suspend, we don't need to lock sysfs with hotplug. We can
+>> achieve the same effect by checking if policy->cpus is empty.
+>
+> Are you talking about the changes in store()?
+
+Yes.
+
+>
+>> Hotplug mutual exclusion was only done for sysfs writes. But reads need the
+>> same protection too.  So, this patch adds that too.
+>
+> How? How is checking for policy->cpus enough?
+
+Because when all the CPUs in a policy are hotplugged off, the 
+policy->cpus would be empty? So, it's functionally the same without 
+having to get hotplug lock. This way, CPUs of other policies could be 
+hotplugged while your are show/store on one policy.
+
+But I'm sure you already understood this. So, not sure what you are 
+really asking.
+
+>
+>> Also, cpufreq driver (un)register can race with hotplug since CPU online
+>> state can change between adding/removing the currently online devices and
+>> registering/unregistering for hotplug notifiers. So, fix that by
+>> registering for hotplug notifiers first before adding devices and
+>> unregistering from hotplug notifiers first before removing devices.
+>
+> Couldn't get it, tell us an example race and what will go wrong due to it.
+> Also this should have had a separate patch for itself.
+
+I assumed we go a lot of down_write()s and that would cause a 
+down_read_trylock() to fail. But we really do that only for cpufreq 
+driver register/unregister. So, my previous statement is not really a 
+very useful/common.
+
+But I do hate that we do "trylock". It always makes one wonder if it 
+will silently fail (since we return NULL, which is same as policy with 
+"offline" policy). Technically, we could do down_read(), but lockdep is 
+throwing warnings when it's really not an issue (doing down read twice). 
+So, I'm guessing all these trylocks are just to keep lockdep happy?
+
+
+>
+>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>> ---
+>>   drivers/cpufreq/cpufreq.c | 44 ++++++++++++++++++++------------------------
+>>   1 file changed, 20 insertions(+), 24 deletions(-)
 >>
->> Viresh, I tried your suggestion (and my initial thought too) to combine this
->> as an if/else with the previous if. But the indentation got nasty and made
->> it hard to read. I'm sure the compiler will optimize it. So, I would prefer
->> to leave it this way.
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index a0a2ec2..f72b2b7 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -748,17 +748,18 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
+>>   {
+>>          struct cpufreq_policy *policy = to_policy(kobj);
+>>          struct freq_attr *fattr = to_attr(attr);
+>> -       ssize_t ret;
+>> +       ssize_t ret = -EINVAL;
+>>
+>>          if (!down_read_trylock(&cpufreq_rwsem))
+>> -               return -EINVAL;
+>> -
+>> +               return ret;
+>>          down_read(&policy->rwsem);
+>>
+>> -       if (fattr->show)
+>> -               ret = fattr->show(policy, buf);
+>> -       else
+>> -               ret = -EIO;
+>> +       if (!cpumask_empty(policy->cpus)) {
+>> +               if (fattr->show)
+>> +                       ret = fattr->show(policy, buf);
+>> +               else
+>> +                       ret = -EIO;
+>> +       }
 >
-> Okay, I gave that comment again :)
+> Makes sense upto this point.
 >
-> Try this:
+>>          up_read(&policy->rwsem);
+>>          up_read(&cpufreq_rwsem);
+>> @@ -773,26 +774,19 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
+>>          struct freq_attr *fattr = to_attr(attr);
+>>          ssize_t ret = -EINVAL;
+>>
+>> -       get_online_cpus();
+>> -
+>> -       if (!cpu_online(policy->cpu))
+>> -               goto unlock;
+>> -
 >
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index f72b2b7..092a0ba 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -991,8 +991,10 @@ static int cpufreq_change_policy_cpus(struct
-> cpufreq_policy *policy,
->                                          CPUFREQ_UPDATE_POLICY_CPU, policy);
->          }
+> @Srivatsa: what do you say?
 >
-> -       cpus = !cpumask_empty(policy->cpus);
-> -       if (has_target() && cpus) {
-> +       if (!cpumask_empty(policy->cpus)) {
-> +               if (!has_target())
-> +                       goto unlock;
-> +
->                  ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
->                  if (!ret)
->                          ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-> @@ -1001,9 +1003,7 @@ static int cpufreq_change_policy_cpus(struct
-> cpufreq_policy *policy,
->                          pr_err("%s: Failed to start governor\n", __func__);
->                          goto unlock;
->                  }
-> -       }
-> -
-> -       if (!cpus && cpufreq_driver->stop_cpu && cpufreq_driver->setpolicy) {
-> +       } else if (cpufreq_driver->stop_cpu && cpufreq_driver->setpolicy) {
->                  cpufreq_driver->stop_cpu(policy);
->          }
+>>          if (!down_read_trylock(&cpufreq_rwsem))
+>> -               goto unlock;
+>> -
+>> +               return ret;
+>>          down_write(&policy->rwsem);
+>>
+>> -       if (fattr->store)
+>> -               ret = fattr->store(policy, buf, count);
+>> -       else
+>> -               ret = -EIO;
+>> +       if (!cpumask_empty(policy->cpus)) {
+>> +               if (fattr->store)
+>> +                       ret = fattr->store(policy, buf, count);
+>> +               else
+>> +                       ret = -EIO;
+>> +       }
+>>
+>>          up_write(&policy->rwsem);
+>> -
+>>          up_read(&cpufreq_rwsem);
+>> -unlock:
+>> -       put_online_cpus();
+>>
+>>          return ret;
+>>   }
+>> @@ -2270,6 +2264,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+>>                  }
+>>          }
+>>
+>> +       register_hotcpu_notifier(&cpufreq_cpu_notifier);
+>> +
+>>          ret = subsys_interface_register(&cpufreq_interface);
+>>          if (ret)
+>>                  goto err_boost_unreg;
+>> @@ -2293,13 +2289,13 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+>>                  }
+>>          }
+>>
+>> -       register_hotcpu_notifier(&cpufreq_cpu_notifier);
+>>          pr_debug("driver %s up and running\n", driver_data->name);
+>>
+>>          return 0;
+>>   err_if_unreg:
+>>          subsys_interface_unregister(&cpufreq_interface);
+>>   err_boost_unreg:
+>> +       unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
+>>          if (cpufreq_boost_supported())
+>>                  cpufreq_sysfs_remove_file(&boost.attr);
+>>   err_null_driver:
+>> @@ -2327,12 +2323,12 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
+>>
+>>          pr_debug("unregistering driver %s\n", driver->name);
+>>
+>> +       unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
+>> +
+>>          subsys_interface_unregister(&cpufreq_interface);
+>>          if (cpufreq_boost_supported())
+>>                  cpufreq_sysfs_remove_file(&boost.attr);
+>>
+>> -       unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
+>> -
+>>          down_write(&cpufreq_rwsem);
+>>          write_lock_irqsave(&cpufreq_driver_lock, flags);
 >
+> Normally the order of register/unregister should be just opposite.
+> Isn't that true here? Yeah, it was broken earlier as well...
 
-Not bad :) I'll take it.
+Generally agreed, but as explained in the commit text, we need to keep 
+it this way to avoid races with hotplug/unregister.
 
 -Saravana
 
