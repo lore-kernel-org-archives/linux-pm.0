@@ -1,50 +1,51 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCHv2 00/17] cpuidle for Marvell Armada 370 and 38x
-Date: Wed, 16 Jul 2014 09:10:08 -0400
-Message-ID: <20140716131008.GA13108@titan.lakedaemon.net>
-References: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com>
- <20140713222223.GH13108@titan.lakedaemon.net>
- <20140716124522.GV13108@titan.lakedaemon.net>
- <20140716145905.33105756@free-electrons.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 1/2] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
+Date: Wed, 16 Jul 2014 18:43:45 +0530
+Message-ID: <CAKohpomKF_TvpPZzEwocOK33RKnLWLtE2cPK6hk7YuhTVaNg2g@mail.gmail.com>
+References: <1405464473-3916-1-git-send-email-skannan@codeaurora.org>
+	<1405464473-3916-2-git-send-email-skannan@codeaurora.org>
+	<CAKohpok2hzwDLy77CZJ+7pHV-Nj4XTviJxVeXQYJRYtKXME00w@mail.gmail.com>
+	<53C65F03.1050609@mit.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-03-ewr.mailhop.org ([204.13.248.66]:43394 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932824AbaGPNKV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 09:10:21 -0400
-Content-Disposition: inline
-In-Reply-To: <20140716145905.33105756@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <53C65F03.1050609@mit.edu>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa@mit.edu>
+Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-On Wed, Jul 16, 2014 at 02:59:05PM +0200, Thomas Petazzoni wrote:
-> Dear Jason Cooper,
-> 
-> On Wed, 16 Jul 2014 08:45:22 -0400, Jason Cooper wrote:
-> 
-> > Ok, so I applied patch #10 to mvebu/dt, and #17 to mvebu/defconfig.  I
-> > was then going to apply the rest into a tentative topic branch
-> > (mvebu/soc-cpuidle), but it failed when based on v3.16-rc1, and it
-> > failed when based on mvebu/soc.
-> > 
-> > Could you please outline the deps so I can get this into -next?  We're
-> > really cutting the deadline close for v3.17, and I'd like to already
-> > have some time in -next if/when cpuidle Ack's it going through the mvebu
-> > tree.
-> 
-> As explained in the cover letter:
+On 16 July 2014 16:46, Srivatsa S. Bhat <srivatsa@mit.edu> wrote:
+> Short answer: If the sysfs directory has already been created by cpufreq,
+> then yes, it will remain as it is. However, if the online operation failed
+> before that, then cpufreq won't know about that CPU at all, and no file will
+> be created.
+>
+> Long answer:
+> The existing cpufreq code does all its work (including creating the sysfs
+> directories etc) at the CPU_ONLINE stage. This stage is not expected to fail
+> (in fact even the core CPU hotplug code in kernel/cpu.c doesn't care for
+> error returns at this point). So if a CPU fails to come up in earlier stages
+> itself (such as CPU_UP_PREPARE), then cpufreq won't even hear about that CPU,
+> and hence no sysfs files will be created/linked. However, if the CPU bringup
+> operation fails during the CPU_ONLINE stage after the cpufreq's notifier has
+> been invoked, then we do nothing about it and the cpufreq sysfs files will
+> remain.
 
-Gah!  I missed that it was listed in the changes.  Thanks!
+In short, the problem I mentioned before this para is genuine. And setting
+policy->cpu to the first cpu of a mask is indeed a bad idea.
 
->  * Series rebased on top of mvebu/fixes + mvebu/soc to take into
->    account the conflicts with the changes already merged on the PMSU
->    code.
+>> Also, how does suspend/resume work without CONFIG_HOTPLUG_CPU ?
+>> What's the sequence of events?
+>>
+>
+> Well, CONFIG_SUSPEND doesn't have an explicit dependency on HOTPLUG_CPU, but
+> SMP systems usually use CONFIG_PM_SLEEP_SMP, which sets CONFIG_HOTPLUG_CPU.
 
-Yup, I missed the dep on mvebu/fixes.
+I read usually as *optional*
 
-thx,
+> (I guess the reason why CONFIG_SUSPEND doesn't depend on HOTPLUG_CPU is
+> because suspend is possible even on uniprocessor systems and hence the
+> Kconfig dependency wasn't really justified).
 
-Jason.
+Again the same question, how do we suspend when HOTPLUG is disabled?
