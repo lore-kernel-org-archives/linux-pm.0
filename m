@@ -1,31 +1,47 @@
-From: Yingchun Li <sword.l.dragon@gmail.com>
-Subject: Linux cpuidle driver: Is there ready API for checking DDR's masters?
-Date: Wed, 16 Jul 2014 16:52:42 +0800
-Message-ID: <CADkvYHEfeRzzK1PT_hxBB0pCMeKoVihyivOxrNPYxbuM4LgmQg@mail.gmail.com>
+From: Bastien Nocera <hadess@hadess.net>
+Subject: Re: Power-managing devices that are not of interest at some point
+ in time
+Date: Wed, 16 Jul 2014 12:00:38 +0200
+Message-ID: <1405504838.17757.2.camel@nuvo>
+References: <20140716013206.GA13409@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f175.google.com ([209.85.220.175]:63875 "EHLO
-	mail-vc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758397AbaGPIwn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 04:52:43 -0400
-Received: by mail-vc0-f175.google.com with SMTP id hu12so1019361vcb.6
-        for <linux-pm@vger.kernel.org>; Wed, 16 Jul 2014 01:52:42 -0700 (PDT)
+Received: from relay5-d.mail.gandi.net ([217.70.183.197]:37243 "EHLO
+	relay5-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbaGPKAq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jul 2014 06:00:46 -0400
+In-Reply-To: <20140716013206.GA13409@google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Patrik Fimml <patrikf@chromium.org>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Torokhov <dtor@google.com>, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 
-I wrote a cpuidle driver for my board, and one state is shutdown the DDR.
-Before shutdown the DDR, I want to make sure there are no masters
-(some controller has builtin DMA, such as USB controller, SD controller.)
-to access DDR.
-One option is the pm_qos API, and every master request a qos before accessing
-transfer. But the API cannot be used in interrupt context, it is very
-inconvenient
-for my case.
-One option is implementing a customer API, and any master who
-access DDR should get a reference and release the reference after
-free the DDR.
-Please give me some advice on this issue?
+On Tue, 2014-07-15 at 18:32 -0700, Patrik Fimml wrote:
+> (Re-sending with correct mailing list addresses.)
+> 
+> Hi,
+> 
+> When the lid of a laptop is closed, certain devices can no longer
+> provide interesting input or will even produce bogus input, such as:
+<snip>
+> It's somewhat difficult to get the semantics right, since handles to
+> such devices might still be open. It might be easier to implement
+> behavior specific to device classes. On the other hand, it would be nice
+> to have a uniform way of shutting devices down, and not introduce
+> another possible path for a device to enter a power-saving state.
+> 
+> Rafael, can you give us your opinion on this?
 
-Thanks a lot!
+Ditto the "tablet mode" of some devices such as the Thinkpad X41, or the
+newer Lenovo Yoga, which should have their keyboards and touchpads
+disabled.
+
+If we used something like UPower to enable/disable those inaccessible
+devices, we'd need a way of enumerating which devices won't be
+accessible in those modes. Turning them off and back on should be easy
+enough.
+
+Cheers
+
