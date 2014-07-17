@@ -1,134 +1,62 @@
-From: Bastian Hecht <hechtb@gmail.com>
+From: Wolfram Sang <wsa@the-dreams.de>
 Subject: Re: [PATCH v2 1/5] i2c: Don't start transfers when suspended
-Date: Thu, 17 Jul 2014 16:58:17 +0200
-Message-ID: <CABYn4swJ5NHyUd5+zCK6jhHex4v9DCMe5Qo-BZqxjPf90JfusQ@mail.gmail.com>
+Date: Thu, 17 Jul 2014 17:09:59 +0200
+Message-ID: <20140717150958.GA2901@katana>
 References: <1405608520-5644-1-git-send-email-hechtb@gmail.com>
+ <CABYn4swJ5NHyUd5+zCK6jhHex4v9DCMe5Qo-BZqxjPf90JfusQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="T4sUOijqQbZv57TR"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f174.google.com ([209.85.213.174]:43376 "EHLO
-	mail-ig0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932139AbaGQO6S (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Jul 2014 10:58:18 -0400
-In-Reply-To: <1405608520-5644-1-git-send-email-hechtb@gmail.com>
+Received: from sauhun.de ([89.238.76.85]:38504 "EHLO pokefinder.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932975AbaGQPKE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 17 Jul 2014 11:10:04 -0400
+Content-Disposition: inline
+In-Reply-To: <CABYn4swJ5NHyUd5+zCK6jhHex4v9DCMe5Qo-BZqxjPf90JfusQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-i2c@vger.kernel.org
-Cc: Linux-SH <linux-sh@vger.kernel.org>, Tomoya MORINAGA <tomoya.rohm@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Bastian Hecht <hechtb@gmail.com>, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
-
-I want to add the remark that I can't help further on the patch series
-in the next month about. So this is free to be taken/ignored/modified
-without any approval by my side.
-
-Have fun coding,
-
- Bastian
+To: Bastian Hecht <hechtb@gmail.com>
+Cc: linux-i2c@vger.kernel.org, Linux-SH <linux-sh@vger.kernel.org>, Tomoya MORINAGA <tomoya.rohm@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
 
-2014-07-17 16:48 GMT+02:00 Bastian Hecht <hechtb@gmail.com>:
-> i2c transfer requests come in very uncontrolled, like from interrupt routines.
-> We might be suspended when this happens. To avoid i2c timeouts caused by
-> powered down busses we check for suspension.
->
-> Several bus drivers handle this problem on their own. We can clean things up
-> by moving the protection mechanism into the core.
->
-> Signed-off-by: Bastian Hecht <hechtb@gmail.com>
-> ---
-> changelog v2:
->
-> - commit message extended.
-> - initialization added for adap->suspended
-> - swapped branch for increased performance
->
->
->  drivers/i2c/i2c-core.c | 25 ++++++++++++++++++++++++-
->  include/linux/i2c.h    |  1 +
->  2 files changed, 25 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> index 7c7f4b8..b15dc20 100644
-> --- a/drivers/i2c/i2c-core.c
-> +++ b/drivers/i2c/i2c-core.c
-> @@ -343,6 +343,13 @@ static int i2c_legacy_resume(struct device *dev)
->  static int i2c_device_pm_suspend(struct device *dev)
->  {
->         const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> +       struct i2c_adapter *adap = i2c_verify_adapter(dev);
-> +
-> +       if (adap) {
-> +               i2c_lock_adapter(adap);
-> +               adap->suspended = true;
-> +               i2c_unlock_adapter(adap);
-> +       }
->
->         if (pm)
->                 return pm_generic_suspend(dev);
-> @@ -353,6 +360,13 @@ static int i2c_device_pm_suspend(struct device *dev)
->  static int i2c_device_pm_resume(struct device *dev)
->  {
->         const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> +       struct i2c_adapter *adap = i2c_verify_adapter(dev);
-> +
-> +       if (adap) {
-> +               i2c_lock_adapter(adap);
-> +               adap->suspended = false;
-> +               i2c_unlock_adapter(adap);
-> +       }
->
->         if (pm)
->                 return pm_generic_resume(dev);
-> @@ -1243,6 +1257,7 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
->         dev_set_name(&adap->dev, "i2c-%d", adap->nr);
->         adap->dev.bus = &i2c_bus_type;
->         adap->dev.type = &i2c_adapter_type;
-> +       adap->suspended = false;
->         res = device_register(&adap->dev);
->         if (res)
->                 goto out_list;
-> @@ -1819,7 +1834,10 @@ int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
->                         i2c_lock_adapter(adap);
->                 }
->
-> -               ret = __i2c_transfer(adap, msgs, num);
-> +               if (!adap->suspended)
-> +                       ret = __i2c_transfer(adap, msgs, num);
-> +               else
-> +                       ret = -EIO;
->                 i2c_unlock_adapter(adap);
->
->                 return ret;
-> @@ -2577,6 +2595,10 @@ s32 i2c_smbus_xfer(struct i2c_adapter *adapter, u16 addr, unsigned short flags,
->
->         if (adapter->algo->smbus_xfer) {
->                 i2c_lock_adapter(adapter);
-> +               if (adapter->suspended) {
-> +                       res = -EIO;
-> +                       goto unlock;
-> +               }
->
->                 /* Retry automatically on arbitration loss */
->                 orig_jiffies = jiffies;
-> @@ -2590,6 +2612,7 @@ s32 i2c_smbus_xfer(struct i2c_adapter *adapter, u16 addr, unsigned short flags,
->                                        orig_jiffies + adapter->timeout))
->                                 break;
->                 }
-> +unlock:
->                 i2c_unlock_adapter(adapter);
->
->                 if (res != -EOPNOTSUPP || !adapter->algo->master_xfer)
-> diff --git a/include/linux/i2c.h b/include/linux/i2c.h
-> index b556e0a..af08c75 100644
-> --- a/include/linux/i2c.h
-> +++ b/include/linux/i2c.h
-> @@ -434,6 +434,7 @@ struct i2c_adapter {
->         int timeout;                    /* in jiffies */
->         int retries;
->         struct device dev;              /* the adapter device */
-> +       unsigned int suspended:1;
->
->         int nr;
->         char name[48];
-> --
-> 1.9.1
->
+--T4sUOijqQbZv57TR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Thu, Jul 17, 2014 at 04:58:17PM +0200, Bastian Hecht wrote:
+> I want to add the remark that I can't help further on the patch series
+> in the next month about. So this is free to be taken/ignored/modified
+> without any approval by my side.
+
+Good to know. I'd like to get some Tested-by tags before applying to
+make sure we have no regressions. So, with you being away, let's just
+schedule this for 3.18 and we have all the time we need. Thanks for
+finishing this code before you left. Have a great month!
+
+   Wolfram
+
+
+--T4sUOijqQbZv57TR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTx+dGAAoJEBQN5MwUoCm2kTAQAILjCU9YgdSrBzIrZlErvV7j
+RCjYBuvlZObzxxkWsCmqkhWT0erU+UsBHzkVITCctnDYdgYJdE2fdJMiogOcxzHw
+jjrj2P/+OWFuWtjaUnsCw5WaYWx5g8xnlirSmslEgw0M4iefKolRPnxYzvnSj2SN
+6ldW/xomnMKtfUmq6havxHieGkC7LOwoIw9r3oEUmP6hyLfsAFOvHUrrL3Zw3XSh
+0RG6hGEUYoX9CJUBQXPVoyntnHD7ehoYafrakXuiiBpOgIkXF/W54E5a6XFNViGd
+XT6zQnmxK7kJ27qMGvEsGQGfKmNy5yLCCuwFnjIxpEu/FnODT+ZhHbNc1YPDkSf8
+iU4HSymPE8Sfr5JOU2FACpFImOFqjXOWrhY0lLv0aA5xh2uyE2xmo62sI6jIl/5R
+KUhJNnRClqCKLzZPz+z3KzCBLnJlSs5L9qiqo6tjsdemy0Sk1FJ+Zhu9GsOc85Xa
+9M6KaANDmRRtUC2A0PRHRlUYLr7uBWCf148oX9RPDtxWOCp5xihbGtZ320uHtyOR
+nj63qouwnwa/FHJDem97Dc+ujJViSBWC+FxiZoBgGtLhKdjzhZI7xlNBJ5S0zvJn
+YTVdU2BPqddqFurC3Mc9l3Ub0w88+ZpposbRKVqxusxU8BIbTA1CEYkdctUoQkiX
+Va2fWKGUdV3IcImsAwbA
+=8ugv
+-----END PGP SIGNATURE-----
+
+--T4sUOijqQbZv57TR--
