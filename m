@@ -1,79 +1,98 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 1/2] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
-Date: Thu, 17 Jul 2014 11:21:25 +0530
-Message-ID: <CAKohponX1Wkk0ZOpV6C4i5pQr35b=zMN0L7mjfHVZDwq_A4ocw@mail.gmail.com>
-References: <1405464473-3916-1-git-send-email-skannan@codeaurora.org>
-	<1405464473-3916-2-git-send-email-skannan@codeaurora.org>
-	<CAKohpok2hzwDLy77CZJ+7pHV-Nj4XTviJxVeXQYJRYtKXME00w@mail.gmail.com>
-	<53C65F03.1050609@mit.edu>
-	<CAKohpomKF_TvpPZzEwocOK33RKnLWLtE2cPK6hk7YuhTVaNg2g@mail.gmail.com>
-	<53C6D90A.1000402@codeaurora.org>
+From: Thomas Abraham <ta.omasab@gmail.com>
+Subject: Re: [PATCH v7 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
+Date: Thu, 17 Jul 2014 11:28:19 +0530
+Message-ID: <CAJuA9aiVFFZiN7_xBg6iQEX-LJKLMmHKvPhmdmOduouQzBtQJw@mail.gmail.com>
+References: <1405345118-4269-1-git-send-email-thomas.ab@samsung.com>
+	<CAJuA9ahWbL8v2nS6wuDosn-bi+pga57KUe5wQN14Mot_-RTc6w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <53C6D90A.1000402@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Srivatsa S. Bhat" <srivatsa@mit.edu>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f53.google.com ([209.85.215.53]:58793 "EHLO
+	mail-la0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751758AbaGQF6V (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Jul 2014 01:58:21 -0400
+In-Reply-To: <CAJuA9ahWbL8v2nS6wuDosn-bi+pga57KUe5wQN14Mot_-RTc6w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>
 
-On 17 July 2014 01:26, Saravana Kannan <skannan@codeaurora.org> wrote:
-> No it's not. All the cpu*/ directories for all possible CPUs will be there
-> whether a CPU is online/offline. Which is why I also weed out impossible
-> CPUs, but you said the driver shouldn't be passing impossible CPUs anyway.
-> I'm just picking one directory to put the real cpufreq directory under. So,
-> the code as-is is definitely not broken.
+Hi Mike,
 
-I may be wrong, and that's why I checked it with Srivatsa. He is quite familiar
-with hotplug code.
+On Tue, Jul 15, 2014 at 9:20 AM, Thomas Abraham <ta.omasab@gmail.com> wrote:
+> Hi Tomasz,
+>
+> On Mon, Jul 14, 2014 at 7:08 PM, Thomas Abraham <thomas.ab@samsung.com> wrote:
+>> Changes since v6:
+>> - Fixes suggested by Amit Daniel <amit.daniel@samsung.com>.
+>>
+>> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+>> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
+>> series also enabled cpufreq support for Exynos5420 using arm_big_little cpufreq
+>> driver.
+>>
+>> Thomas Abraham (6):
+>>   clk: samsung: add infrastructure to register cpu clocks
+>>   clk: samsung: register exynos5420 apll/kpll configuration data
+>>   clk: exynos: use cpu-clock provider type to represent arm clock
+>>   ARM: dts: Exynos: add cpu nodes, opp and cpu clock configuration data
+>>   ARM: Exynos: switch to using generic cpufreq driver for exynos4210/5250
+>>   cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
+>
+> In this series, support for Exynos5420 has been included. If there are
+> any more changes required, could you please let me know.
 
-Let me show the example again, its a bit tricky.
+This patch series migrates exynos cpufreq support to use generic
+cpufreq drivers. For this, cpu clock blocks are encapsulated into a
+cpu clock type and cpufreq driver operates the cpu clock type.
 
-I agree with you that sysfs nodes for CPUs stay as is with offline events, but
-we aren't talking about that here. On boot when we are trying to bring CPUs
-online, some of them may fail to come. And in that case, as confirmed by
-Srivatsa, there are no sysfs directories. This doesn't happen normally and
-is a very corner case.
+We had discussed in the [1] about using coordinated clocks. This
+series is not using the concept of coordinated clocks but the code in
+this series can be migrated to use coordinated clocks when it is
+available.
 
-Still think we are wrong?
+Is it okay to consider this series for v3.17-rc1. I will update this
+code to use coordinated clocks when it is available. This series helps
+with cpufreq support for newer Exynos SoCs such as Exynos5420/3250.
 
-> Sure, I can pick the first cpu that comes online to decide where to put the
-> real sysfs cpufreq directory, but then I have to keep track of that in a
-> separate field when it's time to remove it when the cpufreq driver is
-> unregistered.
+[1] http://www.spinics.net/lists/cpufreq/msg10042.html
 
-It works this way right now and I don't think we maintain any separate field
-here. Subsys-interface takes care of the order in which CPUs are added/
-removed. And we don't have to handle that here. Just fix policy->cpu
-at first cpufreq_add_dev().
+Thanks,
+Thomas
 
-> And no, we
-> shouldn't be moving sysfs directory to stay with only an online directory.
-> That's the thing this patch is trying to simplify.
-
-Ahh, I really missed it in reviews. So, that's why you are looking at first
-cpu of related_cpus.. Hmm, so it is quite possible that we would end up
-in a case where policy->cpu wouldn't have sysfs directory created for it.
-
-Not sure if that might cause some hickups.
-
-@Srivatsa: ??
-
-> So, I think using the first cpu in related CPUs will always work. If there's
-> any disagreement, I think it's purely a personal preference over adding
-> another field vs calling cpumask_first()
-
-That's what the problem with this patch was, just too big to miss important
-things :)
-
-I now understood why you had these extra cpumask_first() calls.
-
-But having said that, I still don't see a need to change the current behavior.
-The important point is kobject and links are added just once, no movement.
-And so, I would still like to add it to policy->cpu, i.e. the cpu which comes
-first. And this happens only once while we register a driver, so no side
-effects probably.
-
-Not every platform is going through hotplug/suspend/resume and keeping
-policy->cpu and sysfs node aligned atleast for them might not be that bad.
-Though it will work for any cpu.
+>
+> Thanks,
+> Thomas.
+>
+>>
+>>  arch/arm/boot/dts/exynos4210-origen.dts         |    6 +
+>>  arch/arm/boot/dts/exynos4210-trats.dts          |    6 +
+>>  arch/arm/boot/dts/exynos4210-universal_c210.dts |    6 +
+>>  arch/arm/boot/dts/exynos4210.dtsi               |   27 ++
+>>  arch/arm/boot/dts/exynos5250-arndale.dts        |    6 +
+>>  arch/arm/boot/dts/exynos5250-cros-common.dtsi   |    6 +
+>>  arch/arm/boot/dts/exynos5250-smdk5250.dts       |    6 +
+>>  arch/arm/boot/dts/exynos5250.dtsi               |   23 +
+>>  arch/arm/boot/dts/exynos5420-smdk5420.dts       |    6 +
+>>  arch/arm/boot/dts/exynos5420.dtsi               |   32 ++
+>>  arch/arm/mach-exynos/exynos.c                   |   15 +-
+>>  drivers/clk/samsung/Makefile                    |    2 +-
+>>  drivers/clk/samsung/clk-cpu.c                   |  576 +++++++++++++++++++++++
+>>  drivers/clk/samsung/clk-exynos4.c               |   25 +-
+>>  drivers/clk/samsung/clk-exynos5250.c            |   16 +-
+>>  drivers/clk/samsung/clk-exynos5420.c            |   60 ++-
+>>  drivers/clk/samsung/clk.h                       |    5 +
+>>  drivers/cpufreq/Kconfig.arm                     |   22 -
+>>  drivers/cpufreq/Makefile                        |    2 -
+>>  drivers/cpufreq/exynos4210-cpufreq.c            |  184 --------
+>>  drivers/cpufreq/exynos5250-cpufreq.c            |  210 ---------
+>>  include/dt-bindings/clock/exynos5250.h          |    1 +
+>>  include/dt-bindings/clock/exynos5420.h          |    2 +
+>>  23 files changed, 802 insertions(+), 442 deletions(-)
+>>  create mode 100644 drivers/clk/samsung/clk-cpu.c
+>>  delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
+>>  delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
+>>
+>> --
+>> 1.7.9.5
+>>
