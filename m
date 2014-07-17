@@ -1,55 +1,134 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH v3] ARM: EXYNOS: Fix suspend/resume sequences
-Date: Thu, 17 Jul 2014 16:42:26 +0200
-Message-ID: <53C7E0D2.1050307@samsung.com>
-References: <53C51B57.9040404@samsung.com>
- <1405434287-22710-1-git-send-email-t.figa@samsung.com>
- <53C53A1A.6060701@samsung.com>
+From: Bastian Hecht <hechtb@gmail.com>
+Subject: Re: [PATCH v2 1/5] i2c: Don't start transfers when suspended
+Date: Thu, 17 Jul 2014 16:58:17 +0200
+Message-ID: <CABYn4swJ5NHyUd5+zCK6jhHex4v9DCMe5Qo-BZqxjPf90JfusQ@mail.gmail.com>
+References: <1405608520-5644-1-git-send-email-hechtb@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <53C53A1A.6060701@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Chander Kashyap <k.chander@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f174.google.com ([209.85.213.174]:43376 "EHLO
+	mail-ig0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932139AbaGQO6S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Jul 2014 10:58:18 -0400
+In-Reply-To: <1405608520-5644-1-git-send-email-hechtb@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-i2c@vger.kernel.org
+Cc: Linux-SH <linux-sh@vger.kernel.org>, Tomoya MORINAGA <tomoya.rohm@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Bastian Hecht <hechtb@gmail.com>, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-Hi Kukjin,
+I want to add the remark that I can't help further on the patch series
+in the next month about. So this is free to be taken/ignored/modified
+without any approval by my side.
 
-On 15.07.2014 16:26, Tomasz Figa wrote:
-> Forgot to CC Daniel and linux-pm. Sorry for the noise.
-> 
-> On 15.07.2014 16:24, Tomasz Figa wrote:
->> Due to recent consolidation of Exynos suspend and cpuidle code, some
->> parts of suspend and resume sequences are executed two times, once from
->> exynos_pm_syscore_ops and then from exynos_cpu_pm_notifier() and thus it
->> breaks suspend, at least on Exynos4-based boards. In addition, simple
->> core power down from a cpuidle driver could, in case of CPU 0 could
->> result in calling functions that are specific to suspend and deeper idle
->> states.
->>
->> This patch fixes the issue by moving those operations outside the CPU PM
->> notifier into suspend and AFTR code paths. This leads to a bit of code
->> duplication, but allows additional code simplification, so in the end
->> more code is removed than added.
->>
->> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
->> ---
->>  arch/arm/mach-exynos/pm.c        | 164 ++++++++++++++++++---------------------
->>  drivers/cpuidle/cpuidle-exynos.c |  25 +-----
->>  2 files changed, 80 insertions(+), 109 deletions(-)
->>
+Have fun coding,
 
-Please consider this patch for next pull request with rc fixes. It
-replaces following patches posted in this thread:
+ Bastian
 
-[PATCH 5/6] ARM: EXYNOS: Fix suspend/resume sequencies
-[PATCH v2 5/6] ARM: EXYNOS: Fix suspend/resume sequences
 
-and also similar patch by Chander:
-
-[PATCH 2/2] cpuidle: Exynos: fix cpuidle for all states
-
-Best regards,
-Tomasz
+2014-07-17 16:48 GMT+02:00 Bastian Hecht <hechtb@gmail.com>:
+> i2c transfer requests come in very uncontrolled, like from interrupt routines.
+> We might be suspended when this happens. To avoid i2c timeouts caused by
+> powered down busses we check for suspension.
+>
+> Several bus drivers handle this problem on their own. We can clean things up
+> by moving the protection mechanism into the core.
+>
+> Signed-off-by: Bastian Hecht <hechtb@gmail.com>
+> ---
+> changelog v2:
+>
+> - commit message extended.
+> - initialization added for adap->suspended
+> - swapped branch for increased performance
+>
+>
+>  drivers/i2c/i2c-core.c | 25 ++++++++++++++++++++++++-
+>  include/linux/i2c.h    |  1 +
+>  2 files changed, 25 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+> index 7c7f4b8..b15dc20 100644
+> --- a/drivers/i2c/i2c-core.c
+> +++ b/drivers/i2c/i2c-core.c
+> @@ -343,6 +343,13 @@ static int i2c_legacy_resume(struct device *dev)
+>  static int i2c_device_pm_suspend(struct device *dev)
+>  {
+>         const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +       struct i2c_adapter *adap = i2c_verify_adapter(dev);
+> +
+> +       if (adap) {
+> +               i2c_lock_adapter(adap);
+> +               adap->suspended = true;
+> +               i2c_unlock_adapter(adap);
+> +       }
+>
+>         if (pm)
+>                 return pm_generic_suspend(dev);
+> @@ -353,6 +360,13 @@ static int i2c_device_pm_suspend(struct device *dev)
+>  static int i2c_device_pm_resume(struct device *dev)
+>  {
+>         const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +       struct i2c_adapter *adap = i2c_verify_adapter(dev);
+> +
+> +       if (adap) {
+> +               i2c_lock_adapter(adap);
+> +               adap->suspended = false;
+> +               i2c_unlock_adapter(adap);
+> +       }
+>
+>         if (pm)
+>                 return pm_generic_resume(dev);
+> @@ -1243,6 +1257,7 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
+>         dev_set_name(&adap->dev, "i2c-%d", adap->nr);
+>         adap->dev.bus = &i2c_bus_type;
+>         adap->dev.type = &i2c_adapter_type;
+> +       adap->suspended = false;
+>         res = device_register(&adap->dev);
+>         if (res)
+>                 goto out_list;
+> @@ -1819,7 +1834,10 @@ int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+>                         i2c_lock_adapter(adap);
+>                 }
+>
+> -               ret = __i2c_transfer(adap, msgs, num);
+> +               if (!adap->suspended)
+> +                       ret = __i2c_transfer(adap, msgs, num);
+> +               else
+> +                       ret = -EIO;
+>                 i2c_unlock_adapter(adap);
+>
+>                 return ret;
+> @@ -2577,6 +2595,10 @@ s32 i2c_smbus_xfer(struct i2c_adapter *adapter, u16 addr, unsigned short flags,
+>
+>         if (adapter->algo->smbus_xfer) {
+>                 i2c_lock_adapter(adapter);
+> +               if (adapter->suspended) {
+> +                       res = -EIO;
+> +                       goto unlock;
+> +               }
+>
+>                 /* Retry automatically on arbitration loss */
+>                 orig_jiffies = jiffies;
+> @@ -2590,6 +2612,7 @@ s32 i2c_smbus_xfer(struct i2c_adapter *adapter, u16 addr, unsigned short flags,
+>                                        orig_jiffies + adapter->timeout))
+>                                 break;
+>                 }
+> +unlock:
+>                 i2c_unlock_adapter(adapter);
+>
+>                 if (res != -EOPNOTSUPP || !adapter->algo->master_xfer)
+> diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+> index b556e0a..af08c75 100644
+> --- a/include/linux/i2c.h
+> +++ b/include/linux/i2c.h
+> @@ -434,6 +434,7 @@ struct i2c_adapter {
+>         int timeout;                    /* in jiffies */
+>         int retries;
+>         struct device dev;              /* the adapter device */
+> +       unsigned int suspended:1;
+>
+>         int nr;
+>         char name[48];
+> --
+> 1.9.1
+>
