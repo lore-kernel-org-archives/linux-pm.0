@@ -1,88 +1,152 @@
-From: Dmitry Torokhov <dtor@google.com>
-Subject: Re: Power-managing devices that are not of interest at some point in time
-Date: Wed, 16 Jul 2014 16:31:11 -0700
-Message-ID: <CAE_wzQ8HERY+EX_5kjfHML-eu2cxv5ihhYt2nCn34Zws4mgS-A@mail.gmail.com>
-References: <20140716013206.GA13409@google.com>
-	<5611777.bNi5p029gt@vostro.rjw.lan>
-	<1405552422.17757.5.camel@nuvo>
-	<1463038.d2xocpRFLY@vostro.rjw.lan>
-	<1405553002.17757.7.camel@nuvo>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] cpufreq: move policy kobj to policy->cpu at resume
+Date: Thu, 17 Jul 2014 05:51:55 +0530
+Message-ID: <CAKohpo=Wx-wr0RT6GWoxcmuFyrTr+jKUN2q2bmqda7vMsL5ETg@mail.gmail.com>
+References: <1eff59d9b51f8ade67bc1cf9f10683f9463ec9f6.1404996041.git.viresh.kumar@linaro.org>
+	<9320264.Zgy80Rpl1d@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <1405553002.17757.7.camel@nuvo>
-Sender: linux-input-owner@vger.kernel.org
-To: Bastien Nocera <hadess@hadess.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <9320264.Zgy80Rpl1d@vostro.rjw.lan>
+Sender: stable-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Saravana Kannan <skannan@codeaurora.org>, "Bu, Yitian" <ybu@qti.qualcomm.com>, Stable <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 16, 2014 at 4:23 PM, Bastien Nocera <hadess@hadess.net> wrote:
-> On Thu, 2014-07-17 at 01:33 +0200, Rafael J. Wysocki wrote:
->> On Thursday, July 17, 2014 01:13:42 AM Bastien Nocera wrote:
->> > On Thu, 2014-07-17 at 01:11 +0200, Rafael J. Wysocki wrote:
->> > > On Tuesday, July 15, 2014 06:32:06 PM Patrik Fimml wrote:
->> > > > (Re-sending with correct mailing list addresses.)
->> > > >
->> > > > Hi,
->> > > >
->> > > > When the lid of a laptop is closed, certain devices can no longer
->> > > > provide interesting input or will even produce bogus input, such as:
->> > > >
->> > > > - input devices: touchscreen, touchpad, keyboard
->> > > > - sensors: ambient light sensor, accelerometer, magnetometer
->> > > > - a video camera mounted on the lid
->> > > > - display backlight
->> > > >
->> > > > Various workarounds cover some of these cases, and we have some ugly
->> > > > hacks in ChromeOS to make things work. It would be nice if a userspace
->> > > > power management daemon could listen to the lid-close event, and then
->> > > > have a way to temporarily power off these devices, potentially through
->> > > > sysfs.
->> > > >
->> > > > I've been discussing this with Dmitry and Benson (cc'd), and we've been
->> > > > wondering whether we could come up with a generic solution that could
->> > > > benefit multiple device classes.
->> > > >
->> > > > There's some overlap with runtime PM here. The action to be taken in
->> > > > such a situation would probably be similar to a runtime suspend. The
->> > > > match is not perfect though, since devices with more than two power
->> > > > states might want to enter different states depending on the situation.
->> > > >
->> > > > It's somewhat difficult to get the semantics right, since handles to
->> > > > such devices might still be open. It might be easier to implement
->> > > > behavior specific to device classes. On the other hand, it would be nice
->> > > > to have a uniform way of shutting devices down, and not introduce
->> > > > another possible path for a device to enter a power-saving state.
->> > > >
->> > > > Rafael, can you give us your opinion on this?
->> > >
->> > > Let me try to understand the scenario in the first place.
->> > >
->> > > To start with, a number of devices is in use (that is, open, there are
->> > > applications listening/talking to them etc).  Now, an event happens, such
->> > > as a laptop lid close and you want some of those devices, but possibly
->> > > not all of them, to quiesce themselves and go into low-power states.
->> > >
->> > > Is that correct?
-
-Pretty much, although the devices would not listen to events
-themselves but rather there will be an entity listening for various
-events and requesting certain devices to quiesce themselves in
-response for such events.
-
-> <snip>
->> Well, is the scenario I described correct or not?  If not, then what
->> exactly is the scenario you want to be able to handle?
+On 17 July 2014 04:48, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> +static int update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu,
+>> +                          struct device *cpu_dev)
+>>  {
+>> +     int ret;
+>> +
+>>       if (WARN_ON(cpu == policy->cpu))
+>> -             return;
+>> +             return 0;
+>> +
+>> +     /* Move kobject to the new policy->cpu */
+>> +     ret = kobject_move(&policy->kobj, &cpu_dev->kobj);
+>> +     if (ret) {
+>> +             pr_err("%s: Failed to move kobj: %d\n", __func__, ret);
+>> +             return ret;
 >
-> I don't expect devices to have to know about the lid status, no. Patrik
-> might feel differently, but I think that all that's being asked is
-> already possible through existing user-space mechanisms, it's just
-> missing metadata to be able to implement it.
+> Previously, we returned -EINVAL in the kobject_move() failure case.  Why are
+> we changing that now?
 
-We are not planning on implementing the policy in kernel, that's
-indeed task for userspace; but unless we bring in the heavy hammer of
-forcibly unbinding drivers, we do not currently have universal
-mechanism of quiescing devices.
+We should have preserved return value of kobject_move() earlier in
+cpufreq_nominate_new_policy_cpu() and sent that, but we returned
+-EINVAL. And I realized that its more appropriate to return the error
+returned by kobject_move().
 
-Thanks,
-Dmitry
+>>  static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>> @@ -1154,7 +1166,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>>        * by invoking update_policy_cpu().
+>>        */
+>>       if (recover_policy && cpu != policy->cpu)
+>> -             update_policy_cpu(policy, cpu);
+>> +             WARN_ON(update_policy_cpu(policy, cpu, dev));
+>
+> This is an arbitrary difference in the handling of update_policy_cpu() return
+> value.  Why do we want the WARN_ON() here and not in the other place?
+
+We really can't recover in this case. We have reached here after a suspend/
+resume, and probing first cpu of a non-boot cluster. And we *have* to make
+it policy-master.
+
+But in the other case, we are removing a CPU in PREPARE stage and so
+we can actually fail from there and let everybody know. Though I am not
+aware of anycase in which kobject_move() can fail there.
+
+> Don't we want to recover from kobject_move() failures here as well?
+
+In the other case, we have just removed the link from the new policy->cpu
+and so we try to recover for that in failures, but don't have something
+similar here.
+
+>>       else
+>>               policy->cpu = cpu;
+>>
+>> @@ -1307,38 +1319,11 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>>       return __cpufreq_add_dev(dev, sif);
+>>  }
+>>
+>> -static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *policy,
+>> -                                        unsigned int old_cpu)
+>> -{
+>> -     struct device *cpu_dev;
+>> -     int ret;
+>> -
+>> -     /* first sibling now owns the new sysfs dir */
+>> -     cpu_dev = get_cpu_device(cpumask_any_but(policy->cpus, old_cpu));
+>> -
+>> -     sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+>> -     ret = kobject_move(&policy->kobj, &cpu_dev->kobj);
+>> -     if (ret) {
+>> -             pr_err("%s: Failed to move kobj: %d\n", __func__, ret);
+>> -
+>> -             down_write(&policy->rwsem);
+>> -             cpumask_set_cpu(old_cpu, policy->cpus);
+>> -             up_write(&policy->rwsem);
+>
+> Why don't we need the above three lines in the new code?
+
+It was probably meaningful when this was added initially, but later
+some commit moved the cpumask_clear_cpu() to
+__cpufreq_remove_dev_finish(). And so we don't really need to
+set the cpu to policy->cpus again, as it was never cleared by this
+stage..
+
+>> -
+>> -             ret = sysfs_create_link(&cpu_dev->kobj, &policy->kobj,
+>> -                                     "cpufreq");
+>> -
+>> -             return -EINVAL;
+>> -     }
+>> -
+>> -     return cpu_dev->id;
+>> -}
+>> -
+>>  static int __cpufreq_remove_dev_prepare(struct device *dev,
+>>                                       struct subsys_interface *sif)
+>>  {
+>>       unsigned int cpu = dev->id, cpus;
+>> -     int new_cpu, ret;
+>> +     int ret;
+>>       unsigned long flags;
+>>       struct cpufreq_policy *policy;
+>>
+>> @@ -1378,14 +1363,28 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+>>       if (cpu != policy->cpu) {
+>>               sysfs_remove_link(&dev->kobj, "cpufreq");
+>>       } else if (cpus > 1) {
+>> -             new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu);
+>> -             if (new_cpu >= 0) {
+>> -                     update_policy_cpu(policy, new_cpu);
+>> +             /* Nominate new CPU */
+>> +             int new_cpu = cpumask_any_but(policy->cpus, cpu);
+>> +             struct device *cpu_dev = get_cpu_device(new_cpu);
+>>
+>> -                     if (!cpufreq_suspended)
+>> -                             pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
+>> -                                      __func__, new_cpu, cpu);
+>> +             sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+>> +             ret = update_policy_cpu(policy, new_cpu, cpu_dev);
+>> +             if (ret) {
+>> +                     /*
+>> +                      * To supress compilation warning about return value of
+>> +                      * sysfs_create_link().
+>> +                      */
+>> +                     int temp;
+>> +
+>> +                     /* Create link again if we failed. */
+>> +                     temp = sysfs_create_link(&cpu_dev->kobj, &policy->kobj,
+>> +                                              "cpufreq");
+>
+> And this is *ugly*.
+
+Absolutely, Let me know what can we do to work around this.
+It was like this earlier as well, just that I added a descriptive
+comment this time.
+
+--
+viresh
