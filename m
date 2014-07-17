@@ -1,98 +1,56 @@
-From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v7 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
-Date: Thu, 17 Jul 2014 11:28:19 +0530
-Message-ID: <CAJuA9aiVFFZiN7_xBg6iQEX-LJKLMmHKvPhmdmOduouQzBtQJw@mail.gmail.com>
-References: <1405345118-4269-1-git-send-email-thomas.ab@samsung.com>
-	<CAJuA9ahWbL8v2nS6wuDosn-bi+pga57KUe5wQN14Mot_-RTc6w@mail.gmail.com>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: Power-managing devices that are not of interest at some point
+ in time
+Date: Thu, 17 Jul 2014 08:01:48 +0200
+Message-ID: <1405576908.27806.10.camel@linux-fkkt.site>
+References: <20140716013206.GA13409@google.com>
+	 <5611777.bNi5p029gt@vostro.rjw.lan> <1405552422.17757.5.camel@nuvo>
+	 <1463038.d2xocpRFLY@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f53.google.com ([209.85.215.53]:58793 "EHLO
-	mail-la0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751758AbaGQF6V (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Jul 2014 01:58:21 -0400
-In-Reply-To: <CAJuA9ahWbL8v2nS6wuDosn-bi+pga57KUe5wQN14Mot_-RTc6w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <1463038.d2xocpRFLY@vostro.rjw.lan>
+Sender: linux-input-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Bastien Nocera <hadess@hadess.net>, Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, Dmitry Torokhov <dtor@google.com>, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>
 
-Hi Mike,
+On Thu, 2014-07-17 at 01:33 +0200, Rafael J. Wysocki wrote:
+> On Thursday, July 17, 2014 01:13:42 AM Bastien Nocera wrote:
 
-On Tue, Jul 15, 2014 at 9:20 AM, Thomas Abraham <ta.omasab@gmail.com> wrote:
-> Hi Tomasz,
->
-> On Mon, Jul 14, 2014 at 7:08 PM, Thomas Abraham <thomas.ab@samsung.com> wrote:
->> Changes since v6:
->> - Fixes suggested by Amit Daniel <amit.daniel@samsung.com>.
->>
->> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
->> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
->> series also enabled cpufreq support for Exynos5420 using arm_big_little cpufreq
->> driver.
->>
->> Thomas Abraham (6):
->>   clk: samsung: add infrastructure to register cpu clocks
->>   clk: samsung: register exynos5420 apll/kpll configuration data
->>   clk: exynos: use cpu-clock provider type to represent arm clock
->>   ARM: dts: Exynos: add cpu nodes, opp and cpu clock configuration data
->>   ARM: Exynos: switch to using generic cpufreq driver for exynos4210/5250
->>   cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
->
-> In this series, support for Exynos5420 has been included. If there are
-> any more changes required, could you please let me know.
+> > Applications can already check the lid status (through UPower), and with
+> > the additional metadata from the kernel, know that the webcam won't be
+> > usable when the lid is closed. Switching to external webcam, a webcam on
+> > the outside of the case, or switch off the video stream would then be
+> > the expected behaviour.
+> 
+> Well, is the scenario I described correct or not?  If not, then what
+> exactly is the scenario you want to be able to handle?
 
-This patch series migrates exynos cpufreq support to use generic
-cpufreq drivers. For this, cpu clock blocks are encapsulated into a
-cpu clock type and cpufreq driver operates the cpu clock type.
+Well, I think you need to add that you want user space to tell the
+kernel that devices should not do remote wakeup under some conditions.
+And I think this should not be limited to lid closure. And thus it
+does not belong into the kernel.
 
-We had discussed in the [1] about using coordinated clocks. This
-series is not using the concept of coordinated clocks but the code in
-this series can be migrated to use coordinated clocks when it is
-available.
+A good example would be mice. From the kernel side runtime power
+management works just fine. In practice it is rarely usable because
+remote wakeup doesn't work well enough in common mice. It would
+be good enough if the screen saver were working.
 
-Is it okay to consider this series for v3.17-rc1. I will update this
-code to use coordinated clocks when it is available. This series helps
-with cpufreq support for newer Exynos SoCs such as Exynos5420/3250.
+So I think lacking is the ability to model that remote wakeup
+capabilities are
 
-[1] http://www.spinics.net/lists/cpufreq/msg10042.html
+- dependent on external events
+- binary capable or incapable
 
-Thanks,
-Thomas
+And we might introduce a system similar to rfkill that tells
+devices that they are useless and hence idle due to external factors
+(the internal webcam, keyboard, touchscreen ...)
+Putting this into user space is difficult because you cannot really
+fully close a keyboard.
 
->
-> Thanks,
-> Thomas.
->
->>
->>  arch/arm/boot/dts/exynos4210-origen.dts         |    6 +
->>  arch/arm/boot/dts/exynos4210-trats.dts          |    6 +
->>  arch/arm/boot/dts/exynos4210-universal_c210.dts |    6 +
->>  arch/arm/boot/dts/exynos4210.dtsi               |   27 ++
->>  arch/arm/boot/dts/exynos5250-arndale.dts        |    6 +
->>  arch/arm/boot/dts/exynos5250-cros-common.dtsi   |    6 +
->>  arch/arm/boot/dts/exynos5250-smdk5250.dts       |    6 +
->>  arch/arm/boot/dts/exynos5250.dtsi               |   23 +
->>  arch/arm/boot/dts/exynos5420-smdk5420.dts       |    6 +
->>  arch/arm/boot/dts/exynos5420.dtsi               |   32 ++
->>  arch/arm/mach-exynos/exynos.c                   |   15 +-
->>  drivers/clk/samsung/Makefile                    |    2 +-
->>  drivers/clk/samsung/clk-cpu.c                   |  576 +++++++++++++++++++++++
->>  drivers/clk/samsung/clk-exynos4.c               |   25 +-
->>  drivers/clk/samsung/clk-exynos5250.c            |   16 +-
->>  drivers/clk/samsung/clk-exynos5420.c            |   60 ++-
->>  drivers/clk/samsung/clk.h                       |    5 +
->>  drivers/cpufreq/Kconfig.arm                     |   22 -
->>  drivers/cpufreq/Makefile                        |    2 -
->>  drivers/cpufreq/exynos4210-cpufreq.c            |  184 --------
->>  drivers/cpufreq/exynos5250-cpufreq.c            |  210 ---------
->>  include/dt-bindings/clock/exynos5250.h          |    1 +
->>  include/dt-bindings/clock/exynos5420.h          |    2 +
->>  23 files changed, 802 insertions(+), 442 deletions(-)
->>  create mode 100644 drivers/clk/samsung/clk-cpu.c
->>  delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
->>  delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
->>
->> --
->> 1.7.9.5
->>
+	Regards
+		Oliver
+
+
