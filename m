@@ -1,39 +1,55 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Power-managing devices that are not of interest at some point
- in time
-Date: Thu, 17 Jul 2014 10:39:16 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1407171029210.1517-100000@iolanthe.rowland.org>
-References: <CAE_wzQ8HERY+EX_5kjfHML-eu2cxv5ihhYt2nCn34Zws4mgS-A@mail.gmail.com>
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: Re: [PATCH v3] ARM: EXYNOS: Fix suspend/resume sequences
+Date: Thu, 17 Jul 2014 16:42:26 +0200
+Message-ID: <53C7E0D2.1050307@samsung.com>
+References: <53C51B57.9040404@samsung.com>
+ <1405434287-22710-1-git-send-email-t.figa@samsung.com>
+ <53C53A1A.6060701@samsung.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAE_wzQ8HERY+EX_5kjfHML-eu2cxv5ihhYt2nCn34Zws4mgS-A@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Torokhov <dtor@google.com>
-Cc: Bastien Nocera <hadess@hadess.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <53C53A1A.6060701@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Chander Kashyap <k.chander@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 16 Jul 2014, Dmitry Torokhov wrote:
+Hi Kukjin,
 
-> We are not planning on implementing the policy in kernel, that's
-> indeed task for userspace; but unless we bring in the heavy hammer of
-> forcibly unbinding drivers, we do not currently have universal
-> mechanism of quiescing devices.
+On 15.07.2014 16:26, Tomasz Figa wrote:
+> Forgot to CC Daniel and linux-pm. Sorry for the noise.
+> 
+> On 15.07.2014 16:24, Tomasz Figa wrote:
+>> Due to recent consolidation of Exynos suspend and cpuidle code, some
+>> parts of suspend and resume sequences are executed two times, once from
+>> exynos_pm_syscore_ops and then from exynos_cpu_pm_notifier() and thus it
+>> breaks suspend, at least on Exynos4-based boards. In addition, simple
+>> core power down from a cpuidle driver could, in case of CPU 0 could
+>> result in calling functions that are specific to suspend and deeper idle
+>> states.
+>>
+>> This patch fixes the issue by moving those operations outside the CPU PM
+>> notifier into suspend and AFTR code paths. This leads to a bit of code
+>> duplication, but allows additional code simplification, so in the end
+>> more code is removed than added.
+>>
+>> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+>> ---
+>>  arch/arm/mach-exynos/pm.c        | 164 ++++++++++++++++++---------------------
+>>  drivers/cpuidle/cpuidle-exynos.c |  25 +-----
+>>  2 files changed, 80 insertions(+), 109 deletions(-)
+>>
 
-We sort of do: the ->freeze() callback.  But it wasn't intended for
-this kind of use; drivers may very well expect that userspace will
-already be frozen when the callback runs.  Besides, ->freeze() is
-supposed to quiesce devices without powering them down, whereas you
-want to do both.
+Please consider this patch for next pull request with rc fixes. It
+replaces following patches posted in this thread:
 
-What you're asking for is different from anything the PM subsystem has
-done before.  Given this fact, I don't see any alternatives to adding a
-new API or repurposing an existing API.  Either one would be somewhat
-painful.
+[PATCH 5/6] ARM: EXYNOS: Fix suspend/resume sequencies
+[PATCH v2 5/6] ARM: EXYNOS: Fix suspend/resume sequences
 
-For example, we could arrange to invoke ->suspend().  However, since
-the circumstances would be unusual (userspace is still running,
-->prepare() was not called beforehand, ->suspend_irq() won't be called
-afterward), subsystems and drivers may very well react inappropriately.
+and also similar patch by Chander:
 
-Alan Stern
+[PATCH 2/2] cpuidle: Exynos: fix cpuidle for all states
+
+Best regards,
+Tomasz
