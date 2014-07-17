@@ -1,93 +1,71 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v5 7/8] drivers: cpuidle: initialize Exynos driver
- through DT
-Date: Thu, 17 Jul 2014 15:20:20 +0100
-Message-ID: <20140717142019.GA21732@e102568-lin.cambridge.arm.com>
-References: <1403705421-17597-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1403705421-17597-8-git-send-email-lorenzo.pieralisi@arm.com>
- <5019714.S4WTdsyrXS@amdc1032>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] Add "rpm_not_supported" flag
+Date: Thu, 17 Jul 2014 10:27:44 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1407171021250.1517-100000@iolanthe.rowland.org>
+References: <1961774.JeWiFOnpio@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <5019714.S4WTdsyrXS@amdc1032>
-Content-Disposition: inline
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Tomasz Figa <t.figa@samsung.com>, Chander Kashyap <chander.kashyap@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:54734 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756649AbaGQO1r (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Jul 2014 10:27:47 -0400
+In-Reply-To: <1961774.JeWiFOnpio@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
 
-On Wed, Jun 25, 2014 at 04:23:38PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> On Wednesday, June 25, 2014 03:10:20 PM Lorenzo Pieralisi wrote:
-> > With the introduction of DT based idle states, CPUidle drivers for
-> > ARM can now initialize idle states data through properties in the device
-> > tree.
+On Thu, 17 Jul 2014, Rafael J. Wysocki wrote:
+
+> On Wednesday, July 16, 2014 04:03:45 PM Greg Kroah-Hartman wrote:
+> > On Thu, Jul 17, 2014 at 12:40:23AM +0200, Rafael J. Wysocki wrote:
+> > > On Wednesday, July 02, 2014 10:27:06 AM Alan Stern wrote:
+> > > > Here's a brief summary of the story behind this patch...
+> > > > 
+> > > > At one point, I suggested to Dan that instead of doing something
+> > > > special for these devices, we could simply have the runtime_suspend()
+> > > > routine always return -EBUSY.  He didn't like that idea because then
+> > > > the user would see the device was never powering down but would have no
+> > > > idea why.  The rpm_not_supported flag provides this information to the
+> > > > user by causing the power/runtime_status attribute to say "not
+> > > > supported".  (Although to be entirely fair, we could just put a message
+> > > > in the kernel log during probe if the hardware doesn't support runtime
+> > > > suspend.)
+> > > > 
+> > > > Instead, Dan introduced a messy PM QoS mechanism in commit
+> > > > e3d105055525.  I didn't like that approach, but Greg merged it before I
+> > > > objected.
+> > > 
+> > > That really looks a bit like a hack to me to be honest.
+
+My thought exactly.
+
+> > > Greg, what's your plan toward this?
 > > 
-> > This patch adds code to the Exynos CPUidle driver to dynamically
-> > initialize idle states data through the updated device tree source
-> > files.
-> > 
-> > Cc: Kukjin Kim <kgene.kim@samsung.com>
-> > Cc: Tomasz Figa <t.figa@samsung.com>
-> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> > ---
-> > Compile tested, I am not sure I patched the right dts files, please check.
+> > If I need to revert something that you all find was wrong, I'll be glad
+> > to do so, sorry for merging something too early.
 > 
-> cpuidle-exynos driver is currently working properly in deeper cpuidle
-> mode (AFTR) on Exynos4210 and Exynos5250 (please also see the following
-> patch from Tomasz Figa: [1]).  There is ongoing work to AFTR mode work
-> also on Exynos4x12 and Exynos3250 but it is not complete yet.  Exynos5410
-> OTOH should probably use the generic big little cpuidle driver (this SoC
-> is similar to Exynos5420 one for which Chander Kashyap has developed
-> cpuidle-big_little support [2]).
-> 
-> Making long story short, I think that your patch should depend on patch
-> [1] and update only exynos4210.dtsi and exynos5250.dtsi.  Also for your
-> patch #6 there needs to be some coordination with merging of Chander's
-> patchset ([2]).
-> 
-> [1] http://www.spinics.net/lists/arm-kernel/msg341023.html
-> [2] https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg664470.html
+> Alan, what do you think?
 
+I'm in favor of reverting that commit and putting something else in its 
+place.  But first we have to figure out an approach that will satisfy 
+everyone.
 
-exynos4210.dtsi does not even have cpu nodes in it. Should I add them or
-this might trigger regression (ie cpu_logical_map()) ?
+I've been hoping that Dan would contribute to this thread.  He has
+spear-headed this whole line of development, and he wrote the commit in
+question.
 
-I will post a new version soon, should I just patch 5250 for now ?
+Maybe he would be happy with the simplest approach: If the device
+doesn't support runtime PM, write a message in the kernel log and make
+->runtime_suspend() always return -EBUSY.
 
-I would need help to test this patch thanks.
+> I think we're still unsure if the approach taken by that commit is correct,
+> but then I suppose we don't need to revert it at this point and we can fix
+> it later.  Is that correct, or would fixing it be difficult for some reason?
 
-Lorenzo
+As far as I can see, it would be okay to wait a while before making any 
+changes.
 
-> >  .../devicetree/bindings/arm/exynos/idle-states.txt | 27 ++++++++++++++++++++
-> >  arch/arm/boot/dts/exynos3250.dtsi                  | 16 ++++++++++++
-> >  arch/arm/boot/dts/exynos5250.dtsi                  | 15 +++++++++++
-> >  arch/arm/boot/dts/exynos5410.dtsi                  | 17 +++++++++++++
-> >  drivers/cpuidle/Kconfig.arm                        |  1 +
-> >  drivers/cpuidle/cpuidle-exynos.c                   | 29 +++++++++++++---------
-> >  6 files changed, 93 insertions(+), 12 deletions(-)
-> >  create mode 100644 Documentation/devicetree/bindings/arm/exynos/idle-states.txt
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+Alan Stern
+
