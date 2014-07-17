@@ -1,72 +1,45 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v3] PM / devfreq: Add possible_frequencies device attribute
-Date: Thu, 17 Jul 2014 00:50:58 +0000 (GMT)
-Message-ID: <725805840.101171405558256488.JavaMail.weblogic@epmlwas01c>
-Reply-To: myungjoo.ham@samsung.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] cpufreq: move policy kobj to policy->cpu at resume
+Date: Thu, 17 Jul 2014 09:51:46 +0530
+Message-ID: <CAKohponqQ2SNNO64SuBxPwCXU6BNa4QNhDzUaSAhnwAN3iy-Kg@mail.gmail.com>
+References: <1eff59d9b51f8ade67bc1cf9f10683f9463ec9f6.1404996041.git.viresh.kumar@linaro.org>
+	<9320264.Zgy80Rpl1d@vostro.rjw.lan>
+	<CAKohpo=Wx-wr0RT6GWoxcmuFyrTr+jKUN2q2bmqda7vMsL5ETg@mail.gmail.com>
+	<CAJZ5v0jOB-s0qNx+Uh5ihyAAvryOt+QM9=Gy09LEWPK-=ckx6g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-MIME-version: 1.0
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f176.google.com ([209.85.213.176]:42458 "EHLO
+	mail-ig0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751750AbaGQEVr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Jul 2014 00:21:47 -0400
+Received: by mail-ig0-f176.google.com with SMTP id hn18so5297312igb.3
+        for <linux-pm@vger.kernel.org>; Wed, 16 Jul 2014 21:21:46 -0700 (PDT)
+In-Reply-To: <CAJZ5v0jOB-s0qNx+Uh5ihyAAvryOt+QM9=Gy09LEWPK-=ckx6g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Saravana Kannan <skannan@codeaurora.org>, "Bu, Yitian" <ybu@qti.qualcomm.com>, Stable <stable@vger.kernel.org>
 
-T24gV2VkLCBKdWwgMTYsIDIwMTQgYXQgMTI6MDEgUE0sIFNhcmF2YW5hIEthbm5hbiA8c2thbm5h
-bkBjb2RlYXVyb3JhLm9yZz4gd3JvdGU6DQo+IFNvbWUgZGV2aWNlcyB1c2UgZnJlcV90YWJsZSBp
-bnN0ZWFkIG9mIE9QUC4gRm9yIHRob3NlIGRldmljZXMsIHRoZQ0KPiBhdmFpbGFibGVfZnJlcXVl
-bmNpZXMgc3lzZnMgZmlsZSBzaG93cyB1cCBlbXB0eS4gU28sIGFkZCBhDQo+IHBvc3NpYmxlX2Zy
-ZXF1ZW5jaWVzIGF0dHJpYnV0ZS9zeWZzIGZpbGUgdGhhdCBsaXN0IGFsbCB0aGUgcG9zc2libGUN
-Cj4gZnJlcXVlbmNpZXMuDQo+DQo+IEZvciBkZXZpY2VzIHRoYXQgdXNlIE9QUCwgdGhlIG91dHB1
-dCBvZiB0aGlzIGZpbGUgd2lsbCBtYXRjaA0KPiBhdmFpbGFibGVfZnJlcXVlbmNpZXMuIEl0IG1h
-eSBjaGFuZ2UgaW4gdGhlIGZ1dHVyZSB0byBzaG93IGFsbCBPUFANCj4gZnJlcXVlbmNpZXMgLS0g
-ZXZlbiB0aGUgZGlzYWJsZWQgb25lcy4NCj4NCj4gU2lnbmVkLW9mZi1ieTogU2FyYXZhbmEgS2Fu
-bmFuIDxza2FubmFuQGNvZGVhdXJvcmEub3JnPg0KDQpIaSwNCg0KDQpQbGVhc2UgYWRkIGEgZG9j
-dW1lbnRhdGlvbiBlbnRyeSBmb3IgdGhpcyBuZXcgQUJJIGhhdmluZyBhIGxpdHRsZSBqdXN0aWZp
-Y2F0aW9uIGFuZCB1c2FnZSBpbmNsdWRlZC4NCg0KUGx1cywgSSBhbSBjb25zaWRlcmluZyB0byBt
-b3ZlIHRyYW5zX3N0YXQgYWxvbmcgd2l0aCB0aGlzIGVudHJ5IHRvIHNvbWV3aGVyZSBzdWNoIGFz
-IC4uLi9zdGF0LyoNCih5b3UgZG9uJ3QgbmVlZCB0byB0YWtlIGNhcmUgb2YgdGhpcy4pDQoNCkJl
-c2lkZXMsIGFzIE9QUCBzZWVtcyBiZWNvbWluZyB0aGUgc3RhbmRhcmQgYXMgaW1hZ2luZWQgd2hl
-biBkZXZmcmVxIGRldmVsb3BtZW50IHN0YXJ0ZWQsDQpzb29uLCBkZXZmcmVxIG1heSByZXF1aXJl
-IE9QUCB1bmxlc3MgdGhlIGRldmZyZXEgZGV2aWNlIGhhcyBjb250aW51b3VzIGZyZXF1ZW5jaWVz
-Lg0KDQpDaGVlcnMsDQpNeXVuZ0pvbw0KDQo+IC0tLQ0KPiAgZHJpdmVycy9kZXZmcmVxL2RldmZy
-ZXEuYyB8IDI2ICsrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ICAxIGZpbGUgY2hhbmdlZCwg
-MjYgaW5zZXJ0aW9ucygrKQ0KPg0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVxL2RldmZy
-ZXEuYyBiL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMNCj4gaW5kZXggOWY5MDM2OS4uNjVlZWQz
-OCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYw0KPiArKysgYi9kcml2
-ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQo+IEBAIC05OTQsNiArOTk0LDMxIEBAIHN0YXRpYyBzc2l6
-ZV90IGF2YWlsYWJsZV9mcmVxdWVuY2llc19zaG93KHN0cnVjdCBkZXZpY2UgKmQsDQo+ICB9DQo+
-ICBzdGF0aWMgREVWSUNFX0FUVFJfUk8oYXZhaWxhYmxlX2ZyZXF1ZW5jaWVzKTsNCj4NCj4gK3N0
-YXRpYyBzc2l6ZV90IHBvc3NpYmxlX2ZyZXF1ZW5jaWVzX3Nob3coc3RydWN0IGRldmljZSAqZCwN
-Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RydWN0IGRldmlj
-ZV9hdHRyaWJ1dGUgKmF0dHIsDQo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgIGNoYXIgKmJ1ZikNCj4gK3sNCj4gKyAgICAgICBzdHJ1Y3QgZGV2ZnJlcSAqZGYgPSB0
-b19kZXZmcmVxKGQpOw0KPiArICAgICAgIHVuc2lnbmVkIGludCBpID0gMDsNCj4gKyAgICAgICBz
-c2l6ZV90IGNvdW50ID0gMDsNCj4gKw0KPiArICAgICAgIGlmICghZGYtPnByb2ZpbGUtPmZyZXFf
-dGFibGUpDQo+ICsgICAgICAgICAgICAgICByZXR1cm4gYXZhaWxhYmxlX2ZyZXF1ZW5jaWVzX3No
-b3coZCwgYXR0ciwgYnVmKTsNCj4gKw0KPiArICAgICAgIGZvciAoaSA9IDA7IGkgPCBkZi0+cHJv
-ZmlsZS0+bWF4X3N0YXRlOyBpKyspDQo+ICsgICAgICAgICAgICAgICBjb3VudCArPSBzY25wcmlu
-dGYoJmJ1Zltjb3VudF0sIChQQUdFX1NJWkUgLSBjb3VudCAtIDIpLA0KPiArICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICIldSAiLCBkZi0+cHJvZmlsZS0+ZnJlcV90YWJsZVtpXSk7
-DQo+ICsNCj4gKyAgICAgICAvKiBUcnVuY2F0ZSB0aGUgdHJhaWxpbmcgc3BhY2UgKi8NCj4gKyAg
-ICAgICBpZiAoY291bnQpDQo+ICsgICAgICAgICAgICAgICBjb3VudC0tOw0KPiArDQo+ICsgICAg
-ICAgY291bnQgKz0gc3ByaW50ZigmYnVmW2NvdW50XSwgIlxuIik7DQo+ICsNCj4gKyAgICAgICBy
-ZXR1cm4gY291bnQ7DQo+ICt9DQo+ICtzdGF0aWMgREVWSUNFX0FUVFJfUk8ocG9zc2libGVfZnJl
-cXVlbmNpZXMpOw0KPiArDQo+ICBzdGF0aWMgc3NpemVfdCB0cmFuc19zdGF0X3Nob3coc3RydWN0
-IGRldmljZSAqZGV2LA0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RydWN0IGRl
-dmljZV9hdHRyaWJ1dGUgKmF0dHIsIGNoYXIgKmJ1ZikNCj4gIHsNCj4gQEAgLTEwNDEsNiArMTA2
-Niw3IEBAIHN0YXRpYyBzdHJ1Y3QgYXR0cmlidXRlICpkZXZmcmVxX2F0dHJzW10gPSB7DQo+ICAg
-ICAgICAgJmRldl9hdHRyX2F2YWlsYWJsZV9nb3Zlcm5vcnMuYXR0ciwNCj4gICAgICAgICAmZGV2
-X2F0dHJfY3VyX2ZyZXEuYXR0ciwNCj4gICAgICAgICAmZGV2X2F0dHJfYXZhaWxhYmxlX2ZyZXF1
-ZW5jaWVzLmF0dHIsDQo+ICsgICAgICAgJmRldl9hdHRyX3Bvc3NpYmxlX2ZyZXF1ZW5jaWVzLmF0
-dHIsDQo+ICAgICAgICAgJmRldl9hdHRyX3RhcmdldF9mcmVxLmF0dHIsDQo+ICAgICAgICAgJmRl
-dl9hdHRyX3BvbGxpbmdfaW50ZXJ2YWwuYXR0ciwNCj4gICAgICAgICAmZGV2X2F0dHJfbWluX2Zy
-ZXEuYXR0ciwNCj4gLS0NCj4gMS44LjIuMQ0KPg0KPiBUaGUgUXVhbGNvbW0gSW5ub3ZhdGlvbiBD
-ZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIgb2YgdGhlIENvZGUgQXVyb3JhIEZvcnVtLA0KPiBob3N0
-ZWQgYnkgVGhlIExpbnV4IEZvdW5kYXRpb24NCj4NCj4gX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18NCj4gbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QN
-Cj4gbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnDQo+IGh0dHA6Ly9saXN0cy5p
-bmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbA0KDQoNCg0KLS0g
-DQpNeXVuZ0pvbyBIYW0sIFBoLkQuDQpTeXN0ZW0gUy9XIExhYiwgUy9XIENlbnRlciwgU2Ftc3Vu
-ZyBFbGVjdHJvbmljcw==
+On 17 July 2014 06:19, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> Quite frankly, to me this patch just does too much in one go without
+> describing about a half of things it is doing.
+>
+> I would just add the kobject_move() call to __cpufreq_add_dev() to
+> start with (because that's what you really want if I'm not mistaken)
+> and do the cleanups separately, later.
+
+I understand that as I had similar feelings about it. See what I sent
+during V1: http://www.spinics.net/lists/stable/msg54338.html
+
+Only when Srivatsa asked me to do the cleanups with it, I went for
+V2. And still wasn't really sure about getting that as a bug fix. And
+so had a chat with him again and asked you to push V1, and we
+will do cleanups later.
+
+So, I don't see V1 in patchworks anymore and I must resend?
+I will make out a series out of V2, first patch would be a fix for
+3.16 & stable, and others would be for 3.17. Hope that works.
+
+--
+viresh
