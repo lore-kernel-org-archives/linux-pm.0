@@ -1,55 +1,152 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: mvebu cpuidle and cpufreq branch handling for v3.17
-Date: Fri, 18 Jul 2014 19:07:40 -0400
-Message-ID: <20140718230740.GR24496@titan.lakedaemon.net>
+From: Dmitry Torokhov <dtor@google.com>
+Subject: Re: Power-managing devices that are not of interest at some point in time
+Date: Fri, 18 Jul 2014 16:16:50 -0700
+Message-ID: <1451627.FURGiR949u@dtor-glaptop>
+References: <Pine.LNX.4.44L0.1407181557020.979-100000@iolanthe.rowland.org> <2443949.K0iePsg3Aa@vostro.rjw.lan> <1693424.kPNUQHOHlX@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:34097 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756528AbaGRXH5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 19:07:57 -0400
-Content-Disposition: inline
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:40632 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753249AbaGRXQw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 19:16:52 -0400
+Received: by mail-pa0-f48.google.com with SMTP id et14so6174407pad.21
+        for <linux-pm@vger.kernel.org>; Fri, 18 Jul 2014 16:16:51 -0700 (PDT)
+In-Reply-To: <1693424.kPNUQHOHlX@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>, Kevin Hilman <khilman@linaro.org>, arm@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Linux ARM Kernel <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Patrik Fimml <patrikf@chromium.org>, Bastien Nocera <hadess@hadess.net>, linux-pm@vger.kernel.org, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Arnd, Olof, Kevin,
+On Saturday, July 19, 2014 12:55:09 AM Rafael J. Wysocki wrote:
+> On Saturday, July 19, 2014 12:19:39 AM Rafael J. Wysocki wrote:
+> > On Friday, July 18, 2014 02:45:40 PM Dmitry Torokhov wrote:
+> > > On Friday, July 18, 2014 11:59:18 PM Rafael J. Wysocki wrote:
+> > > > On Friday, July 18, 2014 02:26:21 PM Dmitry Torokhov wrote:
+> > > > > On Friday, July 18, 2014 04:09:46 PM Alan Stern wrote:
+> > > > > > On Fri, 18 Jul 2014, Patrik Fimml wrote:
+> > > > > > > On Fri, Jul 18, 2014 at 03:00:46PM -0400, Alan Stern wrote:
+> > > > [cut]
+> > > > 
+> > > > > > > I'm not sure what the appropriate action for a video camera is
+> > > > > > > anyway.
+> > > > > > > Should it go away completely, including its device? Should it be
+> > > > > > > there,
+> > > > > > > but certainly not be the default choice when there is an
+> > > > > > > external
+> > > > > > > camera? I'm thinking along the lines of some application's
+> > > > > > > settings
+> > > > > > > dialog here, where it might be desirable to still be able to
+> > > > > > > select
+> > > > > > > the
+> > > > > > > internal camera for future recordings.
+> > > > > > > 
+> > > > > > > Of course, userspace could still decide simply not to
+> > > > > > > quiesce|deactivate|inhibit the device if that was desired.
+> > > > > > 
+> > > > > > There's some question about how much of userspace needs to get
+> > > > > > involved.  Just the daemon that manages these configuration
+> > > > > > changes, or
+> > > > > > other programs as well?  I guess that's not really our problem...
+> > > > > 
+> > > > > We need to provide means of implementing policy; the policy itself
+> > > > > is not
+> > > > > really our concern ;)
+> > > > > 
+> > > > > > In the end, it sounds like you're suggesting a new pair of PM
+> > > > > > callbacks: ->deactivate() and ->reactivate(), or ->inhibit() and
+> > > > > > ->uninhibit().  Plus an optional (?) sysfs interface for invoking
+> > > > > > the
+> > > > > > callbacks.
+> > > > > 
+> > > > > We do need sysfs interface so that userspace can talk to the devices
+> > > > > in
+> > > > > question; and we also need to make sure that PM core is aware of the
+> > > > > new
+> > > > > callbacks and provides guarantees about their interactions with
+> > > > > system-
+> > > > > and
+> > > > > runtime-PM callbacks so that individual drivers do not have to sort
+> > > > > it out
+> > > > > on their own.
+> > > > 
+> > > > A step back, please.
+> > > > 
+> > > > I have no idea why those need to be PM callbacks.
+> > > > 
+> > > > What you need really seems to be a way to tell a driver "ignore input
+> > > > from
+> > > > this device from now on as it is most likely bogus".  A natural
+> > > > reaction of
+> > > > the driver to that might be to stop processing input from the device
+> > > > and
+> > > > then runtime suspend it (and prevent it from generating remote wakeup
+> > > > as
+> > > > that may be bogus as well), but I don't see why the PM core needs to
+> > > > be
+> > > > involved in that at all.
+> > > 
+> > > So that we do not need to handle cases like:
+> > > 
+> > > - I am already in idle state and request comes to inhibit, what do I do
+> > > (in
+> > 
+> > > driver) or:
+> > I'm not sure why being "suspended" or not matters here.  The PM core
+> > doesn't know what physical state the device is in anyway and the driver
+> > or subsystem (or another layer such as ACPI) has to track that.
+> > 
+> > Also it seems that it should be perfectly fine to ignore input from the
+> > device without suspending it as well as it is perfectly fine to be
+> > suspended while you are generally not ignoring the input (just because
+> > there is no input at the moment, for example).
+> > 
+> > Yes, it make sense to suspend the device when you know you'll ignore input
+> > going forward, but then if the real goal is to prevent bogus input from
+> > reaching applications, then this isn't a power management problem even.
+> 
+> The area where it must interact with power management is wakeup, both remote
+> wakeup at run time and wakeup from system suspend.  In particular, there's
+> the question whether or not a device ignoring its input should be regarded
+> as a wakeup source.
 
-I have two branches with the remaining mvebu SoC changes for v3.17.
-They are mvebu/soc-cpuidle and mvebu/soc-cpufreq.  Each branch is
-slightly problematic because both contain changes to their respective
-code in drivers/.  To send the driver changes through the appropriate
-subsystems would be a garish nightmare of branch on branch on branch.
-Thankfully, the changes are isolated to drivers only mvebu uses, so
-keeping it all together should cause minimal, if any, conflicts.
+I'd say no.
 
-I've requested Acks from the appropriate maintainers but as it's summer
-I'm not confident that we'll receive those Acks in time for the arm-soc
-cutoff (-rc6 -ish).
+Anyway, even though it is very tempting to declare inhibit a "deeper" state of 
+runtime suspend maybe you are right and inhibit should really be separate from 
+PM and drivers would have to sort out all the possible state permutations.
 
-As I see it, I could send arm-soc two topic branch pull requests, which
-arm-soc would keep out separate on the remote chance of an objection.
+Considering input devices:
 
-Or, I could wait for the Acks (the code has already been in -next for
-several days), merge it into mvebu/soc, and send a, most likely, late
-pull request for it.
+input_open(): check if device is inhibited, if so do nothing. Otherwise try 
+waking up itself and parent (via pm_runtime_get_sync() on itself), this will 
+power up the device. Do additional configuration if needed.
 
-Which would you guys prefer?
+input_close(): check if device is inhibited, if not do pm_runtime_put (_sync? 
+to make sure we power off properly and not leave device up and running? or 
+should we power down manually not waiting for runtime PM)?
 
-The cpuidle branch and ML link:
+inhibit(): check if device is opened, if opened do pm_runtime_put_sync().
 
-  git://git.infradead.org/linux-mvebu.git mvebu/soc-cpuidle
+uninhibit(): if device is opened do pm_runtime_get_sync(), let runtime PM 
+bring up the device. Do additional config if needed -> very similar to 
+input_open(), different condition.
 
-  https://lkml.kernel.org/r/1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com
+runtime_suspend(): power down the device. If not inhibited enable as wakeup 
+source.
 
-The cpufreq branch and ML link:
+runtime_resume(): power up the device if device is opened and not inhibited.
 
-  git://git.infradead.org/linux-mvebu.git mvebu/soc-cpufreq
+system_suspend(): check if device is opened, not inhibited and not in 
+runtimesuspend  already; power down.
 
-  https://lkml.kernel.org/r/1404920715-19834-1-git-send-email-thomas.petazzoni@free-electrons.com
+system_resume(): power up the device if it is opened and not inhibited. I 
+guess it's OK to wake up device that shoudl be runtime-PM-idle since it will 
+go to back sleep shortly.
 
-thx,
+Ugh.. This is complicated...
 
-Jason.
+Thanks,
+Dmitry
+
