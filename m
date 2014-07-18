@@ -1,29 +1,107 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Sachin Kamat <spk.linux@gmail.com>
 Subject: Re: [PATCH] cpufreq: tests: Providing cpufreq regression test
-Date: Fri, 18 Jul 2014 13:42:39 +0200
-Message-ID: <2218713.u72ghDj0Dh@vostro.rjw.lan>
+Date: Fri, 18 Jul 2014 16:58:53 +0530
+Message-ID: <CAK5sBcH=L-7=BHNPQUjuoQfQx5QeFmBSdwdow+RXBExgCOP0Ww@mail.gmail.com>
 References: <1405678985-21677-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63967 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761305AbaGRLYW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 07:24:22 -0400
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-Reply-To: <1405678985-21677-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Abraham <ta.omasab@gmail.com>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tomasz Figa <t.figa@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Abraham <ta.omasab@gmail.com>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tomasz Figa <t.figa@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 18, 2014 12:23:05 PM Lukasz Majewski wrote:
+Hi Lukasz,
+
+I tested this script on 4210 based Origen board.
+This is the output:
+./cpufreq_freq_test.sh
+CURRENT GOVERNOR: performance
+SET GOVERNOR: performance
+######################################
+TEST AVAILABLE FREQS
+######################################
+FREQ: 1200000 sleep: invalid number '0.1'
+[    5.918347] random: gzip urandom read with 61 bits of entropy available
+         OK
+FREQ: 1000000 sleep: invalid number '0.1'
+         OK
+FREQ: 800000 sleep: invalid number '0.1'
+         OK
+FREQ: 500000 sleep: invalid number '0.1'
+         OK
+FREQ: 200000 sleep: invalid number '0.1'
+         OK
+######################################
+TEST FREQS SWITCHING
+######################################
+REFERENCE FREQ: 1200000
+FREQ: 1200000 ----> FREQ: 1200000 sleep: invalid number '0.1'
+         OK
+FREQ: 1200000 ----> FREQ: 1000000 sleep: invalid number '0.1'
+         OK
+FREQ: 1200000 ----> FREQ: 800000 sleep: invalid number '0.1'
+         OK
+FREQ: 1200000 ----> FREQ: 500000 sleep: invalid number '0.1'
+         OK
+FREQ: 1200000 ----> FREQ: 200000 sleep: invalid number '0.1'
+         OK
+REFERENCE FREQ: 1000000
+FREQ: 1000000 ----> FREQ: 1200000 sleep: invalid number '0.1'
+         OK
+FREQ: 1000000 ----> FREQ: 1000000 sleep: invalid number '0.1'
+         OK
+FREQ: 1000000 ----> FREQ: 800000 sleep: invalid number '0.1'
+         OK
+FREQ: 1000000 ----> FREQ: 500000 sleep: invalid number '0.1'
+         OK
+FREQ: 1000000 ----> FREQ: 200000 sleep: invalid number '0.1'
+         OK
+REFERENCE FREQ: 800000
+FREQ: 800000 ----> FREQ: 1200000 sleep: invalid number '0.1'
+         OK
+FREQ: 800000 ----> FREQ: 1000000 sleep: invalid number '0.1'
+         OK
+FREQ: 800000 ----> FREQ: 800000 sleep: invalid number '0.1'
+         OK
+FREQ: 800000 ----> FREQ: 500000 sleep: invalid number '0.1'
+         OK
+FREQ: 800000 ----> FREQ: 200000 sleep: invalid number '0.1'
+         OK
+REFERENCE FREQ: 500000
+FREQ: 500000 ----> FREQ: 1200000 sleep: invalid number '0.1'
+         OK
+FREQ: 500000 ----> FREQ: 1000000 sleep: invalid number '0.1'
+         OK
+FREQ: 500000 ----> FREQ: 800000 sleep: invalid number '0.1'
+         OK
+FREQ: 500000 ----> FREQ: 500000 sleep: invalid number '0.1'
+         OK
+FREQ: 500000 ----> FREQ: 200000 sleep: invalid number '0.1'
+         OK
+REFERENCE FREQ: 200000
+FREQ: 200000 ----> FREQ: 1200000 sleep: invalid number '0.1'
+         OK
+FREQ: 200000 ----> FREQ: 1000000 sleep: invalid number '0.1'
+         OK
+FREQ: 200000 ----> FREQ: 800000 sleep: invalid number '0.1'
+         OK
+FREQ: 200000 ----> FREQ: 500000 sleep: invalid number '0.1'
+         OK
+FREQ: 200000 ----> FREQ: 200000 sleep: invalid number '0.1'
+         OK
+######################################
+ERRORS: 0
+######################################
+
+Though it says 0 errors, what does the "invalid number..." signify?
+
+
+On Fri, Jul 18, 2014 at 3:53 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
 > This commit adds first regression test "cpufreq_freq_test.sh" for the
 > cpufreq subsystem.
-
-Care to add any description of how it is supposed to work and what it is
-going to test?
-
+>
 > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 > ---
 >  drivers/cpufreq/tests/README               |  23 +++++
@@ -31,7 +109,7 @@ going to test?
 >  2 files changed, 172 insertions(+)
 >  create mode 100644 drivers/cpufreq/tests/README
 >  create mode 100755 drivers/cpufreq/tests/cpufreq_freq_test.sh
-> 
+>
 > diff --git a/drivers/cpufreq/tests/README b/drivers/cpufreq/tests/README
 > new file mode 100644
 > index 0000000..66638d2
@@ -46,54 +124,20 @@ going to test?
 > +Description:
 > +------------
 > +This test is supposed to test if cpufreq attributes exported by sysfs are
+
+s/test/script would be better
+
 > +exposing a correct values.
+
+s/ exposing a correct values / exposing correct values
+
 > +
 > +It can work with or without boost enabled and helps spotting errors related to
-> +cpufreq and common clock framework.
-> +
-> +Used attributes:
-> +----------------
-> +- "scaling_available_frequencies"
-> +- "cpuinfo_cur_freq"
-> +- "scaling_governor"
-> +
-> +Target devices:
-> +---------------
-> +
-> +All devices which exports mentioned above sysfs attributes.
-> \ No newline at end of file
-> diff --git a/drivers/cpufreq/tests/cpufreq_freq_test.sh b/drivers/cpufreq/tests/cpufreq_freq_test.sh
-> new file mode 100755
-> index 0000000..53156ca
-> --- /dev/null
-> +++ b/drivers/cpufreq/tests/cpufreq_freq_test.sh
-> @@ -0,0 +1,149 @@
-> +#!/bin/bash
-> +#
-> +# This file provides a simple mean to test if all declared freqs at
-> +# "scaling_available_frequencies" can be set and if "cpuinfo_cur_freq"
-> +# returns this value.
-> +#
-> +# Usage: ./cpufreq_freq_test.sh
-> +# Requisite: Compile in "performance" governor
-> +#
-> +# This program is free software; you can redistribute it and/or modify
-> +# it under the terms of the GNU General Public License as published by
-> +# the Free Software Foundation; either version 2 of the License, or
-> +# (at your option) any later version.
-> +#
-> +# This program is distributed in the hope that it will be useful,
-> +# but WITHOUT ANY WARRANTY; without even the implied warranty of
-> +# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> +# GNU General Public License for more details.
-> +#
-> +# You should have received a copy of the GNU General Public License
-> +# along with this program; if not, you can access it online at
-> +# http://www.gnu.org/licenses/gpl-2.0.html.
-> +#
-> +# Copyright (C) Samsung Electronics, 2014
-> +#
-> +# Author: Lukasz Majewski <l.majewski@samsung.com>
+
+s/ helps spotting / helps in spotting
+
+<snip>
+
 > +
 > +set +x
 > +
@@ -103,122 +147,13 @@ going to test?
 > +COLOUR_DEFAULT="\33[0m"
 > +
 > +T_PATCH=/sys/devices/system/cpu/cpu0/cpufreq
+
+Shouldn't this be called PATH instead of PATCH?
+
 > +BOOST_PATCH=/sys/devices/system/cpu/cpufreq
-> +
-> +if [ ! -d "$T_PATCH" ]; then
-> +    printf "   $COLOUR_RED No patch to CPUFREQ $COLOUR_DEFAULT\n"
-> +    exit 1
-> +fi
-> +
-> +ERRORS=0
-> +
-> +OLD_GOV=`cat $T_PATCH/scaling_governor`
-> +echo "CURRENT GOVERNOR: $OLD_GOV"
-> +echo "SET GOVERNOR: performance"
-> +echo "performance" > $T_PATCH/scaling_governor
-> +
-> +function test_freqs1 {
-> +    FREQS=`cat $1`
-> +    for I in $FREQS; do
-> +	cpufreq_set_freq $I
-> +	if [ "$2" ]; then
-> +	    printf "$COLOUR_BLUE BOOST $COLOUR_DEFAULT" $I
-> +	fi
-> +	cpufreq_test_freq $I
-> +    done
-> +}
-> +
-> +function test_freqs2 {
-> +    FREQ=`cat $1`
-> +    FREQS_ARRAY=($FREQ)
-> +
-> +    for freq in ${FREQS_ARRAY[@]}
-> +    do
-> +	echo "REFERENCE FREQ: $freq"
-> +	for f in ${FREQS_ARRAY[@]}
-> +	do
-> +	    cpufreq_set_freq $freq
-> +	    echo -n "----> "
-> +	    cpufreq_set_freq $f
-> +	    cpufreq_test_freq $f
-> +	done
-> +    done
-> +}
-> +
-> +function restore {
-> +    if [ -f $BOOST_PATCH/boost ]; then
-> +	cpufreq_boost_state $BOOST_STATE
-> +    fi
-> +
-> +    echo "SET GOVERNOR: $OLD_GOV"
-> +    echo $OLD_GOV > $T_PATCH/scaling_governor
-> +}
-> +
-> +function die {
-> +    printf "   $COLOUR_RED FAILED $COLOUR_DEFAULT\n"
-> +    restore_gov
-> +    exit 1
-> +}
-> +
-> +function cpufreq_test_freq {
-> +    gzip < /dev/urandom > /dev/null &
-> +    pid=$!
-> +    sleep 0.1
-> +    CURR_FREQ=`cat $T_PATCH/cpuinfo_cur_freq`
-> +    if [ $1 -eq $CURR_FREQ ]; then
-> +	printf "\t$COLOUR_GREEN OK $COLOUR_DEFAULT\n"
-> +    else
-> +	printf "$COLOUR_RED CURRENT $CURR_FREQ $COLOUR_DEFAULT\n"
-> +	ERRORS=`expr $ERRORS + 1`
-> +	#die
-> +    fi
-> +    kill -9 $pid
-> +    wait $! 2>/dev/null
-> +}
-> +
-> +function cpufreq_set_freq {
-> +    echo $1 > $T_PATCH/scaling_max_freq || die $?
-> +    printf "FREQ:$COLOUR_GREEN %s $COLOUR_DEFAULT" $1
-> +}
-> +
-> +function cpufreq_boost_state {
-> +   echo $1 > $BOOST_PATCH/boost
-> +}
-> +
-> +function cpufreq_boost_status {
-> +   cat $BOOST_PATCH/boost
-> +}
-> +
-> +if [ -f $BOOST_PATCH/boost ]; then
-> +    echo "######################################"
-> +    echo "TEST BOOST OPERATION"
-> +    echo "######################################"
-> +
-> +    BOOST_STATE=$(cpufreq_boost_status)
-> +    if [ $BOOST_STATE -eq 0 ]; then
-> +	cpufreq_boost_state 1
-> +    fi
-> +    test_freqs1 $T_PATCH/scaling_boost_frequencies 1
-> +fi
-> +
-> +echo "######################################"
-> +echo "TEST AVAILABLE FREQS"
-> +echo "######################################"
-> +test_freqs1 $T_PATCH/scaling_available_frequencies
-> +
-> +echo "######################################"
-> +echo "TEST FREQS SWITCHING"
-> +echo "######################################"
-> +test_freqs2 $T_PATCH/scaling_available_frequencies
-> +
-> +echo "######################################"
-> +echo "ERRORS: $ERRORS"
-> +echo "######################################"
-> +
-> +restore
-> +exit 0
-> 
+
+ditto and rest of the places in the document.
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards,
+Sachin.
