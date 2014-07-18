@@ -1,123 +1,110 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: make table sentinal macros unsigned to match use
-Date: Fri, 18 Jul 2014 03:20:49 +0200
-Message-ID: <100420681.lrPIpDzhHV@vostro.rjw.lan>
-References: <20140627210939.GB24604@oc3347516403.ibm.com> <CAKohpo=qB3nB+ZNKE4Y94m6gPWZZ4YZEU_WOA=s5DB8apxUQGQ@mail.gmail.com> <20140711220630.GA5697@oc3347516403.ibm.com>
+Subject: Re: Power-managing devices that are not of interest at some point in time
+Date: Fri, 18 Jul 2014 03:30:31 +0200
+Message-ID: <2674541.jV2qHCZlHf@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1407171029210.1517-100000@iolanthe.rowland.org> <8587268.sIIBz6Y2QN@vostro.rjw.lan> <4468130.Uu9vndH3sC@dtor-glaptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20140711220630.GA5697@oc3347516403.ibm.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Brian W Hart <hartb@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>, Stratos Karafotis <stratosk@semaphore.gr>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <4468130.Uu9vndH3sC@dtor-glaptop>
+Sender: linux-input-owner@vger.kernel.org
+To: Dmitry Torokhov <dtor@google.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Bastien Nocera <hadess@hadess.net>, Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 11, 2014 05:06:30 PM Brian W Hart wrote:
-> On Mon, Jun 30, 2014 at 10:25:20AM +0530, Viresh Kumar wrote:
-> > On 28 June 2014 02:39, Brian W Hart <hartb@linux.vnet.ibm.com> wrot=
-e:
-> > > Commit 5eeaf1f18973 (cpufreq: Fix build error on some platforms t=
-hat
-> > > use cpufreq_for_each_*) moved function cpufreq_next_valid() to a =
-public
-> > > header.  Warnings are now generated when objects including that h=
-eader
-> > > are built with -Wsign-compare (as an out-of-tree module might be)=
-:
-> > >
-> > > .../include/linux/cpufreq.h: In function =E2=80=98cpufreq_next_va=
-lid=E2=80=99:
-> > > .../include/linux/cpufreq.h:519:27: warning: comparison between s=
-igned
-> > > and unsigned integer expressions [-Wsign-compare]
-> > >   while ((*pos)->frequency !=3D CPUFREQ_TABLE_END)
-> > >                            ^
-> > > .../include/linux/cpufreq.h:520:25: warning: comparison between s=
-igned
-> > > and unsigned integer expressions [-Wsign-compare]
-> > >    if ((*pos)->frequency !=3D CPUFREQ_ENTRY_INVALID)
-> > >                          ^
-> > >
-> > > Constants CPUFREQ_ENTRY_INVALID and CPUFREQ_TABLE_END are signed,=
- but
-> > > are used with unsigned member 'frequency' of cpufreq_frequency_ta=
-ble.
-> > > Update the macro definitions to be explicitly unsigned to match t=
-heir
-> > > use.
-> > >
-> > > This also corrects potentially wrong behavior of clk_rate_table_i=
-ter()
-> > > if unsigned long is wider than usigned int.
-> > >
-> > > Signed-off-by: Brian W Hart <hartb@linux.vnet.ibm.com>
-> > > ---
-> > > These macros are fairly broadly used in the kernel so I was bit l=
-eery
-> > > of changing them, but after inspection I think it's fine.  I foun=
-d 102
-> > > uses of the macros, of which:
-> > >
-> > > 99 are uses with cpufreq_frequency_table.frequency (95) or with l=
-ocal
-> > >    variables of the same type as frequency (4).  These should be =
-just
-> > >    fine with this change--we're just making explicit a conversion=
- that
-> > >    was previously implicit.
-> > >
-> > >  2 are uses with a local variable of different type (unsigned lon=
-g) than
-> > >    'frequency' (in drivers/sh/clk/core.c).  One of these uses is =
-safe;
-> > >    the other (in clk_rate_table_iter()) is broken if unsigned lon=
-g
-> > >    is wider than unsigned int.  As a side-effect, this patch corr=
-ects
-> > >    the potential misbehavior there.
-> > >
-> > >  1 is a use in macro cpufreq_for_each_entry() with what _should_ =
-be the
-> > >    frequency member of a cpufreq_frequency_table, provided the ca=
-ller it
-> > >    well-behaved.  There are 18 callers of this macro; all are wel=
-l-behaved.
-> > >    So these should also be safe.
-> >=20
-> > I would have moved some of it to logs, they look good.
-> >=20
-> > >  include/linux/cpufreq.h |    4 ++--
-> > >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > >
-> > > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> > > index ec4112d..8f8ae95 100644
-> > > --- a/include/linux/cpufreq.h
-> > > +++ b/include/linux/cpufreq.h
-> > > @@ -482,8 +482,8 @@ extern struct cpufreq_governor cpufreq_gov_co=
-nservative;
-> > >   ***************************************************************=
-******/
-> > >
-> > >  /* Special Values of .frequency field */
-> > > -#define CPUFREQ_ENTRY_INVALID  ~0
-> > > -#define CPUFREQ_TABLE_END      ~1
-> > > +#define CPUFREQ_ENTRY_INVALID  ~0u
-> > > +#define CPUFREQ_TABLE_END      ~1u
-> > >  /* Special Values of .flags field */
-> > >  #define CPUFREQ_BOOST_FREQ     (1 << 0)
-> >=20
-> > Thanks.
-> >=20
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->=20
-> I haven't seen this appear in the linux-pm tree yet. Is there anythin=
-g
-> further needed on my part--aside from patience?
+On Thursday, July 17, 2014 05:43:42 PM Dmitry Torokhov wrote:
+> On Friday, July 18, 2014 02:43:02 AM Rafael J. Wysocki wrote:
+> > On Thursday, July 17, 2014 09:59:19 AM Dmitry Torokhov wrote:
+> > > On Thursday, July 17, 2014 10:39:16 AM Alan Stern wrote:
+> > > > On Wed, 16 Jul 2014, Dmitry Torokhov wrote:
+> > > > > We are not planning on implementing the policy in kernel, that's
+> > > > > indeed task for userspace; but unless we bring in the heavy hammer of
+> > > > > forcibly unbinding drivers, we do not currently have universal
+> > > > > mechanism of quiescing devices.
+> > > > 
+> > > > We sort of do: the ->freeze() callback.  But it wasn't intended for
+> > > > this kind of use; drivers may very well expect that userspace will
+> > > > already be frozen when the callback runs.  Besides, ->freeze() is
+> > > > supposed to quiesce devices without powering them down, whereas you
+> > > > want to do both.
+> > > 
+> > > Right.
+> > > 
+> > > > What you're asking for is different from anything the PM subsystem has
+> > > > done before.
+> > > 
+> > > Right.
+> > > 
+> > > > Given this fact, I don't see any alternatives to adding a
+> > > > new API or repurposing an existing API.  Either one would be somewhat
+> > > > painful.
+> > > > 
+> > > > For example, we could arrange to invoke ->suspend().  However, since
+> > > > the circumstances would be unusual (userspace is still running,
+> > > > ->prepare() was not called beforehand, ->suspend_irq() won't be called
+> > > > afterward), subsystems and drivers may very well react inappropriately.
+> > > 
+> > > I do not think anybody expects that drivers would not have to be modified
+> > > to support this functionality; I expect drivers would have to declare
+> > > themselves "queiscable" and therefore would assert that they will act
+> > > according to whatever rules we set up. I only want to make sure that this
+> > > new state is added to existing list of PM states rather than creating
+> > > completely new facility, so that driver authors have a chance to
+> > > understand PM state transitions that involve their driver.
+> > 
+> > If you're referring to runtime PM, it doesn't use "states".  It uses status
+> > values (you can think of them as metastates) which are "active", "suspended"
+> > or in-transit from one to the other.  There's no room for more of these in
+> > the design, I'm afraid.
+> > 
+> > Moreover, .runtime_suspend() can only be called when the device is quiescent
+> > already.  [That also applies to .suspend_late() and .suspend_irq() for
+> > system suspend and the freezing of tasks is requisite for the .prepare()
+> > and .suspend() callbacks (and the corresponding hibernation-related ones).]
+> > 
+> > From past discussions on similar topics it followed that there really was
+> > no generic way for individual drivers to quiesce devices on demand as long
+> > as user space was running.  Everything we could come up with was racy, this
+> > way or another.  That is the reason for using the freezer during system
+> > suspend.  In other words, if you want drivers to quiesce devices by force,
+> > you need to quiesce user space by force to start with - for example by
+> > freezing it.
+> > 
+> > For runtime PM, on the other hand, the underlying observation is that
+> > drivers should be able to detect when devices are already quiescent and
+> > initialize power transitions at those points.  It's role is to help with
+> > that, but not with quiescing things.
+> > 
+> > That said, in the "laptop lid closed" scenario (assuming that the system is
+> > not supposed to suspend in response to that, which in my opinion is the
+> > best approach)
+> 
+> This is default approach that works for many, but not necessarily all  use 
+> cases. I believe docked with lid closed scenario was mentioned already.
+> 
+> > the problem really seems to be that drivers are not
+> > aggressive enough with starting PM transitions (using runtime PM) when they
+> > see no activity.  Thus it seems that when the lid is closed, it'll be good
+> > to switch the drivers into a "more aggressive runtime PM mode" in which
+> > they will use any opportunity to start a power transition without worrying
+> > about extra latencies resulting from that.  In that mode they should also
+> > disable remote wakeup.  I think this should be sufficient to address the
+> > use case at hand.
+> 
+> OK, so how do we let the drivers know that they should start being aggressive 
+> with PM and that they should disable remote wakeup? I'd rather not add 
+> subsystem-specific interface for this, that is why we are reaching out in the 
+> first place.
 
-=46ell through the cracks, sorry.  I'll include this into the next PM p=
-ull request
-for 3.16.  Thanks!
+For disabling remote wakeup we have a PM QoS flag that I'm not entirely happy
+with, so I guess we can replace it with something saner (I talked about that
+with Alan during the last year's LinuxCon, but then didn't have the time to
+get to that).
+
+For the whole thing I guess we can add a sysfs attribute under devices/.../power
+that will need to be exposed by drivers supporting that feature.  I'm not sure
+how to call it, though.
 
 Rafael
 
