@@ -1,15 +1,15 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 10/11] cpufreq: intel_pstate: Remove core_pct rounding
-Date: Fri, 18 Jul 2014 08:37:27 -0700
-Message-ID: <1405697848-13546-12-git-send-email-dirk.j.brandewie@intel.com>
+Subject: [PATCH 11/11] cpufreq: intel_pstate: Keep values in aperf/mperf in full precision
+Date: Fri, 18 Jul 2014 08:37:28 -0700
+Message-ID: <1405697848-13546-13-git-send-email-dirk.j.brandewie@intel.com>
 References: <1405697848-13546-1-git-send-email-dirk.j.brandewie@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:60502 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422813AbaGRPh4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 11:37:56 -0400
-Received: by mail-pa0-f48.google.com with SMTP id et14so5647526pad.35
-        for <linux-pm@vger.kernel.org>; Fri, 18 Jul 2014 08:37:55 -0700 (PDT)
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:48323 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422773AbaGRPh6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 11:37:58 -0400
+Received: by mail-pa0-f44.google.com with SMTP id eu11so5687399pac.3
+        for <linux-pm@vger.kernel.org>; Fri, 18 Jul 2014 08:37:57 -0700 (PDT)
 In-Reply-To: <1405697848-13546-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -18,40 +18,36 @@ Cc: rjw@rjwysocki.net, Stratos Karafotis <stratosk@semaphore.gr>, Dirk Brandewie
 
 From: Stratos Karafotis <stratosk@semaphore.gr>
 
-The specific rounding adds conditionally only 1/256 to fractional
-part of core_pct.
+Currently we shift right aperf and mperf variables by FRAC_BITS
+to prevent overflow when we convert them to fix point numbers
+(shift left by FRAC_BITS).
 
-We can safely remove it without any noticeable impact in
-calculations.
+But this is not necessary, because we actually use delta aperf and mperf
+which are much less than APERF and MPERF values.
 
-Use div64_u64 instead of div_u64 to avoid possible overflow of
-sample->mperf as divisor
+So, use the unmodified APERF and MPERF values in calculation.
+This also adds 8 bits in precision, although the gain is insignificant.
 
 Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 33a09da..dc6e6bf 100644
+index dc6e6bf..c5eac94 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -545,13 +545,9 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu)
- {
- 	struct sample *sample = &cpu->sample;
- 	int64_t core_pct;
--	int32_t rem;
+@@ -565,9 +565,6 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+ 	rdmsrl(MSR_IA32_MPERF, mperf);
+ 	local_irq_restore(flags);
  
- 	core_pct = int_tofp(sample->aperf) * int_tofp(100);
--	core_pct = div_u64_rem(core_pct, int_tofp(sample->mperf), &rem);
+-	aperf = aperf >> FRAC_BITS;
+-	mperf = mperf >> FRAC_BITS;
 -
--	if ((rem << 1) >= int_tofp(sample->mperf))
--		core_pct += 1;
-+	core_pct = div64_u64(core_pct, int_tofp(sample->mperf));
- 
- 	sample->freq = fp_toint(
- 		mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
+ 	cpu->last_sample_time = cpu->sample.time;
+ 	cpu->sample.time = ktime_get();
+ 	cpu->sample.aperf = aperf;
 -- 
 1.9.3
 
