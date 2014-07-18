@@ -1,64 +1,48 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Power-managing devices that are not of interest at some point
- in time
-Date: Fri, 18 Jul 2014 11:19:07 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1407181107450.979-100000@iolanthe.rowland.org>
-References: <2674541.jV2qHCZlHf@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: dirk.brandewie@gmail.com
+Subject: [PATCH 00/11] intel_pstate updates
+Date: Fri, 18 Jul 2014 08:37:16 -0700
+Message-ID: <1405697848-13546-1-git-send-email-dirk.j.brandewie@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:54835 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751376AbaGRPTI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 11:19:08 -0400
-In-Reply-To: <2674541.jV2qHCZlHf@vostro.rjw.lan>
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:34155 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422773AbaGRPhj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 11:37:39 -0400
+Received: by mail-pd0-f175.google.com with SMTP id r10so3725205pdi.6
+        for <linux-pm@vger.kernel.org>; Fri, 18 Jul 2014 08:37:38 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dmitry Torokhov <dtor@google.com>, Bastien Nocera <hadess@hadess.net>, Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Fri, 18 Jul 2014, Rafael J. Wysocki wrote:
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-> > > the problem really seems to be that drivers are not
-> > > aggressive enough with starting PM transitions (using runtime PM) when they
-> > > see no activity.  Thus it seems that when the lid is closed, it'll be good
-> > > to switch the drivers into a "more aggressive runtime PM mode" in which
-> > > they will use any opportunity to start a power transition without worrying
-> > > about extra latencies resulting from that.  In that mode they should also
-> > > disable remote wakeup.  I think this should be sufficient to address the
-> > > use case at hand.
-> > 
-> > OK, so how do we let the drivers know that they should start being aggressive 
-> > with PM and that they should disable remote wakeup? I'd rather not add 
-> > subsystem-specific interface for this, that is why we are reaching out in the 
-> > first place.
-> 
-> For disabling remote wakeup we have a PM QoS flag that I'm not entirely happy
-> with, so I guess we can replace it with something saner (I talked about that
-> with Alan during the last year's LinuxCon, but then didn't have the time to
-> get to that).
+These patches have been in the development branch used by Stratos,
+Doug and myself for a long time.  I had hoped to batch them up with
+other functional changes that are under development but those changes
+are still under active discussion and there is no reason to hold these
+changes up.
 
-Right.  We discussed changing .../power/wakeup so that it could contain
-"enabled", "disabled", or "off", where "off" would mean remote wakeup
-should be disabled even during runtime suspend.
+Based on v3.16-rc5 commit 1795cd9b3a91d4b5473c97f491d63892442212ab
 
-> For the whole thing I guess we can add a sysfs attribute under devices/.../power
-> that will need to be exposed by drivers supporting that feature.  I'm not sure
-> how to call it, though.
+Stratos Karafotis (11):
+  cpufreq: intel_pstate: Make intel_pstate_kobject and debugfs_parent
+    locals
+  cpufreq: intel_pstate: Remove unnecessary type casting in div_s64()
+    call
+  cpufreq: intel_pstate: Add missing blank lines after declarations
+  cpufreq: intel_pstate: Fit code in a single line where possible
+  cpufreq: intel_pstate: Cleanup parentheses
+  cpufreq: intel_pstate: Remove unnecessary intermediate variable
+    sample_time
+  cpufreq: intel_pstate: Align multiple lines to open parenthesis
+  cpufreq: intel_pstate: Disable interrupts during MSRs reading
+  cpufreq: intel_pstate: Simplify P state adjustment logic.
+  cpufreq: intel_pstate: Remove core_pct rounding
+  cpufreq: intel_pstate: Keep values in aperf/mperf in full precision
 
-"runtime_mode"?
+ drivers/cpufreq/intel_pstate.c | 131 +++++++++++++++++------------------------
+ 1 file changed, 53 insertions(+), 78 deletions(-)
 
-Will this really be capable of doing what Dmitry wants?  I don't know
-how the drivers in question work.  But if a driver increments the
-runtime usage count each time the device file is opened, forcibly
-setting the usage count back to 0 won't be easy.
-
-Also, would putting the camera into runtime suspend prevent it from
-showing up on a list of available video devices?  I doubt it.  More
-likely, the video driver would have to unregister the class device
-while remaining bound to the physical device.  Probably other drivers
-would have to do the same sort of thing.  (I don't know whether doing
-this would retain the settings as Oliver wants, though.)
-
-Alan Stern
+-- 
+1.9.3
 
