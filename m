@@ -1,95 +1,48 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH Resend] cpufreq: cpu0: OPPs can be populated at runtime
-Date: Fri, 18 Jul 2014 03:08:19 +0200
-Message-ID: <1715003.nmNk448M7G@vostro.rjw.lan>
-References: <ba4ef31af64ef475c050d51bd04f3a93f0efc402.1405090205.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: kirkwood: Reinstate cpufreq driver for ARCH_KIRKWOOD
+Date: Fri, 18 Jul 2014 03:08:57 +0200
+Message-ID: <5801914.DoQzr9v8uz@vostro.rjw.lan>
+References: <1404987355.23201.65.camel@samson1.armitage.org.uk> <20140710135859.GL21833@lunn.ch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56532 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759055AbaGRAuC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Jul 2014 20:50:02 -0400
-In-Reply-To: <ba4ef31af64ef475c050d51bd04f3a93f0efc402.1405090205.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140710135859.GL21833@lunn.ch>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Quentin Armitage <quentin@armitage.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arvind.chauhan@arm.com, ttynkkynen@nvidia.com
 
-On Friday, July 11, 2014 08:24:19 PM Viresh Kumar wrote:
-> OPPs can be populated statically, via DT, or added at run time with
-> dev_pm_opp_add().
+On Thursday, July 10, 2014 03:58:59 PM Andrew Lunn wrote:
+> On Thu, Jul 10, 2014 at 11:15:55AM +0100, Quentin Armitage wrote:
+> > Commit ff1f0018cf66080d8e6f59791e552615648a033a ("drivers: Enable
+> > building of Kirkwood drivers for mach-mvebu") added Kirkwood into
+> > mach-mvebu, adding MACH_KIRKWOOD to ARCH_KIRKWOOD in the KConfig files.
+> > 
+> > The change for ARM_KIRKWOOD_CPUFREQ replaced ARCH_KIRKWOOD with
+> > MACH_KIRKWOOD, whereas all the other changes were ARCH_KIRKWOOD ||
+> > MACH_KIRKWOOD.
+> > 
+> > As a consequence of this change, the cpufreq driver is no longer enabled
+> > for ARCH_KIRKWOOD. This patch reinstates ARM_KIRKWOOD_CPUFREQ for
+> > ARCH_KIRKWOOD.
+> > 
+> > Signed-off-by: Quentin Armitage <quentin@armitage.org.uk>
+> > ---
+> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> > index ebac671..24778f0 100644
+> > --- a/drivers/cpufreq/Kconfig.arm
+> > +++ b/drivers/cpufreq/Kconfig.arm
+> > @@ -118,7 +118,7 @@ config ARM_INTEGRATOR
+> >           If in doubt, say Y.
+> > 
+> >  config ARM_KIRKWOOD_CPUFREQ
+> > -       def_bool MACH_KIRKWOOD
+> > +       def_bool ARCH_KIRKWOOD || MACH_KIRKWOOD
+> >         help
+> >           This adds the CPUFreq driver for Marvell Kirkwood
+> >           SoCs.
 > 
-> While this driver handles the first case correctly, it would fail to populate
-> OPPs added at runtime. Because call to of_init_opp_table() would fail as there
-> are no OPPs in DT and probe will return early.
-> 
-> To fix this, remove error checking and call dev_pm_opp_init_cpufreq_table()
-> unconditionally.
-> 
-> Update bindings as well.
-> 
-> Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-> Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
-> Tested-by: Stephen Boyd <sboyd@codeaurora.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> Hi Rafael,
-> 
-> This was earlier sent as part of: https://lkml.org/lkml/2014/7/1/358 series. But
-> actually is an fix and can (should?) be pushed for 3.16.
-> 
-> Rest of the patches from that series are cleanups/updates and so can go in
-> 3.17.
-> 
-> Please see if you can take it for 3.16.
+> Acked-by: Andrew Lunn <andrew@lunn.ch>
 
 Applied, thanks!
-
->  Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt | 6 ++++--
->  drivers/cpufreq/cpufreq-cpu0.c                             | 7 ++-----
->  2 files changed, 6 insertions(+), 7 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> index f055515..366690c 100644
-> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> @@ -8,10 +8,12 @@ Both required and optional properties listed below must be defined
->  under node /cpus/cpu@0.
->  
->  Required properties:
-> -- operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt
-> -  for details
-> +- None
->  
->  Optional properties:
-> +- operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt for
-> +  details. OPPs *must* be supplied either via DT, i.e. this property, or
-> +  populated at runtime.
->  - clock-latency: Specify the possible maximum transition latency for clock,
->    in unit of nanoseconds.
->  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index ee1ae30..86beda9 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -152,11 +152,8 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
->  		goto out_put_reg;
->  	}
->  
-> -	ret = of_init_opp_table(cpu_dev);
-> -	if (ret) {
-> -		pr_err("failed to init OPP table: %d\n", ret);
-> -		goto out_put_clk;
-> -	}
-> +	/* OPPs might be populated at runtime, don't check for error here */
-> +	of_init_opp_table(cpu_dev);
->  
->  	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
->  	if (ret) {
-> 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
