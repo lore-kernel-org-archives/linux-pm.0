@@ -1,120 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/6] PM / Hibernate: Memory bitmap scalability improvements
-Date: Sat, 19 Jul 2014 00:05:02 +0200
-Message-ID: <2105930.LcBFYOUaLE@vostro.rjw.lan>
-References: <1405684643-30234-1-git-send-email-joro@8bytes.org>
+From: Olof Johansson <olof@lixom.net>
+Subject: Re: [RFC] cpufreq: Add bindings for CPU clock sharing topology
+Date: Fri, 18 Jul 2014 14:52:25 -0700
+Message-ID: <CAOesGMhuNzVtUkaUjF+JjNgHcgf08WiM0DG-kzwtcyUxkK_zow@mail.gmail.com>
+References: <7e097b71342c9f5f63b07ff2e135eb7beb626aab.1405661369.git.viresh.kumar@linaro.org>
+	<CAOesGMhTkTEXp99gpU8cZBwYmiXpsySG5zMn6oSyo_Mf5PAiUg@mail.gmail.com>
+	<CAKohpo=MmoALOHg-=7cf0jm=OJO57TWQZQXqkRwhRwU-DGPMmA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53587 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755746AbaGRVqo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 17:46:44 -0400
-In-Reply-To: <1405684643-30234-1-git-send-email-joro@8bytes.org>
+Received: from mail-vc0-f169.google.com ([209.85.220.169]:61830 "EHLO
+	mail-vc0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755506AbaGRVw0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 17:52:26 -0400
+Received: by mail-vc0-f169.google.com with SMTP id hu12so8541294vcb.0
+        for <linux-pm@vger.kernel.org>; Fri, 18 Jul 2014 14:52:25 -0700 (PDT)
+In-Reply-To: <CAKohpo=MmoALOHg-=7cf0jm=OJO57TWQZQXqkRwhRwU-DGPMmA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joerg Roedel <joro@8bytes.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mike Turquette <mike.turquette@linaro.org>, Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>
 
-On Friday, July 18, 2014 01:57:17 PM Joerg Roedel wrote:
-> Hi,
-> 
-> here is a patch set to improve the scalability of the memory
-> bitmap implementation used for hibernation. The current
-> implementation does not scale well to machines with several
-> TB of memory. A resume on those machines may cause soft
-> lockups to be reported.
-> 
-> These patches improve the data structure by adding a radix
-> tree to the linked list structure to improve random access
-> performance from O(n) to O(log_b(n)), where b depends on the
-> architecture (b=512 on amd64, 1024 in i386).
-> 
-> A test on a 12TB machine showed an improvement in resume
-> time from 76s with the old implementation to 2.4s with the
-> radix tree and the improved swsusp_free function. See below
-> for details of this test.
-> 
-> Patches 1-3 that add the radix tree while keeping the
-> existing memory bitmap implementation in place and add code
-> to compare the results between both implementations. This
-> was used during development to make sure both data
-> structures return the same results.
-> 
-> Patch 4 re-implements the swsusp_free() function to not
-> iterate over all pfns but only over the bits set in the
-> bitmaps. This showed to scale better on large memory
-> machines.
-> 
-> Patch 5 removes the old memory bitmap implementation now
-> that the radix tree is in place and working correctly.
-> 
-> The last patch adds touching the soft lockup watchdog in
-> rtree_next_node. This is necessary because the worst case
-> performance (all bits set in the forbidden_pages_map and
-> free_pages_map) is the same as with the old implementation
-> and may still cause soft lockups. Patch 6 avoids this.
-> 
-> The code was tested in 32 and 64 bit x86 and showed no
-> issues there.
-> 
-> Below is an example test that shows the performance
-> improvement on a 12TB machine. First the test with the old
-> memory bitmap:
-> 
-> # time perf record /usr/sbin/resume $sdev
-> resume: libgcrypt version: 1.5.0
-> [ perf record: Woken up 12 times to write data ]
-> [ perf record: Captured and wrote 2.882 MB perf.data (~125898 samples) ]
-> 
-> real    1m16.043s
-> user    0m0.016s
-> sys     0m0.312s
-> # perf report --stdio |head -50
-> # Events: 75K cycles
-> #
-> # Overhead  Command         Shared Object                                   
-> Symbol
-> # ........  .......  .................... 
-> ........................................
-> #
->     56.16%   resume  [kernel.kallsyms]     [k] memory_bm_test_bit
->     19.35%   resume  [kernel.kallsyms]     [k] swsusp_free
->     14.90%   resume  [kernel.kallsyms]     [k] memory_bm_find_bit
->      7.28%   resume  [kernel.kallsyms]     [k] swsusp_page_is_forbidden
-> 
-> And here is the same test on the same machine with these
-> patches applied:
-> 
-> #  time perf record /usr/sbin/resume $sdev
-> resume: libgcrypt version: 1.5.0
-> [ perf record: Woken up 1 times to write data ]
-> [ perf record: Captured and wrote 0.039 MB perf.data (~1716 samples) ]
-> 
-> real    0m2.376s
-> user    0m0.020s
-> sys     0m0.408s
-> 
-> # perf report --stdio |head -50
-> # Events: 762  cycles
-> #
-> # Overhead  Command      Shared Object                     Symbol
-> # ........  .......  .................  .........................
-> #
->     34.78%   resume  [kernel.kallsyms]  [k] find_next_bit
->     27.03%   resume  [kernel.kallsyms]  [k] clear_page_c_e
->      9.70%   resume  [kernel.kallsyms]  [k] mark_nosave_pages
->      3.92%   resume  [kernel.kallsyms]  [k] alloc_rtree_node
->      2.38%   resume  [kernel.kallsyms]  [k] get_image_page
-> 
-> As can be seen on these results these patches improve the
-> scalability significantly. Please review, any comments
-> appreciated.
+On Thu, Jul 17, 2014 at 11:40 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 18 July 2014 11:47, Olof Johansson <olof@lixom.net> wrote:
+>> Why complicate it by using two properties?
+>>
+>> If there is no property, then the CPUs are assumed to be controlled
+>> independently.
+>>
+>> if there is a clock-master = <phandle> property, then that points at
+>> the cpu that is the main one controlling clock for the group.
+>>
+>> There's really no need to label the master -- it will be the only one
+>> with incoming links but nothing outgoing. And a master without slaves
+>> is an independently controlled cpu so you should be fine in that
+>> aspect too.
+>
+> I thought so earlier, but then I remembered something I read long back.
+> Don't remember which thread now, but I *might* be wrong..
+>
+> "Bindings are like APIs and new bindings shouldn't break existing stuff.."
+>
+> And:
+>
+>> If there is no property, then the CPUs are assumed to be controlled
+>> independently.
+>
+> seems to break the existing API.
 
-Looks good.
+What is the current API that is being broken, in your opinion?
 
-How much testing did that receive?
+> But if that isn't the case, the bindings are very simple & clear to handle.
+> Diff for new bindings:
 
-Rafael
+It's somewhat confusing to see a diff to the patch instead of a new
+version. It seems to remove the cpu 0 entry now?
 
+
+-Olof
