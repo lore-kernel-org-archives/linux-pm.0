@@ -1,119 +1,83 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Power-managing devices that are not of interest at some point in time
-Date: Fri, 18 Jul 2014 03:35:58 +0200
-Message-ID: <15990629.Z6g24UroS8@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1407171029210.1517-100000@iolanthe.rowland.org> <4468130.Uu9vndH3sC@dtor-glaptop> <2674541.jV2qHCZlHf@vostro.rjw.lan>
+From: Thomas Abraham <ta.omasab@gmail.com>
+Subject: Re: [PATCH v7 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
+Date: Fri, 18 Jul 2014 07:34:10 +0530
+Message-ID: <CAJuA9airHPrnkGMR9HvB3UmHeCyEfoPeujO+L7TfdXd_Z6SmOQ@mail.gmail.com>
+References: <1405345118-4269-1-git-send-email-thomas.ab@samsung.com>
+	<CAJuA9ahWbL8v2nS6wuDosn-bi+pga57KUe5wQN14Mot_-RTc6w@mail.gmail.com>
+	<CAJuA9aiVFFZiN7_xBg6iQEX-LJKLMmHKvPhmdmOduouQzBtQJw@mail.gmail.com>
+	<53C86DF3.1040303@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:49683 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752760AbaGRBRl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Jul 2014 21:17:41 -0400
-In-Reply-To: <2674541.jV2qHCZlHf@vostro.rjw.lan>
+Received: from mail-lb0-f180.google.com ([209.85.217.180]:36664 "EHLO
+	mail-lb0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751093AbaGRCEM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Jul 2014 22:04:12 -0400
+In-Reply-To: <53C86DF3.1040303@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dtor@google.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Bastien Nocera <hadess@hadess.net>, Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>
 
-On Friday, July 18, 2014 03:30:31 AM Rafael J. Wysocki wrote:
-> On Thursday, July 17, 2014 05:43:42 PM Dmitry Torokhov wrote:
-> > On Friday, July 18, 2014 02:43:02 AM Rafael J. Wysocki wrote:
-> > > On Thursday, July 17, 2014 09:59:19 AM Dmitry Torokhov wrote:
-> > > > On Thursday, July 17, 2014 10:39:16 AM Alan Stern wrote:
-> > > > > On Wed, 16 Jul 2014, Dmitry Torokhov wrote:
-> > > > > > We are not planning on implementing the policy in kernel, that's
-> > > > > > indeed task for userspace; but unless we bring in the heavy hammer of
-> > > > > > forcibly unbinding drivers, we do not currently have universal
-> > > > > > mechanism of quiescing devices.
-> > > > > 
-> > > > > We sort of do: the ->freeze() callback.  But it wasn't intended for
-> > > > > this kind of use; drivers may very well expect that userspace will
-> > > > > already be frozen when the callback runs.  Besides, ->freeze() is
-> > > > > supposed to quiesce devices without powering them down, whereas you
-> > > > > want to do both.
-> > > > 
-> > > > Right.
-> > > > 
-> > > > > What you're asking for is different from anything the PM subsystem has
-> > > > > done before.
-> > > > 
-> > > > Right.
-> > > > 
-> > > > > Given this fact, I don't see any alternatives to adding a
-> > > > > new API or repurposing an existing API.  Either one would be somewhat
-> > > > > painful.
-> > > > > 
-> > > > > For example, we could arrange to invoke ->suspend().  However, since
-> > > > > the circumstances would be unusual (userspace is still running,
-> > > > > ->prepare() was not called beforehand, ->suspend_irq() won't be called
-> > > > > afterward), subsystems and drivers may very well react inappropriately.
-> > > > 
-> > > > I do not think anybody expects that drivers would not have to be modified
-> > > > to support this functionality; I expect drivers would have to declare
-> > > > themselves "queiscable" and therefore would assert that they will act
-> > > > according to whatever rules we set up. I only want to make sure that this
-> > > > new state is added to existing list of PM states rather than creating
-> > > > completely new facility, so that driver authors have a chance to
-> > > > understand PM state transitions that involve their driver.
-> > > 
-> > > If you're referring to runtime PM, it doesn't use "states".  It uses status
-> > > values (you can think of them as metastates) which are "active", "suspended"
-> > > or in-transit from one to the other.  There's no room for more of these in
-> > > the design, I'm afraid.
-> > > 
-> > > Moreover, .runtime_suspend() can only be called when the device is quiescent
-> > > already.  [That also applies to .suspend_late() and .suspend_irq() for
-> > > system suspend and the freezing of tasks is requisite for the .prepare()
-> > > and .suspend() callbacks (and the corresponding hibernation-related ones).]
-> > > 
-> > > From past discussions on similar topics it followed that there really was
-> > > no generic way for individual drivers to quiesce devices on demand as long
-> > > as user space was running.  Everything we could come up with was racy, this
-> > > way or another.  That is the reason for using the freezer during system
-> > > suspend.  In other words, if you want drivers to quiesce devices by force,
-> > > you need to quiesce user space by force to start with - for example by
-> > > freezing it.
-> > > 
-> > > For runtime PM, on the other hand, the underlying observation is that
-> > > drivers should be able to detect when devices are already quiescent and
-> > > initialize power transitions at those points.  It's role is to help with
-> > > that, but not with quiescing things.
-> > > 
-> > > That said, in the "laptop lid closed" scenario (assuming that the system is
-> > > not supposed to suspend in response to that, which in my opinion is the
-> > > best approach)
-> > 
-> > This is default approach that works for many, but not necessarily all  use 
-> > cases. I believe docked with lid closed scenario was mentioned already.
-> > 
-> > > the problem really seems to be that drivers are not
-> > > aggressive enough with starting PM transitions (using runtime PM) when they
-> > > see no activity.  Thus it seems that when the lid is closed, it'll be good
-> > > to switch the drivers into a "more aggressive runtime PM mode" in which
-> > > they will use any opportunity to start a power transition without worrying
-> > > about extra latencies resulting from that.  In that mode they should also
-> > > disable remote wakeup.  I think this should be sufficient to address the
-> > > use case at hand.
-> > 
-> > OK, so how do we let the drivers know that they should start being aggressive 
-> > with PM and that they should disable remote wakeup? I'd rather not add 
-> > subsystem-specific interface for this, that is why we are reaching out in the 
-> > first place.
-> 
-> For disabling remote wakeup we have a PM QoS flag that I'm not entirely happy
-> with, so I guess we can replace it with something saner (I talked about that
-> with Alan during the last year's LinuxCon, but then didn't have the time to
-> get to that).
-> 
-> For the whole thing I guess we can add a sysfs attribute under devices/.../power
-> that will need to be exposed by drivers supporting that feature.  I'm not sure
-> how to call it, though.
+On Fri, Jul 18, 2014 at 6:14 AM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> Hi Thomas,
+>
+> On 07/17/2014 02:58 PM, Thomas Abraham wrote:
+>> Hi Mike,
+>>
+>> On Tue, Jul 15, 2014 at 9:20 AM, Thomas Abraham <ta.omasab@gmail.com> wrote:
+>>> Hi Tomasz,
+>>>
+>>> On Mon, Jul 14, 2014 at 7:08 PM, Thomas Abraham <thomas.ab@samsung.com> wrote:
+>>>> Changes since v6:
+>>>> - Fixes suggested by Amit Daniel <amit.daniel@samsung.com>.
+>>>>
+>>>> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+>>>> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
+>>>> series also enabled cpufreq support for Exynos5420 using arm_big_little cpufreq
+>>>> driver.
+>>>>
+>>>> Thomas Abraham (6):
+>>>>   clk: samsung: add infrastructure to register cpu clocks
+>>>>   clk: samsung: register exynos5420 apll/kpll configuration data
+>>>>   clk: exynos: use cpu-clock provider type to represent arm clock
+>>>>   ARM: dts: Exynos: add cpu nodes, opp and cpu clock configuration data
+>>>>   ARM: Exynos: switch to using generic cpufreq driver for exynos4210/5250
+>>>>   cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
+>>>
+>>> In this series, support for Exynos5420 has been included. If there are
+>>> any more changes required, could you please let me know.
+>>
+>> This patch series migrates exynos cpufreq support to use generic
+>> cpufreq drivers. For this, cpu clock blocks are encapsulated into a
+>> cpu clock type and cpufreq driver operates the cpu clock type.
+>>
+>> We had discussed in the [1] about using coordinated clocks. This
+>> series is not using the concept of coordinated clocks but the code in
+>> this series can be migrated to use coordinated clocks when it is
+>> available.
+>>
+>> Is it okay to consider this series for v3.17-rc1. I will update this
+>> code to use coordinated clocks when it is available. This series helps
+>> with cpufreq support for newer Exynos SoCs such as Exynos5420/3250.
+>>
+>> [1] http://www.spinics.net/lists/cpufreq/msg10042.html
+>>
+>
+> I tested this patchset with Exynos3250 cpufreq patchset[1] on Exynos3250 SoC.
+>  [1] https://lkml.org/lkml/2014/6/18/126
+>
+> Tested-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-Or we could add an "aggressive" value to the devices/.../power/control attribute,
-but then it will be difficult for user space to verify whether or not it is
-supported for the given device.
+Hi Chanwoo,
 
-Rafael
+Thanks for using these patches for Exynos3250 cpufreq support.
 
+Regards,
+Thomas.
+
+
+>
+> Best Regards,
+> Chanwoo Choi
+>
