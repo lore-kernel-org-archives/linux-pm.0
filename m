@@ -1,159 +1,118 @@
-From: Sachin Kamat <spk.linux@gmail.com>
-Subject: Re: [PATCH] cpufreq: tests: Providing cpufreq regression test
-Date: Fri, 18 Jul 2014 16:58:53 +0530
-Message-ID: <CAK5sBcH=L-7=BHNPQUjuoQfQx5QeFmBSdwdow+RXBExgCOP0Ww@mail.gmail.com>
-References: <1405678985-21677-1-git-send-email-l.majewski@samsung.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI and power management fixes for v3.16-rc6
+Date: Fri, 18 Jul 2014 13:41:16 +0200
+Message-ID: <CAJZ5v0i00u1AQgXzGFpkEK7EL0_bY5+TqFRBRmuivMByPAZvsg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1405678985-21677-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Abraham <ta.omasab@gmail.com>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tomasz Figa <t.figa@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f181.google.com ([209.85.213.181]:37544 "EHLO
+	mail-ig0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965231AbaGRLlR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 07:41:17 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Lukasz,
+Hi Linus,
 
-I tested this script on 4210 based Origen board.
-This is the output:
-./cpufreq_freq_test.sh
-CURRENT GOVERNOR: performance
-SET GOVERNOR: performance
-######################################
-TEST AVAILABLE FREQS
-######################################
-FREQ: 1200000 sleep: invalid number '0.1'
-[    5.918347] random: gzip urandom read with 61 bits of entropy available
-         OK
-FREQ: 1000000 sleep: invalid number '0.1'
-         OK
-FREQ: 800000 sleep: invalid number '0.1'
-         OK
-FREQ: 500000 sleep: invalid number '0.1'
-         OK
-FREQ: 200000 sleep: invalid number '0.1'
-         OK
-######################################
-TEST FREQS SWITCHING
-######################################
-REFERENCE FREQ: 1200000
-FREQ: 1200000 ----> FREQ: 1200000 sleep: invalid number '0.1'
-         OK
-FREQ: 1200000 ----> FREQ: 1000000 sleep: invalid number '0.1'
-         OK
-FREQ: 1200000 ----> FREQ: 800000 sleep: invalid number '0.1'
-         OK
-FREQ: 1200000 ----> FREQ: 500000 sleep: invalid number '0.1'
-         OK
-FREQ: 1200000 ----> FREQ: 200000 sleep: invalid number '0.1'
-         OK
-REFERENCE FREQ: 1000000
-FREQ: 1000000 ----> FREQ: 1200000 sleep: invalid number '0.1'
-         OK
-FREQ: 1000000 ----> FREQ: 1000000 sleep: invalid number '0.1'
-         OK
-FREQ: 1000000 ----> FREQ: 800000 sleep: invalid number '0.1'
-         OK
-FREQ: 1000000 ----> FREQ: 500000 sleep: invalid number '0.1'
-         OK
-FREQ: 1000000 ----> FREQ: 200000 sleep: invalid number '0.1'
-         OK
-REFERENCE FREQ: 800000
-FREQ: 800000 ----> FREQ: 1200000 sleep: invalid number '0.1'
-         OK
-FREQ: 800000 ----> FREQ: 1000000 sleep: invalid number '0.1'
-         OK
-FREQ: 800000 ----> FREQ: 800000 sleep: invalid number '0.1'
-         OK
-FREQ: 800000 ----> FREQ: 500000 sleep: invalid number '0.1'
-         OK
-FREQ: 800000 ----> FREQ: 200000 sleep: invalid number '0.1'
-         OK
-REFERENCE FREQ: 500000
-FREQ: 500000 ----> FREQ: 1200000 sleep: invalid number '0.1'
-         OK
-FREQ: 500000 ----> FREQ: 1000000 sleep: invalid number '0.1'
-         OK
-FREQ: 500000 ----> FREQ: 800000 sleep: invalid number '0.1'
-         OK
-FREQ: 500000 ----> FREQ: 500000 sleep: invalid number '0.1'
-         OK
-FREQ: 500000 ----> FREQ: 200000 sleep: invalid number '0.1'
-         OK
-REFERENCE FREQ: 200000
-FREQ: 200000 ----> FREQ: 1200000 sleep: invalid number '0.1'
-         OK
-FREQ: 200000 ----> FREQ: 1000000 sleep: invalid number '0.1'
-         OK
-FREQ: 200000 ----> FREQ: 800000 sleep: invalid number '0.1'
-         OK
-FREQ: 200000 ----> FREQ: 500000 sleep: invalid number '0.1'
-         OK
-FREQ: 200000 ----> FREQ: 200000 sleep: invalid number '0.1'
-         OK
-######################################
-ERRORS: 0
-######################################
+Please pull from
 
-Though it says 0 errors, what does the "invalid number..." signify?
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.16-rc6
+
+to receive ACPI and power management fixes for v3.16-rc6
+with top-most commit 3962808023d54f0e1adbde403eb8e572984ccb2a
+
+ Merge branches 'pm-sleep' and 'pm-cpufreq'
+
+on top of commit 1795cd9b3a91d4b5473c97f491d63892442212ab
+
+ Linux 3.16-rc5
+
+These are a few recent regression fixes, a revert of the ACPI video
+commit I promised, a system resume fix related to request_firmware(),
+an ACPI video quirk for one more Win8-oriented BIOS, an ACPI device
+enumeration documentation update and a few fixes for ARM cpufreq
+drivers.
+
+Specifics:
+
+ - Fix for a recently introduced NULL pointer dereference in the core
+   system suspend code occuring when platforms without ACPI attempt to
+   use the "freeze" sleep state from Zhang Rui.
+
+ - Fix for a recently introduced build warning in cpufreq headers from
+   Brian W Hart.
+
+ - Fix for a 3.13 cpufreq regression related to sysem resume that
+   triggers on some systems with multiple CPU clusters from Viresh Kumar.
+
+ - Fix for a 3.4 regression in request_firmware() resulting in
+   WARN_ON()s on some systems during system resume from Takashi Iwai.
+
+ - Revert of the ACPI video commit that changed the default value of
+   the video.brightness_switch_enabled command line argument to 0 as
+   it has been reported to break existing setups.
+
+ - ACPI device enumeration documentation update to take recent code
+   changes into account and make the documentation match the code again
+   from Darren Hart.
+
+ - Fixes for the sa1110, imx6q, kirkwood, and cpu0 cpufreq drivers
+   from Linus Walleij, Nicolas Del Piano, Quentin Armitage, Viresh Kumar.
+
+ - New ACPI video blacklist entry for HP ProBook 4540s from Hans de Goede.
+
+Thanks!
 
 
-On Fri, Jul 18, 2014 at 3:53 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> This commit adds first regression test "cpufreq_freq_test.sh" for the
-> cpufreq subsystem.
->
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> ---
->  drivers/cpufreq/tests/README               |  23 +++++
->  drivers/cpufreq/tests/cpufreq_freq_test.sh | 149 +++++++++++++++++++++++++++++
->  2 files changed, 172 insertions(+)
->  create mode 100644 drivers/cpufreq/tests/README
->  create mode 100755 drivers/cpufreq/tests/cpufreq_freq_test.sh
->
-> diff --git a/drivers/cpufreq/tests/README b/drivers/cpufreq/tests/README
-> new file mode 100644
-> index 0000000..66638d2
-> --- /dev/null
-> +++ b/drivers/cpufreq/tests/README
-> @@ -0,0 +1,23 @@
-> +This file contains list of cpufreq's available regression tests with a short
-> +usage description.
-> +
-> +1. cpufreq_freq_test.sh
-> +
-> +Description:
-> +------------
-> +This test is supposed to test if cpufreq attributes exported by sysfs are
+---------------
 
-s/test/script would be better
+Brian W Hart (1):
+      cpufreq: make table sentinel macros unsigned to match use
 
-> +exposing a correct values.
+Darren Hart (1):
+      ACPI / documentation: Remove reference to
+acpi_platform_device_ids from enumeration.txt
 
-s/ exposing a correct values / exposing correct values
+Hans de Goede (1):
+      ACPI / video: Add use_native_backlight quirk for HP ProBook 4540s
 
-> +
-> +It can work with or without boost enabled and helps spotting errors related to
+Linus Walleij (1):
+      cpufreq: sa1110: set memory type for h3600
 
-s/ helps spotting / helps in spotting
+Nicolas Del Piano (1):
+      cpufreq: imx6q: Select PM_OPP
 
-<snip>
+Quentin Armitage (1):
+      cpufreq: kirkwood: Reinstate cpufreq driver for ARCH_KIRKWOOD
 
-> +
-> +set +x
-> +
-> +COLOUR_RED="\33[31m"
-> +COLOUR_BLUE="\33[34m"
-> +COLOUR_GREEN="\33[32m"
-> +COLOUR_DEFAULT="\33[0m"
-> +
-> +T_PATCH=/sys/devices/system/cpu/cpu0/cpufreq
+Rafael J. Wysocki (1):
+      Revert "ACPI / video: change acpi-video
+brightness_switch_enabled default to 0"
 
-Shouldn't this be called PATH instead of PATCH?
+Takashi Iwai (1):
+      PM / sleep: Fix request_firmware() error at resume
 
-> +BOOST_PATCH=/sys/devices/system/cpu/cpufreq
+Viresh Kumar (2):
+      cpufreq: cpu0: OPPs can be populated at runtime
+      cpufreq: move policy kobj to policy->cpu at resume
 
-ditto and rest of the places in the document.
+Zhang Rui (1):
+      PM / sleep: fix freeze_ops NULL pointer dereferences
 
--- 
-Regards,
-Sachin.
+---------------
+
+ Documentation/acpi/enumeration.txt                         |  6 ------
+ Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt |  6 ++++--
+ Documentation/kernel-parameters.txt                        |  2 +-
+ drivers/acpi/video.c                                       | 10 +++++++++-
+ drivers/cpufreq/Kconfig.arm                                |  3 ++-
+ drivers/cpufreq/cpufreq-cpu0.c                             |  7 ++-----
+ drivers/cpufreq/cpufreq.c                                  |  6 ++++--
+ drivers/cpufreq/sa1110-cpufreq.c                           |  2 +-
+ include/linux/cpufreq.h                                    |  4 ++--
+ kernel/power/process.c                                     |  1 +
+ kernel/power/suspend.c                                     |  4 ++--
+ 11 files changed, 28 insertions(+), 23 deletions(-)
