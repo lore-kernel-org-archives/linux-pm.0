@@ -1,15 +1,15 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 04/11] cpufreq: intel_pstate: Fit code in a single line where possible
-Date: Fri, 18 Jul 2014 08:37:20 -0700
-Message-ID: <1405697848-13546-5-git-send-email-dirk.j.brandewie@intel.com>
+Subject: [PATCH 01/11] cpufreq: intel_pstate: Make intel_pstate_kobject and debugfs_parent locals
+Date: Fri, 18 Jul 2014 08:37:17 -0700
+Message-ID: <1405697848-13546-2-git-send-email-dirk.j.brandewie@intel.com>
 References: <1405697848-13546-1-git-send-email-dirk.j.brandewie@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f174.google.com ([209.85.192.174]:37713 "EHLO
-	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422773AbaGRPhp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 11:37:45 -0400
-Received: by mail-pd0-f174.google.com with SMTP id fp1so5207779pdb.19
-        for <linux-pm@vger.kernel.org>; Fri, 18 Jul 2014 08:37:45 -0700 (PDT)
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:61184 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422654AbaGRPhk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 11:37:40 -0400
+Received: by mail-pa0-f50.google.com with SMTP id et14so5691122pad.9
+        for <linux-pm@vger.kernel.org>; Fri, 18 Jul 2014 08:37:40 -0700 (PDT)
 In-Reply-To: <1405697848-13546-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -18,72 +18,48 @@ Cc: rjw@rjwysocki.net, Stratos Karafotis <stratosk@semaphore.gr>, Dirk Brandewie
 
 From: Stratos Karafotis <stratosk@semaphore.gr>
 
-We can fit these lines in a single one, under the 80 characters
-limit.
+Since we never remove sysfs entry and debugfs files, we can make
+the intel_pstate_kobject and debugfs_parent locals.
+
+Also, annotate with __init intel_pstate_sysfs_expose_params()
+and intel_pstate_debug_expose_params() in order to be freed
+after bootstrap.
 
 Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 18 +++++-------------
- 1 file changed, 5 insertions(+), 13 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index e9f3048..424c5a9 100644
+index 86631cb..601c428 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -205,11 +205,7 @@ static inline void intel_pstate_busy_pid_reset(struct cpudata *cpu)
- 	pid_d_gain_set(&cpu->pid, pid_params.d_gain_pct);
- 	pid_i_gain_set(&cpu->pid, pid_params.i_gain_pct);
+@@ -253,9 +253,9 @@ static struct pid_param pid_files[] = {
+ 	{NULL, NULL}
+ };
  
--	pid_reset(&cpu->pid,
--		pid_params.setpoint,
--		100,
--		pid_params.deadband,
--		0);
-+	pid_reset(&cpu->pid, pid_params.setpoint, 100, pid_params.deadband, 0);
- }
+-static struct dentry *debugfs_parent;
+-static void intel_pstate_debug_expose_params(void)
++static void __init intel_pstate_debug_expose_params(void)
+ {
++	struct dentry *debugfs_parent;
+ 	int i = 0;
  
- static inline void intel_pstate_reset_all_pid(void)
-@@ -235,8 +231,7 @@ static int pid_param_get(void *data, u64 *val)
- 	*val = *(u32 *)data;
- 	return 0;
- }
--DEFINE_SIMPLE_ATTRIBUTE(fops_pid_param, pid_param_get,
--			pid_param_set, "%llu\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_pid_param, pid_param_get, pid_param_set, "%llu\n");
+ 	debugfs_parent = debugfs_create_dir("pstate_snb", NULL);
+@@ -342,10 +342,10 @@ static struct attribute *intel_pstate_attributes[] = {
+ static struct attribute_group intel_pstate_attr_group = {
+ 	.attrs = intel_pstate_attributes,
+ };
+-static struct kobject *intel_pstate_kobject;
  
- struct pid_param {
- 	char *name;
-@@ -355,8 +350,7 @@ static void __init intel_pstate_sysfs_expose_params(void)
+-static void intel_pstate_sysfs_expose_params(void)
++static void __init intel_pstate_sysfs_expose_params(void)
+ {
++	struct kobject *intel_pstate_kobject;
+ 	int rc;
+ 
  	intel_pstate_kobject = kobject_create_and_add("intel_pstate",
- 						&cpu_subsys.dev_root->kobj);
- 	BUG_ON(!intel_pstate_kobject);
--	rc = sysfs_create_group(intel_pstate_kobject,
--				&intel_pstate_attr_group);
-+	rc = sysfs_create_group(intel_pstate_kobject, &intel_pstate_attr_group);
- 	BUG_ON(rc);
- }
- 
-@@ -515,8 +509,7 @@ static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
- 			cpu->pstate.min_pstate, cpu->pstate.turbo_pstate);
- 
- 	min_perf = fp_toint(mul_fp(int_tofp(max_perf), limits.min_perf));
--	*min = clamp_t(int, min_perf,
--			cpu->pstate.min_pstate, max_perf);
-+	*min = clamp_t(int, min_perf, cpu->pstate.min_pstate, max_perf);
- }
- 
- static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
-@@ -713,8 +706,7 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
- 
- 	init_timer_deferrable(&cpu->timer);
- 	cpu->timer.function = intel_pstate_timer_func;
--	cpu->timer.data =
--		(unsigned long)cpu;
-+	cpu->timer.data = (unsigned long)cpu;
- 	cpu->timer.expires = jiffies + HZ/100;
- 	intel_pstate_busy_pid_reset(cpu);
- 	intel_pstate_sample(cpu);
 -- 
 1.9.3
 
