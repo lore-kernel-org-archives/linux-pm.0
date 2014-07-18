@@ -1,102 +1,229 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Power-managing devices that are not of interest at some point in time
-Date: Sat, 19 Jul 2014 00:19:39 +0200
-Message-ID: <2443949.K0iePsg3Aa@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1407181557020.979-100000@iolanthe.rowland.org> <1539989.Y0kuKjTTVX@vostro.rjw.lan> <17819865.W1zWUlPo9n@dtor-glaptop>
+Subject: [PATCH] PM / sleep: Move platform suspend operations to separate functions
+Date: Sat, 19 Jul 2014 00:42:31 +0200
+Message-ID: <7305139.n04xFAvSbJ@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60540 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:53300 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752591AbaGRWBV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 18:01:21 -0400
-In-Reply-To: <17819865.W1zWUlPo9n@dtor-glaptop>
+	with SMTP id S1755400AbaGRWYN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 18:24:13 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dtor@google.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Patrik Fimml <patrikf@chromium.org>, Bastien Nocera <hadess@hadess.net>, linux-pm@vger.kernel.org, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Peter Zijlstra <peterz@infradead.org>
 
-On Friday, July 18, 2014 02:45:40 PM Dmitry Torokhov wrote:
-> On Friday, July 18, 2014 11:59:18 PM Rafael J. Wysocki wrote:
-> > On Friday, July 18, 2014 02:26:21 PM Dmitry Torokhov wrote:
-> > > On Friday, July 18, 2014 04:09:46 PM Alan Stern wrote:
-> > > > On Fri, 18 Jul 2014, Patrik Fimml wrote:
-> > > > > On Fri, Jul 18, 2014 at 03:00:46PM -0400, Alan Stern wrote:
-> > [cut]
-> > 
-> > > > > I'm not sure what the appropriate action for a video camera is anyway.
-> > > > > Should it go away completely, including its device? Should it be
-> > > > > there,
-> > > > > but certainly not be the default choice when there is an external
-> > > > > camera? I'm thinking along the lines of some application's settings
-> > > > > dialog here, where it might be desirable to still be able to select
-> > > > > the
-> > > > > internal camera for future recordings.
-> > > > > 
-> > > > > Of course, userspace could still decide simply not to
-> > > > > quiesce|deactivate|inhibit the device if that was desired.
-> > > > 
-> > > > There's some question about how much of userspace needs to get
-> > > > involved.  Just the daemon that manages these configuration changes, or
-> > > > other programs as well?  I guess that's not really our problem...
-> > > 
-> > > We need to provide means of implementing policy; the policy itself is not
-> > > really our concern ;)
-> > > 
-> > > > In the end, it sounds like you're suggesting a new pair of PM
-> > > > callbacks: ->deactivate() and ->reactivate(), or ->inhibit() and
-> > > > ->uninhibit().  Plus an optional (?) sysfs interface for invoking the
-> > > > callbacks.
-> > > 
-> > > We do need sysfs interface so that userspace can talk to the devices in
-> > > question; and we also need to make sure that PM core is aware of the new
-> > > callbacks and provides guarantees about their interactions with system-
-> > > and
-> > > runtime-PM callbacks so that individual drivers do not have to sort it out
-> > > on their own.
-> > 
-> > A step back, please.
-> > 
-> > I have no idea why those need to be PM callbacks.
-> > 
-> > What you need really seems to be a way to tell a driver "ignore input from
-> > this device from now on as it is most likely bogus".  A natural reaction of
-> > the driver to that might be to stop processing input from the device and
-> > then runtime suspend it (and prevent it from generating remote wakeup as
-> > that may be bogus as well), but I don't see why the PM core needs to be
-> > involved in that at all.
-> 
-> So that we do not need to handle cases like:
-> 
-> - I am already in idle state and request comes to inhibit, what do I do (in 
-> driver) or:
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I'm not sure why being "suspended" or not matters here.  The PM core doesn't
-know what physical state the device is in anyway and the driver or subsystem
-(or another layer such as ACPI) has to track that.
+After the introduction of freeze_ops it makes more sense to move
+all of the platform suspend operations to separate functions that
+each will do all of the necessary checks and choose the right
+callback to execute istead of doing all that in the core code
+which makes it generally harder to follow.
 
-Also it seems that it should be perfectly fine to ignore input from the device
-without suspending it as well as it is perfectly fine to be suspended while
-you are generally not ignoring the input (just because there is no input at
-the moment, for example).
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-Yes, it make sense to suspend the device when you know you'll ignore input going
-forward, but then if the real goal is to prevent bogus input from reaching
-applications, then this isn't a power management problem even.
+This is on top of the master branch of linux-pm.git.
 
-> - I inhibited the device, now system suspend comes, what do I do? Also what do 
-> I do at resume? I'd rather not have driver checks host of flags to figure out 
-> the end state if PM core could spell it out for me.
+---
+ kernel/power/suspend.c |  120 +++++++++++++++++++++++++++++++------------------
+ 1 file changed, 77 insertions(+), 43 deletions(-)
 
-Well, how will the new PM callbacks help here, exactly?
-
-> We already have to sort 
-> out open/close and suspend/resume iteractions (i.e what one needs to do to 
-> suspend or resume device that has not been opened, and if it is different from 
-> devices that have been opened).
-
-I guess it would help if you gave an example.
-
-Rafael
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -36,12 +36,6 @@ const char *pm_states[PM_SUSPEND_MAX];
+ 
+ static const struct platform_suspend_ops *suspend_ops;
+ static const struct platform_freeze_ops *freeze_ops;
+-
+-static bool need_suspend_ops(suspend_state_t state)
+-{
+-	return state > PM_SUSPEND_FREEZE;
+-}
+-
+ static DECLARE_WAIT_QUEUE_HEAD(suspend_freeze_wait_head);
+ static bool suspend_freeze_wake;
+ 
+@@ -139,6 +133,65 @@ int suspend_valid_only_mem(suspend_state
+ }
+ EXPORT_SYMBOL_GPL(suspend_valid_only_mem);
+ 
++static bool sleep_state_supported(suspend_state_t state)
++{
++	return state == PM_SUSPEND_FREEZE || (suspend_ops && suspend_ops->enter);
++}
++
++static int platform_suspend_prepare(suspend_state_t state)
++{
++	return state != PM_SUSPEND_FREEZE && suspend_ops->prepare ?
++		suspend_ops->prepare() : 0;
++}
++
++static int platform_suspend_prepare_late(suspend_state_t state)
++{
++	return state != PM_SUSPEND_FREEZE && suspend_ops->prepare_late ?
++		suspend_ops->prepare_late() : 0;
++}
++
++static void platform_suspend_wake(suspend_state_t state)
++{
++	if (state != PM_SUSPEND_FREEZE && suspend_ops->wake)
++		suspend_ops->wake();
++}
++
++static void platform_suspend_finish(suspend_state_t state)
++{
++	if (state != PM_SUSPEND_FREEZE && suspend_ops->finish)
++		suspend_ops->finish();
++}
++
++static int platform_suspend_begin(suspend_state_t state)
++{
++	if (state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->begin)
++		return freeze_ops->begin();
++	else if (suspend_ops->begin)
++		return suspend_ops->begin(state);
++	else
++		return 0;
++}
++
++static void platform_suspend_end(suspend_state_t state)
++{
++	if (state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->end)
++		freeze_ops->end();
++	else if (suspend_ops->end)
++		suspend_ops->end();
++}
++
++static void platform_suspend_recover(suspend_state_t state)
++{
++	if (state != PM_SUSPEND_FREEZE && suspend_ops->recover)
++		suspend_ops->recover();
++}
++
++static bool platform_suspend_again(suspend_state_t state)
++{
++	return state != PM_SUSPEND_FREEZE && suspend_ops->suspend_again ?
++		suspend_ops->suspend_again() : false;
++}
++
+ static int suspend_test(int level)
+ {
+ #ifdef CONFIG_PM_DEBUG
+@@ -162,7 +215,7 @@ static int suspend_prepare(suspend_state
+ {
+ 	int error;
+ 
+-	if (need_suspend_ops(state) && (!suspend_ops || !suspend_ops->enter))
++	if (!sleep_state_supported(state))
+ 		return -EPERM;
+ 
+ 	pm_prepare_console();
+@@ -208,23 +261,18 @@ static int suspend_enter(suspend_state_t
+ {
+ 	int error;
+ 
+-	if (need_suspend_ops(state) && suspend_ops->prepare) {
+-		error = suspend_ops->prepare();
+-		if (error)
+-			goto Platform_finish;
+-	}
++	error = platform_suspend_prepare(state);
++	if (error)
++		goto Platform_finish;
+ 
+ 	error = dpm_suspend_end(PMSG_SUSPEND);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Some devices failed to power down\n");
+ 		goto Platform_finish;
+ 	}
+-
+-	if (need_suspend_ops(state) && suspend_ops->prepare_late) {
+-		error = suspend_ops->prepare_late();
+-		if (error)
+-			goto Platform_wake;
+-	}
++	error = platform_suspend_prepare_late(state);
++	if (error)
++		goto Platform_wake;
+ 
+ 	if (suspend_test(TEST_PLATFORM))
+ 		goto Platform_wake;
+@@ -272,15 +320,11 @@ static int suspend_enter(suspend_state_t
+ 	ftrace_start();
+ 
+  Platform_wake:
+-	if (need_suspend_ops(state) && suspend_ops->wake)
+-		suspend_ops->wake();
+-
++	platform_suspend_wake(state);
+ 	dpm_resume_start(PMSG_RESUME);
+ 
+  Platform_finish:
+-	if (need_suspend_ops(state) && suspend_ops->finish)
+-		suspend_ops->finish();
+-
++	platform_suspend_finish(state);
+ 	return error;
+ }
+ 
+@@ -293,18 +337,13 @@ int suspend_devices_and_enter(suspend_st
+ 	int error;
+ 	bool wakeup = false;
+ 
+-	if (need_suspend_ops(state) && !suspend_ops)
++	if (!sleep_state_supported(state))
+ 		return -ENOSYS;
+ 
+-	if (need_suspend_ops(state) && suspend_ops->begin) {
+-		error = suspend_ops->begin(state);
+-		if (error)
+-			goto Close;
+-	} else if (state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->begin) {
+-		error = freeze_ops->begin();
+-		if (error)
+-			goto Close;
+-	}
++	error = platform_suspend_begin(state);
++	if (error)
++		goto Close;
++
+ 	suspend_console();
+ 	suspend_test_start();
+ 	error = dpm_suspend_start(PMSG_SUSPEND);
+@@ -318,25 +357,20 @@ int suspend_devices_and_enter(suspend_st
+ 
+ 	do {
+ 		error = suspend_enter(state, &wakeup);
+-	} while (!error && !wakeup && need_suspend_ops(state)
+-		&& suspend_ops->suspend_again && suspend_ops->suspend_again());
++	} while (!error && !wakeup && platform_suspend_again(state));
+ 
+  Resume_devices:
+ 	suspend_test_start();
+ 	dpm_resume_end(PMSG_RESUME);
+ 	suspend_test_finish("resume devices");
+ 	resume_console();
+- Close:
+-	if (need_suspend_ops(state) && suspend_ops->end)
+-		suspend_ops->end();
+-	else if (state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->end)
+-		freeze_ops->end();
+ 
++ Close:
++	platform_suspend_end(state);
+ 	return error;
+ 
+  Recover_platform:
+-	if (need_suspend_ops(state) && suspend_ops->recover)
+-		suspend_ops->recover();
++	platform_suspend_recover(state);
+ 	goto Resume_devices;
+ }
+ 
 
