@@ -1,170 +1,148 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC] cpufreq: Add bindings for CPU clock sharing topology
-Date: Fri, 18 Jul 2014 12:10:08 +0530
-Message-ID: <CAKohpo=MmoALOHg-=7cf0jm=OJO57TWQZQXqkRwhRwU-DGPMmA@mail.gmail.com>
-References: <7e097b71342c9f5f63b07ff2e135eb7beb626aab.1405661369.git.viresh.kumar@linaro.org>
-	<CAOesGMhTkTEXp99gpU8cZBwYmiXpsySG5zMn6oSyo_Mf5PAiUg@mail.gmail.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 05/13] thermal: rcar: Document SoC-specific bindings
+Date: Fri, 18 Jul 2014 16:46:21 +0900
+Message-ID: <20140718074619.GA12613@verge.net.au>
+References: <1404908623-909-1-git-send-email-geert+renesas@glider.be>
+ <1404908623-909-6-git-send-email-geert+renesas@glider.be>
+ <20140711091358.GK12420@verge.net.au>
+ <1405435735.28592.50.camel@rzhang1-toshiba>
+ <87mwcakpzw.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f50.google.com ([209.85.219.50]:45936 "EHLO
-	mail-oa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750980AbaGRGkJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 02:40:09 -0400
-Received: by mail-oa0-f50.google.com with SMTP id g18so2470456oah.23
-        for <linux-pm@vger.kernel.org>; Thu, 17 Jul 2014 23:40:09 -0700 (PDT)
-In-Reply-To: <CAOesGMhTkTEXp99gpU8cZBwYmiXpsySG5zMn6oSyo_Mf5PAiUg@mail.gmail.com>
+Received: from kirsty.vergenet.net ([202.4.237.240]:36707 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751810AbaGRHq1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 03:46:27 -0400
+Content-Disposition: inline
+In-Reply-To: <87mwcakpzw.wl%kuninori.morimoto.gx@renesas.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Olof Johansson <olof@lixom.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mike Turquette <mike.turquette@linaro.org>, Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org
 
-On 18 July 2014 11:47, Olof Johansson <olof@lixom.net> wrote:
-> Why complicate it by using two properties?
->
-> If there is no property, then the CPUs are assumed to be controlled
-> independently.
->
-> if there is a clock-master = <phandle> property, then that points at
-> the cpu that is the main one controlling clock for the group.
->
-> There's really no need to label the master -- it will be the only one
-> with incoming links but nothing outgoing. And a master without slaves
-> is an independently controlled cpu so you should be fine in that
-> aspect too.
+On Tue, Jul 15, 2014 at 07:16:06PM -0700, Kuninori Morimoto wrote:
+> 
+> Hi
+> 
+> > > > The documentation only mentioned the generic fallback compatible property.
+> > > > Add the missing SoC-specific compatible properties, some of which are
+> > > > already in use.
+> > > > 
+> > > > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > > > Cc: Zhang Rui <rui.zhang@intel.com>
+> > > > Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+> > > > Cc: linux-pm@vger.kernel.org
+> > > 
+> > > Acked-by: Simon Horman <horms+renesas@verge.net.au>
+> > 
+> > Kuninori,
+> > 
+> > what' your opinion of this patch?
+> > 
+> > thanks,
+> > rui
+> > > 
+> > > > ---
+> > > >  .../devicetree/bindings/thermal/rcar-thermal.txt       | 18 ++++++++++++------
+> > > >  1 file changed, 12 insertions(+), 6 deletions(-)
+> > > > 
+> > > > diff --git a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+> > > > index 28ef498a66e5..0ef00be44b01 100644
+> > > > --- a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+> > > > +++ b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+> > > > @@ -1,7 +1,13 @@
+> > > >  * Renesas R-Car Thermal
+> > > >  
+> > > >  Required properties:
+> > > > -- compatible		: "renesas,rcar-thermal"
+> > > > +- compatible		: "renesas,thermal-<soctype>", "renesas,rcar-thermal"
+> > > > +			  as fallback.
+> > > > +			  Examples with soctypes are:
+> > > > +			    - "renesas,thermal-r8a73a4" (R-Mobile AP6)
+> > > > +			    - "renesas,thermal-r8a7779" (R-Car H1)
+> > > > +			    - "renesas,thermal-r8a7790" (R-Car H2)
+> > > > +			    - "renesas,thermal-r8a7791" (R-Car M2)
+> > > >  - reg			: Address range of the thermal registers.
+> > > >  			  The 1st reg will be recognized as common register
+> > > >  			  if it has "interrupts".
+> > > > @@ -12,18 +18,18 @@ Option properties:
+> > > >  
+> > > >  Example (non interrupt support):
+> > > >  
+> > > > -thermal@e61f0100 {
+> > > > -	compatible = "renesas,rcar-thermal";
+> > > > -	reg = <0xe61f0100 0x38>;
+> > > > +thermal@ffc48000 {
+> > > > +	compatible = "renesas,thermal-r8a7779", "renesas,rcar-thermal";
+> > > > +	reg = <0xffc48000 0x38>;
+> > > >  };
+> > > >  
+> > > >  Example (interrupt support):
+> > > >  
+> > > >  thermal@e61f0000 {
+> > > > -	compatible = "renesas,rcar-thermal";
+> > > > +	compatible = "renesas,thermal-r8a73a4", "renesas,rcar-thermal";
+> > > >  	reg = <0xe61f0000 0x14
+> > > >  		0xe61f0100 0x38
+> > > >  		0xe61f0200 0x38
+> > > >  		0xe61f0300 0x38>;
+> > > > -	interrupts = <0 69 4>;
+> > > > +	interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
+> > > >  };
+> 
+> This patch and [12/13] are adding SoC-specific compatible name.
+> Of course we don't know future request,
+> and, adding SoC-specific compatible name for
+> fallbacking is nice safety for us.
+> So, I don't have strong objection about it.
+> 
+> But, thermal driver side do nothing for each
+> SoC-specific compatible name at this point.
+> This means
+> 
+>  -> There is no trouble in driver/SoC
+>  -> Add new (and not used) compatible name
+>  -> Nothing happen in driver/SoC
+> 
+> My questions are...
+>  1) How to verify this patch ?
+>  2) Do we need to update example SoC "specific name" list in rcar-thermal.txt.
+>     Few example codes are very enough ?
 
-I thought so earlier, but then I remembered something I read long back.
-Don't remember which thread now, but I *might* be wrong..
+Hi Morimoto-san,
 
-"Bindings are like APIs and new bindings shouldn't break existing stuff.."
+I believe that the approach taken with this patch is similar to the
+approach that has been taken for several other drivers used by Renesas
+SoCs. The implication of this approach is:
 
-And:
+1. That the (in this case thermal) IP on the SoC's listed is known
+   to work with the driver using the generic (in this case
+   renesas,rcar-thermal) compatibility string.
 
-> If there is no property, then the CPUs are assumed to be controlled
-> independently.
+2. That if some incompatibility is subsequently found such that the
+   IP on SoC does function correctly using the generic compatibility
+   string or some new feature is to be enabled which is not generic
+   then it the driver should be updated with code that is triggered
+   by the SoC-specific compat string.
 
-seems to break the existing API.
+3. That Soc dts(i) files should list the more specific SoC compat string
+   followed bu the generic compat string. In this way so long as the
+   driver only matches on the generic compat string it will be used. But
+   if the driver is updated match on the SoC-specific compat string
+   then it will be used instead. In this way dtbs should be forwards
+   compatible with driver updates.
 
-But if that isn't the case, the bindings are very simple & clear to handle.
-Diff for new bindings:
+   I believe that this series includes patches to update the relevant
+   dtsi files accordingly.
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpu_clocks.txt
-b/Documentation/devicetree/bindings/cpufreq/cpu_clocks.txt
-index 30ce9ad..d127bba 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpu_clocks.txt
-+++ b/Documentation/devicetree/bindings/cpufreq/cpu_clocks.txt
-@@ -9,15 +9,14 @@ Clock lines may or may not be shared among different
-CPUs on a platform.
-     separate line for itself
+In relation to verification, I believe all the SoCs listed in this patch
+are known to work with the generic compat string. And they should continue
+to work with this change because its only an documentation change. In the
+future, if a SoC specific compat string is added to the driver code then
+verification would need to occur.
 
- Optional Properties:
--- clock-master: This declares cpu as clock master. Other CPUs can either define
--  "clock-ganged" or "clock-master" property, but shouldn't be missing both.
-+- clock-master: Contains phandle of the master cpu controlling clocks.
-
--- clock-ganged: Should have phandle of a cpu declared as "clock-master".
--
--If any cpu node, doesn't have both "clock-master" and "clock-ganged" properties
--defined, it would be assumed that all CPUs on that platform share a
-single clock
--line. This will help supporting already upstreamed platforms.
-+  Ideally there is nothing like a "master" CPU as any CPU can play with DVFS
-+  settings. But we have to choose one cpu out of a group, so that others can
-+  point to it.
-
-+  If there is no "clock-master" property for a cpu node, it is considered as
-+  master. It may or may not have other slave CPUs pointing towards it.
-
- Examples:
- 1.) All CPUs share a single clock line
-@@ -30,34 +29,6 @@ cpus {
-                compatible = "arm,cortex-a15";
-                reg = <0>;
-                next-level-cache = <&L2>;
--               clock-master;
--               operating-points = <
--                       /* kHz    uV */
--                       792000  1100000
--                       396000  950000
--                       198000  850000
--               >;
--               clock-latency = <61036>; /* two CLK32 periods */
--       };
--
--       cpu1: cpu@1 {
--               compatible = "arm,cortex-a15";
--               reg = <1>;
--               next-level-cache = <&L2>;
--               clock-ganged = <&cpu0>;
--       };
--};
--
--OR (clock-master/ganged aren't defined)
--
--cpus {
--       #address-cells = <1>;
--       #size-cells = <0>;
--
--       cpu0: cpu@0 {
--               compatible = "arm,cortex-a15";
--               reg = <0>;
--               next-level-cache = <&L2>;
-                operating-points = <
-                        /* kHz    uV */
-                        792000  1100000
-@@ -71,6 +42,7 @@ cpus {
-                compatible = "arm,cortex-a15";
-                reg = <1>;
-                next-level-cache = <&L2>;
-+               clock-master = <&cpu0>;
-        };
- };
-
-@@ -83,7 +55,6 @@ cpus {
-                compatible = "arm,cortex-a15";
-                reg = <0>;
-                next-level-cache = <&L2>;
--               clock-master;
-                operating-points = <
-                        /* kHz    uV */
-                        792000  1100000
-@@ -97,7 +68,6 @@ cpus {
-                compatible = "arm,cortex-a15";
-                reg = <1>;
-                next-level-cache = <&L2>;
--               clock-master;
-                operating-points = <
-                        /* kHz    uV */
-                        792000  1100000
-@@ -119,7 +89,6 @@ cpus {
-                compatible = "arm,cortex-a15";
-                reg = <0>;
-                next-level-cache = <&L2>;
--               clock-master;
-                operating-points = <
-                        /* kHz    uV */
-                        792000  1100000
-@@ -133,14 +102,13 @@ cpus {
-                compatible = "arm,cortex-a15";
-                reg = <1>;
-                next-level-cache = <&L2>;
--               clock-ganged = <&cpu0>;
-+               clock-master = <&cpu0>;
-        };
-
-        cpu2: cpu@100 {
-                compatible = "arm,cortex-a7";
-                reg = <100>;
-                next-level-cache = <&L2>;
--               clock-master;
-                operating-points = <
-                        /* kHz    uV */
-                        792000  950000
-@@ -154,6 +122,6 @@ cpus {
-                compatible = "arm,cortex-a7";
-                reg = <101>;
-                next-level-cache = <&L2>;
--               clock-ganged = <&cpu2>;
-+               clock-master = <&cpu2>;
-        };
- };
+>From my point of view the documentation in rcar-thermal.txt is consistent
+with the documentation for other drivers that use this binding scheme
+(at least the ones that are documented :). I would not have any problems
+examples but I don't think its entirely necessary.
