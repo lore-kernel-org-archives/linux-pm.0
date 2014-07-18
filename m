@@ -1,77 +1,100 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V1 Resend 1/4] cpufreq: move policy kobj to policy->cpu at resume
-Date: Fri, 18 Jul 2014 02:57:03 +0200
-Message-ID: <1667182.nUyuo0gHhu@vostro.rjw.lan>
-References: <cover.1405573982.git.viresh.kumar@linaro.org> <568e1bd8a6e3e5eff48e84a0d142464a35c09694.1405573982.git.viresh.kumar@linaro.org>
+From: Dmitry Torokhov <dtor@google.com>
+Subject: Re: Power-managing devices that are not of interest at some point in time
+Date: Thu, 17 Jul 2014 17:43:42 -0700
+Message-ID: <4468130.Uu9vndH3sC@dtor-glaptop>
+References: <Pine.LNX.4.44L0.1407171029210.1517-100000@iolanthe.rowland.org> <3088260.XkiUM6Vtxh@dtor-glaptop> <8587268.sIIBz6Y2QN@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <568e1bd8a6e3e5eff48e84a0d142464a35c09694.1405573982.git.viresh.kumar@linaro.org>
-Sender: stable-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arvind.chauhan@arm.com, srivatsa@mit.edu, skannan@codeaurora.org, ybu@qti.qualcomm.com, stable@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <8587268.sIIBz6Y2QN@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Bastien Nocera <hadess@hadess.net>, Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 17, 2014 10:48:25 AM Viresh Kumar wrote:
-> This is only relevant to implementations with multiple clusters, where clusters
-> have separate clock lines but all CPUs within a cluster share it.
+On Friday, July 18, 2014 02:43:02 AM Rafael J. Wysocki wrote:
+> On Thursday, July 17, 2014 09:59:19 AM Dmitry Torokhov wrote:
+> > On Thursday, July 17, 2014 10:39:16 AM Alan Stern wrote:
+> > > On Wed, 16 Jul 2014, Dmitry Torokhov wrote:
+> > > > We are not planning on implementing the policy in kernel, that's
+> > > > indeed task for userspace; but unless we bring in the heavy hammer of
+> > > > forcibly unbinding drivers, we do not currently have universal
+> > > > mechanism of quiescing devices.
+> > > 
+> > > We sort of do: the ->freeze() callback.  But it wasn't intended for
+> > > this kind of use; drivers may very well expect that userspace will
+> > > already be frozen when the callback runs.  Besides, ->freeze() is
+> > > supposed to quiesce devices without powering them down, whereas you
+> > > want to do both.
+> > 
+> > Right.
+> > 
+> > > What you're asking for is different from anything the PM subsystem has
+> > > done before.
+> > 
+> > Right.
+> > 
+> > > Given this fact, I don't see any alternatives to adding a
+> > > new API or repurposing an existing API.  Either one would be somewhat
+> > > painful.
+> > > 
+> > > For example, we could arrange to invoke ->suspend().  However, since
+> > > the circumstances would be unusual (userspace is still running,
+> > > ->prepare() was not called beforehand, ->suspend_irq() won't be called
+> > > afterward), subsystems and drivers may very well react inappropriately.
+> > 
+> > I do not think anybody expects that drivers would not have to be modified
+> > to support this functionality; I expect drivers would have to declare
+> > themselves "queiscable" and therefore would assert that they will act
+> > according to whatever rules we set up. I only want to make sure that this
+> > new state is added to existing list of PM states rather than creating
+> > completely new facility, so that driver authors have a chance to
+> > understand PM state transitions that involve their driver.
 > 
-> Consider a dual cluster platform with 2 cores per cluster. During suspend we
-> start hot unplugging CPUs in order 1 to 3. When CPU2 is removed, policy->kobj
-> would be moved to CPU3 and when CPU3 goes down we wouldn't free policy or its
-> kobj as we want to retain permissions/values/etc.
+> If you're referring to runtime PM, it doesn't use "states".  It uses status
+> values (you can think of them as metastates) which are "active", "suspended"
+> or in-transit from one to the other.  There's no room for more of these in
+> the design, I'm afraid.
 > 
-> Now on resume, we will get CPU2 before CPU3 and will call __cpufreq_add_dev().
-> We will recover the old policy and update policy->cpu from 3 to 2 from
-> update_policy_cpu().
+> Moreover, .runtime_suspend() can only be called when the device is quiescent
+> already.  [That also applies to .suspend_late() and .suspend_irq() for
+> system suspend and the freezing of tasks is requisite for the .prepare()
+> and .suspend() callbacks (and the corresponding hibernation-related ones).]
 > 
-> But the kobj is still tied to CPU3 and isn't moved to CPU2. We wouldn't create a
-> link for CPU2, but would try that for CPU3 while bringing it online. Which will
-> report errors as CPU3 already has kobj assigned to it.
+> From past discussions on similar topics it followed that there really was
+> no generic way for individual drivers to quiesce devices on demand as long
+> as user space was running.  Everything we could come up with was racy, this
+> way or another.  That is the reason for using the freezer during system
+> suspend.  In other words, if you want drivers to quiesce devices by force,
+> you need to quiesce user space by force to start with - for example by
+> freezing it.
 > 
-> This bug got introduced with commit 42f921a, which overlooked this scenario.
+> For runtime PM, on the other hand, the underlying observation is that
+> drivers should be able to detect when devices are already quiescent and
+> initialize power transitions at those points.  It's role is to help with
+> that, but not with quiescing things.
 > 
-> To fix this, lets move kobj to the new policy->cpu while bringing first CPU of a
-> cluster back. Also do a WARN_ON() if kobject_move failed, as we would reach here
-> only for the first CPU of a non-boot cluster. And we can't recover from this
-> situation, if kobject_move() fails.
-> 
-> Fixes: ("42f921a cpufreq: remove sysfs files for CPUs which failed to come back after resume")
-> Cc: stable@vger.kernel.org # 3.13+
-> Reported-by: Bu Yitian <ybu@qti.qualcomm.com>
-> Reported-by: Saravana Kannan <skannan@codeaurora.org>
-> Tested-by: Bu Yitian <ybu@qti.qualcomm.com>
-> Reviewed-by: Srivatsa S. Bhat <srivatsa@mit.edu>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> That said, in the "laptop lid closed" scenario (assuming that the system is
+> not supposed to suspend in response to that, which in my opinion is the
+> best approach)
 
-Applied, thanks!  The rest is on my todo list.
+This is default approach that works for many, but not necessarily all  use 
+cases. I believe docked with lid closed scenario was mentioned already.
 
-> ---
->  drivers/cpufreq/cpufreq.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 62259d2..6f02485 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1153,10 +1153,12 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
->  	 * the creation of a brand new one. So we need to perform this update
->  	 * by invoking update_policy_cpu().
->  	 */
-> -	if (recover_policy && cpu != policy->cpu)
-> +	if (recover_policy && cpu != policy->cpu) {
->  		update_policy_cpu(policy, cpu);
-> -	else
-> +		WARN_ON(kobject_move(&policy->kobj, &dev->kobj));
-> +	} else {
->  		policy->cpu = cpu;
-> +	}
->  
->  	cpumask_copy(policy->cpus, cpumask_of(cpu));
->  
-> 
+> the problem really seems to be that drivers are not
+> aggressive enough with starting PM transitions (using runtime PM) when they
+> see no activity.  Thus it seems that when the lid is closed, it'll be good
+> to switch the drivers into a "more aggressive runtime PM mode" in which
+> they will use any opportunity to start a power transition without worrying
+> about extra latencies resulting from that.  In that mode they should also
+> disable remote wakeup.  I think this should be sufficient to address the
+> use case at hand.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+OK, so how do we let the drivers know that they should start being aggressive 
+with PM and that they should disable remote wakeup? I'd rather not add 
+subsystem-specific interface for this, that is why we are reaching out in the 
+first place.
+
+Thanks,
+Dmitry
