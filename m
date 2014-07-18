@@ -1,65 +1,64 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH 2/2] PM / devfreq: exynos: Enable building exynos PPMU as module
-Date: Fri, 18 Jul 2014 15:09:54 +0100
-Message-ID: <1405692594-19352-3-git-send-email-punit.agrawal@arm.com>
-References: <1405692594-19352-1-git-send-email-punit.agrawal@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1405692594-19352-1-git-send-email-punit.agrawal@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: orjan.eide@arm.com, Punit Agrawal <punit.agrawal@arm.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Power-managing devices that are not of interest at some point
+ in time
+Date: Fri, 18 Jul 2014 11:19:07 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1407181107450.979-100000@iolanthe.rowland.org>
+References: <2674541.jV2qHCZlHf@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:54835 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751376AbaGRPTI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 11:19:08 -0400
+In-Reply-To: <2674541.jV2qHCZlHf@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dmitry Torokhov <dtor@google.com>, Bastien Nocera <hadess@hadess.net>, Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Export symbols from the PPMU driver needed to build the exynos bus
-driver as a module.
+On Fri, 18 Jul 2014, Rafael J. Wysocki wrote:
 
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
----
- drivers/devfreq/Kconfig              |    2 +-
- drivers/devfreq/exynos/exynos_ppmu.c |    3 +++
- 2 files changed, 4 insertions(+), 1 deletion(-)
+> > > the problem really seems to be that drivers are not
+> > > aggressive enough with starting PM transitions (using runtime PM) when they
+> > > see no activity.  Thus it seems that when the lid is closed, it'll be good
+> > > to switch the drivers into a "more aggressive runtime PM mode" in which
+> > > they will use any opportunity to start a power transition without worrying
+> > > about extra latencies resulting from that.  In that mode they should also
+> > > disable remote wakeup.  I think this should be sufficient to address the
+> > > use case at hand.
+> > 
+> > OK, so how do we let the drivers know that they should start being aggressive 
+> > with PM and that they should disable remote wakeup? I'd rather not add 
+> > subsystem-specific interface for this, that is why we are reaching out in the 
+> > first place.
+> 
+> For disabling remote wakeup we have a PM QoS flag that I'm not entirely happy
+> with, so I guess we can replace it with something saner (I talked about that
+> with Alan during the last year's LinuxCon, but then didn't have the time to
+> get to that).
 
-diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 49e74c1..77bf126 100644
---- a/drivers/devfreq/Kconfig
-+++ b/drivers/devfreq/Kconfig
-@@ -79,7 +79,7 @@ config ARM_EXYNOS4_BUS_DEVFREQ
- 	  This does not yet operate with optimal voltages.
- 
- config ARM_EXYNOS5_BUS_DEVFREQ
--	bool "ARM Exynos5250 Bus DEVFREQ Driver"
-+	tristate "ARM Exynos5250 Bus DEVFREQ Driver"
- 	depends on SOC_EXYNOS5250
- 	select ARCH_HAS_OPP
- 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
-diff --git a/drivers/devfreq/exynos/exynos_ppmu.c b/drivers/devfreq/exynos/exynos_ppmu.c
-index 75fcc51..97b75e5 100644
---- a/drivers/devfreq/exynos/exynos_ppmu.c
-+++ b/drivers/devfreq/exynos/exynos_ppmu.c
-@@ -73,6 +73,7 @@ void busfreq_mon_reset(struct busfreq_ppmu_data *ppmu_data)
- 		exynos_ppmu_start(ppmu_base);
- 	}
- }
-+EXPORT_SYMBOL(busfreq_mon_reset);
- 
- void exynos_read_ppmu(struct busfreq_ppmu_data *ppmu_data)
- {
-@@ -97,6 +98,7 @@ void exynos_read_ppmu(struct busfreq_ppmu_data *ppmu_data)
- 
- 	busfreq_mon_reset(ppmu_data);
- }
-+EXPORT_SYMBOL(exynos_read_ppmu);
- 
- int exynos_get_busier_ppmu(struct busfreq_ppmu_data *ppmu_data)
- {
-@@ -114,3 +116,4 @@ int exynos_get_busier_ppmu(struct busfreq_ppmu_data *ppmu_data)
- 
- 	return busy;
- }
-+EXPORT_SYMBOL(exynos_get_busier_ppmu);
--- 
-1.7.10.4
+Right.  We discussed changing .../power/wakeup so that it could contain
+"enabled", "disabled", or "off", where "off" would mean remote wakeup
+should be disabled even during runtime suspend.
+
+> For the whole thing I guess we can add a sysfs attribute under devices/.../power
+> that will need to be exposed by drivers supporting that feature.  I'm not sure
+> how to call it, though.
+
+"runtime_mode"?
+
+Will this really be capable of doing what Dmitry wants?  I don't know
+how the drivers in question work.  But if a driver increments the
+runtime usage count each time the device file is opened, forcibly
+setting the usage count back to 0 won't be easy.
+
+Also, would putting the camera into runtime suspend prevent it from
+showing up on a list of available video devices?  I doubt it.  More
+likely, the video driver would have to unregister the class device
+while remaining bound to the physical device.  Probably other drivers
+would have to do the same sort of thing.  (I don't know whether doing
+this would retain the settings as Oliver wants, though.)
+
+Alan Stern
+
