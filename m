@@ -1,115 +1,90 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v5 7/8] drivers: cpuidle: initialize Exynos driver through
- DT
-Date: Fri, 18 Jul 2014 18:10:39 +0200
-Message-ID: <1633432.ZfU5VfHtET@amdc1032>
-References: <1403705421-17597-1-git-send-email-lorenzo.pieralisi@arm.com>
- <20140717142019.GA21732@e102568-lin.cambridge.arm.com>
- <CANuQgHEPocfO8wDPDTJUkBNGEfw6FoLEYAJK-zPPA7kd_L-34Q@mail.gmail.com>
+From: Patrik Fimml <patrikf@chromium.org>
+Subject: Re: Power-managing devices that are not of interest at some point in
+ time
+Date: Fri, 18 Jul 2014 10:47:12 -0700
+Message-ID: <20140718174712.GA3156@google.com>
+References: <Pine.LNX.4.44L0.1407171029210.1517-100000@iolanthe.rowland.org>
+ <3088260.XkiUM6Vtxh@dtor-glaptop>
+ <8587268.sIIBz6Y2QN@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <CANuQgHEPocfO8wDPDTJUkBNGEfw6FoLEYAJK-zPPA7kd_L-34Q@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Chander Kashyap <chander.kashyap@linaro.org>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Tomasz Figa <t.figa@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Rob Herring <robh+dt@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-input-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <8587268.sIIBz6Y2QN@vostro.rjw.lan>
+Sender: linux-input-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dmitry Torokhov <dtor@google.com>, Alan Stern <stern@rowland.harvard.edu>, Bastien Nocera <hadess@hadess.net>, Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, Jul 18, 2014 at 02:43:02AM +0200, Rafael J. Wysocki wrote:
+> From past discussions on similar topics it followed that there really was
+> no generic way for individual drivers to quiesce devices on demand as long as
+> user space was running.  Everything we could come up with was racy, this way or
+> another.  That is the reason for using the freezer during system suspend.  In
+> other words, if you want drivers to quiesce devices by force, you need to quiesce
+> user space by force to start with - for example by freezing it.
 
-Hi,
+Can you give me some pointers?
 
-On Friday, July 18, 2014 02:15:01 PM Chander Kashyap wrote:
-> Hi Lorenzo,
+> For runtime PM, on the other hand, the underlying observation is that drivers
+> should be able to detect when devices are already quiescent and initialize power
+> transitions at those points.  It's role is to help with that, but not with quiescing
+> things.
 > 
-> 
-> On 17 July 2014 19:50, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> > On Wed, Jun 25, 2014 at 04:23:38PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> >>
-> >> Hi,
-> >>
-> >> On Wednesday, June 25, 2014 03:10:20 PM Lorenzo Pieralisi wrote:
-> >> > With the introduction of DT based idle states, CPUidle drivers for
-> >> > ARM can now initialize idle states data through properties in the device
-> >> > tree.
-> >> >
-> >> > This patch adds code to the Exynos CPUidle driver to dynamically
-> >> > initialize idle states data through the updated device tree source
-> >> > files.
-> >> >
-> >> > Cc: Kukjin Kim <kgene.kim@samsung.com>
-> >> > Cc: Tomasz Figa <t.figa@samsung.com>
-> >> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> >> > ---
-> >> > Compile tested, I am not sure I patched the right dts files, please check.
-> >>
-> >> cpuidle-exynos driver is currently working properly in deeper cpuidle
-> >> mode (AFTR) on Exynos4210 and Exynos5250 (please also see the following
-> >> patch from Tomasz Figa: [1]).  There is ongoing work to AFTR mode work
-> >> also on Exynos4x12 and Exynos3250 but it is not complete yet.  Exynos5410
-> >> OTOH should probably use the generic big little cpuidle driver (this SoC
-> >> is similar to Exynos5420 one for which Chander Kashyap has developed
-> >> cpuidle-big_little support [2]).
-> >>
-> >> Making long story short, I think that your patch should depend on patch
-> >> [1] and update only exynos4210.dtsi and exynos5250.dtsi.  Also for your
-> >> patch #6 there needs to be some coordination with merging of Chander's
-> >> patchset ([2]).
-> >>
-> >> [1] http://www.spinics.net/lists/arm-kernel/msg341023.html
-> >> [2] https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg664470.html
-> >
-> >
-> > exynos4210.dtsi does not even have cpu nodes in it. Should I add them or
-> > this might trigger regression (ie cpu_logical_map()) ?
-> 
-> Yes that can cause regression.
+> That said, in the "laptop lid closed" scenario (assuming that the system is not
+> supposed to suspend in response to that, which in my opinion is the best approach)
+> the problem really seems to be that drivers are not aggressive enough with starting
+> PM transitions (using runtime PM) when they see no activity.  Thus it seems that
+> when the lid is closed, it'll be good to switch the drivers into a "more aggressive
+> runtime PM mode" in which they will use any opportunity to start a power transition
+> without worrying about extra latencies resulting from that.  In that mode they
+> should also disable remote wakeup.  I think this should be sufficient to address
+> the use case at hand.
 
-Yes, two patches from Tomasz Figa are needed to fix it:
+Let me try to clear things up a little.
 
-- [PATCH 2/6] ARM: EXYNOS: Fix core ID used by platsmp and hotplug code
-  http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32811.html
+Of course, in most cases, a laptop would enter suspend after closing the
+lid. But you can think of scenarios where the laptop would stay on:
+- Your laptop is docked, and you use an external monitor, but you don't
+  want to have your laptop open (maybe due to lack of space).
+- You have your laptop in your backpack and use it as a music player.
 
-- [PATCH] irqchip: gic: Fix core ID calculation when topology is read from DT
-  http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34277.html
+In those scenarios, you wouldn't want to see bogus input (our worst-case
+example is the mouse pointer being over the 1-Click Buy button on
+Amazon - stray clicks that result from the laptop lid interfering with
+the touchpad wouldn't be a good thing).
 
-> > I will post a new version soon, should I just patch 5250 for now ?
+Now there are basically two approaches with pros and cons:
 
-I posted patch adding CPU nodes for Exynos4 SoCs to DT:
+ 1. Get userspace to close handles to all such devices while the lid is
+    closed, and
+1a. Have drivers with sufficiently aggressive PM so that devices are
+    actually going to a low-power/off state when userspace doesn't have
+    any handles open.
 
-- [PATCH] ARM: dts: add CPU nodes for Exynos4 SoCs
-  http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34378.html
+This can be done with the infrastructure that we have in the kernel
+today, although drivers might have to be improved in order to actually
+get devices to power off.
 
-Please make your series depend on it and add Exynos4210 support.
+ 2. Give userspace a way of quiescing a device. Handles to the device
+    stay open, but the device will no longer perform its function and,
+    if possible, power down.
 
-> > I would need help to test this patch thanks.
-> 
-> I can test the patch for 5250.
+For input devices, this makes a lot of sense in my opinion.
 
-I can do testing on Exynos4210 if needed.
+The notable difference to runtime PM as we have it today is that with
+runtime PM, a device typically goes to a low-power state because it is
+idle. In our scenario, we want to forcibly quiesce it even if it is not
+idle (and if it continues to provide events in a low-power mode, we
+want to ignore them instead of passing them on). So maybe integration
+with runtime PM is not the best fit.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Perhaps the best way to go forward would be to add a new property for
+all devices that support quiescing so userspace has a uniform way of
+doing things, but have subsystems (and potentially the device driver)
+decide what action is appropriate to quiesce a device. Some subsystems
+might be able to provide a default implementation (e.g. input could just
+skip all events that are reported from the device driver).
 
-> >
-> > Lorenzo
-> >
-> >> >  .../devicetree/bindings/arm/exynos/idle-states.txt | 27 ++++++++++++++++++++
-> >> >  arch/arm/boot/dts/exynos3250.dtsi                  | 16 ++++++++++++
-> >> >  arch/arm/boot/dts/exynos5250.dtsi                  | 15 +++++++++++
-> >> >  arch/arm/boot/dts/exynos5410.dtsi                  | 17 +++++++++++++
-> >> >  drivers/cpuidle/Kconfig.arm                        |  1 +
-> >> >  drivers/cpuidle/cpuidle-exynos.c                   | 29 +++++++++++++---------
-> >> >  6 files changed, 93 insertions(+), 12 deletions(-)
-> >> >  create mode 100644 Documentation/devicetree/bindings/arm/exynos/idle-states.txt
+Regards,
+Patrik
