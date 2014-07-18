@@ -1,74 +1,144 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 05/11] cpufreq: intel_pstate: Cleanup parentheses
-Date: Fri, 18 Jul 2014 08:37:21 -0700
-Message-ID: <1405697848-13546-6-git-send-email-dirk.j.brandewie@intel.com>
+Subject: [PATCH 07/11] cpufreq: intel_pstate: Align multiple lines to open parenthesis
+Date: Fri, 18 Jul 2014 08:37:23 -0700
+Message-ID: <1405697848-13546-8-git-send-email-dirk.j.brandewie@intel.com>
 References: <1405697848-13546-1-git-send-email-dirk.j.brandewie@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:44483 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422773AbaGRPhr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 11:37:47 -0400
-Received: by mail-pa0-f50.google.com with SMTP id et14so5644338pad.37
-        for <linux-pm@vger.kernel.org>; Fri, 18 Jul 2014 08:37:46 -0700 (PDT)
+Received: from mail-pd0-f170.google.com ([209.85.192.170]:35111 "EHLO
+	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422808AbaGRPhu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jul 2014 11:37:50 -0400
+Received: by mail-pd0-f170.google.com with SMTP id g10so5273011pdj.29
+        for <linux-pm@vger.kernel.org>; Fri, 18 Jul 2014 08:37:49 -0700 (PDT)
 In-Reply-To: <1405697848-13546-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, Stratos Karafotis <stratosk@semaphore.gr>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: rjw@rjwysocki.net, Stratos Karafotis <stratosk@semaphore.gr>
 
 From: Stratos Karafotis <stratosk@semaphore.gr>
 
-Remove unnecessary parentheses.
-Also, add parentheses in one case for better readability.
+Suppress checkpatch.pl --strict warnings:
+CHECK: Alignment should match open parenthesis
 
 Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 34 +++++++++++++++++-----------------
+ 1 file changed, 17 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 424c5a9..dee9e58 100644
+index e0ed078..9d75bd6 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -443,7 +443,7 @@ static int core_get_turbo_pstate(void)
+@@ -147,7 +147,7 @@ static struct perf_limits limits = {
+ };
  
- 	rdmsrl(MSR_NHM_TURBO_RATIO_LIMIT, value);
- 	nont = core_get_max_pstate();
--	ret = ((value) & 255);
-+	ret = (value) & 255;
- 	if (ret <= nont)
- 		ret = nont;
- 	return ret;
-@@ -617,7 +617,7 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
- 	current_pstate = int_tofp(cpu->pstate.current_pstate);
- 	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+ static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
+-			int deadband, int integral) {
++			     int deadband, int integral) {
+ 	pid->setpoint = setpoint;
+ 	pid->deadband  = deadband;
+ 	pid->integral  = int_tofp(integral);
+@@ -258,8 +258,8 @@ static void __init intel_pstate_debug_expose_params(void)
+ 		return;
+ 	while (pid_files[i].name) {
+ 		debugfs_create_file(pid_files[i].name, 0660,
+-				debugfs_parent, pid_files[i].value,
+-				&fops_pid_param);
++				    debugfs_parent, pid_files[i].value,
++				    &fops_pid_param);
+ 		i++;
+ 	}
+ }
+@@ -275,7 +275,7 @@ static void __init intel_pstate_debug_expose_params(void)
+ 	}
  
--	sample_time = (pid_params.sample_rate_ms  * USEC_PER_MSEC);
-+	sample_time = pid_params.sample_rate_ms  * USEC_PER_MSEC;
- 	duration_us = (u32) ktime_us_delta(cpu->sample.time,
- 					cpu->last_sample_time);
- 	if (duration_us > sample_time * 3) {
-@@ -751,7 +751,7 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 	limits.min_perf_pct = clamp_t(int, limits.min_perf_pct, 0 , 100);
- 	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
- 
--	limits.max_policy_pct = policy->max * 100 / policy->cpuinfo.max_freq;
-+	limits.max_policy_pct = (policy->max * 100) / policy->cpuinfo.max_freq;
- 	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
- 	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
- 	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
-@@ -763,8 +763,8 @@ static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
+ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
+-				const char *buf, size_t count)
++			      const char *buf, size_t count)
  {
+ 	unsigned int input;
+ 	int ret;
+@@ -292,7 +292,7 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
+ }
+ 
+ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+-				const char *buf, size_t count)
++				  const char *buf, size_t count)
+ {
+ 	unsigned int input;
+ 	int ret;
+@@ -309,7 +309,7 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+ }
+ 
+ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+-				const char *buf, size_t count)
++				  const char *buf, size_t count)
+ {
+ 	unsigned int input;
+ 	int ret;
+@@ -618,10 +618,10 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+ 
+ 	sample_time = pid_params.sample_rate_ms  * USEC_PER_MSEC;
+ 	duration_us = (u32) ktime_us_delta(cpu->sample.time,
+-					cpu->last_sample_time);
++					   cpu->last_sample_time);
+ 	if (duration_us > sample_time * 3) {
+ 		sample_ratio = div_fp(int_tofp(sample_time),
+-				int_tofp(duration_us));
++				      int_tofp(duration_us));
+ 		core_busy = mul_fp(core_busy, sample_ratio);
+ 	}
+ 
+@@ -763,7 +763,7 @@ static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
  	cpufreq_verify_within_cpu_limits(policy);
  
--	if ((policy->policy != CPUFREQ_POLICY_POWERSAVE) &&
--		(policy->policy != CPUFREQ_POLICY_PERFORMANCE))
-+	if (policy->policy != CPUFREQ_POLICY_POWERSAVE &&
-+		policy->policy != CPUFREQ_POLICY_PERFORMANCE)
+ 	if (policy->policy != CPUFREQ_POLICY_POWERSAVE &&
+-		policy->policy != CPUFREQ_POLICY_PERFORMANCE)
++	    policy->policy != CPUFREQ_POLICY_PERFORMANCE)
  		return -EINVAL;
  
  	return 0;
+@@ -796,7 +796,7 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	rdmsrl(MSR_IA32_MISC_ENABLE, misc_en);
+ 	if (misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ||
+-		cpu->pstate.max_pstate == cpu->pstate.turbo_pstate) {
++	    cpu->pstate.max_pstate == cpu->pstate.turbo_pstate) {
+ 		limits.turbo_disabled = 1;
+ 		limits.no_turbo = 1;
+ 	}
+@@ -838,8 +838,8 @@ static int intel_pstate_msrs_not_valid(void)
+ 	rdmsrl(MSR_IA32_MPERF, mperf);
+ 
+ 	if (!pstate_funcs.get_max() ||
+-		!pstate_funcs.get_min() ||
+-		!pstate_funcs.get_turbo())
++	    !pstate_funcs.get_min() ||
++	    !pstate_funcs.get_turbo())
+ 		return -ENODEV;
+ 
+ 	rdmsrl(MSR_IA32_APERF, tmp);
+@@ -921,14 +921,14 @@ static bool intel_pstate_platform_pwr_mgmt_exists(void)
+ 	struct acpi_table_header hdr;
+ 	struct hw_vendor_info *v_info;
+ 
+-	if (acpi_disabled
+-	    || ACPI_FAILURE(acpi_get_table_header(ACPI_SIG_FADT, 0, &hdr)))
++	if (acpi_disabled ||
++	    ACPI_FAILURE(acpi_get_table_header(ACPI_SIG_FADT, 0, &hdr)))
+ 		return false;
+ 
+ 	for (v_info = vendor_info; v_info->valid; v_info++) {
+-		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE)
+-		    && !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE)
+-		    && intel_pstate_no_acpi_pss())
++		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE) &&
++		    !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
++		    intel_pstate_no_acpi_pss())
+ 			return true;
+ 	}
+ 
 -- 
 1.9.3
 
