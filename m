@@ -1,61 +1,61 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v3] PM / devfreq: Add possible_frequencies device attribute
-Date: Thu, 17 Jul 2014 20:32:54 -0700
-Message-ID: <53C89566.9020505@codeaurora.org>
-References: <725805840.101171405558256488.JavaMail.weblogic@epmlwas01c>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
+Date: Fri, 18 Jul 2014 09:47:24 +0530
+Message-ID: <CAKohpomKzK8pMJs1gv+uXxhd17HtCQyfjSnVYw9KpGz6FwbgDA@mail.gmail.com>
+References: <cover.1404231535.git.viresh.kumar@linaro.org>
+	<20140717093518.486ac244@free-electrons.com>
+	<CAKohpokZXUzXKRWBje7QF_jrvOd5dmfmWQ2Csf3xiMuvT_vPYA@mail.gmail.com>
+	<2399813.Puj1SZWhCh@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:56661 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755689AbaGRDcz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Jul 2014 23:32:55 -0400
-In-Reply-To: <725805840.101171405558256488.JavaMail.weblogic@epmlwas01c>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2399813.Puj1SZWhCh@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mturquette@linaro.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Simon Horman <horms@verge.net.au>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas P Abraham <thomas.ab@samsung.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Sachin Kamat <spk.linux@gmail.com>, Michal Simek <michal.simek@xilinx.com>
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: =?EUC-KR?B?udqw5rnO?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 07/16/2014 05:50 PM, MyungJoo Ham wrote:
-> On Wed, Jul 16, 2014 at 12:01 PM, Saravana Kannan <skannan@codeaurora.org> wrote:
->> Some devices use freq_table instead of OPP. For those devices, the
->> available_frequencies sysfs file shows up empty. So, add a
->> possible_frequencies attribute/syfs file that list all the possible
->> frequencies.
+On 18 July 2014 06:32, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > only support the following cases:
+>> >
+>> >  * One clock for all CPUs
+>> >  * One clock for each CPU
 >>
->> For devices that use OPP, the output of this file will match
->> available_frequencies. It may change in the future to show all OPP
->> frequencies -- even the disabled ones.
+>> Yeah, so I also proposed this yesterday that we stick to only these
+>> two implementations for now. And was looking at how would the
+>> cpufreq-generic driver come to know about this.
 >>
->> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> 
-> Hi,
-> 
-> 
-> Please add a documentation entry for this new ABI having a little justification and usage included.
+>> So, one way out now is to see if "clocks" property is defined in
+>> multiple cpu nodes, if yes don't compare them and consider separate
+>> clocks for each cpu. We don't have to try matching that to any other
+>> node, as that's a very bad idea. Mike was already very upset with that :)
+>>
+>> @Stephen/Rafael: Does that sound any better? Ofcourse the final thing
+>> is to get bindings to figure out relations between CPUs..
+>
+> Before I apply anything in this area, I need a clear statement from the ARM
+> people as a group on what the approach is going to be.
 
-Will do.
+Thanks for your response Rafael.
 
-> 
-> Plus, I am considering to move trans_stat along with this entry to somewhere such as .../stat/*
-> (you don't need to take care of this.)
+Mike/Rob/Stephen: I believe Atleast three of you should express your views
+now :)
 
-Ok.
+So, this is what I propose:
 
-> 
-> Besides, as OPP seems becoming the standard as imagined when devfreq development started,
-> soon, devfreq may require OPP unless the devfreq device has continuous frequencies.
+- I will start another thread with a new DT binding, something like:
 
-I agree. Only one caveat with OPP is that if a device isn't using OPP to
-do any voltage scaling, then it forces a voltage column with 0s. Also,
-even if we make OPP mandatory, we'll still want trans_stats that
-currently seem to depend on freq_table being populated. I was actually
-planning on sending out more patches later that'll do a lot of stuff
-automatically for devices with OPP. Like creating freq_table, etc.
+"clocks-ganged" = <&cpu0>
 
--Saravana
+and then we can decide on naming/etc ..
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+- I will drop the patch which matches clock nodes from DT and introduce
+another one that will just check if "clocks" is mentioned in more than one
+CPU. If yes, then we behave as if all CPUs have separate clock lines.
+
+That will work for Krait/mvebu and all existing users.
+
+Does that sound good?
+
+--
+viresh
