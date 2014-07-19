@@ -1,50 +1,56 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Joerg Roedel <joro@8bytes.org>
 Subject: Re: [PATCH 0/6] PM / Hibernate: Memory bitmap scalability
  improvements
-Date: Sat, 19 Jul 2014 12:26:23 +0200
-Message-ID: <20140719102623.GA837@amd.pavel.ucw.cz>
+Date: Sat, 19 Jul 2014 13:35:02 +0200
+Message-ID: <20140719113502.GJ30979@8bytes.org>
 References: <1405684643-30234-1-git-send-email-joro@8bytes.org>
+ <20140719102623.GA837@amd.pavel.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36902 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758166AbaGSK0Z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 19 Jul 2014 06:26:25 -0400
+Received: from 8bytes.org ([81.169.241.247]:49227 "EHLO theia.8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760968AbaGSLfF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 19 Jul 2014 07:35:05 -0400
 Content-Disposition: inline
-In-Reply-To: <1405684643-30234-1-git-send-email-joro@8bytes.org>
+In-Reply-To: <20140719102623.GA837@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joerg Roedel <joro@8bytes.org>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi!
+Hi,
 
-> here is a patch set to improve the scalability of the memory
-> bitmap implementation used for hibernation. The current
-> implementation does not scale well to machines with several
-> TB of memory. A resume on those machines may cause soft
-> lockups to be reported.
+On Sat, Jul 19, 2014 at 12:26:23PM +0200, Pavel Machek wrote:
+> > A test on a 12TB machine showed an improvement in resume
+> > time from 76s with the old implementation to 2.4s with the
+> > radix tree and the improved swsusp_free function. See below
+> > for details of this test.
 > 
-> These patches improve the data structure by adding a radix
-> tree to the linked list structure to improve random access
-> performance from O(n) to O(log_b(n)), where b depends on the
-> architecture (b=512 on amd64, 1024 in i386).
+> Ok, nice.
 > 
-> A test on a 12TB machine showed an improvement in resume
-> time from 76s with the old implementation to 2.4s with the
-> radix tree and the improved swsusp_free function. See below
-> for details of this test.
+> How did space requirements change?
+> 
+> In particular, do we need to reserve a bit more pages for hibernation
+> now?
 
-Ok, nice.
+This depends on the amount of memory in the system. On one side the
+struct bm_block (32 bytes) was replaced by struct rtree_node (16 bytes).
 
-How did space requirements change?
+On the other side more pages are required to build the radix tree.
+For systems with up to 64GB of RAM on amd64 this is one additional page.
+On a 12TB system this sums up to 193 additional pages (again, on amd64)
+required for the radix tree inner nodes.
 
-In particular, do we need to reserve a bit more pages for hibernation
-now?
+These 193 pages take around 800kb while we save ca. 1.5MB because of the
+smaller struct rtree_node.
+
+On a 4GB system the situation is different, there we need to reserve one
+additional page while saving only 512 bytes with the smaller struct. The
+break-even is somewhere around 32GB where the savings of struct
+rtree_node outweight the additional page required for the radix tree.
 
 Thanks,
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+	Joerg
+
