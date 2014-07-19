@@ -1,102 +1,49 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: [PATCH v4] PM / devfreq: Add possible_frequencies device attribute
-Date: Fri, 18 Jul 2014 17:15:58 -0700
-Message-ID: <1405728958-619-1-git-send-email-skannan@codeaurora.org>
-References: <725805840.101171405558256488.JavaMail.weblogic@epmlwas01c>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <725805840.101171405558256488.JavaMail.weblogic@epmlwas01c>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Saravana Kannan <skannan@codeaurora.org>
+From: Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH 0/6] PM / Hibernate: Memory bitmap scalability
+ improvements
+Date: Sat, 19 Jul 2014 09:55:40 +0200
+Message-ID: <20140719075540.GH30979@8bytes.org>
+References: <1405684643-30234-1-git-send-email-joro@8bytes.org>
+ <2105930.LcBFYOUaLE@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 8bytes.org ([81.169.241.247]:49134 "EHLO theia.8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751845AbaGSHzo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 19 Jul 2014 03:55:44 -0400
+Content-Disposition: inline
+In-Reply-To: <2105930.LcBFYOUaLE@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Some devices use freq_table instead of OPP. For those devices, the
-available_frequencies sysfs file shows up empty. So, add a
-possible_frequencies attribute/syfs file that list all the possible
-frequencies.
+Hi Rafael,
 
-For devices that use OPP, the output of this file will match
-available_frequencies. It may change in the future to show all OPP
-frequencies -- even the disabled ones.
+On Sat, Jul 19, 2014 at 12:05:02AM +0200, Rafael J. Wysocki wrote:
+> On Friday, July 18, 2014 01:57:17 PM Joerg Roedel wrote:
+> > here is a patch set to improve the scalability of the memory
+> > bitmap implementation used for hibernation. The current
+> > implementation does not scale well to machines with several
+> > TB of memory. A resume on those machines may cause soft
+> > lockups to be reported.
+> 
+> Looks good.
+> 
+> How much testing did that receive?
 
-Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
----
- Documentation/ABI/testing/sysfs-class-devfreq | 15 +++++++++++++++
- drivers/devfreq/devfreq.c                     | 26 ++++++++++++++++++++++++++
- 2 files changed, 41 insertions(+)
+Well, I did function testing of the radix tree and the old memory bitmap
+in parallel (patches 1-4) and looked for the warnings to trigger in case
+the bitmaps return different results. With these patches the radix tree
+produced always the same results as the old implementation (none of the
+warnings did trigger).
 
-diff --git a/Documentation/ABI/testing/sysfs-class-devfreq b/Documentation/ABI/testing/sysfs-class-devfreq
-index ee39aca..a461e67 100644
---- a/Documentation/ABI/testing/sysfs-class-devfreq
-+++ b/Documentation/ABI/testing/sysfs-class-devfreq
-@@ -72,6 +72,21 @@ Description:
- 		This is a snapshot of available frequencies and not limited
- 		by the min/max frequency restrictions.
- 
-+What:		/sys/class/devfreq/.../possible_frequencies
-+Date:		July 2014
-+Contact:	Saravana Kannan <skannan@codeaurora.org>
-+Description:
-+		The /sys/class/devfreq/.../possible_frequencies shows
-+		the possible frequencies of the corresponding devfreq object.
-+		This is a snapshot of possible frequencies and not limited by
-+		the min/max frequency restrictions. Unlike
-+		available_frequencies, this is also does not require the
-+		devfreq device to use OPP for listing its possible
-+		frequencies. When OPP is used, this behaves the same way as
-+		available_frequencies. It maybe improved in the future to
-+		list all possible OPP frequencies even if some of them are
-+		disabled at run-time.
-+
- What:		/sys/class/devfreq/.../available_governors
- Date:		October 2012
- Contact:	Nishanth Menon <nm@ti.com>
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 9f90369..65eed38 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -994,6 +994,31 @@ static ssize_t available_frequencies_show(struct device *d,
- }
- static DEVICE_ATTR_RO(available_frequencies);
- 
-+static ssize_t possible_frequencies_show(struct device *d,
-+					  struct device_attribute *attr,
-+					  char *buf)
-+{
-+	struct devfreq *df = to_devfreq(d);
-+	unsigned int i = 0;
-+	ssize_t count = 0;
-+
-+	if (!df->profile->freq_table)
-+		return available_frequencies_show(d, attr, buf);
-+
-+	for (i = 0; i < df->profile->max_state; i++)
-+		count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
-+				   "%u ", df->profile->freq_table[i]);
-+
-+	/* Truncate the trailing space */
-+	if (count)
-+		count--;
-+
-+	count += sprintf(&buf[count], "\n");
-+
-+	return count;
-+}
-+static DEVICE_ATTR_RO(possible_frequencies);
-+
- static ssize_t trans_stat_show(struct device *dev,
- 			       struct device_attribute *attr, char *buf)
- {
-@@ -1041,6 +1066,7 @@ static struct attribute *devfreq_attrs[] = {
- 	&dev_attr_available_governors.attr,
- 	&dev_attr_cur_freq.attr,
- 	&dev_attr_available_frequencies.attr,
-+	&dev_attr_possible_frequencies.attr,
- 	&dev_attr_target_freq.attr,
- 	&dev_attr_polling_interval.attr,
- 	&dev_attr_min_freq.attr,
--- 
-1.8.2.1
+I first tested with KVM (64 bit and 32 bit x86 guest) and later on real
+amd64 machines. One of our partners tested the patches on a 1TB, a 4TB
+and a 12TB memory machine, always with positive result.
 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+Thanks,
+
+	Joerg
+
