@@ -1,51 +1,57 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/5] tools/power/cpupower/utils/helpers/sysfs.c: drop negativity check on unsigned value
-Date: Sat, 19 Jul 2014 22:28:41 +0200
-Message-ID: <3471157.kIgI5mxtgb@vostro.rjw.lan>
-References: <1405697445-23620-1-git-send-email-andrey.krieger.utkin@gmail.com> <1405797244-5182-1-git-send-email-andrey.krieger.utkin@gmail.com>
+Subject: Re: [PATCH 00/11] intel_pstate updates
+Date: Sat, 19 Jul 2014 22:31:30 +0200
+Message-ID: <3522584.qtcX0qT22E@vostro.rjw.lan>
+References: <1405697848-13546-1-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61283 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:51619 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755773AbaGSUKW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 19 Jul 2014 16:10:22 -0400
-In-Reply-To: <1405797244-5182-1-git-send-email-andrey.krieger.utkin@gmail.com>
+	with SMTP id S1754635AbaGSUNL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 19 Jul 2014 16:13:11 -0400
+In-Reply-To: <1405697848-13546-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrey Utkin <andrey.krieger.utkin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, dcb314@hotmail.com, rafael.j.wysocki@intel.com, trenn@suse.de, linux@dominikbrodowski.net, linux-pm@vger.kernel.org
+To: dirk.brandewie@gmail.com
+Cc: linux-pm@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stratos Karafotis <stratosk@semaphore.gr>
 
-On Saturday, July 19, 2014 10:14:04 PM Andrey Utkin wrote:
-> Resubmitting to send also to linux-pm@vger.kernel.org as requested by
-> Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Friday, July 18, 2014 08:37:16 AM dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 > 
-> ---8<---
+> These patches have been in the development branch used by Stratos,
+> Doug and myself for a long time.  I had hoped to batch them up with
+> other functional changes that are under development but those changes
+> are still under active discussion and there is no reason to hold these
+> changes up.
 > 
-> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=80621
-> Reported-by: David Binderman <dcb314@hotmail.com>
-> Signed-off-by: Andrey Utkin <andrey.krieger.utkin@gmail.com>
+> Based on v3.16-rc5 commit 1795cd9b3a91d4b5473c97f491d63892442212ab
+> 
+> Stratos Karafotis (11):
+>   cpufreq: intel_pstate: Make intel_pstate_kobject and debugfs_parent
+>     locals
+>   cpufreq: intel_pstate: Remove unnecessary type casting in div_s64()
+>     call
+>   cpufreq: intel_pstate: Add missing blank lines after declarations
+>   cpufreq: intel_pstate: Fit code in a single line where possible
+>   cpufreq: intel_pstate: Cleanup parentheses
+>   cpufreq: intel_pstate: Remove unnecessary intermediate variable
+>     sample_time
+>   cpufreq: intel_pstate: Align multiple lines to open parenthesis
+>   cpufreq: intel_pstate: Disable interrupts during MSRs reading
+>   cpufreq: intel_pstate: Simplify P state adjustment logic.
+>   cpufreq: intel_pstate: Remove core_pct rounding
+>   cpufreq: intel_pstate: Keep values in aperf/mperf in full precision
 
-Queued up for 3.17, thanks!
+[11/11] appears to be the same as the patch marked [9/17] which I guess
+was posted by mistake.  Other than that, looks good.  Queued up for 3.17,
+thanks!
 
-> ---
->  tools/power/cpupower/utils/helpers/sysfs.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/tools/power/cpupower/utils/helpers/sysfs.c b/tools/power/cpupower/utils/helpers/sysfs.c
-> index 851c7a1..09afe5d 100644
-> --- a/tools/power/cpupower/utils/helpers/sysfs.c
-> +++ b/tools/power/cpupower/utils/helpers/sysfs.c
-> @@ -81,7 +81,7 @@ int sysfs_is_cpu_online(unsigned int cpu)
->  	close(fd);
->  
->  	value = strtoull(linebuf, &endp, 0);
-> -	if (value > 1 || value < 0)
-> +	if (value > 1)
->  		return -EINVAL;
->  
->  	return value;
+>  drivers/cpufreq/intel_pstate.c | 131 +++++++++++++++++------------------------
+>  1 file changed, 53 insertions(+), 78 deletions(-)
+> 
 > 
 
 -- 
