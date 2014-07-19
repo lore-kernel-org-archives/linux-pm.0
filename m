@@ -1,127 +1,92 @@
 From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH v7 4/6] ARM: dts: Exynos: add cpu nodes, opp and cpu clock
- configuration data
-Date: Sat, 19 Jul 2014 15:18:00 +0200
-Message-ID: <53CA7008.7000106@gmail.com>
-References: <1405345118-4269-1-git-send-email-thomas.ab@samsung.com> <1405345118-4269-5-git-send-email-thomas.ab@samsung.com>
+Subject: Re: [PATCH v7 5/6] ARM: Exynos: switch to using generic cpufreq driver
+ for exynos4210/5250/5420
+Date: Sat, 19 Jul 2014 15:27:35 +0200
+Message-ID: <53CA7247.1080009@gmail.com>
+References: <1405345118-4269-1-git-send-email-thomas.ab@samsung.com> <1405345118-4269-6-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1405345118-4269-5-git-send-email-thomas.ab@samsung.com>
+In-Reply-To: <1405345118-4269-6-git-send-email-thomas.ab@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Thomas Abraham <thomas.ab@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, cw00.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Thomas,
-
-Please see my comments inline.
-
 On 14.07.2014 15:38, Thomas Abraham wrote:
 > From: Thomas Abraham <thomas.ab@samsung.com>
 > 
-> For Exynos 4210/5250/5420 based platforms, add CPU nodes, operating points and
-> cpu clock data for migrating from Exynos specific cpufreq driver to using
-> generic cpufreq drivers.
-
-[snip]
-
-> diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
-> index ee3001f..c3a73bf 100644
-> --- a/arch/arm/boot/dts/exynos4210.dtsi
-> +++ b/arch/arm/boot/dts/exynos4210.dtsi
-> @@ -31,6 +31,33 @@
->  		pinctrl2 = &pinctrl_2;
->  	};
+> Remove the platform device instantiation for exynos cpufreq driver and add the
+> platform device for generic cpufreq drivers.
+> 
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Reviewed-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> Tested-by: Arjun K.V <arjun.kv@samsung.com>
+> ---
+>  arch/arm/mach-exynos/exynos.c |   15 ++++++++++++++-
+>  1 file changed, 14 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+> index 2a43a17..5028b35 100644
+> --- a/arch/arm/mach-exynos/exynos.c
+> +++ b/arch/arm/mach-exynos/exynos.c
+> @@ -183,7 +183,20 @@ void __init exynos_cpuidle_init(void)
 >  
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		cpu@0 {
-
-nit: Missing blank line after last property.
-
-The cluster ID field of MPIDR on Exynos4210 is 0x9 not zero, which means
-that this should be cpu@900.
-
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a9";
-> +			reg = <0>;
-
-			reg = <0x900>;
-
-> +			clocks = <&clock CLK_ARM_CLK>;
-> +			clock-names = "cpu";
+>  void __init exynos_cpufreq_init(void)
+>  {
+> -	platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
+> +	char *dev_name;
 > +
-> +			operating-points = <
-> +				1200000 1250000
-> +				1000000 1150000
-> +				800000	1075000
-> +				500000	975000
-> +				400000	975000
-> +				200000	950000
-> +			>;
-> +		};
+> +	if (of_machine_is_compatible("samsung,exynos5440"))
+> +		return;
+
+The original code registers the device unconditionally. Why Exynos5440
+is excluded now?
+
+> +	if (of_machine_is_compatible("samsung,exynos5420"))
+> +		dev_name = "arm-bL-cpufreq-dt";
+> +	else
+> +		if (of_machine_is_compatible("samsung,exynos4412") ||
+> +			of_machine_is_compatible("samsung,exynos4212"))
+> +			dev_name = "exynos-cpufreq";
+> +		else
+> +			dev_name = "cpufreq-cpu0";
 > +
-> +		cpu@1 {
+> +	platform_device_register_simple(dev_name, -1, NULL, 0);
+>  }
 
-		cpu@901
+How about rewriting this to:
 
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a9";
-> +			reg = <1>;
+static const struct of_device_id exynos_cpufreq_matches[] = {
+	{ .compatible = "samsung,exynos5420",
+			.data = "arm-bL-cpufreq-dt" },
+	{ .compatible = "samsung,exynos5250",
+			.data = "cpufreq-cpu0" },
+	{ .compatible = "samsung,exynos4210",
+			.data = "cpufreq-cpu0" },
+	{ /* sentinel */ }
+};
 
-			reg = <0x901>;
+void __init exynos_cpufreq_init(void)
+{
+	struct device_node *root = of_find_node_by_path("/");
+	const struct of_device_id *match;
 
-> +		};
+	match = of_match_node(exynos_cpufreq_matches, root);
+	if (!match) {
+		platform_device_register_simple("exynos-cpufreq", -1,
+						NULL, 0);
+		return;
+	}
 
-In general this wouldn't have even booted, because there were several
-places where code relied on CPUs being 0, 1, 2... However I have sent
-necessary fixes and they should hit linux-next in few days.
+	platform_device_register_simple(match->data, -1, NULL, 0);
+}
 
-> +	};
-> +
->  	sysram@02020000 {
->  		compatible = "mmio-sram";
->  		reg = <0x02020000 0x20000>;
-
-[snip]
-
-> diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
-> index 834fb5a..66b0f98 100644
-> --- a/arch/arm/boot/dts/exynos5250.dtsi
-> +++ b/arch/arm/boot/dts/exynos5250.dtsi
-> @@ -63,6 +63,29 @@
->  			compatible = "arm,cortex-a15";
->  			reg = <0>;
->  			clock-frequency = <1700000000>;
-> +
-> +			clocks = <&clock CLK_ARM_CLK>;
-> +			clock-names = "cpu";
-> +
-> +			operating-points = <
-> +				1700000 1300000
-> +				1600000 1250000
-> +				1500000 1225000
-> +				1400000 1200000
-> +				1300000 1150000
-> +				1200000 1125000
-> +				1100000 1100000
-> +				1000000 1075000
-> +				 900000 1050000
-> +				 800000 1025000
-> +				 700000 1012500
-> +				 600000 1000000
-> +				 500000  975000
-> +				 400000  950000
-> +				 300000  937500
-> +				 200000  925000
-> +			>;
-> +			clock-latency = <200000>;
-
-I don't see this property specified for Exynos4210. Have you missed it
-there?
+This way it is much more readable and original behavior is preserved for
+any SoCs not supported by new drivers.
 
 Best regards,
 Tomasz
