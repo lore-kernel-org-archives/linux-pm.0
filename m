@@ -1,39 +1,45 @@
-From: Andrey Utkin <andrey.krieger.utkin@gmail.com>
-Subject: [PATCH 1/5] tools/power/cpupower/utils/helpers/sysfs.c: drop negativity check on unsigned value
-Date: Sat, 19 Jul 2014 22:14:04 +0300
-Message-ID: <1405797244-5182-1-git-send-email-andrey.krieger.utkin@gmail.com>
-References: <1405697445-23620-1-git-send-email-andrey.krieger.utkin@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1405697445-23620-1-git-send-email-andrey.krieger.utkin@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, dcb314@hotmail.com, rafael.j.wysocki@intel.com, trenn@suse.de, linux@dominikbrodowski.net, linux-pm@vger.kernel.org, Andrey Utkin <andrey.krieger.utkin@gmail.com>
+From: Tobias Jakobi <liquid.acid@gmx.net>
+Subject: Re: [PATCH v7 0/6] cpufreq: use generic cpufreq drivers for exynos
+ platforms
+Date: Sat, 19 Jul 2014 21:20:27 +0200
+Message-ID: <53CAC4FB.9030703@gmx.net>
+References: <1405345118-4269-1-git-send-email-thomas.ab@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1405345118-4269-1-git-send-email-thomas.ab@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, cw00.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Resubmitting to send also to linux-pm@vger.kernel.org as requested by
-Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hello,
 
----8<---
+I have a question concerning an older version of this patchset, the one
+which still included exynos4x12 support and where the clocking data was
+provided through DT.
 
-Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=80621
-Reported-by: David Binderman <dcb314@hotmail.com>
-Signed-off-by: Andrey Utkin <andrey.krieger.utkin@gmail.com>
----
- tools/power/cpupower/utils/helpers/sysfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I tried to get this working for my ODROID-X2, which does work well,
+including the usage of the boost frequences. Since the X2 has an
+Exynos4412 Prime I added additional clocking data and operating points.
 
-diff --git a/tools/power/cpupower/utils/helpers/sysfs.c b/tools/power/cpupower/utils/helpers/sysfs.c
-index 851c7a1..09afe5d 100644
---- a/tools/power/cpupower/utils/helpers/sysfs.c
-+++ b/tools/power/cpupower/utils/helpers/sysfs.c
-@@ -81,7 +81,7 @@ int sysfs_is_cpu_online(unsigned int cpu)
- 	close(fd);
- 
- 	value = strtoull(linebuf, &endp, 0);
--	if (value > 1 || value < 0)
-+	if (value > 1)
- 		return -EINVAL;
- 
- 	return value;
--- 
-1.8.5.5
+clocking data (comes from the vendor kernel):
+<1704000 3 7 0 6 1 2 7 0 7>
+<1600000 3 7 0 6 1 2 6 0 7>
+
+operating points (again from vendor kernel):
+1704000 1375000
+1600000 1350000
+
+Doing this I get correct output from scaling_available_frequencies and
+scaling_boost_frequencies and the driver seems to select these
+frequences. However when reading from cpufreq_cur_freq, which I think
+returns the frequency of the armclk, the maximum freq never exceeds
+1.5GHz. So effectively the additional clocking data and opps are not used.
+
+I wonder this happens? Is there some kind of limit enforced?
+
+
+With best wishes,
+Tobias Jakobi
