@@ -1,79 +1,101 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 00/11] intel_pstate updates
-Date: Sat, 19 Jul 2014 23:54:14 +0200
-Message-ID: <2674303.gCTh0s6JEA@vostro.rjw.lan>
-References: <1405697848-13546-1-git-send-email-dirk.j.brandewie@intel.com> <3522584.qtcX0qT22E@vostro.rjw.lan> <53CADCC2.503@semaphore.gr>
+Subject: [PATCH] ACPI / PM: Use ACPI_COMPANION() instead of ACPI_HANDLE()
+Date: Sat, 19 Jul 2014 23:56:31 +0200
+Message-ID: <1850188.af4fKDc87v@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:65153 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:62632 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756049AbaGSVfy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 19 Jul 2014 17:35:54 -0400
-In-Reply-To: <53CADCC2.503@semaphore.gr>
+	with SMTP id S1751191AbaGSViL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 19 Jul 2014 17:38:11 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: dirk.brandewie@gmail.com, linux-pm@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Sunday, July 20, 2014 12:01:54 AM Stratos Karafotis wrote:
-> On 19/07/2014 11:31 =CE=BC=CE=BC, Rafael J. Wysocki wrote:
-> > On Friday, July 18, 2014 08:37:16 AM dirk.brandewie@gmail.com wrote=
-:
-> >> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> >>
-> >> These patches have been in the development branch used by Stratos,
-> >> Doug and myself for a long time.  I had hoped to batch them up wit=
-h
-> >> other functional changes that are under development but those chan=
-ges
-> >> are still under active discussion and there is no reason to hold t=
-hese
-> >> changes up.
-> >>
-> >> Based on v3.16-rc5 commit 1795cd9b3a91d4b5473c97f491d63892442212ab
-> >>
-> >> Stratos Karafotis (11):
-> >>   cpufreq: intel_pstate: Make intel_pstate_kobject and debugfs_par=
-ent
-> >>     locals
-> >>   cpufreq: intel_pstate: Remove unnecessary type casting in div_s6=
-4()
-> >>     call
-> >>   cpufreq: intel_pstate: Add missing blank lines after declaration=
-s
-> >>   cpufreq: intel_pstate: Fit code in a single line where possible
-> >>   cpufreq: intel_pstate: Cleanup parentheses
-> >>   cpufreq: intel_pstate: Remove unnecessary intermediate variable
-> >>     sample_time
-> >>   cpufreq: intel_pstate: Align multiple lines to open parenthesis
-> >>   cpufreq: intel_pstate: Disable interrupts during MSRs reading
-> >>   cpufreq: intel_pstate: Simplify P state adjustment logic.
-> >>   cpufreq: intel_pstate: Remove core_pct rounding
-> >>   cpufreq: intel_pstate: Keep values in aperf/mperf in full precis=
-ion
-> >=20
-> > [11/11] appears to be the same as the patch marked [9/17] which I g=
-uess
-> > was posted by mistake.  Other than that, looks good.  Queued up for=
- 3.17,
-> > thanks!
->=20
-> The only difference between them is the last 2 lines in changelog.
-> [11/11] is the correct one.
-> The final code in bleeding-edge is, of course, correct.
->=20
-> I'm sorry that I didn't notice this earlier.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-No big deal.
+The ACPI_HANDLE() macro evaluates ACPI_COMPANION() internally to
+return the handle of the device's ACPI companion, so it is much
+more straightforward and efficient to use ACPI_COMPANION()
+directly to obtain the device's ACPI companion object instead of
+using ACPI_HANDLE() and acpi_bus_get_device() on the returned
+handle for the same thing.
 
-I fixed up the changelog in my tree internally, will propagate to linux=
--pm
-with the next push.
+Do that in three places in the ACPI device PM code.
 
-Thanks!
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+On top of https://patchwork.kernel.org/patch/4589941/
+
+---
+ drivers/acpi/device_pm.c |   21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
+
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -558,7 +558,6 @@ static int acpi_dev_pm_get_state(struct
+  */
+ int acpi_pm_device_sleep_state(struct device *dev, int *d_min_p, int d_max_in)
+ {
+-	acpi_handle handle = ACPI_HANDLE(dev);
+ 	struct acpi_device *adev;
+ 	int ret, d_min, d_max;
+ 
+@@ -573,8 +572,9 @@ int acpi_pm_device_sleep_state(struct de
+ 			d_max_in = ACPI_STATE_D3_HOT;
+ 	}
+ 
+-	if (!handle || acpi_bus_get_device(handle, &adev)) {
+-		dev_dbg(dev, "ACPI handle without context in %s!\n", __func__);
++	adev = ACPI_COMPANION(dev);
++	if (!adev) {
++		dev_dbg(dev, "ACPI companion missing in %s!\n", __func__);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -664,15 +664,13 @@ static void acpi_device_pm_event(acpi_ha
+ int acpi_pm_device_run_wake(struct device *phys_dev, bool enable)
+ {
+ 	struct acpi_device *adev;
+-	acpi_handle handle;
+ 
+ 	if (!device_run_wake(phys_dev))
+ 		return -EINVAL;
+ 
+-	handle = ACPI_HANDLE(phys_dev);
+-	if (!handle || acpi_bus_get_device(handle, &adev)) {
+-		dev_dbg(phys_dev, "ACPI handle without context in %s!\n",
+-			__func__);
++	adev = ACPI_COMPANION(phys_dev);
++	if (!adev) {
++		dev_dbg(phys_dev, "ACPI companion missing in %s!\n", __func__);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -692,16 +690,15 @@ static inline void acpi_device_pm_event(
+  */
+ int acpi_pm_device_sleep_wake(struct device *dev, bool enable)
+ {
+-	acpi_handle handle;
+ 	struct acpi_device *adev;
+ 	int error;
+ 
+ 	if (!device_can_wakeup(dev))
+ 		return -EINVAL;
+ 
+-	handle = ACPI_HANDLE(dev);
+-	if (!handle || acpi_bus_get_device(handle, &adev)) {
+-		dev_dbg(dev, "ACPI handle without context in %s!\n", __func__);
++	adev = ACPI_COMPANION(dev);
++	if (!adev) {
++		dev_dbg(dev, "ACPI companion missing in %s!\n", __func__);
+ 		return -ENODEV;
+ 	}
+ 
+
