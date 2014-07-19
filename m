@@ -1,45 +1,45 @@
-From: Tobias Jakobi <liquid.acid@gmx.net>
-Subject: Re: [PATCH v7 0/6] cpufreq: use generic cpufreq drivers for exynos
- platforms
-Date: Sat, 19 Jul 2014 21:20:27 +0200
-Message-ID: <53CAC4FB.9030703@gmx.net>
-References: <1405345118-4269-1-git-send-email-thomas.ab@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Power-managing devices that are not of interest at some point in time
+Date: Sat, 19 Jul 2014 22:19:55 +0200
+Message-ID: <3454348.ZgJ1ZIlfsF@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1407191357140.28179-100000@netrider.rowland.org> <2047146.r4vphTZhkk@dtor-glaptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1405345118-4269-1-git-send-email-thomas.ab@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, cw00.choi@samsung.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <2047146.r4vphTZhkk@dtor-glaptop>
+Sender: linux-input-owner@vger.kernel.org
+To: Dmitry Torokhov <dtor@google.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Benson Leung <bleung@chromium.org>, Patrik Fimml <patrikf@chromium.org>, Bastien Nocera <hadess@hadess.net>, linux-pm@vger.kernel.org, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+On Saturday, July 19, 2014 11:21:52 AM Dmitry Torokhov wrote:
+> On Saturday, July 19, 2014 01:59:01 PM Alan Stern wrote:
+> > On Sat, 19 Jul 2014, Benson Leung wrote:
+> > > > This raises an interesting question.  Suppose the system gets suspended
+> > > > while the lid is closed.  At that point, shouldn't wakeup devices be
+> > > > enabled, even if they were already inhibited?
+> > > 
+> > > It's possible that this could be a policy decision, ie, whether
+> > > power/wakeup is set to enabled for those devices or not.
+> > > However, I'd say that there's only one policy that makes sense in that
+> > > case : wakeups should be disabled while suspended.
+> > > 
+> > > If we inhibited the device during runtime to prevent stray input
+> > > events from being generated, it wouldn't make sense to allow the
+> > > device to potentially generate an accidental wakeup while suspended.
+> > 
+> > That doesn't really make sense.  If you're afraid of a device
+> > generating spurious wakeup events when the lid is closed, you should
+> > never enable it for wakeup.  After all, one of the first things that
+> > people often do after suspending their laptop is close the lid.
+> 
+> That's a fair point, and I think should be done by default. But that does not 
+> change what Benson said - I think if we inhibited the device it should stay 
+> inhibited across system suspend, including being disabled as wakeup source 
+> even if it could be enabled as such.
 
-I have a question concerning an older version of this patchset, the one
-which still included exynos4x12 support and where the clocking data was
-provided through DT.
+This seems to be the best approach to me too.
 
-I tried to get this working for my ODROID-X2, which does work well,
-including the usage of the boost frequences. Since the X2 has an
-Exynos4412 Prime I added additional clocking data and operating points.
+Rafael
 
-clocking data (comes from the vendor kernel):
-<1704000 3 7 0 6 1 2 7 0 7>
-<1600000 3 7 0 6 1 2 6 0 7>
-
-operating points (again from vendor kernel):
-1704000 1375000
-1600000 1350000
-
-Doing this I get correct output from scaling_available_frequencies and
-scaling_boost_frequencies and the driver seems to select these
-frequences. However when reading from cpufreq_cur_freq, which I think
-returns the frequency of the armclk, the maximum freq never exceeds
-1.5GHz. So effectively the additional clocking data and opps are not used.
-
-I wonder this happens? Is there some kind of limit enforced?
-
-
-With best wishes,
-Tobias Jakobi
