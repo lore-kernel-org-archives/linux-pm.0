@@ -1,89 +1,36 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/2] cpufreq: ondemand: Eliminate the deadband effect
-Date: Sun, 20 Jul 2014 23:51:51 +0200
-Message-ID: <20140720215151.GA7817@amd.pavel.ucw.cz>
-References: <1404147574-17422-1-git-send-email-stratosk@semaphore.gr>
- <1404147574-17422-3-git-send-email-stratosk@semaphore.gr>
- <20140711165710.GA18033@amd.pavel.ucw.cz>
- <53C01F15.2090702@semaphore.gr>
- <20140711183414.GA18951@amd.pavel.ucw.cz>
- <53C03CDD.5020701@semaphore.gr>
+From: =?euc-kr?B?x9S47cHW?= <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH 1/2] PM / devfreq: Export helper functions for drivers
+Date: Sun, 20 Jul 2014 23:28:17 +0000 (GMT)
+Message-ID: <32148397.172891405898897186.JavaMail.weblogic@epml01>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <53C03CDD.5020701@semaphore.gr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:62385 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750996AbaGTX2U (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Jul 2014 19:28:20 -0400
+Received: from epcpsbgr1.samsung.com
+ (u141.gpu120.samsung.co.kr [203.254.230.141])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0N9100LIBAJ5DN30@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 21 Jul 2014 08:28:17 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Punit Agrawal <punit.agrawal@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Cc: "orjan.eide@arm.com" <orjan.eide@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>
 
-Hi!
+DQoNClNlbmRlciA6IFB1bml0IEFncmF3YWw8cHVuaXQuYWdyYXdhbEBhcm0uY29tPg0KPiBGcm9t
+OiCoqnJqYW4gRWlkZSANCj4NCj4gVGhlc2UgZnVuY3Rpb25zIGFyZSBpbmRlbmRlZCBmb3IgdXNl
+IGJ5IGRyaXZlcnMgYW5kIHNob3VsZCBiZSBhdmFpbGFibGUNCj4gYWxzbyB3aGVuIHRoZSBkcml2
+ZXIgaXMgYnVpbHQgYXMgYSBtb2R1bGUuDQo+DQo+IENjOiBNeXVuZ0pvbyBIYW0gDQo+IENjOiBL
+eXVuZ21pbiBQYXJrIA0KPiBTaWduZWQtb2ZmLWJ5OiCoqnJqYW4gRWlkZSANCg0KRGVhciBQdW5p
+dCwNCg0KDQpKdXN0IGJlaW5nIGN1cmlvdXMsIGlzIHRoZXJlIGFueSByZWFzb24gbm90IHRvIHVz
+ZSBFWFBPUlRfU1lNQk9MX0dQTCA/DQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28uDQoNCi0tDQpNeXVu
+Z0pvbyBIYW0gKMfUuO3B1iksIFBIRA0KRnJvbnRpZXIgQ1MgTGFiLCBTb2Z0d2FyZSBDZW50ZXIN
+ClNhbXN1bmcgRWxlY3Ryb25pY3MNCkNlbGw6ICs4Mi0xMC02NzE0LTI4NTg=
 
-> >>>> Tested on Intel i7-3770 CPU @ 3.40GHz and on ARM quad core 1500MHz Krait
-> >>>> (Android smartphone).
-> >>>> Benchmarks on Intel i7 shows a performance improvement on low and medium
-> >>>> work loads with lower power consumption. Specifics:
-> >>>>
-> >>>> Phoronix Linux Kernel Compilation 3.1:
-> >>>> Time: -0.40%, energy: -0.07%
-> >>>> Phoronix Apache:
-> >>>> Time: -4.98%, energy: -2.35%
-> >>>> Phoronix FFMPEG:
-> >>>> Time: -6.29%, energy: -4.02%
-> >>>
-> >>> Hmm. Intel i7 should be race-to-idle machine. So basically rule like
-> >>> if (load > 0) go to max frequency else go to lowest frequency would do
-> >>> the right thing in your test, right?
-> >>
-> >> I don't think that "if (load > 0) go to max" will work even on i7.
-> >> For low load this will have impact on energy consumption.
-> > 
-> > Are you sure? CPU frequency should not matter on idle CPU.
-> 
-> Even on a totally idle CPU there will be a small impact because of leakage
-> current (thanks to Dirk Brandewie for this info).
 
-Are you sure? IIRC Intel cpus will automatically lower CPU frequency
-in deep C states..
-
-> This simple test on a nearly idle system shows this:
-> 
-> [root@albert cpufreq]# for CPUFREQ in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do [ -f $CPUFREQ ] || continue; echo -n performance > $CPUFREQ; done
-> [root@albert cpufreq]# /home/stratosk/kernels/linux-pm/tools/power/x86/turbostat/turbostat -J sleep 20
->     Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7   Pkg_J   Cor_J   GFX_J   time
->        -       -       2    0.06    2712    3392       0    0.30    0.00   99.63    0.00      34      34    8.09    0.00   81.94    0.00  380.41   14.51    1.64   20.00
->        0       0       0    0.02    1891    3392       0    0.09    0.00   99.88    0.00      34      34    8.09    0.00   81.94    0.00  380.41   14.51    1.64   20.00
->        0       4       1    0.04    3006    3392       0    0.07
->        1       1       1    0.04    2501    3392       0    0.62    0.00   99.33    0.00      34
->        1       5       0    0.01    2346    3392       0    0.66
->        2       2       0    0.01    1996    3392       0    0.44    0.00   99.55    0.00      34
->        2       6       4    0.18    2278    3392       0    0.26
->        3       3       5    0.15    3449    3392       0    0.07    0.01   99.77    0.00      34
->        3       7       0    0.01    1839    3392       0    0.21
-> 20.000899 sec
-> [root@albert cpufreq]# ^C
-> [root@albert cpufreq]# for CPUFREQ in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do [ -f $CPUFREQ ] || continue; echo -n ondemand > $CPUFREQ; done
-> [root@albert cpufreq]# /home/stratosk/kernels/linux-pm/tools/power/x86/turbostat/turbostat -J sleep 20
->     Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7   Pkg_J   Cor_J   GFX_J   time
->        -       -       2    0.09    1693    3392       0    0.35    0.01   99.55    0.00      35      36    8.33    0.00   84.31    0.00  377.68   12.23    1.15   20.00
->        0       0       1    0.08    1603    3392       0    0.13    0.00   99.79    0.00      35      36    8.33    0.00   84.31    0.00  377.68   12.23    1.15   20.00
->        0       4       1    0.08    1646    3392       0    0.13
->        1       1       1    0.06    1647    3392       0    0.66    0.00   99.28    0.00      35
->        1       5       0    0.01    1611    3392       0    0.71
->        2       2       0    0.02    1617    3392       0    0.50    0.02   99.46    0.00      35
->        2       6       4    0.22    1764    3392       0    0.30
->        3       3       4    0.25    1701    3392       0    0.07    0.00   99.68    0.00      35
->        3       7       0    0.01    1602    3392       0    0.31
-> 20.001580 sec
-> 
-> 
-> So, for low loads the impact will be higher.
-
-So it seems ondemand saves cca 1% of energy?
-
-Best regards,
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
