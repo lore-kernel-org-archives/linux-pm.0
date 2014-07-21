@@ -1,57 +1,52 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [Update 2x][PATCH 1/2] ACPI / PM: Always enable wakeup GPEs when
- enabling device wakeup
-Date: Mon, 21 Jul 2014 10:17:34 +0200
-Message-ID: <20140721081734.GL3935@laptop>
-References: <1907495.agrCMfRsQN@vostro.rjw.lan>
- <1617640.X0G82q0eFI@vostro.rjw.lan>
- <7670400.0LUVFHKPfm@vostro.rjw.lan>
- <5962983.s3jy9r09Hm@vostro.rjw.lan>
+From: Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH 0/6] PM / Hibernate: Memory bitmap scalability
+ improvements
+Date: Mon, 21 Jul 2014 10:32:11 +0200
+Message-ID: <20140721083211.GK30979@8bytes.org>
+References: <1405684643-30234-1-git-send-email-joro@8bytes.org>
+ <20140719134904.GA2852@amd.pavel.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 8bytes.org ([81.169.241.247]:50680 "EHLO theia.8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753266AbaGUIcN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 21 Jul 2014 04:32:13 -0400
 Content-Disposition: inline
-In-Reply-To: <5962983.s3jy9r09Hm@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+In-Reply-To: <20140719134904.GA2852@amd.pavel.ucw.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2014 at 01:51:46AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: ACPI / PM: Always enable wakeup GPEs when enabling device wakeup
+On Sat, Jul 19, 2014 at 03:49:04PM +0200, Pavel Machek wrote:
+> Hi!
 > 
-> Wakeup GPEs are currently only enabled when setting up devices for
-> remote wakeup at run time.  During system-wide transitions they are
-> enabled by ACPICA at the very last stage of suspend (before asking
-> the BIOS to take over).  Of course, that only works for system
-> sleep states supported by ACPI, so in particular it doesn't work
-> for the "freeze" sleep state.
+> > These patches improve the data structure by adding a radix
+> > tree to the linked list structure to improve random access
+> > performance from O(n) to O(log_b(n)), where b depends on the
+> > architecture (b=512 on amd64, 1024 in i386).
 > 
-> For this reason, modify the ACPI core device PM code to enable wakeup
-> GPEs for devices when setting them up for wakeup regardless of whether
-> that is remote wakeup at runtime or system wakeup.  That allows the
-> same device wakeup setup routine to be used for both runtime PM and
-> system-wide PM and makes it possible to reduce code size quite a bit.
+> Are you sure? From your other mail, you said you are adding just a
+> single page. I'd expect random access performance to go from
 > 
-> That should make things like ACPI-based PCI Wake-on-LAN work with
-> the "freeze" sleep state among other things.
-> 
-> Tested-on: Toshiba Portege R500
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> The PCI ACPI device PM notify handler has to be updated to avoid running
-> runtime resume callbacks during system suspend too.
+> O(n) to O(n/1024) in such case?
 
-So I tested the first version, with that my WSM-EP didn't resume on WoL
-and pressing the power button after the WoL had it crash and burn in the
-igb driver.
+No, for the 4GB case the additional page is used as an index page into
+the block-bitmap pages. On AM64 a page can hold 512 references and a
+single block-bitmap page is enough for 128MB of RAM. This means that for
+systems with up to 64GB of RAM we can get the block-bitmap page directly
+from the index page. For systems with more than 64GB of RAM we need
+another level of index pages, and now we need two memory accesses to get
+to the block-bitmap page (okay, with this implementation its actually 2
+memory accesses per level, because the index-pages refer to a struct
+rtree_node which itself contains the pointer to the index/data page).
 
-Today I tested this latest version and WoL still didn't trigger a
-resume, but the power button did make it go again, no crashes and I
-suppose I can confirm the earlier patch that stopped making it go halt
-works.
+A two-level radix tree would be enough for systems with up to 32TB of
+RAM. After that we need 3 levels, but you can already see that this
+doesn't scale linearly anymore but with log_512(n), where n is the
+number of block-bitmap pages required.
 
-When I 'halt' I can wake the machine back up using a WoL so that all
-_should_ work afaik.
+
+	Joerg
+
