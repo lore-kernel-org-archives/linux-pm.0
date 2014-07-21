@@ -1,50 +1,113 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH v3] ARM: EXYNOS: Fix suspend/resume sequences
-Date: Mon, 21 Jul 2014 12:23:51 +0200
-Message-ID: <53CCEA37.4060104@gmail.com>
-References: <53C51B57.9040404@samsung.com> <1405434287-22710-1-git-send-email-t.figa@samsung.com> <53C53A1A.6060701@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <53C53A1A.6060701@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kukjin Kim <kgene.kim@gmail.com>
-Cc: Tomasz Figa <t.figa@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Chander Kashyap <k.chander@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arm@kernel.org" <arm@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
+From: Joerg Roedel <joro@8bytes.org>
+Subject: [PATCH 4/6] PM / Hibernate: Iterate over set bits instead of PFNs in swsusp_free()
+Date: Mon, 21 Jul 2014 12:27:00 +0200
+Message-ID: <1405938422-21900-5-git-send-email-joro@8bytes.org>
+References: <1405938422-21900-1-git-send-email-joro@8bytes.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 8bytes.org ([81.169.241.247]:50845 "EHLO theia.8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754220AbaGUK1G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 21 Jul 2014 06:27:06 -0400
+In-Reply-To: <1405938422-21900-1-git-send-email-joro@8bytes.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Joerg Roedel <joro@8bytes.org>, Joerg Roedel <jroedel@suse.de>
 
-Hi,
+From: Joerg Roedel <jroedel@suse.de>
 
-On 15.07.2014 16:26, Tomasz Figa wrote:
-> Forgot to CC Daniel and linux-pm. Sorry for the noise.
-> 
-> On 15.07.2014 16:24, Tomasz Figa wrote:
->> Due to recent consolidation of Exynos suspend and cpuidle code, some
->> parts of suspend and resume sequences are executed two times, once from
->> exynos_pm_syscore_ops and then from exynos_cpu_pm_notifier() and thus it
->> breaks suspend, at least on Exynos4-based boards. In addition, simple
->> core power down from a cpuidle driver could, in case of CPU 0 could
->> result in calling functions that are specific to suspend and deeper idle
->> states.
->>
->> This patch fixes the issue by moving those operations outside the CPU PM
->> notifier into suspend and AFTR code paths. This leads to a bit of code
->> duplication, but allows additional code simplification, so in the end
->> more code is removed than added.
->>
->> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
->> ---
->>  arch/arm/mach-exynos/pm.c        | 164 ++++++++++++++++++---------------------
->>  drivers/cpuidle/cpuidle-exynos.c |  25 +-----
->>  2 files changed, 80 insertions(+), 109 deletions(-)
->>
+The existing implementation of swsusp_free iterates over all
+pfns in the system and checks every bit in the two memory
+bitmaps.
 
-This is an important regression fix for 3.16 and today 3.16-rc6 was
-already released...
+This doesn't scale very well with large numbers of pfns,
+especially when the bitmaps are not populated very densly.
+Change the algorithm to iterate over the set bits in the
+bitmaps instead to make it scale better in large memory
+configurations.
 
-Kukjin, could you pick up this patch and few others you missed and make
-sure that it is included in 3.16-rc7? If you are busy, maybe Arnd or
-Olof could take them directly?
+Also add a memory_bm_clear_current() helper function that
+clears the bit for the last position returned from the
+memory bitmap.
 
-Best regards,
-Tomasz
+Signed-off-by: Joerg Roedel <jroedel@suse.de>
+---
+ kernel/power/snapshot.c | 53 +++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 38 insertions(+), 15 deletions(-)
+
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 6c09879..83a6c61 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -848,6 +848,17 @@ static void memory_bm_clear_bit(struct memory_bitmap *bm, unsigned long pfn)
+ 	clear_bit(bit, addr);
+ }
+ 
++static void memory_bm_clear_current(struct memory_bitmap *bm)
++{
++	int bit;
++
++	bit  = max(bm->cur.node_bit - 1, 0);
++	clear_bit(bit, bm->cur.node->data);
++
++	bit = max(bm->cur.bit - 1, 0);
++	clear_bit(bit, bm->cur.block->data);
++}
++
+ static int memory_bm_test_bit(struct memory_bitmap *bm, unsigned long pfn)
+ {
+ 	void *addr;
+@@ -1491,23 +1502,35 @@ static struct memory_bitmap copy_bm;
+ 
+ void swsusp_free(void)
+ {
+-	struct zone *zone;
+-	unsigned long pfn, max_zone_pfn;
++	unsigned long fb_pfn, fr_pfn;
+ 
+-	for_each_populated_zone(zone) {
+-		max_zone_pfn = zone_end_pfn(zone);
+-		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+-			if (pfn_valid(pfn)) {
+-				struct page *page = pfn_to_page(pfn);
+-
+-				if (swsusp_page_is_forbidden(page) &&
+-				    swsusp_page_is_free(page)) {
+-					swsusp_unset_page_forbidden(page);
+-					swsusp_unset_page_free(page);
+-					__free_page(page);
+-				}
+-			}
++	memory_bm_position_reset(forbidden_pages_map);
++	memory_bm_position_reset(free_pages_map);
++
++loop:
++	fr_pfn = memory_bm_next_pfn(free_pages_map);
++	fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
++
++	/*
++	 * Find the next bit set in both bitmaps. This is guaranteed to
++	 * terminate when fb_pfn == fr_pfn == BM_END_OF_MAP.
++	 */
++	do {
++		if (fb_pfn < fr_pfn)
++			fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
++		if (fr_pfn < fb_pfn)
++			fr_pfn = memory_bm_next_pfn(free_pages_map);
++	} while (fb_pfn != fr_pfn);
++
++	if (fr_pfn != BM_END_OF_MAP && pfn_valid(fr_pfn)) {
++		struct page *page = pfn_to_page(fr_pfn);
++
++		memory_bm_clear_current(forbidden_pages_map);
++		memory_bm_clear_current(free_pages_map);
++		__free_page(page);
++		goto loop;
+ 	}
++
+ 	nr_copy_pages = 0;
+ 	nr_meta_pages = 0;
+ 	restore_pblist = NULL;
+-- 
+1.9.1
+
