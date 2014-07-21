@@ -1,53 +1,57 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCHv2 12/17] cpuidle: mvebu: make the cpuidle driver capable of handling multiple SoCs
-Date: Mon, 21 Jul 2014 14:51:38 +0200
-Message-ID: <19699239.33i4BRP9GE@wuerfel>
-References: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com> <53CD08CF.6080900@linaro.org> <20140721143813.6028b6ed@free-electrons.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/6 v2] PM / Hibernate: Memory bitmap scalability
+ improvements
+Date: Mon, 21 Jul 2014 15:06:29 +0200
+Message-ID: <20140721130629.GA15122@amd.pavel.ucw.cz>
+References: <1405938422-21900-1-git-send-email-joro@8bytes.org>
+ <20140721120053.GA14069@amd.pavel.ucw.cz>
+ <20140721123613.GL30979@8bytes.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.17.13]:52869 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932318AbaGUMwC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 08:52:02 -0400
-In-Reply-To: <20140721143813.6028b6ed@free-electrons.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39046 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754690AbaGUNGb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 09:06:31 -0400
+Content-Disposition: inline
+In-Reply-To: <20140721123613.GL30979@8bytes.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Jason Cooper <jason@lakedaemon.net>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday 21 July 2014 14:38:13 Thomas Petazzoni wrote:
-> Dear Daniel Lezcano,
-> 
-> On Mon, 21 Jul 2014 14:34:23 +0200, Daniel Lezcano wrote:
-> 
-> > So there are three solutions:
+Hi!
+
+> > > The last patch adds touching the soft lockup watchdog in
+> > > rtree_next_node. This is necessary because the worst case
+> > > performance (all bits set in the forbidden_pages_map and
+> > > free_pages_map) is the same as with the old implementation
+> > > and may still cause soft lockups. Patch 6 avoids this.
 > > 
-> > 1. Pass the flag through the platform data, I am not really in favor of 
-> > that as mentioned above
+> > Ok, so what about simpler patch? Just touch the watchdog?
 > 
-> That's what is already implemented.
+> That would just cover the problem that the bitmap data structure and the
+> algorithm in swsusp_free do not scale well on bigmem machines.
 
-It's certainly better than checking a global compatible string in
-driver code, IMHO.
+And is it a problem? Hibernation of 12TB machine will take 6 hours if
+you back your swap with SSDs.
 
-Instead of a global header file, I would have put the structure
-definition under linux/platform-data, as we do for most other
-legacy drivers.
+Does not scale == burns additional 60 seconds of CPU time. I think we
+can live with that...
 
-> > 2. Use the compatible string like the cpuidle-big-little.c driver, but 
-> > Arnd is not in favor of that
-> > 
-> > 3. Register 3 platform drivers, in cpuidle-mvebu-v7.c, and let the 
-> > registering of the cpuidle's platform device to enable the right one
+...because noone sane will hibernate 12TB machine.
+
+> > Additional 70 seconds will be lost in noise if you write 12TB of RAM
+> > to (even quite fast) disk.
 > 
-> I'm fine with doing (3). Daniel, Arnd, let me know if that's ok for
-> you, and I'll respin the patch series accordingly.
+> Sure, but you would still get the soft lockup warnings when swsusp_free
+> runs in the end.
 
-If I understood Daniel correctly, this is temporary anyway until
-we have a proper binding, right?
+Yes, that's why I propose to apply just patch 6 -- to avoid soft
+lockup warnings.
 
-If so, I don't really mind either approach.
-
-	Arnd
+Best regards,
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
