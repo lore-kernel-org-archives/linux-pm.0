@@ -1,113 +1,198 @@
 From: Joerg Roedel <joro@8bytes.org>
-Subject: [PATCH 4/6] PM / Hibernate: Iterate over set bits instead of PFNs in swsusp_free()
-Date: Mon, 21 Jul 2014 12:27:00 +0200
-Message-ID: <1405938422-21900-5-git-send-email-joro@8bytes.org>
+Subject: [PATCH 3/6] PM / Hibernate: Implement position keeping in radix tree
+Date: Mon, 21 Jul 2014 12:26:59 +0200
+Message-ID: <1405938422-21900-4-git-send-email-joro@8bytes.org>
 References: <1405938422-21900-1-git-send-email-joro@8bytes.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 8bytes.org ([81.169.241.247]:50845 "EHLO theia.8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754220AbaGUK1G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 21 Jul 2014 06:27:06 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1405938422-21900-1-git-send-email-joro@8bytes.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Joerg Roedel <joro@8bytes.org>, Joerg Roedel <jroedel@suse.de>
+List-Id: linux-pm@vger.kernel.org
 
 From: Joerg Roedel <jroedel@suse.de>
 
-The existing implementation of swsusp_free iterates over all
-pfns in the system and checks every bit in the two memory
-bitmaps.
-
-This doesn't scale very well with large numbers of pfns,
-especially when the bitmaps are not populated very densly.
-Change the algorithm to iterate over the set bits in the
-bitmaps instead to make it scale better in large memory
-configurations.
-
-Also add a memory_bm_clear_current() helper function that
-clears the bit for the last position returned from the
-memory bitmap.
+Add code to remember the last position that was requested in
+the radix tree. Use it as a cache for faster linear walking
+of the bitmap in the memory_bm_rtree_next_pfn() function
+which is also added with this patch.
 
 Signed-off-by: Joerg Roedel <jroedel@suse.de>
 ---
- kernel/power/snapshot.c | 53 +++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 38 insertions(+), 15 deletions(-)
+ kernel/power/snapshot.c | 102 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 100 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 6c09879..83a6c61 100644
+index d5eea1b..6c09879 100644
 --- a/kernel/power/snapshot.c
 +++ b/kernel/power/snapshot.c
-@@ -848,6 +848,17 @@ static void memory_bm_clear_bit(struct memory_bitmap *bm, unsigned long pfn)
- 	clear_bit(bit, addr);
+@@ -309,6 +309,11 @@ struct mem_zone_bm_rtree {
+ struct bm_position {
+ 	struct bm_block *block;
+ 	int bit;
++
++	struct mem_zone_bm_rtree *zone;
++	struct rtree_node *node;
++	unsigned long node_pfn;
++	int node_bit;
+ };
+ 
+ struct memory_bitmap {
+@@ -487,6 +492,13 @@ static void memory_bm_position_reset(struct memory_bitmap *bm)
+ {
+ 	bm->cur.block = list_entry(bm->blocks.next, struct bm_block, hook);
+ 	bm->cur.bit = 0;
++
++	bm->cur.zone = list_entry(bm->zones.next, struct mem_zone_bm_rtree,
++				  list);
++	bm->cur.node = list_entry(bm->cur.zone->leaves.next,
++				  struct rtree_node, list);
++	bm->cur.node_pfn = 0;
++	bm->cur.node_bit = 0;
  }
  
-+static void memory_bm_clear_current(struct memory_bitmap *bm)
+ static void memory_bm_free(struct memory_bitmap *bm, int clear_nosave_free);
+@@ -734,6 +746,11 @@ static int memory_rtree_find_bit(struct memory_bitmap *bm, unsigned long pfn,
+ 	struct rtree_node *node;
+ 	int i, block_nr;
+ 
++	zone = bm->cur.zone;
++
++	if (pfn >= zone->start_pfn && pfn < zone->end_pfn)
++		goto zone_found;
++
+ 	zone = NULL;
+ 
+ 	/* Find the right zone */
+@@ -747,10 +764,16 @@ static int memory_rtree_find_bit(struct memory_bitmap *bm, unsigned long pfn,
+ 	if (!zone)
+ 		return -EFAULT;
+ 
++zone_found:
+ 	/*
+ 	 * We have a zone. Now walk the radix tree to find the leave
+ 	 * node for our pfn.
+ 	 */
++
++	node = bm->cur.node;
++	if (((pfn - zone->start_pfn) & ~BM_BLOCK_MASK) == bm->cur.node_pfn)
++		goto node_found;
++
+ 	node      = zone->rtree;
+ 	block_nr  = (pfn - zone->start_pfn) >> BM_BLOCK_SHIFT;
+ 
+@@ -763,9 +786,15 @@ static int memory_rtree_find_bit(struct memory_bitmap *bm, unsigned long pfn,
+ 		node = (struct rtree_node *)node->data[index];
+ 	}
+ 
++node_found:
++	/* Update last position */
++	bm->cur.zone     = zone;
++	bm->cur.node     = node;
++	bm->cur.node_pfn = (pfn - zone->start_pfn) & ~BM_BLOCK_MASK;
++
+ 	/* Set return values */
+-	*addr   = node->data;
+-	*bit_nr = (pfn - zone->start_pfn) & BM_BLOCK_MASK;
++	*addr            = node->data;
++	*bit_nr          = (pfn - zone->start_pfn) & BM_BLOCK_MASK;
+ 
+ 	return 0;
+ }
+@@ -860,11 +889,16 @@ static bool memory_bm_pfn_present(struct memory_bitmap *bm, unsigned long pfn)
+  *	this function.
+  */
+ 
++static unsigned long memory_bm_rtree_next_pfn(struct memory_bitmap *bm);
++
+ static unsigned long memory_bm_next_pfn(struct memory_bitmap *bm)
+ {
++	unsigned long rtree_pfn;
+ 	struct bm_block *bb;
+ 	int bit;
+ 
++	rtree_pfn = memory_bm_rtree_next_pfn(bm);
++
+ 	bb = bm->cur.block;
+ 	do {
+ 		bit = bm->cur.bit;
+@@ -878,13 +912,77 @@ static unsigned long memory_bm_next_pfn(struct memory_bitmap *bm)
+ 	} while (&bb->hook != &bm->blocks);
+ 
+ 	memory_bm_position_reset(bm);
++	WARN_ON_ONCE(rtree_pfn != BM_END_OF_MAP);
+ 	return BM_END_OF_MAP;
+ 
+  Return_pfn:
++	WARN_ON_ONCE(bb->start_pfn + bit != rtree_pfn);
+ 	bm->cur.bit = bit + 1;
+ 	return bb->start_pfn + bit;
+ }
+ 
++/*
++ *	rtree_next_node - Jumps to the next leave node
++ *
++ *	Sets the position to the beginning of the next node in the
++ *	memory bitmap. This is either the next node in the current
++ *	zone's radix tree or the first node in the radix tree of the
++ *	next zone.
++ *
++ *	Returns true if there is a next node, false otherwise.
++ */
++static bool rtree_next_node(struct memory_bitmap *bm)
 +{
-+	int bit;
++	bm->cur.node = list_entry(bm->cur.node->list.next,
++				  struct rtree_node, list);
++	if (&bm->cur.node->list != &bm->cur.zone->leaves) {
++		bm->cur.node_pfn += BM_BITS_PER_BLOCK;
++		bm->cur.node_bit  = 0;
++		return true;
++	}
 +
-+	bit  = max(bm->cur.node_bit - 1, 0);
-+	clear_bit(bit, bm->cur.node->data);
++	/* No more nodes, goto next zone */
++	bm->cur.zone = list_entry(bm->cur.zone->list.next,
++				  struct mem_zone_bm_rtree, list);
++	if (&bm->cur.zone->list != &bm->zones) {
++		bm->cur.node = list_entry(bm->cur.zone->leaves.next,
++					  struct rtree_node, list);
++		bm->cur.node_pfn = 0;
++		bm->cur.node_bit = 0;
++		return true;
++	}
 +
-+	bit = max(bm->cur.bit - 1, 0);
-+	clear_bit(bit, bm->cur.block->data);
++	/* No more zones */
++	return false;
 +}
 +
- static int memory_bm_test_bit(struct memory_bitmap *bm, unsigned long pfn)
- {
- 	void *addr;
-@@ -1491,23 +1502,35 @@ static struct memory_bitmap copy_bm;
- 
- void swsusp_free(void)
- {
--	struct zone *zone;
--	unsigned long pfn, max_zone_pfn;
-+	unsigned long fb_pfn, fr_pfn;
- 
--	for_each_populated_zone(zone) {
--		max_zone_pfn = zone_end_pfn(zone);
--		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
--			if (pfn_valid(pfn)) {
--				struct page *page = pfn_to_page(pfn);
--
--				if (swsusp_page_is_forbidden(page) &&
--				    swsusp_page_is_free(page)) {
--					swsusp_unset_page_forbidden(page);
--					swsusp_unset_page_free(page);
--					__free_page(page);
--				}
--			}
-+	memory_bm_position_reset(forbidden_pages_map);
-+	memory_bm_position_reset(free_pages_map);
++/*
++ *	memory_bm_rtree_next_pfn - Find the next set bit
++ *
++ *	Starting from the last returned position this function searches
++ *	for the next set bit in the memory bitmap and returns its
++ *	number. If no more bit is set BM_END_OF_MAP is returned.
++ */
++static unsigned long memory_bm_rtree_next_pfn(struct memory_bitmap *bm)
++{
++	unsigned long bits, pfn, pages;
++	int bit;
 +
-+loop:
-+	fr_pfn = memory_bm_next_pfn(free_pages_map);
-+	fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
-+
-+	/*
-+	 * Find the next bit set in both bitmaps. This is guaranteed to
-+	 * terminate when fb_pfn == fr_pfn == BM_END_OF_MAP.
-+	 */
 +	do {
-+		if (fb_pfn < fr_pfn)
-+			fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
-+		if (fr_pfn < fb_pfn)
-+			fr_pfn = memory_bm_next_pfn(free_pages_map);
-+	} while (fb_pfn != fr_pfn);
++		pages	  = bm->cur.zone->end_pfn - bm->cur.zone->start_pfn;
++		bits      = min(pages - bm->cur.node_pfn, BM_BITS_PER_BLOCK);
++		bit	  = find_next_bit(bm->cur.node->data, bits,
++					  bm->cur.node_bit);
++		if (bit < bits) {
++			pfn = bm->cur.zone->start_pfn + bm->cur.node_pfn + bit;
++			bm->cur.node_bit = bit + 1;
++			return pfn;
++		}
++	} while (rtree_next_node(bm));
 +
-+	if (fr_pfn != BM_END_OF_MAP && pfn_valid(fr_pfn)) {
-+		struct page *page = pfn_to_page(fr_pfn);
++	return BM_END_OF_MAP;
++}
 +
-+		memory_bm_clear_current(forbidden_pages_map);
-+		memory_bm_clear_current(free_pages_map);
-+		__free_page(page);
-+		goto loop;
- 	}
-+
- 	nr_copy_pages = 0;
- 	nr_meta_pages = 0;
- 	restore_pblist = NULL;
+ /**
+  *	This structure represents a range of page frames the contents of which
+  *	should not be saved during the suspend.
 -- 
 1.9.1
-
