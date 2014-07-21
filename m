@@ -1,44 +1,94 @@
-From: Matthew Longnecker <mlongnecker@nvidia.com>
-Subject: Re: [PATCH 4/6] ARM: tegra: Add soctherm and thermal zones to Tegra124
- device tree
-Date: Mon, 21 Jul 2014 16:13:13 -0700
-Message-ID: <53CD9E89.3030109@nvidia.com>
-References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com>
- <1403856699-2140-5-git-send-email-mperttunen@nvidia.com>
+From: hadess@hadess.net
+Subject: Re: Power-managing devices that are not of interest at some point
+ in time
+Date: Tue, 22 Jul 2014 01:23:14 +0200
+Message-ID: <00d187033b8082c2400a38175f7a4dd8@hadess.net>
+References: <Pine.LNX.4.44L0.1407181557020.979-100000@iolanthe.rowland.org>
+ <2443949.K0iePsg3Aa@vostro.rjw.lan> <1693424.kPNUQHOHlX@vostro.rjw.lan>
+ <1451627.FURGiR949u@dtor-glaptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1403856699-2140-5-git-send-email-mperttunen@nvidia.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <1451627.FURGiR949u@dtor-glaptop>
+Sender: linux-input-owner@vger.kernel.org
+To: Dmitry Torokhov <dtor@google.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Patrik Fimml <patrikf@chromium.org>, linux-pm@vger.kernel.org, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 6/27/2014 1:11 AM, Mikko Perttunen wrote:
-> This adds the soctherm thermal sensing and management unit to the
-> Tegra124 device tree along with the four thermal zones it exports.
+On 2014-07-19 01:16, Dmitry Torokhov wrote:
+<snip>
+> I'd say no.
+> 
+> Anyway, even though it is very tempting to declare inhibit a "deeper" 
+> state of
+> runtime suspend maybe you are right and inhibit should really be 
+> separate from
+> PM and drivers would have to sort out all the possible state 
+> permutations.
+> 
+> Considering input devices:
+> 
+> input_open(): check if device is inhibited, if so do nothing. Otherwise 
+> try
+> waking up itself and parent (via pm_runtime_get_sync() on itself), this 
+> will
+> power up the device. Do additional configuration if needed.
+> 
+> input_close(): check if device is inhibited, if not do pm_runtime_put 
+> (_sync?
+> to make sure we power off properly and not leave device up and running? 
+> or
+> should we power down manually not waiting for runtime PM)?
+> 
+> inhibit(): check if device is opened, if opened do 
+> pm_runtime_put_sync().
+> 
+> uninhibit(): if device is opened do pm_runtime_get_sync(), let runtime 
+> PM
+> bring up the device. Do additional config if needed -> very similar to
+> input_open(), different condition.
+> 
+> runtime_suspend(): power down the device. If not inhibited enable as 
+> wakeup
+> source.
+> 
+> runtime_resume(): power up the device if device is opened and not 
+> inhibited.
+> 
+> system_suspend(): check if device is opened, not inhibited and not in
+> runtimesuspend  already; power down.
+> 
+> system_resume(): power up the device if it is opened and not inhibited. 
+> I
+> guess it's OK to wake up device that shoudl be runtime-PM-idle since it 
+> will
+> go to back sleep shortly.
+> 
+> Ugh.. This is complicated...
 
-Mikko, soctherm doesn't "export thermal zones". I would rewrite your 
-desription like this:
+Seriously complicated. The compositor and/or X.org can handle most of 
+that for
+input devices already. For the camera, you want the application to know 
+that
+the device is present, but not usable, instead of making it vanish or 
+rendering
+it unusable. And if you wanted to implement this in the kernel, even 
+with the aid
+of a user-space daemon, you're still missing the most important part, 
+the device
+tagging.
 
-   Extend the Tegra124 device tree by adding the soctherm thermal
-   sensing and management unit and by defining four thermal zones --
-   one for each temperature sensor in soctherm.
+Once you've tagged the devices which would need to be left alone when 
+the lid is
+closed, or the laptop is in tablet mode, see if the problem can be 
+solved within
+user-space alone. I'm fairly certain it wouldn't take too long to fix 
+Xorg
+or a state-of-the-art compositor to behave properly.
 
-System integrators have some flexibility in deciding how many thermal 
-zones to define for their platform. For example, an integrator could 
-define a single zone for the entire Tegra chip (giving a simple system 
-at runtime) or with multiple zones (giving potentially higher 
-performance near thermal limits). That's why I don't like the 
-implication that soctherm dictates the existence of particular thermal 
-zones.
+All I see right now is making it harder to write devices drivers with no 
+real benefits.
 
--Matt
+Cheers
