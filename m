@@ -1,118 +1,239 @@
-From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Subject: [PATCH v2 03/16] clk: tegra: Add binding for the Tegra124 DFLL
- clocksource
-Date: Mon, 21 Jul 2014 18:38:49 +0300
-Message-ID: <1405957142-19416-4-git-send-email-ttynkkynen@nvidia.com>
+From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH v2 14/16] cpufreq: Add cpufreq driver for Tegra124
+Date: Mon, 21 Jul 2014 18:39:00 +0300
+Message-ID: <1405957142-19416-15-git-send-email-ttynkkynen@nvidia.com>
 References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Viresh Kumar <viresh.kumar@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Paul Walmsley <pwalmsley@nvidia.com>
+Content-Type: text/plain
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1405957142-19416-1-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The DFLL is the main clocksource for the fast CPU cluster on Tegra124
-and also provides automatic CPU rail voltage scaling as well. The DFLL
-is a separate IP block from the usual Tegra124 clock-and-reset
-controller, so it gets its own node in the device tree.
+Add a new cpufreq driver for Tegra124. Instead of using the PLLX as
+the CPU clocksource, switch immediately to the DFLL. It allows the use
+of higher clock rates, and will automatically scale the CPU voltage as
+well. Besides the CPU clocksource switch, we let the cpufreq-cpu0 driver
+for all the cpufreq operations.
 
-Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+This driver also relies on the DFLL driver to fill the OPP table for the
+CPU0 device, so that the cpufreq-cpu0 driver knows what frequencies to
+use.
+
+This driver is a completely independent of the old cpufreq driver
+(tegra-cpufreq), which is only used on Tegra20.
+
+Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
 v2 changes:
-    - dropped most of the I2C properties, as they are now queried from
-      the regulator framework
-    - s/vdd_cpu-supply/vdd-cpu-supply/ to better match what other Tegra
-      bindings do
+    - use the cpufreq-cpu0 driver
 
- .../bindings/clock/nvidia,tegra124-dfll.txt        | 69 ++++++++++++++++++++++
- 1 file changed, 69 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+ drivers/cpufreq/Kconfig.arm        |   1 +
+ drivers/cpufreq/Makefile           |   1 +
+ drivers/cpufreq/tegra124-cpufreq.c | 169 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 171 insertions(+)
+ create mode 100644 drivers/cpufreq/tegra124-cpufreq.c
 
-diff --git a/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 7364a53..df3c73e 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -244,6 +244,7 @@ config ARM_SPEAR_CPUFREQ
+ config ARM_TEGRA_CPUFREQ
+ 	bool "TEGRA CPUFreq support"
+ 	depends on ARCH_TEGRA
++	depends on GENERIC_CPUFREQ_CPU0
+ 	default y
+ 	help
+ 	  This adds the CPUFreq driver support for TEGRA SOCs.
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index db6d9a2..3437d24 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -76,6 +76,7 @@ obj-$(CONFIG_ARM_SA1100_CPUFREQ)	+= sa1100-cpufreq.o
+ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
+ obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA_CPUFREQ)		+= tegra-cpufreq.o
++obj-$(CONFIG_ARM_TEGRA_CPUFREQ)		+= tegra124-cpufreq.o
+ obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+ 
+ ##################################################################################
+diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
 new file mode 100644
-index 0000000..54c62ac
+index 0000000..65ff428
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
-@@ -0,0 +1,69 @@
-+NVIDIA Tegra124 DFLL FCPU clocksource
++++ b/drivers/cpufreq/tegra124-cpufreq.c
+@@ -0,0 +1,169 @@
++/*
++ * Tegra 124 cpufreq driver
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
 +
-+This binding uses the common clock binding:
-+Documentation/devicetree/bindings/clock/clock-bindings.txt
++#define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
 +
-+The DFLL IP block on Tegra is a root clocksource designed for clocking
-+the fast CPU cluster. It consists of a free-running voltage controlled
-+oscillator connected to the CPU voltage rail (VDD_CPU), and a closed loop
-+control module that will automatically adjust the VDD_CPU voltage by
-+communicating with an off-chip PMIC either via an I2C bus or via PWM signals.
++#include <linux/clk.h>
++#include <linux/cpufreq.h>
++#include <linux/cpu.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/pm_opp.h>
++#include <linux/types.h>
 +
-+Required properties:
-+- compatible : should be "nvidia,tegra124-dfll-fcpu"
-+- reg : Defines the following set of registers, in the order listed:
-+        - registers for the DFLL control logic.
-+        - registers for the I2C output logic.
-+        - registers for the integrated I2C master controller.
-+        - look-up table RAM for voltage register values.
-+- interrupts: Should contain the DFLL block interrupt.
-+- clocks: Must contain an entry for each entry in clock-names.
-+  See ../clocks/clock-bindings.txt for details.
-+- clock-names: Must include the following entries:
-+  - soc: Clock source for the DFLL control logic.
-+  - ref: The closed loop reference clock
-+  - i2c: Clock source for the integrated I2C master.
-+- #clock-cells: Must be 0.
-+- clock-output-names: Name of the clock output.
-+- vdd-cpu-supply: Regulator for the CPU voltage rail that the DFLL
-+  hardware will start controlling.
++static struct cpufreq_frequency_table *freq_table;
 +
-+Required properties for the control loop parameters:
-+- nvidia,sample-rate: Sample rate of the DFLL control loop.
-+- nvidia,droop-ctrl: See the register CL_DVFS_DROOP_CTRL in the TRM.
-+- nvidia,force-mode: See the field DFLL_PARAMS_FORCE_MODE in the TRM.
-+- nvidia,cf: Numeric value, see the field DFLL_PARAMS_CF_PARAM in the TRM.
-+- nvidia,ci: Numeric value, see the field DFLL_PARAMS_CI_PARAM in the TRM.
-+- nvidia,cg: Numeric value, see the field DFLL_PARAMS_CG_PARAM in the TRM.
-+- nvidia,cg-scale: Boolean value, see the field DFLL_PARAMS_CG_SCALE in the TRM.
++static struct device *cpu_dev;
++static struct clk *cpu_clk;
++static struct clk *pllp_clk;
++static struct clk *pllx_clk;
++static struct clk *dfll_clk;
 +
-+Required properties for I2C mode:
-+- nvidia,i2c-fs-rate: I2C transfer rate, if using FS mode.
++static int tegra124_cpu_switch_to_dfll(void)
++{
++	struct clk *original_cpu_clk_parent;
++	unsigned long rate;
++	struct dev_pm_opp *opp;
++	int ret;
 +
-+Example:
++	rate = clk_get_rate(cpu_clk);
++	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &rate);
++	if (IS_ERR(opp))
++		return PTR_ERR(opp);
 +
-+dfll@0,70110000 {
-+        compatible = "nvidia,tegra124-dfll";
-+        reg = <0 0x70110000 0 0x100>, /* DFLL control */
-+              <0 0x70110000 0 0x100>, /* I2C output control */
-+              <0 0x70110100 0 0x100>, /* Integrated I2C controller */
-+              <0 0x70110200 0 0x100>; /* Look-up table RAM */
-+        interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
-+        clocks = <&tegra_car TEGRA124_CLK_DFLL_SOC>,
-+                 <&tegra_car TEGRA124_CLK_DFLL_REF>,
-+                 <&tegra_car TEGRA124_CLK_I2C5>;
-+        clock-names = "soc", "ref", "i2c";
-+        #clock-cells = <0>;
-+        clock-output-names = "dfllCPU_out";
-+        vdd-cpu-supply = <&vdd_cpu>;
-+        status = "okay";
++	ret = clk_set_rate(dfll_clk, rate);
++	if (ret)
++		return ret;
 +
-+        nvidia,sample-rate = <12500>;
-+        nvidia,droop-ctrl = <0x00000f00>;
-+        nvidia,force-mode = <1>;
-+        nvidia,cf = <10>;
-+        nvidia,ci = <0>;
-+        nvidia,cg = <2>;
++	original_cpu_clk_parent = clk_get_parent(cpu_clk);
++	clk_set_parent(cpu_clk, pllp_clk);
++	if (ret)
++		return ret;
 +
-+        nvidia,i2c-fs-rate = <400000>;
++	ret = clk_prepare_enable(dfll_clk);
++	if (ret)
++		goto out_switch_to_original_parent;
++
++	clk_set_parent(cpu_clk, dfll_clk);
++
++	return 0;
++
++out_switch_to_original_parent:
++	clk_set_parent(cpu_clk, original_cpu_clk_parent);
++
++	return ret;
++}
++
++static struct platform_device_info cpufreq_cpu0_devinfo = {
++	.name = "cpufreq-cpu0",
 +};
++
++static int tegra124_cpufreq_probe(struct platform_device *pdev)
++{
++	int ret;
++
++	cpu_dev = get_cpu_device(0);
++	if (!cpu_dev)
++		return -ENODEV;
++
++	cpu_clk = of_clk_get_by_name(cpu_dev->of_node, "cpu_g");
++	if (IS_ERR(cpu_clk))
++		return PTR_ERR(cpu_clk);
++
++	dfll_clk = of_clk_get_by_name(cpu_dev->of_node, "dfll");
++	if (IS_ERR(dfll_clk)) {
++		ret = PTR_ERR(dfll_clk);
++		goto out_put_cpu_clk;
++	}
++
++	pllx_clk = of_clk_get_by_name(cpu_dev->of_node, "pll_x");
++	if (IS_ERR(pllx_clk)) {
++		ret = PTR_ERR(pllx_clk);
++		goto out_put_dfll_clk;
++	}
++
++	pllp_clk = of_clk_get_by_name(cpu_dev->of_node, "pll_p");
++	if (IS_ERR(pllp_clk)) {
++		ret = PTR_ERR(pllp_clk);
++		goto out_put_pllx_clk;
++	}
++
++	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
++	if (ret)
++		goto out_put_pllp_clk;
++
++	ret = tegra124_cpu_switch_to_dfll();
++	if (ret)
++		goto out_free_table;
++
++	platform_device_register_full(&cpufreq_cpu0_devinfo);
++
++	return 0;
++
++out_free_table:
++	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
++out_put_pllp_clk:
++	clk_put(pllp_clk);
++out_put_pllx_clk:
++	clk_put(pllx_clk);
++out_put_dfll_clk:
++	clk_put(dfll_clk);
++out_put_cpu_clk:
++	clk_put(cpu_clk);
++
++	return ret;
++}
++
++static struct platform_driver tegra124_cpufreq_platdrv = {
++	.driver = {
++		.name	= "cpufreq-tegra124",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= tegra124_cpufreq_probe,
++};
++
++static const struct of_device_id soc_of_matches[] = {
++	{ .compatible = "nvidia,tegra124", },
++	{}
++};
++
++static int __init tegra_cpufreq_init(void)
++{
++	int ret;
++	struct platform_device *pdev;
++
++	if (!of_find_matching_node(NULL, soc_of_matches))
++		return -ENODEV;
++
++	ret = platform_driver_register(&tegra124_cpufreq_platdrv);
++	if (ret)
++		return ret;
++
++	pdev = platform_device_register_simple("cpufreq-tegra124", -1, NULL, 0);
++	if (IS_ERR(pdev)) {
++		platform_driver_unregister(&tegra124_cpufreq_platdrv);
++		return PTR_ERR(pdev);
++	}
++
++	return 0;
++}
++
++MODULE_AUTHOR("Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>");
++MODULE_DESCRIPTION("cpufreq driver for nVIDIA Tegra124");
++MODULE_LICENSE("GPLv2");
++module_init(tegra_cpufreq_init);
 -- 
 1.8.1.5
