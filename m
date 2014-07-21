@@ -1,52 +1,62 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCHv2 12/17] cpuidle: mvebu: make the cpuidle driver capable
- of handling multiple SoCs
-Date: Mon, 21 Jul 2014 13:35:34 +0200
-Message-ID: <20140721133534.3415e425@free-electrons.com>
-References: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<8387001.GKG5goCh1a@wuerfel>
-	<20140721131939.20e81354@free-electrons.com>
-	<52019695.n2AjkGEsJ7@wuerfel>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/6] PM / Hibernate: Memory bitmap scalability
+ improvements
+Date: Mon, 21 Jul 2014 13:45:07 +0200
+Message-ID: <20140721114507.GA13921@amd.pavel.ucw.cz>
+References: <1405684643-30234-1-git-send-email-joro@8bytes.org>
+ <20140719134904.GA2852@amd.pavel.ucw.cz>
+ <20140721083211.GK30979@8bytes.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:52599 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754157AbaGULfi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 07:35:38 -0400
-In-Reply-To: <52019695.n2AjkGEsJ7@wuerfel>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36991 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753937AbaGULpJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 07:45:09 -0400
+Content-Disposition: inline
+In-Reply-To: <20140721083211.GK30979@8bytes.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arm-kernel@lists.infradead.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Dear Arnd Bergmann,
-
-On Mon, 21 Jul 2014 13:30:47 +0200, Arnd Bergmann wrote:
-
-> > > It would be best to have a way to read a property (or multiple
-> > > properties) from DT instead, to identify the requirements of the
-> > > device individually. However, I guess that would also require
-> > > changing the DT representation in an incompatible way, which we
-> > > normally don't.
+On Mon 2014-07-21 10:32:11, Joerg Roedel wrote:
+> On Sat, Jul 19, 2014 at 03:49:04PM +0200, Pavel Machek wrote:
+> > Hi!
 > > 
-> > cpuidle is not represented in DT, so besides checking the global
-> > compatible string with of_machine_is_compatible(), or passing data
-> > through platform_data (as proposed in the patch series), I don't really
-> > see how the cpuidle driver could find out which SoC variant is being
-> > used.
+> > > These patches improve the data structure by adding a radix
+> > > tree to the linked list structure to improve random access
+> > > performance from O(n) to O(log_b(n)), where b depends on the
+> > > architecture (b=512 on amd64, 1024 in i386).
+> > 
+> > Are you sure? From your other mail, you said you are adding just a
+> > single page. I'd expect random access performance to go from
+> > 
+> > O(n) to O(n/1024) in such case?
 > 
-> One way I think it can be done is by looking up the pmsu node
-> and then looking at some of the properties in there.
+> No, for the 4GB case the additional page is used as an index page into
+> the block-bitmap pages. On AM64 a page can hold 512 references and a
+> single block-bitmap page is enough for 128MB of RAM. This means that for
+> systems with up to 64GB of RAM we can get the block-bitmap page directly
+> from the index page. For systems with more than 64GB of RAM we need
+> another level of index pages, and now we need two memory accesses to get
+> to the block-bitmap page (okay, with this implementation its actually 2
+> memory accesses per level, because the index-pages refer to a struct
+> rtree_node which itself contains the pointer to the index/data page).
+> 
+> A two-level radix tree would be enough for systems with up to 32TB of
+> RAM. After that we need 3 levels, but you can already see that this
+> doesn't scale linearly anymore but with log_512(n), where n is the
+> number of block-bitmap pages required.
 
-Which properties do you have in mind? Should we simply use different
-compatible strings for the PMSU node, per SoC ? Some other suggestions ?
+Ok, so you have sped it up from O(n) to O(log(n)) speed, and increased
+memory requirements from O(n) to O(n * log(n)), right?
 
-Thanks,
+does enough_swap() or reqd_free_pages() need to be updated?
 
-Thomas
+Best regards,
+								Pavel
+
 -- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
