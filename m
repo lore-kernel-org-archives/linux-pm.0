@@ -1,72 +1,57 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 0/6] of-thermal hardware trip points + Tegra124 SOCTHERM
- driver
-Date: Mon, 21 Jul 2014 15:42:29 +0800
-Message-ID: <1405928549.2455.2.camel@rzhang1-toshiba>
-References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [Update 2x][PATCH 1/2] ACPI / PM: Always enable wakeup GPEs when
+ enabling device wakeup
+Date: Mon, 21 Jul 2014 10:17:34 +0200
+Message-ID: <20140721081734.GL3935@laptop>
+References: <1907495.agrCMfRsQN@vostro.rjw.lan>
+ <1617640.X0G82q0eFI@vostro.rjw.lan>
+ <7670400.0LUVFHKPfm@vostro.rjw.lan>
+ <5962983.s3jy9r09Hm@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:1097 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752685AbaGUHmf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 21 Jul 2014 03:42:35 -0400
-In-Reply-To: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5962983.s3jy9r09Hm@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mikko Perttunen <mperttunen@nvidia.com>
-Cc: edubezval@gmail.com, swarren@wwwdotorg.org, thierry.reding@gmail.com, pdeschrijver@nvidia.com, mlongnecker@nvidia.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hi, Eduardo,
+On Mon, Jul 21, 2014 at 01:51:46AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: ACPI / PM: Always enable wakeup GPEs when enabling device wakeup
+> 
+> Wakeup GPEs are currently only enabled when setting up devices for
+> remote wakeup at run time.  During system-wide transitions they are
+> enabled by ACPICA at the very last stage of suspend (before asking
+> the BIOS to take over).  Of course, that only works for system
+> sleep states supported by ACPI, so in particular it doesn't work
+> for the "freeze" sleep state.
+> 
+> For this reason, modify the ACPI core device PM code to enable wakeup
+> GPEs for devices when setting them up for wakeup regardless of whether
+> that is remote wakeup at runtime or system wakeup.  That allows the
+> same device wakeup setup routine to be used for both runtime PM and
+> system-wide PM and makes it possible to reduce code size quite a bit.
+> 
+> That should make things like ACPI-based PCI Wake-on-LAN work with
+> the "freeze" sleep state among other things.
+> 
+> Tested-on: Toshiba Portege R500
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> The PCI ACPI device PM notify handler has to be updated to avoid running
+> runtime resume callbacks during system suspend too.
 
-what do you think of this patch set?
+So I tested the first version, with that my WSM-EP didn't resume on WoL
+and pressing the power button after the WoL had it crash and burn in the
+igb driver.
 
-thanks,
-rui
+Today I tested this latest version and WoL still didn't trigger a
+resume, but the power button did make it go again, no crashes and I
+suppose I can confirm the earlier patch that stopped making it go halt
+works.
 
-On Fri, 2014-06-27 at 11:11 +0300, Mikko Perttunen wrote:
-> Hi everyone,
-> 
-> this series adds support for hardware-tracked thermal trip points
-> for the device tree thermal framework and introduces a new Tegra124 thermal
-> driver that uses them.
-> 
-> Hardware-tracked trip points are trip points that do not need to be polled;
-> the hardware gives an interrupt when the trip point is reached. The device
-> tree thermal framework has not previously given the sensor driver any
-> information about set trip points, so using these has been impossible.
-> This series adds a new callback from of-thermal to the driver to allow telling
-> the driver about trip points. The driver only needs to track two trip points,
-> the framework ensures that the current temperature lies between those two.
-> Behavior for drivers that do not include this callback is unchanged.
-> 
-> The Tegra124 SOCTHERM thermal driver that is included exposes four thermal zones
-> (the thermctl thermal zones) with hardware-tracked trip point support. While the
-> hardware supports four tracked trip points, only one is used.
-> 
-> Mikko Perttunen (6):
->   thermal: of: Add support for hardware-tracked trip points
->   of: Add bindings for nvidia,tegra124-soctherm
->   ARM: tegra: Add thermal trip points for Jetson TK1
->   ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
->   clk: tegra: Add soctherm and tsensor clocks to Tegra124 init table
->   thermal: Add Tegra SOCTHERM thermal management driver
-> 
->  .../devicetree/bindings/thermal/tegra-soctherm.txt |  32 ++
->  arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  32 ++
->  arch/arm/boot/dts/tegra124.dtsi                    |  48 ++
->  drivers/clk/tegra/clk-tegra124.c                   |   2 +
->  drivers/thermal/Kconfig                            |   7 +
->  drivers/thermal/Makefile                           |   1 +
->  drivers/thermal/of-thermal.c                       |  97 +++-
->  drivers/thermal/tegra_soctherm.c                   | 553 +++++++++++++++++++++
->  include/dt-bindings/thermal/tegra124-soctherm.h    |  15 +
->  include/linux/thermal.h                            |   3 +-
->  10 files changed, 785 insertions(+), 5 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
->  create mode 100644 drivers/thermal/tegra_soctherm.c
->  create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
-> 
-
-
+When I 'halt' I can wake the machine back up using a WoL so that all
+_should_ work afaik.
