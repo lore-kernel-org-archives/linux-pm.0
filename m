@@ -1,78 +1,53 @@
-From: Joerg Roedel <joro@8bytes.org>
-Subject: Re: [PATCH 0/6 v2] PM / Hibernate: Memory bitmap scalability
- improvements
-Date: Mon, 21 Jul 2014 14:36:13 +0200
-Message-ID: <20140721123613.GL30979@8bytes.org>
-References: <1405938422-21900-1-git-send-email-joro@8bytes.org>
- <20140721120053.GA14069@amd.pavel.ucw.cz>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCHv2 12/17] cpuidle: mvebu: make the cpuidle driver capable
+ of handling multiple SoCs
+Date: Mon, 21 Jul 2014 14:38:13 +0200
+Message-ID: <20140721143813.6028b6ed@free-electrons.com>
+References: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com>
+	<52019695.n2AjkGEsJ7@wuerfel>
+	<20140721133534.3415e425@free-electrons.com>
+	<5251405.VTrfDi1rj5@wuerfel>
+	<20140721140917.16e71558@free-electrons.com>
+	<53CD08CF.6080900@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 8bytes.org ([81.169.241.247]:51113 "EHLO theia.8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932082AbaGUMgQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 21 Jul 2014 08:36:16 -0400
-Content-Disposition: inline
-In-Reply-To: <20140721120053.GA14069@amd.pavel.ucw.cz>
+Received: from top.free-electrons.com ([176.31.233.9]:53012 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754579AbaGUMiR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 08:38:17 -0400
+In-Reply-To: <53CD08CF.6080900@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-Hi,
+Dear Daniel Lezcano,
 
-On Mon, Jul 21, 2014 at 02:00:53PM +0200, Pavel Machek wrote:
-> > These patches improve the data structure by adding a radix
-> > tree to the linked list structure to improve random access
-> > performance from O(n) to O(log_b(n)), where b depends on the
-> > architecture (b=512 on amd64, 1024 in i386).
+On Mon, 21 Jul 2014 14:34:23 +0200, Daniel Lezcano wrote:
+
+> So there are three solutions:
 > 
-> Why are we doing random access there?
+> 1. Pass the flag through the platform data, I am not really in favor of 
+> that as mentioned above
 
-Mostly because the bits in the bitmaps need to be set, cleared and
-tested, basically at every place that calls one of the swsusp_*page*
-functions.
+That's what is already implemented.
 
-> Is the improvement from fact that normally very little memory is used
-> on big memory machines?
-
-That is one part of the optimzation, yes. As I wrote in Patch 6 the
-worst-case performance is still the same as with the old implementation,
-hence it is still necessary to touch the soft lockup watchdog.
-
-> Actually... how long does it take to hibernate 12TB machine? That
-> should be many hours, right? You just can't hibernate machine that
-> big.
-
-Sorry, I didn't run the tests on these big machines myself as I don't
-have access to them, I relied on our partner to do that and report back
-the results.
-
-> > The last patch adds touching the soft lockup watchdog in
-> > rtree_next_node. This is necessary because the worst case
-> > performance (all bits set in the forbidden_pages_map and
-> > free_pages_map) is the same as with the old implementation
-> > and may still cause soft lockups. Patch 6 avoids this.
 > 
-> Ok, so what about simpler patch? Just touch the watchdog?
+> 2. Use the compatible string like the cpuidle-big-little.c driver, but 
+> Arnd is not in favor of that
+> 
+> 3. Register 3 platform drivers, in cpuidle-mvebu-v7.c, and let the 
+> registering of the cpuidle's platform device to enable the right one
 
-That would just cover the problem that the bitmap data structure and the
-algorithm in swsusp_free do not scale well on bigmem machines.
+I'm fine with doing (3). Daniel, Arnd, let me know if that's ok for
+you, and I'll respin the patch series accordingly.
 
-If you want to test the correctnes of these patches yourself, you can
-test with only patches 1-4. This will run hibernate with both bitmap
-implementations in parallel and trigger a WARN_ON_ONCE when any
-difference is found.
+Thanks,
 
-I did that with different configurations (64 and 32 bit kernel, in KVM
-and on real hardware) and found no issues with only patches 1-4.
-
-> Additional 70 seconds will be lost in noise if you write 12TB of RAM
-> to (even quite fast) disk.
-
-Sure, but you would still get the soft lockup warnings when swsusp_free
-runs in the end.
-
-
-	Joerg
-
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
