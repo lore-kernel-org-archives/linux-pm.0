@@ -1,72 +1,53 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/6 v2] PM / Hibernate: Memory bitmap scalability
+From: Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH 0/6] PM / Hibernate: Memory bitmap scalability
  improvements
-Date: Mon, 21 Jul 2014 16:10:27 +0200
-Message-ID: <20140721141027.GA16042@amd.pavel.ucw.cz>
-References: <1405938422-21900-1-git-send-email-joro@8bytes.org>
- <20140721120053.GA14069@amd.pavel.ucw.cz>
- <20140721123613.GL30979@8bytes.org>
- <20140721130629.GA15122@amd.pavel.ucw.cz>
- <20140721133800.GM30979@8bytes.org>
+Date: Mon, 21 Jul 2014 16:29:51 +0200
+Message-ID: <20140721142951.GN30979@8bytes.org>
+References: <1405684643-30234-1-git-send-email-joro@8bytes.org>
+ <20140719134904.GA2852@amd.pavel.ucw.cz>
+ <20140721083211.GK30979@8bytes.org>
+ <20140721114507.GA13921@amd.pavel.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41837 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932383AbaGUOK3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 10:10:29 -0400
+Received: from 8bytes.org ([81.169.241.247]:51406 "EHLO theia.8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754125AbaGUO3z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 21 Jul 2014 10:29:55 -0400
 Content-Disposition: inline
-In-Reply-To: <20140721133800.GM30979@8bytes.org>
+In-Reply-To: <20140721114507.GA13921@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joerg Roedel <joro@8bytes.org>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi!
+Hi,
 
-> > > That would just cover the problem that the bitmap data structure and the
-> > > algorithm in swsusp_free do not scale well on bigmem machines.
-> > 
-> > And is it a problem? Hibernation of 12TB machine will take 6 hours if
-> > you back your swap with SSDs.
-> > 
-> > Does not scale == burns additional 60 seconds of CPU time. I think we
-> > can live with that...
-> 
-> Problem is that these 76s are burned every time, whether you just use
-> 500MB or the full 12TB of the machine.
+On Mon, Jul 21, 2014 at 01:45:07PM +0200, Pavel Machek wrote:
+> Ok, so you have sped it up from O(n) to O(log(n)) speed, and increased
+> memory requirements from O(n) to O(n * log(n)), right?
 
-On 12TB machine, how much memory is used after boot finishes? I
-suspect it is not 500MB.
+No, new memory requirements are still ~O(n), because the additional pages
+needed for the index in the radix tree are outweighted by the memory
+saved by the smaller size of struct rtree_node compared to struct
+bm_block.
 
-> Next problem is that the bitmaps are allocated (and need to be freed)
-> without even being sure that a resume will happen.
+If you want to see real numbers, here is a small tool which tells you
+exactly when you need more memory and how much you save with the new
+memory bitmap implementation:
 
-Could we fix that instead? Allocating bitmaps before we see
-hibernation signature is a bug.
+	http://www.zlug.org/~joro/data/mem_req.c
 
-[How long does 12TB machine boot?]
+It will tell you that the new implementation uses at most 2 more pages
+for smaller RAM sizes (2 pages because 2 memory bitmaps are allocated)
+and will actually save pages for bigger RAM sizes (already 30 pages on a
+1TB machine, 384 pages on a 12TB machine)
 
-> > ...because noone sane will hibernate 12TB machine.
-> 
-> And Linux is only made for sane people? Thats pretty new to me ;-)
+You can also modify the above tool to give you some data to plot, then
+you will also SEE that there is still a linear relationship between RAM
+size and memory required by the old and new memory bitmap
+implementation.
 
-Yeah, but please don't optimize for insane people :-).
 
-> > Yes, that's why I propose to apply just patch 6 -- to avoid soft
-> > lockup warnings.
-> 
-> Only patch 6 would wrap the problem with the soft lockups, but the other
-> patches actually improve the resume and boot situation on those
-> machines.
+	Joerg
 
-Yeah. Provide timings for 12TB machine suspending/resuming and we may
-talk about it.
-
-#6 is bugfix. We should take it. Rest is performance improvement for
-insane config. I don't think we should take it.
-
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
