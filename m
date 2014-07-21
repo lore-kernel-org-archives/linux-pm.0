@@ -1,66 +1,51 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/6 v2] PM / Hibernate: Memory bitmap scalability
- improvements
-Date: Mon, 21 Jul 2014 14:00:53 +0200
-Message-ID: <20140721120053.GA14069@amd.pavel.ucw.cz>
-References: <1405938422-21900-1-git-send-email-joro@8bytes.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCHv2 12/17] cpuidle: mvebu: make the cpuidle driver capable of handling multiple SoCs
+Date: Mon, 21 Jul 2014 14:00:22 +0200
+Message-ID: <5251405.VTrfDi1rj5@wuerfel>
+References: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com> <52019695.n2AjkGEsJ7@wuerfel> <20140721133534.3415e425@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37488 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754002AbaGUMAz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 08:00:55 -0400
-Content-Disposition: inline
-In-Reply-To: <1405938422-21900-1-git-send-email-joro@8bytes.org>
+Received: from mout.kundenserver.de ([212.227.126.130]:49229 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754613AbaGUMCx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 08:02:53 -0400
+In-Reply-To: <20140721133534.3415e425@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joerg Roedel <joro@8bytes.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-Hi!
-
-> * Rebased to v3.16-rc6
-> * Fixed the style issues in Patch 1 mentioned by Rafael
+On Monday 21 July 2014 13:35:34 Thomas Petazzoni wrote:
+> On Mon, 21 Jul 2014 13:30:47 +0200, Arnd Bergmann wrote:
 > 
-> Hi,
+> > > > It would be best to have a way to read a property (or multiple
+> > > > properties) from DT instead, to identify the requirements of the
+> > > > device individually. However, I guess that would also require
+> > > > changing the DT representation in an incompatible way, which we
+> > > > normally don't.
+> > > 
+> > > cpuidle is not represented in DT, so besides checking the global
+> > > compatible string with of_machine_is_compatible(), or passing data
+> > > through platform_data (as proposed in the patch series), I don't really
+> > > see how the cpuidle driver could find out which SoC variant is being
+> > > used.
+> > 
+> > One way I think it can be done is by looking up the pmsu node
+> > and then looking at some of the properties in there.
 > 
-> here is the revised patch set to improve the scalability of
-> the memory bitmap implementation used for hibernation. The
-> current implementation does not scale well to machines with
-> several TB of memory. A resume on those machines may cause
-> soft lockups to be reported.
-> 
-> These patches improve the data structure by adding a radix
-> tree to the linked list structure to improve random access
-> performance from O(n) to O(log_b(n)), where b depends on the
-> architecture (b=512 on amd64, 1024 in i386).
+> Which properties do you have in mind? Should we simply use different
+> compatible strings for the PMSU node, per SoC ? Some other suggestions ?
 
-Why are we doing random access there?
+I don't know, it really depends on what the differences are between
+the SoCs, and I haven't looked at them.
 
-Is the improvement from fact that normally very little memory is used
-on big memory machines?
+Using the compatible strings would make it work best if you have one
+driver per variant, and then share some common code, as opposed to
+having one shared driver with a number of exceptions.
 
-> A test on a 12TB machine showed an improvement in resume
-> time from 76s with the old implementation to 2.4s with the
-> radix tree and the improved swsusp_free function. See below
-> for details of this test.
+If the differences are just a few parameters, it might be better
+to encode those parameters in DT properties instead.
 
-Actually... how long does it take to hibernate 12TB machine? That
-should be many hours, right? You just can't hibernate machine that
-big.
-
-> The last patch adds touching the soft lockup watchdog in
-> rtree_next_node. This is necessary because the worst case
-> performance (all bits set in the forbidden_pages_map and
-> free_pages_map) is the same as with the old implementation
-> and may still cause soft lockups. Patch 6 avoids this.
-
-Ok, so what about simpler patch? Just touch the watchdog?
-
-Additional 70 seconds will be lost in noise if you write 12TB of RAM
-to (even quite fast) disk.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Arnd
