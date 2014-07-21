@@ -1,218 +1,227 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RESEND PATCH] thermal: samsung: Add TMU support for Exynos3250
- SoC
-Date: Mon, 21 Jul 2014 14:04:56 +0800
-Message-ID: <1405922696.2455.1.camel@rzhang1-toshiba>
-References: <1405641605-3370-1-git-send-email-cw00.choi@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1405641605-3370-1-git-send-email-cw00.choi@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, Jonghwa Lee <jonghwa3.lee@samsung.com>, kgene.kim@samsung.com, pawel.moll@arm.com, linux-pm@vger.kernel.org, kyungmin.park@samsung.com, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, amit.daniel@samsung.com, robh+dt@kernel.org, eduardo.valentin@gmail.com, galak@codeaurora.org, ch.naveen@samsung.com, linux-arm-kernel@lists.infradead.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v2] cpufreq: tests: Providing cpufreq regression test
+Date: Mon, 21 Jul 2014 09:02:34 +0200
+Message-ID: <1405926154-27214-1-git-send-email-l.majewski@samsung.com>
+References: <1405678985-21677-1-git-send-email-l.majewski@samsung.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <1405678985-21677-1-git-send-email-l.majewski@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Abraham <ta.omasab@gmail.com>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <spk.linux@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2014-07-18 at 09:00 +0900, Chanwoo Choi wrote:
-> This patch adds the registers, bit fields and compatible strings
-> required to support for the 1 TMU channels on Exynos3250.
-> 
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> [Add MUX address setting bits by Jonghwa Lee]
-> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Reviewed-by: Amit Daniel Kachhap<amit.daniel@samsung.com>
+This commit adds first regression test "cpufreq_freq_test.sh" for the
+cpufreq subsystem.
 
-Eduardo and Amit,
+Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 
-do you have any comments on this?
+---
+Changes for v2:
+- Replace *_PATCH with *_PATH for variables names
+- Corrected mistakes in the README file
+- Providing detailed explanation of the patch in the README file
+---
+ drivers/cpufreq/tests/README               |  33 +++++++
+ drivers/cpufreq/tests/cpufreq_freq_test.sh | 149 +++++++++++++++++++++++++++++
+ 2 files changed, 182 insertions(+)
+ create mode 100644 drivers/cpufreq/tests/README
+ create mode 100755 drivers/cpufreq/tests/cpufreq_freq_test.sh
 
-thanks,
-rui
+diff --git a/drivers/cpufreq/tests/README b/drivers/cpufreq/tests/README
+new file mode 100644
+index 0000000..3e9cd80
+--- /dev/null
++++ b/drivers/cpufreq/tests/README
+@@ -0,0 +1,33 @@
++This file contains list of cpufreq's available regression tests with a short
++usage description.
++
++1. cpufreq_freq_test.sh
++
++Description:
++------------
++This script is supposed to test if cpufreq attributes exported by sysfs are
++exposing correct values.
++
++To achieve this goal it saves the current governor and changes it to
++"performance". Afterwards, it reads the "scaling_available_frequencies"
++property. With the list of supported frequencies it is able to enforce each of
++them by writing to "scaling_max_freq" attribute. To make the test more reliable
++a superfluous load with gzip is created to be sure that we are running with
++highest possible frequency. This high load is regulated with the 'sleep'
++duration. After this time the "cpufreq_cur_freq" is read and compared with the
++original value. As the last step the original governor is restored.
++
++This script can work with or without BOOST enabled and helps in spotting errors
++related to cpufreq and common clock framework.
++
++Used attributes:
++----------------
++- "scaling_available_frequencies"
++- "cpuinfo_cur_freq"
++- "scaling_governor"
++- "scaling_max_freq"
++
++Target devices:
++---------------
++
++All devices which exports mentioned above sysfs attributes.
+\ No newline at end of file
+diff --git a/drivers/cpufreq/tests/cpufreq_freq_test.sh b/drivers/cpufreq/tests/cpufreq_freq_test.sh
+new file mode 100755
+index 0000000..c25f05c
+--- /dev/null
++++ b/drivers/cpufreq/tests/cpufreq_freq_test.sh
+@@ -0,0 +1,149 @@
++#!/bin/bash
++#
++# This file provides a simple mean to test if all declared freqs at
++# "scaling_available_frequencies" can be set and if "cpuinfo_cur_freq"
++# returns this value.
++#
++# Usage: ./cpufreq_freq_test.sh
++# Requisite: Compiled in "performance" governor
++#
++# This program is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 2 of the License, or
++# (at your option) any later version.
++#
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, you can access it online at
++# http://www.gnu.org/licenses/gpl-2.0.html.
++#
++# Copyright (C) Samsung Electronics, 2014
++#
++# Author: Lukasz Majewski <l.majewski@samsung.com>
++
++set +x
++
++COLOUR_RED="\33[31m"
++COLOUR_BLUE="\33[34m"
++COLOUR_GREEN="\33[32m"
++COLOUR_DEFAULT="\33[0m"
++
++T_PATH=/sys/devices/system/cpu/cpu0/cpufreq
++BOOST_PATH=/sys/devices/system/cpu/cpufreq
++
++if [ ! -d "$T_PATH" ]; then
++    printf "   $COLOUR_RED No path to CPUFREQ $COLOUR_DEFAULT\n"
++    exit 1
++fi
++
++ERRORS=0
++
++OLD_GOV=`cat $T_PATH/scaling_governor`
++echo "CURRENT GOVERNOR: $OLD_GOV"
++echo "SET GOVERNOR: performance"
++echo "performance" > $T_PATH/scaling_governor
++
++function test_freqs1 {
++    FREQS=`cat $1`
++    for I in $FREQS; do
++	cpufreq_set_freq $I
++	if [ "$2" ]; then
++	    printf "$COLOUR_BLUE BOOST $COLOUR_DEFAULT" $I
++	fi
++	cpufreq_test_freq $I
++    done
++}
++
++function test_freqs2 {
++    FREQ=`cat $1`
++    FREQS_ARRAY=($FREQ)
++
++    for freq in ${FREQS_ARRAY[@]}
++    do
++	echo "REFERENCE FREQ: $freq"
++	for f in ${FREQS_ARRAY[@]}
++	do
++	    cpufreq_set_freq $freq
++	    echo -n "----> "
++	    cpufreq_set_freq $f
++	    cpufreq_test_freq $f
++	done
++    done
++}
++
++function restore {
++    if [ -f $BOOST_PATH/boost ]; then
++	cpufreq_boost_state $BOOST_STATE
++    fi
++
++    echo "SET GOVERNOR: $OLD_GOV"
++    echo $OLD_GOV > $T_PATH/scaling_governor
++}
++
++function die {
++    printf "   $COLOUR_RED FAILED $COLOUR_DEFAULT\n"
++    restore_gov
++    exit 1
++}
++
++function cpufreq_test_freq {
++    gzip < /dev/urandom > /dev/null &
++    pid=$!
++    sleep 0.1
++    CURR_FREQ=`cat $T_PATH/cpuinfo_cur_freq`
++    if [ $1 -eq $CURR_FREQ ]; then
++	printf "\t$COLOUR_GREEN OK $COLOUR_DEFAULT\n"
++    else
++	printf "$COLOUR_RED CURRENT $CURR_FREQ $COLOUR_DEFAULT\n"
++	ERRORS=`expr $ERRORS + 1`
++	#die
++    fi
++    kill -9 $pid
++    wait $! 2>/dev/null
++}
++
++function cpufreq_set_freq {
++    echo $1 > $T_PATH/scaling_max_freq || die $?
++    printf "FREQ:$COLOUR_GREEN %s $COLOUR_DEFAULT" $1
++}
++
++function cpufreq_boost_state {
++   echo $1 > $BOOST_PATH/boost
++}
++
++function cpufreq_boost_status {
++   cat $BOOST_PATH/boost
++}
++
++if [ -f $BOOST_PATH/boost ]; then
++    echo "######################################"
++    echo "TEST BOOST OPERATION"
++    echo "######################################"
++
++    BOOST_STATE=$(cpufreq_boost_status)
++    if [ $BOOST_STATE -eq 0 ]; then
++	cpufreq_boost_state 1
++    fi
++    test_freqs1 $T_PATH/scaling_boost_frequencies 1
++fi
++
++echo "######################################"
++echo "TEST AVAILABLE FREQS"
++echo "######################################"
++test_freqs1 $T_PATH/scaling_available_frequencies
++
++echo "######################################"
++echo "TEST FREQS SWITCHING"
++echo "######################################"
++test_freqs2 $T_PATH/scaling_available_frequencies
++
++echo "######################################"
++echo "ERRORS: $ERRORS"
++echo "######################################"
++
++restore
++exit 0
+-- 
+2.0.0.rc2
 
-> ---
->  .../devicetree/bindings/thermal/exynos-thermal.txt |  1 +
->  drivers/thermal/samsung/exynos_tmu.c               |  7 +-
->  drivers/thermal/samsung/exynos_tmu.h               |  3 +-
->  drivers/thermal/samsung/exynos_tmu_data.c          | 89 ++++++++++++++++++++++
->  drivers/thermal/samsung/exynos_tmu_data.h          |  7 ++
->  5 files changed, 105 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> index c949092..ae738f5 100644
-> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> @@ -3,6 +3,7 @@
->  ** Required properties:
->  
->  - compatible : One of the following:
-> +	       "samsung,exynos3250-tmu"
->  	       "samsung,exynos4412-tmu"
->  	       "samsung,exynos4210-tmu"
->  	       "samsung,exynos5250-tmu"
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index d7ca9f4..a2a08ea 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -505,6 +505,10 @@ static irqreturn_t exynos_tmu_irq(int irq, void *id)
->  
->  static const struct of_device_id exynos_tmu_match[] = {
->  	{
-> +		.compatible = "samsung,exynos3250-tmu",
-> +		.data = (void *)EXYNOS3250_TMU_DRV_DATA,
-> +	},
-> +	{
->  		.compatible = "samsung,exynos4210-tmu",
->  		.data = (void *)EXYNOS4210_TMU_DRV_DATA,
->  	},
-> @@ -677,7 +681,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->  		goto err_clk_sec;
->  	}
->  
-> -	if (pdata->type == SOC_ARCH_EXYNOS4210 ||
-> +	if (pdata->type == SOC_ARCH_EXYNOS3250 ||
-> +	    pdata->type == SOC_ARCH_EXYNOS4210 ||
->  	    pdata->type == SOC_ARCH_EXYNOS4412 ||
->  	    pdata->type == SOC_ARCH_EXYNOS5250 ||
->  	    pdata->type == SOC_ARCH_EXYNOS5260 ||
-> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-> index edd08cf..1b4a644 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.h
-> +++ b/drivers/thermal/samsung/exynos_tmu.h
-> @@ -40,7 +40,8 @@ enum calibration_mode {
->  };
->  
->  enum soc_type {
-> -	SOC_ARCH_EXYNOS4210 = 1,
-> +	SOC_ARCH_EXYNOS3250 = 1,
-> +	SOC_ARCH_EXYNOS4210,
->  	SOC_ARCH_EXYNOS4412,
->  	SOC_ARCH_EXYNOS5250,
->  	SOC_ARCH_EXYNOS5260,
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-> index c1d81dc..aa8e0de 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -90,6 +90,95 @@ struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
->  };
->  #endif
->  
-> +#if defined(CONFIG_SOC_EXYNOS3250)
-> +static const struct exynos_tmu_registers exynos3250_tmu_registers = {
-> +	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
-> +	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
-> +	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
-> +	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
-> +	.test_mux_addr_shift = EXYNOS4412_MUX_ADDR_SHIFT,
-> +	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
-> +	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
-> +	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
-> +	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
-> +	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
-> +	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
-> +	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
-> +	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
-> +	.tmu_status = EXYNOS_TMU_REG_STATUS,
-> +	.tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
-> +	.threshold_th0 = EXYNOS_THD_TEMP_RISE,
-> +	.threshold_th1 = EXYNOS_THD_TEMP_FALL,
-> +	.tmu_inten = EXYNOS_TMU_REG_INTEN,
-> +	.inten_rise0_shift = EXYNOS_TMU_INTEN_RISE0_SHIFT,
-> +	.inten_rise1_shift = EXYNOS_TMU_INTEN_RISE1_SHIFT,
-> +	.inten_rise2_shift = EXYNOS_TMU_INTEN_RISE2_SHIFT,
-> +	.inten_fall0_shift = EXYNOS_TMU_INTEN_FALL0_SHIFT,
-> +	.tmu_intstat = EXYNOS_TMU_REG_INTSTAT,
-> +	.tmu_intclear = EXYNOS_TMU_REG_INTCLEAR,
-> +	.intclr_fall_shift = EXYNOS_TMU_CLEAR_FALL_INT_SHIFT,
-> +	.intclr_rise_shift = EXYNOS_TMU_RISE_INT_SHIFT,
-> +	.intclr_rise_mask = EXYNOS_TMU_RISE_INT_MASK,
-> +	.intclr_fall_mask = EXYNOS_TMU_FALL_INT_MASK,
-> +	.emul_con = EXYNOS_EMUL_CON,
-> +	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
-> +	.emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
-> +	.emul_time_mask = EXYNOS_EMUL_TIME_MASK,
-> +};
-> +
-> +#define EXYNOS3250_TMU_DATA \
-> +	.threshold_falling = 10, \
-> +	.trigger_levels[0] = 70, \
-> +	.trigger_levels[1] = 95, \
-> +	.trigger_levels[2] = 110, \
-> +	.trigger_levels[3] = 120, \
-> +	.trigger_enable[0] = true, \
-> +	.trigger_enable[1] = true, \
-> +	.trigger_enable[2] = true, \
-> +	.trigger_enable[3] = false, \
-> +	.trigger_type[0] = THROTTLE_ACTIVE, \
-> +	.trigger_type[1] = THROTTLE_ACTIVE, \
-> +	.trigger_type[2] = SW_TRIP, \
-> +	.trigger_type[3] = HW_TRIP, \
-> +	.max_trigger_level = 4, \
-> +	.gain = 8, \
-> +	.reference_voltage = 16, \
-> +	.noise_cancel_mode = 4, \
-> +	.cal_type = TYPE_TWO_POINT_TRIMMING, \
-> +	.efuse_value = 55, \
-> +	.min_efuse_value = 40, \
-> +	.max_efuse_value = 100, \
-> +	.first_point_trim = 25, \
-> +	.second_point_trim = 85, \
-> +	.default_temp_offset = 50, \
-> +	.freq_tab[0] = { \
-> +		.freq_clip_max = 800 * 1000, \
-> +		.temp_level = 70, \
-> +	}, \
-> +	.freq_tab[1] = { \
-> +		.freq_clip_max = 400 * 1000, \
-> +		.temp_level = 95, \
-> +	}, \
-> +	.freq_tab_count = 2, \
-> +	.registers = &exynos3250_tmu_registers, \
-> +	.features = (TMU_SUPPORT_EMULATION | \
-> +			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
-> +			TMU_SUPPORT_EMUL_TIME)
-> +#endif
-> +
-> +#if defined(CONFIG_SOC_EXYNOS3250)
-> +struct exynos_tmu_init_data const exynos3250_default_tmu_data = {
-> +	.tmu_data = {
-> +		{
-> +			EXYNOS3250_TMU_DATA,
-> +			.type = SOC_ARCH_EXYNOS3250,
-> +			.test_mux = EXYNOS4412_MUX_ADDR_VALUE,
-> +		},
-> +	},
-> +	.tmu_count = 1,
-> +};
-> +#endif
-> +
->  #if defined(CONFIG_SOC_EXYNOS4412) || defined(CONFIG_SOC_EXYNOS5250)
->  static const struct exynos_tmu_registers exynos4412_tmu_registers = {
->  	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-> index d268981..f0979e5 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.h
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
-> @@ -148,6 +148,13 @@
->  #define EXYNOS5440_TMU_TH_RISE4_SHIFT		24
->  #define EXYNOS5440_EFUSE_SWAP_OFFSET		8
->  
-> +#if defined(CONFIG_SOC_EXYNOS3250)
-> +extern struct exynos_tmu_init_data const exynos3250_default_tmu_data;
-> +#define EXYNOS3250_TMU_DRV_DATA (&exynos3250_default_tmu_data)
-> +#else
-> +#define EXYNOS3250_TMU_DRV_DATA (NULL)
-> +#endif
-> +
->  #if defined(CONFIG_CPU_EXYNOS4210)
->  extern struct exynos_tmu_init_data const exynos4210_default_tmu_data;
->  #define EXYNOS4210_TMU_DRV_DATA (&exynos4210_default_tmu_data)
