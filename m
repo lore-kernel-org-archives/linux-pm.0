@@ -1,227 +1,72 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v2] cpufreq: tests: Providing cpufreq regression test
-Date: Mon, 21 Jul 2014 09:02:34 +0200
-Message-ID: <1405926154-27214-1-git-send-email-l.majewski@samsung.com>
-References: <1405678985-21677-1-git-send-email-l.majewski@samsung.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <1405678985-21677-1-git-send-email-l.majewski@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Abraham <ta.omasab@gmail.com>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <spk.linux@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 0/6] of-thermal hardware trip points + Tegra124 SOCTHERM
+ driver
+Date: Mon, 21 Jul 2014 15:42:29 +0800
+Message-ID: <1405928549.2455.2.camel@rzhang1-toshiba>
+References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:1097 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752685AbaGUHmf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 21 Jul 2014 03:42:35 -0400
+In-Reply-To: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mikko Perttunen <mperttunen@nvidia.com>
+Cc: edubezval@gmail.com, swarren@wwwdotorg.org, thierry.reding@gmail.com, pdeschrijver@nvidia.com, mlongnecker@nvidia.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-This commit adds first regression test "cpufreq_freq_test.sh" for the
-cpufreq subsystem.
+Hi, Eduardo,
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+what do you think of this patch set?
 
----
-Changes for v2:
-- Replace *_PATCH with *_PATH for variables names
-- Corrected mistakes in the README file
-- Providing detailed explanation of the patch in the README file
----
- drivers/cpufreq/tests/README               |  33 +++++++
- drivers/cpufreq/tests/cpufreq_freq_test.sh | 149 +++++++++++++++++++++++++++++
- 2 files changed, 182 insertions(+)
- create mode 100644 drivers/cpufreq/tests/README
- create mode 100755 drivers/cpufreq/tests/cpufreq_freq_test.sh
+thanks,
+rui
 
-diff --git a/drivers/cpufreq/tests/README b/drivers/cpufreq/tests/README
-new file mode 100644
-index 0000000..3e9cd80
---- /dev/null
-+++ b/drivers/cpufreq/tests/README
-@@ -0,0 +1,33 @@
-+This file contains list of cpufreq's available regression tests with a short
-+usage description.
-+
-+1. cpufreq_freq_test.sh
-+
-+Description:
-+------------
-+This script is supposed to test if cpufreq attributes exported by sysfs are
-+exposing correct values.
-+
-+To achieve this goal it saves the current governor and changes it to
-+"performance". Afterwards, it reads the "scaling_available_frequencies"
-+property. With the list of supported frequencies it is able to enforce each of
-+them by writing to "scaling_max_freq" attribute. To make the test more reliable
-+a superfluous load with gzip is created to be sure that we are running with
-+highest possible frequency. This high load is regulated with the 'sleep'
-+duration. After this time the "cpufreq_cur_freq" is read and compared with the
-+original value. As the last step the original governor is restored.
-+
-+This script can work with or without BOOST enabled and helps in spotting errors
-+related to cpufreq and common clock framework.
-+
-+Used attributes:
-+----------------
-+- "scaling_available_frequencies"
-+- "cpuinfo_cur_freq"
-+- "scaling_governor"
-+- "scaling_max_freq"
-+
-+Target devices:
-+---------------
-+
-+All devices which exports mentioned above sysfs attributes.
-\ No newline at end of file
-diff --git a/drivers/cpufreq/tests/cpufreq_freq_test.sh b/drivers/cpufreq/tests/cpufreq_freq_test.sh
-new file mode 100755
-index 0000000..c25f05c
---- /dev/null
-+++ b/drivers/cpufreq/tests/cpufreq_freq_test.sh
-@@ -0,0 +1,149 @@
-+#!/bin/bash
-+#
-+# This file provides a simple mean to test if all declared freqs at
-+# "scaling_available_frequencies" can be set and if "cpuinfo_cur_freq"
-+# returns this value.
-+#
-+# Usage: ./cpufreq_freq_test.sh
-+# Requisite: Compiled in "performance" governor
-+#
-+# This program is free software; you can redistribute it and/or modify
-+# it under the terms of the GNU General Public License as published by
-+# the Free Software Foundation; either version 2 of the License, or
-+# (at your option) any later version.
-+#
-+# This program is distributed in the hope that it will be useful,
-+# but WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+# GNU General Public License for more details.
-+#
-+# You should have received a copy of the GNU General Public License
-+# along with this program; if not, you can access it online at
-+# http://www.gnu.org/licenses/gpl-2.0.html.
-+#
-+# Copyright (C) Samsung Electronics, 2014
-+#
-+# Author: Lukasz Majewski <l.majewski@samsung.com>
-+
-+set +x
-+
-+COLOUR_RED="\33[31m"
-+COLOUR_BLUE="\33[34m"
-+COLOUR_GREEN="\33[32m"
-+COLOUR_DEFAULT="\33[0m"
-+
-+T_PATH=/sys/devices/system/cpu/cpu0/cpufreq
-+BOOST_PATH=/sys/devices/system/cpu/cpufreq
-+
-+if [ ! -d "$T_PATH" ]; then
-+    printf "   $COLOUR_RED No path to CPUFREQ $COLOUR_DEFAULT\n"
-+    exit 1
-+fi
-+
-+ERRORS=0
-+
-+OLD_GOV=`cat $T_PATH/scaling_governor`
-+echo "CURRENT GOVERNOR: $OLD_GOV"
-+echo "SET GOVERNOR: performance"
-+echo "performance" > $T_PATH/scaling_governor
-+
-+function test_freqs1 {
-+    FREQS=`cat $1`
-+    for I in $FREQS; do
-+	cpufreq_set_freq $I
-+	if [ "$2" ]; then
-+	    printf "$COLOUR_BLUE BOOST $COLOUR_DEFAULT" $I
-+	fi
-+	cpufreq_test_freq $I
-+    done
-+}
-+
-+function test_freqs2 {
-+    FREQ=`cat $1`
-+    FREQS_ARRAY=($FREQ)
-+
-+    for freq in ${FREQS_ARRAY[@]}
-+    do
-+	echo "REFERENCE FREQ: $freq"
-+	for f in ${FREQS_ARRAY[@]}
-+	do
-+	    cpufreq_set_freq $freq
-+	    echo -n "----> "
-+	    cpufreq_set_freq $f
-+	    cpufreq_test_freq $f
-+	done
-+    done
-+}
-+
-+function restore {
-+    if [ -f $BOOST_PATH/boost ]; then
-+	cpufreq_boost_state $BOOST_STATE
-+    fi
-+
-+    echo "SET GOVERNOR: $OLD_GOV"
-+    echo $OLD_GOV > $T_PATH/scaling_governor
-+}
-+
-+function die {
-+    printf "   $COLOUR_RED FAILED $COLOUR_DEFAULT\n"
-+    restore_gov
-+    exit 1
-+}
-+
-+function cpufreq_test_freq {
-+    gzip < /dev/urandom > /dev/null &
-+    pid=$!
-+    sleep 0.1
-+    CURR_FREQ=`cat $T_PATH/cpuinfo_cur_freq`
-+    if [ $1 -eq $CURR_FREQ ]; then
-+	printf "\t$COLOUR_GREEN OK $COLOUR_DEFAULT\n"
-+    else
-+	printf "$COLOUR_RED CURRENT $CURR_FREQ $COLOUR_DEFAULT\n"
-+	ERRORS=`expr $ERRORS + 1`
-+	#die
-+    fi
-+    kill -9 $pid
-+    wait $! 2>/dev/null
-+}
-+
-+function cpufreq_set_freq {
-+    echo $1 > $T_PATH/scaling_max_freq || die $?
-+    printf "FREQ:$COLOUR_GREEN %s $COLOUR_DEFAULT" $1
-+}
-+
-+function cpufreq_boost_state {
-+   echo $1 > $BOOST_PATH/boost
-+}
-+
-+function cpufreq_boost_status {
-+   cat $BOOST_PATH/boost
-+}
-+
-+if [ -f $BOOST_PATH/boost ]; then
-+    echo "######################################"
-+    echo "TEST BOOST OPERATION"
-+    echo "######################################"
-+
-+    BOOST_STATE=$(cpufreq_boost_status)
-+    if [ $BOOST_STATE -eq 0 ]; then
-+	cpufreq_boost_state 1
-+    fi
-+    test_freqs1 $T_PATH/scaling_boost_frequencies 1
-+fi
-+
-+echo "######################################"
-+echo "TEST AVAILABLE FREQS"
-+echo "######################################"
-+test_freqs1 $T_PATH/scaling_available_frequencies
-+
-+echo "######################################"
-+echo "TEST FREQS SWITCHING"
-+echo "######################################"
-+test_freqs2 $T_PATH/scaling_available_frequencies
-+
-+echo "######################################"
-+echo "ERRORS: $ERRORS"
-+echo "######################################"
-+
-+restore
-+exit 0
--- 
-2.0.0.rc2
+On Fri, 2014-06-27 at 11:11 +0300, Mikko Perttunen wrote:
+> Hi everyone,
+> 
+> this series adds support for hardware-tracked thermal trip points
+> for the device tree thermal framework and introduces a new Tegra124 thermal
+> driver that uses them.
+> 
+> Hardware-tracked trip points are trip points that do not need to be polled;
+> the hardware gives an interrupt when the trip point is reached. The device
+> tree thermal framework has not previously given the sensor driver any
+> information about set trip points, so using these has been impossible.
+> This series adds a new callback from of-thermal to the driver to allow telling
+> the driver about trip points. The driver only needs to track two trip points,
+> the framework ensures that the current temperature lies between those two.
+> Behavior for drivers that do not include this callback is unchanged.
+> 
+> The Tegra124 SOCTHERM thermal driver that is included exposes four thermal zones
+> (the thermctl thermal zones) with hardware-tracked trip point support. While the
+> hardware supports four tracked trip points, only one is used.
+> 
+> Mikko Perttunen (6):
+>   thermal: of: Add support for hardware-tracked trip points
+>   of: Add bindings for nvidia,tegra124-soctherm
+>   ARM: tegra: Add thermal trip points for Jetson TK1
+>   ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
+>   clk: tegra: Add soctherm and tsensor clocks to Tegra124 init table
+>   thermal: Add Tegra SOCTHERM thermal management driver
+> 
+>  .../devicetree/bindings/thermal/tegra-soctherm.txt |  32 ++
+>  arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  32 ++
+>  arch/arm/boot/dts/tegra124.dtsi                    |  48 ++
+>  drivers/clk/tegra/clk-tegra124.c                   |   2 +
+>  drivers/thermal/Kconfig                            |   7 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/of-thermal.c                       |  97 +++-
+>  drivers/thermal/tegra_soctherm.c                   | 553 +++++++++++++++++++++
+>  include/dt-bindings/thermal/tegra124-soctherm.h    |  15 +
+>  include/linux/thermal.h                            |   3 +-
+>  10 files changed, 785 insertions(+), 5 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
+>  create mode 100644 drivers/thermal/tegra_soctherm.c
+>  create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
+> 
+
 
