@@ -1,47 +1,78 @@
-From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Subject: [PATCH v2 10/16] clk: tegra: Add the DFLL as a possible parent of the cclk_g clock
-Date: Mon, 21 Jul 2014 18:38:56 +0300
-Message-ID: <1405957142-19416-11-git-send-email-ttynkkynen@nvidia.com>
-References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH, RFC 0/3] Per-cpu PM QoS requests.
+Date: Mon, 21 Jul 2014 09:52:01 -0600
+Message-ID: <1405957924-41292-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:19702 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933082AbaGUPkP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 11:40:15 -0400
-In-Reply-To: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:55891 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932322AbaGUPwL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 11:52:11 -0400
+Received: by mail-pa0-f41.google.com with SMTP id rd3so9556072pab.14
+        for <linux-pm@vger.kernel.org>; Mon, 21 Jul 2014 08:52:11 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Walmsley <pwalmsley@nvidia.com>, devicetree@vger.kernel.org, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+To: linux-pm@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Kevin Hilman <khilman@linaro.org>, Lina Iyer <lina.iyer@linaro.org>
 
-The DFLL clocksource was missing from the list of possible parents for
-the fast CPU cluster. Add it to the list.
+This series of patches adds a new feature to allow per-cpu PM QoS.
 
-Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
----
-v2 changes:
-    - none
+The first of the patch, modifies the irq manager to allow multiple clients for
+IRQ SMP affinity change notification. Today, only one client can register a
+notification per IRQ. The PM QoS framework is also now interested in knowing
+when the SMP affinity changes for an IRQ. With the current implementation, a
+second registration on the change notification releases the current
+notification callbacks and registers the new one. Modify the notification
+mechanism to use a list for notification instead of single data structure.
+Also, a client that wants to de-register from the notification will now need to
+call a separate API instead of the overloaded function call with a NULL
+argument.
 
- drivers/clk/tegra/clk-tegra-super-gen4.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+The next two patches re-organize PM QoS framework to allow QoS and the Dev PM
+QoS frameworks to specify a request type. Most requestors of PM QoS do not know
+or care about the CPU(s) the QoS needs to be effected. In many cases, it is
+still desirable to have the QoS apply on all available cpus. However, in
+conjunction with an IRQ balancer or a driver that has specific cpu(s)
+requirement for its use, can specify a QoS request only for that set of cpus.
+For example in a case, where a certain IRQ might need a performance QoS, but
+does not want to affect the general power consumption of all the cpus in the
+system, can specify an QoS request thats affine only to that cpu(s), where the
+IRQ can be triggered.
 
-diff --git a/drivers/clk/tegra/clk-tegra-super-gen4.c b/drivers/clk/tegra/clk-tegra-super-gen4.c
-index feb3201..f1f4410 100644
---- a/drivers/clk/tegra/clk-tegra-super-gen4.c
-+++ b/drivers/clk/tegra/clk-tegra-super-gen4.c
-@@ -44,7 +44,9 @@ static const char *sclk_parents[] = { "clk_m", "pll_c_out1", "pll_p_out4",
- 
- static const char *cclk_g_parents[] = { "clk_m", "pll_c", "clk_32k", "pll_m",
- 					"pll_p", "pll_p_out4", "unused",
--					"unused", "pll_x" };
-+					"unused", "pll_x", "unused", "unused",
-+					"unused", "unused", "unused", "unused",
-+					"dfllCPU_out" };
- 
- static const char *cclk_lp_parents[] = { "clk_m", "pll_c", "clk_32k", "pll_m",
- 					 "pll_p", "pll_p_out4", "unused",
+The change adds ability to specify the PM QoS request types and two new PM QoS
+request types in addition to the default that applies to all cpus.
+
+PM_QOS_REQ_AFFINE_CORES: This allows drivers to specify a certain set of cpus
+that the request should be applied on.
+
+PM_QOS_REQ_AFFINE_IRQ: This allows drivers to specify an IRQ to which the QoS
+request can be tracked with. This uses the IRQ SMP affinity notification to set
+the cpumask of the affected cpus internally.
+
+The request defaults to PM_QOS_REQ_ALL_CORES when not explicitly specified and
+applies the request to all cpus.
+
+There is also a provision to read the QoS request value for a constraint, for a
+constraint for a set of cpus or just a cpu. CPUIdle governors can use this
+feature to get a QoS request for the cpu(s) they are interested in.
+
+Lina Iyer (3):
+  irq: Allow multiple clients to register for irq affinity notification
+  QoS: Modify data structures and function arguments for scalability.
+  QoS: Enhance framework to support cpu/irq specific QoS requests
+
+ Documentation/power/pm_qos_interface.txt |  18 +++
+ drivers/base/power/qos.c                 |  14 +--
+ drivers/infiniband/hw/qib/qib_iba7322.c  |   4 +-
+ include/linux/interrupt.h                |  12 +-
+ include/linux/irq.h                      |   1 +
+ include/linux/irqdesc.h                  |   5 +-
+ include/linux/pm_qos.h                   |  23 +++-
+ kernel/irq/irqdesc.c                     |   1 +
+ kernel/irq/manage.c                      |  69 +++++++-----
+ kernel/power/qos.c                       | 184 ++++++++++++++++++++++++++++++-
+ lib/cpu_rmap.c                           |   2 +-
+ 11 files changed, 279 insertions(+), 54 deletions(-)
+
 -- 
-1.8.1.5
+1.9.1
 
