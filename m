@@ -1,63 +1,59 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCHv2 12/17] cpuidle: mvebu: make the cpuidle driver capable
- of handling multiple SoCs
-Date: Mon, 21 Jul 2014 15:12:43 +0200
-Message-ID: <53CD11CB.7020300@linaro.org>
-References: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com>	<52019695.n2AjkGEsJ7@wuerfel>	<20140721133534.3415e425@free-electrons.com>	<5251405.VTrfDi1rj5@wuerfel>	<20140721140917.16e71558@free-electrons.com>	<53CD08CF.6080900@linaro.org> <20140721143813.6028b6ed@free-electrons.com>
+From: Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH 0/6 v2] PM / Hibernate: Memory bitmap scalability
+ improvements
+Date: Mon, 21 Jul 2014 15:38:00 +0200
+Message-ID: <20140721133800.GM30979@8bytes.org>
+References: <1405938422-21900-1-git-send-email-joro@8bytes.org>
+ <20140721120053.GA14069@amd.pavel.ucw.cz>
+ <20140721123613.GL30979@8bytes.org>
+ <20140721130629.GA15122@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f174.google.com ([74.125.82.174]:39575 "EHLO
-	mail-we0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932104AbaGUNMq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 09:12:46 -0400
-Received: by mail-we0-f174.google.com with SMTP id x48so7714660wes.33
-        for <linux-pm@vger.kernel.org>; Mon, 21 Jul 2014 06:12:44 -0700 (PDT)
-In-Reply-To: <20140721143813.6028b6ed@free-electrons.com>
+Received: from 8bytes.org ([81.169.241.247]:51209 "EHLO theia.8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932187AbaGUNiD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 21 Jul 2014 09:38:03 -0400
+Content-Disposition: inline
+In-Reply-To: <20140721130629.GA15122@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 07/21/2014 02:38 PM, Thomas Petazzoni wrote:
-> Dear Daniel Lezcano,
->
-> On Mon, 21 Jul 2014 14:34:23 +0200, Daniel Lezcano wrote:
->
->> So there are three solutions:
->>
->> 1. Pass the flag through the platform data, I am not really in favor=
- of
->> that as mentioned above
->
-> That's what is already implemented.
+Hi,
 
-Yes, that was the point :)
+On Mon, Jul 21, 2014 at 03:06:29PM +0200, Pavel Machek wrote:
+> > That would just cover the problem that the bitmap data structure and the
+> > algorithm in swsusp_free do not scale well on bigmem machines.
+> 
+> And is it a problem? Hibernation of 12TB machine will take 6 hours if
+> you back your swap with SSDs.
+> 
+> Does not scale == burns additional 60 seconds of CPU time. I think we
+> can live with that...
 
->> 2. Use the compatible string like the cpuidle-big-little.c driver, b=
-ut
->> Arnd is not in favor of that
->>
->> 3. Register 3 platform drivers, in cpuidle-mvebu-v7.c, and let the
->> registering of the cpuidle's platform device to enable the right one
->
-> I'm fine with doing (3). Daniel, Arnd, let me know if that's ok for
-> you, and I'll respin the patch series accordingly.
+Problem is that these 76s are burned every time, whether you just use
+500MB or the full 12TB of the machine.
 
-Ok for me.
+Next problem is that the bitmaps are allocated (and need to be freed)
+without even being sure that a resume will happen.
 
-Thanks Thomas
+So when you boot the kernel with 'resume=/dev/something' on the cmdline
+it will always take these 76s just for allocating and freeing the
+bitmaps for nothing on such a machine.
 
-   -- Daniel
+> ...because noone sane will hibernate 12TB machine.
+
+And Linux is only made for sane people? Thats pretty new to me ;-)
+
+> Yes, that's why I propose to apply just patch 6 -- to avoid soft
+> lockup warnings.
+
+Only patch 6 would wrap the problem with the soft lockups, but the other
+patches actually improve the resume and boot situation on those
+machines.
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+	Joerg
 
