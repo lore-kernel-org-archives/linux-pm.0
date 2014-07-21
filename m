@@ -1,45 +1,116 @@
-From: =?euc-kr?B?x9S47cHW?= <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v4] PM / devfreq: Add possible_frequencies device attribute
-Date: Mon, 21 Jul 2014 01:42:41 +0000 (GMT)
-Message-ID: <2979470.179111405906960960.JavaMail.weblogic@epml01>
-Reply-To: myungjoo.ham@samsung.com
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH 2/2] cpufreq: ondemand: Eliminate the deadband effect
+Date: Mon, 21 Jul 2014 08:41:58 +0300
+Message-ID: <53CCA826.1070809@semaphore.gr>
+References: <1404147574-17422-1-git-send-email-stratosk@semaphore.gr> <1404147574-17422-3-git-send-email-stratosk@semaphore.gr> <20140711165710.GA18033@amd.pavel.ucw.cz> <53C01F15.2090702@semaphore.gr> <20140711183414.GA18951@amd.pavel.ucw.cz> <53C03CDD.5020701@semaphore.gr> <20140720215151.GA7817@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:45032 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751745AbaGUBmu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Jul 2014 21:42:50 -0400
-Received: from epcpsbgr5.samsung.com
- (u145.gpu120.samsung.co.kr [203.254.230.145])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0N9100MMXGR5WY70@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Mon, 21 Jul 2014 10:42:41 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140720215151.GA7817@amd.pavel.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-U2VuZGVyIDogU2FyYXZhbmEgS2FubmFuPHNrYW5uYW5AY29kZWF1cm9yYS5vcmc+DQpUaXRsZSA6
-IFtQQVRDSCB2NF0gUE0gLyBkZXZmcmVxOiBBZGQgcG9zc2libGVfZnJlcXVlbmNpZXMgZGV2aWNl
-IGF0dHJpYnV0ZQ0KPg0KPiBTb21lIGRldmljZXMgdXNlIGZyZXFfdGFibGUgaW5zdGVhZCBvZiBP
-UFAuIEZvciB0aG9zZSBkZXZpY2VzLCB0aGUNCj4gYXZhaWxhYmxlX2ZyZXF1ZW5jaWVzIHN5c2Zz
-IGZpbGUgc2hvd3MgdXAgZW1wdHkuIFNvLCBhZGQgYQ0KPiBwb3NzaWJsZV9mcmVxdWVuY2llcyBh
-dHRyaWJ1dGUvc3lmcyBmaWxlIHRoYXQgbGlzdCBhbGwgdGhlIHBvc3NpYmxlDQo+IGZyZXF1ZW5j
-aWVzLg0KPg0KPiBGb3IgZGV2aWNlcyB0aGF0IHVzZSBPUFAsIHRoZSBvdXRwdXQgb2YgdGhpcyBm
-aWxlIHdpbGwgbWF0Y2gNCj4gYXZhaWxhYmxlX2ZyZXF1ZW5jaWVzLiBJdCBtYXkgY2hhbmdlIGlu
-IHRoZSBmdXR1cmUgdG8gc2hvdyBhbGwgT1BQDQo+IGZyZXF1ZW5jaWVzIC0tIGV2ZW4gdGhlIGRp
-c2FibGVkIG9uZXMuDQo+DQo+IFNpZ25lZC1vZmYtYnk6IFNhcmF2YW5hIEthbm5hbiANCg0KTG9v
-a3MgR29vZC4NClNpZ25lZC1vZmYtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1
-bmcuY29tPg0KDQpJJ2xsIHJlYmFzZSBhbmQgbWVyZ2UgaW50byBkZXZmcmVxLW5leHQgd2hlbiBJ
-IGdldCBiYWNrIChJIGNhbiBvbmx5IGFjY2VzcyB0aGUgSW50ZXJuZXQgdmlhIG1vYmlsZSBwaG9u
-ZXMgdW50aWwgV2VkIHRoaXMgd2Vlay4pDQpJJ2xsIG1vdmUgdGhpcyBzeXNmcyBlbnRyeSB0byAu
-Li4vc3RhdCBhbG9uZyB3aXRoIHN0YXQgc3lzZnMgYW5kIG1ha2UgaXQgY29uZGl0aW9uYWwgKGFw
-cGVhcnMgb25seSB3aGVuIHN0YXQgaXMgYXZhaWxhYmxlKQ0KDQpDaGVlcnMsDQpNeXVuZ0pvby4N
-Ci0tDQpNeXVuZ0pvbyBIYW0gKMfUuO3B1iksIFBIRA0KRnJvbnRpZXIgQ1MgTGFiLCBTb2Z0d2Fy
-ZSBDZW50ZXINClNhbXN1bmcgRWxlY3Ryb25pY3MNCkNlbGw6ICs4Mi0xMC02NzE0LTI4NTg=
+On 21/07/2014 12:51 =CF=80=CE=BC, Pavel Machek wrote:
+> Hi!
+>=20
+>>>>>> Tested on Intel i7-3770 CPU @ 3.40GHz and on ARM quad core 1500M=
+Hz Krait
+>>>>>> (Android smartphone).
+>>>>>> Benchmarks on Intel i7 shows a performance improvement on low an=
+d medium
+>>>>>> work loads with lower power consumption. Specifics:
+>>>>>>
+>>>>>> Phoronix Linux Kernel Compilation 3.1:
+>>>>>> Time: -0.40%, energy: -0.07%
+>>>>>> Phoronix Apache:
+>>>>>> Time: -4.98%, energy: -2.35%
+>>>>>> Phoronix FFMPEG:
+>>>>>> Time: -6.29%, energy: -4.02%
+>>>>>
+>>>>> Hmm. Intel i7 should be race-to-idle machine. So basically rule l=
+ike
+>>>>> if (load > 0) go to max frequency else go to lowest frequency wou=
+ld do
+>>>>> the right thing in your test, right?
+>>>>
+>>>> I don't think that "if (load > 0) go to max" will work even on i7.
+>>>> For low load this will have impact on energy consumption.
+>>>
+>>> Are you sure? CPU frequency should not matter on idle CPU.
+>>
+>> Even on a totally idle CPU there will be a small impact because of l=
+eakage
+>> current (thanks to Dirk Brandewie for this info).
+>=20
+> Are you sure? IIRC Intel cpus will automatically lower CPU frequency
+> in deep C states..
+
+I'm sorry. I don't know further details about the leakage current
+in deeper C states.
+
+>> This simple test on a nearly idle system shows this:
+>>
+>> [root@albert cpufreq]# for CPUFREQ in /sys/devices/system/cpu/cpu*/c=
+pufreq/scaling_governor; do [ -f $CPUFREQ ] || continue; echo -n perfor=
+mance > $CPUFREQ; done
+>> [root@albert cpufreq]# /home/stratosk/kernels/linux-pm/tools/power/x=
+86/turbostat/turbostat -J sleep 20
+>>     Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CP=
+U%c3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7   =
+Pkg_J   Cor_J   GFX_J   time
+>>        -       -       2    0.06    2712    3392       0    0.30    =
+0.00   99.63    0.00      34      34    8.09    0.00   81.94    0.00  3=
+80.41   14.51    1.64   20.00
+>>        0       0       0    0.02    1891    3392       0    0.09    =
+0.00   99.88    0.00      34      34    8.09    0.00   81.94    0.00  3=
+80.41   14.51    1.64   20.00
+>>        0       4       1    0.04    3006    3392       0    0.07
+>>        1       1       1    0.04    2501    3392       0    0.62    =
+0.00   99.33    0.00      34
+>>        1       5       0    0.01    2346    3392       0    0.66
+>>        2       2       0    0.01    1996    3392       0    0.44    =
+0.00   99.55    0.00      34
+>>        2       6       4    0.18    2278    3392       0    0.26
+>>        3       3       5    0.15    3449    3392       0    0.07    =
+0.01   99.77    0.00      34
+>>        3       7       0    0.01    1839    3392       0    0.21
+>> 20.000899 sec
+>> [root@albert cpufreq]# ^C
+>> [root@albert cpufreq]# for CPUFREQ in /sys/devices/system/cpu/cpu*/c=
+pufreq/scaling_governor; do [ -f $CPUFREQ ] || continue; echo -n ondema=
+nd > $CPUFREQ; done
+>> [root@albert cpufreq]# /home/stratosk/kernels/linux-pm/tools/power/x=
+86/turbostat/turbostat -J sleep 20
+>>     Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CP=
+U%c3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7   =
+Pkg_J   Cor_J   GFX_J   time
+>>        -       -       2    0.09    1693    3392       0    0.35    =
+0.01   99.55    0.00      35      36    8.33    0.00   84.31    0.00  3=
+77.68   12.23    1.15   20.00
+>>        0       0       1    0.08    1603    3392       0    0.13    =
+0.00   99.79    0.00      35      36    8.33    0.00   84.31    0.00  3=
+77.68   12.23    1.15   20.00
+>>        0       4       1    0.08    1646    3392       0    0.13
+>>        1       1       1    0.06    1647    3392       0    0.66    =
+0.00   99.28    0.00      35
+>>        1       5       0    0.01    1611    3392       0    0.71
+>>        2       2       0    0.02    1617    3392       0    0.50    =
+0.02   99.46    0.00      35
+>>        2       6       4    0.22    1764    3392       0    0.30
+>>        3       3       4    0.25    1701    3392       0    0.07    =
+0.00   99.68    0.00      35
+>>        3       7       0    0.01    1602    3392       0    0.31
+>> 20.001580 sec
+>>
+>>
+>> So, for low loads the impact will be higher.
+>=20
+> So it seems ondemand saves cca 1% of energy?
+
+Yes, in this small test, on my nearly "idle" system.
 
 
+Stratos
