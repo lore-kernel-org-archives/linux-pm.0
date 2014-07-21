@@ -1,62 +1,66 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/6] PM / Hibernate: Memory bitmap scalability
+Subject: Re: [PATCH 0/6 v2] PM / Hibernate: Memory bitmap scalability
  improvements
-Date: Mon, 21 Jul 2014 13:45:07 +0200
-Message-ID: <20140721114507.GA13921@amd.pavel.ucw.cz>
-References: <1405684643-30234-1-git-send-email-joro@8bytes.org>
- <20140719134904.GA2852@amd.pavel.ucw.cz>
- <20140721083211.GK30979@8bytes.org>
+Date: Mon, 21 Jul 2014 14:00:53 +0200
+Message-ID: <20140721120053.GA14069@amd.pavel.ucw.cz>
+References: <1405938422-21900-1-git-send-email-joro@8bytes.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36991 "EHLO
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37488 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753937AbaGULpJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 07:45:09 -0400
+	with ESMTP id S1754002AbaGUMAz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 08:00:55 -0400
 Content-Disposition: inline
-In-Reply-To: <20140721083211.GK30979@8bytes.org>
+In-Reply-To: <1405938422-21900-1-git-send-email-joro@8bytes.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Joerg Roedel <joro@8bytes.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon 2014-07-21 10:32:11, Joerg Roedel wrote:
-> On Sat, Jul 19, 2014 at 03:49:04PM +0200, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > These patches improve the data structure by adding a radix
-> > > tree to the linked list structure to improve random access
-> > > performance from O(n) to O(log_b(n)), where b depends on the
-> > > architecture (b=512 on amd64, 1024 in i386).
-> > 
-> > Are you sure? From your other mail, you said you are adding just a
-> > single page. I'd expect random access performance to go from
-> > 
-> > O(n) to O(n/1024) in such case?
+Hi!
+
+> * Rebased to v3.16-rc6
+> * Fixed the style issues in Patch 1 mentioned by Rafael
 > 
-> No, for the 4GB case the additional page is used as an index page into
-> the block-bitmap pages. On AM64 a page can hold 512 references and a
-> single block-bitmap page is enough for 128MB of RAM. This means that for
-> systems with up to 64GB of RAM we can get the block-bitmap page directly
-> from the index page. For systems with more than 64GB of RAM we need
-> another level of index pages, and now we need two memory accesses to get
-> to the block-bitmap page (okay, with this implementation its actually 2
-> memory accesses per level, because the index-pages refer to a struct
-> rtree_node which itself contains the pointer to the index/data page).
+> Hi,
 > 
-> A two-level radix tree would be enough for systems with up to 32TB of
-> RAM. After that we need 3 levels, but you can already see that this
-> doesn't scale linearly anymore but with log_512(n), where n is the
-> number of block-bitmap pages required.
+> here is the revised patch set to improve the scalability of
+> the memory bitmap implementation used for hibernation. The
+> current implementation does not scale well to machines with
+> several TB of memory. A resume on those machines may cause
+> soft lockups to be reported.
+> 
+> These patches improve the data structure by adding a radix
+> tree to the linked list structure to improve random access
+> performance from O(n) to O(log_b(n)), where b depends on the
+> architecture (b=512 on amd64, 1024 in i386).
 
-Ok, so you have sped it up from O(n) to O(log(n)) speed, and increased
-memory requirements from O(n) to O(n * log(n)), right?
+Why are we doing random access there?
 
-does enough_swap() or reqd_free_pages() need to be updated?
+Is the improvement from fact that normally very little memory is used
+on big memory machines?
 
-Best regards,
-								Pavel
+> A test on a 12TB machine showed an improvement in resume
+> time from 76s with the old implementation to 2.4s with the
+> radix tree and the improved swsusp_free function. See below
+> for details of this test.
 
+Actually... how long does it take to hibernate 12TB machine? That
+should be many hours, right? You just can't hibernate machine that
+big.
+
+> The last patch adds touching the soft lockup watchdog in
+> rtree_next_node. This is necessary because the worst case
+> performance (all bits set in the forbidden_pages_map and
+> free_pages_map) is the same as with the old implementation
+> and may still cause soft lockups. Patch 6 avoids this.
+
+Ok, so what about simpler patch? Just touch the watchdog?
+
+Additional 70 seconds will be lost in noise if you write 12TB of RAM
+to (even quite fast) disk.
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
