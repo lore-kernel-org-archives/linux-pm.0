@@ -1,63 +1,34 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RESEND PATCH 0/6] thermal: sti: Add new Thermal driver
-Date: Mon, 21 Jul 2014 17:34:59 +0800
-Message-ID: <1405935299.2455.3.camel@rzhang1-toshiba>
-References: <1401980819-19962-1-git-send-email-lee.jones@linaro.org>
-	 <20140624092309.GD13803@lee--X1> <20140709120823.GA32573@lee--X1>
-	 <1404911964.28592.4.camel@rzhang1-toshiba> <20140709134646.GB479@lee--X1>
-	 <20140714130824.GA3993@lee--X1> <1405347277.28592.25.camel@rzhang1-toshiba>
-	 <20140714142703.GC3993@lee--X1> <20140721091753.GV30888@lee--X1>
+From: Maxime Coquelin <maxime.coquelin@st.com>
+Subject: Re: [PATCH 6/6] ARM: multi_v7_defconfig: Configure in ST's Thermal
+ Controller
+Date: Mon, 21 Jul 2014 11:50:03 +0200
+Message-ID: <53CCE24B.6000505@st.com>
+References: <1401980819-19962-1-git-send-email-lee.jones@linaro.org> <1401980819-19962-7-git-send-email-lee.jones@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140721091753.GV30888@lee--X1>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, ajitpal.singh@st.com, edubezval@gmail.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, maxime.coquelin@st.com, patrice.chotard@st.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx07-00178001.pphosted.com ([62.209.51.94]:49949 "EHLO
+	mx07-00178001.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752846AbaGUJuj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 05:50:39 -0400
+In-Reply-To: <1401980819-19962-7-git-send-email-lee.jones@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: kernel@stlinux.com, ajitpal.singh@st.com, edubezval@gmail.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, patrice.chotard@st.com
 
-On Mon, 2014-07-21 at 10:17 +0100, Lee Jones wrote:
-> On Mon, 14 Jul 2014, Lee Jones wrote:
-> 
-> > On Mon, 14 Jul 2014, Zhang Rui wrote:
-> > 
-> > > On Mon, 2014-07-14 at 14:08 +0100, Lee Jones wrote:
-> > > > On Wed, 09 Jul 2014, Lee Jones wrote:
-> > > > > On Wed, 09 Jul 2014, Zhang Rui wrote:
-> > > > > > On Wed, 2014-07-09 at 13:08 +0100, Lee Jones wrote:
-> > > > > > > On Tue, 24 Jun 2014, Lee Jones wrote:
-> > > > > > > 
-> > > > > > > > > I'm re-sending this set, as one of the maintainers' email addresses
-> > > > > > > > > is incorrect in the MAINTAINERS file.
-> > > > > > > > > 
-> > > > > > > > > This patchset adds full support for 2 types of Thermal Controllers
-> > > > > > > > > produced by STMicroelectronics.  One is a more traditional memory
-> > > > > > > > > mapped variant, the other is controlled solely by system configuration
-> > > > > > > > > registers.
-> > > > > > > > 
-> > > > > > > > Any thing from the Thermal guys? Has this set fallen through the gaps?
-> > > > > > > 
-> > > > > > > Anything at all?  It's been well over a month now.
-> > > > > > > 
-> > > > > > Well, for the soc thermal drivers, I'd prefer to take them via Eduardo,
-> > > > > > but as we didn't get any feedback from Eduardo, I will take them.
-> > > > > 
-> > > > > Thanks Rui.
-> > > > > 
-> > > > > So have you taken all 4 "thermal: sti: *" patches?
-> > > > 
-> > > > Have you taken these yet?
-> > > 
-> > > Not yet. will do tomorrow.
-> 
-> I waited 7 days and still don't see them?
-> 
-Done, they're in my local tree and I forgot to push them.
-thanks for the reminder.
 
--rui
-> > Perfect, thanks for the update.
-> > 
-> > > >   I notice that these aren't in -next yet.
-> 
+
+On 06/05/2014 05:06 PM, Lee Jones wrote:
+> Signed-off-by: Ajit Pal Singh <ajitpal.singh@st.com>
+> Signed-off-by: Lee Jones <lee.jones@linaro.org>
+> ---
+>   arch/arm/configs/multi_v7_defconfig | 2 ++
+>   1 file changed, 2 insertions(+)
+>
+
+Added to my queue for v3.17.
+
+Thanks,
+Maxime
