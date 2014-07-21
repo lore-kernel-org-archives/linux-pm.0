@@ -1,196 +1,108 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v6 6/7] drivers: cpuidle: initialize big.LITTLE driver through DT
-Date: Mon, 21 Jul 2014 17:06:25 +0100
-Message-ID: <1405958786-17243-7-git-send-email-lorenzo.pieralisi@arm.com>
-References: <1405958786-17243-1-git-send-email-lorenzo.pieralisi@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+From: Rob Herring <rob.herring@linaro.org>
+Subject: Re: [RFC] cpufreq: Add bindings for CPU clock sharing topology
+Date: Mon, 21 Jul 2014 12:00:42 -0500
+Message-ID: <CABGGisyDf7xt7CNii_NJ_stvBGNEeiXBMFxNkA2myS8OQ-VCtw@mail.gmail.com>
+References: <7e097b71342c9f5f63b07ff2e135eb7beb626aab.1405661369.git.viresh.kumar@linaro.org>
+ <CAOesGMhTkTEXp99gpU8cZBwYmiXpsySG5zMn6oSyo_Mf5PAiUg@mail.gmail.com>
+ <CAKohpo=MmoALOHg-=7cf0jm=OJO57TWQZQXqkRwhRwU-DGPMmA@mail.gmail.com>
+ <CAOesGMhuNzVtUkaUjF+JjNgHcgf08WiM0DG-kzwtcyUxkK_zow@mail.gmail.com>
+ <CAKohpokLqrydV3b=innvOWrW9ijXtZwPKdT5Ew65cjMxsY2Mvw@mail.gmail.com> <53CA8D95.8010108@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:42317 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932883AbaGUQGt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 12:06:49 -0400
-In-Reply-To: <1405958786-17243-1-git-send-email-lorenzo.pieralisi@arm.com>
+Received: from mail-la0-f50.google.com ([209.85.215.50]:61516 "EHLO
+	mail-la0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932818AbaGURBE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 13:01:04 -0400
+Received: by mail-la0-f50.google.com with SMTP id gf5so4836797lab.37
+        for <linux-pm@vger.kernel.org>; Mon, 21 Jul 2014 10:01:02 -0700 (PDT)
+In-Reply-To: <53CA8D95.8010108@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Chander Kashyap <chander.kashyap@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Geoff
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Olof Johansson <olof@lixom.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mike Turquette <mike.turquette@linaro.org>, Grant Likely <grant.likely@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>
 
-With the introduction of DT based idle states, CPUidle drivers for ARM
-can now initialize idle states data through properties in the device tree.
+On Sat, Jul 19, 2014 at 10:24 AM, Santosh Shilimkar
+<santosh.shilimkar@ti.com> wrote:
+> Viresh,
+>
+> On Saturday 19 July 2014 10:46 AM, Viresh Kumar wrote:
+>> On 19 July 2014 03:22, Olof Johansson <olof@lixom.net> wrote:
+>>> What is the current API that is being broken, in your opinion?
+>>
+>> So, currently the nodes doesn't have any such property. And drivers
+>> consider all of them as sharing clocks, for eg: cpufreq-cpu0.
+>>
+>> Now, if we use those older DT's after the new changes, drivers would
+>> consider CPUs as having separate clocks. And that would be opposite
+>> of what currently happens.
+>>
+>> Not sure if this counts as broken.
+>>
+>>>> But if that isn't the case, the bindings are very simple & clear to handle.
+>>>> Diff for new bindings:
+>>>
+>>> It's somewhat confusing to see a diff to the patch instead of a new
+>>> version. It seems to remove the cpu 0 entry now?
+>>
+>> Not really, I removed an unwanted example. This is how it looks:
+>>
+>>
+>>
+>> * Generic CPUFreq clock bindings
+>>
+>> Clock lines may or may not be shared among different CPUs on a platform.
+>>
+>> Possible configurations:
+>> 1.) All CPUs share a single clock line
+>> 2.) All CPUs have independent clock lines
+>> 3.) CPUs within a group/cluster share clock line but each group/cluster have a
+>>     separate line for itself
+>>
+>> Optional Properties:
+>> - clock-master: Contains phandle of the master cpu controlling clocks.
+>>
+>>   Ideally there is nothing like a "master" CPU as any CPU can play with DVFS
+>>   settings. But we have to choose one cpu out of a group, so that others can
+>>   point to it.
+>>
+>>   If there is no "clock-master" property for a cpu node, it is considered as
+>>   master. It may or may not have other slave CPUs pointing towards it.
+>>
+>
+> Sorry for jumping late, but one of the point I was raising as part of your
+> other series was to extend the CPU topology bindings to cover the voltage
+> domain information which is probably what is really needed to let the
+> CPUfreq extract the information. Not sure if it was already discussed.
+>
+> After all the CPU clocks, cluster, clock-gating, power domains are pretty much
+> related. So instead of having new binding for CPUFreq, I was wondering whether
+> we can extend the CPU topology binding information to include missing information.
+> Scheduler work anyway needs that information.
+>
+> Ref: Documentation/devicetree/bindings/arm/topology.txt
+>
+> Does that make sense ?
 
-This patch adds code to the big.LITTLE CPUidle driver to dynamically
-initialize idle states data through the updated device tree source file.
+To me, but every time I suggest adding things to the topology the ARM
+folks object... I really think we should have built the topology into
+the /cpus hierarchy. Then we could add properties at the correct place
+in the hierarchy where they are common.
 
-Cc: Chander Kashyap <chander.kashyap@linaro.org>
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
----
- arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts | 23 ++++++++++++++++
- drivers/cpuidle/Kconfig.arm                |  1 +
- drivers/cpuidle/cpuidle-big_little.c       | 43 +++++++++++++++-----------=
-----
- 3 files changed, 46 insertions(+), 21 deletions(-)
+I don't really like the proposal here. It just doesn't look like a
+clean description of the h/w.
 
-diff --git a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts b/arch/arm/boot/dts=
-/vexpress-v2p-ca15_a7.dts
-index a25c262..d61da86 100644
---- a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
-+++ b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
-@@ -38,6 +38,7 @@
- =09=09=09compatible =3D "arm,cortex-a15";
- =09=09=09reg =3D <0>;
- =09=09=09cci-control-port =3D <&cci_control1>;
-+=09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_BIG>;
- =09=09};
-=20
- =09=09cpu1: cpu@1 {
-@@ -45,6 +46,7 @@
- =09=09=09compatible =3D "arm,cortex-a15";
- =09=09=09reg =3D <1>;
- =09=09=09cci-control-port =3D <&cci_control1>;
-+=09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_BIG>;
- =09=09};
-=20
- =09=09cpu2: cpu@2 {
-@@ -52,6 +54,7 @@
- =09=09=09compatible =3D "arm,cortex-a7";
- =09=09=09reg =3D <0x100>;
- =09=09=09cci-control-port =3D <&cci_control2>;
-+=09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_LITTLE>;
- =09=09};
-=20
- =09=09cpu3: cpu@3 {
-@@ -59,6 +62,7 @@
- =09=09=09compatible =3D "arm,cortex-a7";
- =09=09=09reg =3D <0x101>;
- =09=09=09cci-control-port =3D <&cci_control2>;
-+=09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_LITTLE>;
- =09=09};
-=20
- =09=09cpu4: cpu@4 {
-@@ -66,6 +70,25 @@
- =09=09=09compatible =3D "arm,cortex-a7";
- =09=09=09reg =3D <0x102>;
- =09=09=09cci-control-port =3D <&cci_control2>;
-+=09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_LITTLE>;
-+=09=09};
-+
-+=09=09idle-states {
-+=09=09=09CLUSTER_SLEEP_BIG: cluster-sleep-big {
-+=09=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09=09local-timer-stop;
-+=09=09=09=09entry-latency-us =3D <1000>;
-+=09=09=09=09exit-latency-us =3D <700>;
-+=09=09=09=09min-residency-us =3D <3500>;
-+=09=09=09};
-+
-+=09=09=09CLUSTER_SLEEP_LITTLE: cluster-sleep-little {
-+=09=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09=09local-timer-stop;
-+=09=09=09=09entry-latency-us =3D <1000>;
-+=09=09=09=09exit-latency-us =3D <500>;
-+=09=09=09=09min-residency-us =3D <3000>;
-+=09=09=09};
- =09=09};
- =09};
-=20
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index b6d69e8..a9b089c 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -12,6 +12,7 @@ config ARM_BIG_LITTLE_CPUIDLE
- =09depends on ARCH_VEXPRESS_TC2_PM
- =09select ARM_CPU_SUSPEND
- =09select CPU_IDLE_MULTIPLE_DRIVERS
-+=09select DT_IDLE_STATES
- =09help
- =09  Select this option to enable CPU idle driver for big.LITTLE based
- =09  ARM systems. Driver manages CPUs coordination through MCPM and
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle=
--big_little.c
-index b45fc62..0a88480 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -24,6 +24,8 @@
- #include <asm/smp_plat.h>
- #include <asm/suspend.h>
-=20
-+#include "dt_idle_states.h"
-+
- static int bl_enter_powerdown(struct cpuidle_device *dev,
- =09=09=09      struct cpuidle_driver *drv, int idx);
-=20
-@@ -61,32 +63,12 @@ static struct cpuidle_driver bl_idle_little_driver =3D =
-{
- =09.name =3D "little_idle",
- =09.owner =3D THIS_MODULE,
- =09.states[0] =3D ARM_CPUIDLE_WFI_STATE,
--=09.states[1] =3D {
--=09=09.enter=09=09=09=3D bl_enter_powerdown,
--=09=09.exit_latency=09=09=3D 700,
--=09=09.target_residency=09=3D 2500,
--=09=09.flags=09=09=09=3D CPUIDLE_FLAG_TIME_VALID |
--=09=09=09=09=09  CPUIDLE_FLAG_TIMER_STOP,
--=09=09.name=09=09=09=3D "C1",
--=09=09.desc=09=09=09=3D "ARM little-cluster power down",
--=09},
--=09.state_count =3D 2,
- };
-=20
- static struct cpuidle_driver bl_idle_big_driver =3D {
- =09.name =3D "big_idle",
- =09.owner =3D THIS_MODULE,
- =09.states[0] =3D ARM_CPUIDLE_WFI_STATE,
--=09.states[1] =3D {
--=09=09.enter=09=09=09=3D bl_enter_powerdown,
--=09=09.exit_latency=09=09=3D 500,
--=09=09.target_residency=09=3D 2000,
--=09=09.flags=09=09=09=3D CPUIDLE_FLAG_TIME_VALID |
--=09=09=09=09=09  CPUIDLE_FLAG_TIMER_STOP,
--=09=09.name=09=09=09=3D "C1",
--=09=09.desc=09=09=09=3D "ARM big-cluster power down",
--=09},
--=09.state_count =3D 2,
- };
-=20
- /*
-@@ -165,7 +147,8 @@ static int __init bl_idle_driver_init(struct cpuidle_dr=
-iver *drv, int cpu_id)
-=20
- static int __init bl_idle_init(void)
- {
--=09int ret;
-+=09int ret, i;
-+=09struct cpuidle_driver *drv;
-=20
- =09/*
- =09 * Initialize the driver just for a compliant set of machines
-@@ -187,6 +170,24 @@ static int __init bl_idle_init(void)
- =09if (ret)
- =09=09goto out_uninit_little;
-=20
-+=09 /* Start at index 1, index 0 standard WFI */
-+=09ret =3D dt_init_idle_driver(&bl_idle_big_driver, 1);
-+=09if (ret)
-+=09=09goto out_uninit_big;
-+
-+=09 /* Start at index 1, index 0 standard WFI */
-+=09ret =3D dt_init_idle_driver(&bl_idle_little_driver, 1);
-+=09if (ret)
-+=09=09goto out_uninit_big;
-+
-+=09drv =3D &bl_idle_big_driver;
-+=09for (i =3D 1; i < drv->state_count; i++)
-+=09=09drv->states[i].enter =3D bl_enter_powerdown;
-+
-+=09drv =3D &bl_idle_little_driver;
-+=09for (i =3D 1; i < drv->state_count; i++)
-+=09=09drv->states[i].enter =3D bl_enter_powerdown;
-+
- =09ret =3D cpuidle_register(&bl_idle_little_driver, NULL);
- =09if (ret)
- =09=09goto out_uninit_big;
---=20
-1.9.1
+Ignoring compatibility, I would like to see something like
+operating-points and/or the clock properties be moved up to /cpus if
+they are shared and be per cpu node when they are not. This of course
+does not work if you have independent OPPs for each cluster with a
+shared clock within cluster.
 
+The operating-points binding has obvious shortcomings and this is
+another example. Someone needs to step up with a new binding that
+addresses this and all other issues (e.g. turbo modes, extra per OPP
+data, etc.). I don't really want to see halfway fixes to the binding
+that ignore the other issues (unless there is a really simple
+solution).
 
+Rob
