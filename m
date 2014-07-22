@@ -1,178 +1,250 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: [PATCH] PM / OPP: Remove ARCH_HAS_OPP
-Date: Tue, 22 Jul 2014 15:43:12 +0100
-Message-ID: <1406040192-632-1-git-send-email-broonie@kernel.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:49498 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753557AbaGVOnf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Jul 2014 10:43:35 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Peter Feuerer <peter@piie.net>
+Subject: [PATCH v5 3/6] thermal: Added Bang-bang thermal governor
+Date: Tue, 22 Jul 2014 17:37:13 +0200
+Message-ID: <1406043436-17068-4-git-send-email-peter@piie.net>
+References: <1398561815-22033-1-git-send-email-peter@piie.net>
+ <1406043436-17068-1-git-send-email-peter@piie.net>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1406043436-17068-1-git-send-email-peter@piie.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Feuerer <peter@piie.net>, Andrew Morton <akpm@linux-foundation.org>, Zhang Rui <rui.zhang@intel.com>, Andreas Mohr <andi@lisas.de>, Borislav Petkov <bp@suse.de>, Javi Merino <javi.merino@arm.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, Mark Brown <broonie@linaro.org>
 
-From: Mark Brown <broonie@linaro.org>
+The bang-bang thermal governor uses a hysteresis to switch abruptly on
+or off a cooling device.  It is intended to control fans, which can
+not be throttled but just switched on or off.
+Bang-bang cannot be set as default governor as it is intended for
+special devices only.  For those special devices the driver needs to
+explicitely request it.
 
-Since the OPP layer is a kernel library which has been converted to be
-directly selectable by its callers rather than user selectable and
-requiring architectures to enable it explicitly the ARCH_HAS_OPP symbol
-has become redundant and can be removed. Do so.
-
-Signed-off-by: Mark Brown <broonie@linaro.org>
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Nishanth Menon <nm@ti.com>
-Acked-by: Rob Herring <robh@kernel.org>
-Acked-by: Shawn Guo <shawn.guo@freescale.com>
-Acked-by: Simon Horman <horms+renesas@verge.net.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Andreas Mohr <andi@lisas.de>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Javi Merino <javi.merino@arm.com>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Peter Feuerer <peter@piie.net>
 ---
+ drivers/thermal/Kconfig         |  10 +++
+ drivers/thermal/Makefile        |   1 +
+ drivers/thermal/gov_bang_bang.c | 131 ++++++++++++++++++++++++++++++++++++++++
+ drivers/thermal/thermal_core.c  |   5 ++
+ drivers/thermal/thermal_core.h  |   8 +++
+ 5 files changed, 155 insertions(+)
+ create mode 100644 drivers/thermal/gov_bang_bang.c
 
-Raphael, IIRC you said that you'd applied this but it seems not to have
-appeared in -next.  There's a few more references crept in, I'll try to
-get them removed at source.
-
- Documentation/power/opp.txt    | 3 ---
- arch/arm/mach-exynos/Kconfig   | 1 -
- arch/arm/mach-highbank/Kconfig | 1 -
- arch/arm/mach-imx/Kconfig      | 1 -
- arch/arm/mach-omap2/Kconfig    | 1 -
- arch/arm/mach-shmobile/Kconfig | 2 --
- arch/arm/mach-vexpress/Kconfig | 1 -
- arch/arm/mach-zynq/Kconfig     | 1 -
- drivers/devfreq/Kconfig        | 1 -
- kernel/power/Kconfig           | 3 ---
- 10 files changed, 15 deletions(-)
-
-diff --git a/Documentation/power/opp.txt b/Documentation/power/opp.txt
-index a9adad828cdc..c6279c2be47c 100644
---- a/Documentation/power/opp.txt
-+++ b/Documentation/power/opp.txt
-@@ -51,9 +51,6 @@ Typical usage of the OPP library is as follows:
- SoC framework	-> modifies on required cases certain OPPs	-> OPP layer
- 		-> queries to search/retrieve information	->
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index f9a1386..fa14d56 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -84,6 +84,16 @@ config THERMAL_GOV_STEP_WISE
+ 	  Enable this to manage platform thermals using a simple linear
+ 	  governor.
  
--Architectures that provide a SoC framework for OPP should select ARCH_HAS_OPP
--to make the OPP layer available.
--
- OPP layer expects each domain to be represented by a unique device pointer. SoC
- framework registers a set of initial OPPs per device with the OPP layer. This
- list is expected to be an optimally small number typically around 5 per device.
-diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
-index 8f9b66c4ac78..f7889f6a1353 100644
---- a/arch/arm/mach-exynos/Kconfig
-+++ b/arch/arm/mach-exynos/Kconfig
-@@ -100,7 +100,6 @@ config SOC_EXYNOS5440
- 	default y
- 	depends on ARCH_EXYNOS5
- 	select ARCH_DMA_ADDR_T_64BIT if ARM_LPAE
--	select ARCH_HAS_OPP
- 	select HAVE_ARM_ARCH_TIMER
- 	select AUTO_ZRELADDR
- 	select MIGHT_HAVE_PCI
-diff --git a/arch/arm/mach-highbank/Kconfig b/arch/arm/mach-highbank/Kconfig
-index a5960e2ac090..31aa866c3317 100644
---- a/arch/arm/mach-highbank/Kconfig
-+++ b/arch/arm/mach-highbank/Kconfig
-@@ -2,7 +2,6 @@ config ARCH_HIGHBANK
- 	bool "Calxeda ECX-1000/2000 (Highbank/Midway)" if ARCH_MULTI_V7
- 	select ARCH_DMA_ADDR_T_64BIT if ARM_LPAE
- 	select ARCH_HAS_HOLES_MEMORYMODEL
--	select ARCH_HAS_OPP
- 	select ARCH_SUPPORTS_BIG_ENDIAN
- 	select ARM_AMBA
- 	select ARM_ERRATA_764369 if SMP
-diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
-index 2bc7b97861b4..9de84a215abd 100644
---- a/arch/arm/mach-imx/Kconfig
-+++ b/arch/arm/mach-imx/Kconfig
-@@ -1,6 +1,5 @@
- menuconfig ARCH_MXC
- 	bool "Freescale i.MX family" if ARCH_MULTI_V4_V5 || ARCH_MULTI_V6_V7
--	select ARCH_HAS_OPP
- 	select ARCH_REQUIRE_GPIOLIB
- 	select ARM_CPU_SUSPEND if PM
- 	select CLKSRC_MMIO
-diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-index 1c1ed737f7ab..e7189dcc9309 100644
---- a/arch/arm/mach-omap2/Kconfig
-+++ b/arch/arm/mach-omap2/Kconfig
-@@ -15,7 +15,6 @@ config ARCH_OMAP3
- 	bool "TI OMAP3"
- 	depends on ARCH_MULTI_V7
- 	select ARCH_OMAP2PLUS
--	select ARCH_HAS_OPP
- 	select ARM_CPU_SUSPEND if PM
- 	select OMAP_INTERCONNECT
- 	select PM_OPP if PM
-diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
-index 384221d72d22..5814754c1240 100644
---- a/arch/arm/mach-shmobile/Kconfig
-+++ b/arch/arm/mach-shmobile/Kconfig
-@@ -92,7 +92,6 @@ config ARCH_R8A73A4
- 	select CPU_V7
- 	select SH_CLK_CPG
- 	select RENESAS_IRQC
--	select ARCH_HAS_OPP
- 	select SYS_SUPPORTS_SH_CMT
- 	select SYS_SUPPORTS_SH_TMU
- 
-@@ -244,7 +243,6 @@ config MACH_KOELSCH
- config MACH_KZM9G
- 	bool "KZM-A9-GT board"
- 	depends on ARCH_SH73A0
--	select ARCH_HAS_OPP
- 	select ARCH_REQUIRE_GPIOLIB
- 	select REGULATOR_FIXED_VOLTAGE if REGULATOR
- 	select SND_SOC_AK4642 if SND_SIMPLE_CARD
-diff --git a/arch/arm/mach-vexpress/Kconfig b/arch/arm/mach-vexpress/Kconfig
-index d8b9330f896a..1af70329b88d 100644
---- a/arch/arm/mach-vexpress/Kconfig
-+++ b/arch/arm/mach-vexpress/Kconfig
-@@ -64,7 +64,6 @@ config ARCH_VEXPRESS_DCSCB
- 
- config ARCH_VEXPRESS_SPC
- 	bool "Versatile Express Serial Power Controller (SPC)"
--	select ARCH_HAS_OPP
- 	select PM_OPP
++config THERMAL_GOV_BANG_BANG
++	bool "Bang Bang thermal governor"
++	default n
++	help
++	  Enable this to manage platform thermals using bang bang governor.
++
++	  Say 'Y' here if you want to use two point temperature regulation
++	  used for fans without throttling.  Some fan drivers depend on this
++	  governor to be enabled (e.g. acerhdf).
++
+ config THERMAL_GOV_USER_SPACE
+ 	bool "User_space thermal governor"
  	help
- 	  The TC2 (A15x2 A7x3) versatile express core tile integrates a logic
-diff --git a/arch/arm/mach-zynq/Kconfig b/arch/arm/mach-zynq/Kconfig
-index 0c164f81e72d..aaa5162c1509 100644
---- a/arch/arm/mach-zynq/Kconfig
-+++ b/arch/arm/mach-zynq/Kconfig
-@@ -1,6 +1,5 @@
- config ARCH_ZYNQ
- 	bool "Xilinx Zynq ARM Cortex A9 Platform" if ARCH_MULTI_V7
--	select ARCH_HAS_OPP
- 	select ARCH_SUPPORTS_BIG_ENDIAN
- 	select ARM_AMBA
- 	select ARM_GIC
-diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 49e74c1fc639..3dced0a9eae3 100644
---- a/drivers/devfreq/Kconfig
-+++ b/drivers/devfreq/Kconfig
-@@ -68,7 +68,6 @@ comment "DEVFREQ Drivers"
- config ARM_EXYNOS4_BUS_DEVFREQ
- 	bool "ARM Exynos4210/4212/4412 Memory Bus DEVFREQ Driver"
- 	depends on (CPU_EXYNOS4210 || SOC_EXYNOS4212 || SOC_EXYNOS4412) && !ARCH_MULTIPLATFORM
--	select ARCH_HAS_OPP
- 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
- 	select PM_OPP
- 	help
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 9a83d780facd..e4e4121fa327 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -253,9 +253,6 @@ config APM_EMULATION
- 	  anything, try disabling/enabling this option (or disabling/enabling
- 	  APM in your BIOS).
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index de0636a..a675980 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -11,6 +11,7 @@ thermal_sys-$(CONFIG_THERMAL_OF)		+= of-thermal.o
  
--config ARCH_HAS_OPP
--	bool
--
- config PM_OPP
- 	bool
- 	---help---
+ # governors
+ thermal_sys-$(CONFIG_THERMAL_GOV_FAIR_SHARE)	+= fair_share.o
++thermal_sys-$(CONFIG_THERMAL_GOV_BANG_BANG)	+= gov_bang_bang.o
+ thermal_sys-$(CONFIG_THERMAL_GOV_STEP_WISE)	+= step_wise.o
+ thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE)	+= user_space.o
+ 
+diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
+new file mode 100644
+index 0000000..c5dd76b
+--- /dev/null
++++ b/drivers/thermal/gov_bang_bang.c
+@@ -0,0 +1,131 @@
++/*
++ *  gov_bang_bang.c - A simple thermal throttling governor using hysteresis
++ *
++ *  Copyright (C) 2014 Peter Feuerer <peter@piie.net>
++ *
++ *  Based on step_wise.c with following Copyrights:
++ *  Copyright (C) 2012 Intel Corp
++ *  Copyright (C) 2012 Durgadoss R <durgadoss.r@intel.com>
++ *
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
++ * the GNU General Public License for more details.
++ *
++ */
++
++#include <linux/thermal.h>
++
++#include "thermal_core.h"
++
++static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
++{
++	long trip_temp;
++	unsigned long trip_hyst;
++	struct thermal_instance *instance;
++
++	tz->ops->get_trip_temp(tz, trip, &trip_temp);
++	tz->ops->get_trip_hyst(tz, trip, &trip_hyst);
++
++	dev_dbg(&tz->device, "Trip%d[temp=%ld]:temp=%d:hyst=%ld\n",
++				trip, trip_temp, tz->temperature,
++				trip_hyst);
++
++	mutex_lock(&tz->lock);
++
++	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
++		if (instance->trip != trip)
++			continue;
++
++		/* in case fan is in initial state, switch the fan off */
++		if (instance->target == THERMAL_NO_TARGET)
++			instance->target = 0;
++
++		/* in case fan is neither on nor off set the fan to active */
++		if (instance->target != 0 && instance->target != 1) {
++			pr_warn("Thermal instance %s controlled by bang-bang has unexpected state: %ld\n",
++					instance->name, instance->target);
++			instance->target = 1;
++		}
++
++		/*
++		 * enable fan when temperature exceeds trip_temp and disable
++		 * the fan in case it falls below trip_temp minus hysteresis
++		 */
++		if (instance->target == 0 && tz->temperature >= trip_temp)
++			instance->target = 1;
++		else if (instance->target == 1 &&
++				tz->temperature < trip_temp - trip_hyst)
++			instance->target = 0;
++
++		dev_dbg(&instance->cdev->device, "target=%d\n",
++					(int)instance->target);
++
++		instance->cdev->updated = false; /* cdev needs update */
++	}
++
++	mutex_unlock(&tz->lock);
++}
++
++/**
++ * bang_bang_control - controls devices associated with the given zone
++ * @tz - thermal_zone_device
++ * @trip - the trip point
++ *
++ * Regulation Logic: a two point regulation, deliver cooling state depending
++ * on the previous state shown in this diagram:
++ *
++ *                Fan:   OFF    ON
++ *
++ *                              |
++ *                              |
++ *          trip_temp:    +---->+
++ *                        |     |        ^
++ *                        |     |        |
++ *                        |     |   Temperature
++ * (trip_temp - hyst):    +<----+
++ *                        |
++ *                        |
++ *                        |
++ *
++ *   * If the fan is not running and temperature exceeds trip_temp, the fan
++ *     gets turned on.
++ *   * In case the fan is running, temperature must fall below
++ *     (trip_temp - hyst) so that the fan gets turned off again.
++ *
++ */
++static int bang_bang_control(struct thermal_zone_device *tz, int trip)
++{
++	struct thermal_instance *instance;
++
++	thermal_zone_trip_update(tz, trip);
++
++	mutex_lock(&tz->lock);
++
++	list_for_each_entry(instance, &tz->thermal_instances, tz_node)
++		thermal_cdev_update(instance->cdev);
++
++	mutex_unlock(&tz->lock);
++
++	return 0;
++}
++
++static struct thermal_governor thermal_gov_bang_bang = {
++	.name		= "bang_bang",
++	.throttle	= bang_bang_control,
++};
++
++int thermal_gov_bang_bang_register(void)
++{
++	return thermal_register_governor(&thermal_gov_bang_bang);
++}
++
++void thermal_gov_bang_bang_unregister(void)
++{
++	thermal_unregister_governor(&thermal_gov_bang_bang);
++}
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 71b0ec0..4c2726b 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1790,6 +1790,10 @@ static int __init thermal_register_governors(void)
+ 	if (result)
+ 		return result;
+ 
++	result = thermal_gov_bang_bang_register();
++	if (result)
++		return result;
++
+ 	return thermal_gov_user_space_register();
+ }
+ 
+@@ -1797,6 +1801,7 @@ static void thermal_unregister_governors(void)
+ {
+ 	thermal_gov_step_wise_unregister();
+ 	thermal_gov_fair_share_unregister();
++	thermal_gov_bang_bang_unregister();
+ 	thermal_gov_user_space_unregister();
+ }
+ 
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 3db339f..d15d243 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -69,6 +69,14 @@ static inline int thermal_gov_fair_share_register(void) { return 0; }
+ static inline void thermal_gov_fair_share_unregister(void) {}
+ #endif /* CONFIG_THERMAL_GOV_FAIR_SHARE */
+ 
++#ifdef CONFIG_THERMAL_GOV_BANG_BANG
++int thermal_gov_bang_bang_register(void);
++void thermal_gov_bang_bang_unregister(void);
++#else
++static inline int thermal_gov_bang_bang_register(void) { return 0; }
++static inline void thermal_gov_bang_bang_unregister(void) {}
++#endif /* CONFIG_THERMAL_GOV_BANG_BANG */
++
+ #ifdef CONFIG_THERMAL_GOV_USER_SPACE
+ int thermal_gov_user_space_register(void);
+ void thermal_gov_user_space_unregister(void);
 -- 
-2.0.1
-
+2.0.2
