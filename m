@@ -1,88 +1,66 @@
-From: Matthew Longnecker <mlongnecker@nvidia.com>
-Subject: Re: [PATCH 1/6] thermal: of: Add support for hardware-tracked trip
- points
-Date: Mon, 21 Jul 2014 16:53:04 -0700
-Message-ID: <53CDA7E0.2060207@nvidia.com>
-References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com> <1403856699-2140-2-git-send-email-mperttunen@nvidia.com> <53B1D1C8.5010907@wwwdotorg.org> <53B262EA.9030806@nvidia.com> <53B2FADC.8060708@wwwdotorg.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/6 v2] PM / Hibernate: Memory bitmap scalability improvements
+Date: Tue, 22 Jul 2014 02:41:29 +0200
+Message-ID: <6793803.1FXN0a3O0V@vostro.rjw.lan>
+References: <1405938422-21900-1-git-send-email-joro@8bytes.org> <20140721160346.GP30979@8bytes.org> <20140721230500.GA7019@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from plane.gmane.org ([80.91.229.3]:46613 "EHLO plane.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751062AbaGUXxU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 21 Jul 2014 19:53:20 -0400
-Received: from list by plane.gmane.org with local (Exim 4.69)
-	(envelope-from <gll-linux-pm2@m.gmane.org>)
-	id 1X9NOQ-0001u6-VB
-	for linux-pm@vger.kernel.org; Tue, 22 Jul 2014 01:53:18 +0200
-Received: from searspoint.nvidia.com ([216.228.112.21])
-        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-pm@vger.kernel.org>; Tue, 22 Jul 2014 01:53:18 +0200
-Received: from mlongnecker by searspoint.nvidia.com with local (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-pm@vger.kernel.org>; Tue, 22 Jul 2014 01:53:18 +0200
-In-Reply-To: <53B2FADC.8060708@wwwdotorg.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:61541 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751341AbaGVAXJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jul 2014 20:23:09 -0400
+In-Reply-To: <20140721230500.GA7019@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Pavel Machek <pavel@ucw.cz>, Joerg Roedel <joro@8bytes.org>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 7/1/2014 11:15 AM, Stephen Warren wrote:
-> On 07/01/2014 01:27 AM, Mikko Perttunen wrote:
->> >Inline.
->> >
->> >On 01/07/14 00:08, Stephen Warren wrote:
->>> >>On 06/27/2014 02:11 AM, Mikko Perttunen wrote:
->>>> >>>This adds support for hardware-tracked trip points to the device tree
->>>> >>>thermal sensor framework.
->>>> >>>
->>>> >>>The framework supports an arbitrary number of trip points. Whenever
->>>> >>>the current temperature is updated, the trip points immediately
->>>> >>>below and above the current temperature are found. A sensor driver
->>>> >>>callback `set_trips' is then called with the temperatures.
->>>> >>>If there is no trip point above or below the current temperature,
->>>> >>>the passed trip temperature will be LONG_MAX or LONG_MIN respectively.
->>>> >>>In this callback, the driver should program the hardware such that
->>>> >>>it is notified when either of these trip points are triggered.
->>>> >>>When a trip point is triggered, the driver should call
->>>> >>>`thermal_zone_device_update' for the respective thermal zone. This
->>>> >>>will cause the trip points to be updated again.
->>>> >>>
->>>> >>>If the `set_trips' callback is not implemented (is NULL), the framework
->>>> >>>behaves as before.
->>> >>
->>> >>Is there no "core thermal" code? I would have expected this new feature
->>> >>to be implemented in "core" code rather than of/dt "support" code.
->>> >>Perhaps there would also be some additions to the of/dt code, but I'd
->>> >>still expect the bulk of the feature to be complete independant of
->>> >>of/dt. Systems still using board files or ACPI or ... would surely
->>> >>benefit from this too?
+On Tuesday, July 22, 2014 01:05:00 AM Pavel Machek wrote:
+> Hi!
+> 
+> On Mon 2014-07-21 18:03:46, Joerg Roedel wrote:
+> > On Mon, Jul 21, 2014 at 04:10:27PM +0200, Pavel Machek wrote:
+> > > > And Linux is only made for sane people? Thats pretty new to me ;-)
+> > > 
+> > > Yeah, but please don't optimize for insane people :-).
+> > 
+> > Thats rather discriminating, even more when you realize that 'insane' is
+> > a very subjective attribute.
+> 
+> You admitted you don't even have access to machine you are trying to
+> optimize for.
+> 
+> > > #6 is bugfix. We should take it. Rest is performance improvement for
+> > > insane config. I don't think we should take it.
+> > 
+> > Have you any other reason against these changes besides your
+> > proven-to-be-wrong disbelief that it is necessary?
+> 
+> Where you proven me wrong?
+> 
+> If kernel is preparing bitmaps before checking resume signature, that
+> is bug that costs you 60 seconds boot time on your 12TB machine. Fix
+> that bug. It will benefit everyone.
+> 
+> Software watchdog during hibernation on 12TB machine is a bug that
+> hits insane people. Ok, lets fix it.
+> 
+> Optimizing hibernation for memory-is-empty case is wrong. Linux tries
+> to use as much memory as it can.
+> 
+> Hibernating 12TB machine will take 5 hours or more. Redoing data
+> structures to save 60 seconds of 5 hour process is not worth
+> it. Nobody sane would hibernate 12TB machine.
 
-Stephen, the "core thermal code" defined two major object types:
-  * a thermal zone
-  * a cooling device
+It looks like some specific need motivated the Joerg's work, however,
+so let's just not dismiss the use case lightly without knowing it.
 
-Each thermal zone corresponds to a physical region in space within a 
-device. A sane person might expect there to be one physical temperature 
-sensor associated with each zone. But, that's not always the case.
+That said I would like to know how much time we save through this
+optimization relative to the total hibernation time on systems with
+various amounts of memory (say, 4 GB, 8 GB, 16 GB, 32 GB, more) and
+whether or not it makes hibernation slower in any case.
 
-Because the thermal core did not expose the concept of a "sensor" 
-separately from a "zone", many drivers which register thermal zones are 
-messy -- they include a mix of device driver code (i.e. poking at 
-register for a thermal sensor IP block) and device-agnostic code for 
-implementing behaviors required of a thermal zone.
-
-of-thermal does more than just parse device tree. It registers thermal 
-zones using its own implementation of that device-agnostic code. Having 
-that centralized implementation of the thermal zone code allows thermal 
-sensor device drivers which talk to of-thermal to be simpler than 
-drivers which try to talk directly to the thermal core.
-
-The fact that you need to use DT to make use of the simpler sensor 
-driver interface doesn't seem like a good reason to push back on Mikko's 
-change.
-
--Matt
+Rafael
 
