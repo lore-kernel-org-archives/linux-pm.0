@@ -1,70 +1,124 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 3/4] cpupower: Remove redundant error check
-Date: Tue, 22 Jul 2014 16:06:00 +0200
-Message-ID: <1406037961-27190-4-git-send-email-trenn@suse.de>
+Subject: [PATCH 2/4] tools: power: cpupower: bench: parse.c: Fix several minor errors
+Date: Tue, 22 Jul 2014 16:05:59 +0200
+Message-ID: <1406037961-27190-3-git-send-email-trenn@suse.de>
 References: <1406037961-27190-1-git-send-email-trenn@suse.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:46137 "EHLO mx2.suse.de"
+Received: from cantor2.suse.de ([195.135.220.15]:46141 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753116AbaGVOHH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S1754395AbaGVOHH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Tue, 22 Jul 2014 10:07:07 -0400
 In-Reply-To: <1406037961-27190-1-git-send-email-trenn@suse.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Peter Senna Tschudin <peter.senna@gmail.com>
+Cc: linux-pm@vger.kernel.org, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 
-From: Peter Senna Tschudin <peter.senna@gmail.com>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 
-Remove double checks, and move the call to print_error to the
-first check. Replace break by return, and return 0 on success.
-The simplified version of the coccinelle semantic patch that
-fixes this issue is as follows:
+Resolved several minor errors in prepare_config() and made some additional improvements.
+Earlier, the risk of file stream that was not closed. Misuse of strncpy, and the use of strncmp with strlen that makes it pointless.
+I also check that sscanf has been successful, otherwise continue to the next line. And minimized the use of magic numbers.
 
-// <smpl>
-@@
-expression E; identifier pr; expression list es;
-@@
-for(...;...;...){
-...
--	if (E) break;
-+	if (E){
-+		pr(es);
-+		break;
-+	}
-...
-}
-- if(E) pr(es);
-// </smpl>
+This was found using a static code analysis program called cppcheck.
 
-Untested.
-
-Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- tools/power/cpupower/utils/cpufreq-set.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ tools/power/cpupower/bench/parse.c |   39 +++++++++++++++++++----------------
+ 1 files changed, 21 insertions(+), 18 deletions(-)
 
-diff --git a/tools/power/cpupower/utils/cpufreq-set.c b/tools/power/cpupower/utils/cpufreq-set.c
-index a416de8..f656e58 100644
---- a/tools/power/cpupower/utils/cpufreq-set.c
-+++ b/tools/power/cpupower/utils/cpufreq-set.c
-@@ -320,12 +320,11 @@ int cmd_freq_set(int argc, char **argv)
+diff --git a/tools/power/cpupower/bench/parse.c b/tools/power/cpupower/bench/parse.c
+index 543bba1..f503fb5 100644
+--- a/tools/power/cpupower/bench/parse.c
++++ b/tools/power/cpupower/bench/parse.c
+@@ -158,14 +158,15 @@ struct config *prepare_default_config()
+ int prepare_config(const char *path, struct config *config)
+ {
+ 	size_t len = 0;
+-	char *opt, *val, *line = NULL;
+-	FILE *configfile = fopen(path, "r");
++	char opt[16], val[32], *line = NULL;
++	FILE *configfile;
  
- 		printf(_("Setting cpu: %d\n"), cpu);
- 		ret = do_one_cpu(cpu, &new_pol, freq, policychange);
--		if (ret)
--			break;
-+		if (ret) {
-+			print_error();
-+			return ret;
-+		}
+ 	if (config == NULL) {
+ 		fprintf(stderr, "error: config is NULL\n");
+ 		return 1;
  	}
  
--	if (ret)
--		print_error();
--
--	return ret;
-+	return 0;
++	configfile = fopen(path, "r");
+ 	if (configfile == NULL) {
+ 		perror("fopen");
+ 		fprintf(stderr, "error: unable to read configfile\n");
+@@ -174,52 +175,54 @@ int prepare_config(const char *path, struct config *config)
+ 	}
+ 
+ 	while (getline(&line, &len, configfile) != -1) {
+-		if (line[0] == '#' || line[0] == ' ')
++		if (line[0] == '#' || line[0] == ' ' || line[0] == '\n')
+ 			continue;
+ 
+-		sscanf(line, "%as = %as", &opt, &val);
++		if (sscanf(line, "%14s = %30s", opt, val) < 2)
++			continue;
+ 
+ 		dprintf("parsing: %s -> %s\n", opt, val);
+ 
+-		if (strncmp("sleep", opt, strlen(opt)) == 0)
++		if (strcmp("sleep", opt) == 0)
+ 			sscanf(val, "%li", &config->sleep);
+ 
+-		else if (strncmp("load", opt, strlen(opt)) == 0)
++		else if (strcmp("load", opt) == 0)
+ 			sscanf(val, "%li", &config->load);
+ 
+-		else if (strncmp("load_step", opt, strlen(opt)) == 0)
++		else if (strcmp("load_step", opt) == 0)
+ 			sscanf(val, "%li", &config->load_step);
+ 
+-		else if (strncmp("sleep_step", opt, strlen(opt)) == 0)
++		else if (strcmp("sleep_step", opt) == 0)
+ 			sscanf(val, "%li", &config->sleep_step);
+ 
+-		else if (strncmp("cycles", opt, strlen(opt)) == 0)
++		else if (strcmp("cycles", opt) == 0)
+ 			sscanf(val, "%u", &config->cycles);
+ 
+-		else if (strncmp("rounds", opt, strlen(opt)) == 0)
++		else if (strcmp("rounds", opt) == 0)
+ 			sscanf(val, "%u", &config->rounds);
+ 
+-		else if (strncmp("verbose", opt, strlen(opt)) == 0)
++		else if (strcmp("verbose", opt) == 0)
+ 			sscanf(val, "%u", &config->verbose);
+ 
+-		else if (strncmp("output", opt, strlen(opt)) == 0)
++		else if (strcmp("output", opt) == 0)
+ 			config->output = prepare_output(val); 
+ 
+-		else if (strncmp("cpu", opt, strlen(opt)) == 0)
++		else if (strcmp("cpu", opt) == 0)
+ 			sscanf(val, "%u", &config->cpu);
+ 
+-		else if (strncmp("governor", opt, 14) == 0)
+-			strncpy(config->governor, val, 14);
++		else if (strcmp("governor", opt) == 0) {
++			strncpy(config->governor, val,
++					sizeof(config->governor));
++			config->governor[sizeof(config->governor) - 1] = '\0';
++		}
+ 
+-		else if (strncmp("priority", opt, strlen(opt)) == 0) {
++		else if (strcmp("priority", opt) == 0) {
+ 			if (string_to_prio(val) != SCHED_ERR)
+ 				config->prio = string_to_prio(val);
+ 		}
+ 	}
+ 
+ 	free(line);
+-	free(opt);
+-	free(val);
+ 
+ 	return 0;
  }
 -- 
 1.7.6.1
