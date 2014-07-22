@@ -1,64 +1,85 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Update 2x][PATCH 1/2] ACPI / PM: Always enable wakeup GPEs when enabling device wakeup
-Date: Tue, 22 Jul 2014 03:02:29 +0200
-Message-ID: <30566603.pYsRuTlO6S@vostro.rjw.lan>
-References: <1907495.agrCMfRsQN@vostro.rjw.lan> <5962983.s3jy9r09Hm@vostro.rjw.lan> <20140721081734.GL3935@laptop>
+Subject: [PATCH 1/3] PM: Create PM workqueue if runtime PM is not configured too
+Date: Tue, 22 Jul 2014 03:24:27 +0200
+Message-ID: <1470749.z3A6zRcAYh@vostro.rjw.lan>
+References: <1907495.agrCMfRsQN@vostro.rjw.lan> <9631666.En3K0jlGsY@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20140721081734.GL3935@laptop>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <9631666.En3K0jlGsY@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 21, 2014 10:17:34 AM Peter Zijlstra wrote:
-> On Mon, Jul 21, 2014 at 01:51:46AM +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Subject: ACPI / PM: Always enable wakeup GPEs when enabling device wakeup
-> > 
-> > Wakeup GPEs are currently only enabled when setting up devices for
-> > remote wakeup at run time.  During system-wide transitions they are
-> > enabled by ACPICA at the very last stage of suspend (before asking
-> > the BIOS to take over).  Of course, that only works for system
-> > sleep states supported by ACPI, so in particular it doesn't work
-> > for the "freeze" sleep state.
-> > 
-> > For this reason, modify the ACPI core device PM code to enable wakeup
-> > GPEs for devices when setting them up for wakeup regardless of whether
-> > that is remote wakeup at runtime or system wakeup.  That allows the
-> > same device wakeup setup routine to be used for both runtime PM and
-> > system-wide PM and makes it possible to reduce code size quite a bit.
-> > 
-> > That should make things like ACPI-based PCI Wake-on-LAN work with
-> > the "freeze" sleep state among other things.
-> > 
-> > Tested-on: Toshiba Portege R500
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> > 
-> > The PCI ACPI device PM notify handler has to be updated to avoid running
-> > runtime resume callbacks during system suspend too.
-> 
-> So I tested the first version, with that my WSM-EP didn't resume on WoL
-> and pressing the power button after the WoL had it crash and burn in the
-> igb driver.
-> 
-> Today I tested this latest version and WoL still didn't trigger a
-> resume, but the power button did make it go again, no crashes and I
-> suppose I can confirm the earlier patch that stopped making it go halt
-> works.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-OK, thanks!
+The PM workqueue is going to be used by ACPI PM notify handlers
+regardless of whether or not runtime PM is configured, so move
+it out of #ifdef CONFIG_PM_RUNTIME.
 
-> When I 'halt' I can wake the machine back up using a WoL so that all
-> _should_ work afaik.
+Do that in three places in the ACPI device PM code.
 
-Yes, it should.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ include/linux/pm_runtime.h |   11 +++++++++--
+ kernel/power/main.c        |    4 ----
+ 2 files changed, 9 insertions(+), 6 deletions(-)
 
-I'll send an updated patchset shortly, so please test that one.  If it
-doesn't help, we'll need to dig deeper still.
-
-Rafael
-
+Index: linux-pm/include/linux/pm_runtime.h
+===================================================================
+--- linux-pm.orig/include/linux/pm_runtime.h
++++ linux-pm/include/linux/pm_runtime.h
+@@ -24,11 +24,20 @@
+ #define RPM_AUTO		0x08	/* Use autosuspend_delay */
+ 
+ #ifdef CONFIG_PM
++extern struct workqueue_struct *pm_wq;
++
++static inline bool queue_pm_work(struct work_struct *work)
++{
++	return queue_work(pm_wq, work);
++}
++
+ extern int pm_generic_runtime_suspend(struct device *dev);
+ extern int pm_generic_runtime_resume(struct device *dev);
+ extern int pm_runtime_force_suspend(struct device *dev);
+ extern int pm_runtime_force_resume(struct device *dev);
+ #else
++static inline bool queue_pm_work(struct work_struct *work) { return false; }
++
+ static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
+ static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
+ static inline int pm_runtime_force_suspend(struct device *dev) { return 0; }
+@@ -37,8 +46,6 @@ static inline int pm_runtime_force_resum
+ 
+ #ifdef CONFIG_PM_RUNTIME
+ 
+-extern struct workqueue_struct *pm_wq;
+-
+ extern int __pm_runtime_idle(struct device *dev, int rpmflags);
+ extern int __pm_runtime_suspend(struct device *dev, int rpmflags);
+ extern int __pm_runtime_resume(struct device *dev, int rpmflags);
+Index: linux-pm/kernel/power/main.c
+===================================================================
+--- linux-pm.orig/kernel/power/main.c
++++ linux-pm/kernel/power/main.c
+@@ -616,7 +616,6 @@ static struct attribute_group attr_group
+ 	.attrs = g,
+ };
+ 
+-#ifdef CONFIG_PM_RUNTIME
+ struct workqueue_struct *pm_wq;
+ EXPORT_SYMBOL_GPL(pm_wq);
+ 
+@@ -626,9 +625,6 @@ static int __init pm_start_workqueue(voi
+ 
+ 	return pm_wq ? 0 : -ENOMEM;
+ }
+-#else
+-static inline int pm_start_workqueue(void) { return 0; }
+-#endif
+ 
+ static int __init pm_init(void)
+ {
