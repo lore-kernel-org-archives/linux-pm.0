@@ -1,387 +1,162 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Update][PATCH 2/3] ACPI / PM: Revork the handling of ACPI device wakeup notifications
-Date: Tue, 22 Jul 2014 14:29:42 +0200
-Message-ID: <1658618.0eushJSIkF@vostro.rjw.lan>
-References: <1907495.agrCMfRsQN@vostro.rjw.lan> <9631666.En3K0jlGsY@vostro.rjw.lan> <15452047.8SNvN9NOiv@vostro.rjw.lan>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/3] ACPI / PM: Make ACPI-based PCI wakeup work for the
+ "freeze" sleep state
+Date: Tue, 22 Jul 2014 14:13:45 +0200
+Message-ID: <20140722121345.GC3935@laptop>
+References: <1907495.agrCMfRsQN@vostro.rjw.lan>
+ <9631666.En3K0jlGsY@vostro.rjw.lan>
+ <20140722085538.GA3935@laptop>
+ <2866134.Da8PQoU0sW@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <15452047.8SNvN9NOiv@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2866134.Da8PQoU0sW@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, Jul 22, 2014 at 02:23:03PM +0200, Rafael J. Wysocki wrote:
+> > Doesn't break, doesn't 'work' either.
+> 
+> This probably means that WoL on that machine is not ACPI-based.
 
-Since ACPI wakeup GPEs are going to be enabled during system suspend
-as well as for runtime wakeup by a subsequent patch and the same
-notify handlers will be used in both cases, rework the ACPI device
-wakeup notification framework so that the part specific to physical
-devices is always run asynchronously from the PM workqueue.  This
-prevents runtime resume callbacks for those devices from being
-run during system suspend and resume which may not be appropriate,
-among other things.
+Oh lovely, of course that's an 'option' !
 
-Also make ACPI device wakeup notification handling a bit more robust
-agaist subsequent removal of ACPI device objects, whould that ever
-happen, and create a wakeup source object for each ACPI device
-configured for wakeup so that wakeup notifications for those
-devices can wake up the system from the "freeze" sleep state.
+> > Is there anything I can provide you with to make this easier? lspci output
+> > or anything like that?
+> 
+> Yes, /proc/interrupts from the machine in question would help to start with.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+Be sure to get a _wide_ terminal when viewing ;-)
 
-I noticed that acpi_pm_notify_handler() was racy with the handler
-unregistration, so added locking and a check to it.
+            CPU0       CPU1       CPU2       CPU3       CPU4       CPU5       CPU6       CPU7       CPU8       CPU9       CPU10      CPU11      CPU12      CPU13      CPU14      CPU15      CPU16      CPU17      CPU18      CPU19      CPU20      CPU21      CPU22      CPU23      
+   0:        433          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC-edge      timer
+   1:          3          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC-edge      i8042
+   3:          4          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC-edge    
+   4:        357          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC-edge      serial
+   8:          1          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC-edge      rtc0
+   9:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC-fasteoi   acpi
+  12:          4          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC-edge      i8042
+  16:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC   16-fasteoi   pata_jmicron, uhci_hcd:usb3
+  18:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC   18-fasteoi   ehci_hcd:usb1, uhci_hcd:usb7, i801_smbus
+  19:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC   19-fasteoi   uhci_hcd:usb4, uhci_hcd:usb6
+  23:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC   23-fasteoi   ehci_hcd:usb2, uhci_hcd:usb5
+  25:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      aerdrv, PCIe PME
+  27:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      aerdrv, PCIe PME
+  29:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      aerdrv, PCIe PME
+  31:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      aerdrv, PCIe PME
+  33:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      aerdrv, PCIe PME
+  34:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      PCIe PME
+  35:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      PCIe PME
+  36:       2039          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      ahci
+  37:          1          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0
+  38:       6467          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0-TxRx-0
+  39:       5504          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0-TxRx-1
+  40:       5298          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0-TxRx-2
+  41:       5221          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0-TxRx-3
+  42:       6415          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0-TxRx-4
+  43:       5311          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0-TxRx-5
+  44:       5231          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0-TxRx-6
+  45:       5556          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0-TxRx-7
+ NMI:          8          1          1          0          0          0          0          0          7          0          0          2          0          3          1          0          0          0          0          2          0          0          0          1   Non-maskable interrupts
+ LOC:      37022      15954      12352      10360      10326       9371       9760       9739      13134      11383      10975      11614       8692      15659      10999       9948       8597       8485      10011      15927      10431      10164       8530      10337   Local timer interrupts
+ SPU:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   Spurious interrupts
+ PMI:          8          1          1          0          0          0          0          0          7          0          0          2          0          3          1          0          0          0          0          2          0          0          0          1   Performance monitoring interrupts
+ IWI:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IRQ work interrupts
+ RTR:         15          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   APIC ICR read retries
+ RES:       1150        345        168         73         60         66         92         70        243         60         54         54         35        108         66         35         32         36         41        286         60         37         46         55   Rescheduling interrupts
+ CAL:         49         68         76         76         76         76        173        141        160        197        169        146         73         73         73         73         73         73         76        254         90        167         83         79   Function call interrupts
+ TLB:          0          0          0          0          0          0          0          0          1          1          0          0          1          0          0          0          0          0          0          3          1          0          1          0   TLB shootdowns
+ TRM:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   Thermal event interrupts
+ THR:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   Threshold APIC interrupts
+ MCE:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   Machine check exceptions
+ MCP:         36         36         36         36         36         36         36         36         36         36         36         36         36         36         36         36         36         36         36         36         36         36         36         36   Machine check polls
+ ERR:          0
+ MIS:          0
 
----
- drivers/acpi/device_pm.c |   80 ++++++++++++++++++++++++++++++++++-------------
- drivers/acpi/pci_root.c  |    2 -
- drivers/pci/pci-acpi.c   |   60 +++++++++++------------------------
- include/acpi/acpi_bus.h  |   21 +++++++-----
- include/linux/pci-acpi.h |   13 +++++--
- 5 files changed, 101 insertions(+), 75 deletions(-)
+> Also /sys/kernel/debug/wakeup_sources (if /sys/kernel/debug/ is where your debugfs
+> lives) before
 
-Index: linux-pm/include/acpi/acpi_bus.h
-===================================================================
---- linux-pm.orig/include/acpi/acpi_bus.h
-+++ linux-pm/include/acpi/acpi_bus.h
-@@ -315,12 +315,19 @@ struct acpi_device_wakeup_flags {
- 	u8 notifier_present:1;  /* Wake-up notify handler has been installed */
- };
- 
-+struct acpi_device_wakeup_context {
-+	struct work_struct work;
-+	struct device *dev;
-+};
-+
- struct acpi_device_wakeup {
- 	acpi_handle gpe_device;
- 	u64 gpe_number;
- 	u64 sleep_state;
- 	struct list_head resources;
- 	struct acpi_device_wakeup_flags flags;
-+	struct acpi_device_wakeup_context context;
-+	struct wakeup_source *ws;
- 	int prepare_count;
- };
- 
-@@ -504,20 +511,18 @@ int acpi_enable_wakeup_device_power(stru
- int acpi_disable_wakeup_device_power(struct acpi_device *dev);
- 
- #ifdef CONFIG_PM
--acpi_status acpi_add_pm_notifier(struct acpi_device *adev,
--				 acpi_notify_handler handler, void *context);
--acpi_status acpi_remove_pm_notifier(struct acpi_device *adev,
--				    acpi_notify_handler handler);
-+acpi_status acpi_add_pm_notifier(struct acpi_device *adev, struct device *dev,
-+				 void (*work_func)(struct work_struct *work));
-+acpi_status acpi_remove_pm_notifier(struct acpi_device *adev);
- int acpi_pm_device_sleep_state(struct device *, int *, int);
- #else
- static inline acpi_status acpi_add_pm_notifier(struct acpi_device *adev,
--					       acpi_notify_handler handler,
--					       void *context)
-+					       struct device *dev,
-+				               void (*work_func)(struct work_struct *work))
- {
- 	return AE_SUPPORT;
- }
--static inline acpi_status acpi_remove_pm_notifier(struct acpi_device *adev,
--						  acpi_notify_handler handler)
-+static inline acpi_status acpi_remove_pm_notifier(struct acpi_device *adev)
- {
- 	return AE_SUPPORT;
- }
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -367,29 +367,61 @@ EXPORT_SYMBOL(acpi_bus_power_manageable)
- #ifdef CONFIG_PM
- static DEFINE_MUTEX(acpi_pm_notifier_lock);
- 
-+static void acpi_pm_notify_handler(acpi_handle handle, u32 val, void *not_used)
-+{
-+	struct acpi_device *adev;
-+
-+	if (val != ACPI_NOTIFY_DEVICE_WAKE)
-+		return;
-+
-+	adev = acpi_bus_get_acpi_device(handle);
-+	if (!adev)
-+		return;
-+
-+	mutex_lock(&acpi_pm_notifier_lock);
-+
-+	if (adev->wakeup.flags.notifier_present) {
-+		__pm_wakeup_event(adev->wakeup.ws, 0);
-+		if (adev->wakeup.context.work.func)
-+			queue_pm_work(&adev->wakeup.context.work);
-+	}
-+
-+	mutex_unlock(&acpi_pm_notifier_lock);
-+
-+	acpi_bus_put_acpi_device(adev);
-+}
-+
- /**
-- * acpi_add_pm_notifier - Register PM notifier for given ACPI device.
-- * @adev: ACPI device to add the notifier for.
-- * @context: Context information to pass to the notifier routine.
-+ * acpi_add_pm_notifier - Register PM notify handler for given ACPI device.
-+ * @adev: ACPI device to add the notify handler for.
-+ * @dev: Device to generate a wakeup event for while handling the notification.
-+ * @work_func: Work function to execute when handling the notification.
-  *
-  * NOTE: @adev need not be a run-wake or wakeup device to be a valid source of
-  * PM wakeup events.  For example, wakeup events may be generated for bridges
-  * if one of the devices below the bridge is signaling wakeup, even if the
-  * bridge itself doesn't have a wakeup GPE associated with it.
-  */
--acpi_status acpi_add_pm_notifier(struct acpi_device *adev,
--				 acpi_notify_handler handler, void *context)
-+acpi_status acpi_add_pm_notifier(struct acpi_device *adev, struct device *dev,
-+				 void (*work_func)(struct work_struct *work))
- {
- 	acpi_status status = AE_ALREADY_EXISTS;
- 
-+	if (!dev && !work_func)
-+		return AE_BAD_PARAMETER;
-+
- 	mutex_lock(&acpi_pm_notifier_lock);
- 
- 	if (adev->wakeup.flags.notifier_present)
- 		goto out;
- 
--	status = acpi_install_notify_handler(adev->handle,
--					     ACPI_SYSTEM_NOTIFY,
--					     handler, context);
-+	adev->wakeup.ws = wakeup_source_register(dev_name(&adev->dev));
-+	adev->wakeup.context.dev = dev;
-+	if (work_func)
-+		INIT_WORK(&adev->wakeup.context.work, work_func);
-+
-+	status = acpi_install_notify_handler(adev->handle, ACPI_SYSTEM_NOTIFY,
-+					     acpi_pm_notify_handler, NULL);
- 	if (ACPI_FAILURE(status))
- 		goto out;
- 
-@@ -404,8 +436,7 @@ acpi_status acpi_add_pm_notifier(struct
-  * acpi_remove_pm_notifier - Unregister PM notifier from given ACPI device.
-  * @adev: ACPI device to remove the notifier from.
-  */
--acpi_status acpi_remove_pm_notifier(struct acpi_device *adev,
--				    acpi_notify_handler handler)
-+acpi_status acpi_remove_pm_notifier(struct acpi_device *adev)
- {
- 	acpi_status status = AE_BAD_PARAMETER;
- 
-@@ -416,10 +447,17 @@ acpi_status acpi_remove_pm_notifier(stru
- 
- 	status = acpi_remove_notify_handler(adev->handle,
- 					    ACPI_SYSTEM_NOTIFY,
--					    handler);
-+					    acpi_pm_notify_handler);
- 	if (ACPI_FAILURE(status))
- 		goto out;
- 
-+	if (adev->wakeup.context.work.func) {
-+		cancel_work_sync(&adev->wakeup.context.work);
-+		adev->wakeup.context.work.func = NULL;
-+	}
-+	adev->wakeup.context.dev = NULL;
-+	wakeup_source_unregister(adev->wakeup.ws);
-+
- 	adev->wakeup.flags.notifier_present = false;
- 
-  out:
-@@ -602,16 +640,15 @@ EXPORT_SYMBOL(acpi_pm_device_sleep_state
- 
- #ifdef CONFIG_PM_RUNTIME
- /**
-- * acpi_wakeup_device - Wakeup notification handler for ACPI devices.
-- * @handle: ACPI handle of the device the notification is for.
-- * @event: Type of the signaled event.
-- * @context: Device corresponding to @handle.
-+ * acpi_pm_notify_work_func - ACPI devices wakeup notification work function.
-+ * @work: Work item to handle.
-  */
--static void acpi_wakeup_device(acpi_handle handle, u32 event, void *context)
-+static void acpi_pm_notify_work_func(struct work_struct *work)
- {
--	struct device *dev = context;
-+	struct device *dev;
- 
--	if (event == ACPI_NOTIFY_DEVICE_WAKE && dev) {
-+	dev = container_of(work, struct acpi_device_wakeup_context, work)->dev;
-+	if (dev) {
- 		pm_wakeup_event(dev, 0);
- 		pm_runtime_resume(dev);
- 	}
-@@ -677,8 +714,7 @@ int acpi_pm_device_run_wake(struct devic
- }
- EXPORT_SYMBOL(acpi_pm_device_run_wake);
- #else
--static inline void acpi_wakeup_device(acpi_handle handle, u32 event,
--				      void *context) {}
-+static inline void acpi_pm_notify_work_func(struct work_struct *work) {}
- #endif /* CONFIG_PM_RUNTIME */
- 
- #ifdef CONFIG_PM_SLEEP
-@@ -1048,7 +1084,7 @@ int acpi_dev_pm_attach(struct device *de
- 	if (dev->pm_domain)
- 		return -EEXIST;
- 
--	acpi_add_pm_notifier(adev, acpi_wakeup_device, dev);
-+	acpi_add_pm_notifier(adev, dev, acpi_pm_notify_work_func);
- 	dev->pm_domain = &acpi_general_pm_domain;
- 	if (power_on) {
- 		acpi_dev_pm_full_power(adev);
-@@ -1076,7 +1112,7 @@ void acpi_dev_pm_detach(struct device *d
- 
- 	if (adev && dev->pm_domain == &acpi_general_pm_domain) {
- 		dev->pm_domain = NULL;
--		acpi_remove_pm_notifier(adev, acpi_wakeup_device);
-+		acpi_remove_pm_notifier(adev);
- 		if (power_off) {
- 			/*
- 			 * If the device's PM QoS resume latency limit or flags
-Index: linux-pm/drivers/pci/pci-acpi.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-acpi.c
-+++ linux-pm/drivers/pci/pci-acpi.c
-@@ -18,31 +18,31 @@
- #include "pci.h"
- 
- /**
-- * pci_acpi_wake_bus - Wake-up notification handler for root buses.
-- * @handle: ACPI handle of a device the notification is for.
-- * @event: Type of the signaled event.
-- * @context: PCI root bus to wake up devices on.
-+ * pci_acpi_wake_bus - Root bus wakeup notification fork function.
-+ * @work: Work item to handle.
-  */
--static void pci_acpi_wake_bus(acpi_handle handle, u32 event, void *context)
-+static void pci_acpi_wake_bus(struct work_struct *work)
- {
--	struct pci_bus *pci_bus = context;
-+	struct acpi_device *adev;
-+	struct acpi_pci_root *root;
- 
--	if (event == ACPI_NOTIFY_DEVICE_WAKE && pci_bus)
--		pci_pme_wakeup_bus(pci_bus);
-+	adev = container_of(work, struct acpi_device, wakeup.context.work);
-+	root = acpi_driver_data(adev);
-+	pci_pme_wakeup_bus(root->bus);
- }
- 
- /**
-- * pci_acpi_wake_dev - Wake-up notification handler for PCI devices.
-+ * pci_acpi_wake_dev - PCI device wakeup notification work function.
-  * @handle: ACPI handle of a device the notification is for.
-- * @event: Type of the signaled event.
-- * @context: PCI device object to wake up.
-+ * @work: Work item to handle.
-  */
--static void pci_acpi_wake_dev(acpi_handle handle, u32 event, void *context)
-+static void pci_acpi_wake_dev(struct work_struct *work)
- {
--	struct pci_dev *pci_dev = context;
-+	struct acpi_device_wakeup_context *context;
-+	struct pci_dev *pci_dev;
- 
--	if (event != ACPI_NOTIFY_DEVICE_WAKE || !pci_dev)
--		return;
-+	context = container_of(work, struct acpi_device_wakeup_context, work);
-+	pci_dev = to_pci_dev(context->dev);
- 
- 	if (pci_dev->pme_poll)
- 		pci_dev->pme_poll = false;
-@@ -65,23 +65,12 @@ static void pci_acpi_wake_dev(acpi_handl
- }
- 
- /**
-- * pci_acpi_add_bus_pm_notifier - Register PM notifier for given PCI bus.
-- * @dev: ACPI device to add the notifier for.
-- * @pci_bus: PCI bus to walk checking for PME status if an event is signaled.
-+ * pci_acpi_add_bus_pm_notifier - Register PM notifier for root PCI bus.
-+ * @dev: PCI root bridge ACPI device.
-  */
--acpi_status pci_acpi_add_bus_pm_notifier(struct acpi_device *dev,
--					 struct pci_bus *pci_bus)
-+acpi_status pci_acpi_add_bus_pm_notifier(struct acpi_device *dev)
- {
--	return acpi_add_pm_notifier(dev, pci_acpi_wake_bus, pci_bus);
--}
--
--/**
-- * pci_acpi_remove_bus_pm_notifier - Unregister PCI bus PM notifier.
-- * @dev: ACPI device to remove the notifier from.
-- */
--acpi_status pci_acpi_remove_bus_pm_notifier(struct acpi_device *dev)
--{
--	return acpi_remove_pm_notifier(dev, pci_acpi_wake_bus);
-+	return acpi_add_pm_notifier(dev, NULL, pci_acpi_wake_bus);
- }
- 
- /**
-@@ -92,16 +81,7 @@ acpi_status pci_acpi_remove_bus_pm_notif
- acpi_status pci_acpi_add_pm_notifier(struct acpi_device *dev,
- 				     struct pci_dev *pci_dev)
- {
--	return acpi_add_pm_notifier(dev, pci_acpi_wake_dev, pci_dev);
--}
--
--/**
-- * pci_acpi_remove_pm_notifier - Unregister PCI device PM notifier.
-- * @dev: ACPI device to remove the notifier from.
-- */
--acpi_status pci_acpi_remove_pm_notifier(struct acpi_device *dev)
--{
--	return acpi_remove_pm_notifier(dev, pci_acpi_wake_dev);
-+	return acpi_add_pm_notifier(dev, &pci_dev->dev, pci_acpi_wake_dev);
- }
- 
- phys_addr_t acpi_pci_root_get_mcfg_addr(acpi_handle handle)
-Index: linux-pm/include/linux/pci-acpi.h
-===================================================================
---- linux-pm.orig/include/linux/pci-acpi.h
-+++ linux-pm/include/linux/pci-acpi.h
-@@ -11,12 +11,17 @@
- #include <linux/acpi.h>
- 
- #ifdef CONFIG_ACPI
--extern acpi_status pci_acpi_add_bus_pm_notifier(struct acpi_device *dev,
--						 struct pci_bus *pci_bus);
--extern acpi_status pci_acpi_remove_bus_pm_notifier(struct acpi_device *dev);
-+extern acpi_status pci_acpi_add_bus_pm_notifier(struct acpi_device *dev);
-+static inline acpi_status pci_acpi_remove_bus_pm_notifier(struct acpi_device *dev)
-+{
-+	return acpi_remove_pm_notifier(dev);
-+}
- extern acpi_status pci_acpi_add_pm_notifier(struct acpi_device *dev,
- 					     struct pci_dev *pci_dev);
--extern acpi_status pci_acpi_remove_pm_notifier(struct acpi_device *dev);
-+static inline acpi_status pci_acpi_remove_pm_notifier(struct acpi_device *dev)
-+{
-+	return acpi_remove_pm_notifier(dev);
-+}
- extern phys_addr_t acpi_pci_root_get_mcfg_addr(acpi_handle handle);
- 
- static inline acpi_handle acpi_find_root_bridge_handle(struct pci_dev *pdev)
-Index: linux-pm/drivers/acpi/pci_root.c
-===================================================================
---- linux-pm.orig/drivers/acpi/pci_root.c
-+++ linux-pm/drivers/acpi/pci_root.c
-@@ -593,7 +593,7 @@ static int acpi_pci_root_add(struct acpi
- 	if (no_aspm)
- 		pcie_no_aspm();
- 
--	pci_acpi_add_bus_pm_notifier(device, root->bus);
-+	pci_acpi_add_bus_pm_notifier(device);
- 	if (device->wakeup.flags.run_wake)
- 		device_set_run_wake(root->bus->bridge, true);
- 
+of course not, that's /debug :-)
+
+name		active_count	event_count	wakeup_count	expire_count	active_since	total_time	max_time	last_change	prevent_suspend_time
+00:06       	0		0		0		0		0		0		0		7066		0
+00:02       	0		0		0		0		0		0		0		7056		0
+0000:00:1d.2	0		0		0		0		0		0		0		7056		0
+0000:00:1d.1	0		0		0		0		0		0		0		7046		0
+0000:00:1d.0	0		0		0		0		0		0		0		7035		0
+0000:00:1a.2	0		0		0		0		0		0		0		7025		0
+0000:00:1a.0	0		0		0		0		0		0		0		7015		0
+0000:00:1d.7	0		0		0		0		0		0		0		7004		0
+0000:00:1a.7	0		0		0		0		0		0		0		6982		0
+0000:01:00.1	0		0		0		0		0		0		0		6797		0
+0000:01:00.0	0		0		0		0		0		0		0		6591		0
+alarmtimer  	0		0		0		0		0		0		0		5012		0
+PNP0C0C:00  	0		0		0		0		0		0		0		1924		0
+PNP0C0E:00  	0		0		0		0		0		0		0		1924		0
+LNXPWRBN:00 	0		0		0		0		0		0		0		1922		0
+PNP0A08:00  	0		0		0		0		0		0		0		1838		0
+device:2a   	0		0		0		0		0		0		0		1802		0
+device:29   	0		0		0		0		0		0		0		1798		0
+device:10   	0		0		0		0		0		0		0		1763		0
+device:02   	0		0		0		0		0		0		0		1757		0
+device:00   	0		0		0		0		0		0		0		1746		0
+device:01   	0		0		0		0		0		0		0		1735		0
+device:15   	0		0		0		0		0		0		0		1730		0
+device:13   	0		0		0		0		0		0		0		1723		0
+device:12   	0		0		0		0		0		0		0		1718		0
+device:11   	0		0		0		0		0		0		0		1711		0
+device:1f   	0		0		0		0		0		0		0		1705		0
+device:1b   	0		0		0		0		0		0		0		1699		0
+device:19   	0		0		0		0		0		0		0		1693		0
+device:18   	0		0		0		0		0		0		0		1685		0
+device:16   	0		0		0		0		0		0		0		1678		0
+device:28   	0		0		0		0		0		0		0		1616		0
+device:26   	0		0		0		0		0		0		0		1612		0
+device:24   	0		0		0		0		0		0		0		1607		0
+device:22   	0		0		0		0		0		0		0		1602		0
+device:20   	0		0		0		0		0		0		0		1597		0
+
+> and after a "freeze" with an attempt to use WoL to wake it up.
+
+Issued 3 WoLs then hit the power button:
+
+name		active_count	event_count	wakeup_count	expire_count	active_since	total_time	max_time	last_change	prevent_suspend_time
+00:06       	0		0		0		0		0		0		0		7066		0
+00:02       	0		0		0		0		0		0		0		7056		0
+0000:00:1d.2	0		0		0		0		0		0		0		7056		0
+0000:00:1d.1	0		0		0		0		0		0		0		7046		0
+0000:00:1d.0	0		0		0		0		0		0		0		7035		0
+0000:00:1a.2	0		0		0		0		0		0		0		7025		0
+0000:00:1a.0	0		0		0		0		0		0		0		7015		0
+0000:00:1d.7	0		0		0		0		0		0		0		7004		0
+0000:00:1a.7	0		0		0		0		0		0		0		6982		0
+0000:01:00.1	0		0		0		0		0		0		0		6797		0
+0000:01:00.0	0		0		0		0		0		0		0		6591		0
+alarmtimer  	0		0		0		0		0		0		0		5012		0
+PNP0C0C:00  	0		0		0		0		0		0		0		1924		0
+PNP0C0E:00  	0		0		0		0		0		0		0		1924		0
+LNXPWRBN:00 	1		1		0		0		0		0		0		10597988		0
+PNP0A08:00  	0		0		0		0		0		0		0		1838		0
+device:2a   	0		0		0		0		0		0		0		1802		0
+device:29   	0		0		0		0		0		0		0		1798		0
+device:10   	0		0		0		0		0		0		0		1763		0
+device:02   	0		0		0		0		0		0		0		1757		0
+device:00   	0		0		0		0		0		0		0		1746		0
+device:01   	0		0		0		0		0		0		0		1735		0
+device:15   	0		0		0		0		0		0		0		1730		0
+device:13   	0		0		0		0		0		0		0		1723		0
+device:12   	0		0		0		0		0		0		0		1718		0
+device:11   	0		0		0		0		0		0		0		1711		0
+device:1f   	0		0		0		0		0		0		0		1705		0
+device:1b   	0		0		0		0		0		0		0		1699		0
+device:19   	0		0		0		0		0		0		0		1693		0
+device:18   	0		0		0		0		0		0		0		1685		0
+device:16   	0		0		0		0		0		0		0		1678		0
+device:28   	0		0		0		0		0		0		0		1616		0
+device:26   	0		0		0		0		0		0		0		1612		0
+device:24   	0		0		0		0		0		0		0		1607		0
+device:22   	0		0		0		0		0		0		0		1602		0
+device:20   	0		0		0		0		0		0		0		1597		0
