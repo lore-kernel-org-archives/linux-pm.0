@@ -1,42 +1,105 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCHv3 0/7] cpufreq support for Marvell Armada XP
-Date: Wed, 23 Jul 2014 13:53:25 +0200
-Message-ID: <20140723135325.036a212d@free-electrons.com>
-References: <1404920715-19834-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<20140723131930.46dcbc2e@free-electrons.com>
-	<20140723113945.GB23220@titan.lakedaemon.net>
+From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH v2 14/16] cpufreq: Add cpufreq driver for Tegra124
+Date: Wed, 23 Jul 2014 14:57:51 +0300
+Message-ID: <53CFA33F.6030307@nvidia.com>
+References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>	<1405957142-19416-15-git-send-email-ttynkkynen@nvidia.com> <CAKohpomQthJ_XE-HhzW07Q4aVtxQVy97iaL0Vy6Q4Lhw22A=VA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:40113 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756030AbaGWLx3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 07:53:29 -0400
-In-Reply-To: <20140723113945.GB23220@titan.lakedaemon.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAKohpomQthJ_XE-HhzW07Q4aVtxQVy97iaL0Vy6Q4Lhw22A=VA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jason Cooper <jason@lakedaemon.net>
-Cc: Mike Turquette <mturquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 
-Dear Jason Cooper,
 
-On Wed, 23 Jul 2014 07:39:45 -0400, Jason Cooper wrote:
 
-> > What do you think?
+On 23/07/14 07:44, Viresh Kumar wrote:
+> On 21 July 2014 21:09, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
 > 
-> Let's wait and see what -rc1 looks like and take action based on that.
+>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+>> index 7364a53..df3c73e 100644
+>> --- a/drivers/cpufreq/Kconfig.arm
+>> +++ b/drivers/cpufreq/Kconfig.arm
+>> @@ -244,6 +244,7 @@ config ARM_SPEAR_CPUFREQ
+>>  config ARM_TEGRA_CPUFREQ
+>>         bool "TEGRA CPUFreq support"
+>>         depends on ARCH_TEGRA
+>> +       depends on GENERIC_CPUFREQ_CPU0
+> 
+> Wouldn't this also disturb the existing cpufreq driver for earlier
+> tegra platforms? i.e. we don't need cpufreq-cpu0 for them
+> atleast as of now.
+> 
+>>         default y
+>>         help
+>>           This adds the CPUFreq driver support for TEGRA SOCs.
+>> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+>> index db6d9a2..3437d24 100644
+>> --- a/drivers/cpufreq/Makefile
+>> +++ b/drivers/cpufreq/Makefile
+>> @@ -76,6 +76,7 @@ obj-$(CONFIG_ARM_SA1100_CPUFREQ)      += sa1100-cpufreq.o
+>>  obj-$(CONFIG_ARM_SA1110_CPUFREQ)       += sa1110-cpufreq.o
+>>  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)                += spear-cpufreq.o
+>>  obj-$(CONFIG_ARM_TEGRA_CPUFREQ)                += tegra-cpufreq.o
+>> +obj-$(CONFIG_ARM_TEGRA_CPUFREQ)                += tegra124-cpufreq.o
+> 
+> Maybe, you can update the same line if you want.
 
-Sure. Thanks a lot for your summary. I agree with your proposal.
+Oh, right.
 
-I'm working on respining the cpuidle series based on the discussion
-with Daniel Lezcano and Arnd Bergmann. If all goes well, you can expect
-a new version today.
+> 
+>>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ) += vexpress-spc-cpufreq.o
+>>
+>>  ##################################################################################
+>> diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
+> 
+>> +static struct cpufreq_frequency_table *freq_table;
+>> +
+>> +static struct device *cpu_dev;
+>> +static struct clk *cpu_clk;
+>> +static struct clk *pllp_clk;
+>> +static struct clk *pllx_clk;
+>> +static struct clk *dfll_clk;
+> 
+> The routines in this file are going to be called just once at boot, right?
+> In that case we are actually wasting some memory by creating globals.
+> Probably just move all these in a struct and allocate it at runtime.
+> 
 
-Thanks,
+Sure.
 
-Thomas
+[...]
+>> +
+>> +       ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+>> +       if (ret)
+>> +               goto out_put_pllp_clk;
+> 
+> Why do you need this? cpufreq-cpu0 also does it and this freq_table is
+> just not getting used at all then.
+> 
+
+Oops, yes I forgot to remove that part when making the conversion.
+
+>> +
+>> +       pdev = platform_device_register_simple("cpufreq-tegra124", -1, NULL, 0);
+>> +       if (IS_ERR(pdev)) {
+>> +               platform_driver_unregister(&tegra124_cpufreq_platdrv);
+>> +               return PTR_ERR(pdev);
+>> +       }
+> 
+> Why create another unnecessary platform-device/driver here? If
+> of_find_matching_node() passes and you really need to probe cpufreq-cpu0
+> here, then just remove the other two calls and move probe's implementation
+> here only.
+> 
+
+The platform device is required for the deferred probe that can happen if the
+DFLL driver hasn't initialized yet, and module_init() callbacks don't seem to
+respect -EPROBE_DEFER.
+
+[...]
+
 -- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+nvpublic
