@@ -1,217 +1,71 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 14/16] cpufreq: Add cpufreq driver for Tegra124
-Date: Wed, 23 Jul 2014 10:14:44 +0530
-Message-ID: <CAKohpomQthJ_XE-HhzW07Q4aVtxQVy97iaL0Vy6Q4Lhw22A=VA@mail.gmail.com>
-References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>
-	<1405957142-19416-15-git-send-email-ttynkkynen@nvidia.com>
+Subject: Re: [RFC] cpufreq: Add bindings for CPU clock sharing topology
+Date: Wed, 23 Jul 2014 10:25:08 +0530
+Message-ID: <CAKohpokPAcmERN3S3Wbf7a4gXaQAWyBtKV7RXDHYThMWW57fGA@mail.gmail.com>
+References: <7e097b71342c9f5f63b07ff2e135eb7beb626aab.1405661369.git.viresh.kumar@linaro.org>
+	<CAOesGMhTkTEXp99gpU8cZBwYmiXpsySG5zMn6oSyo_Mf5PAiUg@mail.gmail.com>
+	<CAKohpo=MmoALOHg-=7cf0jm=OJO57TWQZQXqkRwhRwU-DGPMmA@mail.gmail.com>
+	<CAOesGMhuNzVtUkaUjF+JjNgHcgf08WiM0DG-kzwtcyUxkK_zow@mail.gmail.com>
+	<CAKohpokLqrydV3b=innvOWrW9ijXtZwPKdT5Ew65cjMxsY2Mvw@mail.gmail.com>
+	<53CA8D95.8010108@ti.com>
+	<CABGGisyDf7xt7CNii_NJ_stvBGNEeiXBMFxNkA2myS8OQ-VCtw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f54.google.com ([209.85.219.54]:56209 "EHLO
-	mail-oa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754537AbaGWEop (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 00:44:45 -0400
-Received: by mail-oa0-f54.google.com with SMTP id n16so901270oag.41
-        for <linux-pm@vger.kernel.org>; Tue, 22 Jul 2014 21:44:44 -0700 (PDT)
-In-Reply-To: <1405957142-19416-15-git-send-email-ttynkkynen@nvidia.com>
+Received: from mail-oa0-f48.google.com ([209.85.219.48]:54014 "EHLO
+	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756512AbaGWEzJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 00:55:09 -0400
+Received: by mail-oa0-f48.google.com with SMTP id m1so911591oag.21
+        for <linux-pm@vger.kernel.org>; Tue, 22 Jul 2014 21:55:08 -0700 (PDT)
+In-Reply-To: <CABGGisyDf7xt7CNii_NJ_stvBGNEeiXBMFxNkA2myS8OQ-VCtw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Cc: "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul Walmsley <pwalmsley@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Rob Herring <rob.herring@linaro.org>
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>, Olof Johansson <olof@lixom.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mike Turquette <mike.turquette@linaro.org>, Grant Likely <grant.likely@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>
 
-On 21 July 2014 21:09, Tuomas Tynkkynen <ttynkkynen@nvidia.com> wrote:
+On 21 July 2014 22:30, Rob Herring <rob.herring@linaro.org> wrote:
 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 7364a53..df3c73e 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -244,6 +244,7 @@ config ARM_SPEAR_CPUFREQ
->  config ARM_TEGRA_CPUFREQ
->         bool "TEGRA CPUFreq support"
->         depends on ARCH_TEGRA
-> +       depends on GENERIC_CPUFREQ_CPU0
-
-Wouldn't this also disturb the existing cpufreq driver for earlier
-tegra platforms? i.e. we don't need cpufreq-cpu0 for them
-atleast as of now.
-
->         default y
->         help
->           This adds the CPUFreq driver support for TEGRA SOCs.
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index db6d9a2..3437d24 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -76,6 +76,7 @@ obj-$(CONFIG_ARM_SA1100_CPUFREQ)      += sa1100-cpufreq.o
->  obj-$(CONFIG_ARM_SA1110_CPUFREQ)       += sa1110-cpufreq.o
->  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)                += spear-cpufreq.o
->  obj-$(CONFIG_ARM_TEGRA_CPUFREQ)                += tegra-cpufreq.o
-> +obj-$(CONFIG_ARM_TEGRA_CPUFREQ)                += tegra124-cpufreq.o
-
-Maybe, you can update the same line if you want.
-
->  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ) += vexpress-spc-cpufreq.o
+> To me, but every time I suggest adding things to the topology the ARM
+> folks object... I really think we should have built the topology into
+> the /cpus hierarchy. Then we could add properties at the correct place
+> in the hierarchy where they are common.
 >
->  ##################################################################################
-> diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
+> I don't really like the proposal here. It just doesn't look like a
+> clean description of the h/w.
 
-> +static struct cpufreq_frequency_table *freq_table;
-> +
-> +static struct device *cpu_dev;
-> +static struct clk *cpu_clk;
-> +static struct clk *pllp_clk;
-> +static struct clk *pllx_clk;
-> +static struct clk *dfll_clk;
+I knew it wouldn't be easy to get these bindings correctly in the first
+attempt atleast, but I still went for it so that this thread can progress:
 
-The routines in this file are going to be called just once at boot, right?
-In that case we are actually wasting some memory by creating globals.
-Probably just move all these in a struct and allocate it at runtime.
+https://lkml.org/lkml/2014/7/18/3
 
-> +static int tegra124_cpu_switch_to_dfll(void)
-> +{
-> +       struct clk *original_cpu_clk_parent;
-> +       unsigned long rate;
-> +       struct dev_pm_opp *opp;
-> +       int ret;
-> +
-> +       rate = clk_get_rate(cpu_clk);
-> +       opp = dev_pm_opp_find_freq_ceil(cpu_dev, &rate);
-> +       if (IS_ERR(opp))
-> +               return PTR_ERR(opp);
-> +
-> +       ret = clk_set_rate(dfll_clk, rate);
-> +       if (ret)
-> +               return ret;
-> +
-> +       original_cpu_clk_parent = clk_get_parent(cpu_clk);
-> +       clk_set_parent(cpu_clk, pllp_clk);
-> +       if (ret)
-> +               return ret;
-> +
-> +       ret = clk_prepare_enable(dfll_clk);
-> +       if (ret)
-> +               goto out_switch_to_original_parent;
-> +
-> +       clk_set_parent(cpu_clk, dfll_clk);
-> +
-> +       return 0;
-> +
-> +out_switch_to_original_parent:
-> +       clk_set_parent(cpu_clk, original_cpu_clk_parent);
-> +
-> +       return ret;
-> +}
-> +
-> +static struct platform_device_info cpufreq_cpu0_devinfo = {
-> +       .name = "cpufreq-cpu0",
-> +};
-> +
-> +static int tegra124_cpufreq_probe(struct platform_device *pdev)
-> +{
-> +       int ret;
-> +
-> +       cpu_dev = get_cpu_device(0);
-> +       if (!cpu_dev)
-> +               return -ENODEV;
-> +
+There are changes waiting to get some kind of intermediate solution
+in, so that other platforms can reuse cpufreq-cpu0 driver. Also, so that
+cpufreq-cpu0 can be converted to cpufreq-generic, so that it can support
+almost any platform.
 
-Shouldn't we do a of_node_get() here?
+Can you please reply to that thread to suggest some intermediate
+solution that we can get fixed in 3.17? Mvebu and Krait are waiting for
+these patches to get in..
 
-> +       cpu_clk = of_clk_get_by_name(cpu_dev->of_node, "cpu_g");
-> +       if (IS_ERR(cpu_clk))
-> +               return PTR_ERR(cpu_clk);
-> +
-> +       dfll_clk = of_clk_get_by_name(cpu_dev->of_node, "dfll");
-> +       if (IS_ERR(dfll_clk)) {
-> +               ret = PTR_ERR(dfll_clk);
-> +               goto out_put_cpu_clk;
-> +       }
-> +
-> +       pllx_clk = of_clk_get_by_name(cpu_dev->of_node, "pll_x");
-> +       if (IS_ERR(pllx_clk)) {
-> +               ret = PTR_ERR(pllx_clk);
-> +               goto out_put_dfll_clk;
-> +       }
-> +
-> +       pllp_clk = of_clk_get_by_name(cpu_dev->of_node, "pll_p");
-> +       if (IS_ERR(pllp_clk)) {
-> +               ret = PTR_ERR(pllp_clk);
-> +               goto out_put_pllx_clk;
-> +       }
-> +
-> +       ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-> +       if (ret)
-> +               goto out_put_pllp_clk;
+The solution can be simple enough as right now we have only two kinds
+of platforms:
+- All CPUs share clock
+- All CPUs have separate clocks
 
-Why do you need this? cpufreq-cpu0 also does it and this freq_table is
-just not getting used at all then.
+The most simple solution of that could have been a Kconfig entry, but that
+would be a problem for multi-arch builds if these platforms do want to get
+build with multi-arch config. Otherwise we have to get some binding in
+place for 3.17..
 
-> +
-> +       ret = tegra124_cpu_switch_to_dfll();
-> +       if (ret)
-> +               goto out_free_table;
-> +
-> +       platform_device_register_full(&cpufreq_cpu0_devinfo);
-> +
-> +       return 0;
-> +
-> +out_free_table:
-> +       dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
-> +out_put_pllp_clk:
-> +       clk_put(pllp_clk);
-> +out_put_pllx_clk:
-> +       clk_put(pllx_clk);
-> +out_put_dfll_clk:
-> +       clk_put(dfll_clk);
-> +out_put_cpu_clk:
-> +       clk_put(cpu_clk);
-> +
-> +       return ret;
-> +}
-> +
-> +static struct platform_driver tegra124_cpufreq_platdrv = {
-> +       .driver = {
-> +               .name   = "cpufreq-tegra124",
-> +               .owner  = THIS_MODULE,
-> +       },
-> +       .probe          = tegra124_cpufreq_probe,
-> +};
-> +
-> +static const struct of_device_id soc_of_matches[] = {
-> +       { .compatible = "nvidia,tegra124", },
-> +       {}
-> +};
-> +
-> +static int __init tegra_cpufreq_init(void)
-> +{
-> +       int ret;
-> +       struct platform_device *pdev;
-> +
-> +       if (!of_find_matching_node(NULL, soc_of_matches))
-> +               return -ENODEV;
-> +
-> +       ret = platform_driver_register(&tegra124_cpufreq_platdrv);
-> +       if (ret)
-> +               return ret;
-> +
-> +       pdev = platform_device_register_simple("cpufreq-tegra124", -1, NULL, 0);
-> +       if (IS_ERR(pdev)) {
-> +               platform_driver_unregister(&tegra124_cpufreq_platdrv);
-> +               return PTR_ERR(pdev);
-> +       }
+Please see if you can get that thread going :)
 
-Why create another unnecessary platform-device/driver here? If
-of_find_matching_node() passes and you really need to probe cpufreq-cpu0
-here, then just remove the other two calls and move probe's implementation
-here only.
+> Ignoring compatibility, I would like to see something like
+> operating-points and/or the clock properties be moved up to /cpus if
+> they are shared and be per cpu node when they are not. This of course
+> does not work if you have independent OPPs for each cluster with a
+> shared clock within cluster.
 
-> +       return 0;
-> +}
-> +
-> +MODULE_AUTHOR("Tuomas Tynkkynen <ttynkkynen@nvidia.com>");
-> +MODULE_DESCRIPTION("cpufreq driver for nVIDIA Tegra124");
-> +MODULE_LICENSE("GPLv2");
-> +module_init(tegra_cpufreq_init);
-> --
-> 1.8.1.5
->
+Yeah, that had always been the issue. People probably tried to get a
+cluster {} block as well to simplify that but there were some objections
+to it as well, though not sure what happened to that stuff..
