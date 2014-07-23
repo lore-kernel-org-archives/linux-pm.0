@@ -1,43 +1,73 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC PATCH] PM/CPU: Parallel enabling nonboot cpus with resume
- devices
-Date: Wed, 23 Jul 2014 12:53:04 +0200
-Message-ID: <20140723105304.GA22675@amd.pavel.ucw.cz>
-References: <1406106694-3306-1-git-send-email-tianyu.lan@intel.com>
+Subject: Re: [PATCH 0/6 v2] PM / Hibernate: Memory bitmap scalability
+ improvements
+Date: Wed, 23 Jul 2014 12:57:51 +0200
+Message-ID: <20140723105750.GB22675@amd.pavel.ucw.cz>
+References: <1405938422-21900-1-git-send-email-joro@8bytes.org>
+ <20140721160346.GP30979@8bytes.org>
+ <20140721230500.GA7019@amd.pavel.ucw.cz>
+ <6793803.1FXN0a3O0V@vostro.rjw.lan>
+ <20140722103443.GV30979@8bytes.org>
+ <20140722105812.GB9814@amd.pavel.ucw.cz>
+ <20140722121022.GA31450@8bytes.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43608 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751103AbaGWKxG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 06:53:06 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1406106694-3306-1-git-send-email-tianyu.lan@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20140722121022.GA31450@8bytes.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Joerg Roedel <joro@8bytes.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, peterz@infradead.org, toshi.kani@hp.com, mingo@kernel.org, akpm@linux-foundation.org, todd.e.brandt@linux.intel.com, fabf@skynet.be, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi!
-
-> In the current world, all nonboot cpus are enabled serially during system
-> resume. System resume sequence is that boot cpu enables nonboot cpu one by
-> one and then resume devices. Before resuming devices, there are few tasks
-> assigned to nonboot cpus after they are brought up. This waste cpu usage.
+On Tue 2014-07-22 14:10:22, Joerg Roedel wrote:
+> On Tue, Jul 22, 2014 at 12:58:12PM +0200, Pavel Machek wrote:
+> > On Tue 2014-07-22 12:34:44, Joerg Roedel wrote:
+> > > On Tue, Jul 22, 2014 at 02:41:29AM +0200, Rafael J. Wysocki wrote:
+> > > > It looks like some specific need motivated the Joerg's work, however,
+> > > > so let's just not dismiss the use case lightly without knowing it.
+> > > 
+> > > The motivation was to optimize the data structures for machines with
+> > > large amounts of RAM without penalizing average machines. On a 12TB
+> > > machine you are close to 100000 pages just for one bitmap. Scanning
+> > > through that linearly to find a given bit just doesnt scale anymore in
+> > > this case.
+> > 
+> > Can you produce backtrace where 12TB machine spends time during boot
+> > with resume= parameter but no suspend image?
+> > 
+> > AFAICT swsusp_check() does not play with bitmaps.
 > 
-> To accelerate S3, this patches adds a new kernel configure
-> PM_PARALLEL_CPU_UP_FOR_SUSPEND to allow boot cpu to go forward to resume
-> devices after bringing up one nonboot cpu. The nonboot cpu will be in charge
-> of bringing up other cpus. This makes enabling cpu2~x parallel with resuming
-> devices. From the test result on 4 logical core laptop, the time of resume
-> device almost wasn't affected by enabling nonboot cpus lately while the start
-> point is almost 30ms earlier than before.
+> I can ask for a backtrace, I currently don't have one. But I have
+> perf-data for this case. It also shows that it spends most of its time
+> with bitmap operations:
+> 
+> ~# time perf record /usr/sbin/resume $sdev
+> resume: libgcrypt version: 1.5.0
+> [ perf record: Woken up 12 times to write data ]
+> [ perf record: Captured and wrote 2.882 MB perf.data (~125898
+samples) ]
 
-Does this mean that userspace can now run seeing the "offlined" cpus
-still in offline state?
+Aha, but that's the userland code... suspend package, resume.c: 
 
+        dev = open(snapshot_dev_name, O_WRONLY);
+        if (dev < 0) {
+                error = ENOENT;
+                goto Free;
+        }
+
+        resume_dev = open_resume_dev(resume_dev_name, &swsusp_header);
+        if (resume_dev == -ENOMEDIUM) {
+                error = 0;
+                goto Close;
+        } else if (resume_dev < 0) {
+                error = -resume_dev;
+                goto Close;
+        }
+
+What your probably want to do is open_resume_dev first, and only
+open(snapshot_dev_name...) if it finds correct signature.
 									Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
