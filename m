@@ -1,13 +1,13 @@
 From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: [PATCHv3 05/16] ARM: mvebu: rename the armada_370_xp symbols to mvebu_v7 in pmsu.c
-Date: Wed, 23 Jul 2014 15:00:42 +0200
-Message-ID: <1406120453-29291-6-git-send-email-thomas.petazzoni@free-electrons.com>
+Subject: [PATCHv3 04/16] ARM: mvebu: use the common function for Armada 375 SMP workaround
+Date: Wed, 23 Jul 2014 15:00:41 +0200
+Message-ID: <1406120453-29291-5-git-send-email-thomas.petazzoni@free-electrons.com>
 References: <1406120453-29291-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:40681 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:40689 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753038AbaGWNBC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 09:01:02 -0400
+	with ESMTP id S1751513AbaGWNBA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 09:01:00 -0400
 In-Reply-To: <1406120453-29291-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -16,163 +16,177 @@ Cc: Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior 
 
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
 
-Most of the function related to the PMSU are not specific to the
-Armada 370 or Armada XP SoCs. They can also be used for most of the
-other mvebu ARMv7 SoCs, and will actually be used to support cpuidle
-on Armada 38x.
+Use the common function mvebu_setup_boot_addr_wa() introduced in the
+commit "ARM: mvebu: Add a common function for the boot address work
+around" instead of the dedicated version for Armada 375.
+
+This commit also moves the workaround in the system-controller
+module. Indeed the workaround on 375 is really related to setting the
+boot address which is done by the system controller.
+
+As a bonus we no longer use an harcoded value to access the register
+storing the boot address.
 
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 ---
- arch/arm/mach-mvebu/armada-370-xp.h |  1 -
- arch/arm/mach-mvebu/platsmp.c       |  2 +-
- arch/arm/mach-mvebu/pmsu.c          | 34 +++++++++++++++++-----------------
- arch/arm/mach-mvebu/pmsu.h          |  2 ++
- 4 files changed, 20 insertions(+), 19 deletions(-)
+ arch/arm/mach-mvebu/headsmp-a9.S        | 15 ------------
+ arch/arm/mach-mvebu/platsmp-a9.c        | 42 +++------------------------------
+ arch/arm/mach-mvebu/system-controller.c | 31 ++++++++++++++++++++++++
+ 3 files changed, 34 insertions(+), 54 deletions(-)
 
-diff --git a/arch/arm/mach-mvebu/armada-370-xp.h b/arch/arm/mach-mvebu/armada-370-xp.h
-index 52c1603a..84cd90d 100644
---- a/arch/arm/mach-mvebu/armada-370-xp.h
-+++ b/arch/arm/mach-mvebu/armada-370-xp.h
-@@ -25,6 +25,5 @@ extern struct smp_operations armada_xp_smp_ops;
- #endif
+diff --git a/arch/arm/mach-mvebu/headsmp-a9.S b/arch/arm/mach-mvebu/headsmp-a9.S
+index da5bb29..be51c99 100644
+--- a/arch/arm/mach-mvebu/headsmp-a9.S
++++ b/arch/arm/mach-mvebu/headsmp-a9.S
+@@ -18,21 +18,6 @@
+ #include <asm/assembler.h>
  
- int armada_370_xp_pmsu_idle_enter(unsigned long deepidle);
--void armada_370_xp_pmsu_idle_exit(void);
+ 	__CPUINIT
+-#define CPU_RESUME_ADDR_REG 0xf10182d4
+-
+-.global armada_375_smp_cpu1_enable_code_start
+-.global armada_375_smp_cpu1_enable_code_end
+-
+-armada_375_smp_cpu1_enable_code_start:
+-ARM_BE8(setend	be)
+-	adr     r0, 1f
+-	ldr	r0, [r0]
+-	ldr     r1, [r0]
+-ARM_BE8(rev	r1, r1)
+-	mov     pc, r1
+-1:
+-	.word   CPU_RESUME_ADDR_REG
+-armada_375_smp_cpu1_enable_code_end:
  
- #endif /* __MACH_ARMADA_370_XP_H */
-diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
-index b6fa9f0..6da2b72 100644
---- a/arch/arm/mach-mvebu/platsmp.c
-+++ b/arch/arm/mach-mvebu/platsmp.c
-@@ -108,7 +108,7 @@ static int armada_xp_boot_secondary(unsigned int cpu, struct task_struct *idle)
-  */
- static void armada_xp_secondary_init(unsigned int cpu)
- {
--	armada_370_xp_pmsu_idle_exit();
-+	mvebu_v7_pmsu_idle_exit();
- }
+ ENTRY(mvebu_cortex_a9_secondary_startup)
+ ARM_BE8(setend	be)
+diff --git a/arch/arm/mach-mvebu/platsmp-a9.c b/arch/arm/mach-mvebu/platsmp-a9.c
+index 43aaf3f..47a71a9 100644
+--- a/arch/arm/mach-mvebu/platsmp-a9.c
++++ b/arch/arm/mach-mvebu/platsmp-a9.c
+@@ -20,33 +20,8 @@
+ #include <asm/smp_scu.h>
+ #include <asm/smp_plat.h>
+ #include "common.h"
+-#include "mvebu-soc-id.h"
+ #include "pmsu.h"
  
- static void __init armada_xp_smp_init_cpus(void)
-diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-index 272a9c05..501d450 100644
---- a/arch/arm/mach-mvebu/pmsu.c
-+++ b/arch/arm/mach-mvebu/pmsu.c
-@@ -73,7 +73,7 @@ extern void ll_enable_coherency(void);
+-#define CRYPT0_ENG_ID   41
+-#define CRYPT0_ENG_ATTR 0x1
+-#define SRAM_PHYS_BASE  0xFFFF0000
+-
+-#define BOOTROM_BASE    0xFFF00000
+-#define BOOTROM_SIZE    0x100000
+-
+-extern unsigned char armada_375_smp_cpu1_enable_code_end;
+-extern unsigned char armada_375_smp_cpu1_enable_code_start;
+-
+-static void armada_375_smp_cpu1_enable_wa(void)
+-{
+-	void __iomem *sram_virt_base;
+-
+-	mvebu_mbus_del_window(BOOTROM_BASE, BOOTROM_SIZE);
+-	mvebu_mbus_add_window_by_id(CRYPT0_ENG_ID, CRYPT0_ENG_ATTR,
+-				SRAM_PHYS_BASE, SZ_64K);
+-	sram_virt_base = ioremap(SRAM_PHYS_BASE, SZ_64K);
+-
+-	memcpy(sram_virt_base, &armada_375_smp_cpu1_enable_code_start,
+-	       &armada_375_smp_cpu1_enable_code_end
+-	       - &armada_375_smp_cpu1_enable_code_start);
+-}
+-
+ extern void mvebu_cortex_a9_secondary_startup(void);
  
- extern void armada_370_xp_cpu_resume(void);
- 
--static struct platform_device armada_xp_cpuidle_device = {
-+static struct platform_device mvebu_v7_cpuidle_device = {
- 	.name = "cpuidle-armada-370-xp",
- };
- 
-@@ -132,7 +132,7 @@ int mvebu_setup_boot_addr_wa(unsigned int crypto_eng_target,
- 	return 0;
- }
- 
--static int __init armada_370_xp_pmsu_init(void)
-+static int __init mvebu_v7_pmsu_init(void)
- {
- 	struct device_node *np;
- 	struct resource res;
-@@ -176,7 +176,7 @@ static int __init armada_370_xp_pmsu_init(void)
- 	return ret;
- }
- 
--static void armada_370_xp_pmsu_enable_l2_powerdown_onidle(void)
-+static void mvebu_v7_pmsu_enable_l2_powerdown_onidle(void)
- {
- 	u32 reg;
- 
-@@ -190,7 +190,7 @@ static void armada_370_xp_pmsu_enable_l2_powerdown_onidle(void)
- }
- 
- /* No locking is needed because we only access per-CPU registers */
--static int armada_370_xp_prepare(unsigned long deepidle)
-+static int mvebu_v7_pmsu_idle_prepare(bool deepidle)
- {
- 	unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
- 	u32 reg;
-@@ -233,7 +233,7 @@ int armada_370_xp_pmsu_idle_enter(unsigned long deepidle)
- {
- 	int ret;
- 
--	ret = armada_370_xp_prepare(deepidle);
-+	ret = mvebu_v7_pmsu_idle_prepare(deepidle);
- 	if (ret)
- 		return ret;
- 
-@@ -272,7 +272,7 @@ static int armada_370_xp_cpu_suspend(unsigned long deepidle)
- }
- 
- /* No locking is needed because we only access per-CPU registers */
--void armada_370_xp_pmsu_idle_exit(void)
-+void mvebu_v7_pmsu_idle_exit(void)
- {
- 	unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
- 	u32 reg;
-@@ -294,24 +294,24 @@ void armada_370_xp_pmsu_idle_exit(void)
- 	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
- }
- 
--static int armada_370_xp_cpu_pm_notify(struct notifier_block *self,
-+static int mvebu_v7_cpu_pm_notify(struct notifier_block *self,
- 				    unsigned long action, void *hcpu)
- {
- 	if (action == CPU_PM_ENTER) {
- 		unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
- 		mvebu_pmsu_set_cpu_boot_addr(hw_cpu, armada_370_xp_cpu_resume);
- 	} else if (action == CPU_PM_EXIT) {
--		armada_370_xp_pmsu_idle_exit();
-+		mvebu_v7_pmsu_idle_exit();
- 	}
- 
- 	return NOTIFY_OK;
- }
- 
--static struct notifier_block armada_370_xp_cpu_pm_notifier = {
--	.notifier_call = armada_370_xp_cpu_pm_notify,
-+static struct notifier_block mvebu_v7_cpu_pm_notifier = {
-+	.notifier_call = mvebu_v7_cpu_pm_notify,
- };
- 
--static int __init armada_370_xp_cpu_pm_init(void)
-+static int __init mvebu_v7_cpu_pm_init(void)
- {
- 	struct device_node *np;
- 
-@@ -334,13 +334,13 @@ static int __init armada_370_xp_cpu_pm_init(void)
- 		return 0;
- 	of_node_put(np);
- 
--	armada_370_xp_pmsu_enable_l2_powerdown_onidle();
--	armada_xp_cpuidle_device.dev.platform_data = armada_370_xp_cpu_suspend;
--	platform_device_register(&armada_xp_cpuidle_device);
--	cpu_pm_register_notifier(&armada_370_xp_cpu_pm_notifier);
-+	mvebu_v7_pmsu_enable_l2_powerdown_onidle();
-+	mvebu_v7_cpuidle_device.dev.platform_data = armada_370_xp_cpu_suspend;
-+	platform_device_register(&mvebu_v7_cpuidle_device);
-+	cpu_pm_register_notifier(&mvebu_v7_cpu_pm_notifier);
- 
- 	return 0;
- }
- 
--arch_initcall(armada_370_xp_cpu_pm_init);
--early_initcall(armada_370_xp_pmsu_init);
-+arch_initcall(mvebu_v7_cpu_pm_init);
-+early_initcall(mvebu_v7_pmsu_init);
-diff --git a/arch/arm/mach-mvebu/pmsu.h b/arch/arm/mach-mvebu/pmsu.h
-index ae50194..6b58c1f 100644
---- a/arch/arm/mach-mvebu/pmsu.h
-+++ b/arch/arm/mach-mvebu/pmsu.h
-@@ -16,4 +16,6 @@ int mvebu_setup_boot_addr_wa(unsigned int crypto_eng_target,
-                              unsigned int crypto_eng_attribute,
-                              phys_addr_t resume_addr_reg);
- 
-+void mvebu_v7_pmsu_idle_exit(void);
+ static int __cpuinit mvebu_cortex_a9_boot_secondary(unsigned int cpu,
+@@ -63,21 +38,10 @@ static int __cpuinit mvebu_cortex_a9_boot_secondary(unsigned int cpu,
+ 	 * address.
+ 	 */
+ 	hw_cpu = cpu_logical_map(cpu);
+-
+-	if (of_machine_is_compatible("marvell,armada375")) {
+-		u32 dev, rev;
+-
+-		if (mvebu_get_soc_id(&dev, &rev) == 0 &&
+-		    rev == ARMADA_375_Z1_REV)
+-			armada_375_smp_cpu1_enable_wa();
+-
++	if (of_machine_is_compatible("marvell,armada375"))
+ 		mvebu_system_controller_set_cpu_boot_addr(mvebu_cortex_a9_secondary_startup);
+-	}
+-	else {
+-		mvebu_pmsu_set_cpu_boot_addr(hw_cpu,
+-					     mvebu_cortex_a9_secondary_startup);
+-	}
+-
++	else
++		mvebu_pmsu_set_cpu_boot_addr(hw_cpu, mvebu_cortex_a9_secondary_startup);
+ 	smp_wmb();
+ 	ret = mvebu_cpu_reset_deassert(hw_cpu);
+ 	if (ret) {
+diff --git a/arch/arm/mach-mvebu/system-controller.c b/arch/arm/mach-mvebu/system-controller.c
+index b2b4e3d..a068cb5 100644
+--- a/arch/arm/mach-mvebu/system-controller.c
++++ b/arch/arm/mach-mvebu/system-controller.c
+@@ -28,8 +28,14 @@
+ #include <linux/io.h>
+ #include <linux/reboot.h>
+ #include "common.h"
++#include "mvebu-soc-id.h"
++#include "pmsu.h"
 +
- #endif	/* __MACH_370_XP_PMSU_H */
++#define ARMADA_375_CRYPT0_ENG_TARGET 41
++#define ARMADA_375_CRYPT0_ENG_ATTR    1
+ 
+ static void __iomem *system_controller_base;
++static phys_addr_t system_controller_phys_base;
+ 
+ struct mvebu_system_controller {
+ 	u32 rstoutn_mask_offset;
+@@ -121,10 +127,32 @@ int mvebu_system_controller_get_soc_id(u32 *dev, u32 *rev)
+ }
+ 
+ #ifdef CONFIG_SMP
++void mvebu_armada375_smp_wa_init(void)
++{
++	u32 dev, rev;
++	phys_addr_t resume_addr_reg;
++
++	if (mvebu_get_soc_id(&dev, &rev) != 0)
++		return;
++
++	if (rev != ARMADA_375_Z1_REV)
++		return;
++
++	resume_addr_reg = system_controller_phys_base +
++		mvebu_sc->resume_boot_addr;
++	mvebu_setup_boot_addr_wa(ARMADA_375_CRYPT0_ENG_TARGET,
++				 ARMADA_375_CRYPT0_ENG_ATTR,
++				 resume_addr_reg);
++}
++
+ void mvebu_system_controller_set_cpu_boot_addr(void *boot_addr)
+ {
+ 	BUG_ON(system_controller_base == NULL);
+ 	BUG_ON(mvebu_sc->resume_boot_addr == 0);
++
++	if (of_machine_is_compatible("marvell,armada375"))
++		mvebu_armada375_smp_wa_init();
++
+ 	writel(virt_to_phys(boot_addr), system_controller_base +
+ 	       mvebu_sc->resume_boot_addr);
+ }
+@@ -138,7 +166,10 @@ static int __init mvebu_system_controller_init(void)
+ 	np = of_find_matching_node_and_match(NULL, of_system_controller_table,
+ 					     &match);
+ 	if (np) {
++		struct resource res;
+ 		system_controller_base = of_iomap(np, 0);
++		of_address_to_resource(np, 0, &res);
++		system_controller_phys_base = res.start;
+ 		mvebu_sc = (struct mvebu_system_controller *)match->data;
+ 		of_node_put(np);
+ 	}
 -- 
 2.0.0
 
