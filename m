@@ -1,44 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/3] ACPI / PM: Make ACPI-based PCI wakeup work for the "freeze" sleep state
-Date: Wed, 23 Jul 2014 13:43:59 +0200
-Message-ID: <1938033.aGLPbNTjeQ@vostro.rjw.lan>
-References: <1907495.agrCMfRsQN@vostro.rjw.lan> <3271848.fNJ1rk2xTa@vostro.rjw.lan> <20140723072850.GO3935@laptop>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/3] ACPI / PM: Make ACPI-based PCI wakeup work for the
+ "freeze" sleep state
+Date: Wed, 23 Jul 2014 13:38:40 +0200
+Message-ID: <20140723113840.GJ20603@laptop.programming.kicks-ass.net>
+References: <1907495.agrCMfRsQN@vostro.rjw.lan>
+ <3271848.fNJ1rk2xTa@vostro.rjw.lan>
+ <20140723072850.GO3935@laptop>
+ <1938033.aGLPbNTjeQ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52473 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756664AbaGWLZf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 07:25:35 -0400
-In-Reply-To: <20140723072850.GO3935@laptop>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1938033.aGLPbNTjeQ@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 23, 2014 09:28:50 AM Peter Zijlstra wrote:
-> On Wed, Jul 23, 2014 at 12:26:20AM +0200, Rafael J. Wysocki wrote:
-> > All of that indicates that the machine in question has WoL based on native PCIe
-> > PME signaling.  In that case it doesn't wake up from the "freeze" state, because
-> > some code is missing.
+On Wed, Jul 23, 2014 at 01:43:59PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, July 23, 2014 09:28:50 AM Peter Zijlstra wrote:
+> > On Wed, Jul 23, 2014 at 12:26:20AM +0200, Rafael J. Wysocki wrote:
+> > > All of that indicates that the machine in question has WoL based on native PCIe
+> > > PME signaling.  In that case it doesn't wake up from the "freeze" state, because
+> > > some code is missing.
+> > 
+> > Didn't wake, but it did show:
+> > 
+> > 0000:00:01.0:pcie01     1               1               0               0               0               0               0               99207           0
+> > LNXPWRBN:00             1               1               0               0               0               0               0               99191           0
+> > 
+> > So at least something's moving, although its not quite working yet.
 > 
-> Didn't wake, but it did show:
+> That may be because I forgot about one piece, sorry about that.
+> This patch:
 > 
-> 0000:00:01.0:pcie01     1               1               0               0               0               0               0               99207           0
-> LNXPWRBN:00             1               1               0               0               0               0               0               99191           0
+> https://patchwork.kernel.org/patch/4526561/
 > 
-> So at least something's moving, although its not quite working yet.
+> (which I think is in tip already) is needed to make enable_irq_wake()
+> work with the "freeze" state.
+> 
+> Can you please apply this in addition and retest?
 
-That may be because I forgot about one piece, sorry about that.
-This patch:
+I appear to have that hunk already (I'm running -tip based kernels).
 
-https://patchwork.kernel.org/patch/4526561/
-
-(which I think is in tip already) is needed to make enable_irq_wake()
-work with the "freeze" state.
-
-Can you please apply this in addition and retest?
-
-Rafael
-
+(also, patchwork blows chunks :/)
