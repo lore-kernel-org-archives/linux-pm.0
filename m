@@ -1,70 +1,30 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/3] ACPI / PM: Make ACPI-based PCI wakeup work for the "freeze" sleep state
-Date: Wed, 23 Jul 2014 18:55:53 +0200
-Message-ID: <9451719.LAKB4xNqkA@vostro.rjw.lan>
-References: <1907495.agrCMfRsQN@vostro.rjw.lan> <6491652.ycQtdn67HU@vostro.rjw.lan> <20140723120432.GU3935@laptop>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 14/16] cpufreq: Add cpufreq driver for Tegra124
+Date: Wed, 23 Jul 2014 22:20:14 +0530
+Message-ID: <CAKohponLh66Ubr6=wY2OZCCrK11KZDj=DmXXqXsGGTHSG45wpA@mail.gmail.com>
+References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>
+	<1405957142-19416-15-git-send-email-ttynkkynen@nvidia.com>
+	<CAKohpomQthJ_XE-HhzW07Q4aVtxQVy97iaL0Vy6Q4Lhw22A=VA@mail.gmail.com>
+	<53CFA33F.6030307@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52423 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756244AbaGWQh3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 12:37:29 -0400
-In-Reply-To: <20140723120432.GU3935@laptop>
+Received: from mail-oa0-f41.google.com ([209.85.219.41]:33972 "EHLO
+	mail-oa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757549AbaGWQuP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 12:50:15 -0400
+Received: by mail-oa0-f41.google.com with SMTP id j17so1988736oag.14
+        for <linux-pm@vger.kernel.org>; Wed, 23 Jul 2014 09:50:14 -0700 (PDT)
+In-Reply-To: <53CFA33F.6030307@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
+To: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Cc: "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul Walmsley <pwalmsley@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-[Trimming CC list somewhat]
+On 23 July 2014 17:27, Tuomas Tynkkynen <ttynkkynen@nvidia.com> wrote:
+> The platform device is required for the deferred probe that can happen if the
+> DFLL driver hasn't initialized yet, and module_init() callbacks don't seem to
+> respect -EPROBE_DEFER.
 
-On Wednesday, July 23, 2014 02:04:32 PM Peter Zijlstra wrote:
-> On Wed, Jul 23, 2014 at 02:17:55PM +0200, Rafael J. Wysocki wrote:
-> > > (also, patchwork blows chunks :/)
-> > 
-> > That's never happened to me (and there's only one hunk in that patch).
-> 
-> I meant that patchwork sucks :-) It hides the actual patch, I had to
-> download things in order to see the actual patch.
-
-Well, my experience is much better here, never mind. :-)
-
-> > Anyway, the count for 0000:00:01.0:pcie01 means that the wakeup source
-> > has been activated, so it should have woken it up in theory.
-> > 
-> > Unless, of course, it was activated after the power button wakeup.
-> 
-> Yeah, I was thikning that maybe it doesn't get through entirely but has
-> pending state and comes through once we press the power button.
-
-It looks like that's what happens.
-
-> > It looks like the stuff works on the hardware level, though, so we should be
-> > able to make the wakeup work too.  I'll have another look later today.
-> 
-> Thanks.
-
-OK, so I think that before going any deeper it's better to check if we don't
-leave anything obvious behind, so please see if this makes any difference (on
-top of the previous one):
-
----
- drivers/pci/pcie/pme.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-pm/drivers/pci/pcie/pme.c
-===================================================================
---- linux-pm.orig/drivers/pci/pcie/pme.c
-+++ linux-pm/drivers/pci/pcie/pme.c
-@@ -364,7 +364,8 @@ static int pcie_pme_probe(struct pcie_de
- 	pcie_pme_interrupt_enable(port, false);
- 	pcie_clear_root_pme_status(port);
- 
--	ret = request_irq(srv->irq, pcie_pme_irq, IRQF_SHARED, "PCIe PME", srv);
-+	ret = request_irq(srv->irq, pcie_pme_irq, IRQF_SHARED | IRQF_NO_SUSPEND,
-+			  "PCIe PME", srv);
- 	if (ret) {
- 		kfree(data);
- 	} else {
-
+Oh, which call in this file will return EPROBE_DEFER? I couldn't make out
+which one will depend on DFLL driver.
