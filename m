@@ -1,87 +1,85 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: tests: Providing cpufreq regression test
-Date: Wed, 23 Jul 2014 10:36:15 +0530
-Message-ID: <CAKohpondk7Cty8MhTcjyzZW8Z0o4AVupYE0rRnG4YJf+SmDyjg@mail.gmail.com>
-References: <1405678985-21677-1-git-send-email-l.majewski@samsung.com>
-	<1405926154-27214-1-git-send-email-l.majewski@samsung.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH v2 14/16] cpufreq: Add cpufreq driver for Tegra124
+Date: Wed, 23 Jul 2014 08:54:13 +0200
+Message-ID: <20140723065412.GA15759@ulmo.nvidia.com>
+References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>
+ <1405957142-19416-15-git-send-email-ttynkkynen@nvidia.com>
+ <CAKohpomQthJ_XE-HhzW07Q4aVtxQVy97iaL0Vy6Q4Lhw22A=VA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f46.google.com ([209.85.218.46]:54808 "EHLO
-	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754537AbaGWFGQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 01:06:16 -0400
-Received: by mail-oi0-f46.google.com with SMTP id i138so483116oig.33
-        for <linux-pm@vger.kernel.org>; Tue, 22 Jul 2014 22:06:16 -0700 (PDT)
-In-Reply-To: <1405926154-27214-1-git-send-email-l.majewski@samsung.com>
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:55903 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755362AbaGWGyT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 02:54:19 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKohpomQthJ_XE-HhzW07Q4aVtxQVy97iaL0Vy6Q4Lhw22A=VA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Abraham <ta.omasab@gmail.com>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <spk.linux@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tuomas Tynkkynen <ttynkkynen@nvidia.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul Walmsley <pwalmsley@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-Hi Lukasz,
 
-I haven't replied yet as I wanted to see what the general feed of Rafael
-is going to be :)
+--sm4nu43k4a2Rpi4c
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-As this is something new and wasn't sure if we really want this..
+On Wed, Jul 23, 2014 at 10:14:44AM +0530, Viresh Kumar wrote:
+> On 21 July 2014 21:09, Tuomas Tynkkynen <ttynkkynen@nvidia.com> wrote:
+>=20
+> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> > index 7364a53..df3c73e 100644
+> > --- a/drivers/cpufreq/Kconfig.arm
+> > +++ b/drivers/cpufreq/Kconfig.arm
+> > @@ -244,6 +244,7 @@ config ARM_SPEAR_CPUFREQ
+> >  config ARM_TEGRA_CPUFREQ
+> >         bool "TEGRA CPUFreq support"
+> >         depends on ARCH_TEGRA
+> > +       depends on GENERIC_CPUFREQ_CPU0
+>=20
+> Wouldn't this also disturb the existing cpufreq driver for earlier
+> tegra platforms? i.e. we don't need cpufreq-cpu0 for them
+> atleast as of now.
 
-On 21 July 2014 12:32, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> This commit adds first regression test "cpufreq_freq_test.sh" for the
-> cpufreq subsystem.
+Perhaps this should be "select" rather than "depends on"?
 
-That's not enough, Tell us why we should continue reading this mail..
+> > +static int tegra124_cpufreq_probe(struct platform_device *pdev)
+> > +{
+> > +       int ret;
+> > +
+> > +       cpu_dev =3D get_cpu_device(0);
+> > +       if (!cpu_dev)
+> > +               return -ENODEV;
+> > +
+>=20
+> Shouldn't we do a of_node_get() here?
 
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->
-> ---
-> Changes for v2:
-> - Replace *_PATCH with *_PATH for variables names
-> - Corrected mistakes in the README file
-> - Providing detailed explanation of the patch in the README file
-> ---
->  drivers/cpufreq/tests/README               |  33 +++++++
->  drivers/cpufreq/tests/cpufreq_freq_test.sh | 149 +++++++++++++++++++++++++++++
+I think this would need to be get_device() since it's the struct device
+that's being used subsequently.
 
-Probably a better place would be tools/power/cpufreq/
+Thierry
 
-@Rafael?
+--sm4nu43k4a2Rpi4c
+Content-Type: application/pgp-signature
 
->  2 files changed, 182 insertions(+)
->  create mode 100644 drivers/cpufreq/tests/README
->  create mode 100755 drivers/cpufreq/tests/cpufreq_freq_test.sh
->
-> diff --git a/drivers/cpufreq/tests/README b/drivers/cpufreq/tests/README
-> new file mode 100644
-> index 0000000..3e9cd80
-> --- /dev/null
-> +++ b/drivers/cpufreq/tests/README
-> @@ -0,0 +1,33 @@
-> +This file contains list of cpufreq's available regression tests with a short
-> +usage description.
-> +
-> +1. cpufreq_freq_test.sh
-> +
-> +Description:
-> +------------
-> +This script is supposed to test if cpufreq attributes exported by sysfs are
-> +exposing correct values.
-> +
-> +To achieve this goal it saves the current governor and changes it to
-> +"performance". Afterwards, it reads the "scaling_available_frequencies"
-> +property. With the list of supported frequencies it is able to enforce each of
-> +them by writing to "scaling_max_freq" attribute. To make the test more reliable
-> +a superfluous load with gzip is created to be sure that we are running with
-> +highest possible frequency. This high load is regulated with the 'sleep'
-> +duration. After this time the "cpufreq_cur_freq" is read and compared with the
-> +original value. As the last step the original governor is restored.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-I couldn't make out the purpose of this test and why we need it. How do
-we ensure that "cpufreq attributes exported by sysfs are exposing
-correct values"?
+iQIcBAEBAgAGBQJTz1wTAAoJEN0jrNd/PrOhkXAP/izIcV7uR89IM12bl0i4flPE
+coaTpdmTakTvdjRRJdbeolp2Y6Y0L8yuYYs7/cxtcv6tPzRLwEQgDcyEp7WkmPn+
+mQT4sb5WGmyNyl+q8RiSqUPV9+Wg4ConXjvvTGxA/lQ+11/y3iSSxrrwyOZ9MCB3
+OFP6BlmfTqB0UpvMb+E42cI/U5qJLE1DaQVcuSUvkEj45WQdRnwiYFeF4j/Z0q7t
+IIJpN+Qaxp1QqKPTH9YNeKG5USd3czwvd0rMU4Zh8+s/PeBvEly8Af1wlcI6Lxzr
+IfOmDLLrWP8eMTaYmz4byc7OvJW8bcQbacGV3JoLFPtf9qw7HOZzLcOSI08K1jDb
+WhyACPtIUtnCeaY2F7aq3uywOjeExJkYJQiLA1UON4o/nSd8Gbkos8eIrWL6nyyw
+pHjTx+1RNBXnlKv1G0nNVDsM7s/ot2ykHwiBD1qqhr10c1b/J2/j0+RCXdNwdTF4
+T0tih1pdYUUUlkQ7kSot+V6j1qEnSUnViAsl2EKsAvTR3f9L0HQnLrWbs0c8O+HL
+AcchUwNMpQuqdfk1MK2PgnXcdaByF8iUB4aF7x+aLq82AJoXRgSOr4r1HHLaE9GZ
+6OYFI4rcqgK4REW9mZbjKDMPPkkVw0KeIhFpSgKqbanKB/AkNmQUbYOmupXXNJqw
+UPOzbD3WvUlzgUH+9hr7
+=PCQZ
+-----END PGP SIGNATURE-----
 
-And actually what do we mean by this statement even? What kind of errors can
-be there in exposing these values.
-
-I want to understand the purpose of this script very clearly first and then only
-will look at the details.
+--sm4nu43k4a2Rpi4c--
