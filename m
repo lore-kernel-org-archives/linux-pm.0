@@ -1,49 +1,27 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/3] ACPI / PM: Make ACPI-based PCI wakeup work for the
- "freeze" sleep state
-Date: Wed, 23 Jul 2014 18:50:44 +0200
-Message-ID: <20140723165044.GY3935@laptop>
-References: <1907495.agrCMfRsQN@vostro.rjw.lan>
- <6491652.ycQtdn67HU@vostro.rjw.lan>
- <20140723120432.GU3935@laptop>
- <9451719.LAKB4xNqkA@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCHv3 0/7] cpufreq support for Marvell Armada XP
+Date: Wed, 23 Jul 2014 22:22:20 +0530
+Message-ID: <CAKohpo=MbDPKjtMypDEapVzLP4NZWJzsTwCvz2pRWRA1GAbZxA@mail.gmail.com>
+References: <1404920715-19834-1-git-send-email-thomas.petazzoni@free-electrons.com>
+	<20140723131930.46dcbc2e@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:43495 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932082AbaGWQur (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 12:50:47 -0400
-Content-Disposition: inline
-In-Reply-To: <9451719.LAKB4xNqkA@vostro.rjw.lan>
+Received: from mail-oi0-f41.google.com ([209.85.218.41]:58442 "EHLO
+	mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932080AbaGWQwV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 12:52:21 -0400
+Received: by mail-oi0-f41.google.com with SMTP id a141so1055821oig.14
+        for <linux-pm@vger.kernel.org>; Wed, 23 Jul 2014 09:52:20 -0700 (PDT)
+In-Reply-To: <20140723131930.46dcbc2e@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Jul 23, 2014 at 06:55:53PM +0200, Rafael J. Wysocki wrote:
-> OK, so I think that before going any deeper it's better to check if we don't
-> leave anything obvious behind, so please see if this makes any difference (on
-> top of the previous one):
-> 
-> ---
->  drivers/pci/pcie/pme.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> Index: linux-pm/drivers/pci/pcie/pme.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pcie/pme.c
-> +++ linux-pm/drivers/pci/pcie/pme.c
-> @@ -364,7 +364,8 @@ static int pcie_pme_probe(struct pcie_de
->  	pcie_pme_interrupt_enable(port, false);
->  	pcie_clear_root_pme_status(port);
->  
-> -	ret = request_irq(srv->irq, pcie_pme_irq, IRQF_SHARED, "PCIe PME", srv);
-> +	ret = request_irq(srv->irq, pcie_pme_irq, IRQF_SHARED | IRQF_NO_SUSPEND,
-> +			  "PCIe PME", srv);
->  	if (ret) {
->  		kfree(data);
->  	} else {
-> 
+On 23 July 2014 16:49, Thomas Petazzoni
+<thomas.petazzoni@free-electrons.com> wrote:
+> So, what do we do with this patch series, which depends on the
+> cpufreq-generic driver? Has there been any solution found for 3.17 ?
 
-No joy :-(
+I have been trying hard, nothing conclusive yet :(
