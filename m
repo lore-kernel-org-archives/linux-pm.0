@@ -1,105 +1,62 @@
-From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v2 14/16] cpufreq: Add cpufreq driver for Tegra124
-Date: Wed, 23 Jul 2014 14:57:51 +0300
-Message-ID: <53CFA33F.6030307@nvidia.com>
-References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>	<1405957142-19416-15-git-send-email-ttynkkynen@nvidia.com> <CAKohpomQthJ_XE-HhzW07Q4aVtxQVy97iaL0Vy6Q4Lhw22A=VA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/3] ACPI / PM: Make ACPI-based PCI wakeup work for the "freeze" sleep state
+Date: Wed, 23 Jul 2014 14:17:55 +0200
+Message-ID: <6491652.ycQtdn67HU@vostro.rjw.lan>
+References: <1907495.agrCMfRsQN@vostro.rjw.lan> <1938033.aGLPbNTjeQ@vostro.rjw.lan> <20140723113840.GJ20603@laptop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAKohpomQthJ_XE-HhzW07Q4aVtxQVy97iaL0Vy6Q4Lhw22A=VA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:61482 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753350AbaGWL7c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 07:59:32 -0400
+In-Reply-To: <20140723113840.GJ20603@laptop.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
 
+On Wednesday, July 23, 2014 01:38:40 PM Peter Zijlstra wrote:
+> On Wed, Jul 23, 2014 at 01:43:59PM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, July 23, 2014 09:28:50 AM Peter Zijlstra wrote:
+> > > On Wed, Jul 23, 2014 at 12:26:20AM +0200, Rafael J. Wysocki wrote:
+> > > > All of that indicates that the machine in question has WoL based on native PCIe
+> > > > PME signaling.  In that case it doesn't wake up from the "freeze" state, because
+> > > > some code is missing.
+> > > 
+> > > Didn't wake, but it did show:
+> > > 
+> > > 0000:00:01.0:pcie01     1               1               0               0               0               0               0               99207           0
+> > > LNXPWRBN:00             1               1               0               0               0               0               0               99191           0
+> > > 
+> > > So at least something's moving, although its not quite working yet.
+> > 
+> > That may be because I forgot about one piece, sorry about that.
+> > This patch:
+> > 
+> > https://patchwork.kernel.org/patch/4526561/
+> > 
+> > (which I think is in tip already) is needed to make enable_irq_wake()
+> > work with the "freeze" state.
+> > 
+> > Can you please apply this in addition and retest?
+> 
+> I appear to have that hunk already (I'm running -tip based kernels).
 
+I see.
 
-On 23/07/14 07:44, Viresh Kumar wrote:
-> On 21 July 2014 21:09, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> 
->> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
->> index 7364a53..df3c73e 100644
->> --- a/drivers/cpufreq/Kconfig.arm
->> +++ b/drivers/cpufreq/Kconfig.arm
->> @@ -244,6 +244,7 @@ config ARM_SPEAR_CPUFREQ
->>  config ARM_TEGRA_CPUFREQ
->>         bool "TEGRA CPUFreq support"
->>         depends on ARCH_TEGRA
->> +       depends on GENERIC_CPUFREQ_CPU0
-> 
-> Wouldn't this also disturb the existing cpufreq driver for earlier
-> tegra platforms? i.e. we don't need cpufreq-cpu0 for them
-> atleast as of now.
-> 
->>         default y
->>         help
->>           This adds the CPUFreq driver support for TEGRA SOCs.
->> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
->> index db6d9a2..3437d24 100644
->> --- a/drivers/cpufreq/Makefile
->> +++ b/drivers/cpufreq/Makefile
->> @@ -76,6 +76,7 @@ obj-$(CONFIG_ARM_SA1100_CPUFREQ)      += sa1100-cpufreq.o
->>  obj-$(CONFIG_ARM_SA1110_CPUFREQ)       += sa1110-cpufreq.o
->>  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)                += spear-cpufreq.o
->>  obj-$(CONFIG_ARM_TEGRA_CPUFREQ)                += tegra-cpufreq.o
->> +obj-$(CONFIG_ARM_TEGRA_CPUFREQ)                += tegra124-cpufreq.o
-> 
-> Maybe, you can update the same line if you want.
+> (also, patchwork blows chunks :/)
 
-Oh, right.
+That's never happened to me (and there's only one hunk in that patch).
 
-> 
->>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ) += vexpress-spc-cpufreq.o
->>
->>  ##################################################################################
->> diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
-> 
->> +static struct cpufreq_frequency_table *freq_table;
->> +
->> +static struct device *cpu_dev;
->> +static struct clk *cpu_clk;
->> +static struct clk *pllp_clk;
->> +static struct clk *pllx_clk;
->> +static struct clk *dfll_clk;
-> 
-> The routines in this file are going to be called just once at boot, right?
-> In that case we are actually wasting some memory by creating globals.
-> Probably just move all these in a struct and allocate it at runtime.
-> 
+Anyway, the count for 0000:00:01.0:pcie01 means that the wakeup source
+has been activated, so it should have woken it up in theory.
 
-Sure.
+Unless, of course, it was activated after the power button wakeup.
 
-[...]
->> +
->> +       ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
->> +       if (ret)
->> +               goto out_put_pllp_clk;
-> 
-> Why do you need this? cpufreq-cpu0 also does it and this freq_table is
-> just not getting used at all then.
-> 
+It looks like the stuff works on the hardware level, though, so we should be
+able to make the wakeup work too.  I'll have another look later today.
 
-Oops, yes I forgot to remove that part when making the conversion.
+Rafael
 
->> +
->> +       pdev = platform_device_register_simple("cpufreq-tegra124", -1, NULL, 0);
->> +       if (IS_ERR(pdev)) {
->> +               platform_driver_unregister(&tegra124_cpufreq_platdrv);
->> +               return PTR_ERR(pdev);
->> +       }
-> 
-> Why create another unnecessary platform-device/driver here? If
-> of_find_matching_node() passes and you really need to probe cpufreq-cpu0
-> here, then just remove the other two calls and move probe's implementation
-> here only.
-> 
-
-The platform device is required for the deferred probe that can happen if the
-DFLL driver hasn't initialized yet, and module_init() callbacks don't seem to
-respect -EPROBE_DEFER.
-
-[...]
-
--- 
-nvpublic
