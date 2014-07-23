@@ -1,41 +1,924 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH v2] cpufreq: tests: Providing cpufreq regression test
-Date: Wed, 23 Jul 2014 17:02:28 +0200
-Message-ID: <20140723150228.GE2856@lunn.ch>
-References: <1405678985-21677-1-git-send-email-l.majewski@samsung.com>
- <1405926154-27214-1-git-send-email-l.majewski@samsung.com>
- <CAKohpondk7Cty8MhTcjyzZW8Z0o4AVupYE0rRnG4YJf+SmDyjg@mail.gmail.com>
- <20140723093824.5e51918f@amdc2363>
- <CAKohpok++gPcNk9-E4MsFdNBy8qL7oLYvatk1EvcW1OHwroZXQ@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v6 1/7] Documentation: arm: define DT idle states bindings
+Date: Wed, 23 Jul 2014 17:52:21 +0200
+Message-ID: <53CFDA35.1080203@linaro.org>
+References: <1405958786-17243-1-git-send-email-lorenzo.pieralisi@arm.com> <1405958786-17243-2-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vps0.lunn.ch ([178.209.37.122]:51858 "EHLO vps0.lunn.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757100AbaGWPHe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 23 Jul 2014 11:07:34 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKohpok++gPcNk9-E4MsFdNBy8qL7oLYvatk1EvcW1OHwroZXQ@mail.gmail.com>
+Received: from mail-wi0-f174.google.com ([209.85.212.174]:58310 "EHLO
+	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbaGWPwX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 11:52:23 -0400
+Received: by mail-wi0-f174.google.com with SMTP id d1so8102083wiv.1
+        for <linux-pm@vger.kernel.org>; Wed, 23 Jul 2014 08:52:22 -0700 (PDT)
+In-Reply-To: <1405958786-17243-2-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Thomas Abraham <ta.omasab@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Sachin Kamat <spk.linux@gmail.com>, Tomasz Figa <t.figa@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <chander.kashyap@linaro.org>, Geoff Levand <geoff@infradead.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Wed, Jul 23, 2014 at 02:19:54PM +0530, Viresh Kumar wrote:
-> On 23 July 2014 13:08, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > Do you want to say that we have enough tests and we don't need more ?
-> 
-> No. We don't have any tests at all :)
+On 07/21/2014 06:06 PM, Lorenzo Pieralisi wrote:
+> ARM based platforms implement a variety of power management schemes t=
+hat
+> allow processors to enter idle states at run-time.
+> The parameters defining these idle states vary on a per-platform basi=
+s forcing
+> the OS to hardcode the state parameters in platform specific static t=
+ables
+> whose size grows as the number of platforms supported in the kernel i=
+ncreases
+> and hampers device drivers standardization.
+>
+> Therefore, this patch aims at standardizing idle state device tree bi=
+ndings
+> for ARM platforms. Bindings define idle state parameters inclusive of=
+ entry
+> methods and state latencies, to allow operating systems to retrieve t=
+he
+> configuration entries from the device tree and initialize the related=
+ power
+> management drivers, paving the way for common code in the kernel to d=
+eal with
+> idle states and removing the need for static data in current and prev=
+ious
+> kernel versions.
+>
+> ARM64 platforms require the DT to define an entry-method property
+> for idle states.
+>
+> On system implementing PSCI as an enable-method to enter low-power
+> states the PSCI CPU suspend method requires the power_state parameter=
+ to
+> be passed to the PSCI CPU suspend function.
+>
+> This parameter is specific to a power state and platform specific,
+> therefore must be provided by firmware to the OS in order to enable
+> proper call sequence.
+>
+> Thus, this patch also adds a property in the PSCI bindings that
+> describes how the PSCI CPU suspend power_state parameter should be
+> defined in DT in all device nodes that rely on PSCI CPU suspend metho=
+d usage.
+>
+> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-Not really true. I've found bugs triggering opps using cpufreq-bench.
-http://marc.info/?l=linux-pm&m=138165517321579&w=2
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-and i hope you learned from that experience and run this tool when
-making changes to the core.
 
-There is an old writeup of cpufreq-bench here:
-https://lwn.net/Articles/339862/
 
-and the code itself is in the mainline tree, tools/power/cpupower/bench
+> ---
+>   Documentation/devicetree/bindings/arm/cpus.txt     |   8 +
+>   .../devicetree/bindings/arm/idle-states.txt        | 679 ++++++++++=
++++++++++++
+>   Documentation/devicetree/bindings/arm/psci.txt     |  14 +-
+>   3 files changed, 700 insertions(+), 1 deletion(-)
+>   create mode 100644 Documentation/devicetree/bindings/arm/idle-state=
+s.txt
+>
+> diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documen=
+tation/devicetree/bindings/arm/cpus.txt
+> index 1fe72a0..a44d4fd 100644
+> --- a/Documentation/devicetree/bindings/arm/cpus.txt
+> +++ b/Documentation/devicetree/bindings/arm/cpus.txt
+> @@ -215,6 +215,12 @@ nodes to be present and contain the properties d=
+escribed below.
+>   		Value type: <phandle>
+>   		Definition: Specifies the ACC[2] node associated with this CPU.
+>
+> +	- cpu-idle-states
+> +		Usage: Optional
+> +		Value type: <prop-encoded-array>
+> +		Definition:
+> +			# List of phandles to idle state nodes supported
+> +			  by this cpu [3].
+>
+>   Example 1 (dual-cluster big.LITTLE system 32-bit):
+>
+> @@ -411,3 +417,5 @@ cpus {
+>   --
+>   [1] arm/msm/qcom,saw2.txt
+>   [2] arm/msm/qcom,kpss-acc.txt
+> +[3] ARM Linux kernel documentation - idle states bindings
+> +    Documentation/devicetree/bindings/arm/idle-states.txt
+> diff --git a/Documentation/devicetree/bindings/arm/idle-states.txt b/=
+Documentation/devicetree/bindings/arm/idle-states.txt
+> new file mode 100644
+> index 0000000..37375c7
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/arm/idle-states.txt
+> @@ -0,0 +1,679 @@
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +ARM idle states binding description
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +1 - Introduction
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +ARM systems contain HW capable of managing power consumption dynamic=
+ally,
+> +where cores can be put in different low-power states (ranging from s=
+imple
+> +wfi to power gating) according to OS PM policies. The CPU states rep=
+resenting
+> +the range of dynamic idle states that a processor can enter at run-t=
+ime, can be
+> +specified through device tree bindings representing the parameters r=
+equired
+> +to enter/exit specific idle states on a given processor.
+> +
+> +According to the Server Base System Architecture document (SBSA, [3]=
+), the
+> +power states an ARM CPU can be put into are identified by the follow=
+ing list:
+> +
+> +- Running
+> +- Idle_standby
+> +- Idle_retention
+> +- Sleep
+> +- Off
+> +
+> +The power states described in the SBSA document define the basic CPU=
+ states on
+> +top of which ARM platforms implement power management schemes that a=
+llow an OS
+> +PM implementation to put the processor in different idle states (whi=
+ch include
+> +states listed above; "off" state is not an idle state since it does =
+not have
+> +wake-up capabilities, hence it is not considered in this document).
+> +
+> +Idle state parameters (eg entry latency) are platform specific and n=
+eed to be
+> +characterized with bindings that provide the required information to=
+ OS PM
+> +code so that it can build the required tables and use them at runtim=
+e.
+> +
+> +The device tree binding definition for ARM idle states is the subjec=
+t of this
+> +document.
+> +
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +2 - idle-states definitions
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +Idle states are characterized for a specific system through a set of
+> +timing and energy related properties, that underline the HW behaviou=
+r
+> +triggered upon idle states entry and exit.
+> +
+> +The following diagram depicts the CPU execution phases and related t=
+iming
+> +properties required to enter and exit an idle state:
+> +
+> +..__[EXEC]__|__[PREP]__|__[ENTRY]__|__[IDLE]__|__[EXIT]__|__[EXEC]__=
+=2E.
+> +	    |          |           |          |          |
+> +
+> +	    |<------ entry ------->|
+> +	    |       latency        |
+> +					      |<- exit ->|
+> +					      |  latency |
+> +	    |<-------- min-residency -------->|
+> +		       |<-------  wakeup-latency ------->|
+> +
+> +		Diagram 1: CPU idle state execution phases
+> +
+> +EXEC:	Normal CPU execution.
+> +
+> +PREP:	Preparation phase before committing the hardware to idle mode
+> +	like cache flushing. This is abortable on pending wake-up
+> +	event conditions. The abort latency is assumed to be negligible
+> +	(i.e. less than the ENTRY + EXIT duration). If aborted, CPU
+> +	goes back to EXEC. This phase is optional. If not abortable,
+> +	this should be included in the ENTRY phase instead.
+> +
+> +ENTRY:	The hardware is committed to idle mode. This period must run
+> +	to completion up to IDLE before anything else can happen.
+> +
+> +IDLE:	This is the actual energy-saving idle period. This may last
+> +	between 0 and infinite time, until a wake-up event occurs.
+> +
+> +EXIT:	Period during which the CPU is brought back to operational
+> +	mode (EXEC).
+> +
+> +entry-latency: Worst case latency required to enter the idle state. =
+The
+> +exit-latency may be guaranteed only after entry-latency has passed.
+> +
+> +min-residency: Minimum period, including preparation and entry, for =
+a given
+> +idle state to be worthwhile energywise.
+> +
+> +wakeup-latency: Maximum delay between the signaling of a wake-up eve=
+nt and the
+> +CPU being able to execute normal code again. If not specified, this =
+is assumed
+> +to be entry-latency + exit-latency.
+> +
+> +These timing parameters can be used by an OS in different circumstan=
+ces.
+> +
+> +An idle CPU requires the expected min-residency time to select the m=
+ost
+> +appropriate idle state based on the expected expiry time of the next=
+ IRQ
+> +(ie wake-up) that causes the CPU to return to the EXEC phase.
+> +
+> +An operating system scheduler may need to compute the shortest wake-=
+up delay
+> +for CPUs in the system by detecting how long will it take to get a C=
+PU out
+> +of an idle state, eg:
+> +
+> +wakeup-delay =3D exit-latency + max(entry-latency - (now - entry-tim=
+estamp), 0)
+> +
+> +In other words, the scheduler can make its scheduling decision by se=
+lecting
+> +(eg waking-up) the CPU with the shortest wake-up latency.
+> +The wake-up latency must take into account the entry latency if that=
+ period
+> +has not expired. The abortable nature of the PREP period can be igno=
+red
+> +if it cannot be relied upon (e.g. the PREP deadline may occur much s=
+ooner than
+> +the worst case since it depends on the CPU operating conditions, ie =
+caches
+> +state).
+> +
+> +An OS has to reliably probe the wakeup-latency since some devices ca=
+n enforce
+> +latency constraints guarantees to work properly, so the OS has to de=
+tect the
+> +worst case wake-up latency it can incur if a CPU is allowed to enter=
+ an
+> +idle state, and possibly to prevent that to guarantee reliable devic=
+e
+> +functioning.
+> +
+> +The min-residency time parameter deserves further explanation since =
+it is
+> +expressed in time units but must factor in energy consumption coeffi=
+cients.
+> +
+> +The energy consumption of a cpu when it enters a power state can be =
+roughly
+> +characterised by the following graph:
+> +
+> +               |
+> +               |
+> +               |
+> +           e   |
+> +           n   |                                      /---
+> +           e   |                               /------
+> +           r   |                        /------
+> +           g   |                  /-----
+> +           y   |           /------
+> +               |       ----
+> +               |      /|
+> +               |     / |
+> +               |    /  |
+> +               |   /   |
+> +               |  /    |
+> +               | /     |
+> +               |/      |
+> +          -----|-------+----------------------------------
+> +              0|       1                              time(ms)
+> +
+> +		Graph 1: Energy vs time example
+> +
+> +The graph is split in two parts delimited by time 1ms on the X-axis.
+> +The graph curve with X-axis values =3D { x | 0 < x < 1ms } has a ste=
+ep slope
+> +and denotes the energy costs incurred whilst entering and leaving th=
+e idle
+> +state.
+> +The graph curve in the area delimited by X-axis values =3D {x | x > =
+1ms } has
+> +shallower slope and essentially represents the energy consumption of=
+ the idle
+> +state.
+> +
+> +min-residency is defined for a given idle state as the minimum expec=
+ted
+> +residency time for a state (inclusive of preparation and entry) afte=
+r
+> +which choosing that state become the most energy efficient option. A=
+ good
+> +way to visualise this, is by taking the same graph above and compari=
+ng some
+> +states energy consumptions plots.
+> +
+> +For sake of simplicity, let's consider a system with two idle states=
+ IDLE1,
+> +and IDLE2:
+> +
+> +          |
+> +          |
+> +          |
+> +          |                                                  /-- IDL=
+E1
+> +       e  |                                              /---
+> +       n  |                                         /----
+> +       e  |                                     /---
+> +       r  |                                /-----/--------- IDLE2
+> +       g  |                    /-------/---------
+> +       y  |        ------------    /---|
+> +          |       /           /----    |
+> +          |      /        /---         |
+> +          |     /    /----             |
+> +          |    / /---                  |
+> +          |   ---                      |
+> +          |  /                         |
+> +          | /                          |
+> +          |/                           |                  time
+> +       ---/----------------------------+------------------------
+> +          |IDLE1-energy < IDLE2-energy | IDLE2-energy < IDLE1-energy
+> +                                       |
+> +                                IDLE2-min-residency
+> +
+> +		Graph 2: idle states min-residency example
+> +
+> +In graph 2 above, that takes into account idle states entry/exit ene=
+rgy
+> +costs, it is clear that if the idle state residency time (ie time ti=
+ll next
+> +wake-up IRQ) is less than IDLE2-min-residency, IDLE1 is the better i=
+dle state
+> +choice energywise.
+> +
+> +This is mainly down to the fact that IDLE1 entry/exit energy costs a=
+re lower
+> +than IDLE2.
+> +
+> +However, the lower power consumption (ie shallower energy curve slop=
+e) of idle
+> +state IDLE2 implies that after a suitable time, IDLE2 becomes more e=
+nergy
+> +efficient.
+> +
+> +The time at which IDLE2 becomes more energy efficient than IDLE1 (an=
+d other
+> +shallower states in a system with multiple idle states) is defined
+> +IDLE2-min-residency and corresponds to the time when energy consumpt=
+ion of
+> +IDLE1 and IDLE2 states breaks even.
+> +
+> +The definitions provided in this section underpin the idle states
+> +properties specification that is the subject of the following sectio=
+ns.
+> +
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +3 - idle-states node
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +ARM processor idle states are defined within the idle-states node, w=
+hich is
+> +a direct child of the cpus node [1] and provides a container where t=
+he
+> +processor idle states, defined as device tree nodes, are listed.
+> +
+> +- idle-states node
+> +
+> +	Usage: Optional - On ARM systems, it is a container of processor id=
+le
+> +			  states nodes. If the system does not provide CPU
+> +			  power management capabilities or the processor just
+> +			  supports idle_standby an idle-states node is not
+> +			  required.
+> +
+> +	Description: idle-states node is a container node, where its
+> +		     subnodes describe the CPU idle states.
+> +
+> +	Node name must be "idle-states".
+> +
+> +	The idle-states node's parent node must be the cpus node.
+> +
+> +	The idle-states node's child nodes can be:
+> +
+> +	- one or more state nodes
+> +
+> +	Any other configuration is considered invalid.
+> +
+> +	An idle-states node defines the following properties:
+> +
+> +	- entry-method
+> +		Value type: <stringlist>
+> +		Usage and definition depend on ARM architecture version.
+> +			# On ARM v8 64-bit this property is required and must
+> +			  be one of:
+> +			   - "psci" (see bindings in [2])
+> +			# On ARM 32-bit systems this property is optional
+> +
+> +The nodes describing the idle states (state) can only be defined wit=
+hin the
+> +idle-states node, any other configuration is considered invalid and =
+therefore
+> +must be ignored.
+> +
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +4 - state node
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +A state node represents an idle state description and must be define=
+d as
+> +follows:
+> +
+> +- state node
+> +
+> +	Description: must be child of the idle-states node
+> +
+> +	The state node name shall follow standard device tree naming
+> +	rules ([5], 2.2.1 "Node names"), in particular state nodes which
+> +	are siblings within a single common parent must be given a unique n=
+ame.
+> +
+> +	The idle state entered by executing the wfi instruction (idle_stand=
+by
+> +	SBSA,[3][4]) is considered standard on all ARM platforms and theref=
+ore
+> +	must not be listed.
+> +
+> +	With the definitions provided above, the following list represents
+> +	the valid properties for a state node:
+> +
+> +	- compatible
+> +		Usage: Required
+> +		Value type: <stringlist>
+> +		Definition: Must be "arm,idle-state".
+> +
+> +	- local-timer-stop
+> +		Usage: See definition
+> +		Value type: <none>
+> +		Definition: if present the CPU local timer control logic is
+> +			    lost on state entry, otherwise it is retained.
+> +
+> +	- entry-latency-us
+> +		Usage: Required
+> +		Value type: <prop-encoded-array>
+> +		Definition: u32 value representing worst case latency in
+> +			    microseconds required to enter the idle state.
+> +			    The exit-latency-us duration may be guaranteed
+> +			    only after entry-latency-us has passed.
+> +
+> +	- exit-latency-us
+> +		Usage: Required
+> +		Value type: <prop-encoded-array>
+> +		Definition: u32 value representing worst case latency
+> +			    in microseconds required to exit the idle state.
+> +
+> +	- min-residency-us
+> +		Usage: Required
+> +		Value type: <prop-encoded-array>
+> +		Definition: u32 value representing minimum residency duration
+> +			    in microseconds, inclusive of preparation and
+> +			    entry, for this idle state to be considered
+> +			    worthwhile energy wise (refer to section 2 of
+> +			    this document for a complete description).
+> +
+> +	- wakeup-latency-us:
+> +		Usage: Optional
+> +		Value type: <prop-encoded-array>
+> +		Definition: u32 value representing maximum delay between the
+> +			    signaling of a wake-up event and the CPU being
+> +			    able to execute normal code again. If omitted,
+> +			    this is assumed to be equal to:
+> +
+> +				entry-latency-us + exit-latency-us
+> +
+> +			    It is important to supply this value on systems
+> +			    where the duration of PREP phase (see diagram 1,
+> +			    section 2) is non-neglibigle.
+> +			    In such systems entry-latency-us + exit-latency-us
+> +			    will exceed wakeup-latency-us by this duration.
+> +
+> +	In addition to the properties listed above, a state node may requir=
+e
+> +	additional properties specifics to the entry-method defined in the
+> +	idle-states node, please refer to the entry-method bindings
+> +	documentation for properties definitions.
+> +
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +4 - Examples
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +Example 1 (ARM 64-bit, 16-cpu system, PSCI enable-method):
+> +
+> +cpus {
+> +	#size-cells =3D <0>;
+> +	#address-cells =3D <2>;
+> +
+> +	CPU0: cpu@0 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a57";
+> +		reg =3D <0x0 0x0>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
+> +				   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
+> +	};
+> +
+> +	CPU1: cpu@1 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a57";
+> +		reg =3D <0x0 0x1>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
+> +				   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
+> +	};
+> +
+> +	CPU2: cpu@100 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a57";
+> +		reg =3D <0x0 0x100>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
+> +				   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
+> +	};
+> +
+> +	CPU3: cpu@101 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a57";
+> +		reg =3D <0x0 0x101>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
+> +				   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
+> +	};
+> +
+> +	CPU4: cpu@10000 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a57";
+> +		reg =3D <0x0 0x10000>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
+> +				   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
+> +	};
+> +
+> +	CPU5: cpu@10001 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a57";
+> +		reg =3D <0x0 0x10001>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
+> +				   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
+> +	};
+> +
+> +	CPU6: cpu@10100 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a57";
+> +		reg =3D <0x0 0x10100>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
+> +				   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
+> +	};
+> +
+> +	CPU7: cpu@10101 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a57";
+> +		reg =3D <0x0 0x10101>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
+> +				   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
+> +	};
+> +
+> +	CPU8: cpu@100000000 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a53";
+> +		reg =3D <0x1 0x0>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
+> +				   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
+> +	};
+> +
+> +	CPU9: cpu@100000001 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a53";
+> +		reg =3D <0x1 0x1>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
+> +				   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
+> +	};
+> +
+> +	CPU10: cpu@100000100 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a53";
+> +		reg =3D <0x1 0x100>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
+> +				   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
+> +	};
+> +
+> +	CPU11: cpu@100000101 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a53";
+> +		reg =3D <0x1 0x101>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
+> +				   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
+> +	};
+> +
+> +	CPU12: cpu@100010000 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a53";
+> +		reg =3D <0x1 0x10000>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
+> +				   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
+> +	};
+> +
+> +	CPU13: cpu@100010001 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a53";
+> +		reg =3D <0x1 0x10001>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
+> +				   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
+> +	};
+> +
+> +	CPU14: cpu@100010100 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a53";
+> +		reg =3D <0x1 0x10100>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
+> +				   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
+> +	};
+> +
+> +	CPU15: cpu@100010101 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a53";
+> +		reg =3D <0x1 0x10101>;
+> +		enable-method =3D "psci";
+> +		cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
+> +				   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
+> +	};
+> +
+> +	idle-states {
+> +		entry-method =3D "arm,psci";
+> +
+> +		CPU_RETENTION_0_0: cpu-retention-0-0 {
+> +			compatible =3D "arm,idle-state";
+> +			arm,psci-suspend-param =3D <0x0010000>;
+> +			entry-latency-us =3D <20>;
+> +			exit-latency-us =3D <40>;
+> +			min-residency-us =3D <80>;
+> +		};
+> +
+> +		CLUSTER_RETENTION_0: cluster-retention-0 {
+> +			compatible =3D "arm,idle-state";
+> +			local-timer-stop;
+> +			arm,psci-suspend-param =3D <0x1010000>;
+> +			entry-latency-us =3D <50>;
+> +			exit-latency-us =3D <100>;
+> +			min-residency-us =3D <250>;
+> +			wakeup-latency-us =3D <130>;
+> +		};
+> +
+> +		CPU_SLEEP_0_0: cpu-sleep-0-0 {
+> +			compatible =3D "arm,idle-state";
+> +			local-timer-stop;
+> +			arm,psci-suspend-param =3D <0x0010000>;
+> +			entry-latency-us =3D <250>;
+> +			exit-latency-us =3D <500>;
+> +			min-residency-us =3D <950>;
+> +		};
+> +
+> +		CLUSTER_SLEEP_0: cluster-sleep-0 {
+> +			compatible =3D "arm,idle-state";
+> +			local-timer-stop;
+> +			arm,psci-suspend-param =3D <0x1010000>;
+> +			entry-latency-us =3D <600>;
+> +			exit-latency-us =3D <1100>;
+> +			min-residency-us =3D <2700>;
+> +			wakeup-latency-us =3D <1500>;
+> +		};
+> +
+> +		CPU_RETENTION_1_0: cpu-retention-1-0 {
+> +			compatible =3D "arm,idle-state";
+> +			arm,psci-suspend-param =3D <0x0010000>;
+> +			entry-latency-us =3D <20>;
+> +			exit-latency-us =3D <40>;
+> +			min-residency-us =3D <90>;
+> +		};
+> +
+> +		CLUSTER_RETENTION_1: cluster-retention-1 {
+> +			compatible =3D "arm,idle-state";
+> +			local-timer-stop;
+> +			arm,psci-suspend-param =3D <0x1010000>;
+> +			entry-latency-us =3D <50>;
+> +			exit-latency-us =3D <100>;
+> +			min-residency-us =3D <270>;
+> +			wakeup-latency-us =3D <100>;
+> +		};
+> +
+> +		CPU_SLEEP_1_0: cpu-sleep-1-0 {
+> +			compatible =3D "arm,idle-state";
+> +			local-timer-stop;
+> +			arm,psci-suspend-param =3D <0x0010000>;
+> +			entry-latency-us =3D <70>;
+> +			exit-latency-us =3D <100>;
+> +			min-residency-us =3D <300>;
+> +			wakeup-latency-us =3D <150>;
+> +		};
+> +
+> +		CLUSTER_SLEEP_1: cluster-sleep-1 {
+> +			compatible =3D "arm,idle-state";
+> +			local-timer-stop;
+> +			arm,psci-suspend-param =3D <0x1010000>;
+> +			entry-latency-us =3D <500>;
+> +			exit-latency-us =3D <1200>;
+> +			min-residency-us =3D <3500>;
+> +			wakeup-latency-us =3D <1300>;
+> +		};
+> +	};
+> +
+> +};
+> +
+> +Example 2 (ARM 32-bit, 8-cpu system, two clusters):
+> +
+> +cpus {
+> +	#size-cells =3D <0>;
+> +	#address-cells =3D <1>;
+> +
+> +	CPU0: cpu@0 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a15";
+> +		reg =3D <0x0>;
+> +		cpu-idle-states =3D <&CPU_SLEEP_0_0 &CLUSTER_SLEEP_0>;
+> +	};
+> +
+> +	CPU1: cpu@1 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a15";
+> +		reg =3D <0x1>;
+> +		cpu-idle-states =3D <&CPU_SLEEP_0_0 &CLUSTER_SLEEP_0>;
+> +	};
+> +
+> +	CPU2: cpu@2 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a15";
+> +		reg =3D <0x2>;
+> +		cpu-idle-states =3D <&CPU_SLEEP_0_0 &CLUSTER_SLEEP_0>;
+> +	};
+> +
+> +	CPU3: cpu@3 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a15";
+> +		reg =3D <0x3>;
+> +		cpu-idle-states =3D <&CPU_SLEEP_0_0 &CLUSTER_SLEEP_0>;
+> +	};
+> +
+> +	CPU4: cpu@100 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a7";
+> +		reg =3D <0x100>;
+> +		cpu-idle-states =3D <&CPU_SLEEP_1_0 &CLUSTER_SLEEP_1>;
+> +	};
+> +
+> +	CPU5: cpu@101 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a7";
+> +		reg =3D <0x101>;
+> +		cpu-idle-states =3D <&CPU_SLEEP_1_0 &CLUSTER_SLEEP_1>;
+> +	};
+> +
+> +	CPU6: cpu@102 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a7";
+> +		reg =3D <0x102>;
+> +		cpu-idle-states =3D <&CPU_SLEEP_1_0 &CLUSTER_SLEEP_1>;
+> +	};
+> +
+> +	CPU7: cpu@103 {
+> +		device_type =3D "cpu";
+> +		compatible =3D "arm,cortex-a7";
+> +		reg =3D <0x103>;
+> +		cpu-idle-states =3D <&CPU_SLEEP_1_0 &CLUSTER_SLEEP_1>;
+> +	};
+> +
+> +	idle-states {
+> +		CPU_SLEEP_0_0: cpu-sleep-0-0 {
+> +			compatible =3D "arm,idle-state";
+> +			local-timer-stop;
+> +			entry-latency-us =3D <200>;
+> +			exit-latency-us =3D <100>;
+> +			min-residency-us =3D <400>;
+> +			wakeup-latency-us =3D <250>;
+> +		};
+> +
+> +		CLUSTER_SLEEP_0: cluster-sleep-0 {
+> +			compatible =3D "arm,idle-state";
+> +			local-timer-stop;
+> +			entry-latency-us =3D <500>;
+> +			exit-latency-us =3D <1500>;
+> +			min-residency-us =3D <2500>;
+> +			wakeup-latency-us =3D <1700>;
+> +		};
+> +
+> +		CPU_SLEEP_1_0: cpu-sleep-1-0 {
+> +			compatible =3D "arm,idle-state";
+> +			local-timer-stop;
+> +			entry-latency-us =3D <300>;
+> +			exit-latency-us =3D <500>;
+> +			min-residency-us =3D <900>;
+> +			wakeup-latency-us =3D <600>;
+> +		};
+> +
+> +		CLUSTER_SLEEP_1: cluster-sleep-1 {
+> +			compatible =3D "arm,idle-state";
+> +			local-timer-stop;
+> +			entry-latency-us =3D <800>;
+> +			exit-latency-us =3D <2000>;
+> +			min-residency-us =3D <6500>;
+> +			wakeup-latency-us =3D <2300>;
+> +		};
+> +	};
+> +
+> +};
+> +
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +5 - References
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +[1] ARM Linux Kernel documentation - CPUs bindings
+> +    Documentation/devicetree/bindings/arm/cpus.txt
+> +
+> +[2] ARM Linux Kernel documentation - PSCI bindings
+> +    Documentation/devicetree/bindings/arm/psci.txt
+> +
+> +[3] ARM Server Base System Architecture (SBSA)
+> +    http://infocenter.arm.com/help/index.jsp
+> +
+> +[4] ARM Architecture Reference Manuals
+> +    http://infocenter.arm.com/help/index.jsp
+> +
+> +[5] ePAPR standard
+> +    https://www.power.org/documentation/epapr-version-1-1/
+> diff --git a/Documentation/devicetree/bindings/arm/psci.txt b/Documen=
+tation/devicetree/bindings/arm/psci.txt
+> index b4a58f3..5aa40ed 100644
+> --- a/Documentation/devicetree/bindings/arm/psci.txt
+> +++ b/Documentation/devicetree/bindings/arm/psci.txt
+> @@ -50,6 +50,16 @@ Main node optional properties:
+>
+>    - migrate       : Function ID for MIGRATE operation
+>
+> +Device tree nodes that require usage of PSCI CPU_SUSPEND function (i=
+e idle
+> +state nodes, as per bindings in [1]) must specify the following prop=
+erties:
+> +
+> +- arm,psci-suspend-param
+> +		Usage: Required for state nodes[1] if the corresponding
+> +                       idle-states node entry-method property is set
+> +                       to "psci".
+> +		Value type: <u32>
+> +		Definition: power_state parameter to pass to the PSCI
+> +			    suspend call.
+>
+>   Example:
+>
+> @@ -64,7 +74,6 @@ Case 1: PSCI v0.1 only.
+>   		migrate		=3D <0x95c10003>;
+>   	};
+>
+> -
+>   Case 2: PSCI v0.2 only
+>
+>   	psci {
+> @@ -88,3 +97,6 @@ Case 3: PSCI v0.2 and PSCI v0.1.
+>
+>   		...
+>   	};
+> +
+> +[1] Kernel documentation - ARM idle states bindings
+> +    Documentation/devicetree/bindings/arm/idle-states.txt
+>
 
-	Andrew
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
