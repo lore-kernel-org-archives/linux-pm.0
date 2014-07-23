@@ -1,46 +1,85 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/3] ACPI / PM: Make ACPI-based PCI wakeup work for the
- "freeze" sleep state
-Date: Wed, 23 Jul 2014 13:38:40 +0200
-Message-ID: <20140723113840.GJ20603@laptop.programming.kicks-ass.net>
-References: <1907495.agrCMfRsQN@vostro.rjw.lan>
- <3271848.fNJ1rk2xTa@vostro.rjw.lan>
- <20140723072850.GO3935@laptop>
- <1938033.aGLPbNTjeQ@vostro.rjw.lan>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCHv3 0/7] cpufreq support for Marvell Armada XP
+Date: Wed, 23 Jul 2014 07:39:45 -0400
+Message-ID: <20140723113945.GB23220@titan.lakedaemon.net>
+References: <1404920715-19834-1-git-send-email-thomas.petazzoni@free-electrons.com>
+ <20140723131930.46dcbc2e@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mho-03-ewr.mailhop.org ([204.13.248.66]:12124 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756434AbaGWLkB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 07:40:01 -0400
 Content-Disposition: inline
-In-Reply-To: <1938033.aGLPbNTjeQ@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+In-Reply-To: <20140723131930.46dcbc2e@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Mike Turquette <mturquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 
-On Wed, Jul 23, 2014 at 01:43:59PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, July 23, 2014 09:28:50 AM Peter Zijlstra wrote:
-> > On Wed, Jul 23, 2014 at 12:26:20AM +0200, Rafael J. Wysocki wrote:
-> > > All of that indicates that the machine in question has WoL based on native PCIe
-> > > PME signaling.  In that case it doesn't wake up from the "freeze" state, because
-> > > some code is missing.
-> > 
-> > Didn't wake, but it did show:
-> > 
-> > 0000:00:01.0:pcie01     1               1               0               0               0               0               0               99207           0
-> > LNXPWRBN:00             1               1               0               0               0               0               0               99191           0
-> > 
-> > So at least something's moving, although its not quite working yet.
-> 
-> That may be because I forgot about one piece, sorry about that.
-> This patch:
-> 
-> https://patchwork.kernel.org/patch/4526561/
-> 
-> (which I think is in tip already) is needed to make enable_irq_wake()
-> work with the "freeze" state.
-> 
-> Can you please apply this in addition and retest?
+Thomas,
 
-I appear to have that hunk already (I'm running -tip based kernels).
+On Wed, Jul 23, 2014 at 01:19:30PM +0200, Thomas Petazzoni wrote:
+> Viresh, Jason,
+> 
+> So, what do we do with this patch series, which depends on the
+> cpufreq-generic driver? Has there been any solution found for 3.17 ?
+> 
+> Jason, in any case, I'd like the following patches to be merged for
+> 3.17, regardless of what happens with the cpufreq driver:
+> 
+>  ARM: mvebu: ensure CPU clocks are enabled
+>  ARM: mvebu: extend PMSU code to support dynamic frequency scaling
+>  clk: mvebu: extend clk-cpu for dynamic frequency scaling
 
-(also, patchwork blows chunks :/)
+I just sent the pull for these three yesterday.
+
+> One patch should be split:
+> 
+>  ARM: mvebu: update Armada XP DT for dynamic frequency scaling
+> 
+>  -> In this patch, the addition of clock-latency is related to the
+>     cpufreq generic DT binding, so I think we shouldn't merge that. But
+>     on the other hand, this patch also adds the new registers for the
+>     Armada XP CPU clock, which is used by "clk: mvebu: extend clk-cpu
+>     for dynamic frequency scaling".
+
+This was a part of one of the previous DT pull requests and is already
+in arm-soc.
+
+> The patch:
+> 
+>  ARM: mvebu: allow enabling of cpufreq on Armada XP
+> 
+> can be dropped, since ARCH_HAS_CPUFREQ has been removed.
+
+Yup, did that when Paul raised the issue.
+
+> The other patches are defconfig changes, which are meaningless without
+> the cpufreq-generic driver.
+
+Already pushed to arm-soc.
+
+> Jason, what do you think about me sending a new version of the patch
+> series, which will have two clearly separated set of patches:
+> 
+>  1/ A first set of patches that can be applied regardless of what
+>     happens on the cpufreq driver side. Getting it merged will not
+>     bring cpufreq support, but it will add the foundations needed to
+>     support it.
+> 
+>  2/ A second set of patches that use the cpufreq-generic driver, which
+>     might get applied of the cpufreq maintainers find a solution in
+>     time for 3.17. If not, then I'll re-adapt them for 3.18.
+
+It sounds like the only patch in group 2 would be the DT change, which
+has already been taken.
+
+> What do you think?
+
+Let's wait and see what -rc1 looks like and take action based on that.
+
+thx,
+
+Jason.
