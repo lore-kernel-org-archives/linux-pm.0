@@ -1,134 +1,157 @@
 From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: [PATCHv3 00/16] cpuidle for Marvell Armada 370 and 38x
-Date: Wed, 23 Jul 2014 15:00:37 +0200
-Message-ID: <1406120453-29291-1-git-send-email-thomas.petazzoni@free-electrons.com>
+Subject: [PATCHv3 03/16] ARM: mvebu: add a common function for the boot address work around
+Date: Wed, 23 Jul 2014 15:00:40 +0200
+Message-ID: <1406120453-29291-4-git-send-email-thomas.petazzoni@free-electrons.com>
+References: <1406120453-29291-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:40654 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:40681 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751143AbaGWNA5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 09:00:57 -0400
+	with ESMTP id S1752767AbaGWNA7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 09:00:59 -0400
+In-Reply-To: <1406120453-29291-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>
 Cc: Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-Hello,
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
 
-Here comes the third version of the cpuidle support for Armada 370 and
-Armada 38x.
+On some of the mvebu SoCs and due to internal BootROM issue, the CPU
+initial jump code must be placed in the SRAM memory of the SoC. In
+order to achieve this, we have to unmap the BootROM and at some
+specific location where the BootROM was placed, create a dedicated
+MBus window for the SRAM. This SRAM is initialized with a few
+instructions of code that allows to jump to the real secondary CPU
+boot address. The SRAM used is the Crypto engine one.
 
-We are hoping to see this patch series merged for 3.17.
+This work around is currently needed for booting SMP on Armada 375 Z1
+and will be needed for cpuidle support on Armada 370. Instead of
+duplicating the same code, this commit introduces a common function to
+handle it: mvebu_setup_boot_addr_wa().
 
-Most patches are touching only arch/arm/mach-mvebu/ code so they
-should be handled by the mvebu maintainers. However, patches 11-13 are
-touching the mvebu cpuidle driver, with a possible issue on patch 11,
-which touches both the cpuidle driver and the mach-mvebu code in order
-to rename the driver without breaking functionality (if needed, we can
-decide to split the commits, it would break functionality temporarly,
-but not buildability).
+Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+---
+ arch/arm/mach-mvebu/pmsu.c    | 47 +++++++++++++++++++++++++++++++++++++++++++
+ arch/arm/mach-mvebu/pmsu.h    |  3 +++
+ arch/arm/mach-mvebu/pmsu_ll.S | 22 ++++++++++++++++++++
+ 3 files changed, 72 insertions(+)
 
-Changes since v2
-================
-
- * According to the discussion with Daniel Lezcano (cpuidle
-   maintainer) and Arnd Bergmann, changed the cpuidle-mvebu-v7 driver
-   to actually register three separate cpuidle platform driver, one
-   per-SoC. This way, we don't need special platform data to convey
-   the SoC type being used, as this information is already available
-   by looking at the driver name.
-
-   This change impacts the patches "cpuidle: mvebu: rename the driver
-   from armada-370-xp to mvebu-v7", "cpuidle: mvebu: add Armada 370
-   support", "cpuidle: mvebu: add Armada 38x support", "ARM: mvebu:
-   add cpuidle support for Armada 370" and "ARM: mvebu: add cpuidle
-   support for Armada 38x". Other patches are unchanged. The patch
-   "cpuidle: mvebu: make the cpuidle driver capable of handling
-   multiple SoCs" was no longer needed, so it has been removed.
-
-Changes since v1
-================
-
- * Series rebased on top of mvebu/fixes + mvebu/soc to take into
-   account the conflicts with the changes already merged on the PMSU
-   code.
-
- * Adjusted the fix that sorts the #include statements in pmsu.c by
-   alphabetic order to really use the alphabetic order.
-
- * Various improvements to the implementation of the common function
-   for the boot address workaround:
-
-    - Main function renamed from mvebu_boot_addr_wa() to
-      mvebu_setup_boot_addr_wa().
-    - Both target and attribute of the crypto SRAM MBus window are now
-      passed as arguments.
-    - Use appropriate types for arguments.
-    - Add error checking for ioremap() call.
-    - Use __raw_writel() instead of direct pointer dereference
-    - Fix the assembly code to work properly in big-endian
-      configurations.
-
- * Misc small fixes in the migration of the Armada 375 SMP code to use
-   the common function for the boot address workaround: use correct
-   types, split in a separate function to reduce the indentation
-   level, use better naming for macros, etc.
-
- * Re-organized the commits by grouping several patches that were
-   separate before, to for example have a single patch to introduce
-   the cpuidle support on Armada 370.
-
- * Move back into the cpuidle driver the list of the cpuidle states
-   for each SoC.
-
- * Numerous other small typos and improvements.
-
-Thanks,
-
-Thomas
-
-Gregory CLEMENT (14):
-  ARM: mvebu: split again armada_370_xp_pmsu_idle_enter() in PMSU code
-  ARM: mvebu: sort the #include of pmsu.c in alphabetic order
-  ARM: mvebu: add a common function for the boot address work around
-  ARM: mvebu: use the common function for Armada 375 SMP workaround
-  ARM: mvebu: rename the armada_370_xp symbols to mvebu_v7 in pmsu.c
-  ARM: mvebu: make the cpuidle initialization more generic
-  ARM: mvebu: use a local variable to store the resume address
-  ARM: mvebu: make the snoop disabling optional in
-    mvebu_v7_pmsu_idle_prepare()
-  ARM: mvebu: export the SCU address
-  ARM: mvebu: add CA9 MPcore SoC Controller node
-  cpuidle: mvebu: rename the driver from armada-370-xp to mvebu-v7
-  ARM: mvebu: add cpuidle support for Armada 370
-  ARM: mvebu: add cpuidle support for Armada 38x
-  ARM: mvebu: defconfig: enable cpuidle support in mvebu_v7_defconfig
-
-Thomas Petazzoni (2):
-  cpuidle: mvebu: add Armada 370 support
-  cpuidle: mvebu: add Armada 38x support
-
- .../bindings/arm/armada-380-mpcore-soc-ctrl.txt    |  14 ++
- arch/arm/boot/dts/armada-38x.dtsi                  |   5 +
- arch/arm/configs/mvebu_v7_defconfig                |   2 +
- arch/arm/mach-mvebu/armada-370-xp.h                |   1 -
- arch/arm/mach-mvebu/board-v7.c                     |   9 +-
- arch/arm/mach-mvebu/common.h                       |   2 +
- arch/arm/mach-mvebu/headsmp-a9.S                   |  15 --
- arch/arm/mach-mvebu/platsmp-a9.c                   |  42 +---
- arch/arm/mach-mvebu/platsmp.c                      |   2 +-
- arch/arm/mach-mvebu/pmsu.c                         | 273 ++++++++++++++++++---
- arch/arm/mach-mvebu/pmsu.h                         |   5 +
- arch/arm/mach-mvebu/pmsu_ll.S                      |  36 +++
- arch/arm/mach-mvebu/system-controller.c            |  31 +++
- drivers/cpuidle/Kconfig.arm                        |  12 +-
- drivers/cpuidle/Makefile                           |   2 +-
- drivers/cpuidle/cpuidle-armada-370-xp.c            |  93 -------
- drivers/cpuidle/cpuidle-mvebu-v7.c                 | 150 +++++++++++
- 17 files changed, 500 insertions(+), 194 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/arm/armada-380-mpcore-soc-ctrl.txt
- delete mode 100644 drivers/cpuidle/cpuidle-armada-370-xp.c
- create mode 100644 drivers/cpuidle/cpuidle-mvebu-v7.c
-
+diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
+index 9e18cce..272a9c05 100644
+--- a/arch/arm/mach-mvebu/pmsu.c
++++ b/arch/arm/mach-mvebu/pmsu.c
+@@ -22,6 +22,7 @@
+ #include <linux/init.h>
+ #include <linux/io.h>
+ #include <linux/kernel.h>
++#include <linux/mbus.h>
+ #include <linux/of_address.h>
+ #include <linux/platform_device.h>
+ #include <linux/resource.h>
+@@ -63,6 +64,10 @@ static void __iomem *pmsu_mp_base;
+ #define L2C_NFABRIC_PM_CTL		    0x4
+ #define L2C_NFABRIC_PM_CTL_PWR_DOWN		BIT(20)
+ 
++#define SRAM_PHYS_BASE  0xFFFF0000
++#define BOOTROM_BASE    0xFFF00000
++#define BOOTROM_SIZE    0x100000
++
+ extern void ll_disable_coherency(void);
+ extern void ll_enable_coherency(void);
+ 
+@@ -85,6 +90,48 @@ void mvebu_pmsu_set_cpu_boot_addr(int hw_cpu, void *boot_addr)
+ 		PMSU_BOOT_ADDR_REDIRECT_OFFSET(hw_cpu));
+ }
+ 
++extern unsigned char mvebu_boot_wa_start;
++extern unsigned char mvebu_boot_wa_end;
++
++/*
++ * This function sets up the boot address workaround needed for SMP
++ * boot on Armada 375 Z1 and cpuidle on Armada 370. It unmaps the
++ * BootROM Mbus window, and instead remaps a crypto SRAM into which a
++ * custom piece of code is copied to replace the problematic BootROM.
++ */
++int mvebu_setup_boot_addr_wa(unsigned int crypto_eng_target,
++			     unsigned int crypto_eng_attribute,
++			     phys_addr_t resume_addr_reg)
++{
++	void __iomem *sram_virt_base;
++	u32 code_len = &mvebu_boot_wa_end - &mvebu_boot_wa_start;
++
++	mvebu_mbus_del_window(BOOTROM_BASE, BOOTROM_SIZE);
++	mvebu_mbus_add_window_by_id(crypto_eng_target, crypto_eng_attribute,
++				    SRAM_PHYS_BASE, SZ_64K);
++
++	sram_virt_base = ioremap(SRAM_PHYS_BASE, SZ_64K);
++	if (!sram_virt_base) {
++		pr_err("Unable to map SRAM to setup the boot address WA\n");
++		return -ENOMEM;
++	}
++
++	memcpy(sram_virt_base, &mvebu_boot_wa_start, code_len);
++
++	/*
++	 * The last word of the code copied in SRAM must contain the
++	 * physical base address of the PMSU register. We
++	 * intentionally store this address in the native endianness
++	 * of the system.
++	 */
++	__raw_writel((unsigned long)resume_addr_reg,
++		     sram_virt_base + code_len - 4);
++
++	iounmap(sram_virt_base);
++
++	return 0;
++}
++
+ static int __init armada_370_xp_pmsu_init(void)
+ {
+ 	struct device_node *np;
+diff --git a/arch/arm/mach-mvebu/pmsu.h b/arch/arm/mach-mvebu/pmsu.h
+index 07a737c..ae50194 100644
+--- a/arch/arm/mach-mvebu/pmsu.h
++++ b/arch/arm/mach-mvebu/pmsu.h
+@@ -12,5 +12,8 @@
+ #define __MACH_MVEBU_PMSU_H
+ 
+ int armada_xp_boot_cpu(unsigned int cpu_id, void *phys_addr);
++int mvebu_setup_boot_addr_wa(unsigned int crypto_eng_target,
++                             unsigned int crypto_eng_attribute,
++                             phys_addr_t resume_addr_reg);
+ 
+ #endif	/* __MACH_370_XP_PMSU_H */
+diff --git a/arch/arm/mach-mvebu/pmsu_ll.S b/arch/arm/mach-mvebu/pmsu_ll.S
+index fc3de68..17d7f3b 100644
+--- a/arch/arm/mach-mvebu/pmsu_ll.S
++++ b/arch/arm/mach-mvebu/pmsu_ll.S
+@@ -23,3 +23,25 @@ ARM_BE8(setend	be )			@ go BE8 if entered LE
+ 	b	cpu_resume
+ ENDPROC(armada_370_xp_cpu_resume)
+ 
++.global mvebu_boot_wa_start
++.global mvebu_boot_wa_end
++
++/* The following code will be executed from SRAM */
++ENTRY(mvebu_boot_wa_start)
++mvebu_boot_wa_start:
++ARM_BE8(setend	be)
++	adr	r0, 1f
++	ldr	r0, [r0]		@ load the address of the
++					@ resume register
++	ldr	r0, [r0]		@ load the value in the
++					@ resume register
++ARM_BE8(rev	r0, r0)			@ the value is stored LE
++	mov	pc, r0			@ jump to this value
++/*
++ * the last word of this piece of code will be filled by the physical
++ * address of the boot address register just after being copied in SRAM
++ */
++1:
++	.long   .
++mvebu_boot_wa_end:
++ENDPROC(mvebu_boot_wa_end)
 -- 
 2.0.0
 
