@@ -1,281 +1,197 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v6 2/7] drivers: cpuidle: implement DT based idle states
- infrastructure
-Date: Wed, 23 Jul 2014 18:07:45 +0200
-Message-ID: <53CFDDD1.5030002@linaro.org>
-References: <1405958786-17243-1-git-send-email-lorenzo.pieralisi@arm.com> <1405958786-17243-3-git-send-email-lorenzo.pieralisi@arm.com>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [PATCH v6 4/7] arm64: add PSCI CPU_SUSPEND based cpu_suspend
+ support
+Date: Wed, 23 Jul 2014 12:15:15 -0400
+Message-ID: <CAJ5Y-ea6Z8EDe_kMZ3O3CxGD7k-M9JLKN-iEr7FB=-GwKGhSdA@mail.gmail.com>
+References: <1405958786-17243-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1405958786-17243-5-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:64987 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752625AbaGWQHr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 12:07:47 -0400
-Received: by mail-wi0-f176.google.com with SMTP id bs8so8138573wib.3
-        for <linux-pm@vger.kernel.org>; Wed, 23 Jul 2014 09:07:46 -0700 (PDT)
-In-Reply-To: <1405958786-17243-3-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1405958786-17243-5-git-send-email-lorenzo.pieralisi@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Tomasz Figa <t.figa@samsung.com>, Chander Kashyap <chander.kashyap@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Grant Likely <grant.likely@linaro.org>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Devicetree List <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Sebastian Capella <sebcape@gmail.com>, Rob Herring <robh+dt@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Geoff Levand <geoff@infradead.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, Bartlomiej
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <chander.kashyap@linaro.org>, Geoff Levand <geoff@infradead.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 07/21/2014 06:06 PM, Lorenzo Pieralisi wrote:
-> On most common ARM systems, the low-power states a CPU can be put int=
-o are
-> not discoverable in HW and require device tree bindings to describe
-> power down suspend operations and idle states parameters.
+On 21 July 2014 12:06, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
+> This patch implements the cpu_suspend cpu operations method through
+> the PSCI CPU SUSPEND API. The PSCI implementation translates the idle state
+> index passed by the cpu_suspend core call into a valid PSCI state according to
+> the PSCI states initialized at boot through the cpu_init_idle() CPU
+> operations hook.
 >
-> In order to enable DT based idle states and configure idle drivers, t=
-his
-> patch implements the bulk infrastructure required to parse the device=
- tree
-> idle states bindings and initialize the corresponding CPUidle driver =
-states
-> data.
->
-> The parsing API accepts a start index that defines the first idle sta=
-te
-> that should be initialized by the parsing code in order to give new a=
-nd
-> legacy driver flexibility over which states should be parsed using th=
-e
-> new DT mechanism.
->
-> The idle states list is obtained from the first cpu in the driver
-> cpumask, which implicitly means the parsing code expects idle states
-> (and related list of phandles) to be the same for all CPUs in the
-> CPUidle driver mask. The kernel does not check this assumption, it mu=
-st
-> be enforced by the bootloader to ensure correct system behaviour.
+> Entry point is set to cpu_resume physical address, that represents the
+> default kernel execution address following a CPU reset; for standby
+> states the entry point address is useless and will therefore be ignored
+> by the PSCI implementation.
 >
 > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-
-This patch looks good for me but I have a couple of questions below.
-
 > ---
->   drivers/cpuidle/Kconfig          |   8 +++
->   drivers/cpuidle/Makefile         |   1 +
->   drivers/cpuidle/dt_idle_states.c | 138 ++++++++++++++++++++++++++++=
-+++++++++++
->   drivers/cpuidle/dt_idle_states.h |   5 ++
->   4 files changed, 152 insertions(+)
->   create mode 100644 drivers/cpuidle/dt_idle_states.c
->   create mode 100644 drivers/cpuidle/dt_idle_states.h
+>  arch/arm64/kernel/psci.c | 89 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 89 insertions(+)
 >
-> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-> index 1b96fb9..414e7a96 100644
-> --- a/drivers/cpuidle/Kconfig
-> +++ b/drivers/cpuidle/Kconfig
-> @@ -30,6 +30,14 @@ config CPU_IDLE_GOV_MENU
->   	bool "Menu governor (for tickless system)"
->   	default y
+> diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
+> index a623c44..bbdf41d 100644
+> --- a/arch/arm64/kernel/psci.c
+> +++ b/arch/arm64/kernel/psci.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/reboot.h>
+>  #include <linux/pm.h>
+>  #include <linux/delay.h>
+> +#include <linux/slab.h>
+>  #include <uapi/linux/psci.h>
 >
-> +config DT_IDLE_STATES
-> +        bool "Idle states DT support"
-> +	depends on ARM || ARM64
-> +	help
-> +	 Allows the CPU idle framework to initialize CPU idle drivers
-> +	 state data by using DT provided nodes compliant with idle states
-> +	 device tree bindings.
-> +
-
-Wouldn't make sense to make this as an hidden option and let the=20
-different drivers to set DT_IDLE_STATES if they depend on it ?
-
->   menu "ARM CPU Idle Drivers"
->   depends on ARM
->   source "drivers/cpuidle/Kconfig.arm"
-> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-> index d8bb1ff..b27a062 100644
-> --- a/drivers/cpuidle/Makefile
-> +++ b/drivers/cpuidle/Makefile
-> @@ -4,6 +4,7 @@
+>  #include <asm/compiler.h>
+> @@ -28,6 +29,7 @@
+>  #include <asm/errno.h>
+>  #include <asm/psci.h>
+>  #include <asm/smp_plat.h>
+> +#include <asm/suspend.h>
+>  #include <asm/system_misc.h>
 >
->   obj-y +=3D cpuidle.o driver.o governor.o sysfs.o governors/
->   obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) +=3D coupled.o
-> +obj-$(CONFIG_DT_IDLE_STATES)		  +=3D dt_idle_states.o
+>  #define PSCI_POWER_STATE_TYPE_STANDBY          0
+> @@ -65,6 +67,8 @@ enum psci_function {
+>         PSCI_FN_MAX,
+>  };
 >
->   ###################################################################=
-###############
->   # ARM SoC drivers
-> diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_id=
-le_states.c
-> new file mode 100644
-> index 0000000..5413132
-> --- /dev/null
-> +++ b/drivers/cpuidle/dt_idle_states.c
-> @@ -0,0 +1,138 @@
-> +/*
-> + * DT idle states parsing code.
-> + *
-> + * Copyright (C) 2014 ARM Ltd.
-> + * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> + *
-> + * This program is free software; you can redistribute it and/or mod=
-ify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
+> +static DEFINE_PER_CPU_READ_MOSTLY(struct psci_power_state *, psci_power_state);
 > +
-> +#define pr_fmt(fmt) "DT idle-states: " fmt
-> +
-> +#include <linux/cpuidle.h>
-> +#include <linux/cpumask.h>
-> +#include <linux/errno.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/of_device.h>
-> +
-> +#include "dt_idle_states.h"
-> +
-> +static int init_state_node(struct cpuidle_state *idle_state,
-> +			   struct device_node *state_node)
+>  static u32 psci_function_id[PSCI_FN_MAX];
+>
+>  static int psci_to_linux_errno(int errno)
+> @@ -93,6 +97,18 @@ static u32 psci_power_state_pack(struct psci_power_state state)
+>                  & PSCI_0_2_POWER_STATE_AFFL_MASK);
+>  }
+>
+> +static void psci_power_state_unpack(u32 power_state,
+> +                                   struct psci_power_state *state)
 > +{
-> +	int err;
-> +
-> +	err =3D of_property_read_u32(state_node, "wakeup-latency-us",
-> +				   &idle_state->exit_latency);
-> +	if (err) {
-> +		u32 entry_latency, exit_latency;
-> +
-> +		err =3D of_property_read_u32(state_node, "entry-latency-us",
-> +					   &entry_latency);
-> +		if (err) {
-> +			pr_debug(" * %s missing entry-latency-us property\n",
-> +				 state_node->full_name);
-> +			return -EINVAL;
-> +		}
-> +
-> +		err =3D of_property_read_u32(state_node, "exit-latency-us",
-> +					   &exit_latency);
-> +		if (err) {
-> +			pr_debug(" * %s missing exit-latency-us property\n",
-> +				 state_node->full_name);
-> +			return -EINVAL;
-> +		}
-> +		/*
-> +		 * If wakeup-latency-us is missing, default to entry+exit
-> +		 * latencies as defined in idle states bindings
-> +		 */
-> +		idle_state->exit_latency =3D entry_latency + exit_latency;
-> +	}
-> +
-> +	err =3D of_property_read_u32(state_node, "min-residency-us",
-> +				   &idle_state->target_residency);
-> +	if (err) {
-> +		pr_debug(" * %s missing min-residency-us property\n",
-> +			     state_node->full_name);
-> +		return -EINVAL;
-> +	}
-> +
-> +	idle_state->flags =3D CPUIDLE_FLAG_TIME_VALID;
-> +	if (of_property_read_bool(state_node, "local-timer-stop"))
-> +		idle_state->flags |=3D CPUIDLE_FLAG_TIMER_STOP;
-> +	/*
-> +	 * TODO:
-> +	 *	replace with kstrdup and pointer assignment when name
-> +	 *	and desc become string pointers
-> +	 */
-> +	strncpy(idle_state->name, state_node->name, CPUIDLE_NAME_LEN - 1);
-> +	strncpy(idle_state->desc, state_node->name, CPUIDLE_DESC_LEN - 1);
-> +	return 0;
+> +       state->id = (power_state & PSCI_0_2_POWER_STATE_ID_MASK) >>
+> +                       PSCI_0_2_POWER_STATE_ID_SHIFT;
+> +       state->type = (power_state & PSCI_0_2_POWER_STATE_TYPE_MASK) >>
+> +                       PSCI_0_2_POWER_STATE_TYPE_SHIFT;
+> +       state->affinity_level =
+> +                       (power_state & PSCI_0_2_POWER_STATE_AFFL_MASK) >>
+> +                       PSCI_0_2_POWER_STATE_AFFL_SHIFT;
 > +}
 > +
-> +/**
-> + * dt_init_idle_driver() - Parse the DT idle states and initialize t=
-he
-> + *			   idle driver states array
-> + *
-> + * @drv:	  Pointer to CPU idle driver to be initialized
-> + * @start_idx:    First idle state index to be initialized
-> + *
-> + * On success the states array in the cpuidle driver contains
-> + * initialized entries in the states array, starting from index star=
-t_idx.
-> + *
-> + * Return:
-> + *	0 on success
-> + *	<0 on failure
-> + */
-> +int dt_init_idle_driver(struct cpuidle_driver *drv, unsigned int sta=
-rt_idx)
+>  /*
+>   * The following two functions are invoked via the invoke_psci_fn pointer
+>   * and will not be inlined, allowing us to piggyback on the AAPCS.
+> @@ -199,6 +215,61 @@ static int psci_migrate_info_type(void)
+>         return err;
+>  }
+>
+> +static int cpu_psci_cpu_init_idle(struct device_node *cpu_node,
+> +                                 unsigned int cpu)
 > +{
-> +	unsigned int i, state_idx =3D start_idx;
-> +	struct cpuidle_state *idle_state;
-> +	struct device_node *state_node, *cpu_node;
+> +       int i, ret, count = 0;
+> +       struct psci_power_state *psci_states;
+> +       struct device_node *state_node;
 > +
+> +       /*
+> +        * If the PSCI cpu_suspend function hook has not been initialized
+> +        * idle states must not be enabled, so bail out
+> +        */
+> +       if (!psci_ops.cpu_suspend)
+> +               return -EOPNOTSUPP;
 > +
-> +	if (state_idx >=3D CPUIDLE_STATE_MAX)
-> +		return -EINVAL;
-> +	/*
-> +	 * We get the idle states for the first logical cpu in the
-> +	 * driver mask. The kernel does not check idle states on all
-> +	 * cpus in the driver mask, they are assumed to be the same
-> +	 * by default.
-> +	 */
-> +	cpu_node =3D of_cpu_device_node_get(cpumask_first(drv->cpumask));
+> +       /* Count idle states */
+> +       while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
+> +                                             count)))
+> +               count++;
 > +
-> +	for (i =3D 0; ; i++) {
-> +		int err;
+> +       if (!count)
+> +               return -ENODEV;
 > +
-> +		state_node =3D of_parse_phandle(cpu_node, "cpu-idle-states", i);
-> +		if (!state_node)
-> +			break;
+> +       psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
+> +       if (!psci_states) {
+> +               pr_warn("idle state psci_state allocation failed\n");
+> +               return -ENOMEM;
+> +       }
 > +
-> +		if (state_idx =3D=3D CPUIDLE_STATE_MAX) {
-> +			pr_warn("State index reached static CPU idle driver states array =
-size\n");
-> +			break;
-> +		}
+> +       for (i = 0; i < count; i++) {
+> +               u32 psci_power_state;
 > +
-> +		idle_state =3D &drv->states[state_idx++];
-> +		err =3D init_state_node(idle_state, state_node);
-> +		if (err)
-
-As the init_state_node error traces are in pr_debug level, a pr_err=20
-would help here IMO.
-
-> +			return err;
-> +	}
+> +               state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
 > +
-> +	/*
-> +	 * If no idle states are detected, return an error and let the idle
-> +	 * driver initialization fail accordingly since initializing a driv=
-er
-> +	 * with simple WFI as an idle state is equivalent to letting the
-> +	 * kernel run the default idle loop.
-> +	 */
-> +	if (!i)
-> +		return -ENODATA;
+> +               ret = of_property_read_u32(state_node,
+> +                                          "arm,psci-suspend-param",
+> +                                          &psci_power_state);
+> +               if (ret) {
+> +                       pr_warn(" * %s missing arm,psci-suspend-param property\n",
+> +                               state_node->full_name);
+> +                       goto free_mem;
+> +               }
 > +
-> +	drv->state_count =3D state_idx;
-> +	return 0;
+> +               pr_debug("psci-power-state %#x index %d\n", psci_power_state,
+> +                                                           i);
+> +               psci_power_state_unpack(psci_power_state, &psci_states[i]);
+> +       }
+> +       /* Idle states parsed correctly, initialize per-cpu pointer */
+> +       per_cpu(psci_power_state, cpu) = psci_states;
+> +       return 0;
+> +
+> +free_mem:
+> +       kfree(psci_states);
+> +       return ret;
 > +}
-> +EXPORT_SYMBOL_GPL(dt_init_idle_driver);
-> diff --git a/drivers/cpuidle/dt_idle_states.h b/drivers/cpuidle/dt_id=
-le_states.h
-> new file mode 100644
-> index 0000000..728c37c
-> --- /dev/null
-> +++ b/drivers/cpuidle/dt_idle_states.h
-> @@ -0,0 +1,5 @@
-> +#ifndef __DT_IDLE_STATES
-> +#define __DT_IDLE_STATES
 > +
-> +int dt_init_idle_driver(struct cpuidle_driver *drv, unsigned int sta=
-rt_idx);
+>  static int get_set_conduit_method(struct device_node *np)
+>  {
+>         const char *method;
+> @@ -436,8 +507,23 @@ static int cpu_psci_cpu_kill(unsigned int cpu)
+>  #endif
+>  #endif
+>
+> +static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
+> +{
+> +       struct psci_power_state *state = __get_cpu_var(psci_power_state);
+> +       /*
+> +        * idle state index 0 corresponds to wfi, should never be called
+> +        * from the cpu_suspend operations
+> +        */
+> +       if (WARN_ON_ONCE(!index))
+> +               return -EINVAL;
+> +
+> +       return psci_ops.cpu_suspend(state[index - 1],
+> +                                   virt_to_phys(cpu_resume));
+> +}
+> +
+>  const struct cpu_operations cpu_psci_ops = {
+>         .name           = "psci",
+> +       .cpu_init_idle  = cpu_psci_cpu_init_idle,
+>  #ifdef CONFIG_SMP
+>         .cpu_init       = cpu_psci_cpu_init,
+>         .cpu_prepare    = cpu_psci_cpu_prepare,
+> @@ -448,5 +534,8 @@ const struct cpu_operations cpu_psci_ops = {
+>         .cpu_kill       = cpu_psci_cpu_kill,
+>  #endif
+>  #endif
+> +#ifdef CONFIG_ARM64_CPU_SUSPEND
+> +       .cpu_suspend    = cpu_psci_cpu_suspend,
 > +#endif
+>  };
 >
+> --
+> 1.9.1
 
+Reviewed-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+>
+>
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
