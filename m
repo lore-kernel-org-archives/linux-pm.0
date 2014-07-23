@@ -1,87 +1,92 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: [PATCHv3 13/16] cpuidle: mvebu: add Armada 38x support
-Date: Wed, 23 Jul 2014 15:00:50 +0200
-Message-ID: <1406120453-29291-14-git-send-email-thomas.petazzoni@free-electrons.com>
-References: <1406120453-29291-1-git-send-email-thomas.petazzoni@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:40745 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754279AbaGWNBK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 09:01:10 -0400
-In-Reply-To: <1406120453-29291-1-git-send-email-thomas.petazzoni@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 14/16] cpufreq: Add cpufreq driver for Tegra124
+Date: Wed, 23 Jul 2014 15:51:28 +0200
+Message-ID: <20140723135127.GB14263@ulmo.nvidia.com>
+References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>
+ <1405957142-19416-15-git-send-email-ttynkkynen@nvidia.com>
+ <CAKohpomQthJ_XE-HhzW07Q4aVtxQVy97iaL0Vy6Q4Lhw22A=VA@mail.gmail.com>
+ <20140723065412.GA15759@ulmo.nvidia.com>
+ <CAKohponmg24pvnX2Jhfg5LHKKHx3VEm-6a_JXTGhVXY-aj3EOw@mail.gmail.com>
+ <20140723072442.GC15759@ulmo.nvidia.com>
+ <CAKohponfKzuK+TnQvWcvaT8hRX8XZJWXWGMQw138DCwP=qcx+A@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="CdrF4e02JqNVZeln"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohponfKzuK+TnQvWcvaT8hRX8XZJWXWGMQw138DCwP=qcx+A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>
-Cc: Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-This commit adds the list of cpuidle states supported by the Armada
-38x SoC in the cpuidle-mvebu-v7 driver, as well as the necessary logic
-around it to support this SoC.
 
-Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
----
- drivers/cpuidle/cpuidle-mvebu-v7.c | 29 ++++++++++++++++++++++++++++-
- 1 file changed, 28 insertions(+), 1 deletion(-)
+--CdrF4e02JqNVZeln
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/cpuidle/cpuidle-mvebu-v7.c b/drivers/cpuidle/cpuidle-mvebu-v7.c
-index d23597f..45371bb 100644
---- a/drivers/cpuidle/cpuidle-mvebu-v7.c
-+++ b/drivers/cpuidle/cpuidle-mvebu-v7.c
-@@ -1,5 +1,5 @@
- /*
-- * Marvell Armada 370 and Armada XP SoC cpuidle driver
-+ * Marvell Armada 370, 38x and XP SoC cpuidle driver
-  *
-  * Copyright (C) 2014 Marvell
-  *
-@@ -86,6 +86,21 @@ static struct cpuidle_driver armada370_idle_driver = {
- 	.state_count = 2,
- };
- 
-+static struct cpuidle_driver armada38x_idle_driver = {
-+	.name			= "armada_38x_idle",
-+	.states[0]		= ARM_CPUIDLE_WFI_STATE,
-+	.states[1]		= {
-+		.enter			= mvebu_v7_enter_idle,
-+		.exit_latency		= 10,
-+		.power_usage		= 5,
-+		.target_residency	= 100,
-+		.flags			= CPUIDLE_FLAG_TIME_VALID,
-+		.name			= "Idle",
-+		.desc			= "CPU and SCU power down",
-+	},
-+	.state_count = 2,
-+};
-+
- static int mvebu_v7_cpuidle_probe(struct platform_device *pdev)
- {
- 	mvebu_v7_cpu_suspend = pdev->dev.platform_data;
-@@ -94,6 +109,8 @@ static int mvebu_v7_cpuidle_probe(struct platform_device *pdev)
- 		return cpuidle_register(&armadaxp_idle_driver, NULL);
- 	else if (!strcmp(pdev->dev.driver->name, "cpuidle-armada-370"))
- 		return cpuidle_register(&armada370_idle_driver, NULL);
-+	else if (!strcmp(pdev->dev.driver->name, "cpuidle-armada-38x"))
-+		return cpuidle_register(&armada38x_idle_driver, NULL);
- 	else
- 		return -EINVAL;
- }
-@@ -118,6 +135,16 @@ static struct platform_driver armada370_cpuidle_plat_driver = {
- 
- module_platform_driver(armada370_cpuidle_plat_driver);
- 
-+static struct platform_driver armada38x_cpuidle_plat_driver = {
-+	.driver = {
-+		.name = "cpuidle-armada-38x",
-+		.owner = THIS_MODULE,
-+	},
-+	.probe = mvebu_v7_cpuidle_probe,
-+};
-+
-+module_platform_driver(armada38x_cpuidle_plat_driver);
-+
- MODULE_AUTHOR("Gregory CLEMENT <gregory.clement@free-electrons.com>");
- MODULE_DESCRIPTION("Marvell EBU v7 cpuidle driver");
- MODULE_LICENSE("GPL");
--- 
-2.0.0
+On Wed, Jul 23, 2014 at 01:55:57PM +0530, Viresh Kumar wrote:
+> On 23 July 2014 12:54, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+> > ARM_TEGRA_CPUFREQ is still optional, so the select only applies when the
+> > Tegra cpufreq driver is enabled. This is mostly just out of convenience,
+> > though. The Tegra cpufreq driver uses the generic CPU0 cpufreq driver so
+> > a select will automatically pull in the necessary dependency. With a
+>=20
+> Not necessarily. cpufreq-cpu0 can have few unmet dependency. And so
+> there are chances that tegra driver is compiled but cpufreq-cpu0 isn't as
+> we didn't mention it as a *hard* dependency.
+>=20
+> And so at boot, there wouldn't be any cpufreq support even when tegra's
+> cpufreq driver is available.
+>=20
+> Though, menuconfig may give some warnings no such situations.
+>=20
+> > "depends on" the Tegra cpufreq driver only becomes available after
+> > you've selected GENERIC_CPUFREQ_CPU0, which is somewhat unintuitive.
+> >
+> > To illustrate with an example: as a user, I want to enable CPU frequency
+> > scaling on Tegra. So I use menuconfig to navigate to the "CPU Frequency
+> > scaling" menu (enable it if not available yet) and look for an entry
+> > that says "Tegra". But I can't find it because it's hidden due to the
+> > lack of GENERIC_CPUFREQ_CPU0. That the Tegra CPU frequency driver uses a
+> > generic driver is an implementation detail that users shouldn't have to
+> > be aware of.
+>=20
+> Don't know, the guy compiling out stuff should be knowledgeable enough to
+> have a look why tegra cpufreq entry isn't shown in menu. As, probably the
+> above problem I mentioned looks to be of more significance than this one,
+> atleast to me :)
+>=20
+> And, another thing to mention is that CONFIG_TEGRA_CPUFREQ is valid
+> for earlier platforms as well and so a select/depends wouldn't be valid f=
+or
+> earlier platforms. We probably need another Kconfig entry here.
 
+Yes, sounds like a new Kconfig entry for this specific driver would be a
+better approach and should remove all the above concerns.
+
+Thierry
+
+--CdrF4e02JqNVZeln
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIbBAEBAgAGBQJTz73eAAoJEN0jrNd/PrOhLJYP+IuuRTEEvQoTQ1Y2AMHVsLTf
+tPei0ThoS2Mav5HMWIGOKB8kbmqf0koRR4Z+SHRlwrdyU7VN9aNmDXUY2MCZWs9X
+XLmzPaQAFcvciI+8t6GT0uJBBRCzhC06+PQdKeMEaTyqKhsDaC0fmbQQYiaRzMBe
+F2YG18PY3jDeEXid+OYIuwOt9bH3EGp1Of+9BbFANmBQyG8Jdt6Un7cAWYJj/dTi
+vl4eekndo+Hd0n3QYmW/6Urzb4DEyY+giiZ6d7MLDZs/zx7s+zoCzxgKo4JbMizy
+LlhKyE1FHV8gM7uwfVxyM3f1fv0LGmXYpfv8KfU9+XHK0IDQKjpfAZ7A+TA5bZ1+
+o3U+0nno7E0TSWIJcjuStUP1M8QVlVum87D01zatkgsn/hm/6XxijH+8Br6k1R3E
+cIDQS7+ziEYSpjTrvV4t9pOHmxe1HlhC5yfBs8m1r+gAQBdAKuZeTiDO1DAbf3Ka
+ok9QlOCDWSwCAYMdGrv/qyrkA4/U6aqZtb1xvW5uucc081TnN4cQcW/1KcWhinrQ
+EBVxGAVEaGZnbhlml8SqqVQEzNFsT+aDzkCQYu8fU7g2xEJedgJNv3TpLqxewYFW
+GY2iJcj+QdgqaOoTpWBbGJvNjiqb8iFR0xK+odB/+ops16B19o0rnUffmujdtyJC
+TlT/ri2zehYTNtTnkRg=
+=zC7T
+-----END PGP SIGNATURE-----
+
+--CdrF4e02JqNVZeln--
