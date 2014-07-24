@@ -1,48 +1,62 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
-Date: Thu, 24 Jul 2014 16:18:05 +0530
-Message-ID: <CAKohpo=HKUkGRK4NX7E59z5QthcKbZKETB-DuP10xj3x+vdHaQ@mail.gmail.com>
-References: <cover.1404231535.git.viresh.kumar@linaro.org>
-	<20140717093518.486ac244@free-electrons.com>
-	<CAKohpokZXUzXKRWBje7QF_jrvOd5dmfmWQ2Csf3xiMuvT_vPYA@mail.gmail.com>
-	<2399813.Puj1SZWhCh@vostro.rjw.lan>
-	<CAKohpomKzK8pMJs1gv+uXxhd17HtCQyfjSnVYw9KpGz6FwbgDA@mail.gmail.com>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCHv3 2/7] ARM: mvebu: extend PMSU code to support dynamic
+ frequency scaling
+Date: Thu, 24 Jul 2014 07:11:00 -0400
+Message-ID: <20140724111100.GR23220@titan.lakedaemon.net>
+References: <1404920715-19834-1-git-send-email-thomas.petazzoni@free-electrons.com>
+ <1404920715-19834-3-git-send-email-thomas.petazzoni@free-electrons.com>
+ <20140723235026.6419.93364@quantum>
+ <20140724082902.0e64d454@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAKohpomKzK8pMJs1gv+uXxhd17HtCQyfjSnVYw9KpGz6FwbgDA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rob Herring <rob.herring-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lists linaro-kernel <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Thomas P Abraham <thomas.ab-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Arvind Chauhan <arvind.chauhan-5wv7dgnIgG8@public.gmane.org>, Sachin Kamat <spk.linux-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Michal Simek <michal.simek-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:32799 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758508AbaGXLLP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 07:11:15 -0400
+Content-Disposition: inline
+In-Reply-To: <20140724082902.0e64d454@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Mike Turquette <mturquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-On 18 July 2014 09:47, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->> Before I apply anything in this area, I need a clear statement from the ARM
->> people as a group on what the approach is going to be.
+On Thu, Jul 24, 2014 at 08:29:02AM +0200, Thomas Petazzoni wrote:
+> Dear Mike Turquette,
+> 
+> On Wed, 23 Jul 2014 16:50:26 -0700, Mike Turquette wrote:
+> 
+> > >  * registers the frequency operating points supported by the CPU;
+> > > 
+> > >  * registers a clock notifier of the CPU clocks. The notifier function
+> > 
+> > Where does this code register a clock notifier callback?
+> > 
+> > >    listens to the newly introduced APPLY_RATE_CHANGE event, and uses
+> > 
+> > I don't see APPLY_RATE_CHANGE referenced.
+> 
+> Yes, this is a mistake of the commit log, due to remains of the v2 of
+> the patch series. Back in the v2, there was indeed a new clock notifier
+> being used. But Stephen Boyd argued against that, and instead suggested
+> to use a direct function call, which this v3 implements, as stated in
+> the cover letter:
+> 
+>  - As suggested by Stephen Boyd, instead of using a new clock notifier
+>    that somewhat "hides" the dependency of the clk-cpu clock driver on
+>    the PMSU, use a direct call from the clk-cpu driver to the PMSU
+>    driver.
+> 
+> The commit log of this commit was not adjusted consequently, and this
+> is my fault. Jason, is it still time to change this commit log?
 
-@Rafael: The only patch which has blocked this set is:
+If there are no code changes, I'd prefer not to.  We're rather late in
+the game.
 
-cpufreq: cpu0: Extend support beyond CPU0
+Even though it's not ideal, the commit in question does have a Link: tag
+pointing at the patch email on which this conversation is based.  So a
+frustrated future developer won't be frustrated long. :)
 
-This is about finding which CPUs share clock line..
+thx,
 
-Other patches are sort of independent of this one and cpufreq-cpu0 would
-continue to work for existing platforms if we apply these patches.
-
-I was wondering if you would like to apply other patches leaving this one?
-I will then rebase stuff again and send non-controversial patches for 3.17.
-So, that we get something in 3.17 and the last change can be merged during
-rc's as well once we finalize on bindings..
-
-> Mike/Rob/Stephen: I believe Atleast three of you should express your views
-> now :)
-
-Any idea on how can we get some temporary solution for 3.17 as we didn't
-conclude anything yet on bindings ?
-
---
-viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Jason.
