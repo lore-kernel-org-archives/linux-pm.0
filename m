@@ -1,118 +1,48 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle: coupled: Enable interrupts when early returning
- on invalid driver
-Date: Thu, 24 Jul 2014 12:27:28 +0200
-Message-ID: <53D0DF90.3040307@linaro.org>
-References: <1406193999-20300-1-git-send-email-k.kozlowski@samsung.com> <53D0D348.406@linaro.org> <1406195191.21857.6.camel@AMDC1943>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC] cpufreq: Add bindings for CPU clock sharing topology
+Date: Thu, 24 Jul 2014 16:09:31 +0530
+Message-ID: <CAKohpo=CqhA-TOfJh3U0G+tEMqvn_tiyWK=Yd6yNdAoDYQ-1BA@mail.gmail.com>
+References: <7e097b71342c9f5f63b07ff2e135eb7beb626aab.1405661369.git.viresh.kumar@linaro.org>
+	<CAOesGMhTkTEXp99gpU8cZBwYmiXpsySG5zMn6oSyo_Mf5PAiUg@mail.gmail.com>
+	<CAKohpo=MmoALOHg-=7cf0jm=OJO57TWQZQXqkRwhRwU-DGPMmA@mail.gmail.com>
+	<CAOesGMhuNzVtUkaUjF+JjNgHcgf08WiM0DG-kzwtcyUxkK_zow@mail.gmail.com>
+	<CAKohpokLqrydV3b=innvOWrW9ijXtZwPKdT5Ew65cjMxsY2Mvw@mail.gmail.com>
+	<53CA8D95.8010108@ti.com>
+	<CAKohpok-C+JCebjJkZExx6EjBctoyJF7fV71Vjj7bi1TAdXrFQ@mail.gmail.com>
+	<20140724003314.6419.51564@quantum>
+	<CABGGisxHxdTyh500ey+KVLV3EnfYZvtsCV=Nt4Nqu7p6KJOwdA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1406195191.21857.6.camel@AMDC1943>
-Sender: stable-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Colin Cross <ccross@android.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, stable@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f46.google.com ([209.85.218.46]:59098 "EHLO
+	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752767AbaGXKjb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 06:39:31 -0400
+Received: by mail-oi0-f46.google.com with SMTP id i138so1873493oig.5
+        for <linux-pm@vger.kernel.org>; Thu, 24 Jul 2014 03:39:31 -0700 (PDT)
+In-Reply-To: <CABGGisxHxdTyh500ey+KVLV3EnfYZvtsCV=Nt4Nqu7p6KJOwdA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <rob.herring@linaro.org>
+Cc: Mike Turquette <mike.turquette@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Olof Johansson <olof@lixom.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Grant Likely <grant.likely@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>
 
-On 07/24/2014 11:46 AM, Krzysztof Kozlowski wrote:
-> On czw, 2014-07-24 at 11:35 +0200, Daniel Lezcano wrote:
->> On 07/24/2014 11:26 AM, Krzysztof Kozlowski wrote:
->>> cpuidle_enter_state is expected to return with interrupts enabled.
->>> However cpuidle_enter_state_coupled returned with interrupts disabl=
-ed if
->>> the cpuidle driver was registered without mask of coupled cpus.
->>
->> Hi Krzysztof,
->>
->> may be your patch is right but I would like to clarify one thing. Th=
-is
->> is the cpuidle driver for exynos. AFAICT, the coupled states shouldn=
-'t
->> be enabled for this driver, so how did you face this issue ?
->
-> I faced this on cpuidle drivers on both Exynos and MSM. But these wer=
-e
-> not mainline cpuidle drivers.
+On 24 July 2014 07:54, Rob Herring <rob.herring@linaro.org> wrote:
 
-Ok, I think the root problem is the FLAG_COUPLED is set for the state=20
-but without the cpumask. I don't think we should handle that in the=20
-enter_couple function but in the registering of the device and fail to=20
-register the driver/device if the informations are not properly set.
+>> A previous approach tried to compare struct clk pointers, which is a bad
+>> idea since those are just cookies and should not be deref'd by drivers.
+>> However a similar approach would be to compare the phandle, right?
 
-In this case, we know the sanity checks are done one time at the=20
-registering time and we don't need to do that each time when entering i=
-n=20
-the enter coupled function. Hence the "if (!coupled)" disappear and no=20
-need to re-enable the irq.
+Yeah. So what's the right way then?
 
+> I think there needs to be a way to query whether a rate change for a
+> clock affects other children. As pointed out previously, the clock to
+> a core may not be shared, but it's parent that can change rates could
+> be shared. This could be done with functions
+> clk_get_parent_rate_change to return the clock in heirarchy which can
+> change rates, and clk_is_parent_clk which tells if one clock is a
+> child of another clock. It's been a while since I've looked at the
+> clock api. It could also be done by experiment. Change the rate for
+> core 0 and see if core 1's rate is changed and still equal. There's
+> probably some ordering issue with doing that though.
 
->>> This could be observed as a warning:
->>> [    1.613132] ------------[ cut here ]------------
->>> [    1.613244] WARNING: CPU: 0 PID: 0 at kernel/sched/idle.c:175 cp=
-u_idle_loop+0x2dc/0x6d0()
->>> [    1.620268] Modules linked in:
->>> [    1.623311] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 3.16.0-rc4=
--00102-g7669ccdbf8af-dirty #81
->>> [    1.623619] dwmmc_exynos 12510000.mshc: 1 slots initialized
->>> [    1.624890] logger: created 256K log 'log_main'
->>> [    1.625483] logger: created 256K log 'log_events'
->>> [    1.626084] logger: created 256K log 'log_radio'
->>> [    1.626699] logger: created 256K log 'log_system'
->>> [    1.655960] [<c00167cc>] (unwind_backtrace) from [<c0012c28>] (s=
-how_stack+0x10/0x14)
->>> [    1.663679] [<c0012c28>] (show_stack) from [<c050ab00>] (dump_st=
-ack+0x70/0xbc)
->>> [    1.670883] [<c050ab00>] (dump_stack) from [<c0023ac8>] (warn_sl=
-owpath_common+0x68/0x8c)
->>> [    1.678954] [<c0023ac8>] (warn_slowpath_common) from [<c0023b08>=
-] (warn_slowpath_null+0x1c/0x24)
->>> [    1.687720] [<c0023b08>] (warn_slowpath_null) from [<c006ddd4>] =
-(cpu_idle_loop+0x2dc/0x6d0)
->>> [    1.696052] [<c006ddd4>] (cpu_idle_loop) from [<c006e1d4>] (cpup=
-ri_find+0x0/0xd4)
->>> [    1.703518] [<c006e1d4>] (cpupri_find) from [<c07cdd14>] (proces=
-sor_id+0x0/0x2c)
->>> [    1.710917] ---[ end trace a85327313857296e ]---
->>>
->>> Enable the interrupts also when early returning from
->>> cpuidle_enter_state_coupled due to invalid coupled configuration.
->>>
->>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->>> Fixes: 4126c0197bc8 ("cpuidle: add support for states that affect m=
-ultiple cpus")
->>> Cc: <stable@vger.kernel.org>
->>> ---
->>>    drivers/cpuidle/coupled.c | 4 +++-
->>>    1 file changed, 3 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
->>> index 73fe2f8d7f96..2b57c267e855 100644
->>> --- a/drivers/cpuidle/coupled.c
->>> +++ b/drivers/cpuidle/coupled.c
->>> @@ -463,8 +463,10 @@ int cpuidle_enter_state_coupled(struct cpuidle=
-_device *dev,
->>>    	struct cpuidle_coupled *coupled =3D dev->coupled;
->>>    	int w;
->>>
->>> -	if (!coupled)
->>> +	if (!coupled) {
->>> +		local_irq_enable();
->>>    		return -EINVAL;
->>> +	}
->>>
->>>    	while (coupled->prevent) {
->>>    		cpuidle_coupled_clear_pokes(dev->cpu);
->>>
->>
->>
->
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+But Mike sort of Nak'd that as well earlier :)
