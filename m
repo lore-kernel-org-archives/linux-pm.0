@@ -1,80 +1,58 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [PATCH RFC] suspend/hibernation: Fix racing timers
-Date: Thu, 24 Jul 2014 08:59:55 -0700
-Message-ID: <b125f213-6799-48bd-9e70-040287264948@BN1AFFO11FD033.protection.gbl>
-References: <1405964152-17865-1-git-send-email-soren.brinkmann@xilinx.com>
- <53D083C5.2000501@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Eduardo Valentin <eduardo.valentin@gmail.com>
+Subject: Re: [PATCH] thermal: of: look for sensor driver parent node if device node missing
+Date: Thu, 24 Jul 2014 12:38:15 -0400
+Message-ID: <4324757E-1D43-42E9-BC7C-A633A29E7782@gmail.com>
+References: <1405336354-31310-1-git-send-email-ldewangan@nvidia.com> <53D0D694.9040101@nvidia.com> <744357E9AAD1214791ACBA4B0B90926301396F53@SHSMSX101.ccr.corp.intel.com>
+Mime-Version: 1.0 (1.0)
+Content-Type: text/plain;
+	charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1blp0188.outbound.protection.outlook.com ([207.46.163.188]:36593
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932207AbaGXP77 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 24 Jul 2014 11:59:59 -0400
-Content-Disposition: inline
-In-Reply-To: <53D083C5.2000501@linaro.org>
+Received: from mail-oi0-f51.google.com ([209.85.218.51]:61670 "EHLO
+	mail-oi0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759448AbaGXQiT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 12:38:19 -0400
+In-Reply-To: <744357E9AAD1214791ACBA4B0B90926301396F53@SHSMSX101.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: Laxman Dewangan <ldewangan@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi John,
+Hello,
 
-On Wed, 2014-07-23 at 08:55PM -0700, John Stultz wrote:
-> On 07/21/2014 10:35 AM, Soren Brinkmann wrote:
-> > On platforms that do not power off during suspend, successfully ent=
-ering
-> > suspend races with timers.
-> >
-> > The race happening in a couple of location is:
-> >
-> >   1. disable IRQs 	(e.g. arch_suspend_disable_irqs())
-> >      ...
-> >   2. syscore_suspend()
-> >         -> tick_suspend() 	(timers are turned off here)
-> >      ...
-> >   3. wfi		(wait for wake-IRQ here)
-> >
-> > Between steps 1 and 2 the timers can still generate interrupts that=
- are
-> > not handled and stay pending until step 3. That pending IRQ causes =
-an
-> > immediate - spurious - wake.
-> >
-> > The solution is to remove the timekeeping suspend/resume functions =
-from
-> > the syscore functions and explictly call them at the appropriate ti=
-me in
-> > the suspend/hibernation patchs. I.e. timers are suspend _before_ IR=
-Qs
-> > get disabled. And accordingly in the resume path.
->=20
-> So.. I sort of follow this, though from the description disabling
-> timekeeping to turn off timers seems a little indirect (I do see that
-> suspending timekeeping calls clockevents_suspend() which is the key
-> part). Maybe this could be clarified in a future version of the patch
-> description?
->=20
-> I worry that moving timekeeping_suspend earlier in the suspend proces=
-s
-> might cause problems where things access time in the suspend path. I
-> recall these orderings have been problematic in the past, and slightl=
-y
-> tweaking them can often destabilize things badly.
+Perhaps you may have sent this email to the wrong Eduardo as I do not recognize the topic you are discussing.
 
-You're right. Just when I received this I started seeing some warning
-from the kernel due to ktime_get() called with timekeeping being
-suspended.
-Though, stability-wise it seems to work.
+Regards,
 
->=20
-> I wonder if it would be better just to move the clockevent_suspend()
-> call to the earlier site, that way timers are halted but timekeeping
-> continues until its normal suspend point.
+Sent from my iPhone
 
-I'll look into this and send out a patch once I have something working.
-
-	Thanks,
-	S=C3=B6ren
+> On Jul 24, 2014, at 11:15 AM, "Zhang, Rui" <rui.zhang@intel.com> wrote:
+> 
+> Hi, Laxman,
+> 
+> As Eduardo is the of thermal author and maintainer, I will take your patch only if you can get ACK from Eduardo.
+> 
+> Eduardo,
+> Do you have any comments on this?
+> 
+> Thanks,
+> rui
+> 
+>> -----Original Message-----
+>> From: Laxman Dewangan [mailto:ldewangan@nvidia.com]
+>> Sent: Thursday, July 24, 2014 5:49 PM
+>> To: Zhang, Rui; eduardo.valentin@ti.com
+>> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
+>> Subject: Re: [PATCH] thermal: of: look for sensor driver parent node if
+>> device node missing
+>> Importance: High
+>> 
+>>> On Monday 14 July 2014 04:42 PM, Laxman Dewangan wrote:
+>>> There are some mfd devices which supports junction thermal interrupt
+>>> like ams,AS3722. The DT binding of these devices are defined as the
+>>> flat and drivers for sub module of such devices are registered as the
+>>> mfd_add_devices. In this method, the sub devices registered as
+>>> platform driver and these do not have the of_node pointer on their
+>>> device structure. In this case, use the parent of_node pointer to get
+>>> the required of_node pointer.
+>> Any comment please?
