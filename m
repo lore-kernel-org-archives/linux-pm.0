@@ -1,54 +1,57 @@
 From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCHv3 2/7] ARM: mvebu: extend PMSU code to support dynamic
- frequency scaling
-Date: Thu, 24 Jul 2014 08:29:02 +0200
-Message-ID: <20140724082902.0e64d454@free-electrons.com>
+Subject: Re: [PATCHv3 3/7] clk: mvebu: extend clk-cpu for dynamic frequency
+ scaling
+Date: Thu, 24 Jul 2014 08:33:25 +0200
+Message-ID: <20140724083325.0c578091@free-electrons.com>
 References: <1404920715-19834-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<1404920715-19834-3-git-send-email-thomas.petazzoni@free-electrons.com>
-	<20140723235026.6419.93364@quantum>
+	<20140723235358.6419.26311@quantum>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:45745 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:45774 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751171AbaGXG3G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 02:29:06 -0400
-In-Reply-To: <20140723235026.6419.93364@quantum>
+	with ESMTP id S1751248AbaGXGd2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 02:33:28 -0400
+In-Reply-To: <20140723235358.6419.26311@quantum>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Cc: Thomas Petazzoni <mturquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, devicetree@vger.kernel.orgMike Turquette <mturquette@linaro.org>
 
-Dear Mike Turquette,
+Hello,
 
-On Wed, 23 Jul 2014 16:50:26 -0700, Mike Turquette wrote:
+(Not sure why this e-mail comes with me as the From:, but anyway.)
 
-> >  * registers the frequency operating points supported by the CPU;
-> > 
-> >  * registers a clock notifier of the CPU clocks. The notifier function
+On Wed, 23 Jul 2014 16:53:58 -0700, Thomas Petazzoni wrote:
+
+> +static int clk_cpu_set_rate(struct clk_hw *hwclk, unsigned long rate,
+> +                           unsigned long parent_rate)
+> +{
+> +       if (__clk_is_enabled(hwclk->clk))
+> +               return clk_cpu_on_set_rate(hwclk, rate, parent_rate);
+> +       else
+> +               return clk_cpu_off_set_rate(hwclk, rate, parent_rate);
 > 
-> Where does this code register a clock notifier callback?
-> 
-> >    listens to the newly introduced APPLY_RATE_CHANGE event, and uses
-> 
-> I don't see APPLY_RATE_CHANGE referenced.
+> This is racy. You don't hold the clk_enable lock so it could be enable
+> between the conditional check and executing clk_cpu_on_set_rate.
 
-Yes, this is a mistake of the commit log, due to remains of the v2 of
-the patch series. Back in the v2, there was indeed a new clock notifier
-being used. But Stephen Boyd argued against that, and instead suggested
-to use a direct function call, which this v3 implements, as stated in
-the cover letter:
+Right.
 
- - As suggested by Stephen Boyd, instead of using a new clock notifier
-   that somewhat "hides" the dependency of the clk-cpu clock driver on
-   the PMSU, use a direct call from the clk-cpu driver to the PMSU
-   driver.
+> How do you ensure that secondary CPU clocks are not enabled/disabled
+> when changing rates?
 
-The commit log of this commit was not adjusted consequently, and this
-is my fault. Jason, is it still time to change this commit log?
+In practice, this currently cannot happen: we enable the secondary CPU
+clocks before starting the secondary CPUs, and we never ever disable or
+re-enable again those clocks. So with the present code, I believe there
+is no problem. Even when we do CPU hotplug, we don't turn off the CPU
+clocks, simply because they cannot be turned off: the enable/disable
+state is only used here as an indication so that the clock driver knows
+which frequency change strategy it should apply.
 
-Best regards,
+But you're anyway right, I'll send a followup patch adding the lock.
+Would that be OK for you?
+
+Thanks,
 
 Thomas
 -- 
