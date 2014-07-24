@@ -1,77 +1,46 @@
-From: Rob Herring <rob.herring@linaro.org>
-Subject: Re: [RFC] cpufreq: Add bindings for CPU clock sharing topology
-Date: Wed, 23 Jul 2014 21:24:16 -0500
-Message-ID: <CABGGisxHxdTyh500ey+KVLV3EnfYZvtsCV=Nt4Nqu7p6KJOwdA@mail.gmail.com>
-References: <7e097b71342c9f5f63b07ff2e135eb7beb626aab.1405661369.git.viresh.kumar@linaro.org>
- <CAOesGMhTkTEXp99gpU8cZBwYmiXpsySG5zMn6oSyo_Mf5PAiUg@mail.gmail.com>
- <CAKohpo=MmoALOHg-=7cf0jm=OJO57TWQZQXqkRwhRwU-DGPMmA@mail.gmail.com>
- <CAOesGMhuNzVtUkaUjF+JjNgHcgf08WiM0DG-kzwtcyUxkK_zow@mail.gmail.com>
- <CAKohpokLqrydV3b=innvOWrW9ijXtZwPKdT5Ew65cjMxsY2Mvw@mail.gmail.com>
- <53CA8D95.8010108@ti.com> <CAKohpok-C+JCebjJkZExx6EjBctoyJF7fV71Vjj7bi1TAdXrFQ@mail.gmail.com>
- <20140724003314.6419.51564@quantum>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
+Date: Wed, 23 Jul 2014 20:02:15 -0700
+Message-ID: <53D07737.70904@codeaurora.org>
+References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org> <16164926.ZsJxe6UV3e@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f177.google.com ([209.85.217.177]:44522 "EHLO
-	mail-lb0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757811AbaGXCYi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 22:24:38 -0400
-Received: by mail-lb0-f177.google.com with SMTP id s7so1751541lbd.22
-        for <linux-pm@vger.kernel.org>; Wed, 23 Jul 2014 19:24:36 -0700 (PDT)
-In-Reply-To: <20140724003314.6419.51564@quantum>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <16164926.ZsJxe6UV3e@vostro.rjw.lan>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Todd Poynor <toddpoynor@google.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mike.turquette@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Olof Johansson <olof@lixom.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Grant Likely <grant.likely@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>
 
-On Wed, Jul 23, 2014 at 7:33 PM, Mike Turquette
-<mike.turquette@linaro.org> wrote:
-> Quoting Viresh Kumar (2014-07-20 05:07:32)
->> On 19 July 2014 20:54, Santosh Shilimkar <santosh.shilimkar@ti.com> wrote:
->> > Sorry for jumping late
+On 07/16/2014 03:02 PM, Rafael J. Wysocki wrote:
+> On Wednesday, July 09, 2014 07:37:30 PM Saravana Kannan wrote:
+>> Preliminary patch. Not tested. Just sending out to give an idea of what I'm
+>> looking to do. Expect a lot more simplification when it's done.
 >>
->> No, you aren't late. Its just 2 days old thread :)
->>
->> > but one of the point I was raising as part of your
->> > other series was to extend the CPU topology bindings to cover the voltage
->> > domain information which is probably what is really needed to let the
->> > CPUfreq extract the information. Not sure if it was already discussed.
->>
->> Not it wasn't.
->>
->> > After all the CPU clocks, cluster, clock-gating, power domains are pretty much
->> > related. So instead of having new binding for CPUFreq, I was wondering whether
->> > we can extend the CPU topology binding information to include missing information.
->> > Scheduler work anyway needs that information.
->> >
->> > Ref: Documentation/devicetree/bindings/arm/topology.txt
->> >
->> > Does that make sense ?
->>
->> Yeah it does, but I am not sure what exactly the bindings should look then.
->> So, the most basic step could be moving the new bindings to topology.txt
->> and name clock-master to dvfs-master.
->>
->> What else?
+>> Benefits:
+>> * A lot more simpler code.
+>> * Less stability issues.
+>> * Suspend/resume time would improve.
+>> * Hotplug time would improve.
+>> * Sysfs file permissions would be maintained.
+>> * More policy settings would be maintained across suspend/resume.
+>> * cpufreq stats would be maintained across hotplug for all CPUs.
 >
-> If we're going to model the hardware then the binding should not use the
-> CPU phandles in "clock-master" or "dvfs-master". The correct thing to
-> model for a given CPU is which clock consumes. It's not accurate to say
-> that one CPU is the "master", at least not in this context.
+> One problem.  The real hotplug (when the CPU actually goes away) depends on
+> offline removing all that stuff for it.  How are you going to address that?
 >
-> A previous approach tried to compare struct clk pointers, which is a bad
-> idea since those are just cookies and should not be deref'd by drivers.
-> However a similar approach would be to compare the phandle, right?
 
-I think there needs to be a way to query whether a rate change for a
-clock affects other children. As pointed out previously, the clock to
-a core may not be shared, but it's parent that can change rates could
-be shared. This could be done with functions
-clk_get_parent_rate_change to return the clock in heirarchy which can
-change rates, and clk_is_parent_clk which tells if one clock is a
-child of another clock. It's been a while since I've looked at the
-clock api. It could also be done by experiment. Change the rate for
-core 0 and see if core 1's rate is changed and still equal. There's
-probably some ordering issue with doing that though.
+Ok, I think I've figured this out. But one question. Is it possible to 
+physically remove one CPU in a bunch of "related cpus" without also 
+unplugging the rest? Put another way, can you unplug one core from a 
+cluster?
 
-Rob
+It's not too hard to support that too, but if it's not a realistic case, 
+I would rather not write code for that.
+
+-Saravana
+
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
