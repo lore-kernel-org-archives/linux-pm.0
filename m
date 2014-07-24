@@ -1,58 +1,23 @@
-From: Eduardo Valentin <eduardo.valentin@gmail.com>
-Subject: Re: [PATCH] thermal: of: look for sensor driver parent node if device node missing
-Date: Thu, 24 Jul 2014 12:38:15 -0400
-Message-ID: <4324757E-1D43-42E9-BC7C-A633A29E7782@gmail.com>
-References: <1405336354-31310-1-git-send-email-ldewangan@nvidia.com> <53D0D694.9040101@nvidia.com> <744357E9AAD1214791ACBA4B0B90926301396F53@SHSMSX101.ccr.corp.intel.com>
-Mime-Version: 1.0 (1.0)
-Content-Type: text/plain;
-	charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f51.google.com ([209.85.218.51]:61670 "EHLO
-	mail-oi0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759448AbaGXQiT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 12:38:19 -0400
-In-Reply-To: <744357E9AAD1214791ACBA4B0B90926301396F53@SHSMSX101.ccr.corp.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] PCI / PM: Make PCIe PME interrupts wake up from "freeze"
+ sleep state
+Date: Thu, 24 Jul 2014 19:13:20 +0200
+Message-ID: <20140724171320.GL3935@laptop>
+References: <12684812.i3F8JrYCl0@vostro.rjw.lan>
+ <20140724134241.GZ6758@twins.programming.kicks-ass.net>
+ <3655886.Ih7L6voqVK@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <3655886.Ih7L6voqVK@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: Laxman Dewangan <ldewangan@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hello,
+On Thu, Jul 24, 2014 at 05:36:28PM +0200, Rafael J. Wysocki wrote:
 
-Perhaps you may have sent this email to the wrong Eduardo as I do not recognize the topic you are discussing.
+> OK, so can you please test the updated patch below?
 
-Regards,
-
-Sent from my iPhone
-
-> On Jul 24, 2014, at 11:15 AM, "Zhang, Rui" <rui.zhang@intel.com> wrote:
-> 
-> Hi, Laxman,
-> 
-> As Eduardo is the of thermal author and maintainer, I will take your patch only if you can get ACK from Eduardo.
-> 
-> Eduardo,
-> Do you have any comments on this?
-> 
-> Thanks,
-> rui
-> 
->> -----Original Message-----
->> From: Laxman Dewangan [mailto:ldewangan@nvidia.com]
->> Sent: Thursday, July 24, 2014 5:49 PM
->> To: Zhang, Rui; eduardo.valentin@ti.com
->> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
->> Subject: Re: [PATCH] thermal: of: look for sensor driver parent node if
->> device node missing
->> Importance: High
->> 
->>> On Monday 14 July 2014 04:42 PM, Laxman Dewangan wrote:
->>> There are some mfd devices which supports junction thermal interrupt
->>> like ams,AS3722. The DT binding of these devices are defined as the
->>> flat and drivers for sub module of such devices are registered as the
->>> mfd_add_devices. In this method, the sub devices registered as
->>> platform driver and these do not have the of_node pointer on their
->>> device structure. In this case, use the parent of_node pointer to get
->>> the required of_node pointer.
->> Any comment please?
+Rejoyce, it works! ;-)
