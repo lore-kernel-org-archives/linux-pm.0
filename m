@@ -1,61 +1,33 @@
-From: John Stultz <john.stultz@linaro.org>
-Subject: Re: [PATCH RFC] suspend/hibernation: Fix racing timers
-Date: Wed, 23 Jul 2014 20:55:49 -0700
-Message-ID: <53D083C5.2000501@linaro.org>
-References: <1405964152-17865-1-git-send-email-soren.brinkmann@xilinx.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
+Date: Thu, 24 Jul 2014 10:34:58 +0530
+Message-ID: <CAKohpokynnTttD7Wbq8uBB4SXK9xFEBdRJ2ozhMQscyvq69xRw@mail.gmail.com>
+References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org>
+	<16164926.ZsJxe6UV3e@vostro.rjw.lan>
+	<53D07737.70904@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:33753 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934053AbaGXDzw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 23:55:52 -0400
-Received: by mail-pd0-f180.google.com with SMTP id y13so2825443pdi.11
-        for <linux-pm@vger.kernel.org>; Wed, 23 Jul 2014 20:55:52 -0700 (PDT)
-In-Reply-To: <1405964152-17865-1-git-send-email-soren.brinkmann@xilinx.com>
+Received: from mail-oi0-f48.google.com ([209.85.218.48]:41972 "EHLO
+	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934044AbaGXFE7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 01:04:59 -0400
+Received: by mail-oi0-f48.google.com with SMTP id h136so1635400oig.7
+        for <linux-pm@vger.kernel.org>; Wed, 23 Jul 2014 22:04:59 -0700 (PDT)
+In-Reply-To: <53D07737.70904@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Soren Brinkmann <soren.brinkmann@xilinx.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 07/21/2014 10:35 AM, Soren Brinkmann wrote:
-> On platforms that do not power off during suspend, successfully entering
-> suspend races with timers.
->
-> The race happening in a couple of location is:
->
->   1. disable IRQs 	(e.g. arch_suspend_disable_irqs())
->      ...
->   2. syscore_suspend()
->         -> tick_suspend() 	(timers are turned off here)
->      ...
->   3. wfi		(wait for wake-IRQ here)
->
-> Between steps 1 and 2 the timers can still generate interrupts that are
-> not handled and stay pending until step 3. That pending IRQ causes an
-> immediate - spurious - wake.
->
-> The solution is to remove the timekeeping suspend/resume functions from
-> the syscore functions and explictly call them at the appropriate time in
-> the suspend/hibernation patchs. I.e. timers are suspend _before_ IRQs
-> get disabled. And accordingly in the resume path.
+On 24 July 2014 08:32, Saravana Kannan <skannan@codeaurora.org> wrote:
+> Ok, I think I've figured this out. But one question. Is it possible to
+> physically remove one CPU in a bunch of "related cpus" without also
+> unplugging the rest? Put another way, can you unplug one core from a
+> cluster?
 
-So.. I sort of follow this, though from the description disabling
-timekeeping to turn off timers seems a little indirect (I do see that
-suspending timekeeping calls clockevents_suspend() which is the key
-part). Maybe this could be clarified in a future version of the patch
-description?
+Are we talking about doing this here:
 
-I worry that moving timekeeping_suspend earlier in the suspend process
-might cause problems where things access time in the suspend path. I
-recall these orderings have been problematic in the past, and slightly
-tweaking them can often destabilize things badly.
+echo 0 > /sys/devices/system/cpu/cpuX/online      ??
 
-I wonder if it would be better just to move the clockevent_suspend()
-call to the earlier site, that way timers are halted but timekeeping
-continues until its normal suspend point.
-
-thanks
--john
-
+If yes, then what's the confusion all about? Yes we do it all the time.
