@@ -1,68 +1,83 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: PROBLEM: Kernel OOPS and possible system freeze after concurrent
- writing to cpufreq/scaling_governor (Resend)
-Date: Thu, 24 Jul 2014 15:12:54 +0530
-Message-ID: <CAKohpomo_Qoc-ioC-L-n6z19SLMgCfzebec7pqkq9y86gt61HA@mail.gmail.com>
-References: <1405522398.2348.42.camel@x200t>
-	<1406185912.2406.3.camel@x200t>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH] cpuidle: coupled: Enable interrupts when early returning
+ on invalid driver
+Date: Thu, 24 Jul 2014 11:46:31 +0200
+Message-ID: <1406195191.21857.6.camel@AMDC1943>
+References: <1406193999-20300-1-git-send-email-k.kozlowski@samsung.com>
+ <53D0D348.406@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f42.google.com ([209.85.219.42]:44279 "EHLO
-	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756727AbaGXJmz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 05:42:55 -0400
-Received: by mail-oa0-f42.google.com with SMTP id n16so3317662oag.1
-        for <linux-pm@vger.kernel.org>; Thu, 24 Jul 2014 02:42:54 -0700 (PDT)
-In-Reply-To: <1406185912.2406.3.camel@x200t>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <53D0D348.406@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Colin Cross <ccross@android.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 24 July 2014 12:41, Robert Sch=C3=B6ne <robert.schoene@tu-dresden.de=
-> wrote:
-> (Resend, because there hasn't been a reply within the last week)
+On czw, 2014-07-24 at 11:35 +0200, Daniel Lezcano wrote:
+> On 07/24/2014 11:26 AM, Krzysztof Kozlowski wrote:
+> > cpuidle_enter_state is expected to return with interrupts enabled.
+> > However cpuidle_enter_state_coupled returned with interrupts disabled if
+> > the cpuidle driver was registered without mask of coupled cpus.
+> 
+> Hi Krzysztof,
+> 
+> may be your patch is right but I would like to clarify one thing. This 
+> is the cpuidle driver for exynos. AFAICT, the coupled states shouldn't 
+> be enabled for this driver, so how did you face this issue ?
 
-How did I miss it? Yes its in my inbox. Sorry buddy..
+I faced this on cpuidle drivers on both Exynos and MSM. But these were
+not mainline cpuidle drivers.
 
-> crash_governor.sh:
-> #!/bin/sh
-> # this is called concurrently via runme.sh
-> for I in `seq 1000`
-> do
->         echo ondemand | sudo tee /sys/devices/system/cpu/cpu*/cpufreq=
-/scaling_governor
->         echo userspace | sudo tee /sys/devices/system/cpu/cpu*/cpufre=
-q/scaling_governor
-> done
->
-> runme.sh:
-> #!/bin/sh
-> # run 8 concurrent instances
-> for I in `seq 8`
-> do
->         ./crash_governor.sh &
-> done
->
-> Just run runme.sh and crash your system :)
+Best regards,
+Krzysztof
 
-Oh, yes. Quite easily I could see that happening :)
-
-I have pushed a fix earlier for similar issues:
-19c7630 cpufreq: serialize calls to __cpufreq_governor()
-
-but was later reverted by Srivatsa:
-56d07db cpufreq: Remove temporary fix for race between CPU hotplug and
-sysfs-writes
-
-because we didn't thought about this usecase.
-
-I propose we get that back. I have tested a revert of 56d07db on
-my setup and didn't see any crash..
-
-Please see if that works for you as well..
-
---
-viresh
+> > This could be observed as a warning:
+> > [    1.613132] ------------[ cut here ]------------
+> > [    1.613244] WARNING: CPU: 0 PID: 0 at kernel/sched/idle.c:175 cpu_idle_loop+0x2dc/0x6d0()
+> > [    1.620268] Modules linked in:
+> > [    1.623311] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 3.16.0-rc4-00102-g7669ccdbf8af-dirty #81
+> > [    1.623619] dwmmc_exynos 12510000.mshc: 1 slots initialized
+> > [    1.624890] logger: created 256K log 'log_main'
+> > [    1.625483] logger: created 256K log 'log_events'
+> > [    1.626084] logger: created 256K log 'log_radio'
+> > [    1.626699] logger: created 256K log 'log_system'
+> > [    1.655960] [<c00167cc>] (unwind_backtrace) from [<c0012c28>] (show_stack+0x10/0x14)
+> > [    1.663679] [<c0012c28>] (show_stack) from [<c050ab00>] (dump_stack+0x70/0xbc)
+> > [    1.670883] [<c050ab00>] (dump_stack) from [<c0023ac8>] (warn_slowpath_common+0x68/0x8c)
+> > [    1.678954] [<c0023ac8>] (warn_slowpath_common) from [<c0023b08>] (warn_slowpath_null+0x1c/0x24)
+> > [    1.687720] [<c0023b08>] (warn_slowpath_null) from [<c006ddd4>] (cpu_idle_loop+0x2dc/0x6d0)
+> > [    1.696052] [<c006ddd4>] (cpu_idle_loop) from [<c006e1d4>] (cpupri_find+0x0/0xd4)
+> > [    1.703518] [<c006e1d4>] (cpupri_find) from [<c07cdd14>] (processor_id+0x0/0x2c)
+> > [    1.710917] ---[ end trace a85327313857296e ]---
+> >
+> > Enable the interrupts also when early returning from
+> > cpuidle_enter_state_coupled due to invalid coupled configuration.
+> >
+> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > Fixes: 4126c0197bc8 ("cpuidle: add support for states that affect multiple cpus")
+> > Cc: <stable@vger.kernel.org>
+> > ---
+> >   drivers/cpuidle/coupled.c | 4 +++-
+> >   1 file changed, 3 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+> > index 73fe2f8d7f96..2b57c267e855 100644
+> > --- a/drivers/cpuidle/coupled.c
+> > +++ b/drivers/cpuidle/coupled.c
+> > @@ -463,8 +463,10 @@ int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
+> >   	struct cpuidle_coupled *coupled = dev->coupled;
+> >   	int w;
+> >
+> > -	if (!coupled)
+> > +	if (!coupled) {
+> > +		local_irq_enable();
+> >   		return -EINVAL;
+> > +	}
+> >
+> >   	while (coupled->prevent) {
+> >   		cpuidle_coupled_clear_pokes(dev->cpu);
+> >
+> 
+> 
