@@ -1,112 +1,96 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] PCI / PM: Make PCIe PME interrupts wake up from "freeze"
- sleep state
-Date: Thu, 24 Jul 2014 15:42:41 +0200
-Message-ID: <20140724134241.GZ6758@twins.programming.kicks-ass.net>
-References: <12684812.i3F8JrYCl0@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFCv2 PATCH 01/23] sched: Documentation for scheduler energy cost model
+Date: Thu, 24 Jul 2014 16:28:27 +0200
+Message-ID: <14224056.9QdYi5f1q1@vostro.rjw.lan>
+References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com> <3288345.jvzVvqTJvD@vostro.rjw.lan> <20140724072609.GI3935@laptop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="pA3GpxlsFRhNUARh"
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <12684812.i3F8JrYCl0@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:62382 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758890AbaGXOKB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 10:10:01 -0400
+In-Reply-To: <20140724072609.GI3935@laptop>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Morten Rasmussen <morten.rasmussen@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@kernel.org, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, preeti@linux.vnet.ibm.com, Dietmar.Eggemann@arm.com, pjt@google.com
 
+On Thursday, July 24, 2014 09:26:09 AM Peter Zijlstra wrote:
+> On Thu, Jul 24, 2014 at 02:53:20AM +0200, Rafael J. Wysocki wrote:
+> > I am used to slightly different terminology here.  Namely, there are voltage
+> > domains (parts sharing a voltage rail or a voltage regulator, such that you
+> > can only apply/remove/change voltage to all of them at the same time) and clock
+> > domains (analogously, but for clocks).  A power domain (which in your description
+> > above seems to correspond to a voltage domain) may be a voltage domain, a clock
+> > domain or a combination thereof.
+> > 
+> > In addition to that, in a voltage domain it may be possible to apply many
+> > different levels of voltage, which case doesn't seem to be covered at all by
+> > the above (or I'm missing something).
+> > 
+> > Also a P-state is not just a frequency level, but a combination of frequency
+> > and voltage that has to be applied for that frequency to be stable.  You may
+> > regard them as Operation Performance Points of the CPU, but that very well may
+> > go beyond frequencies and voltages.  Thus it actually is better not to talk
+> > about P-states as "frequencies".
+> > 
+> > Now, P-states may or may not have to be coordinated between all CPUs in a
+> > package (cluster), by hardware or software, such that all CPUs in a cluster
+> > need to be kept in the same P-state.  That you can regard as a "P-state
+> > domain", but it usually means a specific combination of voltage and frequency.
+> 
+> I think Morton is aware of this, but for the sake of sanity dropped the
+> whole lot into something simpler (while hoping reality would not ruin
+> his life).
+> 
+> > C-states in turn are states in which CPUs don't execute instructions.
+> > That need not mean the removal of voltage or even frequency from them.
+> > Of course, they do mean some sort of power draw reduction, but that may
+> > be achieved in many different ways.  Some C-states require coordination
+> > too (for example, a single C-state may apply to a whole package or cluster
+> > at the same time) and you can think about "domains" here too, but there
+> > need not be a direct mapping to physical parameters such as the frequency
+> > or the voltage.
+> 
+> One thing that wasn't clear to me is if you allow for C-domain and
+> P-domain to overlap or if they're always inclusive (where one is wholly
+> contained in the other).
 
---pA3GpxlsFRhNUARh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On the CPUs I worked with so far they were always inclusive.  Previously, the
+whole package was a P-state domain.  Today some CPUs (Haswell server chips
+for example) have per-core P-states.
 
-On Wed, Jul 23, 2014 at 10:46:26PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> The "freeze" sleep state, also known as suspend-to-idle, is entered
-> without taking nonboot CPUs offline, right after devices have been
-> suspended.  It works by waiting for at least one wakeup source object
-> to become "active" as a result of handling a hardware interrupt.
->=20
-> Of course, interrupts supposed to be able to wake up the system from
-> suspend-to-idle cannot be disabled by suspend_device_irqs() and their
-> interrupt handlers must be able to cope with interrupts coming after
-> all devices have been suspended.  In that case, they only need to
-> call __pm_wakeup_event() for a single wakeup source object without
-> trying to access hardware (that will be resumed later as part of
-> the subsequent system resume).
->=20
-> Make PCIe PME interrupts work this way.
->=20
-> Register an additional wakeup source object for each PCIe PME
-> service device.  That object will be used to generate wakeups from
-> suspend-to-idle.
->=20
-> Add IRQF_NO_SUSPEND to PME interrupt flags.  This will make
-> suspend_device_irqs() to ignore PME interrupts, but that's OK,
-> because the PME interrupt handler is suspend-aware anyway and
-> can cope with interrupts coming during system suspend-resume.
->=20
-> For each PCIe port with PME service during the "prepare" phase of
-> system suspend walk the bus below it and see if any devices on that
-> bus are configured for wakeup.  If so, mark the port as one that can
-> be used for system wakeup signaling and handle it differenty going
-> forward.
->=20
-> Namely, while suspending its PME service, do not disable the PME
-> interrupt, but only set a "suspended" flag for the PME service to
-> make the interrupt handler behave in a special way, which is to call
-> __pm_wakeup_event() with the service's wakeup source object as the
-> first argument whenever the interrupt is triggered.
->=20
-> The "suspended" flag is cleared while resuming the PME service and
-> the "wakeup" flag is cleared at the "complete" stage of system
-> resume.
->=20
-> This change allows Wake-on-LAN to be used for wakeup from
-> suspend-to-idle on my MSI Wind tesbed netbook.
->=20
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
+> > Moreover, P-states and C-states may overlap.  That is, a CPU may be in Px
+> > and Cy at the same time, which means that after leaving Cy it will execute
+> > instructions in Px.  Things like leakage may depend on x in that case and
+> > the total power draw may depend on the combination of x and y.
+> 
+> Right, and I suppose the domain thing makes it impossible to drop to the
+> lowest P state on going idle. Tricky that.
 
-> -	ret =3D request_irq(srv->irq, pcie_pme_irq, IRQF_SHARED, "PCIe PME", sr=
-v);
-> +	ret =3D request_irq(srv->irq, pcie_pme_irq, IRQF_SHARED | IRQF_NO_SUSPE=
-ND,
-> +			  "PCIe PME", srv);
+That's the case for older chips.  I'm not sure about the newest lot entirely
+to be honest, need to ask.
 
-So with this patch on:
+> > The concern is that if a scaling governor is running in parallel with the above
+> > algorithm and it has its own utilization goal (it usually does), it may change
+> > the P-state under you to match that utilization goal and you'll end up with
+> > something different from what you expected.
+> > 
+> > That may be addressed either by trying to predict what the scaling governor will
+> > do (and good luck with that) or by taking care of P-states by yourself.  The
+> > latter would require changes to the algorithm I think, though.
+> 
+> The idea was that we'll do P states ourselves based on these utilization
+> figures. If we find we cannot fit the 'new' task into the current set
+> without either raising P or waking an idle cpu (if at all available), we
+> compute the cost of either option and pick the cheapest.
 
-  http://marc.info/?l=3Dlinux-kernel&m=3D140620918218199
+Yeah.  One subtle thing is that ramping up P may affect the other guys
+(if the whole chip is a P-domain, for example), but I guess that can be
+taken into account.
 
-This will not work on my machine, because aerdrv is requesting the same
-irq.
-
-Now I've not a f'cking clue what aerdrv is, and whether it too wants
-NO_SUSPEND on or not.
-
-But if I make it also request NO_SUSPEND it all starts working.
-
---pA3GpxlsFRhNUARh
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJT0Q1RAAoJEHZH4aRLwOS6Js0QAK0M1pt+tZBZdosexF3cngC3
-23DE6c7i2kKjRIl7bmL849y5RwCfQPaJ5ZjPaCaOav4jbRcQ63slzFjM+yLuaGB7
-M4Bbd5uLneGcJ9b0lbAD5vDRbvQ36mV1rnS1yiOXY27YfVsYNtKjz0oJ790XFupf
-PqUvnlOkq2OxTBccxfL9n6UtvoLJuNJ4ypN9P1i10k+vcmUNfYxwe01so2vuaMgX
-xtIGi3ZxlXH1C+Gt3j0OfCmki3xFZY6qn/LqPw6zCikg48BG5ZRwdh8F8G6vIF2c
-oUSMGmO903yUfh86Q4l7RXp2HFAYGXF4m9fW7yN/2hvFg1CBXixZIC9WIkYIGe82
-4c7fxTUGB5gP+zFwjQjvSEf1FuDgsjmmw4vi1xsM2U96k7eUnlFjAcCIbY1kNCbp
-I1+npim6PlALwMU5BUbtIRUwJCD9iBeiTWtb5Hyhe55eVeIzHXvE6vkIhLxj1a0f
-6uqEmRDdbpFPdhlOQoWjoQKlWbp9BbZWKjOhEOUztnE6TY9oC0VQUSO/czvZmkpN
-n2op85Mn6jhDbb6M7sD8R8MupBxRMU6gdnWXSpxIMqYkybzamzQO2WUG4RiGzn0I
-QRyv56IgeDn5uR6W2cCvbJTVCPpZyCftBvlccWxP3Z6bXar2AuEqPWv3P5qojTYJ
-U5vXIGEch1As71qgtuim
-=ngW2
------END PGP SIGNATURE-----
-
---pA3GpxlsFRhNUARh--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
