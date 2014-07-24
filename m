@@ -1,21 +1,21 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
-Date: Fri, 25 Jul 2014 00:02:34 +0200
-Message-ID: <108195247.B5bmKnnP6H@vostro.rjw.lan>
+Date: Fri, 25 Jul 2014 01:10:36 +0200
+Message-ID: <13290270.IfKaUSRMLR@vostro.rjw.lan>
 References: <20140724212620.GO3935@laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56899 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:63876 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S934176AbaGXVoJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 17:44:09 -0400
+	with SMTP id S1759740AbaGXWwM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 18:52:12 -0400
 In-Reply-To: <20140724212620.GO3935@laptop>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
 On Thursday, July 24, 2014 11:26:20 PM Peter Zijlstra wrote:
 > Subject: irq: Rework IRQF_NO_SUSPENDED
@@ -48,12 +48,36 @@ On Thursday, July 24, 2014 11:26:20 PM Peter Zijlstra wrote:
 > There is still enable_irq_wake()/IRQD_WAKEUP_STATE that tries to serve
 > a similar purpose but is equially wrecked for shared interrupts,
 > ideally this would be removed.
-> 
+
+Let me comment about this particular thing.
+
+I had a discussion with Dmitry about that and his argument was that
+enable_irq_wake() should imply IRQF_NO_SUSPEND, because drivers that
+set up interrupts for system wakeup should expect those interrupts to
+trigger at any time, including system suspend.  Hence the patch that
+added the IRQD_WAKEUP_STATE check to __disable_irq().
+
+However, in the face of the problem that is being addressed here I'm
+not really sure that this argument is valid, because if the driver
+calling enable_irq_wake() is sharing the IRQ with another one, the
+other driver may not actually know that the IRQ will be a wakeup one
+and still may not expect interrupts to come to it during system
+suspend/resume.
+
+Yes, drivers using enable_irq_wake() will likely want IRQF_NO_SUSPEND to
+be set for their irqactions, but that should not imply "no suspend" for
+all irqactions sharing the same desc.  So I guess it may be better to go
+forth and use a global "interrupts suspended" state variable instead of the
+IRQS_SUSPENDED flag for each desc and throw away the IRQD_WAKEUP_STATE
+check from suspend_device_irqs() entirely.
+
+Peter, it looks like you'd prefer that?
+
+Rafael
+
+
 > Cc: rjw@rjwysocki.net
 > Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-
-Acked-by: Rafael J. Wysocki <rjw@rjwysocki.net>
-
 > ---
 >  kernel/irq/chip.c      |    4 +---
 >  kernel/irq/handle.c    |   24 +++++++++++++++++++++---
