@@ -1,43 +1,226 @@
-From: skannan@codeaurora.org
-Subject: Re: [PATCH] cpufreq: Don't destroy/realloc policy/sysfs on
- hotplug/suspend
-Date: Thu, 24 Jul 2014 09:12:13 -0000
-Message-ID: <ca2398ca40725bf3b1b258ab3707970e.squirrel@www.codeaurora.org>
-References: <1404959850-11617-1-git-send-email-skannan@codeaurora.org>
-    <16164926.ZsJxe6UV3e@vostro.rjw.lan> <53D07737.70904@codeaurora.org>
-    <CAKohpokynnTttD7Wbq8uBB4SXK9xFEBdRJ2ozhMQscyvq69xRw@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCHv3 11/16] cpuidle: mvebu: rename the driver from armada-370-xp
+ to mvebu-v7
+Date: Thu, 24 Jul 2014 11:15:15 +0200
+Message-ID: <53D0CEA3.1050204@linaro.org>
+References: <1406120453-29291-1-git-send-email-thomas.petazzoni@free-electrons.com> <1406120453-29291-12-git-send-email-thomas.petazzoni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:33619 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751509AbaGXJMO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 05:12:14 -0400
-In-Reply-To: <CAKohpokynnTttD7Wbq8uBB4SXK9xFEBdRJ2ozhMQscyvq69xRw@mail.gmail.com>
+Received: from mail-wg0-f46.google.com ([74.125.82.46]:44487 "EHLO
+	mail-wg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797AbaGXJPR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 05:15:17 -0400
+Received: by mail-wg0-f46.google.com with SMTP id m15so2384643wgh.17
+        for <linux-pm@vger.kernel.org>; Thu, 24 Jul 2014 02:15:15 -0700 (PDT)
+In-Reply-To: <1406120453-29291-12-git-send-email-thomas.petazzoni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>
+Cc: Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+
+On 07/23/2014 03:00 PM, Thomas Petazzoni wrote:
+> From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+>
+> This driver will be able to manage the cpuidle for more SoCs than jus=
+t
+> Armada 370 and XP. It will also support Armada 38x and potentially
+> other SoC of the Marvell Armada EBU family. To take this into account=
+,
+> this patch renames the driver and its symbols.
+>
+> It also changes the driver name from cpuidle-armada-370-xp to
+> cpuidle-armada-xp, because separate platform drivers will be
+> registered for the other SoC types. This change must be done
+> simultaneously in the cpuidle driver and in the PMSU code in order to
+> remain bisectable.
+>
+> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+> ---
+>   arch/arm/mach-mvebu/pmsu.c                         |  2 +-
+>   drivers/cpuidle/Kconfig.arm                        | 12 +++----
+>   drivers/cpuidle/Makefile                           |  2 +-
+>   ...{cpuidle-armada-370-xp.c =3D> cpuidle-mvebu-v7.c} | 39 +++++++++=
+++-----------
+>   4 files changed, 27 insertions(+), 28 deletions(-)
+>   rename drivers/cpuidle/{cpuidle-armada-370-xp.c =3D> cpuidle-mvebu-=
+v7.c} (58%)
+>
+> diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
+> index 15e67bf..0cd2d09 100644
+> --- a/arch/arm/mach-mvebu/pmsu.c
+> +++ b/arch/arm/mach-mvebu/pmsu.c
+> @@ -76,7 +76,7 @@ extern void armada_370_xp_cpu_resume(void);
+>   static void *mvebu_cpu_resume;
+>
+>   static struct platform_device mvebu_v7_cpuidle_device =3D {
+> -	.name =3D "cpuidle-armada-370-xp",
+> +	.name =3D "cpuidle-armada-xp",
+>   };
+>
+>   static struct of_device_id of_pmsu_table[] =3D {
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
+m
+> index b6d69e8..a563427 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -1,12 +1,6 @@
+>   #
+>   # ARM CPU Idle drivers
+>   #
+> -config ARM_ARMADA_370_XP_CPUIDLE
+> -	bool "CPU Idle Driver for Armada 370/XP family processors"
+> -	depends on ARCH_MVEBU
+> -	help
+> -	  Select this to enable cpuidle on Armada 370/XP processors.
+> -
+>   config ARM_BIG_LITTLE_CPUIDLE
+>   	bool "Support for ARM big.LITTLE processors"
+>   	depends on ARCH_VEXPRESS_TC2_PM
+> @@ -61,3 +55,9 @@ config ARM_EXYNOS_CPUIDLE
+>   	depends on ARCH_EXYNOS
+>   	help
+>   	  Select this to enable cpuidle for Exynos processors
+> +
+> +config ARM_MVEBU_V7_CPUIDLE
+> +	bool "CPU Idle Driver for mvebu v7 family processors"
+> +	depends on ARCH_MVEBU
+> +	help
+> +	  Select this to enable cpuidle on Armada 370, 38x and XP processor=
+s.
+> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+> index d8bb1ff..11edb31 100644
+> --- a/drivers/cpuidle/Makefile
+> +++ b/drivers/cpuidle/Makefile
+> @@ -7,7 +7,7 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) +=3D couple=
+d.o
+>
+>   ###################################################################=
+###############
+>   # ARM SoC drivers
+> -obj-$(CONFIG_ARM_ARMADA_370_XP_CPUIDLE) +=3D cpuidle-armada-370-xp.o
+> +obj-$(CONFIG_ARM_MVEBU_V7_CPUIDLE) +=3D cpuidle-mvebu-v7.o
+>   obj-$(CONFIG_ARM_BIG_LITTLE_CPUIDLE)	+=3D cpuidle-big_little.o
+>   obj-$(CONFIG_ARM_CLPS711X_CPUIDLE)	+=3D cpuidle-clps711x.o
+>   obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+=3D cpuidle-calxeda.o
+> diff --git a/drivers/cpuidle/cpuidle-armada-370-xp.c b/drivers/cpuidl=
+e/cpuidle-mvebu-v7.c
+> similarity index 58%
+> rename from drivers/cpuidle/cpuidle-armada-370-xp.c
+> rename to drivers/cpuidle/cpuidle-mvebu-v7.c
+> index 28587d0..7252fd8 100644
+> --- a/drivers/cpuidle/cpuidle-armada-370-xp.c
+> +++ b/drivers/cpuidle/cpuidle-mvebu-v7.c
+> @@ -21,12 +21,11 @@
+>   #include <linux/platform_device.h>
+>   #include <asm/cpuidle.h>
+>
+> -#define ARMADA_370_XP_MAX_STATES	3
+> -#define ARMADA_370_XP_FLAG_DEEP_IDLE	0x10000
+> +#define MVEBU_V7_FLAG_DEEP_IDLE	0x10000
+>
+> -static int (*armada_370_xp_cpu_suspend)(int);
+> +static int (*mvebu_v7_cpu_suspend)(int);
+>
+> -static int armada_370_xp_enter_idle(struct cpuidle_device *dev,
+> +static int mvebu_v7_enter_idle(struct cpuidle_device *dev,
+>   				struct cpuidle_driver *drv,
+>   				int index)
+>   {
+> @@ -34,10 +33,10 @@ static int armada_370_xp_enter_idle(struct cpuidl=
+e_device *dev,
+>   	bool deepidle =3D false;
+>   	cpu_pm_enter();
+>
+> -	if (drv->states[index].flags & ARMADA_370_XP_FLAG_DEEP_IDLE)
+> +	if (drv->states[index].flags & MVEBU_V7_FLAG_DEEP_IDLE)
+>   		deepidle =3D true;
+>
+> -	ret =3D armada_370_xp_cpu_suspend(deepidle);
+> +	ret =3D mvebu_v7_cpu_suspend(deepidle);
+>   	if (ret)
+>   		return ret;
+>
+> @@ -46,11 +45,11 @@ static int armada_370_xp_enter_idle(struct cpuidl=
+e_device *dev,
+>   	return index;
+>   }
+>
+> -static struct cpuidle_driver armada_370_xp_idle_driver =3D {
+> -	.name			=3D "armada_370_xp_idle",
+> +static struct cpuidle_driver armadaxp_idle_driver =3D {
+> +	.name			=3D "armada_xp_idle",
+>   	.states[0]		=3D ARM_CPUIDLE_WFI_STATE,
+>   	.states[1]		=3D {
+> -		.enter			=3D armada_370_xp_enter_idle,
+> +		.enter			=3D mvebu_v7_enter_idle,
+>   		.exit_latency		=3D 10,
+>   		.power_usage		=3D 50,
+>   		.target_residency	=3D 100,
+> @@ -59,35 +58,35 @@ static struct cpuidle_driver armada_370_xp_idle_d=
+river =3D {
+>   		.desc			=3D "CPU power down",
+>   	},
+>   	.states[2]		=3D {
+> -		.enter			=3D armada_370_xp_enter_idle,
+> +		.enter			=3D mvebu_v7_enter_idle,
+>   		.exit_latency		=3D 100,
+>   		.power_usage		=3D 5,
+>   		.target_residency	=3D 1000,
+>   		.flags			=3D CPUIDLE_FLAG_TIME_VALID |
+> -						ARMADA_370_XP_FLAG_DEEP_IDLE,
+> +						MVEBU_V7_FLAG_DEEP_IDLE,
+>   		.name			=3D "MV CPU DEEP IDLE",
+>   		.desc			=3D "CPU and L2 Fabric power down",
+>   	},
+> -	.state_count =3D ARMADA_370_XP_MAX_STATES,
+> +	.state_count =3D 3,
+>   };
+>
+> -static int armada_370_xp_cpuidle_probe(struct platform_device *pdev)
+> +static int mvebu_v7_cpuidle_probe(struct platform_device *pdev)
+>   {
+>
+> -	armada_370_xp_cpu_suspend =3D (void *)(pdev->dev.platform_data);
+> -	return cpuidle_register(&armada_370_xp_idle_driver, NULL);
+> +	mvebu_v7_cpu_suspend =3D pdev->dev.platform_data;
+> +	return cpuidle_register(&armadaxp_idle_driver, NULL);
+>   }
+>
+> -static struct platform_driver armada_370_xp_cpuidle_plat_driver =3D =
+{
+> +static struct platform_driver armadaxp_cpuidle_plat_driver =3D {
+>   	.driver =3D {
+> -		.name =3D "cpuidle-armada-370-xp",
+> +		.name =3D "cpuidle-armada-xp",
+>   		.owner =3D THIS_MODULE,
+>   	},
+> -	.probe =3D armada_370_xp_cpuidle_probe,
+> +	.probe =3D mvebu_v7_cpuidle_probe,
+>   };
+>
+> -module_platform_driver(armada_370_xp_cpuidle_plat_driver);
+> +module_platform_driver(armadaxp_cpuidle_plat_driver);
+>
+>   MODULE_AUTHOR("Gregory CLEMENT <gregory.clement@free-electrons.com>=
+");
+> -MODULE_DESCRIPTION("Armada 370/XP cpu idle driver");
+> +MODULE_DESCRIPTION("Marvell EBU v7 cpuidle driver");
+>   MODULE_LICENSE("GPL");
+>
 
 
-Viresh Kumar wrote:
-> On 24 July 2014 08:32, Saravana Kannan <skannan@codeaurora.org> wrote:
->> Ok, I think I've figured this out. But one question. Is it possible to
->> physically remove one CPU in a bunch of "related cpus" without also
->> unplugging the rest? Put another way, can you unplug one core from a
->> cluster?
->
-> Are we talking about doing this here:
->
-> echo 0 > /sys/devices/system/cpu/cpuX/online      ??
->
-> If yes, then what's the confusion all about? Yes we do it all the time.
->
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-No. That's why I said physically remove.
-
--- 
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
