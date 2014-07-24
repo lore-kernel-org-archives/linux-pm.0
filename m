@@ -1,80 +1,65 @@
-From: Thomas Petazzoni <mturquette@linaro.org>
-Subject: [PATCHv3 3/7] clk: mvebu: extend clk-cpu for dynamic frequency scaling
-Date: Wed, 23 Jul 2014 16:53:58 -0700
-Message-ID: <20140723235358.6419.26311@quantum>
-References: <1404920715-19834-1-git-send-email-thomas.petazzoni@free-electrons.com>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [GIT PULL] ARM: mvebu: SoC changes for v3.17 (round 3)
+Date: Wed, 23 Jul 2014 20:08:17 -0400
+Message-ID: <20140724000817.GP23220@titan.lakedaemon.net>
+References: <20140722205706.GA23220@titan.lakedaemon.net>
+ <201407232231.41787.arnd@arndb.de>
+ <20140723234130.GM23220@titan.lakedaemon.net>
+ <CAOesGMj1euJo-NPO-Ah18enuJc12u9ndaYo=9dM37pX_yX-wUw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:39549 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933712AbaGWXyD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 19:54:03 -0400
-Received: by mail-pd0-f172.google.com with SMTP id ft15so2488463pdb.17
-        for <linux-pm@vger.kernel.org>; Wed, 23 Jul 2014 16:54:02 -0700 (PDT)
-In-Reply-To: <1404920715-19834-1-git-send-email-thomas.petazzoni@free-electrons.com>
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:32266 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756000AbaGXAIe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jul 2014 20:08:34 -0400
+Content-Disposition: inline
+In-Reply-To: <CAOesGMj1euJo-NPO-Ah18enuJc12u9ndaYo=9dM37pX_yX-wUw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, devicetree@vger.kernel.org
+To: Olof Johansson <olof@lixom.net>
+Cc: Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@linaro.org>, "arm@kernel.org" <arm@kernel.org>, Andrew Lunn <andrew@lunn.ch>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Linux ARM Kernel <linux-arm-kernel@lists.infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-+static int clk_cpu_on_set_rate(struct clk_hw *hwclk, unsigned long rate,
-+                              unsigned long parent_rate)
-+{
-+       u32 reg;
-+       unsigned long fabric_div, target_div, cur_rate;
-+       struct cpu_clk *cpuclk = to_cpu_clk(hwclk);
-+
-+       /*
-+        * PMU DFS registers are not mapped, Device Tree does not
-+        * describes them. We cannot change the frequency dynamically.
-+        */
-+       if (!cpuclk->pmu_dfs)
-+               return -ENODEV;
-+
-+       cur_rate = __clk_get_rate(hwclk->clk);
-+
-+       reg = readl(cpuclk->reg_base + SYS_CTRL_CLK_DIVIDER_CTRL2_OFFSET);
-+       fabric_div = (reg >> SYS_CTRL_CLK_DIVIDER_CTRL2_NBCLK_RATIO_SHIFT) &
-+               SYS_CTRL_CLK_DIVIDER_MASK;
-+
-+       /* Frequency is going up */
-+       if (rate == 2 * cur_rate)
-+               target_div = fabric_div / 2;
-+       /* Frequency is going down */
-+       else
-+               target_div = fabric_div;
-+
-+       if (target_div == 0)
-+               target_div = 1;
-+
-+       reg = readl(cpuclk->pmu_dfs);
-+       reg &= ~(PMU_DFS_RATIO_MASK << PMU_DFS_RATIO_SHIFT);
-+       reg |= (target_div << PMU_DFS_RATIO_SHIFT);
-+       writel(reg, cpuclk->pmu_dfs);
-+
-+       reg = readl(cpuclk->reg_base + SYS_CTRL_CLK_DIVIDER_CTRL_OFFSET);
-+       reg |= (SYS_CTRL_CLK_DIVIDER_CTRL_RESET_ALL <<
-+               SYS_CTRL_CLK_DIVIDER_CTRL_RESET_SHIFT);
-+       writel(reg, cpuclk->reg_base + SYS_CTRL_CLK_DIVIDER_CTRL_OFFSET);
-+
-+       return mvebu_pmsu_dfs_request(cpuclk->cpu);
-+}
-+
-+static int clk_cpu_set_rate(struct clk_hw *hwclk, unsigned long rate,
-+                           unsigned long parent_rate)
-+{
-+       if (__clk_is_enabled(hwclk->clk))
-+               return clk_cpu_on_set_rate(hwclk, rate, parent_rate);
-+       else
-+               return clk_cpu_off_set_rate(hwclk, rate, parent_rate);
+On Wed, Jul 23, 2014 at 04:45:15PM -0700, Olof Johansson wrote:
+> On Wed, Jul 23, 2014 at 4:41 PM, Jason Cooper <jason@lakedaemon.net> wrote:
+> > On Wed, Jul 23, 2014 at 10:31:41PM +0200, Arnd Bergmann wrote:
+> >> On Tuesday 22 July 2014, Jason Cooper wrote:
+...
+> >> > As usual (do I need to type this each time any more? :) ), this is an
+> >> > incremental pull request from tags/mvebu-soc-3.17-2 up to
+> >> > tags/mvebu-soc-3.17-3 on the mvebu/soc branch.
+> >>
+> >> It certainly helps me to have this information, but you can write it
+> >> more briefly, e.g. "based on tags/mvebu-soc-3.17-2".
+> >
+> > Ahhhh....  Much more succinct.  Thank you.  On a side note, I wonder
+> > what it would take to get 'git request-pull' smart enough to add that
+> > information when handed a tag?
+> >
+> >> > The following changes since commit ba364fc752daeded072a5ef31e43b84cb1f9e5fd:
+> >> >
+> >> >   ARM: Kirkwood: Remove mach-kirkwood (2014-07-13 22:13:39 +0000)
+> >
+> > eg:
+> >
+> >   ARM: Kirkwood: Remove mach-kirkwood (tags/mvebu-soc-3.17-2)
+> 
+> That only maps to the tag in your tree, which might or might not map
+> directly to something that we know or care about. We do tend to keep
+> naming similar, but not always identical. For example, the branch for
+> that tag would be mvebu/soc2 in our tree.
 
-This is racy. You don't hold the clk_enable lock so it could be enable
-between the conditional check and executing clk_cpu_on_set_rate.
+Right, the goal was to automate 'based on tags/mvebu-soc-3.17-2' which
+lets you guys know it's an incremental pull request.
 
-How do you ensure that secondary CPU clocks are not enabled/disabled
-when changing rates?
+> > Is the date of the base commit useful in any way in the pull request?
+> 
+> I find the SHA to be useful, I will sometimes run "git branch
+> --contains ba3ec57<...>" to see where the base is merged already. The
+> date, for me, less so.
 
-Regards,
-Mike
+Ok, good to know.
+
+thx,
+
+Jason.
