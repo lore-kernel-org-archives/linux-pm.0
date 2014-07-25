@@ -1,117 +1,83 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
-Date: Fri, 25 Jul 2014 14:47:25 +0200
-Message-ID: <1805200.1exkRoNuC2@vostro.rjw.lan>
-References: <20140724212620.GO3935@laptop> <alpine.DEB.2.10.1407251135590.23352@nanos>
+Date: Fri, 25 Jul 2014 14:49:34 +0200
+Message-ID: <2634160.AMXQm5EuML@vostro.rjw.lan>
+References: <20140724212620.GO3935@laptop> <13290270.IfKaUSRMLR@vostro.rjw.lan> <alpine.DEB.2.10.1407251109390.23352@nanos>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.10.1407251135590.23352@nanos>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64137 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759259AbaGYMbH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 08:31:07 -0400
+In-Reply-To: <alpine.DEB.2.10.1407251109390.23352@nanos>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
-On Friday, July 25, 2014 11:40:48 AM Thomas Gleixner wrote:
-> On Thu, 24 Jul 2014, Peter Zijlstra wrote:
-> > @@ -29,14 +29,20 @@ void suspend_device_irqs(void)
-> >  	for_each_irq_desc(irq, desc) {
-> >  		unsigned long flags;
-> >  
-> > +		/*
-> > +		 * Ideally this would be a global state, but we cannot
-> > +		 * for the trainwreck that is IRQD_WAKEUP_STATE.
-> > +		 */
-> >  		raw_spin_lock_irqsave(&desc->lock, flags);
-> > -		__disable_irq(desc, irq, true);
-> > +		if (!irqd_has_set(&desc->irq_data, IRQD_WAKEUP_STATE))
-> > +			desc->istate |= IRQS_SUSPENDED;
-> >  		raw_spin_unlock_irqrestore(&desc->lock, flags);
-> >  	}
-> >  
-> > -	for_each_irq_desc(irq, desc)
-> > +	for_each_irq_desc(irq, desc) {
-> >  		if (desc->istate & IRQS_SUSPENDED)
-> >  			synchronize_irq(irq);
-> > +	}
-> >  }
+On Friday, July 25, 2014 11:27:25 AM Thomas Gleixner wrote:
+> On Fri, 25 Jul 2014, Rafael J. Wysocki wrote:
+> > On Thursday, July 24, 2014 11:26:20 PM Peter Zijlstra wrote:
+> > > Subject: irq: Rework IRQF_NO_SUSPENDED
+> > > From: Peter Zijlstra <peterz@infradead.org>
+> > > Date: Thu Jul 24 22:34:50 CEST 2014
+> > > 
+> > > Typically when devices are suspended they're quiesced such that they
+> > > will not generate any further interrupts.
+> > > 
+> > > However some devices should still generate interrupts, even when
+> > > suspended, typically used to wake the machine back up.
+> > > 
+> > > Such logic should ideally be contained inside each driver, if it can
+> > > generate interrupts when suspended, it knows about this and the
+> > > interrupt handler can deal with it.
+> > > 
+> > > Except of course for shared interrupts, when such a wakeup device is
+> > > sharing an interrupt line with a device that does not expect
+> > > interrupts while suspended things can go funny.
+> > > 
+> > > This is where IRQF_NO_SUSPEND comes in, the idea is that drivers that
+> > > have the capability to wake the machine set IRQF_NO_SUSPEND and their
+> > > handler will still be called, even when the IRQ subsystem is formally
+> > > suspended. Handlers without IRQF_NO_SUSPEND will not be called.
+> > > 
+> > > This replaced the prior implementation of IRQF_NO_SUSPEND which had
+> > > a number of fatal issues in that it didn't actually work for the
+> > > shared case, exactly the case it should be helping.
+> > > 
+> > > There is still enable_irq_wake()/IRQD_WAKEUP_STATE that tries to serve
+> > > a similar purpose but is equially wrecked for shared interrupts,
+> > > ideally this would be removed.
+> > 
+> > Let me comment about this particular thing.
+> > 
+> > I had a discussion with Dmitry about that and his argument was that
+> > enable_irq_wake() should imply IRQF_NO_SUSPEND, because drivers that
+> > set up interrupts for system wakeup should expect those interrupts to
+> > trigger at any time, including system suspend.  Hence the patch that
+> > added the IRQD_WAKEUP_STATE check to __disable_irq().
+> > 
+> > However, in the face of the problem that is being addressed here I'm
+> > not really sure that this argument is valid, because if the driver
+> > calling enable_irq_wake() is sharing the IRQ with another one, the
+> > other driver may not actually know that the IRQ will be a wakeup one
+> > and still may not expect interrupts to come to it during system
+> > suspend/resume.
+> > 
+> > Yes, drivers using enable_irq_wake() will likely want IRQF_NO_SUSPEND to
+> > be set for their irqactions, but that should not imply "no suspend" for
+> > all irqactions sharing the same desc.  So I guess it may be better to go
+> > forth and use a global "interrupts suspended" state variable instead of the
+> > IRQS_SUSPENDED flag for each desc and throw away the IRQD_WAKEUP_STATE
+> > check from suspend_device_irqs() entirely.
 > 
-> So, instead of disabling the interrupt you just mark it
-> suspended. Good luck with level triggered interrupt lines then.
-> 
-> Assume the interrupt fires after you marked it suspended. Then the
-> flow handler will call handle_irq_event() which will do nothing and
-> return handled. So the flow handler will reenable the interrupt line,
-> which will cause the interrupt to fire immediately again after the
-> RETI. Guess how much progress the system is going to make when that
-> happens.
+> How should that global state work?
 
-Good point.
+Well, never mind.
 
-So it looks like we really need the "suspend" thing to either disable
-the interrupt entirely (in which case all handlers for all actions
-will not be invoked after it's been suspended) or leave it enabled
-(causing all handlers to be invoked all the time).
+If the face of your remark about the level-triggered interrupts that's all moot.
 
-I'm not sure if we can do much beyond what's already in your tree
-about that, then.
+Rafael
 
-Well, perhaps the patch failing the irq request in case of the
-IRQF_NO_SUSPEND mismatch is a bit too drastic.  Instead, we could
-just print a warning in __setup_irq() in that case and then check
-IRQF_NO_SUSPEND for all actions in __disable_irq().
-
-What about this?
-
----
- kernel/irq/manage.c |   22 +++++++++++++++++++---
- 1 file changed, 19 insertions(+), 3 deletions(-)
-
-Index: linux-pm/kernel/irq/manage.c
-===================================================================
---- linux-pm.orig/kernel/irq/manage.c
-+++ linux-pm/kernel/irq/manage.c
-@@ -385,8 +385,17 @@ setup_affinity(unsigned int irq, struct
- void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
- {
- 	if (suspend) {
--		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND)
--		    || irqd_has_set(&desc->irq_data, IRQD_WAKEUP_STATE))
-+		struct irqaction *action = desc->action;
-+		unsigned int flags;
-+
-+		if (!action || irqd_has_set(&desc->irq_data, IRQD_WAKEUP_STATE))
-+			return;
-+		flags = IRQF_NO_SUSPEND;
-+		do {
-+			flags &= action->flags;
-+			action = action->next;
-+		} while (action);
-+		if (flags)
- 			return;
- 		desc->istate |= IRQS_SUSPENDED;
- 	}
-@@ -1079,7 +1088,7 @@ __setup_irq(unsigned int irq, struct irq
- 		 */
- 
- #define IRQF_MISMATCH \
--	(IRQF_TRIGGER_MASK | IRQF_ONESHOT | IRQF_NO_SUSPEND)
-+	(IRQF_TRIGGER_MASK | IRQF_ONESHOT)
- 
- 		if (!((old->flags & new->flags) & IRQF_SHARED) ||
- 		    ((old->flags ^ new->flags) & IRQF_MISMATCH))
-@@ -1090,6 +1099,13 @@ __setup_irq(unsigned int irq, struct irq
- 		    (new->flags & IRQF_PERCPU))
- 			goto mismatch;
- 
-+		if ((old->flags & IRQF_NO_SUSPEND) !=
-+		    (new->flags & IRQF_NO_SUSPEND)) {
-+			pr_err("irq %d: IRQF_NO_SUSPEND mismatch %08x (%s) vs. %08x (%s)\n",
-+			       irq, new->flags, new->name, old->flags, old->name);
-+			pr_err("irq %d: IRQF_NO_SUSPEND will be ignored\n");
-+		}
-+
- 		/* add new interrupt at end of irq queue */
- 		do {
- 			/*
