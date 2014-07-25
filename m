@@ -1,26 +1,22 @@
-From: Mark Brown <broonie@kernel.org>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 Subject: Re: [PATCH v2 01/16] regmap: Add regmap_get_device
-Date: Fri, 25 Jul 2014 18:34:00 +0100
-Message-ID: <20140725173400.GZ17528@sirena.org.uk>
+Date: Fri, 25 Jul 2014 18:43:11 +0100
+Message-ID: <20140725174311.GA17528@sirena.org.uk>
 References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>
  <1405957142-19416-2-git-send-email-ttynkkynen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="w41lMVNXnOw3ZHPk"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:54952 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932839AbaGYRee (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 13:34:34 -0400
+	protocol="application/pgp-signature"; boundary="kNWh/WJk9f5Nf1i0"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1405957142-19416-2-git-send-email-ttynkkynen@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1405957142-19416-2-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Walmsley <pwalmsley@nvidia.com>, devicetree@vger.kernel.org
 
 
---w41lMVNXnOw3ZHPk
+--kNWh/WJk9f5Nf1i0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
@@ -28,36 +24,61 @@ On Mon, Jul 21, 2014 at 06:38:47PM +0300, Tuomas Tynkkynen wrote:
 > Add a new function regmap_get_device to obtain the underlying struct
 > device from a regmap.
 
-I've applied this...
+I've also created a signed tag for use in other trees:
 
-> +struct device *regmap_get_device(struct regmap *map)
-> +{
-> +	return map->dev;
-> +}
-> +
+The following changes since commit 7171511eaec5bf23fb06078f59784a3a0626b38f:
 
-...plus a followup exporting the symbol so it can be used from modules.
+  Linux 3.16-rc1 (2014-06-15 17:45:28 -1000)
 
---w41lMVNXnOw3ZHPk
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/broonie/regmap.git tags/getdev
+
+for you to fetch changes up to fa2fbe4a981a70866d20cee62af0d89eb6b6027e:
+
+  regmap: Allow regmap_get_device() to be used by modules (2014-07-25 18:30:31 +0100)
+
+----------------------------------------------------------------
+regmap: Support for retrieving the struct device for a regmap
+
+Some hardware has support for regmap style operations, this is
+especially common with embedded controllers that interact with PMICs.
+Allow drivers handling such devices to get the device from a regmap to
+aid in supporting such functionality.
+
+Signed-off-by: Mark Brown <broonie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+
+----------------------------------------------------------------
+Mark Brown (1):
+      regmap: Allow regmap_get_device() to be used by modules
+
+Tuomas Tynkkynen (1):
+      regmap: Add regmap_get_device
+
+ drivers/base/regmap/regmap.c | 13 +++++++++++++
+ include/linux/regmap.h       |  7 +++++++
+ 2 files changed, 20 insertions(+)
+
+--kNWh/WJk9f5Nf1i0
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBAgAGBQJT0pUFAAoJELSic+t+oim9+KAP/RQuuZn2h04DaqFGmgTxw3iw
-8ZcctSQ/V5rJckcCGyGgmNeC7N3x3fIjCUc6rAf+sI4y7o8CoWvLvTE7Rlp9tIx9
-pZ90IgiSOH8nz+N+RjBe4yk35pePuGN3bE+AtlLW3p7AOr47WX8RCtcAJ2pVKs5+
-Qre9QFSAD09fLHKsiW1q0uSf6xWBBNgHpfMzPq003O0zRZvDp7xsGNH5Lz1VSSQg
-NKln7o10n0DmD6nskitiaR3/26f8NEXDm726Bj9z5sothK9j4nz1DubxlPhqHmFl
-EmTGxosU3+iNsxl+hEO5Z1tMpetk2MoWqb50qCCFGUVkhl/b98BBLgvr+zlNtTrz
-QMnCs/l8QJ/tGt44sEKVutctcLnxU/tjnt+7OAcI9KbyvTOjqeS/ntvMebf3rUoC
-ct3ZnRBPnQajAdjNSsXcgR5Xd+jsZEKk2hQPIgViR4ndPWvq33g5gdqRqWhMoxWx
-66xuXBmoIvToJgmDYVZULk50r93887SY1tYw1txNa3TAyhRiHpGRtAll7wxoHAgz
-PTdVkI771vLn8dyzftVzsj95KbHFQi3KKhacCYreUprTCTDxbd3U5ycjZ2kS5mOz
-IOo2l2CjEzydolBiaP/N7Bcir2oCt0cUpGI84O8zcBJoGhKkoWosMcYbHdf/Glnp
-GfNojqxnfKEYyBDvUR6L
-=E4/F
+iQIcBAEBAgAGBQJT0pcsAAoJELSic+t+oim9q3sP/jcyPDZiWu75iid8XwQUp29X
+jG+786R1KH0v6FnVQIYO3t9NNrhQR82AXv7Iubvvvvs2yFyZOO+oMTvuWVe+OPIM
+seEklyt7Bw+ClFkTRzJ5vnTOgai40+IksojvchsnPhEQqHGOytg3JpkeIekU7nKi
+5Sacwz5kQY6zgWKCiCON2WK8XTpSUPcOVgGzRwz7cnmQxZHl3FP1wofXGMXub2Yz
+8MR5Iom9rvgP6q9lW9CCivc8XQnAXH4SVV76Ox2+NPrSwVRKRjQYjw56i4lYn3c9
+UrP0PreCRq3T8OWOq2dhZy1Ysb837pR4djR0vWKuRWrdWQOUHtUroG7j6dwCu9Tf
+2Bq9PqdOEnjDnByQiOQgPgNV7a+Rak06rjMks6/HMy8EqXn1I3EyChzCJHbBKxbQ
+jaTuBoDzSOWfclSwRce75jlUA9V03vtchFvAQKMjxyV64GAAVV5+o+9BtrlDWqgc
+qYyJkRE9+HbGC4zuJKLTCJUPT4VDz7VeG8Sh6CDXyWX1ANfcaFIhm6fPoqd4vOYF
+jYkni1RJ5gfKC9/dl1yb5bCORt2PBtyP2+XQs/+xI3LfbHBs2hlLKSVuJCYTzOnR
+PRQ5CLnZPV9mCieXaQZd+k3PpjoMn2BZFKcw5gGCO553AlVLJd7VwYexUUdzViYK
+K05mICwMg6r296Q7BrOe
+=4fGo
 -----END PGP SIGNATURE-----
 
---w41lMVNXnOw3ZHPk--
+--kNWh/WJk9f5Nf1i0--
