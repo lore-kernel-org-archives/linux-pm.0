@@ -1,18 +1,22 @@
 From: Jiang Liu <jiang.liu@linux.intel.com>
 Subject: Re: [RFC Patch V1 30/30] x86, NUMA: Online node earlier when doing
  CPU hot-addition
-Date: Fri, 25 Jul 2014 09:43:16 +0800
-Message-ID: <53D1B634.4080902@linux.intel.com>
+Date: Fri, 25 Jul 2014 09:44:36 +0800
+Message-ID: <53D1B684.1010900@linux.intel.com>
 References: <1405064267-11678-1-git-send-email-jiang.liu@linux.intel.com> <1405064267-11678-31-git-send-email-jiang.liu@linux.intel.com> <20140724233027.GC24458@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:48786 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752677AbaGYBot (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 24 Jul 2014 21:44:49 -0400
 In-Reply-To: <20140724233027.GC24458@linux.vnet.ibm.com>
-Sender: owner-linux-mm@kvack.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, David Rientjes <rientjes@google.com>, Mike Galbraith <umgwanakikbuti@gmail.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Tony Luck <tony.luck@intel.com>, linux-mm@kvack.org, linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 
 
@@ -81,8 +85,6 @@ On 2014/7/25 7:30, Nishanth Aravamudan wrote:
 > 
 > try_online_node() seems like it can fail? I assume it's a pretty rare
 > case, but should the return code be checked?
-Good suggestion, I should split out this patch to fix the crash.
-
 > 
 > If it does fail, it seems like there are pretty serious problems and we
 > shouldn't be onlining this CPU, etc.?
@@ -93,15 +95,9 @@ Good suggestion, I should split out this patch to fix the crash.
 > 
 > Which means you can remove this check presuming try_online_node()
 > returned 0.
-Yes, that's true.
+Good suggestion, will try to enhance the error handling path.
 
 > 
 > Thanks,
 > Nish
 > 
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
