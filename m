@@ -1,63 +1,51 @@
-From: pramod gurav <pramod.gurav.etc@gmail.com>
-Subject: Re: [PATCH] cpufreq: Fix latency for cpufreq_info
-Date: Fri, 25 Jul 2014 11:06:16 +0530
-Message-ID: <CAMf-jS=pCKtOK6ZG=LWLGSJT9xCzCkiuARVskut4Wz+pARSsyw@mail.gmail.com>
-References: <1405319337-11368-1-git-send-email-xerofoify@gmail.com>
-	<CAKohpo=R4sjEGUFDt2yubfTQ+r1FO5RtFBYg8XROH-SYu90Zew@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
+Date: Fri, 25 Jul 2014 07:58:47 +0200
+Message-ID: <20140725055847.GQ3935@laptop>
+References: <20140724212620.GO3935@laptop>
+ <13290270.IfKaUSRMLR@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f44.google.com ([209.85.215.44]:37788 "EHLO
-	mail-la0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750809AbaGYFgT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 01:36:19 -0400
-In-Reply-To: <CAKohpo=R4sjEGUFDt2yubfTQ+r1FO5RtFBYg8XROH-SYu90Zew@mail.gmail.com>
+Received: from bombadil.infradead.org ([198.137.202.9]:52237 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750809AbaGYF6y (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 01:58:54 -0400
+Content-Disposition: inline
+In-Reply-To: <13290270.IfKaUSRMLR@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Nicholas Krause <xerofoify@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
-Viresh,
-Be careful when you ACK Nick's patches. He has confessed he has no
-idea how to build test a kernel. His patches are NOT AT ALL build
-tested. And some of his patches are being reverted for causing
-problems in build and all. He looks for FIXME and removes/edits the
-code as per the comments. Just be careful.
+On Fri, Jul 25, 2014 at 01:10:36AM +0200, Rafael J. Wysocki wrote:
+> > There is still enable_irq_wake()/IRQD_WAKEUP_STATE that tries to serve
+> > a similar purpose but is equially wrecked for shared interrupts,
+> > ideally this would be removed.
+> 
+> Let me comment about this particular thing.
+> 
+> I had a discussion with Dmitry about that and his argument was that
+> enable_irq_wake() should imply IRQF_NO_SUSPEND, because drivers that
+> set up interrupts for system wakeup should expect those interrupts to
+> trigger at any time, including system suspend.  Hence the patch that
+> added the IRQD_WAKEUP_STATE check to __disable_irq().
+> 
+> However, in the face of the problem that is being addressed here I'm
+> not really sure that this argument is valid, because if the driver
+> calling enable_irq_wake() is sharing the IRQ with another one, the
+> other driver may not actually know that the IRQ will be a wakeup one
+> and still may not expect interrupts to come to it during system
+> suspend/resume.
+> 
+> Yes, drivers using enable_irq_wake() will likely want IRQF_NO_SUSPEND to
+> be set for their irqactions, but that should not imply "no suspend" for
+> all irqactions sharing the same desc.  So I guess it may be better to go
+> forth and use a global "interrupts suspended" state variable instead of the
+> IRQS_SUSPENDED flag for each desc and throw away the IRQD_WAKEUP_STATE
+> check from suspend_device_irqs() entirely.
+> 
+> Peter, it looks like you'd prefer that?
 
-On Mon, Jul 14, 2014 at 12:00 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 14 July 2014 11:58, Nicholas Krause <xerofoify@gmail.com> wrote:
->> This fixes the latency for the cpufreq policy to 1 million nanoseconds
->> that calls the function pxa_cpu_init for the member of the structure
->> called cpuinfo.transition_latency.
->>
->> Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
->> ---
->>  drivers/cpufreq/pxa2xx-cpufreq.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
->> index e24269a..e08bb98 100644
->> --- a/drivers/cpufreq/pxa2xx-cpufreq.c
->> +++ b/drivers/cpufreq/pxa2xx-cpufreq.c
->> @@ -372,7 +372,7 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
->>         init_sdram_rows();
->>
->>         /* set default policy and cpuinfo */
->> -       policy->cpuinfo.transition_latency = 1000; /* FIXME: 1 ms, assumed */
->> +       policy->cpuinfo.transition_latency = 1000000;
->>
->>         /* Generate pxa25x the run cpufreq_frequency_table struct */
->>         for (i = 0; i < NUM_PXA25x_RUN_FREQS; i++) {
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
-
--- 
-Thanks and Regards
-Pramod
+My preference would be to shoot enable_irq_wake() in the head, its
+fundamentally broken.
