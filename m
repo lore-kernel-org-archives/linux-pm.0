@@ -1,78 +1,58 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
-Date: Fri, 25 Jul 2014 11:27:25 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1407251109390.23352@nanos>
-References: <20140724212620.GO3935@laptop> <13290270.IfKaUSRMLR@vostro.rjw.lan>
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: Re: [PATCH-REPOST] thermal: of: look for sensor driver parent node
+ if device node missing
+Date: Fri, 25 Jul 2014 10:30:36 +0100
+Message-ID: <20140725093036.GB2865@e104805>
+References: <1406279971-14957-1-git-send-email-ldewangan@nvidia.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:55520 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbaGYJ1a (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 05:27:30 -0400
-In-Reply-To: <13290270.IfKaUSRMLR@vostro.rjw.lan>
+Received: from service87.mimecast.com ([91.220.42.44]:57405 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422AbaGYJaj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 05:30:39 -0400
+In-Reply-To: <1406279971-14957-1-git-send-email-ldewangan@nvidia.com>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
+To: Laxman Dewangan <ldewangan@nvidia.com>
+Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Fri, 25 Jul 2014, Rafael J. Wysocki wrote:
-> On Thursday, July 24, 2014 11:26:20 PM Peter Zijlstra wrote:
-> > Subject: irq: Rework IRQF_NO_SUSPENDED
-> > From: Peter Zijlstra <peterz@infradead.org>
-> > Date: Thu Jul 24 22:34:50 CEST 2014
-> > 
-> > Typically when devices are suspended they're quiesced such that they
-> > will not generate any further interrupts.
-> > 
-> > However some devices should still generate interrupts, even when
-> > suspended, typically used to wake the machine back up.
-> > 
-> > Such logic should ideally be contained inside each driver, if it can
-> > generate interrupts when suspended, it knows about this and the
-> > interrupt handler can deal with it.
-> > 
-> > Except of course for shared interrupts, when such a wakeup device is
-> > sharing an interrupt line with a device that does not expect
-> > interrupts while suspended things can go funny.
-> > 
-> > This is where IRQF_NO_SUSPEND comes in, the idea is that drivers that
-> > have the capability to wake the machine set IRQF_NO_SUSPEND and their
-> > handler will still be called, even when the IRQ subsystem is formally
-> > suspended. Handlers without IRQF_NO_SUSPEND will not be called.
-> > 
-> > This replaced the prior implementation of IRQF_NO_SUSPEND which had
-> > a number of fatal issues in that it didn't actually work for the
-> > shared case, exactly the case it should be helping.
-> > 
-> > There is still enable_irq_wake()/IRQD_WAKEUP_STATE that tries to serve
-> > a similar purpose but is equially wrecked for shared interrupts,
-> > ideally this would be removed.
-> 
-> Let me comment about this particular thing.
-> 
-> I had a discussion with Dmitry about that and his argument was that
-> enable_irq_wake() should imply IRQF_NO_SUSPEND, because drivers that
-> set up interrupts for system wakeup should expect those interrupts to
-> trigger at any time, including system suspend.  Hence the patch that
-> added the IRQD_WAKEUP_STATE check to __disable_irq().
-> 
-> However, in the face of the problem that is being addressed here I'm
-> not really sure that this argument is valid, because if the driver
-> calling enable_irq_wake() is sharing the IRQ with another one, the
-> other driver may not actually know that the IRQ will be a wakeup one
-> and still may not expect interrupts to come to it during system
-> suspend/resume.
-> 
-> Yes, drivers using enable_irq_wake() will likely want IRQF_NO_SUSPEND to
-> be set for their irqactions, but that should not imply "no suspend" for
-> all irqactions sharing the same desc.  So I guess it may be better to go
-> forth and use a global "interrupts suspended" state variable instead of the
-> IRQS_SUSPENDED flag for each desc and throw away the IRQD_WAKEUP_STATE
-> check from suspend_device_irqs() entirely.
+[Fixed Eduardo's email *again*]
 
-How should that global state work?
+On Fri, Jul 25, 2014 at 10:19:31AM +0100, Laxman Dewangan wrote:
+> There are some mfd devices which supports junction thermal interrupt
+> like ams,AS3722. The DT binding of these devices are defined as the
+> flat and drivers for sub module of such devices are registered as
+> the mfd_add_devices. In this method, the sub devices registered as
+> platform driver and these do not have the of_node pointer on their
+> device structure. In this case, use the parent of_node pointer to
+> get the required of_node pointer.
+> 
+> Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
+> ---
+> I typed differnet email ID for Eduardo and so it did not reach to him.
+> Resending the patch with correct ID.
+> 
+>  drivers/thermal/of-thermal.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index 04b1be7..85a7d71 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -396,6 +396,8 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
+>  		return ERR_PTR(-EINVAL);
+>  
+>  	sensor_np = dev->of_node;
+> +	if (!sensor_np && dev->parent)
+> +		sensor_np = dev->parent->of_node;
+>  
+>  	for_each_child_of_node(np, child) {
+>  		struct of_phandle_args sensor_specs;
+> -- 
+> 1.8.1.5
+> 
+> 
 
-Thanks,
-
-	tglx
