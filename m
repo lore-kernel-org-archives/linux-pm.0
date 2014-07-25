@@ -1,51 +1,80 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
-Date: Fri, 25 Jul 2014 17:41:16 +0200
-Message-ID: <20140725174116.325608d2@free-electrons.com>
-References: <cover.1404231535.git.viresh.kumar@linaro.org>
-	<20140717093518.486ac244@free-electrons.com>
-	<CAKohpokZXUzXKRWBje7QF_jrvOd5dmfmWQ2Csf3xiMuvT_vPYA@mail.gmail.com>
-	<2399813.Puj1SZWhCh@vostro.rjw.lan>
-	<CAKohpomKzK8pMJs1gv+uXxhd17HtCQyfjSnVYw9KpGz6FwbgDA@mail.gmail.com>
-	<CAKohpo=HKUkGRK4NX7E59z5QthcKbZKETB-DuP10xj3x+vdHaQ@mail.gmail.com>
-	<CAL_JsqKqCeU0zs+rS1vxsOeh=Kuw_-gaVHtGU76Lb6TchCTytw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
+Date: Fri, 25 Jul 2014 19:03:38 +0200
+Message-ID: <2870044.iEzUSaptji@vostro.rjw.lan>
+References: <20140724212620.GO3935@laptop> <20140725124037.GL20603@laptop.programming.kicks-ass.net> <20140725132541.GT12054@laptop.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAL_JsqKqCeU0zs+rS1vxsOeh=Kuw_-gaVHtGU76Lb6TchCTytw@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mturquette@linaro.org>, Nishanth Menon <nm@ti.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Thomas P Abraham <thomas.ab@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Sachin Kamat <spk.linux@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140725132541.GT12054@laptop.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
-
-On Fri, 25 Jul 2014 09:29:09 -0500, Rob Herring wrote:
-
-> > Any idea on how can we get some temporary solution for 3.17 as we didn't
-> > conclude anything yet on bindings ?
+On Friday, July 25, 2014 03:25:41 PM Peter Zijlstra wrote:
+> On Fri, Jul 25, 2014 at 02:40:37PM +0200, Peter Zijlstra wrote:
+> > On Fri, Jul 25, 2014 at 11:40:48AM +0200, Thomas Gleixner wrote:
+> > > On Thu, 24 Jul 2014, Peter Zijlstra wrote:
+> > > > @@ -29,14 +29,20 @@ void suspend_device_irqs(void)
+> > > >  	for_each_irq_desc(irq, desc) {
+> > > >  		unsigned long flags;
+> > > >  
+> > > > +		/*
+> > > > +		 * Ideally this would be a global state, but we cannot
+> > > > +		 * for the trainwreck that is IRQD_WAKEUP_STATE.
+> > > > +		 */
+> > > >  		raw_spin_lock_irqsave(&desc->lock, flags);
+> > > > -		__disable_irq(desc, irq, true);
+> > > > +		if (!irqd_has_set(&desc->irq_data, IRQD_WAKEUP_STATE))
+> > > > +			desc->istate |= IRQS_SUSPENDED;
+> > > >  		raw_spin_unlock_irqrestore(&desc->lock, flags);
+> > > >  	}
+> > > >  
+> > > > -	for_each_irq_desc(irq, desc)
+> > > > +	for_each_irq_desc(irq, desc) {
+> > > >  		if (desc->istate & IRQS_SUSPENDED)
+> > > >  			synchronize_irq(irq);
+> > > > +	}
+> > > >  }
+> > > 
+> > > So, instead of disabling the interrupt you just mark it
+> > > suspended. Good luck with level triggered interrupt lines then.
+> > > 
+> > > Assume the interrupt fires after you marked it suspended. Then the
+> > > flow handler will call handle_irq_event() which will do nothing and
+> > > return handled. So the flow handler will reenable the interrupt line,
+> > > which will cause the interrupt to fire immediately again after the
+> > > RETI. Guess how much progress the system is going to make when that
+> > > happens.
+> > 
+> > Urgh, right. I knew it was too easy. Can we have do_irqhandler() ACK the
+> > interrupt and not call the handler?
 > 
-> A temporary solution would have to be NOT in DT because once you add
-> something into DT you are stuck with it for some time. You could
-> simply support independent clocks by looking at the platform type, but
-> that is still risky since you may want to define the OPP in DT
-> differently for the 2 cases.
-> 
-> The other problem with temporary solutions is once they are accepted,
-> people loose motivation to create the permanent solution. "Can you
-> take this now and I'll fix the issues later" is a red flag to
-> maintainers.
+> OK, so Rafael said there's devices that keep on raising their interrupt
+> until they get attention. Ideally this won't happen because the device
+> is suspended etc.. But I'm sure there's some broken piece of hardware
+> out there that'll make it go boom.
 
-On the Marvell Armada XP side of things, the OPPs are registered
-dynamically because they change from one board to the other. The only
-thing that is in the DT for cpufreq-generic is the clock-latency
-parameter.
+So here's an idea.
 
-Thanks,
+What about returning IRQ_NONE rather than IRQ_HANDLED for "suspended"
+interrupts (after all, that's what a sane driver would do for a
+suspended device I suppose)?
 
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+If the line is really shared and the interrupt is taken care of by
+the other guy sharing the line, we'll be all fine.
+
+If that is not the case, on the other hand, and something's really
+broken, we'll end up disabling the interrupt and marking it as
+IRQS_SPURIOUS_DISABLED (if I understand things correctly).
+
+But then, we can re-enable it and clear the IRQS_SPURIOUS_DISABLED
+flag at the resume_device_irqs() time so the driver can use it again.
+And we'll have a trace of the breakage in dmesg, so possibly we can
+go forth and fix the bad guy.
+
+Would that make sense?
+
+Rafael
