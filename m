@@ -1,100 +1,113 @@
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [RFC Patch V1 30/30] x86, NUMA: Online node earlier when doing
- CPU hot-addition
-Date: Thu, 24 Jul 2014 16:30:27 -0700
-Message-ID: <20140724233027.GC24458@linux.vnet.ibm.com>
-References: <1405064267-11678-1-git-send-email-jiang.liu@linux.intel.com>
- <1405064267-11678-31-git-send-email-jiang.liu@linux.intel.com>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCHv3 00/16] cpuidle for Marvell Armada 370 and 38x
+Date: Thu, 24 Jul 2014 20:05:54 -0400
+Message-ID: <20140725000554.GA23220@titan.lakedaemon.net>
+References: <1406120453-29291-1-git-send-email-thomas.petazzoni@free-electrons.com>
+ <20140724120349.GT23220@titan.lakedaemon.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mho-03-ewr.mailhop.org ([204.13.248.66]:21981 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934813AbaGYAGH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jul 2014 20:06:07 -0400
 Content-Disposition: inline
-In-Reply-To: <1405064267-11678-31-git-send-email-jiang.liu@linux.intel.com>
-Sender: owner-linux-mm@kvack.org
-To: Jiang Liu <jiang.liu@linux.intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, David Rientjes <rientjes@google.com>, Mike Galbraith <umgwanakikbuti@gmail.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Tony Luck <tony.luck@intel.com>, linux-mm@kvack.org, linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20140724120349.GT23220@titan.lakedaemon.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-On 11.07.2014 [15:37:47 +0800], Jiang Liu wrote:
-> With typical CPU hot-addition flow on x86, PCI host bridges embedded
-> in physical processor are always associated with NOMA_NO_NODE, which
-> may cause sub-optimal performance.
-> 1) Handle CPU hot-addition notification
-> 	acpi_processor_add()
-> 		acpi_processor_get_info()
-> 			acpi_processor_hotadd_init()
-> 				acpi_map_lsapic()
-> 1.a)					acpi_map_cpu2node()
+On Thu, Jul 24, 2014 at 08:03:49AM -0400, Jason Cooper wrote:
+> Thomas, all,
 > 
-> 2) Handle PCI host bridge hot-addition notification
-> 	acpi_pci_root_add()
-> 		pci_acpi_scan_root()
-> 2.a)			if (node != NUMA_NO_NODE && !node_online(node)) node = NUMA_NO_NODE;
+> On Wed, Jul 23, 2014 at 03:00:37PM +0200, Thomas Petazzoni wrote:
+> > Hello,
+> > 
+> > Here comes the third version of the cpuidle support for Armada 370 and
+> > Armada 38x.
+> > 
+> > We are hoping to see this patch series merged for 3.17.
+> > 
+> > Most patches are touching only arch/arm/mach-mvebu/ code so they
+> > should be handled by the mvebu maintainers. However, patches 11-13 are
+> > touching the mvebu cpuidle driver, with a possible issue on patch 11,
+> > which touches both the cpuidle driver and the mach-mvebu code in order
+> > to rename the driver without breaking functionality (if needed, we can
+> > decide to split the commits, it would break functionality temporarly,
+> > but not buildability).
+> > 
+> > Changes since v2
+> > ================
+> > 
+> >  * According to the discussion with Daniel Lezcano (cpuidle
+> >    maintainer) and Arnd Bergmann, changed the cpuidle-mvebu-v7 driver
+> >    to actually register three separate cpuidle platform driver, one
+> >    per-SoC. This way, we don't need special platform data to convey
+> >    the SoC type being used, as this information is already available
+> >    by looking at the driver name.
+> > 
+> >    This change impacts the patches "cpuidle: mvebu: rename the driver
+> >    from armada-370-xp to mvebu-v7", "cpuidle: mvebu: add Armada 370
+> >    support", "cpuidle: mvebu: add Armada 38x support", "ARM: mvebu:
+> >    add cpuidle support for Armada 370" and "ARM: mvebu: add cpuidle
+> >    support for Armada 38x". Other patches are unchanged. The patch
+> >    "cpuidle: mvebu: make the cpuidle driver capable of handling
+> >    multiple SoCs" was no longer needed, so it has been removed.
+> > 
+> ...
+> > Gregory CLEMENT (14):
+> >   ARM: mvebu: split again armada_370_xp_pmsu_idle_enter() in PMSU code
+> >   ARM: mvebu: sort the #include of pmsu.c in alphabetic order
+> >   ARM: mvebu: add a common function for the boot address work around
+> >   ARM: mvebu: use the common function for Armada 375 SMP workaround
+> >   ARM: mvebu: rename the armada_370_xp symbols to mvebu_v7 in pmsu.c
+> >   ARM: mvebu: make the cpuidle initialization more generic
+> >   ARM: mvebu: use a local variable to store the resume address
+> >   ARM: mvebu: make the snoop disabling optional in
+> >     mvebu_v7_pmsu_idle_prepare()
+> >   ARM: mvebu: export the SCU address
+> >   ARM: mvebu: add CA9 MPcore SoC Controller node
+> >   cpuidle: mvebu: rename the driver from armada-370-xp to mvebu-v7
+> >   ARM: mvebu: add cpuidle support for Armada 370
+> >   ARM: mvebu: add cpuidle support for Armada 38x
+> >   ARM: mvebu: defconfig: enable cpuidle support in mvebu_v7_defconfig
+> > 
+> > Thomas Petazzoni (2):
+> >   cpuidle: mvebu: add Armada 370 support
+> >   cpuidle: mvebu: add Armada 38x support
+> > 
+> >  .../bindings/arm/armada-380-mpcore-soc-ctrl.txt    |  14 ++
+> >  arch/arm/boot/dts/armada-38x.dtsi                  |   5 +
+> >  arch/arm/configs/mvebu_v7_defconfig                |   2 +
+> >  arch/arm/mach-mvebu/armada-370-xp.h                |   1 -
+> >  arch/arm/mach-mvebu/board-v7.c                     |   9 +-
+> >  arch/arm/mach-mvebu/common.h                       |   2 +
+> >  arch/arm/mach-mvebu/headsmp-a9.S                   |  15 --
+> >  arch/arm/mach-mvebu/platsmp-a9.c                   |  42 +---
+> >  arch/arm/mach-mvebu/platsmp.c                      |   2 +-
+> >  arch/arm/mach-mvebu/pmsu.c                         | 273 ++++++++++++++++++---
+> >  arch/arm/mach-mvebu/pmsu.h                         |   5 +
+> >  arch/arm/mach-mvebu/pmsu_ll.S                      |  36 +++
+> >  arch/arm/mach-mvebu/system-controller.c            |  31 +++
+> >  drivers/cpuidle/Kconfig.arm                        |  12 +-
+> >  drivers/cpuidle/Makefile                           |   2 +-
+> >  drivers/cpuidle/cpuidle-armada-370-xp.c            |  93 -------
+> >  drivers/cpuidle/cpuidle-mvebu-v7.c                 | 150 +++++++++++
+> >  17 files changed, 500 insertions(+), 194 deletions(-)
+> >  create mode 100644 Documentation/devicetree/bindings/arm/armada-380-mpcore-soc-ctrl.txt
+> >  delete mode 100644 drivers/cpuidle/cpuidle-armada-370-xp.c
+> >  create mode 100644 drivers/cpuidle/cpuidle-mvebu-v7.c
 > 
-> 3) Handle memory hot-addition notification
-> 	acpi_memory_device_add()
-> 		acpi_memory_enable_device()
-> 			add_memory()
-> 3.a)				node_set_online();
-> 
-> 4) Online CPUs through sysfs interfaces
-> 	cpu_subsys_online()
-> 		cpu_up()
-> 			try_online_node()
-> 4.a)				node_set_online();
-> 
-> So associated node is always in offline state because it is onlined
-> until step 3.a or 4.a.
-> 
-> We could improve performance by online node at step 1.a. This change
-> also makes the code symmetric. Nodes are always created when handling
-> CPU/memory hot-addition events instead of handling user requests from
-> sysfs interfaces, and are destroyed when handling CPU/memory hot-removal
-> events.
+> Whole series, except 10 (went to mvebu/dt), and 16 (went to
+> mvebu/defconfig) applied to mvebu/soc-cpuidle.  Patches 11 to 13 applied
+> with Daniel's Ack.
 
-It seems like this patch has little to nothing to do with the rest of
-the series and can be sent on its own?
+Now merged into mvebu/soc.
 
-> It also close a race window caused by kmalloc_node(cpu_to_node(cpu)),
+It's getting really close.  I'll try to send out the pull request
+tomorrow am.  
 
-To be clear, the race is that on some x86 platforms, there is a period
-of time where a node ID returned by cpu_to_node() is offline.
+thx,
 
-<snip>
-
-> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
-> ---
->  arch/x86/kernel/acpi/boot.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> index 3b5641703a49..00c2ed507460 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -611,6 +611,7 @@ static void acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
->  	nid = acpi_get_node(handle);
->  	if (nid != -1) {
->  		set_apicid_to_node(physid, nid);
-> +		try_online_node(nid);
-
-try_online_node() seems like it can fail? I assume it's a pretty rare
-case, but should the return code be checked?
-
-If it does fail, it seems like there are pretty serious problems and we
-shouldn't be onlining this CPU, etc.?
-
->  		numa_set_node(cpu, nid);
->  		if (node_online(nid))
->  			set_cpu_numa_mem(cpu, local_memory_node(nid));
-
-Which means you can remove this check presuming try_online_node()
-returned 0.
-
-Thanks,
-Nish
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Jason.
