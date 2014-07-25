@@ -1,83 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
-Date: Fri, 25 Jul 2014 14:49:34 +0200
-Message-ID: <2634160.AMXQm5EuML@vostro.rjw.lan>
-References: <20140724212620.GO3935@laptop> <13290270.IfKaUSRMLR@vostro.rjw.lan> <alpine.DEB.2.10.1407251109390.23352@nanos>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
+ to be held for duration of changing governors
+Date: Fri, 25 Jul 2014 08:41:37 -0400
+Message-ID: <53D25081.1010209@redhat.com>
+References: <1406224491-3599-1-git-send-email-prarit@redhat.com> <CAKohpomHj17A4e6Sh8JSz1HPbq9r8gXUJeZ20PQ=Mhu59Vt7ZQ@mail.gmail.com> <53D24030.1010302@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64137 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759259AbaGYMbH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 08:31:07 -0400
-In-Reply-To: <alpine.DEB.2.10.1407251109390.23352@nanos>
+Received: from mx1.redhat.com ([209.132.183.28]:48904 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751348AbaGYMlm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 25 Jul 2014 08:41:42 -0400
+In-Reply-To: <53D24030.1010302@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Friday, July 25, 2014 11:27:25 AM Thomas Gleixner wrote:
-> On Fri, 25 Jul 2014, Rafael J. Wysocki wrote:
-> > On Thursday, July 24, 2014 11:26:20 PM Peter Zijlstra wrote:
-> > > Subject: irq: Rework IRQF_NO_SUSPENDED
-> > > From: Peter Zijlstra <peterz@infradead.org>
-> > > Date: Thu Jul 24 22:34:50 CEST 2014
-> > > 
-> > > Typically when devices are suspended they're quiesced such that they
-> > > will not generate any further interrupts.
-> > > 
-> > > However some devices should still generate interrupts, even when
-> > > suspended, typically used to wake the machine back up.
-> > > 
-> > > Such logic should ideally be contained inside each driver, if it can
-> > > generate interrupts when suspended, it knows about this and the
-> > > interrupt handler can deal with it.
-> > > 
-> > > Except of course for shared interrupts, when such a wakeup device is
-> > > sharing an interrupt line with a device that does not expect
-> > > interrupts while suspended things can go funny.
-> > > 
-> > > This is where IRQF_NO_SUSPEND comes in, the idea is that drivers that
-> > > have the capability to wake the machine set IRQF_NO_SUSPEND and their
-> > > handler will still be called, even when the IRQ subsystem is formally
-> > > suspended. Handlers without IRQF_NO_SUSPEND will not be called.
-> > > 
-> > > This replaced the prior implementation of IRQF_NO_SUSPEND which had
-> > > a number of fatal issues in that it didn't actually work for the
-> > > shared case, exactly the case it should be helping.
-> > > 
-> > > There is still enable_irq_wake()/IRQD_WAKEUP_STATE that tries to serve
-> > > a similar purpose but is equially wrecked for shared interrupts,
-> > > ideally this would be removed.
-> > 
-> > Let me comment about this particular thing.
-> > 
-> > I had a discussion with Dmitry about that and his argument was that
-> > enable_irq_wake() should imply IRQF_NO_SUSPEND, because drivers that
-> > set up interrupts for system wakeup should expect those interrupts to
-> > trigger at any time, including system suspend.  Hence the patch that
-> > added the IRQD_WAKEUP_STATE check to __disable_irq().
-> > 
-> > However, in the face of the problem that is being addressed here I'm
-> > not really sure that this argument is valid, because if the driver
-> > calling enable_irq_wake() is sharing the IRQ with another one, the
-> > other driver may not actually know that the IRQ will be a wakeup one
-> > and still may not expect interrupts to come to it during system
-> > suspend/resume.
-> > 
-> > Yes, drivers using enable_irq_wake() will likely want IRQF_NO_SUSPEND to
-> > be set for their irqactions, but that should not imply "no suspend" for
-> > all irqactions sharing the same desc.  So I guess it may be better to go
-> > forth and use a global "interrupts suspended" state variable instead of the
-> > IRQS_SUSPENDED flag for each desc and throw away the IRQD_WAKEUP_STATE
-> > check from suspend_device_irqs() entirely.
+
+
+On 07/25/2014 07:32 AM, Prarit Bhargava wrote:
 > 
-> How should that global state work?
+> 
+> On 07/25/2014 12:27 AM, Viresh Kumar wrote:
+>> On 24 July 2014 23:24, Prarit Bhargava <prarit@redhat.com> wrote:
+>>> The closer I looked at commit 955ef483, the more questions I have.  The first
+>>> thing is that it appears that the stacktrace includes function calls that
+>>> are not, and never have been, part of the linux.git tree, ie) the call trace
+>>> shows
+>>>
+>>>             [<c0055a79>] lock_acquire+0x61/0xbc
+>>>             [<c00fabf1>] sysfs_addrm_finish+0xc1/0x128
+>>>             [<c00f9819>] sysfs_hash_and_remove+0x35/0x64
+>>>             [<c00fbe6f>] remove_files.isra.0+0x1b/0x24
+>>>             [<c00fbea5>] sysfs_remove_group+0x2d/0xa8
+>>>             [<c02f9a0b>] cpufreq_governor_interactive+0x13b/0x35c
+>>>             [<c02f61df>] __cpufreq_governor+0x2b/0x8c
+>>>             [<c02f6579>] __cpufreq_set_policy+0xa9/0xf8
+>>>             [<c02f6b75>] store_scaling_governor+0x61/0x100
+>>>             [<c02f6f4d>] store+0x39/0x60
+>>>             [<c00f9b81>] sysfs_write_file+0xed/0x114
+>>>             [<c00b3fd1>] vfs_write+0x65/0xd8
+>>>             [<c00b424b>] sys_write+0x2f/0x50
+>>>             [<c000cdc1>] ret_fast_syscall+0x1/0x52
+>>>
+>>> and the top part of the stack from cpufreq_governor_interactive() appear to
+>>> be for a driver that is not in the linux.git tree.  Google search does show
+>>> that it exists in various android trees, however, my concern is that the "core"
+>>> scaling governors are now broken because of an out tree driver.
+>>
+>> Actually the problem did occur with ondemand/conservative as well. And
+>> the problem was, we accessed something from cpufreq sysfs and then were
+>> trying to remove that only and so some recursive locking stuff..
 
-Well, never mind.
+> I'll try to dig in further to see if I can reproduce the above lock inversion.
 
-If the face of your remark about the level-triggered interrupts that's all moot.
+Okay -- I think I got it:  The above happens only with an *older* sysfs stack
+which acquires a &buffer->mutex.  This no longer happens with the new sysfs
+stack so the above change is still no longer necessary in mainline linux.git (at
+least AFAICT).
 
-Rafael
+In any case, the change still appears to be incorrect in that it breaks the
+rwsem locking scheme of the cpufreq policy.  I'll do some additional testing on
+various systems and get back to you in a few days.
 
+P.
