@@ -1,51 +1,55 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
-Date: Fri, 25 Jul 2014 07:58:47 +0200
-Message-ID: <20140725055847.GQ3935@laptop>
-References: <20140724212620.GO3935@laptop>
- <13290270.IfKaUSRMLR@vostro.rjw.lan>
+From: Laxman Dewangan <ldewangan@nvidia.com>
+Subject: Re: [PATCH] thermal: of: look for sensor driver parent node if device
+ node missing
+Date: Fri, 25 Jul 2014 13:52:00 +0530
+Message-ID: <53D213A8.6000506@nvidia.com>
+References: <1405336354-31310-1-git-send-email-ldewangan@nvidia.com> <53D0D694.9040101@nvidia.com> <744357E9AAD1214791ACBA4B0B90926301396F53@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:52237 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750809AbaGYF6y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 01:58:54 -0400
-Content-Disposition: inline
-In-Reply-To: <13290270.IfKaUSRMLR@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <744357E9AAD1214791ACBA4B0B90926301396F53@SHSMSX101.ccr.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Zhang, Rui" <rui.zhang@intel.com>, "eduardo.valentin@gmail.com" <eduardo.valentin@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
-On Fri, Jul 25, 2014 at 01:10:36AM +0200, Rafael J. Wysocki wrote:
-> > There is still enable_irq_wake()/IRQD_WAKEUP_STATE that tries to serve
-> > a similar purpose but is equially wrecked for shared interrupts,
-> > ideally this would be removed.
-> 
-> Let me comment about this particular thing.
-> 
-> I had a discussion with Dmitry about that and his argument was that
-> enable_irq_wake() should imply IRQF_NO_SUSPEND, because drivers that
-> set up interrupts for system wakeup should expect those interrupts to
-> trigger at any time, including system suspend.  Hence the patch that
-> added the IRQD_WAKEUP_STATE check to __disable_irq().
-> 
-> However, in the face of the problem that is being addressed here I'm
-> not really sure that this argument is valid, because if the driver
-> calling enable_irq_wake() is sharing the IRQ with another one, the
-> other driver may not actually know that the IRQ will be a wakeup one
-> and still may not expect interrupts to come to it during system
-> suspend/resume.
-> 
-> Yes, drivers using enable_irq_wake() will likely want IRQF_NO_SUSPEND to
-> be set for their irqactions, but that should not imply "no suspend" for
-> all irqactions sharing the same desc.  So I guess it may be better to go
-> forth and use a global "interrupts suspended" state variable instead of the
-> IRQS_SUSPENDED flag for each desc and throw away the IRQD_WAKEUP_STATE
-> check from suspend_device_irqs() entirely.
-> 
-> Peter, it looks like you'd prefer that?
+Thanks Rui.
+It seems I have put the wrong email-id for Eduardo (which I got from 
+get_maintainer) and the original patch not reached to Eduardo.
 
-My preference would be to shoot enable_irq_wake() in the head, its
-fundamentally broken.
+Do I need to re-post patch?
+
+Thanks,
+Laxman
+
+On Thursday 24 July 2014 08:45 PM, Zhang, Rui wrote:
+> Hi, Laxman,
+>
+> As Eduardo is the of thermal author and maintainer, I will take your patch only if you can get ACK from Eduardo.
+>
+> Eduardo,
+> Do you have any comments on this?
+>
+> Thanks,
+> rui
+>
+>> -----Original Message-----
+>> From: Laxman Dewangan [mailto:ldewangan@nvidia.com]
+>> Sent: Thursday, July 24, 2014 5:49 PM
+>> To: Zhang, Rui; eduardo.valentin@ti.com
+>> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
+>> Subject: Re: [PATCH] thermal: of: look for sensor driver parent node if
+>> device node missing
+>> Importance: High
+>>
+>> On Monday 14 July 2014 04:42 PM, Laxman Dewangan wrote:
+>>> There are some mfd devices which supports junction thermal interrupt
+>>> like ams,AS3722. The DT binding of these devices are defined as the
+>>> flat and drivers for sub module of such devices are registered as the
+>>> mfd_add_devices. In this method, the sub devices registered as
+>>> platform driver and these do not have the of_node pointer on their
+>>> device structure. In this case, use the parent of_node pointer to get
+>>> the required of_node pointer.
+>>>
+>> Any comment please?
