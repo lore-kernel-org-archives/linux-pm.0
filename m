@@ -1,74 +1,63 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
-Date: Fri, 25 Jul 2014 18:58:10 +0200
-Message-ID: <20140725165810.GG6758@twins.programming.kicks-ass.net>
-References: <20140724212620.GO3935@laptop>
- <20140725124037.GL20603@laptop.programming.kicks-ass.net>
- <20140725132541.GT12054@laptop.lan>
- <2870044.iEzUSaptji@vostro.rjw.lan>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2 01/16] regmap: Add regmap_get_device
+Date: Fri, 25 Jul 2014 18:34:00 +0100
+Message-ID: <20140725173400.GZ17528@sirena.org.uk>
+References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>
+ <1405957142-19416-2-git-send-email-ttynkkynen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="x6I3On15oG0ucwLF"
+	protocol="application/pgp-signature"; boundary="w41lMVNXnOw3ZHPk"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:48472 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932508AbaGYQ6U (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 12:58:20 -0400
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:54952 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932839AbaGYRee (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 13:34:34 -0400
 Content-Disposition: inline
-In-Reply-To: <2870044.iEzUSaptji@vostro.rjw.lan>
+In-Reply-To: <1405957142-19416-2-git-send-email-ttynkkynen@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Walmsley <pwalmsley@nvidia.com>, devicetree@vger.kernel.org
 
 
---x6I3On15oG0ucwLF
+--w41lMVNXnOw3ZHPk
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jul 25, 2014 at 07:03:38PM +0200, Rafael J. Wysocki wrote:
-> So here's an idea.
->=20
-> What about returning IRQ_NONE rather than IRQ_HANDLED for "suspended"
-> interrupts (after all, that's what a sane driver would do for a
-> suspended device I suppose)?
->=20
-> If the line is really shared and the interrupt is taken care of by
-> the other guy sharing the line, we'll be all fine.
->=20
-> If that is not the case, on the other hand, and something's really
-> broken, we'll end up disabling the interrupt and marking it as
-> IRQS_SPURIOUS_DISABLED (if I understand things correctly).
->=20
-> But then, we can re-enable it and clear the IRQS_SPURIOUS_DISABLED
-> flag at the resume_device_irqs() time so the driver can use it again.
-> And we'll have a trace of the breakage in dmesg, so possibly we can
-> go forth and fix the bad guy.
->=20
-> Would that make sense?
+On Mon, Jul 21, 2014 at 06:38:47PM +0300, Tuomas Tynkkynen wrote:
+> Add a new function regmap_get_device to obtain the underlying struct
+> device from a regmap.
 
-Works for me..=20
+I've applied this...
 
---x6I3On15oG0ucwLF
-Content-Type: application/pgp-signature
+> +struct device *regmap_get_device(struct regmap *map)
+> +{
+> +	return map->dev;
+> +}
+> +
+
+...plus a followup exporting the symbol so it can be used from modules.
+
+--w41lMVNXnOw3ZHPk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v2
 
-iQIcBAEBAgAGBQJT0oyhAAoJEHZH4aRLwOS62hwP/RA9M2thJ65Ak6iwKnuaj4NQ
-xAU/ZxiDISJl89pJS5DjdjSAukpBHrxhwR0nKuq721hug9ZOtkIJ+GQww/k39q62
-GoYlhKcxifnqCvkC1my8xsRQKaiwvO4rpeh0UNAvgSz/t/RDGt6kuO0XjeJE6UD4
-PClvbUfTKRYSRkBwOXdxemm+/WlMqGznFJVtxIUpuWnZQN2JOVbwmi0rjMDKWk/8
-523N0jOV8hPBBdEcNXKDVBErkX6JXoPCeTvoDVE7xMslwJspfvbmKgKz0mDcbAH9
-0yWpjSCbp7FWPLedI8TlWJkYf+lOJEoWc+gUz1s1nQ0eJ96HOM4fpF2fGbE0WF04
-YZHfN2yD5HP7CzCTJMN4NubwrF17jy8gtacQ6CWgrpm2GdT6xhfOljHixAhDE55Q
-dcWMMfVzeeGMCmrnqgEGjgrgTFiD/hYg8r0DJLlJp8xY01dURHP1wFWTQfecfaVu
-8T9RJziEx1ReRwhvVrbdb99C/vo9EzH4Bb5pUDxLhNS7DJNamvunu5KHFl5uFwfm
-HBex9AApnovUR5HyIQA8QnW9zVtUx+KYHFaF9NzglWbokvDL6XOGAVkj0IKI7Pa8
-K9RdKdOCS3bHd9XWyqIopwN40Xs7yOzURhrkqh8V1/YIckQjwQGM+D1OFwwoQM7N
-jrpzWEidWjmLp/d9OIlH
-=J5lO
+iQIcBAEBAgAGBQJT0pUFAAoJELSic+t+oim9+KAP/RQuuZn2h04DaqFGmgTxw3iw
+8ZcctSQ/V5rJckcCGyGgmNeC7N3x3fIjCUc6rAf+sI4y7o8CoWvLvTE7Rlp9tIx9
+pZ90IgiSOH8nz+N+RjBe4yk35pePuGN3bE+AtlLW3p7AOr47WX8RCtcAJ2pVKs5+
+Qre9QFSAD09fLHKsiW1q0uSf6xWBBNgHpfMzPq003O0zRZvDp7xsGNH5Lz1VSSQg
+NKln7o10n0DmD6nskitiaR3/26f8NEXDm726Bj9z5sothK9j4nz1DubxlPhqHmFl
+EmTGxosU3+iNsxl+hEO5Z1tMpetk2MoWqb50qCCFGUVkhl/b98BBLgvr+zlNtTrz
+QMnCs/l8QJ/tGt44sEKVutctcLnxU/tjnt+7OAcI9KbyvTOjqeS/ntvMebf3rUoC
+ct3ZnRBPnQajAdjNSsXcgR5Xd+jsZEKk2hQPIgViR4ndPWvq33g5gdqRqWhMoxWx
+66xuXBmoIvToJgmDYVZULk50r93887SY1tYw1txNa3TAyhRiHpGRtAll7wxoHAgz
+PTdVkI771vLn8dyzftVzsj95KbHFQi3KKhacCYreUprTCTDxbd3U5ycjZ2kS5mOz
+IOo2l2CjEzydolBiaP/N7Bcir2oCt0cUpGI84O8zcBJoGhKkoWosMcYbHdf/Glnp
+GfNojqxnfKEYyBDvUR6L
+=E4/F
 -----END PGP SIGNATURE-----
 
---x6I3On15oG0ucwLF--
+--w41lMVNXnOw3ZHPk--
