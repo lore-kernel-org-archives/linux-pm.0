@@ -1,164 +1,184 @@
-From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Subject: [PATCH RFC v2] PM / sleep: Fix racing timers
-Date: Fri, 25 Jul 2014 14:06:48 -0700
-Message-ID: <1406322408-15408-1-git-send-email-soren.brinkmann@xilinx.com>
-References: <53D083C5.2000501@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
+Date: Sat, 26 Jul 2014 00:25:29 +0200
+Message-ID: <1663327.PISiM9sMHC@vostro.rjw.lan>
+References: <20140724212620.GO3935@laptop> <2870044.iEzUSaptji@vostro.rjw.lan> <alpine.DEB.2.10.1407252217350.23352@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f52.google.com ([209.85.213.52]:61727 "EHLO
-	mail-yh0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759874AbaGYVG6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 17:06:58 -0400
-In-Reply-To: <53D083C5.2000501@linaro.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:63783 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751594AbaGYWHD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 18:07:03 -0400
+In-Reply-To: <alpine.DEB.2.10.1407252217350.23352@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Soren Brinkmann <soren.brinkmann@xilinx.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On platforms that do not power off during suspend, successfully enterin=
-g
-suspend races with timers.
+On Friday, July 25, 2014 11:00:12 PM Thomas Gleixner wrote:
+> On Fri, 25 Jul 2014, Rafael J. Wysocki wrote:
+> > On Friday, July 25, 2014 03:25:41 PM Peter Zijlstra wrote:
+> > > OK, so Rafael said there's devices that keep on raising their interrupt
+> > > until they get attention. Ideally this won't happen because the device
+> > > is suspended etc.. But I'm sure there's some broken piece of hardware
+> > > out there that'll make it go boom.
+> > 
+> > So here's an idea.
+> > 
+> > What about returning IRQ_NONE rather than IRQ_HANDLED for "suspended"
+> > interrupts (after all, that's what a sane driver would do for a
+> > suspended device I suppose)?
+> > 
+> > If the line is really shared and the interrupt is taken care of by
+> > the other guy sharing the line, we'll be all fine.
+> > 
+> > If that is not the case, on the other hand, and something's really
+> > broken, we'll end up disabling the interrupt and marking it as
+> > IRQS_SPURIOUS_DISABLED (if I understand things correctly).
+> 
+> We should not wait 100k unhandled interrupts in that case. We know
+> already at the first unhandled interrupt that the shit hit the fan.
 
-The race happening in a couple of location is:
+The first one may be a bus glitch or some such.  Also I guess we still need to
+allow the legitimate "no suspend" guy to handle his interrupts until it gets
+too worse.
 
-  1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
-     ...
-  2. syscore_suspend()
-      -> timekeeping_suspend()
-       -> clockevents_notify(SUSPEND)
-        -> tick_suspend()   	(timers are turned off here)
-     ...
-  3. wfi            		(wait for wake-IRQ here)
+Also does it really hurt to rely on the generic mechanism here?  We regard
+it as fine at all other times after all.
 
-Between steps 1 and 2 the timers can still generate interrupts that are
-not handled and stay pending until step 3. That pending IRQ causes an
-immediate - spurious - wake.
+> I'll have a deeper look how we can sanitize the whole wake/no_suspend
+> logic vs. shared interrupts.
 
-The solution is to move the clockevents suspend/resume notification
-out of the syscore_suspend step and explictly call them at the appropri=
-ate
-time in the suspend/hibernation paths. I.e. timers are suspend _before_
-IRQs get disabled. And accordingly in the resume path.
+Cool, thanks!
 
-Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+> Need to look at the usage sites first.
+
+There will be more of them, like this:
+
+https://patchwork.kernel.org/patch/4618531/
+
+Essentially, all wakeup interrupts will need at least one no_suspend irqaction
+going forward.
+
+Below is my take on this (untested) in case it is useful for anything.
+
+It is targeted at the problematic case (that is, a shared interrupt with at least
+one irqaction that has IRQF_NO_SUSPEND set and at least one that doesn't) only and
+is not supposed to change behavior in the other cases (the do_irqaction thing
+shamelessly stolen from the Peter's patch).  It drops the IRQD_WAKEUP_STATE check,
+because that has the same problem with shared interrupts as no_suspend.
+
+Rafael
+
+
 ---
-Hi,
+ kernel/irq/handle.c |   21 ++++++++++++++++++---
+ kernel/irq/manage.c |   30 +++++++++++++++++++++++++-----
+ 2 files changed, 43 insertions(+), 8 deletions(-)
 
-This is my second shot at this. I followed John's suggestion to keep th=
-e
-timekeeping suspend where it is and just move the shutdown of the clock=
-event
-devices around.
-
-	Thanks,
-	S=C3=B6ren
-
- kernel/power/hibernate.c  | 9 +++++++++
- kernel/power/suspend.c    | 5 +++++
- kernel/time/timekeeping.c | 1 -
- 3 files changed, 14 insertions(+), 1 deletion(-)
-
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index fcc2611d3f14..ab9f807e2ccb 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -285,6 +285,8 @@ static int create_image(int platform_mode)
- 	if (error || hibernation_test(TEST_CPUS))
- 		goto Enable_cpus;
-=20
-+	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
+Index: linux-pm/kernel/irq/manage.c
+===================================================================
+--- linux-pm.orig/kernel/irq/manage.c
++++ linux-pm/kernel/irq/manage.c
+@@ -385,10 +385,23 @@ setup_affinity(unsigned int irq, struct
+ void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
+ {
+ 	if (suspend) {
+-		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND)
+-		    || irqd_has_set(&desc->irq_data, IRQD_WAKEUP_STATE))
++		struct irqaction *action = desc->action;
++		unsigned int no_suspend, flags;
 +
- 	local_irq_disable();
-=20
- 	error =3D syscore_suspend();
-@@ -316,6 +318,7 @@ static int create_image(int platform_mode)
- 	syscore_resume();
-=20
-  Enable_irqs:
-+	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
- 	local_irq_enable();
-=20
-  Enable_cpus:
-@@ -440,6 +443,8 @@ static int resume_target_kernel(bool platform_mode)
- 	if (error)
- 		goto Enable_cpus;
-=20
-+	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-+
- 	local_irq_disable();
-=20
- 	error =3D syscore_suspend();
-@@ -474,6 +479,7 @@ static int resume_target_kernel(bool platform_mode)
- 	syscore_resume();
-=20
-  Enable_irqs:
-+	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
- 	local_irq_enable();
-=20
-  Enable_cpus:
-@@ -555,6 +561,8 @@ int hibernation_platform_enter(void)
- 	if (error)
- 		goto Platform_finish;
-=20
-+	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-+
- 	local_irq_disable();
- 	syscore_suspend();
- 	if (pm_wakeup_pending()) {
-@@ -568,6 +576,7 @@ int hibernation_platform_enter(void)
-=20
-  Power_up:
- 	syscore_resume();
-+	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
- 	local_irq_enable();
- 	enable_nonboot_cpus();
-=20
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index ed35a4790afe..ca6c56a87ea3 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -12,6 +12,7 @@
- #include <linux/delay.h>
- #include <linux/errno.h>
- #include <linux/init.h>
-+#include <linux/clockchips.h>
- #include <linux/console.h>
- #include <linux/cpu.h>
- #include <linux/cpuidle.h>
-@@ -253,6 +254,8 @@ static int suspend_enter(suspend_state_t state, boo=
-l *wakeup)
- 	if (error || suspend_test(TEST_CPUS))
- 		goto Enable_cpus;
-=20
-+	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-+
- 	arch_suspend_disable_irqs();
- 	BUG_ON(!irqs_disabled());
-=20
-@@ -270,6 +273,8 @@ static int suspend_enter(suspend_state_t state, boo=
-l *wakeup)
- 		syscore_resume();
++		if (!action)
++			return;
++		no_suspend = IRQF_NO_SUSPEND;
++		flags = 0;
++		do {
++			no_suspend &= action->flags;
++			flags |= action->flags;
++			action = action->next;
++		} while (action);
++		if (no_suspend)
+ 			return;
+ 		desc->istate |= IRQS_SUSPENDED;
++		if (flags & IRQF_NO_SUSPEND)
++			return;
  	}
-=20
-+	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
+ 
+ 	if (!desc->depth++)
+@@ -446,7 +459,15 @@ EXPORT_SYMBOL(disable_irq);
+ void __enable_irq(struct irq_desc *desc, unsigned int irq, bool resume)
+ {
+ 	if (resume) {
+-		if (!(desc->istate & IRQS_SUSPENDED)) {
++		if (desc->istate & IRQS_SUSPENDED) {
++			desc->istate &= ~IRQS_SUSPENDED;
++			if (desc->istate & IRQS_SPURIOUS_DISABLED) {
++				pr_err("WARNING! Unhandled events during suspend for IRQ %d\n", irq);
++				desc->istate &= ~IRQS_SPURIOUS_DISABLED;
++			} else if (desc->depth == 0) {
++				return;
++			}
++		} else {
+ 			if (!desc->action)
+ 				return;
+ 			if (!(desc->action->flags & IRQF_FORCE_RESUME))
+@@ -454,7 +475,6 @@ void __enable_irq(struct irq_desc *desc,
+ 			/* Pretend that it got disabled ! */
+ 			desc->depth++;
+ 		}
+-		desc->istate &= ~IRQS_SUSPENDED;
+ 	}
+ 
+ 	switch (desc->depth) {
+@@ -1079,7 +1099,7 @@ __setup_irq(unsigned int irq, struct irq
+ 		 */
+ 
+ #define IRQF_MISMATCH \
+-	(IRQF_TRIGGER_MASK | IRQF_ONESHOT | IRQF_NO_SUSPEND)
++	(IRQF_TRIGGER_MASK | IRQF_ONESHOT)
+ 
+ 		if (!((old->flags & new->flags) & IRQF_SHARED) ||
+ 		    ((old->flags ^ new->flags) & IRQF_MISMATCH))
+Index: linux-pm/kernel/irq/handle.c
+===================================================================
+--- linux-pm.orig/kernel/irq/handle.c
++++ linux-pm/kernel/irq/handle.c
+@@ -131,6 +131,23 @@ void __irq_wake_thread(struct irq_desc *
+ }
+ 
+ irqreturn_t
++do_irqaction(struct irq_desc *desc, struct irqaction *action,
++	     unsigned int irq, void *dev_id)
++{
++	irqreturn_t ret;
 +
- 	arch_suspend_enable_irqs();
- 	BUG_ON(irqs_disabled());
-=20
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 32d8d6aaedb8..d2f21cbe2bfd 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -1032,7 +1032,6 @@ static int timekeeping_suspend(void)
- 	write_seqcount_end(&timekeeper_seq);
- 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
-=20
--	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
- 	clocksource_suspend();
- 	clockevents_suspend();
-=20
---=20
-2.0.1.1.gfbfc394
++	if (unlikely((desc->istate & IRQS_SUSPENDED) &&
++		     !(action->flags & IRQF_NO_SUSPEND)))
++		return IRQ_NONE;
++
++	trace_irq_handler_entry(irq, action);
++	ret = action->handler(irq, dev_id);
++	trace_irq_handler_exit(irq, action, ret);
++
++	return ret;
++}
++
++irqreturn_t
+ handle_irq_event_percpu(struct irq_desc *desc, struct irqaction *action)
+ {
+ 	irqreturn_t retval = IRQ_NONE;
+@@ -139,9 +156,7 @@ handle_irq_event_percpu(struct irq_desc
+ 	do {
+ 		irqreturn_t res;
+ 
+-		trace_irq_handler_entry(irq, action);
+-		res = action->handler(irq, action->dev_id);
+-		trace_irq_handler_exit(irq, action, res);
++		res = do_irqaction(desc, action, irq, action->dev_id);
+ 
+ 		if (WARN_ONCE(!irqs_disabled(),"irq %u handler %pF enabled interrupts\n",
+ 			      irq, action->handler))
 
