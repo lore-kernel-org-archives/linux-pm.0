@@ -1,103 +1,72 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: Re: [RFC Patch V1 30/30] x86, NUMA: Online node earlier when doing
- CPU hot-addition
-Date: Fri, 25 Jul 2014 09:44:36 +0800
-Message-ID: <53D1B684.1010900@linux.intel.com>
-References: <1405064267-11678-1-git-send-email-jiang.liu@linux.intel.com> <1405064267-11678-31-git-send-email-jiang.liu@linux.intel.com> <20140724233027.GC24458@linux.vnet.ibm.com>
+From: Alexandre Courbot <gnurou@gmail.com>
+Subject: Re: [PATCH] gpio: extend gpiod_get*() with flags parameter
+Date: Fri, 25 Jul 2014 10:36:43 +0900
+Message-ID: <CAAVeFu+R+UWtxftWBM3qghNnf9O6SOf5AeNC-qemG7W05hiuAQ@mail.gmail.com>
+References: <1406214298-20062-1-git-send-email-acourbot@nvidia.com>
+ <1496956.3bpx902hFg@avalon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:48786 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752677AbaGYBot (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 24 Jul 2014 21:44:49 -0400
-In-Reply-To: <20140724233027.GC24458@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <1496956.3bpx902hFg@avalon>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <chris@printf.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Liam Girdwood <lgirdwood@gmail.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Jiri Slaby <jslaby@suse.cz>, Florian Fainelli <f.fainelli@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Alexander Shiyan <shc_work@mail.ru>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Paul Handrigan <Paul.Handrigan@cirrus.com>, linux-iio@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Hans Verkuil <hans.verkuil@cisco.com>, linux-serial@vger.kernel.org, linux-input@vger.kernel.o
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, David Rientjes <rientjes@google.com>, Mike Galbraith <umgwanakikbuti@gmail.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Tony Luck <tony.luck@intel.com>, linux-mm@kvack.org, linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
+On Fri, Jul 25, 2014 at 1:23 AM, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+>> diff --git a/Documentation/gpio/consumer.txt
+>> b/Documentation/gpio/consumer.txt index 7ff30d2..a3fb1d7 100644
+>> --- a/Documentation/gpio/consumer.txt
+>> +++ b/Documentation/gpio/consumer.txt
+>> @@ -29,13 +29,24 @@ gpiod_get() functions. Like many other kernel
+>> subsystems, gpiod_get() takes the device that will use the GPIO and the
+>> function the requested GPIO is supposed to fulfill:
+>>
+>> -     struct gpio_desc *gpiod_get(struct device *dev, const char *con_id)
+>> +     struct gpio_desc *gpiod_get(struct device *dev, const char *con_id,
+>> +                                 enum gpio_flags flags)
+>
+> I assume you mean enum gpiod_flags here and in the rest of the documentation.
 
+Indeed, thanks for pointing it out.
 
-On 2014/7/25 7:30, Nishanth Aravamudan wrote:
-> On 11.07.2014 [15:37:47 +0800], Jiang Liu wrote:
->> With typical CPU hot-addition flow on x86, PCI host bridges embedded
->> in physical processor are always associated with NOMA_NO_NODE, which
->> may cause sub-optimal performance.
->> 1) Handle CPU hot-addition notification
->> 	acpi_processor_add()
->> 		acpi_processor_get_info()
->> 			acpi_processor_hotadd_init()
->> 				acpi_map_lsapic()
->> 1.a)					acpi_map_cpu2node()
+>
+>>  If a function is implemented by using several GPIOs together (e.g. a simple
+>> LED device that displays digits), an additional index argument can be
+>> specified:
 >>
->> 2) Handle PCI host bridge hot-addition notification
->> 	acpi_pci_root_add()
->> 		pci_acpi_scan_root()
->> 2.a)			if (node != NUMA_NO_NODE && !node_online(node)) node = NUMA_NO_NODE;
->>
->> 3) Handle memory hot-addition notification
->> 	acpi_memory_device_add()
->> 		acpi_memory_enable_device()
->> 			add_memory()
->> 3.a)				node_set_online();
->>
->> 4) Online CPUs through sysfs interfaces
->> 	cpu_subsys_online()
->> 		cpu_up()
->> 			try_online_node()
->> 4.a)				node_set_online();
->>
->> So associated node is always in offline state because it is onlined
->> until step 3.a or 4.a.
->>
->> We could improve performance by online node at step 1.a. This change
->> also makes the code symmetric. Nodes are always created when handling
->> CPU/memory hot-addition events instead of handling user requests from
->> sysfs interfaces, and are destroyed when handling CPU/memory hot-removal
->> events.
-> 
-> It seems like this patch has little to nothing to do with the rest of
-> the series and can be sent on its own?
-> 
->> It also close a race window caused by kmalloc_node(cpu_to_node(cpu)),
-> 
-> To be clear, the race is that on some x86 platforms, there is a period
-> of time where a node ID returned by cpu_to_node() is offline.
-> 
-> <snip>
-> 
->> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
->> ---
->>  arch/x86/kernel/acpi/boot.c |    1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
->> index 3b5641703a49..00c2ed507460 100644
->> --- a/arch/x86/kernel/acpi/boot.c
->> +++ b/arch/x86/kernel/acpi/boot.c
->> @@ -611,6 +611,7 @@ static void acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
->>  	nid = acpi_get_node(handle);
->>  	if (nid != -1) {
->>  		set_apicid_to_node(physid, nid);
->> +		try_online_node(nid);
-> 
-> try_online_node() seems like it can fail? I assume it's a pretty rare
-> case, but should the return code be checked?
-> 
-> If it does fail, it seems like there are pretty serious problems and we
-> shouldn't be onlining this CPU, etc.?
-> 
->>  		numa_set_node(cpu, nid);
->>  		if (node_online(nid))
->>  			set_cpu_numa_mem(cpu, local_memory_node(nid));
-> 
-> Which means you can remove this check presuming try_online_node()
-> returned 0.
-Good suggestion, will try to enhance the error handling path.
+>>       struct gpio_desc *gpiod_get_index(struct device *dev,
+>> -                                       const char *con_id, unsigned int idx)
+>> +                                       const char *con_id, unsigned int idx,
+>> +                                       enum gpio_flags flags)
+>> +
+>> +The flags parameter is used to optionally specify a direction and initial
+>> value +for the GPIO. Values can be:
+>> +
+>> +* AS_IS or 0 to not initialize the GPIO at all. The direction must be set
+>> later
+>> +  with one of the dedicated functions.
+>> +* INPUT to initialize the GPIO as input.
+>> +* OUTPUT_LOW to initialize the GPIO as output with a value of 0.
+>> +* OUTPUT_HIGH to initialize the GPIO as output with a value of 1.
+>
+> Pretty please, could you at least prefix that with GPIOD_ ? Those names are
+> too generic.
+>
+> How about renaming them to GPIOD_AS_IS, GPIOD_IN, GPIOD_OUT_INIT_LOW and
+> GPIOD_OUT_INIT_HIGH in order to match the GPIOF_ flags ?
 
-> 
-> Thanks,
-> Nish
-> 
+Yeah, you're right, the possibility of name collision is quite high here.
+
+Thanks,
+Alex.
