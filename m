@@ -1,72 +1,68 @@
-From: Alexandre Courbot <gnurou@gmail.com>
-Subject: Re: [PATCH] gpio: extend gpiod_get*() with flags parameter
-Date: Fri, 25 Jul 2014 10:32:45 +0900
-Message-ID: <CAAVeFuLK2qf1n6ipnW1tK_ur2_j7NOWLegMWYAQGwKw85fnwpA@mail.gmail.com>
-References: <1406214298-20062-1-git-send-email-acourbot@nvidia.com>
- <6059032.T3tqvLkWTo@wuerfel>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem to
+ be held for duration of changing governors
+Date: Fri, 25 Jul 2014 09:57:22 +0530
+Message-ID: <CAKohpomHj17A4e6Sh8JSz1HPbq9r8gXUJeZ20PQ=Mhu59Vt7ZQ@mail.gmail.com>
+References: <1406224491-3599-1-git-send-email-prarit@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <6059032.T3tqvLkWTo@wuerfel>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <chris@printf.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Liam Girdwood <lgirdwood@gmail.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Pavel Machek <pavel@ucw.cz>, Jiri Slaby <jslaby@suse.cz>, Florian Fainelli <f.fainelli@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Alexander Shiyan <shc_work@mail.ru>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Paul Handrigan <Paul.Handrigan@cirrus.com>, linux-iio@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Hans Verkuil <hans.verkuil@cisco.com>, linux-serial@vger.kernel.org, linux-input@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1406224491-3599-1-git-send-email-prarit@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 25, 2014 at 1:10 AM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Friday 25 July 2014 00:04:58 Alexandre Courbot wrote:
->> I'm not sure how this could be applied harmlessly though - maybe through
->> a dedicated branch for -next? Problem is that a lot of new code is not
->> yet merged into mainline, and conflicts are very likely to occur. Linus,
->> do you have any suggestion as to how this can be done without blood being
->> spilled?
+On 24 July 2014 23:24, Prarit Bhargava <prarit@redhat.com> wrote:
+> The closer I looked at commit 955ef483, the more questions I have.  The first
+> thing is that it appears that the stacktrace includes function calls that
+> are not, and never have been, part of the linux.git tree, ie) the call trace
+> shows
 >
-> There is a trick that we sometime use in this situation,
-> though it has to be done carefully:
+>             [<c0055a79>] lock_acquire+0x61/0xbc
+>             [<c00fabf1>] sysfs_addrm_finish+0xc1/0x128
+>             [<c00f9819>] sysfs_hash_and_remove+0x35/0x64
+>             [<c00fbe6f>] remove_files.isra.0+0x1b/0x24
+>             [<c00fbea5>] sysfs_remove_group+0x2d/0xa8
+>             [<c02f9a0b>] cpufreq_governor_interactive+0x13b/0x35c
+>             [<c02f61df>] __cpufreq_governor+0x2b/0x8c
+>             [<c02f6579>] __cpufreq_set_policy+0xa9/0xf8
+>             [<c02f6b75>] store_scaling_governor+0x61/0x100
+>             [<c02f6f4d>] store+0x39/0x60
+>             [<c00f9b81>] sysfs_write_file+0xed/0x114
+>             [<c00b3fd1>] vfs_write+0x65/0xd8
+>             [<c00b424b>] sys_write+0x2f/0x50
+>             [<c000cdc1>] ret_fast_syscall+0x1/0x52
 >
->> diff --git a/Documentation/gpio/consumer.txt b/Documentation/gpio/consumer.txt
->> index 7ff30d2..a3fb1d7 100644
->> --- a/Documentation/gpio/consumer.txt
->> +++ b/Documentation/gpio/consumer.txt
->> @@ -29,13 +29,24 @@ gpiod_get() functions. Like many other kernel subsystems, gpiod_get() takes the
->>  device that will use the GPIO and the function the requested GPIO is supposed to
->>  fulfill:
->>
->> -       struct gpio_desc *gpiod_get(struct device *dev, const char *con_id)
->> +       struct gpio_desc *gpiod_get(struct device *dev, const char *con_id,
->> +                                   enum gpio_flags flags)
->>
->>
->
->
-> -       struct gpio_desc *gpiod_get(struct device *dev, const char *con_id)
-> +       struct gpio_desc *__gpiod_get(struct device *dev, const char *con_id,
-> +                                       enum gpio_flags flags);
-> +
-> +#define __gpiod_get(dev, con_id, flags, ...) __gpiod_get(dev, con_id, flags)
-> +#define gpiod_get(varargs ...) __gpiod_get(varargs, 0)
->
-> This will allow both variants to be called, and any users of the three-argument
-> version will pass zero as the fourth argument (or whatever you choose there).
->
-> Once the conversion is complete, the macros can be removed.
+> and the top part of the stack from cpufreq_governor_interactive() appear to
+> be for a driver that is not in the linux.git tree.  Google search does show
+> that it exists in various android trees, however, my concern is that the "core"
+> scaling governors are now broken because of an out tree driver.
 
-Wow, that works great, thanks! Indeed, this will allow me to send more
-localized patches and to not spam half of the kernel developers. Sorry
-about the noise.
+Actually the problem did occur with ondemand/conservative as well. And
+the problem was, we accessed something from cpufreq sysfs and then were
+trying to remove that only and so some recursive locking stuff..
 
-Let's close this thread, I will submit the gpiolib update with this
-trick first, then update each user before eventually removing the
-macros.
+And so nothing interactive governor specific.
 
-Thanks,
-Alex.
+The problem looks similar to what's reported here:
+http://comments.gmane.org/gmane.linux.power-management.general/47397
+
+And that's how I replied to it:
+
+I have pushed a fix earlier for similar issues:
+19c7630 cpufreq: serialize calls to __cpufreq_governor()
+
+but was later reverted by Srivatsa:
+56d07db cpufreq: Remove temporary fix for race between CPU hotplug and
+sysfs-writes
+
+because we didn't thought about this usecase.
+
+I propose we get that back. I have tested a revert of 56d07db on
+my setup and didn't see any crash..
+
+Please see if that works for you as well..
+
+--
+viresh
