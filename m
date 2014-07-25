@@ -1,86 +1,82 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 02/16] regulator: Add helpers for low-level register
- access
-Date: Fri, 25 Jul 2014 18:48:30 +0100
-Message-ID: <20140725174830.GB17528@sirena.org.uk>
-References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com>
- <1405957142-19416-3-git-send-email-ttynkkynen@nvidia.com>
+From: Mike Turquette <mike.turquette@linaro.org>
+Subject: Re: [RFC] cpufreq: Add bindings for CPU clock sharing topology
+Date: Fri, 25 Jul 2014 13:02:14 -0700
+Message-ID: <20140725200214.22930.56323@quantum>
+References: <7e097b71342c9f5f63b07ff2e135eb7beb626aab.1405661369.git.viresh.kumar@linaro.org>
+ <CAOesGMhTkTEXp99gpU8cZBwYmiXpsySG5zMn6oSyo_Mf5PAiUg@mail.gmail.com>
+ <CAKohpo=MmoALOHg-=7cf0jm=OJO57TWQZQXqkRwhRwU-DGPMmA@mail.gmail.com>
+ <CAOesGMhuNzVtUkaUjF+JjNgHcgf08WiM0DG-kzwtcyUxkK_zow@mail.gmail.com>
+ <CAKohpokLqrydV3b=innvOWrW9ijXtZwPKdT5Ew65cjMxsY2Mvw@mail.gmail.com>
+ <53CA8D95.8010108@ti.com>
+ <CAKohpok-C+JCebjJkZExx6EjBctoyJF7fV71Vjj7bi1TAdXrFQ@mail.gmail.com>
+ <20140724003314.6419.51564@quantum>
+ <CABGGisxHxdTyh500ey+KVLV3EnfYZvtsCV=Nt4Nqu7p6KJOwdA@mail.gmail.com>
+ <CAKohpo=CqhA-TOfJh3U0G+tEMqvn_tiyWK=Yd6yNdAoDYQ-1BA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zQkbmZdDtNfaM5TR"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1405957142-19416-3-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:53176 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934959AbaGYUCT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 16:02:19 -0400
+Received: by mail-pd0-f180.google.com with SMTP id y13so6237370pdi.39
+        for <linux-pm@vger.kernel.org>; Fri, 25 Jul 2014 13:02:19 -0700 (PDT)
+In-Reply-To: <CAKohpo=CqhA-TOfJh3U0G+tEMqvn_tiyWK=Yd6yNdAoDYQ-1BA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@linaro.org>
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>, Olof Johansson <olof@lixom.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Grant Likely <grant.likely@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>
 
+Quoting Viresh Kumar (2014-07-24 03:39:31)
+> On 24 July 2014 07:54, Rob Herring <rob.herring@linaro.org> wrote:
+> 
+> >> A previous approach tried to compare struct clk pointers, which is a bad
+> >> idea since those are just cookies and should not be deref'd by drivers.
+> >> However a similar approach would be to compare the phandle, right?
+> 
+> Yeah. So what's the right way then?
+> 
+> > I think there needs to be a way to query whether a rate change for a
+> > clock affects other children. As pointed out previously, the clock to
+> > a core may not be shared, but it's parent that can change rates could
+> > be shared. This could be done with functions
+> > clk_get_parent_rate_change to return the clock in heirarchy which can
+> > change rates, and clk_is_parent_clk which tells if one clock is a
+> > child of another clock. It's been a while since I've looked at the
+> > clock api. It could also be done by experiment. Change the rate for
+> > core 0 and see if core 1's rate is changed and still equal. There's
+> > probably some ordering issue with doing that though.
+> 
+> But Mike sort of Nak'd that as well earlier :)
 
---zQkbmZdDtNfaM5TR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Sorry for being NAKy. Pushing more query functions into the clk api will
+be a bad thing in the long term. First there are races: if a driver
+queries the clock framework and then calls another clk.h api function
+based on that result, we would need to lock the whole block of code
+since the query may be invalid immediately after the result is returned.
 
-On Mon, Jul 21, 2014 at 06:38:48PM +0300, Tuomas Tynkkynen wrote:
+Secondly, it is common for hardware to be designed with various use case
+configurations already known. From a software point of view this is
+"compile-time" info since we already know what OPPs we want to run at,
+how we want to multiplex our clock outputs, etc. Often we know exactly
+what we want to do from a hardware integration standpoint, and by trying
+to have some algorithmic approach in software where we walk the tree and
+figure stuff out dynamically is just going to make life hard for us.
 
-> Add helper functions that allow regulator consumers to obtain low-level
-> details about the regulator hardware, like the voltage selector register
-> address and such. These details can be useful when configuring hardware
-> or firmware that want to do low-level access to regulators, with no
-> involvement from the kernel.
+I also think this whole push to consolidate every cpufreq machine driver
+into cpufreq-cpu0 is complete madness. Machine drivers exist for a
+reason. Now with this big push to remove cpufreq drivers we are just
+pushing more and more logic into the clock framework (see some recent
+patch series introducing "cpu clocks" as clock providers, which
+essentially do what the old cpufreq machine drivers used to do).
 
-Applied, thanks.  I've also created a signed tag for this one:
+So my opinion is to figure out how to specify the shared-clock versus
+independent-clock parameter it DT. I think the big issue here is the
+topology semantics around the cpus node, and I'll stay out of that
+stuff. But let's please not introduce a random API for a single merge
+window and let's also not over-consolidate machine driver code just for
+the sake of having fewer C files.
 
-The following changes since commit 7171511eaec5bf23fb06078f59784a3a0626b38f:
-
-  Linux 3.16-rc1 (2014-06-15 17:45:28 -1000)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git tags/getreg
-
-for you to fetch changes up to 04eca28cde52cdf9eb91e127cc358ad79a8ec53b:
-
-  regulator: Add helpers for low-level register access (2014-07-25 18:43:48 +0100)
-
-----------------------------------------------------------------
-regulator: Allow clients to retrieve voltage selection register
-information
-
-Some systems have embedded controllers that can automatically manage the
-voltage of a regulator.  Help client drivers support this in a generic
-fashion by providing access to the register information we have in the
-framework.
-
-----------------------------------------------------------------
-Tuomas Tynkkynen (1):
-      regulator: Add helpers for low-level register access
-
- Documentation/power/regulator/consumer.txt | 35 +++++++++++++++
- drivers/regulator/core.c                   | 71 ++++++++++++++++++++++++++++++
- include/linux/regulator/consumer.h         | 26 +++++++++++
- 3 files changed, 132 insertions(+)
-
---zQkbmZdDtNfaM5TR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBAgAGBQJT0phqAAoJELSic+t+oim98jYP/ROiXmfOX8whSlYCzUPrJuv7
-BPyGJcWQarxfMiGfSkz7bw16BNliJjCuxxyMlUFc14fFiQGLYJptGEkHVjMUghgl
-LGfMlFC3W3Xml8cD8NN5X8k6HfsC18z0xIktb+kkDLkXnvAqs4FbJlp7uaFr72D8
-mm6iZ4QidjxGkfoCuUb+mbzAfZWuqqcLLuzed0zckXElXwoPaCf+2uFUDabiY6ap
-QFvncNoBjUm4/O1gNSVeP2m/Ab4MwVJSQxJPDnVqYKtUFFZV/3DZJhXUiZIpDiW8
-0GDqgD7bn1X0fyGGSSByFd9TYsoC2xSSpXvahcQ4632RV9rtV9an3egR8nBuI/8x
-fUaZ1PKtO0ri+++IuaAjuL9P/1tgW2mzlzxHqzoXxgjQhLBMOTKDx/aWKBAenj0j
-hSbC7daldZaWY6j51YgwHBs/SMcUYqW3D0XAeu+BvzqnaLB/IW+F6QM0IBV6S0js
-t/l4CeLmoKz/O0lX5hbv4/UDRtgYwDm5zbZG8yapjxC3CK/0Mlh64cUyhqzWW2IB
-cfLtXzyc9C2vqns+GAjO5yROG+dkMM80pEBNtfcNM7CxS6sQpxODWg8QfGzEKBD7
-5ehykCWhtRs5E4KyHiIvtdmiRhg0r5Deho6bHR1DG4KOkHrCRQF05BpR9TPko+iA
-rmNH8zXNGQmiclf+iIKm
-=fMkx
------END PGP SIGNATURE-----
-
---zQkbmZdDtNfaM5TR--
+Regards,
+Mike
