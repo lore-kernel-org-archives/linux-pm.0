@@ -1,63 +1,93 @@
 From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: [RFC PATCH 2/3] PM / clock_ops: allow to specify custom pm_clk_notifier callback
-Date: Fri, 25 Jul 2014 21:31:35 +0300
-Message-ID: <1406313096-29761-3-git-send-email-grygorii.strashko@ti.com>
+Subject: [RFC PATCH 3/3] ARM: keystone: pm_domain: setup clk pm domain clocks from DT
+Date: Fri, 25 Jul 2014 21:31:36 +0300
+Message-ID: <1406313096-29761-4-git-send-email-grygorii.strashko@ti.com>
 References: <1406313096-29761-1-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:48337 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753217AbaGYRq4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 25 Jul 2014 13:46:56 -0400
+Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <1406313096-29761-1-git-send-email-grygorii.strashko@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-sh-owner@vger.kernel.org
 To: santosh.shilimkar@ti.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org
 Cc: ben.dooks@codethink.co.uk, laurent.pinchart@ideasonboard.com, grant.likely@secretlab.ca, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
+List-Id: linux-pm@vger.kernel.org
 
-The CLK PM domain assumes that platform code should always provide
-list of Connection IDs of the clock (con_id) in
-pm_clk_notifier_block structure. Then CLK PM domain uses these con_ids
-to setup list of clocks per device.
+This patch implements custom pm_clk_notifier callback for Keystone 2
+CLK PM domain which fills list of clocks for Device with all
+clocks assigned to this Device in DT.
 
-Such approach is inconvenient when devices can have different number
-of clocks. For example, if maximum number of clocks used by
-device is 4 the pm_clk_notifier_block structure will look like:
-
-static struct pm_clk_notifier_block platform_domain_notifier = {
-	.pm_domain = &keystone_pm_domain,
-	.con_ids = { "fck", "opt1", "opt2", "opt3", NULL },
-};
-
-More over, clocks in DT have to be named using only con_ids:
-	clocks = <&paclk13>, <&clkcpgmac>, <&chipclk12>;
-	clock-names = "fck", "opt1", "opt2";
-
-This patch allow to specify custom pm_clk_notifier callback from
-platform code and in such way makes CLK PM domain initialization
-more flexible. For example, Keystone 2 will provide custom callback
-to fill list of clocks for Device with all clocks assigned to this
-Device in DT.
+After this patch .con_ids field in pm_clk_notifier_block is not
+used and there are no limitation for clocks names in DT any more.
 
 Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
 ---
- drivers/base/power/clock_ops.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/arm/mach-keystone/pm_domain.c |   46 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
 
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index 2d5c9c1..c103598 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -520,6 +520,7 @@ void pm_clk_add_notifier(struct bus_type *bus,
- 	if (!bus || !clknb)
- 		return;
+diff --git a/arch/arm/mach-keystone/pm_domain.c b/arch/arm/mach-keystone/pm_domain.c
+index ca79dda..56542d2 100644
+--- a/arch/arm/mach-keystone/pm_domain.c
++++ b/arch/arm/mach-keystone/pm_domain.c
+@@ -47,6 +47,51 @@ static int keystone_pm_runtime_resume(struct device *dev)
  
--	clknb->nb.notifier_call = pm_clk_notify;
-+	if (!clknb->nb.notifier_call)
-+		clknb->nb.notifier_call = pm_clk_notify;
- 	bus_register_notifier(bus, &clknb->nb);
+ 	return pm_generic_runtime_resume(dev);
  }
++
++static int keystone_pm_clk_notify(struct notifier_block *nb,
++				  unsigned long action, void *data)
++{
++	struct pm_clk_notifier_block *clknb;
++	struct device *dev = data;
++	int error;
++	unsigned int i;
++	struct clk *clk;
++	struct device_node *np = dev->of_node;
++
++	dev_dbg(dev, "%s() %ld\n", __func__, action);
++
++	clknb = container_of(nb, struct pm_clk_notifier_block, nb);
++
++	switch (action) {
++	case BUS_NOTIFY_BIND_DRIVER:
++		if (dev->pm_domain)
++			break;
++
++		error = pm_clk_create(dev);
++		if (error)
++			break;
++
++		dev->pm_domain = clknb->pm_domain;
++
++		for (i = 0; (clk = of_clk_get(np, i)) && !IS_ERR(clk); i++) {
++			if (pm_clk_add_clk(dev, clk))
++				clk_put(clk);
++		}
++
++		break;
++	case BUS_NOTIFY_UNBOUND_DRIVER:
++		if (dev->pm_domain != clknb->pm_domain)
++			break;
++
++		dev->pm_domain = NULL;
++		pm_clk_destroy(dev);
++		break;
++	}
++
++	return 0;
++}
++#else
++
+ #endif
+ 
+ static struct dev_pm_domain keystone_pm_domain = {
+@@ -59,6 +104,7 @@ static struct dev_pm_domain keystone_pm_domain = {
+ 
+ static struct pm_clk_notifier_block platform_domain_notifier = {
+ 	.pm_domain = &keystone_pm_domain,
++	.nb = { .notifier_call = keystone_pm_clk_notify, },
+ };
+ 
+ static struct of_device_id of_keystone_table[] = {
 -- 
 1.7.9.5
 
