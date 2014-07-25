@@ -1,57 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: PROBLEM: Kernel OOPS and possible system freeze after concurrent
- writing to cpufreq/scaling_governor (Resend)
-Date: Fri, 25 Jul 2014 14:33:26 +0530
-Message-ID: <CAKohpomDkU1nBP4+1EkSdDxQESD+1b6kmaELVfGEifqTL+ZOdg@mail.gmail.com>
-References: <1405522398.2348.42.camel@x200t>
-	<1406185912.2406.3.camel@x200t>
-	<CAKohpomo_Qoc-ioC-L-n6z19SLMgCfzebec7pqkq9y86gt61HA@mail.gmail.com>
-	<1406277769.2399.4.camel@x200t>
+From: Laxman Dewangan <ldewangan@nvidia.com>
+Subject: [PATCH-REPOST] thermal: of: look for sensor driver parent node if device node missing
+Date: Fri, 25 Jul 2014 14:49:31 +0530
+Message-ID: <1406279971-14957-1-git-send-email-ldewangan@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f48.google.com ([209.85.218.48]:42134 "EHLO
-	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756912AbaGYJD0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 05:03:26 -0400
-Received: by mail-oi0-f48.google.com with SMTP id h136so3066727oig.7
-        for <linux-pm@vger.kernel.org>; Fri, 25 Jul 2014 02:03:26 -0700 (PDT)
-In-Reply-To: <1406277769.2399.4.camel@x200t>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:10117 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756909AbaGYJVP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 05:21:15 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: rui.zhang@intel.com, eduardo.valentin@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, javi.merino@arm.com, Laxman Dewangan <ldewangan@nvidia.com>
 
-On 25 July 2014 14:12, Robert Sch=C3=B6ne <robert.schoene@tu-dresden.de=
-> wrote:
-> The bug is still there. Here's my bash history, so that you can be su=
-re I checked it correctly:
->
-> git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linu=
-x.git linux-git
-> cd linux-git/
-> git show 56d07db
-> git branch --contains 19c7630
-> git branch --contains 56d07db
-> git revert -n 56d07db
-> make oldconfig
-> make clean
-> make -j9 deb-pkg
-> cd ..
-> sudo dpkg -i linux-libc-dev_3.16.0-rc6+-2_amd64.deb
-> sudo dpkg -i linux-image-3.16.0-rc6+_3.16.0-rc6+-2_amd64.deb
-> sudo dpkg -i linux-headers-3.16.0-rc6+_3.16.0-rc6+-2_amd64.deb
-> sudo dpkg -i linux-firmware-image-3.16.0-rc6+_3.16.0-rc6+-2_amd64.deb
-> sudo update-grub2
-> sudo reboot
->
-> Again, I didn't get a backtrace for the error, but only this:
+There are some mfd devices which supports junction thermal interrupt
+like ams,AS3722. The DT binding of these devices are defined as the
+flat and drivers for sub module of such devices are registered as
+the mfd_add_devices. In this method, the sub devices registered as
+platform driver and these do not have the of_node pointer on their
+device structure. In this case, use the parent of_node pointer to
+get the required of_node pointer.
 
-Not sure if you did exactly what I asked for:
+Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
+---
+I typed differnet email ID for Eduardo and so it did not reach to him.
+Resending the patch with correct ID.
 
-Please run this in your repository:
+ drivers/thermal/of-thermal.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-git revert 56d07db
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index 04b1be7..85a7d71 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -396,6 +396,8 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	sensor_np = dev->of_node;
++	if (!sensor_np && dev->parent)
++		sensor_np = dev->parent->of_node;
+ 
+ 	for_each_child_of_node(np, child) {
+ 		struct of_phandle_args sensor_specs;
+-- 
+1.8.1.5
 
-save-quit the editor window and try again..
