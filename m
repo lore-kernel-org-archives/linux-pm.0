@@ -1,73 +1,75 @@
-From: Nick Krause <xerofoify@gmail.com>
-Subject: Re: [PATCH] cpufreq: Fix latency for cpufreq_info
-Date: Fri, 25 Jul 2014 19:06:54 -0400
-Message-ID: <CAPDOMVi7bXziheE6LaCHjjGg-aPov5_8kSN-xGxedPzV=PRAEQ@mail.gmail.com>
-References: <1405319337-11368-1-git-send-email-xerofoify@gmail.com>
-	<CAKohpo=R4sjEGUFDt2yubfTQ+r1FO5RtFBYg8XROH-SYu90Zew@mail.gmail.com>
-	<CAMf-jS=pCKtOK6ZG=LWLGSJT9xCzCkiuARVskut4Wz+pARSsyw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
+Date: Sat, 26 Jul 2014 13:49:17 +0200
+Message-ID: <2368056.cLoWQWpTSo@vostro.rjw.lan>
+References: <20140724212620.GO3935@laptop> <alpine.DEB.2.10.1407252217350.23352@nanos> <1663327.PISiM9sMHC@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f172.google.com ([74.125.82.172]:52235 "EHLO
-	mail-we0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbaGYXGz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jul 2014 19:06:55 -0400
-In-Reply-To: <CAMf-jS=pCKtOK6ZG=LWLGSJT9xCzCkiuARVskut4Wz+pARSsyw@mail.gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:59091 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750732AbaGZLat (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 26 Jul 2014 07:30:49 -0400
+In-Reply-To: <1663327.PISiM9sMHC@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: pramod gurav <pramod.gurav.etc@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Fri, Jul 25, 2014 at 1:36 AM, pramod gurav
-<pramod.gurav.etc@gmail.com> wrote:
-> Viresh,
-> Be careful when you ACK Nick's patches. He has confessed he has no
-> idea how to build test a kernel. His patches are NOT AT ALL build
-> tested. And some of his patches are being reverted for causing
-> problems in build and all. He looks for FIXME and removes/edits the
-> code as per the comments. Just be careful.
->
-> On Mon, Jul 14, 2014 at 12:00 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 14 July 2014 11:58, Nicholas Krause <xerofoify@gmail.com> wrote:
->>> This fixes the latency for the cpufreq policy to 1 million nanoseconds
->>> that calls the function pxa_cpu_init for the member of the structure
->>> called cpuinfo.transition_latency.
->>>
->>> Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
->>> ---
->>>  drivers/cpufreq/pxa2xx-cpufreq.c | 2 +-
->>>  1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
->>> index e24269a..e08bb98 100644
->>> --- a/drivers/cpufreq/pxa2xx-cpufreq.c
->>> +++ b/drivers/cpufreq/pxa2xx-cpufreq.c
->>> @@ -372,7 +372,7 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
->>>         init_sdram_rows();
->>>
->>>         /* set default policy and cpuinfo */
->>> -       policy->cpuinfo.transition_latency = 1000; /* FIXME: 1 ms, assumed */
->>> +       policy->cpuinfo.transition_latency = 1000000;
->>>
->>>         /* Generate pxa25x the run cpufreq_frequency_table struct */
->>>         for (i = 0; i < NUM_PXA25x_RUN_FREQS; i++) {
->>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->
->
->
-> --
-> Thanks and Regards
-> Pramod
+On Saturday, July 26, 2014 12:25:29 AM Rafael J. Wysocki wrote:
+> On Friday, July 25, 2014 11:00:12 PM Thomas Gleixner wrote:
+> > On Fri, 25 Jul 2014, Rafael J. Wysocki wrote:
+> > > On Friday, July 25, 2014 03:25:41 PM Peter Zijlstra wrote:
+> > > > OK, so Rafael said there's devices that keep on raising their interrupt
+> > > > until they get attention. Ideally this won't happen because the device
+> > > > is suspended etc.. But I'm sure there's some broken piece of hardware
+> > > > out there that'll make it go boom.
+> > > 
+> > > So here's an idea.
+> > > 
+> > > What about returning IRQ_NONE rather than IRQ_HANDLED for "suspended"
+> > > interrupts (after all, that's what a sane driver would do for a
+> > > suspended device I suppose)?
+> > > 
+> > > If the line is really shared and the interrupt is taken care of by
+> > > the other guy sharing the line, we'll be all fine.
+> > > 
+> > > If that is not the case, on the other hand, and something's really
+> > > broken, we'll end up disabling the interrupt and marking it as
+> > > IRQS_SPURIOUS_DISABLED (if I understand things correctly).
+> > 
+> > We should not wait 100k unhandled interrupts in that case. We know
+> > already at the first unhandled interrupt that the shit hit the fan.
+> 
+> The first one may be a bus glitch or some such.  Also I guess we still need to
+> allow the legitimate "no suspend" guy to handle his interrupts until it gets
+> too worse.
+> 
+> Also does it really hurt to rely on the generic mechanism here?  We regard
+> it as fine at all other times after all.
+> 
+> > I'll have a deeper look how we can sanitize the whole wake/no_suspend
+> > logic vs. shared interrupts.
 
+One more idea, on top of the prototype patch that I posted
+(https://patchwork.kernel.org/patch/4625921/).
 
-Pramod,
-I learned how to do it today and Viresh checked this and it didn't build
-so I sent him another fixed patch :). I am learning fast now and known
-how to properly test my patches now.
-Nick
+The problem with enable_irq_wake() is that it only takes one argument, so
+if that's a shared interrupt, we can't really say which irqaction is supposed
+to handle wakeup interrupts should they occur.
+
+To address this we can introduce enable_device_irq_wake() that will take
+an additional dev_id argument (that must be the one passed to request_irq() or
+the operation will fail) that can be used to identify the irqaction for
+handling the wakeup interrupts.  It can work by setting IRQF_NO_SUSPEND
+for the irqaction in question and doing the rest along the lines of
+irq_set_irq_wake(irq, 1).  disable_device_irq_wake() will then clear
+IRQF_NO_SUSPEND (it also has to be passed the dev_id argument).
+
+If we have that, the guys who need to set up device interrupts (ie. interrupts
+normally used for signaling input events etc) for system wakeup will need to
+use enable_device_irq_wake() and that should just work.
+
+Rafael
+
