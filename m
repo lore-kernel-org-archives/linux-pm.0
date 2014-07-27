@@ -1,157 +1,80 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH RFC v2] PM / sleep: Fix racing timers
-Date: Mon, 28 Jul 2014 01:18:35 +0200
-Message-ID: <1461880.klCWmqfb3F@vostro.rjw.lan>
-References: <53D083C5.2000501@linaro.org> <1406322408-15408-1-git-send-email-soren.brinkmann@xilinx.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH] PM: fix kernel-doc warnings in drivers/base/power/main.c
+Date: Sun, 27 Jul 2014 16:17:15 -0700
+Message-ID: <53D5887B.80000@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1406322408-15408-1-git-send-email-soren.brinkmann@xilinx.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Soren Brinkmann <soren.brinkmann@xilinx.com>, John Stultz <john.stultz@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from casper.infradead.org ([85.118.1.10]:56292 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750785AbaG0XRV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Jul 2014 19:17:21 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-On Friday, July 25, 2014 02:06:48 PM Soren Brinkmann wrote:
-> On platforms that do not power off during suspend, successfully entering
-> suspend races with timers.
-> 
-> The race happening in a couple of location is:
-> 
->   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
->      ...
->   2. syscore_suspend()
->       -> timekeeping_suspend()
->        -> clockevents_notify(SUSPEND)
->         -> tick_suspend()   	(timers are turned off here)
->      ...
->   3. wfi            		(wait for wake-IRQ here)
-> 
-> Between steps 1 and 2 the timers can still generate interrupts that are
-> not handled and stay pending until step 3. That pending IRQ causes an
-> immediate - spurious - wake.
-> 
-> The solution is to move the clockevents suspend/resume notification
-> out of the syscore_suspend step and explictly call them at the appropriate
-> time in the suspend/hibernation paths. I.e. timers are suspend _before_
-> IRQs get disabled. And accordingly in the resume path.
-> 
-> Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> ---
-> Hi,
-> 
-> This is my second shot at this. I followed John's suggestion to keep the
-> timekeeping suspend where it is and just move the shutdown of the clockevent
-> devices around.
+From: Randy Dunlap <rdunlap@infradead.org>
 
-John, what do you think?
+Fix kernel-doc warnings in drivers/base/power/main.c:
 
+Warning(..//drivers/base/power/main.c:473): No description found for parameter 'async'
+Warning(..//drivers/base/power/main.c:601): No description found for parameter 'async'
+Warning(..//drivers/base/power/main.c:1012): No description found for parameter 'async'
+Warning(..//drivers/base/power/main.c:1151): No description found for parameter 'async'
+Warning(..//drivers/base/power/main.c:1305): No description found for parameter 'info'
 
->  kernel/power/hibernate.c  | 9 +++++++++
->  kernel/power/suspend.c    | 5 +++++
->  kernel/time/timekeeping.c | 1 -
->  3 files changed, 14 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index fcc2611d3f14..ab9f807e2ccb 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -285,6 +285,8 @@ static int create_image(int platform_mode)
->  	if (error || hibernation_test(TEST_CPUS))
->  		goto Enable_cpus;
->  
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-> +
->  	local_irq_disable();
->  
->  	error = syscore_suspend();
-> @@ -316,6 +318,7 @@ static int create_image(int platform_mode)
->  	syscore_resume();
->  
->   Enable_irqs:
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
->  	local_irq_enable();
->  
->   Enable_cpus:
-> @@ -440,6 +443,8 @@ static int resume_target_kernel(bool platform_mode)
->  	if (error)
->  		goto Enable_cpus;
->  
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-> +
->  	local_irq_disable();
->  
->  	error = syscore_suspend();
-> @@ -474,6 +479,7 @@ static int resume_target_kernel(bool platform_mode)
->  	syscore_resume();
->  
->   Enable_irqs:
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
->  	local_irq_enable();
->  
->   Enable_cpus:
-> @@ -555,6 +561,8 @@ int hibernation_platform_enter(void)
->  	if (error)
->  		goto Platform_finish;
->  
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-> +
->  	local_irq_disable();
->  	syscore_suspend();
->  	if (pm_wakeup_pending()) {
-> @@ -568,6 +576,7 @@ int hibernation_platform_enter(void)
->  
->   Power_up:
->  	syscore_resume();
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
->  	local_irq_enable();
->  	enable_nonboot_cpus();
->  
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index ed35a4790afe..ca6c56a87ea3 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -12,6 +12,7 @@
->  #include <linux/delay.h>
->  #include <linux/errno.h>
->  #include <linux/init.h>
-> +#include <linux/clockchips.h>
->  #include <linux/console.h>
->  #include <linux/cpu.h>
->  #include <linux/cpuidle.h>
-> @@ -253,6 +254,8 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
->  	if (error || suspend_test(TEST_CPUS))
->  		goto Enable_cpus;
->  
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-> +
->  	arch_suspend_disable_irqs();
->  	BUG_ON(!irqs_disabled());
->  
-> @@ -270,6 +273,8 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
->  		syscore_resume();
->  	}
->  
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
-> +
->  	arch_suspend_enable_irqs();
->  	BUG_ON(irqs_disabled());
->  
-> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-> index 32d8d6aaedb8..d2f21cbe2bfd 100644
-> --- a/kernel/time/timekeeping.c
-> +++ b/kernel/time/timekeeping.c
-> @@ -1032,7 +1032,6 @@ static int timekeeping_suspend(void)
->  	write_seqcount_end(&timekeeper_seq);
->  	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
->  
-> -	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
->  	clocksource_suspend();
->  	clockevents_suspend();
->  
-> 
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc:	"Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:	Len Brown <len.brown@intel.com>
+Cc:	Pavel Machek <pavel@ucw.cz>
+Cc:	linux-pm@vger.kernel.org
+---
+ drivers/base/power/main.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Index: lnx-316-rc7/drivers/base/power/main.c
+===================================================================
+--- lnx-316-rc7.orig/drivers/base/power/main.c
++++ lnx-316-rc7/drivers/base/power/main.c
+@@ -465,6 +465,7 @@ static void dpm_watchdog_clear(struct dp
+  * device_resume_noirq - Execute an "early resume" callback for given device.
+  * @dev: Device to handle.
+  * @state: PM transition of the system being carried out.
++ * @async: If true, the device is being resumed asynchronously.
+  *
+  * The driver of @dev will not receive interrupts while this function is being
+  * executed.
+@@ -594,6 +595,7 @@ static void dpm_resume_noirq(pm_message_
+  * device_resume_early - Execute an "early resume" callback for given device.
+  * @dev: Device to handle.
+  * @state: PM transition of the system being carried out.
++ * @async: If true, the device is being resumed asynchronously.
+  *
+  * Runtime PM is disabled for @dev while this function is being executed.
+  */
+@@ -1004,6 +1006,7 @@ static pm_message_t resume_event(pm_mess
+  * device_suspend_noirq - Execute a "late suspend" callback for given device.
+  * @dev: Device to handle.
+  * @state: PM transition of the system being carried out.
++ * @async: If true, the device is being suspended asynchronously.
+  *
+  * The driver of @dev will not receive interrupts while this function is being
+  * executed.
+@@ -1144,6 +1147,7 @@ static int dpm_suspend_noirq(pm_message_
+  * device_suspend_late - Execute a "late suspend" callback for given device.
+  * @dev: Device to handle.
+  * @state: PM transition of the system being carried out.
++ * @async: If true, the device is being suspended asynchronously.
+  *
+  * Runtime PM is disabled for @dev while this function is being executed.
+  */
+@@ -1298,6 +1302,7 @@ EXPORT_SYMBOL_GPL(dpm_suspend_end);
+  * @dev: Device to suspend.
+  * @state: PM transition of the system being carried out.
+  * @cb: Suspend callback to execute.
++ * @info: string description of caller.
+  */
+ static int legacy_suspend(struct device *dev, pm_message_t state,
+ 			  int (*cb)(struct device *dev, pm_message_t state),
