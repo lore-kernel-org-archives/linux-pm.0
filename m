@@ -1,46 +1,43 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v5 3/6] thermal: Added Bang-bang thermal governor
-Date: Mon, 28 Jul 2014 10:26:29 +0800
-Message-ID: <1406514389.14109.7.camel@rzhang1-toshiba>
-References: <1398561815-22033-1-git-send-email-peter@piie.net>
-	 <1406043436-17068-1-git-send-email-peter@piie.net>
-	 <1406043436-17068-4-git-send-email-peter@piie.net>
-	 <cone.1406384086.541895.7413.1000@galar>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:42392 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751901AbaG1C0g (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 27 Jul 2014 22:26:36 -0400
-In-Reply-To: <cone.1406384086.541895.7413.1000@galar>
-Sender: linux-pm-owner@vger.kernel.org
+From: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
+Subject: [PATCH] cpuidle: ladder governor - use macro instead of hardcoded value
+Date: Mon, 28 Jul 2014 09:58:50 +0600
+Message-ID: <1406519930-5159-1-git-send-email-meraj.enigma@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org, Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Feuerer <peter@piie.net>
-Cc: linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Andreas Mohr <andi@lisas.de>, Borislav Petkov <bp@suse.de>, Javi Merino <javi.merino@arm.com>
 
-On Sat, 2014-07-26 at 16:14 +0200, Peter Feuerer wrote:
-> Hi Rui,
-> 
-> Peter Feuerer writes:
-> 
-> > The bang-bang thermal governor uses a hysteresis to switch abruptly on
-> > or off a cooling device.  It is intended to control fans, which can
-> > not be throttled but just switched on or off.
-> > Bang-bang cannot be set as default governor as it is intended for
-> > special devices only.  For those special devices the driver needs to
-> > explicitely request it.
-> > 
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> 
-> Anything that prevents you from giving your acked-by?
-> 
-NO.
+use CPUIDLE_DRIVER_STATE_START, instead of hardcoded value 0. As,
+CPUIDLE_DRIVER_STATE_START can be 1/0 based on
+CONFIG_ARCH_HAS_CPU_RELAX is defined or not.
 
-I'll queue them for 3.18.
+Signed-off-by: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
+---
+ drivers/cpuidle/governors/ladder.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-thanks,
-rui
-
+diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+index 9f08e8c..044ee0d 100644
+--- a/drivers/cpuidle/governors/ladder.c
++++ b/drivers/cpuidle/governors/ladder.c
+@@ -144,7 +144,7 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
+ 
+ 	ldev->last_state_idx = CPUIDLE_DRIVER_STATE_START;
+ 
+-	for (i = 0; i < drv->state_count; i++) {
++	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+ 		state = &drv->states[i];
+ 		lstate = &ldev->states[i];
+ 
+@@ -156,7 +156,7 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
+ 
+ 		if (i < drv->state_count - 1)
+ 			lstate->threshold.promotion_time = state->exit_latency;
+-		if (i > 0)
++		if (i > CPUIDLE_DRIVER_STATE_START)
+ 			lstate->threshold.demotion_time = state->exit_latency;
+ 	}
+ 
+-- 
+1.9.1
