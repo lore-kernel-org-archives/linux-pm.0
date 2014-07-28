@@ -1,64 +1,90 @@
-From: Patrik Fimml <patrikf@chromium.org>
-Subject: Re: Power-managing devices that are not of interest at some point in
- time
-Date: Mon, 28 Jul 2014 13:01:14 -0700
-Message-ID: <20140728200114.GB20708@google.com>
-References: <Pine.LNX.4.44L0.1407181557020.979-100000@iolanthe.rowland.org>
- <2443949.K0iePsg3Aa@vostro.rjw.lan>
- <1693424.kPNUQHOHlX@vostro.rjw.lan>
- <1451627.FURGiR949u@dtor-glaptop>
+From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
+Subject: Re: [PATCH RFC v2] PM / sleep: Fix racing timers
+Date: Mon, 28 Jul 2014 13:02:25 -0700
+Message-ID: <d7b265bb-546f-4e86-8e81-197edd1757c5@BN1AFFO11FD007.protection.gbl>
+References: <53D083C5.2000501@linaro.org>
+ <1406322408-15408-1-git-send-email-soren.brinkmann@xilinx.com>
+ <53D6A23A.6010904@codeaurora.org> <53D6A36B.1070105@linaro.org>
+ <53D6A6B3.4060507@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-input-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bl2lp0207.outbound.protection.outlook.com ([207.46.163.207]:41020
+	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751162AbaG1UCn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Jul 2014 16:02:43 -0400
 Content-Disposition: inline
-In-Reply-To: <1451627.FURGiR949u@dtor-glaptop>
-Sender: linux-input-owner@vger.kernel.org
-To: Dmitry Torokhov <dtor@google.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Patrik Fimml <patrikf@chromium.org>, Bastien Nocera <hadess@hadess.net>, linux-pm@vger.kernel.org, Benson Leung <bleung@google.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <53D6A6B3.4060507@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Fri, Jul 18, 2014 at 04:16:50PM -0700, Dmitry Torokhov wrote:
-> [...]
-> Anyway, even though it is very tempting to declare inhibit a "deeper" state of 
-> runtime suspend maybe you are right and inhibit should really be separate from 
-> PM and drivers would have to sort out all the possible state permutations.
-> 
-> Considering input devices:
-> 
-> input_open(): check if device is inhibited, if so do nothing. Otherwise try 
-> waking up itself and parent (via pm_runtime_get_sync() on itself), this will 
-> power up the device. Do additional configuration if needed.
-> 
-> input_close(): check if device is inhibited, if not do pm_runtime_put (_sync? 
-> to make sure we power off properly and not leave device up and running? or 
-> should we power down manually not waiting for runtime PM)?
-> 
-> inhibit(): check if device is opened, if opened do pm_runtime_put_sync().
-> 
-> uninhibit(): if device is opened do pm_runtime_get_sync(), let runtime PM 
-> bring up the device. Do additional config if needed -> very similar to 
-> input_open(), different condition.
-> 
-> runtime_suspend(): power down the device. If not inhibited enable as wakeup 
-> source.
-> 
-> runtime_resume(): power up the device if device is opened and not inhibited.
-> 
-> system_suspend(): check if device is opened, not inhibited and not in 
-> runtimesuspend  already; power down.
-> 
-> system_resume(): power up the device if it is opened and not inhibited. I 
-> guess it's OK to wake up device that shoudl be runtime-PM-idle since it will 
-> go to back sleep shortly.
-> 
-> Ugh.. This is complicated...
+On Mon, 2014-07-28 at 12:38PM -0700, Stephen Boyd wrote:
+> On 07/28/14 12:24, John Stultz wrote:
+> > On 07/28/2014 12:19 PM, Stephen Boyd wrote:
+> >> On 07/25/14 14:06, Soren Brinkmann wrote:
+> >>> On platforms that do not power off during suspend, successfully e=
+ntering
+> >>> suspend races with timers.
+> >>>
+> >>> The race happening in a couple of location is:
+> >>>
+> >>>   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
+> >>>      ...
+> >>>   2. syscore_suspend()
+> >>>       -> timekeeping_suspend()
+> >>>        -> clockevents_notify(SUSPEND)
+> >>>         -> tick_suspend()   	(timers are turned off here)
+> >>>      ...
+> >>>   3. wfi            		(wait for wake-IRQ here)
+> >>>
+> >>> Between steps 1 and 2 the timers can still generate interrupts th=
+at are
+> >>> not handled and stay pending until step 3. That pending IRQ cause=
+s an
+> >>> immediate - spurious - wake.
+> >>>
+> >>> The solution is to move the clockevents suspend/resume notificati=
+on
+> >>> out of the syscore_suspend step and explictly call them at the ap=
+propriate
+> >>> time in the suspend/hibernation paths. I.e. timers are suspend _b=
+efore_
+> >>> IRQs get disabled. And accordingly in the resume path.
+> >>>
+> >>> Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+> >> Do we know which timer_list or hrtimer wants to run while entering
+> >> suspend? I'd suspect the scheduler tick but perhaps we just forgot=
+ to
+> >> cancel some timer during suspend?
+> > Though, canceling timers really shouldn't be necessary for
+> > suspend/resume, no?
+> >
+> >
+>=20
+> Agreed. Perhaps I put it the wrong way. I'm worried that some timer
+> needs to run just when we go into suspend. As long as that timer is t=
+he
+> scheduler tick we should be ok, but if it isn't the scheduler tick th=
+en
+> it would be good to know what it is and why it's pending. Unless the
+> idea is that if we get this far into suspend and there's a pending ti=
+mer
+> we should just ignore it and go to sleep anyway?
 
-There might be more elegant ways to implement this. It might make sense
-to factor out power transitions. One could have a function that derives
-the appropriate power state given the circumstances (i.e.
-suspend/inhibit/runtime suspend) and then performs the needed
-transition. This is something one would have to see when actually
-implementing this, I might experiment with this approach a bit.
+Well, that is pretty much what happens currently. The IRQs are disabled
+and nobody cares about the pending timer. My problem with that is, that
+"suspend" for Zynq is just waiting in WFI. Hence, the pending interrupt=
+s
+causes an immediate resume.
+So, it should hopefully be more or less fine since the current
+implementation basically ignores the timer. With this patch we just shu=
+t
+them down a little earlier to prevent this pending interrupt - at least
+that is the intention.
 
-Regards,
-Patrik
+	Thanks,
+	S=C3=B6ren
