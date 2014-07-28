@@ -1,95 +1,60 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH v2 0/9] thermal: exynos: various cleanups
-Date: Mon, 28 Jul 2014 20:30:53 +0530
-Message-ID: <CADGdYn6EN-evo2KCjFfQ2h8gLoop=xTJZO3fnNxBxM9067tjxg@mail.gmail.com>
-References: <1403026045-16024-1-git-send-email-b.zolnierkie@samsung.com>
-	<20140728143759.GA17837@developer>
+From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
+Subject: Re: [PATCH RFC v2] PM / sleep: Fix racing timers
+Date: Mon, 28 Jul 2014 08:51:18 -0700
+Message-ID: <db9a4d35-891e-4b66-aa70-25c1f65012fd@BN1BFFO11FD021.protection.gbl>
+References: <53D083C5.2000501@linaro.org>
+ <1406322408-15408-1-git-send-email-soren.brinkmann@xilinx.com>
+ <20140728100538.GA16237@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f47.google.com ([209.85.213.47]:43963 "EHLO
-	mail-yh0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752982AbaG1PAy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 11:00:54 -0400
-In-Reply-To: <20140728143759.GA17837@developer>
+Received: from mail-bn1lp0144.outbound.protection.outlook.com ([207.46.163.144]:18770
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752161AbaG1PvY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Jul 2014 11:51:24 -0400
+Content-Disposition: inline
+In-Reply-To: <20140728100538.GA16237@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Hi Eduardo,
+On Mon, 2014-07-28 at 12:05PM +0200, Pavel Machek wrote:
+> On Fri 2014-07-25 14:06:48, Soren Brinkmann wrote:
+> > On platforms that do not power off during suspend, successfully ent=
+ering
+> > suspend races with timers.
+> >=20
+> > The race happening in a couple of location is:
+> >=20
+> >   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
+> >      ...
+> >   2. syscore_suspend()
+> >       -> timekeeping_suspend()
+> >        -> clockevents_notify(SUSPEND)
+> >         -> tick_suspend()   	(timers are turned off here)
+> >      ...
+> >   3. wfi            		(wait for wake-IRQ here)
+> >=20
+> > Between steps 1 and 2 the timers can still generate interrupts that=
+ are
+> > not handled and stay pending until step 3. That pending IRQ causes =
+an
+> > immediate - spurious - wake.
+> >=20
+> > The solution is to move the clockevents suspend/resume notification
+> > out of the syscore_suspend step and explictly call them at the appr=
+opriate
+> > time in the suspend/hibernation paths. I.e. timers are suspend _bef=
+ore_
+> > IRQs get disabled. And accordingly in the resume path.
+> >=20
+> > Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+>=20
+> Did you test the hibernation?
+No, I don't have a system to test hibernation. Suspend seems to work
+fine though.
 
-Please reject this entire series as this is not re-based recently.
-Actually two point trimming which this series seeks to remove is used
-by exynos3250 and is in Rui's tree
-(https://git.kernel.org/cgit/linux/kernel/git/rzhang/linux.git/commit/?h=next&id=1fe56dc16a3dab400206443f70ae158c8f595c42).
-
-Thanks,
-Amit D
-
-
-On Mon, Jul 28, 2014 at 8:07 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
-> On Tue, Jun 17, 2014 at 07:27:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
->> Hi,
->>
->> This patch series contains various cleanups for EXYNOS thermal
->> driver.  Overall it decreases driver's LOC by 12%.  It is based
->> on next-20140617 kernel.  It should not cause any functionality
->> changes.
->>
->> Changes since v1:
->> - synced patches against next-20140617
->> - merged patch "thermal: exynos: remove unused defines" into
->>   "thermal: exynos: remove unused struct exynos_tmu_registers
->>   entries" one (per request from Eduardo)
->> - improved patch descriptions for patches #1-5
->> - fixed documentation for pdata->gain and pdata->reference_voltage
->> - added Reviewed-by from Amit to patches #6, #7 and #10
->> - added missing Acked-by from Kyungmin Park
->
-> Pulled the series.
->
-> Thanks.
->
->>
->> Best regards,
->> --
->> Bartlomiej Zolnierkiewicz
->> Samsung R&D Institute Poland
->> Samsung Electronics
->>
->>
->> Bartlomiej Zolnierkiewicz (9):
->>   thermal: exynos: remove unused struct exynos_tmu_registers entries
->>   thermal: exynos: remove dead code for HW_MODE calibration
->>   thermal: exynos: remove dead code for TYPE_TWO_POINT_TRIMMING
->>     calibration
->>   thermal: exynos: remove redundant pdata checks from
->>     exynos_tmu_initialize()
->>   thermal: exynos: remove redundant threshold_code checks from
->>     exynos_tmu_initialize()
->>   thermal: exynos: simplify temp_to_code() and code_to_temp()
->>   thermal: exynos: cache non_hw_trigger_levels in pdata
->>   thermal: exynos: remove redundant pdata checks from
->>     exynos_tmu_control()
->>   thermal: exynos: remove identical values from exynos*_tmu_registers
->>     structures
->>
->>  drivers/thermal/samsung/exynos_thermal_common.h |   1 -
->>  drivers/thermal/samsung/exynos_tmu.c            | 181 ++++--------------------
->>  drivers/thermal/samsung/exynos_tmu.h            |  90 +-----------
->>  drivers/thermal/samsung/exynos_tmu_data.c       |  64 +--------
->>  drivers/thermal/samsung/exynos_tmu_data.h       |  33 +----
->>  5 files changed, 41 insertions(+), 328 deletions(-)
->>
->> --
->> 1.8.2.3
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+	S=C3=B6ren
