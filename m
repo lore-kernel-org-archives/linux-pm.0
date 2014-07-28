@@ -1,60 +1,94 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH, v2]
-Date: Mon, 28 Jul 2014 14:11:35 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1407281350550.23352@nanos>
-References: <20140724212620.GO3935@laptop> <1663327.PISiM9sMHC@vostro.rjw.lan> <3637397.iCmFpOsayO@vostro.rjw.lan> <3337421.bsfMykWVnZ@vostro.rjw.lan>
+Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
+Date: Mon, 28 Jul 2014 14:33:41 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1407281412060.23352@nanos>
+References: <20140724212620.GO3935@laptop> <alpine.DEB.2.10.1407252217350.23352@nanos> <1663327.PISiM9sMHC@vostro.rjw.lan> <2368056.cLoWQWpTSo@vostro.rjw.lan> <20140728064913.GH6758@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3337421.bsfMykWVnZ@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:40163 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751586AbaG1Mdp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 08:33:45 -0400
+In-Reply-To: <20140728064913.GH6758@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Mon, 28 Jul 2014, Rafael J. Wysocki wrote:
-> On Sunday, July 27, 2014 05:53:07 PM Rafael J. Wysocki wrote:
->  irqreturn_t
-> +do_irqaction(struct irq_desc *desc, struct irqaction *action,
-> +	     unsigned int irq, void *dev_id)
-> +{
-> +	irqreturn_t ret;
-> +
-> +	if (unlikely((desc->istate & IRQS_SHARED_SUSPENDED) &&
-> +		     !(action->flags & IRQF_NO_SUSPEND)))
-> +		return IRQ_NONE;
+On Mon, 28 Jul 2014, Peter Zijlstra wrote:
+> On Sat, Jul 26, 2014 at 01:49:17PM +0200, Rafael J. Wysocki wrote:
+> > One more idea, on top of the prototype patch that I posted
+> > (https://patchwork.kernel.org/patch/4625921/).
+> > 
+> > The problem with enable_irq_wake() is that it only takes one argument, so
+> > if that's a shared interrupt, we can't really say which irqaction is supposed
+> > to handle wakeup interrupts should they occur.
+> 
+> Right.
 
-I really want to avoid that conditional. We burden it on every
-interrupt just to deal with this nonsense.
+Historically no hardware manufacturer was so stupid to have wakeup
+sources on shared interrupts. Just because x86 is brain damaged is no
+reason to claim that stuff that worked fine for years is crap.
 
-A simple solution for this is to add irq_desc::action_suspended and
-move the shared actions which are not flagged NO_SUSPEND over and
-bring them back on resume.
+We never needed this until now, so we simply go and do what we've done
+always in such situations. We look for a solution which copes with the
+new hardware brain farts and keeps the existing stuff working. It's
+that simple.
 
-> Index: linux-pm/kernel/irq/spurious.c
-> ===================================================================
-> --- linux-pm.orig/kernel/irq/spurious.c
-> +++ linux-pm/kernel/irq/spurious.c
-> @@ -275,6 +275,8 @@ try_misrouted_irq(unsigned int irq, stru
->  void note_interrupt(unsigned int irq, struct irq_desc *desc,
->  		    irqreturn_t action_ret)
->  {
-> +	int misrouted;
-> +
->  	if (desc->istate & IRQS_POLL_INPROGRESS ||
->  	    irq_settings_is_polled(desc))
->  		return;
-> @@ -384,6 +386,9 @@ void note_interrupt(unsigned int irq, st
->  		}
->  	}
->  
-> +	misrouted = unlikely(try_misrouted_irq(irq, desc, action_ret)) ?
-> +			misrouted_irq(irq) : 0;
+> > To address this we can introduce enable_device_irq_wake() that will take
+> > an additional dev_id argument (that must be the one passed to request_irq() or
+> > the operation will fail) that can be used to identify the irqaction for
+> > handling the wakeup interrupts.  It can work by setting IRQF_NO_SUSPEND
+> > for the irqaction in question and doing the rest along the lines of
+> > irq_set_irq_wake(irq, 1).  disable_device_irq_wake() will then clear
+> > IRQF_NO_SUSPEND (it also has to be passed the dev_id argument).
+> > 
+> > If we have that, the guys who need to set up device interrupts (ie. interrupts
+> > normally used for signaling input events etc) for system wakeup will need to
+> > use enable_device_irq_wake() and that should just work.
+> 
+> So in the patch I posted I described why NO_SUSPEND is useful, I still
+> have to hear a solid reason for why we also need enable_irq_wake()? What
+> does it do that cannot be achieved with NO_SUSPEND?
+> 
+> I realize its dynamic, but that's crap, at device registration time it
+> pretty much already knows if its a wakeup source or not, right?
 
-If the system is suspended, why would we try misrouted irqs at all?
-All non wakeup irqs are disabled, so we just spend a gazillion of
-cycles for nothing.
+It does, but that doesn't make it crap. There are situations where you
+want certain wakeup sources enabled or disabled and you can't do that
+with IRQF_NO_SUSPEND. And to support this, you need the wake_depth
+counter as well. And that's what we always had.
+
+I'd rather say, that the "I can wakeup the machine and will do so no
+matter what flag" is more stupid than the wake mechanism.
+
+It was added to support XEN wreckage and I wish we've never done that
+in the first place.
+
+So we are not going to make everything a single stupid flag and limit
+the usability of existing code. We rather go and try to remove the
+stupid flag before it becomes more wide spread.
+
+And we cannot treat the wakeup thing the same way as the
+IRQF_NO_SUSPEND flag, because there is hardware where the irq line
+must be disabled at the normal (non suspend) interrupt controller, and
+the wake mechanism tells the PM microcontroller to monitor the
+interrupt line and kick the machine back to life.
+
+So we need to very carefully look at all the existing cases instead of
+yelling crap and inflicting x86 specific horror on everyone. I said on
+friday, that I need to look at ALL use cases first and I meant it.
 
 Thanks,
 
 	tglx
+
+
+
+
+
+
+
+
+
