@@ -1,34 +1,80 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Subject: PM / OPP: ARCH_HAS_OPP
-Date: Mon, 28 Jul 2014 14:47:12 +0200
-Message-ID: <1406551632.5397.17.camel@x220>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
+Date: Mon, 28 Jul 2014 15:04:35 +0200
+Message-ID: <20140728130435.GO20603@laptop.programming.kicks-ass.net>
+References: <20140724212620.GO3935@laptop>
+ <alpine.DEB.2.10.1407252217350.23352@nanos>
+ <1663327.PISiM9sMHC@vostro.rjw.lan>
+ <2368056.cLoWQWpTSo@vostro.rjw.lan>
+ <20140728064913.GH6758@twins.programming.kicks-ass.net>
+ <alpine.DEB.2.10.1407281412060.23352@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cpsmtpb-ews05.kpnxchange.com ([213.75.39.8]:52651 "EHLO
-	cpsmtpb-ews05.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752328AbaG1MrO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 08:47:14 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58930 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751802AbaG1NFv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 09:05:51 -0400
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.10.1407281412060.23352@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Simon Horman <horms+renesas@verge.net.au>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-Mark,
+On Mon, Jul 28, 2014 at 02:33:41PM +0200, Thomas Gleixner wrote:
+> > I realize its dynamic, but that's crap, at device registration time it
+> > pretty much already knows if its a wakeup source or not, right?
+> 
+> It does, but that doesn't make it crap. There are situations where you
+> want certain wakeup sources enabled or disabled and you can't do that
+> with IRQF_NO_SUSPEND. And to support this, you need the wake_depth
+> counter as well. And that's what we always had.
 
-Your commit 78c5e0bb145d ("PM / OPP: Remove ARCH_HAS_OPP") landed in
-today's linux-next (ie, next-20140728). It removes the Kconfig symbol
-ARCH_HAS_OPP and ten select statements for that symbol.
+But if the driver is PM aware it can change its behaviour in runtime. We
+don't need to disable the line in the PIC if its well behaved. This
+force disable is more a bandaid to quiesce ignorant drivers than
+anything else.
 
-After that commit there are still nine select statements for that symbol
-left in linux-next. (These select statements are now actually NOPs.) The
-peculiar thing is that these nine statements are all found in Kconfig
-files also touched by that commit.
+> I'd rather say, that the "I can wakeup the machine and will do so no
+> matter what flag" is more stupid than the wake mechanism.
 
-Anyhow, are patches to remove these pointless select statements queued
-somewhere?
+I never said such. I think the NO_SUSPEND name bad one that confuses
+thing more than anything as it describes the implementation not the
+semantics.
 
+But as above, if a driver sets this it basically says I'm PM aware and
+will behave right, no need to go force the PIC on me.
 
-Paul Bolle
+With that the driver can or can not, depending on runtime circumstances
+wake or not etc.
+
+> So we are not going to make everything a single stupid flag and limit
+> the usability of existing code. We rather go and try to remove the
+> stupid flag before it becomes more wide spread.
+
+Sure, having two different means of PM for the irq layer is one too
+many.
+
+> And we cannot treat the wakeup thing the same way as the
+> IRQF_NO_SUSPEND flag, because there is hardware where the irq line
+> must be disabled at the normal (non suspend) interrupt controller, and
+> the wake mechanism tells the PM microcontroller to monitor the
+> interrupt line and kick the machine back to life.
+
+Ah, see that is useful information.. Yes such a thing would invalidate
+the flag scheme.
+
+> So we need to very carefully look at all the existing cases instead of
+> yelling crap and inflicting x86 specific horror on everyone. I said on
+> friday, that I need to look at ALL use cases first and I meant it.
+
+Well, the reason I yelled crap is because its IRQ nr based and not
+handler based. Yes, shared lines are a pain, but we have to deal with
+them, so allowing 'new' interfaces in that do not deal with it is very
+unfortunate at best.
+
+What further didn't help is that it wasn't at all clear to me how it was
+supposed to work.
+
 
