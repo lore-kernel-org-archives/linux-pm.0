@@ -1,85 +1,51 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 0/4] ARM: EXYNOS: cpuidle: fix AFTR mode on boards
- with secure firmware enabled
-Date: Mon, 28 Jul 2014 09:43:02 +0200
-Message-ID: <53D5FF06.6080904@linaro.org>
-References: <1404926274-18411-1-git-send-email-b.zolnierkie@samsung.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH RFC v2] PM / sleep: Fix racing timers
+Date: Mon, 28 Jul 2014 12:05:39 +0200
+Message-ID: <20140728100538.GA16237@amd.pavel.ucw.cz>
+References: <53D083C5.2000501@linaro.org>
+ <1406322408-15408-1-git-send-email-soren.brinkmann@xilinx.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1404926274-18411-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
-Cc: Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34262 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750903AbaG1KFk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 06:05:40 -0400
+Content-Disposition: inline
+In-Reply-To: <1406322408-15408-1-git-send-email-soren.brinkmann@xilinx.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Cc: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 07/09/2014 07:17 PM, Bartlomiej Zolnierkiewicz wrote:
-> Hi,
->
-> This patch series adds support for AFTR idle mode on boards with
-> secure firmware enabled and allows EXYNOS cpuidle driver usage on
-> Exynos4x12 SoCs.
->
-> It has been tested on Trats2 board (using Exynos4412 SoC with secure
-> firmware enabled) on which AFTR mode reduces power consumption by ~12=
-%
-> when EXYNOS cpuidle driver is enabled (in both cases the default
-> exynos_defconfig config is used and CPU1-3 are offlined).
+On Fri 2014-07-25 14:06:48, Soren Brinkmann wrote:
+> On platforms that do not power off during suspend, successfully entering
+> suspend races with timers.
+> 
+> The race happening in a couple of location is:
+> 
+>   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
+>      ...
+>   2. syscore_suspend()
+>       -> timekeeping_suspend()
+>        -> clockevents_notify(SUSPEND)
+>         -> tick_suspend()   	(timers are turned off here)
+>      ...
+>   3. wfi            		(wait for wake-IRQ here)
+> 
+> Between steps 1 and 2 the timers can still generate interrupts that are
+> not handled and stay pending until step 3. That pending IRQ causes an
+> immediate - spurious - wake.
+> 
+> The solution is to move the clockevents suspend/resume notification
+> out of the syscore_suspend step and explictly call them at the appropriate
+> time in the suspend/hibernation paths. I.e. timers are suspend _before_
+> IRQs get disabled. And accordingly in the resume path.
+> 
+> Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
 
+Did you test the hibernation?
 
-Hi Bartlomiej,
-
-what is the status of this patchset ? Is it supposed to land for 3.17 ?
-
-Thanks
-
-   -- Daniel
-
-> v3:
-> - rebased on top of next-20140708 +
->    http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg3=
-2809.html
->    (with rejects fixed)
->    http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg3=
-2808.html
->    http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg3=
-2991.html
->    (with rejects fixed in patch #2)
-> - addressed review comments from Tomasz Figa and Daniel Lezcano
->
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
->
->
-> Bartlomiej Zolnierkiewicz (4):
->    ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by static inl=
-ines
->    ARM: EXYNOS: add AFTR mode support to firmware do_idle method
->    ARM: EXYNOS: cpuidle: add secure firmware support to AFTR mode cod=
-e
->    ARM: EXYNOS: cpuidle: allow driver usage on Exynos4x12 SoCs
->
->   arch/arm/include/asm/firmware.h  |  2 +-
->   arch/arm/mach-exynos/common.h    |  7 ++++++-
->   arch/arm/mach-exynos/exynos.c    |  3 ++-
->   arch/arm/mach-exynos/firmware.c  | 36 ++++++++++++++++++++++++++---=
--------
->   arch/arm/mach-exynos/pm.c        | 39 +++++++++++++++++++++++++++++=
-----------
->   drivers/cpuidle/cpuidle-exynos.c |  6 +++---
->   6 files changed, 67 insertions(+), 26 deletions(-)
->
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
