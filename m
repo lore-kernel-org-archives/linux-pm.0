@@ -1,112 +1,74 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
-Date: Mon, 28 Jul 2014 23:53:15 +0200
-Message-ID: <2706544.qjOZ3fREQ9@vostro.rjw.lan>
-References: <20140724212620.GO3935@laptop> <20140728064913.GH6758@twins.programming.kicks-ass.net> <alpine.DEB.2.10.1407281412060.23352@nanos>
+Subject: Re: [PATCH 1/1] cpuidle: big_little: Fix build error
+Date: Tue, 29 Jul 2014 00:00:19 +0200
+Message-ID: <1636644.mn4hD5sirK@vostro.rjw.lan>
+References: <1406523539-23823-1-git-send-email-sachin.kamat@samsung.com> <53D5EB46.7070606@linaro.org> <CAK5sBcFiEaK_zvifq24gQ9uPLOF_mtQo4n9R7_fBnk82gL8qQA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52969 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:54438 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750708AbaG1Vep (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 17:34:45 -0400
-In-Reply-To: <alpine.DEB.2.10.1407281412060.23352@nanos>
+	with SMTP id S1750708AbaG1Vls convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 17:41:48 -0400
+In-Reply-To: <CAK5sBcFiEaK_zvifq24gQ9uPLOF_mtQo4n9R7_fBnk82gL8qQA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: Sachin Kamat <spk.linux@gmail.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Andreas =?ISO-8859-1?Q?F=E4rber?= <afaerber@suse.de>
 
-On Monday, July 28, 2014 02:33:41 PM Thomas Gleixner wrote:
-> On Mon, 28 Jul 2014, Peter Zijlstra wrote:
-> > On Sat, Jul 26, 2014 at 01:49:17PM +0200, Rafael J. Wysocki wrote:
-> > > One more idea, on top of the prototype patch that I posted
-> > > (https://patchwork.kernel.org/patch/4625921/).
-> > > 
-> > > The problem with enable_irq_wake() is that it only takes one argument, so
-> > > if that's a shared interrupt, we can't really say which irqaction is supposed
-> > > to handle wakeup interrupts should they occur.
-> > 
-> > Right.
-> 
-> Historically no hardware manufacturer was so stupid to have wakeup
-> sources on shared interrupts. Just because x86 is brain damaged is no
-> reason to claim that stuff that worked fine for years is crap.
+On Monday, July 28, 2014 11:51:09 AM Sachin Kamat wrote:
+> Hi Daniel,
+>=20
+> On Mon, Jul 28, 2014 at 11:48 AM, Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+> > On 07/28/2014 06:58 AM, Sachin Kamat wrote:
+> >>
+> >> big_little CPU idle driver references functions defined in MCPM dr=
+iver.
+> >> Thus make it depend on MCPM to avoid the following errors:
+> >>
+> >> drivers/built-in.o: In function `bl_enter_powerdown':
+> >> drivers/cpuidle/cpuidle-big_little.c:134: undefined reference to
+> >> `mcpm_cpu_powered_up'
+> >> drivers/built-in.o: In function `bl_powerdown_finisher':
+> >> drivers/cpuidle/cpuidle-big_little.c:104: undefined reference to
+> >> `mcpm_set_entry_vector'
+> >> drivers/cpuidle/cpuidle-big_little.c:111: undefined reference to
+> >> `mcpm_cpu_suspend'
+> >> make: *** [vmlinux] Error 1
+> >>
+> >> Reported-by: Andreas F=C3=A4rber <afaerber@suse.de>
+> >> Signed-off-by: Sachin Kamat <sachin.kamat@samsung.com>
+> >> ---
+> >>   drivers/cpuidle/Kconfig.arm | 1 +
+> >>   1 file changed, 1 insertion(+)
+> >>
+> >> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig=
+=2Earm
+> >> index 33fc0ff..38cff69 100644
+> >> --- a/drivers/cpuidle/Kconfig.arm
+> >> +++ b/drivers/cpuidle/Kconfig.arm
+> >> @@ -4,6 +4,7 @@
+> >>   config ARM_BIG_LITTLE_CPUIDLE
+> >>         bool "Support for ARM big.LITTLE processors"
+> >>         depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS
+> >> +       depends on MCPM
+> >>         select ARM_CPU_SUSPEND
+> >>         select CPU_IDLE_MULTIPLE_DRIVERS
+> >>         help
+> >
+> >
+> > Hi Sachin,
+> >
+> > thanks for the fix. Arnd sent the same fix a couple of weeks ago.
+>=20
+> Oh great. Perhaps it hasn't hit the linux-next tree yet.
 
-I don't honestly think that's x86 only.  The PCIe PME interrupt has always been
-designed as shareable and that's not limited to x86.
+No, it hasn't and I can't find it in the linux-pm archives.
 
-Also enable_irq_wake() has the problem that on some platforms it makes
-the interrupt wakeup-only, so it stops signaling input events after that.
-AT91 seems to be one of these platforms (you may argue that this is a platform
-bug, but still).  So if it is called in a driver's .suspend() callback,
-it will create a "blind" period for potential wakeup events between
-that point and when the platform is eventually turned off.
+I'll queue up your patch, thanks!
 
-> We never needed this until now, so we simply go and do what we've done
-> always in such situations. We look for a solution which copes with the
-> new hardware brain farts and keeps the existing stuff working. It's
-> that simple.
-> 
-> > > To address this we can introduce enable_device_irq_wake() that will take
-> > > an additional dev_id argument (that must be the one passed to request_irq() or
-> > > the operation will fail) that can be used to identify the irqaction for
-> > > handling the wakeup interrupts.  It can work by setting IRQF_NO_SUSPEND
-> > > for the irqaction in question and doing the rest along the lines of
-> > > irq_set_irq_wake(irq, 1).  disable_device_irq_wake() will then clear
-> > > IRQF_NO_SUSPEND (it also has to be passed the dev_id argument).
-> > > 
-> > > If we have that, the guys who need to set up device interrupts (ie. interrupts
-> > > normally used for signaling input events etc) for system wakeup will need to
-> > > use enable_device_irq_wake() and that should just work.
-> > 
-> > So in the patch I posted I described why NO_SUSPEND is useful, I still
-> > have to hear a solid reason for why we also need enable_irq_wake()? What
-> > does it do that cannot be achieved with NO_SUSPEND?
-> > 
-> > I realize its dynamic, but that's crap, at device registration time it
-> > pretty much already knows if its a wakeup source or not, right?
-> 
-> It does, but that doesn't make it crap. There are situations where you
-> want certain wakeup sources enabled or disabled and you can't do that
-> with IRQF_NO_SUSPEND. And to support this, you need the wake_depth
-> counter as well. And that's what we always had.
-> 
-> I'd rather say, that the "I can wakeup the machine and will do so no
-> matter what flag" is more stupid than the wake mechanism.
-> 
-> It was added to support XEN wreckage and I wish we've never done that
-> in the first place.
-
-We needed to do that for timers to start with.  We also need it for ACPI
-and pretty much everything that needs to react to events during system
-suspend/resume too.  I would argue for limiting its use to things that
-need their interrupts to be always enabled, though.
-
-> So we are not going to make everything a single stupid flag and limit
-> the usability of existing code. We rather go and try to remove the
-> stupid flag before it becomes more wide spread.
-> 
-> And we cannot treat the wakeup thing the same way as the
-> IRQF_NO_SUSPEND flag, because there is hardware where the irq line
-> must be disabled at the normal (non suspend) interrupt controller, and
-> the wake mechanism tells the PM microcontroller to monitor the
-> interrupt line and kick the machine back to life.
-> 
-> So we need to very carefully look at all the existing cases instead of
-> yelling crap and inflicting x86 specific horror on everyone. I said on
-> friday, that I need to look at ALL use cases first and I meant it.
-
-Regardless of the use case, I don't think it is necessary to manipulate
-the interrupt controller settings before the syscore_suspend stage, because
-if an interrupt happens earlier, we need to handle it pretty much in a normal
-way, unless it has been suspended.
-
-So I'd argue for not using anything like enable_irq_wake() that goes all
-the way to the hardware in drivers.  Instead, we could allow drivers to
-mark interrupts as "set this up for system wakeup" and really do the setup
-right before putting the platform into the final "suspended" state.  And that
-is totally independend of the IRQF_NO_SUSPEND thing.
-
-Rafael
-
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
