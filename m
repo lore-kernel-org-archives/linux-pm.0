@@ -1,74 +1,100 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] cpuidle: big_little: Fix build error
-Date: Tue, 29 Jul 2014 00:00:19 +0200
-Message-ID: <1636644.mn4hD5sirK@vostro.rjw.lan>
-References: <1406523539-23823-1-git-send-email-sachin.kamat@samsung.com> <53D5EB46.7070606@linaro.org> <CAK5sBcFiEaK_zvifq24gQ9uPLOF_mtQo4n9R7_fBnk82gL8qQA@mail.gmail.com>
+From: Jason Baron <jbaron@akamai.com>
+Subject: Re: [PATCH] intel_idle: use static_key to optimize idle enter/exit
+ paths
+Date: Mon, 28 Jul 2014 17:50:06 -0400
+Message-ID: <53D6C58E.7070707@akamai.com>
+References: <20140711175458.6793B2029@prod-mail-relay06.akamai.com> <CAJvTdKkZoo1yO0N4ra8SBh0XY4PiY+KWkVysGptfhVWYb8kO1g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54438 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750708AbaG1Vls convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 17:41:48 -0400
-In-Reply-To: <CAK5sBcFiEaK_zvifq24gQ9uPLOF_mtQo4n9R7_fBnk82gL8qQA@mail.gmail.com>
+Received: from prod-mail-xrelay07.akamai.com ([72.246.2.115]:47611 "EHLO
+	prod-mail-xrelay07.akamai.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751727AbaG1VuH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 17:50:07 -0400
+In-Reply-To: <CAJvTdKkZoo1yO0N4ra8SBh0XY4PiY+KWkVysGptfhVWYb8kO1g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sachin Kamat <spk.linux@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Andreas =?ISO-8859-1?Q?F=E4rber?= <afaerber@suse.de>
+To: Len Brown <lenb@kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Monday, July 28, 2014 11:51:09 AM Sachin Kamat wrote:
-> Hi Daniel,
->=20
-> On Mon, Jul 28, 2014 at 11:48 AM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
-> > On 07/28/2014 06:58 AM, Sachin Kamat wrote:
-> >>
-> >> big_little CPU idle driver references functions defined in MCPM dr=
-iver.
-> >> Thus make it depend on MCPM to avoid the following errors:
-> >>
-> >> drivers/built-in.o: In function `bl_enter_powerdown':
-> >> drivers/cpuidle/cpuidle-big_little.c:134: undefined reference to
-> >> `mcpm_cpu_powered_up'
-> >> drivers/built-in.o: In function `bl_powerdown_finisher':
-> >> drivers/cpuidle/cpuidle-big_little.c:104: undefined reference to
-> >> `mcpm_set_entry_vector'
-> >> drivers/cpuidle/cpuidle-big_little.c:111: undefined reference to
-> >> `mcpm_cpu_suspend'
-> >> make: *** [vmlinux] Error 1
-> >>
-> >> Reported-by: Andreas F=C3=A4rber <afaerber@suse.de>
-> >> Signed-off-by: Sachin Kamat <sachin.kamat@samsung.com>
-> >> ---
-> >>   drivers/cpuidle/Kconfig.arm | 1 +
-> >>   1 file changed, 1 insertion(+)
-> >>
-> >> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig=
-=2Earm
-> >> index 33fc0ff..38cff69 100644
-> >> --- a/drivers/cpuidle/Kconfig.arm
-> >> +++ b/drivers/cpuidle/Kconfig.arm
-> >> @@ -4,6 +4,7 @@
-> >>   config ARM_BIG_LITTLE_CPUIDLE
-> >>         bool "Support for ARM big.LITTLE processors"
-> >>         depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS
-> >> +       depends on MCPM
-> >>         select ARM_CPU_SUSPEND
-> >>         select CPU_IDLE_MULTIPLE_DRIVERS
-> >>         help
-> >
-> >
-> > Hi Sachin,
-> >
-> > thanks for the fix. Arnd sent the same fix a couple of weeks ago.
->=20
-> Oh great. Perhaps it hasn't hit the linux-next tree yet.
+On 07/28/2014 04:38 PM, Len Brown wrote:
+> On Fri, Jul 11, 2014 at 1:54 PM, Jason Baron <jbaron@akamai.com> wrote:
+>> If 'arat' is set in the cpuflags, we can avoid the checks for entering/exiting
+>> the tick broadcast code entirely. It would seem that this is a hot enough code
+>> path to make this worthwhile. I ran a few hackbench runs, and consistenly see
+>> reduced branches and cycles.
+> 
+> Hi Jason,
+> 
+> Your logic looks right -- though I've never used this
+> static_key_slow_inc() stuff.
+> I'm impressed that something in user-space could detect this change.
+> 
+> Can you share how to run the workload where you detected a difference,
+> and describe the hardware you measured?
+> 
+> thanks,
+> -Len Brown, Intel Open Source Technology Center
+> 
 
-No, it hasn't and I can't find it in the linux-pm archives.
 
-I'll queue up your patch, thanks!
+Hi Len,
 
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+So using something like hackbench appears to show the difference
+(with CONFIG_JUMP_LABEL enabled):
+
+Without the patch:
+
+ Performance counter stats for 'perf bench sched messaging' (200 runs):
+
+        641.113816 task-clock                #    8.020 CPUs utilized            ( +-  0.16% ) [100.00%]
+             29020 context-switches          #    0.045 M/sec                    ( +-  1.66% ) [100.00%]
+              2487 cpu-migrations            #    0.004 M/sec                    ( +-  0.89% ) [100.00%]
+             10514 page-faults               #    0.016 M/sec                    ( +-  0.11% )
+        2085813986 cycles                    #    3.253 GHz                      ( +-  0.16% ) [100.00%]
+        1658381753 stalled-cycles-frontend   #   79.51% frontend cycles idle     ( +-  0.18% ) [100.00%]
+   <not supported> stalled-cycles-backend  
+        1221737228 instructions              #    0.59  insns per cycle        
+                                             #    1.36  stalled cycles per insn  ( +-  0.12% ) [100.00%]
+         211723499 branches                  #  330.243 M/sec                    ( +-  0.14% ) [100.00%]
+            716846 branch-misses             #    0.34% of all branches          ( +-  0.66% )
+
+       0.079936660 seconds time elapsed                                          ( +-  0.16% )
+
+
+With the patch:
+
+Performance counter stats for 'perf bench sched messaging' (200 runs):
+
+        638.819963 task-clock                #    8.020 CPUs utilized            ( +-  0.15% ) [100.00%]
+             27751 context-switches          #    0.043 M/sec                    ( +-  1.61% ) [100.00%]
+              2502 cpu-migrations            #    0.004 M/sec                    ( +-  0.92% ) [100.00%]
+             10503 page-faults               #    0.016 M/sec                    ( +-  0.09% )
+        2078109565 cycles                    #    3.253 GHz                      ( +-  0.14% ) [100.00%]
+        1653002141 stalled-cycles-frontend   #   79.54% frontend cycles idle     ( +-  0.17% ) [100.00%]
+   <not supported> stalled-cycles-backend
+        1218013520 instructions              #    0.59  insns per cycle
+                                             #    1.36  stalled cycles per insn  ( +-  0.12% ) [100.00%]
+         210943815 branches                  #  330.209 M/sec                    ( +-  0.14% ) [100.00%]
+            697865 branch-misses             #    0.33% of all branches          ( +-  0.66% )
+
+       0.079648462 seconds time elapsed                                          ( +-  0.15% )
+
+So you can see that 'branches' is higher without the patch. Yes, there is some
+'noise' here, but there is a measurable impact. It doesn't seem to make too much
+sense to me to check for the presence of a h/w feature every time through this kind
+of code path if its easily avoidable.
+
+Hardware is 4 core Intel box:
+
+model name	: Intel(R) Xeon(R) CPU E3-1270 V2 @ 3.50GHz
+stepping	: 9
+microcode	: 0x12
+cpu MHz		: 3501.000
+cache size	: 8192 KB
+
+Thanks,
+
+-Jason
+
