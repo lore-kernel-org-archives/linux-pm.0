@@ -1,64 +1,65 @@
-From: John Stultz <john.stultz@linaro.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
 Subject: Re: [PATCH RFC v2] PM / sleep: Fix racing timers
-Date: Mon, 28 Jul 2014 12:26:07 -0700
-Message-ID: <53D6A3CF.7010204@linaro.org>
-References: <53D083C5.2000501@linaro.org> <1406322408-15408-1-git-send-email-soren.brinkmann@xilinx.com> <1461880.klCWmqfb3F@vostro.rjw.lan>
+Date: Mon, 28 Jul 2014 12:38:27 -0700
+Message-ID: <53D6A6B3.4060507@codeaurora.org>
+References: <53D083C5.2000501@linaro.org> <1406322408-15408-1-git-send-email-soren.brinkmann@xilinx.com> <53D6A23A.6010904@codeaurora.org> <53D6A36B.1070105@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:38130 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750985AbaG1T0K (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 15:26:10 -0400
-Received: by mail-pa0-f54.google.com with SMTP id fa1so11083924pad.13
-        for <linux-pm@vger.kernel.org>; Mon, 28 Jul 2014 12:26:10 -0700 (PDT)
-In-Reply-To: <1461880.klCWmqfb3F@vostro.rjw.lan>
+Received: from smtp.codeaurora.org ([198.145.11.231]:50634 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998AbaG1Ti3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 15:38:29 -0400
+In-Reply-To: <53D6A36B.1070105@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Soren Brinkmann <soren.brinkmann@xilinx.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: John Stultz <john.stultz@linaro.org>
+Cc: Soren Brinkmann <soren.brinkmann@xilinx.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 07/27/2014 04:18 PM, Rafael J. Wysocki wrote:
-> On Friday, July 25, 2014 02:06:48 PM Soren Brinkmann wrote:
->> On platforms that do not power off during suspend, successfully entering
->> suspend races with timers.
->>
->> The race happening in a couple of location is:
->>
->>   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
->>      ...
->>   2. syscore_suspend()
->>       -> timekeeping_suspend()
->>        -> clockevents_notify(SUSPEND)
->>         -> tick_suspend()   	(timers are turned off here)
->>      ...
->>   3. wfi            		(wait for wake-IRQ here)
->>
->> Between steps 1 and 2 the timers can still generate interrupts that are
->> not handled and stay pending until step 3. That pending IRQ causes an
->> immediate - spurious - wake.
->>
->> The solution is to move the clockevents suspend/resume notification
->> out of the syscore_suspend step and explictly call them at the appropriate
->> time in the suspend/hibernation paths. I.e. timers are suspend _before_
->> IRQs get disabled. And accordingly in the resume path.
->>
->> Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
->> ---
->> Hi,
->>
->> This is my second shot at this. I followed John's suggestion to keep the
->> timekeeping suspend where it is and just move the shutdown of the clockevent
->> devices around.
-> John, what do you think?
+On 07/28/14 12:24, John Stultz wrote:
+> On 07/28/2014 12:19 PM, Stephen Boyd wrote:
+>> On 07/25/14 14:06, Soren Brinkmann wrote:
+>>> On platforms that do not power off during suspend, successfully entering
+>>> suspend races with timers.
+>>>
+>>> The race happening in a couple of location is:
+>>>
+>>>   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
+>>>      ...
+>>>   2. syscore_suspend()
+>>>       -> timekeeping_suspend()
+>>>        -> clockevents_notify(SUSPEND)
+>>>         -> tick_suspend()   	(timers are turned off here)
+>>>      ...
+>>>   3. wfi            		(wait for wake-IRQ here)
+>>>
+>>> Between steps 1 and 2 the timers can still generate interrupts that are
+>>> not handled and stay pending until step 3. That pending IRQ causes an
+>>> immediate - spurious - wake.
+>>>
+>>> The solution is to move the clockevents suspend/resume notification
+>>> out of the syscore_suspend step and explictly call them at the appropriate
+>>> time in the suspend/hibernation paths. I.e. timers are suspend _before_
+>>> IRQs get disabled. And accordingly in the resume path.
+>>>
+>>> Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+>> Do we know which timer_list or hrtimer wants to run while entering
+>> suspend? I'd suspect the scheduler tick but perhaps we just forgot to
+>> cancel some timer during suspend?
+> Though, canceling timers really shouldn't be necessary for
+> suspend/resume, no?
+>
+>
 
-I've not had the chance to take a closer look and do any testing. I
-suspect we'll need tgxl's input here as well.
+Agreed. Perhaps I put it the wrong way. I'm worried that some timer
+needs to run just when we go into suspend. As long as that timer is the
+scheduler tick we should be ok, but if it isn't the scheduler tick then
+it would be good to know what it is and why it's pending. Unless the
+idea is that if we get this far into suspend and there's a pending timer
+we should just ignore it and go to sleep anyway?
 
-The change makes sense, but ordering modifications in this area tend to
-be fragile, as there are lots of implicit dependencies.
-
-thanks
--john
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
 
