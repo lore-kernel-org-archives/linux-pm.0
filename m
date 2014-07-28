@@ -1,100 +1,60 @@
-From: Jason Baron <jbaron@akamai.com>
-Subject: Re: [PATCH] intel_idle: use static_key to optimize idle enter/exit
- paths
-Date: Mon, 28 Jul 2014 17:50:06 -0400
-Message-ID: <53D6C58E.7070707@akamai.com>
-References: <20140711175458.6793B2029@prod-mail-relay06.akamai.com> <CAJvTdKkZoo1yO0N4ra8SBh0XY4PiY+KWkVysGptfhVWYb8kO1g@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
+Date: Tue, 29 Jul 2014 01:01:59 +0200
+Message-ID: <1629826.p5Zlf8Riij@vostro.rjw.lan>
+References: <20140724212620.GO3935@laptop> <alpine.DEB.2.10.1407281412060.23352@nanos> <2706544.qjOZ3fREQ9@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from prod-mail-xrelay07.akamai.com ([72.246.2.115]:47611 "EHLO
-	prod-mail-xrelay07.akamai.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751727AbaG1VuH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 17:50:07 -0400
-In-Reply-To: <CAJvTdKkZoo1yO0N4ra8SBh0XY4PiY+KWkVysGptfhVWYb8kO1g@mail.gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:50581 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751502AbaG1Wn3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 18:43:29 -0400
+In-Reply-To: <2706544.qjOZ3fREQ9@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 07/28/2014 04:38 PM, Len Brown wrote:
-> On Fri, Jul 11, 2014 at 1:54 PM, Jason Baron <jbaron@akamai.com> wrote:
->> If 'arat' is set in the cpuflags, we can avoid the checks for entering/exiting
->> the tick broadcast code entirely. It would seem that this is a hot enough code
->> path to make this worthwhile. I ran a few hackbench runs, and consistenly see
->> reduced branches and cycles.
+On Monday, July 28, 2014 11:53:15 PM Rafael J. Wysocki wrote:
+> On Monday, July 28, 2014 02:33:41 PM Thomas Gleixner wrote:
+> > On Mon, 28 Jul 2014, Peter Zijlstra wrote:
+> > > On Sat, Jul 26, 2014 at 01:49:17PM +0200, Rafael J. Wysocki wrote:
+
+[cut]
+
+> > So we are not going to make everything a single stupid flag and limit
+> > the usability of existing code. We rather go and try to remove the
+> > stupid flag before it becomes more wide spread.
+> > 
+> > And we cannot treat the wakeup thing the same way as the
+> > IRQF_NO_SUSPEND flag, because there is hardware where the irq line
+> > must be disabled at the normal (non suspend) interrupt controller, and
+> > the wake mechanism tells the PM microcontroller to monitor the
+> > interrupt line and kick the machine back to life.
+> > 
+> > So we need to very carefully look at all the existing cases instead of
+> > yelling crap and inflicting x86 specific horror on everyone. I said on
+> > friday, that I need to look at ALL use cases first and I meant it.
 > 
-> Hi Jason,
+> Regardless of the use case, I don't think it is necessary to manipulate
+> the interrupt controller settings before the syscore_suspend stage, because
+> if an interrupt happens earlier, we need to handle it pretty much in a normal
+> way, unless it has been suspended.
 > 
-> Your logic looks right -- though I've never used this
-> static_key_slow_inc() stuff.
-> I'm impressed that something in user-space could detect this change.
-> 
-> Can you share how to run the workload where you detected a difference,
-> and describe the hardware you measured?
-> 
-> thanks,
-> -Len Brown, Intel Open Source Technology Center
-> 
+> So I'd argue for not using anything like enable_irq_wake() that goes all
+> the way to the hardware in drivers.  Instead, we could allow drivers to
+> mark interrupts as "set this up for system wakeup" and really do the setup
+> right before putting the platform into the final "suspended" state.  And that
+> is totally independend of the IRQF_NO_SUSPEND thing.
 
+In addition to that we need the interrupt handler of the driver that requested
+the irq to be set up for system wakeup to be invoked after suspend_device_irqs()
+in case there are interrupts that should abort the suspend transition or we
+can lose a wakeup event.  So whatever interface we decide to use it has to
+affect suspend/resume_device_irqs() pretty much in the same way as the
+IRQF_NO_SUSPEND flag.
 
-Hi Len,
-
-So using something like hackbench appears to show the difference
-(with CONFIG_JUMP_LABEL enabled):
-
-Without the patch:
-
- Performance counter stats for 'perf bench sched messaging' (200 runs):
-
-        641.113816 task-clock                #    8.020 CPUs utilized            ( +-  0.16% ) [100.00%]
-             29020 context-switches          #    0.045 M/sec                    ( +-  1.66% ) [100.00%]
-              2487 cpu-migrations            #    0.004 M/sec                    ( +-  0.89% ) [100.00%]
-             10514 page-faults               #    0.016 M/sec                    ( +-  0.11% )
-        2085813986 cycles                    #    3.253 GHz                      ( +-  0.16% ) [100.00%]
-        1658381753 stalled-cycles-frontend   #   79.51% frontend cycles idle     ( +-  0.18% ) [100.00%]
-   <not supported> stalled-cycles-backend  
-        1221737228 instructions              #    0.59  insns per cycle        
-                                             #    1.36  stalled cycles per insn  ( +-  0.12% ) [100.00%]
-         211723499 branches                  #  330.243 M/sec                    ( +-  0.14% ) [100.00%]
-            716846 branch-misses             #    0.34% of all branches          ( +-  0.66% )
-
-       0.079936660 seconds time elapsed                                          ( +-  0.16% )
-
-
-With the patch:
-
-Performance counter stats for 'perf bench sched messaging' (200 runs):
-
-        638.819963 task-clock                #    8.020 CPUs utilized            ( +-  0.15% ) [100.00%]
-             27751 context-switches          #    0.043 M/sec                    ( +-  1.61% ) [100.00%]
-              2502 cpu-migrations            #    0.004 M/sec                    ( +-  0.92% ) [100.00%]
-             10503 page-faults               #    0.016 M/sec                    ( +-  0.09% )
-        2078109565 cycles                    #    3.253 GHz                      ( +-  0.14% ) [100.00%]
-        1653002141 stalled-cycles-frontend   #   79.54% frontend cycles idle     ( +-  0.17% ) [100.00%]
-   <not supported> stalled-cycles-backend
-        1218013520 instructions              #    0.59  insns per cycle
-                                             #    1.36  stalled cycles per insn  ( +-  0.12% ) [100.00%]
-         210943815 branches                  #  330.209 M/sec                    ( +-  0.14% ) [100.00%]
-            697865 branch-misses             #    0.33% of all branches          ( +-  0.66% )
-
-       0.079648462 seconds time elapsed                                          ( +-  0.15% )
-
-So you can see that 'branches' is higher without the patch. Yes, there is some
-'noise' here, but there is a measurable impact. It doesn't seem to make too much
-sense to me to check for the presence of a h/w feature every time through this kind
-of code path if its easily avoidable.
-
-Hardware is 4 core Intel box:
-
-model name	: Intel(R) Xeon(R) CPU E3-1270 V2 @ 3.50GHz
-stepping	: 9
-microcode	: 0x12
-cpu MHz		: 3501.000
-cache size	: 8192 KB
-
-Thanks,
-
--Jason
+Rafael
 
