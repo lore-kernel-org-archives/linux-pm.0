@@ -1,63 +1,38 @@
-From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v7 6/6] cpufreq: exynos: remove exynos4210/5250 specific
- cpufreq driver support
-Date: Tue, 29 Jul 2014 11:23:20 +0530
-Message-ID: <CAJuA9agfpQ7oyfZ99qSDj7EbsFk6dMnxxu5=P=vJYzTpAAUEuQ@mail.gmail.com>
-References: <1405345118-4269-1-git-send-email-thomas.ab@samsung.com>
-	<1405345118-4269-7-git-send-email-thomas.ab@samsung.com>
-	<53CA72CC.7010505@gmail.com>
+From: Shawn Guo <shawn.guo@freescale.com>
+Subject: Re: PM / OPP: ARCH_HAS_OPP
+Date: Tue, 29 Jul 2014 15:03:46 +0800
+Message-ID: <20140729070345.GA24750@dragon>
+References: <1406551632.5397.17.camel@x220>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <53CA72CC.7010505@gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1blp0189.outbound.protection.outlook.com ([207.46.163.189]:49483
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752644AbaG2HEB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 29 Jul 2014 03:04:01 -0400
+Content-Disposition: inline
+In-Reply-To: <1406551632.5397.17.camel@x220>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Paul Bolle <pebolle@tiscali.nl>
+Cc: Mark Brown <broonie@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>, Rob Herring <robh@kernel.org>, Simon Horman <horms+renesas@verge.net.au>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 
-Hi Tomasz,
+On Mon, Jul 28, 2014 at 02:47:12PM +0200, Paul Bolle wrote:
+> Mark,
+> 
+> Your commit 78c5e0bb145d ("PM / OPP: Remove ARCH_HAS_OPP") landed in
+> today's linux-next (ie, next-20140728). It removes the Kconfig symbol
+> ARCH_HAS_OPP and ten select statements for that symbol.
+> 
+> After that commit there are still nine select statements for that symbol
+> left in linux-next. (These select statements are now actually NOPs.) The
+> peculiar thing is that these nine statements are all found in Kconfig
+> files also touched by that commit.
+> 
+> Anyhow, are patches to remove these pointless select statements queued
+> somewhere?
 
-On Sat, Jul 19, 2014 at 6:59 PM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
-> Hi,
->
-> On 14.07.2014 15:38, Thomas Abraham wrote:
->> From: Thomas Abraham <thomas.ab@samsung.com>
->>
->> Exynos4210 and Exynos5250 based platforms have switched over to use generic
->> cpufreq drivers for cpufreq functionality. So the Exynos specific cpufreq
->> drivers for these platforms can be removed.
->>
->> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> Reviewed-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->> Tested-by: Arjun K.V <arjun.kv@samsung.com>
->> ---
->>  drivers/cpufreq/Kconfig.arm          |   22 ----
->>  drivers/cpufreq/Makefile             |    2 -
->>  drivers/cpufreq/exynos4210-cpufreq.c |  184 -----------------------------
->>  drivers/cpufreq/exynos5250-cpufreq.c |  210 ----------------------------------
->>  4 files changed, 418 deletions(-)
->>  delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
->>  delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
->>
->
-> I would hesitate with removing this driver straightaway and replacing it
-> with a new one that isn't yet well tested. For at least one release I
-> would keep the old code in place with the possibility of switching
-> between old and new one in Kconfig.
+There a couple of such select in imx Kconfig, and I will clean them up.
 
-The new drivers have been tested for three days on
-Exynos4210/5250/5420 based boards. So I am fairly confident that there
-will be no issues in switching to the generic drivers and the old
-drivers have not been retained in the next version.
-
-Thanks,
-Thomas.
-
->
-> Best regards,
-> Tomasz
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Shawn
