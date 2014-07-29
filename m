@@ -1,65 +1,56 @@
-From: Eduardo Valentin <edubezval@gmail.com>
+From: Laxman Dewangan <ldewangan@nvidia.com>
 Subject: Re: [PATCH-REPOST] thermal: of: look for sensor driver parent node
  if device node missing
-Date: Tue, 29 Jul 2014 10:12:34 -0400
-Message-ID: <20140729141234.GA26807@developer>
-References: <1406279971-14957-1-git-send-email-ldewangan@nvidia.com>
+Date: Tue, 29 Jul 2014 19:53:58 +0530
+Message-ID: <53D7AE7E.8070104@nvidia.com>
+References: <1406279971-14957-1-git-send-email-ldewangan@nvidia.com> <20140729141234.GA26807@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1406279971-14957-1-git-send-email-ldewangan@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Laxman Dewangan <ldewangan@nvidia.com>
-Cc: rui.zhang@intel.com, eduardo.valentin@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, javi.merino@arm.com
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:4545 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751979AbaG2OZ0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 10:25:26 -0400
+In-Reply-To: <20140729141234.GA26807@developer>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "eduardo.valentin@gmail.com" <eduardo.valentin@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "javi.merino@arm.com" <javi.merino@arm.com>
 
-Hello Laxman,
+On Tuesday 29 July 2014 07:42 PM, Eduardo Valentin wrote:
+> Hello Laxman,
+>
+> On Fri, Jul 25, 2014 at 02:49:31PM +0530, Laxman Dewangan wrote:
+>> There are some mfd devices which supports junction thermal interrupt
+>> like ams,AS3722. The DT binding of these devices are defined as the
+>> flat and drivers for sub module of such devices are registered as
+>> the mfd_add_devices. In this method, the sub devices registered as
+>> platform driver and these do not have the of_node pointer on their
+>> device structure. In this case, use the parent of_node pointer to
+>> get the required of_node pointer.
+>>
+> Can you please elaborate a bit more on your proposal? So, you would
+> append the thermal zones on the DT node of the MFD device?
 
-On Fri, Jul 25, 2014 at 02:49:31PM +0530, Laxman Dewangan wrote:
-> There are some mfd devices which supports junction thermal interrupt
-> like ams,AS3722. The DT binding of these devices are defined as the
-> flat and drivers for sub module of such devices are registered as
-> the mfd_add_devices. In this method, the sub devices registered as
-> platform driver and these do not have the of_node pointer on their
-> device structure. In this case, use the parent of_node pointer to
-> get the required of_node pointer.
-> 
+Yes, mfd node for ams,as3722 is flat node, almost all sub-module driver 
+have their property on this node only. Regulator have their own sub node 
+under this node.
 
-Can you please elaborate a bit more on your proposal? So, you would
-append the thermal zones on the DT node of the MFD device?
+as3722 {
+         compatible = "ams,as3722";
+         #gpio-contorller;
+         #gpio-cells = <2>;
+     ::::::::::
+         regulator {
+                 ::::
+         };
+};
 
-To me looks like MFD becomes sowhat obsolete with DT.
 
-Besides, to what I could see from past iterations, MFD with DT seams to
-be a controvertial subject. That is, we have people that agree to have
-it, and people that are not fan of it.
+So in this, the thermal sensor driver's property is on the as3722 node 
+only and thermal zone need to refer this node for sensor.
 
-> Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
-> ---
-> I typed differnet email ID for Eduardo and so it did not reach to him.
-> Resending the patch with correct ID.
-> 
->  drivers/thermal/of-thermal.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 04b1be7..85a7d71 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -396,6 +396,8 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
->  		return ERR_PTR(-EINVAL);
->  
->  	sensor_np = dev->of_node;
-> +	if (!sensor_np && dev->parent)
-> +		sensor_np = dev->parent->of_node;
->  
->  	for_each_child_of_node(np, child) {
->  		struct of_phandle_args sensor_specs;
-> -- 
-> 1.8.1.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+However, as3722 thermal sensor driver is register as sub mfd devices 
+through mfd_add_devices() and thermal sensor drivers pdev->dev.of_node 
+does not have any valid pointer.
