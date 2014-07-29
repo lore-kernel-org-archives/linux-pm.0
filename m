@@ -1,56 +1,56 @@
-From: Laxman Dewangan <ldewangan@nvidia.com>
-Subject: Re: [PATCH-REPOST] thermal: of: look for sensor driver parent node
- if device node missing
-Date: Tue, 29 Jul 2014 19:53:58 +0530
-Message-ID: <53D7AE7E.8070104@nvidia.com>
-References: <1406279971-14957-1-git-send-email-ldewangan@nvidia.com> <20140729141234.GA26807@developer>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH 1/3] cpupower: mperf monitor: Correct use of ! and &
+Date: Tue, 29 Jul 2014 18:12:18 +0200
+Message-ID: <1406650340-38644-1-git-send-email-trenn@suse.de>
+References: <2377922.j9jRKZAKtD@vostro.rjw.lan>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:4545 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751979AbaG2OZ0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 10:25:26 -0400
-In-Reply-To: <20140729141234.GA26807@developer>
+Received: from cantor2.suse.de ([195.135.220.15]:48927 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751802AbaG2QMw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 29 Jul 2014 12:12:52 -0400
+In-Reply-To: <2377922.j9jRKZAKtD@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "eduardo.valentin@gmail.com" <eduardo.valentin@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "javi.merino@arm.com" <javi.merino@arm.com>
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, Himangi Saraogi <himangi774@gmail.com>, Thomas Renninger <trenn@suse.de>
 
-On Tuesday 29 July 2014 07:42 PM, Eduardo Valentin wrote:
-> Hello Laxman,
->
-> On Fri, Jul 25, 2014 at 02:49:31PM +0530, Laxman Dewangan wrote:
->> There are some mfd devices which supports junction thermal interrupt
->> like ams,AS3722. The DT binding of these devices are defined as the
->> flat and drivers for sub module of such devices are registered as
->> the mfd_add_devices. In this method, the sub devices registered as
->> platform driver and these do not have the of_node pointer on their
->> device structure. In this case, use the parent of_node pointer to
->> get the required of_node pointer.
->>
-> Can you please elaborate a bit more on your proposal? So, you would
-> append the thermal zones on the DT node of the MFD device?
+From: Himangi Saraogi <himangi774@gmail.com>
 
-Yes, mfd node for ams,as3722 is flat node, almost all sub-module driver 
-have their property on this node only. Regulator have their own sub node 
-under this node.
+In commit ae91d60ba88ef0bdb1b5e9b2363bd52fc45d2af7, a bug was fixed that
+involved converting !x & y to !(x & y).  The code below shows the same
+pattern, and thus should perhaps be fixed in the same way.
 
-as3722 {
-         compatible = "ams,as3722";
-         #gpio-contorller;
-         #gpio-cells = <2>;
-     ::::::::::
-         regulator {
-                 ::::
-         };
-};
+The Coccinelle semantic patch that makes this change is as follows:
 
+// <smpl>
+@@ expression E1,E2; @@
+(
+  !E1 & !E2
+|
+- !E1 & E2
++ !(E1 & E2)
+)
+// </smpl>
 
-So in this, the thermal sensor driver's property is on the as3722 node 
-only and thermal zone need to refer this node for sensor.
+Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+---
+ .../cpupower/utils/idle_monitor/mperf_monitor.c    |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-However, as3722 thermal sensor driver is register as sub mfd devices 
-through mfd_add_devices() and thermal sensor drivers pdev->dev.of_node 
-does not have any valid pointer.
+diff --git a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+index 5650ab5..90a8c4f 100644
+--- a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
++++ b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+@@ -237,7 +237,7 @@ static int init_maxfreq_mode(void)
+ 	unsigned long long hwcr;
+ 	unsigned long min;
+ 
+-	if (!cpupower_cpu_info.caps & CPUPOWER_CAP_INV_TSC)
++	if (!(cpupower_cpu_info.caps & CPUPOWER_CAP_INV_TSC))
+ 		goto use_sysfs;
+ 
+ 	if (cpupower_cpu_info.vendor == X86_VENDOR_AMD) {
+-- 
+1.7.6.1
+
