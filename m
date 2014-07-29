@@ -1,40 +1,68 @@
-From: Brian Norris <computersforpeace@gmail.com>
-Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
-Date: Tue, 29 Jul 2014 13:41:00 -0700
-Message-ID: <20140729204100.GI3711@ld-irv-0074>
-References: <20140724212620.GO3935@laptop>
- <13290270.IfKaUSRMLR@vostro.rjw.lan>
- <20140725055847.GQ3935@laptop>
- <20140729192008.GH3711@ld-irv-0074>
- <20140729192843.GP3935@laptop>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/6 v2] PM / Hibernate: Memory bitmap scalability improvements
+Date: Tue, 29 Jul 2014 23:22:39 +0200
+Message-ID: <3290133.D59AnCbavX@vostro.rjw.lan>
+References: <1405938422-21900-1-git-send-email-joro@8bytes.org> <20140722103443.GV30979@8bytes.org> <20140728135933.GA5918@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f174.google.com ([209.85.192.174]:40476 "EHLO
-	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751693AbaG2UlF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 16:41:05 -0400
-Content-Disposition: inline
-In-Reply-To: <20140729192843.GP3935@laptop>
+Received: from v094114.home.net.pl ([79.96.170.134]:60380 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752030AbaG2VEH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 17:04:07 -0400
+In-Reply-To: <20140728135933.GA5918@pd.tnic>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
+To: Borislav Petkov <bp@alien8.de>
+Cc: Joerg Roedel <joro@8bytes.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2014 at 09:28:43PM +0200, Peter Zijlstra wrote:
-> On Tue, Jul 29, 2014 at 12:20:08PM -0700, Brian Norris wrote:
+On Monday, July 28, 2014 03:59:33 PM Borislav Petkov wrote:
+> On Tue, Jul 22, 2014 at 12:34:44PM +0200, Joerg Roedel wrote:
+> > So my test was to resume from a swap partition that contained no image.
+> > Here is the result from the 16GB machine. First with a v3.16-rc6 kernel
+> > without my changes:
+> > 
+> > kv:~/base # time perf record /usr/sbin/resume /dev/sda1
+> > resume: libgcrypt version: 1.5.3
+> > [ perf record: Woken up 1 times to write data ]
+> > [ perf record: Captured and wrote 0.019 MB perf.data (~823 samples) ]
+> > 
+> > real    0m0.084s
+> > user    0m0.012s
+> > sys     0m0.064s
+> > 
+> > Here is the result with my patches on top:
+> > 
+> > kv:~/hibernate # time perf record /usr/sbin/resume /dev/sda1
+> > resume: libgcrypt version: 1.5.3
+> > [ perf record: Woken up 1 times to write data ]
+> > [ perf record: Captured and wrote 0.014 MB perf.data (~602 samples) ]
+> > 
+> > real    0m0.032s
+> > user    0m0.003s
+> > sys     0m0.027s
+> > 
+> > So we save around 50ms (or 62% of time) already on this 16GB machine.
 > 
-> > I'm curious what you mean. Are you referring to the fact that its input
-> > is simply an IRQ number (regardless of whether the IRQ is shared), not
-> > something that identifies the particular handler (e.g., struct
-> > irqaction)?
+> So, let's see, with Joerg's patches we
 > 
-> Yes. I know that shared stuff is a massive head-ache, but I feel we
-> should not introduce primitives that do not work with it.
+> - solve the issue on huge boxes. And yes, we most definitely want to be
+> able to suspend them too. RAS is one very prominent use case here.
+> 
+> *and*
+> 
+> - we see improvement on smaller boxes, above numbers look good to me.
+> 
+> and all that for an additional 8K for a S/R cycle?! And for some
+> additional complexity of a radix tree which is self-contained, well
+> tested and understood?
+> 
+> This looks like certainly like net win to me.
 
-Thanks for the reply. I could also have just read the rest of the thread
-[1], in which this very question was addressed already. Shame on me.
+Yes, it does.
 
-Brian
+I've queued up the Joergs patches for 3.17, thanks!
 
-[1] https://lkml.org/lkml/2014/7/28/60
+Rafael
+
