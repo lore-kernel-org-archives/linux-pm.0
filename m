@@ -1,84 +1,63 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH 2/2] of/clk: use "clkops-clocks" to specify clocks
- handled by clock_ops domain
-Date: Mon, 28 Jul 2014 23:52:34 -0600
-Message-ID: <CACxGe6uMke5vgzcNC9xUqjr2bHJ4QFHD6YjocSZWq8Ccx8Mm6A@mail.gmail.com>
-References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
- <1402592023-13416-1-git-send-email-grygorii.strashko@ti.com>
- <1402592023-13416-3-git-send-email-grygorii.strashko@ti.com>
- <20140728140533.6E916C4116F@trevor.secretlab.ca> <53D68CC4.1010704@ti.com>
+From: Thomas Abraham <ta.omasab@gmail.com>
+Subject: Re: [PATCH v7 6/6] cpufreq: exynos: remove exynos4210/5250 specific
+ cpufreq driver support
+Date: Tue, 29 Jul 2014 11:23:20 +0530
+Message-ID: <CAJuA9agfpQ7oyfZ99qSDj7EbsFk6dMnxxu5=P=vJYzTpAAUEuQ@mail.gmail.com>
+References: <1405345118-4269-1-git-send-email-thomas.ab@samsung.com>
+	<1405345118-4269-7-git-send-email-thomas.ab@samsung.com>
+	<53CA72CC.7010505@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <53D68CC4.1010704@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <53CA72CC.7010505@gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 28, 2014 at 11:47 AM, Grygorii Strashko
-<grygorii.strashko@ti.com> wrote:
-> Hi Grant.
+Hi Tomasz,
+
+On Sat, Jul 19, 2014 at 6:59 PM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+> Hi,
 >
-> On 07/28/2014 05:05 PM, Grant Likely wrote:
->> On Thu, 12 Jun 2014 19:53:43 +0300, Grygorii Strashko <grygorii.strashko@ti.com> wrote:
->>> Use "clkops-clocks" property to specify clocks handled by
->>> clock_ops domain PM domain. Only clocks defined in "clkops-clocks"
->>> set of clocks will be handled by Runtime PM through clock_ops
->>> Pm domain.
->>>
->>> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
->>> ---
->>>   drivers/of/of_clk.c |    7 ++-----
->>>   1 file changed, 2 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/drivers/of/of_clk.c b/drivers/of/of_clk.c
->>> index 35f5e9f..5f9b90e 100644
->>> --- a/drivers/of/of_clk.c
->>> +++ b/drivers/of/of_clk.c
->>> @@ -86,11 +86,8 @@ int of_clk_register_runtime_pm_clocks(struct device_node *np,
->>>      struct clk *clk;
->>>      int error;
->>>
->>> -    for (i = 0; (clk = of_clk_get(np, i)) && !IS_ERR(clk); i++) {
->>> -            if (!clk_may_runtime_pm(clk)) {
->>> -                    clk_put(clk);
->>> -                    continue;
->>> -            }
->>> +    for (i = 0; (clk = of_clk_get_from_set(np, "clkops", i)) &&
->>> +                 !IS_ERR(clk); i++) {
+> On 14.07.2014 15:38, Thomas Abraham wrote:
+>> From: Thomas Abraham <thomas.ab@samsung.com>
 >>
->> This really looks like an ABI break to me. What happens to all the
->> existing platforms who don't have this new clkops-clocks in their device
->> tree?
+>> Exynos4210 and Exynos5250 based platforms have switched over to use generic
+>> cpufreq drivers for cpufreq functionality. So the Exynos specific cpufreq
+>> drivers for these platforms can be removed.
+>>
+>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> Reviewed-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> Tested-by: Arjun K.V <arjun.kv@samsung.com>
+>> ---
+>>  drivers/cpufreq/Kconfig.arm          |   22 ----
+>>  drivers/cpufreq/Makefile             |    2 -
+>>  drivers/cpufreq/exynos4210-cpufreq.c |  184 -----------------------------
+>>  drivers/cpufreq/exynos5250-cpufreq.c |  210 ----------------------------------
+>>  4 files changed, 418 deletions(-)
+>>  delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
+>>  delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
+>>
 >
-> Agree. This patch as is will break such platforms.
-> As possible solution for above problem - the NULL can be used as clock's prefix
-> by default and platform code can configure new value of clock's prefix during
-> initialization.
-> In addition, to make this solution full the of_clk_get_by_name() will
-> need to be modified too.
->
-> But note pls, this is pure RFC patches which I did to find out the answer on questions:
-> - What is better: maintain Runtime PM clocks configuration in DT or in code?
+> I would hesitate with removing this driver straightaway and replacing it
+> with a new one that isn't yet well tested. For at least one release I
+> would keep the old code in place with the possibility of switching
+> between old and new one in Kconfig.
 
-In code. I don't think it is workable to embed runtime PM behaviour
-into the DT bindings. I think there will be too much variance in what
-hardware requires. We can create helpers to make this simpler, but I
-don't think it is a good idea to set it up automatically without any
-control from the driver itself.
+The new drivers have been tested for three days on
+Exynos4210/5250/5420 based boards. So I am fairly confident that there
+will be no issues in switching to the generic drivers and the old
+drivers have not been retained in the next version.
+
+Thanks,
+Thomas.
 
 >
-> - Where and when to call of_clk_register_runtime_pm_clocks()?
->   Bus notifier/ platform core/ device drivers
-
-I would say in device drivers.
-
-> Also, May be platform dependent solution [1] can be acceptable for now?
->
-> [1] https://lkml.org/lkml/2014/7/25/630
-
-I need to look at the series before I comment. I've flagged it and
-will hopefully look at it tomorrow.
-
-g.
+> Best regards,
+> Tomasz
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
