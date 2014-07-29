@@ -1,74 +1,134 @@
 From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v8 2/6] clk: samsung: add cpu clock configuration data and
- instantiate cpu clock
-Date: Tue, 29 Jul 2014 17:16:49 +0530
-Message-ID: <CAJuA9ahuch8c9CzVwO7pf8Chf0G3coNH4KLOF29Sj7dQ9gqO_Q@mail.gmail.com>
+Subject: Re: [PATCH v8 3/6] ARM: dts: Exynos: add CPU OPP and regulator supply property
+Date: Tue, 29 Jul 2014 17:30:20 +0530
+Message-ID: <CAJuA9ahAmPytu0Oncnj7Ytm+UFCfiekdFnsHu1N6js=NNsypJQ@mail.gmail.com>
 References: <1406611711-25112-1-git-send-email-thomas.ab@samsung.com>
-	<1406611711-25112-3-git-send-email-thomas.ab@samsung.com>
-	<53D773DA.6050003@gmail.com>
+	<1406611711-25112-4-git-send-email-thomas.ab@samsung.com>
+	<53D77817.7030605@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f42.google.com ([209.85.215.42]:50435 "EHLO
-	mail-la0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751234AbaG2Lqv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 07:46:51 -0400
-In-Reply-To: <53D773DA.6050003@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <53D77817.7030605@gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Doug Anderson <dianders@chromium.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, =?UTF-8?Q?Andreas_F=C3=A4rber?= <afaerber@suse.de>, Sachin Kamat <sachin.kamat@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
 Hi Tomasz,
 
-On Tue, Jul 29, 2014 at 3:43 PM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+On Tue, Jul 29, 2014 at 4:01 PM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
 > Hi Thomas,
 >
-> Just few minor comments for things I probably missed before.
+> Other than the same question about 400 MHz OPP for Exynos4210, I have
+> also few more inline.
 >
 > On 29.07.2014 07:28, Thomas Abraham wrote:
->
-> [snip]
->
->> @@ -1356,6 +1357,16 @@ static struct samsung_pll_clock exynos4x12_plls[nr_plls] __initdata = {
->>                       VPLL_LOCK, VPLL_CON0, NULL),
->>  };
+>> For Exynos 4210/5250/5420 based platforms, add CPU operating points and CPU
+>> regulator supply properties for migrating from Exynos specific cpufreq driver
+>> to using generic cpufreq drivers.
 >>
->> +static const struct exynos_cpuclk_cfg_data e4210_armclk_d[] __initconst = {
->> +     { 1200000, E4210_CPU_DIV0(7, 1, 4, 3, 7, 3), E4210_CPU_DIV1(0, 5), },
->> +     { 1000000, E4210_CPU_DIV0(7, 1, 4, 3, 7, 3), E4210_CPU_DIV1(0, 4), },
->> +     {  800000, E4210_CPU_DIV0(7, 1, 3, 3, 7, 3), E4210_CPU_DIV1(0, 3), },
->> +     {  500000, E4210_CPU_DIV0(7, 1, 3, 3, 7, 3), E4210_CPU_DIV1(0, 3), },
->> +     {  400000, E4210_CPU_DIV0(7, 1, 3, 3, 7, 3), E4210_CPU_DIV1(0, 3), },
+>> Cc: Kukjin Kim <kgene.kim@samsung.com>
+>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+>> ---
+>>  arch/arm/boot/dts/exynos4210-origen.dts         |    6 ++++
+>>  arch/arm/boot/dts/exynos4210-trats.dts          |    6 ++++
+>>  arch/arm/boot/dts/exynos4210-universal_c210.dts |    6 ++++
+>>  arch/arm/boot/dts/exynos4210.dtsi               |   12 +++++++
+>>  arch/arm/boot/dts/exynos5250-arndale.dts        |    6 ++++
+>>  arch/arm/boot/dts/exynos5250-cros-common.dtsi   |    6 ++++
+>>  arch/arm/boot/dts/exynos5250-smdk5250.dts       |    6 ++++
+>>  arch/arm/boot/dts/exynos5250.dtsi               |   23 ++++++++++++++
+>>  arch/arm/boot/dts/exynos5420-smdk5420.dts       |    6 ++++
 >
-> I have noticed that the old driver does not have this operating point.
-> While it is probably OK to add this one and even few more for all
-> possible APLL settings, I am interested in how you obtained the values
-> for DIV0 and DIV1 registers for this configuration.
+> There are more Exynos5420-based boards supported in mainline. If you do
+> not have necessary data and/or hardware to fully enable the new driver
+> on them, you should add responsible people on Cc list, so at least they
+> know they have one more item on their TODO list. Added them for you.
 
-I found these values from an old internal repo. So far no trouble seen
-with these values in all the testing.
+Thanks!. Will do that next time.
 
 >
->> +     {  200000, E4210_CPU_DIV0(0, 1, 1, 1, 3, 1), E4210_CPU_DIV1(0, 3), },
->> +     {  0 },
->> +};
+>>  arch/arm/boot/dts/exynos5420.dtsi               |   38 +++++++++++++++++++++++
+>>  10 files changed, 115 insertions(+)
 >
 > [snip]
 >
->> diff --git a/include/dt-bindings/clock/exynos5250.h b/include/dt-bindings/clock/exynos5250.h
->> index 4273891..855d809 100644
->> --- a/include/dt-bindings/clock/exynos5250.h
->> +++ b/include/dt-bindings/clock/exynos5250.h
->> @@ -21,6 +21,7 @@
->>  #define CLK_FOUT_CPLL                6
->>  #define CLK_FOUT_EPLL                7
->>  #define CLK_FOUT_VPLL                8
->> +#define CLK_ARM_CLK          12
+>> diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
+>> index 492e1ef..876247a 100644
+>> --- a/arch/arm/boot/dts/exynos5250.dtsi
+>> +++ b/arch/arm/boot/dts/exynos5250.dtsi
+>> @@ -63,6 +63,29 @@
+>>                       compatible = "arm,cortex-a15";
+>>                       reg = <0>;
+>>                       clock-frequency = <1700000000>;
+>> +
+>> +                     clocks = <&clock CLK_ARM_CLK>;
+>> +                     clock-names = "cpu";
+>> +                     clock-latency = <200000>;
 >
-> Why 12 not 9?
+> Where does this latency value comes from? How did you calculate it?
+>
+> For example, on Exynos4210, for all operating points added by your
+> patches, the highest PLL locking latency will be 60uS, because the
+> highest PDIV value would be 6 and PLL lock time is PDIV*240 ticks of 24
+> MHz reference clock.
 
-Exynos4 uses 12 and so just wanted to keep it same for Exynos5250 as well.
+Since the CPU clock is a composite clock with dividers and muxes, the
+latency includes the settling time for these clock blocks as well. I
+have not made any measurements of the clock transition latency.
+
+>
+>> +
+>> +                     operating-points = <
+>> +                             1700000 1300000
+>> +                             1600000 1250000
+>
+> [snip]
+>
+>> diff --git a/arch/arm/boot/dts/exynos5420-smdk5420.dts b/arch/arm/boot/dts/exynos5420-smdk5420.dts
+>> index 6052aa9..084e587 100644
+>> --- a/arch/arm/boot/dts/exynos5420-smdk5420.dts
+>> +++ b/arch/arm/boot/dts/exynos5420-smdk5420.dts
+>> @@ -24,6 +24,12 @@
+>>               bootargs = "console=ttySAC2,115200 init=/linuxrc";
+>>       };
+>>
+>> +     cpus {
+>
+> Is there no regulator for cpu0?
+
+This was a mistake. I did not intend to add regulator for cpu4 as well
+but somehow I missed it. I will remove it in the next version.
+
+>
+>> +             cpu@4 {
+>> +                     cpu0-supply = <&buck6_reg>;
+>> +             };
+>> +     };
+>> +
+>>       fixed-rate-clocks {
+>>               oscclk {
+>>                       compatible = "samsung,exynos5420-oscclk";
+>> diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
+>> index cb2b70e..1116d55 100644
+>> --- a/arch/arm/boot/dts/exynos5420.dtsi
+>> +++ b/arch/arm/boot/dts/exynos5420.dtsi
+>
+> [snip]
+>
+>>
+>>               cpu1: cpu@1 {
+>> @@ -69,6 +87,7 @@
+>>                       reg = <0x1>;
+>>                       clock-frequency = <1800000000>;
+>>                       cci-control-port = <&cci_control1>;
+>> +                     clock-latency = <200000>;
+>
+> Do you need to specify this property for every CPU or rather just for
+> those which have operating points specified?
+
+The big.little cpufreq driver expects each CPU to have the clock
+latency specified.
 
 Thanks,
 Thomas.
@@ -77,6 +137,6 @@ Thomas.
 > Best regards,
 > Tomasz
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
