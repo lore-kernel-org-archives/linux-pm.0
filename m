@@ -1,60 +1,70 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
-Date: Tue, 29 Jul 2014 01:01:59 +0200
-Message-ID: <1629826.p5Zlf8Riij@vostro.rjw.lan>
-References: <20140724212620.GO3935@laptop> <alpine.DEB.2.10.1407281412060.23352@nanos> <2706544.qjOZ3fREQ9@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Thomas Abraham <thomas.ab@samsung.com>
+Subject: [PATCH v8 0/6] cpufreq: use generic cpufreq drivers for exynos
+ platforms
+Date: Tue, 29 Jul 2014 10:58:25 +0530
+Message-ID: <1406611711-25112-1-git-send-email-thomas.ab@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50581 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751502AbaG1Wn3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jul 2014 18:43:29 -0400
-In-Reply-To: <2706544.qjOZ3fREQ9@vostro.rjw.lan>
+Received: from mailout4.samsung.com ([203.254.224.34]:18476 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751114AbaG2Fbq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 01:31:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, heiko@sntech.de, cw00.choi@samsung.com
 
-On Monday, July 28, 2014 11:53:15 PM Rafael J. Wysocki wrote:
-> On Monday, July 28, 2014 02:33:41 PM Thomas Gleixner wrote:
-> > On Mon, 28 Jul 2014, Peter Zijlstra wrote:
-> > > On Sat, Jul 26, 2014 at 01:49:17PM +0200, Rafael J. Wysocki wrote:
+Changes since v7:
+- Fixes suggested by Tomasz Figa.
 
-[cut]
+This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
+series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
+driver.
 
-> > So we are not going to make everything a single stupid flag and limit
-> > the usability of existing code. We rather go and try to remove the
-> > stupid flag before it becomes more wide spread.
-> > 
-> > And we cannot treat the wakeup thing the same way as the
-> > IRQF_NO_SUSPEND flag, because there is hardware where the irq line
-> > must be disabled at the normal (non suspend) interrupt controller, and
-> > the wake mechanism tells the PM microcontroller to monitor the
-> > interrupt line and kick the machine back to life.
-> > 
-> > So we need to very carefully look at all the existing cases instead of
-> > yelling crap and inflicting x86 specific horror on everyone. I said on
-> > friday, that I need to look at ALL use cases first and I meant it.
-> 
-> Regardless of the use case, I don't think it is necessary to manipulate
-> the interrupt controller settings before the syscore_suspend stage, because
-> if an interrupt happens earlier, we need to handle it pretty much in a normal
-> way, unless it has been suspended.
-> 
-> So I'd argue for not using anything like enable_irq_wake() that goes all
-> the way to the hardware in drivers.  Instead, we could allow drivers to
-> mark interrupts as "set this up for system wakeup" and really do the setup
-> right before putting the platform into the final "suspended" state.  And that
-> is totally independend of the IRQF_NO_SUSPEND thing.
+This patch series is dependent on two other patches
+1. ARM: dts: add CPU nodes for Exynos4 SoCs
+   - https://lkml.org/lkml/2014/7/21/315
+2. ARM: dts: smdk5250: Specify MAX77686 pmic interrupt
+   - http://www.spinics.net/lists/arm-kernel/msg351134.html
 
-In addition to that we need the interrupt handler of the driver that requested
-the irq to be set up for system wakeup to be invoked after suspend_device_irqs()
-in case there are interrupts that should abort the suspend transition or we
-can lose a wakeup event.  So whatever interface we decide to use it has to
-affect suspend/resume_device_irqs() pretty much in the same way as the
-IRQF_NO_SUSPEND flag.
+Since there are significant changes since v7, the Tested-by and Acked-by tags
+for all the patches in this series have been dropped.
 
-Rafael
+Thomas Abraham (6):
+  clk: samsung: add infrastructure to register cpu clocks
+  clk: samsung: add cpu clock configuration data and instantiate cpu clock
+  ARM: dts: Exynos: add CPU OPP and regulator supply property
+  ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
+  cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
+  clk: samsung: remove unused clock aliases and update clock flags
+
+ arch/arm/boot/dts/exynos4210-origen.dts         |    6 +
+ arch/arm/boot/dts/exynos4210-trats.dts          |    6 +
+ arch/arm/boot/dts/exynos4210-universal_c210.dts |    6 +
+ arch/arm/boot/dts/exynos4210.dtsi               |   12 +
+ arch/arm/boot/dts/exynos5250-arndale.dts        |    6 +
+ arch/arm/boot/dts/exynos5250-cros-common.dtsi   |    6 +
+ arch/arm/boot/dts/exynos5250-smdk5250.dts       |    6 +
+ arch/arm/boot/dts/exynos5250.dtsi               |   23 ++
+ arch/arm/boot/dts/exynos5420-smdk5420.dts       |    6 +
+ arch/arm/boot/dts/exynos5420.dtsi               |   38 +++
+ arch/arm/mach-exynos/exynos.c                   |   24 +-
+ drivers/clk/samsung/Makefile                    |    2 +-
+ drivers/clk/samsung/clk-cpu.c                   |  335 +++++++++++++++++++++++
+ drivers/clk/samsung/clk-cpu.h                   |   91 ++++++
+ drivers/clk/samsung/clk-exynos4.c               |   59 ++--
+ drivers/clk/samsung/clk-exynos5250.c            |   44 ++-
+ drivers/clk/samsung/clk-exynos5420.c            |   72 ++++-
+ drivers/cpufreq/Kconfig.arm                     |   22 --
+ drivers/cpufreq/Makefile                        |    2 -
+ drivers/cpufreq/exynos4210-cpufreq.c            |  184 -------------
+ drivers/cpufreq/exynos5250-cpufreq.c            |  210 --------------
+ include/dt-bindings/clock/exynos5250.h          |    1 +
+ include/dt-bindings/clock/exynos5420.h          |    2 +
+ 23 files changed, 707 insertions(+), 456 deletions(-)
+ create mode 100644 drivers/clk/samsung/clk-cpu.c
+ create mode 100644 drivers/clk/samsung/clk-cpu.h
+ delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
+ delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
+
 
