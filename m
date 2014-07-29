@@ -1,90 +1,65 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: add support to disable thermal zone from DTS
-Date: Tue, 29 Jul 2014 09:47:19 -0400
-Message-ID: <20140729134719.GD3336@developer>
-References: <1406282518-31266-1-git-send-email-ldewangan@nvidia.com>
+Subject: Re: [PATCH-REPOST] thermal: of: look for sensor driver parent node
+ if device node missing
+Date: Tue, 29 Jul 2014 10:12:34 -0400
+Message-ID: <20140729141234.GA26807@developer>
+References: <1406279971-14957-1-git-send-email-ldewangan@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f169.google.com ([209.85.220.169]:46324 "EHLO
-	mail-vc0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750960AbaG2Nre (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 09:47:34 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1406282518-31266-1-git-send-email-ldewangan@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1406279971-14957-1-git-send-email-ldewangan@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Laxman Dewangan <ldewangan@nvidia.com>
 Cc: rui.zhang@intel.com, eduardo.valentin@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, javi.merino@arm.com
+List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 25, 2014 at 03:31:58PM +0530, Laxman Dewangan wrote:
-> Add support to check status of the thermal zone before registering the
-> zone. This will help on disabling some non-existing thermal zone from
-> the top level DTS file out of common dtsi thermalzone file.
+Hello Laxman,
+
+On Fri, Jul 25, 2014 at 02:49:31PM +0530, Laxman Dewangan wrote:
+> There are some mfd devices which supports junction thermal interrupt
+> like ams,AS3722. The DT binding of these devices are defined as the
+> flat and drivers for sub module of such devices are registered as
+> the mfd_add_devices. In this method, the sub devices registered as
+> platform driver and these do not have the of_node pointer on their
+> device structure. In this case, use the parent of_node pointer to
+> get the required of_node pointer.
 > 
-> For example,
-> we have 3 platforms almost same but thermal zones on this platform are
-> little bit different. Platform 1 and 2 have three thermal zones and
-> platform 3 has two thermal zones. To avoid duplication of the thermal
-> zones entries on each DTS file of platforms,we created one common
-> dtsi file for thermal zone and included this dtsi file from these
-> 3 platform's top level dts file.
-> 
-> On common thermal zone com dtsi file, all thermal zone are enabled and
-> need to disable one of thermal zone on platform 3 dts file. For this, we
-> just added entry status = "disabled" for that thermal zone on platform 3
-> dts file and along with this change to make it work.
-> 
-> This way, we reuse the common file and control the enable/disable of the
-> thermal zone from top level dts file.
-> 
+
+Can you please elaborate a bit more on your proposal? So, you would
+append the thermal zones on the DT node of the MFD device?
+
+To me looks like MFD becomes sowhat obsolete with DT.
+
+Besides, to what I could see from past iterations, MFD with DT seams to
+be a controvertial subject. That is, we have people that agree to have
+it, and people that are not fan of it.
+
 > Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
-
-This patch looks sane to me.
-
-Applied. Thanks.
-
 > ---
->  drivers/thermal/of-thermal.c | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
+> I typed differnet email ID for Eduardo and so it did not reach to him.
+> Resending the patch with correct ID.
+> 
+>  drivers/thermal/of-thermal.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
 > diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 4b2b999..f8eb625 100644
+> index 04b1be7..85a7d71 100644
 > --- a/drivers/thermal/of-thermal.c
 > +++ b/drivers/thermal/of-thermal.c
-> @@ -401,6 +401,10 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
->  		struct of_phandle_args sensor_specs;
->  		int ret, id;
+> @@ -396,6 +396,8 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
+>  		return ERR_PTR(-EINVAL);
 >  
-> +		/* Check whether child is enabled or not */
-> +		if (!of_device_is_available(child))
-> +			continue;
-> +
->  		/* For now, thermal framework supports only 1 sensor per zone */
->  		ret = of_parse_phandle_with_args(child, "thermal-sensors",
->  						 "#thermal-sensor-cells",
-> @@ -771,6 +775,10 @@ int __init of_parse_thermal_zones(void)
->  		struct thermal_zone_device *zone;
->  		struct thermal_zone_params *tzp;
+>  	sensor_np = dev->of_node;
+> +	if (!sensor_np && dev->parent)
+> +		sensor_np = dev->parent->of_node;
 >  
-> +		/* Check whether child is enabled or not */
-> +		if (!of_device_is_available(child))
-> +			continue;
-> +
->  		tz = thermal_of_build_thermal_zone(child);
->  		if (IS_ERR(tz)) {
->  			pr_err("failed to build thermal zone %s: %ld\n",
-> @@ -838,6 +846,10 @@ void of_thermal_destroy_zones(void)
 >  	for_each_child_of_node(np, child) {
->  		struct thermal_zone_device *zone;
->  
-> +		/* Check whether child is enabled or not */
-> +		if (!of_device_is_available(child))
-> +			continue;
-> +
->  		zone = thermal_zone_get_zone_by_name(child->name);
->  		if (IS_ERR(zone))
->  			continue;
+>  		struct of_phandle_args sensor_specs;
 > -- 
 > 1.8.1.5
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
