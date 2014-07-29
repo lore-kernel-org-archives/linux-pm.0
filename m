@@ -1,113 +1,73 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2 0/9] thermal: exynos: various cleanups
-Date: Tue, 29 Jul 2014 08:58:48 -0400
-Message-ID: <20140729125848.GA18746@developer>
-References: <1403026045-16024-1-git-send-email-b.zolnierkie@samsung.com>
- <20140728143759.GA17837@developer>
- <CADGdYn6EN-evo2KCjFfQ2h8gLoop=xTJZO3fnNxBxM9067tjxg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED
+Date: Tue, 29 Jul 2014 15:33:23 +0200
+Message-ID: <3042738.6Ohp3GcNCj@vostro.rjw.lan>
+References: <20140724212620.GO3935@laptop> <1629826.p5Zlf8Riij@vostro.rjw.lan> <alpine.DEB.2.10.1407291445570.4129@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CADGdYn6EN-evo2KCjFfQ2h8gLoop=xTJZO3fnNxBxM9067tjxg@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: amit daniel kachhap <amit.daniel@samsung.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:50521 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752101AbaG2NOw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 09:14:52 -0400
+In-Reply-To: <alpine.DEB.2.10.1407291445570.4129@nanos>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Mon, Jul 28, 2014 at 08:30:53PM +0530, amit daniel kachhap wrote:
-> Hi Eduardo,
-
-Hello Amit,
-
+On Tuesday, July 29, 2014 02:46:41 PM Thomas Gleixner wrote:
+> On Tue, 29 Jul 2014, Rafael J. Wysocki wrote:
 > 
-> Please reject this entire series as this is not re-based recently.
-> Actually two point trimming which this series seeks to remove is used
-> by exynos3250 and is in Rui's tree
-> (https://git.kernel.org/cgit/linux/kernel/git/rzhang/linux.git/commit/?h=next&id=1fe56dc16a3dab400206443f70ae158c8f595c42).
+> > On Monday, July 28, 2014 11:53:15 PM Rafael J. Wysocki wrote:
+> > > On Monday, July 28, 2014 02:33:41 PM Thomas Gleixner wrote:
+> > > > On Mon, 28 Jul 2014, Peter Zijlstra wrote:
+> > > > > On Sat, Jul 26, 2014 at 01:49:17PM +0200, Rafael J. Wysocki wrote:
+> > 
+> > [cut]
+> > 
+> > > > So we are not going to make everything a single stupid flag and limit
+> > > > the usability of existing code. We rather go and try to remove the
+> > > > stupid flag before it becomes more wide spread.
+> > > > 
+> > > > And we cannot treat the wakeup thing the same way as the
+> > > > IRQF_NO_SUSPEND flag, because there is hardware where the irq line
+> > > > must be disabled at the normal (non suspend) interrupt controller, and
+> > > > the wake mechanism tells the PM microcontroller to monitor the
+> > > > interrupt line and kick the machine back to life.
+> > > > 
+> > > > So we need to very carefully look at all the existing cases instead of
+> > > > yelling crap and inflicting x86 specific horror on everyone. I said on
+> > > > friday, that I need to look at ALL use cases first and I meant it.
+> > > 
+> > > Regardless of the use case, I don't think it is necessary to manipulate
+> > > the interrupt controller settings before the syscore_suspend stage, because
+> > > if an interrupt happens earlier, we need to handle it pretty much in a normal
+> > > way, unless it has been suspended.
+> > > 
+> > > So I'd argue for not using anything like enable_irq_wake() that goes all
+> > > the way to the hardware in drivers.  Instead, we could allow drivers to
+> > > mark interrupts as "set this up for system wakeup" and really do the setup
+> > > right before putting the platform into the final "suspended" state.  And that
+> > > is totally independend of the IRQF_NO_SUSPEND thing.
+> > 
+> > In addition to that we need the interrupt handler of the driver that requested
+> > the irq to be set up for system wakeup to be invoked after suspend_device_irqs()
+> > in case there are interrupts that should abort the suspend transition or we
+> > can lose a wakeup event.  So whatever interface we decide to use it has to
+> > affect suspend/resume_device_irqs() pretty much in the same way as the
+> > IRQF_NO_SUSPEND flag.
 > 
+> Right, that's a different issue. We probably want that even for the
+> existing irq_wake() users.
 
-Yeah, that was my original concern when I first looked this series.
-However, as I saw a couple of your acks I thought you would be in sync
-with Bartlomiej. 
+I agree.
 
-I agree with Bartlomiej that we need to keep the kernel code in very
-good shape, but if we are removing features for the sake of reducing
-LOCs and we end up dropping support to known chips, I definitely won't
-agree. 
+There's one more thing to consider here.  Going forward we'll want to avoid
+touching runtime-suspended devices during system suspend.  Then, system wakeup
+devices will need to mark their IRQs for system wakeup at the runtime suspend
+time and I'm not sure if that's the right time for calling enable_irq_wake().
 
-Can you guys please reach a common agreement on these cleanups?
+Rafael
 
-Bartlomiej, best thing to do is to sync your work on top of Rui's tree.
-
-For now I am dropping this series from my -next branch. :-(
-
-> Thanks,
-> Amit D
-> 
-> 
-> On Mon, Jul 28, 2014 at 8:07 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
-> > On Tue, Jun 17, 2014 at 07:27:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> >> Hi,
-> >>
-> >> This patch series contains various cleanups for EXYNOS thermal
-> >> driver.  Overall it decreases driver's LOC by 12%.  It is based
-> >> on next-20140617 kernel.  It should not cause any functionality
-> >> changes.
-> >>
-> >> Changes since v1:
-> >> - synced patches against next-20140617
-> >> - merged patch "thermal: exynos: remove unused defines" into
-> >>   "thermal: exynos: remove unused struct exynos_tmu_registers
-> >>   entries" one (per request from Eduardo)
-> >> - improved patch descriptions for patches #1-5
-> >> - fixed documentation for pdata->gain and pdata->reference_voltage
-> >> - added Reviewed-by from Amit to patches #6, #7 and #10
-> >> - added missing Acked-by from Kyungmin Park
-> >
-> > Pulled the series.
-> >
-> > Thanks.
-> >
-> >>
-> >> Best regards,
-> >> --
-> >> Bartlomiej Zolnierkiewicz
-> >> Samsung R&D Institute Poland
-> >> Samsung Electronics
-> >>
-> >>
-> >> Bartlomiej Zolnierkiewicz (9):
-> >>   thermal: exynos: remove unused struct exynos_tmu_registers entries
-> >>   thermal: exynos: remove dead code for HW_MODE calibration
-> >>   thermal: exynos: remove dead code for TYPE_TWO_POINT_TRIMMING
-> >>     calibration
-> >>   thermal: exynos: remove redundant pdata checks from
-> >>     exynos_tmu_initialize()
-> >>   thermal: exynos: remove redundant threshold_code checks from
-> >>     exynos_tmu_initialize()
-> >>   thermal: exynos: simplify temp_to_code() and code_to_temp()
-> >>   thermal: exynos: cache non_hw_trigger_levels in pdata
-> >>   thermal: exynos: remove redundant pdata checks from
-> >>     exynos_tmu_control()
-> >>   thermal: exynos: remove identical values from exynos*_tmu_registers
-> >>     structures
-> >>
-> >>  drivers/thermal/samsung/exynos_thermal_common.h |   1 -
-> >>  drivers/thermal/samsung/exynos_tmu.c            | 181 ++++--------------------
-> >>  drivers/thermal/samsung/exynos_tmu.h            |  90 +-----------
-> >>  drivers/thermal/samsung/exynos_tmu_data.c       |  64 +--------
-> >>  drivers/thermal/samsung/exynos_tmu_data.h       |  33 +----
-> >>  5 files changed, 41 insertions(+), 328 deletions(-)
-> >>
-> >> --
-> >> 1.8.2.3
-> >>
-> >> --
-> >> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> >> the body of a message to majordomo@vger.kernel.org
-> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
