@@ -1,94 +1,88 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: of: look for sensor driver parent node if
- device node missing
-Date: Wed, 30 Jul 2014 10:26:22 -0400
-Message-ID: <20140730142622.GA3808@developer>
-References: <1405336354-31310-1-git-send-email-ldewangan@nvidia.com>
- <1405339495.4627.3.camel@weser.hi.pengutronix.de>
- <20140730131846.GB14219@developer>
- <53D8F578.1030409@nvidia.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3 0/4] ARM: EXYNOS: cpuidle: fix AFTR mode on boards
+ with secure firmware enabled
+Date: Wed, 30 Jul 2014 18:30:47 +0200
+Message-ID: <53D91DB7.8050806@linaro.org>
+References: <1404926274-18411-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <53D8F578.1030409@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Laxman Dewangan <ldewangan@nvidia.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1404926274-18411-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Laxman,
 
-On Wed, Jul 30, 2014 at 07:09:04PM +0530, Laxman Dewangan wrote:
-> On Wednesday 30 July 2014 06:48 PM, Eduardo Valentin wrote:
-> > Laxman,
-> >
-> > On Mon, Jul 14, 2014 at 02:04:55PM +0200, Lucas Stach wrote:
-> >> Am Montag, den 14.07.2014, 16:42 +0530 schrieb Laxman Dewangan:
-> >>> There are some mfd devices which supports junction thermal interrupt
-> >>> like ams,AS3722. The DT binding of these devices are defined as the
-> >>> flat and drivers for sub module of such devices are registered as
-> >>> the mfd_add_devices. In this method, the sub devices registered as
-> >>> platform driver and these do not have the of_node pointer on their
-> >>> device structure. In this case, use the parent of_node pointer to
-> >>> get the required of_node pointer.
-> >>>
-> >>> Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
-> >>> ---
-> >>>   drivers/thermal/of-thermal.c | 2 ++
-> >>>   1 file changed, 2 insertions(+)
-> >>>
-> >>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> >>> index 04b1be7..85a7d71 100644
-> >>> --- a/drivers/thermal/of-thermal.c
-> >>> +++ b/drivers/thermal/of-thermal.c
-> >>> @@ -396,6 +396,8 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
-> >>>   		return ERR_PTR(-EINVAL);
-> >>>   
-> >>>   	sensor_np = dev->of_node;
-> >>> +	if (!sensor_np && dev->parent)
-> >>> +		sensor_np = dev->parent->of_node;
-> >>>   
-> >>>   	for_each_child_of_node(np, child) {
-> >>>   		struct of_phandle_args sensor_specs;
-> >> This seems like the wrong way around. If the MFD has subdev information
-> >> stored in the parent node it should be the MFD drivers responsibility to
-> >> populate the subdev of_node with its own node. The subdev should not be
-> >> forced to make such possible unsafe assumptions.
-> >>
-> > This is my understanding too. MFD device drivers must populate the
-> > required data onto their sub devices while creating them.
-> >
-> 
-> Sometime ago, Stephen sent patch on MFD to initialize the mfd sub 
-> devices of_node with parent node.
-> 
-> mfd: always assign of_node in mfd_add_device()
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2013-December/217482.html
-> 
+Hi Bartlomiej,
 
-In fact, as I mentioned, this is a controversal subject.
+I tried to apply this patchset on top of next-20140708 but it does not=20
+apply.
 
-> But it has unforeseen issue and reverted with patch
-> mfd: Revert "mfd: Always assign of_node in mfd_add_device()"
-> https://groups.google.com/forum/#!msg/rtc-linux/2LeLipSPFs0/XfPCKpT1BnUJ
-> 
+Do you have a more recent version ?
 
-Indeed, the strategy had issues.
+Thanks in advance
 
-> So we do not have any mechanism here to pass the parent of_node to the 
-> of-thermal.
+   -- Daniel
 
-Yeah, but still, as you can see this issue is present in other places apart from
-of-thermal. Therefore, it is clear that needs to be fixed somewhere else
-than in of-thermal so that others benefit too, don't you agree?
+On 07/09/2014 07:17 PM, Bartlomiej Zolnierkiewicz wrote:
+> Hi,
+>
+> This patch series adds support for AFTR idle mode on boards with
+> secure firmware enabled and allows EXYNOS cpuidle driver usage on
+> Exynos4x12 SoCs.
+>
+> It has been tested on Trats2 board (using Exynos4412 SoC with secure
+> firmware enabled) on which AFTR mode reduces power consumption by ~12=
+%
+> when EXYNOS cpuidle driver is enabled (in both cases the default
+> exynos_defconfig config is used and CPU1-3 are offlined).
+>
+> v3:
+> - rebased on top of next-20140708 +
+>    http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg3=
+2809.html
+>    (with rejects fixed)
+>    http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg3=
+2808.html
+>    http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg3=
+2991.html
+>    (with rejects fixed in patch #2)
+> - addressed review comments from Tomasz Figa and Daniel Lezcano
+>
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+>
+>
+> Bartlomiej Zolnierkiewicz (4):
+>    ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by static inl=
+ines
+>    ARM: EXYNOS: add AFTR mode support to firmware do_idle method
+>    ARM: EXYNOS: cpuidle: add secure firmware support to AFTR mode cod=
+e
+>    ARM: EXYNOS: cpuidle: allow driver usage on Exynos4x12 SoCs
+>
+>   arch/arm/include/asm/firmware.h  |  2 +-
+>   arch/arm/mach-exynos/common.h    |  7 ++++++-
+>   arch/arm/mach-exynos/exynos.c    |  3 ++-
+>   arch/arm/mach-exynos/firmware.c  | 36 ++++++++++++++++++++++++++---=
+-------
+>   arch/arm/mach-exynos/pm.c        | 39 +++++++++++++++++++++++++++++=
+----------
+>   drivers/cpuidle/cpuidle-exynos.c |  6 +++---
+>   6 files changed, 67 insertions(+), 26 deletions(-)
+>
 
-> 
-> Adding Stephen and Lee for more comment.
 
-Sure.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-In general, I believe letting sub devices to access the MFD core data
-(in this case, the parent of node data) is somehow racy. I would prefer
-we could have a way to populate the of_node of subdevs with only the
-required info.
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
