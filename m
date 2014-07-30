@@ -1,218 +1,71 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [RFC PATCH 2/2] of/clk: use "clkops-clocks" to specify clocks
- handled by clock_ops domain
-Date: Wed, 30 Jul 2014 16:25:31 +0300
-Message-ID: <53D8F24B.7010104@ti.com>
-References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
- <53D68CC4.1010704@ti.com>
- <CACxGe6uMke5vgzcNC9xUqjr2bHJ4QFHD6YjocSZWq8Ccx8Mm6A@mail.gmail.com>
- <2717555.fiA6A86F65@avalon>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: of: look for sensor driver parent node if
+ device node missing
+Date: Wed, 30 Jul 2014 09:18:46 -0400
+Message-ID: <20140730131846.GB14219@developer>
+References: <1405336354-31310-1-git-send-email-ldewangan@nvidia.com>
+ <1405339495.4627.3.camel@weser.hi.pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <2717555.fiA6A86F65@avalon>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Grant Likely <grant.likely@secretlab.ca>
-Cc: Simon Horman <horms@verge.net.au>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Mike Turquette <mturquette@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ben Dooks <ben.dooks@codethink.co.uk>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f182.google.com ([209.85.220.182]:44918 "EHLO
+	mail-vc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751370AbaG3NSz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jul 2014 09:18:55 -0400
+Content-Disposition: inline
+In-Reply-To: <1405339495.4627.3.camel@weser.hi.pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: Laxman Dewangan <ldewangan@nvidia.com>, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Laurent,
+Laxman,
 
-On 07/30/2014 03:06 AM, Laurent Pinchart wrote:
-> Hi Grygorii and Grant,
+On Mon, Jul 14, 2014 at 02:04:55PM +0200, Lucas Stach wrote:
+> Am Montag, den 14.07.2014, 16:42 +0530 schrieb Laxman Dewangan:
+> > There are some mfd devices which supports junction thermal interrupt
+> > like ams,AS3722. The DT binding of these devices are defined as the
+> > flat and drivers for sub module of such devices are registered as
+> > the mfd_add_devices. In this method, the sub devices registered as
+> > platform driver and these do not have the of_node pointer on their
+> > device structure. In this case, use the parent of_node pointer to
+> > get the required of_node pointer.
+> > 
+> > Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
+> > ---
+> >  drivers/thermal/of-thermal.c | 2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> > index 04b1be7..85a7d71 100644
+> > --- a/drivers/thermal/of-thermal.c
+> > +++ b/drivers/thermal/of-thermal.c
+> > @@ -396,6 +396,8 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
+> >  		return ERR_PTR(-EINVAL);
+> >  
+> >  	sensor_np = dev->of_node;
+> > +	if (!sensor_np && dev->parent)
+> > +		sensor_np = dev->parent->of_node;
+> >  
+> >  	for_each_child_of_node(np, child) {
+> >  		struct of_phandle_args sensor_specs;
 > 
-> On Monday 28 July 2014 23:52:34 Grant Likely wrote:
->> On Mon, Jul 28, 2014 at 11:47 AM, Grygorii Strashko wrote:
->>> On 07/28/2014 05:05 PM, Grant Likely wrote:
->>>> On Thu, 12 Jun 2014 19:53:43 +0300, Grygorii Strashko wrote:
->>>>> Use "clkops-clocks" property to specify clocks handled by
->>>>> clock_ops domain PM domain. Only clocks defined in "clkops-clocks"
->>>>> set of clocks will be handled by Runtime PM through clock_ops
->>>>> Pm domain.
->>>>>
->>>>> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
->>>>> ---
->>>>>
->>>>>    drivers/of/of_clk.c |    7 ++-----
->>>>>    1 file changed, 2 insertions(+), 5 deletions(-)
->>>>>
->>>>> diff --git a/drivers/of/of_clk.c b/drivers/of/of_clk.c
->>>>> index 35f5e9f..5f9b90e 100644
->>>>> --- a/drivers/of/of_clk.c
->>>>> +++ b/drivers/of/of_clk.c
->>>>> @@ -86,11 +86,8 @@ int of_clk_register_runtime_pm_clocks(struct
->>>>> device_node *np,>>>
->>>>>       struct clk *clk;
->>>>>       int error;
->>>>>
->>>>> -    for (i = 0; (clk = of_clk_get(np, i)) && !IS_ERR(clk); i++) {
->>>>> -            if (!clk_may_runtime_pm(clk)) {
->>>>> -                    clk_put(clk);
->>>>> -                    continue;
->>>>> -            }
->>>>> +    for (i = 0; (clk = of_clk_get_from_set(np, "clkops", i)) &&
->>>>> +                 !IS_ERR(clk); i++) {
->>>>
->>>> This really looks like an ABI break to me. What happens to all the
->>>> existing platforms who don't have this new clkops-clocks in their device
->>>> tree?
->>>
->>> Agree. This patch as is will break such platforms.
->>> As possible solution for above problem - the NULL can be used as clock's
->>> prefix by default and platform code can configure new value of clock's
->>> prefix during initialization.
->>> In addition, to make this solution full the of_clk_get_by_name() will
->>> need to be modified too.
->>>
->>> But note pls, this is pure RFC patches which I did to find out the answer
->>> on questions: - What is better: maintain Runtime PM clocks configuration
->>> in DT or in code?
->>
->> In code. I don't think it is workable to embed runtime PM behaviour
->> into the DT bindings. I think there will be too much variance in what
->> hardware requires. We can create helpers to make this simpler, but I
->> don't think it is a good idea to set it up automatically without any
->> control from the driver itself.
->>
->>> - Where and when to call of_clk_register_runtime_pm_clocks()?
->>>
->>>    Bus notifier/ platform core/ device drivers
->>
->> I would say in device drivers.
-> 
-> I tend to agree with that.
-> 
-> It will help here to take a step back and remember what the problem we're
-> trying to solve is.
-> 
-> At the root is clock management. Our system comprise many clocks, and they
-> need to be handled. The Common Clock Framework nicely models the clocks, and
-> offers an API for drivers to retrieve device clocks and control them. Drivers
-> can thus implement clock management manually without much pain.
-> 
-> A clock can be managed in roughly three different ways :
-> 
-> - it can be enabled at probe time and disabled at remove time ;
-> 
-> - it can be enabled right before the device leaves its idle state and disabled
-> when the device goes back to idle ; or
-> 
-> - it can be enabled and disabled in a more fine-grained, device-specific
-> manner.
-> 
-> The selected clock management granularity depends on constraints specific to
-> the device and on how aggressive power saving needs to be. Enabling the clocks
-> at probe time and disabling them at remove time is enough for most devices,
-> but leads to a high power consumption. For that reason the second clock
-> management scheme is often desired.
-> 
-> Managing clocks manually in the driver is a valid option. However, when adding
-> runtime PM to the equation, and realizing that the clocks need to be enabled
-> in the runtime PM resume handler and disabled in the suspend handler, the
-> clock management code starts looking very similar in most drivers. We're thus
-> tempted to factorize it away from the drivers into a shared location.
-> 
-> It's important to note at this point that the goal here is only to simplify
-> drivers. Moving clock management code out of the drivers doesn't (unless I'm
-> missing something) open the door to new possibilities, it just serves as a
-> simplification.
-> 
-> Now, as Grygorii mentioned, differences between how a given IP core is
-> integrated in various SoCs can make clock management SoC-dependent. In the
-> vast majority of cases (which is really what we need to target, given that our
-> target is simplifying drivers) SoC integration can be described as a list of
-> clocks that must be managed. That list can be common to all devices in a given
-> SoC, or can be device-dependent as well.
-
-That's actually a problem - now we have static list of managed clocks per-SoC and
-not per device.
-
-> 
-> Few locations can be used to express a per-device list of per-SoC clocks. We
-> can have clocks lists in a per-SoC and per-device location, per-device clocks
-> lists in an SoC-specific location, or per-SoC clocks lists in a device-
-> specific location.
-> 
-> The first option would require listing clocks to be managed by runtime PM in
-> DT nodes, as proposed by this patch set. I don't think this is the best
-> option, as that information is a mix of hardware description and software
-> policy, with the hardware description part being already present in DT in the
-> clocks property.
-
-I'm not fully agree here. The clock is "functional clock" If It's managed by runtime PM.
-And all such clocks need to be enabled/disabled always when device is powered on/off.
-So, from my point of view it's HW description and it follows TRM. 
-Other clocks are optional and only drivers should control them.
-And question is how to define sets of such clocks in the best way?
-
-> 
-> The second option calls for storing the lists in SoC code under arch/. As
-> we're trying to minimize the amount of SoC code there (and even remove SoC
-> code completely when possible) I don't think that's a good option.
-> 
-> The third option would require storing the clocks lists in device drivers. I
-> believe this is our best option, as a trade-off between simplicity and
-> versatility. Drivers that use runtime PM already need to enable it explicitly
-> when probing devices. Passing a list of clock names to runtime PM at that
-> point wouldn't complicate drivers much. When the clocks list isn't SoC-
-> dependent it could be stored as static information. Otherwise it could be
-> derived from DT (or any other source of hardware description) using C code,
-> offering all the versatility we need.
-
-Ok. if I understand right, you propose smth like this:
-1) DT based solution:
-
-devA {
-	clocks = <&clkpa>, <&clkcpgmac>, <&chipclk12>;
-	rpm-clocks = <&clkpa>, <&clkcpgmac>;
-- or -
-	clocks = <&clkpa>, <&clkcpgmac>, <&chipclk12>;
-	clock-names = "clk_pa", "clk_cpgmac", "cpsw_cpts_rft_clk";
-	rpm-clocks =  "clk_pa", "clk_cpgmac";
-}
-
-in driver:
- pm_runtime_enable();
-  |- of_clk_register_runtime_pm_clocks()
-- or -
- of_clk_register_runtime_pm_clocks()
- pm_runtime_enable();
-
-
-2) Static solution:
-char *con_ids_davinci[] =
-    { "fck", "master", "slave", NULL };
-char *con_ids_keystone[] =
-    { "clk_pa", "clk_cpgmac" };
-
-static struct of_device_id of_match[] = {
-	{ .compatible = "ti,keystone", con_ids_keystone},
-	{ .compatible = "ti,davinci", con_ids_davinci},
-	{},
-};
-
-Personally, I like option 1 and, seems, it will not break ABI. 
-
-> 
-> The only drawback of this solution I can think of right now is that the
-> runtime PM core couldn't manage device clocks before probing the device.
-> Specifically device clocks couldn't be managed if no driver is loaded for that
-> device. I somehow recall that someone raised this as being a problem, but I
-> can't remember why.
+> This seems like the wrong way around. If the MFD has subdev information
+> stored in the parent node it should be the MFD drivers responsibility to
+> populate the subdev of_node with its own node. The subdev should not be
+> forced to make such possible unsafe assumptions.
 > 
 
-I can recollect only OMAP2+ SoCs where some abstraction called HW_MOD is used 
-during platform initialization to reset all devices and turn off unused ones
-before probing the devices. But clock_ops are not used by OMAP2+:)
+This is my understanding too. MFD device drivers must populate the
+required data onto their sub devices while creating them.
 
-regards,
--grygorii
+> Regards,
+> Lucas
+> -- 
+> Pengutronix e.K.             | Lucas Stach                 |
+> Industrial Linux Solutions   | http://www.pengutronix.de/  |
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
