@@ -1,109 +1,32 @@
-From: Matt Longnecker <mlongnecker@nvidia.com>
-Subject: [PATCH] thermal: tell cooling devices when a trip_point changes
-Date: Wed, 30 Jul 2014 16:10:40 -0700
-Message-ID: <53D97B70.1050305@nvidia.com>
+From: Fabian Morision <fmorision1@gmail.com>
+Subject: -- Re: Very Urgent............
+Date: Thu, 31 Jul 2014 01:27:03 +0200
+Message-ID: <CABfGM6_nBUSgO_4D4Wi_h67VQOty+jYQXqE0JDvRx0gL-rj_bw__48684.1741171249$1406764716$gmane$org@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:9351 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750911AbaG3XGW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jul 2014 19:06:22 -0400
+Received: from mail-qa0-f68.google.com ([209.85.216.68]:61533 "EHLO
+	mail-qa0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754237AbaG3X62 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jul 2014 19:58:28 -0400
+Received: by mail-qa0-f68.google.com with SMTP id dc16so480196qab.3
+        for <linux-pm@vger.kernel.org>; Wed, 30 Jul 2014 16:58:28 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mlongnecker@nvidia.com
 
-Some hardware can react autonomously at a programmed temperature.
-For example, an SoC might implement a last ditch throttle or a
-hardware thermal shutdown. The driver for such a device can
-register itself as a cooling_device with the thermal framework.
+Greetings from gulf region
 
-With this change, the thermal framework notifies such a driver
-when userspace alters the relevant trip temperature so that
-the driver can reprogram its hardware
+Thanks for the e-mail. I am very interested on funding lucrative
+business partnership with you acting as the manager and sole
+controller of the investment while i remain a silent investor for a
+period of ten yrs , though I am only looking at investment
+opportunities within the range you specified for a start. You can
+reply me here (fmorision@yahoo.com)
 
-Signed-off-by: Matt Longnecker <mlongnecker@nvidia.com>
----
- drivers/thermal/thermal_core.c |   30 ++++++++++++++++++++++++++++++
- include/linux/thermal.h        |    2 ++
- 2 files changed, 32 insertions(+)
+Let me know your thought asap
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 71b0ec0..f25272e 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -597,6 +597,7 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
- 	int trip, ret;
- 	unsigned long temperature;
-+	struct thermal_instance *pos = NULL;
- 
- 	if (!tz->ops->set_trip_temp)
- 		return -EPERM;
-@@ -609,6 +610,20 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
- 
- 	ret = tz->ops->set_trip_temp(tz, trip, temperature);
- 
-+	/*
-+	 * Notify bound cooling devices that this trip point changed.
-+	 * This is useful for cooling devices which represent a behavior
-+	 * which trips in hardware (e.g. catastrophic shutdown)
-+	 */
-+	list_for_each_entry(pos, &tz->thermal_instances, tz_node) {
-+		if (pos->tz == tz && pos->trip == trip && pos->cdev) {
-+			if (pos->cdev->ops->trip_point_changed)
-+				pos->cdev->ops->trip_point_changed(pos->cdev,
-+								   pos->tz,
-+								   trip);
-+		}
-+	}
-+
- 	return ret ? ret : count;
- }
- 
-@@ -641,6 +656,7 @@ trip_point_hyst_store(struct device *dev, struct device_attribute *attr,
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
- 	int trip, ret;
- 	unsigned long temperature;
-+	struct thermal_instance *pos = NULL;
- 
- 	if (!tz->ops->set_trip_hyst)
- 		return -EPERM;
-@@ -658,6 +674,20 @@ trip_point_hyst_store(struct device *dev, struct device_attribute *attr,
- 	 */
- 	ret = tz->ops->set_trip_hyst(tz, trip, temperature);
- 
-+	/*
-+	 * Notify bound cooling devices that this trip point changed.
-+	 * This is useful for cooling devices which represent a behavior
-+	 * which trips in hardware (e.g. catastrophic shutdown)
-+	 */
-+	list_for_each_entry(pos, &tz->thermal_instances, tz_node) {
-+		if (pos->tz == tz && pos->trip == trip && pos->cdev) {
-+			if (pos->cdev->ops->trip_point_changed)
-+				pos->cdev->ops->trip_point_changed(pos->cdev,
-+								   pos->tz,
-+								   trip);
-+		}
-+	}
-+
- 	return ret ? ret : count;
- }
- 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index f7e11c7..7da7fc5 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -138,6 +138,8 @@ struct thermal_cooling_device_ops {
- 	int (*get_max_state) (struct thermal_cooling_device *, unsigned long *);
- 	int (*get_cur_state) (struct thermal_cooling_device *, unsigned long *);
- 	int (*set_cur_state) (struct thermal_cooling_device *, unsigned long);
-+	void (*trip_point_changed) (struct thermal_cooling_device *,
-+				    struct thermal_zone_device *, int);
- };
- 
- struct thermal_cooling_device {
--- 
-1.7.9.5
+Regards
 
+Financial Consultant
+
+Mr.Fabian Morision
