@@ -1,264 +1,166 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem to be held for duration of changing governors [v2]
-Date: Wed, 30 Jul 2014 02:03:46 +0200
-Message-ID: <1727443.QxEjMbNBsd@vostro.rjw.lan>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [RFC PATCH 2/2] of/clk: use "clkops-clocks" to specify clocks handled by clock_ops domain
+Date: Wed, 30 Jul 2014 02:06:59 +0200
+Message-ID: <2717555.fiA6A86F65@avalon>
+References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be> <53D68CC4.1010704@ti.com> <CACxGe6uMke5vgzcNC9xUqjr2bHJ4QFHD6YjocSZWq8Ccx8Mm6A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54399 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754189AbaG2XpO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 19:45:14 -0400
-In-Reply-To: <1406634362-811-1-git-send-email-prarit@redhat.com>
+Received: from perceval.ideasonboard.com ([95.142.166.194]:35305 "EHLO
+	perceval.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754482AbaG3AGn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 20:06:43 -0400
+In-Reply-To: <CACxGe6uMke5vgzcNC9xUqjr2bHJ4QFHD6YjocSZWq8Ccx8Mm6A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Geert Uytterhoeven <geert+renesas@glider.be>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tuesday, July 29, 2014 07:46:02 AM Prarit Bhargava wrote:
-> [v2]: Fixed wording of commit, and added additional testing information.
-> 
-> A while ago we added a test to mimic some of our users' userspace governor
-> programs which monitor system behaviour and will switch governors on the
-> fly.  The decision process for this includes looking at time of day,
-> expected system load, etc.  For some time now we have had reports of
-> system panics in the cpufreq code when using the userspace governor
-> utility.
-> 
-> The userspace utility writes
-> /sys/devices/system/cpu/cpuX/cpufreq/scaling_governor and sets the
-> governor.  In some cases this can happen rapidly, and under heavy load
-> there are occasions where the changes are delayed.  This can mean that
-> several governor changes may occur within a short period of time.
-> 
-> This has exposed a bug in the store_scaling_governor path.  When the sysfs
-> file is written to,
-> 
-> store()
-> 	->down_write(&policy->rwsem);
-> 	->store_scaling_governor()
-> 		-> cpufreq_set_policy()
-> 			up_write(&policy->rwsem);
-> 			__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-> 			down_write(&policy->rwsem);
-> 
-> The release of the policy->rwsem results in a situation where another
-> write to the scaling_governor file can now start and overwrite pointers
-> and cause corruption.
-> 
-> ex)
-> 
->  Oops: 0000 [#1] SMP
->  Modules linked in: sg e1000e igb iTCO_wdt iTCO_vendor_support coretemp kvm_intel ptp kvm pps_core i7300_edac edac_core ses lpc_ich enclosure ioatdma mfd_core shpchp dca i2c_i801 serio_raw acpi_cpufreq pcspkr mperf nfsd auth_rpcgss nfs_acl lockd sunrpc xfs libcrc32c sr_mod cdrom sd_mod ata_generic crc_t10dif crct10dif_common pata_acpi radeon i2c_algo_bit drm_kms_helper ttm drm ata_piix libata i2c_core megaraid_sas dm_mirror dm_region_hash dm_log dm_mod
->  CPU: 7 PID: 565 Comm: kworker/7:2 Not tainted 3.10.0-121.el7.x86_64 #1
->  Hardware name: Intel MP Server/S7000FC4UR, BIOS SFC4UR.86B.01.00.0031.021820102042 02/18/2010
->  Workqueue: events od_dbs_timer
->  task: ffff88046544cfa0 ti: ffff880465438000 task.ti: ffff880465438000
->  RIP: 0010:[<ffffffff81489bed>]  [<ffffffff81489bed>] od_dbs_timer+0x2d/0x160
->  RSP: 0018:ffff880465439de0  EFLAGS: 00010282
->  RAX: ffff88007f03d500 RBX: 0000000000010de0 RCX: 0000000000000006
->  RDX: 0000000000000006 RSI: 7040000000000000 RDI: ffff88046f2f0e08
->  e1000e 0000:06:00.0: irq 79 for MSI/MSI-X
->  IPv6: ADDRCONF(NETDEV_UP): enp6s0f0: link is not ready
->  RBP: ffff880465439e18 R08: ffff88046f2f0e10 R09: dfedcb48370f0e08
->  R10: dfedcb48370f0e08 R11: 0000000000000000 R12: ffff880465a69200
->  R13: 0000000000000000 R14: ffff88046f2f0e08 R15: 00000000000001c0
->  e1000e 0000:06:00.1: irq 80 for MSI/MSI-X
->  FS:  0000000000000000(0000) GS:ffff88046f2e0000(0000) knlGS:0000000000000000
->  CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
->  CR2: 0000000000000010 CR3: 0000000466be5000 CR4: 00000000000007e0
->  DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->  DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->  Stack:
->   ffff88045ef8d140 ffff880468e1ad80 ffff88046f2f0e08 ffff880465a69200
->   ffff88046f2f3e00 ffff88046f2f7f00 00000000000001c0 ffff880465439e60
->   ffffffff8107e02b 000000006f2f3e18 0000000000000000 ffff88046f2f3e18
->  Call Trace:
->   [<ffffffff8107e02b>] process_one_work+0x17b/0x460
->   [<ffffffff8107edfb>] worker_thread+0x11b/0x400
->   [<ffffffff8107ece0>] ? rescuer_thread+0x400/0x400
->   [<ffffffff81085aef>] kthread+0xcf/0xe0
->   [<ffffffff81085a20>] ? kthread_create_on_node+0x140/0x140
->  e1000e 0000:06:00.1: irq 80 for MSI/MSI-X
->  IPv6: ADDRCONF(NETDEV_UP): enp6s0f1: link is not ready
->   [<ffffffff815fc76c>] ret_from_fork+0x7c/0xb0
->   [<ffffffff81085a20>] ? kthread_create_on_node+0x140/0x140
->  Code: 66 66 90 55 48 89 e5 41 57 41 56 49 89 fe 41 55 41 54 53 48 c7 c3 e0 0d 01 00 48 83 ec 10 48 8b 47 f8 8b 50 14 4c 8b 68 40 89 d1 <4d> 8b 7d 10 89 55 cc 48 03 1c cd 80 78 9e 81 48 8d 83 a8 00 00
->  RIP  [<ffffffff81489bed>] od_dbs_timer+0x2d/0x160
->   RSP <ffff880465439de0>
->  CR2: 0000000000000010
->  BUG: unable to handle kernel  ---[ end trace c9a1ca82e01a4294 ]---
->  Kernel panic - not syncing: Fatal exception
-> NULL pointer dereference at 0000000000000014
->  IP: [<ffffffff81489be4>] od_dbs_timer+0x24/0x160
->  PGD 46661d067 PUD 465540067 PMD 0
->  Oops: 0000 [#2] SMP
->  Modules linked in: sg e1000e igb iTCO_wdt iTCO_vendor_support coretemp kvm_intel ptp kvm pps_core i7300_edac edac_core ses lpc_ich enclosure ioatdma mfd_core shpchp dca i2c_i801 serio_raw acpi_cpufreq pcspkr mperf nfsd auth_rpcgss nfs_acl lockd sunrpc xfs libcrc32c sr_mod cdrom sd_mod ata_generic crc_t10dif crct10dif_common pata_acpi radeon i2c_algo_bit drm_kms_helper ttm drm ata_piix libata i2c_core megaraid_sas dm_mirror dm_region_hash dm_log dm_mod
->  CPU: 6 PID: 506 Comm: kworker/6:2 Tainted: G      D     --------------   3.10.0-121.el7.x86_64 #1
->  Hardware name: Intel MP Server/S7000FC4UR, BIOS SFC4UR.86B.01.00.0031.021820102042 02/18/2010
->  Workqueue: events od_dbs_timer
->  task: ffff880465448b60 ti: ffff880463730000 task.ti: ffff880463730000
->  RIP: 0010:[<ffffffff81489be4>]  [<ffffffff81489be4>] od_dbs_timer+0x24/0x160
->  RSP: 0018:ffff880463731de0  EFLAGS: 00010282
->  RAX: 0000000000000000 RBX: 0000000000010de0 RCX: dead000000200200
->  RDX: 0000000000000001 RSI: 7040000000000000 RDI: ffff88046f2d0e08
->  RBP: ffff880463731e18 R08: ffff88046f2d0e10 R09: dfedcb50370d0e08
->  R10: dfedcb50370d0e08 R11: 0000000000000000 R12: ffff880465bd2b80
->  R13: ffff88046f2d3e00 R14: ffff88046f2d0e08 R15: 0000000000000180
->  FS:  0000000000000000(0000) GS:ffff88046f2c0000(0000) knlGS:0000000000000000
->  CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
->  CR2: 0000000000000014 CR3: 0000000466be5000 CR4: 00000000000007e0
->  DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->  DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->  Stack:
->   ffff88045ef8d140 ffff880468dcf1c0 ffff88046f2d0e08 ffff880465bd2b80
->   ffff88046f2d3e00 ffff88046f2d7f00 0000000000000180 ffff880463731e60
->   ffffffff8107e02b 000000006f2d3e18 0000000000000000 ffff88046f2d3e18
->  Call Trace:
->   [<ffffffff8107e02b>] process_one_work+0x17b/0x460
->   [<ffffffff8107edfb>] worker_thread+0x11b/0x400
->   [<ffffffff8107ece0>] ? rescuer_thread+0x400/0x400
->   [<ffffffff81085aef>] kthread+0xcf/0xe0
->   [<ffffffff81085a20>] ? kthread_create_on_node+0x140/0x140
->   [<ffffffff815fc76c>] ret_from_fork+0x7c/0xb0
->   [<ffffffff81085a20>] ? kthread_create_on_node+0x140/0x140
->  Code: 1f 84 00 00 00 00 00 66 66 66 66 90 55 48 89 e5 41 57 41 56 49 89 fe 41 55 41 54 53 48 c7 c3 e0 0d 01 00 48 83 ec 10 48 8b 47 f8 <8b> 50 14 4c 8b 68 40 89 d1 4d 8b 7d 10 89 55 cc 48 03 1c cd 80
->  RIP  [<ffffffff81489be4>] od_dbs_timer+0x24/0x160
->   RSP <ffff880463731de0>
->  CR2: 0000000000000014
->  drm_kms_helper: panic occurred, switching back to text console
-> 
-> There are other panics associated with this, including list corruption and
-> various flavors of panics in the od_dbs_timer & work code.
-> 
-> As a test I introduced a separate mutex around the cpufreq_set_policy() call.
-> After doing so system behaves as expected, and the panics no longer happen.
-> I narrowed the mutex down to the "governor switch" code in
-> cpufreq_set_policy() and saw that everything stabilized.
-> 
-> I then reverted commit 955ef4833574636819cd269cfbae12f79cbde63a, cpufreq: Drop
-> rwsem lock around CPUFREQ_GOV_POLICY_EXIT, which added the dropping of the
-> policy->rwsem and again, the panics no longer occurred.
-> 
-> The closer I looked at commit 955ef483, the more questions I have.  The first
-> thing is that it appears that the stacktrace includes function calls that
-> are not, and never have been, part of the linux.git tree, ie) the call trace
-> shows
-> 
->             [<c0055a79>] lock_acquire+0x61/0xbc
->             [<c00fabf1>] sysfs_addrm_finish+0xc1/0x128
->             [<c00f9819>] sysfs_hash_and_remove+0x35/0x64
->             [<c00fbe6f>] remove_files.isra.0+0x1b/0x24
->             [<c00fbea5>] sysfs_remove_group+0x2d/0xa8
->             [<c02f9a0b>] cpufreq_governor_interactive+0x13b/0x35c
->             [<c02f61df>] __cpufreq_governor+0x2b/0x8c
->             [<c02f6579>] __cpufreq_set_policy+0xa9/0xf8
->             [<c02f6b75>] store_scaling_governor+0x61/0x100
->             [<c02f6f4d>] store+0x39/0x60
->             [<c00f9b81>] sysfs_write_file+0xed/0x114
->             [<c00b3fd1>] vfs_write+0x65/0xd8
->             [<c00b424b>] sys_write+0x2f/0x50
->             [<c000cdc1>] ret_fast_syscall+0x1/0x52
-> 
-> and the top part of the stack from cpufreq_governor_interactive() appear to
-> be for a driver that is not in the linux.git tree.  Google search does show
-> that it exists in various android trees, however, my concern is that the "core"
-> scaling governors are now broken because of an out tree driver.
-> 
-> It seems like the patch fixed this problem incorrectly by breaking the existing
-> locking.  The whole point of the policy->rwsem is to single thread updates
-> to the policy struct; this is no longer the case after that commit as we
-> are breaking the locking right in the middle of a policy->governor update.
-> The fix should have been to the cpufreq_governor_interactive out-of-tree
-> driver and fix the locking there in its release code.  In any case, the current
-> linux.git code no longer can reproduce the original failure; the locking in the
-> sysfs release code has changed.
-> 
-> In case anyone is interested in reproducing, the reproducer I used was
-> 
-> i=0
-> while [ True ]; do
->         i=$((i+1))
->         echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor &
->         echo "performance" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor &
->         echo "ondemand" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor  &
->         echo "performance" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor &
->         if [ $((i % 100)) = 0 ]; then
->                 num_ps=$(ps aux | grep doit | wc -l)
->                 echo "$i running, $num_ps outstanding"
->         fi
-> done
-> 
-> and the system usually panics within 500 iterations.
-> 
-> I have tested this extensively across 15 systems of various configurations.
-> In the unpatched kernel I see oopses usually within 500 iterations.  In the
-> patched kernel which fixes the broken locking, I can go several hours
-> without any issues.
-> 
-> This patch effectively reverts commit 955ef483.
+Hi Grygorii and Grant,
 
-OK, I'm convinced by this.
-
-I suppose we should push it for -stable from 3.10 through 3.15.x, right?
-
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Lenny Szubowicz <lszubowi@redhat.com>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-> ---
->  drivers/cpufreq/cpufreq.c |    8 +-------
->  include/linux/cpufreq.h   |    4 ----
->  2 files changed, 1 insertion(+), 11 deletions(-)
+On Monday 28 July 2014 23:52:34 Grant Likely wrote:
+> On Mon, Jul 28, 2014 at 11:47 AM, Grygorii Strashko wrote:
+> > On 07/28/2014 05:05 PM, Grant Likely wrote:
+> >> On Thu, 12 Jun 2014 19:53:43 +0300, Grygorii Strashko wrote:
+> >>> Use "clkops-clocks" property to specify clocks handled by
+> >>> clock_ops domain PM domain. Only clocks defined in "clkops-clocks"
+> >>> set of clocks will be handled by Runtime PM through clock_ops
+> >>> Pm domain.
+> >>> 
+> >>> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> >>> ---
+> >>> 
+> >>>   drivers/of/of_clk.c |    7 ++-----
+> >>>   1 file changed, 2 insertions(+), 5 deletions(-)
+> >>> 
+> >>> diff --git a/drivers/of/of_clk.c b/drivers/of/of_clk.c
+> >>> index 35f5e9f..5f9b90e 100644
+> >>> --- a/drivers/of/of_clk.c
+> >>> +++ b/drivers/of/of_clk.c
+> >>> @@ -86,11 +86,8 @@ int of_clk_register_runtime_pm_clocks(struct
+> >>> device_node *np,>>> 
+> >>>      struct clk *clk;
+> >>>      int error;
+> >>> 
+> >>> -    for (i = 0; (clk = of_clk_get(np, i)) && !IS_ERR(clk); i++) {
+> >>> -            if (!clk_may_runtime_pm(clk)) {
+> >>> -                    clk_put(clk);
+> >>> -                    continue;
+> >>> -            }
+> >>> +    for (i = 0; (clk = of_clk_get_from_set(np, "clkops", i)) &&
+> >>> +                 !IS_ERR(clk); i++) {
+> >> 
+> >> This really looks like an ABI break to me. What happens to all the
+> >> existing platforms who don't have this new clkops-clocks in their device
+> >> tree?
+> > 
+> > Agree. This patch as is will break such platforms.
+> > As possible solution for above problem - the NULL can be used as clock's
+> > prefix by default and platform code can configure new value of clock's
+> > prefix during initialization.
+> > In addition, to make this solution full the of_clk_get_by_name() will
+> > need to be modified too.
+> > 
+> > But note pls, this is pure RFC patches which I did to find out the answer
+> > on questions: - What is better: maintain Runtime PM clocks configuration
+> > in DT or in code?
+>
+> In code. I don't think it is workable to embed runtime PM behaviour
+> into the DT bindings. I think there will be too much variance in what
+> hardware requires. We can create helpers to make this simpler, but I
+> don't think it is a good idea to set it up automatically without any
+> control from the driver itself.
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 6f02485..4869f0e 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2198,12 +2198,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
->  	/* save old, working values */
->  	old_gov = policy->governor;
->  	/* end old governor */
-> -	if (old_gov) {
-> -		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> -		up_write(&policy->rwsem);
-> +	if (old_gov)
->  		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-> -		down_write(&policy->rwsem);
-> -	}
->  
->  	/* start new governor */
->  	policy->governor = new_policy->governor;
-> @@ -2211,9 +2207,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
->  		if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
->  			goto out;
->  
-> -		up_write(&policy->rwsem);
->  		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-> -		down_write(&policy->rwsem);
->  	}
->  
->  	/* new governor failed, so re-start old one */
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 8f8ae95..b450c43 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -100,10 +100,6 @@ struct cpufreq_policy {
->  	 * - Any routine that will write to the policy structure and/or may take away
->  	 *   the policy altogether (eg. CPU hotplug), will hold this lock in write
->  	 *   mode before doing so.
-> -	 *
-> -	 * Additional rules:
-> -	 * - Lock should not be held across
-> -	 *     __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
->  	 */
->  	struct rw_semaphore	rwsem;
->  
+> > - Where and when to call of_clk_register_runtime_pm_clocks()?
+> > 
+> >   Bus notifier/ platform core/ device drivers
 > 
+> I would say in device drivers.
+
+I tend to agree with that.
+
+It will help here to take a step back and remember what the problem we're 
+trying to solve is.
+
+At the root is clock management. Our system comprise many clocks, and they 
+need to be handled. The Common Clock Framework nicely models the clocks, and 
+offers an API for drivers to retrieve device clocks and control them. Drivers 
+can thus implement clock management manually without much pain.
+
+A clock can be managed in roughly three different ways :
+
+- it can be enabled at probe time and disabled at remove time ;
+
+- it can be enabled right before the device leaves its idle state and disabled 
+when the device goes back to idle ; or
+
+- it can be enabled and disabled in a more fine-grained, device-specific 
+manner.
+
+The selected clock management granularity depends on constraints specific to 
+the device and on how aggressive power saving needs to be. Enabling the clocks 
+at probe time and disabling them at remove time is enough for most devices, 
+but leads to a high power consumption. For that reason the second clock 
+management scheme is often desired.
+
+Managing clocks manually in the driver is a valid option. However, when adding 
+runtime PM to the equation, and realizing that the clocks need to be enabled 
+in the runtime PM resume handler and disabled in the suspend handler, the 
+clock management code starts looking very similar in most drivers. We're thus 
+tempted to factorize it away from the drivers into a shared location.
+
+It's important to note at this point that the goal here is only to simplify 
+drivers. Moving clock management code out of the drivers doesn't (unless I'm 
+missing something) open the door to new possibilities, it just serves as a 
+simplification.
+
+Now, as Grygorii mentioned, differences between how a given IP core is 
+integrated in various SoCs can make clock management SoC-dependent. In the 
+vast majority of cases (which is really what we need to target, given that our 
+target is simplifying drivers) SoC integration can be described as a list of 
+clocks that must be managed. That list can be common to all devices in a given 
+SoC, or can be device-dependent as well.
+
+Few locations can be used to express a per-device list of per-SoC clocks. We 
+can have clocks lists in a per-SoC and per-device location, per-device clocks 
+lists in an SoC-specific location, or per-SoC clocks lists in a device-
+specific location.
+
+The first option would require listing clocks to be managed by runtime PM in 
+DT nodes, as proposed by this patch set. I don't think this is the best 
+option, as that information is a mix of hardware description and software 
+policy, with the hardware description part being already present in DT in the 
+clocks property.
+
+The second option calls for storing the lists in SoC code under arch/. As 
+we're trying to minimize the amount of SoC code there (and even remove SoC 
+code completely when possible) I don't think that's a good option.
+
+The third option would require storing the clocks lists in device drivers. I 
+believe this is our best option, as a trade-off between simplicity and 
+versatility. Drivers that use runtime PM already need to enable it explicitly 
+when probing devices. Passing a list of clock names to runtime PM at that 
+point wouldn't complicate drivers much. When the clocks list isn't SoC-
+dependent it could be stored as static information. Otherwise it could be 
+derived from DT (or any other source of hardware description) using C code, 
+offering all the versatility we need.
+
+The only drawback of this solution I can think of right now is that the 
+runtime PM core couldn't manage device clocks before probing the device. 
+Specifically device clocks couldn't be managed if no driver is loaded for that 
+device. I somehow recall that someone raised this as being a problem, but I 
+can't remember why.
+
+> > Also, May be platform dependent solution [1] can be acceptable for now?
+> > 
+> > [1] https://lkml.org/lkml/2014/7/25/630
+> 
+> I need to look at the series before I comment. I've flagged it and
+> will hopefully look at it tomorrow.
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards,
+
+Laurent Pinchart
+
