@@ -1,86 +1,86 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 0/3] irq / PM: wakeup interrupt interface for drivers (was: Re: [RFC][PATCH] irq: Rework IRQF_NO_SUSPENDED)
-Date: Wed, 30 Jul 2014 23:46:59 +0200
-Message-ID: <8151374.tpuvaHv3nd@vostro.rjw.lan>
-References: <20140724212620.GO3935@laptop> <alpine.DEB.2.10.1407291445570.4129@nanos> <3042738.6Ohp3GcNCj@vostro.rjw.lan>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/3] irq / PM: New driver interface for wakeup
+ interrupts
+Date: Thu, 31 Jul 2014 00:56:59 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1407302350260.4170@nanos>
+References: <20140724212620.GO3935@laptop> <3042738.6Ohp3GcNCj@vostro.rjw.lan> <8151374.tpuvaHv3nd@vostro.rjw.lan> <5808955.xYYC2DJrBV@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52874 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751539AbaG3Vgd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jul 2014 17:36:33 -0400
-In-Reply-To: <3042738.6Ohp3GcNCj@vostro.rjw.lan>
+Received: from www.linutronix.de ([62.245.132.108]:58050 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbaG3W5E (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jul 2014 18:57:04 -0400
+In-Reply-To: <5808955.xYYC2DJrBV@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
-On Tuesday, July 29, 2014 03:33:23 PM Rafael J. Wysocki wrote:
-> On Tuesday, July 29, 2014 02:46:41 PM Thomas Gleixner wrote:
-> > On Tue, 29 Jul 2014, Rafael J. Wysocki wrote:
-> > 
-> > > On Monday, July 28, 2014 11:53:15 PM Rafael J. Wysocki wrote:
-> > > > On Monday, July 28, 2014 02:33:41 PM Thomas Gleixner wrote:
-> > > > > On Mon, 28 Jul 2014, Peter Zijlstra wrote:
-> > > > > > On Sat, Jul 26, 2014 at 01:49:17PM +0200, Rafael J. Wysocki wrote:
-> > > 
-> > > [cut]
-> > > 
-> > > > > So we are not going to make everything a single stupid flag and limit
-> > > > > the usability of existing code. We rather go and try to remove the
-> > > > > stupid flag before it becomes more wide spread.
-> > > > > 
-> > > > > And we cannot treat the wakeup thing the same way as the
-> > > > > IRQF_NO_SUSPEND flag, because there is hardware where the irq line
-> > > > > must be disabled at the normal (non suspend) interrupt controller, and
-> > > > > the wake mechanism tells the PM microcontroller to monitor the
-> > > > > interrupt line and kick the machine back to life.
-> > > > > 
-> > > > > So we need to very carefully look at all the existing cases instead of
-> > > > > yelling crap and inflicting x86 specific horror on everyone. I said on
-> > > > > friday, that I need to look at ALL use cases first and I meant it.
-> > > > 
-> > > > Regardless of the use case, I don't think it is necessary to manipulate
-> > > > the interrupt controller settings before the syscore_suspend stage, because
-> > > > if an interrupt happens earlier, we need to handle it pretty much in a normal
-> > > > way, unless it has been suspended.
-> > > > 
-> > > > So I'd argue for not using anything like enable_irq_wake() that goes all
-> > > > the way to the hardware in drivers.  Instead, we could allow drivers to
-> > > > mark interrupts as "set this up for system wakeup" and really do the setup
-> > > > right before putting the platform into the final "suspended" state.  And that
-> > > > is totally independend of the IRQF_NO_SUSPEND thing.
-> > > 
-> > > In addition to that we need the interrupt handler of the driver that requested
-> > > the irq to be set up for system wakeup to be invoked after suspend_device_irqs()
-> > > in case there are interrupts that should abort the suspend transition or we
-> > > can lose a wakeup event.  So whatever interface we decide to use it has to
-> > > affect suspend/resume_device_irqs() pretty much in the same way as the
-> > > IRQF_NO_SUSPEND flag.
-> > 
-> > Right, that's a different issue. We probably want that even for the
-> > existing irq_wake() users.
+On Wed, 30 Jul 2014, Rafael J. Wysocki wrote:
+
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> I agree.
-> 
-> There's one more thing to consider here.  Going forward we'll want to avoid
-> touching runtime-suspended devices during system suspend.  Then, system wakeup
-> devices will need to mark their IRQs for system wakeup at the runtime suspend
-> time and I'm not sure if that's the right time for calling enable_irq_wake().
+> Device drivers currently use enable_irq_wake() to configure their
+> interrupts for system wakeup, but that API is not particularly
+> well suited for this purpose, because it goes directly all the
+> way to the hardware and attempts to change the IRQ configuration
+> at the chip level.
+>
+> The first problem with this approach is that the IRQ subsystem
+> is not told which interrupt handler is supposed to handle
+> interrupts from the wakeup line should they occur during system
+> suspend or resume.  That is problematic if the IRQ is shared
+> and the other devices sharing it with the wakeup device in question
+> are not wakeup devices.  In that case their drivers may not be
+> prepared to handle interrupts after the devices have been powered
+> down and they may expect suspend_device_irqs() to disable the
+> interrupt.  For this reason, the IRQ should not be left enabled
+> by suspend_device_irqs() in that case.  On the other hand, though,
+> it needs to be left enabled to prevent wakeup events occuring
+> after suspend_device_irqs() has returned from being lost.
 
-Taking all of the above into consideration I prepared a prototype that will
-follow.  Patch [1/3] is the actual prototype of the core changes, patch [2/3]
-uses that to implement suspend-to-idle wakeup for PME and patch [3/3] illustrates
-how an existing user of enable_irq_wake() can be modified to use the new stuff.
+I really disagree here. The API was designed at a point where it was
+very well suited for the purpose. At least from the POV of the
+hardware which caused that infrastructure to be built. Looking at it
+10 years later with a different set of hardware requirements in mind
+does not make it invalid.
 
-All is on top of https://patchwork.kernel.org/patch/4643871/ which should apply
-on top of -tip (if I'm not mistaken).
+That's really not the way it works. x86 didn't give a rats ass 10
+years ago when this was introduced, simply because there was no x86
+hardware which could support this or if there was hardware nobody was
+interested to do so. Coming in 10 years after the fact and telling
+those who designed and used this for 10 years, that it's a design
+failure is more than inappropriate.
 
-I've tested patches [1-2/3] with PME on my MSI Wind.
+There is nothing wrong to point out that existing infrastructure is
+not able to handle the new requirements of differently (and partially
+ass backwards) designed hardware. But that's different from stating:
 
-Comments welcome.
+   "that API is not particularly well suited for the purpose"
 
-Rafael
+What's worse is that you are merily fiddling around in the existing
+code without doing a proper analysis of the existing semantics and a
+proper description of your new semantics.
 
+Before this code changes in any way I want to see:
+
+ 1) a description of the existing semantics and their background
+
+ 2) a description of the short comings of the existing semantics w/o
+    considering the new fangled (hardware) use cases
+
+ 3) a description how to mitigate the short comings described in #2
+    w/o breaking the world and some more and introducing hard to
+    decode regressions
+
+ 4) a description why the improvements introduced by #3 are not
+    sufficient for the new fangled (hardware) use cases
+
+ 5) a description how to mitigate the short comings described in #4
+    w/o breaking the world and some more and introducing hard to
+    decode regressions
+
+Thanks,
+
+	tglx
