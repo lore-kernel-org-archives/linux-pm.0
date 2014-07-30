@@ -1,328 +1,214 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 1/6] thermal: of: Add support for hardware-tracked trip
- points
-Date: Wed, 30 Jul 2014 10:16:39 -0400
-Message-ID: <20140730141639.GA3715@developer>
-References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com>
- <1403856699-2140-2-git-send-email-mperttunen@nvidia.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
+ to be held for duration of changing governors [v2]
+Date: Wed, 30 Jul 2014 10:18:25 -0400
+Message-ID: <53D8FEB1.5040808@redhat.com>
+References: <1406634362-811-1-git-send-email-prarit@redhat.com> <1727443.QxEjMbNBsd@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1403856699-2140-2-git-send-email-mperttunen@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mikko Perttunen <mperttunen@nvidia.com>
-Cc: rui.zhang@intel.com, swarren@wwwdotorg.org, thierry.reding@gmail.com, pdeschrijver@nvidia.com, mlongnecker@nvidia.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:37436 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753411AbaG3OSc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 30 Jul 2014 10:18:32 -0400
+In-Reply-To: <1727443.QxEjMbNBsd@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
 
-Terve Mikko,
 
-On Fri, Jun 27, 2014 at 11:11:34AM +0300, Mikko Perttunen wrote:
-> This adds support for hardware-tracked trip points to the device tree
-> thermal sensor framework.
+
+On 07/29/2014 08:03 PM, Rafael J. Wysocki wrote:
+> On Tuesday, July 29, 2014 07:46:02 AM Prarit Bhargava wrote:
+>> [v2]: Fixed wording of commit, and added additional testing information.
+>>
+>> A while ago we added a test to mimic some of our users' userspace governor
+>> programs which monitor system behaviour and will switch governors on the
+>> fly.  The decision process for this includes looking at time of day,
+>> expected system load, etc.  For some time now we have had reports of
+>> system panics in the cpufreq code when using the userspace governor
+>> utility.
+>>
+>> The userspace utility writes
+>> /sys/devices/system/cpu/cpuX/cpufreq/scaling_governor and sets the
+>> governor.  In some cases this can happen rapidly, and under heavy load
+>> there are occasions where the changes are delayed.  This can mean that
+>> several governor changes may occur within a short period of time.
+>>
+>> This has exposed a bug in the store_scaling_governor path.  When the sysfs
+>> file is written to,
+>>
+>> store()
+>> 	->down_write(&policy->rwsem);
+>> 	->store_scaling_governor()
+>> 		-> cpufreq_set_policy()
+>> 			up_write(&policy->rwsem);
+>> 			__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+>> 			down_write(&policy->rwsem);
+>>
+>> The release of the policy->rwsem results in a situation where another
+>> write to the scaling_governor file can now start and overwrite pointers
+>> and cause corruption.
+>>
+>> ex)
+>>
+>>  Oops: 0000 [#1] SMP
+>>  Modules linked in: sg e1000e igb iTCO_wdt iTCO_vendor_support coretemp kvm_intel ptp kvm pps_core i7300_edac edac_core ses lpc_ich enclosure ioatdma mfd_core shpchp dca i2c_i801 serio_raw acpi_cpufreq pcspkr mperf nfsd auth_rpcgss nfs_acl lockd sunrpc xfs libcrc32c sr_mod cdrom sd_mod ata_generic crc_t10dif crct10dif_common pata_acpi radeon i2c_algo_bit drm_kms_helper ttm drm ata_piix libata i2c_core megaraid_sas dm_mirror dm_region_hash dm_log dm_mod
+>>  CPU: 7 PID: 565 Comm: kworker/7:2 Not tainted 3.10.0-121.el7.x86_64 #1
+>>  Hardware name: Intel MP Server/S7000FC4UR, BIOS SFC4UR.86B.01.00.0031.021820102042 02/18/2010
+>>  Workqueue: events od_dbs_timer
+>>  task: ffff88046544cfa0 ti: ffff880465438000 task.ti: ffff880465438000
+>>  RIP: 0010:[<ffffffff81489bed>]  [<ffffffff81489bed>] od_dbs_timer+0x2d/0x160
+>>  RSP: 0018:ffff880465439de0  EFLAGS: 00010282
+>>  RAX: ffff88007f03d500 RBX: 0000000000010de0 RCX: 0000000000000006
+>>  RDX: 0000000000000006 RSI: 7040000000000000 RDI: ffff88046f2f0e08
+>>  e1000e 0000:06:00.0: irq 79 for MSI/MSI-X
+>>  IPv6: ADDRCONF(NETDEV_UP): enp6s0f0: link is not ready
+>>  RBP: ffff880465439e18 R08: ffff88046f2f0e10 R09: dfedcb48370f0e08
+>>  R10: dfedcb48370f0e08 R11: 0000000000000000 R12: ffff880465a69200
+>>  R13: 0000000000000000 R14: ffff88046f2f0e08 R15: 00000000000001c0
+>>  e1000e 0000:06:00.1: irq 80 for MSI/MSI-X
+>>  FS:  0000000000000000(0000) GS:ffff88046f2e0000(0000) knlGS:0000000000000000
+>>  CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+>>  CR2: 0000000000000010 CR3: 0000000466be5000 CR4: 00000000000007e0
+>>  DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>>  DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>>  Stack:
+>>   ffff88045ef8d140 ffff880468e1ad80 ffff88046f2f0e08 ffff880465a69200
+>>   ffff88046f2f3e00 ffff88046f2f7f00 00000000000001c0 ffff880465439e60
+>>   ffffffff8107e02b 000000006f2f3e18 0000000000000000 ffff88046f2f3e18
+>>  Call Trace:
+>>   [<ffffffff8107e02b>] process_one_work+0x17b/0x460
+>>   [<ffffffff8107edfb>] worker_thread+0x11b/0x400
+>>   [<ffffffff8107ece0>] ? rescuer_thread+0x400/0x400
+>>   [<ffffffff81085aef>] kthread+0xcf/0xe0
+>>   [<ffffffff81085a20>] ? kthread_create_on_node+0x140/0x140
+>>  e1000e 0000:06:00.1: irq 80 for MSI/MSI-X
+>>  IPv6: ADDRCONF(NETDEV_UP): enp6s0f1: link is not ready
+>>   [<ffffffff815fc76c>] ret_from_fork+0x7c/0xb0
+>>   [<ffffffff81085a20>] ? kthread_create_on_node+0x140/0x140
+>>  Code: 66 66 90 55 48 89 e5 41 57 41 56 49 89 fe 41 55 41 54 53 48 c7 c3 e0 0d 01 00 48 83 ec 10 48 8b 47 f8 8b 50 14 4c 8b 68 40 89 d1 <4d> 8b 7d 10 89 55 cc 48 03 1c cd 80 78 9e 81 48 8d 83 a8 00 00
+>>  RIP  [<ffffffff81489bed>] od_dbs_timer+0x2d/0x160
+>>   RSP <ffff880465439de0>
+>>  CR2: 0000000000000010
+>>  BUG: unable to handle kernel  ---[ end trace c9a1ca82e01a4294 ]---
+>>  Kernel panic - not syncing: Fatal exception
+>> NULL pointer dereference at 0000000000000014
+>>  IP: [<ffffffff81489be4>] od_dbs_timer+0x24/0x160
+>>  PGD 46661d067 PUD 465540067 PMD 0
+>>  Oops: 0000 [#2] SMP
+>>  Modules linked in: sg e1000e igb iTCO_wdt iTCO_vendor_support coretemp kvm_intel ptp kvm pps_core i7300_edac edac_core ses lpc_ich enclosure ioatdma mfd_core shpchp dca i2c_i801 serio_raw acpi_cpufreq pcspkr mperf nfsd auth_rpcgss nfs_acl lockd sunrpc xfs libcrc32c sr_mod cdrom sd_mod ata_generic crc_t10dif crct10dif_common pata_acpi radeon i2c_algo_bit drm_kms_helper ttm drm ata_piix libata i2c_core megaraid_sas dm_mirror dm_region_hash dm_log dm_mod
+>>  CPU: 6 PID: 506 Comm: kworker/6:2 Tainted: G      D     --------------   3.10.0-121.el7.x86_64 #1
+>>  Hardware name: Intel MP Server/S7000FC4UR, BIOS SFC4UR.86B.01.00.0031.021820102042 02/18/2010
+>>  Workqueue: events od_dbs_timer
+>>  task: ffff880465448b60 ti: ffff880463730000 task.ti: ffff880463730000
+>>  RIP: 0010:[<ffffffff81489be4>]  [<ffffffff81489be4>] od_dbs_timer+0x24/0x160
+>>  RSP: 0018:ffff880463731de0  EFLAGS: 00010282
+>>  RAX: 0000000000000000 RBX: 0000000000010de0 RCX: dead000000200200
+>>  RDX: 0000000000000001 RSI: 7040000000000000 RDI: ffff88046f2d0e08
+>>  RBP: ffff880463731e18 R08: ffff88046f2d0e10 R09: dfedcb50370d0e08
+>>  R10: dfedcb50370d0e08 R11: 0000000000000000 R12: ffff880465bd2b80
+>>  R13: ffff88046f2d3e00 R14: ffff88046f2d0e08 R15: 0000000000000180
+>>  FS:  0000000000000000(0000) GS:ffff88046f2c0000(0000) knlGS:0000000000000000
+>>  CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+>>  CR2: 0000000000000014 CR3: 0000000466be5000 CR4: 00000000000007e0
+>>  DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>>  DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>>  Stack:
+>>   ffff88045ef8d140 ffff880468dcf1c0 ffff88046f2d0e08 ffff880465bd2b80
+>>   ffff88046f2d3e00 ffff88046f2d7f00 0000000000000180 ffff880463731e60
+>>   ffffffff8107e02b 000000006f2d3e18 0000000000000000 ffff88046f2d3e18
+>>  Call Trace:
+>>   [<ffffffff8107e02b>] process_one_work+0x17b/0x460
+>>   [<ffffffff8107edfb>] worker_thread+0x11b/0x400
+>>   [<ffffffff8107ece0>] ? rescuer_thread+0x400/0x400
+>>   [<ffffffff81085aef>] kthread+0xcf/0xe0
+>>   [<ffffffff81085a20>] ? kthread_create_on_node+0x140/0x140
+>>   [<ffffffff815fc76c>] ret_from_fork+0x7c/0xb0
+>>   [<ffffffff81085a20>] ? kthread_create_on_node+0x140/0x140
+>>  Code: 1f 84 00 00 00 00 00 66 66 66 66 90 55 48 89 e5 41 57 41 56 49 89 fe 41 55 41 54 53 48 c7 c3 e0 0d 01 00 48 83 ec 10 48 8b 47 f8 <8b> 50 14 4c 8b 68 40 89 d1 4d 8b 7d 10 89 55 cc 48 03 1c cd 80
+>>  RIP  [<ffffffff81489be4>] od_dbs_timer+0x24/0x160
+>>   RSP <ffff880463731de0>
+>>  CR2: 0000000000000014
+>>  drm_kms_helper: panic occurred, switching back to text console
+>>
+>> There are other panics associated with this, including list corruption and
+>> various flavors of panics in the od_dbs_timer & work code.
+>>
+>> As a test I introduced a separate mutex around the cpufreq_set_policy() call.
+>> After doing so system behaves as expected, and the panics no longer happen.
+>> I narrowed the mutex down to the "governor switch" code in
+>> cpufreq_set_policy() and saw that everything stabilized.
+>>
+>> I then reverted commit 955ef4833574636819cd269cfbae12f79cbde63a, cpufreq: Drop
+>> rwsem lock around CPUFREQ_GOV_POLICY_EXIT, which added the dropping of the
+>> policy->rwsem and again, the panics no longer occurred.
+>>
+>> The closer I looked at commit 955ef483, the more questions I have.  The first
+>> thing is that it appears that the stacktrace includes function calls that
+>> are not, and never have been, part of the linux.git tree, ie) the call trace
+>> shows
+>>
+>>             [<c0055a79>] lock_acquire+0x61/0xbc
+>>             [<c00fabf1>] sysfs_addrm_finish+0xc1/0x128
+>>             [<c00f9819>] sysfs_hash_and_remove+0x35/0x64
+>>             [<c00fbe6f>] remove_files.isra.0+0x1b/0x24
+>>             [<c00fbea5>] sysfs_remove_group+0x2d/0xa8
+>>             [<c02f9a0b>] cpufreq_governor_interactive+0x13b/0x35c
+>>             [<c02f61df>] __cpufreq_governor+0x2b/0x8c
+>>             [<c02f6579>] __cpufreq_set_policy+0xa9/0xf8
+>>             [<c02f6b75>] store_scaling_governor+0x61/0x100
+>>             [<c02f6f4d>] store+0x39/0x60
+>>             [<c00f9b81>] sysfs_write_file+0xed/0x114
+>>             [<c00b3fd1>] vfs_write+0x65/0xd8
+>>             [<c00b424b>] sys_write+0x2f/0x50
+>>             [<c000cdc1>] ret_fast_syscall+0x1/0x52
+>>
+>> and the top part of the stack from cpufreq_governor_interactive() appear to
+>> be for a driver that is not in the linux.git tree.  Google search does show
+>> that it exists in various android trees, however, my concern is that the "core"
+>> scaling governors are now broken because of an out tree driver.
+>>
+>> It seems like the patch fixed this problem incorrectly by breaking the existing
+>> locking.  The whole point of the policy->rwsem is to single thread updates
+>> to the policy struct; this is no longer the case after that commit as we
+>> are breaking the locking right in the middle of a policy->governor update.
+>> The fix should have been to the cpufreq_governor_interactive out-of-tree
+>> driver and fix the locking there in its release code.  In any case, the current
+>> linux.git code no longer can reproduce the original failure; the locking in the
+>> sysfs release code has changed.
+>>
+>> In case anyone is interested in reproducing, the reproducer I used was
+>>
+>> i=0
+>> while [ True ]; do
+>>         i=$((i+1))
+>>         echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor &
+>>         echo "performance" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor &
+>>         echo "ondemand" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor  &
+>>         echo "performance" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor &
+>>         if [ $((i % 100)) = 0 ]; then
+>>                 num_ps=$(ps aux | grep doit | wc -l)
+>>                 echo "$i running, $num_ps outstanding"
+>>         fi
+>> done
+>>
+>> and the system usually panics within 500 iterations.
+>>
+>> I have tested this extensively across 15 systems of various configurations.
+>> In the unpatched kernel I see oopses usually within 500 iterations.  In the
+>> patched kernel which fixes the broken locking, I can go several hours
+>> without any issues.
+>>
+>> This patch effectively reverts commit 955ef483.
 > 
-> The framework supports an arbitrary number of trip points. Whenever
-> the current temperature is updated, the trip points immediately
-> below and above the current temperature are found. A sensor driver
-
-One thing I don't follow on your proposal is the groundings you need to
-'set_trips' whenever temperature changes. Given your intention is to add
-support to interrupt driven devices, shouldn't we 'set_trips' just when
-we cross the previously set trips range?
-
-> callback `set_trips' is then called with the temperatures.
-> If there is no trip point above or below the current temperature,
-> the passed trip temperature will be LONG_MAX or LONG_MIN respectively.
-> In this callback, the driver should program the hardware such that
-> it is notified when either of these trip points are triggered.
-> When a trip point is triggered, the driver should call
-> `thermal_zone_device_update' for the respective thermal zone. This
-> will cause the trip points to be updated again.
+> OK, I'm convinced by this.
 > 
-> If the `set_trips' callback is not implemented (is NULL), the framework
-> behaves as before.
+> I suppose we should push it for -stable from 3.10 through 3.15.x, right?
 
-As already mentioned by swarren, the proposal must be wider. We shall
-keep the same support in case the device is used in a system without
-device tree. In other words, if you want to see extra functionality for
-interrupt driven devices, you shall update the core part too, and draft
-a common messaging path.
+Rafael, I think that is a good idea.  I'm not sure what the protocol is for
+adding stable@kernel.org though ...
 
-In general, interrupt driven devices are not mapped in the current
-thermal framework. That is, the current code is timer interrupt driven.
-Other interrupt updates from devices are propagated to
-the framework using thermal_zone_device_update(). In other words, you would
-reprogram your hardware trips from your interrupt handler/workqueue then
-just let the framework know what is going on with temperature, via a simple
-thermal_zone_device_update().
-
-The way I see this going forward it would be a common interface to
-configure the thermal zones to be monitored:
-a. via polling only
-b. via interrupt only
-c. both a + b
-
-obviously, the above shall be informative only for userland.
-
-keep in mind also that changing interrupt configuration for high and low
-temperature thresholds can be racy. 
-
-This feature was kept in the TODO list of the of-thermal.c because the
-we lack a proper support from the thermal framework (never came out of
-the TODO list, I know, I apologize for this). And this missing feature
-was spotted by the hwmon folks also, as they do have such support. So,
-the major missing improvements on interrupt driven devices shall come in
-three steps: (i) thermal framework, (ii) of-thermal (iii) thermal
-framework and hwmon interface. 
-
-
-Cheers,
-
-
-> 
-> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
-> ---
->  drivers/thermal/of-thermal.c | 97 ++++++++++++++++++++++++++++++++++++++++++--
->  include/linux/thermal.h      |  3 +-
->  2 files changed, 95 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 04b1be7..bfccea5 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -89,6 +89,7 @@ struct __thermal_zone {
->  	/* trip data */
->  	int ntrips;
->  	struct __thermal_trip *trips;
-> +	long prev_low_trip, prev_high_trip;
->  
->  	/* cooling binding data */
->  	int num_tbps;
-> @@ -98,19 +99,66 @@ struct __thermal_zone {
->  	void *sensor_data;
->  	int (*get_temp)(void *, long *);
->  	int (*get_trend)(void *, long *);
-> +	int (*set_trips)(void *, long, long);
->  };
->  
-> +/***   Automatic trip handling   ***/
-> +
-> +static int of_thermal_set_trips(struct thermal_zone_device *tz, long temp)
-> +{
-> +	struct __thermal_zone *data = tz->devdata;
-> +	long low = LONG_MIN, high = LONG_MAX;
-> +	int i;
-> +
-> +	/* Hardware trip points not supported */
-> +	if (!data->set_trips)
-> +		return 0;
-> +
-> +	/* No need to change trip points */
-> +	if (temp > data->prev_low_trip && temp < data->prev_high_trip)
-> +		return 0;
-> +
-> +	for (i = 0; i < data->ntrips; ++i) {
-> +		struct __thermal_trip *trip = data->trips + i;
-> +		long trip_low = trip->temperature - trip->hysteresis;
-> +
-> +		if (trip_low < temp && trip_low > low)
-> +			low = trip_low;
-> +
-> +		if (trip->temperature > temp && trip->temperature < high)
-> +			high = trip->temperature;
-> +	}
-> +
-> +	dev_dbg(&tz->device,
-> +		"temperature %ld, updating trip points to %ld, %ld\n",
-> +		temp, low, high);
-> +
-> +	data->prev_low_trip = low;
-> +	data->prev_high_trip = high;
-> +
-> +	return data->set_trips(data->sensor_data, low, high);
-> +}
-> +
->  /***   DT thermal zone device callbacks   ***/
->  
->  static int of_thermal_get_temp(struct thermal_zone_device *tz,
->  			       unsigned long *temp)
->  {
->  	struct __thermal_zone *data = tz->devdata;
-> +	int err;
->  
->  	if (!data->get_temp)
->  		return -EINVAL;
->  
-> -	return data->get_temp(data->sensor_data, temp);
-> +	err = data->get_temp(data->sensor_data, temp);
-> +	if (err)
-> +		return err;
-> +
-> +	err = of_thermal_set_trips(tz, *temp);
-
-Here, if you update trips whenever you get_temp, you are possibly
-reprogramming your trips on every poll. Remember, this function will be
-called on every poll, in the current implementation.
-
-> +	if (err)
-> +		return err;
-> +
-> +	return 0;
->  }
->  
->  static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
-> @@ -222,6 +270,22 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
->  	return 0;
->  }
->  
-> +static int of_thermal_update_trips(struct thermal_zone_device *tz)
-> +{
-> +	long temp;
-> +	int err;
-> +
-> +	err = of_thermal_get_temp(tz, &temp);
-> +	if (err)
-> +		return err;
-> +
-> +	err = of_thermal_set_trips(tz, temp);
-> +	if (err)
-> +		return err;
-> +
-> +	return 0;
-> +}
-> +
->  static int of_thermal_get_trip_type(struct thermal_zone_device *tz, int trip,
->  				    enum thermal_trip_type *type)
->  {
-> @@ -252,6 +316,7 @@ static int of_thermal_set_trip_temp(struct thermal_zone_device *tz, int trip,
->  				    unsigned long temp)
->  {
->  	struct __thermal_zone *data = tz->devdata;
-> +	int err;
->  
->  	if (trip >= data->ntrips || trip < 0)
->  		return -EDOM;
-> @@ -259,6 +324,10 @@ static int of_thermal_set_trip_temp(struct thermal_zone_device *tz, int trip,
->  	/* thermal framework should take care of data->mask & (1 << trip) */
->  	data->trips[trip].temperature = temp;
->  
-> +	err = of_thermal_update_trips(tz);
-> +	if (err)
-> +		return err;
-> +
->  	return 0;
->  }
->  
-> @@ -279,6 +348,7 @@ static int of_thermal_set_trip_hyst(struct thermal_zone_device *tz, int trip,
->  				    unsigned long hyst)
->  {
->  	struct __thermal_zone *data = tz->devdata;
-> +	int err;
->  
->  	if (trip >= data->ntrips || trip < 0)
->  		return -EDOM;
-> @@ -286,6 +356,10 @@ static int of_thermal_set_trip_hyst(struct thermal_zone_device *tz, int trip,
->  	/* thermal framework should take care of data->mask & (1 << trip) */
->  	data->trips[trip].hysteresis = hyst;
->  
-> +	err = of_thermal_update_trips(tz);
-> +	if (err)
-> +		return err;
-> +
->  	return 0;
->  }
->  
-> @@ -325,10 +399,12 @@ static struct thermal_zone_device *
->  thermal_zone_of_add_sensor(struct device_node *zone,
->  			   struct device_node *sensor, void *data,
->  			   int (*get_temp)(void *, long *),
-> -			   int (*get_trend)(void *, long *))
-> +			   int (*get_trend)(void *, long *),
-> +			   int (*set_trips)(void *, long, long))
-
-we need to clean the above arguments. they should become a .ops.
-
->  {
->  	struct thermal_zone_device *tzd;
->  	struct __thermal_zone *tz;
-> +	int err;
->  
->  	tzd = thermal_zone_get_zone_by_name(zone->name);
->  	if (IS_ERR(tzd))
-> @@ -339,8 +415,15 @@ thermal_zone_of_add_sensor(struct device_node *zone,
->  	mutex_lock(&tzd->lock);
->  	tz->get_temp = get_temp;
->  	tz->get_trend = get_trend;
-> +	tz->set_trips = set_trips;
->  	tz->sensor_data = data;
->  
-> +	err = of_thermal_update_trips(tzd);
-> +	if (err) {
-> +		mutex_unlock(&tzd->lock);
-> +		return ERR_PTR(err);
-> +	}
-> +
->  	tzd->ops->get_temp = of_thermal_get_temp;
->  	tzd->ops->get_trend = of_thermal_get_trend;
->  	mutex_unlock(&tzd->lock);
-> @@ -384,7 +467,8 @@ thermal_zone_of_add_sensor(struct device_node *zone,
->  struct thermal_zone_device *
->  thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
->  				void *data, int (*get_temp)(void *, long *),
-> -				int (*get_trend)(void *, long *))
-> +				int (*get_trend)(void *, long *),
-> +				int (*set_trips)(void *, long, long))
-
-ditto.
-
->  {
->  	struct device_node *np, *child, *sensor_np;
->  
-> @@ -422,7 +506,8 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
->  			return thermal_zone_of_add_sensor(child, sensor_np,
->  							  data,
->  							  get_temp,
-> -							  get_trend);
-> +							  get_trend,
-> +							  set_trips);
-
-ditto.
-
->  		}
->  	}
->  	of_node_put(np);
-> @@ -466,6 +551,7 @@ void thermal_zone_of_sensor_unregister(struct device *dev,
->  
->  	tz->get_temp = NULL;
->  	tz->get_trend = NULL;
-> +	tz->set_trips = NULL;
->  	tz->sensor_data = NULL;
->  	mutex_unlock(&tzd->lock);
->  }
-> @@ -671,6 +757,9 @@ thermal_of_build_thermal_zone(struct device_node *np)
->  	/* trips */
->  	child = of_get_child_by_name(np, "trips");
->  
-> +	tz->prev_high_trip = LONG_MIN;
-> +	tz->prev_low_trip = LONG_MAX;
-> +
->  	/* No trips provided */
->  	if (!child)
->  		goto finish;
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index f7e11c7..2f8951c 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -248,7 +248,8 @@ struct thermal_genl_event {
->  struct thermal_zone_device *
->  thermal_zone_of_sensor_register(struct device *dev, int id,
->  				void *data, int (*get_temp)(void *, long *),
-> -				int (*get_trend)(void *, long *));
-> +				int (*get_trend)(void *, long *),
-> +				int (*set_trips)(void *, long, long));
->  void thermal_zone_of_sensor_unregister(struct device *dev,
->  				       struct thermal_zone_device *tz);
->  #else
-> -- 
-> 1.8.1.5
-> 
+P.
