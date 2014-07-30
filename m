@@ -1,74 +1,65 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH] PM / sleep: Rename symbols, functions and
- variables related to sleep
-Date: Wed, 30 Jul 2014 08:50:34 +0200
-Message-ID: <20140730065034.GB8024@amd.pavel.ucw.cz>
-References: <5215142.eaz1Ajyth6@vostro.rjw.lan>
- <5425640.ztbaPas56b@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5425640.ztbaPas56b@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+From: Thomas Abraham <thomas.ab@samsung.com>
+Subject: [PATCH v9 0/6] cpufreq: use generic cpufreq drivers for exynos
+ platforms
+Date: Wed, 30 Jul 2014 13:37:37 +0530
+Message-ID: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, heiko@sntech.de, cw00.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2014-07-30 01:41:25, Rafael J. Wysocki wrote:
-> On Monday, July 28, 2014 01:13:56 AM Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > The names of several symbols, data types, functions and variables
-> > related to system sleep states are confusing and don't reflect the
-> > real behavior of those states correctly.
-> > 
-> > First of all, there generally are two sleep states that require
-> > platform support and one sleep state that is platform-independent.
-> > The first two of them are currently known as MEM and STANDBY,
-> > although these names really only match what the states do on full
-> > hardware ACPI compliant systems.  MEM in particular is supposed
-> > to mean "suspend-to-RAM", but in fact it means "the deepest sleep
-> > state available with platform support".  The definition of STANDBY
-> > is even more arbitrary.
-> > 
-> > Moreover, the remaining sleep state that doesn't need platform support
-> > is currently called FREEZE, which leads to double confusion with the
-> > process freezer (used during transitions to all sleep states) and
-> > with the freeze stage of processing devices during hibernation.
-> > 
-> > For these reasons, rename the PM_SUSPEND_MEM, PM_SUSPEND_STANDBY
-> > and PM_SUSPEND_FREEZE symbols to PM_SUSPEND_PLATFORM_DEEP,
-> > PM_SUSPEND_PLATFORM_SHALLOW and PM_SUSPEND_IDLE_SLEEP, respectively,
-> > everywhere and rename data types, functions and variables related to
-> > those states to match the new names of the symbols.
-> > 
-> > This is a semi-mechanical replacement of names and it should not lead
-> > to any functional differences.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> OK, any comments or objections anyone?
-> 
-> Or should I just make it a non-RFC and apply it?
+Changes since v8:
+- Fixes suggested by Tomasz Figa.
 
-I don't really like the new names, and I'm not sure if I like
-direction this is heading. At least on ACPI machines, S1 and S3 is
-different -- different parts of hardware will stay powered on.
+This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
+series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
+driver.
 
-So if you want to charge your cellphone with machine suspended, you
-want S1... and you don't want S1/S3 to change names. (Ok, this is not
-what you are doing now, but what you plan AFAICT.)
+This patch series is dependent on two other patches
+1. ARM: dts: add CPU nodes for Exynos4 SoCs
+   - https://lkml.org/lkml/2014/7/21/315
+2. ARM: dts: smdk5250: Specify MAX77686 pmic interrupt
+   - http://www.spinics.net/lists/arm-kernel/msg351134.html
+3. clk: exynos4: remove duplicate div_core2 divider clock instantiation
+   - http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34859.html
 
-> > For these reasons, rename the PM_SUSPEND_MEM, PM_SUSPEND_STANDBY
-> > and PM_SUSPEND_FREEZE symbols to PM_SUSPEND_PLATFORM_DEEP,
-> > PM_SUSPEND_PLATFORM_SHALLOW and PM_SUSPEND_IDLE_SLEEP, respectively,
+Thomas Abraham (6):
+  clk: samsung: add infrastructure to register cpu clocks
+  clk: samsung: add cpu clock configuration data and instantiate cpu clock
+  ARM: dts: Exynos: add CPU OPP and regulator supply property
+  ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
+  cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
+  clk: samsung: remove unused clock aliases and update clock flags
 
-I'm not sure why you want to mention "platform there", AFAICT better
-names would be
+ arch/arm/boot/dts/exynos4210-origen.dts         |    4 +
+ arch/arm/boot/dts/exynos4210-trats.dts          |    4 +
+ arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 +
+ arch/arm/boot/dts/exynos4210.dtsi               |   14 +-
+ arch/arm/boot/dts/exynos5250-arndale.dts        |    4 +
+ arch/arm/boot/dts/exynos5250-smdk5250.dts       |    4 +
+ arch/arm/boot/dts/exynos5250-snow.dts           |    4 +
+ arch/arm/boot/dts/exynos5250.dtsi               |   25 +-
+ arch/arm/boot/dts/exynos5420.dtsi               |   38 +++
+ arch/arm/mach-exynos/exynos.c                   |   24 +-
+ drivers/clk/samsung/Makefile                    |    2 +-
+ drivers/clk/samsung/clk-cpu.c                   |  335 +++++++++++++++++++++++
+ drivers/clk/samsung/clk-cpu.h                   |   91 ++++++
+ drivers/clk/samsung/clk-exynos4.c               |   63 +++--
+ drivers/clk/samsung/clk-exynos5250.c            |   44 ++-
+ drivers/clk/samsung/clk-exynos5420.c            |   72 ++++-
+ drivers/cpufreq/Kconfig.arm                     |   22 --
+ drivers/cpufreq/Makefile                        |    2 -
+ drivers/cpufreq/exynos4210-cpufreq.c            |  184 -------------
+ drivers/cpufreq/exynos5250-cpufreq.c            |  210 --------------
+ include/dt-bindings/clock/exynos5250.h          |    1 +
+ include/dt-bindings/clock/exynos5420.h          |    2 +
+ 22 files changed, 690 insertions(+), 463 deletions(-)
+ create mode 100644 drivers/clk/samsung/clk-cpu.c
+ create mode 100644 drivers/clk/samsung/clk-cpu.h
+ delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
+ delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
 
-PM_SUSPEND_DEEP, PM_SUSPEND_SHALLOW, PM_IDLE_SLEEP.
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.9.5
