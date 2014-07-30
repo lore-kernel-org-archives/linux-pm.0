@@ -1,62 +1,350 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 0/5] Simplify hotplug/suspend handling
-Date: Wed, 30 Jul 2014 02:29:11 +0200
-Message-ID: <1667655.2j1xLy7HXa@vostro.rjw.lan>
-References: <1406250448-470-1-git-send-email-skannan@codeaurora.org>
+Subject: [PATCH, v6] irq / PM: Fix IRQF_NO_SUSPEND problem with shared interrupts
+Date: Wed, 30 Jul 2014 02:54:22 +0200
+Message-ID: <5406863.luk6QaqFAf@vostro.rjw.lan>
+References: <20140724212620.GO3935@laptop> <1574820.JRmxKN4N9f@vostro.rjw.lan> <37028068.N4oZ2EyB94@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55288 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752651AbaG3AKj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 20:10:39 -0400
-In-Reply-To: <1406250448-470-1-git-send-email-skannan@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <37028068.N4oZ2EyB94@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Todd Poynor <toddpoynor@google.com>, "Srivatsa S . Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@codeaurora.org>
 
-On Thursday, July 24, 2014 06:07:23 PM Saravana Kannan wrote:
-> Series of patchs to simplify policy/sysfs/kobj/locking handling across
-> suspend/resume
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I need someone to review this series for me.  Viresh or Srivatsa, preferably
-both.
+Since __disable_irq() only checks IRQF_NO_SUSPEND for the first
+irqaction in a given irq_desc, that value of that bit for the
+first irqaction affects all of the other irqactions sharing the
+interrupt with it.  This is problematic in two cases.
 
-Thanks!
+First, if IRQF_NO_SUSPEND is set in the first irqaction and unset
+in at least one of the other irqactions sharing the same interrupt,
+the interrupt handlers in the other irqactions with IRQF_NO_SUSPEND
+unset will be invoked after suspend_device_irqs() has returned even
+though they are not supposed to.  That shouldn't be a problem if
+those interrupt handlers are implemented correctly and the
+corresponding devices are properly suspended, but it may lead to
+functional issues otherwise.
 
-> The following have been tested so far on a 2x2 cluster environment:
-> - Boot with 2 cpus and no cpufreq driver.
-> - mod probe driver and see cpufreq sysfs files show up only for the 1st cluster.
-> - Online the rest of the 2 CPUs and have files show up correctly.
-> - rmmod the driver and see the files go away.
-> - modprobe again (or back and forth multiples times) and see it work.
-> - suspend/resume works as expected.
-> - When a cluster is offline, all read/writes to its sysfs files return an error
-> 
-> v4
-> - Split it up into smaller patches
-> - Will handle physical CPU removal correctly
-> - Fixed earlier mistake of deleting code under !recover_policy
-> - Dropped some code refactor that reuses a lot of code between add/remove
-> - Dropped fix for exiting hotplug race with cpufreq driver probe/rmmod
-> - Dropped changes will come later once this series is acked.
-> 
-> 
-> Saravana Kannan (5):
->   cpufreq: Don't wait for CPU to going offline to restart governor
->   cpufreq: Keep track of which CPU owns the kobj/sysfs nodes separately
->   cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
->   cpufreq: Properly handle physical CPU hot-add/hot-remove
->   cpufreq: Delete dead code related to policy save/restore
-> 
->  drivers/cpufreq/cpufreq.c | 238 ++++++++++++++++++----------------------------
->  include/linux/cpufreq.h   |   1 +
->  2 files changed, 93 insertions(+), 146 deletions(-)
-> 
-> 
+Second, if IRQF_NO_SUSPEND is unset in the first irqaction and set
+in at least one of the other irqactions sharing the same interrupt,
+the interrupt handlers in the other irqactions with IRQF_NO_SUSPEND
+set will not be invoked after suspend_device_irqs() has returned, but
+they are supposed to be invoked then.  That may be a problem if the
+corresponding devices are wakeup devices or if their interrupts have
+to be properly handled during system suspend/resume too for other
+reasons, which is the case for timer interrupts or the ACPI SCI for
+example.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+To address this, modify the handling of IRQF_NO_SUSPEND by
+suspend_device_irqs() and resume_device_irqs() and make
+note_interrupt() handle suspended interrupts.
+
+First of all, make suspend_device_irqs() check IRQF_NO_SUSPEND for
+all irqactions sharing the same irq_desc and avoid disabling the IRQ
+if at least one of them has IRQF_NO_SUSPEND set.  If that flag is
+also unset for at least one irqaction in the given irq_desc, however,
+suspend_device_irqs() will move the irqactions with IRQF_NO_SUSPEND
+unset over to a list of "suspended actions" whose interrupt handlers
+won't be invoked going forward.
+
+Second, modify note_interrupt() to disable misbehaving IRQs faster if
+spuroius interrupts occur during system suspend/resume (that is, for
+an irq_desc with IRQS_SUSPENDED set).
+
+Finally, make resume_device_irqs() move irqactions from the list of
+"suspended actions" created by suspend_device_irqs() back to the
+regular "action" list.  It also will clear the IRQS_SPURIOUS_DISABLED
+flag for IRQS_SUSPENDED IRQs that were emergency disabled after
+suspend_device_irqs() had returned and will log warning messages for
+them.
+
+This should address the problematic case (when IRQF_NO_SUSPEND is set
+for at least one and unset for at least one irqaction sharing one
+irq_desc) and that case only without changing behavior in any other
+cases.
+
+It also effectively reverts a previous change to refuse interrupt
+requests with IRQF_NO_SUSPEND settings that do not match the
+existing ones (as it is not needed any more) and a previous change
+that added a IRQD_WAKEUP_STATE check to __disable_irqs() (as that
+mechanism has the same problem with shared interrupts as described
+above).
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+One more minor update, sorry about that.
+
+I've just noticed that in v5 I used the same name (no_suspend) for two different
+variables in the same function (in different scopes, but still confusing), so
+this is fixed here.
+
+Rafael
+
+---
+ include/linux/irqdesc.h |    2 +
+ kernel/irq/internals.h  |    4 +-
+ kernel/irq/manage.c     |   31 +++---------------
+ kernel/irq/pm.c         |   82 ++++++++++++++++++++++++++++++++++++++++++++++--
+ kernel/irq/spurious.c   |   14 +++++++-
+ 5 files changed, 102 insertions(+), 31 deletions(-)
+
+Index: linux-pm/kernel/irq/manage.c
+===================================================================
+--- linux-pm.orig/kernel/irq/manage.c
++++ linux-pm/kernel/irq/manage.c
+@@ -382,15 +382,8 @@ setup_affinity(unsigned int irq, struct
+ }
+ #endif
+ 
+-void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
++void __disable_irq(struct irq_desc *desc, unsigned int irq)
+ {
+-	if (suspend) {
+-		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND)
+-		    || irqd_has_set(&desc->irq_data, IRQD_WAKEUP_STATE))
+-			return;
+-		desc->istate |= IRQS_SUSPENDED;
+-	}
+-
+ 	if (!desc->depth++)
+ 		irq_disable(desc);
+ }
+@@ -402,7 +395,7 @@ static int __disable_irq_nosync(unsigned
+ 
+ 	if (!desc)
+ 		return -EINVAL;
+-	__disable_irq(desc, irq, false);
++	__disable_irq(desc, irq);
+ 	irq_put_desc_busunlock(desc, flags);
+ 	return 0;
+ }
+@@ -443,20 +436,8 @@ void disable_irq(unsigned int irq)
+ }
+ EXPORT_SYMBOL(disable_irq);
+ 
+-void __enable_irq(struct irq_desc *desc, unsigned int irq, bool resume)
++void __enable_irq(struct irq_desc *desc, unsigned int irq)
+ {
+-	if (resume) {
+-		if (!(desc->istate & IRQS_SUSPENDED)) {
+-			if (!desc->action)
+-				return;
+-			if (!(desc->action->flags & IRQF_FORCE_RESUME))
+-				return;
+-			/* Pretend that it got disabled ! */
+-			desc->depth++;
+-		}
+-		desc->istate &= ~IRQS_SUSPENDED;
+-	}
+-
+ 	switch (desc->depth) {
+ 	case 0:
+  err_out:
+@@ -498,7 +479,7 @@ void enable_irq(unsigned int irq)
+ 		 KERN_ERR "enable_irq before setup/request_irq: irq %u\n", irq))
+ 		goto out;
+ 
+-	__enable_irq(desc, irq, false);
++	__enable_irq(desc, irq);
+ out:
+ 	irq_put_desc_busunlock(desc, flags);
+ }
+@@ -1079,7 +1060,7 @@ __setup_irq(unsigned int irq, struct irq
+ 		 */
+ 
+ #define IRQF_MISMATCH \
+-	(IRQF_TRIGGER_MASK | IRQF_ONESHOT | IRQF_NO_SUSPEND)
++	(IRQF_TRIGGER_MASK | IRQF_ONESHOT)
+ 
+ 		if (!((old->flags & new->flags) & IRQF_SHARED) ||
+ 		    ((old->flags ^ new->flags) & IRQF_MISMATCH))
+@@ -1232,7 +1213,7 @@ __setup_irq(unsigned int irq, struct irq
+ 	 */
+ 	if (shared && (desc->istate & IRQS_SPURIOUS_DISABLED)) {
+ 		desc->istate &= ~IRQS_SPURIOUS_DISABLED;
+-		__enable_irq(desc, irq, false);
++		__enable_irq(desc, irq);
+ 	}
+ 
+ 	raw_spin_unlock_irqrestore(&desc->lock, flags);
+Index: linux-pm/kernel/irq/spurious.c
+===================================================================
+--- linux-pm.orig/kernel/irq/spurious.c
++++ linux-pm/kernel/irq/spurious.c
+@@ -391,10 +391,20 @@ void note_interrupt(unsigned int irq, st
+ 		 * otherwise the counter becomes a doomsday timer for otherwise
+ 		 * working systems
+ 		 */
+-		if (time_after(jiffies, desc->last_unhandled + HZ/10))
++		if (time_after(jiffies, desc->last_unhandled + HZ/10)) {
+ 			desc->irqs_unhandled = 1;
+-		else
++		} else {
+ 			desc->irqs_unhandled++;
++			if (unlikely(desc->istate & IRQS_SUSPENDED)) {
++				/*
++				 * That shouldn't happen.  It means IRQs from
++				 * a device that is supposed to be suspended at
++				 * this point.  Decay faster.
++				 */
++				desc->irqs_unhandled += 999;
++				desc->irq_count += 999;
++			}
++		}
+ 		desc->last_unhandled = jiffies;
+ 	}
+ 
+Index: linux-pm/include/linux/irqdesc.h
+===================================================================
+--- linux-pm.orig/include/linux/irqdesc.h
++++ linux-pm/include/linux/irqdesc.h
+@@ -20,6 +20,7 @@ struct irq_desc;
+  * @handle_irq:		highlevel irq-events handler
+  * @preflow_handler:	handler called before the flow handler (currently used by sparc)
+  * @action:		the irq action chain
++ * @action_suspended:	suspended irq action chain
+  * @status:		status information
+  * @core_internal_state__do_not_mess_with_it: core internal status information
+  * @depth:		disable-depth, for nested irq_disable() calls
+@@ -47,6 +48,7 @@ struct irq_desc {
+ 	irq_preflow_handler_t	preflow_handler;
+ #endif
+ 	struct irqaction	*action;	/* IRQ action list */
++	struct irqaction	*action_suspended;
+ 	unsigned int		status_use_accessors;
+ 	unsigned int		core_internal_state__do_not_mess_with_it;
+ 	unsigned int		depth;		/* nested irq disables */
+Index: linux-pm/kernel/irq/internals.h
+===================================================================
+--- linux-pm.orig/kernel/irq/internals.h
++++ linux-pm/kernel/irq/internals.h
+@@ -63,8 +63,8 @@ enum {
+ 
+ extern int __irq_set_trigger(struct irq_desc *desc, unsigned int irq,
+ 		unsigned long flags);
+-extern void __disable_irq(struct irq_desc *desc, unsigned int irq, bool susp);
+-extern void __enable_irq(struct irq_desc *desc, unsigned int irq, bool resume);
++extern void __disable_irq(struct irq_desc *desc, unsigned int irq);
++extern void __enable_irq(struct irq_desc *desc, unsigned int irq);
+ 
+ extern int irq_startup(struct irq_desc *desc, bool resend);
+ extern void irq_shutdown(struct irq_desc *desc);
+Index: linux-pm/kernel/irq/pm.c
+===================================================================
+--- linux-pm.orig/kernel/irq/pm.c
++++ linux-pm/kernel/irq/pm.c
+@@ -13,6 +13,50 @@
+ 
+ #include "internals.h"
+ 
++static void suspend_irq(struct irq_desc *desc, int irq)
++{
++	struct irqaction *action = desc->action;
++	unsigned int no_suspend, flags;
++
++	if (!action)
++		return;
++
++	no_suspend = IRQF_NO_SUSPEND;
++	flags = 0;
++	do {
++		no_suspend &= action->flags;
++		flags |= action->flags;
++		action = action->next;
++	} while (action);
++	if (no_suspend)
++		return;
++
++	desc->istate |= IRQS_SUSPENDED;
++
++	if ((flags & IRQF_NO_SUSPEND) &&
++	    !(desc->istate & IRQS_SPURIOUS_DISABLED)) {
++		struct irqaction *active = NULL;
++		struct irqaction *suspended = NULL;
++		struct irqaction *head = desc->action;
++
++		do {
++			action = head;
++			head = action->next;
++			if (action->flags & IRQF_NO_SUSPEND) {
++				action->next = active;
++				active = action;
++			} else {
++				action->next = suspended;
++				suspended = action;
++			}
++		} while (head);
++		desc->action = active;
++		desc->action_suspended = suspended;
++		return;
++	}
++	__disable_irq(desc, irq);
++}
++
+ /**
+  * suspend_device_irqs - disable all currently enabled interrupt lines
+  *
+@@ -30,7 +74,7 @@ void suspend_device_irqs(void)
+ 		unsigned long flags;
+ 
+ 		raw_spin_lock_irqsave(&desc->lock, flags);
+-		__disable_irq(desc, irq, true);
++		suspend_irq(desc, irq);
+ 		raw_spin_unlock_irqrestore(&desc->lock, flags);
+ 	}
+ 
+@@ -40,6 +84,40 @@ void suspend_device_irqs(void)
+ }
+ EXPORT_SYMBOL_GPL(suspend_device_irqs);
+ 
++static void resume_irq(struct irq_desc *desc, int irq)
++{
++	if (desc->istate & IRQS_SUSPENDED) {
++		desc->istate &= ~IRQS_SUSPENDED;
++		if (desc->action_suspended) {
++			struct irqaction *action = desc->action;
++
++			while (action->next)
++				action = action->next;
++
++			action->next = desc->action_suspended;
++			desc->action_suspended = NULL;
++
++			if (desc->istate & IRQS_SPURIOUS_DISABLED) {
++				pr_err("Re-enabling emergency disabled IRQ %d\n",
++				       irq);
++				desc->istate &= ~IRQS_SPURIOUS_DISABLED;
++			} else {
++				return;
++			}
++		}
++	} else {
++		if (!desc->action)
++			return;
++
++		if (!(desc->action->flags & IRQF_FORCE_RESUME))
++			return;
++
++		/* Pretend that it got disabled ! */
++		desc->depth++;
++	}
++	__enable_irq(desc, irq);
++}
++
+ static void resume_irqs(bool want_early)
+ {
+ 	struct irq_desc *desc;
+@@ -54,7 +132,7 @@ static void resume_irqs(bool want_early)
+ 			continue;
+ 
+ 		raw_spin_lock_irqsave(&desc->lock, flags);
+-		__enable_irq(desc, irq, true);
++		resume_irq(desc, irq);
+ 		raw_spin_unlock_irqrestore(&desc->lock, flags);
+ 	}
+ }
