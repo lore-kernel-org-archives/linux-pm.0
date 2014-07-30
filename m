@@ -1,63 +1,60 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/3] cpupower: mperf monitor: Correct use of ! and &
-Date: Wed, 30 Jul 2014 02:28:11 +0200
-Message-ID: <2905082.LOmnC9giP0@vostro.rjw.lan>
-References: <2377922.j9jRKZAKtD@vostro.rjw.lan> <1406650340-38644-1-git-send-email-trenn@suse.de>
+Subject: Re: [PATCH v4 0/5] Simplify hotplug/suspend handling
+Date: Wed, 30 Jul 2014 02:29:11 +0200
+Message-ID: <1667655.2j1xLy7HXa@vostro.rjw.lan>
+References: <1406250448-470-1-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53280 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:55288 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752651AbaG3AJj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 20:09:39 -0400
-In-Reply-To: <1406650340-38644-1-git-send-email-trenn@suse.de>
+	with SMTP id S1752651AbaG3AKj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jul 2014 20:10:39 -0400
+In-Reply-To: <1406250448-470-1-git-send-email-skannan@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-pm@vger.kernel.org, Himangi Saraogi <himangi774@gmail.com>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Todd Poynor <toddpoynor@google.com>, "Srivatsa S . Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@codeaurora.org>
 
-On Tuesday, July 29, 2014 06:12:18 PM Thomas Renninger wrote:
-> From: Himangi Saraogi <himangi774@gmail.com>
-> 
-> In commit ae91d60ba88ef0bdb1b5e9b2363bd52fc45d2af7, a bug was fixed that
-> involved converting !x & y to !(x & y).  The code below shows the same
-> pattern, and thus should perhaps be fixed in the same way.
-> 
-> The Coccinelle semantic patch that makes this change is as follows:
-> 
-> // <smpl>
-> @@ expression E1,E2; @@
-> (
->   !E1 & !E2
-> |
-> - !E1 & E2
-> + !(E1 & E2)
-> )
-> // </smpl>
-> 
-> Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
-> Signed-off-by: Thomas Renninger <trenn@suse.de>
+On Thursday, July 24, 2014 06:07:23 PM Saravana Kannan wrote:
+> Series of patchs to simplify policy/sysfs/kobj/locking handling across
+> suspend/resume
 
-All three queued up for 3.17, thanks!
+I need someone to review this series for me.  Viresh or Srivatsa, preferably
+both.
 
-> ---
->  .../cpupower/utils/idle_monitor/mperf_monitor.c    |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+Thanks!
+
+> The following have been tested so far on a 2x2 cluster environment:
+> - Boot with 2 cpus and no cpufreq driver.
+> - mod probe driver and see cpufreq sysfs files show up only for the 1st cluster.
+> - Online the rest of the 2 CPUs and have files show up correctly.
+> - rmmod the driver and see the files go away.
+> - modprobe again (or back and forth multiples times) and see it work.
+> - suspend/resume works as expected.
+> - When a cluster is offline, all read/writes to its sysfs files return an error
 > 
-> diff --git a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
-> index 5650ab5..90a8c4f 100644
-> --- a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
-> +++ b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
-> @@ -237,7 +237,7 @@ static int init_maxfreq_mode(void)
->  	unsigned long long hwcr;
->  	unsigned long min;
->  
-> -	if (!cpupower_cpu_info.caps & CPUPOWER_CAP_INV_TSC)
-> +	if (!(cpupower_cpu_info.caps & CPUPOWER_CAP_INV_TSC))
->  		goto use_sysfs;
->  
->  	if (cpupower_cpu_info.vendor == X86_VENDOR_AMD) {
+> v4
+> - Split it up into smaller patches
+> - Will handle physical CPU removal correctly
+> - Fixed earlier mistake of deleting code under !recover_policy
+> - Dropped some code refactor that reuses a lot of code between add/remove
+> - Dropped fix for exiting hotplug race with cpufreq driver probe/rmmod
+> - Dropped changes will come later once this series is acked.
+> 
+> 
+> Saravana Kannan (5):
+>   cpufreq: Don't wait for CPU to going offline to restart governor
+>   cpufreq: Keep track of which CPU owns the kobj/sysfs nodes separately
+>   cpufreq: Don't destroy/realloc policy/sysfs on hotplug/suspend
+>   cpufreq: Properly handle physical CPU hot-add/hot-remove
+>   cpufreq: Delete dead code related to policy save/restore
+> 
+>  drivers/cpufreq/cpufreq.c | 238 ++++++++++++++++++----------------------------
+>  include/linux/cpufreq.h   |   1 +
+>  2 files changed, 93 insertions(+), 146 deletions(-)
+> 
 > 
 
 -- 
