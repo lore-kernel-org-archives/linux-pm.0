@@ -1,281 +1,93 @@
-From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v9 3/6] ARM: dts: Exynos: add CPU OPP and regulator supply property
-Date: Thu, 31 Jul 2014 09:48:03 +0530
-Message-ID: <CAJuA9ajJovdUsQMydmZPzK8eOOOeus9FqXaZ6hLP1z8Om3ReDw@mail.gmail.com>
+From: "Chander M. Kashyap" <chander.kashyap@gmail.com>
+Subject: Re: [PATCH v9 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
+Date: Thu, 31 Jul 2014 11:50:45 +0530
+Message-ID: <CADWw7OiwXNrbFyiVhpcJyBnAdsGsXcAMgMUOmY=JxHM7+7Z0eA@mail.gmail.com>
 References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
-	<1406707663-16656-4-git-send-email-thomas.ab@samsung.com>
-	<CAD=FV=WNmREbRLmsusbJ6KKykVzwdBqOUfYkWWOhbc=HmxyTdA@mail.gmail.com>
-	<CAJuA9aiBmM+HF0TJkvdjgOkGKYaL4SHU9JtvqfU2jiV7CP978A@mail.gmail.com>
-	<CAD=FV=Vq7+ujjzwBCR4bvQ13-0qV4VVktVOWy8z51RF-9=LKXA@mail.gmail.com>
-	<CAJuA9ahcg39YmSS43eTdLov-q=Eu0kaOQ_hFfiZeU2E_u6eCXQ@mail.gmail.com>
-	<CAD=FV=WejyO1SqqYvh4wdKtRV58zc-rGCy=aq9Bf2GvpnbJGgg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAD=FV=WejyO1SqqYvh4wdKtRV58zc-rGCy=aq9Bf2GvpnbJGgg@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Andreas Faerber <afaerber@suse.de>, Chanwoo Choi <cw00.choi@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f178.google.com ([209.85.214.178]:53618 "EHLO
+	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752748AbaGaGUq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 02:20:46 -0400
+In-Reply-To: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, l.majewski@samsung.com, Kukjin Kim <kgene.kim@samsung.com>, mturquette@linaro.org, heiko@sntech.de, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, cw00.choi@samsung.com, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-On Thu, Jul 31, 2014 at 9:38 AM, Doug Anderson <dianders@chromium.org> wrote:
-> Thomas,
+On Wed, Jul 30, 2014 at 1:37 PM, Thomas Abraham <thomas.ab@samsung.com> wrote:
+> Changes since v8:
+> - Fixes suggested by Tomasz Figa.
 >
-> On Wed, Jul 30, 2014 at 9:06 PM, Thomas Abraham <ta.omasab@gmail.com> wrote:
->> On Thu, Jul 31, 2014 at 9:23 AM, Doug Anderson <dianders@chromium.org> wrote:
->>> Thomas,
->>>
->>> On Wed, Jul 30, 2014 at 8:21 PM, Thomas Abraham <ta.omasab@gmail.com> wrote:
->>>> Hi Doug,
->>>>
->>>> On Thu, Jul 31, 2014 at 6:07 AM, Doug Anderson <dianders@chromium.org> wrote:
->>>>> Thomas,
->>>>>
->>>>> On Wed, Jul 30, 2014 at 1:07 AM, Thomas Abraham <thomas.ab@samsung.com> wrote:
->>>>>> diff --git a/arch/arm/boot/dts/exynos5250-arndale.dts b/arch/arm/boot/dts/exynos5250-arndale.dts
->>>>>> index d0de1f5..3b12a97 100644
->>>>>> --- a/arch/arm/boot/dts/exynos5250-arndale.dts
->>>>>> +++ b/arch/arm/boot/dts/exynos5250-arndale.dts
->>>>>> @@ -575,3 +575,7 @@
->>>>>>                 usb-phy = <&usb2_phy>;
->>>>>>         };
->>>>>>  };
->>>>>> +
->>>>>> +&cpu0 {
->>>>>> +       cpu0-supply = <&buck2_reg>;
->>>>>> +};
->>>>>> diff --git a/arch/arm/boot/dts/exynos5250-smdk5250.dts b/arch/arm/boot/dts/exynos5250-smdk5250.dts
->>>>>> index b4b35ad..f07e834 100644
->>>>>> --- a/arch/arm/boot/dts/exynos5250-smdk5250.dts
->>>>>> +++ b/arch/arm/boot/dts/exynos5250-smdk5250.dts
->>>>>> @@ -414,3 +414,7 @@
->>>>>>                 };
->>>>>>         };
->>>>>>  };
->>>>>> +
->>>>>> +&cpu0 {
->>>>>> +       cpu0-supply = <&buck2_reg>;
->>>>>> +};
->>>>>> diff --git a/arch/arm/boot/dts/exynos5250-snow.dts b/arch/arm/boot/dts/exynos5250-snow.dts
->>>>>> index f2b8c41..91acca7 100644
->>>>>> --- a/arch/arm/boot/dts/exynos5250-snow.dts
->>>>>> +++ b/arch/arm/boot/dts/exynos5250-snow.dts
->>>>>> @@ -509,4 +509,8 @@
->>>>>>         };
->>>>>>  };
->>>>>>
->>>>>> +&cpu0 {
->>>>>> +       cpu0-supply = <&buck2_reg>;
->>>>>> +};
->>>>>> +
->>>>>>  #include "cros-ec-keyboard.dtsi"
->>>>>> diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
->>>>>> index 492e1ef..97b282c 100644
->>>>>> --- a/arch/arm/boot/dts/exynos5250.dtsi
->>>>>> +++ b/arch/arm/boot/dts/exynos5250.dtsi
->>>>>> @@ -58,11 +58,34 @@
->>>>>>                 #address-cells = <1>;
->>>>>>                 #size-cells = <0>;
->>>>>>
->>>>>> -               cpu@0 {
->>>>>> +               cpu0: cpu@0 {
->>>>>>                         device_type = "cpu";
->>>>>>                         compatible = "arm,cortex-a15";
->>>>>>                         reg = <0>;
->>>>>>                         clock-frequency = <1700000000>;
->>>>>> +
->>>>>> +                       clocks = <&clock CLK_ARM_CLK>;
->>>>>> +                       clock-names = "cpu";
->>>>>> +                       clock-latency = <140000>;
->>>>>
->>>>> Where did the 140000 number come from?  My old calculations show that
->>>>> with lock time of 270 ad P up to 6 we were at 67.5us lock time.
->>>>
->>>> I measured the time taken by clk_set_rate call in the cpufreq driver
->>>> using do_gettimeofday(). The time taken to change the clock speed was
->>>> between 87us to 134us for Exynos5420. So I just took the worst case
->>>> time of 140us. Also, the time taken to change the CPU clock speed
->>>> includes the settling time for changes to dividers and mux clock
->>>> blocks.
->>>
->>> Interesting.  I wonder why the difference between my earlier
->>> calculations.  It seems just about double.  :-/
->>
->> In your calculation, only the PLL lock time is being considered. But
->> the 140us latency is for the whole clk_set_rate() call.
->>
->>>
->>>
->>>>>> +                       operating-points = <
->>>>>> +                               1700000 1300000
->>>>>> +                               1600000 1250000
->>>>>> +                               1500000 1225000
->>>>>> +                               1400000 1200000
->>>>>> +                               1300000 1150000
->>>>>> +                               1200000 1125000
->>>>>> +                               1100000 1100000
->>>>>> +                               1000000 1075000
->>>>>> +                                900000 1050000
->>>>>> +                                800000 1025000
->>>>>> +                                700000 1012500
->>>>>> +                                600000 1000000
->>>>>> +                                500000  975000
->>>>>> +                                400000  950000
->>>>>> +                                300000  937500
->>>>>> +                                200000  925000
->>>>>> +                       >;
->>>>>>                 };
->>>>>>                 cpu@1 {
->>>>>>                         device_type = "cpu";
->>>>>> diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
->>>>>> index cb2b70e..3154b4c 100644
->>>>>> --- a/arch/arm/boot/dts/exynos5420.dtsi
->>>>>> +++ b/arch/arm/boot/dts/exynos5420.dtsi
->>>>>> @@ -59,8 +59,26 @@
->>>>>>                         device_type = "cpu";
->>>>>>                         compatible = "arm,cortex-a15";
->>>>>>                         reg = <0x0>;
->>>>>> +                       clocks = <&clock CLK_ARM_CLK>;
->>>>>> +                       clock-names = "cpu-cluster.0";
->>>>>>                         clock-frequency = <1800000000>;
->>>>>>                         cci-control-port = <&cci_control1>;
->>>>>> +                       clock-latency = <140000>;
->>>>>> +
->>>>>> +                       operating-points = <
->>>>>> +                               1800000 1250000
->>>>>> +                               1700000 1212500
->>>>>> +                               1600000 1175000
->>>>>> +                               1500000 1137500
->>>>>> +                               1400000 1112500
->>>>>> +                               1300000 1062500
->>>>>> +                               1200000 1037500
->>>>>> +                               1100000 1012500
->>>>>> +                               1000000 987500
->>>>>> +                                900000 962500
->>>>>> +                                800000 937500
->>>>>> +                                700000 912500
->>>>>> +                       >;
->>>>>>                 };
->>>>>>
->>>>>>                 cpu1: cpu@1 {
->>>>>> @@ -69,6 +87,7 @@
->>>>>>                         reg = <0x1>;
->>>>>>                         clock-frequency = <1800000000>;
->>>>>>                         cci-control-port = <&cci_control1>;
->>>>>> +                       clock-latency = <140000>;
->>>>>>                 };
->>>>>>
->>>>>>                 cpu2: cpu@2 {
->>>>>> @@ -77,6 +96,7 @@
->>>>>>                         reg = <0x2>;
->>>>>>                         clock-frequency = <1800000000>;
->>>>>>                         cci-control-port = <&cci_control1>;
->>>>>> +                       clock-latency = <140000>;
->>>>>>                 };
->>>>>>
->>>>>>                 cpu3: cpu@3 {
->>>>>> @@ -85,14 +105,29 @@
->>>>>>                         reg = <0x3>;
->>>>>>                         clock-frequency = <1800000000>;
->>>>>>                         cci-control-port = <&cci_control1>;
->>>>>> +                       clock-latency = <140000>;
->>>>>>                 };
->>>>>>
->>>>>>                 cpu4: cpu@100 {
->>>>>>                         device_type = "cpu";
->>>>>>                         compatible = "arm,cortex-a7";
->>>>>>                         reg = <0x100>;
->>>>>> +                       clocks = <&clock CLK_KFC_CLK>;
->>>>>> +                       clock-names = "cpu-cluster.1";
->>>>>>                         clock-frequency = <1000000000>;
->>>>>
->>>>> It does't start out at its maximum?
->>>>
->>>> The A7 CPU clock need not start with the maximum. On the SMDK5420
->>>> board, the firmware has set the A7 CPU clock to 1GHz. So I used the
->>>> same value here.
->>>
->>> Does it need to match the firmware?  On exynos5420-peach-pit and
->>> peach-pi I think the firmware starts the kernel at 1.7GHz.
->>
->> It need not strictly match with the firmware. 1.7GHz for A7 seems too
->> high since the max A7 speed was 1.3GHz. Probably peach-pit/pi had
->> 600MHz starting frequency for A7 CPU.
+> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
+> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
+> driver.
 >
-> Sorry, the ARM was at 1.7, not the KFC.  ...but above the default for
-> ARM was listed as 1.8
+> This patch series is dependent on two other patches
+> 1. ARM: dts: add CPU nodes for Exynos4 SoCs
+>    - https://lkml.org/lkml/2014/7/21/315
+> 2. ARM: dts: smdk5250: Specify MAX77686 pmic interrupt
+>    - http://www.spinics.net/lists/arm-kernel/msg351134.html
+> 3. clk: exynos4: remove duplicate div_core2 divider clock instantiation
+>    - http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34859.html
+>
+> Thomas Abraham (6):
+>   clk: samsung: add infrastructure to register cpu clocks
+>   clk: samsung: add cpu clock configuration data and instantiate cpu clock
+>   ARM: dts: Exynos: add CPU OPP and regulator supply property
+>   ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
+>   cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
+>   clk: samsung: remove unused clock aliases and update clock flags
+>
+>  arch/arm/boot/dts/exynos4210-origen.dts         |    4 +
+>  arch/arm/boot/dts/exynos4210-trats.dts          |    4 +
+>  arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 +
+>  arch/arm/boot/dts/exynos4210.dtsi               |   14 +-
+>  arch/arm/boot/dts/exynos5250-arndale.dts        |    4 +
+>  arch/arm/boot/dts/exynos5250-smdk5250.dts       |    4 +
+>  arch/arm/boot/dts/exynos5250-snow.dts           |    4 +
+>  arch/arm/boot/dts/exynos5250.dtsi               |   25 +-
+>  arch/arm/boot/dts/exynos5420.dtsi               |   38 +++
+>  arch/arm/mach-exynos/exynos.c                   |   24 +-
+>  drivers/clk/samsung/Makefile                    |    2 +-
+>  drivers/clk/samsung/clk-cpu.c                   |  335 +++++++++++++++++++++++
+>  drivers/clk/samsung/clk-cpu.h                   |   91 ++++++
+>  drivers/clk/samsung/clk-exynos4.c               |   63 +++--
+>  drivers/clk/samsung/clk-exynos5250.c            |   44 ++-
+>  drivers/clk/samsung/clk-exynos5420.c            |   72 ++++-
+>  drivers/cpufreq/Kconfig.arm                     |   22 --
+>  drivers/cpufreq/Makefile                        |    2 -
+>  drivers/cpufreq/exynos4210-cpufreq.c            |  184 -------------
+>  drivers/cpufreq/exynos5250-cpufreq.c            |  210 --------------
+>  include/dt-bindings/clock/exynos5250.h          |    1 +
+>  include/dt-bindings/clock/exynos5420.h          |    2 +
+>  22 files changed, 690 insertions(+), 463 deletions(-)
+>  create mode 100644 drivers/clk/samsung/clk-cpu.c
+>  create mode 100644 drivers/clk/samsung/clk-cpu.h
+>  delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
+>  delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
+>
+> --
+> 1.7.9.5
 
-I think the listed frequency need not strictly match the initial
-firmware frequency. If it has to match, then this value can be
-overridden in the peach-pit/pi board dts files.
-
-Thanks,
-Thomas.
+Working great.
+tested on smdk5420, and arndale-5250
 
 >
->>
->> Thanks,
->> Thomas.
->>
->>>
->>>
->>>>>>                         cci-control-port = <&cci_control0>;
->>>>>> +                       clock-latency = <140000>;
->>>>>> +
->>>>>> +                       operating-points = <
->>>>>> +                               1300000 1275000
->>>>>> +                               1200000 1212500
->>>>>> +                               1100000 1162500
->>>>>> +                               1000000 1112500
->>>>>> +                                900000 1062500
->>>>>> +                                800000 1025000
->>>>>> +                                700000 975000
->>>>>> +                                600000 937500
->>>>>> +                       >;
->>>>>>                 };
->>>>>>
->>>>>>                 cpu5: cpu@101 {
->>>>>> @@ -101,6 +136,7 @@
->>>>>>                         reg = <0x101>;
->>>>>>                         clock-frequency = <1000000000>;
->>>>>>                         cci-control-port = <&cci_control0>;
->>>>>> +                       clock-latency = <140000>;
->>>>>>                 };
->>>>>>
->>>>>>                 cpu6: cpu@102 {
->>>>>> @@ -109,6 +145,7 @@
->>>>>>                         reg = <0x102>;
->>>>>>                         clock-frequency = <1000000000>;
->>>>>>                         cci-control-port = <&cci_control0>;
->>>>>> +                       clock-latency = <140000>;
->>>>>>                 };
->>>>>>
->>>>>>                 cpu7: cpu@103 {
->>>>>> @@ -117,6 +154,7 @@
->>>>>>                         reg = <0x103>;
->>>>>>                         clock-frequency = <1000000000>;
->>>>>>                         cci-control-port = <&cci_control0>;
->>>>>> +                       clock-latency = <140000>;
->>>>>>                 };
->>>>>>         };
->>>>>
->>>>> Don't you need to put a reference to the supply in the 5420 board
->>>>> files?  ...or is that not possible yet since the max77802 hasn't
->>>>> landed yet?
->>>>
->>>> The arm big.little cpufreq driver does not have voltage scaling
->>>> support yet. So the supply was not mentioned.
->>>>
->>>>>
->>>>> If that's not possible, is there any reason to post the 5420.dtsi
->>>>> patch now?  Also: what about 5800?  It's so similar to 5420 that it
->>>>> seems a shame not to do them at the same time.
->>>>
->>>> This patch series has support for Exynos5800 as well. But it is A15
->>>> clock is restricted to 1.8GHz for now since we do not have a way to
->>>> handle the vdd_arm and vdd_int voltage difference with 1.9GHz and
->>>> 2.0GHZ in upstream yet.
->>>
->>> Oh, right!  The 5800 includes the 5420 dtsi...
->>>
->>> -Doug
+>
+>
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+
+
+-- 
+thanks and regards,
+Chander M. Kashyap
+Contact Number: +918123738320
+------- TENSION LENE KA NAHI, DENE KE-----
