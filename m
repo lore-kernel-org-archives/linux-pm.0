@@ -1,32 +1,75 @@
-From: Fabian Morision <fmorision1@gmail.com>
-Subject: -- Re: Very Urgent............
-Date: Thu, 31 Jul 2014 01:27:03 +0200
-Message-ID: <CABfGM6_nBUSgO_4D4Wi_h67VQOty+jYQXqE0JDvRx0gL-rj_bw__48684.1741171249$1406764716$gmane$org@mail.gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/3] irq / PM: New driver interface for wakeup
+ interrupts
+Date: Thu, 31 Jul 2014 02:12:11 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1407310137510.4997@nanos>
+References: <20140724212620.GO3935@laptop> <3042738.6Ohp3GcNCj@vostro.rjw.lan> <8151374.tpuvaHv3nd@vostro.rjw.lan> <5808955.xYYC2DJrBV@vostro.rjw.lan> <alpine.DEB.2.10.1407302350260.4170@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f68.google.com ([209.85.216.68]:61533 "EHLO
-	mail-qa0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754237AbaG3X62 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jul 2014 19:58:28 -0400
-Received: by mail-qa0-f68.google.com with SMTP id dc16so480196qab.3
-        for <linux-pm@vger.kernel.org>; Wed, 30 Jul 2014 16:58:28 -0700 (PDT)
+Received: from www.linutronix.de ([62.245.132.108]:58275 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751756AbaGaAM3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jul 2014 20:12:29 -0400
+In-Reply-To: <alpine.DEB.2.10.1407302350260.4170@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
-Greetings from gulf region
+On Thu, 31 Jul 2014, Thomas Gleixner wrote:
+> On Wed, 30 Jul 2014, Rafael J. Wysocki wrote:
+> Before this code changes in any way I want to see:
+> 
+>  1) a description of the existing semantics and their background
+> 
+>  2) a description of the short comings of the existing semantics w/o
+>     considering the new fangled (hardware) use cases
+> 
+>  3) a description how to mitigate the short comings described in #2
+>     w/o breaking the world and some more and introducing hard to
+>     decode regressions
+> 
+>  4) a description why the improvements introduced by #3 are not
+>     sufficient for the new fangled (hardware) use cases
+> 
+>  5) a description how to mitigate the short comings described in #4
+>     w/o breaking the world and some more and introducing hard to
+>     decode regressions
 
-Thanks for the e-mail. I am very interested on funding lucrative
-business partnership with you acting as the manager and sole
-controller of the investment while i remain a silent investor for a
-period of ten yrs , though I am only looking at investment
-opportunities within the range you specified for a start. You can
-reply me here (fmorision@yahoo.com)
+Aside of that I want to see a coherent explanation why a shared MSI
+interrupt makes any sense at all.
 
-Let me know your thought asap
+25:  1 <....> 0   PCI-MSI-edge      aerdrv, PCIe PME
 
-Regards
+AFAICT, that's the primary reason why you insist to support wakeup
+sources on shared irq lines. And to be honest, it's utter bullshit.
 
-Financial Consultant
+The whole purpose of MSI is to avoid interrupt sharing, but of course
+if that particular interrupt source has two potential causes, i.e. the
+AER and the PME one and the stupid hardware does not support different
+vectors or the drivers are not able to do so, it's conveniant to make
+them shared instead of thinking about them what they really are:
 
-Mr.Fabian Morision
+ Separate interrupts on a secondary interrupt controller connected to
+ the primary (MSI) one.
+
+That's what is in fact. Simply because you can enable/disable them at
+the same IP block quite contrary to stuff which is physically shared
+by hard wired electrical connections.
+
+Slapping IRQF_SHARED on that and then whining about shortcomings of
+the core code is way simpler than sitting down and think about
+actual topologies, right?
+
+Most architectures aside of x86 have long ago realized that and the
+core has all infrastructure available to deal with irq topologies. You
+just have to utilize it.
+
+Thanks,
+
+	tglx
+
+
+
+
