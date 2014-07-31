@@ -1,214 +1,60 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH v9 3/6] ARM: dts: Exynos: add CPU OPP and regulator supply property
-Date: Wed, 30 Jul 2014 17:37:43 -0700
-Message-ID: <CAD=FV=WNmREbRLmsusbJ6KKykVzwdBqOUfYkWWOhbc=HmxyTdA@mail.gmail.com>
-References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
-	<1406707663-16656-4-git-send-email-thomas.ab@samsung.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
+ to be held for duration of changing governors [v2]
+Date: Wed, 30 Jul 2014 18:36:00 -0700
+Message-ID: <53D99D80.8090905@codeaurora.org>
+References: <1406634362-811-1-git-send-email-prarit@redhat.com> <1727443.QxEjMbNBsd@vostro.rjw.lan> <53D8FEB1.5040808@redhat.com> <1816455.s1k7EgIPj9@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1406707663-16656-4-git-send-email-thomas.ab@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, cw00.choi@samsung.com, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Andreas Faerber <afaerber@suse.de>, Sachin Kamat <sachin.kamat@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.11.231]:55803 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518AbaGaBgB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jul 2014 21:36:01 -0400
+In-Reply-To: <1816455.s1k7EgIPj9@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Prarit Bhargava <prarit@redhat.com>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
 
-Thomas,
-
-On Wed, Jul 30, 2014 at 1:07 AM, Thomas Abraham <thomas.ab@samsung.com> wrote:
-> diff --git a/arch/arm/boot/dts/exynos5250-arndale.dts b/arch/arm/boot/dts/exynos5250-arndale.dts
-> index d0de1f5..3b12a97 100644
-> --- a/arch/arm/boot/dts/exynos5250-arndale.dts
-> +++ b/arch/arm/boot/dts/exynos5250-arndale.dts
-> @@ -575,3 +575,7 @@
->                 usb-phy = <&usb2_phy>;
->         };
->  };
-> +
-> +&cpu0 {
-> +       cpu0-supply = <&buck2_reg>;
-> +};
-> diff --git a/arch/arm/boot/dts/exynos5250-smdk5250.dts b/arch/arm/boot/dts/exynos5250-smdk5250.dts
-> index b4b35ad..f07e834 100644
-> --- a/arch/arm/boot/dts/exynos5250-smdk5250.dts
-> +++ b/arch/arm/boot/dts/exynos5250-smdk5250.dts
-> @@ -414,3 +414,7 @@
->                 };
->         };
->  };
-> +
-> +&cpu0 {
-> +       cpu0-supply = <&buck2_reg>;
-> +};
-> diff --git a/arch/arm/boot/dts/exynos5250-snow.dts b/arch/arm/boot/dts/exynos5250-snow.dts
-> index f2b8c41..91acca7 100644
-> --- a/arch/arm/boot/dts/exynos5250-snow.dts
-> +++ b/arch/arm/boot/dts/exynos5250-snow.dts
-> @@ -509,4 +509,8 @@
->         };
->  };
+On 07/30/2014 02:40 PM, Rafael J. Wysocki wrote:
+> On Wednesday, July 30, 2014 10:18:25 AM Prarit Bhargava wrote:
+>>
+>> On 07/29/2014 08:03 PM, Rafael J. Wysocki wrote:
+>>> On Tuesday, July 29, 2014 07:46:02 AM Prarit Bhargava wrote:
 >
-> +&cpu0 {
-> +       cpu0-supply = <&buck2_reg>;
-> +};
-> +
->  #include "cros-ec-keyboard.dtsi"
-> diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
-> index 492e1ef..97b282c 100644
-> --- a/arch/arm/boot/dts/exynos5250.dtsi
-> +++ b/arch/arm/boot/dts/exynos5250.dtsi
-> @@ -58,11 +58,34 @@
->                 #address-cells = <1>;
->                 #size-cells = <0>;
+> [cut]
 >
-> -               cpu@0 {
-> +               cpu0: cpu@0 {
->                         device_type = "cpu";
->                         compatible = "arm,cortex-a15";
->                         reg = <0>;
->                         clock-frequency = <1700000000>;
-> +
-> +                       clocks = <&clock CLK_ARM_CLK>;
-> +                       clock-names = "cpu";
-> +                       clock-latency = <140000>;
+>>>> This patch effectively reverts commit 955ef483.
 
-Where did the 140000 number come from?  My old calculations show that
-with lock time of 270 ad P up to 6 we were at 67.5us lock time.
+The issue reported in this patch is valid. We are seeing that internally 
+too. I believe I reported it in another thread (within the past month).
 
+However, the original patch fixes a real deadlock issue (I'm too tired 
+to look it up now). We can revet the original, but it's going to bring 
+back the original issue. I just want to make sure Prarit and Raphael 
+realize this before proceeding.
 
-> +                       operating-points = <
-> +                               1700000 1300000
-> +                               1600000 1250000
-> +                               1500000 1225000
-> +                               1400000 1200000
-> +                               1300000 1150000
-> +                               1200000 1125000
-> +                               1100000 1100000
-> +                               1000000 1075000
-> +                                900000 1050000
-> +                                800000 1025000
-> +                                700000 1012500
-> +                                600000 1000000
-> +                                500000  975000
-> +                                400000  950000
-> +                                300000  937500
-> +                                200000  925000
-> +                       >;
->                 };
->                 cpu@1 {
->                         device_type = "cpu";
-> diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
-> index cb2b70e..3154b4c 100644
-> --- a/arch/arm/boot/dts/exynos5420.dtsi
-> +++ b/arch/arm/boot/dts/exynos5420.dtsi
-> @@ -59,8 +59,26 @@
->                         device_type = "cpu";
->                         compatible = "arm,cortex-a15";
->                         reg = <0x0>;
-> +                       clocks = <&clock CLK_ARM_CLK>;
-> +                       clock-names = "cpu-cluster.0";
->                         clock-frequency = <1800000000>;
->                         cci-control-port = <&cci_control1>;
-> +                       clock-latency = <140000>;
-> +
-> +                       operating-points = <
-> +                               1800000 1250000
-> +                               1700000 1212500
-> +                               1600000 1175000
-> +                               1500000 1137500
-> +                               1400000 1112500
-> +                               1300000 1062500
-> +                               1200000 1037500
-> +                               1100000 1012500
-> +                               1000000 987500
-> +                                900000 962500
-> +                                800000 937500
-> +                                700000 912500
-> +                       >;
->                 };
+I do have plans for a proper fix for the mainline (not stable branches), 
+but plan to do that after the current set of suspend/hotplug patches go 
+through. The fix would be easier to make after that.
+
+>>>
+>>> OK, I'm convinced by this.
+>>>
+>>> I suppose we should push it for -stable from 3.10 through 3.15.x, right?
+>>
+>> Rafael, I think that is a good idea.  I'm not sure what the protocol is for
+>> adding stable@kernel.org though ...
 >
->                 cpu1: cpu@1 {
-> @@ -69,6 +87,7 @@
->                         reg = <0x1>;
->                         clock-frequency = <1800000000>;
->                         cci-control-port = <&cci_control1>;
-> +                       clock-latency = <140000>;
->                 };
+> I'll take care of this, thanks!
 >
->                 cpu2: cpu@2 {
-> @@ -77,6 +96,7 @@
->                         reg = <0x2>;
->                         clock-frequency = <1800000000>;
->                         cci-control-port = <&cci_control1>;
-> +                       clock-latency = <140000>;
->                 };
->
->                 cpu3: cpu@3 {
-> @@ -85,14 +105,29 @@
->                         reg = <0x3>;
->                         clock-frequency = <1800000000>;
->                         cci-control-port = <&cci_control1>;
-> +                       clock-latency = <140000>;
->                 };
->
->                 cpu4: cpu@100 {
->                         device_type = "cpu";
->                         compatible = "arm,cortex-a7";
->                         reg = <0x100>;
-> +                       clocks = <&clock CLK_KFC_CLK>;
-> +                       clock-names = "cpu-cluster.1";
->                         clock-frequency = <1000000000>;
 
-It does't start out at its maximum?
+But you aren't going to pull the in for the next release, right?
 
+-Saravana
 
->                         cci-control-port = <&cci_control0>;
-> +                       clock-latency = <140000>;
-> +
-> +                       operating-points = <
-> +                               1300000 1275000
-> +                               1200000 1212500
-> +                               1100000 1162500
-> +                               1000000 1112500
-> +                                900000 1062500
-> +                                800000 1025000
-> +                                700000 975000
-> +                                600000 937500
-> +                       >;
->                 };
->
->                 cpu5: cpu@101 {
-> @@ -101,6 +136,7 @@
->                         reg = <0x101>;
->                         clock-frequency = <1000000000>;
->                         cci-control-port = <&cci_control0>;
-> +                       clock-latency = <140000>;
->                 };
->
->                 cpu6: cpu@102 {
-> @@ -109,6 +145,7 @@
->                         reg = <0x102>;
->                         clock-frequency = <1000000000>;
->                         cci-control-port = <&cci_control0>;
-> +                       clock-latency = <140000>;
->                 };
->
->                 cpu7: cpu@103 {
-> @@ -117,6 +154,7 @@
->                         reg = <0x103>;
->                         clock-frequency = <1000000000>;
->                         cci-control-port = <&cci_control0>;
-> +                       clock-latency = <140000>;
->                 };
->         };
-
-Don't you need to put a reference to the supply in the 5420 board
-files?  ...or is that not possible yet since the max77802 hasn't
-landed yet?
-
-If that's not possible, is there any reason to post the 5420.dtsi
-patch now?  Also: what about 5800?  It's so similar to 5420 that it
-seems a shame not to do them at the same time.
-
-
--Doug
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
