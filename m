@@ -1,64 +1,34 @@
 From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Thu, 31 Jul 2014 15:13:58 -0700
-Message-ID: <53DABFA6.6090503@codeaurora.org>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com>
+Subject: Re: [PATCH v4 3/5] cpufreq: Don't destroy/realloc policy/sysfs on
+ hotplug/suspend
+Date: Thu, 31 Jul 2014 15:15:47 -0700
+Message-ID: <53DAC013.1070708@codeaurora.org>
+References: <1406250448-470-1-git-send-email-skannan@codeaurora.org> <1406250448-470-4-git-send-email-skannan@codeaurora.org> <3141717.0s1tLjazMZ@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53DAB038.3050007@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <3141717.0s1tLjazMZ@vostro.rjw.lan>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Todd Poynor <toddpoynor@google.com>, "Srivatsa S . Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/31/2014 02:08 PM, Prarit Bhargava wrote:
+On 07/31/2014 02:56 PM, Rafael J. Wysocki wrote:
+> On Thursday, July 24, 2014 06:07:26 PM Saravana Kannan wrote:
+>> This patch simplifies a lot of the hotplug/suspend code by not
+>> adding/removing/moving the policy/sysfs/kobj during hotplug and just leaves
+>> the cpufreq directory and policy in place irrespective of whether the CPUs
+>> are ONLINE/OFFLINE.
 >
->
-> On 07/31/2014 04:38 PM, Saravana Kannan wrote:
->> On 07/31/2014 01:30 PM, Prarit Bhargava wrote:
->>>
->>>
->>> On 07/31/2014 04:24 PM, Saravana Kannan wrote:
->>>>
->>>> Prarit,
->>>>
->>>> I'm not an expert on sysfs locking, but I would think the specific sysfs lock
->>>> would depend on the file/attribute group. So, can you please try to hotplug a
->>>> core in/out (to trigger the POLICY_EXIT) and then read a sysfs file exported by
->>>> the governor? scaling_governor doesn't cut it since that file is not removed on
->>>> policy exit event to governor. If it's ondemand, try reading/write it's sampling
->>>> rate file.
->>>
->>> Thanks Saravana -- will do.  I will get back to you shortly on this.
->>>
->>
->> Thanks. Btw, in case you weren't already aware of it. You'll have to hoplug out
->> all the CPUs in a cluster to trigger a POLICY_EXIT for that cluster/policy.
->
-> Yep -- the affected_cpus file should show all the cpus in the policy IIRC.  One
-> of the systems I have has 1 cpu/policy and has 48 threads so the POLICY_EXIT is
-> called.
->
-> I'll put something like
->
-> while [1];
-> do
-> echo ondemand > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
-> cat /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-> echo 20000 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-> cat /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-> echo 0 > /sys/devices/system/cpu/cpu1/online
-> sleep 1
-> echo 1 > /sys/devices/system/cpu/cpu1/online
-> sleep 1
-> done
->
+> I'm still quite unsure how this is going to work with the real CPU hot-remove
+> that makes the entire sysfs cpu directories go away.  Can you please explain
+> that?
 
-The actual race can only happen with 2 threads. I'm just trying to 
-trigger a lockdep warning here.
+With this patch it won't work correctly. 4/5 fixes it to work correctly. 
+Just keeping them separate to make it easy to review.
+
+We can squash 3/5 and 4/5 later if people prefer it that way.
 
 -Saravana
 
