@@ -1,96 +1,124 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/3] irq / PM: New driver interface for wakeup interrupts
-Date: Thu, 31 Jul 2014 23:04:10 +0200
-Message-ID: <1483885.6aPDiGeI4u@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1407311552530.885-100000@iolanthe.rowland.org>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v4 1/5] cpufreq: Don't wait for CPU to going offline to
+ restart governor
+Date: Thu, 31 Jul 2014 13:47:48 -0700
+Message-ID: <53DAAB74.7050003@codeaurora.org>
+References: <1406250448-470-1-git-send-email-skannan@codeaurora.org> <1406250448-470-2-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59146 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750836AbaGaUpi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 16:45:38 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1407311552530.885-100000@iolanthe.rowland.org>
+Received: from smtp.codeaurora.org ([198.145.11.231]:50635 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751036AbaGaUru (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 16:47:50 -0400
+In-Reply-To: <1406250448-470-2-git-send-email-skannan@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Poynor <toddpoynor@google.com>, "Srivatsa S . Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@codeaurora.org>
 
-On Thursday, July 31, 2014 04:12:55 PM Alan Stern wrote:
-> On Thu, 31 Jul 2014, Rafael J. Wysocki wrote:
-> 
-> > And before we enter the wakeup handling slippery slope, let me make a note
-> > that this problem is bothering me quite a bit at the moment.  In my opinion
-> > we need to address it somehow regardless of the wakeup issues and I'm not sure
-> > if failing __setup_irq() when there's a mismatch (that is, there are existing
-> > actions for the given irq_desc and their IRQF_NO_SUSPEND settings are not
-> > consistent with the new one) is the right way to do that, because it may make
-> > things behave a bit randomly (it will always fail the second guy, but that need
-> > not be the one who's requested IRQF_NO_SUSPEND and it depends on the ordering
-> > between them).
-> 
-> Pardon me for sticking my nose into the middle of the conversation, but
-> here's what it looks like to me:
-> 
-> The entire no_irq phase of suspend/resume is starting to seem like a
-> mistake.  We should never have done it.
+On 07/24/2014 06:07 PM, Saravana Kannan wrote:
+> There's no need to wait for the CPU going down to fully go offline to
+> restart the governor. We can stop the governor, change policy->cpus and
+> immediately restart the governor. This should reduce the time without any
+> CPUfreq monitoring and also help future patches with simplifying the code.
+>
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+> ---
+>   drivers/cpufreq/cpufreq.c | 33 ++++++++++++++++++---------------
+>   1 file changed, 18 insertions(+), 15 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 62259d2..ee0eb7b 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1390,6 +1390,21 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+>   		cpufreq_driver->stop_cpu(policy);
+>   	}
+>
+> +	down_write(&policy->rwsem);
+> +	cpumask_clear_cpu(cpu, policy->cpus);
+> +	up_write(&policy->rwsem);
+> +
+> +	if (cpus > 1 && has_target()) {
+> +		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+> +		if (!ret)
+> +			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+> +
+> +		if (ret) {
+> +			pr_err("%s: Failed to start governor\n", __func__);
+> +			return ret;
+> +		}
+> +	}
+> +
+>   	return 0;
+>   }
+>
+> @@ -1410,15 +1425,12 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>   		return -EINVAL;
+>   	}
+>
+> -	down_write(&policy->rwsem);
+> +	down_read(&policy->rwsem);
+>   	cpus = cpumask_weight(policy->cpus);
+> -
+> -	if (cpus > 1)
+> -		cpumask_clear_cpu(cpu, policy->cpus);
+> -	up_write(&policy->rwsem);
+> +	up_read(&policy->rwsem);
+>
+>   	/* If cpu is last user of policy, free policy */
+> -	if (cpus == 1) {
+> +	if (cpus == 0) {
+>   		if (has_target()) {
+>   			ret = __cpufreq_governor(policy,
+>   					CPUFREQ_GOV_POLICY_EXIT);
+> @@ -1447,15 +1459,6 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>
+>   		if (!cpufreq_suspended)
+>   			cpufreq_policy_free(policy);
+> -	} else if (has_target()) {
+> -		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+> -		if (!ret)
+> -			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+> -
+> -		if (ret) {
+> -			pr_err("%s: Failed to start governor\n", __func__);
+> -			return ret;
+> -		}
+>   	}
+>
+>   	per_cpu(cpufreq_cpu_data, cpu) = NULL;
+>
 
-In hindsight, I totally agree.  Question is what we can do about it now.
+This patch should also fix another issue reported in-house recently. 
+cpufreq_update_policy() fails for an ONLINE CPU. This is the scenario 
+that triggers it:
 
-> Alternatively, it might be
-> okay to disable _all_ interrupts during the no_irq phase provided they
-> are then _all_ enabled again before entering the sysdev and
-> platform-specific parts of suspend (or the final freeze).
-> 
-> As I understand it, the idea behind the no_irq phase was to make life 
-> easier for drivers.  They wouldn't have to worry about strange things 
-> cropping up while they're in the middle of powering down their devices 
-> or afterward.
+Thead A
+- Cluster with 4 CPUs
+- CPU3 is going down.
+- Governor is STOPed.
+- CPU3 is removed, but governor not STARTed yet.
 
-Actually, it was done to prevent bugs in PCI drivers from crashing boxes
-during suspend and resume IIRC.
+Thread B
+- get_online_cpus()
+- We cross this hotplug barrier since since POST_DEAD is sent AFTER 
+releasing the hotplug lock.
+- cpufreq_update_policy(CPU0) does a bunch of stuff
+- Then sends GOV_LIMITS to governor.
+- governor is currently STOPed, so it returns an error and 
+cpufreq_update_policy() fails.
 
-When we were debugging PME with Peter a couple of days ago I asked him to
-comment out suspend/resume_device_irqs() experimentally and see what
-happens and it turned out that the system didn't resume any more.  It looks
-like it still prevents problems from happening, then.
+Thread A
+- In POST_DEAD notifier, STARTs the governor again.
 
-> Well, guess what?  It turns out that they do have to worry about it
-> after all.  Timers can still fire during suspend transitions, and if an
-> IRQ line is shared with a wakeup source then it won't be disabled.
+So, a perfectly valid call (doing get_online_cpus() and checking for 
+cpu_online() on a CPU before calling) fails.
 
-OK, that's where it starts to get really messy.  If people were not using
-IRQF_NO_SUSPEND excessively, the situation would be that almost all IRQ
-lines, including the ones of wakeup sources, would be disabled by
-suspend_device_irqs() (the exceptions being really low-level stuff that
-needs to run during suspend/resume and not sharing IRQ lines).
+-Saravana
 
-The wakeup would then be handled with the help of the lazy disable mechanism,
-that is, enable_irq_wake() from the driver and then check_wakeup_irqs() in
-syscore_suspend().
-
-However, what we have now is a mixture of different mechanisms often used
-for things they had not been intended for.
-
-But I agree that we'd probably have avoided it if suspend_device_irqs() hadn't
-existed.
-
-> The fact is, drivers should not rely on disabled interrupts to prevent
-> untimely interrupt requests or wakeups.  They should configure their
-> devices not to generate any interrupt requests at all, apart from
-> wakeup requests.  And their interrupt handlers shouldn't mind being
-> invoked for a shared IRQ, even after their devices are turned off.
-> 
-> Any driver that leaves its device capable of generating non-wakeup
-> interrupt requests during suspend, and relies on interrupts being
-> globally disabled to avoid problems, is most likely broken.  Yes, it
-> may be acceptable in cases where the IRQ line isn't shared, but it's
-> still a bad design.
-
-Totally agreed.
-
-So how can we eliminate the noirq phase in a workable way?
-
-Rafael
-
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
