@@ -1,45 +1,66 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH v9 0/6] cpufreq: use generic cpufreq drivers for exynos
- platforms
-Date: Thu, 31 Jul 2014 16:15:15 +0200
-Message-ID: <53DA4F73.5040400@gmail.com>
-References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem to be held for duration of changing governors [v2]
+Date: Thu, 31 Jul 2014 18:36:47 +0200
+Message-ID: <2066166.pXm4lKLOID@vostro.rjw.lan>
+References: <1406634362-811-1-git-send-email-prarit@redhat.com> <3140593.vs3eOK6CdF@vostro.rjw.lan> <53DA1916.4090806@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, cw00.choi@samsung.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:63164 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750774AbaGaQSO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 12:18:14 -0400
+In-Reply-To: <53DA1916.4090806@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Saravana Kannan <skannan@codeaurora.org>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
 
-Hi Thomas,
-
-On 30.07.2014 10:07, Thomas Abraham wrote:
-> Changes since v8:
-> - Fixes suggested by Tomasz Figa.
+On Thursday, July 31, 2014 06:23:18 AM Prarit Bhargava wrote:
 > 
-> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
-> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
-> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
-> driver.
+> On 07/30/2014 10:16 PM, Rafael J. Wysocki wrote:
+> > On Wednesday, July 30, 2014 06:36:00 PM Saravana Kannan wrote:
+> >> On 07/30/2014 02:40 PM, Rafael J. Wysocki wrote:
+> >>> On Wednesday, July 30, 2014 10:18:25 AM Prarit Bhargava wrote:
+> >>>>
+> >>>> On 07/29/2014 08:03 PM, Rafael J. Wysocki wrote:
+> >>>>> On Tuesday, July 29, 2014 07:46:02 AM Prarit Bhargava wrote:
+> >>>
+> >>> [cut]
+> >>>
+> >>>>>> This patch effectively reverts commit 955ef483.
+> >>
+> >> The issue reported in this patch is valid. We are seeing that internally 
+> >> too. I believe I reported it in another thread (within the past month).
+> >>
+> >> However, the original patch fixes a real deadlock issue (I'm too tired 
+> >> to look it up now). We can revet the original, but it's going to bring 
+> >> back the original issue. I just want to make sure Prarit and Raphael 
+> >> realize this before proceeding.
+> >>
+> >> I do have plans for a proper fix for the mainline (not stable branches), 
+> >> but plan to do that after the current set of suspend/hotplug patches go 
+> >> through. The fix would be easier to make after that.
+> >>
+> >>>>>
+> >>>>> OK, I'm convinced by this.
+> >>>>>
+> >>>>> I suppose we should push it for -stable from 3.10 through 3.15.x, right?
+> >>>>
+> >>>> Rafael, I think that is a good idea.  I'm not sure what the protocol is for
+> >>>> adding stable@kernel.org though ...
 > 
-> This patch series is dependent on two other patches
-> 1. ARM: dts: add CPU nodes for Exynos4 SoCs
->    - https://lkml.org/lkml/2014/7/21/315
-> 2. ARM: dts: smdk5250: Specify MAX77686 pmic interrupt
->    - http://www.spinics.net/lists/arm-kernel/msg351134.html
-> 3. clk: exynos4: remove duplicate div_core2 divider clock instantiation
->    - http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34859.html
+> Rafael, let me (again) re-write the patch description.  I think Saravana has
+> raised an important issue that I have not clearly identified why it is safe to
+> remove this code in my patch description.  Also, I want to clearly identify the
+> appropriate -stable releases to push this out to.
+> 
+> I'll submit a [v3] later today or tomorrow.
 
-I think we are at final stage of works on this series. Thanks for your
-cooperation.
+In any case that's too late for 3.16 final, unless there's an -rc8.
 
-After addressing remaining minor comments from this thread, feel free to
-add:
+Thanks for doing that work!
 
-Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+Rafael
 
-Best regards,
-Tomasz
