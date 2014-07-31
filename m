@@ -1,95 +1,52 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/3] irq / PM: New driver interface for wakeup
- interrupts
-Date: Fri, 1 Aug 2014 01:41:31 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1408010134440.4997@nanos>
-References: <Pine.LNX.4.44L0.1407311552530.885-100000@iolanthe.rowland.org> <1483885.6aPDiGeI4u@vostro.rjw.lan>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v4 3/5] cpufreq: Don't destroy/realloc policy/sysfs on
+ hotplug/suspend
+Date: Thu, 31 Jul 2014 16:48:00 -0700
+Message-ID: <53DAD5B0.3070500@codeaurora.org>
+References: <1406250448-470-1-git-send-email-skannan@codeaurora.org>
+ <1406250448-470-4-git-send-email-skannan@codeaurora.org>
+ <3141717.0s1tLjazMZ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:38061 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750952AbaGaXlh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 19:41:37 -0400
-In-Reply-To: <1483885.6aPDiGeI4u@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <3141717.0s1tLjazMZ@vostro.rjw.lan>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
+Cc: "Srivatsa S . Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Todd Poynor <toddpoynor@google.com>, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-On Thu, 31 Jul 2014, Rafael J. Wysocki wrote:
-> On Thursday, July 31, 2014 04:12:55 PM Alan Stern wrote:
-> > Pardon me for sticking my nose into the middle of the conversation, but
-> > here's what it looks like to me:
-> > 
-> > The entire no_irq phase of suspend/resume is starting to seem like a
-> > mistake.  We should never have done it.
-> 
-> In hindsight, I totally agree.  Question is what we can do about it now.
+On 07/31/2014 02:56 PM, Rafael J. Wysocki wrote:
+> On Thursday, July 24, 2014 06:07:26 PM Saravana Kannan wrote:
+>> This patch simplifies a lot of the hotplug/suspend code by not
+>> adding/removing/moving the policy/sysfs/kobj during hotplug and just leaves
+>> the cpufreq directory and policy in place irrespective of whether the CPUs
+>> are ONLINE/OFFLINE.
+>
+> I'm still quite unsure how this is going to work with the real CPU hot-remove
+> that makes the entire sysfs cpu directories go away.  Can you please explain
+> that?
 
-<SNIP>
+Sure. Not a problem. I just wanted to make sure you had a chance to look 
+at the code first.
 
-> So how can we eliminate the noirq phase in a workable way?
+Physical hot-remove triggers a "remove" for all the  registered 
+subsys_interfaces for that CPU (after going through a couple of 
+functions). So, when that happens, the cpufreq subsys_interface remove 
+for that CPU gets called. At that point, I clean up that CPU's SW states 
+as if it was never plugged in from the start. If that CPU was the owner 
+of the sysfs directory, I move it over to a different CPU.
 
-The straight way to do that is breaking the world and some more and
-then fix up a gazillion of device drivers by doing a massive voodoo
-debugging effort simply because in most cases we do not get any useful
-information out of the system once the shit hits the fan.
+-Saravana
 
-We could add instrumentation to the core code about interrupts which
-are coming in unexpectedly during suspend, but that does not solve
-anything.
-
-We really cannot call any device handler at that point as clocks might
-be turned off already and any access to a device register might simply
-cause a full undebuggable stall of the CPU.
-
-And there is no way to prove that there is no chance of a spurious
-interrupt for a given device. 
-
-So if we cannot handle it at the infrastructure level, we need to make
-sure that every fricking device driver interrupt handler has a 
-
-     if (dev->suspended)
-     	return CRAP;
-
-conditional as the first line of code in it.
-
-What is that buying us? 
-
-Nothing than a shitload of hard to understand problems, really. The
-only sensible way to handle this is at the core level.
-
-#1 There is no way that you can rely on random drivers to do the Right
-   Thing. 
-
-#2 There is no way that all hardware is implemented in a sane way.
-
-#3 You CANNOT educate the people who are tasked to implement something
-   which "does the job" to understand all the subtle details of
-   suspend/resume or whatever.
-
-In fact such an approach would take the general aims of consolidating
-repeating patterns into core infrastructure and hiding complexity from
-the driver developers ad absurdum. No thanks. We have enough
-uncomprehensible shite in drivers/* already. We really can do without
-adding more reasons for voodoo programming.
-
-This is a classic core infrastructure problem and we need to get the
-semantics and the implementation straight by considering the
-challenges of new fangled hardware and the incompentent usage of
-that. Once we have that we need to fix the few offending drivers, but
-that's a task which can be handled with grep and some brain applied.
-
-Anyone who thinks that this can and should be solved at the driver
-level is simply taking the wrong drugs or ran out of supply of the
-proper ones. Either call your shrink or your drug dealer to get out of
-that.
-
-Thanks,
-
-	tglx
-
-
-
-
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
