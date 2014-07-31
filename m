@@ -1,78 +1,85 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem to be held for duration of changing governors [v2]
-Date: Thu, 31 Jul 2014 20:38:22 +0200
-Message-ID: <1917362.abr2Y4p7vh@vostro.rjw.lan>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com>
+From: Thomas Abraham <ta.omasab@gmail.com>
+Subject: Re: [PATCH v9 6/6] clk: samsung: remove unused clock aliases and
+ update clock flags
+Date: Thu, 31 Jul 2014 23:54:28 +0530
+Message-ID: <CAJuA9ahCVnG8st0t_U+Nw9+eHV3fh57EjUeJw=LxCA0QzSm=AA@mail.gmail.com>
+References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
+	<1406707663-16656-7-git-send-email-thomas.ab@samsung.com>
+	<53DA4F1A.5040604@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63100 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751066AbaGaSTs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 14:19:48 -0400
-In-Reply-To: <53DA8389.80804@redhat.com>
+Received: from mail-la0-f46.google.com ([209.85.215.46]:37754 "EHLO
+	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750859AbaGaSYa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 14:24:30 -0400
+In-Reply-To: <53DA4F1A.5040604@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Saravana Kannan <skannan@codeaurora.org>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-On Thursday, July 31, 2014 01:57:29 PM Prarit Bhargava wrote:
-> 
-> On 07/31/2014 12:36 PM, Rafael J. Wysocki wrote:
-> > On Thursday, July 31, 2014 06:23:18 AM Prarit Bhargava wrote:
-> >>
-> >> On 07/30/2014 10:16 PM, Rafael J. Wysocki wrote:
-> >>> On Wednesday, July 30, 2014 06:36:00 PM Saravana Kannan wrote:
-> >>>> On 07/30/2014 02:40 PM, Rafael J. Wysocki wrote:
-> >>>>> On Wednesday, July 30, 2014 10:18:25 AM Prarit Bhargava wrote:
-> >>>>>>
-> >>>>>> On 07/29/2014 08:03 PM, Rafael J. Wysocki wrote:
-> >>>>>>> On Tuesday, July 29, 2014 07:46:02 AM Prarit Bhargava wrote:
-> >>>>>
-> >>>>> [cut]
-> >>>>>
-> >>>>>>>> This patch effectively reverts commit 955ef483.
-> >>>>
-> >>>> The issue reported in this patch is valid. We are seeing that internally 
-> >>>> too. I believe I reported it in another thread (within the past month).
-> >>>>
-> >>>> However, the original patch fixes a real deadlock issue (I'm too tired 
-> >>>> to look it up now). We can revet the original, but it's going to bring 
-> >>>> back the original issue. I just want to make sure Prarit and Raphael 
-> >>>> realize this before proceeding.
-> >>>>
-> >>>> I do have plans for a proper fix for the mainline (not stable branches), 
-> >>>> but plan to do that after the current set of suspend/hotplug patches go 
-> >>>> through. The fix would be easier to make after that.
-> >>>>
-> >>>>>>>
-> >>>>>>> OK, I'm convinced by this.
-> >>>>>>>
-> >>>>>>> I suppose we should push it for -stable from 3.10 through 3.15.x, right?
-> >>>>>>
-> >>>>>> Rafael, I think that is a good idea.  I'm not sure what the protocol is for
-> >>>>>> adding stable@kernel.org though ...
-> >>
-> >> Rafael, let me (again) re-write the patch description.  I think Saravana has
-> >> raised an important issue that I have not clearly identified why it is safe to
-> >> remove this code in my patch description.  Also, I want to clearly identify the
-> >> appropriate -stable releases to push this out to.
-> >>
-> >> I'll submit a [v3] later today or tomorrow.
-> > 
-> > In any case that's too late for 3.16 final, unless there's an -rc8.
-> > 
-> > Thanks for doing that work!
-> 
-> Ugh ... I tried this (yet another) large system and hit another panic :(.
-> 
-> I'm investigating now, and I'm hoping this is just something "new".
+Hi Tomasz,
 
-Well, I've applied your patch as is and I can push it to Linus.
+On Thu, Jul 31, 2014 at 7:43 PM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+> On 30.07.2014 10:07, Thomas Abraham wrote:
+>> With some of the Exynos SoCs switched over to use the generic CPUfreq drivers,
+>> the unused clock aliases can be removed. In addition to this, the individual
+>> clock blocks which are now encapsulated with the consolidate CPU clock type
+>> can now be marked with read-only flags.
+>
+> [snip]
+>
+>> @@ -1500,6 +1499,7 @@ static void __init exynos4_clk_init(struct device_node *np,
+>>               exynos4_soc == EXYNOS4210 ? "Exynos4210" : "Exynos4x12",
+>>               _get_rate("sclk_apll"), _get_rate("sclk_mpll"),
+>>               _get_rate("sclk_epll"), _get_rate("sclk_vpll"),
+>> +             exynos4_soc == EXYNOS4210 ? _get_rate("armclk") :
+>>               _get_rate("div_core2"));
+>
+> I believe "div_core2" should work fine here for all SoCs without the
+> need for this if.
 
-However, if you want to update the changelog, I'll not do that, but in that
-case the patch will have to wait for the next week.
+The following patch is a pre-requisite for this patch.
+http://www.spinics.net/lists/arm-kernel/msg351540.html
 
-Rafael
+The rate can be obtained from div_core2 as well but with the cpu clock
+now registered, the rate can be obtained from the cpu clock instance
+instead of the div_core2 divider. And when Exynos4412 also add cpu
+clock instance, the 'if' above will be removed.
 
+>
+>>  }
+>>
+>> diff --git a/drivers/clk/samsung/clk-exynos5250.c b/drivers/clk/samsung/clk-exynos5250.c
+>> index e19e365..1d958f1 100644
+>> --- a/drivers/clk/samsung/clk-exynos5250.c
+>> +++ b/drivers/clk/samsung/clk-exynos5250.c
+>
+> [snip]
+>
+>> @@ -848,6 +851,6 @@ static void __init exynos5250_clk_init(struct device_node *np)
+>>       samsung_clk_of_add_provider(np, ctx);
+>>
+>>       pr_info("Exynos5250: clock setup completed, armclk=%ld\n",
+>> -                     _get_rate("div_arm2"));
+>> +                     _get_rate("armclk"));
+>
+> Similarly here, no need for this change.
+
+Same here. Instead of getting the rate from div_core2 divider block,
+the cpu clock instance is used to find the rate. I would prefer to use
+cpu clock here. Is there any reason to prefer div_core2 over the cpu
+clock instance?
+
+Thanks,
+Thomas.
+
+>
+> Best regards,
+> Tomasz
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
