@@ -1,75 +1,245 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v3 3/8] thermal: exynos: remove redundant pdata checks from
- exynos_tmu_initialize()
-Date: Thu, 31 Jul 2014 19:11:01 +0200
-Message-ID: <1406826667-2289-4-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v3 8/8] thermal: exynos: remove identical values from
+ exynos*_tmu_registers structures
+Date: Thu, 31 Jul 2014 19:11:06 +0200
+Message-ID: <1406826667-2289-9-git-send-email-b.zolnierkie@samsung.com>
 References: <1406826667-2289-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1406826667-2289-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Remove runtime checks for pdata sanity from exynos_tmu_initialize().
-
-The current values hardcoded in pdata will never trigger the checks
-and checking itself is not proper.  The checks in question are done
-at runtime in a production code for data that is hardcoded inside
-driver during development time and later it doesn't change.  Such
-data should be verified during development and review time (i.e. by
-a script parsing relevant data from exynos_tmu_data.c, one can also
-argue that verification to be done is so simple that the review by
-a maintainer should be enough).
+There is no need for abstracting configuration for registers that
+are identical on all SoC types.
 
 There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/thermal/samsung/exynos_thermal_common.h |  1 -
- drivers/thermal/samsung/exynos_tmu.c            | 13 -------------
- 2 files changed, 14 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c      | 16 ++++++------
+ drivers/thermal/samsung/exynos_tmu.h      | 15 -----------
+ drivers/thermal/samsung/exynos_tmu_data.c | 42 -------------------------------
+ 3 files changed, 8 insertions(+), 65 deletions(-)
 
-diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
-index 3eb2ed9..cd44719 100644
---- a/drivers/thermal/samsung/exynos_thermal_common.h
-+++ b/drivers/thermal/samsung/exynos_thermal_common.h
-@@ -27,7 +27,6 @@
- #define SENSOR_NAME_LEN	16
- #define MAX_TRIP_COUNT	8
- #define MAX_COOLING_DEVICE 4
--#define MAX_THRESHOLD_LEVS 5
- 
- #define ACTIVE_INTERVAL 500
- #define IDLE_INTERVAL 10000
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 4a55f11..b9bffad 100644
+index 122ae66..35437df 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -201,23 +201,10 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 			(pdata->efuse_value >> reg->triminfo_85_shift) &
+@@ -174,7 +174,7 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 			trim_info = readl(data->base + reg->triminfo_data);
+ 	}
+ 	data->temp_error1 = trim_info & EXYNOS_TMU_TEMP_MASK;
+-	data->temp_error2 = ((trim_info >> reg->triminfo_85_shift) &
++	data->temp_error2 = ((trim_info >> EXYNOS_TRIMINFO_85_SHIFT) &
+ 				EXYNOS_TMU_TEMP_MASK);
+ 
+ 	if (!data->temp_error1 ||
+@@ -184,7 +184,7 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 
+ 	if (!data->temp_error2)
+ 		data->temp_error2 =
+-			(pdata->efuse_value >> reg->triminfo_85_shift) &
++			(pdata->efuse_value >> EXYNOS_TRIMINFO_85_SHIFT) &
  			EXYNOS_TMU_TEMP_MASK;
  
--	if (pdata->max_trigger_level > MAX_THRESHOLD_LEVS) {
--		dev_err(&pdev->dev, "Invalid max trigger level\n");
--		ret = -EINVAL;
--		goto out;
--	}
--
- 	for (i = 0; i < pdata->max_trigger_level; i++) {
- 		if (!pdata->trigger_levels[i])
- 			continue;
+ 	rising_threshold = readl(data->base + reg->threshold_th0);
+@@ -274,11 +274,11 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
+ 	if (pdata->test_mux)
+ 		con |= (pdata->test_mux << reg->test_mux_addr_shift);
  
--		if ((pdata->trigger_type[i] == HW_TRIP) &&
--		(!pdata->trigger_levels[pdata->max_trigger_level - 1])) {
--			dev_err(&pdev->dev, "Invalid hw trigger level\n");
--			ret = -EINVAL;
--			goto out;
--		}
--
- 		/* Count trigger levels except the HW trip*/
- 		if (!(pdata->trigger_type[i] == HW_TRIP))
- 			trigger_levs++;
+-	con &= ~(reg->buf_vref_sel_mask << reg->buf_vref_sel_shift);
+-	con |= pdata->reference_voltage << reg->buf_vref_sel_shift;
++	con &= ~(EXYNOS_TMU_REF_VOLTAGE_MASK << EXYNOS_TMU_REF_VOLTAGE_SHIFT);
++	con |= pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT;
+ 
+-	con &= ~(reg->buf_slope_sel_mask << reg->buf_slope_sel_shift);
+-	con |= (pdata->gain << reg->buf_slope_sel_shift);
++	con &= ~(EXYNOS_TMU_BUF_SLOPE_SEL_MASK << EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT);
++	con |= (pdata->gain << EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT);
+ 
+ 	if (pdata->noise_cancel_mode) {
+ 		con &= ~(reg->therm_trip_mode_mask <<
+@@ -287,7 +287,7 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
+ 	}
+ 
+ 	if (on) {
+-		con |= (1 << reg->core_en_shift);
++		con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
+ 		interrupt_en =
+ 			pdata->trigger_enable[3] << reg->inten_rise3_shift |
+ 			pdata->trigger_enable[2] << reg->inten_rise2_shift |
+@@ -297,7 +297,7 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
+ 			interrupt_en |=
+ 				interrupt_en << reg->inten_fall0_shift;
+ 	} else {
+-		con &= ~(1 << reg->core_en_shift);
++		con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
+ 		interrupt_en = 0; /* Disable all interrupts */
+ 	}
+ 	writel(interrupt_en, data->base + reg->tmu_inten);
+diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+index 327c64f..d503f35 100644
+--- a/drivers/thermal/samsung/exynos_tmu.h
++++ b/drivers/thermal/samsung/exynos_tmu.h
+@@ -77,20 +77,12 @@ enum soc_type {
+  * bitfields. The register validity, offsets and bitfield values may vary
+  * slightly across different exynos SOC's.
+  * @triminfo_data: register containing 2 pont trimming data
+- * @triminfo_25_shift: shift bit of the 25 C trim value in triminfo_data reg.
+- * @triminfo_85_shift: shift bit of the 85 C trim value in triminfo_data reg.
+  * @triminfo_ctrl: trim info controller register.
+  * @tmu_ctrl: TMU main controller register.
+  * @test_mux_addr_shift: shift bits of test mux address.
+- * @buf_vref_sel_shift: shift bits of reference voltage in tmu_ctrl register.
+- * @buf_vref_sel_mask: mask bits of reference voltage in tmu_ctrl register.
+  * @therm_trip_mode_shift: shift bits of tripping mode in tmu_ctrl register.
+  * @therm_trip_mode_mask: mask bits of tripping mode in tmu_ctrl register.
+  * @therm_trip_en_shift: shift bits of tripping enable in tmu_ctrl register.
+- * @buf_slope_sel_shift: shift bits of amplifier gain value in tmu_ctrl
+-	register.
+- * @buf_slope_sel_mask: mask bits of amplifier gain value in tmu_ctrl register.
+- * @core_en_shift: shift bits of TMU core enable bit in tmu_ctrl register.
+  * @tmu_status: register drescribing the TMU status.
+  * @tmu_cur_temp: register containing the current temperature of the TMU.
+  * @threshold_temp: register containing the base threshold level.
+@@ -119,22 +111,15 @@ enum soc_type {
+  */
+ struct exynos_tmu_registers {
+ 	u32	triminfo_data;
+-	u32	triminfo_25_shift;
+-	u32	triminfo_85_shift;
+ 
+ 	u32	triminfo_ctrl;
+ 	u32	triminfo_ctrl1;
+ 
+ 	u32	tmu_ctrl;
+ 	u32     test_mux_addr_shift;
+-	u32	buf_vref_sel_shift;
+-	u32	buf_vref_sel_mask;
+ 	u32	therm_trip_mode_shift;
+ 	u32	therm_trip_mode_mask;
+ 	u32	therm_trip_en_shift;
+-	u32	buf_slope_sel_shift;
+-	u32	buf_slope_sel_mask;
+-	u32	core_en_shift;
+ 
+ 	u32	tmu_status;
+ 
+diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
+index 9c81515..82e0732 100644
+--- a/drivers/thermal/samsung/exynos_tmu_data.c
++++ b/drivers/thermal/samsung/exynos_tmu_data.c
+@@ -27,14 +27,7 @@
+ #if defined(CONFIG_CPU_EXYNOS4210)
+ static const struct exynos_tmu_registers exynos4210_tmu_registers = {
+ 	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
+-	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
+-	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
+ 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
+-	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
+-	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
+-	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
+-	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
+-	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
+ 	.tmu_status = EXYNOS_TMU_REG_STATUS,
+ 	.tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
+ 	.threshold_temp = EXYNOS4210_TMU_REG_THRESHOLD_TEMP,
+@@ -94,18 +87,11 @@ struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
+ #if defined(CONFIG_SOC_EXYNOS3250)
+ static const struct exynos_tmu_registers exynos3250_tmu_registers = {
+ 	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
+-	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
+-	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
+ 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
+ 	.test_mux_addr_shift = EXYNOS4412_MUX_ADDR_SHIFT,
+-	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
+-	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
+ 	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
+ 	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
+ 	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
+-	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
+-	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
+-	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
+ 	.tmu_status = EXYNOS_TMU_REG_STATUS,
+ 	.tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
+ 	.threshold_th0 = EXYNOS_THD_TEMP_RISE,
+@@ -183,19 +169,12 @@ struct exynos_tmu_init_data const exynos3250_default_tmu_data = {
+ #if defined(CONFIG_SOC_EXYNOS4412) || defined(CONFIG_SOC_EXYNOS5250)
+ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
+ 	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
+-	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
+-	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
+ 	.triminfo_ctrl = EXYNOS_TMU_TRIMINFO_CON,
+ 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
+ 	.test_mux_addr_shift = EXYNOS4412_MUX_ADDR_SHIFT,
+-	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
+-	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
+ 	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
+ 	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
+ 	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
+-	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
+-	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
+-	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
+ 	.tmu_status = EXYNOS_TMU_REG_STATUS,
+ 	.tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
+ 	.threshold_th0 = EXYNOS_THD_TEMP_RISE,
+@@ -286,18 +265,11 @@ struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
+ #if defined(CONFIG_SOC_EXYNOS5260)
+ static const struct exynos_tmu_registers exynos5260_tmu_registers = {
+ 	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
+-	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
+-	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
+ 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
+ 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL1,
+-	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
+-	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
+ 	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
+ 	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
+ 	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
+-	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
+-	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
+-	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
+ 	.tmu_status = EXYNOS_TMU_REG_STATUS,
+ 	.tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
+ 	.threshold_th0 = EXYNOS_THD_TEMP_RISE,
+@@ -378,17 +350,10 @@ struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
+ #if defined(CONFIG_SOC_EXYNOS5420)
+ static const struct exynos_tmu_registers exynos5420_tmu_registers = {
+ 	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
+-	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
+-	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
+ 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
+-	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
+-	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
+ 	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
+ 	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
+ 	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
+-	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
+-	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
+-	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
+ 	.tmu_status = EXYNOS_TMU_REG_STATUS,
+ 	.tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
+ 	.threshold_th0 = EXYNOS_THD_TEMP_RISE,
+@@ -477,17 +442,10 @@ struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
+ #if defined(CONFIG_SOC_EXYNOS5440)
+ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
+ 	.triminfo_data = EXYNOS5440_TMU_S0_7_TRIM,
+-	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
+-	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
+ 	.tmu_ctrl = EXYNOS5440_TMU_S0_7_CTRL,
+-	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
+-	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
+ 	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
+ 	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
+ 	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
+-	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
+-	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
+-	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
+ 	.tmu_status = EXYNOS5440_TMU_S0_7_STATUS,
+ 	.tmu_cur_temp = EXYNOS5440_TMU_S0_7_TEMP,
+ 	.threshold_th0 = EXYNOS5440_TMU_S0_7_TH0,
 -- 
 1.8.2.3
