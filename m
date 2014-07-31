@@ -1,66 +1,71 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem to be held for duration of changing governors [v2]
-Date: Thu, 31 Jul 2014 18:36:47 +0200
-Message-ID: <2066166.pXm4lKLOID@vostro.rjw.lan>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com> <3140593.vs3eOK6CdF@vostro.rjw.lan> <53DA1916.4090806@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v3 0/8] thermal: exynos: various cleanups
+Date: Thu, 31 Jul 2014 19:10:58 +0200
+Message-ID: <1406826667-2289-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63164 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750774AbaGaQSO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 12:18:14 -0400
-In-Reply-To: <53DA1916.4090806@redhat.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:33127 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbaGaRL2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 13:11:28 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Saravana Kannan <skannan@codeaurora.org>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 
-On Thursday, July 31, 2014 06:23:18 AM Prarit Bhargava wrote:
-> 
-> On 07/30/2014 10:16 PM, Rafael J. Wysocki wrote:
-> > On Wednesday, July 30, 2014 06:36:00 PM Saravana Kannan wrote:
-> >> On 07/30/2014 02:40 PM, Rafael J. Wysocki wrote:
-> >>> On Wednesday, July 30, 2014 10:18:25 AM Prarit Bhargava wrote:
-> >>>>
-> >>>> On 07/29/2014 08:03 PM, Rafael J. Wysocki wrote:
-> >>>>> On Tuesday, July 29, 2014 07:46:02 AM Prarit Bhargava wrote:
-> >>>
-> >>> [cut]
-> >>>
-> >>>>>> This patch effectively reverts commit 955ef483.
-> >>
-> >> The issue reported in this patch is valid. We are seeing that internally 
-> >> too. I believe I reported it in another thread (within the past month).
-> >>
-> >> However, the original patch fixes a real deadlock issue (I'm too tired 
-> >> to look it up now). We can revet the original, but it's going to bring 
-> >> back the original issue. I just want to make sure Prarit and Raphael 
-> >> realize this before proceeding.
-> >>
-> >> I do have plans for a proper fix for the mainline (not stable branches), 
-> >> but plan to do that after the current set of suspend/hotplug patches go 
-> >> through. The fix would be easier to make after that.
-> >>
-> >>>>>
-> >>>>> OK, I'm convinced by this.
-> >>>>>
-> >>>>> I suppose we should push it for -stable from 3.10 through 3.15.x, right?
-> >>>>
-> >>>> Rafael, I think that is a good idea.  I'm not sure what the protocol is for
-> >>>> adding stable@kernel.org though ...
-> 
-> Rafael, let me (again) re-write the patch description.  I think Saravana has
-> raised an important issue that I have not clearly identified why it is safe to
-> remove this code in my patch description.  Also, I want to clearly identify the
-> appropriate -stable releases to push this out to.
-> 
-> I'll submit a [v3] later today or tomorrow.
+Hi,
 
-In any case that's too late for 3.16 final, unless there's an -rc8.
+This patch series contains various cleanups for EXYNOS thermal
+driver.  Overall it decreases driver's LOC by 9%.  It is based
+on next-20140731 kernel.  It should not cause any functionality
+changes.
 
-Thanks for doing that work!
+Changes since v2 (https://lkml.org/lkml/2014/6/17/436):
+- synced patches against next-20140731
+- dropped patch "thermal: exynos: remove dead code for
+  TYPE_TWO_POINT_TRIMMING calibration" (newly added Exynos3250
+  SoC support uses TYPE_TWO_POINT_TRIMMING calibration)
+- updated patch description for patch #2
+- dropped Reviewed-by from Amit from patch #8 (due to changed
+  scope of the patch)
 
-Rafael
+Changes since v1 (https://lkml.org/lkml/2014/5/5/194):
+- synced patches against next-20140617
+- merged patch "thermal: exynos: remove unused defines" into
+  "thermal: exynos: remove unused struct exynos_tmu_registers
+  entries" one (per request from Eduardo)
+- improved patch descriptions for patches #1-5
+- fixed documentation for pdata->gain and pdata->reference_voltage
+- added Reviewed-by from Amit to patches #6, #7 and #10
+- added missing Acked-by from Kyungmin Park
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (8):
+  thermal: exynos: remove unused struct exynos_tmu_registers entries
+  thermal: exynos: remove dead code for HW_MODE calibration
+  thermal: exynos: remove redundant pdata checks from
+    exynos_tmu_initialize()
+  thermal: exynos: remove redundant threshold_code checks from
+    exynos_tmu_initialize()
+  thermal: exynos: simplify temp_to_code() and code_to_temp()
+  thermal: exynos: cache non_hw_trigger_levels in pdata
+  thermal: exynos: remove redundant pdata checks from
+    exynos_tmu_control()
+  thermal: exynos: remove identical values from exynos*_tmu_registers
+    structures
+
+ drivers/thermal/samsung/exynos_thermal_common.h |   1 -
+ drivers/thermal/samsung/exynos_tmu.c            | 126 +++++-------------------
+ drivers/thermal/samsung/exynos_tmu.h            |  74 +-------------
+ drivers/thermal/samsung/exynos_tmu_data.c       |  56 ++---------
+ drivers/thermal/samsung/exynos_tmu_data.h       |  31 +-----
+ 5 files changed, 35 insertions(+), 253 deletions(-)
+
+-- 
+1.8.2.3
 
