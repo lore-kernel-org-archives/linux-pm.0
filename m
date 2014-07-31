@@ -1,66 +1,110 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Thu, 31 Jul 2014 06:23:18 -0400
-Message-ID: <53DA1916.4090806@redhat.com>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com> <1816455.s1k7EgIPj9@vostro.rjw.lan> <53D99D80.8090905@codeaurora.org> <3140593.vs3eOK6CdF@vostro.rjw.lan>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/3] irq / PM: New driver interface for wakeup
+ interrupts
+Date: Thu, 31 Jul 2014 12:44:24 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1407311230420.4997@nanos>
+References: <20140724212620.GO3935@laptop> <alpine.DEB.2.10.1407302350260.4170@nanos> <alpine.DEB.2.10.1407310137510.4997@nanos> <2084079.fEC1AulnFk@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:42544 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752288AbaGaKXY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 31 Jul 2014 06:23:24 -0400
-In-Reply-To: <3140593.vs3eOK6CdF@vostro.rjw.lan>
+Received: from www.linutronix.de ([62.245.132.108]:60670 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755166AbaGaKo2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 06:44:28 -0400
+In-Reply-To: <2084079.fEC1AulnFk@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Saravana Kannan <skannan@codeaurora.org>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
+On Thu, 31 Jul 2014, Rafael J. Wysocki wrote:
 
-
-On 07/30/2014 10:16 PM, Rafael J. Wysocki wrote:
-> On Wednesday, July 30, 2014 06:36:00 PM Saravana Kannan wrote:
->> On 07/30/2014 02:40 PM, Rafael J. Wysocki wrote:
->>> On Wednesday, July 30, 2014 10:18:25 AM Prarit Bhargava wrote:
->>>>
->>>> On 07/29/2014 08:03 PM, Rafael J. Wysocki wrote:
->>>>> On Tuesday, July 29, 2014 07:46:02 AM Prarit Bhargava wrote:
->>>
->>> [cut]
->>>
->>>>>> This patch effectively reverts commit 955ef483.
->>
->> The issue reported in this patch is valid. We are seeing that internally 
->> too. I believe I reported it in another thread (within the past month).
->>
->> However, the original patch fixes a real deadlock issue (I'm too tired 
->> to look it up now). We can revet the original, but it's going to bring 
->> back the original issue. I just want to make sure Prarit and Raphael 
->> realize this before proceeding.
->>
->> I do have plans for a proper fix for the mainline (not stable branches), 
->> but plan to do that after the current set of suspend/hotplug patches go 
->> through. The fix would be easier to make after that.
->>
->>>>>
->>>>> OK, I'm convinced by this.
->>>>>
->>>>> I suppose we should push it for -stable from 3.10 through 3.15.x, right?
->>>>
->>>> Rafael, I think that is a good idea.  I'm not sure what the protocol is for
->>>> adding stable@kernel.org though ...
-
-Rafael, let me (again) re-write the patch description.  I think Saravana has
-raised an important issue that I have not clearly identified why it is safe to
-remove this code in my patch description.  Also, I want to clearly identify the
-appropriate -stable releases to push this out to.
-
-I'll submit a [v3] later today or tomorrow.
-
-P.
-
+> On Thursday, July 31, 2014 02:12:11 AM Thomas Gleixner wrote:
+> > On Thu, 31 Jul 2014, Thomas Gleixner wrote:
+> > > On Wed, 30 Jul 2014, Rafael J. Wysocki wrote:
+> > > Before this code changes in any way I want to see:
+> > > 
+> > >  1) a description of the existing semantics and their background
 > 
-> Rafael
+> On that one, the meaning of IRQF_NO_SUSPEND is quite simple to me.
 > 
+> If it is set (for the first irqaction in a given irq_desc)
+> suspend_device_irqs() will leave that IRQ alone (that is, will not
+> disable it and will not mark it as IRQS_SUSPENDED).
+> 
+> As a result, if an interrupt for that irq_desc happens after
+> suspend_device_irqs(), the interrupt handlers from all of its irqactions
+> will be invoked.
+> 
+> So this basically means "ignore that IRQ" to suspend_device_irqs() and
+> that's its *only* meaning.
+> 
+> It's primary users are timers, per-CPU IRQs, ACPI SCI, via-pmu, Xen.
+> There also is a bunch of drivers that use it for wakeup stuff, but they
+> shouldn't in my opinion.
+
+Indeed.
+
+> The background I'm aware of was primarily timers (we wanted to be able
+> to msleep() during PCI PM transitions in the noirq phases of system suspend
+> and resume among other things), and we want per-CPU stuff to work all the
+> time too.  ACPI uses it for signaling various types of events (including
+> battery and thermal) that need to be handled all the time.  I'm not sure
+> why Xen needs it exactly, but that seems to be IPI-related.
+
+So none of these interrupts is used to abort suspend or wakeup. They
+are kept functional because they are required for the suspend/resume
+transitions itself.
+
+What's this PCIe PME handler doing? Is it required functionality for
+the suspend/resume path or is it a wakeup/abort mechanism.
+
+> The current handling of IRQF_NO_SUSPEND has a problem vs shared interrupts
+> which I've tried to address by https://patchwork.kernel.org/patch/4643871/
+> and which is described in the changelog of that patch.  Unfortunately, some
+> existing users pass IRQF_SHARED along with IRQF_NO_SUSPEND which is the main
+> motivation for that.  Many of them use it for wakeup purposes, but for one
+> example (that doesn't use it for wakeup only) the ACPI SCI is shareable by
+> design.
+
+So many of them use it for wakeup purposes. Why so and how is that
+supposed to work?
+
+The mechanism for wakeup sources is:
+
+    1) Lazy disable the interrupt
+
+    2) Do the transition into suspend with interrupts enabled
+
+    3) Check whether one of the wakeup sources has triggered. If yes,
+       abort. Otherwise suspend.
+
+The ones marked IRQF_NO_SUSPEND are not part of the above scheme,
+because they are not checked. So they use different mechanisms to
+abort the suspend?
+
+> > Aside of that I want to see a coherent explanation why a shared MSI
+> > interrupt makes any sense at all.
+> > 
+> > 25:  1 <....> 0   PCI-MSI-edge      aerdrv, PCIe PME
+> >
+> > AFAICT, that's the primary reason why you insist to support wakeup
+> > sources on shared irq lines. And to be honest, it's utter bullshit.
+> 
+> No, this isn't the primary reason.
+> 
+> Here's /proc/interrupts from my MSI Wind system and, as you can see,
+> PCIe PME are (a) not MSI and (b) shared with some interesting things
+> (USB, WiFi and the GPU).
+
+>  16:       5217          0   IO-APIC-fasteoi   PCIe PME, uhci_hcd:usb4, i915
+>  17:      13964          0   IO-APIC-fasteoi   PCIe PME, rtl818x_pci
+
+So the obvious question is: WHY are they not using MSI?
+
+Just because MSI fucked up the MSI configuration of the device or is
+there any sane explanation for it?
+ 
+Thanks,
+
+	tglx
