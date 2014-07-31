@@ -1,75 +1,214 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/3] irq / PM: New driver interface for wakeup
- interrupts
-Date: Thu, 31 Jul 2014 02:12:11 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1407310137510.4997@nanos>
-References: <20140724212620.GO3935@laptop> <3042738.6Ohp3GcNCj@vostro.rjw.lan> <8151374.tpuvaHv3nd@vostro.rjw.lan> <5808955.xYYC2DJrBV@vostro.rjw.lan> <alpine.DEB.2.10.1407302350260.4170@nanos>
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [PATCH v9 3/6] ARM: dts: Exynos: add CPU OPP and regulator supply property
+Date: Wed, 30 Jul 2014 17:37:43 -0700
+Message-ID: <CAD=FV=WNmREbRLmsusbJ6KKykVzwdBqOUfYkWWOhbc=HmxyTdA@mail.gmail.com>
+References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
+	<1406707663-16656-4-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:58275 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751756AbaGaAM3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jul 2014 20:12:29 -0400
-In-Reply-To: <alpine.DEB.2.10.1407302350260.4170@nanos>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1406707663-16656-4-git-send-email-thomas.ab@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, cw00.choi@samsung.com, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Andreas Faerber <afaerber@suse.de>, Sachin Kamat <sachin.kamat@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
-On Thu, 31 Jul 2014, Thomas Gleixner wrote:
-> On Wed, 30 Jul 2014, Rafael J. Wysocki wrote:
-> Before this code changes in any way I want to see:
-> 
->  1) a description of the existing semantics and their background
-> 
->  2) a description of the short comings of the existing semantics w/o
->     considering the new fangled (hardware) use cases
-> 
->  3) a description how to mitigate the short comings described in #2
->     w/o breaking the world and some more and introducing hard to
->     decode regressions
-> 
->  4) a description why the improvements introduced by #3 are not
->     sufficient for the new fangled (hardware) use cases
-> 
->  5) a description how to mitigate the short comings described in #4
->     w/o breaking the world and some more and introducing hard to
->     decode regressions
+Thomas,
 
-Aside of that I want to see a coherent explanation why a shared MSI
-interrupt makes any sense at all.
+On Wed, Jul 30, 2014 at 1:07 AM, Thomas Abraham <thomas.ab@samsung.com> wrote:
+> diff --git a/arch/arm/boot/dts/exynos5250-arndale.dts b/arch/arm/boot/dts/exynos5250-arndale.dts
+> index d0de1f5..3b12a97 100644
+> --- a/arch/arm/boot/dts/exynos5250-arndale.dts
+> +++ b/arch/arm/boot/dts/exynos5250-arndale.dts
+> @@ -575,3 +575,7 @@
+>                 usb-phy = <&usb2_phy>;
+>         };
+>  };
+> +
+> +&cpu0 {
+> +       cpu0-supply = <&buck2_reg>;
+> +};
+> diff --git a/arch/arm/boot/dts/exynos5250-smdk5250.dts b/arch/arm/boot/dts/exynos5250-smdk5250.dts
+> index b4b35ad..f07e834 100644
+> --- a/arch/arm/boot/dts/exynos5250-smdk5250.dts
+> +++ b/arch/arm/boot/dts/exynos5250-smdk5250.dts
+> @@ -414,3 +414,7 @@
+>                 };
+>         };
+>  };
+> +
+> +&cpu0 {
+> +       cpu0-supply = <&buck2_reg>;
+> +};
+> diff --git a/arch/arm/boot/dts/exynos5250-snow.dts b/arch/arm/boot/dts/exynos5250-snow.dts
+> index f2b8c41..91acca7 100644
+> --- a/arch/arm/boot/dts/exynos5250-snow.dts
+> +++ b/arch/arm/boot/dts/exynos5250-snow.dts
+> @@ -509,4 +509,8 @@
+>         };
+>  };
+>
+> +&cpu0 {
+> +       cpu0-supply = <&buck2_reg>;
+> +};
+> +
+>  #include "cros-ec-keyboard.dtsi"
+> diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
+> index 492e1ef..97b282c 100644
+> --- a/arch/arm/boot/dts/exynos5250.dtsi
+> +++ b/arch/arm/boot/dts/exynos5250.dtsi
+> @@ -58,11 +58,34 @@
+>                 #address-cells = <1>;
+>                 #size-cells = <0>;
+>
+> -               cpu@0 {
+> +               cpu0: cpu@0 {
+>                         device_type = "cpu";
+>                         compatible = "arm,cortex-a15";
+>                         reg = <0>;
+>                         clock-frequency = <1700000000>;
+> +
+> +                       clocks = <&clock CLK_ARM_CLK>;
+> +                       clock-names = "cpu";
+> +                       clock-latency = <140000>;
 
-25:  1 <....> 0   PCI-MSI-edge      aerdrv, PCIe PME
-
-AFAICT, that's the primary reason why you insist to support wakeup
-sources on shared irq lines. And to be honest, it's utter bullshit.
-
-The whole purpose of MSI is to avoid interrupt sharing, but of course
-if that particular interrupt source has two potential causes, i.e. the
-AER and the PME one and the stupid hardware does not support different
-vectors or the drivers are not able to do so, it's conveniant to make
-them shared instead of thinking about them what they really are:
-
- Separate interrupts on a secondary interrupt controller connected to
- the primary (MSI) one.
-
-That's what is in fact. Simply because you can enable/disable them at
-the same IP block quite contrary to stuff which is physically shared
-by hard wired electrical connections.
-
-Slapping IRQF_SHARED on that and then whining about shortcomings of
-the core code is way simpler than sitting down and think about
-actual topologies, right?
-
-Most architectures aside of x86 have long ago realized that and the
-core has all infrastructure available to deal with irq topologies. You
-just have to utilize it.
-
-Thanks,
-
-	tglx
+Where did the 140000 number come from?  My old calculations show that
+with lock time of 270 ad P up to 6 we were at 67.5us lock time.
 
 
+> +                       operating-points = <
+> +                               1700000 1300000
+> +                               1600000 1250000
+> +                               1500000 1225000
+> +                               1400000 1200000
+> +                               1300000 1150000
+> +                               1200000 1125000
+> +                               1100000 1100000
+> +                               1000000 1075000
+> +                                900000 1050000
+> +                                800000 1025000
+> +                                700000 1012500
+> +                                600000 1000000
+> +                                500000  975000
+> +                                400000  950000
+> +                                300000  937500
+> +                                200000  925000
+> +                       >;
+>                 };
+>                 cpu@1 {
+>                         device_type = "cpu";
+> diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
+> index cb2b70e..3154b4c 100644
+> --- a/arch/arm/boot/dts/exynos5420.dtsi
+> +++ b/arch/arm/boot/dts/exynos5420.dtsi
+> @@ -59,8 +59,26 @@
+>                         device_type = "cpu";
+>                         compatible = "arm,cortex-a15";
+>                         reg = <0x0>;
+> +                       clocks = <&clock CLK_ARM_CLK>;
+> +                       clock-names = "cpu-cluster.0";
+>                         clock-frequency = <1800000000>;
+>                         cci-control-port = <&cci_control1>;
+> +                       clock-latency = <140000>;
+> +
+> +                       operating-points = <
+> +                               1800000 1250000
+> +                               1700000 1212500
+> +                               1600000 1175000
+> +                               1500000 1137500
+> +                               1400000 1112500
+> +                               1300000 1062500
+> +                               1200000 1037500
+> +                               1100000 1012500
+> +                               1000000 987500
+> +                                900000 962500
+> +                                800000 937500
+> +                                700000 912500
+> +                       >;
+>                 };
+>
+>                 cpu1: cpu@1 {
+> @@ -69,6 +87,7 @@
+>                         reg = <0x1>;
+>                         clock-frequency = <1800000000>;
+>                         cci-control-port = <&cci_control1>;
+> +                       clock-latency = <140000>;
+>                 };
+>
+>                 cpu2: cpu@2 {
+> @@ -77,6 +96,7 @@
+>                         reg = <0x2>;
+>                         clock-frequency = <1800000000>;
+>                         cci-control-port = <&cci_control1>;
+> +                       clock-latency = <140000>;
+>                 };
+>
+>                 cpu3: cpu@3 {
+> @@ -85,14 +105,29 @@
+>                         reg = <0x3>;
+>                         clock-frequency = <1800000000>;
+>                         cci-control-port = <&cci_control1>;
+> +                       clock-latency = <140000>;
+>                 };
+>
+>                 cpu4: cpu@100 {
+>                         device_type = "cpu";
+>                         compatible = "arm,cortex-a7";
+>                         reg = <0x100>;
+> +                       clocks = <&clock CLK_KFC_CLK>;
+> +                       clock-names = "cpu-cluster.1";
+>                         clock-frequency = <1000000000>;
+
+It does't start out at its maximum?
 
 
+>                         cci-control-port = <&cci_control0>;
+> +                       clock-latency = <140000>;
+> +
+> +                       operating-points = <
+> +                               1300000 1275000
+> +                               1200000 1212500
+> +                               1100000 1162500
+> +                               1000000 1112500
+> +                                900000 1062500
+> +                                800000 1025000
+> +                                700000 975000
+> +                                600000 937500
+> +                       >;
+>                 };
+>
+>                 cpu5: cpu@101 {
+> @@ -101,6 +136,7 @@
+>                         reg = <0x101>;
+>                         clock-frequency = <1000000000>;
+>                         cci-control-port = <&cci_control0>;
+> +                       clock-latency = <140000>;
+>                 };
+>
+>                 cpu6: cpu@102 {
+> @@ -109,6 +145,7 @@
+>                         reg = <0x102>;
+>                         clock-frequency = <1000000000>;
+>                         cci-control-port = <&cci_control0>;
+> +                       clock-latency = <140000>;
+>                 };
+>
+>                 cpu7: cpu@103 {
+> @@ -117,6 +154,7 @@
+>                         reg = <0x103>;
+>                         clock-frequency = <1000000000>;
+>                         cci-control-port = <&cci_control0>;
+> +                       clock-latency = <140000>;
+>                 };
+>         };
+
+Don't you need to put a reference to the supply in the 5420 board
+files?  ...or is that not possible yet since the max77802 hasn't
+landed yet?
+
+If that's not possible, is there any reason to post the 5420.dtsi
+patch now?  Also: what about 5800?  It's so similar to 5420 that it
+seems a shame not to do them at the same time.
+
+
+-Doug
