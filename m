@@ -1,124 +1,69 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v4 1/5] cpufreq: Don't wait for CPU to going offline to
- restart governor
-Date: Thu, 31 Jul 2014 13:47:48 -0700
-Message-ID: <53DAAB74.7050003@codeaurora.org>
-References: <1406250448-470-1-git-send-email-skannan@codeaurora.org> <1406250448-470-2-git-send-email-skannan@codeaurora.org>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
+ to be held for duration of changing governors [v2]
+Date: Thu, 31 Jul 2014 17:08:08 -0400
+Message-ID: <53DAB038.3050007@redhat.com>
+References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:50635 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbaGaUru (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 16:47:50 -0400
-In-Reply-To: <1406250448-470-2-git-send-email-skannan@codeaurora.org>
+Received: from mx1.redhat.com ([209.132.183.28]:61665 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752779AbaGaVIO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 31 Jul 2014 17:08:14 -0400
+In-Reply-To: <53DAA95B.2040505@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Poynor <toddpoynor@google.com>, "Srivatsa S . Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
 
-On 07/24/2014 06:07 PM, Saravana Kannan wrote:
-> There's no need to wait for the CPU going down to fully go offline to
-> restart the governor. We can stop the governor, change policy->cpus and
-> immediately restart the governor. This should reduce the time without any
-> CPUfreq monitoring and also help future patches with simplifying the code.
->
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> ---
->   drivers/cpufreq/cpufreq.c | 33 ++++++++++++++++++---------------
->   1 file changed, 18 insertions(+), 15 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 62259d2..ee0eb7b 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1390,6 +1390,21 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->   		cpufreq_driver->stop_cpu(policy);
->   	}
->
-> +	down_write(&policy->rwsem);
-> +	cpumask_clear_cpu(cpu, policy->cpus);
-> +	up_write(&policy->rwsem);
-> +
-> +	if (cpus > 1 && has_target()) {
-> +		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
-> +		if (!ret)
-> +			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-> +
-> +		if (ret) {
-> +			pr_err("%s: Failed to start governor\n", __func__);
-> +			return ret;
-> +		}
-> +	}
-> +
->   	return 0;
->   }
->
-> @@ -1410,15 +1425,12 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
->   		return -EINVAL;
->   	}
->
-> -	down_write(&policy->rwsem);
-> +	down_read(&policy->rwsem);
->   	cpus = cpumask_weight(policy->cpus);
-> -
-> -	if (cpus > 1)
-> -		cpumask_clear_cpu(cpu, policy->cpus);
-> -	up_write(&policy->rwsem);
-> +	up_read(&policy->rwsem);
->
->   	/* If cpu is last user of policy, free policy */
-> -	if (cpus == 1) {
-> +	if (cpus == 0) {
->   		if (has_target()) {
->   			ret = __cpufreq_governor(policy,
->   					CPUFREQ_GOV_POLICY_EXIT);
-> @@ -1447,15 +1459,6 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
->
->   		if (!cpufreq_suspended)
->   			cpufreq_policy_free(policy);
-> -	} else if (has_target()) {
-> -		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
-> -		if (!ret)
-> -			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-> -
-> -		if (ret) {
-> -			pr_err("%s: Failed to start governor\n", __func__);
-> -			return ret;
-> -		}
->   	}
->
->   	per_cpu(cpufreq_cpu_data, cpu) = NULL;
->
 
-This patch should also fix another issue reported in-house recently. 
-cpufreq_update_policy() fails for an ONLINE CPU. This is the scenario 
-that triggers it:
 
-Thead A
-- Cluster with 4 CPUs
-- CPU3 is going down.
-- Governor is STOPed.
-- CPU3 is removed, but governor not STARTed yet.
+On 07/31/2014 04:38 PM, Saravana Kannan wrote:
+> On 07/31/2014 01:30 PM, Prarit Bhargava wrote:
+>>
+>>
+>> On 07/31/2014 04:24 PM, Saravana Kannan wrote:
+>>>
+>>> Prarit,
+>>>
+>>> I'm not an expert on sysfs locking, but I would think the specific sysfs lock
+>>> would depend on the file/attribute group. So, can you please try to hotplug a
+>>> core in/out (to trigger the POLICY_EXIT) and then read a sysfs file exported by
+>>> the governor? scaling_governor doesn't cut it since that file is not removed on
+>>> policy exit event to governor. If it's ondemand, try reading/write it's sampling
+>>> rate file.
+>>
+>> Thanks Saravana -- will do.  I will get back to you shortly on this.
+>>
+> 
+> Thanks. Btw, in case you weren't already aware of it. You'll have to hoplug out
+> all the CPUs in a cluster to trigger a POLICY_EXIT for that cluster/policy.
 
-Thread B
-- get_online_cpus()
-- We cross this hotplug barrier since since POST_DEAD is sent AFTER 
-releasing the hotplug lock.
-- cpufreq_update_policy(CPU0) does a bunch of stuff
-- Then sends GOV_LIMITS to governor.
-- governor is currently STOPed, so it returns an error and 
-cpufreq_update_policy() fails.
+Yep -- the affected_cpus file should show all the cpus in the policy IIRC.  One
+of the systems I have has 1 cpu/policy and has 48 threads so the POLICY_EXIT is
+called.
 
-Thread A
-- In POST_DEAD notifier, STARTs the governor again.
+I'll put something like
 
-So, a perfectly valid call (doing get_online_cpus() and checking for 
-cpu_online() on a CPU before calling) fails.
+while [1];
+do
+echo ondemand > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
+cat /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+echo 20000 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+cat /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+echo 0 > /sys/devices/system/cpu/cpu1/online
+sleep 1
+echo 1 > /sys/devices/system/cpu/cpu1/online
+sleep 1
+done
 
--Saravana
+and let it run unless you can think of something else.  FWIW, manually trying
+that yields no problems AFAICT.  The sleeps are just me being paranoid and
+keeping things in sequence.
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+P.
+> 
+> -Saravana
+> 
