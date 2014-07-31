@@ -1,110 +1,105 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/3] irq / PM: New driver interface for wakeup
- interrupts
-Date: Thu, 31 Jul 2014 12:44:24 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1407311230420.4997@nanos>
-References: <20140724212620.GO3935@laptop> <alpine.DEB.2.10.1407302350260.4170@nanos> <alpine.DEB.2.10.1407310137510.4997@nanos> <2084079.fEC1AulnFk@vostro.rjw.lan>
+From: Thomas Abraham <ta.omasab@gmail.com>
+Subject: Re: [PATCH v9 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
+Date: Thu, 31 Jul 2014 16:29:03 +0530
+Message-ID: <CAJuA9aiwHUm1NrfLBR8pEzgTjpDd7xY9Lzpi3WmK0VeOgMGGFA@mail.gmail.com>
+References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
+	<CADWw7OiwXNrbFyiVhpcJyBnAdsGsXcAMgMUOmY=JxHM7+7Z0eA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:60670 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755166AbaGaKo2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 06:44:28 -0400
-In-Reply-To: <2084079.fEC1AulnFk@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CADWw7OiwXNrbFyiVhpcJyBnAdsGsXcAMgMUOmY=JxHM7+7Z0eA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Chander M. Kashyap" <chander.kashyap@gmail.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
-On Thu, 31 Jul 2014, Rafael J. Wysocki wrote:
+On Thu, Jul 31, 2014 at 11:50 AM, Chander M. Kashyap
+<chander.kashyap@gmail.com> wrote:
+> On Wed, Jul 30, 2014 at 1:37 PM, Thomas Abraham <thomas.ab@samsung.com> wrote:
+>> Changes since v8:
+>> - Fixes suggested by Tomasz Figa.
+>>
+>> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+>> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
+>> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
+>> driver.
+>>
+>> This patch series is dependent on two other patches
+>> 1. ARM: dts: add CPU nodes for Exynos4 SoCs
+>>    - https://lkml.org/lkml/2014/7/21/315
+>> 2. ARM: dts: smdk5250: Specify MAX77686 pmic interrupt
+>>    - http://www.spinics.net/lists/arm-kernel/msg351134.html
+>> 3. clk: exynos4: remove duplicate div_core2 divider clock instantiation
+>>    - http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34859.html
+>>
+>> Thomas Abraham (6):
+>>   clk: samsung: add infrastructure to register cpu clocks
+>>   clk: samsung: add cpu clock configuration data and instantiate cpu clock
+>>   ARM: dts: Exynos: add CPU OPP and regulator supply property
+>>   ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
+>>   cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
+>>   clk: samsung: remove unused clock aliases and update clock flags
+>>
+>>  arch/arm/boot/dts/exynos4210-origen.dts         |    4 +
+>>  arch/arm/boot/dts/exynos4210-trats.dts          |    4 +
+>>  arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 +
+>>  arch/arm/boot/dts/exynos4210.dtsi               |   14 +-
+>>  arch/arm/boot/dts/exynos5250-arndale.dts        |    4 +
+>>  arch/arm/boot/dts/exynos5250-smdk5250.dts       |    4 +
+>>  arch/arm/boot/dts/exynos5250-snow.dts           |    4 +
+>>  arch/arm/boot/dts/exynos5250.dtsi               |   25 +-
+>>  arch/arm/boot/dts/exynos5420.dtsi               |   38 +++
+>>  arch/arm/mach-exynos/exynos.c                   |   24 +-
+>>  drivers/clk/samsung/Makefile                    |    2 +-
+>>  drivers/clk/samsung/clk-cpu.c                   |  335 +++++++++++++++++++++++
+>>  drivers/clk/samsung/clk-cpu.h                   |   91 ++++++
+>>  drivers/clk/samsung/clk-exynos4.c               |   63 +++--
+>>  drivers/clk/samsung/clk-exynos5250.c            |   44 ++-
+>>  drivers/clk/samsung/clk-exynos5420.c            |   72 ++++-
+>>  drivers/cpufreq/Kconfig.arm                     |   22 --
+>>  drivers/cpufreq/Makefile                        |    2 -
+>>  drivers/cpufreq/exynos4210-cpufreq.c            |  184 -------------
+>>  drivers/cpufreq/exynos5250-cpufreq.c            |  210 --------------
+>>  include/dt-bindings/clock/exynos5250.h          |    1 +
+>>  include/dt-bindings/clock/exynos5420.h          |    2 +
+>>  22 files changed, 690 insertions(+), 463 deletions(-)
+>>  create mode 100644 drivers/clk/samsung/clk-cpu.c
+>>  create mode 100644 drivers/clk/samsung/clk-cpu.h
+>>  delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
+>>  delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
+>>
+>> --
+>> 1.7.9.5
+>
+> Working great.
+> tested on smdk5420, and arndale-5250
 
-> On Thursday, July 31, 2014 02:12:11 AM Thomas Gleixner wrote:
-> > On Thu, 31 Jul 2014, Thomas Gleixner wrote:
-> > > On Wed, 30 Jul 2014, Rafael J. Wysocki wrote:
-> > > Before this code changes in any way I want to see:
-> > > 
-> > >  1) a description of the existing semantics and their background
-> 
-> On that one, the meaning of IRQF_NO_SUSPEND is quite simple to me.
-> 
-> If it is set (for the first irqaction in a given irq_desc)
-> suspend_device_irqs() will leave that IRQ alone (that is, will not
-> disable it and will not mark it as IRQS_SUSPENDED).
-> 
-> As a result, if an interrupt for that irq_desc happens after
-> suspend_device_irqs(), the interrupt handlers from all of its irqactions
-> will be invoked.
-> 
-> So this basically means "ignore that IRQ" to suspend_device_irqs() and
-> that's its *only* meaning.
-> 
-> It's primary users are timers, per-CPU IRQs, ACPI SCI, via-pmu, Xen.
-> There also is a bunch of drivers that use it for wakeup stuff, but they
-> shouldn't in my opinion.
+Hi Chander,
 
-Indeed.
+Thanks for testing this series. Can I add a "Tested-by" tag for this series?
 
-> The background I'm aware of was primarily timers (we wanted to be able
-> to msleep() during PCI PM transitions in the noirq phases of system suspend
-> and resume among other things), and we want per-CPU stuff to work all the
-> time too.  ACPI uses it for signaling various types of events (including
-> battery and thermal) that need to be handled all the time.  I'm not sure
-> why Xen needs it exactly, but that seems to be IPI-related.
-
-So none of these interrupts is used to abort suspend or wakeup. They
-are kept functional because they are required for the suspend/resume
-transitions itself.
-
-What's this PCIe PME handler doing? Is it required functionality for
-the suspend/resume path or is it a wakeup/abort mechanism.
-
-> The current handling of IRQF_NO_SUSPEND has a problem vs shared interrupts
-> which I've tried to address by https://patchwork.kernel.org/patch/4643871/
-> and which is described in the changelog of that patch.  Unfortunately, some
-> existing users pass IRQF_SHARED along with IRQF_NO_SUSPEND which is the main
-> motivation for that.  Many of them use it for wakeup purposes, but for one
-> example (that doesn't use it for wakeup only) the ACPI SCI is shareable by
-> design.
-
-So many of them use it for wakeup purposes. Why so and how is that
-supposed to work?
-
-The mechanism for wakeup sources is:
-
-    1) Lazy disable the interrupt
-
-    2) Do the transition into suspend with interrupts enabled
-
-    3) Check whether one of the wakeup sources has triggered. If yes,
-       abort. Otherwise suspend.
-
-The ones marked IRQF_NO_SUSPEND are not part of the above scheme,
-because they are not checked. So they use different mechanisms to
-abort the suspend?
-
-> > Aside of that I want to see a coherent explanation why a shared MSI
-> > interrupt makes any sense at all.
-> > 
-> > 25:  1 <....> 0   PCI-MSI-edge      aerdrv, PCIe PME
-> >
-> > AFAICT, that's the primary reason why you insist to support wakeup
-> > sources on shared irq lines. And to be honest, it's utter bullshit.
-> 
-> No, this isn't the primary reason.
-> 
-> Here's /proc/interrupts from my MSI Wind system and, as you can see,
-> PCIe PME are (a) not MSI and (b) shared with some interesting things
-> (USB, WiFi and the GPU).
-
->  16:       5217          0   IO-APIC-fasteoi   PCIe PME, uhci_hcd:usb4, i915
->  17:      13964          0   IO-APIC-fasteoi   PCIe PME, rtl818x_pci
-
-So the obvious question is: WHY are they not using MSI?
-
-Just because MSI fucked up the MSI configuration of the device or is
-there any sane explanation for it?
- 
 Thanks,
+Thomas.
 
-	tglx
+>
+>>
+>>
+>>
+>>
+>> _______________________________________________
+>> linux-arm-kernel mailing list
+>> linux-arm-kernel@lists.infradead.org
+>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>
+>
+>
+> --
+> thanks and regards,
+> Chander M. Kashyap
+> Contact Number: +918123738320
+> ------- TENSION LENE KA NAHI, DENE KE-----
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
