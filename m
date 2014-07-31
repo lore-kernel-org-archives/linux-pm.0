@@ -1,45 +1,130 @@
-From: "Javi Merino" <javi.merino@arm.com>
+From: Zhang Rui <rui.zhang@intel.com>
 Subject: Re: [PATCH] thermal: tell cooling devices when a trip_point changes
-Date: Thu, 31 Jul 2014 08:59:25 +0100
-Message-ID: <20140731075924.GA2791@e104805>
+Date: Thu, 31 Jul 2014 16:30:57 +0800
+Message-ID: <1406795457.10148.17.camel@rzhang1-toshiba>
 References: <53D97B70.1050305@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:36171 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755348AbaGaH72 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 03:59:28 -0400
+Received: from mga11.intel.com ([192.55.52.93]:25176 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932116AbaGaIbC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 31 Jul 2014 04:31:02 -0400
 In-Reply-To: <53D97B70.1050305@nvidia.com>
-Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Matt Longnecker <mlongnecker@nvidia.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2014 at 12:10:40AM +0100, Matt Longnecker wrote:
+On Wed, 2014-07-30 at 16:10 -0700, Matt Longnecker wrote:
 > Some hardware can react autonomously at a programmed temperature.
+
+if you have a temperature sensor, then you should have a thermal zone
+device driver for it, right?
+
 > For example, an SoC might implement a last ditch throttle or a
-> hardware thermal shutdown. The driver for such a device can
+> hardware thermal shutdown.
+
+And it should be handled by the thermal zone driver, who has the
+knowledge of when to do throttle/shutdown.
+
+>  The driver for such a device can
 > register itself as a cooling_device with the thermal framework.
 > 
+cooling device just exports its cooling ability for thermal framework to
+use. It never makes any decision about thermal control.
+
 > With this change, the thermal framework notifies such a driver
 > when userspace alters the relevant trip temperature so that
 > the driver can reprogram its hardware
+> 
+When user space alters the trip temperature, the thermal zone device
+driver is aware is this change, and it can optionally program the
+hardware.
 
-Why can't you just use the existing cooling device interface?  Cooling
-devices can be bound to trip points.  Most thermal governors will
-increase cooling for that cooling device when the trip point is hit.
-The last ditch throttle or hardware thermal shutdown will then kick
-when the cooling state changes to 1.
+thanks,
+rui
+> Signed-off-by: Matt Longnecker <mlongnecker@nvidia.com>
+> ---
+>  drivers/thermal/thermal_core.c |   30 ++++++++++++++++++++++++++++++
+>  include/linux/thermal.h        |    2 ++
+>  2 files changed, 32 insertions(+)
+> 
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 71b0ec0..f25272e 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -597,6 +597,7 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+>  	struct thermal_zone_device *tz = to_thermal_zone(dev);
+>  	int trip, ret;
+>  	unsigned long temperature;
+> +	struct thermal_instance *pos = NULL;
+>  
+>  	if (!tz->ops->set_trip_temp)
+>  		return -EPERM;
+> @@ -609,6 +610,20 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+>  
+>  	ret = tz->ops->set_trip_temp(tz, trip, temperature);
+>  
+> +	/*
+> +	 * Notify bound cooling devices that this trip point changed.
+> +	 * This is useful for cooling devices which represent a behavior
+> +	 * which trips in hardware (e.g. catastrophic shutdown)
+> +	 */
+> +	list_for_each_entry(pos, &tz->thermal_instances, tz_node) {
+> +		if (pos->tz == tz && pos->trip == trip && pos->cdev) {
+> +			if (pos->cdev->ops->trip_point_changed)
+> +				pos->cdev->ops->trip_point_changed(pos->cdev,
+> +								   pos->tz,
+> +								   trip);
+> +		}
+> +	}
+> +
+>  	return ret ? ret : count;
+>  }
+>  
+> @@ -641,6 +656,7 @@ trip_point_hyst_store(struct device *dev, struct device_attribute *attr,
+>  	struct thermal_zone_device *tz = to_thermal_zone(dev);
+>  	int trip, ret;
+>  	unsigned long temperature;
+> +	struct thermal_instance *pos = NULL;
+>  
+>  	if (!tz->ops->set_trip_hyst)
+>  		return -EPERM;
+> @@ -658,6 +674,20 @@ trip_point_hyst_store(struct device *dev, struct device_attribute *attr,
+>  	 */
+>  	ret = tz->ops->set_trip_hyst(tz, trip, temperature);
+>  
+> +	/*
+> +	 * Notify bound cooling devices that this trip point changed.
+> +	 * This is useful for cooling devices which represent a behavior
+> +	 * which trips in hardware (e.g. catastrophic shutdown)
+> +	 */
+> +	list_for_each_entry(pos, &tz->thermal_instances, tz_node) {
+> +		if (pos->tz == tz && pos->trip == trip && pos->cdev) {
+> +			if (pos->cdev->ops->trip_point_changed)
+> +				pos->cdev->ops->trip_point_changed(pos->cdev,
+> +								   pos->tz,
+> +								   trip);
+> +		}
+> +	}
+> +
+>  	return ret ? ret : count;
+>  }
+>  
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index f7e11c7..7da7fc5 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -138,6 +138,8 @@ struct thermal_cooling_device_ops {
+>  	int (*get_max_state) (struct thermal_cooling_device *, unsigned long *);
+>  	int (*get_cur_state) (struct thermal_cooling_device *, unsigned long *);
+>  	int (*set_cur_state) (struct thermal_cooling_device *, unsigned long);
+> +	void (*trip_point_changed) (struct thermal_cooling_device *,
+> +				    struct thermal_zone_device *, int);
+>  };
+>  
+>  struct thermal_cooling_device {
 
-If the existing governors are too complex for what you want, you can
-have a look at the bang bang governor[0] which (I think) is bound to
-be merged soon.
-
-[0] http://article.gmane.org/gmane.linux.kernel/1753348
-
-Cheers,
-Javi
 
