@@ -1,73 +1,95 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Thu, 31 Jul 2014 18:58:46 -0400
-Message-ID: <53DACA26.1000908@redhat.com>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/3] irq / PM: New driver interface for wakeup
+ interrupts
+Date: Fri, 1 Aug 2014 01:41:31 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1408010134440.4997@nanos>
+References: <Pine.LNX.4.44L0.1407311552530.885-100000@iolanthe.rowland.org> <1483885.6aPDiGeI4u@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53DABFA6.6090503@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:38061 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750952AbaGaXlh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 19:41:37 -0400
+In-Reply-To: <1483885.6aPDiGeI4u@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
-
-
-On 07/31/2014 06:13 PM, Saravana Kannan wrote:
-> On 07/31/2014 02:08 PM, Prarit Bhargava wrote:
->>
->>
->> On 07/31/2014 04:38 PM, Saravana Kannan wrote:
->>> On 07/31/2014 01:30 PM, Prarit Bhargava wrote:
->>>>
->>>>
->>>> On 07/31/2014 04:24 PM, Saravana Kannan wrote:
->>>>>
->>>>> Prarit,
->>>>>
->>>>> I'm not an expert on sysfs locking, but I would think the specific sysfs lock
->>>>> would depend on the file/attribute group. So, can you please try to hotplug a
->>>>> core in/out (to trigger the POLICY_EXIT) and then read a sysfs file
->>>>> exported by
->>>>> the governor? scaling_governor doesn't cut it since that file is not
->>>>> removed on
->>>>> policy exit event to governor. If it's ondemand, try reading/write it's
->>>>> sampling
->>>>> rate file.
->>>>
->>>> Thanks Saravana -- will do.  I will get back to you shortly on this.
->>>>
->>>
->>> Thanks. Btw, in case you weren't already aware of it. You'll have to hoplug out
->>> all the CPUs in a cluster to trigger a POLICY_EXIT for that cluster/policy.
->>
->> Yep -- the affected_cpus file should show all the cpus in the policy IIRC.  One
->> of the systems I have has 1 cpu/policy and has 48 threads so the POLICY_EXIT is
->> called.
->>
->> I'll put something like
->>
->> while [1];
->> do
->> echo ondemand > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
->> cat /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
->> echo 20000 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
->> cat /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
->> echo 0 > /sys/devices/system/cpu/cpu1/online
->> sleep 1
->> echo 1 > /sys/devices/system/cpu/cpu1/online
->> sleep 1
->> done
->>
+On Thu, 31 Jul 2014, Rafael J. Wysocki wrote:
+> On Thursday, July 31, 2014 04:12:55 PM Alan Stern wrote:
+> > Pardon me for sticking my nose into the middle of the conversation, but
+> > here's what it looks like to me:
+> > 
+> > The entire no_irq phase of suspend/resume is starting to seem like a
+> > mistake.  We should never have done it.
 > 
-> The actual race can only happen with 2 threads. I'm just trying to trigger a
-> lockdep warning here.
+> In hindsight, I totally agree.  Question is what we can do about it now.
 
-I ran the above in two separate terminals with cpuset -c 0 and cpuset -c 1 to
-multi-thread it all.  No deadlock or LOCKDEP trace after about 1/2 hour, so I
-think we're in the clear on that concern.
+<SNIP>
 
-P.
+> So how can we eliminate the noirq phase in a workable way?
+
+The straight way to do that is breaking the world and some more and
+then fix up a gazillion of device drivers by doing a massive voodoo
+debugging effort simply because in most cases we do not get any useful
+information out of the system once the shit hits the fan.
+
+We could add instrumentation to the core code about interrupts which
+are coming in unexpectedly during suspend, but that does not solve
+anything.
+
+We really cannot call any device handler at that point as clocks might
+be turned off already and any access to a device register might simply
+cause a full undebuggable stall of the CPU.
+
+And there is no way to prove that there is no chance of a spurious
+interrupt for a given device. 
+
+So if we cannot handle it at the infrastructure level, we need to make
+sure that every fricking device driver interrupt handler has a 
+
+     if (dev->suspended)
+     	return CRAP;
+
+conditional as the first line of code in it.
+
+What is that buying us? 
+
+Nothing than a shitload of hard to understand problems, really. The
+only sensible way to handle this is at the core level.
+
+#1 There is no way that you can rely on random drivers to do the Right
+   Thing. 
+
+#2 There is no way that all hardware is implemented in a sane way.
+
+#3 You CANNOT educate the people who are tasked to implement something
+   which "does the job" to understand all the subtle details of
+   suspend/resume or whatever.
+
+In fact such an approach would take the general aims of consolidating
+repeating patterns into core infrastructure and hiding complexity from
+the driver developers ad absurdum. No thanks. We have enough
+uncomprehensible shite in drivers/* already. We really can do without
+adding more reasons for voodoo programming.
+
+This is a classic core infrastructure problem and we need to get the
+semantics and the implementation straight by considering the
+challenges of new fangled hardware and the incompentent usage of
+that. Once we have that we need to fix the few offending drivers, but
+that's a task which can be handled with grep and some brain applied.
+
+Anyone who thinks that this can and should be solved at the driver
+level is simply taking the wrong drugs or ran out of supply of the
+proper ones. Either call your shrink or your drug dealer to get out of
+that.
+
+Thanks,
+
+	tglx
+
+
+
+
