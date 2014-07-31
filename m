@@ -1,78 +1,89 @@
-From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v9 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
-Date: Fri, 1 Aug 2014 00:04:10 +0530
-Message-ID: <CAJuA9ajCP85aWL8ke_2sZ0bNXYxPHOLDHMfTVG1F7Z1aMCAyNA@mail.gmail.com>
-References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
-	<53DA4F73.5040400@gmail.com>
-	<CAJuA9ahoke1b+=TgJQ0tfb4dKh4QmT7w1PoLkB0pZueWr0Awkw@mail.gmail.com>
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [PATCH v9 6/6] clk: samsung: remove unused clock aliases and
+ update clock flags
+Date: Thu, 31 Jul 2014 20:35:28 +0200
+Message-ID: <53DA8C70.2060009@gmail.com>
+References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>	<1406707663-16656-7-git-send-email-thomas.ab@samsung.com>	<53DA4F1A.5040604@gmail.com> <CAJuA9ahCVnG8st0t_U+Nw9+eHV3fh57EjUeJw=LxCA0QzSm=AA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f173.google.com ([209.85.217.173]:47997 "EHLO
-	mail-lb0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751222AbaGaSeM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 14:34:12 -0400
-In-Reply-To: <CAJuA9ahoke1b+=TgJQ0tfb4dKh4QmT7w1PoLkB0pZueWr0Awkw@mail.gmail.com>
+Received: from mail-we0-f182.google.com ([74.125.82.182]:57642 "EHLO
+	mail-we0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751350AbaGaSfg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 14:35:36 -0400
+In-Reply-To: <CAJuA9ahCVnG8st0t_U+Nw9+eHV3fh57EjUeJw=LxCA0QzSm=AA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>
+To: Thomas Abraham <ta.omasab@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-Hi Viresh,
-
-On Thu, Jul 31, 2014 at 11:55 PM, Thomas Abraham <ta.omasab@gmail.com> wrote:
-> On Thu, Jul 31, 2014 at 7:45 PM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
->> Hi Thomas,
->>
->> On 30.07.2014 10:07, Thomas Abraham wrote:
->>> Changes since v8:
->>> - Fixes suggested by Tomasz Figa.
->>>
->>> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
->>> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
->>> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
->>> driver.
->>>
->>> This patch series is dependent on two other patches
->>> 1. ARM: dts: add CPU nodes for Exynos4 SoCs
->>>    - https://lkml.org/lkml/2014/7/21/315
->>> 2. ARM: dts: smdk5250: Specify MAX77686 pmic interrupt
->>>    - http://www.spinics.net/lists/arm-kernel/msg351134.html
->>> 3. clk: exynos4: remove duplicate div_core2 divider clock instantiation
->>>    - http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34859.html
->>
->> I think we are at final stage of works on this series. Thanks for your
->> cooperation.
->>
->> After addressing remaining minor comments from this thread, feel free to
->> add:
->>
->> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
-
-You had acked the cpufreq related changes in  v7 of this series. But
-there were some changes in v8 and so I have not included your Ack for
-v8 and v9. Could you please have one more look at the patches 4/6 [1]
-and 5/6 [2] of this v9 series and let me know if it looks okay.
-
-[1] http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34865.html
-[2] http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34864.html
-
-Thanks,
-Thomas.
-
->
+On 31.07.2014 20:24, Thomas Abraham wrote:
 > Hi Tomasz,
->
-> Thanks for your review of this series. Your review comments has helped
-> to make this series better.
->
-> Regards,
-> Thomas.
->
+> 
+> On Thu, Jul 31, 2014 at 7:43 PM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+>> On 30.07.2014 10:07, Thomas Abraham wrote:
+>>> With some of the Exynos SoCs switched over to use the generic CPUfreq drivers,
+>>> the unused clock aliases can be removed. In addition to this, the individual
+>>> clock blocks which are now encapsulated with the consolidate CPU clock type
+>>> can now be marked with read-only flags.
 >>
->> Best regards,
->> Tomasz
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> [snip]
+>>
+>>> @@ -1500,6 +1499,7 @@ static void __init exynos4_clk_init(struct device_node *np,
+>>>               exynos4_soc == EXYNOS4210 ? "Exynos4210" : "Exynos4x12",
+>>>               _get_rate("sclk_apll"), _get_rate("sclk_mpll"),
+>>>               _get_rate("sclk_epll"), _get_rate("sclk_vpll"),
+>>> +             exynos4_soc == EXYNOS4210 ? _get_rate("armclk") :
+>>>               _get_rate("div_core2"));
+>>
+>> I believe "div_core2" should work fine here for all SoCs without the
+>> need for this if.
+> 
+> The following patch is a pre-requisite for this patch.
+> http://www.spinics.net/lists/arm-kernel/msg351540.html
+> 
+> The rate can be obtained from div_core2 as well but with the cpu clock
+> now registered, the rate can be obtained from the cpu clock instance
+> instead of the div_core2 divider. And when Exynos4412 also add cpu
+> clock instance, the 'if' above will be removed.
+> 
+>>
+>>>  }
+>>>
+>>> diff --git a/drivers/clk/samsung/clk-exynos5250.c b/drivers/clk/samsung/clk-exynos5250.c
+>>> index e19e365..1d958f1 100644
+>>> --- a/drivers/clk/samsung/clk-exynos5250.c
+>>> +++ b/drivers/clk/samsung/clk-exynos5250.c
+>>
+>> [snip]
+>>
+>>> @@ -848,6 +851,6 @@ static void __init exynos5250_clk_init(struct device_node *np)
+>>>       samsung_clk_of_add_provider(np, ctx);
+>>>
+>>>       pr_info("Exynos5250: clock setup completed, armclk=%ld\n",
+>>> -                     _get_rate("div_arm2"));
+>>> +                     _get_rate("armclk"));
+>>
+>> Similarly here, no need for this change.
+> 
+> Same here. Instead of getting the rate from div_core2 divider block,
+> the cpu clock instance is used to find the rate. I would prefer to use
+> cpu clock here. Is there any reason to prefer div_core2 over the cpu
+> clock instance?
+
+Well, the reason is simple: if you don't need to change something (i.e.
+the change doesn't have any advantages), don't change it.
+
+There is no difference between obtaining the rate from div_{arm,core}2
+and armclk, so I don't see the point of changing this.
+
+In fact now when thinking of it, this has revealed one hole that will be
+unhandled by your code - if cpufreq is disabled and the bootloader
+configures div_{arm,core}{,2} with non-zero values, armclk will return
+incorrect rate. However since I haven't observed such case on existing
+platforms, fixing this might be done on top of this series, in a
+separate patch.
+
+Best regards,
+Tomasz
