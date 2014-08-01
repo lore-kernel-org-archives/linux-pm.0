@@ -1,87 +1,60 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Fri, 01 Aug 2014 12:54:52 -0700
-Message-ID: <53DBF08C.3020703@codeaurora.org>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <53DBE764.8050109@redhat.com> <53DBEC27.7050803@codeaurora.org> <53DBEDE7.90400@redhat.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2] PM / sleep: Rename symbols, functions and variables
+ related to sleep
+Date: Fri, 1 Aug 2014 22:20:01 +0200
+Message-ID: <20140801202001.GA13738@amd.pavel.ucw.cz>
+References: <5215142.eaz1Ajyth6@vostro.rjw.lan>
+ <20140730065034.GB8024@amd.pavel.ucw.cz>
+ <4200761.44Q8iqWhBp@vostro.rjw.lan>
+ <74048613.5iSL8BqdeO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:35658 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751460AbaHATyy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Aug 2014 15:54:54 -0400
-In-Reply-To: <53DBEDE7.90400@redhat.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44292 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755387AbaHAUUD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Aug 2014 16:20:03 -0400
+Content-Disposition: inline
+In-Reply-To: <74048613.5iSL8BqdeO@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
 
-On 08/01/14 12:43, Prarit Bhargava wrote:
->
-> On 08/01/2014 03:36 PM, Stephen Boyd wrote:
->> On 08/01/14 12:15, Prarit Bhargava wrote:
->>> On 08/01/2014 01:18 PM, Stephen Boyd wrote:
->>>> On 08/01/14 03:27, Prarit Bhargava wrote:
->>>>> Can you send me the test and the trace of the deadlock?  I'm not creating it with:
->>>>>
->>>> This was with conservative as the default, and switching to ondemand
->>>>
->>>> # cd /sys/devices/system/cpu/cpu2/cpufreq
->>>> # ls
->>>> affected_cpus                  scaling_available_governors
->>>> conservative                   scaling_cur_freq
->>>> cpuinfo_cur_freq               scaling_driver
->>>> cpuinfo_max_freq               scaling_governor
->>>> cpuinfo_min_freq               scaling_max_freq
->>>> cpuinfo_transition_latency     scaling_min_freq
->>>> related_cpus                   scaling_setspeed
->>>> scaling_available_frequencies  stats
->>>> # cat conservative/down_threshold
->>>> 20
->>>> # echo ondemand > scaling_governor
->>> Thanks Stephen,
->>>
->>> There's obviously a difference in our .configs.  I have a global conservative
->>> directory, ie) /sys/devices/system/cpu/cpufreq/conservative instead of a per-cpu
->>> governor file.
->>>
->>> ie) what are your .config options for CPUFREQ?
->>>
->>> Mine are:
->>>
->>> #
->>> # CPU Frequency scaling
->>> #
->>> CONFIG_CPU_FREQ=y
->>> CONFIG_CPU_FREQ_GOV_COMMON=y
->>> CONFIG_CPU_FREQ_STAT=m
->>> CONFIG_CPU_FREQ_STAT_DETAILS=y
->>> # CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
->>> # CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
->>> # CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
->>> CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE=y
->>> CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
->>> CONFIG_CPU_FREQ_GOV_POWERSAVE=y
->>> CONFIG_CPU_FREQ_GOV_USERSPACE=y
->>> CONFIG_CPU_FREQ_GOV_ONDEMAND=y
->>> CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
->>>
->>> Is there some other config option I have to set?
->> I have the same options. The difference is that my driver has a governor
->> per policy. That's set with the CPUFREQ_HAVE_GOVERNOR_PER_POLICY flag.
->> If I remove that flag I can't trigger the lockdep splat anymore with
->> this sequence and your patch.
-> I see -- so you're seeing this on arm then?  If so, let me know so I can reserve
-> one to work on :)
->
+On Fri 2014-08-01 16:33:12, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The names of several symbols, data types, functions and variables
+> related to system sleep states are confusing and don't reflect the
+> real behavior of those states correctly.
+> 
+> First of all, there generally are two sleep states that require
+> platform support and one sleep state that is platform-independent.
+> The first two of them are currently known as MEM and STANDBY,
+> although these names really only match what the states do on full
+> hardware ACPI compliant systems.  MEM in particular is supposed
+> to mean "suspend-to-RAM", but in fact it means "the deepest sleep
+> state available with platform support".  The definition of STANDBY
+> is even more arbitrary.
+> 
+> Moreover, the remaining sleep state that doesn't need platform support
+> is currently called FREEZE, which leads to double confusion with the
+> process freezer (used during transitions to all sleep states) and
+> with the freeze stage of processing devices during hibernation.
+> 
+> For these reasons, rename the PM_SUSPEND_MEM, PM_SUSPEND_STANDBY
+> and PM_SUSPEND_FREEZE symbols to PM_SUSPEND_DEEP, PM_SUSPEND_SHALLOW
+> and PM_IDLE_SLEEP, respectively, everywhere and rename data types,
+> functions and variables related to those states to match the new names
+> of the symbols.
+> 
+> This is a semi-mechanical replacement of names and it should not lead
+> to any functional differences.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I only have ARM to test on. You can set this flag in your cpufreq driver
-if you have independently scaling CPU frequencies, so it isn't
-necessarily an ARM thing.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
