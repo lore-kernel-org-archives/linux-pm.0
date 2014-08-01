@@ -1,411 +1,143 @@
-From: "edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 1/6] thermal: of: Add support for hardware-tracked trip points
-Date: Fri, 1 Aug 2014 09:15:39 -0400
-Message-ID: <CAC-25o-9WNyWWuSWw4mUrKkBzSvPYKG1NWs5Mtb0q3AjGo6wfw@mail.gmail.com>
-References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com>
-	<1403856699-2140-2-git-send-email-mperttunen@nvidia.com>
-	<20140730141639.GA3715@developer>
-	<53DB7D0D.1070508@nvidia.com>
+From: "edubezval@gmail.com" <edubezval@gmail.com>
+Subject: Re: [PATCH v2 0/9] thermal: exynos: various cleanups
+Date: Fri, 1 Aug 2014 09:18:30 -0400
+Message-ID: <CAC-25o9xxKtsphuY51Fhv3CBFKxMoJ1SGMJypLkt9fvHnTsQxA@mail.gmail.com>
+References: <1403026045-16024-1-git-send-email-b.zolnierkie@samsung.com>
+	<CADGdYn6EN-evo2KCjFfQ2h8gLoop=xTJZO3fnNxBxM9067tjxg@mail.gmail.com>
+	<20140729125848.GA18746@developer>
+	<5064578.QsHz5kKYq8@amdc1032>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <53DB7D0D.1070508-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <5064578.QsHz5kKYq8@amdc1032>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: amit daniel kachhap <amit.daniel@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Moro,
+Bartlomiej,
 
-On Fri, Aug 1, 2014 at 7:42 AM, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> Moi Eduardo :)
+On Thu, Jul 31, 2014 at 1:37 PM, Bartlomiej Zolnierkiewicz
+<b.zolnierkie@samsung.com> wrote:
 >
+> Hi,
 >
-> On 30/07/14 17:16, Eduardo Valentin wrote:
+> On Tuesday, July 29, 2014 08:58:48 AM Eduardo Valentin wrote:
+>> On Mon, Jul 28, 2014 at 08:30:53PM +0530, amit daniel kachhap wrote:
+>> > Hi Eduardo,
 >>
->> Terve Mikko,
+>> Hello Amit,
 >>
->> On Fri, Jun 27, 2014 at 11:11:34AM +0300, Mikko Perttunen wrote:
->>>
->>> This adds support for hardware-tracked trip points to the device tree
->>> thermal sensor framework.
->>>
->>> The framework supports an arbitrary number of trip points. Whenever
->>> the current temperature is updated, the trip points immediately
->>> below and above the current temperature are found. A sensor driver
+>> >
+>> > Please reject this entire series as this is not re-based recently.
+>> > Actually two point trimming which this series seeks to remove is used
+>> > by exynos3250 and is in Rui's tree
+>> > (https://git.kernel.org/cgit/linux/kernel/git/rzhang/linux.git/commit/?h=next&id=1fe56dc16a3dab400206443f70ae158c8f595c42).
+>> >
 >>
+>> Yeah, that was my original concern when I first looked this series.
+>> However, as I saw a couple of your acks I thought you would be in sync
+>> with Bartlomiej.
 >>
->> One thing I don't follow on your proposal is the groundings you need to
->> 'set_trips' whenever temperature changes. Given your intention is to add
->> support to interrupt driven devices, shouldn't we 'set_trips' just when
->> we cross the previously set trips range?
+>> I agree with Bartlomiej that we need to keep the kernel code in very
+>> good shape, but if we are removing features for the sake of reducing
+>> LOCs and we end up dropping support to known chips, I definitely won't
+>> agree.
 >
+> There is no intention to drop support for known chips.  Two months after
+> initial posting of my patchset support for the new Exynos3250 SoC was
+> posted and it happens to use the two point trimming calibration code (that
+> was introduced back in September 2011 but never used previously).  If we
+> had removed it earlier it would have to be readded partially but we are
+> talking about less than 100 lines of rather straightforward code (also
+> the calibration code in question is not perfect anyway and would profit
+> from some cleaning but I left it as it is for now).
 >
-> I think the reasoning for this was that I didn't want to make changes to
-> thermal_core and thermal_zone_device_update only calls get_temp on the zone,
-> so I had to add this code to get_temp. set_trips would anyway only be called
-> if we had crossed a trip point.
->
->
-
-I see.
-
+>> Can you guys please reach a common agreement on these cleanups?
 >>
->>> callback `set_trips' is then called with the temperatures.
->>> If there is no trip point above or below the current temperature,
->>> the passed trip temperature will be LONG_MAX or LONG_MIN respectively.
->>> In this callback, the driver should program the hardware such that
->>> it is notified when either of these trip points are triggered.
->>> When a trip point is triggered, the driver should call
->>> `thermal_zone_device_update' for the respective thermal zone. This
->>> will cause the trip points to be updated again.
->>>
->>> If the `set_trips' callback is not implemented (is NULL), the framework
->>> behaves as before.
->>
->>
->> As already mentioned by swarren, the proposal must be wider. We shall
->> keep the same support in case the device is used in a system without
->> device tree. In other words, if you want to see extra functionality for
->> interrupt driven devices, you shall update the core part too, and draft
->> a common messaging path.
+>> Bartlomiej, best thing to do is to sync your work on top of Rui's tree.
 >
+> Done, I posted v3 of patchset today:
 >
-> Yeah, this is sensible. A simpler solution would be to just tell of-thermal
-> drivers about the trip points and let the driver do whatever it wants. That
-> would mirror the way normal thermal_core drivers are done. What is your
-> opinion on that?
+>   http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35013.html
 >
+> I hope that it is acceptable for Amit now (Amit, please take a look at
+> patches when you find some time, thanks!).
 >
 
-In fact, with the current implementation in the thermal framework,
-there is nothing else left than coding the feature in the driver
-itself. The framework would know only about the existance of the
-trips. This approach would need to be cleaned whenever we write the
-fix in the core though.
+Thanks for updating the series.
 
-For this reason, I would prefer to clean the core first, then write
-the driver as a proof that the changes in core are properly covering
-the existing drivers and interrupt driven drivers.
+Amit, can you please test the series on socs you have available? I
+would prefer to merge this one now if we have a proper tested-by.
 
->>
->> In general, interrupt driven devices are not mapped in the current
->> thermal framework. That is, the current code is timer interrupt driven.
->> Other interrupt updates from devices are propagated to
->> the framework using thermal_zone_device_update(). In other words, you
->> would
->> reprogram your hardware trips from your interrupt handler/workqueue then
->> just let the framework know what is going on with temperature, via a
->> simple
->> thermal_zone_device_update().
->>
->> The way I see this going forward it would be a common interface to
->> configure the thermal zones to be monitored:
->> a. via polling only
->> b. via interrupt only
->> c. both a + b
->>
->> obviously, the above shall be informative only for userland.
->>
->> keep in mind also that changing interrupt configuration for high and low
->> temperature thresholds can be racy.
->>
->> This feature was kept in the TODO list of the of-thermal.c because the
->> we lack a proper support from the thermal framework (never came out of
->> the TODO list, I know, I apologize for this). And this missing feature
->> was spotted by the hwmon folks also, as they do have such support. So,
->> the major missing improvements on interrupt driven devices shall come in
->> three steps: (i) thermal framework, (ii) of-thermal (iii) thermal
->> framework and hwmon interface.
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
 >
->
-> For now, I think I'll submit a driver with just polling support so that we
-> can get some support in.
-
-
-I see. I will be looking into the changes in core. Whenever I have a
-working RFC I will share with the list.
-
-Terveydeksi!,
-
->
+>> For now I am dropping this series from my -next branch. :-(
 >>
->>
->> Cheers,
->>
->>
->
-> Thanks, Mikko
->
->
->>>
->>> Signed-off-by: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->>> ---
->>>   drivers/thermal/of-thermal.c | 97
->>> ++++++++++++++++++++++++++++++++++++++++++--
->>>   include/linux/thermal.h      |  3 +-
->>>   2 files changed, 95 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
->>> index 04b1be7..bfccea5 100644
->>> --- a/drivers/thermal/of-thermal.c
->>> +++ b/drivers/thermal/of-thermal.c
->>> @@ -89,6 +89,7 @@ struct __thermal_zone {
->>>        /* trip data */
->>>        int ntrips;
->>>        struct __thermal_trip *trips;
->>> +     long prev_low_trip, prev_high_trip;
->>>
->>>        /* cooling binding data */
->>>        int num_tbps;
->>> @@ -98,19 +99,66 @@ struct __thermal_zone {
->>>        void *sensor_data;
->>>        int (*get_temp)(void *, long *);
->>>        int (*get_trend)(void *, long *);
->>> +     int (*set_trips)(void *, long, long);
->>>   };
->>>
->>> +/***   Automatic trip handling   ***/
->>> +
->>> +static int of_thermal_set_trips(struct thermal_zone_device *tz, long
->>> temp)
->>> +{
->>> +     struct __thermal_zone *data = tz->devdata;
->>> +     long low = LONG_MIN, high = LONG_MAX;
->>> +     int i;
->>> +
->>> +     /* Hardware trip points not supported */
->>> +     if (!data->set_trips)
->>> +             return 0;
->>> +
->>> +     /* No need to change trip points */
->>> +     if (temp > data->prev_low_trip && temp < data->prev_high_trip)
->>> +             return 0;
->>> +
->>> +     for (i = 0; i < data->ntrips; ++i) {
->>> +             struct __thermal_trip *trip = data->trips + i;
->>> +             long trip_low = trip->temperature - trip->hysteresis;
->>> +
->>> +             if (trip_low < temp && trip_low > low)
->>> +                     low = trip_low;
->>> +
->>> +             if (trip->temperature > temp && trip->temperature < high)
->>> +                     high = trip->temperature;
->>> +     }
->>> +
->>> +     dev_dbg(&tz->device,
->>> +             "temperature %ld, updating trip points to %ld, %ld\n",
->>> +             temp, low, high);
->>> +
->>> +     data->prev_low_trip = low;
->>> +     data->prev_high_trip = high;
->>> +
->>> +     return data->set_trips(data->sensor_data, low, high);
->>> +}
->>> +
->>>   /***   DT thermal zone device callbacks   ***/
->>>
->>>   static int of_thermal_get_temp(struct thermal_zone_device *tz,
->>>                               unsigned long *temp)
->>>   {
->>>        struct __thermal_zone *data = tz->devdata;
->>> +     int err;
->>>
->>>        if (!data->get_temp)
->>>                return -EINVAL;
->>>
->>> -     return data->get_temp(data->sensor_data, temp);
->>> +     err = data->get_temp(data->sensor_data, temp);
->>> +     if (err)
->>> +             return err;
->>> +
->>> +     err = of_thermal_set_trips(tz, *temp);
->>
->>
->> Here, if you update trips whenever you get_temp, you are possibly
->> reprogramming your trips on every poll. Remember, this function will be
->> called on every poll, in the current implementation.
->>
->>> +     if (err)
->>> +             return err;
->>> +
->>> +     return 0;
->>>   }
->>>
->>>   static int of_thermal_get_trend(struct thermal_zone_device *tz, int
->>> trip,
->>> @@ -222,6 +270,22 @@ static int of_thermal_set_mode(struct
->>> thermal_zone_device *tz,
->>>        return 0;
->>>   }
->>>
->>> +static int of_thermal_update_trips(struct thermal_zone_device *tz)
->>> +{
->>> +     long temp;
->>> +     int err;
->>> +
->>> +     err = of_thermal_get_temp(tz, &temp);
->>> +     if (err)
->>> +             return err;
->>> +
->>> +     err = of_thermal_set_trips(tz, temp);
->>> +     if (err)
->>> +             return err;
->>> +
->>> +     return 0;
->>> +}
->>> +
->>>   static int of_thermal_get_trip_type(struct thermal_zone_device *tz, int
->>> trip,
->>>                                    enum thermal_trip_type *type)
->>>   {
->>> @@ -252,6 +316,7 @@ static int of_thermal_set_trip_temp(struct
->>> thermal_zone_device *tz, int trip,
->>>                                    unsigned long temp)
->>>   {
->>>        struct __thermal_zone *data = tz->devdata;
->>> +     int err;
->>>
->>>        if (trip >= data->ntrips || trip < 0)
->>>                return -EDOM;
->>> @@ -259,6 +324,10 @@ static int of_thermal_set_trip_temp(struct
->>> thermal_zone_device *tz, int trip,
->>>        /* thermal framework should take care of data->mask & (1 << trip)
->>> */
->>>        data->trips[trip].temperature = temp;
->>>
->>> +     err = of_thermal_update_trips(tz);
->>> +     if (err)
->>> +             return err;
->>> +
->>>        return 0;
->>>   }
->>>
->>> @@ -279,6 +348,7 @@ static int of_thermal_set_trip_hyst(struct
->>> thermal_zone_device *tz, int trip,
->>>                                    unsigned long hyst)
->>>   {
->>>        struct __thermal_zone *data = tz->devdata;
->>> +     int err;
->>>
->>>        if (trip >= data->ntrips || trip < 0)
->>>                return -EDOM;
->>> @@ -286,6 +356,10 @@ static int of_thermal_set_trip_hyst(struct
->>> thermal_zone_device *tz, int trip,
->>>        /* thermal framework should take care of data->mask & (1 << trip)
->>> */
->>>        data->trips[trip].hysteresis = hyst;
->>>
->>> +     err = of_thermal_update_trips(tz);
->>> +     if (err)
->>> +             return err;
->>> +
->>>        return 0;
->>>   }
->>>
->>> @@ -325,10 +399,12 @@ static struct thermal_zone_device *
->>>   thermal_zone_of_add_sensor(struct device_node *zone,
->>>                           struct device_node *sensor, void *data,
->>>                           int (*get_temp)(void *, long *),
->>> -                        int (*get_trend)(void *, long *))
->>> +                        int (*get_trend)(void *, long *),
->>> +                        int (*set_trips)(void *, long, long))
->>
->>
->> we need to clean the above arguments. they should become a .ops.
->>
->>>   {
->>>        struct thermal_zone_device *tzd;
->>>        struct __thermal_zone *tz;
->>> +     int err;
->>>
->>>        tzd = thermal_zone_get_zone_by_name(zone->name);
->>>        if (IS_ERR(tzd))
->>> @@ -339,8 +415,15 @@ thermal_zone_of_add_sensor(struct device_node *zone,
->>>        mutex_lock(&tzd->lock);
->>>        tz->get_temp = get_temp;
->>>        tz->get_trend = get_trend;
->>> +     tz->set_trips = set_trips;
->>>        tz->sensor_data = data;
->>>
->>> +     err = of_thermal_update_trips(tzd);
->>> +     if (err) {
->>> +             mutex_unlock(&tzd->lock);
->>> +             return ERR_PTR(err);
->>> +     }
->>> +
->>>        tzd->ops->get_temp = of_thermal_get_temp;
->>>        tzd->ops->get_trend = of_thermal_get_trend;
->>>        mutex_unlock(&tzd->lock);
->>> @@ -384,7 +467,8 @@ thermal_zone_of_add_sensor(struct device_node *zone,
->>>   struct thermal_zone_device *
->>>   thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
->>>                                void *data, int (*get_temp)(void *, long
->>> *),
->>> -                             int (*get_trend)(void *, long *))
->>> +                             int (*get_trend)(void *, long *),
->>> +                             int (*set_trips)(void *, long, long))
->>
->>
->> ditto.
->>
->>>   {
->>>        struct device_node *np, *child, *sensor_np;
->>>
->>> @@ -422,7 +506,8 @@ thermal_zone_of_sensor_register(struct device *dev,
->>> int sensor_id,
->>>                        return thermal_zone_of_add_sensor(child,
->>> sensor_np,
->>>                                                          data,
->>>                                                          get_temp,
->>> -                                                       get_trend);
->>> +                                                       get_trend,
->>> +                                                       set_trips);
->>
->>
->> ditto.
->>
->>>                }
->>>        }
->>>        of_node_put(np);
->>> @@ -466,6 +551,7 @@ void thermal_zone_of_sensor_unregister(struct device
->>> *dev,
->>>
->>>        tz->get_temp = NULL;
->>>        tz->get_trend = NULL;
->>> +     tz->set_trips = NULL;
->>>        tz->sensor_data = NULL;
->>>        mutex_unlock(&tzd->lock);
->>>   }
->>> @@ -671,6 +757,9 @@ thermal_of_build_thermal_zone(struct device_node *np)
->>>        /* trips */
->>>        child = of_get_child_by_name(np, "trips");
->>>
->>> +     tz->prev_high_trip = LONG_MIN;
->>> +     tz->prev_low_trip = LONG_MAX;
->>> +
->>>        /* No trips provided */
->>>        if (!child)
->>>                goto finish;
->>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->>> index f7e11c7..2f8951c 100644
->>> --- a/include/linux/thermal.h
->>> +++ b/include/linux/thermal.h
->>> @@ -248,7 +248,8 @@ struct thermal_genl_event {
->>>   struct thermal_zone_device *
->>>   thermal_zone_of_sensor_register(struct device *dev, int id,
->>>                                void *data, int (*get_temp)(void *, long
->>> *),
->>> -                             int (*get_trend)(void *, long *));
->>> +                             int (*get_trend)(void *, long *),
->>> +                             int (*set_trips)(void *, long, long));
->>>   void thermal_zone_of_sensor_unregister(struct device *dev,
->>>                                       struct thermal_zone_device *tz);
->>>   #else
->>> --
->>> 1.8.1.5
->>>
->>
+>> > Thanks,
+>> > Amit D
+>> >
+>> >
+>> > On Mon, Jul 28, 2014 at 8:07 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
+>> > > On Tue, Jun 17, 2014 at 07:27:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
+>> > >> Hi,
+>> > >>
+>> > >> This patch series contains various cleanups for EXYNOS thermal
+>> > >> driver.  Overall it decreases driver's LOC by 12%.  It is based
+>> > >> on next-20140617 kernel.  It should not cause any functionality
+>> > >> changes.
+>> > >>
+>> > >> Changes since v1:
+>> > >> - synced patches against next-20140617
+>> > >> - merged patch "thermal: exynos: remove unused defines" into
+>> > >>   "thermal: exynos: remove unused struct exynos_tmu_registers
+>> > >>   entries" one (per request from Eduardo)
+>> > >> - improved patch descriptions for patches #1-5
+>> > >> - fixed documentation for pdata->gain and pdata->reference_voltage
+>> > >> - added Reviewed-by from Amit to patches #6, #7 and #10
+>> > >> - added missing Acked-by from Kyungmin Park
+>> > >
+>> > > Pulled the series.
+>> > >
+>> > > Thanks.
+>> > >
+>> > >>
+>> > >> Best regards,
+>> > >> --
+>> > >> Bartlomiej Zolnierkiewicz
+>> > >> Samsung R&D Institute Poland
+>> > >> Samsung Electronics
+>> > >>
+>> > >>
+>> > >> Bartlomiej Zolnierkiewicz (9):
+>> > >>   thermal: exynos: remove unused struct exynos_tmu_registers entries
+>> > >>   thermal: exynos: remove dead code for HW_MODE calibration
+>> > >>   thermal: exynos: remove dead code for TYPE_TWO_POINT_TRIMMING
+>> > >>     calibration
+>> > >>   thermal: exynos: remove redundant pdata checks from
+>> > >>     exynos_tmu_initialize()
+>> > >>   thermal: exynos: remove redundant threshold_code checks from
+>> > >>     exynos_tmu_initialize()
+>> > >>   thermal: exynos: simplify temp_to_code() and code_to_temp()
+>> > >>   thermal: exynos: cache non_hw_trigger_levels in pdata
+>> > >>   thermal: exynos: remove redundant pdata checks from
+>> > >>     exynos_tmu_control()
+>> > >>   thermal: exynos: remove identical values from exynos*_tmu_registers
+>> > >>     structures
+>> > >>
+>> > >>  drivers/thermal/samsung/exynos_thermal_common.h |   1 -
+>> > >>  drivers/thermal/samsung/exynos_tmu.c            | 181 ++++--------------------
+>> > >>  drivers/thermal/samsung/exynos_tmu.h            |  90 +-----------
+>> > >>  drivers/thermal/samsung/exynos_tmu_data.c       |  64 +--------
+>> > >>  drivers/thermal/samsung/exynos_tmu_data.h       |  33 +----
+>> > >>  5 files changed, 41 insertions(+), 328 deletions(-)
+>> > >>
+>> > >> --
+>> > >> 1.8.2.3
 >
 
 
