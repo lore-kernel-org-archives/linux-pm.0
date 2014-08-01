@@ -1,33 +1,59 @@
-From: keita kobayashi <keita.kobayashi.ym@renesas.com>
-Subject: [PATCH 6/6] ARM: shmobile: Enable CPUIdle configuration for shmobile_defconfig
-Date: Fri, 1 Aug 2014 18:49:01 +0900
-Message-ID: <53DB628D.4000900@renesas.com>
+From: Wang Weidong <wangweidong1@huawei.com>
+Subject: [PATCH] cpufreq: get the cur_freq from acpi_processor_performance
+Date: Fri, 1 Aug 2014 17:52:41 +0800
+Message-ID: <53DB6369.8070907@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: horms+renesas@verge.net.au, Magnus Damm <magnus.damm@gmail.com>, rjw@rjwysocki.net
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from szxga01-in.huawei.com ([119.145.14.64]:25505 "EHLO
+	szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754003AbaHAJxA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Aug 2014 05:53:00 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, wangweidong <wangweidong1@huawei.com>
 
-Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
+As the initialized freq_tables maybe different from the p-states
+values, so the array index is different as well.
+
+p-states value: [2400 2400 2000 ...], while the freq_tables:
+[2400 2000 ... CPUFREQ_TABLE_END]. After setted the freqs 2000,
+the perf->state is 3 while the freqs_table's index should be 2.
+So when call the get_cur_freq_on_cpu, the freqs value we get
+is 2400.
+
+So, fix the problem with the correct tables.
+
+Signed-off-by: Wang Weidong <wangweidong1@huawei.com>
 ---
- arch/arm/configs/shmobile_defconfig |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/cpufreq/acpi-cpufreq.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/configs/shmobile_defconfig b/arch/arm/configs/shmobile_defconfig
-index 3b13614..63e57a5 100644
---- a/arch/arm/configs/shmobile_defconfig
-+++ b/arch/arm/configs/shmobile_defconfig
-@@ -149,6 +149,8 @@ CONFIG_NLS_ISO8859_1=y
- # CONFIG_ENABLE_WARN_DEPRECATED is not set
- # CONFIG_ENABLE_MUST_CHECK is not set
- # CONFIG_ARM_UNWIND is not set
-+CONFIG_CPU_IDLE=y
-+CONFIG_ARM_SHMOBILE_CPUIDLE=y
- CONFIG_CPU_FREQ=y
- CONFIG_CPU_FREQ_GOV_COMMON=y
- CONFIG_CPU_FREQ_STAT=y
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index b0c18ed..2b934cb 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -365,6 +365,7 @@ static u32 get_cur_val(const struct cpumask *mask)
+ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+ {
+ 	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, cpu);
++	struct acpi_processor_performance *perf;
+ 	unsigned int freq;
+ 	unsigned int cached_freq;
+ 
+@@ -375,7 +376,8 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+ 		return 0;
+ 	}
+ 
+-	cached_freq = data->freq_table[data->acpi_data->state].frequency;
++	perf = data->acpi_data;
++	cached_freq = perf->states[perf->state].core_frequency * 1000;
+ 	freq = extract_freq(get_cur_val(cpumask_of(cpu)), data);
+ 	if (freq != cached_freq) {
+ 		/*
 -- 
-1.7.9.5
+1.7.12
+
+
