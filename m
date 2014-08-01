@@ -1,7 +1,7 @@
 From: keita kobayashi <keita.kobayashi.ym@renesas.com>
-Subject: [PATCH 2/6] ARM: shmobile: APMU: Add CPUIdle function
-Date: Fri, 1 Aug 2014 18:48:30 +0900
-Message-ID: <53DB626E.7070101@renesas.com>
+Subject: [PATCH 3/6] cpuidle: shmobile: Add CPUIdle driver
+Date: Fri, 1 Aug 2014 18:48:37 +0900
+Message-ID: <53DB6275.1010707@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
@@ -11,87 +11,119 @@ To: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: horms+renesas@verge.net.au, Magnus Damm <magnus.damm@gmail.com>, rjw@rjwysocki.net
 List-Id: linux-pm@vger.kernel.org
 
-This patch add support Core-Standby state for CPUIdle.
+Add the wfi and Core-Standby for CPUIdle power states support for
+the shmobile SoCs.
 
 Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
 ---
- arch/arm/mach-shmobile/common.h       |    1 +
- arch/arm/mach-shmobile/platsmp-apmu.c |   19 +++++++++++++++++--
- 2 files changed, 18 insertions(+), 2 deletions(-)
+ drivers/cpuidle/Kconfig.arm        |    6 +++
+ drivers/cpuidle/Makefile           |    1 +
+ drivers/cpuidle/cpuidle-shmobile.c |   71 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 78 insertions(+)
+ create mode 100644 drivers/cpuidle/cpuidle-shmobile.c
 
-diff --git a/arch/arm/mach-shmobile/common.h b/arch/arm/mach-shmobile/common.h
-index 9805608..adbb422 100644
---- a/arch/arm/mach-shmobile/common.h
-+++ b/arch/arm/mach-shmobile/common.h
-@@ -32,6 +32,7 @@ extern void shmobile_handle_irq_intc(struct pt_regs *);
- extern struct platform_suspend_ops shmobile_suspend_ops;
- struct cpuidle_driver;
- extern void shmobile_cpuidle_set_driver(struct cpuidle_driver *drv);
-+extern void shmobile_smp_apmu_enter_cpuidle(void);
-
- #ifdef CONFIG_SUSPEND
- int shmobile_suspend_init(void);
-diff --git a/arch/arm/mach-shmobile/platsmp-apmu.c b/arch/arm/mach-shmobile/platsmp-apmu.c
-index ad6a383..3bfb1a0 100644
---- a/arch/arm/mach-shmobile/platsmp-apmu.c
-+++ b/arch/arm/mach-shmobile/platsmp-apmu.c
-@@ -7,6 +7,7 @@
-  * it under the terms of the GNU General Public License version 2 as
-  * published by the Free Software Foundation.
-  */
-+#include <linux/cpuidle.h>
- #include <linux/cpu_pm.h>
- #include <linux/delay.h>
- #include <linux/init.h>
-@@ -18,6 +19,7 @@
- #include <linux/threads.h>
- #include <asm/cacheflush.h>
- #include <asm/cp15.h>
-+#include <asm/cpuidle.h>
- #include <asm/proc-fns.h>
- #include <asm/smp_plat.h>
- #include <asm/suspend.h>
-@@ -148,7 +150,8 @@ int shmobile_smp_apmu_boot_secondary(unsigned int cpu, struct task_struct *idle)
- }
- #endif
-
--#if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_SUSPEND)
-+#if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_SUSPEND) || \
-+defined(CONFIG_CPU_IDLE)
- /* nicked from arch/arm/mach-exynos/hotplug.c */
- static inline void cpu_enter_lowpower_a15(void)
- {
-@@ -224,14 +227,16 @@ int shmobile_smp_apmu_cpu_kill(unsigned int cpu)
- }
- #endif
-
--#if defined(CONFIG_SUSPEND)
-+#if defined(CONFIG_SUSPEND) || defined(CONFIG_CPU_IDLE)
- static int shmobile_smp_apmu_do_suspend(unsigned long cpu)
- {
- 	shmobile_smp_apmu_cpu_shutdown(cpu);
- 	cpu_do_idle(); /* WFI selects Core Standby */
- 	return 1;
- }
-+#endif
-
-+#if defined(CONFIG_SUSPEND)
- static int shmobile_smp_apmu_enter_suspend(suspend_state_t state)
- {
- 	shmobile_smp_hook(smp_processor_id(), virt_to_phys(cpu_resume), 0);
-@@ -245,3 +250,13 @@ void __init shmobile_smp_apmu_suspend_init(void)
- 	shmobile_suspend_ops.enter = shmobile_smp_apmu_enter_suspend;
- }
- #endif
+diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+index b6d69e8..2908cd0 100644
+--- a/drivers/cpuidle/Kconfig.arm
++++ b/drivers/cpuidle/Kconfig.arm
+@@ -61,3 +61,9 @@ config ARM_EXYNOS_CPUIDLE
+ 	depends on ARCH_EXYNOS
+ 	help
+ 	  Select this to enable cpuidle for Exynos processors
 +
-+#if defined(CONFIG_CPU_IDLE)
-+void shmobile_smp_apmu_enter_cpuidle(void)
++config ARM_SHMOBILE_CPUIDLE
++	bool "Cpu Idle Driver for the shmobile SoCs"
++	depends on ARCH_SHMOBILE_MULTI
++	help
++	  Select this to enable cpuidle for shmobile SoCs
+diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+index d8bb1ff..0d24054 100644
+--- a/drivers/cpuidle/Makefile
++++ b/drivers/cpuidle/Makefile
+@@ -16,6 +16,7 @@ obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+= cpuidle-zynq.o
+ obj-$(CONFIG_ARM_U8500_CPUIDLE)         += cpuidle-ux500.o
+ obj-$(CONFIG_ARM_AT91_CPUIDLE)          += cpuidle-at91.o
+ obj-$(CONFIG_ARM_EXYNOS_CPUIDLE)        += cpuidle-exynos.o
++obj-$(CONFIG_ARM_SHMOBILE_CPUIDLE)      += cpuidle-shmobile.o
+
+ ###############################################################################
+ # MIPS drivers
+diff --git a/drivers/cpuidle/cpuidle-shmobile.c b/drivers/cpuidle/cpuidle-shmobile.c
+new file mode 100644
+index 0000000..538c4ec
+--- /dev/null
++++ b/drivers/cpuidle/cpuidle-shmobile.c
+@@ -0,0 +1,71 @@
++/*
++ * CPUIdle support code for SH-Mobile ARM
++ *
++ *  Copyright (C) 2014 Renesas Electronics Corporation
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/cpuidle.h>
++#include <linux/device.h>
++#include <linux/io.h>
++#include <linux/platform_device.h>
++#include <linux/pm.h>
++#include <linux/suspend.h>
++
++#include <asm/cpuidle.h>
++#include <asm/proc-fns.h>
++
++static void (*shmobile_enter_corestandby)(void);
++
++int shmobile_enter_cpuidle(struct cpuidle_device *dev,
++			   struct cpuidle_driver *drv,
++			   int index)
 +{
-+	cpu_pm_enter();
-+	cpu_suspend(smp_processor_id(), shmobile_smp_apmu_do_suspend);
-+	cpu_leave_lowpower();
-+	cpu_pm_exit();
++	shmobile_enter_corestandby();
++	return index;
 +}
-+#endif
++
++static struct cpuidle_driver renesas_cpuidle_driver = {
++	.name = "shmobile_cpuidle",
++	.owner = THIS_MODULE,
++	.states = {
++		ARM_CPUIDLE_WFI_STATE,
++		{
++			.name			= "C1",
++			.desc			= "Core Standby Mode",
++			.exit_latency		= 500,
++			.target_residency	= 100000,
++			.flags			= CPUIDLE_FLAG_TIME_VALID,
++			.enter			= shmobile_enter_cpuidle,
++		},
++	},
++	.state_count = 2,
++};
++
++static int shmobile_cpuidle_probe(struct platform_device *pdev)
++{
++	int ret;
++
++	shmobile_enter_corestandby = (void *)(pdev->dev.platform_data);
++
++	ret = cpuidle_register(&renesas_cpuidle_driver, NULL);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to register cpuidle driver\n");
++		return ret;
++	}
++
++	return 0;
++}
++
++static struct platform_driver shmobile_cpuidle_driver = {
++	.probe	= shmobile_cpuidle_probe,
++	.driver	= {
++		.name = "cpuidle-shmobile",
++		.owner = THIS_MODULE,
++	},
++};
++
++module_platform_driver(shmobile_cpuidle_driver);
 -- 
 1.7.9.5
