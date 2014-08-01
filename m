@@ -1,77 +1,111 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/3] irq / PM: New driver interface for wakeup interrupts
-Date: Fri, 01 Aug 2014 02:51:53 +0200
-Message-ID: <18540471.qjHjCLCFs6@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1407311552530.885-100000@iolanthe.rowland.org> <1483885.6aPDiGeI4u@vostro.rjw.lan> <alpine.DEB.2.10.1408010134440.4997@nanos>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
+ to be held for duration of changing governors [v2]
+Date: Thu, 31 Jul 2014 17:55:46 -0700
+Message-ID: <53DAE592.2030909@codeaurora.org>
+References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.10.1408010134440.4997@nanos>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.11.231]:37404 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752102AbaHAAzr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jul 2014 20:55:47 -0400
+In-Reply-To: <53DACA26.1000908@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>
 
-On Friday, August 01, 2014 01:41:31 AM Thomas Gleixner wrote:
-> On Thu, 31 Jul 2014, Rafael J. Wysocki wrote:
-> > On Thursday, July 31, 2014 04:12:55 PM Alan Stern wrote:
-> > > Pardon me for sticking my nose into the middle of the conversation, but
-> > > here's what it looks like to me:
-> > > 
-> > > The entire no_irq phase of suspend/resume is starting to seem like a
-> > > mistake.  We should never have done it.
-> > 
-> > In hindsight, I totally agree.  Question is what we can do about it now.
-> 
-> <SNIP>
-> 
-> > So how can we eliminate the noirq phase in a workable way?
-> 
-> The straight way to do that is breaking the world and some more and
-> then fix up a gazillion of device drivers by doing a massive voodoo
-> debugging effort simply because in most cases we do not get any useful
-> information out of the system once the shit hits the fan.
-> 
-> We could add instrumentation to the core code about interrupts which
-> are coming in unexpectedly during suspend, but that does not solve
-> anything.
-> 
-> We really cannot call any device handler at that point as clocks might
-> be turned off already and any access to a device register might simply
-> cause a full undebuggable stall of the CPU.
-> 
-> And there is no way to prove that there is no chance of a spurious
-> interrupt for a given device. 
-> 
-> So if we cannot handle it at the infrastructure level, we need to make
-> sure that every fricking device driver interrupt handler has a 
-> 
->      if (dev->suspended)
->      	return CRAP;
-> 
-> conditional as the first line of code in it.
-> 
-> What is that buying us? 
-> 
-> Nothing than a shitload of hard to understand problems, really. The
-> only sensible way to handle this is at the core level.
-> 
-> #1 There is no way that you can rely on random drivers to do the Right
->    Thing. 
-> 
-> #2 There is no way that all hardware is implemented in a sane way.
-> 
-> #3 You CANNOT educate the people who are tasked to implement something
->    which "does the job" to understand all the subtle details of
->    suspend/resume or whatever.
+On 07/31/2014 03:58 PM, Prarit Bhargava wrote:
+>
+>
+> On 07/31/2014 06:13 PM, Saravana Kannan wrote:
+>> On 07/31/2014 02:08 PM, Prarit Bhargava wrote:
+>>>
+>>>
+>>> On 07/31/2014 04:38 PM, Saravana Kannan wrote:
+>>>> On 07/31/2014 01:30 PM, Prarit Bhargava wrote:
+>>>>>
+>>>>>
+>>>>> On 07/31/2014 04:24 PM, Saravana Kannan wrote:
+>>>>>>
+>>>>>> Prarit,
+>>>>>>
+>>>>>> I'm not an expert on sysfs locking, but I would think the specific sysfs lock
+>>>>>> would depend on the file/attribute group. So, can you please try to hotplug a
+>>>>>> core in/out (to trigger the POLICY_EXIT) and then read a sysfs file
+>>>>>> exported by
+>>>>>> the governor? scaling_governor doesn't cut it since that file is not
+>>>>>> removed on
+>>>>>> policy exit event to governor. If it's ondemand, try reading/write it's
+>>>>>> sampling
+>>>>>> rate file.
+>>>>>
+>>>>> Thanks Saravana -- will do.  I will get back to you shortly on this.
+>>>>>
+>>>>
+>>>> Thanks. Btw, in case you weren't already aware of it. You'll have to hoplug out
+>>>> all the CPUs in a cluster to trigger a POLICY_EXIT for that cluster/policy.
+>>>
+>>> Yep -- the affected_cpus file should show all the cpus in the policy IIRC.  One
+>>> of the systems I have has 1 cpu/policy and has 48 threads so the POLICY_EXIT is
+>>> called.
+>>>
+>>> I'll put something like
+>>>
+>>> while [1];
+>>> do
+>>> echo ondemand > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
+>>> cat /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+>>> echo 20000 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+>>> cat /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+>>> echo 0 > /sys/devices/system/cpu/cpu1/online
+>>> sleep 1
+>>> echo 1 > /sys/devices/system/cpu/cpu1/online
+>>> sleep 1
+>>> done
+>>>
+>>
+>> The actual race can only happen with 2 threads. I'm just trying to trigger a
+>> lockdep warning here.
+>
+> I ran the above in two separate terminals with cpuset -c 0 and cpuset -c 1 to
+> multi-thread it all.  No deadlock or LOCKDEP trace after about 1/2 hour, so I
+> think we're in the clear on that concern.
+>
 
-These are fair points.
+I wasn't convinced. So, I took some help from Stephen to test it.
 
-However, if the driver implements ->runtime_suspend, it has to handle
-the "my device is suspended" condition in its interrupt handler regardless.
+It's been a while, so I didn't remember the original issue clearly when 
+I gave you some test suggestions. Now that I looked at the code more 
+closely, I have a proper way to reproduce the original issue.
 
-For such a driver doing the same over system suspend/resume shouldn't
-be a real problem.
+Nack for this patch for 2 reasons:
+1. You seem to have accidentally removed a GOV_STOP in your patch. We 
+definitely can't do that. This broke changing governors and that's why 
+your patch didn't cause any issues. Because all your governor echos were 
+failing.
+2. When we fixed that and actually tried a proper test (not the one I 
+gave you), we reproduced the original issue.
 
-Rafael
+To reproduce original issue:
+Preconditions:
+* lockdep is enabled
+* governor per policy is enabled
+
+Steps:
+1. Set governor to ondemand.
+2. Cat one of the ondemand sysfs files.
+3. Change governor to conservative.
+
+When you do that, there's an AB, BA dead lock issue with one thread 
+trying to cat a governor sysfs file and another thread trying to change 
+governors.
+
+-Saravana
+
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
