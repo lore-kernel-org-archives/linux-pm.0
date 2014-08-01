@@ -1,79 +1,130 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [RFC] [PATCH 3/3] QoS: Enhance framework to support cpu/irq
- specific QoS requests
-Date: Fri, 1 Aug 2014 11:11:31 -0600 (MDT)
-Message-ID: <alpine.OSX.2.03.1408011103100.59887@ilina-mac.local>
-References: <1406307334-8288-1-git-send-email-lina.iyer@linaro.org> <1406307334-8288-4-git-send-email-lina.iyer@linaro.org> <53DBB92F.60602@linaro.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
+ to be held for duration of changing governors [v2]
+Date: Fri, 01 Aug 2014 10:18:32 -0700
+Message-ID: <53DBCBE8.6010809@codeaurora.org>
+References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:45399 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbaHARLf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Aug 2014 13:11:35 -0400
-Received: by mail-pd0-f181.google.com with SMTP id g10so5873172pdj.40
-        for <linux-pm@vger.kernel.org>; Fri, 01 Aug 2014 10:11:34 -0700 (PDT)
-In-Reply-To: <53DBB92F.60602@linaro.org>
+Received: from smtp.codeaurora.org ([198.145.11.231]:56680 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751460AbaHARSe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Aug 2014 13:18:34 -0400
+In-Reply-To: <53DB6B81.6050400@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Lina Iyer <lina.iyer@linaro.org>, linux-pm@vger.kernel.org, linus.walleij@linaro.org, arnd.bergmann@linaro.org, rjw@rjwysocki.net, tglx@linutronix.de, Praveen Chidambaram <pchidamb@codeaurora.org>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
 
-On Fri, 1 Aug 2014, Daniel Lezcano wrote:
+On 08/01/14 03:27, Prarit Bhargava wrote:
+>
+> Can you send me the test and the trace of the deadlock?  I'm not creating it with:
+>
 
-> On 07/25/2014 06:55 PM, Lina Iyer wrote:
->> +int pm_qos_request_for_cpumask(param_class, cpumask):
->> +Returns the aggregated value for a given PM QoS class for the specified
->> +cpumask.
->> +
->
-> You can get rid of 'pm_qos_request_for_cpu' because that will be easy to call 
-> 'pm_qos_request_for_cpumask' with cpumask_of(cpu).
-Sure, but pm_qos_request_for_cpu() returns without locking which the 
--for_cpu_mask() cannot. Is that still desirable?
+This was with conservative as the default, and switching to ondemand
 
->
-> IMO, you should split this patch into several. First bring per cpu without 
-> adding new apis and then bring one by one the different changes.
-Will do.
+# cd /sys/devices/system/cpu/cpu2/cpufreq
+# ls
+affected_cpus                  scaling_available_governors
+conservative                   scaling_cur_freq
+cpuinfo_cur_freq               scaling_driver
+cpuinfo_max_freq               scaling_governor
+cpuinfo_min_freq               scaling_max_freq
+cpuinfo_transition_latency     scaling_min_freq
+related_cpus                   scaling_setspeed
+scaling_available_frequencies  stats
+# cat conservative/down_threshold
+20
+# echo ondemand > scaling_governor
 
->>   	.no_constraint_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
->>   	.type = PM_QOS_MAX,
->> @@ -157,6 +166,34 @@ static inline void pm_qos_set_value(struct 
->> pm_qos_constraints *c, s32 value)
->>   	c->target_value = value;
->>   }
->
-> Wouldn't make sense to create a per_cpu variable pm qos constraints instead 
-> of creating an array of cpus ?
-Sure. But we most likely would not access it from the respective cpu. But 
-can be done.
+ ======================================================
+ [ INFO: possible circular locking dependency detected ]
+ 3.16.0-rc3-00039-ge1e38f124d87 #47 Not tainted
+ -------------------------------------------------------
+ sh/75 is trying to acquire lock:
+  (s_active#9){++++..}, at: [<c0358a94>] kernfs_remove_by_name_ns+0x3c/0x84
 
->
->> +static inline void pm_qos_set_value_for_cpus(struct pm_qos_constraints *c)
->> +{
->> +	struct pm_qos_request *req = NULL;
->> +	int cpu;
->> +	s32 qos_val[NR_CPUS] = { [0 ... (NR_CPUS - 1)] = c->default_value };
->
-> The kernel stack size is small, IIRC, 2xPAGE_SIZE. NR_CPUS could be big 
-> (1024). That may lead to a stack overflow on some systems.
->
-Good point. I will allocate this.
+ but task is already holding lock:
+  (&policy->rwsem){+++++.}, at: [<c05ab1f0>] store+0x68/0xb8
 
->> +	 * there are no active users of the irq_notify object, i.e, kref 
->> count
->> +	 * is non-zero. This could happen if there is an active 'notify'
->> +	 * callback happening while the pm_qos_remove request is called. Wait
->> +	 * until the release callback clears the cpus_affine mask.
->> +	 */
->> +	if (req->type == PM_QOS_REQ_AFFINE_IRQ) {
->> +		while (!cpumask_empty(&req->cpus_affine) && count--)
->> +			msleep(50);
->> +		BUG_ON(!count);
->> +	}
->
-> You shouldn't use this approach but a locking mechanism.
->
-Okay, will change.
+ which lock already depends on the new lock.
+
+
+ the existing dependency chain (in reverse order) is:
+
+-> #1 (&policy->rwsem){+++++.}:
+        [<c0359234>] kernfs_fop_open+0x138/0x298
+        [<c02fa3f4>] do_dentry_open.isra.12+0x1b0/0x2f0
+        [<c02fa604>] finish_open+0x20/0x38
+        [<c0308d34>] do_last.isra.37+0x5ac/0xb68
+        [<c03093a4>] path_openat+0xb4/0x5d8
+        [<c0309bcc>] do_filp_open+0x2c/0x80
+        [<c02fb558>] do_sys_open+0x10c/0x1c8
+        [<c020f0a0>] ret_fast_syscall+0x0/0x48
+
+-> #0 (s_active#9){++++..}:
+        [<c0357d18>] __kernfs_remove+0x250/0x300
+        [<c0358a94>] kernfs_remove_by_name_ns+0x3c/0x84
+        [<c035aa78>] remove_files+0x34/0x78
+        [<c035aee0>] sysfs_remove_group+0x40/0x98
+        [<c05b0560>] cpufreq_governor_dbs+0x4c0/0x6ec
+        [<c05abebc>] __cpufreq_governor+0x118/0x200
+        [<c05ac0fc>] cpufreq_set_policy+0x158/0x2ac
+        [<c05ad5e4>] store_scaling_governor+0x6c/0x94
+        [<c05ab210>] store+0x88/0xb8
+        [<c035a00c>] sysfs_kf_write+0x4c/0x50
+        [<c03594d4>] kernfs_fop_write+0xc0/0x180
+        [<c02fc5c8>] vfs_write+0xa0/0x1a8
+        [<c02fc9d4>] SyS_write+0x40/0x8c
+        [<c020f0a0>] ret_fast_syscall+0x0/0x48
+
+ other info that might help us debug this:
+
+  Possible unsafe locking scenario:
+
+        CPU0                    CPU1
+        ----                    ----
+   lock(&policy->rwsem);
+                                lock(s_active#9);
+                                lock(&policy->rwsem);
+   lock(s_active#9);
+
+  *** DEADLOCK ***
+
+ 6 locks held by sh/75:
+  #0:  (sb_writers#4){.+.+..}, at: [<c02fc6a8>] vfs_write+0x180/0x1a8
+  #1:  (&of->mutex){+.+...}, at: [<c0359498>] kernfs_fop_write+0x84/0x180
+  #2:  (s_active#10){.+.+..}, at: [<c03594a0>] kernfs_fop_write+0x8c/0x180
+  #3:  (cpu_hotplug.lock){++++++}, at: [<c0221ef8>] get_online_cpus+0x38/0x9c
+  #4:  (cpufreq_rwsem){.+.+.+}, at: [<c05ab1d8>] store+0x50/0xb8
+  #5:  (&policy->rwsem){+++++.}, at: [<c05ab1f0>] store+0x68/0xb8
+
+ stack backtrace:
+ CPU: 0 PID: 75 Comm: sh Not tainted 3.16.0-rc3-00039-ge1e38f124d87 #47
+ [<c0214de8>] (unwind_backtrace) from [<c02123f8>] (show_stack+0x10/0x14)
+ [<c02123f8>] (show_stack) from [<c0709e5c>] (dump_stack+0x70/0xbc)
+ [<c0709e5c>] (dump_stack) from [<c070722c>] (print_circular_bug+0x280/0x2d4)
+ [<c070722c>] (print_circular_bug) from [<c02629cc>] (__lock_acquire+0x18d0/0x1abc)
+ [<c02629cc>] (__lock_acquire) from [<c026310c>] (lock_acquire+0x9c/0x138)
+ [<c026310c>] (lock_acquire) from [<c0357d18>] (__kernfs_remove+0x250/0x300)
+ [<c0357d18>] (__kernfs_remove) from [<c0358a94>] (kernfs_remove_by_name_ns+0x3c/0x84)
+ [<c0358a94>] (kernfs_remove_by_name_ns) from [<c035aa78>] (remove_files+0x34/0x78)
+ [<c035aa78>] (remove_files) from [<c035aee0>] (sysfs_remove_group+0x40/0x98)
+ [<c035aee0>] (sysfs_remove_group) from [<c05b0560>] (cpufreq_governor_dbs+0x4c0/0x6ec)
+ [<c05b0560>] (cpufreq_governor_dbs) from [<c05abebc>] (__cpufreq_governor+0x118/0x200)
+ [<c05abebc>] (__cpufreq_governor) from [<c05ac0fc>] (cpufreq_set_policy+0x158/0x2ac)
+ [<c05ac0fc>] (cpufreq_set_policy) from [<c05ad5e4>] (store_scaling_governor+0x6c/0x94)
+ [<c05ad5e4>] (store_scaling_governor) from [<c05ab210>] (store+0x88/0xb8)
+ [<c05ab210>] (store) from [<c035a00c>] (sysfs_kf_write+0x4c/0x50)
+ [<c035a00c>] (sysfs_kf_write) from [<c03594d4>] (kernfs_fop_write+0xc0/0x180)
+ [<c03594d4>] (kernfs_fop_write) from [<c02fc5c8>] (vfs_write+0xa0/0x1a8)
+ [<c02fc5c8>] (vfs_write) from [<c02fc9d4>] (SyS_write+0x40/0x8c)
+ [<c02fc9d4>] (SyS_write) from [<c020f0a0>] (ret_fast_syscall+0x0/0x48)
+
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
 
