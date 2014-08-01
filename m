@@ -1,59 +1,123 @@
-From: Wang Weidong <wangweidong1@huawei.com>
-Subject: [PATCH] cpufreq: get the cur_freq from acpi_processor_performance
-Date: Fri, 1 Aug 2014 17:52:41 +0800
-Message-ID: <53DB6369.8070907@huawei.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
+ to be held for duration of changing governors [v2]
+Date: Fri, 01 Aug 2014 06:24:38 -0400
+Message-ID: <53DB6AE6.3040703@redhat.com>
+References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga01-in.huawei.com ([119.145.14.64]:25505 "EHLO
-	szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754003AbaHAJxA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Aug 2014 05:53:00 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59523 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752946AbaHAKYq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 1 Aug 2014 06:24:46 -0400
+In-Reply-To: <53DAE592.2030909@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, wangweidong <wangweidong1@huawei.com>
-
-As the initialized freq_tables maybe different from the p-states
-values, so the array index is different as well.
-
-p-states value: [2400 2400 2000 ...], while the freq_tables:
-[2400 2000 ... CPUFREQ_TABLE_END]. After setted the freqs 2000,
-the perf->state is 3 while the freqs_table's index should be 2.
-So when call the get_cur_freq_on_cpu, the freqs value we get
-is 2400.
-
-So, fix the problem with the correct tables.
-
-Signed-off-by: Wang Weidong <wangweidong1@huawei.com>
----
- drivers/cpufreq/acpi-cpufreq.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index b0c18ed..2b934cb 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -365,6 +365,7 @@ static u32 get_cur_val(const struct cpumask *mask)
- static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
- {
- 	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, cpu);
-+	struct acpi_processor_performance *perf;
- 	unsigned int freq;
- 	unsigned int cached_freq;
- 
-@@ -375,7 +376,8 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
- 		return 0;
- 	}
- 
--	cached_freq = data->freq_table[data->acpi_data->state].frequency;
-+	perf = data->acpi_data;
-+	cached_freq = perf->states[perf->state].core_frequency * 1000;
- 	freq = extract_freq(get_cur_val(cpumask_of(cpu)), data);
- 	if (freq != cached_freq) {
- 		/*
--- 
-1.7.12
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>
 
 
+
+On 07/31/2014 08:55 PM, Saravana Kannan wrote:
+> On 07/31/2014 03:58 PM, Prarit Bhargava wrote:
+>>
+>>
+>> On 07/31/2014 06:13 PM, Saravana Kannan wrote:
+>>> On 07/31/2014 02:08 PM, Prarit Bhargava wrote:
+>>>>
+>>>>
+>>>> On 07/31/2014 04:38 PM, Saravana Kannan wrote:
+>>>>> On 07/31/2014 01:30 PM, Prarit Bhargava wrote:
+>>>>>>
+>>>>>>
+>>>>>> On 07/31/2014 04:24 PM, Saravana Kannan wrote:
+>>>>>>>
+>>>>>>> Prarit,
+>>>>>>>
+>>>>>>> I'm not an expert on sysfs locking, but I would think the specific sysfs
+>>>>>>> lock
+>>>>>>> would depend on the file/attribute group. So, can you please try to
+>>>>>>> hotplug a
+>>>>>>> core in/out (to trigger the POLICY_EXIT) and then read a sysfs file
+>>>>>>> exported by
+>>>>>>> the governor? scaling_governor doesn't cut it since that file is not
+>>>>>>> removed on
+>>>>>>> policy exit event to governor. If it's ondemand, try reading/write it's
+>>>>>>> sampling
+>>>>>>> rate file.
+>>>>>>
+>>>>>> Thanks Saravana -- will do.  I will get back to you shortly on this.
+>>>>>>
+>>>>>
+>>>>> Thanks. Btw, in case you weren't already aware of it. You'll have to hoplug
+>>>>> out
+>>>>> all the CPUs in a cluster to trigger a POLICY_EXIT for that cluster/policy.
+>>>>
+>>>> Yep -- the affected_cpus file should show all the cpus in the policy IIRC.  One
+>>>> of the systems I have has 1 cpu/policy and has 48 threads so the POLICY_EXIT is
+>>>> called.
+>>>>
+>>>> I'll put something like
+>>>>
+>>>> while [1];
+>>>> do
+>>>> echo ondemand > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
+>>>> cat /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+>>>> echo 20000 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+>>>> cat /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+>>>> echo 0 > /sys/devices/system/cpu/cpu1/online
+>>>> sleep 1
+>>>> echo 1 > /sys/devices/system/cpu/cpu1/online
+>>>> sleep 1
+>>>> done
+>>>>
+>>>
+>>> The actual race can only happen with 2 threads. I'm just trying to trigger a
+>>> lockdep warning here.
+>>
+>> I ran the above in two separate terminals with cpuset -c 0 and cpuset -c 1 to
+>> multi-thread it all.  No deadlock or LOCKDEP trace after about 1/2 hour, so I
+>> think we're in the clear on that concern.
+>>
+> 
+> I wasn't convinced. So, I took some help from Stephen to test it.
+> 
+> It's been a while, so I didn't remember the original issue clearly when I gave
+> you some test suggestions. Now that I looked at the code more closely, I have a
+> proper way to reproduce the original issue.
+> 
+> Nack for this patch for 2 reasons:
+> 1. You seem to have accidentally removed a GOV_STOP in your patch. We definitely
+> can't do that. This broke changing governors and that's why your patch didn't
+> cause any issues. Because all your governor echos were failing.
+
+Yes, I mentioned that yesterday in the thread.
+
+> 2. When we fixed that and actually tried a proper test (not the one I gave you),
+> we reproduced the original issue.
+> 
+> To reproduce original issue:
+> Preconditions:
+> * lockdep is enabled
+> * governor per policy is enabled
+
+Okay.  I have that ...
+
+> 
+> Steps:
+> 1. Set governor to ondemand.
+> 2. Cat one of the ondemand sysfs files.
+> 3. Change governor to conservative.
+> 
+> When you do that, there's an AB, BA dead lock issue with one thread trying to
+> cat a governor sysfs file and another thread trying to change governors.
+
+Okay, I'm going to try this too...
+
+P.
+
+> 
+> -Saravana
+> 
