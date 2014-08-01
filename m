@@ -1,146 +1,103 @@
-From: "edubezval@gmail.com" <edubezval@gmail.com>
-Subject: Re: [PATCH v2 0/9] thermal: exynos: various cleanups
-Date: Fri, 1 Aug 2014 09:18:30 -0400
-Message-ID: <CAC-25o9xxKtsphuY51Fhv3CBFKxMoJ1SGMJypLkt9fvHnTsQxA@mail.gmail.com>
-References: <1403026045-16024-1-git-send-email-b.zolnierkie@samsung.com>
-	<CADGdYn6EN-evo2KCjFfQ2h8gLoop=xTJZO3fnNxBxM9067tjxg@mail.gmail.com>
-	<20140729125848.GA18746@developer>
-	<5064578.QsHz5kKYq8@amdc1032>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/3] irq / PM: New driver interface for wakeup interruptsn
+Date: Fri, 01 Aug 2014 15:45:41 +0200
+Message-ID: <19816559.O6O5RjzKM1@vostro.rjw.lan>
+References: <20140724212620.GO3935@laptop> <1624300.2IhdzCt5pu@vostro.rjw.lan> <alpine.DEB.2.10.1408010217090.4997@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <5064578.QsHz5kKYq8@amdc1032>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: amit daniel kachhap <amit.daniel@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58864 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750716AbaHAN1H (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Aug 2014 09:27:07 -0400
+In-Reply-To: <alpine.DEB.2.10.1408010217090.4997@nanos>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
-Bartlomiej,
+On Friday, August 01, 2014 11:40:55 AM Thomas Gleixner wrote:
+> On Fri, 1 Aug 2014, Rafael J. Wysocki wrote:
+> > On Friday, August 01, 2014 12:16:23 AM Thomas Gleixner wrote:
 
-On Thu, Jul 31, 2014 at 1:37 PM, Bartlomiej Zolnierkiewicz
-<b.zolnierkie@samsung.com> wrote:
->
-> Hi,
->
-> On Tuesday, July 29, 2014 08:58:48 AM Eduardo Valentin wrote:
->> On Mon, Jul 28, 2014 at 08:30:53PM +0530, amit daniel kachhap wrote:
->> > Hi Eduardo,
->>
->> Hello Amit,
->>
->> >
->> > Please reject this entire series as this is not re-based recently.
->> > Actually two point trimming which this series seeks to remove is used
->> > by exynos3250 and is in Rui's tree
->> > (https://git.kernel.org/cgit/linux/kernel/git/rzhang/linux.git/commit/?h=next&id=1fe56dc16a3dab400206443f70ae158c8f595c42).
->> >
->>
->> Yeah, that was my original concern when I first looked this series.
->> However, as I saw a couple of your acks I thought you would be in sync
->> with Bartlomiej.
->>
->> I agree with Bartlomiej that we need to keep the kernel code in very
->> good shape, but if we are removing features for the sake of reducing
->> LOCs and we end up dropping support to known chips, I definitely won't
->> agree.
->
-> There is no intention to drop support for known chips.  Two months after
-> initial posting of my patchset support for the new Exynos3250 SoC was
-> posted and it happens to use the two point trimming calibration code (that
-> was introduced back in September 2011 but never used previously).  If we
-> had removed it earlier it would have to be readded partially but we are
-> talking about less than 100 lines of rather straightforward code (also
-> the calibration code in question is not perfect anyway and would profit
-> from some cleaning but I left it as it is for now).
->
->> Can you guys please reach a common agreement on these cleanups?
->>
->> Bartlomiej, best thing to do is to sync your work on top of Rui's tree.
->
-> Done, I posted v3 of patchset today:
->
->   http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35013.html
->
-> I hope that it is acceptable for Amit now (Amit, please take a look at
-> patches when you find some time, thanks!).
->
+[cut]
 
-Thanks for updating the series.
+> > > > And now there's one more piece of it which is suspend-to-idle (aka "freeze").
+> > > > That doesn't go all the way to syscore_suspend(), but basically stops after
+> > > > finishing the "noirq" phase of suspending devices.  Then, it idles the CPUs
+> > > > and waits for interrupts that will take them out of idle.  Only some of those
+> > > > interrupts are wakeup events, so it only resumes when __pm_wakeup_event() or
+> > > > __pm_relax() is called in the process of handling the interrupts.
+> > > >
+> > > > Of course, it could be implemented differently, but that was the simplest
+> > > > way to do that.  It still can be changed, but I'd really like it not to have
+> > > > to go through all of the disabling nonboot CPUs and sysfore_suspend(), because
+> > > > that simply isn't necessary (and it avoids a metric ton of problems with CPU
+> > > > offline/online).  And of course, it has to work on x86 too.
+> > > 
+> > > Right. So one thing which would make the situation more clear is that
+> > > the interrupt handler needs to tell the core code about this by
+> > > returning something like IRQ_HANDLED_PMWAKE and the core kicks the
+> > > suspend-to-idle logic back to life. I'm not sure whether the extra
+> > > return value is actually necessary, we might even map it to
+> > > IRQ_HANDLED in the core as we know that we are in the suspend
+> > > state.
+> > 
+> > I'm not sure I'm following you here.  Do you mean that upon receiving
+> > IRQ_HANDLED_PMWAKE from an interrupt handler the core will know that
+> > this was a wakeup event and will trigger a resume from suspend-to-idle?
+> 
+> Correct. Whether we need the extra return code is debatable. But yes,
+> we want to talk to the PM/suspend/resume thing at core level instead
+> of letting drivers use random interfaces which happen to be exported
+> for one reason or the other, but definitely not for the purpose of
+> random driver.
 
-Amit, can you please test the series on socs you have available? I
-would prefer to merge this one now if we have a proper tested-by.
+OK, I guess "IRQ_HANDLED from a wakeup interrupt" may be interpreted as
+IRQ_HANDLED_PMWAKE.  On the other hand, if that's going to be handled in
+handle_irq_event_percpu(), then using a special return code would save us
+a brach for IRQ_HANDLED interrupts.  We could convert it to IRQ_HANDLED
+immediately then.
 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
->
->> For now I am dropping this series from my -next branch. :-(
->>
->> > Thanks,
->> > Amit D
->> >
->> >
->> > On Mon, Jul 28, 2014 at 8:07 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
->> > > On Tue, Jun 17, 2014 at 07:27:16PM +0200, Bartlomiej Zolnierkiewicz wrote:
->> > >> Hi,
->> > >>
->> > >> This patch series contains various cleanups for EXYNOS thermal
->> > >> driver.  Overall it decreases driver's LOC by 12%.  It is based
->> > >> on next-20140617 kernel.  It should not cause any functionality
->> > >> changes.
->> > >>
->> > >> Changes since v1:
->> > >> - synced patches against next-20140617
->> > >> - merged patch "thermal: exynos: remove unused defines" into
->> > >>   "thermal: exynos: remove unused struct exynos_tmu_registers
->> > >>   entries" one (per request from Eduardo)
->> > >> - improved patch descriptions for patches #1-5
->> > >> - fixed documentation for pdata->gain and pdata->reference_voltage
->> > >> - added Reviewed-by from Amit to patches #6, #7 and #10
->> > >> - added missing Acked-by from Kyungmin Park
->> > >
->> > > Pulled the series.
->> > >
->> > > Thanks.
->> > >
->> > >>
->> > >> Best regards,
->> > >> --
->> > >> Bartlomiej Zolnierkiewicz
->> > >> Samsung R&D Institute Poland
->> > >> Samsung Electronics
->> > >>
->> > >>
->> > >> Bartlomiej Zolnierkiewicz (9):
->> > >>   thermal: exynos: remove unused struct exynos_tmu_registers entries
->> > >>   thermal: exynos: remove dead code for HW_MODE calibration
->> > >>   thermal: exynos: remove dead code for TYPE_TWO_POINT_TRIMMING
->> > >>     calibration
->> > >>   thermal: exynos: remove redundant pdata checks from
->> > >>     exynos_tmu_initialize()
->> > >>   thermal: exynos: remove redundant threshold_code checks from
->> > >>     exynos_tmu_initialize()
->> > >>   thermal: exynos: simplify temp_to_code() and code_to_temp()
->> > >>   thermal: exynos: cache non_hw_trigger_levels in pdata
->> > >>   thermal: exynos: remove redundant pdata checks from
->> > >>     exynos_tmu_control()
->> > >>   thermal: exynos: remove identical values from exynos*_tmu_registers
->> > >>     structures
->> > >>
->> > >>  drivers/thermal/samsung/exynos_thermal_common.h |   1 -
->> > >>  drivers/thermal/samsung/exynos_tmu.c            | 181 ++++--------------------
->> > >>  drivers/thermal/samsung/exynos_tmu.h            |  90 +-----------
->> > >>  drivers/thermal/samsung/exynos_tmu_data.c       |  64 +--------
->> > >>  drivers/thermal/samsung/exynos_tmu_data.h       |  33 +----
->> > >>  5 files changed, 41 insertions(+), 328 deletions(-)
->> > >>
->> > >> --
->> > >> 1.8.2.3
->
+[cut]
 
+> > I'm not sure about the ordering, though.  It would be good to have a working
+> > replacement for the IRQF_NO_SUSPEND things that we'll be removing in 1, for
+> > example.  So since we need to do 3) IRQF_SHARED for both IRQF_NO_SUSPEND and
+> > wakeup, as you said, would it be practical to start with that one?
+> 
+> The numbering was not meant as ordering, it was just to seperate the
+> various issues which we need to look at.
 
+OK, I'll take a stab at the IRQF_SHARED thing if you don't mind.
 
--- 
-Eduardo Bezerra Valentin
+Here's my current understanding of what can be done for IRQF_NO_SUSPEND.
+
+In suspend_device_irqs():
+
+(1) If all actions in the list have the same setting (eg. IRQF_NO_SUSPEND unset),
+    keep the current behavior.
+(2) If the actions have different settings:
+    - Actions with IRQF_NO_SUSPEND set are not modified.
+    - Actions with IRQF_NO_SUSPEND unset are switched over to a stub handler.
+    - IRQS_SUSPEND_MODE (new flag) is set for the IRQ.
+
+In note_interrupt():
+
+  If action_ret is IRQ_NONE and IRQS_SUSPEND_MODE is set for the IRQ, disable the
+  IRQ, set IRQS_SUSPENDED for it and call system_wakeup(BAD_INTERRUPT) (that will
+  abort suspend if still in progress or break the suspend-to-idle loop).
+
+In resume_device_irqs():
+
+(1) If IRQS_SUSPEND_MODE is set, switch over actions with IRQF_NO_SUSPEND unset
+    to their original handlers and clear the flag.  Fall through.
+(2) If IRQS_SUSPENDED is set, clear the flag and enable the interrupt.
+
+The stub handler only needs to return IRQ_NONE unconditionally in that case.
+
+Does that make sense?
+
+Rafael
+
