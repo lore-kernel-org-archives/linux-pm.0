@@ -1,63 +1,101 @@
-From: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-Subject: Re: [PATCH v9 3/6] ARM: dts: Exynos: add CPU OPP and regulator supply
- property
-Date: Sat, 02 Aug 2014 05:49:21 +0200
-Message-ID: <53DC5FC1.7060700@collabora.co.uk>
-References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com> <1406707663-16656-4-git-send-email-thomas.ab@samsung.com>
+From: Himangi Saraogi <himangi774@gmail.com>
+Subject: [PATCH] cpufreq: integrator: Use set_cpus_allowed_ptr
+Date: Sun, 3 Aug 2014 15:45:40 +0530
+Message-ID: <20140803101539.GA7978@himangi-Dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1406707663-16656-4-git-send-email-thomas.ab@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, cw00.choi@samsung.com, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>, Sachin Kamat <sachin.kamat@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f179.google.com ([209.85.192.179]:42807 "EHLO
+	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750746AbaHCKPn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 3 Aug 2014 06:15:43 -0400
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Julia Lawall <julia.lawall@lip6.fr>
 
-Hello Thomas,
+Several years ago there was an effort to convert all uses of
+set_cpus_allowed to use set_cpus_allowed_ptr with the goal of eventually
+removing the current definition of set_cpus_allowed and renaming
+set_cpus_allowed_ptr as set_cpus_allowed
+(https://lkml.org/lkml/2010/3/26/59). This is another step in this
+direction.
 
-On 07/30/2014 10:07 AM, Thomas Abraham wrote:
-> For Exynos 4210/5250/5420 based platforms, add CPU operating points and CPU
-> regulator supply properties for migrating from Exynos specific cpufreq driver
-> to using generic cpufreq drivers.
-> 
-> Cc: Kukjin Kim <kgene.kim@samsung.com>
-> Cc: Doug Anderson <dianders@chromium.org>
-> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> Cc: Andreas Faerber <afaerber@suse.de>
-> Cc: Sachin Kamat <sachin.kamat@linaro.org>
-> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-> ---
->  arch/arm/boot/dts/exynos4210-origen.dts         |    4 +++
->  arch/arm/boot/dts/exynos4210-trats.dts          |    4 +++
->  arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 +++
->  arch/arm/boot/dts/exynos4210.dtsi               |   14 ++++++++-
->  arch/arm/boot/dts/exynos5250-arndale.dts        |    4 +++
->  arch/arm/boot/dts/exynos5250-smdk5250.dts       |    4 +++
->  arch/arm/boot/dts/exynos5250-snow.dts           |    4 +++
->  arch/arm/boot/dts/exynos5250.dtsi               |   25 ++++++++++++++-
->  arch/arm/boot/dts/exynos5420.dtsi               |   38 +++++++++++++++++++++++
->  9 files changed, 99 insertions(+), 2 deletions(-)
-> 
+The Coccinelle semantic patch that makes this change is as follows:
 
-Tested the series on a Exynos5420 based Peach Pit Chromebook by doing the
-following for CPU0-3:
+// <smpl>
+@@
+expression E1,E2;
+@@
 
-1) Verified that the big.LITTLE CPUFreq (arm-big-little) driver was reported as
-used in /sys/devices/system/cpu/cpu*/cpufreq/scaling_driver.
+- set_cpus_allowed(E1, cpumask_of_cpu(E2))
++ set_cpus_allowed_ptr(E1, cpumask_of(E2))
 
-2) Set all available governors (conservative, ondemand, userspace, powersave and
-performance).
+@@
+expression E;
+identifier I;
+@@
 
-3) Confirmed that cpuinfo_cur_freq and scaling_cur_freq values were fixed or
-changing according to the selected governor policy.
+- set_cpus_allowed(E, I)
++ set_cpus_allowed_ptr(E, &I)
+// </smpl>
 
-4) Verified that the statistics in /sys/devices/system/cpu/cpu*/cpufreq/stats/*
-were filled.
+Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
+Acked-by: Julia Lawall <julia.lawall@lip6.fr>
+---
+ drivers/cpufreq/integrator-cpufreq.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Everything is working correctly so please feel free to add for the whole series:
+diff --git a/drivers/cpufreq/integrator-cpufreq.c b/drivers/cpufreq/integrator-cpufreq.c
+index e5122f1..c132052 100644
+--- a/drivers/cpufreq/integrator-cpufreq.c
++++ b/drivers/cpufreq/integrator-cpufreq.c
+@@ -92,7 +92,7 @@ static int integrator_set_target(struct cpufreq_policy *policy,
+ 	 * Bind to the specified CPU.  When this call returns,
+ 	 * we should be running on the right CPU.
+ 	 */
+-	set_cpus_allowed(current, cpumask_of_cpu(cpu));
++	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+ 	BUG_ON(cpu != smp_processor_id());
+ 
+ 	/* get current setting */
+@@ -118,7 +118,7 @@ static int integrator_set_target(struct cpufreq_policy *policy,
+ 	freqs.new = icst_hz(&cclk_params, vco) / 1000;
+ 
+ 	if (freqs.old == freqs.new) {
+-		set_cpus_allowed(current, cpus_allowed);
++		set_cpus_allowed_ptr(current, &cpus_allowed);
+ 		return 0;
+ 	}
+ 
+@@ -141,7 +141,7 @@ static int integrator_set_target(struct cpufreq_policy *policy,
+ 	/*
+ 	 * Restore the CPUs allowed mask.
+ 	 */
+-	set_cpus_allowed(current, cpus_allowed);
++	set_cpus_allowed_ptr(current, &cpus_allowed);
+ 
+ 	cpufreq_freq_transition_end(policy, &freqs, 0);
+ 
+@@ -157,7 +157,7 @@ static unsigned int integrator_get(unsigned int cpu)
+ 
+ 	cpus_allowed = current->cpus_allowed;
+ 
+-	set_cpus_allowed(current, cpumask_of_cpu(cpu));
++	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+ 	BUG_ON(cpu != smp_processor_id());
+ 
+ 	/* detect memory etc. */
+@@ -173,7 +173,7 @@ static unsigned int integrator_get(unsigned int cpu)
+ 
+ 	current_freq = icst_hz(&cclk_params, vco) / 1000; /* current freq */
+ 
+-	set_cpus_allowed(current, cpus_allowed);
++	set_cpus_allowed_ptr(current, &cpus_allowed);
+ 
+ 	return current_freq;
+ }
+-- 
+1.9.1
 
-Tested-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-
-Best regards,
-Javier
