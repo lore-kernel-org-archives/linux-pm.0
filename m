@@ -1,103 +1,104 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Mon, 04 Aug 2014 06:11:48 -0400
-Message-ID: <53DF5C64.1040609@redhat.com>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <53DBE764.8050109@redhat.com> <53DBEC27.7050803@codeaurora.org> <53DBEDE7.90400@redhat.com> <53DBF08C.3020703@codeaurora.org> <53DC05C7.5000507@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:29671 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751648AbaHDKL4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Aug 2014 06:11:56 -0400
-In-Reply-To: <53DC05C7.5000507@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
+Subject: [PATCH] Hibernate: check unsafe page should not in e820 reserved region
+Date: Mon,  4 Aug 2014 18:33:16 +0800
+Message-ID: <1407148396-21405-1-git-send-email-jlee@suse.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
 
+When the machine doesn't well handle the e820 persistent when hibernate
+resuming, then it may causes page fault when writing image to snapshot
+buffer:
 
+[   17.929495] BUG: unable to handle kernel paging request at ffff880069d4f000
+[   17.933469] IP: [<ffffffff810a1cf0>] load_image_lzo+0x810/0xe40
+[   17.933469] PGD 2194067 PUD 77ffff067 PMD 2197067 PTE 0
+[   17.933469] Oops: 0002 [#1] SMP
+...
 
-On 08/01/2014 05:25 PM, Saravana Kannan wrote:
-> On 08/01/2014 12:54 PM, Stephen Boyd wrote:
->> On 08/01/14 12:43, Prarit Bhargava wrote:
->>>
->>> On 08/01/2014 03:36 PM, Stephen Boyd wrote:
->>>> On 08/01/14 12:15, Prarit Bhargava wrote:
->>>>> On 08/01/2014 01:18 PM, Stephen Boyd wrote:
->>>>>> On 08/01/14 03:27, Prarit Bhargava wrote:
->>>>>>> Can you send me the test and the trace of the deadlock?  I'm not creating
->>>>>>> it with:
->>>>>>>
->>>>>> This was with conservative as the default, and switching to ondemand
->>>>>>
->>>>>> # cd /sys/devices/system/cpu/cpu2/cpufreq
->>>>>> # ls
->>>>>> affected_cpus                  scaling_available_governors
->>>>>> conservative                   scaling_cur_freq
->>>>>> cpuinfo_cur_freq               scaling_driver
->>>>>> cpuinfo_max_freq               scaling_governor
->>>>>> cpuinfo_min_freq               scaling_max_freq
->>>>>> cpuinfo_transition_latency     scaling_min_freq
->>>>>> related_cpus                   scaling_setspeed
->>>>>> scaling_available_frequencies  stats
->>>>>> # cat conservative/down_threshold
->>>>>> 20
->>>>>> # echo ondemand > scaling_governor
->>>>> Thanks Stephen,
->>>>>
->>>>> There's obviously a difference in our .configs.  I have a global conservative
->>>>> directory, ie) /sys/devices/system/cpu/cpufreq/conservative instead of a
->>>>> per-cpu
->>>>> governor file.
->>>>>
->>>>> ie) what are your .config options for CPUFREQ?
->>>>>
->>>>> Mine are:
->>>>>
->>>>> #
->>>>> # CPU Frequency scaling
->>>>> #
->>>>> CONFIG_CPU_FREQ=y
->>>>> CONFIG_CPU_FREQ_GOV_COMMON=y
->>>>> CONFIG_CPU_FREQ_STAT=m
->>>>> CONFIG_CPU_FREQ_STAT_DETAILS=y
->>>>> # CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
->>>>> # CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
->>>>> # CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
->>>>> CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE=y
->>>>> CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
->>>>> CONFIG_CPU_FREQ_GOV_POWERSAVE=y
->>>>> CONFIG_CPU_FREQ_GOV_USERSPACE=y
->>>>> CONFIG_CPU_FREQ_GOV_ONDEMAND=y
->>>>> CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
->>>>>
->>>>> Is there some other config option I have to set?
->>>> I have the same options. The difference is that my driver has a governor
->>>> per policy. That's set with the CPUFREQ_HAVE_GOVERNOR_PER_POLICY flag.
->>>> If I remove that flag I can't trigger the lockdep splat anymore with
->>>> this sequence and your patch.
->>> I see -- so you're seeing this on arm then?  If so, let me know so I can reserve
->>> one to work on :)
->>>
->>
->> I only have ARM to test on. You can set this flag in your cpufreq driver
->> if you have independently scaling CPU frequencies, so it isn't
->> necessarily an ARM thing.
->>
-> 
-> Sorry, forgot to mention this in the earlier email. But yeah, this is a totally
-> SW feature. You should be able to enable this flag in your driver.
+The ffff880069d4f000 page is in e820 reserved region of resume boot
+kernel:
 
-Thanks Saravana, I'll get back to this today.  I'm also going to try to track
-down an ARM server as well.
+[    0.000000] BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff] reserved
+...
+[    0.000000] PM: Registered nosave memory: [mem 0x69d4f000-0x69e12fff]
 
-I'll get back to everyone in a bit.
+So snapshot.c mark the pfn to forbidden pages map. But, this
+page is also in the memory bitmap in snapshot image because it's an
+original page used by image kernel, so it will also mark as an
+unsafe(free) page in prepare_image().
 
-P.
+That means the page in e820 when resuming mark as "forbidden" and
+"free", it causes get_buffer() treat it as an allocated unsafe page.
+Then snapshot_write_next() return this page to load_image, load_image
+writing content to this address, but this page didn't really allocated
+. So, we got page fault.
 
-> 
-> -Saravana
-> 
+Although the root cause is from BIOS, I think aggressive check and
+significant message in kernel will better then a page fault for
+issue tracking, especially when serial console unavailable.
+
+This patch adds code in mark_unsafe_pages() for check does free pages in
+nosave region. If so, then it print message and return fault to stop whole
+S4 resume process:
+
+[    8.166004] PM: Image loading progress:   0%
+[    8.658717] PM: 0x6796c000 in e820 nosave regsion: [mem 0x6796c000-0x6796cfff]
+[    8.918737] PM: Read 2511940 kbytes in 1.04 seconds (2415.32 MB/s)
+[    8.926633] PM: Error -14 resuming
+[    8.933534] PM: Failed to load hibernation image, recovering.
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+---
+ kernel/power/snapshot.c | 24 +++++++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 98c3b34..e6db5a8 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -730,6 +730,28 @@ static void mark_nosave_pages(struct memory_bitmap *bm)
+ 	}
+ }
+ 
++static bool is_nosave_page(unsigned long pfn)
++{
++	struct nosave_region *region;
++
++	if (list_empty(&nosave_regions))
++		return 0;
++
++	list_for_each_entry(region, &nosave_regions, list) {
++		if (pfn >= region->start_pfn && pfn < region->end_pfn) {
++			pr_err("PM: %#010llx in e820 nosave regsion: "
++			       "[mem %#010llx-%#010llx]\n",
++			       (unsigned long long) pfn << PAGE_SHIFT,
++			       (unsigned long long) region->start_pfn << PAGE_SHIFT,
++			       ((unsigned long long) region->end_pfn << PAGE_SHIFT)
++					- 1);
++			return true;
++		}
++	}
++
++	return false;
++}
++
+ /**
+  *	create_basic_memory_bitmaps - create bitmaps needed for marking page
+  *	frames that should not be saved and free page frames.  The pointers
+@@ -1769,7 +1791,7 @@ static int mark_unsafe_pages(struct memory_bitmap *bm)
+ 	do {
+ 		pfn = memory_bm_next_pfn(bm);
+ 		if (likely(pfn != BM_END_OF_MAP)) {
+-			if (likely(pfn_valid(pfn)))
++			if (likely(pfn_valid(pfn)) && !is_nosave_page(pfn))
+ 				swsusp_set_page_free(pfn_to_page(pfn));
+ 			else
+ 				return -EFAULT;
+-- 
+1.8.4.5
