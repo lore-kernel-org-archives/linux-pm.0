@@ -1,98 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: integrator: Use set_cpus_allowed_ptr
-Date: Mon, 4 Aug 2014 12:52:07 +0530
-Message-ID: <CAKohpommqaWtNrmsKHptB3W6-kufe-4ieLe5RA1fqLTCiQ7=qQ@mail.gmail.com>
-References: <20140803101539.GA7978@himangi-Dell>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem to
+ be held for duration of changing governors
+Date: Mon, 4 Aug 2014 15:24:40 +0530
+Message-ID: <CAKohpoksKz5437Yds0Rk59Rgr+rdt=UcH421MjY2BhEbMjfwQw@mail.gmail.com>
+References: <1406224491-3599-1-git-send-email-prarit@redhat.com>
+	<CAKohpomHj17A4e6Sh8JSz1HPbq9r8gXUJeZ20PQ=Mhu59Vt7ZQ@mail.gmail.com>
+	<53D24030.1010302@redhat.com>
+	<53D25081.1010209@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140803101539.GA7978@himangi-Dell>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Himangi Saraogi <himangi774@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Julia Lawall <julia.lawall@lip6.fr>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f54.google.com ([209.85.218.54]:57137 "EHLO
+	mail-oi0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750831AbaHDJyk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Aug 2014 05:54:40 -0400
+Received: by mail-oi0-f54.google.com with SMTP id i138so4379336oig.13
+        for <linux-pm@vger.kernel.org>; Mon, 04 Aug 2014 02:54:40 -0700 (PDT)
+In-Reply-To: <53D25081.1010209@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 3 August 2014 15:45, Himangi Saraogi <himangi774@gmail.com> wrote:
-> Several years ago there was an effort to convert all uses of
-> set_cpus_allowed to use set_cpus_allowed_ptr with the goal of eventually
-> removing the current definition of set_cpus_allowed and renaming
-> set_cpus_allowed_ptr as set_cpus_allowed
-> (https://lkml.org/lkml/2010/3/26/59). This is another step in this
-> direction.
->
-> The Coccinelle semantic patch that makes this change is as follows:
->
-> // <smpl>
-> @@
-> expression E1,E2;
-> @@
->
-> - set_cpus_allowed(E1, cpumask_of_cpu(E2))
-> + set_cpus_allowed_ptr(E1, cpumask_of(E2))
->
-> @@
-> expression E;
-> identifier I;
-> @@
->
-> - set_cpus_allowed(E, I)
-> + set_cpus_allowed_ptr(E, &I)
-> // </smpl>
->
-> Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
-> Acked-by: Julia Lawall <julia.lawall@lip6.fr>
-> ---
->  drivers/cpufreq/integrator-cpufreq.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/cpufreq/integrator-cpufreq.c b/drivers/cpufreq/integrator-cpufreq.c
-> index e5122f1..c132052 100644
-> --- a/drivers/cpufreq/integrator-cpufreq.c
-> +++ b/drivers/cpufreq/integrator-cpufreq.c
-> @@ -92,7 +92,7 @@ static int integrator_set_target(struct cpufreq_policy *policy,
->          * Bind to the specified CPU.  When this call returns,
->          * we should be running on the right CPU.
->          */
-> -       set_cpus_allowed(current, cpumask_of_cpu(cpu));
-> +       set_cpus_allowed_ptr(current, cpumask_of(cpu));
->         BUG_ON(cpu != smp_processor_id());
->
->         /* get current setting */
-> @@ -118,7 +118,7 @@ static int integrator_set_target(struct cpufreq_policy *policy,
->         freqs.new = icst_hz(&cclk_params, vco) / 1000;
->
->         if (freqs.old == freqs.new) {
-> -               set_cpus_allowed(current, cpus_allowed);
-> +               set_cpus_allowed_ptr(current, &cpus_allowed);
->                 return 0;
->         }
->
-> @@ -141,7 +141,7 @@ static int integrator_set_target(struct cpufreq_policy *policy,
->         /*
->          * Restore the CPUs allowed mask.
->          */
-> -       set_cpus_allowed(current, cpus_allowed);
-> +       set_cpus_allowed_ptr(current, &cpus_allowed);
->
->         cpufreq_freq_transition_end(policy, &freqs, 0);
->
-> @@ -157,7 +157,7 @@ static unsigned int integrator_get(unsigned int cpu)
->
->         cpus_allowed = current->cpus_allowed;
->
-> -       set_cpus_allowed(current, cpumask_of_cpu(cpu));
-> +       set_cpus_allowed_ptr(current, cpumask_of(cpu));
->         BUG_ON(cpu != smp_processor_id());
->
->         /* detect memory etc. */
-> @@ -173,7 +173,7 @@ static unsigned int integrator_get(unsigned int cpu)
->
->         current_freq = icst_hz(&cclk_params, vco) / 1000; /* current freq */
->
-> -       set_cpus_allowed(current, cpus_allowed);
-> +       set_cpus_allowed_ptr(current, &cpus_allowed);
->
->         return current_freq;
->  }
+On 25 July 2014 18:11, Prarit Bhargava <prarit@redhat.com> wrote:
+> Okay -- I think I got it:  The above happens only with an *older* sysfs stack
+> which acquires a &buffer->mutex.  This no longer happens with the new sysfs
+> stack so the above change is still no longer necessary in mainline linux.git (at
+> least AFAICT).
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hmm, that's something new for me. Would it be possible to give some commits
+for reference where the behavior changed? This would be quite helpful once
+we face it again and need to come back to this thread :)
+
+> In any case, the change still appears to be incorrect in that it breaks the
+> rwsem locking scheme of the cpufreq policy.  I'll do some additional testing on
+> various systems and get back to you in a few days.
+
+What about breaking rwsem locking scheme?
