@@ -1,49 +1,62 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v4 5/5] ARM: EXYNOS: cpuidle: allow driver usage on Exynos4x12
- SoCs
-Date: Mon, 04 Aug 2014 19:45:45 +0200
-Message-ID: <1407174345-31213-6-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v4 4/5] ARM: EXYNOS: PM: fix register setup for AFTR mode code
+Date: Mon, 04 Aug 2014 19:45:44 +0200
+Message-ID: <1407174345-31213-5-git-send-email-b.zolnierkie@samsung.com>
 References: <1407174345-31213-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:36707 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751950AbaHDRqW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Aug 2014 13:46:22 -0400
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1407174345-31213-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Kukjin Kim <kgene.kim@samsung.com>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
+List-Id: linux-pm@vger.kernel.org
 
-Register cpuidle platform device on Exynos4x12 SoCs allowing EXYNOS
-cpuidle driver usage on these SoCs.
+Add S5P_CENTRAL_SEQ_OPTION register setup to cpuidle AFTR mode code
+by moving the relevant code from exynos_pm_suspend() (used only by
+suspend) to exynos_pm_central_suspend() (used by both suspend and
+AFTR).  Without this setup AFTR mode doesn't show any benefit over
+WFI one (at least on Exynos4412 SoC).  When this setup is applied
+AFTR mode reduces power consumption by ~12% (as measured on Trats2
+board).
 
-AFTR mode reduces power consumption on Trats2 board (Exynos4412 SoC
-with secure firmware enabled) by ~12% when EXYNOS cpuidle driver is
-enabled (in both cases the default exynos_defconfig config is used
-and CPU1-3 are offlined).
+This change is a preparation for adding secure firmware support to
+EXYNOS cpuidle driver.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- arch/arm/mach-exynos/exynos.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/arm/mach-exynos/pm.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-index 6a24e11..15cf86d 100644
---- a/arch/arm/mach-exynos/exynos.c
-+++ b/arch/arm/mach-exynos/exynos.c
-@@ -317,7 +317,9 @@ static void __init exynos_dt_machine_init(void)
- 		exynos_sysram_init();
+diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+index a61b85c..4e32cc6 100644
+--- a/arch/arm/mach-exynos/pm.c
++++ b/arch/arm/mach-exynos/pm.c
+@@ -169,6 +169,10 @@ static void exynos_pm_central_suspend(void)
+ 	tmp = pmu_raw_readl(S5P_CENTRAL_SEQ_CONFIGURATION);
+ 	tmp &= ~S5P_CENTRAL_LOWPWR_CFG;
+ 	pmu_raw_writel(tmp, S5P_CENTRAL_SEQ_CONFIGURATION);
++
++	/* Setting SEQ_OPTION register */
++	pmu_raw_writel(S5P_USE_STANDBY_WFI0 | S5P_USE_STANDBY_WFE0,
++		       S5P_CENTRAL_SEQ_OPTION);
+ }
  
- 	if (of_machine_is_compatible("samsung,exynos4210") ||
--			of_machine_is_compatible("samsung,exynos5250"))
-+	    of_machine_is_compatible("samsung,exynos4212") ||
-+	    of_machine_is_compatible("samsung,exynos4412") ||
-+	    of_machine_is_compatible("samsung,exynos5250"))
- 		platform_device_register(&exynos_cpuidle);
+ static int exynos_pm_central_resume(void)
+@@ -291,15 +295,8 @@ static void exynos_pm_prepare(void)
  
- 	platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
+ static int exynos_pm_suspend(void)
+ {
+-	unsigned long tmp;
+-
+ 	exynos_pm_central_suspend();
+ 
+-	/* Setting SEQ_OPTION register */
+-
+-	tmp = (S5P_USE_STANDBY_WFI0 | S5P_USE_STANDBY_WFE0);
+-	pmu_raw_writel(tmp, S5P_CENTRAL_SEQ_OPTION);
+-
+ 	if (read_cpuid_part() == ARM_CPU_PART_CORTEX_A9)
+ 		exynos_cpu_save_register();
+ 
 -- 
 1.8.2.3
-
