@@ -1,41 +1,37 @@
-From: Markus Pargmann <mpa@pengutronix.de>
-Subject: [PATCH] cpufreq: cpu0: Do not print error message when deferring
-Date: Mon,  4 Aug 2014 14:48:03 +0200
-Message-ID: <1407156483-15730-1-git-send-email-mpa@pengutronix.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] Hibernate: check unsafe page should not in e820
+ reserved region
+Date: Mon, 4 Aug 2014 15:08:11 +0200
+Message-ID: <20140804130810.GA23098@amd.pavel.ucw.cz>
+References: <1407148396-21405-1-git-send-email-jlee@suse.com>
+ <s5hlhr4v32f.wl%tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48918 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751117AbaHDMsY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Aug 2014 08:48:24 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60338 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752239AbaHDNIN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Aug 2014 09:08:13 -0400
+Content-Disposition: inline
+In-Reply-To: <s5hlhr4v32f.wl%tiwai@suse.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de, Markus Pargmann <mpa@pengutronix.de>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>
 
--EPROBE_DEFER is no real error. We are just waiting unti the necessary
-components are ready. The driver core infrastructure will also print an
-appropriate info message.
+> > +
+> > +	list_for_each_entry(region, &nosave_regions, list) {
+> > +		if (pfn >= region->start_pfn && pfn < region->end_pfn) {
+> > +			pr_err("PM: %#010llx in e820 nosave regsion: "
 
-This patch changes the error message to a debug message.
+And while looking at it, this should probably be spelled "region".
+ 
+...plus maybe past part of changelog here into the comment?
 
-Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
----
- drivers/cpufreq/cpufreq-cpu0.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Otherwise looks good to me, 
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index ee1ae303a07c..26405d5c7a1f 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -137,7 +137,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 		 * not yet registered, we should try defering probe.
- 		 */
- 		if (PTR_ERR(cpu_reg) == -EPROBE_DEFER) {
--			dev_err(cpu_dev, "cpu0 regulator not ready, retry\n");
-+			dev_dbg(cpu_dev, "cpu0 regulator not ready, retry\n");
- 			ret = -EPROBE_DEFER;
- 			goto out_put_node;
- 		}
+Acked-by: Pavel Machek <pavel@ucw.cz>
+									Pavel
 -- 
-2.0.1
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
