@@ -1,39 +1,103 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem to
- be held for duration of changing governors
-Date: Mon, 4 Aug 2014 15:24:40 +0530
-Message-ID: <CAKohpoksKz5437Yds0Rk59Rgr+rdt=UcH421MjY2BhEbMjfwQw@mail.gmail.com>
-References: <1406224491-3599-1-git-send-email-prarit@redhat.com>
-	<CAKohpomHj17A4e6Sh8JSz1HPbq9r8gXUJeZ20PQ=Mhu59Vt7ZQ@mail.gmail.com>
-	<53D24030.1010302@redhat.com>
-	<53D25081.1010209@redhat.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
+ to be held for duration of changing governors [v2]
+Date: Mon, 04 Aug 2014 06:11:48 -0400
+Message-ID: <53DF5C64.1040609@redhat.com>
+References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <53DBE764.8050109@redhat.com> <53DBEC27.7050803@codeaurora.org> <53DBEDE7.90400@redhat.com> <53DBF08C.3020703@codeaurora.org> <53DC05C7.5000507@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f54.google.com ([209.85.218.54]:57137 "EHLO
-	mail-oi0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831AbaHDJyk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Aug 2014 05:54:40 -0400
-Received: by mail-oi0-f54.google.com with SMTP id i138so4379336oig.13
-        for <linux-pm@vger.kernel.org>; Mon, 04 Aug 2014 02:54:40 -0700 (PDT)
-In-Reply-To: <53D25081.1010209@redhat.com>
+Received: from mx1.redhat.com ([209.132.183.28]:29671 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751648AbaHDKL4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Aug 2014 06:11:56 -0400
+In-Reply-To: <53DC05C7.5000507@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Lenny Szubowicz <lszubowi@redhat.com>, linux-pm@vger.kernel.org
 
-On 25 July 2014 18:11, Prarit Bhargava <prarit@redhat.com> wrote:
-> Okay -- I think I got it:  The above happens only with an *older* sysfs stack
-> which acquires a &buffer->mutex.  This no longer happens with the new sysfs
-> stack so the above change is still no longer necessary in mainline linux.git (at
-> least AFAICT).
 
-Hmm, that's something new for me. Would it be possible to give some commits
-for reference where the behavior changed? This would be quite helpful once
-we face it again and need to come back to this thread :)
 
-> In any case, the change still appears to be incorrect in that it breaks the
-> rwsem locking scheme of the cpufreq policy.  I'll do some additional testing on
-> various systems and get back to you in a few days.
+On 08/01/2014 05:25 PM, Saravana Kannan wrote:
+> On 08/01/2014 12:54 PM, Stephen Boyd wrote:
+>> On 08/01/14 12:43, Prarit Bhargava wrote:
+>>>
+>>> On 08/01/2014 03:36 PM, Stephen Boyd wrote:
+>>>> On 08/01/14 12:15, Prarit Bhargava wrote:
+>>>>> On 08/01/2014 01:18 PM, Stephen Boyd wrote:
+>>>>>> On 08/01/14 03:27, Prarit Bhargava wrote:
+>>>>>>> Can you send me the test and the trace of the deadlock?  I'm not creating
+>>>>>>> it with:
+>>>>>>>
+>>>>>> This was with conservative as the default, and switching to ondemand
+>>>>>>
+>>>>>> # cd /sys/devices/system/cpu/cpu2/cpufreq
+>>>>>> # ls
+>>>>>> affected_cpus                  scaling_available_governors
+>>>>>> conservative                   scaling_cur_freq
+>>>>>> cpuinfo_cur_freq               scaling_driver
+>>>>>> cpuinfo_max_freq               scaling_governor
+>>>>>> cpuinfo_min_freq               scaling_max_freq
+>>>>>> cpuinfo_transition_latency     scaling_min_freq
+>>>>>> related_cpus                   scaling_setspeed
+>>>>>> scaling_available_frequencies  stats
+>>>>>> # cat conservative/down_threshold
+>>>>>> 20
+>>>>>> # echo ondemand > scaling_governor
+>>>>> Thanks Stephen,
+>>>>>
+>>>>> There's obviously a difference in our .configs.  I have a global conservative
+>>>>> directory, ie) /sys/devices/system/cpu/cpufreq/conservative instead of a
+>>>>> per-cpu
+>>>>> governor file.
+>>>>>
+>>>>> ie) what are your .config options for CPUFREQ?
+>>>>>
+>>>>> Mine are:
+>>>>>
+>>>>> #
+>>>>> # CPU Frequency scaling
+>>>>> #
+>>>>> CONFIG_CPU_FREQ=y
+>>>>> CONFIG_CPU_FREQ_GOV_COMMON=y
+>>>>> CONFIG_CPU_FREQ_STAT=m
+>>>>> CONFIG_CPU_FREQ_STAT_DETAILS=y
+>>>>> # CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+>>>>> # CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+>>>>> # CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
+>>>>> CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE=y
+>>>>> CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+>>>>> CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+>>>>> CONFIG_CPU_FREQ_GOV_USERSPACE=y
+>>>>> CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+>>>>> CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+>>>>>
+>>>>> Is there some other config option I have to set?
+>>>> I have the same options. The difference is that my driver has a governor
+>>>> per policy. That's set with the CPUFREQ_HAVE_GOVERNOR_PER_POLICY flag.
+>>>> If I remove that flag I can't trigger the lockdep splat anymore with
+>>>> this sequence and your patch.
+>>> I see -- so you're seeing this on arm then?  If so, let me know so I can reserve
+>>> one to work on :)
+>>>
+>>
+>> I only have ARM to test on. You can set this flag in your cpufreq driver
+>> if you have independently scaling CPU frequencies, so it isn't
+>> necessarily an ARM thing.
+>>
+> 
+> Sorry, forgot to mention this in the earlier email. But yeah, this is a totally
+> SW feature. You should be able to enable this flag in your driver.
 
-What about breaking rwsem locking scheme?
+Thanks Saravana, I'll get back to this today.  I'm also going to try to track
+down an ARM server as well.
+
+I'll get back to everyone in a bit.
+
+P.
+
+> 
+> -Saravana
+> 
