@@ -1,163 +1,126 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Mon, 04 Aug 2014 10:00:02 -0400
-Message-ID: <53DF91E2.2020105@redhat.com>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <CAKohpom0KycrB8qJDM7yEOHOn76J1sEe90CG+JXERJMcxKnOJA@mail.gmail.com> <53DF7BC4.9070500@redhat.com> <CAKohpomEQ__Q4xTaBgHJyE0Meu4au-cXKCAKCqHWTHLRL+R5OA@mail.gmail.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH] Hibernate: check unsafe page should not in e820 reserved
+ region
+Date: Mon, 4 Aug 2014 22:52:47 +0800
+Message-ID: <20140804145247.GD16024@linux-rxt1.site>
+References: <1407148396-21405-1-git-send-email-jlee@suse.com>
+ <s5hlhr4v32f.wl%tiwai@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:28361 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751394AbaHDOAR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Aug 2014 10:00:17 -0400
-In-Reply-To: <CAKohpomEQ__Q4xTaBgHJyE0Meu4au-cXKCAKCqHWTHLRL+R5OA@mail.gmail.com>
+Received: from smtp.nue.novell.com ([195.135.221.5]:36732 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbaHDOxB (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Mon, 4 Aug 2014 10:53:01 -0400
+Content-Disposition: inline
+In-Reply-To: <s5hlhr4v32f.wl%tiwai@suse.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, =?UTF-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+Hi Takashi, 
 
+First, thanks for your review!
 
-On 08/04/2014 09:38 AM, Viresh Kumar wrote:
-> On 4 August 2014 17:55, Prarit Bhargava <prarit@redhat.com> wrote:
->> The issue is the collision between the setup & teardown of the policy's governor
->> sysfs files.
->>
->> On creation the kernel does:
->>
->> down_write(&policy->rwsem)
->> mutex_lock(kernfs_mutex) <- note this is similar to the "old" sysfs_mutex.
->>
->> The opposite happens on a governor switch, specifically the existing governor's
->> exit, and then we get a lockdep warning.
+On Mon, Aug 04, 2014 at 02:42:32PM +0200, Takashi Iwai wrote:
+> At Mon,  4 Aug 2014 18:33:16 +0800,
+> Lee, Chun-Yi wrote:
+> > 
+> > When the machine doesn't well handle the e820 persistent when hibernate
+> > resuming, then it may causes page fault when writing image to snapshot
+> > buffer:
+> > 
+> > [   17.929495] BUG: unable to handle kernel paging request at ffff880069d4f000
+> > [   17.933469] IP: [<ffffffff810a1cf0>] load_image_lzo+0x810/0xe40
+> > [   17.933469] PGD 2194067 PUD 77ffff067 PMD 2197067 PTE 0
+> > [   17.933469] Oops: 0002 [#1] SMP
+> > ...
+> > 
+> > The ffff880069d4f000 page is in e820 reserved region of resume boot
+> > kernel:
+> > 
+> > [    0.000000] BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff] reserved
+> > ...
+> > [    0.000000] PM: Registered nosave memory: [mem 0x69d4f000-0x69e12fff]
+> > 
+> > So snapshot.c mark the pfn to forbidden pages map. But, this
+> > page is also in the memory bitmap in snapshot image because it's an
+> > original page used by image kernel, so it will also mark as an
+> > unsafe(free) page in prepare_image().
+> > 
+> > That means the page in e820 when resuming mark as "forbidden" and
+> > "free", it causes get_buffer() treat it as an allocated unsafe page.
+> > Then snapshot_write_next() return this page to load_image, load_image
+> > writing content to this address, but this page didn't really allocated
+> > . So, we got page fault.
+> > 
+> > Although the root cause is from BIOS, I think aggressive check and
+> > significant message in kernel will better then a page fault for
+> > issue tracking, especially when serial console unavailable.
+> > 
+> > This patch adds code in mark_unsafe_pages() for check does free pages in
+> > nosave region. If so, then it print message and return fault to stop whole
+> > S4 resume process:
+> > 
+> > [    8.166004] PM: Image loading progress:   0%
+> > [    8.658717] PM: 0x6796c000 in e820 nosave regsion: [mem 0x6796c000-0x6796cfff]
+> > [    8.918737] PM: Read 2511940 kbytes in 1.04 seconds (2415.32 MB/s)
+> > [    8.926633] PM: Error -14 resuming
+> > [    8.933534] PM: Failed to load hibernation image, recovering.
+> > 
+> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > Cc: Len Brown <len.brown@intel.com>
+> > Cc: Pavel Machek <pavel@ucw.cz>
+> > Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+> > ---
+> >  kernel/power/snapshot.c | 24 +++++++++++++++++++++++-
+> >  1 file changed, 23 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> > index 98c3b34..e6db5a8 100644
+> > --- a/kernel/power/snapshot.c
+> > +++ b/kernel/power/snapshot.c
+> > @@ -730,6 +730,28 @@ static void mark_nosave_pages(struct memory_bitmap *bm)
+> >  	}
+> >  }
+> >  
+> > +static bool is_nosave_page(unsigned long pfn)
+> > +{
+> > +	struct nosave_region *region;
+> > +
+> > +	if (list_empty(&nosave_regions))
+> > +		return 0;
 > 
-> Okay, probably a bit more clarity is what I was looking for. Suppose we try
-> to change governor, now tell me what will happen.
-> 
->> I tried to reproduce with the instructions but was unable to ... ut that was on
->> Friday ;) and I'm going to try again this morning.  I've also ping'd some of the
->> engineers here in the office who are working on ARM to get access to a system to
->> do further analysis and testing.
-> 
-> You DON'T need an ARM for that, just try that on any x86 machine which has
-> multiple groups of CPUs sharing clock line. Or in other terms there are multiple
-> policy structures there..
-
-I do ... I really think I do.  Because this is all working on x86 AFAICT.
-
-> 
-> You just need to enable the flag we were discussing about, it just decided the
-> location where governor's directory will get created. Nothing else.
+> Just a nitpicking: this should be "false" for consistency.
+> But, looking further at the code:
 > 
 
-That doesn't appear to be correct.  I'm testing with the patch that removes the
-locking workaround and:
+Yes, should using return false;
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index b0c18ed..d86b421 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -884,6 +884,8 @@ static struct freq_attr *acpi_cpufreq_attr[] = {
- };
+> > +
+> > +	list_for_each_entry(region, &nosave_regions, list) {
+> > +		if (pfn >= region->start_pfn && pfn < region->end_pfn) {
+> > +			pr_err("PM: %#010llx in e820 nosave regsion: "
+> > +			       "[mem %#010llx-%#010llx]\n",
+> > +			       (unsigned long long) pfn << PAGE_SHIFT,
+> > +			       (unsigned long long) region->start_pfn << PAGE_SHIFT,
+> > +			       ((unsigned long long) region->end_pfn << PAGE_SHIFT)
+> > +					- 1);
+> > +			return true;
+> > +		}
+> > +	}
+> > +
+> > +	return false;
+> 
+> I think the above empty check can be removed completely.
+> 
+> 
+> Takashi
 
- static struct cpufreq_driver acpi_cpufreq_driver = {
-+       .name           = "acpi_cpufreq",
-+       .flags                  = CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
-        .verify         = cpufreq_generic_frequency_table_verify,
-        .target_index   = acpi_cpufreq_target,
-        .bios_limit     = acpi_processor_get_bios_limit,
-
-as well as few printk statement sprinkled in the code.  I'm doing the following
-and on *15* different x86 systems I do not see a problem:
-
-My cpufreq related config is
-
-#
-# CPU Frequency scaling
-#
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_GOV_COMMON=y
-CONFIG_CPU_FREQ_STAT=m
-CONFIG_CPU_FREQ_STAT_DETAILS=y
-# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
-CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE=y
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_POWERSAVE=y
-CONFIG_CPU_FREQ_GOV_USERSPACE=y
-CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
-
-I am doing (from boot)
-
-[root@intel-canoepass-05 cpufreq]# cd /sys/devices/system/cpu/cpu2/cpufreq/
-[root@intel-canoepass-05 cpufreq]# ls
-affected_cpus     cpuinfo_transition_latency     scaling_driver
-bios_limit        freqdomain_cpus                scaling_governor
-conservative      related_cpus                   scaling_max_freq
-cpuinfo_cur_freq  scaling_available_frequencies  scaling_min_freq
-cpuinfo_max_freq  scaling_available_governors    scaling_setspeed
-cpuinfo_min_freq  scaling_cur_freq
-[root@intel-canoepass-05 cpufreq]# cat conservative/
-down_threshold        sampling_down_factor  up_threshold
-freq_step             sampling_rate
-ignore_nice_load      sampling_rate_min
-[root@intel-canoepass-05 cpufreq]# cat conservative/down_threshold
-20
-[root@intel-canoepass-05 cpufreq]# echo ondemand > scaling_governor
-[root@intel-canoepass-05 cpufreq]# cat ondemand/up_threshold
-95
-[root@intel-canoepass-05 cpufreq]# echo conservative > scaling_governor
-[root@intel-canoepass-05 cpufreq]#
-
-without any issue.  My dmesg (with the printk's) shows
+Thanks for your suggestion, I will remove the empty check.
 
 
-[ 55.331058] cpufreq_set_policy: stopping governor conservative
-[ 55.337652] cpufreq_governor_dbs: removing sysfs files for governor conservative
-[ 55.346028] cpufreq_set_policy: starting governor ondemand
-[ 55.352167] cpufreq_governor_dbs: creating sysfs files for governor ondemand
-[ 76.818989] cpufreq_set_policy: stopping governor ondemand
-[ 76.825202] cpufreq_governor_dbs: removing sysfs files for governor ondemand
-[ 76.833131] cpufreq_set_policy: starting governor conservative
-[ 76.839667] cpufreq_governor_dbs: creating sysfs files for governor conservative
-
-There is an already reported LOCKDEP warning in the xfs code that fires at login
-so I know LOCKDEP is functional.
-
-Stephen's report as well as the lockup report implies that I should open a file,
-
--> #1 (&policy->rwsem){+++++.}:
-        [<c0359234>] kernfs_fop_open+0x138/0x298
-        [<c02fa3f4>] do_dentry_open.isra.12+0x1b0/0x2f0
-        [<c02fa604>] finish_open+0x20/0x38
-        [<c0308d34>] do_last.isra.37+0x5ac/0xb68
-        [<c03093a4>] path_openat+0xb4/0x5d8
-        [<c0309bcc>] do_filp_open+0x2c/0x80
-        [<c02fb558>] do_sys_open+0x10c/0x1c8
-        [<c020f0a0>] ret_fast_syscall+0x0/0x48
-
-and then switch the governor ...
-
--> #0 (s_active#9){++++..}:
-        [<c0357d18>] __kernfs_remove+0x250/0x300
-        [<c0358a94>] kernfs_remove_by_name_ns+0x3c/0x84
-        [<c035aa78>] remove_files+0x34/0x78
-        [<c035aee0>] sysfs_remove_group+0x40/0x98
-        [<c05b0560>] cpufreq_governor_dbs+0x4c0/0x6ec
-        [<c05abebc>] __cpufreq_governor+0x118/0x200
-        [<c05ac0fc>] cpufreq_set_policy+0x158/0x2ac
-        [<c05ad5e4>] store_scaling_governor+0x6c/0x94
-        [<c05ab210>] store+0x88/0xb8
-        [<c035a00c>] sysfs_kf_write+0x4c/0x50
-        [<c03594d4>] kernfs_fop_write+0xc0/0x180
-        [<c02fc5c8>] vfs_write+0xa0/0x1a8
-        [<c02fc9d4>] SyS_write+0x40/0x8c
-        [<c020f0a0>] ret_fast_syscall+0x0/0x48
-
-... right?
-
-P.
+Regards
+Joey Lee
