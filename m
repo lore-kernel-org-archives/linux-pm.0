@@ -1,49 +1,111 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [RFC PATCH 2/2] of/clk: use "clkops-clocks" to specify clocks handled by clock_ops domain
-Date: Mon, 04 Aug 2014 17:21:49 +0200
-Message-ID: <1616494.8YxGyrZW3V@avalon>
-References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be> <2717555.fiA6A86F65@avalon> <CAMuHMdVKDQz8q0b2UA7=1K8Qw4n3U0=M+mJyi5UQP7QZdC-JiQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdVKDQz8q0b2UA7=1K8Qw4n3U0=M+mJyi5UQP7QZdC-JiQ@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Grant Likely <grant.likely@secretlab.ca>, Grygorii Strashko <grygorii.strashko@ti.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
+Subject: [PATCH v2] Hibernate: check unsafe page should not in e820 reserved region
+Date: Mon,  4 Aug 2014 23:23:21 +0800
+Message-ID: <1407165801-24648-1-git-send-email-jlee@suse.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f41.google.com ([74.125.82.41]:40904 "EHLO
+	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751033AbaHDPXl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Aug 2014 11:23:41 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>
 
-Hi Geert,
+When the machine doesn't well handle the e820 persistent when hibernate
+resuming, then it may causes page fault when writing image to snapshot
+buffer:
 
-On Monday 04 August 2014 13:28:32 Geert Uytterhoeven wrote:
-> On Wed, Jul 30, 2014 at 2:06 AM, Laurent Pinchart wrote:
-> > The third option would require storing the clocks lists in device drivers.
-> > I believe this is our best option, as a trade-off between simplicity and
-> > versatility. Drivers that use runtime PM already need to enable it
-> > explicitly when probing devices. Passing a list of clock names to runtime
-> > PM at that point wouldn't complicate drivers much. When the clocks list
-> > isn't SoC- dependent it could be stored as static information. Otherwise
-> > it could be derived from DT (or any other source of hardware description)
-> > using C code, offering all the versatility we need.
-> > 
-> > The only drawback of this solution I can think of right now is that the
-> > runtime PM core couldn't manage device clocks before probing the device.
-> > Specifically device clocks couldn't be managed if no driver is loaded for
-> > that device. I somehow recall that someone raised this as being a
-> > problem, but I can't remember why.
-> 
-> Perhaps you're thinking of clocks that were enabled (by the boot loader or
-> implicit reset state) before running Linux, and aren't disabled?
+[   17.929495] BUG: unable to handle kernel paging request at ffff880069d4f000
+[   17.933469] IP: [<ffffffff810a1cf0>] load_image_lzo+0x810/0xe40
+[   17.933469] PGD 2194067 PUD 77ffff067 PMD 2197067 PTE 0
+[   17.933469] Oops: 0002 [#1] SMP
+...
 
-That wasn't the reason, I know that clk_disable_unused() takes care of that 
-problem (provided the clock drivers behave correctly, the commit you mention 
-below shows that's not always the case, but that's an unrelated issue).
+The ffff880069d4f000 page is in e820 reserved region of resume boot
+kernel:
 
-> That was fixed by commit bb178da701382a230e26d90cf94e8a24b280e0d9
-> ("clk: shmobile: mstp: Fix the is_enabled() operation").
+[    0.000000] BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff] reserved
+...
+[    0.000000] PM: Registered nosave memory: [mem 0x69d4f000-0x69e12fff]
 
+So snapshot.c mark the pfn to forbidden pages map. But, this
+page is also in the memory bitmap in snapshot image because it's an
+original page used by image kernel, so it will also mark as an
+unsafe(free) page in prepare_image().
+
+That means the page in e820 when resuming mark as "forbidden" and
+"free", it causes get_buffer() treat it as an allocated unsafe page.
+Then snapshot_write_next() return this page to load_image, load_image
+writing content to this address, but this page didn't really allocated
+. So, we got page fault.
+
+Although the root cause is from BIOS, I think aggressive check and
+significant message in kernel will better then a page fault for
+issue tracking, especially when serial console unavailable.
+
+This patch adds code in mark_unsafe_pages() for check does free pages in
+nosave region. If so, then it print message and return fault to stop whole
+S4 resume process:
+
+[    8.166004] PM: Image loading progress:   0%
+[    8.658717] PM: 0x6796c000 in e820 nosave region: [mem 0x6796c000-0x6796cfff]
+[    8.918737] PM: Read 2511940 kbytes in 1.04 seconds (2415.32 MB/s)
+[    8.926633] PM: Error -14 resuming
+[    8.933534] PM: Failed to load hibernation image, recovering.
+
+v2:
+ + removed empty check of nosave_regions list.
+ + fixed the typo of "region" in code for error message and patch comment.
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Takashi Iwai <tiwai@suse.de>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+---
+ kernel/power/snapshot.c | 21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 4fc5c32..c4b8093 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -954,6 +954,25 @@ static void mark_nosave_pages(struct memory_bitmap *bm)
+ 	}
+ }
+ 
++static bool is_nosave_page(unsigned long pfn)
++{
++	struct nosave_region *region;
++
++	list_for_each_entry(region, &nosave_regions, list) {
++		if (pfn >= region->start_pfn && pfn < region->end_pfn) {
++			pr_err("PM: %#010llx in e820 nosave region: "
++			       "[mem %#010llx-%#010llx]\n",
++			       (unsigned long long) pfn << PAGE_SHIFT,
++			       (unsigned long long) region->start_pfn << PAGE_SHIFT,
++			       ((unsigned long long) region->end_pfn << PAGE_SHIFT)
++					- 1);
++			return true;
++		}
++	}
++
++	return false;
++}
++
+ /**
+  *	create_basic_memory_bitmaps - create bitmaps needed for marking page
+  *	frames that should not be saved and free page frames.  The pointers
+@@ -2015,7 +2034,7 @@ static int mark_unsafe_pages(struct memory_bitmap *bm)
+ 	do {
+ 		pfn = memory_bm_next_pfn(bm);
+ 		if (likely(pfn != BM_END_OF_MAP)) {
+-			if (likely(pfn_valid(pfn)))
++			if (likely(pfn_valid(pfn)) && !is_nosave_page(pfn))
+ 				swsusp_set_page_free(pfn_to_page(pfn));
+ 			else
+ 				return -EFAULT;
 -- 
-Regards,
-
-Laurent Pinchart
+1.8.4.5
 
