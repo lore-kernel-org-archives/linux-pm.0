@@ -1,107 +1,125 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Tue, 05 Aug 2014 15:51:19 -0700
-Message-ID: <53E15FE7.4040808@codeaurora.org>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <53DBE764.8050109@redhat.com> <53DBEC27.7050803@codeaurora.org> <CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com> <53E0B657.4070007@redhat.com> <CAKohponxBdYEgY2oYuzmdaqfSRS8Uq8bZOzcb1QDmKO-z5ZBFQ@mail.gmail.com> <53E1556B.5070304@codeaurora.org> <53E15DBB.7080800@redhat.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [Update][PATCH 1/5] PM / sleep: Mechanism for aborting system suspends unconditionally
+Date: Wed, 06 Aug 2014 01:29 +0200
+Message-ID: <1909932.TyJLycJLk5@vostro.rjw.lan>
+References: <20140724212620.GO3935@laptop> <3321219.itH23ZEDt4@vostro.rjw.lan> <2110414.zVMoE3FRqa@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:49280 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753435AbaHEWvV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 18:51:21 -0400
-In-Reply-To: <53E15DBB.7080800@redhat.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:52327 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753796AbaHEXKU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 19:10:20 -0400
+In-Reply-To: <2110414.zVMoE3FRqa@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
-On 08/05/2014 03:42 PM, Prarit Bhargava wrote:
-> So back to the original problem, which in short, revolves around these two
-> functions (with comments included by me):
->
-> /* called with kernfs rwsem for this kobj held */
-> static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
-> {
->          struct cpufreq_policy *policy = to_policy(kobj);
->          struct freq_attr *fattr = to_attr(attr);
->          ssize_t ret;
->
->          if (!down_read_trylock(&cpufreq_rwsem))
->                  return -EINVAL;
->
->          down_read(&policy->rwsem);
->
->
-> and
->
-> static ssize_t store(struct kobject *kobj, struct attribute *attr,
->                       const char *buf, size_t count)
-> {
->          struct cpufreq_policy *policy = to_policy(kobj);
->          struct freq_attr *fattr = to_attr(attr);
->          ssize_t ret = -EINVAL;
->
->          get_online_cpus();
->
->          if (!cpu_online(policy->cpu))
->                  goto unlock;
->
->          if (!down_read_trylock(&cpufreq_rwsem))
->                  goto unlock;
->
->          down_write(&policy->rwsem);
->
->          /* if governor switch, calls sysfs_remove_group
->           * and acquires kernfs rwsem for this kobj */
->
-> There's another bug here which I haven't had a chance to discuss.  There's the
-> possibility that we have multiple threads waiting at the store's
-> down_write(&policy->rwsem) when another thread does a governor switch.  When
-> the policy->rwsem is released by the governor switch thread, all the other
-> threads will enter this code path and race through while looking at stale data.
->
-> We hit some NULL pointers (very similar to the ones originally reported in this
-> thread) and, of course, the system dies.
->
-> I wonder if the show() down_read(&policy->rwsem) needs to be a
-> down_read_trylock(), and similarily in the store the down_write(&policy->rwsem)
-> needs to be a down_write_trylock() ?
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: PM / sleep: Mechanism for aborting system suspends unconditionally
 
-This will create bigger issues if you make this change to the generic 
-show/store. The writes would no longer be reliable even if the race 
-could have been handled properly in the kernel (say, a race between a 
-call to cpufreq_update_policy() and user space reading/writing 
-something). This would be a serious userspace ABI change.
+It sometimes may be necessary to abort a system suspend in
+progress or wake up the system from suspend-to-idle even if the
+pm_wakeup_event()/pm_stay_awake() mechanism is not enabled.
 
-> We would also have to do a check on policy->governor_enabled to verify that
-> the data was still valid after taking the lock.
->
-> *If* we were to make this change, does that also happen to fix the risk of a
-> deadlock in this code?
+For this purpose, introduce a new global variable abort_suspend and
+make pm_wakeup_pending() check its value.  Also add routines for
+manipulating that variable.
 
-We should not do the change you are referring to.
+This is going to be used in subsequent changes.
 
->
-> That might be too hacky ... gotta be a better way :/ ...
->
-> Anyway, just a thought.
->
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-I definitely have a fix for this and the original race you reported. 
-It's basically reverting that commit you reverted + a fix for the 
-deadlock. That's the only way to fix the scaling_governor issue.
+The empty stub pm_wakeup_clear() for CONFIG_PM_SLEEP unset was missing.
 
-You fix the deadlock by moving the governor attribute group removing to 
-the framework code and doing it before STOP+EXIT to governor without 
-holding the policy lock. And the reverse for INIT+STOP.
+Rafael
 
-I'll try to get to it if no one else does.
+---
+ drivers/base/power/wakeup.c |   20 ++++++++++++++++++++
+ include/linux/suspend.h     |    4 ++++
+ kernel/power/process.c      |    1 +
+ 3 files changed, 25 insertions(+)
 
--Saravana
+Index: linux-pm/include/linux/suspend.h
+===================================================================
+--- linux-pm.orig/include/linux/suspend.h
++++ linux-pm/include/linux/suspend.h
+@@ -371,6 +371,8 @@ extern int unregister_pm_notifier(struct
+ extern bool events_check_enabled;
+ 
+ extern bool pm_wakeup_pending(void);
++extern void pm_system_wakeup(void);
++extern void pm_wakeup_clear(void);
+ extern bool pm_get_wakeup_count(unsigned int *count, bool block);
+ extern bool pm_save_wakeup_count(unsigned int count);
+ extern void pm_wakep_autosleep_enabled(bool set);
+@@ -418,6 +420,8 @@ static inline int unregister_pm_notifier
+ #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
+ 
+ static inline bool pm_wakeup_pending(void) { return false; }
++static inline void pm_system_wakeup(void) {}
++static inline void pm_wakeup_clear(void) {}
+ 
+ static inline void lock_system_sleep(void) {}
+ static inline void unlock_system_sleep(void) {}
+Index: linux-pm/drivers/base/power/wakeup.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/wakeup.c
++++ linux-pm/drivers/base/power/wakeup.c
+@@ -691,6 +691,8 @@ void pm_print_active_wakeup_sources(void
+ }
+ EXPORT_SYMBOL_GPL(pm_print_active_wakeup_sources);
+ 
++static bool abort_suspend;
++
+ /**
+  * pm_wakeup_pending - Check if power transition in progress should be aborted.
+  *
+@@ -712,6 +714,7 @@ bool pm_wakeup_pending(void)
+ 		ret = (cnt != saved_count || inpr > 0);
+ 		events_check_enabled = !ret;
+ 	}
++	ret = ret || abort_suspend;
+ 	spin_unlock_irqrestore(&events_lock, flags);
+ 
+ 	if (ret) {
+@@ -722,6 +725,23 @@ bool pm_wakeup_pending(void)
+ 	return ret;
+ }
+ 
++void pm_system_wakeup(void)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&events_lock, flags);
++	abort_suspend = true;
++	spin_unlock_irqrestore(&events_lock, flags);
++	freeze_wake();
++}
++
++void pm_wakeup_clear(void)
++{
++	spin_lock_irq(&events_lock);
++	abort_suspend = false;
++	spin_unlock_irq(&events_lock);
++}
++
+ /**
+  * pm_get_wakeup_count - Read the number of registered wakeup events.
+  * @count: Address to store the value at.
+Index: linux-pm/kernel/power/process.c
+===================================================================
+--- linux-pm.orig/kernel/power/process.c
++++ linux-pm/kernel/power/process.c
+@@ -129,6 +129,7 @@ int freeze_processes(void)
+ 	if (!pm_freezing)
+ 		atomic_inc(&system_freezing_cnt);
+ 
++	pm_wakeup_clear();
+ 	printk("Freezing user space processes ... ");
+ 	pm_freezing = true;
+ 	error = try_to_freeze_tasks(true);
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
