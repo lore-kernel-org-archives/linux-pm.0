@@ -1,51 +1,66 @@
 From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: [PATCH v2 0/4] Tegra124 soctherm driver
-Date: Tue, 5 Aug 2014 15:18:53 +0300
-Message-ID: <1407241137-32232-1-git-send-email-mperttunen@nvidia.com>
+Subject: [PATCH v2 3/4] ARM: tegra: Add thermal trip points for Jetson TK1
+Date: Tue, 5 Aug 2014 15:18:56 +0300
+Message-ID: <1407241137-32232-4-git-send-email-mperttunen@nvidia.com>
+References: <1407241137-32232-1-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:14035 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753126AbaHEMV3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 08:21:29 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1407241137-32232-1-git-send-email-mperttunen@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com, swarren@wwwdotorg.org, thierry.reding@gmail.com
 Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mikko Perttunen <mperttunen@nvidia.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+This adds critical trip points to the Jetson TK1 device tree.
+The device will do a controlled shutdown when either the CPU, GPU
+or MEM thermal zone reaches 101 degrees Celsius.
 
-this series adds support for the thermal monitoring features of the
-soctherm unit on the Tegra124 SoC. v2 drops support for interrupt-
-based trip points. Thermtrip (emergency thermal shutdown) still
-works when this driver is loaded and the PMC thermal reset patch
-series is applied.
+Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+---
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts | 32 +++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
-The branch is also available in my github repo,
-  git://github.com/cyndis/linux.git soctherm-v2
-
-Thanks,
-Mikko
-
-Mikko Perttunen (4):
-  of: Add bindings for nvidia,tegra124-soctherm
-  ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
-  ARM: tegra: Add thermal trip points for Jetson TK1
-  thermal: Add Tegra SOCTHERM thermal management driver
-
- .../devicetree/bindings/thermal/tegra-soctherm.txt |  35 ++
- arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  32 ++
- arch/arm/boot/dts/tegra124.dtsi                    |  47 +++
- drivers/thermal/Kconfig                            |   7 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/tegra_soctherm.c                   | 452 +++++++++++++++++++++
- include/dt-bindings/thermal/tegra124-soctherm.h    |  13 +
- 7 files changed, 587 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
- create mode 100644 drivers/thermal/tegra_soctherm.c
- create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
-
+diff --git a/arch/arm/boot/dts/tegra124-jetson-tk1.dts b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+index ee178c4..c6b47b9 100644
+--- a/arch/arm/boot/dts/tegra124-jetson-tk1.dts
++++ b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+@@ -1856,4 +1856,36 @@
+ 			 <&tegra_car TEGRA124_CLK_EXTERN1>;
+ 		clock-names = "pll_a", "pll_a_out0", "mclk";
+ 	};
++
++	thermal-zones {
++		cpu {
++			trips {
++				trip@0 {
++					temperature = <101000>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++			};
++		};
++
++		mem {
++			trips {
++				trip@0 {
++					temperature = <101000>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++			};
++		};
++
++		gpu {
++			trips {
++				trip@0 {
++					temperature = <101000>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++			};
++		};
++	};
+ };
 -- 
 1.8.1.5
-
