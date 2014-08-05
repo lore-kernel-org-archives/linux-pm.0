@@ -1,67 +1,84 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/5] irq / PM: Shared IRQs vs IRQF_NO_SUSPEND and
- suspend-to-idle wakeup
-Date: Tue, 5 Aug 2014 18:12:35 +0200
-Message-ID: <20140805161235.GE19379@twins.programming.kicks-ass.net>
-References: <20140724212620.GO3935@laptop>
- <alpine.DEB.2.10.1408011533580.4997@nanos>
- <3855585.ek3PTQLkmN@vostro.rjw.lan>
- <3321219.itH23ZEDt4@vostro.rjw.lan>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
+ to be held for duration of changing governors [v2]
+Date: Tue, 05 Aug 2014 15:06:35 -0700
+Message-ID: <53E1556B.5070304@codeaurora.org>
+References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <53DBE764.8050109@redhat.com> <53DBEC27.7050803@codeaurora.org> <CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com> <53E0B657.4070007@redhat.com> <CAKohponxBdYEgY2oYuzmdaqfSRS8Uq8bZOzcb1QDmKO-z5ZBFQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="SALzGxM+9VBgwVYp"
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:38761 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753581AbaHEQMs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 12:12:48 -0400
-Content-Disposition: inline
-In-Reply-To: <3321219.itH23ZEDt4@vostro.rjw.lan>
+Received: from smtp.codeaurora.org ([198.145.11.231]:47478 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753671AbaHEWGh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 18:06:37 -0400
+In-Reply-To: <CAKohponxBdYEgY2oYuzmdaqfSRS8Uq8bZOzcb1QDmKO-z5ZBFQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Prarit Bhargava <prarit@redhat.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+On 08/05/2014 03:53 AM, Viresh Kumar wrote:
+> On 5 August 2014 16:17, Prarit Bhargava <prarit@redhat.com> wrote:
+>> Nope, not a stupid question.  After reproducing (finally!) yesterday I've been
+>> wondering the same thing.
+>
+> Good to know that :)
+>
+>> I've been looking into *exactly* this.  On any platform where
+>> cpu_weight(affected_cpus) == 1 for a particular cpu this lockdep trace should
+>> happen.
+>
+>> That's what I'm wondering too.  I'm going to instrument the code to find out
+>> this morning.  I'm wondering if this comes down to a lockdep class issue
+>> (perhaps lockdep puts globally defined locks like cpufreq_global_kobject in a
+>> different class?).
+>
+> Maybe, I tried this Hack to make this somewhat similar to the other case
+> on my platform with just two CPUs:
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 6f02485..6b4abac 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -98,7 +98,7 @@ static DEFINE_MUTEX(cpufreq_governor_mutex);
+>
+>   bool have_governor_per_policy(void)
+>   {
+> -       return !!(cpufreq_driver->flags & CPUFREQ_HAVE_GOVERNOR_PER_POLICY);
+> +       return !(cpufreq_driver->flags & CPUFREQ_HAVE_GOVERNOR_PER_POLICY);
+>   }
+>   EXPORT_SYMBOL_GPL(have_governor_per_policy);
+>
+>
+> This should result in something similar to setting that per-policy-governor
+> flag (Actually I could have done that too :)), and I couldn't see that crash :(
+>
+> That needs more investigation now, probably we can get some champ of
+> sysfs stuff like Tejun/Greg into discussion now..
 
---SALzGxM+9VBgwVYp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Stephen and I looked into this. This is not a sysfs framework 
+difference. The reason we don't have this issue when we use global 
+tunables is because we add the attribute group to the 
+cpufreq_global_kobject and that kobject doesn't have a kobj_type ops 
+similar to the per policy kobject. So, read/write to those attributes do 
+NOT go through the generic show/store ops that wrap every other cpufreq 
+framework attribute read/writes.
 
-On Tue, Aug 05, 2014 at 05:22:57PM +0200, Rafael J. Wysocki wrote:
-> Here's a patch series based on what we talked about.
->=20
-> [1/5] Mechanism to wake up the system or abort suspend in progress automa=
-tically.
-> [2/5] Fix for shared IRQs vs IRQF_NO_SUSPEND (with wakeup in mind).
-> [3/5] Wakeup interrupts support for suspend-to-idle.
-> [4/5] Set IRQCHIP_SKIP_SET_WAKE for x86 IOAPIC IRQ chips.
-> [5/5] Make PCIe PME wake up from suspend to idle.
->=20
-> All tested on MSI Wind that has a couple of issues being addressed.
+So, none of those read/write do any kind of locking. They don't race 
+with POLICY_EXIT (because we remove the sysfs group first thing in 
+POLICY_EXIT) but might still race with START/STOPs (not sure, haven't 
+looked closely yet).
 
-I can confirm it works on my WSM-EP which has that shared interrupt
-stuff.
+For example, writing to sampling_rate of ondemand governor might cause a 
+race in update_sampling_rate(). It could race and happen between a STOP 
+and POLICY_EXIT (triggered by hotplug, gov change, etc).
 
---SALzGxM+9VBgwVYp
-Content-Type: application/pgp-signature
+So, this might be a completely separate bug that needs fixing when we 
+don't use per policy govs.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+-Saravana
 
-iQIcBAEBAgAGBQJT4QJzAAoJEHZH4aRLwOS6msEP+wSxqLsjT6iMMkBfS6Vo0L7q
-ZF9+D1iPaa2goWOctNY6yhP6nFjTq0xrcb5TuGr+tqKkPO9ciEhtm37EihHNDV9x
-Mn70t1aDND9meiimMbmoESq7m5ixsvTcxsU047/fAElszwyylCYjM7lR/Hyac3WR
-m29SfIkksNLsDYZLVhx6SXr18wANAczMWg449ftxBI9l2KUyZ8kM/9KggbolP+6K
-u7JkhSRK7t/lDU8+aiqVmmwAD32viH3lF1Ldb3RTviRf+3otYK98I6Isdq7GqTmi
-IDp/GLhX52yr7i5AjjPcaduNhrMA1eV2pj8Ec5h2ECak3iculmtyJhmkKs5Asj1p
-xBkM33/tgGjcZrMkmQlHkpxPO6sAgL7POeIYtJykO019qgKlu2rx1RPc8c1+6MMO
-vfqZj4CykLOq/A3fxrqhaAdr4278gwRka/6XW5kE3gplIGcAOIVmzaOFX6VB2Zqq
-Onv8xjpY5bPhUcPCn9JyD2PSkzQUUesf3yHagRVjtHEcUxpD6k49NegDN0ceB98U
-lWdk7a8KjYhAo5Jt+WHLa7+Zm0MnL0HVlQcgkkvBTV74K3FzUMb/wSBmo/U0MgcI
-q6KInmazcuTmk+iit/6+IeKObepGTqbO6Iux18n68RDu/BGn+bPCX9ZiHdnoX1YY
-t6Rmhc8O6oUngmLXxwYW
-=q8va
------END PGP SIGNATURE-----
-
---SALzGxM+9VBgwVYp--
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
