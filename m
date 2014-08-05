@@ -1,97 +1,126 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq_opp.c: Fixed the __might_sleep by changing GFP_KERNEL to GFP_ATOMIC.
-Date: Wed, 06 Aug 2014 01:35:55 +0200
-Message-ID: <5600331.UfWMPf73u1@vostro.rjw.lan>
-References: <1407183283-21921-1-git-send-email-moon.linux@yahoo.com> <CAKohpo=j59=5fmVAdhGXkdb3YHN6zDQBkibZZTfc73GvSqx=3A@mail.gmail.com>
+From: Sebastian Reichel <sre@ring0.de>
+Subject: [GIT PULL] power supply changes for 3.17
+Date: Wed, 6 Aug 2014 01:51:58 +0200
+Message-ID: <20140805235158.GA4157@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="0F1p//8PRICkK4MW"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51722 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751365AbaHEXRO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 19:17:14 -0400
-In-Reply-To: <CAKohpo=j59=5fmVAdhGXkdb3YHN6zDQBkibZZTfc73GvSqx=3A@mail.gmail.com>
+Received: from ring0.de ([5.45.105.125]:41765 "EHLO ring0.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750823AbaHEXwH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Aug 2014 19:52:07 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Anand Moon <moon.linux@yahoo.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tuesday, August 05, 2014 11:47:50 AM Viresh Kumar wrote:
-> On 5 August 2014 01:44, Anand Moon <moon.linux@yahoo.com> wrote:
-> > Note: Generally, you should use GFP_ATOMIC in interrupt context
-> > or in process context where it is not allowed to sleep, and GFP_KERNEL elsewhere.
-> >
-> > This changes fixes bellow bug on ARM imx6
-> >
-> > Signed-off-by: Anand Moon <moon.linux@yahoo.com>
-> 
-> This should have come after the kernel dump.
-> 
-> > [    7.331858]
-> > [    7.333369] ===============================
-> > [    7.337633] [ INFO: suspicious RCU usage. ]
-> > [    7.341834] 3.16.0-armv7-x2 #1 Not tainted
-> > [    7.346506] -------------------------------
-> > [    7.350709] include/linux/rcupdate.h:513 Illegal context switch in RCU read-side critical section!
-> > [    7.359735]
-> > [    7.359735] other info that might help us debug this:
-> > [    7.359735]
-> > [    7.367932]
-> > [    7.367932] rcu_scheduler_active = 1, debug_locks = 1
-> > [    7.374477] 2 locks held by swapper/0/1:
-> > [    7.378491]  #0:  (&dev->mutex){......}, at: [<c06b273c>] device_attach+0x28/0x9c
-> > [    7.386212]  #1:  (rcu_read_lock){......}, at: [<c083cfc8>] dev_pm_opp_init_cpufreq_table+0x0/0x23c
-> > [    7.396284]
-> > [    7.396284] stack backtrace:
-> > [    7.400666] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.16.0-armv7-x2 #1
-> > [    7.407668] [<c0019234>] (unwind_backtrace) from [<c0014218>] (show_stack+0x20/0x24)
-> > [    7.415473] [<c0014218>] (show_stack) from [<c0a5b8a0>] (dump_stack+0x9c/0xbc)
-> > [    7.422818] [<c0a5b8a0>] (dump_stack) from [<c00b4474>] (lockdep_rcu_suspicious+0xdc/0x110)
-> > [    7.431298] [<c00b4474>] (lockdep_rcu_suspicious) from [<c008d214>] (__might_sleep+0x204/0x240)
-> > [    7.440106] [<c008d214>] (__might_sleep) from [<c01c8090>] (__kmalloc+0x2a8/0x328)
-> > [    7.447801] [<c01c8090>] (__kmalloc) from [<c083d06c>] (dev_pm_opp_init_cpufreq_table+0xa4/0x23c)
-> > [    7.456780] [<c083d06c>] (dev_pm_opp_init_cpufreq_table) from [<c0841bb0>] (imx6q_cpufreq_probe+0x160/0x750)
-> > [    7.466734] [<c0841bb0>] (imx6q_cpufreq_probe) from [<c06b4b84>] (platform_drv_probe+0x28/0x5c)
-> > [    7.475456] [<c06b4b84>] (platform_drv_probe) from [<c06b2960>] (driver_probe_device+0x14c/0x39c)
-> > [    7.484457] [<c06b2960>] (driver_probe_device) from [<c06b2c00>] (__device_attach+0x50/0x54)
-> > [    7.492986] [<c06b2c00>] (__device_attach) from [<c06b09e0>] (bus_for_each_drv+0x70/0xa4)
-> > [    7.501291] [<c06b09e0>] (bus_for_each_drv) from [<c06b279c>] (device_attach+0x88/0x9c)
-> > [    7.509388] [<c06b279c>] (device_attach) from [<c06b1c08>] (bus_probe_device+0x98/0xbc)
-> > [    7.517600] [<c06b1c08>] (bus_probe_device) from [<c06afac0>] (device_add+0x4a8/0x5a0)
-> > [    7.525679] [<c06afac0>] (device_add) from [<c06b487c>] (platform_device_add+0xd4/0x26c)
-> > [    7.533974] [<c06b487c>] (platform_device_add) from [<c06b5144>] (platform_device_register+0x30/0x34)
-> > [    7.543404] [<c06b5144>] (platform_device_register) from [<c0f0dcb4>] (imx6q_init_late+0x17c/0x18c)
-> > [    7.552609] [<c0f0dcb4>] (imx6q_init_late) from [<c0f00b8c>] (init_machine_late+0x28/0x30)
-> > [    7.560991] [<c0f00b8c>] (init_machine_late) from [<c0008bb0>] (do_one_initcall+0xec/0x224)
-> > [    7.569538] [<c0008bb0>] (do_one_initcall) from [<c0efef00>] (kernel_init_freeable+0x208/0x2ac)
-> > [    7.578448] [<c0efef00>] (kernel_init_freeable) from [<c0a557ac>] (kernel_init+0x1c/0xf8)
-> > [    7.586764] [<c0a557ac>] (kernel_init) from [<c000fce8>] (ret_from_fork+0x14/0x20)
-> > ---
-> >  drivers/cpufreq/cpufreq_opp.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq_opp.c b/drivers/cpufreq/cpufreq_opp.c
-> > index c0c6f4a..d5b5625 100644
-> > --- a/drivers/cpufreq/cpufreq_opp.c
-> > +++ b/drivers/cpufreq/cpufreq_opp.c
-> > @@ -60,7 +60,7 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
-> >                 goto out;
-> >         }
-> >
-> > -       freq_table = kzalloc(sizeof(*freq_table) * (max_opps + 1), GFP_KERNEL);
-> > +       freq_table = kzalloc(sizeof(*freq_table) * (max_opps + 1), GFP_ATOMIC);
-> >         if (!freq_table) {
-> >                 ret = -ENOMEM;
-> >                 goto out;
-> 
-> Please see this:
-> 
-> https://lkml.org/lkml/2014/7/16/815
-> 
-> @Rafael: Have you already applied patch from above link?
 
-No, I haven't.  Do we need it after all?
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Rafael
+The following changes since commit f83971912231fe5390d2357442b6c25bb8076d9b:
 
+  Merge tag 'gfs2-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-3.0-fixes (2014-07-18 06:26:04 -1000)
+
+are available in the git repository at:
+
+  git://git.infradead.org/battery-2.6.git tags/for-v3.17
+
+for you to fetch changes up to 5e37195f30cc31e6a1052cbc282254e127c1b8c7:
+
+  ipaq_micro_battery: fix sparse non static symbol warning (2014-07-28 15:36:29 +0200)
+
+----------------------------------------------------------------
+power supply changes for the v3.17 series
+
+ - Added iPaq h3xxx battery driver
+ - Added Broadcom STB reset driver
+ - DT support for rx51-battery
+ - misc. fixes
+
+----------------------------------------------------------------
+Bjorn Helgaas (1):
+      power/reset: Fix GPL v2 license string typo
+
+Dmitry Artamonow (1):
+      power: add driver for battery reading on iPaq h3xxx
+
+Doug Anderson (1):
+      charger: tps65090: Allow charger module to be used when no irq
+
+Himangi Saraogi (1):
+      bq27x00_battery: Introduce the use of the managed version of kzalloc
+
+Jenny TC (1):
+      power_supply: Add inlmt,iterm, min/max temp props
+
+Linus Walleij (1):
+      power: poweroff: gpio: convert to use descriptors
+
+Marc Carino (1):
+      power: reset: Add reboot driver for brcmstb
+
+Marek Belisko (1):
+      bq27000: report missing device better.
+
+Nishanth Menon (1):
+      power: twl4030_charger: detect battery presence prior to enabling charger
+
+Sebastian Reichel (3):
+      bq2415x_charger: Fix Atomic Sleep Bug
+      rx51_battery: convert to iio consumer
+      Documentation: DT: Document rx51-battery binding
+
+Wei Yongjun (2):
+      power_supply: Fix sparse non static symbol warning
+      ipaq_micro_battery: fix sparse non static symbol warning
+
+ Documentation/devicetree/bindings/power/rx51-battery.txt |  25 ++++++++++
+ Documentation/power/power_supply_class.txt               |   6 +++
+ drivers/power/Kconfig                                    |   7 +++
+ drivers/power/Makefile                                   |   1 +
+ drivers/power/bq2415x_charger.c                          |   8 +++-
+ drivers/power/bq27x00_battery.c                          |  28 ++++-------
+ drivers/power/ipaq_micro_battery.c                       | 290 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/power/power_supply_core.c                        |   3 +-
+ drivers/power/power_supply_sysfs.c                       |   4 ++
+ drivers/power/reset/Kconfig                              |  11 +++++
+ drivers/power/reset/Makefile                             |   1 +
+ drivers/power/reset/brcmstb-reboot.c                     | 120 +++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/power/reset/gpio-poweroff.c                      |  52 ++++++++-------------
+ drivers/power/reset/restart-poweroff.c                   |   2 +-
+ drivers/power/rx51_battery.c                             |  90 ++++++++++++++++++++++++++----------
+ drivers/power/tps65090-charger.c                         |  76 +++++++++++++++++++++++-------
+ drivers/power/twl4030_charger.c                          |  44 +++++++++++++++++-
+ include/linux/power_supply.h                             |   4 ++
+ 18 files changed, 673 insertions(+), 99 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/rx51-battery.txt
+ create mode 100644 drivers/power/ipaq_micro_battery.c
+ create mode 100644 drivers/power/reset/brcmstb-reboot.c
+
+--0F1p//8PRICkK4MW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJT4W4eAAoJENju1/PIO/qakFsP/1c2gH6DZyiSff8Ym2w5PVrx
+Stv4EIh8I+ps7z+XXftnckHbP50fcDmsFYvWXo/idt9W3/hrPfxRgl28so+igDUW
+Q8N1R9diDpUVU4zbM3nON+BuvGA/rxyxmJ798sfyJ2PCM1r4+aRpj1kEPCeuCkBR
+2Ox+v2Z6SirWPE2cm2oXt8XE10ihj1wh0Ul3wc73LzXgl/5yKejsK3wYhMQnuaRF
+LNduJuSr1gtwMHcI8eMeWAbWxXNtWfAvcilX3ahcMQqyK8UZc3C9WasogrRkrZsa
+JOeUij94+PzrrVbGjVZ9eBTDWKwSdWQK2+axhlaqiNtU7UVBw5Iz2BefDH4aZaXe
+6SAqkoxBTehq3zN6hwTLOOQlYP3tKxP50h3JQbNIo93CFwtQLEi/LP7SM7+gccOF
+MM4/ydcfFrXDChOzPGFN11bkidRZNeO9YSRlgW8hkJ3lBvPaIZ+goOVzq4ytWgCd
+Byo8ZwIz8aRthk+MzbSQwRrYnlcZUaZk2JuJynf8SlPJqiDpU2mGirRXzB567HBr
+0tB0WXTI7lYhAt7jLwsJTqMxSQlKrY/Pc0yldnZx0KQ0NvSAuPVCG6jG62N0/Ath
+32pjFC+iH7jyn0Df0sf+KHjXc/j1oCgo2K9wYfplSILsc4tfvly2ffjEQB+hK8sl
+iHqIpJpsNME6jiLLAMRU
+=fyph
+-----END PGP SIGNATURE-----
+
+--0F1p//8PRICkK4MW--
