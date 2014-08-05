@@ -1,111 +1,102 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [RFC 1/2] PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
-Date: Tue,  5 Aug 2014 16:35:23 +0200
-Message-ID: <1407249324-8568-2-git-send-email-tomeu.vizoso@collabora.com>
-References: <1407249324-8568-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1407249324-8568-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v5 0/5] ARM: EXYNOS: cpuidle: fix AFTR mode on boards
+ with secure firmware enabled
+Date: Tue, 05 Aug 2014 17:07:36 +0200
+Message-ID: <53E0F338.8080006@linaro.org>
+References: <1407245666-20016-1-git-send-email-b.zolnierkie@samsung.com> <53E0E420.8060207@linaro.org> <53E0E98F.5020706@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:63658 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751235AbaHEPHm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 11:07:42 -0400
+Received: by mail-wi0-f182.google.com with SMTP id d1so1534382wiv.15
+        for <linux-pm@vger.kernel.org>; Tue, 05 Aug 2014 08:07:40 -0700 (PDT)
+In-Reply-To: <53E0E98F.5020706@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
 
-Also adds a class type PM_QOS_SUM that aggregates the values by summing them.
+On 08/05/2014 04:26 PM, Krzysztof Kozlowski wrote:
+> On 05.08.2014 16:03, Daniel Lezcano wrote:
+>> On 08/05/2014 03:34 PM, Bartlomiej Zolnierkiewicz wrote:
+>>> Hi,
+>>>
+>>> This patch series adds support for AFTR idle mode on boards with
+>>> secure firmware enabled and allows EXYNOS cpuidle driver usage on
+>>> Exynos4x12 SoCs.
+>>>
+>>> It has been tested on Trats2 board (using Exynos4412 SoC with secur=
+e
+>>> firmware enabled) on which AFTR mode reduces power consumption by ~=
+12%
+>>> when EXYNOS cpuidle driver is enabled (in both cases the default
+>>> exynos_defconfig config is used and CPU1-3 are offlined).
+>>
+>> As a sidenote:
+>>
+>> On my odroid-U2:
+>>   * 4 cpus online -> 130 mA
+>>   * 3 cpus online -> 164 mA
+>>   * 2 cpus online -> 160 mA
+>>   * 1 cpu online  -> 157 mA
+>>
+>> So were are consuming more when there are unplugged cpu ... any idea=
+s ?
+>
+> On which tree are you testing? Current next has ARMCLK down feature
+> enabled. ARMCLK down may stop working after hotunplugging CPU:
+> http://www.spinics.net/lists/arm-kernel/msg352890.html
+>
+> That was observed especially on Exynos4212 where ARMCLK down stops
+> working permanently. On Trats2 (Exynos4412) the clock down stopped on=
+ly
+> a for short period after disabling CPU.
 
-It can be used by memory controllers to calculate the optimum clock frequency
-based on the bandwidth needs of the different memory clients.
+Hi Krzysztof,
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
----
- include/linux/pm_qos.h |  5 ++++-
- kernel/power/qos.c     | 27 ++++++++++++++++++++++++++-
- 2 files changed, 30 insertions(+), 2 deletions(-)
+I tested the patches you mentioned above on top of this patchset.
 
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 9ab4bf7..636e828 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -15,6 +15,7 @@ enum {
- 	PM_QOS_CPU_DMA_LATENCY,
- 	PM_QOS_NETWORK_LATENCY,
- 	PM_QOS_NETWORK_THROUGHPUT,
-+	PM_QOS_MEMORY_BANDWIDTH,
- 
- 	/* insert new class ID */
- 	PM_QOS_NUM_CLASSES,
-@@ -32,6 +33,7 @@ enum pm_qos_flags_status {
- #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
- #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
- #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
-+#define PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE	0
- #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
-@@ -69,7 +71,8 @@ struct dev_pm_qos_request {
- enum pm_qos_type {
- 	PM_QOS_UNITIALIZED,
- 	PM_QOS_MAX,		/* return the largest value */
--	PM_QOS_MIN		/* return the smallest value */
-+	PM_QOS_MIN,		/* return the smallest value */
-+	PM_QOS_SUM		/* return the sum */
- };
- 
- /*
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 884b770..5f4c006 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -105,11 +105,27 @@ static struct pm_qos_object network_throughput_pm_qos = {
- };
- 
- 
-+static BLOCKING_NOTIFIER_HEAD(memory_bandwidth_notifier);
-+static struct pm_qos_constraints memory_bw_constraints = {
-+	.list = PLIST_HEAD_INIT(memory_bw_constraints.list),
-+	.target_value = PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE,
-+	.default_value = PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE,
-+	.no_constraint_value = PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE,
-+	.type = PM_QOS_SUM,
-+	.notifiers = &memory_bandwidth_notifier,
-+};
-+static struct pm_qos_object memory_bandwidth_pm_qos = {
-+	.constraints = &memory_bw_constraints,
-+	.name = "memory_bandwidth",
-+};
-+
-+
- static struct pm_qos_object *pm_qos_array[] = {
- 	&null_pm_qos,
- 	&cpu_dma_pm_qos,
- 	&network_lat_pm_qos,
--	&network_throughput_pm_qos
-+	&network_throughput_pm_qos,
-+	&memory_bandwidth_pm_qos,
- };
- 
- static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
-@@ -130,6 +146,9 @@ static const struct file_operations pm_qos_power_fops = {
- /* unlocked internal variant */
- static inline int pm_qos_get_value(struct pm_qos_constraints *c)
- {
-+	struct plist_node *node;
-+	int total_value = 0;
-+
- 	if (plist_head_empty(&c->list))
- 		return c->no_constraint_value;
- 
-@@ -140,6 +159,12 @@ static inline int pm_qos_get_value(struct pm_qos_constraints *c)
- 	case PM_QOS_MAX:
- 		return plist_last(&c->list)->prio;
- 
-+	case PM_QOS_SUM:
-+		plist_for_each(node, &c->list)
-+			total_value += node->prio;
-+
-+		return total_value;
-+
- 	default:
- 		/* runtime check for not using enum */
- 		BUG();
--- 
-1.9.3
+You are right this is directly related to the ARMCLK but the behavior=20
+may be not as you expect I think.
+
+When I boot:
+
+4 cpus online =3D> 131 mA
+
+Then I unplug one by one the cpus:
+
+3 cpus online =3D> 127 mA
+2 cpus online =3D> 123 mA
+1 cpu online  =3D> 120 mA
+
+This is consistent.
+
+But now, I online the cpus:
+
+2 cpus online =3D> 162 mA
+3 cpus online =3D> 165 mA
+4 cpus online =3D> 131 mA
+
+
+-- side note --
+
+Please note, I did not disable the cpuidle neither the AFTR state and=20
+the kernel did not hang but I don't see the noticeable power saving we=20
+should be observing when there is one cpu remaining entering the AFTR=20
+state (cpuidle stats show we enter AFTR). So there is definitively=20
+something wrong with this state.
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
