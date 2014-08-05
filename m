@@ -1,115 +1,51 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 0/4] ARM: EXYNOS: cpuidle: fix AFTR mode on boards
- with secure firmware enabled
-Date: Tue, 05 Aug 2014 14:06:38 +0200
-Message-ID: <53E0C8CE.6050203@linaro.org>
-References: <1404926274-18411-1-git-send-email-b.zolnierkie@samsung.com> <53D5FF06.6080904@linaro.org> <1616004.BFfRa8qesz@amdc1032>
+From: Mikko Perttunen <mperttunen@nvidia.com>
+Subject: [PATCH v2 0/4] Tegra124 soctherm driver
+Date: Tue, 5 Aug 2014 15:18:53 +0300
+Message-ID: <1407241137-32232-1-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f171.google.com ([74.125.82.171]:63463 "EHLO
-	mail-we0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753429AbaHEMGn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 08:06:43 -0400
-Received: by mail-we0-f171.google.com with SMTP id p10so886341wes.30
-        for <linux-pm@vger.kernel.org>; Tue, 05 Aug 2014 05:06:42 -0700 (PDT)
-In-Reply-To: <1616004.BFfRa8qesz@amdc1032>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:14035 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753126AbaHEMV3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 08:21:29 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+To: rui.zhang@intel.com, edubezval@gmail.com, swarren@wwwdotorg.org, thierry.reding@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mikko Perttunen <mperttunen@nvidia.com>
 
-On 08/05/2014 02:04 PM, Bartlomiej Zolnierkiewicz wrote:
->
-> Hi Daniel,
->
-> On Monday, July 28, 2014 09:43:02 AM Daniel Lezcano wrote:
->> On 07/09/2014 07:17 PM, Bartlomiej Zolnierkiewicz wrote:
->>> Hi,
->>>
->>> This patch series adds support for AFTR idle mode on boards with
->>> secure firmware enabled and allows EXYNOS cpuidle driver usage on
->>> Exynos4x12 SoCs.
->>>
->>> It has been tested on Trats2 board (using Exynos4412 SoC with secur=
-e
->>> firmware enabled) on which AFTR mode reduces power consumption by ~=
-12%
->>> when EXYNOS cpuidle driver is enabled (in both cases the default
->>> exynos_defconfig config is used and CPU1-3 are offlined).
->>
->>
->> Hi Bartlomiej,
->>
->> what is the status of this patchset ? Is it supposed to land for 3.1=
-7 ?
->
-> I posted v4 yesterday:
-> http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg3519=
-7.html
->
-> When it comes to merging the patchset for 3.17 it is up to Kukjin.
+Hi,
 
-Ok, thanks for the sync up.
+this series adds support for the thermal monitoring features of the
+soctherm unit on the Tegra124 SoC. v2 drops support for interrupt-
+based trip points. Thermtrip (emergency thermal shutdown) still
+works when this driver is loaded and the PMC thermal reset patch
+series is applied.
 
-   -- Daniel
+The branch is also available in my github repo,
+  git://github.com/cyndis/linux.git soctherm-v2
 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
->
->> Thanks
->>
->>     -- Daniel
->>
->>> v3:
->>> - rebased on top of next-20140708 +
->>>     http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/m=
-sg32809.html
->>>     (with rejects fixed)
->>>     http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/m=
-sg32808.html
->>>     http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/m=
-sg32991.html
->>>     (with rejects fixed in patch #2)
->>> - addressed review comments from Tomasz Figa and Daniel Lezcano
->>>
->>> Best regards,
->>> --
->>> Bartlomiej Zolnierkiewicz
->>> Samsung R&D Institute Poland
->>> Samsung Electronics
->>>
->>>
->>> Bartlomiej Zolnierkiewicz (4):
->>>     ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by static =
-inlines
->>>     ARM: EXYNOS: add AFTR mode support to firmware do_idle method
->>>     ARM: EXYNOS: cpuidle: add secure firmware support to AFTR mode =
-code
->>>     ARM: EXYNOS: cpuidle: allow driver usage on Exynos4x12 SoCs
->>>
->>>    arch/arm/include/asm/firmware.h  |  2 +-
->>>    arch/arm/mach-exynos/common.h    |  7 ++++++-
->>>    arch/arm/mach-exynos/exynos.c    |  3 ++-
->>>    arch/arm/mach-exynos/firmware.c  | 36 ++++++++++++++++++++++++++=
-----------
->>>    arch/arm/mach-exynos/pm.c        | 39 ++++++++++++++++++++++++++=
-+++----------
->>>    drivers/cpuidle/cpuidle-exynos.c |  6 +++---
->>>    6 files changed, 67 insertions(+), 26 deletions(-)
->
+Thanks,
+Mikko
 
+Mikko Perttunen (4):
+  of: Add bindings for nvidia,tegra124-soctherm
+  ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
+  ARM: tegra: Add thermal trip points for Jetson TK1
+  thermal: Add Tegra SOCTHERM thermal management driver
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+ .../devicetree/bindings/thermal/tegra-soctherm.txt |  35 ++
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  32 ++
+ arch/arm/boot/dts/tegra124.dtsi                    |  47 +++
+ drivers/thermal/Kconfig                            |   7 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/tegra_soctherm.c                   | 452 +++++++++++++++++++++
+ include/dt-bindings/thermal/tegra124-soctherm.h    |  13 +
+ 7 files changed, 587 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
+ create mode 100644 drivers/thermal/tegra_soctherm.c
+ create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+-- 
+1.8.1.5
 
