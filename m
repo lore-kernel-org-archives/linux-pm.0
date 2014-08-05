@@ -1,57 +1,95 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem to
- be held for duration of changing governors [v2]
-Date: Tue, 5 Aug 2014 13:16:48 +0530
-Message-ID: <CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com>
-	<2066166.pXm4lKLOID@vostro.rjw.lan>
-	<53DA8389.80804@redhat.com>
-	<1917362.abr2Y4p7vh@vostro.rjw.lan>
-	<53DA8A41.2030601@redhat.com>
-	<53DAA60B.6040802@codeaurora.org>
-	<53DAA749.5080506@redhat.com>
-	<53DAA95B.2040505@codeaurora.org>
-	<53DAB038.3050007@redhat.com>
-	<53DABFA6.6090503@codeaurora.org>
-	<53DACA26.1000908@redhat.com>
-	<53DAE592.2030909@codeaurora.org>
-	<53DB6B81.6050400@redhat.com>
-	<53DBCBE8.6010809@codeaurora.org>
-	<53DBE764.8050109@redhat.com>
-	<53DBEC27.7050803@codeaurora.org>
+From: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
+Subject: Re: [Query] cpuidle functions cpuidle_install_idle_handler/cpuidle_uninstall_idle_handler
+Date: Tue, 5 Aug 2014 14:55:23 +0600
+Message-ID: <CAHu9=sPEDuC-nQqP4Xe-_vLXz3FFGpkzSnCMCdJcUbmT+choeQ@mail.gmail.com>
+References: <CAHu9=sPqfgxO5YbA28pa2jdRwjnvwE22JUNhr0XzwaLurf_gWg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53DBEC27.7050803@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f176.google.com ([209.85.223.176]:54333 "EHLO
+	mail-ie0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755635AbaHEIzo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 04:55:44 -0400
+In-Reply-To: <CAHu9=sPqfgxO5YbA28pa2jdRwjnvwE22JUNhr0XzwaLurf_gWg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 2 August 2014 01:06, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> I have the same options. The difference is that my driver has a governor
-> per policy. That's set with the CPUFREQ_HAVE_GOVERNOR_PER_POLICY flag.
+ping!
 
-You may call me stupid but I got a bit confused after looking into the code
-again. Why does the crash dump depends on this flag?
-
-We *always* remove the governor specific directory while switching governors
-(Ofcourse only if its updated for All CPUs). And so on a dual core platform,
-where both CPU 0 & 1 share a clock line, switching of governors should result
-in this crash dump?
-
-I may know the answer to the stupid question I had, but not sure why that is a
-problem. The only (and quite significant) difference that this flag makes
-is the location of governor-specific directory:
-- w/o this flag: /sys/devices/system/cpu/cpufreq/<here>
-- w/ this flag: /sys/devices/system/cpu/cpu*/cpufreq/<here>
-
-So, is there some issue with the sysfs lock for <cpu*/cpufreq/> node as while
-switching governor we change  <cpu*/cpufreq/scaling_governor> at the same
-location?
+Since its been a while. Anyone has any comment on this? Should I go
+ahead submit a patch?
 
 --
-viresh
+Thanks,
+-Meraj
 
---
-viresh
+
+On Thu, Jul 24, 2014 at 9:35 PM, Mohammad Merajul Islam Molla
+<meraj.enigma@gmail.com> wrote:
+> Hi
+>
+> In drivers/cpuidle/cpuidle.c, there are two functions
+> cpuidle_install_idle_handler & cpuidle_uninstall_idle_handler.
+> The names seem confusing to me as they don't install any handler,
+> rather set 'initialized'  variable to 1/0.
+>
+> In kernel version 3.0, these functions used to look as below where
+> they installed and uninstalled some handler function (pm_idle) -
+>
+> void cpuidle_install_idle_handler(void)
+>  {
+>         if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
+>                  /* Make sure all changes finished before we switch
+> to new idle */
+>                  smp_wmb();
+>                  pm_idle = cpuidle_idle_call;
+>           }
+>  }
+>
+> void cpuidle_uninstall_idle_handler(void)
+>  {
+>          if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+>                  pm_idle = pm_idle_old;
+>                  cpuidle_kick_cpus();
+>          }
+>  }
+>
+> In recent kernel (3.16.0-rc6) , the code for the two mentioned
+> functions looks as below -
+>
+> /**
+>  * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
+>  */
+> void cpuidle_install_idle_handler(void)
+> {
+>         if (enabled_devices) {
+>                 /* Make sure all changes finished before we switch to
+> new idle */
+>                 smp_wmb();
+>                 initialized = 1;
+>         }
+> }
+>
+> /**
+>  * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop
+> handler
+>  */
+> void cpuidle_uninstall_idle_handler(void)
+> {
+>         if (enabled_devices) {
+>                 initialized = 0;
+>                 kick_all_cpus_sync();
+>         }
+> }
+>
+> There is no idle handler (pm_idle) installed/uninstalled anymore.
+>
+> So should these functions be renamed now to something -
+> cpuidle_initialize()/cpuidle_uninitialize()?  Also, the comments
+> should be removed?
+>
+>
+> --
+> Thanks,
+> -Meraj
