@@ -1,8 +1,7 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v5 2/5] ARM: EXYNOS: add AFTR mode support to firmware do_idle
- method
-Date: Tue, 05 Aug 2014 15:34:23 +0200
-Message-ID: <1407245666-20016-3-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v5 4/5] ARM: EXYNOS: PM: fix register setup for AFTR mode code
+Date: Tue, 05 Aug 2014 15:34:25 +0200
+Message-ID: <1407245666-20016-5-git-send-email-b.zolnierkie@samsung.com>
 References: <1407245666-20016-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1407245666-20016-1-git-send-email-b.zolnierkie@samsung.com>
@@ -11,76 +10,53 @@ To: Kukjin Kim <kgene.kim@samsung.com>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On some platforms (i.e. EXYNOS ones) more than one idle mode is
-available and we need to distinguish them in firmware do_idle method.
-
-Add mode parameter to do_idle firmware method and AFTR mode support
-to EXYNOS do_idle implementation.
+Add S5P_CENTRAL_SEQ_OPTION register setup to cpuidle AFTR mode code
+by moving the relevant code from exynos_pm_suspend() (used only by
+suspend) to exynos_pm_central_suspend() (used by both suspend and
+AFTR).  Without this setup AFTR mode doesn't show any benefit over
+WFI one (at least on Exynos4412 SoC).  When this setup is applied
+AFTR mode reduces power consumption by ~12% (as measured on Trats2
+board).
 
 This change is a preparation for adding secure firmware support to
 EXYNOS cpuidle driver.
 
-This patch shouldn't cause any functionality changes (please note
-that do_idle firmware method is unused currently).
-
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- arch/arm/include/asm/firmware.h |  2 +-
- arch/arm/mach-exynos/common.h   |  5 +++++
- arch/arm/mach-exynos/firmware.c | 10 ++++++++--
- 3 files changed, 14 insertions(+), 3 deletions(-)
+ arch/arm/mach-exynos/pm.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm/include/asm/firmware.h b/arch/arm/include/asm/firmware.h
-index 5904f59..89aefe1 100644
---- a/arch/arm/include/asm/firmware.h
-+++ b/arch/arm/include/asm/firmware.h
-@@ -28,7 +28,7 @@ struct firmware_ops {
- 	/*
- 	 * Enters CPU idle mode
- 	 */
--	int (*do_idle)(void);
-+	int (*do_idle)(unsigned long mode);
- 	/*
- 	 * Sets boot address of specified physical CPU
- 	 */
-diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
-index c218200..2d830df 100644
---- a/arch/arm/mach-exynos/common.h
-+++ b/arch/arm/mach-exynos/common.h
-@@ -119,6 +119,11 @@ extern void __iomem *sysram_base_addr;
- extern void __iomem *pmu_base_addr;
- void exynos_sysram_init(void);
- 
-+enum {
-+	FW_DO_IDLE_SLEEP,
-+	FW_DO_IDLE_AFTR,
-+};
+diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+index e0b6885..3cee123 100644
+--- a/arch/arm/mach-exynos/pm.c
++++ b/arch/arm/mach-exynos/pm.c
+@@ -169,6 +169,10 @@ static void exynos_pm_central_suspend(void)
+ 	tmp = pmu_raw_readl(S5P_CENTRAL_SEQ_CONFIGURATION);
+ 	tmp &= ~S5P_CENTRAL_LOWPWR_CFG;
+ 	pmu_raw_writel(tmp, S5P_CENTRAL_SEQ_CONFIGURATION);
 +
- void exynos_firmware_init(void);
- 
- extern u32 exynos_get_eint_wake_mask(void);
-diff --git a/arch/arm/mach-exynos/firmware.c b/arch/arm/mach-exynos/firmware.c
-index f5e626d..e57b7c3 100644
---- a/arch/arm/mach-exynos/firmware.c
-+++ b/arch/arm/mach-exynos/firmware.c
-@@ -28,9 +28,15 @@
- #define EXYNOS_BOOT_ADDR	0x8
- #define EXYNOS_BOOT_FLAG	0xc
- 
--static int exynos_do_idle(void)
-+static int exynos_do_idle(unsigned long mode)
- {
--	exynos_smc(SMC_CMD_SLEEP, 0, 0, 0);
-+	switch (mode) {
-+	case FW_DO_IDLE_AFTR:
-+		exynos_smc(SMC_CMD_CPU0AFTR, 0, 0, 0);
-+		break;
-+	case FW_DO_IDLE_SLEEP:
-+		exynos_smc(SMC_CMD_SLEEP, 0, 0, 0);
-+	}
- 	return 0;
++	/* Setting SEQ_OPTION register */
++	pmu_raw_writel(S5P_USE_STANDBY_WFI0 | S5P_USE_STANDBY_WFE0,
++		       S5P_CENTRAL_SEQ_OPTION);
  }
+ 
+ static int exynos_pm_central_resume(void)
+@@ -291,15 +295,8 @@ static void exynos_pm_prepare(void)
+ 
+ static int exynos_pm_suspend(void)
+ {
+-	unsigned long tmp;
+-
+ 	exynos_pm_central_suspend();
+ 
+-	/* Setting SEQ_OPTION register */
+-
+-	tmp = (S5P_USE_STANDBY_WFI0 | S5P_USE_STANDBY_WFE0);
+-	pmu_raw_writel(tmp, S5P_CENTRAL_SEQ_OPTION);
+-
+ 	if (read_cpuid_part() == ARM_CPU_PART_CORTEX_A9)
+ 		exynos_cpu_save_register();
  
 -- 
 1.8.2.3
