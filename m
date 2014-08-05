@@ -1,57 +1,46 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v5 0/5] ARM: EXYNOS: cpuidle: fix AFTR mode on boards with
- secure firmware enabled
-Date: Tue, 05 Aug 2014 16:26:23 +0200
-Message-ID: <53E0E98F.5020706@samsung.com>
-References: <1407245666-20016-1-git-send-email-b.zolnierkie@samsung.com>
- <53E0E420.8060207@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:23339 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751671AbaHEO0X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 10:26:23 -0400
-In-reply-to: <53E0E420.8060207@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [RFC 0/2] Add PM_QOS_MEMORY_BANDWIDTH class
+Date: Tue,  5 Aug 2014 16:35:22 +0200
+Message-ID: <1407249324-8568-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
 
-On 05.08.2014 16:03, Daniel Lezcano wrote:
-> On 08/05/2014 03:34 PM, Bartlomiej Zolnierkiewicz wrote:
->> Hi,
->>
->> This patch series adds support for AFTR idle mode on boards with
->> secure firmware enabled and allows EXYNOS cpuidle driver usage on
->> Exynos4x12 SoCs.
->>
->> It has been tested on Trats2 board (using Exynos4412 SoC with secure
->> firmware enabled) on which AFTR mode reduces power consumption by ~12%
->> when EXYNOS cpuidle driver is enabled (in both cases the default
->> exynos_defconfig config is used and CPU1-3 are offlined).
->
-> As a sidenote:
->
-> On my odroid-U2:
->   * 4 cpus online -> 130 mA
->   * 3 cpus online -> 164 mA
->   * 2 cpus online -> 160 mA
->   * 1 cpu online  -> 157 mA
->
-> So were are consuming more when there are unplugged cpu ... any ideas ?
+Hi,
 
-On which tree are you testing? Current next has ARMCLK down feature 
-enabled. ARMCLK down may stop working after hotunplugging CPU:
-http://www.spinics.net/lists/arm-kernel/msg352890.html
+I need a way for device drivers to register their needs of memory bandwidth so
+the optimal frequency for the memory bus clock can be set.
 
-That was observed especially on Exynos4212 where ARMCLK down stops 
-working permanently. On Trats2 (Exynos4412) the clock down stopped only 
-a for short period after disabling CPU.
+Adding one more pm_qos class and a PM_QOS_SUM class type seems to accomplish
+that neatly, so I'm asking for comments on these very simple patches.
 
-Best regards,
-Krzysztof
+The patch to drm/tegra isn't really functional because the EMC clock
+implementation [0] hasn't been merged yet, and I'm not posting an
+implementation of a notification listener because in my platform that would be
+the EMC driver which is still under discussion as well.
 
+This will be most useful once we have per-user clock constraints [1], so the
+EMC driver can set one more floor frequency that together with the other
+constraints would lead to the effective rate of the memory bus.
 
+Thanks,
 
+Tomeu
+
+[0] http://article.gmane.org/gmane.linux.kernel/1744817
+[1] http://article.gmane.org/gmane.linux.kernel/1760039
+
+Tomeu Vizoso (2):
+  PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
+  drm/tegra: Request memory bandwidth for the display controller
+
+ drivers/gpu/drm/tegra/dc.c  | 11 +++++++++++
+ drivers/gpu/drm/tegra/drm.h |  2 ++
+ include/linux/pm_qos.h      |  5 ++++-
+ kernel/power/qos.c          | 27 ++++++++++++++++++++++++++-
+ 4 files changed, 43 insertions(+), 2 deletions(-)
+
+-- 
+1.9.3
