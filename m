@@ -1,72 +1,87 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem to
- be held for duration of changing governors [v2]
-Date: Tue, 5 Aug 2014 16:23:41 +0530
-Message-ID: <CAKohponxBdYEgY2oYuzmdaqfSRS8Uq8bZOzcb1QDmKO-z5ZBFQ@mail.gmail.com>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com>
-	<2066166.pXm4lKLOID@vostro.rjw.lan>
-	<53DA8389.80804@redhat.com>
-	<1917362.abr2Y4p7vh@vostro.rjw.lan>
-	<53DA8A41.2030601@redhat.com>
-	<53DAA60B.6040802@codeaurora.org>
-	<53DAA749.5080506@redhat.com>
-	<53DAA95B.2040505@codeaurora.org>
-	<53DAB038.3050007@redhat.com>
-	<53DABFA6.6090503@codeaurora.org>
-	<53DACA26.1000908@redhat.com>
-	<53DAE592.2030909@codeaurora.org>
-	<53DB6B81.6050400@redhat.com>
-	<53DBCBE8.6010809@codeaurora.org>
-	<53DBE764.8050109@redhat.com>
-	<53DBEC27.7050803@codeaurora.org>
-	<CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com>
-	<53E0B657.4070007@redhat.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v3 0/4] ARM: EXYNOS: cpuidle: fix AFTR mode on boards with
+ secure firmware enabled
+Date: Tue, 05 Aug 2014 14:04:44 +0200
+Message-ID: <1616004.BFfRa8qesz@amdc1032>
+References: <1404926274-18411-1-git-send-email-b.zolnierkie@samsung.com>
+ <53D5FF06.6080904@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53E0B657.4070007@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:49507 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751693AbaHEMEt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 08:04:49 -0400
+In-reply-to: <53D5FF06.6080904@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-On 5 August 2014 16:17, Prarit Bhargava <prarit@redhat.com> wrote:
-> Nope, not a stupid question.  After reproducing (finally!) yesterday I've been
-> wondering the same thing.
-
-Good to know that :)
-
-> I've been looking into *exactly* this.  On any platform where
-> cpu_weight(affected_cpus) == 1 for a particular cpu this lockdep trace should
-> happen.
-
-> That's what I'm wondering too.  I'm going to instrument the code to find out
-> this morning.  I'm wondering if this comes down to a lockdep class issue
-> (perhaps lockdep puts globally defined locks like cpufreq_global_kobject in a
-> different class?).
-
-Maybe, I tried this Hack to make this somewhat similar to the other case
-on my platform with just two CPUs:
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 6f02485..6b4abac 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -98,7 +98,7 @@ static DEFINE_MUTEX(cpufreq_governor_mutex);
-
- bool have_governor_per_policy(void)
- {
--       return !!(cpufreq_driver->flags & CPUFREQ_HAVE_GOVERNOR_PER_POLICY);
-+       return !(cpufreq_driver->flags & CPUFREQ_HAVE_GOVERNOR_PER_POLICY);
- }
- EXPORT_SYMBOL_GPL(have_governor_per_policy);
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
 
-This should result in something similar to setting that per-policy-governor
-flag (Actually I could have done that too :)), and I couldn't see that crash :(
+Hi Daniel,
 
-That needs more investigation now, probably we can get some champ of
-sysfs stuff like Tejun/Greg into discussion now..
+On Monday, July 28, 2014 09:43:02 AM Daniel Lezcano wrote:
+> On 07/09/2014 07:17 PM, Bartlomiej Zolnierkiewicz wrote:
+> > Hi,
+> >
+> > This patch series adds support for AFTR idle mode on boards with
+> > secure firmware enabled and allows EXYNOS cpuidle driver usage on
+> > Exynos4x12 SoCs.
+> >
+> > It has been tested on Trats2 board (using Exynos4412 SoC with secure
+> > firmware enabled) on which AFTR mode reduces power consumption by ~12%
+> > when EXYNOS cpuidle driver is enabled (in both cases the default
+> > exynos_defconfig config is used and CPU1-3 are offlined).
+> 
+> 
+> Hi Bartlomiej,
+> 
+> what is the status of this patchset ? Is it supposed to land for 3.17 ?
 
+I posted v4 yesterday:
+http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35197.html
+
+When it comes to merging the patchset for 3.17 it is up to Kukjin.
+
+Best regards,
 --
-viresh
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> Thanks
+> 
+>    -- Daniel
+> 
+> > v3:
+> > - rebased on top of next-20140708 +
+> >    http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32809.html
+> >    (with rejects fixed)
+> >    http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32808.html
+> >    http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32991.html
+> >    (with rejects fixed in patch #2)
+> > - addressed review comments from Tomasz Figa and Daniel Lezcano
+> >
+> > Best regards,
+> > --
+> > Bartlomiej Zolnierkiewicz
+> > Samsung R&D Institute Poland
+> > Samsung Electronics
+> >
+> >
+> > Bartlomiej Zolnierkiewicz (4):
+> >    ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by static inlines
+> >    ARM: EXYNOS: add AFTR mode support to firmware do_idle method
+> >    ARM: EXYNOS: cpuidle: add secure firmware support to AFTR mode code
+> >    ARM: EXYNOS: cpuidle: allow driver usage on Exynos4x12 SoCs
+> >
+> >   arch/arm/include/asm/firmware.h  |  2 +-
+> >   arch/arm/mach-exynos/common.h    |  7 ++++++-
+> >   arch/arm/mach-exynos/exynos.c    |  3 ++-
+> >   arch/arm/mach-exynos/firmware.c  | 36 ++++++++++++++++++++++++++----------
+> >   arch/arm/mach-exynos/pm.c        | 39 +++++++++++++++++++++++++++++----------
+> >   drivers/cpuidle/cpuidle-exynos.c |  6 +++---
+> >   6 files changed, 67 insertions(+), 26 deletions(-)
+
