@@ -1,102 +1,153 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v5 0/5] ARM: EXYNOS: cpuidle: fix AFTR mode on boards
- with secure firmware enabled
-Date: Tue, 05 Aug 2014 17:07:36 +0200
-Message-ID: <53E0F338.8080006@linaro.org>
-References: <1407245666-20016-1-git-send-email-b.zolnierkie@samsung.com> <53E0E420.8060207@linaro.org> <53E0E98F.5020706@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 5/5] PCI / PM: Make PCIe PME interrupts wake up from suspend-to-idle
+Date: Tue, 05 Aug 2014 17:28:55 +0200
+Message-ID: <2711098.sybS8dER1z@vostro.rjw.lan>
+References: <20140724212620.GO3935@laptop> <3855585.ek3PTQLkmN@vostro.rjw.lan> <3321219.itH23ZEDt4@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:63658 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751235AbaHEPHm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 11:07:42 -0400
-Received: by mail-wi0-f182.google.com with SMTP id d1so1534382wiv.15
-        for <linux-pm@vger.kernel.org>; Tue, 05 Aug 2014 08:07:40 -0700 (PDT)
-In-Reply-To: <53E0E98F.5020706@samsung.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:60436 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753099AbaHEPK7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 11:10:59 -0400
+In-Reply-To: <3321219.itH23ZEDt4@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
-On 08/05/2014 04:26 PM, Krzysztof Kozlowski wrote:
-> On 05.08.2014 16:03, Daniel Lezcano wrote:
->> On 08/05/2014 03:34 PM, Bartlomiej Zolnierkiewicz wrote:
->>> Hi,
->>>
->>> This patch series adds support for AFTR idle mode on boards with
->>> secure firmware enabled and allows EXYNOS cpuidle driver usage on
->>> Exynos4x12 SoCs.
->>>
->>> It has been tested on Trats2 board (using Exynos4412 SoC with secur=
-e
->>> firmware enabled) on which AFTR mode reduces power consumption by ~=
-12%
->>> when EXYNOS cpuidle driver is enabled (in both cases the default
->>> exynos_defconfig config is used and CPU1-3 are offlined).
->>
->> As a sidenote:
->>
->> On my odroid-U2:
->>   * 4 cpus online -> 130 mA
->>   * 3 cpus online -> 164 mA
->>   * 2 cpus online -> 160 mA
->>   * 1 cpu online  -> 157 mA
->>
->> So were are consuming more when there are unplugged cpu ... any idea=
-s ?
->
-> On which tree are you testing? Current next has ARMCLK down feature
-> enabled. ARMCLK down may stop working after hotunplugging CPU:
-> http://www.spinics.net/lists/arm-kernel/msg352890.html
->
-> That was observed especially on Exynos4212 where ARMCLK down stops
-> working permanently. On Trats2 (Exynos4412) the clock down stopped on=
-ly
-> a for short period after disabling CPU.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Hi Krzysztof,
+To make PCIe PME interrupts wake up the system from suspend to idle,
+make the PME driver use enable_irq_wake() on the IRQ during system
+suspend (if there are any wakeup devices below the given PCIe port)
+without disabling PME interrupts.  This way, an interrupt will still
+trigger if a wakeup event happens and the system will be woken up (or
+system suspend in progress will be aborted) by means of the new
+mechanics introduced previously.
 
-I tested the patches you mentioned above on top of this patchset.
+This change allows Wake-on-LAN to be used for wakeup from
+suspend-to-idle on my MSI Wind tesbed netbook.
 
-You are right this is directly related to the ARMCLK but the behavior=20
-may be not as you expect I think.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/pci/pcie/pme.c |   61 ++++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 51 insertions(+), 10 deletions(-)
 
-When I boot:
-
-4 cpus online =3D> 131 mA
-
-Then I unplug one by one the cpus:
-
-3 cpus online =3D> 127 mA
-2 cpus online =3D> 123 mA
-1 cpu online  =3D> 120 mA
-
-This is consistent.
-
-But now, I online the cpus:
-
-2 cpus online =3D> 162 mA
-3 cpus online =3D> 165 mA
-4 cpus online =3D> 131 mA
-
-
--- side note --
-
-Please note, I did not disable the cpuidle neither the AFTR state and=20
-the kernel did not hang but I don't see the noticeable power saving we=20
-should be observing when there is one cpu remaining entering the AFTR=20
-state (cpuidle stats show we enter AFTR). So there is definitively=20
-something wrong with this state.
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Index: linux-pm/drivers/pci/pcie/pme.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pcie/pme.c
++++ linux-pm/drivers/pci/pcie/pme.c
+@@ -41,11 +41,17 @@ static int __init pcie_pme_setup(char *s
+ }
+ __setup("pcie_pme=", pcie_pme_setup);
+ 
++enum pme_suspend_level {
++	PME_SUSPEND_NONE = 0,
++	PME_SUSPEND_WAKEUP,
++	PME_SUSPEND_NOIRQ,
++};
++
+ struct pcie_pme_service_data {
+ 	spinlock_t lock;
+ 	struct pcie_device *srv;
+ 	struct work_struct work;
+-	bool noirq; /* Don't enable the PME interrupt used by this service. */
++	enum pme_suspend_level suspend_level;
+ };
+ 
+ /**
+@@ -223,7 +229,7 @@ static void pcie_pme_work_fn(struct work
+ 	spin_lock_irq(&data->lock);
+ 
+ 	for (;;) {
+-		if (data->noirq)
++		if (data->suspend_level != PME_SUSPEND_NONE)
+ 			break;
+ 
+ 		pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
+@@ -250,7 +256,7 @@ static void pcie_pme_work_fn(struct work
+ 		spin_lock_irq(&data->lock);
+ 	}
+ 
+-	if (!data->noirq)
++	if (data->suspend_level == PME_SUSPEND_NONE)
+ 		pcie_pme_interrupt_enable(port, true);
+ 
+ 	spin_unlock_irq(&data->lock);
+@@ -367,6 +373,21 @@ static int pcie_pme_probe(struct pcie_de
+ 	return ret;
+ }
+ 
++static bool pcie_pme_check_wakeup(struct pci_bus *bus)
++{
++	struct pci_dev *dev;
++
++	if (!bus)
++		return false;
++
++	list_for_each_entry(dev, &bus->devices, bus_list)
++		if (device_may_wakeup(&dev->dev)
++		    || pcie_pme_check_wakeup(dev->subordinate))
++			return true;
++
++	return false;
++}
++
+ /**
+  * pcie_pme_suspend - Suspend PCIe PME service device.
+  * @srv: PCIe service device to suspend.
+@@ -375,11 +396,26 @@ static int pcie_pme_suspend(struct pcie_
+ {
+ 	struct pcie_pme_service_data *data = get_service_data(srv);
+ 	struct pci_dev *port = srv->port;
++	bool wakeup;
+ 
++	if (device_may_wakeup(&port->dev)) {
++		wakeup = true;
++	} else {
++		down_read(&pci_bus_sem);
++		wakeup = pcie_pme_check_wakeup(port->subordinate);
++		up_read(&pci_bus_sem);
++	}
+ 	spin_lock_irq(&data->lock);
+-	pcie_pme_interrupt_enable(port, false);
+-	pcie_clear_root_pme_status(port);
+-	data->noirq = true;
++	if (wakeup) {
++		enable_irq_wake(srv->irq);
++		data->suspend_level = PME_SUSPEND_WAKEUP;
++	} else {
++		struct pci_dev *port = srv->port;
++
++		pcie_pme_interrupt_enable(port, false);
++		pcie_clear_root_pme_status(port);
++		data->suspend_level = PME_SUSPEND_NOIRQ;
++	}
+ 	spin_unlock_irq(&data->lock);
+ 
+ 	synchronize_irq(srv->irq);
+@@ -394,12 +430,17 @@ static int pcie_pme_suspend(struct pcie_
+ static int pcie_pme_resume(struct pcie_device *srv)
+ {
+ 	struct pcie_pme_service_data *data = get_service_data(srv);
+-	struct pci_dev *port = srv->port;
+ 
+ 	spin_lock_irq(&data->lock);
+-	data->noirq = false;
+-	pcie_clear_root_pme_status(port);
+-	pcie_pme_interrupt_enable(port, true);
++	if (data->suspend_level == PME_SUSPEND_NOIRQ) {
++		struct pci_dev *port = srv->port;
++
++		pcie_clear_root_pme_status(port);
++		pcie_pme_interrupt_enable(port, true);
++	} else {
++		disable_irq_wake(srv->irq);
++	}
++	data->suspend_level = PME_SUSPEND_NONE;
+ 	spin_unlock_irq(&data->lock);
+ 
+ 	return 0;
 
