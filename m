@@ -1,217 +1,64 @@
-From: Anson Huang <b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Subject: [PATCH] Thermal: imx: add i.mx6sx thermal support
-Date: Tue, 5 Aug 2014 17:12:43 +0800
-Message-ID: <1407229963-32662-1-git-send-email-b20788@freescale.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
+ to be held for duration of changing governors [v2]
+Date: Tue, 05 Aug 2014 06:47:51 -0400
+Message-ID: <53E0B657.4070007@redhat.com>
+References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <53DBE764.8050109@redhat.com> <53DBEC27.7050803@codeaurora.org> <CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, eduardo.valentin-l0cyMroinI0@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:57377 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753758AbaHEKr6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Aug 2014 06:47:58 -0400
+In-Reply-To: <CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-i.MX6SX has some new features of thermal interrupt function,
-there are LOW, HIGH and PANIC irq for thermal sensor, so add
-platform data to separate different thermal version;
 
-The reset value of LOW ALARM is 0 which means the highest
-temp, so the LOW ALARM will be triggered once irq is enabled,
-so we need to correct it before enabling thermal irq;
 
-Enable PANIC ALARM as critical trip point, it will trigger
-system reset via SRC module once PANIC IRQ is triggered, it
-is pure hardware function, so use it instead of software
-reset by cooling device.
+On 08/05/2014 03:46 AM, Viresh Kumar wrote:
+> On 2 August 2014 01:06, Stephen Boyd <sboyd@codeaurora.org> wrote:
+>> I have the same options. The difference is that my driver has a governor
+>> per policy. That's set with the CPUFREQ_HAVE_GOVERNOR_PER_POLICY flag.
+> 
+> You may call me stupid but I got a bit confused after looking into the code
+> again. Why does the crash dump depends on this flag?
 
-Signed-off-by: Anson Huang <b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
----
- .../devicetree/bindings/thermal/imx-thermal.txt    |    2 +-
- drivers/thermal/imx_thermal.c                      |   88 +++++++++++++++++---
- 2 files changed, 76 insertions(+), 14 deletions(-)
+Nope, not a stupid question.  After reproducing (finally!) yesterday I've been
+wondering the same thing.
 
-diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-index 1f0f672..95c05b1 100644
---- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-@@ -1,7 +1,7 @@
- * Temperature Monitor (TEMPMON) on Freescale i.MX SoCs
- 
- Required properties:
--- compatible : "fsl,imx6q-thermal"
-+- compatible : "fsl,imx6q-tempmon" for V1, "fsl,imx6sx-tempmon" for V2.
- - fsl,tempmon : phandle pointer to system controller that contains TEMPMON
-   control registers, e.g. ANATOP on imx6q.
- - fsl,tempmon-data : phandle pointer to fuse controller that contains TEMPMON
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 2c516f2..2276e74 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -19,6 +19,7 @@
- #include <linux/mfd/syscon.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/of_device.h>
- #include <linux/platform_device.h>
- #include <linux/regmap.h>
- #include <linux/slab.h>
-@@ -31,6 +32,10 @@
- 
- #define MISC0				0x0150
- #define MISC0_REFTOP_SELBIASOFF		(1 << 3)
-+#define MISC1				0x0160
-+#define MISC1_IRQ_TEMPHIGH		(1 << 29)
-+#define MISC1_IRQ_TEMPLOW		(1 << 28)
-+#define MISC1_IRQ_TEMPPANIC		(1 << 27)
- 
- #define TEMPSENSE0			0x0180
- #define TEMPSENSE0_ALARM_VALUE_SHIFT	20
-@@ -43,6 +48,11 @@
- 
- #define TEMPSENSE1			0x0190
- #define TEMPSENSE1_MEASURE_FREQ		0xffff
-+#define TEMPSENSE2			0x0290
-+#define TEMPSENSE2_LOW_VALUE_SHIFT	0
-+#define TEMPSENSE2_LOW_VALUE_MASK	0xfff
-+#define TEMPSENSE2_PANIC_VALUE_SHIFT	16
-+#define TEMPSENSE2_PANIC_VALUE_MASK	0xfff0000
- 
- #define OCOTP_ANA1			0x04e0
- 
-@@ -66,6 +76,21 @@ enum imx_thermal_trip {
- #define FACTOR1				15976
- #define FACTOR2				4297157
- 
-+#define TEMPMON_V1			1
-+#define TEMPMON_V2			2
-+
-+struct thermal_soc_data {
-+	u32 version;
-+};
-+
-+static struct thermal_soc_data thermal_imx6q_data = {
-+	.version = TEMPMON_V1,
-+};
-+
-+static struct thermal_soc_data thermal_imx6sx_data = {
-+	.version = TEMPMON_V2,
-+};
-+
- struct imx_thermal_data {
- 	struct thermal_zone_device *tz;
- 	struct thermal_cooling_device *cdev;
-@@ -79,8 +104,21 @@ struct imx_thermal_data {
- 	bool irq_enabled;
- 	int irq;
- 	struct clk *thermal_clk;
-+	const struct thermal_soc_data *socdata;
- };
- 
-+static void imx_set_panic_temp(struct imx_thermal_data *data,
-+			       signed long panic_temp)
-+{
-+	struct regmap *map = data->tempmon;
-+	int critical_value;
-+
-+	critical_value = (data->c2 - panic_temp) / data->c1;
-+	regmap_write(map, TEMPSENSE2 + REG_CLR, TEMPSENSE2_PANIC_VALUE_MASK);
-+	regmap_write(map, TEMPSENSE2 + REG_SET, critical_value <<
-+			TEMPSENSE2_PANIC_VALUE_SHIFT);
-+}
-+
- static void imx_set_alarm_temp(struct imx_thermal_data *data,
- 			       signed long alarm_temp)
- {
-@@ -142,13 +180,15 @@ static int imx_get_temp(struct thermal_zone_device *tz, unsigned long *temp)
- 	/* See imx_get_sensor_data() for formula derivation */
- 	*temp = data->c2 - n_meas * data->c1;
- 
--	/* Update alarm value to next higher trip point */
--	if (data->alarm_temp == data->temp_passive && *temp >= data->temp_passive)
--		imx_set_alarm_temp(data, data->temp_critical);
--	if (data->alarm_temp == data->temp_critical && *temp < data->temp_passive) {
--		imx_set_alarm_temp(data, data->temp_passive);
--		dev_dbg(&tz->device, "thermal alarm off: T < %lu\n",
--			data->alarm_temp / 1000);
-+	/* Update alarm value to next higher trip point, only V1 needs it */
-+	if (data->socdata->version == TEMPMON_V1) {
-+		if (data->alarm_temp == data->temp_passive && *temp >= data->temp_passive)
-+			imx_set_alarm_temp(data, data->temp_critical);
-+		if (data->alarm_temp == data->temp_critical && *temp < data->temp_passive) {
-+			imx_set_alarm_temp(data, data->temp_passive);
-+			dev_dbg(&tz->device, "thermal alarm off: T < %lu\n",
-+				data->alarm_temp / 1000);
-+		}
- 	}
- 
- 	if (*temp != data->last_temp) {
-@@ -398,8 +438,17 @@ static irqreturn_t imx_thermal_alarm_irq_thread(int irq, void *dev)
- 	return IRQ_HANDLED;
- }
- 
-+static const struct of_device_id of_imx_thermal_match[] = {
-+	{ .compatible = "fsl,imx6q-tempmon", .data = &thermal_imx6q_data, },
-+	{ .compatible = "fsl,imx6sx-tempmon", .data = &thermal_imx6sx_data, },
-+	{ /* end */ }
-+};
-+MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
-+
- static int imx_thermal_probe(struct platform_device *pdev)
- {
-+	const struct of_device_id *of_id =
-+		of_match_device(of_imx_thermal_match, &pdev->dev);
- 	struct imx_thermal_data *data;
- 	struct cpumask clip_cpus;
- 	struct regmap *map;
-@@ -418,6 +467,21 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 	}
- 	data->tempmon = map;
- 
-+	data->socdata = of_id->data;
-+
-+	/* make sure the IRQ flag is clear before enable irq */
-+	regmap_write(map, MISC1 + REG_CLR, MISC1_IRQ_TEMPHIGH);
-+	if (data->socdata->version == TEMPMON_V2) {
-+		regmap_write(map, MISC1 + REG_CLR, MISC1_IRQ_TEMPLOW |
-+			MISC1_IRQ_TEMPPANIC);
-+		/*
-+		 * reset value of LOW ALARM is incorrect, set it to lowest
-+		 * value to avoid false trigger of low alarm.
-+		 */
-+		regmap_write(map, TEMPSENSE2 + REG_SET,
-+			TEMPSENSE2_LOW_VALUE_MASK);
-+	}
-+
- 	data->irq = platform_get_irq(pdev, 0);
- 	if (data->irq < 0)
- 		return data->irq;
-@@ -489,6 +553,10 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 	measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
- 	regmap_write(map, TEMPSENSE1 + REG_SET, measure_freq);
- 	imx_set_alarm_temp(data, data->temp_passive);
-+
-+	if (data->socdata->version == TEMPMON_V2)
-+		imx_set_panic_temp(data, data->temp_critical);
-+
- 	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
- 	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
- 
-@@ -550,12 +618,6 @@ static int imx_thermal_resume(struct device *dev)
- static SIMPLE_DEV_PM_OPS(imx_thermal_pm_ops,
- 			 imx_thermal_suspend, imx_thermal_resume);
- 
--static const struct of_device_id of_imx_thermal_match[] = {
--	{ .compatible = "fsl,imx6q-tempmon", },
--	{ /* end */ }
--};
--MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
--
- static struct platform_driver imx_thermal = {
- 	.driver = {
- 		.name	= "imx_thermal",
--- 
-1.7.9.5
+> 
+> We *always* remove the governor specific directory while switching governors
+> (Ofcourse only if its updated for All CPUs). And so on a dual core platform,
+> where both CPU 0 & 1 share a clock line, switching of governors should result
+> in this crash dump?
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I've been looking into *exactly* this.  On any platform where
+cpu_weight(affected_cpus) == 1 for a particular cpu this lockdep trace should
+happen.
+
+
+> 
+> I may know the answer to the stupid question I had, but not sure why that is a
+> problem. The only (and quite significant) difference that this flag makes
+> is the location of governor-specific directory:
+> - w/o this flag: /sys/devices/system/cpu/cpufreq/<here>
+> - w/ this flag: /sys/devices/system/cpu/cpu*/cpufreq/<here>
+> 
+
+cpufreq_global_kobject vs the policy's kobject.
+
+> So, is there some issue with the sysfs lock for <cpu*/cpufreq/> node as while
+> switching governor we change  <cpu*/cpufreq/scaling_governor> at the same
+> location?
+
+That's what I'm wondering too.  I'm going to instrument the code to find out
+this morning.  I'm wondering if this comes down to a lockdep class issue
+(perhaps lockdep puts globally defined locks like cpufreq_global_kobject in a
+different class?).
+
+P.
