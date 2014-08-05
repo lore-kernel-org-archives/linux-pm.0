@@ -1,249 +1,85 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] Thermal: imx: add i.mx6sx thermal support
-Date: Tue, 5 Aug 2014 09:25:53 -0400
-Message-ID: <20140805132553.GA20291@developer>
-References: <1407229963-32662-1-git-send-email-b20788@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f177.google.com ([209.85.160.177]:59772 "EHLO
-	mail-yk0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752216AbaHEN1K (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 09:27:10 -0400
-Content-Disposition: inline
-In-Reply-To: <1407229963-32662-1-git-send-email-b20788@freescale.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v5 0/5] ARM: EXYNOS: cpuidle: fix AFTR mode on boards with
+ secure firmware enabled
+Date: Tue, 05 Aug 2014 15:34:21 +0200
+Message-ID: <1407245666-20016-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Anson Huang <b20788@freescale.com>
-Cc: rui.zhang@intel.com, shawn.guo@linaro.org, eduardo.valentin@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-Hello Anson,
+Hi,
 
-On Tue, Aug 05, 2014 at 05:12:43PM +0800, Anson Huang wrote:
-> i.MX6SX has some new features of thermal interrupt function,
-> there are LOW, HIGH and PANIC irq for thermal sensor, so add
-> platform data to separate different thermal version;
-> 
-> The reset value of LOW ALARM is 0 which means the highest
-> temp, so the LOW ALARM will be triggered once irq is enabled,
-> so we need to correct it before enabling thermal irq;
-> 
-> Enable PANIC ALARM as critical trip point, it will trigger
-> system reset via SRC module once PANIC IRQ is triggered, it
-> is pure hardware function, so use it instead of software
-> reset by cooling device.
-> 
-> Signed-off-by: Anson Huang <b20788@freescale.com>
-> ---
->  .../devicetree/bindings/thermal/imx-thermal.txt    |    2 +-
->  drivers/thermal/imx_thermal.c                      |   88 +++++++++++++++++---
->  2 files changed, 76 insertions(+), 14 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> index 1f0f672..95c05b1 100644
-> --- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> @@ -1,7 +1,7 @@
->  * Temperature Monitor (TEMPMON) on Freescale i.MX SoCs
->  
->  Required properties:
-> -- compatible : "fsl,imx6q-thermal"
-> +- compatible : "fsl,imx6q-tempmon" for V1, "fsl,imx6sx-tempmon" for V2.
+This patch series adds support for AFTR idle mode on boards with
+secure firmware enabled and allows EXYNOS cpuidle driver usage on
+Exynos4x12 SoCs.
 
-It would be kind to document the difference between V1 and V2, don't you
-think?
+It has been tested on Trats2 board (using Exynos4412 SoC with secure
+firmware enabled) on which AFTR mode reduces power consumption by ~12%
+when EXYNOS cpuidle driver is enabled (in both cases the default
+exynos_defconfig config is used and CPU1-3 are offlined).
 
->  - fsl,tempmon : phandle pointer to system controller that contains TEMPMON
->    control registers, e.g. ANATOP on imx6q.
->  - fsl,tempmon-data : phandle pointer to fuse controller that contains TEMPMON
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index 2c516f2..2276e74 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -19,6 +19,7 @@
->  #include <linux/mfd/syscon.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
-> +#include <linux/of_device.h>
->  #include <linux/platform_device.h>
->  #include <linux/regmap.h>
->  #include <linux/slab.h>
-> @@ -31,6 +32,10 @@
->  
->  #define MISC0				0x0150
->  #define MISC0_REFTOP_SELBIASOFF		(1 << 3)
-> +#define MISC1				0x0160
-> +#define MISC1_IRQ_TEMPHIGH		(1 << 29)
-> +#define MISC1_IRQ_TEMPLOW		(1 << 28)
-> +#define MISC1_IRQ_TEMPPANIC		(1 << 27)
+Depends on:
+- next-20140804 branch of linux-next kernel tree
+- [PATCH v5][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35262.html)
+- [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
 
-how about using 
-+#define MISC1_IRQ_TEMPHIGH		BIT(29)
-+#define MISC1_IRQ_TEMPLOW		BIT(28)
-+#define MISC1_IRQ_TEMPPANIC		BIT(27)
+Changes since v4:
+- rebased on top of next-20140804 +
+  [PATCH v5][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35262.html)
+  [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
+- call exynos_save_cp15() only on A9 type core (this is needed for the future
+  Exynos3250 SoC support)
 
->  
->  #define TEMPSENSE0			0x0180
->  #define TEMPSENSE0_ALARM_VALUE_SHIFT	20
-> @@ -43,6 +48,11 @@
->  
->  #define TEMPSENSE1			0x0190
->  #define TEMPSENSE1_MEASURE_FREQ		0xffff
-> +#define TEMPSENSE2			0x0290
-> +#define TEMPSENSE2_LOW_VALUE_SHIFT	0
-> +#define TEMPSENSE2_LOW_VALUE_MASK	0xfff
-> +#define TEMPSENSE2_PANIC_VALUE_SHIFT	16
-> +#define TEMPSENSE2_PANIC_VALUE_MASK	0xfff0000
+Changes since v3:
+- rebased on top of next-20140804 +
+  [PATCH v4][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35192.html)
+  [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
+- (re-)added patch fixing S5P_CENTRAL_SEQ_OPTION register setup
 
-Are the above register offsets and (bit) masks applicable to both
-versions? do you mind adding a comment to what is specific to V2?
+Changes since v2:
+- rebased on top of next-20140708 +
+  [PATCH 5/6] ARM: EXYNOS: Fix suspend/resume sequencies
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32809.html)
+  [with rejects fixed]
+  [PATCH 6/6] ARM: EXYNOS: Register cpuidle device only on Exynos4210 and 5250
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32808.html)
+  [PATCH 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32991.html)
+  [with rejects fixed in patch #2]
+- addressed review comments from Tomasz Figa and Daniel Lezcano
 
->  
->  #define OCOTP_ANA1			0x04e0
->  
-> @@ -66,6 +76,21 @@ enum imx_thermal_trip {
->  #define FACTOR1				15976
->  #define FACTOR2				4297157
->  
-> +#define TEMPMON_V1			1
-> +#define TEMPMON_V2			2
-> +
+Changes since v1:
+- synced against next-20140602
+- added missing Acked-by-s
 
-where does the V1/V2 nomenclature come from? how about:
-
-+#define TEMPMON_IMX6Q			1
-+#define TEMPMON_IMX6SX			2
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
 
-> +struct thermal_soc_data {
-> +	u32 version;
-> +};
-> +
-> +static struct thermal_soc_data thermal_imx6q_data = {
-> +	.version = TEMPMON_V1,
-> +};
-> +
-> +static struct thermal_soc_data thermal_imx6sx_data = {
-> +	.version = TEMPMON_V2,
-> +};
-> +
->  struct imx_thermal_data {
->  	struct thermal_zone_device *tz;
->  	struct thermal_cooling_device *cdev;
-> @@ -79,8 +104,21 @@ struct imx_thermal_data {
->  	bool irq_enabled;
->  	int irq;
->  	struct clk *thermal_clk;
-> +	const struct thermal_soc_data *socdata;
->  };
->  
-> +static void imx_set_panic_temp(struct imx_thermal_data *data,
-> +			       signed long panic_temp)
-> +{
-> +	struct regmap *map = data->tempmon;
-> +	int critical_value;
-> +
-> +	critical_value = (data->c2 - panic_temp) / data->c1;
-> +	regmap_write(map, TEMPSENSE2 + REG_CLR, TEMPSENSE2_PANIC_VALUE_MASK);
-> +	regmap_write(map, TEMPSENSE2 + REG_SET, critical_value <<
-> +			TEMPSENSE2_PANIC_VALUE_SHIFT);
-> +}
-> +
->  static void imx_set_alarm_temp(struct imx_thermal_data *data,
->  			       signed long alarm_temp)
->  {
-> @@ -142,13 +180,15 @@ static int imx_get_temp(struct thermal_zone_device *tz, unsigned long *temp)
->  	/* See imx_get_sensor_data() for formula derivation */
->  	*temp = data->c2 - n_meas * data->c1;
->  
-> -	/* Update alarm value to next higher trip point */
-> -	if (data->alarm_temp == data->temp_passive && *temp >= data->temp_passive)
-> -		imx_set_alarm_temp(data, data->temp_critical);
-> -	if (data->alarm_temp == data->temp_critical && *temp < data->temp_passive) {
-> -		imx_set_alarm_temp(data, data->temp_passive);
-> -		dev_dbg(&tz->device, "thermal alarm off: T < %lu\n",
-> -			data->alarm_temp / 1000);
-> +	/* Update alarm value to next higher trip point, only V1 needs it */
-> +	if (data->socdata->version == TEMPMON_V1) {
-> +		if (data->alarm_temp == data->temp_passive && *temp >= data->temp_passive)
-> +			imx_set_alarm_temp(data, data->temp_critical);
-> +		if (data->alarm_temp == data->temp_critical && *temp < data->temp_passive) {
-> +			imx_set_alarm_temp(data, data->temp_passive);
-> +			dev_dbg(&tz->device, "thermal alarm off: T < %lu\n",
-> +				data->alarm_temp / 1000);
-> +		}
->  	}
->  
->  	if (*temp != data->last_temp) {
-> @@ -398,8 +438,17 @@ static irqreturn_t imx_thermal_alarm_irq_thread(int irq, void *dev)
->  	return IRQ_HANDLED;
->  }
->  
-> +static const struct of_device_id of_imx_thermal_match[] = {
-> +	{ .compatible = "fsl,imx6q-tempmon", .data = &thermal_imx6q_data, },
-> +	{ .compatible = "fsl,imx6sx-tempmon", .data = &thermal_imx6sx_data, },
-> +	{ /* end */ }
-> +};
-> +MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
-> +
->  static int imx_thermal_probe(struct platform_device *pdev)
->  {
-> +	const struct of_device_id *of_id =
-> +		of_match_device(of_imx_thermal_match, &pdev->dev);
->  	struct imx_thermal_data *data;
->  	struct cpumask clip_cpus;
->  	struct regmap *map;
-> @@ -418,6 +467,21 @@ static int imx_thermal_probe(struct platform_device *pdev)
->  	}
->  	data->tempmon = map;
->  
-> +	data->socdata = of_id->data;
-> +
-> +	/* make sure the IRQ flag is clear before enable irq */
-> +	regmap_write(map, MISC1 + REG_CLR, MISC1_IRQ_TEMPHIGH);
+Bartlomiej Zolnierkiewicz (5):
+  ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by static inlines
+  ARM: EXYNOS: add AFTR mode support to firmware do_idle method
+  ARM: EXYNOS: cpuidle: add secure firmware support to AFTR mode code
+  ARM: EXYNOS: PM: fix register setup for AFTR mode code
+  ARM: EXYNOS: cpuidle: allow driver usage on Exynos4x12 SoCs
 
-Shouldn't this be also done only for TEMPMON_V2? What is the benefit /
-effect in doing for V1 ?
+ arch/arm/include/asm/firmware.h |  2 +-
+ arch/arm/mach-exynos/common.h   |  5 ++++
+ arch/arm/mach-exynos/exynos.c   |  4 ++-
+ arch/arm/mach-exynos/firmware.c | 34 ++++++++++++++++-------
+ arch/arm/mach-exynos/pm.c       | 60 ++++++++++++++++++++++++-----------------
+ 5 files changed, 70 insertions(+), 35 deletions(-)
 
-> +	if (data->socdata->version == TEMPMON_V2) {
-> +		regmap_write(map, MISC1 + REG_CLR, MISC1_IRQ_TEMPLOW |
-> +			MISC1_IRQ_TEMPPANIC);
-> +		/*
-> +		 * reset value of LOW ALARM is incorrect, set it to lowest
-> +		 * value to avoid false trigger of low alarm.
-> +		 */
-> +		regmap_write(map, TEMPSENSE2 + REG_SET,
-> +			TEMPSENSE2_LOW_VALUE_MASK);
-> +	}
-> +
->  	data->irq = platform_get_irq(pdev, 0);
->  	if (data->irq < 0)
->  		return data->irq;
-> @@ -489,6 +553,10 @@ static int imx_thermal_probe(struct platform_device *pdev)
->  	measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
->  	regmap_write(map, TEMPSENSE1 + REG_SET, measure_freq);
->  	imx_set_alarm_temp(data, data->temp_passive);
-> +
-> +	if (data->socdata->version == TEMPMON_V2)
-> +		imx_set_panic_temp(data, data->temp_critical);
-> +
->  	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
->  	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
->  
-> @@ -550,12 +618,6 @@ static int imx_thermal_resume(struct device *dev)
->  static SIMPLE_DEV_PM_OPS(imx_thermal_pm_ops,
->  			 imx_thermal_suspend, imx_thermal_resume);
->  
-> -static const struct of_device_id of_imx_thermal_match[] = {
-> -	{ .compatible = "fsl,imx6q-tempmon", },
-> -	{ /* end */ }
-> -};
-> -MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
-> -
->  static struct platform_driver imx_thermal = {
->  	.driver = {
->  		.name	= "imx_thermal",
-> -- 
-> 1.7.9.5
-> 
-
+-- 
+1.8.2.3
