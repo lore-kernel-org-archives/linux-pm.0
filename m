@@ -1,47 +1,67 @@
-From: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
-Subject: state[i].transition_latency and state[i].bus_master_latency set to 0. BUG?
-Date: Tue, 5 Aug 2014 17:37:57 +0200
-Message-ID: <CAPybu_0wdTRYHwPN6mHdBrx8_RjcEXBWRpBs4HU5LASR16cOQg@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/5] irq / PM: Shared IRQs vs IRQF_NO_SUSPEND and
+ suspend-to-idle wakeup
+Date: Tue, 5 Aug 2014 18:12:35 +0200
+Message-ID: <20140805161235.GE19379@twins.programming.kicks-ass.net>
+References: <20140724212620.GO3935@laptop>
+ <alpine.DEB.2.10.1408011533580.4997@nanos>
+ <3855585.ek3PTQLkmN@vostro.rjw.lan>
+ <3321219.itH23ZEDt4@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, "alex@qtec.com" <alex@qtec.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="SALzGxM+9VBgwVYp"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from casper.infradead.org ([85.118.1.10]:38761 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753581AbaHEQMs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 12:12:48 -0400
+Content-Disposition: inline
+In-Reply-To: <3321219.itH23ZEDt4@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-Hello!
-
-I am working with an AMD family 14h Processor. And I believe that the
-governor is not behaving as expected.
-
-On the _PSS table, the transition_latency and bus_master_latency are set to 0.
-
-The AMDs BIOS development guide (page 60 and 61)
-http://developer.amd.com/wordpress/media/2012/10/43170_14h_Mod_00h-0Fh_BKDG.pdf
-they recommend to use value of 0.
-
-Is 0 valid value? The governor will work properly with this value?
-
-What could be a good default value?
-
-Is there a way to experimentally measure the latency?
-
-Thanks for your help!
-
-Extract from dmesg:
-[    0.843340] Extracting state 0
-[    0.843374] State [0]: core_frequency[1650] power[6075]
-transition_latency[0] bus_master_latency[0] control[0x0] status[0x0]
-[    0.843481] Extracting state 1
-[    0.843513] State [1]: core_frequency[1320] power[3712]
-transition_latency[0] bus_master_latency[0] control[0x1] status[0x1]
-[    0.843618] Extracting state 2
-[    0.843652] State [2]: core_frequency[825] power[1472]
-transition_latency[0] bus_master_latency[0] control[0x2] status[0x2]
-[    0.843757] Extracting state 3
-[    0.843790] State [3]: core_frequency[528] power[1008]
-transition_latency[0] bus_master_latency[0] control[0x3] status[0x3]
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
 
 
--- 
-Ricardo Ribalda
+--SALzGxM+9VBgwVYp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Aug 05, 2014 at 05:22:57PM +0200, Rafael J. Wysocki wrote:
+> Here's a patch series based on what we talked about.
+>=20
+> [1/5] Mechanism to wake up the system or abort suspend in progress automa=
+tically.
+> [2/5] Fix for shared IRQs vs IRQF_NO_SUSPEND (with wakeup in mind).
+> [3/5] Wakeup interrupts support for suspend-to-idle.
+> [4/5] Set IRQCHIP_SKIP_SET_WAKE for x86 IOAPIC IRQ chips.
+> [5/5] Make PCIe PME wake up from suspend to idle.
+>=20
+> All tested on MSI Wind that has a couple of issues being addressed.
+
+I can confirm it works on my WSM-EP which has that shared interrupt
+stuff.
+
+--SALzGxM+9VBgwVYp
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJT4QJzAAoJEHZH4aRLwOS6msEP+wSxqLsjT6iMMkBfS6Vo0L7q
+ZF9+D1iPaa2goWOctNY6yhP6nFjTq0xrcb5TuGr+tqKkPO9ciEhtm37EihHNDV9x
+Mn70t1aDND9meiimMbmoESq7m5ixsvTcxsU047/fAElszwyylCYjM7lR/Hyac3WR
+m29SfIkksNLsDYZLVhx6SXr18wANAczMWg449ftxBI9l2KUyZ8kM/9KggbolP+6K
+u7JkhSRK7t/lDU8+aiqVmmwAD32viH3lF1Ldb3RTviRf+3otYK98I6Isdq7GqTmi
+IDp/GLhX52yr7i5AjjPcaduNhrMA1eV2pj8Ec5h2ECak3iculmtyJhmkKs5Asj1p
+xBkM33/tgGjcZrMkmQlHkpxPO6sAgL7POeIYtJykO019qgKlu2rx1RPc8c1+6MMO
+vfqZj4CykLOq/A3fxrqhaAdr4278gwRka/6XW5kE3gplIGcAOIVmzaOFX6VB2Zqq
+Onv8xjpY5bPhUcPCn9JyD2PSkzQUUesf3yHagRVjtHEcUxpD6k49NegDN0ceB98U
+lWdk7a8KjYhAo5Jt+WHLa7+Zm0MnL0HVlQcgkkvBTV74K3FzUMb/wSBmo/U0MgcI
+q6KInmazcuTmk+iit/6+IeKObepGTqbO6Iux18n68RDu/BGn+bPCX9ZiHdnoX1YY
+t6Rmhc8O6oUngmLXxwYW
+=q8va
+-----END PGP SIGNATURE-----
+
+--SALzGxM+9VBgwVYp--
