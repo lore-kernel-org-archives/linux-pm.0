@@ -1,153 +1,74 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 5/5] PCI / PM: Make PCIe PME interrupts wake up from suspend-to-idle
-Date: Tue, 05 Aug 2014 17:28:55 +0200
-Message-ID: <2711098.sybS8dER1z@vostro.rjw.lan>
+Subject: [PATCH 4/5] x86 / PM: Set IRQCHIP_SKIP_SET_WAKE for IOAPIC IRQ chip objects
+Date: Tue, 05 Aug 2014 17:27:07 +0200
+Message-ID: <6349012.D6gFckYEQ1@vostro.rjw.lan>
 References: <20140724212620.GO3935@laptop> <3855585.ek3PTQLkmN@vostro.rjw.lan> <3321219.itH23ZEDt4@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60436 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753099AbaHEPK7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Aug 2014 11:10:59 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <3321219.itH23ZEDt4@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>
 Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-To make PCIe PME interrupts wake up the system from suspend to idle,
-make the PME driver use enable_irq_wake() on the IRQ during system
-suspend (if there are any wakeup devices below the given PCIe port)
-without disabling PME interrupts.  This way, an interrupt will still
-trigger if a wakeup event happens and the system will be woken up (or
-system suspend in progress will be aborted) by means of the new
-mechanics introduced previously.
+Set the IRQCHIP_SKIP_SET_WAKE for IOAPIC IRQ chip objects so that
+interrupts from them can work as wakeup interrupts for suspend-to-idle.
 
-This change allows Wake-on-LAN to be used for wakeup from
-suspend-to-idle on my MSI Wind tesbed netbook.
+After this change, running enable_irq_wake() on one of the IRQs in
+question will succeed and IRQD_WAKEUP_STATE will be set for it, so
+all of the suspend-to-idle wakeup mechanics introduced previously
+will work for it automatically.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/pci/pcie/pme.c |   61 ++++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 51 insertions(+), 10 deletions(-)
+ arch/x86/kernel/apic/io_apic.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-Index: linux-pm/drivers/pci/pcie/pme.c
+Index: linux-pm/arch/x86/kernel/apic/io_apic.c
 ===================================================================
---- linux-pm.orig/drivers/pci/pcie/pme.c
-+++ linux-pm/drivers/pci/pcie/pme.c
-@@ -41,11 +41,17 @@ static int __init pcie_pme_setup(char *s
- }
- __setup("pcie_pme=", pcie_pme_setup);
- 
-+enum pme_suspend_level {
-+	PME_SUSPEND_NONE = 0,
-+	PME_SUSPEND_WAKEUP,
-+	PME_SUSPEND_NOIRQ,
-+};
-+
- struct pcie_pme_service_data {
- 	spinlock_t lock;
- 	struct pcie_device *srv;
- 	struct work_struct work;
--	bool noirq; /* Don't enable the PME interrupt used by this service. */
-+	enum pme_suspend_level suspend_level;
+--- linux-pm.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-pm/arch/x86/kernel/apic/io_apic.c
+@@ -2507,6 +2507,7 @@ static struct irq_chip ioapic_chip __rea
+ 	.irq_eoi		= ack_apic_level,
+ 	.irq_set_affinity	= native_ioapic_set_affinity,
+ 	.irq_retrigger		= ioapic_retrigger_irq,
++	.flags			= IRQCHIP_SKIP_SET_WAKE,
  };
  
- /**
-@@ -223,7 +229,7 @@ static void pcie_pme_work_fn(struct work
- 	spin_lock_irq(&data->lock);
+ static inline void init_IO_APIC_traps(void)
+@@ -3030,6 +3031,7 @@ static struct irq_chip msi_chip = {
+ 	.irq_ack		= ack_apic_edge,
+ 	.irq_set_affinity	= msi_set_affinity,
+ 	.irq_retrigger		= ioapic_retrigger_irq,
++	.flags			= IRQCHIP_SKIP_SET_WAKE,
+ };
  
- 	for (;;) {
--		if (data->noirq)
-+		if (data->suspend_level != PME_SUSPEND_NONE)
- 			break;
+ int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
+@@ -3128,6 +3130,7 @@ static struct irq_chip dmar_msi_type = {
+ 	.irq_ack		= ack_apic_edge,
+ 	.irq_set_affinity	= dmar_msi_set_affinity,
+ 	.irq_retrigger		= ioapic_retrigger_irq,
++	.flags			= IRQCHIP_SKIP_SET_WAKE,
+ };
  
- 		pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
-@@ -250,7 +256,7 @@ static void pcie_pme_work_fn(struct work
- 		spin_lock_irq(&data->lock);
- 	}
+ int arch_setup_dmar_msi(unsigned int irq)
+@@ -3178,6 +3181,7 @@ static struct irq_chip hpet_msi_type = {
+ 	.irq_ack = ack_apic_edge,
+ 	.irq_set_affinity = hpet_msi_set_affinity,
+ 	.irq_retrigger = ioapic_retrigger_irq,
++	.flags = IRQCHIP_SKIP_SET_WAKE,
+ };
  
--	if (!data->noirq)
-+	if (data->suspend_level == PME_SUSPEND_NONE)
- 		pcie_pme_interrupt_enable(port, true);
+ int default_setup_hpet_msi(unsigned int irq, unsigned int id)
+@@ -3241,6 +3245,7 @@ static struct irq_chip ht_irq_chip = {
+ 	.irq_ack		= ack_apic_edge,
+ 	.irq_set_affinity	= ht_set_affinity,
+ 	.irq_retrigger		= ioapic_retrigger_irq,
++	.flags			= IRQCHIP_SKIP_SET_WAKE,
+ };
  
- 	spin_unlock_irq(&data->lock);
-@@ -367,6 +373,21 @@ static int pcie_pme_probe(struct pcie_de
- 	return ret;
- }
- 
-+static bool pcie_pme_check_wakeup(struct pci_bus *bus)
-+{
-+	struct pci_dev *dev;
-+
-+	if (!bus)
-+		return false;
-+
-+	list_for_each_entry(dev, &bus->devices, bus_list)
-+		if (device_may_wakeup(&dev->dev)
-+		    || pcie_pme_check_wakeup(dev->subordinate))
-+			return true;
-+
-+	return false;
-+}
-+
- /**
-  * pcie_pme_suspend - Suspend PCIe PME service device.
-  * @srv: PCIe service device to suspend.
-@@ -375,11 +396,26 @@ static int pcie_pme_suspend(struct pcie_
- {
- 	struct pcie_pme_service_data *data = get_service_data(srv);
- 	struct pci_dev *port = srv->port;
-+	bool wakeup;
- 
-+	if (device_may_wakeup(&port->dev)) {
-+		wakeup = true;
-+	} else {
-+		down_read(&pci_bus_sem);
-+		wakeup = pcie_pme_check_wakeup(port->subordinate);
-+		up_read(&pci_bus_sem);
-+	}
- 	spin_lock_irq(&data->lock);
--	pcie_pme_interrupt_enable(port, false);
--	pcie_clear_root_pme_status(port);
--	data->noirq = true;
-+	if (wakeup) {
-+		enable_irq_wake(srv->irq);
-+		data->suspend_level = PME_SUSPEND_WAKEUP;
-+	} else {
-+		struct pci_dev *port = srv->port;
-+
-+		pcie_pme_interrupt_enable(port, false);
-+		pcie_clear_root_pme_status(port);
-+		data->suspend_level = PME_SUSPEND_NOIRQ;
-+	}
- 	spin_unlock_irq(&data->lock);
- 
- 	synchronize_irq(srv->irq);
-@@ -394,12 +430,17 @@ static int pcie_pme_suspend(struct pcie_
- static int pcie_pme_resume(struct pcie_device *srv)
- {
- 	struct pcie_pme_service_data *data = get_service_data(srv);
--	struct pci_dev *port = srv->port;
- 
- 	spin_lock_irq(&data->lock);
--	data->noirq = false;
--	pcie_clear_root_pme_status(port);
--	pcie_pme_interrupt_enable(port, true);
-+	if (data->suspend_level == PME_SUSPEND_NOIRQ) {
-+		struct pci_dev *port = srv->port;
-+
-+		pcie_clear_root_pme_status(port);
-+		pcie_pme_interrupt_enable(port, true);
-+	} else {
-+		disable_irq_wake(srv->irq);
-+	}
-+	data->suspend_level = PME_SUSPEND_NONE;
- 	spin_unlock_irq(&data->lock);
- 
- 	return 0;
-
+ int arch_setup_ht_irq(unsigned int irq, struct pci_dev *dev)
