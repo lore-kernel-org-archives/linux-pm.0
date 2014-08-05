@@ -1,133 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 3/5] irq / PM: Make wakeup interrupts wake up from suspend-to-idle
-Date: Tue, 05 Aug 2014 17:26:27 +0200
-Message-ID: <1811897.nanFq2OCTN@vostro.rjw.lan>
-References: <20140724212620.GO3935@laptop> <3855585.ek3PTQLkmN@vostro.rjw.lan> <3321219.itH23ZEDt4@vostro.rjw.lan>
+From: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
+Subject: state[i].transition_latency and state[i].bus_master_latency set to 0. BUG?
+Date: Tue, 5 Aug 2014 17:37:57 +0200
+Message-ID: <CAPybu_0wdTRYHwPN6mHdBrx8_RjcEXBWRpBs4HU5LASR16cOQg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3321219.itH23ZEDt4@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, "alex@qtec.com" <alex@qtec.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hello!
 
-Make IRQs enabled for system wakeup via enable_irq_wake() wake up
-the system from suspend-to-idle.
+I am working with an AMD family 14h Processor. And I believe that the
+governor is not behaving as expected.
 
-For this purpose, introduce a new routine for enabling or disabling
-wakeup interrupts, set_wakeup_irqs(), and make freeze_enter() call
-it to enable them before starting the suspend-to-idle loop and to
-disable them after the loop has been terminated.
+On the _PSS table, the transition_latency and bus_master_latency are set to 0.
 
-Also make note_interrupt() check the wakeup status of the IRQ when
-irqs_suspended is set and wake up the system (or abort system
-suspend in progress) for wakeup interrupts as well as for unhandled
-ones.  This is necessary to handle wakeup IRQs that aren't shared,
-because their handlers may still return IRQ_HANDLED when
-irqs_suspended is set.
+The AMDs BIOS development guide (page 60 and 61)
+http://developer.amd.com/wordpress/media/2012/10/43170_14h_Mod_00h-0Fh_BKDG.pdf
+they recommend to use value of 0.
 
-Thus callers of enable_irq_wake() still need to be prepared for
-handling interrupts from the given IRQ during the entire system
-suspend and resume, but it is not guaranteed that those handlers
-will be invoked every time between suspend_device_irqs() and
-resume_device_irqs() (the core may simply wake up the system or
-abort system suspend in progress without invoking original
-interrupt handlers for the IRQ).
+Is 0 valid value? The governor will work properly with this value?
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- include/linux/interrupt.h |    1 +
- kernel/irq/pm.c           |   25 +++++++++++++++++++++++++
- kernel/irq/spurious.c     |    7 +++++--
- kernel/power/suspend.c    |    3 +++
- 4 files changed, 34 insertions(+), 2 deletions(-)
+What could be a good default value?
 
-Index: linux-pm/include/linux/interrupt.h
-===================================================================
---- linux-pm.orig/include/linux/interrupt.h
-+++ linux-pm/include/linux/interrupt.h
-@@ -197,6 +197,7 @@ extern void irq_wake_thread(unsigned int
- /* The following three functions are for the core kernel use only. */
- extern void suspend_device_irqs(void);
- extern void resume_device_irqs(void);
-+extern void set_wakeup_irqs(bool enable);
- #ifdef CONFIG_PM_SLEEP
- extern int check_wakeup_irqs(void);
- #else
-Index: linux-pm/kernel/irq/pm.c
-===================================================================
---- linux-pm.orig/kernel/irq/pm.c
-+++ linux-pm/kernel/irq/pm.c
-@@ -130,3 +130,28 @@ int check_wakeup_irqs(void)
- 
- 	return 0;
- }
-+
-+void set_wakeup_irqs(bool enable)
-+{
-+	struct irq_desc *desc;
-+	int irq;
-+
-+	for_each_irq_desc(irq, desc) {
-+		unsigned long flags;
-+
-+		raw_spin_lock_irqsave(&desc->lock, flags);
-+
-+		if (desc->action && irqd_is_wakeup_set(&desc->irq_data) &&
-+		    !desc->skip_suspend) {
-+			if (enable) {
-+				desc->istate &= ~IRQS_SUSPENDED;
-+				__enable_irq(desc, irq, false);
-+			} else if (!(desc->istate & IRQS_SUSPENDED)) {
-+				__disable_irq(desc, irq, false);
-+				desc->istate |= IRQS_SUSPENDED;
-+			}
-+		}
-+
-+		raw_spin_unlock_irqrestore(&desc->lock, flags);
-+	}
-+}
-Index: linux-pm/kernel/power/suspend.c
-===================================================================
---- linux-pm.orig/kernel/power/suspend.c
-+++ linux-pm/kernel/power/suspend.c
-@@ -12,6 +12,7 @@
- #include <linux/delay.h>
- #include <linux/errno.h>
- #include <linux/init.h>
-+#include <linux/interrupt.h>
- #include <linux/console.h>
- #include <linux/cpu.h>
- #include <linux/cpuidle.h>
-@@ -55,7 +56,9 @@ static void freeze_enter(void)
- {
- 	cpuidle_use_deepest_state(true);
- 	cpuidle_resume();
-+	set_wakeup_irqs(true);
- 	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
-+	set_wakeup_irqs(false);
- 	cpuidle_pause();
- 	cpuidle_use_deepest_state(false);
- }
-Index: linux-pm/kernel/irq/spurious.c
-===================================================================
---- linux-pm.orig/kernel/irq/spurious.c
-+++ linux-pm/kernel/irq/spurious.c
-@@ -276,8 +276,11 @@ try_misrouted_irq(unsigned int irq, stru
- void note_interrupt(unsigned int irq, struct irq_desc *desc,
- 		    irqreturn_t action_ret)
- {
--	if (unlikely(irqs_suspended && action_ret == IRQ_NONE)) {
--		pr_err("IRQ %d: Unhandled while suspended\n", irq);
-+	if (unlikely(irqs_suspended &&
-+	    (action_ret == IRQ_NONE || irqd_is_wakeup_set(&desc->irq_data)))) {
-+		if (!irqd_is_wakeup_set(&desc->irq_data))
-+			pr_err("IRQ %d: Unhandled while suspended\n", irq);
-+
- 		desc->istate |= IRQS_SUSPENDED;
- 		desc->depth++;
- 		irq_disable(desc);
+Is there a way to experimentally measure the latency?
+
+Thanks for your help!
+
+Extract from dmesg:
+[    0.843340] Extracting state 0
+[    0.843374] State [0]: core_frequency[1650] power[6075]
+transition_latency[0] bus_master_latency[0] control[0x0] status[0x0]
+[    0.843481] Extracting state 1
+[    0.843513] State [1]: core_frequency[1320] power[3712]
+transition_latency[0] bus_master_latency[0] control[0x1] status[0x1]
+[    0.843618] Extracting state 2
+[    0.843652] State [2]: core_frequency[825] power[1472]
+transition_latency[0] bus_master_latency[0] control[0x2] status[0x2]
+[    0.843757] Extracting state 3
+[    0.843790] State [3]: core_frequency[528] power[1008]
+transition_latency[0] bus_master_latency[0] control[0x3] status[0x3]
+
+
+-- 
+Ricardo Ribalda
