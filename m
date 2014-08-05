@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/5] PM / sleep: Mechanism for aborting system suspends unconditionally
-Date: Tue, 05 Aug 2014 17:24:11 +0200
-Message-ID: <2110414.zVMoE3FRqa@vostro.rjw.lan>
+Subject: [PATCH 3/5] irq / PM: Make wakeup interrupts wake up from suspend-to-idle
+Date: Tue, 05 Aug 2014 17:26:27 +0200
+Message-ID: <1811897.nanFq2OCTN@vostro.rjw.lan>
 References: <20140724212620.GO3935@laptop> <3855585.ek3PTQLkmN@vostro.rjw.lan> <3321219.itH23ZEDt4@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,98 +15,119 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It sometimes may be necessary to abort a system suspend in
-progress or wake up the system from suspend-to-idle even if the
-pm_wakeup_event()/pm_stay_awake() mechanism is not enabled.
+Make IRQs enabled for system wakeup via enable_irq_wake() wake up
+the system from suspend-to-idle.
 
-For this purpose, introduce a new global variable abort_suspend and
-make pm_wakeup_pending() check its value.  Also add routines for
-manipulating that variable.
+For this purpose, introduce a new routine for enabling or disabling
+wakeup interrupts, set_wakeup_irqs(), and make freeze_enter() call
+it to enable them before starting the suspend-to-idle loop and to
+disable them after the loop has been terminated.
 
-This is going to be used in subsequent changes.
+Also make note_interrupt() check the wakeup status of the IRQ when
+irqs_suspended is set and wake up the system (or abort system
+suspend in progress) for wakeup interrupts as well as for unhandled
+ones.  This is necessary to handle wakeup IRQs that aren't shared,
+because their handlers may still return IRQ_HANDLED when
+irqs_suspended is set.
+
+Thus callers of enable_irq_wake() still need to be prepared for
+handling interrupts from the given IRQ during the entire system
+suspend and resume, but it is not guaranteed that those handlers
+will be invoked every time between suspend_device_irqs() and
+resume_device_irqs() (the core may simply wake up the system or
+abort system suspend in progress without invoking original
+interrupt handlers for the IRQ).
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/base/power/wakeup.c |   20 ++++++++++++++++++++
- include/linux/suspend.h     |    3 +++
- kernel/power/process.c      |    1 +
- 3 files changed, 24 insertions(+)
+ include/linux/interrupt.h |    1 +
+ kernel/irq/pm.c           |   25 +++++++++++++++++++++++++
+ kernel/irq/spurious.c     |    7 +++++--
+ kernel/power/suspend.c    |    3 +++
+ 4 files changed, 34 insertions(+), 2 deletions(-)
 
-Index: linux-pm/include/linux/suspend.h
+Index: linux-pm/include/linux/interrupt.h
 ===================================================================
---- linux-pm.orig/include/linux/suspend.h
-+++ linux-pm/include/linux/suspend.h
-@@ -371,6 +371,8 @@ extern int unregister_pm_notifier(struct
- extern bool events_check_enabled;
- 
- extern bool pm_wakeup_pending(void);
-+extern void pm_system_wakeup(void);
-+extern void pm_wakeup_clear(void);
- extern bool pm_get_wakeup_count(unsigned int *count, bool block);
- extern bool pm_save_wakeup_count(unsigned int count);
- extern void pm_wakep_autosleep_enabled(bool set);
-@@ -418,6 +420,7 @@ static inline int unregister_pm_notifier
- #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
- 
- static inline bool pm_wakeup_pending(void) { return false; }
-+static inline void pm_system_wakeup(void) {}
- 
- static inline void lock_system_sleep(void) {}
- static inline void unlock_system_sleep(void) {}
-Index: linux-pm/drivers/base/power/wakeup.c
+--- linux-pm.orig/include/linux/interrupt.h
++++ linux-pm/include/linux/interrupt.h
+@@ -197,6 +197,7 @@ extern void irq_wake_thread(unsigned int
+ /* The following three functions are for the core kernel use only. */
+ extern void suspend_device_irqs(void);
+ extern void resume_device_irqs(void);
++extern void set_wakeup_irqs(bool enable);
+ #ifdef CONFIG_PM_SLEEP
+ extern int check_wakeup_irqs(void);
+ #else
+Index: linux-pm/kernel/irq/pm.c
 ===================================================================
---- linux-pm.orig/drivers/base/power/wakeup.c
-+++ linux-pm/drivers/base/power/wakeup.c
-@@ -691,6 +691,8 @@ void pm_print_active_wakeup_sources(void
+--- linux-pm.orig/kernel/irq/pm.c
++++ linux-pm/kernel/irq/pm.c
+@@ -130,3 +130,28 @@ int check_wakeup_irqs(void)
+ 
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(pm_print_active_wakeup_sources);
- 
-+static bool abort_suspend;
 +
- /**
-  * pm_wakeup_pending - Check if power transition in progress should be aborted.
-  *
-@@ -712,6 +714,7 @@ bool pm_wakeup_pending(void)
- 		ret = (cnt != saved_count || inpr > 0);
- 		events_check_enabled = !ret;
- 	}
-+	ret = ret || abort_suspend;
- 	spin_unlock_irqrestore(&events_lock, flags);
- 
- 	if (ret) {
-@@ -722,6 +725,23 @@ bool pm_wakeup_pending(void)
- 	return ret;
- }
- 
-+void pm_system_wakeup(void)
++void set_wakeup_irqs(bool enable)
 +{
-+	unsigned long flags;
++	struct irq_desc *desc;
++	int irq;
 +
-+	spin_lock_irqsave(&events_lock, flags);
-+	abort_suspend = true;
-+	spin_unlock_irqrestore(&events_lock, flags);
-+	freeze_wake();
++	for_each_irq_desc(irq, desc) {
++		unsigned long flags;
++
++		raw_spin_lock_irqsave(&desc->lock, flags);
++
++		if (desc->action && irqd_is_wakeup_set(&desc->irq_data) &&
++		    !desc->skip_suspend) {
++			if (enable) {
++				desc->istate &= ~IRQS_SUSPENDED;
++				__enable_irq(desc, irq, false);
++			} else if (!(desc->istate & IRQS_SUSPENDED)) {
++				__disable_irq(desc, irq, false);
++				desc->istate |= IRQS_SUSPENDED;
++			}
++		}
++
++		raw_spin_unlock_irqrestore(&desc->lock, flags);
++	}
 +}
-+
-+void pm_wakeup_clear(void)
-+{
-+	spin_lock_irq(&events_lock);
-+	abort_suspend = false;
-+	spin_unlock_irq(&events_lock);
-+}
-+
- /**
-  * pm_get_wakeup_count - Read the number of registered wakeup events.
-  * @count: Address to store the value at.
-Index: linux-pm/kernel/power/process.c
+Index: linux-pm/kernel/power/suspend.c
 ===================================================================
---- linux-pm.orig/kernel/power/process.c
-+++ linux-pm/kernel/power/process.c
-@@ -129,6 +129,7 @@ int freeze_processes(void)
- 	if (!pm_freezing)
- 		atomic_inc(&system_freezing_cnt);
- 
-+	pm_wakeup_clear();
- 	printk("Freezing user space processes ... ");
- 	pm_freezing = true;
- 	error = try_to_freeze_tasks(true);
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -12,6 +12,7 @@
+ #include <linux/delay.h>
+ #include <linux/errno.h>
+ #include <linux/init.h>
++#include <linux/interrupt.h>
+ #include <linux/console.h>
+ #include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+@@ -55,7 +56,9 @@ static void freeze_enter(void)
+ {
+ 	cpuidle_use_deepest_state(true);
+ 	cpuidle_resume();
++	set_wakeup_irqs(true);
+ 	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
++	set_wakeup_irqs(false);
+ 	cpuidle_pause();
+ 	cpuidle_use_deepest_state(false);
+ }
+Index: linux-pm/kernel/irq/spurious.c
+===================================================================
+--- linux-pm.orig/kernel/irq/spurious.c
++++ linux-pm/kernel/irq/spurious.c
+@@ -276,8 +276,11 @@ try_misrouted_irq(unsigned int irq, stru
+ void note_interrupt(unsigned int irq, struct irq_desc *desc,
+ 		    irqreturn_t action_ret)
+ {
+-	if (unlikely(irqs_suspended && action_ret == IRQ_NONE)) {
+-		pr_err("IRQ %d: Unhandled while suspended\n", irq);
++	if (unlikely(irqs_suspended &&
++	    (action_ret == IRQ_NONE || irqd_is_wakeup_set(&desc->irq_data)))) {
++		if (!irqd_is_wakeup_set(&desc->irq_data))
++			pr_err("IRQ %d: Unhandled while suspended\n", irq);
++
+ 		desc->istate |= IRQS_SUSPENDED;
+ 		desc->depth++;
+ 		irq_disable(desc);
