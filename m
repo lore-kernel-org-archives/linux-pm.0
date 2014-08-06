@@ -1,48 +1,67 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v6 6/7] drivers: cpuidle: initialize big.LITTLE driver
- through DT
-Date: Wed, 6 Aug 2014 10:02:20 +0100
-Message-ID: <20140806090220.GA24431@e102568-lin.cambridge.arm.com>
-References: <1405958786-17243-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1405958786-17243-7-git-send-email-lorenzo.pieralisi@arm.com>
- <20140723162626.GE20966@arm.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
+ to be held for duration of changing governors [v2]
+Date: Wed, 06 Aug 2014 06:09:41 -0400
+Message-ID: <53E1FEE5.80305@redhat.com>
+References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <53DBE764.8050109@redhat.com> <53DBEC27.7050803@codeaurora.org> <CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com> <53E0B657.4070007@redhat.com> <CAKohponxBdYEgY2oYuzmdaqfSRS8Uq8bZOzcb1QDmKO-z5ZBFQ@mail.gmail.com> <53E1556B.5070304@codeaurora.org> <CAKohpoky1-hj7cwnKc58svh8Z1Yas1=q4uJEK8mWcb56uqAc
+ ng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140723162626.GE20966@arm.com>
-Content-Disposition: inline
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Tomasz Figa <t.figa@samsung.com>, Chander Kashyap <chander.kashyap@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Geoff Levand <geoff@infradead.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, Bartlomi
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:52152 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753286AbaHFKJv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 6 Aug 2014 06:09:51 -0400
+In-Reply-To: <CAKohpoky1-hj7cwnKc58svh8Z1Yas1=q4uJEK8mWcb56uqAcng@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Saravana Kannan <skannan@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, Jul 23, 2014 at 05:26:26PM +0100, Catalin Marinas wrote:
-> On Mon, Jul 21, 2014 at 05:06:25PM +0100, Lorenzo Pieralisi wrote:
-> > With the introduction of DT based idle states, CPUidle drivers for ARM
-> > can now initialize idle states data through properties in the device tree.
-> > 
-> > This patch adds code to the big.LITTLE CPUidle driver to dynamically
-> > initialize idle states data through the updated device tree source file.
-> > 
-> > Cc: Chander Kashyap <chander.kashyap@linaro.org>
-> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+
+
+On 08/06/2014 04:10 AM, Viresh Kumar wrote:
+> On 6 August 2014 03:36, Saravana Kannan <skannan@codeaurora.org> wrote:
+>> Stephen and I looked into this. This is not a sysfs framework difference.
+>> The reason we don't have this issue when we use global tunables is because
+>> we add the attribute group to the cpufreq_global_kobject and that kobject
+>> doesn't have a kobj_type ops similar to the per policy kobject. So,
+>> read/write to those attributes do NOT go through the generic show/store ops
+>> that wrap every other cpufreq framework attribute read/writes.
+>>
+>> So, none of those read/write do any kind of locking. They don't race with
+>> POLICY_EXIT (because we remove the sysfs group first thing in POLICY_EXIT)
+>> but might still race with START/STOPs (not sure, haven't looked closely
+>> yet).
+>>
+>> For example, writing to sampling_rate of ondemand governor might cause a
+>> race in update_sampling_rate(). It could race and happen between a STOP and
+>> POLICY_EXIT (triggered by hotplug, gov change, etc).
 > 
-> I think for this patch (and the exynos one) we should still allow the
-> driver to work fine with old DT. Basically if the information is not in
-> DT, fall back to the original static definitions.
+> This sounds good but I couldn't prove it. Doing this on my dual core exynos
+> doesn't give me that crash report and it should?
 
-Yes, this makes sense, I will implement the fall-back mechanism on v7,
-that should be final. If in the meanwhile Samsung guys have time to
-test the Exynos patch that would be very appreciated.
+Are you sure you're not seeing another lockdep warning?  That was my problem --
+there was an xfs related lockdep warning which then resulted in lockdep being
+disabled from that point on.
 
-Thanks,
-Lorenzo
+P.
+
+> 
+> diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+> index 1e0ec57..027b6f7 100644
+> --- a/drivers/cpufreq/exynos-cpufreq.c
+> +++ b/drivers/cpufreq/exynos-cpufreq.c
+> @@ -139,7 +139,7 @@ static int exynos_cpufreq_cpu_init(struct
+> cpufreq_policy *policy)
+>  }
+> 
+>  static struct cpufreq_driver exynos_driver = {
+> -       .flags          = CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
+> +       .flags          = CPUFREQ_STICKY |
+> CPUFREQ_NEED_INITIAL_FREQ_CHECK | CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
+>         .verify         = cpufreq_generic_frequency_table_verify,
+>         .target_index   = exynos_target,
+>         .get            = cpufreq_generic_get,
+> 
