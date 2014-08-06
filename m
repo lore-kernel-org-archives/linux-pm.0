@@ -1,107 +1,132 @@
-From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: [PATCH v3 1/4] of: Add bindings for nvidia,tegra124-soctherm
-Date: Wed, 6 Aug 2014 13:25:03 +0300
-Message-ID: <1407320706-17440-2-git-send-email-mperttunen@nvidia.com>
-References: <1407320706-17440-1-git-send-email-mperttunen@nvidia.com>
+From: "edubezval@gmail.com" <edubezval@gmail.com>
+Subject: Re: [PATCH V2] Thermal: imx: add i.mx6sx thermal support
+Date: Wed, 6 Aug 2014 08:56:33 -0400
+Message-ID: <CAC-25o_z-pJ_3HX-wfnWB2uVSCRodXYzqOe2U-yac2kAY2ShYQ@mail.gmail.com>
+References: <1407302256-26726-1-git-send-email-b20788@freescale.com>
+	<53E1D29D.1010009@gmail.com>
+	<b85e230a058340a58fd3091e2be9b25d@BN1PR0301MB0628.namprd03.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1407320706-17440-1-git-send-email-mperttunen@nvidia.com>
+In-Reply-To: <b85e230a058340a58fd3091e2be9b25d@BN1PR0301MB0628.namprd03.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, swarren@wwwdotorg.org, thierry.reding@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mikko Perttunen <mperttunen@nvidia.com>
+To: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
+Cc: Varka Bhadram <varkabhadram@gmail.com>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This adds binding documentation and headers for the Tegra124
-SOCTHERM device tree node.
+Hello Anson,
 
-Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
----
-v3: updated text slightly, added example using define
+On Wed, Aug 6, 2014 at 3:05 AM, Anson.Huang@freescale.com
+<Anson.Huang@freescale.com> wrote:
+> Sorry for leaving such warnings, I thought we did NOT care about the long
+> line issue now, will fix them in V3 patch.
+>
 
- .../devicetree/bindings/thermal/tegra-soctherm.txt | 53 ++++++++++++++++++++++
- include/dt-bindings/thermal/tegra124-soctherm.h    | 13 ++++++
- 2 files changed, 66 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
- create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
+Lines over 80 columns are not an error of style. We simply suggest to
+keep this. By now, I think it really depends on which subsystem you
+are working with. I would prefer you keep this rule, as most of the
+code inside the thermal framework follows it.
 
-diff --git a/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt b/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
-new file mode 100644
-index 0000000..ecf3ed7
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
-@@ -0,0 +1,53 @@
-+Tegra124 SOCTHERM thermal management system
-+
-+The SOCTHERM IP block contains thermal sensors, support for polled
-+or interrupt-based thermal monitoring, CPU and GPU throttling based
-+on temperature trip points, and handling external overcurrent
-+notifications. It is also used to manage emergency shutdown in an
-+overheating situation.
-+
-+Required properties :
-+- compatible : "nvidia,tegra124-soctherm".
-+- reg : Should contain 1 entry:
-+  - SOCTHERM register set
-+- interrupts : Defines the interrupt used by SOCTHERM
-+- clocks : Must contain an entry for each entry in clock-names.
-+  See ../clocks/clock-bindings.txt for details.
-+- clock-names : Must include the following entries:
-+  - tsensor
-+  - soctherm
-+- resets : Must contain an entry for each entry in reset-names.
-+  See ../reset/reset.txt for details.
-+- reset-names : Must include the following entries:
-+  - soctherm
-+- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description
-+    of this property. See <dt-bindings/thermal/tegra124-soctherm.h> for a
-+    list of valid values when referring to thermal sensors.
-+
-+
-+Example :
-+
-+	soctherm@0,700e2000 {
-+		compatible = "nvidia,tegra124-soctherm";
-+		reg = <0x0 0x700e2000 0x0 0x1000>;
-+		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&tegra_car TEGRA124_CLK_TSENSOR>,
-+			<&tegra_car TEGRA124_CLK_SOC_THERM>;
-+		clock-names = "tsensor", "soctherm";
-+		resets = <&tegra_car 78>;
-+		reset-names = "soctherm";
-+
-+		#thermal-sensor-cells = <1>;
-+	};
-+
-+Example: referring to thermal sensors :
-+
-+       thermal-zones {
-+                cpu {
-+                        polling-delay-passive = <1000>;
-+                        polling-delay = <1000>;
-+
-+                        thermal-sensors =
-+                                <&soctherm TEGRA124_SOCTHERM_SENSOR_CPU>;
-+                };
-+	};
-diff --git a/include/dt-bindings/thermal/tegra124-soctherm.h b/include/dt-bindings/thermal/tegra124-soctherm.h
-new file mode 100644
-index 0000000..85aaf66
---- /dev/null
-+++ b/include/dt-bindings/thermal/tegra124-soctherm.h
-@@ -0,0 +1,13 @@
-+/*
-+ * This header provides constants for binding nvidia,tegra124-soctherm.
-+ */
-+
-+#ifndef _DT_BINDINGS_THERMAL_TEGRA124_SOCTHERM_H
-+#define _DT_BINDINGS_THERMAL_TEGRA124_SOCTHERM_H
-+
-+#define TEGRA124_SOCTHERM_SENSOR_CPU 0
-+#define TEGRA124_SOCTHERM_SENSOR_MEM 1
-+#define TEGRA124_SOCTHERM_SENSOR_GPU 2
-+#define TEGRA124_SOCTHERM_SENSOR_PLLX 3
-+
-+#endif
+>
+>
+> Thanks Varka.
+>
+>
+>
+> Best regards!
+>
+> Anson Huang
+>
+>
+>
+> From: Varka Bhadram [mailto:varkabhadram@gmail.com]
+> Sent: 2014-08-06 3:01 PM
+> To: Huang Yongcai-B20788; edubezval@gmail.com; shawn.guo@linaro.org;
+> rui.zhang@intel.com
+> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
+> devicetree@vger.kernel.org
+> Subject: Re: [PATCH V2] Thermal: imx: add i.mx6sx thermal support
+>
+>
+>
+> On 08/06/2014 10:47 AM, Anson Huang wrote:
+>
+> i.MX6SX has some new features of thermal interrupt function,
+>
+> there are LOW, HIGH and PANIC irq for thermal sensor, so add
+>
+> platform data to separate different thermal version;
+>
+>
+>
+> The reset value of LOW ALARM is 0 which means the highest
+>
+> temp, so the LOW ALARM will be triggered once irq is enabled,
+>
+> so we need to correct it before enabling thermal irq;
+>
+>
+>
+> Enable PANIC ALARM as critical trip point, it will trigger
+>
+> system reset via SRC module once PANIC IRQ is triggered, it
+>
+> is pure hardware function, so use it instead of software
+>
+> reset by cooling device.
+>
+>
+>
+> Signed-off-by: Anson Huang <b20788@freescale.com>
+>
+> ---
+>
+>  .../devicetree/bindings/thermal/imx-thermal.txt    |    5 +-
+>
+>  drivers/thermal/imx_thermal.c                      |   89
+> +++++++++++++++++---
+>
+>  2 files changed, 80 insertions(+), 14 deletions(-)
+>
+>
+>
+> ./scripts/checkpatch.pl --show-types
+> V2-Thermal-imx-add-i.mx6sx-thermal-support.patch
+>
+> WARNING:LONG_LINE: line over 80 characters
+>
+> #109: FILE: drivers/thermal/imx_thermal.c:185:
+>
+> +    /* Update alarm value to next higher trip point, only TEMPMON_IMX6Q
+> needs it */
+>
+>
+>
+> WARNING:LONG_LINE: line over 80 characters
+>
+> #111: FILE: drivers/thermal/imx_thermal.c:187:
+>
+> +        if (data->alarm_temp == data->temp_passive && *temp >=
+> data->temp_passive)
+>
+>
+>
+> WARNING:LONG_LINE: line over 80 characters
+>
+> #113: FILE: drivers/thermal/imx_thermal.c:189:
+>
+> +        if (data->alarm_temp == data->temp_critical && *temp <
+> data->temp_passive) {
+>
+>
+>
+> --
+>
+> Regards,
+>
+> Varka Bhadram.
+
+
+
 -- 
-1.8.1.5
+Eduardo Bezerra Valentin
