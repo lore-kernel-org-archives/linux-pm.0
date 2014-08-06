@@ -1,37 +1,25 @@
-From: Hans Wennborg <hans@hanshq.net>
-Subject: [PATCH 02/15] cpufreq: fix decimal printf format specifiers prefixed with 0x
-Date: Tue,  5 Aug 2014 21:41:48 -0700
-Message-ID: <1407300108-32186-1-git-send-email-hans@hanshq.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq_opp.c: Fixed the __might_sleep by changing
+ GFP_KERNEL to GFP_ATOMIC.
+Date: Wed, 6 Aug 2014 10:38:37 +0530
+Message-ID: <CAKohpo=VQEtmSLE5-fQ8=zb-kkRYN8kZeaBPzMV5rF=WxxmeDg@mail.gmail.com>
+References: <1407183283-21921-1-git-send-email-moon.linux@yahoo.com>
+	<CAKohpo=j59=5fmVAdhGXkdb3YHN6zDQBkibZZTfc73GvSqx=3A@mail.gmail.com>
+	<5600331.UfWMPf73u1@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5600331.UfWMPf73u1@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Hans Wennborg <hans@hanshq.net>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Anand Moon <moon.linux@yahoo.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The prefix suggests the number should be printed in hex, so use
-the %x specifier to do that.
+On 6 August 2014 05:05, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> https://lkml.org/lkml/2014/7/16/815
+>>
+>> @Rafael: Have you already applied patch from above link?
+>
+> No, I haven't.  Do we need it after all?
 
-Found by using regex suggested by Joe Perches.
-
-Signed-off-by: Hans Wennborg <hans@hanshq.net>
----
- drivers/cpufreq/speedstep-smi.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
-index 8635eec..fda9beb 100644
---- a/drivers/cpufreq/speedstep-smi.c
-+++ b/drivers/cpufreq/speedstep-smi.c
-@@ -324,8 +324,8 @@ static int __init speedstep_init(void)
- 		return -ENODEV;
- 	}
- 
--	pr_debug("signature:0x%.8ulx, command:0x%.8ulx, "
--		"event:0x%.8ulx, perf_level:0x%.8ulx.\n",
-+	pr_debug("signature:0x%.8lx, command:0x%.8lx, "
-+		"event:0x%.8lx, perf_level:0x%.8lx.\n",
- 		ist_info.signature, ist_info.command,
- 		ist_info.event, ist_info.perf_level);
- 
--- 
-2.0.0.526.g5318336
+I think yes, Right Stephen? :)
