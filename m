@@ -1,51 +1,90 @@
 From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: [PATCH v3 0/4] Tegra124 soctherm driver
-Date: Wed, 6 Aug 2014 13:25:02 +0300
-Message-ID: <1407320706-17440-1-git-send-email-mperttunen@nvidia.com>
+Subject: [PATCH v3 2/4] ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
+Date: Wed, 6 Aug 2014 13:25:04 +0300
+Message-ID: <1407320706-17440-3-git-send-email-mperttunen@nvidia.com>
+References: <1407320706-17440-1-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:7211 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754065AbaHFKZ3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Aug 2014 06:25:29 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1407320706-17440-1-git-send-email-mperttunen@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com, swarren@wwwdotorg.org, thierry.reding@gmail.com
 Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mikko Perttunen <mperttunen@nvidia.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+This adds the soctherm thermal sensing and management unit to the
+Tegra124 device tree along with the four thermal zones corresponding
+to the four thermal sensors provided by soctherm.
 
-this series adds support for the thermal monitoring features of the
-soctherm unit on the Tegra124 SoC. v2 drops support for interrupt-
-based trip points. Thermtrip (emergency thermal shutdown) still
-works when this driver is loaded and the PMC thermal reset patch
-series is applied.
+Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+---
+ arch/arm/boot/dts/tegra124.dtsi | 47 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-The branch is also available in my github repo,
-  git://github.com/cyndis/linux.git soctherm-v3
-
-Thanks,
-Mikko
-
-Mikko Perttunen (4):
-  of: Add bindings for nvidia,tegra124-soctherm
-  ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
-  ARM: tegra: Add thermal trip points for Jetson TK1
-  thermal: Add Tegra SOCTHERM thermal management driver
-
- .../devicetree/bindings/thermal/tegra-soctherm.txt |  53 +++
- arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  32 ++
- arch/arm/boot/dts/tegra124.dtsi                    |  47 +++
- drivers/thermal/Kconfig                            |  10 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/tegra_soctherm.c                   | 430 +++++++++++++++++++++
- include/dt-bindings/thermal/tegra124-soctherm.h    |  13 +
- 7 files changed, 586 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
- create mode 100644 drivers/thermal/tegra_soctherm.c
- create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
-
+diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegra124.dtsi
+index 03916ef..a579fab 100644
+--- a/arch/arm/boot/dts/tegra124.dtsi
++++ b/arch/arm/boot/dts/tegra124.dtsi
+@@ -3,6 +3,7 @@
+ #include <dt-bindings/pinctrl/pinctrl-tegra.h>
+ #include <dt-bindings/pinctrl/pinctrl-tegra-xusb.h>
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
++#include <dt-bindings/thermal/tegra124-soctherm.h>
+ 
+ #include "skeleton.dtsi"
+ 
+@@ -756,6 +757,52 @@
+ 		status = "disabled";
+ 	};
+ 
++	thermal-zones {
++		cpu {
++			polling-delay-passive = <1000>;
++			polling-delay = <1000>;
++
++			thermal-sensors =
++				<&soctherm TEGRA124_SOCTHERM_SENSOR_CPU>;
++		};
++
++		mem {
++			polling-delay-passive = <1000>;
++			polling-delay = <1000>;
++
++			thermal-sensors =
++				<&soctherm TEGRA124_SOCTHERM_SENSOR_MEM>;
++		};
++
++		gpu {
++			polling-delay-passive = <1000>;
++			polling-delay = <1000>;
++
++			thermal-sensors =
++				<&soctherm TEGRA124_SOCTHERM_SENSOR_GPU>;
++		};
++
++		pllx {
++			polling-delay-passive = <1000>;
++			polling-delay = <1000>;
++
++			thermal-sensors =
++				<&soctherm TEGRA124_SOCTHERM_SENSOR_PLLX>;
++		};
++	};
++
++	soctherm: soctherm@0,700e2000 {
++		compatible = "nvidia,tegra124-soctherm";
++		reg = <0x0 0x700e2000 0x0 0x1000>;
++		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&tegra_car TEGRA124_CLK_TSENSOR>,
++			<&tegra_car TEGRA124_CLK_SOC_THERM>;
++		clock-names = "tsensor", "soctherm";
++		resets = <&tegra_car 78>;
++		reset-names = "soctherm";
++		#thermal-sensor-cells = <1>;
++	};
++
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
 -- 
 1.8.1.5
-
