@@ -1,81 +1,61 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 0/2] sbs-battery: Add missing power class sysfs files
-Date: Wed, 6 Aug 2014 02:40:42 +0200
-Message-ID: <20140806004042.GA9957@earth.universe>
-References: <1407152866-31790-1-git-send-email-javier.martinez@collabora.co.uk>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH] Thermal: imx: add i.mx6sx thermal support
+Date: Wed, 6 Aug 2014 09:10:46 +0800
+Message-ID: <20140806011045.GC27051@dragon>
+References: <1407229963-32662-1-git-send-email-b20788@freescale.com>
+ <20140805132553.GA20291@developer>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="T4sUOijqQbZv57TR"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bl2lp0212.outbound.protection.outlook.com ([207.46.163.212]:13947
+	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753729AbaHFBLN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Aug 2014 21:11:13 -0400
 Content-Disposition: inline
-In-Reply-To: <1407152866-31790-1-git-send-email-javier.martinez@collabora.co.uk>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Doug Anderson <dianders@chromium.org>, Olof Johansson <olof@lixom.net>, Simon Que <sque@chromium.org>, cychiang <cychiang@chromium.org>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+In-Reply-To: <20140805132553.GA20291@developer>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Anson Huang <b20788@freescale.com>, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
+On Tue, Aug 05, 2014 at 09:25:53AM -0400, Eduardo Valentin wrote:
+> > @@ -31,6 +32,10 @@
+> >  
+> >  #define MISC0				0x0150
+> >  #define MISC0_REFTOP_SELBIASOFF		(1 << 3)
+> > +#define MISC1				0x0160
+> > +#define MISC1_IRQ_TEMPHIGH		(1 << 29)
+> > +#define MISC1_IRQ_TEMPLOW		(1 << 28)
+> > +#define MISC1_IRQ_TEMPPANIC		(1 << 27)
+> 
+> how about using 
+> +#define MISC1_IRQ_TEMPHIGH		BIT(29)
+> +#define MISC1_IRQ_TEMPLOW		BIT(28)
+> +#define MISC1_IRQ_TEMPPANIC		BIT(27)
 
---T4sUOijqQbZv57TR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+While I agree this is good, I think it's more important to keep the
+style consistent for the file.  We already have a number of (1 << x)
+in the file.
 
-On Mon, Aug 04, 2014 at 01:47:44PM +0200, Javier Martinez Canillas wrote:
-> This series add the model_name, manufacturer and voltage_min_design
-> files from the power supply monitor class sysfs interface that were
-> missing for the sbs-battery driver. The commits were taken from the
-> Chrome OS 3.8 downstream kernel and patches were squashed when they
-> just fixed bugs introduced on previous commits that do the export.
->=20
-> The patch-set was tested on a Exynos5420 based Peach Pit machine by
-> confirming that the sysfs files existed and provide the right data:
->=20
-> # cat /sys/class/power_supply/sbs-20-000b/{voltage_min_design,manufacture=
-r,model_name}
-> 7500000
-> SANYO
-> 4302A40
->=20
-> Simon Que (1):
->   sbs-battery: add min design voltage to sbs-battery
->=20
-> cychiang (1):
->   sbs-battery: export manufacturer and model name to sysfs
->=20
->  drivers/power/sbs-battery.c | 125 ++++++++++++++++++++++++++++++++++++++=
-+++++-
->  1 file changed, 123 insertions(+), 2 deletions(-)
->=20
-> Best regards,
-> Javier
+...
 
-Both applied to battery.git's next-next branch. I modified the
-author from the first commit (cychiang <cychiang@chromium.org>),
-so that it's equal to the signed-off line (Cheng-Yi Chiang
-<cychiang@chromium.org>).
+> > @@ -66,6 +76,21 @@ enum imx_thermal_trip {
+> >  #define FACTOR1				15976
+> >  #define FACTOR2				4297157
+> >  
+> > +#define TEMPMON_V1			1
+> > +#define TEMPMON_V2			2
+> > +
+> 
+> where does the V1/V2 nomenclature come from? how about:
+> 
+> +#define TEMPMON_IMX6Q			1
+> +#define TEMPMON_IMX6SX			2
 
--- Sebastian
++1
 
---T4sUOijqQbZv57TR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+If the V1/V2 nomenclature is not coming from hardware manual, we don't
+want to use it, neither code nor binding doc.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJT4XmJAAoJENju1/PIO/qanVcQAKbt0SxgXCGSvdk8HKatkul0
-glQpafA8PZuKQXDNGI31vmbnXbFjA7Zjn4U8kkb5mNf1E2FbyP7v6x9eOIjayE2m
-/rET0d8jfn+T13ReN051qpAbWn5ESQzKzRGaPgahz4elnAMZoQM8tX1nLtbbk7HM
-dEVk8s88Fxhi/etfI2Jx752dcMALRvqJnVe1o/hE8dRkdC+Rj2XQycFt9MQar1l6
-Yr2cUTW8Dyxalv/enZOewoXc2prPShZg2Pl9w2sfmnWvUQFHw2mc+5aiD+RV2zuR
-ehz2zCbppF6kGmhvM8x981EZH+/PUBqyjeFtSw3MCY/dgID6zIUNesBbuuGKfbzL
-F1fHxTwCuJ6kNsytbW44zSF22br2a/K3r+HMg2m+ZHwP6oDSI2dF+Rymjx2ZyhSI
-LaeOY66uVxpYCYe5n7LaR3PNM+Vuk8lJ1vY2+p8scpStrCnG43fu1DglfJ+jqmzX
-44hhw1JsLhuz+0CtFmx3lm4aLs6pBCsKJlUFlfJqDRMzRqfxy/sReSCPTqMzJRD5
-x1WAN6VdkyvxAz+DlsWmaDk7cUY2ZrJXw/SFKbt0r+Jx52kP61LgVNagBZJNX0sW
-jb8B0Nnb0uSRKqQL0C36ZAhuEF+QrhthJkNMrePBVZ9yJLMSMoahI+9itD63dcIC
-LJiLyX3rrWxrCZVDZttL
-=nP2h
------END PGP SIGNATURE-----
-
---T4sUOijqQbZv57TR--
+Shawn
