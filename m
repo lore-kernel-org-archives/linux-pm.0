@@ -1,184 +1,255 @@
-From: "edubezval@gmail.com" <edubezval@gmail.com>
-Subject: Re: [PATCH V2] Thermal: imx: add i.mx6sx thermal support
-Date: Wed, 6 Aug 2014 08:59:05 -0400
-Message-ID: <CAC-25o8pOAynNMk0z4kmPJN0E1Q-xYmggdVSOK+OVNwRTkxmEg@mail.gmail.com>
-References: <1407302256-26726-1-git-send-email-b20788@freescale.com>
-	<53E1D29D.1010009@gmail.com>
-	<b85e230a058340a58fd3091e2be9b25d@BN1PR0301MB0628.namprd03.prod.outlook.com>
-	<CAC-25o_z-pJ_3HX-wfnWB2uVSCRodXYzqOe2U-yac2kAY2ShYQ@mail.gmail.com>
+From: "edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V3] Thermal: imx: add i.mx6sx thermal support
+Date: Wed, 6 Aug 2014 09:24:46 -0400
+Message-ID: <CAC-25o8BiKHYAD6=_5xAP5L310bH_GjwVQpqBYC7UydvbaxeqQ@mail.gmail.com>
+References: <1407309129-5562-1-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f174.google.com ([209.85.217.174]:44037 "EHLO
-	mail-lb0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752343AbaHFM7I (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Aug 2014 08:59:08 -0400
-In-Reply-To: <CAC-25o_z-pJ_3HX-wfnWB2uVSCRodXYzqOe2U-yac2kAY2ShYQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1407309129-5562-1-git-send-email-b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Anson Huang <b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Cc: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
-Cc: Varka Bhadram <varkabhadram@gmail.com>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-Hello again,
+Hello Anson,
 
-On Wed, Aug 6, 2014 at 8:56 AM, edubezval@gmail.com <edubezval@gmail.com> wrote:
-> Hello Anson,
+On Wed, Aug 6, 2014 at 3:12 AM, Anson Huang <b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org> wrote:
+> i.MX6SX has some new features of thermal interrupt function,
+> there are LOW, HIGH and PANIC irq for thermal sensor, so add
+> platform data to separate different thermal version;
 >
-> On Wed, Aug 6, 2014 at 3:05 AM, Anson.Huang@freescale.com
-> <Anson.Huang@freescale.com> wrote:
->> Sorry for leaving such warnings, I thought we did NOT care about the long
->> line issue now, will fix them in V3 patch.
->>
+> The reset value of LOW ALARM is 0 which means the highest
+> temp, so the LOW ALARM will be triggered once irq is enabled,
+> so we need to correct it before enabling thermal irq;
 >
-> Lines over 80 columns are not an error of style. We simply suggest to
-> keep this. By now, I think it really depends on which subsystem you
-> are working with. I would prefer you keep this rule, as most of the
-> code inside the thermal framework follows it.
+> Enable PANIC ALARM as critical trip point, it will trigger
+> system reset via SRC module once PANIC IRQ is triggered, it
+> is pure hardware function, so use it instead of software
+> reset by cooling device.
+
+So far the patch is pretty much better now. Unfortunately, I do not
+have a way to test it. Can you please check if some workmate of yours
+can do a testing on both hardwares and send his/her tested-by?
+
+
+
 >
-
-Let me put this straight, quoting the Kernel Documentation/CodingStyle:
-
- 75                 Chapter 2: Breaking long lines and strings
-
- 76
-
- 77 Coding style is all about readability and maintainability using commonly
-
- 78 available tools.
-
- 79
-
- 80 The limit on the length of lines is 80 columns and this is a strongly
-
- 81 preferred limit.
-
- 82
-
- 83 Statements longer than 80 columns will be broken into sensible
-chunks, unless
-
- 84 exceeding 80 columns significantly increases readability and does not hide
-
- 85 information. Descendants are always substantially shorter than the
-parent and
-
- 86 are placed substantially to the right. The same applies to function headers
-
- 87 with a long argument list. However, never break user-visible strings such as
-
- 88 printk messages, because that breaks the ability to grep for them."
-
-
-
-
-
-
-
->>
->>
->> Thanks Varka.
->>
->>
->>
->> Best regards!
->>
->> Anson Huang
->>
->>
->>
->> From: Varka Bhadram [mailto:varkabhadram@gmail.com]
->> Sent: 2014-08-06 3:01 PM
->> To: Huang Yongcai-B20788; edubezval@gmail.com; shawn.guo@linaro.org;
->> rui.zhang@intel.com
->> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
->> devicetree@vger.kernel.org
->> Subject: Re: [PATCH V2] Thermal: imx: add i.mx6sx thermal support
->>
->>
->>
->> On 08/06/2014 10:47 AM, Anson Huang wrote:
->>
->> i.MX6SX has some new features of thermal interrupt function,
->>
->> there are LOW, HIGH and PANIC irq for thermal sensor, so add
->>
->> platform data to separate different thermal version;
->>
->>
->>
->> The reset value of LOW ALARM is 0 which means the highest
->>
->> temp, so the LOW ALARM will be triggered once irq is enabled,
->>
->> so we need to correct it before enabling thermal irq;
->>
->>
->>
->> Enable PANIC ALARM as critical trip point, it will trigger
->>
->> system reset via SRC module once PANIC IRQ is triggered, it
->>
->> is pure hardware function, so use it instead of software
->>
->> reset by cooling device.
->>
->>
->>
->> Signed-off-by: Anson Huang <b20788@freescale.com>
->>
->> ---
->>
->>  .../devicetree/bindings/thermal/imx-thermal.txt    |    5 +-
->>
->>  drivers/thermal/imx_thermal.c                      |   89
->> +++++++++++++++++---
->>
->>  2 files changed, 80 insertions(+), 14 deletions(-)
->>
->>
->>
->> ./scripts/checkpatch.pl --show-types
->> V2-Thermal-imx-add-i.mx6sx-thermal-support.patch
->>
->> WARNING:LONG_LINE: line over 80 characters
->>
->> #109: FILE: drivers/thermal/imx_thermal.c:185:
->>
->> +    /* Update alarm value to next higher trip point, only TEMPMON_IMX6Q
->> needs it */
->>
->>
->>
->> WARNING:LONG_LINE: line over 80 characters
->>
->> #111: FILE: drivers/thermal/imx_thermal.c:187:
->>
->> +        if (data->alarm_temp == data->temp_passive && *temp >=
->> data->temp_passive)
->>
->>
->>
->> WARNING:LONG_LINE: line over 80 characters
->>
->> #113: FILE: drivers/thermal/imx_thermal.c:189:
->>
->> +        if (data->alarm_temp == data->temp_critical && *temp <
->> data->temp_passive) {
->>
->>
->>
->> --
->>
->> Regards,
->>
->> Varka Bhadram.
+> Signed-off-by: Anson Huang <b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+> ---
+>  .../devicetree/bindings/thermal/imx-thermal.txt    |    5 +-
+>  drivers/thermal/imx_thermal.c                      |   91 +++++++++++++++++---
+>  2 files changed, 82 insertions(+), 14 deletions(-)
 >
+> diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+> index 1f0f672..3c67bd5 100644
+> --- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+> @@ -1,7 +1,10 @@
+>  * Temperature Monitor (TEMPMON) on Freescale i.MX SoCs
 >
+>  Required properties:
+> -- compatible : "fsl,imx6q-thermal"
+> +- compatible : "fsl,imx6q-tempmon" for i.MX6Q, "fsl,imx6sx-tempmon" for i.MX6SX.
+> +  i.MX6SX has two more IRQs than i.MX6Q, one is IRQ_LOW and the other is IRQ_PANIC,
+> +  when temperature is below than low threshold, IRQ_LOW will be triggered, when temperature
+> +  is higher than panic threshold, system will auto reboot by SRC module.
+>  - fsl,tempmon : phandle pointer to system controller that contains TEMPMON
+>    control registers, e.g. ANATOP on imx6q.
+>  - fsl,tempmon-data : phandle pointer to fuse controller that contains TEMPMON
+> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+> index 2c516f2..461bf3d 100644
+> --- a/drivers/thermal/imx_thermal.c
+> +++ b/drivers/thermal/imx_thermal.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/mfd/syscon.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+> +#include <linux/of_device.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/regmap.h>
+>  #include <linux/slab.h>
+> @@ -31,6 +32,11 @@
 >
+>  #define MISC0                          0x0150
+>  #define MISC0_REFTOP_SELBIASOFF                (1 << 3)
+> +#define MISC1                          0x0160
+> +#define MISC1_IRQ_TEMPHIGH             (1 << 29)
+> +/* Below LOW and PANIC bits are only for TEMPMON_IMX6SX */
+> +#define MISC1_IRQ_TEMPLOW              (1 << 28)
+> +#define MISC1_IRQ_TEMPPANIC            (1 << 27)
+>
+>  #define TEMPSENSE0                     0x0180
+>  #define TEMPSENSE0_ALARM_VALUE_SHIFT   20
+> @@ -43,6 +49,12 @@
+>
+>  #define TEMPSENSE1                     0x0190
+>  #define TEMPSENSE1_MEASURE_FREQ                0xffff
+> +/* Below TEMPSENSE2 is only for TEMPMON_IMX6SX */
+> +#define TEMPSENSE2                     0x0290
+> +#define TEMPSENSE2_LOW_VALUE_SHIFT     0
+> +#define TEMPSENSE2_LOW_VALUE_MASK      0xfff
+> +#define TEMPSENSE2_PANIC_VALUE_SHIFT   16
+> +#define TEMPSENSE2_PANIC_VALUE_MASK    0xfff0000
+>
+>  #define OCOTP_ANA1                     0x04e0
+>
+> @@ -66,6 +78,21 @@ enum imx_thermal_trip {
+>  #define FACTOR1                                15976
+>  #define FACTOR2                                4297157
+>
+> +#define TEMPMON_IMX6Q                  1
+> +#define TEMPMON_IMX6SX                 2
+> +
+> +struct thermal_soc_data {
+> +       u32 version;
+> +};
+> +
+> +static struct thermal_soc_data thermal_imx6q_data = {
+> +       .version = TEMPMON_IMX6Q,
+> +};
+> +
+> +static struct thermal_soc_data thermal_imx6sx_data = {
+> +       .version = TEMPMON_IMX6SX,
+> +};
+> +
+>  struct imx_thermal_data {
+>         struct thermal_zone_device *tz;
+>         struct thermal_cooling_device *cdev;
+> @@ -79,8 +106,21 @@ struct imx_thermal_data {
+>         bool irq_enabled;
+>         int irq;
+>         struct clk *thermal_clk;
+> +       const struct thermal_soc_data *socdata;
+>  };
+>
+> +static void imx_set_panic_temp(struct imx_thermal_data *data,
+> +                              signed long panic_temp)
+> +{
+> +       struct regmap *map = data->tempmon;
+> +       int critical_value;
+> +
+> +       critical_value = (data->c2 - panic_temp) / data->c1;
+> +       regmap_write(map, TEMPSENSE2 + REG_CLR, TEMPSENSE2_PANIC_VALUE_MASK);
+> +       regmap_write(map, TEMPSENSE2 + REG_SET, critical_value <<
+> +                       TEMPSENSE2_PANIC_VALUE_SHIFT);
+> +}
+> +
+>  static void imx_set_alarm_temp(struct imx_thermal_data *data,
+>                                signed long alarm_temp)
+>  {
+> @@ -142,13 +182,17 @@ static int imx_get_temp(struct thermal_zone_device *tz, unsigned long *temp)
+>         /* See imx_get_sensor_data() for formula derivation */
+>         *temp = data->c2 - n_meas * data->c1;
+>
+> -       /* Update alarm value to next higher trip point */
+> -       if (data->alarm_temp == data->temp_passive && *temp >= data->temp_passive)
+> -               imx_set_alarm_temp(data, data->temp_critical);
+> -       if (data->alarm_temp == data->temp_critical && *temp < data->temp_passive) {
+> -               imx_set_alarm_temp(data, data->temp_passive);
+> -               dev_dbg(&tz->device, "thermal alarm off: T < %lu\n",
+> -                       data->alarm_temp / 1000);
+> +       /* Update alarm value to next higher trip point for TEMPMON_IMX6Q */
+> +       if (data->socdata->version == TEMPMON_IMX6Q) {
+> +               if (data->alarm_temp == data->temp_passive &&
+> +                       *temp >= data->temp_passive)
+> +                       imx_set_alarm_temp(data, data->temp_critical);
+> +               if (data->alarm_temp == data->temp_critical &&
+> +                       *temp < data->temp_passive) {
+> +                       imx_set_alarm_temp(data, data->temp_passive);
+> +                       dev_dbg(&tz->device, "thermal alarm off: T < %lu\n",
+> +                               data->alarm_temp / 1000);
+> +               }
+>         }
+>
+>         if (*temp != data->last_temp) {
+> @@ -398,8 +442,17 @@ static irqreturn_t imx_thermal_alarm_irq_thread(int irq, void *dev)
+>         return IRQ_HANDLED;
+>  }
+>
+> +static const struct of_device_id of_imx_thermal_match[] = {
+> +       { .compatible = "fsl,imx6q-tempmon", .data = &thermal_imx6q_data, },
+> +       { .compatible = "fsl,imx6sx-tempmon", .data = &thermal_imx6sx_data, },
+> +       { /* end */ }
+> +};
+> +MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
+> +
+>  static int imx_thermal_probe(struct platform_device *pdev)
+>  {
+> +       const struct of_device_id *of_id =
+> +               of_match_device(of_imx_thermal_match, &pdev->dev);
+>         struct imx_thermal_data *data;
+>         struct cpumask clip_cpus;
+>         struct regmap *map;
+> @@ -418,6 +471,20 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>         }
+>         data->tempmon = map;
+>
+> +       data->socdata = of_id->data;
+> +
+> +       /* make sure the IRQ flag is clear before enabling irq on i.MX6SX */
+> +       if (data->socdata->version == TEMPMON_IMX6SX) {
+
+A general question on the patch strategy. You have chosen to split the
+features per chip version. While this strategy is straight forward,
+and one would even say very natural, I would say it is not very
+scalable. In case your next chip versions have an overlap in features
+with the existing ones, you will make your code a nightmare of ifs per
+chip version. One suggestion is, that I have experienced to work with
+TI and Samsung chips, to split the code per feature, not per chip
+version.
+
+In chis case, you will have a .supports or .features bitfield instead
+of a .version. Then you would check if particular feature is present
+in the chip you are dealing with, instead of asking for chip version.
+What do you think?
+
+> +               regmap_write(map, MISC1 + REG_CLR, MISC1_IRQ_TEMPHIGH |
+> +                       MISC1_IRQ_TEMPLOW | MISC1_IRQ_TEMPPANIC);
+> +               /*
+> +                * reset value of LOW ALARM is incorrect, set it to lowest
+> +                * value to avoid false trigger of low alarm.
+> +                */
+> +               regmap_write(map, TEMPSENSE2 + REG_SET,
+> +                       TEMPSENSE2_LOW_VALUE_MASK);
+> +       }
+> +
+>         data->irq = platform_get_irq(pdev, 0);
+>         if (data->irq < 0)
+>                 return data->irq;
+> @@ -489,6 +556,10 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>         measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
+>         regmap_write(map, TEMPSENSE1 + REG_SET, measure_freq);
+>         imx_set_alarm_temp(data, data->temp_passive);
+> +
+> +       if (data->socdata->version == TEMPMON_IMX6SX)
+> +               imx_set_panic_temp(data, data->temp_critical);
+> +
+>         regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
+>         regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
+>
+> @@ -550,12 +621,6 @@ static int imx_thermal_resume(struct device *dev)
+>  static SIMPLE_DEV_PM_OPS(imx_thermal_pm_ops,
+>                          imx_thermal_suspend, imx_thermal_resume);
+>
+> -static const struct of_device_id of_imx_thermal_match[] = {
+> -       { .compatible = "fsl,imx6q-tempmon", },
+> -       { /* end */ }
+> -};
+> -MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
+> -
+>  static struct platform_driver imx_thermal = {
+>         .driver = {
+>                 .name   = "imx_thermal",
 > --
-> Eduardo Bezerra Valentin
+> 1.7.9.5
+>
 
 
 
 -- 
 Eduardo Bezerra Valentin
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
