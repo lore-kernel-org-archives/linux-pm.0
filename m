@@ -1,197 +1,130 @@
-From: =?iso-8859-1?Q?Ren=E9_Moll?= <Rene.Moll@xsens.com>
-Subject: RE: [PATCH] power: reset: add PowerPath poweroff support
-Date: Thu, 7 Aug 2014 15:54:48 +0000
-Message-ID: <8B68774BB69A844693005BA12A50F1146D4B11@XSMBXSVR01.xsens-tech.local>
-References: <8B68774BB69A844693005BA12A50F1146D4AE3@XSMBXSVR01.xsens-tech.local>
- <53E385F6.2020903@nvidia.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v5 0/5] ARM: EXYNOS: cpuidle: fix AFTR mode on boards with
+ secure firmware enabled
+Date: Thu, 07 Aug 2014 19:18:43 +0200
+Message-ID: <25593716.2VrAenu32Y@amdc1032>
+References: <1407245666-20016-1-git-send-email-b.zolnierkie@samsung.com>
+ <53E0E13E.3@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from filter1.ibarracuda.nl ([83.247.7.10]:54935 "EHLO
-	filter1.ibarracuda.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932274AbaHGPy4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Aug 2014 11:54:56 -0400
-In-Reply-To: <53E385F6.2020903@nvidia.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <53E0E13E.3@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Frans Klaver <Frans.Klaver@xsens.com>, Mikko Perttunen <mperttunen@nvidia.com>
 
-Thanks for your response, I will do some refactoring based on your
-comments. Also see the inline replies.
 
-> -----Original Message-----
-> From: Mikko Perttunen [mailto:mperttunen@nvidia.com]
-> Sent: Thursday, August 07, 2014 3:58 PM
-> To: Ren=E9 Moll; linux-pm@vger.kernel.org
-> Cc: Sebastian Reichel; Dmitry Eremin-Solenikov; David Woodhouse; Fran=
-s
-> Klaver
-> Subject: Re: [PATCH] power: reset: add PowerPath poweroff support
->=20
-> Not my subsystem, but some general points..
->=20
-> On 07/08/14 15:44, Ren=E9 Moll wrote:
+On Tuesday, August 05, 2014 03:50:54 PM Daniel Lezcano wrote:
+> On 08/05/2014 03:34 PM, Bartlomiej Zolnierkiewicz wrote:
+> > Hi,
 > >
-> > Signed-off-by: Ren=E9 Moll <rene.moll@xsens.com>
->=20
-> Please add a commit message. You should describe the hardware, it's
-> capabilities and what features this driver implements.
->=20
+> > This patch series adds support for AFTR idle mode on boards with
+> > secure firmware enabled and allows EXYNOS cpuidle driver usage on
+> > Exynos4x12 SoCs.
+> >
+> > It has been tested on Trats2 board (using Exynos4412 SoC with secure
+> > firmware enabled) on which AFTR mode reduces power consumption by ~12%
+> > when EXYNOS cpuidle driver is enabled (in both cases the default
+> > exynos_defconfig config is used and CPU1-3 are offlined).
+> 
+> Hi Bartlomiej,
 
-Since the driver already has documentation embedded,
-this seemed a bit overkill to me.
+Hi Daniel,
 
-> > + * the Free Software Foundation, either version 3 of the License, =
-or
-> > + * (at your option) any later version.
->=20
-> The kernel is GPL v2.
->=20
+> I tested your patchset on an odroid-u2. When the cpuidle driver is 
+> enabled and the cpu1-3 are offlined, the kernel hangs.
+> 
+> If I disable the AFTR state on cpuidle, and offline the 1-3, it works as 
+> expected. So there is something wrong with the AFTR on the odroid board.
 
-Ok, I will correct this.
+Thanks for testing.  I reproduced the problem on ODROID-U3 board.  I also
+tested Exynos4412 based Origen board and it also has problem with AFTR mode.
+We did some debugging but nothing specific has came up yet (we suspect that
+the issue may be caused by incompatibilities of bootloader firmware of
+ODROID-U2/U3 and Origen4412 boards).  We will keep investigating this but
+in the meantime I would like to have this patchset acked/merged if possible
+(with Exynos4412 support limited to Trats2 target currently [*]) as:
 
-> > + * The driver requires a non-shared, edge-triggered interrupt on t=
-he
-> > + trigger
-> > + * GPIO.
->=20
-> You should add a description of the hardware and device tree node alo=
-ng
-> with properties (like this one!) under Documentation/devicetree/bindi=
-ngs/...
-> Don't refer to Linux-specific driver implementation details, though.
->=20
+- it contains mostly fundamental changes for all secure firmware enabled
+  boards (which would be needed also on ODROID/Origen4412 boards if we get
+  AFTR mode working on them)
 
-Good point, will add this.
+- it adds working AFTR mode support for Exynos4412 Trats2 target
 
-> > +       dev_info(data->dev, "executing shutdown\n");
-> > +
-> > +       call_usermodehelper(shutdown_argv[0], shutdown_argv,
-> > +               shutdown_envp, UMH_NO_WAIT);
->=20
-> Any reason not to use orderly_poweroff()?
->=20
+- it prepares support for Exynos4212 and Exynos3250 targets which are
+  working fine with AFTR mode in our internal kernels and which are not
+  yet upstreamed
 
-I was not aware of that function, which indeed does exactly what I need=
-=2E
-I will change this.
+[*] In the future it should be possible to enable AFTR mode support per
+    board using DT (basing on patches from Lorenzo), for now it should be
+    fine to check for Trats2 target directly while registering cpuidle
+    platform device.  I will post v6 soon.
 
-> > +       powerpath_poweroff_default(data);
-> > +
-> > +       for (i =3D 0; i < ARRAY_SIZE(data->gpio); i++) {
-> > +               data->gpio[i] =3D gpiod_get(&pdev->dev, name[i]);
-> > +
-> > +               if (IS_ERR(data->gpio[i])) {
-> > +                       ret =3D PTR_ERR(data->gpio[i]);
-> > +                       dev_err(&pdev->dev,
-> > +                               "unable to claim the following gpio=
-: %s\n",
-> > +                               name[i]);
-> > +                       goto err;
-> > +               }
-> > +       }
->=20
-> If an error occurs mid-loop, this can leave some gpios get'ted. I rec=
-ommend
-> switching to devm_gpiod_get.
->=20
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-devm_* functions do not seem to common to me and are sparsely documente=
-d,
-therefore I preferred the regular functions. This error jump should go =
-to=20
-err_io and the clean-up loop must check if the gpio entry is actually f=
-illed in
-
-> > +static struct platform_driver powerpath_poweroff_driver =3D {
-> > +       .probe =3D powerpath_poweroff_probe,
-> > +       .remove =3D powerpath_poweroff_remove,
-> > +       .driver =3D {
-> > +               .name =3D "powerpath-poweroff",
-> > +               .owner =3D THIS_MODULE,
-> > +               .of_match_table =3D of_powerpath_poweroff_match,
-> > +       },
-> > +       .suspend =3D powerpath_poweroff_suspend,
-> > +       .resume =3D powerpath_poweroff_resume,
-> > +       .shutdown =3D powerpath_poweroff_shutdown,
->=20
-> Based on other drivers, looks like what you're supposed to do is stor=
-e a
-> function pointer in `pm_power_off'.=20
-
-I will use that instead of the shutdown pointer.
-
-> [...] Also, no need to specify suspend and
-> resume if you don't implement them anyway.
->=20
-
-Actually, this is recommended in Documentation/SubmittingDrivers.txt
-
-> > +static int powerpath_poweroff_notify_panic(struct notifier_block *=
-nb,
-> > +       unsigned long code, void *unused) {
-> > +       powerpath_poweroff_panic =3D 1;
-> > +       return NOTIFY_DONE;
-> > +}
-> > +
-> > +static struct notifier_block powerpath_poweroff_panic_nb =3D {
-> > +       .notifier_call =3D powerpath_poweroff_notify_panic, };
-> > +
-> > +static int __init powerpath_poweroff_platform_init(void)
-> > +{
-> > +       powerpath_poweroff_panic =3D 0;
-> > +
-> > +       atomic_notifier_chain_register(&panic_notifier_list,
-> > +               &powerpath_poweroff_panic_nb);
-> > +
-> > +       return platform_driver_register(&powerpath_poweroff_driver)=
-;
-> > +}
-> > +
-> > +static void __exit powerpath_poweroff_platform_exit(void)
-> > +{
-> > +       atomic_notifier_chain_unregister(&panic_notifier_list,
-> > +               &powerpath_poweroff_panic_nb);
-> > +
-> > +       platform_driver_unregister(&powerpath_poweroff_driver);
-> > +}
-> > +
-> > +module_init(powerpath_poweroff_platform_init);
-> > +module_exit(powerpath_poweroff_platform_exit);
->=20
-> You can leave a lot of this out by using module_platform_driver()
->=20
-
-I am aware of that macro, however where to place the notifier calls.
-The register call could be placed in the probe function. The unregister=
- call
-should then go to the remove function, which you suggested to remove :)
-
-Personally I think this is neater as a panic is a system state, which w=
-e
-want to know and react upon, but is not part of the driver itself.
-
-> > +
-> > +MODULE_AUTHOR("Ren=E9 Moll <rene.moll@xsens.com>");
-> > +MODULE_DESCRIPTION("PowerPath power-off driver");
-> MODULE_LICENSE("GPL
-> > +v2");
-> > +
+> > Depends on:
+> > - next-20140804 branch of linux-next kernel tree
+> > - [PATCH v5][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
+> >    (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35262.html)
+> > - [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+> >    (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
+> >
+> > Changes since v4:
+> > - rebased on top of next-20140804 +
+> >    [PATCH v5][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
+> >    (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35262.html)
+> >    [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+> >    (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
+> > - call exynos_save_cp15() only on A9 type core (this is needed for the future
+> >    Exynos3250 SoC support)
+> >
+> > Changes since v3:
+> > - rebased on top of next-20140804 +
+> >    [PATCH v4][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
+> >    (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35192.html)
+> >    [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+> >    (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
+> > - (re-)added patch fixing S5P_CENTRAL_SEQ_OPTION register setup
+> >
+> > Changes since v2:
+> > - rebased on top of next-20140708 +
+> >    [PATCH 5/6] ARM: EXYNOS: Fix suspend/resume sequencies
+> >    (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32809.html)
+> >    [with rejects fixed]
+> >    [PATCH 6/6] ARM: EXYNOS: Register cpuidle device only on Exynos4210 and 5250
+> >    (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32808.html)
+> >    [PATCH 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+> >    (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32991.html)
+> >    [with rejects fixed in patch #2]
+> > - addressed review comments from Tomasz Figa and Daniel Lezcano
+> >
+> > Changes since v1:
+> > - synced against next-20140602
+> > - added missing Acked-by-s
+> >
+> > Best regards,
 > > --
-> > 1.9.1
+> > Bartlomiej Zolnierkiewicz
+> > Samsung R&D Institute Poland
+> > Samsung Electronics
 > >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm"=
- in
-> > the body of a message to majordomo@vger.kernel.org More majordomo
-> info
-> > at  http://vger.kernel.org/majordomo-info.html
 > >
->=20
-> Thanks for contributing!
->=20
-> Cheers,
-> Mikko
+> > Bartlomiej Zolnierkiewicz (5):
+> >    ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by static inlines
+> >    ARM: EXYNOS: add AFTR mode support to firmware do_idle method
+> >    ARM: EXYNOS: cpuidle: add secure firmware support to AFTR mode code
+> >    ARM: EXYNOS: PM: fix register setup for AFTR mode code
+> >    ARM: EXYNOS: cpuidle: allow driver usage on Exynos4x12 SoCs
+> >
+> >   arch/arm/include/asm/firmware.h |  2 +-
+> >   arch/arm/mach-exynos/common.h   |  5 ++++
+> >   arch/arm/mach-exynos/exynos.c   |  4 ++-
+> >   arch/arm/mach-exynos/firmware.c | 34 ++++++++++++++++-------
+> >   arch/arm/mach-exynos/pm.c       | 60 ++++++++++++++++++++++++-----------------
+> >   5 files changed, 70 insertions(+), 35 deletions(-)
