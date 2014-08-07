@@ -1,95 +1,36 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2] Hibernate: check unsafe page should not in e820
- reserved region
-Date: Thu, 7 Aug 2014 10:00:25 +0200
-Message-ID: <20140807080025.GA24700@amd.pavel.ucw.cz>
-References: <1407165801-24648-1-git-send-email-jlee@suse.com>
- <20140807040543.GE26210@linux-rxt1.site>
+From: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V3] Thermal: imx: add i.mx6sx thermal support
+Date: Thu, 7 Aug 2014 16:50:26 +0800
+Message-ID: <20140807085024.GE27051@dragon>
+References: <1407309129-5562-1-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51633 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754219AbaHGIA3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Aug 2014 04:00:29 -0400
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20140807040543.GE26210@linux-rxt1.site>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1407309129-5562-1-git-send-email-b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Anson Huang <b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Cc: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: joeyli <jlee@suse.com>
-Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, Aug 06, 2014 at 03:12:09PM +0800, Anson Huang wrote:
+> i.MX6SX has some new features of thermal interrupt function,
+> there are LOW, HIGH and PANIC irq for thermal sensor, so add
+> platform data to separate different thermal version;
+> 
+> The reset value of LOW ALARM is 0 which means the highest
+> temp, so the LOW ALARM will be triggered once irq is enabled,
+> so we need to correct it before enabling thermal irq;
+> 
+> Enable PANIC ALARM as critical trip point, it will trigger
+> system reset via SRC module once PANIC IRQ is triggered, it
+> is pure hardware function, so use it instead of software
+> reset by cooling device.
+> 
+> Signed-off-by: Anson Huang <b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
 
-> > When the machine doesn't well handle the e820 persistent when hibernate
-> > resuming, then it may causes page fault when writing image to snapshot
-> > buffer:
-> > 
-> > [   17.929495] BUG: unable to handle kernel paging request at ffff880069d4f000
-> > [   17.933469] IP: [<ffffffff810a1cf0>] load_image_lzo+0x810/0xe40
-> > [   17.933469] PGD 2194067 PUD 77ffff067 PMD 2197067 PTE 0
-> > [   17.933469] Oops: 0002 [#1] SMP
-> > ...
-> > 
-> > The ffff880069d4f000 page is in e820 reserved region of resume boot
-> > kernel:
-> > 
-> > [    0.000000] BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff] reserved
-> > ...
-> > [    0.000000] PM: Registered nosave memory: [mem 0x69d4f000-0x69e12fff]
-> > 
-> > So snapshot.c mark the pfn to forbidden pages map. But, this
-> > page is also in the memory bitmap in snapshot image because it's an
-> > original page used by image kernel, so it will also mark as an
-> > unsafe(free) page in prepare_image().
-> > 
-> > That means the page in e820 when resuming mark as "forbidden" and
-> > "free", it causes get_buffer() treat it as an allocated unsafe page.
-> > Then snapshot_write_next() return this page to load_image, load_image
-> > writing content to this address, but this page didn't really allocated
-> > . So, we got page fault.
-> > 
-> > Although the root cause is from BIOS, I think aggressive check and
-> > significant message in kernel will better then a page fault for
-> > issue tracking, especially when serial console unavailable.
-> > 
-> > This patch adds code in mark_unsafe_pages() for check does free pages in
-> > nosave region. If so, then it print message and return fault to stop whole
-> > S4 resume process:
-> > 
-> > [    8.166004] PM: Image loading progress:   0%
-> > [    8.658717] PM: 0x6796c000 in e820 nosave region: [mem 0x6796c000-0x6796cfff]
-> > [    8.918737] PM: Read 2511940 kbytes in 1.04 seconds (2415.32 MB/s)
-> > [    8.926633] PM: Error -14 resuming
-> > [    8.933534] PM: Failed to load hibernation image, recovering.
-> > 
-> > v2:
-> >  + removed empty check of nosave_regions list.
-> >  + fixed the typo of "region" in code for error message and patch comment.
-> > 
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Len Brown <len.brown@intel.com>
-> > Cc: Takashi Iwai <tiwai@suse.de>
-> > Acked-by: Pavel Machek <pavel@ucw.cz>
-> > Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
-> 
-> I discussed with Vojtech Pavlik for this patch, he raised a situation is:
-> 
-> Maybe e820 changed but image kernel original pages do not fall into new e820 region.
-> Then the hibernate will recovery success, but later kernel drivers may got problem
-> when accessing memory. 
-> 
-> My idea is hashing the start/end pfn of each nosave region sequentially, put this
-> nosave region digest to hibernate header then compare e820 digest in check_header()
-> when hibernate resuming.
-> 
-> I am developing patch, then we don't need check unsafe page should not in unsave(e820)
-> regions.
-
-Actually, if you are doing such a check... it makes sense to check for
-_all_ the regions, nosave or not. If e820 map changed at all, it is
-not safe to resume.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Tested-by: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
