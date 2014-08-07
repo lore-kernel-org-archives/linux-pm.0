@@ -1,104 +1,84 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 1/5] cpufreq: Don't wait for CPU to going offline to
- restart governor
-Date: Thu, 7 Aug 2014 14:24:37 +0530
-Message-ID: <CAKohpon=xWZJzfN0PceVntumAUFfCsbG1ibUwSxewB7bE=U7bQ@mail.gmail.com>
+Subject: Re: [PATCH v4 2/5] cpufreq: Keep track of which CPU owns the
+ kobj/sysfs nodes separately
+Date: Thu, 7 Aug 2014 14:32:03 +0530
+Message-ID: <CAKohpomN_shuNTAkHEs-1+rqjM21RRZmeg41PNWY3AnSQOEGzA@mail.gmail.com>
+References: <1406250448-470-1-git-send-email-skannan@codeaurora.org>
+	<1406250448-470-3-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f45.google.com ([209.85.218.45]:53712 "EHLO
+	mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754273AbaHGJCD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Aug 2014 05:02:03 -0400
+Received: by mail-oi0-f45.google.com with SMTP id e131so2491380oig.18
+        for <linux-pm@vger.kernel.org>; Thu, 07 Aug 2014 02:02:03 -0700 (PDT)
+In-Reply-To: <1406250448-470-3-git-send-email-skannan@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Saravana Kannan <skannan@codeaurora.org>
 Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "Srivatsa S . Bhat" <srivatsa@mit.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
-List-Id: linux-pm@vger.kernel.org
-
-Sorry for the really long delay this time around. I am used to replying within a
-day normally, and this time it just took so much time.
-
-For next time please rebase on latest updates in pm/linux-next as there are
-few updates there.
 
 On 25 July 2014 06:37, Saravana Kannan <skannan@codeaurora.org> wrote:
-> There's no need to wait for the CPU going down to fully go offline to
-> restart the governor. We can stop the governor, change policy->cpus and
-> immediately restart the governor. This should reduce the time without any
-> CPUfreq monitoring and also help future patches with simplifying the code.
-
-I agree with the idea here, though the $subject can be improved a bit
-here..
-
+> The ownership of the kobj doesn't need to match policy->cpu or change as
+> frequently. So, keep track of it separately.
+>
 > Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
 > ---
->  drivers/cpufreq/cpufreq.c | 33 ++++++++++++++++++---------------
->  1 file changed, 18 insertions(+), 15 deletions(-)
+>  drivers/cpufreq/cpufreq.c | 4 +++-
+>  include/linux/cpufreq.h   | 1 +
+>  2 files changed, 4 insertions(+), 1 deletion(-)
 >
 > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 62259d2..ee0eb7b 100644
+> index ee0eb7b..af4f291 100644
 > --- a/drivers/cpufreq/cpufreq.c
 > +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1390,6 +1390,21 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->                 cpufreq_driver->stop_cpu(policy);
+> @@ -868,7 +868,7 @@ static int cpufreq_add_dev_symlink(struct cpufreq_policy *policy)
+>         for_each_cpu(j, policy->cpus) {
+>                 struct device *cpu_dev;
+>
+> -               if (j == policy->cpu)
+> +               if (j == policy->kobj_cpu)
+>                         continue;
+>
+>                 pr_debug("Adding link for CPU: %u\n", j);
+> @@ -917,6 +917,7 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
+>                         goto err_out_kobj_put;
 >         }
 >
-> +       down_write(&policy->rwsem);
-> +       cpumask_clear_cpu(cpu, policy->cpus);
-> +       up_write(&policy->rwsem);
+> +       policy->kobj_cpu = policy->cpu;
 
-There is a down_read() present early in this routine and we better update this
-at that place only.
+Not here but in __cpufreq_add_dev()..
 
-> +       if (cpus > 1 && has_target()) {
+>         ret = cpufreq_add_dev_symlink(policy);
+>         if (ret)
+>                 goto err_out_kobj_put;
+> @@ -1330,6 +1331,7 @@ static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *policy,
 
-We already have a if (cpus > 1) block, move this there.
+This doesn't exist anymore.
 
-> +               ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
-> +               if (!ret)
-> +                       ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-> +
-> +               if (ret) {
-> +                       pr_err("%s: Failed to start governor\n", __func__);
-> +                       return ret;
-> +               }
-> +       }
-> +
->         return 0;
->  }
 >
-> @@ -1410,15 +1425,12 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
 >                 return -EINVAL;
 >         }
+> +       policy->kobj_cpu = cpu_dev->id;
 >
-> -       down_write(&policy->rwsem);
-> +       down_read(&policy->rwsem);
->         cpus = cpumask_weight(policy->cpus);
-> -
-> -       if (cpus > 1)
-> -               cpumask_clear_cpu(cpu, policy->cpus);
-> -       up_write(&policy->rwsem);
-> +       up_read(&policy->rwsem);
+>         return cpu_dev->id;
+>  }
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index ec4112d..91c2e38 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -68,6 +68,7 @@ struct cpufreq_policy {
+>         unsigned int            cpu;    /* cpu nr of CPU managing this policy */
+>         unsigned int            last_cpu; /* cpu nr of previous CPU that managed
+>                                            * this policy */
+> +       unsigned int            kobj_cpu; /* Tracks which CPU own the kobj */
+>         struct clk              *clk;
+>         struct cpufreq_cpuinfo  cpuinfo;/* see above */
 >
->         /* If cpu is last user of policy, free policy */
-> -       if (cpus == 1) {
-> +       if (cpus == 0) {
->                 if (has_target()) {
->                         ret = __cpufreq_governor(policy,
->                                         CPUFREQ_GOV_POLICY_EXIT);
-> @@ -1447,15 +1459,6 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+> --
+> 1.8.2.1
 >
->                 if (!cpufreq_suspended)
->                         cpufreq_policy_free(policy);
-> -       } else if (has_target()) {
-> -               ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
-> -               if (!ret)
-> -                       ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-> -
-> -               if (ret) {
-> -                       pr_err("%s: Failed to start governor\n", __func__);
-> -                       return ret;
-> -               }
->         }
-
-Also, you must mention in the log about an important change you are making.
-Don't know if there are any side effects...
-
-You are emptying policy->cpus on removal of last CPU of a policy, which wasn't
-the case earlier.
+> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+> hosted by The Linux Foundation
