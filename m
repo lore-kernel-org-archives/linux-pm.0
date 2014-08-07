@@ -1,36 +1,73 @@
-From: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V3] Thermal: imx: add i.mx6sx thermal support
-Date: Thu, 7 Aug 2014 16:50:26 +0800
-Message-ID: <20140807085024.GE27051@dragon>
-References: <1407309129-5562-1-git-send-email-b20788@freescale.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH v2] Hibernate: check unsafe page should not in e820
+ reserved region
+Date: Thu, 7 Aug 2014 16:52:03 +0800
+Message-ID: <20140807085203.GF26210@linux-rxt1.site>
+References: <1407165801-24648-1-git-send-email-jlee@suse.com>
+ <20140807040543.GE26210@linux-rxt1.site>
+ <20140807080025.GA24700@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.nue.novell.com ([195.135.221.5]:41730 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754363AbaHGIwT (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Thu, 7 Aug 2014 04:52:19 -0400
 Content-Disposition: inline
-In-Reply-To: <1407309129-5562-1-git-send-email-b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Anson Huang <b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Cc: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <20140807080025.GA24700@amd.pavel.ucw.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2014 at 03:12:09PM +0800, Anson Huang wrote:
-> i.MX6SX has some new features of thermal interrupt function,
-> there are LOW, HIGH and PANIC irq for thermal sensor, so add
-> platform data to separate different thermal version;
+On Thu, Aug 07, 2014 at 10:00:25AM +0200, Pavel Machek wrote:
+> Hi!
 > 
-> The reset value of LOW ALARM is 0 which means the highest
-> temp, so the LOW ALARM will be triggered once irq is enabled,
-> so we need to correct it before enabling thermal irq;
+> > > When the machine doesn't well handle the e820 persistent when hibernate
+> > > resuming, then it may causes page fault when writing image to snapshot
+> > > buffer:
+> > > 
+> > > [   17.929495] BUG: unable to handle kernel paging request at ffff880069d4f000
+> > > [   17.933469] IP: [<ffffffff810a1cf0>] load_image_lzo+0x810/0xe40
+> > > [   17.933469] PGD 2194067 PUD 77ffff067 PMD 2197067 PTE 0
+> > > [   17.933469] Oops: 0002 [#1] SMP
+[...]
+> > > [    8.933534] PM: Failed to load hibernation image, recovering.
+> > > 
+> > > v2:
+> > >  + removed empty check of nosave_regions list.
+> > >  + fixed the typo of "region" in code for error message and patch comment.
+> > > 
+> > > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > > Cc: Len Brown <len.brown@intel.com>
+> > > Cc: Takashi Iwai <tiwai@suse.de>
+> > > Acked-by: Pavel Machek <pavel@ucw.cz>
+> > > Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+> > 
+> > I discussed with Vojtech Pavlik for this patch, he raised a situation is:
+> > 
+> > Maybe e820 changed but image kernel original pages do not fall into new e820 region.
+> > Then the hibernate will recovery success, but later kernel drivers may got problem
+> > when accessing memory. 
+> > 
+> > My idea is hashing the start/end pfn of each nosave region sequentially, put this
+> > nosave region digest to hibernate header then compare e820 digest in check_header()
+> > when hibernate resuming.
+> > 
+> > I am developing patch, then we don't need check unsafe page should not in unsave(e820)
+> > regions.
 > 
-> Enable PANIC ALARM as critical trip point, it will trigger
-> system reset via SRC module once PANIC IRQ is triggered, it
-> is pure hardware function, so use it instead of software
-> reset by cooling device.
-> 
-> Signed-off-by: Anson Huang <b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+> Actually, if you are doing such a check... it makes sense to check for
+> _all_ the regions, nosave or not. If e820 map changed at all, it is
+> not safe to resume.
+> 									Pavel
 
-Tested-by: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Currently nosave region only called register by e820 code, so hibernate's nosave region included e820
+reserved, ACPI data and ACPI NVS region.
+
+I thought hashing the start/end pfn of above regions is enough.
+
+
+Regards
+Joey Lee
