@@ -1,90 +1,56 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Thu, 07 Aug 2014 06:12:50 -0400
-Message-ID: <53E35122.3040806@redhat.com>
-References: <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <53DBE764.8050109@redhat.com> <53DBEC27.7050803@codeaurora.org> <CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com> <53E0B657.4070007@redhat.com> <CAKohponxBdYEgY2oYuzmdaqfSRS8Uq8bZOzcb1QDmKO-z5ZBFQ@mail.gmail.com> <53E1556B.5070304@codeaurora.org> <CAKohpoky1-hj7cwnKc58svh8Z1Yas1=q4uJEK8mWcb56uqAcng@mail.gmail.com> <53E1FEE5.80305@redhat.com> <20140806150831.GB32301@codeaurora.org> <CAKohponBRn9mwpPMinsjqpHe3wTFj6aNpYk5gZaWDKht3bd5NQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem to
+ be held for duration of changing governors [v2]
+Date: Thu, 7 Aug 2014 15:45:32 +0530
+Message-ID: <CAKohpokLsqMMxMwh_p+kUL=He9-8cSws6onG6DCBNBVzz1=5TA@mail.gmail.com>
+References: <53DB6B81.6050400@redhat.com>
+	<53DBCBE8.6010809@codeaurora.org>
+	<53DBE764.8050109@redhat.com>
+	<53DBEC27.7050803@codeaurora.org>
+	<CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com>
+	<53E0B657.4070007@redhat.com>
+	<CAKohponxBdYEgY2oYuzmdaqfSRS8Uq8bZOzcb1QDmKO-z5ZBFQ@mail.gmail.com>
+	<53E1556B.5070304@codeaurora.org>
+	<CAKohpoky1-hj7cwnKc58svh8Z1Yas1=q4uJEK8mWcb56uqAcng@mail.gmail.com>
+	<53E1FEE5.80305@redhat.com>
+	<20140806150831.GB32301@codeaurora.org>
+	<CAKohponBRn9mwpPMinsjqpHe3wTFj6aNpYk5gZaWDKht3bd5NQ@mail.gmail.com>
+	<53E35122.3040806@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:3512 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754413AbaHGKM5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 7 Aug 2014 06:12:57 -0400
-In-Reply-To: <CAKohponBRn9mwpPMinsjqpHe3wTFj6aNpYk5gZaWDKht3bd5NQ@mail.gmail.com>
+Received: from mail-oi0-f45.google.com ([209.85.218.45]:53092 "EHLO
+	mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754303AbaHGKPd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Aug 2014 06:15:33 -0400
+Received: by mail-oi0-f45.google.com with SMTP id e131so2531334oig.18
+        for <linux-pm@vger.kernel.org>; Thu, 07 Aug 2014 03:15:33 -0700 (PDT)
+In-Reply-To: <53E35122.3040806@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+To: Prarit Bhargava <prarit@redhat.com>
 Cc: Stephen Boyd <sboyd@codeaurora.org>, Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+On 7 August 2014 15:42, Prarit Bhargava <prarit@redhat.com> wrote:
+> That should have done it.  What are your CPUFREQ configs?
+
+You can check the same .config I attached last time for that :)
+
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_GOV_COMMON=y
+CONFIG_CPU_FREQ_STAT=y
+CONFIG_CPU_FREQ_STAT_DETAILS=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE=y
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+CONFIG_CPU_FREQ_GOV_USERSPACE=y
+CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
 
 
-On 08/07/2014 02:36 AM, Viresh Kumar wrote:
-> On 6 August 2014 20:38, Stephen Boyd <sboyd@codeaurora.org> wrote:
->> On 08/06, Prarit Bhargava wrote:
->>> Are you sure you're not seeing another lockdep warning?  That was my problem --
->>> there was an xfs related lockdep warning which then resulted in lockdep being
->>> disabled from that point on.
-> 
-> There is a fair chance that I might be doing something really really stupid,
-> but I couldn't get the lockdep warning..
-> 
->> Are we talking about the lockdep splat or the crash that started
->> this thread or something else? For the lockdep splat you need the
->> corrected patch in this thread and the per policy governor flag.
->> I'm not sure how to recreate the crash that started this thread.
-> 
-> We are talking about the lockdep splat that would happen if we don't
-> drop locking around EXIT..
-> 
-> This is my full diff over mainline and my .config is attached.
-> Please enlighten me on what am I missing :)
-
-That should have done it.  What are your CPUFREQ configs?
-
-P.
-
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 6f02485..fa11a7d 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2200,9 +2200,7 @@ static int cpufreq_set_policy(struct
-> cpufreq_policy *policy,
->         /* end old governor */
->         if (old_gov) {
->                 __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> -               up_write(&policy->rwsem);
->                 __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-> -               down_write(&policy->rwsem);
->         }
-> 
->         /* start new governor */
-> @@ -2211,9 +2209,7 @@ static int cpufreq_set_policy(struct
-> cpufreq_policy *policy,
->                 if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
->                         goto out;
-> 
-> -               up_write(&policy->rwsem);
->                 __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-> -               down_write(&policy->rwsem);
->         }
-> 
->         /* new governor failed, so re-start old one */
-> diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-> index 1e0ec57..027b6f7 100644
-> --- a/drivers/cpufreq/exynos-cpufreq.c
-> +++ b/drivers/cpufreq/exynos-cpufreq.c
-> @@ -139,7 +139,7 @@ static int exynos_cpufreq_cpu_init(struct
-> cpufreq_policy *policy)
->  }
-> 
->  static struct cpufreq_driver exynos_driver = {
-> -       .flags          = CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-> +       .flags          = CPUFREQ_STICKY |
-> CPUFREQ_NEED_INITIAL_FREQ_CHECK | CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
->         .verify         = cpufreq_generic_frequency_table_verify,
->         .target_index   = exynos_target,
->         .get            = cpufreq_generic_get,
-> 
+Anyway, has anybody tried to test what I have been trying now?
+@Prarit: You can try that on your x86 box as well, which has a
+single cluster or group of CPUs sharing clock line.
