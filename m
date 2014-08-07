@@ -1,56 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem to
- be held for duration of changing governors [v2]
-Date: Thu, 7 Aug 2014 15:45:32 +0530
-Message-ID: <CAKohpokLsqMMxMwh_p+kUL=He9-8cSws6onG6DCBNBVzz1=5TA@mail.gmail.com>
-References: <53DB6B81.6050400@redhat.com>
-	<53DBCBE8.6010809@codeaurora.org>
-	<53DBE764.8050109@redhat.com>
-	<53DBEC27.7050803@codeaurora.org>
-	<CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com>
-	<53E0B657.4070007@redhat.com>
-	<CAKohponxBdYEgY2oYuzmdaqfSRS8Uq8bZOzcb1QDmKO-z5ZBFQ@mail.gmail.com>
-	<53E1556B.5070304@codeaurora.org>
-	<CAKohpoky1-hj7cwnKc58svh8Z1Yas1=q4uJEK8mWcb56uqAcng@mail.gmail.com>
-	<53E1FEE5.80305@redhat.com>
-	<20140806150831.GB32301@codeaurora.org>
-	<CAKohponBRn9mwpPMinsjqpHe3wTFj6aNpYk5gZaWDKht3bd5NQ@mail.gmail.com>
-	<53E35122.3040806@redhat.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH v2] Hibernate: check unsafe page should not in e820
+ reserved region
+Date: Thu, 7 Aug 2014 18:17:34 +0800
+Message-ID: <20140807101734.GG26210@linux-rxt1.site>
+References: <1407165801-24648-1-git-send-email-jlee@suse.com>
+ <20140807040543.GE26210@linux-rxt1.site>
+ <20140807080025.GA24700@amd.pavel.ucw.cz>
+ <20140807085203.GF26210@linux-rxt1.site>
+ <20140807093957.GB28649@Nokia-N900>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f45.google.com ([209.85.218.45]:53092 "EHLO
-	mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754303AbaHGKPd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Aug 2014 06:15:33 -0400
-Received: by mail-oi0-f45.google.com with SMTP id e131so2531334oig.18
-        for <linux-pm@vger.kernel.org>; Thu, 07 Aug 2014 03:15:33 -0700 (PDT)
-In-Reply-To: <53E35122.3040806@redhat.com>
+Received: from smtp.nue.novell.com ([195.135.221.5]:49259 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755772AbaHGKRv (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Thu, 7 Aug 2014 06:17:51 -0400
+Content-Disposition: inline
+In-Reply-To: <20140807093957.GB28649@Nokia-N900>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 7 August 2014 15:42, Prarit Bhargava <prarit@redhat.com> wrote:
-> That should have done it.  What are your CPUFREQ configs?
+On Thu, Aug 07, 2014 at 11:39:57AM +0200, Pavel Machek wrote:
+> > > Actually, if you are doing such a check... it makes sense to check for
+> > > _all_ the regions, nosave or not. If e820 map changed at all, it is
+> > > not safe to resume.
+> > > 									Pavel
+> > 
+> > Currently nosave region only called register by e820 code, so hibernate's nosave region included e820
+> > reserved, ACPI data and ACPI NVS region.
+> > 
+> > I thought hashing the start/end pfn of above regions is enough.
+> 
+> If ammount of memory changed, for example, it is unsafe to
+> resume. So if you are doing the check, anyway, please hash
+> whole e820 table.
+> 						Pavel
 
-You can check the same .config I attached last time for that :)
-
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_GOV_COMMON=y
-CONFIG_CPU_FREQ_STAT=y
-CONFIG_CPU_FREQ_STAT_DETAILS=y
-# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
-CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE=y
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_POWERSAVE=y
-CONFIG_CPU_FREQ_GOV_USERSPACE=y
-CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+There already have num_physpages in header for check the total physical page number.
 
 
-Anyway, has anybody tried to test what I have been trying now?
-@Prarit: You can try that on your x86 box as well, which has a
-single cluster or group of CPUs sharing clock line.
+Regards
+Joey Lee
