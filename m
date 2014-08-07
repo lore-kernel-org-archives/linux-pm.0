@@ -1,31 +1,43 @@
 From: Hans Wennborg <hans@hanshq.net>
-Subject: Re: [PATCH 02/15] cpufreq: fix decimal printf format specifiers prefixed
- with 0x
-Date: Wed, 06 Aug 2014 22:53:38 -0700
-Message-ID: <53E31462.2060800@hanshq.net>
-References: <1407300108-32186-1-git-send-email-hans@hanshq.net> <1494298.av10nJMuYA@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Subject: [PATCH 1/1] cpufreq: fix decimal printf specifiers prefixed with 0x
+Date: Wed,  6 Aug 2014 22:52:23 -0700
+Message-ID: <1407390743-30085-1-git-send-email-hans@hanshq.net>
+References: <1494298.av10nJMuYA@vostro.rjw.lan>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from s87.loopia.se ([194.9.94.112]:13058 "EHLO s87.loopia.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756755AbaHGFxp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 7 Aug 2014 01:53:45 -0400
 In-Reply-To: <1494298.av10nJMuYA@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Hans Wennborg <hans@hanshq.net>
 
-On 08/06/2014 01:35 PM, Rafael J. Wysocki wrote:
-> On Tuesday, August 05, 2014 09:41:48 PM Hans Wennborg wrote:
->> The prefix suggests the number should be printed in hex, so use
->> the %x specifier to do that.
->>
->> Found by using regex suggested by Joe Perches.
->>
->> Signed-off-by: Hans Wennborg <hans@hanshq.net>
->
-> This triggers a build warning related to the formats.  Care to fix up?
+The prefix suggests the number should be printed in hex, so use
+the %x specifier to do that. Also, these are 32-bit values,
+so drop the l characters.
 
-Sure. Sending a new patch, hopefully attached to the same thread (still 
-working on my git send-mail skills).
+Signed-off-by: Hans Wennborg <hans@hanshq.net>
+---
+ drivers/cpufreq/speedstep-smi.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-  - Hans
+diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
+index 8635eec..5fc96d5 100644
+--- a/drivers/cpufreq/speedstep-smi.c
++++ b/drivers/cpufreq/speedstep-smi.c
+@@ -324,8 +324,8 @@ static int __init speedstep_init(void)
+ 		return -ENODEV;
+ 	}
+ 
+-	pr_debug("signature:0x%.8ulx, command:0x%.8ulx, "
+-		"event:0x%.8ulx, perf_level:0x%.8ulx.\n",
++	pr_debug("signature:0x%.8x, command:0x%.8x, "
++		"event:0x%.8x, perf_level:0x%.8x.\n",
+ 		ist_info.signature, ist_info.command,
+ 		ist_info.event, ist_info.perf_level);
+ 
+-- 
+2.0.0.526.g5318336
+
