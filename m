@@ -1,73 +1,104 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [PATCH v2] Hibernate: check unsafe page should not in e820
- reserved region
-Date: Thu, 7 Aug 2014 16:52:03 +0800
-Message-ID: <20140807085203.GF26210@linux-rxt1.site>
-References: <1407165801-24648-1-git-send-email-jlee@suse.com>
- <20140807040543.GE26210@linux-rxt1.site>
- <20140807080025.GA24700@amd.pavel.ucw.cz>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 1/5] cpufreq: Don't wait for CPU to going offline to
+ restart governor
+Date: Thu, 7 Aug 2014 14:24:37 +0530
+Message-ID: <CAKohpon=xWZJzfN0PceVntumAUFfCsbG1ibUwSxewB7bE=U7bQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:41730 "EHLO
-	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754363AbaHGIwT (ORCPT
-	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
-	Thu, 7 Aug 2014 04:52:19 -0400
-Content-Disposition: inline
-In-Reply-To: <20140807080025.GA24700@amd.pavel.ucw.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "Srivatsa S . Bhat" <srivatsa@mit.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Aug 07, 2014 at 10:00:25AM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > > When the machine doesn't well handle the e820 persistent when hibernate
-> > > resuming, then it may causes page fault when writing image to snapshot
-> > > buffer:
-> > > 
-> > > [   17.929495] BUG: unable to handle kernel paging request at ffff880069d4f000
-> > > [   17.933469] IP: [<ffffffff810a1cf0>] load_image_lzo+0x810/0xe40
-> > > [   17.933469] PGD 2194067 PUD 77ffff067 PMD 2197067 PTE 0
-> > > [   17.933469] Oops: 0002 [#1] SMP
-[...]
-> > > [    8.933534] PM: Failed to load hibernation image, recovering.
-> > > 
-> > > v2:
-> > >  + removed empty check of nosave_regions list.
-> > >  + fixed the typo of "region" in code for error message and patch comment.
-> > > 
-> > > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > > Cc: Len Brown <len.brown@intel.com>
-> > > Cc: Takashi Iwai <tiwai@suse.de>
-> > > Acked-by: Pavel Machek <pavel@ucw.cz>
-> > > Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
-> > 
-> > I discussed with Vojtech Pavlik for this patch, he raised a situation is:
-> > 
-> > Maybe e820 changed but image kernel original pages do not fall into new e820 region.
-> > Then the hibernate will recovery success, but later kernel drivers may got problem
-> > when accessing memory. 
-> > 
-> > My idea is hashing the start/end pfn of each nosave region sequentially, put this
-> > nosave region digest to hibernate header then compare e820 digest in check_header()
-> > when hibernate resuming.
-> > 
-> > I am developing patch, then we don't need check unsafe page should not in unsave(e820)
-> > regions.
-> 
-> Actually, if you are doing such a check... it makes sense to check for
-> _all_ the regions, nosave or not. If e820 map changed at all, it is
-> not safe to resume.
-> 									Pavel
+Sorry for the really long delay this time around. I am used to replying within a
+day normally, and this time it just took so much time.
 
-Currently nosave region only called register by e820 code, so hibernate's nosave region included e820
-reserved, ACPI data and ACPI NVS region.
+For next time please rebase on latest updates in pm/linux-next as there are
+few updates there.
 
-I thought hashing the start/end pfn of above regions is enough.
+On 25 July 2014 06:37, Saravana Kannan <skannan@codeaurora.org> wrote:
+> There's no need to wait for the CPU going down to fully go offline to
+> restart the governor. We can stop the governor, change policy->cpus and
+> immediately restart the governor. This should reduce the time without any
+> CPUfreq monitoring and also help future patches with simplifying the code.
 
+I agree with the idea here, though the $subject can be improved a bit
+here..
 
-Regards
-Joey Lee
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 33 ++++++++++++++++++---------------
+>  1 file changed, 18 insertions(+), 15 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 62259d2..ee0eb7b 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1390,6 +1390,21 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+>                 cpufreq_driver->stop_cpu(policy);
+>         }
+>
+> +       down_write(&policy->rwsem);
+> +       cpumask_clear_cpu(cpu, policy->cpus);
+> +       up_write(&policy->rwsem);
+
+There is a down_read() present early in this routine and we better update this
+at that place only.
+
+> +       if (cpus > 1 && has_target()) {
+
+We already have a if (cpus > 1) block, move this there.
+
+> +               ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+> +               if (!ret)
+> +                       ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+> +
+> +               if (ret) {
+> +                       pr_err("%s: Failed to start governor\n", __func__);
+> +                       return ret;
+> +               }
+> +       }
+> +
+>         return 0;
+>  }
+>
+> @@ -1410,15 +1425,12 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>                 return -EINVAL;
+>         }
+>
+> -       down_write(&policy->rwsem);
+> +       down_read(&policy->rwsem);
+>         cpus = cpumask_weight(policy->cpus);
+> -
+> -       if (cpus > 1)
+> -               cpumask_clear_cpu(cpu, policy->cpus);
+> -       up_write(&policy->rwsem);
+> +       up_read(&policy->rwsem);
+>
+>         /* If cpu is last user of policy, free policy */
+> -       if (cpus == 1) {
+> +       if (cpus == 0) {
+>                 if (has_target()) {
+>                         ret = __cpufreq_governor(policy,
+>                                         CPUFREQ_GOV_POLICY_EXIT);
+> @@ -1447,15 +1459,6 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>
+>                 if (!cpufreq_suspended)
+>                         cpufreq_policy_free(policy);
+> -       } else if (has_target()) {
+> -               ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+> -               if (!ret)
+> -                       ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+> -
+> -               if (ret) {
+> -                       pr_err("%s: Failed to start governor\n", __func__);
+> -                       return ret;
+> -               }
+>         }
+
+Also, you must mention in the log about an important change you are making.
+Don't know if there are any side effects...
+
+You are emptying policy->cpus on removal of last CPU of a policy, which wasn't
+the case earlier.
