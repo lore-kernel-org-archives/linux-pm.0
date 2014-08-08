@@ -1,91 +1,55 @@
-From: Oleksandr Natalenko <oleksandr@natalenko.name>
-Subject: Re: [BUG] oops in cpufreq driver with AMD Kaveri CPU
-Date: Fri, 08 Aug 2014 20:26:29 +0300
-Message-ID: <2218871.DzMQ58ssQz@spock>
-References: <4708675.eITUXPv8Ih@spock> <2651364.4shODVy8cx@spock>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH 1/3] of: Add of_match_machine helper
+Date: Fri, 8 Aug 2014 14:01:57 -0500
+Message-ID: <CAL_JsqLFkTGCn-n6+Z644-2iAZ=6PcFD6ox=63pR-eb1s6tNGw@mail.gmail.com>
+References: <1407452515-2390-1-git-send-email-ttynkkynen@nvidia.com>
+ <1407452515-2390-2-git-send-email-ttynkkynen@nvidia.com> <20140808094123.GC5387@ulmo>
+ <53E4CF4E.6010500@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from natalenko.name ([78.47.77.148]:56247 "EHLO natalenko.name"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738AbaHHR0l convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Aug 2014 13:26:41 -0400
-In-Reply-To: <2651364.4shODVy8cx@spock>
+Received: from mail-vc0-f176.google.com ([209.85.220.176]:47918 "EHLO
+	mail-vc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751651AbaHHTCS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Aug 2014 15:02:18 -0400
+In-Reply-To: <53E4CF4E.6010500@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
+To: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-=46illed up detailed bugreport on bugzilla:
+On Fri, Aug 8, 2014 at 8:23 AM, Tuomas Tynkkynen <ttynkkynen@nvidia.com> wrote:
+>
+>
+> On 08/08/14 12:41, Thierry Reding wrote:
+>>
+>>> +const struct of_device_id *of_match_machine(const struct of_device_id *matches)
+>>> +{
+>>> +    const struct of_device_id *match;
+>>> +    struct device_node *root;
+>>> +
+>>> +    root = of_find_node_by_path("/");
+>>> +    if (!root)
+>>> +            return NULL;
+>>> +
+>>> +    match = of_match_node(matches, root);
+>>> +    of_node_put(root);
+>>> +    return match;
+>>> +}
+>>> +EXPORT_SYMBOL(of_match_machine);
+>>
+>> I wonder if of_find_node_by_path("/") is somewhat overkill here. Perhaps
+>> simply of_node_get(of_allnodes) would be more appropriate here since the
+>> function is implemented in the core?
+>
+> of_machine_is_compatible() uses of_find_node_by_path("/") as well, of_allnodes
+> seems to be only used when during iterating. So I'd prefer to have them
+> consistent.
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D81701
+Agreed.
 
-On Thursday 07 August 2014 23:53:17 Oleksandr Natalenko wrote:
-> Disabling cpufreq code in kernel config works around this issue.
->=20
-> Is this bug related to sleeping in atomic context, which is caused by
-> improper GFP_KERNEL usage instead of GFP_ATOMIC? Should I test tat pa=
-tch,
-> or there will be another fix?
->=20
-> On Tuesday 05 August 2014 00:39:11 Oleksandr Natalenko wrote:
-> > Hello.
-> >=20
-> > Occasionally I get my machine hung completely. Fortunately, I've go=
-t and
-> > saved oops listing using netconsole before hang, and here it is [1]=
-=2E
-> >=20
-> > Here is little piece of oops from the link above:
-> >=20
-> > =3D=3D=3D
-> > [15051.270461] BUG: unable to handle kernel paging request at
-> > 00000000ff5ae8e4 [15051.271583] IP: [<ffffffff8109ae6e>]
-> > srcu_notifier_call_chain+0xe/0x20 =E2=80=A6
-> > [15051.956205] Call Trace:
-> > [15051.980641]  [<ffffffff81606085>] ?
-> > __cpufreq_notify_transition+0x95/0x1e0 [15052.005640]=20
-> > [<ffffffff816081ee>]
-> > cpufreq_notify_transition+0x3e/0x70 [15052.030240]  [<ffffffff81608=
-3d8>]
-> > cpufreq_freq_transition_begin+0xe8/0x130 [15052.054522]
-> > [<ffffffff813b8940>] ? ucs2_strncmp+0x70/0x70
-> > [15052.078208]  [<ffffffff816089bf>] __target_index+0xbf/0x1a0
-> > [15052.101348]  [<ffffffff81608b9c>] __cpufreq_driver_target+0xfc/0=
-x160
-> > [15052.124250]  [<ffffffff8160b0d4>] od_check_cpu+0xa4/0xb0
-> > [15052.146789]  [<ffffffff8160c9ec>] dbs_check_cpu+0x16c/0x1c0
-> > [15052.168935]  [<ffffffff8160b4dd>] od_dbs_timer+0x11d/0x180
-> > [15052.190607]  [<ffffffff8108e6ff>] process_one_work+0x17f/0x4c0
-> > [15052.211825]  [<ffffffff8108f46b>] worker_thread+0x11b/0x3f0
-> > [15052.232490]  [<ffffffff8108f350>] ? create_and_start_worker+0x80=
-/0x80
-> > [15052.253127]  [<ffffffff81096479>] kthread+0xc9/0xe0
-> > [15052.273292]  [<ffffffff810963b0>] ? flush_kthread_worker+0xb0/0x=
-b0
-> > [15052.293487]  [<ffffffff81793efc>] ret_from_fork+0x7c/0xb0
-> > [15052.313544]  [<ffffffff810963b0>] ? flush_kthread_worker+0xb0/0x=
-b0
-> > =E2=80=A6
-> > =3D=3D=3D
-> >=20
-> > Also here is my lspci [2] and cpuinfo [3] as well.
-> >=20
-> > Vanilla 3.15.8 and 3.16.0 are affected as well as latest Ubuntu 3.1=
-3
-> > kernel.
-> >=20
-> > No visible reason to trigger the bug. After hang machine doesn't re=
-spond
-> > via network, there's no disk IO, and also it doesn't respond to pre=
-ssing
-> > power button in order to perform soft off.
-> >=20
-> > [1] https://gist.github.com/085af9da81197faf6637
-> > [2] https://gist.github.com/318ebda5576b099590b8
-> > [3] https://gist.github.com/9c1307463c7ad6835b2d
---=20
-Oleksandr post-factum Natalenko, MSc
-pf-kernel community
-https://natalenko.name/
+For the series:
+
+Acked-by: Rob Herring <robh@kernel.org>
+
+Rob
