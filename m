@@ -1,49 +1,91 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH] cpuidle/cpuidle-big_little: fix reading cpu id part
- number
-Date: Fri, 8 Aug 2014 17:47:37 +0100
-Message-ID: <20140808164737.GB11623@e102568-lin.cambridge.arm.com>
-References: <1407501757-15231-1-git-send-email-juri.lelli@arm.com>
- <20140808132105.GB30282@n2100.arm.linux.org.uk>
+From: Oleksandr Natalenko <oleksandr@natalenko.name>
+Subject: Re: [BUG] oops in cpufreq driver with AMD Kaveri CPU
+Date: Fri, 08 Aug 2014 20:26:29 +0300
+Message-ID: <2218871.DzMQ58ssQz@spock>
+References: <4708675.eITUXPv8Ih@spock> <2651364.4shODVy8cx@spock>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:36818 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752661AbaHHQrl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Aug 2014 12:47:41 -0400
-In-Reply-To: <20140808132105.GB30282@n2100.arm.linux.org.uk>
-Content-Disposition: inline
+Received: from natalenko.name ([78.47.77.148]:56247 "EHLO natalenko.name"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750738AbaHHR0l convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Aug 2014 13:26:41 -0400
+In-Reply-To: <2651364.4shODVy8cx@spock>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Juri Lelli <Juri.Lelli@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Juri Lelli <juri.lelli@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 
-On Fri, Aug 08, 2014 at 02:21:05PM +0100, Russell King - ARM Linux wrote:
-> On Fri, Aug 08, 2014 at 01:42:37PM +0100, Juri Lelli wrote:
-> > Commit af040ffc9ba1 ("ARM: make it easier to check the CPU part number
-> > correctly") changed ARM_CPU_PART_X masks, and the way they are returned and
-> > checked against. Usage of read_cpuid_part_number() is now deprecated, and
-> > calling places updated accordingly. This actually broke cpuidle-big_little
-> > initialization, as bl_idle_driver_init() performs a check using and hardcoded
-> > mask on cpu_id.
-> > 
-> > Update the check to reflect changes on ARM_CPU_PART_X masks. Also,
-> > make the check easier to understand.
-> 
-> I don't like this "let's work out our own way to check the CPU type"
-> stuff which people seem to create.  Let's try and do the job better
-> and have some proper interfaces to do this kind of thing.
-> 
-> Maybe we should have smp_cpuid_part(cpu) which returns the CPU vendor/
-> part identifier for the particular CPU in an efficient manner.
+=46illed up detailed bugreport on bugzilla:
 
-Ok, basically an inline function that either read and mask the cpuid
-stashed at boot in cpu_data or read the part number straight away on UP.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D81701
 
-Should it belong in asm/smp_plat.h ?
-
-Thanks,
-Lorenzo
-
+On Thursday 07 August 2014 23:53:17 Oleksandr Natalenko wrote:
+> Disabling cpufreq code in kernel config works around this issue.
+>=20
+> Is this bug related to sleeping in atomic context, which is caused by
+> improper GFP_KERNEL usage instead of GFP_ATOMIC? Should I test tat pa=
+tch,
+> or there will be another fix?
+>=20
+> On Tuesday 05 August 2014 00:39:11 Oleksandr Natalenko wrote:
+> > Hello.
+> >=20
+> > Occasionally I get my machine hung completely. Fortunately, I've go=
+t and
+> > saved oops listing using netconsole before hang, and here it is [1]=
+=2E
+> >=20
+> > Here is little piece of oops from the link above:
+> >=20
+> > =3D=3D=3D
+> > [15051.270461] BUG: unable to handle kernel paging request at
+> > 00000000ff5ae8e4 [15051.271583] IP: [<ffffffff8109ae6e>]
+> > srcu_notifier_call_chain+0xe/0x20 =E2=80=A6
+> > [15051.956205] Call Trace:
+> > [15051.980641]  [<ffffffff81606085>] ?
+> > __cpufreq_notify_transition+0x95/0x1e0 [15052.005640]=20
+> > [<ffffffff816081ee>]
+> > cpufreq_notify_transition+0x3e/0x70 [15052.030240]  [<ffffffff81608=
+3d8>]
+> > cpufreq_freq_transition_begin+0xe8/0x130 [15052.054522]
+> > [<ffffffff813b8940>] ? ucs2_strncmp+0x70/0x70
+> > [15052.078208]  [<ffffffff816089bf>] __target_index+0xbf/0x1a0
+> > [15052.101348]  [<ffffffff81608b9c>] __cpufreq_driver_target+0xfc/0=
+x160
+> > [15052.124250]  [<ffffffff8160b0d4>] od_check_cpu+0xa4/0xb0
+> > [15052.146789]  [<ffffffff8160c9ec>] dbs_check_cpu+0x16c/0x1c0
+> > [15052.168935]  [<ffffffff8160b4dd>] od_dbs_timer+0x11d/0x180
+> > [15052.190607]  [<ffffffff8108e6ff>] process_one_work+0x17f/0x4c0
+> > [15052.211825]  [<ffffffff8108f46b>] worker_thread+0x11b/0x3f0
+> > [15052.232490]  [<ffffffff8108f350>] ? create_and_start_worker+0x80=
+/0x80
+> > [15052.253127]  [<ffffffff81096479>] kthread+0xc9/0xe0
+> > [15052.273292]  [<ffffffff810963b0>] ? flush_kthread_worker+0xb0/0x=
+b0
+> > [15052.293487]  [<ffffffff81793efc>] ret_from_fork+0x7c/0xb0
+> > [15052.313544]  [<ffffffff810963b0>] ? flush_kthread_worker+0xb0/0x=
+b0
+> > =E2=80=A6
+> > =3D=3D=3D
+> >=20
+> > Also here is my lspci [2] and cpuinfo [3] as well.
+> >=20
+> > Vanilla 3.15.8 and 3.16.0 are affected as well as latest Ubuntu 3.1=
+3
+> > kernel.
+> >=20
+> > No visible reason to trigger the bug. After hang machine doesn't re=
+spond
+> > via network, there's no disk IO, and also it doesn't respond to pre=
+ssing
+> > power button in order to perform soft off.
+> >=20
+> > [1] https://gist.github.com/085af9da81197faf6637
+> > [2] https://gist.github.com/318ebda5576b099590b8
+> > [3] https://gist.github.com/9c1307463c7ad6835b2d
+--=20
+Oleksandr post-factum Natalenko, MSc
+pf-kernel community
+https://natalenko.name/
