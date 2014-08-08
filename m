@@ -1,52 +1,46 @@
-From: "edubezval@gmail.com" <edubezval@gmail.com>
-Subject: Re: How can I get trip index when get_trend is called ?
-Date: Fri, 8 Aug 2014 08:13:22 -0400
-Message-ID: <CAC-25o-=KiyEyj_jyN=8WsbDph+f9gHWZ3aRSqQK1FLtdM8AFw@mail.gmail.com>
-References: <CAOsG7tquweEhJgctcQtN6xx0nPJsT6sB-cPNipMnETSQM-y4wA@mail.gmail.com>
+From: "edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V3] Thermal: imx: add i.mx6sx thermal support
+Date: Fri, 8 Aug 2014 08:15:54 -0400
+Message-ID: <CAC-25o_C1ijr64NyA22JqfS9Z90-v9iseaYzcf1ojy_QNXzExA@mail.gmail.com>
+References: <1407309129-5562-1-git-send-email-b20788@freescale.com>
+	<20140807085024.GE27051@dragon>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f175.google.com ([209.85.217.175]:36050 "EHLO
-	mail-lb0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755942AbaHHMNY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Aug 2014 08:13:24 -0400
-In-Reply-To: <CAOsG7tquweEhJgctcQtN6xx0nPJsT6sB-cPNipMnETSQM-y4wA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20140807085024.GE27051@dragon>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Anson Huang <b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Hyungwoo Yang <hwoo.yang@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Hello Yang,
+Hello Shawn,
 
-I am copying the list, as others may have same questions.
-
-On Thu, Aug 7, 2014 at 7:07 PM, Hyungwoo Yang <hwoo.yang@gmail.com> wrote:
+On Thu, Aug 7, 2014 at 4:50 AM, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> On Wed, Aug 06, 2014 at 03:12:09PM +0800, Anson Huang wrote:
+>> i.MX6SX has some new features of thermal interrupt function,
+>> there are LOW, HIGH and PANIC irq for thermal sensor, so add
+>> platform data to separate different thermal version;
+>>
+>> The reset value of LOW ALARM is 0 which means the highest
+>> temp, so the LOW ALARM will be triggered once irq is enabled,
+>> so we need to correct it before enabling thermal irq;
+>>
+>> Enable PANIC ALARM as critical trip point, it will trigger
+>> system reset via SRC module once PANIC IRQ is triggered, it
+>> is pure hardware function, so use it instead of software
+>> reset by cooling device.
+>>
+>> Signed-off-by: Anson Huang <b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
 >
-> Hello,
->
-> My trend calculation uses trip temperature. depending on how far current
-> temperature from trip point, trend is different. It worked fine but ,with DT
-> support from you, I cannot find a way to get trip index for trend
-> calculation.
+> Tested-by: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-I am not sure how the rate of temperature can be dependent on trip
-temperature. Are you adding an artifact to, say, make the trend look
-increasing faster if it is closer to trip temperature?
+Thanks!
 
->
-> Could you help me to get this? why did you change interface ? what is the
-> alternative ?
-
-Well, I do not recall changing any interface with of-thermal. The DT
-support in fact adds interfaces.
-
-Side question, what driver are you dealing with? Is it already merged
-in the Linux Kernel mainline?
-
->
-> Best Regard,
-> Hyungwoo Yang
-
-
+Did you have the chance to test on both? i.MX6Q and i.MX6SX?
 
 -- 
 Eduardo Bezerra Valentin
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
