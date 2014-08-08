@@ -1,60 +1,57 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH 2/3] soc/tegra: Use of_match_machine in soc_is_tegra()
-Date: Fri, 8 Aug 2014 11:43:19 +0200
-Message-ID: <20140808094317.GA15852@ulmo>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 3/3] cpuidle: big.LITTLE: Use of_match_machine
+Date: Fri, 8 Aug 2014 11:45:28 +0200
+Message-ID: <20140808094525.GB15852@ulmo>
 References: <1407452515-2390-1-git-send-email-ttynkkynen@nvidia.com>
- <1407452515-2390-3-git-send-email-ttynkkynen@nvidia.com>
+ <1407452515-2390-4-git-send-email-ttynkkynen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="9jxsPFA5p3P2qPhR"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f169.google.com ([209.85.212.169]:60893 "EHLO
-	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752889AbaHHJnX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Aug 2014 05:43:23 -0400
+	protocol="application/pgp-signature"; boundary="SkvwRMAIpAhPCcCJ"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1407452515-2390-3-git-send-email-ttynkkynen@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1407452515-2390-4-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
 
---9jxsPFA5p3P2qPhR
+--SkvwRMAIpAhPCcCJ
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Aug 08, 2014 at 02:01:54AM +0300, Tuomas Tynkkynen wrote:
+On Fri, Aug 08, 2014 at 02:01:55AM +0300, Tuomas Tynkkynen wrote:
 > Use the new helper function, also fixing a device_node refcount leak.
 >=20
-> Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+> Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 > ---
->  drivers/soc/tegra/common.c | 8 +-------
->  1 file changed, 1 insertion(+), 7 deletions(-)
+> Compile tested only.
+>=20
+>  drivers/cpuidle/cpuidle-big_little.c | 6 +-----
+>  1 file changed, 1 insertion(+), 5 deletions(-)
 
-Reviewed-by: Thierry Reding <treding@nvidia.com>
-Acked-by: Thierry Reding <treding@nvidia.com>
+Reviewed-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
---9jxsPFA5p3P2qPhR
+--SkvwRMAIpAhPCcCJ
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBAgAGBQJT5Ju1AAoJEN0jrNd/PrOhM3QP/1tdY0KjDXYbtLv3WeKwKCRK
-KeKPMqeRL6ZVrojBLYvSOPSZS3VWsHS5rHW6touRKhzzDRUS7EIolG3Wt0fGW/lE
-nIxfiVol+p3HKhNupQxY1xfnQXrPriNr2Evwc1JfBP4YNsZOwFM8q86yAPomyrO4
-0lXwX2g9Q4sIUMEXwmDQkKo6+SeEIvua+sNgtippJtT/nNlNG3CSFD+nt7Iz4FoY
-kxzDsSQUIPvYO331TstXQYRt7ZxnlzDVnk1+ydbdfRLm4uCRJsHadKE5NmWAkoTw
-Sgo8+Ph1agqQlsw5PRDQc1vLZoNr6zZrV144rI9kpsC5lrd/FeO4abUsP79M2BPA
-h2zbBFnHtFXcEuce47iuenO9le0vyCcCTidnmocwMl2LXX2jjJUHytZ6O/Sn/PDQ
-l/vfFYQHN2i8LLDUzv8+rj3teYpctH2mrTPJhnqwC7kA/9h3AYTn8mMTJd8H/LoB
-kpsOHZ/1iRzlkiq4+nYKX43qQWd/YQhvhf5A1slp5fMBuEnqhcMkIr1DxoR6eyQw
-BnWgAR9aNaDXxDzL9hP9NJxlYULevop3gymOQFLtX25jrOE9ii93nO1yDvG4lZeJ
-epffyx5pChCTY/GO/yxZ6sQ5D8IZBv1G9E+y8hDJeFjQeY91EpbtFGId83Ausqk/
-MZ/foczd0d9fDNXeYWDt
-=r6fh
+iQIcBAEBAgAGBQJT5Jw1AAoJEN0jrNd/PrOhv58QAJQ+7QEy+lCmrZl/FZxclODm
+/SeF3BfFa9bn295JeerkH2mQAHRSpQhkvBvHjl2LNVLXE239mSbJBalB3giBb5N8
+yFGiUJgd+h7ykYz1JkpbqC71Ko1IW3rTllM1WcjZM6TdASWIPtb32MIrvE0dMlyU
+QB51RWYwnuu0b2CiVORAHiohUi0ay+rFCkcfZGf7mObgDVGuKwDtpVpnY2Y5Bpjy
+L++wMbEwimJxoPoWNMeGYcV+v/L+EbjC9kacQORi2/49WpPKijZmBHVWIrwhqdEP
+69SVDtUUbNxN0db/zvGZ/KqMwMvnaXmlvvj2qu9HWh98a554lrryhWtaBsKpJ3h2
+Wv/nZe1hDBy+Fn+KVgTxN2iCRpjQsUkXlHmTBi7uLoGEemov7WXXWzN0olN0wjOF
+MC9cXXZiisFhWBrY+92171LfmphT31XQJSbqseB9Bpia7rF2EMZVrHumz8GoKsMF
+fmbY7GZKy7xW6nIozM0+fNoOjYeyOYN6FJFl8WwTb1qUvPuD6/4P328FEwcpYUPA
+KpAO9ndYMACfDXr0QKUqZqGRSORKscw4Lr/SVeVOxgBUR0OOjucweBj2Tsmd3VQ6
+y0sufdWRKTK4Z8Ah2rKuJDsQtWWIZkwAfYcHScD2w6RO4q3CsX2GS0XzswasV0bl
+A8mG1laO1d8PsXbP4/mi
+=To51
 -----END PGP SIGNATURE-----
 
---9jxsPFA5p3P2qPhR--
+--SkvwRMAIpAhPCcCJ--
