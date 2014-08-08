@@ -1,37 +1,44 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH] cpuidle/cpuidle-big_little: fix reading cpu id part
-	number
-Date: Fri, 8 Aug 2014 14:21:05 +0100
-Message-ID: <20140808132105.GB30282@n2100.arm.linux.org.uk>
-References: <1407501757-15231-1-git-send-email-juri.lelli@arm.com>
+From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH 1/3] of: Add of_match_machine helper
+Date: Fri, 8 Aug 2014 16:23:26 +0300
+Message-ID: <53E4CF4E.6010500@nvidia.com>
+References: <1407452515-2390-1-git-send-email-ttynkkynen@nvidia.com> <1407452515-2390-2-git-send-email-ttynkkynen@nvidia.com> <20140808094123.GC5387@ulmo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1407501757-15231-1-git-send-email-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: linux-kernel@vger.kernel.org, lorenzo.pieralisi@arm.com, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Juri Lelli <juri.lelli@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20140808094123.GC5387@ulmo>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 08, 2014 at 01:42:37PM +0100, Juri Lelli wrote:
-> Commit af040ffc9ba1 ("ARM: make it easier to check the CPU part number
-> correctly") changed ARM_CPU_PART_X masks, and the way they are returned and
-> checked against. Usage of read_cpuid_part_number() is now deprecated, and
-> calling places updated accordingly. This actually broke cpuidle-big_little
-> initialization, as bl_idle_driver_init() performs a check using and hardcoded
-> mask on cpu_id.
+
+
+On 08/08/14 12:41, Thierry Reding wrote:
 > 
-> Update the check to reflect changes on ARM_CPU_PART_X masks. Also,
-> make the check easier to understand.
+>> +const struct of_device_id *of_match_machine(const struct of_device_id *matches)
+>> +{
+>> +	const struct of_device_id *match;
+>> +	struct device_node *root;
+>> +
+>> +	root = of_find_node_by_path("/");
+>> +	if (!root)
+>> +		return NULL;
+>> +
+>> +	match = of_match_node(matches, root);
+>> +	of_node_put(root);
+>> +	return match;
+>> +}
+>> +EXPORT_SYMBOL(of_match_machine);
+> 
+> I wonder if of_find_node_by_path("/") is somewhat overkill here. Perhaps
+> simply of_node_get(of_allnodes) would be more appropriate here since the
+> function is implemented in the core?
 
-I don't like this "let's work out our own way to check the CPU type"
-stuff which people seem to create.  Let's try and do the job better
-and have some proper interfaces to do this kind of thing.
-
-Maybe we should have smp_cpuid_part(cpu) which returns the CPU vendor/
-part identifier for the particular CPU in an efficient manner.
+of_machine_is_compatible() uses of_find_node_by_path("/") as well, of_allnodes
+seems to be only used when during iterating. So I'd prefer to have them
+consistent.
 
 -- 
-FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
-according to speedtest.net.
+nvpublic
