@@ -1,57 +1,122 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 3/3] cpuidle: big.LITTLE: Use of_match_machine
-Date: Fri, 8 Aug 2014 11:45:28 +0200
-Message-ID: <20140808094525.GB15852@ulmo>
-References: <1407452515-2390-1-git-send-email-ttynkkynen@nvidia.com>
- <1407452515-2390-4-git-send-email-ttynkkynen@nvidia.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH] PM/CPU: Parallel enabling nonboot cpus with resume
+ devices
+Date: Fri, 8 Aug 2014 16:25:02 +0530
+Message-ID: <20140808105501.GA15048@in.ibm.com>
+References: <1406106694-3306-1-git-send-email-tianyu.lan@intel.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="SkvwRMAIpAhPCcCJ"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1407452515-2390-4-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-List-Id: linux-pm@vger.kernel.org
-
-
---SkvwRMAIpAhPCcCJ
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:32778 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755216AbaHHKzv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 Aug 2014 06:55:51 -0400
+Received: from /spool/local
+	by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+	Fri, 8 Aug 2014 06:55:50 -0400
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <1406106694-3306-1-git-send-email-tianyu.lan@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, peterz@infradead.org, toshi.kani@hp.com, mingo@kernel.org, akpm@linux-foundation.org, todd.e.brandt@linux.intel.com, fabf@skynet.be, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, Aug 08, 2014 at 02:01:55AM +0300, Tuomas Tynkkynen wrote:
-> Use the new helper function, also fixing a device_node refcount leak.
->=20
-> Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Hi Lan,
+
+On Wed, Jul 23, 2014 at 05:11:34PM +0800, Lan Tianyu wrote:
+> In the current world, all nonboot cpus are enabled serially during system
+> resume. System resume sequence is that boot cpu enables nonboot cpu one by
+> one and then resume devices. Before resuming devices, there are few tasks
+> assigned to nonboot cpus after they are brought up. This waste cpu usage.
+> 
+> To accelerate S3, this patches adds a new kernel configure
+> PM_PARALLEL_CPU_UP_FOR_SUSPEND to allow boot cpu to go forward to resume
+> devices after bringing up one nonboot cpu. The nonboot cpu will be in charge
+> of bringing up other cpus. This makes enabling cpu2~x parallel with resuming
+> devices. From the test result on 4 logical core laptop, the time of resume
+> device almost wasn't affected by enabling nonboot cpus lately while the start
+> point is almost 30ms earlier than before.
+> 
+> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
 > ---
-> Compile tested only.
->=20
->  drivers/cpuidle/cpuidle-big_little.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
+>  kernel/cpu.c         | 82 ++++++++++++++++++++++++++++++++++++++++++++++------
+>  kernel/power/Kconfig | 13 +++++++++
+>  2 files changed, 86 insertions(+), 9 deletions(-)
+> 
+> diff --git a/kernel/cpu.c b/kernel/cpu.c
+> index a343bde..d4c1353 100644
+> --- a/kernel/cpu.c
+> +++ b/kernel/cpu.c
+> @@ -551,9 +551,27 @@ void __weak arch_enable_nonboot_cpus_end(void)
+>  {
+>  }
+> 
+> +static int _cpu_up_with_trace(int cpu)
+> +{
+> +	int error;
+> +
+> +	trace_suspend_resume(TPS("CPU_ON"), cpu, true);
+> +	error = _cpu_up(cpu, 1);
+> +	trace_suspend_resume(TPS("CPU_ON"), cpu, false);
+> +	if (error) {
+> +		pr_warn("Error taking CPU%d up: %d\n", cpu, error);
+> +		return error;
+> +	}
+> +
+> +	pr_info("CPU%d is up\n", cpu);
+> +	return 0;
+> +}
+> +
 
-Reviewed-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+[..snip..]
+> 
+> +
+> +void __ref enable_nonboot_cpus(void)
+> +{
+> +	struct task_struct *tsk;
+> +	int cpu;
+> +
+> +	/* Allow everyone to use the CPU hotplug again */
+> +	cpu_maps_update_begin();
+> +	cpu_hotplug_disabled = 0;
+> +	if (cpumask_empty(frozen_cpus))
+> +		goto out;
+> +
+> +	arch_enable_nonboot_cpus_begin();
+> +
+> +	cpu = cpumask_first(frozen_cpus);
+> +	cpumask_clear_cpu(cpu, frozen_cpus);
+> +
+> +	_cpu_up_with_trace(cpu);
 
---SkvwRMAIpAhPCcCJ
-Content-Type: application/pgp-signature
+We should be handling the error returned by _cpu_up_with_trace() 
+in case 'cpu' fails to come online. Unless it is something that I am
+not aware of it doesn't make much sense to create a kthread on a cpu
+that we know has failed to come online.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iQIcBAEBAgAGBQJT5Jw1AAoJEN0jrNd/PrOhv58QAJQ+7QEy+lCmrZl/FZxclODm
-/SeF3BfFa9bn295JeerkH2mQAHRSpQhkvBvHjl2LNVLXE239mSbJBalB3giBb5N8
-yFGiUJgd+h7ykYz1JkpbqC71Ko1IW3rTllM1WcjZM6TdASWIPtb32MIrvE0dMlyU
-QB51RWYwnuu0b2CiVORAHiohUi0ay+rFCkcfZGf7mObgDVGuKwDtpVpnY2Y5Bpjy
-L++wMbEwimJxoPoWNMeGYcV+v/L+EbjC9kacQORi2/49WpPKijZmBHVWIrwhqdEP
-69SVDtUUbNxN0db/zvGZ/KqMwMvnaXmlvvj2qu9HWh98a554lrryhWtaBsKpJ3h2
-Wv/nZe1hDBy+Fn+KVgTxN2iCRpjQsUkXlHmTBi7uLoGEemov7WXXWzN0olN0wjOF
-MC9cXXZiisFhWBrY+92171LfmphT31XQJSbqseB9Bpia7rF2EMZVrHumz8GoKsMF
-fmbY7GZKy7xW6nIozM0+fNoOjYeyOYN6FJFl8WwTb1qUvPuD6/4P328FEwcpYUPA
-KpAO9ndYMACfDXr0QKUqZqGRSORKscw4Lr/SVeVOxgBUR0OOjucweBj2Tsmd3VQ6
-y0sufdWRKTK4Z8Ah2rKuJDsQtWWIZkwAfYcHScD2w6RO4q3CsX2GS0XzswasV0bl
-A8mG1laO1d8PsXbP4/mi
-=To51
------END PGP SIGNATURE-----
+> +
+> +	if (cpumask_empty(frozen_cpus)) {
+> +		arch_enable_nonboot_cpus_end();
+> +	} else {
+> +		tsk = kthread_create_on_cpu(async_enable_nonboot_cpus,
+> +				NULL, cpu, "async-enable-nonboot-cpus");
+> +		if (IS_ERR(tsk)) {
+> +			pr_err("Failed to create async enable nonboot cpus thread.\n");
+> +			goto out;
+> +		}
+> +
+> +		kthread_unpark(tsk);
+> +	}
+> +out:
+> +	cpu_maps_update_done();
+> +}
+> +#endif
+> +
 
---SkvwRMAIpAhPCcCJ--
+--
+Thanks and Regards
+gautham.
+
