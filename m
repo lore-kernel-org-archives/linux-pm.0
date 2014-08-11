@@ -1,93 +1,75 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RESEND PATCH 0/6] thermal: sti: Add new Thermal driver
-Date: Mon, 11 Aug 2014 14:56:45 +0100
-Message-ID: <20140811135645.GD31769@lee--X1>
-References: <20140624092309.GD13803@lee--X1>
- <20140709120823.GA32573@lee--X1>
- <1404911964.28592.4.camel@rzhang1-toshiba>
- <20140709134646.GB479@lee--X1>
- <20140714130824.GA3993@lee--X1>
- <1405347277.28592.25.camel@rzhang1-toshiba>
- <20140714142703.GC3993@lee--X1>
- <20140721091753.GV30888@lee--X1>
- <1405935299.2455.3.camel@rzhang1-toshiba>
- <20140721101306.GW30888@lee--X1>
+From: Olof Johansson <olof@lixom.net>
+Subject: Re: [RFC][PATCH] PM / sleep: Rename symbols, functions and variables
+ related to sleep
+Date: Mon, 11 Aug 2014 08:15:22 -0700
+Message-ID: <CAOesGMiohfNDRo1P58NYdQA6tqSLfuPQV85BEDVVo8UvtW=Ctw@mail.gmail.com>
+References: <5215142.eaz1Ajyth6@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20140721101306.GW30888@lee--X1>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-F5mvAk5X5gdBDgjK7y7TUQ@public.gmane.org, ajitpal.singh-qxv4g6HH51o@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, maxime.coquelin-qxv4g6HH51o@public.gmane.org, patrice.chotard-qxv4g6HH51o@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f52.google.com ([209.85.218.52]:52932 "EHLO
+	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753692AbaHKPPX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Aug 2014 11:15:23 -0400
+Received: by mail-oi0-f52.google.com with SMTP id h136so5551014oig.25
+        for <linux-pm@vger.kernel.org>; Mon, 11 Aug 2014 08:15:23 -0700 (PDT)
+In-Reply-To: <5215142.eaz1Ajyth6@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Zhang Rui <rui.zhang@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>
 
-On Mon, 21 Jul 2014, Lee Jones wrote:
-> On Mon, 21 Jul 2014, Zhang Rui wrote:
-> > On Mon, 2014-07-21 at 10:17 +0100, Lee Jones wrote:
-> > > On Mon, 14 Jul 2014, Lee Jones wrote:
-> > > > On Mon, 14 Jul 2014, Zhang Rui wrote:
-> > > > > On Mon, 2014-07-14 at 14:08 +0100, Lee Jones wrote:
-> > > > > > On Wed, 09 Jul 2014, Lee Jones wrote:
-> > > > > > > On Wed, 09 Jul 2014, Zhang Rui wrote:
-> > > > > > > > On Wed, 2014-07-09 at 13:08 +0100, Lee Jones wrote:
-> > > > > > > > > On Tue, 24 Jun 2014, Lee Jones wrote:
-> > > > > > > > >=20
-> > > > > > > > > > > I'm re-sending this set, as one of the maintainer=
-s' email addresses
-> > > > > > > > > > > is incorrect in the MAINTAINERS file.
-> > > > > > > > > > >=20
-> > > > > > > > > > > This patchset adds full support for 2 types of Th=
-ermal Controllers
-> > > > > > > > > > > produced by STMicroelectronics.  One is a more tr=
-aditional memory
-> > > > > > > > > > > mapped variant, the other is controlled solely by=
- system configuration
-> > > > > > > > > > > registers.
-> > > > > > > > > >=20
-> > > > > > > > > > Any thing from the Thermal guys? Has this set falle=
-n through the gaps?
-> > > > > > > > >=20
-> > > > > > > > > Anything at all?  It's been well over a month now.
-> > > > > > > > >=20
-> > > > > > > > Well, for the soc thermal drivers, I'd prefer to take t=
-hem via Eduardo,
-> > > > > > > > but as we didn't get any feedback from Eduardo, I will =
-take them.
-> > > > > > >=20
-> > > > > > > Thanks Rui.
-> > > > > > >=20
-> > > > > > > So have you taken all 4 "thermal: sti: *" patches?
-> > > > > >=20
-> > > > > > Have you taken these yet?
-> > > > >=20
-> > > > > Not yet. will do tomorrow.
-> > >=20
-> > > I waited 7 days and still don't see them?
-> > >=20
-> > Done, they're in my local tree and I forgot to push them.
-> > thanks for the reminder.
->=20
-> Thanks dude.
+On Sun, Jul 27, 2014 at 4:13 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> The names of several symbols, data types, functions and variables
+> related to system sleep states are confusing and don't reflect the
+> real behavior of those states correctly.
+>
+> First of all, there generally are two sleep states that require
+> platform support and one sleep state that is platform-independent.
+> The first two of them are currently known as MEM and STANDBY,
+> although these names really only match what the states do on full
+> hardware ACPI compliant systems.  MEM in particular is supposed
+> to mean "suspend-to-RAM", but in fact it means "the deepest sleep
+> state available with platform support".  The definition of STANDBY
+> is even more arbitrary.
+>
+> Moreover, the remaining sleep state that doesn't need platform support
+> is currently called FREEZE, which leads to double confusion with the
+> process freezer (used during transitions to all sleep states) and
+> with the freeze stage of processing devices during hibernation.
+>
+> For these reasons, rename the PM_SUSPEND_MEM, PM_SUSPEND_STANDBY
+> and PM_SUSPEND_FREEZE symbols to PM_SUSPEND_PLATFORM_DEEP,
+> PM_SUSPEND_PLATFORM_SHALLOW and PM_SUSPEND_IDLE_SLEEP, respectively,
+> everywhere and rename data types, functions and variables related to
+> those states to match the new names of the symbols.
+>
+> This is a semi-mechanical replacement of names and it should not lead
+> to any functional differences.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Hi Rui,
+This showed up in -next over this weekend and broke two ARM builds.
+Please don't add new code to -next during a merge window.
 
-Do you know when you will send your pull-request?
+>From http://arm-soc.lixom.net/buildlogs/next/next-20140811:
 
-We are half way through the merge window and I don't see any new
-Thermal patches?
+/home/build/work/batch/arch/arm/mach-s5pv210/pm.c:150:12: error:
+'suspend_valid_only_mem' undeclared here (not in a function)
+  .valid  = suspend_valid_only_mem,
 
-Kind regards,
-Lee
+/home/build/work/batch/arch/arm/mach-mmp/pm-pxa910.c: In function
+'pxa910_pm_valid':
+/home/build/work/batch/arch/arm/mach-mmp/pm-pxa910.c:243:65: error:
+expected ')' before ';' token
+  return state == PM_SUSPEND_SHALLOW || (state == PM_SUSPEND_DEEP;
+                                                                 ^
+/home/build/work/batch/arch/arm/mach-mmp/pm-pxa910.c:244:1: error:
+expected ';' before '}' token
+ }
+ ^
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-Olof
