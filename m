@@ -1,75 +1,135 @@
-From: Olof Johansson <olof@lixom.net>
-Subject: Re: [RFC][PATCH] PM / sleep: Rename symbols, functions and variables
- related to sleep
-Date: Mon, 11 Aug 2014 08:15:22 -0700
-Message-ID: <CAOesGMiohfNDRo1P58NYdQA6tqSLfuPQV85BEDVVo8UvtW=Ctw@mail.gmail.com>
-References: <5215142.eaz1Ajyth6@vostro.rjw.lan>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v4 1/5] cpufreq: Don't wait for CPU to going offline to
+ restart governor
+Date: Mon, 11 Aug 2014 15:11:18 -0700
+Message-ID: <53E93F86.5030304@codeaurora.org>
+References: <CAKohpon=xWZJzfN0PceVntumAUFfCsbG1ibUwSxewB7bE=U7bQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f52.google.com ([209.85.218.52]:52932 "EHLO
-	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753692AbaHKPPX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Aug 2014 11:15:23 -0400
-Received: by mail-oi0-f52.google.com with SMTP id h136so5551014oig.25
-        for <linux-pm@vger.kernel.org>; Mon, 11 Aug 2014 08:15:23 -0700 (PDT)
-In-Reply-To: <5215142.eaz1Ajyth6@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpon=xWZJzfN0PceVntumAUFfCsbG1ibUwSxewB7bE=U7bQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "Srivatsa S . Bhat" <srivatsa@mit.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Zhang Rui <rui.zhang@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>
 
-On Sun, Jul 27, 2014 at 4:13 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 08/07/2014 01:54 AM, Viresh Kumar wrote:
+> Sorry for the really long delay this time around. I am used to replying within a
+> day normally, and this time it just took so much time.
 >
-> The names of several symbols, data types, functions and variables
-> related to system sleep states are confusing and don't reflect the
-> real behavior of those states correctly.
+> For next time please rebase on latest updates in pm/linux-next as there are
+> few updates there.
+
+Will do.
+
 >
-> First of all, there generally are two sleep states that require
-> platform support and one sleep state that is platform-independent.
-> The first two of them are currently known as MEM and STANDBY,
-> although these names really only match what the states do on full
-> hardware ACPI compliant systems.  MEM in particular is supposed
-> to mean "suspend-to-RAM", but in fact it means "the deepest sleep
-> state available with platform support".  The definition of STANDBY
-> is even more arbitrary.
+> On 25 July 2014 06:37, Saravana Kannan <skannan@codeaurora.org> wrote:
+>> There's no need to wait for the CPU going down to fully go offline to
+>> restart the governor. We can stop the governor, change policy->cpus and
+>> immediately restart the governor. This should reduce the time without any
+>> CPUfreq monitoring and also help future patches with simplifying the code.
 >
-> Moreover, the remaining sleep state that doesn't need platform support
-> is currently called FREEZE, which leads to double confusion with the
-> process freezer (used during transitions to all sleep states) and
-> with the freeze stage of processing devices during hibernation.
+> I agree with the idea here, though the $subject can be improved a bit
+> here..
+
+Suggestions welcome. I think the current one explains the main point of 
+this change.
+
+>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>> ---
+>>   drivers/cpufreq/cpufreq.c | 33 ++++++++++++++++++---------------
+>>   1 file changed, 18 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index 62259d2..ee0eb7b 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -1390,6 +1390,21 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+>>                  cpufreq_driver->stop_cpu(policy);
+>>          }
+>>
+>> +       down_write(&policy->rwsem);
+>> +       cpumask_clear_cpu(cpu, policy->cpus);
+>> +       up_write(&policy->rwsem);
 >
-> For these reasons, rename the PM_SUSPEND_MEM, PM_SUSPEND_STANDBY
-> and PM_SUSPEND_FREEZE symbols to PM_SUSPEND_PLATFORM_DEEP,
-> PM_SUSPEND_PLATFORM_SHALLOW and PM_SUSPEND_IDLE_SLEEP, respectively,
-> everywhere and rename data types, functions and variables related to
-> those states to match the new names of the symbols.
+> There is a down_read() present early in this routine and we better update this
+> at that place only.
+
+I would rather not. My v1 patch series was super refactored to allow a 
+lot of reuse, etc. But you guys complained about the diffs being 
+confusing (which was a valid point).
+
+Also, if we are talking about refactoring this, there's room for much 
+better refactor at the end of the series. I will add a patch to the 
+series to do the refactoring.
+
 >
-> This is a semi-mechanical replacement of names and it should not lead
-> to any functional differences.
+>> +       if (cpus > 1 && has_target()) {
 >
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> We already have a if (cpus > 1) block, move this there.
 
-This showed up in -next over this weekend and broke two ARM builds.
-Please don't add new code to -next during a merge window.
+That only runs if cpu != policy->cpu. This needs to run irrespective of 
+that.
 
->From http://arm-soc.lixom.net/buildlogs/next/next-20140811:
+>
+>> +               ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+>> +               if (!ret)
+>> +                       ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+>> +
+>> +               if (ret) {
+>> +                       pr_err("%s: Failed to start governor\n", __func__);
+>> +                       return ret;
+>> +               }
+>> +       }
+>> +
+>>          return 0;
+>>   }
+>>
+>> @@ -1410,15 +1425,12 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>>                  return -EINVAL;
+>>          }
+>>
+>> -       down_write(&policy->rwsem);
+>> +       down_read(&policy->rwsem);
+>>          cpus = cpumask_weight(policy->cpus);
+>> -
+>> -       if (cpus > 1)
+>> -               cpumask_clear_cpu(cpu, policy->cpus);
+>> -       up_write(&policy->rwsem);
+>> +       up_read(&policy->rwsem);
+>>
+>>          /* If cpu is last user of policy, free policy */
+>> -       if (cpus == 1) {
+>> +       if (cpus == 0) {
+>>                  if (has_target()) {
+>>                          ret = __cpufreq_governor(policy,
+>>                                          CPUFREQ_GOV_POLICY_EXIT);
+>> @@ -1447,15 +1459,6 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>>
+>>                  if (!cpufreq_suspended)
+>>                          cpufreq_policy_free(policy);
+>> -       } else if (has_target()) {
+>> -               ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+>> -               if (!ret)
+>> -                       ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+>> -
+>> -               if (ret) {
+>> -                       pr_err("%s: Failed to start governor\n", __func__);
+>> -                       return ret;
+>> -               }
+>>          }
+>
+> Also, you must mention in the log about an important change you are making.
+> Don't know if there are any side effects...
+>
+> You are emptying policy->cpus on removal of last CPU of a policy, which wasn't
+> the case earlier.
 
-/home/build/work/batch/arch/arm/mach-s5pv210/pm.c:150:12: error:
-'suspend_valid_only_mem' undeclared here (not in a function)
-  .valid  = suspend_valid_only_mem,
+You mean the log in the cover letter? Will do.
 
-/home/build/work/batch/arch/arm/mach-mmp/pm-pxa910.c: In function
-'pxa910_pm_valid':
-/home/build/work/batch/arch/arm/mach-mmp/pm-pxa910.c:243:65: error:
-expected ')' before ';' token
-  return state == PM_SUSPEND_SHALLOW || (state == PM_SUSPEND_DEEP;
-                                                                 ^
-/home/build/work/batch/arch/arm/mach-mmp/pm-pxa910.c:244:1: error:
-expected ';' before '}' token
- }
- ^
+-Saravana
 
-
--Olof
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
