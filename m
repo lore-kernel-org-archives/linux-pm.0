@@ -1,152 +1,124 @@
-From: "edubezval@gmail.com" <edubezval@gmail.com>
-Subject: Re: [PATCH] drivers: fixed spelling of "celcius" to "celsius"
-Date: Sat, 9 Aug 2014 12:49:54 -0400
-Message-ID: <CAC-25o-qMVTsZ=pvXNDJGKTsubGd_sfVJ6AJmsov=Nrz3o9VxQ@mail.gmail.com>
-References: <1407571352-33867-1-git-send-email-learnertilldeath@gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] thermal management updates for v3.17-rc1
+Date: Mon, 11 Aug 2014 13:57:01 +0800
+Message-ID: <1407736621.2339.11.camel@rzhang1-toshiba>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f180.google.com ([209.85.217.180]:61238 "EHLO
-	mail-lb0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751205AbaHIQt4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 Aug 2014 12:49:56 -0400
-In-Reply-To: <1407571352-33867-1-git-send-email-learnertilldeath@gmail.com>
+Received: from mga14.intel.com ([192.55.52.115]:33896 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752034AbaHKF5Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Aug 2014 01:57:16 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ankit <learnertilldeath@gmail.com>
-Cc: airlied@linux.ie, shahed.shaikh@qlogic.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, Zhang Rui <rui.zhang@intel.com>, dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Hello Ankit,
+Hi, Linus,
 
-On Sat, Aug 9, 2014 at 4:02 AM, Ankit <learnertilldeath@gmail.com> wrote:
-> Fixed spelling issue -- changed celcius to celsius
->
-> Kernel version: mainline
->
-> Signed-off-by: Ankit <learnertilldeath@gmail.com>
+please pull from 
 
-On the thermal part,
+ git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
+to receive Thermal Management updates for v3.17-rc1 with top-most commit
 
-but I think might be worth splitting the change per domain, so we
-avoid merge conflicts. The change is just one liner though.
+47d104ba5879790c7c91c3390b0b08399e168efe:
 
-> ---
->  drivers/gpu/drm/nouveau/core/engine/graph/nv10.c  | 4 ++--
->  drivers/gpu/drm/nouveau/core/engine/graph/nv20.c  | 2 +-
->  drivers/gpu/drm/nouveau/core/engine/graph/nv25.c  | 2 +-
->  drivers/net/ethernet/qlogic/qlcnic/qlcnic_sysfs.c | 2 +-
->  drivers/power/ds2780_battery.c                    | 2 +-
->  drivers/power/ds2782_battery.c                    | 2 +-
->  drivers/thermal/thermal_core.c                    | 2 +-
->  7 files changed, 8 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/gpu/drm/nouveau/core/engine/graph/nv10.c b/drivers/gpu/drm/nouveau/core/engine/graph/nv10.c
-> index 4532f7e..1faeeb1 100644
-> --- a/drivers/gpu/drm/nouveau/core/engine/graph/nv10.c
-> +++ b/drivers/gpu/drm/nouveau/core/engine/graph/nv10.c
-> @@ -451,7 +451,7 @@ nv10_graph_sclass[] = {
->         { 0x0093, &nv04_graph_ofuncs }, /* surf3d */
->         { 0x0094, &nv04_graph_ofuncs }, /* ttri */
->         { 0x0095, &nv04_graph_ofuncs }, /* mtri */
-> -       { 0x0056, &nv04_graph_ofuncs }, /* celcius */
-> +       { 0x0056, &nv04_graph_ofuncs }, /* celsius */
->         {},
->  };
->
-> @@ -474,7 +474,7 @@ nv15_graph_sclass[] = {
->         { 0x0093, &nv04_graph_ofuncs }, /* surf3d */
->         { 0x0094, &nv04_graph_ofuncs }, /* ttri */
->         { 0x0095, &nv04_graph_ofuncs }, /* mtri */
-> -       { 0x0096, &nv04_graph_ofuncs }, /* celcius */
-> +       { 0x0096, &nv04_graph_ofuncs }, /* celsius */
->         {},
->  };
->
-> diff --git a/drivers/gpu/drm/nouveau/core/engine/graph/nv20.c b/drivers/gpu/drm/nouveau/core/engine/graph/nv20.c
-> index d145e08..eb00689 100644
-> --- a/drivers/gpu/drm/nouveau/core/engine/graph/nv20.c
-> +++ b/drivers/gpu/drm/nouveau/core/engine/graph/nv20.c
-> @@ -31,7 +31,7 @@ nv20_graph_sclass[] = {
->         { 0x0072, &nv04_graph_ofuncs, NULL }, /* beta4 */
->         { 0x0089, &nv04_graph_ofuncs, NULL }, /* sifm */
->         { 0x008a, &nv04_graph_ofuncs, NULL }, /* ifc */
-> -       { 0x0096, &nv04_graph_ofuncs, NULL }, /* celcius */
-> +       { 0x0096, &nv04_graph_ofuncs, NULL }, /* celsius */
->         { 0x0097, &nv04_graph_ofuncs, NULL }, /* kelvin */
->         { 0x009e, &nv04_graph_ofuncs, NULL }, /* swzsurf */
->         { 0x009f, &nv04_graph_ofuncs, NULL }, /* imageblit */
-> diff --git a/drivers/gpu/drm/nouveau/core/engine/graph/nv25.c b/drivers/gpu/drm/nouveau/core/engine/graph/nv25.c
-> index 7a80d00..fcfe1c5 100644
-> --- a/drivers/gpu/drm/nouveau/core/engine/graph/nv25.c
-> +++ b/drivers/gpu/drm/nouveau/core/engine/graph/nv25.c
-> @@ -28,7 +28,7 @@ nv25_graph_sclass[] = {
->         { 0x0072, &nv04_graph_ofuncs, NULL }, /* beta4 */
->         { 0x0089, &nv04_graph_ofuncs, NULL }, /* sifm */
->         { 0x008a, &nv04_graph_ofuncs, NULL }, /* ifc */
-> -       { 0x0096, &nv04_graph_ofuncs, NULL }, /* celcius */
-> +       { 0x0096, &nv04_graph_ofuncs, NULL }, /* celsius */
->         { 0x009e, &nv04_graph_ofuncs, NULL }, /* swzsurf */
->         { 0x009f, &nv04_graph_ofuncs, NULL }, /* imageblit */
->         { 0x0597, &nv04_graph_ofuncs, NULL }, /* kelvin */
-> diff --git a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_sysfs.c b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_sysfs.c
-> index f5786d5..b0f7ab0 100644
-> --- a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_sysfs.c
-> +++ b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_sysfs.c
-> @@ -1264,7 +1264,7 @@ static ssize_t qlcnic_hwmon_show_temp(struct device *dev,
->                 value = QLC_SHARED_REG_RD32(adapter, QLCNIC_ASIC_TEMP);
->
->         temperature = qlcnic_get_temp_val(value);
-> -       /* display millidegree celcius */
-> +       /* display millidegree celsius */
->         temperature *= 1000;
->         return sprintf(buf, "%u\n", temperature);
->  }
-> diff --git a/drivers/power/ds2780_battery.c b/drivers/power/ds2780_battery.c
-> index 9f418fa..bf7d4bd 100644
-> --- a/drivers/power/ds2780_battery.c
-> +++ b/drivers/power/ds2780_battery.c
-> @@ -210,7 +210,7 @@ static int ds2780_get_temperature(struct ds2780_device_info *dev_info,
->                 return ret;
->
->         /*
-> -        * Temperature is measured in units of 0.125 degrees celcius, the
-> +        * Temperature is measured in units of 0.125 degrees celsius, the
->          * power_supply class measures temperature in tenths of degrees
->          * celsius. The temperature value is stored as a 10 bit number, plus
->          * sign in the upper bits of a 16 bit register.
-> diff --git a/drivers/power/ds2782_battery.c b/drivers/power/ds2782_battery.c
-> index 041f9b6..adc7d32 100644
-> --- a/drivers/power/ds2782_battery.c
-> +++ b/drivers/power/ds2782_battery.c
-> @@ -104,7 +104,7 @@ static int ds278x_get_temp(struct ds278x_info *info, int *temp)
->         int err;
->
->         /*
-> -        * Temperature is measured in units of 0.125 degrees celcius, the
-> +        * Temperature is measured in units of 0.125 degrees celsius, the
->          * power_supply class measures temperature in tenths of degrees
->          * celsius. The temperature value is stored as a 10 bit number, plus
->          * sign in the upper bits of a 16 bit register.
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 71b0ec0..e69db4f 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -691,7 +691,7 @@ passive_store(struct device *dev, struct device_attribute *attr,
->         if (!sscanf(buf, "%d\n", &state))
->                 return -EINVAL;
->
-> -       /* sanity check: values below 1000 millicelcius don't make sense
-> +       /* sanity check: values below 1000 millicelsius don't make sense
->          * and can cause the system to go into a thermal heart attack
->          */
->         if (state && state < 1000)
-> --
-> 1.8.3.4 (Apple Git-47)
->
+  Merge branches 'exynos-fix', 'for-rc', 'int3403-fix', 'misc',
+'rcar-thermal' and 'sti-thermal' of .git into next (2014-07-22 10:13:00
++0800)
+
+on top of commit 1795cd9b3a91d4b5473c97f491d63892442212ab:
+
+  Linux 3.16-rc5 (2014-07-13 14:04:33 -0700)
+
+Specifics:
+
+- adds full support for 2 types of Thermal Controllers
+produced by STMicroelectronics. One is a more traditional memory
+mapped variant, the other is controlled solely by system configuration
+registers. From: Lee Jones.
+
+- add TMU (Thermal Management Unit) support for Exynos3250 Soc. From:
+Chanwoo Choi.
+
+- add critical and passive trip point support for int3403 thermal
+driver. From: Srinivas Pandruvada.
+
+- a couple of small fixes/cleanups from Javi Merino, and Geert
+Uytterhoeven.
+
+----------------------------------------------------------------
+
+Bartlomiej Zolnierkiewicz (1):
+      thermal: exynos: fix ordering in exynos_tmu_remove()
+
+Chanwoo Choi (1):
+      thermal: samsung: Add TMU support for Exynos3250 SoC
+
+Geert Uytterhoeven (1):
+      thermal: rcar: Document SoC-specific bindings
+
+Javi Merino (2):
+      thermal: cpu_cooling: fix typo highjack -> hijack
+      thermal: document struct thermal_zone_device and thermal_governor
+
+Lee Jones (4):
+      thermal: sti: Supply Device Tree documentation
+      thermal: sti: Introduce ST Thermal core code
+      thermal: sti: Add support for ST's System Config Register based
+Thermal controller
+      thermal: sti: Add support for ST's Memory Mapped based Thermal
+controller
+
+Riku Voipio (1):
+      thermal: allow building dove_thermal with mvebu
+
+Srinivas Pandruvada (1):
+      Thermal: int3403: Add CRT and PSV trip
+
+Zhang Rui (1):
+      Merge branches 'exynos-fix', 'for-rc', 'int3403-fix', 'misc',
+'rcar-thermal' and 'sti-thermal' of .git into next
+
+ Documentation/devicetree/bindings/thermal/exynos-thermal.txt |   1 +
+ Documentation/devicetree/bindings/thermal/rcar-thermal.txt   |  18
++++++---
+ Documentation/devicetree/bindings/thermal/st-thermal.txt     |  42
++++++++++++++++++++
+ drivers/thermal/Kconfig                                      |   7 +++-
+ drivers/thermal/Makefile                                     |   1 +
+ drivers/thermal/cpu_cooling.c                                |   2 +-
+ drivers/thermal/int3403_thermal.c                            |  67
++++++++++++++++++++++++++----
+ drivers/thermal/samsung/exynos_tmu.c                         |  11
++++--
+ drivers/thermal/samsung/exynos_tmu.h                         |   3 +-
+ drivers/thermal/samsung/exynos_tmu_data.c                    |  89
++++++++++++++++++++++++++++++++++++++++
+ drivers/thermal/samsung/exynos_tmu_data.h                    |   7 ++++
+ drivers/thermal/st/Kconfig                                   |  12
+++++++
+ drivers/thermal/st/Makefile                                  |   3 ++
+ drivers/thermal/st/st_thermal.c                              | 313
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/thermal/st/st_thermal.h                              | 104
++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/thermal/st/st_thermal_memmap.c                       | 209
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/thermal/st/st_thermal_syscfg.c                       | 179
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h                                      |  46
++++++++++++++++++++-
+ 18 files changed, 1093 insertions(+), 21 deletions(-)
+ create mode 100644
+Documentation/devicetree/bindings/thermal/st-thermal.txt
+ create mode 100644 drivers/thermal/st/Kconfig
+ create mode 100644 drivers/thermal/st/Makefile
+ create mode 100644 drivers/thermal/st/st_thermal.c
+ create mode 100644 drivers/thermal/st/st_thermal.h
+ create mode 100644 drivers/thermal/st/st_thermal_memmap.c
+ create mode 100644 drivers/thermal/st/st_thermal_syscfg.c
 
 
-
--- 
-Eduardo Bezerra Valentin
