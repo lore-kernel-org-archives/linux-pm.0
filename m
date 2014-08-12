@@ -1,57 +1,77 @@
-From: "Hernandez, Carlos" <ceh@ti.com>
-Subject: RE: [PATCH 1/2] PM / devfreq: Export helper functions for drivers
-Date: Tue, 12 Aug 2014 13:49:16 +0000
-Message-ID: <32B5D12402BE454796026F6AC58AA86E32F2EFD6@DLEE08.ent.ti.com>
-References: <1405692594-19352-1-git-send-email-punit.agrawal@arm.com>
- <1405692594-19352-2-git-send-email-punit.agrawal@arm.com>
+From: Oleksandr Natalenko <oleksandr@natalenko.name>
+Subject: Re: [BUG] oops in cpufreq driver with AMD Kaveri CPU
+Date: Tue, 12 Aug 2014 21:04:30 +0300
+Message-ID: <1449757.YVvGmvgCpE@spock>
+References: <4708675.eITUXPv8Ih@spock> <97078cc7-f961-4575-ab72-ec88e6f30b9e@email.android.com> <CAOh2x=nJTuKKKyM72MUFSkrsH1eh1YgRUbfLcTCpfZzO85q80w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:48444 "EHLO arroyo.ext.ti.com"
+Received: from natalenko.name ([78.47.77.148]:58310 "EHLO natalenko.name"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752212AbaHLNtv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 Aug 2014 09:49:51 -0400
-In-Reply-To: <1405692594-19352-2-git-send-email-punit.agrawal@arm.com>
-Content-Language: en-US
+	id S1753529AbaHLSEe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 Aug 2014 14:04:34 -0400
+In-Reply-To: <CAOh2x=nJTuKKKyM72MUFSkrsH1eh1YgRUbfLcTCpfZzO85q80w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
-Cc: "orjan.eide@arm.com" <orjan.eide@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-QWNrZWQtQnk6IENhcmxvcyBIZXJuYW5kZXogPGNlaEB0aS5jb20+DQoNCi0tLS0tT3JpZ2luYWwg
-TWVzc2FnZS0tLS0tDQpGcm9tOiBsaW51eC1rZXJuZWwtb3duZXJAdmdlci5rZXJuZWwub3JnIFtt
-YWlsdG86bGludXgta2VybmVsLW93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIFB1
-bml0IEFncmF3YWwNClNlbnQ6IEZyaWRheSwgSnVseSAxOCwgMjAxNCAxMDoxMCBBTQ0KVG86IGxp
-bnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgtc2Ftc3VuZy1zb2NAdmdlci5rZXJuZWwub3Jn
-DQpDYzogb3JqYW4uZWlkZUBhcm0uY29tOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBs
-aW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IE15dW5nSm9vIEhhbTsgS3l1bmdt
-aW4gUGFyaw0KU3ViamVjdDogW1BBVENIIDEvMl0gUE0gLyBkZXZmcmVxOiBFeHBvcnQgaGVscGVy
-IGZ1bmN0aW9ucyBmb3IgZHJpdmVycw0KDQpGcm9tOiDDmHJqYW4gRWlkZSA8b3JqYW4uZWlkZUBh
-cm0uY29tPg0KDQpUaGVzZSBmdW5jdGlvbnMgYXJlIGluZGVuZGVkIGZvciB1c2UgYnkgZHJpdmVy
-cyBhbmQgc2hvdWxkIGJlIGF2YWlsYWJsZSBhbHNvIHdoZW4gdGhlIGRyaXZlciBpcyBidWlsdCBh
-cyBhIG1vZHVsZS4NCg0KQ2M6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29t
-Pg0KQ2M6IEt5dW5nbWluIFBhcmsgPGt5dW5nbWluLnBhcmtAc2Ftc3VuZy5jb20+DQpTaWduZWQt
-b2ZmLWJ5OiDDmHJqYW4gRWlkZSA8b3JqYW4uZWlkZUBhcm0uY29tPg0KLS0tDQogZHJpdmVycy9k
-ZXZmcmVxL2RldmZyZXEuYyB8ICAgIDMgKysrDQogMSBmaWxlIGNoYW5nZWQsIDMgaW5zZXJ0aW9u
-cygrKQ0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYyBiL2RyaXZlcnMv
-ZGV2ZnJlcS9kZXZmcmVxLmMgaW5kZXggOWY5MDM2OS4uMzBiNTM4ZDggMTAwNjQ0DQotLS0gYS9k
-cml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQorKysgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5j
-DQpAQCAtMTExOSw2ICsxMTE5LDcgQEAgc3RydWN0IGRldl9wbV9vcHAgKmRldmZyZXFfcmVjb21t
-ZW5kZWRfb3BwKHN0cnVjdCBkZXZpY2UgKmRldiwNCiANCiAJcmV0dXJuIG9wcDsNCiB9DQorRVhQ
-T1JUX1NZTUJPTChkZXZmcmVxX3JlY29tbWVuZGVkX29wcCk7DQogDQogLyoqDQogICogZGV2ZnJl
-cV9yZWdpc3Rlcl9vcHBfbm90aWZpZXIoKSAtIEhlbHBlciBmdW5jdGlvbiB0byBnZXQgZGV2ZnJl
-cSBub3RpZmllZCBAQCAtMTE0Miw2ICsxMTQzLDcgQEAgaW50IGRldmZyZXFfcmVnaXN0ZXJfb3Bw
-X25vdGlmaWVyKHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IGRldmZyZXEgKmRldmZyZXEpDQog
-DQogCXJldHVybiByZXQ7DQogfQ0KK0VYUE9SVF9TWU1CT0woZGV2ZnJlcV9yZWdpc3Rlcl9vcHBf
-bm90aWZpZXIpOw0KIA0KIC8qKg0KICAqIGRldmZyZXFfdW5yZWdpc3Rlcl9vcHBfbm90aWZpZXIo
-KSAtIEhlbHBlciBmdW5jdGlvbiB0byBzdG9wIGdldHRpbmcgZGV2ZnJlcSBAQCAtMTE2OCw2ICsx
-MTcwLDcgQEAgaW50IGRldmZyZXFfdW5yZWdpc3Rlcl9vcHBfbm90aWZpZXIoc3RydWN0IGRldmlj
-ZSAqZGV2LCBzdHJ1Y3QgZGV2ZnJlcSAqZGV2ZnJlcSkNCiANCiAJcmV0dXJuIHJldDsNCiB9DQor
-RVhQT1JUX1NZTUJPTChkZXZmcmVxX3VucmVnaXN0ZXJfb3BwX25vdGlmaWVyKTsNCiANCiBzdGF0
-aWMgdm9pZCBkZXZtX2RldmZyZXFfb3BwX3JlbGVhc2Uoc3RydWN0IGRldmljZSAqZGV2LCB2b2lk
-ICpyZXMpICB7DQotLQ0KMS43LjEwLjQNCg0KLS0NClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBs
-aXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1rZXJuZWwiIGluIHRoZSBib2R5
-IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnIE1vcmUgbWFqb3Jkb21v
-IGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KUGxl
-YXNlIHJlYWQgdGhlIEZBUSBhdCAgaHR0cDovL3d3dy50dXgub3JnL2xrbWwvDQoNCg0K
+Well, I've added the following code to cpufreq_register_notifier() 
+(drivers/cpufreq/cpufreq.c) to CPUFREQ_TRANSITION_NOTIFIER case:
+
+===
+pr_info("Registered transition notifier: %p, (%p)\n", nb->notifier_call, &nb-
+>notifier_call);
+===
+
+And got the following in my dmesg (only 1 line):
+
+===
+$ cat /var/log/kern.log | grep "Registered transition notifier"
+Aug 12 17:23:45 defiant kernel: [    3.084977] cpufreq: Registered transition 
+notifier: ffffffff81590378, (ffffffff81cb0ba0)
+===
+
+System.map tells me, that ffffffff81590378 corresponds to 
+cpufreq_stat_notifier_trans() (in drivers/cpufreq/cpufreq_stats.c).
+
+Also I've added
+
+===
+pr_info("%s\n", __func__);
+===
+
+to all callbacks (hello, LXR :)), and got the following occurrences in dmesg:
+
+===
+$ cat /var/log/kern.log | egrep -e '(acpi_|cpufreq|notifier)' | awk 
+'{print($7)}' | sort -u
+acpi_processor_ppc_notifier
+acpi_thermal_cpufreq_notifier
+cpufreq_stat_notifier_policy
+===
+
+No extra notifiers are involved so far, but also I haven't caught new hang yet 
+as it occurs randomly. Still waiting for it, but I hope my little 
+investigation could help somehow.
+
+On Tuesday 12 August 2014 13:16:25 Viresh Kumar wrote:
+> On Tue, Aug 12, 2014 at 12:56 PM, Oleksandr Natalenko
+> 
+> <oleksandr@natalenko.name> wrote:
+> > Got that and will try to investigate ASAP.
+> > 
+> > Just to note: I tried to use powersave governor and got the same result. I
+> > believe notifiers are used with powersave governor as well. Am I wrong?
+> Notifiers are used from the cpufreq core when frequency is changed.
+> And the powersave governor should have changed the frequency only
+> ONCE, i.e. to go to lowest frequency.
+> 
+> So, it probably happened at the first & only change at that time as well..
+> But it shouldn't happen any later. So, see what the log looks like on
+> that crash.
+-- 
+Oleksandr post-factum Natalenko, MSc
+pf-kernel community
+https://natalenko.name/
