@@ -1,49 +1,88 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Hibernate: Do not assume the first e820 area to be RAM
-Date: Tue, 12 Aug 2014 11:35:33 +0200
-Message-ID: <20140812093533.GB3950@amd.pavel.ucw.cz>
-References: <1407754252-22779-1-git-send-email-jlee@suse.com>
+Subject: Re: [PATCH] Hibernate: save e820 table to snapshot header for
+ comparison
+Date: Tue, 12 Aug 2014 11:41:36 +0200
+Message-ID: <20140812094136.GC3950@amd.pavel.ucw.cz>
+References: <1407751987-21448-1-git-send-email-jlee@suse.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58143 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414AbaHLJfi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Aug 2014 05:35:38 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1407754252-22779-1-git-send-email-jlee@suse.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1407751987-21448-1-git-send-email-jlee@suse.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Mon 2014-08-11 18:50:52, Lee, Chun-Yi wrote:
-> In arch/x86/kernel/setup.c::trim_bios_range(), the codes introduced
-> by 1b5576e6 (base on d8a9e6a5), it updates the first 4Kb of memory
-> to be E820_RESERVED region. That's because it's a BIOS owned area
-> but generally not listed in the E820 table:
-> 
-> [    0.000000] e820: BIOS-provided physical RAM map:
-> [    0.000000] BIOS-e820: [mem 0x0000000000000000-0x0000000000096fff] usable
-> [    0.000000] BIOS-e820: [mem 0x0000000000097000-0x0000000000097fff] reserved
-> ...
-> [    0.000000] e820: update [mem 0x00000000-0x00000fff] usable ==> reserved
-> [    0.000000] e820: remove [mem 0x000a0000-0x000fffff] usable
-> 
-> But the region of first 4Kb didn't register to nosave memory:
-> 
-> [    0.000000] PM: Registered nosave memory: [mem 0x00097000-0x00097fff]
-> [    0.000000] PM: Registered nosave memory: [mem 0x000a0000-0x000fffff]
-> 
-> The codes in e820_mark_nosave_regions() assumes the first e820 area to be
-> RAM, so it causes the first 4Kb E820_RESERVED region ignored when register
-> to nosave. This patch removed assumption of the first e820 area.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Len Brown <len.brown@intel.com>
+Hi!
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+> [    7.374714] e820: Check memory region: [mem 0x0000000100000000-0x000000187fffffff] usable
+> [    7.378041] PM: Image mismatch: memory map changed
+> [    7.381314] PM: Read 2398272 kbytes in 0.27 seconds (8882.48 MB/s)
+> [    7.385476] PM: Error -1 resuming
+> [    7.388730] PM: Failed to load hibernation image, recovering.
+> [    7.688989] PM: Basic memory bitmaps freed
 
+Nice!
+
+> +int save_mem_chk_map(struct mementry *mem_chk_map)
+
+I'd prefer _chk_ -> _check_
+
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < e820.nr_map; i++) {
+> +		struct e820entry *ei = &e820.map[i];
+> +
+> +		if (i > MEMCHKMAX)
+> +			break;
+
+MEMCHKMAX -> MEM_CHECK_MAX?
+
+What happens when there are more entries?
+
+> +bool check_mem_map(int mem_chk_entries, struct mementry *mem_chk_map)
+> +{
+> +	int i;
+> +	bool ret = true;
+> +
+> +	if (mem_chk_entries != e820.nr_map) {
+> +		pr_err("PM: memory check entry number %d:%d\n",
+> +			mem_chk_entries, e820.nr_map);
+> +		ret = false;
+> +		goto Print_map;
+> +	}
+
+I'd change name to something like mem_map_matches() or mem_map_ok(),
+so that it is clear what true/false means.
+
+Can you reduce ammount of gotos?
+
+> +	for (i = 0; i < mem_chk_entries; i++) {
+> +		struct e820entry *ei = &e820.map[i];
+> +
+> +		if (i > MEMCHKMAX)
+> +			break;
+> +
+> +		/* check regions not E820_RAM or E820_RESERVED_KERN */
+> +		if (ei->type != E820_RAM && ei->type != E820_RESERVED_KERN) {
+> +			if (mem_chk_map[i].addr != ei->addr ||
+> +			    mem_chk_map[i].size != ei->size ||
+> +			    mem_chk_map[i].type != ei->type) {
+> +				ret = false;
+> +				goto Print_map;
+> +			}
+> +		}
+
+Why don't you check RAM and RESERVED_KERN, too? If those changed, we
+don't want to resume, either, right?
+
+(Plus, you only check ei->type; you should check mem_chk_map[].type,
+too AFAICT).
+
+Thanks,
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
