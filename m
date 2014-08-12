@@ -1,76 +1,85 @@
 From: Oleksandr Natalenko <oleksandr@natalenko.name>
 Subject: Re: [BUG] oops in cpufreq driver with AMD Kaveri CPU
-Date: Tue, 12 Aug 2014 21:04:30 +0300
-Message-ID: <1449757.YVvGmvgCpE@spock>
-References: <4708675.eITUXPv8Ih@spock> <97078cc7-f961-4575-ab72-ec88e6f30b9e@email.android.com> <CAOh2x=nJTuKKKyM72MUFSkrsH1eh1YgRUbfLcTCpfZzO85q80w@mail.gmail.com>
+Date: Tue, 12 Aug 2014 21:18:09 +0300
+Message-ID: <3606476.mQLS7miLfb@spock>
+References: <4708675.eITUXPv8Ih@spock> <CAOh2x=nJTuKKKyM72MUFSkrsH1eh1YgRUbfLcTCpfZzO85q80w@mail.gmail.com> <1449757.YVvGmvgCpE@spock>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from natalenko.name ([78.47.77.148]:58310 "EHLO natalenko.name"
+Received: from natalenko.name ([78.47.77.148]:58355 "EHLO natalenko.name"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753529AbaHLSEe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 Aug 2014 14:04:34 -0400
-In-Reply-To: <CAOh2x=nJTuKKKyM72MUFSkrsH1eh1YgRUbfLcTCpfZzO85q80w@mail.gmail.com>
+	id S1753049AbaHLSSM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 Aug 2014 14:18:12 -0400
+In-Reply-To: <1449757.YVvGmvgCpE@spock>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Well, I've added the following code to cpufreq_register_notifier() 
-(drivers/cpufreq/cpufreq.c) to CPUFREQ_TRANSITION_NOTIFIER case:
+Hmm, looks like I've put pr_info to policy notifier instead of transition 
+notifier. Will fix it now and post new logs.
 
-===
-pr_info("Registered transition notifier: %p, (%p)\n", nb->notifier_call, &nb-
->notifier_call);
-===
-
-And got the following in my dmesg (only 1 line):
-
-===
-$ cat /var/log/kern.log | grep "Registered transition notifier"
-Aug 12 17:23:45 defiant kernel: [    3.084977] cpufreq: Registered transition 
-notifier: ffffffff81590378, (ffffffff81cb0ba0)
-===
-
-System.map tells me, that ffffffff81590378 corresponds to 
-cpufreq_stat_notifier_trans() (in drivers/cpufreq/cpufreq_stats.c).
-
-Also I've added
-
-===
-pr_info("%s\n", __func__);
-===
-
-to all callbacks (hello, LXR :)), and got the following occurrences in dmesg:
-
-===
-$ cat /var/log/kern.log | egrep -e '(acpi_|cpufreq|notifier)' | awk 
-'{print($7)}' | sort -u
-acpi_processor_ppc_notifier
-acpi_thermal_cpufreq_notifier
-cpufreq_stat_notifier_policy
-===
-
-No extra notifiers are involved so far, but also I haven't caught new hang yet 
-as it occurs randomly. Still waiting for it, but I hope my little 
-investigation could help somehow.
-
-On Tuesday 12 August 2014 13:16:25 Viresh Kumar wrote:
-> On Tue, Aug 12, 2014 at 12:56 PM, Oleksandr Natalenko
+On Tuesday 12 August 2014 21:04:30 Oleksandr Natalenko wrote:
+> Well, I've added the following code to cpufreq_register_notifier()
+> (drivers/cpufreq/cpufreq.c) to CPUFREQ_TRANSITION_NOTIFIER case:
 > 
-> <oleksandr@natalenko.name> wrote:
-> > Got that and will try to investigate ASAP.
+> ===
+> pr_info("Registered transition notifier: %p, (%p)\n", nb->notifier_call,
+> &nb-
+> >notifier_call);
+> 
+> ===
+> 
+> And got the following in my dmesg (only 1 line):
+> 
+> ===
+> $ cat /var/log/kern.log | grep "Registered transition notifier"
+> Aug 12 17:23:45 defiant kernel: [    3.084977] cpufreq: Registered
+> transition notifier: ffffffff81590378, (ffffffff81cb0ba0)
+> ===
+> 
+> System.map tells me, that ffffffff81590378 corresponds to
+> cpufreq_stat_notifier_trans() (in drivers/cpufreq/cpufreq_stats.c).
+> 
+> Also I've added
+> 
+> ===
+> pr_info("%s\n", __func__);
+> ===
+> 
+> to all callbacks (hello, LXR :)), and got the following occurrences in
+> dmesg:
+> 
+> ===
+> $ cat /var/log/kern.log | egrep -e '(acpi_|cpufreq|notifier)' | awk
+> '{print($7)}' | sort -u
+> acpi_processor_ppc_notifier
+> acpi_thermal_cpufreq_notifier
+> cpufreq_stat_notifier_policy
+> ===
+> 
+> No extra notifiers are involved so far, but also I haven't caught new hang
+> yet as it occurs randomly. Still waiting for it, but I hope my little
+> investigation could help somehow.
+> 
+> On Tuesday 12 August 2014 13:16:25 Viresh Kumar wrote:
+> > On Tue, Aug 12, 2014 at 12:56 PM, Oleksandr Natalenko
 > > 
-> > Just to note: I tried to use powersave governor and got the same result. I
-> > believe notifiers are used with powersave governor as well. Am I wrong?
-> Notifiers are used from the cpufreq core when frequency is changed.
-> And the powersave governor should have changed the frequency only
-> ONCE, i.e. to go to lowest frequency.
-> 
-> So, it probably happened at the first & only change at that time as well..
-> But it shouldn't happen any later. So, see what the log looks like on
-> that crash.
+> > <oleksandr@natalenko.name> wrote:
+> > > Got that and will try to investigate ASAP.
+> > > 
+> > > Just to note: I tried to use powersave governor and got the same result.
+> > > I
+> > > believe notifiers are used with powersave governor as well. Am I wrong?
+> > 
+> > Notifiers are used from the cpufreq core when frequency is changed.
+> > And the powersave governor should have changed the frequency only
+> > ONCE, i.e. to go to lowest frequency.
+> > 
+> > So, it probably happened at the first & only change at that time as well..
+> > But it shouldn't happen any later. So, see what the log looks like on
+> > that crash.
 -- 
 Oleksandr post-factum Natalenko, MSc
 pf-kernel community
