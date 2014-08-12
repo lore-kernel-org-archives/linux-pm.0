@@ -1,114 +1,57 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Tue, 12 Aug 2014 07:33:56 -0400
-Message-ID: <53E9FBA4.2080609@redhat.com>
-References: <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <53DBE764.8050109@redhat.com> <53DBEC27.7050803@codeaurora.org> <CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com> <53E0B657.4070007@redhat.com> <CAKohponxBdYEgY2oYuzmdaqfSRS8Uq8bZOzcb1QDmKO-z5ZBFQ@mail.gmail.com> <53E1556B.5070304@codeaurora.org> <CAKohpoky1-hj7cwnKc58svh8Z1Yas1=q4uJEK8mWcb56uqAcng@mail.gmail.com> <53E1FEE5.80305@redhat.com> <20140806150831.GB32301@codeaurora.org> <CAKohponBRn9mwpPMinsjqpHe3wTFj6aNpYk5gZaWDKht3bd5NQ@mail.gmail.com> <53E35122.3040806@redhat.com> <CAKohpokLsqMMxMwh_p+kUL=He9-8cSws6onG6DCBNBVzz1=5TA@mail.gmail.com> <CAKohpokebTdX-Ssdc4N+b09tZ35qkckiErypc0c0Nbe7v+Y5uQ@mail.gmail.com>
+From: "Hernandez, Carlos" <ceh@ti.com>
+Subject: RE: [PATCH 1/2] PM / devfreq: Export helper functions for drivers
+Date: Tue, 12 Aug 2014 13:49:16 +0000
+Message-ID: <32B5D12402BE454796026F6AC58AA86E32F2EFD6@DLEE08.ent.ti.com>
+References: <1405692594-19352-1-git-send-email-punit.agrawal@arm.com>
+ <1405692594-19352-2-git-send-email-punit.agrawal@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:36506 "EHLO mx1.redhat.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:48444 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751850AbaHLLeE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 Aug 2014 07:34:04 -0400
-In-Reply-To: <CAKohpokebTdX-Ssdc4N+b09tZ35qkckiErypc0c0Nbe7v+Y5uQ@mail.gmail.com>
+	id S1752212AbaHLNtv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 Aug 2014 09:49:51 -0400
+In-Reply-To: <1405692594-19352-2-git-send-email-punit.agrawal@arm.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Punit Agrawal <punit.agrawal@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Cc: "orjan.eide@arm.com" <orjan.eide@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-
-
-On 08/12/2014 05:03 AM, Viresh Kumar wrote:
-> On 7 August 2014 15:45, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 7 August 2014 15:42, Prarit Bhargava <prarit@redhat.com> wrote:
->>> That should have done it.  What are your CPUFREQ configs?
->>
->> You can check the same .config I attached last time for that :)
->>
->> CONFIG_CPU_FREQ=y
->> CONFIG_CPU_FREQ_GOV_COMMON=y
->> CONFIG_CPU_FREQ_STAT=y
->> CONFIG_CPU_FREQ_STAT_DETAILS=y
->> # CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
->> # CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
->> # CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
->> CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE=y
->> CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
->> CONFIG_CPU_FREQ_GOV_POWERSAVE=y
->> CONFIG_CPU_FREQ_GOV_USERSPACE=y
->> CONFIG_CPU_FREQ_GOV_ONDEMAND=y
->> CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
-
-Viresh, sorry for my late reply -- I got distracted by another issue.
-
->>
->>
->> Anyway, has anybody tried to test what I have been trying now?
->> @Prarit: You can try that on your x86 box as well, which has a
->> single cluster or group of CPUs sharing clock line.
-> 
-
-Okay, this is what I have and I can reproduce this *easily* 100% of the time.
-
-I've used your above config options and have enabled LOCKDEP.
-
-In order to restore the locking, I've applied the following patch to the cpufreq
-core (sorry for the cut-and-paste):
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index d9fdedd..dfda238 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2192,9 +2192,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *polic
-        /* end old governor */
-        if (old_gov) {
-                __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
--               up_write(&policy->rwsem);
-                __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
--               down_write(&policy->rwsem);
-        }
-
-        /* start new governor */
-@@ -2203,9 +2201,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *polic
-                if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
-                        goto out;
-
--               up_write(&policy->rwsem);
-                __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
--               down_write(&policy->rwsem);
-        }
-
-        /* new governor failed, so re-start old one */
-
-
-I've modified the acpi-cpufreq driver to include (sorry for the cut-and-paste)
-
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index b0c18ed..97653c3 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -884,6 +884,9 @@ static struct freq_attr *acpi_cpufreq_attr[] = {
- };
-
- static struct cpufreq_driver acpi_cpufreq_driver = {
-+       .flags                  = CPUFREQ_STICKY |
-+                                       CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
-+                                       CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-        .verify         = cpufreq_generic_frequency_table_verify,
-        .target_index   = acpi_cpufreq_target,
-        .bios_limit     = acpi_processor_get_bios_limit,
-
-I do a
-
-cat /sys/devices/system/cpu/cpu2/cpufreq/conservative/*
-echo ondemand > /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor
-
-and then I immediately see the stack trace.
-
-P.
-
-
-> Ping!!
-> 
+QWNrZWQtQnk6IENhcmxvcyBIZXJuYW5kZXogPGNlaEB0aS5jb20+DQoNCi0tLS0tT3JpZ2luYWwg
+TWVzc2FnZS0tLS0tDQpGcm9tOiBsaW51eC1rZXJuZWwtb3duZXJAdmdlci5rZXJuZWwub3JnIFtt
+YWlsdG86bGludXgta2VybmVsLW93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIFB1
+bml0IEFncmF3YWwNClNlbnQ6IEZyaWRheSwgSnVseSAxOCwgMjAxNCAxMDoxMCBBTQ0KVG86IGxp
+bnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgtc2Ftc3VuZy1zb2NAdmdlci5rZXJuZWwub3Jn
+DQpDYzogb3JqYW4uZWlkZUBhcm0uY29tOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBs
+aW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IE15dW5nSm9vIEhhbTsgS3l1bmdt
+aW4gUGFyaw0KU3ViamVjdDogW1BBVENIIDEvMl0gUE0gLyBkZXZmcmVxOiBFeHBvcnQgaGVscGVy
+IGZ1bmN0aW9ucyBmb3IgZHJpdmVycw0KDQpGcm9tOiDDmHJqYW4gRWlkZSA8b3JqYW4uZWlkZUBh
+cm0uY29tPg0KDQpUaGVzZSBmdW5jdGlvbnMgYXJlIGluZGVuZGVkIGZvciB1c2UgYnkgZHJpdmVy
+cyBhbmQgc2hvdWxkIGJlIGF2YWlsYWJsZSBhbHNvIHdoZW4gdGhlIGRyaXZlciBpcyBidWlsdCBh
+cyBhIG1vZHVsZS4NCg0KQ2M6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29t
+Pg0KQ2M6IEt5dW5nbWluIFBhcmsgPGt5dW5nbWluLnBhcmtAc2Ftc3VuZy5jb20+DQpTaWduZWQt
+b2ZmLWJ5OiDDmHJqYW4gRWlkZSA8b3JqYW4uZWlkZUBhcm0uY29tPg0KLS0tDQogZHJpdmVycy9k
+ZXZmcmVxL2RldmZyZXEuYyB8ICAgIDMgKysrDQogMSBmaWxlIGNoYW5nZWQsIDMgaW5zZXJ0aW9u
+cygrKQ0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYyBiL2RyaXZlcnMv
+ZGV2ZnJlcS9kZXZmcmVxLmMgaW5kZXggOWY5MDM2OS4uMzBiNTM4ZDggMTAwNjQ0DQotLS0gYS9k
+cml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQorKysgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5j
+DQpAQCAtMTExOSw2ICsxMTE5LDcgQEAgc3RydWN0IGRldl9wbV9vcHAgKmRldmZyZXFfcmVjb21t
+ZW5kZWRfb3BwKHN0cnVjdCBkZXZpY2UgKmRldiwNCiANCiAJcmV0dXJuIG9wcDsNCiB9DQorRVhQ
+T1JUX1NZTUJPTChkZXZmcmVxX3JlY29tbWVuZGVkX29wcCk7DQogDQogLyoqDQogICogZGV2ZnJl
+cV9yZWdpc3Rlcl9vcHBfbm90aWZpZXIoKSAtIEhlbHBlciBmdW5jdGlvbiB0byBnZXQgZGV2ZnJl
+cSBub3RpZmllZCBAQCAtMTE0Miw2ICsxMTQzLDcgQEAgaW50IGRldmZyZXFfcmVnaXN0ZXJfb3Bw
+X25vdGlmaWVyKHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IGRldmZyZXEgKmRldmZyZXEpDQog
+DQogCXJldHVybiByZXQ7DQogfQ0KK0VYUE9SVF9TWU1CT0woZGV2ZnJlcV9yZWdpc3Rlcl9vcHBf
+bm90aWZpZXIpOw0KIA0KIC8qKg0KICAqIGRldmZyZXFfdW5yZWdpc3Rlcl9vcHBfbm90aWZpZXIo
+KSAtIEhlbHBlciBmdW5jdGlvbiB0byBzdG9wIGdldHRpbmcgZGV2ZnJlcSBAQCAtMTE2OCw2ICsx
+MTcwLDcgQEAgaW50IGRldmZyZXFfdW5yZWdpc3Rlcl9vcHBfbm90aWZpZXIoc3RydWN0IGRldmlj
+ZSAqZGV2LCBzdHJ1Y3QgZGV2ZnJlcSAqZGV2ZnJlcSkNCiANCiAJcmV0dXJuIHJldDsNCiB9DQor
+RVhQT1JUX1NZTUJPTChkZXZmcmVxX3VucmVnaXN0ZXJfb3BwX25vdGlmaWVyKTsNCiANCiBzdGF0
+aWMgdm9pZCBkZXZtX2RldmZyZXFfb3BwX3JlbGVhc2Uoc3RydWN0IGRldmljZSAqZGV2LCB2b2lk
+ICpyZXMpICB7DQotLQ0KMS43LjEwLjQNCg0KLS0NClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBs
+aXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1rZXJuZWwiIGluIHRoZSBib2R5
+IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnIE1vcmUgbWFqb3Jkb21v
+IGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KUGxl
+YXNlIHJlYWQgdGhlIEZBUSBhdCAgaHR0cDovL3d3dy50dXgub3JnL2xrbWwvDQoNCg0K
