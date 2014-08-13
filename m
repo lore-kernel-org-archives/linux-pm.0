@@ -1,170 +1,106 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v7 8/8] drivers: cpuidle: initialize Exynos driver through DT
-Date: Wed, 13 Aug 2014 16:52:07 +0100
-Message-ID: <1407945127-27554-9-git-send-email-lorenzo.pieralisi@arm.com>
-References: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Tomasz Figa <t.figa@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Lina Iyer <lina.iyer@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Grant Likely <grant.likely@linaro.org>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, devicetree@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Geoff Levand <geoff@infradead.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v2 0/4] PM QoS: per-cpu PM QoS support
+Date: Wed, 13 Aug 2014 10:01:25 -0600
+Message-ID: <1407945689-18494-1-git-send-email-lina.iyer@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:50321 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbaHMQBh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 12:01:37 -0400
+Received: by mail-pa0-f44.google.com with SMTP id eu11so15220765pac.3
+        for <linux-pm@vger.kernel.org>; Wed, 13 Aug 2014 09:01:37 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: daniel.lezcano@linaro.org, khilman@linaro.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, tglx@linutronix.de, rjw@rjwysocki.net
+Cc: Lina Iyer <lina.iyer@linaro.org>
 
-With the introduction of DT based idle states, CPUidle drivers for
-ARM can now initialize idle states data through properties in the device
-tree.
 
-This patch adds code to the Exynos CPUidle driver to dynamically
-initialize idle states data through the updated device tree source
-files.
+This patchset enables drivers to set per-cpu PM QoS. PM QoS requests currently
+apply to all cpus. However, drivers may be interested in only a few cpu(s) that
+need to gaurantee the QoS requirement. The reason being, some requests may be
+needed only to allow a quicker response to an IRQ, while requests may apply to
+a certain cpu or a cluster of cpus, as dictated by an usecase. For example, in
+ARM architectures, it may be benefical to set a QoS requirement to handle use
+cases on big/Little cluster, while the other cluster can be in the deepest idle
+state it can be.
 
-Cc: Chander Kashyap <k.chander@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Tomasz Figa <t.figa@samsung.com>
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
----
- arch/arm/boot/dts/exynos4210.dtsi | 11 +++++++++++
- arch/arm/boot/dts/exynos5250.dtsi | 11 +++++++++++
- drivers/cpuidle/Kconfig.arm       |  1 +
- drivers/cpuidle/cpuidle-exynos.c  | 27 ++++++++++++++++++++++++---
- 4 files changed, 47 insertions(+), 3 deletions(-)
+An intended application of this feature could be the cpuidle governor. For
+example, governor can now look at a CPU_DMA_LATENCY request only for that cpu
+when deciding the allowable C-States. In a clustered environment, the governor
+would look at the QoS request for a set of cpus before deciding the cluster's
+low power mode.
 
-diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
-index eab7c7b..69fd1a0 100644
---- a/arch/arm/boot/dts/exynos4210.dtsi
-+++ b/arch/arm/boot/dts/exynos4210.dtsi
-@@ -48,12 +48,23 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a9";
- 			reg = <0x900>;
-+			cpu-idle-states = <&CLUSTER_SLEEP_0>;
- 		};
- 
- 		cpu@901 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a9";
- 			reg = <0x901>;
-+			cpu-idle-states = <&CLUSTER_SLEEP_0>;
-+		};
-+
-+		idle-states {
-+			CLUSTER_SLEEP_0: cluster-sleep-0 {
-+				compatible = "arm,idle-state";
-+				entry-latency-us = <1000>;
-+				exit-latency-us = <300>;
-+				min-residency-us = <100000>;
-+			};
- 		};
- 	};
- 
-diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
-index 492e1ef..3a758ff 100644
---- a/arch/arm/boot/dts/exynos5250.dtsi
-+++ b/arch/arm/boot/dts/exynos5250.dtsi
-@@ -63,12 +63,23 @@
- 			compatible = "arm,cortex-a15";
- 			reg = <0>;
- 			clock-frequency = <1700000000>;
-+			cpu-idle-states = <&CLUSTER_SLEEP_0>;
- 		};
- 		cpu@1 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a15";
- 			reg = <1>;
- 			clock-frequency = <1700000000>;
-+			cpu-idle-states = <&CLUSTER_SLEEP_0>;
-+		};
-+
-+		idle-states {
-+			CLUSTER_SLEEP_0: cluster-sleep-0 {
-+				compatible = "arm,idle-state";
-+				entry-latency-us = <1000>;
-+				exit-latency-us = <300>;
-+				min-residency-us = <100000>;
-+			};
- 		};
- 	};
- 
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index e339c7f..04cc229 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -55,6 +55,7 @@ config ARM_AT91_CPUIDLE
- config ARM_EXYNOS_CPUIDLE
- 	bool "Cpu Idle Driver for the Exynos processors"
- 	depends on ARCH_EXYNOS
-+	select DT_IDLE_STATES
- 	help
- 	  Select this to enable cpuidle for Exynos processors
- 
-diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
-index ba9b34b..6dff982 100644
---- a/drivers/cpuidle/cpuidle-exynos.c
-+++ b/drivers/cpuidle/cpuidle-exynos.c
-@@ -13,11 +13,14 @@
- #include <linux/export.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-+#include <linux/slab.h>
- 
- #include <asm/proc-fns.h>
- #include <asm/suspend.h>
- #include <asm/cpuidle.h>
- 
-+#include "dt_idle_states.h"
-+
- static void (*exynos_enter_aftr)(void);
- 
- static int exynos_enter_lowpower(struct cpuidle_device *dev,
-@@ -58,17 +61,35 @@ static struct cpuidle_driver exynos_idle_driver = {
- 
- static int exynos_cpuidle_probe(struct platform_device *pdev)
- {
--	int ret;
-+	int ret, i;
-+	struct cpuidle_driver *drv = &exynos_idle_driver;
- 
- 	exynos_enter_aftr = (void *)(pdev->dev.platform_data);
- 
--	ret = cpuidle_register(&exynos_idle_driver, NULL);
-+	drv->cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
-+	if (!drv->cpumask)
-+		return -ENOMEM;
-+
-+	/* Start at index 1, index 0 standard WFI */
-+	ret = dt_init_idle_driver(drv, 1);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "failed to initialize idle states\n");
-+		goto free_mem;
-+	}
-+
-+	for (i = 1; i < drv->state_count; i++)
-+		drv->states[i].enter = exynos_enter_lowpower;
-+
-+	ret = cpuidle_register(drv, NULL);
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to register cpuidle driver\n");
--		return ret;
-+		goto free_mem;
- 	}
- 
- 	return 0;
-+free_mem:
-+	kfree(drv->cpumask);
-+	return ret;
- }
- 
- static struct platform_driver exynos_cpuidle_driver = {
+With these requirements in mind, the patches do the following -
+
+- Reorganize the PM QoS and dev-PM QoS frameworks to pass around data structures
+rather than member variables. Do not want to pass plist around. It is much more
+scalable, if we pass the pm_qos_request object rather than its member.
+
+- Enhance PM QoS framework to support the per-cpu requests. This is done by
+adding a per-cpu array for each constraint. This array holds the per-cpu QoS
+value for each constraint. The intelligence behind the per-cpu is on the driver.
+The framework just adds the request against the list held by the constraint
+structure. Adding a request adds the request to the list of requests
+against a constraint and also parses the array to see if this request superseeds
+any existing QoS value for the cpus that this request has specified. The
+workload of parsing the request is borne when updating the request.
+
+- The driver that does an add request passes in the PM QoS request
+  structure, can now pass in an additional request type that indicates if the
+request is to be applied to all cores (default and existing behavior) or applies
+to a subset of the cpus using a cpumask.
+
+- To get the request value of a constraint back, you could use the
+pm_qos_request() or its new cpu variants pm_qos_request_for_cpu() and
+pm_qos_request_for_cpumask(). The _for_cpu() allows returns an s32 value without
+locking.
+
+- The next feature builds up on the per-cpu PM QoS feature to provide the
+ability to allow a driver to tag a QoS request against an IRQ instead of a cpu.
+Drivers may be concerned with an IRQ handling latency because of CPU low
+power states, for example. When adding a request, they could specify the request
+type to tag an IRQ and provide the IRQ numbers. When using tools like
+irq-balancer, the IRQ affinity may jump from one cpu to another and in such a
+case, the request needs to be modified correctly. irq/manage.c provides such
+notification whenever the affinity changes. However, the current mechanism
+allows for only one notification callback. 
+
+	- Change to the smp_affinity_notifications. Modify the exisiting
+	  mechanism of a single callback to support a list of requests. Drivers
+	  can register for change notifications.
+
+	- From PM QoS register for notification on behalf of a driver whenever
+	  a request with IRQ is specified. When the notification arrives, modify
+	  the cpu affinity of the QoS request to the cpus, that the IRQ is affine to.
+
+- Remarks
+I do not have the governor changes here at this point. Also, there is no change
+to userspace at this point, i.e, userspace cannot specify a QoS request against
+a cpu or specify an IRQ to tag this request against.
+
+Thanks,
+Lina
+
+
+Lina Iyer (4):
+  QoS: Modify data structures and function arguments for scalability.
+  QoS: Enhance framework to support per-cpu PM QoS request
+  irq: Allow multiple clients to register for irq affinity notification
+  QoS: Enable PM QoS requests to apply only on smp_affinity of an IRQ
+
+ Documentation/power/pm_qos_interface.txt |  18 +++
+ drivers/base/power/qos.c                 |  14 +--
+ drivers/infiniband/hw/qib/qib_iba7322.c  |   4 +-
+ include/linux/interrupt.h                |  12 +-
+ include/linux/irq.h                      |   1 +
+ include/linux/irqdesc.h                  |   6 +-
+ include/linux/pm_qos.h                   |  25 +++-
+ kernel/irq/irqdesc.c                     |   1 +
+ kernel/irq/manage.c                      |  85 +++++++++-----
+ kernel/power/qos.c                       | 191 ++++++++++++++++++++++++++++++-
+ lib/cpu_rmap.c                           |   2 +-
+ 11 files changed, 306 insertions(+), 53 deletions(-)
+
 -- 
 1.9.1
+
