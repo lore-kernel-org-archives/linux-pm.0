@@ -1,180 +1,73 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH] cpuidle/cpuidle-big_little: fix reading cpu id part number
-Date: Wed, 13 Aug 2014 12:14:40 +0100
-Message-ID: <53EB48A0.3040204@arm.com>
-References: <1407501757-15231-1-git-send-email-juri.lelli@arm.com> <20140808132105.GB30282@n2100.arm.linux.org.uk> <20140808164737.GB11623@e102568-lin.cambridge.arm.com> <53EB381D.7080604@arm.com> <20140813104431.GJ30401@n2100.arm.linux.org.uk>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [ANNOUNCE] Tools to analyse PM and scheduling behaviour
+Date: Wed, 13 Aug 2014 13:22:34 +0200
+Message-ID: <20140813112234.GK9918@twins.programming.kicks-ass.net>
+References: <CAP245DUSAHO_VBoBMy4KQaaA6_0a-i3Y3u4utnK8ji3UMVniyA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="o7SYQ77Phh4p2BTz"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:33790 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750968AbaHMLOi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 07:14:38 -0400
-In-Reply-To: <20140813104431.GJ30401@n2100.arm.linux.org.uk>
+Received: from casper.infradead.org ([85.118.1.10]:44076 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbaHMLWu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 07:22:50 -0400
+Content-Disposition: inline
+In-Reply-To: <CAP245DUSAHO_VBoBMy4KQaaA6_0a-i3Y3u4utnK8ji3UMVniyA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Juri Lelli <juri.lelli@gmail.com>
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Ingo Molnar <mingo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Gross, Mark" <mark.gross@intel.com>, Paul McKenney <Paul.McKenney@us.ibm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mike Turquette <mturquette@linaro.org>, Juri Lelli <juri.lelli@arm.com>, sched-tools@linaro.org
 
-On 13/08/14 11:44, Russell King - ARM Linux wrote:
-> On Wed, Aug 13, 2014 at 11:04:13AM +0100, Juri Lelli wrote:
->> Thanks a lot for the comment. Does what below address it?
-> 
-> Yes, thanks, but a few of nitpicks though.
-> 
->> +/*
->> + * smp_cpuid_part() - return part id for a given cpu
->> + *
->> + * @cpu: logical cpu id
->> + *
->> + * Return: part id of logical cpu passed as argument
->> + *
->> + */
-> 
-> If this is supposed to be a kerneldoc-compatible comment, please read
-> Documentation/kernel-doc-nano-HOWTO.txt for the correct format.
-> 
->> +static inline unsigned int smp_cpuid_part(int cpu)
->> +{
->> +	struct cpuinfo_arm *cpu_info = &per_cpu(cpu_data, cpu);
->> +
->> +	return is_smp() ? (cpu_info->cpuid  & ARM_CPU_PART_MASK) :
-> 
-> Parens are not required, and there's a double space before &.
-> 
-> The BNF for the ?: operator is:
-> 
-> cond-expr:
-> 	log-or-expr ? expr : cond-expr
-> 
-> So the compiler knows that whatever is between the ? and : is a single
-> expression, and the parens are surplus.
-> 
->> -static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
->> +static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int match_id)
-> 
-> If we're changing the name, "part_id" would probably be better than the
-> opaque "match_id" here.
-> 
 
-Right, thanks! What follows has those fixed. Should I send it as a new post?
+--o7SYQ77Phh4p2BTz
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
+On Fri, Aug 08, 2014 at 07:24:01PM +0530, Amit Kucheria wrote:
+> Workload Generator Details
+> --------------------------
+> The Workload Generator is based on rt-app. Shared resources, waits, signa=
+ls
+> and locking order can be specified for each thread in a JSON description =
+to
+> construct complex interdependencies. This allows simulation of interesting
+> use-cases. The repository contains examples of a mp3 and web-browsing
+> workload.
+>=20
+> The method to construct the JSON description is quite manual currently. We
+> capture the trace of a workload of interest (say, on Android) and analyse
+> it in kernelshark. We then construct the JSON description by hand until i=
+ts
+> resultant trace looks similar to the trace from the real workload.
+>=20
+> The immediate goal is to expand the library to cover the common mobile
+> workloads. We=E2=80=99re also working with the rt-app maintainer to get o=
+ur changes
+> merged.
 
-- Juri
+With the end goal of having a program convert a trace into a JSON
+description I take it?
 
->From 61b88de0f021213f894e843c8e4673203f953ca9 Mon Sep 17 00:00:00 2001
-From: Juri Lelli <juri.lelli@arm.com>
-Date: Thu, 7 Aug 2014 17:26:54 +0100
-Subject: [PATCH] cpuidle/cpuidle-big_little: fix reading cpu id part number
+--o7SYQ77Phh4p2BTz
+Content-Type: application/pgp-signature
 
-Commit af040ffc9ba1e079ee4c0748aff64fa3d4716fa5 by Russell King changed
-ARM_CPU_PART_X masks, and the way they are returned and checked against.
-Usage of read_cpuid_part_number() is now deprecated, and calling places
-updated accordingly. This actually broke cpuidle-big_little initialization,
-as bl_idle_driver_init() performs a check using and hardcoded mask on
-cpu_id.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-Create an interface to perform the check (that is now even easier to read).
-Define also a proper mask (ARM_CPU_PART_MASK) that makes this kind of checks
-cleaner and helps preventing bugs in the future. Update usage accordingly.
+iQIcBAEBAgAGBQJT60p6AAoJEHZH4aRLwOS6/3cQAIulGSX8fc5ulQXn5IDoNyr4
+zvz2Kjd5bvqMI+5ydLHwmrjfU2Lcg1Lgo0MG5A/PQESIwbwya4yWJkKDrIW//Lf2
+r+7uKvm7uctwcMmibxgKQkJK9sQG/bG4RSbqD3Q42FxRkuUmDcisdcI2koOdJGTp
+YaNSF6oga0JOnqx9tJ5xJ5wiCIt5He2/Puk3a5QfyexCaHEYYR+2sXet1T34IvMO
+j5mi/vyVvSApDqiD8p93Et2do+ftNDgn9ButuI1p3OblEMSxqgquTo/XbzJ4sk5K
+1wOVqBk2TEbfdxgF/asjgiT8iUzRah9ZF4SWwb57CMnnqYN6z8kyEwxmWdzfEaGr
+jFOHE7LkObCmnQcH+/KRopCNnJ1VFf8sl3VO3hYzEmVhthitLSKdmBaYNl9fPtO1
+m8uGzbMtT3tV0B2xTD1BjtomfG8i8wTpdkn9rSVVOHLRoWZQGcRc4FPCsuI5/NCu
+JUR7P2mYGK73QRi9jJkwvo9IIhaLqKeHHSUa+bWsJXNKBObc+p07Dinwai8c3DBM
+Z5Iwj1ajHBkl5Y8FkWXO8KCZsmHAI3C942MIW8I2d5FLgLUORQtBEe4e2ETidWYf
+qLlc7+8uV1z+zDTJxkUWFJeEjG1UCE0nSwX0CewtidAjToHWV0OD8QSVIN9T196Y
+brf7c8e5HrMaU0XDH21j
+=WWwd
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
----
- arch/arm/include/asm/cputype.h       |  3 ++-
- arch/arm/include/asm/smp_plat.h      | 15 +++++++++++++++
- drivers/cpuidle/cpuidle-big_little.c | 13 +++----------
- 3 files changed, 20 insertions(+), 11 deletions(-)
-
-diff --git a/arch/arm/include/asm/cputype.h b/arch/arm/include/asm/cputype.h
-index 963a251..819777d 100644
---- a/arch/arm/include/asm/cputype.h
-+++ b/arch/arm/include/asm/cputype.h
-@@ -74,6 +74,7 @@
- #define ARM_CPU_PART_CORTEX_A12		0x4100c0d0
- #define ARM_CPU_PART_CORTEX_A17		0x4100c0e0
- #define ARM_CPU_PART_CORTEX_A15		0x4100c0f0
-+#define ARM_CPU_PART_MASK		0xff00fff0
- 
- #define ARM_CPU_XSCALE_ARCH_MASK	0xe000
- #define ARM_CPU_XSCALE_ARCH_V1		0x2000
-@@ -179,7 +180,7 @@ static inline unsigned int __attribute_const__ read_cpuid_implementor(void)
-  */
- static inline unsigned int __attribute_const__ read_cpuid_part(void)
- {
--	return read_cpuid_id() & 0xff00fff0;
-+	return read_cpuid_id() & ARM_CPU_PART_MASK;
- }
- 
- static inline unsigned int __attribute_const__ __deprecated read_cpuid_part_number(void)
-diff --git a/arch/arm/include/asm/smp_plat.h b/arch/arm/include/asm/smp_plat.h
-index a252c0b..0ad7d49 100644
---- a/arch/arm/include/asm/smp_plat.h
-+++ b/arch/arm/include/asm/smp_plat.h
-@@ -8,6 +8,7 @@
- #include <linux/cpumask.h>
- #include <linux/err.h>
- 
-+#include <asm/cpu.h>
- #include <asm/cputype.h>
- 
- /*
-@@ -25,6 +26,20 @@ static inline bool is_smp(void)
- #endif
- }
- 
-+/**
-+ * smp_cpuid_part() - return part id for a given cpu
-+ * @cpu:	logical cpu id.
-+ *
-+ * Return: part id of logical cpu passed as argument.
-+ */
-+static inline unsigned int smp_cpuid_part(int cpu)
-+{
-+	struct cpuinfo_arm *cpu_info = &per_cpu(cpu_data, cpu);
-+
-+	return is_smp() ? cpu_info->cpuid & ARM_CPU_PART_MASK :
-+			  read_cpuid_part();
-+}
-+
- /* all SMP configurations have the extended CPUID registers */
- #ifndef CONFIG_MMU
- #define tlb_ops_need_broadcast()	0
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index 344d79fa..ef94c3b 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -138,25 +138,18 @@ static int bl_enter_powerdown(struct cpuidle_device *dev,
- 	return idx;
- }
- 
--static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
-+static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int part_id)
- {
--	struct cpuinfo_arm *cpu_info;
- 	struct cpumask *cpumask;
--	unsigned long cpuid;
- 	int cpu;
- 
- 	cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
- 	if (!cpumask)
- 		return -ENOMEM;
- 
--	for_each_possible_cpu(cpu) {
--		cpu_info = &per_cpu(cpu_data, cpu);
--		cpuid = is_smp() ? cpu_info->cpuid : read_cpuid_id();
--
--		/* read cpu id part number */
--		if ((cpuid & 0xFFF0) == cpu_id)
-+	for_each_possible_cpu(cpu)
-+		if (smp_cpuid_part(cpu) == part_id)
- 			cpumask_set_cpu(cpu, cpumask);
--	}
- 
- 	drv->cpumask = cpumask;
- 
--- 
-2.0.4
-
+--o7SYQ77Phh4p2BTz--
