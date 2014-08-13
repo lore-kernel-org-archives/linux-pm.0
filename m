@@ -1,249 +1,198 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v7 6/8] drivers: cpuidle: CPU idle ARM64 driver
-Date: Wed, 13 Aug 2014 16:52:05 +0100
-Message-ID: <1407945127-27554-7-git-send-email-lorenzo.pieralisi@arm.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Subject: [PATCH v7 5/8] arm64: add PSCI CPU_SUSPEND based cpu_suspend support
+Date: Wed, 13 Aug 2014 16:52:04 +0100
+Message-ID: <1407945127-27554-6-git-send-email-lorenzo.pieralisi@arm.com>
 References: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:38792 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753417AbaHMPwf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 11:52:35 -0400
-In-Reply-To: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1407945127-27554-1-git-send-email-lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Charles Garcia Tobin <Charles.Garcia-Tobin-5wv7dgnIgG8@public.gmane.org>, Nicolas Pitre <nico-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Amit Kucheria <amit.kucheria-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Antti Miettinen <ananaza-X3B1VOXEql0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Capella <sebcape-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Chander Kashyap <k.chander-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Geoff
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <k.chander@samsung.com>, Geoff
 
-This patch implements a generic CPU idle driver for ARM64 machines.
+This patch implements the cpu_suspend cpu operations method through
+the PSCI CPU SUSPEND API. The PSCI implementation translates the idle state
+index passed by the cpu_suspend core call into a valid PSCI state according=
+ to
+the PSCI states initialized at boot through the cpu_init_idle() CPU
+operations hook.
 
-It relies on the DT idle states infrastructure to initialize idle
-states count and respective parameters. Current code assumes the driver
-is managing idle states on all possible CPUs but can be easily
-generalized to support heterogenous systems and build cpumasks at
-runtime using MIDRs or DT cpu nodes compatible properties.
+The PSCI CPU suspend operation hook checks if the PSCI state is a
+standby state. If it is, it calls the PSCI suspend implementation
+straight away, without saving any context. If the state is a power
+down state the kernel calls the __cpu_suspend API (that saves the CPU
+context) and passed the PSCI suspend finisher as a parameter so that PSCI
+can be called by the __cpu_suspend implementation after saving and flushing
+the context as last function before power down.
 
-The driver relies on the arm64 CPU operations to call the idle
-initialization hook used to parse and save suspend back-end specific
-idle states information upon probing.
+For power down states, entry point is set to cpu_resume physical address,
+that represents the default kernel execution address following a CPU reset.
 
-Idle state index 0 is always initialized as a simple wfi state, ie always
-considered present and functional on all ARM64 platforms.
-
-Idle state indices higher than 0 trigger idle state entry by calling
-the cpu_suspend function, that triggers the suspend operation through
-the CPU operations suspend back-end hook. cpu_suspend passes the idle
-state index as a parameter so that the CPU operations suspend back-end
-can retrieve the required idle state data by using the idle state
-index to execute a look-up on its internal data structures.
-
-Reviewed-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Reviewed-by: Ashwin Chaugule <ashwin.chaugule-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
 ---
- drivers/cpuidle/Kconfig         |   5 ++
- drivers/cpuidle/Kconfig.arm64   |  14 +++++
- drivers/cpuidle/Makefile        |   4 ++
- drivers/cpuidle/cpuidle-arm64.c | 131 ++++++++++++++++++++++++++++++++++++=
+ arch/arm64/kernel/psci.c | 100 +++++++++++++++++++++++++++++++++++++++++++=
 ++++
- 4 files changed, 154 insertions(+)
- create mode 100644 drivers/cpuidle/Kconfig.arm64
- create mode 100644 drivers/cpuidle/cpuidle-arm64.c
+ 1 file changed, 100 insertions(+)
 
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 8deb934..c5029c1 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -33,6 +33,11 @@ depends on ARM
- source "drivers/cpuidle/Kconfig.arm"
- endmenu
-=20
-+menu "ARM64 CPU Idle Drivers"
-+depends on ARM64
-+source "drivers/cpuidle/Kconfig.arm64"
-+endmenu
-+
- menu "MIPS CPU Idle Drivers"
- depends on MIPS
- source "drivers/cpuidle/Kconfig.mips"
-diff --git a/drivers/cpuidle/Kconfig.arm64 b/drivers/cpuidle/Kconfig.arm64
-new file mode 100644
-index 0000000..d0a08ed
---- /dev/null
-+++ b/drivers/cpuidle/Kconfig.arm64
-@@ -0,0 +1,14 @@
-+#
-+# ARM64 CPU Idle drivers
-+#
-+
-+config ARM64_CPUIDLE
-+=09bool "Generic ARM64 CPU idle Driver"
-+=09select ARM64_CPU_SUSPEND
-+=09select DT_IDLE_STATES
-+=09help
-+=09  Select this to enable generic cpuidle driver for ARM64.
-+=09  It provides a generic idle driver whose idle states are configured
-+=09  at run-time through DT nodes. The CPUidle suspend backend is
-+=09  initialized by calling the CPU operations init idle hook
-+=09  provided by architecture code.
-diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index 002b653..4d177b9 100644
---- a/drivers/cpuidle/Makefile
-+++ b/drivers/cpuidle/Makefile
-@@ -23,6 +23,10 @@ obj-$(CONFIG_ARM_EXYNOS_CPUIDLE)        +=3D cpuidle-exy=
-nos.o
- obj-$(CONFIG_MIPS_CPS_CPUIDLE)=09=09+=3D cpuidle-cps.o
-=20
- ##########################################################################=
-#####
-+# ARM64 drivers
-+obj-$(CONFIG_ARM64_CPUIDLE)=09=09+=3D cpuidle-arm64.o
-+
-+##########################################################################=
-#####
- # POWERPC drivers
- obj-$(CONFIG_PSERIES_CPUIDLE)=09=09+=3D cpuidle-pseries.o
- obj-$(CONFIG_POWERNV_CPUIDLE)=09=09+=3D cpuidle-powernv.o
-diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm6=
-4.c
-new file mode 100644
-index 0000000..25ec622
---- /dev/null
-+++ b/drivers/cpuidle/cpuidle-arm64.c
-@@ -0,0 +1,131 @@
-+/*
-+ * ARM64 generic CPU idle driver.
-+ *
-+ * Copyright (C) 2014 ARM Ltd.
-+ * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#define pr_fmt(fmt) "CPUidle arm64: " fmt
-+
-+#include <linux/cpuidle.h>
-+#include <linux/cpumask.h>
-+#include <linux/cpu_pm.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
+diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
+index 5539547..8258a77 100644
+--- a/arch/arm64/kernel/psci.c
++++ b/arch/arm64/kernel/psci.c
+@@ -21,6 +21,7 @@
+ #include <linux/reboot.h>
+ #include <linux/pm.h>
+ #include <linux/delay.h>
 +#include <linux/slab.h>
-+
-+#include <asm/cpuidle.h>
+ #include <uapi/linux/psci.h>
+=20
+ #include <asm/compiler.h>
+@@ -28,6 +29,7 @@
+ #include <asm/errno.h>
+ #include <asm/psci.h>
+ #include <asm/smp_plat.h>
 +#include <asm/suspend.h>
+ #include <asm/system_misc.h>
+=20
+ #define PSCI_POWER_STATE_TYPE_STANDBY=09=090
+@@ -65,6 +67,8 @@ enum psci_function {
+ =09PSCI_FN_MAX,
+ };
+=20
++static DEFINE_PER_CPU_READ_MOSTLY(struct psci_power_state *, psci_power_st=
+ate);
 +
-+#include "dt_idle_states.h"
-+
-+/*
-+ * arm_enter_idle_state - Programs CPU to enter the specified state
-+ *
-+ * dev: cpuidle device
-+ * drv: cpuidle driver
-+ * idx: state index
-+ *
-+ * Called from the CPUidle framework to program the device to the
-+ * specified target state selected by the governor.
-+ */
-+static int arm_enter_idle_state(struct cpuidle_device *dev,
-+=09=09=09=09struct cpuidle_driver *drv, int idx)
+ static u32 psci_function_id[PSCI_FN_MAX];
+=20
+ static int psci_to_linux_errno(int errno)
+@@ -93,6 +97,18 @@ static u32 psci_power_state_pack(struct psci_power_state=
+ state)
+ =09=09 & PSCI_0_2_POWER_STATE_AFFL_MASK);
+ }
+=20
++static void psci_power_state_unpack(u32 power_state,
++=09=09=09=09    struct psci_power_state *state)
 +{
-+=09int ret;
-+
-+=09if (!idx) {
-+=09=09cpu_do_idle();
-+=09=09return idx;
-+=09}
-+
-+=09ret =3D cpu_pm_enter();
-+=09if (!ret) {
-+=09=09/*
-+=09=09 * Pass idle state index to cpu_suspend which in turn will
-+=09=09 * call the CPU ops suspend protocol with idle index as a
-+=09=09 * parameter.
-+=09=09 */
-+=09=09ret =3D cpu_suspend(idx);
-+
-+=09=09cpu_pm_exit();
-+=09}
-+
-+=09return ret ? -1 : idx;
++=09state->id =3D (power_state & PSCI_0_2_POWER_STATE_ID_MASK) >>
++=09=09=09PSCI_0_2_POWER_STATE_ID_SHIFT;
++=09state->type =3D (power_state & PSCI_0_2_POWER_STATE_TYPE_MASK) >>
++=09=09=09PSCI_0_2_POWER_STATE_TYPE_SHIFT;
++=09state->affinity_level =3D
++=09=09=09(power_state & PSCI_0_2_POWER_STATE_AFFL_MASK) >>
++=09=09=09PSCI_0_2_POWER_STATE_AFFL_SHIFT;
 +}
 +
-+struct cpuidle_driver arm64_idle_driver =3D {
-+=09.name =3D "arm64_idle",
-+=09.owner =3D THIS_MODULE,
-+=09/*
-+=09 * State at index 0 is standby wfi and considered standard
-+=09 * on all ARM platforms. If in some platforms simple wfi
-+=09 * can't be used as "state 0", DT bindings must be implemented
-+=09 * to work around this issue and allow installing a special
-+=09 * handler for idle state index 0.
-+=09 */
-+=09.states[0] =3D {
-+=09=09.enter                  =3D arm_enter_idle_state,
-+=09=09.exit_latency           =3D 1,
-+=09=09.target_residency       =3D 1,
-+=09=09.power_usage=09=09=3D UINT_MAX,
-+=09=09.flags                  =3D CPUIDLE_FLAG_TIME_VALID,
-+=09=09.name                   =3D "WFI",
-+=09=09.desc                   =3D "ARM64 WFI",
-+=09}
-+};
-+
-+/*
-+ * arm64_idle_init
-+ *
-+ * Registers the arm64 specific cpuidle driver with the cpuidle
-+ * framework. It relies on core code to parse the idle states
-+ * and initialize them using driver data structures accordingly.
-+ */
-+static int __init arm64_idle_init(void)
+ /*
+  * The following two functions are invoked via the invoke_psci_fn pointer
+  * and will not be inlined, allowing us to piggyback on the AAPCS.
+@@ -199,6 +215,59 @@ static int psci_migrate_info_type(void)
+ =09return err;
+ }
+=20
++static int __maybe_unused cpu_psci_cpu_init_idle(struct device_node *cpu_n=
+ode,
++=09=09=09=09=09=09 unsigned int cpu)
 +{
-+=09int i, ret;
-+=09struct cpuidle_driver *drv =3D &arm64_idle_driver;
++=09int i, ret, count =3D 0;
++=09struct psci_power_state *psci_states;
++=09struct device_node *state_node;
 +
-+=09drv->cpumask =3D kzalloc(cpumask_size(), GFP_KERNEL);
-+=09if (!drv->cpumask)
++=09/*
++=09 * If the PSCI cpu_suspend function hook has not been initialized
++=09 * idle states must not be enabled, so bail out
++=09 */
++=09if (!psci_ops.cpu_suspend)
++=09=09return -EOPNOTSUPP;
++
++=09/* Count idle states */
++=09while ((state_node =3D of_parse_phandle(cpu_node, "cpu-idle-states",
++=09=09=09=09=09      count)))
++=09=09count++;
++
++=09if (!count)
++=09=09return -ENODEV;
++
++=09psci_states =3D kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
++=09if (!psci_states)
 +=09=09return -ENOMEM;
 +
-+=09cpumask_copy(drv->cpumask, cpu_possible_mask);
-+=09/*
-+=09 * Initialize idle states data, starting at index 1.
-+=09 * This driver is DT only, if no DT idle states are detected (ret =3D=
-=3D 0)
-+=09 * let the driver initialization fail accordingly since there is no
-+=09 * reason to initialize the idle driver if only wfi is supported.
-+=09 */
-+=09ret =3D dt_init_idle_driver(drv, 1);
-+=09if (ret <=3D 0)
-+=09=09goto free_mem;
-+=09/*
-+=09 * Call arch CPU operations in order to initialize
-+=09 * idle states suspend back-end specific data
-+=09 */
-+=09for_each_cpu(i, drv->cpumask) {
-+=09=09ret =3D cpu_init_idle(i);
-+=09=09if (ret)
++=09for (i =3D 0; i < count; i++) {
++=09=09u32 psci_power_state;
++
++=09=09state_node =3D of_parse_phandle(cpu_node, "cpu-idle-states", i);
++
++=09=09ret =3D of_property_read_u32(state_node,
++=09=09=09=09=09   "arm,psci-suspend-param",
++=09=09=09=09=09   &psci_power_state);
++=09=09if (ret) {
++=09=09=09pr_warn(" * %s missing arm,psci-suspend-param property\n",
++=09=09=09=09state_node->full_name);
 +=09=09=09goto free_mem;
++=09=09}
++
++=09=09pr_debug("psci-power-state %#x index %d\n", psci_power_state,
++=09=09=09=09=09=09=09    i);
++=09=09psci_power_state_unpack(psci_power_state, &psci_states[i]);
 +=09}
-+
-+=09for (i =3D 1; i < drv->state_count; i++)
-+=09=09drv->states[i].enter =3D arm_enter_idle_state;
-+
-+=09ret =3D cpuidle_register(drv, NULL);
-+=09if (ret)
-+=09=09goto free_mem;
-+
++=09/* Idle states parsed correctly, initialize per-cpu pointer */
++=09per_cpu(psci_power_state, cpu) =3D psci_states;
 +=09return 0;
++
 +free_mem:
-+=09kfree(drv->cpumask);
++=09kfree(psci_states);
 +=09return ret;
 +}
-+device_initcall(arm64_idle_init);
++
+ static int get_set_conduit_method(struct device_node *np)
+ {
+ =09const char *method;
+@@ -436,8 +505,39 @@ static int cpu_psci_cpu_kill(unsigned int cpu)
+ #endif
+ #endif
+=20
++static int psci_suspend_finisher(unsigned long index)
++{
++=09struct psci_power_state *state =3D __get_cpu_var(psci_power_state);
++
++=09return psci_ops.cpu_suspend(state[index - 1],
++=09=09=09=09    virt_to_phys(cpu_resume));
++}
++
++static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
++{
++=09int ret;
++=09struct psci_power_state *state =3D __get_cpu_var(psci_power_state);
++=09/*
++=09 * idle state index 0 corresponds to wfi, should never be called
++=09 * from the cpu_suspend operations
++=09 */
++=09if (WARN_ON_ONCE(!index))
++=09=09return -EINVAL;
++
++=09if (state->type =3D=3D PSCI_POWER_STATE_TYPE_STANDBY)
++=09=09ret =3D psci_ops.cpu_suspend(state[index - 1], 0);
++=09else
++=09=09ret =3D __cpu_suspend(index, psci_suspend_finisher);
++
++=09return ret;
++}
++
+ const struct cpu_operations cpu_psci_ops =3D {
+ =09.name=09=09=3D "psci",
++#ifdef CONFIG_CPU_IDLE
++=09.cpu_init_idle=09=3D cpu_psci_cpu_init_idle,
++=09.cpu_suspend=09=3D cpu_psci_cpu_suspend,
++#endif
+ #ifdef CONFIG_SMP
+ =09.cpu_init=09=3D cpu_psci_cpu_init,
+ =09.cpu_prepare=09=3D cpu_psci_cpu_prepare,
 --=20
 1.9.1
 
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
