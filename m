@@ -1,88 +1,168 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Wed, 13 Aug 2014 05:58:18 -0400
-Message-ID: <53EB36BA.7050302@redhat.com>
-References: <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <53DBE764.8050109@redhat.com> <53DBEC27.7050803@codeaurora.org> <CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com> <53E0B657.4070007@redhat.com> <CAKohponxBdYEgY2oYuzmdaqfSRS8Uq8bZOzcb1QDmKO-z5ZBFQ@mail.gmail.com> <53E1556B.5070304@codeaurora.org> <CAKohpoky1-hj7cwnKc58svh8Z1Yas1=q4uJEK8mWcb56uqAcng@mail.gmail.com> <53E1FEE5.80305@redhat.com> <20140806150831.GB32301@codeaurora.org> <CAKohponBRn9mwpPMinsjqpHe3wTFj6aNpYk5gZaWDKht3bd5NQ@mail.gmail.com> <53E35122.3040806@redhat.com> <CAKohpokLsqMMxMwh_p+kUL=He9-8cSws6onG6DCBNBVzz1=5TA@mail.gmail.com> <CAKohpokebTdX-Ssdc4N+b09tZ35qkckiErypc0c0Nbe7v+Y5uQ@mail.gmail.com> <53E9FBA4.2080609@redhat.com> <CAKohponqFj5jSpvYbMD5d5zgCJAjCYkNg=_L+BKeMEDmBEWbyg@m
- ail.gmail.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH] cpuidle/cpuidle-big_little: fix reading cpu id part number
+Date: Wed, 13 Aug 2014 11:04:13 +0100
+Message-ID: <53EB381D.7080604@arm.com>
+References: <1407501757-15231-1-git-send-email-juri.lelli@arm.com> <20140808132105.GB30282@n2100.arm.linux.org.uk> <20140808164737.GB11623@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:63165 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751097AbaHMJ6Y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Aug 2014 05:58:24 -0400
-In-Reply-To: <CAKohponqFj5jSpvYbMD5d5zgCJAjCYkNg=_L+BKeMEDmBEWbyg@mail.gmail.com>
+Received: from service87.mimecast.com ([91.220.42.44]:47890 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750803AbaHMKEK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 06:04:10 -0400
+In-Reply-To: <20140808164737.GB11623@e102568-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Juri Lelli <juri.lelli@gmail.com>
 
+Hi all,
 
+On 08/08/14 17:47, Lorenzo Pieralisi wrote:
+> On Fri, Aug 08, 2014 at 02:21:05PM +0100, Russell King - ARM Linux wrote:
+>> On Fri, Aug 08, 2014 at 01:42:37PM +0100, Juri Lelli wrote:
+>>> Commit af040ffc9ba1 ("ARM: make it easier to check the CPU part number
+>>> correctly") changed ARM_CPU_PART_X masks, and the way they are returned and
+>>> checked against. Usage of read_cpuid_part_number() is now deprecated, and
+>>> calling places updated accordingly. This actually broke cpuidle-big_little
+>>> initialization, as bl_idle_driver_init() performs a check using and hardcoded
+>>> mask on cpu_id.
+>>>
+>>> Update the check to reflect changes on ARM_CPU_PART_X masks. Also,
+>>> make the check easier to understand.
+>>
+>> I don't like this "let's work out our own way to check the CPU type"
+>> stuff which people seem to create.  Let's try and do the job better
+>> and have some proper interfaces to do this kind of thing.
+>>
+>> Maybe we should have smp_cpuid_part(cpu) which returns the CPU vendor/
+>> part identifier for the particular CPU in an efficient manner.
 
-On 08/13/2014 03:39 AM, Viresh Kumar wrote:
-> On 12 August 2014 17:03, Prarit Bhargava <prarit@redhat.com> wrote:
->> Okay, this is what I have and I can reproduce this *easily* 100% of the time.
->>
->> I've used your above config options and have enabled LOCKDEP.
->>
->> In order to restore the locking, I've applied the following patch to the cpufreq
->> core (sorry for the cut-and-paste):
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index d9fdedd..dfda238 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -2192,9 +2192,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *polic
->>         /* end old governor */
->>         if (old_gov) {
->>                 __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
->> -               up_write(&policy->rwsem);
->>                 __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
->> -               down_write(&policy->rwsem);
->>         }
->>
->>         /* start new governor */
->> @@ -2203,9 +2201,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *polic
->>                 if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
->>                         goto out;
->>
->> -               up_write(&policy->rwsem);
->>                 __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
->> -               down_write(&policy->rwsem);
->>         }
->>
->>         /* new governor failed, so re-start old one */
->>
->>
->> I've modified the acpi-cpufreq driver to include (sorry for the cut-and-paste)
->>
->> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
->> index b0c18ed..97653c3 100644
->> --- a/drivers/cpufreq/acpi-cpufreq.c
->> +++ b/drivers/cpufreq/acpi-cpufreq.c
->> @@ -884,6 +884,9 @@ static struct freq_attr *acpi_cpufreq_attr[] = {
->>  };
->>
->>  static struct cpufreq_driver acpi_cpufreq_driver = {
->> +       .flags                  = CPUFREQ_STICKY |
->> +                                       CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
->> +                                       CPUFREQ_NEED_INITIAL_FREQ_CHECK,
->>         .verify         = cpufreq_generic_frequency_table_verify,
->>         .target_index   = acpi_cpufreq_target,
->>         .bios_limit     = acpi_processor_get_bios_limit,
->>
->> I do a
->>
->> cat /sys/devices/system/cpu/cpu2/cpufreq/conservative/*
->> echo ondemand > /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor
->>
->> and then I immediately see the stack trace.
+Thanks a lot for the comment. Does what below address it?
+
 > 
-> What's your system configuration? How many clusters/cpus/etc..
-
-Anywhere from 2-4 sockets, 8 - 240 cpus (depending on # of sockets), x86 arch.
-
-P.
+> Ok, basically an inline function that either read and mask the cpuid
+> stashed at boot in cpu_data or read the part number straight away on UP.
 > 
+> Should it belong in asm/smp_plat.h ?
+> 
+
+Ok, this is how it could look like.
+
+>From 6dbaf6c2eb34b06966daf5e90d1f08a0202c86e2 Mon Sep 17 00:00:00 2001
+From: Juri Lelli <juri.lelli@arm.com>
+Date: Thu, 7 Aug 2014 17:26:54 +0100
+Subject: [PATCH] cpuidle/cpuidle-big_little: fix reading cpu id part number
+
+Commit af040ffc9ba1e079ee4c0748aff64fa3d4716fa5 by Russell King changed
+ARM_CPU_PART_X masks, and the way they are returned and checked against.
+Usage of read_cpuid_part_number() is now deprecated, and calling places
+updated accordingly. This actually broke cpuidle-big_little initialization,
+as bl_idle_driver_init() performs a check using and hardcoded mask on
+cpu_id.
+
+Create an interface to perform the check (that is now even easier to read).
+Define also a proper mask (ARM_CPU_PART_MASK) that makes this kind of checks
+cleaner and helps preventing bugs in the future. Update usage accordingly.
+
+Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+---
+ arch/arm/include/asm/cputype.h       |  3 ++-
+ arch/arm/include/asm/smp_plat.h      | 17 +++++++++++++++++
+ drivers/cpuidle/cpuidle-big_little.c | 13 +++----------
+ 3 files changed, 22 insertions(+), 11 deletions(-)
+
+diff --git a/arch/arm/include/asm/cputype.h b/arch/arm/include/asm/cputype.h
+index 963a251..819777d 100644
+--- a/arch/arm/include/asm/cputype.h
++++ b/arch/arm/include/asm/cputype.h
+@@ -74,6 +74,7 @@
+ #define ARM_CPU_PART_CORTEX_A12		0x4100c0d0
+ #define ARM_CPU_PART_CORTEX_A17		0x4100c0e0
+ #define ARM_CPU_PART_CORTEX_A15		0x4100c0f0
++#define ARM_CPU_PART_MASK		0xff00fff0
+ 
+ #define ARM_CPU_XSCALE_ARCH_MASK	0xe000
+ #define ARM_CPU_XSCALE_ARCH_V1		0x2000
+@@ -179,7 +180,7 @@ static inline unsigned int __attribute_const__ read_cpuid_implementor(void)
+  */
+ static inline unsigned int __attribute_const__ read_cpuid_part(void)
+ {
+-	return read_cpuid_id() & 0xff00fff0;
++	return read_cpuid_id() & ARM_CPU_PART_MASK;
+ }
+ 
+ static inline unsigned int __attribute_const__ __deprecated read_cpuid_part_number(void)
+diff --git a/arch/arm/include/asm/smp_plat.h b/arch/arm/include/asm/smp_plat.h
+index a252c0b..b84ee77 100644
+--- a/arch/arm/include/asm/smp_plat.h
++++ b/arch/arm/include/asm/smp_plat.h
+@@ -8,6 +8,7 @@
+ #include <linux/cpumask.h>
+ #include <linux/err.h>
+ 
++#include <asm/cpu.h>
+ #include <asm/cputype.h>
+ 
+ /*
+@@ -25,6 +26,22 @@ static inline bool is_smp(void)
+ #endif
+ }
+ 
++/*
++ * smp_cpuid_part() - return part id for a given cpu
++ *
++ * @cpu: logical cpu id
++ *
++ * Return: part id of logical cpu passed as argument
++ *
++ */
++static inline unsigned int smp_cpuid_part(int cpu)
++{
++	struct cpuinfo_arm *cpu_info = &per_cpu(cpu_data, cpu);
++
++	return is_smp() ? (cpu_info->cpuid  & ARM_CPU_PART_MASK) :
++			  read_cpuid_part();
++}
++
+ /* all SMP configurations have the extended CPUID registers */
+ #ifndef CONFIG_MMU
+ #define tlb_ops_need_broadcast()	0
+diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+index 344d79fa..1703d32 100644
+--- a/drivers/cpuidle/cpuidle-big_little.c
++++ b/drivers/cpuidle/cpuidle-big_little.c
+@@ -138,25 +138,18 @@ static int bl_enter_powerdown(struct cpuidle_device *dev,
+ 	return idx;
+ }
+ 
+-static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
++static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int match_id)
+ {
+-	struct cpuinfo_arm *cpu_info;
+ 	struct cpumask *cpumask;
+-	unsigned long cpuid;
+ 	int cpu;
+ 
+ 	cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
+ 	if (!cpumask)
+ 		return -ENOMEM;
+ 
+-	for_each_possible_cpu(cpu) {
+-		cpu_info = &per_cpu(cpu_data, cpu);
+-		cpuid = is_smp() ? cpu_info->cpuid : read_cpuid_id();
+-
+-		/* read cpu id part number */
+-		if ((cpuid & 0xFFF0) == cpu_id)
++	for_each_possible_cpu(cpu)
++		if (smp_cpuid_part(cpu) == match_id)
+ 			cpumask_set_cpu(cpu, cpumask);
+-	}
+ 
+ 	drv->cpumask = cpumask;
+ 
+-- 
+2.0.4
+
