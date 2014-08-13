@@ -1,41 +1,124 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: [PATCH] cpuidle: big.LITTLE: add Exynos5800 compatible string
-Date: Tue, 12 Aug 2014 17:11:05 -0700
-Message-ID: <1407888665-24603-1-git-send-email-khilman@linaro.org>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH] Hibernate: save e820 table to snapshot header for
+ comparison
+Date: Wed, 13 Aug 2014 12:29:13 +0800
+Message-ID: <20140813042913.GB19409@linux-rxt1.site>
+References: <1407751987-21448-1-git-send-email-jlee@suse.com>
+ <20140812094136.GC3950@amd.pavel.ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:33759 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752423AbaHMALI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Aug 2014 20:11:08 -0400
-Received: by mail-pa0-f51.google.com with SMTP id ey11so13942668pad.10
-        for <linux-pm@vger.kernel.org>; Tue, 12 Aug 2014 17:11:07 -0700 (PDT)
+Received: from smtp.nue.novell.com ([195.135.221.5]:42898 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750742AbaHME3b (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Wed, 13 Aug 2014 00:29:31 -0400
+Content-Disposition: inline
+In-Reply-To: <20140812094136.GC3950@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: daniel.lezcano@linaro.org
-Cc: t.figa@samsung.com, k.chander@samsung.com, kgene.kim@samsung.com, linaro-kernel@lists.linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, "open list:CPUIDLE DRIVER -..." <linux-arm-kernel@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
 
-Exynos 5800 is big.LITTLE SoC compatible with the 5420.  Add the
-compatible string so this driver works on the 5800.
+Hi Pavel, 
 
-Tested on exynos5800-peach-pi (aka Samsung Chromebook2)
+Thanks for your review, first!
 
-Signed-off-by: Kevin Hilman <khilman@linaro.org>
----
- drivers/cpuidle/cpuidle-big_little.c | 1 +
- 1 file changed, 1 insertion(+)
+On Tue, Aug 12, 2014 at 11:41:36AM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > [    7.374714] e820: Check memory region: [mem 0x0000000100000000-0x000000187fffffff] usable
+> > [    7.378041] PM: Image mismatch: memory map changed
+> > [    7.381314] PM: Read 2398272 kbytes in 0.27 seconds (8882.48 MB/s)
+> > [    7.385476] PM: Error -1 resuming
+> > [    7.388730] PM: Failed to load hibernation image, recovering.
+> > [    7.688989] PM: Basic memory bitmaps freed
+> 
+> Nice!
+> 
+> > +int save_mem_chk_map(struct mementry *mem_chk_map)
+> 
+> I'd prefer _chk_ -> _check_
+>
 
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index 0a1f827308db..bf3ab66fdaaf 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -166,6 +166,7 @@ static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int match_id)
- static const struct of_device_id compatible_machine_match[] = {
- 	{ .compatible = "arm,vexpress,v2p-ca15_a7" },
- 	{ .compatible = "samsung,exynos5420" },
-+	{ .compatible = "samsung,exynos5800" },
- 	{},
- };
+OK, I will change the naming.
  
--- 
-1.9.2
+> > +{
+> > +	int i;
+> > +
+> > +	for (i = 0; i < e820.nr_map; i++) {
+> > +		struct e820entry *ei = &e820.map[i];
+> > +
+> > +		if (i > MEMCHKMAX)
+> > +			break;
+> 
+> MEMCHKMAX -> MEM_CHECK_MAX?
+> 
+> What happens when there are more entries?
+> 
 
+Yes, the number 128 is from E820MAX, the legacy E820 BIOS limitation. My original thinking is keep
+the size of swsusp_info in 4K then don't need change the swap accessing codes in swsusp_read() and
+swsusp_write(). On the other hand, I have no machine that provides E820 entries more then 128.
+
+hm.... but, yes, this is an magic number causes we didn't check the entries bigger than 128.
+I will modify this patch to keep the pages of E820 table behind the swsusp_info header.
+
+> > +bool check_mem_map(int mem_chk_entries, struct mementry *mem_chk_map)
+> > +{
+> > +	int i;
+> > +	bool ret = true;
+> > +
+> > +	if (mem_chk_entries != e820.nr_map) {
+> > +		pr_err("PM: memory check entry number %d:%d\n",
+> > +			mem_chk_entries, e820.nr_map);
+> > +		ret = false;
+> > +		goto Print_map;
+> > +	}
+> 
+> I'd change name to something like mem_map_matches() or mem_map_ok(),
+> so that it is clear what true/false means.
+> 
+> Can you reduce ammount of gotos?
+> 
+
+OK, I will change naming and reduce goto.
+
+> > +	for (i = 0; i < mem_chk_entries; i++) {
+> > +		struct e820entry *ei = &e820.map[i];
+> > +
+> > +		if (i > MEMCHKMAX)
+> > +			break;
+> > +
+> > +		/* check regions not E820_RAM or E820_RESERVED_KERN */
+> > +		if (ei->type != E820_RAM && ei->type != E820_RESERVED_KERN) {
+> > +			if (mem_chk_map[i].addr != ei->addr ||
+> > +			    mem_chk_map[i].size != ei->size ||
+> > +			    mem_chk_map[i].type != ei->type) {
+> > +				ret = false;
+> > +				goto Print_map;
+> > +			}
+> > +		}
+> 
+> Why don't you check RAM and RESERVED_KERN, too? If those changed, we
+> don't want to resume, either, right?
+> 
+
+The RESERVED_KERN is boot_params.hdr.setup_data, reserved by kernel for
+PCI RomImage and extend e820 entries. The E820_RAM and E820_RESERVED_KERN 
+are saved in hibernate snapshot image and will restore to appropriate page
+frame. If hibernate can not restore data to the original page frame, then
+whole hibernate resume process will be stop. So I think don't need check
+RAM and RESERVED_KERN because image saved it.
+
+> (Plus, you only check ei->type; you should check mem_chk_map[].type,
+> too AFAICT).
+>
+
+Yes, thanks for your suggestion, I will also check type of mem_chk_map.
+ 
+> Thanks,
+> 									Pavel
+
+Thanks a lot!
+Joey Lee
