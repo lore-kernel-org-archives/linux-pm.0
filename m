@@ -1,71 +1,30 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Subject: [PATCH] ARM: zynq: cpuidle: Remove .owner field for driver
-Date: Wed, 13 Aug 2014 14:01:43 +0200
-Message-ID: <01b4472cb5b1a5d03c98ec78cdd223970a52bd54.1407931299.git.michal.simek@xilinx.com>
-Content-Type: multipart/signed;
-    boundary="=_mimegpg-monstr-desktop-21313-1407931303-0001";
-    micalg=pgp-sha1; protocol="application/pgp-signature"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f182.google.com ([74.125.82.182]:57990 "EHLO
-	mail-we0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751749AbaHMMBq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 08:01:46 -0400
-Received: by mail-we0-f182.google.com with SMTP id k48so11198218wev.13
-        for <linux-pm@vger.kernel.org>; Wed, 13 Aug 2014 05:01:45 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Oleksandr Natalenko <oleksandr@natalenko.name>
+Subject: Re: [BUG] oops in cpufreq driver with AMD Kaveri CPU
+Date: Wed, 13 Aug 2014 15:45:33 +0300
+Message-ID: <23471357.28K1EPJDR0@spock>
+References: <4708675.eITUXPv8Ih@spock> <CAKohpomF9QLLG-6evXWeUvrR9k7Y8ypVNdXyE4cAi=EFOQviHQ@mail.gmail.com> <22004375.5nGJFy1vsr@spock>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <22004375.5nGJFy1vsr@spock>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, monstr@monstr.eu
-Cc: linux-arm-kernel@lists.infradead.org, Josh Cartwright <josh.cartwright@ni.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, Peter Crosthwaite <peter.crosthwaite@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
+Also I've found similar oops report with upstreamed fix (commit 
+46a310b80bc2c9ccc019649c9da91194cbc10944).
 
---=_mimegpg-monstr-desktop-21313-1407931303-0001
-
-There is no need to init .owner field.
-
-Based on the patch from Peter Griffin <peter.griffin@linaro.org>
-"mmc: remove .owner field for drivers using module_platform_driver"
-
-This patch removes the superflous .owner field for drivers which
-use the module_platform_driver API, as this is overriden in
-platform_driver_register anyway."
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
----
-
- drivers/cpuidle/cpuidle-zynq.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidle-zynq.c
-index aded75928028..6e03734e3508 100644
---- a/drivers/cpuidle/cpuidle-zynq.c
-+++ b/drivers/cpuidle/cpuidle-zynq.c
-@@ -80,7 +80,6 @@ static int zynq_cpuidle_probe(struct platform_device *pdev)
- static struct platform_driver zynq_cpuidle_driver = {
- 	.driver = {
- 		.name = "cpuidle-zynq",
--		.owner = THIS_MODULE,
- 	},
- 	.probe = zynq_cpuidle_probe,
- };
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-21313-1407931303-0001
-Content-Type: application/pgp-signature
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAlPrU6cACgkQykllyylKDCG9QACcDsP/l7Pab9W2rN8NG6Kb5nVA
-3DMAn3+OFJVRO2x49JITig178MevNUMw
-=6Bq7
------END PGP SIGNATURE-----
-
---=_mimegpg-monstr-desktop-21313-1407931303-0001--
+On Wednesday 13 August 2014 08:56:02 Oleksandr Natalenko wrote:
+> On Wednesday 13 August 2014 10:02:26 Viresh Kumar wrote:
+> > That's why you should have copied the diff here, so that I could have
+> > confirmed if what you have done is correct or not.
+> 
+> You may check my modifications here [1] or attached to this email.
+> 
+> [1] https://gist.github.com/bdcc7d41883b5e077974
+-- 
+Oleksandr post-factum Natalenko, MSc
+pf-kernel community
+https://natalenko.name/
