@@ -1,314 +1,202 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v2 3/4] irq: Allow multiple clients to register for irq affinity notification
-Date: Wed, 13 Aug 2014 10:01:28 -0600
-Message-ID: <1407945689-18494-4-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v2 4/4] QoS: Enable PM QoS requests to apply only on smp_affinity of an IRQ
+Date: Wed, 13 Aug 2014 10:01:29 -0600
+Message-ID: <1407945689-18494-5-git-send-email-lina.iyer@linaro.org>
 References: <1407945689-18494-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f176.google.com ([209.85.192.176]:51177 "EHLO
-	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbaHMQBm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 12:01:42 -0400
-Received: by mail-pd0-f176.google.com with SMTP id y10so14634227pdj.21
-        for <linux-pm@vger.kernel.org>; Wed, 13 Aug 2014 09:01:42 -0700 (PDT)
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:35288 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbaHMQBo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 12:01:44 -0400
+Received: by mail-pa0-f50.google.com with SMTP id et14so15124866pad.37
+        for <linux-pm@vger.kernel.org>; Wed, 13 Aug 2014 09:01:44 -0700 (PDT)
 In-Reply-To: <1407945689-18494-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: daniel.lezcano@linaro.org, khilman@linaro.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, tglx@linutronix.de, rjw@rjwysocki.net
-Cc: Lina Iyer <lina.iyer@linaro.org>
+Cc: Lina Iyer <lina.iyer@linaro.org>, Praveen Chidambaram <pchidamb@codeaurora.org>
 
-The current implementation allows only a single notification callback
-whenever the IRQ's SMP affinity is changed. Adding a second notification
-punts the existing notifier function out of registration.
+QoS requests that need to track an IRQ can be set to apply only on the
+cpus to which the IRQ's smp_affinity attribute is set to. The PM QoS
+framework will automatically track IRQ migration between the cores. The
+QoS is updated to be applied only to the core(s) that the IRQ has been
+migrated to.
 
-Add a list of notifiers, allowing multiple clients to register for irq
-affinity notifications.
+The userspace sysfs interface does not support IRQ affinity.
 
+Signed-off-by: Praveen Chidambaram <pchidamb@codeaurora.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/infiniband/hw/qib/qib_iba7322.c |  4 +-
- include/linux/interrupt.h               | 12 ++++-
- include/linux/irq.h                     |  1 +
- include/linux/irqdesc.h                 |  6 ++-
- kernel/irq/irqdesc.c                    |  1 +
- kernel/irq/manage.c                     | 85 ++++++++++++++++++++++-----------
- lib/cpu_rmap.c                          |  2 +-
- 7 files changed, 74 insertions(+), 37 deletions(-)
+ Documentation/power/pm_qos_interface.txt |  4 +-
+ include/linux/pm_qos.h                   |  5 +++
+ kernel/power/qos.c                       | 77 +++++++++++++++++++++++++++++++-
+ 3 files changed, 84 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/infiniband/hw/qib/qib_iba7322.c b/drivers/infiniband/hw/qib/qib_iba7322.c
-index a7eb325..62cb77d 100644
---- a/drivers/infiniband/hw/qib/qib_iba7322.c
-+++ b/drivers/infiniband/hw/qib/qib_iba7322.c
-@@ -3345,9 +3345,7 @@ static void reset_dca_notifier(struct qib_devdata *dd, struct qib_msix_entry *m)
- 		"Disabling notifier on HCA %d irq %d\n",
- 		dd->unit,
- 		m->msix.vector);
--	irq_set_affinity_notifier(
--		m->msix.vector,
--		NULL);
-+	irq_release_affinity_notifier(m->notifier);
- 	m->notifier = NULL;
- }
+diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
+index c129517..32b864d 100644
+--- a/Documentation/power/pm_qos_interface.txt
++++ b/Documentation/power/pm_qos_interface.txt
+@@ -47,8 +47,10 @@ applies to all cores. However, the driver can also specify a request type to
+ be either of
+         PM_QOS_REQ_ALL_CORES,
+         PM_QOS_REQ_AFFINE_CORES,
++        PM_QOS_REQ_AFFINE_IRQ,
  
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 698ad05..c1e227c 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -203,7 +203,7 @@ static inline int check_wakeup_irqs(void) { return 0; }
-  * struct irq_affinity_notify - context for notification of IRQ affinity changes
-  * @irq:		Interrupt to which notification applies
-  * @kref:		Reference count, for internal use
-- * @work:		Work item, for internal use
-+ * @list:		Add to the notifier list, for internal use
-  * @notify:		Function to be called on change.  This will be
-  *			called in process context.
-  * @release:		Function to be called on release.  This will be
-@@ -214,7 +214,7 @@ static inline int check_wakeup_irqs(void) { return 0; }
- struct irq_affinity_notify {
- 	unsigned int irq;
- 	struct kref kref;
--	struct work_struct work;
-+	struct list_head list;
- 	void (*notify)(struct irq_affinity_notify *, const cpumask_t *mask);
- 	void (*release)(struct kref *ref);
+-Specify the cpumask when type is set to PM_QOS_REQ_AFFINE_CORES.
++Specify the cpumask when type is set to PM_QOS_REQ_AFFINE_CORES and specify
++the IRQ number with PM_QOS_REQ_AFFINE_IRQ.
+ 
+ void pm_qos_update_request(handle, new_target_value):
+ Will update the list element pointed to by the handle with the new target value
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index a3aa5b5..68b16b8 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -11,6 +11,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/cpumask.h>
+ #include <linux/interrupt.h>
++#include <linux/completion.h>
+ 
+ enum {
+ 	PM_QOS_RESERVED = 0,
+@@ -45,12 +46,16 @@ enum pm_qos_flags_status {
+ enum pm_qos_req_type {
+ 	PM_QOS_REQ_ALL_CORES = 0,
+ 	PM_QOS_REQ_AFFINE_CORES,
++	PM_QOS_REQ_AFFINE_IRQ,
  };
-@@ -265,6 +265,8 @@ extern int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m);
- extern int
- irq_set_affinity_notifier(unsigned int irq, struct irq_affinity_notify *notify);
  
-+extern int
-+irq_release_affinity_notifier(struct irq_affinity_notify *notify);
- #else /* CONFIG_SMP */
+ struct pm_qos_request {
+ 	enum pm_qos_req_type type;
+ 	struct cpumask cpus_affine;
++	uint32_t irq;
+ 	/* Internal structure members */
++	struct irq_affinity_notify irq_notify;
++	struct completion irq_released;
+ 	struct plist_node node;
+ 	int pm_qos_class;
+ 	struct delayed_work work; /* for pm_qos_update_request_timeout */
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index 27f84a2..c10e8bc 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -41,6 +41,9 @@
+ #include <linux/platform_device.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
++#include <linux/irq.h>
++#include <linux/irqdesc.h>
++#include <linux/delay.h>
  
- static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
-@@ -295,6 +297,12 @@ irq_set_affinity_notifier(unsigned int irq, struct irq_affinity_notify *notify)
- {
- 	return 0;
+ #include <linux/uaccess.h>
+ #include <linux/export.h>
+@@ -412,6 +415,37 @@ static void pm_qos_work_fn(struct work_struct *work)
+ 	__pm_qos_update_request(req, PM_QOS_DEFAULT_VALUE);
  }
-+
-+static inline int
-+irq_release_affinity_notifier(struct irq_affinity_notify *notify)
+ 
++static void pm_qos_irq_release(struct kref *ref)
 +{
-+	return 0;
-+}
- #endif /* CONFIG_SMP */
- 
- /*
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 62af592..2634a48 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -20,6 +20,7 @@
- #include <linux/errno.h>
- #include <linux/topology.h>
- #include <linux/wait.h>
-+#include <linux/list.h>
- 
- #include <asm/irq.h>
- #include <asm/ptrace.h>
-diff --git a/include/linux/irqdesc.h b/include/linux/irqdesc.h
-index 472c021..db3509e 100644
---- a/include/linux/irqdesc.h
-+++ b/include/linux/irqdesc.h
-@@ -31,7 +31,8 @@ struct irq_desc;
-  * @threads_handled_last: comparator field for deferred spurious detection of theraded handlers
-  * @lock:		locking for SMP
-  * @affinity_hint:	hint to user space for preferred irq affinity
-- * @affinity_notify:	context for notification of affinity changes
-+ * @affinity_notify:	list of notification clients for affinity changes
-+ * @affinity_work:	Work queue for handling affinity change notifications
-  * @pending_mask:	pending rebalanced interrupts
-  * @threads_oneshot:	bitfield to handle shared oneshot threads
-  * @threads_active:	number of irqaction threads currently running
-@@ -60,7 +61,8 @@ struct irq_desc {
- 	struct cpumask		*percpu_enabled;
- #ifdef CONFIG_SMP
- 	const struct cpumask	*affinity_hint;
--	struct irq_affinity_notify *affinity_notify;
-+	struct list_head	affinity_notify;
-+	struct work_struct	affinity_work;
- #ifdef CONFIG_GENERIC_PENDING_IRQ
- 	cpumask_var_t		pending_mask;
- #endif
-diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
-index 1487a12..c95e1f3 100644
---- a/kernel/irq/irqdesc.c
-+++ b/kernel/irq/irqdesc.c
-@@ -91,6 +91,7 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
- 	for_each_possible_cpu(cpu)
- 		*per_cpu_ptr(desc->kstat_irqs, cpu) = 0;
- 	desc_smp_init(desc, node);
-+	INIT_LIST_HEAD(&desc->affinity_notify);
- }
- 
- int nr_irqs = NR_IRQS;
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 88657d7..99fc0e7 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -209,10 +209,9 @@ int irq_set_affinity_locked(struct irq_data *data, const struct cpumask *mask,
- 		irq_copy_pending(desc, mask);
- 	}
- 
--	if (desc->affinity_notify) {
--		kref_get(&desc->affinity_notify->kref);
--		schedule_work(&desc->affinity_notify->work);
--	}
-+	if (!list_empty(&desc->affinity_notify))
-+		schedule_work(&desc->affinity_work);
-+
- 	irqd_set(data, IRQD_AFFINITY_SET);
- 
- 	return ret;
-@@ -248,14 +247,14 @@ EXPORT_SYMBOL_GPL(irq_set_affinity_hint);
- 
- static void irq_affinity_notify(struct work_struct *work)
- {
--	struct irq_affinity_notify *notify =
--		container_of(work, struct irq_affinity_notify, work);
--	struct irq_desc *desc = irq_to_desc(notify->irq);
-+	struct irq_desc *desc =
-+			container_of(work, struct irq_desc, affinity_work);
- 	cpumask_var_t cpumask;
- 	unsigned long flags;
-+	struct irq_affinity_notify *notify;
- 
- 	if (!desc || !alloc_cpumask_var(&cpumask, GFP_KERNEL))
--		goto out;
-+		return;
- 
- 	raw_spin_lock_irqsave(&desc->lock, flags);
- 	if (irq_move_pending(&desc->irq_data))
-@@ -264,11 +263,20 @@ static void irq_affinity_notify(struct work_struct *work)
- 		cpumask_copy(cpumask, desc->irq_data.affinity);
- 	raw_spin_unlock_irqrestore(&desc->lock, flags);
- 
--	notify->notify(notify, cpumask);
-+	list_for_each_entry(notify, &desc->affinity_notify, list) {
-+		/**
-+		 * Check and get the kref only if the kref has not been
-+		 * released by now. Its possible that the reference count
-+		 * is already 0, we dont want to notify those if they are
-+		 * already released.
-+		 */
-+		if (!kref_get_unless_zero(&notify->kref))
-+			continue;
-+		notify->notify(notify, cpumask);
-+		kref_put(&notify->kref, notify->release);
-+	}
- 
- 	free_cpumask_var(cpumask);
--out:
--	kref_put(&notify->kref, notify->release);
- }
- 
- /**
-@@ -286,34 +294,50 @@ int
- irq_set_affinity_notifier(unsigned int irq, struct irq_affinity_notify *notify)
- {
- 	struct irq_desc *desc = irq_to_desc(irq);
--	struct irq_affinity_notify *old_notify;
- 	unsigned long flags;
- 
--	/* The release function is promised process context */
--	might_sleep();
--
- 	if (!desc)
- 		return -EINVAL;
- 
--	/* Complete initialisation of *notify */
--	if (notify) {
--		notify->irq = irq;
--		kref_init(&notify->kref);
--		INIT_WORK(&notify->work, irq_affinity_notify);
-+	if (!notify) {
-+		WARN("%s called with NULL notifier - use irq_release_affinity_notifier function instead.\n",
-+				__func__);
-+		return -EINVAL;
- 	}
- 
-+	notify->irq = irq;
-+	kref_init(&notify->kref);
-+	INIT_LIST_HEAD(&notify->list);
- 	raw_spin_lock_irqsave(&desc->lock, flags);
--	old_notify = desc->affinity_notify;
--	desc->affinity_notify = notify;
-+	list_add(&notify->list, &desc->affinity_notify);
- 	raw_spin_unlock_irqrestore(&desc->lock, flags);
- 
--	if (old_notify)
--		kref_put(&old_notify->kref, old_notify->release);
--
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(irq_set_affinity_notifier);
- 
-+/**
-+ *	irq_release_affinity_notifier - Remove us from notifications
-+ *	@notify: Context for notification
-+ */
-+int irq_release_affinity_notifier(struct irq_affinity_notify *notify)
-+{
-+	struct irq_desc *desc;
 +	unsigned long flags;
++	struct irq_affinity_notify *notify = container_of(ref,
++			struct irq_affinity_notify, kref);
++	struct pm_qos_request *req = container_of(notify,
++			struct pm_qos_request, irq_notify);
 +
-+	if (!notify)
-+		return -EINVAL;
++	spin_lock_irqsave(&pm_qos_lock, flags);
++	cpumask_clear(&req->cpus_affine);
++	spin_unlock_irqrestore(&pm_qos_lock, flags);
 +
-+	desc = irq_to_desc(notify->irq);
-+	raw_spin_lock_irqsave(&desc->lock, flags);
-+	list_del(&notify->list);
-+	raw_spin_unlock_irqrestore(&desc->lock, flags);
-+	kref_put(&notify->kref, notify->release);
-+
-+	return 0;
++	complete(&req->irq_released);
 +}
-+EXPORT_SYMBOL_GPL(irq_release_affinity_notifier);
 +
- #ifndef CONFIG_AUTO_IRQ_AFFINITY
- /*
-  * Generic version of the affinity autoselector.
-@@ -348,6 +372,8 @@ setup_affinity(unsigned int irq, struct irq_desc *desc, struct cpumask *mask)
- 		if (cpumask_intersects(mask, nodemask))
- 			cpumask_and(mask, mask, nodemask);
- 	}
-+	INIT_LIST_HEAD(&desc->affinity_notify);
-+	INIT_WORK(&desc->affinity_work, irq_affinity_notify);
- 	irq_do_set_affinity(&desc->irq_data, mask, false);
- 	return 0;
- }
-@@ -1414,14 +1440,15 @@ EXPORT_SYMBOL_GPL(remove_irq);
- void free_irq(unsigned int irq, void *dev_id)
++static void pm_qos_irq_notify(struct irq_affinity_notify *notify,
++		const cpumask_t *mask)
++{
++	unsigned long flags;
++	struct pm_qos_request *req = container_of(notify,
++			struct pm_qos_request, irq_notify);
++	struct pm_qos_constraints *c =
++		pm_qos_array[req->pm_qos_class]->constraints;
++
++	spin_lock_irqsave(&pm_qos_lock, flags);
++	cpumask_copy(&req->cpus_affine, mask);
++	spin_unlock_irqrestore(&pm_qos_lock, flags);
++
++	pm_qos_update_target(c, req, PM_QOS_UPDATE_REQ, req->node.prio);
++}
++
+ /**
+  * pm_qos_add_request - inserts new qos request into the list
+  * @req: pointer to a preallocated handle
+@@ -445,6 +479,34 @@ void pm_qos_add_request(struct pm_qos_request *req,
+ 		}
+ 		break;
+ 
++	case PM_QOS_REQ_AFFINE_IRQ:
++		if (irq_can_set_affinity(req->irq)) {
++			int ret = 0;
++			struct irq_desc *desc = irq_to_desc(req->irq);
++			struct cpumask *mask = desc->irq_data.affinity;
++
++			/* Get the current affinity */
++			cpumask_copy(&req->cpus_affine, mask);
++			req->irq_notify.irq = req->irq;
++			req->irq_notify.notify = pm_qos_irq_notify;
++			req->irq_notify.release = pm_qos_irq_release;
++
++			ret = irq_set_affinity_notifier(req->irq,
++					&req->irq_notify);
++			if (ret) {
++				WARN(1, KERN_ERR "IRQ affinity notify set failed\n");
++				req->type = PM_QOS_REQ_ALL_CORES;
++				cpumask_setall(&req->cpus_affine);
++			}
++		} else {
++			req->type = PM_QOS_REQ_ALL_CORES;
++			cpumask_setall(&req->cpus_affine);
++			WARN(1, KERN_ERR "IRQ-%d not set for request with affinity flag\n",
++					req->irq);
++		}
++		init_completion(&req->irq_released);
++		break;
++
+ 	default:
+ 		WARN(1, KERN_ERR "Unknown request type %d\n", req->type);
+ 		/* fall through */
+@@ -526,11 +588,14 @@ void pm_qos_update_request_timeout(struct pm_qos_request *req, s32 new_value,
+  */
+ void pm_qos_remove_request(struct pm_qos_request *req)
  {
- 	struct irq_desc *desc = irq_to_desc(irq);
-+	struct irq_affinity_notify *notify;
- 
- 	if (!desc || WARN_ON(irq_settings_is_per_cpu_devid(desc)))
+-
+ 	if (!req) /*guard against callers passing in null */
  		return;
+ 		/* silent return to keep pcm code cleaner */
  
--#ifdef CONFIG_SMP
--	if (WARN_ON(desc->affinity_notify))
--		desc->affinity_notify = NULL;
--#endif
-+	WARN_ON(!list_empty(&desc->affinity_notify));
++	/* Remove ourselves from the irq notification */
++	if (req->type == PM_QOS_REQ_AFFINE_IRQ)
++		irq_release_affinity_notifier(&req->irq_notify);
 +
-+	list_for_each_entry(notify, &desc->affinity_notify, list)
-+		kref_put(&notify->kref, notify->release);
+ 	if (!pm_qos_request_active(req)) {
+ 		WARN(1, KERN_ERR "pm_qos_remove_request() called for unknown object\n");
+ 		return;
+@@ -543,6 +608,16 @@ void pm_qos_remove_request(struct pm_qos_request *req)
+ 			     req, PM_QOS_REMOVE_REQ,
+ 			     PM_QOS_DEFAULT_VALUE);
  
- 	chip_bus_lock(desc);
- 	kfree(__free_irq(irq, dev_id));
-diff --git a/lib/cpu_rmap.c b/lib/cpu_rmap.c
-index 4f134d8..0c8da50 100644
---- a/lib/cpu_rmap.c
-+++ b/lib/cpu_rmap.c
-@@ -235,7 +235,7 @@ void free_irq_cpu_rmap(struct cpu_rmap *rmap)
- 
- 	for (index = 0; index < rmap->used; index++) {
- 		glue = rmap->obj[index];
--		irq_set_affinity_notifier(glue->notify.irq, NULL);
-+		irq_release_affinity_notifier(&glue->notify);
- 	}
- 
- 	cpu_rmap_put(rmap);
++	/**
++	 * The 'release' callback of the notifier would not be called unless
++	 * there are no active users of the irq_notify object, i.e, kref count
++	 * is non-zero. This could happen if there is an active 'notify'
++	 * callback happening while the pm_qos_remove request is called. Wait
++	 * until the release callback clears the cpus_affine mask.
++	 */
++	if (req->type == PM_QOS_REQ_AFFINE_IRQ)
++		wait_for_completion(&req->irq_released);
++
+ 	memset(req, 0, sizeof(*req));
+ }
+ EXPORT_SYMBOL_GPL(pm_qos_remove_request);
 -- 
 1.9.1
 
