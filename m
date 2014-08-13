@@ -1,299 +1,314 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v2 2/4] QoS: Enhance framework to support per-cpu PM QoS request
-Date: Wed, 13 Aug 2014 10:01:27 -0600
-Message-ID: <1407945689-18494-3-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v2 3/4] irq: Allow multiple clients to register for irq affinity notification
+Date: Wed, 13 Aug 2014 10:01:28 -0600
+Message-ID: <1407945689-18494-4-git-send-email-lina.iyer@linaro.org>
 References: <1407945689-18494-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f169.google.com ([209.85.192.169]:48885 "EHLO
-	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbaHMQBl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 12:01:41 -0400
-Received: by mail-pd0-f169.google.com with SMTP id y10so14702727pdj.14
-        for <linux-pm@vger.kernel.org>; Wed, 13 Aug 2014 09:01:40 -0700 (PDT)
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:51177 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbaHMQBm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 12:01:42 -0400
+Received: by mail-pd0-f176.google.com with SMTP id y10so14634227pdj.21
+        for <linux-pm@vger.kernel.org>; Wed, 13 Aug 2014 09:01:42 -0700 (PDT)
 In-Reply-To: <1407945689-18494-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: daniel.lezcano@linaro.org, khilman@linaro.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, tglx@linutronix.de, rjw@rjwysocki.net
-Cc: Lina Iyer <lina.iyer@linaro.org>, Praveen Chidambaram <pchidamb@codeaurora.org>
+Cc: Lina Iyer <lina.iyer@linaro.org>
 
-QoS request can be better optimized if the request can be set only for
-the required cpus and not all cpus. This helps save power on other
-cores, while still gauranteeing the quality of service on the desired
-cores.
+The current implementation allows only a single notification callback
+whenever the IRQ's SMP affinity is changed. Adding a second notification
+punts the existing notifier function out of registration.
 
-Add a new enumeration to specify the PM QoS request type. The enums help
-specify what is the intended target cpu of the request.
+Add a list of notifiers, allowing multiple clients to register for irq
+affinity notifications.
 
-Enhance the QoS constraints data structures to support target value for
-each core. Requests specify if the QoS is applicable to all cores
-(default) or to a selective subset of the cores or to a core(s).
-
-Idle and interested drivers can request a PM QoS value for a constraint
-across all cpus, or a specific cpu or a set of cpus. Separate APIs have
-been added to request for individual cpu or a cpumask.  The default
-behaviour of PM QoS is maintained i.e, requests that do not specify a
-type of the request will continue to be effected on all cores.
-
-The userspace sysfs interface does not support setting cpumask of a PM
-QoS request.
-
-Signed-off-by: Praveen Chidambaram <pchidamb@codeaurora.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- Documentation/power/pm_qos_interface.txt |  16 +++++
- include/linux/pm_qos.h                   |  13 ++++
- kernel/power/qos.c                       | 102 +++++++++++++++++++++++++++++++
- 3 files changed, 131 insertions(+)
+ drivers/infiniband/hw/qib/qib_iba7322.c |  4 +-
+ include/linux/interrupt.h               | 12 ++++-
+ include/linux/irq.h                     |  1 +
+ include/linux/irqdesc.h                 |  6 ++-
+ kernel/irq/irqdesc.c                    |  1 +
+ kernel/irq/manage.c                     | 85 ++++++++++++++++++++++-----------
+ lib/cpu_rmap.c                          |  2 +-
+ 7 files changed, 74 insertions(+), 37 deletions(-)
 
-diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
-index a5da5c7..c129517 100644
---- a/Documentation/power/pm_qos_interface.txt
-+++ b/Documentation/power/pm_qos_interface.txt
-@@ -41,6 +41,15 @@ registered notifiers are called only if the target value is now different.
- Clients of pm_qos need to save the returned handle for future use in other
- pm_qos API functions.
- 
-+The handle is a pm_qos_request object. By default the request object sets the
-+request type to PM_QOS_REQ_ALL_CORES, in which case, the PM QoS request
-+applies to all cores. However, the driver can also specify a request type to
-+be either of
-+        PM_QOS_REQ_ALL_CORES,
-+        PM_QOS_REQ_AFFINE_CORES,
-+
-+Specify the cpumask when type is set to PM_QOS_REQ_AFFINE_CORES.
-+
- void pm_qos_update_request(handle, new_target_value):
- Will update the list element pointed to by the handle with the new target value
- and recompute the new aggregated target, calling the notification tree if the
-@@ -54,6 +63,13 @@ the request.
- int pm_qos_request(param_class):
- Returns the aggregated value for a given PM QoS class.
- 
-+int pm_qos_request_for_cpu(param_class, cpu):
-+Returns the aggregated value for a given PM QoS class for the specified cpu.
-+
-+int pm_qos_request_for_cpumask(param_class, cpumask):
-+Returns the aggregated value for a given PM QoS class for the specified
-+cpumask.
-+
- int pm_qos_request_active(handle):
- Returns if the request is still active, i.e. it has not been removed from a
- PM QoS class constraints list.
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index e1b763d..a3aa5b5 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -9,6 +9,8 @@
- #include <linux/miscdevice.h>
- #include <linux/device.h>
- #include <linux/workqueue.h>
-+#include <linux/cpumask.h>
-+#include <linux/interrupt.h>
- 
- enum {
- 	PM_QOS_RESERVED = 0,
-@@ -40,7 +42,15 @@ enum pm_qos_flags_status {
- #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
- #define PM_QOS_FLAG_REMOTE_WAKEUP	(1 << 1)
- 
-+enum pm_qos_req_type {
-+	PM_QOS_REQ_ALL_CORES = 0,
-+	PM_QOS_REQ_AFFINE_CORES,
-+};
-+
- struct pm_qos_request {
-+	enum pm_qos_req_type type;
-+	struct cpumask cpus_affine;
-+	/* Internal structure members */
- 	struct plist_node node;
- 	int pm_qos_class;
- 	struct delayed_work work; /* for pm_qos_update_request_timeout */
-@@ -80,6 +90,7 @@ enum pm_qos_type {
- struct pm_qos_constraints {
- 	struct plist_head list;
- 	s32 target_value;	/* Do not change to 64 bit */
-+	s32 target_per_cpu[NR_CPUS];
- 	s32 default_value;
- 	s32 no_constraint_value;
- 	enum pm_qos_type type;
-@@ -127,6 +138,8 @@ void pm_qos_update_request_timeout(struct pm_qos_request *req,
- void pm_qos_remove_request(struct pm_qos_request *req);
- 
- int pm_qos_request(int pm_qos_class);
-+int pm_qos_request_for_cpu(int pm_qos_class, int cpu);
-+int pm_qos_request_for_cpumask(int pm_qos_class, struct cpumask *mask);
- int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
- int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
- int pm_qos_request_active(struct pm_qos_request *req);
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index d0b9c0f..27f84a2 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -65,6 +65,8 @@ static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
- static struct pm_qos_constraints cpu_dma_constraints = {
- 	.list = PLIST_HEAD_INIT(cpu_dma_constraints.list),
- 	.target_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
-+	.target_per_cpu = { [0 ... (NR_CPUS - 1)] =
-+				PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE },
- 	.default_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
- 	.no_constraint_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
- 	.type = PM_QOS_MIN,
-@@ -79,6 +81,8 @@ static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
- static struct pm_qos_constraints network_lat_constraints = {
- 	.list = PLIST_HEAD_INIT(network_lat_constraints.list),
- 	.target_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
-+	.target_per_cpu = { [0 ... (NR_CPUS - 1)] =
-+				PM_QOS_NETWORK_LAT_DEFAULT_VALUE },
- 	.default_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
- 	.no_constraint_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
- 	.type = PM_QOS_MIN,
-@@ -94,6 +98,8 @@ static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
- static struct pm_qos_constraints network_tput_constraints = {
- 	.list = PLIST_HEAD_INIT(network_tput_constraints.list),
- 	.target_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
-+	.target_per_cpu = { [0 ... (NR_CPUS - 1)] =
-+				PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE },
- 	.default_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
- 	.no_constraint_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
- 	.type = PM_QOS_MAX,
-@@ -157,6 +163,43 @@ static inline void pm_qos_set_value(struct pm_qos_constraints *c, s32 value)
- 	c->target_value = value;
+diff --git a/drivers/infiniband/hw/qib/qib_iba7322.c b/drivers/infiniband/hw/qib/qib_iba7322.c
+index a7eb325..62cb77d 100644
+--- a/drivers/infiniband/hw/qib/qib_iba7322.c
++++ b/drivers/infiniband/hw/qib/qib_iba7322.c
+@@ -3345,9 +3345,7 @@ static void reset_dca_notifier(struct qib_devdata *dd, struct qib_msix_entry *m)
+ 		"Disabling notifier on HCA %d irq %d\n",
+ 		dd->unit,
+ 		m->msix.vector);
+-	irq_set_affinity_notifier(
+-		m->msix.vector,
+-		NULL);
++	irq_release_affinity_notifier(m->notifier);
+ 	m->notifier = NULL;
  }
  
-+static inline void pm_qos_set_value_for_cpus(struct pm_qos_constraints *c)
-+{
-+	struct pm_qos_request *req = NULL;
-+	int cpu;
-+	s32 *qos_val;
-+
-+	qos_val = kcalloc(NR_CPUS, sizeof(*qos_val), GFP_KERNEL);
-+	if (!qos_val) {
-+		WARN("%s: No memory for PM QoS\n", __func__);
-+		return;
-+	}
-+
-+	for_each_possible_cpu(cpu)
-+		qos_val[cpu] = c->default_value;
-+
-+	plist_for_each_entry(req, &c->list, node) {
-+		for_each_cpu(cpu, &req->cpus_affine) {
-+			switch (c->type) {
-+			case PM_QOS_MIN:
-+				if (qos_val[cpu] > req->node.prio)
-+					qos_val[cpu] = req->node.prio;
-+				break;
-+			case PM_QOS_MAX:
-+				if (req->node.prio > qos_val[cpu])
-+					qos_val[cpu] = req->node.prio;
-+				break;
-+			default:
-+				BUG();
-+				break;
-+			}
-+		}
-+	}
-+
-+	for_each_possible_cpu(cpu)
-+		c->target_per_cpu[cpu] = qos_val[cpu];
-+}
-+
- /**
-  * pm_qos_update_target - manages the constraints list and calls the notifiers
-  *  if needed
-@@ -206,6 +249,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c,
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index 698ad05..c1e227c 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -203,7 +203,7 @@ static inline int check_wakeup_irqs(void) { return 0; }
+  * struct irq_affinity_notify - context for notification of IRQ affinity changes
+  * @irq:		Interrupt to which notification applies
+  * @kref:		Reference count, for internal use
+- * @work:		Work item, for internal use
++ * @list:		Add to the notifier list, for internal use
+  * @notify:		Function to be called on change.  This will be
+  *			called in process context.
+  * @release:		Function to be called on release.  This will be
+@@ -214,7 +214,7 @@ static inline int check_wakeup_irqs(void) { return 0; }
+ struct irq_affinity_notify {
+ 	unsigned int irq;
+ 	struct kref kref;
+-	struct work_struct work;
++	struct list_head list;
+ 	void (*notify)(struct irq_affinity_notify *, const cpumask_t *mask);
+ 	void (*release)(struct kref *ref);
+ };
+@@ -265,6 +265,8 @@ extern int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m);
+ extern int
+ irq_set_affinity_notifier(unsigned int irq, struct irq_affinity_notify *notify);
  
- 	curr_value = pm_qos_get_value(c);
- 	pm_qos_set_value(c, curr_value);
-+	pm_qos_set_value_for_cpus(c);
++extern int
++irq_release_affinity_notifier(struct irq_affinity_notify *notify);
+ #else /* CONFIG_SMP */
  
- 	spin_unlock_irqrestore(&pm_qos_lock, flags);
- 
-@@ -298,6 +342,44 @@ int pm_qos_request(int pm_qos_class)
- }
- EXPORT_SYMBOL_GPL(pm_qos_request);
- 
-+int pm_qos_request_for_cpu(int pm_qos_class, int cpu)
-+{
-+	return pm_qos_array[pm_qos_class]->constraints->target_per_cpu[cpu];
-+}
-+EXPORT_SYMBOL(pm_qos_request_for_cpu);
-+
-+int pm_qos_request_for_cpumask(int pm_qos_class, struct cpumask *mask)
-+{
-+	unsigned long irqflags;
-+	int cpu;
-+	struct pm_qos_constraints *c = NULL;
-+	int val;
-+
-+	spin_lock_irqsave(&pm_qos_lock, irqflags);
-+	c = pm_qos_array[pm_qos_class]->constraints;
-+	val = c->default_value;
-+
-+	for_each_cpu(cpu, mask) {
-+		switch (c->type) {
-+		case PM_QOS_MIN:
-+			if (c->target_per_cpu[cpu] < val)
-+				val = c->target_per_cpu[cpu];
-+			break;
-+		case PM_QOS_MAX:
-+			if (c->target_per_cpu[cpu] > val)
-+				val = c->target_per_cpu[cpu];
-+			break;
-+		default:
-+			BUG();
-+			break;
-+		}
-+	}
-+	spin_unlock_irqrestore(&pm_qos_lock, irqflags);
-+
-+	return val;
-+}
-+EXPORT_SYMBOL(pm_qos_request_for_cpumask);
-+
- int pm_qos_request_active(struct pm_qos_request *req)
+ static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
+@@ -295,6 +297,12 @@ irq_set_affinity_notifier(unsigned int irq, struct irq_affinity_notify *notify)
  {
- 	return req->pm_qos_class != 0;
-@@ -353,6 +435,24 @@ void pm_qos_add_request(struct pm_qos_request *req,
- 		WARN(1, KERN_ERR "pm_qos_add_request() called for already added request\n");
- 		return;
+ 	return 0;
+ }
++
++static inline int
++irq_release_affinity_notifier(struct irq_affinity_notify *notify)
++{
++	return 0;
++}
+ #endif /* CONFIG_SMP */
+ 
+ /*
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index 62af592..2634a48 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -20,6 +20,7 @@
+ #include <linux/errno.h>
+ #include <linux/topology.h>
+ #include <linux/wait.h>
++#include <linux/list.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/ptrace.h>
+diff --git a/include/linux/irqdesc.h b/include/linux/irqdesc.h
+index 472c021..db3509e 100644
+--- a/include/linux/irqdesc.h
++++ b/include/linux/irqdesc.h
+@@ -31,7 +31,8 @@ struct irq_desc;
+  * @threads_handled_last: comparator field for deferred spurious detection of theraded handlers
+  * @lock:		locking for SMP
+  * @affinity_hint:	hint to user space for preferred irq affinity
+- * @affinity_notify:	context for notification of affinity changes
++ * @affinity_notify:	list of notification clients for affinity changes
++ * @affinity_work:	Work queue for handling affinity change notifications
+  * @pending_mask:	pending rebalanced interrupts
+  * @threads_oneshot:	bitfield to handle shared oneshot threads
+  * @threads_active:	number of irqaction threads currently running
+@@ -60,7 +61,8 @@ struct irq_desc {
+ 	struct cpumask		*percpu_enabled;
+ #ifdef CONFIG_SMP
+ 	const struct cpumask	*affinity_hint;
+-	struct irq_affinity_notify *affinity_notify;
++	struct list_head	affinity_notify;
++	struct work_struct	affinity_work;
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+ 	cpumask_var_t		pending_mask;
+ #endif
+diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
+index 1487a12..c95e1f3 100644
+--- a/kernel/irq/irqdesc.c
++++ b/kernel/irq/irqdesc.c
+@@ -91,6 +91,7 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
+ 	for_each_possible_cpu(cpu)
+ 		*per_cpu_ptr(desc->kstat_irqs, cpu) = 0;
+ 	desc_smp_init(desc, node);
++	INIT_LIST_HEAD(&desc->affinity_notify);
+ }
+ 
+ int nr_irqs = NR_IRQS;
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 88657d7..99fc0e7 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -209,10 +209,9 @@ int irq_set_affinity_locked(struct irq_data *data, const struct cpumask *mask,
+ 		irq_copy_pending(desc, mask);
  	}
+ 
+-	if (desc->affinity_notify) {
+-		kref_get(&desc->affinity_notify->kref);
+-		schedule_work(&desc->affinity_notify->work);
+-	}
++	if (!list_empty(&desc->affinity_notify))
++		schedule_work(&desc->affinity_work);
 +
-+	switch (req->type) {
-+	case PM_QOS_REQ_AFFINE_CORES:
-+		if (cpumask_empty(&req->cpus_affine)) {
-+			req->type = PM_QOS_REQ_ALL_CORES;
-+			cpumask_setall(&req->cpus_affine);
-+			WARN(1, KERN_ERR "Affine cores not set for request with affinity flag\n");
-+		}
-+		break;
-+
-+	default:
-+		WARN(1, KERN_ERR "Unknown request type %d\n", req->type);
-+		/* fall through */
-+	case PM_QOS_REQ_ALL_CORES:
-+		cpumask_setall(&req->cpus_affine);
-+		break;
-+	}
-+
- 	req->pm_qos_class = pm_qos_class;
- 	INIT_DELAYED_WORK(&req->work, pm_qos_work_fn);
- 	trace_pm_qos_add_request(pm_qos_class, value);
-@@ -426,6 +526,7 @@ void pm_qos_update_request_timeout(struct pm_qos_request *req, s32 new_value,
-  */
- void pm_qos_remove_request(struct pm_qos_request *req)
+ 	irqd_set(data, IRQD_AFFINITY_SET);
+ 
+ 	return ret;
+@@ -248,14 +247,14 @@ EXPORT_SYMBOL_GPL(irq_set_affinity_hint);
+ 
+ static void irq_affinity_notify(struct work_struct *work)
  {
-+
- 	if (!req) /*guard against callers passing in null */
- 		return;
- 		/* silent return to keep pcm code cleaner */
-@@ -441,6 +542,7 @@ void pm_qos_remove_request(struct pm_qos_request *req)
- 	pm_qos_update_target(pm_qos_array[req->pm_qos_class]->constraints,
- 			     req, PM_QOS_REMOVE_REQ,
- 			     PM_QOS_DEFAULT_VALUE);
-+
- 	memset(req, 0, sizeof(*req));
+-	struct irq_affinity_notify *notify =
+-		container_of(work, struct irq_affinity_notify, work);
+-	struct irq_desc *desc = irq_to_desc(notify->irq);
++	struct irq_desc *desc =
++			container_of(work, struct irq_desc, affinity_work);
+ 	cpumask_var_t cpumask;
+ 	unsigned long flags;
++	struct irq_affinity_notify *notify;
+ 
+ 	if (!desc || !alloc_cpumask_var(&cpumask, GFP_KERNEL))
+-		goto out;
++		return;
+ 
+ 	raw_spin_lock_irqsave(&desc->lock, flags);
+ 	if (irq_move_pending(&desc->irq_data))
+@@ -264,11 +263,20 @@ static void irq_affinity_notify(struct work_struct *work)
+ 		cpumask_copy(cpumask, desc->irq_data.affinity);
+ 	raw_spin_unlock_irqrestore(&desc->lock, flags);
+ 
+-	notify->notify(notify, cpumask);
++	list_for_each_entry(notify, &desc->affinity_notify, list) {
++		/**
++		 * Check and get the kref only if the kref has not been
++		 * released by now. Its possible that the reference count
++		 * is already 0, we dont want to notify those if they are
++		 * already released.
++		 */
++		if (!kref_get_unless_zero(&notify->kref))
++			continue;
++		notify->notify(notify, cpumask);
++		kref_put(&notify->kref, notify->release);
++	}
+ 
+ 	free_cpumask_var(cpumask);
+-out:
+-	kref_put(&notify->kref, notify->release);
  }
- EXPORT_SYMBOL_GPL(pm_qos_remove_request);
+ 
+ /**
+@@ -286,34 +294,50 @@ int
+ irq_set_affinity_notifier(unsigned int irq, struct irq_affinity_notify *notify)
+ {
+ 	struct irq_desc *desc = irq_to_desc(irq);
+-	struct irq_affinity_notify *old_notify;
+ 	unsigned long flags;
+ 
+-	/* The release function is promised process context */
+-	might_sleep();
+-
+ 	if (!desc)
+ 		return -EINVAL;
+ 
+-	/* Complete initialisation of *notify */
+-	if (notify) {
+-		notify->irq = irq;
+-		kref_init(&notify->kref);
+-		INIT_WORK(&notify->work, irq_affinity_notify);
++	if (!notify) {
++		WARN("%s called with NULL notifier - use irq_release_affinity_notifier function instead.\n",
++				__func__);
++		return -EINVAL;
+ 	}
+ 
++	notify->irq = irq;
++	kref_init(&notify->kref);
++	INIT_LIST_HEAD(&notify->list);
+ 	raw_spin_lock_irqsave(&desc->lock, flags);
+-	old_notify = desc->affinity_notify;
+-	desc->affinity_notify = notify;
++	list_add(&notify->list, &desc->affinity_notify);
+ 	raw_spin_unlock_irqrestore(&desc->lock, flags);
+ 
+-	if (old_notify)
+-		kref_put(&old_notify->kref, old_notify->release);
+-
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(irq_set_affinity_notifier);
+ 
++/**
++ *	irq_release_affinity_notifier - Remove us from notifications
++ *	@notify: Context for notification
++ */
++int irq_release_affinity_notifier(struct irq_affinity_notify *notify)
++{
++	struct irq_desc *desc;
++	unsigned long flags;
++
++	if (!notify)
++		return -EINVAL;
++
++	desc = irq_to_desc(notify->irq);
++	raw_spin_lock_irqsave(&desc->lock, flags);
++	list_del(&notify->list);
++	raw_spin_unlock_irqrestore(&desc->lock, flags);
++	kref_put(&notify->kref, notify->release);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(irq_release_affinity_notifier);
++
+ #ifndef CONFIG_AUTO_IRQ_AFFINITY
+ /*
+  * Generic version of the affinity autoselector.
+@@ -348,6 +372,8 @@ setup_affinity(unsigned int irq, struct irq_desc *desc, struct cpumask *mask)
+ 		if (cpumask_intersects(mask, nodemask))
+ 			cpumask_and(mask, mask, nodemask);
+ 	}
++	INIT_LIST_HEAD(&desc->affinity_notify);
++	INIT_WORK(&desc->affinity_work, irq_affinity_notify);
+ 	irq_do_set_affinity(&desc->irq_data, mask, false);
+ 	return 0;
+ }
+@@ -1414,14 +1440,15 @@ EXPORT_SYMBOL_GPL(remove_irq);
+ void free_irq(unsigned int irq, void *dev_id)
+ {
+ 	struct irq_desc *desc = irq_to_desc(irq);
++	struct irq_affinity_notify *notify;
+ 
+ 	if (!desc || WARN_ON(irq_settings_is_per_cpu_devid(desc)))
+ 		return;
+ 
+-#ifdef CONFIG_SMP
+-	if (WARN_ON(desc->affinity_notify))
+-		desc->affinity_notify = NULL;
+-#endif
++	WARN_ON(!list_empty(&desc->affinity_notify));
++
++	list_for_each_entry(notify, &desc->affinity_notify, list)
++		kref_put(&notify->kref, notify->release);
+ 
+ 	chip_bus_lock(desc);
+ 	kfree(__free_irq(irq, dev_id));
+diff --git a/lib/cpu_rmap.c b/lib/cpu_rmap.c
+index 4f134d8..0c8da50 100644
+--- a/lib/cpu_rmap.c
++++ b/lib/cpu_rmap.c
+@@ -235,7 +235,7 @@ void free_irq_cpu_rmap(struct cpu_rmap *rmap)
+ 
+ 	for (index = 0; index < rmap->used; index++) {
+ 		glue = rmap->obj[index];
+-		irq_set_affinity_notifier(glue->notify.irq, NULL);
++		irq_release_affinity_notifier(&glue->notify);
+ 	}
+ 
+ 	cpu_rmap_put(rmap);
 -- 
 1.9.1
 
