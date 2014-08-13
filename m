@@ -1,128 +1,110 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Wed, 13 Aug 2014 15:57:38 -0400
-Message-ID: <53EBC332.30507@redhat.com>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <53DBE764.8050109@redhat.com> <53DBEC27.7050803@codeaurora.org> <CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com> <53E0B657.4070007@redhat.com> <CAKohponxBdYEgY2oYuzmdaqfSRS8Uq8bZOzcb1QDmKO-z5ZBFQ@mail.gmail.com> <53E1556B.5070304@codeaurora.org> <53E15DBB.7080800@redhat.com> <53E15FE7.4040808@co
- deaurora.org>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v7 2/8] Documentation: arm: define DT idle states bindings
+Date: Wed, 13 Aug 2014 23:11:01 +0100
+Message-ID: <20140813221101.GA32697@e102568-lin.cambridge.arm.com>
+References: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1407945127-27554-3-git-send-email-lorenzo.pieralisi@arm.com>
+ <20140813192533.GA32624@ilina-mac.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:5455 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750803AbaHMT5p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Aug 2014 15:57:45 -0400
-In-Reply-To: <53E15FE7.4040808@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140813192533.GA32624@ilina-mac.local>
+Content-Disposition: inline
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Tomasz Figa <t.figa@samsung.com>, Chander Kashyap <k.chander@samsung.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Geoff Levand <geoff@infradead.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-
-
-On 08/05/2014 06:51 PM, Saravana Kannan wrote:
-
+On Wed, Aug 13, 2014 at 08:25:36PM +0100, Lina Iyer wrote:
+> Hi Lorenzo,
 > 
-> I definitely have a fix for this and the original race you reported. It's
-> basically reverting that commit you reverted + a fix for the deadlock. That's
-> the only way to fix the scaling_governor issue.
+> On Wed, Aug 13, 2014 at 04:52:01PM +0100, Lorenzo Pieralisi wrote:
+> >+===========================================
+> >+4 - Examples
+> >+===========================================
+> >+
+> >+Example 1 (ARM 64-bit, 16-cpu system, PSCI enable-method):
+> >+
+> >+cpus {
+> >+	#size-cells = <0>;
+> >+	#address-cells = <2>;
+> >+
+> >+	CPU0: cpu@0 {
+> >+		device_type = "cpu";
+> >+		compatible = "arm,cortex-a57";
+> >+		reg = <0x0 0x0>;
+> >+		enable-method = "psci";
+> >+		cpu-idle-states = <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
+> >+				   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
+> >+	};
+> Sorry for jumping in late. I havent gone through all the patches yet or
+> followed on previous discussions, if somebody could answer this or point
+> me to the discussion, it would be great.
+> Why is the cpu defining the possible cluster idle states? Would it be
+> better that cluster states form a separate node, something like this -
 > 
-> You fix the deadlock by moving the governor attribute group removing to the
-> framework code and doing it before STOP+EXIT to governor without holding the
-> policy lock. And the reverse for INIT+STOP.
+> 	CLUSTER0: cluster@0 {
+> 		...
+> 		cpus = <&CPU0 &CPU1 &CPU2 &CPU3>;
+> 		cluster-idle-states = <&CLUTER_RETENTION_0, &CLUSTER_SLEEP_0>;
+> 		};
+> 	};	
+> 		
+> Allowing for something like this to be defined - 
 > 
+> 	super_cluster0: cluster@101 {
+> 		...
+> 		clusters = <&CLUSTER0  &CLUSTER1>;
+> 		cluster-idle-states = <&SOC_RETENTION, &SOC_SLEEP>;
+> 		};
+> 	};
+> 
+> And each cluster-idle-state follows the general idle definition as
+> provided in this document, and an indicator what the compising
+> components should idle at, for this idle state to be available.
+> 
+> 	CLUSTER_SLEEP_0: cluster-sleep@0 {
+> 		...
+> 		/* sleep definition for cluster0's retention */
+> 		min-idle-state = <CPU_SLEEP_0>;
+> 	};
+> 
+> 	SOC_SLEEP: cluster-sleep@101 {
+> 		...
+> 		min-idle-state = <&CLUSTER_SLEEP_0>;
+> 	};
+> 		
+> 
+> Opens up the idle state for a lot of heirarchical possibilities, which
+> if you think, is generally how the SoC is. 
 
-I'm still not convinced of the deadlock so I did a bit of additional research
-and am pretty close to saying that this is a false positive from the lockdep
-code in the kernfs area.
+We have been thinking for 7 patch versions + some more for this specific
+document, which is ready to go after extensive debate.
 
-A few things that have caused me concern about the lockdep splat we're seeing:
+It is probably better to have a look at archives first since honestly it
+is impossible to summarize 6 months worth of discussions in few lines.
 
-1.  The splat occurs when we hit __kernfs_remove+0x25b/0x360 which resolves to
+I think the hierarchy you mention should be implemented using power
+domains, which is how the SoC implements power management and that's
+what defines idle states hierarchy.
 
-        if (kernfs_lockdep(kn)) {
-                rwsem_acquire(&kn->dep_map, 0, 0, _RET_IP_);  <<< RIGHT HERE
-                if (atomic_read(&kn->active) != KN_DEACTIVATED_BIAS)
-                        lock_contended(&kn->dep_map, _RET_IP_);
-        }
+To be 100% precise, I would like to detect what cpus are affected by an
+idle state entry by defining for each idle state what power domain
+(which can be hierarchical) is affected, not by grouping them under
+a tag "cluster" "supercluster" or whatchamacallit.
 
-ie) the *ONLY* way we hit a "deadlock" in this code is if we have LOCKDEP
-configured in the kernfs.
+I removed power domains to simplify the current proposal which is sufficient
+as a starting point, but they are next on my TODO list and were part of the
+initial bindings, consider yourself welcome to help us define the way forward
+keeping this document as a starting point.
 
-It should be noted, that having kernfs_lockdep() always return 0 [1], results in
-NO additional lockdep warnings.
-
-Additionally the splat contains
-
-[  107.428421]        CPU0                    CPU1
-[  107.433482]        ----                    ----
-[  107.438544]   lock(&policy->rwsem);
-[  107.442459]                                lock(s_active#98);
-[  107.448916]                                lock(&policy->rwsem);
-[  107.455650]   lock(s_active#98);
-
-which also points to the situation above (s_active is the default naming used in
-the kernfs lockdep code).
-
-In short -- there is no deadlock here.  It only happens in the lockdep code
-itself, not because lockdep has identified a real problem.
-
-2.  I then started asking myself why this was occurring.  The reason appears to
-be that the attribute for scaling_governor is deleting other sysfs attributes
-and that got me to wondering if there were other areas where this occurred and I
-remembered it does!  In the USB code writing and reading to the  bConfiguration
-of a device may lead to the removal of "down stream" attributes.  The reading
-and writing of bConfiguration occurs in
-drivers/usb/core/sysfs.c:79
-
-
-/* configuration value is always present, and r/w */
-usb_actconfig_show(bConfigurationValue, "%u\n");
-
-static ssize_t bConfigurationValue_store(struct device *dev,
-                                         struct device_attribute *attr,
-                                         const char *buf, size_t count)
-{
-        struct usb_device       *udev = to_usb_device(dev);
-        int                     config, value;
-
-        if (sscanf(buf, "%d", &config) != 1 || config < -1 || config > 255)
-                return -EINVAL;
-        usb_lock_device(udev);
-        value = usb_set_configuration(udev, config);
-        usb_unlock_device(udev);
-        return (value < 0) ? value : count;
-}
-
-... and the next lines are IMO important here:
-
-static DEVICE_ATTR_IGNORE_LOCKDEP(bConfigurationValue, S_IRUGO | S_IWUSR,
-                bConfigurationValue_show, bConfigurationValue_store);
-
-FWIW, it isn't *exactly* the same ... but commit
-356c05d58af05d582e634b54b40050c73609617b explains a similarity between what is
-happening with our lockdep splat and the lockdep issues seen in USB.
-
-3.  I came across this from an earlier discussion ...
-
-https://lkml.org/lkml/2010/1/29/306
-
-"We get false positives when the code of a sysfs attribute
-synchronously removes other sysfs attributes.  In general that is not
-safe due to hotplug etc, but there are specific instances of static
-sysfs entries like the pm_core where it appears to be safe."
-
-...
-
-
-So ... the question that I have is: is this lockdep splat "real"?  It seems to
-only occur because we enable the lockdep code in kernfs, that is it occurs as a
-side-effect and doesn't appear to be "real" to me.
-
-I only offer this in an effort to keep work to a minimum ;)
-
-P.
-
-[1] It wasn't that simple.  There are some other changes that have to be made.
-But you get the idea ...
+Lorenzo
