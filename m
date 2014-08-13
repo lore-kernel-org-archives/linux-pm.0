@@ -1,193 +1,299 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v2 1/4] QoS: Modify data structures and function arguments for scalability.
-Date: Wed, 13 Aug 2014 10:01:26 -0600
-Message-ID: <1407945689-18494-2-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v2 2/4] QoS: Enhance framework to support per-cpu PM QoS request
+Date: Wed, 13 Aug 2014 10:01:27 -0600
+Message-ID: <1407945689-18494-3-git-send-email-lina.iyer@linaro.org>
 References: <1407945689-18494-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:54650 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbaHMQBj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 12:01:39 -0400
-Received: by mail-pd0-f171.google.com with SMTP id z10so14720553pdj.30
-        for <linux-pm@vger.kernel.org>; Wed, 13 Aug 2014 09:01:38 -0700 (PDT)
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:48885 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbaHMQBl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 12:01:41 -0400
+Received: by mail-pd0-f169.google.com with SMTP id y10so14702727pdj.14
+        for <linux-pm@vger.kernel.org>; Wed, 13 Aug 2014 09:01:40 -0700 (PDT)
 In-Reply-To: <1407945689-18494-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: daniel.lezcano@linaro.org, khilman@linaro.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, tglx@linutronix.de, rjw@rjwysocki.net
 Cc: Lina Iyer <lina.iyer@linaro.org>, Praveen Chidambaram <pchidamb@codeaurora.org>
 
-QoS add requests uses a handle to the priority list that is used
-internally to save the request, but this does not extend well. Also,
-dev_pm_qos structure definition seems to use a list object directly.
-The 'derivative' relationship seems to be broken.
+QoS request can be better optimized if the request can be set only for
+the required cpus and not all cpus. This helps save power on other
+cores, while still gauranteeing the quality of service on the desired
+cores.
 
-Use pm_qos_request objects instead of passing around the protected
-priority list object.
+Add a new enumeration to specify the PM QoS request type. The enums help
+specify what is the intended target cpu of the request.
+
+Enhance the QoS constraints data structures to support target value for
+each core. Requests specify if the QoS is applicable to all cores
+(default) or to a selective subset of the cores or to a core(s).
+
+Idle and interested drivers can request a PM QoS value for a constraint
+across all cpus, or a specific cpu or a set of cpus. Separate APIs have
+been added to request for individual cpu or a cpumask.  The default
+behaviour of PM QoS is maintained i.e, requests that do not specify a
+type of the request will continue to be effected on all cores.
+
+The userspace sysfs interface does not support setting cpumask of a PM
+QoS request.
 
 Signed-off-by: Praveen Chidambaram <pchidamb@codeaurora.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/base/power/qos.c | 14 +++++++-------
- include/linux/pm_qos.h   |  7 ++++---
- kernel/power/qos.c       | 14 ++++++++------
- 3 files changed, 19 insertions(+), 16 deletions(-)
+ Documentation/power/pm_qos_interface.txt |  16 +++++
+ include/linux/pm_qos.h                   |  13 ++++
+ kernel/power/qos.c                       | 102 +++++++++++++++++++++++++++++++
+ 3 files changed, 131 insertions(+)
 
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 36b9eb4..67a66b1 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -143,7 +143,7 @@ static int apply_constraint(struct dev_pm_qos_request *req,
- 	switch(req->type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 		ret = pm_qos_update_target(&qos->resume_latency,
--					   &req->data.pnode, action, value);
-+					   &req->data.lat, action, value);
- 		if (ret) {
- 			value = pm_qos_read_value(&qos->resume_latency);
- 			blocking_notifier_call_chain(&dev_pm_notifiers,
-@@ -153,7 +153,7 @@ static int apply_constraint(struct dev_pm_qos_request *req,
- 		break;
- 	case DEV_PM_QOS_LATENCY_TOLERANCE:
- 		ret = pm_qos_update_target(&qos->latency_tolerance,
--					   &req->data.pnode, action, value);
-+					   &req->data.lat, action, value);
- 		if (ret) {
- 			value = pm_qos_read_value(&qos->latency_tolerance);
- 			req->dev->power.set_latency_tolerance(req->dev, value);
-@@ -254,7 +254,7 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
+diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
+index a5da5c7..c129517 100644
+--- a/Documentation/power/pm_qos_interface.txt
++++ b/Documentation/power/pm_qos_interface.txt
+@@ -41,6 +41,15 @@ registered notifiers are called only if the target value is now different.
+ Clients of pm_qos need to save the returned handle for future use in other
+ pm_qos API functions.
  
- 	/* Flush the constraints lists for the device. */
- 	c = &qos->resume_latency;
--	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
-+	plist_for_each_entry_safe(req, tmp, &c->list, data.lat.node) {
- 		/*
- 		 * Update constraints list and call the notification
- 		 * callbacks if needed
-@@ -263,7 +263,7 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
- 		memset(req, 0, sizeof(*req));
- 	}
- 	c = &qos->latency_tolerance;
--	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
-+	plist_for_each_entry_safe(req, tmp, &c->list, data.lat.node) {
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
- 		memset(req, 0, sizeof(*req));
- 	}
-@@ -378,7 +378,7 @@ static int __dev_pm_qos_update_request(struct dev_pm_qos_request *req,
- 	switch(req->type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 	case DEV_PM_QOS_LATENCY_TOLERANCE:
--		curr_value = req->data.pnode.prio;
-+		curr_value = req->data.lat.node.prio;
- 		break;
- 	case DEV_PM_QOS_FLAGS:
- 		curr_value = req->data.flr.flags;
-@@ -831,8 +831,8 @@ s32 dev_pm_qos_get_user_latency_tolerance(struct device *dev)
- 	mutex_lock(&dev_pm_qos_mtx);
- 	ret = IS_ERR_OR_NULL(dev->power.qos)
- 		|| !dev->power.qos->latency_tolerance_req ?
--			PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT :
--			dev->power.qos->latency_tolerance_req->data.pnode.prio;
-+		PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT :
-+		dev->power.qos->latency_tolerance_req->data.lat.node.prio;
- 	mutex_unlock(&dev_pm_qos_mtx);
- 	return ret;
- }
++The handle is a pm_qos_request object. By default the request object sets the
++request type to PM_QOS_REQ_ALL_CORES, in which case, the PM QoS request
++applies to all cores. However, the driver can also specify a request type to
++be either of
++        PM_QOS_REQ_ALL_CORES,
++        PM_QOS_REQ_AFFINE_CORES,
++
++Specify the cpumask when type is set to PM_QOS_REQ_AFFINE_CORES.
++
+ void pm_qos_update_request(handle, new_target_value):
+ Will update the list element pointed to by the handle with the new target value
+ and recompute the new aggregated target, calling the notification tree if the
+@@ -54,6 +63,13 @@ the request.
+ int pm_qos_request(param_class):
+ Returns the aggregated value for a given PM QoS class.
+ 
++int pm_qos_request_for_cpu(param_class, cpu):
++Returns the aggregated value for a given PM QoS class for the specified cpu.
++
++int pm_qos_request_for_cpumask(param_class, cpumask):
++Returns the aggregated value for a given PM QoS class for the specified
++cpumask.
++
+ int pm_qos_request_active(handle):
+ Returns if the request is still active, i.e. it has not been removed from a
+ PM QoS class constraints list.
 diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 9ab4bf7..e1b763d 100644
+index e1b763d..a3aa5b5 100644
 --- a/include/linux/pm_qos.h
 +++ b/include/linux/pm_qos.h
-@@ -60,7 +60,7 @@ enum dev_pm_qos_req_type {
- struct dev_pm_qos_request {
- 	enum dev_pm_qos_req_type type;
- 	union {
--		struct plist_node pnode;
-+		struct pm_qos_request lat;
- 		struct pm_qos_flags_request flr;
- 	} data;
- 	struct device *dev;
-@@ -112,7 +112,8 @@ static inline int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
- 	return req->dev != NULL;
- }
+@@ -9,6 +9,8 @@
+ #include <linux/miscdevice.h>
+ #include <linux/device.h>
+ #include <linux/workqueue.h>
++#include <linux/cpumask.h>
++#include <linux/interrupt.h>
  
--int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
-+int pm_qos_update_target(struct pm_qos_constraints *c,
-+			 struct pm_qos_request *req,
- 			 enum pm_qos_req_action action, int value);
- bool pm_qos_update_flags(struct pm_qos_flags *pqf,
- 			 struct pm_qos_flags_request *req,
-@@ -210,7 +211,7 @@ int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val);
+ enum {
+ 	PM_QOS_RESERVED = 0,
+@@ -40,7 +42,15 @@ enum pm_qos_flags_status {
+ #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
+ #define PM_QOS_FLAG_REMOTE_WAKEUP	(1 << 1)
  
- static inline s32 dev_pm_qos_requested_resume_latency(struct device *dev)
- {
--	return dev->power.qos->resume_latency_req->data.pnode.prio;
-+	return dev->power.qos->resume_latency_req->data.lat.node.prio;
- }
++enum pm_qos_req_type {
++	PM_QOS_REQ_ALL_CORES = 0,
++	PM_QOS_REQ_AFFINE_CORES,
++};
++
+ struct pm_qos_request {
++	enum pm_qos_req_type type;
++	struct cpumask cpus_affine;
++	/* Internal structure members */
+ 	struct plist_node node;
+ 	int pm_qos_class;
+ 	struct delayed_work work; /* for pm_qos_update_request_timeout */
+@@ -80,6 +90,7 @@ enum pm_qos_type {
+ struct pm_qos_constraints {
+ 	struct plist_head list;
+ 	s32 target_value;	/* Do not change to 64 bit */
++	s32 target_per_cpu[NR_CPUS];
+ 	s32 default_value;
+ 	s32 no_constraint_value;
+ 	enum pm_qos_type type;
+@@ -127,6 +138,8 @@ void pm_qos_update_request_timeout(struct pm_qos_request *req,
+ void pm_qos_remove_request(struct pm_qos_request *req);
  
- static inline s32 dev_pm_qos_requested_flags(struct device *dev)
+ int pm_qos_request(int pm_qos_class);
++int pm_qos_request_for_cpu(int pm_qos_class, int cpu);
++int pm_qos_request_for_cpumask(int pm_qos_class, struct cpumask *mask);
+ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
+ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
+ int pm_qos_request_active(struct pm_qos_request *req);
 diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 884b770..d0b9c0f 100644
+index d0b9c0f..27f84a2 100644
 --- a/kernel/power/qos.c
 +++ b/kernel/power/qos.c
-@@ -161,19 +161,21 @@ static inline void pm_qos_set_value(struct pm_qos_constraints *c, s32 value)
+@@ -65,6 +65,8 @@ static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
+ static struct pm_qos_constraints cpu_dma_constraints = {
+ 	.list = PLIST_HEAD_INIT(cpu_dma_constraints.list),
+ 	.target_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
++	.target_per_cpu = { [0 ... (NR_CPUS - 1)] =
++				PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE },
+ 	.default_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
+ 	.no_constraint_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
+ 	.type = PM_QOS_MIN,
+@@ -79,6 +81,8 @@ static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
+ static struct pm_qos_constraints network_lat_constraints = {
+ 	.list = PLIST_HEAD_INIT(network_lat_constraints.list),
+ 	.target_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
++	.target_per_cpu = { [0 ... (NR_CPUS - 1)] =
++				PM_QOS_NETWORK_LAT_DEFAULT_VALUE },
+ 	.default_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
+ 	.no_constraint_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
+ 	.type = PM_QOS_MIN,
+@@ -94,6 +98,8 @@ static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
+ static struct pm_qos_constraints network_tput_constraints = {
+ 	.list = PLIST_HEAD_INIT(network_tput_constraints.list),
+ 	.target_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
++	.target_per_cpu = { [0 ... (NR_CPUS - 1)] =
++				PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE },
+ 	.default_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
+ 	.no_constraint_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
+ 	.type = PM_QOS_MAX,
+@@ -157,6 +163,43 @@ static inline void pm_qos_set_value(struct pm_qos_constraints *c, s32 value)
+ 	c->target_value = value;
+ }
+ 
++static inline void pm_qos_set_value_for_cpus(struct pm_qos_constraints *c)
++{
++	struct pm_qos_request *req = NULL;
++	int cpu;
++	s32 *qos_val;
++
++	qos_val = kcalloc(NR_CPUS, sizeof(*qos_val), GFP_KERNEL);
++	if (!qos_val) {
++		WARN("%s: No memory for PM QoS\n", __func__);
++		return;
++	}
++
++	for_each_possible_cpu(cpu)
++		qos_val[cpu] = c->default_value;
++
++	plist_for_each_entry(req, &c->list, node) {
++		for_each_cpu(cpu, &req->cpus_affine) {
++			switch (c->type) {
++			case PM_QOS_MIN:
++				if (qos_val[cpu] > req->node.prio)
++					qos_val[cpu] = req->node.prio;
++				break;
++			case PM_QOS_MAX:
++				if (req->node.prio > qos_val[cpu])
++					qos_val[cpu] = req->node.prio;
++				break;
++			default:
++				BUG();
++				break;
++			}
++		}
++	}
++
++	for_each_possible_cpu(cpu)
++		c->target_per_cpu[cpu] = qos_val[cpu];
++}
++
+ /**
   * pm_qos_update_target - manages the constraints list and calls the notifiers
   *  if needed
-  * @c: constraints data struct
-- * @node: request to add to the list, to update or to remove
-+ * @req: request to add to the list, to update or to remove
-  * @action: action to take on the constraints list
-  * @value: value of the request to add or update
-  *
-  * This function returns 1 if the aggregated constraint value has changed, 0
-  *  otherwise.
-  */
--int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
-+int pm_qos_update_target(struct pm_qos_constraints *c,
-+			 struct pm_qos_request *req,
- 			 enum pm_qos_req_action action, int value)
- {
- 	unsigned long flags;
- 	int prev_value, curr_value, new_value;
- 	int ret;
-+	struct plist_node *node = &req->node;
+@@ -206,6 +249,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c,
  
- 	spin_lock_irqsave(&pm_qos_lock, flags);
- 	prev_value = pm_qos_get_value(c);
-@@ -310,7 +312,7 @@ static void __pm_qos_update_request(struct pm_qos_request *req,
- 	if (new_value != req->node.prio)
- 		pm_qos_update_target(
- 			pm_qos_array[req->pm_qos_class]->constraints,
--			&req->node, PM_QOS_UPDATE_REQ, new_value);
-+			req, PM_QOS_UPDATE_REQ, new_value);
+ 	curr_value = pm_qos_get_value(c);
+ 	pm_qos_set_value(c, curr_value);
++	pm_qos_set_value_for_cpus(c);
+ 
+ 	spin_unlock_irqrestore(&pm_qos_lock, flags);
+ 
+@@ -298,6 +342,44 @@ int pm_qos_request(int pm_qos_class)
  }
+ EXPORT_SYMBOL_GPL(pm_qos_request);
  
- /**
-@@ -355,7 +357,7 @@ void pm_qos_add_request(struct pm_qos_request *req,
++int pm_qos_request_for_cpu(int pm_qos_class, int cpu)
++{
++	return pm_qos_array[pm_qos_class]->constraints->target_per_cpu[cpu];
++}
++EXPORT_SYMBOL(pm_qos_request_for_cpu);
++
++int pm_qos_request_for_cpumask(int pm_qos_class, struct cpumask *mask)
++{
++	unsigned long irqflags;
++	int cpu;
++	struct pm_qos_constraints *c = NULL;
++	int val;
++
++	spin_lock_irqsave(&pm_qos_lock, irqflags);
++	c = pm_qos_array[pm_qos_class]->constraints;
++	val = c->default_value;
++
++	for_each_cpu(cpu, mask) {
++		switch (c->type) {
++		case PM_QOS_MIN:
++			if (c->target_per_cpu[cpu] < val)
++				val = c->target_per_cpu[cpu];
++			break;
++		case PM_QOS_MAX:
++			if (c->target_per_cpu[cpu] > val)
++				val = c->target_per_cpu[cpu];
++			break;
++		default:
++			BUG();
++			break;
++		}
++	}
++	spin_unlock_irqrestore(&pm_qos_lock, irqflags);
++
++	return val;
++}
++EXPORT_SYMBOL(pm_qos_request_for_cpumask);
++
+ int pm_qos_request_active(struct pm_qos_request *req)
+ {
+ 	return req->pm_qos_class != 0;
+@@ -353,6 +435,24 @@ void pm_qos_add_request(struct pm_qos_request *req,
+ 		WARN(1, KERN_ERR "pm_qos_add_request() called for already added request\n");
+ 		return;
+ 	}
++
++	switch (req->type) {
++	case PM_QOS_REQ_AFFINE_CORES:
++		if (cpumask_empty(&req->cpus_affine)) {
++			req->type = PM_QOS_REQ_ALL_CORES;
++			cpumask_setall(&req->cpus_affine);
++			WARN(1, KERN_ERR "Affine cores not set for request with affinity flag\n");
++		}
++		break;
++
++	default:
++		WARN(1, KERN_ERR "Unknown request type %d\n", req->type);
++		/* fall through */
++	case PM_QOS_REQ_ALL_CORES:
++		cpumask_setall(&req->cpus_affine);
++		break;
++	}
++
+ 	req->pm_qos_class = pm_qos_class;
  	INIT_DELAYED_WORK(&req->work, pm_qos_work_fn);
  	trace_pm_qos_add_request(pm_qos_class, value);
- 	pm_qos_update_target(pm_qos_array[pm_qos_class]->constraints,
--			     &req->node, PM_QOS_ADD_REQ, value);
-+			     req, PM_QOS_ADD_REQ, value);
- }
- EXPORT_SYMBOL_GPL(pm_qos_add_request);
- 
-@@ -409,7 +411,7 @@ void pm_qos_update_request_timeout(struct pm_qos_request *req, s32 new_value,
- 	if (new_value != req->node.prio)
- 		pm_qos_update_target(
- 			pm_qos_array[req->pm_qos_class]->constraints,
--			&req->node, PM_QOS_UPDATE_REQ, new_value);
-+			req, PM_QOS_UPDATE_REQ, new_value);
- 
- 	schedule_delayed_work(&req->work, usecs_to_jiffies(timeout_us));
- }
-@@ -437,7 +439,7 @@ void pm_qos_remove_request(struct pm_qos_request *req)
- 
- 	trace_pm_qos_remove_request(req->pm_qos_class, PM_QOS_DEFAULT_VALUE);
+@@ -426,6 +526,7 @@ void pm_qos_update_request_timeout(struct pm_qos_request *req, s32 new_value,
+  */
+ void pm_qos_remove_request(struct pm_qos_request *req)
+ {
++
+ 	if (!req) /*guard against callers passing in null */
+ 		return;
+ 		/* silent return to keep pcm code cleaner */
+@@ -441,6 +542,7 @@ void pm_qos_remove_request(struct pm_qos_request *req)
  	pm_qos_update_target(pm_qos_array[req->pm_qos_class]->constraints,
--			     &req->node, PM_QOS_REMOVE_REQ,
-+			     req, PM_QOS_REMOVE_REQ,
+ 			     req, PM_QOS_REMOVE_REQ,
  			     PM_QOS_DEFAULT_VALUE);
++
  	memset(req, 0, sizeof(*req));
  }
+ EXPORT_SYMBOL_GPL(pm_qos_remove_request);
 -- 
 1.9.1
 
