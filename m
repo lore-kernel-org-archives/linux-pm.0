@@ -1,176 +1,297 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Subject: [PATCH v7 0/8] ARM generic idle states
-Date: Wed, 13 Aug 2014 16:51:59 +0100
-Message-ID: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH v7 1/8] arm64: kernel: refactor the CPU suspend API for retention states
+Date: Wed, 13 Aug 2014 16:52:00 +0100
+Message-ID: <1407945127-27554-2-git-send-email-lorenzo.pieralisi@arm.com>
+References: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Charles Garcia Tobin <Charles.Garcia-Tobin-5wv7dgnIgG8@public.gmane.org>, Nicolas Pitre <nico-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Amit Kucheria <amit.kucheria-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Antti Miettinen <ananaza-X3B1VOXEql0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Capella <sebcape-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Chander Kashyap <k.chander-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Geoff
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:37705 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753366AbaHMPwY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 11:52:24 -0400
+In-Reply-To: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <k.chander@samsung.com>, Geoff
 
-This patch is v7 of a previous posting:
+CPU suspend is the standard kernel interface to be used to enter
+low-power states on ARM64 systems. Current cpu_suspend implementation
+by default assumes that all low power states are losing the CPU context,
+so the CPU registers must be saved and cleaned to DRAM upon state
+entry. Furthermore, the current cpu_suspend() implementation assumes
+that if the CPU suspend back-end method returns when called, this has
+to be considered an error regardless of the return code (which can be
+successful) since the CPU was not expected to return from a code path that
+is different from cpu_resume code path - eg returning from the reset vector=
+.
 
-http://lists.infradead.org/pipermail/linux-arm-kernel/2014-July/274248.html
+All in all this means that the current API does not cope well with low-powe=
+r
+states that preserve the CPU context when entered (ie retention states),
+since first of all the context is saved for nothing on state entry for
+those states and a successful state entry can return as a normal function
+return, which is considered an error by the current CPU suspend
+implementation.
 
-Patchset has been tested on:
+This patch refactors the cpu_suspend() API so that it can be split in
+two separate functionalities. The arm64 cpu_suspend API just provides
+a wrapper around CPU suspend operation hook. A new function is
+introduced (for architecture code use only) for states that require
+context saving upon entry:
 
-- Juno ARM64 platform and Foundation v8 models (based on Trusted Firmware
-  PSCI implementation available at [1])
-  # Patches to enable idle states on Juno and Foundation models can be made
-    available, current dts are not in the mainline kernel
-- TC2
-- Compile tested on Samsung Exynos
+__cpu_suspend(unsigned long arg, int (*fn)(unsigned long))
 
-Patch for Exynos CPUidle code depends on patch [2].
+__cpu_suspend() saves the context on function entry and calls the
+so called suspend finisher (ie fn) to complete the suspend operation.
+The finisher is not expected to return, unless it fails in which case
+the error is propagated back to the __cpu_suspend caller.
 
-[1] https://github.com/ARM-software/arm-trusted-firmware
-[2] http://lists.infradead.org/pipermail/linux-arm-kernel/2014-July/274179.=
-html
+The API refactoring results in the following pseudo code call sequence for =
+a
+suspending CPU, when triggered from a kernel subsystem:
 
-Changes in v7:
+/*
+ * int cpu_suspend(unsigned long idx)
+ * @idx: idle state index
+ */
+{
+-> cpu_suspend(idx)
+=09|---> CPU operations suspend hook called, if present
+=09=09|--> if (retention_state)
+=09=09=09|--> direct suspend back-end call (eg PSCI suspend)
+=09=09     else
+=09=09=09|--> __cpu_suspend(idx, &back_end_finisher);
+}
 
-- Refactored arm64 cpu_suspend API to support retention states
-- Readded static states tables for TC2 and Exynos CPUidle driver so that
-  platforms with old dts files will still work as expected
-- Slightly reworked the DT parsing API to return the number of parsed DT
-  states
-- Ported PSCI to the new cpu_suspend API, now supporting retention states
-- Rebased against 3.16
+By refactoring the cpu_suspend API this way, the CPU operations back-end
+has a chance to detect whether idle states require state saving or not
+and can call the required suspend operations accordingly either through
+simple function call or indirectly through __cpu_suspend() which carries ou=
+t
+state saving and suspend finisher dispatching to complete idle state entry.
 
-Changes in v6:
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+---
+ arch/arm64/include/asm/suspend.h |  1 +
+ arch/arm64/kernel/sleep.S        | 47 +++++++++++++++++++++++++++++-------=
+----
+ arch/arm64/kernel/suspend.c      | 47 ++++++++++++++++++++++++------------=
+----
+ 3 files changed, 63 insertions(+), 32 deletions(-)
 
-- Added ARM64 CPU init idle to CPU operations
-- Removed power-rank property; sorting depends on the cpu-idle-states phand=
-le
-  list order now
-- Added local-timer-stop flag
-- Removed useless TC2 and Exynos DT idle state entry-method bindings
-- Removed RTSM dts update
-- Updated PSCI suspend parameter and DT bindings
-- Updated PSCI parsing code
-- Rebased against 3.16-rc6
-
-Changes in v5:
-
-- Added power-rank property to implement state sorting, following a number
-  of on/off list review comments
-- Added timer retained bool property
-- Ported TC2 big.LITTLE and Exynos drivers to DT initialization
-- Renamed s/OF/dt/ throughout the patch
-- Incorporated review comments and list discussions in the idle states
-  bindings documents
-- Rebased against 3.16-rc2
-
-Changes in v4:
-
-- States sorting using exit-latency
-- Added cosmetic review comments
-- Dropped RFC
-- Rebased against 3.15
-
-Changes in v3:
-
-- Streamlined the idle states bindings and added them to the series
-  http://www.spinics.net/lists/arm-kernel/msg316299.html
-- Sorting states through min-residency+exit-latency
-- Added debug strings formatting
-- Reworded min-residency-us idle state property
-- Removed power-domain properties from idle states waiting for code
-  examples requiring them to be defined
-
-Changes in v2:
-
-- Moved OF parsing code to drivers/cpuidle
-- Improved states detection and sorting through linked list
-- Split code in generic and ARM64 specific bits
-- Moved idle enter function into ARM64 idle driver
-- Refactored PSCI idle states register function
-- Renamed suspend operations and moved detection to ARM64 idle driver
-- Changed the way CPUIDLE_FLAG_TIMER_STOP is handled
-- Simplified idle state nodes parsing since according to the latest
-  bindings idle state nodes are a flat list, not hierarchical anymore
-- Used min-residency-us to sort the states, to be further discussed
-
-Idle states on most ARM platforms can be characterized by a set of
-parameters that are platform agnostic and describe the HW idle states
-features. So far, CPU idle drivers for ARM platforms required the definitio=
-n
-of parameters through static tables, duplicating control data for different
-platforms. Moreover, the lack of standardization on firmware interfaces
-hampered any standardization effort, resulting in CPU idle drivers for ARM
-platforms containing duplicated code and platform specific power down routi=
-nes.
-
-The introduction of the PSCI firmware interface, and more in general, well
-defined suspend back-ends, allows the definition of generic idle states and
-the respective kernel infrastructure to support them.
-
-Building on top of DT idle states bindings, that standardize idle states
-parameters and corresponding suspend back-ends, this patchset provides code
-that parses DT idle states nodes and builds at run-time the control data
-infrastructure required by the ARM CPU idle drivers.
-
-Idle states define an entry method (eg PSCI), that requires the respective
-ARM64 kernel back-end to be invoked to initialize idle states parameters, s=
-o
-that when the idle driver executes the back-end specific entry method a tab=
-le
-look-up can be carried out to retrieve the corresponding idle state paramet=
-er.
-
-On legacy ARM platforms, the DT idle states are just used to initialize
-states data.
-
-Lorenzo Pieralisi (8):
-  arm64: kernel: refactor the CPU suspend API for retention states
-  Documentation: arm: define DT idle states bindings
-  drivers: cpuidle: implement DT based idle states infrastructure
-  arm64: kernel: introduce cpu_init_idle CPU operation
-  arm64: add PSCI CPU_SUSPEND based cpu_suspend support
-  drivers: cpuidle: CPU idle ARM64 driver
-  drivers: cpuidle: initialize big.LITTLE driver through DT
-  drivers: cpuidle: initialize Exynos driver through DT
-
- Documentation/devicetree/bindings/arm/cpus.txt     |   8 +
- .../devicetree/bindings/arm/idle-states.txt        | 679 +++++++++++++++++=
-++++
- Documentation/devicetree/bindings/arm/psci.txt     |  14 +-
- arch/arm/boot/dts/exynos4210.dtsi                  |  11 +
- arch/arm/boot/dts/exynos5250.dtsi                  |  11 +
- arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts         |  23 +
- arch/arm64/include/asm/cpu_ops.h                   |   3 +
- arch/arm64/include/asm/cpuidle.h                   |  13 +
- arch/arm64/include/asm/suspend.h                   |   1 +
- arch/arm64/kernel/Makefile                         |   1 +
- arch/arm64/kernel/cpuidle.c                        |  29 +
- arch/arm64/kernel/psci.c                           | 100 +++
- arch/arm64/kernel/sleep.S                          |  47 +-
- arch/arm64/kernel/suspend.c                        |  47 +-
- drivers/cpuidle/Kconfig                            |   8 +
- drivers/cpuidle/Kconfig.arm                        |   2 +
- drivers/cpuidle/Kconfig.arm64                      |  14 +
- drivers/cpuidle/Makefile                           |   5 +
- drivers/cpuidle/cpuidle-arm64.c                    | 131 ++++
- drivers/cpuidle/cpuidle-big_little.c               |  23 +-
- drivers/cpuidle/cpuidle-exynos.c                   |  27 +-
- drivers/cpuidle/dt_idle_states.c                   | 140 +++++
- drivers/cpuidle/dt_idle_states.h                   |   5 +
- 23 files changed, 1305 insertions(+), 37 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/arm/idle-states.txt
- create mode 100644 arch/arm64/include/asm/cpuidle.h
- create mode 100644 arch/arm64/kernel/cpuidle.c
- create mode 100644 drivers/cpuidle/Kconfig.arm64
- create mode 100644 drivers/cpuidle/cpuidle-arm64.c
- create mode 100644 drivers/cpuidle/dt_idle_states.c
- create mode 100644 drivers/cpuidle/dt_idle_states.h
-
+diff --git a/arch/arm64/include/asm/suspend.h b/arch/arm64/include/asm/susp=
+end.h
+index e9c149c..456d67c 100644
+--- a/arch/arm64/include/asm/suspend.h
++++ b/arch/arm64/include/asm/suspend.h
+@@ -21,6 +21,7 @@ struct sleep_save_sp {
+ =09phys_addr_t save_ptr_stash_phys;
+ };
+=20
++extern int __cpu_suspend(unsigned long arg, int (*fn)(unsigned long));
+ extern void cpu_resume(void);
+ extern int cpu_suspend(unsigned long);
+=20
+diff --git a/arch/arm64/kernel/sleep.S b/arch/arm64/kernel/sleep.S
+index b192572..a564b44 100644
+--- a/arch/arm64/kernel/sleep.S
++++ b/arch/arm64/kernel/sleep.S
+@@ -49,28 +49,39 @@
+ =09orr=09\dst, \dst, \mask=09=09// dst|=3D(aff3>>rs3)
+ =09.endm
+ /*
+- * Save CPU state for a suspend.  This saves callee registers, and allocat=
+es
+- * space on the kernel stack to save the CPU specific registers + some
+- * other data for resume.
++ * Save CPU state for a suspend and execute the suspend finisher.
++ * On success it will return 0 through cpu_resume - ie through a CPU
++ * soft/hard reboot from the reset vector.
++ * On failure it returns the suspend finisher return value or force
++ * -EOPNOTSUPP if the finisher erroneously returns 0 (the suspend finisher
++ * is not allowed to return, if it does this must be considered failure).
++ * It saves callee registers, and allocates space on the kernel stack
++ * to save the CPU specific registers + some other data for resume.
+  *
+  *  x0 =3D suspend finisher argument
++ *  x1 =3D suspend finisher function pointer
+  */
+-ENTRY(__cpu_suspend)
++ENTRY(__cpu_suspend_enter)
+ =09stp=09x29, lr, [sp, #-96]!
+ =09stp=09x19, x20, [sp,#16]
+ =09stp=09x21, x22, [sp,#32]
+ =09stp=09x23, x24, [sp,#48]
+ =09stp=09x25, x26, [sp,#64]
+ =09stp=09x27, x28, [sp,#80]
++=09/*
++=09 * Stash suspend finisher and its argument in x20 and x19
++=09 */
++=09mov=09x19, x0
++=09mov=09x20, x1
+ =09mov=09x2, sp
+ =09sub=09sp, sp, #CPU_SUSPEND_SZ=09// allocate cpu_suspend_ctx
+-=09mov=09x1, sp
++=09mov=09x0, sp
+ =09/*
+-=09 * x1 now points to struct cpu_suspend_ctx allocated on the stack
++=09 * x0 now points to struct cpu_suspend_ctx allocated on the stack
+ =09 */
+-=09str=09x2, [x1, #CPU_CTX_SP]
+-=09ldr=09x2, =3Dsleep_save_sp
+-=09ldr=09x2, [x2, #SLEEP_SAVE_SP_VIRT]
++=09str=09x2, [x0, #CPU_CTX_SP]
++=09ldr=09x1, =3Dsleep_save_sp
++=09ldr=09x1, [x1, #SLEEP_SAVE_SP_VIRT]
+ #ifdef CONFIG_SMP
+ =09mrs=09x7, mpidr_el1
+ =09ldr=09x9, =3Dmpidr_hash
+@@ -82,11 +93,21 @@ ENTRY(__cpu_suspend)
+ =09ldp=09w3, w4, [x9, #MPIDR_HASH_SHIFTS]
+ =09ldp=09w5, w6, [x9, #(MPIDR_HASH_SHIFTS + 8)]
+ =09compute_mpidr_hash x8, x3, x4, x5, x6, x7, x10
+-=09add=09x2, x2, x8, lsl #3
++=09add=09x1, x1, x8, lsl #3
+ #endif
+-=09bl=09__cpu_suspend_finisher
++=09bl=09__cpu_suspend_save
++=09/*
++=09 * Grab suspend finisher in x20 and its argument in x19
++=09 */
++=09mov=09x0, x19
++=09mov=09x1, x20
++=09/*
++=09 * We are ready for power down, fire off the suspend finisher
++=09 * in x1, with argument in x0
++=09 */
++=09blr=09x1
+         /*
+-=09 * Never gets here, unless suspend fails.
++=09 * Never gets here, unless suspend finisher fails.
+ =09 * Successful cpu_suspend should return from cpu_resume, returning
+ =09 * through this code path is considered an error
+ =09 * If the return value is set to 0 force x0 =3D -EOPNOTSUPP
+@@ -103,7 +124,7 @@ ENTRY(__cpu_suspend)
+ =09ldp=09x27, x28, [sp, #80]
+ =09ldp=09x29, lr, [sp], #96
+ =09ret
+-ENDPROC(__cpu_suspend)
++ENDPROC(__cpu_suspend_enter)
+ =09.ltorg
+=20
+ /*
+diff --git a/arch/arm64/kernel/suspend.c b/arch/arm64/kernel/suspend.c
+index 55a99b9..893eab6 100644
+--- a/arch/arm64/kernel/suspend.c
++++ b/arch/arm64/kernel/suspend.c
+@@ -9,22 +9,18 @@
+ #include <asm/suspend.h>
+ #include <asm/tlbflush.h>
+=20
+-extern int __cpu_suspend(unsigned long);
++extern int __cpu_suspend_enter(unsigned long arg, int (*fn)(unsigned long)=
+);
+ /*
+- * This is called by __cpu_suspend() to save the state, and do whatever
++ * This is called by __cpu_suspend_enter() to save the state, and do whate=
+ver
+  * flushing is required to ensure that when the CPU goes to sleep we have
+  * the necessary data available when the caches are not searched.
+  *
+- * @arg: Argument to pass to suspend operations
+- * @ptr: CPU context virtual address
+- * @save_ptr: address of the location where the context physical address
+- *            must be saved
++ * ptr: CPU context virtual address
++ * save_ptr: address of the location where the context physical address
++ *           must be saved
+  */
+-int __cpu_suspend_finisher(unsigned long arg, struct cpu_suspend_ctx *ptr,
+-=09=09=09   phys_addr_t *save_ptr)
++void __cpu_suspend_save(struct cpu_suspend_ctx *ptr, phys_addr_t *save_ptr=
+)
+ {
+-=09int cpu =3D smp_processor_id();
+-
+ =09*save_ptr =3D virt_to_phys(ptr);
+=20
+ =09cpu_do_suspend(ptr);
+@@ -35,8 +31,6 @@ int __cpu_suspend_finisher(unsigned long arg, struct cpu_=
+suspend_ctx *ptr,
+ =09 */
+ =09__flush_dcache_area(ptr, sizeof(*ptr));
+ =09__flush_dcache_area(save_ptr, sizeof(*save_ptr));
+-
+-=09return cpu_ops[cpu]->cpu_suspend(arg);
+ }
+=20
+ /*
+@@ -56,15 +50,15 @@ void __init cpu_suspend_set_dbg_restorer(void (*hw_bp_r=
+estore)(void *))
+ }
+=20
+ /**
+- * cpu_suspend
++ * cpu_suspend() - function to enter a low-power state
++ * @arg: argument to pass to CPU suspend operations
+  *
+- * @arg: argument to pass to the finisher function
++ * Return: 0 on success, -EOPNOTSUPP if CPU suspend hook not initialized, =
+CPU
++ * operations back-end error code otherwise.
+  */
+ int cpu_suspend(unsigned long arg)
+ {
+-=09struct mm_struct *mm =3D current->active_mm;
+-=09int ret, cpu =3D smp_processor_id();
+-=09unsigned long flags;
++=09int cpu =3D smp_processor_id();
+=20
+ =09/*
+ =09 * If cpu_ops have not been registered or suspend
+@@ -72,6 +66,21 @@ int cpu_suspend(unsigned long arg)
+ =09 */
+ =09if (!cpu_ops[cpu] || !cpu_ops[cpu]->cpu_suspend)
+ =09=09return -EOPNOTSUPP;
++=09return cpu_ops[cpu]->cpu_suspend(arg);
++}
++
++/*
++ * __cpu_suspend
++ *
++ * arg: argument to pass to the finisher function
++ * fn: finisher function pointer
++ *
++ */
++int __cpu_suspend(unsigned long arg, int (*fn)(unsigned long))
++{
++=09struct mm_struct *mm =3D current->active_mm;
++=09int ret;
++=09unsigned long flags;
+=20
+ =09/*
+ =09 * From this point debug exceptions are disabled to prevent
+@@ -86,7 +95,7 @@ int cpu_suspend(unsigned long arg)
+ =09 * page tables, so that the thread address space is properly
+ =09 * set-up on function return.
+ =09 */
+-=09ret =3D __cpu_suspend(arg);
++=09ret =3D __cpu_suspend_enter(arg, fn);
+ =09if (ret =3D=3D 0) {
+ =09=09cpu_switch_mm(mm->pgd, mm);
+ =09=09flush_tlb_all();
+@@ -95,7 +104,7 @@ int cpu_suspend(unsigned long arg)
+ =09=09 * Restore per-cpu offset before any kernel
+ =09=09 * subsystem relying on it has a chance to run.
+ =09=09 */
+-=09=09set_my_cpu_offset(per_cpu_offset(cpu));
++=09=09set_my_cpu_offset(per_cpu_offset(smp_processor_id()));
+=20
+ =09=09/*
+ =09=09 * Restore HW breakpoint registers to sane values
 --=20
 1.9.1
 
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
