@@ -1,202 +1,59 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v2 4/4] QoS: Enable PM QoS requests to apply only on smp_affinity of an IRQ
-Date: Wed, 13 Aug 2014 10:01:29 -0600
-Message-ID: <1407945689-18494-5-git-send-email-lina.iyer@linaro.org>
-References: <1407945689-18494-1-git-send-email-lina.iyer@linaro.org>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v7 3/8] drivers: cpuidle: implement DT based idle states
+ infrastructure
+Date: Wed, 13 Aug 2014 12:31:11 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1408131223501.1133@knanqh.ubzr>
+References: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com> <1407945127-27554-4-git-send-email-lorenzo.pieralisi@arm.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:35288 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbaHMQBo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 12:01:44 -0400
-Received: by mail-pa0-f50.google.com with SMTP id et14so15124866pad.37
-        for <linux-pm@vger.kernel.org>; Wed, 13 Aug 2014 09:01:44 -0700 (PDT)
-In-Reply-To: <1407945689-18494-1-git-send-email-lina.iyer@linaro.org>
+Received: from mail-qc0-f177.google.com ([209.85.216.177]:50026 "EHLO
+	mail-qc0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753353AbaHMQbP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Aug 2014 12:31:15 -0400
+Received: by mail-qc0-f177.google.com with SMTP id x13so4292576qcv.8
+        for <linux-pm@vger.kernel.org>; Wed, 13 Aug 2014 09:31:14 -0700 (PDT)
+In-Reply-To: <1407945127-27554-4-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: daniel.lezcano@linaro.org, khilman@linaro.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, tglx@linutronix.de, rjw@rjwysocki.net
-Cc: Lina Iyer <lina.iyer@linaro.org>, Praveen Chidambaram <pchidamb@codeaurora.org>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <k.chander@samsung.com>, Geoff Levand <geoff@infradead.o>
 
-QoS requests that need to track an IRQ can be set to apply only on the
-cpus to which the IRQ's smp_affinity attribute is set to. The PM QoS
-framework will automatically track IRQ migration between the cores. The
-QoS is updated to be applied only to the core(s) that the IRQ has been
-migrated to.
+On Wed, 13 Aug 2014, Lorenzo Pieralisi wrote:
 
-The userspace sysfs interface does not support IRQ affinity.
+> On most common ARM systems, the low-power states a CPU can be put into are
+> not discoverable in HW and require device tree bindings to describe
+> power down suspend operations and idle states parameters.
+> 
+> In order to enable DT based idle states and configure idle drivers, this
+> patch implements the bulk infrastructure required to parse the device tree
+> idle states bindings and initialize the corresponding CPUidle driver states
+> data.
+> 
+> The parsing API accepts a start index that defines the first idle state
+> that should be initialized by the parsing code in order to give new and
+> legacy driver flexibility over which states should be parsed using the
+> new DT mechanism.
+> 
+> The idle states list is obtained from the first cpu in the driver
+> cpumask, which implicitly means the parsing code expects idle states
+> (and related list of phandles) to be the same for all CPUs in the
+> CPUidle driver mask. The kernel does not check this assumption, it must
+> be enforced by the bootloader to ensure correct system behaviour.
 
-Signed-off-by: Praveen Chidambaram <pchidamb@codeaurora.org>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
- Documentation/power/pm_qos_interface.txt |  4 +-
- include/linux/pm_qos.h                   |  5 +++
- kernel/power/qos.c                       | 77 +++++++++++++++++++++++++++++++-
- 3 files changed, 84 insertions(+), 2 deletions(-)
+Can we make the kernel a little less reliant on bootloader to ensure 
+correct system behaviour please?  If assumptions are assumed by the 
+kernel, it should at least print a warning and simply ignore the 
+information when such assumption are not respected.
 
-diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
-index c129517..32b864d 100644
---- a/Documentation/power/pm_qos_interface.txt
-+++ b/Documentation/power/pm_qos_interface.txt
-@@ -47,8 +47,10 @@ applies to all cores. However, the driver can also specify a request type to
- be either of
-         PM_QOS_REQ_ALL_CORES,
-         PM_QOS_REQ_AFFINE_CORES,
-+        PM_QOS_REQ_AFFINE_IRQ,
- 
--Specify the cpumask when type is set to PM_QOS_REQ_AFFINE_CORES.
-+Specify the cpumask when type is set to PM_QOS_REQ_AFFINE_CORES and specify
-+the IRQ number with PM_QOS_REQ_AFFINE_IRQ.
- 
- void pm_qos_update_request(handle, new_target_value):
- Will update the list element pointed to by the handle with the new target value
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index a3aa5b5..68b16b8 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -11,6 +11,7 @@
- #include <linux/workqueue.h>
- #include <linux/cpumask.h>
- #include <linux/interrupt.h>
-+#include <linux/completion.h>
- 
- enum {
- 	PM_QOS_RESERVED = 0,
-@@ -45,12 +46,16 @@ enum pm_qos_flags_status {
- enum pm_qos_req_type {
- 	PM_QOS_REQ_ALL_CORES = 0,
- 	PM_QOS_REQ_AFFINE_CORES,
-+	PM_QOS_REQ_AFFINE_IRQ,
- };
- 
- struct pm_qos_request {
- 	enum pm_qos_req_type type;
- 	struct cpumask cpus_affine;
-+	uint32_t irq;
- 	/* Internal structure members */
-+	struct irq_affinity_notify irq_notify;
-+	struct completion irq_released;
- 	struct plist_node node;
- 	int pm_qos_class;
- 	struct delayed_work work; /* for pm_qos_update_request_timeout */
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 27f84a2..c10e8bc 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -41,6 +41,9 @@
- #include <linux/platform_device.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-+#include <linux/irq.h>
-+#include <linux/irqdesc.h>
-+#include <linux/delay.h>
- 
- #include <linux/uaccess.h>
- #include <linux/export.h>
-@@ -412,6 +415,37 @@ static void pm_qos_work_fn(struct work_struct *work)
- 	__pm_qos_update_request(req, PM_QOS_DEFAULT_VALUE);
- }
- 
-+static void pm_qos_irq_release(struct kref *ref)
-+{
-+	unsigned long flags;
-+	struct irq_affinity_notify *notify = container_of(ref,
-+			struct irq_affinity_notify, kref);
-+	struct pm_qos_request *req = container_of(notify,
-+			struct pm_qos_request, irq_notify);
-+
-+	spin_lock_irqsave(&pm_qos_lock, flags);
-+	cpumask_clear(&req->cpus_affine);
-+	spin_unlock_irqrestore(&pm_qos_lock, flags);
-+
-+	complete(&req->irq_released);
-+}
-+
-+static void pm_qos_irq_notify(struct irq_affinity_notify *notify,
-+		const cpumask_t *mask)
-+{
-+	unsigned long flags;
-+	struct pm_qos_request *req = container_of(notify,
-+			struct pm_qos_request, irq_notify);
-+	struct pm_qos_constraints *c =
-+		pm_qos_array[req->pm_qos_class]->constraints;
-+
-+	spin_lock_irqsave(&pm_qos_lock, flags);
-+	cpumask_copy(&req->cpus_affine, mask);
-+	spin_unlock_irqrestore(&pm_qos_lock, flags);
-+
-+	pm_qos_update_target(c, req, PM_QOS_UPDATE_REQ, req->node.prio);
-+}
-+
- /**
-  * pm_qos_add_request - inserts new qos request into the list
-  * @req: pointer to a preallocated handle
-@@ -445,6 +479,34 @@ void pm_qos_add_request(struct pm_qos_request *req,
- 		}
- 		break;
- 
-+	case PM_QOS_REQ_AFFINE_IRQ:
-+		if (irq_can_set_affinity(req->irq)) {
-+			int ret = 0;
-+			struct irq_desc *desc = irq_to_desc(req->irq);
-+			struct cpumask *mask = desc->irq_data.affinity;
-+
-+			/* Get the current affinity */
-+			cpumask_copy(&req->cpus_affine, mask);
-+			req->irq_notify.irq = req->irq;
-+			req->irq_notify.notify = pm_qos_irq_notify;
-+			req->irq_notify.release = pm_qos_irq_release;
-+
-+			ret = irq_set_affinity_notifier(req->irq,
-+					&req->irq_notify);
-+			if (ret) {
-+				WARN(1, KERN_ERR "IRQ affinity notify set failed\n");
-+				req->type = PM_QOS_REQ_ALL_CORES;
-+				cpumask_setall(&req->cpus_affine);
-+			}
-+		} else {
-+			req->type = PM_QOS_REQ_ALL_CORES;
-+			cpumask_setall(&req->cpus_affine);
-+			WARN(1, KERN_ERR "IRQ-%d not set for request with affinity flag\n",
-+					req->irq);
-+		}
-+		init_completion(&req->irq_released);
-+		break;
-+
- 	default:
- 		WARN(1, KERN_ERR "Unknown request type %d\n", req->type);
- 		/* fall through */
-@@ -526,11 +588,14 @@ void pm_qos_update_request_timeout(struct pm_qos_request *req, s32 new_value,
-  */
- void pm_qos_remove_request(struct pm_qos_request *req)
- {
--
- 	if (!req) /*guard against callers passing in null */
- 		return;
- 		/* silent return to keep pcm code cleaner */
- 
-+	/* Remove ourselves from the irq notification */
-+	if (req->type == PM_QOS_REQ_AFFINE_IRQ)
-+		irq_release_affinity_notifier(&req->irq_notify);
-+
- 	if (!pm_qos_request_active(req)) {
- 		WARN(1, KERN_ERR "pm_qos_remove_request() called for unknown object\n");
- 		return;
-@@ -543,6 +608,16 @@ void pm_qos_remove_request(struct pm_qos_request *req)
- 			     req, PM_QOS_REMOVE_REQ,
- 			     PM_QOS_DEFAULT_VALUE);
- 
-+	/**
-+	 * The 'release' callback of the notifier would not be called unless
-+	 * there are no active users of the irq_notify object, i.e, kref count
-+	 * is non-zero. This could happen if there is an active 'notify'
-+	 * callback happening while the pm_qos_remove request is called. Wait
-+	 * until the release callback clears the cpus_affine mask.
-+	 */
-+	if (req->type == PM_QOS_REQ_AFFINE_IRQ)
-+		wait_for_completion(&req->irq_released);
-+
- 	memset(req, 0, sizeof(*req));
- }
- EXPORT_SYMBOL_GPL(pm_qos_remove_request);
--- 
-1.9.1
+> +	/*
+> +	 * We get the idle states for the first logical cpu in the
+> +	 * driver mask. The kernel does not check idle states on all
+> +	 * cpus in the driver mask, they are assumed to be the same
+> +	 * by default.
+> +	 */
 
+What if they're not?
+
+
+Nicolas
