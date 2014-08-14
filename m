@@ -1,45 +1,70 @@
 From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
 Subject: RE: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
  back to DEFAULT
-Date: Thu, 14 Aug 2014 13:57:49 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E5B70B@SHSMSX101.ccr.corp.intel.com>
+Date: Thu, 14 Aug 2014 14:10:27 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E5B73B@SHSMSX101.ccr.corp.intel.com>
 References: <1407982309-4863-1-git-send-email-chuansheng.liu@intel.com>
  <CAKnoXLw3DrBAxCUWEkXtvCTf+E1w0xTHJSiSUY6Qd6xHXeGaoQ@mail.gmail.com>
- <20140814110040.GI16043@twins.programming.kicks-ass.net>
- <53EC9A29.8090408@linaro.org>
- <20140814124135.GJ16043@twins.programming.kicks-ass.net>
- <53ECB9CD.9040705@linaro.org>
+ <20140814105336.GH16043@twins.programming.kicks-ass.net>
+ <27240C0AC20F114CBF8149A2696CBE4A01E5B61C@SHSMSX101.ccr.corp.intel.com>
+ <20140814131304.GK16043@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53ECB9CD.9040705@linaro.org>
+In-Reply-To: <20140814131304.GK16043@twins.programming.kicks-ass.net>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
-W21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBUaHVyc2RheSwgQXVn
-dXN0IDE0LCAyMDE0IDk6MzAgUE0NCj4gVG86IFBldGVyIFppamxzdHJhDQo+IENjOiBMaXUsIENo
-dWFuc2hlbmc7IFJhZmFlbCBKLiBXeXNvY2tpOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IExL
-TUw7IExpdSwNCj4gQ2hhbmdjaGVuZzsgV2FuZywgWGlhb21pbmc7IENoYWtyYXZhcnR5LCBTb3V2
-aWsgSw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBjcHVpZGxlOiBGaXggdGhlIENQVSBzdHVjayBh
-dCBDMCBmb3IgMi0zcyBhZnRlciBQTV9RT1MNCj4gYmFjayB0byBERUZBVUxUDQoNCg0KPiBJIHRo
-aW5rIHRoZSBtYWluIGlzc3VlIGhlcmUgaXMgdG8gZXhpdCB0aGUgcG9sbF9pZGxlIGxvb3Agd2hl
-biBhbiBJUEkgaXMNCj4gcmVjZWl2ZWQuIElJVUMsIHRoZXJlIGlzIGEgcG1fcW9zIHVzZXIsIHBl
-cmhhcHMgYSBkcml2ZXIgKENodWFuc2hlbmcgY2FuDQo+IGdpdmUgbW9yZSBkZXRhaWxzKSwgc2V0
-dGluZyBhIHZlcnkgc2hvcnQgbGF0ZW5jeSwgc28gdGhlIGNwdWlkbGUNCj4gZnJhbWV3b3JrIGNo
-b29zZSBhIHNoYWxsb3cgc3RhdGUgbGlrZSB0aGUgcG9sbF9pZGxlIGFuZCB0aGVuIHRoZSBkcml2
-ZXINCj4gc2V0cyBhIGJpZ2dlciBsYXRlbmN5LCBsZWFkaW5nIHRvIHRoZSBJUEkgdG8gd2FrZSBh
-bGwgdGhlIGNwdXMuIEFzIHRoZQ0KPiBDUFVzIGFyZSBpbiB0aGUgcG9sbF9pZGxlLCB0aGV5IGRv
-bid0IGV4aXQgdW50aWwgYW4gZXZlbnQgbWFrZSB0aGVtIHRvDQo+IGV4aXQgdGhlIG5lZWRfcmVz
-Y2hlZCgpIGxvb3AgKHJlc2NoZWR1bGUgb3Igd2hhdGV2ZXIpLiBUaGlzIHNpdHVhdGlvbg0KPiBj
-YW4gbGV0IHRoZSBDUFVzIHRvIHN0YW5kIGluIHRoZSBpbmZpbml0ZSBsb29wIHNldmVyYWwgc2Vj
-b25kcyB3aGlsZSB3ZQ0KPiBhcmUgZXhwZWN0aW5nIHRoZW0gdG8gZXhpdCB0aGUgcG9sbF9pZGxl
-IGFuZCBlbnRlciBhIGRlZXBlciBpZGxlIHN0YXRlLA0KPiB0aHVzIHdpdGggYW4gZXh0cmEgZW5l
-cmd5IGNvbnN1bXB0aW9uLg0KPiANCg0KRXhhY3RseSwgbm8gZnVuY3Rpb24gZXJyb3IgaGVyZS4g
-QnV0IGRvIG5vdCBlbnRlciB0aGUgZGVlcGVyIEMtc3RhdGUgd2lsbCBicmluZyBtb3JlIHBvd2Vy
-DQpjb25zdW1wdGlvbiwgaW4gc29tZSBtcDMgc3RhbmRieSBtb2RlLCBldmVuIDEwJSBwb3dlciBj
-YW4gYmUgc2F2ZWQuDQoNCkFuZCB0aGlzIGlzIHRoZSBwYXRjaCdzIGFpbSBoZXJlLg0KDQoNCg==
+
+
+> -----Original Message-----
+> From: Peter Zijlstra [mailto:peterz@infradead.org]
+> Sent: Thursday, August 14, 2014 9:13 PM
+> To: Liu, Chuansheng
+> Cc: Daniel Lezcano; Rafael J. Wysocki; linux-pm@vger.kernel.org; LKML; Liu,
+> Changcheng; Wang, Xiaoming; Chakravarty, Souvik K
+> Subject: Re: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
+> back to DEFAULT
+> 
+> On Thu, Aug 14, 2014 at 11:24:06AM +0000, Liu, Chuansheng wrote:
+> > If inspecting the polling flag, we can not fix the race between poll_idle and
+> smp_callback,
+> > since in poll_idle(), before set polling flag, if the smp_callback come in, then
+> no resched bit set,
+> > after that, poll_idle() will do the polling action, without reselection
+> immediately, it will bring power
+> > regression here.
+> 
+> -ENOPARSE. Is there a question there?
+
+Lezcano suggest to inspect the polling flag, then code is like below:
+smp_callback() {
+if (polling_flag)
+  set_resched_bit;
+}
+
+And the poll_idle code is like below:
+static int poll_idle(struct cpuidle_device *dev,
+                struct cpuidle_driver *drv, int index)
+{
+        local_irq_enable();
+        if (!current_set_polling_and_test()) {
+                while (!need_resched())
+                        cpu_relax();
+        }   
+        current_clr_polling();
+
+        return index;
+}
+
+The race is:
+Idle task:
+poll_idle
+  local_irq_enable()
+<== IPI interrupt coming, check the polling flag is not set yet, do nothing;
+Come back to poll_idle, it will stay in the poll loop for a while, instead break
+it immediately to let governor reselect the right C-state.
