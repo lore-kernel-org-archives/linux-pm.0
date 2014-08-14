@@ -1,259 +1,85 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] Exynos4: cpuidle: support dual CPUs with AFTR state
-Date: Thu, 14 Aug 2014 12:55:03 +0200
-Message-ID: <1929175.yd8jnLbgsd@amdc1032>
-References: <1396604925-18383-1-git-send-email-daniel.lezcano@linaro.org>
- <2337363.gvYnZM7kuD@amdc1032> <53CCF438.8000805@linaro.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
+ back to DEFAULT
+Date: Thu, 14 Aug 2014 13:00:40 +0200
+Message-ID: <20140814110040.GI16043@twins.programming.kicks-ass.net>
+References: <1407982309-4863-1-git-send-email-chuansheng.liu@intel.com>
+ <CAKnoXLw3DrBAxCUWEkXtvCTf+E1w0xTHJSiSUY6Qd6xHXeGaoQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <53CCF438.8000805@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Tomasz Figa <t.figa@samsung.com>, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, ccross@google.com, k.kozlowski@samsung.com
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="G3juXO9GfR42w+sw"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:43816 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752473AbaHNLAy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Aug 2014 07:00:54 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKnoXLw3DrBAxCUWEkXtvCTf+E1w0xTHJSiSUY6Qd6xHXeGaoQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Chuansheng Liu <chuansheng.liu@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, changcheng.liu@intel.com, xiaoming.wang@intel.com, souvik.k.chakravarty@intel.com
 
 
-Hi,
+--G3juXO9GfR42w+sw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Monday, July 21, 2014 01:06:32 PM Daniel Lezcano wrote:
-> On 07/16/2014 07:34 PM, Bartlomiej Zolnierkiewicz wrote:
+On Thu, Aug 14, 2014 at 12:29:32PM +0200, Daniel Lezcano wrote:
+> Hi Chuansheng,
+>=20
+> On 14 August 2014 04:11, Chuansheng Liu <chuansheng.liu@intel.com> wrote:
+>=20
+> > We found sometimes even after we let PM_QOS back to DEFAULT,
+> > the CPU still stuck at C0 for 2-3s, don't do the new suitable C-state
+> > selection immediately after received the IPI interrupt.
 > >
-> > Hi,
+> > The code model is simply like below:
+> > {
+> >         pm_qos_update_request(&pm_qos, C1 - 1);
+> >                 < =3D=3D Here keep all cores at C0
+> >         ...;
+> >         pm_qos_update_request(&pm_qos, PM_QOS_DEFAULT_VALUE);
+> >                 < =3D=3D Here some cores still stuck at C0 for 2-3s
+> > }
 > >
-> > On Friday, May 30, 2014 03:53:09 PM Bartlomiej Zolnierkiewicz wrote:
-> >>
-> >> Hi,
-> >>
-> >> On Friday, May 30, 2014 01:34:45 PM Tomasz Figa wrote:
-> >>> Hi Daniel,
-> >>>
-> >>> On 30.05.2014 11:30, Daniel Lezcano wrote:
-> >>>> On 04/24/2014 07:42 PM, Tomasz Figa wrote:
-> >>>>> Hi Daniel,
-> >>>>>
-> >>>>> Please see my comments inline.
-> >>>>>
-> >>>>> Btw. Please fix your e-mail composer to properly wrap your messages
-> >>>>> around 7xth column, as otherwise they're hard to read.
-> >>>>>
-> >>>>> On 04.04.2014 11:48, Daniel Lezcano wrote:
-> >>>>>> The following driver is for exynos4210. I did not yet finished the
-> >>>>>> other boards, so
-> >>>>>> I created a specific driver for 4210 which could be merged later.
-> >>>>>>
-> >>>>>> The driver is based on Colin Cross's driver found at:
-> >>>>>>
-> >>>>>> https://android.googlesource.com/kernel/exynos/+/e686b1ec67423c40b4fdf811f9a4dfa3b393a010%5E%5E!/
-> >>>>>>
-> >>>>>>
-> >>>>>>
-> >>>>>> This one was based on a 3.4 kernel and an old API.
-> >>>>>>
-> >>>>>> It has been refreshed, simplified and based on the recent code cleanup
-> >>>>>> I sent
-> >>>>>> today.
-> >>>>>>
-> >>>>>> The AFTR could be entered when all the cpus (except cpu0) are down. In
-> >>>>>> order to
-> >>>>>> reach this situation, the couple idle states are used.
-> >>>>>>
-> >>>>>> There is a sync barrier at the entry and the exit of the low power
-> >>>>>> function. So
-> >>>>>> all cpus will enter and exit the function at the same time.
-> >>>>>>
-> >>>>>> At this point, CPU0 knows the other cpu will power down itself. CPU0
-> >>>>>> waits for
-> >>>>>> the CPU1 to be powered down and then initiate the AFTR power down
-> >>>>>> sequence.
-> >>>>>>
-> >>>>>> No interrupts are handled by CPU1, this is why we switch to the timer
-> >>>>>> broadcast
-> >>>>>> even if the local timer is not impacted by the idle state.
-> >>>>>>
-> >>>>>> When CPU0 wakes up, it powers up CPU1 and waits for it to boot. Then
-> >>>>>> they both
-> >>>>>> exit the idle function.
-> >>>>>>
-> >>>>>> This driver allows the exynos4210 to have the same power consumption
-> >>>>>> at idle
-> >>>>>> time than the one when we have to unplug CPU1 in order to let CPU0 to
-> >>>>>> reach
-> >>>>>> the AFTR state.
-> >>>>>>
-> >>>>>> This patch is a RFC because, we have to find a way to remove the macros
-> >>>>>> definitions and cpu powerdown function without pulling the arch
-> >>>>>> dependent
-> >>>>>> headers.
-> >>>>>>
-> >>>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> >>>>>> ---
-> >>>>>>    arch/arm/mach-exynos/common.c        |   11 +-
-> >>>>>>    drivers/cpuidle/Kconfig.arm          |    8 ++
-> >>>>>>    drivers/cpuidle/Makefile             |    1 +
-> >>>>>>    drivers/cpuidle/cpuidle-exynos4210.c |  226
-> >>>>>> ++++++++++++++++++++++++++++++++++
-> >>>>
-> >>>> [ ... ]
-> >>>>
-> >>>>
-> >>>>> Otherwise, I quite like the whole idea. I need to play a bit with CPU
-> >>>>> hotplug and PMU to verify that things couldn't really be simplified a
-> >>>>> bit, but in general this looks reasonably.
-> >>>>
-> >>>> Hi Tomasz,
-> >>>>
-> >>>> did you have time to look at this simplification ?
-> >>>
-> >>> Unfortunately I got preempted with other things to do and now I'm on
-> >>> vacation. I worked a bit with Bart (added on CC) on this and generally
-> >>> the conclusion was that all the things are necessary. He was also
-> >>> working to extend the driver to support Exynos4x12.
-> >>>
-> >>> Bart, has anything interesting showed up since we talked about this last
-> >>> time?
-> >>
-> >> Since we last looked into this I have fixed the "standard" AFTR support
-> >> for Exynos3250 and started to work on adding Exynos3250 support to this
-> >> driver (as Exynos3250 support has bigger priority than Exynos4x12 one).
-> >> Unfortunately I also got preempted with other things so it is still
-> >> unfinished and doesn't work yet.  Moreover I had no possibility to test
-> >> the new driver on Exynos4210 based Origen yet (I hope to do this next
-> >> week).
-> >
-> > I have tested this patch on Origen board (Exynos4210 rev 1.1) and it
-> > causes system lockup (it seems that the code gets stuck on waiting for
-> > CPU1 to wake up).
-> >
-> > The kernels I have tried:
-> > * current -next + this patch + few fixes to bring it up to date
-> > * commit cd245f5 + this patch + some fixes
-> > * next-20140403 + your Exynos cpuidle patch series + this patch
-> >
-> > I have also tried with S5P_VA_SYSRAM replaced by S5P_INFORM5 to
-> > match Exynos 4210 rev 1.1 but it didn't help.
-> >
-> > U-Boot version used is:
-> > U-Boot 2012.07 (Sep 22 2012 - 05:12:41) for ORIGEN
-> >
-> > Could you please tell me which hardware/bootloader/kernel exactly
-> > have you used to test this patch?
-> 
-> When I used it, it was on top of 3.15-rc1:
-> 
-> https://git.linaro.org/people/daniel.lezcano/linux.git/shortlog/refs/heads/cpuidle/samsung-next
-> 
-> The hardware was a exynos-4210 origen board ver A.
+> > The reason is when pm_qos come back to DEFAULT, there is IPI interrupt =
+to
+> > wake up the core, but when core is in poll idle state, the IPI interrupt
+> > can not break the polling loop.
 
-I need the following patch to make this driver work on my hardware.
+So seeing how you're from @intel.com I'm assuming you're using x86 here.
 
-[ Unfortunately even with this patch the driver doesn't work reliably.
-  After 30-40 minutes of stress testing it lockups the system (I can
-  send you testing app+script if needed). ]
+I'm not seeing how this can be possible, MWAIT is interrupted by IPIs
+just fine, which means we'll fall out of the cpuidle_enter(), which
+means we'll cpuidle_reflect(), and then leave cpuidle_idle_call().
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+It will indeed not leave the cpu_idle_loop() function and go right back
+into cpuidle_idle_call(), but that will then call cpuidle_select() which
+should pick a new C state.
 
+So the interrupt _should_ work. If it doesn't you need to explain why.
 
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH] cpuidle: Exynos4210: make coupled driver work on Revision 1.1
+--G3juXO9GfR42w+sw
+Content-Type: application/pgp-signature
 
-* Add static inline helper cpu_boot_reg_base() and use it instead of
-  BOOT_VECTOR macro.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-* Use S5P_INFORM register instead of S5P_VA_SYSRAM one on Revison 1.1
-  (this matches platform code in arch/arm/mach-exynos/platsmp.c).
+iQIcBAEBAgAGBQJT7JbYAAoJEHZH4aRLwOS6EGUP/28NXBBtg5PBMF9g060zyHge
+Mo5bnR5UUD2bGEq0uCQ8GpbJTfeyMKqjP7r1vQ9zK4nHbsFLiSIp/rPsGS0AOOtL
+SHqMWaVyvtSppikUvBuGbiqDLn50SNMxLwhyGaMWfovKB7L5mKdHMB1W5AwAwRi1
+M4J6tkrbeQy0UwsFeydx5+j1Gwu+aWc672/VUAJ7a8i/BAyEpeFlD31Wz4NoI8iE
+XdpIxJK7r3dhcn+XMtkolYPHr0Vn7Dho18Q5sFZXu3U6FsUtb83+Sz6p1WXtxb+7
+VEhF0DocGMkacKqBvKscT2m/tCwp7wKXVoI4+VVdjyezyF8u4ezcE6sEs0401tyS
+S1cgkzxTxQF6r+0ahb5YzxWn5SiISMaf2ju5TllUmjwyCmbEFKj2qv+0gGBbqARr
+4QIXiBE/QiCEnfu1ADMKHkpmGyYuJswCR/hnylanZpp2h4TSzRJCCuq08rEo/ZxE
+CcoQEhOt0z33Rd7xU4Hff9v82/zcRVP1qwmNy1HEkDUrnQMEVEFJzOJUoHnzGxYn
+gIYfu5klMsW+Y6f9h4MayWUj37+47a8trJw8WbX3sIVWEKB3YIsMYA9iU6Hhl1Hz
+d4bUxjrHd9tmFKht8vl4fC6e0YzYlDgQnBw18ARHbSWnDvOh91YxJeuJiUZav5N1
+gq57BNtnPMx5Yano4oDq
+=w+M0
+-----END PGP SIGNATURE-----
 
-* Retry poking CPU1 out of the BOOT ROM if necessary
-  (this matches platform code in arch/arm/mach-exynos/platsmp.c).
-
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- drivers/cpuidle/cpuidle-exynos4210.c |   27 ++++++++++++++-------------
- 1 file changed, 14 insertions(+), 13 deletions(-)
-
-Index: b/drivers/cpuidle/cpuidle-exynos4210.c
-===================================================================
---- a/drivers/cpuidle/cpuidle-exynos4210.c	2014-07-22 15:42:11.580365939 +0200
-+++ b/drivers/cpuidle/cpuidle-exynos4210.c	2014-07-22 16:11:01.112369130 +0200
-@@ -29,12 +29,19 @@
- static atomic_t exynos_idle_barrier;
- static atomic_t cpu1_wakeup = ATOMIC_INIT(0);
- 
--#define BOOT_VECTOR S5P_VA_SYSRAM
- #define S5P_VA_PMU                  S3C_ADDR(0x02180000)
- #define S5P_PMUREG(x)              (S5P_VA_PMU + (x))
-+#define S5P_INFORM5                 S5P_PMUREG(0x0814)
- #define S5P_ARM_CORE1_CONFIGURATION S5P_PMUREG(0x2080)
- #define S5P_ARM_CORE1_STATUS        S5P_PMUREG(0x2084)
- 
-+static inline void __iomem *cpu_boot_reg_base(void)
-+{
-+	if (samsung_rev() == EXYNOS4210_REV_1_1)
-+		return S5P_INFORM5;
-+	return S5P_VA_SYSRAM;
-+}
-+
- static void (*exynos_aftr)(void);
- extern void exynos_cpu_resume(void);
- static int cpu_suspend_finish(unsigned long flags)
-@@ -76,7 +83,7 @@ static int exynos_cpu0_enter_aftr(void)
- 			 * boot back up again, getting stuck in the
- 			 * boot rom code
- 			 */
--			if (__raw_readl(BOOT_VECTOR) == 0)
-+			if (__raw_readl(cpu_boot_reg_base()) == 0)
- 				goto abort;
- 
- 			cpu_relax();
-@@ -95,7 +102,7 @@ abort:
- 		 * Set the boot vector to something non-zero
- 		 */
- 		__raw_writel(virt_to_phys(exynos_cpu_resume),
--			     BOOT_VECTOR);
-+			     cpu_boot_reg_base());
- 		dsb();
- 
- 		/*
-@@ -108,24 +115,18 @@ abort:
- 		/*
- 		 * Wait for cpu1 to get stuck in the boot rom
- 		 */
--		while ((__raw_readl(BOOT_VECTOR) != 0) &&
-+		while ((__raw_readl(cpu_boot_reg_base()) != 0) &&
- 		       !atomic_read(&cpu1_wakeup))
- 			cpu_relax();
- 
--		if (!atomic_read(&cpu1_wakeup)) {
-+		while (!atomic_read(&cpu1_wakeup)) {
- 			/*
- 			 * Poke cpu1 out of the boot rom
- 			 */
- 			__raw_writel(virt_to_phys(exynos_cpu_resume),
--				     BOOT_VECTOR);
-+				     cpu_boot_reg_base());
- 			dsb_sev();
- 		}
--
--		/*
--		 * Wait for cpu1 to finish booting
--		 */
--		while (!atomic_read(&cpu1_wakeup))
--			cpu_relax();
- 	}
- 
- 	return ret;
-@@ -165,7 +166,7 @@ static int exynos_enter_aftr(struct cpui
- {
- 	int ret;
- 
--	__raw_writel(virt_to_phys(exynos_cpu_resume), BOOT_VECTOR);
-+	__raw_writel(virt_to_phys(exynos_cpu_resume), cpu_boot_reg_base());
- 
- 	/*
- 	 * Waiting all cpus to reach this point at the same moment
+--G3juXO9GfR42w+sw--
