@@ -1,67 +1,71 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
- back to DEFAULT
-Date: Thu, 14 Aug 2014 14:26:38 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E5B762@SHSMSX101.ccr.corp.intel.com>
-References: <1407982309-4863-1-git-send-email-chuansheng.liu@intel.com>
- <CAKnoXLw3DrBAxCUWEkXtvCTf+E1w0xTHJSiSUY6Qd6xHXeGaoQ@mail.gmail.com>
- <20140814105336.GH16043@twins.programming.kicks-ass.net>
- <27240C0AC20F114CBF8149A2696CBE4A01E5B61C@SHSMSX101.ccr.corp.intel.com>
- <20140814131304.GK16043@twins.programming.kicks-ass.net>
- <27240C0AC20F114CBF8149A2696CBE4A01E5B73B@SHSMSX101.ccr.corp.intel.com>
- <53ECC4EB.20407@linaro.org>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v7 3/8] drivers: cpuidle: implement DT based idle states
+ infrastructure
+Date: Thu, 14 Aug 2014 11:47:57 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1408141142530.29347@knanqh.ubzr>
+References: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1407945127-27554-4-git-send-email-lorenzo.pieralisi@arm.com>
+ <alpine.LFD.2.11.1408131223501.1133@knanqh.ubzr>
+ <20140813170440.GA30822@e102568-lin.cambridge.arm.com>
+ <alpine.LFD.2.11.1408131319210.1133@knanqh.ubzr>
+ <20140814112911.GA5039@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53ECC4EB.20407@linaro.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140814112911.GA5039@red-moon>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Tomasz Figa <t.figa@samsung.com>, Lina Iyer <lina.iyer@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Vincent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, ashwin.chaugule@linaro.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Geoff Levand <geoff@infradead.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
-W21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBUaHVyc2RheSwgQXVn
-dXN0IDE0LCAyMDE0IDEwOjE3IFBNDQo+IFRvOiBMaXUsIENodWFuc2hlbmc7IFBldGVyIFppamxz
-dHJhDQo+IENjOiBSYWZhZWwgSi4gV3lzb2NraTsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBM
-S01MOyBMaXUsIENoYW5nY2hlbmc7DQo+IFdhbmcsIFhpYW9taW5nOyBDaGFrcmF2YXJ0eSwgU291
-dmlrIEsNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gY3B1aWRsZTogRml4IHRoZSBDUFUgc3R1Y2sg
-YXQgQzAgZm9yIDItM3MgYWZ0ZXIgUE1fUU9TDQo+IGJhY2sgdG8gREVGQVVMVA0KPiANCj4gT24g
-MDgvMTQvMjAxNCAwNDoxMCBQTSwgTGl1LCBDaHVhbnNoZW5nIHdyb3RlOg0KPiA+DQo+ID4NCj4g
-Pj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogUGV0ZXIgWmlqbHN0cmEg
-W21haWx0bzpwZXRlcnpAaW5mcmFkZWFkLm9yZ10NCj4gPj4gU2VudDogVGh1cnNkYXksIEF1Z3Vz
-dCAxNCwgMjAxNCA5OjEzIFBNDQo+ID4+IFRvOiBMaXUsIENodWFuc2hlbmcNCj4gPj4gQ2M6IERh
-bmllbCBMZXpjYW5vOyBSYWZhZWwgSi4gV3lzb2NraTsgbGludXgtcG1Admdlci5rZXJuZWwub3Jn
-OyBMS01MOyBMaXUsDQo+ID4+IENoYW5nY2hlbmc7IFdhbmcsIFhpYW9taW5nOyBDaGFrcmF2YXJ0
-eSwgU291dmlrIEsNCj4gPj4gU3ViamVjdDogUmU6IFtQQVRDSF0gY3B1aWRsZTogRml4IHRoZSBD
-UFUgc3R1Y2sgYXQgQzAgZm9yIDItM3MgYWZ0ZXIgUE1fUU9TDQo+ID4+IGJhY2sgdG8gREVGQVVM
-VA0KPiA+Pg0KPiA+PiBPbiBUaHUsIEF1ZyAxNCwgMjAxNCBhdCAxMToyNDowNkFNICswMDAwLCBM
-aXUsIENodWFuc2hlbmcgd3JvdGU6DQo+ID4+PiBJZiBpbnNwZWN0aW5nIHRoZSBwb2xsaW5nIGZs
-YWcsIHdlIGNhbiBub3QgZml4IHRoZSByYWNlIGJldHdlZW4gcG9sbF9pZGxlIGFuZA0KPiA+PiBz
-bXBfY2FsbGJhY2ssDQo+ID4+PiBzaW5jZSBpbiBwb2xsX2lkbGUoKSwgYmVmb3JlIHNldCBwb2xs
-aW5nIGZsYWcsIGlmIHRoZSBzbXBfY2FsbGJhY2sgY29tZSBpbiwgdGhlbg0KPiA+PiBubyByZXNj
-aGVkIGJpdCBzZXQsDQo+ID4+PiBhZnRlciB0aGF0LCBwb2xsX2lkbGUoKSB3aWxsIGRvIHRoZSBw
-b2xsaW5nIGFjdGlvbiwgd2l0aG91dCByZXNlbGVjdGlvbg0KPiA+PiBpbW1lZGlhdGVseSwgaXQg
-d2lsbCBicmluZyBwb3dlcg0KPiA+Pj4gcmVncmVzc2lvbiBoZXJlLg0KPiA+Pg0KPiA+PiAtRU5P
-UEFSU0UuIElzIHRoZXJlIGEgcXVlc3Rpb24gdGhlcmU/DQo+ID4NCj4gPiBMZXpjYW5vIHN1Z2dl
-c3QgdG8gaW5zcGVjdCB0aGUgcG9sbGluZyBmbGFnLCB0aGVuIGNvZGUgaXMgbGlrZSBiZWxvdzoN
-Cj4gPiBzbXBfY2FsbGJhY2soKSB7DQo+ID4gaWYgKHBvbGxpbmdfZmxhZykNCj4gPiAgICBzZXRf
-cmVzY2hlZF9iaXQ7DQo+ID4gfQ0KPiA+DQo+ID4gQW5kIHRoZSBwb2xsX2lkbGUgY29kZSBpcyBs
-aWtlIGJlbG93Og0KPiA+IHN0YXRpYyBpbnQgcG9sbF9pZGxlKHN0cnVjdCBjcHVpZGxlX2Rldmlj
-ZSAqZGV2LA0KPiA+ICAgICAgICAgICAgICAgICAgc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYs
-IGludCBpbmRleCkNCj4gPiB7DQo+ID4gICAgICAgICAgbG9jYWxfaXJxX2VuYWJsZSgpOw0KPiA+
-ICAgICAgICAgIGlmICghY3VycmVudF9zZXRfcG9sbGluZ19hbmRfdGVzdCgpKSB7DQo+ID4gICAg
-ICAgICAgICAgICAgICB3aGlsZSAoIW5lZWRfcmVzY2hlZCgpKQ0KPiANCj4gT3IgYWx0ZXJuYXRp
-dmVseSwgc29tZXRoaW5nIGxpa2U6DQo+IA0KPiAJd2hpbGUgKCFuZWVkX3Jlc2NoZWQoKSB8fCBr
-aWNrbWUpIHsNCj4gCQkuLi4NCj4gCX0NCj4gDQo+IA0KPiBzbXBfY2FsbGJhY2soKQ0KPiB7DQo+
-IAlraWNrbWUgPSAxOw0KPiB9DQo+IA0KPiBraWNrbWUgaXMgYSBwZXJjcHUgdmFyaWFibGUgYW5k
-IHNldCB0byB6ZXJvIHdoZW4gZXhpdGluZyB0aGUgJ2VudGVyJw0KPiBjYWxsYmFjay4NCj4gDQo+
-IFNvIHdlIGRvbid0IG1lc3Mgd2l0aCB0aGUgcG9sbGluZyBmbGFnLCB3aGljaCBpcyBhbHJlYWR5
-IGEgYml0IHRyaWNreS4NCj4gDQo+IFRoaXMgcGF0Y2ggaXMgdmVyeSBzdHJhaWdodGZvcndhcmQg
-dG8gaWxsdXN0cmF0ZSB0aGUgaWRlYS4NCj4gDQo+ID4gICAgICAgICAgICAgICAgICAgICAgICAg
-IGNwdV9yZWxheCgpOw0KPiA+ICAgICAgICAgIH0NCj4gPiAgICAgICAgICBjdXJyZW50X2Nscl9w
-b2xsaW5nKCk7DQo+ID4NCj4gPiAgICAgICAgICByZXR1cm4gaW5kZXg7DQo+ID4gfQ0KPiA+DQpU
-aGFua3MgTGV6Y2FubywgdGhlIG5ldyBmbGFnIGtpY2ttZSBzb3VuZHMgbWFraW5nIHRoaW5ncyBz
-aW1wbGUsDQp3aWxsIHRyeSB0byBzZW5kIG9uZSBuZXcgcGF0Y2ggdG8gcmV2aWV3OikNCg0KDQoN
-Cg==
+On Thu, 14 Aug 2014, Lorenzo Pieralisi wrote:
+
+> On Wed, Aug 13, 2014 at 06:29:49PM +0100, Nicolas Pitre wrote:
+> > So if you tell me a messed-up DT won't bear much consequences then I'm 
+> > fine with that.
+> 
+> Nico, on second thoughts, since Ashwin raised the point too and I think
+> that at these early stages it might turn out useful, I gave coding
+> the check a go. I tried to make the check self contained so that we can
+> yank it out if we do not want it in the final version or we will want
+> to remove it later.
+> 
+> Here the refreshed patch is:
+> 
+> -- >8 --
+> Subject: [PATCH] drivers: cpuidle: implement DT based idle states
+>  infrastructure
+> 
+> On most common ARM systems, the low-power states a CPU can be put into are
+> not discoverable in HW and require device tree bindings to describe
+> power down suspend operations and idle states parameters.
+> 
+> In order to enable DT based idle states and configure idle drivers, this
+> patch implements the bulk infrastructure required to parse the device tree
+> idle states bindings and initialize the corresponding CPUidle driver states
+> data.
+> 
+> The parsing API accepts a start index that defines the first idle state
+> that should be initialized by the parsing code in order to give new and
+> legacy driver flexibility over which states should be parsed using the
+> new DT mechanism.
+> 
+> The idle states list is obtained from the first cpu in the driver
+> cpumask, which implicitly means the parsing code expects idle states
+> (and related list of phandles) to be the same for all CPUs in the
+> CPUidle driver mask. The kernel does not check this assumption, it must
+> be enforced by the bootloader to ensure correct system behaviour.
+
+Is this last sentence still true?
+
+
+Nicolas
