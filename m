@@ -1,71 +1,89 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
- back to DEFAULT
-Date: Thu, 14 Aug 2014 11:17:52 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E5B5FB@SHSMSX101.ccr.corp.intel.com>
-References: <1407982309-4863-1-git-send-email-chuansheng.liu@intel.com>
- <CAKnoXLw3DrBAxCUWEkXtvCTf+E1w0xTHJSiSUY6Qd6xHXeGaoQ@mail.gmail.com>
- <20140814110040.GI16043@twins.programming.kicks-ass.net>
- <53EC9A29.8090408@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:1347 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754508AbaHNLR6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 Aug 2014 07:17:58 -0400
-In-Reply-To: <53EC9A29.8090408@linaro.org>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: powernv: Register the driver with reboot notifier
+Date: Thu, 14 Aug 2014 16:49:38 +0530
+Message-ID: <1408015178-21745-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
-W21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBUaHVyc2RheSwgQXVn
-dXN0IDE0LCAyMDE0IDc6MTUgUE0NCj4gVG86IFBldGVyIFppamxzdHJhDQo+IENjOiBMaXUsIENo
-dWFuc2hlbmc7IFJhZmFlbCBKLiBXeXNvY2tpOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IExL
-TUw7IExpdSwNCj4gQ2hhbmdjaGVuZzsgV2FuZywgWGlhb21pbmc7IENoYWtyYXZhcnR5LCBTb3V2
-aWsgSw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBjcHVpZGxlOiBGaXggdGhlIENQVSBzdHVjayBh
-dCBDMCBmb3IgMi0zcyBhZnRlciBQTV9RT1MNCj4gYmFjayB0byBERUZBVUxUDQo+IA0KPiBPbiAw
-OC8xNC8yMDE0IDAxOjAwIFBNLCBQZXRlciBaaWpsc3RyYSB3cm90ZToNCj4gPiBPbiBUaHUsIEF1
-ZyAxNCwgMjAxNCBhdCAxMjoyOTozMlBNICswMjAwLCBEYW5pZWwgTGV6Y2FubyB3cm90ZToNCj4g
-Pj4gSGkgQ2h1YW5zaGVuZywNCj4gPj4NCj4gPj4gT24gMTQgQXVndXN0IDIwMTQgMDQ6MTEsIENo
-dWFuc2hlbmcgTGl1IDxjaHVhbnNoZW5nLmxpdUBpbnRlbC5jb20+DQo+IHdyb3RlOg0KPiA+Pg0K
-PiA+Pj4gV2UgZm91bmQgc29tZXRpbWVzIGV2ZW4gYWZ0ZXIgd2UgbGV0IFBNX1FPUyBiYWNrIHRv
-IERFRkFVTFQsDQo+ID4+PiB0aGUgQ1BVIHN0aWxsIHN0dWNrIGF0IEMwIGZvciAyLTNzLCBkb24n
-dCBkbyB0aGUgbmV3IHN1aXRhYmxlIEMtc3RhdGUNCj4gPj4+IHNlbGVjdGlvbiBpbW1lZGlhdGVs
-eSBhZnRlciByZWNlaXZlZCB0aGUgSVBJIGludGVycnVwdC4NCj4gPj4+DQo+ID4+PiBUaGUgY29k
-ZSBtb2RlbCBpcyBzaW1wbHkgbGlrZSBiZWxvdzoNCj4gPj4+IHsNCj4gPj4+ICAgICAgICAgIHBt
-X3Fvc191cGRhdGVfcmVxdWVzdCgmcG1fcW9zLCBDMSAtIDEpOw0KPiA+Pj4gICAgICAgICAgICAg
-ICAgICA8ID09IEhlcmUga2VlcCBhbGwgY29yZXMgYXQgQzANCj4gPj4+ICAgICAgICAgIC4uLjsN
-Cj4gPj4+ICAgICAgICAgIHBtX3Fvc191cGRhdGVfcmVxdWVzdCgmcG1fcW9zLA0KPiBQTV9RT1Nf
-REVGQVVMVF9WQUxVRSk7DQo+ID4+PiAgICAgICAgICAgICAgICAgIDwgPT0gSGVyZSBzb21lIGNv
-cmVzIHN0aWxsIHN0dWNrIGF0IEMwIGZvciAyLTNzDQo+ID4+PiB9DQo+ID4+Pg0KPiA+Pj4gVGhl
-IHJlYXNvbiBpcyB3aGVuIHBtX3FvcyBjb21lIGJhY2sgdG8gREVGQVVMVCwgdGhlcmUgaXMgSVBJ
-IGludGVycnVwdCB0bw0KPiA+Pj4gd2FrZSB1cCB0aGUgY29yZSwgYnV0IHdoZW4gY29yZSBpcyBp
-biBwb2xsIGlkbGUgc3RhdGUsIHRoZSBJUEkgaW50ZXJydXB0DQo+ID4+PiBjYW4gbm90IGJyZWFr
-IHRoZSBwb2xsaW5nIGxvb3AuDQo+ID4NCj4gPiBTbyBzZWVpbmcgaG93IHlvdSdyZSBmcm9tIEBp
-bnRlbC5jb20gSSdtIGFzc3VtaW5nIHlvdSdyZSB1c2luZyB4ODYgaGVyZS4NCj4gPg0KPiA+IEkn
-bSBub3Qgc2VlaW5nIGhvdyB0aGlzIGNhbiBiZSBwb3NzaWJsZSwgTVdBSVQgaXMgaW50ZXJydXB0
-ZWQgYnkgSVBJcw0KPiA+IGp1c3QgZmluZSwgd2hpY2ggbWVhbnMgd2UnbGwgZmFsbCBvdXQgb2Yg
-dGhlIGNwdWlkbGVfZW50ZXIoKSwgd2hpY2gNCj4gPiBtZWFucyB3ZSdsbCBjcHVpZGxlX3JlZmxl
-Y3QoKSwgYW5kIHRoZW4gbGVhdmUgY3B1aWRsZV9pZGxlX2NhbGwoKS4NCj4gPg0KPiA+IEl0IHdp
-bGwgaW5kZWVkIG5vdCBsZWF2ZSB0aGUgY3B1X2lkbGVfbG9vcCgpIGZ1bmN0aW9uIGFuZCBnbyBy
-aWdodCBiYWNrDQo+ID4gaW50byBjcHVpZGxlX2lkbGVfY2FsbCgpLCBidXQgdGhhdCB3aWxsIHRo
-ZW4gY2FsbCBjcHVpZGxlX3NlbGVjdCgpIHdoaWNoDQo+ID4gc2hvdWxkIHBpY2sgYSBuZXcgQyBz
-dGF0ZS4NCj4gPg0KPiA+IFNvIHRoZSBpbnRlcnJ1cHQgX3Nob3VsZF8gd29yay4gSWYgaXQgZG9l
-c24ndCB5b3UgbmVlZCB0byBleHBsYWluIHdoeS4NCj4gDQo+IEkgdGhpbmsgdGhlIGlzc3VlIGlz
-IHJlbGF0ZWQgdG8gdGhlIHBvbGxfaWRsZSBzdGF0ZSwgaW4NCj4gZHJpdmVycy9jcHVpZGxlL2Ry
-aXZlci5jLiBUaGlzIHN0YXRlIGlzIHg4NiBzcGVjaWZpYyBhbmQgaW5zZXJ0ZWQgaW4gdGhlDQo+
-IGNwdWlkbGUgdGFibGUgYXMgdGhlIHN0YXRlIDAgKFBPTEwpLiBUaGVyZSBpcyBubyBtd2FpdCBm
-b3IgdGhpcyBzdGF0ZS4NCj4gSXQgaXMgYSBiaXQgY29uZnVzaW5nIGJlY2F1c2UgdGhpcyBzdGF0
-ZSBpcyBub3QgbGlzdGVkIGluIHRoZSBhY3BpIC8NCj4gaW50ZWwgaWRsZSBkcml2ZXIgYnV0IGlu
-c2VydGVkIGltcGxpY2l0bHkgYXQgdGhlIGJlZ2lubmluZyBvZiB0aGUgaWRsZQ0KPiB0YWJsZSBi
-eSB0aGUgY3B1aWRsZSBmcmFtZXdvcmsgd2hlbiB0aGUgZHJpdmVyIGlzIHJlZ2lzdGVyZWQuDQoN
-ClllcywgSSBhbSB0YWxraW5nIGFib3V0IHRoZSBwb2xsX2lkbGUoKSBmdW5jdGlvbiB3aGljaCBk
-aWRuJ3QgdXNlIHRoZSBtd2FpdCwNCklmIHdlIHdhbnQgdGhlIHJlc2VsZWN0aW9uIGhhcHBlbmlu
-ZyBpbW1lZGlhdGVseSwgd2UgbmVlZCB0byBicmVhayB0aGUgcG9sbCB3aGlsZSBsb29wDQp3aXRo
-IHNldHRpbmcgc2NoZWR1bGUgYml0LCBpbnN0ZWFkbHkgd2UgZGlkbid0IGNhcmUgaWYgcmVhbCBy
-ZS1zY2hlZHVsZSBoYXBwZW5pbmcgb3Igbm90Lg0KDQoNCg0KDQo=
+This patch ensures the cpus to kexec/reboot at nominal frequency.
+Nominal frequency is the highest cpu frequency on PowerPC at
+which the cores can run without getting throttled.
+
+If the host kernel had set the cpus to a low pstate and then it
+kexecs/reboots to a cpufreq disabled kernel it would cause the target
+kernel to perform poorly. It will also increase the boot up time of
+the target kernel. So set the cpus to high pstate, in this case to
+nominal frequency before rebooting to avoid such scenarios.
+
+The reboot notifier will suspend the cpufreq governor and enable
+nominal frequency to be set during a reboot/kexec similar to the
+suspend operartion.
+
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 379c083..e9f3d3a 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -26,6 +26,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/smp.h>
+ #include <linux/of.h>
++#include <linux/reboot.h>
+ 
+ #include <asm/cputhreads.h>
+ #include <asm/firmware.h>
+@@ -314,9 +315,21 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	for (i = 0; i < threads_per_core; i++)
+ 		cpumask_set_cpu(base + i, policy->cpus);
+ 
++	policy->suspend_freq = pstate_id_to_freq(powernv_pstate_info.nominal);
+ 	return cpufreq_table_validate_and_show(policy, powernv_freqs);
+ }
+ 
++static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
++				unsigned long action, void *unused)
++{
++	cpufreq_suspend();
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block powernv_cpufreq_reboot_nb = {
++	.notifier_call = powernv_cpufreq_reboot_notifier,
++};
++
+ static struct cpufreq_driver powernv_cpufreq_driver = {
+ 	.name		= "powernv-cpufreq",
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+@@ -325,6 +338,7 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+ 	.target_index	= powernv_cpufreq_target_index,
+ 	.get		= powernv_cpufreq_get,
+ 	.attr		= powernv_cpu_freq_attr,
++	.suspend        = cpufreq_generic_suspend,
+ };
+ 
+ static int __init powernv_cpufreq_init(void)
+@@ -342,12 +356,14 @@ static int __init powernv_cpufreq_init(void)
+ 		return rc;
+ 	}
+ 
++	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
+ 	return cpufreq_register_driver(&powernv_cpufreq_driver);
+ }
+ module_init(powernv_cpufreq_init);
+ 
+ static void __exit powernv_cpufreq_exit(void)
+ {
++	unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
+ 	cpufreq_unregister_driver(&powernv_cpufreq_driver);
+ }
+ module_exit(powernv_cpufreq_exit);
+-- 
+1.9.3
