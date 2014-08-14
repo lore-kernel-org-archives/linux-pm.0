@@ -1,97 +1,71 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
  back to DEFAULT
-Date: Thu, 14 Aug 2014 13:14:49 +0200
-Message-ID: <53EC9A29.8090408@linaro.org>
-References: <1407982309-4863-1-git-send-email-chuansheng.liu@intel.com> <CAKnoXLw3DrBAxCUWEkXtvCTf+E1w0xTHJSiSUY6Qd6xHXeGaoQ@mail.gmail.com> <20140814110040.GI16043@twins.programming.kicks-ass.net>
+Date: Thu, 14 Aug 2014 11:17:52 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E5B5FB@SHSMSX101.ccr.corp.intel.com>
+References: <1407982309-4863-1-git-send-email-chuansheng.liu@intel.com>
+ <CAKnoXLw3DrBAxCUWEkXtvCTf+E1w0xTHJSiSUY6Qd6xHXeGaoQ@mail.gmail.com>
+ <20140814110040.GI16043@twins.programming.kicks-ass.net>
+ <53EC9A29.8090408@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:62536 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbaHNLOy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Aug 2014 07:14:54 -0400
-Received: by mail-wi0-f182.google.com with SMTP id d1so2111676wiv.9
-        for <linux-pm@vger.kernel.org>; Thu, 14 Aug 2014 04:14:51 -0700 (PDT)
-In-Reply-To: <20140814110040.GI16043@twins.programming.kicks-ass.net>
+Received: from mga14.intel.com ([192.55.52.115]:1347 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754508AbaHNLR6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 Aug 2014 07:17:58 -0400
+In-Reply-To: <53EC9A29.8090408@linaro.org>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Chuansheng Liu <chuansheng.liu@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, changcheng.liu@intel.com, xiaoming.wang@intel.com, souvik.k.chakravarty@intel.com
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
 
-On 08/14/2014 01:00 PM, Peter Zijlstra wrote:
-> On Thu, Aug 14, 2014 at 12:29:32PM +0200, Daniel Lezcano wrote:
->> Hi Chuansheng,
->>
->> On 14 August 2014 04:11, Chuansheng Liu <chuansheng.liu@intel.com> w=
-rote:
->>
->>> We found sometimes even after we let PM_QOS back to DEFAULT,
->>> the CPU still stuck at C0 for 2-3s, don't do the new suitable C-sta=
-te
->>> selection immediately after received the IPI interrupt.
->>>
->>> The code model is simply like below:
->>> {
->>>          pm_qos_update_request(&pm_qos, C1 - 1);
->>>                  < =3D=3D Here keep all cores at C0
->>>          ...;
->>>          pm_qos_update_request(&pm_qos, PM_QOS_DEFAULT_VALUE);
->>>                  < =3D=3D Here some cores still stuck at C0 for 2-3=
-s
->>> }
->>>
->>> The reason is when pm_qos come back to DEFAULT, there is IPI interr=
-upt to
->>> wake up the core, but when core is in poll idle state, the IPI inte=
-rrupt
->>> can not break the polling loop.
->
-> So seeing how you're from @intel.com I'm assuming you're using x86 he=
-re.
->
-> I'm not seeing how this can be possible, MWAIT is interrupted by IPIs
-> just fine, which means we'll fall out of the cpuidle_enter(), which
-> means we'll cpuidle_reflect(), and then leave cpuidle_idle_call().
->
-> It will indeed not leave the cpu_idle_loop() function and go right ba=
-ck
-> into cpuidle_idle_call(), but that will then call cpuidle_select() wh=
-ich
-> should pick a new C state.
->
-> So the interrupt _should_ work. If it doesn't you need to explain why=
-=2E
-
-I think the issue is related to the poll_idle state, in=20
-drivers/cpuidle/driver.c. This state is x86 specific and inserted in th=
-e=20
-cpuidle table as the state 0 (POLL). There is no mwait for this state.=20
-It is a bit confusing because this state is not listed in the acpi /=20
-intel idle driver but inserted implicitly at the beginning of the idle=20
-table by the cpuidle framework when the driver is registered.
-
-static int poll_idle(struct cpuidle_device *dev,
-                 struct cpuidle_driver *drv, int index)
-{
-         local_irq_enable();
-         if (!current_set_polling_and_test()) {
-                 while (!need_resched())
-                         cpu_relax();
-         }
-         current_clr_polling();
-
-         return index;
-}
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
+W21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBUaHVyc2RheSwgQXVn
+dXN0IDE0LCAyMDE0IDc6MTUgUE0NCj4gVG86IFBldGVyIFppamxzdHJhDQo+IENjOiBMaXUsIENo
+dWFuc2hlbmc7IFJhZmFlbCBKLiBXeXNvY2tpOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IExL
+TUw7IExpdSwNCj4gQ2hhbmdjaGVuZzsgV2FuZywgWGlhb21pbmc7IENoYWtyYXZhcnR5LCBTb3V2
+aWsgSw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBjcHVpZGxlOiBGaXggdGhlIENQVSBzdHVjayBh
+dCBDMCBmb3IgMi0zcyBhZnRlciBQTV9RT1MNCj4gYmFjayB0byBERUZBVUxUDQo+IA0KPiBPbiAw
+OC8xNC8yMDE0IDAxOjAwIFBNLCBQZXRlciBaaWpsc3RyYSB3cm90ZToNCj4gPiBPbiBUaHUsIEF1
+ZyAxNCwgMjAxNCBhdCAxMjoyOTozMlBNICswMjAwLCBEYW5pZWwgTGV6Y2FubyB3cm90ZToNCj4g
+Pj4gSGkgQ2h1YW5zaGVuZywNCj4gPj4NCj4gPj4gT24gMTQgQXVndXN0IDIwMTQgMDQ6MTEsIENo
+dWFuc2hlbmcgTGl1IDxjaHVhbnNoZW5nLmxpdUBpbnRlbC5jb20+DQo+IHdyb3RlOg0KPiA+Pg0K
+PiA+Pj4gV2UgZm91bmQgc29tZXRpbWVzIGV2ZW4gYWZ0ZXIgd2UgbGV0IFBNX1FPUyBiYWNrIHRv
+IERFRkFVTFQsDQo+ID4+PiB0aGUgQ1BVIHN0aWxsIHN0dWNrIGF0IEMwIGZvciAyLTNzLCBkb24n
+dCBkbyB0aGUgbmV3IHN1aXRhYmxlIEMtc3RhdGUNCj4gPj4+IHNlbGVjdGlvbiBpbW1lZGlhdGVs
+eSBhZnRlciByZWNlaXZlZCB0aGUgSVBJIGludGVycnVwdC4NCj4gPj4+DQo+ID4+PiBUaGUgY29k
+ZSBtb2RlbCBpcyBzaW1wbHkgbGlrZSBiZWxvdzoNCj4gPj4+IHsNCj4gPj4+ICAgICAgICAgIHBt
+X3Fvc191cGRhdGVfcmVxdWVzdCgmcG1fcW9zLCBDMSAtIDEpOw0KPiA+Pj4gICAgICAgICAgICAg
+ICAgICA8ID09IEhlcmUga2VlcCBhbGwgY29yZXMgYXQgQzANCj4gPj4+ICAgICAgICAgIC4uLjsN
+Cj4gPj4+ICAgICAgICAgIHBtX3Fvc191cGRhdGVfcmVxdWVzdCgmcG1fcW9zLA0KPiBQTV9RT1Nf
+REVGQVVMVF9WQUxVRSk7DQo+ID4+PiAgICAgICAgICAgICAgICAgIDwgPT0gSGVyZSBzb21lIGNv
+cmVzIHN0aWxsIHN0dWNrIGF0IEMwIGZvciAyLTNzDQo+ID4+PiB9DQo+ID4+Pg0KPiA+Pj4gVGhl
+IHJlYXNvbiBpcyB3aGVuIHBtX3FvcyBjb21lIGJhY2sgdG8gREVGQVVMVCwgdGhlcmUgaXMgSVBJ
+IGludGVycnVwdCB0bw0KPiA+Pj4gd2FrZSB1cCB0aGUgY29yZSwgYnV0IHdoZW4gY29yZSBpcyBp
+biBwb2xsIGlkbGUgc3RhdGUsIHRoZSBJUEkgaW50ZXJydXB0DQo+ID4+PiBjYW4gbm90IGJyZWFr
+IHRoZSBwb2xsaW5nIGxvb3AuDQo+ID4NCj4gPiBTbyBzZWVpbmcgaG93IHlvdSdyZSBmcm9tIEBp
+bnRlbC5jb20gSSdtIGFzc3VtaW5nIHlvdSdyZSB1c2luZyB4ODYgaGVyZS4NCj4gPg0KPiA+IEkn
+bSBub3Qgc2VlaW5nIGhvdyB0aGlzIGNhbiBiZSBwb3NzaWJsZSwgTVdBSVQgaXMgaW50ZXJydXB0
+ZWQgYnkgSVBJcw0KPiA+IGp1c3QgZmluZSwgd2hpY2ggbWVhbnMgd2UnbGwgZmFsbCBvdXQgb2Yg
+dGhlIGNwdWlkbGVfZW50ZXIoKSwgd2hpY2gNCj4gPiBtZWFucyB3ZSdsbCBjcHVpZGxlX3JlZmxl
+Y3QoKSwgYW5kIHRoZW4gbGVhdmUgY3B1aWRsZV9pZGxlX2NhbGwoKS4NCj4gPg0KPiA+IEl0IHdp
+bGwgaW5kZWVkIG5vdCBsZWF2ZSB0aGUgY3B1X2lkbGVfbG9vcCgpIGZ1bmN0aW9uIGFuZCBnbyBy
+aWdodCBiYWNrDQo+ID4gaW50byBjcHVpZGxlX2lkbGVfY2FsbCgpLCBidXQgdGhhdCB3aWxsIHRo
+ZW4gY2FsbCBjcHVpZGxlX3NlbGVjdCgpIHdoaWNoDQo+ID4gc2hvdWxkIHBpY2sgYSBuZXcgQyBz
+dGF0ZS4NCj4gPg0KPiA+IFNvIHRoZSBpbnRlcnJ1cHQgX3Nob3VsZF8gd29yay4gSWYgaXQgZG9l
+c24ndCB5b3UgbmVlZCB0byBleHBsYWluIHdoeS4NCj4gDQo+IEkgdGhpbmsgdGhlIGlzc3VlIGlz
+IHJlbGF0ZWQgdG8gdGhlIHBvbGxfaWRsZSBzdGF0ZSwgaW4NCj4gZHJpdmVycy9jcHVpZGxlL2Ry
+aXZlci5jLiBUaGlzIHN0YXRlIGlzIHg4NiBzcGVjaWZpYyBhbmQgaW5zZXJ0ZWQgaW4gdGhlDQo+
+IGNwdWlkbGUgdGFibGUgYXMgdGhlIHN0YXRlIDAgKFBPTEwpLiBUaGVyZSBpcyBubyBtd2FpdCBm
+b3IgdGhpcyBzdGF0ZS4NCj4gSXQgaXMgYSBiaXQgY29uZnVzaW5nIGJlY2F1c2UgdGhpcyBzdGF0
+ZSBpcyBub3QgbGlzdGVkIGluIHRoZSBhY3BpIC8NCj4gaW50ZWwgaWRsZSBkcml2ZXIgYnV0IGlu
+c2VydGVkIGltcGxpY2l0bHkgYXQgdGhlIGJlZ2lubmluZyBvZiB0aGUgaWRsZQ0KPiB0YWJsZSBi
+eSB0aGUgY3B1aWRsZSBmcmFtZXdvcmsgd2hlbiB0aGUgZHJpdmVyIGlzIHJlZ2lzdGVyZWQuDQoN
+ClllcywgSSBhbSB0YWxraW5nIGFib3V0IHRoZSBwb2xsX2lkbGUoKSBmdW5jdGlvbiB3aGljaCBk
+aWRuJ3QgdXNlIHRoZSBtd2FpdCwNCklmIHdlIHdhbnQgdGhlIHJlc2VsZWN0aW9uIGhhcHBlbmlu
+ZyBpbW1lZGlhdGVseSwgd2UgbmVlZCB0byBicmVhayB0aGUgcG9sbCB3aGlsZSBsb29wDQp3aXRo
+IHNldHRpbmcgc2NoZWR1bGUgYml0LCBpbnN0ZWFkbHkgd2UgZGlkbid0IGNhcmUgaWYgcmVhbCBy
+ZS1zY2hlZHVsZSBoYXBwZW5pbmcgb3Igbm90Lg0KDQoNCg0KDQo=
