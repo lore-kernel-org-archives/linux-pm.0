@@ -1,124 +1,82 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Thu, 14 Aug 2014 11:16:40 -0700
-Message-ID: <53ECFD08.5060605@codeaurora.org>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <53DBE764.8050109@redhat.com> <53DBEC27.7050803@codeaurora.org> <CAKohpombG3Gj4mbm02vPNnAxzaRvQP7rb=iQ14dCFH4_+71H3w@mail.gmail.com> <53E0B657.4070007@redhat.com> <CAKohponxBdYEgY2oYuzmdaqfSRS8Uq8bZOzcb1QDmKO-z5ZBFQ@mail.gmail.com> <53E1556B.5070304@codeaurora.org> <53E15DBB.7080800@redhat.com> <53E15FE7.4040808@co
- deaurora.org> <53EBC332.30507@redhat.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Subject: Re: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
+ back to DEFAULT
+Date: Thu, 14 Aug 2014 14:12:27 -0700
+Message-ID: <53ED263B.7030703@mit.edu>
+References: <1407982309-4863-1-git-send-email-chuansheng.liu@intel.com> <CAKnoXLw3DrBAxCUWEkXtvCTf+E1w0xTHJSiSUY6Qd6xHXeGaoQ@mail.gmail.com> <20140814110040.GI16043@twins.programming.kicks-ass.net> <53EC9A29.8090408@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:49377 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752498AbaHNSQm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Aug 2014 14:16:42 -0400
-In-Reply-To: <53EBC332.30507@redhat.com>
+Received: from mail-pd0-f174.google.com ([209.85.192.174]:46361 "EHLO
+	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753046AbaHNVMb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Aug 2014 17:12:31 -0400
+Received: by mail-pd0-f174.google.com with SMTP id fp1so2235731pdb.33
+        for <linux-pm@vger.kernel.org>; Thu, 14 Aug 2014 14:12:31 -0700 (PDT)
+In-Reply-To: <53EC9A29.8090408@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: Chuansheng Liu <chuansheng.liu@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, changcheng.liu@intel.com, xiaoming.wang@intel.com, souvik.k.chakravarty@intel.com
 
-On 08/13/2014 12:57 PM, Prarit Bhargava wrote:
->
->
-> On 08/05/2014 06:51 PM, Saravana Kannan wrote:
->
+On 08/14/2014 04:14 AM, Daniel Lezcano wrote:
+> On 08/14/2014 01:00 PM, Peter Zijlstra wrote:
 >>
->> I definitely have a fix for this and the original race you reported. It's
->> basically reverting that commit you reverted + a fix for the deadlock. That's
->> the only way to fix the scaling_governor issue.
+>> So seeing how you're from @intel.com I'm assuming you're using x86 here.
 >>
->> You fix the deadlock by moving the governor attribute group removing to the
->> framework code and doing it before STOP+EXIT to governor without holding the
->> policy lock. And the reverse for INIT+STOP.
+>> I'm not seeing how this can be possible, MWAIT is interrupted by IPIs
+>> just fine, which means we'll fall out of the cpuidle_enter(), which
+>> means we'll cpuidle_reflect(), and then leave cpuidle_idle_call().
 >>
->
-> I'm still not convinced of the deadlock so I did a bit of additional research
-> and am pretty close to saying that this is a false positive from the lockdep
-> code in the kernfs area.
->
-> A few things that have caused me concern about the lockdep splat we're seeing:
->
-> 1.  The splat occurs when we hit __kernfs_remove+0x25b/0x360 which resolves to
->
->          if (kernfs_lockdep(kn)) {
->                  rwsem_acquire(&kn->dep_map, 0, 0, _RET_IP_);  <<< RIGHT HERE
->                  if (atomic_read(&kn->active) != KN_DEACTIVATED_BIAS)
->                          lock_contended(&kn->dep_map, _RET_IP_);
->          }
->
-> ie) the *ONLY* way we hit a "deadlock" in this code is if we have LOCKDEP
-> configured in the kernfs.
->
-> It should be noted, that having kernfs_lockdep() always return 0 [1], results in
-> NO additional lockdep warnings.
->
-> Additionally the splat contains
->
-> [  107.428421]        CPU0                    CPU1
-> [  107.433482]        ----                    ----
-> [  107.438544]   lock(&policy->rwsem);
-> [  107.442459]                                lock(s_active#98);
-> [  107.448916]                                lock(&policy->rwsem);
-> [  107.455650]   lock(s_active#98);
->
-> which also points to the situation above (s_active is the default naming used in
-> the kernfs lockdep code).
->
-> In short -- there is no deadlock here.  It only happens in the lockdep code
-> itself, not because lockdep has identified a real problem.
->
-> 2.  I then started asking myself why this was occurring.  The reason appears to
-> be that the attribute for scaling_governor is deleting other sysfs attributes
-> and that got me to wondering if there were other areas where this occurred and I
-> remembered it does!  In the USB code writing and reading to the  bConfiguration
-> of a device may lead to the removal of "down stream" attributes.  The reading
-> and writing of bConfiguration occurs in
-> drivers/usb/core/sysfs.c:79
->
->
-> /* configuration value is always present, and r/w */
-> usb_actconfig_show(bConfigurationValue, "%u\n");
->
-> static ssize_t bConfigurationValue_store(struct device *dev,
->                                           struct device_attribute *attr,
->                                           const char *buf, size_t count)
+>> It will indeed not leave the cpu_idle_loop() function and go right back
+>> into cpuidle_idle_call(), but that will then call cpuidle_select() which
+>> should pick a new C state.
+>>
+>> So the interrupt _should_ work. If it doesn't you need to explain why.
+> 
+> I think the issue is related to the poll_idle state, in
+> drivers/cpuidle/driver.c. This state is x86 specific and inserted in the
+> cpuidle table as the state 0 (POLL). There is no mwait for this state.
+> It is a bit confusing because this state is not listed in the acpi /
+> intel idle driver but inserted implicitly at the beginning of the idle
+> table by the cpuidle framework when the driver is registered.
+> 
+> static int poll_idle(struct cpuidle_device *dev,
+>                 struct cpuidle_driver *drv, int index)
 > {
->          struct usb_device       *udev = to_usb_device(dev);
->          int                     config, value;
->
->          if (sscanf(buf, "%d", &config) != 1 || config < -1 || config > 255)
->                  return -EINVAL;
->          usb_lock_device(udev);
->          value = usb_set_configuration(udev, config);
->          usb_unlock_device(udev);
->          return (value < 0) ? value : count;
+>         local_irq_enable();
+>         if (!current_set_polling_and_test()) {
+>                 while (!need_resched())
+>                         cpu_relax();
+>         }
+>         current_clr_polling();
+> 
+>         return index;
 > }
->
-> ... and the next lines are IMO important here:
->
-> static DEVICE_ATTR_IGNORE_LOCKDEP(bConfigurationValue, S_IRUGO | S_IWUSR,
->                  bConfigurationValue_show, bConfigurationValue_store);
->
-> FWIW, it isn't *exactly* the same ... but commit
-> 356c05d58af05d582e634b54b40050c73609617b explains a similarity between what is
-> happening with our lockdep splat and the lockdep issues seen in USB.
 
-This seems VERY different from our situation. I don't see an equivalent 
-of a policy lock that's grabbed from both threads, but in opposite order.
+As the most recent person to have modified this function, and as an
+avowed hater of pointless IPIs, let me ask a rather different question:
+why are you sending IPIs at all?  As of Linux 3.16, poll_idle actually
+supports the polling idle interface :)
 
-If I'm not mistaken, the sysfs entry here uses some wait/complete pair 
-to wait for something. But that's an equivalent of a semaphore with max 
-count of 1. Lockdep just seems to be making it obvious by adding 
-semaphore calls.
+Can't you just do:
 
-So, a semaphore equivalent deadlock with another semaphore. I believe 
-this is a read deadlock.
+if (set_nr_if_polling(rq->idle)) {
+	trace_sched_wake_idle_without_ipi(cpu);
+} else {
+	spin_lock_irqsave(&rq->lock, flags);
+	if (rq->curr == rq->idle)
+		smp_send_reschedule(cpu);
+	// else the CPU wasn't idle; nothing to do
+	raw_spin_unlock_irqrestore(&rq->lock, flags);
+}
 
--Saravana
+In the common case (wake from C0, i.e. polling idle), this will skip the
+IPI entirely unless you race with idle entry/exit, saving a few more
+precious electrons and all of the latency involved in poking the APIC
+registers.
 
+--Andy
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+P.S. "30mV" in the patch description is presumably a typo.
