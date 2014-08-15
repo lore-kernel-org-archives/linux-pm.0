@@ -1,128 +1,63 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Subject: Re: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
- back to DEFAULT
-Date: Thu, 14 Aug 2014 18:27:21 -0700
-Message-ID: <CALCETrUxw-Z7Tb-BJvbz9VR5uuMQy54FBHvSBicirpscoFc7mA@mail.gmail.com>
-References: <1407982309-4863-1-git-send-email-chuansheng.liu@intel.com>
- <CAKnoXLw3DrBAxCUWEkXtvCTf+E1w0xTHJSiSUY6Qd6xHXeGaoQ@mail.gmail.com>
- <20140814110040.GI16043@twins.programming.kicks-ass.net> <53EC9A29.8090408@linaro.org>
- <53ED263B.7030703@mit.edu> <20140814211656.GV19379@twins.programming.kicks-ass.net>
- <CALCETrUEWAbzk3S=T93qh-j4xhwoVrUCqhybr_rr1n-uynQTvw@mail.gmail.com> <27240C0AC20F114CBF8149A2696CBE4A01E5BA34@SHSMSX101.ccr.corp.intel.com>
+From: "Du, ChangbinX" <changbinx.du@intel.com>
+Subject: [BUG]  usb_dev_resume returns -113 due to work items queued by usb
+ on pm_wq is not executed before suspending.
+Date: Fri, 15 Aug 2014 02:19:11 +0000
+Message-ID: <0C18FE92A7765D4EB9EE5D38D86A563A01BA6392@SHSMSX103.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <27240C0AC20F114CBF8149A2696CBE4A01E5BA34@SHSMSX101.ccr.corp.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:32731 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752781AbaHOCTR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Aug 2014 22:19:17 -0400
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Nyman, Mathias" <mathias.nyman@intel.com>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
+Cc: "Wu, Hao" <hao.wu@intel.com>
 
-On Thu, Aug 14, 2014 at 6:21 PM, Liu, Chuansheng
-<chuansheng.liu@intel.com> wrote:
->
->
->> -----Original Message-----
->> From: Andy Lutomirski [mailto:luto@amacapital.net]
->> Sent: Friday, August 15, 2014 5:23 AM
->> To: Peter Zijlstra
->> Cc: Daniel Lezcano; Liu, Chuansheng; Rafael J. Wysocki;
->> linux-pm@vger.kernel.org; LKML; Liu, Changcheng; Wang, Xiaoming;
->> Chakravarty, Souvik K
->> Subject: Re: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
->> back to DEFAULT
->>
->> On Thu, Aug 14, 2014 at 2:16 PM, Peter Zijlstra <peterz@infradead.org>
->> wrote:
->> > On Thu, Aug 14, 2014 at 02:12:27PM -0700, Andy Lutomirski wrote:
->> >> On 08/14/2014 04:14 AM, Daniel Lezcano wrote:
->> >> > On 08/14/2014 01:00 PM, Peter Zijlstra wrote:
->> >> >>
->> >> >> So seeing how you're from @intel.com I'm assuming you're using x86
->> here.
->> >> >>
->> >> >> I'm not seeing how this can be possible, MWAIT is interrupted by IPIs
->> >> >> just fine, which means we'll fall out of the cpuidle_enter(), which
->> >> >> means we'll cpuidle_reflect(), and then leave cpuidle_idle_call().
->> >> >>
->> >> >> It will indeed not leave the cpu_idle_loop() function and go right back
->> >> >> into cpuidle_idle_call(), but that will then call cpuidle_select() which
->> >> >> should pick a new C state.
->> >> >>
->> >> >> So the interrupt _should_ work. If it doesn't you need to explain why.
->> >> >
->> >> > I think the issue is related to the poll_idle state, in
->> >> > drivers/cpuidle/driver.c. This state is x86 specific and inserted in the
->> >> > cpuidle table as the state 0 (POLL). There is no mwait for this state.
->> >> > It is a bit confusing because this state is not listed in the acpi /
->> >> > intel idle driver but inserted implicitly at the beginning of the idle
->> >> > table by the cpuidle framework when the driver is registered.
->> >> >
->> >> > static int poll_idle(struct cpuidle_device *dev,
->> >> >                 struct cpuidle_driver *drv, int index)
->> >> > {
->> >> >         local_irq_enable();
->> >> >         if (!current_set_polling_and_test()) {
->> >> >                 while (!need_resched())
->> >> >                         cpu_relax();
->> >> >         }
->> >> >         current_clr_polling();
->> >> >
->> >> >         return index;
->> >> > }
->> >>
->> >> As the most recent person to have modified this function, and as an
->> >> avowed hater of pointless IPIs, let me ask a rather different question:
->> >> why are you sending IPIs at all?  As of Linux 3.16, poll_idle actually
->> >> supports the polling idle interface :)
->> >>
->> >> Can't you just do:
->> >>
->> >> if (set_nr_if_polling(rq->idle)) {
->> >>       trace_sched_wake_idle_without_ipi(cpu);
->> >> } else {
->> >>       spin_lock_irqsave(&rq->lock, flags);
->> >>       if (rq->curr == rq->idle)
->> >>               smp_send_reschedule(cpu);
->> >>       // else the CPU wasn't idle; nothing to do
->> >>       raw_spin_unlock_irqrestore(&rq->lock, flags);
->> >> }
->> >>
->> >> In the common case (wake from C0, i.e. polling idle), this will skip the
->> >> IPI entirely unless you race with idle entry/exit, saving a few more
->> >> precious electrons and all of the latency involved in poking the APIC
->> >> registers.
->> >
->> > They could and they probably should, but that logic should _not_ live in
->> > the cpuidle driver.
->>
->> Sure.  My point is that fixing the IPI handler is, I think, totally
->> bogus, because the IPI API isn't the right way to do this at all.
->>
->> It would be straightforward to add a new function wake_if_idle(int
->> cpu) to sched/core.c.
->>
-> Thanks Andy and Peter's suggestion, it will save some IPI things in case the cores are not
-> in idle.
+Hi, All,
+As described in runtime_pm.txt for pm_wq:
+The power management work queue pm_wq in which bus types and device
+drivers can put their PM-related work items. It is strongly recommended that
+pm_wq be used for queuing all work items related to runtime PM, because
+this allows them to be synchronized with system-wide power transitions
+(suspend to RAM, hibernation and resume from system sleep states).
 
-This isn't quite right.  Using the polling interface correctly will
-save IPIs in case the core *is* idle.  But, given that you are trying
-to upgrade the chosen idle state, I don't think you need to kick
-non-idle CPUs at all, and my example contains that optimization.
+Per my understanding, all runtime PM related works items queued on pm_wq
+should be completed before suspend to RAM. So to ensure device state is
+runtime active before suspending. Having checked the pm code, I found this is
+not true for work items queued by drivers.
 
-Presumably the function should be named something like wake_up_if_idle.
+Now usb driver has used this pm_wq to run a work item that resumes root hub
+(see function xhci_resume()->usb_hcd_resume_root_hub()). But sometimes
+this work is not completed before usb device suspend. That is to say root hub
+device may still in runtime suspend state before suspending. And this can result
+in problem. One case is that as below error log shows,
 
->
-> There is one similar API in sched/core.c wake_up_idle_cpu(),
-> then just need add one new common smp API:
->
-> smp_wake_up_cpus() {
-> for_each_online_cpu()
->   wake_up_idle_cpu();
-> }
->
-> Will try one patch for it.
+[  108.046248] PM: Entering mem sleep
+[  108.050487] Suspending console(s) (use no_console_suspend to debug)
+[  108.426510] active wakeup source: event5-576
+[  108.426529] PM: Some devices failed to suspend
+[  108.426887] dpm_run_callback(): usb_dev_resume+0x0/0x20 returns -113
+[  108.426918] PM: Device 1-2 failed to resume async: error -113
+[  108.428299] PM: resume of devices complete after 1.755 msecs
 
-This will have lots of extra overhead if the cpu is *not* idle.  I
-think my example will be a lot more efficient.
+The usb_dev_resume() return error -113, which mean host is in suspend state
+when resuming a device. The scenario is:
+1) Just before system suspending, pm core will run hcd runtime resume
+  routine if host is in runtime suspend state.
+2) Hcd runtime resume function xhci_resume() returns, and roothub resume
+  worker was queued by usb_hcd_resume_root_hub().
+3) system suspend continue going before roothub resume worker starts executing.
+  Thus host is still in runtime suspend state.
+4) One event make suspending process aborted before hcd suspended. Then pm
+  core will call resume routines for just suspended device. But when resuming
+  a usb device it find the host is in suspended. Then return error -113.
 
---Andy
+If my analysis is correct, could you share your ideas for this issue?
+
+Regards and Thanks!
+Du, Changbin
+
