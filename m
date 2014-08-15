@@ -1,243 +1,169 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: Re: [PATCH v2 2/4] QoS: Enhance framework to support per-cpu PM QoS
- request
-Date: Fri, 15 Aug 2014 13:37:32 +0100
-Message-ID: <20140815123732.GB2753@e104805>
-References: <1407945689-18494-1-git-send-email-lina.iyer@linaro.org>
- <1407945689-18494-3-git-send-email-lina.iyer@linaro.org>
+From: AYAN KUMAR HALDER <ayankumarh@gmail.com>
+Subject: Re: Need help understanding the logic of __cpuidle_set_driver
+Date: Fri, 15 Aug 2014 18:11:11 +0530
+Message-ID: <CAGAs2AkFvnegYmqhj7Bue50xAD1Yh3YoTbVGUviQ0jsPncxdXQ@mail.gmail.com>
+References: <CAHu9=sOwSuw5igPp0UQWJe8fwMb_vt3PPrc1A9nK4pJB5QmXDA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:60483 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750956AbaHOMhj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Aug 2014 08:37:39 -0400
-In-Reply-To: <1407945689-18494-3-git-send-email-lina.iyer@linaro.org>
-Content-Disposition: inline
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:43704 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbaHOMlO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Aug 2014 08:41:14 -0400
+Received: by mail-pa0-f41.google.com with SMTP id rd3so3430141pab.28
+        for <linux-pm@vger.kernel.org>; Fri, 15 Aug 2014 05:41:11 -0700 (PDT)
+In-Reply-To: <CAHu9=sOwSuw5igPp0UQWJe8fwMb_vt3PPrc1A9nK4pJB5QmXDA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Praveen Chidambaram <pchidamb@codeaurora.org>
+To: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
+Cc: kernelnewbies <kernelnewbies@kernelnewbies.org>, linux-pm@vger.kernel.org
 
-Hi Lina, some minor nits,
+On Fri, Aug 15, 2014 at 3:50 PM, Mohammad Merajul Islam Molla
+<meraj.enigma@gmail.com> wrote:
+> Hello,
+>
+> I was looking into the code of drivers/cpuidle/driver.c. I have some
+> doubts regarding the implementation of __cpuidle_set_driver function
+> when CONFIG_CPU_IDLE_MULTIPLE_DRIVERS is defined.
+>
+> If CONFIG_CPU_IDLE_MULTIPLE_DRIVERS is defined, the code for
+> __cpuidle_set_driver/__cpuidle_unset_driver looks as -
+>
+>  39  * __cpuidle_unset_driver - unset per CPU driver variables.
+>  40  * @drv: a valid pointer to a struct cpuidle_driver
+>  41  *
+>  42  * For each CPU in the driver's CPU mask, unset the registered
+> driver per CPU
+>  43  * variable. If @drv is different from the registered driver, the
+> corresponding
+>  44  * variable is not cleared.
+>  45  */
+>  46 static inline void __cpuidle_unset_driver(struct cpuidle_driver *drv)
+>  47 {
+>  48         int cpu;
+>  49
+>  50         for_each_cpu(cpu, drv->cpumask) {
+>  51
+>  52                 if (drv != __cpuidle_get_cpu_driver(cpu))
+>  53                         continue;
+>  54
+>  55                 per_cpu(cpuidle_drivers, cpu) = NULL;
+>  56         }
+>  57 }
+>  58
+>  59 /**
+>  60  * __cpuidle_set_driver - set per CPU driver variables for the given driver.
+>  61  * @drv: a valid pointer to a struct cpuidle_driver
+>  62  *
+>  63  * For each CPU in the driver's cpumask, unset the registered driver per CPU
+>  64  * to @drv.
+>  65  *
+>  66  * Returns 0 on success, -EBUSY if the CPUs have driver(s) already.
+>  67  */
+>  68 static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
+>  69 {
+>  70         int cpu;
+>  71
+>  72         for_each_cpu(cpu, drv->cpumask) {
+>  73
+>  74                 if (__cpuidle_get_cpu_driver(cpu)) {
+>  75                         __cpuidle_unset_driver(drv);
+>  76                         return -EBUSY;
+>  77                 }
+>  78
+>  79                 per_cpu(cpuidle_drivers, cpu) = drv;
+>  80         }
+>  81
+>  82         return 0;
+>  83 }
+>
+> Apparently, the comment should be - "set/register the driver per CPU
+> to @drv" instead of "unset the registered driver per CPU to @drv" in
+> case of __cpuidle_set_driver.
 
-On Wed, Aug 13, 2014 at 05:01:27PM +0100, Lina Iyer wrote:
-> QoS request can be better optimized if the request can be set only for
-> the required cpus and not all cpus. This helps save power on other
-> cores, while still gauranteeing the quality of service on the desired
+I would like to slightly differ here. As per my understanding, the
+comments given
+for the function is correct. The function __cpuidle_set_driver(drv)
+would do the following:-
 
-                     guaranteeing
+1. If the cpu has any registered idle driver which is same as @drv,
+the registered
+driver would be unset. ie "unset the registered driver per CPU to @drv"
+2. If the cpu has any registered idle driver which is different from
+@drv, do nothing
+3. If the cpu has no registered idle driver, set the idle driver to @drv
 
-> cores.
-> 
-> Add a new enumeration to specify the PM QoS request type. The enums help
-> specify what is the intended target cpu of the request.
-> 
-> Enhance the QoS constraints data structures to support target value for
-> each core. Requests specify if the QoS is applicable to all cores
-> (default) or to a selective subset of the cores or to a core(s).
-> 
-> Idle and interested drivers can request a PM QoS value for a constraint
-> across all cpus, or a specific cpu or a set of cpus. Separate APIs have
-> been added to request for individual cpu or a cpumask.  The default
-> behaviour of PM QoS is maintained i.e, requests that do not specify a
-> type of the request will continue to be effected on all cores.
-> 
-> The userspace sysfs interface does not support setting cpumask of a PM
-> QoS request.
-> 
-> Signed-off-by: Praveen Chidambaram <pchidamb@codeaurora.org>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> ---
->  Documentation/power/pm_qos_interface.txt |  16 +++++
->  include/linux/pm_qos.h                   |  13 ++++
->  kernel/power/qos.c                       | 102 +++++++++++++++++++++++++++++++
->  3 files changed, 131 insertions(+)
-> 
-[...]
-> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-> index d0b9c0f..27f84a2 100644
-> --- a/kernel/power/qos.c
-> +++ b/kernel/power/qos.c
-> @@ -65,6 +65,8 @@ static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
->  static struct pm_qos_constraints cpu_dma_constraints = {
->  	.list = PLIST_HEAD_INIT(cpu_dma_constraints.list),
->  	.target_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
-> +	.target_per_cpu = { [0 ... (NR_CPUS - 1)] =
-> +				PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE },
->  	.default_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
->  	.no_constraint_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
->  	.type = PM_QOS_MIN,
-> @@ -79,6 +81,8 @@ static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
->  static struct pm_qos_constraints network_lat_constraints = {
->  	.list = PLIST_HEAD_INIT(network_lat_constraints.list),
->  	.target_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
-> +	.target_per_cpu = { [0 ... (NR_CPUS - 1)] =
-> +				PM_QOS_NETWORK_LAT_DEFAULT_VALUE },
->  	.default_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
->  	.no_constraint_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
->  	.type = PM_QOS_MIN,
-> @@ -94,6 +98,8 @@ static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
->  static struct pm_qos_constraints network_tput_constraints = {
->  	.list = PLIST_HEAD_INIT(network_tput_constraints.list),
->  	.target_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
-> +	.target_per_cpu = { [0 ... (NR_CPUS - 1)] =
-> +				PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE },
->  	.default_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
->  	.no_constraint_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
->  	.type = PM_QOS_MAX,
-> @@ -157,6 +163,43 @@ static inline void pm_qos_set_value(struct pm_qos_constraints *c, s32 value)
->  	c->target_value = value;
->  }
->  
-> +static inline void pm_qos_set_value_for_cpus(struct pm_qos_constraints *c)
-> +{
-> +	struct pm_qos_request *req = NULL;
-> +	int cpu;
-> +	s32 *qos_val;
-> +
-> +	qos_val = kcalloc(NR_CPUS, sizeof(*qos_val), GFP_KERNEL);
-> +	if (!qos_val) {
-> +		WARN("%s: No memory for PM QoS\n", __func__);
-> +		return;
-> +	}
-> +
-> +	for_each_possible_cpu(cpu)
-> +		qos_val[cpu] = c->default_value;
-> +
-> +	plist_for_each_entry(req, &c->list, node) {
-> +		for_each_cpu(cpu, &req->cpus_affine) {
-> +			switch (c->type) {
-> +			case PM_QOS_MIN:
-> +				if (qos_val[cpu] > req->node.prio)
-> +					qos_val[cpu] = req->node.prio;
-> +				break;
-> +			case PM_QOS_MAX:
-> +				if (req->node.prio > qos_val[cpu])
-> +					qos_val[cpu] = req->node.prio;
-> +				break;
-> +			default:
-> +				BUG();
-> +				break;
-> +			}
-> +		}
-> +	}
-> +
-> +	for_each_possible_cpu(cpu)
-> +		c->target_per_cpu[cpu] = qos_val[cpu];
-> +}
-> +
->  /**
->   * pm_qos_update_target - manages the constraints list and calls the notifiers
->   *  if needed
-> @@ -206,6 +249,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c,
->  
->  	curr_value = pm_qos_get_value(c);
->  	pm_qos_set_value(c, curr_value);
-> +	pm_qos_set_value_for_cpus(c);
->  
->  	spin_unlock_irqrestore(&pm_qos_lock, flags);
->  
-> @@ -298,6 +342,44 @@ int pm_qos_request(int pm_qos_class)
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_request);
->  
-> +int pm_qos_request_for_cpu(int pm_qos_class, int cpu)
-> +{
-> +	return pm_qos_array[pm_qos_class]->constraints->target_per_cpu[cpu];
-> +}
-> +EXPORT_SYMBOL(pm_qos_request_for_cpu);
-> +
-> +int pm_qos_request_for_cpumask(int pm_qos_class, struct cpumask *mask)
-> +{
-> +	unsigned long irqflags;
-> +	int cpu;
-> +	struct pm_qos_constraints *c = NULL;
-> +	int val;
-> +
-> +	spin_lock_irqsave(&pm_qos_lock, irqflags);
-> +	c = pm_qos_array[pm_qos_class]->constraints;
-> +	val = c->default_value;
-> +
-> +	for_each_cpu(cpu, mask) {
-> +		switch (c->type) {
-> +		case PM_QOS_MIN:
-> +			if (c->target_per_cpu[cpu] < val)
-> +				val = c->target_per_cpu[cpu];
-> +			break;
-> +		case PM_QOS_MAX:
-> +			if (c->target_per_cpu[cpu] > val)
-> +				val = c->target_per_cpu[cpu];
-> +			break;
-> +		default:
-> +			BUG();
-> +			break;
-> +		}
-> +	}
-> +	spin_unlock_irqrestore(&pm_qos_lock, irqflags);
-> +
-> +	return val;
-> +}
-> +EXPORT_SYMBOL(pm_qos_request_for_cpumask);
-> +
->  int pm_qos_request_active(struct pm_qos_request *req)
+> However, regarding the logic, I have a few doubts -
+>
+> 1. for each cpu in drv->cpumask, if there is already a driver
+> registered, its calling __cpuidle_unset_driver which loops over for
+> each cpu in drv->cpumask again. Isn't it unnecessary to do this nested
+> calls?
+
+__cpuidle_unset_driver :- This function gets called from
+"__cpuidle_unregister_driver()" too.
+So it needs to loop over each cpu to see if its registered driver is
+same as @drv. What
+you might be trying to convey here is that instead of calling
+__cpuidle_unset_driver, we could
+have done the following:-
+static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
+{
+        int cpu;
+        struct cpuidle_driver *tmp = NULL;
+        for_each_cpu(cpu, drv->cpumask) {
+
+                tmp = __cpuidle_get_cpu_driver(cpu); /* This would
+prevent nesting of loops */
+                if ( tmp != NULL ) {
+                        if ( tmp == drv )
+                              per_cpu(cpuidle_drivers, cpu) = NULL;
+                        return -EBUSY;
+                }
+
+                per_cpu(cpuidle_drivers, cpu) = drv;
+        }
+
+        return 0;
+}
+
+
+
+> 2. after calling __cpuidle_unset_driver, if drv equals already
+> registered driver, it sets per_cpu driver to null? Isn't it wrong when
+> we are trying to set to a new driver? Why do we need to unset and make
+> the driver null when we are returning EBUSY from __cpuidle_set_driver?
+
+My understanding is that if there is a previously registered cpuidle
+driver, returning
+EBUSY is fine. But I do share the same doubt as you have that if the previous
+registered cpuidle driver is same as the new one, then why should it
+be unset and NULLed.
+
+> Would it be correct and cleaner if the code is written as below -
+>
+>  static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
 >  {
->  	return req->pm_qos_class != 0;
-> @@ -353,6 +435,24 @@ void pm_qos_add_request(struct pm_qos_request *req,
->  		WARN(1, KERN_ERR "pm_qos_add_request() called for already added request\n");
->  		return;
->  	}
-> +
-> +	switch (req->type) {
-> +	case PM_QOS_REQ_AFFINE_CORES:
-> +		if (cpumask_empty(&req->cpus_affine)) {
-> +			req->type = PM_QOS_REQ_ALL_CORES;
-> +			cpumask_setall(&req->cpus_affine);
-> +			WARN(1, KERN_ERR "Affine cores not set for request with affinity flag\n");
-> +		}
-> +		break;
-> +
-> +	default:
-> +		WARN(1, KERN_ERR "Unknown request type %d\n", req->type);
-> +		/* fall through */
-> +	case PM_QOS_REQ_ALL_CORES:
-> +		cpumask_setall(&req->cpus_affine);
-> +		break;
-> +	}
-> +
->  	req->pm_qos_class = pm_qos_class;
->  	INIT_DELAYED_WORK(&req->work, pm_qos_work_fn);
->  	trace_pm_qos_add_request(pm_qos_class, value);
-> @@ -426,6 +526,7 @@ void pm_qos_update_request_timeout(struct pm_qos_request *req, s32 new_value,
->   */
->  void pm_qos_remove_request(struct pm_qos_request *req)
->  {
-> +
-
-Unnecessary newline added.
-
->  	if (!req) /*guard against callers passing in null */
->  		return;
->  		/* silent return to keep pcm code cleaner */
-> @@ -441,6 +542,7 @@ void pm_qos_remove_request(struct pm_qos_request *req)
->  	pm_qos_update_target(pm_qos_array[req->pm_qos_class]->constraints,
->  			     req, PM_QOS_REMOVE_REQ,
->  			     PM_QOS_DEFAULT_VALUE);
-> +
-
-ditto.  Cheers,
-Javi
-
->  	memset(req, 0, sizeof(*req));
+>          int ret = -EBUSY;
+>          int cpu;
+>
+>         for_each_cpu(cpu, drv->cpumask) {
+>                 if (drv == __cpuidle_get_cpu_driver(cpu))    [if drv
+> is already the registered driver, do nothing]
+>                          continue;
+>
+>                  per_cpu(cpuidle_drivers, cpu) = drv;  [if only drv !=
+> already registered driver, set per_cpu driver to drv and set ret 0]
+>                  ret = 0;
+>          }
+>
+>          return ret;     [only if all cpus already had drv as
+> registered driver, return -EBUSY. Otherwise return 0]
 >  }
->  EXPORT_SYMBOL_GPL(pm_qos_remove_request);
-> -- 
-> 1.9.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+>
+The difference that might cause some trouble is that the timer
+broadcast notification is
+not sent while changing the cpuide drivers.
 
+Regards,
+Ayan Kumar Halder
