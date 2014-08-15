@@ -1,147 +1,117 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v2] cpuidle/cpuidle-big_little: fix reading cpu id part
- number
-Date: Fri, 15 Aug 2014 11:07:04 +0100
-Message-ID: <20140815100704.GA4580@e102568-lin.cambridge.arm.com>
-References: <1408004865-27525-1-git-send-email-juri.lelli@arm.com>
+From: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
+Subject: Need help understanding the logic of __cpuidle_set_driver
+Date: Fri, 15 Aug 2014 16:20:37 +0600
+Message-ID: <CAHu9=sOwSuw5igPp0UQWJe8fwMb_vt3PPrc1A9nK4pJB5QmXDA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1408004865-27525-1-git-send-email-juri.lelli@arm.com>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <Juri.Lelli@arm.com>
-Cc: "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Will Deacon <Will.Deacon@arm.com>, Chao Xie <chao.xie@marvell.com>, Stephen Warren <swarren@nvidia.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Chao Xie Linux <xiechao.mail@gmail.com>, Juri Lelli <juri.lelli@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f182.google.com ([209.85.213.182]:49734 "EHLO
+	mail-ig0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750917AbaHOKU5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Aug 2014 06:20:57 -0400
+Received: by mail-ig0-f182.google.com with SMTP id c1so1424936igq.3
+        for <linux-pm@vger.kernel.org>; Fri, 15 Aug 2014 03:20:57 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kernelnewbies <kernelnewbies@kernelnewbies.org>, linux-pm@vger.kernel.org
 
-On Thu, Aug 14, 2014 at 09:27:45AM +0100, Juri Lelli wrote:
-> Commit af040ffc9ba1 ("ARM: make it easier to check the CPU part number
-> correctly") changed ARM_CPU_PART_X masks, and the way they are returned and
-> checked against. Usage of read_cpuid_part_number() is now deprecated, and
-> calling places updated accordingly. This actually broke cpuidle-big_little
-> initialization, as bl_idle_driver_init() performs a check using an hardcoded
-> mask on cpu_id.
-> 
-> Create an interface to perform the check (that is now even easier to read).
-> Define also a proper mask (ARM_CPU_PART_MASK) that makes this kind of checks
-> cleaner and helps preventing bugs in the future. Update usage accordingly.
+Hello,
 
-If Russell does not have any additional comments you can send it to his
-patch system.
+I was looking into the code of drivers/cpuidle/driver.c. I have some
+doubts regarding the implementation of __cpuidle_set_driver function
+when CONFIG_CPU_IDLE_MULTIPLE_DRIVERS is defined.
 
+If CONFIG_CPU_IDLE_MULTIPLE_DRIVERS is defined, the code for
+__cpuidle_set_driver/__cpuidle_unset_driver looks as -
+
+ 39  * __cpuidle_unset_driver - unset per CPU driver variables.
+ 40  * @drv: a valid pointer to a struct cpuidle_driver
+ 41  *
+ 42  * For each CPU in the driver's CPU mask, unset the registered
+driver per CPU
+ 43  * variable. If @drv is different from the registered driver, the
+corresponding
+ 44  * variable is not cleared.
+ 45  */
+ 46 static inline void __cpuidle_unset_driver(struct cpuidle_driver *drv)
+ 47 {
+ 48         int cpu;
+ 49
+ 50         for_each_cpu(cpu, drv->cpumask) {
+ 51
+ 52                 if (drv != __cpuidle_get_cpu_driver(cpu))
+ 53                         continue;
+ 54
+ 55                 per_cpu(cpuidle_drivers, cpu) = NULL;
+ 56         }
+ 57 }
+ 58
+ 59 /**
+ 60  * __cpuidle_set_driver - set per CPU driver variables for the given driver.
+ 61  * @drv: a valid pointer to a struct cpuidle_driver
+ 62  *
+ 63  * For each CPU in the driver's cpumask, unset the registered driver per CPU
+ 64  * to @drv.
+ 65  *
+ 66  * Returns 0 on success, -EBUSY if the CPUs have driver(s) already.
+ 67  */
+ 68 static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
+ 69 {
+ 70         int cpu;
+ 71
+ 72         for_each_cpu(cpu, drv->cpumask) {
+ 73
+ 74                 if (__cpuidle_get_cpu_driver(cpu)) {
+ 75                         __cpuidle_unset_driver(drv);
+ 76                         return -EBUSY;
+ 77                 }
+ 78
+ 79                 per_cpu(cpuidle_drivers, cpu) = drv;
+ 80         }
+ 81
+ 82         return 0;
+ 83 }
+
+Apparently, the comment should be - "set/register the driver per CPU
+to @drv" instead of "unset the registered driver per CPU to @drv" in
+case of __cpuidle_set_driver.
+
+However, regarding the logic, I have a few doubts -
+
+1. for each cpu in drv->cpumask, if there is already a driver
+registered, its calling __cpuidle_unset_driver which loops over for
+each cpu in drv->cpumask again. Isn't it unnecessary to do this nested
+calls?
+
+2. after calling __cpuidle_unset_driver, if drv equals already
+registered driver, it sets per_cpu driver to null? Isn't it wrong when
+we are trying to set to a new driver? Why do we need to unset and make
+the driver null when we are returning EBUSY from __cpuidle_set_driver?
+
+Would it be correct and cleaner if the code is written as below -
+
+ static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
+ {
+         int ret = -EBUSY;
+         int cpu;
+
+        for_each_cpu(cpu, drv->cpumask) {
+                if (drv == __cpuidle_get_cpu_driver(cpu))    [if drv
+is already the registered driver, do nothing]
+                         continue;
+
+                 per_cpu(cpuidle_drivers, cpu) = drv;  [if only drv !=
+already registered driver, set per_cpu driver to drv and set ret 0]
+                 ret = 0;
+         }
+
+         return ret;     [only if all cpus already had drv as
+registered driver, return -EBUSY. Otherwise return 0]
+ }
+
+
+Please let me know your views.
+
+--
 Thanks,
-Lorenzo
-
-> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Will Deacon <will.deacon@arm.com>
-> Cc: Chao Xie <chao.xie@marvell.com>
-> Cc: Stephen Warren <swarren@nvidia.com>
-> Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: Jonathan Austin <Jonathan.Austin@arm.com>
-> Cc: Chao Xie Linux <xiechao.mail@gmail.com>
-> Cc: Juri Lelli <juri.lelli@gmail.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
->  arch/arm/include/asm/cputype.h       |  3 ++-
->  arch/arm/include/asm/smp_plat.h      | 15 +++++++++++++++
->  drivers/cpuidle/cpuidle-big_little.c | 13 +++----------
->  3 files changed, 20 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/arm/include/asm/cputype.h b/arch/arm/include/asm/cputype.h
-> index 963a251..819777d 100644
-> --- a/arch/arm/include/asm/cputype.h
-> +++ b/arch/arm/include/asm/cputype.h
-> @@ -74,6 +74,7 @@
->  #define ARM_CPU_PART_CORTEX_A12		0x4100c0d0
->  #define ARM_CPU_PART_CORTEX_A17		0x4100c0e0
->  #define ARM_CPU_PART_CORTEX_A15		0x4100c0f0
-> +#define ARM_CPU_PART_MASK		0xff00fff0
->  
->  #define ARM_CPU_XSCALE_ARCH_MASK	0xe000
->  #define ARM_CPU_XSCALE_ARCH_V1		0x2000
-> @@ -179,7 +180,7 @@ static inline unsigned int __attribute_const__ read_cpuid_implementor(void)
->   */
->  static inline unsigned int __attribute_const__ read_cpuid_part(void)
->  {
-> -	return read_cpuid_id() & 0xff00fff0;
-> +	return read_cpuid_id() & ARM_CPU_PART_MASK;
->  }
->  
->  static inline unsigned int __attribute_const__ __deprecated read_cpuid_part_number(void)
-> diff --git a/arch/arm/include/asm/smp_plat.h b/arch/arm/include/asm/smp_plat.h
-> index a252c0b..0ad7d49 100644
-> --- a/arch/arm/include/asm/smp_plat.h
-> +++ b/arch/arm/include/asm/smp_plat.h
-> @@ -8,6 +8,7 @@
->  #include <linux/cpumask.h>
->  #include <linux/err.h>
->  
-> +#include <asm/cpu.h>
->  #include <asm/cputype.h>
->  
->  /*
-> @@ -25,6 +26,20 @@ static inline bool is_smp(void)
->  #endif
->  }
->  
-> +/**
-> + * smp_cpuid_part() - return part id for a given cpu
-> + * @cpu:	logical cpu id.
-> + *
-> + * Return: part id of logical cpu passed as argument.
-> + */
-> +static inline unsigned int smp_cpuid_part(int cpu)
-> +{
-> +	struct cpuinfo_arm *cpu_info = &per_cpu(cpu_data, cpu);
-> +
-> +	return is_smp() ? cpu_info->cpuid & ARM_CPU_PART_MASK :
-> +			  read_cpuid_part();
-> +}
-> +
->  /* all SMP configurations have the extended CPUID registers */
->  #ifndef CONFIG_MMU
->  #define tlb_ops_need_broadcast()	0
-> diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-> index 344d79fa..ef94c3b 100644
-> --- a/drivers/cpuidle/cpuidle-big_little.c
-> +++ b/drivers/cpuidle/cpuidle-big_little.c
-> @@ -138,25 +138,18 @@ static int bl_enter_powerdown(struct cpuidle_device *dev,
->  	return idx;
->  }
->  
-> -static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
-> +static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int part_id)
->  {
-> -	struct cpuinfo_arm *cpu_info;
->  	struct cpumask *cpumask;
-> -	unsigned long cpuid;
->  	int cpu;
->  
->  	cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
->  	if (!cpumask)
->  		return -ENOMEM;
->  
-> -	for_each_possible_cpu(cpu) {
-> -		cpu_info = &per_cpu(cpu_data, cpu);
-> -		cpuid = is_smp() ? cpu_info->cpuid : read_cpuid_id();
-> -
-> -		/* read cpu id part number */
-> -		if ((cpuid & 0xFFF0) == cpu_id)
-> +	for_each_possible_cpu(cpu)
-> +		if (smp_cpuid_part(cpu) == part_id)
->  			cpumask_set_cpu(cpu, cpumask);
-> -	}
->  
->  	drv->cpumask = cpumask;
->  
-> -- 
-> 2.0.4
-> 
+-Meraj
