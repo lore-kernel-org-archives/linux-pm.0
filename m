@@ -1,313 +1,93 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] Exynos4: cpuidle: support dual CPUs with AFTR state
-Date: Fri, 15 Aug 2014 01:57:02 +0200
-Message-ID: <53ED4CCE.5010806@linaro.org>
-References: <1396604925-18383-1-git-send-email-daniel.lezcano@linaro.org> <2337363.gvYnZM7kuD@amdc1032> <53CCF438.8000805@linaro.org> <1929175.yd8jnLbgsd@amdc1032>
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
+ back to DEFAULT
+Date: Fri, 15 Aug 2014 01:21:52 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E5BA34@SHSMSX101.ccr.corp.intel.com>
+References: <1407982309-4863-1-git-send-email-chuansheng.liu@intel.com>
+ <CAKnoXLw3DrBAxCUWEkXtvCTf+E1w0xTHJSiSUY6Qd6xHXeGaoQ@mail.gmail.com>
+ <20140814110040.GI16043@twins.programming.kicks-ass.net>
+ <53EC9A29.8090408@linaro.org> <53ED263B.7030703@mit.edu>
+ <20140814211656.GV19379@twins.programming.kicks-ass.net>
+ <CALCETrUEWAbzk3S=T93qh-j4xhwoVrUCqhybr_rr1n-uynQTvw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1929175.yd8jnLbgsd@amdc1032>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Tomasz Figa <t.figa@samsung.com>, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, ccross@google.com, k.kozlowski@samsung.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:56664 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750869AbaHOBWI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 Aug 2014 21:22:08 -0400
+In-Reply-To: <CALCETrUEWAbzk3S=T93qh-j4xhwoVrUCqhybr_rr1n-uynQTvw@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Lutomirski <luto@amacapital.net>, Peter Zijlstra <peterz@infradead.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
 
-On 08/14/2014 12:55 PM, Bartlomiej Zolnierkiewicz wrote:
->
-> Hi,
->
-> On Monday, July 21, 2014 01:06:32 PM Daniel Lezcano wrote:
->> On 07/16/2014 07:34 PM, Bartlomiej Zolnierkiewicz wrote:
->>>
->>> Hi,
->>>
->>> On Friday, May 30, 2014 03:53:09 PM Bartlomiej Zolnierkiewicz wrote=
-:
->>>>
->>>> Hi,
->>>>
->>>> On Friday, May 30, 2014 01:34:45 PM Tomasz Figa wrote:
->>>>> Hi Daniel,
->>>>>
->>>>> On 30.05.2014 11:30, Daniel Lezcano wrote:
->>>>>> On 04/24/2014 07:42 PM, Tomasz Figa wrote:
->>>>>>> Hi Daniel,
->>>>>>>
->>>>>>> Please see my comments inline.
->>>>>>>
->>>>>>> Btw. Please fix your e-mail composer to properly wrap your mess=
-ages
->>>>>>> around 7xth column, as otherwise they're hard to read.
->>>>>>>
->>>>>>> On 04.04.2014 11:48, Daniel Lezcano wrote:
->>>>>>>> The following driver is for exynos4210. I did not yet finished=
- the
->>>>>>>> other boards, so
->>>>>>>> I created a specific driver for 4210 which could be merged lat=
-er.
->>>>>>>>
->>>>>>>> The driver is based on Colin Cross's driver found at:
->>>>>>>>
->>>>>>>> https://android.googlesource.com/kernel/exynos/+/e686b1ec67423=
-c40b4fdf811f9a4dfa3b393a010%5E%5E!/
->>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>>> This one was based on a 3.4 kernel and an old API.
->>>>>>>>
->>>>>>>> It has been refreshed, simplified and based on the recent code=
- cleanup
->>>>>>>> I sent
->>>>>>>> today.
->>>>>>>>
->>>>>>>> The AFTR could be entered when all the cpus (except cpu0) are =
-down. In
->>>>>>>> order to
->>>>>>>> reach this situation, the couple idle states are used.
->>>>>>>>
->>>>>>>> There is a sync barrier at the entry and the exit of the low p=
-ower
->>>>>>>> function. So
->>>>>>>> all cpus will enter and exit the function at the same time.
->>>>>>>>
->>>>>>>> At this point, CPU0 knows the other cpu will power down itself=
-=2E CPU0
->>>>>>>> waits for
->>>>>>>> the CPU1 to be powered down and then initiate the AFTR power d=
-own
->>>>>>>> sequence.
->>>>>>>>
->>>>>>>> No interrupts are handled by CPU1, this is why we switch to th=
-e timer
->>>>>>>> broadcast
->>>>>>>> even if the local timer is not impacted by the idle state.
->>>>>>>>
->>>>>>>> When CPU0 wakes up, it powers up CPU1 and waits for it to boot=
-=2E Then
->>>>>>>> they both
->>>>>>>> exit the idle function.
->>>>>>>>
->>>>>>>> This driver allows the exynos4210 to have the same power consu=
-mption
->>>>>>>> at idle
->>>>>>>> time than the one when we have to unplug CPU1 in order to let =
-CPU0 to
->>>>>>>> reach
->>>>>>>> the AFTR state.
->>>>>>>>
->>>>>>>> This patch is a RFC because, we have to find a way to remove t=
-he macros
->>>>>>>> definitions and cpu powerdown function without pulling the arc=
-h
->>>>>>>> dependent
->>>>>>>> headers.
->>>>>>>>
->>>>>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>>>>>>> ---
->>>>>>>>     arch/arm/mach-exynos/common.c        |   11 +-
->>>>>>>>     drivers/cpuidle/Kconfig.arm          |    8 ++
->>>>>>>>     drivers/cpuidle/Makefile             |    1 +
->>>>>>>>     drivers/cpuidle/cpuidle-exynos4210.c |  226
->>>>>>>> ++++++++++++++++++++++++++++++++++
->>>>>>
->>>>>> [ ... ]
->>>>>>
->>>>>>
->>>>>>> Otherwise, I quite like the whole idea. I need to play a bit wi=
-th CPU
->>>>>>> hotplug and PMU to verify that things couldn't really be simpli=
-fied a
->>>>>>> bit, but in general this looks reasonably.
->>>>>>
->>>>>> Hi Tomasz,
->>>>>>
->>>>>> did you have time to look at this simplification ?
->>>>>
->>>>> Unfortunately I got preempted with other things to do and now I'm=
- on
->>>>> vacation. I worked a bit with Bart (added on CC) on this and gene=
-rally
->>>>> the conclusion was that all the things are necessary. He was also
->>>>> working to extend the driver to support Exynos4x12.
->>>>>
->>>>> Bart, has anything interesting showed up since we talked about th=
-is last
->>>>> time?
->>>>
->>>> Since we last looked into this I have fixed the "standard" AFTR su=
-pport
->>>> for Exynos3250 and started to work on adding Exynos3250 support to=
- this
->>>> driver (as Exynos3250 support has bigger priority than Exynos4x12 =
-one).
->>>> Unfortunately I also got preempted with other things so it is stil=
-l
->>>> unfinished and doesn't work yet.  Moreover I had no possibility to=
- test
->>>> the new driver on Exynos4210 based Origen yet (I hope to do this n=
-ext
->>>> week).
->>>
->>> I have tested this patch on Origen board (Exynos4210 rev 1.1) and i=
-t
->>> causes system lockup (it seems that the code gets stuck on waiting =
-for
->>> CPU1 to wake up).
->>>
->>> The kernels I have tried:
->>> * current -next + this patch + few fixes to bring it up to date
->>> * commit cd245f5 + this patch + some fixes
->>> * next-20140403 + your Exynos cpuidle patch series + this patch
->>>
->>> I have also tried with S5P_VA_SYSRAM replaced by S5P_INFORM5 to
->>> match Exynos 4210 rev 1.1 but it didn't help.
->>>
->>> U-Boot version used is:
->>> U-Boot 2012.07 (Sep 22 2012 - 05:12:41) for ORIGEN
->>>
->>> Could you please tell me which hardware/bootloader/kernel exactly
->>> have you used to test this patch?
->>
->> When I used it, it was on top of 3.15-rc1:
->>
->> https://git.linaro.org/people/daniel.lezcano/linux.git/shortlog/refs=
-/heads/cpuidle/samsung-next
->>
->> The hardware was a exynos-4210 origen board ver A.
->
-> I need the following patch to make this driver work on my hardware.
-
-Thanks for the patch !
-
-> [ Unfortunately even with this patch the driver doesn't work reliably=
-=2E
->    After 30-40 minutes of stress testing it lockups the system (I can
->    send you testing app+script if needed). ]
-
-Yes, please. I will try to reproduce it.
-
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
->
->
-> From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Subject: [PATCH] cpuidle: Exynos4210: make coupled driver work on Rev=
-ision 1.1
->
-> * Add static inline helper cpu_boot_reg_base() and use it instead of
->    BOOT_VECTOR macro.
->
-> * Use S5P_INFORM register instead of S5P_VA_SYSRAM one on Revison 1.1
->    (this matches platform code in arch/arm/mach-exynos/platsmp.c).
->
-> * Retry poking CPU1 out of the BOOT ROM if necessary
->    (this matches platform code in arch/arm/mach-exynos/platsmp.c).
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
-> ---
->   drivers/cpuidle/cpuidle-exynos4210.c |   27 ++++++++++++++---------=
-----
->   1 file changed, 14 insertions(+), 13 deletions(-)
->
-> Index: b/drivers/cpuidle/cpuidle-exynos4210.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- a/drivers/cpuidle/cpuidle-exynos4210.c	2014-07-22 15:42:11.580365=
-939 +0200
-> +++ b/drivers/cpuidle/cpuidle-exynos4210.c	2014-07-22 16:11:01.112369=
-130 +0200
-> @@ -29,12 +29,19 @@
->   static atomic_t exynos_idle_barrier;
->   static atomic_t cpu1_wakeup =3D ATOMIC_INIT(0);
->
-> -#define BOOT_VECTOR S5P_VA_SYSRAM
->   #define S5P_VA_PMU                  S3C_ADDR(0x02180000)
->   #define S5P_PMUREG(x)              (S5P_VA_PMU + (x))
-> +#define S5P_INFORM5                 S5P_PMUREG(0x0814)
->   #define S5P_ARM_CORE1_CONFIGURATION S5P_PMUREG(0x2080)
->   #define S5P_ARM_CORE1_STATUS        S5P_PMUREG(0x2084)
->
-> +static inline void __iomem *cpu_boot_reg_base(void)
-> +{
-> +	if (samsung_rev() =3D=3D EXYNOS4210_REV_1_1)
-> +		return S5P_INFORM5;
-> +	return S5P_VA_SYSRAM;
-> +}
-> +
->   static void (*exynos_aftr)(void);
->   extern void exynos_cpu_resume(void);
->   static int cpu_suspend_finish(unsigned long flags)
-> @@ -76,7 +83,7 @@ static int exynos_cpu0_enter_aftr(void)
->   			 * boot back up again, getting stuck in the
->   			 * boot rom code
->   			 */
-> -			if (__raw_readl(BOOT_VECTOR) =3D=3D 0)
-> +			if (__raw_readl(cpu_boot_reg_base()) =3D=3D 0)
->   				goto abort;
->
->   			cpu_relax();
-> @@ -95,7 +102,7 @@ abort:
->   		 * Set the boot vector to something non-zero
->   		 */
->   		__raw_writel(virt_to_phys(exynos_cpu_resume),
-> -			     BOOT_VECTOR);
-> +			     cpu_boot_reg_base());
->   		dsb();
->
->   		/*
-> @@ -108,24 +115,18 @@ abort:
->   		/*
->   		 * Wait for cpu1 to get stuck in the boot rom
->   		 */
-> -		while ((__raw_readl(BOOT_VECTOR) !=3D 0) &&
-> +		while ((__raw_readl(cpu_boot_reg_base()) !=3D 0) &&
->   		       !atomic_read(&cpu1_wakeup))
->   			cpu_relax();
->
-> -		if (!atomic_read(&cpu1_wakeup)) {
-> +		while (!atomic_read(&cpu1_wakeup)) {
->   			/*
->   			 * Poke cpu1 out of the boot rom
->   			 */
->   			__raw_writel(virt_to_phys(exynos_cpu_resume),
-> -				     BOOT_VECTOR);
-> +				     cpu_boot_reg_base());
->   			dsb_sev();
->   		}
-> -
-> -		/*
-> -		 * Wait for cpu1 to finish booting
-> -		 */
-> -		while (!atomic_read(&cpu1_wakeup))
-> -			cpu_relax();
->   	}
->
->   	return ret;
-> @@ -165,7 +166,7 @@ static int exynos_enter_aftr(struct cpui
->   {
->   	int ret;
->
-> -	__raw_writel(virt_to_phys(exynos_cpu_resume), BOOT_VECTOR);
-> +	__raw_writel(virt_to_phys(exynos_cpu_resume), cpu_boot_reg_base());
->
->   	/*
->   	 * Waiting all cpus to reach this point at the same moment
->
->
->
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQW5keSBMdXRvbWlyc2tp
+IFttYWlsdG86bHV0b0BhbWFjYXBpdGFsLm5ldF0NCj4gU2VudDogRnJpZGF5LCBBdWd1c3QgMTUs
+IDIwMTQgNToyMyBBTQ0KPiBUbzogUGV0ZXIgWmlqbHN0cmENCj4gQ2M6IERhbmllbCBMZXpjYW5v
+OyBMaXUsIENodWFuc2hlbmc7IFJhZmFlbCBKLiBXeXNvY2tpOw0KPiBsaW51eC1wbUB2Z2VyLmtl
+cm5lbC5vcmc7IExLTUw7IExpdSwgQ2hhbmdjaGVuZzsgV2FuZywgWGlhb21pbmc7DQo+IENoYWty
+YXZhcnR5LCBTb3V2aWsgSw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBjcHVpZGxlOiBGaXggdGhl
+IENQVSBzdHVjayBhdCBDMCBmb3IgMi0zcyBhZnRlciBQTV9RT1MNCj4gYmFjayB0byBERUZBVUxU
+DQo+IA0KPiBPbiBUaHUsIEF1ZyAxNCwgMjAxNCBhdCAyOjE2IFBNLCBQZXRlciBaaWpsc3RyYSA8
+cGV0ZXJ6QGluZnJhZGVhZC5vcmc+DQo+IHdyb3RlOg0KPiA+IE9uIFRodSwgQXVnIDE0LCAyMDE0
+IGF0IDAyOjEyOjI3UE0gLTA3MDAsIEFuZHkgTHV0b21pcnNraSB3cm90ZToNCj4gPj4gT24gMDgv
+MTQvMjAxNCAwNDoxNCBBTSwgRGFuaWVsIExlemNhbm8gd3JvdGU6DQo+ID4+ID4gT24gMDgvMTQv
+MjAxNCAwMTowMCBQTSwgUGV0ZXIgWmlqbHN0cmEgd3JvdGU6DQo+ID4+ID4+DQo+ID4+ID4+IFNv
+IHNlZWluZyBob3cgeW91J3JlIGZyb20gQGludGVsLmNvbSBJJ20gYXNzdW1pbmcgeW91J3JlIHVz
+aW5nIHg4Ng0KPiBoZXJlLg0KPiA+PiA+Pg0KPiA+PiA+PiBJJ20gbm90IHNlZWluZyBob3cgdGhp
+cyBjYW4gYmUgcG9zc2libGUsIE1XQUlUIGlzIGludGVycnVwdGVkIGJ5IElQSXMNCj4gPj4gPj4g
+anVzdCBmaW5lLCB3aGljaCBtZWFucyB3ZSdsbCBmYWxsIG91dCBvZiB0aGUgY3B1aWRsZV9lbnRl
+cigpLCB3aGljaA0KPiA+PiA+PiBtZWFucyB3ZSdsbCBjcHVpZGxlX3JlZmxlY3QoKSwgYW5kIHRo
+ZW4gbGVhdmUgY3B1aWRsZV9pZGxlX2NhbGwoKS4NCj4gPj4gPj4NCj4gPj4gPj4gSXQgd2lsbCBp
+bmRlZWQgbm90IGxlYXZlIHRoZSBjcHVfaWRsZV9sb29wKCkgZnVuY3Rpb24gYW5kIGdvIHJpZ2h0
+IGJhY2sNCj4gPj4gPj4gaW50byBjcHVpZGxlX2lkbGVfY2FsbCgpLCBidXQgdGhhdCB3aWxsIHRo
+ZW4gY2FsbCBjcHVpZGxlX3NlbGVjdCgpIHdoaWNoDQo+ID4+ID4+IHNob3VsZCBwaWNrIGEgbmV3
+IEMgc3RhdGUuDQo+ID4+ID4+DQo+ID4+ID4+IFNvIHRoZSBpbnRlcnJ1cHQgX3Nob3VsZF8gd29y
+ay4gSWYgaXQgZG9lc24ndCB5b3UgbmVlZCB0byBleHBsYWluIHdoeS4NCj4gPj4gPg0KPiA+PiA+
+IEkgdGhpbmsgdGhlIGlzc3VlIGlzIHJlbGF0ZWQgdG8gdGhlIHBvbGxfaWRsZSBzdGF0ZSwgaW4N
+Cj4gPj4gPiBkcml2ZXJzL2NwdWlkbGUvZHJpdmVyLmMuIFRoaXMgc3RhdGUgaXMgeDg2IHNwZWNp
+ZmljIGFuZCBpbnNlcnRlZCBpbiB0aGUNCj4gPj4gPiBjcHVpZGxlIHRhYmxlIGFzIHRoZSBzdGF0
+ZSAwIChQT0xMKS4gVGhlcmUgaXMgbm8gbXdhaXQgZm9yIHRoaXMgc3RhdGUuDQo+ID4+ID4gSXQg
+aXMgYSBiaXQgY29uZnVzaW5nIGJlY2F1c2UgdGhpcyBzdGF0ZSBpcyBub3QgbGlzdGVkIGluIHRo
+ZSBhY3BpIC8NCj4gPj4gPiBpbnRlbCBpZGxlIGRyaXZlciBidXQgaW5zZXJ0ZWQgaW1wbGljaXRs
+eSBhdCB0aGUgYmVnaW5uaW5nIG9mIHRoZSBpZGxlDQo+ID4+ID4gdGFibGUgYnkgdGhlIGNwdWlk
+bGUgZnJhbWV3b3JrIHdoZW4gdGhlIGRyaXZlciBpcyByZWdpc3RlcmVkLg0KPiA+PiA+DQo+ID4+
+ID4gc3RhdGljIGludCBwb2xsX2lkbGUoc3RydWN0IGNwdWlkbGVfZGV2aWNlICpkZXYsDQo+ID4+
+ID4gICAgICAgICAgICAgICAgIHN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2LCBpbnQgaW5kZXgp
+DQo+ID4+ID4gew0KPiA+PiA+ICAgICAgICAgbG9jYWxfaXJxX2VuYWJsZSgpOw0KPiA+PiA+ICAg
+ICAgICAgaWYgKCFjdXJyZW50X3NldF9wb2xsaW5nX2FuZF90ZXN0KCkpIHsNCj4gPj4gPiAgICAg
+ICAgICAgICAgICAgd2hpbGUgKCFuZWVkX3Jlc2NoZWQoKSkNCj4gPj4gPiAgICAgICAgICAgICAg
+ICAgICAgICAgICBjcHVfcmVsYXgoKTsNCj4gPj4gPiAgICAgICAgIH0NCj4gPj4gPiAgICAgICAg
+IGN1cnJlbnRfY2xyX3BvbGxpbmcoKTsNCj4gPj4gPg0KPiA+PiA+ICAgICAgICAgcmV0dXJuIGlu
+ZGV4Ow0KPiA+PiA+IH0NCj4gPj4NCj4gPj4gQXMgdGhlIG1vc3QgcmVjZW50IHBlcnNvbiB0byBo
+YXZlIG1vZGlmaWVkIHRoaXMgZnVuY3Rpb24sIGFuZCBhcyBhbg0KPiA+PiBhdm93ZWQgaGF0ZXIg
+b2YgcG9pbnRsZXNzIElQSXMsIGxldCBtZSBhc2sgYSByYXRoZXIgZGlmZmVyZW50IHF1ZXN0aW9u
+Og0KPiA+PiB3aHkgYXJlIHlvdSBzZW5kaW5nIElQSXMgYXQgYWxsPyAgQXMgb2YgTGludXggMy4x
+NiwgcG9sbF9pZGxlIGFjdHVhbGx5DQo+ID4+IHN1cHBvcnRzIHRoZSBwb2xsaW5nIGlkbGUgaW50
+ZXJmYWNlIDopDQo+ID4+DQo+ID4+IENhbid0IHlvdSBqdXN0IGRvOg0KPiA+Pg0KPiA+PiBpZiAo
+c2V0X25yX2lmX3BvbGxpbmcocnEtPmlkbGUpKSB7DQo+ID4+ICAgICAgIHRyYWNlX3NjaGVkX3dh
+a2VfaWRsZV93aXRob3V0X2lwaShjcHUpOw0KPiA+PiB9IGVsc2Ugew0KPiA+PiAgICAgICBzcGlu
+X2xvY2tfaXJxc2F2ZSgmcnEtPmxvY2ssIGZsYWdzKTsNCj4gPj4gICAgICAgaWYgKHJxLT5jdXJy
+ID09IHJxLT5pZGxlKQ0KPiA+PiAgICAgICAgICAgICAgIHNtcF9zZW5kX3Jlc2NoZWR1bGUoY3B1
+KTsNCj4gPj4gICAgICAgLy8gZWxzZSB0aGUgQ1BVIHdhc24ndCBpZGxlOyBub3RoaW5nIHRvIGRv
+DQo+ID4+ICAgICAgIHJhd19zcGluX3VubG9ja19pcnFyZXN0b3JlKCZycS0+bG9jaywgZmxhZ3Mp
+Ow0KPiA+PiB9DQo+ID4+DQo+ID4+IEluIHRoZSBjb21tb24gY2FzZSAod2FrZSBmcm9tIEMwLCBp
+LmUuIHBvbGxpbmcgaWRsZSksIHRoaXMgd2lsbCBza2lwIHRoZQ0KPiA+PiBJUEkgZW50aXJlbHkg
+dW5sZXNzIHlvdSByYWNlIHdpdGggaWRsZSBlbnRyeS9leGl0LCBzYXZpbmcgYSBmZXcgbW9yZQ0K
+PiA+PiBwcmVjaW91cyBlbGVjdHJvbnMgYW5kIGFsbCBvZiB0aGUgbGF0ZW5jeSBpbnZvbHZlZCBp
+biBwb2tpbmcgdGhlIEFQSUMNCj4gPj4gcmVnaXN0ZXJzLg0KPiA+DQo+ID4gVGhleSBjb3VsZCBh
+bmQgdGhleSBwcm9iYWJseSBzaG91bGQsIGJ1dCB0aGF0IGxvZ2ljIHNob3VsZCBfbm90XyBsaXZl
+IGluDQo+ID4gdGhlIGNwdWlkbGUgZHJpdmVyLg0KPiANCj4gU3VyZS4gIE15IHBvaW50IGlzIHRo
+YXQgZml4aW5nIHRoZSBJUEkgaGFuZGxlciBpcywgSSB0aGluaywgdG90YWxseQ0KPiBib2d1cywg
+YmVjYXVzZSB0aGUgSVBJIEFQSSBpc24ndCB0aGUgcmlnaHQgd2F5IHRvIGRvIHRoaXMgYXQgYWxs
+Lg0KPiANCj4gSXQgd291bGQgYmUgc3RyYWlnaHRmb3J3YXJkIHRvIGFkZCBhIG5ldyBmdW5jdGlv
+biB3YWtlX2lmX2lkbGUoaW50DQo+IGNwdSkgdG8gc2NoZWQvY29yZS5jLg0KPiANClRoYW5rcyBB
+bmR5IGFuZCBQZXRlcidzIHN1Z2dlc3Rpb24sIGl0IHdpbGwgc2F2ZSBzb21lIElQSSB0aGluZ3Mg
+aW4gY2FzZSB0aGUgY29yZXMgYXJlIG5vdA0KaW4gaWRsZS4NCg0KVGhlcmUgaXMgb25lIHNpbWls
+YXIgQVBJIGluIHNjaGVkL2NvcmUuYyB3YWtlX3VwX2lkbGVfY3B1KCksDQp0aGVuIGp1c3QgbmVl
+ZCBhZGQgb25lIG5ldyBjb21tb24gc21wIEFQSToNCg0Kc21wX3dha2VfdXBfY3B1cygpIHsNCmZv
+cl9lYWNoX29ubGluZV9jcHUoKQ0KICB3YWtlX3VwX2lkbGVfY3B1KCk7DQp9DQoNCldpbGwgdHJ5
+IG9uZSBwYXRjaCBmb3IgaXQuDQoNCg0K
