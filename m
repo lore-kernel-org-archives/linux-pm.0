@@ -1,93 +1,128 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
+From: Andy Lutomirski <luto@amacapital.net>
+Subject: Re: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
  back to DEFAULT
-Date: Fri, 15 Aug 2014 01:21:52 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E5BA34@SHSMSX101.ccr.corp.intel.com>
+Date: Thu, 14 Aug 2014 18:27:21 -0700
+Message-ID: <CALCETrUxw-Z7Tb-BJvbz9VR5uuMQy54FBHvSBicirpscoFc7mA@mail.gmail.com>
 References: <1407982309-4863-1-git-send-email-chuansheng.liu@intel.com>
  <CAKnoXLw3DrBAxCUWEkXtvCTf+E1w0xTHJSiSUY6Qd6xHXeGaoQ@mail.gmail.com>
- <20140814110040.GI16043@twins.programming.kicks-ass.net>
- <53EC9A29.8090408@linaro.org> <53ED263B.7030703@mit.edu>
- <20140814211656.GV19379@twins.programming.kicks-ass.net>
- <CALCETrUEWAbzk3S=T93qh-j4xhwoVrUCqhybr_rr1n-uynQTvw@mail.gmail.com>
+ <20140814110040.GI16043@twins.programming.kicks-ass.net> <53EC9A29.8090408@linaro.org>
+ <53ED263B.7030703@mit.edu> <20140814211656.GV19379@twins.programming.kicks-ass.net>
+ <CALCETrUEWAbzk3S=T93qh-j4xhwoVrUCqhybr_rr1n-uynQTvw@mail.gmail.com> <27240C0AC20F114CBF8149A2696CBE4A01E5BA34@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:56664 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750869AbaHOBWI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 Aug 2014 21:22:08 -0400
-In-Reply-To: <CALCETrUEWAbzk3S=T93qh-j4xhwoVrUCqhybr_rr1n-uynQTvw@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <27240C0AC20F114CBF8149A2696CBE4A01E5BA34@SHSMSX101.ccr.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Lutomirski <luto@amacapital.net>, Peter Zijlstra <peterz@infradead.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQW5keSBMdXRvbWlyc2tp
-IFttYWlsdG86bHV0b0BhbWFjYXBpdGFsLm5ldF0NCj4gU2VudDogRnJpZGF5LCBBdWd1c3QgMTUs
-IDIwMTQgNToyMyBBTQ0KPiBUbzogUGV0ZXIgWmlqbHN0cmENCj4gQ2M6IERhbmllbCBMZXpjYW5v
-OyBMaXUsIENodWFuc2hlbmc7IFJhZmFlbCBKLiBXeXNvY2tpOw0KPiBsaW51eC1wbUB2Z2VyLmtl
-cm5lbC5vcmc7IExLTUw7IExpdSwgQ2hhbmdjaGVuZzsgV2FuZywgWGlhb21pbmc7DQo+IENoYWty
-YXZhcnR5LCBTb3V2aWsgSw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBjcHVpZGxlOiBGaXggdGhl
-IENQVSBzdHVjayBhdCBDMCBmb3IgMi0zcyBhZnRlciBQTV9RT1MNCj4gYmFjayB0byBERUZBVUxU
-DQo+IA0KPiBPbiBUaHUsIEF1ZyAxNCwgMjAxNCBhdCAyOjE2IFBNLCBQZXRlciBaaWpsc3RyYSA8
-cGV0ZXJ6QGluZnJhZGVhZC5vcmc+DQo+IHdyb3RlOg0KPiA+IE9uIFRodSwgQXVnIDE0LCAyMDE0
-IGF0IDAyOjEyOjI3UE0gLTA3MDAsIEFuZHkgTHV0b21pcnNraSB3cm90ZToNCj4gPj4gT24gMDgv
-MTQvMjAxNCAwNDoxNCBBTSwgRGFuaWVsIExlemNhbm8gd3JvdGU6DQo+ID4+ID4gT24gMDgvMTQv
-MjAxNCAwMTowMCBQTSwgUGV0ZXIgWmlqbHN0cmEgd3JvdGU6DQo+ID4+ID4+DQo+ID4+ID4+IFNv
-IHNlZWluZyBob3cgeW91J3JlIGZyb20gQGludGVsLmNvbSBJJ20gYXNzdW1pbmcgeW91J3JlIHVz
-aW5nIHg4Ng0KPiBoZXJlLg0KPiA+PiA+Pg0KPiA+PiA+PiBJJ20gbm90IHNlZWluZyBob3cgdGhp
-cyBjYW4gYmUgcG9zc2libGUsIE1XQUlUIGlzIGludGVycnVwdGVkIGJ5IElQSXMNCj4gPj4gPj4g
-anVzdCBmaW5lLCB3aGljaCBtZWFucyB3ZSdsbCBmYWxsIG91dCBvZiB0aGUgY3B1aWRsZV9lbnRl
-cigpLCB3aGljaA0KPiA+PiA+PiBtZWFucyB3ZSdsbCBjcHVpZGxlX3JlZmxlY3QoKSwgYW5kIHRo
-ZW4gbGVhdmUgY3B1aWRsZV9pZGxlX2NhbGwoKS4NCj4gPj4gPj4NCj4gPj4gPj4gSXQgd2lsbCBp
-bmRlZWQgbm90IGxlYXZlIHRoZSBjcHVfaWRsZV9sb29wKCkgZnVuY3Rpb24gYW5kIGdvIHJpZ2h0
-IGJhY2sNCj4gPj4gPj4gaW50byBjcHVpZGxlX2lkbGVfY2FsbCgpLCBidXQgdGhhdCB3aWxsIHRo
-ZW4gY2FsbCBjcHVpZGxlX3NlbGVjdCgpIHdoaWNoDQo+ID4+ID4+IHNob3VsZCBwaWNrIGEgbmV3
-IEMgc3RhdGUuDQo+ID4+ID4+DQo+ID4+ID4+IFNvIHRoZSBpbnRlcnJ1cHQgX3Nob3VsZF8gd29y
-ay4gSWYgaXQgZG9lc24ndCB5b3UgbmVlZCB0byBleHBsYWluIHdoeS4NCj4gPj4gPg0KPiA+PiA+
-IEkgdGhpbmsgdGhlIGlzc3VlIGlzIHJlbGF0ZWQgdG8gdGhlIHBvbGxfaWRsZSBzdGF0ZSwgaW4N
-Cj4gPj4gPiBkcml2ZXJzL2NwdWlkbGUvZHJpdmVyLmMuIFRoaXMgc3RhdGUgaXMgeDg2IHNwZWNp
-ZmljIGFuZCBpbnNlcnRlZCBpbiB0aGUNCj4gPj4gPiBjcHVpZGxlIHRhYmxlIGFzIHRoZSBzdGF0
-ZSAwIChQT0xMKS4gVGhlcmUgaXMgbm8gbXdhaXQgZm9yIHRoaXMgc3RhdGUuDQo+ID4+ID4gSXQg
-aXMgYSBiaXQgY29uZnVzaW5nIGJlY2F1c2UgdGhpcyBzdGF0ZSBpcyBub3QgbGlzdGVkIGluIHRo
-ZSBhY3BpIC8NCj4gPj4gPiBpbnRlbCBpZGxlIGRyaXZlciBidXQgaW5zZXJ0ZWQgaW1wbGljaXRs
-eSBhdCB0aGUgYmVnaW5uaW5nIG9mIHRoZSBpZGxlDQo+ID4+ID4gdGFibGUgYnkgdGhlIGNwdWlk
-bGUgZnJhbWV3b3JrIHdoZW4gdGhlIGRyaXZlciBpcyByZWdpc3RlcmVkLg0KPiA+PiA+DQo+ID4+
-ID4gc3RhdGljIGludCBwb2xsX2lkbGUoc3RydWN0IGNwdWlkbGVfZGV2aWNlICpkZXYsDQo+ID4+
-ID4gICAgICAgICAgICAgICAgIHN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2LCBpbnQgaW5kZXgp
-DQo+ID4+ID4gew0KPiA+PiA+ICAgICAgICAgbG9jYWxfaXJxX2VuYWJsZSgpOw0KPiA+PiA+ICAg
-ICAgICAgaWYgKCFjdXJyZW50X3NldF9wb2xsaW5nX2FuZF90ZXN0KCkpIHsNCj4gPj4gPiAgICAg
-ICAgICAgICAgICAgd2hpbGUgKCFuZWVkX3Jlc2NoZWQoKSkNCj4gPj4gPiAgICAgICAgICAgICAg
-ICAgICAgICAgICBjcHVfcmVsYXgoKTsNCj4gPj4gPiAgICAgICAgIH0NCj4gPj4gPiAgICAgICAg
-IGN1cnJlbnRfY2xyX3BvbGxpbmcoKTsNCj4gPj4gPg0KPiA+PiA+ICAgICAgICAgcmV0dXJuIGlu
-ZGV4Ow0KPiA+PiA+IH0NCj4gPj4NCj4gPj4gQXMgdGhlIG1vc3QgcmVjZW50IHBlcnNvbiB0byBo
-YXZlIG1vZGlmaWVkIHRoaXMgZnVuY3Rpb24sIGFuZCBhcyBhbg0KPiA+PiBhdm93ZWQgaGF0ZXIg
-b2YgcG9pbnRsZXNzIElQSXMsIGxldCBtZSBhc2sgYSByYXRoZXIgZGlmZmVyZW50IHF1ZXN0aW9u
-Og0KPiA+PiB3aHkgYXJlIHlvdSBzZW5kaW5nIElQSXMgYXQgYWxsPyAgQXMgb2YgTGludXggMy4x
-NiwgcG9sbF9pZGxlIGFjdHVhbGx5DQo+ID4+IHN1cHBvcnRzIHRoZSBwb2xsaW5nIGlkbGUgaW50
-ZXJmYWNlIDopDQo+ID4+DQo+ID4+IENhbid0IHlvdSBqdXN0IGRvOg0KPiA+Pg0KPiA+PiBpZiAo
-c2V0X25yX2lmX3BvbGxpbmcocnEtPmlkbGUpKSB7DQo+ID4+ICAgICAgIHRyYWNlX3NjaGVkX3dh
-a2VfaWRsZV93aXRob3V0X2lwaShjcHUpOw0KPiA+PiB9IGVsc2Ugew0KPiA+PiAgICAgICBzcGlu
-X2xvY2tfaXJxc2F2ZSgmcnEtPmxvY2ssIGZsYWdzKTsNCj4gPj4gICAgICAgaWYgKHJxLT5jdXJy
-ID09IHJxLT5pZGxlKQ0KPiA+PiAgICAgICAgICAgICAgIHNtcF9zZW5kX3Jlc2NoZWR1bGUoY3B1
-KTsNCj4gPj4gICAgICAgLy8gZWxzZSB0aGUgQ1BVIHdhc24ndCBpZGxlOyBub3RoaW5nIHRvIGRv
-DQo+ID4+ICAgICAgIHJhd19zcGluX3VubG9ja19pcnFyZXN0b3JlKCZycS0+bG9jaywgZmxhZ3Mp
-Ow0KPiA+PiB9DQo+ID4+DQo+ID4+IEluIHRoZSBjb21tb24gY2FzZSAod2FrZSBmcm9tIEMwLCBp
-LmUuIHBvbGxpbmcgaWRsZSksIHRoaXMgd2lsbCBza2lwIHRoZQ0KPiA+PiBJUEkgZW50aXJlbHkg
-dW5sZXNzIHlvdSByYWNlIHdpdGggaWRsZSBlbnRyeS9leGl0LCBzYXZpbmcgYSBmZXcgbW9yZQ0K
-PiA+PiBwcmVjaW91cyBlbGVjdHJvbnMgYW5kIGFsbCBvZiB0aGUgbGF0ZW5jeSBpbnZvbHZlZCBp
-biBwb2tpbmcgdGhlIEFQSUMNCj4gPj4gcmVnaXN0ZXJzLg0KPiA+DQo+ID4gVGhleSBjb3VsZCBh
-bmQgdGhleSBwcm9iYWJseSBzaG91bGQsIGJ1dCB0aGF0IGxvZ2ljIHNob3VsZCBfbm90XyBsaXZl
-IGluDQo+ID4gdGhlIGNwdWlkbGUgZHJpdmVyLg0KPiANCj4gU3VyZS4gIE15IHBvaW50IGlzIHRo
-YXQgZml4aW5nIHRoZSBJUEkgaGFuZGxlciBpcywgSSB0aGluaywgdG90YWxseQ0KPiBib2d1cywg
-YmVjYXVzZSB0aGUgSVBJIEFQSSBpc24ndCB0aGUgcmlnaHQgd2F5IHRvIGRvIHRoaXMgYXQgYWxs
-Lg0KPiANCj4gSXQgd291bGQgYmUgc3RyYWlnaHRmb3J3YXJkIHRvIGFkZCBhIG5ldyBmdW5jdGlv
-biB3YWtlX2lmX2lkbGUoaW50DQo+IGNwdSkgdG8gc2NoZWQvY29yZS5jLg0KPiANClRoYW5rcyBB
-bmR5IGFuZCBQZXRlcidzIHN1Z2dlc3Rpb24sIGl0IHdpbGwgc2F2ZSBzb21lIElQSSB0aGluZ3Mg
-aW4gY2FzZSB0aGUgY29yZXMgYXJlIG5vdA0KaW4gaWRsZS4NCg0KVGhlcmUgaXMgb25lIHNpbWls
-YXIgQVBJIGluIHNjaGVkL2NvcmUuYyB3YWtlX3VwX2lkbGVfY3B1KCksDQp0aGVuIGp1c3QgbmVl
-ZCBhZGQgb25lIG5ldyBjb21tb24gc21wIEFQSToNCg0Kc21wX3dha2VfdXBfY3B1cygpIHsNCmZv
-cl9lYWNoX29ubGluZV9jcHUoKQ0KICB3YWtlX3VwX2lkbGVfY3B1KCk7DQp9DQoNCldpbGwgdHJ5
-IG9uZSBwYXRjaCBmb3IgaXQuDQoNCg0K
+On Thu, Aug 14, 2014 at 6:21 PM, Liu, Chuansheng
+<chuansheng.liu@intel.com> wrote:
+>
+>
+>> -----Original Message-----
+>> From: Andy Lutomirski [mailto:luto@amacapital.net]
+>> Sent: Friday, August 15, 2014 5:23 AM
+>> To: Peter Zijlstra
+>> Cc: Daniel Lezcano; Liu, Chuansheng; Rafael J. Wysocki;
+>> linux-pm@vger.kernel.org; LKML; Liu, Changcheng; Wang, Xiaoming;
+>> Chakravarty, Souvik K
+>> Subject: Re: [PATCH] cpuidle: Fix the CPU stuck at C0 for 2-3s after PM_QOS
+>> back to DEFAULT
+>>
+>> On Thu, Aug 14, 2014 at 2:16 PM, Peter Zijlstra <peterz@infradead.org>
+>> wrote:
+>> > On Thu, Aug 14, 2014 at 02:12:27PM -0700, Andy Lutomirski wrote:
+>> >> On 08/14/2014 04:14 AM, Daniel Lezcano wrote:
+>> >> > On 08/14/2014 01:00 PM, Peter Zijlstra wrote:
+>> >> >>
+>> >> >> So seeing how you're from @intel.com I'm assuming you're using x86
+>> here.
+>> >> >>
+>> >> >> I'm not seeing how this can be possible, MWAIT is interrupted by IPIs
+>> >> >> just fine, which means we'll fall out of the cpuidle_enter(), which
+>> >> >> means we'll cpuidle_reflect(), and then leave cpuidle_idle_call().
+>> >> >>
+>> >> >> It will indeed not leave the cpu_idle_loop() function and go right back
+>> >> >> into cpuidle_idle_call(), but that will then call cpuidle_select() which
+>> >> >> should pick a new C state.
+>> >> >>
+>> >> >> So the interrupt _should_ work. If it doesn't you need to explain why.
+>> >> >
+>> >> > I think the issue is related to the poll_idle state, in
+>> >> > drivers/cpuidle/driver.c. This state is x86 specific and inserted in the
+>> >> > cpuidle table as the state 0 (POLL). There is no mwait for this state.
+>> >> > It is a bit confusing because this state is not listed in the acpi /
+>> >> > intel idle driver but inserted implicitly at the beginning of the idle
+>> >> > table by the cpuidle framework when the driver is registered.
+>> >> >
+>> >> > static int poll_idle(struct cpuidle_device *dev,
+>> >> >                 struct cpuidle_driver *drv, int index)
+>> >> > {
+>> >> >         local_irq_enable();
+>> >> >         if (!current_set_polling_and_test()) {
+>> >> >                 while (!need_resched())
+>> >> >                         cpu_relax();
+>> >> >         }
+>> >> >         current_clr_polling();
+>> >> >
+>> >> >         return index;
+>> >> > }
+>> >>
+>> >> As the most recent person to have modified this function, and as an
+>> >> avowed hater of pointless IPIs, let me ask a rather different question:
+>> >> why are you sending IPIs at all?  As of Linux 3.16, poll_idle actually
+>> >> supports the polling idle interface :)
+>> >>
+>> >> Can't you just do:
+>> >>
+>> >> if (set_nr_if_polling(rq->idle)) {
+>> >>       trace_sched_wake_idle_without_ipi(cpu);
+>> >> } else {
+>> >>       spin_lock_irqsave(&rq->lock, flags);
+>> >>       if (rq->curr == rq->idle)
+>> >>               smp_send_reschedule(cpu);
+>> >>       // else the CPU wasn't idle; nothing to do
+>> >>       raw_spin_unlock_irqrestore(&rq->lock, flags);
+>> >> }
+>> >>
+>> >> In the common case (wake from C0, i.e. polling idle), this will skip the
+>> >> IPI entirely unless you race with idle entry/exit, saving a few more
+>> >> precious electrons and all of the latency involved in poking the APIC
+>> >> registers.
+>> >
+>> > They could and they probably should, but that logic should _not_ live in
+>> > the cpuidle driver.
+>>
+>> Sure.  My point is that fixing the IPI handler is, I think, totally
+>> bogus, because the IPI API isn't the right way to do this at all.
+>>
+>> It would be straightforward to add a new function wake_if_idle(int
+>> cpu) to sched/core.c.
+>>
+> Thanks Andy and Peter's suggestion, it will save some IPI things in case the cores are not
+> in idle.
+
+This isn't quite right.  Using the polling interface correctly will
+save IPIs in case the core *is* idle.  But, given that you are trying
+to upgrade the chosen idle state, I don't think you need to kick
+non-idle CPUs at all, and my example contains that optimization.
+
+Presumably the function should be named something like wake_up_if_idle.
+
+>
+> There is one similar API in sched/core.c wake_up_idle_cpu(),
+> then just need add one new common smp API:
+>
+> smp_wake_up_cpus() {
+> for_each_online_cpu()
+>   wake_up_idle_cpu();
+> }
+>
+> Will try one patch for it.
+
+This will have lots of extra overhead if the cpu is *not* idle.  I
+think my example will be a lot more efficient.
+
+--Andy
