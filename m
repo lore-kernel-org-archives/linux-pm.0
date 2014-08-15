@@ -1,16 +1,16 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v7 2/8] Documentation: arm: define DT idle states bindings
-Date: Fri, 15 Aug 2014 18:51:52 +0100
-Message-ID: <20140815175152.GA8803@e102568-lin.cambridge.arm.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v7 8/8] drivers: cpuidle: initialize Exynos driver
+ through DT
+Date: Fri, 15 Aug 2014 15:12:33 -0600
+Message-ID: <20140815211233.GA46224@ilina-mac.local>
 References: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1407945127-27554-3-git-send-email-lorenzo.pieralisi@arm.com>
- <20140815172030.GA45197@ilina-mac.local>
+ <1407945127-27554-9-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140815172030.GA45197@ilina-mac.local>
 Content-Disposition: inline
+In-Reply-To: <1407945127-27554-9-git-send-email-lorenzo.pieralisi@arm.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -20,147 +20,159 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Tomasz Figa <t.figa@samsung.com>, Chander Kashyap <k.chander@samsung.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Geoff Levand <geoff@infradead.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Tomasz Figa <t.figa@samsung.com>, Chander Kashyap <k.chander@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-arm-kernel@lists.infradead.org, Grant Likely <grant.likely@linaro.org>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, devicetree@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Sebastian Capella <sebcape@gmail.com>, Rob Herring <robh+dt@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Geoff Levand <geoff@infradead.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.c>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 15, 2014 at 06:20:30PM +0100, Lina Iyer wrote:
-
-[...]
-
-> >+===========================================
-> >+3 - idle-states node
-> >+===========================================
-> >+
-> >+ARM processor idle states are defined within the idle-states node, which is
-> >+a direct child of the cpus node [1] and provides a container where the
-> >+processor idle states, defined as device tree nodes, are listed.
-> >+
-> >+- idle-states node
-> >+
-> >+      Usage: Optional - On ARM systems, it is a container of processor idle
-> >+                        states nodes. If the system does not provide CPU
-> >+                        power management capabilities or the processor just
-> >+                        supports idle_standby an idle-states node is not
-> >+                        required.
-> >+
-> >+      Description: idle-states node is a container node, where its
-> >+                   subnodes describe the CPU idle states.
-> >+
-> >+      Node name must be "idle-states".
-> >+
-> >+      The idle-states node's parent node must be the cpus node.
-> >+
-> >+      The idle-states node's child nodes can be:
-> >+
-> >+      - one or more state nodes
-> >+
-> >+      Any other configuration is considered invalid.
-> >+
-> >+      An idle-states node defines the following properties:
-> >+
-> >+      - entry-method
-> >+              Value type: <stringlist>
-> >+              Usage and definition depend on ARM architecture version.
-> >+                      # On ARM v8 64-bit this property is required and must
-> >+                        be one of:
-> >+                         - "psci" (see bindings in [2])
-> >+                      # On ARM 32-bit systems this property is optional
-> >+
-> >+The nodes describing the idle states (state) can only be defined within the
-> >+idle-states node, any other configuration is considered invalid and therefore
-> >+must be ignored.
-> >+
-> >+===========================================
-> >+4 - state node
-> >+===========================================
-> >+
-> >+A state node represents an idle state description and must be defined as
-> >+follows:
-> >+
-> >+- state node
-> >+
-> >+      Description: must be child of the idle-states node
-> >+
-> >+      The state node name shall follow standard device tree naming
-> >+      rules ([5], 2.2.1 "Node names"), in particular state nodes which
-> >+      are siblings within a single common parent must be given a unique name.
-> >+
-> >+      The idle state entered by executing the wfi instruction (idle_standby
-> >+      SBSA,[3][4]) is considered standard on all ARM platforms and therefore
-> >+      must not be listed.
-> >+
-> >+      With the definitions provided above, the following list represents
-> >+      the valid properties for a state node:
-> >+
-> >+      - compatible
-> >+              Usage: Required
-> >+              Value type: <stringlist>
-> >+              Definition: Must be "arm,idle-state".
-> >+
-> >+      - local-timer-stop
-> >+              Usage: See definition
-> >+              Value type: <none>
-> >+              Definition: if present the CPU local timer control logic is
-> >+                          lost on state entry, otherwise it is retained.
-> >+
-> >+      - entry-latency-us
-> >+              Usage: Required
-> >+              Value type: <prop-encoded-array>
-> >+              Definition: u32 value representing worst case latency in
-> >+                          microseconds required to enter the idle state.
-> >+                          The exit-latency-us duration may be guaranteed
-> >+                          only after entry-latency-us has passed.
-> >+
-> >+      - exit-latency-us
-> >+              Usage: Required
-> >+              Value type: <prop-encoded-array>
-> >+              Definition: u32 value representing worst case latency
-> >+                          in microseconds required to exit the idle state.
-> >+
-> >+      - min-residency-us
-> >+              Usage: Required
-> >+              Value type: <prop-encoded-array>
-> >+              Definition: u32 value representing minimum residency duration
-> >+                          in microseconds, inclusive of preparation and
-> >+                          entry, for this idle state to be considered
-> >+                          worthwhile energy wise (refer to section 2 of
-> >+                          this document for a complete description).
-> >+
-> >+      - wakeup-latency-us:
-> >+              Usage: Optional
-> >+              Value type: <prop-encoded-array>
-> >+              Definition: u32 value representing maximum delay between the
-> >+                          signaling of a wake-up event and the CPU being
-> >+                          able to execute normal code again. If omitted,
-> >+                          this is assumed to be equal to:
-> >+
-> >+                              entry-latency-us + exit-latency-us
-> >+
-> >+                          It is important to supply this value on systems
-> >+                          where the duration of PREP phase (see diagram 1,
-> >+                          section 2) is non-neglibigle.
-> >+                          In such systems entry-latency-us + exit-latency-us
-> >+                          will exceed wakeup-latency-us by this duration.
-> >+
-> >+      In addition to the properties listed above, a state node may require
-> >+      additional properties specifics to the entry-method defined in the
-> >+      idle-states node, please refer to the entry-method bindings
-> >+      documentation for properties definitions.
-> How are the different idle-states node differenciated?
-> Say, I want to choose a different entry point function for each of these
-> node sepately.
-
-You add an idle state entry method specific parameter (as PSCI does,
-and it's part of this patch already) to each idle state and document it
-in the respective binding.
-
-> Also, not all targets may support all idle states. If we do not want to enter
-> retention on one target, while an other target might, there is no way
-> to know what the idle state node is to set up the correct entry function.
-
-What's a target ? A CPU ? Every CPU lists its idle states through the
-cpu-idle-states phandle list. If a CPU does not support an idle state it must
-not be there.
-
-Lorenzo
+On Wed, Aug 13, 2014 at 04:52:07PM +0100, Lorenzo Pieralisi wrote:
+>With the introduction of DT based idle states, CPUidle drivers for
+>ARM can now initialize idle states data through properties in the device
+>tree.
+>
+>This patch adds code to the Exynos CPUidle driver to dynamically
+>initialize idle states data through the updated device tree source
+>files.
+>
+>Cc: Chander Kashyap <k.chander@samsung.com>
+>Cc: Kukjin Kim <kgene.kim@samsung.com>
+>Cc: Tomasz Figa <t.figa@samsung.com>
+>Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>---
+> arch/arm/boot/dts/exynos4210.dtsi | 11 +++++++++++
+> arch/arm/boot/dts/exynos5250.dtsi | 11 +++++++++++
+> drivers/cpuidle/Kconfig.arm       |  1 +
+> drivers/cpuidle/cpuidle-exynos.c  | 27 ++++++++++++++++++++++++---
+> 4 files changed, 47 insertions(+), 3 deletions(-)
+>
+>diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
+>index eab7c7b..69fd1a0 100644
+>--- a/arch/arm/boot/dts/exynos4210.dtsi
+>+++ b/arch/arm/boot/dts/exynos4210.dtsi
+>@@ -48,12 +48,23 @@
+> 			device_type = "cpu";
+> 			compatible = "arm,cortex-a9";
+> 			reg = <0x900>;
+>+			cpu-idle-states = <&CLUSTER_SLEEP_0>;
+> 		};
+>
+> 		cpu@901 {
+> 			device_type = "cpu";
+> 			compatible = "arm,cortex-a9";
+> 			reg = <0x901>;
+>+			cpu-idle-states = <&CLUSTER_SLEEP_0>;
+>+		};
+>+
+>+		idle-states {
+>+			CLUSTER_SLEEP_0: cluster-sleep-0 {
+>+				compatible = "arm,idle-state";
+>+				entry-latency-us = <1000>;
+>+				exit-latency-us = <300>;
+>+				min-residency-us = <100000>;
+>+			};
+> 		};
+> 	};
+>
+>diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
+>index 492e1ef..3a758ff 100644
+>--- a/arch/arm/boot/dts/exynos5250.dtsi
+>+++ b/arch/arm/boot/dts/exynos5250.dtsi
+>@@ -63,12 +63,23 @@
+> 			compatible = "arm,cortex-a15";
+> 			reg = <0>;
+> 			clock-frequency = <1700000000>;
+>+			cpu-idle-states = <&CLUSTER_SLEEP_0>;
+> 		};
+> 		cpu@1 {
+> 			device_type = "cpu";
+> 			compatible = "arm,cortex-a15";
+> 			reg = <1>;
+> 			clock-frequency = <1700000000>;
+>+			cpu-idle-states = <&CLUSTER_SLEEP_0>;
+>+		};
+>+
+>+		idle-states {
+>+			CLUSTER_SLEEP_0: cluster-sleep-0 {
+>+				compatible = "arm,idle-state";
+>+				entry-latency-us = <1000>;
+>+				exit-latency-us = <300>;
+>+				min-residency-us = <100000>;
+>+			};
+> 		};
+> 	};
+>
+>diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+>index e339c7f..04cc229 100644
+>--- a/drivers/cpuidle/Kconfig.arm
+>+++ b/drivers/cpuidle/Kconfig.arm
+>@@ -55,6 +55,7 @@ config ARM_AT91_CPUIDLE
+> config ARM_EXYNOS_CPUIDLE
+> 	bool "Cpu Idle Driver for the Exynos processors"
+> 	depends on ARCH_EXYNOS
+>+	select DT_IDLE_STATES
+> 	help
+> 	  Select this to enable cpuidle for Exynos processors
+>
+>diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
+>index ba9b34b..6dff982 100644
+>--- a/drivers/cpuidle/cpuidle-exynos.c
+>+++ b/drivers/cpuidle/cpuidle-exynos.c
+>@@ -13,11 +13,14 @@
+> #include <linux/export.h>
+> #include <linux/module.h>
+> #include <linux/platform_device.h>
+>+#include <linux/slab.h>
+>
+> #include <asm/proc-fns.h>
+> #include <asm/suspend.h>
+> #include <asm/cpuidle.h>
+>
+>+#include "dt_idle_states.h"
+>+
+> static void (*exynos_enter_aftr)(void);
+>
+> static int exynos_enter_lowpower(struct cpuidle_device *dev,
+>@@ -58,17 +61,35 @@ static struct cpuidle_driver exynos_idle_driver = {
+>
+> static int exynos_cpuidle_probe(struct platform_device *pdev)
+> {
+>-	int ret;
+>+	int ret, i;
+>+	struct cpuidle_driver *drv = &exynos_idle_driver;
+>
+> 	exynos_enter_aftr = (void *)(pdev->dev.platform_data);
+>
+>-	ret = cpuidle_register(&exynos_idle_driver, NULL);
+>+	drv->cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
+>+	if (!drv->cpumask)
+>+		return -ENOMEM;
+drv->cpumask would not have any cpu set. I dont see it being modified
+elsewhere.
+>+
+>+	/* Start at index 1, index 0 standard WFI */
+>+	ret = dt_init_idle_driver(drv, 1);
+>+	if (ret < 0) {
+>+		dev_err(&pdev->dev, "failed to initialize idle states\n");
+>+		goto free_mem;
+>+	}
+>+
+>+	for (i = 1; i < drv->state_count; i++)
+>+		drv->states[i].enter = exynos_enter_lowpower;
+>+
+>+	ret = cpuidle_register(drv, NULL);
+> 	if (ret) {
+> 		dev_err(&pdev->dev, "failed to register cpuidle driver\n");
+>-		return ret;
+>+		goto free_mem;
+> 	}
+>
+> 	return 0;
+>+free_mem:
+>+	kfree(drv->cpumask);
+>+	return ret;
+> }
+>
+> static struct platform_driver exynos_cpuidle_driver = {
+>-- 
+>1.9.1
+>
+>
