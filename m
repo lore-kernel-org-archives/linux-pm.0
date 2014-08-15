@@ -1,169 +1,82 @@
-From: AYAN KUMAR HALDER <ayankumarh@gmail.com>
-Subject: Re: Need help understanding the logic of __cpuidle_set_driver
-Date: Fri, 15 Aug 2014 18:11:11 +0530
-Message-ID: <CAGAs2AkFvnegYmqhj7Bue50xAD1Yh3YoTbVGUviQ0jsPncxdXQ@mail.gmail.com>
-References: <CAHu9=sOwSuw5igPp0UQWJe8fwMb_vt3PPrc1A9nK4pJB5QmXDA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:43704 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbaHOMlO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Aug 2014 08:41:14 -0400
-Received: by mail-pa0-f41.google.com with SMTP id rd3so3430141pab.28
-        for <linux-pm@vger.kernel.org>; Fri, 15 Aug 2014 05:41:11 -0700 (PDT)
-In-Reply-To: <CAHu9=sOwSuw5igPp0UQWJe8fwMb_vt3PPrc1A9nK4pJB5QmXDA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Subject: [RFC v2 0/3] PM QoS: Add support for memory bandwidth constraints
+Date: Fri, 15 Aug 2014 14:52:06 +0200
+Message-ID: <1408107129-29516-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>
-Cc: kernelnewbies <kernelnewbies@kernelnewbies.org>, linux-pm@vger.kernel.org
 
-On Fri, Aug 15, 2014 at 3:50 PM, Mohammad Merajul Islam Molla
-<meraj.enigma@gmail.com> wrote:
-> Hello,
->
-> I was looking into the code of drivers/cpuidle/driver.c. I have some
-> doubts regarding the implementation of __cpuidle_set_driver function
-> when CONFIG_CPU_IDLE_MULTIPLE_DRIVERS is defined.
->
-> If CONFIG_CPU_IDLE_MULTIPLE_DRIVERS is defined, the code for
-> __cpuidle_set_driver/__cpuidle_unset_driver looks as -
->
->  39  * __cpuidle_unset_driver - unset per CPU driver variables.
->  40  * @drv: a valid pointer to a struct cpuidle_driver
->  41  *
->  42  * For each CPU in the driver's CPU mask, unset the registered
-> driver per CPU
->  43  * variable. If @drv is different from the registered driver, the
-> corresponding
->  44  * variable is not cleared.
->  45  */
->  46 static inline void __cpuidle_unset_driver(struct cpuidle_driver *drv)
->  47 {
->  48         int cpu;
->  49
->  50         for_each_cpu(cpu, drv->cpumask) {
->  51
->  52                 if (drv != __cpuidle_get_cpu_driver(cpu))
->  53                         continue;
->  54
->  55                 per_cpu(cpuidle_drivers, cpu) = NULL;
->  56         }
->  57 }
->  58
->  59 /**
->  60  * __cpuidle_set_driver - set per CPU driver variables for the given driver.
->  61  * @drv: a valid pointer to a struct cpuidle_driver
->  62  *
->  63  * For each CPU in the driver's cpumask, unset the registered driver per CPU
->  64  * to @drv.
->  65  *
->  66  * Returns 0 on success, -EBUSY if the CPUs have driver(s) already.
->  67  */
->  68 static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
->  69 {
->  70         int cpu;
->  71
->  72         for_each_cpu(cpu, drv->cpumask) {
->  73
->  74                 if (__cpuidle_get_cpu_driver(cpu)) {
->  75                         __cpuidle_unset_driver(drv);
->  76                         return -EBUSY;
->  77                 }
->  78
->  79                 per_cpu(cpuidle_drivers, cpu) = drv;
->  80         }
->  81
->  82         return 0;
->  83 }
->
-> Apparently, the comment should be - "set/register the driver per CPU
-> to @drv" instead of "unset the registered driver per CPU to @drv" in
-> case of __cpuidle_set_driver.
+Some device drivers need to sustain transfers to or from external memory at
+given fixed rates for a period of time. If we wait for the devfreq drivers to
+react to this load, the user is likely going to perceive glitches in the user
+experience.
 
-I would like to slightly differ here. As per my understanding, the
-comments given
-for the function is correct. The function __cpuidle_set_driver(drv)
-would do the following:-
+Some common scenarios that would benefit from it are display controllers
+setting a new mode, USB drivers starting isochronous transfers, camera drivers
+starting to capture and hw media codecs doing their thing.
 
-1. If the cpu has any registered idle driver which is same as @drv,
-the registered
-driver would be unset. ie "unset the registered driver per CPU to @drv"
-2. If the cpu has any registered idle driver which is different from
-@drv, do nothing
-3. If the cpu has no registered idle driver, set the idle driver to @drv
+I'm proposing adding a new PM_QOS_MEMORY_BANDWIDTH class that device drivers
+can use to register their memory bandwidth needs right when they become known,
+so the external memory clock can be set at the optimum frequency, thus
+preventing glitches.
 
-> However, regarding the logic, I have a few doubts -
->
-> 1. for each cpu in drv->cpumask, if there is already a driver
-> registered, its calling __cpuidle_unset_driver which loops over for
-> each cpu in drv->cpumask again. Isn't it unnecessary to do this nested
-> calls?
+There have been similar proposals before [0], the first main concern being that
+constraints need to refer to a global resource such as CPUs. If they referred
+to a network NIC or to a UART, there would be no way of knowing how to actually
+constrain each device because there would be a single list of requests.
 
-__cpuidle_unset_driver :- This function gets called from
-"__cpuidle_unregister_driver()" too.
-So it needs to loop over each cpu to see if its registered driver is
-same as @drv. What
-you might be trying to convey here is that instead of calling
-__cpuidle_unset_driver, we could
-have done the following:-
-static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
-{
-        int cpu;
-        struct cpuidle_driver *tmp = NULL;
-        for_each_cpu(cpu, drv->cpumask) {
+In this case, the memory bus is a global resource just like the CPUs are, and
+all requests in this class will apply to a single device driver in any
+particular system.
 
-                tmp = __cpuidle_get_cpu_driver(cpu); /* This would
-prevent nesting of loops */
-                if ( tmp != NULL ) {
-                        if ( tmp == drv )
-                              per_cpu(cpuidle_drivers, cpu) = NULL;
-                        return -EBUSY;
-                }
+The second serious concern was that constraints need to be defined in a way
+generic enough so they can be consumed in a wide array of particular systems
+without placing the burden of taking into account hw specifics in the driver of
+the memory client.
 
-                per_cpu(cpuidle_drivers, cpu) = drv;
-        }
+Here, the PM_QOS_MEMORY_BANDWIDTH constraints are specified always in kbs,
+being the amount of data that the device driver wants to see transferred per
+second. This allows for example for a camera driver to calculate the
+appropriate value based on the size of each frame and the desired FPS and,
+depending on the particular system where the camera block is used, the
+appropriate external memory driver will convert that to the bus clock frequency
+that makes sense for the hardware at hand.
 
-        return 0;
-}
+The first patch adds the new class and also a new PM_QOS_SUM class type.
 
+The second illustrates how the driver for such a memory client would request
+its memory bandwidth requirement.
 
+The third patch illustrates how an hypothetical driver for an external memory
+controller would listen for changes in the aggregated bandwidth constraint and
+would set a floor frequency rate on the appropriate clock.
 
-> 2. after calling __cpuidle_unset_driver, if drv equals already
-> registered driver, it sets per_cpu driver to null? Isn't it wrong when
-> we are trying to set to a new driver? Why do we need to unset and make
-> the driver null when we are returning EBUSY from __cpuidle_set_driver?
+Most vendor trees carry their own solution for this specific issue, so it would
+be pretty neat if mainline gained a similar mechanism so we get more power
+management goodies in the right place.
 
-My understanding is that if there is a previously registered cpuidle
-driver, returning
-EBUSY is fine. But I do share the same doubt as you have that if the previous
-registered cpuidle driver is same as the new one, then why should it
-be unset and NULLed.
+[0] https://lkml.org/lkml/2012/3/10/165
 
-> Would it be correct and cleaner if the code is written as below -
->
->  static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
->  {
->          int ret = -EBUSY;
->          int cpu;
->
->         for_each_cpu(cpu, drv->cpumask) {
->                 if (drv == __cpuidle_get_cpu_driver(cpu))    [if drv
-> is already the registered driver, do nothing]
->                          continue;
->
->                  per_cpu(cpuidle_drivers, cpu) = drv;  [if only drv !=
-> already registered driver, set per_cpu driver to drv and set ret 0]
->                  ret = 0;
->          }
->
->          return ret;     [only if all cpus already had drv as
-> registered driver, return -EBUSY. Otherwise return 0]
->  }
->
-The difference that might cause some trouble is that the timer
-broadcast notification is
-not sent while changing the cpuide drivers.
+Thanks,
 
-Regards,
-Ayan Kumar Halder
+Tomeu
+
+Tomeu Vizoso (3):
+  PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
+  drm/tegra: Request memory bandwidth for the display controller
+  memory: tegra124-emc: Add EMC driver
+
+ drivers/gpu/drm/tegra/dc.c    |  11 ++++
+ drivers/gpu/drm/tegra/drm.h   |   2 +
+ drivers/memory/Kconfig        |   8 +++
+ drivers/memory/Makefile       |   1 +
+ drivers/memory/tegra124-emc.c | 115 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_qos.h        |   5 +-
+ kernel/power/qos.c            |  27 +++++++++-
+ 7 files changed, 167 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/memory/tegra124-emc.c
+
+-- 
+1.9.3
