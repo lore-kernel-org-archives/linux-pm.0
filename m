@@ -1,43 +1,59 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 3/3][update] PM / sleep: Introduce command line
- argument for sleep state enumeration
-Date: Sat, 16 Aug 2014 10:10:07 +0200
-Message-ID: <20140816081007.GA21682@Nokia-N900>
-References: <1817539.9KW2IGGbDV@vostro.rjw.lan>
- <2242480.eT2OxdNqLH@vostro.rjw.lan>
- <20140730105529.GB12448@amd.pavel.ucw.cz>
- <3319219.i7p5TE6seQ@vostro.rjw.lan>
+Subject: Re: [PATCH] Documentation: power: swsusp: Fix script for unswapping
+Date: Sat, 16 Aug 2014 17:42:30 +0200
+Message-ID: <20140816154230.GB12400@Nokia-N900>
+References: <1399374116-12400-1-git-send-email-pali.rohar@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36990 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751248AbaHPIKN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 16 Aug 2014 04:10:13 -0400
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-doc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3319219.i7p5TE6seQ@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1399374116-12400-1-git-send-email-pali.rohar@gmail.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Pali Roh?r <pali.rohar@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Randy Dunlap <rdunlap@infradead.org>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Fri 2014-08-01 15:54:32, Rafael J. Wysocki wrote:
-> On Wednesday, July 30, 2014 12:55:29 PM Pavel Machek wrote:
-> > 
-> > > For this reason I'm considering changing the defaul behavior going forward (so
-> > > that "mem" is always present and means "the deepest sleep state available other
-> > > than hibernation"), but I don't want to do that in one go.
-> > 
-> > Actually, I don't think that's good idea, at least on PC.
-> > 
-> > The way to wake up from S3 is power button. The way to wake up from
-> > "echo freeze > state" is going to be different, right?
-> 
-> No, it isn't.  That's the point among other things.
+On Tue 2014-05-06 13:01:56, Pali Roh?r wrote:
+> System can have mmaped also character devices (e.g dri devices by X) =
+or deleted
+> files. Running cat on character devices is really bad idea (system ca=
+n hang) so
+> run cat only on regular files. Also mmaped files can have spaces in f=
+ilenames.
+>=20
+> Signed-off-by: Pali Roh=E1r <pali.rohar@gmail.com>
 
-There's difference, actually.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
->From S3, power button event is consumed.
+> ---
+>  Documentation/power/swsusp.txt |    5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/Documentation/power/swsusp.txt b/Documentation/power/sws=
+usp.txt
+> index 079160e..f732a83 100644
+> --- a/Documentation/power/swsusp.txt
+> +++ b/Documentation/power/swsusp.txt
+> @@ -220,7 +220,10 @@ Q: After resuming, system is paging heavily, lea=
+ding to very bad interactivity.
+> =20
+>  A: Try running
+> =20
+> -cat `cat /proc/[0-9]*/maps | grep / | sed 's:.* /:/:' | sort -u` > /=
+dev/null
+> +cat /proc/[0-9]*/maps | grep / | sed 's:.* /:/:' | sort -u | while r=
+ead file
+> +do
+> +  test -f "$file" && cat "$file" > /dev/null
+> +done
+> =20
+>  after resume. swapoff -a; swapon -a may also be useful.
+> =20
+> --=20
+> 1.7.9.5
 
->From freeze, after resume, "what you want to do? power off,
-suspend, hibernate" dialog appears.
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
