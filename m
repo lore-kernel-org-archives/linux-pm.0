@@ -1,41 +1,62 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH 2/3] smp: re-implement the kick_all_cpus_sync() with
- wake_up_if_idle()
-Date: Mon, 18 Aug 2014 00:12:39 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E5D3FB@SHSMSX101.ccr.corp.intel.com>
-References: <1408086085-16691-1-git-send-email-chuansheng.liu@intel.com>
- <1408086085-16691-2-git-send-email-chuansheng.liu@intel.com>
- <CALCETrUQ7x+kPYewNSUeAX5=0yVmqYWca9XCXtUbM0SNZ2ou+Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:53632 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750725AbaHRAMn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 17 Aug 2014 20:12:43 -0400
-In-Reply-To: <CALCETrUQ7x+kPYewNSUeAX5=0yVmqYWca9XCXtUbM0SNZ2ou+Q@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/3] of: Add of_match_machine helper
+Date: Sun, 17 Aug 2014 16:28:54 +0100
+Message-ID: <20140817152854.5406BC40ADD@trevor.secretlab.ca>
+References: <1407452515-2390-1-git-send-email-ttynkkynen@nvidia.com>
+	<1407452515-2390-2-git-send-email-ttynkkynen@nvidia.com>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1407452515-2390-2-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
 
-SGVsbG8gQW5keSwNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBBbmR5
-IEx1dG9taXJza2kgW21haWx0bzpsdXRvQGFtYWNhcGl0YWwubmV0XQ0KPiBTZW50OiBGcmlkYXks
-IEF1Z3VzdCAxNSwgMjAxNCAxMTo0MSBQTQ0KPiBUbzogTGl1LCBDaHVhbnNoZW5nDQo+IENjOiBQ
-ZXRlciBaaWpsc3RyYTsgRGFuaWVsIExlemNhbm87IFJhZmFlbCBKLiBXeXNvY2tpOyBJbmdvIE1v
-bG5hcjsNCj4gbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJu
-ZWwub3JnOyBMaXUsIENoYW5nY2hlbmc7DQo+IFdhbmcsIFhpYW9taW5nOyBDaGFrcmF2YXJ0eSwg
-U291dmlrIEsNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzNdIHNtcDogcmUtaW1wbGVtZW50IHRo
-ZSBraWNrX2FsbF9jcHVzX3N5bmMoKSB3aXRoDQo+IHdha2VfdXBfaWZfaWRsZSgpDQo+IA0KPiBP
-biBGcmksIEF1ZyAxNSwgMjAxNCBhdCAxMjowMSBBTSwgQ2h1YW5zaGVuZyBMaXUNCj4gPGNodWFu
-c2hlbmcubGl1QGludGVsLmNvbT4gd3JvdGU6DQo+ID4gQ3VycmVudGx5IHVzaW5nIHNtcF9jYWxs
-X2Z1bmN0aW9uKCkganVzdCB3b2tlIHVwIHRoZSBjb3JyZXNwb25kaW5nDQo+ID4gY3B1LCBidXQg
-Y2FuIG5vdCBicmVhayB0aGUgcG9sbGluZyBpZGxlIGxvb3AuDQo+ID4NCj4gPiBIZXJlIHVzaW5n
-IHRoZSBuZXcgc2NoZWQgQVBJIHdha2VfdXBfaWZfaWRsZSgpIHRvIGltcGxlbWVudCBpdC4NCj4g
-DQo+IGtpY2tfYWxsX2NwdXNfc3luYyBoYXMgb3RoZXIgY2FsbGVycywgYW5kIHRob3NlIG90aGVy
-IGNhbGxlcnMgd2FudCB0aGUNCj4gb2xkIGJlaGF2aW9yLiAgSSB0aGluayB0aGlzIHNob3VsZCBi
-ZSBhIG5ldyBmdW5jdGlvbi4NCj4gDQpZZXMsIHNlZW1zIHNvbWUgY3VycmVudCB1c2VycyBvZiBr
-aWNrX2FsbF9jcHVzX3N5bmMoKSBuZWVkIElQSSBpbmRlZWQsDQp3aWxsIHRyeSB0byBzZW5kIG91
-dCBwYXRjaCBWMiB3aXRoIG9uZSBuZXcgZnVuY3Rpb24uDQoNCg==
+On Fri, 8 Aug 2014 02:01:53 +0300, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+> Add of_match_machine function to test the device tree root for an
+> of_match array. This can be useful when testing SoC versions at runtime,
+> for example.
+> 
+> Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+>  drivers/of/base.c  | 21 +++++++++++++++++++++
+>  include/linux/of.h |  3 +++
+>  2 files changed, 24 insertions(+)
+> 
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index d8574ad..37798ea 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -977,6 +977,27 @@ struct device_node *of_find_matching_node_and_match(struct device_node *from,
+>  EXPORT_SYMBOL(of_find_matching_node_and_match);
+>  
+>  /**
+> + * of_match_machine - Tell if root of device tree has a matching of_match struct
+> + *	@matches:	array of of device match structures to search in
+> + *
+> + *	Returns the result of of_match_node for the root node.
+> + */
+> +const struct of_device_id *of_match_machine(const struct of_device_id *matches)
+> +{
+> +	const struct of_device_id *match;
+> +	struct device_node *root;
+> +
+> +	root = of_find_node_by_path("/");
+> +	if (!root)
+> +		return NULL;
+> +
+> +	match = of_match_node(matches, root);
+> +	of_node_put(root);
+> +	return match;
+> +}
+> +EXPORT_SYMBOL(of_match_machine);
+
+Too wordy...
+
+	return of_match_node(matches, of_allnodes);
+
+:-)
+
+It could be a static inline, but I don't think it's even worth having a
+helper. The callers could just open code the above.
+
+g.
