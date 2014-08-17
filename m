@@ -1,44 +1,85 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 3/3][update] PM / sleep: Introduce command line argument
- for sleep state enumeration
-Date: Sun, 17 Aug 2014 06:16:57 +0200
-Message-ID: <CAJZ5v0gQsjjfPwksuhmeL062es7ge-4CPAJkOP1ft5Ka0L4w=Q@mail.gmail.com>
-References: <1817539.9KW2IGGbDV@vostro.rjw.lan>
-	<2242480.eT2OxdNqLH@vostro.rjw.lan>
-	<20140730105529.GB12448@amd.pavel.ucw.cz>
-	<3319219.i7p5TE6seQ@vostro.rjw.lan>
-	<20140816081007.GA21682@Nokia-N900>
-Mime-Version: 1.0
+From: Christoph Lameter <cl@linux.com>
+Subject: [PATCH 07/35] [PATCH 07/36] drivers/cpuidle: Replace __get_cpu_var uses for address
+ calculation
+Date: Sun, 17 Aug 2014 12:30:30 -0500
+Message-ID: <20140817173034.022788940@linux.com>
+References: <20140817173023.439660246@linux.com>
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140816081007.GA21682@Nokia-N900>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:39492 "EHLO
+	qmta10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752158AbaHQRg4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Aug 2014 13:36:56 -0400
+Content-Disposition: inline; filename=0007-drivers-cpuidle-Replace-__get_cpu_var-uses-for-addre.patch
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: akpm@linuxfoundation.org, rostedt@goodmis.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On Sat, Aug 16, 2014 at 10:10 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Fri 2014-08-01 15:54:32, Rafael J. Wysocki wrote:
->> On Wednesday, July 30, 2014 12:55:29 PM Pavel Machek wrote:
->> >
->> > > For this reason I'm considering changing the defaul behavior going forward (so
->> > > that "mem" is always present and means "the deepest sleep state available other
->> > > than hibernation"), but I don't want to do that in one go.
->> >
->> > Actually, I don't think that's good idea, at least on PC.
->> >
->> > The way to wake up from S3 is power button. The way to wake up from
->> > "echo freeze > state" is going to be different, right?
->>
->> No, it isn't.  That's the point among other things.
->
-> There's difference, actually.
->
-> From S3, power button event is consumed.
->
-> From freeze, after resume, "what you want to do? power off,
-> suspend, hibernate" dialog appears.
+All of these are for address calculation. Replace with
+this_cpu_ptr().
 
-In 3.17-rc1 it shouldn't.  Have you tested this one?
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+[cpufreq changes]
+Signed-off-by: Christoph Lameter <cl@linux.com>
+---
+ drivers/cpuidle/governors/ladder.c | 4 ++--
+ drivers/cpuidle/governors/menu.c   | 6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-Rafael
+Index: linux/drivers/cpuidle/governors/ladder.c
+===================================================================
+--- linux.orig/drivers/cpuidle/governors/ladder.c
++++ linux/drivers/cpuidle/governors/ladder.c
+@@ -66,7 +66,7 @@ static inline void ladder_do_selection(s
+ static int ladder_select_state(struct cpuidle_driver *drv,
+ 				struct cpuidle_device *dev)
+ {
+-	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
++	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+ 	struct ladder_device_state *last_state;
+ 	int last_residency, last_idx = ldev->last_state_idx;
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+@@ -170,7 +170,7 @@ static int ladder_enable_device(struct c
+  */
+ static void ladder_reflect(struct cpuidle_device *dev, int index)
+ {
+-	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
++	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+ 	if (index > 0)
+ 		ldev->last_state_idx = index;
+ }
+Index: linux/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux.orig/drivers/cpuidle/governors/menu.c
++++ linux/drivers/cpuidle/governors/menu.c
+@@ -284,7 +284,7 @@ again:
+  */
+ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+-	struct menu_device *data = &__get_cpu_var(menu_devices);
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+ 	int i;
+ 	unsigned int interactivity_req;
+@@ -369,7 +369,7 @@ static int menu_select(struct cpuidle_dr
+  */
+ static void menu_reflect(struct cpuidle_device *dev, int index)
+ {
+-	struct menu_device *data = &__get_cpu_var(menu_devices);
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	data->last_state_idx = index;
+ 	if (index >= 0)
+ 		data->needs_update = 1;
+@@ -382,7 +382,7 @@ static void menu_reflect(struct cpuidle_
+  */
+ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+-	struct menu_device *data = &__get_cpu_var(menu_devices);
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	int last_idx = data->last_state_idx;
+ 	struct cpuidle_state *target = &drv->states[last_idx];
+ 	unsigned int measured_us;
+
