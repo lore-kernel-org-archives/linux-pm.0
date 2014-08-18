@@ -1,40 +1,50 @@
-From: "Kim, Milo" <Milo.Kim@ti.com>
-Subject: RE: [PATCH] lp8788-charger: fix a missing coma in stime[]
-Date: Mon, 18 Aug 2014 06:21:32 +0000
-Message-ID: <A874F61F95741C4A9BA573A70FE3998FBC465A35@DQHE06.ent.ti.com>
-References: <1408172065.3164.1.camel@ubuntu>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq_opp: Fixed the order of argument for kcalloc.
+Date: Mon, 18 Aug 2014 13:00:30 +0530
+Message-ID: <CAKohpomeNmNA+7biiVqPWEx4UeiBj_GR2ccPVDpQADFzfs+XAw@mail.gmail.com>
+References: <1408180966-15493-1-git-send-email-moon.linux@yahoo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:51674 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751013AbaHRGWI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 18 Aug 2014 02:22:08 -0400
-In-Reply-To: <1408172065.3164.1.camel@ubuntu>
-Content-Language: en-US
+Received: from mail-oa0-f46.google.com ([209.85.219.46]:34522 "EHLO
+	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbaHRHaa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Aug 2014 03:30:30 -0400
+Received: by mail-oa0-f46.google.com with SMTP id m1so3724932oag.19
+        for <linux-pm@vger.kernel.org>; Mon, 18 Aug 2014 00:30:30 -0700 (PDT)
+In-Reply-To: <1408180966-15493-1-git-send-email-moon.linux@yahoo.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Maks Naumov <maksqwe1@ukr.net>
-Cc: "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Anand Moon <moon.linux@yahoo.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-SGkgTWFrcywNCg0KVGhhbmtzIQ0KQ291bGQgeW91IGxvb3AgbWFpbnRhaW5lcnMgb2YgdGhlIHBv
-d2VyIHN1cHBseSBjbGFzcyBkcml2ZXIgd2l0aCBtYWlsaW5nIGxpc3QgbmV4dCB0aW1lPw0KDQpB
-Y2tlZC1ieTogTWlsbyBLaW0gPG1pbG8ua2ltQHRpLmNvbT4NCg0KPiAtLS0tLU9yaWdpbmFsIE1l
-c3NhZ2UtLS0tLQ0KPiBGcm9tOiBNYWtzIE5hdW1vdiBbbWFpbHRvOm1ha3Nxd2UxQHVrci5uZXRd
-DQo+IFNlbnQ6IFNhdHVyZGF5LCBBdWd1c3QgMTYsIDIwMTQgMzo1NCBQTQ0KPiBUbzogS2ltLCBN
-aWxvDQo+IFN1YmplY3Q6IFtQQVRDSF0gbHA4Nzg4LWNoYXJnZXI6IGZpeCBhIG1pc3NpbmcgY29t
-YSBpbiBzdGltZVtdDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBNYWtzIE5hdW1vdiA8bWFrc3F3ZTFA
-dWtyLm5ldD4NCj4gLS0tDQo+ICBkcml2ZXJzL3Bvd2VyL2xwODc4OC1jaGFyZ2VyLmMgfCAyICst
-DQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkNCj4gDQo+
-IGRpZmYgLS1naXQgYS9kcml2ZXJzL3Bvd2VyL2xwODc4OC1jaGFyZ2VyLmMgYi9kcml2ZXJzL3Bv
-d2VyL2xwODc4OC1jaGFyZ2VyLmMNCj4gaW5kZXggZWQ0OWI1MC4uNTI1NzhkOTggMTAwNjQ0DQo+
-IC0tLSBhL2RyaXZlcnMvcG93ZXIvbHA4Nzg4LWNoYXJnZXIuYw0KPiArKysgYi9kcml2ZXJzL3Bv
-d2VyL2xwODc4OC1jaGFyZ2VyLmMNCj4gQEAgLTY0MCw3ICs2NDAsNyBAQCBzdGF0aWMgc3NpemVf
-dCBscDg3ODhfc2hvd19lb2NfdGltZShzdHJ1Y3QgZGV2aWNlDQo+ICpkZXYsDQo+ICB7DQo+ICAJ
-c3RydWN0IGxwODc4OF9jaGFyZ2VyICpwY2hnID0gZGV2X2dldF9kcnZkYXRhKGRldik7DQo+ICAJ
-Y2hhciAqc3RpbWVbXSA9IHsgIjQwMG1zIiwgIjVtaW4iLCAiMTBtaW4iLCAiMTVtaW4iLA0KPiAt
-CQkJIjIwbWluIiwgIjI1bWluIiwgIjMwbWluIiAiTm8gdGltZW91dCIgfTsNCj4gKwkJCSIyMG1p
-biIsICIyNW1pbiIsICIzMG1pbiIsICJObyB0aW1lb3V0IiB9Ow0KPiAgCXU4IHZhbDsNCj4gDQo+
-ICAJbHA4Nzg4X3JlYWRfYnl0ZShwY2hnLT5scCwgTFA4Nzg4X0NIR19FT0MsICZ2YWwpOw0KPiAt
-LQ0KPiAxLjkuMQ0KPiANCj4gDQoNCg==
+On 16 August 2014 14:52, Anand Moon <moon.linux@yahoo.com> wrote:
+> These changes fix the argument to the kcalloc
+>         @n: number of elements.
+>         @size: element size.
+>         @flags: the type of memory to allocate (see kmalloc).
+>
+>         void *kcalloc(size_t n, size_t size, gfp_t flags)
+>
+> Signed-off-by: Anand Moon <moon.linux@yahoo.com>
+> ---
+>  drivers/cpufreq/cpufreq_opp.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq_opp.c b/drivers/cpufreq/cpufreq_opp.c
+> index f7a32d2..773bcde 100644
+> --- a/drivers/cpufreq/cpufreq_opp.c
+> +++ b/drivers/cpufreq/cpufreq_opp.c
+> @@ -60,7 +60,7 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+>                 goto out;
+>         }
+>
+> -       freq_table = kcalloc(sizeof(*freq_table), (max_opps + 1), GFP_ATOMIC);
+> +       freq_table = kcalloc((max_opps + 1), sizeof(*freq_table), GFP_ATOMIC);
+>         if (!freq_table) {
+>                 ret = -ENOMEM;
+>                 goto out;
+
+Fixes: 3c5445c cpufreq: OPP: Avoid sleeping while atomic
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
