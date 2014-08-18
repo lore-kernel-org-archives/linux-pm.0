@@ -1,92 +1,106 @@
 From: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v2 04/16] clk: tegra: Add library for the DFLL clock source
- (open-loop mode)
-Date: Mon, 18 Aug 2014 14:05:55 +0800
-Message-ID: <53F197C3.5010002@nvidia.com>
-References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com> <1405957142-19416-5-git-send-email-ttynkkynen@nvidia.com>
+Subject: Re: [PATCH v2 05/16] clk: tegra: Add closed loop support for the
+ DFLL
+Date: Mon, 18 Aug 2014 14:08:08 +0800
+Message-ID: <53F19848.7020303@nvidia.com>
+References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com> <1405957142-19416-6-git-send-email-ttynkkynen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1405957142-19416-5-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1405957142-19416-6-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
 On 07/21/2014 11:38 PM, Tuomas Tynkkynen wrote:
-> Add shared code to support the Tegra DFLL clocksource in open-loop
-> mode. This root clocksource is present on the Tegra124 SoCs. The
-> DFLL is the intended primary clock source for the fast CPU cluster.
+> With closed loop support, the clock rate of the DFLL can be adjusted.
 >
-> This code is very closely based on a patch by Paul Walmsley from
-> December (http://comments.gmane.org/gmane.linux.ports.tegra/15273),
-> which in turn comes from the internal driver by originally created
-> by Aleksandr Frid <afrid-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>.
+> The oscillator itself in the DFLL is a free-running oscillator whose
+> rate is directly determined the supply voltage. However, the DFLL
+> module contains logic to compare the DFLL output rate to a fixed
+> reference clock (51 MHz) and make a decision to either lower or raise
+> the DFLL supply voltage. The DFLL module can then autonomously change
+> the supply voltage by communicating with an off-chip PMIC via either I2C
+> or PWM signals. This driver currently supports only I2C.
 >
-> Subsequent patches will add support for closed loop mode and drivers
-> for the Tegra124 fast CPU cluster DFLL devices, which rely on this
-> code.
->
-> Signed-off-by: Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 > Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 > ---
 > v2 changes:
->      - minor, moved the devm_regulator_get here
+>      - query the various properties required for I2C mode from the
+>        regulator framework
 >
->   drivers/clk/tegra/Makefile   |    1 +
->   drivers/clk/tegra/clk-dfll.c | 1085 ++++++++++++++++++++++++++++++++++++++++++
->   drivers/clk/tegra/clk-dfll.h |   55 +++
->   3 files changed, 1141 insertions(+)
->   create mode 100644 drivers/clk/tegra/clk-dfll.c
->   create mode 100644 drivers/clk/tegra/clk-dfll.h
-...
-> --- /dev/null
+>   drivers/clk/tegra/clk-dfll.c | 656 ++++++++++++++++++++++++++++++++++++++++++-
+>   1 file changed, 653 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/clk/tegra/clk-dfll.c b/drivers/clk/tegra/clk-dfll.c
+> index d83e859..0d4b2dd 100644
+> --- a/drivers/clk/tegra/clk-dfll.c
 > +++ b/drivers/clk/tegra/clk-dfll.c
+> @@ -205,12 +205,16 @@
 ...
-> +
-> +/*
-> + * Output clock scaler helpers
-> + */
 > +
 > +/**
-> + * dfll_scale_dvco_rate - calculate scaled rate from the DVCO rate
-> + * @scale_bits: clock scaler value (bits in the DFLL_FREQ_REQ_SCALE field)
-> + * @dvco_rate: the DVCO rate
+> + * dfll_calculate_rate_request - calculate DFLL parameters for a given rate
+> + * @td: DFLL instance
+> + * @req: DFLL-rate-request structure
+> + * @rate: the desired DFLL rate
 > + *
-> + * Apply the same scaling formula that the DFLL hardware uses to scale
-> + * the DVCO rate.
+> + * Populate the DFLL-rate-request record @req fields with the scale_bits
+> + * and mult_bits fields, based on the target input rate. Returns 0 upon
+> + * success, or -EINVAL if the requested rate in req->rate is too high
+> + * or low for the DFLL to generate.
 > + */
-> +static unsigned long dfll_scale_dvco_rate(int scale_bits,
-> +					  unsigned long dvco_rate)
+> +static int dfll_calculate_rate_request(struct tegra_dfll *td,
+> +				       struct dfll_rate_req *req,
+> +				       unsigned long rate)
 > +{
-> +	return (u64)dvco_rate * (scale_bits + 1) / DFLL_FREQ_REQ_SCALE_MAX;
-> +}
-...
-> +static u64 dfll_read_monitor_rate(struct tegra_dfll *td)
-> +{
-> +	u32 v, s;
-> +	u64 pre_scaler_rate, post_scaler_rate;
+> +	u32 val;
 > +
-> +	if (!dfll_is_running(td))
-> +		return 0;
+> +	/*
+> +	 * If requested rate is below the minimum DVCO rate, active the scaler.
+> +	 * In the future the DVCO minimum voltage should be selected based on
+> +	 * chip temperature and the actual minimum rate should be calibrated
+> +	 * at runtime.
+> +	 */
+> +	req->scale_bits = DFLL_FREQ_REQ_SCALE_MAX - 1;
+> +	if (rate < td->dvco_rate_min) {
+> +		int scale;
 > +
-> +	v = dfll_readl(td, DFLL_MONITOR_DATA);
-> +	v = (v & DFLL_MONITOR_DATA_VAL_MASK) >> DFLL_MONITOR_DATA_VAL_SHIFT;
-> +	pre_scaler_rate = dfll_calc_monitored_rate(v, td->ref_rate);
+> +		scale = DIV_ROUND_CLOSEST(rate / 1000 * DFLL_FREQ_REQ_SCALE_MAX,
+> +					  td->dvco_rate_min / 1000);
+> +		if (!scale) {
+> +			dev_err(td->dev, "%s: Rate %lu is too low\n",
+> +				__func__, rate);
+> +			return -EINVAL;
+> +		}
+> +		req->scale_bits = scale - 1;
+> +		rate = td->dvco_rate_min;
+> +	}
 > +
-> +	s = dfll_readl(td, DFLL_FREQ_REQ);
-> +	s = (s & DFLL_FREQ_REQ_SCALE_MASK) >> DFLL_FREQ_REQ_SCALE_SHIFT;
-> +	post_scaler_rate = dfll_scale_dvco_rate(pre_scaler_rate, s);
-Should be dfll_scale_dvco_rate(s, pre_scaler_rate);
+> +	/* Convert requested rate into frequency request and scale settings */
+> +	val = DVCO_RATE_TO_MULT(rate, td->ref_rate);
+> +	if (val > FREQ_MAX) {
+> +		dev_err(td->dev, "%s: Rate %lu is above dfll range\n",
+> +			__func__, rate);
+> +		return -EINVAL;
+> +	}
+> +	req->mult_bits = val;
+> +	req->dvco_target_rate = MULT_TO_DVCO_RATE(req->mult_bits, td->ref_rate);
+> +	req->rate = dfll_scale_dvco_rate(req->dvco_target_rate,
+> +					 req->scale_bits);
+Should be dfll_scale_dvco_rate(req->scale_bits, req->dvco_target_rate);
 
 Thanks,
 Vince
 
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> +	req->lut_index = find_lut_index_for_rate(td, req->dvco_target_rate);
+> +	if (req->lut_index < 0)
+> +		return req->lut_index;
+> +
+> +	return 0;
+> +}
+> +
