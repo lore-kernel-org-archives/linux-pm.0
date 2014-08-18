@@ -1,7 +1,7 @@
 From: Kukjin Kim <kgene.kim@samsung.com>
 Subject: Re: [PATCH] cpuidle: big.LITTLE: add Exynos5800 compatible string
-Date: Mon, 18 Aug 2014 11:29:27 -0500
-Message-ID: <53F229E7.4070604@samsung.com>
+Date: Mon, 18 Aug 2014 11:36:16 -0500
+Message-ID: <53F22B80.3050205@samsung.com>
 References: <1407888665-24603-1-git-send-email-khilman@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; Format="flowed"
