@@ -1,77 +1,74 @@
-From: "Du, ChangbinX" <changbinx.du@intel.com>
-Subject: RE: [BUG]  usb_dev_resume returns -113 due to work items queued by
- usb on pm_wq is not executed before suspending.
-Date: Mon, 18 Aug 2014 11:54:26 +0000
-Message-ID: <0C18FE92A7765D4EB9EE5D38D86A563A01BA7FD0@SHSMSX103.ccr.corp.intel.com>
-References: <0C18FE92A7765D4EB9EE5D38D86A563A01BA6392@SHSMSX103.ccr.corp.intel.com>
- <Pine.LNX.4.44L0.1408151018410.1144-100000@iolanthe.rowland.org>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH 1/2] PM / devfreq: Export helper functions for drivers
+Date: Mon, 18 Aug 2014 14:15:48 +0100
+Message-ID: <9hhsikuey63.fsf@arm.com>
+References: <2126088679.390471407886644188.JavaMail.weblogic@epmlwas02a>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:50577 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750712AbaHRLyc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Aug 2014 07:54:32 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1408151018410.1144-100000@iolanthe.rowland.org>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <2126088679.390471407886644188.JavaMail.weblogic@epmlwas02a>
+	(=?utf-8?B?Iu2VqOuqheyjvCIncw==?= message of "Tue, 12 Aug 2014 23:37:25
+ +0000 (GMT)")
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: "Hernandez, Carlos" <ceh@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "orjan.eide@arm.com" <orjan.eide@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, =?utf-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Nyman, Mathias" <mathias.nyman@intel.com>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "Wu, Hao" <hao.wu@intel.com>
 
-> On Fri, 15 Aug 2014, Du, ChangbinX wrote:
-> > If my analysis is correct, could you share your ideas for this issue?
-> 
-> Hasn't this already been fixed?  See commit d6236f6d1d88 (xhci: Fix runtime
-> suspended xhci from blocking system suspend).
-> 
-> Alan Stern
+=ED=95=A8=EB=AA=85=EC=A3=BC <myungjoo.ham@samsung.com> writes:
 
-Hi, Stern,
-These are two different issues. Commit d6236f6d1d88 fixes issue that xhci runtime
-pm logical blocks system suspend. But the issue we are encountering is usb device
-resuming fail and lead to device reset.
+>> ------- Original Message -------
+>> Sender : Hernandez, Carlos<ceh@ti.com>
+>> Date : 2014-08-12 22:49 (GMT+09:00)
+>> Title : RE: [PATCH 1/2] PM / devfreq: Export helper functions for dr=
+ivers
+>>=20
+>> Acked-By: Carlos Hernandez=20
+>>=20
+>> -----Original Message-----
+>> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@=
+vger.kernel.org] On Behalf Of Punit Agrawal
+>> Sent: Friday, July 18, 2014 10:10 AM
+>> To: linux-pm@vger.kernel.org; linux-samsung-soc@vger.kernel.org
+>> Cc: orjan.eide@arm.com; linux-kernel@vger.kernel.org; linux-arm-kern=
+el@lists.infradead.org; MyungJoo Ham; Kyungmin Park
+>> Subject: [PATCH 1/2] PM / devfreq: Export helper functions for drive=
+rs
+>>=20
+>> From: =C3=98rjan Eide=20
+>>=20
+>> These functions are indended for use by drivers and should be availa=
+ble also when the driver is built as a module.>=20
+>>=20
+>> Cc: MyungJoo Ham=20
+>> Cc: Kyungmin Park=20
+>> Signed-off-by: =C3=98rjan Eide=20
+>
+> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+>
+> There will be some modifications to this patch for consistency with
+> other pending patches, but please don't worry about them. I'll handle
+> them while merging this.
 
-This issue can be reproduced by below steps:
-1) Plug a usb device to usb3 host, and make sure this device can enter runtime
-  suspend state.
-2) Wait HCD entering runtime suspend state.( xhci_suspend() will be called)
-3) Make system starts system suspending. On this step, PM core freeze threads and
-  resume hcd & the usb device to runtime active state(xhci_resume() will be called, 
-  and roothub resuming work item is queued). Then calls the suspend callbacks of devices'.
-4) We force system suspending process aborted (by modifying code) just after the usb
-  Device suspend callback is invoked.
-5) Then PM core will call resume callback of the usb device to recovery. On this step
-  usb_dev_resume() invokes and it return -113 error. Because the can_submit flag of
-  root hub is 0. Root hub resuming work item is still pending.
+Great! Thanks MyungJoo.
 
-The sequence is:
-xhci_suspend()						--->  host runtime suspend
-PM: Syncing filesystems ... done.
-PM: Preparing system for mem sleep
-Freezing user space processes
-xhci_resume()						---> resume to runtime active, work item queued , 
-									   but the roothub is not resumed(can_submit=0).
-PM: Entering mem sleep
-...									---> invoke device suspend callbacks
-1-1:1.0: device suspending
-...
-PM: Some devices failed to suspend		---> suspending process aborted and starts recovery
-....									---> call resuming callbacks for suspended devices
-1-1:1.0: usb_dev_resume() -> usb_resume -> 
-  usb_resume_both()->generic_resume()->
-  usb_port_resume()->hub_port_status()->
-  usb_control_msg()->usb_submit_urb()->
-  usb_hcd_link_urb_to_ep()
-
-int usb_hcd_link_urb_to_ep(struct usb_hcd *hcd, struct urb *urb)
-{
-...
-	if (unlikely(!urb->dev->can_submit)) {
-		rc = -EHOSTUNREACH;	  // -113
-		goto done;
-	}
-...
-}
-
+>
+>
+> Cheers,
+> MyungJoo.
+>
+>> ---
+>> drivers/devfreq/devfreq.c |    3 +++
+>> 1 file changed, 3 insertions(+)
+>
+>
+>
+> --
+> MyungJoo Ham (=ED=95=A8=EB=AA=85=EC=A3=BC), PHD
+> Frontier CS Lab, Software Center
+> Samsung Electronics
+> Cell: +82-10-6714-2858--
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
