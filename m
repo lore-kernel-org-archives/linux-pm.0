@@ -1,48 +1,77 @@
-From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Subject: Re: [PATCH 1/3] of: Add of_match_machine helper
-Date: Mon, 18 Aug 2014 13:10:13 +0300
-Message-ID: <53F1D105.1070107@nvidia.com>
-References: <1407452515-2390-1-git-send-email-ttynkkynen@nvidia.com>	<1407452515-2390-2-git-send-email-ttynkkynen@nvidia.com>
- <20140817152854.5406BC40ADD@trevor.secretlab.ca>
+From: "Du, ChangbinX" <changbinx.du@intel.com>
+Subject: RE: [BUG]  usb_dev_resume returns -113 due to work items queued by
+ usb on pm_wq is not executed before suspending.
+Date: Mon, 18 Aug 2014 11:54:26 +0000
+Message-ID: <0C18FE92A7765D4EB9EE5D38D86A563A01BA7FD0@SHSMSX103.ccr.corp.intel.com>
+References: <0C18FE92A7765D4EB9EE5D38D86A563A01BA6392@SHSMSX103.ccr.corp.intel.com>
+ <Pine.LNX.4.44L0.1408151018410.1144-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140817152854.5406BC40ADD@trevor.secretlab.ca>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Grant Likely <grant.likely@linaro.org>
-Cc: devicetree@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J.
- Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, linux-tegra@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:50577 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750712AbaHRLyc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Aug 2014 07:54:32 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1408151018410.1144-100000@iolanthe.rowland.org>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Nyman, Mathias" <mathias.nyman@intel.com>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "Wu, Hao" <hao.wu@intel.com>
 
-On 17/08/14 18:28, Grant Likely wrote:
-> On Fri, 8 Aug 2014 02:01:53 +0300, Tuomas Tynkkynen <ttynkkynen@nvidia.com> wrote:
-[...]
->> +EXPORT_SYMBOL(of_match_machine);
+> On Fri, 15 Aug 2014, Du, ChangbinX wrote:
+> > If my analysis is correct, could you share your ideas for this issue?
 > 
-> Too wordy...
+> Hasn't this already been fixed?  See commit d6236f6d1d88 (xhci: Fix runtime
+> suspended xhci from blocking system suspend).
 > 
-> 	return of_match_node(matches, of_allnodes);
-> 
-> :-)
-> 
-> It could be a static inline, but I don't think it's even worth having a
-> helper. The callers could just open code the above.
-> 
+> Alan Stern
 
-Do you mean all the drivers should be referring to of_allnodes directly?
-I see that it's indeed exported, but to me that sounds like relying too
-much on an implementation detail. In fact, Documentation/devicetree/todo.txt
-even seems to have a TODO entry for its removal ("Remove of_allnodes list
-and iterate using list of child nodes alone").
+Hi, Stern,
+These are two different issues. Commit d6236f6d1d88 fixes issue that xhci runtime
+pm logical blocks system suspend. But the issue we are encountering is usb device
+resuming fail and lead to device reset.
 
--- 
-nvpublic
+This issue can be reproduced by below steps:
+1) Plug a usb device to usb3 host, and make sure this device can enter runtime
+  suspend state.
+2) Wait HCD entering runtime suspend state.( xhci_suspend() will be called)
+3) Make system starts system suspending. On this step, PM core freeze threads and
+  resume hcd & the usb device to runtime active state(xhci_resume() will be called, 
+  and roothub resuming work item is queued). Then calls the suspend callbacks of devices'.
+4) We force system suspending process aborted (by modifying code) just after the usb
+  Device suspend callback is invoked.
+5) Then PM core will call resume callback of the usb device to recovery. On this step
+  usb_dev_resume() invokes and it return -113 error. Because the can_submit flag of
+  root hub is 0. Root hub resuming work item is still pending.
+
+The sequence is:
+xhci_suspend()						--->  host runtime suspend
+PM: Syncing filesystems ... done.
+PM: Preparing system for mem sleep
+Freezing user space processes
+xhci_resume()						---> resume to runtime active, work item queued , 
+									   but the roothub is not resumed(can_submit=0).
+PM: Entering mem sleep
+...									---> invoke device suspend callbacks
+1-1:1.0: device suspending
+...
+PM: Some devices failed to suspend		---> suspending process aborted and starts recovery
+....									---> call resuming callbacks for suspended devices
+1-1:1.0: usb_dev_resume() -> usb_resume -> 
+  usb_resume_both()->generic_resume()->
+  usb_port_resume()->hub_port_status()->
+  usb_control_msg()->usb_submit_urb()->
+  usb_hcd_link_urb_to_ep()
+
+int usb_hcd_link_urb_to_ep(struct usb_hcd *hcd, struct urb *urb)
+{
+...
+	if (unlikely(!urb->dev->can_submit)) {
+		rc = -EHOSTUNREACH;	  // -113
+		goto done;
+	}
+...
+}
+
