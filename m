@@ -1,106 +1,40 @@
-From: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v2 05/16] clk: tegra: Add closed loop support for the
- DFLL
-Date: Mon, 18 Aug 2014 14:08:08 +0800
-Message-ID: <53F19848.7020303@nvidia.com>
-References: <1405957142-19416-1-git-send-email-ttynkkynen@nvidia.com> <1405957142-19416-6-git-send-email-ttynkkynen@nvidia.com>
+From: "Kim, Milo" <Milo.Kim@ti.com>
+Subject: RE: [PATCH] lp8788-charger: fix a missing coma in stime[]
+Date: Mon, 18 Aug 2014 06:21:32 +0000
+Message-ID: <A874F61F95741C4A9BA573A70FE3998FBC465A35@DQHE06.ent.ti.com>
+References: <1408172065.3164.1.camel@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1405957142-19416-6-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:51674 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751013AbaHRGWI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 18 Aug 2014 02:22:08 -0400
+In-Reply-To: <1408172065.3164.1.camel@ubuntu>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Maks Naumov <maksqwe1@ukr.net>
+Cc: "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi,
-
-On 07/21/2014 11:38 PM, Tuomas Tynkkynen wrote:
-> With closed loop support, the clock rate of the DFLL can be adjusted.
->
-> The oscillator itself in the DFLL is a free-running oscillator whose
-> rate is directly determined the supply voltage. However, the DFLL
-> module contains logic to compare the DFLL output rate to a fixed
-> reference clock (51 MHz) and make a decision to either lower or raise
-> the DFLL supply voltage. The DFLL module can then autonomously change
-> the supply voltage by communicating with an off-chip PMIC via either I2C
-> or PWM signals. This driver currently supports only I2C.
->
-> Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> ---
-> v2 changes:
->      - query the various properties required for I2C mode from the
->        regulator framework
->
->   drivers/clk/tegra/clk-dfll.c | 656 ++++++++++++++++++++++++++++++++++++++++++-
->   1 file changed, 653 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/clk/tegra/clk-dfll.c b/drivers/clk/tegra/clk-dfll.c
-> index d83e859..0d4b2dd 100644
-> --- a/drivers/clk/tegra/clk-dfll.c
-> +++ b/drivers/clk/tegra/clk-dfll.c
-> @@ -205,12 +205,16 @@
-...
-> +
-> +/**
-> + * dfll_calculate_rate_request - calculate DFLL parameters for a given rate
-> + * @td: DFLL instance
-> + * @req: DFLL-rate-request structure
-> + * @rate: the desired DFLL rate
-> + *
-> + * Populate the DFLL-rate-request record @req fields with the scale_bits
-> + * and mult_bits fields, based on the target input rate. Returns 0 upon
-> + * success, or -EINVAL if the requested rate in req->rate is too high
-> + * or low for the DFLL to generate.
-> + */
-> +static int dfll_calculate_rate_request(struct tegra_dfll *td,
-> +				       struct dfll_rate_req *req,
-> +				       unsigned long rate)
-> +{
-> +	u32 val;
-> +
-> +	/*
-> +	 * If requested rate is below the minimum DVCO rate, active the scaler.
-> +	 * In the future the DVCO minimum voltage should be selected based on
-> +	 * chip temperature and the actual minimum rate should be calibrated
-> +	 * at runtime.
-> +	 */
-> +	req->scale_bits = DFLL_FREQ_REQ_SCALE_MAX - 1;
-> +	if (rate < td->dvco_rate_min) {
-> +		int scale;
-> +
-> +		scale = DIV_ROUND_CLOSEST(rate / 1000 * DFLL_FREQ_REQ_SCALE_MAX,
-> +					  td->dvco_rate_min / 1000);
-> +		if (!scale) {
-> +			dev_err(td->dev, "%s: Rate %lu is too low\n",
-> +				__func__, rate);
-> +			return -EINVAL;
-> +		}
-> +		req->scale_bits = scale - 1;
-> +		rate = td->dvco_rate_min;
-> +	}
-> +
-> +	/* Convert requested rate into frequency request and scale settings */
-> +	val = DVCO_RATE_TO_MULT(rate, td->ref_rate);
-> +	if (val > FREQ_MAX) {
-> +		dev_err(td->dev, "%s: Rate %lu is above dfll range\n",
-> +			__func__, rate);
-> +		return -EINVAL;
-> +	}
-> +	req->mult_bits = val;
-> +	req->dvco_target_rate = MULT_TO_DVCO_RATE(req->mult_bits, td->ref_rate);
-> +	req->rate = dfll_scale_dvco_rate(req->dvco_target_rate,
-> +					 req->scale_bits);
-Should be dfll_scale_dvco_rate(req->scale_bits, req->dvco_target_rate);
-
-Thanks,
-Vince
-
-> +	req->lut_index = find_lut_index_for_rate(td, req->dvco_target_rate);
-> +	if (req->lut_index < 0)
-> +		return req->lut_index;
-> +
-> +	return 0;
-> +}
-> +
+SGkgTWFrcywNCg0KVGhhbmtzIQ0KQ291bGQgeW91IGxvb3AgbWFpbnRhaW5lcnMgb2YgdGhlIHBv
+d2VyIHN1cHBseSBjbGFzcyBkcml2ZXIgd2l0aCBtYWlsaW5nIGxpc3QgbmV4dCB0aW1lPw0KDQpB
+Y2tlZC1ieTogTWlsbyBLaW0gPG1pbG8ua2ltQHRpLmNvbT4NCg0KPiAtLS0tLU9yaWdpbmFsIE1l
+c3NhZ2UtLS0tLQ0KPiBGcm9tOiBNYWtzIE5hdW1vdiBbbWFpbHRvOm1ha3Nxd2UxQHVrci5uZXRd
+DQo+IFNlbnQ6IFNhdHVyZGF5LCBBdWd1c3QgMTYsIDIwMTQgMzo1NCBQTQ0KPiBUbzogS2ltLCBN
+aWxvDQo+IFN1YmplY3Q6IFtQQVRDSF0gbHA4Nzg4LWNoYXJnZXI6IGZpeCBhIG1pc3NpbmcgY29t
+YSBpbiBzdGltZVtdDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBNYWtzIE5hdW1vdiA8bWFrc3F3ZTFA
+dWtyLm5ldD4NCj4gLS0tDQo+ICBkcml2ZXJzL3Bvd2VyL2xwODc4OC1jaGFyZ2VyLmMgfCAyICst
+DQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkNCj4gDQo+
+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3Bvd2VyL2xwODc4OC1jaGFyZ2VyLmMgYi9kcml2ZXJzL3Bv
+d2VyL2xwODc4OC1jaGFyZ2VyLmMNCj4gaW5kZXggZWQ0OWI1MC4uNTI1NzhkOTggMTAwNjQ0DQo+
+IC0tLSBhL2RyaXZlcnMvcG93ZXIvbHA4Nzg4LWNoYXJnZXIuYw0KPiArKysgYi9kcml2ZXJzL3Bv
+d2VyL2xwODc4OC1jaGFyZ2VyLmMNCj4gQEAgLTY0MCw3ICs2NDAsNyBAQCBzdGF0aWMgc3NpemVf
+dCBscDg3ODhfc2hvd19lb2NfdGltZShzdHJ1Y3QgZGV2aWNlDQo+ICpkZXYsDQo+ICB7DQo+ICAJ
+c3RydWN0IGxwODc4OF9jaGFyZ2VyICpwY2hnID0gZGV2X2dldF9kcnZkYXRhKGRldik7DQo+ICAJ
+Y2hhciAqc3RpbWVbXSA9IHsgIjQwMG1zIiwgIjVtaW4iLCAiMTBtaW4iLCAiMTVtaW4iLA0KPiAt
+CQkJIjIwbWluIiwgIjI1bWluIiwgIjMwbWluIiAiTm8gdGltZW91dCIgfTsNCj4gKwkJCSIyMG1p
+biIsICIyNW1pbiIsICIzMG1pbiIsICJObyB0aW1lb3V0IiB9Ow0KPiAgCXU4IHZhbDsNCj4gDQo+
+ICAJbHA4Nzg4X3JlYWRfYnl0ZShwY2hnLT5scCwgTFA4Nzg4X0NIR19FT0MsICZ2YWwpOw0KPiAt
+LQ0KPiAxLjkuMQ0KPiANCj4gDQoNCg==
