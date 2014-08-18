@@ -1,16 +1,16 @@
 From: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [PATCH v7 4/8] arm64: kernel: introduce cpu_init_idle CPU
- operation
-Date: Mon, 18 Aug 2014 15:21:06 +0100
-Message-ID: <20140818142106.GE20043@localhost>
+Subject: Re: [PATCH v7 5/8] arm64: add PSCI CPU_SUSPEND based cpu_suspend
+ support
+Date: Mon, 18 Aug 2014 15:21:13 +0100
+Message-ID: <20140818142113.GF20043@localhost>
 References: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1407945127-27554-5-git-send-email-lorenzo.pieralisi@arm.com>
+ <1407945127-27554-6-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <1407945127-27554-5-git-send-email-lorenzo.pieralisi@arm.com>
+In-Reply-To: <1407945127-27554-6-git-send-email-lorenzo.pieralisi@arm.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -24,26 +24,28 @@ To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 Cc: Mark Rutland <Mark.Rutland@arm.com>, Tomasz Figa <t.figa@samsung.com>, Lina Iyer <lina.iyer@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Geoff Levand <geoff@infradead.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.ku>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 13, 2014 at 04:52:03PM +0100, Lorenzo Pieralisi wrote:
-> The CPUidle subsystem on ARM64 machines requires the idle states
-> implementation back-end to initialize idle states parameter upon
-> boot. This patch adds a hook in the CPU operations structure that
-> should be initialized by the CPU operations back-end in order to
-> provide a function that initializes cpu idle states.
+On Wed, Aug 13, 2014 at 04:52:04PM +0100, Lorenzo Pieralisi wrote:
+> This patch implements the cpu_suspend cpu operations method through
+> the PSCI CPU SUSPEND API. The PSCI implementation translates the idle state
+> index passed by the cpu_suspend core call into a valid PSCI state according to
+> the PSCI states initialized at boot through the cpu_init_idle() CPU
+> operations hook.
 > 
-> This patch also adds the infrastructure to arm64 kernel required
-> to export the CPU operations based initialization interface, so
-> that drivers (ie CPUidle) can use it when they are initialized
-> at probe time.
+> The PSCI CPU suspend operation hook checks if the PSCI state is a
+> standby state. If it is, it calls the PSCI suspend implementation
+> straight away, without saving any context. If the state is a power
+> down state the kernel calls the __cpu_suspend API (that saves the CPU
+> context) and passed the PSCI suspend finisher as a parameter so that PSCI
+> can be called by the __cpu_suspend implementation after saving and flushing
+> the context as last function before power down.
 > 
+> For power down states, entry point is set to cpu_resume physical address,
+> that represents the default kernel execution address following a CPU reset.
+> 
+> Reviewed-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
 > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 > ---
->  arch/arm64/include/asm/cpu_ops.h |  3 +++
->  arch/arm64/include/asm/cpuidle.h | 13 +++++++++++++
->  arch/arm64/kernel/Makefile       |  1 +
->  arch/arm64/kernel/cpuidle.c      | 29 +++++++++++++++++++++++++++++
->  4 files changed, 46 insertions(+)
->  create mode 100644 arch/arm64/include/asm/cpuidle.h
->  create mode 100644 arch/arm64/kernel/cpuidle.c
+>  arch/arm64/kernel/psci.c | 100 +++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 100 insertions(+)
 
 Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
