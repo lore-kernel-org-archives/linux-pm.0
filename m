@@ -1,85 +1,41 @@
-From: Christoph Lameter <cl@linux.com>
-Subject: [PATCH 07/35] [PATCH 07/36] drivers/cpuidle: Replace __get_cpu_var uses for address
- calculation
-Date: Sun, 17 Aug 2014 12:30:30 -0500
-Message-ID: <20140817173034.022788940@linux.com>
-References: <20140817173023.439660246@linux.com>
-Content-Type: text/plain; charset=UTF-8
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH 2/3] smp: re-implement the kick_all_cpus_sync() with
+ wake_up_if_idle()
+Date: Mon, 18 Aug 2014 00:12:39 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E5D3FB@SHSMSX101.ccr.corp.intel.com>
+References: <1408086085-16691-1-git-send-email-chuansheng.liu@intel.com>
+ <1408086085-16691-2-git-send-email-chuansheng.liu@intel.com>
+ <CALCETrUQ7x+kPYewNSUeAX5=0yVmqYWca9XCXtUbM0SNZ2ou+Q@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:39492 "EHLO
-	qmta10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752158AbaHQRg4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Aug 2014 13:36:56 -0400
-Content-Disposition: inline; filename=0007-drivers-cpuidle-Replace-__get_cpu_var-uses-for-addre.patch
+Received: from mga11.intel.com ([192.55.52.93]:53632 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750725AbaHRAMn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 17 Aug 2014 20:12:43 -0400
+In-Reply-To: <CALCETrUQ7x+kPYewNSUeAX5=0yVmqYWca9XCXtUbM0SNZ2ou+Q@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: akpm@linuxfoundation.org, rostedt@goodmis.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andy Lutomirski <luto@amacapital.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
 
-All of these are for address calculation. Replace with
-this_cpu_ptr().
-
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-[cpufreq changes]
-Signed-off-by: Christoph Lameter <cl@linux.com>
----
- drivers/cpuidle/governors/ladder.c | 4 ++--
- drivers/cpuidle/governors/menu.c   | 6 +++---
- 2 files changed, 5 insertions(+), 5 deletions(-)
-
-Index: linux/drivers/cpuidle/governors/ladder.c
-===================================================================
---- linux.orig/drivers/cpuidle/governors/ladder.c
-+++ linux/drivers/cpuidle/governors/ladder.c
-@@ -66,7 +66,7 @@ static inline void ladder_do_selection(s
- static int ladder_select_state(struct cpuidle_driver *drv,
- 				struct cpuidle_device *dev)
- {
--	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
-+	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
- 	struct ladder_device_state *last_state;
- 	int last_residency, last_idx = ldev->last_state_idx;
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
-@@ -170,7 +170,7 @@ static int ladder_enable_device(struct c
-  */
- static void ladder_reflect(struct cpuidle_device *dev, int index)
- {
--	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
-+	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
- 	if (index > 0)
- 		ldev->last_state_idx = index;
- }
-Index: linux/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux.orig/drivers/cpuidle/governors/menu.c
-+++ linux/drivers/cpuidle/governors/menu.c
-@@ -284,7 +284,7 @@ again:
-  */
- static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- {
--	struct menu_device *data = &__get_cpu_var(menu_devices);
-+	struct menu_device *data = this_cpu_ptr(&menu_devices);
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
- 	int i;
- 	unsigned int interactivity_req;
-@@ -369,7 +369,7 @@ static int menu_select(struct cpuidle_dr
-  */
- static void menu_reflect(struct cpuidle_device *dev, int index)
- {
--	struct menu_device *data = &__get_cpu_var(menu_devices);
-+	struct menu_device *data = this_cpu_ptr(&menu_devices);
- 	data->last_state_idx = index;
- 	if (index >= 0)
- 		data->needs_update = 1;
-@@ -382,7 +382,7 @@ static void menu_reflect(struct cpuidle_
-  */
- static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- {
--	struct menu_device *data = &__get_cpu_var(menu_devices);
-+	struct menu_device *data = this_cpu_ptr(&menu_devices);
- 	int last_idx = data->last_state_idx;
- 	struct cpuidle_state *target = &drv->states[last_idx];
- 	unsigned int measured_us;
-
+SGVsbG8gQW5keSwNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBBbmR5
+IEx1dG9taXJza2kgW21haWx0bzpsdXRvQGFtYWNhcGl0YWwubmV0XQ0KPiBTZW50OiBGcmlkYXks
+IEF1Z3VzdCAxNSwgMjAxNCAxMTo0MSBQTQ0KPiBUbzogTGl1LCBDaHVhbnNoZW5nDQo+IENjOiBQ
+ZXRlciBaaWpsc3RyYTsgRGFuaWVsIExlemNhbm87IFJhZmFlbCBKLiBXeXNvY2tpOyBJbmdvIE1v
+bG5hcjsNCj4gbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJu
+ZWwub3JnOyBMaXUsIENoYW5nY2hlbmc7DQo+IFdhbmcsIFhpYW9taW5nOyBDaGFrcmF2YXJ0eSwg
+U291dmlrIEsNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzNdIHNtcDogcmUtaW1wbGVtZW50IHRo
+ZSBraWNrX2FsbF9jcHVzX3N5bmMoKSB3aXRoDQo+IHdha2VfdXBfaWZfaWRsZSgpDQo+IA0KPiBP
+biBGcmksIEF1ZyAxNSwgMjAxNCBhdCAxMjowMSBBTSwgQ2h1YW5zaGVuZyBMaXUNCj4gPGNodWFu
+c2hlbmcubGl1QGludGVsLmNvbT4gd3JvdGU6DQo+ID4gQ3VycmVudGx5IHVzaW5nIHNtcF9jYWxs
+X2Z1bmN0aW9uKCkganVzdCB3b2tlIHVwIHRoZSBjb3JyZXNwb25kaW5nDQo+ID4gY3B1LCBidXQg
+Y2FuIG5vdCBicmVhayB0aGUgcG9sbGluZyBpZGxlIGxvb3AuDQo+ID4NCj4gPiBIZXJlIHVzaW5n
+IHRoZSBuZXcgc2NoZWQgQVBJIHdha2VfdXBfaWZfaWRsZSgpIHRvIGltcGxlbWVudCBpdC4NCj4g
+DQo+IGtpY2tfYWxsX2NwdXNfc3luYyBoYXMgb3RoZXIgY2FsbGVycywgYW5kIHRob3NlIG90aGVy
+IGNhbGxlcnMgd2FudCB0aGUNCj4gb2xkIGJlaGF2aW9yLiAgSSB0aGluayB0aGlzIHNob3VsZCBi
+ZSBhIG5ldyBmdW5jdGlvbi4NCj4gDQpZZXMsIHNlZW1zIHNvbWUgY3VycmVudCB1c2VycyBvZiBr
+aWNrX2FsbF9jcHVzX3N5bmMoKSBuZWVkIElQSSBpbmRlZWQsDQp3aWxsIHRyeSB0byBzZW5kIG91
+dCBwYXRjaCBWMiB3aXRoIG9uZSBuZXcgZnVuY3Rpb24uDQoNCg==
