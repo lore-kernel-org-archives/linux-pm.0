@@ -1,58 +1,67 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: RE: [BUG]  usb_dev_resume returns -113 due to work items queued by
- usb on pm_wq is not executed before suspending.
-Date: Mon, 18 Aug 2014 10:22:37 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1408181019470.1332-100000@iolanthe.rowland.org>
-References: <0C18FE92A7765D4EB9EE5D38D86A563A01BA7FD0@SHSMSX103.ccr.corp.intel.com>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH v7 6/8] drivers: cpuidle: CPU idle ARM64 driver
+Date: Mon, 18 Aug 2014 15:21:53 +0100
+Message-ID: <20140818142153.GH20043@localhost>
+References: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1407945127-27554-7-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <0C18FE92A7765D4EB9EE5D38D86A563A01BA7FD0-0J0gbvR4kTggGBtAFL8yw7fspsVTdybXVpNB7YpNyf8@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Du, ChangbinX" <changbinx.du-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: "rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org" <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "Nyman, Mathias" <mathias.nyman-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "pavel-+ZI9xUNit7I@public.gmane.org" <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Wu, Hao" <hao.wu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1407945127-27554-7-git-send-email-lorenzo.pieralisi@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Tomasz Figa <t.figa@samsung.com>, Lina Iyer <lina.iyer@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Geoff Levand <geoff@infradead.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.ku>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 18 Aug 2014, Du, ChangbinX wrote:
+On Wed, Aug 13, 2014 at 04:52:05PM +0100, Lorenzo Pieralisi wrote:
+> +static int __init arm64_idle_init(void)
+> +{
+> +	int i, ret;
+> +	struct cpuidle_driver *drv = &arm64_idle_driver;
+> +
+> +	drv->cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
+> +	if (!drv->cpumask)
+> +		return -ENOMEM;
+> +
+> +	cpumask_copy(drv->cpumask, cpu_possible_mask);
+> +	/*
+> +	 * Initialize idle states data, starting at index 1.
+> +	 * This driver is DT only, if no DT idle states are detected (ret == 0)
+> +	 * let the driver initialization fail accordingly since there is no
+> +	 * reason to initialize the idle driver if only wfi is supported.
+> +	 */
+> +	ret = dt_init_idle_driver(drv, 1);
+> +	if (ret <= 0)
+> +		goto free_mem;
+> +	/*
+> +	 * Call arch CPU operations in order to initialize
+> +	 * idle states suspend back-end specific data
+> +	 */
+> +	for_each_cpu(i, drv->cpumask) {
+> +		ret = cpu_init_idle(i);
+> +		if (ret)
+> +			goto free_mem;
+> +	}
+> +
+> +	for (i = 1; i < drv->state_count; i++)
+> +		drv->states[i].enter = arm_enter_idle_state;
 
-> > On Fri, 15 Aug 2014, Du, ChangbinX wrote:
-> > > If my analysis is correct, could you share your ideas for this issue?
-> > 
-> > Hasn't this already been fixed?  See commit d6236f6d1d88 (xhci: Fix runtime
-> > suspended xhci from blocking system suspend).
-> > 
-> > Alan Stern
-> 
-> Hi, Stern,
-> These are two different issues. Commit d6236f6d1d88 fixes issue that xhci runtime
-> pm logical blocks system suspend. But the issue we are encountering is usb device
-> resuming fail and lead to device reset.
+BTW, I've seen this pattern a few times already. Do you think it would
+be useful to change the dt_init_idle_driver() API to take a function
+pointer as argument and populate it there? The only drawback would be if
+we want different functions based on the states that have been
+populated (not sure whether we'll need the flexibility in the future).
+Either way, my ack on this patch stands.
 
-Yes, the issues are different, but I think the fix is the same.  You
-should test a kernel that includes commit d6236f6d1d88.
-
-> This issue can be reproduced by below steps:
-> 1) Plug a usb device to usb3 host, and make sure this device can enter runtime
->   suspend state.
-> 2) Wait HCD entering runtime suspend state.( xhci_suspend() will be called)
-> 3) Make system starts system suspending. On this step, PM core freeze threads and
->   resume hcd & the usb device to runtime active state(xhci_resume() will be called, 
->   and roothub resuming work item is queued). Then calls the suspend callbacks of devices'.
-
-Commit d6236f6d1d88 prevents the roothub resuming work item from being
-queued.
-
-> 4) We force system suspending process aborted (by modifying code) just after the usb
->   Device suspend callback is invoked.
-> 5) Then PM core will call resume callback of the usb device to recovery. On this step
->   usb_dev_resume() invokes and it return -113 error. Because the can_submit flag of
->   root hub is 0. Root hub resuming work item is still pending.
-
-I still think that commit has already fixed your problem.
-
-Alan Stern
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Catalin
