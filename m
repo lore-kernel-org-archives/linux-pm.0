@@ -1,92 +1,48 @@
-From: Chuansheng Liu <chuansheng.liu@intel.com>
-Subject: [PATCH 2/3] smp: Adding new function wake_up_all_cpus()
-Date: Mon, 18 Aug 2014 16:37:31 +0800
-Message-ID: <1408351052-25075-2-git-send-email-chuansheng.liu@intel.com>
-References: <1408351052-25075-1-git-send-email-chuansheng.liu@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:55964 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751218AbaHRIwB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 18 Aug 2014 04:52:01 -0400
-In-Reply-To: <1408351052-25075-1-git-send-email-chuansheng.liu@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Subject: Re: [PATCH 1/3] of: Add of_match_machine helper
+Date: Mon, 18 Aug 2014 13:10:13 +0300
+Message-ID: <53F1D105.1070107@nvidia.com>
+References: <1407452515-2390-1-git-send-email-ttynkkynen@nvidia.com>	<1407452515-2390-2-git-send-email-ttynkkynen@nvidia.com>
+ <20140817152854.5406BC40ADD@trevor.secretlab.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140817152854.5406BC40ADD@trevor.secretlab.ca>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Grant Likely <grant.likely@linaro.org>
+Cc: devicetree@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J.
+ Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, linux-tegra@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: luto@amacapital.net, peterz@infradead.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net, mingo@redhat.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, changcheng.liu@intel.com, xiaoming.wang@intel.com, souvik.k.chakravarty@intel.com, chuansheng.liu@intel.com
 
-Currently kick_all_cpus_sync() can break non-polling idle cpus
-thru IPI interrupts.
+On 17/08/14 18:28, Grant Likely wrote:
+> On Fri, 8 Aug 2014 02:01:53 +0300, Tuomas Tynkkynen <ttynkkynen@nvidia.com> wrote:
+[...]
+>> +EXPORT_SYMBOL(of_match_machine);
+> 
+> Too wordy...
+> 
+> 	return of_match_node(matches, of_allnodes);
+> 
+> :-)
+> 
+> It could be a static inline, but I don't think it's even worth having a
+> helper. The callers could just open code the above.
+> 
 
-But sometimes we need to break the polling idle cpus immediately
-to reselect the suitable c-state, also for non-idle cpus, we need
-to do nothing if we try to wake up them.
+Do you mean all the drivers should be referring to of_allnodes directly?
+I see that it's indeed exported, but to me that sounds like relying too
+much on an implementation detail. In fact, Documentation/devicetree/todo.txt
+even seems to have a TODO entry for its removal ("Remove of_allnodes list
+and iterate using list of child nodes alone").
 
-Here adding one new function wake_up_all_cpus() to let all cpus out
-of idle based on function wake_up_if_idle().
-
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
----
- include/linux/smp.h |    2 ++
- kernel/smp.c        |   22 ++++++++++++++++++++++
- 2 files changed, 24 insertions(+)
-
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index 34347f2..1cfb1fd 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -100,6 +100,7 @@ int smp_call_function_any(const struct cpumask *mask,
- 			  smp_call_func_t func, void *info, int wait);
- 
- void kick_all_cpus_sync(void);
-+void wake_up_all_cpus(void);
- 
- /*
-  * Generic and arch helpers
-@@ -148,6 +149,7 @@ smp_call_function_any(const struct cpumask *mask, smp_call_func_t func,
- }
- 
- static inline void kick_all_cpus_sync(void) {  }
-+static inline void wake_up_all_cpus(void) {  }
- 
- #endif /* !SMP */
- 
-diff --git a/kernel/smp.c b/kernel/smp.c
-index aff8aa1..1e69507 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -13,6 +13,7 @@
- #include <linux/gfp.h>
- #include <linux/smp.h>
- #include <linux/cpu.h>
-+#include <linux/sched.h>
- 
- #include "smpboot.h"
- 
-@@ -699,3 +700,24 @@ void kick_all_cpus_sync(void)
- 	smp_call_function(do_nothing, NULL, 1);
- }
- EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
-+
-+/**
-+ * wake_up_all_cpus - break all cpus out of idle
-+ * wake_up_all_cpus try to break all cpus which is in idle state even
-+ * including idle polling cpus, for non-idle cpus, we will do nothing
-+ * for them.
-+ */
-+void wake_up_all_cpus(void)
-+{
-+	int cpu;
-+
-+	preempt_disable();
-+	for_each_online_cpu(cpu) {
-+		if (cpu == smp_processor_id())
-+			continue;
-+
-+		wake_up_if_idle(cpu);
-+	}
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL_GPL(wake_up_all_cpus);
 -- 
-1.7.9.5
-
+nvpublic
