@@ -1,16 +1,15 @@
 From: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [PATCH v7 1/8] arm64: kernel: refactor the CPU suspend API for
- retention states
-Date: Mon, 18 Aug 2014 15:20:30 +0100
-Message-ID: <20140818142030.GB20043@localhost>
+Subject: Re: [PATCH v7 2/8] Documentation: arm: define DT idle states bindings
+Date: Mon, 18 Aug 2014 15:20:41 +0100
+Message-ID: <20140818142041.GC20043@localhost>
 References: <1407945127-27554-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1407945127-27554-2-git-send-email-lorenzo.pieralisi@arm.com>
+ <1407945127-27554-3-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <1407945127-27554-2-git-send-email-lorenzo.pieralisi@arm.com>
+In-Reply-To: <1407945127-27554-3-git-send-email-lorenzo.pieralisi@arm.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -24,64 +23,47 @@ To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 Cc: Mark Rutland <Mark.Rutland@arm.com>, Tomasz Figa <t.figa@samsung.com>, Lina Iyer <lina.iyer@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Geoff Levand <geoff@infradead.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.ku>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 13, 2014 at 04:52:00PM +0100, Lorenzo Pieralisi wrote:
-> CPU suspend is the standard kernel interface to be used to enter
-> low-power states on ARM64 systems. Current cpu_suspend implementation
-> by default assumes that all low power states are losing the CPU context,
-> so the CPU registers must be saved and cleaned to DRAM upon state
-> entry. Furthermore, the current cpu_suspend() implementation assumes
-> that if the CPU suspend back-end method returns when called, this has
-> to be considered an error regardless of the return code (which can be
-> successful) since the CPU was not expected to return from a code path that
-> is different from cpu_resume code path - eg returning from the reset vector.
+On Wed, Aug 13, 2014 at 04:52:01PM +0100, Lorenzo Pieralisi wrote:
+> ARM based platforms implement a variety of power management schemes that
+> allow processors to enter idle states at run-time.
+> The parameters defining these idle states vary on a per-platform basis forcing
+> the OS to hardcode the state parameters in platform specific static tables
+> whose size grows as the number of platforms supported in the kernel increases
+> and hampers device drivers standardization.
 > 
-> All in all this means that the current API does not cope well with low-power
-> states that preserve the CPU context when entered (ie retention states),
-> since first of all the context is saved for nothing on state entry for
-> those states and a successful state entry can return as a normal function
-> return, which is considered an error by the current CPU suspend
-> implementation.
+> Therefore, this patch aims at standardizing idle state device tree bindings
+> for ARM platforms. Bindings define idle state parameters inclusive of entry
+> methods and state latencies, to allow operating systems to retrieve the
+> configuration entries from the device tree and initialize the related power
+> management drivers, paving the way for common code in the kernel to deal with
+> idle states and removing the need for static data in current and previous
+> kernel versions.
 > 
-> This patch refactors the cpu_suspend() API so that it can be split in
-> two separate functionalities. The arm64 cpu_suspend API just provides
-> a wrapper around CPU suspend operation hook. A new function is
-> introduced (for architecture code use only) for states that require
-> context saving upon entry:
+> ARM64 platforms require the DT to define an entry-method property
+> for idle states.
 > 
-> __cpu_suspend(unsigned long arg, int (*fn)(unsigned long))
+> On system implementing PSCI as an enable-method to enter low-power
+> states the PSCI CPU suspend method requires the power_state parameter to
+> be passed to the PSCI CPU suspend function.
 > 
-> __cpu_suspend() saves the context on function entry and calls the
-> so called suspend finisher (ie fn) to complete the suspend operation.
-> The finisher is not expected to return, unless it fails in which case
-> the error is propagated back to the __cpu_suspend caller.
+> This parameter is specific to a power state and platform specific,
+> therefore must be provided by firmware to the OS in order to enable
+> proper call sequence.
 > 
-> The API refactoring results in the following pseudo code call sequence for a
-> suspending CPU, when triggered from a kernel subsystem:
+> Thus, this patch also adds a property in the PSCI bindings that
+> describes how the PSCI CPU suspend power_state parameter should be
+> defined in DT in all device nodes that rely on PSCI CPU suspend method usage.
 > 
-> /*
->  * int cpu_suspend(unsigned long idx)
->  * @idx: idle state index
->  */
-> {
-> -> cpu_suspend(idx)
-> 	|---> CPU operations suspend hook called, if present
-> 		|--> if (retention_state)
-> 			|--> direct suspend back-end call (eg PSCI suspend)
-> 		     else
-> 			|--> __cpu_suspend(idx, &back_end_finisher);
-> }
-> 
-> By refactoring the cpu_suspend API this way, the CPU operations back-end
-> has a chance to detect whether idle states require state saving or not
-> and can call the required suspend operations accordingly either through
-> simple function call or indirectly through __cpu_suspend() which carries out
-> state saving and suspend finisher dispatching to complete idle state entry.
-> 
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Acked-by: Nicolas Pitre <nico@linaro.org>
+> Reviewed-by: Rob Herring <robh@kernel.org>
+> Reviewed-by: Sebastian Capella <sebcape@gmail.com>
 > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 > ---
->  arch/arm64/include/asm/suspend.h |  1 +
->  arch/arm64/kernel/sleep.S        | 47 +++++++++++++++++++++++++++++-----------
->  arch/arm64/kernel/suspend.c      | 47 ++++++++++++++++++++++++----------------
->  3 files changed, 63 insertions(+), 32 deletions(-)
+>  Documentation/devicetree/bindings/arm/cpus.txt     |   8 +
+>  .../devicetree/bindings/arm/idle-states.txt        | 679 +++++++++++++++++++++
+>  Documentation/devicetree/bindings/arm/psci.txt     |  14 +-
+>  3 files changed, 700 insertions(+), 1 deletion(-)
+>  create mode 100644 Documentation/devicetree/bindings/arm/idle-states.txt
 
-Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
