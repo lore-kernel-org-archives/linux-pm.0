@@ -1,32 +1,25 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 1/2] PM: Print pending wakeup IRQ preventing suspend
- to dmesg
-Date: Tue, 19 Aug 2014 10:59:33 +0200
-Message-ID: <20140819085933.GA7862@amd>
-References: <1406910649-4028-1-git-send-email-amit.pundir@linaro.org>
- <1406910649-4028-2-git-send-email-amit.pundir@linaro.org>
+Subject: Re: [PATCH v3 2/3] drm/tegra: Request memory bandwidth for the
+ display controller
+Date: Tue, 19 Aug 2014 11:02:01 +0200
+Message-ID: <20140819090201.GB7862@amd>
+References: <1408437523-8542-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1408437523-8542-3-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1406910649-4028-2-git-send-email-amit.pundir@linaro.org>
+In-Reply-To: <1408437523-8542-3-git-send-email-tomeu.vizoso@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Pundir <amit.pundir@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Todd Poynor <toddpoynor@google.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Android Kernel Team <kernel-team@android.com>, John Stultz <john.stultz@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-pm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2014-08-01 22:00:48, Amit Pundir wrote:
-> From: Todd Poynor <toddpoynor@google.com>
+On Tue 2014-08-19 10:38:42, Tomeu Vizoso wrote:
+> For now the amount requested is based solely on the current mode's refresh
+> rate.
 > 
-> Currently when a pending wakeup irq stops suspend, it can be difficult
-> to determine why suspend was prevented and which IRQ was actually
-> responsible.
-> 
-> In order to help debug these situations, this patch prints the IRQ
-> number and action name of that pending wakeup irq which prevents suspend.
-> This patch comes from the Android patch set, where its been used to debug
-> suspend problems.
-> 
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 
 Acked-by: Pavel Machek <pavel@ucw.cz>
 
