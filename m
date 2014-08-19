@@ -1,114 +1,54 @@
-From: xiaoming wang <xiaoming.wang@intel.com>
-Subject: [PATCH 2/2] PM / sleep: Asynchronous threads for dpm_complete
-Date: Tue, 19 Aug 2014 16:29:29 -0400
-Message-ID: <1408480169-18090-2-git-send-email-xiaoming.wang@intel.com>
-References: <1408480169-18090-1-git-send-email-xiaoming.wang@intel.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [RFC v2 1/3] PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
+Date: Tue, 19 Aug 2014 09:20:20 +0200
+Message-ID: <CAAObsKCLvOJW-Ua5sFgjxWsENr0UsWe1VA5A3QZtCHMwqAPHmQ@mail.gmail.com>
+References: <1408107129-29516-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1408107129-29516-2-git-send-email-tomeu.vizoso@collabora.com> <20140816063517.GB13884@Nokia-N900>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1408480169-18090-1-git-send-email-xiaoming.wang@intel.com>
+In-Reply-To: <20140816063517.GB13884@Nokia-N900>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: xiaoming wang <xiaoming.wang@intel.com>, Chuansheng Liu <chuansheng.liu@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Terje Bergstr?m <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-In analogy with commits 5af84b82701a and 97df8c12995,
-using asynchronous threads can improve the overall
-resume time significantly.
+On 16 August 2014 08:35, Pavel Machek <pavel@ucw.cz> wrote:
+>>
+>> @@ -13,6 +14,7 @@ Each parameters have defined units:
+>>   * latency: usec
+>>   * timeout: usec
+>>   * throughput: kbs (kilo bit / sec)
+>> + * memory bandwidth: kbs (kilo bit / sec)
+>
+> Would mega bits per second make sense here?
+>
+> I suppose some many-core systems would have memory bandwith
+> in > 10 terabit/sec, overflowing u32.
 
-This patch is for dpm_complete phase.
+Yeah, I was a bit concerned about excessive rounding increasing the
+chances of going to a higher frequency step than strictly necessary,
+but after thinking a bit more about it, I think it won't be a problem
+because it would be a bad idea anyway to only take into account
+explicit bandwidth requirements when calculating the optimal memory
+bus frequency.
 
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
-Signed-off-by: xiaoming wang <xiaoming.wang@intel.com>
----
- drivers/base/power/main.c |   38 ++++++++++++++++++++++++++++++++++----
- 1 files changed, 34 insertions(+), 4 deletions(-)
+So I agree that a coarser unit such as mbps should be more appropriate here.
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index f9fe1b3..00c4bf1 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -889,14 +889,15 @@ void dpm_resume(pm_message_t state)
-  * @dev: Device to handle.
-  * @state: PM transition of the system being carried out.
-  */
--static void device_complete(struct device *dev, pm_message_t state)
-+static void device_complete(struct device *dev, pm_message_t state, bool async)
- {
- 	void (*callback)(struct device *) = NULL;
- 	char *info = NULL;
- 
- 	if (dev->power.syscore)
--		return;
-+		goto Complete;
- 
-+	dpm_wait(dev->parent, async);
- 	device_lock(dev);
- 
- 	if (dev->pm_domain) {
-@@ -928,6 +929,17 @@ static void device_complete(struct device *dev, pm_message_t state)
- 	device_unlock(dev);
- 
- 	pm_runtime_put(dev);
-+
-+Complete:
-+	complete_all(&dev->power.completion);
-+}
-+
-+static void async_complete(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+
-+	device_complete(dev, pm_transition, true);
-+	put_device(dev);
- }
- 
- /**
-@@ -940,27 +952,45 @@ static void device_complete(struct device *dev, pm_message_t state)
- void dpm_complete(pm_message_t state)
- {
- 	struct list_head list;
-+	struct device *dev;
- 
- 	trace_suspend_resume(TPS("dpm_complete"), state.event, true);
- 	might_sleep();
- 
- 	INIT_LIST_HEAD(&list);
- 	mutex_lock(&dpm_list_mtx);
-+	pm_transition = state;
-+
-+	/*
-+	  * Advanced the async threads upfront,
-+	  * in case the starting of async threads is
-+	  * delayed by non-async resuming devices.
-+	  */
-+	list_for_each_entry(dev, &dpm_prepared_list, power.entry) {
-+		reinit_completion(dev->power.completion);
-+		if (is_async(dev)) {
-+			get_device(dev);
-+			async_schedule(async_complete, dev);
-+		}
-+	}
-+
- 	while (!list_empty(&dpm_prepared_list)) {
--		struct device *dev = to_device(dpm_prepared_list.prev);
-+		dev = to_device(dpm_prepared_list.prev);
- 
- 		get_device(dev);
- 		dev->power.is_prepared = false;
- 		list_move(&dev->power.entry, &list);
- 		mutex_unlock(&dpm_list_mtx);
- 
--		device_complete(dev, state);
-+		if (!is_async(dev))
-+			device_complete(dev, state);
- 
- 		mutex_lock(&dpm_list_mtx);
- 		put_device(dev);
- 	}
- 	list_splice(&list, &dpm_list);
- 	mutex_unlock(&dpm_list_mtx);
-+	async_synchronize_full();
- 	trace_suspend_resume(TPS("dpm_complete"), state.event, false);
- }
- 
--- 
-1.7.1
+> Plus, if driver in 3/3 is just an example, perhaps comment
+> should explain that clearly?
+
+Will do.
+
+> Otherwise looks good,
+>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+
+Thanks,
+
+Tomeu
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
