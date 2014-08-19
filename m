@@ -1,13 +1,19 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH] thermal: exynos: Add support for TRIM_RELOAD feature at
+Subject: [PATCHv2] thermal: exynos: Add support for TRIM_RELOAD feature at
  Exynos3250
-Date: Tue, 19 Aug 2014 20:57:43 +0900
-Message-ID: <1408449463-3987-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Date: Tue, 19 Aug 2014 21:07:58 +0900
+Message-ID: <1408450078-6296-1-git-send-email-cw00.choi@samsung.com>
+References: <1408449463-3987-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:49333 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751880AbaHSMID (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Aug 2014 08:08:03 -0400
+In-reply-to: <1408449463-3987-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rui.zhang@intel.com, eduardo.valentin@ti.com
 Cc: kgene.kim@samsung.com, b.zolnierkie@samsung.com, amit.daniel@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, ch.naveen@samsung.com, kyungmin.park@samsung.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Eduardo Valentin <edubezval@gmail.com>
-List-Id: linux-pm@vger.kernel.org
 
 This patch add support for TRIM_RELOAD feature at Exynos3250. The TMU of
 Exynos3250 has two TRIMINFO_CON register.
@@ -17,11 +23,14 @@ Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c      | 7 +++++--
- drivers/thermal/samsung/exynos_tmu.h      | 5 +++--
- drivers/thermal/samsung/exynos_tmu_data.c | 9 ++++++++-
- drivers/thermal/samsung/exynos_tmu_data.h | 7 +++++--
- 4 files changed, 21 insertions(+), 7 deletions(-)
+Changes from v1:
+- Add missing 'TMU_SUPPORT_TRIM_RELOAD' features
+
+ drivers/thermal/samsung/exynos_tmu.c      |  7 +++++--
+ drivers/thermal/samsung/exynos_tmu.h      |  5 +++--
+ drivers/thermal/samsung/exynos_tmu_data.c | 11 +++++++++--
+ drivers/thermal/samsung/exynos_tmu_data.h |  7 +++++--
+ 4 files changed, 22 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
 index acbff14..ed01606 100644
@@ -65,7 +74,7 @@ index 1b4a644..72cb54e 100644
  	enum calibration_type cal_type;
  	enum calibration_mode cal_mode;
 diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index aa8e0de..25f9890 100644
+index aa8e0de..b45aa90 100644
 --- a/drivers/thermal/samsung/exynos_tmu_data.c
 +++ b/drivers/thermal/samsung/exynos_tmu_data.c
 @@ -95,6 +95,8 @@ static const struct exynos_tmu_registers exynos3250_tmu_registers = {
@@ -77,7 +86,7 @@ index aa8e0de..25f9890 100644
  	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
  	.test_mux_addr_shift = EXYNOS4412_MUX_ADDR_SHIFT,
  	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
-@@ -160,6 +162,9 @@ static const struct exynos_tmu_registers exynos3250_tmu_registers = {
+@@ -160,8 +162,11 @@ static const struct exynos_tmu_registers exynos3250_tmu_registers = {
  		.temp_level = 95, \
  	}, \
  	.freq_tab_count = 2, \
@@ -85,8 +94,11 @@ index aa8e0de..25f9890 100644
 +	.triminfo_reload[1] = 0x11, \
 +	.triminfo_reload_count = 2, \
  	.registers = &exynos3250_tmu_registers, \
- 	.features = (TMU_SUPPORT_EMULATION | \
+-	.features = (TMU_SUPPORT_EMULATION | \
++	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD\
  			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
+ 			TMU_SUPPORT_EMUL_TIME)
+ #endif
 @@ -184,7 +189,7 @@ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
  	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
  	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
@@ -125,3 +137,4 @@ index f0979e5..e0536c3 100644
  #define EXYNOS_EMUL_CON		0x80
 -- 
 1.8.0
+
