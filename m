@@ -1,271 +1,326 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: Re: [RFC PATCH v5 08/10] thermal: introduce the Power Allocator
- governor
-Date: Tue, 19 Aug 2014 17:02:54 +0100
-Message-ID: <20140819160254.GA16982@e104805>
-References: <1405001928-12697-1-git-send-email-javi.merino@arm.com>
- <1405001928-12697-9-git-send-email-javi.merino@arm.com>
- <20140819134552.GB4628@developer>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [ANNOUNCE] (Resend) Tools to analyse PM and scheduling behaviour
+Date: Tue, 19 Aug 2014 23:41:37 +0530
+Message-ID: <87mwb0fixy.fsf@matterhorn.verdurent.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:47540 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752244AbaHSQC6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Aug 2014 12:02:58 -0400
-In-Reply-To: <20140819134552.GB4628@developer>
-Content-Disposition: inline
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:64521 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753324AbaHSSLh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Aug 2014 14:11:37 -0400
+Received: by mail-pd0-f177.google.com with SMTP id p10so10226085pdj.36
+        for <linux-pm@vger.kernel.org>; Tue, 19 Aug 2014 11:11:37 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, "broonie@kernel.org" <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, Aug 19, 2014 at 02:45:52PM +0100, Eduardo Valentin wrote:
-> Javi,
 
-Hi Eduardo,
+(Apologies for the resend. Gmail plain-text mode still sends multipart
+messages that includes text/html and vger doesn't like that.)
 
-> On Thu, Jul 10, 2014 at 03:18:46PM +0100, Javi Merino wrote:
-> > The power allocator governor is a thermal governor that controls system
-> > and device power allocation to control temperature.  Conceptually, the
-> > implementation divides the sustainable power of a thermal zone among
-> > all the heat sources in that zone.
-> >
-> > This governor relies on "power actors", entities that represent heat
-> > sources.  They can report current and maximum power consumption and
-> > can set a given maximum power consumption, usually via a cooling
-> > device.
-> >
-> > The governor uses a Proportional Integral Derivative (PID) controller
-> > driven by the temperature of the thermal zone.  The output of the
-> > controller is a power budget that is then allocated to each power
-> > actor that can have bearing on the temperature we are trying to
-> > control.  It decides how much power to give each cooling device based
-> > on the performance they are requesting.  The PID controller ensures
-> > that the total power budget does not exceed the control temperature.
-> >
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> > Signed-off-by: Javi Merino <javi.merino@arm.com>
-> > ---
-> >  Documentation/thermal/power_allocator.txt |  61 ++++
-> >  drivers/thermal/Kconfig                   |  15 +
-> >  drivers/thermal/Makefile                  |   1 +
-> >  drivers/thermal/power_allocator.c         | 467 ++++++++++++++++++++++++++++++
-> >  drivers/thermal/thermal_core.c            |   7 +-
-> >  drivers/thermal/thermal_core.h            |   8 +
-> >  include/linux/thermal.h                   |   8 +
-> >  7 files changed, 566 insertions(+), 1 deletion(-)
-> >  create mode 100644 Documentation/thermal/power_allocator.txt
-> >  create mode 100644 drivers/thermal/power_allocator.c
-> >
-> > diff --git a/Documentation/thermal/power_allocator.txt b/Documentation/thermal/power_allocator.txt
-> > new file mode 100644
-> > index 000000000000..1859074dadcb
-> > --- /dev/null
-> > +++ b/Documentation/thermal/power_allocator.txt
-> > @@ -0,0 +1,61 @@
-> > +Integration of the power_allocator governor in a platform
-> > +=========================================================
-> > +
-> > +Registering thermal_zone_device
-> > +-------------------------------
-> > +
-> > +An estimate of the sustainable dissipatable power (in mW) should be
-> > +provided while registering the thermal zone.  This is the maximum
-> > +sustained power for allocation at the desired maximum temperature.
-> > +This number can vary for different conditions, but the closed-loop of
-> > +the controller should take care of those variations, the
-> > +`sustainable_power` should be an estimation of it.  Register your
-> > +thermal zone with `thermal_zone_params` that have a
-> > +`sustainable_power`.  If you weren't passing any
-> > +`thermal_zone_params`, then something like this will do:
-> > +
-> > +     static const struct thermal_zone_params tz_params = {
-> > +             .sustainable_power = 3500,
-> > +     };
-> > +
-> > +and then pass `tz_params` as the 5th parameter to
-> > +`thermal_zone_device_register()`
-> > +
-> > +Trip points
-> > +-----------
-> > +
-> > +The governor requires the following two trip points:
-> > +
-> > +1.  "switch on" trip point: temperature above which the governor
-> > +    control loop starts operating
-> > +2.  "desired temperature" trip point: it should be higher than the
-> > +    "switch on" trip point. It is the target temperature the governor
-> > +    is controlling for.
-> > +
-> > +The trip points can be either active or passive.
-> > +
-> 
-> I would prefer, for the sake of keeping the right concept in use, you
-> state here that they are passive trip points.
+Received: by 10.107.1.149 with HTTP; Fri, 8 Aug 2014 06:54:01 -0700 (PD=
+T)
+Date: Fri, 8 Aug 2014 19:24:01 +0530
+Delivered-To: amit.kucheria@linaro.org
+Message-ID: <CAP245DUSAHO_VBoBMy4KQaaA6_0a-i3Y3u4utnK8ji3UMVniyA@mail.g=
+mail.com>
+Subject: [ANNOUNCE] Tools to analyse PM and scheduling behaviour
+=46rom: Amit Kucheria <amit.kucheria@linaro.org>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.or=
+g>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List =
+<linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org=
+>
+Cc: "Gross\, Mark" <mark.gross@intel.com>, Paul McKenney <Paul.McKenney=
+@us.ibm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Dietmar Egge=
+mann <Dietmar.Eggemann@arm.com>, Preeti U Murthy <preeti@linux.vnet.ibm=
+=2Ecom>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <v=
+incent.guittot@linaro.org>, Mike Turquette <mturquette@linaro.org>, Jur=
+i Lelli <juri.lelli@arm.com>, sched-tools@linaro.org
 
-Sure, I've also changed the function that checks this condition
-accordingly.
+Hi all,
 
-> > +Power actors
-> > +------------
-> > +
-> > +Devices controlled by this governor must be registered with the power
-> > +actor API.  Read `power_actor.txt` for more information about them.
-> > +
-> > +Limitations of the power allocator governor
-> > +===========================================
-> > +
-> > +The power allocator governor can't work with cooling devices directly.
-> > +A power actor can be created to interface between the governor and the
-> > +cooling device (see cpu_actor.c for an example).  Otherwise, if you
-> > +have power actors and cooling devices that are next to the same
-> > +thermal sensor create two thermal zones, one for each type.  Use the
-> > +power allocator governor for the power actor thermal zone with the
-> > +power actors and any other governor for the one with cooling devices.
-> > +
-> > +The power allocator governor's PID controller is highly dependent on a
-> > +periodic tick.  If you have a driver that calls
-> > +`thermal_zone_device_update()` (or anything that ends up calling the
-> > +governor's `throttle()` function) repetitively, the governor response
-> > +won't be very good.  Note that this is not particular to this
-> > +governor, step-wise will also misbehave if you call its throttle()
-> > +faster than the normal thermal framework tick (due to interrupts for
-> > +example) as it will overreact.
-> 
-> I would recommend rephrasing the paragraph above, as I mentioned in
-> other email, looks like a documented bug. Mentioning that the governor
-> is still dependent on polling_delay active_delay is still worth it.
-> Also, the coexistance of interrupt driven thermal zones with polling
-> driven framework requires the interrupt firing to be configure to
-> something meaneanful, such as, an event outside the temperature range
-> the current trip is.
+At the Energy-Aware Scheduling workshop at Kernel Summit last year[1],
+maintainers identified a need for tools that would make it easier to
+analyse changes to scheduling and power management behaviour of a syste=
+m.
+In order to satisfy that need, the Power Management working group at Li=
+naro
+has created idlestat[2]. The key design principles of idlestat are to
+minimize measurement overhead during a trace capture and be accurate in
+capturing P-state and C-state transitions while being architecture-agno=
+stic.
 
-Ok, I'll rephrase it to clarify the point.
+Another requirement was to give maintainers the ability to benchmark ke=
+rnel
+changes against typical mobile workloads without having to run a system
+like Android. In order to satisfy that need, we=E2=80=99ve created a wo=
+rkload
+generator[3] (by extending rt-app) to allow simulation of typical mobil=
+e
+use cases[4].
 
-> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > index 249b196deffd..0e76c0dab5f3 100644
-> > --- a/drivers/thermal/Kconfig
-> > +++ b/drivers/thermal/Kconfig
-> > @@ -71,6 +71,14 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
-> >         Select this if you want to let the user space manage the
-> >         platform thermals.
-> >
-> > +config THERMAL_DEFAULT_GOV_POWER_ALLOCATOR
-> > +     bool "power_allocator"
-> > +     select THERMAL_GOV_POWER_ALLOCATOR
-> > +     help
-> > +       Select this if you want to control temperature based on
-> > +       system and device power allocation. This governor relies on
-> > +       power actors to operate.
-> > +
-> >  endchoice
-> >
-> >  config THERMAL_GOV_FAIR_SHARE
-> > @@ -89,6 +97,13 @@ config THERMAL_GOV_USER_SPACE
-> >       help
-> >         Enable this to let the user space manage the platform thermals.
-> >
-> > +config THERMAL_GOV_POWER_ALLOCATOR
-> > +     bool "Power allocator thermal governor"
-> > +     select THERMAL_POWER_ACTOR
-> > +     help
-> > +       Enable this to manage platform thermals by dynamically
-> > +       allocating and limiting power to devices.
-> > +
-> >  config THERMAL_POWER_ACTOR
-> >       bool
-> >
-> > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> > index 74f97c90a46c..e74d57d0fe61 100644
-> > --- a/drivers/thermal/Makefile
-> > +++ b/drivers/thermal/Makefile
-> > @@ -13,6 +13,7 @@ thermal_sys-$(CONFIG_THERMAL_OF)            += of-thermal.o
-> >  thermal_sys-$(CONFIG_THERMAL_GOV_FAIR_SHARE) += fair_share.o
-> >  thermal_sys-$(CONFIG_THERMAL_GOV_STEP_WISE)  += step_wise.o
-> >  thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE) += user_space.o
-> > +thermal_sys-$(CONFIG_THERMAL_GOV_POWER_ALLOCATOR)    += power_allocator.o
-> >
-> >  # power actors
-> >  obj-$(CONFIG_THERMAL_POWER_ACTOR) += power_actor.o
-> > diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-> > new file mode 100644
-> > index 000000000000..eb1797cd859b
-> > --- /dev/null
-> > +++ b/drivers/thermal/power_allocator.c
-> > @@ -0,0 +1,467 @@
-> > +/*
-> > + * A power allocator to manage temperature
-> > + *
-> > + * Copyright (C) 2014 ARM Ltd.
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify
-> > + * it under the terms of the GNU General Public License version 2 as
-> > + * published by the Free Software Foundation.
-> > + *
-> > + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> > + * kind, whether express or implied; without even the implied warranty
-> > + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> > + * GNU General Public License for more details.
-> > + */
-> > +
-> > +#define pr_fmt(fmt) "Power allocator: " fmt
-> > +
-> > +#include <linux/power_actor.h>
-> > +#include <linux/rculist.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/thermal.h>
-> > +
-> > +#include "thermal_core.h"
-> > +
-> > +#define FRAC_BITS 8
-> > +#define int_to_frac(x) ((x) << FRAC_BITS)
-> > +#define frac_to_int(x) ((x) >> FRAC_BITS)
-> > +
-> > +/**
-> > + * mul_frac() - multiply two fixed-point numbers
-> > + * @x:       first multiplicand
-> > + * @y:       second multiplicand
-> > + *
-> > + * Return: the result of multiplying two fixed-point numbers.  The
-> > + * result is also a fixed-point number.
-> > + */
-> > +static inline s64 mul_frac(s64 x, s64 y)
-> > +{
-> > +     return (x * y) >> FRAC_BITS;
-> > +}
-> > +
-> > +enum power_allocator_trip_levels {
-> > +     TRIP_SWITCH_ON = 0,     /* Switch on PID controller */
-> > +     TRIP_MAX_DESIRED_TEMPERATURE, /* Temperature we are controlling for */
-> > +};
-> > +
-> > +/**
-> > + * struct power_allocator_params - parameters for the power allocator governor
-> > + * @k_po:    Proportional parameter of the PID controller when overshooting
-> > + *           (i.e., when temperature is below the target)
-> > + * @k_pi:    Proportional parameter of the PID controller when undershooting
-> > + * @k_i:     Integral parameter of the PID controller
-> > + * @k_d:     Derivative parameter of the PID controller
-> 
-> Po, Pi, i, and d were not documented in your document above. Did you
-> miss them?
-> 
-> Given that they are core part of the governor behavior, I'd suggest
-> having a section in its document about how to fine tune the constants.
-> Explain, for instance, if it is enough to fine tune per platform, and
-> if having constants defined at compilation time or at runtime are good
-> point to be documented.
+An example usage of both tools together would be:
+ sudo ./idlestat --trace -f /tmp/mytrace -t 100 -- rt-app mp3.json
 
-We need to provide a way for platforms to specify these constants.
-Currently they are fixed because I thought that some heuristic would
-be good enough to cover all the platforms.  It turns out that it's not
-realistic so we will provide a mechanism for platforms to change them,
-we will export them in debugfs and document them in the next series.
+This should allow us to do repeatable analysis of the power management =
+and
+scheduling behaviour of the system with well-crafted workloads.
 
-Cheers,
-Javi
+We=E2=80=99re soliciting early feedback from community on the direction=
+ of idlestat
+and rt-app and enhancements that would make the tools more useful. I al=
+so
+want to propose idlestat as a candidate for inclusion into kernel tools
+directory.
 
+Idlestat Details
+----------------
+Idlestat uses FTRACE to capture traces related to C-state and P-state
+transitions of the CPU and wakeups (IRQ, IPI) on the system and then
+post-processes the data to print statistics. It is designed to be used
+non-interactively. Idlestat can deduce the idle time for a cluster as a=
+n
+intersection between the idle times of all the cpus belonging to the sa=
+me
+cluster. This data is useful to analyse and optimise scheduling behavio=
+ur.
+The tool will also list how many times the menu governor mis-predicts
+target residency in a C-state.
+
+In the future, we plan to add a =E2=80=98diff mode=E2=80=99 to allow co=
+mparison of two
+trace files (useful for regression tracking) and to allow inputting an
+energy model for the CPU so that the tool can output a rough energy
+consumption estimate for the workload. See the wiki[2] for other ideas =
+for
+new features.
+
+A sample run on 24-core Intel XEON with HT disabled and all but two cpu=
+s in
+each cluster offlined (for the sake of keeping the output short) looks =
+as
+follows:
+
+sudo ./idlestat --trace -f /tmp/mytrace -t 10 -p -c -w
+Log is 12.934396 secs long with 148153 events
+-----------------------------------------------------------------------=
+---------
+| C-state  |   min    |   max    |   avg    |   total  | hits  |  over =
+|
+under |
+-----------------------------------------------------------------------=
+---------
+| clusterA
+    |
+-----------------------------------------------------------------------=
+---------
+|   C6-IVT |      0us |  21.02ms |    364us | 244.85ms |   673 |     0 =
+|
+  0 |
+-----------------------------------------------------------------------=
+---------
+|             cpu0
+    |
+-----------------------------------------------------------------------=
+---------
+|   C1-IVT |     31us |     42us |     37us |    111us |     3 |     0 =
+|
+  0 |
+|  C1E-IVT |     21us |    112us |     52us |    155us |     3 |     2 =
+|
+  0 |
+|   C3-IVT |     40us |    276us |    178us |   1.07ms |     6 |     2 =
+|
+  0 |
+|   C6-IVT |      2us |  21.13ms |    580us | 260.23ms |   449 |   318 =
+|
+  0 |
+-----------------------------------------------------------------------=
+---------
+|             cpu1
+    |
+-----------------------------------------------------------------------=
+---------
+|     POLL |     17us |     17us |     17us |     17us |     1 |     0 =
+|
+  1 |
+|   C1-IVT |      6us |     95us |     49us |   1.09ms |    22 |     0 =
+|
+  3 |
+|  C1E-IVT |      4us |    166us |    108us |   2.16ms |    20 |     3 =
+|
+  4 |
+|   C3-IVT |      6us |    274us |    167us |   4.51ms |    27 |     7 =
+|
+  0 |
+|   C6-IVT |      1us |  52.56ms |    372us |   11.07s | 29794 | 23533 =
+|
+  0 |
+-----------------------------------------------------------------------=
+---------
+| clusterB
+    |
+-----------------------------------------------------------------------=
+---------
+|   C6-IVT |      0us |  85.65ms |   2.21ms |   11.33s |  5121 |     0 =
+|
+  0 |
+-----------------------------------------------------------------------=
+---------
+|             cpu6
+    |
+-----------------------------------------------------------------------=
+---------
+|   C1-IVT |     44us |     44us |     44us |     44us |     1 |     0 =
+|
+  0 |
+|  C1E-IVT |    164us |    164us |    164us |    164us |     1 |     0 =
+|
+  1 |
+|   C3-IVT |    258us |    258us |    258us |    258us |     1 |     0 =
+|
+  0 |
+|   C6-IVT |      1us |  85.65ms |   2.24ms |   11.43s |  5113 |  1358 =
+|
+  0 |
+-----------------------------------------------------------------------=
+---------
+|             cpu7
+    |
+-----------------------------------------------------------------------=
+---------
+|   C1-IVT |      9us |      9us |      9us |      9us |     1 |     0 =
+|
+  0 |
+|   C3-IVT |    298us |    298us |    298us |    298us |     1 |     0 =
+|
+  0 |
+|   C6-IVT |     22us |    1.50s | 279.02ms |   12.83s |    46 |     3 =
+|
+  0 |
+-----------------------------------------------------------------------=
+---------
+
+----------------------------------------------------------------
+| P-state  |   min    |   max    |   avg    |   total  | hits  |
+----------------------------------------------------------------
+|             cpu0                                             |
+----------------------------------------------------------------
+|  2.60GHz |      0us |   12.56s |  59.79ms |   12.62s |   211 |
+|  2.20GHz |  12.01ms |  12.01ms |  12.01ms |  12.01ms |     1 |
+|  1.50GHz |      0us |   2.66ms |     95us |   3.53ms |    37 |
+|  1.20GHz |      1us |  14.24ms |    368us |  26.85ms |    73 |
+----------------------------------------------------------------
+|             cpu1                                             |
+----------------------------------------------------------------
+|  2.60GHz |      0us |   6.43ms |     57us | 757.08ms | 13341 |
+|  2.50GHz |      0us |   6.82ms |     79us |  31.93ms |   404 |
+|  2.40GHz |      0us |   6.59ms |    111us |  11.43ms |   103 |
+|  2.30GHz |      0us |   5.82ms |     29us |  29.27ms |   999 |
+|  2.20GHz |      0us |   7.80ms |     49us |  79.03ms |  1618 |
+|  2.10GHz |      0us |   4.96ms |     66us |  30.72ms |   465 |
+|  2.00GHz |      0us |   9.01ms |     33us |  40.57ms |  1246 |
+|  1.90GHz |      0us |   6.16ms |     57us |  24.81ms |   434 |
+|  1.80GHz |      0us |  11.56ms |    101us |  77.03ms |   764 |
+|  1.70GHz |      0us |  12.97ms |     96us |  58.47ms |   606 |
+|  1.60GHz |      0us |  12.94ms |     98us |  85.31ms |   867 |
+|  1.50GHz |      0us |  11.99ms |    166us |  35.10ms |   211 |
+|  1.40GHz |      0us |   3.64ms |     62us |  26.97ms |   433 |
+|  1.30GHz |   7.99ms |   7.99ms |   7.99ms |   7.99ms |     1 |
+|  1.20GHz |      0us |  15.29ms |     64us | 531.01ms |  8291 |
+----------------------------------------------------------------
+|             cpu6                                             |
+----------------------------------------------------------------
+|  2.60GHz |      1us |   6.10ms |    215us | 658.53ms |  3059 |
+|  2.30GHz |     20us |   5.57ms |    205us |  21.16ms |   103 |
+|  2.20GHz |     18us |   7.42ms |    201us |  26.49ms |   132 |
+|  2.00GHz |     21us |    367us |    159us |   4.77ms |    30 |
+|  1.90GHz |     21us |   8.96ms |    259us |  18.42ms |    71 |
+|  1.80GHz |     72us |   6.09ms |    280us |  11.49ms |    41 |
+|  1.70GHz |      2us |   5.40ms |    173us |  38.69ms |   224 |
+|  1.60GHz |      2us |   3.95ms |    188us |  11.50ms |    61 |
+|  1.50GHz |      2us |  11.66ms |    323us |  38.39ms |   119 |
+|  1.40GHz |      2us |  11.94ms |    364us |  61.85ms |   170 |
+|  1.30GHz |      5us |  10.72ms |    315us |  24.27ms |    77 |
+|  1.20GHz |      2us |  15.83ms |    608us | 569.34ms |   937 |
+----------------------------------------------------------------
+|             cpu7                                             |
+----------------------------------------------------------------
+|  2.60GHz |      5us |  75.74ms |   8.43ms |  75.88ms |     9 |
+|  1.70GHz |   1.41ms |   1.41ms |   1.41ms |   1.41ms |     1 |
+|  1.20GHz |     10us |   4.87ms |    181us |   7.07ms |    39 |
+----------------------------------------------------------------
+
+--------------------------------------------
+| Wakeup |  #  |       Name      |  Count  |
+--------------------------------------------
+|             cpu0                         |
+--------------------------------------------
+| irq    | 117 |     eth0-TxRx-6 |     355 |
+| ipi    | --- |      RESCHEDULE |       2 |
+--------------------------------------------
+|             cpu1                         |
+--------------------------------------------
+| irq    | 115 |     eth0-TxRx-4 |   29654 |
+| irq    | 130 |     eth1-TxRx-1 |       4 |
+| irq    | 111 |     eth0-TxRx-0 |       1 |
+| irq    | 112 |     eth0-TxRx-1 |       3 |
+--------------------------------------------
+|             cpu6                         |
+--------------------------------------------
+| ipi    | --- |      RESCHEDULE |     274 |
+--------------------------------------------
+|             cpu7                         |
+--------------------------------------------
+| ipi    | --- |      RESCHEDULE |       4 |
+--------------------------------------------
+
+The IPI statistics require support for generic IPI tracing[4] to land
+upstream.
+
+Workload Generator Details
+--------------------------
+The Workload Generator is based on rt-app. Shared resources, waits, sig=
+nals
+and locking order can be specified for each thread in a JSON descriptio=
+n to
+construct complex interdependencies. This allows simulation of interest=
+ing
+use-cases. The repository contains examples of a mp3 and web-browsing
+workload.
+
+The method to construct the JSON description is quite manual currently.=
+ We
+capture the trace of a workload of interest (say, on Android) and analy=
+se
+it in kernelshark. We then construct the JSON description by hand until=
+ its
+resultant trace looks similar to the trace from the real workload.
+
+The immediate goal is to expand the library to cover the common mobile
+workloads. We=E2=80=99re also working with the rt-app maintainer to get=
+ our changes
+merged.
+
+Thanks to ARM for help in specifying the mobile workloads and reviewing=
+ the
+results.
+
+Please play with the tools and let us know what you think. You can writ=
+e to
+sched-tools@linaro.org if you want to contact us off-list.
+
+Regards,
+Amit
+
+[1] http://lwn.net/Articles/571414/
+[2]
+https://wiki.linaro.org/WorkingGroups/PowerManagement/Resources/Tools/I=
+dlestat
+[3]
+https://wiki.linaro.org/WorkingGroups/PowerManagement/Resources/Tools/W=
+orkloadGen
+[4] https://lkml.org/lkml/2014/1/7/355
+[5] https://lkml.org/lkml/2014/7/25/610
