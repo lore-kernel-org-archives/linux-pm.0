@@ -1,146 +1,232 @@
 From: "edubezval@gmail.com" <edubezval@gmail.com>
-Subject: Re: [PATCHv2] thermal: exynos: Add support for TRIM_RELOAD feature at Exynos3250
-Date: Tue, 19 Aug 2014 08:28:40 -0400
-Message-ID: <CAC-25o9ExZVTczq3ttkc5XX9ozXUCby2m7hAkUe=LAQakjzVWA@mail.gmail.com>
-References: <1408449463-3987-1-git-send-email-cw00.choi@samsung.com>
-	<1408450078-6296-1-git-send-email-cw00.choi@samsung.com>
+Subject: Re: [RFC PATCH v5 05/10] thermal: let governors have private data for
+ each thermal zone
+Date: Tue, 19 Aug 2014 08:49:32 -0400
+Message-ID: <CAC-25o8mcFXXykms5Ro+bLCztRKda3yg7BQHAg0+oZNT_Ym++w@mail.gmail.com>
+References: <1405001928-12697-1-git-send-email-javi.merino@arm.com>
+	<1405001928-12697-6-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1408450078-6296-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, "Valentin, Eduardo" <eduardo.valentin@ti.com>, Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Amit Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, l.majewski@samsung.com, naveen krishna <ch.naveen@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f171.google.com ([209.85.217.171]:43020 "EHLO
+	mail-lb0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbaHSMte (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Aug 2014 08:49:34 -0400
+In-Reply-To: <1405001928-12697-6-git-send-email-javi.merino@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Punit Agrawal <punit.agrawal@arm.com>, broonie@kernel.org, Zhang Rui <rui.zhang@intel.com>
 
-Amit,
+Javi,
 
-On Tue, Aug 19, 2014 at 8:07 AM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
-> This patch add support for TRIM_RELOAD feature at Exynos3250. The TMU of
-> Exynos3250 has two TRIMINFO_CON register.
+On Thu, Jul 10, 2014 at 10:18 AM, Javi Merino <javi.merino@arm.com> wrote:
+> A governor may need to store its current state between calls to
+> throttle().  That state depends on the thermal zone, so store it as
+> private data in struct thermal_zone_device.
 >
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+> The governors may have two new ops: bind_to_tz() and unbind_from_tz().
+> When provided, these functions let governors do some initialization
+> and teardown when they are bound/unbound to a tz and possibly store that
+> information in the governor_data field of the struct
+> thermal_zone_device.
+>
 > Cc: Zhang Rui <rui.zhang@intel.com>
 > Cc: Eduardo Valentin <edubezval@gmail.com>
-
-What do you think about this patch?
-
+> Signed-off-by: Javi Merino <javi.merino@arm.com>
 > ---
-> Changes from v1:
-> - Add missing 'TMU_SUPPORT_TRIM_RELOAD' features
+>  drivers/thermal/thermal_core.c | 83 ++++++++++++++++++++++++++++++++++++++----
+>  include/linux/thermal.h        |  9 +++++
+>  2 files changed, 84 insertions(+), 8 deletions(-)
 >
->  drivers/thermal/samsung/exynos_tmu.c      |  7 +++++--
->  drivers/thermal/samsung/exynos_tmu.h      |  5 +++--
->  drivers/thermal/samsung/exynos_tmu_data.c | 11 +++++++++--
->  drivers/thermal/samsung/exynos_tmu_data.h |  7 +++++--
->  4 files changed, 22 insertions(+), 8 deletions(-)
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 71b0ec0c370d..3da99dd80ad5 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -72,6 +72,58 @@ static struct thermal_governor *__find_governor(const char *name)
+>         return NULL;
+>  }
 >
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index acbff14..ed01606 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -164,8 +164,11 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
->                 }
+> +/**
+> + * bind_previous_governor() - bind the previous governor of the thermal zone
+> + * @tz:                a valid pointer to a struct thermal_zone_device
+> + * @failed_gov_name:   the name of the governor that failed to register
+> + *
+> + * Register the previous governor of the thermal zone after a new
+> + * governor has failed to be bound.
+> + */
+> +static void bind_previous_governor(struct thermal_zone_device *tz,
+> +                               const char *failed_gov_name)
+> +{
+> +       if (tz->governor && tz->governor->bind_to_tz) {
+> +               if (tz->governor->bind_to_tz(tz)) {
+> +                       dev_warn(&tz->device,
+> +                               "governor %s failed to bind and the previous one (%s) failed to register again, thermal zone %s has no governor\n",
+> +                               failed_gov_name, tz->governor->name, tz->type);
+
+The above must be a dev_err(), not warn. Besides, I would prefer if
+you could improve the message. What is the difference between register
+and bind?
+
+> +                       tz->governor = NULL;
+> +               }
+> +       }
+> +}
+> +
+> +/**
+> + * thermal_set_governor() - Switch to another governor
+> + * @tz:                a valid pointer to a struct thermal_zone_device
+> + * @new_gov:   pointer to the new governor
+> + *
+> + * Change the governor of thermal zone @tz.
+> + *
+> + * Return: 0 on success, an error if the new governor's bind_to_tz() failed.
+> + */
+> +static int thermal_set_governor(struct thermal_zone_device *tz,
+> +                               struct thermal_governor *new_gov)
+> +{
+> +       int ret = 0;
+> +
+> +       if (tz->governor && tz->governor->unbind_from_tz)
+> +               tz->governor->unbind_from_tz(tz);
+> +
+> +       if (new_gov && new_gov->bind_to_tz) {
+> +               ret = new_gov->bind_to_tz(tz);
+> +               if (ret) {
+> +                       bind_previous_governor(tz, new_gov->name);
+> +
+> +                       return ret;
+> +               }
+> +       }
+> +
+> +       tz->governor = new_gov;
+> +
+> +       return ret;
+> +}
+> +
+>  int thermal_register_governor(struct thermal_governor *governor)
+>  {
+>         int err;
+> @@ -104,8 +156,15 @@ int thermal_register_governor(struct thermal_governor *governor)
+>
+>                 name = pos->tzp->governor_name;
+>
+> -               if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
+> -                       pos->governor = governor;
+> +               if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH)) {
+> +                       int ret;
+> +
+> +                       ret = thermal_set_governor(pos, governor);
+> +                       if (ret)
+> +                               dev_warn(&pos->device,
+> +                                       "Failed to set governor %s for thermal zone %s: %d\n",
+> +                                       governor->name, pos->type, ret);
+
+dev_err here too.
+
+> +               }
 >         }
 >
-> -       if (TMU_SUPPORTS(pdata, TRIM_RELOAD))
-> -               __raw_writel(1, data->base + reg->triminfo_ctrl);
-> +       if (TMU_SUPPORTS(pdata, TRIM_RELOAD)) {
-> +               for (i = 0; i < pdata->triminfo_reload_count; i++)
-> +                       __raw_writel(pdata->triminfo_reload[i],
-> +                                       data->base + reg->triminfo_ctrl[i]);
+>         mutex_unlock(&thermal_list_lock);
+> @@ -131,7 +190,7 @@ void thermal_unregister_governor(struct thermal_governor *governor)
+>         list_for_each_entry(pos, &thermal_tz_list, node) {
+>                 if (!strnicmp(pos->governor->name, governor->name,
+>                                                 THERMAL_NAME_LENGTH))
+> -                       pos->governor = NULL;
+> +                       thermal_set_governor(pos, NULL);
+>         }
+>
+>         mutex_unlock(&thermal_list_lock);
+> @@ -756,8 +815,9 @@ policy_store(struct device *dev, struct device_attribute *attr,
+>         if (!gov)
+>                 goto exit;
+>
+> -       tz->governor = gov;
+> -       ret = count;
+> +       ret = thermal_set_governor(tz, gov);
+> +       if (!ret)
+> +               ret = count;
+>
+>  exit:
+>         mutex_unlock(&thermal_governor_lock);
+> @@ -1452,6 +1512,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>         int result;
+>         int count;
+>         int passive = 0;
+> +       struct thermal_governor *governor;
+>
+>         if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+>                 return ERR_PTR(-EINVAL);
+> @@ -1542,9 +1603,15 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>         mutex_lock(&thermal_governor_lock);
+>
+>         if (tz->tzp)
+> -               tz->governor = __find_governor(tz->tzp->governor_name);
+> +               governor = __find_governor(tz->tzp->governor_name);
+>         else
+> -               tz->governor = def_governor;
+> +               governor = def_governor;
+> +
+> +       result = thermal_set_governor(tz, governor);
+> +       if (result) {
+> +               mutex_unlock(&thermal_governor_lock);
+> +               goto unregister;
 > +       }
 >
->         if (pdata->cal_mode == HW_MODE)
->                 goto skip_calib_data;
-> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-> index 1b4a644..72cb54e 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.h
-> +++ b/drivers/thermal/samsung/exynos_tmu.h
-> @@ -151,8 +151,7 @@ struct exynos_tmu_registers {
->         u32     triminfo_25_shift;
->         u32     triminfo_85_shift;
+>         mutex_unlock(&thermal_governor_lock);
 >
-> -       u32     triminfo_ctrl;
-> -       u32     triminfo_ctrl1;
-> +       u32     triminfo_ctrl[2];
->         u32     triminfo_reload_shift;
+> @@ -1634,7 +1701,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+>                 device_remove_file(&tz->device, &dev_attr_mode);
+>         device_remove_file(&tz->device, &dev_attr_policy);
+>         remove_trip_attrs(tz);
+> -       tz->governor = NULL;
+> +       thermal_set_governor(tz, NULL);
 >
->         u32     tmu_ctrl;
-> @@ -295,6 +294,8 @@ struct exynos_tmu_platform_data {
->         u8 second_point_trim;
->         u8 default_temp_offset;
->         u8 test_mux;
-> +       u8 triminfo_reload[2];
-> +       u8 triminfo_reload_count;
->
->         enum calibration_type cal_type;
->         enum calibration_mode cal_mode;
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-> index aa8e0de..b45aa90 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -95,6 +95,8 @@ static const struct exynos_tmu_registers exynos3250_tmu_registers = {
->         .triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
->         .triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
->         .triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
-> +       .triminfo_ctrl[0] = EXYNOS_TMU_TRIMINFO_CON1,
-> +       .triminfo_ctrl[1] = EXYNOS_TMU_TRIMINFO_CON2,
->         .tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
->         .test_mux_addr_shift = EXYNOS4412_MUX_ADDR_SHIFT,
->         .buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
-> @@ -160,8 +162,11 @@ static const struct exynos_tmu_registers exynos3250_tmu_registers = {
->                 .temp_level = 95, \
->         }, \
->         .freq_tab_count = 2, \
-> +       .triminfo_reload[0] = 0x1, \
-> +       .triminfo_reload[1] = 0x11, \
-> +       .triminfo_reload_count = 2, \
->         .registers = &exynos3250_tmu_registers, \
-> -       .features = (TMU_SUPPORT_EMULATION | \
-> +       .features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD\
->                         TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
->                         TMU_SUPPORT_EMUL_TIME)
->  #endif
-> @@ -184,7 +189,7 @@ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
->         .triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
->         .triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
->         .triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
-> -       .triminfo_ctrl = EXYNOS_TMU_TRIMINFO_CON,
-> +       .triminfo_ctrl[0] = EXYNOS_TMU_TRIMINFO_CON2,
->         .triminfo_reload_shift = EXYNOS_TRIMINFO_RELOAD_SHIFT,
->         .tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
->         .test_mux_addr_shift = EXYNOS4412_MUX_ADDR_SHIFT,
-> @@ -252,6 +257,8 @@ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
->                 .temp_level = 95, \
->         }, \
->         .freq_tab_count = 2, \
-> +       .triminfo_reload[0] = 0x1, \
-> +       .triminfo_reload_count = 1, \
->         .registers = &exynos4412_tmu_registers, \
->         .features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
->                         TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-> index f0979e5..e0536c3 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.h
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
-> @@ -57,8 +57,11 @@
->  #define EXYNOS4210_TMU_TRIG_LEVEL_MASK 0x1111
->  #define EXYNOS4210_TMU_INTCLEAR_VAL    0x1111
->
-> -/* Exynos5250 and Exynos4412 specific registers */
-> -#define EXYNOS_TMU_TRIMINFO_CON        0x14
-> +/* Exynos3250 specific registers */
-> +#define EXYNOS_TMU_TRIMINFO_CON1       0x10
-> +
-> +/* Exynos5250, Exynos4412 and Exynos3250 specific registers */
-> +#define EXYNOS_TMU_TRIMINFO_CON2       0x14
->  #define EXYNOS_THD_TEMP_RISE           0x50
->  #define EXYNOS_THD_TEMP_FALL           0x54
->  #define EXYNOS_EMUL_CON                0x80
+>         thermal_remove_hwmon_sysfs(tz);
+>         release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 0305cde21a74..1124b7a9358a 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -187,6 +187,7 @@ struct thermal_attr {
+>   * @ops:       operations this &thermal_zone_device supports
+>   * @tzp:       thermal zone parameters
+>   * @governor:  pointer to the governor for this thermal zone
+> + * @governor_data:     private pointer for governor data
+>   * @thermal_instances: list of &struct thermal_instance of this thermal zone
+>   * @idr:       &struct idr to generate unique id for this zone's cooling
+>   *             devices
+> @@ -213,6 +214,7 @@ struct thermal_zone_device {
+>         struct thermal_zone_device_ops *ops;
+>         const struct thermal_zone_params *tzp;
+>         struct thermal_governor *governor;
+> +       void *governor_data;
+>         struct list_head thermal_instances;
+>         struct idr idr;
+>         struct mutex lock;
+> @@ -223,12 +225,19 @@ struct thermal_zone_device {
+>  /**
+>   * struct thermal_governor - structure that holds thermal governor information
+>   * @name:      name of the governor
+> + * @bind_to_tz: callback called when binding to a thermal zone.  If it
+> + *             returns 0, the governor is bound to the thermal zone,
+> + *             otherwise it fails.
+> + * @unbind_from_tz:    callback called when a governor is unbound from a
+> + *                     thermal zone.
+>   * @throttle:  callback called for every trip point even if temperature is
+>   *             below the trip point temperature
+>   * @governor_list:     node in thermal_governor_list (in thermal_core.c)
+>   */
+>  struct thermal_governor {
+>         char name[THERMAL_NAME_LENGTH];
+> +       int (*bind_to_tz)(struct thermal_zone_device *tz);
+> +       void (*unbind_from_tz)(struct thermal_zone_device *tz);
+>         int (*throttle)(struct thermal_zone_device *tz, int trip);
+>         struct list_head        governor_list;
+>  };
 > --
-> 1.8.0
+> 1.9.1
+>
 >
 
 
