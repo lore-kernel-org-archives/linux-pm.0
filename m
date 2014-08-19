@@ -1,54 +1,90 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [RFC v2 1/3] PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
-Date: Tue, 19 Aug 2014 09:20:20 +0200
-Message-ID: <CAAObsKCLvOJW-Ua5sFgjxWsENr0UsWe1VA5A3QZtCHMwqAPHmQ@mail.gmail.com>
-References: <1408107129-29516-1-git-send-email-tomeu.vizoso@collabora.com>
- <1408107129-29516-2-git-send-email-tomeu.vizoso@collabora.com> <20140816063517.GB13884@Nokia-N900>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: [PATCH v3 0/3] PM QoS: Add support for memory bandwidth constraints
+Date: Tue, 19 Aug 2014 10:38:40 +0200
+Message-ID: <1408437523-8542-1-git-send-email-tomeu.vizoso@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140816063517.GB13884@Nokia-N900>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Terje Bergstr?m <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>
+To: linux-pm@vger.kernel.org
+Cc: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 16 August 2014 08:35, Pavel Machek <pavel@ucw.cz> wrote:
->>
->> @@ -13,6 +14,7 @@ Each parameters have defined units:
->>   * latency: usec
->>   * timeout: usec
->>   * throughput: kbs (kilo bit / sec)
->> + * memory bandwidth: kbs (kilo bit / sec)
->
-> Would mega bits per second make sense here?
->
-> I suppose some many-core systems would have memory bandwith
-> in > 10 terabit/sec, overflowing u32.
+Hi,
 
-Yeah, I was a bit concerned about excessive rounding increasing the
-chances of going to a higher frequency step than strictly necessary,
-but after thinking a bit more about it, I think it won't be a problem
-because it would be a bad idea anyway to only take into account
-explicit bandwidth requirements when calculating the optimal memory
-bus frequency.
+have rebased on top of 3.17rc1 and changed the units to be megabits per second,
+as suggested by Pavel. Follows the original blurb:
 
-So I agree that a coarser unit such as mbps should be more appropriate here.
+Some device drivers need to sustain transfers to or from external memory at
+given fixed rates for a period of time. If we wait for the devfreq drivers to
+react to this load, the user is likely going to perceive glitches in the user
+experience.
 
-> Plus, if driver in 3/3 is just an example, perhaps comment
-> should explain that clearly?
+Some common scenarios that would benefit from it are display controllers
+setting a new mode, USB drivers starting isochronous transfers, camera drivers
+starting to capture and hw media codecs doing their thing.
 
-Will do.
+I'm proposing adding a new PM_QOS_MEMORY_BANDWIDTH class that device drivers
+can use to register their memory bandwidth needs right when they become known,
+so the external memory clock can be set at the optimum frequency, thus
+preventing glitches.
 
-> Otherwise looks good,
->
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+There have been similar proposals before [0], the first main concern being that
+constraints need to refer to a global resource such as CPUs. If they referred
+to a network NIC or to a UART, there would be no way of knowing how to actually
+constrain each device because there would be a single list of requests.
+
+In this case, the memory bus is a global resource just like the CPUs are, and
+all requests in this class will apply to a single device driver in any
+particular system.
+
+The second serious concern was that constraints need to be defined in a way
+generic enough so they can be consumed in a wide array of particular systems
+without placing the burden of taking into account hw specifics in the driver of
+the memory client.
+
+Here, the PM_QOS_MEMORY_BANDWIDTH constraints are specified always in kbs,
+being the amount of data that the device driver wants to see transferred per
+second. This allows for example for a camera driver to calculate the
+appropriate value based on the size of each frame and the desired FPS and,
+depending on the particular system where the camera block is used, the
+appropriate external memory driver will convert that to the bus clock frequency
+that makes sense for the hardware at hand.
+
+The first patch adds the new class and also a new PM_QOS_SUM class type.
+
+The second illustrates how the driver for such a memory client would request
+its memory bandwidth requirement.
+
+The third patch illustrates how an hypothetical driver for an external memory
+controller would listen for changes in the aggregated bandwidth constraint and
+would set a floor frequency rate on the appropriate clock. Depends on the
+per-user clk series [1].
+
+Most vendor trees carry their own solution for this specific issue, so it would
+be pretty neat if mainline gained a similar mechanism so we get more power
+management goodies in the right place.
+
+[0] https://lkml.org/lkml/2012/3/10/165
+[1] http://article.gmane.org/gmane.linux.ports.arm.kernel/349154
 
 Thanks,
 
 Tomeu
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Tomeu Vizoso (3):
+  PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
+  drm/tegra: Request memory bandwidth for the display controller
+  memory: tegra124-emc: Add EMC driver
+
+ Documentation/power/pm_qos_interface.txt |   4 +-
+ drivers/gpu/drm/tegra/dc.c               |  13 ++++
+ drivers/gpu/drm/tegra/drm.h              |   3 +
+ drivers/memory/Kconfig                   |   8 +++
+ drivers/memory/Makefile                  |   1 +
+ drivers/memory/tegra124-emc.c            | 116 +++++++++++++++++++++++++++++++
+ include/linux/pm_qos.h                   |   5 +-
+ kernel/power/qos.c                       |  27 ++++++-
+ 8 files changed, 174 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/memory/tegra124-emc.c
+
+-- 
+1.9.3
