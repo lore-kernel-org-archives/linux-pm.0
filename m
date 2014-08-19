@@ -1,253 +1,271 @@
 From: "Javi Merino" <javi.merino@arm.com>
-Subject: Re: [RFC PATCH v5 05/10] thermal: let governors have private data
- for each thermal zone
-Date: Tue, 19 Aug 2014 16:40:04 +0100
-Message-ID: <20140819154004.GF2896@e104805>
+Subject: Re: [RFC PATCH v5 08/10] thermal: introduce the Power Allocator
+ governor
+Date: Tue, 19 Aug 2014 17:02:54 +0100
+Message-ID: <20140819160254.GA16982@e104805>
 References: <1405001928-12697-1-git-send-email-javi.merino@arm.com>
- <1405001928-12697-6-git-send-email-javi.merino@arm.com>
- <CAC-25o8mcFXXykms5Ro+bLCztRKda3yg7BQHAg0+oZNT_Ym++w@mail.gmail.com>
+ <1405001928-12697-9-git-send-email-javi.merino@arm.com>
+ <20140819134552.GB4628@developer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:50315 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:47540 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751810AbaHSPkK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Aug 2014 11:40:10 -0400
-In-Reply-To: <CAC-25o8mcFXXykms5Ro+bLCztRKda3yg7BQHAg0+oZNT_Ym++w@mail.gmail.com>
+	with ESMTP id S1752244AbaHSQC6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Aug 2014 12:02:58 -0400
+In-Reply-To: <20140819134552.GB4628@developer>
 Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "edubezval@gmail.com" <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, "broonie@kernel.org" <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, "broonie@kernel.org" <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>
 
-On Tue, Aug 19, 2014 at 01:49:32PM +0100, edubezval@gmail.com wrote:
+On Tue, Aug 19, 2014 at 02:45:52PM +0100, Eduardo Valentin wrote:
 > Javi,
 
 Hi Eduardo,
 
-> On Thu, Jul 10, 2014 at 10:18 AM, Javi Merino <javi.merino@arm.com> wrote:
-> > A governor may need to store its current state between calls to
-> > throttle().  That state depends on the thermal zone, so store it as
-> > private data in struct thermal_zone_device.
+> On Thu, Jul 10, 2014 at 03:18:46PM +0100, Javi Merino wrote:
+> > The power allocator governor is a thermal governor that controls system
+> > and device power allocation to control temperature.  Conceptually, the
+> > implementation divides the sustainable power of a thermal zone among
+> > all the heat sources in that zone.
 > >
-> > The governors may have two new ops: bind_to_tz() and unbind_from_tz().
-> > When provided, these functions let governors do some initialization
-> > and teardown when they are bound/unbound to a tz and possibly store that
-> > information in the governor_data field of the struct
-> > thermal_zone_device.
+> > This governor relies on "power actors", entities that represent heat
+> > sources.  They can report current and maximum power consumption and
+> > can set a given maximum power consumption, usually via a cooling
+> > device.
+> >
+> > The governor uses a Proportional Integral Derivative (PID) controller
+> > driven by the temperature of the thermal zone.  The output of the
+> > controller is a power budget that is then allocated to each power
+> > actor that can have bearing on the temperature we are trying to
+> > control.  It decides how much power to give each cooling device based
+> > on the performance they are requesting.  The PID controller ensures
+> > that the total power budget does not exceed the control temperature.
 > >
 > > Cc: Zhang Rui <rui.zhang@intel.com>
 > > Cc: Eduardo Valentin <edubezval@gmail.com>
+> > Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
 > > Signed-off-by: Javi Merino <javi.merino@arm.com>
 > > ---
-> >  drivers/thermal/thermal_core.c | 83 ++++++++++++++++++++++++++++++++++++++----
-> >  include/linux/thermal.h        |  9 +++++
-> >  2 files changed, 84 insertions(+), 8 deletions(-)
+> >  Documentation/thermal/power_allocator.txt |  61 ++++
+> >  drivers/thermal/Kconfig                   |  15 +
+> >  drivers/thermal/Makefile                  |   1 +
+> >  drivers/thermal/power_allocator.c         | 467 ++++++++++++++++++++++++++++++
+> >  drivers/thermal/thermal_core.c            |   7 +-
+> >  drivers/thermal/thermal_core.h            |   8 +
+> >  include/linux/thermal.h                   |   8 +
+> >  7 files changed, 566 insertions(+), 1 deletion(-)
+> >  create mode 100644 Documentation/thermal/power_allocator.txt
+> >  create mode 100644 drivers/thermal/power_allocator.c
 > >
-> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> > index 71b0ec0c370d..3da99dd80ad5 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -72,6 +72,58 @@ static struct thermal_governor *__find_governor(const char *name)
-> >         return NULL;
-> >  }
-> >
-> > +/**
-> > + * bind_previous_governor() - bind the previous governor of the thermal zone
-> > + * @tz:                a valid pointer to a struct thermal_zone_device
-> > + * @failed_gov_name:   the name of the governor that failed to register
-> > + *
-> > + * Register the previous governor of the thermal zone after a new
-> > + * governor has failed to be bound.
-> > + */
-> > +static void bind_previous_governor(struct thermal_zone_device *tz,
-> > +                               const char *failed_gov_name)
-> > +{
-> > +       if (tz->governor && tz->governor->bind_to_tz) {
-> > +               if (tz->governor->bind_to_tz(tz)) {
-> > +                       dev_warn(&tz->device,
-> > +                               "governor %s failed to bind and the previous one (%s) failed to register again, thermal zone %s has no governor\n",
-> > +                               failed_gov_name, tz->governor->name, tz->type);
+> > diff --git a/Documentation/thermal/power_allocator.txt b/Documentation/thermal/power_allocator.txt
+> > new file mode 100644
+> > index 000000000000..1859074dadcb
+> > --- /dev/null
+> > +++ b/Documentation/thermal/power_allocator.txt
+> > @@ -0,0 +1,61 @@
+> > +Integration of the power_allocator governor in a platform
+> > +=========================================================
+> > +
+> > +Registering thermal_zone_device
+> > +-------------------------------
+> > +
+> > +An estimate of the sustainable dissipatable power (in mW) should be
+> > +provided while registering the thermal zone.  This is the maximum
+> > +sustained power for allocation at the desired maximum temperature.
+> > +This number can vary for different conditions, but the closed-loop of
+> > +the controller should take care of those variations, the
+> > +`sustainable_power` should be an estimation of it.  Register your
+> > +thermal zone with `thermal_zone_params` that have a
+> > +`sustainable_power`.  If you weren't passing any
+> > +`thermal_zone_params`, then something like this will do:
+> > +
+> > +     static const struct thermal_zone_params tz_params = {
+> > +             .sustainable_power = 3500,
+> > +     };
+> > +
+> > +and then pass `tz_params` as the 5th parameter to
+> > +`thermal_zone_device_register()`
+> > +
+> > +Trip points
+> > +-----------
+> > +
+> > +The governor requires the following two trip points:
+> > +
+> > +1.  "switch on" trip point: temperature above which the governor
+> > +    control loop starts operating
+> > +2.  "desired temperature" trip point: it should be higher than the
+> > +    "switch on" trip point. It is the target temperature the governor
+> > +    is controlling for.
+> > +
+> > +The trip points can be either active or passive.
+> > +
 > 
-> The above must be a dev_err(), not warn.
+> I would prefer, for the sake of keeping the right concept in use, you
+> state here that they are passive trip points.
 
-Sure
+Sure, I've also changed the function that checks this condition
+accordingly.
 
->                                          Besides, I would prefer if
-> you could improve the message. What is the difference between register
-> and bind?
+> > +Power actors
+> > +------------
+> > +
+> > +Devices controlled by this governor must be registered with the power
+> > +actor API.  Read `power_actor.txt` for more information about them.
+> > +
+> > +Limitations of the power allocator governor
+> > +===========================================
+> > +
+> > +The power allocator governor can't work with cooling devices directly.
+> > +A power actor can be created to interface between the governor and the
+> > +cooling device (see cpu_actor.c for an example).  Otherwise, if you
+> > +have power actors and cooling devices that are next to the same
+> > +thermal sensor create two thermal zones, one for each type.  Use the
+> > +power allocator governor for the power actor thermal zone with the
+> > +power actors and any other governor for the one with cooling devices.
+> > +
+> > +The power allocator governor's PID controller is highly dependent on a
+> > +periodic tick.  If you have a driver that calls
+> > +`thermal_zone_device_update()` (or anything that ends up calling the
+> > +governor's `throttle()` function) repetitively, the governor response
+> > +won't be very good.  Note that this is not particular to this
+> > +governor, step-wise will also misbehave if you call its throttle()
+> > +faster than the normal thermal framework tick (due to interrupts for
+> > +example) as it will overreact.
+> 
+> I would recommend rephrasing the paragraph above, as I mentioned in
+> other email, looks like a documented bug. Mentioning that the governor
+> is still dependent on polling_delay active_delay is still worth it.
+> Also, the coexistance of interrupt driven thermal zones with polling
+> driven framework requires the interrupt firing to be configure to
+> something meaneanful, such as, an event outside the temperature range
+> the current trip is.
 
-None.  It should say bind in both, it'll make it clearer.  I'll fix
-it.
+Ok, I'll rephrase it to clarify the point.
 
-> > +                       tz->governor = NULL;
-> > +               }
-> > +       }
+> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > index 249b196deffd..0e76c0dab5f3 100644
+> > --- a/drivers/thermal/Kconfig
+> > +++ b/drivers/thermal/Kconfig
+> > @@ -71,6 +71,14 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
+> >         Select this if you want to let the user space manage the
+> >         platform thermals.
+> >
+> > +config THERMAL_DEFAULT_GOV_POWER_ALLOCATOR
+> > +     bool "power_allocator"
+> > +     select THERMAL_GOV_POWER_ALLOCATOR
+> > +     help
+> > +       Select this if you want to control temperature based on
+> > +       system and device power allocation. This governor relies on
+> > +       power actors to operate.
+> > +
+> >  endchoice
+> >
+> >  config THERMAL_GOV_FAIR_SHARE
+> > @@ -89,6 +97,13 @@ config THERMAL_GOV_USER_SPACE
+> >       help
+> >         Enable this to let the user space manage the platform thermals.
+> >
+> > +config THERMAL_GOV_POWER_ALLOCATOR
+> > +     bool "Power allocator thermal governor"
+> > +     select THERMAL_POWER_ACTOR
+> > +     help
+> > +       Enable this to manage platform thermals by dynamically
+> > +       allocating and limiting power to devices.
+> > +
+> >  config THERMAL_POWER_ACTOR
+> >       bool
+> >
+> > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> > index 74f97c90a46c..e74d57d0fe61 100644
+> > --- a/drivers/thermal/Makefile
+> > +++ b/drivers/thermal/Makefile
+> > @@ -13,6 +13,7 @@ thermal_sys-$(CONFIG_THERMAL_OF)            += of-thermal.o
+> >  thermal_sys-$(CONFIG_THERMAL_GOV_FAIR_SHARE) += fair_share.o
+> >  thermal_sys-$(CONFIG_THERMAL_GOV_STEP_WISE)  += step_wise.o
+> >  thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE) += user_space.o
+> > +thermal_sys-$(CONFIG_THERMAL_GOV_POWER_ALLOCATOR)    += power_allocator.o
+> >
+> >  # power actors
+> >  obj-$(CONFIG_THERMAL_POWER_ACTOR) += power_actor.o
+> > diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
+> > new file mode 100644
+> > index 000000000000..eb1797cd859b
+> > --- /dev/null
+> > +++ b/drivers/thermal/power_allocator.c
+> > @@ -0,0 +1,467 @@
+> > +/*
+> > + * A power allocator to manage temperature
+> > + *
+> > + * Copyright (C) 2014 ARM Ltd.
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2 as
+> > + * published by the Free Software Foundation.
+> > + *
+> > + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+> > + * kind, whether express or implied; without even the implied warranty
+> > + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> > + * GNU General Public License for more details.
+> > + */
+> > +
+> > +#define pr_fmt(fmt) "Power allocator: " fmt
+> > +
+> > +#include <linux/power_actor.h>
+> > +#include <linux/rculist.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/thermal.h>
+> > +
+> > +#include "thermal_core.h"
+> > +
+> > +#define FRAC_BITS 8
+> > +#define int_to_frac(x) ((x) << FRAC_BITS)
+> > +#define frac_to_int(x) ((x) >> FRAC_BITS)
+> > +
+> > +/**
+> > + * mul_frac() - multiply two fixed-point numbers
+> > + * @x:       first multiplicand
+> > + * @y:       second multiplicand
+> > + *
+> > + * Return: the result of multiplying two fixed-point numbers.  The
+> > + * result is also a fixed-point number.
+> > + */
+> > +static inline s64 mul_frac(s64 x, s64 y)
+> > +{
+> > +     return (x * y) >> FRAC_BITS;
 > > +}
 > > +
+> > +enum power_allocator_trip_levels {
+> > +     TRIP_SWITCH_ON = 0,     /* Switch on PID controller */
+> > +     TRIP_MAX_DESIRED_TEMPERATURE, /* Temperature we are controlling for */
+> > +};
+> > +
 > > +/**
-> > + * thermal_set_governor() - Switch to another governor
-> > + * @tz:                a valid pointer to a struct thermal_zone_device
-> > + * @new_gov:   pointer to the new governor
-> > + *
-> > + * Change the governor of thermal zone @tz.
-> > + *
-> > + * Return: 0 on success, an error if the new governor's bind_to_tz() failed.
-> > + */
-> > +static int thermal_set_governor(struct thermal_zone_device *tz,
-> > +                               struct thermal_governor *new_gov)
-> > +{
-> > +       int ret = 0;
-> > +
-> > +       if (tz->governor && tz->governor->unbind_from_tz)
-> > +               tz->governor->unbind_from_tz(tz);
-> > +
-> > +       if (new_gov && new_gov->bind_to_tz) {
-> > +               ret = new_gov->bind_to_tz(tz);
-> > +               if (ret) {
-> > +                       bind_previous_governor(tz, new_gov->name);
-> > +
-> > +                       return ret;
-> > +               }
-> > +       }
-> > +
-> > +       tz->governor = new_gov;
-> > +
-> > +       return ret;
-> > +}
-> > +
-> >  int thermal_register_governor(struct thermal_governor *governor)
-> >  {
-> >         int err;
-> > @@ -104,8 +156,15 @@ int thermal_register_governor(struct thermal_governor *governor)
-> >
-> >                 name = pos->tzp->governor_name;
-> >
-> > -               if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
-> > -                       pos->governor = governor;
-> > +               if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH)) {
-> > +                       int ret;
-> > +
-> > +                       ret = thermal_set_governor(pos, governor);
-> > +                       if (ret)
-> > +                               dev_warn(&pos->device,
-> > +                                       "Failed to set governor %s for thermal zone %s: %d\n",
-> > +                                       governor->name, pos->type, ret);
+> > + * struct power_allocator_params - parameters for the power allocator governor
+> > + * @k_po:    Proportional parameter of the PID controller when overshooting
+> > + *           (i.e., when temperature is below the target)
+> > + * @k_pi:    Proportional parameter of the PID controller when undershooting
+> > + * @k_i:     Integral parameter of the PID controller
+> > + * @k_d:     Derivative parameter of the PID controller
 > 
-> dev_err here too.
+> Po, Pi, i, and d were not documented in your document above. Did you
+> miss them?
+> 
+> Given that they are core part of the governor behavior, I'd suggest
+> having a section in its document about how to fine tune the constants.
+> Explain, for instance, if it is enough to fine tune per platform, and
+> if having constants defined at compilation time or at runtime are good
+> point to be documented.
 
-Ok.  Thanks!
-Javi 
+We need to provide a way for platforms to specify these constants.
+Currently they are fixed because I thought that some heuristic would
+be good enough to cover all the platforms.  It turns out that it's not
+realistic so we will provide a mechanism for platforms to change them,
+we will export them in debugfs and document them in the next series.
 
-> > +               }
-> >         }
-> >
-> >         mutex_unlock(&thermal_list_lock);
-> > @@ -131,7 +190,7 @@ void thermal_unregister_governor(struct thermal_governor *governor)
-> >         list_for_each_entry(pos, &thermal_tz_list, node) {
-> >                 if (!strnicmp(pos->governor->name, governor->name,
-> >                                                 THERMAL_NAME_LENGTH))
-> > -                       pos->governor = NULL;
-> > +                       thermal_set_governor(pos, NULL);
-> >         }
-> >
-> >         mutex_unlock(&thermal_list_lock);
-> > @@ -756,8 +815,9 @@ policy_store(struct device *dev, struct device_attribute *attr,
-> >         if (!gov)
-> >                 goto exit;
-> >
-> > -       tz->governor = gov;
-> > -       ret = count;
-> > +       ret = thermal_set_governor(tz, gov);
-> > +       if (!ret)
-> > +               ret = count;
-> >
-> >  exit:
-> >         mutex_unlock(&thermal_governor_lock);
-> > @@ -1452,6 +1512,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
-> >         int result;
-> >         int count;
-> >         int passive = 0;
-> > +       struct thermal_governor *governor;
-> >
-> >         if (type && strlen(type) >= THERMAL_NAME_LENGTH)
-> >                 return ERR_PTR(-EINVAL);
-> > @@ -1542,9 +1603,15 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
-> >         mutex_lock(&thermal_governor_lock);
-> >
-> >         if (tz->tzp)
-> > -               tz->governor = __find_governor(tz->tzp->governor_name);
-> > +               governor = __find_governor(tz->tzp->governor_name);
-> >         else
-> > -               tz->governor = def_governor;
-> > +               governor = def_governor;
-> > +
-> > +       result = thermal_set_governor(tz, governor);
-> > +       if (result) {
-> > +               mutex_unlock(&thermal_governor_lock);
-> > +               goto unregister;
-> > +       }
-> >
-> >         mutex_unlock(&thermal_governor_lock);
-> >
-> > @@ -1634,7 +1701,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
-> >                 device_remove_file(&tz->device, &dev_attr_mode);
-> >         device_remove_file(&tz->device, &dev_attr_policy);
-> >         remove_trip_attrs(tz);
-> > -       tz->governor = NULL;
-> > +       thermal_set_governor(tz, NULL);
-> >
-> >         thermal_remove_hwmon_sysfs(tz);
-> >         release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
-> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> > index 0305cde21a74..1124b7a9358a 100644
-> > --- a/include/linux/thermal.h
-> > +++ b/include/linux/thermal.h
-> > @@ -187,6 +187,7 @@ struct thermal_attr {
-> >   * @ops:       operations this &thermal_zone_device supports
-> >   * @tzp:       thermal zone parameters
-> >   * @governor:  pointer to the governor for this thermal zone
-> > + * @governor_data:     private pointer for governor data
-> >   * @thermal_instances: list of &struct thermal_instance of this thermal zone
-> >   * @idr:       &struct idr to generate unique id for this zone's cooling
-> >   *             devices
-> > @@ -213,6 +214,7 @@ struct thermal_zone_device {
-> >         struct thermal_zone_device_ops *ops;
-> >         const struct thermal_zone_params *tzp;
-> >         struct thermal_governor *governor;
-> > +       void *governor_data;
-> >         struct list_head thermal_instances;
-> >         struct idr idr;
-> >         struct mutex lock;
-> > @@ -223,12 +225,19 @@ struct thermal_zone_device {
-> >  /**
-> >   * struct thermal_governor - structure that holds thermal governor information
-> >   * @name:      name of the governor
-> > + * @bind_to_tz: callback called when binding to a thermal zone.  If it
-> > + *             returns 0, the governor is bound to the thermal zone,
-> > + *             otherwise it fails.
-> > + * @unbind_from_tz:    callback called when a governor is unbound from a
-> > + *                     thermal zone.
-> >   * @throttle:  callback called for every trip point even if temperature is
-> >   *             below the trip point temperature
-> >   * @governor_list:     node in thermal_governor_list (in thermal_core.c)
-> >   */
-> >  struct thermal_governor {
-> >         char name[THERMAL_NAME_LENGTH];
-> > +       int (*bind_to_tz)(struct thermal_zone_device *tz);
-> > +       void (*unbind_from_tz)(struct thermal_zone_device *tz);
-> >         int (*throttle)(struct thermal_zone_device *tz, int trip);
-> >         struct list_head        governor_list;
-> >  };
-> > --
-> > 1.9.1
-> >
-> >
-> 
-> 
-> 
-> -- 
-> Eduardo Bezerra Valentin
-> 
+Cheers,
+Javi
 
