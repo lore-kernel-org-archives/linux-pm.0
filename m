@@ -1,32 +1,39 @@
-From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Subject: Re: [PATCH v3 3/3] memory: tegra124-emc: Add EMC driver
-Date: Tue, 19 Aug 2014 11:06:05 +0200
-Message-ID: <CAAObsKA+JofL3JANtdqAqGgtA3-x+GMQ0Ei7gMzmmWynP3U9Sg@mail.gmail.com>
-References: <1408437523-8542-1-git-send-email-tomeu.vizoso@collabora.com>
- <1408437523-8542-4-git-send-email-tomeu.vizoso@collabora.com> <20140819090314.GC7862@amd>
+From: "Du, ChangbinX" <changbinx.du@intel.com>
+Subject: RE: [BUG]  usb_dev_resume returns -113 due to work items queued by
+ usb on pm_wq is not executed before suspending.
+Date: Tue, 19 Aug 2014 10:08:35 +0000
+Message-ID: <0C18FE92A7765D4EB9EE5D38D86A563A01BA8636@SHSMSX103.ccr.corp.intel.com>
+References: <0C18FE92A7765D4EB9EE5D38D86A563A01BA7FD0@SHSMSX103.ccr.corp.intel.com>
+ <Pine.LNX.4.44L0.1408181019470.1332-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20140819090314.GC7862@amd>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:9006 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972AbaHSKIo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Aug 2014 06:08:44 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1408181019470.1332-100000@iolanthe.rowland.org>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Nyman, Mathias" <mathias.nyman@intel.com>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "Wu, Hao" <hao.wu@intel.com>
 
-On 19 August 2014 11:03, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org> wrote:
-> On Tue 2014-08-19 10:38:43, Tomeu Vizoso wrote:
->> Sets the EMC clock rate based on the bandwidth requirements registered by
->> memory clients through the PM_QOS_MEMORY_BANDWIDTH class.
->>
->> Note: this is just an example and not a proper driver for a external memory
->> controller. Its only purpose is to illustrate how such a driver
->> would set the
->
-> So... you don't want this to be merged?
+> Commit d6236f6d1d88 prevents the roothub resuming work item from being
+> queued.
+> 
+> > 4) We force system suspending process aborted (by modifying code) just
+> after the usb
+> >   Device suspend callback is invoked.
+> > 5) Then PM core will call resume callback of the usb device to recovery. On
+> this step
+> >   usb_dev_resume() invokes and it return -113 error. Because the
+> can_submit flag of
+> >   root hub is 0. Root hub resuming work item is still pending.
+> 
+> I still think that commit has already fixed your problem.
+> 
+> Alan Stern
 
-Not really, there's quite some work left to do until we have a proper
-EMC driver for Tegra124.
-
-Thanks,
-
-Tomeu
+Yes, thanks. Issue didn't reproduce after applying that patch.
