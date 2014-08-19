@@ -1,744 +1,225 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [RFC PATCH v5 08/10] thermal: introduce the Power Allocator
- governor
-Date: Tue, 19 Aug 2014 09:45:52 -0400
-Message-ID: <20140819134552.GB4628@developer>
-References: <1405001928-12697-1-git-send-email-javi.merino@arm.com>
- <1405001928-12697-9-git-send-email-javi.merino@arm.com>
+From: Juha-Matti Tilli <juha-matti.tilli@iki.fi>
+Subject: Re: [PATCH v4 4/4] thermal: Add Tegra SOCTHERM thermal management
+ driver
+Date: Tue, 19 Aug 2014 17:09:55 +0300
+Message-ID: <20140819140955.GA50475@sandfort.unics.fi>
+References: <1408100430-29461-1-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f174.google.com ([209.85.220.174]:63289 "EHLO
-	mail-vc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750789AbaHSNpt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Aug 2014 09:45:49 -0400
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <1405001928-12697-9-git-send-email-javi.merino@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1408100430-29461-1-git-send-email-mperttunen@nvidia.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Mikko Perttunen <mperttunen@nvidia.com>
+Cc: linux-pm@vger.kernel.org, Juha-Matti Tilli <jtilli@nvidia.com>, swarren@wwwdotorg.org, linux-kernel@vger.kernel.org, edubezval@gmail.com, thierry.reding@gmail.com, linux-tegra@vger.kernel.org, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, broonie@kernel.org, Zhang Rui <rui.zhang@intel.com>
 
-Javi,
+> This adds support for the Tegra SOCTHERM thermal sensing and management
+> system found in the Tegra124 system-on-chip. This initial driver supports
+> temperature polling for four thermal zones.
 
-On Thu, Jul 10, 2014 at 03:18:46PM +0100, Javi Merino wrote:
-> The power allocator governor is a thermal governor that controls system
-> and device power allocation to control temperature.  Conceptually, the
-> implementation divides the sustainable power of a thermal zone among
-> all the heat sources in that zone.
-> 
-> This governor relies on "power actors", entities that represent heat
-> sources.  They can report current and maximum power consumption and
-> can set a given maximum power consumption, usually via a cooling
-> device.
-> 
-> The governor uses a Proportional Integral Derivative (PID) controller
-> driven by the temperature of the thermal zone.  The output of the
-> controller is a power budget that is then allocated to each power
-> actor that can have bearing on the temperature we are trying to
-> control.  It decides how much power to give each cooling device based
-> on the performance they are requesting.  The PID controller ensures
-> that the total power budget does not exceed the control temperature.
-> 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
-> ---
->  Documentation/thermal/power_allocator.txt |  61 ++++
->  drivers/thermal/Kconfig                   |  15 +
->  drivers/thermal/Makefile                  |   1 +
->  drivers/thermal/power_allocator.c         | 467 ++++++++++++++++++++++++++++++
->  drivers/thermal/thermal_core.c            |   7 +-
->  drivers/thermal/thermal_core.h            |   8 +
->  include/linux/thermal.h                   |   8 +
->  7 files changed, 566 insertions(+), 1 deletion(-)
->  create mode 100644 Documentation/thermal/power_allocator.txt
->  create mode 100644 drivers/thermal/power_allocator.c
-> 
-> diff --git a/Documentation/thermal/power_allocator.txt b/Documentation/thermal/power_allocator.txt
-> new file mode 100644
-> index 000000000000..1859074dadcb
-> --- /dev/null
-> +++ b/Documentation/thermal/power_allocator.txt
-> @@ -0,0 +1,61 @@
-> +Integration of the power_allocator governor in a platform
-> +=========================================================
-> +
-> +Registering thermal_zone_device
-> +-------------------------------
-> +
-> +An estimate of the sustainable dissipatable power (in mW) should be
-> +provided while registering the thermal zone.  This is the maximum
-> +sustained power for allocation at the desired maximum temperature.
-> +This number can vary for different conditions, but the closed-loop of
-> +the controller should take care of those variations, the
-> +`sustainable_power` should be an estimation of it.  Register your
-> +thermal zone with `thermal_zone_params` that have a
-> +`sustainable_power`.  If you weren't passing any
-> +`thermal_zone_params`, then something like this will do:
-> +
-> +	static const struct thermal_zone_params tz_params = {
-> +		.sustainable_power = 3500,
-> +	};
-> +
-> +and then pass `tz_params` as the 5th parameter to
-> +`thermal_zone_device_register()`
-> +
-> +Trip points
-> +-----------
-> +
-> +The governor requires the following two trip points:
-> +
-> +1.  "switch on" trip point: temperature above which the governor
-> +    control loop starts operating
-> +2.  "desired temperature" trip point: it should be higher than the
-> +    "switch on" trip point. It is the target temperature the governor
-> +    is controlling for.
-> +
-> +The trip points can be either active or passive.
-> +
+I have several comments about this patch. Overall, the code looks clean,
+way cleaner than NVIDIA's internal soc_therm driver. I adopted your code
+to run on the internal firmware of a Tegra124 SoC. Additionally, I
+tested the code as-is on a Jetson TK1.
 
-I would prefer, for the sake of keeping the right concept in use, you
-state here that they are passive trip points.
+My test shows that the temperature readings look sane and do vary with
+load, so the code seems to work. However, I have some concerns about the
+calibration values calculated by this code and the error handling of the
+code.
 
-> +Power actors
-> +------------
-> +
-> +Devices controlled by this governor must be registered with the power
-> +actor API.  Read `power_actor.txt` for more information about them.
-> +
-> +Limitations of the power allocator governor
-> +===========================================
-> +
-> +The power allocator governor can't work with cooling devices directly.
-> +A power actor can be created to interface between the governor and the
-> +cooling device (see cpu_actor.c for an example).  Otherwise, if you
-> +have power actors and cooling devices that are next to the same
-> +thermal sensor create two thermal zones, one for each type.  Use the
-> +power allocator governor for the power actor thermal zone with the
-> +power actors and any other governor for the one with cooling devices.
-> +
-> +The power allocator governor's PID controller is highly dependent on a
-> +periodic tick.  If you have a driver that calls
-> +`thermal_zone_device_update()` (or anything that ends up calling the
-> +governor's `throttle()` function) repetitively, the governor response
-> +won't be very good.  Note that this is not particular to this
-> +governor, step-wise will also misbehave if you call its throttle()
-> +faster than the normal thermal framework tick (due to interrupts for
-> +example) as it will overreact.
+Originally, I thought the fuse offsets were incorrect but as it turns
+out, the official Linux kernel starts counting the fuses at a different
+location than NVIDIA's internal kernel.
 
-I would recommend rephrasing the paragraph above, as I mentioned in
-other email, looks like a documented bug. Mentioning that the governor
-is still dependent on polling_delay active_delay is still worth it.
-Also, the coexistance of interrupt driven thermal zones with polling
-driven framework requires the interrupt firing to be configure to
-something meaneanful, such as, an event outside the temperature range
-the current trip is. 
-
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 249b196deffd..0e76c0dab5f3 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -71,6 +71,14 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
->  	  Select this if you want to let the user space manage the
->  	  platform thermals.
->  
-> +config THERMAL_DEFAULT_GOV_POWER_ALLOCATOR
-> +	bool "power_allocator"
-> +	select THERMAL_GOV_POWER_ALLOCATOR
-> +	help
-> +	  Select this if you want to control temperature based on
-> +	  system and device power allocation. This governor relies on
-> +	  power actors to operate.
-> +
->  endchoice
->  
->  config THERMAL_GOV_FAIR_SHARE
-> @@ -89,6 +97,13 @@ config THERMAL_GOV_USER_SPACE
->  	help
->  	  Enable this to let the user space manage the platform thermals.
->  
-> +config THERMAL_GOV_POWER_ALLOCATOR
-> +	bool "Power allocator thermal governor"
-> +	select THERMAL_POWER_ACTOR
-> +	help
-> +	  Enable this to manage platform thermals by dynamically
-> +	  allocating and limiting power to devices.
-> +
->  config THERMAL_POWER_ACTOR
->  	bool
->  
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 74f97c90a46c..e74d57d0fe61 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -13,6 +13,7 @@ thermal_sys-$(CONFIG_THERMAL_OF)		+= of-thermal.o
->  thermal_sys-$(CONFIG_THERMAL_GOV_FAIR_SHARE)	+= fair_share.o
->  thermal_sys-$(CONFIG_THERMAL_GOV_STEP_WISE)	+= step_wise.o
->  thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE)	+= user_space.o
-> +thermal_sys-$(CONFIG_THERMAL_GOV_POWER_ALLOCATOR)	+= power_allocator.o
->  
->  # power actors
->  obj-$(CONFIG_THERMAL_POWER_ACTOR) += power_actor.o
-> diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-> new file mode 100644
-> index 000000000000..eb1797cd859b
-> --- /dev/null
-> +++ b/drivers/thermal/power_allocator.c
-> @@ -0,0 +1,467 @@
-> +/*
-> + * A power allocator to manage temperature
-> + *
-> + * Copyright (C) 2014 ARM Ltd.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> + * kind, whether express or implied; without even the implied warranty
-> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#define pr_fmt(fmt) "Power allocator: " fmt
-> +
-> +#include <linux/power_actor.h>
-> +#include <linux/rculist.h>
-> +#include <linux/slab.h>
-> +#include <linux/thermal.h>
-> +
-> +#include "thermal_core.h"
-> +
-> +#define FRAC_BITS 8
-> +#define int_to_frac(x) ((x) << FRAC_BITS)
-> +#define frac_to_int(x) ((x) >> FRAC_BITS)
-> +
-> +/**
-> + * mul_frac() - multiply two fixed-point numbers
-> + * @x:	first multiplicand
-> + * @y:	second multiplicand
-> + *
-> + * Return: the result of multiplying two fixed-point numbers.  The
-> + * result is also a fixed-point number.
-> + */
-> +static inline s64 mul_frac(s64 x, s64 y)
+[snip]
+> +static int calculate_shared_calibration(struct tsensor_shared_calibration *r)
 > +{
-> +	return (x * y) >> FRAC_BITS;
-> +}
+> +	u32 val;
+> +	u32 shifted_cp, shifted_ft;
+> +	int err;
 > +
-> +enum power_allocator_trip_levels {
-> +	TRIP_SWITCH_ON = 0,	/* Switch on PID controller */
-> +	TRIP_MAX_DESIRED_TEMPERATURE, /* Temperature we are controlling for */
-> +};
+> +	err = tegra_fuse_readl(FUSE_TSENSOR8_CALIB, &val);
+> +	if (err)
+> +		return err;
+> +	r->base_cp = val & FUSE_TSENSOR8_CALIB_CP_TS_BASE_MASK;
+> +	r->base_ft = (val & FUSE_TSENSOR8_CALIB_FT_TS_BASE_MASK)
+> +		>> FUSE_TSENSOR8_CALIB_FT_TS_BASE_SHIFT;
 > +
-> +/**
-> + * struct power_allocator_params - parameters for the power allocator governor
-> + * @k_po:	Proportional parameter of the PID controller when overshooting
-> + *		(i.e., when temperature is below the target)
-> + * @k_pi:	Proportional parameter of the PID controller when undershooting
-> + * @k_i:	Integral parameter of the PID controller
-> + * @k_d:	Derivative parameter of the PID controller
-
-Po, Pi, i, and d were not documented in your document above. Did you
-miss them?
-
-Given that they are core part of the governor behavior, I'd suggest
-having a section in its document about how to fine tune the constants.
-Explain, for instance, if it is enough to fine tune per platform, and
-if having constants defined at compilation time or at runtime are good
-point to be documented.
-
-> + * @integral_cutoff:	threshold below which the error is no longer accumulated
-> +			in the PID controller
-> + * @err_integral:	accumulated error in the PID controller.
-> + * @prev_err:	error in the previous iteration of the PID controller.
-> + *		Used to calculate the derivative term.
-> + */
-> +struct power_allocator_params {
-> +	s32 k_po;
-> +	s32 k_pu;
-> +	s32 k_i;
-> +	s32 k_d;
-> +	s32 integral_cutoff;
-> +	s32 err_integral;
-> +	s32 prev_err;
-> +};
+> +	err = tegra_fuse_readl(FUSE_SPARE_REALIGNMENT_REG_0, &val);
+> +	if (err)
+> +		return err;
+> +	shifted_cp = sign_extend32(val, 5);
+> +	val = ((val & FUSE_SPARE_REALIGNMENT_REG_SHIFT_FT_MASK)
+> +		>> FUSE_SPARE_REALIGNMENT_REG_SHIFT_FT_SHIFT);
+> +	shifted_ft = sign_extend32(val, 4);
 > +
-> +/**
-> + * pid_controller() - PID controller
-> + * @tz:	thermal zone we are operating in
-> + * @current_temp:	the current temperature
-> + * @control_temp:	the target temperature
-> + * @max_allocatable_power:	maximum allocatable power for this thermal zone
-> + *
-> + * This PID controller increases the available power budget so that the
-> + * temperature of the thermal zone gets as close as possible to
-> + * @control_temp and limits the power if it exceeds it.  k_po is the
-> + * proportional term when we are overshooting, k_pu is the
-> + * proportional term when we are undershooting.  integral_cutoff is a
-> + * threshold below which we stop accumulating the error.  The
-> + * accumulated error is only valid if the requested power will make
-> + * the system warmer.  If the system is mostly idle, there's no point
-> + * in accumulating positive error.
-> + *
-> + * Return: The power budget for the next period.
-> + */
-> +static u32 pid_controller(struct thermal_zone_device *tz,
-> +			unsigned long current_temp, unsigned long control_temp,
-> +			u32 max_allocatable_power)
-> +{
-> +	s64 p, i, d, power_range;
-> +	s32 err;
-> +	struct power_allocator_params *params = tz->governor_data;
-> +
-> +	err = ((s32)control_temp - (s32)current_temp) / 1000;
-> +	err = int_to_frac(err);
-> +
-> +	/* Calculate the proportional term */
-> +	p = mul_frac(err < 0 ? params->k_po : params->k_pu, err);
-> +
-> +	/*
-> +	 * Calculate the integral term
-> +	 *
-> +	 * if the error s less than cut off allow integration (but
-> +	 * the integral is limited to max power)
-> +	 *
-
-
-
-
-> +	i = mul_frac(params->k_i, params->err_integral);
-> +
-> +	if (err < int_to_frac(params->integral_cutoff)) {
-> +		s64 tmpi = mul_frac(params->k_i, err);
-> +
-> +		tmpi += i;
-> +		if (tmpi <= int_to_frac(max_allocatable_power)) {
-> +			i = tmpi;
-> +			params->err_integral += err;
-> +		}
-> +	}
-> +
-> +	/*
-> +	 * Calculate the derivative term
-> +	 *
-> +	 * We do err - prev_err, so with a positive k_d, a decreasing
-> +	 * error (i.e. driving closer to the line) results in less
-> +	 * power being applied, slowing down the controller)
-> +	 */
-> +	d = mul_frac(params->k_d, err - params->prev_err);
-> +	params->prev_err = err;
-> +
-> +	power_range = p + i + d;
-> +
-> +	/* feed-forward the known sustainable dissipatable power */
-> +	power_range = tz->tzp->sustainable_power + frac_to_int(power_range);
-> +
-> +	return clamp(power_range, (s64)0, (s64)max_allocatable_power);
-> +}
-> +
-> +/**
-> + * divvy_up_power() - divvy the allocated power between the actors
-> + * @req_power:	each actor's requested power
-> + * @max_power:	each actor's maximum available power
-> + * @num_actors:	size of the @req_power, @max_power and @granted_power's array
-> + * @total_req_power: sum of @req_power
-> + * @power_range:	total allocated power
-> + * @granted_power:	ouput array: each actor's granted power
-> + *
-> + * This function divides the total allocated power (@power_range)
-> + * fairly between the actors.  It first tries to give each actor a
-> + * share of the @power_range according to how much power it requested
-> + * compared to the rest of the actors.  For example, if only one actor
-> + * requests power, then it receives all the @power_range.  If
-> + * three actors each requests 1mW, each receives a third of the
-> + * @power_range.
-> + *
-> + * If any actor received more than their maximum power, then that
-> + * surplus is re-divvied among the actors based on how far they are
-> + * from their respective maximums.
-> + *
-> + * Granted power for each actor is written to @granted_power, which
-> + * should've been allocated by the calling function.
-> + */
-> +static void divvy_up_power(u32 *req_power, u32 *max_power, int num_actors,
-> +			u32 total_req_power, u32 power_range,
-> +			u32 *granted_power)
-> +{
-> +	u32 extra_power, capped_extra_power, extra_actor_power[num_actors];
-> +	int i;
-> +
-> +	if (!total_req_power) {
-> +		/*
-> +		 * Nobody requested anything, so just give everybody
-> +		 * the maximum power
-> +		 */
-> +		for (i = 0; i < num_actors; i++)
-> +			granted_power[i] = max_power[i];
-> +
-> +		return;
-> +	}
-> +
-> +	capped_extra_power = 0;
-> +	extra_power = 0;
-> +	for (i = 0; i < num_actors; i++) {
-> +		u64 req_range = req_power[i] * power_range;
-> +
-> +		granted_power[i] = div_u64(req_range, total_req_power);
-> +
-> +		if (granted_power[i] > max_power[i]) {
-> +			extra_power += granted_power[i] - max_power[i];
-> +			granted_power[i] = max_power[i];
-> +		}
-> +
-> +		extra_actor_power[i] = max_power[i] - granted_power[i];
-> +		capped_extra_power += extra_actor_power[i];
-> +	}
-> +
-> +	if (!extra_power)
-> +		return;
-> +
-> +	/*
-> +	 * Re-divvy the reclaimed extra among actors based on
-> +	 * how far they are from the max
-> +	 */
-> +	extra_power = min(extra_power, capped_extra_power);
-> +	if (capped_extra_power > 0)
-> +		for (i = 0; i < num_actors; i++)
-> +			granted_power[i] += (extra_actor_power[i] *
-> +					extra_power) / capped_extra_power;
-> +}
-> +
-> +static int allocate_power(struct thermal_zone_device *tz,
-> +			unsigned long current_temp, unsigned long control_temp)
-> +{
-> +	struct power_actor *actor;
-> +	u32 *req_power, *max_power, *granted_power;
-> +	u32 total_req_power, max_allocatable_power;
-> +	u32 power_range;
-> +	int i, num_actors, ret = 0;
-> +
-> +	mutex_lock(&tz->lock);
-> +	rcu_read_lock();
-> +
-> +	num_actors = 0;
-> +	list_for_each_entry_rcu(actor, &actor_list, actor_node)
-> +		num_actors++;
-> +
-> +	req_power = devm_kcalloc(&tz->device, num_actors, sizeof(*req_power),
-> +				GFP_KERNEL);
-> +	if (!req_power) {
-> +		ret = -ENOMEM;
-> +		goto unlock;
-> +	}
-> +
-> +	max_power = devm_kcalloc(&tz->device, num_actors, sizeof(*max_power),
-> +				GFP_KERNEL);
-> +	if (!max_power) {
-> +		ret = -ENOMEM;
-> +		goto free_req_power;
-> +	}
-> +
-> +	granted_power = devm_kcalloc(&tz->device, num_actors,
-> +				sizeof(*granted_power), GFP_KERNEL);
-> +	if (!granted_power) {
-> +		ret = -ENOMEM;
-> +		goto free_max_power;
-> +	}
-> +
-> +	i = 0;
-> +	total_req_power = 0;
-> +	max_allocatable_power = 0;
-> +
-> +	list_for_each_entry_rcu(actor, &actor_list, actor_node) {
-> +		req_power[i] = actor->ops->get_req_power(actor, tz);
-> +		total_req_power += req_power[i];
-> +
-> +		max_power[i] = actor->ops->get_max_power(actor, tz);
-> +		max_allocatable_power += max_power[i];
-> +
-> +		i++;
-> +	}
-> +
-> +	power_range = pid_controller(tz, current_temp, control_temp,
-> +				max_allocatable_power);
-> +
-> +	divvy_up_power(req_power, max_power, num_actors, total_req_power,
-> +		power_range, granted_power);
-> +
-> +	i = 0;
-> +	list_for_each_entry_rcu(actor, &actor_list, actor_node) {
-> +		actor->ops->set_power(actor, tz, granted_power[i]);
-> +		i++;
-> +	}
-> +
-> +	devm_kfree(&tz->device, granted_power);
-> +free_max_power:
-> +	devm_kfree(&tz->device, max_power);
-> +free_req_power:
-> +	devm_kfree(&tz->device, req_power);
-> +unlock:
-> +	rcu_read_unlock();
-> +	mutex_unlock(&tz->lock);
-> +
-> +	return ret;
-> +}
-> +
-> +static int check_trips(struct thermal_zone_device *tz)
-> +{
-> +	int ret;
-> +	enum thermal_trip_type type;
-> +
-> +	if (tz->trips < 2)
-> +		return -EINVAL;
-> +
-> +	ret = tz->ops->get_trip_type(tz, TRIP_SWITCH_ON, &type);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if ((type != THERMAL_TRIP_PASSIVE) && (type != THERMAL_TRIP_ACTIVE))
-> +		return -EINVAL;
-> +
-> +	ret = tz->ops->get_trip_type(tz, TRIP_MAX_DESIRED_TEMPERATURE, &type);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if ((type != THERMAL_TRIP_PASSIVE) && (type != THERMAL_TRIP_ACTIVE))
-> +		return -EINVAL;
-> +
-> +	return ret;
-> +}
-> +
-> +static void reset_pid_controller(struct power_allocator_params *params)
-> +{
-> +	params->err_integral = 0;
-> +	params->prev_err = 0;
-> +}
-> +
-> +static void allow_maximum_power(struct thermal_zone_device *tz)
-> +{
-> +	struct power_actor *actor;
-> +
-> +	rcu_read_lock();
-> +
-> +	list_for_each_entry_rcu(actor, &actor_list, actor_node) {
-> +		u32 max_power = actor->ops->get_max_power(actor, tz);
-> +
-> +		actor->ops->set_power(actor, tz, max_power);
-> +	}
-> +
-> +	rcu_read_unlock();
-> +}
-> +
-> +/**
-> + * power_allocator_bind() - bind the power_allocator governor to a thermal zone
-> + * @tz:	thermal zone to bind it to
-> + *
-> + * Check that the thermal zone is valid for this governor, that is, it
-> + * has two thermal trips.  If so, initialize the PID controller
-> + * parameters and bind it to the thermal zone.
-> + *
-> + * Return: 0 on success, -EINVAL if the trips were invalid or -ENOMEM
-> + * if we ran out of memory.
-> + */
-> +static int power_allocator_bind(struct thermal_zone_device *tz)
-> +{
-> +	int ret;
-> +	struct power_allocator_params *params;
-> +	unsigned long switch_on_temp, control_temp;
-> +	u32 temperature_threshold;
-> +
-> +	ret = check_trips(tz);
-> +	if (ret) {
-> +		dev_err(&tz->device,
-> +			"thermal zone %s has the wrong number of trips for this governor\n",
-> +			tz->type);
-> +		return ret;
-> +	}
-> +
-> +	if (!tz->tzp || !tz->tzp->sustainable_power) {
-> +		dev_err(&tz->device,
-> +			"power_allocator: missing sustainable_power\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	params = devm_kzalloc(&tz->device, sizeof(*params), GFP_KERNEL);
-> +	if (!params)
-> +		return -ENOMEM;
-> +
-> +	ret = tz->ops->get_trip_temp(tz, TRIP_SWITCH_ON, &switch_on_temp);
-> +	if (ret)
-> +		goto free;
-> +
-> +	ret = tz->ops->get_trip_temp(tz, TRIP_MAX_DESIRED_TEMPERATURE,
-> +				&control_temp);
-> +	if (ret)
-> +		goto free;
-> +
-> +	temperature_threshold = (control_temp - switch_on_temp) / 1000;
-> +
-> +	params->k_po = int_to_frac(tz->tzp->sustainable_power) /
-> +		temperature_threshold;
-> +	params->k_pu = int_to_frac(2 * tz->tzp->sustainable_power) /
-> +		temperature_threshold;
-> +	params->k_i = int_to_frac(1);
-> +	params->k_d = int_to_frac(0);
-> +	params->integral_cutoff = 0;
-> +
-> +	reset_pid_controller(params);
-> +
-> +	tz->governor_data = params;
+> +	r->actual_temp_cp = 2 * NOMINAL_CALIB_CP_T124 + shifted_cp;
+> +	r->actual_temp_ft = 2 * NOMINAL_CALIB_FT_T124 + shifted_ft;
 > +
 > +	return 0;
-> +
-> +free:
-> +	devm_kfree(&tz->device, params);
-> +	return ret;
 > +}
 > +
-> +static void power_allocator_unbind(struct thermal_zone_device *tz)
+> +static int calculate_tsensor_calibration(
+> +	struct tegra_tsensor *sensor,
+> +	struct tsensor_shared_calibration shared,
+> +	u32 *calib
+> +)
 > +{
-> +	dev_dbg(&tz->device, "Unbinding from thermal zone %d\n", tz->id);
-> +	devm_kfree(&tz->device, tz->governor_data);
-> +	tz->governor_data = NULL;
+> +	u32 val;
+> +	s32 actual_tsensor_ft, actual_tsensor_cp;
+> +	s32 delta_sens, delta_temp;
+> +	s32 mult, div;
+> +	s16 therma, thermb;
+> +	int err;
+> +
+> +	err = tegra_fuse_readl(sensor->calib_fuse_offset, &val);
+> +	if (err)
+> +		return err;
+> +
+> +	actual_tsensor_cp = (shared.base_cp * 64) + sign_extend32(val, 12);
+> +	val = (val & FUSE_TSENSOR_CALIB_FT_TS_BASE_MASK)
+> +		>> FUSE_TSENSOR_CALIB_FT_TS_BASE_SHIFT;
+> +	actual_tsensor_ft = (shared.base_ft * 32) + sign_extend32(val, 12);
+> +
+> +	delta_sens = actual_tsensor_ft - actual_tsensor_cp;
+> +	delta_temp = shared.actual_temp_ft - shared.actual_temp_cp;
+> +
+> +	mult = t124_tsensor_config.pdiv * t124_tsensor_config.tsample_ate;
+> +	div = t124_tsensor_config.tsample * t124_tsensor_config.pdiv_ate;
+> +
+> +	therma = div_s64((s64) delta_temp * (1LL << 13) * mult,
+> +		(s64) delta_sens * div);
+> +	thermb = div_s64(((s64) actual_tsensor_ft * shared.actual_temp_cp) -
+> +		((s64) actual_tsensor_cp * shared.actual_temp_ft),
+> +		(s64) delta_sens);
+> +
+> +	therma = div_s64((s64) therma * sensor->fuse_corr_alpha,
+> +		(s64) 1000000LL);
+> +	thermb = div_s64((s64) thermb * sensor->fuse_corr_alpha +
+> +		sensor->fuse_corr_beta,
+> +		(s64) 1000000LL);
+> +
+> +	*calib = ((u16)(therma) << SENSOR_CONFIG2_THERMA_SHIFT) |
+> +		((u16)thermb << SENSOR_CONFIG2_THERMB_SHIFT);
+> +
+> +	return 0;
 > +}
 > +
-> +static int power_allocator_throttle(struct thermal_zone_device *tz, int trip)
+> +static int enable_tsensor(struct tegra_soctherm *tegra,
+> +			  struct tegra_tsensor *sensor,
+> +			  struct tsensor_shared_calibration shared)
 > +{
-> +	int ret;
-> +	unsigned long switch_on_temp, control_temp, current_temp;
-> +	struct power_allocator_params *params = tz->governor_data;
+> +	void * __iomem base = tegra->regs + sensor->base;
+> +	unsigned int val;
+> +	u32 calib;
+> +	int err;
 > +
-> +	/*
-> +	 * We get called for every trip point but we only need to do
-> +	 * our calculations once
-> +	 */
-> +	if (trip != TRIP_MAX_DESIRED_TEMPERATURE)
-> +		return 0;
+> +	err = calculate_tsensor_calibration(sensor, shared, &calib);
+> +	if (err)
+> +		return err;
 > +
-> +	ret = thermal_zone_get_temp(tz, &current_temp);
-> +	if (ret) {
-> +		dev_warn(&tz->device, "Failed to get temperature: %d\n", ret);
-> +		return ret;
-> +	}
+> +	val = 0;
+> +	val |= t124_tsensor_config.tall << SENSOR_CONFIG0_TALL_SHIFT;
+> +	writel(val, base + SENSOR_CONFIG0);
 > +
-> +	ret = tz->ops->get_trip_temp(tz, TRIP_SWITCH_ON, &switch_on_temp);
-> +	if (ret) {
-> +		dev_warn(&tz->device,
-> +			"Failed to get switch on temperature: %d\n", ret);
-> +		return ret;
-> +	}
+> +	val = 0;
+> +	val |= (t124_tsensor_config.tsample - 1) <<
+> +		SENSOR_CONFIG1_TSAMPLE_SHIFT;
+> +	val |= t124_tsensor_config.tiddq_en << SENSOR_CONFIG1_TIDDQ_EN_SHIFT;
+> +	val |= t124_tsensor_config.ten_count << SENSOR_CONFIG1_TEN_COUNT_SHIFT;
+> +	val |= SENSOR_CONFIG1_TEMP_ENABLE;
+> +	writel(val, base + SENSOR_CONFIG1);
 > +
-> +	if (current_temp < switch_on_temp) {
-> +		tz->passive = 0;
-> +		reset_pid_controller(params);
-> +		allow_maximum_power(tz);
-> +		return 0;
-> +	}
+> +	writel(calib, base + SENSOR_CONFIG2);
 > +
-> +	tz->passive = 1;
-> +
-> +	ret = tz->ops->get_trip_temp(tz, TRIP_MAX_DESIRED_TEMPERATURE,
-> +				&control_temp);
-> +	if (ret) {
-> +		dev_warn(&tz->device,
-> +			"Failed to get the maximum desired temperature: %d\n",
-> +			ret);
-> +		return ret;
-> +	}
-> +
-> +	return allocate_power(tz, current_temp, control_temp);
+> +	return 0;
 > +}
+
+This code writes different values to SENSOR_CONFIG2 registers than what
+the NVIDIA's internal soc_therm driver does. Because the calibration
+value calculation should be based on the same fuses that NVIDIA's
+internal driver reads, I believe the value calculated and eventually
+written to SENSOR_CONFIG2 should be identical with NVIDIA's internal
+driver. That is not the case now.
+
+I first loaded the NVIDIA's internal soc_therm driver and then loaded
+code adopted from your driver running on Tegra's firmware. Here's a log
+of how the CONFIG2 values are changed by this code to different values
+than NVIDIA's internal soc_therm driver originally sets them to:
+
+CONFIG2: 5b0f813 -> 5c6f7fb
+CONFIG2: 5e8f7cd -> 5fff7b4
+CONFIG2: 5bdf7ce -> 5d3f7b5
+CONFIG2: 596f831 -> 5aaf81a
+CONFIG2: 675f6b5 -> 68cf698
+CONFIG2: 6d6f641 -> 6eff623
+CONFIG2: 641f72b -> 659f710
+CONFIG2: 590f861 -> 5a5f84a
+
+On the left, there's the value set by NVIDIA's internal soc_therm driver
+and on the right, there's the value set by code adopted from your
+driver. My modifications to the code are minor, and I don't think they
+could explain why the CONFIG2 values set are different.
+
+If you want them, I can supply you the values of the fuses on my
+development board.
+
+The temperature readings look sane and do vary with load, but I think
+they're a bit different than what NVIDIA's internal soc_therm driver
+gives. I'm not entirely sure if the calibration values set by your
+driver or the calibration values set by NVIDIA's internal soc_therm
+driver are correct, but it seems to me that only one of these drivers
+can be correct.
+
+The values written to CONFIG1 and CONFIG0 do seem sane.
+
+Since there are divisions being done, some sort of explicit protection
+from divisions by zero should perhaps be considered, although this can
+happen only if the fuses for some reason read all zeroes. I'm not sure
+if that's possible with real hardware.
+
+Where does this code come from? It does not definitely come from
+NVIDIA's internal soc_therm driver, as it looks entirely different. And
+it calculates different calibration values. If you wrote the code, you
+should consider commenting it since there are a lot of complex
+calculations going on that are not obvious to the reader. For example,
+what do "cp" and "ft" mean? Are they acronyms? If so, they should be
+explained.
+
+[snip]
+> +	for (i = 0; i < ARRAY_SIZE(tegra->thermctl_tzs); ++i) {
+> +		struct tegra_thermctl_zone *zone =
+> +			devm_kzalloc(&pdev->dev, sizeof(*zone), GFP_KERNEL);
+> +		if (!zone) {
+> +			err = -ENOMEM;
+
+Shouldn't this one have a --i line like the next IS_ERR block?
+
+> +			goto unregister_tzs;
+> +		}
 > +
-> +static struct thermal_governor thermal_gov_power_allocator = {
-> +	.name		= "power_allocator",
-> +	.bind_to_tz	= power_allocator_bind,
-> +	.unbind_from_tz	= power_allocator_unbind,
-> +	.throttle	= power_allocator_throttle,
-> +};
+> +		zone->temp_reg = tegra->regs + thermctl_temp_offsets[i];
+> +		zone->temp_shift = thermctl_temp_shifts[i];
 > +
-> +int thermal_gov_power_allocator_register(void)
-> +{
-> +	return thermal_register_governor(&thermal_gov_power_allocator);
-> +}
+> +		tz = thermal_zone_of_sensor_register(
+> +			&pdev->dev, i, zone, tegra_thermctl_get_temp, NULL);
+> +		if (IS_ERR(tz)) {
+> +			err = PTR_ERR(tz);
+> +			dev_err(&pdev->dev, "failed to register sensor: %d\n",
+> +				err);
+> +			--i;
+> +			goto unregister_tzs;
+> +		}
 > +
-> +void thermal_gov_power_allocator_unregister(void)
-> +{
-> +	thermal_unregister_governor(&thermal_gov_power_allocator);
-> +}
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 3da99dd80ad5..1415d3d8a9eb 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1857,7 +1857,11 @@ static int __init thermal_register_governors(void)
->  	if (result)
->  		return result;
->  
-> -	return thermal_gov_user_space_register();
-> +	result = thermal_gov_user_space_register();
-> +	if (result)
-> +		return result;
-> +
-> +	return thermal_gov_power_allocator_register();
->  }
->  
->  static void thermal_unregister_governors(void)
-> @@ -1865,6 +1869,7 @@ static void thermal_unregister_governors(void)
->  	thermal_gov_step_wise_unregister();
->  	thermal_gov_fair_share_unregister();
->  	thermal_gov_user_space_unregister();
-> +	thermal_gov_power_allocator_unregister();
->  }
->  
->  static int __init thermal_init(void)
-> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-> index 3db339fb636f..b24cde2c71cc 100644
-> --- a/drivers/thermal/thermal_core.h
-> +++ b/drivers/thermal/thermal_core.h
-> @@ -77,6 +77,14 @@ static inline int thermal_gov_user_space_register(void) { return 0; }
->  static inline void thermal_gov_user_space_unregister(void) {}
->  #endif /* CONFIG_THERMAL_GOV_USER_SPACE */
->  
-> +#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
-> +int thermal_gov_power_allocator_register(void);
-> +void thermal_gov_power_allocator_unregister(void);
-> +#else
-> +static inline int thermal_gov_power_allocator_register(void) { return 0; }
-> +static inline void thermal_gov_power_allocator_unregister(void) {}
-> +#endif /* CONFIG_THERMAL_GOV_POWER_ALLOCATOR */
-> +
->  /* device tree support */
->  #ifdef CONFIG_THERMAL_OF
->  int of_parse_thermal_zones(void);
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 1124b7a9358a..e01141261756 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -57,6 +57,8 @@
->  #define DEFAULT_THERMAL_GOVERNOR       "fair_share"
->  #elif defined(CONFIG_THERMAL_DEFAULT_GOV_USER_SPACE)
->  #define DEFAULT_THERMAL_GOVERNOR       "user_space"
-> +#elif defined(CONFIG_THERMAL_DEFAULT_GOV_POWER_ALLOCATOR)
-> +#define DEFAULT_THERMAL_GOVERNOR       "power_allocator"
->  #endif
->  
->  struct thermal_zone_device;
-> @@ -287,6 +289,12 @@ struct thermal_zone_params {
->  
->  	int num_tbps;	/* Number of tbp entries */
->  	struct thermal_bind_params *tbp;
-> +
-> +	/*
-> +	 * Sustainable power (heat) that this thermal zone can dissipate in
-> +	 * mW
-> +	 */
-> +	u32 sustainable_power;
->  };
->  
->  struct thermal_genl_event {
-> -- 
-> 1.9.1
-> 
-> 
+> +		tegra->thermctl_tzs[i] = tz;
+> +	}
