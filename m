@@ -1,67 +1,97 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: Handling commit change logs
-Date: Wed, 20 Aug 2014 14:30:12 -0600
-Message-ID: <53F50554.3050505@wwwdotorg.org>
-References: <1408419205-10048-1-git-send-email-tuomas.tynkkynen@iki.fi>	<1408419205-10048-14-git-send-email-tuomas.tynkkynen@iki.fi>	<CAKohpokQOALPH13Ykz4nTBOby8J1X6_F30LNKz=gsC4wN3=3vg@mail.gmail.com>	<53F3A900.8010805@nvidia.com>	<CAKohponcZv9-MFNUQFxC_49-+P6QOhdjxsnYAyL3i4sXdCBYrw@mail.gmail.com> <CABxcv=ncm3Y7Ecfymro6TOuP=d10OV5--8n=dYmHyj6zi8hwEw@mail.gmail.com> <53F4FED4.7060408@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:59316 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751823AbaHTU3y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Aug 2014 16:29:54 -0400
-In-Reply-To: <53F4FED4.7060408@suse.de>
-Sender: linux-pm-owner@vger.kernel.org
+From: Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH 1/9] ARM: zynq: PM: Enable A9 internal clock gating feature
+Date: Wed, 20 Aug 2014 13:41:47 -0700
+Message-ID: <1408567315-28479-2-git-send-email-soren.brinkmann@xilinx.com>
+References: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1408567315-28479-1-git-send-email-soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Michal Simek <michal.simek-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?QW5kcmVhcyBGw6RyYmVy?= <afaerber@suse.de>, Javier Martinez Canillas <javier@dowhile0.org>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, Vince Hsu <vinceh@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>, Thierry Reding <thierry.reding@gmail.com>, Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Paul Walmsley <pwalmsley@nvidia.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 08/20/2014 02:02 PM, Andreas F=C3=A4rber wrote:
-> Hi Javier,
->
-> Am 20.08.2014 17:39, schrieb Javier Martinez Canillas:
->> As you already know when you apply a patch with git am, everything
->> that is between a line with 3 dashes line (---) and the actual diff =
-is
->> omitted since that is where the generated diffstat is placed by git
->> format-patch.
->>
->> We usually rely on that behavior to put there the history of a patch
->> or any information that we think that is useful for reviewers but is
->> not suitable to end in the commit message. Now that means that you
->> have to generate the patch and then manually edit it to add the
->> history there.
->>
->> But since git am omits any text between the first "---" and the diff=
-,
->> it means that you can add a "---" on your actual commit message and
->> anything that follows will be discarded by git am, that way you can
->> maintain your history on your commit message which is way less tedio=
-us
->> than manually editing patches.
->>
->> So the second "---" from Tuomas patch is actually the one generated =
-by
->> git format-patch but that gets discarded by git am just like any oth=
-er
->> text so it causes no harm when other apply the patches.
->>
->> If this not the correct workflow and you have a better way to manage
->> this, I would love to know about it.
->
-> One drawback of having --- in the commit message is that you can't
-> cherry-pick but really need to use git-am for it to be stripped.
+Signed-off-by: Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
+---
+ arch/arm/mach-zynq/common.c  |  6 ++++++
+ arch/arm/mach-zynq/common.h  | 11 +++++++++++
+ arch/arm/mach-zynq/platsmp.c |  9 +++++++++
+ 3 files changed, 26 insertions(+)
 
-You can, you just have to either:
+diff --git a/arch/arm/mach-zynq/common.c b/arch/arm/mach-zynq/common.c
+index 31a6fa40ba37..3cb7c198615a 100644
+--- a/arch/arm/mach-zynq/common.c
++++ b/arch/arm/mach-zynq/common.c
+@@ -98,6 +98,11 @@ static int __init zynq_get_revision(void)
+ 	return revision;
+ }
+ 
++static void __init zynq_init_late(void)
++{
++	zynq_core_pm_init();
++}
++
+ /**
+  * zynq_init_machine - System specific initialization, intended to be
+  *		       called from board specific initialization.
+@@ -204,6 +209,7 @@ DT_MACHINE_START(XILINX_EP107, "Xilinx Zynq Platform")
+ 	.map_io		= zynq_map_io,
+ 	.init_irq	= zynq_irq_init,
+ 	.init_machine	= zynq_init_machine,
++	.init_late	= zynq_init_late,
+ 	.init_time	= zynq_timer_init,
+ 	.dt_compat	= zynq_dt_match,
+ 	.reserve	= zynq_memory_init,
+diff --git a/arch/arm/mach-zynq/common.h b/arch/arm/mach-zynq/common.h
+index f652f0a884a6..596ef0b5067c 100644
+--- a/arch/arm/mach-zynq/common.h
++++ b/arch/arm/mach-zynq/common.h
+@@ -40,4 +40,15 @@ extern void __iomem *zynq_scu_base;
+ /* Hotplug */
+ extern void zynq_platform_cpu_die(unsigned int cpu);
+ 
++static inline void zynq_core_pm_init(void)
++{
++	/* A9 clock gating */
++	asm volatile ("mrc  p15, 0, r12, c15, c0, 0\n"
++		      "orr  r12, r12, #1\n"
++		      "mcr  p15, 0, r12, c15, c0, 0\n"
++		      : /* no outputs */
++		      : /* no inputs */
++		      : "r12");
++}
++
+ #endif
+diff --git a/arch/arm/mach-zynq/platsmp.c b/arch/arm/mach-zynq/platsmp.c
+index abc82ef085c1..616b99e07c60 100644
+--- a/arch/arm/mach-zynq/platsmp.c
++++ b/arch/arm/mach-zynq/platsmp.c
+@@ -112,6 +112,14 @@ static void __init zynq_smp_prepare_cpus(unsigned int max_cpus)
+ 	scu_enable(zynq_scu_base);
+ }
+ 
++/*
++ * This function is in the hotplug path. Don't move it into the init section!!
++ */
++static void zynq_secondary_init(unsigned int cpu)
++{
++	zynq_core_pm_init();
++}
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ static int zynq_cpu_kill(unsigned cpu)
+ {
+@@ -124,6 +132,7 @@ struct smp_operations zynq_smp_ops __initdata = {
+ 	.smp_init_cpus		= zynq_smp_init_cpus,
+ 	.smp_prepare_cpus	= zynq_smp_prepare_cpus,
+ 	.smp_boot_secondary	= zynq_boot_secondary,
++	.smp_secondary_init	= zynq_secondary_init,
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	.cpu_die		= zynq_platform_cpu_die,
+ 	.cpu_kill		= zynq_cpu_kill,
+-- 
+2.0.1.1.gfbfc394
 
-* Pass -e to git cherry-pick so you get to edit the patch description,
-
-* Run "git commit --amend" right afterwards,
-
-=2E.. and then delete everything starting at ---.
-
-I do this reasonably often on my own patches; I send them to the list,=20
-get them reviewed, and then cherry-pick them into the Tegra maintainer=20
-tree rather than saving them from the email client and running git am.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
