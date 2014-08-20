@@ -1,49 +1,136 @@
 From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Subject: [PATCH 2/9] Documentation: devicetree: Add binding for Synopsys DDR
- controller
-Date: Wed, 20 Aug 2014 13:41:48 -0700
-Message-ID: <1408567315-28479-3-git-send-email-soren.brinkmann@xilinx.com>
+Subject: [PATCH 7/9] ARM: zynq: Synchronise zynq_cpu_die/kill
+Date: Wed, 20 Aug 2014 13:41:53 -0700
+Message-ID: <1408567315-28479-8-git-send-email-soren.brinkmann@xilinx.com>
 References: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Michal Simek <michal.simek@xilinx.com>, Russell King <linux@arm.linux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-kernel@vger.kernel.org, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, Kumar Gala <galak@codeaurora.org>, linux-arm-kernel@lists.infradead.org
+Cc: =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
----
- .../devicetree/bindings/memory-controllers/synopsys.txt       | 11 +++++++++++
- 1 file changed, 11 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/memory-controllers/synopsys.txt
+Avoid races and add synchronisation between the arch specific
+kill and die routines.
 
-diff --git a/Documentation/devicetree/bindings/memory-controllers/synopsys.txt b/Documentation/devicetree/bindings/memory-controllers/synopsys.txt
-new file mode 100644
-index 000000000000..f9c6454146b6
---- /dev/null
-+++ b/Documentation/devicetree/bindings/memory-controllers/synopsys.txt
-@@ -0,0 +1,11 @@
-+Binding for Synopsys IntelliDDR Multi Protocol Memory Controller
+The same synchronisation issue was fixed on IMX platform
+by this commit:
+"ARM: imx: fix sync issue between imx_cpu_die and imx_cpu_kill"
+(sha1: 2f3edfd7e27ad4206acbc2ae99c9df5f46353024)
+
+Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+ arch/arm/mach-zynq/common.h  |  2 ++
+ arch/arm/mach-zynq/hotplug.c |  2 ++
+ arch/arm/mach-zynq/platsmp.c |  6 ++++++
+ arch/arm/mach-zynq/slcr.c    | 43 ++++++++++++++++++++++++++++++++++++++++++-
+ 4 files changed, 52 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-zynq/common.h b/arch/arm/mach-zynq/common.h
+index 87945fa2a179..c0773e87e83c 100644
+--- a/arch/arm/mach-zynq/common.h
++++ b/arch/arm/mach-zynq/common.h
+@@ -24,6 +24,8 @@ extern int zynq_early_slcr_init(void);
+ extern void zynq_slcr_system_reset(void);
+ extern void zynq_slcr_cpu_stop(int cpu);
+ extern void zynq_slcr_cpu_start(int cpu);
++extern bool zynq_slcr_cpu_state_read(int cpu);
++extern void zynq_slcr_cpu_state_write(int cpu, bool die);
+ extern u32 zynq_slcr_get_device_id(void);
+ 
+ #ifdef CONFIG_SMP
+diff --git a/arch/arm/mach-zynq/hotplug.c b/arch/arm/mach-zynq/hotplug.c
+index 366f46c91365..fe44a05677e2 100644
+--- a/arch/arm/mach-zynq/hotplug.c
++++ b/arch/arm/mach-zynq/hotplug.c
+@@ -19,6 +19,8 @@
+  */
+ void zynq_platform_cpu_die(unsigned int cpu)
+ {
++	zynq_slcr_cpu_state_write(cpu, true);
 +
-+Required properties:
-+ - compatible: Should be 'xlnx,zynq-ddrc-a05'
-+ - reg: Base address and size of the controllers memory area
+ 	/*
+ 	 * there is no power-control hardware on this platform, so all
+ 	 * we can do is put the core into WFI; this is safe as the calling
+diff --git a/arch/arm/mach-zynq/platsmp.c b/arch/arm/mach-zynq/platsmp.c
+index 616b99e07c60..f77f7ca4c45b 100644
+--- a/arch/arm/mach-zynq/platsmp.c
++++ b/arch/arm/mach-zynq/platsmp.c
+@@ -123,6 +123,12 @@ static void zynq_secondary_init(unsigned int cpu)
+ #ifdef CONFIG_HOTPLUG_CPU
+ static int zynq_cpu_kill(unsigned cpu)
+ {
++	unsigned long timeout = jiffies + msecs_to_jiffies(50);
 +
-+Example:
-+	memory-controller@f8006000 {
-+		compatible = "xlnx,zynq-ddrc-a05";
-+		reg = <0xf8006000 0x1000>;
-+	};
++	while (zynq_slcr_cpu_state_read(cpu))
++		if (time_after(jiffies, timeout))
++			return 0;
++
+ 	zynq_slcr_cpu_stop(cpu);
+ 	return 1;
+ }
+diff --git a/arch/arm/mach-zynq/slcr.c b/arch/arm/mach-zynq/slcr.c
+index c43a2d16e223..d4cb50cf97c0 100644
+--- a/arch/arm/mach-zynq/slcr.c
++++ b/arch/arm/mach-zynq/slcr.c
+@@ -138,6 +138,8 @@ void zynq_slcr_cpu_start(int cpu)
+ 	zynq_slcr_write(reg, SLCR_A9_CPU_RST_CTRL_OFFSET);
+ 	reg &= ~(SLCR_A9_CPU_CLKSTOP << cpu);
+ 	zynq_slcr_write(reg, SLCR_A9_CPU_RST_CTRL_OFFSET);
++
++	zynq_slcr_cpu_state_write(cpu, false);
+ }
+ 
+ /**
+@@ -154,8 +156,47 @@ void zynq_slcr_cpu_stop(int cpu)
+ }
+ 
+ /**
+- * zynq_slcr_init - Regular slcr driver init
++ * zynq_slcr_cpu_state - Read/write cpu state
++ * @cpu:	cpu number
+  *
++ * SLCR_REBOOT_STATUS save upper 2 bits (31/30 cpu states for cpu0 and cpu1)
++ * 0 means cpu is running, 1 cpu is going to die.
++ *
++ * Return: true if cpu is running, false if cpu is going to die
++ */
++bool zynq_slcr_cpu_state_read(int cpu)
++{
++	u32 state;
++
++	state = readl(zynq_slcr_base + SLCR_REBOOT_STATUS_OFFSET);
++	state &= 1 << (31 - cpu);
++
++	return !state;
++}
++
++/**
++ * zynq_slcr_cpu_state - Read/write cpu state
++ * @cpu:	cpu number
++ * @die:	cpu state - true if cpu is going to die
++ *
++ * SLCR_REBOOT_STATUS save upper 2 bits (31/30 cpu states for cpu0 and cpu1)
++ * 0 means cpu is running, 1 cpu is going to die.
++ */
++void zynq_slcr_cpu_state_write(int cpu, bool die)
++{
++	u32 state, mask;
++
++	state = readl(zynq_slcr_base + SLCR_REBOOT_STATUS_OFFSET);
++	mask = 1 << (31 - cpu);
++	if (die)
++		state |= mask;
++	else
++		state &= ~mask;
++	writel(state, zynq_slcr_base + SLCR_REBOOT_STATUS_OFFSET);
++}
++
++/**
++ * zynq_slcr_init - Regular slcr driver init
+  * Return:	0 on success, negative errno otherwise.
+  *
+  * Called early during boot from platform code to remap SLCR area.
 -- 
 2.0.1.1.gfbfc394
