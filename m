@@ -1,176 +1,122 @@
-From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Subject: [PATCH] PM / sleep: Fix racing timers
-Date: Wed, 20 Aug 2014 13:55:09 -0700
-Message-ID: <1408568109-30297-1-git-send-email-soren.brinkmann@xilinx.com>
+From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH v4 00/16] Tegra124 CL-DVFS / DFLL clocksource, plus cpufreq
+Date: Thu, 21 Aug 2014 00:04:28 +0300
+Message-ID: <1408568684-11016-1-git-send-email-ttynkkynen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Soren Brinkmann <soren.brinkmann@xilinx.com>
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On platforms that do not power off during suspend, successfully enterin=
-g
-suspend races with timers.
+v4 changes:
+DFLL:
+    - fix wrong register accessors used for the DFLL_OUTPUT_CFG register
+        - I decided to leave the dfll_i2c_{readl,writel} separate since the
+          correct barrier function still needs to be called
+    - fix PMIC I2C voltage register address being uninitialized
+cpufreq:
+    - back to 'depends on GENERIC_CPUFREQ_CPU0' from 'select GENERIC_CPUFREQ_CPU0'
+        - leads to new patch to update the defconfigs
+    - check for get_cpu_device() return value
+    - add comment why an extra platform driver+device is required
 
-The race happening in a couple of location is:
+v3 changes:
+- Fix incorrect order of arguments to dfll_scale_dvco_rate
+- Fix accidental commas at end-of-statement to semicolons
+- Some cpufreq changes:
+    - rename cpufreq-tegra to cpufreq-tegra20
+    - have separate Kconfig entries for Tegra20/Tegra124 support
+    - use 'select GENERIC_CPUFREQ_CPU0', not depends
+    - support unbinding of the platform device
+        - requires adding the vdd_cpu regulator to the DT so
+          the old voltage can be restored when switching to PLLX
+    - allocate a state structure instead of globals
+    - use of_match_machine()
+    - various style nits fixed
 
-  1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
-     ...
-  2. syscore_suspend()
-      -> timekeeping_suspend()
-       -> clockevents_notify(SUSPEND)
-        -> tick_suspend()   	(timers are turned off here)
-     ...
-  3. wfi            		(wait for wake-IRQ here)
+The cpufreq part is dependant on the of_match_machine() series.
 
-Between steps 1 and 2 the timers can still generate interrupts that are
-not handled and stay pending until step 3. That pending IRQ causes an
-immediate - spurious - wake.
+Original cover letter:
 
-The solution is to move the clockevents suspend/resume notification
-out of the syscore_suspend step and explictly call them at the appropri=
-ate
-time in the suspend/hibernation paths. I.e. timers are suspend _before_
-IRQs get disabled. And accordingly in the resume path.
+This series implements the DFLL/CL-DVFS clock source for the fast CPU
+cluster on Tegra124, and a cpufreq driver that uses the DFLL for
+clocking the CPU. Most of this is based on Paul Walmsley's public patch
+set from December 2013, which is available at
+http://comments.gmane.org/gmane.linux.ports.tegra/15273
 
-Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
----
-Hi,
+The DFLL clock hardware is a voltage-controlled oscillator plus
+control logic that compares the generated output clock with a
+51 MHz reference clock, and can make decisions to either lower
+or raise the DFLL voltage to keep the output rate close to the
+software-requested rate. The voltage changes are done by
+communicating with an off-chip PMIC via either I2C or PWM.
+As the DFLL oscillator is powered via the CPU rail, using
+the DFLL as the CPU clocksource also gives us dynamic CPU
+voltage scaling.
 
-there was a little of an dicussion on the RFC for this patch, but that
-eventually ended (https://lkml.org/lkml/2014/7/21/493).
-In the meantime I found one small flaw that is fixed in this patch (cha=
-ngelog
-below).
-This resolves the issues I see on my Zynq (ARM) platform and I also pat=
-ched my
-Laptop's (x86_64) kernel with this where it looks good as well. Though,=
- in both
-cases only suspend is used. Any testing - especially of hibernation - w=
-ould
-be much appreciated.
+This series has been tested on the Jetson TK1 (Rev C). Porting this to
+the Venice2 should be simple, though do note that it does not have
+active cooling.
 
-	Thanks,
-	S=C3=B6ren
+Thanks,
+Tuomas
 
-Changes since RFC:
- - remove resume notification from syscore_resume path.
----
- kernel/power/hibernate.c  | 9 +++++++++
- kernel/power/suspend.c    | 5 +++++
- kernel/time/timekeeping.c | 3 ---
- 3 files changed, 14 insertions(+), 3 deletions(-)
+Paul Walmsley (1):
+  clk: tegra: Add DFLL DVCO reset control for Tegra124
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index a9dfa79b6bab..76f15644aec8 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -285,6 +285,8 @@ static int create_image(int platform_mode)
- 	if (error || hibernation_test(TEST_CPUS))
- 		goto Enable_cpus;
-=20
-+	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-+
- 	local_irq_disable();
-=20
- 	error =3D syscore_suspend();
-@@ -316,6 +318,7 @@ static int create_image(int platform_mode)
- 	syscore_resume();
-=20
-  Enable_irqs:
-+	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
- 	local_irq_enable();
-=20
-  Enable_cpus:
-@@ -438,6 +441,8 @@ static int resume_target_kernel(bool platform_mode)
- 	if (error)
- 		goto Enable_cpus;
-=20
-+	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-+
- 	local_irq_disable();
-=20
- 	error =3D syscore_suspend();
-@@ -472,6 +477,7 @@ static int resume_target_kernel(bool platform_mode)
- 	syscore_resume();
-=20
-  Enable_irqs:
-+	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
- 	local_irq_enable();
-=20
-  Enable_cpus:
-@@ -550,6 +556,8 @@ int hibernation_platform_enter(void)
- 	if (error)
- 		goto Platform_finish;
-=20
-+	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-+
- 	local_irq_disable();
- 	syscore_suspend();
- 	if (pm_wakeup_pending()) {
-@@ -563,6 +571,7 @@ int hibernation_platform_enter(void)
-=20
-  Power_up:
- 	syscore_resume();
-+	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
- 	local_irq_enable();
- 	enable_nonboot_cpus();
-=20
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 6dadb25cb0d8..6bba2f907bcb 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -12,6 +12,7 @@
- #include <linux/delay.h>
- #include <linux/errno.h>
- #include <linux/init.h>
-+#include <linux/clockchips.h>
- #include <linux/console.h>
- #include <linux/cpu.h>
- #include <linux/cpuidle.h>
-@@ -294,6 +295,8 @@ static int suspend_enter(suspend_state_t state, boo=
-l *wakeup)
- 	if (error || suspend_test(TEST_CPUS))
- 		goto Enable_cpus;
-=20
-+	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-+
- 	arch_suspend_disable_irqs();
- 	BUG_ON(!irqs_disabled());
-=20
-@@ -311,6 +314,8 @@ static int suspend_enter(suspend_state_t state, boo=
-l *wakeup)
- 		syscore_resume();
- 	}
-=20
-+	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
-+
- 	arch_suspend_enable_irqs();
- 	BUG_ON(irqs_disabled());
-=20
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index fb4a9c2cf8d9..f13332185b07 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -1188,8 +1188,6 @@ static void timekeeping_resume(void)
-=20
- 	touch_softlockup_watchdog();
-=20
--	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
--
- 	/* Resume hrtimers */
- 	hrtimers_resume();
- }
-@@ -1242,7 +1240,6 @@ static int timekeeping_suspend(void)
- 	write_seqcount_end(&tk_core.seq);
- 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
-=20
--	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
- 	clocksource_suspend();
- 	clockevents_suspend();
-=20
---=20
-2.0.1.1.gfbfc394
+Tuomas Tynkkynen (15):
+  clk: tegra: Add binding for the Tegra124 DFLL clocksource
+  clk: tegra: Add library for the DFLL clock source (open-loop mode)
+  clk: tegra: Add closed loop support for the DFLL
+  clk: tegra: Add functions for parsing CVB tables
+  clk: tegra: Add Tegra124 DFLL clocksource platform driver
+  clk: tegra: Save/restore CCLKG_BURST_POLICY on suspend
+  clk: tegra: Add the DFLL as a possible parent of the cclk_g clock
+  ARM: tegra: Add the DFLL to Tegra124 device tree
+  ARM: tegra: Enable the DFLL on the Jetson TK1
+  cpufreq: tegra124: Add device tree bindings
+  cpufreq: tegra: Rename tegra-cpufreq to tegra20-cpufreq
+  cpufreq: Add cpufreq driver for Tegra124
+  ARM: tegra: Add entries for cpufreq on Tegra124
+  ARM: tegra: Add CPU regulator to the Jetson TK1 device tree
+  ARM: tegra: enable Tegra124 cpufreq driver by default
+
+ .../bindings/clock/nvidia,tegra124-dfll.txt        |   69 +
+ .../bindings/cpufreq/tegra124-cpufreq.txt          |   44 +
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts          |   12 +-
+ arch/arm/boot/dts/tegra124.dtsi                    |   33 +-
+ arch/arm/configs/tegra_defconfig                   |    1 +
+ arch/arm/mach-tegra/Kconfig                        |    1 +
+ drivers/clk/tegra/Makefile                         |    3 +
+ drivers/clk/tegra/clk-dfll.c                       | 1741 ++++++++++++++++++++
+ drivers/clk/tegra/clk-dfll.h                       |   55 +
+ drivers/clk/tegra/clk-tegra-super-gen4.c           |    4 +-
+ drivers/clk/tegra/clk-tegra124-dfll-fcpu.c         |  165 ++
+ drivers/clk/tegra/clk-tegra124.c                   |   61 +
+ drivers/clk/tegra/clk.h                            |    3 +
+ drivers/clk/tegra/cvb.c                            |  133 ++
+ drivers/clk/tegra/cvb.h                            |   67 +
+ drivers/cpufreq/Kconfig.arm                        |   13 +-
+ drivers/cpufreq/Makefile                           |    3 +-
+ drivers/cpufreq/tegra124-cpufreq.c                 |  215 +++
+ .../cpufreq/{tegra-cpufreq.c => tegra20-cpufreq.c} |    0
+ 19 files changed, 2616 insertions(+), 7 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
+ create mode 100644 drivers/clk/tegra/clk-dfll.c
+ create mode 100644 drivers/clk/tegra/clk-dfll.h
+ create mode 100644 drivers/clk/tegra/clk-tegra124-dfll-fcpu.c
+ create mode 100644 drivers/clk/tegra/cvb.c
+ create mode 100644 drivers/clk/tegra/cvb.h
+ create mode 100644 drivers/cpufreq/tegra124-cpufreq.c
+ rename drivers/cpufreq/{tegra-cpufreq.c => tegra20-cpufreq.c} (100%)
+
+-- 
+1.8.1.5
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
