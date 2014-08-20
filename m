@@ -1,65 +1,66 @@
-From: Javier Martinez Canillas <javier@dowhile0.org>
-Subject: Re: [PATCH v3 13/15] cpufreq: Add cpufreq driver for Tegra124
-Date: Wed, 20 Aug 2014 17:39:29 +0200
-Message-ID: <CABxcv=ncm3Y7Ecfymro6TOuP=d10OV5--8n=dYmHyj6zi8hwEw@mail.gmail.com>
-References: <1408419205-10048-1-git-send-email-tuomas.tynkkynen@iki.fi>
-	<1408419205-10048-14-git-send-email-tuomas.tynkkynen@iki.fi>
-	<CAKohpokQOALPH13Ykz4nTBOby8J1X6_F30LNKz=gsC4wN3=3vg@mail.gmail.com>
-	<53F3A900.8010805@nvidia.com>
-	<CAKohponcZv9-MFNUQFxC_49-+P6QOhdjxsnYAyL3i4sXdCBYrw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH 1/2] arm: irq: Notify affinity change when migrating IRQs during hotplug
+Date: Wed, 20 Aug 2014 10:59:47 -0600
+Message-ID: <1408553988-63924-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f46.google.com ([74.125.82.46]:46214 "EHLO
-	mail-wg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbaHTPjb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Aug 2014 11:39:31 -0400
-Received: by mail-wg0-f46.google.com with SMTP id m15so7938928wgh.5
-        for <linux-pm@vger.kernel.org>; Wed, 20 Aug 2014 08:39:29 -0700 (PDT)
-In-Reply-To: <CAKohponcZv9-MFNUQFxC_49-+P6QOhdjxsnYAyL3i4sXdCBYrw@mail.gmail.com>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:64889 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751625AbaHTRAJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Aug 2014 13:00:09 -0400
+Received: by mail-pd0-f180.google.com with SMTP id v10so12210122pde.11
+        for <linux-pm@vger.kernel.org>; Wed, 20 Aug 2014 10:00:05 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul Walmsley <pwalmsley@nvidia.com>, Vince Hsu <vinceh@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: khilman@linaro.org, tglx@linutronix.de, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, ulf.hansson@linaro.org
+Cc: Praveen Chidambaram <pchidamb@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>
 
-Hello Viresh,
+From: Praveen Chidambaram <pchidamb@codeaurora.org>
 
-On Wed, Aug 20, 2014 at 8:39 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 20 August 2014 01:14, Tuomas Tynkkynen <ttynkkynen@nvidia.com> wrote:
->> There's actually a (mis-?)feature in git format-patch: a literal '---'
->> line in a commit message won't be escaped, so the patch notes can be
->> written in the commit message directly so the patch files don't need
->> to be modified by hand.
->
-> How exactly? Can you list the command here please..
-> --
+Hotplug causes IRQs affine to a core that is being taken down to migrate
+to an online core. This is done by directly calling the irq_set_affinity
+associated with the irq_chip structure. Instead using the
+irq_set_affinity_locked() api lets the notifications bubble through.
 
-I rely on the behavior that Tuomas is mentioning as well but is not
-about git format-patch but git am.
+Signed-off-by: Praveen Chidambaram <pchidamb@codeaurora.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+---
+ arch/arm/kernel/irq.c | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
-As you already know when you apply a patch with git am, everything
-that is between a line with 3 dashes line (---) and the actual diff is
-omitted since that is where the generated diffstat is placed by git
-format-patch.
+diff --git a/arch/arm/kernel/irq.c b/arch/arm/kernel/irq.c
+index 2c42576..8835ef2 100644
+--- a/arch/arm/kernel/irq.c
++++ b/arch/arm/kernel/irq.c
+@@ -157,7 +157,6 @@ static bool migrate_one_irq(struct irq_desc *desc)
+ {
+ 	struct irq_data *d = irq_desc_get_irq_data(desc);
+ 	const struct cpumask *affinity = d->affinity;
+-	struct irq_chip *c;
+ 	bool ret = false;
+ 
+ 	/*
+@@ -167,17 +166,12 @@ static bool migrate_one_irq(struct irq_desc *desc)
+ 	if (irqd_is_per_cpu(d) || !cpumask_test_cpu(smp_processor_id(), affinity))
+ 		return false;
+ 
+-	if (cpumask_any_and(affinity, cpu_online_mask) >= nr_cpu_ids) {
+-		affinity = cpu_online_mask;
++	if (cpumask_any_and(affinity, cpu_online_mask) >= nr_cpu_ids)
+ 		ret = true;
+-	}
+-
+-	c = irq_data_get_irq_chip(d);
+-	if (!c->irq_set_affinity)
+-		pr_debug("IRQ%u: unable to set affinity\n", d->irq);
+-	else if (c->irq_set_affinity(d, affinity, true) == IRQ_SET_MASK_OK && ret)
+-		cpumask_copy(d->affinity, affinity);
+ 
++	affinity = cpu_online_mask;
++	ret = (irq_set_affinity_locked(d, affinity, true) == IRQ_SET_MASK_OK)
++			&& ret;
+ 	return ret;
+ }
+ 
+-- 
+1.9.1
 
-We usually rely on that behavior to put there the history of a patch
-or any information that we think that is useful for reviewers but is
-not suitable to end in the commit message. Now that means that you
-have to generate the patch and then manually edit it to add the
-history there.
-
-But since git am omits any text between the first "---" and the diff,
-it means that you can add a "---" on your actual commit message and
-anything that follows will be discarded by git am, that way you can
-maintain your history on your commit message which is way less tedious
-than manually editing patches.
-
-So the second "---" from Tuomas patch is actually the one generated by
-git format-patch but that gets discarded by git am just like any other
-text so it causes no harm when other apply the patches.
-
-If this not the correct workflow and you have a better way to manage
-this, I would love to know about it.
-
-Best regards,
-Javier
