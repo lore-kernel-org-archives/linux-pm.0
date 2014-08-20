@@ -1,39 +1,51 @@
-From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Subject: [PATCH v4 08/16] clk: tegra: Add the DFLL as a possible parent of the cclk_g clock
-Date: Thu, 21 Aug 2014 00:04:36 +0300
-Message-ID: <1408568684-11016-9-git-send-email-ttynkkynen@nvidia.com>
+From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH v4 10/16] ARM: tegra: Enable the DFLL on the Jetson TK1
+Date: Thu, 21 Aug 2014 00:04:38 +0300
+Message-ID: <1408568684-11016-11-git-send-email-ttynkkynen@nvidia.com>
 References: <1408568684-11016-1-git-send-email-ttynkkynen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1408568684-11016-1-git-send-email-ttynkkynen@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Walmsley <pwalmsley@nvidia.com>, Vince Hsu <vinceh@nvidia.com>, devicetree@vger.kernel.org, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1408568684-11016-1-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The DFLL clocksource was missing from the list of possible parents for
-the fast CPU cluster. Add it to the list.
+Add the board-specific properties of the DFLL for the Jetson TK1 board.
+On this board, the DFLL will take control of the sd0 regulator on the
+on-board AS3722 PMIC.
 
-Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
- drivers/clk/tegra/clk-tegra-super-gen4.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/clk/tegra/clk-tegra-super-gen4.c b/drivers/clk/tegra/clk-tegra-super-gen4.c
-index feb3201..f1f4410 100644
---- a/drivers/clk/tegra/clk-tegra-super-gen4.c
-+++ b/drivers/clk/tegra/clk-tegra-super-gen4.c
-@@ -44,7 +44,9 @@ static const char *sclk_parents[] = { "clk_m", "pll_c_out1", "pll_p_out4",
+diff --git a/arch/arm/boot/dts/tegra124-jetson-tk1.dts b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+index 1b7c342..04134da 100644
+--- a/arch/arm/boot/dts/tegra124-jetson-tk1.dts
++++ b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+@@ -1453,7 +1453,7 @@
+ 				vin-ldo9-10-supply = <&vdd_5v0_sys>;
+ 				vin-ldo11-supply = <&vdd_3v3_run>;
  
- static const char *cclk_g_parents[] = { "clk_m", "pll_c", "clk_32k", "pll_m",
- 					"pll_p", "pll_p_out4", "unused",
--					"unused", "pll_x" };
-+					"unused", "pll_x", "unused", "unused",
-+					"unused", "unused", "unused", "unused",
-+					"dfllCPU_out" };
+-				sd0 {
++				vdd_cpu: sd0 {
+ 					regulator-name = "+VDD_CPU_AP";
+ 					regulator-min-microvolt = <700000>;
+ 					regulator-max-microvolt = <1400000>;
+@@ -1662,6 +1662,12 @@
+ 		non-removable;
+ 	};
  
- static const char *cclk_lp_parents[] = { "clk_m", "pll_c", "clk_32k", "pll_m",
- 					 "pll_p", "pll_p_out4", "unused",
++	dfll@0,70110000 {
++		status = "okay";
++		vdd-cpu-supply = <&vdd_cpu>;
++		nvidia,i2c-fs-rate = <400000>;
++	};
++
+ 	ahub@0,70300000 {
+ 		i2s@0,70301100 {
+ 			status = "okay";
 -- 
 1.8.1.5
