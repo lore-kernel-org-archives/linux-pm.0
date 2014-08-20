@@ -1,11 +1,11 @@
 From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Subject: [PATCH 4/9] ARM: zynq: PM: Enable DDR self-refresh and clock stop
-Date: Wed, 20 Aug 2014 13:41:50 -0700
-Message-ID: <1408567315-28479-5-git-send-email-soren.brinkmann@xilinx.com>
+Subject: [PATCH 6/9] ARM: zynq: cpuidle: Remove pointless code
+Date: Wed, 20 Aug 2014 13:41:52 -0700
+Message-ID: <1408567315-28479-7-git-send-email-soren.brinkmann@xilinx.com>
 References: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
@@ -21,80 +21,54 @@ To: Michal Simek <michal.simek@xilinx.com>, Russell King <linux@arm.linux.org.uk
 Cc: devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-kernel@vger.kernel.org, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, Kumar Gala <galak@codeaurora.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-VGhlIEREUiBjb250cm9sbGVyIGNhbiBkZXRlY3QgaWRsZSBwZXJpb2RzIGFuZCBsZXZlcmFnZSBs
-b3cgcG93ZXIKZmVhdHVyZXMgbGlrZSBzZWxmLXJlZnJlc2ggYW5kIGNsb2NrIHN0b3AuCldoZW4g
-bmV3IHJlcXVlc3RzIG9jY3VyLCB0aGUgRERSQyByZXN1bWVzIG5vcm1hbCBvcGVyYXRpb24uCgpT
-aWduZWQtb2ZmLWJ5OiBTb3JlbiBCcmlua21hbm4gPHNvcmVuLmJyaW5rbWFubkB4aWxpbnguY29t
-PgotLS0KIGFyY2gvYXJtL21hY2gtenlucS9NYWtlZmlsZSB8ICAyICstCiBhcmNoL2FybS9tYWNo
-LXp5bnEvY29tbW9uLmMgfCAgMSArCiBhcmNoL2FybS9tYWNoLXp5bnEvY29tbW9uLmggfCAgMiAr
-KwogYXJjaC9hcm0vbWFjaC16eW5xL3BtLmMgICAgIHwgODQgKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrCiA0IGZpbGVzIGNoYW5nZWQsIDg4IGluc2VydGlvbnMo
-KyksIDEgZGVsZXRpb24oLSkKIGNyZWF0ZSBtb2RlIDEwMDY0NCBhcmNoL2FybS9tYWNoLXp5bnEv
-cG0uYwoKZGlmZiAtLWdpdCBhL2FyY2gvYXJtL21hY2gtenlucS9NYWtlZmlsZSBiL2FyY2gvYXJt
-L21hY2gtenlucS9NYWtlZmlsZQppbmRleCAxYjI1ZDkyZWJmMjIuLjgyMGRmZjZlMWViYSAxMDA2
-NDQKLS0tIGEvYXJjaC9hcm0vbWFjaC16eW5xL01ha2VmaWxlCisrKyBiL2FyY2gvYXJtL21hY2gt
-enlucS9NYWtlZmlsZQpAQCAtMyw3ICszLDcgQEAKICMKIAogIyBDb21tb24gc3VwcG9ydAotb2Jq
-LXkJCQkJOj0gY29tbW9uLm8gc2xjci5vCitvYmoteQkJCQk6PSBjb21tb24ubyBzbGNyLm8gcG0u
-bwogQ0ZMQUdTX1JFTU9WRV9ob3RwbHVnLm8JCT0tbWFyY2g9YXJtdjZrCiBDRkxBR1NfaG90cGx1
-Zy5vIAkJPS1XYSwtbWFyY2g9YXJtdjctYSAtbWNwdT1jb3J0ZXgtYTkKIG9iai0kKENPTkZJR19I
-T1RQTFVHX0NQVSkJKz0gaG90cGx1Zy5vCmRpZmYgLS1naXQgYS9hcmNoL2FybS9tYWNoLXp5bnEv
-Y29tbW9uLmMgYi9hcmNoL2FybS9tYWNoLXp5bnEvY29tbW9uLmMKaW5kZXggM2NiN2MxOTg2MTVh
-Li42YmQxM2U1Y2U2YjcgMTAwNjQ0Ci0tLSBhL2FyY2gvYXJtL21hY2gtenlucS9jb21tb24uYwor
-KysgYi9hcmNoL2FybS9tYWNoLXp5bnEvY29tbW9uLmMKQEAgLTEwMSw2ICsxMDEsNyBAQCBzdGF0
-aWMgaW50IF9faW5pdCB6eW5xX2dldF9yZXZpc2lvbih2b2lkKQogc3RhdGljIHZvaWQgX19pbml0
-IHp5bnFfaW5pdF9sYXRlKHZvaWQpCiB7CiAJenlucV9jb3JlX3BtX2luaXQoKTsKKwl6eW5xX3Bt
-X2xhdGVfaW5pdCgpOwogfQogCiAvKioKZGlmZiAtLWdpdCBhL2FyY2gvYXJtL21hY2gtenlucS9j
-b21tb24uaCBiL2FyY2gvYXJtL21hY2gtenlucS9jb21tb24uaAppbmRleCA1OTZlZjBiNTA2N2Mu
-Ljg3OTQ1ZmEyYTE3OSAxMDA2NDQKLS0tIGEvYXJjaC9hcm0vbWFjaC16eW5xL2NvbW1vbi5oCisr
-KyBiL2FyY2gvYXJtL21hY2gtenlucS9jb21tb24uaApAQCAtNDAsNiArNDAsOCBAQCBleHRlcm4g
-dm9pZCBfX2lvbWVtICp6eW5xX3NjdV9iYXNlOwogLyogSG90cGx1ZyAqLwogZXh0ZXJuIHZvaWQg
-enlucV9wbGF0Zm9ybV9jcHVfZGllKHVuc2lnbmVkIGludCBjcHUpOwogCitpbnQgenlucV9wbV9s
-YXRlX2luaXQodm9pZCk7CisKIHN0YXRpYyBpbmxpbmUgdm9pZCB6eW5xX2NvcmVfcG1faW5pdCh2
-b2lkKQogewogCS8qIEE5IGNsb2NrIGdhdGluZyAqLwpkaWZmIC0tZ2l0IGEvYXJjaC9hcm0vbWFj
-aC16eW5xL3BtLmMgYi9hcmNoL2FybS9tYWNoLXp5bnEvcG0uYwpuZXcgZmlsZSBtb2RlIDEwMDY0
-NAppbmRleCAwMDAwMDAwMDAwMDAuLjE5OTU1OTE3YWFjOAotLS0gL2Rldi9udWxsCisrKyBiL2Fy
-Y2gvYXJtL21hY2gtenlucS9wbS5jCkBAIC0wLDAgKzEsODQgQEAKKy8qCisgKiBaeW5xIHBvd2Vy
-IG1hbmFnZW1lbnQKKyAqCisgKiAgQ29weXJpZ2h0IChDKSAyMDEyIC0gMjAxNCBYaWxpbngKKyAq
-CisgKiAgU8O2cmVuIEJyaW5rbWFubiA8c29yZW4uYnJpbmttYW5uQHhpbGlueC5jb20+CisgKgor
-ICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU6IHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0
-IGFuZC9vciBtb2RpZnkKKyAqIGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwg
-UHVibGljIExpY2Vuc2UgYXMgcHVibGlzaGVkIGJ5CisgKiB0aGUgRnJlZSBTb2Z0d2FyZSBGb3Vu
-ZGF0aW9uLCBlaXRoZXIgdmVyc2lvbiAyIG9mIHRoZSBMaWNlbnNlLCBvcgorICogKGF0IHlvdXIg
-b3B0aW9uKSBhbnkgbGF0ZXIgdmVyc2lvbi4KKyAqCisgKiBUaGlzIHByb2dyYW0gaXMgZGlzdHJp
-YnV0ZWQgaW4gdGhlIGhvcGUgdGhhdCBpdCB3aWxsIGJlIHVzZWZ1bCwKKyAqIGJ1dCBXSVRIT1VU
-IEFOWSBXQVJSQU5UWTsgd2l0aG91dCBldmVuIHRoZSBpbXBsaWVkIHdhcnJhbnR5IG9mCisgKiBN
-RVJDSEFOVEFCSUxJVFkgb3IgRklUTkVTUyBGT1IgQSBQQVJUSUNVTEFSIFBVUlBPU0UuICBTZWUg
-dGhlCisgKiBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBmb3IgbW9yZSBkZXRhaWxzLgorICoK
-KyAqIFlvdSBzaG91bGQgaGF2ZSByZWNlaXZlZCBhIGNvcHkgb2YgdGhlIEdOVSBHZW5lcmFsIFB1
-YmxpYyBMaWNlbnNlCisgKiBhbG9uZyB3aXRoIHRoaXMgcHJvZ3JhbS4gIElmIG5vdCwgc2VlIDxo
-dHRwOi8vd3d3LmdudS5vcmcvbGljZW5zZXMvPi4KKyAqLworCisjaW5jbHVkZSA8bGludXgvaW8u
-aD4KKyNpbmNsdWRlIDxsaW51eC9vZl9hZGRyZXNzLmg+CisjaW5jbHVkZSA8bGludXgvb2ZfZGV2
-aWNlLmg+CisjaW5jbHVkZSAiY29tbW9uLmgiCisKKy8qIHJlZ2lzdGVyIG9mZnNldHMgKi8KKyNk
-ZWZpbmUgRERSQ19DVFJMX1JFRzFfT0ZGUwkJMHg2MAorI2RlZmluZSBERFJDX0RSQU1fUEFSQU1f
-UkVHM19PRkZTCTB4MjAKKworLyogYml0ZmllbGRzICovCisjZGVmaW5lIEREUkNfQ0xPQ0tTVE9Q
-X01BU0sJQklUKDIzKQorI2RlZmluZSBERFJDX1NFTEZSRUZSRVNIX01BU0sJQklUKDEyKQorCitz
-dGF0aWMgdm9pZCBfX2lvbWVtICpkZHJjX2Jhc2U7CisKKy8qKgorICogenlucV9wbV9pb3JlbWFw
-KCkgLSBDcmVhdGUgSU8gbWFwcGluZ3MKKyAqIEBjb21wOglEVCBjb21wYXRpYmxlIHN0cmluZwor
-ICogUmV0dXJucyBhIHBvaW50ZXIgdG8gdGhlIG1hcHBlZCBtZW1vcnkgb3IgTlVMTC4KKyAqCisg
-KiBSZW1hcCB0aGUgbWVtb3J5IHJlZ2lvbiBmb3IgYSBjb21wYXRpYmxlIERUIG5vZGUuCisgKi8K
-K3N0YXRpYyB2b2lkIF9faW9tZW0gKnp5bnFfcG1faW9yZW1hcChjb25zdCBjaGFyICpjb21wKQor
-eworCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7CisJdm9pZCBfX2lvbWVtICpiYXNlID0gTlVMTDsK
-KworCW5wID0gb2ZfZmluZF9jb21wYXRpYmxlX25vZGUoTlVMTCwgTlVMTCwgY29tcCk7CisJaWYg
-KG5wKSB7CisJCWJhc2UgPSBvZl9pb21hcChucCwgMCk7CisJCW9mX25vZGVfcHV0KG5wKTsKKwl9
-IGVsc2UgeworCQlwcl93YXJuKCIlczogbm8gY29tcGF0aWJsZSBub2RlIGZvdW5kIGZvciAnJXMn
-XG4iLCBfX2Z1bmNfXywKKwkJCQljb21wKTsKKwl9CisKKwlyZXR1cm4gYmFzZTsKK30KKworaW50
-IF9faW5pdCB6eW5xX3BtX2xhdGVfaW5pdCh2b2lkKQoreworCXUzMiByZWc7CisKKwlkZHJjX2Jh
-c2UgPSB6eW5xX3BtX2lvcmVtYXAoInhsbngsenlucS1kZHJjLWEwNSIpOworCWlmICghZGRyY19i
-YXNlKSB7CisJCXByX3dhcm4oIiVzOiBVbmFibGUgdG8gbWFwIEREUkMgSU8gbWVtb3J5LlxuIiwg
-X19mdW5jX18pOworCX0gZWxzZSB7CisJCS8qCisJCSAqIEVuYWJsZSBERFJDIHNlbGYtcmVmcmVz
-aCBhbmQgY2xvY2sgc3RvcCBmZWF0dXJlcy4gVGhlIEhXCisJCSAqIHRha2VzIGNhcmUgb2YgZW50
-ZXJpbmcvZXhpdGluZyB0aGUgY29ycmVjdCBtb2RlcyBkZXBlbmRpbmcKKwkJICogb24gYWN0aXZp
-dHkgc3RhdGUuCisJCSAqLworCQlyZWcgPSByZWFkbChkZHJjX2Jhc2UgKyBERFJDX0NUUkxfUkVH
-MV9PRkZTKTsKKwkJcmVnIHw9IEREUkNfU0VMRlJFRlJFU0hfTUFTSzsKKwkJd3JpdGVsKHJlZywg
-ZGRyY19iYXNlICsgRERSQ19DVFJMX1JFRzFfT0ZGUyk7CisKKwkJcmVnID0gcmVhZGwoZGRyY19i
-YXNlICsgRERSQ19EUkFNX1BBUkFNX1JFRzNfT0ZGUyk7CisJCXJlZyB8PSBERFJDX0NMT0NLU1RP
-UF9NQVNLOworCQl3cml0ZWwocmVnLCBkZHJjX2Jhc2UgKyBERFJDX0RSQU1fUEFSQU1fUkVHM19P
-RkZTKTsKKwl9CisKKwlyZXR1cm4gMDsKK30KLS0gCjIuMC4xLjEuZ2ZiZmMzOTQKCgpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVs
-IG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDov
-L2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+The core is not powered down, it is pointless to call the cpu_pm notifiers and
+switch to the global timer.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-and-tested-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+---
+ drivers/cpuidle/cpuidle-zynq.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidle-zynq.c
+index aded75928028..c61b8b2a7c77 100644
+--- a/drivers/cpuidle/cpuidle-zynq.c
++++ b/drivers/cpuidle/cpuidle-zynq.c
+@@ -26,7 +26,6 @@
+  */
+ 
+ #include <linux/init.h>
+-#include <linux/cpu_pm.h>
+ #include <linux/cpuidle.h>
+ #include <linux/platform_device.h>
+ #include <asm/proc-fns.h>
+@@ -38,15 +37,9 @@
+ static int zynq_enter_idle(struct cpuidle_device *dev,
+ 			   struct cpuidle_driver *drv, int index)
+ {
+-	/* Devices must be stopped here */
+-	cpu_pm_enter();
+-
+ 	/* Add code for DDR self refresh start */
+ 	cpu_do_idle();
+ 
+-	/* Add code for DDR self refresh stop */
+-	cpu_pm_exit();
+-
+ 	return index;
+ }
+ 
+@@ -59,8 +52,7 @@ static struct cpuidle_driver zynq_idle_driver = {
+ 			.enter			= zynq_enter_idle,
+ 			.exit_latency		= 10,
+ 			.target_residency	= 10000,
+-			.flags			= CPUIDLE_FLAG_TIME_VALID |
+-						  CPUIDLE_FLAG_TIMER_STOP,
++			.flags			= CPUIDLE_FLAG_TIME_VALID,
+ 			.name			= "RAM_SR",
+ 			.desc			= "WFI and RAM Self Refresh",
+ 		},
+-- 
+2.0.1.1.gfbfc394
