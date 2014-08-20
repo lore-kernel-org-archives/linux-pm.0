@@ -1,42 +1,38 @@
-From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Subject: [PATCH v4 15/16] ARM: tegra: Add CPU regulator to the Jetson TK1 device tree
-Date: Thu, 21 Aug 2014 00:04:43 +0300
-Message-ID: <1408568684-11016-16-git-send-email-ttynkkynen@nvidia.com>
+From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH v4 16/16] ARM: tegra: enable Tegra124 cpufreq driver by default
+Date: Thu, 21 Aug 2014 00:04:44 +0300
+Message-ID: <1408568684-11016-17-git-send-email-ttynkkynen@nvidia.com>
 References: <1408568684-11016-1-git-send-email-ttynkkynen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:3607 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752629AbaHTVF7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Aug 2014 17:05:59 -0400
-In-Reply-To: <1408568684-11016-1-git-send-email-ttynkkynen@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1408568684-11016-1-git-send-email-ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Walmsley <pwalmsley@nvidia.com>, Vince Hsu <vinceh@nvidia.com>, devicetree@vger.kernel.org, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 
-Add the CPU voltage regulator for the cpufreq driver.
+The Tegra124 cpufreq driver depends on CONFIG_GENERIC_CPUFREQ_CPU0, so
+enable it to get the Tegra driver to build by default.
 
-Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
-v3: New patch
+v4: New patch
 ---
- arch/arm/boot/dts/tegra124-jetson-tk1.dts | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/arm/configs/tegra_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/boot/dts/tegra124-jetson-tk1.dts b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
-index 04134da..5250be5 100644
---- a/arch/arm/boot/dts/tegra124-jetson-tk1.dts
-+++ b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
-@@ -1890,3 +1890,7 @@
- 		};
- 	};
- };
-+
-+&cpu0 {
-+	vdd-cpu-supply = <&vdd_cpu>;
-+};
+diff --git a/arch/arm/configs/tegra_defconfig b/arch/arm/configs/tegra_defconfig
+index 285c433..afaa97c 100644
+--- a/arch/arm/configs/tegra_defconfig
++++ b/arch/arm/configs/tegra_defconfig
+@@ -43,6 +43,7 @@ CONFIG_KEXEC=y
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_STAT_DETAILS=y
+ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
++CONFIG_GENERIC_CPUFREQ_CPU0=y
+ CONFIG_CPU_IDLE=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
 -- 
 1.8.1.5
-
