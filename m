@@ -1,117 +1,57 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v7 11/11] clk: rockchip: add restart handler
-Date: Tue, 19 Aug 2014 17:45:38 -0700
-Message-ID: <1408495538-27480-12-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v7 03/11] arm64: Support restart through restart handler call
+ chain
+Date: Tue, 19 Aug 2014 17:45:30 -0700
+Message-ID: <1408495538-27480-4-git-send-email-linux@roeck-us.net>
 References: <1408495538-27480-1-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1408495538-27480-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Russell King <linux@arm.linux.org.uk>, Wim Van Sebroeck <wim@iguana.be>, Catalin Marinas <catalin.marinas@arm.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-watchdog@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Heiko Stuebner <heiko@sntech.de>, Jonas Jensen <jonas.jensen@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tomasz Figa <t.figa@samsung.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
+Cc: linux-samsung-soc@vger.kernel.org, linux-watchdog@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Randy Dunlap <rdunlap@infradead.org>, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Jonas Jensen <jonas.jensen@gmail.com>, Guenter Roeck <linux@roeck-us.net>, linux-doc@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@kernel.org>, linux-arm-kernel@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>
 List-Id: linux-pm@vger.kernel.org
 
-=46rom: Heiko St=C3=BCbner <heiko@sntech.de>
+The kernel core now supports a restart handler call chain to restart
+the system. Call it if arm_pm_restart is not set.
 
-Add infrastructure to write the correct value to the restart register a=
-nd
-register the restart notifier for both rk3188 (including rk3066) and rk=
-3288.
-
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+Acked-by: Heiko Stuebner <heiko@sntech.de>
 ---
-v7: Added patch to series.
+v7: No change.
+v6: No change.
+v5: Renamed restart function to do_kernel_restart
+v4: No change.
+v3: Use wrapper function to execute notifier call chain.
+v2: Only call notifier call chain if arm_pm_restart is not set.
+    Do not include linux/watchdog.h.
 
- drivers/clk/rockchip/clk-rk3188.c |  2 ++
- drivers/clk/rockchip/clk-rk3288.c |  2 ++
- drivers/clk/rockchip/clk.c        | 25 +++++++++++++++++++++++++
- drivers/clk/rockchip/clk.h        |  1 +
- 4 files changed, 30 insertions(+)
+ arch/arm64/kernel/process.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/clk/rockchip/clk-rk3188.c b/drivers/clk/rockchip/c=
-lk-rk3188.c
-index a83a6d8..71b661a 100644
---- a/drivers/clk/rockchip/clk-rk3188.c
-+++ b/drivers/clk/rockchip/clk-rk3188.c
-@@ -631,6 +631,8 @@ static void __init rk3188_common_clk_init(struct de=
-vice_node *np)
-=20
- 	rockchip_register_softrst(np, 9, reg_base + RK2928_SOFTRST_CON(0),
- 				  ROCKCHIP_SOFTRST_HIWORD_MASK);
-+
-+	rockchip_register_restart_notifier(RK2928_GLB_SRST_FST);
- }
-=20
- static void __init rk3066a_clk_init(struct device_node *np)
-diff --git a/drivers/clk/rockchip/clk-rk3288.c b/drivers/clk/rockchip/c=
-lk-rk3288.c
-index 0d8c6c5..b604217 100644
---- a/drivers/clk/rockchip/clk-rk3288.c
-+++ b/drivers/clk/rockchip/clk-rk3288.c
-@@ -713,5 +713,7 @@ static void __init rk3288_clk_init(struct device_no=
-de *np)
-=20
- 	rockchip_register_softrst(np, 9, reg_base + RK3288_SOFTRST_CON(0),
- 				  ROCKCHIP_SOFTRST_HIWORD_MASK);
-+
-+	rockchip_register_restart_notifier(RK3288_GLB_SRST_FST);
- }
- CLK_OF_DECLARE(rk3288_cru, "rockchip,rk3288-cru", rk3288_clk_init);
-diff --git a/drivers/clk/rockchip/clk.c b/drivers/clk/rockchip/clk.c
-index 278cf9d..aa41433 100644
---- a/drivers/clk/rockchip/clk.c
-+++ b/drivers/clk/rockchip/clk.c
-@@ -25,6 +25,7 @@
- #include <linux/clk-provider.h>
- #include <linux/mfd/syscon.h>
- #include <linux/regmap.h>
-+#include <linux/reboot.h>
- #include "clk.h"
-=20
- /**
-@@ -242,3 +243,27 @@ void __init rockchip_clk_register_branches(
- 		rockchip_clk_add_lookup(clk, list->id);
- 	}
- }
-+
-+static unsigned int reg_restart;
-+static int rockchip_restart_notify(struct notifier_block *this,
-+				   unsigned long mode, void *cmd)
-+{
-+	writel(0xfdb9, reg_base + reg_restart);
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block rockchip_restart_handler =3D {
-+	.notifier_call =3D rockchip_restart_notify,
-+	.priority =3D 128,
-+};
-+
-+void __init rockchip_register_restart_notifier(unsigned int reg)
-+{
-+	int ret;
-+
-+	reg_restart =3D reg;
-+	ret =3D register_restart_handler(&rockchip_restart_handler);
-+	if (ret)
-+		pr_err("%s: cannot register restart handler, %d\n",
-+		       __func__, ret);
-+}
-diff --git a/drivers/clk/rockchip/clk.h b/drivers/clk/rockchip/clk.h
-index 887cbde..0b5eab5 100644
---- a/drivers/clk/rockchip/clk.h
-+++ b/drivers/clk/rockchip/clk.h
-@@ -329,6 +329,7 @@ void rockchip_clk_register_branches(struct rockchip=
-_clk_branch *clk_list,
- 				    unsigned int nr_clk);
- void rockchip_clk_register_plls(struct rockchip_pll_clock *pll_list,
- 				unsigned int nr_pll, int grf_lock_offset);
-+void rockchip_register_restart_notifier(unsigned int reg);
-=20
- #define ROCKCHIP_SOFTRST_HIWORD_MASK	BIT(0)
-=20
---=20
+diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
+index 1309d64..0d3fb9f 100644
+--- a/arch/arm64/kernel/process.c
++++ b/arch/arm64/kernel/process.c
+@@ -180,6 +180,8 @@ void machine_restart(char *cmd)
+ 	/* Now call the architecture specific reboot code. */
+ 	if (arm_pm_restart)
+ 		arm_pm_restart(reboot_mode, cmd);
++	else
++		do_kernel_restart(cmd);
+ 
+ 	/*
+ 	 * Whoops - the architecture was unable to reboot.
+-- 
 1.9.1
