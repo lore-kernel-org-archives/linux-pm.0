@@ -1,136 +1,100 @@
 From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Subject: [PATCH 7/9] ARM: zynq: Synchronise zynq_cpu_die/kill
-Date: Wed, 20 Aug 2014 13:41:53 -0700
-Message-ID: <1408567315-28479-8-git-send-email-soren.brinkmann@xilinx.com>
+Subject: [PATCH 4/9] ARM: zynq: PM: Enable DDR self-refresh and clock stop
+Date: Wed, 20 Aug 2014 13:41:50 -0700
+Message-ID: <1408567315-28479-5-git-send-email-soren.brinkmann@xilinx.com>
 References: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Michal Simek <michal.simek@xilinx.com>, Russell King <linux@arm.linux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-kernel@vger.kernel.org, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, Kumar Gala <galak@codeaurora.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Avoid races and add synchronisation between the arch specific
-kill and die routines.
-
-The same synchronisation issue was fixed on IMX platform
-by this commit:
-"ARM: imx: fix sync issue between imx_cpu_die and imx_cpu_kill"
-(sha1: 2f3edfd7e27ad4206acbc2ae99c9df5f46353024)
-
-Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
----
- arch/arm/mach-zynq/common.h  |  2 ++
- arch/arm/mach-zynq/hotplug.c |  2 ++
- arch/arm/mach-zynq/platsmp.c |  6 ++++++
- arch/arm/mach-zynq/slcr.c    | 43 ++++++++++++++++++++++++++++++++++++++++++-
- 4 files changed, 52 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/mach-zynq/common.h b/arch/arm/mach-zynq/common.h
-index 87945fa2a179..c0773e87e83c 100644
---- a/arch/arm/mach-zynq/common.h
-+++ b/arch/arm/mach-zynq/common.h
-@@ -24,6 +24,8 @@ extern int zynq_early_slcr_init(void);
- extern void zynq_slcr_system_reset(void);
- extern void zynq_slcr_cpu_stop(int cpu);
- extern void zynq_slcr_cpu_start(int cpu);
-+extern bool zynq_slcr_cpu_state_read(int cpu);
-+extern void zynq_slcr_cpu_state_write(int cpu, bool die);
- extern u32 zynq_slcr_get_device_id(void);
- 
- #ifdef CONFIG_SMP
-diff --git a/arch/arm/mach-zynq/hotplug.c b/arch/arm/mach-zynq/hotplug.c
-index 366f46c91365..fe44a05677e2 100644
---- a/arch/arm/mach-zynq/hotplug.c
-+++ b/arch/arm/mach-zynq/hotplug.c
-@@ -19,6 +19,8 @@
-  */
- void zynq_platform_cpu_die(unsigned int cpu)
- {
-+	zynq_slcr_cpu_state_write(cpu, true);
-+
- 	/*
- 	 * there is no power-control hardware on this platform, so all
- 	 * we can do is put the core into WFI; this is safe as the calling
-diff --git a/arch/arm/mach-zynq/platsmp.c b/arch/arm/mach-zynq/platsmp.c
-index 616b99e07c60..f77f7ca4c45b 100644
---- a/arch/arm/mach-zynq/platsmp.c
-+++ b/arch/arm/mach-zynq/platsmp.c
-@@ -123,6 +123,12 @@ static void zynq_secondary_init(unsigned int cpu)
- #ifdef CONFIG_HOTPLUG_CPU
- static int zynq_cpu_kill(unsigned cpu)
- {
-+	unsigned long timeout = jiffies + msecs_to_jiffies(50);
-+
-+	while (zynq_slcr_cpu_state_read(cpu))
-+		if (time_after(jiffies, timeout))
-+			return 0;
-+
- 	zynq_slcr_cpu_stop(cpu);
- 	return 1;
- }
-diff --git a/arch/arm/mach-zynq/slcr.c b/arch/arm/mach-zynq/slcr.c
-index c43a2d16e223..d4cb50cf97c0 100644
---- a/arch/arm/mach-zynq/slcr.c
-+++ b/arch/arm/mach-zynq/slcr.c
-@@ -138,6 +138,8 @@ void zynq_slcr_cpu_start(int cpu)
- 	zynq_slcr_write(reg, SLCR_A9_CPU_RST_CTRL_OFFSET);
- 	reg &= ~(SLCR_A9_CPU_CLKSTOP << cpu);
- 	zynq_slcr_write(reg, SLCR_A9_CPU_RST_CTRL_OFFSET);
-+
-+	zynq_slcr_cpu_state_write(cpu, false);
- }
- 
- /**
-@@ -154,8 +156,47 @@ void zynq_slcr_cpu_stop(int cpu)
- }
- 
- /**
-- * zynq_slcr_init - Regular slcr driver init
-+ * zynq_slcr_cpu_state - Read/write cpu state
-+ * @cpu:	cpu number
-  *
-+ * SLCR_REBOOT_STATUS save upper 2 bits (31/30 cpu states for cpu0 and cpu1)
-+ * 0 means cpu is running, 1 cpu is going to die.
-+ *
-+ * Return: true if cpu is running, false if cpu is going to die
-+ */
-+bool zynq_slcr_cpu_state_read(int cpu)
-+{
-+	u32 state;
-+
-+	state = readl(zynq_slcr_base + SLCR_REBOOT_STATUS_OFFSET);
-+	state &= 1 << (31 - cpu);
-+
-+	return !state;
-+}
-+
-+/**
-+ * zynq_slcr_cpu_state - Read/write cpu state
-+ * @cpu:	cpu number
-+ * @die:	cpu state - true if cpu is going to die
-+ *
-+ * SLCR_REBOOT_STATUS save upper 2 bits (31/30 cpu states for cpu0 and cpu1)
-+ * 0 means cpu is running, 1 cpu is going to die.
-+ */
-+void zynq_slcr_cpu_state_write(int cpu, bool die)
-+{
-+	u32 state, mask;
-+
-+	state = readl(zynq_slcr_base + SLCR_REBOOT_STATUS_OFFSET);
-+	mask = 1 << (31 - cpu);
-+	if (die)
-+		state |= mask;
-+	else
-+		state &= ~mask;
-+	writel(state, zynq_slcr_base + SLCR_REBOOT_STATUS_OFFSET);
-+}
-+
-+/**
-+ * zynq_slcr_init - Regular slcr driver init
-  * Return:	0 on success, negative errno otherwise.
-  *
-  * Called early during boot from platform code to remap SLCR area.
--- 
-2.0.1.1.gfbfc394
+VGhlIEREUiBjb250cm9sbGVyIGNhbiBkZXRlY3QgaWRsZSBwZXJpb2RzIGFuZCBsZXZlcmFnZSBs
+b3cgcG93ZXIKZmVhdHVyZXMgbGlrZSBzZWxmLXJlZnJlc2ggYW5kIGNsb2NrIHN0b3AuCldoZW4g
+bmV3IHJlcXVlc3RzIG9jY3VyLCB0aGUgRERSQyByZXN1bWVzIG5vcm1hbCBvcGVyYXRpb24uCgpT
+aWduZWQtb2ZmLWJ5OiBTb3JlbiBCcmlua21hbm4gPHNvcmVuLmJyaW5rbWFubkB4aWxpbnguY29t
+PgotLS0KIGFyY2gvYXJtL21hY2gtenlucS9NYWtlZmlsZSB8ICAyICstCiBhcmNoL2FybS9tYWNo
+LXp5bnEvY29tbW9uLmMgfCAgMSArCiBhcmNoL2FybS9tYWNoLXp5bnEvY29tbW9uLmggfCAgMiAr
+KwogYXJjaC9hcm0vbWFjaC16eW5xL3BtLmMgICAgIHwgODQgKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrCiA0IGZpbGVzIGNoYW5nZWQsIDg4IGluc2VydGlvbnMo
+KyksIDEgZGVsZXRpb24oLSkKIGNyZWF0ZSBtb2RlIDEwMDY0NCBhcmNoL2FybS9tYWNoLXp5bnEv
+cG0uYwoKZGlmZiAtLWdpdCBhL2FyY2gvYXJtL21hY2gtenlucS9NYWtlZmlsZSBiL2FyY2gvYXJt
+L21hY2gtenlucS9NYWtlZmlsZQppbmRleCAxYjI1ZDkyZWJmMjIuLjgyMGRmZjZlMWViYSAxMDA2
+NDQKLS0tIGEvYXJjaC9hcm0vbWFjaC16eW5xL01ha2VmaWxlCisrKyBiL2FyY2gvYXJtL21hY2gt
+enlucS9NYWtlZmlsZQpAQCAtMyw3ICszLDcgQEAKICMKIAogIyBDb21tb24gc3VwcG9ydAotb2Jq
+LXkJCQkJOj0gY29tbW9uLm8gc2xjci5vCitvYmoteQkJCQk6PSBjb21tb24ubyBzbGNyLm8gcG0u
+bwogQ0ZMQUdTX1JFTU9WRV9ob3RwbHVnLm8JCT0tbWFyY2g9YXJtdjZrCiBDRkxBR1NfaG90cGx1
+Zy5vIAkJPS1XYSwtbWFyY2g9YXJtdjctYSAtbWNwdT1jb3J0ZXgtYTkKIG9iai0kKENPTkZJR19I
+T1RQTFVHX0NQVSkJKz0gaG90cGx1Zy5vCmRpZmYgLS1naXQgYS9hcmNoL2FybS9tYWNoLXp5bnEv
+Y29tbW9uLmMgYi9hcmNoL2FybS9tYWNoLXp5bnEvY29tbW9uLmMKaW5kZXggM2NiN2MxOTg2MTVh
+Li42YmQxM2U1Y2U2YjcgMTAwNjQ0Ci0tLSBhL2FyY2gvYXJtL21hY2gtenlucS9jb21tb24uYwor
+KysgYi9hcmNoL2FybS9tYWNoLXp5bnEvY29tbW9uLmMKQEAgLTEwMSw2ICsxMDEsNyBAQCBzdGF0
+aWMgaW50IF9faW5pdCB6eW5xX2dldF9yZXZpc2lvbih2b2lkKQogc3RhdGljIHZvaWQgX19pbml0
+IHp5bnFfaW5pdF9sYXRlKHZvaWQpCiB7CiAJenlucV9jb3JlX3BtX2luaXQoKTsKKwl6eW5xX3Bt
+X2xhdGVfaW5pdCgpOwogfQogCiAvKioKZGlmZiAtLWdpdCBhL2FyY2gvYXJtL21hY2gtenlucS9j
+b21tb24uaCBiL2FyY2gvYXJtL21hY2gtenlucS9jb21tb24uaAppbmRleCA1OTZlZjBiNTA2N2Mu
+Ljg3OTQ1ZmEyYTE3OSAxMDA2NDQKLS0tIGEvYXJjaC9hcm0vbWFjaC16eW5xL2NvbW1vbi5oCisr
+KyBiL2FyY2gvYXJtL21hY2gtenlucS9jb21tb24uaApAQCAtNDAsNiArNDAsOCBAQCBleHRlcm4g
+dm9pZCBfX2lvbWVtICp6eW5xX3NjdV9iYXNlOwogLyogSG90cGx1ZyAqLwogZXh0ZXJuIHZvaWQg
+enlucV9wbGF0Zm9ybV9jcHVfZGllKHVuc2lnbmVkIGludCBjcHUpOwogCitpbnQgenlucV9wbV9s
+YXRlX2luaXQodm9pZCk7CisKIHN0YXRpYyBpbmxpbmUgdm9pZCB6eW5xX2NvcmVfcG1faW5pdCh2
+b2lkKQogewogCS8qIEE5IGNsb2NrIGdhdGluZyAqLwpkaWZmIC0tZ2l0IGEvYXJjaC9hcm0vbWFj
+aC16eW5xL3BtLmMgYi9hcmNoL2FybS9tYWNoLXp5bnEvcG0uYwpuZXcgZmlsZSBtb2RlIDEwMDY0
+NAppbmRleCAwMDAwMDAwMDAwMDAuLjE5OTU1OTE3YWFjOAotLS0gL2Rldi9udWxsCisrKyBiL2Fy
+Y2gvYXJtL21hY2gtenlucS9wbS5jCkBAIC0wLDAgKzEsODQgQEAKKy8qCisgKiBaeW5xIHBvd2Vy
+IG1hbmFnZW1lbnQKKyAqCisgKiAgQ29weXJpZ2h0IChDKSAyMDEyIC0gMjAxNCBYaWxpbngKKyAq
+CisgKiAgU8O2cmVuIEJyaW5rbWFubiA8c29yZW4uYnJpbmttYW5uQHhpbGlueC5jb20+CisgKgor
+ICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU6IHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0
+IGFuZC9vciBtb2RpZnkKKyAqIGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwg
+UHVibGljIExpY2Vuc2UgYXMgcHVibGlzaGVkIGJ5CisgKiB0aGUgRnJlZSBTb2Z0d2FyZSBGb3Vu
+ZGF0aW9uLCBlaXRoZXIgdmVyc2lvbiAyIG9mIHRoZSBMaWNlbnNlLCBvcgorICogKGF0IHlvdXIg
+b3B0aW9uKSBhbnkgbGF0ZXIgdmVyc2lvbi4KKyAqCisgKiBUaGlzIHByb2dyYW0gaXMgZGlzdHJp
+YnV0ZWQgaW4gdGhlIGhvcGUgdGhhdCBpdCB3aWxsIGJlIHVzZWZ1bCwKKyAqIGJ1dCBXSVRIT1VU
+IEFOWSBXQVJSQU5UWTsgd2l0aG91dCBldmVuIHRoZSBpbXBsaWVkIHdhcnJhbnR5IG9mCisgKiBN
+RVJDSEFOVEFCSUxJVFkgb3IgRklUTkVTUyBGT1IgQSBQQVJUSUNVTEFSIFBVUlBPU0UuICBTZWUg
+dGhlCisgKiBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBmb3IgbW9yZSBkZXRhaWxzLgorICoK
+KyAqIFlvdSBzaG91bGQgaGF2ZSByZWNlaXZlZCBhIGNvcHkgb2YgdGhlIEdOVSBHZW5lcmFsIFB1
+YmxpYyBMaWNlbnNlCisgKiBhbG9uZyB3aXRoIHRoaXMgcHJvZ3JhbS4gIElmIG5vdCwgc2VlIDxo
+dHRwOi8vd3d3LmdudS5vcmcvbGljZW5zZXMvPi4KKyAqLworCisjaW5jbHVkZSA8bGludXgvaW8u
+aD4KKyNpbmNsdWRlIDxsaW51eC9vZl9hZGRyZXNzLmg+CisjaW5jbHVkZSA8bGludXgvb2ZfZGV2
+aWNlLmg+CisjaW5jbHVkZSAiY29tbW9uLmgiCisKKy8qIHJlZ2lzdGVyIG9mZnNldHMgKi8KKyNk
+ZWZpbmUgRERSQ19DVFJMX1JFRzFfT0ZGUwkJMHg2MAorI2RlZmluZSBERFJDX0RSQU1fUEFSQU1f
+UkVHM19PRkZTCTB4MjAKKworLyogYml0ZmllbGRzICovCisjZGVmaW5lIEREUkNfQ0xPQ0tTVE9Q
+X01BU0sJQklUKDIzKQorI2RlZmluZSBERFJDX1NFTEZSRUZSRVNIX01BU0sJQklUKDEyKQorCitz
+dGF0aWMgdm9pZCBfX2lvbWVtICpkZHJjX2Jhc2U7CisKKy8qKgorICogenlucV9wbV9pb3JlbWFw
+KCkgLSBDcmVhdGUgSU8gbWFwcGluZ3MKKyAqIEBjb21wOglEVCBjb21wYXRpYmxlIHN0cmluZwor
+ICogUmV0dXJucyBhIHBvaW50ZXIgdG8gdGhlIG1hcHBlZCBtZW1vcnkgb3IgTlVMTC4KKyAqCisg
+KiBSZW1hcCB0aGUgbWVtb3J5IHJlZ2lvbiBmb3IgYSBjb21wYXRpYmxlIERUIG5vZGUuCisgKi8K
+K3N0YXRpYyB2b2lkIF9faW9tZW0gKnp5bnFfcG1faW9yZW1hcChjb25zdCBjaGFyICpjb21wKQor
+eworCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7CisJdm9pZCBfX2lvbWVtICpiYXNlID0gTlVMTDsK
+KworCW5wID0gb2ZfZmluZF9jb21wYXRpYmxlX25vZGUoTlVMTCwgTlVMTCwgY29tcCk7CisJaWYg
+KG5wKSB7CisJCWJhc2UgPSBvZl9pb21hcChucCwgMCk7CisJCW9mX25vZGVfcHV0KG5wKTsKKwl9
+IGVsc2UgeworCQlwcl93YXJuKCIlczogbm8gY29tcGF0aWJsZSBub2RlIGZvdW5kIGZvciAnJXMn
+XG4iLCBfX2Z1bmNfXywKKwkJCQljb21wKTsKKwl9CisKKwlyZXR1cm4gYmFzZTsKK30KKworaW50
+IF9faW5pdCB6eW5xX3BtX2xhdGVfaW5pdCh2b2lkKQoreworCXUzMiByZWc7CisKKwlkZHJjX2Jh
+c2UgPSB6eW5xX3BtX2lvcmVtYXAoInhsbngsenlucS1kZHJjLWEwNSIpOworCWlmICghZGRyY19i
+YXNlKSB7CisJCXByX3dhcm4oIiVzOiBVbmFibGUgdG8gbWFwIEREUkMgSU8gbWVtb3J5LlxuIiwg
+X19mdW5jX18pOworCX0gZWxzZSB7CisJCS8qCisJCSAqIEVuYWJsZSBERFJDIHNlbGYtcmVmcmVz
+aCBhbmQgY2xvY2sgc3RvcCBmZWF0dXJlcy4gVGhlIEhXCisJCSAqIHRha2VzIGNhcmUgb2YgZW50
+ZXJpbmcvZXhpdGluZyB0aGUgY29ycmVjdCBtb2RlcyBkZXBlbmRpbmcKKwkJICogb24gYWN0aXZp
+dHkgc3RhdGUuCisJCSAqLworCQlyZWcgPSByZWFkbChkZHJjX2Jhc2UgKyBERFJDX0NUUkxfUkVH
+MV9PRkZTKTsKKwkJcmVnIHw9IEREUkNfU0VMRlJFRlJFU0hfTUFTSzsKKwkJd3JpdGVsKHJlZywg
+ZGRyY19iYXNlICsgRERSQ19DVFJMX1JFRzFfT0ZGUyk7CisKKwkJcmVnID0gcmVhZGwoZGRyY19i
+YXNlICsgRERSQ19EUkFNX1BBUkFNX1JFRzNfT0ZGUyk7CisJCXJlZyB8PSBERFJDX0NMT0NLU1RP
+UF9NQVNLOworCQl3cml0ZWwocmVnLCBkZHJjX2Jhc2UgKyBERFJDX0RSQU1fUEFSQU1fUkVHM19P
+RkZTKTsKKwl9CisKKwlyZXR1cm4gMDsKK30KLS0gCjIuMC4xLjEuZ2ZiZmMzOTQKCgpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVs
+IG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDov
+L2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
