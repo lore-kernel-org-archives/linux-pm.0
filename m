@@ -1,97 +1,76 @@
-From: Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH 1/9] ARM: zynq: PM: Enable A9 internal clock gating feature
-Date: Wed, 20 Aug 2014 13:41:47 -0700
-Message-ID: <1408567315-28479-2-git-send-email-soren.brinkmann@xilinx.com>
+From: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Subject: [PATCH 5/9] ARM: zynq: Remove invalidate cache for cpu die
+Date: Wed, 20 Aug 2014 13:41:51 -0700
+Message-ID: <1408567315-28479-6-git-send-email-soren.brinkmann@xilinx.com>
 References: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1408567315-28479-1-git-send-email-soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Michal Simek <michal.simek-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Michal Simek <michal.simek@xilinx.com>, Russell King <linux@arm.linux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
----
- arch/arm/mach-zynq/common.c  |  6 ++++++
- arch/arm/mach-zynq/common.h  | 11 +++++++++++
- arch/arm/mach-zynq/platsmp.c |  9 +++++++++
- 3 files changed, 26 insertions(+)
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-diff --git a/arch/arm/mach-zynq/common.c b/arch/arm/mach-zynq/common.c
-index 31a6fa40ba37..3cb7c198615a 100644
---- a/arch/arm/mach-zynq/common.c
-+++ b/arch/arm/mach-zynq/common.c
-@@ -98,6 +98,11 @@ static int __init zynq_get_revision(void)
- 	return revision;
- }
+As there is no Power management unit on this board, it is not possible to power
+down a core, just WFI is allowed. There is no point to invalidate the cache and
+exit coherency.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-and-tested-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+---
+ arch/arm/mach-zynq/hotplug.c | 32 +-------------------------------
+ 1 file changed, 1 insertion(+), 31 deletions(-)
+
+diff --git a/arch/arm/mach-zynq/hotplug.c b/arch/arm/mach-zynq/hotplug.c
+index 5052c70326e4..366f46c91365 100644
+--- a/arch/arm/mach-zynq/hotplug.c
++++ b/arch/arm/mach-zynq/hotplug.c
+@@ -10,35 +10,7 @@
+  * it under the terms of the GNU General Public License version 2 as
+  * published by the Free Software Foundation.
+  */
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/smp.h>
+-
+-#include <asm/cacheflush.h>
+-#include <asm/cp15.h>
+-#include "common.h"
+-
+-static inline void zynq_cpu_enter_lowpower(void)
+-{
+-	unsigned int v;
+-
+-	flush_cache_all();
+-	asm volatile(
+-	"	mcr	p15, 0, %1, c7, c5, 0\n"
+-	"	dsb\n"
+-	/*
+-	 * Turn off coherency
+-	 */
+-	"	mrc	p15, 0, %0, c1, c0, 1\n"
+-	"	bic	%0, %0, #0x40\n"
+-	"	mcr	p15, 0, %0, c1, c0, 1\n"
+-	"	mrc	p15, 0, %0, c1, c0, 0\n"
+-	"	bic	%0, %0, %2\n"
+-	"	mcr	p15, 0, %0, c1, c0, 0\n"
+-	  : "=&r" (v)
+-	  : "r" (0), "Ir" (CR_C)
+-	  : "cc");
+-}
++#include <asm/proc-fns.h>
  
-+static void __init zynq_init_late(void)
-+{
-+	zynq_core_pm_init();
-+}
-+
- /**
-  * zynq_init_machine - System specific initialization, intended to be
-  *		       called from board specific initialization.
-@@ -204,6 +209,7 @@ DT_MACHINE_START(XILINX_EP107, "Xilinx Zynq Platform")
- 	.map_io		= zynq_map_io,
- 	.init_irq	= zynq_irq_init,
- 	.init_machine	= zynq_init_machine,
-+	.init_late	= zynq_init_late,
- 	.init_time	= zynq_timer_init,
- 	.dt_compat	= zynq_dt_match,
- 	.reserve	= zynq_memory_init,
-diff --git a/arch/arm/mach-zynq/common.h b/arch/arm/mach-zynq/common.h
-index f652f0a884a6..596ef0b5067c 100644
---- a/arch/arm/mach-zynq/common.h
-+++ b/arch/arm/mach-zynq/common.h
-@@ -40,4 +40,15 @@ extern void __iomem *zynq_scu_base;
- /* Hotplug */
- extern void zynq_platform_cpu_die(unsigned int cpu);
- 
-+static inline void zynq_core_pm_init(void)
-+{
-+	/* A9 clock gating */
-+	asm volatile ("mrc  p15, 0, r12, c15, c0, 0\n"
-+		      "orr  r12, r12, #1\n"
-+		      "mcr  p15, 0, r12, c15, c0, 0\n"
-+		      : /* no outputs */
-+		      : /* no inputs */
-+		      : "r12");
-+}
-+
- #endif
-diff --git a/arch/arm/mach-zynq/platsmp.c b/arch/arm/mach-zynq/platsmp.c
-index abc82ef085c1..616b99e07c60 100644
---- a/arch/arm/mach-zynq/platsmp.c
-+++ b/arch/arm/mach-zynq/platsmp.c
-@@ -112,6 +112,14 @@ static void __init zynq_smp_prepare_cpus(unsigned int max_cpus)
- 	scu_enable(zynq_scu_base);
- }
- 
-+/*
-+ * This function is in the hotplug path. Don't move it into the init section!!
-+ */
-+static void zynq_secondary_init(unsigned int cpu)
-+{
-+	zynq_core_pm_init();
-+}
-+
- #ifdef CONFIG_HOTPLUG_CPU
- static int zynq_cpu_kill(unsigned cpu)
+ /*
+  * platform-specific code to shutdown a CPU
+@@ -47,8 +19,6 @@ static inline void zynq_cpu_enter_lowpower(void)
+  */
+ void zynq_platform_cpu_die(unsigned int cpu)
  {
-@@ -124,6 +132,7 @@ struct smp_operations zynq_smp_ops __initdata = {
- 	.smp_init_cpus		= zynq_smp_init_cpus,
- 	.smp_prepare_cpus	= zynq_smp_prepare_cpus,
- 	.smp_boot_secondary	= zynq_boot_secondary,
-+	.smp_secondary_init	= zynq_secondary_init,
- #ifdef CONFIG_HOTPLUG_CPU
- 	.cpu_die		= zynq_platform_cpu_die,
- 	.cpu_kill		= zynq_cpu_kill,
+-	zynq_cpu_enter_lowpower();
+-
+ 	/*
+ 	 * there is no power-control hardware on this platform, so all
+ 	 * we can do is put the core into WFI; this is safe as the calling
 -- 
 2.0.1.1.gfbfc394
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
