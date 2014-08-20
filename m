@@ -1,41 +1,37 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [PATCH v3 2/4] ARM: tegra: Add soctherm and thermal zones to
- Tegra124 device tree
-Date: Wed, 20 Aug 2014 13:42:27 -0600
-Message-ID: <53F4FA23.3000409@wwwdotorg.org>
-References: <1407320706-17440-1-git-send-email-mperttunen@nvidia.com> <1407320706-17440-3-git-send-email-mperttunen@nvidia.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH v3 3/4] ARM: tegra: Add thermal trip points for Jetson
+ TK1
+Date: Wed, 20 Aug 2014 13:44:00 -0600
+Message-ID: <53F4FA80.9050103@wwwdotorg.org>
+References: <1407320706-17440-1-git-send-email-mperttunen@nvidia.com> <1407320706-17440-4-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1407320706-17440-3-git-send-email-mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:44656 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751280AbaHTTnj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Aug 2014 15:43:39 -0400
+In-Reply-To: <1407320706-17440-4-git-send-email-mperttunen@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mikko Perttunen <mperttunen@nvidia.com>, rui.zhang@intel.com, edubezval@gmail.com, thierry.reding@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
 On 08/06/2014 04:25 AM, Mikko Perttunen wrote:
-> This adds the soctherm thermal sensing and management unit to the
-> Tegra124 device tree along with the four thermal zones corresponding
-> to the four thermal sensors provided by soctherm.
+> This adds critical trip points to the Jetson TK1 device tree.
+> The device will do a controlled shutdown when either the CPU, GPU
+> or MEM thermal zone reaches 101 degrees Celsius.
 
-> diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegra124.dtsi
+> diff --git a/arch/arm/boot/dts/tegra124-jetson-tk1.dts b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
 
 > +	thermal-zones {
+> +		cpu {
+> +			trips {
+...
+> +			};
+> +		};
 
-> +	soctherm: soctherm@0,700e2000 {
-
->   	cpus {
-
-The sort order of these nodes is wrong; nodes with reg should be sorted 
-according to the reg value. Nodes without reg should be sorted 
-alpha-numerically. That would place soctherm after sdhci@0,700b0600, and 
-thermal-zones before timer.
-
-soctherm isn't a generic node name but sounds more like an identity; 
-thermal-sensor sounds like a better node name (but the node label can 
-still be soctherm if you want; label names don't show up in the DT ABI).
-
-If these are the only issues, they can probably be fixed manually when 
-applying the patches, assuming a Tegra maintainer does it - I wouldn't 
-want to burden anyone else with that.
+thermal.txt states that a cooling-maps sub-node is mandatory. However, 
+it seems to be missing here. Is the DT binding documentation overly 
+strict, or do we need to add such a node here?
