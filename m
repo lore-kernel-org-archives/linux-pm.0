@@ -1,40 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 13/16] cpufreq: Add cpufreq driver for Tegra124
-Date: Thu, 21 Aug 2014 10:39:41 +0530
-Message-ID: <CAKohpo=rwM7Gju83heSzhw02J+FP1Jv2zdABZGsXFTF8KH=oEw@mail.gmail.com>
-References: <1408568684-11016-1-git-send-email-ttynkkynen@nvidia.com>
-	<1408568684-11016-14-git-send-email-ttynkkynen@nvidia.com>
+From: Wang Weidong <wangweidong1@huawei.com>
+Subject: [RESEND PATCH] acpi-cpufreq: get the cur_freq from acpi_processor_performance
+ states
+Date: Thu, 21 Aug 2014 13:55:15 +0800
+Message-ID: <53F589C3.4050504@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f170.google.com ([209.85.214.170]:60672 "EHLO
-	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750989AbaHUFJm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Aug 2014 01:09:42 -0400
-Received: by mail-ob0-f170.google.com with SMTP id wp4so7126804obc.1
-        for <linux-pm@vger.kernel.org>; Wed, 20 Aug 2014 22:09:41 -0700 (PDT)
-In-Reply-To: <1408568684-11016-14-git-send-email-ttynkkynen@nvidia.com>
+Received: from szxga03-in.huawei.com ([119.145.14.66]:6018 "EHLO
+	szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbaHUF5R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Aug 2014 01:57:17 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Cc: "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul Walmsley <pwalmsley@nvidia.com>, Vince Hsu <vinceh@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org >> \"linux-kernel@vger.kernel.org\"" <linux-kernel@vger.kernel.org>
 
-On 21 August 2014 02:34, Tuomas Tynkkynen <ttynkkynen@nvidia.com> wrote:
-> Add a new cpufreq driver for Tegra124. Instead of using the PLLX as
-> the CPU clocksource, switch immediately to the DFLL. It allows the use
-> of higher clock rates, and will automatically scale the CPU voltage as
-> well. Besides the CPU clocksource switch, we let the cpufreq-cpu0 driver
-> for all the cpufreq operations.
->
-> This driver also relies on the DFLL driver to fill the OPP table for the
-> CPU0 device, so that the cpufreq-cpu0 driver knows what frequencies to
-> use.
->
-> Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-> ---
-> v4:
->  - check for get_cpu_device() return value
->  - add comment why an extra platform driver+device is required
->  - back to 'depends on GENERIC_CPUFREQ_CPU0'
+As the initialized freq_tables maybe different from the p-states
+values, so the array index is different as well.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+p-states value: [2400 2400 2000 ...], while the freq_tables:
+[2400 2000 ... CPUFREQ_TABLE_END]. After setted the freqs 2000,
+the perf->state is 3 while the freqs_table's index should be 2.
+So when call the get_cur_freq_on_cpu, the freqs value we get
+is 2400.
+
+So, fix the problem with the correct tables.
+
+Signed-off-by: Wang Weidong <wangweidong1@huawei.com>
+---
+ drivers/cpufreq/acpi-cpufreq.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index b0c18ed..ac93885 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -365,6 +365,7 @@ static u32 get_cur_val(const struct cpumask *mask)
+ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+ {
+ 	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, cpu);
++	struct acpi_processor_performance *perf;
+ 	unsigned int freq;
+ 	unsigned int cached_freq;
+ 
+@@ -375,7 +376,8 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+ 		return 0;
+ 	}
+ 
+-	cached_freq = data->freq_table[data->acpi_data->state].frequency;
++	perf = data->acpi_data;
++	cached_freq = perf->states[perf->state].core_frequency * 1000;
+ 	freq = extract_freq(get_cur_val(cpumask_of(cpu)), data);
+ 	if (freq != cached_freq) {
+ 		/*
+-- 
+1.7.12
+
+
