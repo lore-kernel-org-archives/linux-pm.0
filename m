@@ -1,60 +1,41 @@
-From: Wang Weidong <wangweidong1@huawei.com>
-Subject: [RESEND PATCH] acpi-cpufreq: get the cur_freq from acpi_processor_performance
- states
-Date: Thu, 21 Aug 2014 13:55:15 +0800
-Message-ID: <53F589C3.4050504@huawei.com>
+From: Heiko Schocher <hs@denx.de>
+Subject: Re: Handling commit change logs
+Date: Thu, 21 Aug 2014 08:13:17 +0200
+Message-ID: <53F58DFD.900@denx.de>
+References: <1408419205-10048-1-git-send-email-tuomas.tynkkynen@iki.fi> <1408419205-10048-14-git-send-email-tuomas.tynkkynen@iki.fi> <CAKohpokQOALPH13Ykz4nTBOby8J1X6_F30LNKz=gsC4wN3=3vg@mail.gmail.com> <53F3A900.8010805@nvidia.com> <CAKohponcZv9-MFNUQFxC_49-+P6QOhdjxsnYAyL3i4sXdCBYrw@mail.gmail.com> <CABxcv=ncm3Y7Ecfymro6TOuP=d10OV5--8n=dYmHyj6zi8hwEw@mail.gmail.com> <53F4FED4.7060408@suse.de> <53F50554.3050505@wwwdotorg.org> <CAOh2x=mO1r76fkvruvBLaL144G8fHgDPMwhKVCxv4HW8FRUE_Q@mail.gmail.com>
+Reply-To: hs@denx.de
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga03-in.huawei.com ([119.145.14.66]:6018 "EHLO
-	szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751337AbaHUF5R (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Aug 2014 01:57:17 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x=mO1r76fkvruvBLaL144G8fHgDPMwhKVCxv4HW8FRUE_Q@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Prashant Gaikwad <pgaikwad@nvidia.com>, Mike Turquette <mturquette@linaro.org>, Vince Hsu <vinceh@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>, Thierry Reding <thierry.reding@gmail.com>, Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Paul Walmsley <pwalmsley@nvidia.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Javier Martinez Canillas <javier@dowhile0.org>, =?ISO-8859-1?Q?Andreas_?= =?ISO-8859-1?Q?F=E4rber?= <afaerber@suse.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org >> \"linux-kernel@vger.kernel.org\"" <linux-kernel@vger.kernel.org>
 
-As the initialized freq_tables maybe different from the p-states
-values, so the array index is different as well.
+Hello Viresh,
 
-p-states value: [2400 2400 2000 ...], while the freq_tables:
-[2400 2000 ... CPUFREQ_TABLE_END]. After setted the freqs 2000,
-the perf->state is 3 while the freqs_table's index should be 2.
-So when call the get_cur_freq_on_cpu, the freqs value we get
-is 2400.
+Am 21.08.2014 06:26, schrieb Viresh Kumar:
+> On Thu, Aug 21, 2014 at 2:00 AM, Stephen Warren<swarren@wwwdotorg.org=
+>  wrote:
+>> On 08/20/2014 02:02 PM, Andreas F=E4rber wrote:
+>>> Am 20.08.2014 17:39, schrieb Javier Martinez Canillas:
+>>>> If this not the correct workflow and you have a better way to mana=
+ge
+>>>> this, I would love to know about it.
+>
+> Oh yes, this was certainly useful. I was missing this (mis)feature :)
 
-So, fix the problem with the correct tables.
+maybe patman from u-boot is also interesting for you, see:
 
-Signed-off-by: Wang Weidong <wangweidong1@huawei.com>
----
- drivers/cpufreq/acpi-cpufreq.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+http://git.denx.de/?p=3Du-boot.git;a=3Dblob;f=3Dtools/patman/README;h=3D=
+5fb508b80df10d3b11d95eea95a141ce3d0ef578;hb=3D67ee22b0681305ba1099c508e=
+ecade996abc1c65
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index b0c18ed..ac93885 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -365,6 +365,7 @@ static u32 get_cur_val(const struct cpumask *mask)
- static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
- {
- 	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, cpu);
-+	struct acpi_processor_performance *perf;
- 	unsigned int freq;
- 	unsigned int cached_freq;
- 
-@@ -375,7 +376,8 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
- 		return 0;
- 	}
- 
--	cached_freq = data->freq_table[data->acpi_data->state].frequency;
-+	perf = data->acpi_data;
-+	cached_freq = perf->states[perf->state].core_frequency * 1000;
- 	freq = extract_freq(get_cur_val(cpumask_of(cpu)), data);
- 	if (freq != cached_freq) {
- 		/*
--- 
-1.7.12
-
-
+bye,
+Heiko
+--=20
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
