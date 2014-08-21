@@ -1,79 +1,39 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Subject: Re: [PATCH 9/9] ARM: zynq: Rename 'zynq_platform_cpu_die'
-Date: Thu, 21 Aug 2014 14:28:48 +0200
-Message-ID: <4ac42f4d-72bf-4a8d-a997-094f129d7c74@BN1AFFO11FD020.protection.gbl>
-References: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
- <1408567315-28479-10-git-send-email-soren.brinkmann@xilinx.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v5 0/4] Tegra124 soctherm driver
+Date: Thu, 21 Aug 2014 12:01:29 -0400
+Message-ID: <20140821160127.GA17621@developer>
+References: <1408616242-21009-1-git-send-email-mperttunen@nvidia.com>
+ <20140821122011.GA99564@sandfort.unics.fi>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="E6jSFPjdRpPTIqJGfiSoF9FRNNWJctKVP"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1408567315-28479-10-git-send-email-soren.brinkmann@xilinx.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Soren Brinkmann <soren.brinkmann@xilinx.com>, Michal Simek <michal.simek@xilinx.com>, Russell King <linux@arm.linux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f178.google.com ([209.85.220.178]:43208 "EHLO
+	mail-vc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751671AbaHUQBi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Aug 2014 12:01:38 -0400
+Content-Disposition: inline
+In-Reply-To: <20140821122011.GA99564@sandfort.unics.fi>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Juha-Matti Tilli <juha-matti.tilli@iki.fi>
+Cc: Mikko Perttunen <mperttunen@nvidia.com>, rui.zhang@intel.com, swarren@wwwdotorg.org, thierry.reding@gmail.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
---E6jSFPjdRpPTIqJGfiSoF9FRNNWJctKVP
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Hello Juha-Matti,
 
-On 08/20/2014 10:41 PM, Soren Brinkmann wrote:
-> Match the naming pattern of all other SMP ops and rename
-> zynq_platform_cpu_die --> zynq_cpu_die.
->=20
-> Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> ---
->  arch/arm/mach-zynq/platsmp.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/arm/mach-zynq/platsmp.c b/arch/arm/mach-zynq/platsmp.=
-c
-> index 04e578718aa2..95933c5e70e1 100644
-> --- a/arch/arm/mach-zynq/platsmp.c
-> +++ b/arch/arm/mach-zynq/platsmp.c
-> @@ -138,7 +138,7 @@ static int zynq_cpu_kill(unsigned cpu)
->   *
->   * Called with IRQs disabled
->   */
-> -static void zynq_platform_cpu_die(unsigned int cpu)
-> +static void zynq_cpu_die(unsigned int cpu)
->  {
->  	zynq_slcr_cpu_state_write(cpu, true);
-> =20
-> @@ -158,7 +158,7 @@ struct smp_operations zynq_smp_ops __initdata =3D {=
+On Thu, Aug 21, 2014 at 03:20:11PM +0300, Juha-Matti Tilli wrote:
+> On Thu, Aug 21, 2014 at 01:17:18PM +0300, Mikko Perttunen wrote:
+> > this series adds support for the thermal monitoring features of the
+> > soctherm unit on the Tegra124 SoC. 
+> 
+> For all patches in this series:
+> 
+> Reviewed-by: Juha-Matti Tilli <jtilli@nvidia.com>
+> Tested-by: Juha-Matti Tilli <jtilli@nvidia.com>
 
->  	.smp_boot_secondary	=3D zynq_boot_secondary,
->  	.smp_secondary_init	=3D zynq_secondary_init,
->  #ifdef CONFIG_HOTPLUG_CPU
-> -	.cpu_die		=3D zynq_platform_cpu_die,
-> +	.cpu_die		=3D zynq_cpu_die,
->  	.cpu_kill		=3D zynq_cpu_kill,
->  #endif
->  };
+I suppose the 4 C to 5 C difference is not seen anymore in this version,
+right?
 
-Will be good if you can move fix that kernel-doc format for this function=
+Cheers,
 
-too. It is just nice to have thing.
+Eduardo
 
-Thanks,
-Michal
-
-
-
-
---E6jSFPjdRpPTIqJGfiSoF9FRNNWJctKVP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAlP15gAACgkQykllyylKDCHSegCdEgP2AzxXjeYe4Yx1hOz3GR5R
-RgkAmgPR5Ybaub07soh0+psJHObiejM9
-=cmxL
------END PGP SIGNATURE-----
-
---E6jSFPjdRpPTIqJGfiSoF9FRNNWJctKVP--
