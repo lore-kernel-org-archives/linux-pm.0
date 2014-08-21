@@ -1,69 +1,131 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH 1/3] sched: Add new API wake_up_if_idle() to wake up the
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/3] sched: Add new API wake_up_if_idle() to wake up the
  idle cpu
-Date: Thu, 21 Aug 2014 02:12:49 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E5F7BC@SHSMSX101.ccr.corp.intel.com>
-References: <1408351052-25075-1-git-send-email-chuansheng.liu@intel.com>
- <53F5514A.5050007@linaro.org>
+Date: Thu, 21 Aug 2014 05:48:11 +0200
+Message-ID: <53F56BFB.7080602@linaro.org>
+References: <1408351052-25075-1-git-send-email-chuansheng.liu@intel.com> <53F5514A.5050007@linaro.org> <27240C0AC20F114CBF8149A2696CBE4A01E5F7BC@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53F5514A.5050007@linaro.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "luto@amacapital.net" <luto@amacapital.net>, "peterz@infradead.org" <peterz@infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "mingo@redhat.com" <mingo@redhat.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f169.google.com ([209.85.223.169]:64493 "EHLO
+	mail-ie0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753682AbaHUDsN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Aug 2014 23:48:13 -0400
+Received: by mail-ie0-f169.google.com with SMTP id rd18so4097475iec.28
+        for <linux-pm@vger.kernel.org>; Wed, 20 Aug 2014 20:48:12 -0700 (PDT)
+In-Reply-To: <27240C0AC20F114CBF8149A2696CBE4A01E5F7BC@SHSMSX101.ccr.corp.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Liu, Chuansheng" <chuansheng.liu@intel.com>, "luto@amacapital.net" <luto@amacapital.net>, "peterz@infradead.org" <peterz@infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "mingo@redhat.com" <mingo@redhat.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
 
-SGVsbG8gRGFuaWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IERh
-bmllbCBMZXpjYW5vIFttYWlsdG86ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZ10NCj4gU2VudDog
-VGh1cnNkYXksIEF1Z3VzdCAyMSwgMjAxNCA5OjU0IEFNDQo+IFRvOiBMaXUsIENodWFuc2hlbmc7
-IGx1dG9AYW1hY2FwaXRhbC5uZXQ7IHBldGVyekBpbmZyYWRlYWQub3JnOw0KPiByandAcmp3eXNv
-Y2tpLm5ldDsgbWluZ29AcmVkaGF0LmNvbQ0KPiBDYzogbGludXgtcG1Admdlci5rZXJuZWwub3Jn
-OyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBMaXUsIENoYW5nY2hlbmc7DQo+IFdhbmcs
-IFhpYW9taW5nOyBDaGFrcmF2YXJ0eSwgU291dmlrIEsNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAx
-LzNdIHNjaGVkOiBBZGQgbmV3IEFQSSB3YWtlX3VwX2lmX2lkbGUoKSB0byB3YWtlIHVwIHRoZQ0K
-PiBpZGxlIGNwdQ0KPiANCj4gT24gMDgvMTgvMjAxNCAxMDozNyBBTSwgQ2h1YW5zaGVuZyBMaXUg
-d3JvdGU6DQo+ID4gSW1wbGVtZW50aW5nIG9uZSBuZXcgQVBJIHdha2VfdXBfaWZfaWRsZSgpLCB3
-aGljaCBpcyB1c2VkIHRvDQo+ID4gd2FrZSB1cCB0aGUgaWRsZSBDUFUuDQo+IA0KPiBJcyB0aGlz
-IHBhdGNoc2V0IHRlc3RlZCA/IERpZCB5b3UgY2hlY2sgaXQgc29sdmVzIHRoZSBpc3N1ZSB5b3Ug
-d2VyZQ0KPiBmYWNpbmcgPw0KV2UgaGF2ZSBkb25lIHRoZSBiYXNpYyB0ZXN0LCBhbmQgZm91bmQg
-dGhlIGNvcmVzIGNhbiBleGl0IEMwIHF1aWNrbHkgd2l0aCB0aGlzIHBhdGNoc2V0Lg0KQmFzaWNh
-bGx5IG9uY2UgdGhlIF9USUZfTkVFRF9SRVNDSEVEIGlzIHNldCwgdGhlbiB0aGUgcG9sbF9pZGxl
-KCkgY2FuIGJlIGJyb2tlbi4NCg0KUGxlYXNlIGNvcnJlY3QgbWUgaWYgc29tZXRoaW5nIGlzIHdy
-b25nLCB0aGFua3MuDQoNCj4gDQo+ID4gU3VnZ2VzdGVkLWJ5OiBBbmR5IEx1dG9taXJza2kgPGx1
-dG9AYW1hY2FwaXRhbC5uZXQ+DQo+ID4gU2lnbmVkLW9mZi1ieTogQ2h1YW5zaGVuZyBMaXUgPGNo
-dWFuc2hlbmcubGl1QGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiAgIGluY2x1ZGUvbGludXgvc2No
-ZWQuaCB8ICAgIDEgKw0KPiA+ICAga2VybmVsL3NjaGVkL2NvcmUuYyAgIHwgICAxNiArKysrKysr
-KysrKysrKysrDQo+ID4gICAyIGZpbGVzIGNoYW5nZWQsIDE3IGluc2VydGlvbnMoKykNCj4gPg0K
-PiA+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3NjaGVkLmggYi9pbmNsdWRlL2xpbnV4L3Nj
-aGVkLmgNCj4gPiBpbmRleCA4NTdiYTQwLi4zZjg5YWMxIDEwMDY0NA0KPiA+IC0tLSBhL2luY2x1
-ZGUvbGludXgvc2NoZWQuaA0KPiA+ICsrKyBiL2luY2x1ZGUvbGludXgvc2NoZWQuaA0KPiA+IEBA
-IC0xMDI0LDYgKzEwMjQsNyBAQCBzdHJ1Y3Qgc2NoZWRfZG9tYWluX3RvcG9sb2d5X2xldmVsIHsN
-Cj4gPiAgIGV4dGVybiBzdHJ1Y3Qgc2NoZWRfZG9tYWluX3RvcG9sb2d5X2xldmVsICpzY2hlZF9k
-b21haW5fdG9wb2xvZ3k7DQo+ID4NCj4gPiAgIGV4dGVybiB2b2lkIHNldF9zY2hlZF90b3BvbG9n
-eShzdHJ1Y3Qgc2NoZWRfZG9tYWluX3RvcG9sb2d5X2xldmVsICp0bCk7DQo+ID4gK2V4dGVybiB2
-b2lkIHdha2VfdXBfaWZfaWRsZShpbnQgY3B1KTsNCj4gPg0KPiA+ICAgI2lmZGVmIENPTkZJR19T
-Q0hFRF9ERUJVRw0KPiA+ICAgIyBkZWZpbmUgU0RfSU5JVF9OQU1FKHR5cGUpCQkubmFtZSA9ICN0
-eXBlDQo+ID4gZGlmZiAtLWdpdCBhL2tlcm5lbC9zY2hlZC9jb3JlLmMgYi9rZXJuZWwvc2NoZWQv
-Y29yZS5jDQo+ID4gaW5kZXggMTIxMTU3NS4uYWRmMTA0ZiAxMDA2NDQNCj4gPiAtLS0gYS9rZXJu
-ZWwvc2NoZWQvY29yZS5jDQo+ID4gKysrIGIva2VybmVsL3NjaGVkL2NvcmUuYw0KPiA+IEBAIC0x
-NjIwLDYgKzE2MjAsMjIgQEAgc3RhdGljIHZvaWQgdHR3dV9xdWV1ZV9yZW1vdGUoc3RydWN0DQo+
-IHRhc2tfc3RydWN0ICpwLCBpbnQgY3B1KQ0KPiA+ICAgCX0NCj4gPiAgIH0NCj4gPg0KPiA+ICt2
-b2lkIHdha2VfdXBfaWZfaWRsZShpbnQgY3B1KQ0KPiA+ICt7DQo+ID4gKwlzdHJ1Y3QgcnEgKnJx
-ID0gY3B1X3JxKGNwdSk7DQo+ID4gKwl1bnNpZ25lZCBsb25nIGZsYWdzOw0KPiA+ICsNCj4gPiAr
-CWlmIChzZXRfbnJfaWZfcG9sbGluZyhycS0+aWRsZSkpIHsNCj4gPiArCQl0cmFjZV9zY2hlZF93
-YWtlX2lkbGVfd2l0aG91dF9pcGkoY3B1KTsNCj4gPiArCX0gZWxzZSB7DQo+ID4gKwkJcmF3X3Nw
-aW5fbG9ja19pcnFzYXZlKCZycS0+bG9jaywgZmxhZ3MpOw0KPiA+ICsJCWlmIChycS0+Y3VyciA9
-PSBycS0+aWRsZSkNCj4gPiArCQkJc21wX3NlbmRfcmVzY2hlZHVsZShjcHUpOw0KPiA+ICsJCS8q
-IEVsc2UgY3B1IGlzIG5vdCBpbiBpZGxlLCBkbyBub3RoaW5nIGhlcmUgKi8NCj4gPiArCQlyYXdf
-c3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmcnEtPmxvY2ssIGZsYWdzKTsNCj4gPiArCX0NCj4gPiAr
-fQ0KPiA+ICsNCj4gPiAgIGJvb2wgY3B1c19zaGFyZV9jYWNoZShpbnQgdGhpc19jcHUsIGludCB0
-aGF0X2NwdSkNCj4gPiAgIHsNCj4gPiAgIAlyZXR1cm4gcGVyX2NwdShzZF9sbGNfaWQsIHRoaXNf
-Y3B1KSA9PSBwZXJfY3B1KHNkX2xsY19pZCwgdGhhdF9jcHUpOw0KPiA+DQo+IA0KPiANCj4gLS0N
-Cj4gICA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ug
-c29mdHdhcmUgZm9yIEFSTQ0KPiBTb0NzDQo+IA0KPiBGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93
-d3cuZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfA0KPiA8aHR0cDovL3R3aXR0
-ZXIuY29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8DQo+IDxodHRwOi8vd3d3LmxpbmFyby5vcmcv
-bGluYXJvLWJsb2cvPiBCbG9nDQoNCg==
+On 08/21/2014 04:12 AM, Liu, Chuansheng wrote:
+> Hello Daniel,
+>
+>> -----Original Message-----
+>> From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
+>> Sent: Thursday, August 21, 2014 9:54 AM
+>> To: Liu, Chuansheng; luto@amacapital.net; peterz@infradead.org;
+>> rjw@rjwysocki.net; mingo@redhat.com
+>> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; Liu, Cha=
+ngcheng;
+>> Wang, Xiaoming; Chakravarty, Souvik K
+>> Subject: Re: [PATCH 1/3] sched: Add new API wake_up_if_idle() to wak=
+e up the
+>> idle cpu
+>>
+>> On 08/18/2014 10:37 AM, Chuansheng Liu wrote:
+>>> Implementing one new API wake_up_if_idle(), which is used to
+>>> wake up the idle CPU.
+>>
+>> Is this patchset tested ? Did you check it solves the issue you were
+>> facing ?
+> We have done the basic test, and found the cores can exit C0 quickly =
+with this patchset.
+> Basically once the _TIF_NEED_RESCHED is set, then the poll_idle() can=
+ be broken.
+>
+> Please correct me if something is wrong, thanks.
+
+Actually, it was not clear for me if this patch was a proposal or not.
+
+I will review it.
+
+Thanks
+
+   -- Daniel
+
+>>> Suggested-by: Andy Lutomirski <luto@amacapital.net>
+>>> Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+>>> ---
+>>>    include/linux/sched.h |    1 +
+>>>    kernel/sched/core.c   |   16 ++++++++++++++++
+>>>    2 files changed, 17 insertions(+)
+>>>
+>>> diff --git a/include/linux/sched.h b/include/linux/sched.h
+>>> index 857ba40..3f89ac1 100644
+>>> --- a/include/linux/sched.h
+>>> +++ b/include/linux/sched.h
+>>> @@ -1024,6 +1024,7 @@ struct sched_domain_topology_level {
+>>>    extern struct sched_domain_topology_level *sched_domain_topology=
+;
+>>>
+>>>    extern void set_sched_topology(struct sched_domain_topology_leve=
+l *tl);
+>>> +extern void wake_up_if_idle(int cpu);
+>>>
+>>>    #ifdef CONFIG_SCHED_DEBUG
+>>>    # define SD_INIT_NAME(type)		.name =3D #type
+>>> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+>>> index 1211575..adf104f 100644
+>>> --- a/kernel/sched/core.c
+>>> +++ b/kernel/sched/core.c
+>>> @@ -1620,6 +1620,22 @@ static void ttwu_queue_remote(struct
+>> task_struct *p, int cpu)
+>>>    	}
+>>>    }
+>>>
+>>> +void wake_up_if_idle(int cpu)
+>>> +{
+>>> +	struct rq *rq =3D cpu_rq(cpu);
+>>> +	unsigned long flags;
+>>> +
+>>> +	if (set_nr_if_polling(rq->idle)) {
+>>> +		trace_sched_wake_idle_without_ipi(cpu);
+>>> +	} else {
+>>> +		raw_spin_lock_irqsave(&rq->lock, flags);
+>>> +		if (rq->curr =3D=3D rq->idle)
+>>> +			smp_send_reschedule(cpu);
+>>> +		/* Else cpu is not in idle, do nothing here */
+>>> +		raw_spin_unlock_irqrestore(&rq->lock, flags);
+>>> +	}
+>>> +}
+>>> +
+>>>    bool cpus_share_cache(int this_cpu, int that_cpu)
+>>>    {
+>>>    	return per_cpu(sd_llc_id, this_cpu) =3D=3D per_cpu(sd_llc_id, t=
+hat_cpu);
+>>>
+>>
+>>
+>> --
+>>    <http://www.linaro.org/> Linaro.org =E2=94=82 Open source softwar=
+e for ARM
+>> SoCs
+>>
+>> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+>> <http://twitter.com/#!/linaroorg> Twitter |
+>> <http://www.linaro.org/linaro-blog/> Blog
+>
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
