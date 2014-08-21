@@ -1,154 +1,69 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: Need help understanding the logic of __cpuidle_set_driver
-Date: Thu, 21 Aug 2014 04:04:25 +0200
-Message-ID: <53F553A9.7050104@linaro.org>
-References: <CAHu9=sOwSuw5igPp0UQWJe8fwMb_vt3PPrc1A9nK4pJB5QmXDA@mail.gmail.com>
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH 1/3] sched: Add new API wake_up_if_idle() to wake up the
+ idle cpu
+Date: Thu, 21 Aug 2014 02:12:49 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E5F7BC@SHSMSX101.ccr.corp.intel.com>
+References: <1408351052-25075-1-git-send-email-chuansheng.liu@intel.com>
+ <53F5514A.5050007@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f181.google.com ([209.85.223.181]:60728 "EHLO
-	mail-ie0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750809AbaHUCE1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Aug 2014 22:04:27 -0400
-Received: by mail-ie0-f181.google.com with SMTP id rp18so3913826iec.12
-        for <linux-pm@vger.kernel.org>; Wed, 20 Aug 2014 19:04:26 -0700 (PDT)
-In-Reply-To: <CAHu9=sOwSuw5igPp0UQWJe8fwMb_vt3PPrc1A9nK4pJB5QmXDA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <53F5514A.5050007@linaro.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "luto@amacapital.net" <luto@amacapital.net>, "peterz@infradead.org" <peterz@infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "mingo@redhat.com" <mingo@redhat.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>, kernelnewbies <kernelnewbies@kernelnewbies.org>, linux-pm@vger.kernel.org
 
-On 08/15/2014 12:20 PM, Mohammad Merajul Islam Molla wrote:
-> Hello,
->
-> I was looking into the code of drivers/cpuidle/driver.c. I have some
-> doubts regarding the implementation of __cpuidle_set_driver function
-> when CONFIG_CPU_IDLE_MULTIPLE_DRIVERS is defined.
->
-> If CONFIG_CPU_IDLE_MULTIPLE_DRIVERS is defined, the code for
-> __cpuidle_set_driver/__cpuidle_unset_driver looks as -
->
->   39  * __cpuidle_unset_driver - unset per CPU driver variables.
->   40  * @drv: a valid pointer to a struct cpuidle_driver
->   41  *
->   42  * For each CPU in the driver's CPU mask, unset the registered
-> driver per CPU
->   43  * variable. If @drv is different from the registered driver, th=
-e
-> corresponding
->   44  * variable is not cleared.
->   45  */
->   46 static inline void __cpuidle_unset_driver(struct cpuidle_driver =
-*drv)
->   47 {
->   48         int cpu;
->   49
->   50         for_each_cpu(cpu, drv->cpumask) {
->   51
->   52                 if (drv !=3D __cpuidle_get_cpu_driver(cpu))
->   53                         continue;
->   54
->   55                 per_cpu(cpuidle_drivers, cpu) =3D NULL;
->   56         }
->   57 }
->   58
->   59 /**
->   60  * __cpuidle_set_driver - set per CPU driver variables for the g=
-iven driver.
->   61  * @drv: a valid pointer to a struct cpuidle_driver
->   62  *
->   63  * For each CPU in the driver's cpumask, unset the registered dr=
-iver per CPU
->   64  * to @drv.
->   65  *
->   66  * Returns 0 on success, -EBUSY if the CPUs have driver(s) alrea=
-dy.
->   67  */
->   68 static inline int __cpuidle_set_driver(struct cpuidle_driver *dr=
-v)
->   69 {
->   70         int cpu;
->   71
->   72         for_each_cpu(cpu, drv->cpumask) {
->   73
->   74                 if (__cpuidle_get_cpu_driver(cpu)) {
->   75                         __cpuidle_unset_driver(drv);
->   76                         return -EBUSY;
->   77                 }
->   78
->   79                 per_cpu(cpuidle_drivers, cpu) =3D drv;
->   80         }
->   81
->   82         return 0;
->   83 }
->
-> Apparently, the comment should be - "set/register the driver per CPU
-> to @drv" instead of "unset the registered driver per CPU to @drv" in
-> case of __cpuidle_set_driver.
-
-Right, it is a typo.
-
-> However, regarding the logic, I have a few doubts -
->
-> 1. for each cpu in drv->cpumask, if there is already a driver
-> registered, its calling __cpuidle_unset_driver which loops over for
-> each cpu in drv->cpumask again. Isn't it unnecessary to do this neste=
-d
-> calls?
-
-It is to rollback the previous changes done in the loop.
-
-> 2. after calling __cpuidle_unset_driver, if drv equals already
-> registered driver, it sets per_cpu driver to null? Isn't it wrong whe=
-n
-> we are trying to set to a new driver? Why do we need to unset and mak=
-e
-> the driver null when we are returning EBUSY from __cpuidle_set_driver=
-?
->
-> Would it be correct and cleaner if the code is written as below -
->
->   static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
->   {
->           int ret =3D -EBUSY;
->           int cpu;
->
->          for_each_cpu(cpu, drv->cpumask) {
->                  if (drv =3D=3D __cpuidle_get_cpu_driver(cpu))    [if=
- drv
-> is already the registered driver, do nothing]
->                           continue;
->
->                   per_cpu(cpuidle_drivers, cpu) =3D drv;  [if only dr=
-v !=3D
-> already registered driver, set per_cpu driver to drv and set ret 0]
->                   ret =3D 0;
->           }
->
->           return ret;     [only if all cpus already had drv as
-> registered driver, return -EBUSY. Otherwise return 0]
->   }
->
->
-> Please let me know your views.
->
-> --
-> Thanks,
-> -Meraj
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+SGVsbG8gRGFuaWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IERh
+bmllbCBMZXpjYW5vIFttYWlsdG86ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZ10NCj4gU2VudDog
+VGh1cnNkYXksIEF1Z3VzdCAyMSwgMjAxNCA5OjU0IEFNDQo+IFRvOiBMaXUsIENodWFuc2hlbmc7
+IGx1dG9AYW1hY2FwaXRhbC5uZXQ7IHBldGVyekBpbmZyYWRlYWQub3JnOw0KPiByandAcmp3eXNv
+Y2tpLm5ldDsgbWluZ29AcmVkaGF0LmNvbQ0KPiBDYzogbGludXgtcG1Admdlci5rZXJuZWwub3Jn
+OyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBMaXUsIENoYW5nY2hlbmc7DQo+IFdhbmcs
+IFhpYW9taW5nOyBDaGFrcmF2YXJ0eSwgU291dmlrIEsNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAx
+LzNdIHNjaGVkOiBBZGQgbmV3IEFQSSB3YWtlX3VwX2lmX2lkbGUoKSB0byB3YWtlIHVwIHRoZQ0K
+PiBpZGxlIGNwdQ0KPiANCj4gT24gMDgvMTgvMjAxNCAxMDozNyBBTSwgQ2h1YW5zaGVuZyBMaXUg
+d3JvdGU6DQo+ID4gSW1wbGVtZW50aW5nIG9uZSBuZXcgQVBJIHdha2VfdXBfaWZfaWRsZSgpLCB3
+aGljaCBpcyB1c2VkIHRvDQo+ID4gd2FrZSB1cCB0aGUgaWRsZSBDUFUuDQo+IA0KPiBJcyB0aGlz
+IHBhdGNoc2V0IHRlc3RlZCA/IERpZCB5b3UgY2hlY2sgaXQgc29sdmVzIHRoZSBpc3N1ZSB5b3Ug
+d2VyZQ0KPiBmYWNpbmcgPw0KV2UgaGF2ZSBkb25lIHRoZSBiYXNpYyB0ZXN0LCBhbmQgZm91bmQg
+dGhlIGNvcmVzIGNhbiBleGl0IEMwIHF1aWNrbHkgd2l0aCB0aGlzIHBhdGNoc2V0Lg0KQmFzaWNh
+bGx5IG9uY2UgdGhlIF9USUZfTkVFRF9SRVNDSEVEIGlzIHNldCwgdGhlbiB0aGUgcG9sbF9pZGxl
+KCkgY2FuIGJlIGJyb2tlbi4NCg0KUGxlYXNlIGNvcnJlY3QgbWUgaWYgc29tZXRoaW5nIGlzIHdy
+b25nLCB0aGFua3MuDQoNCj4gDQo+ID4gU3VnZ2VzdGVkLWJ5OiBBbmR5IEx1dG9taXJza2kgPGx1
+dG9AYW1hY2FwaXRhbC5uZXQ+DQo+ID4gU2lnbmVkLW9mZi1ieTogQ2h1YW5zaGVuZyBMaXUgPGNo
+dWFuc2hlbmcubGl1QGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiAgIGluY2x1ZGUvbGludXgvc2No
+ZWQuaCB8ICAgIDEgKw0KPiA+ICAga2VybmVsL3NjaGVkL2NvcmUuYyAgIHwgICAxNiArKysrKysr
+KysrKysrKysrDQo+ID4gICAyIGZpbGVzIGNoYW5nZWQsIDE3IGluc2VydGlvbnMoKykNCj4gPg0K
+PiA+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3NjaGVkLmggYi9pbmNsdWRlL2xpbnV4L3Nj
+aGVkLmgNCj4gPiBpbmRleCA4NTdiYTQwLi4zZjg5YWMxIDEwMDY0NA0KPiA+IC0tLSBhL2luY2x1
+ZGUvbGludXgvc2NoZWQuaA0KPiA+ICsrKyBiL2luY2x1ZGUvbGludXgvc2NoZWQuaA0KPiA+IEBA
+IC0xMDI0LDYgKzEwMjQsNyBAQCBzdHJ1Y3Qgc2NoZWRfZG9tYWluX3RvcG9sb2d5X2xldmVsIHsN
+Cj4gPiAgIGV4dGVybiBzdHJ1Y3Qgc2NoZWRfZG9tYWluX3RvcG9sb2d5X2xldmVsICpzY2hlZF9k
+b21haW5fdG9wb2xvZ3k7DQo+ID4NCj4gPiAgIGV4dGVybiB2b2lkIHNldF9zY2hlZF90b3BvbG9n
+eShzdHJ1Y3Qgc2NoZWRfZG9tYWluX3RvcG9sb2d5X2xldmVsICp0bCk7DQo+ID4gK2V4dGVybiB2
+b2lkIHdha2VfdXBfaWZfaWRsZShpbnQgY3B1KTsNCj4gPg0KPiA+ICAgI2lmZGVmIENPTkZJR19T
+Q0hFRF9ERUJVRw0KPiA+ICAgIyBkZWZpbmUgU0RfSU5JVF9OQU1FKHR5cGUpCQkubmFtZSA9ICN0
+eXBlDQo+ID4gZGlmZiAtLWdpdCBhL2tlcm5lbC9zY2hlZC9jb3JlLmMgYi9rZXJuZWwvc2NoZWQv
+Y29yZS5jDQo+ID4gaW5kZXggMTIxMTU3NS4uYWRmMTA0ZiAxMDA2NDQNCj4gPiAtLS0gYS9rZXJu
+ZWwvc2NoZWQvY29yZS5jDQo+ID4gKysrIGIva2VybmVsL3NjaGVkL2NvcmUuYw0KPiA+IEBAIC0x
+NjIwLDYgKzE2MjAsMjIgQEAgc3RhdGljIHZvaWQgdHR3dV9xdWV1ZV9yZW1vdGUoc3RydWN0DQo+
+IHRhc2tfc3RydWN0ICpwLCBpbnQgY3B1KQ0KPiA+ICAgCX0NCj4gPiAgIH0NCj4gPg0KPiA+ICt2
+b2lkIHdha2VfdXBfaWZfaWRsZShpbnQgY3B1KQ0KPiA+ICt7DQo+ID4gKwlzdHJ1Y3QgcnEgKnJx
+ID0gY3B1X3JxKGNwdSk7DQo+ID4gKwl1bnNpZ25lZCBsb25nIGZsYWdzOw0KPiA+ICsNCj4gPiAr
+CWlmIChzZXRfbnJfaWZfcG9sbGluZyhycS0+aWRsZSkpIHsNCj4gPiArCQl0cmFjZV9zY2hlZF93
+YWtlX2lkbGVfd2l0aG91dF9pcGkoY3B1KTsNCj4gPiArCX0gZWxzZSB7DQo+ID4gKwkJcmF3X3Nw
+aW5fbG9ja19pcnFzYXZlKCZycS0+bG9jaywgZmxhZ3MpOw0KPiA+ICsJCWlmIChycS0+Y3VyciA9
+PSBycS0+aWRsZSkNCj4gPiArCQkJc21wX3NlbmRfcmVzY2hlZHVsZShjcHUpOw0KPiA+ICsJCS8q
+IEVsc2UgY3B1IGlzIG5vdCBpbiBpZGxlLCBkbyBub3RoaW5nIGhlcmUgKi8NCj4gPiArCQlyYXdf
+c3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmcnEtPmxvY2ssIGZsYWdzKTsNCj4gPiArCX0NCj4gPiAr
+fQ0KPiA+ICsNCj4gPiAgIGJvb2wgY3B1c19zaGFyZV9jYWNoZShpbnQgdGhpc19jcHUsIGludCB0
+aGF0X2NwdSkNCj4gPiAgIHsNCj4gPiAgIAlyZXR1cm4gcGVyX2NwdShzZF9sbGNfaWQsIHRoaXNf
+Y3B1KSA9PSBwZXJfY3B1KHNkX2xsY19pZCwgdGhhdF9jcHUpOw0KPiA+DQo+IA0KPiANCj4gLS0N
+Cj4gICA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ug
+c29mdHdhcmUgZm9yIEFSTQ0KPiBTb0NzDQo+IA0KPiBGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93
+d3cuZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfA0KPiA8aHR0cDovL3R3aXR0
+ZXIuY29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8DQo+IDxodHRwOi8vd3d3LmxpbmFyby5vcmcv
+bGluYXJvLWJsb2cvPiBCbG9nDQoNCg==
