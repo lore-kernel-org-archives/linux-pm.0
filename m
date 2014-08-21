@@ -1,29 +1,202 @@
-From: Juha-Matti Tilli <juha-matti.tilli@iki.fi>
-Subject: Re: [PATCH v5 0/4] Tegra124 soctherm driver
-Date: Thu, 21 Aug 2014 21:03:29 +0300
-Message-ID: <20140821180329.GA5447@sandfort.unics.fi>
-References: <1408616242-21009-1-git-send-email-mperttunen@nvidia.com>
- <20140821122011.GA99564@sandfort.unics.fi>
- <20140821160127.GA17621@developer>
+From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
+Subject: Re: [PATCH 4/9] ARM: zynq: PM: Enable DDR self-refresh and clock stop
+Date: Thu, 21 Aug 2014 11:59:53 -0700
+Message-ID: <07c7c372-75e1-434d-bd0e-692091f72698@BY2FFO11FD009.protection.gbl>
+References: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
+ <1408567315-28479-5-git-send-email-soren.brinkmann@xilinx.com>
+ <57cd5124-bd1d-47b9-b467-647937c15fff@BN1BFFO11FD052.protection.gbl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116]:43325 "EHLO
-	gw02.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753501AbaHUSDo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Aug 2014 14:03:44 -0400
+Received: from mail-by2lp0242.outbound.protection.outlook.com ([207.46.163.242]:52147
+	"EHLO na01-by2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751905AbaHUTAD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 21 Aug 2014 15:00:03 -0400
 Content-Disposition: inline
-In-Reply-To: <20140821160127.GA17621@developer>
+In-Reply-To: <57cd5124-bd1d-47b9-b467-647937c15fff@BN1BFFO11FD052.protection.gbl>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Mikko Perttunen <mperttunen@nvidia.com>, rui.zhang@intel.com, swarren@wwwdotorg.org, thierry.reding@gmail.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Michal Simek <michal.simek@xilinx.com>
+Cc: Russell King <linux@arm.linux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 
-On Thu, Aug 21, 2014 at 12:01:29PM -0400, Eduardo Valentin wrote:
-> I suppose the 4 C to 5 C difference is not seen anymore in this version,
-> right?
+On Thu, 2014-08-21 at 02:25PM +0200, Michal Simek wrote:
+> On 08/20/2014 10:41 PM, Soren Brinkmann wrote:
+> > The DDR controller can detect idle periods and leverage low power
+> > features like self-refresh and clock stop.
+> > When new requests occur, the DDRC resumes normal operation.
+> >=20
+> > Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+> > ---
+> >  arch/arm/mach-zynq/Makefile |  2 +-
+> >  arch/arm/mach-zynq/common.c |  1 +
+> >  arch/arm/mach-zynq/common.h |  2 ++
+> >  arch/arm/mach-zynq/pm.c     | 84 +++++++++++++++++++++++++++++++++=
+++++++++++++
+> >  4 files changed, 88 insertions(+), 1 deletion(-)
+> >  create mode 100644 arch/arm/mach-zynq/pm.c
+> >=20
+> > diff --git a/arch/arm/mach-zynq/Makefile b/arch/arm/mach-zynq/Makef=
+ile
+> > index 1b25d92ebf22..820dff6e1eba 100644
+> > --- a/arch/arm/mach-zynq/Makefile
+> > +++ b/arch/arm/mach-zynq/Makefile
+> > @@ -3,7 +3,7 @@
+> >  #
+> > =20
+> >  # Common support
+> > -obj-y				:=3D common.o slcr.o
+> > +obj-y				:=3D common.o slcr.o pm.o
+> >  CFLAGS_REMOVE_hotplug.o		=3D-march=3Darmv6k
+> >  CFLAGS_hotplug.o 		=3D-Wa,-march=3Darmv7-a -mcpu=3Dcortex-a9
+> >  obj-$(CONFIG_HOTPLUG_CPU)	+=3D hotplug.o
+> > diff --git a/arch/arm/mach-zynq/common.c b/arch/arm/mach-zynq/commo=
+n.c
+> > index 3cb7c198615a..6bd13e5ce6b7 100644
+> > --- a/arch/arm/mach-zynq/common.c
+> > +++ b/arch/arm/mach-zynq/common.c
+> > @@ -101,6 +101,7 @@ static int __init zynq_get_revision(void)
+> >  static void __init zynq_init_late(void)
+> >  {
+> >  	zynq_core_pm_init();
+> > +	zynq_pm_late_init();
+> >  }
+> > =20
+> >  /**
+> > diff --git a/arch/arm/mach-zynq/common.h b/arch/arm/mach-zynq/commo=
+n.h
+> > index 596ef0b5067c..87945fa2a179 100644
+> > --- a/arch/arm/mach-zynq/common.h
+> > +++ b/arch/arm/mach-zynq/common.h
+> > @@ -40,6 +40,8 @@ extern void __iomem *zynq_scu_base;
+> >  /* Hotplug */
+> >  extern void zynq_platform_cpu_die(unsigned int cpu);
+> > =20
+> > +int zynq_pm_late_init(void);
+> > +
+> >  static inline void zynq_core_pm_init(void)
+> >  {
+> >  	/* A9 clock gating */
+> > diff --git a/arch/arm/mach-zynq/pm.c b/arch/arm/mach-zynq/pm.c
+> > new file mode 100644
+> > index 000000000000..19955917aac8
+> > --- /dev/null
+> > +++ b/arch/arm/mach-zynq/pm.c
+> > @@ -0,0 +1,84 @@
+> > +/*
+> > + * Zynq power management
+> > + *
+> > + *  Copyright (C) 2012 - 2014 Xilinx
+> > + *
+> > + *  S=C3=B6ren Brinkmann <soren.brinkmann@xilinx.com>
+> > + *
+> > + * This program is free software: you can redistribute it and/or m=
+odify
+> > + * it under the terms of the GNU General Public License as publish=
+ed by
+> > + * the Free Software Foundation, either version 2 of the License, =
+or
+> > + * (at your option) any later version.
+> > + *
+> > + * This program is distributed in the hope that it will be useful,
+> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + * GNU General Public License for more details.
+> > + *
+> > + * You should have received a copy of the GNU General Public Licen=
+se
+> > + * along with this program.  If not, see <http://www.gnu.org/licen=
+ses/>.
+>=20
+> IRC this paragraph is not necessary and can be just removed.
+It's the standard header as suggested by gnu.org.
 
-Yes, I verified that this newest version writes identical calibration
-values to the CONFIG2 registers than the NVIDIA's internal downstream
-driver and therefore the temperature difference is not seen anymore.
-All the bugs I reported have been fixed in this version.
+>=20
+> > + */
+> > +
+> > +#include <linux/io.h>
+> > +#include <linux/of_address.h>
+> > +#include <linux/of_device.h>
+> > +#include "common.h"
+> > +
+> > +/* register offsets */
+> > +#define DDRC_CTRL_REG1_OFFS		0x60
+> > +#define DDRC_DRAM_PARAM_REG3_OFFS	0x20
+> > +
+> > +/* bitfields */
+> > +#define DDRC_CLOCKSTOP_MASK	BIT(23)
+> > +#define DDRC_SELFREFRESH_MASK	BIT(12)
+> > +
+> > +static void __iomem *ddrc_base;
+> > +
+> > +/**
+> > + * zynq_pm_ioremap() - Create IO mappings
+> > + * @comp:	DT compatible string
+> > + * Returns a pointer to the mapped memory or NULL.
+> > + *
+> > + * Remap the memory region for a compatible DT node.
+> > + */
+>=20
+> [linux]$ ./scripts/kernel-doc -man -v arch/arm/mach-zynq/pm.c > /dev/=
+null
+> Info(arch/arm/mach-zynq/pm.c:38): Scanning doc for
+> Warning(arch/arm/mach-zynq/pm.c:45): No description found for return =
+value of 'zynq_pm_ioremap'
+I'll fix that.
+
+>=20
+> > +static void __iomem *zynq_pm_ioremap(const char *comp)
+> > +{
+> > +	struct device_node *np;
+> > +	void __iomem *base =3D NULL;
+> > +
+> > +	np =3D of_find_compatible_node(NULL, NULL, comp);
+> > +	if (np) {
+> > +		base =3D of_iomap(np, 0);
+> > +		of_node_put(np);
+> > +	} else {
+> > +		pr_warn("%s: no compatible node found for '%s'\n", __func__,
+> > +				comp);
+> > +	}
+> > +
+> > +	return base;
+> > +}
+> > +
+> > +int __init zynq_pm_late_init(void)
+>=20
+> kernel doc will be nice to have here.
+I'll add a line or two.
+
+>=20
+> > +{
+> > +	u32 reg;
+> > +
+> > +	ddrc_base =3D zynq_pm_ioremap("xlnx,zynq-ddrc-a05");
+> > +	if (!ddrc_base) {
+> > +		pr_warn("%s: Unable to map DDRC IO memory.\n", __func__);
+> > +	} else {
+> > +		/*
+> > +		 * Enable DDRC self-refresh and clock stop features. The HW
+> > +		 * takes care of entering/exiting the correct modes depending
+> > +		 * on activity state.
+> > +		 */
+> > +		reg =3D readl(ddrc_base + DDRC_CTRL_REG1_OFFS);
+> > +		reg |=3D DDRC_SELFREFRESH_MASK;
+> > +		writel(reg, ddrc_base + DDRC_CTRL_REG1_OFFS);
+> > +
+> > +		reg =3D readl(ddrc_base + DDRC_DRAM_PARAM_REG3_OFFS);
+> > +		reg |=3D DDRC_CLOCKSTOP_MASK;
+> > +		writel(reg, ddrc_base + DDRC_DRAM_PARAM_REG3_OFFS);
+> > +	}
+> > +
+> > +	return 0;
+>=20
+> You are not using this return value that's why I would just remove it=
+ and
+> change function return type to void.
+Right, I'll change it.
+
+	Thanks,
+	S=C3=B6ren
+
