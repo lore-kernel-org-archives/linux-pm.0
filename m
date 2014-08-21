@@ -1,38 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: powernv: Register the driver with reboot notifier
-Date: Thu, 21 Aug 2014 11:56:52 +0530
-Message-ID: <CAKohpon8ANWoy52B=_nSuNyHALrsQOLX4cA+690E=CifnVRFtg@mail.gmail.com>
-References: <1408015178-21745-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-	<CAKohponDNHYrD9b==cp+pVmAi2ygA9-HcLZWqr4w3DDivB=-Ng@mail.gmail.com>
-	<53F57E51.4060200@gmail.com>
+From: Mikko Perttunen <mperttunen@nvidia.com>
+Subject: Re: [PATCH v3 3/4] ARM: tegra: Add thermal trip points for Jetson
+ TK1
+Date: Thu, 21 Aug 2014 10:37:46 +0300
+Message-ID: <53F5A1CA.1010601@nvidia.com>
+References: <1407320706-17440-1-git-send-email-mperttunen@nvidia.com> <1407320706-17440-4-git-send-email-mperttunen@nvidia.com> <53F4FA80.9050103@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f46.google.com ([209.85.219.46]:51011 "EHLO
-	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750989AbaHUG0w (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Aug 2014 02:26:52 -0400
-Received: by mail-oa0-f46.google.com with SMTP id m1so7217725oag.33
-        for <linux-pm@vger.kernel.org>; Wed, 20 Aug 2014 23:26:52 -0700 (PDT)
-In-Reply-To: <53F57E51.4060200@gmail.com>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:5825 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753443AbaHUHhu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Aug 2014 03:37:50 -0400
+In-Reply-To: <53F4FA80.9050103@wwwdotorg.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpabhatppc@gmail.com>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Stephen Warren <swarren@wwwdotorg.org>, rui.zhang@intel.com, edubezval@gmail.com, thierry.reding@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 21 August 2014 10:36, Shilpasri G Bhat <shilpabhatppc@gmail.com> wrote:
-> The intention here is stop the cpufreq governor and then to set the cpus to
-> nominal frequency so as to ensure that the frequency won't be changed later.
+On 20/08/14 22:44, Stephen Warren wrote:
+> On 08/06/2014 04:25 AM, Mikko Perttunen wrote:
+>> This adds critical trip points to the Jetson TK1 device tree.
+>> The device will do a controlled shutdown when either the CPU, GPU
+>> or MEM thermal zone reaches 101 degrees Celsius.
 >
-> The .suspend callback of the driver is not called during reboot/kexec.
-> So we need an explicit reboot notifier to call cpufreq-suspend() to
-> suffice the requirement.
+>> diff --git a/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+>> b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+>
+>> +    thermal-zones {
+>> +        cpu {
+>> +            trips {
+> ...
+>> +            };
+>> +        };
+>
+> thermal.txt states that a cooling-maps sub-node is mandatory. However,
+> it seems to be missing here. Is the DT binding documentation overly
+> strict, or do we need to add such a node here?
 
-Hi Shilpa,
+Debatable. I can add an empty one, that's probably the easiest solution.
 
-No, we can't allow any platform driver to misuse cpufreq_suspend().
-Platform drivers aren't *allowed* to call this routine.
+Mikko
 
-Now the deal is how do we move to nominal frequency on reboot..
-@Rafael: Any suggestions? How do we ensure that governors
-are stopped on these notifiers, or if there is some other solution here?
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
