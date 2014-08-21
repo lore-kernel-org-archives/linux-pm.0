@@ -1,31 +1,41 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: Handling commit change logs
-Date: Thu, 21 Aug 2014 09:56:43 +0530
-Message-ID: <CAOh2x=mO1r76fkvruvBLaL144G8fHgDPMwhKVCxv4HW8FRUE_Q@mail.gmail.com>
-References: <1408419205-10048-1-git-send-email-tuomas.tynkkynen@iki.fi>
-	<1408419205-10048-14-git-send-email-tuomas.tynkkynen@iki.fi>
-	<CAKohpokQOALPH13Ykz4nTBOby8J1X6_F30LNKz=gsC4wN3=3vg@mail.gmail.com>
-	<53F3A900.8010805@nvidia.com>
-	<CAKohponcZv9-MFNUQFxC_49-+P6QOhdjxsnYAyL3i4sXdCBYrw@mail.gmail.com>
-	<CABxcv=ncm3Y7Ecfymro6TOuP=d10OV5--8n=dYmHyj6zi8hwEw@mail.gmail.com>
-	<53F4FED4.7060408@suse.de>
-	<53F50554.3050505@wwwdotorg.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v7 02/11] power/restart: Call machine_restart instead of
+ arm_pm_restart
+Date: Wed, 20 Aug 2014 21:42:30 -0700
+Message-ID: <20140821044230.GA14609@roeck-us.net>
+References: <1408495538-27480-1-git-send-email-linux@roeck-us.net>
+ <1408495538-27480-3-git-send-email-linux@roeck-us.net>
+ <CAD=FV=Va8UrpDCLjFQJ6j-K0C3v7NPfifaJGtReCkUEu3x0mLg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <53F50554.3050505-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: =?ISO-8859-1?Q?Andreas_F=E4rber?= <afaerber-l3A5Bk7waGM@public.gmane.org>, Javier Martinez Canillas <javier-0uQlZySMnqxg9hUCZPvPmw@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tuomas Tynkkynen <tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAD=FV=Va8UrpDCLjFQJ6j-K0C3v7NPfifaJGtReCkUEu3x0mLg@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Doug Anderson <dianders@chromium.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Wim Van Sebroeck <wim@iguana.be>, Catalin Marinas <catalin.marinas@arm.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Andrew Morton <akpm@linux-foundation.org>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Heiko Stuebner <heiko@sntech.de>, Jonas Jensen <jonas.jensen@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tomasz Figa <t.figa@samsung.com>, "linux-doc@vger.kernel.org" <linux-doc@vge>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 21, 2014 at 2:00 AM, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>=
- wrote:
-> On 08/20/2014 02:02 PM, Andreas F=E4rber wrote:
->> Am 20.08.2014 17:39, schrieb Javier Martinez Canillas:
->>> If this not the correct workflow and you have a better way to manag=
-e
->>> this, I would love to know about it.
+On Wed, Aug 20, 2014 at 09:10:31PM -0700, Doug Anderson wrote:
+> Guenter,
+> 
+> On Tue, Aug 19, 2014 at 5:45 PM, Guenter Roeck <linux@roeck-us.net> wrote:
+> > machine_restart is supported on non-ARM platforms, and and ultimately calls
+> > arm_pm_restart, so dont call arm_pm_restart directly but use the more
+> > generic function.
+> >
+> > Cc: Russell King <linux@arm.linux.org.uk>
+> 
+> Do you need to submit this to his patch tracker to get him to pick it
+> up?  How are you envisioning that this series land?  It crosses a lot
+> of boundaries so I guess will need a reasonable amount of coordination
+> between maintainers...
+> 
+> 
+If I get an Acked-by: from all maintainers, I could send a pull request
+to Linus directly. How do I send a patch to Russell's patch tracker ?
+I thought I copied all mailing lists suggested by get_maintainer.pl,
+but maybe I missed one.
 
-Oh yes, this was certainly useful. I was missing this (mis)feature :)
+Thanks,
+Guenter
