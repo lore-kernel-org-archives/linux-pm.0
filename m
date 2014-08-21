@@ -1,62 +1,113 @@
-From: Heiko Schocher <hs-ynQEQJNshbs@public.gmane.org>
-Subject: Re: Handling commit change logs
-Date: Thu, 21 Aug 2014 12:49:55 +0200
-Message-ID: <53F5CED3.2040107@denx.de>
-References: <1408419205-10048-1-git-send-email-tuomas.tynkkynen@iki.fi> <1408419205-10048-14-git-send-email-tuomas.tynkkynen@iki.fi> <CAKohpokQOALPH13Ykz4nTBOby8J1X6_F30LNKz=gsC4wN3=3vg@mail.gmail.com> <53F3A900.8010805@nvidia.com> <CAKohponcZv9-MFNUQFxC_49-+P6QOhdjxsnYAyL3i4sXdCBYrw@mail.gmail.com> <CABxcv=ncm3Y7Ecfymro6TOuP=d10OV5--8n=dYmHyj6zi8hwEw@mail.gmail.com> <53F4FED4.7060408@suse.de> <53F50554.3050505@wwwdotorg.org> <CAOh2x=mO1r76fkvruvBLaL144G8fHgDPMwhKVCxv4HW8FRUE_Q@mail.gmail.com> <53F58DFD.900@denx.de> <CABxcv=kJixq0WW5YEX-LvBfU-e9_0pkPw5JeHFOWz8h-_eSjyg@mail.gmail.com>
-Reply-To: hs-ynQEQJNshbs@public.gmane.org
+From: Michal Simek <michal.simek-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH 1/9] ARM: zynq: PM: Enable A9 internal clock gating feature
+Date: Thu, 21 Aug 2014 14:19:51 +0200
+Message-ID: <26994133-6c3c-45c0-af09-3cb55ad35b13@BY2FFO11FD028.protection.gbl>
+References: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
+ <1408567315-28479-2-git-send-email-soren.brinkmann@xilinx.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CABxcv=kJixq0WW5YEX-LvBfU-e9_0pkPw5JeHFOWz8h-_eSjyg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Javier Martinez Canillas <javier-0uQlZySMnqxg9hUCZPvPmw@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tuomas Tynkkynen <tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Paul Walmsley <pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, =?UTF-8?B?QW5kcmVhcyBGw6RyYmVy?= <afaerber-l3A5Bk7waGM@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="u9B6IdofbnURCF0hptOP8LLwkN7nPivIW"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1408567315-28479-2-git-send-email-soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, Michal Simek <michal.simek-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Javier,
+--u9B6IdofbnURCF0hptOP8LLwkN7nPivIW
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Am 21.08.2014 12:35, schrieb Javier Martinez Canillas:
-> Hello Heiko,
->
-> On Thu, Aug 21, 2014 at 8:13 AM, Heiko Schocher<hs-ynQEQJNshbs@public.gmane.org>  wrote:
->> Hello Viresh,
->>
->> Am 21.08.2014 06:26, schrieb Viresh Kumar:
->>
->>> On Thu, Aug 21, 2014 at 2:00 AM, Stephen Warren<swarren@wwwdotorg.o=
-rg>
->>> wrote:
->>>>
->>>> On 08/20/2014 02:02 PM, Andreas F=C3=A4rber wrote:
->>>>>
->>>>> Am 20.08.2014 17:39, schrieb Javier Martinez Canillas:
->>>>>>
->>>>>> If this not the correct workflow and you have a better way to ma=
-nage
->>>>>> this, I would love to know about it.
->>>
->>>
->>> Oh yes, this was certainly useful. I was missing this (mis)feature =
-:)
->>
->>
->> maybe patman from u-boot is also interesting for you, see:
->>
->> http://git.denx.de/?p=3Du-boot.git;a=3Dblob;f=3Dtools/patman/README;=
-h=3D5fb508b80df10d3b11d95eea95a141ce3d0ef578;hb=3D67ee22b0681305ba1099c=
-508eecade996abc1c65
->>
->
-> Very interesting and seems to match my workflow as well so I'll take =
-a
-> look, thanks for sharing!
+On 08/20/2014 10:41 PM, Soren Brinkmann wrote:
+> Signed-off-by: Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
+> ---
+>  arch/arm/mach-zynq/common.c  |  6 ++++++
+>  arch/arm/mach-zynq/common.h  | 11 +++++++++++
+>  arch/arm/mach-zynq/platsmp.c |  9 +++++++++
+>  3 files changed, 26 insertions(+)
+>=20
+> diff --git a/arch/arm/mach-zynq/common.c b/arch/arm/mach-zynq/common.c
+> index 31a6fa40ba37..3cb7c198615a 100644
+> --- a/arch/arm/mach-zynq/common.c
+> +++ b/arch/arm/mach-zynq/common.c
+> @@ -98,6 +98,11 @@ static int __init zynq_get_revision(void)
+>  	return revision;
+>  }
+> =20
+> +static void __init zynq_init_late(void)
+> +{
+> +	zynq_core_pm_init();
+> +}
+> +
+>  /**
+>   * zynq_init_machine - System specific initialization, intended to be
+>   *		       called from board specific initialization.
+> @@ -204,6 +209,7 @@ DT_MACHINE_START(XILINX_EP107, "Xilinx Zynq Platfor=
+m")
+>  	.map_io		=3D zynq_map_io,
+>  	.init_irq	=3D zynq_irq_init,
+>  	.init_machine	=3D zynq_init_machine,
+> +	.init_late	=3D zynq_init_late,
+>  	.init_time	=3D zynq_timer_init,
+>  	.dt_compat	=3D zynq_dt_match,
+>  	.reserve	=3D zynq_memory_init,
+> diff --git a/arch/arm/mach-zynq/common.h b/arch/arm/mach-zynq/common.h
+> index f652f0a884a6..596ef0b5067c 100644
+> --- a/arch/arm/mach-zynq/common.h
+> +++ b/arch/arm/mach-zynq/common.h
+> @@ -40,4 +40,15 @@ extern void __iomem *zynq_scu_base;
+>  /* Hotplug */
+>  extern void zynq_platform_cpu_die(unsigned int cpu);
+> =20
+> +static inline void zynq_core_pm_init(void)
+> +{
+> +	/* A9 clock gating */
+> +	asm volatile ("mrc  p15, 0, r12, c15, c0, 0\n"
+> +		      "orr  r12, r12, #1\n"
+> +		      "mcr  p15, 0, r12, c15, c0, 0\n"
+> +		      : /* no outputs */
+> +		      : /* no inputs */
+> +		      : "r12");
+> +}
+> +
+>  #endif
+> diff --git a/arch/arm/mach-zynq/platsmp.c b/arch/arm/mach-zynq/platsmp.=
+c
+> index abc82ef085c1..616b99e07c60 100644
+> --- a/arch/arm/mach-zynq/platsmp.c
+> +++ b/arch/arm/mach-zynq/platsmp.c
+> @@ -112,6 +112,14 @@ static void __init zynq_smp_prepare_cpus(unsigned =
+int max_cpus)
+>  	scu_enable(zynq_scu_base);
+>  }
+> =20
+> +/*
+> + * This function is in the hotplug path. Don't move it into the init s=
+ection!!
+> + */
 
-You are welcome!
+Worth to use kernel-doc format here.
 
-bye,
-Heiko
---=20
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Thanks,
+Michal
+
+
+--u9B6IdofbnURCF0hptOP8LLwkN7nPivIW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAlP14+cACgkQykllyylKDCF06wCaAxSiK5U5pSBIg7xsHPvP+Epq
+OykAoJETtPKdaaopxOSH4si8TSQ/Hkid
+=7ib3
+-----END PGP SIGNATURE-----
+
+--u9B6IdofbnURCF0hptOP8LLwkN7nPivIW--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
