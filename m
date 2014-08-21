@@ -1,131 +1,71 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/3] sched: Add new API wake_up_if_idle() to wake up the
- idle cpu
-Date: Thu, 21 Aug 2014 05:48:11 +0200
-Message-ID: <53F56BFB.7080602@linaro.org>
-References: <1408351052-25075-1-git-send-email-chuansheng.liu@intel.com> <53F5514A.5050007@linaro.org> <27240C0AC20F114CBF8149A2696CBE4A01E5F7BC@SHSMSX101.ccr.corp.intel.com>
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [PATCH v7 01/11] kernel: Add support for kernel restart handler
+ call chain
+Date: Wed, 20 Aug 2014 21:08:37 -0700
+Message-ID: <CAD=FV=UEyCgA+v6JK20Oos=SF4YEEMARB4JEvGJZwL25WaX6kg@mail.gmail.com>
+References: <1408495538-27480-1-git-send-email-linux@roeck-us.net>
+	<1408495538-27480-2-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f169.google.com ([209.85.223.169]:64493 "EHLO
-	mail-ie0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753682AbaHUDsN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Aug 2014 23:48:13 -0400
-Received: by mail-ie0-f169.google.com with SMTP id rd18so4097475iec.28
-        for <linux-pm@vger.kernel.org>; Wed, 20 Aug 2014 20:48:12 -0700 (PDT)
-In-Reply-To: <27240C0AC20F114CBF8149A2696CBE4A01E5F7BC@SHSMSX101.ccr.corp.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1408495538-27480-2-git-send-email-linux@roeck-us.net>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Russell King <linux@arm.linux.org.uk>, Wim Van Sebroeck <wim@iguana.be>, Catalin Marinas <catalin.marinas@arm.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Andrew Morton <akpm@linux-foundation.org>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Heiko Stuebner <heiko@sntech.de>, Jonas Jensen <jonas.jensen@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tomasz Figa <t.figa@samsung.com>, "linux-doc@vger.kernel.org" <linux-doc@vge>
 List-Id: linux-pm@vger.kernel.org
-To: "Liu, Chuansheng" <chuansheng.liu@intel.com>, "luto@amacapital.net" <luto@amacapital.net>, "peterz@infradead.org" <peterz@infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "mingo@redhat.com" <mingo@redhat.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
 
-On 08/21/2014 04:12 AM, Liu, Chuansheng wrote:
-> Hello Daniel,
+Guenter,
+
+On Tue, Aug 19, 2014 at 5:45 PM, Guenter Roeck <linux@roeck-us.net> wrote:
+> Various drivers implement architecture and/or device specific means
+> to restart (reset) the system. Various mechanisms have been implemented
+> to support those schemes. The best known mechanism is arm_pm_restart,
+> which is a function pointer to be set either from platform specific code
+> or from drivers. Another mechanism is to use hardware watchdogs to issue
+> a reset; this mechanism is used if there is no other method available
+> to reset a board or system. Two examples are alim7101_wdt, which currently
+> uses the reboot notifier to trigger a reset, and moxart_wdt, which registers
+> the arm_pm_restart function.
 >
->> -----Original Message-----
->> From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
->> Sent: Thursday, August 21, 2014 9:54 AM
->> To: Liu, Chuansheng; luto@amacapital.net; peterz@infradead.org;
->> rjw@rjwysocki.net; mingo@redhat.com
->> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; Liu, Cha=
-ngcheng;
->> Wang, Xiaoming; Chakravarty, Souvik K
->> Subject: Re: [PATCH 1/3] sched: Add new API wake_up_if_idle() to wak=
-e up the
->> idle cpu
->>
->> On 08/18/2014 10:37 AM, Chuansheng Liu wrote:
->>> Implementing one new API wake_up_if_idle(), which is used to
->>> wake up the idle CPU.
->>
->> Is this patchset tested ? Did you check it solves the issue you were
->> facing ?
-> We have done the basic test, and found the cores can exit C0 quickly =
-with this patchset.
-> Basically once the _TIF_NEED_RESCHED is set, then the poll_idle() can=
- be broken.
+> The existing mechanisms have a number of drawbacks. Typically only one scheme
+> to restart the system is supported (at least if arm_pm_restart is used).
+> At least in theory there can be multiple means to restart the system, some of
+> which may be less desirable (for example one mechanism may only reset the CPU,
+> while another may reset the entire system). Using arm_pm_restart can also be
+> racy if the function pointer is set from a driver, as the driver may be in
+> the process of being unloaded when arm_pm_restart is called.
+> Using the reboot notifier is always racy, as it is unknown if and when
+> other functions using the reboot notifier have completed execution
+> by the time the watchdog fires.
 >
-> Please correct me if something is wrong, thanks.
-
-Actually, it was not clear for me if this patch was a proposal or not.
-
-I will review it.
-
-Thanks
-
-   -- Daniel
-
->>> Suggested-by: Andy Lutomirski <luto@amacapital.net>
->>> Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
->>> ---
->>>    include/linux/sched.h |    1 +
->>>    kernel/sched/core.c   |   16 ++++++++++++++++
->>>    2 files changed, 17 insertions(+)
->>>
->>> diff --git a/include/linux/sched.h b/include/linux/sched.h
->>> index 857ba40..3f89ac1 100644
->>> --- a/include/linux/sched.h
->>> +++ b/include/linux/sched.h
->>> @@ -1024,6 +1024,7 @@ struct sched_domain_topology_level {
->>>    extern struct sched_domain_topology_level *sched_domain_topology=
-;
->>>
->>>    extern void set_sched_topology(struct sched_domain_topology_leve=
-l *tl);
->>> +extern void wake_up_if_idle(int cpu);
->>>
->>>    #ifdef CONFIG_SCHED_DEBUG
->>>    # define SD_INIT_NAME(type)		.name =3D #type
->>> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
->>> index 1211575..adf104f 100644
->>> --- a/kernel/sched/core.c
->>> +++ b/kernel/sched/core.c
->>> @@ -1620,6 +1620,22 @@ static void ttwu_queue_remote(struct
->> task_struct *p, int cpu)
->>>    	}
->>>    }
->>>
->>> +void wake_up_if_idle(int cpu)
->>> +{
->>> +	struct rq *rq =3D cpu_rq(cpu);
->>> +	unsigned long flags;
->>> +
->>> +	if (set_nr_if_polling(rq->idle)) {
->>> +		trace_sched_wake_idle_without_ipi(cpu);
->>> +	} else {
->>> +		raw_spin_lock_irqsave(&rq->lock, flags);
->>> +		if (rq->curr =3D=3D rq->idle)
->>> +			smp_send_reschedule(cpu);
->>> +		/* Else cpu is not in idle, do nothing here */
->>> +		raw_spin_unlock_irqrestore(&rq->lock, flags);
->>> +	}
->>> +}
->>> +
->>>    bool cpus_share_cache(int this_cpu, int that_cpu)
->>>    {
->>>    	return per_cpu(sd_llc_id, this_cpu) =3D=3D per_cpu(sd_llc_id, t=
-hat_cpu);
->>>
->>
->>
->> --
->>    <http://www.linaro.org/> Linaro.org =E2=94=82 Open source softwar=
-e for ARM
->> SoCs
->>
->> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
->> <http://twitter.com/#!/linaroorg> Twitter |
->> <http://www.linaro.org/linaro-blog/> Blog
+> Introduce a system restart handler call chain to solve the described problems.
+> This call chain is expected to be executed from the architecture specific
+> machine_restart() function. Drivers providing system restart functionality
+> (such as the watchdog drivers mentioned above) are expected to register
+> with this call chain. By using the priority field in the notifier block,
+> callers can control restart handler execution sequence and thus ensure that
+> the restart handler with the optimal restart capabilities for a given system
+> is called first.
 >
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+> Acked-by: Heiko Stuebner <heiko@sntech.de>
+> ---
+> v7: Rebased to v3.17-rc1
+> v6: Use atomic notifier call chain
+> v5: Function renames:
+>     register_restart_notifier -> register_restart_handler
+>     unregister_restart_notifier -> unregister_restart_handler
+>     kernel_restart_notify -> do_kernel_restart
+> v4: Document and suggest values for notifier priorities
+> v3: Add kernel_restart_notify wrapper function to execute notifier.
+>     Improve documentation.
+>     Move restart_notifier_list into kernel/reboot.c and make it static.
+> v2: No change.
+>
+>  include/linux/reboot.h |  3 ++
+>  kernel/reboot.c        | 81 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 84 insertions(+)
 
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Reviewed-by: Doug Anderson <dianders@chromium.org>
+Tested-by: Doug Anderson <dianders@chromium.org>
