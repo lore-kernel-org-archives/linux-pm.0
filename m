@@ -1,60 +1,43 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH v7 11/11] clk: rockchip: add restart handler
-Date: Thu, 21 Aug 2014 10:18:08 +0200
-Message-ID: <18796253.Gqruund2RM@phil>
-References: <1408495538-27480-1-git-send-email-linux@roeck-us.net> <1408495538-27480-12-git-send-email-linux@roeck-us.net> <CAD=FV=U+WbodSLyQVQieiKkWNTBROCktJLgR9B8eOWZhGWYxgg@mail.gmail.com>
+From: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH v5 0/4] Tegra124 soctherm driver
+Date: Thu, 21 Aug 2014 13:17:18 +0300
+Message-ID: <1408616242-21009-1-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAD=FV=U+WbodSLyQVQieiKkWNTBROCktJLgR9B8eOWZhGWYxgg@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: Guenter Roeck <linux@roeck-us.net>, Russell King <linux@arm.linux.org.uk>, Wim Van Sebroeck <wim@iguana.be>, Catalin Marinas <catalin.marinas@arm.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Andrew Morton <akpm@linux-foundation.org>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Jonas Jensen <jonas.jensen@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tomasz Figa <t.figa@samsung.com>, "linux-doc@vger.kernel.org" <linux-doc@v>
+Content-Type: text/plain
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, juha-matti.tilli-X3B1VOXEql0@public.gmane.org, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 20. August 2014, 21:15:10 schrieb Doug Anderson:
-> Guenter / Heiko,
->=20
-> On Tue, Aug 19, 2014 at 5:45 PM, Guenter Roeck <linux@roeck-us.net> w=
-rote:
-> > From: Heiko St=FCbner <heiko@sntech.de>
-> >=20
-> > Add infrastructure to write the correct value to the restart regist=
-er and
-> > register the restart notifier for both rk3188 (including rk3066) an=
-d
-> > rk3288.
-> >=20
-> > Signed-off-by: Heiko Stuebner <heiko@sntech.de>
-> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> > ---
-> > v7: Added patch to series.
-> >=20
-> >  drivers/clk/rockchip/clk-rk3188.c |  2 ++
-> >  drivers/clk/rockchip/clk-rk3288.c |  2 ++
-> >  drivers/clk/rockchip/clk.c        | 25 +++++++++++++++++++++++++
-> >  drivers/clk/rockchip/clk.h        |  1 +
-> >  4 files changed, 30 insertions(+)
->=20
-> This patch doesn't apply cleanly with the in-flight (clk: rockchip:
-> protect critical clocks from getting disabled) patch from Heiko.  It'=
-s
-> trivial to resolve and unclear which will land first, so I think it's
-> fine...
+Hi,
 
-This should be expected :-) .
+this series adds support for the thermal monitoring features of the
+soctherm unit on the Tegra124 SoC. 
 
-The patch about critical clocks will (hopefully soon) go through Mike's=
- tree,=20
-while this series will most likely go through somewhere else (Linus' tr=
-ee=20
-directly or something), so I guess the merge conflic will be resolved b=
-y Linus=20
-when both trees meet each other during the merge window.
-So both this patch as well as the other one should stay independent of =
-each=20
-other.
+The branch is also available in my github repo,
+  git://github.com/cyndis/linux.git soctherm-v5
 
+Thanks,
+Mikko
 
-Heiko
+Mikko Perttunen (4):
+  of: Add bindings for nvidia,tegra124-soctherm
+  ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
+  ARM: tegra: Add thermal trip points for Jetson TK1
+  thermal: Add Tegra SOCTHERM thermal management driver
+
+ .../devicetree/bindings/thermal/tegra-soctherm.txt |  53 +++
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  41 ++
+ arch/arm/boot/dts/tegra124.dtsi                    |  47 ++
+ drivers/thermal/Kconfig                            |  10 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/tegra_soctherm.c                   | 471 +++++++++++++++++++++
+ include/dt-bindings/thermal/tegra124-soctherm.h    |  13 +
+ 7 files changed, 636 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
+ create mode 100644 drivers/thermal/tegra_soctherm.c
+ create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
+
+-- 
+1.8.1.5
