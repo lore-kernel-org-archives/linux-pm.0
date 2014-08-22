@@ -1,134 +1,92 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [PATCH 8/9] ARM: zynq: Remove hotplug.c
-Date: Thu, 21 Aug 2014 16:38:26 -0700
-Message-ID: <347fcf72-b3a5-4212-87b9-0cc92d1a962c@BN1AFFO11FD035.protection.gbl>
-References: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com>
- <1408567315-28479-9-git-send-email-soren.brinkmann@xilinx.com>
- <53F54C26.5010000@linaro.org>
+From: =?ISO-8859-15?Q?Andreas_F=E4rber?= <afaerber@suse.de>
+Subject: Re: [PATCH v7 04/11] arm: Support restart through restart handler
+ call chain
+Date: Fri, 22 Aug 2014 03:32:42 +0200
+Message-ID: <53F69DBA.4070806@suse.de>
+References: <1408495538-27480-1-git-send-email-linux@roeck-us.net> <1408495538-27480-5-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <53F54C26.5010000@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Michal Simek <michal.simek@xilinx.com>, Russell King <linux@arm.linux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:51431 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755420AbaHVBcu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 21 Aug 2014 21:32:50 -0400
+In-Reply-To: <1408495538-27480-5-git-send-email-linux@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>, Doug Anderson <dianders@chromium.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Wim Van Sebroeck <wim@iguana.be>, Catalin Marinas <catalin.marinas@arm.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Andrew Morton <akpm@linux-foundation.org>, linux-watchdog@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Heiko Stuebner <heiko@sntech.de>, Jonas Jensen <jonas.jensen@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tomasz Figa <t.figa@samsung.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 2014-08-21 at 03:32AM +0200, Daniel Lezcano wrote:
-> On 08/20/2014 10:41 PM, Soren Brinkmann wrote:
-> >The hotplug code contains only a single function, which is an SMP
-> >function. Move that to platsmp.c where all other SMP runctions resid=
-e.
-> >That allows removing hotplug.c and declaring the cpu_die function
-> >static.
-> >
-> >Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> >---
-> >  arch/arm/mach-zynq/Makefile  |  1 -
-> >  arch/arm/mach-zynq/common.h  |  3 +--
-> >  arch/arm/mach-zynq/hotplug.c | 17 -----------------
-> >  arch/arm/mach-zynq/platsmp.c | 18 ++++++++++++++++++
-> >  4 files changed, 19 insertions(+), 20 deletions(-)
-> >
-> >diff --git a/arch/arm/mach-zynq/Makefile b/arch/arm/mach-zynq/Makefi=
-le
-> >index 820dff6e1eba..c85fb3f7d5cd 100644
-> >--- a/arch/arm/mach-zynq/Makefile
-> >+++ b/arch/arm/mach-zynq/Makefile
-> >@@ -6,5 +6,4 @@
-> >  obj-y				:=3D common.o slcr.o pm.o
-> >  CFLAGS_REMOVE_hotplug.o		=3D-march=3Darmv6k
-> >  CFLAGS_hotplug.o 		=3D-Wa,-march=3Darmv7-a -mcpu=3Dcortex-a9
-> >-obj-$(CONFIG_HOTPLUG_CPU)	+=3D hotplug.o
-> >  obj-$(CONFIG_SMP)		+=3D headsmp.o platsmp.o
-> >diff --git a/arch/arm/mach-zynq/common.h b/arch/arm/mach-zynq/common=
-=2Eh
-> >index c0773e87e83c..e6bb12c50a23 100644
-> >--- a/arch/arm/mach-zynq/common.h
-> >+++ b/arch/arm/mach-zynq/common.h
-> >@@ -39,8 +39,7 @@ extern struct smp_operations zynq_smp_ops __initda=
-ta;
-> >
-> >  extern void __iomem *zynq_scu_base;
-> >
-> >-/* Hotplug */
-> >-extern void zynq_platform_cpu_die(unsigned int cpu);
-> >+int zynq_pm_late_init(void);
-> >
-> >  int zynq_pm_late_init(void);
-> >
-> >diff --git a/arch/arm/mach-zynq/hotplug.c b/arch/arm/mach-zynq/hotpl=
-ug.c
-> >index fe44a05677e2..b685c89f11e4 100644
-> >--- a/arch/arm/mach-zynq/hotplug.c
-> >+++ b/arch/arm/mach-zynq/hotplug.c
-> >@@ -12,20 +12,3 @@
-> >   */
-> >  #include <asm/proc-fns.h>
-> >
-> >-/*
-> >- * platform-specific code to shutdown a CPU
-> >- *
-> >- * Called with IRQs disabled
-> >- */
-> >-void zynq_platform_cpu_die(unsigned int cpu)
-> >-{
-> >-	zynq_slcr_cpu_state_write(cpu, true);
-> >-
-> >-	/*
-> >-	 * there is no power-control hardware on this platform, so all
-> >-	 * we can do is put the core into WFI; this is safe as the calling
-> >-	 * code will have already disabled interrupts
-> >-	 */
-> >-	for (;;)
-> >-		cpu_do_idle();
-> >-}
-> >diff --git a/arch/arm/mach-zynq/platsmp.c b/arch/arm/mach-zynq/plats=
-mp.c
-> >index f77f7ca4c45b..04e578718aa2 100644
-> >--- a/arch/arm/mach-zynq/platsmp.c
-> >+++ b/arch/arm/mach-zynq/platsmp.c
-> >@@ -132,6 +132,24 @@ static int zynq_cpu_kill(unsigned cpu)
-> >  	zynq_slcr_cpu_stop(cpu);
-> >  	return 1;
-> >  }
-> >+
-> >+/*
-> >+ * platform-specific code to shutdown a CPU
-> >+ *
-> >+ * Called with IRQs disabled
-> >+ */
-> >+static void zynq_platform_cpu_die(unsigned int cpu)
-> >+{
-> >+	zynq_slcr_cpu_state_write(cpu, true);
-> >+
-> >+	/*
-> >+	 * there is no power-control hardware on this platform, so all
-> >+	 * we can do is put the core into WFI; this is safe as the calling
-> >+	 * code will have already disabled interrupts
-> >+	 */
-> >+	for (;;)
-> >+		cpu_do_idle();
+Hi,
+
+Am 20.08.2014 02:45, schrieb Guenter Roeck:
+> The kernel core now supports a restart handler call chain for system
+> restart functions.
 >=20
-> IIUC, the cpu_do_idle() will flush the L1 cache and then call the
-> WFI. It makes sense if we are about to power down the core. So I am
-> wondering if we can just call wfi() instead.
+> With this change, the arm_pm_restart callback is now optional, so
+> drop its initialization and check if it is set before calling it.
+> Only call the kernel restart handler if arm_pm_restart is not set.
+[...]
+> diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+> index 81ef686..ea279f7 100644
+> --- a/arch/arm/kernel/process.c
+> +++ b/arch/arm/kernel/process.c
+> @@ -114,17 +114,13 @@ void soft_restart(unsigned long addr)
+>  	BUG();
+>  }
+> =20
+> -static void null_restart(enum reboot_mode reboot_mode, const char *c=
+md)
+> -{
+> -}
+> -
+>  /*
+>   * Function pointers to optional machine specific functions
+>   */
+>  void (*pm_power_off)(void);
+>  EXPORT_SYMBOL(pm_power_off);
+> =20
+> -void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *cmd=
+) =3D null_restart;
+> +void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *cmd=
+);
 
-I'm not sure - it's not that trivial to trace that through the sources.
-But I think cpu_do_idle ends up in cpu_v7_do_idle which is just:
-	ENTRY(cpu_v7_do_idle)                                                 =
-          =20
-	        dsb                                     @ WFI may enter a low-=
-power mode=20
-	        wfi                                                           =
-          =20
-	        ret     lr                                                    =
-          =20
-	ENDPROC(cpu_v7_do_idle)
+Stupid newbie question maybe, but isn't this variable uninitialized now=
+,
+like any non-static variable in C99? Or does the kernel assure that all
+such "fields" are zero-initialized?
 
-I think that is what we want here.
+>  EXPORT_SYMBOL_GPL(arm_pm_restart);
 
-	Thanks,
-	S=C3=B6ren
+(This doesn't seem to be affecting the value of arm_pm_restart, just
+redeclaring it extern and adding further derived symbols.)
+
+> =20
+>  /*
+> @@ -230,7 +226,10 @@ void machine_restart(char *cmd)
+>  	local_irq_disable();
+>  	smp_send_stop();
+> =20
+> -	arm_pm_restart(reboot_mode, cmd);
+> +	if (arm_pm_restart)
+
+Here we seem to be relying on arm_pm_restart to be NULL when not
+callable. I.e., wondering whether it's ruled out that the following lin=
+e
+is triggered due to non-zero garbage in arm_pm_restart?
+
+Thanks,
+Andreas
+
+> +		arm_pm_restart(reboot_mode, cmd);
+> +	else
+> +		do_kernel_restart(cmd);
+> =20
+>  	/* Give a grace period for failure to restart of 1s */
+>  	mdelay(1000);
+
+--=20
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 N=FCrnberg, Germany
+GF: Jeff Hawn, Jennifer Guild, Felix Imend=F6rffer; HRB 16746 AG N=FCrn=
+berg
