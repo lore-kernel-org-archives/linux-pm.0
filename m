@@ -1,66 +1,101 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 5/6] ARM: shmobile: Add CPU notifier for CPUIdle boot vector
-Date: Fri, 22 Aug 2014 19:48:33 +0900
-Message-ID: <CANqRtoR5aCLv9_Qnh5gzjd3-zZCnZGk95sO0sLc7FXR+-r5Kxw@mail.gmail.com>
-References: <53DB6284.3090506@renesas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: [PATCH v2] intel_idle: add idle values for Cherrytrail/Braswell
+Date: Fri, 22 Aug 2014 14:39:00 +0300
+Message-ID: <1408707540-12393-1-git-send-email-mika.westerberg@linux.intel.com>
+References: <1408701508-13636-1-git-send-email-mika.westerberg@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f176.google.com ([209.85.217.176]:65341 "EHLO
-	mail-lb0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751451AbaHVKse (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Aug 2014 06:48:34 -0400
-In-Reply-To: <53DB6284.3090506@renesas.com>
+Received: from mga01.intel.com ([192.55.52.88]:55491 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751947AbaHVLjD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Aug 2014 07:39:03 -0400
+In-Reply-To: <1408701508-13636-1-git-send-email-mika.westerberg@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: keita kobayashi <keita.kobayashi.ym@renesas.com>
-Cc: SH-Linux <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Simon Horman <horms+renesas@verge.net.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Len Brown <lenb@kernel.org>
+Cc: Kumar P Mahesh <mahesh.kumar.p@intel.com>, Alan Cox <alan@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Kobayashi-san,
+From: Mahesh Kumar P <mahesh.kumar.p@intel.com>
 
-Thanks for your patches. About the use of CPU notifiers, please see my
-question below:
+Cherrytrail/Braswell is a successor of Intel Baytrail but has slighly
+different CPU idle values and latencies.
 
-On Fri, Aug 1, 2014 at 6:48 PM, keita kobayashi
-<keita.kobayashi.ym@renesas.com> wrote:
-> Add CPU notifiers for the shared mach-shmobile cpuidle code.
->
-> Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
-> ---
->  arch/arm/mach-shmobile/cpuidle.c |   24 ++++++++++++++++++++++++
->  1 file changed, 24 insertions(+)
->
-> diff --git a/arch/arm/mach-shmobile/cpuidle.c b/arch/arm/mach-shmobile/cpuidle.c
-> index 19c0c98..1771dd3 100644
-> --- a/arch/arm/mach-shmobile/cpuidle.c
-> +++ b/arch/arm/mach-shmobile/cpuidle.c
-> @@ -20,6 +20,27 @@
->  #include <asm/io.h>
->  #include "common.h"
->
-> +static int shmobile_cpuidle_notifier_call(struct notifier_block *nfb,
-> +                                         unsigned long action, void *hcpu)
-> +{
-> +       unsigned int cpu = (long)hcpu;
-> +
-> +       switch (action) {
-> +       case CPU_ONLINE:
-> +       case CPU_STARTING:
-> +       case CPU_STARTING_FROZEN:
-> +               /* For this particular CPU register CPUIdle boot vector */
-> +               shmobile_smp_hook(cpu, virt_to_phys(cpu_resume), 0);
-> +               break;
-> +       };
-> +
-> +       return NOTIFY_OK;
-> +}
+Signed-off-by: Kumar P Mahesh <mahesh.kumar.p@intel.com>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+---
+I learned from Mahesh that C1e, C4 and S0i2 states are deprecated so those
+are now removed.
 
-In my earlier CPUIdle and reset vector sharing experiments it seemed
-enough to install the reset vector with CPU notifier using CPU_ONLINE.
+ drivers/idle/intel_idle.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
-Can you please explain the reason why you also include CPU_STARTING
-and CPU_STARTING_FROZEN above?
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 9b7ee7e427df..e472580c1826 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -197,6 +197,42 @@ static struct cpuidle_state snb_cstates[] = {
+ 		.enter = NULL }
+ };
+ 
++static struct cpuidle_state cht_cstates[] = {
++	{ /* MWAIT C1 */
++		.name = "C1-CHT",
++		.desc = "MWAIT 0x00",
++		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
++		.exit_latency = 1,
++		.target_residency = 4,
++		.enter = &intel_idle },
++	{ /* MWAIT C6 */
++		.name = "C6-CHT",
++		.desc = "MWAIT 0x52",
++		.flags = MWAIT2flg(0x52) | CPUIDLE_FLAG_TIME_VALID
++						| CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 140,
++		.target_residency = 560,
++		.enter = &intel_idle },
++	{ /* MWAIT C7-S0i1 */
++		.name = "S0i1-CHT",
++		.desc = "MWAIT 0x60",
++		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TIME_VALID
++						| CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 1200,
++		.target_residency = 4000,
++		.enter = &intel_idle },
++	{ /* MWAIT C9-S0i3 */
++		.name = "S0i3-CHT",
++		.desc = "MWAIT 0x64",
++		.flags = MWAIT2flg(0x64) | CPUIDLE_FLAG_TIME_VALID
++						| CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 10000,
++		.target_residency = 20000,
++		.enter = &intel_idle },
++	{
++		.enter = NULL }
++};
++
+ static struct cpuidle_state byt_cstates[] = {
+ 	{
+ 		.name = "C1-BYT",
+@@ -677,6 +713,11 @@ static const struct idle_cpu idle_cpu_byt = {
+ 	.byt_auto_demotion_disable_flag = true,
+ };
+ 
++static const struct idle_cpu idle_cpu_cht = {
++	.state_table = cht_cstates,
++	.disable_promotion_to_c1e = true,
++};
++
+ static const struct idle_cpu idle_cpu_ivb = {
+ 	.state_table = ivb_cstates,
+ 	.disable_promotion_to_c1e = true,
+@@ -725,6 +766,7 @@ static const struct x86_cpu_id intel_idle_ids[] = {
+ 	ICPU(0x3f, idle_cpu_hsw),
+ 	ICPU(0x45, idle_cpu_hsw),
+ 	ICPU(0x46, idle_cpu_hsw),
++	ICPU(0x4c, idle_cpu_cht),
+ 	ICPU(0x4d, idle_cpu_avn),
+ 	ICPU(0x3d, idle_cpu_bdw),
+ 	ICPU(0x4f, idle_cpu_bdw),
+-- 
+2.1.0
 
-Thanks,
-
-/ magnus
