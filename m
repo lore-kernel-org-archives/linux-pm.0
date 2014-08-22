@@ -1,66 +1,58 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v7 04/11] arm: Support restart through restart handler
- call chain
-Date: Thu, 21 Aug 2014 19:19:47 -0700
-Message-ID: <20140822021947.GA17788@roeck-us.net>
-References: <1408495538-27480-1-git-send-email-linux@roeck-us.net>
- <1408495538-27480-5-git-send-email-linux@roeck-us.net>
- <53F69DBA.4070806@suse.de>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: powernv: Register the driver with reboot notifier
+Date: Fri, 22 Aug 2014 08:18:06 +0530
+Message-ID: <53F6AF66.10204@linux.vnet.ibm.com>
+References: <1408015178-21745-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <CAKohponDNHYrD9b==cp+pVmAi2ygA9-HcLZWqr4w3DDivB=-Ng@mail.gmail.com> <53F57E51.4060200@gmail.com> <CAKohpon8ANWoy52B=_nSuNyHALrsQOLX4cA+690E=CifnVRFtg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <53F69DBA.4070806@suse.de>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Andreas =?iso-8859-1?Q?F=E4rber?= <afaerber@suse.de>
-Cc: Doug Anderson <dianders@chromium.org>, Russell King <linux@arm.linux.org.uk>, Wim Van Sebroeck <wim@iguana.be>, Catalin Marinas <catalin.marinas@arm.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Andrew Morton <akpm@linux-foundation.org>, linux-watchdog@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Heiko Stuebner <heiko@sntech.de>, Jonas Jensen <jonas.jensen@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tomasz Figa <t.figa@samsung.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e35.co.us.ibm.com ([32.97.110.153]:50261 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755553AbaHVCsP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Aug 2014 22:48:15 -0400
+Received: from /spool/local
+	by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Thu, 21 Aug 2014 20:48:15 -0600
+In-Reply-To: <CAKohpon8ANWoy52B=_nSuNyHALrsQOLX4cA+690E=CifnVRFtg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Shilpasri G Bhat <shilpabhatppc@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
-On Fri, Aug 22, 2014 at 03:32:42AM +0200, Andreas F=E4rber wrote:
-> Hi,
->=20
-> Am 20.08.2014 02:45, schrieb Guenter Roeck:
-> > The kernel core now supports a restart handler call chain for syste=
-m
-> > restart functions.
-> >=20
-> > With this change, the arm_pm_restart callback is now optional, so
-> > drop its initialization and check if it is set before calling it.
-> > Only call the kernel restart handler if arm_pm_restart is not set.
-> [...]
-> > diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
-> > index 81ef686..ea279f7 100644
-> > --- a/arch/arm/kernel/process.c
-> > +++ b/arch/arm/kernel/process.c
-> > @@ -114,17 +114,13 @@ void soft_restart(unsigned long addr)
-> >  	BUG();
-> >  }
-> > =20
-> > -static void null_restart(enum reboot_mode reboot_mode, const char =
-*cmd)
-> > -{
-> > -}
-> > -
-> >  /*
-> >   * Function pointers to optional machine specific functions
-> >   */
-> >  void (*pm_power_off)(void);
-> >  EXPORT_SYMBOL(pm_power_off);
-> > =20
-> > -void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *c=
-md) =3D null_restart;
-> > +void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *c=
-md);
->=20
-> Stupid newbie question maybe, but isn't this variable uninitialized n=
-ow,
-> like any non-static variable in C99? Or does the kernel assure that a=
-ll
-> such "fields" are zero-initialized?
->=20
-It is initialized with NULL, like all other global and static variables=
- in the
-kernel (and like pm_power_off a few lines above).
+Hi Viresh,
 
-Guenter
+On 08/21/2014 11:56 AM, Viresh Kumar wrote:
+> On 21 August 2014 10:36, Shilpasri G Bhat <shilpabhatppc@gmail.com> wrote:
+>> The intention here is stop the cpufreq governor and then to set the cpus to
+>> nominal frequency so as to ensure that the frequency won't be changed later.
+>>
+>> The .suspend callback of the driver is not called during reboot/kexec.
+>> So we need an explicit reboot notifier to call cpufreq-suspend() to
+>> suffice the requirement.
+> 
+> Hi Shilpa,
+> 
+> No, we can't allow any platform driver to misuse cpufreq_suspend().
+> Platform drivers aren't *allowed* to call this routine.
+
+At the moment this looks like the best way forward. We need to do this
+cleanly by ensuring that we stop the governors and then call into the
+driver to deal with the cpu frequency in its own way during reboot. The
+best way to do this would be by calling this routine. Either this or
+cpufreq_suspend() should be called in the reboot path generically. The
+latter might not be an enticing option for other platforms.
+
+Regards
+Preeti U Murthy
+> 
+> Now the deal is how do we move to nominal frequency on reboot..
+> @Rafael: Any suggestions? How do we ensure that governors
+> are stopped on these notifiers, or if there is some other solution here?
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
+
