@@ -1,59 +1,112 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] thermal soc changes
-Date: Fri, 22 Aug 2014 08:46:32 -0400
-Message-ID: <1408711592-8917-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f172.google.com ([209.85.220.172]:37078 "EHLO
-	mail-vc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756101AbaHVMqi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Aug 2014 08:46:38 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Subject: Re: [PATCH v2] intel_idle: add idle values for Cherrytrail/Braswell
+Date: Fri, 22 Aug 2014 22:06:21 +0800
+Message-ID: <53F74E5D.2040108@linux.intel.com>
+References: <1408701508-13636-1-git-send-email-mika.westerberg@linux.intel.com> <1408707540-12393-1-git-send-email-mika.westerberg@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1408707540-12393-1-git-send-email-mika.westerberg@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>, Len Brown <lenb@kernel.org>
+Cc: Kumar P Mahesh <mahesh.kumar.p@intel.com>, Alan Cox <alan@linux.intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Hello Rui,
+On 2014/8/22 19:39, Mika Westerberg wrote:
+> From: Mahesh Kumar P <mahesh.kumar.p@intel.com>
+> 
+> Cherrytrail/Braswell is a successor of Intel Baytrail but has slighly
+> different CPU idle values and latencies.
+> 
+> Signed-off-by: Kumar P Mahesh <mahesh.kumar.p@intel.com>
+> Signed-off-by: Alan Cox <alan@linux.intel.com>
+> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> ---
+> I learned from Mahesh that C1e, C4 and S0i2 states are deprecated so those
+> are now removed.
 
-Please pull these changes. Here we have three new features: IMX driver has
-now support to i.mx6sx, the of-thermal now if aware of disabled thermal zones
-in DT, and we shall have tracing support on thermal framework.
+If the platform has ACPI supported, I believe Len wants to see what
+C-states number exported by ACPI.
 
-The following changes since commit 47d104ba5879790c7c91c3390b0b08399e168efe:
+Please boot the machine with "intel_idle.max_cstate=0" to disable
+intel_idle, then post the output of the following commands
 
-  Merge branches 'exynos-fix', 'for-rc', 'int3403-fix', 'misc', 'rcar-thermal' and 'sti-thermal' of .git into next (2014-07-22 10:13:00 +0800)
+dmesg | grep idle
+grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
 
-are available in the git repository at:
+Thanks,
+-Aubrey
 
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git 
-
-for you to fetch changes up to 3c94f17e72a7bcf689756da100b6051e535c45f4:
-
-  Thermal: imx: add i.mx6sx thermal support (2014-08-09 10:29:30 -0400)
-
-----------------------------------------------------------------
-Anson Huang (1):
-      Thermal: imx: add i.mx6sx thermal support
-
-Laxman Dewangan (1):
-      thermal: add support to disable thermal zone from DTS
-
-Punit Agrawal (3):
-      thermal: trace: Trace temperature changes
-      thermal: trace: Trace when a cooling device's state is updated
-      thermal: trace: Trace when temperature is above a trip point
-
- .../devicetree/bindings/thermal/imx-thermal.txt    |  5 +-
- drivers/thermal/fair_share.c                       | 12 +++
- drivers/thermal/imx_thermal.c                      | 91 ++++++++++++++++++----
- drivers/thermal/of-thermal.c                       | 12 +++
- drivers/thermal/step_wise.c                        |  5 +-
- drivers/thermal/thermal_core.c                     |  7 ++
- include/trace/events/thermal.h                     | 83 ++++++++++++++++++++
- 7 files changed, 200 insertions(+), 15 deletions(-)
- create mode 100644 include/trace/events/thermal.h
-
-
- BR,
-
- Eduardo Valentin
+> 
+>  drivers/idle/intel_idle.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 42 insertions(+)
+> 
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index 9b7ee7e427df..e472580c1826 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -197,6 +197,42 @@ static struct cpuidle_state snb_cstates[] = {
+>  		.enter = NULL }
+>  };
+>  
+> +static struct cpuidle_state cht_cstates[] = {
+> +	{ /* MWAIT C1 */
+> +		.name = "C1-CHT",
+> +		.desc = "MWAIT 0x00",
+> +		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
+> +		.exit_latency = 1,
+> +		.target_residency = 4,
+> +		.enter = &intel_idle },
+> +	{ /* MWAIT C6 */
+> +		.name = "C6-CHT",
+> +		.desc = "MWAIT 0x52",
+> +		.flags = MWAIT2flg(0x52) | CPUIDLE_FLAG_TIME_VALID
+> +						| CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.exit_latency = 140,
+> +		.target_residency = 560,
+> +		.enter = &intel_idle },
+> +	{ /* MWAIT C7-S0i1 */
+> +		.name = "S0i1-CHT",
+> +		.desc = "MWAIT 0x60",
+> +		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TIME_VALID
+> +						| CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.exit_latency = 1200,
+> +		.target_residency = 4000,
+> +		.enter = &intel_idle },
+> +	{ /* MWAIT C9-S0i3 */
+> +		.name = "S0i3-CHT",
+> +		.desc = "MWAIT 0x64",
+> +		.flags = MWAIT2flg(0x64) | CPUIDLE_FLAG_TIME_VALID
+> +						| CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.exit_latency = 10000,
+> +		.target_residency = 20000,
+> +		.enter = &intel_idle },
+> +	{
+> +		.enter = NULL }
+> +};
+> +
+>  static struct cpuidle_state byt_cstates[] = {
+>  	{
+>  		.name = "C1-BYT",
+> @@ -677,6 +713,11 @@ static const struct idle_cpu idle_cpu_byt = {
+>  	.byt_auto_demotion_disable_flag = true,
+>  };
+>  
+> +static const struct idle_cpu idle_cpu_cht = {
+> +	.state_table = cht_cstates,
+> +	.disable_promotion_to_c1e = true,
+> +};
+> +
+>  static const struct idle_cpu idle_cpu_ivb = {
+>  	.state_table = ivb_cstates,
+>  	.disable_promotion_to_c1e = true,
+> @@ -725,6 +766,7 @@ static const struct x86_cpu_id intel_idle_ids[] = {
+>  	ICPU(0x3f, idle_cpu_hsw),
+>  	ICPU(0x45, idle_cpu_hsw),
+>  	ICPU(0x46, idle_cpu_hsw),
+> +	ICPU(0x4c, idle_cpu_cht),
+>  	ICPU(0x4d, idle_cpu_avn),
+>  	ICPU(0x3d, idle_cpu_bdw),
+>  	ICPU(0x4f, idle_cpu_bdw),
+> 
