@@ -1,48 +1,66 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Add CPU ID for Braswell processor
-Date: Fri, 22 Aug 2014 15:49:50 +0530
-Message-ID: <CAKohpo=7CyRT7szhJAQXjRfBFyw_6LuHSdVS39z=899T0eBoMg@mail.gmail.com>
-References: <1408701944-14734-1-git-send-email-mika.westerberg@linux.intel.com>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 5/6] ARM: shmobile: Add CPU notifier for CPUIdle boot vector
+Date: Fri, 22 Aug 2014 19:48:33 +0900
+Message-ID: <CANqRtoR5aCLv9_Qnh5gzjd3-zZCnZGk95sO0sLc7FXR+-r5Kxw@mail.gmail.com>
+References: <53DB6284.3090506@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f46.google.com ([209.85.218.46]:52957 "EHLO
-	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751556AbaHVKTv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Aug 2014 06:19:51 -0400
-Received: by mail-oi0-f46.google.com with SMTP id i138so7604193oig.33
-        for <linux-pm@vger.kernel.org>; Fri, 22 Aug 2014 03:19:51 -0700 (PDT)
-In-Reply-To: <1408701944-14734-1-git-send-email-mika.westerberg@linux.intel.com>
+Received: from mail-lb0-f176.google.com ([209.85.217.176]:65341 "EHLO
+	mail-lb0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751451AbaHVKse (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Aug 2014 06:48:34 -0400
+In-Reply-To: <53DB6284.3090506@renesas.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: keita kobayashi <keita.kobayashi.ym@renesas.com>
+Cc: SH-Linux <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Simon Horman <horms+renesas@verge.net.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 22 August 2014 15:35, Mika Westerberg
-<mika.westerberg@linux.intel.com> wrote:
-> This is pretty much the same as Intel Baytrail, only the CPU ID is
-> different. Add the new ID to the supported CPU list.
+Hi Kobayashi-san,
+
+Thanks for your patches. About the use of CPU notifiers, please see my
+question below:
+
+On Fri, Aug 1, 2014 at 6:48 PM, keita kobayashi
+<keita.kobayashi.ym@renesas.com> wrote:
+> Add CPU notifiers for the shared mach-shmobile cpuidle code.
 >
-> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
-
-Dirk might be away on holidays..
-
+> Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
 > ---
->  drivers/cpufreq/intel_pstate.c | 1 +
->  1 file changed, 1 insertion(+)
+>  arch/arm/mach-shmobile/cpuidle.c |   24 ++++++++++++++++++++++++
+>  1 file changed, 24 insertions(+)
 >
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index c5eac949760d..a3cf8994160b 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -660,6 +660,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
->         ICPU(0x3f, core_params),
->         ICPU(0x45, core_params),
->         ICPU(0x46, core_params),
-> +       ICPU(0x4c, byt_params),
->         ICPU(0x4f, core_params),
->         ICPU(0x56, core_params),
->         {}
+> diff --git a/arch/arm/mach-shmobile/cpuidle.c b/arch/arm/mach-shmobile/cpuidle.c
+> index 19c0c98..1771dd3 100644
+> --- a/arch/arm/mach-shmobile/cpuidle.c
+> +++ b/arch/arm/mach-shmobile/cpuidle.c
+> @@ -20,6 +20,27 @@
+>  #include <asm/io.h>
+>  #include "common.h"
+>
+> +static int shmobile_cpuidle_notifier_call(struct notifier_block *nfb,
+> +                                         unsigned long action, void *hcpu)
+> +{
+> +       unsigned int cpu = (long)hcpu;
+> +
+> +       switch (action) {
+> +       case CPU_ONLINE:
+> +       case CPU_STARTING:
+> +       case CPU_STARTING_FROZEN:
+> +               /* For this particular CPU register CPUIdle boot vector */
+> +               shmobile_smp_hook(cpu, virt_to_phys(cpu_resume), 0);
+> +               break;
+> +       };
+> +
+> +       return NOTIFY_OK;
+> +}
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+In my earlier CPUIdle and reset vector sharing experiments it seemed
+enough to install the reset vector with CPU notifier using CPU_ONLINE.
+
+Can you please explain the reason why you also include CPU_STARTING
+and CPU_STARTING_FROZEN above?
+
+Thanks,
+
+/ magnus
