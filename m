@@ -1,103 +1,112 @@
-From: Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH 9/9] ARM: zynq: Rename 'zynq_platform_cpu_die'
-Date: Fri, 22 Aug 2014 07:52:49 +0200
-Message-ID: <53F6DAB1.9020001@monstr.eu>
-References: <1408567315-28479-1-git-send-email-soren.brinkmann@xilinx.com> <1408567315-28479-10-git-send-email-soren.brinkmann@xilinx.com> <4ac42f4d-72bf-4a8d-a997-094f129d7c74@BN1AFFO11FD020.protection.gbl> <9c7c26e1-4098-4252-a719-fb7b7205be61@BN1AFFO11FD006.protection.gbl>
-Reply-To: monstr@monstr.eu
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="esr4mJLf5gHeHliFMEeGFxnVN8o1LmpJf"
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: [PATCH] intel_idle: add idle values for Cherrytrail/Braswell
+Date: Fri, 22 Aug 2014 12:58:28 +0300
+Message-ID: <1408701508-13636-1-git-send-email-mika.westerberg@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f169.google.com ([74.125.82.169]:59929 "EHLO
-	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbaHVFwy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Aug 2014 01:52:54 -0400
-Received: by mail-we0-f169.google.com with SMTP id u56so10142155wes.14
-        for <linux-pm@vger.kernel.org>; Thu, 21 Aug 2014 22:52:52 -0700 (PDT)
-In-Reply-To: <9c7c26e1-4098-4252-a719-fb7b7205be61@BN1AFFO11FD006.protection.gbl>
+Received: from mga02.intel.com ([134.134.136.20]:6258 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750729AbaHVJ6c (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Aug 2014 05:58:32 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?U8O2cmVuIEJyaW5rbWFubg==?= <soren.brinkmann@xilinx.com>, Michal Simek <michal.simek@xilinx.com>
-Cc: Russell King <linux@arm.linux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Kumar Mahesh <mahesh.kumar.p@intel.com>, Alan Cox <alan@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---esr4mJLf5gHeHliFMEeGFxnVN8o1LmpJf
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+From: Kumar Mahesh <mahesh.kumar.p@intel.com>
 
-On 08/21/2014 09:02 PM, S=C3=B6ren Brinkmann wrote:
-> On Thu, 2014-08-21 at 02:28PM +0200, Michal Simek wrote:
->> On 08/20/2014 10:41 PM, Soren Brinkmann wrote:
->>> Match the naming pattern of all other SMP ops and rename
->>> zynq_platform_cpu_die --> zynq_cpu_die.
->>>
->>> Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
->>> ---
->>>  arch/arm/mach-zynq/platsmp.c | 4 ++--
->>>  1 file changed, 2 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/arch/arm/mach-zynq/platsmp.c b/arch/arm/mach-zynq/platsm=
-p.c
->>> index 04e578718aa2..95933c5e70e1 100644
->>> --- a/arch/arm/mach-zynq/platsmp.c
->>> +++ b/arch/arm/mach-zynq/platsmp.c
->>> @@ -138,7 +138,7 @@ static int zynq_cpu_kill(unsigned cpu)
->>>   *
->>>   * Called with IRQs disabled
->>>   */
->>> -static void zynq_platform_cpu_die(unsigned int cpu)
->>> +static void zynq_cpu_die(unsigned int cpu)
->>>  {
+Braswell is a successor of Intel Baytrail but has slighly different CPU
+idle values and latencies.
 
-Sorry for incorrect place - I mean to use kernel-doc here not below. :-)
+Signed-off-by: Kumar Mahesh <mahesh.kumar.p@intel.com>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+---
+ drivers/idle/intel_idle.c | 58 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
 
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 9b7ee7e427df..ae6f9f1cb700 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -536,6 +536,59 @@ static struct cpuidle_state atom_cstates[] = {
+ 	{
+ 		.enter = NULL }
+ };
++
++static struct cpuidle_state chv_cstates[CPUIDLE_STATE_MAX] = {
++	{ /* MWAIT C1 */
++		.name = "C1-ATM",
++		.desc = "MWAIT 0x00",
++		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
++		.exit_latency = 1,
++		.target_residency = 4,
++		.enter = &intel_idle },
++	{ /* MWAIT C4 */
++		.name = "C4-ATM",
++		.desc = "MWAIT 0x30",
++		.flags = MWAIT2flg(0x30) | CPUIDLE_FLAG_TIME_VALID
++						| CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 100,
++		.target_residency = 400,
++		.enter = &intel_idle },
++	{ /* MWAIT C6 */
++		.name = "C6-ATM",
++		.desc = "MWAIT 0x52",
++		.flags = MWAIT2flg(0x52) | CPUIDLE_FLAG_TIME_VALID
++						| CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 140,
++		.target_residency = 560,
++		.enter = &intel_idle },
++	{ /* MWAIT C7-S0i1 */
++		.name = "S0i1-ATM",
++		.desc = "MWAIT 0x60",
++		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TIME_VALID
++						| CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 1200,
++		.target_residency = 4000,
++		.enter = &intel_idle },
++	{ /* MWAIT C8-S0i2 */
++		.name = "S0i2-ATM",
++		.desc = "MWAIT 0x62",
++		.flags = MWAIT2flg(0x62) | CPUIDLE_FLAG_TIME_VALID
++						| CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 2000,
++		.target_residency = 8000,
++		.enter = &intel_idle },
++	{ /* MWAIT C9-S0i3 */
++		.name = "S0i3-ATM",
++		.desc = "MWAIT 0x64",
++		.flags = MWAIT2flg(0x64) | CPUIDLE_FLAG_TIME_VALID
++						| CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 10000,
++		.target_residency = 20000,
++		.enter = &intel_idle },
++	{
++		.enter = NULL }
++};
++
+ static struct cpuidle_state avn_cstates[] = {
+ 	{
+ 		.name = "C1-AVN",
+@@ -702,6 +755,10 @@ static const struct idle_cpu idle_cpu_avn = {
+ 	.disable_promotion_to_c1e = true,
+ };
+ 
++static const struct idle_cpu idle_cpu_chv = {
++	.state_table = chv_cstates,
++};
++
+ #define ICPU(model, cpu) \
+ 	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_MWAIT, (unsigned long)&cpu }
+ 
+@@ -725,6 +782,7 @@ static const struct x86_cpu_id intel_idle_ids[] = {
+ 	ICPU(0x3f, idle_cpu_hsw),
+ 	ICPU(0x45, idle_cpu_hsw),
+ 	ICPU(0x46, idle_cpu_hsw),
++	ICPU(0x4c, idle_cpu_chv),
+ 	ICPU(0x4d, idle_cpu_avn),
+ 	ICPU(0x3d, idle_cpu_bdw),
+ 	ICPU(0x4f, idle_cpu_bdw),
+-- 
+2.1.0
 
->>>  	zynq_slcr_cpu_state_write(cpu, true);
->>> =20
->>> @@ -158,7 +158,7 @@ struct smp_operations zynq_smp_ops __initdata =3D=
- {
->>>  	.smp_boot_secondary	=3D zynq_boot_secondary,
->>>  	.smp_secondary_init	=3D zynq_secondary_init,
->>>  #ifdef CONFIG_HOTPLUG_CPU
->>> -	.cpu_die		=3D zynq_platform_cpu_die,
->>> +	.cpu_die		=3D zynq_cpu_die,
->>>  	.cpu_kill		=3D zynq_cpu_kill,
->>>  #endif
->>>  };
->>
->> Will be good if you can move fix that kernel-doc format for this funct=
-ion
->> too. It is just nice to have thing.
->=20
-> All these SMP-ops should be documented in the header defining that
-> struct, shouldn't they?
-
-This struct is not necessary. I have added comment to wrong place.
-
-Thanks,
-Michal
-
---=20
-Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
-Maintainer of Linux kernel - Xilinx Zynq ARM architecture
-Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
-
-
-
---esr4mJLf5gHeHliFMEeGFxnVN8o1LmpJf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAlP22rEACgkQykllyylKDCGQQgCfbnYaZMHESzaMPiJsxT7s9LST
-eJgAn1gUeByYxo/JC1mXdS9b42LX9CjR
-=9+sD
------END PGP SIGNATURE-----
-
---esr4mJLf5gHeHliFMEeGFxnVN8o1LmpJf--
