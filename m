@@ -1,195 +1,102 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v3 9/9] ARM: exynos: Move to generic PM domain DT bindings
-Date: Thu,  4 Sep 2014 15:52:36 +0200
-Message-ID: <1409838756-31963-10-git-send-email-ulf.hansson@linaro.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 1/9] ACPI / PM: Let acpi_dev_pm_detach() return an
+ error code
+Date: Sun, 24 Aug 2014 00:45:15 +0200
+Message-ID: <20140823224515.GA19046@xo-6d-61-c0.localdomain>
 References: <1409838756-31963-1-git-send-email-ulf.hansson@linaro.org>
+ <1409838756-31963-2-git-send-email-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f171.google.com ([209.85.217.171]:36585 "EHLO
-	mail-lb0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753048AbaIDNxN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 09:53:13 -0400
-Received: by mail-lb0-f171.google.com with SMTP id 10so2872465lbg.2
-        for <linux-pm@vger.kernel.org>; Thu, 04 Sep 2014 06:53:12 -0700 (PDT)
-In-Reply-To: <1409838756-31963-1-git-send-email-ulf.hansson@linaro.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35040 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753991AbaIDPbj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 11:31:39 -0400
+Content-Disposition: inline
+In-Reply-To: <1409838756-31963-2-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Tomasz Figa <t.figa@samsung.com>, linux-samsung-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>
 
-From: Tomasz Figa <t.figa@samsung.com>
+On Thu 2014-09-04 15:52:28, Ulf Hansson wrote:
+> To give callers the option of acting on a errors while removing the
+> pm_domain ops for the device in the ACPI PM domain, let
+> acpi_dev_pm_detach() return an int to provide the error code.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
 
-This patch moves Exynos PM domain code to use the new generic PM domain
-look-up framework introduced in previous patches, thus also allowing
-the new code to be compiled with CONFIG_ARCH_EXYNOS.
+Acked-by: Pavel Machek <Pavel@ucw.cz>
 
-Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-[Ulf:Rebased and resolved conflicts]
----
- .../bindings/arm/exynos/power_domain.txt           | 13 ++--
- arch/arm/mach-exynos/pm_domains.c                  | 78 +---------------------
- kernel/power/Kconfig                               |  2 +-
- 3 files changed, 8 insertions(+), 85 deletions(-)
+> ---
+>  drivers/acpi/device_pm.c | 8 +++++++-
+>  include/linux/acpi.h     | 7 +++++--
+>  2 files changed, 12 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+> index 67075f8..0d52ce1 100644
+> --- a/drivers/acpi/device_pm.c
+> +++ b/drivers/acpi/device_pm.c
+> @@ -1055,6 +1055,8 @@ static struct dev_pm_domain acpi_general_pm_domain = {
+>   *
+>   * Callers must ensure proper synchronization of this function with power
+>   * management callbacks.
+> + *
+> + * Returns 0 on successfully attached PM domain or negative error code.
+>   */
+>  int acpi_dev_pm_attach(struct device *dev, bool power_on)
+>  {
+> @@ -1087,8 +1089,10 @@ EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
+>   *
+>   * Callers must ensure proper synchronization of this function with power
+>   * management callbacks.
+> + *
+> + * Returns 0 on successfully detached PM domain or negative error code.
+>   */
+> -void acpi_dev_pm_detach(struct device *dev, bool power_off)
+> +int acpi_dev_pm_detach(struct device *dev, bool power_off)
+>  {
+>  	struct acpi_device *adev = ACPI_COMPANION(dev);
+>  
+> @@ -1107,7 +1111,9 @@ void acpi_dev_pm_detach(struct device *dev, bool power_off)
+>  			acpi_device_wakeup(adev, ACPI_STATE_S0, false);
+>  			acpi_dev_pm_low_power(dev, adev, ACPI_STATE_S0);
+>  		}
+> +		return 0;
+>  	}
+> +	return -EINVAL;
+>  }
+>  EXPORT_SYMBOL_GPL(acpi_dev_pm_detach);
+>  #endif /* CONFIG_PM */
+> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> index 807cbc4..c83cca5 100644
+> --- a/include/linux/acpi.h
+> +++ b/include/linux/acpi.h
+> @@ -587,7 +587,7 @@ static inline int acpi_subsys_freeze(struct device *dev) { return 0; }
+>  #if defined(CONFIG_ACPI) && defined(CONFIG_PM)
+>  struct acpi_device *acpi_dev_pm_get_node(struct device *dev);
+>  int acpi_dev_pm_attach(struct device *dev, bool power_on);
+> -void acpi_dev_pm_detach(struct device *dev, bool power_off);
+> +int acpi_dev_pm_detach(struct device *dev, bool power_off);
+>  #else
+>  static inline struct acpi_device *acpi_dev_pm_get_node(struct device *dev)
+>  {
+> @@ -597,7 +597,10 @@ static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
+>  {
+>  	return -ENODEV;
+>  }
+> -static inline void acpi_dev_pm_detach(struct device *dev, bool power_off) {}
+> +static inline int acpi_dev_pm_detach(struct device *dev, bool power_off)
+> +{
+> +	return -ENODEV;
+> +}
+>  #endif
+>  
+>  #ifdef CONFIG_ACPI
+> -- 
+> 1.9.1
 
-diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-index 8b4f7b7f..abde1ea 100644
---- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-+++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-@@ -8,6 +8,8 @@ Required Properties:
-     * samsung,exynos4210-pd - for exynos4210 type power domain.
- - reg: physical base address of the controller and length of memory mapped
-     region.
-+- #power-domain-cells: number of cells in power domain specifier;
-+    must be 0.
- 
- Optional Properties:
- - clocks: List of clock handles. The parent clocks of the input clocks to the
-@@ -29,6 +31,7 @@ Example:
- 	lcd0: power-domain-lcd0 {
- 		compatible = "samsung,exynos4210-pd";
- 		reg = <0x10023C00 0x10>;
-+		#power-domain-cells = <0>;
- 	};
- 
- 	mfc_pd: power-domain@10044060 {
-@@ -37,12 +40,8 @@ Example:
- 		clocks = <&clock CLK_FIN_PLL>, <&clock CLK_MOUT_SW_ACLK333>,
- 			<&clock CLK_MOUT_USER_ACLK333>;
- 		clock-names = "oscclk", "pclk0", "clk0";
-+		#power-domain-cells = <0>;
- 	};
- 
--Example of the node using power domain:
--
--	node {
--		/* ... */
--		samsung,power-domain = <&lcd0>;
--		/* ... */
--	};
-+See Documentation/devicetree/bindings/power/power_domain.txt for description
-+of consumer-side bindings.
-diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
-index fd76e1b..20f2671 100644
---- a/arch/arm/mach-exynos/pm_domains.c
-+++ b/arch/arm/mach-exynos/pm_domains.c
-@@ -105,78 +105,6 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
- 	return exynos_pd_power(domain, false);
- }
- 
--static void exynos_add_device_to_domain(struct exynos_pm_domain *pd,
--					 struct device *dev)
--{
--	int ret;
--
--	dev_dbg(dev, "adding to power domain %s\n", pd->pd.name);
--
--	while (1) {
--		ret = pm_genpd_add_device(&pd->pd, dev);
--		if (ret != -EAGAIN)
--			break;
--		cond_resched();
--	}
--
--	pm_genpd_dev_need_restore(dev, true);
--}
--
--static void exynos_remove_device_from_domain(struct device *dev)
--{
--	struct generic_pm_domain *genpd = dev_to_genpd(dev);
--	int ret;
--
--	dev_dbg(dev, "removing from power domain %s\n", genpd->name);
--
--	while (1) {
--		ret = pm_genpd_remove_device(genpd, dev);
--		if (ret != -EAGAIN)
--			break;
--		cond_resched();
--	}
--}
--
--static void exynos_read_domain_from_dt(struct device *dev)
--{
--	struct platform_device *pd_pdev;
--	struct exynos_pm_domain *pd;
--	struct device_node *node;
--
--	node = of_parse_phandle(dev->of_node, "samsung,power-domain", 0);
--	if (!node)
--		return;
--	pd_pdev = of_find_device_by_node(node);
--	if (!pd_pdev)
--		return;
--	pd = platform_get_drvdata(pd_pdev);
--	exynos_add_device_to_domain(pd, dev);
--}
--
--static int exynos_pm_notifier_call(struct notifier_block *nb,
--				    unsigned long event, void *data)
--{
--	struct device *dev = data;
--
--	switch (event) {
--	case BUS_NOTIFY_BIND_DRIVER:
--		if (dev->of_node)
--			exynos_read_domain_from_dt(dev);
--
--		break;
--
--	case BUS_NOTIFY_UNBOUND_DRIVER:
--		exynos_remove_device_from_domain(dev);
--
--		break;
--	}
--	return NOTIFY_DONE;
--}
--
--static struct notifier_block platform_nb = {
--	.notifier_call = exynos_pm_notifier_call,
--};
--
- static __init int exynos4_pm_init_power_domain(void)
- {
- 	struct platform_device *pdev;
-@@ -202,7 +130,6 @@ static __init int exynos4_pm_init_power_domain(void)
- 		pd->base = of_iomap(np, 0);
- 		pd->pd.power_off = exynos_pd_power_off;
- 		pd->pd.power_on = exynos_pd_power_on;
--		pd->pd.of_node = np;
- 
- 		pd->oscclk = clk_get(dev, "oscclk");
- 		if (IS_ERR(pd->oscclk))
-@@ -228,15 +155,12 @@ static __init int exynos4_pm_init_power_domain(void)
- 			clk_put(pd->oscclk);
- 
- no_clk:
--		platform_set_drvdata(pdev, pd);
--
- 		on = __raw_readl(pd->base + 0x4) & INT_LOCAL_PWR_EN;
- 
- 		pm_genpd_init(&pd->pd, NULL, !on);
-+		of_genpd_add_provider_simple(np, &pd->pd);
- 	}
- 
--	bus_register_notifier(&platform_bus_type, &platform_nb);
--
- 	return 0;
- }
- arch_initcall(exynos4_pm_init_power_domain);
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 897619b..bbef57f 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -304,7 +304,7 @@ config PM_GENERIC_DOMAINS_RUNTIME
- 
- config PM_GENERIC_DOMAINS_OF
- 	def_bool y
--	depends on PM_GENERIC_DOMAINS && OF && !ARCH_EXYNOS
-+	depends on PM_GENERIC_DOMAINS && OF
- 
- config CPU_PM
- 	bool
 -- 
-1.9.1
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
