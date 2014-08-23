@@ -1,15 +1,14 @@
 From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH v7 00/11] kernel: Add support for restart handler call
- chain
-Date: Sun, 24 Aug 2014 01:00:33 +0200
-Message-ID: <1868939.JnM9WCSHq4@diego>
-References: <1408495538-27480-1-git-send-email-linux@roeck-us.net>
- <20140823163505.GA25900@roeck-us.net>
+Subject: Re: [PATCH 1/2] dt-bindings: document Rockchip thermal
+Date: Sun, 24 Aug 2014 01:03:05 +0200
+Message-ID: <1504889.nDzfjZj9xp@diego>
+References: <1408752934-18318-1-git-send-email-caesar.wang@rock-chips.com>
+ <1408752934-18318-2-git-send-email-caesar.wang@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140823163505.GA25900@roeck-us.net>
+In-Reply-To: <1408752934-18318-2-git-send-email-caesar.wang@rock-chips.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,99 +18,82 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-samsung-soc@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, linux-watchdog@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Wim Van Sebroeck <wim@iguana.be>, Andrew Morton <akpm@linux-foundation.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+To: Caesar Wang <caesar.wang@rock-chips.com>
+Cc: huangtao@rock-chips.com, devicetree@vger.kernel.org, addy.ke@rock-chips.com, grant.linkely@linaro.org, xjq@rock-chips.com, linux-pm@vger.kernel.org, rdunlap@infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dianders@chromium.org, eduardo.valentin@ti.com, zyw@rock-chips.com, robh+dt@kernel.org, cf@rock-chips.com, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org, zhaoyifeng <zyf@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-Am Samstag, 23. August 2014, 09:35:05 schrieb Guenter Roeck:
-> On Tue, Aug 19, 2014 at 05:45:27PM -0700, Guenter Roeck wrote:
-> > Various drivers implement architecture and/or device specific means
-> > to restart (reset) the system. Various mechanisms have been implemented
-> > to support those schemes. The best known mechanism is arm_pm_restart,
-> > which is a function pointer to be set either from platform specific code
-> > or from drivers. Another mechanism is to use hardware watchdogs to issue
-> > a reset; this mechanism is used if there is no other method available
-> > to reset a board or system. Two examples are alim7101_wdt, which currently
-> > uses the reboot notifier to trigger a reset, and moxart_wdt, which
-> > registers the arm_pm_restart function. Several other restart drivers for
-> > arm, all directly calling arm_pm_restart, are in the process of being
-> > integrated into the kernel. All those drivers would benefit from the new
-> > API.
-> > 
-> > The existing mechanisms have a number of drawbacks. Typically only one
-> > scheme to restart the system is supported (at least if arm_pm_restart is
-> > used). At least in theory there can be multiple means to restart the
-> > system, some of which may be less desirable (for example one mechanism
-> > may only reset the CPU, while another may reset the entire system). Using
-> > arm_pm_restart can also be racy if the function pointer is set from a
-> > driver, as the driver may be in the process of being unloaded when
-> > arm_pm_restart is called.
-> > Using the reboot notifier is always racy, as it is unknown if and when
-> > other functions using the reboot notifier have completed execution
-> > by the time the watchdog fires.
-> > 
-> > Introduce a system restart handler call chain to solve the described
-> > problems. This call chain is expected to be executed from the
-> > architecture specific machine_restart() function. Drivers providing
-> > system restart functionality (such as the watchdog drivers mentioned
-> > above) are expected to register with this call chain. By using the
-> > priority field in the notifier block, callers can control restart handler
-> > execution sequence and thus ensure that the restart handler with the
-> > optimal restart capabilities for a given system is called first.
-> > 
-> > Since the first revision of this patchset, a number of separate patch
-> > submissions have been made which either depend on it or could make use of
-> > it.
-> > 
-> > http://www.spinics.net/linux/lists/arm-kernel/msg344796.html
-> > 
-> > 	registers three notifiers.
-> > 
-> > https://lkml.org/lkml/2014/7/8/962
-> > 
-> > 	would benefit from it.
-> > 
-> > Patch 1 of this series implements the restart handler function. Patches 2
-> > and 3 implement calling the restart handler chain from arm and arm64
-> > restart code.
-> > 
-> > Patch 4 modifies the restart-poweroff driver to no longer call
-> > arm_pm_restart directly but machine_restart. This is done to avoid
-> > calling arm_pm_restart from more than one place. The change makes the
-> > driver architecture independent, so it would be possible to drop the arm
-> > dependency from its Kconfig entry.
-> > 
-> > Patch 5 and 6 convert existing restart handlers in the watchdog subsystem
-> > to use the restart handler. Patch 7 unexports arm_pm_restart to ensure
-> > that no one gets the idea to implement a restart handler as module.
-> > 
-> > The entire patch series, including additional patches depending on it,
-> > is available from
-> > https://git.kernel.org/cgit/linux/kernel/git/groeck/linux-staging.git/
-> > in branch 'restart-staging'.
-> 
-> Hi Andrew,
-> 
-> I think this series is ready for upstream integration. Question now
-> is how we should proceed to get it actually integrated.
-> 
-> I can see a number of options:
-> - You take patch #1, the rest goes in through maintainer trees.
+Hi Caesar,
 
-I don't think you can split the patches like this. Patch1 introduces 
-(un)register_restart_handler functions used by later patches in the series. 
-You therefore cannot really split the series, as otherwise you would get build 
-failures in the individual trees.
+Am Samstag, 23. August 2014, 08:15:33 schrieb Caesar Wang:
+> This add the necessary binding documentation for the thermal
+> found on Rockchip SoCs
+> 
+> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
+> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+> ---
+>  .../bindings/thermal/rockchip-thermal.txt          |   33
+> ++++++++++++++++++++ 1 file changed, 33 insertions(+)
+>  create mode 100644
+> Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt new file
+> mode 100644
+> index 0000000..b556eae
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+> @@ -0,0 +1,33 @@
+> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
+> +
+> +Required properties:
+> +- compatible : "rockchip,rk3288-tsadc"
+> +- reg : physical base address of the controller and length of memory mapped
+> +  region.
+> +- interrupts : The interrupt number to the cpu. The interrupt specifier
+> format +  depends on the interrupt controller.
+> +- clocks : Must contain an entry for each entry in clock-names.
+> +- clock-names : Shall be "tsadc_clk" for the transfer-clock, and
+> "tsadc_pclk" for +    the peripheral clock.
+> +Optional properties:
+> +- clock-frequency : Thermal sensor's clock frequency.
+
+see comment in patch2, this should probably use assigned-rate if at all 
+necessary (and the assigned-rate is not necessary to document here)
+
+
+> +- pinctrl-names : Should contain only one value - "default".
+> +- pinctrl-0 : Should contain only one value - &tsadc_int.
+
+in general pinctrl settings are just board-specific settings and do not
+need to be part of the binding documentation.
+And in this case, are you sure that the tsadc uses some pin as interrupt?
+Because in the TRM the TS-ADC interrupt is number 69 of the GIC itself
+and not some pin accessible via pinctrl.
+
+
+> +- passive-temp : Temperature of trip 0.
+> +- critical-temp : Temperature of trip 1.
+> +- force-shut-temp : Temperature of force shut down.
+
+please use the generic trip-points described in
+Documentation/devicetree/bindings/thermal/thermal.txt
+for this, instead of defining new properties
 
 
 Heiko
 
-
-> - You take all patches after we get missing maintainer Acks.
-> - I send a pull request directly to Linus after we get missing
->   maintainer Acks.
-> 
-> What do you think would be the best way to proceed ?
-> 
-> Thanks,
-> Guenter
+> +Example:
+> +
+> +tsadc: tsadc@ff280000 {
+> +	compatible = "rockchip,rk3288-tsadc";
+> +	reg = <0xff280000 0x100>;
+> +	interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
+> +	clock-frequency = <10000>;
+> +	clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
+> +	clock-names = "tsadc_clk", "tsadc_pclk";
+> +	pinctrl-names = "default";
+> +	pinctrl-1 = <&tsadc_int>;
+> +	passive-temp = <80>;
+> +	critical-temp = <100>;
+> +	force-shut-temp = <120>;
+> +};
