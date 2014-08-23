@@ -1,63 +1,95 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH 1/2] dt-bindings: document Rockchip thermal
-Date: Sat, 23 Aug 2014 08:15:33 +0800
-Message-ID: <1408752934-18318-2-git-send-email-caesar.wang@rock-chips.com>
-References: <1408752934-18318-1-git-send-email-caesar.wang@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1408752934-18318-1-git-send-email-caesar.wang@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, eduardo.valentin@ti.com, rdunlap@infradead.org, heiko@sntech.de
-Cc: cf@rock-chips.com, grant.linkely@linaro.org, robh+dt@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, zyw@rock-chips.com, huangtao@rock-chips.com, xjq@rock-chips.com, addy.ke@rock-chips.com, dianders@chromium.org, Caesar Wang <caesar.wang@rock-chips.com>, zhaoyifeng <zyf@rock-chips.com>
+From: Sundar <sunder.svit@gmail.com>
+Subject: Re: [ANNOUNCE] (Resend) Tools to analyse PM and scheduling behaviour
+Date: Fri, 22 Aug 2014 19:14:46 -0700
+Message-ID: <CAMHCuPWeMwjJO+xzmQrZFmEMdx3+yF=zkove8brWX4rQiti50w@mail.gmail.com>
+References: <87mwb0fixy.fsf@matterhorn.verdurent.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f175.google.com ([209.85.217.175]:54405 "EHLO
+	mail-lb0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751733AbaHWCOt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Aug 2014 22:14:49 -0400
+In-Reply-To: <87mwb0fixy.fsf@matterhorn.verdurent.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul McKenney <Paul.McKenney@us.ibm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mike Turquette <mturquette@linaro.org>, Juri Lelli <juri.lelli@arm.com>, sched-tools@linaro.org, len.brown@intel.com, mark.gross@intel.com
 
-This add the necessary binding documentation for the thermal
-found on Rockchip SoCs
+Hi Amit,
 
-Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
-Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
----
- .../bindings/thermal/rockchip-thermal.txt          |   33 ++++++++++++++++++++
- 1 file changed, 33 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+On Tue, Aug 19, 2014 at 11:11 AM, Amit Kucheria
+<amit.kucheria@linaro.org> wrote:
+>
+> We=E2=80=99re soliciting early feedback from community on the directi=
+on of idlestat
 
-diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-new file mode 100644
-index 0000000..b556eae
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-@@ -0,0 +1,33 @@
-+* Temperature Sensor ADC (TSADC) on rockchip SoCs
-+
-+Required properties:
-+- compatible : "rockchip,rk3288-tsadc"
-+- reg : physical base address of the controller and length of memory mapped
-+  region.
-+- interrupts : The interrupt number to the cpu. The interrupt specifier format
-+  depends on the interrupt controller.
-+- clocks : Must contain an entry for each entry in clock-names.
-+- clock-names : Shall be "tsadc_clk" for the transfer-clock, and "tsadc_pclk" for
-+    the peripheral clock.
-+Optional properties:
-+- clock-frequency : Thermal sensor's clock frequency.
-+- pinctrl-names : Should contain only one value - "default".
-+- pinctrl-0 : Should contain only one value - &tsadc_int.
-+- passive-temp : Temperature of trip 0.
-+- critical-temp : Temperature of trip 1.
-+- force-shut-temp : Temperature of force shut down.
-+Example:
-+
-+tsadc: tsadc@ff280000 {
-+	compatible = "rockchip,rk3288-tsadc";
-+	reg = <0xff280000 0x100>;
-+	interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-+	clock-frequency = <10000>;
-+	clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-+	clock-names = "tsadc_clk", "tsadc_pclk";
-+	pinctrl-names = "default";
-+	pinctrl-1 = <&tsadc_int>;
-+	passive-temp = <80>;
-+	critical-temp = <100>;
-+	force-shut-temp = <120>;
-+};
--- 
-1.7.9.5
+Nice :)
+
+> Idlestat Details
+> ----------------
+> Idlestat uses FTRACE to capture traces related to C-state and P-state
+> transitions of the CPU and wakeups (IRQ, IPI) on the system and then
+> post-processes the data to print statistics. It is designed to be use=
+d
+> non-interactively. Idlestat can deduce the idle time for a cluster as=
+ an
+> intersection between the idle times of all the cpus belonging to the =
+same
+> cluster. This data is useful to analyse and optimise scheduling behav=
+iour.
+> The tool will also list how many times the menu governor mis-predicts
+> target residency in a C-state.
+
+We discussed this in the energy aware scheduling workshop this week @
+the Kernel Summit. A few notes:
+
+1. We need to really understand the co-relation of this tool w.r.t
+actual hardware states.
+It is usually likely that the software "thinks" it is in a low power
+state, but the actual
+hardware might not be. What is the coverage for these kind of cases her=
+e.
+
+2. I understand that C/P states are a direct metric of how well the
+workload behaved w.r.t power;
+but I am not sure that relates to a direct measure of how the
+scheduler performed. The C/P states
+could be maintained whilst giving away performance or power at the
+expense of additional components
+on the SoC and platform like DDR IOs, fabric states etc.
+
+Quick Summary of what I discussed with Daniel @ the workshop about idle=
+stat:
+
+1. There might be usually platform specific tools to get residencies
+for P/C states.
+PowerTop & Turbostat are two that first come to mind. Any specific
+item apart from prediction logic
+that idlestat differs from these two?
+
+2. To me debugging performance or power, C/P states provide the
+direction that something is wrong.
+But they still dont tell me "what" is wrong "if" the issue is somehow
+in the kernel as opposed to a more
+easily fixable software code (traceable at hardware/software level for
+best optimizations). How do I
+conclude that my scheduler is the culprit apart from the points where
+it took a decision to select the
+right idle states based on predicted sleep times? In my opinion, that
+would boil down to if the scheduler
+was invoking too much load balancing calls, moving my threads across
+cores too much, data being
+thrashed across caches, cores too much etc.
+
+I think a tool for scheduler metrics must be based on more inner
+details like the above, finally culminating
+into C/P states. as opposed to C/P states being the metric to be relied=
+=2E
+
+Let me know your thoughts.
+
+Cheers!
+
+-- these are my personal thoughts and do not represent my employers'
