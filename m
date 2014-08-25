@@ -1,27 +1,42 @@
 From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH 0/3] Introduce of_match_machine() helper
-Date: Mon, 25 Aug 2014 11:45:38 -0600
-Message-ID: <53FB7642.1000808@wwwdotorg.org>
-References: <1407452515-2390-1-git-send-email-ttynkkynen@nvidia.com>
+Subject: Re: [PATCH v3 3/3] memory: tegra124-emc: Add EMC driver
+Date: Mon, 25 Aug 2014 11:52:53 -0600
+Message-ID: <53FB77F5.3010604@wwwdotorg.org>
+References: <1408437523-8542-1-git-send-email-tomeu.vizoso@collabora.com> <1408437523-8542-4-git-send-email-tomeu.vizoso@collabora.com> <20140819090314.GC7862@amd> <CAAObsKA+JofL3JANtdqAqGgtA3-x+GMQ0Ei7gMzmmWynP3U9Sg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:38447 "EHLO
+Received: from avon.wwwdotorg.org ([70.85.31.133]:48496 "EHLO
 	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933034AbaHYRpN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Aug 2014 13:45:13 -0400
-In-Reply-To: <1407452515-2390-1-git-send-email-ttynkkynen@nvidia.com>
+	with ESMTP id S932253AbaHYRw2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Aug 2014 13:52:28 -0400
+In-Reply-To: <CAAObsKA+JofL3JANtdqAqGgtA3-x+GMQ0Ei7gMzmmWynP3U9Sg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Pavel Machek <pavel@ucw.cz>, Thierry Reding <thierry.reding@gmail.com>
+Cc: linux-pm@vger.kernel.org, =?UTF-8?B?VGVyamUgQmVyZ3N0csO2bQ==?= <tbergstrom@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>
 
-On 08/07/2014 05:01 PM, Tuomas Tynkkynen wrote:
-> Some mach-specific drivers that don't require their own node in the device tree
-> (for example drivers/soc/*, cpufreq, cpuidle etc.) want to match on the device
-> tree root compatible property instead. Instead of open-coding (and forgetting
-> to call of_node_put on the root node) everywhere, add a helper to the OF core.
+On 08/19/2014 03:06 AM, Tomeu Vizoso wrote:
+> On 19 August 2014 11:03, Pavel Machek <pavel@ucw.cz> wrote:
+>> On Tue 2014-08-19 10:38:43, Tomeu Vizoso wrote:
+>>> Sets the EMC clock rate based on the bandwidth requirements registered by
+>>> memory clients through the PM_QOS_MEMORY_BANDWIDTH class.
+>>>
+>>> Note: this is just an example and not a proper driver for a external memory
+>>> controller. Its only purpose is to illustrate how such a driver
+>>> would set the
+>>
+>> So... you don't want this to be merged?
+>
+> Not really, there's quite some work left to do until we have a proper
+> EMC driver for Tegra124.
 
-Tuomas, I assume there will be a new version of this series to address 
-the review comments? For now, I'm not intending on applying this.
+Given that, the only patches in this series that should be merged touch 
+(a) pm_qos, (b) tegradrm. As such, I would suggest that patch 1 be 
+merged into the pm_qos tree in a standalone topic branch, and Thierry 
+can merge this into the Tegra tree and apply patch 2 when he's ready.
+
+Since patch 3 is the only patch that would normally go through the Tegra 
+tree, and patch 3 isn't to be applied yet, I don't intend on applying 
+any of these patches to the Tegra tree.
