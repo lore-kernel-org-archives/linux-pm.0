@@ -1,58 +1,89 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC] cpufreq: Add bindings for CPU clock sharing topology
-Date: Mon, 25 Aug 2014 12:35:44 +0530
-Message-ID: <CAKohpo=s9A_EtJ2d2E9sjVkR8xs-bgRisnk=jZUeyWEf3uP5gg@mail.gmail.com>
-References: <7e097b71342c9f5f63b07ff2e135eb7beb626aab.1405661369.git.viresh.kumar@linaro.org>
-	<CAOesGMhTkTEXp99gpU8cZBwYmiXpsySG5zMn6oSyo_Mf5PAiUg@mail.gmail.com>
-	<CAKohpo=MmoALOHg-=7cf0jm=OJO57TWQZQXqkRwhRwU-DGPMmA@mail.gmail.com>
-	<CAOesGMhuNzVtUkaUjF+JjNgHcgf08WiM0DG-kzwtcyUxkK_zow@mail.gmail.com>
-	<CAKohpokLqrydV3b=innvOWrW9ijXtZwPKdT5Ew65cjMxsY2Mvw@mail.gmail.com>
-	<53CA8D95.8010108@ti.com>
-	<CAKohpok-C+JCebjJkZExx6EjBctoyJF7fV71Vjj7bi1TAdXrFQ@mail.gmail.com>
-	<20140724003314.6419.51564@quantum>
-	<CABGGisxHxdTyh500ey+KVLV3EnfYZvtsCV=Nt4Nqu7p6KJOwdA@mail.gmail.com>
-	<CAKohpo=CqhA-TOfJh3U0G+tEMqvn_tiyWK=Yd6yNdAoDYQ-1BA@mail.gmail.com>
-	<20140725200214.22930.56323@quantum>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f173.google.com ([209.85.214.173]:55651 "EHLO
-	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753538AbaHYHFp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Aug 2014 03:05:45 -0400
-Received: by mail-ob0-f173.google.com with SMTP id vb8so10344081obc.32
-        for <linux-pm@vger.kernel.org>; Mon, 25 Aug 2014 00:05:44 -0700 (PDT)
-In-Reply-To: <20140725200214.22930.56323@quantum>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCHv4 3/4] thermal: exynos: Add support for TRIM_RELOAD feature at
+ Exynos3250
+Date: Mon, 25 Aug 2014 16:30:24 +0900
+Message-ID: <1408951825-2639-4-git-send-email-cw00.choi@samsung.com>
+References: <1408951825-2639-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1408951825-2639-1-git-send-email-cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: eduardo.valentin-l0cyMroinI0@public.gmane.org, amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+Cc: kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, ch.naveen-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mike.turquette@linaro.org>
-Cc: Rob Herring <rob.herring@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Olof Johansson <olof@lixom.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Grant Likely <grant.likely@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>
 
-On 26 July 2014 01:32, Mike Turquette <mike.turquette@linaro.org> wrote:
-> So my opinion is to figure out how to specify the shared-clock versus
-> independent-clock parameter it DT. I think the big issue here is the
-> topology semantics around the cpus node, and I'll stay out of that
-> stuff. But let's please not introduce a random API for a single merge
-> window and let's also not over-consolidate machine driver code just for
-> the sake of having fewer C files.
+This patch add support for TRIM_RELOAD feature at Exynos3250. The TMu of
+Exynos3250 has two TRIMINFO_CON register and must need to set RELOAD bit
+before reading TRIMINFO register.
 
-Returning almost after a month to this :(
+Signed-off-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Acked-by: Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Amit Daniel Kachhap <amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Reviewed-by: Amit Daniel Kachhap <amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+---
+ drivers/thermal/samsung/exynos_tmu_data.c | 11 +++++++++--
+ drivers/thermal/samsung/exynos_tmu_data.h |  7 +++++--
+ 2 files changed, 14 insertions(+), 4 deletions(-)
 
-- I agree that consolidation to cpufreq-cpu0 driver is good but adding a
-backend clk driver for that is bad. I would look around supporting callbacks
-to cpufreq-cpu0 driver. So that ->target()/->target_index() can be specified
-by platform drivers and rest of the code can be used. But that's the next
-problem to solve.
-
-- Back to the first issue. How do we sharing information from DT ?
-
-As I read them (and I may be wrong in understanding that), there were
-conflicting ideas from many..
-
-Can we please decide how we want to see these bindings? So, that I can
-implement them quickly and close this thread...
-
-Its just hanging in the middle as there wasn't a single clean solution yet.
+diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
+index 754c638..4006eb4 100644
+--- a/drivers/thermal/samsung/exynos_tmu_data.c
++++ b/drivers/thermal/samsung/exynos_tmu_data.c
+@@ -95,6 +95,11 @@ static const struct exynos_tmu_registers exynos3250_tmu_registers = {
+ 	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
+ 	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
+ 	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
++	.triminfo_ctrl[0] = EXYNOS_TMU_TRIMINFO_CON1,
++	.triminfo_ctrl[1] = EXYNOS_TMU_TRIMINFO_CON2,
++	.triminfo_ctrl_count = 2,
++	.triminfo_reload_shift = EXYNOS_TRIMINFO_RELOAD_SHIFT,
++	.triminfo_reload_mask = EXYNOS_TRIMINFO_RELOAD_MASK,
+ 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
+ 	.test_mux_addr_shift = EXYNOS4412_MUX_ADDR_SHIFT,
+ 	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
+@@ -161,7 +166,9 @@ static const struct exynos_tmu_registers exynos3250_tmu_registers = {
+ 	}, \
+ 	.freq_tab_count = 2, \
+ 	.registers = &exynos3250_tmu_registers, \
+-	.features = (TMU_SUPPORT_EMULATION | \
++	.triminfo_reload[0] = EXYNOS_TRIMINFO_RELOAD_ENABLE, \
++	.triminfo_reload[1] = EXYNOS_TRIMINFO_RELOAD_ENABLE, \
++	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
+ 			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
+ 			TMU_SUPPORT_EMUL_TIME)
+ #endif
+@@ -184,7 +191,7 @@ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
+ 	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
+ 	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
+ 	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
+-	.triminfo_ctrl[0] = EXYNOS_TMU_TRIMINFO_CON,
++	.triminfo_ctrl[0] = EXYNOS_TMU_TRIMINFO_CON2,
+ 	.triminfo_ctrl_count = 1,
+ 	.triminfo_reload_shift = EXYNOS_TRIMINFO_RELOAD_SHIFT,
+ 	.triminfo_reload_mask = EXYNOS_TRIMINFO_RELOAD_MASK,
+diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
+index 87454f63..f62fdde 100644
+--- a/drivers/thermal/samsung/exynos_tmu_data.h
++++ b/drivers/thermal/samsung/exynos_tmu_data.h
+@@ -57,8 +57,11 @@
+ #define EXYNOS4210_TMU_TRIG_LEVEL_MASK	0x1111
+ #define EXYNOS4210_TMU_INTCLEAR_VAL	0x1111
+ 
+-/* Exynos5250 and Exynos4412 specific registers */
+-#define EXYNOS_TMU_TRIMINFO_CON	0x14
++/*  Exynos3250 specific registers */
++#define EXYNOS_TMU_TRIMINFO_CON1	0x10
++
++/* Exynos5250 ,Exynos4412 and Exynos3250 specific registers */
++#define EXYNOS_TMU_TRIMINFO_CON2	0x14
+ #define EXYNOS_THD_TEMP_RISE		0x50
+ #define EXYNOS_THD_TEMP_FALL		0x54
+ #define EXYNOS_EMUL_CON		0x80
+-- 
+1.8.0
 
 --
-viresh
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
