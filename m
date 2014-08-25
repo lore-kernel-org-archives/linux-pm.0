@@ -1,218 +1,94 @@
 From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH 1/9] powerpc/powernv: Enable Offline CPUs to enter deep idle states
-Date: Mon, 25 Aug 2014 23:31:05 +0530
-Message-ID: <1408989673-14137-2-git-send-email-shreyas@linux.vnet.ibm.com>
+Subject: [PATCH 2/9] cpuidle/powernv: Populate cpuidle state details by querying the device-tree
+Date: Mon, 25 Aug 2014 23:31:06 +0530
+Message-ID: <1408989673-14137-3-git-send-email-shreyas@linux.vnet.ibm.com>
 References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: "Srivatsa S. Bhat" <srivatsa@MIT.EDU>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: "Srivatsa S. Bhat" <srivatsa@MIT.EDU>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-The offline cpus should enter deep idle states so as to gain maximum
-powersavings when the entire core is offline. To do so the offline path
-must be made aware of the available deepest idle state. Hence probe the
-device tree for the possible idle states in powernv core code and
-expose the deepest idle state through flags.
+We hard code the metrics relevant for cpuidle states in the kernel today.
+Instead pick them up from the device tree so that they remain relevant
+and updated for the system that the kernel is running on.
 
-Since the  device tree is probed by the cpuidle driver as well, move
-the parameters required to discover the idle states into an appropriate
-common place to both the driver and the powernv core code.
-
-Another point is that fastsleep idle state may require workarounds in
-the kernel to function properly. This workaround is introduced in the
-subsequent patches. However neither the cpuidle driver or the hotplug
-path need be bothered about this workaround.
-
-They will be taken care of by the core powernv code.
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
 Cc: linux-pm@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Srivatsa S. Bhat <srivatsa@MIT.EDU>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-[ Changelog modified by preeti@linux.vnet.ibm.com ]
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: devicetree@vger.kernel.org
 Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal.h          |  4 +++
- arch/powerpc/platforms/powernv/powernv.h |  7 +++++
- arch/powerpc/platforms/powernv/setup.c   | 51 ++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/smp.c     | 11 ++++++-
- drivers/cpuidle/cpuidle-powernv.c        |  7 ++---
- 5 files changed, 75 insertions(+), 5 deletions(-)
+ drivers/cpuidle/cpuidle-powernv.c | 27 ++++++++++++++++++++++-----
+ 1 file changed, 22 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 86055e5..28b8342 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -772,6 +772,10 @@ extern struct kobject *opal_kobj;
- /* /ibm,opal */
- extern struct device_node *opal_node;
- 
-+/* Flags used for idle state discovery from the device tree */
-+#define IDLE_INST_NAP	0x00010000 /* nap instruction can be used */
-+#define IDLE_INST_SLEEP	0x00020000 /* sleep instruction can be used */
-+
- /* API functions */
- int64_t opal_invalid_call(void);
- int64_t opal_console_write(int64_t term_number, __be64 *length,
-diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
-index 75501bf..31ece13 100644
---- a/arch/powerpc/platforms/powernv/powernv.h
-+++ b/arch/powerpc/platforms/powernv/powernv.h
-@@ -23,6 +23,13 @@ static inline int pnv_pci_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
- }
- #endif
- 
-+/* Flags to indicate which of the CPU idle states are available for use */
-+
-+#define IDLE_USE_NAP		(1UL << 0)
-+#define IDLE_USE_SLEEP		(1UL << 1)
-+
-+extern unsigned int pnv_get_supported_cpuidle_states(void);
-+
- extern void pnv_lpc_init(void);
- 
- bool cpu_core_split_required(void);
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 5a0e2dc..2dca1d8 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -282,6 +282,57 @@ static void __init pnv_setup_machdep_rtas(void)
- }
- #endif /* CONFIG_PPC_POWERNV_RTAS */
- 
-+static unsigned int supported_cpuidle_states;
-+
-+unsigned int pnv_get_supported_cpuidle_states(void)
-+{
-+	return supported_cpuidle_states;
-+}
-+
-+static int __init pnv_probe_idle_states(void)
-+{
-+	struct device_node *power_mgt;
-+	struct property *prop;
-+	int dt_idle_states;
-+	u32 *flags;
-+	int i;
-+
-+	supported_cpuidle_states = 0;
-+
-+	if (cpuidle_disable != IDLE_NO_OVERRIDE)
-+		return 0;
-+
-+	if (!firmware_has_feature(FW_FEATURE_OPALv3))
-+		return 0;
-+
-+	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
-+	if (!power_mgt) {
-+		pr_warn("opal: PowerMgmt Node not found\n");
-+		return 0;
-+	}
-+
-+	prop = of_find_property(power_mgt, "ibm,cpu-idle-state-flags", NULL);
-+	if (!prop) {
-+		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
-+		return 0;
-+	}
-+
-+	dt_idle_states = prop->length / sizeof(u32);
-+	flags = (u32 *) prop->value;
-+
-+	for (i = 0; i < dt_idle_states; i++) {
-+		if (flags[i] & IDLE_INST_NAP)
-+			supported_cpuidle_states |= IDLE_USE_NAP;
-+
-+		if (flags[i] & IDLE_INST_SLEEP)
-+			supported_cpuidle_states |= IDLE_USE_SLEEP;
-+	}
-+
-+	return 0;
-+}
-+
-+subsys_initcall(pnv_probe_idle_states);
-+
- static int __init pnv_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 5fcfcf4..3ad31d2 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -149,6 +149,7 @@ static int pnv_smp_cpu_disable(void)
- static void pnv_smp_cpu_kill_self(void)
- {
- 	unsigned int cpu;
-+	unsigned long idle_states;
- 
- 	/* Standard hot unplug procedure */
- 	local_irq_disable();
-@@ -159,13 +160,21 @@ static void pnv_smp_cpu_kill_self(void)
- 	generic_set_cpu_dead(cpu);
- 	smp_wmb();
- 
-+	idle_states = pnv_get_supported_cpuidle_states();
-+
- 	/* We don't want to take decrementer interrupts while we are offline,
- 	 * so clear LPCR:PECE1. We keep PECE2 enabled.
- 	 */
- 	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
- 	while (!generic_check_cpu_restart(cpu)) {
- 		ppc64_runlatch_off();
--		power7_nap(1);
-+
-+		/* If sleep is supported, go to sleep, instead of nap */
-+		if (idle_states & IDLE_USE_SLEEP)
-+			power7_sleep();
-+		else
-+			power7_nap(1);
-+
- 		ppc64_runlatch_on();
- 
- 		/* Reenable IRQs briefly to clear the IPI that woke us */
 diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index a64be57..23d2743 100644
+index 23d2743..3ceff53 100644
 --- a/drivers/cpuidle/cpuidle-powernv.c
 +++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -16,13 +16,12 @@
+@@ -162,7 +162,8 @@ static int powernv_add_idle_states(void)
+ 	int nr_idle_states = 1; /* Snooze */
+ 	int dt_idle_states;
+ 	const __be32 *idle_state_flags;
+-	u32 len_flags, flags;
++	const __be32 *idle_state_latency;
++	u32 len_flags, flags, latency_ns;
+ 	int i;
  
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-+#include <asm/opal.h>
- #include <asm/runlatch.h>
+ 	/* Currently we have snooze statically defined */
+@@ -178,19 +179,33 @@ static int powernv_add_idle_states(void)
+ 		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
+ 		return nr_idle_states;
+ 	}
++	idle_state_latency = of_get_property(power_mgt,
++			"ibm,cpu-idle-state-latencies-ns", NULL);
++	if (!idle_state_latency) {
++		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
++		return nr_idle_states;
++	}
  
- /* Flags and constants used in PowerNV platform */
+ 	dt_idle_states = len_flags / sizeof(u32);
  
- #define MAX_POWERNV_IDLE_STATES	8
--#define IDLE_USE_INST_NAP	0x00010000 /* Use nap instruction */
--#define IDLE_USE_INST_SLEEP	0x00020000 /* Use sleep instruction */
- 
- struct cpuidle_driver powernv_idle_driver = {
- 	.name             = "powernv_idle",
-@@ -185,7 +184,7 @@ static int powernv_add_idle_states(void)
  	for (i = 0; i < dt_idle_states; i++) {
  
  		flags = be32_to_cpu(idle_state_flags[i]);
--		if (flags & IDLE_USE_INST_NAP) {
-+		if (flags & IDLE_INST_NAP) {
++
++		/* Cpuidle accepts exit_latency in us and we estimate best case
++		 * target residency to be 10x exit_latency
++		 */
++		latency_ns = be32_to_cpu(idle_state_latency[i]);
++
+ 		if (flags & IDLE_INST_NAP) {
  			/* Add NAP state */
  			strcpy(powernv_states[nr_idle_states].name, "Nap");
  			strcpy(powernv_states[nr_idle_states].desc, "Nap");
-@@ -196,7 +195,7 @@ static int powernv_add_idle_states(void)
+ 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
+-			powernv_states[nr_idle_states].exit_latency = 10;
+-			powernv_states[nr_idle_states].target_residency = 100;
++			powernv_states[nr_idle_states].exit_latency =
++					((unsigned int)latency_ns) / 1000;
++			powernv_states[nr_idle_states].target_residency =
++					((unsigned int)latency_ns / 100);
+ 			powernv_states[nr_idle_states].enter = &nap_loop;
  			nr_idle_states++;
  		}
- 
--		if (flags & IDLE_USE_INST_SLEEP) {
-+		if (flags & IDLE_INST_SLEEP) {
- 			/* Add FASTSLEEP state */
- 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+@@ -201,8 +216,10 @@ static int powernv_add_idle_states(void)
  			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
+ 			powernv_states[nr_idle_states].flags =
+ 				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
+-			powernv_states[nr_idle_states].exit_latency = 300;
+-			powernv_states[nr_idle_states].target_residency = 1000000;
++			powernv_states[nr_idle_states].exit_latency =
++					((unsigned int)latency_ns) / 1000;
++			powernv_states[nr_idle_states].target_residency =
++					((unsigned int)latency_ns / 100);
+ 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
+ 			nr_idle_states++;
+ 		}
 -- 
 1.9.0
