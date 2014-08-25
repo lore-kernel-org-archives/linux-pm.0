@@ -1,133 +1,112 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCHv4 2/4] thermal: exynos: Add support for many TRIMINFO_CTRL
- registers
-Date: Mon, 25 Aug 2014 20:49:16 +0900
-Message-ID: <53FB22BC.2000609@samsung.com>
-References: <1408951825-2639-1-git-send-email-cw00.choi@samsung.com>
- <5071235.4ralWIzmJe@amdc1032> <53FB11E5.2070503@samsung.com>
- <13170930.3cdcLOtxou@amdc1032>
+From: Chander Kashyap <k.chander@samsung.com>
+Subject: Re: [PATCH v9 4/6] ARM: Exynos: switch to using generic cpufreq
+ driver for Exynos4210/5250/5420
+Date: Mon, 25 Aug 2014 17:45:07 +0530
+Message-ID: <CADWw7OgAS-z-UOrJU-hL2fzuefJmLtCTg57jYk2Df7f5KfLJmA@mail.gmail.com>
+References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
+	<1406707663-16656-5-git-send-email-thomas.ab@samsung.com>
+	<53DA8BB9.6020702@samsung.com>
+	<53DA8D85.3050106@gmail.com>
+	<7hbnrc6px3.fsf@paris.lan>
+	<53F7DA13.6090305@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <13170930.3cdcLOtxou@amdc1032>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-arm-kernel@lists.infradead.org, eduardo.valentin@ti.com, amit.daniel@samsung.com, rui.zhang@intel.com, mark.rutland@arm.com, devicetree@vger.kernel.org, kgene.kim@samsung.com, pawel.moll@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, linux-samsung-soc@vger.kernel.org, kyungmin.park@samsung.com, robh+dt@kernel.org, galak@codeaurora.org, ch.naveen@samsung.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f52.google.com ([209.85.218.52]:50125 "EHLO
+	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752959AbaHYMPI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Aug 2014 08:15:08 -0400
+In-Reply-To: <53F7DA13.6090305@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Kevin Hilman <khilman@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, amit.kucheria@linaro.org, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linaro-kernel@lists.linaro.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-On 08/25/2014 08:19 PM, Bartlomiej Zolnierkiewicz wrote:
-> On Monday, August 25, 2014 07:37:25 PM Chanwoo Choi wrote:
->> Hi Bartlomiej,
+Hi Kevin, Tomasz,
+
+On Sat, Aug 23, 2014 at 5:32 AM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+> Hi Kevin,
+>
+> Thanks for taking a look at this.
+>
+> On 23.08.2014 01:54, Kevin Hilman wrote:
+>> Tomasz Figa <tomasz.figa@gmail.com> writes:
 >>
->> On 08/25/2014 07:15 PM, Bartlomiej Zolnierkiewicz wrote:
+>>> Kukjin,
 >>>
->>> Hi,
->>>
->>> On Monday, August 25, 2014 04:30:23 PM Chanwoo Choi wrote:
->>>> This patch support many TRIMINFO_CTRL registers if specific Exynos SoC
->>>> has one more TRIMINFO_CTRL registers. Also this patch uses proper 'RELOAD'
->>>> shift/mask bit operation to set RELOAD feature instead of static value.
+>>> On 31.07.2014 20:32, Kukjin Kim wrote:
+>>>> On 07/30/14 17:07, Thomas Abraham wrote:
+>>>>> The new CPU clock type allows the use of generic CPUfreq drivers. So for
+>>>>> Exynos4210/5250, switch to using generic cpufreq driver. For Exynos5420,
+>>>>> which did not have CPUfreq driver support, enable the use of generic
+>>>>> CPUfreq driver.
+>>>>>
+>>>>> Suggested-by: Tomasz Figa<t.figa@samsung.com>
+>>>>> Cc: Kukjin Kim<kgene.kim@samsung.com>
 >>>>
->>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
->>>> Cc: Zhang Rui <rui.zhang@intel.com>
->>>> Cc: Eduardo Valentin <edubezval@gmail.com>
->>>> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
->>>> Reviewed-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->>>> ---
->>>>  drivers/thermal/samsung/exynos_thermal_common.h |  1 +
->>>>  drivers/thermal/samsung/exynos_tmu.c            | 23 ++++++++++++++++++++---
->>>>  drivers/thermal/samsung/exynos_tmu.h            |  9 +++++++--
->>>>  drivers/thermal/samsung/exynos_tmu_data.c       |  5 ++++-
->>>>  drivers/thermal/samsung/exynos_tmu_data.h       |  3 +++
->>>>  5 files changed, 35 insertions(+), 6 deletions(-)
+>>>> Looks good to me,
 >>>>
->>>> diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
->>>> index 3eb2ed9..b211976 100644
->>>> --- a/drivers/thermal/samsung/exynos_thermal_common.h
->>>> +++ b/drivers/thermal/samsung/exynos_thermal_common.h
->>>> @@ -28,6 +28,7 @@
->>>>  #define MAX_TRIP_COUNT	8
->>>>  #define MAX_COOLING_DEVICE 4
->>>>  #define MAX_THRESHOLD_LEVS 5
->>>> +#define MAX_TRIMINFO_CTRL_REG	2
->>>>  
->>>>  #define ACTIVE_INTERVAL 500
->>>>  #define IDLE_INTERVAL 10000
->>>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->>>> index acbff14..7234f38 100644
->>>> --- a/drivers/thermal/samsung/exynos_tmu.c
->>>> +++ b/drivers/thermal/samsung/exynos_tmu.c
->>>> @@ -147,7 +147,7 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
->>>>  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
->>>>  	struct exynos_tmu_platform_data *pdata = data->pdata;
->>>>  	const struct exynos_tmu_registers *reg = pdata->registers;
->>>> -	unsigned int status, trim_info = 0, con;
->>>> +	unsigned int status, trim_info = 0, con, ctrl;
->>>>  	unsigned int rising_threshold = 0, falling_threshold = 0;
->>>>  	int ret = 0, threshold_code, i, trigger_levs = 0;
->>>>  
->>>> @@ -164,8 +164,25 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
->>>>  		}
->>>>  	}
->>>>  
->>>> -	if (TMU_SUPPORTS(pdata, TRIM_RELOAD))
->>>> -		__raw_writel(1, data->base + reg->triminfo_ctrl);
->>>> +	if (TMU_SUPPORTS(pdata, TRIM_RELOAD)) {
->>>> +		if (reg->triminfo_ctrl_count > MAX_TRIMINFO_CTRL_REG) {
+>>>> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+>>>>
+>>>> BTW, who will handle this series? I hope see this series in 3.17.
 >>>
->>> Please remove this check and MAX_TRIMINFO_CTRL_REG define.
->>>
->>> We do not want such runtime checks for development time errors.
+>>> This series consists mostly of clock changes and it likely depends on
+>>> patches already in my for-next, so I would be inclined toward taking it
+>>> through samsung-clk tree.
 >>
->> OK, I'll remove it.
+>> So has this series been picked up anywhere?  I don't see it in your
+>> samsung-clk tree, nor in Kukjin's for-next.
+>
+> No, it has not. In general it was already too late in the release cycle
+> when the last version was posted.
+>
+> I had a plan to take it through clock tree with Kukjin's and Viresh's
+> cooperation, but now as you say it...
+>
 >>
->>>
->>>> +			ret = -EINVAL;
->>>> +			goto out;
->>>> +		}
->>>> +
->>>> +		for (i = 0; i < reg->triminfo_ctrl_count; i++) {
->>>> +			if (pdata->triminfo_reload[i]) {
->>>> +				ctrl = readl(data->base +
->>>> +						reg->triminfo_ctrl[i]);
->>>> +				ctrl &= ~(reg->triminfo_reload_mask <<
->>>> +						reg->triminfo_reload_shift);
->>>> +				ctrl |= pdata->triminfo_reload[i] <<
->>>> +						reg->triminfo_reload_shift;
->>>
->>> triminfo_reload_shift and triminfo_reload_mask variables have always
->>> the same values when this code is run so there is no need for them.
+>> Also, I'm curious whether or how this is has been tested on big.LITTLE
+>> SoCs.
 >>
->> I don't understand. Do you mean that timinfo_reload_{shift/mask} variable is un-needed?
-> 
-> Yes.
-> 
->> If you possible, I need more detailed comment.
-> 
-> Currently triminfo_reload_shift is always "0" and triminfo_reload_mask
-> is "1" so there is no need to add an abstraction for different SoCs
-> (it should be added only when there is a real need for it).
-> 
-> Please just rewrite this code as:
-> 
-> 			if (pdata->triminfo_reload[i]) {
-> 				ctrl = readl(data->base +
-> 						reg->triminfo_ctrl[i]);
-> 				ctrl |= pdata->triminfo_reload[i];
-> 				__raw_writel(ctrl, data->base +
-> 						reg->triminfo_ctrl[i]);
-> 			}
-> 
-> Then you can remove unused triminfo_reload_shift and
-> EXYNOS_TRIMINFO_RELOAD_SHIFT.
-> 
-> Please also include my patch (https://lkml.org/lkml/2014/8/20/481) in
-> your patch series (or at least mark it in the cover letter that my
-> patch should be merged before your patch #2/4).
+>> I'm trying it on the 5800/Chromebook2 and it's not terribly stable.  I'm
+>> testing along with CPUidle, so there may be some untested interactions
+>> there as it seems a bit more stable without CPUidle enabled.
+>>
+>> I'd love to hear from anyone else that's testing CPUidle and CPUfreq
+>> together big.LITTLE 5420/5800, with or without the switcher.
 
-OK. thanks for your comment.
+I have tested this patch series on SMDK5420 with cpuidle (with and
+without b.L switcher enabled).
 
-Best Regards,
-Chanwoo Choi
+As of now voltage scaling support is not there in generic big-little
+cpufreq driver (arm_big_little.c).
+Hence need to tie arm and kfc voltages to highest level for testing.
+
+Without this change stability issues are there, but with this change
+everything is stable.
+
+>
+> I'd definitely like to see a clarification on this issues, before this
+> series hits mainline or at least its parts related to affected SoCs.
+> Also I'd like to hear some confirmation from Samsung Poland R&D Center
+> guys (on CC), whether this code works stable on their target boards
+> (Universal C210, Trats, Trats2).
+>
+>>
+>> Also, the patch below[2] is needed for 5800.
+>>
+>> FWIW, I have a temporary branch[1] based on the v3.17-rc branch of the
+>> exynos-reference tree where I've added the DT patch needed for CPUidle,
+>> this series (and it's dependencies) which is what I'm using for testing.
+>
+> The patch looks fine to me (well, it's trivial :)), thanks.
+>
+> Best regards,
+> Tomasz
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+regards,
+Chander
