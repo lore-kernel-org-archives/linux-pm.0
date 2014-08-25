@@ -1,80 +1,51 @@
-From: kodiak furr <boxerspam1@gmail.com>
-Subject: Re: [PATCH 2/2] PM / sleep: Asynchronous threads for dpm_complete
-Date: Mon, 25 Aug 2014 09:27:12 -0500
-Message-ID: <53fb47c5.019c3c0a.6cdb.02e1@mx.google.com>
-References: <1408979617-14140-1-git-send-email-xiaoming.wang@intel.com>
- <1408979617-14140-2-git-send-email-xiaoming.wang@intel.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH v9 4/6] ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
+Date: Mon, 25 Aug 2014 08:32:01 -0700
+Message-ID: <7h8umc60we.fsf@paris.lan>
+References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
+	<1406707663-16656-5-git-send-email-thomas.ab@samsung.com>
+	<53DA8BB9.6020702@samsung.com> <53DA8D85.3050106@gmail.com>
+	<7hbnrc6px3.fsf@paris.lan> <53F7DA13.6090305@gmail.com>
+	<CADWw7OgAS-z-UOrJU-hL2fzuefJmLtCTg57jYk2Df7f5KfLJmA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f49.google.com ([209.85.218.49]:38222 "EHLO
-	mail-oi0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932492AbaHYO1T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Aug 2014 10:27:19 -0400
-In-Reply-To: <1408979617-14140-2-git-send-email-xiaoming.wang@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CADWw7OgAS-z-UOrJU-hL2fzuefJmLtCTg57jYk2Df7f5KfLJmA@mail.gmail.com>
+	(Chander Kashyap's message of "Mon, 25 Aug 2014 17:45:07 +0530")
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chander Kashyap <k.chander@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, Heiko =?utf-8?Q?St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, amit.kucheria@linaro.org, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linaro-kernel@lists.linaro.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: xiaoming wang <xiaoming.wang@intel.com>
-Cc: gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, Chuansheng Liu <chuansheng.liu@intel.com>, len.brown@intel.com, linux-kernel@vger.kernel.org, pavel@ucw.cz
 
-a29kaWFrIGZ1cnIgbGlrZWQgeW91ciBtZXNzYWdlIHdpdGggQm94ZXIgZm9yIEFuZHJvaWQuCgpP
-biBBdWcgMjUsIDIwMTQgMTA6MTMgQU0sIHhpYW9taW5nIHdhbmcgPHhpYW9taW5nLndhbmdAaW50
-ZWwuY29tPiB3cm90ZToKPgo+IEluIGFuYWxvZ3kgd2l0aCBjb21taXRzIDVhZjg0YjgyNzAxYSBh
-bmQgOTdkZjhjMTI5OTUsIAo+IHVzaW5nIGFzeW5jaHJvbm91cyB0aHJlYWRzIGNhbiBpbXByb3Zl
-IHRoZSBvdmVyYWxsIAo+IHJlc3VtZSB0aW1lIHNpZ25pZmljYW50bHkuIAo+Cj4gVGhpcyBwYXRj
-aCBpcyBmb3IgZHBtX2NvbXBsZXRlIHBoYXNlLiAKPgo+IFNpZ25lZC1vZmYtYnk6IENodWFuc2hl
-bmcgTGl1IDxjaHVhbnNoZW5nLmxpdUBpbnRlbC5jb20+IAo+IFNpZ25lZC1vZmYtYnk6IHhpYW9t
-aW5nIHdhbmcgPHhpYW9taW5nLndhbmdAaW50ZWwuY29tPiAKPiAtLS0gCj4gZHJpdmVycy9iYXNl
-L3Bvd2VyL21haW4uYyB8wqDCoCAzOCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-LS0tLSAKPiAxIGZpbGVzIGNoYW5nZWQsIDM0IGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0p
-IAo+Cj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvYmFzZS9wb3dlci9tYWluLmMgYi9kcml2ZXJzL2Jh
-c2UvcG93ZXIvbWFpbi5jIAo+IGluZGV4IGY5ZmUxYjMuLjAwYzRiZjEgMTAwNjQ0IAo+IC0tLSBh
-L2RyaXZlcnMvYmFzZS9wb3dlci9tYWluLmMgCj4gKysrIGIvZHJpdmVycy9iYXNlL3Bvd2VyL21h
-aW4uYyAKPiBAQCAtODg5LDE0ICs4ODksMTUgQEAgdm9pZCBkcG1fcmVzdW1lKHBtX21lc3NhZ2Vf
-dCBzdGF0ZSkgCj4gwqAgKiBAZGV2OiBEZXZpY2UgdG8gaGFuZGxlLiAKPiDCoCAqIEBzdGF0ZTog
-UE0gdHJhbnNpdGlvbiBvZiB0aGUgc3lzdGVtIGJlaW5nIGNhcnJpZWQgb3V0LiAKPiDCoCAqLyAK
-PiAtc3RhdGljIHZvaWQgZGV2aWNlX2NvbXBsZXRlKHN0cnVjdCBkZXZpY2UgKmRldiwgcG1fbWVz
-c2FnZV90IHN0YXRlKSAKPiArc3RhdGljIHZvaWQgZGV2aWNlX2NvbXBsZXRlKHN0cnVjdCBkZXZp
-Y2UgKmRldiwgcG1fbWVzc2FnZV90IHN0YXRlLCBib29sIGFzeW5jKSAKPiB7IAo+IHZvaWQgKCpj
-YWxsYmFjaykoc3RydWN0IGRldmljZSAqKSA9IE5VTEw7IAo+IGNoYXIgKmluZm8gPSBOVUxMOyAK
-Pgo+IGlmIChkZXYtPnBvd2VyLnN5c2NvcmUpIAo+IC0gcmV0dXJuOyAKPiArIGdvdG8gQ29tcGxl
-dGU7IAo+Cj4gKyBkcG1fd2FpdChkZXYtPnBhcmVudCwgYXN5bmMpOyAKPiBkZXZpY2VfbG9jayhk
-ZXYpOyAKPgo+IGlmIChkZXYtPnBtX2RvbWFpbikgeyAKPiBAQCAtOTI4LDYgKzkyOSwxNyBAQCBz
-dGF0aWMgdm9pZCBkZXZpY2VfY29tcGxldGUoc3RydWN0IGRldmljZSAqZGV2LCBwbV9tZXNzYWdl
-X3Qgc3RhdGUpIAo+IGRldmljZV91bmxvY2soZGV2KTsgCj4KPiBwbV9ydW50aW1lX3B1dChkZXYp
-OyAKPiArIAo+ICtDb21wbGV0ZTogCj4gKyBjb21wbGV0ZV9hbGwoJmRldi0+cG93ZXIuY29tcGxl
-dGlvbik7IAo+ICt9IAo+ICsgCj4gK3N0YXRpYyB2b2lkIGFzeW5jX2NvbXBsZXRlKHZvaWQgKmRh
-dGEsIGFzeW5jX2Nvb2tpZV90IGNvb2tpZSkgCj4gK3sgCj4gKyBzdHJ1Y3QgZGV2aWNlICpkZXYg
-PSAoc3RydWN0IGRldmljZSAqKWRhdGE7IAo+ICsgCj4gKyBkZXZpY2VfY29tcGxldGUoZGV2LCBw
-bV90cmFuc2l0aW9uLCB0cnVlKTsgCj4gKyBwdXRfZGV2aWNlKGRldik7IAo+IH0gCj4KPiAvKiog
-Cj4gQEAgLTk0MCwyNyArOTUyLDQ1IEBAIHN0YXRpYyB2b2lkIGRldmljZV9jb21wbGV0ZShzdHJ1
-Y3QgZGV2aWNlICpkZXYsIHBtX21lc3NhZ2VfdCBzdGF0ZSkgCj4gdm9pZCBkcG1fY29tcGxldGUo
-cG1fbWVzc2FnZV90IHN0YXRlKSAKPiB7IAo+IHN0cnVjdCBsaXN0X2hlYWQgbGlzdDsgCj4gKyBz
-dHJ1Y3QgZGV2aWNlICpkZXY7IAo+Cj4gdHJhY2Vfc3VzcGVuZF9yZXN1bWUoVFBTKCJkcG1fY29t
-cGxldGUiKSwgc3RhdGUuZXZlbnQsIHRydWUpOyAKPiBtaWdodF9zbGVlcCgpOyAKPgo+IElOSVRf
-TElTVF9IRUFEKCZsaXN0KTsgCj4gbXV0ZXhfbG9jaygmZHBtX2xpc3RfbXR4KTsgCj4gKyBwbV90
-cmFuc2l0aW9uID0gc3RhdGU7IAo+ICsgCj4gKyAvKiAKPiArIMKgICogQWR2YW5jZWQgdGhlIGFz
-eW5jIHRocmVhZHMgdXBmcm9udCwgCj4gKyDCoCAqIGluIGNhc2UgdGhlIHN0YXJ0aW5nIG9mIGFz
-eW5jIHRocmVhZHMgaXMgCj4gKyDCoCAqIGRlbGF5ZWQgYnkgbm9uLWFzeW5jIHJlc3VtaW5nIGRl
-dmljZXMuIAo+ICsgwqAgKi8gCj4gKyBsaXN0X2Zvcl9lYWNoX2VudHJ5KGRldiwgJmRwbV9wcmVw
-YXJlZF9saXN0LCBwb3dlci5lbnRyeSkgeyAKPiArIHJlaW5pdF9jb21wbGV0aW9uKCZkZXYtPnBv
-d2VyLmNvbXBsZXRpb24pOyAKPiArIGlmIChpc19hc3luYyhkZXYpKSB7IAo+ICsgZ2V0X2Rldmlj
-ZShkZXYpOyAKPiArIGFzeW5jX3NjaGVkdWxlKGFzeW5jX2NvbXBsZXRlLCBkZXYpOyAKPiArIH0g
-Cj4gKyB9IAo+ICsgCj4gd2hpbGUgKCFsaXN0X2VtcHR5KCZkcG1fcHJlcGFyZWRfbGlzdCkpIHsg
-Cj4gLSBzdHJ1Y3QgZGV2aWNlICpkZXYgPSB0b19kZXZpY2UoZHBtX3ByZXBhcmVkX2xpc3QucHJl
-dik7IAo+ICsgZGV2ID0gdG9fZGV2aWNlKGRwbV9wcmVwYXJlZF9saXN0LnByZXYpOyAKPgo+IGdl
-dF9kZXZpY2UoZGV2KTsgCj4gZGV2LT5wb3dlci5pc19wcmVwYXJlZCA9IGZhbHNlOyAKPiBsaXN0
-X21vdmUoJmRldi0+cG93ZXIuZW50cnksICZsaXN0KTsgCj4gbXV0ZXhfdW5sb2NrKCZkcG1fbGlz
-dF9tdHgpOyAKPgo+IC0gZGV2aWNlX2NvbXBsZXRlKGRldiwgc3RhdGUpOyAKPiArIGlmICghaXNf
-YXN5bmMoZGV2KSkgCj4gKyBkZXZpY2VfY29tcGxldGUoZGV2LCBzdGF0ZSwgZmFsc2UpOyAKPgo+
-IG11dGV4X2xvY2soJmRwbV9saXN0X210eCk7IAo+IHB1dF9kZXZpY2UoZGV2KTsgCj4gfSAKPiBs
-aXN0X3NwbGljZSgmbGlzdCwgJmRwbV9saXN0KTsgCj4gbXV0ZXhfdW5sb2NrKCZkcG1fbGlzdF9t
-dHgpOyAKPiArIGFzeW5jX3N5bmNocm9uaXplX2Z1bGwoKTsgCj4gdHJhY2Vfc3VzcGVuZF9yZXN1
-bWUoVFBTKCJkcG1fY29tcGxldGUiKSwgc3RhdGUuZXZlbnQsIGZhbHNlKTsgCj4gfSAKPgo+IC0t
-IAo+IDEuNy4xIAo+Cj4gLS0gCj4gVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQg
-dGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWtlcm5lbCIgaW4gCj4gdGhlIGJvZHkgb2YgYSBt
-ZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcgCj4gTW9yZSBtYWpvcmRvbW8gaW5m
-byBhdMKgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbCAKPiBQbGVh
-c2UgcmVhZCB0aGUgRkFRIGF0wqAgaHR0cDovL3d3dy50dXgub3JnL2xrbWwvIAo=
+Hi Chander,
 
+Chander Kashyap <k.chander@samsung.com> writes:
+
+[...]
+
+>>> I'm trying it on the 5800/Chromebook2 and it's not terribly stable.  I'm
+>>> testing along with CPUidle, so there may be some untested interactions
+>>> there as it seems a bit more stable without CPUidle enabled.
+>>>
+>>> I'd love to hear from anyone else that's testing CPUidle and CPUfreq
+>>> together big.LITTLE 5420/5800, with or without the switcher.
+>
+> I have tested this patch series on SMDK5420 with cpuidle (with and
+> without b.L switcher enabled).
+>
+> As of now voltage scaling support is not there in generic big-little
+> cpufreq driver (arm_big_little.c).
+> Hence need to tie arm and kfc voltages to highest level for testing.
+
+> Without this change stability issues are there, but with this change
+> everything is stable.
+
+Can you clarify how you're setting the voltages to ensure stability?
+
+Tomasz, I didn't mean to suggest this isn't ready for mainline.  For the
+5420/5800 it seems cpufreq support is a new feature, so this isn't a
+regression against previous (mainline) behavior.  Maybe the big.LITTLE
+cpufreq support should've been separated out from the cleanup since it's
+more of a new feature, but that's up to you.
+
+Kevin
