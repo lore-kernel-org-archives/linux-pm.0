@@ -1,41 +1,84 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: [PATCH] power/reset: xgene-reset: Fix prototype of xgene_restart()
-Date: Sun, 24 Aug 2014 19:36:29 -0500
-Message-ID: <1408926989-12501-1-git-send-email-broonie@kernel.org>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v2] intel_idle: add idle values for Cherrytrail/Braswell
+Date: Mon, 25 Aug 2014 13:12:00 +0300
+Message-ID: <20140825101200.GH1660@lahna.fi.intel.com>
+References: <1408701508-13636-1-git-send-email-mika.westerberg@linux.intel.com>
+ <1408707540-12393-1-git-send-email-mika.westerberg@linux.intel.com>
+ <53F74E5D.2040108@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:60191 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751540AbaHYKCb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Aug 2014 06:02:31 -0400
+Received: from mga02.intel.com ([134.134.136.20]:58154 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754767AbaHYKMH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 Aug 2014 06:12:07 -0400
+Content-Disposition: inline
+In-Reply-To: <53F74E5D.2040108@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Mark Brown <broonie@linaro.org>
+To: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Cc: Len Brown <lenb@kernel.org>, Kumar P Mahesh <mahesh.kumar.p@intel.com>, Alan Cox <alan@linux.intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Mark Brown <broonie@linaro.org>
+On Fri, Aug 22, 2014 at 10:06:21PM +0800, Li, Aubrey wrote:
+> On 2014/8/22 19:39, Mika Westerberg wrote:
+> > From: Mahesh Kumar P <mahesh.kumar.p@intel.com>
+> > 
+> > Cherrytrail/Braswell is a successor of Intel Baytrail but has slighly
+> > different CPU idle values and latencies.
+> > 
+> > Signed-off-by: Kumar P Mahesh <mahesh.kumar.p@intel.com>
+> > Signed-off-by: Alan Cox <alan@linux.intel.com>
+> > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> > ---
+> > I learned from Mahesh that C1e, C4 and S0i2 states are deprecated so those
+> > are now removed.
+> 
+> If the platform has ACPI supported, I believe Len wants to see what
+> C-states number exported by ACPI.
+> 
+> Please boot the machine with "intel_idle.max_cstate=0" to disable
+> intel_idle, then post the output of the following commands
 
-The xgene-reset driver uses xgene_restart() as arm_pm_restart() but that
-function should take an enum reset_type as the first argument rather than
-a char. Fix this; the paramter is not referenced in the implementation.
+OK, here goes:
 
-Signed-off-by: Mark Brown <broonie@linaro.org>
----
- drivers/power/reset/xgene-reboot.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> dmesg | grep idle
 
-diff --git a/drivers/power/reset/xgene-reboot.c b/drivers/power/reset/xgene-reboot.c
-index ecd55f8..6b49be6 100644
---- a/drivers/power/reset/xgene-reboot.c
-+++ b/drivers/power/reset/xgene-reboot.c
-@@ -40,7 +40,7 @@ struct xgene_reboot_context {
- 
- static struct xgene_reboot_context *xgene_restart_ctx;
- 
--static void xgene_restart(char str, const char *cmd)
-+static void xgene_restart(enum reboot_mode mode, const char *cmd)
- {
- 	struct xgene_reboot_context *ctx = xgene_restart_ctx;
- 	unsigned long timeout;
--- 
-2.1.0.rc1
+[    0.523624] cpuidle: using governor ladder
+[    0.528215] cpuidle: using governor menu
+[   16.649461] intel_idle: disabled
+[   16.736481] ACPI: acpi_idle registered with cpuidle
 
+> grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
+
+/sys/devices/system/cpu/cpu0/cpuidle/state0/desc:CPUIDLE CORE POLL IDLE
+/sys/devices/system/cpu/cpu0/cpuidle/state0/disable:0
+/sys/devices/system/cpu/cpu0/cpuidle/state0/latency:0
+/sys/devices/system/cpu/cpu0/cpuidle/state0/name:POLL
+/sys/devices/system/cpu/cpu0/cpuidle/state0/power:4294967295
+/sys/devices/system/cpu/cpu0/cpuidle/state0/residency:0
+/sys/devices/system/cpu/cpu0/cpuidle/state0/time:0
+/sys/devices/system/cpu/cpu0/cpuidle/state0/usage:0
+/sys/devices/system/cpu/cpu0/cpuidle/state1/desc:ACPI FFH INTEL MWAIT 0x0
+/sys/devices/system/cpu/cpu0/cpuidle/state1/disable:0
+/sys/devices/system/cpu/cpu0/cpuidle/state1/latency:1
+/sys/devices/system/cpu/cpu0/cpuidle/state1/name:C1
+/sys/devices/system/cpu/cpu0/cpuidle/state1/power:0
+/sys/devices/system/cpu/cpu0/cpuidle/state1/residency:2
+/sys/devices/system/cpu/cpu0/cpuidle/state1/time:1255076
+/sys/devices/system/cpu/cpu0/cpuidle/state1/usage:763
+/sys/devices/system/cpu/cpu0/cpuidle/state2/desc:ACPI FFH INTEL MWAIT 0x58
+/sys/devices/system/cpu/cpu0/cpuidle/state2/disable:0
+/sys/devices/system/cpu/cpu0/cpuidle/state2/latency:500
+/sys/devices/system/cpu/cpu0/cpuidle/state2/name:C2
+/sys/devices/system/cpu/cpu0/cpuidle/state2/power:0
+/sys/devices/system/cpu/cpu0/cpuidle/state2/residency:1000
+/sys/devices/system/cpu/cpu0/cpuidle/state2/time:1694866
+/sys/devices/system/cpu/cpu0/cpuidle/state2/usage:639
+/sys/devices/system/cpu/cpu0/cpuidle/state3/desc:ACPI FFH INTEL MWAIT 0x64
+/sys/devices/system/cpu/cpu0/cpuidle/state3/disable:0
+/sys/devices/system/cpu/cpu0/cpuidle/state3/latency:5000
+/sys/devices/system/cpu/cpu0/cpuidle/state3/name:C3
+/sys/devices/system/cpu/cpu0/cpuidle/state3/power:0
+/sys/devices/system/cpu/cpu0/cpuidle/state3/residency:10000
+/sys/devices/system/cpu/cpu0/cpuidle/state3/time:380547473
+/sys/devices/system/cpu/cpu0/cpuidle/state3/usage:744
