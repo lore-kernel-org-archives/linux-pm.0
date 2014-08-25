@@ -1,42 +1,90 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH v3 3/3] memory: tegra124-emc: Add EMC driver
-Date: Mon, 25 Aug 2014 11:52:53 -0600
-Message-ID: <53FB77F5.3010604@wwwdotorg.org>
-References: <1408437523-8542-1-git-send-email-tomeu.vizoso@collabora.com> <1408437523-8542-4-git-send-email-tomeu.vizoso@collabora.com> <20140819090314.GC7862@amd> <CAAObsKA+JofL3JANtdqAqGgtA3-x+GMQ0Ei7gMzmmWynP3U9Sg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
+Date: Mon, 25 Aug 2014 23:27:52 +0530
+Message-ID: <1408989481-13891-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:48496 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932253AbaHYRw2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Aug 2014 13:52:28 -0400
-In-Reply-To: <CAAObsKA+JofL3JANtdqAqGgtA3-x+GMQ0Ei7gMzmmWynP3U9Sg@mail.gmail.com>
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:33597 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932256AbaHYR6l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 Aug 2014 13:58:41 -0400
+Received: from /spool/local
+	by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
+	Mon, 25 Aug 2014 13:58:40 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Pavel Machek <pavel@ucw.cz>, Thierry Reding <thierry.reding@gmail.com>
-Cc: linux-pm@vger.kernel.org, =?UTF-8?B?VGVyamUgQmVyZ3N0csO2bQ==?= <tbergstrom@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>
+To: linux-kernel@vger.kernel.org
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa@MIT.EDU>, "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-On 08/19/2014 03:06 AM, Tomeu Vizoso wrote:
-> On 19 August 2014 11:03, Pavel Machek <pavel@ucw.cz> wrote:
->> On Tue 2014-08-19 10:38:43, Tomeu Vizoso wrote:
->>> Sets the EMC clock rate based on the bandwidth requirements registered by
->>> memory clients through the PM_QOS_MEMORY_BANDWIDTH class.
->>>
->>> Note: this is just an example and not a proper driver for a external memory
->>> controller. Its only purpose is to illustrate how such a driver
->>> would set the
->>
->> So... you don't want this to be merged?
->
-> Not really, there's quite some work left to do until we have a proper
-> EMC driver for Tegra124.
+Fast sleep is an idle state, where the core and the L1 and L2
+caches are brought down to a threshold voltage. This also means that
+the communication between L2 and L3 caches have to be fenced. However
+the current P8 chips have a bug wherein this fencing between L2 and
+L3 caches get delayed by a cpu cycle. This can delay L3 response to
+the other cpus if they request for data during this time. Thus they
+would fetch the same data from the memory which could lead to data
+corruption if L3 cache is not flushed.
+Patch 4 adds support to work around this.
 
-Given that, the only patches in this series that should be merged touch 
-(a) pm_qos, (b) tegradrm. As such, I would suggest that patch 1 be 
-merged into the pm_qos tree in a standalone topic branch, and Thierry 
-can merge this into the Tegra tree and apply patch 2 when he's ready.
+'Deep Winkle' is a deeper idle state where core and private L2 are powered
+off. While it offers higher power savings, it is at the cost of losing
+hypervisor register state and higher latency.
+Patch 5-9 adds support for winkle and uses it for offline cpus.
 
-Since patch 3 is the only patch that would normally go through the Tegra 
-tree, and patch 3 isn't to be applied yet, I don't intend on applying 
-any of these patches to the Tegra tree.
+Patch 1 - Moves parameters required discover idle states to a location 
+common to both cpuidle driver and powernv core code
+Patch 2 - Populates idle state details from device tree
+Patch 3 - Enables cpus to run guest after waking up from fastsleep/winkle
+
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Srivatsa S. Bhat <srivatsa@MIT.EDU>
+Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: devicetree@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+
+Preeti U Murthy (2):
+  cpuidle/powernv: Populate cpuidle state details by querying the
+    device-tree
+  powerpc/powernv/cpuidle: Add workaround to enable fastsleep
+
+Shreyas B. Prabhu (6):
+  powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
+    fast-sleep
+  powerpc/powernv: Add OPAL call to save and restore
+  powerpc: Adding macro for accessing Thread Switch Control Register
+  powerpc/powernv: Add winkle infrastructure
+  powerpc/powernv: Discover and enable winkle
+  powerpc/powernv: Enter deepest supported idle state in offline
+
+Srivatsa S. Bhat (1):
+  powerpc/powernv: Enable Offline CPUs to enter deep idle states
+
+ arch/powerpc/include/asm/machdep.h             |   4 +
+ arch/powerpc/include/asm/opal.h                |  10 ++
+ arch/powerpc/include/asm/paca.h                |   3 +
+ arch/powerpc/include/asm/ppc-opcode.h          |   2 +
+ arch/powerpc/include/asm/processor.h           |   6 +-
+ arch/powerpc/include/asm/reg.h                 |   1 +
+ arch/powerpc/kernel/asm-offsets.c              |   1 +
+ arch/powerpc/kernel/exceptions-64s.S           |  37 ++---
+ arch/powerpc/kernel/idle.c                     |  30 ++++
+ arch/powerpc/kernel/idle_power7.S              |  83 +++++++++-
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
+ arch/powerpc/platforms/powernv/powernv.h       |   8 +
+ arch/powerpc/platforms/powernv/setup.c         | 217 +++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/smp.c           |  13 +-
+ arch/powerpc/platforms/powernv/subcore.c       |  15 ++
+ drivers/cpuidle/cpuidle-powernv.c              |  40 ++++-
+ 16 files changed, 439 insertions(+), 33 deletions(-)
+
+-- 
+1.9.0
+
