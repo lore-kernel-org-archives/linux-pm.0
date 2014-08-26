@@ -1,72 +1,154 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 0/5 v3] irq / PM: Suspend-to-idle wakeup interrupts
-Date: Wed, 27 Aug 2014 01:46:23 +0200
-Message-ID: <5320472.coYotHR1d0@vostro.rjw.lan>
-References: <26580319.OZP7jvJnA9@vostro.rjw.lan>
+Subject: [PATCH 4/5 v3] PCI / PM: Make PCIe PME interrupts wake up from suspend-to-idle
+Date: Wed, 27 Aug 2014 01:51:31 +0200
+Message-ID: <3100042.GU96J7QUhN@vostro.rjw.lan>
+References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <26580319.OZP7jvJnA9@vostro.rjw.lan>
+In-Reply-To: <5320472.coYotHR1d0@vostro.rjw.lan>
 Sender: linux-pci-owner@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>
 Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Monday, August 11, 2014 03:56:46 PM Rafael J. Wysocki wrote:
-> Hi,
-> 
-> I thought I'd just refresh the previous patchset, but in the meantime I found
-> a way to avoid adding overhead to note_interrupt(), so I decided to change the
-> approach.
-> 
-> Patch [2/6] fixes the problem with IRQF_NO_SUSPEND and shared interrupts.  The
-> idea is to use wrapper handlers for all irqactions of the shared IRQs where at
-> least one of them has IRQF_NO_SUSPEND set.  Since the wrapper handler is now
-> installed for all irqactions in the given irq_desc, it can track the return
-> codes from the original handlers and "suspend" the IRQ if the interrupt is going
-> to be unhandled eventually.  All described in the changelog.  This is independent
-> of the handling of wakeup interrupts for suspend-to-idle.
-> 
-> Patch [3/6] makes IRQs configured for system wakeup with enable_irq_wake() work
-> for suspend to idle.  It does that by using a (different) wrapper handler for
-> all irqactions in the wakeup irq_descs and that wrapper handler takes care of
-> all the ugly details.  Again, all described in the changelog.
-> 
-> Patches [1/6], [4-5/6] are unmodified and the last one addes documentation.
+To make PCIe PME interrupts wake up the system from suspend to idle,
+make the PME driver use enable_irq_wake() on the IRQ during system
+suspend (if there are any wakeup devices below the given PCIe port)
+without disabling PME interrupts.  This way, an interrupt will still
+trigger if a wakeup event happens and the system will be woken up (or
+system suspend in progress will be aborted) by means of the new
+mechanics introduced previously.
 
-It has occured to me recently that trying to address two different issues at
-once in one patchset may be more confusing than it has to be, so the following
-series has one and only one purpose which is to make enable_irq_wake() interrupts
-wake up from suspend-to-idle while avoiding the shared interrupts pain.
+This change allows Wake-on-LAN to be used for wakeup from
+suspend-to-idle on my MSI Wind tesbed netbook.
 
-The way it works is that for each IRQD_WAKEUP_STATE IRQ (a) all of the interrupt
-handlers are substituted for by a special "wakeup mode" handler and (b) the
-IRQ is re-enabled right before entering the suspend-to-idle loop.  After a wakeup
-interrupt all is restored to the previous state left by suspend_device_irqs().
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/pci/pcie/pme.c |   61 ++++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 51 insertions(+), 10 deletions(-)
 
-The "wakeup mode" handler triggers a system wakeup, disables the IRQ and marks
-it as "suspended" and "pending".
 
-To me, all of this is relatively straightforward and the handling of
-IRQF_NO_SUSPEND for shared interrupts, which is a separate problem, can be
-addressed on top of it later (make no mistake, I still think that it should be
-addressed).
+--
+To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-The patches are as follows:
-
-[1/5] Mechanism to wake up the system or abort suspend in progress automatically.
-[2/5] Wakeup interrupts support for suspend-to-idle.
-[3/5] Set IRQCHIP_SKIP_SET_WAKE for x86 IOAPIC IRQ chips.
-[4/5] Make PCIe PME wake up from suspend to idle.
-[5/5] Documentation.
-
-Patches [1/5] and [3-4/5] have not been changed since I posted them previously
-and patch [5/5] has been updated to reflect the focus on wakeup (I removed the
-paragraph on IRQF_NO_SUSPEND vs shared interrupts from it).
-
-All tested on MSI Wind.
-
-Rafael
+Index: linux-pm/drivers/pci/pcie/pme.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pcie/pme.c
++++ linux-pm/drivers/pci/pcie/pme.c
+@@ -41,11 +41,17 @@ static int __init pcie_pme_setup(char *s
+ }
+ __setup("pcie_pme=", pcie_pme_setup);
+ 
++enum pme_suspend_level {
++	PME_SUSPEND_NONE = 0,
++	PME_SUSPEND_WAKEUP,
++	PME_SUSPEND_NOIRQ,
++};
++
+ struct pcie_pme_service_data {
+ 	spinlock_t lock;
+ 	struct pcie_device *srv;
+ 	struct work_struct work;
+-	bool noirq; /* Don't enable the PME interrupt used by this service. */
++	enum pme_suspend_level suspend_level;
+ };
+ 
+ /**
+@@ -223,7 +229,7 @@ static void pcie_pme_work_fn(struct work
+ 	spin_lock_irq(&data->lock);
+ 
+ 	for (;;) {
+-		if (data->noirq)
++		if (data->suspend_level != PME_SUSPEND_NONE)
+ 			break;
+ 
+ 		pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
+@@ -250,7 +256,7 @@ static void pcie_pme_work_fn(struct work
+ 		spin_lock_irq(&data->lock);
+ 	}
+ 
+-	if (!data->noirq)
++	if (data->suspend_level == PME_SUSPEND_NONE)
+ 		pcie_pme_interrupt_enable(port, true);
+ 
+ 	spin_unlock_irq(&data->lock);
+@@ -367,6 +373,21 @@ static int pcie_pme_probe(struct pcie_de
+ 	return ret;
+ }
+ 
++static bool pcie_pme_check_wakeup(struct pci_bus *bus)
++{
++	struct pci_dev *dev;
++
++	if (!bus)
++		return false;
++
++	list_for_each_entry(dev, &bus->devices, bus_list)
++		if (device_may_wakeup(&dev->dev)
++		    || pcie_pme_check_wakeup(dev->subordinate))
++			return true;
++
++	return false;
++}
++
+ /**
+  * pcie_pme_suspend - Suspend PCIe PME service device.
+  * @srv: PCIe service device to suspend.
+@@ -375,11 +396,26 @@ static int pcie_pme_suspend(struct pcie_
+ {
+ 	struct pcie_pme_service_data *data = get_service_data(srv);
+ 	struct pci_dev *port = srv->port;
++	bool wakeup;
+ 
++	if (device_may_wakeup(&port->dev)) {
++		wakeup = true;
++	} else {
++		down_read(&pci_bus_sem);
++		wakeup = pcie_pme_check_wakeup(port->subordinate);
++		up_read(&pci_bus_sem);
++	}
+ 	spin_lock_irq(&data->lock);
+-	pcie_pme_interrupt_enable(port, false);
+-	pcie_clear_root_pme_status(port);
+-	data->noirq = true;
++	if (wakeup) {
++		enable_irq_wake(srv->irq);
++		data->suspend_level = PME_SUSPEND_WAKEUP;
++	} else {
++		struct pci_dev *port = srv->port;
++
++		pcie_pme_interrupt_enable(port, false);
++		pcie_clear_root_pme_status(port);
++		data->suspend_level = PME_SUSPEND_NOIRQ;
++	}
+ 	spin_unlock_irq(&data->lock);
+ 
+ 	synchronize_irq(srv->irq);
+@@ -394,12 +430,17 @@ static int pcie_pme_suspend(struct pcie_
+ static int pcie_pme_resume(struct pcie_device *srv)
+ {
+ 	struct pcie_pme_service_data *data = get_service_data(srv);
+-	struct pci_dev *port = srv->port;
+ 
+ 	spin_lock_irq(&data->lock);
+-	data->noirq = false;
+-	pcie_clear_root_pme_status(port);
+-	pcie_pme_interrupt_enable(port, true);
++	if (data->suspend_level == PME_SUSPEND_NOIRQ) {
++		struct pci_dev *port = srv->port;
++
++		pcie_clear_root_pme_status(port);
++		pcie_pme_interrupt_enable(port, true);
++	} else {
++		disable_irq_wake(srv->irq);
++	}
++	data->suspend_level = PME_SUSPEND_NONE;
+ 	spin_unlock_irq(&data->lock);
+ 
+ 	return 0;
