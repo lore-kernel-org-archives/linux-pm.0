@@ -1,56 +1,53 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv5 0/4] thermal: exynos: Add support for TRIMINFO feature of
- Exynos3250
-Date: Tue, 26 Aug 2014 10:31:01 +0900
-Message-ID: <1409016665-3824-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: eduardo.valentin@ti.com, amit.daniel@samsung.com, rui.zhang@intel.com
-Cc: kgene.kim@samsung.com, ch.naveen@samsung.com, kyungmin.park@samsung.com, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCHv5 4/4] thermal: exynos: Remove duplicate code when reading
+ triminfo register of Exynos5440
+Date: Tue, 26 Aug 2014 10:31:05 +0900
+Message-ID: <1409016665-3824-5-git-send-email-cw00.choi@samsung.com>
+References: <1409016665-3824-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:44204 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756803AbaHZBbU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Aug 2014 21:31:20 -0400
+In-reply-to: <1409016665-3824-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: eduardo.valentin@ti.com, amit.daniel@samsung.com, rui.zhang@intel.com
+Cc: kgene.kim@samsung.com, ch.naveen@samsung.com, kyungmin.park@samsung.com, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Eduardo Valentin <edubezval@gmail.com>
 
-This patchset add the support of TRIMINFO_RELOAD feature for Exynos3250.
-But Exynos3250 has two TRIMINFO_CTRL register instead other Exynos has only one
-TRIMINFO_CTRL register. So, this patchset support the some Exynos SoC which
-has more than one TRIMINF_CTRL.
+This patch remove simply duplicate code when reading triminfo register of Exynos5440.
 
-Also, this patchset fix wrong value of TRIMINFO_RELOAD_SHIFT and remove
-duplicate code when reading triminfo register of Exynos5440.
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Reviewed-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+---
+ drivers/thermal/samsung/exynos_tmu.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-Changes from v4:
-- Remove un-necessary triminfo_ctrl_{shift, mask} field
-- Includes Bartlomiej's patch[1] that Exynos5260 / Exynos5420 should not use
-TRIM_RELOAD flag
-[2] https://lkml.org/lkml/2014/8/20/481
-
-Changes from v3:
-- Add reviewed message of Amit Daniel Kachhap <amit.daniel@samsung.com>
-- Split RELOAD patch as two patch
-- Fix 'TRIMINFO_RELOAD_SHIFT' value
-- This series includes separate patch[1]
-[1] https://lkml.org/lkml/2014/8/20/5
-- Drop ACTIME bit setting because TRM includes not enough information of ACTIME bit.
-
-Changes from v2:
-- Fix build break because of missing 'or' operation.
-
-Changes from v1:
-- Add missing 'TMU_SUPPORT_TRIM_RELOAD' features
-
-Bartlomiej Zolnierkiewicz (1):
-  thermal: samsung: Exynos5260 and Exynos5420 should not use TRIM_RELOAD flag
-
-Chanwoo Choi (3):
-  thermal: exynos: Add support for many TRIMINFO_CTRL registers
-  thermal: exynos: Add support for TRIM_RELOAD feature at Exynos3250
-  thermal: exynos: Remove duplicate code when reading triminfo register of Exynos5440
-
- drivers/thermal/samsung/exynos_thermal_common.h |  1 +
- drivers/thermal/samsung/exynos_tmu.c            | 19 +++++++++++------
- drivers/thermal/samsung/exynos_tmu.h            |  9 ++++----
- drivers/thermal/samsung/exynos_tmu_data.c       | 28 ++++++++++++++-----------
- drivers/thermal/samsung/exynos_tmu_data.h       |  9 +++++---
- 5 files changed, 40 insertions(+), 26 deletions(-)
-
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 64c702a..5888467 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -187,15 +187,13 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 		 */
+ 		switch (data->id) {
+ 		case 0:
++		case 2:
+ 			trim_info = readl(data->base +
+ 			EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
+ 			break;
+ 		case 1:
+ 			trim_info = readl(data->base + reg->triminfo_data);
+ 			break;
+-		case 2:
+-			trim_info = readl(data->base -
+-			EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
+ 		}
+ 	} else {
+ 		/* On exynos5420 the triminfo register is in the shared space */
 -- 
 1.8.0
+
