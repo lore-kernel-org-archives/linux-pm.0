@@ -1,112 +1,48 @@
-From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Subject: [PATCH v4 2/3] drm/tegra: Request memory bandwidth for the display controller
-Date: Tue, 26 Aug 2014 15:12:07 +0200
-Message-ID: <1409058728-13347-3-git-send-email-tomeu.vizoso@collabora.com>
-References: <1409058728-13347-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1409058728-13347-1-git-send-email-tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Subject: Re: [PATCH 2/9] PM / Domains: Add generic OF-based power domain
+ look-up
+Date: Tue, 26 Aug 2014 15:15:18 +0200
+Message-ID: <1409058918.2911.55.camel@paszta.hi.pengutronix.de>
+References: <1409054837-5667-1-git-send-email-ulf.hansson@linaro.org>
+	 <1409054837-5667-3-git-send-email-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50225 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754395AbaHZNPj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Aug 2014 09:15:39 -0400
+In-Reply-To: <1409054837-5667-3-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, Philipp Zabel <philipp.zabel@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Wolfram Sang <wsa@the-dreams.de>, Stephen Boyd <sboyd@codeaurora.org>, Linus Walleij <linus.walleij@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chris Ball <chris@printf.net>, linux-acpi@vger.kernel.org, Simon Horman <horms@verge.net.au>, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>linux-a
 
-For now the amount requested is based solely on the current mode's refresh
-rate.
+Hi Ulf,
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Acked-by: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Am Dienstag, den 26.08.2014, 14:07 +0200 schrieb Ulf Hansson:
+> From: Tomasz Figa <t.figa@samsung.com>
+> 
+> This patch introduces generic code to perform power domain look-up using
+> device tree and automatically bind devices to their power domains.
+> Generic device tree binding is introduced to specify power domains of
+> devices in their device tree nodes.
+> 
+> Backwards compatibility with legacy Samsung-specific power domain
+> bindings is provided, but for now the new code is not compiled when
+> CONFIG_ARCH_EXYNOS is selected to avoid collision with legacy code. This
+> will change as soon as Exynos power domain code gets converted to use
+> the generic framework in further patch.
+> 
+> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
----
+Thank you for updating this series. I've tested patches 1-4
+using the PU power domain on i.MX6.
 
-v4: * Use vertical refresh rate when calculating the bandwidth requirement
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
 
-v3: * Fixed the bandwidth calculation, and have the units be mbps
----
- drivers/gpu/drm/tegra/dc.c  | 15 +++++++++++++++
- drivers/gpu/drm/tegra/drm.h |  3 +++
- 2 files changed, 18 insertions(+)
+regards
+Philipp
 
-diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
-index 6553fd2..8a3fee8 100644
---- a/drivers/gpu/drm/tegra/dc.c
-+++ b/drivers/gpu/drm/tegra/dc.c
-@@ -9,6 +9,7 @@
- 
- #include <linux/clk.h>
- #include <linux/debugfs.h>
-+#include <linux/pm_qos.h>
- #include <linux/reset.h>
- 
- #include "dc.h"
-@@ -753,6 +754,8 @@ static void tegra_crtc_disable(struct drm_crtc *crtc)
- 	}
- 
- 	drm_vblank_off(drm, dc->pipe);
-+
-+	pm_qos_update_request(&dc->qos_request, PM_QOS_DEFAULT_VALUE);
- }
- 
- static bool tegra_crtc_mode_fixup(struct drm_crtc *crtc,
-@@ -839,6 +842,7 @@ static int tegra_crtc_mode_set(struct drm_crtc *crtc,
- 	struct tegra_dc *dc = to_tegra_dc(crtc);
- 	struct tegra_dc_window window;
- 	u32 value;
-+	unsigned long bandwidth;
- 	int err;
- 
- 	drm_vblank_pre_modeset(crtc->dev, dc->pipe);
-@@ -879,6 +883,12 @@ static int tegra_crtc_mode_set(struct drm_crtc *crtc,
- 	if (err < 0)
- 		dev_err(dc->dev, "failed to enable root plane\n");
- 
-+	bandwidth = window.stride[0] * window.dst.h * 8;
-+	bandwidth *= drm_mode_vrefresh(mode);
-+	bandwidth /= 1024 * 1024;
-+
-+	pm_qos_update_request(&dc->qos_request, bandwidth);
-+
- 	return 0;
- }
- 
-@@ -1499,6 +1509,9 @@ static int tegra_dc_probe(struct platform_device *pdev)
- 		return err;
- 	}
- 
-+	pm_qos_add_request(&dc->qos_request, PM_QOS_MEMORY_BANDWIDTH,
-+			   PM_QOS_DEFAULT_VALUE);
-+
- 	platform_set_drvdata(pdev, dc);
- 
- 	return 0;
-@@ -1509,6 +1522,8 @@ static int tegra_dc_remove(struct platform_device *pdev)
- 	struct tegra_dc *dc = platform_get_drvdata(pdev);
- 	int err;
- 
-+	pm_qos_remove_request(&dc->qos_request);
-+
- 	err = host1x_client_unregister(&dc->client);
- 	if (err < 0) {
- 		dev_err(&pdev->dev, "failed to unregister host1x client: %d\n",
-diff --git a/drivers/gpu/drm/tegra/drm.h b/drivers/gpu/drm/tegra/drm.h
-index e89c70f..a99e533d 100644
---- a/drivers/gpu/drm/tegra/drm.h
-+++ b/drivers/gpu/drm/tegra/drm.h
-@@ -12,6 +12,7 @@
- 
- #include <uapi/drm/tegra_drm.h>
- #include <linux/host1x.h>
-+#include <linux/pm_qos.h>
- 
- #include <drm/drmP.h>
- #include <drm/drm_crtc_helper.h>
-@@ -120,6 +121,8 @@ struct tegra_dc {
- 	struct drm_pending_vblank_event *event;
- 
- 	const struct tegra_dc_soc_info *soc;
-+
-+	struct pm_qos_request qos_request;
- };
- 
- static inline struct tegra_dc *
--- 
-1.9.3
