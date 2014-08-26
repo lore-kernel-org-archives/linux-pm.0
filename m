@@ -1,113 +1,43 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: Re: [PATCH 1/2] dt-bindings: document Rockchip thermal
-Date: Wed, 27 Aug 2014 00:47:02 +0800
-Message-ID: <53FCBA06.90701@rock-chips.com>
-References: <1408752934-18318-1-git-send-email-caesar.wang@rock-chips.com> <1408752934-18318-2-git-send-email-caesar.wang@rock-chips.com> <1504889.nDzfjZj9xp@diego>
+From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Subject: Re: [PATCH v4 3/3] memory: tegra124-emc: Add EMC driver
+Date: Tue, 26 Aug 2014 11:17:45 -0600
+Message-ID: <53FCC139.6020703@wwwdotorg.org>
+References: <1409058728-13347-1-git-send-email-tomeu.vizoso@collabora.com> <1409058728-13347-4-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1504889.nDzfjZj9xp@diego>
-Sender: linux-doc-owner@vger.kernel.org
-To: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>
-Cc: rui.zhang@intel.com, rdunlap@infradead.org, cf@rock-chips.com, grant.likely@linaro.org, robh+dt@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, zyw@rock-chips.com, huangtao@rock-chips.com, xjq@rock-chips.com, addy.ke@rock-chips.com, dianders@chromium.org, zhaoyifeng <zyf@rock-chips.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1409058728-13347-4-git-send-email-tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?windows-1252?Q?Terje_Bergstr=F6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Heiko,
-=E5=9C=A8 2014/8/24 7:03, Heiko St=C3=BCbner =E5=86=99=E9=81=93:
-> Hi Caesar,
+On 08/26/2014 07:12 AM, Tomeu Vizoso wrote:
+> Sets the EMC clock rate based on the bandwidth requirements registered by
+> memory clients through the PM_QOS_MEMORY_BANDWIDTH class.
 >
-> Am Samstag, 23. August 2014, 08:15:33 schrieb Caesar Wang:
->> This add the necessary binding documentation for the thermal
->> found on Rockchip SoCs
->>
->> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
->> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
->> ---
->>   .../bindings/thermal/rockchip-thermal.txt          |   33
->> ++++++++++++++++++++ 1 file changed, 33 insertions(+)
->>   create mode 100644
->> Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-ther=
-mal.txt
->> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt new=
- file
->> mode 100644
->> index 0000000..b556eae
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->> @@ -0,0 +1,33 @@
->> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
->> +
->> +Required properties:
->> +- compatible : "rockchip,rk3288-tsadc"
->> +- reg : physical base address of the controller and length of memor=
-y mapped
->> +  region.
->> +- interrupts : The interrupt number to the cpu. The interrupt speci=
-fier
->> format +  depends on the interrupt controller.
->> +- clocks : Must contain an entry for each entry in clock-names.
->> +- clock-names : Shall be "tsadc_clk" for the transfer-clock, and
->> "tsadc_pclk" for +    the peripheral clock.
->> +Optional properties:
->> +- clock-frequency : Thermal sensor's clock frequency.
-> see comment in patch2, this should probably use assigned-rate if at a=
-ll
-> necessary (and the assigned-rate is not necessary to document here)
->
->
->> +- pinctrl-names : Should contain only one value - "default".
->> +- pinctrl-0 : Should contain only one value - &tsadc_int.
-> in general pinctrl settings are just board-specific settings and do n=
-ot
-> need to be part of the binding documentation.
-> And in this case, are you sure that the tsadc uses some pin as interr=
-upt?
-> Because in the TRM the TS-ADC interrupt is number 69 of the GIC itsel=
-f
-> and not some pin accessible via pinctrl.
->
->
->> +- passive-temp : Temperature of trip 0.
->> +- critical-temp : Temperature of trip 1.
->> +- force-shut-temp : Temperature of force shut down.
-> please use the generic trip-points described in
-> Documentation/devicetree/bindings/thermal/thermal.txt
-> for this, instead of defining new properties
+> Note: this is just an example and not a proper driver for a external memory
+> controller. Its only purpose is to illustrate how such a driver would set the
+> frequency of the external memory clock based on the bandwidth requirements of
+> memory clients.
 
-There are have 4 trip-points mode in thermal.txt.
-It's ACTIVE=E3=80=81PASSAIVE=E3=80=81 HOT and  CRITICAL.
+> diff --git a/arch/arm/mach-tegra/tegra.c b/arch/arm/mach-tegra/tegra.c
 
-Do you have some suggestion for fix it if I need add shut-temp mode ?
+> @@ -112,6 +117,11 @@ static void __init tegra_dt_init(void)
+>   	parent = soc_device_to_device(soc_dev);
+>
+>   	/*
+> +	 * HACK: register a platform device to probe the driver
+> +	 */
+> +	platform_device_register(&tegra_emc);
 
-- Caesar
->
-> Heiko
->
->> +Example:
->> +
->> +tsadc: tsadc@ff280000 {
->> +	compatible =3D "rockchip,rk3288-tsadc";
->> +	reg =3D <0xff280000 0x100>;
->> +	interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
->> +	clock-frequency =3D <10000>;
->> +	clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
->> +	clock-names =3D "tsadc_clk", "tsadc_pclk";
->> +	pinctrl-names =3D "default";
->> +	pinctrl-1 =3D <&tsadc_int>;
->> +	passive-temp =3D <80>;
->> +	critical-temp =3D <100>;
->> +	force-shut-temp =3D <120>;
->> +};
->
->
->
+I don't think this is a hack, except for the bug: That should only 
+happen on Tegra124 not on all Tegra SoCs.
 
---=20
-Best regards,
-Caesar
+Do you intend all 3 patches in this series to be merged? You'd mentioned 
+you didn't when asked about this for a previous version. I'm not sure if 
+that's changed?
 
-
+To merge, I'd need Thierry's ack on patch 2, and Thierry's, Peter's, 
+Mikko's, and/or Tuomas's on this patch.
