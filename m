@@ -1,84 +1,73 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 0/9] PM / Domains: Generic OF-based support
-Date: Tue, 26 Aug 2014 14:07:08 +0200
-Message-ID: <1409054837-5667-1-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 1/9] ACPI / PM: Let acpi_dev_pm_detach() return an error code
+Date: Tue, 26 Aug 2014 14:07:09 +0200
+Message-ID: <1409054837-5667-2-git-send-email-ulf.hansson@linaro.org>
+References: <1409054837-5667-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1409054837-5667-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 Cc: linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patchset has a bit of a history and some parts of it has been posted
-earlier.
+To give callers the option of acting on a errors while removing the
+pm_domain ops for the device in the ACPI power domain, let
+acpi_dev_pm_detach() return an int to provide the error code.
 
-http://lists.infradead.org/pipermail/linux-arm-kernel/2014-June/262725.html
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/acpi/device_pm.c | 4 ++++
+ include/linux/acpi.h     | 7 +++++--
+ 2 files changed, 9 insertions(+), 2 deletions(-)
 
-I intentially didn't increase version number of the patches, since I think it
-will cause more confusion than clarity.
-
-A summary of changes since the last patchset (link above):
-	- Instead of letting driver core handling the device to power domain
-	binding/unbinding, follow the behavior of how the ACPI power domain
-	is handled.
-
-
-This is a summary of what these patches are intended to do:
-
-1)
-Add generic power domain OF-based support which also includes APIs to handle
-attach/detach of generic power domains to devices.
-
-2)
-Adding a common API to attach/detach power domains and include support for the
-ACPI and the generic power domain in there.
-
-3)
->From subsystem level code, at probe/remove, convert from invoking the ACPI
-specific power domain attach/detach functions to the new common attach/detach
-APIs.
-
-4)
-Add support for the AMBA bus to attach/detach power domains, using the new
-common APIs.
-
-5)
-Convert Exynos to use the new generic power domain OF support.
-
-Obviously, there are dependencies througout this patchset, which means if they
-get accepted the all need to go together.
-
-
-Tomasz Figa (2):
-  PM / Domains: Add generic OF-based power domain look-up
-  ARM: exynos: Move to generic power domain bindings
-
-Ulf Hansson (7):
-  ACPI / PM: Let acpi_dev_pm_detach() return an error code
-  PM / Domains: Add APIs to attach/detach a power domain for a device
-  drivercore / platform: Convert to dev_pm_domain_attach|detach()
-  i2c: core: Convert to dev_pm_domain_attach|detach()
-  mmc: sdio: Convert to dev_pm_domain_attach|detach()
-  spi: core: Convert to dev_pm_domain_attach|detach()
-  amba: Add support for attach/detach of power domains
-
- .../bindings/arm/exynos/power_domain.txt           |  13 +-
- .../devicetree/bindings/power/power_domain.txt     |  51 ++++
- arch/arm/mach-exynos/pm_domains.c                  |  78 +-----
- drivers/acpi/device_pm.c                           |   4 +
- drivers/amba/bus.c                                 |  10 +-
- drivers/base/platform.c                            |  15 +-
- drivers/base/power/common.c                        |  58 ++++
- drivers/base/power/domain.c                        | 291 +++++++++++++++++++++
- drivers/i2c/i2c-core.c                             |  13 +-
- drivers/mmc/core/sdio_bus.c                        |   4 +-
- drivers/spi/spi.c                                  |  12 +-
- include/linux/acpi.h                               |   7 +-
- include/linux/pm.h                                 |  14 +
- include/linux/pm_domain.h                          |  46 ++++
- kernel/power/Kconfig                               |   4 +
- 15 files changed, 514 insertions(+), 106 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/power_domain.txt
-
+diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+index 67075f8..fa78abb 100644
+--- a/drivers/acpi/device_pm.c
++++ b/drivers/acpi/device_pm.c
+@@ -1087,6 +1087,8 @@ EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
+  *
+  * Callers must ensure proper synchronization of this function with power
+  * management callbacks.
++ *
++ * Returns 0 on successfully detached power domain or negative error code.
+  */
+ void acpi_dev_pm_detach(struct device *dev, bool power_off)
+ {
+@@ -1107,7 +1109,9 @@ void acpi_dev_pm_detach(struct device *dev, bool power_off)
+ 			acpi_device_wakeup(adev, ACPI_STATE_S0, false);
+ 			acpi_dev_pm_low_power(dev, adev, ACPI_STATE_S0);
+ 		}
++		return 0;
+ 	}
++	return -ENODEV;
+ }
+ EXPORT_SYMBOL_GPL(acpi_dev_pm_detach);
+ #endif /* CONFIG_PM */
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index 5320153..a7bfdf6 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -576,7 +576,7 @@ static inline int acpi_subsys_freeze(struct device *dev) { return 0; }
+ #if defined(CONFIG_ACPI) && defined(CONFIG_PM)
+ struct acpi_device *acpi_dev_pm_get_node(struct device *dev);
+ int acpi_dev_pm_attach(struct device *dev, bool power_on);
+-void acpi_dev_pm_detach(struct device *dev, bool power_off);
++int acpi_dev_pm_detach(struct device *dev, bool power_off);
+ #else
+ static inline struct acpi_device *acpi_dev_pm_get_node(struct device *dev)
+ {
+@@ -586,7 +586,10 @@ static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
+ {
+ 	return -ENODEV;
+ }
+-static inline void acpi_dev_pm_detach(struct device *dev, bool power_off) {}
++static inline int acpi_dev_pm_detach(struct device *dev, bool power_off)
++{
++	return -ENODEV;
++}
+ #endif
+ 
+ #ifdef CONFIG_ACPI
 -- 
 1.9.1
 
