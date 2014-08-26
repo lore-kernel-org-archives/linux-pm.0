@@ -1,87 +1,99 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv5 1/4] thermal: samsung: Exynos5260 and Exynos5420 should not
- use TRIM_RELOAD flag
-Date: Tue, 26 Aug 2014 10:31:02 +0900
-Message-ID: <1409016665-3824-2-git-send-email-cw00.choi@samsung.com>
-References: <1409016665-3824-1-git-send-email-cw00.choi@samsung.com>
+From: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Subject: Re: [PATCH v2] intel_idle: add idle values for Cherrytrail/Braswell
+Date: Tue, 26 Aug 2014 10:38:32 +0800
+Message-ID: <53FBF328.1080205@linux.intel.com>
+References: <1408701508-13636-1-git-send-email-mika.westerberg@linux.intel.com> <1408707540-12393-1-git-send-email-mika.westerberg@linux.intel.com> <53F74E5D.2040108@linux.intel.com> <20140825101200.GH1660@lahna.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1409016665-3824-1-git-send-email-cw00.choi@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: eduardo.valentin@ti.com, amit.daniel@samsung.com, rui.zhang@intel.com
-Cc: kgene.kim@samsung.com, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, kyungmin.park@samsung.com, linux-samsung-soc@vger.kernel.org, ch.naveen@samsung.com, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:30623 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752959AbaHZCim (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 Aug 2014 22:38:42 -0400
+In-Reply-To: <20140825101200.GH1660@lahna.fi.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Len Brown <lenb@kernel.org>, Kumar P Mahesh <mahesh.kumar.p@intel.com>, Alan Cox <alan@linux.intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+On 2014/8/25 18:12, Mika Westerberg wrote:
+> On Fri, Aug 22, 2014 at 10:06:21PM +0800, Li, Aubrey wrote:
+>> On 2014/8/22 19:39, Mika Westerberg wrote:
+>>> From: Mahesh Kumar P <mahesh.kumar.p@intel.com>
+>>>
+>>> Cherrytrail/Braswell is a successor of Intel Baytrail but has slighly
+>>> different CPU idle values and latencies.
+>>>
+>>> Signed-off-by: Kumar P Mahesh <mahesh.kumar.p@intel.com>
+>>> Signed-off-by: Alan Cox <alan@linux.intel.com>
+>>> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+>>> ---
+>>> I learned from Mahesh that C1e, C4 and S0i2 states are deprecated so those
+>>> are now removed.
+>>
+>> If the platform has ACPI supported, I believe Len wants to see what
+>> C-states number exported by ACPI.
+>>
+>> Please boot the machine with "intel_idle.max_cstate=0" to disable
+>> intel_idle, then post the output of the following commands
+> 
+> OK, here goes:
 
-Currently these SoCs claim TRIM_RELOAD support but don't have
-triminfo_ctrl register address defined in their struct
-exynos_tmu_registers entries.  This causes incorrect write of
-value "1" to data->base + 0x00 address (which happens to be
-TRIMINFO register).  Additionally according to the documentation
-that I have neither Exynos5260 nor Exynos5420 support/require
-TRIM_RELOAD feature.  Thus fix the aforementioned issue by
-removing TMU_SUPPORT_TRIM_RELOAD flag for both Exynos5260 and
-Exynos5420.
+ACPI exposes 0x58 as C6 mwait hint while the patch proposes 0x52 for C6.
+Can you please remove "intel_idle.max_cstate=0" and run "dmesg | grep
+idle" again to see how many C6 supports in CPUID enumeration?
 
-Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- drivers/thermal/samsung/exynos_tmu_data.c | 16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+Thanks,
+-Aubrey
 
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index aa8e0de..8c0ada2 100644
---- a/drivers/thermal/samsung/exynos_tmu_data.c
-+++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -359,9 +359,8 @@ static const struct exynos_tmu_registers exynos5260_tmu_registers = {
- #define EXYNOS5260_TMU_DATA \
- 	__EXYNOS5260_TMU_DATA \
- 	.type = SOC_ARCH_EXYNOS5260, \
--	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
--			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
--			TMU_SUPPORT_EMUL_TIME)
-+	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_FALLING_TRIP | \
-+			TMU_SUPPORT_READY_STATUS | TMU_SUPPORT_EMUL_TIME)
- 
- struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
- 	.tmu_data = {
-@@ -451,16 +450,15 @@ static const struct exynos_tmu_registers exynos5420_tmu_registers = {
- #define EXYNOS5420_TMU_DATA \
- 	__EXYNOS5420_TMU_DATA \
- 	.type = SOC_ARCH_EXYNOS5250, \
--	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
--			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
--			TMU_SUPPORT_EMUL_TIME)
-+	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_FALLING_TRIP | \
-+			TMU_SUPPORT_READY_STATUS | TMU_SUPPORT_EMUL_TIME)
- 
- #define EXYNOS5420_TMU_DATA_SHARED \
- 	__EXYNOS5420_TMU_DATA \
- 	.type = SOC_ARCH_EXYNOS5420_TRIMINFO, \
--	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
--			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
--			TMU_SUPPORT_EMUL_TIME | TMU_SUPPORT_ADDRESS_MULTIPLE)
-+	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_FALLING_TRIP | \
-+			TMU_SUPPORT_READY_STATUS | TMU_SUPPORT_EMUL_TIME | \
-+			TMU_SUPPORT_ADDRESS_MULTIPLE)
- 
- struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
- 	.tmu_data = {
--- 
-1.8.0
+> 
+>> dmesg | grep idle
+> 
+> [    0.523624] cpuidle: using governor ladder
+> [    0.528215] cpuidle: using governor menu
+> [   16.649461] intel_idle: disabled
+> [   16.736481] ACPI: acpi_idle registered with cpuidle
+> 
+>> grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
+> 
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/desc:CPUIDLE CORE POLL IDLE
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/disable:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/latency:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/name:POLL
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/power:4294967295
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/residency:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/time:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/usage:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/desc:ACPI FFH INTEL MWAIT 0x0
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/disable:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/latency:1
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/name:C1
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/power:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/residency:2
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/time:1255076
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/usage:763
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/desc:ACPI FFH INTEL MWAIT 0x58
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/disable:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/latency:500
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/name:C2
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/power:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/residency:1000
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/time:1694866
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/usage:639
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/desc:ACPI FFH INTEL MWAIT 0x64
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/disable:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/latency:5000
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/name:C3
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/power:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/residency:10000
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/time:380547473
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/usage:744
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+
