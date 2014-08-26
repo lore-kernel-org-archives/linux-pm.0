@@ -1,89 +1,178 @@
-From: Chander Kashyap <k.chander@samsung.com>
-Subject: Re: [PATCH v9 4/6] ARM: Exynos: switch to using generic cpufreq
- driver for Exynos4210/5250/5420
-Date: Tue, 26 Aug 2014 10:55:05 +0530
-Message-ID: <CADWw7OgW+o3tB=ptnsy-PsmXmNv8oXzt_WfK6NswQiEWWwAzNA@mail.gmail.com>
-References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
-	<1406707663-16656-5-git-send-email-thomas.ab@samsung.com>
-	<53DA8BB9.6020702@samsung.com>
-	<53DA8D85.3050106@gmail.com>
-	<7hbnrc6px3.fsf@paris.lan>
-	<53F7DA13.6090305@gmail.com>
-	<CADWw7OgAS-z-UOrJU-hL2fzuefJmLtCTg57jYk2Df7f5KfLJmA@mail.gmail.com>
-	<7h8umc60we.fsf@paris.lan>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [ANNOUNCE] (Resend) Tools to analyse PM and scheduling behaviour
+Date: Tue, 26 Aug 2014 11:02:52 +0530
+Message-ID: <87oav7n7cr.fsf@matterhorn.verdurent.com>
+References: <87mwb0fixy.fsf@matterhorn.verdurent.com> <CAMHCuPWeMwjJO+xzmQrZFmEMdx3+yF=zkove8brWX4rQiti50w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <7h8umc60we.fsf@paris.lan>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kevin Hilman <khilman@linaro.org>
-Cc: Chander Kashyap <k.chander@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linaro-kernel@lists.linaro.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f182.google.com ([209.85.192.182]:37261 "EHLO
+	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751336AbaHZFcv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Aug 2014 01:32:51 -0400
+Received: by mail-pd0-f182.google.com with SMTP id fp1so21997195pdb.13
+        for <linux-pm@vger.kernel.org>; Mon, 25 Aug 2014 22:32:51 -0700 (PDT)
+In-Reply-To: <CAMHCuPWeMwjJO+xzmQrZFmEMdx3+yF=zkove8brWX4rQiti50w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sundar <sunder.svit@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul McKenney <Paul.McKenney@us.ibm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mike Turquette <mturquette@linaro.org>, Juri Lelli <juri.lelli@arm.com>, sched-tools@linaro.org, len.brown@intel.com, mark.gross@intel.com, larry.bassel@linaro.org
 
-Hi Kevin,
-
-On Mon, Aug 25, 2014 at 9:02 PM, Kevin Hilman <khilman@linaro.org> wrote:
-> Hi Chander,
+On Sat, 23 Aug 2014 at 07:44 +0530, Sundar <sunder.svit@gmail.com> wrot=
+e:
+> Hi Amit,
 >
-> Chander Kashyap <k.chander@samsung.com> writes:
->
-> [...]
->
->>>> I'm trying it on the 5800/Chromebook2 and it's not terribly stable.  I'm
->>>> testing along with CPUidle, so there may be some untested interactions
->>>> there as it seems a bit more stable without CPUidle enabled.
->>>>
->>>> I'd love to hear from anyone else that's testing CPUidle and CPUfreq
->>>> together big.LITTLE 5420/5800, with or without the switcher.
+> On Tue, Aug 19, 2014 at 11:11 AM, Amit Kucheria
+> <amit.kucheria@linaro.org> wrote:
 >>
->> I have tested this patch series on SMDK5420 with cpuidle (with and
->> without b.L switcher enabled).
->>
->> As of now voltage scaling support is not there in generic big-little
->> cpufreq driver (arm_big_little.c).
->> Hence need to tie arm and kfc voltages to highest level for testing.
+>> We=E2=80=99re soliciting early feedback from community on the direct=
+ion of idlestat
 >
->> Without this change stability issues are there, but with this change
->> everything is stable.
+> Nice :)
 >
-> Can you clarify how you're setting the voltages to ensure stability?
-
-below is the diff :  wip/exynos/integ
-
---- a/arch/arm/boot/dts/exynos5800-peach-pi.dts
-+++ b/arch/arm/boot/dts/exynos5800-peach-pi.dts
-@@ -225,7 +225,7 @@
-
-                        buck2_reg: BUCK2 {
-                                regulator-name = "vdd_arm";
--                               regulator-min-microvolt = <800000>;
-+                               regulator-min-microvolt = <1500000>;
-                                regulator-max-microvolt = <1500000>;
-                                regulator-always-on;
-                                regulator-boot-on;
-@@ -260,7 +260,7 @@
-
-                        buck6_reg: BUCK6 {
-                                regulator-name = "vdd_kfc";
--                               regulator-min-microvolt = <800000>;
-+                               regulator-min-microvolt = <1500000>;
-                                regulator-max-microvolt = <1500000>;
-                                regulator-always-on;
-                                regulator-boot-on;
-
+>> Idlestat Details
+>> ----------------
+>> Idlestat uses FTRACE to capture traces related to C-state and P-stat=
+e
+>> transitions of the CPU and wakeups (IRQ, IPI) on the system and then
+>> post-processes the data to print statistics. It is designed to be us=
+ed
+>> non-interactively. Idlestat can deduce the idle time for a cluster a=
+s an
+>> intersection between the idle times of all the cpus belonging to the=
+ same
+>> cluster. This data is useful to analyse and optimise scheduling beha=
+viour.
+>> The tool will also list how many times the menu governor mis-predict=
+s
+>> target residency in a C-state.
 >
-> Tomasz, I didn't mean to suggest this isn't ready for mainline.  For the
-> 5420/5800 it seems cpufreq support is a new feature, so this isn't a
-> regression against previous (mainline) behavior.  Maybe the big.LITTLE
-> cpufreq support should've been separated out from the cleanup since it's
-> more of a new feature, but that's up to you.
+> We discussed this in the energy aware scheduling workshop this week @
+> the Kernel Summit. A few notes:
 >
-> Kevin
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> 1. We need to really understand the co-relation of this tool w.r.t
+> actual hardware states.
+> It is usually likely that the software "thinks" it is in a low power
+> state, but the actual
+> hardware might not be. What is the coverage for these kind of cases h=
+ere.
 
-regards,
-Chander
+You are right, it does not represent the actual state of the HW, only
+the 'requested' state.
+
+There are various platform-dependent ways to knowing the actual HW
+state. Some examples are:
+ - Through an external HW signal (e.g. a GPIO that is toggled when cloc=
+k
+ to the CPU is cut off)
+ - Measuring power on the power rails and correlating those well-known
+ values (CPU ON, retention, OFF) to the traces
+ - Reading some register (like MSR on x86)
+
+This is not the main focus of the tool.
+
+> 2. I understand that C/P states are a direct metric of how well the
+> workload behaved w.r.t power;
+> but I am not sure that relates to a direct measure of how the
+> scheduler performed.
+
+Consider the following examples:
+
+*On a given platform*, we see the same benchmark scores with and
+without patchset ABC, but including patchset ABC leads to better "power
+behaviour" i.e. requests of deeper idle states and/or lower frequencies=
+=2E
+
+Consider another example where the benchmark score dramatically improve=
+s
+with patchset XYZ while the idle and frequency requests are marginally
+worse (shallower idle, reduced residency or increased frequency request=
+s).
+
+In both cases, it is left to platforms to do real measurements to confi=
+rm that
+this is indeed the case. The latter example might not even be possible
+on some platforms, given some platform constraints e.g. the platform
+thermal envelope.
+
+Idlestat is not a replacement for real measurements. It is a tool to
+allow maintainers (scheduler, PM) to judge if any further investigation
+is needed and request such numbers from people running the code on
+various architectures before merging the patches.
+
+> The C/P states
+> could be maintained whilst giving away performance or power at the
+> expense of additional components
+> on the SoC and platform like DDR IOs, fabric states etc.
+
+True.
+
+> Quick Summary of what I discussed with Daniel @ the workshop about id=
+lestat:
+>
+> 1. There might be usually platform specific tools to get residencies
+> for P/C states.
+> PowerTop & Turbostat are two that first come to mind. Any specific
+> item apart from prediction logic
+> that idlestat differs from these two?
+
+=46irst, idlestat is designed to be architecture-independent. It only
+depends on what the kernel knows.
+Second, it is created with benchmarking in mind - non-interactive and
+minimal overhead.
+Third, it was designed for maintainers to be able to quickly tell if a
+patchset changes OS behaviour dramatically and request deeper
+analysis on various architectures.
+=46ourth, it has the prediction logic which calculates the intersection=
+ of
+C-state requests by several cpus in a cluster to determine the cluster
+state.
+
+On top of this, we have two WIP additions:
+ - an experimental "energy model" patch for idlestat that lets a SoC
+ vendor provide the cost of various states as input and idlestat will
+ output the "energy cost" of a workload.
+ - a 'diff mode' to show the diff between two traces
+
+> 2. To me debugging performance or power, C/P states provide the
+> direction that something is wrong.
+>
+> But they still dont tell me "what" is wrong "if" the issue is somehow
+> in the kernel as opposed to a more
+
+Correct. At the moment, idlestat can only provide an indication if
+something might be wrong.
+
+> easily fixable software code (traceable at hardware/software level fo=
+r
+> best optimizations). How do I
+> conclude that my scheduler is the culprit apart from the points where
+> it took a decision to select the
+> right idle states based on predicted sleep times? In my opinion, that
+> would boil down to if the scheduler
+> was invoking too much load balancing calls, moving my threads across
+> cores too much, data being
+> thrashed across caches, cores too much etc.
+
+These would show up as regressions in benchmark results. Fengguang's
+excellent benchmark report[1] already captures such "changes". Does it
+make sense to recapture that in a tool?
+
+We're open to tracking more metrics if it is felt they are useful.
+
+> I think a tool for scheduler metrics must be based on more inner
+> details like the above, finally culminating
+> into C/P states. as opposed to C/P states being the metric to be reli=
+ed.
+
+One of the tenets of energy-aware scheduling is "improving energy
+efficiency with little or no performance regression". idlestat tells us
+about possible regressions on the energy front and benchmarks should
+tell us if we are regressing on performance. Hence the focus on
+C/P-states for now.
+
+Regards,
+Amit
+[1] https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg703826=
+=2Ehtml
