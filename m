@@ -1,113 +1,79 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/5 v3] PM / sleep: Mechanism for aborting system suspends unconditionally
-Date: Wed, 27 Aug 2014 01:47:47 +0200
-Message-ID: <3280095.tp6RTXXLdN@vostro.rjw.lan>
+Subject: [PATCH 3/5 v3] x86 / PM: Set IRQCHIP_SKIP_SET_WAKE for IOAPIC IRQ chip objects
+Date: Wed, 27 Aug 2014 01:50:49 +0200
+Message-ID: <5572679.hklRpx9fCZ@vostro.rjw.lan>
 References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:59492 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755541AbaHZXg6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Aug 2014 19:36:58 -0400
 In-Reply-To: <5320472.coYotHR1d0@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>
 Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
-List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It sometimes may be necessary to abort a system suspend in
-progress or wake up the system from suspend-to-idle even if the
-pm_wakeup_event()/pm_stay_awake() mechanism is not enabled.
+Set the IRQCHIP_SKIP_SET_WAKE for IOAPIC IRQ chip objects so that
+interrupts from them can work as wakeup interrupts for suspend-to-idle.
 
-For this purpose, introduce a new global variable abort_suspend and
-make pm_wakeup_pending() check its value.  Also add routines for
-manipulating that variable.
-
-This is going to be used in subsequent changes.
+After this change, running enable_irq_wake() on one of the IRQs in
+question will succeed and IRQD_WAKEUP_STATE will be set for it, so
+all of the suspend-to-idle wakeup mechanics introduced previously
+will work for it automatically.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/base/power/wakeup.c |   20 ++++++++++++++++++++
- include/linux/suspend.h     |    4 ++++
- kernel/power/process.c      |    1 +
- 3 files changed, 25 insertions(+)
+ arch/x86/kernel/apic/io_apic.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-Index: linux-pm/include/linux/suspend.h
+Index: linux-pm/arch/x86/kernel/apic/io_apic.c
 ===================================================================
---- linux-pm.orig/include/linux/suspend.h
-+++ linux-pm/include/linux/suspend.h
-@@ -371,6 +371,8 @@ extern int unregister_pm_notifier(struct
- extern bool events_check_enabled;
+--- linux-pm.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-pm/arch/x86/kernel/apic/io_apic.c
+@@ -2618,6 +2618,7 @@ static struct irq_chip ioapic_chip __rea
+ 	.irq_eoi		= ack_apic_level,
+ 	.irq_set_affinity	= native_ioapic_set_affinity,
+ 	.irq_retrigger		= ioapic_retrigger_irq,
++	.flags			= IRQCHIP_SKIP_SET_WAKE,
+ };
  
- extern bool pm_wakeup_pending(void);
-+extern void pm_system_wakeup(void);
-+extern void pm_wakeup_clear(void);
- extern bool pm_get_wakeup_count(unsigned int *count, bool block);
- extern bool pm_save_wakeup_count(unsigned int count);
- extern void pm_wakep_autosleep_enabled(bool set);
-@@ -418,6 +420,8 @@ static inline int unregister_pm_notifier
- #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
+ static inline void init_IO_APIC_traps(void)
+@@ -3168,6 +3169,7 @@ static struct irq_chip msi_chip = {
+ 	.irq_ack		= ack_apic_edge,
+ 	.irq_set_affinity	= msi_set_affinity,
+ 	.irq_retrigger		= ioapic_retrigger_irq,
++	.flags			= IRQCHIP_SKIP_SET_WAKE,
+ };
  
- static inline bool pm_wakeup_pending(void) { return false; }
-+static inline void pm_system_wakeup(void) {}
-+static inline void pm_wakeup_clear(void) {}
+ int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
+@@ -3266,6 +3268,7 @@ static struct irq_chip dmar_msi_type = {
+ 	.irq_ack		= ack_apic_edge,
+ 	.irq_set_affinity	= dmar_msi_set_affinity,
+ 	.irq_retrigger		= ioapic_retrigger_irq,
++	.flags			= IRQCHIP_SKIP_SET_WAKE,
+ };
  
- static inline void lock_system_sleep(void) {}
- static inline void unlock_system_sleep(void) {}
-Index: linux-pm/drivers/base/power/wakeup.c
-===================================================================
---- linux-pm.orig/drivers/base/power/wakeup.c
-+++ linux-pm/drivers/base/power/wakeup.c
-@@ -691,6 +691,8 @@ void pm_print_active_wakeup_sources(void
- }
- EXPORT_SYMBOL_GPL(pm_print_active_wakeup_sources);
+ int arch_setup_dmar_msi(unsigned int irq)
+@@ -3316,6 +3319,7 @@ static struct irq_chip hpet_msi_type = {
+ 	.irq_ack = ack_apic_edge,
+ 	.irq_set_affinity = hpet_msi_set_affinity,
+ 	.irq_retrigger = ioapic_retrigger_irq,
++	.flags = IRQCHIP_SKIP_SET_WAKE,
+ };
  
-+static bool abort_suspend;
-+
- /**
-  * pm_wakeup_pending - Check if power transition in progress should be aborted.
-  *
-@@ -712,6 +714,7 @@ bool pm_wakeup_pending(void)
- 		ret = (cnt != saved_count || inpr > 0);
- 		events_check_enabled = !ret;
- 	}
-+	ret = ret || abort_suspend;
- 	spin_unlock_irqrestore(&events_lock, flags);
+ int default_setup_hpet_msi(unsigned int irq, unsigned int id)
+@@ -3379,6 +3383,7 @@ static struct irq_chip ht_irq_chip = {
+ 	.irq_ack		= ack_apic_edge,
+ 	.irq_set_affinity	= ht_set_affinity,
+ 	.irq_retrigger		= ioapic_retrigger_irq,
++	.flags			= IRQCHIP_SKIP_SET_WAKE,
+ };
  
- 	if (ret) {
-@@ -722,6 +725,23 @@ bool pm_wakeup_pending(void)
- 	return ret;
- }
- 
-+void pm_system_wakeup(void)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&events_lock, flags);
-+	abort_suspend = true;
-+	spin_unlock_irqrestore(&events_lock, flags);
-+	freeze_wake();
-+}
-+
-+void pm_wakeup_clear(void)
-+{
-+	spin_lock_irq(&events_lock);
-+	abort_suspend = false;
-+	spin_unlock_irq(&events_lock);
-+}
-+
- /**
-  * pm_get_wakeup_count - Read the number of registered wakeup events.
-  * @count: Address to store the value at.
-Index: linux-pm/kernel/power/process.c
-===================================================================
---- linux-pm.orig/kernel/power/process.c
-+++ linux-pm/kernel/power/process.c
-@@ -129,6 +129,7 @@ int freeze_processes(void)
- 	if (!pm_freezing)
- 		atomic_inc(&system_freezing_cnt);
- 
-+	pm_wakeup_clear();
- 	printk("Freezing user space processes ... ");
- 	pm_freezing = true;
- 	error = try_to_freeze_tasks(true);
+ int arch_setup_ht_irq(unsigned int irq, struct pci_dev *dev)
+
