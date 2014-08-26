@@ -1,70 +1,96 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 8/9] amba: Add support for attach/detach of power domains
-Date: Tue, 26 Aug 2014 14:07:16 +0200
-Message-ID: <1409054837-5667-9-git-send-email-ulf.hansson@linaro.org>
-References: <1409054837-5667-1-git-send-email-ulf.hansson@linaro.org>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [PATCH v4 0/3] PM QoS: Add support for memory bandwidth constraints
+Date: Tue, 26 Aug 2014 15:12:05 +0200
+Message-ID: <1409058728-13347-1-git-send-email-tomeu.vizoso@collabora.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f44.google.com ([209.85.215.44]:52296 "EHLO
-	mail-la0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757922AbaHZMIE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Aug 2014 08:08:04 -0400
-Received: by mail-la0-f44.google.com with SMTP id el20so15149700lab.3
-        for <linux-pm@vger.kernel.org>; Tue, 26 Aug 2014 05:08:02 -0700 (PDT)
-In-Reply-To: <1409054837-5667-1-git-send-email-ulf.hansson@linaro.org>
+Received: from mail-wg0-f43.google.com ([74.125.82.43]:43306 "EHLO
+	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757970AbaHZNMu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Aug 2014 09:12:50 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Ulf Hansson <ulf.hansson@linaro.org>
+To: linux-pm@vger.kernel.org
+Cc: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
 
-AMBA devices may on some SoCs resides in power domains. To be able to
-manage these devices from there, let's try to attach devices to their
-corresponding power domain during the probe phase.
+Hi,
 
-To reverse these actions at the remove phase, we try to detach the
-device from it's power domain.
+have rebased on top of linux-next and fixed some small issues (see individual
+commit messages for details). Follows the original blurb:
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/amba/bus.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+Some device drivers need to sustain transfers to or from external memory at
+given fixed rates for a period of time. If we wait for the devfreq drivers to
+react to this load, the user is likely going to perceive glitches in the user
+experience.
 
-diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
-index 3cf61a1..8f52393 100644
---- a/drivers/amba/bus.c
-+++ b/drivers/amba/bus.c
-@@ -182,9 +182,15 @@ static int amba_probe(struct device *dev)
- 	int ret;
- 
- 	do {
-+		ret = dev_pm_domain_attach(dev, true);
-+		if (ret == -EPROBE_DEFER)
-+			break;
-+
- 		ret = amba_get_enable_pclk(pcdev);
--		if (ret)
-+		if (ret) {
-+			dev_pm_domain_detach(dev, true);
- 			break;
-+		}
- 
- 		pm_runtime_get_noresume(dev);
- 		pm_runtime_set_active(dev);
-@@ -199,6 +205,7 @@ static int amba_probe(struct device *dev)
- 		pm_runtime_put_noidle(dev);
- 
- 		amba_put_disable_pclk(pcdev);
-+		dev_pm_domain_detach(dev, true);
- 	} while (0);
- 
- 	return ret;
-@@ -220,6 +227,7 @@ static int amba_remove(struct device *dev)
- 	pm_runtime_put_noidle(dev);
- 
- 	amba_put_disable_pclk(pcdev);
-+	dev_pm_domain_detach(dev, true);
- 
- 	return ret;
- }
+Some common scenarios that would benefit from it are display controllers
+setting a new mode, USB drivers starting isochronous transfers, camera drivers
+starting to capture and hw media codecs doing their thing.
+
+I'm proposing adding a new PM_QOS_MEMORY_BANDWIDTH class that device drivers
+can use to register their memory bandwidth needs right when they become known,
+so the external memory clock can be set at the optimum frequency, thus
+preventing glitches.
+
+There have been similar proposals before [0], the first main concern being that
+constraints need to refer to a global resource such as CPUs. If they referred
+to a network NIC or to a UART, there would be no way of knowing how to actually
+constrain each device because there would be a single list of requests.
+
+In this case, the memory bus is a global resource just like the CPUs are, and
+all requests in this class will apply to a single device driver in any
+particular system.
+
+The second serious concern was that constraints need to be defined in a way
+generic enough so they can be consumed in a wide array of particular systems
+without placing the burden of taking into account hw specifics in the driver of
+the memory client.
+
+Here, the PM_QOS_MEMORY_BANDWIDTH constraints are specified always in kbs,
+being the amount of data that the device driver wants to see transferred per
+second. This allows for example for a camera driver to calculate the
+appropriate value based on the size of each frame and the desired FPS and,
+depending on the particular system where the camera block is used, the
+appropriate external memory driver will convert that to the bus clock frequency
+that makes sense for the hardware at hand.
+
+The first patch adds the new class and also a new PM_QOS_SUM class type.
+
+The second illustrates how the driver for such a memory client would request
+its memory bandwidth requirement.
+
+The third patch illustrates how an hypothetical driver for an external memory
+controller would listen for changes in the aggregated bandwidth constraint and
+would set a floor frequency rate on the appropriate clock. Depends on the
+per-user clk series [1].
+
+Most vendor trees carry their own solution for this specific issue, so it would
+be pretty neat if mainline gained a similar mechanism so we get more power
+management goodies in the right place.
+
+[0] https://lkml.org/lkml/2012/3/10/165
+[1] http://article.gmane.org/gmane.linux.ports.arm.kernel/349154
+
+Thanks,
+
+Tomeu
+
+Tomeu Vizoso (3):
+  PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
+  drm/tegra: Request memory bandwidth for the display controller
+  memory: tegra124-emc: Add EMC driver
+
+ Documentation/power/pm_qos_interface.txt |   4 +-
+ arch/arm/mach-tegra/tegra.c              |  10 +++
+ drivers/gpu/drm/tegra/dc.c               |  15 ++++
+ drivers/gpu/drm/tegra/drm.h              |   3 +
+ drivers/memory/Kconfig                   |   9 +++
+ drivers/memory/Makefile                  |   1 +
+ drivers/memory/tegra124-emc.c            | 117 +++++++++++++++++++++++++++++++
+ include/linux/pm_qos.h                   |   5 +-
+ kernel/power/qos.c                       |  27 ++++++-
+ 9 files changed, 188 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/memory/tegra124-emc.c
+
 -- 
-1.9.1
+1.9.3
 
