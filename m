@@ -1,130 +1,57 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 3/9] PM / Domains: Add APIs to attach/detach a power domain for a device
-Date: Tue, 26 Aug 2014 14:07:11 +0200
-Message-ID: <1409054837-5667-4-git-send-email-ulf.hansson@linaro.org>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 5/9] i2c: core: Convert to dev_pm_domain_attach|detach()
+Date: Tue, 26 Aug 2014 14:07:13 +0200
+Message-ID: <1409054837-5667-6-git-send-email-ulf.hansson@linaro.org>
 References: <1409054837-5667-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1409054837-5667-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Ulf Hansson <ulf.hansson@linaro.org>
+Return-path: <linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1409054837-5667-1-git-send-email-ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ben Dooks <ben-linux-elnMNo+KYs3YtjvyW6yDsg@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Philipp Zabel <philipp.zabel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Chris Ball <chris-OsFVWbfNK3isTnJN9+BGXg@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-To maintain scalability let's add common methods to attach and detach
-a power domain for a device, dev_pm_domain_attach|detach().
+Previously only the ACPI power domain was supported by the i2c bus.
 
-Typically dev_pm_domain_attach() shall be invoked from subsystem level
-code at the probe phase to try to attach a device to it's power domain.
-The reversed actions may be done a the remove phase and then by invoking
-dev_pm_domain_detach().
+Let's convert to the common attach/detach functions for power domains,
+which currently means we are extending the support to include the
+generic power domain as well.
 
-The supported power domains at this point are the ACPI and the generic
-power domains.
-
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Signed-off-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- drivers/base/power/common.c | 58 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm.h          | 14 +++++++++++
- 2 files changed, 72 insertions(+)
+ drivers/i2c/i2c-core.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-index df2e5ee..f544128 100644
---- a/drivers/base/power/common.c
-+++ b/drivers/base/power/common.c
-@@ -11,6 +11,8 @@
- #include <linux/export.h>
- #include <linux/slab.h>
- #include <linux/pm_clock.h>
-+#include <linux/acpi.h>
-+#include <linux/pm_domain.h>
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index 66aa83b..7cf7b47 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -279,10 +279,13 @@ static int i2c_device_probe(struct device *dev)
+ 	if (status < 0)
+ 		return status;
  
- /**
-  * dev_pm_get_subsys_data - Create or refcount power.subsys_data for device.
-@@ -82,3 +84,59 @@ int dev_pm_put_subsys_data(struct device *dev)
- 	return ret;
+-	acpi_dev_pm_attach(&client->dev, true);
+-	status = driver->probe(client, i2c_match_id(driver->id_table, client));
+-	if (status)
+-		acpi_dev_pm_detach(&client->dev, true);
++	status = dev_pm_domain_attach(&client->dev, true);
++	if (status != -EPROBE_DEFER) {
++		status = driver->probe(client, i2c_match_id(driver->id_table,
++					client));
++		if (status)
++			dev_pm_domain_detach(&client->dev, true);
++	}
+ 
+ 	return status;
  }
- EXPORT_SYMBOL_GPL(dev_pm_put_subsys_data);
-+
-+/**
-+ * dev_pm_domain_attach - Attach a device to it's power domain.
-+ * @dev: Device to attach.
-+ * @power_on: Used to indicate whether we should power on the device.
-+ *
-+ * The @dev may only be attached to a single power domain. By iterating through
-+ * the available alternatives we try to find a valid domain for the device.
-+ *
-+ * This function should typically be invoked from subsystem level code during
-+ * the probe phase. Especially for those that's hold devices which requires
-+ * power management through power domains.
-+ *
-+ * Callers must ensure proper synchronization of this function with power
-+ * management callbacks.
-+ *
-+ * Returns 0 on successfully attached power domain or negative error code.
-+ */
-+int dev_pm_domain_attach(struct device *dev, bool power_on)
-+{
-+	int ret;
-+
-+	ret = acpi_dev_pm_attach(dev, power_on);
-+	if (ret == -EPROBE_DEFER)
-+		return ret;
-+	else
-+		ret = genpd_dev_pm_attach(dev);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_domain_attach);
-+
-+/**
-+ * dev_pm_domain_detach - Detach a device from it's power domain.
-+ * @dev: Device to attach.
-+ * @power_off: Used to indicate whether we should power off the device.
-+ *
-+ * The @dev may be attached to a power domain. By iterating through the
-+ * available alternatives we detach it from it's power domain.
-+ *
-+ * This functions will reverse the actions from dev_pm_domain_attach() and
-+ * thus detach the @dev from it's power domain. Typically it should be invoked
-+ * from subsystem level code during the remove phase.
-+ *
-+ * Callers must ensure proper synchronization of this function with power
-+ * management callbacks.
-+ *
-+ * Returns 0 on successfully detached power domain or negative error code.
-+ */
-+int dev_pm_domain_detach(struct device *dev, bool power_off)
-+{
-+	if (acpi_dev_pm_detach(dev, power_off))
-+		return genpd_dev_pm_detach(dev);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_domain_detach);
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 72c0fe0..8176b07 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -621,6 +621,20 @@ struct dev_pm_domain {
- 	struct dev_pm_ops	ops;
- };
+@@ -302,7 +305,7 @@ static int i2c_device_remove(struct device *dev)
+ 		status = driver->remove(client);
+ 	}
  
-+#ifdef CONFIG_PM
-+extern int dev_pm_domain_attach(struct device *dev, bool power_on);
-+extern int dev_pm_domain_detach(struct device *dev, bool power_off);
-+#else
-+static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
-+{
-+	return -ENODEV;
-+}
-+static inline int dev_pm_domain_detach(struct device *dev, bool power_off)
-+{
-+	return -ENODEV;
-+}
-+#endif
-+
- /*
-  * The PM_EVENT_ messages are also used by drivers implementing the legacy
-  * suspend framework, based on the ->suspend() and ->resume() callbacks common
+-	acpi_dev_pm_detach(&client->dev, true);
++	dev_pm_domain_detach(&client->dev, true);
+ 	return status;
+ }
+ 
 -- 
 1.9.1
-
