@@ -1,94 +1,113 @@
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH 2/9] cpuidle/powernv: Populate cpuidle state details by querying the device-tree
-Date: Mon, 25 Aug 2014 23:31:06 +0530
-Message-ID: <1408989673-14137-3-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+From: Caesar Wang <caesar.wang@rock-chips.com>
+Subject: Re: [PATCH 1/2] dt-bindings: document Rockchip thermal
+Date: Tue, 26 Aug 2014 08:50:12 +0800
+Message-ID: <53FBD9C4.3010309@rock-chips.com>
+References: <1408752934-18318-1-git-send-email-caesar.wang@rock-chips.com> <1408752934-18318-2-git-send-email-caesar.wang@rock-chips.com> <1504889.nDzfjZj9xp@diego>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1504889.nDzfjZj9xp@diego>
+Sender: linux-doc-owner@vger.kernel.org
+To: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>
+Cc: rui.zhang@intel.com, rdunlap@infradead.org, cf@rock-chips.com, grant.likely@linaro.org, robh+dt@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, zyw@rock-chips.com, huangtao@rock-chips.com, xjq@rock-chips.com, addy.ke@rock-chips.com, dianders@chromium.org, zhaoyifeng <zyf@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Hi Heiko,
 
-We hard code the metrics relevant for cpuidle states in the kernel today.
-Instead pick them up from the device tree so that they remain relevant
-and updated for the system that the kernel is running on.
+=E5=9C=A8 2014=E5=B9=B408=E6=9C=8824=E6=97=A5 07:03, Heiko St=C3=BCbner=
+ =E5=86=99=E9=81=93:
+> Hi Caesar,
+>
+> Am Samstag, 23. August 2014, 08:15:33 schrieb Caesar Wang:
+>> This add the necessary binding documentation for the thermal
+>> found on Rockchip SoCs
+>>
+>> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
+>> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+>> ---
+>>   .../bindings/thermal/rockchip-thermal.txt          |   33
+>> ++++++++++++++++++++ 1 file changed, 33 insertions(+)
+>>   create mode 100644
+>> Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-ther=
+mal.txt
+>> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt new=
+ file
+>> mode 100644
+>> index 0000000..b556eae
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>> @@ -0,0 +1,33 @@
+>> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
+>> +
+>> +Required properties:
+>> +- compatible : "rockchip,rk3288-tsadc"
+>> +- reg : physical base address of the controller and length of memor=
+y mapped
+>> +  region.
+>> +- interrupts : The interrupt number to the cpu. The interrupt speci=
+fier
+>> format +  depends on the interrupt controller.
+>> +- clocks : Must contain an entry for each entry in clock-names.
+>> +- clock-names : Shall be "tsadc_clk" for the transfer-clock, and
+>> "tsadc_pclk" for +    the peripheral clock.
+>> +Optional properties:
+>> +- clock-frequency : Thermal sensor's clock frequency.
+> see comment in patch2, this should probably use assigned-rate if at a=
+ll
+> necessary (and the assigned-rate is not necessary to document here)
+>
 
-Cc: linux-pm@vger.kernel.org
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Grant Likely <grant.likely@linaro.org>
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle-powernv.c | 27 ++++++++++++++++++++++-----
- 1 file changed, 22 insertions(+), 5 deletions(-)
+yeah, it's necessary.
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 23d2743..3ceff53 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -162,7 +162,8 @@ static int powernv_add_idle_states(void)
- 	int nr_idle_states = 1; /* Snooze */
- 	int dt_idle_states;
- 	const __be32 *idle_state_flags;
--	u32 len_flags, flags;
-+	const __be32 *idle_state_latency;
-+	u32 len_flags, flags, latency_ns;
- 	int i;
- 
- 	/* Currently we have snooze statically defined */
-@@ -178,19 +179,33 @@ static int powernv_add_idle_states(void)
- 		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
- 		return nr_idle_states;
- 	}
-+	idle_state_latency = of_get_property(power_mgt,
-+			"ibm,cpu-idle-state-latencies-ns", NULL);
-+	if (!idle_state_latency) {
-+		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
-+		return nr_idle_states;
-+	}
- 
- 	dt_idle_states = len_flags / sizeof(u32);
- 
- 	for (i = 0; i < dt_idle_states; i++) {
- 
- 		flags = be32_to_cpu(idle_state_flags[i]);
-+
-+		/* Cpuidle accepts exit_latency in us and we estimate best case
-+		 * target residency to be 10x exit_latency
-+		 */
-+		latency_ns = be32_to_cpu(idle_state_latency[i]);
-+
- 		if (flags & IDLE_INST_NAP) {
- 			/* Add NAP state */
- 			strcpy(powernv_states[nr_idle_states].name, "Nap");
- 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
- 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
--			powernv_states[nr_idle_states].exit_latency = 10;
--			powernv_states[nr_idle_states].target_residency = 100;
-+			powernv_states[nr_idle_states].exit_latency =
-+					((unsigned int)latency_ns) / 1000;
-+			powernv_states[nr_idle_states].target_residency =
-+					((unsigned int)latency_ns / 100);
- 			powernv_states[nr_idle_states].enter = &nap_loop;
- 			nr_idle_states++;
- 		}
-@@ -201,8 +216,10 @@ static int powernv_add_idle_states(void)
- 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
- 			powernv_states[nr_idle_states].flags =
- 				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
--			powernv_states[nr_idle_states].exit_latency = 300;
--			powernv_states[nr_idle_states].target_residency = 1000000;
-+			powernv_states[nr_idle_states].exit_latency =
-+					((unsigned int)latency_ns) / 1000;
-+			powernv_states[nr_idle_states].target_residency =
-+					((unsigned int)latency_ns / 100);
- 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
- 			nr_idle_states++;
- 		}
--- 
-1.9.0
+ok,I will fix it.
+>> +- pinctrl-names : Should contain only one value - "default".
+>> +- pinctrl-0 : Should contain only one value - &tsadc_int.
+> in general pinctrl settings are just board-specific settings and do n=
+ot
+> need to be part of the binding documentation.
+> And in this case, are you sure that the tsadc uses some pin as interr=
+upt?
+> Because in the TRM the TS-ADC interrupt is number 69 of the GIC itsel=
+f
+> and not some pin accessible via pinctrl.
+>
+>
+>> +- passive-temp : Temperature of trip 0.
+>> +- critical-temp : Temperature of trip 1.
+>> +- force-shut-temp : Temperature of force shut down.
+> please use the generic trip-points described in
+> Documentation/devicetree/bindings/thermal/thermal.txt
+> for this, instead of defining new properties
+>
+>
+> Heiko
+Ditto,
+>
+>> +Example:
+>> +
+>> +tsadc: tsadc@ff280000 {
+>> +	compatible =3D "rockchip,rk3288-tsadc";
+>> +	reg =3D <0xff280000 0x100>;
+>> +	interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
+>> +	clock-frequency =3D <10000>;
+>> +	clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
+>> +	clock-names =3D "tsadc_clk", "tsadc_pclk";
+>> +	pinctrl-names =3D "default";
+>> +	pinctrl-1 =3D <&tsadc_int>;
+>> +	passive-temp =3D <80>;
+>> +	critical-temp =3D <100>;
+>> +	force-shut-temp =3D <120>;
+>> +};
+>
+>
+>
+
+--=20
+Best regards,
+Caesar
+
+
