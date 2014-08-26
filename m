@@ -1,77 +1,113 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH v9 4/6] ARM: Exynos: switch to using generic cpufreq
- driver for Exynos4210/5250/5420
-Date: Tue, 26 Aug 2014 08:15:40 -0700
-Message-ID: <CAGa+x85-Anb+HsSUQRaaeex19-HK+yZDW0UpFBwAtsQ8Sf2Aqg@mail.gmail.com>
-References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
-	<1406707663-16656-5-git-send-email-thomas.ab@samsung.com>
-	<53DA8BB9.6020702@samsung.com>
-	<53DA8D85.3050106@gmail.com>
-	<7hbnrc6px3.fsf@paris.lan>
-	<53F7DA13.6090305@gmail.com>
-	<CADWw7OgAS-z-UOrJU-hL2fzuefJmLtCTg57jYk2Df7f5KfLJmA@mail.gmail.com>
-	<7h8umc60we.fsf@paris.lan>
-	<CADWw7OgW+o3tB=ptnsy-PsmXmNv8oXzt_WfK6NswQiEWWwAzNA@mail.gmail.com>
+From: Caesar Wang <caesar.wang@rock-chips.com>
+Subject: Re: [PATCH 1/2] dt-bindings: document Rockchip thermal
+Date: Wed, 27 Aug 2014 00:47:02 +0800
+Message-ID: <53FCBA06.90701@rock-chips.com>
+References: <1408752934-18318-1-git-send-email-caesar.wang@rock-chips.com> <1408752934-18318-2-git-send-email-caesar.wang@rock-chips.com> <1504889.nDzfjZj9xp@diego>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f53.google.com ([209.85.192.53]:61185 "EHLO
-	mail-qg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752177AbaHZPPl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Aug 2014 11:15:41 -0400
-Received: by mail-qg0-f53.google.com with SMTP id z60so11249364qgd.40
-        for <linux-pm@vger.kernel.org>; Tue, 26 Aug 2014 08:15:40 -0700 (PDT)
-In-Reply-To: <CADWw7OgW+o3tB=ptnsy-PsmXmNv8oXzt_WfK6NswQiEWWwAzNA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1504889.nDzfjZj9xp@diego>
+Sender: linux-doc-owner@vger.kernel.org
+To: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>
+Cc: rui.zhang@intel.com, rdunlap@infradead.org, cf@rock-chips.com, grant.likely@linaro.org, robh+dt@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, zyw@rock-chips.com, huangtao@rock-chips.com, xjq@rock-chips.com, addy.ke@rock-chips.com, dianders@chromium.org, zhaoyifeng <zyf@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
-To: Chander Kashyap <k.chander@samsung.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-On Mon, Aug 25, 2014 at 10:25 PM, Chander Kashyap <k.chander@samsung.com> wrote:
-> Hi Kevin,
+Heiko,
+=E5=9C=A8 2014/8/24 7:03, Heiko St=C3=BCbner =E5=86=99=E9=81=93:
+> Hi Caesar,
 >
-> On Mon, Aug 25, 2014 at 9:02 PM, Kevin Hilman <khilman@linaro.org> wrote:
->> Hi Chander,
+> Am Samstag, 23. August 2014, 08:15:33 schrieb Caesar Wang:
+>> This add the necessary binding documentation for the thermal
+>> found on Rockchip SoCs
 >>
->> Chander Kashyap <k.chander@samsung.com> writes:
+>> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
+>> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+>> ---
+>>   .../bindings/thermal/rockchip-thermal.txt          |   33
+>> ++++++++++++++++++++ 1 file changed, 33 insertions(+)
+>>   create mode 100644
+>> Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
 >>
->> [...]
->>
->>>>> I'm trying it on the 5800/Chromebook2 and it's not terribly stable.  I'm
->>>>> testing along with CPUidle, so there may be some untested interactions
->>>>> there as it seems a bit more stable without CPUidle enabled.
->>>>>
->>>>> I'd love to hear from anyone else that's testing CPUidle and CPUfreq
->>>>> together big.LITTLE 5420/5800, with or without the switcher.
->>>
->>> I have tested this patch series on SMDK5420 with cpuidle (with and
->>> without b.L switcher enabled).
->>>
->>> As of now voltage scaling support is not there in generic big-little
->>> cpufreq driver (arm_big_little.c).
->>> Hence need to tie arm and kfc voltages to highest level for testing.
->>
->>> Without this change stability issues are there, but with this change
->>> everything is stable.
->>
->> Can you clarify how you're setting the voltages to ensure stability?
+>> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-ther=
+mal.txt
+>> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt new=
+ file
+>> mode 100644
+>> index 0000000..b556eae
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>> @@ -0,0 +1,33 @@
+>> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
+>> +
+>> +Required properties:
+>> +- compatible : "rockchip,rk3288-tsadc"
+>> +- reg : physical base address of the controller and length of memor=
+y mapped
+>> +  region.
+>> +- interrupts : The interrupt number to the cpu. The interrupt speci=
+fier
+>> format +  depends on the interrupt controller.
+>> +- clocks : Must contain an entry for each entry in clock-names.
+>> +- clock-names : Shall be "tsadc_clk" for the transfer-clock, and
+>> "tsadc_pclk" for +    the peripheral clock.
+>> +Optional properties:
+>> +- clock-frequency : Thermal sensor's clock frequency.
+> see comment in patch2, this should probably use assigned-rate if at a=
+ll
+> necessary (and the assigned-rate is not necessary to document here)
 >
-> below is the diff :  wip/exynos/integ
+>
+>> +- pinctrl-names : Should contain only one value - "default".
+>> +- pinctrl-0 : Should contain only one value - &tsadc_int.
+> in general pinctrl settings are just board-specific settings and do n=
+ot
+> need to be part of the binding documentation.
+> And in this case, are you sure that the tsadc uses some pin as interr=
+upt?
+> Because in the TRM the TS-ADC interrupt is number 69 of the GIC itsel=
+f
+> and not some pin accessible via pinctrl.
+>
+>
+>> +- passive-temp : Temperature of trip 0.
+>> +- critical-temp : Temperature of trip 1.
+>> +- force-shut-temp : Temperature of force shut down.
+> please use the generic trip-points described in
+> Documentation/devicetree/bindings/thermal/thermal.txt
+> for this, instead of defining new properties
 
-Thanks.
+There are have 4 trip-points mode in thermal.txt.
+It's ACTIVE=E3=80=81PASSAIVE=E3=80=81 HOT and  CRITICAL.
 
-I've applied your patch, and bootup shows vdd_arm and vdd_kfc at
-1500mV, but still when booting with cpuidle enabled (bL switcher
-disabled), I'm seeing lockups with no kernel output.  With CPUidle
-disabled, things are pretty stable.
+Do you have some suggestion for fix it if I need add shut-temp mode ?
 
-What tree are you using to test this out on 5420?  I'm using mainline
-v3.17-rc1 + DT patch for CPUidle and this cpufreq series.  See my
-wip/exynos/integ branch at
-git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux.git.
+- Caesar
+>
+> Heiko
+>
+>> +Example:
+>> +
+>> +tsadc: tsadc@ff280000 {
+>> +	compatible =3D "rockchip,rk3288-tsadc";
+>> +	reg =3D <0xff280000 0x100>;
+>> +	interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
+>> +	clock-frequency =3D <10000>;
+>> +	clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
+>> +	clock-names =3D "tsadc_clk", "tsadc_pclk";
+>> +	pinctrl-names =3D "default";
+>> +	pinctrl-1 =3D <&tsadc_int>;
+>> +	passive-temp =3D <80>;
+>> +	critical-temp =3D <100>;
+>> +	force-shut-temp =3D <120>;
+>> +};
+>
+>
+>
 
-Are there other out of tree dependencies that I'm missing?  Is the
-max77802 regulator support that's in mainline sufficient?  or am I
-missing some stuff there?
+--=20
+Best regards,
+Caesar
 
-Kevin
+
