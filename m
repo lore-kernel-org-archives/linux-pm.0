@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 4/5 v3] PCI / PM: Make PCIe PME interrupts wake up from suspend-to-idle
-Date: Wed, 27 Aug 2014 01:51:31 +0200
-Message-ID: <3100042.GU96J7QUhN@vostro.rjw.lan>
+Subject: [PATCH 1/5 v3] PM / sleep: Mechanism for aborting system suspends unconditionally
+Date: Wed, 27 Aug 2014 01:47:47 +0200
+Message-ID: <3280095.tp6RTXXLdN@vostro.rjw.lan>
 References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,140 +15,99 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-To make PCIe PME interrupts wake up the system from suspend to idle,
-make the PME driver use enable_irq_wake() on the IRQ during system
-suspend (if there are any wakeup devices below the given PCIe port)
-without disabling PME interrupts.  This way, an interrupt will still
-trigger if a wakeup event happens and the system will be woken up (or
-system suspend in progress will be aborted) by means of the new
-mechanics introduced previously.
+It sometimes may be necessary to abort a system suspend in
+progress or wake up the system from suspend-to-idle even if the
+pm_wakeup_event()/pm_stay_awake() mechanism is not enabled.
 
-This change allows Wake-on-LAN to be used for wakeup from
-suspend-to-idle on my MSI Wind tesbed netbook.
+For this purpose, introduce a new global variable abort_suspend and
+make pm_wakeup_pending() check its value.  Also add routines for
+manipulating that variable.
+
+This is going to be used in subsequent changes.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/pci/pcie/pme.c |   61 ++++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 51 insertions(+), 10 deletions(-)
+ drivers/base/power/wakeup.c |   20 ++++++++++++++++++++
+ include/linux/suspend.h     |    4 ++++
+ kernel/power/process.c      |    1 +
+ 3 files changed, 25 insertions(+)
 
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-Index: linux-pm/drivers/pci/pcie/pme.c
+Index: linux-pm/include/linux/suspend.h
 ===================================================================
---- linux-pm.orig/drivers/pci/pcie/pme.c
-+++ linux-pm/drivers/pci/pcie/pme.c
-@@ -41,11 +41,17 @@ static int __init pcie_pme_setup(char *s
+--- linux-pm.orig/include/linux/suspend.h
++++ linux-pm/include/linux/suspend.h
+@@ -371,6 +371,8 @@ extern int unregister_pm_notifier(struct
+ extern bool events_check_enabled;
+ 
+ extern bool pm_wakeup_pending(void);
++extern void pm_system_wakeup(void);
++extern void pm_wakeup_clear(void);
+ extern bool pm_get_wakeup_count(unsigned int *count, bool block);
+ extern bool pm_save_wakeup_count(unsigned int count);
+ extern void pm_wakep_autosleep_enabled(bool set);
+@@ -418,6 +420,8 @@ static inline int unregister_pm_notifier
+ #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
+ 
+ static inline bool pm_wakeup_pending(void) { return false; }
++static inline void pm_system_wakeup(void) {}
++static inline void pm_wakeup_clear(void) {}
+ 
+ static inline void lock_system_sleep(void) {}
+ static inline void unlock_system_sleep(void) {}
+Index: linux-pm/drivers/base/power/wakeup.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/wakeup.c
++++ linux-pm/drivers/base/power/wakeup.c
+@@ -691,6 +691,8 @@ void pm_print_active_wakeup_sources(void
  }
- __setup("pcie_pme=", pcie_pme_setup);
+ EXPORT_SYMBOL_GPL(pm_print_active_wakeup_sources);
  
-+enum pme_suspend_level {
-+	PME_SUSPEND_NONE = 0,
-+	PME_SUSPEND_WAKEUP,
-+	PME_SUSPEND_NOIRQ,
-+};
++static bool abort_suspend;
 +
- struct pcie_pme_service_data {
- 	spinlock_t lock;
- 	struct pcie_device *srv;
- 	struct work_struct work;
--	bool noirq; /* Don't enable the PME interrupt used by this service. */
-+	enum pme_suspend_level suspend_level;
- };
- 
  /**
-@@ -223,7 +229,7 @@ static void pcie_pme_work_fn(struct work
- 	spin_lock_irq(&data->lock);
- 
- 	for (;;) {
--		if (data->noirq)
-+		if (data->suspend_level != PME_SUSPEND_NONE)
- 			break;
- 
- 		pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
-@@ -250,7 +256,7 @@ static void pcie_pme_work_fn(struct work
- 		spin_lock_irq(&data->lock);
+  * pm_wakeup_pending - Check if power transition in progress should be aborted.
+  *
+@@ -712,6 +714,7 @@ bool pm_wakeup_pending(void)
+ 		ret = (cnt != saved_count || inpr > 0);
+ 		events_check_enabled = !ret;
  	}
++	ret = ret || abort_suspend;
+ 	spin_unlock_irqrestore(&events_lock, flags);
  
--	if (!data->noirq)
-+	if (data->suspend_level == PME_SUSPEND_NONE)
- 		pcie_pme_interrupt_enable(port, true);
- 
- 	spin_unlock_irq(&data->lock);
-@@ -367,6 +373,21 @@ static int pcie_pme_probe(struct pcie_de
+ 	if (ret) {
+@@ -722,6 +725,23 @@ bool pm_wakeup_pending(void)
  	return ret;
  }
  
-+static bool pcie_pme_check_wakeup(struct pci_bus *bus)
++void pm_system_wakeup(void)
 +{
-+	struct pci_dev *dev;
++	unsigned long flags;
 +
-+	if (!bus)
-+		return false;
++	spin_lock_irqsave(&events_lock, flags);
++	abort_suspend = true;
++	spin_unlock_irqrestore(&events_lock, flags);
++	freeze_wake();
++}
 +
-+	list_for_each_entry(dev, &bus->devices, bus_list)
-+		if (device_may_wakeup(&dev->dev)
-+		    || pcie_pme_check_wakeup(dev->subordinate))
-+			return true;
-+
-+	return false;
++void pm_wakeup_clear(void)
++{
++	spin_lock_irq(&events_lock);
++	abort_suspend = false;
++	spin_unlock_irq(&events_lock);
 +}
 +
  /**
-  * pcie_pme_suspend - Suspend PCIe PME service device.
-  * @srv: PCIe service device to suspend.
-@@ -375,11 +396,26 @@ static int pcie_pme_suspend(struct pcie_
- {
- 	struct pcie_pme_service_data *data = get_service_data(srv);
- 	struct pci_dev *port = srv->port;
-+	bool wakeup;
+  * pm_get_wakeup_count - Read the number of registered wakeup events.
+  * @count: Address to store the value at.
+Index: linux-pm/kernel/power/process.c
+===================================================================
+--- linux-pm.orig/kernel/power/process.c
++++ linux-pm/kernel/power/process.c
+@@ -129,6 +129,7 @@ int freeze_processes(void)
+ 	if (!pm_freezing)
+ 		atomic_inc(&system_freezing_cnt);
  
-+	if (device_may_wakeup(&port->dev)) {
-+		wakeup = true;
-+	} else {
-+		down_read(&pci_bus_sem);
-+		wakeup = pcie_pme_check_wakeup(port->subordinate);
-+		up_read(&pci_bus_sem);
-+	}
- 	spin_lock_irq(&data->lock);
--	pcie_pme_interrupt_enable(port, false);
--	pcie_clear_root_pme_status(port);
--	data->noirq = true;
-+	if (wakeup) {
-+		enable_irq_wake(srv->irq);
-+		data->suspend_level = PME_SUSPEND_WAKEUP;
-+	} else {
-+		struct pci_dev *port = srv->port;
-+
-+		pcie_pme_interrupt_enable(port, false);
-+		pcie_clear_root_pme_status(port);
-+		data->suspend_level = PME_SUSPEND_NOIRQ;
-+	}
- 	spin_unlock_irq(&data->lock);
- 
- 	synchronize_irq(srv->irq);
-@@ -394,12 +430,17 @@ static int pcie_pme_suspend(struct pcie_
- static int pcie_pme_resume(struct pcie_device *srv)
- {
- 	struct pcie_pme_service_data *data = get_service_data(srv);
--	struct pci_dev *port = srv->port;
- 
- 	spin_lock_irq(&data->lock);
--	data->noirq = false;
--	pcie_clear_root_pme_status(port);
--	pcie_pme_interrupt_enable(port, true);
-+	if (data->suspend_level == PME_SUSPEND_NOIRQ) {
-+		struct pci_dev *port = srv->port;
-+
-+		pcie_clear_root_pme_status(port);
-+		pcie_pme_interrupt_enable(port, true);
-+	} else {
-+		disable_irq_wake(srv->irq);
-+	}
-+	data->suspend_level = PME_SUSPEND_NONE;
- 	spin_unlock_irq(&data->lock);
- 
- 	return 0;
++	pm_wakeup_clear();
+ 	printk("Freezing user space processes ... ");
+ 	pm_freezing = true;
+ 	error = try_to_freeze_tasks(true);
