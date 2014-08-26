@@ -1,50 +1,84 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH v2] intel_idle: add idle values for Cherrytrail/Braswell
-Date: Tue, 26 Aug 2014 12:00:32 +0300
-Message-ID: <20140826090032.GN1660@lahna.fi.intel.com>
-References: <1408701508-13636-1-git-send-email-mika.westerberg@linux.intel.com>
- <1408707540-12393-1-git-send-email-mika.westerberg@linux.intel.com>
- <53F74E5D.2040108@linux.intel.com>
- <20140825101200.GH1660@lahna.fi.intel.com>
- <53FBF328.1080205@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <53FBF328.1080205@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Cc: Len Brown <lenb@kernel.org>, Kumar P Mahesh <mahesh.kumar.p@intel.com>, Alan Cox <alan@linux.intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 0/9] PM / Domains: Generic OF-based support
+Date: Tue, 26 Aug 2014 14:07:08 +0200
+Message-ID: <1409054837-5667-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 26, 2014 at 10:38:32AM +0800, Li, Aubrey wrote:
-> On 2014/8/25 18:12, Mika Westerberg wrote:
-> > On Fri, Aug 22, 2014 at 10:06:21PM +0800, Li, Aubrey wrote:
-> >> On 2014/8/22 19:39, Mika Westerberg wrote:
-> >>> From: Mahesh Kumar P <mahesh.kumar.p@intel.com>
-> >>>
-> >>> Cherrytrail/Braswell is a successor of Intel Baytrail but has slighly
-> >>> different CPU idle values and latencies.
-> >>>
-> >>> Signed-off-by: Kumar P Mahesh <mahesh.kumar.p@intel.com>
-> >>> Signed-off-by: Alan Cox <alan@linux.intel.com>
-> >>> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> >>> ---
-> >>> I learned from Mahesh that C1e, C4 and S0i2 states are deprecated so those
-> >>> are now removed.
-> >>
-> >> If the platform has ACPI supported, I believe Len wants to see what
-> >> C-states number exported by ACPI.
-> >>
-> >> Please boot the machine with "intel_idle.max_cstate=0" to disable
-> >> intel_idle, then post the output of the following commands
-> > 
-> > OK, here goes:
-> 
-> ACPI exposes 0x58 as C6 mwait hint while the patch proposes 0x52 for C6.
-> Can you please remove "intel_idle.max_cstate=0" and run "dmesg | grep
-> idle" again to see how many C6 supports in CPUID enumeration?
+This patchset has a bit of a history and some parts of it has been posted
+earlier.
 
-[   16.685769] intel_idle: MWAIT substates: 0x33000020
-[   16.691236] intel_idle: v0.4 model 0x4C
-[   16.695539] intel_idle: lapic_timer_reliable_states 0xffffffff
+http://lists.infradead.org/pipermail/linux-arm-kernel/2014-June/262725.html
+
+I intentially didn't increase version number of the patches, since I think it
+will cause more confusion than clarity.
+
+A summary of changes since the last patchset (link above):
+	- Instead of letting driver core handling the device to power domain
+	binding/unbinding, follow the behavior of how the ACPI power domain
+	is handled.
+
+
+This is a summary of what these patches are intended to do:
+
+1)
+Add generic power domain OF-based support which also includes APIs to handle
+attach/detach of generic power domains to devices.
+
+2)
+Adding a common API to attach/detach power domains and include support for the
+ACPI and the generic power domain in there.
+
+3)
+>From subsystem level code, at probe/remove, convert from invoking the ACPI
+specific power domain attach/detach functions to the new common attach/detach
+APIs.
+
+4)
+Add support for the AMBA bus to attach/detach power domains, using the new
+common APIs.
+
+5)
+Convert Exynos to use the new generic power domain OF support.
+
+Obviously, there are dependencies througout this patchset, which means if they
+get accepted the all need to go together.
+
+
+Tomasz Figa (2):
+  PM / Domains: Add generic OF-based power domain look-up
+  ARM: exynos: Move to generic power domain bindings
+
+Ulf Hansson (7):
+  ACPI / PM: Let acpi_dev_pm_detach() return an error code
+  PM / Domains: Add APIs to attach/detach a power domain for a device
+  drivercore / platform: Convert to dev_pm_domain_attach|detach()
+  i2c: core: Convert to dev_pm_domain_attach|detach()
+  mmc: sdio: Convert to dev_pm_domain_attach|detach()
+  spi: core: Convert to dev_pm_domain_attach|detach()
+  amba: Add support for attach/detach of power domains
+
+ .../bindings/arm/exynos/power_domain.txt           |  13 +-
+ .../devicetree/bindings/power/power_domain.txt     |  51 ++++
+ arch/arm/mach-exynos/pm_domains.c                  |  78 +-----
+ drivers/acpi/device_pm.c                           |   4 +
+ drivers/amba/bus.c                                 |  10 +-
+ drivers/base/platform.c                            |  15 +-
+ drivers/base/power/common.c                        |  58 ++++
+ drivers/base/power/domain.c                        | 291 +++++++++++++++++++++
+ drivers/i2c/i2c-core.c                             |  13 +-
+ drivers/mmc/core/sdio_bus.c                        |   4 +-
+ drivers/spi/spi.c                                  |  12 +-
+ include/linux/acpi.h                               |   7 +-
+ include/linux/pm.h                                 |  14 +
+ include/linux/pm_domain.h                          |  46 ++++
+ kernel/power/Kconfig                               |   4 +
+ 15 files changed, 514 insertions(+), 106 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/power_domain.txt
+
+-- 
+1.9.1
+
