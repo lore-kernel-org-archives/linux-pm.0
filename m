@@ -1,26 +1,21 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 1/2] power: charger-manager: Fix checking of wrong return type
-Date: Tue, 26 Aug 2014 13:41:38 +0900
-Message-ID: <1409028099-6081-2-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH 2/2] power: charger-manager: Check charging state right after
+ completed initialization
+Date: Tue, 26 Aug 2014 13:41:39 +0900
+Message-ID: <1409028099-6081-3-git-send-email-cw00.choi@samsung.com>
 References: <1409028099-6081-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:61526 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbaHZEln (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Aug 2014 00:41:43 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1409028099-6081-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
 Cc: myungjoo.ham@samsung.com, jonghwa3.lee@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch fix minor issue about checking wrong return type.
-
-The of_cm_parse_desc() return ERR_PTR(errnor number) when some error happen
-in this function. But, charger_manager_probe() has only checked whether
-desc is NULL or not. If of_cm_parse_desc() returns ERR_PTR(-ENOMEM), desc
-isn't NULL but desc is (void *)(-ENOMEM). Althouhg some error happen for parsing
-DT, charger_manager_probe() can't detect error of desc instance.
+This patch check the charging state after completed initialization of charger-
+manager and update current charging state. If charger-manager never check and
+update current charging state, charger-manager would have the mismatch issue
+between real state of cable connection and the charging state of charger-manager
+until first polling time of charger-manager.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Acked-by: Myungjoo Ham <myungjoo.ham@samsung.com>
@@ -28,22 +23,26 @@ Cc: Sebastian Reichel <sre@kernel.org>
 Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 Cc: David Woodhouse <dwmw2@infradead.org>
 ---
- drivers/power/charger-manager.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/power/charger-manager.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index 9e4dab4..a10fb57 100644
+index a10fb57..4e560f7 100644
 --- a/drivers/power/charger-manager.c
 +++ b/drivers/power/charger-manager.c
-@@ -1677,7 +1677,7 @@ static int charger_manager_probe(struct platform_device *pdev)
- 		}
- 	}
+@@ -1839,6 +1839,13 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 	device_init_wakeup(&pdev->dev, true);
+ 	device_set_wakeup_capable(&pdev->dev, false);
  
--	if (!desc) {
-+	if (IS_ERR(desc)) {
- 		dev_err(&pdev->dev, "No platform data (desc) found\n");
- 		return -ENODEV;
- 	}
++	/*
++	 * Charger-manager have to check the charging state right after
++	 * tialization of charger-manager and then update current charging
++	 * state.
++	 */
++	cm_monitor();
++
+ 	schedule_work(&setup_polling);
+ 
+ 	return 0;
 -- 
 1.8.0
-
