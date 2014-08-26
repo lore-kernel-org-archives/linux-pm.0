@@ -1,178 +1,50 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [ANNOUNCE] (Resend) Tools to analyse PM and scheduling behaviour
-Date: Tue, 26 Aug 2014 11:02:52 +0530
-Message-ID: <87oav7n7cr.fsf@matterhorn.verdurent.com>
-References: <87mwb0fixy.fsf@matterhorn.verdurent.com> <CAMHCuPWeMwjJO+xzmQrZFmEMdx3+yF=zkove8brWX4rQiti50w@mail.gmail.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v2] intel_idle: add idle values for Cherrytrail/Braswell
+Date: Tue, 26 Aug 2014 12:00:32 +0300
+Message-ID: <20140826090032.GN1660@lahna.fi.intel.com>
+References: <1408701508-13636-1-git-send-email-mika.westerberg@linux.intel.com>
+ <1408707540-12393-1-git-send-email-mika.westerberg@linux.intel.com>
+ <53F74E5D.2040108@linux.intel.com>
+ <20140825101200.GH1660@lahna.fi.intel.com>
+ <53FBF328.1080205@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f182.google.com ([209.85.192.182]:37261 "EHLO
-	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751336AbaHZFcv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Aug 2014 01:32:51 -0400
-Received: by mail-pd0-f182.google.com with SMTP id fp1so21997195pdb.13
-        for <linux-pm@vger.kernel.org>; Mon, 25 Aug 2014 22:32:51 -0700 (PDT)
-In-Reply-To: <CAMHCuPWeMwjJO+xzmQrZFmEMdx3+yF=zkove8brWX4rQiti50w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <53FBF328.1080205@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Cc: Len Brown <lenb@kernel.org>, Kumar P Mahesh <mahesh.kumar.p@intel.com>, Alan Cox <alan@linux.intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sundar <sunder.svit@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul McKenney <Paul.McKenney@us.ibm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mike Turquette <mturquette@linaro.org>, Juri Lelli <juri.lelli@arm.com>, sched-tools@linaro.org, len.brown@intel.com, mark.gross@intel.com, larry.bassel@linaro.org
 
-On Sat, 23 Aug 2014 at 07:44 +0530, Sundar <sunder.svit@gmail.com> wrot=
-e:
-> Hi Amit,
->
-> On Tue, Aug 19, 2014 at 11:11 AM, Amit Kucheria
-> <amit.kucheria@linaro.org> wrote:
->>
->> We=E2=80=99re soliciting early feedback from community on the direct=
-ion of idlestat
->
-> Nice :)
->
->> Idlestat Details
->> ----------------
->> Idlestat uses FTRACE to capture traces related to C-state and P-stat=
-e
->> transitions of the CPU and wakeups (IRQ, IPI) on the system and then
->> post-processes the data to print statistics. It is designed to be us=
-ed
->> non-interactively. Idlestat can deduce the idle time for a cluster a=
-s an
->> intersection between the idle times of all the cpus belonging to the=
- same
->> cluster. This data is useful to analyse and optimise scheduling beha=
-viour.
->> The tool will also list how many times the menu governor mis-predict=
-s
->> target residency in a C-state.
->
-> We discussed this in the energy aware scheduling workshop this week @
-> the Kernel Summit. A few notes:
->
-> 1. We need to really understand the co-relation of this tool w.r.t
-> actual hardware states.
-> It is usually likely that the software "thinks" it is in a low power
-> state, but the actual
-> hardware might not be. What is the coverage for these kind of cases h=
-ere.
+On Tue, Aug 26, 2014 at 10:38:32AM +0800, Li, Aubrey wrote:
+> On 2014/8/25 18:12, Mika Westerberg wrote:
+> > On Fri, Aug 22, 2014 at 10:06:21PM +0800, Li, Aubrey wrote:
+> >> On 2014/8/22 19:39, Mika Westerberg wrote:
+> >>> From: Mahesh Kumar P <mahesh.kumar.p@intel.com>
+> >>>
+> >>> Cherrytrail/Braswell is a successor of Intel Baytrail but has slighly
+> >>> different CPU idle values and latencies.
+> >>>
+> >>> Signed-off-by: Kumar P Mahesh <mahesh.kumar.p@intel.com>
+> >>> Signed-off-by: Alan Cox <alan@linux.intel.com>
+> >>> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> >>> ---
+> >>> I learned from Mahesh that C1e, C4 and S0i2 states are deprecated so those
+> >>> are now removed.
+> >>
+> >> If the platform has ACPI supported, I believe Len wants to see what
+> >> C-states number exported by ACPI.
+> >>
+> >> Please boot the machine with "intel_idle.max_cstate=0" to disable
+> >> intel_idle, then post the output of the following commands
+> > 
+> > OK, here goes:
+> 
+> ACPI exposes 0x58 as C6 mwait hint while the patch proposes 0x52 for C6.
+> Can you please remove "intel_idle.max_cstate=0" and run "dmesg | grep
+> idle" again to see how many C6 supports in CPUID enumeration?
 
-You are right, it does not represent the actual state of the HW, only
-the 'requested' state.
-
-There are various platform-dependent ways to knowing the actual HW
-state. Some examples are:
- - Through an external HW signal (e.g. a GPIO that is toggled when cloc=
-k
- to the CPU is cut off)
- - Measuring power on the power rails and correlating those well-known
- values (CPU ON, retention, OFF) to the traces
- - Reading some register (like MSR on x86)
-
-This is not the main focus of the tool.
-
-> 2. I understand that C/P states are a direct metric of how well the
-> workload behaved w.r.t power;
-> but I am not sure that relates to a direct measure of how the
-> scheduler performed.
-
-Consider the following examples:
-
-*On a given platform*, we see the same benchmark scores with and
-without patchset ABC, but including patchset ABC leads to better "power
-behaviour" i.e. requests of deeper idle states and/or lower frequencies=
-=2E
-
-Consider another example where the benchmark score dramatically improve=
-s
-with patchset XYZ while the idle and frequency requests are marginally
-worse (shallower idle, reduced residency or increased frequency request=
-s).
-
-In both cases, it is left to platforms to do real measurements to confi=
-rm that
-this is indeed the case. The latter example might not even be possible
-on some platforms, given some platform constraints e.g. the platform
-thermal envelope.
-
-Idlestat is not a replacement for real measurements. It is a tool to
-allow maintainers (scheduler, PM) to judge if any further investigation
-is needed and request such numbers from people running the code on
-various architectures before merging the patches.
-
-> The C/P states
-> could be maintained whilst giving away performance or power at the
-> expense of additional components
-> on the SoC and platform like DDR IOs, fabric states etc.
-
-True.
-
-> Quick Summary of what I discussed with Daniel @ the workshop about id=
-lestat:
->
-> 1. There might be usually platform specific tools to get residencies
-> for P/C states.
-> PowerTop & Turbostat are two that first come to mind. Any specific
-> item apart from prediction logic
-> that idlestat differs from these two?
-
-=46irst, idlestat is designed to be architecture-independent. It only
-depends on what the kernel knows.
-Second, it is created with benchmarking in mind - non-interactive and
-minimal overhead.
-Third, it was designed for maintainers to be able to quickly tell if a
-patchset changes OS behaviour dramatically and request deeper
-analysis on various architectures.
-=46ourth, it has the prediction logic which calculates the intersection=
- of
-C-state requests by several cpus in a cluster to determine the cluster
-state.
-
-On top of this, we have two WIP additions:
- - an experimental "energy model" patch for idlestat that lets a SoC
- vendor provide the cost of various states as input and idlestat will
- output the "energy cost" of a workload.
- - a 'diff mode' to show the diff between two traces
-
-> 2. To me debugging performance or power, C/P states provide the
-> direction that something is wrong.
->
-> But they still dont tell me "what" is wrong "if" the issue is somehow
-> in the kernel as opposed to a more
-
-Correct. At the moment, idlestat can only provide an indication if
-something might be wrong.
-
-> easily fixable software code (traceable at hardware/software level fo=
-r
-> best optimizations). How do I
-> conclude that my scheduler is the culprit apart from the points where
-> it took a decision to select the
-> right idle states based on predicted sleep times? In my opinion, that
-> would boil down to if the scheduler
-> was invoking too much load balancing calls, moving my threads across
-> cores too much, data being
-> thrashed across caches, cores too much etc.
-
-These would show up as regressions in benchmark results. Fengguang's
-excellent benchmark report[1] already captures such "changes". Does it
-make sense to recapture that in a tool?
-
-We're open to tracking more metrics if it is felt they are useful.
-
-> I think a tool for scheduler metrics must be based on more inner
-> details like the above, finally culminating
-> into C/P states. as opposed to C/P states being the metric to be reli=
-ed.
-
-One of the tenets of energy-aware scheduling is "improving energy
-efficiency with little or no performance regression". idlestat tells us
-about possible regressions on the energy front and benchmarks should
-tell us if we are regressing on performance. Hence the focus on
-C/P-states for now.
-
-Regards,
-Amit
-[1] https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg703826=
-=2Ehtml
+[   16.685769] intel_idle: MWAIT substates: 0x33000020
+[   16.691236] intel_idle: v0.4 model 0x4C
+[   16.695539] intel_idle: lapic_timer_reliable_states 0xffffffff
