@@ -1,56 +1,41 @@
-From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: Re: [PATCH v5 0/4] Tegra124 soctherm driver
-Date: Wed, 27 Aug 2014 18:36:07 +0300
-Message-ID: <53FDFAE7.7020407@nvidia.com>
-References: <1408616242-21009-1-git-send-email-mperttunen@nvidia.com>
- <20140821122011.GA99564@sandfort.unics.fi> <20140821160127.GA17621@developer>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140821160127.GA17621@developer>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Eduardo Valentin <edubezval@gmail.com>, Juha-Matti Tilli <juha-matti.tilli@iki.fi>
-Cc: linux-pm@vger.kernel.org, swarren@wwwdotorg.org, linux-kernel@vger.kernel.org, thierry.reding@gmail.com, linux-tegra@vger.kernel.org, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
+From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v4 2/8] mfd: max14577: Map charger device to its own of_node
+Date: Wed, 27 Aug 2014 17:20:08 +0200
+Message-ID: <1409152814-17302-3-git-send-email-k.kozlowski@samsung.com>
+References: <1409152814-17302-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1409152814-17302-1-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Moi Eduardo,
+Add a "maxim,max14577-charger" of_compatible to the mfd_cell so the
+MFD child device (the charger) will have its own of_node set. This will
+be used by the max14577 charger driver in next patches to obtain battery
+configuration from DTS.
 
-can you ack this series or is there still something to do?
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+---
+ drivers/mfd/max14577.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Thanks,
-Mikko
-
-On 21/08/14 19:01, Eduardo Valentin wrote:
-> Hello Juha-Matti,
->
-> On Thu, Aug 21, 2014 at 03:20:11PM +0300, Juha-Matti Tilli wrote:
->> On Thu, Aug 21, 2014 at 01:17:18PM +0300, Mikko Perttunen wrote:
->>> this series adds support for the thermal monitoring features of the
->>> soctherm unit on the Tegra124 SoC.
->>
->> For all patches in this series:
->>
->> Reviewed-by: Juha-Matti Tilli <jtilli@nvidia.com>
->> Tested-by: Juha-Matti Tilli <jtilli@nvidia.com>
->
-> I suppose the 4 C to 5 C difference is not seen anymore in this version,
-> right?
->
-> Cheers,
->
-> Eduardo
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-tegra" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+diff --git a/drivers/mfd/max14577.c b/drivers/mfd/max14577.c
+index 4a5e885383f8..6599407b5624 100644
+--- a/drivers/mfd/max14577.c
++++ b/drivers/mfd/max14577.c
+@@ -35,7 +35,10 @@ static const struct mfd_cell max14577_devs[] = {
+ 		.name = "max14577-regulator",
+ 		.of_compatible = "maxim,max14577-regulator",
+ 	},
+-	{ .name = "max14577-charger", },
++	{
++		.name = "max14577-charger",
++		.of_compatible = "maxim,max14577-charger",
++	},
+ };
+ 
+ static const struct mfd_cell max77836_devs[] = {
+-- 
+1.9.1
