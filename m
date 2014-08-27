@@ -1,27 +1,32 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
 Subject: Re: [PATCH 1/9] ACPI / PM: Let acpi_dev_pm_detach() return an error code
-Date: Wed, 27 Aug 2014 09:25:21 +0200
-Message-ID: <CAPDyKFpgf+Qn5xa7FLFvk3KGNW_6k8XPVECHb2+6aZbiQccwgg@mail.gmail.com>
+Date: Wed, 27 Aug 2014 09:26:21 +0200
+Message-ID: <CAPDyKFruPum0Xb_pF1x8GW=SC4Q5Eexa96WBAU-q7iTKFfNrUA@mail.gmail.com>
 References: <1409054837-5667-1-git-send-email-ulf.hansson@linaro.org>
 	<1409054837-5667-2-git-send-email-ulf.hansson@linaro.org>
-	<1959719.tXfePhObS9@vostro.rjw.lan>
+	<1AE640813FDE7649BE1B193DEA596E880265FDCA@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f44.google.com ([209.85.215.44]:54745 "EHLO
-	mail-la0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751921AbaH0HZX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 03:25:23 -0400
-Received: by mail-la0-f44.google.com with SMTP id el20so16325790lab.31
-        for <linux-pm@vger.kernel.org>; Wed, 27 Aug 2014 00:25:21 -0700 (PDT)
-In-Reply-To: <1959719.tXfePhObS9@vostro.rjw.lan>
+Received: from mail-la0-f43.google.com ([209.85.215.43]:49635 "EHLO
+	mail-la0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752982AbaH0H0X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 03:26:23 -0400
+Received: by mail-la0-f43.google.com with SMTP id gi9so13829648lab.30
+        for <linux-pm@vger.kernel.org>; Wed, 27 Aug 2014 00:26:21 -0700 (PDT)
+In-Reply-To: <1AE640813FDE7649BE1B193DEA596E880265FDCA@SHSMSX101.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the->
+To: "Zheng, Lv" <lv.zheng@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark
 
-On 27 August 2014 02:16, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, August 26, 2014 02:07:09 PM Ulf Hansson wrote:
+On 27 August 2014 07:43, Zheng, Lv <lv.zheng@intel.com> wrote:
+> Hi,
+>
+>> From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-owner@vger.kernel.org] On Behalf Of Ulf Hansson
+>> Sent: Tuesday, August 26, 2014 8:07 PM
+>> To: Rafael J. Wysocki; Brown, Len; Pavel Machek; Greg Kroah-Hartman; linux-pm@vger.kernel.org
+>>
 >> To give callers the option of acting on a errors while removing the
 >> pm_domain ops for the device in the ACPI power domain, let
 >> acpi_dev_pm_detach() return an int to provide the error code.
@@ -42,25 +47,19 @@ On 27 August 2014 02:16, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 >>   * management callbacks.
 >> + *
 >> + * Returns 0 on successfully detached power domain or negative error code.
->
-> "PM domain" here, please, not "power domain".
->
-
-Sure.
-
-If you prefer that term, I can also change on the other patches in
-this patchset. There are commit-msg etc , where I think I have used
-"power domain".
-
 >>   */
 >>  void acpi_dev_pm_detach(struct device *dev, bool power_off)
 >
-> It looks like you've never compiled this, have you?
+> Should the return type be "int" here?
 
-You are absolutely right. There were quite some combinations of
-CONFIG_PM_* that I tried out, but I totally forgot ACPI, sorry! I will
-make sure to do it in v2.
+You are right, thanks!
 
+Kind regards
+Uffe
+
+>
+> Thanks and best regards
+> -Lv
 >
 >>  {
 >> @@ -1107,7 +1109,9 @@ void acpi_dev_pm_detach(struct device *dev, bool power_off)
@@ -70,12 +69,6 @@ make sure to do it in v2.
 >> +             return 0;
 >>       }
 >> +     return -ENODEV;
->
-> -EINVAL perhaps?
-
-Sure!
-
->
 >>  }
 >>  EXPORT_SYMBOL_GPL(acpi_dev_pm_detach);
 >>  #endif /* CONFIG_PM */
@@ -104,13 +97,10 @@ Sure!
 >>  #endif
 >>
 >>  #ifdef CONFIG_ACPI
+>> --
+>> 1.9.1
 >>
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
-
-Thanks for reviewing!
-
-Kind regards
-Uffe
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
