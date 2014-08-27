@@ -1,67 +1,140 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [PATCH] PM / sleep: Fix racing timers
-Date: Tue, 26 Aug 2014 17:35:07 -0700
-Message-ID: <64c2b0ef-39e9-4194-aec1-8026b7fbe272@BY2FFO11FD014.protection.gbl>
-References: <1408568109-30297-1-git-send-email-soren.brinkmann@xilinx.com>
- <19851825.qu8r5WDRRO@vostro.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v1 1/1] power: Add simple gpio-restart driver
+Date: Wed, 27 Aug 2014 03:43:00 +0200
+Message-ID: <20140827014300.GA29512@earth.universe>
+References: <1409096705-24290-1-git-send-email-davidriley@chromium.org>
+ <1409096705-24290-2-git-send-email-davidriley@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.19.201]:47057 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752295AbaH0BnH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 26 Aug 2014 21:43:07 -0400
 Content-Disposition: inline
-In-Reply-To: <19851825.qu8r5WDRRO@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
+In-Reply-To: <1409096705-24290-2-git-send-email-davidriley@chromium.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: David Riley <davidriley@chromium.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Guenter Roeck <linux@roeck-us.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Anton Vorontsov <anton@enomsg.org>, Marc Carino <marc.ceeeee@gmail.com>, Anders Berg <anders.berg@lsi.com>, Laxman Dewangan <ldewangan@nvidia.com>, Ivan Khoronzhuk <ivan.khoronzhuk@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Haojian Zhuang <haojian.zhuang@linaro.org>, Jamie Lentin <jm@lentin.co.uk>, Doug Anderson <dianders@chromium.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, 2014-08-27 at 02:32AM +0200, Rafael J. Wysocki wrote:
-> Hi,
->=20
-> Sorry for being somewhat slow to respond to this, but I'm not sure if=
- the
-> approach here is the right one.
->=20
-> On Wednesday, August 20, 2014 01:55:09 PM Soren Brinkmann wrote:
-> > On platforms that do not power off during suspend, successfully ent=
-ering
-> > suspend races with timers.
-> >=20
-> > The race happening in a couple of location is:
-> >=20
-> >   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
-> >      ...
-> >   2. syscore_suspend()
-> >       -> timekeeping_suspend()
-> >        -> clockevents_notify(SUSPEND)
-> >         -> tick_suspend()   	(timers are turned off here)
-> >      ...
-> >   3. wfi            		(wait for wake-IRQ here)
-> >=20
-> > Between steps 1 and 2 the timers can still generate interrupts that=
- are
-> > not handled and stay pending until step 3. That pending IRQ causes =
-an
-> > immediate - spurious - wake.
->=20
-> Well, the problem here is that the platform is not supposed to re-ena=
-ble
-> interrupts after syscore_suspend().  Of course, some platforms do tha=
-t, because
-> they don't really support system sleep and try to emulate it with som=
-ething
-> along the lines of suspend-to-idle.
 
-No, IRQs are not enabled after syscore-suspend. But the wait for
-interrupt state on ARM is left even with IRQs disabled. It will prevent
-the core from taking the exception, but it will "wake" it up. So, my
-impressions was that the core is the appropriate location to fix this. =
-I
-wouldn't know where else to do it.
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-It is certainly an issue caused by this probably non-standard suspend
-state, but if we accept this implementation as a valid suspend
-implementation, I'd say it's a core issue.
+Hi David,
 
-	Thanks,
-	S=C3=B6ren
+On Tue, Aug 26, 2014 at 04:45:05PM -0700, David Riley wrote:
+> This driver registers a restart handler to set a GPIO line high/low
+> to reset a board based on devicetree bindings.
+
+Driver looks fine to me. I have some comments about the
+Documentation, though:
+
+> [...]
+> diff --git a/Documentation/devicetree/bindings/gpio/gpio-restart.txt b/Documentation/devicetree/bindings/gpio/gpio-restart.txt
+> new file mode 100644
+> index 0000000..7cd58788
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/gpio/gpio-restart.txt
+> @@ -0,0 +1,48 @@
+> +Driver a GPIO line that can be used to restart the system as a
+> +restart handler.
+
+Please fix the Typo (first word).
+
+> [...]
+> +
+> +The driver supports both level triggered and edge triggered power off.
+> +At driver load time, the driver will request the given gpio line and
+> +install a restart handler.
+
+The wording is too driver centric IMHO. You are supposed to document
+the binding in a generic way. Maybe start with something like:
+
+"This binding supports level and edge triggered reset."
+
+(power off is the wrong word, since there is already gpio-poweroff).
+
+> +If the optional properties 'input' is +not found, the GPIO line
+> +will be driven in the inactive state. Otherwise its configured
+> +as an input.
+
+What is this needed for?
+
+> +When do_kernel_restart is called the various restart handlers will be tried
+> +in order.  The gpio is configured as an output, and drive active, so
+> +triggering a level triggered power off condition. This will also cause an
+> +inactive->active edge condition, so triggering positive edge triggered
+> +power off. After a delay of 100ms, the GPIO is set to inactive, thus
+> +causing an active->inactive edge, triggering negative edge triggered power
+> +off. After another 100ms delay the GPIO is driver active again. If the
+> +power is still on and the CPU still running after a 3000ms delay, a
+> +WARN_ON(1) is emitted.
+
+I really appreciate the description of the driver (it made it easier
+to review it :)), but Documentation/devicetree should avoid
+Linuxisms. In other words: this is the wrong location for the
+description.
+
+> +Required properties:
+> +- compatible : should be "gpio-restart".
+> +- gpios : The GPIO to set high/low, see "gpios property" in
+> +  Documentation/devicetree/bindings/gpio/gpio.txt. If the pin should be
+> +  low to power down the board set it to "Active Low", otherwise set
+> +  gpio to "Active High".
+> +
+> +Optional properties:
+> +- input : Initially configure the GPIO line as an input. Only reconfigure
+> +  it to an output when the machine_restart function is called. If this optional
+> +  property is not specified, the GPIO is initialized as an output in its
+> +  inactive state.
+> +- priority : A priority ranging from 0 to 255 (default 128) according to
+> +  the following guidelines:
+> +	0:	Restart handler of last resort, with limited restart
+> +		capabilities
+> +	128:	Default restart handler; use if no other restart handler is
+> +		expected to be available, and/or if restart functionality is
+> +		sufficient to restart the entire system
+> +	255:	Highest priority restart handler, will preempt all other
+> +		restart handlers
+
+You should add a short information about the property type here
+(e.g. "8 bit integer" for priority).
+
+> +Examples:
+> +
+> +gpio-restart {
+> +	compatible = "gpio-restart";
+> +	gpios = <&gpio 4 0>;
+> +	priority = /bits/ 8 <200>;
+> +};
+> [...]
+
+-- Sebastian
+
+--GvXjxJ+pjyke8COw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJT/TekAAoJENju1/PIO/qanrQQAKPg8+Qi5oPDFni3AZxhonI+
+zrY+JR1rwRC0mdk9vNvbuyn3dscv8CJdlCVYcOEX/YB/x4216PfHrcw4kc0j4qjP
+2dOPawDHLtGqW9BVLTQLh7iNHeEy0BpDbs0Aw0UDpNPBgirajSWsJcaKNbxnwovr
+MtRvC07GtNZbIRR9xv9Ss4+S0a/kqrZY0GjseVL2GZf7ZoIo+I+Rjg30n4SGhgHJ
+p8KCNfcaeDnF/NHBW/GRFfhtw+19t8It+CCd+bo5x9iELpe6dTzYJbw++gyVz6fP
++8iFwTANhBfNn5gEifYV8LP8nyOLU7EaSXp64nIHB9mdckReuPoFl5789Ny6QTyF
+T5m6oWPrELnIJHBQL4MVDPTQ0dJkRD0fykrM69MRBtqt+otrxWcpb+LE/uxr/Zp9
+64cjwi3lzam2Ph/ktNctG39juO0Ig+3i11Q2rmxMQWzLbQSYIeuhyB+sEK/rxpCI
+MnlrFp0+ZTjeYFRNRHKP0Wr4Ec9f6hm/WhL/ry+ka54txad8whm+zagVyJaAlJwd
+i75YhfpPnx+ZI2YyzPeGJYxwVlSQsuTFT3JAvCg94UaAO7zwVz7J6/vq62nr6W2V
+o2BnR3Vnpi7jbQmWEdGgK7h1TOx6mLjlx7LBOSx8gBLEHWIt48DtQfFvsMQya6DH
+f1nwkNggeV7gNGFZ/G01
+=oWqb
+-----END PGP SIGNATURE-----
+
+--GvXjxJ+pjyke8COw--
