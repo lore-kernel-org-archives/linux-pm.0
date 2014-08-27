@@ -1,59 +1,81 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Add CPU ID for Braswell processor
-Date: Wed, 27 Aug 2014 09:47:45 -0700
-Message-ID: <53FE0BB1.9060201@gmail.com>
-References: <1408701944-14734-1-git-send-email-mika.westerberg@linux.intel.com> <CAKohpo=7CyRT7szhJAQXjRfBFyw_6LuHSdVS39z=899T0eBoMg@mail.gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [RESEND PATCH v3 1/6] charger: max14577: Add support for
+ MAX77836 charger
+Date: Wed, 27 Aug 2014 18:04:16 +0100
+Message-ID: <20140827170416.GC24579@lee--X1>
+References: <1409146282-25075-1-git-send-email-k.kozlowski@samsung.com>
+ <1409146282-25075-2-git-send-email-k.kozlowski@samsung.com>
+ <20140827135218.GG6364@lee--X1>
+ <1409148089.25748.5.camel@AMDC1943>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f176.google.com ([209.85.192.176]:64475 "EHLO
-	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933914AbaH0Qrs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 12:47:48 -0400
-In-Reply-To: <CAKohpo=7CyRT7szhJAQXjRfBFyw_6LuHSdVS39z=899T0eBoMg@mail.gmail.com>
+Received: from mail-qa0-f53.google.com ([209.85.216.53]:57728 "EHLO
+	mail-qa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750934AbaH0REZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 13:04:25 -0400
+Received: by mail-qa0-f53.google.com with SMTP id v10so488095qac.40
+        for <linux-pm@vger.kernel.org>; Wed, 27 Aug 2014 10:04:24 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1409148089.25748.5.camel@AMDC1943>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: dirk.brandewie@gmail.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Anton Vorontsov <anton@enomsg.org>
 
-On 08/22/2014 03:19 AM, Viresh Kumar wrote:
-> On 22 August 2014 15:35, Mika Westerberg
-> <mika.westerberg@linux.intel.com> wrote:
->> This is pretty much the same as Intel Baytrail, only the CPU ID is
->> different. Add the new ID to the supported CPU list.
->>
->> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
->> Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
->
-> Dirk might be away on holidays..
+On Wed, 27 Aug 2014, Krzysztof Kozlowski wrote:
 
-Yes Sorry
+> On =C5=9Bro, 2014-08-27 at 14:52 +0100, Lee Jones wrote:
+> > On Wed, 27 Aug 2014, Krzysztof Kozlowski wrote:
+> >=20
+> > > Add support for MAX77836 charger to the max14577 driver. The MAX7=
+7836
+> > > charger is almost the same as 14577 model except:
+> > >  - No dead-battery detection;
+> > >  - Support for special charger (like in MAX77693);
+> > >  - Support for DX over-voltage protection (like in MAX77693);
+> > >  - Lower values of charging current (two times lower current for
+> > >    slow/fast charge, much lower EOC current);
+> > >  - Slightly different values in ChgTyp field of STATUS2 register.=
+ On
+> > >    MAX14577 0x6 is reserved and 0x7 dead battery. On the MAX77836=
+ the
+> > >    0x6 means special charger and 0x7 is reserved. Regardless of t=
+hese
+> > >    differences the driver maps them to one enum max14577_muic_cha=
+rger_type.
+> > >=20
+> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > > Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> > > Cc: Anton Vorontsov <anton@enomsg.org>
+> > > Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> > > Cc: David Woodhouse <dwmw2@infradead.org>
+> > > Acked-by: Lee Jones <lee.jones@linaro.org>
+> > > ---
+> > >  drivers/power/Kconfig                |  4 +-
+> > >  drivers/power/max14577_charger.c     | 77 ++++++++++++++++++++++=
++++++++-------
+> > >  include/linux/mfd/max14577-private.h | 54 ++++++++++++++++++----=
+---
+> >=20
+> > Not quite so important here, but better to break these out too.  We
+> > can arrange ourselves to that the set can go in together.  Just mak=
+e
+> > sure it's bisectable.
+>=20
+> Are you sure? This will result in a patch which adds some
+> code/symbols/defines used only by next (future) patch. Independent ap=
+ply
+> of such patch still won't make any sense because there won't be any u=
+ser
+> of this code.
 
-Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+That's fine.  I take in lots of patches which do nothing more than
+adds/updates infrastructure.
 
->
->> ---
->>   drivers/cpufreq/intel_pstate.c | 1 +
->>   1 file changed, 1 insertion(+)
->>
->> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
->> index c5eac949760d..a3cf8994160b 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -660,6 +660,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
->>          ICPU(0x3f, core_params),
->>          ICPU(0x45, core_params),
->>          ICPU(0x46, core_params),
->> +       ICPU(0x4c, byt_params),
->>          ICPU(0x4f, core_params),
->>          ICPU(0x56, core_params),
->>          {}
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
