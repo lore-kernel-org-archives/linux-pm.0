@@ -1,73 +1,36 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [GIT PULL] thermal soc changes
-Date: Wed, 27 Aug 2014 15:41:53 +0800
-Message-ID: <1409125313.8085.22.camel@rzhang1-toshiba>
-References: <1408711592-8917-1-git-send-email-edubezval@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:42649 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751524AbaH0Hns (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 27 Aug 2014 03:43:48 -0400
-In-Reply-To: <1408711592-8917-1-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Mark Brown <broonie@kernel.org>
+Subject: [PATCH] cpufreq: s5pv210: Remove spurious __init annotation
+Date: Wed, 27 Aug 2014 12:00:27 +0100
+Message-ID: <1409137227-27080-1-git-send-email-broonie@kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-samsung-soc@vger.kernel.org, Mark Brown <broonie@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Fri, 2014-08-22 at 08:46 -0400, Eduardo Valentin wrote:
-> Hello Rui,
-> 
-> Please pull these changes. Here we have three new features: IMX driver has
-> now support to i.mx6sx, the of-thermal now if aware of disabled thermal zones
-> in DT, and we shall have tracing support on thermal framework.
-> 
-> The following changes since commit 47d104ba5879790c7c91c3390b0b08399e168efe:
-> 
->   Merge branches 'exynos-fix', 'for-rc', 'int3403-fix', 'misc', 'rcar-thermal' and 'sti-thermal' of .git into next (2014-07-22 10:13:00 +0800)
-> 
-> are available in the git repository at:
-> 
-> 
->   https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git 
-> 
+From: Mark Brown <broonie@linaro.org>
 
-I suppose you mean
-http://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git next branch. And I've pulled those changes in your next branch.
+Since this is a platform driver and can be probed at any time we can't
+annotate funtions in the probe path as __init, the code can't safely be
+discarded at the end of kernel init.
 
-thanks,
-rui
-> for you to fetch changes up to 3c94f17e72a7bcf689756da100b6051e535c45f4:
-> 
->   Thermal: imx: add i.mx6sx thermal support (2014-08-09 10:29:30 -0400)
-> 
-> ----------------------------------------------------------------
-> Anson Huang (1):
->       Thermal: imx: add i.mx6sx thermal support
-> 
-> Laxman Dewangan (1):
->       thermal: add support to disable thermal zone from DTS
-> 
-> Punit Agrawal (3):
->       thermal: trace: Trace temperature changes
->       thermal: trace: Trace when a cooling device's state is updated
->       thermal: trace: Trace when temperature is above a trip point
-> 
->  .../devicetree/bindings/thermal/imx-thermal.txt    |  5 +-
->  drivers/thermal/fair_share.c                       | 12 +++
->  drivers/thermal/imx_thermal.c                      | 91 ++++++++++++++++++----
->  drivers/thermal/of-thermal.c                       | 12 +++
->  drivers/thermal/step_wise.c                        |  5 +-
->  drivers/thermal/thermal_core.c                     |  7 ++
->  include/trace/events/thermal.h                     | 83 ++++++++++++++++++++
->  7 files changed, 200 insertions(+), 15 deletions(-)
->  create mode 100644 include/trace/events/thermal.h
-> 
-> 
->  BR,
-> 
->  Eduardo Valentin
+Signed-off-by: Mark Brown <broonie@linaro.org>
+---
+ drivers/cpufreq/s5pv210-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index 9a68225a757e..3f9791f07b8e 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -501,7 +501,7 @@ static int check_mem_type(void __iomem *dmc_reg)
+ 	return val >> 8;
+ }
+ 
+-static int __init s5pv210_cpu_init(struct cpufreq_policy *policy)
++static int s5pv210_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	unsigned long mem_type;
+ 	int ret;
+-- 
+2.1.0.rc1
