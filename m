@@ -1,41 +1,58 @@
-From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v4 2/8] mfd: max14577: Map charger device to its own of_node
-Date: Wed, 27 Aug 2014 17:20:08 +0200
-Message-ID: <1409152814-17302-3-git-send-email-k.kozlowski@samsung.com>
-References: <1409152814-17302-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1409152814-17302-1-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Subject: Re: [PATCH v4 3/3] memory: tegra124-emc: Add EMC driver
+Date: Wed, 27 Aug 2014 10:27:53 -0600
+Message-ID: <53FE0709.8070908@wwwdotorg.org>
+References: <1409058728-13347-1-git-send-email-tomeu.vizoso@collabora.com> <1409058728-13347-4-git-send-email-tomeu.vizoso@collabora.com> <53FCC139.6020703@wwwdotorg.org> <53FD8975.3050706@collabora.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <53FD8975.3050706-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?windows-1252?Q?Terje_Bergstr=F6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add a "maxim,max14577-charger" of_compatible to the mfd_cell so the
-MFD child device (the charger) will have its own of_node set. This will
-be used by the max14577 charger driver in next patches to obtain battery
-configuration from DTS.
+On 08/27/2014 01:32 AM, Tomeu Vizoso wrote:
+> On 08/26/2014 07:17 PM, Stephen Warren wrote:
+>> On 08/26/2014 07:12 AM, Tomeu Vizoso wrote:
+>>> Sets the EMC clock rate based on the bandwidth requirements
+>>> registered by
+>>> memory clients through the PM_QOS_MEMORY_BANDWIDTH class.
+>>>
+>>> Note: this is just an example and not a proper driver for a external
+>>> memory
+>>> controller. Its only purpose is to illustrate how such a driver would
+>>> set the
+>>> frequency of the external memory clock based on the bandwidth
+>>> requirements of
+>>> memory clients.
+>>
+>>> diff --git a/arch/arm/mach-tegra/tegra.c b/arch/arm/mach-tegra/tegra.c
+>>
+>>> @@ -112,6 +117,11 @@ static void __init tegra_dt_init(void)
+>>>       parent = soc_device_to_device(soc_dev);
+>>>
+>>>       /*
+>>> +     * HACK: register a platform device to probe the driver
+>>> +     */
+>>> +    platform_device_register(&tegra_emc);
+>>
+>> I don't think this is a hack, except for the bug: That should only
+>> happen on Tegra124 not on all Tegra SoCs.
+>>
+>> Do you intend all 3 patches in this series to be merged? You'd mentioned
+>> you didn't when asked about this for a previous version. I'm not sure if
+>> that's changed?
+>
+> Yeah, I don't want 3/3 merged because we don't have a functional EMC
+> clock yet on T124, and because I don't know yet where will be the best
+> place to have that code in. That depends on Mikko's work on the real EMC
+> driver which is in a bit of flux right now.
+>
+> I have kept posting it just because I think it complements nicely the
+> explanation in the cover letter, but maybe confuses more than helps.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
----
- drivers/mfd/max14577.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/mfd/max14577.c b/drivers/mfd/max14577.c
-index 4a5e885383f8..6599407b5624 100644
---- a/drivers/mfd/max14577.c
-+++ b/drivers/mfd/max14577.c
-@@ -35,7 +35,10 @@ static const struct mfd_cell max14577_devs[] = {
- 		.name = "max14577-regulator",
- 		.of_compatible = "maxim,max14577-regulator",
- 	},
--	{ .name = "max14577-charger", },
-+	{
-+		.name = "max14577-charger",
-+		.of_compatible = "maxim,max14577-charger",
-+	},
- };
- 
- static const struct mfd_cell max77836_devs[] = {
--- 
-1.9.1
+OK. If you make this one a [PATCH RFC], or add a note to that effect to 
+the commit description (perhaps underneath the --- line), that'd be 
+helpful for future postings.
