@@ -1,75 +1,41 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [RESEND PATCH v3 3/6] charger: max14577: Configure
- battery-dependent settings from DTS and sysfs
-Date: Wed, 27 Aug 2014 18:05:03 +0100
-Message-ID: <20140827170503.GD24579@lee--X1>
-References: <1409146282-25075-1-git-send-email-k.kozlowski@samsung.com>
- <1409146282-25075-4-git-send-email-k.kozlowski@samsung.com>
- <20140827135027.GF6364@lee--X1>
- <1409147725.25748.1.camel@AMDC1943>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH 1/2] arm: irq: Notify affinity change when migrating IRQs during hotplug
+Date: Wed, 27 Aug 2014 10:09:10 -0700
+Message-ID: <7hegw1g8qx.fsf@paris.lan>
+References: <1408553988-63924-1-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f50.google.com ([209.85.216.50]:38650 "EHLO
-	mail-qa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756027AbaH0RFM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 13:05:12 -0400
-Received: by mail-qa0-f50.google.com with SMTP id s7so483245qap.37
-        for <linux-pm@vger.kernel.org>; Wed, 27 Aug 2014 10:05:11 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1409147725.25748.1.camel@AMDC1943>
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:64000 "EHLO
+	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935207AbaH0RJR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 13:09:17 -0400
+Received: by mail-pd0-f171.google.com with SMTP id z10so622159pdj.2
+        for <linux-pm@vger.kernel.org>; Wed, 27 Aug 2014 10:09:16 -0700 (PDT)
+In-Reply-To: <1408553988-63924-1-git-send-email-lina.iyer@linaro.org> (Lina
+	Iyer's message of "Wed, 20 Aug 2014 10:59:47 -0600")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jenny Tc <jenny.tc@intel.com>
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: tglx@linutronix.de, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, ulf.hansson@linaro.org, Praveen Chidambaram <pchidamb@codeaurora.org>
 
-On Wed, 27 Aug 2014, Krzysztof Kozlowski wrote:
+Lina Iyer <lina.iyer@linaro.org> writes:
 
-> On =C5=9Bro, 2014-08-27 at 14:50 +0100, Lee Jones wrote:
-> > On Wed, 27 Aug 2014, Krzysztof Kozlowski wrote:
-> >=20
-> > > Remove hard-coded values for:
-> > >  - Fast Charge current,
-> > >  - End Of Charge current,
-> > >  - Fast Charge timer,
-> > >  - Overvoltage Protection Threshold,
-> > >  - Battery Constant Voltage,
-> > > and use DTS or sysfs to configure them. This allows using the max=
-14577 charger
-> > > driver with different batteries.
-> > >=20
-> > > Now the charger driver requires valid configuration data from DTS=
-=2E In
-> > > case of wrong configuration data it fails during probe. Patch add=
-s
-> > > of_compatible to the charger mfd cell in MFD driver core.
-> > >=20
-> > > The fast charge timer is configured through sysfs entry.
-> > >=20
-> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > > Cc: Kyungmin Park <kyungmin.park@samsung.com>
-> > > Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> > > Cc: David Woodhouse <dwmw2@infradead.org>
-> > > Cc: Jenny Tc <jenny.tc@intel.com>
-> > > Cc: Mark Rutland <mark.rutland@arm.com>
-> > > Acked-by: Lee Jones <lee.jones@linaro.org>
-> > > ---
-> > >  drivers/mfd/max14577.c               |   5 +-
-> >=20
-> > Hmm... not sure why I Acked this.  The code looks okay, but can you
-> > break out the MFD changed into a separate patch please?  You can ad=
-d
-> > my Ack to the broken out patch though.
->=20
-> Sure, I'll split it however the compatible here in mfd_cell makes sen=
-se
-> only with this patch.
+> From: Praveen Chidambaram <pchidamb@codeaurora.org>
+>
+> Hotplug causes IRQs affine to a core that is being taken down to migrate
+> to an online core. This is done by directly calling the irq_set_affinity
+> associated with the irq_chip structure. Instead using the
+> irq_set_affinity_locked() api lets the notifications bubble through.
 
-That's completely fine.
+changelog nit: and why do you want/need the notification to bubble
+through?   IOW, you're explaining "what" the patch does, but not "why",
+which typically includes a summary of the problem being solved.  (I know
+the background from the other series, but other reviewers may not know
+the history there.)
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Also, please post these to linux-arm-kernel.
+
+Thanks,
+
+Kevin
