@@ -1,150 +1,54 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2/5 v3] irq / PM: Make wakeup interrupts work with
- suspend-to-idle
-Date: Wed, 27 Aug 2014 22:32:23 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1408272130350.3323@nanos>
-References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan> <16387974.EqoNYrShmO@vostro.rjw.lan>
+From: Caesar Wang <caesar.wang@rock-chips.com>
+Subject: Re: [PATCH v2 2/2] dt-bindings: document Rockchip thermal
+Date: Thu, 28 Aug 2014 04:36:35 +0800
+Message-ID: <53FE4153.3080601@rock-chips.com>
+References: <1409096503-7081-1-git-send-email-caesar.wang@rock-chips.com> <1409096503-7081-3-git-send-email-caesar.wang@rock-chips.com> <5911166.ElkaNhDZrP@wuerfel>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:35847 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935598AbaH0Uc3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 16:32:29 -0400
-In-Reply-To: <16387974.EqoNYrShmO@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <5911166.ElkaNhDZrP@wuerfel>
+Sender: linux-doc-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, grant.likely@linaro.org, robh+dt@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, zyw@rock-chips.com, addy.ke@rock-chips.com, zhaoyifeng <zyf@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
 
-On Wed, 27 Aug 2014, Rafael J. Wysocki wrote:
-> The line of reasoning leading to that is as follows.
-> 
-> The way suspend_device_irqs() works and the existing code in
-> check_wakeup_irqs(), called by syscore_suspend(), imply that:
-> 
->   (1) Interrupt handlers are not invoked for wakeup interrupts
->       after suspend_device_irqs().
-> 
->   (2) All interrups from system wakeup IRQs received after\
->       suspend_device_irqs() cause full system suspends to be aborted.
-> 
-> In addition to the above, there is the requirement that
-> 
->   (3) System wakeup interrupts should wake up the system from
->       suspend-to-idle.
-> 
-> It immediately follows from (1) and (2) that no effort is made to
-> distinguish "genuine" wakeup interrupts from "spurious" ones.  They
-> all are treated in the same way.  Since (3) means that "genuine"
-> wakeup interrupts are supposed to wake up the system from
-> suspend-to-idle too, consistency with (1) and (2) requires that
-> "spurious" wakeup interrupts should do the same thing.  Thus there is
-> no reason to invoke interrupt handlers for wakeup interrups after
-> suspend_device_irqs() in the suspend-to-idle case.  Moreover, doing
-> so would go against rule (1).
+Arnd,
 
-I agree with that, but I disagree with the implementation.
 
-We now have two separate mechanisms to abort suspend:
+=E5=9C=A8 2014=E5=B9=B408=E6=9C=8828=E6=97=A5 04:17, Arnd Bergmann =E5=86=
+=99=E9=81=93:
+> On Wednesday 27 August 2014 07:41:43 Caesar Wang wrote:
+>> +- clock-names : Shall be "tsadc_clk" for the transfer-clock, and "t=
+sadc_pclk" for
+>> +    the peripheral clock.
+>>
+> Why not just name them "clk" and "pclk"? The "tsadc" part seems highl=
+y redundant.
+>
+> Alternatively, how about "transfer" and "peripheral"?
 
-1) The existing suspend_device_irqs() / check_wakeup_irqs() 
+It seems  nappropriate description.
 
-2) The new suspend_device_irqs() /
-   reenable_stuff_and_fiddle_with_irq_action()
+But,I will fix  as the following:
 
-So why do we need those two mechanisms in the first place?
+-clock-names =EF=BC=9A Shall be "tsadc" for the converter-clock, and "a=
+pb_pclk" for
+               the peripheral clock.
 
-AFAICT there is no reason why we cant use the abort_suspend mechanics
-to replace the suspend_device_irqs() / check_wakeup_irqs() pair.
+Thanks!
 
-All it needs is to do the handler substitution in
-suspend_device_irqs() right away and replace the loop in
-check_wakeup_irqs() with a check for abort_suspend == true. The roll
-back of the handler substitution can happen in resume_device_irqs()
-for both scenarios.
 
-Aside of that the whole irqaction based substitution is silly. What's
-wrong with doing it at the real interrupt handler level?
 
-static void handle_wakeup_irq(unsigned int irq, struct irq_desc *desc)
-{
-	raw_spin_lock(&desc->lock);
+>
+> 	Arnd
+>
+>
+>
 
-	desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
-	desc->depth++;
-	irq_disable(desc);
-	pm_system_wakeup();
-
-	raw_spin_unlock(&desc->lock);
-}
-
-void suspend_device_irqs(void)
-{
-	for_each_irq_desc(irq, desc) {
-		/* Disable the interrupt unconditionally */	       
-		disable_irq(irq);
-
-		/* Is the irq a wakeup source? */
-		if (!irqd_is_wakeup_set(&desc->irq_data))
-			continue;
-
-		/* Replace the handler */
-		raw_spin_lock_irqsave(&desc->lock, flags);
-	     	desc->saved_handler = desc->handler;
-		desc->handler = handle_wakeup_irq;
-		raw_spin_unlock_irqrestore(&desc->lock, flags);
-
-		/* Reenable the wakeup irq */
-		enable_irq(irq);
-	}
-}
-
-/* Move that into the pm core code */
-bool check_wakeup_irqs(void)
-{
-	return abort_suspend;
-}
-
-void resume_device_irqs(void)
-{
-	for_each_irq_desc(irq, desc) {
-
-		/* Prevent the wakeup handler from running */
-		disable_irq();
-
-		raw_spin_lock_irqsave(&desc->lock, flags);
-
-		/* Do we need to restore the handler? */
-		if (desc->handler == handle_wakeup_irq)
-		   	desc->handler = desc->saved_handler;
-
-		/* Is the irq a wakeup source? */
-		if (!irqd_is_wakeup_set(&desc->irq_data))
-		   	__enable_irq(irq, desc);
-
-		/* Did it get disabled in the wakeup handler? */
-		else if (desc->istate & IRQS_SUSPENDED)
-		   	__enable_irq(irq, desc);
-
-		raw_spin_unlock_irqrestore(&desc->lock, flags);
-
-		enable_irq();
-	}
-}
-
-Hmm?
-
-One thing we might think about is having flow specific
-handle_wakeup_irq variants as some hardware might require an ack or
-eoi, but that's a simple to solve problem and way simpler than
-fiddling with the irqaction chain and avoids the whole mess of
-sprinkling irq_pm_saved_id() and irq_pm_restore_handler() calls all
-over the place. I wonder why you added them to __free_irq() at all,
-but no, we dont want that.
-
-Thanks,
-
-	tglx
+--=20
+Best regards,
+Caesar
 
 
