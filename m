@@ -1,79 +1,51 @@
-From: Pramod Gurav <pramod.gurav@smartplayin.com>
-Subject: [PATCH 3/3] cpufreq: cpu0: Convert pr_ to dev_ as struct device is available
-Date: Thu, 28 Aug 2014 00:00:12 -0700
-Message-ID: <1409209212-18730-3-git-send-email-pramod.gurav@smartplayin.com>
-References: <1409209212-18730-1-git-send-email-pramod.gurav@smartplayin.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1409209212-18730-1-git-send-email-pramod.gurav@smartplayin.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Pramod Gurav <pramod.gurav@smartplayin.com>, Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+From: David Riley <davidriley@chromium.org>
+Subject: [PATCH v2 0/1] gpio-restart restart handler
+Date: Wed, 27 Aug 2014 12:23:50 -0700
+Message-ID: <1409167431-21155-1-git-send-email-davidriley@chromium.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:35507 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933865AbaH0TYR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 15:24:17 -0400
+Received: by mail-pa0-f47.google.com with SMTP id kx10so1048858pab.6
+        for <linux-pm@vger.kernel.org>; Wed, 27 Aug 2014 12:24:16 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Guenter Roeck <linux@roeck-us.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, David Riley <davidriley@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Anton Vorontsov <anton@enomsg.org>, Marc Carino <marc.ceeeee@gmail.com>, Anders Berg <anders.berg@lsi.com>, Laxman Dewangan <ldewangan@nvidia.com>, Ivan Khoronzhuk <ivan.khoronzhuk@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Haojian Zhuang <haojian.zhuang@linaro.org>, Jamie Lentin <jm@lentin.co.uk>, Doug Anderson <dianders@chromium.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-CC: Shawn Guo <shawn.guo@linaro.org>
-CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-CC: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
----
- drivers/cpufreq/cpufreq-cpu0.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+This driver builds upon Guenter Roeck's kernel restart handler patchset
+to add a driver which registers a GPIO-based restart handler which restarts
+the system by toggling a GPIO.
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 0652cea..8f0b02f 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -126,7 +126,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 
- 	np = of_node_get(cpu_dev->of_node);
- 	if (!np) {
--		pr_err("failed to find cpu0 node\n");
-+		dev_err(cpu_dev, "failed to find cpu0 node\n");
- 		return -ENOENT;
- 	}
- 
-@@ -141,14 +141,14 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 			ret = -EPROBE_DEFER;
- 			goto out_put_node;
- 		}
--		pr_warn("failed to get cpu0 regulator: %ld\n",
-+		dev_warn(cpu_dev, "failed to get cpu0 regulator: %ld\n",
- 			PTR_ERR(cpu_reg));
- 	}
- 
- 	cpu_clk = clk_get(cpu_dev, NULL);
- 	if (IS_ERR(cpu_clk)) {
- 		ret = PTR_ERR(cpu_clk);
--		pr_err("failed to get cpu0 clock: %d\n", ret);
-+		dev_err(cpu_dev, "failed to get cpu0 clock: %d\n", ret);
- 		goto out_put_reg;
- 	}
- 
-@@ -157,7 +157,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 
- 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
- 	if (ret) {
--		pr_err("failed to init cpufreq table: %d\n", ret);
-+		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
- 		goto out_put_clk;
- 	}
- 
-@@ -193,7 +193,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 
- 	ret = cpufreq_register_driver(&cpu0_cpufreq_driver);
- 	if (ret) {
--		pr_err("failed register driver: %d\n", ret);
-+		dev_err(cpu_dev, "failed register driver: %d\n", ret);
- 		goto out_free_table;
- 	}
- 
-@@ -204,7 +204,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 	if (of_find_property(np, "#cooling-cells", NULL)) {
- 		cdev = of_cpufreq_cooling_register(np, cpu_present_mask);
- 		if (IS_ERR(cdev))
--			pr_err("running cpufreq without cooling device: %ld\n",
-+			dev_err(cpu_dev, "running cpufreq without cooling device: %ld\n",
- 			       PTR_ERR(cdev));
- 	}
- 
+Changes are based off 3.17-rc2 with the following patches from v7 of 
+Guenter's patchset:
+https://patchwork.kernel.org/patch/4746721/
+https://patchwork.kernel.org/patch/4746731/
+https://patchwork.kernel.org/patch/4747011/
+https://patchwork.kernel.org/patch/4746741/
+https://patchwork.kernel.org/patch/4746861/
+
+Changes since v1:
+v2:
+	- Updated devicetree binding to make it less kernel specific
+	- Changed priority property from u8 type to standard u32
+	- Rename input property to open-source
+	- Made delays configurable from binding
+	- Removed unneeded BUG_ON
+	- Used devm_gpiod_get flags parameter to configure initial direction
+
+David Riley (1):
+  power: Add simple gpio-restart driver
+
+ .../devicetree/bindings/gpio/gpio-restart.txt      |  54 ++++++++
+ drivers/power/reset/Kconfig                        |   8 ++
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/gpio-restart.c                 | 149 +++++++++++++++++++++
+ 4 files changed, 212 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/gpio/gpio-restart.txt
+ create mode 100644 drivers/power/reset/gpio-restart.c
+
 -- 
-1.7.0.4
+2.0.0
+
