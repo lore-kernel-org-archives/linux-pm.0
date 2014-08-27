@@ -1,54 +1,51 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: Re: [PATCH v2 2/2] dt-bindings: document Rockchip thermal
-Date: Thu, 28 Aug 2014 04:36:35 +0800
-Message-ID: <53FE4153.3080601@rock-chips.com>
-References: <1409096503-7081-1-git-send-email-caesar.wang@rock-chips.com> <1409096503-7081-3-git-send-email-caesar.wang@rock-chips.com> <5911166.ElkaNhDZrP@wuerfel>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v3 3/4] irq: Allow multiple clients to register for irq
+ affinity notification
+Date: Wed, 27 Aug 2014 22:56:41 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1408272239190.3323@nanos>
+References: <1409170479-29955-1-git-send-email-lina.iyer@linaro.org> <1409170479-29955-4-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <5911166.ElkaNhDZrP@wuerfel>
-Sender: linux-doc-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, grant.likely@linaro.org, robh+dt@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, zyw@rock-chips.com, addy.ke@rock-chips.com, zhaoyifeng <zyf@rock-chips.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:35965 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932159AbaH0U4o (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 16:56:44 -0400
+In-Reply-To: <1409170479-29955-4-git-send-email-lina.iyer@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: khilman@linaro.org, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, daniel.lezcano@linaro.org
 
-Arnd,
+On Wed, 27 Aug 2014, Lina Iyer wrote:
 
+> PM QoS and other idle frameworks can do a better job of addressing power
+> and performance requirements for a cpu, knowing the IRQs that are
+> affine to that cpu. If a performance request is placed against serving
+> the IRQ faster and if the IRQ is affine to a set of cpus, then setting
+> the performance requirements only on those cpus help save power on the
+> rest of the cpus. PM QoS framework is one such framework interested in
+> knowing the smp_affinity of an IRQ and the change notificiation in this
+> regard. QoS requests for the CPU_DMA_LATENCY constraint currently apply
+> to all cpus, but when attached to an IRQ, can be applied only to the set
+> of cpus that IRQ's smp_affinity is set to. This allows other cpus to
+> enter deeper sleep states to save power. More than one framework/driver
+> can be interested in such information.
 
-=E5=9C=A8 2014=E5=B9=B408=E6=9C=8828=E6=97=A5 04:17, Arnd Bergmann =E5=86=
-=99=E9=81=93:
-> On Wednesday 27 August 2014 07:41:43 Caesar Wang wrote:
->> +- clock-names : Shall be "tsadc_clk" for the transfer-clock, and "t=
-sadc_pclk" for
->> +    the peripheral clock.
->>
-> Why not just name them "clk" and "pclk"? The "tsadc" part seems highl=
-y redundant.
->
-> Alternatively, how about "transfer" and "peripheral"?
+All you are describing is the fact, that there is only a single
+notifier possible right now, but you completely miss to describe WHY
+you need multiple ones.
 
-It seems  nappropriate description.
+The existing notifier was introduced to tell the driver that the irq
+affinity has changed, so it can move its buffers to the proper NUMA
+node. So if that driver gets this information then it can tell the PM
+QoS code that its affinity changed so that stuff can react
+accordingly, right?
 
-But,I will fix  as the following:
+This is going nowhere unless you provide a proper usecase and
+arguments why this is necessary. Handwaving and I want a pony
+arguments are not sufficient.
 
--clock-names =EF=BC=9A Shall be "tsadc" for the converter-clock, and "a=
-pb_pclk" for
-               the peripheral clock.
+Thanks,
 
-Thanks!
-
-
-
->
-> 	Arnd
->
->
->
-
---=20
-Best regards,
-Caesar
-
-
+	tglx
