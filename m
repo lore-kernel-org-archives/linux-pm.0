@@ -1,58 +1,59 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [PATCH v4 3/3] memory: tegra124-emc: Add EMC driver
-Date: Wed, 27 Aug 2014 10:27:53 -0600
-Message-ID: <53FE0709.8070908@wwwdotorg.org>
-References: <1409058728-13347-1-git-send-email-tomeu.vizoso@collabora.com> <1409058728-13347-4-git-send-email-tomeu.vizoso@collabora.com> <53FCC139.6020703@wwwdotorg.org> <53FD8975.3050706@collabora.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Add CPU ID for Braswell processor
+Date: Wed, 27 Aug 2014 09:47:45 -0700
+Message-ID: <53FE0BB1.9060201@gmail.com>
+References: <1408701944-14734-1-git-send-email-mika.westerberg@linux.intel.com> <CAKohpo=7CyRT7szhJAQXjRfBFyw_6LuHSdVS39z=899T0eBoMg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <53FD8975.3050706-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?windows-1252?Q?Terje_Bergstr=F6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:64475 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933914AbaH0Qrs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 12:47:48 -0400
+In-Reply-To: <CAKohpo=7CyRT7szhJAQXjRfBFyw_6LuHSdVS39z=899T0eBoMg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: dirk.brandewie@gmail.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 08/27/2014 01:32 AM, Tomeu Vizoso wrote:
-> On 08/26/2014 07:17 PM, Stephen Warren wrote:
->> On 08/26/2014 07:12 AM, Tomeu Vizoso wrote:
->>> Sets the EMC clock rate based on the bandwidth requirements
->>> registered by
->>> memory clients through the PM_QOS_MEMORY_BANDWIDTH class.
->>>
->>> Note: this is just an example and not a proper driver for a external
->>> memory
->>> controller. Its only purpose is to illustrate how such a driver would
->>> set the
->>> frequency of the external memory clock based on the bandwidth
->>> requirements of
->>> memory clients.
+On 08/22/2014 03:19 AM, Viresh Kumar wrote:
+> On 22 August 2014 15:35, Mika Westerberg
+> <mika.westerberg@linux.intel.com> wrote:
+>> This is pretty much the same as Intel Baytrail, only the CPU ID is
+>> different. Add the new ID to the supported CPU list.
 >>
->>> diff --git a/arch/arm/mach-tegra/tegra.c b/arch/arm/mach-tegra/tegra.c
->>
->>> @@ -112,6 +117,11 @@ static void __init tegra_dt_init(void)
->>>       parent = soc_device_to_device(soc_dev);
->>>
->>>       /*
->>> +     * HACK: register a platform device to probe the driver
->>> +     */
->>> +    platform_device_register(&tegra_emc);
->>
->> I don't think this is a hack, except for the bug: That should only
->> happen on Tegra124 not on all Tegra SoCs.
->>
->> Do you intend all 3 patches in this series to be merged? You'd mentioned
->> you didn't when asked about this for a previous version. I'm not sure if
->> that's changed?
+>> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+>> Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
 >
-> Yeah, I don't want 3/3 merged because we don't have a functional EMC
-> clock yet on T124, and because I don't know yet where will be the best
-> place to have that code in. That depends on Mikko's work on the real EMC
-> driver which is in a bit of flux right now.
->
-> I have kept posting it just because I think it complements nicely the
-> explanation in the cover letter, but maybe confuses more than helps.
+> Dirk might be away on holidays..
 
-OK. If you make this one a [PATCH RFC], or add a note to that effect to 
-the commit description (perhaps underneath the --- line), that'd be 
-helpful for future postings.
+Yes Sorry
+
+Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+
+>
+>> ---
+>>   drivers/cpufreq/intel_pstate.c | 1 +
+>>   1 file changed, 1 insertion(+)
+>>
+>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+>> index c5eac949760d..a3cf8994160b 100644
+>> --- a/drivers/cpufreq/intel_pstate.c
+>> +++ b/drivers/cpufreq/intel_pstate.c
+>> @@ -660,6 +660,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+>>          ICPU(0x3f, core_params),
+>>          ICPU(0x45, core_params),
+>>          ICPU(0x46, core_params),
+>> +       ICPU(0x4c, byt_params),
+>>          ICPU(0x4f, core_params),
+>>          ICPU(0x56, core_params),
+>>          {}
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+
