@@ -1,47 +1,67 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH 1/2] arm: irq: Notify affinity change when migrating IRQs
- during hotplug
-Date: Wed, 27 Aug 2014 16:51:39 -0600
-Message-ID: <20140827225139.GD79706@ilina-mac.domain>
-References: <1408553988-63924-1-git-send-email-lina.iyer@linaro.org>
- <7hegw1g8qx.fsf@paris.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Add CPU ID for Braswell processor
+Date: Thu, 28 Aug 2014 01:48:42 +0200
+Message-ID: <1489037.zFJ48ZYqaQ@vostro.rjw.lan>
+References: <1408701944-14734-1-git-send-email-mika.westerberg@linux.intel.com> <CAKohpo=7CyRT7szhJAQXjRfBFyw_6LuHSdVS39z=899T0eBoMg@mail.gmail.com> <53FE0BB1.9060201@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:39787 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932603AbaH0Wvr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 18:51:47 -0400
-Received: by mail-pa0-f49.google.com with SMTP id kq14so67233pab.22
-        for <linux-pm@vger.kernel.org>; Wed, 27 Aug 2014 15:51:44 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <7hegw1g8qx.fsf@paris.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <53FE0BB1.9060201@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@linaro.org>
-Cc: tglx@linutronix.de, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, ulf.hansson@linaro.org, Praveen Chidambaram <pchidamb@codeaurora.org>
 
-On Wed, Aug 27, 2014 at 10:09:10AM -0700, Kevin Hilman wrote:
->Lina Iyer <lina.iyer@linaro.org> writes:
->
->> From: Praveen Chidambaram <pchidamb@codeaurora.org>
->>
->> Hotplug causes IRQs affine to a core that is being taken down to migrate
->> to an online core. This is done by directly calling the irq_set_affinity
->> associated with the irq_chip structure. Instead using the
->> irq_set_affinity_locked() api lets the notifications bubble through.
->
->changelog nit: and why do you want/need the notification to bubble
->through?   IOW, you're explaining "what" the patch does, but not "why",
->which typically includes a summary of the problem being solved.  (I know
->the background from the other series, but other reviewers may not know
->the history there.)
-Okay. I seem to be making the mistake of not explaining things very
-well, in context.
-Let me elaborate and resend.
->
->Also, please post these to linux-arm-kernel.
->
->Thanks,
->
->Kevin
+On Wednesday, August 27, 2014 09:47:45 AM Dirk Brandewie wrote:
+> On 08/22/2014 03:19 AM, Viresh Kumar wrote:
+> > On 22 August 2014 15:35, Mika Westerberg
+> > <mika.westerberg@linux.intel.com> wrote:
+> >> This is pretty much the same as Intel Baytrail, only the CPU ID is
+> >> different. Add the new ID to the supported CPU list.
+> >>
+> >> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> >> Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> >
+> > Dirk might be away on holidays..
+> 
+> Yes Sorry
+> 
+> Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+
+Queued up for 3.17-rc3, thanks!
+
+> 
+> >
+> >> ---
+> >>   drivers/cpufreq/intel_pstate.c | 1 +
+> >>   1 file changed, 1 insertion(+)
+> >>
+> >> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> >> index c5eac949760d..a3cf8994160b 100644
+> >> --- a/drivers/cpufreq/intel_pstate.c
+> >> +++ b/drivers/cpufreq/intel_pstate.c
+> >> @@ -660,6 +660,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+> >>          ICPU(0x3f, core_params),
+> >>          ICPU(0x45, core_params),
+> >>          ICPU(0x46, core_params),
+> >> +       ICPU(0x4c, byt_params),
+> >>          ICPU(0x4f, core_params),
+> >>          ICPU(0x56, core_params),
+> >>          {}
+> >
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
