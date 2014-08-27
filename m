@@ -1,66 +1,52 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Add CPU ID for Braswell processor
-Date: Thu, 28 Aug 2014 01:48:42 +0200
-Message-ID: <1489037.zFJ48ZYqaQ@vostro.rjw.lan>
-References: <1408701944-14734-1-git-send-email-mika.westerberg@linux.intel.com> <CAKohpo=7CyRT7szhJAQXjRfBFyw_6LuHSdVS39z=899T0eBoMg@mail.gmail.com> <53FE0BB1.9060201@gmail.com>
+Subject: Re: [PATCH] cpufreq: s5pv210: Remove spurious __init annotation
+Date: Thu, 28 Aug 2014 01:52:08 +0200
+Message-ID: <2098022.zvxAyBojh6@vostro.rjw.lan>
+References: <1409137227-27080-1-git-send-email-broonie@kernel.org> <CAKohpokyUWnzUOdTtevGG8G8vrdxBCo3XsH9YdvmSt8BPZ1KwA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53FE0BB1.9060201@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58751 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965188AbaH0Xc6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 19:32:58 -0400
+In-Reply-To: <CAKohpokyUWnzUOdTtevGG8G8vrdxBCo3XsH9YdvmSt8BPZ1KwA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Mark Brown <broonie@kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wednesday, August 27, 2014 09:47:45 AM Dirk Brandewie wrote:
-> On 08/22/2014 03:19 AM, Viresh Kumar wrote:
-> > On 22 August 2014 15:35, Mika Westerberg
-> > <mika.westerberg@linux.intel.com> wrote:
-> >> This is pretty much the same as Intel Baytrail, only the CPU ID is
-> >> different. Add the new ID to the supported CPU list.
-> >>
-> >> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> >> Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On Wednesday, August 27, 2014 04:34:28 PM Viresh Kumar wrote:
+> On 27 August 2014 16:30, Mark Brown <broonie@kernel.org> wrote:
+> > From: Mark Brown <broonie@linaro.org>
 > >
-> > Dirk might be away on holidays..
+> > Since this is a platform driver and can be probed at any time we can't
+> > annotate funtions in the probe path as __init, the code can't safely be
+> > discarded at the end of kernel init.
+> >
+> > Signed-off-by: Mark Brown <broonie@linaro.org>
+> > ---
+> >  drivers/cpufreq/s5pv210-cpufreq.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+> > index 9a68225a757e..3f9791f07b8e 100644
+> > --- a/drivers/cpufreq/s5pv210-cpufreq.c
+> > +++ b/drivers/cpufreq/s5pv210-cpufreq.c
+> > @@ -501,7 +501,7 @@ static int check_mem_type(void __iomem *dmc_reg)
+> >         return val >> 8;
+> >  }
+> >
+> > -static int __init s5pv210_cpu_init(struct cpufreq_policy *policy)
+> > +static int s5pv210_cpu_init(struct cpufreq_policy *policy)
+> >  {
+> >         unsigned long mem_type;
+> >         int ret;
 > 
-> Yes Sorry
-> 
-> Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 Queued up for 3.17-rc3, thanks!
-
-> 
-> >
-> >> ---
-> >>   drivers/cpufreq/intel_pstate.c | 1 +
-> >>   1 file changed, 1 insertion(+)
-> >>
-> >> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> >> index c5eac949760d..a3cf8994160b 100644
-> >> --- a/drivers/cpufreq/intel_pstate.c
-> >> +++ b/drivers/cpufreq/intel_pstate.c
-> >> @@ -660,6 +660,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
-> >>          ICPU(0x3f, core_params),
-> >>          ICPU(0x45, core_params),
-> >>          ICPU(0x46, core_params),
-> >> +       ICPU(0x4c, byt_params),
-> >>          ICPU(0x4f, core_params),
-> >>          ICPU(0x56, core_params),
-> >>          {}
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
 I speak only for myself.
