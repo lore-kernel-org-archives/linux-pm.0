@@ -1,47 +1,86 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: s5pv210: Remove spurious __init annotation
-Date: Wed, 27 Aug 2014 16:34:28 +0530
-Message-ID: <CAKohpokyUWnzUOdTtevGG8G8vrdxBCo3XsH9YdvmSt8BPZ1KwA@mail.gmail.com>
-References: <1409137227-27080-1-git-send-email-broonie@kernel.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [GIT PULL] thermal soc changes
+Date: Wed, 27 Aug 2014 09:27:19 -0400
+Message-ID: <20140827132717.GA15875@developer>
+References: <1408711592-8917-1-git-send-email-edubezval@gmail.com>
+ <1409125313.8085.22.camel@rzhang1-toshiba>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f172.google.com ([209.85.214.172]:36631 "EHLO
-	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756688AbaH0LE3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 07:04:29 -0400
-Received: by mail-ob0-f172.google.com with SMTP id wn1so23978obc.31
-        for <linux-pm@vger.kernel.org>; Wed, 27 Aug 2014 04:04:28 -0700 (PDT)
-In-Reply-To: <1409137227-27080-1-git-send-email-broonie@kernel.org>
+Received: from mail-vc0-f179.google.com ([209.85.220.179]:49863 "EHLO
+	mail-vc0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932179AbaH0N10 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 09:27:26 -0400
+Content-Disposition: inline
+In-Reply-To: <1409125313.8085.22.camel@rzhang1-toshiba>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 27 August 2014 16:30, Mark Brown <broonie@kernel.org> wrote:
-> From: Mark Brown <broonie@linaro.org>
->
-> Since this is a platform driver and can be probed at any time we can't
-> annotate funtions in the probe path as __init, the code can't safely be
-> discarded at the end of kernel init.
->
-> Signed-off-by: Mark Brown <broonie@linaro.org>
-> ---
->  drivers/cpufreq/s5pv210-cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-> index 9a68225a757e..3f9791f07b8e 100644
-> --- a/drivers/cpufreq/s5pv210-cpufreq.c
-> +++ b/drivers/cpufreq/s5pv210-cpufreq.c
-> @@ -501,7 +501,7 @@ static int check_mem_type(void __iomem *dmc_reg)
->         return val >> 8;
->  }
->
-> -static int __init s5pv210_cpu_init(struct cpufreq_policy *policy)
-> +static int s5pv210_cpu_init(struct cpufreq_policy *policy)
->  {
->         unsigned long mem_type;
->         int ret;
+Hello Rui,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Wed, Aug 27, 2014 at 03:41:53PM +0800, Zhang Rui wrote:
+> On Fri, 2014-08-22 at 08:46 -0400, Eduardo Valentin wrote:
+> > Hello Rui,
+> > 
+> > Please pull these changes. Here we have three new features: IMX driver has
+> > now support to i.mx6sx, the of-thermal now if aware of disabled thermal zones
+> > in DT, and we shall have tracing support on thermal framework.
+> > 
+> > The following changes since commit 47d104ba5879790c7c91c3390b0b08399e168efe:
+> > 
+> >   Merge branches 'exynos-fix', 'for-rc', 'int3403-fix', 'misc', 'rcar-thermal' and 'sti-thermal' of .git into next (2014-07-22 10:13:00 +0800)
+> > 
+> > are available in the git repository at:
+> > 
+> > 
+> >   https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git 
+> > 
+> 
+> I suppose you mean
+> http://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git next branch. And I've pulled those changes in your next branch.
+
+Yes Rui. I made a mistake. 
+
+Thanks for pulling.
+
+
+> 
+> thanks,
+
+Cheers,
+
+> rui
+> > for you to fetch changes up to 3c94f17e72a7bcf689756da100b6051e535c45f4:
+> > 
+> >   Thermal: imx: add i.mx6sx thermal support (2014-08-09 10:29:30 -0400)
+> > 
+> > ----------------------------------------------------------------
+> > Anson Huang (1):
+> >       Thermal: imx: add i.mx6sx thermal support
+> > 
+> > Laxman Dewangan (1):
+> >       thermal: add support to disable thermal zone from DTS
+> > 
+> > Punit Agrawal (3):
+> >       thermal: trace: Trace temperature changes
+> >       thermal: trace: Trace when a cooling device's state is updated
+> >       thermal: trace: Trace when temperature is above a trip point
+> > 
+> >  .../devicetree/bindings/thermal/imx-thermal.txt    |  5 +-
+> >  drivers/thermal/fair_share.c                       | 12 +++
+> >  drivers/thermal/imx_thermal.c                      | 91 ++++++++++++++++++----
+> >  drivers/thermal/of-thermal.c                       | 12 +++
+> >  drivers/thermal/step_wise.c                        |  5 +-
+> >  drivers/thermal/thermal_core.c                     |  7 ++
+> >  include/trace/events/thermal.h                     | 83 ++++++++++++++++++++
+> >  7 files changed, 200 insertions(+), 15 deletions(-)
+> >  create mode 100644 include/trace/events/thermal.h
+> > 
+> > 
+> >  BR,
+> > 
+> >  Eduardo Valentin
+> 
+> 
