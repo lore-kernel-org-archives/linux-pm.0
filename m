@@ -1,77 +1,115 @@
-From: Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: Re: [PATCH v3 1/4] thermal: rockchip: add driver for thermal
-Date: Fri, 29 Aug 2014 03:36:36 +0800
-Message-ID: <53FF84C4.9080902@rock-chips.com>
-References: <1409187562-12370-1-git-send-email-caesar.wang@rock-chips.com> <20140828143733.GA18084@developer> <3440260.edal29kzlR@diego> <4488604.oBeB6it8Vr@wuerfel>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/5 v3] irq / PM: Suspend-to-idle wakeup interrupts
+Date: Fri, 29 Aug 2014 00:44:11 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1408282355350.23342@nanos>
+References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <4488604.oBeB6it8Vr@wuerfel>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, cf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dtor-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, zyw-TNX95d0MmH7DzftRWevZcw@public.gmane.org, addy.ke-TNX95d0MmH7DzftRWevZcw@public.gmane.org, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, zhaoyifeng <zyf-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:43148 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750894AbaH1WoU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Aug 2014 18:44:20 -0400
+In-Reply-To: <5320472.coYotHR1d0@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
 
-Arnd & Heiko & Eduardo,
+On Wed, 27 Aug 2014, Rafael J. Wysocki wrote:
+> To me, all of this is relatively straightforward and the handling of
+> IRQF_NO_SUSPEND for shared interrupts, which is a separate problem, can be
+> addressed on top of it later (make no mistake, I still think that it should be
+> addressed).
 
-OK. Maybe you are right.
+Why? Just because there is enough idiotic code using it?
 
-This driver should be put into drivers/iio/adc/* ,
-Anyway,I will re-edit it ASAP.
+Let's look at the usage sites:
 
+sound/soc/codecs/twl6040.c
 
-=E5=9C=A8 2014/8/29 0:16, Arnd Bergmann =E5=86=99=E9=81=93:
-> On Thursday 28 August 2014 18:11:43 Heiko St=C3=BCbner wrote:
->> Am Donnerstag, 28. August 2014, 10:37:35 schrieb Eduardo Valentin:
->>>> On the driver side, I believe the correct way to deal with this se=
-tup
->>>> is to split your driver into a generic drivers/iio/adc/rockchips-t=
-sadc.c
->>>> file, and a smaller thermal driver that uses the iio in-kernel int=
-erfaces,
->>>> ideally one that is independent of the underlying hardware and can
->>>> work on any ADC implementation.
->>> Agreed. If you can write such interface and make your driver to wor=
-k in
->>> such way, that would be great.
->> But I currently don't see how you would model the temperature handli=
-ng parts
->> from a generic thermal driver to a generic adc driver for the rk3288=
--tsadc.
->>
->> I guess the general temperature irq handling would use iio-triggers?=
- But how
->> does the target temperature get into the TSADC_COMP1_INT register.
->>
->> Also when getting the temperature, Caesar's driver compares it to it=
-s trip
->> points and sets the next trip point depending on the current tempera=
-ture
->> (passive <-> critical) in rockchip_get_temp.
->>
->> Maybe there is some completely easy way for this, but currently I do=
-n't see
->> it.
-> Eduardo earlier today replied to an email about a generic driver for
-> thermal, which was posted in February but hasn't been merged.
-> See https://lkml.org/lkml/2014/2/5/810
->
-> There may be a newer version of this patch, which I haven't found.
->
-> 	Arnd
->
->
->
+  Introduced in commit 8d61f4901f83461e1f04df7743777e9db5f541aa
 
---=20
-Best regards,
-Caesar
+    ASoC: twl6040: Convert PLUGINT to no-suspend irq
+    
+    Convert headset PLUGINT interrupt to NO_SUSPEND type in order to
+    allow handling of insertion/removal events while device is
+    suspended.
 
+  So why does this need to be a NO_SUSPEND type interrupt? Just because
+  the flag is sexy? What's wrong with using the wake mechanism?
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+drivers/xen/events/events_base.c
+
+  A genuine usecase which makes sense and is not shared
+
+drivers/watchdog/intel-mid_wdt.c
+
+  MUHAHAHAHAHAHA
+
+  static irqreturn_t mid_wdt_irq(int irq, void *dev_id)
+  {
+      panic("Kernel Watchdog");
+      /* This code should not be reached */
+      return IRQ_HANDLED;
+  }
+
+  So why does this need to be NO_SUSPEND? Because we forgot to trigger
+  the watchdog during suspend? Brilliant!
+
+drivers/usb/phy/phy-ab8500-usb.c
+
+  Of course no explanation WHY this uses NO_SUSPEND plus SHARED and
+  there is no fcking reason to do so.
+
+So really, I'm too lazy to walk through that mess further. I bet NONE
+of the usage sites except those for which this has been introduced in
+the first place has a real good reason to do so.
+
+Unless someone comes up with a use case where a shared NO_SUSPEND
+handler is absolutely required, there is nothing which needs to be
+addressed. You've proven yourself, that the wake mechanism is
+sufficient to solve the problem which led to this discussion.
+
+So we rather go and fix the ABUSE instead of making it legitimate by
+fugly workarounds in the core code.
+
+The same applies to the IRQF_RESUME_EARLY flag.
+
+Just look at:
+
+  commit 8b41669ceba0c2d4c09d69ccb9a3458953dae784
+
+    mfd: twl4030: Fix chained irq handling on resume from suspend
+    
+    The irqs are enabled one-by-one in pm core resume_noirq phase.
+    This leads to situation where the twl4030 primary interrupt
+    handler (PIH) is enabled before the chained secondary handlers
+    (SIH). As the PIH cannot clear the pending interrupt, and
+    SIHs have not been enabled yet, a flood of interrupts hangs
+    the device.
+    
+    Fixed the issue by setting the SIH irqs with IRQF_EARLY_RESUME
+    flags, so they get enabled before the PIH.
+
+So we solve an ordering problem which has a completely different root
+cause by slapping random flags on it which paper over the issue?
+
+The solution to the problem is completely wrong and of course the
+"fix" is only applied to the one instance which might be affected by
+that issue, i.e. the one which caused the patch submitter trouble.
+
+Now I don't blame the author, I blame the maintainer who happily
+applied that "fix".
+
+That's unfortunately a very common pattern in the kernel which will
+cause serious maintainability issues in the long run, but of course
+that's just the opinion of a grumpy old greybeard.
+
+The sad thing is that neither the author nor the maintainer who
+applied it is going to be around and responsive when the shit hits the
+fan. That commit is a perfect example for this.
+
+Thanks,
+
+	tglx
