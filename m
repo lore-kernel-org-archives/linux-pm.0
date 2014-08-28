@@ -1,49 +1,55 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v2 6/9] mmc: sdio: Convert to dev_pm_domain_attach|detach()
-Date: Thu, 28 Aug 2014 10:38:59 +0200
-Message-ID: <1409215142-8218-7-git-send-email-ulf.hansson@linaro.org>
-References: <1409215142-8218-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1409215142-8218-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc@vger.kernel.org
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v3 1/4] thermal: rockchip: add driver for thermal
+Date: Thu, 28 Aug 2014 10:48:23 +0200
+Message-ID: <2852853.mfRZfFVSev@wuerfel>
+References: <1409187562-12370-1-git-send-email-caesar.wang@rock-chips.com> <1409187562-12370-2-git-send-email-caesar.wang@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.130]:52101 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932699AbaH1Is6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Aug 2014 04:48:58 -0400
+In-Reply-To: <1409187562-12370-2-git-send-email-caesar.wang@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Caesar Wang <caesar.wang@rock-chips.com>
+Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, grant.likely@linaro.org, robh+dt@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, zyw@rock-chips.com, addy.ke@rock-chips.com, dmitry.torokhov@gmail.com, zhaoyifeng <zyf@rock-chips.com>, linux-iio@vger.kernel.org, Jonathan Cameron <jic23@kernel.org>
 
-Previously only the ACPI power domain was supported by the sdio bus.
+On Thursday 28 August 2014 08:59:19 Caesar Wang wrote:
+> Thermal is TS-ADC Controller module supports user-defined mode and automatic mode.
+> 
+> User-defined mode refers,TSADC all the control signals entirely by software
+> writing to register for direct control.
+> 
+> Automaic mode refers to the module automatically poll TSADC output,and the results
+> Were checked.
+> 
+> If you find that the temperature High in a period of time, an interrupt is generated
+> to the processor down-measures taken;if the temperature over a period of time High,
+> the resulting TSHUT gave CRU module,let it reset the entire chip, or via GPIO give PMIC.
+> 
+> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
+> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
 
-Let's convert to the common attach/detach functions for power domains,
-which currently means we are extending the support to include the
-generic power domain as well.
+Hi Caesar,
 
-Cc: linux-mmc@vger.kernel.org
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/mmc/core/sdio_bus.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+After looking at the driver (last time I only received the patch for
+the binding), I have a more general comment:
 
-diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
-index 4fa8fef9..1df0fc6 100644
---- a/drivers/mmc/core/sdio_bus.c
-+++ b/drivers/mmc/core/sdio_bus.c
-@@ -315,7 +315,7 @@ int sdio_add_func(struct sdio_func *func)
- 	ret = device_add(&func->dev);
- 	if (ret == 0) {
- 		sdio_func_set_present(func);
--		acpi_dev_pm_attach(&func->dev, false);
-+		dev_pm_domain_attach(&func->dev, false);
- 	}
- 
- 	return ret;
-@@ -332,7 +332,7 @@ void sdio_remove_func(struct sdio_func *func)
- 	if (!sdio_func_present(func))
- 		return;
- 
--	acpi_dev_pm_detach(&func->dev, false);
-+	dev_pm_domain_detach(&func->dev, false);
- 	device_del(&func->dev);
- 	put_device(&func->dev);
- }
--- 
-1.9.1
+This looks like a general-purpose ADC device, not an IP block that is
+specific to thermal management. The binding looks ok for that purpose
+but should probably be moved into Documentation/devicetree/bindings/iio/adc/
+as a minor change.
 
+On the driver side, I believe the correct way to deal with this setup
+is to split your driver into a generic drivers/iio/adc/rockchips-tsadc.c
+file, and a smaller thermal driver that uses the iio in-kernel interfaces,
+ideally one that is independent of the underlying hardware and can
+work on any ADC implementation.
+
+I've put the IIO maintainer on Cc in this mail, maybe Jonathan or someone
+else on the linux-iio mailing list has some extra insight.
+
+	Arnd
