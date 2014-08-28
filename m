@@ -1,61 +1,104 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 7/7] MAINTAINERS: Include DA9150 files in Dialog
- Semiconductor support list.
-Date: Thu, 28 Aug 2014 12:17:41 +0100
-Message-ID: <20140828111741.GK24579@lee--X1>
-References: <cover.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
- <09b13677b1e2d1cf02e4eb43e2777f8081ec9597.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
+From: Varka Bhadram <varkabhadram@gmail.com>
+Subject: Re: [PATCH v2 1/7] mfd: Add support for DA9150 combined charger &
+ fuel-gauge device
+Date: Thu, 28 Aug 2014 17:17:08 +0530
+Message-ID: <53FF16BC.9050701@gmail.com>
+References: <cover.1409145187.git.Adam.Thomson.Opensource@diasemi.com> <d6c7de200c9447dbafa74ee76739da943a0b73b2.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <09b13677b1e2d1cf02e4eb43e2777f8081ec9597.1409145187.git.Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Cc: Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <d6c7de200c9447dbafa74ee76739da943a0b73b2.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, linux-iio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 28 Aug 2014, Adam Thomson wrote:
+On 08/28/2014 04:18 PM, Adam Thomson wrote:
 
-> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-> ---
->  MAINTAINERS | 4 ++++
->  1 file changed, 4 insertions(+)
+(...)
 
-Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> +static int da9150_probe(struct i2c_client *client,
+> +			const struct i2c_device_id *id)
+> +{
+> +	struct da9150 *da9150;
+> +	int ret;
+> +
+> +	da9150 = devm_kzalloc(&client->dev, sizeof(struct da9150), GFP_KERNEL);
+> +	if (da9150 == NULL)
+> +		return -ENOMEM;
 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index aefa948..6dc0aee 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2883,12 +2883,15 @@ S:	Supported
->  F:	Documentation/hwmon/da90??
->  F:	drivers/gpio/gpio-da90??.c
->  F:	drivers/hwmon/da90??-hwmon.c
-> +F:	drivers/iio/adc/da91??-*.c
->  F:	drivers/input/misc/da90??_onkey.c
->  F:	drivers/input/touchscreen/da9052_tsi.c
->  F:	drivers/leds/leds-da90??.c
->  F:	drivers/mfd/da903x.c
->  F:	drivers/mfd/da90??-*.c
-> +F:	drivers/mfd/da91??-*.c
->  F:	drivers/power/da9052-battery.c
-> +F:	drivers/power/da91??-*.c
->  F:	drivers/regulator/da903x.c
->  F:	drivers/regulator/da9???-regulator.[ch]
->  F:	drivers/rtc/rtc-da90??.c
-> @@ -2898,6 +2901,7 @@ F:	include/linux/mfd/da903x.h
->  F:	include/linux/mfd/da9052/
->  F:	include/linux/mfd/da9055/
->  F:	include/linux/mfd/da9063/
-> +F:	include/linux/mfd/da9150/
->  F:	include/sound/da[79]*.h
->  F:	sound/soc/codecs/da[79]*.[ch]
->=20
+da9150 = devm_kzalloc(&client->dev, sizeof(*da9150), GFP_KERNEL);
+if (!da9150)
+	return -ENOMEM;
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+> +	da9150->dev = &client->dev;
+> +	da9150->irq = client->irq;
+> +	i2c_set_clientdata(client, da9150);
+> +	dev_set_drvdata(da9150->dev, da9150);
+> +
+> +	da9150->regmap = devm_regmap_init_i2c(client, &da9150_regmap_config);
+> +	if (IS_ERR(da9150->regmap)) {
+> +		ret = PTR_ERR(da9150->regmap);
+> +		dev_err(da9150->dev, "Failed to allocate register map: %d\n",
+> +			ret);
+> +		return ret;
+> +	}
+> +
+> +	return da9150_device_init(da9150);
+> +}
+> +
+> +static int da9150_remove(struct i2c_client *client)
+> +{
+> +	struct da9150 *da9150 = i2c_get_clientdata(client);
+> +
+> +	da9150_device_exit(da9150);
+> +
+> +	return 0;
+> +}
+> +
+> +static void da9150_shutdown(struct i2c_client *client)
+> +{
+> +	struct da9150 *da9150 = i2c_get_clientdata(client);
+> +
+> +	da9150_device_shutdown(da9150);
+> +}
+> +
+> +static const struct i2c_device_id da9150_i2c_id[] = {
+> +	{ "da9150", 0 },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(i2c, da9150_i2c_id);
+> +
+> +static const struct of_device_id da9150_of_match[] = {
+> +	{ .compatible = "dlg,da9150", },
+> +	{ }
+> +};
+> +
+
+missed MODULE_DEVICE_TABLE(of, ...)   ?
+
+> +static struct i2c_driver da9150_driver = {
+> +	.driver	= {
+> +		.name	= "da9150",
+> +		.owner	= THIS_MODULE,
+
+No need to update this field...
+
+> +		.of_match_table = of_match_ptr(da9150_of_match),
+> +	},
+> +	.probe		= da9150_probe,
+> +	.remove		= da9150_remove,
+> +	.shutdown	= da9150_shutdown,
+> +	.id_table	= da9150_i2c_id,
+> +};
+> +
+> +module_i2c_driver(da9150_driver);
+> +
+> +MODULE_DESCRIPTION("I2C Driver for DA9150");
+> +MODULE_AUTHOR("Adam Thomson <Adam.Thomson.Opensource@diasemi.com");
+> +MODULE_LICENSE("GPL");
+>
+-- 
+Regards,
+Varka Bhadram.
