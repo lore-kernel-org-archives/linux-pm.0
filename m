@@ -1,132 +1,82 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2] cpufreq: powernv: Set the cpus to nominal frequency during reboot/kexec
-Date: Thu, 28 Aug 2014 19:36:56 +0530
-Message-ID: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp02.in.ibm.com ([122.248.162.2]:59459 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbaH1OHY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Aug 2014 10:07:24 -0400
-Received: from /spool/local
-	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-	Thu, 28 Aug 2014 19:37:21 +0530
-Sender: linux-pm-owner@vger.kernel.org
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH V3 00/10] CPUFreq: cpufreq-cpu0 updates for 3.{17|18 ?}
+Date: Thu, 28 Aug 2014 10:16:31 -0400
+Message-ID: <53FF39BF.4040006@ti.com>
+References: <cover.1409201048.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <cover.1409201048.git.viresh.kumar@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, shawn.guo@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, t.figa@samsung.com, thomas.petazzoni@free-electrons.com, pramod.gurav@smartplayin.com
 List-Id: linux-pm@vger.kernel.org
-To: viresh.kumar@linaro.org, benh@kernel.crashing.org
-Cc: linuxppc-dev@lists.ozlabs.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, preeti@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
-This patch ensures the cpus to kexec/reboot at nominal frequency.
-Nominal frequency is the highest cpu frequency on PowerPC at
-which the cores can run without getting throttled.
+On Thursday 28 August 2014 01:52 AM, Viresh Kumar wrote:
+> Hi Rafael,
+> 
+> I am sending this again, but without the controversial part this time. I have
+> dropped last two patches which were about detecting clock sharing among CPUs.
+> Would fix up that later once other Maintainers get in sync about the bindings.
+> 
+> So, what's left here ? These are mostly updates/reorders which can be applied
+> the patches which I have dropped now. These are all well reviewed and tested
+> by others. Getting them in shouldn't break anything, I believe. Its better
+> people start using the updates we already have, otherwise they will keep on
+> sending fixes they get (The way Pramod Gurav tried it today).
+> 
+> Can we please get them in 3.17 if its still allowed? Or -next otherwise.
+> 
+> V2: https://lkml.org/lkml/2014/7/1/358
+> 
+> Rebased over: 3.17-rc2
+> 
+> git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/cpu0-updates-v3
+> 
+> V2->V3: Dropped few patches, nothing much.
+> 
+I just hope that binding related discussion don't die because the series
+has been moved on. Ofcourse the rest of the patches can move forward.
 
-If the host kernel had set the cpus to a low pstate and then it
-kexecs/reboots to a cpufreq disabled kernel it would cause the target
-kernel to perform poorly. It will also increase the boot up time of
-the target kernel. So set the cpus to high pstate, in this case to
-nominal frequency before rebooting to avoid such scenarios.
+Feel free to add my ack if you need one
 
-The reboot notifier will set the cpus to nominal frequncy.
 
-Changes v1->v2:
-Invoke .target() driver callback to set the cpus to nominal frequency
-in reboot notifier, instead of calling cpufreq_suspend() as suggested
-by Viresh Kumar.
-Modified the commit message.
-
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 35 +++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 379c083..ba27c49 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -26,6 +26,7 @@
- #include <linux/cpufreq.h>
- #include <linux/smp.h>
- #include <linux/of.h>
-+#include <linux/reboot.h>
- 
- #include <asm/cputhreads.h>
- #include <asm/firmware.h>
-@@ -35,6 +36,7 @@
- #define POWERNV_MAX_PSTATES	256
- 
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
-+static bool rebooting;
- 
- /*
-  * Note: The set of pstates consists of contiguous integers, the
-@@ -284,6 +286,15 @@ static void set_pstate(void *freq_data)
- }
- 
- /*
-+ * get_nominal_index: Returns the index corresponding to the nominal
-+ * pstate in the cpufreq table
-+ */
-+static inline unsigned int get_nominal_index(void)
-+{
-+	return powernv_pstate_info.max - powernv_pstate_info.nominal;
-+}
-+
-+/*
-  * powernv_cpufreq_target_index: Sets the frequency corresponding to
-  * the cpufreq table entry indexed by new_index on the cpus in the
-  * mask policy->cpus
-@@ -293,6 +304,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- {
- 	struct powernv_smp_call_data freq_data;
- 
-+	if (unlikely(rebooting) && new_index != get_nominal_index())
-+		return -EBUSY;
-+
- 	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
- 
- 	/*
-@@ -317,6 +331,25 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return cpufreq_table_validate_and_show(policy, powernv_freqs);
- }
- 
-+static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
-+				unsigned long action, void *unused)
-+{
-+	int cpu;
-+	struct cpufreq_policy cpu_policy;
-+
-+	rebooting = true;
-+	for_each_online_cpu(cpu) {
-+		cpufreq_get_policy(&cpu_policy, cpu);
-+		powernv_cpufreq_target_index(&cpu_policy, get_nominal_index());
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block powernv_cpufreq_reboot_nb = {
-+	.notifier_call = powernv_cpufreq_reboot_notifier,
-+};
-+
- static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.name		= "powernv-cpufreq",
- 	.flags		= CPUFREQ_CONST_LOOPS,
-@@ -342,12 +375,14 @@ static int __init powernv_cpufreq_init(void)
- 		return rc;
- 	}
- 
-+	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
- 	return cpufreq_register_driver(&powernv_cpufreq_driver);
- }
- module_init(powernv_cpufreq_init);
- 
- static void __exit powernv_cpufreq_exit(void)
- {
-+	unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
- 	cpufreq_unregister_driver(&powernv_cpufreq_driver);
- }
- module_exit(powernv_cpufreq_exit);
--- 
-1.9.3
-
+> 
+> Viresh Kumar (10):
+>   cpufreq: Add support for per-policy driver data
+>   cpufreq: cpu0: Update Module Author
+>   cpufreq: cpu0: don't validate clock on clk_put()
+>   cpufreq: cpu0: print relevant error when we defer probe
+>   cpufreq: cpu0: use dev_{err|warn|dbg} instead of pr_{err|warn|debug}
+>   cpufreq: cpu0: Move per-cluster initialization code to ->init()
+>   cpufreq: cpu0: try regulators with name "cpu-supply"
+>   cpufreq: cpu0: Make allocate_resources() work for any CPU
+>   cpufreq: cpu0: rename driver and internals to 'cpufreq_generic'
+>   cpufreq: generic: set platform_{driver|device} '.name' to
+>     'cpufreq-generic'
+> 
+>  .../{cpufreq-cpu0.txt => cpufreq-generic.txt}      |   8 +-
+>  arch/arm/mach-imx/imx27-dt.c                       |   2 +-
+>  arch/arm/mach-imx/mach-imx51.c                     |   2 +-
+>  arch/arm/mach-omap2/pm.c                           |   2 +-
+>  arch/arm/mach-shmobile/board-ape6evm-reference.c   |   2 +-
+>  arch/arm/mach-shmobile/cpufreq.c                   |   2 +-
+>  arch/arm/mach-shmobile/setup-sh73a0.c              |   4 +-
+>  arch/arm/mach-zynq/common.c                        |   2 +-
+>  drivers/cpufreq/Kconfig                            |  10 +-
+>  drivers/cpufreq/Kconfig.arm                        |   2 +-
+>  drivers/cpufreq/Makefile                           |   2 +-
+>  drivers/cpufreq/cpufreq-cpu0.c                     | 248 --------------
+>  drivers/cpufreq/cpufreq-generic.c                  | 363 +++++++++++++++++++++
+>  drivers/cpufreq/exynos4210-cpufreq.c               |   2 +-
+>  drivers/cpufreq/exynos4x12-cpufreq.c               |   2 +-
+>  drivers/cpufreq/exynos5250-cpufreq.c               |   2 +-
+>  drivers/cpufreq/highbank-cpufreq.c                 |   6 +-
+>  drivers/cpufreq/s5pv210-cpufreq.c                  |   2 +-
+>  include/linux/cpufreq.h                            |   3 +
+>  19 files changed, 392 insertions(+), 274 deletions(-)
+>  rename Documentation/devicetree/bindings/cpufreq/{cpufreq-cpu0.txt => cpufreq-generic.txt} (85%)
+>  delete mode 100644 drivers/cpufreq/cpufreq-cpu0.c
+>  create mode 100644 drivers/cpufreq/cpufreq-generic.c
+> 
