@@ -1,70 +1,56 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 1/4] thermal: rockchip: add driver for thermal
-Date: Thu, 28 Aug 2014 10:37:35 -0400
-Message-ID: <20140828143733.GA18084@developer>
-References: <1409187562-12370-1-git-send-email-caesar.wang@rock-chips.com>
- <1409187562-12370-2-git-send-email-caesar.wang@rock-chips.com>
- <2852853.mfRZfFVSev@wuerfel>
+Subject: Re: [PATCH] thermal: add generic IIO channel thermal sensor driver
+Date: Thu, 28 Aug 2014 10:46:34 -0400
+Message-ID: <20140828144632.GA18194@developer>
+References: <1391651007-29813-1-git-send-email-courtney.cavin@sonymobile.com>
+ <1393484014.2637.14.camel@rzhang1-mobl4>
+ <20140314211952.GJ18578@sonymobile.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-doc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2852853.mfRZfFVSev@wuerfel>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Caesar Wang <caesar.wang@rock-chips.com>, heiko@sntech.de, rui.zhang@intel.com, grant.likely@linaro.org, robh+dt@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, zyw@rock-chips.com, addy.ke@rock-chips.com, dmitry.torokhov@gmail.com, zhaoyifeng <zyf@rock-chips.com>, linux-iio@vger.kernel.org, Jonathan Cameron <jic23@kernel.org>
+In-Reply-To: <20140314211952.GJ18578@sonymobile.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Courtney Cavin <courtney.cavin@sonymobile.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "galak@codeaurora.org" <galak@codeaurora.org>, "rob@landley.net" <rob@landley.net>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-Ceasar and Arnd,
-
-On Thu, Aug 28, 2014 at 10:48:23AM +0200, Arnd Bergmann wrote:
-> On Thursday 28 August 2014 08:59:19 Caesar Wang wrote:
-> > Thermal is TS-ADC Controller module supports user-defined mode and automatic mode.
+On Fri, Mar 14, 2014 at 02:19:53PM -0700, Courtney Cavin wrote:
+> On Thu, Feb 27, 2014 at 07:53:34AM +0100, Zhang Rui wrote:
+> > On Wed, 2014-02-05 at 17:43 -0800, Courtney Cavin wrote:
+> > > This driver is a generic method for using IIO ADC channels as thermal
+> > > sensors.
+> > > 
+> > > Signed-off-by: Courtney Cavin <courtney.cavin@sonymobile.com>
 > > 
-> > User-defined mode refers,TSADC all the control signals entirely by software
-> > writing to register for direct control.
+> > Eduardo,
 > > 
-> > Automaic mode refers to the module automatically poll TSADC output,and the results
-> > Were checked.
-> > 
-> > If you find that the temperature High in a period of time, an interrupt is generated
-> > to the processor down-measures taken;if the temperature over a period of time High,
-> > the resulting TSHUT gave CRU module,let it reset the entire chip, or via GPIO give PMIC.
-> > 
-> > Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
-> > Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+> > what do you think of this patch?
 > 
-> Hi Caesar,
+> Apparently not very much.  Oh well.
+
+Curtney,
+
+Apolizes, this one fell into the cracks.
+
+
 > 
-> After looking at the driver (last time I only received the patch for
-> the binding), I have a more general comment:
+> Sans further input, I will submit a new series with the following
+> changes:
+> 	- Fix some return values in probe().
+> 	- Change DT binding
+> 		- Submit as seperate patch in series
+> 		- Reword/rename to represent a thermistor
+> 		- Remove specific references to IIO, where appropriate
+
+
+Do you already send your new version or the current one is still the
+latest?
+
 > 
-> This looks like a general-purpose ADC device, not an IP block that is
-> specific to thermal management. The binding looks ok for that purpose
-> but should probably be moved into Documentation/devicetree/bindings/iio/adc/
-> as a minor change.
-> 
-
-I agree with Arnd's point here. It makes sense to me to have this driver
-under the IIO umbrella. 
-
-> On the driver side, I believe the correct way to deal with this setup
-> is to split your driver into a generic drivers/iio/adc/rockchips-tsadc.c
-> file, and a smaller thermal driver that uses the iio in-kernel interfaces,
-> ideally one that is independent of the underlying hardware and can
-> work on any ADC implementation.
-> 
-
-Agreed. If you can write such interface and make your driver to work in
-such way, that would be great.
-
-> I've put the IIO maintainer on Cc in this mail, maybe Jonathan or someone
-> else on the linux-iio mailing list has some extra insight.
-> 
-> 	Arnd
-
-
-Cheers,
-
-Eduardo
+> -Courtney
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
