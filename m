@@ -1,219 +1,243 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 09/10] cpufreq: cpu0: rename driver and internals to 'cpufreq_generic'
-Date: Thu, 28 Aug 2014 11:22:31 +0530
-Message-ID: <8d75112b27fa36c873838185e99f0dbe7f86cc05.1409201048.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 10/10] cpufreq: generic: set platform_{driver|device} '.name' to 'cpufreq-generic'
+Date: Thu, 28 Aug 2014 11:22:32 +0530
+Message-ID: <c2645161b693c22f745019569bda2ba4db96d645.1409201048.git.viresh.kumar@linaro.org>
 References: <cover.1409201048.git.viresh.kumar@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:50174 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933927AbaH1Fxe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Aug 2014 01:53:34 -0400
+Received: by mail-pa0-f45.google.com with SMTP id bj1so1119392pad.32
+        for <linux-pm@vger.kernel.org>; Wed, 27 Aug 2014 22:53:34 -0700 (PDT)
 In-Reply-To: <cover.1409201048.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1409201048.git.viresh.kumar@linaro.org>
 References: <cover.1409201048.git.viresh.kumar@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, shawn.guo@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, t.figa@samsung.com, santosh.shilimkar@ti.com, thomas.petazzoni@free-electrons.com, pramod.gurav@smartplayin.com, Viresh Kumar <viresh.kumar@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-The naming convention of this driver was always under the scanner, people
-complained that it should have a more generic name than cpu0, as it manages all
-CPUs that are sharing clock lines.
+We have already renamed cpufreq-cpu0 to cpufreq-generic at most of the places,
+the only one left is in the '.name' field of platform driver and devices.
 
-Also, in future it will be modified to support any number of clusters with
-separate clock/voltage lines.
+Lets do it now for all users.
 
-Lets rename it to 'cpufreq_generic' from 'cpufreq_cpu0'.
-
-'.name' field of platform driver/devices isn't renamed yet, would be done
-separately.
+Updates cpufreq-cpu0 from comments as well.
 
 Tested-by: Stephen Boyd <sboyd@codeaurora.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- .../{cpufreq-cpu0.txt => cpufreq-generic.txt}      |  8 ++---
- drivers/cpufreq/Kconfig                            | 10 +++---
- drivers/cpufreq/Kconfig.arm                        |  2 +-
- drivers/cpufreq/Makefile                           |  2 +-
- .../cpufreq/{cpufreq-cpu0.c => cpufreq-generic.c}  | 36 +++++++++++-----------
- 5 files changed, 29 insertions(+), 29 deletions(-)
- rename Documentation/devicetree/bindings/cpufreq/{cpufreq-cpu0.txt => cpufreq-generic.txt} (85%)
- rename drivers/cpufreq/{cpufreq-cpu0.c => cpufreq-generic.c} (90%)
+ arch/arm/mach-imx/imx27-dt.c                     | 2 +-
+ arch/arm/mach-imx/mach-imx51.c                   | 2 +-
+ arch/arm/mach-omap2/pm.c                         | 2 +-
+ arch/arm/mach-shmobile/board-ape6evm-reference.c | 2 +-
+ arch/arm/mach-shmobile/cpufreq.c                 | 2 +-
+ arch/arm/mach-shmobile/setup-sh73a0.c            | 4 ++--
+ arch/arm/mach-zynq/common.c                      | 2 +-
+ drivers/cpufreq/cpufreq-generic.c                | 2 +-
+ drivers/cpufreq/exynos4210-cpufreq.c             | 2 +-
+ drivers/cpufreq/exynos4x12-cpufreq.c             | 2 +-
+ drivers/cpufreq/exynos5250-cpufreq.c             | 2 +-
+ drivers/cpufreq/highbank-cpufreq.c               | 6 +++---
+ drivers/cpufreq/s5pv210-cpufreq.c                | 2 +-
+ 13 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-generic.txt
-similarity index 85%
-rename from Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-rename to Documentation/devicetree/bindings/cpufreq/cpufreq-generic.txt
-index 366690c..9278f79 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-generic.txt
-@@ -1,8 +1,8 @@
--Generic CPU0 cpufreq driver
-+Generic cpufreq driver
+diff --git a/arch/arm/mach-imx/imx27-dt.c b/arch/arm/mach-imx/imx27-dt.c
+index 080e66c..e15db8a 100644
+--- a/arch/arm/mach-imx/imx27-dt.c
++++ b/arch/arm/mach-imx/imx27-dt.c
+@@ -20,7 +20,7 @@
  
--It is a generic cpufreq driver for CPU0 frequency management.  It
--supports both uniprocessor (UP) and symmetric multiprocessor (SMP)
--systems which share clock and voltage across all CPUs.
-+It is a generic cpufreq driver for frequency management.  It supports both
-+uniprocessor (UP) and symmetric multiprocessor (SMP) systems which share clock
-+and voltage across all CPUs.
+ static void __init imx27_dt_init(void)
+ {
+-	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
++	struct platform_device_info devinfo = { .name = "cpufreq-generic", };
  
- Both required and optional properties listed below must be defined
- under node /cpus/cpu@0.
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index ffe350f..22b42d5 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -183,16 +183,16 @@ config CPU_FREQ_GOV_CONSERVATIVE
+ 	mxc_arch_reset_init_dt();
  
- 	  If in doubt, say N.
+diff --git a/arch/arm/mach-imx/mach-imx51.c b/arch/arm/mach-imx/mach-imx51.c
+index c77deb3..7298136 100644
+--- a/arch/arm/mach-imx/mach-imx51.c
++++ b/arch/arm/mach-imx/mach-imx51.c
+@@ -51,7 +51,7 @@ static void __init imx51_ipu_mipi_setup(void)
  
--config GENERIC_CPUFREQ_CPU0
--	tristate "Generic CPU0 cpufreq driver"
-+config CPUFREQ_GENERIC
-+	tristate "Generic cpufreq driver"
- 	depends on HAVE_CLK && OF
--	# if CPU_THERMAL is on and THERMAL=m, CPU0 cannot be =y:
-+	# if CPU_THERMAL is on and THERMAL=m, GENERIC cannot be =y:
- 	depends on !CPU_THERMAL || THERMAL
- 	select PM_OPP
- 	help
--	  This adds a generic cpufreq driver for CPU0 frequency management.
-+	  This adds a generic cpufreq driver for frequency management.
- 	  It supports both uniprocessor (UP) and symmetric multiprocessor (SMP)
--	  systems which share clock and voltage across all CPUs.
-+	  systems which may or maynot share clock and voltage across all CPUs.
+ static void __init imx51_dt_init(void)
+ {
+-	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
++	struct platform_device_info devinfo = { .name = "cpufreq-generic", };
  
- 	  If in doubt, say N.
+ 	mxc_arch_reset_init_dt();
+ 	imx51_ipu_mipi_setup();
+diff --git a/arch/arm/mach-omap2/pm.c b/arch/arm/mach-omap2/pm.c
+index 828aee9..7ec2fbb 100644
+--- a/arch/arm/mach-omap2/pm.c
++++ b/arch/arm/mach-omap2/pm.c
+@@ -282,7 +282,7 @@ static inline void omap_init_cpufreq(void)
+ 	if (!of_have_populated_dt())
+ 		devinfo.name = "omap-cpufreq";
+ 	else
+-		devinfo.name = "cpufreq-cpu0";
++		devinfo.name = "cpufreq-generic";
+ 	platform_device_register_full(&devinfo);
+ }
  
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 7364a53..b0b0ca1 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -92,7 +92,7 @@ config ARM_EXYNOS_CPU_FREQ_BOOST_SW
+diff --git a/arch/arm/mach-shmobile/board-ape6evm-reference.c b/arch/arm/mach-shmobile/board-ape6evm-reference.c
+index 2f7723e..4e98972 100644
+--- a/arch/arm/mach-shmobile/board-ape6evm-reference.c
++++ b/arch/arm/mach-shmobile/board-ape6evm-reference.c
+@@ -50,7 +50,7 @@ static void __init ape6evm_add_standard_devices(void)
  
- config ARM_HIGHBANK_CPUFREQ
- 	tristate "Calxeda Highbank-based"
--	depends on ARCH_HIGHBANK && GENERIC_CPUFREQ_CPU0 && REGULATOR
-+	depends on ARCH_HIGHBANK && CPUFREQ_GENERIC && REGULATOR
- 	default m
- 	help
- 	  This adds the CPUFreq driver for Calxeda Highbank SoC
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index db6d9a2..e8efe9b 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -13,7 +13,7 @@ obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)	+= cpufreq_ondemand.o
- obj-$(CONFIG_CPU_FREQ_GOV_CONSERVATIVE)	+= cpufreq_conservative.o
- obj-$(CONFIG_CPU_FREQ_GOV_COMMON)		+= cpufreq_governor.o
+ 	r8a73a4_add_dt_devices();
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+-	platform_device_register_simple("cpufreq-cpu0", -1, NULL, 0);
++	platform_device_register_simple("cpufreq-generic", -1, NULL, 0);
+ }
  
--obj-$(CONFIG_GENERIC_CPUFREQ_CPU0)	+= cpufreq-cpu0.o
-+obj-$(CONFIG_CPUFREQ_GENERIC)		+= cpufreq-generic.o
+ static const char *ape6evm_boards_compat_dt[] __initdata = {
+diff --git a/arch/arm/mach-shmobile/cpufreq.c b/arch/arm/mach-shmobile/cpufreq.c
+index 8a24b2b..6817204 100644
+--- a/arch/arm/mach-shmobile/cpufreq.c
++++ b/arch/arm/mach-shmobile/cpufreq.c
+@@ -12,6 +12,6 @@
  
- ##################################################################################
- # x86 drivers.
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-generic.c
-similarity index 90%
-rename from drivers/cpufreq/cpufreq-cpu0.c
-rename to drivers/cpufreq/cpufreq-generic.c
-index a5f8c5f..9b85055 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
+ int __init shmobile_cpufreq_init(void)
+ {
+-	platform_device_register_simple("cpufreq-cpu0", -1, NULL, 0);
++	platform_device_register_simple("cpufreq-generic", -1, NULL, 0);
+ 	return 0;
+ }
+diff --git a/arch/arm/mach-shmobile/setup-sh73a0.c b/arch/arm/mach-shmobile/setup-sh73a0.c
+index 2c802ae..297c629 100644
+--- a/arch/arm/mach-shmobile/setup-sh73a0.c
++++ b/arch/arm/mach-shmobile/setup-sh73a0.c
+@@ -775,7 +775,7 @@ void __init sh73a0_add_early_devices(void)
+ 
+ void __init sh73a0_add_standard_devices_dt(void)
+ {
+-	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", .id = -1, };
++	struct platform_device_info devinfo = { .name = "cpufreq-generic", .id = -1, };
+ 
+ 	/* clocks are setup late during boot in the case of DT */
+ 	sh73a0_clock_init();
+@@ -784,7 +784,7 @@ void __init sh73a0_add_standard_devices_dt(void)
+ 			     ARRAY_SIZE(sh73a0_devices_dt));
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ 
+-	/* Instantiate cpufreq-cpu0 */
++	/* Instantiate cpufreq-generic */
+ 	platform_device_register_full(&devinfo);
+ }
+ 
+diff --git a/arch/arm/mach-zynq/common.c b/arch/arm/mach-zynq/common.c
+index 31a6fa4..79f3c61 100644
+--- a/arch/arm/mach-zynq/common.c
++++ b/arch/arm/mach-zynq/common.c
+@@ -104,7 +104,7 @@ static int __init zynq_get_revision(void)
+  */
+ static void __init zynq_init_machine(void)
+ {
+-	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
++	struct platform_device_info devinfo = { .name = "cpufreq-generic", };
+ 	struct soc_device_attribute *soc_dev_attr;
+ 	struct soc_device *soc_dev;
+ 	struct device *parent = NULL;
+diff --git a/drivers/cpufreq/cpufreq-generic.c b/drivers/cpufreq/cpufreq-generic.c
+index 9b85055..549c2e9 100644
+--- a/drivers/cpufreq/cpufreq-generic.c
 +++ b/drivers/cpufreq/cpufreq-generic.c
-@@ -4,7 +4,7 @@
-  * Copyright (C) 2014 Linaro.
-  * Viresh Kumar <viresh.kumar@linaro.org>
-  *
-- * The OPP code in function cpu0_set_target() is reused from
-+ * The OPP code in function set_target() is reused from
-  * drivers/cpufreq/omap-cpufreq.c
-  *
-  * This program is free software; you can redistribute it and/or modify
-@@ -35,7 +35,7 @@ struct private_data {
- 	unsigned int voltage_tolerance; /* in percentage */
- };
+@@ -349,7 +349,7 @@ static int generic_cpufreq_remove(struct platform_device *pdev)
  
--static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
-+static int set_target(struct cpufreq_policy *policy, unsigned int index)
- {
- 	struct dev_pm_opp *opp;
- 	struct cpufreq_frequency_table *freq_table = policy->freq_table;
-@@ -176,7 +176,7 @@ static int allocate_resources(int cpu, struct device **cdev,
- 	return ret;
- }
- 
--static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
-+static int cpufreq_init(struct cpufreq_policy *policy)
- {
- 	struct cpufreq_frequency_table *freq_table;
- 	struct thermal_cooling_device *cdev;
-@@ -287,7 +287,7 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
- 	return ret;
- }
- 
--static int cpu0_cpufreq_exit(struct cpufreq_policy *policy)
-+static int cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct private_data *priv = policy->driver_data;
- 
-@@ -301,18 +301,18 @@ static int cpu0_cpufreq_exit(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static struct cpufreq_driver cpu0_cpufreq_driver = {
-+static struct cpufreq_driver generic_cpufreq_driver = {
- 	.flags = CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
- 	.verify = cpufreq_generic_frequency_table_verify,
--	.target_index = cpu0_set_target,
-+	.target_index = set_target,
- 	.get = cpufreq_generic_get,
--	.init = cpu0_cpufreq_init,
--	.exit = cpu0_cpufreq_exit,
--	.name = "generic_cpu0",
-+	.init = cpufreq_init,
-+	.exit = cpufreq_exit,
-+	.name = "cpufreq-generic",
- 	.attr = cpufreq_generic_attr,
- };
- 
--static int cpu0_cpufreq_probe(struct platform_device *pdev)
-+static int generic_cpufreq_probe(struct platform_device *pdev)
- {
- 	struct device *cpu_dev;
- 	struct regulator *cpu_reg;
-@@ -334,30 +334,30 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 	if (!IS_ERR(cpu_reg))
- 		regulator_put(cpu_reg);
- 
--	ret = cpufreq_register_driver(&cpu0_cpufreq_driver);
-+	ret = cpufreq_register_driver(&generic_cpufreq_driver);
- 	if (ret)
- 		dev_err(cpu_dev, "failed register driver: %d\n", ret);
- 
- 	return ret;
- }
- 
--static int cpu0_cpufreq_remove(struct platform_device *pdev)
-+static int generic_cpufreq_remove(struct platform_device *pdev)
- {
--	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
-+	cpufreq_unregister_driver(&generic_cpufreq_driver);
- 	return 0;
- }
- 
--static struct platform_driver cpu0_cpufreq_platdrv = {
-+static struct platform_driver generic_cpufreq_platdrv = {
+ static struct platform_driver generic_cpufreq_platdrv = {
  	.driver = {
- 		.name	= "cpufreq-cpu0",
+-		.name	= "cpufreq-cpu0",
++		.name	= "cpufreq-generic",
  		.owner	= THIS_MODULE,
  	},
--	.probe		= cpu0_cpufreq_probe,
--	.remove		= cpu0_cpufreq_remove,
-+	.probe		= generic_cpufreq_probe,
-+	.remove		= generic_cpufreq_remove,
- };
--module_platform_driver(cpu0_cpufreq_platdrv);
-+module_platform_driver(generic_cpufreq_platdrv);
+ 	.probe		= generic_cpufreq_probe,
+diff --git a/drivers/cpufreq/exynos4210-cpufreq.c b/drivers/cpufreq/exynos4210-cpufreq.c
+index 61a5431..728c9f4 100644
+--- a/drivers/cpufreq/exynos4210-cpufreq.c
++++ b/drivers/cpufreq/exynos4210-cpufreq.c
+@@ -127,7 +127,7 @@ int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
+ 	 * dependencies on platform headers. It is necessary to enable
+ 	 * Exynos multi-platform support and will be removed together with
+ 	 * this whole driver as soon as Exynos gets migrated to use
+-	 * cpufreq-cpu0 driver.
++	 * cpufreq-generic driver.
+ 	 */
+ 	np = of_find_compatible_node(NULL, NULL, "samsung,exynos4210-clock");
+ 	if (!np) {
+diff --git a/drivers/cpufreq/exynos4x12-cpufreq.c b/drivers/cpufreq/exynos4x12-cpufreq.c
+index 351a207..7bbe5ef 100644
+--- a/drivers/cpufreq/exynos4x12-cpufreq.c
++++ b/drivers/cpufreq/exynos4x12-cpufreq.c
+@@ -174,7 +174,7 @@ int exynos4x12_cpufreq_init(struct exynos_dvfs_info *info)
+ 	 * dependencies on platform headers. It is necessary to enable
+ 	 * Exynos multi-platform support and will be removed together with
+ 	 * this whole driver as soon as Exynos gets migrated to use
+-	 * cpufreq-cpu0 driver.
++	 * cpufreq-generic driver.
+ 	 */
+ 	np = of_find_compatible_node(NULL, NULL, "samsung,exynos4412-clock");
+ 	if (!np) {
+diff --git a/drivers/cpufreq/exynos5250-cpufreq.c b/drivers/cpufreq/exynos5250-cpufreq.c
+index c91ce69..d39864c 100644
+--- a/drivers/cpufreq/exynos5250-cpufreq.c
++++ b/drivers/cpufreq/exynos5250-cpufreq.c
+@@ -153,7 +153,7 @@ int exynos5250_cpufreq_init(struct exynos_dvfs_info *info)
+ 	 * dependencies on platform headers. It is necessary to enable
+ 	 * Exynos multi-platform support and will be removed together with
+ 	 * this whole driver as soon as Exynos gets migrated to use
+-	 * cpufreq-cpu0 driver.
++	 * cpufreq-generic driver.
+ 	 */
+ 	np = of_find_compatible_node(NULL, NULL, "samsung,exynos5250-clock");
+ 	if (!np) {
+diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
+index bf8902a..dc7a9ab 100644
+--- a/drivers/cpufreq/highbank-cpufreq.c
++++ b/drivers/cpufreq/highbank-cpufreq.c
+@@ -6,7 +6,7 @@
+  * published by the Free Software Foundation.
+  *
+  * This driver provides the clk notifier callbacks that are used when
+- * the cpufreq-cpu0 driver changes to frequency to alert the highbank
++ * the cpufreq-generic driver changes to frequency to alert the highbank
+  * EnergyCore Management Engine (ECME) about the need to change
+  * voltage. The ECME interfaces with the actual voltage regulators.
+  */
+@@ -60,7 +60,7 @@ static struct notifier_block hb_cpufreq_clk_nb = {
  
- MODULE_AUTHOR("Viresh Kumar <viresh.kumar@linaro.org>");
- MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
--MODULE_DESCRIPTION("Generic CPU0 cpufreq driver");
-+MODULE_DESCRIPTION("Generic cpufreq driver");
- MODULE_LICENSE("GPL");
+ static int hb_cpufreq_driver_init(void)
+ {
+-	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
++	struct platform_device_info devinfo = { .name = "cpufreq-generic", };
+ 	struct device *cpu_dev;
+ 	struct clk *cpu_clk;
+ 	struct device_node *np;
+@@ -95,7 +95,7 @@ static int hb_cpufreq_driver_init(void)
+ 		goto out_put_node;
+ 	}
+ 
+-	/* Instantiate cpufreq-cpu0 */
++	/* Instantiate cpufreq-generic */
+ 	platform_device_register_full(&devinfo);
+ 
+ out_put_node:
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index 9a68225..11aa3f4 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -597,7 +597,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+ 	 * and dependencies on platform headers. It is necessary to enable
+ 	 * S5PV210 multi-platform support and will be removed together with
+ 	 * this whole driver as soon as S5PV210 gets migrated to use
+-	 * cpufreq-cpu0 driver.
++	 * cpufreq-generic driver.
+ 	 */
+ 	np = of_find_compatible_node(NULL, NULL, "samsung,s5pv210-clock");
+ 	if (!np) {
 -- 
 2.0.3.693.g996b0fd
+
