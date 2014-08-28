@@ -1,60 +1,44 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2/5 v3] irq / PM: Make wakeup interrupts work with
- suspend-to-idle
-Date: Thu, 28 Aug 2014 11:23:11 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1408281109110.23342@nanos>
-References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <16387974.EqoNYrShmO@vostro.rjw.lan> <alpine.DEB.2.10.1408272130350.3323@nanos> <7346724.A5YknVMkmd@vostro.rjw.lan>
+From: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v2 4/7] iio: da9150: Add DT binding documentation for GPADC
+Date: Thu, 28 Aug 2014 11:49:02 +0100
+Message-ID: <39207063c9b1cf5c6355ea52419834507e5206f7.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
+References: <cover.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:38687 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934704AbaH1JXS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Aug 2014 05:23:18 -0400
-In-Reply-To: <7346724.A5YknVMkmd@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1409145187.git.Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
 
-On Thu, 28 Aug 2014, Rafael J. Wysocki wrote:
-> On Wednesday, August 27, 2014 10:32:23 PM Thomas Gleixner wrote:
-> > void suspend_device_irqs(void)
-> > {
-> > 	for_each_irq_desc(irq, desc) {
-> > 		/* Disable the interrupt unconditionally */	       
-> > 		disable_irq(irq);
-> 
-> We still need to skip the IRQF_NO_SUSPEND stuff (eg. timers), so I guess
-> everything left disabled here needs to be IRQS_SUSPENDED, so we know which
-> ones to re-enable in resume_device_irqs().
+Signed-off-by: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+---
+ .../devicetree/bindings/iio/adc/da9150-gpadc.txt         | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
 
-Right. I skipped that one for simplicity. I wanted to look into the
-whole maze today again with brain awake. I think it's simple to
-integrate the no suspend magic here and have a separate handler for
-it.
-
-> > 
-> > 		/* Is the irq a wakeup source? */
-> > 		if (!irqd_is_wakeup_set(&desc->irq_data))
-> > 			continue;
-> > 
-> > 		/* Replace the handler */
-> > 		raw_spin_lock_irqsave(&desc->lock, flags);
-> > 	     	desc->saved_handler = desc->handler;
-> > 		desc->handler = handle_wakeup_irq;
-> 
-> Hmm.  There's no handler field in struct irq_desc (/me is puzzled).
-> 
-> Did you mean handle_irq (I think you did)?
-
-Yup.
- 
-> There is quite some ugliness related to resume_irqs(), the want_early thing
-> and IRQF_EARLY_RESUME / IRQF_FORCE_RESUME.  I guess that needs to be preserved?
-
-Probably. Did not look into the madness of that yet.
-
-Thanks,
-
-	tglx
+diff --git a/Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt b/Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
+new file mode 100644
+index 0000000..c07228d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
+@@ -0,0 +1,16 @@
++Dialog Semiconductor DA9150 IIO GPADC bindings
++
++Required properties:
++- compatible: "dlg,da9150-gpadc" for DA9150 IIO GPADC
++- #io-channel-cells: Should be set to <1>
++  (See Documentation/devicetree/bindings/iio/iio-bindings.txt for further info)
++
++For further information on GPADC channels, see device datasheet.
++
++
++Example:
++
++	gpadc: da9150-gpadc {
++		compatible = "dlg,da9150-gpadc";
++		#io-channel-cells = <1>;
++	};
+--
+1.9.3
