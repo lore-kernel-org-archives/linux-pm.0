@@ -1,56 +1,82 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: add generic IIO channel thermal sensor driver
-Date: Thu, 28 Aug 2014 10:46:34 -0400
-Message-ID: <20140828144632.GA18194@developer>
-References: <1391651007-29813-1-git-send-email-courtney.cavin@sonymobile.com>
- <1393484014.2637.14.camel@rzhang1-mobl4>
- <20140314211952.GJ18578@sonymobile.com>
+Subject: Re: [PATCH v3 0/8] thermal: exynos: various cleanups
+Date: Thu, 28 Aug 2014 10:49:22 -0400
+Message-ID: <20140828144921.GB18194@developer>
+References: <1406826667-2289-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20140314211952.GJ18578@sonymobile.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Courtney Cavin <courtney.cavin@sonymobile.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "galak@codeaurora.org" <galak@codeaurora.org>, "rob@landley.net" <rob@landley.net>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1406826667-2289-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 14, 2014 at 02:19:53PM -0700, Courtney Cavin wrote:
-> On Thu, Feb 27, 2014 at 07:53:34AM +0100, Zhang Rui wrote:
-> > On Wed, 2014-02-05 at 17:43 -0800, Courtney Cavin wrote:
-> > > This driver is a generic method for using IIO ADC channels as thermal
-> > > sensors.
-> > > 
-> > > Signed-off-by: Courtney Cavin <courtney.cavin@sonymobile.com>
-> > 
-> > Eduardo,
-> > 
-> > what do you think of this patch?
+Amit,
+
+On Thu, Jul 31, 2014 at 07:10:58PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> Hi,
 > 
-> Apparently not very much.  Oh well.
-
-Curtney,
-
-Apolizes, this one fell into the cracks.
-
-
+> This patch series contains various cleanups for EXYNOS thermal
+> driver.  Overall it decreases driver's LOC by 9%.  It is based
+> on next-20140731 kernel.  It should not cause any functionality
+> changes.
 > 
-> Sans further input, I will submit a new series with the following
-> changes:
-> 	- Fix some return values in probe().
-> 	- Change DT binding
-> 		- Submit as seperate patch in series
-> 		- Reword/rename to represent a thermistor
-> 		- Remove specific references to IIO, where appropriate
 
+Did you have the time to test this series?
 
-Do you already send your new version or the current one is still the
-latest?
-
+> Changes since v2 (https://lkml.org/lkml/2014/6/17/436):
+> - synced patches against next-20140731
+> - dropped patch "thermal: exynos: remove dead code for
+>   TYPE_TWO_POINT_TRIMMING calibration" (newly added Exynos3250
+>   SoC support uses TYPE_TWO_POINT_TRIMMING calibration)
+> - updated patch description for patch #2
+> - dropped Reviewed-by from Amit from patch #8 (due to changed
+>   scope of the patch)
 > 
-> -Courtney
+> Changes since v1 (https://lkml.org/lkml/2014/5/5/194):
+> - synced patches against next-20140617
+> - merged patch "thermal: exynos: remove unused defines" into
+>   "thermal: exynos: remove unused struct exynos_tmu_registers
+>   entries" one (per request from Eduardo)
+> - improved patch descriptions for patches #1-5
+> - fixed documentation for pdata->gain and pdata->reference_voltage
+> - added Reviewed-by from Amit to patches #6, #7 and #10
+> - added missing Acked-by from Kyungmin Park
+> 
+> Best regards,
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+> 
+> 
+> Bartlomiej Zolnierkiewicz (8):
+>   thermal: exynos: remove unused struct exynos_tmu_registers entries
+>   thermal: exynos: remove dead code for HW_MODE calibration
+>   thermal: exynos: remove redundant pdata checks from
+>     exynos_tmu_initialize()
+>   thermal: exynos: remove redundant threshold_code checks from
+>     exynos_tmu_initialize()
+>   thermal: exynos: simplify temp_to_code() and code_to_temp()
+>   thermal: exynos: cache non_hw_trigger_levels in pdata
+>   thermal: exynos: remove redundant pdata checks from
+>     exynos_tmu_control()
+>   thermal: exynos: remove identical values from exynos*_tmu_registers
+>     structures
+> 
+>  drivers/thermal/samsung/exynos_thermal_common.h |   1 -
+>  drivers/thermal/samsung/exynos_tmu.c            | 126 +++++-------------------
+>  drivers/thermal/samsung/exynos_tmu.h            |  74 +-------------
+>  drivers/thermal/samsung/exynos_tmu_data.c       |  56 ++---------
+>  drivers/thermal/samsung/exynos_tmu_data.h       |  31 +-----
+>  5 files changed, 35 insertions(+), 253 deletions(-)
+> 
+> -- 
+> 1.8.2.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
