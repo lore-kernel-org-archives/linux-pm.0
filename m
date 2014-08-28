@@ -1,62 +1,50 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCHv5 4/4] thermal: exynos: Remove duplicate code when reading
- triminfo register of Exynos5440
-Date: Thu, 28 Aug 2014 13:25:14 +0900
-Message-ID: <53FEAF2A.1080400@samsung.com>
-References: <1409016665-3824-1-git-send-email-cw00.choi@samsung.com>
- <1409016665-3824-5-git-send-email-cw00.choi@samsung.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 1/3] cpufreq: cpu0: Release clk and regulator in remove
+ function
+Date: Thu, 28 Aug 2014 13:30:03 +0800
+Message-ID: <20140828053002.GB23836@dragon>
+References: <1409209212-18730-1-git-send-email-pramod.gurav@smartplayin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1409016665-3824-5-git-send-email-cw00.choi@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: eduardo.valentin@ti.com, amit.daniel@samsung.com, rui.zhang@intel.com, kgene.kim@samsung.com, ch.naveen@samsung.com, kyungmin.park@samsung.com, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1409209212-18730-1-git-send-email-pramod.gurav@smartplayin.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Pramod Gurav <pramod.gurav@smartplayin.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dear Eduardo,
-
-This patch is wrong. It is my mistake.
-
-Please ignore only this patch because
-the offset calculation of 'case 0' is different from 'case 2'.
-
-Best Regards,
-Chanwoo Choi
-
-On 08/26/2014 10:31 AM, Chanwoo Choi wrote:
-> This patch remove simply duplicate code when reading triminfo register of Exynos5440.
+On Thu, Aug 28, 2014 at 12:00:10AM -0700, Pramod Gurav wrote:
+> This function releases clk and regulator in remove function for clean
+> unloading.
 > 
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> Reviewed-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> CC: Shawn Guo <shawn.guo@linaro.org>
+> CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> CC: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
 > ---
->  drivers/thermal/samsung/exynos_tmu.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+>  drivers/cpufreq/cpufreq-cpu0.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index 64c702a..5888467 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -187,15 +187,13 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
->  		 */
->  		switch (data->id) {
->  		case 0:
-> +		case 2:
->  			trim_info = readl(data->base +
->  			EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
->  			break;
->  		case 1:
->  			trim_info = readl(data->base + reg->triminfo_data);
->  			break;
-> -		case 2:
-> -			trim_info = readl(data->base -
-> -			EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
->  		}
->  	} else {
->  		/* On exynos5420 the triminfo register is in the shared space */
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> index 0d2172b..e1574f8 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -229,6 +229,8 @@ static int cpu0_cpufreq_remove(struct platform_device *pdev)
+>  	cpufreq_cooling_unregister(cdev);
+>  	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
+>  	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+> +	clk_put(cpu_clk);
+> +	regulator_put(cpu_reg);
+
+cpu_reg is optional for the driver, so it's more logical to check the
+availability before actually putting it?
+
+Shawn
+
+>  
+>  	return 0;
+>  }
+> -- 
+> 1.7.0.4
 > 
