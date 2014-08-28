@@ -1,55 +1,60 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v3 1/4] thermal: rockchip: add driver for thermal
-Date: Thu, 28 Aug 2014 10:48:23 +0200
-Message-ID: <2852853.mfRZfFVSev@wuerfel>
-References: <1409187562-12370-1-git-send-email-caesar.wang@rock-chips.com> <1409187562-12370-2-git-send-email-caesar.wang@rock-chips.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2/5 v3] irq / PM: Make wakeup interrupts work with
+ suspend-to-idle
+Date: Thu, 28 Aug 2014 11:23:11 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1408281109110.23342@nanos>
+References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <16387974.EqoNYrShmO@vostro.rjw.lan> <alpine.DEB.2.10.1408272130350.3323@nanos> <7346724.A5YknVMkmd@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.130]:52101 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932699AbaH1Is6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Aug 2014 04:48:58 -0400
-In-Reply-To: <1409187562-12370-2-git-send-email-caesar.wang@rock-chips.com>
+Received: from www.linutronix.de ([62.245.132.108]:38687 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934704AbaH1JXS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Aug 2014 05:23:18 -0400
+In-Reply-To: <7346724.A5YknVMkmd@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <caesar.wang@rock-chips.com>
-Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, grant.likely@linaro.org, robh+dt@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, zyw@rock-chips.com, addy.ke@rock-chips.com, dmitry.torokhov@gmail.com, zhaoyifeng <zyf@rock-chips.com>, linux-iio@vger.kernel.org, Jonathan Cameron <jic23@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
 
-On Thursday 28 August 2014 08:59:19 Caesar Wang wrote:
-> Thermal is TS-ADC Controller module supports user-defined mode and automatic mode.
+On Thu, 28 Aug 2014, Rafael J. Wysocki wrote:
+> On Wednesday, August 27, 2014 10:32:23 PM Thomas Gleixner wrote:
+> > void suspend_device_irqs(void)
+> > {
+> > 	for_each_irq_desc(irq, desc) {
+> > 		/* Disable the interrupt unconditionally */	       
+> > 		disable_irq(irq);
 > 
-> User-defined mode refers,TSADC all the control signals entirely by software
-> writing to register for direct control.
+> We still need to skip the IRQF_NO_SUSPEND stuff (eg. timers), so I guess
+> everything left disabled here needs to be IRQS_SUSPENDED, so we know which
+> ones to re-enable in resume_device_irqs().
+
+Right. I skipped that one for simplicity. I wanted to look into the
+whole maze today again with brain awake. I think it's simple to
+integrate the no suspend magic here and have a separate handler for
+it.
+
+> > 
+> > 		/* Is the irq a wakeup source? */
+> > 		if (!irqd_is_wakeup_set(&desc->irq_data))
+> > 			continue;
+> > 
+> > 		/* Replace the handler */
+> > 		raw_spin_lock_irqsave(&desc->lock, flags);
+> > 	     	desc->saved_handler = desc->handler;
+> > 		desc->handler = handle_wakeup_irq;
 > 
-> Automaic mode refers to the module automatically poll TSADC output,and the results
-> Were checked.
+> Hmm.  There's no handler field in struct irq_desc (/me is puzzled).
 > 
-> If you find that the temperature High in a period of time, an interrupt is generated
-> to the processor down-measures taken;if the temperature over a period of time High,
-> the resulting TSHUT gave CRU module,let it reset the entire chip, or via GPIO give PMIC.
-> 
-> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
-> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+> Did you mean handle_irq (I think you did)?
 
-Hi Caesar,
+Yup.
+ 
+> There is quite some ugliness related to resume_irqs(), the want_early thing
+> and IRQF_EARLY_RESUME / IRQF_FORCE_RESUME.  I guess that needs to be preserved?
 
-After looking at the driver (last time I only received the patch for
-the binding), I have a more general comment:
+Probably. Did not look into the madness of that yet.
 
-This looks like a general-purpose ADC device, not an IP block that is
-specific to thermal management. The binding looks ok for that purpose
-but should probably be moved into Documentation/devicetree/bindings/iio/adc/
-as a minor change.
+Thanks,
 
-On the driver side, I believe the correct way to deal with this setup
-is to split your driver into a generic drivers/iio/adc/rockchips-tsadc.c
-file, and a smaller thermal driver that uses the iio in-kernel interfaces,
-ideally one that is independent of the underlying hardware and can
-work on any ADC implementation.
-
-I've put the IIO maintainer on Cc in this mail, maybe Jonathan or someone
-else on the linux-iio mailing list has some extra insight.
-
-	Arnd
+	tglx
