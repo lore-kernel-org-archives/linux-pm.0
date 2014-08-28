@@ -1,53 +1,49 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: s5pv210: Remove spurious __init annotation
-Date: Thu, 28 Aug 2014 01:52:08 +0200
-Message-ID: <2098022.zvxAyBojh6@vostro.rjw.lan>
-References: <1409137227-27080-1-git-send-email-broonie@kernel.org> <CAKohpokyUWnzUOdTtevGG8G8vrdxBCo3XsH9YdvmSt8BPZ1KwA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58751 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965188AbaH0Xc6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Aug 2014 19:32:58 -0400
-In-Reply-To: <CAKohpokyUWnzUOdTtevGG8G8vrdxBCo3XsH9YdvmSt8BPZ1KwA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Caesar Wang <caesar.wang@rock-chips.com>
+Subject: [PATCH v3 0/4] Rockchip soc theamal driver
+Date: Thu, 28 Aug 2014 08:59:18 +0800
+Message-ID: <1409187562-12370-1-git-send-email-caesar.wang@rock-chips.com>
+Return-path: <linux-doc-owner@vger.kernel.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, grant.likely@linaro.org
+Cc: robh+dt@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, zyw@rock-chips.com, addy.ke@rock-chips.com, dmitry.torokhov@gmail.com, Caesar Wang <caesar.wang@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mark Brown <broonie@kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wednesday, August 27, 2014 04:34:28 PM Viresh Kumar wrote:
-> On 27 August 2014 16:30, Mark Brown <broonie@kernel.org> wrote:
-> > From: Mark Brown <broonie@linaro.org>
-> >
-> > Since this is a platform driver and can be probed at any time we can't
-> > annotate funtions in the probe path as __init, the code can't safely be
-> > discarded at the end of kernel init.
-> >
-> > Signed-off-by: Mark Brown <broonie@linaro.org>
-> > ---
-> >  drivers/cpufreq/s5pv210-cpufreq.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-> > index 9a68225a757e..3f9791f07b8e 100644
-> > --- a/drivers/cpufreq/s5pv210-cpufreq.c
-> > +++ b/drivers/cpufreq/s5pv210-cpufreq.c
-> > @@ -501,7 +501,7 @@ static int check_mem_type(void __iomem *dmc_reg)
-> >         return val >> 8;
-> >  }
-> >
-> > -static int __init s5pv210_cpu_init(struct cpufreq_policy *policy)
-> > +static int s5pv210_cpu_init(struct cpufreq_policy *policy)
-> >  {
-> >         unsigned long mem_type;
-> >         int ret;
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Queued up for 3.17-rc3, thanks!
+Changes in v3:(add dts configure)
+        * address comments from Dmitry Torokhov and Arnd Bergmann:
+        - fix clock-names in rockchip-thermal.txt
+        - remove rockchip_thermal_control() in rockchip_set_mode()
+        - fix some code style.
+        - add dts configure.
+
+Changes in v2:
+        * address comments from Heiko Stubner:
+        - fix dt-bindings in rockchip-thermal.txt
+        - remove Author mark
+        - rename TSADC_XXX->TSADCV2_XXX,it eill ready to merge compatible other SoCs.
+        - fix a identation
+        - remove clk_set_rate(),it's no necessary.
+        - fix the SIMPLE_DEV_PM_OPS() function  style.
+
+Tested On rk3288 SDK board.
+
+Caesar Wang (4):
+  thermal: rockchip: add driver for thermal
+  dt-bindings: document Rockchip thermal
+  ARM: dts: add main Thermal info to rk3288
+  ARM: dts: enable Thermal on rk3288-evb board
+
+ .../bindings/thermal/rockchip-thermal.txt          |  20 +
+ arch/arm/boot/dts/rk3288-evb.dtsi                  |   7 +
+ arch/arm/boot/dts/rk3288.dtsi                      |  18 +
+ drivers/thermal/Kconfig                            |   9 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/rockchip_thermal.c                 | 669 +++++++++++++++++++++
+ 6 files changed, 724 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+ create mode 100644 drivers/thermal/rockchip_thermal.c
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.9.1
+
+
