@@ -1,68 +1,141 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 0/5 v3] irq / PM: Suspend-to-idle wakeup interrupts
-Date: Fri, 29 Aug 2014 03:09:34 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1408290256020.23342@nanos>
-References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan> <alpine.DEB.2.10.1408282355350.23342@nanos> <14849230.M7591XGLg0@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/5 v3] irq / PM: Make wakeup interrupts work with suspend-to-idle
+Date: Fri, 29 Aug 2014 03:51:35 +0200
+Message-ID: <2033792.OsOnfZ7sX5@vostro.rjw.lan>
+References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <7346724.A5YknVMkmd@vostro.rjw.lan> <alpine.DEB.2.10.1408281109110.23342@nanos>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:43426 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751087AbaH2BJm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Aug 2014 21:09:42 -0400
-In-Reply-To: <14849230.M7591XGLg0@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.10.1408281109110.23342@nanos>
+Sender: linux-pci-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
 Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Fri, 29 Aug 2014, Rafael J. Wysocki wrote:
-> On Friday, August 29, 2014 12:44:11 AM Thomas Gleixner wrote:
-> > So really, I'm too lazy to walk through that mess further. I bet NONE
-> > of the usage sites except those for which this has been introduced in
-> > the first place has a real good reason to do so.
+On Thursday, August 28, 2014 11:23:11 AM Thomas Gleixner wrote:
+> On Thu, 28 Aug 2014, Rafael J. Wysocki wrote:
+> > On Wednesday, August 27, 2014 10:32:23 PM Thomas Gleixner wrote:
+> > > void suspend_device_irqs(void)
+> > > {
+> > > 	for_each_irq_desc(irq, desc) {
+> > > 		/* Disable the interrupt unconditionally */	       
+> > > 		disable_irq(irq);
+> > 
+> > We still need to skip the IRQF_NO_SUSPEND stuff (eg. timers), so I guess
+> > everything left disabled here needs to be IRQS_SUSPENDED, so we know which
+> > ones to re-enable in resume_device_irqs().
 > 
-> A quite similar conclusion occured to me earlier today independently,
-> so we seem to be in agreement here. :-)
+> Right. I skipped that one for simplicity. I wanted to look into the
+> whole maze today again with brain awake. I think it's simple to
+> integrate the no suspend magic here and have a separate handler for
+> it.
 
-I appreciate that!
- 
-> > Unless someone comes up with a use case where a shared NO_SUSPEND
-> > handler is absolutely required, there is nothing which needs to be
-> > addressed. You've proven yourself, that the wake mechanism is
-> > sufficient to solve the problem which led to this discussion.
+Well, I've already read your message about this particular thing. :-)
+
+Before that I was about to say that I'd rather leave the no suspend stuff as
+is for now until we have working wakeup IRQs for suspend-to-idle at least.
+
+> > > 
+> > > 		/* Is the irq a wakeup source? */
+> > > 		if (!irqd_is_wakeup_set(&desc->irq_data))
+> > > 			continue;
+> > > 
+> > > 		/* Replace the handler */
+> > > 		raw_spin_lock_irqsave(&desc->lock, flags);
+> > > 	     	desc->saved_handler = desc->handler;
+> > > 		desc->handler = handle_wakeup_irq;
+> > 
+> > Hmm.  There's no handler field in struct irq_desc (/me is puzzled).
+> > 
+> > Did you mean handle_irq (I think you did)?
 > 
-> Yeah, that particular thing can be perfectly addressed without using
-> IRQF_NO_SUSPEND.
-> 
-> There seems to be quite some confusion about that in the ARM world,
-> though, as IRQF_NO_SUSPEND things *happen* to wake the system up if WFI is
-> used to emulate "suspend" and that appears to make people believe that using
-> them for this purpose is actually fine (because that appears to work).
+> Yup.
 
-Well, the problem in the ARM world is still the same as we had 10
-years ago, just a bit different. While 10 years ago, the "make it work
-for me" attitude was hidden in some vendor tree and stayed there
-forever, today its still the same "make it work for me" thing which
-gets applied to the vendor tree (they still sport 1000+ patches
-despite all efforts) and then trickles into the mainline w/o much
-review to fulfil the "we need to be mainline" mantra.
- 
-> That said I was not involved in the introduction of IRQF_EARLY_RESUME (or
-> at least I can't recall being involved) and I also can't recall having used
-> it for anything, so I can't really say what the original motivation was.
+So I got that to work earlier today, but with some more stuff in the handler
+which doesn't look particularly generic to me.  Namely, my (working) wakeup
+handler looks like this at the moment:
 
-It was solely introduced to solve an oddball issue with the XEN "IPIs"
-and I take the blame for not documenting it proper. Though I really
-have a hard time to understand why random drivers use this w/o comment
-and for no obvious reason. "Works for me" looks like a reasonable
-explanation.
+static void handle_wakeup_irq(unsigned int irq, struct irq_desc *desc)
+{
+	struct irq_chip *chip = irq_desc_get_chip(desc);
 
-I've uploaded an incomplete and completely untested patch series to
-handle this stuff to: https://tglx.de/~tglx/patches.tar
+	raw_spin_lock(&desc->lock);
 
-Feel free to pick it up and work from there.
+	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
+	kstat_incr_irqs_this_cpu(irq, desc);
 
-Thanks,
+	if (irqd_irq_disabled(&desc->irq_data)) {
+		desc->istate |= IRQS_PENDING;
+		mask_irq(desc);
+	} else {
+		desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
+		desc->depth++;
+		irq_disable(desc);
+		pm_system_wakeup();
+	}
 
-	tglx
+	if (chip->irq_eoi && !(chip->flags & IRQCHIP_EOI_IF_HANDLED))
+		chip->irq_eoi(&desc->irq_data);
+
+	raw_spin_unlock(&desc->lock);
+}
+
+but it only works on a particular machine with a particular wakeup interrupt.
+
+I had to add the
+
+	if (chip->irq_eoi && !(chip->flags & IRQCHIP_EOI_IF_HANDLED))
+		chip->irq_eoi(&desc->irq_data);
+
+check, because otherwise it hanged the system solid once the interrupt happened.
+
+I also had to add this:
+
+
+	if (irqd_irq_disabled(&desc->irq_data)) {
+		desc->istate |= IRQS_PENDING;
+		mask_irq(desc);
+	} ...
+
+because otherwise the IRQ didn't work correctly after resume.
+
+However, both those things appear to be needed just because that's a fastEOI
+interrupt and some other manipulations would need to be done for edge interrupts
+etc.
+
+I'm not sure, then, if we really can come up with a perfectly generic handle_irq
+wakeup interrupt handler that would work with all kinds of IRQs.  It looks like
+the part that could be replaced in all of them in principle is the handle_irq_event()
+call, but the rest seems to be too specific to me.
+
+So I'm not sure what to do at this point.
+
+It is tempting to do the following:
+(1) Add a handle_event callback to struct irq_desc.
+(2) Rename the existing handle_irq_event() to handle_irq_event_common().
+(3) Point desc->handle_event to handle_irq_event_common() for every desc at init.
+(4) Make (new, possibly static inline) handle_irq_event() invoke desc->handle_event().
+(5) During suspend_device_irqs() point desc->handle_event to handle_irq_event_wakeup()
+    for all wakeup IRQs.
+(6) During resume_device_irqs() point desc->handle_event back to handle_irq_event_common()
+    for everybody.
+Then, for CONFIG_PM_SLEEP unset, handle_irq_event() can be defined as
+handle_irq_event_common().
+
+Of course, that adds a function pointer dereference overhead to every interrupt
+event, so I'm not sure if it's acceptable.
+
+One alternative may be to add a handle_wakeup_irq pointer to struct irq_desc and
+check in handle_irq_event() if that is present and call it instead of the usual
+stuff if that's the case.
+
+Another way may be to introduce an irq_desc flag that will be checked by
+handle_irq_event() and will indicate "wakeup mode" to it, in which it will do
+the simplified wakeup handling instead of the usual stuff.  This, however, like
+the previous one, will add a branch to handle_irq_event() that will be checked
+every time even though it only is really necessary during system suspend.
+
+And handlers can be replaced at the irqaction level in a couple of ways too.
+
+Rafael
