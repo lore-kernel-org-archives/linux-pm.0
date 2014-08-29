@@ -1,77 +1,95 @@
-From: Huang Tao <huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: Re: [PATCH v3 1/4] thermal: rockchip: add driver for thermal
-Date: Fri, 29 Aug 2014 20:08:44 +0800
-Message-ID: <54006D4C.2070404@rock-chips.com>
-References: <1409187562-12370-1-git-send-email-caesar.wang@rock-chips.com>	<2852853.mfRZfFVSev@wuerfel>	<20140828143733.GA18084@developer>	<3440260.edal29kzlR@diego>	<2014082909531345696848@rock-chips.com> <CAC-25o-winy6jVjh9_hQ-t2VO2UfxG67pW5DpOve8A2o39EJSw@mail.gmail.com>
+From: Thomas Abraham <ta.omasab@gmail.com>
+Subject: Re: [PATCH v9 4/6] ARM: Exynos: switch to using generic cpufreq
+ driver for Exynos4210/5250/5420
+Date: Fri, 29 Aug 2014 18:22:16 +0530
+Message-ID: <CAJuA9ajtsrY7zSDMs=c6BZ0AqERoBgvq++dTF4Dn673zGMfcgQ@mail.gmail.com>
+References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
+	<1406707663-16656-5-git-send-email-thomas.ab@samsung.com>
+	<53DA8BB9.6020702@samsung.com>
+	<53DA8D85.3050106@gmail.com>
+	<7hbnrc6px3.fsf@paris.lan>
+	<53F7DA13.6090305@gmail.com>
+	<CADWw7OgAS-z-UOrJU-hL2fzuefJmLtCTg57jYk2Df7f5KfLJmA@mail.gmail.com>
+	<7h8umc60we.fsf@paris.lan>
+	<CADWw7OgW+o3tB=ptnsy-PsmXmNv8oXzt_WfK6NswQiEWWwAzNA@mail.gmail.com>
+	<CAGa+x85-Anb+HsSUQRaaeex19-HK+yZDW0UpFBwAtsQ8Sf2Aqg@mail.gmail.com>
+	<CAGa+x86jU8MR=r_xuaiorbNNyqrezb0b6Ozy-MPg9HvsARESOw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAC-25o-winy6jVjh9_hQ-t2VO2UfxG67pW5DpOve8A2o39EJSw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?UTF-8?B?6LW15Luq5bOw?= <zyf-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Cc: =?UTF-8?B?SGVpa29TdMO8Ym5lcg==?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, "rui.zhang" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "grant.likely" <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-doc <linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, =?UTF-8?B?6JSh5p6r?= <cf-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, dianders <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, dtor <dtor-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, =?UTF-8?B?6ZKf5YuH5rGq?= <zyw-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, "addy.ke-TNX95d0MmH7DzftRWevZcw@public.gmane.org" <addy.ke-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, "dmitry.torokhov" <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-iio <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f171.google.com ([209.85.217.171]:52644 "EHLO
+	mail-lb0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbaH2MwS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Aug 2014 08:52:18 -0400
+In-Reply-To: <CAGa+x86jU8MR=r_xuaiorbNNyqrezb0b6Ozy-MPg9HvsARESOw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@linaro.org>
+Cc: Chander Kashyap <k.chander@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-Dear Eduardo Bezerra Valentin:
+Hi Kevin,
 
-=E5=9C=A8 2014=E5=B9=B408=E6=9C=8829=E6=97=A5 19:39, edubezval-Re5JQEeQqe8@public.gmane.org=
-m =E5=86=99=E9=81=93:
-> Hello Zhao,
+On Wed, Aug 27, 2014 at 3:55 AM, Kevin Hilman <khilman@linaro.org> wrote:
+> On Tue, Aug 26, 2014 at 8:15 AM, Kevin Hilman <khilman@linaro.org> wrote:
+>> On Mon, Aug 25, 2014 at 10:25 PM, Chander Kashyap <k.chander@samsung.com> wrote:
 >
-> On Thu, Aug 28, 2014 at 9:54 PM, =E8=B5=B5=E4=BB=AA=E5=B3=B0 <zyf@roc=
-k-chips.com> wrote:
->> Hi Heiko=EF=BC=8C
->>
->>    The TS-ADC on RK3288 has two component, a tsadc and a tsadc contr=
-oller.
->> The tsadc controller is similar like the thermal manager unit on oth=
-er SOCs.
->> We followed the naming of 3066, but not named as the Thermal Manager=
-=2E
->>
->>    Moreover,there is only one set of apb registers to access the tsa=
-dc
->> controller,and the tsadc is controlled by the tsadc controller,could=
- not
->> access directly. If we write a general tsadc driver by accessed tsad=
-c
->> controller registers, and it hardly to write a driver for the tsadc
->> controller.
-> As suggested by Arnd, you can use the generic driver as interface
-> between thermal framework and IIO layer. The driver you are going to
-> write to your ADC is going to be in the IIO subsystem. The only
-> difference is that the generic driver would work for any ADC driver i=
-n
-> the IIO subsystem.
-> https://lkml.org/lkml/2014/2/5/810
+> [...]
 >
-> In fact, there is already a generic driver. We just need to get it up
-> to date.  I see some testing has been already done, and results sound
-> promising.
-This iio_thermal driver only support get temperature from the ADC IIO
-channel.
-It dose not support any advanced feature such as configure the
-temperature when system should be reset.
-So if we adapt it, we will access the register form both TSADC IIO
-driver and  thermal driver.
-I don't thank this is a good ideal.
-
-In fact, we should ignore the "ADC" stuff. This sensor use ADC internal=
-,
-but it is transparent to software, especially in automatic mode.
+>>>>
+>>>> Can you clarify how you're setting the voltages to ensure stability?
+>>>
+>>> below is the diff :  wip/exynos/integ
+>>
+>> Thanks.
+>>
+>> I've applied your patch, and bootup shows vdd_arm and vdd_kfc at
+>> 1500mV, but still when booting with cpuidle enabled (bL switcher
+>> disabled), I'm seeing lockups with no kernel output.  With CPUidle
+>> disabled, things are pretty stable.
+>>
+>> What tree are you using to test this out on 5420?  I'm using mainline
+>> v3.17-rc1 + DT patch for CPUidle and this cpufreq series.  See my
+>> wip/exynos/integ branch at
+>> git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux.git.
 >
->>    So, I do not agree to write a generic adc driver for the rk3288-t=
-sadc.
->>
->> ________________________________
->> Yifeng Zhao
->>
->>
+> I mis-stated this.  Actually my tree is based on the v3.17-rc1 branch
+> of the exynos-reference tree[1] + the above mentioned patches for
+> cpuidle and cpufreq.
+>
+> Also, I've narrowed down the instability a bit, and it's not related
+> to CPUidle.  I can now trigger a boot hang even without CPUidle
+> enabled.  Here's a quick way to cause a boot lockup. With the switcher
+> disabled, I enable CPUfreq and set the default governor to
+> performance.  As soon as cpufreq driver loads, it tries to use the top
+> frequences for both clusters, and it hangs.
+>
+> Selectively disabling frequencies, I narrowed it down to the 1.3GHz
+> and 1.2GHz frequencies of the little cluster.  With these commented
+> out in the DT, it will fully boot with the performance governor
+> enabled.
+>
+> So that leads to the question.  Are all of the operating points in
+> exynos5420.dtsi valid for exynos5800, and have they been validated?
 
+I tried to recreate the boot lockup issue using the same steps you
+listed above for the Exynos5800 peach-pi platform (Chromebook2), but I
+do not see any issues. I can see both clusters with max clock speed
+after boot (1.8GHz and 1.3GHz).
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I am using v3.17-rc2 + CPUFreq Patches + max77802 regulator support
+patches for Chromebook2 + temp hack to set A15 voltage to 1.35V and A7
+voltage to 1.3V.
+
+Sorry for the delaying in following up.
+
+Thanks,
+Thomas.
+
+>
+> Kevin
+>
+> [1]https://github.com/exynos-reference/kernel.git
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
