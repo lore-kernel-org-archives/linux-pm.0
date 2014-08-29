@@ -1,63 +1,118 @@
-From: Jason Baron <jbaron@akamai.com>
-Subject: Re: [PATCH] powercap/rapl: add support for cpu model 0x3f
-Date: Tue, 02 Sep 2014 10:31:53 -0400
-Message-ID: <5405D4D9.7050103@akamai.com>
-References: <20140814142608.5A9A38004B@prod-mail-relay07.akamai.com> <2447035.ZSkeOUhJMy@vostro.rjw.lan>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v3 0/8] thermal: exynos: various cleanups
+Date: Fri, 29 Aug 2014 15:25:53 -0400
+Message-ID: <20140829192551.GA23645@developer>
+References: <1406826667-2289-1-git-send-email-b.zolnierkie@samsung.com>
+ <20140828144921.GB18194@developer>
+ <CADGdYn7NzwJKuO1DG2OJdWwd_keZbUJXY=+XeHhf1e+xcSvoVw@mail.gmail.com>
+ <CAC-25o9ajcpusqUzxTXpVKgi6YBy3_9wZNihtm-9hKXn5OFgNw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from prod-mail-xrelay07.akamai.com ([72.246.2.115]:27841 "EHLO
-	prod-mail-xrelay07.akamai.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752611AbaIBObz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Sep 2014 10:31:55 -0400
-In-Reply-To: <2447035.ZSkeOUhJMy@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAC-25o9ajcpusqUzxTXpVKgi6YBy3_9wZNihtm-9hKXn5OFgNw@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: amit daniel kachhap <amit.daniel@samsung.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>
 
-Hi Rafael,
-
-I think Jacob is ok with it:
-
-https://lkml.org/lkml/2014/8/13/702
-
-but he didn't give it a formal ack.
-
-Thanks,
-
--Jason
-
-On 09/01/2014 07:49 PM, Rafael J. Wysocki wrote:
-> On Thursday, August 14, 2014 02:26:08 PM Jason Baron wrote:
->> I've confirmed that monitoring the package power usage as well as setting power
->> limits appear to be working as expected. Supports the package and dram domains.
->>
->> Tested aginst cpu:
->>
->> Intel(R) Xeon(R) CPU E5-2650 v3 @ 2.30GHz
->>
->> Signed-off-by: Jason Baron <jbaron@akamai.com>
+On Mon, Sep 01, 2014 at 07:05:27AM -0400, edubezval@gmail.com wrote:
+> Amit
 > 
-> Has this been ACKed by Jacob?
+> On Mon, Sep 1, 2014 at 6:53 AM, amit daniel kachhap
+> <amit.daniel@samsung.com> wrote:
+> > On Thu, Aug 28, 2014 at 8:19 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
+> >> Amit,
+> >>
+> >> On Thu, Jul 31, 2014 at 07:10:58PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> >>> Hi,
+> >>>
+> >>> This patch series contains various cleanups for EXYNOS thermal
+> >>> driver.  Overall it decreases driver's LOC by 9%.  It is based
+> >>> on next-20140731 kernel.  It should not cause any functionality
+> >>> changes.
+> >>>
+> >>
+> >> Did you have the time to test this series?
+> >
+> > Hi Eduardo/Bartlomiej,
+> >
+> > For the whole series tested on exynos5250 based arndale board.
+> > Tested-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> >
 > 
->> ---
->>  drivers/powercap/intel_rapl.c | 1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
->> index b1cda6f..a362dcc 100644
->> --- a/drivers/powercap/intel_rapl.c
->> +++ b/drivers/powercap/intel_rapl.c
->> @@ -953,6 +953,7 @@ static const struct x86_cpu_id rapl_ids[] = {
->>  	{ X86_VENDOR_INTEL, 6, 0x3a},/* Ivy Bridge */
->>  	{ X86_VENDOR_INTEL, 6, 0x3c},/* Haswell */
->>  	{ X86_VENDOR_INTEL, 6, 0x3d},/* Broadwell */
->> +	{ X86_VENDOR_INTEL, 6, 0x3f},/* Haswell */
->>  	{ X86_VENDOR_INTEL, 6, 0x45},/* Haswell ULT */
->>  	/* TODO: Add more CPU IDs after testing */
->>  	{}
->>
-> 
+> Thanks! I will pull the series on my tree.
 
+
+Pulled into my next branch. Thanks.
+
+> 
+> 
+> > Sorry for the delay as I was busy in some internal work.
+> >
+> > Thanks,
+> > Amit D
+> >>
+> >>> Changes since v2 (https://lkml.org/lkml/2014/6/17/436):
+> >>> - synced patches against next-20140731
+> >>> - dropped patch "thermal: exynos: remove dead code for
+> >>>   TYPE_TWO_POINT_TRIMMING calibration" (newly added Exynos3250
+> >>>   SoC support uses TYPE_TWO_POINT_TRIMMING calibration)
+> >>> - updated patch description for patch #2
+> >>> - dropped Reviewed-by from Amit from patch #8 (due to changed
+> >>>   scope of the patch)
+> >>>
+> >>> Changes since v1 (https://lkml.org/lkml/2014/5/5/194):
+> >>> - synced patches against next-20140617
+> >>> - merged patch "thermal: exynos: remove unused defines" into
+> >>>   "thermal: exynos: remove unused struct exynos_tmu_registers
+> >>>   entries" one (per request from Eduardo)
+> >>> - improved patch descriptions for patches #1-5
+> >>> - fixed documentation for pdata->gain and pdata->reference_voltage
+> >>> - added Reviewed-by from Amit to patches #6, #7 and #10
+> >>> - added missing Acked-by from Kyungmin Park
+> >>>
+> >>> Best regards,
+> >>> --
+> >>> Bartlomiej Zolnierkiewicz
+> >>> Samsung R&D Institute Poland
+> >>> Samsung Electronics
+> >>>
+> >>>
+> >>> Bartlomiej Zolnierkiewicz (8):
+> >>>   thermal: exynos: remove unused struct exynos_tmu_registers entries
+> >>>   thermal: exynos: remove dead code for HW_MODE calibration
+> >>>   thermal: exynos: remove redundant pdata checks from
+> >>>     exynos_tmu_initialize()
+> >>>   thermal: exynos: remove redundant threshold_code checks from
+> >>>     exynos_tmu_initialize()
+> >>>   thermal: exynos: simplify temp_to_code() and code_to_temp()
+> >>>   thermal: exynos: cache non_hw_trigger_levels in pdata
+> >>>   thermal: exynos: remove redundant pdata checks from
+> >>>     exynos_tmu_control()
+> >>>   thermal: exynos: remove identical values from exynos*_tmu_registers
+> >>>     structures
+> >>>
+> >>>  drivers/thermal/samsung/exynos_thermal_common.h |   1 -
+> >>>  drivers/thermal/samsung/exynos_tmu.c            | 126 +++++-------------------
+> >>>  drivers/thermal/samsung/exynos_tmu.h            |  74 +-------------
+> >>>  drivers/thermal/samsung/exynos_tmu_data.c       |  56 ++---------
+> >>>  drivers/thermal/samsung/exynos_tmu_data.h       |  31 +-----
+> >>>  5 files changed, 35 insertions(+), 253 deletions(-)
+> >>>
+> >>> --
+> >>> 1.8.2.3
+> >>>
+> >>> --
+> >>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> >>> the body of a message to majordomo@vger.kernel.org
+> >>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >> --
+> >> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> >> the body of a message to majordomo@vger.kernel.org
+> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+> 
+> -- 
+> Eduardo Bezerra Valentin
