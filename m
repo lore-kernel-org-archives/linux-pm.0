@@ -1,85 +1,144 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCHv5 4/4] thermal: exynos: Remove duplicate code when reading
- triminfo register of Exynos5440
-Date: Fri, 29 Aug 2014 08:50:41 +0900
-Message-ID: <53FFC051.7040907@samsung.com>
-References: <1409016665-3824-1-git-send-email-cw00.choi@samsung.com>
- <1409016665-3824-5-git-send-email-cw00.choi@samsung.com>
- <53FEAF2A.1080400@samsung.com> <20140828145310.GC18194@developer>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] cpufreq: powernv: Set the cpus to nominal frequency
+ during reboot/kexec
+Date: Fri, 29 Aug 2014 05:33:31 +0530
+Message-ID: <CAKohpokbYkL=cYQ+9-59vPhBmbAWqhrEz7RBPj5-edDB25DPgw@mail.gmail.com>
+References: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:44077 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbaH1Xuo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Aug 2014 19:50:44 -0400
-In-reply-to: <20140828145310.GC18194@developer>
+Received: from mail-ob0-f177.google.com ([209.85.214.177]:62905 "EHLO
+	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751506AbaH2ADc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Aug 2014 20:03:32 -0400
+Received: by mail-ob0-f177.google.com with SMTP id wo20so1229235obc.22
+        for <linux-pm@vger.kernel.org>; Thu, 28 Aug 2014 17:03:32 -0700 (PDT)
+In-Reply-To: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: eduardo.valentin@ti.com, amit.daniel@samsung.com, rui.zhang@intel.com, kgene.kim@samsung.com, ch.naveen@samsung.com, kyungmin.park@samsung.com, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-Dear Eduardo,
+On 28 August 2014 19:36, Shilpasri G Bhat
+<shilpa.bhat@linux.vnet.ibm.com> wrote:
+> This patch ensures the cpus to kexec/reboot at nominal frequency.
+> Nominal frequency is the highest cpu frequency on PowerPC at
+> which the cores can run without getting throttled.
+>
+> If the host kernel had set the cpus to a low pstate and then it
+> kexecs/reboots to a cpufreq disabled kernel it would cause the target
+> kernel to perform poorly. It will also increase the boot up time of
+> the target kernel. So set the cpus to high pstate, in this case to
+> nominal frequency before rebooting to avoid such scenarios.
+>
+> The reboot notifier will set the cpus to nominal frequncy.
+>
+> Changes v1->v2:
+> Invoke .target() driver callback to set the cpus to nominal frequency
+> in reboot notifier, instead of calling cpufreq_suspend() as suggested
+> by Viresh Kumar.
+> Modified the commit message.
 
-On 08/28/2014 11:53 PM, Eduardo Valentin wrote:
-> On Thu, Aug 28, 2014 at 01:25:14PM +0900, Chanwoo Choi wrote:
->> Dear Eduardo,
->>
->> This patch is wrong. It is my mistake.
->>
->> Please ignore only this patch because
->> the offset calculation of 'case 0' is different from 'case 2'.
-> 
-> 
-> Do patches 1 - 3 are still correct? Patch 1, from Barlomiej, seams to be
-> a common agreement. 
+This changelog will get commited, is this what you want?
 
-Yes, patches 1 - 3 are correct.
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 35 +++++++++++++++++++++++++++++++++++
+>  1 file changed, 35 insertions(+)
+>
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 379c083..ba27c49 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -26,6 +26,7 @@
+>  #include <linux/cpufreq.h>
+>  #include <linux/smp.h>
+>  #include <linux/of.h>
+> +#include <linux/reboot.h>
+>
+>  #include <asm/cputhreads.h>
+>  #include <asm/firmware.h>
+> @@ -35,6 +36,7 @@
+>  #define POWERNV_MAX_PSTATES    256
+>
+>  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+> +static bool rebooting;
+>
+>  /*
+>   * Note: The set of pstates consists of contiguous integers, the
+> @@ -284,6 +286,15 @@ static void set_pstate(void *freq_data)
+>  }
+>
+>  /*
+> + * get_nominal_index: Returns the index corresponding to the nominal
+> + * pstate in the cpufreq table
+> + */
+> +static inline unsigned int get_nominal_index(void)
+> +{
+> +       return powernv_pstate_info.max - powernv_pstate_info.nominal;
+> +}
+> +
+> +/*
+>   * powernv_cpufreq_target_index: Sets the frequency corresponding to
+>   * the cpufreq table entry indexed by new_index on the cpus in the
+>   * mask policy->cpus
+> @@ -293,6 +304,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>  {
+>         struct powernv_smp_call_data freq_data;
+>
+> +       if (unlikely(rebooting) && new_index != get_nominal_index())
+> +               return -EBUSY;
 
-Best Regards,
-Chanwoo Choi
+Have you placed the unlikely only around 'rebooting' intentionally or
+should it cover whole if statement?
 
-> 
->>
->> Best Regards,
->> Chanwoo Choi
->>
->> On 08/26/2014 10:31 AM, Chanwoo Choi wrote:
->>> This patch remove simply duplicate code when reading triminfo register of Exynos5440.
->>>
->>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
->>> Cc: Zhang Rui <rui.zhang@intel.com>
->>> Cc: Eduardo Valentin <edubezval@gmail.com>
->>> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
->>> Reviewed-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->>> ---
->>>  drivers/thermal/samsung/exynos_tmu.c | 4 +---
->>>  1 file changed, 1 insertion(+), 3 deletions(-)
->>>
->>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->>> index 64c702a..5888467 100644
->>> --- a/drivers/thermal/samsung/exynos_tmu.c
->>> +++ b/drivers/thermal/samsung/exynos_tmu.c
->>> @@ -187,15 +187,13 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
->>>  		 */
->>>  		switch (data->id) {
->>>  		case 0:
->>> +		case 2:
->>>  			trim_info = readl(data->base +
->>>  			EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
->>>  			break;
->>>  		case 1:
->>>  			trim_info = readl(data->base + reg->triminfo_data);
->>>  			break;
->>> -		case 2:
->>> -			trim_info = readl(data->base -
->>> -			EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
->>>  		}
->>>  	} else {
->>>  		/* On exynos5420 the triminfo register is in the shared space */
->>>
->>
-> 
+> +
+>         freq_data.pstate_id = powernv_freqs[new_index].driver_data;
+>
+>         /*
+> @@ -317,6 +331,25 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>         return cpufreq_table_validate_and_show(policy, powernv_freqs);
+>  }
+>
+> +static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
+> +                               unsigned long action, void *unused)
+> +{
+> +       int cpu;
+> +       struct cpufreq_policy cpu_policy;
+> +
+> +       rebooting = true;
+> +       for_each_online_cpu(cpu) {
+> +               cpufreq_get_policy(&cpu_policy, cpu);
+> +               powernv_cpufreq_target_index(&cpu_policy, get_nominal_index());
+> +       }
+> +
+> +       return NOTIFY_DONE;
+> +}
+> +
+> +static struct notifier_block powernv_cpufreq_reboot_nb = {
+> +       .notifier_call = powernv_cpufreq_reboot_notifier,
+> +};
+> +
+>  static struct cpufreq_driver powernv_cpufreq_driver = {
+>         .name           = "powernv-cpufreq",
+>         .flags          = CPUFREQ_CONST_LOOPS,
+> @@ -342,12 +375,14 @@ static int __init powernv_cpufreq_init(void)
+>                 return rc;
+>         }
+>
+> +       register_reboot_notifier(&powernv_cpufreq_reboot_nb);
+>         return cpufreq_register_driver(&powernv_cpufreq_driver);
+>  }
+>  module_init(powernv_cpufreq_init);
+>
+>  static void __exit powernv_cpufreq_exit(void)
+>  {
+> +       unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
+>         cpufreq_unregister_driver(&powernv_cpufreq_driver);
+>  }
+>  module_exit(powernv_cpufreq_exit);
 
+Looks fine otherwise.
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
