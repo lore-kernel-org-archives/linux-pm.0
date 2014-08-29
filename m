@@ -1,108 +1,96 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v9 4/6] ARM: Exynos: switch to using generic cpufreq
- driver for Exynos4210/5250/5420
-Date: Fri, 29 Aug 2014 08:03:12 -0700
-Message-ID: <CAMAWPa-8h5PNhgT+ApBhA8p=i+4oFOnYnQsQ4mK1JKwwAhpvpQ@mail.gmail.com>
-References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
-	<1406707663-16656-5-git-send-email-thomas.ab@samsung.com>
-	<53DA8BB9.6020702@samsung.com>
-	<53DA8D85.3050106@gmail.com>
-	<7hbnrc6px3.fsf@paris.lan>
-	<53F7DA13.6090305@gmail.com>
-	<CADWw7OgAS-z-UOrJU-hL2fzuefJmLtCTg57jYk2Df7f5KfLJmA@mail.gmail.com>
-	<7h8umc60we.fsf@paris.lan>
-	<CADWw7OgW+o3tB=ptnsy-PsmXmNv8oXzt_WfK6NswQiEWWwAzNA@mail.gmail.com>
-	<CAGa+x85-Anb+HsSUQRaaeex19-HK+yZDW0UpFBwAtsQ8Sf2Aqg@mail.gmail.com>
-	<CAGa+x86jU8MR=r_xuaiorbNNyqrezb0b6Ozy-MPg9HvsARESOw@mail.gmail.com>
-	<CAJuA9ajtsrY7zSDMs=c6BZ0AqERoBgvq++dTF4Dn673zGMfcgQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI and power management fixes for 3.17-rc3
+Date: Fri, 29 Aug 2014 23:14:58 +0200
+Message-ID: <CAJZ5v0g9XMKUQSfrm7so=PFQF0j3xSnBYpKuk8nY_52t7=Cung@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:34560 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753473AbaH2PDT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 29 Aug 2014 11:03:19 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 415582013A
-	for <linux-pm@vger.kernel.org>; Fri, 29 Aug 2014 15:03:18 +0000 (UTC)
-Received: from mail-la0-f49.google.com (mail-la0-f49.google.com [209.85.215.49])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPSA id BDABE2013D
-	for <linux-pm@vger.kernel.org>; Fri, 29 Aug 2014 15:03:14 +0000 (UTC)
-Received: by mail-la0-f49.google.com with SMTP id b17so2845480lan.22
-        for <linux-pm@vger.kernel.org>; Fri, 29 Aug 2014 08:03:12 -0700 (PDT)
-In-Reply-To: <CAJuA9ajtsrY7zSDMs=c6BZ0AqERoBgvq++dTF4Dn673zGMfcgQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: Chander Kashyap <k.chander@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-Hi Thomas,
+Hi Linus,
 
-On Fri, Aug 29, 2014 at 5:52 AM, Thomas Abraham <ta.omasab@gmail.com> wrote:
-> Hi Kevin,
->
-> On Wed, Aug 27, 2014 at 3:55 AM, Kevin Hilman <khilman@linaro.org> wrote:
->> On Tue, Aug 26, 2014 at 8:15 AM, Kevin Hilman <khilman@linaro.org> wrote:
->>> On Mon, Aug 25, 2014 at 10:25 PM, Chander Kashyap <k.chander@samsung.com> wrote:
->>
->> [...]
->>
->>>>>
->>>>> Can you clarify how you're setting the voltages to ensure stability?
->>>>
->>>> below is the diff :  wip/exynos/integ
->>>
->>> Thanks.
->>>
->>> I've applied your patch, and bootup shows vdd_arm and vdd_kfc at
->>> 1500mV, but still when booting with cpuidle enabled (bL switcher
->>> disabled), I'm seeing lockups with no kernel output.  With CPUidle
->>> disabled, things are pretty stable.
->>>
->>> What tree are you using to test this out on 5420?  I'm using mainline
->>> v3.17-rc1 + DT patch for CPUidle and this cpufreq series.  See my
->>> wip/exynos/integ branch at
->>> git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux.git.
->>
->> I mis-stated this.  Actually my tree is based on the v3.17-rc1 branch
->> of the exynos-reference tree[1] + the above mentioned patches for
->> cpuidle and cpufreq.
->>
->> Also, I've narrowed down the instability a bit, and it's not related
->> to CPUidle.  I can now trigger a boot hang even without CPUidle
->> enabled.  Here's a quick way to cause a boot lockup. With the switcher
->> disabled, I enable CPUfreq and set the default governor to
->> performance.  As soon as cpufreq driver loads, it tries to use the top
->> frequences for both clusters, and it hangs.
->>
->> Selectively disabling frequencies, I narrowed it down to the 1.3GHz
->> and 1.2GHz frequencies of the little cluster.  With these commented
->> out in the DT, it will fully boot with the performance governor
->> enabled.
->>
->> So that leads to the question.  Are all of the operating points in
->> exynos5420.dtsi valid for exynos5800, and have they been validated?
->
-> I tried to recreate the boot lockup issue using the same steps you
-> listed above for the Exynos5800 peach-pi platform (Chromebook2), but I
-> do not see any issues. I can see both clusters with max clock speed
-> after boot (1.8GHz and 1.3GHz).
->
-> I am using v3.17-rc2 + CPUFreq Patches + max77802 regulator support
-> patches for Chromebook2 + temp hack to set A15 voltage to 1.35V and A7
-> voltage to 1.3V.
+Please pull from
 
-Can you share your branch and temp hack(s) as well as your defconfig?
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.17-rc3
 
-I'm using the v3.17-rc1 branch from the exynos tree (which includes
-the max77802 series) but also has a bunch of other stuff which may be
-causing the issue.
+to receive more ACPI and power management fixes for v3.17-rc3 with
+top-most commit 0b4f58b7cebd74ede19d13b81fb43a7eaeba10a3
 
-It would be good if I can reproduce your exact tree/branch and see if
-I still have the same problem.
+ Merge branch 'pm-cpufreq'
 
-Thanks for looking into this,
+on top of commit 52addcf9d6669fa439387610bc65c92fa0980cef
 
-Kevin
+ Linux 3.17-rc2
+
+These are ACPI regression fixes (fixed events handling, EC driver
+and PNP enumeration), intel_pstate fix for excessive messages on
+boot, spurious __init removal from the s5pv210 cpufreq driver and
+new IDs for Intel Braswell.
+
+Specifics:
+
+ - Fix for an ACPI regression related to the handling of fixed events
+   that caused netlink routines to be (incorrectly) run in interrupt
+   context from Lan Tianyu.
+
+ - Fix for an ACPI EC driver regression on Acer Aspire V5-573G that
+   caused AC/battery plug/unplug and video brightness change
+   notifications to be delayed on that machine from Lv Zheng.
+
+ - Fix for an ACPI device enumeration regression that caused ACPI
+   driver probe to fail for some devices where it succeeded before
+   (Rafael J Wysocki).
+
+ - intel_pstate driver fix to prevent it from printing an information
+   message for every CPU in the system on every boot from Andi Kleen.
+
+ - s5pv210 cpufreq driver fix to remove an __init annotation from
+   a routine that in fact can be called at any time after init too
+   from Mark Brown.
+
+ - New Intel Braswell device IDs for the ACPI LPSS (Low-Power Subsystem)
+   driver from Alan Cox.
+
+ - New Intel Braswell CPU ID for intel_pstate from Mika Westerberg.
+
+Thanks!
+
+
+---------------
+
+Alan Cox (1):
+      ACPI / LPSS: Add ACPI IDs for Intel Braswell
+
+Andi Kleen (1):
+      intel_pstate: Turn per cpu printk into pr_debug
+
+Lan Tianyu (1):
+      ACPI: Run fixed event device notifications in process context
+
+Lv Zheng (2):
+      ACPI / EC: Add support to disallow QR_EC to be issued when
+SCI_EVT isn't set
+      ACPI / EC: Add support to disallow QR_EC to be issued before
+completing previous QR_EC
+
+Mark Brown (1):
+      cpufreq: s5pv210: Remove spurious __init annotation
+
+Mika Westerberg (1):
+      cpufreq: intel_pstate: Add CPU ID for Braswell processor
+
+Rafael J. Wysocki (1):
+      ACPI / scan: Allow ACPI drivers to bind to PNP device objects
+
+---------------
+
+ drivers/acpi/acpi_lpss.c          | 17 +++++++++++++++++
+ drivers/acpi/ec.c                 | 21 ++++++++++++++++++---
+ drivers/acpi/scan.c               | 17 +++++++++++------
+ drivers/cpufreq/intel_pstate.c    |  3 ++-
+ drivers/cpufreq/s5pv210-cpufreq.c |  2 +-
+ 5 files changed, 49 insertions(+), 11 deletions(-)
