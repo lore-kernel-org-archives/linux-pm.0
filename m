@@ -1,144 +1,132 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: powernv: Set the cpus to nominal frequency
- during reboot/kexec
-Date: Fri, 29 Aug 2014 05:33:31 +0530
-Message-ID: <CAKohpokbYkL=cYQ+9-59vPhBmbAWqhrEz7RBPj5-edDB25DPgw@mail.gmail.com>
-References: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/5 v3] irq / PM: Suspend-to-idle wakeup interrupts
+Date: Fri, 29 Aug 2014 02:54:51 +0200
+Message-ID: <14849230.M7591XGLg0@vostro.rjw.lan>
+References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan> <alpine.DEB.2.10.1408282355350.23342@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f177.google.com ([209.85.214.177]:62905 "EHLO
-	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751506AbaH2ADc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Aug 2014 20:03:32 -0400
-Received: by mail-ob0-f177.google.com with SMTP id wo20so1229235obc.22
-        for <linux-pm@vger.kernel.org>; Thu, 28 Aug 2014 17:03:32 -0700 (PDT)
-In-Reply-To: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.10.1408282355350.23342@nanos>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-On 28 August 2014 19:36, Shilpasri G Bhat
-<shilpa.bhat@linux.vnet.ibm.com> wrote:
-> This patch ensures the cpus to kexec/reboot at nominal frequency.
-> Nominal frequency is the highest cpu frequency on PowerPC at
-> which the cores can run without getting throttled.
->
-> If the host kernel had set the cpus to a low pstate and then it
-> kexecs/reboots to a cpufreq disabled kernel it would cause the target
-> kernel to perform poorly. It will also increase the boot up time of
-> the target kernel. So set the cpus to high pstate, in this case to
-> nominal frequency before rebooting to avoid such scenarios.
->
-> The reboot notifier will set the cpus to nominal frequncy.
->
-> Changes v1->v2:
-> Invoke .target() driver callback to set the cpus to nominal frequency
-> in reboot notifier, instead of calling cpufreq_suspend() as suggested
-> by Viresh Kumar.
-> Modified the commit message.
+On Friday, August 29, 2014 12:44:11 AM Thomas Gleixner wrote:
+> On Wed, 27 Aug 2014, Rafael J. Wysocki wrote:
+> > To me, all of this is relatively straightforward and the handling of
+> > IRQF_NO_SUSPEND for shared interrupts, which is a separate problem, can be
+> > addressed on top of it later (make no mistake, I still think that it should be
+> > addressed).
+> 
+> Why? Just because there is enough idiotic code using it?
+> 
+> Let's look at the usage sites:
+> 
+> sound/soc/codecs/twl6040.c
+> 
+>   Introduced in commit 8d61f4901f83461e1f04df7743777e9db5f541aa
+> 
+>     ASoC: twl6040: Convert PLUGINT to no-suspend irq
+>     
+>     Convert headset PLUGINT interrupt to NO_SUSPEND type in order to
+>     allow handling of insertion/removal events while device is
+>     suspended.
+> 
+>   So why does this need to be a NO_SUSPEND type interrupt? Just because
+>   the flag is sexy? What's wrong with using the wake mechanism?
+> 
+> drivers/xen/events/events_base.c
+> 
+>   A genuine usecase which makes sense and is not shared
+> 
+> drivers/watchdog/intel-mid_wdt.c
+> 
+>   MUHAHAHAHAHAHA
+> 
+>   static irqreturn_t mid_wdt_irq(int irq, void *dev_id)
+>   {
+>       panic("Kernel Watchdog");
+>       /* This code should not be reached */
+>       return IRQ_HANDLED;
+>   }
+> 
+>   So why does this need to be NO_SUSPEND? Because we forgot to trigger
+>   the watchdog during suspend? Brilliant!
+> 
+> drivers/usb/phy/phy-ab8500-usb.c
+> 
+>   Of course no explanation WHY this uses NO_SUSPEND plus SHARED and
+>   there is no fcking reason to do so.
+> 
+> So really, I'm too lazy to walk through that mess further. I bet NONE
+> of the usage sites except those for which this has been introduced in
+> the first place has a real good reason to do so.
 
-This changelog will get commited, is this what you want?
+A quite similar conclusion occured to me earlier today independently,
+so we seem to be in agreement here. :-)
 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 35 +++++++++++++++++++++++++++++++++++
->  1 file changed, 35 insertions(+)
->
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 379c083..ba27c49 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -26,6 +26,7 @@
->  #include <linux/cpufreq.h>
->  #include <linux/smp.h>
->  #include <linux/of.h>
-> +#include <linux/reboot.h>
->
->  #include <asm/cputhreads.h>
->  #include <asm/firmware.h>
-> @@ -35,6 +36,7 @@
->  #define POWERNV_MAX_PSTATES    256
->
->  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
-> +static bool rebooting;
->
->  /*
->   * Note: The set of pstates consists of contiguous integers, the
-> @@ -284,6 +286,15 @@ static void set_pstate(void *freq_data)
->  }
->
->  /*
-> + * get_nominal_index: Returns the index corresponding to the nominal
-> + * pstate in the cpufreq table
-> + */
-> +static inline unsigned int get_nominal_index(void)
-> +{
-> +       return powernv_pstate_info.max - powernv_pstate_info.nominal;
-> +}
-> +
-> +/*
->   * powernv_cpufreq_target_index: Sets the frequency corresponding to
->   * the cpufreq table entry indexed by new_index on the cpus in the
->   * mask policy->cpus
-> @@ -293,6 +304,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  {
->         struct powernv_smp_call_data freq_data;
->
-> +       if (unlikely(rebooting) && new_index != get_nominal_index())
-> +               return -EBUSY;
+> Unless someone comes up with a use case where a shared NO_SUSPEND
+> handler is absolutely required, there is nothing which needs to be
+> addressed. You've proven yourself, that the wake mechanism is
+> sufficient to solve the problem which led to this discussion.
 
-Have you placed the unlikely only around 'rebooting' intentionally or
-should it cover whole if statement?
+Yeah, that particular thing can be perfectly addressed without using
+IRQF_NO_SUSPEND.
 
-> +
->         freq_data.pstate_id = powernv_freqs[new_index].driver_data;
->
->         /*
-> @@ -317,6 +331,25 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
->         return cpufreq_table_validate_and_show(policy, powernv_freqs);
->  }
->
-> +static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
-> +                               unsigned long action, void *unused)
-> +{
-> +       int cpu;
-> +       struct cpufreq_policy cpu_policy;
-> +
-> +       rebooting = true;
-> +       for_each_online_cpu(cpu) {
-> +               cpufreq_get_policy(&cpu_policy, cpu);
-> +               powernv_cpufreq_target_index(&cpu_policy, get_nominal_index());
-> +       }
-> +
-> +       return NOTIFY_DONE;
-> +}
-> +
-> +static struct notifier_block powernv_cpufreq_reboot_nb = {
-> +       .notifier_call = powernv_cpufreq_reboot_notifier,
-> +};
-> +
->  static struct cpufreq_driver powernv_cpufreq_driver = {
->         .name           = "powernv-cpufreq",
->         .flags          = CPUFREQ_CONST_LOOPS,
-> @@ -342,12 +375,14 @@ static int __init powernv_cpufreq_init(void)
->                 return rc;
->         }
->
-> +       register_reboot_notifier(&powernv_cpufreq_reboot_nb);
->         return cpufreq_register_driver(&powernv_cpufreq_driver);
->  }
->  module_init(powernv_cpufreq_init);
->
->  static void __exit powernv_cpufreq_exit(void)
->  {
-> +       unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
->         cpufreq_unregister_driver(&powernv_cpufreq_driver);
->  }
->  module_exit(powernv_cpufreq_exit);
+There seems to be quite some confusion about that in the ARM world,
+though, as IRQF_NO_SUSPEND things *happen* to wake the system up if WFI is
+used to emulate "suspend" and that appears to make people believe that using
+them for this purpose is actually fine (because that appears to work).
 
-Looks fine otherwise.
+> So we rather go and fix the ABUSE instead of making it legitimate by
+> fugly workarounds in the core code.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Fine by me.
+
+> The same applies to the IRQF_RESUME_EARLY flag.
+> 
+> Just look at:
+> 
+>   commit 8b41669ceba0c2d4c09d69ccb9a3458953dae784
+> 
+>     mfd: twl4030: Fix chained irq handling on resume from suspend
+>     
+>     The irqs are enabled one-by-one in pm core resume_noirq phase.
+>     This leads to situation where the twl4030 primary interrupt
+>     handler (PIH) is enabled before the chained secondary handlers
+>     (SIH). As the PIH cannot clear the pending interrupt, and
+>     SIHs have not been enabled yet, a flood of interrupts hangs
+>     the device.
+>     
+>     Fixed the issue by setting the SIH irqs with IRQF_EARLY_RESUME
+>     flags, so they get enabled before the PIH.
+> 
+> So we solve an ordering problem which has a completely different root
+> cause by slapping random flags on it which paper over the issue?
+> 
+> The solution to the problem is completely wrong and of course the
+> "fix" is only applied to the one instance which might be affected by
+> that issue, i.e. the one which caused the patch submitter trouble.
+> 
+> Now I don't blame the author, I blame the maintainer who happily
+> applied that "fix".
+> 
+> That's unfortunately a very common pattern in the kernel which will
+> cause serious maintainability issues in the long run, but of course
+> that's just the opinion of a grumpy old greybeard.
+> 
+> The sad thing is that neither the author nor the maintainer who
+> applied it is going to be around and responsive when the shit hits the
+> fan.
+>
+> That commit is a perfect example for this.
+
+Oh, I can reach that particular maintainer if need be.
+
+That said I was not involved in the introduction of IRQF_EARLY_RESUME (or
+at least I can't recall being involved) and I also can't recall having used
+it for anything, so I can't really say what the original motivation was.
+
+Rafael
