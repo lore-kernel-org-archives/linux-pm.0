@@ -1,79 +1,75 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: [PATCH] ACPI / cpuidle: fix deadlock between cpuidle_lock and
- cpu_hotplug.lock
-Date: Wed, 3 Sep 2014 15:04:28 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.1409031503140.12309@pobox.suse.cz>
-References: <alpine.LNX.2.00.1409031404110.12309@pobox.suse.cz>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCHv6 0/2] thermal: exynos: Add support for TRIMINFO feature
+ of Exynos3250
+Date: Fri, 29 Aug 2014 22:39:30 -0400
+Message-ID: <20140830023928.GC23645@developer>
+References: <1409713743-6124-1-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.LNX.2.00.1409031404110.12309@pobox.suse.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Oleg Nesterov <oleg@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f53.google.com ([209.85.216.53]:40320 "EHLO
+	mail-qa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756076AbaICNLh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 09:11:37 -0400
+Content-Disposition: inline
+In-Reply-To: <1409713743-6124-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: eduardo.valentin@ti.com, amit.daniel@samsung.com, rui.zhang@intel.com, kgene.kim@samsung.com, ch.naveen@samsung.com, kyungmin.park@samsung.com, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-There is a following AB-BA dependency between cpu_hotplug.lock and 
-cpuidle_lock:
+Hi,
 
-1) cpu_hotplug.lock -> cpuidle_lock
-enable_nonboot_cpus()
- _cpu_up()
-  cpu_hotplug_being()
-   LOCK(cpu_hotplug.lock)
- cpu_notify()
-  ...
-  acpi_processor_hotplug()
-   cpuidle_pause_and_lock()
-    LOCK(cpuidle_lock)
+On Wed, Sep 03, 2014 at 12:09:01PM +0900, Chanwoo Choi wrote:
+> This patchset add the support of TRIMINFO_RELOAD feature for Exynos3250.
+> But Exynos3250 has two TRIMINFO_CTRL register instead other Exynos has only one
+> TRIMINFO_CTRL register. So, this patchset support the some Exynos SoC which
+> has more than one TRIMINF_CTRL.
+> 
+> Also, this patchset fix wrong value of TRIMINFO_RELOAD_SHIFT and remove
+> duplicate code when reading triminfo register of Exynos5440.
+> 
+> Changes from v5:
+> - Rebase this patchset on next branch of linux-soc-thermal.git
+> 
 
-2) cpuidle_lock -> cpu_hotplug.lock
-acpi_os_execute_deferred() workqueue
- ...
- acpi_processor_cst_has_changed()
-  cpuidle_pause_and_lock()
-   LOCK(cpuidle_lock)
-  get_online_cpus()
-   LOCK(cpu_hotplug.lock)
+Pulled into my next branch. Thanks.
 
-Fix this by reversing the order acpi_processor_cst_has_changed() does 
-thigs -- let it first execute the protection against CPU hotplug by 
-calling get_online_cpus() and obtain the cpuidle lock only after that (and 
-perform the symmentric change when allowing CPUs hotplug again and 
-dropping cpuidle lock).
-
-Spotted by lockdep.
-
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
----
- drivers/acpi/processor_idle.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 3dca36d..17f9ec5 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -1071,9 +1071,9 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr)
- 
- 	if (pr->id == 0 && cpuidle_get_driver() == &acpi_idle_driver) {
- 
--		cpuidle_pause_and_lock();
- 		/* Protect against cpu-hotplug */
- 		get_online_cpus();
-+		cpuidle_pause_and_lock();
- 
- 		/* Disable all cpuidle devices */
- 		for_each_online_cpu(cpu) {
-@@ -1100,8 +1100,8 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr)
- 				cpuidle_enable_device(dev);
- 			}
- 		}
--		put_online_cpus();
- 		cpuidle_resume_and_unlock();
-+		put_online_cpus();
- 	}
- 
- 	return 0;
--- 
-Jiri Kosina
-SUSE Labs
+> Changes from v4:
+> - Remove un-necessary triminfo_ctrl_{shift, mask} field
+> - Includes Bartlomiej's patch[1] that Exynos5260 / Exynos5420 should not use
+> TRIM_RELOAD flag
+> [2] https://lkml.org/lkml/2014/8/20/481
+> 
+> Changes from v3:
+> - Add reviewed message of Amit Daniel Kachhap <amit.daniel@samsung.com>
+> - Split RELOAD patch as two patch
+> - Fix 'TRIMINFO_RELOAD_SHIFT' value
+> - This series includes separate patch[1]
+> [1] https://lkml.org/lkml/2014/8/20/5
+> - Drop ACTIME bit setting because TRM includes not enough information of ACTIME bit.
+> 
+> Changes from v2:
+> - Fix build break because of missing 'or' operation.
+> 
+> Changes from v1:
+> - Add missing 'TMU_SUPPORT_TRIM_RELOAD' features
+> 
+> Chanwoo Choi (2):
+>   thermal: exynos: Add support for many TRIMINFO_CTRL registers
+>   thermal: exynos: Add support for TRIM_RELOAD feature at Exynos3250
+> 
+>  drivers/thermal/samsung/exynos_thermal_common.h |  1 +
+>  drivers/thermal/samsung/exynos_tmu.c            | 15 ++++++++++++---
+>  drivers/thermal/samsung/exynos_tmu.h            |  7 +++++--
+>  drivers/thermal/samsung/exynos_tmu_data.c       | 11 +++++++++--
+>  drivers/thermal/samsung/exynos_tmu_data.h       |  8 ++++++--
+>  5 files changed, 33 insertions(+), 9 deletions(-)
+> 
+> -- 
+> 1.8.0
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
