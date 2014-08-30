@@ -1,96 +1,109 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI and power management fixes for 3.17-rc3
-Date: Fri, 29 Aug 2014 23:14:58 +0200
-Message-ID: <CAJZ5v0g9XMKUQSfrm7so=PFQF0j3xSnBYpKuk8nY_52t7=Cung@mail.gmail.com>
+From: Sundar <sunder.svit@gmail.com>
+Subject: Re: [ANNOUNCE] (Resend) Tools to analyse PM and scheduling behaviour
+Date: Sat, 30 Aug 2014 11:54:15 +0530
+Message-ID: <CAMHCuPXaacqyngDRb-LnP7x5xC_A3davaKSRt0vfAk+80YOrgw@mail.gmail.com>
+References: <87mwb0fixy.fsf@matterhorn.verdurent.com>
+	<CAMHCuPWeMwjJO+xzmQrZFmEMdx3+yF=zkove8brWX4rQiti50w@mail.gmail.com>
+	<87oav7n7cr.fsf@matterhorn.verdurent.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f169.google.com ([209.85.217.169]:48021 "EHLO
+	mail-lb0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750895AbaH3GYR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 30 Aug 2014 02:24:17 -0400
+In-Reply-To: <87oav7n7cr.fsf@matterhorn.verdurent.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul McKenney <Paul.McKenney@us.ibm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mike Turquette <mturquette@linaro.org>, Juri Lelli <juri.lelli@arm.com>, sched-tools@linaro.org, len.brown@intel.com, mark.gross@intel.com, larry.bassel@linaro.org
 
-Hi Linus,
+Hi Amit,
 
-Please pull from
+On Tue, Aug 26, 2014 at 11:02 AM, Amit Kucheria
+<amit.kucheria@linaro.org> wrote:
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-3.17-rc3
+> Consider the following examples:
+>
+> *On a given platform*, we see the same benchmark scores with and
+> without patchset ABC, but including patchset ABC leads to better "power
+> behaviour" i.e. requests of deeper idle states and/or lower frequencies.
+>
+> Consider another example where the benchmark score dramatically improves
+> with patchset XYZ while the idle and frequency requests are marginally
+> worse (shallower idle, reduced residency or increased frequency requests).
+>
+> In both cases, it is left to platforms to do real measurements to confirm that
+> this is indeed the case. The latter example might not even be possible
+> on some platforms, given some platform constraints e.g. the platform
+> thermal envelope.
+>
+> Idlestat is not a replacement for real measurements. It is a tool to
+> allow maintainers (scheduler, PM) to judge if any further investigation
+> is needed and request such numbers from people running the code on
+> various architectures before merging the patches.
 
-to receive more ACPI and power management fixes for v3.17-rc3 with
-top-most commit 0b4f58b7cebd74ede19d13b81fb43a7eaeba10a3
+As I mentioned, it is very much possible for a workload to preserve the CPU
+C/P states but damage some other system metric like memory/soc bandwidth,
+cache characteristics because the scheduler was probably doing more aggressive
+task placements. I agree that no tool (within room for
+errors/approximations) can
+replace a physical measurement; my only query/concern being is C/P correlation
+the direct or primary metric for scheduler behavior (not PM behavior).
 
- Merge branch 'pm-cpufreq'
+> First, idlestat is designed to be architecture-independent. It only
+> depends on what the kernel knows.
+> Second, it is created with benchmarking in mind - non-interactive and
+> minimal overhead.
+> Third, it was designed for maintainers to be able to quickly tell if a
+> patchset changes OS behaviour dramatically and request deeper
+> analysis on various architectures.
+> Fourth, it has the prediction logic which calculates the intersection of
+> C-state requests by several cpus in a cluster to determine the cluster
+> state.
+>
+> On top of this, we have two WIP additions:
+>  - an experimental "energy model" patch for idlestat that lets a SoC
+>  vendor provide the cost of various states as input and idlestat will
+>  output the "energy cost" of a workload.
+>  - a 'diff mode' to show the diff between two traces
 
-on top of commit 52addcf9d6669fa439387610bc65c92fa0980cef
+I see this as no different from powertop; would it not be easier to
+add the prediction
+logic and investigate energy models integration? I dont mind a
+different tool to be
+doing almost same things, but is there really a need for one?
 
- Linux 3.17-rc2
+> Correct. At the moment, idlestat can only provide an indication if
+> something might be wrong.
 
-These are ACPI regression fixes (fixed events handling, EC driver
-and PNP enumeration), intel_pstate fix for excessive messages on
-boot, spurious __init removal from the s5pv210 cpufreq driver and
-new IDs for Intel Braswell.
+And that's where I think I see an immense value for idlestat to stick to
+scheduler details beyond the traditional C/P state statistics.
 
-Specifics:
+> These would show up as regressions in benchmark results. Fengguang's
+> excellent benchmark report[1] already captures such "changes". Does it
+> make sense to recapture that in a tool?
+> [1] https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg703826.html
 
- - Fix for an ACPI regression related to the handling of fixed events
-   that caused netlink routines to be (incorrectly) run in interrupt
-   context from Lan Tianyu.
+I am yet to digest that report, so apologies :)
 
- - Fix for an ACPI EC driver regression on Acer Aspire V5-573G that
-   caused AC/battery plug/unplug and video brightness change
-   notifications to be delayed on that machine from Lv Zheng.
+> We're open to tracking more metrics if it is felt they are useful.
+>
+> One of the tenets of energy-aware scheduling is "improving energy
+> efficiency with little or no performance regression". idlestat tells us
+> about possible regressions on the energy front and benchmarks should
+> tell us if we are regressing on performance. Hence the focus on
+> C/P-states for now.
 
- - Fix for an ACPI device enumeration regression that caused ACPI
-   driver probe to fail for some devices where it succeeded before
-   (Rafael J Wysocki).
+I would like to know your views on adding additional scheduler metrics
+like task thrashing,
+irregular placements, increased load balancing into the tool to be
+able to zero in the
+scheduler for efficiency losses. There might be more critical metrics
+that I am missing...
 
- - intel_pstate driver fix to prevent it from printing an information
-   message for every CPU in the system on every boot from Andi Kleen.
-
- - s5pv210 cpufreq driver fix to remove an __init annotation from
-   a routine that in fact can be called at any time after init too
-   from Mark Brown.
-
- - New Intel Braswell device IDs for the ACPI LPSS (Low-Power Subsystem)
-   driver from Alan Cox.
-
- - New Intel Braswell CPU ID for intel_pstate from Mika Westerberg.
-
-Thanks!
-
-
----------------
-
-Alan Cox (1):
-      ACPI / LPSS: Add ACPI IDs for Intel Braswell
-
-Andi Kleen (1):
-      intel_pstate: Turn per cpu printk into pr_debug
-
-Lan Tianyu (1):
-      ACPI: Run fixed event device notifications in process context
-
-Lv Zheng (2):
-      ACPI / EC: Add support to disallow QR_EC to be issued when
-SCI_EVT isn't set
-      ACPI / EC: Add support to disallow QR_EC to be issued before
-completing previous QR_EC
-
-Mark Brown (1):
-      cpufreq: s5pv210: Remove spurious __init annotation
-
-Mika Westerberg (1):
-      cpufreq: intel_pstate: Add CPU ID for Braswell processor
-
-Rafael J. Wysocki (1):
-      ACPI / scan: Allow ACPI drivers to bind to PNP device objects
-
----------------
-
- drivers/acpi/acpi_lpss.c          | 17 +++++++++++++++++
- drivers/acpi/ec.c                 | 21 ++++++++++++++++++---
- drivers/acpi/scan.c               | 17 +++++++++++------
- drivers/cpufreq/intel_pstate.c    |  3 ++-
- drivers/cpufreq/s5pv210-cpufreq.c |  2 +-
- 5 files changed, 49 insertions(+), 11 deletions(-)
+Cheers!
+-- 
+---------
+The views expressed in this email are personal and do not necessarily
+echo my employers.
