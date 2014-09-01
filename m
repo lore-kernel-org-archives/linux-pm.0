@@ -1,50 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] powercap/rapl: add support for cpu model 0x3f
-Date: Tue, 02 Sep 2014 01:49:15 +0200
-Message-ID: <2447035.ZSkeOUhJMy@vostro.rjw.lan>
-References: <20140814142608.5A9A38004B@prod-mail-relay07.akamai.com>
+Subject: Re: [PATCH] PM / Domains: Make generic_pm_domain.name const
+Date: Tue, 02 Sep 2014 01:50:36 +0200
+Message-ID: <7567220.FuQYiIRUM7@vostro.rjw.lan>
+References: <1409318001-27586-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59179 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:56539 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752844AbaIAX35 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Sep 2014 19:29:57 -0400
-In-Reply-To: <20140814142608.5A9A38004B@prod-mail-relay07.akamai.com>
+	with SMTP id S1752655AbaIAXbT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Sep 2014 19:31:19 -0400
+In-Reply-To: <1409318001-27586-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jason Baron <jbaron@akamai.com>
-Cc: jacob.jun.pan@linux.intel.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, durgadoss.r@intel.com, srinivas.pandruvada@linux.intel.com
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thursday, August 14, 2014 02:26:08 PM Jason Baron wrote:
-> I've confirmed that monitoring the package power usage as well as setting power
-> limits appear to be working as expected. Supports the package and dram domains.
-> 
-> Tested aginst cpu:
-> 
-> Intel(R) Xeon(R) CPU E5-2650 v3 @ 2.30GHz
-> 
-> Signed-off-by: Jason Baron <jbaron@akamai.com>
+On Friday, August 29, 2014 03:13:21 PM Geert Uytterhoeven wrote:
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Has this been ACKed by Jacob?
+I'm going to apply this one.  Does anything depend on it?
 
 > ---
->  drivers/powercap/intel_rapl.c | 1 +
->  1 file changed, 1 insertion(+)
+>  include/linux/pm_domain.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> index b1cda6f..a362dcc 100644
-> --- a/drivers/powercap/intel_rapl.c
-> +++ b/drivers/powercap/intel_rapl.c
-> @@ -953,6 +953,7 @@ static const struct x86_cpu_id rapl_ids[] = {
->  	{ X86_VENDOR_INTEL, 6, 0x3a},/* Ivy Bridge */
->  	{ X86_VENDOR_INTEL, 6, 0x3c},/* Haswell */
->  	{ X86_VENDOR_INTEL, 6, 0x3d},/* Broadwell */
-> +	{ X86_VENDOR_INTEL, 6, 0x3f},/* Haswell */
->  	{ X86_VENDOR_INTEL, 6, 0x45},/* Haswell ULT */
->  	/* TODO: Add more CPU IDs after testing */
->  	{}
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 7c1d252b20c0..ebc4c76ffb73 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -60,7 +60,7 @@ struct generic_pm_domain {
+>  	struct mutex lock;
+>  	struct dev_power_governor *gov;
+>  	struct work_struct power_off_work;
+> -	char *name;
+> +	const char *name;
+>  	unsigned int in_progress;	/* Number of devices being suspended now */
+>  	atomic_t sd_count;	/* Number of subdomains with power "on" */
+>  	enum gpd_status status;	/* Current state of the domain */
 > 
 
 -- 
