@@ -1,57 +1,172 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: [Patch v3] 0/7] Remove mach-kirkwood
-Date: Sat, 30 Aug 2014 18:46:05 +0200
-Message-ID: <1409417172-6846-1-git-send-email-andrew@lunn.ch>
-Return-path: <linux-ide-owner@vger.kernel.org>
-Sender: linux-ide-owner@vger.kernel.org
-To: Jason Cooper <jason@lakedaemon.net>
-Cc: linux ARM <linux-arm-kernel@lists.infradead.org>, Andrew Lunn <andrew@lunn.ch>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: Shilpa Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] cpufreq: powernv: Set the cpus to nominal frequency
+ during reboot/kexec
+Date: Mon, 01 Sep 2014 10:48:39 +0530
+Message-ID: <1409548719.13507.13.camel@localhost.localdomain>
+References: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+	 <CAKohpokbYkL=cYQ+9-59vPhBmbAWqhrEz7RBPj5-edDB25DPgw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp05.in.ibm.com ([122.248.162.5]:38607 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751110AbaIAFSs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Sep 2014 01:18:48 -0400
+Received: from /spool/local
+	by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+	Mon, 1 Sep 2014 10:48:45 +0530
+In-Reply-To: <CAKohpokbYkL=cYQ+9-59vPhBmbAWqhrEz7RBPj5-edDB25DPgw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, shilpa.bhat@linux.vnet.ibm.com
 
-This is mostly a resend of these patches, removing mach-kirkwood.  Not
-all maintainers picked up there patches, which has resulted in some
-dead kernel configuration in v3.17-rcX.
+Hi Viresh,
+On Fri, 2014-08-29 at 05:33 +0530, Viresh Kumar wrote:
+> On 28 August 2014 19:36, Shilpasri G Bhat
+> <shilpa.bhat@linux.vnet.ibm.com> wrote:
+> >
+> > Changes v1->v2:
+> > Invoke .target() driver callback to set the cpus to nominal frequency
+> > in reboot notifier, instead of calling cpufreq_suspend() as suggested
+> > by Viresh Kumar.
+> > Modified the commit message.
+> 
+> This changelog will get commited, is this what you want?
 
-The patch set has been rebased on v3.17-rc2, and it is intended that
-Jason Cooper will submit them for inclusion in an RC. Subsystem
-maintainers do not need to do anything.
+> > +       if (unlikely(rebooting) && new_index != get_nominal_index())
+> > +               return -EBUSY;
+> 
+> Have you placed the unlikely only around 'rebooting' intentionally or
+> should it cover whole if statement?
+> 
 
-The last patch "cpufreq: Remove ARCH_KIRKWOOD dependency" is new,
-since what it is removing was added during v3.16-rcX. It follows the
-pattern of all the other patches.
+Yes unlikely() should cover the whole if statement. Thank you for pointing it out.
+I have corrected my mistake in the below patch.
 
-Andrew Lunn (7):
-  cpuidle: kirkwood: Remove ARCH_KIRKWOOD dependency
-  ata: Remove ARCH_KIRKWOOD dependency
-  thermal: Remove ARCH_KIRKWOOD dependency
-  leds: Remove ARCH_KIRKWOOD dependency
-  rtc: Remove ARCH_KIRKWOOD dependency
-  watchdog: Remove ARCH_KIRKWOOD dependency
-  cpufreq: Remove ARCH_KIRKWOOD dependency
+Thanks and regards,
+Shilpa
 
- drivers/ata/Kconfig         | 2 +-
- drivers/cpufreq/Kconfig.arm | 2 +-
- drivers/cpuidle/Kconfig.arm | 2 +-
- drivers/leds/Kconfig        | 4 ++--
- drivers/rtc/Kconfig         | 2 +-
- drivers/thermal/Kconfig     | 2 +-
- drivers/watchdog/Kconfig    | 2 +-
- 7 files changed, 8 insertions(+), 8 deletions(-)
 
---
-2.1.0
 
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>
-Cc: linux-ide@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-leds@vger.kernel.org
-Cc: Alessandro Zummo <a.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com
-Cc: Wim Van Sebroeck <wim@iguana.be>
-Cc: linux-watchdog@vger.kernel.org
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
+This patch ensures the cpus to kexec/reboot at nominal frequency.
+Nominal frequency is the highest cpu frequency on PowerPC at
+which the cores can run without getting throttled.
+
+If the host kernel had set the cpus to a low pstate and then it
+kexecs/reboots to a cpufreq disabled kernel it would cause the target
+kernel to perform poorly. It will also increase the boot up time of
+the target kernel. So set the cpus to high pstate, in this case to
+nominal frequency before rebooting to avoid such scenarios.
+
+The reboot notifier will set the cpus to nominal frequncy.
+
+Changes v1->v2:
+Invoke .target() driver callback to set the cpus to nominal frequency
+in reboot notifier, instead of calling cpufreq_suspend() as suggested
+by Viresh Kumar.
+Modified the commit message.
+
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 379c083..f8b83c8 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -26,6 +26,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/smp.h>
+ #include <linux/of.h>
++#include <linux/reboot.h>
+ 
+ #include <asm/cputhreads.h>
+ #include <asm/firmware.h>
+@@ -35,6 +36,7 @@
+ #define POWERNV_MAX_PSTATES	256
+ 
+ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
++static bool rebooting;
+ 
+ /*
+  * Note: The set of pstates consists of contiguous integers, the
+@@ -284,6 +286,15 @@ static void set_pstate(void *freq_data)
+ }
+ 
+ /*
++ * get_nominal_index: Returns the index corresponding to the nominal
++ * pstate in the cpufreq table
++ */
++static inline unsigned int get_nominal_index(void)
++{
++	return powernv_pstate_info.max - powernv_pstate_info.nominal;
++}
++
++/*
+  * powernv_cpufreq_target_index: Sets the frequency corresponding to
+  * the cpufreq table entry indexed by new_index on the cpus in the
+  * mask policy->cpus
+@@ -293,6 +304,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ {
+ 	struct powernv_smp_call_data freq_data;
+ 
++	if (unlikely(rebooting && new_index != get_nominal_index()))
++		return -EBUSY;
++
+ 	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
+ 
+ 	/*
+@@ -317,6 +331,25 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	return cpufreq_table_validate_and_show(policy, powernv_freqs);
+ }
+ 
++static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
++				unsigned long action, void *unused)
++{
++	int cpu;
++	struct cpufreq_policy cpu_policy;
++
++	rebooting = true;
++	for_each_online_cpu(cpu) {
++		cpufreq_get_policy(&cpu_policy, cpu);
++		powernv_cpufreq_target_index(&cpu_policy, get_nominal_index());
++	}
++
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block powernv_cpufreq_reboot_nb = {
++	.notifier_call = powernv_cpufreq_reboot_notifier,
++};
++
+ static struct cpufreq_driver powernv_cpufreq_driver = {
+ 	.name		= "powernv-cpufreq",
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+@@ -342,12 +375,14 @@ static int __init powernv_cpufreq_init(void)
+ 		return rc;
+ 	}
+ 
++	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
+ 	return cpufreq_register_driver(&powernv_cpufreq_driver);
+ }
+ module_init(powernv_cpufreq_init);
+ 
+ static void __exit powernv_cpufreq_exit(void)
+ {
++	unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
+ 	cpufreq_unregister_driver(&powernv_cpufreq_driver);
+ }
+ module_exit(powernv_cpufreq_exit);
+-- 
+1.9.3
+
+
+
+
+
