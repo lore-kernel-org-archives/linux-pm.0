@@ -1,44 +1,74 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [Patch v3] 0/7] Remove mach-kirkwood
-Date: Mon, 1 Sep 2014 16:03:20 +0200
-Message-ID: <20140901140320.GE11312@lunn.ch>
-References: <1409417172-6846-1-git-send-email-andrew@lunn.ch>
- <1997148.5Fa3W8ZmXx@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 11/13] x86 / PM: Set IRQCHIP_SKIP_SET_WAKE for IOAPIC IRQ chip objects
+Date: Mon, 01 Sep 2014 16:28:01 +0200
+Message-ID: <1604186.gKriExSOTM@vostro.rjw.lan>
+References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan> <2516134.pmOxkEuOOy@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-leds-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1997148.5Fa3W8ZmXx@vostro.rjw.lan>
-Sender: linux-leds-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux ARM <linux-arm-kernel@lists.infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <2516134.pmOxkEuOOy@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 01, 2014 at 03:56:43PM +0200, Rafael J. Wysocki wrote:
-> On Saturday, August 30, 2014 06:46:05 PM Andrew Lunn wrote:
-> > This is mostly a resend of these patches, removing mach-kirkwood.  Not
-> > all maintainers picked up there patches, which has resulted in some
-> > dead kernel configuration in v3.17-rcX.
-> > 
-> > The patch set has been rebased on v3.17-rc2, and it is intended that
-> > Jason Cooper will submit them for inclusion in an RC. Subsystem
-> > maintainers do not need to do anything.
-> > 
-> > The last patch "cpufreq: Remove ARCH_KIRKWOOD dependency" is new,
-> > since what it is removing was added during v3.16-rcX. It follows the
-> > pattern of all the other patches.
-> > 
-> > Andrew Lunn (7):
-> >   cpuidle: kirkwood: Remove ARCH_KIRKWOOD dependency
-> >   ata: Remove ARCH_KIRKWOOD dependency
-> >   thermal: Remove ARCH_KIRKWOOD dependency
-> >   leds: Remove ARCH_KIRKWOOD dependency
-> >   rtc: Remove ARCH_KIRKWOOD dependency
-> >   watchdog: Remove ARCH_KIRKWOOD dependency
-> >   cpufreq: Remove ARCH_KIRKWOOD dependency
-> 
-> I have no problems with these changes, but what exactly am I supposed to do?
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Jason will submit the whole series. So an Acked-by: would be nice.
+Set the IRQCHIP_SKIP_SET_WAKE for IOAPIC IRQ chip objects so that
+interrupts from them can work as wakeup interrupts for suspend-to-idle.
 
-      Andrew
+After this change, running enable_irq_wake() on one of the IRQs in
+question will succeed and IRQD_WAKEUP_STATE will be set for it, so
+all of the suspend-to-idle wakeup mechanics introduced previously
+will work for it automatically.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ arch/x86/kernel/apic/io_apic.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+Index: linux-pm/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- linux-pm.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-pm/arch/x86/kernel/apic/io_apic.c
+@@ -2618,6 +2618,7 @@ static struct irq_chip ioapic_chip __rea
+ 	.irq_eoi		= ack_apic_level,
+ 	.irq_set_affinity	= native_ioapic_set_affinity,
+ 	.irq_retrigger		= ioapic_retrigger_irq,
++	.flags			= IRQCHIP_SKIP_SET_WAKE,
+ };
+ 
+ static inline void init_IO_APIC_traps(void)
+@@ -3168,6 +3169,7 @@ static struct irq_chip msi_chip = {
+ 	.irq_ack		= ack_apic_edge,
+ 	.irq_set_affinity	= msi_set_affinity,
+ 	.irq_retrigger		= ioapic_retrigger_irq,
++	.flags			= IRQCHIP_SKIP_SET_WAKE,
+ };
+ 
+ int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
+@@ -3266,6 +3268,7 @@ static struct irq_chip dmar_msi_type = {
+ 	.irq_ack		= ack_apic_edge,
+ 	.irq_set_affinity	= dmar_msi_set_affinity,
+ 	.irq_retrigger		= ioapic_retrigger_irq,
++	.flags			= IRQCHIP_SKIP_SET_WAKE,
+ };
+ 
+ int arch_setup_dmar_msi(unsigned int irq)
+@@ -3316,6 +3319,7 @@ static struct irq_chip hpet_msi_type = {
+ 	.irq_ack = ack_apic_edge,
+ 	.irq_set_affinity = hpet_msi_set_affinity,
+ 	.irq_retrigger = ioapic_retrigger_irq,
++	.flags = IRQCHIP_SKIP_SET_WAKE,
+ };
+ 
+ int default_setup_hpet_msi(unsigned int irq, unsigned int id)
+@@ -3379,6 +3383,7 @@ static struct irq_chip ht_irq_chip = {
+ 	.irq_ack		= ack_apic_edge,
+ 	.irq_set_affinity	= ht_set_affinity,
+ 	.irq_retrigger		= ioapic_retrigger_irq,
++	.flags			= IRQCHIP_SKIP_SET_WAKE,
+ };
+ 
+ int arch_setup_ht_irq(unsigned int irq, struct pci_dev *dev)
