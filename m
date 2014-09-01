@@ -1,110 +1,52 @@
-From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v9 4/6] ARM: Exynos: switch to using generic cpufreq
- driver for Exynos4210/5250/5420
-Date: Mon, 1 Sep 2014 14:17:20 +0530
-Message-ID: <CAJuA9ah5M_pXRMXPB6o7JLhgVUHM7kYo9HOV6Yxv4Z=hKMdG=w@mail.gmail.com>
-References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
-	<1406707663-16656-5-git-send-email-thomas.ab@samsung.com>
-	<53DA8BB9.6020702@samsung.com>
-	<53DA8D85.3050106@gmail.com>
-	<7hbnrc6px3.fsf@paris.lan>
-	<53F7DA13.6090305@gmail.com>
-	<CADWw7OgAS-z-UOrJU-hL2fzuefJmLtCTg57jYk2Df7f5KfLJmA@mail.gmail.com>
-	<7h8umc60we.fsf@paris.lan>
-	<CADWw7OgW+o3tB=ptnsy-PsmXmNv8oXzt_WfK6NswQiEWWwAzNA@mail.gmail.com>
-	<CAGa+x85-Anb+HsSUQRaaeex19-HK+yZDW0UpFBwAtsQ8Sf2Aqg@mail.gmail.com>
-	<CAGa+x86jU8MR=r_xuaiorbNNyqrezb0b6Ozy-MPg9HvsARESOw@mail.gmail.com>
-	<CAJuA9ajtsrY7zSDMs=c6BZ0AqERoBgvq++dTF4Dn673zGMfcgQ@mail.gmail.com>
-	<CAMAWPa-8h5PNhgT+ApBhA8p=i+4oFOnYnQsQ4mK1JKwwAhpvpQ@mail.gmail.com>
+From: David Laight <David.Laight@ACULAB.COM>
+Subject: RE: [PATCH v2] cpufreq: powernv: Set the cpus to nominal frequency
+ during reboot/kexec
+Date: Mon, 1 Sep 2014 09:12:43 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D174849AD@AcuExch.aculab.com>
+References: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <CAKohpokbYkL=cYQ+9-59vPhBmbAWqhrEz7RBPj5-edDB25DPgw@mail.gmail.com>
+ <1409548719.13507.13.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMAWPa-8h5PNhgT+ApBhA8p=i+4oFOnYnQsQ4mK1JKwwAhpvpQ@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Chander Kashyap <k.chander@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0.aculab.com ([213.249.233.131]:47238 "HELO mx0.aculab.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752325AbaIAJOq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 1 Sep 2014 05:14:46 -0400
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 19638-10 for <linux-pm@vger.kernel.org>;
+ Mon,  1 Sep 2014 10:14:37 +0100 (BST)
+In-Reply-To: <1409548719.13507.13.camel@localhost.localdomain>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Shilpa Bhat' <shilpa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
-Hi Kevin,
-
-
-On Fri, Aug 29, 2014 at 8:33 PM, Kevin Hilman <khilman@kernel.org> wrote:
-> Hi Thomas,
->
-> On Fri, Aug 29, 2014 at 5:52 AM, Thomas Abraham <ta.omasab@gmail.com> wrote:
->> Hi Kevin,
->>
->> On Wed, Aug 27, 2014 at 3:55 AM, Kevin Hilman <khilman@linaro.org> wrote:
->>> On Tue, Aug 26, 2014 at 8:15 AM, Kevin Hilman <khilman@linaro.org> wrote:
->>>> On Mon, Aug 25, 2014 at 10:25 PM, Chander Kashyap <k.chander@samsung.com> wrote:
->>>
->>> [...]
->>>
->>>>>>
->>>>>> Can you clarify how you're setting the voltages to ensure stability?
->>>>>
->>>>> below is the diff :  wip/exynos/integ
->>>>
->>>> Thanks.
->>>>
->>>> I've applied your patch, and bootup shows vdd_arm and vdd_kfc at
->>>> 1500mV, but still when booting with cpuidle enabled (bL switcher
->>>> disabled), I'm seeing lockups with no kernel output.  With CPUidle
->>>> disabled, things are pretty stable.
->>>>
->>>> What tree are you using to test this out on 5420?  I'm using mainline
->>>> v3.17-rc1 + DT patch for CPUidle and this cpufreq series.  See my
->>>> wip/exynos/integ branch at
->>>> git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux.git.
->>>
->>> I mis-stated this.  Actually my tree is based on the v3.17-rc1 branch
->>> of the exynos-reference tree[1] + the above mentioned patches for
->>> cpuidle and cpufreq.
->>>
->>> Also, I've narrowed down the instability a bit, and it's not related
->>> to CPUidle.  I can now trigger a boot hang even without CPUidle
->>> enabled.  Here's a quick way to cause a boot lockup. With the switcher
->>> disabled, I enable CPUfreq and set the default governor to
->>> performance.  As soon as cpufreq driver loads, it tries to use the top
->>> frequences for both clusters, and it hangs.
->>>
->>> Selectively disabling frequencies, I narrowed it down to the 1.3GHz
->>> and 1.2GHz frequencies of the little cluster.  With these commented
->>> out in the DT, it will fully boot with the performance governor
->>> enabled.
->>>
->>> So that leads to the question.  Are all of the operating points in
->>> exynos5420.dtsi valid for exynos5800, and have they been validated?
->>
->> I tried to recreate the boot lockup issue using the same steps you
->> listed above for the Exynos5800 peach-pi platform (Chromebook2), but I
->> do not see any issues. I can see both clusters with max clock speed
->> after boot (1.8GHz and 1.3GHz).
->>
->> I am using v3.17-rc2 + CPUFreq Patches + max77802 regulator support
->> patches for Chromebook2 + temp hack to set A15 voltage to 1.35V and A7
->> voltage to 1.3V.
->
-> Can you share your branch and temp hack(s) as well as your defconfig?
->
-> I'm using the v3.17-rc1 branch from the exynos tree (which includes
-> the max77802 series) but also has a bunch of other stuff which may be
-> causing the issue.
->
-> It would be good if I can reproduce your exact tree/branch and see if
-> I still have the same problem.
-
-The branch with the patches that have been used to test cpufreq on
-Exynos5800 is available at
-
-https://github.com/exynos-reference/kernel/tree/exynos5-v3.17-rc3-temp-cpufreq
-
-Please let me know if this works or if there are any issues.
-
-Thanks,
-Thomas.
-
->
-> Thanks for looking into this,
->
-> Kevin
+RnJvbTogU2hpbHBhIEJoYXQNCj4gSGkgVmlyZXNoLA0KPiBPbiBGcmksIDIwMTQtMDgtMjkgYXQg
+MDU6MzMgKzA1MzAsIFZpcmVzaCBLdW1hciB3cm90ZToNCj4gPiBPbiAyOCBBdWd1c3QgMjAxNCAx
+OTozNiwgU2hpbHBhc3JpIEcgQmhhdA0KPiA+IDxzaGlscGEuYmhhdEBsaW51eC52bmV0LmlibS5j
+b20+IHdyb3RlOg0KPiA+ID4NCj4gPiA+IENoYW5nZXMgdjEtPnYyOg0KPiA+ID4gSW52b2tlIC50
+YXJnZXQoKSBkcml2ZXIgY2FsbGJhY2sgdG8gc2V0IHRoZSBjcHVzIHRvIG5vbWluYWwgZnJlcXVl
+bmN5DQo+ID4gPiBpbiByZWJvb3Qgbm90aWZpZXIsIGluc3RlYWQgb2YgY2FsbGluZyBjcHVmcmVx
+X3N1c3BlbmQoKSBhcyBzdWdnZXN0ZWQNCj4gPiA+IGJ5IFZpcmVzaCBLdW1hci4NCj4gPiA+IE1v
+ZGlmaWVkIHRoZSBjb21taXQgbWVzc2FnZS4NCj4gPg0KPiA+IFRoaXMgY2hhbmdlbG9nIHdpbGwg
+Z2V0IGNvbW1pdGVkLCBpcyB0aGlzIHdoYXQgeW91IHdhbnQ/DQo+IA0KPiA+ID4gKyAgICAgICBp
+ZiAodW5saWtlbHkocmVib290aW5nKSAmJiBuZXdfaW5kZXggIT0gZ2V0X25vbWluYWxfaW5kZXgo
+KSkNCj4gPiA+ICsgICAgICAgICAgICAgICByZXR1cm4gLUVCVVNZOw0KPiA+DQo+ID4gSGF2ZSB5
+b3UgcGxhY2VkIHRoZSB1bmxpa2VseSBvbmx5IGFyb3VuZCAncmVib290aW5nJyBpbnRlbnRpb25h
+bGx5IG9yDQo+ID4gc2hvdWxkIGl0IGNvdmVyIHdob2xlIGlmIHN0YXRlbWVudD8NCj4gPg0KPiAN
+Cj4gWWVzIHVubGlrZWx5KCkgc2hvdWxkIGNvdmVyIHRoZSB3aG9sZSBpZiBzdGF0ZW1lbnQuLi4N
+Cg0KQWN0dWFsbHkgaXQgcHJvYmFibHkgc2hvdWxkbid0Lg0KWW91IG5lZWQgdG8gbG9vayBhdCB0
+aGUgZ2VuZXJhdGVkIGNvZGUgd2l0aCBlYWNoIGRpZmZlcmVudCBzZXQgb2YgJ3VubGlrZWx5KCkn
+DQp0byBzZWUgaG93IGdjYyBwcm9jZXNzZXMgdGhlbS4NCkluIHRoaXMgY2FzZSwgaWYgJ3JlYm9v
+dGluZycgaXMgZmFsc2UgeW91IHdhbnQgdG8gJ2ZhbGwgdGhyb3VnaCcgb24gYSBzdGF0aWNhbGx5
+DQpwcmVkaWN0ZWQgJ25vdCB0YWtlbicgYnJhbmNoLiBZb3UgZG9uJ3QgZXZlciBjYXJlIGFib3V0
+IHRoZSBzZWNvbmQgY2xhdXNlLg0KV2l0aCBhbiAndW5saWtlbHknIGNvdmVyaW5nIHRoZSBlbnRp
+cmUgc3RhdGVtZW50IGdjYyBjb3VsZCBlYXNpbHkgYWRkIGENCmZvcndhcmRzIGNvbmRpdGlvbmFs
+IGJyYW5jaCAodGhhdCB3aWxsIGJlIG1pcy1wcmVkaWN0ZWQpIGZvciB0aGUgJ3JlYm9vdGluZycg
+dGVzdC4NCg0KKFllcywgSSBzcGVudCBhIGxvdCBvZiB0aW1lIGdldHRpbmcgZ2NjIHRvIGdlbmVy
+YXRlIGJyYW5jaGVzIHRoYXQgd2VyZQ0KY29ycmVjdGx5IHN0YXRpY2FsbHkgcHJlZGljdGVkIGZv
+ciBzb21lIGNvZGUgd2hlcmUgZXZlcnkgY3ljbGUgbWF0dGVyZWQuKQ0KDQoJRGF2aWQNCg0K
