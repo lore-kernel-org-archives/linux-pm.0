@@ -1,226 +1,187 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 10/13] genirq: Simplify wakeup mechanism
-Date: Mon, 01 Sep 2014 16:27:22 +0200
-Message-ID: <1618455.xcqKAKx7vG@vostro.rjw.lan>
-References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan> <2516134.pmOxkEuOOy@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <2516134.pmOxkEuOOy@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Subject: [PATCH v8 0/8] ARM generic idle states
+Date: Mon,  1 Sep 2014 16:28:36 +0100
+Message-ID: <1409585324-3678-1-git-send-email-lorenzo.pieralisi@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Charles Garcia Tobin <Charles.Garcia-Tobin-5wv7dgnIgG8@public.gmane.org>, Nicolas Pitre <nico-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Amit Kucheria <amit.kucheria-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Antti Miettinen <ananaza-X3B1VOXEql0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Capella <sebcape-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Chander Kashyap <k.chander-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Geoff
 List-Id: linux-pm@vger.kernel.org
 
-From: Thomas Gleixner <tglx@linutronix.de>
+This patch is v8 of a previous posting:
 
-Currently we suspend wakeup interrupts by lazy disabling them and
-check later whether the interrupt has fired, but that's not sufficient
-for suspend to idle as there is no way to check that once we
-transitioned into the CPU idle state.
+http://lists.infradead.org/pipermail/linux-arm-kernel/2014-August/279253.ht=
+ml
 
-So we change the mechanism in the following way:
+Patchset has been tested on:
 
-1) Leave the wakeup interrupts enabled across suspend
+- Juno ARM64 platform and Foundation v8 models (based on Trusted Firmware
+  PSCI implementation available at [1])
+  # Patches to enable idle states on Juno and Foundation models can be made
+    available, current dts are not in the mainline kernel
+- TC2
+- Compile tested on Samsung Exynos
 
-2) Add a check to irq_may_run() which is called at the beginning of
-   each flow handler whether the interrupt is an armed wakeup source.
+Patch for Exynos CPUidle code depends on patch [2].
 
-   This check is basically free as it just extends the existing check
-   for IRQD_IRQ_INPROGRESS. So no new conditional in the hot path.
+[1] https://github.com/ARM-software/arm-trusted-firmware
+[2] http://lists.infradead.org/pipermail/linux-arm-kernel/2014-July/274179.=
+html
 
-   If the IRQD_WAKEUP_ARMED flag is set, then the interrupt is
-   disabled, marked as pending/suspended and the pm core is notified
-   about the wakeup event.
+Changes in v8:
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-[ rjw: syscore.c and irq_pm_check_wakeup() in pm.c ]
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/syscore.c    |    7 ++---
- include/linux/interrupt.h |    5 ----
- kernel/irq/chip.c         |   20 +++++++++++++++-
- kernel/irq/internals.h    |    2 +
- kernel/irq/pm.c           |   55 ++++++++++++++++++++++++----------------------
- 5 files changed, 53 insertions(+), 36 deletions(-)
+- Added idle states check on all cpus in the CPUidle driver mask
+- Added missing DT nodes ref counting
+- Added idle states node matching code to initialize CPUidle enter function
+- Added code to fall back on cpu_possible_mask on NULL CPUidle driver cpuma=
+sk
 
-Index: linux-pm/drivers/base/syscore.c
-===================================================================
---- linux-pm.orig/drivers/base/syscore.c
-+++ linux-pm/drivers/base/syscore.c
-@@ -9,7 +9,7 @@
- #include <linux/syscore_ops.h>
- #include <linux/mutex.h>
- #include <linux/module.h>
--#include <linux/interrupt.h>
-+#include <linux/suspend.h>
- #include <trace/events/power.h>
- 
- static LIST_HEAD(syscore_ops_list);
-@@ -54,9 +54,8 @@ int syscore_suspend(void)
- 	pr_debug("Checking wakeup interrupts\n");
- 
- 	/* Return error code if there are any wakeup interrupts pending. */
--	ret = check_wakeup_irqs();
--	if (ret)
--		return ret;
-+	if (pm_wakeup_pending())
-+		return -EBUSY;
- 
- 	WARN_ONCE(!irqs_disabled(),
- 		"Interrupts enabled before system core suspend.\n");
-Index: linux-pm/include/linux/interrupt.h
-===================================================================
---- linux-pm.orig/include/linux/interrupt.h
-+++ linux-pm/include/linux/interrupt.h
-@@ -193,11 +193,6 @@ extern void irq_wake_thread(unsigned int
- /* The following three functions are for the core kernel use only. */
- extern void suspend_device_irqs(void);
- extern void resume_device_irqs(void);
--#ifdef CONFIG_PM_SLEEP
--extern int check_wakeup_irqs(void);
--#else
--static inline int check_wakeup_irqs(void) { return 0; }
--#endif
- 
- /**
-  * struct irq_affinity_notify - context for notification of IRQ affinity changes
-Index: linux-pm/kernel/irq/chip.c
-===================================================================
---- linux-pm.orig/kernel/irq/chip.c
-+++ linux-pm/kernel/irq/chip.c
-@@ -344,8 +344,26 @@ static bool irq_check_poll(struct irq_de
- 
- static bool irq_may_run(struct irq_desc *desc)
- {
--	if (!irqd_irq_inprogress(&desc->irq_data))
-+	unsigned int mask = IRQD_IRQ_INPROGRESS | IRQD_WAKEUP_ARMED;
-+
-+	/*
-+	 * If the interrupt is not in progress and is not an armed
-+	 * wakeup interrupt, proceed.
-+	 */
-+	if (!irqd_has_set(&desc->irq_data, mask))
- 		return true;
-+
-+	/*
-+	 * If the interrupt is an armed wakeup source, mark it pending
-+	 * and suspended, disable it and notify the pm core about the
-+	 * event.
-+	 */
-+	if (irq_pm_check_wakeup(desc))
-+		return false;
-+
-+	/*
-+	 * Handle a potential concurrent poll on a different core.
-+	 */
- 	return irq_check_poll(desc);
- }
- 
-Index: linux-pm/kernel/irq/pm.c
-===================================================================
---- linux-pm.orig/kernel/irq/pm.c
-+++ linux-pm/kernel/irq/pm.c
-@@ -9,10 +9,24 @@
- #include <linux/irq.h>
- #include <linux/module.h>
- #include <linux/interrupt.h>
-+#include <linux/suspend.h>
- #include <linux/syscore_ops.h>
- 
- #include "internals.h"
- 
-+bool irq_pm_check_wakeup(struct irq_desc *desc)
-+{
-+	if (irqd_is_wakeup_armed(&desc->irq_data)) {
-+		irqd_clear(&desc->irq_data, IRQD_WAKEUP_ARMED);
-+		desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
-+		desc->depth++;
-+		irq_disable(desc);
-+		pm_system_wakeup();
-+		return true;
-+	}
-+	return false;
-+}
-+
- /*
-  * Called from __setup_irq() with desc->lock held after @action has
-  * been installed in the action chain.
-@@ -54,8 +68,16 @@ static bool suspend_device_irq(struct ir
- 	if (!desc->action || desc->no_suspend_depth)
- 		return false;
- 
--	if (irqd_is_wakeup_set(&desc->irq_data))
-+	if (irqd_is_wakeup_set(&desc->irq_data)) {
- 		irqd_set(&desc->irq_data, IRQD_WAKEUP_ARMED);
-+		/*
-+		 * We return true here to force the caller to issue
-+		 * synchronize_irq(). We need to make sure that the
-+		 * IRQD_WAKEUP_ARMED is visible before we return from
-+		 * suspend_device_irqs().
-+		 */
-+		return true;
-+	}
- 
- 	desc->istate |= IRQS_SUSPENDED;
- 	__disable_irq(desc, irq);
-@@ -79,9 +101,13 @@ static bool suspend_device_irq(struct ir
-  * for this purpose.
-  *
-  * So we disable all interrupts and mark them IRQS_SUSPENDED except
-- * for those which are unused and those which are marked as not
-+ * for those which are unused, those which are marked as not
-  * suspendable via an interrupt request with the flag IRQF_NO_SUSPEND
-- * set.
-+ * set and those which are marked as active wakeup sources.
-+ *
-+ * The active wakeup sources are handled by the flow handler entry
-+ * code which checks for the IRQD_WAKEUP_ARMED flag, suspends the
-+ * interrupt and notifies the pm core about the wakeup.
-  */
- void suspend_device_irqs(void)
- {
-@@ -173,26 +199,3 @@ void resume_device_irqs(void)
- 	resume_irqs(false);
- }
- EXPORT_SYMBOL_GPL(resume_device_irqs);
--
--/**
-- * check_wakeup_irqs - check if any wake-up interrupts are pending
-- */
--int check_wakeup_irqs(void)
--{
--	struct irq_desc *desc;
--	int irq;
--
--	for_each_irq_desc(irq, desc) {
--		/*
--		 * Only interrupts which are marked as wakeup source
--		 * and have not been disabled before the suspend check
--		 * can abort suspend.
--		 */
--		if (irqd_is_wakeup_set(&desc->irq_data)) {
--			if (desc->depth == 1 && desc->istate & IRQS_PENDING)
--				return -EBUSY;
--		}
--	}
--
--	return 0;
--}
-Index: linux-pm/kernel/irq/internals.h
-===================================================================
---- linux-pm.orig/kernel/irq/internals.h
-+++ linux-pm/kernel/irq/internals.h
-@@ -196,9 +196,11 @@ static inline void kstat_incr_irqs_this_
- }
- 
- #ifdef CONFIG_PM_SLEEP
-+bool irq_pm_check_wakeup(struct irq_desc *desc);
- void irq_pm_install_action(struct irq_desc *desc, struct irqaction *action);
- void irq_pm_remove_action(struct irq_desc *desc, struct irqaction *action);
- #else
-+static inline bool irq_pm_check_wakeup(struct irq_desc *desc) { return false; }
- static inline void
- irq_pm_install_action(struct irq_desc *desc, struct irqaction *action) { }
- static inline void
+Changes in v7:
+
+- Refactored arm64 cpu_suspend API to support retention states
+- Readded static states tables for TC2 and Exynos CPUidle driver so that
+  platforms with old dts files will still work as expected
+- Slightly reworked the DT parsing API to return the number of parsed DT
+  states
+- Ported PSCI to the new cpu_suspend API, now supporting retention states
+- Rebased against 3.16
+
+Changes in v6:
+
+- Added ARM64 CPU init idle to CPU operations
+- Removed power-rank property; sorting depends on the cpu-idle-states phand=
+le
+  list order now
+- Added local-timer-stop flag
+- Removed useless TC2 and Exynos DT idle state entry-method bindings
+- Removed RTSM dts update
+- Updated PSCI suspend parameter and DT bindings
+- Updated PSCI parsing code
+- Rebased against 3.16-rc6
+
+Changes in v5:
+
+- Added power-rank property to implement state sorting, following a number
+  of on/off list review comments
+- Added timer retained bool property
+- Ported TC2 big.LITTLE and Exynos drivers to DT initialization
+- Renamed s/OF/dt/ throughout the patch
+- Incorporated review comments and list discussions in the idle states
+  bindings documents
+- Rebased against 3.16-rc2
+
+Changes in v4:
+
+- States sorting using exit-latency
+- Added cosmetic review comments
+- Dropped RFC
+- Rebased against 3.15
+
+Changes in v3:
+
+- Streamlined the idle states bindings and added them to the series
+  http://www.spinics.net/lists/arm-kernel/msg316299.html
+- Sorting states through min-residency+exit-latency
+- Added debug strings formatting
+- Reworded min-residency-us idle state property
+- Removed power-domain properties from idle states waiting for code
+  examples requiring them to be defined
+
+Changes in v2:
+
+- Moved OF parsing code to drivers/cpuidle
+- Improved states detection and sorting through linked list
+- Split code in generic and ARM64 specific bits
+- Moved idle enter function into ARM64 idle driver
+- Refactored PSCI idle states register function
+- Renamed suspend operations and moved detection to ARM64 idle driver
+- Changed the way CPUIDLE_FLAG_TIMER_STOP is handled
+- Simplified idle state nodes parsing since according to the latest
+  bindings idle state nodes are a flat list, not hierarchical anymore
+- Used min-residency-us to sort the states, to be further discussed
+
+Idle states on most ARM platforms can be characterized by a set of
+parameters that are platform agnostic and describe the HW idle states
+features. So far, CPU idle drivers for ARM platforms required the definitio=
+n
+of parameters through static tables, duplicating control data for different
+platforms. Moreover, the lack of standardization on firmware interfaces
+hampered any standardization effort, resulting in CPU idle drivers for ARM
+platforms containing duplicated code and platform specific power down routi=
+nes.
+
+The introduction of the PSCI firmware interface, and more in general, well
+defined suspend back-ends, allows the definition of generic idle states and
+the respective kernel infrastructure to support them.
+
+Building on top of DT idle states bindings, that standardize idle states
+parameters and corresponding suspend back-ends, this patchset provides code
+that parses DT idle states nodes and builds at run-time the control data
+infrastructure required by the ARM CPU idle drivers.
+
+Idle states define an entry method (eg PSCI), that requires the respective
+ARM64 kernel back-end to be invoked to initialize idle states parameters, s=
+o
+that when the idle driver executes the back-end specific entry method a tab=
+le
+look-up can be carried out to retrieve the corresponding idle state paramet=
+er.
+
+On legacy ARM platforms the DT idle states are used to initialize states
+data and the idle state compatible string allows to match the corresponding
+idle state enter function and initialize the enter function pointer
+accordingly.
+
+Lorenzo Pieralisi (8):
+  arm64: kernel: refactor the CPU suspend API for retention states
+  Documentation: arm: define DT idle states bindings
+  drivers: cpuidle: implement DT based idle states infrastructure
+  arm64: kernel: introduce cpu_init_idle CPU operation
+  arm64: add PSCI CPU_SUSPEND based cpu_suspend support
+  drivers: cpuidle: CPU idle ARM64 driver
+  drivers: cpuidle: initialize big.LITTLE driver through DT
+  drivers: cpuidle: initialize Exynos driver through DT
+
+ Documentation/devicetree/bindings/arm/cpus.txt     |   8 +
+ .../devicetree/bindings/arm/idle-states.txt        | 679 +++++++++++++++++=
+++++
+ Documentation/devicetree/bindings/arm/psci.txt     |  14 +-
+ arch/arm/boot/dts/exynos4210.dtsi                  |  11 +
+ arch/arm/boot/dts/exynos5250.dtsi                  |  11 +
+ arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts         |  23 +
+ arch/arm64/include/asm/cpu_ops.h                   |   3 +
+ arch/arm64/include/asm/cpuidle.h                   |  13 +
+ arch/arm64/include/asm/suspend.h                   |   1 +
+ arch/arm64/kernel/Makefile                         |   1 +
+ arch/arm64/kernel/cpuidle.c                        |  31 +
+ arch/arm64/kernel/psci.c                           | 104 ++++
+ arch/arm64/kernel/sleep.S                          |  47 +-
+ arch/arm64/kernel/suspend.c                        |  48 +-
+ drivers/cpuidle/Kconfig                            |   8 +
+ drivers/cpuidle/Kconfig.arm                        |   2 +
+ drivers/cpuidle/Kconfig.arm64                      |  14 +
+ drivers/cpuidle/Makefile                           |   5 +
+ drivers/cpuidle/cpuidle-arm64.c                    | 121 ++++
+ drivers/cpuidle/cpuidle-big_little.c               |  19 +
+ drivers/cpuidle/cpuidle-exynos.c                   |  18 +-
+ drivers/cpuidle/dt_idle_states.c                   | 213 +++++++
+ drivers/cpuidle/dt_idle_states.h                   |   7 +
+ 23 files changed, 1367 insertions(+), 34 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/idle-states.txt
+ create mode 100644 arch/arm64/include/asm/cpuidle.h
+ create mode 100644 arch/arm64/kernel/cpuidle.c
+ create mode 100644 drivers/cpuidle/Kconfig.arm64
+ create mode 100644 drivers/cpuidle/cpuidle-arm64.c
+ create mode 100644 drivers/cpuidle/dt_idle_states.c
+ create mode 100644 drivers/cpuidle/dt_idle_states.h
+
+--=20
+1.9.1
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
