@@ -1,100 +1,54 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 01/13] PM / sleep: Mechanism for aborting system suspends unconditionally
-Date: Mon, 01 Sep 2014 16:19:52 +0200
-Message-ID: <6935419.nmCT0f1CW7@vostro.rjw.lan>
-References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan> <2516134.pmOxkEuOOy@vostro.rjw.lan>
+Subject: [PATCH 00/13] genirq / PM: Wakeup interrupts handling rework (related to suspend-to-idle)
+Date: Mon, 01 Sep 2014 16:18:47 +0200
+Message-ID: <2516134.pmOxkEuOOy@vostro.rjw.lan>
+References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2516134.pmOxkEuOOy@vostro.rjw.lan>
+In-Reply-To: <5320472.coYotHR1d0@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi,
 
-It sometimes may be necessary to abort a system suspend in
-progress or wake up the system from suspend-to-idle even if the
-pm_wakeup_event()/pm_stay_awake() mechanism is not enabled.
+This set of patches reworks the handling of system wakeup interrupts so that
+suspend-to-idle is covered in the same way as full system suspend.
 
-For this purpose, introduce a new global variable pm_abort_suspend
-and make pm_wakeup_pending() check its value.  Also add routines
-for manipulating that variable.
+This time we have several new patches from Thomas and hopefully we're nailed
+down that thing at last.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/wakeup.c |   16 +++++++++++++++-
- include/linux/suspend.h     |    4 ++++
- kernel/power/process.c      |    1 +
- 3 files changed, 20 insertions(+), 1 deletion(-)
+[01/13] Mechanism to wake up the system or abort suspend in progress
+        automatically (this is different from the previous versions, because
+        I eventually convinced myself that pm_abort_suspend didn't really
+        require any locking).
+[02/13] Move PM-related IRQ code to kernel/irq/pm.c.
+[03/13] Add accounting for IRQF_NO_SUSPEND and IRQF_RESUME_EARLY.
+[04/13] Use the accoundint added by [03/13].
+[05/13] Make suspend_device_irqs() mask non-wakeup interruts if
+        IRQCHIP_MASK_ON_SUSPEND is set.
+[06/13] Synchronize IRQs in the same loop in which they are reconfigured
+        in suspend_device_irqs().
+[07/13] Separate irq_check_poll() checks from disabled/no action checks in
+        kernel/irq/chip.c.
+[08/13] Add a helper for checks made by many IRQ flow handlers in the same way.
+[09/13] Mark wakeup sources as "armed" on suspend (using a new flag).
+[10/13] Make suspend_device_irqs() leave wakeup interrupts enabled, but handle
+        them so that the first interrupt triggers system wakeup.
+[11/13] Set IRQCHIP_SKIP_SET_WAKE for x86 IOAPIC IRQ chips (same as before).
+[12/13] Make PCIe PME wake up from suspend to idle (same as before).
+[13/13] Document rules related to system suspend and interrupts (updated).
 
-Index: linux-pm/include/linux/suspend.h
-===================================================================
---- linux-pm.orig/include/linux/suspend.h
-+++ linux-pm/include/linux/suspend.h
-@@ -371,6 +371,8 @@ extern int unregister_pm_notifier(struct
- extern bool events_check_enabled;
- 
- extern bool pm_wakeup_pending(void);
-+extern void pm_system_wakeup(void);
-+extern void pm_wakeup_clear(void);
- extern bool pm_get_wakeup_count(unsigned int *count, bool block);
- extern bool pm_save_wakeup_count(unsigned int count);
- extern void pm_wakep_autosleep_enabled(bool set);
-@@ -418,6 +420,8 @@ static inline int unregister_pm_notifier
- #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
- 
- static inline bool pm_wakeup_pending(void) { return false; }
-+static inline void pm_system_wakeup(void) {}
-+static inline void pm_wakeup_clear(void) {}
- 
- static inline void lock_system_sleep(void) {}
- static inline void unlock_system_sleep(void) {}
-Index: linux-pm/drivers/base/power/wakeup.c
-===================================================================
---- linux-pm.orig/drivers/base/power/wakeup.c
-+++ linux-pm/drivers/base/power/wakeup.c
-@@ -24,6 +24,9 @@
-  */
- bool events_check_enabled __read_mostly;
- 
-+/* If set and the system is suspending, terminate the suspend. */
-+static bool pm_abort_suspend __read_mostly;
-+
- /*
-  * Combined counters of registered wakeup events and wakeup events in progress.
-  * They need to be modified together atomically, so it's better to use one
-@@ -719,7 +722,18 @@ bool pm_wakeup_pending(void)
- 		pm_print_active_wakeup_sources();
- 	}
- 
--	return ret;
-+	return ret || pm_abort_suspend;
-+}
-+
-+void pm_system_wakeup(void)
-+{
-+	pm_abort_suspend = true;
-+	freeze_wake();
-+}
-+
-+void pm_wakeup_clear(void)
-+{
-+	pm_abort_suspend = false;
- }
- 
- /**
-Index: linux-pm/kernel/power/process.c
-===================================================================
---- linux-pm.orig/kernel/power/process.c
-+++ linux-pm/kernel/power/process.c
-@@ -129,6 +129,7 @@ int freeze_processes(void)
- 	if (!pm_freezing)
- 		atomic_inc(&system_freezing_cnt);
- 
-+	pm_wakeup_clear();
- 	printk("Freezing user space processes ... ");
- 	pm_freezing = true;
- 	error = try_to_freeze_tasks(true);
+The series have been tested on MSI Wind, but more testing is welcome.
+
+There is a pm-genirq branch in the linux-pm.git tree containing these patches:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-genirq
+
+that can be pulled from.
+
+Kind regards,
+Rafael
