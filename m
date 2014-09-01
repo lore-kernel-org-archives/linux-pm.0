@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 07/13] genirq: Distangle edge handler entry
-Date: Mon, 01 Sep 2014 16:24:17 +0200
-Message-ID: <2736441.mjEfdRQtUX@vostro.rjw.lan>
+Subject: [PATCH 08/13] genirq: Create helper for flow handler entry check
+Date: Mon, 01 Sep 2014 16:24:57 +0200
+Message-ID: <1951365.DpvK0R7Nqk@vostro.rjw.lan>
 References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan> <2516134.pmOxkEuOOy@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,84 +15,108 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Thomas Gleixner <tglx@linutronix.de>
 
-If the interrupt is disabled or has no action, then we should not call
-the poll check. Separate the checks.
+All flow handlers - except the per cpu ones - check for an interrupt
+in progress and an eventual concurrent polling on another cpu.
+
+Create a helper function for the repeated code pattern.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/irq/chip.c |   39 +++++++++++++++++++++++++++++----------
- 1 file changed, 29 insertions(+), 10 deletions(-)
+ kernel/irq/chip.c |   48 ++++++++++++++++++++----------------------------
+ 1 file changed, 20 insertions(+), 28 deletions(-)
 
 Index: linux/kernel/irq/chip.c
 ===================================================================
 --- linux.orig/kernel/irq/chip.c
 +++ linux/kernel/irq/chip.c
-@@ -540,19 +540,29 @@ handle_edge_irq(unsigned int irq, struct
+@@ -342,6 +342,13 @@ static bool irq_check_poll(struct irq_de
+ 	return irq_wait_for_poll(desc);
+ }
+ 
++static bool irq_may_run(struct irq_desc *desc)
++{
++	if (!irqd_irq_inprogress(&desc->irq_data))
++		return true;
++	return irq_check_poll(desc);
++}
++
+ /**
+  *	handle_simple_irq - Simple and software-decoded IRQs.
+  *	@irq:	the interrupt number
+@@ -359,9 +366,8 @@ handle_simple_irq(unsigned int irq, stru
+ {
  	raw_spin_lock(&desc->lock);
  
+-	if (unlikely(irqd_irq_inprogress(&desc->irq_data)))
+-		if (!irq_check_poll(desc))
+-			goto out_unlock;
++	if (!irq_may_run(desc))
++		goto out_unlock;
+ 
  	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
-+
- 	/*
--	 * If we're currently running this IRQ, or its disabled,
--	 * we shouldn't process the IRQ. Mark it pending, handle
--	 * the necessary masking and go out
-+	 * If the handler is currently running, mark it pending,
-+	 * handle the necessary masking and go out
- 	 */
--	if (unlikely(irqd_irq_disabled(&desc->irq_data) ||
--		     irqd_irq_inprogress(&desc->irq_data) || !desc->action)) {
-+	if (unlikely(irqd_irq_inprogress(&desc->irq_data))) {
- 		if (!irq_check_poll(desc)) {
- 			desc->istate |= IRQS_PENDING;
- 			mask_ack_irq(desc);
- 			goto out_unlock;
- 		}
- 	}
-+
-+	/*
-+	 * If its disabled or no action available then mask it and get
-+	 * out of here.
-+	 */
-+	if (irqd_irq_disabled(&desc->irq_data) || !desc->action) {
+ 	kstat_incr_irqs_this_cpu(irq, desc);
+@@ -412,9 +418,8 @@ handle_level_irq(unsigned int irq, struc
+ 	raw_spin_lock(&desc->lock);
+ 	mask_ack_irq(desc);
+ 
+-	if (unlikely(irqd_irq_inprogress(&desc->irq_data)))
+-		if (!irq_check_poll(desc))
+-			goto out_unlock;
++	if (!irq_may_run(desc))
++		goto out_unlock;
+ 
+ 	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
+ 	kstat_incr_irqs_this_cpu(irq, desc);
+@@ -485,9 +490,8 @@ handle_fasteoi_irq(unsigned int irq, str
+ 
+ 	raw_spin_lock(&desc->lock);
+ 
+-	if (unlikely(irqd_irq_inprogress(&desc->irq_data)))
+-		if (!irq_check_poll(desc))
+-			goto out;
++	if (!irq_may_run(desc))
++		goto out;
+ 
+ 	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
+ 	kstat_incr_irqs_this_cpu(irq, desc);
+@@ -541,16 +545,10 @@ handle_edge_irq(unsigned int irq, struct
+ 
+ 	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
+ 
+-	/*
+-	 * If the handler is currently running, mark it pending,
+-	 * handle the necessary masking and go out
+-	 */
+-	if (unlikely(irqd_irq_inprogress(&desc->irq_data))) {
+-		if (!irq_check_poll(desc)) {
+-			desc->istate |= IRQS_PENDING;
+-			mask_ack_irq(desc);
+-			goto out_unlock;
+-		}
++	if (!irq_may_run(desc)) {
 +		desc->istate |= IRQS_PENDING;
 +		mask_ack_irq(desc);
 +		goto out_unlock;
-+	}
-+
- 	kstat_incr_irqs_this_cpu(irq, desc);
+ 	}
  
- 	/* Start handling the irq */
-@@ -601,18 +611,27 @@ void handle_edge_eoi_irq(unsigned int ir
- 	raw_spin_lock(&desc->lock);
+ 	/*
+@@ -612,15 +610,9 @@ void handle_edge_eoi_irq(unsigned int ir
  
  	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
-+
- 	/*
--	 * If we're currently running this IRQ, or its disabled,
--	 * we shouldn't process the IRQ. Mark it pending, handle
--	 * the necessary masking and go out
-+	 * If the handler is currently running, mark it pending,
-+	 * handle the necessary masking and go out
- 	 */
--	if (unlikely(irqd_irq_disabled(&desc->irq_data) ||
--		     irqd_irq_inprogress(&desc->irq_data) || !desc->action)) {
-+	if (unlikely(irqd_irq_inprogress(&desc->irq_data))) {
- 		if (!irq_check_poll(desc)) {
- 			desc->istate |= IRQS_PENDING;
- 			goto out_eoi;
- 		}
- 	}
-+
-+	/*
-+	 * If its disabled or no action available then mask it and get
-+	 * out of here.
-+	 */
-+	if (irqd_irq_disabled(&desc->irq_data) || !desc->action) {
+ 
+-	/*
+-	 * If the handler is currently running, mark it pending,
+-	 * handle the necessary masking and go out
+-	 */
+-	if (unlikely(irqd_irq_inprogress(&desc->irq_data))) {
+-		if (!irq_check_poll(desc)) {
+-			desc->istate |= IRQS_PENDING;
+-			goto out_eoi;
+-		}
++	if (!irq_may_run(desc)) {
 +		desc->istate |= IRQS_PENDING;
 +		goto out_eoi;
-+	}
-+
- 	kstat_incr_irqs_this_cpu(irq, desc);
+ 	}
  
- 	do {
+ 	/*
