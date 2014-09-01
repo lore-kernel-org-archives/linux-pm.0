@@ -1,51 +1,47 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Patch v3] 0/7] Remove mach-kirkwood
-Date: Tue, 02 Sep 2014 01:46:36 +0200
-Message-ID: <21386976.Th3DhM7uPl@vostro.rjw.lan>
-References: <1409417172-6846-1-git-send-email-andrew@lunn.ch> <1997148.5Fa3W8ZmXx@vostro.rjw.lan> <20140901140320.GE11312@lunn.ch>
+Subject: Re: [PATCH] powercap/rapl: lower warning level for domain detection
+Date: Tue, 02 Sep 2014 01:48:40 +0200
+Message-ID: <2181254.mWuCKKqmQW@vostro.rjw.lan>
+References: <1409288168-6537-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61624 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752250AbaIAX1T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Sep 2014 19:27:19 -0400
-In-Reply-To: <20140901140320.GE11312@lunn.ch>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1409288168-6537-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Jason Cooper <jason@lakedaemon.net>, linux ARM <linux-arm-kernel@lists.infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Monday, September 01, 2014 04:03:20 PM Andrew Lunn wrote:
-> On Mon, Sep 01, 2014 at 03:56:43PM +0200, Rafael J. Wysocki wrote:
-> > On Saturday, August 30, 2014 06:46:05 PM Andrew Lunn wrote:
-> > > This is mostly a resend of these patches, removing mach-kirkwood.  Not
-> > > all maintainers picked up there patches, which has resulted in some
-> > > dead kernel configuration in v3.17-rcX.
-> > > 
-> > > The patch set has been rebased on v3.17-rc2, and it is intended that
-> > > Jason Cooper will submit them for inclusion in an RC. Subsystem
-> > > maintainers do not need to do anything.
-> > > 
-> > > The last patch "cpufreq: Remove ARCH_KIRKWOOD dependency" is new,
-> > > since what it is removing was added during v3.16-rcX. It follows the
-> > > pattern of all the other patches.
-> > > 
-> > > Andrew Lunn (7):
-> > >   cpuidle: kirkwood: Remove ARCH_KIRKWOOD dependency
-> > >   ata: Remove ARCH_KIRKWOOD dependency
-> > >   thermal: Remove ARCH_KIRKWOOD dependency
-> > >   leds: Remove ARCH_KIRKWOOD dependency
-> > >   rtc: Remove ARCH_KIRKWOOD dependency
-> > >   watchdog: Remove ARCH_KIRKWOOD dependency
-> > >   cpufreq: Remove ARCH_KIRKWOOD dependency
-> > 
-> > I have no problems with these changes, but what exactly am I supposed to do?
+On Thursday, August 28, 2014 09:56:08 PM Jacob Pan wrote:
+> Many CPUs do not support complete set of RAPL domains, as a
+> result this detection failed message is very misleading and
+> annoying. So lower the warning message to info and reword.
 > 
-> Jason will submit the whole series. So an Acked-by: would be nice.
+> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-OK, so please regard the cpuidle and cpufreq patches as ACKed.
+What about printing a (info-level) message if the RAPL domain *is*
+supported?  That surely is more interesting?
 
-Rafael
+> ---
+>  drivers/powercap/intel_rapl.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index b1cda6f..0b282e7 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -1169,7 +1169,7 @@ static int rapl_detect_domains(struct rapl_package *rp, int cpu)
+>  		if (!rapl_check_domain(cpu, i))
+>  			rp->domain_map |= 1 << i;
+>  		else
+> -			pr_warn("RAPL domain %s detection failed\n",
+> +			pr_info("RAPL domain %s not supported\n",
+>  				rapl_domain_names[i]);
+>  	}
+>  	rp->nr_domains = bitmap_weight(&rp->domain_map,	RAPL_DOMAIN_MAX);
+> 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
