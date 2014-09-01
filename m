@@ -1,107 +1,119 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v8 4/8] arm64: kernel: introduce cpu_init_idle CPU operation
-Date: Mon,  1 Sep 2014 16:28:40 +0100
-Message-ID: <1409585324-3678-5-git-send-email-lorenzo.pieralisi@arm.com>
+Subject: [PATCH v8 6/8] drivers: cpuidle: CPU idle ARM64 driver
+Date: Mon,  1 Sep 2014 16:28:42 +0100
+Message-ID: <1409585324-3678-7-git-send-email-lorenzo.pieralisi@arm.com>
 References: <1409585324-3678-1-git-send-email-lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:58844 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:59237 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754428AbaIAP2s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Sep 2014 11:28:48 -0400
+	with ESMTP id S1754429AbaIAP2y (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Sep 2014 11:28:54 -0400
 In-Reply-To: <1409585324-3678-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <k.chander@samsung.com>, Geoff
 
-The CPUidle subsystem on ARM64 machines requires the idle states
-implementation back-end to initialize idle states parameter upon
-boot. This patch adds a hook in the CPU operations structure that
-should be initialized by the CPU operations back-end in order to
-provide a function that initializes cpu idle states.
+This patch implements a generic CPU idle driver for ARM64 machines.
 
-This patch also adds the infrastructure to arm64 kernel required
-to export the CPU operations based initialization interface, so
-that drivers (ie CPUidle) can use it when they are initialized
-at probe time.
+It relies on the DT idle states infrastructure to initialize idle
+states count and respective parameters. Current code assumes the driver
+is managing idle states on all possible CPUs but can be easily
+generalized to support heterogenous systems and build cpumasks at
+runtime using MIDRs or DT cpu nodes compatible properties.
 
+The driver relies on the arm64 CPU operations to call the idle
+initialization hook used to parse and save suspend back-end specific
+idle states information upon probing.
+
+Idle state index 0 is always initialized as a simple wfi state, ie always
+considered present and functional on all ARM64 platforms.
+
+Idle state indices higher than 0 trigger idle state entry by calling
+the cpu_suspend function, that triggers the suspend operation through
+the CPU operations suspend back-end hook. cpu_suspend passes the idle
+state index as a parameter so that the CPU operations suspend back-end
+can retrieve the required idle state data by using the idle state
+index to execute a look-up on its internal data structures.
+
+Reviewed-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
 Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 ---
- arch/arm64/include/asm/cpu_ops.h |  3 +++
- arch/arm64/include/asm/cpuidle.h | 13 +++++++++++++
- arch/arm64/kernel/Makefile       |  1 +
- arch/arm64/kernel/cpuidle.c      | 31 +++++++++++++++++++++++++++++++
- 4 files changed, 48 insertions(+)
- create mode 100644 arch/arm64/include/asm/cpuidle.h
- create mode 100644 arch/arm64/kernel/cpuidle.c
+ drivers/cpuidle/Kconfig         |   5 ++
+ drivers/cpuidle/Kconfig.arm64   |  14 +++++
+ drivers/cpuidle/Makefile        |   4 ++
+ drivers/cpuidle/cpuidle-arm64.c | 121 ++++++++++++++++++++++++++++++++++++=
+++++
+ 4 files changed, 144 insertions(+)
+ create mode 100644 drivers/cpuidle/Kconfig.arm64
+ create mode 100644 drivers/cpuidle/cpuidle-arm64.c
 
-diff --git a/arch/arm64/include/asm/cpu_ops.h b/arch/arm64/include/asm/cpu_=
-ops.h
-index d7b4b38..47dfa31 100644
---- a/arch/arm64/include/asm/cpu_ops.h
-+++ b/arch/arm64/include/asm/cpu_ops.h
-@@ -28,6 +28,8 @@ struct device_node;
-  *=09=09enable-method property.
-  * @cpu_init:=09Reads any data necessary for a specific enable-method from=
- the
-  *=09=09devicetree, for a given cpu node and proposed logical id.
-+ * @cpu_init_idle: Reads any data necessary to initialize CPU idle states =
-from
-+ *=09=09devicetree, for a given cpu node and proposed logical id.
-  * @cpu_prepare: Early one-time preparation step for a cpu. If there is a
-  *=09=09mechanism for doing so, tests whether it is possible to boot
-  *=09=09the given CPU.
-@@ -47,6 +49,7 @@ struct device_node;
- struct cpu_operations {
- =09const char=09*name;
- =09int=09=09(*cpu_init)(struct device_node *, unsigned int);
-+=09int=09=09(*cpu_init_idle)(struct device_node *, unsigned int);
- =09int=09=09(*cpu_prepare)(unsigned int);
- =09int=09=09(*cpu_boot)(unsigned int);
- =09void=09=09(*cpu_postboot)(void);
-diff --git a/arch/arm64/include/asm/cpuidle.h b/arch/arm64/include/asm/cpui=
-dle.h
-new file mode 100644
-index 0000000..b52a993
---- /dev/null
-+++ b/arch/arm64/include/asm/cpuidle.h
-@@ -0,0 +1,13 @@
-+#ifndef __ASM_CPUIDLE_H
-+#define __ASM_CPUIDLE_H
+diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+index 8deb934..c5029c1 100644
+--- a/drivers/cpuidle/Kconfig
++++ b/drivers/cpuidle/Kconfig
+@@ -33,6 +33,11 @@ depends on ARM
+ source "drivers/cpuidle/Kconfig.arm"
+ endmenu
+=20
++menu "ARM64 CPU Idle Drivers"
++depends on ARM64
++source "drivers/cpuidle/Kconfig.arm64"
++endmenu
 +
-+#ifdef CONFIG_CPU_IDLE
-+extern int cpu_init_idle(unsigned int cpu);
-+#else
-+static inline int cpu_init_idle(unsigned int cpu)
-+{
-+=09return -EOPNOTSUPP;
-+}
-+#endif
-+
-+#endif
-diff --git a/arch/arm64/kernel/Makefile b/arch/arm64/kernel/Makefile
-index 383d81d..be78980 100644
---- a/arch/arm64/kernel/Makefile
-+++ b/arch/arm64/kernel/Makefile
-@@ -27,6 +27,7 @@ arm64-obj-$(CONFIG_PERF_EVENTS)=09=09+=3D perf_regs.o
- arm64-obj-$(CONFIG_HW_PERF_EVENTS)=09+=3D perf_event.o
- arm64-obj-$(CONFIG_HAVE_HW_BREAKPOINT)=09+=3D hw_breakpoint.o
- arm64-obj-$(CONFIG_ARM64_CPU_SUSPEND)=09+=3D sleep.o suspend.o
-+arm64-obj-$(CONFIG_CPU_IDLE)=09=09+=3D cpuidle.o
- arm64-obj-$(CONFIG_JUMP_LABEL)=09=09+=3D jump_label.o
- arm64-obj-$(CONFIG_KGDB)=09=09+=3D kgdb.o
- arm64-obj-$(CONFIG_EFI)=09=09=09+=3D efi.o efi-stub.o efi-entry.o
-diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
+ menu "MIPS CPU Idle Drivers"
+ depends on MIPS
+ source "drivers/cpuidle/Kconfig.mips"
+diff --git a/drivers/cpuidle/Kconfig.arm64 b/drivers/cpuidle/Kconfig.arm64
 new file mode 100644
-index 0000000..19d17f5
+index 0000000..d0a08ed
 --- /dev/null
-+++ b/arch/arm64/kernel/cpuidle.c
-@@ -0,0 +1,31 @@
++++ b/drivers/cpuidle/Kconfig.arm64
+@@ -0,0 +1,14 @@
++#
++# ARM64 CPU Idle drivers
++#
++
++config ARM64_CPUIDLE
++=09bool "Generic ARM64 CPU idle Driver"
++=09select ARM64_CPU_SUSPEND
++=09select DT_IDLE_STATES
++=09help
++=09  Select this to enable generic cpuidle driver for ARM64.
++=09  It provides a generic idle driver whose idle states are configured
++=09  at run-time through DT nodes. The CPUidle suspend backend is
++=09  initialized by calling the CPU operations init idle hook
++=09  provided by architecture code.
+diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+index 002b653..4d177b9 100644
+--- a/drivers/cpuidle/Makefile
++++ b/drivers/cpuidle/Makefile
+@@ -23,6 +23,10 @@ obj-$(CONFIG_ARM_EXYNOS_CPUIDLE)        +=3D cpuidle-exy=
+nos.o
+ obj-$(CONFIG_MIPS_CPS_CPUIDLE)=09=09+=3D cpuidle-cps.o
+=20
+ ##########################################################################=
+#####
++# ARM64 drivers
++obj-$(CONFIG_ARM64_CPUIDLE)=09=09+=3D cpuidle-arm64.o
++
++##########################################################################=
+#####
+ # POWERPC drivers
+ obj-$(CONFIG_PSERIES_CPUIDLE)=09=09+=3D cpuidle-pseries.o
+ obj-$(CONFIG_POWERNV_CPUIDLE)=09=09+=3D cpuidle-powernv.o
+diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm6=
+4.c
+new file mode 100644
+index 0000000..d25fe6f
+--- /dev/null
++++ b/drivers/cpuidle/cpuidle-arm64.c
+@@ -0,0 +1,121 @@
 +/*
-+ * ARM64 CPU idle arch support
++ * ARM64 generic CPU idle driver.
 + *
 + * Copyright (C) 2014 ARM Ltd.
 + * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
@@ -111,26 +123,118 @@ index 0000000..19d17f5
 + * published by the Free Software Foundation.
 + */
 +
++#define pr_fmt(fmt) "CPUidle arm64: " fmt
++
++#include <linux/cpuidle.h>
++#include <linux/cpumask.h>
++#include <linux/cpu_pm.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
 +#include <linux/of.h>
-+#include <linux/of_device.h>
 +
 +#include <asm/cpuidle.h>
-+#include <asm/cpu_ops.h>
++#include <asm/suspend.h>
 +
-+int cpu_init_idle(unsigned int cpu)
++#include "dt_idle_states.h"
++
++/*
++ * arm64_enter_idle_state - Programs CPU to enter the specified state
++ *
++ * dev: cpuidle device
++ * drv: cpuidle driver
++ * idx: state index
++ *
++ * Called from the CPUidle framework to program the device to the
++ * specified target state selected by the governor.
++ */
++static int arm64_enter_idle_state(struct cpuidle_device *dev,
++=09=09=09=09  struct cpuidle_driver *drv, int idx)
 +{
-+=09int ret =3D -EOPNOTSUPP;
-+=09struct device_node *cpu_node =3D of_cpu_device_node_get(cpu);
++=09int ret;
 +
-+=09if (!cpu_node)
-+=09=09return -ENODEV;
++=09if (!idx) {
++=09=09cpu_do_idle();
++=09=09return idx;
++=09}
 +
-+=09if (cpu_ops[cpu] && cpu_ops[cpu]->cpu_init_idle)
-+=09=09ret =3D cpu_ops[cpu]->cpu_init_idle(cpu_node, cpu);
++=09ret =3D cpu_pm_enter();
++=09if (!ret) {
++=09=09/*
++=09=09 * Pass idle state index to cpu_suspend which in turn will
++=09=09 * call the CPU ops suspend protocol with idle index as a
++=09=09 * parameter.
++=09=09 */
++=09=09ret =3D cpu_suspend(idx);
 +
-+=09of_node_put(cpu_node);
-+=09return ret;
++=09=09cpu_pm_exit();
++=09}
++
++=09return ret ? -1 : idx;
 +}
++
++static struct cpuidle_driver arm64_idle_driver =3D {
++=09.name =3D "arm64_idle",
++=09.owner =3D THIS_MODULE,
++=09/*
++=09 * State at index 0 is standby wfi and considered standard
++=09 * on all ARM platforms. If in some platforms simple wfi
++=09 * can't be used as "state 0", DT bindings must be implemented
++=09 * to work around this issue and allow installing a special
++=09 * handler for idle state index 0.
++=09 */
++=09.states[0] =3D {
++=09=09.enter                  =3D arm64_enter_idle_state,
++=09=09.exit_latency           =3D 1,
++=09=09.target_residency       =3D 1,
++=09=09.power_usage=09=09=3D UINT_MAX,
++=09=09.flags                  =3D CPUIDLE_FLAG_TIME_VALID,
++=09=09.name                   =3D "WFI",
++=09=09.desc                   =3D "ARM64 WFI",
++=09}
++};
++
++static const struct of_device_id arm64_idle_state_match[] __initconst =3D =
+{
++=09{ .compatible =3D "arm,idle-state",
++=09  .data =3D arm64_enter_idle_state },
++=09{ },
++};
++
++/*
++ * arm64_idle_init
++ *
++ * Registers the arm64 specific cpuidle driver with the cpuidle
++ * framework. It relies on core code to parse the idle states
++ * and initialize them using driver data structures accordingly.
++ */
++static int __init arm64_idle_init(void)
++{
++=09int cpu, ret;
++=09struct cpuidle_driver *drv =3D &arm64_idle_driver;
++
++=09/*
++=09 * Initialize idle states data, starting at index 1.
++=09 * This driver is DT only, if no DT idle states are detected (ret =3D=
+=3D 0)
++=09 * let the driver initialization fail accordingly since there is no
++=09 * reason to initialize the idle driver if only wfi is supported.
++=09 */
++=09ret =3D dt_init_idle_driver(drv, arm64_idle_state_match, 1);
++=09if (ret <=3D 0)
++=09=09return ret;
++=09/*
++=09 * Call arch CPU operations in order to initialize
++=09 * idle states suspend back-end specific data
++=09 */
++=09for_each_possible_cpu(cpu) {
++=09=09ret =3D cpu_init_idle(cpu);
++=09=09if (ret)
++=09=09=09return ret;
++=09}
++
++=09return cpuidle_register(drv, NULL);
++}
++device_initcall(arm64_idle_init);
 --=20
 1.9.1
 
