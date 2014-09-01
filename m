@@ -1,196 +1,154 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 02/13] genirq: Move suspend/resume logic into irq/pm code
-Date: Mon, 01 Sep 2014 16:20:37 +0200
-Message-ID: <1504806.eH5pWVEYTM@vostro.rjw.lan>
+Subject: [PATCH 13/13] PM / genirq: Document rules related to system suspend and interrupts
+Date: Mon, 01 Sep 2014 16:29:24 +0200
+Message-ID: <2231626.6I7oDf1M2j@vostro.rjw.lan>
 References: <26580319.OZP7jvJnA9@vostro.rjw.lan> <5320472.coYotHR1d0@vostro.rjw.lan> <2516134.pmOxkEuOOy@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53639 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754045AbaIAOL1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Sep 2014 10:11:27 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <2516134.pmOxkEuOOy@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Aubrey Li <aubrey.li@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-No functional change. Preparatory patch for cleaning up the suspend
-abort functionality. Update the comments while at it.
+Add a document describing how IRQs are managed during system suspend
+and resume, how wakeup interrupts work and what the IRQF_NO_SUSPEND
+flag is supposed to be used for.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/irq/internals.h |    4 ++--
- kernel/irq/manage.c    |   28 +++++-----------------------
- kernel/irq/pm.c        |   44 ++++++++++++++++++++++++++++++++++++++------
- 3 files changed, 45 insertions(+), 31 deletions(-)
+ Documentation/power/suspend-and-interrupts.txt |  123 +++++++++++++++++++++++++
+ 1 file changed, 123 insertions(+)
 
-Index: linux/kernel/irq/internals.h
+Index: linux-pm/Documentation/power/suspend-and-interrupts.txt
 ===================================================================
---- linux.orig/kernel/irq/internals.h
-+++ linux/kernel/irq/internals.h
-@@ -63,8 +63,8 @@ enum {
- 
- extern int __irq_set_trigger(struct irq_desc *desc, unsigned int irq,
- 		unsigned long flags);
--extern void __disable_irq(struct irq_desc *desc, unsigned int irq, bool susp);
--extern void __enable_irq(struct irq_desc *desc, unsigned int irq, bool resume);
-+extern void __disable_irq(struct irq_desc *desc, unsigned int irq);
-+extern void __enable_irq(struct irq_desc *desc, unsigned int irq);
- 
- extern int irq_startup(struct irq_desc *desc, bool resend);
- extern void irq_shutdown(struct irq_desc *desc);
-Index: linux/kernel/irq/manage.c
-===================================================================
---- linux.orig/kernel/irq/manage.c
-+++ linux/kernel/irq/manage.c
-@@ -382,14 +382,8 @@ setup_affinity(unsigned int irq, struct
- }
- #endif
- 
--void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
-+void __disable_irq(struct irq_desc *desc, unsigned int irq)
- {
--	if (suspend) {
--		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND))
--			return;
--		desc->istate |= IRQS_SUSPENDED;
--	}
--
- 	if (!desc->depth++)
- 		irq_disable(desc);
- }
-@@ -401,7 +395,7 @@ static int __disable_irq_nosync(unsigned
- 
- 	if (!desc)
- 		return -EINVAL;
--	__disable_irq(desc, irq, false);
-+	__disable_irq(desc, irq);
- 	irq_put_desc_busunlock(desc, flags);
- 	return 0;
- }
-@@ -442,20 +436,8 @@ void disable_irq(unsigned int irq)
- }
- EXPORT_SYMBOL(disable_irq);
- 
--void __enable_irq(struct irq_desc *desc, unsigned int irq, bool resume)
-+void __enable_irq(struct irq_desc *desc, unsigned int irq)
- {
--	if (resume) {
--		if (!(desc->istate & IRQS_SUSPENDED)) {
--			if (!desc->action)
--				return;
--			if (!(desc->action->flags & IRQF_FORCE_RESUME))
--				return;
--			/* Pretend that it got disabled ! */
--			desc->depth++;
--		}
--		desc->istate &= ~IRQS_SUSPENDED;
--	}
--
- 	switch (desc->depth) {
- 	case 0:
-  err_out:
-@@ -497,7 +479,7 @@ void enable_irq(unsigned int irq)
- 		 KERN_ERR "enable_irq before setup/request_irq: irq %u\n", irq))
- 		goto out;
- 
--	__enable_irq(desc, irq, false);
-+	__enable_irq(desc, irq);
- out:
- 	irq_put_desc_busunlock(desc, flags);
- }
-@@ -1228,7 +1210,7 @@ __setup_irq(unsigned int irq, struct irq
- 	 */
- 	if (shared && (desc->istate & IRQS_SPURIOUS_DISABLED)) {
- 		desc->istate &= ~IRQS_SPURIOUS_DISABLED;
--		__enable_irq(desc, irq, false);
-+		__enable_irq(desc, irq);
- 	}
- 
- 	raw_spin_unlock_irqrestore(&desc->lock, flags);
-Index: linux/kernel/irq/pm.c
-===================================================================
---- linux.orig/kernel/irq/pm.c
-+++ linux/kernel/irq/pm.c
-@@ -13,13 +13,26 @@
- 
- #include "internals.h"
- 
-+static void suspend_device_irq(struct irq_desc *desc, int irq)
-+{
-+	if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND))
-+		return;
+--- /dev/null
++++ linux-pm/Documentation/power/suspend-and-interrupts.txt
+@@ -0,0 +1,123 @@
++System Suspend and Device Interrupts
 +
-+	desc->istate |= IRQS_SUSPENDED;
-+	__disable_irq(desc, irq);
-+}
++Copyright (C) 2014 Intel Corp.
++Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 +
- /**
-  * suspend_device_irqs - disable all currently enabled interrupt lines
-  *
-- * During system-wide suspend or hibernation device drivers need to be prevented
-- * from receiving interrupts and this function is provided for this purpose.
-- * It marks all interrupt lines in use, except for the timer ones, as disabled
-- * and sets the IRQS_SUSPENDED flag for each of them.
-+ * During system-wide suspend or hibernation device drivers need to be
-+ * prevented from receiving interrupts and this function is provided
-+ * for this purpose.
-+ *
-+ * So we disable all interrupts and mark them IRQS_SUSPENDED except
-+ * for those which are unused and those which are marked as not
-+ * suspendable via an interrupt request with the flag IRQF_NO_SUSPEND
-+ * set.
-  */
- void suspend_device_irqs(void)
- {
-@@ -30,7 +43,7 @@ void suspend_device_irqs(void)
- 		unsigned long flags;
- 
- 		raw_spin_lock_irqsave(&desc->lock, flags);
--		__disable_irq(desc, irq, true);
-+		suspend_device_irq(desc, irq);
- 		raw_spin_unlock_irqrestore(&desc->lock, flags);
- 	}
- 
-@@ -40,6 +53,25 @@ void suspend_device_irqs(void)
- }
- EXPORT_SYMBOL_GPL(suspend_device_irqs);
- 
-+static void resume_irq(struct irq_desc *desc, int irq)
-+{
-+	if (desc->istate & IRQS_SUSPENDED)
-+		goto resume;
 +
-+	if (!desc->action)
-+		return;
++Suspending and Resuming Device IRQs
++-----------------------------------
 +
-+	/* Interrupts marked with that flag are force reenabled */
-+	if (!(desc->action->flags & IRQF_FORCE_RESUME))
-+		return;
++Device interrupt request lines (IRQs) are generally disabled during system
++suspend after the "late" phase of suspending devices (that is, after all of the
++->prepare, ->suspend and ->suspend_late callbacks have been executed for all
++devices).  That is done by suspend_device_irqs().
 +
-+	/* Pretend that it got disabled ! */
-+	desc->depth++;
-+resume:
-+	desc->istate &= ~IRQS_SUSPENDED;
-+	__enable_irq(desc, irq);
-+}
++The rationale for doing so is that after the "late" phase of device suspend
++there is no legitimate reason why any interrupts from suspended devices should
++trigger and if any devices have not been suspended properly yet, it is better to
++block interrupts from them anyway.  Also, in the past we had problems with
++interrupt handlers for shared IRQs that device drivers implementing them were
++not prepared for interrupts triggering after their devices had been suspended.
++In some cases they would attempt to access, for example, memory address spaces
++of suspended devices and cause unpredictable behavior to ensue as a result.
++Unfortunately, such problems are very difficult to debug and the introduction
++of suspend_device_irqs(), along with the "noirq" phase of device suspend and
++resume, was the only practical way to mitigate them.
 +
- static void resume_irqs(bool want_early)
- {
- 	struct irq_desc *desc;
-@@ -54,7 +86,7 @@ static void resume_irqs(bool want_early)
- 			continue;
- 
- 		raw_spin_lock_irqsave(&desc->lock, flags);
--		__enable_irq(desc, irq, true);
-+		resume_irq(desc, irq);
- 		raw_spin_unlock_irqrestore(&desc->lock, flags);
- 	}
- }
-
++Device IRQs are re-enabled during system resume, right before the "early" phase
++of resuming devices (that is, before starting to execute ->resume_early
++callbacks for devices).  The function doing that is resume_device_irqs().
++
++
++The IRQF_NO_SUSPEND Flag
++------------------------
++
++There are interrupts that can legitimately trigger during the entire system
++suspend-resume cycle, including the "noirq" phases of suspending and resuming
++devices as well as during the time when nonboot CPUs are taken offline and
++brought back online.  That applies to timer interrupts in the first place,
++but also to IPIs and to some other special-purpose interrupts.
++
++The IRQF_NO_SUSPEND flag is used to indicate that to the IRQ subsystem when
++requesting a special-purpose interrupt.  It causes suspend_device_irqs() to
++leave the corresponding IRQ enabled so as to allow the interrupt to work all
++the time as expected.
++
++Note that the IRQF_NO_SUSPEND flag affects the entire IRQ and not just one
++user of it.  Thus, if the IRQ is shared, all of the interrupt handlers installed
++for it will be executed as usual after suspend_device_irqs(), even if the
++IRQF_NO_SUSPEND flag was not passed to request_irq() (or equivalent) by some of
++the IRQ's users.  For this reason, using IRQF_NO_SUSPEND and IRQF_SHARED at the
++same time should be avoided.
++
++
++System Wakeup Interrupts, enable_irq_wake() and disable_irq_wake()
++------------------------------------------------------------------
++
++System wakeup interrupts generally need to be configured to wake up the system
++from sleep states, especially if they are used for different purposes (e.g. as
++I/O interrupts) in the working state.
++
++That may involve turning on a special signal handling logic within the platform
++(such as an SoC) so that signals from a given line are routed in a different way
++during system sleep so as to trigger a system wakeup when needed.  For example,
++the platform may include a dedicated interrupt controller used specifically for
++handling system wakeup events.  Then, if a given interrupt line is supposed to
++wake up the system from sleep sates, the corresponding input of that interrupt
++controller needs to be enabled to receive signals from the line in question.
++After wakeup, it generally is better to disable that input to prevent the
++dedicated controller from triggering interrupts unnecessarily.
++
++The IRQ subsystem provides two helper functions to be used by device drivers for
++those purposes.  Namely, enable_irq_wake() turns on the platform's logic for
++handling the given IRQ as a system wakeup interrupt line and disable_irq_wake()
++turns that logic off.
++
++Calling enable_irq_wake() causes suspend_device_irqs() to treat the given IRQ
++in a special way.  Namely, the IRQ remains enabled, by on the first interrupt
++it will be disabled, marked as pending and "suspended" so that it will be
++re-enabled by resume_device_irqs() during the subsequent system resume.  Also
++the PM core is notified about the event which casues the system suspend in
++progress to be aborted (that doesn't have to happen immediately, but at one
++of the points where the suspend thread looks for pending wakeup events).
++
++This way every interrupt from a wakeup interrupt source will either cause the
++system suspend currently in progress to be aborted or wake up the system if
++already suspended.  However, after suspend_device_irqs() interrupt handlers are
++not executed for system wakeup IRQs.  They are only executed for IRQF_NO_SUSPEND
++IRQs at that time, but those IRQs should not be configured for system wakeup
++using enable_irq_wake().
++
++
++Interrupts and Suspend-to-Idle
++------------------------------
++
++Suspend-to-idle (also known as the "freeze" sleep state) is a relatively new
++system sleep state that works by idling all of the processors and waiting for
++interrupts right after the "noirq" phase of suspending devices.
++
++Of course, this means that all of the interrupts with the IRQF_NO_SUSPEND flag
++set will bring CPUs out of idle while in that state, but they will not cause the
++IRQ subsystem to trigger a system wakeup.
++
++System wakeup interrupts, in turn, will trigger wakeup from suspend-to-idle in
++analogy with what they do in the full system suspend case.  The only difference
++is that the wakeup from suspend-to-idle is signaled using the usual working
++state interrupt delivery mechanisms and doesn't require the platform to use
++any special interrupt handling logic for it to work.
++
++
++IRQF_NO_SUSPEND and enable_irq_wake()
++-------------------------------------
++
++There are no valid reasons to use both enable_irq_wake() and the IRQF_NO_SUSPEND
++flag on the same IRQ.
++
++First of all, if the IRQ is not shared, the rules for handling IRQF_NO_SUSPEND
++interrupts (interrupt handlers are invoked after suspend_device_irqs()) are
++directly at odds with the rules for handling system wakeup interrupts (interrupt
++handlers are not invoked after suspend_device_irqs()).
++
++Second, both enable_irq_wake() and IRQF_NO_SUSPEND apply to entire IRQs and not
++to individual interrupt handlers, so sharing an IRQ between a system wakeup
++interrupt source and an IRQF_NO_SUSPEND interrupt source does not make sense.
