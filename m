@@ -1,73 +1,51 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] powercap/rapl: add support for cpu model 0x3f
-Date: Tue, 2 Sep 2014 10:41:51 -0700
-Message-ID: <20140902104151.720c2ece@ultegra>
-References: <20140814142608.5A9A38004B@prod-mail-relay07.akamai.com>
-	<2447035.ZSkeOUhJMy@vostro.rjw.lan>
-	<5405D4D9.7050103@akamai.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] powercap/rapl: change domain detection message
+Date: Tue,  2 Sep 2014 02:55:21 -0700
+Message-ID: <1409651721-16746-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:49523 "EHLO mga02.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:42811 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754190AbaIBRpR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Sep 2014 13:45:17 -0400
-In-Reply-To: <5405D4D9.7050103@akamai.com>
+	id S1751666AbaIBRyz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Sep 2014 13:54:55 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jason Baron <jbaron@akamai.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>
+To: Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-On Tue, 02 Sep 2014 10:31:53 -0400
-Jason Baron <jbaron@akamai.com> wrote:
+Many CPUs do not support complete set of RAPL domains, as a
+result this detection failed message is very misleading and
+can be annoying.
 
-> Hi Rafael,
-> 
-> I think Jacob is ok with it:
-> 
-> https://lkml.org/lkml/2014/8/13/702
-> 
-> but he didn't give it a formal ack.
-> 
-Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+ [    5.082632] intel_rapl: RAPL domain core detection failed
+ [    5.088370] intel_rapl: RAPL domain uncore detection failed
 
-> Thanks,
-> 
-> -Jason
-> 
-> On 09/01/2014 07:49 PM, Rafael J. Wysocki wrote:
-> > On Thursday, August 14, 2014 02:26:08 PM Jason Baron wrote:
-> >> I've confirmed that monitoring the package power usage as well as
-> >> setting power limits appear to be working as expected. Supports
-> >> the package and dram domains.
-> >>
-> >> Tested aginst cpu:
-> >>
-> >> Intel(R) Xeon(R) CPU E5-2650 v3 @ 2.30GHz
-> >>
-> >> Signed-off-by: Jason Baron <jbaron@akamai.com>
-> > 
-> > Has this been ACKed by Jacob?
-> > 
-> >> ---
-> >>  drivers/powercap/intel_rapl.c | 1 +
-> >>  1 file changed, 1 insertion(+)
-> >>
-> >> diff --git a/drivers/powercap/intel_rapl.c
-> >> b/drivers/powercap/intel_rapl.c index b1cda6f..a362dcc 100644
-> >> --- a/drivers/powercap/intel_rapl.c
-> >> +++ b/drivers/powercap/intel_rapl.c
-> >> @@ -953,6 +953,7 @@ static const struct x86_cpu_id rapl_ids[] = {
-> >>  	{ X86_VENDOR_INTEL, 6, 0x3a},/* Ivy Bridge */
-> >>  	{ X86_VENDOR_INTEL, 6, 0x3c},/* Haswell */
-> >>  	{ X86_VENDOR_INTEL, 6, 0x3d},/* Broadwell */
-> >> +	{ X86_VENDOR_INTEL, 6, 0x3f},/* Haswell */
-> >>  	{ X86_VENDOR_INTEL, 6, 0x45},/* Haswell ULT */
-> >>  	/* TODO: Add more CPU IDs after testing */
-> >>  	{}
-> >>
-> > 
-> 
+So lower the warning message to info and only print out the RAPL
+domains that are supported.
 
-[Jacob Pan]
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ drivers/powercap/intel_rapl.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index b1cda6f..d32b7a6 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -1166,11 +1166,10 @@ static int rapl_detect_domains(struct rapl_package *rp, int cpu)
+ 
+ 	for (i = 0; i < RAPL_DOMAIN_MAX; i++) {
+ 		/* use physical package id to read counters */
+-		if (!rapl_check_domain(cpu, i))
++		if (!rapl_check_domain(cpu, i)) {
+ 			rp->domain_map |= 1 << i;
+-		else
+-			pr_warn("RAPL domain %s detection failed\n",
+-				rapl_domain_names[i]);
++			pr_info("Found RAPL domain %s\n", rapl_domain_names[i]);
++		}
+ 	}
+ 	rp->nr_domains = bitmap_weight(&rp->domain_map,	RAPL_DOMAIN_MAX);
+ 	if (!rp->nr_domains) {
+-- 
+2.0.0.5.gbce14aa
+
