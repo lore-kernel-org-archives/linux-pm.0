@@ -1,32 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: ppc-corenet: remove per-cpu variable 'cpu_mask'
-Date: Tue, 2 Sep 2014 12:19:26 +0530
-Message-ID: <CAKohpokQo=Jqgj2CzTH41WbD6F1GpdhksWdg0dm8WLN_CT5KkA@mail.gmail.com>
-References: <09092df3d8b03df99ee475357c5f5c9cc439c61c.1409629117.git.viresh.kumar@linaro.org>
-	<3d467a39ab1b96dc24ed8a71139d5e030239477f.1409629117.git.viresh.kumar@linaro.org>
-	<6a145a322bd64e14a2d94e8c40151bbe@BY2PR03MB570.namprd03.prod.outlook.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] PM / Domains: Make generic_pm_domain.name const
+Date: Tue, 2 Sep 2014 08:56:08 +0200
+Message-ID: <CAMuHMdU7XSaCY11jEx2Cq=zxYLY5T3n=GaRdXxf7u=H9--T_gA@mail.gmail.com>
+References: <1409318001-27586-1-git-send-email-geert+renesas@glider.be>
+	<7567220.FuQYiIRUM7@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f51.google.com ([209.85.218.51]:46919 "EHLO
-	mail-oi0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750887AbaIBGt1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Sep 2014 02:49:27 -0400
-Received: by mail-oi0-f51.google.com with SMTP id v63so4134334oia.38
-        for <linux-pm@vger.kernel.org>; Mon, 01 Sep 2014 23:49:26 -0700 (PDT)
-In-Reply-To: <6a145a322bd64e14a2d94e8c40151bbe@BY2PR03MB570.namprd03.prod.outlook.com>
+Received: from mail-la0-f51.google.com ([209.85.215.51]:50661 "EHLO
+	mail-la0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbaIBG4K (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Sep 2014 02:56:10 -0400
+In-Reply-To: <7567220.FuQYiIRUM7@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yuantian Tang <Yuantian.Tang@freescale.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Hongbo Zhang <hongbo.zhang@freescale.com>, "LeoLi@freescale.com" <LeoLi@freescale.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 2 September 2014 12:16, Yuantian Tang <Yuantian.Tang@freescale.com> wrote:
-> Hello Viresh:
+Hi Rafael,
+
+On Tue, Sep 2, 2014 at 1:50 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 >
-> Probably it is not right considering the CPU cluster and CPU hotplug case.
+> I'm going to apply this one.  Does anything depend on it?
 
-So in case of hotplug the worst that can happen is policy->cpu gets updated.
-But because we are all concerned about cpu_data here, which is stored in
-per-cpu variables and is updated for all online CPUs, it should work.
+Thanks. So far nothing depends on it.
 
-I would like to see how that fails :)
+>> ---
+>>  include/linux/pm_domain.h |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+>> index 7c1d252b20c0..ebc4c76ffb73 100644
+>> --- a/include/linux/pm_domain.h
+>> +++ b/include/linux/pm_domain.h
+>> @@ -60,7 +60,7 @@ struct generic_pm_domain {
+>>       struct mutex lock;
+>>       struct dev_power_governor *gov;
+>>       struct work_struct power_off_work;
+>> -     char *name;
+>> +     const char *name;
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
