@@ -1,118 +1,34 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 0/8] thermal: exynos: various cleanups
-Date: Fri, 29 Aug 2014 15:25:53 -0400
-Message-ID: <20140829192551.GA23645@developer>
-References: <1406826667-2289-1-git-send-email-b.zolnierkie@samsung.com>
- <20140828144921.GB18194@developer>
- <CADGdYn7NzwJKuO1DG2OJdWwd_keZbUJXY=+XeHhf1e+xcSvoVw@mail.gmail.com>
- <CAC-25o9ajcpusqUzxTXpVKgi6YBy3_9wZNihtm-9hKXn5OFgNw@mail.gmail.com>
+From: Ran Shalit <ranshalit@gmail.com>
+Subject: External devices
+Date: Tue, 2 Sep 2014 17:46:44 +0300
+Message-ID: <CAJ2oMhKRA+0Ge_m=-zFqgTxcZbuGMNAOvBQKP=_GyWRwvfsKFw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAC-25o9ajcpusqUzxTXpVKgi6YBy3_9wZNihtm-9hKXn5OFgNw@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: amit daniel kachhap <amit.daniel@samsung.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f48.google.com ([209.85.216.48]:58154 "EHLO
+	mail-qa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752121AbaIBOqp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Sep 2014 10:46:45 -0400
+Received: by mail-qa0-f48.google.com with SMTP id m5so6432823qaj.35
+        for <linux-pm@vger.kernel.org>; Tue, 02 Sep 2014 07:46:44 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Mon, Sep 01, 2014 at 07:05:27AM -0400, edubezval@gmail.com wrote:
-> Amit
-> 
-> On Mon, Sep 1, 2014 at 6:53 AM, amit daniel kachhap
-> <amit.daniel@samsung.com> wrote:
-> > On Thu, Aug 28, 2014 at 8:19 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
-> >> Amit,
-> >>
-> >> On Thu, Jul 31, 2014 at 07:10:58PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> >>> Hi,
-> >>>
-> >>> This patch series contains various cleanups for EXYNOS thermal
-> >>> driver.  Overall it decreases driver's LOC by 9%.  It is based
-> >>> on next-20140731 kernel.  It should not cause any functionality
-> >>> changes.
-> >>>
-> >>
-> >> Did you have the time to test this series?
-> >
-> > Hi Eduardo/Bartlomiej,
-> >
-> > For the whole series tested on exynos5250 based arndale board.
-> > Tested-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> >
-> 
-> Thanks! I will pull the series on my tree.
+Hello,
 
+I am new in the subject of PM, and though been trying to delve into it
+and reading, I still see it is hugh subject and still have many
+unresolved questions.
+I hope you can help me with some of them:
 
-Pulled into my next branch. Thanks.
+1. Are external devices can be integrated into the runtime
+suspend/resume , or are they outside the subject of PM ? for example I
+have external dsp connected to omap, can it be integrated to the PM ?
+If it is controled through character device how can it be tailored
+into the generic PM ?
+2. When the system moves to idle does it then automatically call all
+tuntime suspend of all devices ?
 
-> 
-> 
-> > Sorry for the delay as I was busy in some internal work.
-> >
-> > Thanks,
-> > Amit D
-> >>
-> >>> Changes since v2 (https://lkml.org/lkml/2014/6/17/436):
-> >>> - synced patches against next-20140731
-> >>> - dropped patch "thermal: exynos: remove dead code for
-> >>>   TYPE_TWO_POINT_TRIMMING calibration" (newly added Exynos3250
-> >>>   SoC support uses TYPE_TWO_POINT_TRIMMING calibration)
-> >>> - updated patch description for patch #2
-> >>> - dropped Reviewed-by from Amit from patch #8 (due to changed
-> >>>   scope of the patch)
-> >>>
-> >>> Changes since v1 (https://lkml.org/lkml/2014/5/5/194):
-> >>> - synced patches against next-20140617
-> >>> - merged patch "thermal: exynos: remove unused defines" into
-> >>>   "thermal: exynos: remove unused struct exynos_tmu_registers
-> >>>   entries" one (per request from Eduardo)
-> >>> - improved patch descriptions for patches #1-5
-> >>> - fixed documentation for pdata->gain and pdata->reference_voltage
-> >>> - added Reviewed-by from Amit to patches #6, #7 and #10
-> >>> - added missing Acked-by from Kyungmin Park
-> >>>
-> >>> Best regards,
-> >>> --
-> >>> Bartlomiej Zolnierkiewicz
-> >>> Samsung R&D Institute Poland
-> >>> Samsung Electronics
-> >>>
-> >>>
-> >>> Bartlomiej Zolnierkiewicz (8):
-> >>>   thermal: exynos: remove unused struct exynos_tmu_registers entries
-> >>>   thermal: exynos: remove dead code for HW_MODE calibration
-> >>>   thermal: exynos: remove redundant pdata checks from
-> >>>     exynos_tmu_initialize()
-> >>>   thermal: exynos: remove redundant threshold_code checks from
-> >>>     exynos_tmu_initialize()
-> >>>   thermal: exynos: simplify temp_to_code() and code_to_temp()
-> >>>   thermal: exynos: cache non_hw_trigger_levels in pdata
-> >>>   thermal: exynos: remove redundant pdata checks from
-> >>>     exynos_tmu_control()
-> >>>   thermal: exynos: remove identical values from exynos*_tmu_registers
-> >>>     structures
-> >>>
-> >>>  drivers/thermal/samsung/exynos_thermal_common.h |   1 -
-> >>>  drivers/thermal/samsung/exynos_tmu.c            | 126 +++++-------------------
-> >>>  drivers/thermal/samsung/exynos_tmu.h            |  74 +-------------
-> >>>  drivers/thermal/samsung/exynos_tmu_data.c       |  56 ++---------
-> >>>  drivers/thermal/samsung/exynos_tmu_data.h       |  31 +-----
-> >>>  5 files changed, 35 insertions(+), 253 deletions(-)
-> >>>
-> >>> --
-> >>> 1.8.2.3
-> >>>
-> >>> --
-> >>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> >>> the body of a message to majordomo@vger.kernel.org
-> >>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >> --
-> >> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
-> >> the body of a message to majordomo@vger.kernel.org
-> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-> 
-> -- 
-> Eduardo Bezerra Valentin
+Thanks very much,
+Ran
