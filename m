@@ -1,64 +1,63 @@
-From: "edubezval@gmail.com" <edubezval@gmail.com>
-Subject: Re: [Patch v3] 3/7] thermal: Remove ARCH_KIRKWOOD dependency
-Date: Tue, 2 Sep 2014 07:53:14 -0400
-Message-ID: <CAC-25o8UaK0gdysSk399Y29OAcQikDerc0b8xbzLiPjT44p0ew@mail.gmail.com>
-References: <1409417172-6846-1-git-send-email-andrew@lunn.ch>
-	<1409417172-6846-4-git-send-email-andrew@lunn.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f172.google.com ([209.85.217.172]:42119 "EHLO
-	mail-lb0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753140AbaIBLxP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Sep 2014 07:53:15 -0400
-Received: by mail-lb0-f172.google.com with SMTP id 10so7402649lbg.17
-        for <linux-pm@vger.kernel.org>; Tue, 02 Sep 2014 04:53:14 -0700 (PDT)
-In-Reply-To: <1409417172-6846-4-git-send-email-andrew@lunn.ch>
-Sender: linux-pm-owner@vger.kernel.org
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: [PATCH 0/8] ARM RealView DeviceTree support v5
+Date: Tue,  2 Sep 2014 14:02:26 +0200
+Message-ID: <1409659354-23553-1-git-send-email-linus.walleij@linaro.org>
+Return-path: <linux-leds-owner@vger.kernel.org>
+Sender: linux-leds-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Will Deacon <will.deacon@arm.com>, Rob Herring <robh@kernel.org>, Linus Walleij <linus.walleij@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Jason Cooper <jason@lakedaemon.net>, linux ARM <linux-arm-kernel@lists.infradead.org>, Zhang Rui <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Andrew,
+I've updated the RealView DeviceTree patch.
 
-On Sat, Aug 30, 2014 at 12:46 PM, Andrew Lunn <andrew@lunn.ch> wrote:
-> mach-kirkwood has been removed, now that kirkwood lives in mach-mvebu.
-> Depend on MACH_KIRKWOOD, which will be set when kirkwood is built as
-> part of ARCH_MVEBU.
->
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> ---
->  drivers/thermal/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 693208eb9047..ef5587fe2c69 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -143,7 +143,7 @@ config RCAR_THERMAL
->
->  config KIRKWOOD_THERMAL
->         tristate "Temperature sensor on Marvell Kirkwood SoCs"
-> -       depends on ARCH_KIRKWOOD || MACH_KIRKWOOD
-> +       depends on MACH_KIRKWOOD
+Main changes:
+- Push l2x0 setup into the device tree
+- Abstractify syscon LEDs
+- Abstractify syscon reboot
 
-I have no objections with this change. So, wrt thermal:
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
+Florian Fainelli (1):
+  ARM: l2c: parse 'cache-size' and 'cache-sets' properties
 
->         depends on OF
->         help
->           Support for the Kirkwood thermal sensor driver into the Linux thermal
-> --
-> 2.1.0
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Linus Walleij (7):
+  leds: add a driver for syscon-based LEDs
+  leds: add device tree bindings for register bit LEDs
+  power: reset: driver for the Versatile syscon reboot
+  soc: add driver for the ARM RealView
+  ARM: l2x0: move DT parsing for cache props
+  ARM: l2x0: support associativity from DT
+  ARM: realview: basic device tree implementation
 
-
+ Documentation/devicetree/bindings/arm/arm-boards   |  65 ++++++
+ Documentation/devicetree/bindings/arm/gic.txt      |   1 +
+ Documentation/devicetree/bindings/arm/l2cc.txt     |   3 +
+ .../devicetree/bindings/leds/register-bit-led.txt  |  99 +++++++++
+ arch/arm/boot/dts/Makefile                         |   1 +
+ arch/arm/boot/dts/arm-realview-pb1176.dts          | 246 +++++++++++++++++++++
+ arch/arm/mach-realview/Kconfig                     |  13 ++
+ arch/arm/mach-realview/Makefile                    |   1 +
+ arch/arm/mach-realview/realview-dt.c               |  47 ++++
+ arch/arm/mm/cache-l2x0.c                           |  82 ++++++-
+ drivers/irqchip/irq-gic.c                          |   2 +
+ drivers/leds/Kconfig                               |  10 +
+ drivers/leds/Makefile                              |   1 +
+ drivers/leds/leds-syscon.c                         | 165 ++++++++++++++
+ drivers/power/reset/Kconfig                        |   9 +
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/arm-versatile-reboot.c         | 111 ++++++++++
+ drivers/soc/Kconfig                                |   1 +
+ drivers/soc/Makefile                               |   1 +
+ drivers/soc/versatile/Kconfig                      |  10 +
+ drivers/soc/versatile/Makefile                     |   1 +
+ drivers/soc/versatile/soc-realview.c               | 144 ++++++++++++
+ 22 files changed, 1009 insertions(+), 5 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/leds/register-bit-led.txt
+ create mode 100644 arch/arm/boot/dts/arm-realview-pb1176.dts
+ create mode 100644 arch/arm/mach-realview/realview-dt.c
+ create mode 100644 drivers/leds/leds-syscon.c
+ create mode 100644 drivers/power/reset/arm-versatile-reboot.c
+ create mode 100644 drivers/soc/versatile/Kconfig
+ create mode 100644 drivers/soc/versatile/Makefile
+ create mode 100644 drivers/soc/versatile/soc-realview.c
 
 -- 
-Eduardo Bezerra Valentin
+1.9.3
