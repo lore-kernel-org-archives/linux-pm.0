@@ -1,146 +1,73 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] PM / sleep: Fix test_suspend= command line option
-Date: Tue, 02 Sep 2014 09:43:49 -0700
-Message-ID: <1409676229.15680.43.camel@spandruv-desktop.jf.intel.com>
-References: <3262231.p5bxWyAveH@vostro.rjw.lan>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH] powercap/rapl: add support for cpu model 0x3f
+Date: Tue, 2 Sep 2014 10:41:51 -0700
+Message-ID: <20140902104151.720c2ece@ultegra>
+References: <20140814142608.5A9A38004B@prod-mail-relay07.akamai.com>
+	<2447035.ZSkeOUhJMy@vostro.rjw.lan>
+	<5405D4D9.7050103@akamai.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:37451 "EHLO mga02.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:49523 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753889AbaIBQoi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Sep 2014 12:44:38 -0400
-In-Reply-To: <3262231.p5bxWyAveH@vostro.rjw.lan>
+	id S1754190AbaIBRpR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Sep 2014 13:45:17 -0400
+In-Reply-To: <5405D4D9.7050103@akamai.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Jason Baron <jbaron@akamai.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>
 
-On Tue, 2014-09-02 at 01:37 +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> After commit d431cbc53cb7 (PM / sleep: Simplify sleep states sysfs
-> interface code) the pm_states[] array is not populated initially,
-> which causes setup_test_suspend() to always fail and the suspend
-> testing during boot doesn't work any more.
-> 
-> Fix the problem by using pm_labels[] instead of pm_states[] in
-> setup_test_suspend() and storing a pointer to the label of the
-> sleep state to test rather than the number representing it,
-> because the connection between the state numbers and labels is
-> only established by suspend_set_ops().
-> 
-This is still causing panic when I applied to 3.17.rc2.
-Need further debug.
+On Tue, 02 Sep 2014 10:31:53 -0400
+Jason Baron <jbaron@akamai.com> wrote:
 
-Thanks,
-Srinivas
-
-> Fixes: d431cbc53cb7 (PM / sleep: Simplify sleep states sysfs interface code)
-> Reported-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  kernel/power/power.h        |    1 +
->  kernel/power/suspend.c      |    2 +-
->  kernel/power/suspend_test.c |   29 +++++++++++++++++------------
->  3 files changed, 19 insertions(+), 13 deletions(-)
+> Hi Rafael,
 > 
-> Index: linux-pm/kernel/power/power.h
-> ===================================================================
-> --- linux-pm.orig/kernel/power/power.h
-> +++ linux-pm/kernel/power/power.h
-> @@ -179,6 +179,7 @@ extern void swsusp_show_speed(struct tim
->  
->  #ifdef CONFIG_SUSPEND
->  /* kernel/power/suspend.c */
-> +extern const char *pm_labels[];
->  extern const char *pm_states[];
->  
->  extern int suspend_devices_and_enter(suspend_state_t state);
-> Index: linux-pm/kernel/power/suspend.c
-> ===================================================================
-> --- linux-pm.orig/kernel/power/suspend.c
-> +++ linux-pm/kernel/power/suspend.c
-> @@ -31,7 +31,7 @@
->  
->  #include "power.h"
->  
-> -static const char *pm_labels[] = { "mem", "standby", "freeze", };
-> +const char *pm_labels[] = { "mem", "standby", "freeze", NULL };
->  const char *pm_states[PM_SUSPEND_MAX];
->  
->  static const struct platform_suspend_ops *suspend_ops;
-> Index: linux-pm/kernel/power/suspend_test.c
-> ===================================================================
-> --- linux-pm.orig/kernel/power/suspend_test.c
-> +++ linux-pm/kernel/power/suspend_test.c
-> @@ -129,20 +129,20 @@ static int __init has_wakealarm(struct d
->   * at startup time.  They're normally disabled, for faster boot and because
->   * we can't know which states really work on this particular system.
->   */
-> -static suspend_state_t test_state __initdata = PM_SUSPEND_ON;
-> +static const char *test_state_label __initdata;
->  
->  static char warn_bad_state[] __initdata =
->  	KERN_WARNING "PM: can't test '%s' suspend state\n";
->  
->  static int __init setup_test_suspend(char *value)
->  {
-> -	suspend_state_t i;
-> +	int i;
->  
->  	/* "=mem" ==> "mem" */
->  	value++;
-> -	for (i = PM_SUSPEND_MIN; i < PM_SUSPEND_MAX; i++)
-> -		if (!strcmp(pm_states[i], value)) {
-> -			test_state = i;
-> +	for (i = 0; pm_labels[i]; i++)
-> +		if (!strcmp(pm_labels[i], value)) {
-> +			test_state_label = pm_labels[i];
->  			return 0;
->  		}
->  
-> @@ -158,13 +158,19 @@ static int __init test_suspend(void)
->  
->  	struct rtc_device	*rtc = NULL;
->  	struct device		*dev;
-> +	suspend_state_t test_state;
->  
->  	/* PM is initialized by now; is that state testable? */
-> -	if (test_state == PM_SUSPEND_ON)
-> -		goto done;
-> -	if (!pm_states[test_state]) {
-> -		printk(warn_bad_state, pm_states[test_state]);
-> -		goto done;
-> +	if (!test_state_label)
-> +		return 0;
-> +
-> +	for (test_state = PM_SUSPEND_MIN; test_state < PM_SUSPEND_MAX; test_state++)
-> +		if (!strcmp(test_state_label, pm_states[test_state]))
-> +			break;
-> +
-> +	if (test_state == PM_SUSPEND_MAX) {
-> +		printk(warn_bad_state, test_state_label);
-> +		return 0;
->  	}
->  
->  	/* RTCs have initialized by now too ... can we use one? */
-> @@ -173,13 +179,12 @@ static int __init test_suspend(void)
->  		rtc = rtc_class_open(dev_name(dev));
->  	if (!rtc) {
->  		printk(warn_no_rtc);
-> -		goto done;
-> +		return 0;
->  	}
->  
->  	/* go for it */
->  	test_wakealarm(rtc, test_state);
->  	rtc_class_close(rtc);
-> -done:
->  	return 0;
->  }
->  late_initcall(test_suspend);
+> I think Jacob is ok with it:
+> 
+> https://lkml.org/lkml/2014/8/13/702
+> 
+> but he didn't give it a formal ack.
+> 
+Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+
+> Thanks,
+> 
+> -Jason
+> 
+> On 09/01/2014 07:49 PM, Rafael J. Wysocki wrote:
+> > On Thursday, August 14, 2014 02:26:08 PM Jason Baron wrote:
+> >> I've confirmed that monitoring the package power usage as well as
+> >> setting power limits appear to be working as expected. Supports
+> >> the package and dram domains.
+> >>
+> >> Tested aginst cpu:
+> >>
+> >> Intel(R) Xeon(R) CPU E5-2650 v3 @ 2.30GHz
+> >>
+> >> Signed-off-by: Jason Baron <jbaron@akamai.com>
+> > 
+> > Has this been ACKed by Jacob?
+> > 
+> >> ---
+> >>  drivers/powercap/intel_rapl.c | 1 +
+> >>  1 file changed, 1 insertion(+)
+> >>
+> >> diff --git a/drivers/powercap/intel_rapl.c
+> >> b/drivers/powercap/intel_rapl.c index b1cda6f..a362dcc 100644
+> >> --- a/drivers/powercap/intel_rapl.c
+> >> +++ b/drivers/powercap/intel_rapl.c
+> >> @@ -953,6 +953,7 @@ static const struct x86_cpu_id rapl_ids[] = {
+> >>  	{ X86_VENDOR_INTEL, 6, 0x3a},/* Ivy Bridge */
+> >>  	{ X86_VENDOR_INTEL, 6, 0x3c},/* Haswell */
+> >>  	{ X86_VENDOR_INTEL, 6, 0x3d},/* Broadwell */
+> >> +	{ X86_VENDOR_INTEL, 6, 0x3f},/* Haswell */
+> >>  	{ X86_VENDOR_INTEL, 6, 0x45},/* Haswell ULT */
+> >>  	/* TODO: Add more CPU IDs after testing */
+> >>  	{}
+> >>
+> > 
 > 
 
-
+[Jacob Pan]
