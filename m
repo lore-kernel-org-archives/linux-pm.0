@@ -1,291 +1,68 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2 2/9] PM / Domains: Add generic OF-based power domain look-up
-Date: Tue, 2 Sep 2014 20:28:08 +0200
-Message-ID: <CAMuHMdWJ3kPE8=OAc=YV5iD=zDUaGMn6GH60g3dZzKLYLiJnww@mail.gmail.com>
-References: <1409215142-8218-1-git-send-email-ulf.hansson@linaro.org>
-	<1409215142-8218-3-git-send-email-ulf.hansson@linaro.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v3 3/4] irq: Allow multiple clients to register for irq
+ affinity notification
+Date: Tue, 2 Sep 2014 12:43:05 -0600
+Message-ID: <20140902184305.GB91995@ilina-mac.local>
+References: <1409170479-29955-1-git-send-email-lina.iyer@linaro.org>
+ <1409170479-29955-4-git-send-email-lina.iyer@linaro.org>
+ <alpine.DEB.2.10.1408272239190.3323@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1409215142-8218-3-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f170.google.com ([209.85.192.170]:36666 "EHLO
+	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753889AbaIBSnK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Sep 2014 14:43:10 -0400
+Received: by mail-pd0-f170.google.com with SMTP id r10so9221592pdi.15
+        for <linux-pm@vger.kernel.org>; Tue, 02 Sep 2014 11:43:09 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.10.1408272239190.3323@nanos>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: khilman@linaro.org, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, daniel.lezcano@linaro.org
 
-Hi Ulf, Tomasz,
-
-On Thu, Aug 28, 2014 at 10:38 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> From: Tomasz Figa <t.figa@samsung.com>
+On Wed, Aug 27 2014 at 14:56 -0600, Thomas Gleixner wrote:
+>On Wed, 27 Aug 2014, Lina Iyer wrote:
 >
-> This patch introduces generic code to perform power domain look-up using
-
-Should "power domain" be replaced by "PM domain" here (and everywhere else
-in this patch), too, cfr. Rafael's earlier comment?
-
-> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
-> @@ -0,0 +1,51 @@
-> +* Generic power domains
-> +
-> +System on chip designs are often divided into multiple power domains that
-> +can be used for power gating of selected IP blocks for power saving by
-> +reduced leakage current.
-> +
-> +This device tree binding can be used to bind power domain consumer devices
-> +with their power domains provided by power domain providers. A power domain
-> +provider can be represented by any node in the device tree and can provide
-> +one or more power domains. A consumer node can refer to the provider by
-> +a phandle and a set of phandle arguments (so called power domain specifier)
-
-specifiers
-
-> +of length specified by #power-domain-cells property in the power domain
-
-the #power-domain-cells property
-
-> +provider node.
-> +
-> +==Power domain providers==
-> +
-> +Required properties:
-> + - #power-domain-cells : Number of cells in a power domain specifier;
-> +   Typically 0 for nodes representing a single power domain and 1 for nodes
-> +   providing multiple power domains (e.g. power controllers), but can be
-> +   any value as specified by device tree binding documentation of particular
-> +   provider.
-> +
-> +Example:
-> +
-> +       power: power-controller@12340000 {
-> +               compatible = "foo,power-controller";
-> +               reg = <0x12340000 0x1000>;
-> +               #power-domain-cells = <1>;
-> +       };
-> +
-> +The node above defines a power controller that is a power domain provider
-> +and expects one cell as its phandle argument.
-> +
-> +==Power domain consumers==
-> +
-> +Required properties:
-> + - power-domains : A phandle and power domain specifier as defined by bindings
-> +                   of power controller specified by phandle.
-
-the power controller
-
-> +
-> +Example:
-> +
-> +       leaky-device@12350000 {
-> +               compatible = "foo,i-leak-current";
-> +               reg = <0x12350000 0x1000>;
-> +               power-domains = <&power 0>;
-> +       };
-> +
-> +The node above defines a typical power domain consumer device, which is located
-> +inside power domain with index 0 of power controller represented by node with
-
-the power domain ... the power controller ... the node
-
-> +label "power".
-
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-
-> +#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
-> +/*
-> + * Device Tree based power domain providers.
-> + *
-> + * The code below implements generic device tree based power domain providers
-> + * that bind device tree nodes with generic power domains registered in the
-> + * system.
-> + *
-> + * Any driver that registers generic power domains and need to support binding
-
-needs
-
-> + * of devices to these domains is supposed to register a power domain provider,
-> + * which maps a power domain specifier retrieved from device tree to a power
-
-the device tree
-
-> +/**
-> + * of_genpd_xlate_onecell() - Xlate function for providers using single index.
-
-a single index
-
-> + * @genpdspec: OF phandle args to map into a power domain
-> + * @data: xlate function private data - pointer to struct genpd_onecell_data
-> + *
-> + * This is a generic xlate function that can be used to model simple power
-> + * domain controllers that have one device tree node and provide multiple
-> + * power domains. A single cell is used as an index to an array of power
-
-an index into
-
-> + * domains specified in genpd_onecell_data struct when registering the
-
-the genpd_onecell_data struct
-
-> + * provider.
-> + */
-> +struct generic_pm_domain *of_genpd_xlate_onecell(
-> +                                       struct of_phandle_args *genpdspec,
-> +                                       void *data)
-> +{
-> +       struct genpd_onecell_data *genpd_data = data;
-> +       unsigned int idx = genpdspec->args[0];
-> +
-> +       if (genpdspec->args_count != 1)
-> +               return ERR_PTR(-EINVAL);
-> +
-> +       if (idx >= genpd_data->domain_num) {
-> +               pr_err("%s: invalid domain index %d\n", __func__, idx);
-
-%u for unsigned int idx
-
-> +               return ERR_PTR(-EINVAL);
-> +       }
-> +
-> +       return genpd_data->domains[idx];
-
-This assumes ->domains[] is a contiguous array.
-
-I'd add a NULL check here, to translate NULL to ERR_PTR(-Esomething),
-so it can support sparse power domain spaces.
-E.g. indexed by the "bit_shift" value of struct rmobile_pm_domain, which
-is the actual bit number to use to power up/down an R-Mobile domain.
-Different members of the R-Mobile family have different numbers of
-domains, and use more or less bits in the same power up/down registers.
-This would be similar to the sparse clock-indices handling in
-renesas,cpg-mstp-clocks.
-
-> +}
-> +EXPORT_SYMBOL_GPL(of_genpd_xlate_onecell);
-> +
-> +/**
-> + * of_genpd_add_provider() - Register a domain provider for a node
-> + * @np: Device node pointer associated with domain provider.
-
-the domain provider
-
-> +/**
-> + * of_genpd_del_provider() - Remove a previously registered domain provider
-> + * @np: Device node pointer associated with domain provider
-
-the domain provider
-
-> +/**
-> + * of_genpd_get_from_provider() - Look-up power domain
-> + * @genpdspec: OF phandle args to use for look-up
-> + *
-> + * Looks for domain provider under node specified by @genpdspec and if found
-
-a domain provider ... under the node
-
-> + * uses xlate function of the provider to map phandle args to a power domain.
-
-> +/**
-> + * genpd_dev_pm_attach - Attach a device to it's power domain using DT.
-
-its
-
-> + * @dev: Device to attach.
-
-> +/**
-> + * genpd_dev_pm_detach - Detach a device from it's power domain.
-
-its
-
-> + * @dev: Device to attach.
-> + *
-> + * Try to locate a corresponding generic power domain, which the device
-> + * then previously were attached to. If found the device is detached from
-
-"was attached to previously"?
-
-> + * the power domain.
-
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 7c1d252..5989758 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -310,4 +310,50 @@ static inline void pm_genpd_syscore_poweron(struct device *dev)
->         pm_genpd_syscore_switch(dev, false);
->  }
+>> PM QoS and other idle frameworks can do a better job of addressing power
+>> and performance requirements for a cpu, knowing the IRQs that are
+>> affine to that cpu. If a performance request is placed against serving
+>> the IRQ faster and if the IRQ is affine to a set of cpus, then setting
+>> the performance requirements only on those cpus help save power on the
+>> rest of the cpus. PM QoS framework is one such framework interested in
+>> knowing the smp_affinity of an IRQ and the change notificiation in this
+>> regard. QoS requests for the CPU_DMA_LATENCY constraint currently apply
+>> to all cpus, but when attached to an IRQ, can be applied only to the set
+>> of cpus that IRQ's smp_affinity is set to. This allows other cpus to
+>> enter deeper sleep states to save power. More than one framework/driver
+>> can be interested in such information.
 >
-> +/* OF power domain providers */
-> +struct of_device_id;
-> +
-> +struct genpd_onecell_data {
-> +       struct generic_pm_domain **domains;
-> +       unsigned int domain_num;
+>All you are describing is the fact, that there is only a single
+>notifier possible right now, but you completely miss to describe WHY
+>you need multiple ones.
+>
+>The existing notifier was introduced to tell the driver that the irq
+>affinity has changed, so it can move its buffers to the proper NUMA
+>node. So if that driver gets this information then it can tell the PM
+>QoS code that its affinity changed so that stuff can react
+>accordingly, right?
+>
+With the new PM QoS changes, multiple drivers would now be interested in
+knowing the smp_affinity changes of the same IRQ. PM QoS abstracts the
+notifier in the framework, so individual drivers dont have to register
+for notification themselves and handle affinity notifications. But PM
+QoS needs to coexist with NUMA and other arch drivers that need to
+modify based on their arch specific needs upon affinity change
+notifications.
+Modifying the IRQ notifications to list, benefits having a simpler
+mechanism to notify all arch drivers and frameworks like PM QoS.
 
-This is the number of domains: "num_domains"?
 
-> +};
-> +
-> +typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
-> +                                                  void *data);
-> +
-> +#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
-> +int of_genpd_add_provider(struct device_node *np, genpd_xlate_t xlate,
-> +                         void *data);
-> +void of_genpd_del_provider(struct device_node *np);
-> +
-> +struct generic_pm_domain *of_genpd_xlate_simple(
-> +                                       struct of_phandle_args *genpdspec,
-> +                                       void *data);
-> +struct generic_pm_domain *of_genpd_xlate_onecell(
-> +                                       struct of_phandle_args *genpdspec,
-> +                                       void *data);
-> +
-> +int genpd_dev_pm_attach(struct device *dev);
-> +int genpd_dev_pm_detach(struct device *dev);
-> +#else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
-> +static inline int of_genpd_add_provider(struct device_node *np,
-> +                                       genpd_xlate_t xlate, void *data)
-> +{
-> +       return 0;
-> +}
-> +static inline void of_genpd_del_provider(struct device_node *np) {}
-> +
-> +#define of_genpd_xlate_simple          NULL
-> +#define of_genpd_xlate_onecell         NULL
-> +
-> +static inline int genpd_dev_pm_attach(struct device *dev)
-> +{
-> +       return -ENODEV;
-> +}
-> +static inline int genpd_dev_pm_detach(struct device *dev)
-> +{
-> +       return -ENODEV;
-> +}
-> +#endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
-
-As of_genpd_add_provider() provides no compile-time type-checking for
-"void *data", I propose to prepend a double underscore to
-of_genpd_add_provider(), and to the xlate helpers of_genpd_xlate_simple()
-and of_genpd_xlate_onecell(), and provide type-checking wrappers:
-
-static inline int of_genpd_add_provider_simple(struct device_node *np,
-                                               struct generic_pm_domain *genpd)
-{
-        return __of_genpd_add_provider(np, __of_genpd_xlate_simple, genpd);
-}
-static inline int of_genpd_add_provider_onecell(struct device_node *np,
-                                                struct genpd_onecell_data *data)
-{
-        return __of_genpd_add_provider(np, __of_genpd_xlate_onecell, data);
-}
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+>This is going nowhere unless you provide a proper usecase and
+>arguments why this is necessary. Handwaving and I want a pony
+>arguments are not sufficient.
+>
+>Thanks,
+>
+>	tglx
