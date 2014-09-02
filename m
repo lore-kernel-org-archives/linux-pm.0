@@ -1,64 +1,42 @@
-From: Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH v2 0/9] Zynq PM updates
-Date: Tue,  2 Sep 2014 14:19:05 -0700
-Message-ID: <1409692754-13437-1-git-send-email-soren.brinkmann@xilinx.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Michal Simek <michal.simek-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+From: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Subject: [PATCH v2 2/9] Documentation: devicetree: Add binding for Synopsys DDR controller
+Date: Tue,  2 Sep 2014 14:19:07 -0700
+Message-ID: <1409692754-13437-3-git-send-email-soren.brinkmann@xilinx.com>
+References: <1409692754-13437-1-git-send-email-soren.brinkmann@xilinx.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:52021 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755305AbaIBVT1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Sep 2014 17:19:27 -0400
+In-Reply-To: <1409692754-13437-1-git-send-email-soren.brinkmann@xilinx.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michal Simek <michal.simek@xilinx.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 
-Hi all,
+Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+---
+ .../devicetree/bindings/memory-controllers/synopsys.txt       | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/memory-controllers/synopsys.txt
 
-here is v2 of this series. It's mostly the same and most changes are
-related to reformatting comments. The only functional change is in 'ARM=
-:
-zynq: PM: Enable DDR clock stop' which does no longer enable
-self-refresh too. It seems self-refresh is inflicting a non-negligible
-amount of latency that degrades memory performance if enabled throughou=
-t
-the whole run time.
-
-	Thanks,
-	S=C3=B6ren
-
-Daniel Lezcano (2):
-  ARM: zynq: Remove invalidate cache for cpu die
-  ARM: zynq: cpuidle: Remove pointless code
-
-Soren Brinkmann (7):
-  ARM: zynq: PM: Enable A9 internal clock gating feature
-  Documentation: devicetree: Add binding for Synopsys DDR controller
-  ARM: zynq: DT: Add DDRC node
-  ARM: zynq: PM: Enable DDR clock stop
-  ARM: zynq: Synchronise zynq_cpu_die/kill
-  ARM: zynq: Remove hotplug.c
-  ARM: zynq: Rename 'zynq_platform_cpu_die'
-
- .../bindings/memory-controllers/synopsys.txt       | 11 +++
- arch/arm/boot/dts/zynq-7000.dtsi                   |  5 ++
- arch/arm/mach-zynq/Makefile                        |  3 +-
- arch/arm/mach-zynq/common.c                        |  7 ++
- arch/arm/mach-zynq/common.h                        | 16 ++++-
- arch/arm/mach-zynq/hotplug.c                       | 47 +-----------
- arch/arm/mach-zynq/platsmp.c                       | 41 ++++++++++-
- arch/arm/mach-zynq/pm.c                            | 83 ++++++++++++++=
-++++++++
- arch/arm/mach-zynq/slcr.c                          | 43 ++++++++++-
- drivers/cpuidle/cpuidle-zynq.c                     | 10 +--
- 10 files changed, 205 insertions(+), 61 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/memory-controller=
-s/synopsys.txt
- create mode 100644 arch/arm/mach-zynq/pm.c
-
---=20
+diff --git a/Documentation/devicetree/bindings/memory-controllers/synopsys.txt b/Documentation/devicetree/bindings/memory-controllers/synopsys.txt
+new file mode 100644
+index 000000000000..f9c6454146b6
+--- /dev/null
++++ b/Documentation/devicetree/bindings/memory-controllers/synopsys.txt
+@@ -0,0 +1,11 @@
++Binding for Synopsys IntelliDDR Multi Protocol Memory Controller
++
++Required properties:
++ - compatible: Should be 'xlnx,zynq-ddrc-a05'
++ - reg: Base address and size of the controllers memory area
++
++Example:
++	memory-controller@f8006000 {
++		compatible = "xlnx,zynq-ddrc-a05";
++		reg = <0xf8006000 0x1000>;
++	};
+-- 
 2.1.0.1.g27b9230
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
