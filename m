@@ -1,44 +1,45 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 15/15] PM / Domains: Keep declaration of dev_power_governors together
-Date: Wed,  3 Sep 2014 12:52:31 +0200
-Message-ID: <1409741551-16437-16-git-send-email-ulf.hansson@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 00/15] PM / Domains: Cleanups and remove superfluous APIs
+Date: Wed, 03 Sep 2014 13:10:32 +0200
+Message-ID: <4774333.eJdjGCa2sL@wuerfel>
 References: <1409741551-16437-1-git-send-email-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <1409741551-16437-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-sh-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: linux-arm-kernel@lists.infradead.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Simon Horman <horms@verge.net.au>, Kevin Hilman <khilman@linaro.org>, Philipp Zabel <philipp.zabel@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-sh@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Mark Brown <broonie@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, linux-samsung-soc@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This is a pure code cleanup in the header file for the PM domain. No
-functional change.
+On Wednesday 03 September 2014 12:52:16 Ulf Hansson wrote:
+> 
+>  arch/arm/mach-exynos/exynos.c         |   1 -
+>  arch/arm/mach-s3c64xx/common.c        |   5 -
+>  arch/arm/mach-s3c64xx/common.h        |   7 -
+>  arch/arm/mach-s3c64xx/mach-anw6410.c  |   1 -
+>  arch/arm/mach-s3c64xx/mach-crag6410.c |   1 -
+>  arch/arm/mach-s3c64xx/mach-hmt.c      |   1 -
+>  arch/arm/mach-s3c64xx/mach-mini6410.c |   1 -
+>  arch/arm/mach-s3c64xx/mach-ncp.c      |   1 -
+>  arch/arm/mach-s3c64xx/mach-real6410.c |   1 -
+>  arch/arm/mach-s3c64xx/mach-smartq5.c  |   1 -
+>  arch/arm/mach-s3c64xx/mach-smartq7.c  |   1 -
+>  arch/arm/mach-s3c64xx/mach-smdk6400.c |   1 -
+>  arch/arm/mach-s3c64xx/mach-smdk6410.c |   1 -
+>  arch/arm/mach-s3c64xx/pm.c            |   7 -
+>  arch/arm/mach-shmobile/pm-r8a7779.c   |   1 -
+>  arch/arm/mach-shmobile/pm-rmobile.c   |   1 -
+>  drivers/base/power/domain.c           | 322 ++++------------------------------
+>  drivers/base/power/domain_governor.c  |   7 +-
+>  drivers/sh/pm_runtime.c               |  11 --
+>  include/linux/pm_domain.h             |  56 +-----
+>  20 files changed, 40 insertions(+), 388 deletions(-)
+> 
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- include/linux/pm_domain.h | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Wow, great diffstat!
 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index ebf52ae..324b927 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -117,8 +117,6 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
- 	return to_gpd_data(dev->power.subsys_data->domain_data);
- }
- 
--extern struct dev_power_governor simple_qos_governor;
--
- extern struct generic_pm_domain *dev_to_genpd(struct device *dev);
- extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
- 				 struct device *dev,
-@@ -151,6 +149,7 @@ extern void pm_genpd_init(struct generic_pm_domain *genpd,
- extern int pm_genpd_poweron(struct generic_pm_domain *genpd);
- extern int pm_genpd_name_poweron(const char *domain_name);
- 
-+extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
- #else
- 
--- 
-1.9.1
+I have no idea what this series really does, but I love it ;-)
 
+	Arnd
