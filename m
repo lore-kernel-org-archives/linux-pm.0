@@ -1,92 +1,77 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: ppc-corenet: remove per-cpu variable 'cpu_mask'
-Date: Wed, 3 Sep 2014 15:20:24 +0530
-Message-ID: <CAKohpo=Pb88SBg0HwrAtzfRkG5Z9HgsapSmA1PbmqqvP-wQ1qw@mail.gmail.com>
-References: <09092df3d8b03df99ee475357c5f5c9cc439c61c.1409629117.git.viresh.kumar@linaro.org>
-	<3d467a39ab1b96dc24ed8a71139d5e030239477f.1409629117.git.viresh.kumar@linaro.org>
-	<6a145a322bd64e14a2d94e8c40151bbe@BY2PR03MB570.namprd03.prod.outlook.com>
-	<CAKohpokQo=Jqgj2CzTH41WbD6F1GpdhksWdg0dm8WLN_CT5KkA@mail.gmail.com>
-	<9fde1bf81522480484897416019b0ee9@BY2PR03MB570.namprd03.prod.outlook.com>
-	<CAKohpo=skCssnm0AZi2rMDUTKg0Xo0p9Sz0KwO1iuapLks=nyg@mail.gmail.com>
-	<d9f1dbc51c9d408ea593d11a95a36ee4@BY2PR03MB570.namprd03.prod.outlook.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/3] sched: Add new API wake_up_if_idle() to wake up the
+ idle cpu
+Date: Wed, 3 Sep 2014 11:51:48 +0200
+Message-ID: <20140903095148.GH4783@worktop.ger.corp.intel.com>
+References: <1408351052-25075-1-git-send-email-chuansheng.liu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f52.google.com ([209.85.218.52]:60140 "EHLO
-	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751573AbaICJuZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 05:50:25 -0400
-Received: by mail-oi0-f52.google.com with SMTP id e131so5367575oig.11
-        for <linux-pm@vger.kernel.org>; Wed, 03 Sep 2014 02:50:24 -0700 (PDT)
-In-Reply-To: <d9f1dbc51c9d408ea593d11a95a36ee4@BY2PR03MB570.namprd03.prod.outlook.com>
+Received: from casper.infradead.org ([85.118.1.10]:38986 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751573AbaICJvw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 05:51:52 -0400
+Content-Disposition: inline
+In-Reply-To: <1408351052-25075-1-git-send-email-chuansheng.liu@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yuantian Tang <Yuantian.Tang@freescale.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "LeoLi@freescale.com" <LeoLi@freescale.com>, Hongtao Jia <hongtao.jia@freescale.com>
+To: Chuansheng Liu <chuansheng.liu@intel.com>
+Cc: luto@amacapital.net, daniel.lezcano@linaro.org, rjw@rjwysocki.net, mingo@redhat.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, changcheng.liu@intel.com, xiaoming.wang@intel.com, souvik.k.chakravarty@intel.com
 
-On 3 September 2014 13:32, Yuantian Tang <Yuantian.Tang@freescale.com> wrote:
-> Test confirmed what I am concerned. Patch 1 is working but patch 2 didn't working in hotplug case.
-> (tested on t4240 platform with 3 cluster and 8 cpus in each cluster, kernel version is 3.12).
+On Mon, Aug 18, 2014 at 04:37:30PM +0800, Chuansheng Liu wrote:
+> Implementing one new API wake_up_if_idle(), which is used to
+> wake up the idle CPU.
+> 
+> Suggested-by: Andy Lutomirski <luto@amacapital.net>
+> Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+> ---
+>  include/linux/sched.h |    1 +
+>  kernel/sched/core.c   |   16 ++++++++++++++++
+>  2 files changed, 17 insertions(+)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 857ba40..3f89ac1 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1024,6 +1024,7 @@ struct sched_domain_topology_level {
+>  extern struct sched_domain_topology_level *sched_domain_topology;
+>  
+>  extern void set_sched_topology(struct sched_domain_topology_level *tl);
+> +extern void wake_up_if_idle(int cpu);
+>  
+>  #ifdef CONFIG_SCHED_DEBUG
+>  # define SD_INIT_NAME(type)		.name = #type
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 1211575..adf104f 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -1620,6 +1620,22 @@ static void ttwu_queue_remote(struct task_struct *p, int cpu)
+>  	}
+>  }
+>  
+> +void wake_up_if_idle(int cpu)
+> +{
+> +	struct rq *rq = cpu_rq(cpu);
+> +	unsigned long flags;
+> +
+> +	if (set_nr_if_polling(rq->idle)) {
+> +		trace_sched_wake_idle_without_ipi(cpu);
+> +	} else {
+> +		raw_spin_lock_irqsave(&rq->lock, flags);
+> +		if (rq->curr == rq->idle)
 
-:(
+That needs to be is_idle_task(), there might be other 'idle' tasks than
+rq->idle :/
 
-> Log is as follows:
-> root@t4240rdb:~# cd /sys/devices/system/
-> root@t4240rdb:/sys/devices/system# ls
-> clockevents  clocksource  cpu  edac
-> root@t4240rdb:/sys/devices/system# cd cpu/
-> root@t4240rdb:/sys/devices/system/cpu# ls
-> cpu0  cpu1  cpu10  cpu11  cpu12  cpu13  cpu14  cpu15  cpu16  cpu17  cpu18  cpu19  cpu2  cpu20  cpu21  cpu22  cpu23  cpu3  cpu4cpu5  cpu6  cpu7  cpu8  cpu9  kernel_max  offline  online  possible  present  probe  release  uevent
-> root@t4240rdb:/sys/devices/system/cpu# cat cpu8/
-> altivec_idle            altivec_idle_wait_time  cache/                  cpufreq/                online                  physical_id             pir                     pw20_state              pw20_wait_time          smt_snooze_delay        subsystem/              topology/               uevent
-> root@t4240rdb:/sys/devices/system/cpu# cat cpu8/cpufreq/affected_cpus
-> 8 9 10 11 12 13 14 15
-> root@t4240rdb:/sys/devices/system/cpu# echo 0 > cpu8/online
-> Cannot set affinity for irq 467
-> root@t4240rdb:/sys/devices/system/cpu# echo 0 > cpu9/online
-> root@t4240rdb:/sys/devices/system/cpu# cat cpu10/cpufreq/affected_cpus
-> 10 11 12 13 14 15
-> root@t4240rdb:/sys/devices/system/cpu# echo 0 > cpu10/online
-> root@t4240rdb:/sys/devices/system/cpu# echo 0 > cpu11/online
-> root@t4240rdb:/sys/devices/system/cpu# echo 0 > cpu12/online
-> root@t4240rdb:/sys/devices/system/cpu# echo 0 > cpu13/online
-> root@t4240rdb:/sys/devices/system/cpu# echo 0 > cpu14/online
-> root@t4240rdb:/sys/devices/system/cpu# echo 0 > cpu15/online
-> root@t4240rdb:/sys/devices/system/cpu# echo 1 > cpu9/online
-> smp_85xx_kick_cpu: Can not start CPU #9. Start CPU #8 first.
-> smp: failed starting cpu 9 (rc -2)
-> -sh: echo: write error: No such file or directory
-
-I don't understand how is this related to my patch? And the successful sequence
-below has CPU14 here instead of 8.. So this error might come without my
-patch as well if this sequence is followed..
-
-> root@t4240rdb:/sys/devices/system/cpu# echo 1 > cpu10/online
-> root@t4240rdb:/sys/devices/system/cpu# cat cpu10/cpufreq/affected_cpus
-> 10
-> root@t4240rdb:/sys/devices/system/cpu# echo 1 > cpu11/online
-> sysfs: cannot create duplicate filename '/devices/system/cpu/cpu10/cpufreq'
-> ------------[ cut here ]------------
-> WARNING: at fs/sysfs/dir.c:526
-
-I think I know why this happened.
-
-Does cpu_core_mask() gives mask of ONLY Online CPUs ? I *strongly* believe
-YES looking at above crash.
-
-If we can change that with some other routine which gives mask of all
-(online+offline)
-CPUs then this crash might go away..
-
-Because of that, I believe there is another problem in your driver even without
-my patch. Do this to get similar crash:
-
-- build driver as module and don't load it by default
-- boot your system
-- offline CPUs 8 to 15 as you did above.
-- insert module
-- try to online cores as you did above.
-
---
-viresh
+> +			smp_send_reschedule(cpu);
+> +		/* Else cpu is not in idle, do nothing here */
+> +		raw_spin_unlock_irqrestore(&rq->lock, flags);
+> +	}
+> +}
+> +
+>  bool cpus_share_cache(int this_cpu, int that_cpu)
+>  {
+>  	return per_cpu(sd_llc_id, this_cpu) == per_cpu(sd_llc_id, that_cpu);
+> -- 
+> 1.7.9.5
+> 
