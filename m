@@ -1,165 +1,38 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v8 4/8] arm64: kernel: introduce cpu_init_idle CPU
- operation
-Date: Wed, 3 Sep 2014 18:46:45 +0100
-Message-ID: <20140903174645.GK1824@e102568-lin.cambridge.arm.com>
-References: <1409585324-3678-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1409585324-3678-5-git-send-email-lorenzo.pieralisi@arm.com>
- <20140903173437.GI92149@ilina-mac.local>
+From: Husam Al Sayed <oscar55@post.sk>
+Subject: FROM: Husam Al Sayed.
+Date: Wed, 3 Sep 2014 20:52:10 +0200 (CEST)
+Message-ID: <1570058782.347268.1409770330215.JavaMail.root@mbox05>
+Reply-To: "alsayedhusa@hotmail.com" <alsayedhusa@hotmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:47310 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbaICRqw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 13:46:52 -0400
-In-Reply-To: <20140903173437.GI92149@ilina-mac.local>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <target-devel-owner@vger.kernel.org>
+Sender: target-devel-owner@vger.kernel.org
+Cc: target-devel@vger.kernel.org, bsingharora@gmail.com, jhs@mojatatu.com, hswong3i@gmail.com, hlhung3i@gmail.com, mkrufky@linuxtv.org, jiri@resnulli.us, kernel@savoirfairelinux.com, sean@mess.org, linux-tegra@vger.kernel.org, pdeschrijver@nvidia.com, pgaikwad@nvidia.com, hdoyu@nvidia.com, riyer@nvidia.com, swarren@wwwdotorg.org, thierry.reding@gmail.com, ldewangan@nvidia.com, andy@greyhouse.net, mark.gross@intel.com, chris@zankel.net, jcmvbkbc@gmail.com, linux-xtensa@linux-xtensa.org, rui.zhang@intel.com, vivien.didelot@savoirfairelinux.com, ibm-acpi@hmh.eng.br, ibm-acpi-devel@lists.sourceforge.net, eduardo.valentin@ti.com, linux-pm@vger.kernel.org, oakad@yahoo.com, mr.swami.reddy@ti.com
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@sam>
 
-On Wed, Sep 03, 2014 at 06:34:37PM +0100, Lina Iyer wrote:
-> On Mon, Sep 01 2014 at 09:28 -0600, Lorenzo Pieralisi wrote:
-> >The CPUidle subsystem on ARM64 machines requires the idle states
-> >implementation back-end to initialize idle states parameter upon
-> >boot. This patch adds a hook in the CPU operations structure that
-> >should be initialized by the CPU operations back-end in order to
-> >provide a function that initializes cpu idle states.
-> >
-> >This patch also adds the infrastructure to arm64 kernel required
-> >to export the CPU operations based initialization interface, so
-> >that drivers (ie CPUidle) can use it when they are initialized
-> >at probe time.
-> >
-> I like the change for ARM64.
-> However, that raises a question, how do I have the same driver that
-> should get probed by a platform device (on 32 bit ARM) and getting called
-> from cpu_init_idle on ARM64?
+FROM: Husam Al Sayed.
 
-I am not following you sorry. The ARM64 CPUidle driver calls the arm64
-cpu_init_idle hooks to initialize idle states (in a generic way from
-a driver perspective), not the other way around.
+EMAIL:alsayedhusa@hotmail.com
+ 
+Hello,
+ 
+I decided to write you this proposal in good faith, believing that you will
+not betray me. I am Mr. Husam Al Sayed, a Bank officer here in U.A.E.
+ 
+One Mr. Peter Adams, a citizen of your country and Crude Oil dealer made a fixed deposit with my bank in 2005 for 108 calendar months, valued at US$30,000,000.00 (Thirty Million United State Dollars) the due date for this deposit contract was last 22nd of January 2014. Sadly Peter was among the death victims in the May 27 2006 Earthquake disaster in Java, Indonesia that killed over 5,000 people. He was in Indonesia on a business trip and that was how he met his untimely end. My bank management is yet to know about his death, I knew about it because he was my friend and I am his Account Officer. Peter did not mention any Next of Kin/ Heir when the account was opened, he was not married and no children. Last week my Bank Management requested that Peter should give instructions on what to do 
+ about his funds, if to renew the contract.
+ 
+I know this will happen and that is why I have been looking for a means to handle the situation, because if my Bank Directors happens to know that Peter is dead and do not have any Heir, they will take the funds for their personal use, so I don't want such to happen. That is why I am seeking your co-operation to present you as the Next of Kin/ Heir to the account, since you are a foreigner and my bank head quarters will release the account to you. There is no risk involved; the transaction will be executed under a legitimate arrangement that will protect us from any breach of law. It is better that we claim the money, than allowing the Bank Directors to take it, they are rich already. I am not a greedy person, so I am suggesting we share the funds in this ratio, 50/50%, equal sharing. Let 
+ me know your mind on this and please do treat this information highly confidential. We shall go over the details once I receive your urgent response. Please Urgently get back to me through this email address as soon as possible:
+ 
+ 
+ 
+Have a nice day and God bless. Anticipating your communication.
+ 
+Regards,
+FROM: Husam Al Sayed.
+EMAIL: alsayedhusa@hotmail.com
+_____________________________________________________________________
 
-On ARM64 your idle driver rely on an arm64 suspend back-end (eg PSCI) to
-enter idle states, it works in a different way from ARM, on purpose.
-
-Have a look at what the code does, it won't be the same driver that's
-for certain, since on arm64 I do not want to cope with per-platform
-CPUidle state enter functions anymore, the arm64 cpu_ops suspend hook
-implements the idle state enter method.
-
-Lorenzo
-
-> >Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-> >Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> >---
-> > arch/arm64/include/asm/cpu_ops.h |  3 +++
-> > arch/arm64/include/asm/cpuidle.h | 13 +++++++++++++
-> > arch/arm64/kernel/Makefile       |  1 +
-> > arch/arm64/kernel/cpuidle.c      | 31 +++++++++++++++++++++++++++++++
-> > 4 files changed, 48 insertions(+)
-> > create mode 100644 arch/arm64/include/asm/cpuidle.h
-> > create mode 100644 arch/arm64/kernel/cpuidle.c
-> >
-> >diff --git a/arch/arm64/include/asm/cpu_ops.h b/arch/arm64/include/asm/cpu_ops.h
-> >index d7b4b38..47dfa31 100644
-> >--- a/arch/arm64/include/asm/cpu_ops.h
-> >+++ b/arch/arm64/include/asm/cpu_ops.h
-> >@@ -28,6 +28,8 @@ struct device_node;
-> >  *		enable-method property.
-> >  * @cpu_init:	Reads any data necessary for a specific enable-method from the
-> >  *		devicetree, for a given cpu node and proposed logical id.
-> >+ * @cpu_init_idle: Reads any data necessary to initialize CPU idle states from
-> >+ *		devicetree, for a given cpu node and proposed logical id.
-> >  * @cpu_prepare: Early one-time preparation step for a cpu. If there is a
-> >  *		mechanism for doing so, tests whether it is possible to boot
-> >  *		the given CPU.
-> >@@ -47,6 +49,7 @@ struct device_node;
-> > struct cpu_operations {
-> > 	const char	*name;
-> > 	int		(*cpu_init)(struct device_node *, unsigned int);
-> >+	int		(*cpu_init_idle)(struct device_node *, unsigned int);
-> > 	int		(*cpu_prepare)(unsigned int);
-> > 	int		(*cpu_boot)(unsigned int);
-> > 	void		(*cpu_postboot)(void);
-> >diff --git a/arch/arm64/include/asm/cpuidle.h b/arch/arm64/include/asm/cpuidle.h
-> >new file mode 100644
-> >index 0000000..b52a993
-> >--- /dev/null
-> >+++ b/arch/arm64/include/asm/cpuidle.h
-> >@@ -0,0 +1,13 @@
-> >+#ifndef __ASM_CPUIDLE_H
-> >+#define __ASM_CPUIDLE_H
-> >+
-> >+#ifdef CONFIG_CPU_IDLE
-> >+extern int cpu_init_idle(unsigned int cpu);
-> >+#else
-> >+static inline int cpu_init_idle(unsigned int cpu)
-> >+{
-> >+	return -EOPNOTSUPP;
-> >+}
-> >+#endif
-> >+
-> >+#endif
-> >diff --git a/arch/arm64/kernel/Makefile b/arch/arm64/kernel/Makefile
-> >index 383d81d..be78980 100644
-> >--- a/arch/arm64/kernel/Makefile
-> >+++ b/arch/arm64/kernel/Makefile
-> >@@ -27,6 +27,7 @@ arm64-obj-$(CONFIG_PERF_EVENTS)		+= perf_regs.o
-> > arm64-obj-$(CONFIG_HW_PERF_EVENTS)	+= perf_event.o
-> > arm64-obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
-> > arm64-obj-$(CONFIG_ARM64_CPU_SUSPEND)	+= sleep.o suspend.o
-> >+arm64-obj-$(CONFIG_CPU_IDLE)		+= cpuidle.o
-> > arm64-obj-$(CONFIG_JUMP_LABEL)		+= jump_label.o
-> > arm64-obj-$(CONFIG_KGDB)		+= kgdb.o
-> > arm64-obj-$(CONFIG_EFI)			+= efi.o efi-stub.o efi-entry.o
-> >diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
-> >new file mode 100644
-> >index 0000000..19d17f5
-> >--- /dev/null
-> >+++ b/arch/arm64/kernel/cpuidle.c
-> >@@ -0,0 +1,31 @@
-> >+/*
-> >+ * ARM64 CPU idle arch support
-> >+ *
-> >+ * Copyright (C) 2014 ARM Ltd.
-> >+ * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> >+ *
-> >+ * This program is free software; you can redistribute it and/or modify
-> >+ * it under the terms of the GNU General Public License version 2 as
-> >+ * published by the Free Software Foundation.
-> >+ */
-> >+
-> >+#include <linux/of.h>
-> >+#include <linux/of_device.h>
-> >+
-> >+#include <asm/cpuidle.h>
-> >+#include <asm/cpu_ops.h>
-> >+
-> >+int cpu_init_idle(unsigned int cpu)
-> >+{
-> >+	int ret = -EOPNOTSUPP;
-> >+	struct device_node *cpu_node = of_cpu_device_node_get(cpu);
-> >+
-> >+	if (!cpu_node)
-> >+		return -ENODEV;
-> >+
-> >+	if (cpu_ops[cpu] && cpu_ops[cpu]->cpu_init_idle)
-> >+		ret = cpu_ops[cpu]->cpu_init_idle(cpu_node, cpu);
-> >+
-> >+	of_node_put(cpu_node);
-> >+	return ret;
-> >+}
-> >-- 
-> >1.9.1
-> >
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
+Vsetko o autach, vsetko pre motoristov - http://www.autosme.sk
