@@ -1,60 +1,55 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH v4 3/4] ARM: dts: add main Thermal info to rk3288
-Date: Wed,  3 Sep 2014 10:10:38 +0800
-Message-ID: <1409710239-19941-4-git-send-email-caesar.wang@rock-chips.com>
-References: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.131]:34450 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750871AbaICCLJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Sep 2014 22:11:09 -0400
-In-Reply-To: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCHv6 0/2] thermal: exynos: Add support for TRIMINFO feature of
+ Exynos3250
+Date: Wed, 03 Sep 2014 12:09:01 +0900
+Message-ID: <1409713743-6124-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: eduardo.valentin@ti.com, amit.daniel@samsung.com, rui.zhang@intel.com
+Cc: kgene.kim@samsung.com, ch.naveen@samsung.com, kyungmin.park@samsung.com, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, zyw@rock-chips.com, addy.ke@rock-chips.com, dmitry.torokhov@gmail.com, Caesar Wang <caesar.wang@rock-chips.com>
 
-Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
----
- arch/arm/boot/dts/rk3288.dtsi | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+This patchset add the support of TRIMINFO_RELOAD feature for Exynos3250.
+But Exynos3250 has two TRIMINFO_CTRL register instead other Exynos has only one
+TRIMINFO_CTRL register. So, this patchset support the some Exynos SoC which
+has more than one TRIMINF_CTRL.
 
-diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
-index 36be7bb..3d672e3 100644
---- a/arch/arm/boot/dts/rk3288.dtsi
-+++ b/arch/arm/boot/dts/rk3288.dtsi
-@@ -224,6 +224,17 @@
- 		status = "disabled";
- 	};
- 
-+	tsadc: tsadc@ff280000 {
-+		compatible = "rockchip,rk3288-tsadc";
-+		reg = <0xff280000 0x100>;
-+		interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-+		clock-names = "tsadc", "apb_pclk";
-+		pinctrl-names = "default";
-+		pinctrl-1 = <&tsadc_int>;
-+		status = "disabled";
-+	};
-+
- 	/* NOTE: ohci@ff520000 doesn't actually work on hardware */
- 
- 	usb_hsic: usb@ff5c0000 {
-@@ -611,5 +622,12 @@
- 				rockchip,pins = <5 15 3 &pcfg_pull_none>;
- 			};
- 		};
-+
-+		tsadc {
-+			tsadc_int: tsadc-int {
-+				rockchip,pins = <0 10 RK_FUNC_1 &pcfg_pull_up>;
-+			};
-+		};
-+
- 	};
- };
+Also, this patchset fix wrong value of TRIMINFO_RELOAD_SHIFT and remove
+duplicate code when reading triminfo register of Exynos5440.
+
+Changes from v5:
+- Rebase this patchset on next branch of linux-soc-thermal.git
+
+Changes from v4:
+- Remove un-necessary triminfo_ctrl_{shift, mask} field
+- Includes Bartlomiej's patch[1] that Exynos5260 / Exynos5420 should not use
+TRIM_RELOAD flag
+[2] https://lkml.org/lkml/2014/8/20/481
+
+Changes from v3:
+- Add reviewed message of Amit Daniel Kachhap <amit.daniel@samsung.com>
+- Split RELOAD patch as two patch
+- Fix 'TRIMINFO_RELOAD_SHIFT' value
+- This series includes separate patch[1]
+[1] https://lkml.org/lkml/2014/8/20/5
+- Drop ACTIME bit setting because TRM includes not enough information of ACTIME bit.
+
+Changes from v2:
+- Fix build break because of missing 'or' operation.
+
+Changes from v1:
+- Add missing 'TMU_SUPPORT_TRIM_RELOAD' features
+
+Chanwoo Choi (2):
+  thermal: exynos: Add support for many TRIMINFO_CTRL registers
+  thermal: exynos: Add support for TRIM_RELOAD feature at Exynos3250
+
+ drivers/thermal/samsung/exynos_thermal_common.h |  1 +
+ drivers/thermal/samsung/exynos_tmu.c            | 15 ++++++++++++---
+ drivers/thermal/samsung/exynos_tmu.h            |  7 +++++--
+ drivers/thermal/samsung/exynos_tmu_data.c       | 11 +++++++++--
+ drivers/thermal/samsung/exynos_tmu_data.h       |  8 ++++++--
+ 5 files changed, 33 insertions(+), 9 deletions(-)
+
 -- 
-1.9.1
-
-
+1.8.0
