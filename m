@@ -1,111 +1,51 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCHv5 4/4] thermal: exynos: Remove duplicate code when reading
- triminfo register of Exynos5440
-Date: Wed, 03 Sep 2014 11:08:43 +0900
-Message-ID: <5406782B.9000408@samsung.com>
-References: <1409016665-3824-1-git-send-email-cw00.choi@samsung.com>
- <1409016665-3824-5-git-send-email-cw00.choi@samsung.com>
- <53FEAF2A.1080400@samsung.com> <20140828145310.GC18194@developer>
- <53FFC051.7040907@samsung.com> <20140829192818.GB23645@developer>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:24357 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751105AbaICCIq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Sep 2014 22:08:46 -0400
-In-reply-to: <20140829192818.GB23645@developer>
-Sender: linux-pm-owner@vger.kernel.org
+From: Caesar Wang <caesar.wang@rock-chips.com>
+Subject: [PATCH v4 0/4] Rockchip soc thermal driver
+Date: Wed,  3 Sep 2014 10:10:35 +0800
+Message-ID: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, zyw@rock-chips.com, addy.ke@rock-chips.com, dmitry.torokhov@gmail.com, Caesar Wang <caesar.wang@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: eduardo.valentin@ti.com, amit.daniel@samsung.com, rui.zhang@intel.com, kgene.kim@samsung.com, ch.naveen@samsung.com, kyungmin.park@samsung.com, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Dear Eduardo,
+Changes in v4:
+        * address comments from Jonathan Cameron,huangtao and zhaoyifeng:
+        - this series thermal driver still be put in driver/thermal/
+        - modify the thermal driver description.
 
-On 08/30/2014 04:28 AM, Eduardo Valentin wrote:
-> Chanwoo,
-> 
-> On Fri, Aug 29, 2014 at 08:50:41AM +0900, Chanwoo Choi wrote:
->> Dear Eduardo,
->>
->> On 08/28/2014 11:53 PM, Eduardo Valentin wrote:
->>> On Thu, Aug 28, 2014 at 01:25:14PM +0900, Chanwoo Choi wrote:
->>>> Dear Eduardo,
->>>>
->>>> This patch is wrong. It is my mistake.
->>>>
->>>> Please ignore only this patch because
->>>> the offset calculation of 'case 0' is different from 'case 2'.
->>>
->>>
->>> Do patches 1 - 3 are still correct? Patch 1, from Barlomiej, seams to be
->>> a common agreement. 
-> 
->>
->> Yes, patches 1 - 3 are correct.
->>
-> 
-> OK. I pulled patch 01 into my next branch.
-> 
-> Can you please update patches 02 and 03 based on my next brach? They are
-> conflicting with the massive cleanups done by Bartlomiej (Thanks
-> Bartlomiej). So, please, resend patches 02 and 03 only, refreshed onto
-> my next branch.
+Changes in v3:(add dts configure)
+        * address comments from Dmitry Torokhov and Arnd Bergmann:
+        - fix clock-names in rockchip-thermal.txt
+        - remove rockchip_thermal_control() in rockchip_set_mode()
+        - fix some code style.
+        - add dts configure.
 
-OK, I'll send new patchset after rebase it.
+Changes in v2:
+        * address comments from Heiko Stubner:
+        - fix dt-bindings in rockchip-thermal.txt
+        - remove Author mark
+        - rename TSADC_XXX->TSADCV2_XXX,it eill ready to merge compatible other SoCs.
+        - fix a identation
+        - remove clk_set_rate(),it's no necessary.
+        - fix the SIMPLE_DEV_PM_OPS() function  style.
 
-Best Regards,
-Chanwoo Choi
+Tested on rk3288 SDK board
 
-> 
-> Cheers.
-> 
->> Best Regards,
->> Chanwoo Choi
->>
->>>
->>>>
->>>> Best Regards,
->>>> Chanwoo Choi
->>>>
->>>> On 08/26/2014 10:31 AM, Chanwoo Choi wrote:
->>>>> This patch remove simply duplicate code when reading triminfo register of Exynos5440.
->>>>>
->>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>>> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
->>>>> Cc: Zhang Rui <rui.zhang@intel.com>
->>>>> Cc: Eduardo Valentin <edubezval@gmail.com>
->>>>> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
->>>>> Reviewed-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->>>>> ---
->>>>>  drivers/thermal/samsung/exynos_tmu.c | 4 +---
->>>>>  1 file changed, 1 insertion(+), 3 deletions(-)
->>>>>
->>>>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->>>>> index 64c702a..5888467 100644
->>>>> --- a/drivers/thermal/samsung/exynos_tmu.c
->>>>> +++ b/drivers/thermal/samsung/exynos_tmu.c
->>>>> @@ -187,15 +187,13 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
->>>>>  		 */
->>>>>  		switch (data->id) {
->>>>>  		case 0:
->>>>> +		case 2:
->>>>>  			trim_info = readl(data->base +
->>>>>  			EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
->>>>>  			break;
->>>>>  		case 1:
->>>>>  			trim_info = readl(data->base + reg->triminfo_data);
->>>>>  			break;
->>>>> -		case 2:
->>>>> -			trim_info = readl(data->base -
->>>>> -			EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
->>>>>  		}
->>>>>  	} else {
->>>>>  		/* On exynos5420 the triminfo register is in the shared space */
->>>>>
->>>>
->>>
->>
-> 
+Caesar Wang (4):
+  thermal: rockchip: add driver for thermal
+  dt-bindings: document Rockchip thermal
+  ARM: dts: add main Thermal info to rk3288
+  ARM: dts: enable Thermal on rk3288-evb board
 
+ .../bindings/thermal/rockchip-thermal.txt          |  20 +
+ arch/arm/boot/dts/rk3288-evb.dtsi                  |   7 +
+ arch/arm/boot/dts/rk3288.dtsi                      |  18 +
+ drivers/thermal/Kconfig                            |   9 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/rockchip_thermal.c                 | 669 +++++++++++++++++++++
+ 6 files changed, 724 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+ create mode 100644 drivers/thermal/rockchip_thermal.c
+
+-- 
+1.9.1
