@@ -1,58 +1,154 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v9 4/6] ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
-Date: Wed, 03 Sep 2014 16:15:21 -0700
-Message-ID: <7hsik847p2.fsf@paris.lan>
-References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
-	<1406707663-16656-5-git-send-email-thomas.ab@samsung.com>
-	<53DA8BB9.6020702@samsung.com> <53DA8D85.3050106@gmail.com>
-	<7hbnrc6px3.fsf@paris.lan> <53F7DA13.6090305@gmail.com>
-	<CADWw7OgAS-z-UOrJU-hL2fzuefJmLtCTg57jYk2Df7f5KfLJmA@mail.gmail.com>
-	<7h8umc60we.fsf@paris.lan>
-	<CADWw7OgW+o3tB=ptnsy-PsmXmNv8oXzt_WfK6NswQiEWWwAzNA@mail.gmail.com>
-	<CAGa+x85-Anb+HsSUQRaaeex19-HK+yZDW0UpFBwAtsQ8Sf2Aqg@mail.gmail.com>
-	<CAGa+x86jU8MR=r_xuaiorbNNyqrezb0b6Ozy-MPg9HvsARESOw@mail.gmail.com>
-	<CAJuA9ajtsrY7zSDMs=c6BZ0AqERoBgvq++dTF4Dn673zGMfcgQ@mail.gmail.com>
-	<CAMAWPa-8h5PNhgT+ApBhA8p=i+4oFOnYnQsQ4mK1JKwwAhpvpQ@mail.gmail.com>
-	<CAJuA9ah5M_pXRMXPB6o7JLhgVUHM7kYo9HOV6Yxv4Z=hKMdG=w@mail.gmail.com>
-	<7hmwah6cop.fsf@paris.lan>
-	<CAJuA9ahe=9gdTaGcRb69syvRfwkkGMgDiiNfOMA9TBo42cWVZw@mail.gmail.com>
-	<CAJuA9ag2pybyLDUyW43wMQu4PA1cB4V9c1bc7WB3xjqzhqNGTw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAJuA9ag2pybyLDUyW43wMQu4PA1cB4V9c1bc7WB3xjqzhqNGTw@mail.gmail.com>
-	(Thomas Abraham's message of "Wed, 3 Sep 2014 18:48:35 +0530")
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: Chander Kashyap <k.chander@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, Heiko =?utf-8?Q?St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+From: Brian Norris <computersforpeace@gmail.com>
+Subject: [PATCH] PM / sleep: add configurable delay for pm_test
+Date: Wed,  3 Sep 2014 16:55:35 -0700
+Message-ID: <1409788535-28264-1-git-send-email-computersforpeace@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:39694 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750788AbaIDAGa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 20:06:30 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki\"" <rjw@rjwysocki.net>
+Cc: Brian Norris <computersforpeace@gmail.com>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
 
-Hi Thomas,
+When CONFIG_PM_DEBUG=y, we provide a sysfs file (/sys/power/pm_test) for
+selecting one of a few suspend test modes, where rather than entering a
+full suspend state, the kernel will perform some subset of suspend
+steps, wait 5 seconds, and then resume back to normal operation.
 
-Thomas Abraham <ta.omasab@gmail.com> writes:
+This mode is useful for (among other things) observing the state of the
+system just before entering a sleep mode, for debugging or analysis
+purposes. However, a constant 5 second wait is not sufficient for some
+sorts of analysis; for example, on an SoC, one might want to use
+external tools to probe the power states of various on-chip controllers
+or clocks.
 
-[...]
+This patch adds a companion sysfs file (/sys/power/pm_test_delay) that
+allows user-space to configure how long the system waits in this test
+state before resuming. It also updates the PM debugging documentation to
+mention the new file.
 
-> A new branch [1] has been created using commits from exynos5-v3.17-rc1
-> branch + cpufreq + regulator + temp fixes. I have tested this branch
-> on Exynos5800 Chromebook2 and cpufreq works fine with both ondemand
-> and performance governors. Please let me know if there are any issues
-> with this new branch. It is based on v3.17-rc3.
+Signed-off-by: Brian Norris <computersforpeace@gmail.com>
+---
+ Documentation/power/basic-pm-debugging.txt | 14 ++++++++------
+ kernel/power/main.c                        | 27 +++++++++++++++++++++++++++
+ kernel/power/power.h                       |  5 +++++
+ kernel/power/suspend.c                     |  8 ++++++--
+ 4 files changed, 46 insertions(+), 8 deletions(-)
 
-Excellent!  Thank you.
+diff --git a/Documentation/power/basic-pm-debugging.txt b/Documentation/power/basic-pm-debugging.txt
+index edeecd447d23..bd9f27ae99fe 100644
+--- a/Documentation/power/basic-pm-debugging.txt
++++ b/Documentation/power/basic-pm-debugging.txt
+@@ -75,12 +75,14 @@ you should do the following:
+ # echo platform > /sys/power/disk
+ # echo disk > /sys/power/state
+ 
+-Then, the kernel will try to freeze processes, suspend devices, wait 5 seconds,
+-resume devices and thaw processes.  If "platform" is written to
+-/sys/power/pm_test , then after suspending devices the kernel will additionally
+-invoke the global control methods (eg. ACPI global control methods) used to
+-prepare the platform firmware for hibernation.  Next, it will wait 5 seconds and
+-invoke the platform (eg. ACPI) global methods used to cancel hibernation etc.
++Then, the kernel will try to freeze processes, suspend devices, wait a few
++seconds (5 by default, but configurable via /sys/power/pm_test_delay), resume
++devices and thaw processes.  If "platform" is written to /sys/power/pm_test,
++then after suspending devices the kernel will additionally invoke the global
++control methods (eg. ACPI global control methods) used to prepare the platform
++firmware for hibernation.  Next, it will wait a configurable number of seconds
++and invoke the platform (eg. ACPI) global methods used to cancel hibernation
++etc.
+ 
+ Writing "none" to /sys/power/pm_test causes the kernel to switch to the normal
+ hibernation/suspend operations.  Also, when open for reading, /sys/power/pm_test
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 9a59d042ea84..4d242c8b43a0 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -73,6 +73,7 @@ power_attr(pm_async);
+ 
+ #ifdef CONFIG_PM_DEBUG
+ int pm_test_level = TEST_NONE;
++int pm_test_seconds = PM_TEST_DELAY_DEFAULT;
+ 
+ static const char * const pm_tests[__TEST_AFTER_LAST] = {
+ 	[TEST_NONE] = "none",
+@@ -132,6 +133,31 @@ static ssize_t pm_test_store(struct kobject *kobj, struct kobj_attribute *attr,
+ }
+ 
+ power_attr(pm_test);
++
++static ssize_t pm_test_delay_show(struct kobject *kobj,
++				  struct kobj_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%d\n", pm_test_seconds);
++}
++
++static ssize_t pm_test_delay_store(struct kobject *kobj,
++				   struct kobj_attribute *attr,
++				   const char *buf, size_t n)
++{
++	int val;
++
++	if (kstrtoint(buf, 10, &val))
++		return -EINVAL;
++
++	if (val < 0)
++		return -EINVAL;
++
++	pm_test_seconds = val;
++
++	return n;
++}
++
++power_attr(pm_test_delay);
+ #endif /* CONFIG_PM_DEBUG */
+ 
+ #ifdef CONFIG_DEBUG_FS
+@@ -601,6 +627,7 @@ static struct attribute * g[] = {
+ #endif
+ #ifdef CONFIG_PM_DEBUG
+ 	&pm_test_attr.attr,
++	&pm_test_delay_attr.attr,
+ #endif
+ #ifdef CONFIG_PM_SLEEP_DEBUG
+ 	&pm_print_times_attr.attr,
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 5d49dcac2537..28111795da71 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -230,6 +230,11 @@ enum {
+ 
+ extern int pm_test_level;
+ 
++/* Default to 5 second delay */
++#define PM_TEST_DELAY_DEFAULT		5
++
++extern int pm_test_seconds;
++
+ #ifdef CONFIG_SUSPEND_FREEZER
+ static inline int suspend_freeze_processes(void)
+ {
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 6dadb25cb0d8..2372a99d4356 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -196,8 +196,12 @@ static int suspend_test(int level)
+ {
+ #ifdef CONFIG_PM_DEBUG
+ 	if (pm_test_level == level) {
+-		printk(KERN_INFO "suspend debug: Waiting for 5 seconds.\n");
+-		mdelay(5000);
++		int i;
++
++		pr_info("suspend debug: waiting for %d second(s)\n",
++				pm_test_seconds);
++		for (i = 0; i < pm_test_seconds; i++)
++			mdelay(1000);
+ 		return 1;
+ 	}
+ #endif /* !CONFIG_PM_DEBUG */
+-- 
+1.9.1
 
-The only thing missing now is the CPUidle support for 5800, and all
-that's needed for that is the compatible string patch[1] which Daniel
-has queued up.
-
-With that patch, display + CPUidle + CPUfreq are working pretty well on
-my exynos5800/chromebook2 with the big.LITTLE switcher disabled.  If I
-turn on the switcher, it boots OK, but as soon as I try to run powertop
-(upstream v2.6.1) it gets stuck.  Have you tried this branch with the
-switcher enabled?
-
-Thanks again for your work on this, we're getting close!  
-
-Kevin
-
-[1] http://lists.infradead.org/pipermail/linux-arm-kernel/2014-August/279028.html
