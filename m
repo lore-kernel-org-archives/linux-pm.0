@@ -1,132 +1,173 @@
-From: Mike Turquette <mturquette@linaro.org>
-Subject: Re: [PATCH v7 11/11] clk: rockchip: add restart handler
-Date: Wed, 03 Sep 2014 12:05:42 -0700
-Message-ID: <20140903190542.11368.20755@quantum>
-References: <1408495538-27480-1-git-send-email-linux@roeck-us.net>
- <1408495538-27480-12-git-send-email-linux@roeck-us.net>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v8 4/8] arm64: kernel: introduce cpu_init_idle CPU
+ operation
+Date: Wed, 3 Sep 2014 13:16:01 -0600
+Message-ID: <20140903191601.GJ92149@ilina-mac.local>
+References: <1409585324-3678-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1409585324-3678-5-git-send-email-lorenzo.pieralisi@arm.com>
+ <20140903173437.GI92149@ilina-mac.local>
+ <20140903174645.GK1824@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1408495538-27480-12-git-send-email-linux@roeck-us.net>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Russell King <linux@arm.linux.org.uk>, Wim Van Sebroeck <wim@iguana.be>, Catalin Marinas <catalin.marinas@arm.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-watchdog@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Heiko Stuebner <heiko@sntech.de>, Jonas Jensen <jonas.jensen@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tomasz Figa <t.figa@samsung.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:39863 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754808AbaICTQP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 15:16:15 -0400
+Received: by mail-pa0-f46.google.com with SMTP id eu11so17989780pac.5
+        for <linux-pm@vger.kernel.org>; Wed, 03 Sep 2014 12:16:11 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20140903174645.GK1824@e102568-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@sam>
 
-Quoting Guenter Roeck (2014-08-19 17:45:38)
-> From: Heiko St=C3=BCbner <heiko@sntech.de>
->=20
-> Add infrastructure to write the correct value to the restart register=
- and
-> register the restart notifier for both rk3188 (including rk3066) and =
-rk3288.
->=20
-> Signed-off-by: Heiko Stuebner <heiko@sntech.de>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+On Wed, Sep 03 2014 at 11:46 -0600, Lorenzo Pieralisi wrote:
+>On Wed, Sep 03, 2014 at 06:34:37PM +0100, Lina Iyer wrote:
+>> On Mon, Sep 01 2014 at 09:28 -0600, Lorenzo Pieralisi wrote:
+>> >The CPUidle subsystem on ARM64 machines requires the idle states
+>> >implementation back-end to initialize idle states parameter upon
+>> >boot. This patch adds a hook in the CPU operations structure that
+>> >should be initialized by the CPU operations back-end in order to
+>> >provide a function that initializes cpu idle states.
+>> >
+>> >This patch also adds the infrastructure to arm64 kernel required
+>> >to export the CPU operations based initialization interface, so
+>> >that drivers (ie CPUidle) can use it when they are initialized
+>> >at probe time.
+>> >
+>> I like the change for ARM64.
+>> However, that raises a question, how do I have the same driver that
+>> should get probed by a platform device (on 32 bit ARM) and getting called
+>> from cpu_init_idle on ARM64?
+>
+>I am not following you sorry. The ARM64 CPUidle driver calls the arm64
+>cpu_init_idle hooks to initialize idle states (in a generic way from
+>a driver perspective), not the other way around.
+>
+>On ARM64 your idle driver rely on an arm64 suspend back-end (eg PSCI) to
+>enter idle states, it works in a different way from ARM, on purpose.
+>
+>Have a look at what the code does, it won't be the same driver that's
+>for certain, since on arm64 I do not want to cope with per-platform
+>CPUidle state enter functions anymore, the arm64 cpu_ops suspend hook
+>implements the idle state enter method.
 
-Acked-by: Mike Turquette <mturquette@linaro.org>
+Ah, I was working on the premise that I may be using the same cpuidle
+driver for ARM64. I guess I will worry about ARM64 with non-PSCI drivers
+when and if I have to. Thanks!
 
-> ---
-> v7: Added patch to series.
->=20
->  drivers/clk/rockchip/clk-rk3188.c |  2 ++
->  drivers/clk/rockchip/clk-rk3288.c |  2 ++
->  drivers/clk/rockchip/clk.c        | 25 +++++++++++++++++++++++++
->  drivers/clk/rockchip/clk.h        |  1 +
->  4 files changed, 30 insertions(+)
->=20
-> diff --git a/drivers/clk/rockchip/clk-rk3188.c b/drivers/clk/rockchip=
-/clk-rk3188.c
-> index a83a6d8..71b661a 100644
-> --- a/drivers/clk/rockchip/clk-rk3188.c
-> +++ b/drivers/clk/rockchip/clk-rk3188.c
-> @@ -631,6 +631,8 @@ static void __init rk3188_common_clk_init(struct =
-device_node *np)
-> =20
->         rockchip_register_softrst(np, 9, reg_base + RK2928_SOFTRST_CO=
-N(0),
->                                   ROCKCHIP_SOFTRST_HIWORD_MASK);
-> +
-> +       rockchip_register_restart_notifier(RK2928_GLB_SRST_FST);
->  }
-> =20
->  static void __init rk3066a_clk_init(struct device_node *np)
-> diff --git a/drivers/clk/rockchip/clk-rk3288.c b/drivers/clk/rockchip=
-/clk-rk3288.c
-> index 0d8c6c5..b604217 100644
-> --- a/drivers/clk/rockchip/clk-rk3288.c
-> +++ b/drivers/clk/rockchip/clk-rk3288.c
-> @@ -713,5 +713,7 @@ static void __init rk3288_clk_init(struct device_=
-node *np)
-> =20
->         rockchip_register_softrst(np, 9, reg_base + RK3288_SOFTRST_CO=
-N(0),
->                                   ROCKCHIP_SOFTRST_HIWORD_MASK);
-> +
-> +       rockchip_register_restart_notifier(RK3288_GLB_SRST_FST);
->  }
->  CLK_OF_DECLARE(rk3288_cru, "rockchip,rk3288-cru", rk3288_clk_init);
-> diff --git a/drivers/clk/rockchip/clk.c b/drivers/clk/rockchip/clk.c
-> index 278cf9d..aa41433 100644
-> --- a/drivers/clk/rockchip/clk.c
-> +++ b/drivers/clk/rockchip/clk.c
-> @@ -25,6 +25,7 @@
->  #include <linux/clk-provider.h>
->  #include <linux/mfd/syscon.h>
->  #include <linux/regmap.h>
-> +#include <linux/reboot.h>
->  #include "clk.h"
-> =20
->  /**
-> @@ -242,3 +243,27 @@ void __init rockchip_clk_register_branches(
->                 rockchip_clk_add_lookup(clk, list->id);
->         }
->  }
-> +
-> +static unsigned int reg_restart;
-> +static int rockchip_restart_notify(struct notifier_block *this,
-> +                                  unsigned long mode, void *cmd)
-> +{
-> +       writel(0xfdb9, reg_base + reg_restart);
-> +       return NOTIFY_DONE;
-> +}
-> +
-> +static struct notifier_block rockchip_restart_handler =3D {
-> +       .notifier_call =3D rockchip_restart_notify,
-> +       .priority =3D 128,
-> +};
-> +
-> +void __init rockchip_register_restart_notifier(unsigned int reg)
-> +{
-> +       int ret;
-> +
-> +       reg_restart =3D reg;
-> +       ret =3D register_restart_handler(&rockchip_restart_handler);
-> +       if (ret)
-> +               pr_err("%s: cannot register restart handler, %d\n",
-> +                      __func__, ret);
-> +}
-> diff --git a/drivers/clk/rockchip/clk.h b/drivers/clk/rockchip/clk.h
-> index 887cbde..0b5eab5 100644
-> --- a/drivers/clk/rockchip/clk.h
-> +++ b/drivers/clk/rockchip/clk.h
-> @@ -329,6 +329,7 @@ void rockchip_clk_register_branches(struct rockch=
-ip_clk_branch *clk_list,
->                                     unsigned int nr_clk);
->  void rockchip_clk_register_plls(struct rockchip_pll_clock *pll_list,
->                                 unsigned int nr_pll, int grf_lock_off=
-set);
-> +void rockchip_register_restart_notifier(unsigned int reg);
-> =20
->  #define ROCKCHIP_SOFTRST_HIWORD_MASK   BIT(0)
-> =20
-> --=20
-> 1.9.1
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
-l" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>Lorenzo
+>
+>> >Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+>> >Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>> >---
+>> > arch/arm64/include/asm/cpu_ops.h |  3 +++
+>> > arch/arm64/include/asm/cpuidle.h | 13 +++++++++++++
+>> > arch/arm64/kernel/Makefile       |  1 +
+>> > arch/arm64/kernel/cpuidle.c      | 31 +++++++++++++++++++++++++++++++
+>> > 4 files changed, 48 insertions(+)
+>> > create mode 100644 arch/arm64/include/asm/cpuidle.h
+>> > create mode 100644 arch/arm64/kernel/cpuidle.c
+>> >
+>> >diff --git a/arch/arm64/include/asm/cpu_ops.h b/arch/arm64/include/asm/cpu_ops.h
+>> >index d7b4b38..47dfa31 100644
+>> >--- a/arch/arm64/include/asm/cpu_ops.h
+>> >+++ b/arch/arm64/include/asm/cpu_ops.h
+>> >@@ -28,6 +28,8 @@ struct device_node;
+>> >  *		enable-method property.
+>> >  * @cpu_init:	Reads any data necessary for a specific enable-method from the
+>> >  *		devicetree, for a given cpu node and proposed logical id.
+>> >+ * @cpu_init_idle: Reads any data necessary to initialize CPU idle states from
+>> >+ *		devicetree, for a given cpu node and proposed logical id.
+>> >  * @cpu_prepare: Early one-time preparation step for a cpu. If there is a
+>> >  *		mechanism for doing so, tests whether it is possible to boot
+>> >  *		the given CPU.
+>> >@@ -47,6 +49,7 @@ struct device_node;
+>> > struct cpu_operations {
+>> > 	const char	*name;
+>> > 	int		(*cpu_init)(struct device_node *, unsigned int);
+>> >+	int		(*cpu_init_idle)(struct device_node *, unsigned int);
+>> > 	int		(*cpu_prepare)(unsigned int);
+>> > 	int		(*cpu_boot)(unsigned int);
+>> > 	void		(*cpu_postboot)(void);
+>> >diff --git a/arch/arm64/include/asm/cpuidle.h b/arch/arm64/include/asm/cpuidle.h
+>> >new file mode 100644
+>> >index 0000000..b52a993
+>> >--- /dev/null
+>> >+++ b/arch/arm64/include/asm/cpuidle.h
+>> >@@ -0,0 +1,13 @@
+>> >+#ifndef __ASM_CPUIDLE_H
+>> >+#define __ASM_CPUIDLE_H
+>> >+
+>> >+#ifdef CONFIG_CPU_IDLE
+>> >+extern int cpu_init_idle(unsigned int cpu);
+>> >+#else
+>> >+static inline int cpu_init_idle(unsigned int cpu)
+>> >+{
+>> >+	return -EOPNOTSUPP;
+>> >+}
+>> >+#endif
+>> >+
+>> >+#endif
+>> >diff --git a/arch/arm64/kernel/Makefile b/arch/arm64/kernel/Makefile
+>> >index 383d81d..be78980 100644
+>> >--- a/arch/arm64/kernel/Makefile
+>> >+++ b/arch/arm64/kernel/Makefile
+>> >@@ -27,6 +27,7 @@ arm64-obj-$(CONFIG_PERF_EVENTS)		+= perf_regs.o
+>> > arm64-obj-$(CONFIG_HW_PERF_EVENTS)	+= perf_event.o
+>> > arm64-obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
+>> > arm64-obj-$(CONFIG_ARM64_CPU_SUSPEND)	+= sleep.o suspend.o
+>> >+arm64-obj-$(CONFIG_CPU_IDLE)		+= cpuidle.o
+>> > arm64-obj-$(CONFIG_JUMP_LABEL)		+= jump_label.o
+>> > arm64-obj-$(CONFIG_KGDB)		+= kgdb.o
+>> > arm64-obj-$(CONFIG_EFI)			+= efi.o efi-stub.o efi-entry.o
+>> >diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
+>> >new file mode 100644
+>> >index 0000000..19d17f5
+>> >--- /dev/null
+>> >+++ b/arch/arm64/kernel/cpuidle.c
+>> >@@ -0,0 +1,31 @@
+>> >+/*
+>> >+ * ARM64 CPU idle arch support
+>> >+ *
+>> >+ * Copyright (C) 2014 ARM Ltd.
+>> >+ * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>> >+ *
+>> >+ * This program is free software; you can redistribute it and/or modify
+>> >+ * it under the terms of the GNU General Public License version 2 as
+>> >+ * published by the Free Software Foundation.
+>> >+ */
+>> >+
+>> >+#include <linux/of.h>
+>> >+#include <linux/of_device.h>
+>> >+
+>> >+#include <asm/cpuidle.h>
+>> >+#include <asm/cpu_ops.h>
+>> >+
+>> >+int cpu_init_idle(unsigned int cpu)
+>> >+{
+>> >+	int ret = -EOPNOTSUPP;
+>> >+	struct device_node *cpu_node = of_cpu_device_node_get(cpu);
+>> >+
+>> >+	if (!cpu_node)
+>> >+		return -ENODEV;
+>> >+
+>> >+	if (cpu_ops[cpu] && cpu_ops[cpu]->cpu_init_idle)
+>> >+		ret = cpu_ops[cpu]->cpu_init_idle(cpu_node, cpu);
+>> >+
+>> >+	of_node_put(cpu_node);
+>> >+	return ret;
+>> >+}
+>> >--
+>> >1.9.1
+>> >
+>> >
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>
