@@ -1,56 +1,53 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [Patch v3] 1/7] cpuidle: kirkwood: Remove ARCH_KIRKWOOD dependency
-Date: Wed, 03 Sep 2014 15:45:06 +0200
-Message-ID: <54071B62.6070303@linaro.org>
-References: <1409417172-6846-1-git-send-email-andrew@lunn.ch> <1409417172-6846-2-git-send-email-andrew@lunn.ch>
+Subject: Re: [PATCH v2 3/9] ARM: zynq: DT: Add DDRC node
+Date: Wed, 03 Sep 2014 15:49:47 +0200
+Message-ID: <54071C7B.4090805@linaro.org>
+References: <1409692754-13437-1-git-send-email-soren.brinkmann@xilinx.com> <1409692754-13437-4-git-send-email-soren.brinkmann@xilinx.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f50.google.com ([74.125.82.50]:35964 "EHLO
-	mail-wg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755286AbaICNpK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 09:45:10 -0400
-Received: by mail-wg0-f50.google.com with SMTP id x12so8390558wgg.21
-        for <linux-pm@vger.kernel.org>; Wed, 03 Sep 2014 06:45:08 -0700 (PDT)
-In-Reply-To: <1409417172-6846-2-git-send-email-andrew@lunn.ch>
+Received: from mail-wi0-f172.google.com ([209.85.212.172]:54558 "EHLO
+	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756263AbaICNtv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 09:49:51 -0400
+Received: by mail-wi0-f172.google.com with SMTP id n3so966298wiv.5
+        for <linux-pm@vger.kernel.org>; Wed, 03 Sep 2014 06:49:50 -0700 (PDT)
+In-Reply-To: <1409692754-13437-4-git-send-email-soren.brinkmann@xilinx.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>
-Cc: linux ARM <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: Soren Brinkmann <soren.brinkmann@xilinx.com>, Michal Simek <michal.simek@xilinx.com>
+Cc: Russell King <linux@arm.linux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 
-On 08/30/2014 06:46 PM, Andrew Lunn wrote:
-> mach-kirkwood has been removed, now that kirkwood lives in mach-mvebu=
-=2E
-> Use MACH_KIRKWOOD, which is set when kirkwood is built as part of
-> mach-mvebu.
+On 09/02/2014 11:19 PM, Soren Brinkmann wrote:
+> Add the DDR controller to the Zynq devicetree.
 >
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
 
 Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 > ---
->   drivers/cpuidle/Kconfig.arm | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+>   arch/arm/boot/dts/zynq-7000.dtsi | 5 +++++
+>   1 file changed, 5 insertions(+)
 >
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
-m
-> index 38cff69ffe06..58bcd0d166ec 100644
-> --- a/drivers/cpuidle/Kconfig.arm
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -28,7 +28,7 @@ config ARM_HIGHBANK_CPUIDLE
+> diff --git a/arch/arm/boot/dts/zynq-7000.dtsi b/arch/arm/boot/dts/zyn=
+q-7000.dtsi
+> index 6cc83d4c6c76..587cadcf7001 100644
+> --- a/arch/arm/boot/dts/zynq-7000.dtsi
+> +++ b/arch/arm/boot/dts/zynq-7000.dtsi
+> @@ -146,6 +146,11 @@
+>   			cache-level =3D <2>;
+>   		};
 >
->   config ARM_KIRKWOOD_CPUIDLE
->   	bool "CPU Idle Driver for Marvell Kirkwood SoCs"
-> -	depends on ARCH_KIRKWOOD || MACH_KIRKWOOD
-> +	depends on MACH_KIRKWOOD
->   	help
->   	  This adds the CPU Idle driver for Marvell Kirkwood SoCs.
->
+> +		memory-controller@f8006000 {
+> +			compatible =3D "xlnx,zynq-ddrc-a05";
+> +			reg =3D <0xf8006000 0x1000>;
+> +		} ;
+> +
+>   		uart0: serial@e0000000 {
+>   			compatible =3D "xlnx,xuartps", "cdns,uart-r1p8";
+>   			status =3D "disabled";
 >
 
 
