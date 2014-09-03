@@ -1,78 +1,117 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [REPOST PATCH v4 0/2] PM QoS: Add support for memory bandwidth constraints
-Date: Wed,  3 Sep 2014 17:49:31 +0200
-Message-ID: <1409759373-22696-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [REPOST PATCH v4 2/2] drm/tegra: Request memory bandwidth for the display controller
+Date: Wed,  3 Sep 2014 17:49:33 +0200
+Message-ID: <1409759373-22696-3-git-send-email-tomeu.vizoso@collabora.com>
+References: <1409759373-22696-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f178.google.com ([209.85.212.178]:52894 "EHLO
+	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755513AbaICPwy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 11:52:54 -0400
+In-Reply-To: <1409759373-22696-1-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
-List-Id: linux-pm@vger.kernel.org
 
-Hi,
+For now the amount requested is based solely on the current mode's refresh
+rate.
 
-this is just a rebase on top of latest linux-next. Follows the original blurb:
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Some device drivers need to sustain transfers to or from external memory at
-given fixed rates for a period of time. If we wait for the devfreq drivers to
-react to this load, the user is likely going to perceive glitches in the user
-experience.
+---
 
-Some common scenarios that would benefit from it are display controllers
-setting a new mode, USB drivers starting isochronous transfers, camera drivers
-starting to capture and hw media codecs doing their thing.
+v4: * Use vertical refresh rate when calculating the bandwidth requirement
 
-I'm proposing adding a new PM_QOS_MEMORY_BANDWIDTH class that device drivers
-can use to register their memory bandwidth needs right when they become known,
-so the external memory clock can be set at the optimum frequency, thus
-preventing glitches.
+v3: * Fixed the bandwidth calculation, and have the units be mbps
+---
+ drivers/gpu/drm/tegra/dc.c  | 15 +++++++++++++++
+ drivers/gpu/drm/tegra/drm.h |  3 +++
+ 2 files changed, 18 insertions(+)
 
-There have been similar proposals before [0], the first main concern being that
-constraints need to refer to a global resource such as CPUs. If they referred
-to a network NIC or to a UART, there would be no way of knowing how to actually
-constrain each device because there would be a single list of requests.
-
-In this case, the memory bus is a global resource just like the CPUs are, and
-all requests in this class will apply to a single device driver in any
-particular system.
-
-The second serious concern was that constraints need to be defined in a way
-generic enough so they can be consumed in a wide array of particular systems
-without placing the burden of taking into account hw specifics in the driver of
-the memory client.
-
-Here, the PM_QOS_MEMORY_BANDWIDTH constraints are specified always in kbs,
-being the amount of data that the device driver wants to see transferred per
-second. This allows for example for a camera driver to calculate the
-appropriate value based on the size of each frame and the desired FPS and,
-depending on the particular system where the camera block is used, the
-appropriate external memory driver will convert that to the bus clock frequency
-that makes sense for the hardware at hand.
-
-The first patch adds the new class and also a new PM_QOS_SUM class type.
-
-The second illustrates how the driver for such a memory client would request
-its memory bandwidth requirement.
-
-Most vendor trees carry their own solution for this specific issue, so it would
-be pretty neat if mainline gained a similar mechanism so we get more power
-management goodies in the right place.
-
-[0] https://lkml.org/lkml/2012/3/10/165
-
-Thanks,
-
-Tomeu
-
-Tomeu Vizoso (2):
-  PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
-  drm/tegra: Request memory bandwidth for the display controller
-
- Documentation/power/pm_qos_interface.txt |  4 +++-
- drivers/gpu/drm/tegra/dc.c               | 15 +++++++++++++++
- drivers/gpu/drm/tegra/drm.h              |  3 +++
- include/linux/pm_qos.h                   |  5 ++++-
- kernel/power/qos.c                       | 27 ++++++++++++++++++++++++++-
- 5 files changed, 51 insertions(+), 3 deletions(-)
-
+diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
+index 6553fd2..8a3fee8 100644
+--- a/drivers/gpu/drm/tegra/dc.c
++++ b/drivers/gpu/drm/tegra/dc.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/clk.h>
+ #include <linux/debugfs.h>
++#include <linux/pm_qos.h>
+ #include <linux/reset.h>
+ 
+ #include "dc.h"
+@@ -753,6 +754,8 @@ static void tegra_crtc_disable(struct drm_crtc *crtc)
+ 	}
+ 
+ 	drm_vblank_off(drm, dc->pipe);
++
++	pm_qos_update_request(&dc->qos_request, PM_QOS_DEFAULT_VALUE);
+ }
+ 
+ static bool tegra_crtc_mode_fixup(struct drm_crtc *crtc,
+@@ -839,6 +842,7 @@ static int tegra_crtc_mode_set(struct drm_crtc *crtc,
+ 	struct tegra_dc *dc = to_tegra_dc(crtc);
+ 	struct tegra_dc_window window;
+ 	u32 value;
++	unsigned long bandwidth;
+ 	int err;
+ 
+ 	drm_vblank_pre_modeset(crtc->dev, dc->pipe);
+@@ -879,6 +883,12 @@ static int tegra_crtc_mode_set(struct drm_crtc *crtc,
+ 	if (err < 0)
+ 		dev_err(dc->dev, "failed to enable root plane\n");
+ 
++	bandwidth = window.stride[0] * window.dst.h * 8;
++	bandwidth *= drm_mode_vrefresh(mode);
++	bandwidth /= 1024 * 1024;
++
++	pm_qos_update_request(&dc->qos_request, bandwidth);
++
+ 	return 0;
+ }
+ 
+@@ -1499,6 +1509,9 @@ static int tegra_dc_probe(struct platform_device *pdev)
+ 		return err;
+ 	}
+ 
++	pm_qos_add_request(&dc->qos_request, PM_QOS_MEMORY_BANDWIDTH,
++			   PM_QOS_DEFAULT_VALUE);
++
+ 	platform_set_drvdata(pdev, dc);
+ 
+ 	return 0;
+@@ -1509,6 +1522,8 @@ static int tegra_dc_remove(struct platform_device *pdev)
+ 	struct tegra_dc *dc = platform_get_drvdata(pdev);
+ 	int err;
+ 
++	pm_qos_remove_request(&dc->qos_request);
++
+ 	err = host1x_client_unregister(&dc->client);
+ 	if (err < 0) {
+ 		dev_err(&pdev->dev, "failed to unregister host1x client: %d\n",
+diff --git a/drivers/gpu/drm/tegra/drm.h b/drivers/gpu/drm/tegra/drm.h
+index e89c70f..a99e533d 100644
+--- a/drivers/gpu/drm/tegra/drm.h
++++ b/drivers/gpu/drm/tegra/drm.h
+@@ -12,6 +12,7 @@
+ 
+ #include <uapi/drm/tegra_drm.h>
+ #include <linux/host1x.h>
++#include <linux/pm_qos.h>
+ 
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc_helper.h>
+@@ -120,6 +121,8 @@ struct tegra_dc {
+ 	struct drm_pending_vblank_event *event;
+ 
+ 	const struct tegra_dc_soc_info *soc;
++
++	struct pm_qos_request qos_request;
+ };
+ 
+ static inline struct tegra_dc *
 -- 
 1.9.3
+
