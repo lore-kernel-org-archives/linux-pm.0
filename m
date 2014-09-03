@@ -1,169 +1,89 @@
-From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v9 4/6] ARM: Exynos: switch to using generic cpufreq
- driver for Exynos4210/5250/5420
-Date: Wed, 3 Sep 2014 09:56:32 +0530
-Message-ID: <CAJuA9ahe=9gdTaGcRb69syvRfwkkGMgDiiNfOMA9TBo42cWVZw@mail.gmail.com>
-References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
-	<1406707663-16656-5-git-send-email-thomas.ab@samsung.com>
-	<53DA8BB9.6020702@samsung.com>
-	<53DA8D85.3050106@gmail.com>
-	<7hbnrc6px3.fsf@paris.lan>
-	<53F7DA13.6090305@gmail.com>
-	<CADWw7OgAS-z-UOrJU-hL2fzuefJmLtCTg57jYk2Df7f5KfLJmA@mail.gmail.com>
-	<7h8umc60we.fsf@paris.lan>
-	<CADWw7OgW+o3tB=ptnsy-PsmXmNv8oXzt_WfK6NswQiEWWwAzNA@mail.gmail.com>
-	<CAGa+x85-Anb+HsSUQRaaeex19-HK+yZDW0UpFBwAtsQ8Sf2Aqg@mail.gmail.com>
-	<CAGa+x86jU8MR=r_xuaiorbNNyqrezb0b6Ozy-MPg9HvsARESOw@mail.gmail.com>
-	<CAJuA9ajtsrY7zSDMs=c6BZ0AqERoBgvq++dTF4Dn673zGMfcgQ@mail.gmail.com>
-	<CAMAWPa-8h5PNhgT+ApBhA8p=i+4oFOnYnQsQ4mK1JKwwAhpvpQ@mail.gmail.com>
-	<CAJuA9ah5M_pXRMXPB6o7JLhgVUHM7kYo9HOV6Yxv4Z=hKMdG=w@mail.gmail.com>
-	<7hmwah6cop.fsf@paris.lan>
+From: AYAN KUMAR HALDER <ayankumarh@gmail.com>
+Subject: Re: External devices
+Date: Wed, 3 Sep 2014 13:31:44 +0530
+Message-ID: <CAGAs2Amw1jvmDxL8+uXU4XW3u6Mxr7LKP4EiP8taTNQ2OpnWNw@mail.gmail.com>
+References: <CAJ2oMhKRA+0Ge_m=-zFqgTxcZbuGMNAOvBQKP=_GyWRwvfsKFw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f51.google.com ([209.85.215.51]:63133 "EHLO
-	mail-la0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751769AbaICE0e (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 00:26:34 -0400
-In-Reply-To: <7hmwah6cop.fsf@paris.lan>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:54937 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbaICIBt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 04:01:49 -0400
+Received: by mail-pa0-f48.google.com with SMTP id ey11so16774935pad.35
+        for <linux-pm@vger.kernel.org>; Wed, 03 Sep 2014 01:01:46 -0700 (PDT)
+In-Reply-To: <CAJ2oMhKRA+0Ge_m=-zFqgTxcZbuGMNAOvBQKP=_GyWRwvfsKFw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Chander Kashyap <k.chander@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Ran Shalit <ranshalit@gmail.com>
+Cc: linux-pm@vger.kernel.org, kernelnewbies <kernelnewbies@kernelnewbies.org>
 
-Hi Kevin,
+> 1. Are external devices can be integrated into the runtime
+> suspend/resume , or are they outside the subject of PM ? for example I
+> have external dsp connected to omap, can it be integrated to the PM ?
+> If it is controled through character device how can it be tailored
+> into the generic PM ?
 
-On Wed, Sep 3, 2014 at 1:02 AM, Kevin Hilman <khilman@kernel.org> wrote:
-> HI Thomas,
+Any external device can be integrated in runtime-pm framework provided
+its device driver or subsystem driver has runtime pm operations
+(namely dev_pm_ops->.runtime_suspend/resume/idle).
+
+Runtime suspend/resume is called by your driver to suspend the
+respective device. It can do so by incrementing/decrementing the usage
+count via pm_runtime_get and pm_runtime_put or by directly calling
+pm_runtime_suspend/pm_request_resume.
+So your char device driver for omap has to enable runtime pm for the
+device by calling pm_runtime_set_active() and pm_runtime_enable() from
+its init/probe methods.
+Whenever the driver needs to wakeup the device(say on receiving a
+interrupt), it can call runtime_pm_get. After handling the interrupt,
+if the driver wants to suspend the device, it can call runtime_pm_put.
+
+My statements are generic as I am unaware how the dsp functions.
+
+> 2. When the system moves to idle does it then automatically call all
+> tuntime suspend of all devices ?
 >
-> Thomas Abraham <ta.omasab@gmail.com> writes:
->
->> On Fri, Aug 29, 2014 at 8:33 PM, Kevin Hilman <khilman@kernel.org> wrote:
->>> Hi Thomas,
->>>
->>> On Fri, Aug 29, 2014 at 5:52 AM, Thomas Abraham <ta.omasab@gmail.com> wrote:
->>>> Hi Kevin,
->>>>
->>>> On Wed, Aug 27, 2014 at 3:55 AM, Kevin Hilman <khilman@linaro.org> wrote:
->>>>> On Tue, Aug 26, 2014 at 8:15 AM, Kevin Hilman <khilman@linaro.org> wrote:
->>>>>> On Mon, Aug 25, 2014 at 10:25 PM, Chander Kashyap <k.chander@samsung.com> wrote:
->>>>>
->>>>> [...]
->>>>>
->>>>>>>>
->>>>>>>> Can you clarify how you're setting the voltages to ensure stability?
->>>>>>>
->>>>>>> below is the diff :  wip/exynos/integ
->>>>>>
->>>>>> Thanks.
->>>>>>
->>>>>> I've applied your patch, and bootup shows vdd_arm and vdd_kfc at
->>>>>> 1500mV, but still when booting with cpuidle enabled (bL switcher
->>>>>> disabled), I'm seeing lockups with no kernel output.  With CPUidle
->>>>>> disabled, things are pretty stable.
->>>>>>
->>>>>> What tree are you using to test this out on 5420?  I'm using mainline
->>>>>> v3.17-rc1 + DT patch for CPUidle and this cpufreq series.  See my
->>>>>> wip/exynos/integ branch at
->>>>>> git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux.git.
->>>>>
->>>>> I mis-stated this.  Actually my tree is based on the v3.17-rc1 branch
->>>>> of the exynos-reference tree[1] + the above mentioned patches for
->>>>> cpuidle and cpufreq.
->>>>>
->>>>> Also, I've narrowed down the instability a bit, and it's not related
->>>>> to CPUidle.  I can now trigger a boot hang even without CPUidle
->>>>> enabled.  Here's a quick way to cause a boot lockup. With the switcher
->>>>> disabled, I enable CPUfreq and set the default governor to
->>>>> performance.  As soon as cpufreq driver loads, it tries to use the top
->>>>> frequences for both clusters, and it hangs.
->>>>>
->>>>> Selectively disabling frequencies, I narrowed it down to the 1.3GHz
->>>>> and 1.2GHz frequencies of the little cluster.  With these commented
->>>>> out in the DT, it will fully boot with the performance governor
->>>>> enabled.
->>>>>
->>>>> So that leads to the question.  Are all of the operating points in
->>>>> exynos5420.dtsi valid for exynos5800, and have they been validated?
->>>>
->>>> I tried to recreate the boot lockup issue using the same steps you
->>>> listed above for the Exynos5800 peach-pi platform (Chromebook2), but I
->>>> do not see any issues. I can see both clusters with max clock speed
->>>> after boot (1.8GHz and 1.3GHz).
->>>>
->>>> I am using v3.17-rc2 + CPUFreq Patches + max77802 regulator support
->>>> patches for Chromebook2 + temp hack to set A15 voltage to 1.35V and A7
->>>> voltage to 1.3V.
->>>
->>> Can you share your branch and temp hack(s) as well as your defconfig?
->>>
->>> I'm using the v3.17-rc1 branch from the exynos tree (which includes
->>> the max77802 series) but also has a bunch of other stuff which may be
->>> causing the issue.
->>>
->>> It would be good if I can reproduce your exact tree/branch and see if
->>> I still have the same problem.
->>
->> The branch with the patches that have been used to test cpufreq on
->> Exynos5800 is available at
->>
->> https://github.com/exynos-reference/kernel/tree/exynos5-v3.17-rc3-temp-cpufreq
->>
->> Please let me know if this works or if there are any issues.
->
-> Yes, your branch works fine, but it's because of the last (unposted)
-> patch on your branch[1]:
-> ARM: dts: remove all supplies sourced from tps65090 PMIC
+As I have mentioned in my previous reply that the runtime-pm is device
+specific(and not system specific). so each device driver calls its
+runtime suspend/resume for its corresponding devices whenever it feels
+so. The runtime-pm framework has some policies like it checks if the
+device to be suspended has any active children or not, etc
 
-I must have explicitly stated that I am using local changes to get
-vdd_arm and vdd_kfc to required levels. I apologize for that. These
-are local temporary changes which I did not want to post. I am working
-on adding voltage scaling support in arm bL cpufreq driver with which
-these local hacks would not be necessary.
+System moving to idle state would correspond to most devices in  a
+runtime-pm idle state. Each device enter into idle state when its
+corresponding driver invokes so. Each device is independently moved to
+idle/suspend/resume state unless their exist a parent-child
+relationship between the devices.
 
->
-> That patch had not been posted, so I hadn't seen it before, but based on
-> the changelog, it's pretty clear you had the same problems that I had
-> without it, so I'm not sure why it wasn't mentioned earlier in this
-> thread.
+Runtime power management is different from system power management (ie
+suspend to RAM/Disk) in which the PM framework calls the suspend and
+resume of all the devices(sequentially). However, these suspend/resume
+functions are different from runtime suspend/resume functions.
+eg
+static const struct dev_pm_ops usb_device_pm_ops = {
+        .prepare =      usb_dev_prepare,
+        .complete =     usb_dev_complete,
 
-At the time of posting, this patch series was only tested on
-Exynos5420 based smdk5420 board. There was no regulator support for
-peach-pit and peach-pi at that time and so I had not tested this
-series on Exynos5800 Chromebook2. But the code was written to be fully
-compatible for Exynos5800 as well. It was when you reported a problem
-with Exynos5800 that I tested this series on Exynos5800 with the
-regulator patches from Javier.
+/* the following two functions are system power management's
+suspend/resume functions which are invoked by PM framework when the
+system suspends/hibernates.  */
 
->
-> I also noticed that the "force vdd_arm and vdd_kfc to max voltage" patch
-> is not actually using the max voltage, which appears to be 1.5V from the
-> DT, but actually using 1.35 V, however the changelog has no explanation
-> for this.
+        .suspend =      usb_dev_suspend,
+        .resume =       usb_dev_resume,
+        .freeze =       usb_dev_freeze,
+        .thaw =         usb_dev_thaw,
+        .poweroff =     usb_dev_poweroff,
+        .restore =      usb_dev_restore,
+#ifdef CONFIG_USB_SUSPEND
+/* the following three functions are runtime power management's
+suspend/resume/idle functions invoked by the driver when it wants to
+put the corresponding device in suspend/idle/resume state.  */
+        .runtime_suspend =      usb_runtime_suspend,
+        .runtime_resume =       usb_runtime_resume,
+        .runtime_idle =         usb_runtime_idle,
+#endif
+};
 
-This also is a temporary patch and by "max voltage" I actually meant
-max voltage required to operate the cpus and not the max voltage that
-the buck can supply.
-
->
-> One other thing, your temp-cpufreq branch has conflicts with max77802
-> stuff in the v3.17-rc1 branch of the exynos-reference tree (which I'm
-> using for CPUidle dependencies, on the PMU series IIRC.)
-
-I haven't checked but probably there is an older version of Javier's
-regulator patches in the v3.17-rc1 branch.
-
->
-> Are there any plans to update the main referece branch and include
-> cpufreq?
-
-Yes, a new branch with all the latest patches (cpufreq + regulator +
-temp fixes) will be created. I will let you when that is ready.
-
-Thanks,
-Thomas.
-
->
-> Kevin
->
-> [1] https://github.com/exynos-reference/kernel/commit/f08be7e4296a3452ee5d1aae31e3de5bbff2cf1a
+Regards,
+Ayan Kumar Halder
