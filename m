@@ -1,75 +1,56 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCHv6 0/2] thermal: exynos: Add support for TRIMINFO feature
- of Exynos3250
-Date: Fri, 29 Aug 2014 22:39:30 -0400
-Message-ID: <20140830023928.GC23645@developer>
-References: <1409713743-6124-1-git-send-email-cw00.choi@samsung.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 14/15] PM / Domains: Remove default_stop_ok() API
+Date: Wed, 3 Sep 2014 15:15:59 +0200
+Message-ID: <CAMuHMdUEfAdpUgEtOQfdG1gbZjVo3bfAAmhm0-miFGbQ8ckHgA@mail.gmail.com>
+References: <1409741551-16437-1-git-send-email-ulf.hansson@linaro.org>
+	<1409741551-16437-15-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f53.google.com ([209.85.216.53]:40320 "EHLO
-	mail-qa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756076AbaICNLh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 09:11:37 -0400
-Content-Disposition: inline
-In-Reply-To: <1409713743-6124-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1409741551-16437-15-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Kevin Hilman <khilman@linaro.org>, Philipp Zabel <philipp.zabel@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux-sh list <linux-sh@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Mark Brown <broonie@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: eduardo.valentin@ti.com, amit.daniel@samsung.com, rui.zhang@intel.com, kgene.kim@samsung.com, ch.naveen@samsung.com, kyungmin.park@samsung.com, b.zolnierkie@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+Hi Ulf,
 
-On Wed, Sep 03, 2014 at 12:09:01PM +0900, Chanwoo Choi wrote:
-> This patchset add the support of TRIMINFO_RELOAD feature for Exynos3250.
-> But Exynos3250 has two TRIMINFO_CTRL register instead other Exynos has only one
-> TRIMINFO_CTRL register. So, this patchset support the some Exynos SoC which
-> has more than one TRIMINF_CTRL.
-> 
-> Also, this patchset fix wrong value of TRIMINFO_RELOAD_SHIFT and remove
-> duplicate code when reading triminfo register of Exynos5440.
-> 
-> Changes from v5:
-> - Rebase this patchset on next branch of linux-soc-thermal.git
-> 
+On Wed, Sep 3, 2014 at 12:52 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> --- a/drivers/base/power/domain_governor.c
+> +++ b/drivers/base/power/domain_governor.c
 
-Pulled into my next branch. Thanks.
+> @@ -229,10 +229,7 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
+>
+>  #else /* !CONFIG_PM_RUNTIME */
+>
+> -bool default_stop_ok(struct device *dev)
+> -{
+> -       return false;
+> -}
+> +static inline bool default_stop_ok(struct device *dev) { return false; }
 
-> Changes from v4:
-> - Remove un-necessary triminfo_ctrl_{shift, mask} field
-> - Includes Bartlomiej's patch[1] that Exynos5260 / Exynos5420 should not use
-> TRIM_RELOAD flag
-> [2] https://lkml.org/lkml/2014/8/20/481
-> 
-> Changes from v3:
-> - Add reviewed message of Amit Daniel Kachhap <amit.daniel@samsung.com>
-> - Split RELOAD patch as two patch
-> - Fix 'TRIMINFO_RELOAD_SHIFT' value
-> - This series includes separate patch[1]
-> [1] https://lkml.org/lkml/2014/8/20/5
-> - Drop ACTIME bit setting because TRM includes not enough information of ACTIME bit.
-> 
-> Changes from v2:
-> - Fix build break because of missing 'or' operation.
-> 
-> Changes from v1:
-> - Add missing 'TMU_SUPPORT_TRIM_RELOAD' features
-> 
-> Chanwoo Choi (2):
->   thermal: exynos: Add support for many TRIMINFO_CTRL registers
->   thermal: exynos: Add support for TRIM_RELOAD feature at Exynos3250
-> 
->  drivers/thermal/samsung/exynos_thermal_common.h |  1 +
->  drivers/thermal/samsung/exynos_tmu.c            | 15 ++++++++++++---
->  drivers/thermal/samsung/exynos_tmu.h            |  7 +++++--
->  drivers/thermal/samsung/exynos_tmu_data.c       | 11 +++++++++--
->  drivers/thermal/samsung/exynos_tmu_data.h       |  8 ++++++--
->  5 files changed, 33 insertions(+), 9 deletions(-)
-> 
-> -- 
-> 1.8.0
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The "inline" doesn't make much sense here. This function is only
+referenced from places that need its address:
+
+struct dev_power_governor simple_qos_governor = {
+        .stop_ok = default_stop_ok,
+        .power_down_ok = default_power_down_ok,
+};
+
+and
+
+struct dev_power_governor pm_domain_always_on_gov = {
+        .power_down_ok = always_on_power_down_ok,
+        .stop_ok = default_stop_ok,
+};
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
