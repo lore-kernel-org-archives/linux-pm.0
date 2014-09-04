@@ -1,166 +1,60 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: [PATCH v2 1/2] sched: let the scheduler see CPU idle states
-Date: Thu, 04 Sep 2014 11:32:09 -0400
-Message-ID: <1409844730-12273-2-git-send-email-nicolas.pitre@linaro.org>
-References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org>
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH v8 6/8] drivers: cpuidle: CPU idle ARM64 driver
+Date: Thu, 4 Sep 2014 17:03:20 +0100
+Message-ID: <20140904160320.GB22354@arm.com>
+References: <1409585324-3678-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1409585324-3678-7-git-send-email-lorenzo.pieralisi@arm.com>
+ <20140903173740.GJ1824@e102568-lin.cambridge.arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:46604 "EHLO
+	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751596AbaIDQDe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 12:03:34 -0400
+Content-Disposition: inline
+In-Reply-To: <20140903173740.GJ1824@e102568-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie>
 
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+On Wed, Sep 03, 2014 at 06:37:40PM +0100, Lorenzo Pieralisi wrote:
+> On Mon, Sep 01, 2014 at 04:28:42PM +0100, Lorenzo Pieralisi wrote:
+> > This patch implements a generic CPU idle driver for ARM64 machines.
+> > 
+> > It relies on the DT idle states infrastructure to initialize idle
+> > states count and respective parameters. Current code assumes the driver
+> > is managing idle states on all possible CPUs but can be easily
+> > generalized to support heterogenous systems and build cpumasks at
+> > runtime using MIDRs or DT cpu nodes compatible properties.
+> > 
+> > The driver relies on the arm64 CPU operations to call the idle
+> > initialization hook used to parse and save suspend back-end specific
+> > idle states information upon probing.
+> > 
+> > Idle state index 0 is always initialized as a simple wfi state, ie always
+> > considered present and functional on all ARM64 platforms.
+> > 
+> > Idle state indices higher than 0 trigger idle state entry by calling
+> > the cpu_suspend function, that triggers the suspend operation through
+> > the CPU operations suspend back-end hook. cpu_suspend passes the idle
+> > state index as a parameter so that the CPU operations suspend back-end
+> > can retrieve the required idle state data by using the idle state
+> > index to execute a look-up on its internal data structures.
+> > 
+> > Reviewed-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+> > Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> 
+> This patch should be ready to go too, is it ok if I split the series
+> in arm64 arch specific patches (will ask Catalin to pull) and CPUidle ones
+> (inclusive of DT bindings and !!this patch!!) and send two separate pull
+> requests ?
 
-When the cpu enters idle, it stores the cpuidle state pointer in its
-struct rq instance which in turn could be used to make a better decision
-when balancing tasks.
+If Daniel/Rafael don't have any objection, I can take the whole series
+through the arm64 tree (it seems that patches have been already acked by
+Daniel).
 
-As soon as the cpu exits its idle state, the struct rq reference is
-cleared.
-
-There are a couple of situations where the idle state pointer could be changed
-while it is being consulted:
-
-1. For x86/acpi with dynamic c-states, when a laptop switches from battery
-   to AC that could result on removing the deeper idle state. The acpi driver
-   triggers:
-	'acpi_processor_cst_has_changed'
-		'cpuidle_pause_and_lock'
-			'cpuidle_uninstall_idle_handler'
-				'kick_all_cpus_sync'.
-
-All cpus will exit their idle state and the pointed object will be set to
-NULL.
-
-2. The cpuidle driver is unloaded. Logically that could happen but not
-in practice because the drivers are always compiled in and 95% of them are
-not coded to unregister themselves.  In any case, the unloading code must
-call 'cpuidle_unregister_device', that calls 'cpuidle_pause_and_lock'
-leading to 'kick_all_cpus_sync' as mentioned above.
-
-A race can happen if we use the pointer and then one of these two scenarios
-occurs at the same moment.
-
-In order to be safe, the idle state pointer stored in the rq must be
-used inside a rcu_read_lock section where we are protected with the
-'rcu_barrier' in the 'cpuidle_uninstall_idle_handler' function. The
-idle_get_state() and idle_put_state() accessors should be used to that
-effect.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Nicolas Pitre <nico@linaro.org>
----
- drivers/cpuidle/cpuidle.c |  6 ++++++
- kernel/sched/idle.c       |  6 ++++++
- kernel/sched/sched.h      | 39 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 51 insertions(+)
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index ee9df5e3f5..530e3055a2 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -225,6 +225,12 @@ void cpuidle_uninstall_idle_handler(void)
- 		initialized = 0;
- 		kick_all_cpus_sync();
- 	}
-+
-+	/*
-+	 * Make sure external observers (such as the scheduler)
-+	 * are done looking at pointed idle states.
-+	 */
-+	rcu_barrier();
- }
- 
- /**
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index 11e7bc434f..c47fce75e6 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -147,6 +147,9 @@ use_default:
- 	    clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
- 		goto use_default;
- 
-+	/* Take note of the planned idle state. */
-+	idle_set_state(this_rq(), &drv->states[next_state]);
-+
- 	/*
- 	 * Enter the idle state previously returned by the governor decision.
- 	 * This function will block until an interrupt occurs and will take
-@@ -154,6 +157,9 @@ use_default:
- 	 */
- 	entered_state = cpuidle_enter(drv, dev, next_state);
- 
-+	/* The cpu is no longer idle or about to enter idle. */
-+	idle_set_state(this_rq(), NULL);
-+
- 	if (broadcast)
- 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
- 
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 579712f4e9..aea8baa7a5 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -14,6 +14,7 @@
- #include "cpuacct.h"
- 
- struct rq;
-+struct cpuidle_state;
- 
- extern __read_mostly int scheduler_running;
- 
-@@ -636,6 +637,11 @@ struct rq {
- #ifdef CONFIG_SMP
- 	struct llist_head wake_list;
- #endif
-+
-+#ifdef CONFIG_CPU_IDLE
-+	/* Must be inspected within a rcu lock section */
-+	struct cpuidle_state *idle_state;
-+#endif
- };
- 
- static inline int cpu_of(struct rq *rq)
-@@ -1180,6 +1186,39 @@ static inline void idle_exit_fair(struct rq *rq) { }
- 
- #endif
- 
-+#ifdef CONFIG_CPU_IDLE
-+static inline void idle_set_state(struct rq *rq,
-+				  struct cpuidle_state *idle_state)
-+{
-+	rq->idle_state = idle_state;
-+}
-+
-+static inline struct cpuidle_state *idle_get_state(struct rq *rq)
-+{
-+	rcu_read_lock();
-+	return rq->idle_state;
-+}
-+
-+static inline void cpuidle_put_state(struct rq *rq)
-+{
-+	rcu_read_unlock();
-+}
-+#else
-+static inline void idle_set_state(struct rq *rq,
-+				  struct cpuidle_state *idle_state)
-+{
-+}
-+
-+static inline struct cpuidle_state *idle_get_state(struct rq *rq)
-+{
-+	return NULL;
-+}
-+
-+static inline void cpuidle_put_state(struct rq *rq)
-+{
-+}
-+#endif
-+
- extern void sysrq_sched_debug_show(void);
- extern void sched_init_granularity(void);
- extern void update_max_interval(void);
 -- 
-1.8.4.108.g55ea5f6
+Catalin
