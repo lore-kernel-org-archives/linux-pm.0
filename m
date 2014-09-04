@@ -1,48 +1,74 @@
-From: Brian Norris <computersforpeace@gmail.com>
-Subject: Re: [PATCH] PM / sleep: add configurable delay for pm_test
-Date: Thu, 4 Sep 2014 10:54:50 -0700
-Message-ID: <20140904175450.GB18411@ld-irv-0074>
-References: <1409788535-28264-1-git-send-email-computersforpeace@gmail.com>
- <20140904071412.GA29832@amd>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [stable -3.14] PM backports for pm_test / CONFIG_PM_DEBUG
+Date: Thu, 04 Sep 2014 21:40:41 +0200
+Message-ID: <1849024.CHOUso6H2K@vostro.rjw.lan>
+References: <20140904010219.GA18411@ld-irv-0074>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:64911 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689AbaIDRy5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 13:54:57 -0400
-Content-Disposition: inline
-In-Reply-To: <20140904071412.GA29832@amd>
+Received: from v094114.home.net.pl ([79.96.170.134]:62359 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755254AbaIDTVU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 15:21:20 -0400
+In-Reply-To: <20140904010219.GA18411@ld-irv-0074>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki\"" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: Brian Norris <computersforpeace@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Zhang Rui <rui.zhang@intel.com>
 
-On Thu, Sep 04, 2014 at 09:14:12AM +0200, Pavel Machek wrote:
-> > When CONFIG_PM_DEBUG=y, we provide a sysfs file (/sys/power/pm_test) for
-> > selecting one of a few suspend test modes, where rather than entering a
-> > full suspend state, the kernel will perform some subset of suspend
-> > steps, wait 5 seconds, and then resume back to normal operation.
-> > 
-> > This mode is useful for (among other things) observing the state of the
-> > system just before entering a sleep mode, for debugging or analysis
-> > purposes. However, a constant 5 second wait is not sufficient for some
-> > sorts of analysis; for example, on an SoC, one might want to use
-> > external tools to probe the power states of various on-chip controllers
-> > or clocks.
+On Wednesday, September 03, 2014 06:02:19 PM Brian Norris wrote:
+> Hi,
 > 
-> When you are doing this kind of analysis, perhaps directly modifying
-> kernel source is the way to go ...?
+> If I enable CONFIG_PM_DEBUG on a 3.14.y kernel, I can see the following
+> results:
+> 
+>     # cat /sys/power/state
+>     freeze standby mem
+>     # cat /sys/power/pm_test
+>     [none] core processors platform devices freezer
+>     # echo core > /sys/power/pm_test
+>     # cat /sys/power/state
+>     [   22.581289] Unsupported pm_test mode for freeze state, please choose none/freezer/devices/platform.
+>     standby mem
+> 
+> Note how 'freeze' is dropped from the supported states, and I get an
+> extra printk message when I'm just checking if the state is valid.
+> 
+> It looks like if I backport a few fixes, I get more sane behavior, where
+> the warnings (and -EAGAIN) appear only when I actually try to enter an
+> unsupported test mode:
+> 
+>     # echo core > /sys/power/pm_test
+>     # cat /sys/power/state
+>     freeze standby mem
+>     # echo freeze > /sys/power/state
+>     [   27.833141] PM: Unsupported test mode for freeze state,please choose none/freezer/devices/platform.
+>     sh: echo: write error: Resource temporarily unavailable
+> 
+> I think I've narrowed it down to this commit that should be backported
+> to -stable (for 3.9+?):
+> 
+>     43e8317b0bba PM / sleep: Use valid_state() for platform-dependent sleep states only
+> 
+> But it needs to drag along this dependency too:
+> 
+>     27ddcc6596e5 PM / sleep: Add state field to pm_states[] entries
 
-That's what I've been doing for now, but I have a few engineers who need
-to do this sort of testing and aren't kernel developers. I could
-continue to maintain my own patch for this, but I just thought I'd see
-what others thought.
+That sounds OK.
 
-Is there a good reason this can't be in mainline? These features are
-hidden behind a Kconfig symbol called PM_DEBUG anyway, and I think this
-classifies as a pretty simple extension to the limited existing PM
-debugging options.
+Can you please send a formal request to include the two commits above to Greg/stable?
 
-Regards,
-Brian
+> While at this, it looks like this commit might be deserving of -stable
+> (3.9+). I haven't tested this one, as I don't have a good freeze+cpuidle
+> setup; it just shows up in the commit log with an interesting
+> description and a 'Fixes' tag:
+> 
+>     f3f125324fc1 PM / suspend: Make cpuidle work in the "freeze" state
+
+Well, it basically makes the freeze state save energy, but it's not essential.
+
+I'm not seeing the "Fixes:" tag on it, though.
+
+Rafael
+
