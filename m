@@ -1,74 +1,41 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [stable -3.14] PM backports for pm_test / CONFIG_PM_DEBUG
-Date: Thu, 04 Sep 2014 21:40:41 +0200
-Message-ID: <1849024.CHOUso6H2K@vostro.rjw.lan>
-References: <20140904010219.GA18411@ld-irv-0074>
+Subject: Re: [PATCH 14/15] PM / Domains: Remove default_stop_ok() API
+Date: Thu, 04 Sep 2014 21:49:29 +0200
+Message-ID: <6302495.FUvz9FPcau@vostro.rjw.lan>
+References: <1409741551-16437-1-git-send-email-ulf.hansson@linaro.org> <1409741551-16437-15-git-send-email-ulf.hansson@linaro.org> <CAMuHMdUEfAdpUgEtOQfdG1gbZjVo3bfAAmhm0-miFGbQ8ckHgA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62359 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755254AbaIDTVU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 15:21:20 -0400
-In-Reply-To: <20140904010219.GA18411@ld-irv-0074>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdUEfAdpUgEtOQfdG1gbZjVo3bfAAmhm0-miFGbQ8ckHgA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Kevin Hilman <khilman@linaro.org>, Philipp Zabel <philipp.zabel@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux-sh list <linux-sh@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Mark Brown <broonie@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Brian Norris <computersforpeace@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Zhang Rui <rui.zhang@intel.com>
 
-On Wednesday, September 03, 2014 06:02:19 PM Brian Norris wrote:
-> Hi,
+On Wednesday, September 03, 2014 03:15:59 PM Geert Uytterhoeven wrote:
+> Hi Ulf,
 > 
-> If I enable CONFIG_PM_DEBUG on a 3.14.y kernel, I can see the following
-> results:
+> On Wed, Sep 3, 2014 at 12:52 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > --- a/drivers/base/power/domain_governor.c
+> > +++ b/drivers/base/power/domain_governor.c
 > 
->     # cat /sys/power/state
->     freeze standby mem
->     # cat /sys/power/pm_test
->     [none] core processors platform devices freezer
->     # echo core > /sys/power/pm_test
->     # cat /sys/power/state
->     [   22.581289] Unsupported pm_test mode for freeze state, please choose none/freezer/devices/platform.
->     standby mem
+> > @@ -229,10 +229,7 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
+> >
+> >  #else /* !CONFIG_PM_RUNTIME */
+> >
+> > -bool default_stop_ok(struct device *dev)
+> > -{
+> > -       return false;
+> > -}
+> > +static inline bool default_stop_ok(struct device *dev) { return false; }
 > 
-> Note how 'freeze' is dropped from the supported states, and I get an
-> extra printk message when I'm just checking if the state is valid.
-> 
-> It looks like if I backport a few fixes, I get more sane behavior, where
-> the warnings (and -EAGAIN) appear only when I actually try to enter an
-> unsupported test mode:
-> 
->     # echo core > /sys/power/pm_test
->     # cat /sys/power/state
->     freeze standby mem
->     # echo freeze > /sys/power/state
->     [   27.833141] PM: Unsupported test mode for freeze state,please choose none/freezer/devices/platform.
->     sh: echo: write error: Resource temporarily unavailable
-> 
-> I think I've narrowed it down to this commit that should be backported
-> to -stable (for 3.9+?):
-> 
->     43e8317b0bba PM / sleep: Use valid_state() for platform-dependent sleep states only
-> 
-> But it needs to drag along this dependency too:
-> 
->     27ddcc6596e5 PM / sleep: Add state field to pm_states[] entries
+> The "inline" doesn't make much sense here.
 
-That sounds OK.
+But then it doesn't hurt either I suppose?
 
-Can you please send a formal request to include the two commits above to Greg/stable?
+Anyway, Ulf, are you going to update this patch?
 
-> While at this, it looks like this commit might be deserving of -stable
-> (3.9+). I haven't tested this one, as I don't have a good freeze+cpuidle
-> setup; it just shows up in the commit log with an interesting
-> description and a 'Fixes' tag:
-> 
->     f3f125324fc1 PM / suspend: Make cpuidle work in the "freeze" state
-
-Well, it basically makes the freeze state save energy, but it's not essential.
-
-I'm not seeing the "Fixes:" tag on it, though.
-
-Rafael
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
