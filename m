@@ -1,47 +1,105 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH 3/3] cpuidle: Using the wake_up_all_idle_cpus() to wake
- up all idle cpus
-Date: Thu, 4 Sep 2014 13:39:38 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E6B3E3@SHSMSX101.ccr.corp.intel.com>
-References: <1409815075-4180-1-git-send-email-chuansheng.liu@intel.com>
- <1409815075-4180-3-git-send-email-chuansheng.liu@intel.com>
- <540862AA.7060907@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <540862AA.7060907@linaro.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "peterz@infradead.org" <peterz@infradead.org>, "luto@amacapital.net" <luto@amacapital.net>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "mingo@redhat.com" <mingo@redhat.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH v3 0/9] PM / Domains: Generic OF-based support
+Date: Thu,  4 Sep 2014 15:52:27 +0200
+Message-ID: <1409838756-31963-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
-W21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBUaHVyc2RheSwgU2Vw
-dGVtYmVyIDA0LCAyMDE0IDk6MDIgUE0NCj4gVG86IExpdSwgQ2h1YW5zaGVuZzsgcGV0ZXJ6QGlu
-ZnJhZGVhZC5vcmc7IGx1dG9AYW1hY2FwaXRhbC5uZXQ7DQo+IHJqd0Byand5c29ja2kubmV0OyBt
-aW5nb0ByZWRoYXQuY29tDQo+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtl
-cm5lbEB2Z2VyLmtlcm5lbC5vcmc7IExpdSwgQ2hhbmdjaGVuZzsNCj4gV2FuZywgWGlhb21pbmc7
-IENoYWtyYXZhcnR5LCBTb3V2aWsgSw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDMvM10gY3B1aWRs
-ZTogVXNpbmcgdGhlIHdha2VfdXBfYWxsX2lkbGVfY3B1cygpIHRvIHdha2UgdXANCj4gYWxsIGlk
-bGUgY3B1cw0KPiANCj4gT24gMDkvMDQvMjAxNCAwOToxNyBBTSwgQ2h1YW5zaGVuZyBMaXUgd3Jv
-dGU6DQo+ID4gQ3VycmVudGx5IGtpY2tfYWxsX2NwdXNfc3luYygpIG9yIHNtcF9jYWxsX2Z1bmN0
-aW9uKCkgY2FuIG5vdA0KPiA+IGJyZWFrIHRoZSBwb2xsaW5nIGlkbGUgY3B1IGltbWVkaWF0ZWx5
-Lg0KPiA+DQo+ID4gSGVyZSB1c2luZyB3YWtlX3VwX2FsbF9pZGxlX2NwdXMoKSB3aGljaCBjYW4g
-d2FrZSB1cCB0aGUgcG9sbGluZyBpZGxlDQo+ID4gY3B1IHF1aWNrbHkgaXMgbXVjaCBoZWxwZnVs
-IGZvciBwb3dlci4NCj4gDQo+IEFja2VkLWJ5OiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxlemNh
-bm9AbGluYXJvLm9yZz4NCj4gDQo+IFNvIElJVUMsIGtpY2tfYWxsX2NwdXNfc3luYyBpcyBhIGJy
-b2tlbiBmdW5jdGlvbiwgcmlnaHQgPw0KPiANCj4gV291bGRuJ3QgbWFrZSBzZW5zZSB0byByZXBs
-YWNlIGFsbCBjYWxscyB0byBraWNrX2FsbF9jcHVzIGJ5DQo+IHdha2VfdXBfYWxsX2lkbGVfY3B1
-cyA/IGFuZCByZW1vdmUgdGhpcyBicm9rZW4gZnVuY3Rpb24gPw0KTXkgaW5pdGlhbCBwYXRjaChW
-MSkgaW5kZWVkIGRvIGl0LCBidXQgQW5keSBwb2ludGVkIG91dCBzb21lIGNhbGxlcnMgb2Yga2lj
-a19hbGxfY3B1c19zeW5jKCkNCnJlYWxseSB3YW50IHRoZSBvbGQgYmVoYXZpb3IuDQoNCk15IGZh
-dWx0IGFnYWluIHRoYXQgZG8gbm90IGhhdmUgdGhlIGRldGFpbGVkIGNoYW5nZWxvZyBmb3IgdGhl
-IHBhdGNoZXMuDQoNClBhc3RlZCB0aGUgY29tbWVudHMgZnJvbSBBbmR5Og0KPT0NCj4gQ3VycmVu
-dGx5IHVzaW5nIHNtcF9jYWxsX2Z1bmN0aW9uKCkganVzdCB3b2tlIHVwIHRoZSBjb3JyZXNwb25k
-aW5nDQo+IGNwdSwgYnV0IGNhbiBub3QgYnJlYWsgdGhlIHBvbGxpbmcgaWRsZSBsb29wLg0KPg0K
-PiBIZXJlIHVzaW5nIHRoZSBuZXcgc2NoZWQgQVBJIHdha2VfdXBfaWZfaWRsZSgpIHRvIGltcGxl
-bWVudCBpdC4NCg0Ka2lja19hbGxfY3B1c19zeW5jIGhhcyBvdGhlciBjYWxsZXJzLCBhbmQgdGhv
-c2Ugb3RoZXIgY2FsbGVycyB3YW50IHRoZQ0Kb2xkIGJlaGF2aW9yLiAgSSB0aGluayB0aGlzIHNo
-b3VsZCBiZSBhIG5ldyBmdW5jdGlvbi4NCg0KLS1BbmR5DQo9PQ0KDQoNCg==
+Changes in v3:
+	- Aligned on terminology, now using "PM domain" in comments and commit
+	- messages/headers.
+	- Improved English and grammar in comments and commit messages/headers.
+	- Adopted proposal from Geert, to have compile-time-check wrapper
+	  functions for the API that adds xlate_simple and xlate_onecell
+	  providers.
+ 	- Renamed "domain_num" to "num_domains", in genpd_onecell_data struct.
+	- Handle non-contiguous arrays for onecell PM domain providers.
+	- Rebased the Exynos patch to follow the new genpd API changes.
+
+
+Changes in v2:
+	- Fix the ACPI patch, it didn't even compile for CONFIG_ACPI.
+	- Updated some comments in code and in commit messages.
+	- Fixed the dev_pm_domain_attach API to handle EPROBE_DEFER properly.
+	- Rebased the ARM Exynos patch.
+	- Added some Tested-by tags.
+
+
+This patchset has a bit of a history and some parts of it has been posted
+earlier.
+
+http://lists.infradead.org/pipermail/linux-arm-kernel/2014-June/262725.html
+
+In the first revision I intentially didn't increase version number of the
+patches, since I think it would have cause more confusion than clarity.
+
+A summary of changes in V1 and since the last patchset, from the link above:
+	- Instead of letting driver core handling the device to power domain
+	binding/unbinding, follow the behavior of how the ACPI power domain
+	is handled.
+
+
+This is a summary of what these patches are intended to do:
+
+1)
+Add generic power domain OF-based support which also includes APIs to handle
+attach/detach of generic power domains to devices.
+
+2)
+Adding a common API to attach/detach power domains and include support for the
+ACPI and the generic power domain in there.
+
+3)
+>From subsystem level code, at probe/remove, convert from invoking the ACPI
+specific power domain attach/detach functions to the new common attach/detach
+APIs.
+
+4)
+Add support for the AMBA bus to attach/detach power domains, using the new
+common APIs.
+
+5)
+Convert Exynos to use the new generic power domain OF support.
+
+Obviously, there are dependencies througout this patchset, which means if they
+get accepted the all need to go together. It might also be convenient to share
+them through an immutable branch.
+
+
+Tomasz Figa (2):
+  PM / Domains: Add generic OF-based PM domain look-up
+  ARM: exynos: Move to generic PM domain DT bindings
+
+Ulf Hansson (7):
+  ACPI / PM: Let acpi_dev_pm_detach() return an error code
+  PM / Domains: Add APIs to attach/detach a PM domain for a device
+  drivercore / platform: Convert to dev_pm_domain_attach|detach()
+  i2c: core: Convert to dev_pm_domain_attach|detach()
+  mmc: sdio: Convert to dev_pm_domain_attach|detach()
+  spi: core: Convert to dev_pm_domain_attach|detach()
+  amba: Add support for attach/detach of PM domains
+
+ .../bindings/arm/exynos/power_domain.txt           |  13 +-
+ .../devicetree/bindings/power/power_domain.txt     |  49 ++++
+ arch/arm/mach-exynos/pm_domains.c                  |  78 +-----
+ drivers/acpi/device_pm.c                           |   8 +-
+ drivers/amba/bus.c                                 |  10 +-
+ drivers/base/platform.c                            |  15 +-
+ drivers/base/power/common.c                        |  56 ++++
+ drivers/base/power/domain.c                        | 291 +++++++++++++++++++++
+ drivers/i2c/i2c-core.c                             |  13 +-
+ drivers/mmc/core/sdio_bus.c                        |   4 +-
+ drivers/spi/spi.c                                  |  12 +-
+ include/linux/acpi.h                               |   7 +-
+ include/linux/pm.h                                 |  14 +
+ include/linux/pm_domain.h                          |  57 ++++
+ kernel/power/Kconfig                               |   4 +
+ 15 files changed, 524 insertions(+), 107 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/power_domain.txt
+
+-- 
+1.9.1
+
