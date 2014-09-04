@@ -1,154 +1,70 @@
-From: Brian Norris <computersforpeace@gmail.com>
-Subject: [PATCH] PM / sleep: add configurable delay for pm_test
-Date: Wed,  3 Sep 2014 16:55:35 -0700
-Message-ID: <1409788535-28264-1-git-send-email-computersforpeace@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:39694 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750788AbaIDAGa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 20:06:30 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 13/15] drivers: sh: Leave disabling of unused PM domains
+ to genpd
+Date: Thu, 4 Sep 2014 09:33:51 +0900
+Message-ID: <20140904003351.GB13821@verge.net.au>
+References: <1409741551-16437-1-git-send-email-ulf.hansson@linaro.org>
+ <1409741551-16437-14-git-send-email-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1409741551-16437-14-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki\"" <rjw@rjwysocki.net>
-Cc: Brian Norris <computersforpeace@gmail.com>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
 
-When CONFIG_PM_DEBUG=y, we provide a sysfs file (/sys/power/pm_test) for
-selecting one of a few suspend test modes, where rather than entering a
-full suspend state, the kernel will perform some subset of suspend
-steps, wait 5 seconds, and then resume back to normal operation.
+On Wed, Sep 03, 2014 at 12:52:29PM +0200, Ulf Hansson wrote:
+> Since genpd at late init, will try to disable unused PM domains we
+> don't need to do it from here as well.
+> 
+> Cc: Simon Horman <horms@verge.net.au>
+> Cc: Magnus Damm <magnus.damm@gmail.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-This mode is useful for (among other things) observing the state of the
-system just before entering a sleep mode, for debugging or analysis
-purposes. However, a constant 5 second wait is not sufficient for some
-sorts of analysis; for example, on an SoC, one might want to use
-external tools to probe the power states of various on-chip controllers
-or clocks.
 
-This patch adds a companion sysfs file (/sys/power/pm_test_delay) that
-allows user-space to configure how long the system waits in this test
-state before resuming. It also updates the PM debugging documentation to
-mention the new file.
+Acked-by: Simon Horman <horms+renesas@verge.net.au>
 
-Signed-off-by: Brian Norris <computersforpeace@gmail.com>
----
- Documentation/power/basic-pm-debugging.txt | 14 ++++++++------
- kernel/power/main.c                        | 27 +++++++++++++++++++++++++++
- kernel/power/power.h                       |  5 +++++
- kernel/power/suspend.c                     |  8 ++++++--
- 4 files changed, 46 insertions(+), 8 deletions(-)
-
-diff --git a/Documentation/power/basic-pm-debugging.txt b/Documentation/power/basic-pm-debugging.txt
-index edeecd447d23..bd9f27ae99fe 100644
---- a/Documentation/power/basic-pm-debugging.txt
-+++ b/Documentation/power/basic-pm-debugging.txt
-@@ -75,12 +75,14 @@ you should do the following:
- # echo platform > /sys/power/disk
- # echo disk > /sys/power/state
- 
--Then, the kernel will try to freeze processes, suspend devices, wait 5 seconds,
--resume devices and thaw processes.  If "platform" is written to
--/sys/power/pm_test , then after suspending devices the kernel will additionally
--invoke the global control methods (eg. ACPI global control methods) used to
--prepare the platform firmware for hibernation.  Next, it will wait 5 seconds and
--invoke the platform (eg. ACPI) global methods used to cancel hibernation etc.
-+Then, the kernel will try to freeze processes, suspend devices, wait a few
-+seconds (5 by default, but configurable via /sys/power/pm_test_delay), resume
-+devices and thaw processes.  If "platform" is written to /sys/power/pm_test,
-+then after suspending devices the kernel will additionally invoke the global
-+control methods (eg. ACPI global control methods) used to prepare the platform
-+firmware for hibernation.  Next, it will wait a configurable number of seconds
-+and invoke the platform (eg. ACPI) global methods used to cancel hibernation
-+etc.
- 
- Writing "none" to /sys/power/pm_test causes the kernel to switch to the normal
- hibernation/suspend operations.  Also, when open for reading, /sys/power/pm_test
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 9a59d042ea84..4d242c8b43a0 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -73,6 +73,7 @@ power_attr(pm_async);
- 
- #ifdef CONFIG_PM_DEBUG
- int pm_test_level = TEST_NONE;
-+int pm_test_seconds = PM_TEST_DELAY_DEFAULT;
- 
- static const char * const pm_tests[__TEST_AFTER_LAST] = {
- 	[TEST_NONE] = "none",
-@@ -132,6 +133,31 @@ static ssize_t pm_test_store(struct kobject *kobj, struct kobj_attribute *attr,
- }
- 
- power_attr(pm_test);
-+
-+static ssize_t pm_test_delay_show(struct kobject *kobj,
-+				  struct kobj_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%d\n", pm_test_seconds);
-+}
-+
-+static ssize_t pm_test_delay_store(struct kobject *kobj,
-+				   struct kobj_attribute *attr,
-+				   const char *buf, size_t n)
-+{
-+	int val;
-+
-+	if (kstrtoint(buf, 10, &val))
-+		return -EINVAL;
-+
-+	if (val < 0)
-+		return -EINVAL;
-+
-+	pm_test_seconds = val;
-+
-+	return n;
-+}
-+
-+power_attr(pm_test_delay);
- #endif /* CONFIG_PM_DEBUG */
- 
- #ifdef CONFIG_DEBUG_FS
-@@ -601,6 +627,7 @@ static struct attribute * g[] = {
- #endif
- #ifdef CONFIG_PM_DEBUG
- 	&pm_test_attr.attr,
-+	&pm_test_delay_attr.attr,
- #endif
- #ifdef CONFIG_PM_SLEEP_DEBUG
- 	&pm_print_times_attr.attr,
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 5d49dcac2537..28111795da71 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -230,6 +230,11 @@ enum {
- 
- extern int pm_test_level;
- 
-+/* Default to 5 second delay */
-+#define PM_TEST_DELAY_DEFAULT		5
-+
-+extern int pm_test_seconds;
-+
- #ifdef CONFIG_SUSPEND_FREEZER
- static inline int suspend_freeze_processes(void)
- {
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 6dadb25cb0d8..2372a99d4356 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -196,8 +196,12 @@ static int suspend_test(int level)
- {
- #ifdef CONFIG_PM_DEBUG
- 	if (pm_test_level == level) {
--		printk(KERN_INFO "suspend debug: Waiting for 5 seconds.\n");
--		mdelay(5000);
-+		int i;
-+
-+		pr_info("suspend debug: waiting for %d second(s)\n",
-+				pm_test_seconds);
-+		for (i = 0; i < pm_test_seconds; i++)
-+			mdelay(1000);
- 		return 1;
- 	}
- #endif /* !CONFIG_PM_DEBUG */
--- 
-1.9.1
-
+> ---
+>  drivers/sh/pm_runtime.c | 11 -----------
+>  1 file changed, 11 deletions(-)
+> 
+> diff --git a/drivers/sh/pm_runtime.c b/drivers/sh/pm_runtime.c
+> index 72f6381..fe2c2d5 100644
+> --- a/drivers/sh/pm_runtime.c
+> +++ b/drivers/sh/pm_runtime.c
+> @@ -75,8 +75,6 @@ static struct pm_clk_notifier_block platform_bus_notifier = {
+>  	.con_ids = { NULL, },
+>  };
+>  
+> -static bool default_pm_on;
+> -
+>  static int __init sh_pm_runtime_init(void)
+>  {
+>  	if (IS_ENABLED(CONFIG_ARCH_SHMOBILE_MULTI)) {
+> @@ -96,16 +94,7 @@ static int __init sh_pm_runtime_init(void)
+>  			return 0;
+>  	}
+>  
+> -	default_pm_on = true;
+>  	pm_clk_add_notifier(&platform_bus_type, &platform_bus_notifier);
+>  	return 0;
+>  }
+>  core_initcall(sh_pm_runtime_init);
+> -
+> -static int __init sh_pm_runtime_late_init(void)
+> -{
+> -	if (default_pm_on)
+> -		pm_genpd_poweroff_unused();
+> -	return 0;
+> -}
+> -late_initcall(sh_pm_runtime_late_init);
+> -- 
+> 1.9.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
