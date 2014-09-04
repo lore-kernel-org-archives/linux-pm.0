@@ -1,212 +1,153 @@
-From: Brian Norris <computersforpeace@gmail.com>
-Subject: [PATCH 3.10.y+] PM / sleep: Use valid_state() for platform-dependent sleep states only
-Date: Thu,  4 Sep 2014 14:21:05 -0700
-Message-ID: <1409865665-5375-1-git-send-email-computersforpeace@gmail.com>
-References: <1849024.CHOUso6H2K@vostro.rjw.lan>
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1849024.CHOUso6H2K@vostro.rjw.lan>
-Sender: stable-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: stable@vger.kernel.org, linux-pm@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v5 0/7] QCOM 8074 cpuidle driver
+Date: Thu,  4 Sep 2014 16:35:25 -0600
+Message-ID: <1409870132-16929-1-git-send-email-lina.iyer@linaro.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: daniel.lezcano@linaro.org, lorenzo.pieralisi@arm.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org
+Cc: linux-pm@vger.kernel.org, msivasub@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Changes since v4:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10327.html ]
+- Update to the v8 of ARM generic idle states patches
+- Use platform device model for cpuidle-qcom
+- Clean up msm-pm.c to remove unnecessary include files and functions
+- Update commit text and documentation for all idle states
+- Remove scm-boot relocate patch from this series, submitted earlier
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10518.html ]
 
-[Upstream commit 43e8317b0bba1d6eb85f38a4a233d82d7c20d732]
+Changes since v3:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10288.html ]
+- Fix CONFIG_QCOM_PM Kconfig as bool
+- More clean ups in spm.c and spm-devices.c
+	- Removed and re-organized data structures to make initialization simple
+	- Remove export of sequence flush functions
+	- Updated commit text
+	- Comments for use of barriers.
+- Rebase on top of 3.17-rc1
 
-Use the observation that, for platform-dependent sleep states
-(PM_SUSPEND_STANDBY, PM_SUSPEND_MEM), a given state is either
-always supported or always unsupported and store that information
-in pm_states[] instead of calling valid_state() every time we
-need to check it.
+Changes since v2:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10148.html ]
+- Prune all the drivers to support basic WFI and power down cpuidle
+  functionality. Remove debug code.
+- Integrate KConfig changes into the drivers' patches.
+- Use Lorenzo's ARM idle-states patches as the basis for reading cpuidle
+  c-states from DT.
+  [ http://marc.info/?l=linux-pm&m=140794514812383&w=2 ]
+- Incorporate review comments
+- Rebase on top of 3.16
 
-Also do not use valid_state() for PM_SUSPEND_FREEZE, which is always
-valid, and move the pm_test_level validity check for PM_SUSPEND_FREEZE
-directly into enter_state().
+Changes since v1/RFC:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10065.html ]
+- Remove hotplug from the patch series. Will submit it separately.
+- Fix SPM drivers per the review comments
+- Modify patch sequence to compile SPM drivers independent of msm-pm, so as to
+  allow wfi() calls to use SPM even without SoC interface driver.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: <stable@vger.kernel.org> # 3.10+: 27ddcc6596e5: PM / sleep: Add state field to pm_states[] entries
-Cc: <stable@vger.kernel.org> # 3.10+
----
-This is a backport request for these two commits upstream:
+8074 like any ARM SoC can do architectural clock gating, that helps save on
+power, but not enough of leakage power.  Leakage power of the SoC can be
+further reduced by turning off power to the core. To aid this, every core (cpu
+and L2) is accompanied by a Sub-system Power Manager (SPM), that can be
+configured to indicate the low power mode, the core would be put into and the
+SPM programs the peripheral h/w accordingly to enter low power and turn off the
+power rail to the core.
 
-    27ddcc6596e5 PM / sleep: Add state field to pm_states[] entries
-    43e8317b0bba PM / sleep: Use valid_state() for platform-dependent sleep states only
+The idle invocation hierarchy - 
 
-Rafael ack'd this:
+	CPUIDLE
+	|
+	cpuidle-qcom.c [CPUIdle driver]
+	|
+	------>	msm-pm.c [SoC Interface layer for QCOM chipsets]
+		|
+		------> spm-devices.c [SPM devices manager]
+		|	|
+		|	------>	spm.c [SPM h/w driver]
+		|
+		------> scm-boot.c [SCM interface layer]		
+			|
+------------------------|--------------------------
+(EL)			Secure Monitor Code
+			|
+			|
+			wfi(); 
+------------------------|--------------------------
+(HW)			[CPU] {clock gate}
+			|
+			-----> [SPM] {statemachine}
+			
 
-  https://lkml.org/lkml/2014/9/4/543
+The patchset does the following -
 
-I've tested these on 3.14, and it looks like they could go back as far as 3.10.
+- Add new Secure Monitor flags to support warmboot of a quad core system.
 
- kernel/power/main.c         |  9 ++++---
- kernel/power/power.h        |  2 --
- kernel/power/suspend.c      | 60 ++++++++++++++++++++++-----------------------
- kernel/power/suspend_test.c |  2 +-
- 4 files changed, 36 insertions(+), 37 deletions(-)
+- Introduce the SPM driver to control power to the core. The SPM h/w IP works
+in conjunction with the Krait CPU/L2. When the core executes WFI instruction,
+the core is clockgated and the SPM state machine takes over and powers the core
+down. An interrupt from GIC, resumes the SPM state machine which brings the cpu
+out of the low power mode.
 
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 8e818432253c..9f51f0ab3d86 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -296,7 +296,7 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *attr,
- 	suspend_state_t i;
- 
- 	for (i = PM_SUSPEND_MIN; i < PM_SUSPEND_MAX; i++)
--		if (valid_state(i))
-+		if (pm_states[i].state)
- 			s += sprintf(s,"%s ", pm_states[i].label);
- 
- #endif
-@@ -328,8 +328,9 @@ static suspend_state_t decode_state(const char *buf, size_t n)
- 
- #ifdef CONFIG_SUSPEND
- 	for (s = &pm_states[state]; state < PM_SUSPEND_MAX; s++, state++)
--		if (len == strlen(s->label) && !strncmp(buf, s->label, len))
--			return state;
-+		if (s->state && len == strlen(s->label)
-+		    && !strncmp(buf, s->label, len))
-+			return s->state;
- #endif
- 
- 	return PM_SUSPEND_ON;
-@@ -447,7 +448,7 @@ static ssize_t autosleep_show(struct kobject *kobj,
- 
- #ifdef CONFIG_SUSPEND
- 	if (state < PM_SUSPEND_MAX)
--		return sprintf(buf, "%s\n", valid_state(state) ?
-+		return sprintf(buf, "%s\n", pm_states[state].state ?
- 					pm_states[state].label : "error");
- #endif
- #ifdef CONFIG_HIBERNATION
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 99539c5da844..c60f13b5270a 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -186,14 +186,12 @@ struct pm_sleep_state {
- /* kernel/power/suspend.c */
- extern struct pm_sleep_state pm_states[];
- 
--extern bool valid_state(suspend_state_t state);
- extern int suspend_devices_and_enter(suspend_state_t state);
- #else /* !CONFIG_SUSPEND */
- static inline int suspend_devices_and_enter(suspend_state_t state)
- {
- 	return -ENOSYS;
- }
--static inline bool valid_state(suspend_state_t state) { return false; }
- #endif /* !CONFIG_SUSPEND */
- 
- #ifdef CONFIG_PM_TEST_SUSPEND
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 5d93b138a2d4..00aca60904b0 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -32,9 +32,9 @@
- #include "power.h"
- 
- struct pm_sleep_state pm_states[PM_SUSPEND_MAX] = {
--	[PM_SUSPEND_FREEZE] = { "freeze", PM_SUSPEND_FREEZE },
--	[PM_SUSPEND_STANDBY] = { "standby", PM_SUSPEND_STANDBY },
--	[PM_SUSPEND_MEM] = { "mem", PM_SUSPEND_MEM },
-+	[PM_SUSPEND_FREEZE] = { .label = "freeze", .state = PM_SUSPEND_FREEZE },
-+	[PM_SUSPEND_STANDBY] = { .label = "standby", },
-+	[PM_SUSPEND_MEM] = { .label = "mem", },
- };
- 
- static const struct platform_suspend_ops *suspend_ops;
-@@ -68,42 +68,34 @@ void freeze_wake(void)
- }
- EXPORT_SYMBOL_GPL(freeze_wake);
- 
-+static bool valid_state(suspend_state_t state)
-+{
-+	/*
-+	 * PM_SUSPEND_STANDBY and PM_SUSPEND_MEM states need low level
-+	 * support and need to be valid to the low level
-+	 * implementation, no valid callback implies that none are valid.
-+	 */
-+	return suspend_ops && suspend_ops->valid && suspend_ops->valid(state);
-+}
-+
- /**
-  * suspend_set_ops - Set the global suspend method table.
-  * @ops: Suspend operations to use.
-  */
- void suspend_set_ops(const struct platform_suspend_ops *ops)
- {
-+	suspend_state_t i;
-+
- 	lock_system_sleep();
-+
- 	suspend_ops = ops;
-+	for (i = PM_SUSPEND_STANDBY; i <= PM_SUSPEND_MEM; i++)
-+		pm_states[i].state = valid_state(i) ? i : 0;
-+
- 	unlock_system_sleep();
- }
- EXPORT_SYMBOL_GPL(suspend_set_ops);
- 
--bool valid_state(suspend_state_t state)
--{
--	if (state == PM_SUSPEND_FREEZE) {
--#ifdef CONFIG_PM_DEBUG
--		if (pm_test_level != TEST_NONE &&
--		    pm_test_level != TEST_FREEZER &&
--		    pm_test_level != TEST_DEVICES &&
--		    pm_test_level != TEST_PLATFORM) {
--			printk(KERN_WARNING "Unsupported pm_test mode for "
--					"freeze state, please choose "
--					"none/freezer/devices/platform.\n");
--			return false;
--		}
--#endif
--			return true;
--	}
--	/*
--	 * PM_SUSPEND_STANDBY and PM_SUSPEND_MEMORY states need lowlevel
--	 * support and need to be valid to the lowlevel
--	 * implementation, no valid callback implies that none are valid.
--	 */
--	return suspend_ops && suspend_ops->valid && suspend_ops->valid(state);
--}
--
- /**
-  * suspend_valid_only_mem - Generic memory-only valid callback.
-  *
-@@ -330,9 +322,17 @@ static int enter_state(suspend_state_t state)
- {
- 	int error;
- 
--	if (!valid_state(state))
--		return -ENODEV;
--
-+	if (state == PM_SUSPEND_FREEZE) {
-+#ifdef CONFIG_PM_DEBUG
-+		if (pm_test_level != TEST_NONE && pm_test_level <= TEST_CPUS) {
-+			pr_warning("PM: Unsupported test mode for freeze state,"
-+				   "please choose none/freezer/devices/platform.\n");
-+			return -EAGAIN;
-+		}
-+#endif
-+	} else if (!valid_state(state)) {
-+		return -EINVAL;
-+	}
- 	if (!mutex_trylock(&pm_mutex))
- 		return -EBUSY;
- 
-diff --git a/kernel/power/suspend_test.c b/kernel/power/suspend_test.c
-index d4e3ab167a73..269b097e78ea 100644
---- a/kernel/power/suspend_test.c
-+++ b/kernel/power/suspend_test.c
-@@ -162,7 +162,7 @@ static int __init test_suspend(void)
- 	/* PM is initialized by now; is that state testable? */
- 	if (test_state == PM_SUSPEND_ON)
- 		goto done;
--	if (!valid_state(test_state)) {
-+	if (!pm_states[test_state].state) {
- 		printk(warn_bad_state, pm_states[test_state].label);
- 		goto done;
- 	}
+- Add a SPM device manager to configure multiple SPM devices.
+
+- Add the device tree configuration for each of the SPM nodes. There is one for
+each cpu. There is one for each cpu.
+
+- Introduce the SoC driver interface layer to configure SPM per the core's idle
+ state. To power down the cpu core, the SPM h/w needs to be set up correctly
+to power down the core, when the core executes WFI. Linux is expected to call
+into Secure Monitor to power down the core. At reset, the core will start in
+seure mode and will be returned back to Linux. 
+
+- Add CPUIDLE driver for QCOM cpus. The cpuidle driver uses the SoC interface
+layer to configure the SPM to allow Krait to be powered down. The cpuidle driver
+is based on ARM idle-state framework for cpuidle drivers.
+
+- Provide device configuration for 8074 SoC. Current support is for WFI and
+standalone power collapse, which powers only the core independent of the
+other cores and caches.
+
+Thanks,
+Lina
+
+
+
+Lina Iyer (7):
+  msm: scm: Add SCM warmboot flags for quad core targets.
+  qcom: spm: Add Subsystem Power Manager driver (SAW2)
+  qcom: spm-devices: Add SPM device manager for the SoC
+  arm: dts: qcom: Add SPM device bindings for 8974
+  qcom: msm-pm: Add cpu low power mode functions
+  qcom: cpuidle: Add cpuidle driver for QCOM cpus
+  arm: dts: qcom: Add idle states device nodes for 8974
+
+ .../bindings/arm/msm/qcom,idle-state.txt           |  72 ++++++++
+ Documentation/devicetree/bindings/arm/msm/spm.txt  |  47 +++++
+ arch/arm/boot/dts/qcom-msm8974-pm.dtsi             |  69 +++++++
+ arch/arm/boot/dts/qcom-msm8974.dtsi                |  30 +++-
+ drivers/cpuidle/Kconfig.arm                        |   7 +
+ drivers/cpuidle/Makefile                           |   1 +
+ drivers/cpuidle/cpuidle-qcom.c                     |  87 +++++++++
+ drivers/soc/qcom/Kconfig                           |   8 +
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/msm-pm.c                          | 106 +++++++++++
+ drivers/soc/qcom/spm-devices.c                     | 198 +++++++++++++++++++++
+ drivers/soc/qcom/spm-drv.h                         |  69 +++++++
+ drivers/soc/qcom/spm.c                             | 192 ++++++++++++++++++++
+ include/soc/qcom/pm.h                              |  31 ++++
+ include/soc/qcom/scm-boot.h                        |   2 +
+ include/soc/qcom/spm.h                             |  38 ++++
+ 16 files changed, 954 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/spm.txt
+ create mode 100644 arch/arm/boot/dts/qcom-msm8974-pm.dtsi
+ create mode 100644 drivers/cpuidle/cpuidle-qcom.c
+ create mode 100644 drivers/soc/qcom/msm-pm.c
+ create mode 100644 drivers/soc/qcom/spm-devices.c
+ create mode 100644 drivers/soc/qcom/spm-drv.h
+ create mode 100644 drivers/soc/qcom/spm.c
+ create mode 100644 include/soc/qcom/pm.h
+ create mode 100644 include/soc/qcom/spm.h
+
 -- 
 1.9.1
