@@ -1,54 +1,119 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
-Date: Thu, 4 Sep 2014 11:38:59 +0530
-Message-ID: <CAKohpom0+bbyffZML2tJjXQDc+2q4PM8sVkL5pDA5WX=rmvtKA@mail.gmail.com>
-References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com>
-	<CAKohpomLW17B=Sk42tczzDF+VGwn7hT521osWPi5TcgqpCPZ_w@mail.gmail.com>
-	<53296AD0.5090908@linux.vnet.ibm.com>
-	<19131121.D211TBerqb@vostro.rjw.lan>
+From: Ran Shalit <ranshalit@gmail.com>
+Subject: Re: External devices
+Date: Thu, 4 Sep 2014 14:11:53 +0300
+Message-ID: <CAJ2oMhKnQczVwLhO0hHyJHCgc6UkV5g7sc3Gnnoq+ktUVYw+pQ@mail.gmail.com>
+References: <CAJ2oMhKRA+0Ge_m=-zFqgTxcZbuGMNAOvBQKP=_GyWRwvfsKFw@mail.gmail.com>
+	<CAGAs2Amw1jvmDxL8+uXU4XW3u6Mxr7LKP4EiP8taTNQ2OpnWNw@mail.gmail.com>
+	<CAJ2oMhL=wuWA3Ga4bdeqvW0QA-cccLA0BfVRDKyLuykyChqu7w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <19131121.D211TBerqb@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Patrick Marlier <patrick.marlier@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f43.google.com ([209.85.192.43]:38502 "EHLO
+	mail-qg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753187AbaIDLLy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 07:11:54 -0400
+Received: by mail-qg0-f43.google.com with SMTP id f51so9900866qge.30
+        for <linux-pm@vger.kernel.org>; Thu, 04 Sep 2014 04:11:53 -0700 (PDT)
+In-Reply-To: <CAJ2oMhL=wuWA3Ga4bdeqvW0QA-cccLA0BfVRDKyLuykyChqu7w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: AYAN KUMAR HALDER <ayankumarh@gmail.com>
+Cc: linux-pm@vger.kernel.org, kernelnewbies <kernelnewbies@kernelnewbies.org>
 
-On 19 March 2014 19:49, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+Hi Ayan,
 
-> That said, for the intel_pstate case ->stop() as proposed by Dirk is demonstrably
-> sufficient and there are no other ->setpolicy drivers in sight wanting or needing
-> anything else.
+When adding some external device to power management, doesn't it need
+to belong to power domain  ( /debug/pm_debug/count ).
+What is the power domain of external device ?
+
+Thanks
+Ran
+
+On Wed, Sep 3, 2014 at 11:23 PM, Ran Shalit <ranshalit@gmail.com> wrote:
+> Hi Ayan,
+> Thanks very much for the explanations, it makes things a bit more
+> clearer than before, but I still have some question marks.
 >
-> So to me, (1) the new ->stop() should *only* be called for ->setpolicy drivers,
-> because the purpose of it should be to "allow ->setpolicy drivers to do what the
-> GOV_STOP will do for regular drivers" as you put it above, and (2) some code in
-> the original intel_pstate's ->exit() may/should stay in there (instead of being
-> moved to the new ->stop()), which is the only possibly remaining issue here.
+> "System moving to idle state would correspond to most devices in  a
+> runtime-pm idle state. Each device enter into idle state when its
+> corresponding driver invokes so"
 >
-> The whole discussion about possibly re-using ->stop() for ->target drivers goes
-> in a totally wrong direction, because *if* ->target drivers need a new callback
-> to be executed around where ->stop() is called for ->setpolicy drivers, *then*
-> that has to be a *different* callback.
+> How does the driver invokes moving to idle state ?  Is it the smae as
+> invoking runtime suspend by the driver ?
+> What is the difference between idle state to runtime suspend ?
+> Are you familiar with any character device example for using PM ?
 >
-> And by the way, ->get() in fact has a different meaning for ->setpolicy drivers,
-> so it would be good to consider logical separation of ->setpolicy and ->target
-> drivers so that each kind has its own separate set of callbacks with no overlaps.
-> That would make it easier to avoid breakage resulting from changes made with
-> ->setpolicy drivers that also affect ->target drivers in unpredictable ways and
-> the other way around.
-
-Okay, I have picked up a very old thread but it looks more sensible to start
-replying here..
-
-Preeti (Cc'd) wants to do something similar, i.e. reduce freq of a
-core before it
-goes down. And the driver is probably: drivers/cpufreq/powernv-cpufreq.c, which
-is ->target() type.
-
-Now should we reuse the same callback ->stop_cpu() or implement a new one?
-I don't know if adding a new callback would be a good idea here..
-
---
-viresh
+> Thanks, Ran
+>
+>
+>
+> On Wed, Sep 3, 2014 at 11:01 AM, AYAN KUMAR HALDER <ayankumarh@gmail.com> wrote:
+>>> 1. Are external devices can be integrated into the runtime
+>>> suspend/resume , or are they outside the subject of PM ? for example I
+>>> have external dsp connected to omap, can it be integrated to the PM ?
+>>> If it is controled through character device how can it be tailored
+>>> into the generic PM ?
+>>
+>> Any external device can be integrated in runtime-pm framework provided
+>> its device driver or subsystem driver has runtime pm operations
+>> (namely dev_pm_ops->.runtime_suspend/resume/idle).
+>>
+>> Runtime suspend/resume is called by your driver to suspend the
+>> respective device. It can do so by incrementing/decrementing the usage
+>> count via pm_runtime_get and pm_runtime_put or by directly calling
+>> pm_runtime_suspend/pm_request_resume.
+>> So your char device driver for omap has to enable runtime pm for the
+>> device by calling pm_runtime_set_active() and pm_runtime_enable() from
+>> its init/probe methods.
+>> Whenever the driver needs to wakeup the device(say on receiving a
+>> interrupt), it can call runtime_pm_get. After handling the interrupt,
+>> if the driver wants to suspend the device, it can call runtime_pm_put.
+>>
+>> My statements are generic as I am unaware how the dsp functions.
+>>
+>>> 2. When the system moves to idle does it then automatically call all
+>>> tuntime suspend of all devices ?
+>>>
+>> As I have mentioned in my previous reply that the runtime-pm is device
+>> specific(and not system specific). so each device driver calls its
+>> runtime suspend/resume for its corresponding devices whenever it feels
+>> so. The runtime-pm framework has some policies like it checks if the
+>> device to be suspended has any active children or not, etc
+>>
+>> System moving to idle state would correspond to most devices in  a
+>> runtime-pm idle state. Each device enter into idle state when its
+>> corresponding driver invokes so. Each device is independently moved to
+>> idle/suspend/resume state unless their exist a parent-child
+>> relationship between the devices.
+>>
+>> Runtime power management is different from system power management (ie
+>> suspend to RAM/Disk) in which the PM framework calls the suspend and
+>> resume of all the devices(sequentially). However, these suspend/resume
+>> functions are different from runtime suspend/resume functions.
+>> eg
+>> static const struct dev_pm_ops usb_device_pm_ops = {
+>>         .prepare =      usb_dev_prepare,
+>>         .complete =     usb_dev_complete,
+>>
+>> /* the following two functions are system power management's
+>> suspend/resume functions which are invoked by PM framework when the
+>> system suspends/hibernates.  */
+>>
+>>         .suspend =      usb_dev_suspend,
+>>         .resume =       usb_dev_resume,
+>>         .freeze =       usb_dev_freeze,
+>>         .thaw =         usb_dev_thaw,
+>>         .poweroff =     usb_dev_poweroff,
+>>         .restore =      usb_dev_restore,
+>> #ifdef CONFIG_USB_SUSPEND
+>> /* the following three functions are runtime power management's
+>> suspend/resume/idle functions invoked by the driver when it wants to
+>> put the corresponding device in suspend/idle/resume state.  */
+>>         .runtime_suspend =      usb_runtime_suspend,
+>>         .runtime_resume =       usb_runtime_resume,
+>>         .runtime_idle =         usb_runtime_idle,
+>> #endif
+>> };
+>>
+>> Regards,
+>> Ayan Kumar Halder
