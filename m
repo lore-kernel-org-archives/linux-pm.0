@@ -1,8 +1,7 @@
-From: Yuantian Tang <Yuantian.Tang@freescale.com>
-Subject: RE: [PATCH 2/2] cpufreq: ppc-corenet: remove per-cpu variable
- 'cpu_mask'
-Date: Thu, 4 Sep 2014 02:51:48 +0000
-Message-ID: <21e79b8a95ca443a9844fc2b79ec5379@BY2PR03MB570.namprd03.prod.outlook.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: ppc-corenet: remove per-cpu variable 'cpu_mask'
+Date: Thu, 4 Sep 2014 09:08:18 +0530
+Message-ID: <CAKohpokZ9vGJzD0G8n=rg8qQJEuZZpuz=X7XNn_UarKbyOmQxw@mail.gmail.com>
 References: <09092df3d8b03df99ee475357c5f5c9cc439c61c.1409629117.git.viresh.kumar@linaro.org>
 	<3d467a39ab1b96dc24ed8a71139d5e030239477f.1409629117.git.viresh.kumar@linaro.org>
 	<6a145a322bd64e14a2d94e8c40151bbe@BY2PR03MB570.namprd03.prod.outlook.com>
@@ -10,88 +9,47 @@ References: <09092df3d8b03df99ee475357c5f5c9cc439c61c.1409629117.git.viresh.kuma
 	<9fde1bf81522480484897416019b0ee9@BY2PR03MB570.namprd03.prod.outlook.com>
 	<CAKohpo=skCssnm0AZi2rMDUTKg0Xo0p9Sz0KwO1iuapLks=nyg@mail.gmail.com>
 	<d9f1dbc51c9d408ea593d11a95a36ee4@BY2PR03MB570.namprd03.prod.outlook.com>
- <CAKohpo=Pb88SBg0HwrAtzfRkG5Z9HgsapSmA1PbmqqvP-wQ1qw@mail.gmail.com>
+	<CAKohpo=Pb88SBg0HwrAtzfRkG5Z9HgsapSmA1PbmqqvP-wQ1qw@mail.gmail.com>
+	<21e79b8a95ca443a9844fc2b79ec5379@BY2PR03MB570.namprd03.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bl2lp0203.outbound.protection.outlook.com ([207.46.163.203]:7492
-	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751321AbaIDCwE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Sep 2014 22:52:04 -0400
-In-Reply-To: <CAKohpo=Pb88SBg0HwrAtzfRkG5Z9HgsapSmA1PbmqqvP-wQ1qw@mail.gmail.com>
-Content-Language: en-US
+Received: from mail-oi0-f49.google.com ([209.85.218.49]:53068 "EHLO
+	mail-oi0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932163AbaIDDiT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 23:38:19 -0400
+Received: by mail-oi0-f49.google.com with SMTP id g201so6243016oib.22
+        for <linux-pm@vger.kernel.org>; Wed, 03 Sep 2014 20:38:19 -0700 (PDT)
+In-Reply-To: <21e79b8a95ca443a9844fc2b79ec5379@BY2PR03MB570.namprd03.prod.outlook.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+To: Yuantian Tang <Yuantian.Tang@freescale.com>
 Cc: Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "LeoLi@freescale.com" <LeoLi@freescale.com>, Hongtao Jia <hongtao.jia@freescale.com>
 
-Q2FuJ3QgYWdyZWUgeW91IG1vcmUuDQpBcyBJIGtub3csIHRoZXJlIGlzIG5vIHN1Y2ggZnVuY3Rp
-b24gdG8gZ2V0IG1hc2sgb2Ygb25saW5lIGFuZCBvZmZsaW5lIGNwdXMgaW4gYSBjbHVzdGVyLg0K
-DQpUaGFua3MsDQpZdWFudGlhbg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
-b206IFZpcmVzaCBLdW1hciBbbWFpbHRvOnZpcmVzaC5rdW1hckBsaW5hcm8ub3JnXQ0KPiBTZW50
-OiBXZWRuZXNkYXksIFNlcHRlbWJlciAwMywgMjAxNCA1OjUwIFBNDQo+IFRvOiBUYW5nIFl1YW50
-aWFuLUIyOTk4Mw0KPiBDYzogUmFmYWVsIFd5c29ja2k7IGxpbmFyby1rZXJuZWxAbGlzdHMubGlu
-YXJvLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBMaQ0KPiBZYW5nLUxlby1SNTg0NzI7
-IEppYSBIb25ndGFvLUIzODk1MQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvMl0gY3B1ZnJlcTog
-cHBjLWNvcmVuZXQ6IHJlbW92ZSBwZXItY3B1IHZhcmlhYmxlDQo+ICdjcHVfbWFzaycNCj4gDQo+
-IE9uIDMgU2VwdGVtYmVyIDIwMTQgMTM6MzIsIFl1YW50aWFuIFRhbmcgPFl1YW50aWFuLlRhbmdA
-ZnJlZXNjYWxlLmNvbT4NCj4gd3JvdGU6DQo+ID4gVGVzdCBjb25maXJtZWQgd2hhdCBJIGFtIGNv
-bmNlcm5lZC4gUGF0Y2ggMSBpcyB3b3JraW5nIGJ1dCBwYXRjaCAyIGRpZG4ndA0KPiB3b3JraW5n
-IGluIGhvdHBsdWcgY2FzZS4NCj4gPiAodGVzdGVkIG9uIHQ0MjQwIHBsYXRmb3JtIHdpdGggMyBj
-bHVzdGVyIGFuZCA4IGNwdXMgaW4gZWFjaCBjbHVzdGVyLCBrZXJuZWwNCj4gdmVyc2lvbiBpcyAz
-LjEyKS4NCj4gDQo+IDooDQo+IA0KPiA+IExvZyBpcyBhcyBmb2xsb3dzOg0KPiA+IHJvb3RAdDQy
-NDByZGI6fiMgY2QgL3N5cy9kZXZpY2VzL3N5c3RlbS8NCj4gPiByb290QHQ0MjQwcmRiOi9zeXMv
-ZGV2aWNlcy9zeXN0ZW0jIGxzIGNsb2NrZXZlbnRzICBjbG9ja3NvdXJjZSAgY3B1DQo+ID4gZWRh
-YyByb290QHQ0MjQwcmRiOi9zeXMvZGV2aWNlcy9zeXN0ZW0jIGNkIGNwdS8NCj4gPiByb290QHQ0
-MjQwcmRiOi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1IyBscw0KPiA+IGNwdTAgIGNwdTEgIGNwdTEw
-ICBjcHUxMSAgY3B1MTIgIGNwdTEzICBjcHUxNCAgY3B1MTUgIGNwdTE2DQo+IGNwdTE3DQo+ID4g
-Y3B1MTggIGNwdTE5ICBjcHUyICBjcHUyMCAgY3B1MjEgIGNwdTIyICBjcHUyMyAgY3B1MyAgY3B1
-NGNwdTUNCj4gY3B1NiAgY3B1NyAgY3B1OCAgY3B1OSAga2VybmVsX21heCAgb2ZmbGluZSAgb25s
-aW5lICBwb3NzaWJsZSAgcHJlc2VudA0KPiBwcm9iZSAgcmVsZWFzZSAgdWV2ZW50IHJvb3RAdDQy
-NDByZGI6L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUjIGNhdCBjcHU4Lw0KPiA+IGFsdGl2ZWNfaWRs
-ZSAgICAgICAgICAgIGFsdGl2ZWNfaWRsZV93YWl0X3RpbWUgIGNhY2hlLw0KPiBjcHVmcmVxLyAg
-ICAgICAgICAgICAgICBvbmxpbmUgICAgICAgICAgICAgICAgICBwaHlzaWNhbF9pZA0KPiBwaXIg
-ICAgICAgICAgICAgICAgICAgICBwdzIwX3N0YXRlICAgICAgICAgICAgICBwdzIwX3dhaXRfdGlt
-ZQ0KPiBzbXRfc25vb3plX2RlbGF5ICAgICAgICBzdWJzeXN0ZW0vICAgICAgICAgICAgICB0b3Bv
-bG9neS8NCj4gdWV2ZW50DQo+ID4gcm9vdEB0NDI0MHJkYjovc3lzL2RldmljZXMvc3lzdGVtL2Nw
-dSMgY2F0IGNwdTgvY3B1ZnJlcS9hZmZlY3RlZF9jcHVzDQo+ID4gOCA5IDEwIDExIDEyIDEzIDE0
-IDE1DQo+ID4gcm9vdEB0NDI0MHJkYjovc3lzL2RldmljZXMvc3lzdGVtL2NwdSMgZWNobyAwID4g
-Y3B1OC9vbmxpbmUgQ2Fubm90IHNldA0KPiA+IGFmZmluaXR5IGZvciBpcnEgNDY3IHJvb3RAdDQy
-NDByZGI6L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUjIGVjaG8gMCA+DQo+ID4gY3B1OS9vbmxpbmUg
-cm9vdEB0NDI0MHJkYjovc3lzL2RldmljZXMvc3lzdGVtL2NwdSMgY2F0DQo+ID4gY3B1MTAvY3B1
-ZnJlcS9hZmZlY3RlZF9jcHVzDQo+ID4gMTAgMTEgMTIgMTMgMTQgMTUNCj4gPiByb290QHQ0MjQw
-cmRiOi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1IyBlY2hvIDAgPiBjcHUxMC9vbmxpbmUNCj4gPiBy
-b290QHQ0MjQwcmRiOi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1IyBlY2hvIDAgPiBjcHUxMS9vbmxp
-bmUNCj4gPiByb290QHQ0MjQwcmRiOi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1IyBlY2hvIDAgPiBj
-cHUxMi9vbmxpbmUNCj4gPiByb290QHQ0MjQwcmRiOi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1IyBl
-Y2hvIDAgPiBjcHUxMy9vbmxpbmUNCj4gPiByb290QHQ0MjQwcmRiOi9zeXMvZGV2aWNlcy9zeXN0
-ZW0vY3B1IyBlY2hvIDAgPiBjcHUxNC9vbmxpbmUNCj4gPiByb290QHQ0MjQwcmRiOi9zeXMvZGV2
-aWNlcy9zeXN0ZW0vY3B1IyBlY2hvIDAgPiBjcHUxNS9vbmxpbmUNCj4gPiByb290QHQ0MjQwcmRi
-Oi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1IyBlY2hvIDEgPiBjcHU5L29ubGluZQ0KPiA+IHNtcF84
-NXh4X2tpY2tfY3B1OiBDYW4gbm90IHN0YXJ0IENQVSAjOS4gU3RhcnQgQ1BVICM4IGZpcnN0Lg0K
-PiA+IHNtcDogZmFpbGVkIHN0YXJ0aW5nIGNwdSA5IChyYyAtMikNCj4gPiAtc2g6IGVjaG86IHdy
-aXRlIGVycm9yOiBObyBzdWNoIGZpbGUgb3IgZGlyZWN0b3J5DQo+IA0KPiBJIGRvbid0IHVuZGVy
-c3RhbmQgaG93IGlzIHRoaXMgcmVsYXRlZCB0byBteSBwYXRjaD8gQW5kIHRoZSBzdWNjZXNzZnVs
-IHNlcXVlbmNlDQo+IGJlbG93IGhhcyBDUFUxNCBoZXJlIGluc3RlYWQgb2YgOC4uIFNvIHRoaXMg
-ZXJyb3IgbWlnaHQgY29tZSB3aXRob3V0IG15IHBhdGNoDQo+IGFzIHdlbGwgaWYgdGhpcyBzZXF1
-ZW5jZSBpcyBmb2xsb3dlZC4uDQo+IA0KPiA+IHJvb3RAdDQyNDByZGI6L3N5cy9kZXZpY2VzL3N5
-c3RlbS9jcHUjIGVjaG8gMSA+IGNwdTEwL29ubGluZQ0KPiA+IHJvb3RAdDQyNDByZGI6L3N5cy9k
-ZXZpY2VzL3N5c3RlbS9jcHUjIGNhdCBjcHUxMC9jcHVmcmVxL2FmZmVjdGVkX2NwdXMNCj4gPiAx
-MA0KPiA+IHJvb3RAdDQyNDByZGI6L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUjIGVjaG8gMSA+IGNw
-dTExL29ubGluZQ0KPiA+IHN5c2ZzOiBjYW5ub3QgY3JlYXRlIGR1cGxpY2F0ZSBmaWxlbmFtZSAn
-L2RldmljZXMvc3lzdGVtL2NwdS9jcHUxMC9jcHVmcmVxJw0KPiA+IC0tLS0tLS0tLS0tLVsgY3V0
-IGhlcmUgXS0tLS0tLS0tLS0tLQ0KPiA+IFdBUk5JTkc6IGF0IGZzL3N5c2ZzL2Rpci5jOjUyNg0K
-PiANCj4gSSB0aGluayBJIGtub3cgd2h5IHRoaXMgaGFwcGVuZWQuDQo+IA0KPiBEb2VzIGNwdV9j
-b3JlX21hc2soKSBnaXZlcyBtYXNrIG9mIE9OTFkgT25saW5lIENQVXMgPyBJICpzdHJvbmdseSog
-YmVsaWV2ZSBZRVMNCj4gbG9va2luZyBhdCBhYm92ZSBjcmFzaC4NCj4gDQo+IElmIHdlIGNhbiBj
-aGFuZ2UgdGhhdCB3aXRoIHNvbWUgb3RoZXIgcm91dGluZSB3aGljaCBnaXZlcyBtYXNrIG9mIGFs
-bA0KPiAob25saW5lK29mZmxpbmUpDQo+IENQVXMgdGhlbiB0aGlzIGNyYXNoIG1pZ2h0IGdvIGF3
-YXkuLg0KPiANCj4gQmVjYXVzZSBvZiB0aGF0LCBJIGJlbGlldmUgdGhlcmUgaXMgYW5vdGhlciBw
-cm9ibGVtIGluIHlvdXIgZHJpdmVyIGV2ZW4gd2l0aG91dCBteQ0KPiBwYXRjaC4gRG8gdGhpcyB0
-byBnZXQgc2ltaWxhciBjcmFzaDoNCj4gDQo+IC0gYnVpbGQgZHJpdmVyIGFzIG1vZHVsZSBhbmQg
-ZG9uJ3QgbG9hZCBpdCBieSBkZWZhdWx0DQo+IC0gYm9vdCB5b3VyIHN5c3RlbQ0KPiAtIG9mZmxp
-bmUgQ1BVcyA4IHRvIDE1IGFzIHlvdSBkaWQgYWJvdmUuDQo+IC0gaW5zZXJ0IG1vZHVsZQ0KPiAt
-IHRyeSB0byBvbmxpbmUgY29yZXMgYXMgeW91IGRpZCBhYm92ZS4NCj4gDQo+IC0tDQo+IHZpcmVz
-aA0K
+On 4 September 2014 08:21, Yuantian Tang <Yuantian.Tang@freescale.com> wrote:
+> Can't agree you more.
+
+Its not about upstreaming my patch but doing the right thing.
+
+> As I know, there is no such function to get mask of online and offline cpus in a cluster.
+
+This is a primary requirement of cpufreq-subsystem. The ->init()
+callback must initialize
+policy->cpus to the mask of all online+offline CPUs that are sharing clock.
+
+Okay, then what I can say is your driver is already broken (without my
+patch) when we
+use it as a module.
+
+>> - build driver as module and don't load it by default
+>> - boot your system
+>> - offline CPUs 8 to 15 as you did above.
+>> - insert module
+>> - try to online cores as you did above.
+
+Above sequence of events would reproduce similar crash for you. So, either
+fix this problem or mark your module as 'bool' instead of 'tristate' so that it
+can't be compiled as module anymore.
+
+--
+viresh
