@@ -1,40 +1,61 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 14/15] PM / Domains: Remove default_stop_ok() API
-Date: Thu, 04 Sep 2014 21:49:29 +0200
-Message-ID: <6302495.FUvz9FPcau@vostro.rjw.lan>
-References: <1409741551-16437-1-git-send-email-ulf.hansson@linaro.org> <1409741551-16437-15-git-send-email-ulf.hansson@linaro.org> <CAMuHMdUEfAdpUgEtOQfdG1gbZjVo3bfAAmhm0-miFGbQ8ckHgA@mail.gmail.com>
+Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
+Date: Thu, 04 Sep 2014 21:56:12 +0200
+Message-ID: <2699050.43LHVsRP52@vostro.rjw.lan>
+References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com> <540838DB.1070202@linux.vnet.ibm.com> <CAKohpomH=ODnDT1FxrGVLOiOpA9NecQR134tUKQk-bRXLGPRYw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdUEfAdpUgEtOQfdG1gbZjVo3bfAAmhm0-miFGbQ8ckHgA@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Kevin Hilman <khilman@linaro.org>, Philipp Zabel <philipp.zabel@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux-sh list <linux-sh@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Mark Brown <broonie@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64971 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755166AbaIDTgv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 15:36:51 -0400
+In-Reply-To: <CAKohpomH=ODnDT1FxrGVLOiOpA9NecQR134tUKQk-bRXLGPRYw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Patrick Marlier <patrick.marlier@gmail.com>
 
-On Wednesday, September 03, 2014 03:15:59 PM Geert Uytterhoeven wrote:
-> Hi Ulf,
+On Thursday, September 04, 2014 04:07:28 PM Viresh Kumar wrote:
+> On 4 September 2014 15:33, Preeti U Murthy <preeti@linux.vnet.ibm.com> wrote:
+> > I think Rafael's point was that since no driver that had implemented the
+> > target_index callback was using it at the time that this patch was
+> > proposed, it was be best to couple the check on existence of stop_cpu
+> > callback with the the check on the kind of cpufreq driver. However
+> > powerpc is also in need of this today and we implement the target_index
+> > callback and find it convenient to use the stop CPU callback.
 > 
-> On Wed, Sep 3, 2014 at 12:52 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > --- a/drivers/base/power/domain_governor.c
-> > +++ b/drivers/base/power/domain_governor.c
+> No, this is what he said..
 > 
-> > @@ -229,10 +229,7 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
+> "
+> So to me, (1) the new ->stop() should *only* be called for ->setpolicy drivers,
+> because the purpose of it should be to "allow ->setpolicy drivers to do what the
+> GOV_STOP will do for regular drivers"
+> "
+> 
+> > Rafael, in which case would it not make sense to remove the check on
+> > driver->setpolicy above?
 > >
-> >  #else /* !CONFIG_PM_RUNTIME */
-> >
-> > -bool default_stop_ok(struct device *dev)
-> > -{
-> > -       return false;
-> > -}
-> > +static inline bool default_stop_ok(struct device *dev) { return false; }
+> > Besides, I don't understand very well why we had this double check in
+> > the first place. Only if the drivers are in need of the functionality
+> > like stop_cpu, would they have implemented this callback right? If we
+> > are to assume that the drivers which have implemented the target_index
+> > callback should never be needing it, they would not have implemented the
+> > stop CPU callback either. So what was that, which was blatantly wrong
+> > with just having a check on stop_cpu? I did go through the discussion
+> > but did not find a convincing answer to this.
 > 
-> The "inline" doesn't make much sense here.
+> The idea was to get something similar to GOV_STOP for setpolicy drivers.
+> But in the end we didn't get to that. What we do in GOV_STOP is stop
+> changing CPUs frequency, but here in stop_cpu() we can stop changing
+> CPUs frequency OR take it to minimum, whatever we want..
+> 
+> As I said earlier, probably we should just do what you did in your patch +
+> some documentation changes.
 
-But then it doesn't hurt either I suppose?
-
-Anyway, Ulf, are you going to update this patch?
+OK, if that works for everybody.  For one, I wouldn't like to end up with a
+callback used for different things in every drvier implementing it.
 
 -- 
 I speak only for myself.
