@@ -1,7 +1,7 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v5 2/7] qcom: spm: Add Subsystem Power Manager driver (SAW2)
-Date: Thu,  4 Sep 2014 16:35:27 -0600
-Message-ID: <1409870132-16929-3-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v5 3/7] qcom: spm-devices: Add SPM device manager for the SoC
+Date: Thu,  4 Sep 2014 16:35:28 -0600
+Message-ID: <1409870132-16929-4-git-send-email-lina.iyer@linaro.org>
 References: <1409870132-16929-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1409870132-16929-1-git-send-email-lina.iyer@linaro.org>
@@ -12,128 +12,113 @@ List-Id: linux-pm@vger.kernel.org
 
 Based on work by many authors, available at codeaurora.org
 
-SPM is a hardware block that controls the peripheral logic surrounding
-the application cores (cpu/l$). When the core executes WFI instruction,
-the SPM takes over the putting the core in low power state as
-configured. The wake up for the SPM is an interrupt at the GIC, which
-then completes the rest of low power mode sequence and brings the core
-out of low power mode.
+Each cpu or an L2$ has an SPM device. They are identical instances of
+the same SPM block. This allows for multiple instances be grouped and
+managed collectively. spm-devices.c is the SPM device manager managing
+multiple SPM devices on top of the driver layer.
 
-The SPM has a set of control registers that configure the SPMs
-individually based on the type of the core and the runtime conditions.
-SPM is a finite state machine block to which a sequence is provided and
-it interprets the bytes  and executes them in sequence. Each low power
-mode that the core can enter into is provided to the SPM as a sequence.
-
-Configure the SPM to set the core (cpu or L2) into its low power mode,
-the index of the first command in the sequence is set in the SPM_CTL
-register. When the core executes ARM wfi instruction, it triggers the
-SPM state machine to start executing from that index. The SPM state
-machine waits until the interrupt occurs and starts executing the rest
-of the sequence until it hits the end of the sequence. The end of the
-sequence jumps the core out of its low power mode.
+Device configuration of each SPM is picked up from the DTS. The hardware
+configuration of each of the SPM is handled by the driver (spm.c).
 
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 [lina: simplify the driver for initial submission, clean up and update
 commit text]
 ---
- drivers/soc/qcom/Makefile  |   1 +
- drivers/soc/qcom/spm-drv.h |  69 ++++++++++++++++
- drivers/soc/qcom/spm.c     | 192 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 262 insertions(+)
- create mode 100644 drivers/soc/qcom/spm-drv.h
- create mode 100644 drivers/soc/qcom/spm.c
+ Documentation/devicetree/bindings/arm/msm/spm.txt |  47 +++++
+ drivers/soc/qcom/Kconfig                          |   8 +
+ drivers/soc/qcom/Makefile                         |   2 +-
+ drivers/soc/qcom/spm-devices.c                    | 198 ++++++++++++++++++++++
+ include/soc/qcom/spm.h                            |  38 +++++
+ 5 files changed, 292 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/spm.txt
+ create mode 100644 drivers/soc/qcom/spm-devices.c
+ create mode 100644 include/soc/qcom/spm.h
 
+diff --git a/Documentation/devicetree/bindings/arm/msm/spm.txt b/Documentation/devicetree/bindings/arm/msm/spm.txt
+new file mode 100644
+index 0000000..30623b0
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/msm/spm.txt
+@@ -0,0 +1,47 @@
++* Subsystem Power Manager (SAW2)
++
++S4 generation of MSMs have SPM hardware blocks to control the Application
++Processor Sub-System power. These SPM blocks run individual state machine
++to determine what the core (L2 or Krait/Scorpion) would do when the WFI
++instruction is executed by the core.
++
++The devicetree representation of the SPM block should be:
++
++Required properties
++
++- compatible: Could be one of -
++		"qcom,spm-v2.1"
++- reg: The physical address and the size of the SPM's memory mapped registers
++- qcom,cpu: phandle for the CPU that the SPM block is attached to.
++	This field is required on only for SPMs that control the CPU.
++- qcom,saw2-clk-div: SAW2 configuration register to program the SPM runtime
++	clocks.
++- qcom,saw2-delays: The SPM delay values that SPM sequences would refer to.
++- qcom,saw2-enable: The SPM control register to enable/disable the sleep state
++	machine.
++
++Optional properties
++
++- qcom,saw2-spm-cmd-wfi: The WFI command sequence
++- qcom,saw2-spm-cmd-ret: The Retention command sequence
++- qcom,saw2-spm-cmd-spc: The Standalone PC command sequence
++- qcom,saw2-spm-cmd-pc: The Power Collapse command sequence. This sequence may
++	turn off other SoC components.
++- qcom,saw2-spm-cmd-gdhs: GDHS (Globally Distributed Head Switch) command
++	sequence. This sequence will retain the memory but turn off the logic.
++-
++Example:
++	spm@f9089000 {
++		compatible = "qcom,spm-v2.1";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0xf9089000 0x1000>;
++		qcom,cpu = <&CPU0>;
++		qcom,saw2-clk-div = <0x1>;
++		qcom,saw2-delays = <0x20000400>;
++		qcom,saw2-enable = <0x1>;
++		qcom,saw2-spm-cmd-wfi = [03 0b 0f];
++		qcom,saw2-spm-cmd-spc = [00 20 50 80 60 70 10 92
++				a0 b0 03 68 70 3b 92 a0 b0
++				82 2b 50 10 30 02 22 30 0f];
++	};
+diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
+index 7dcd554..cd249c4 100644
+--- a/drivers/soc/qcom/Kconfig
++++ b/drivers/soc/qcom/Kconfig
+@@ -11,3 +11,11 @@ config QCOM_GSBI
+ 
+ config QCOM_SCM
+ 	bool
++
++config QCOM_PM
++	bool "Qualcomm Power Management"
++	depends on PM && ARCH_QCOM
++	help
++	  QCOM Platform specific power driver to manage cores and L2 low power
++	  modes. It interface with various system drivers to put the cores in
++	  low power modes.
 diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
-index 70d52ed..20b329f 100644
+index 20b329f..9457b2a 100644
 --- a/drivers/soc/qcom/Makefile
 +++ b/drivers/soc/qcom/Makefile
-@@ -1,3 +1,4 @@
+@@ -1,4 +1,4 @@
  obj-$(CONFIG_QCOM_GSBI)	+=	qcom_gsbi.o
-+obj-$(CONFIG_QCOM_PM)	+=	spm.o
+-obj-$(CONFIG_QCOM_PM)	+=	spm.o
++obj-$(CONFIG_QCOM_PM)	+=	spm.o spm-devices.o
  CFLAGS_scm.o :=$(call as-instr,.arch_extension sec,-DREQUIRES_SEC=1)
  obj-$(CONFIG_QCOM_SCM) += scm.o scm-boot.o
-diff --git a/drivers/soc/qcom/spm-drv.h b/drivers/soc/qcom/spm-drv.h
+diff --git a/drivers/soc/qcom/spm-devices.c b/drivers/soc/qcom/spm-devices.c
 new file mode 100644
-index 0000000..e91df44
+index 0000000..776c0af
 --- /dev/null
-+++ b/drivers/soc/qcom/spm-drv.h
-@@ -0,0 +1,69 @@
-+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+#ifndef __QCOM_SPM_DRIVER_H
-+#define __QCOM_SPM_DRIVER_H
-+
-+enum {
-+	MSM_SPM_REG_SAW2_CFG,
-+	MSM_SPM_REG_SAW2_AVS_CTL,
-+	MSM_SPM_REG_SAW2_AVS_HYSTERESIS,
-+	MSM_SPM_REG_SAW2_SPM_CTL,
-+	MSM_SPM_REG_SAW2_PMIC_DLY,
-+	MSM_SPM_REG_SAW2_AVS_LIMIT,
-+	MSM_SPM_REG_SAW2_AVS_DLY,
-+	MSM_SPM_REG_SAW2_SPM_DLY,
-+	MSM_SPM_REG_SAW2_PMIC_DATA_0,
-+	MSM_SPM_REG_SAW2_PMIC_DATA_1,
-+	MSM_SPM_REG_SAW2_PMIC_DATA_2,
-+	MSM_SPM_REG_SAW2_PMIC_DATA_3,
-+	MSM_SPM_REG_SAW2_PMIC_DATA_4,
-+	MSM_SPM_REG_SAW2_PMIC_DATA_5,
-+	MSM_SPM_REG_SAW2_PMIC_DATA_6,
-+	MSM_SPM_REG_SAW2_PMIC_DATA_7,
-+	MSM_SPM_REG_SAW2_RST,
-+
-+	MSM_SPM_REG_NR_INITIALIZE = MSM_SPM_REG_SAW2_RST,
-+
-+	MSM_SPM_REG_SAW2_ID,
-+	MSM_SPM_REG_SAW2_SECURE,
-+	MSM_SPM_REG_SAW2_STS0,
-+	MSM_SPM_REG_SAW2_STS1,
-+	MSM_SPM_REG_SAW2_STS2,
-+	MSM_SPM_REG_SAW2_VCTL,
-+	MSM_SPM_REG_SAW2_SEQ_ENTRY,
-+	MSM_SPM_REG_SAW2_SPM_STS,
-+	MSM_SPM_REG_SAW2_AVS_STS,
-+	MSM_SPM_REG_SAW2_PMIC_STS,
-+	MSM_SPM_REG_SAW2_VERSION,
-+
-+	MSM_SPM_REG_NR,
-+};
-+
-+struct msm_spm_mode {
-+	u32 mode;
-+	u8 *cmd;
-+	u32 start_addr;
-+};
-+
-+struct msm_spm_driver_data {
-+	void __iomem *reg_base_addr;
-+	u32 reg_shadow[MSM_SPM_REG_NR];
-+	u32 *reg_offsets;
-+	struct msm_spm_mode *modes;
-+	u32 num_modes;
-+};
-+
-+int msm_spm_drv_init(struct msm_spm_driver_data *dev);
-+int msm_spm_drv_set_low_power_mode(struct msm_spm_driver_data *dev, u32 addr);
-+int msm_spm_drv_set_spm_enable(struct msm_spm_driver_data *dev, bool enable);
-+
-+#endif /* __QCOM_SPM_DRIVER_H */
-diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
-new file mode 100644
-index 0000000..81e578c
---- /dev/null
-+++ b/drivers/soc/qcom/spm.c
-@@ -0,0 +1,192 @@
++++ b/drivers/soc/qcom/spm-devices.c
+@@ -0,0 +1,198 @@
 +/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -153,178 +138,228 @@ index 0000000..81e578c
 +#include <linux/init.h>
 +#include <linux/io.h>
 +#include <linux/slab.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/err.h>
++#include <linux/platform_device.h>
++
++#include <soc/qcom/spm.h>
 +
 +#include "spm-drv.h"
 +
-+#define NUM_SEQ_ENTRY 32
-+#define SPM_CTL_ENABLE BIT(0)
-+
-+static u32 msm_spm_reg_offsets_saw2_v2_1[MSM_SPM_REG_NR] = {
-+	[MSM_SPM_REG_SAW2_SECURE]		= 0x00,
-+	[MSM_SPM_REG_SAW2_ID]			= 0x04,
-+	[MSM_SPM_REG_SAW2_CFG]			= 0x08,
-+	[MSM_SPM_REG_SAW2_SPM_STS]		= 0x0C,
-+	[MSM_SPM_REG_SAW2_AVS_STS]		= 0x10,
-+	[MSM_SPM_REG_SAW2_PMIC_STS]		= 0x14,
-+	[MSM_SPM_REG_SAW2_RST]			= 0x18,
-+	[MSM_SPM_REG_SAW2_VCTL]			= 0x1C,
-+	[MSM_SPM_REG_SAW2_AVS_CTL]		= 0x20,
-+	[MSM_SPM_REG_SAW2_AVS_LIMIT]		= 0x24,
-+	[MSM_SPM_REG_SAW2_AVS_DLY]		= 0x28,
-+	[MSM_SPM_REG_SAW2_AVS_HYSTERESIS]	= 0x2C,
-+	[MSM_SPM_REG_SAW2_SPM_CTL]		= 0x30,
-+	[MSM_SPM_REG_SAW2_SPM_DLY]		= 0x34,
-+	[MSM_SPM_REG_SAW2_PMIC_DATA_0]		= 0x40,
-+	[MSM_SPM_REG_SAW2_PMIC_DATA_1]		= 0x44,
-+	[MSM_SPM_REG_SAW2_PMIC_DATA_2]		= 0x48,
-+	[MSM_SPM_REG_SAW2_PMIC_DATA_3]		= 0x4C,
-+	[MSM_SPM_REG_SAW2_PMIC_DATA_4]		= 0x50,
-+	[MSM_SPM_REG_SAW2_PMIC_DATA_5]		= 0x54,
-+	[MSM_SPM_REG_SAW2_PMIC_DATA_6]		= 0x58,
-+	[MSM_SPM_REG_SAW2_PMIC_DATA_7]		= 0x5C,
-+	[MSM_SPM_REG_SAW2_SEQ_ENTRY]		= 0x80,
-+	[MSM_SPM_REG_SAW2_VERSION]		= 0xFD0,
++/**
++ * All related information for an SPM device
++ * Helps manage the collective.
++ */
++struct msm_spm_device {
++	bool initialized;
++	struct msm_spm_driver_data drv;
 +};
 +
-+static void flush_shadow(struct msm_spm_driver_data *drv, u32 reg_index)
++static DEFINE_PER_CPU_SHARED_ALIGNED(struct msm_spm_device, msm_cpu_spm_device);
++
++/**
++ * msm_spm_set_low_power_mode() - Configure SPM start address for low power mode
++ * @mode: SPM LPM mode to enter
++ */
++int msm_spm_set_low_power_mode(u32 mode)
 +{
-+	writel_relaxed(drv->reg_shadow[reg_index],
-+			drv->reg_base_addr + drv->reg_offsets[reg_index]);
++	struct msm_spm_device *dev = &__get_cpu_var(msm_cpu_spm_device);
++	int ret = -EINVAL;
++
++	if (!dev->initialized)
++		return -ENXIO;
++
++	if (mode == MSM_SPM_MODE_DISABLED)
++		ret = msm_spm_drv_set_spm_enable(&dev->drv, false);
++	else if (!msm_spm_drv_set_spm_enable(&dev->drv, true))
++		ret = msm_spm_drv_set_low_power_mode(&dev->drv, mode);
++
++	return ret;
 +}
++EXPORT_SYMBOL(msm_spm_set_low_power_mode);
 +
-+static void load_shadow(struct msm_spm_driver_data *drv, u32 reg_index)
++static int get_cpu_id(struct device_node *node)
 +{
-+	drv->reg_shadow[reg_index] = readl_relaxed(drv->reg_base_addr +
-+						drv->reg_offsets[reg_index]);
-+}
++	struct device_node *cpu_node;
++	u32 cpu;
++	int ret = -EINVAL;
++	char *key = "qcom,cpu";
 +
-+static inline void set_start_addr(struct msm_spm_driver_data *drv, u32 addr)
-+{
-+	/* Update bits 10:4 in the SPM CTL register */
-+	addr &= 0x7F;
-+	addr <<= 4;
-+	drv->reg_shadow[MSM_SPM_REG_SAW2_SPM_CTL] &= 0xFFFFF80F;
-+	drv->reg_shadow[MSM_SPM_REG_SAW2_SPM_CTL] |= addr;
-+}
-+
-+int msm_spm_drv_set_low_power_mode(struct msm_spm_driver_data *drv, u32 mode)
-+{
-+	int i;
-+	u32 start_addr = 0;
-+
-+	for (i = 0; i < drv->num_modes; i++) {
-+		if (drv->modes[i].mode == mode) {
-+			start_addr = drv->modes[i].start_addr;
-+			break;
++	cpu_node = of_parse_phandle(node, key, 0);
++	if (cpu_node) {
++		for_each_possible_cpu(cpu) {
++			if (of_get_cpu_node(cpu, NULL) == cpu_node)
++				return cpu;
 +		}
 +	}
++	return ret;
++}
 +
-+	if (i == drv->num_modes)
++static struct msm_spm_device *msm_spm_get_device(struct platform_device *pdev)
++{
++	struct msm_spm_device *dev = NULL;
++	int cpu = get_cpu_id(pdev->dev.of_node);
++
++	if ((cpu >= 0) && cpu < num_possible_cpus())
++		dev = &per_cpu(msm_cpu_spm_device, cpu);
++
++	return dev;
++}
++
++static int msm_spm_dev_probe(struct platform_device *pdev)
++{
++	int ret;
++	int i;
++	struct device_node *node = pdev->dev.of_node;
++	char *key;
++	u32 val;
++	struct msm_spm_mode modes[MSM_SPM_MODE_NR];
++	struct msm_spm_device *spm_dev;
++	struct resource *res;
++	u32 mode_count = 0;
++
++	struct spm_of {
++		char *key;
++		u32 id;
++	};
++
++	/* SPM Configuration registers */
++	struct spm_of spm_of_data[] = {
++		{"qcom,saw2-clk-div", MSM_SPM_REG_SAW2_CFG},
++		{"qcom,saw2-enable", MSM_SPM_REG_SAW2_SPM_CTL},
++		{"qcom,saw2-delays", MSM_SPM_REG_SAW2_SPM_DLY},
++	};
++
++	/* SPM sleep sequences */
++	struct spm_of mode_of_data[] = {
++		{"qcom,saw2-spm-cmd-wfi", MSM_SPM_MODE_CLOCK_GATING},
++		{"qcom,saw2-spm-cmd-spc", MSM_SPM_MODE_POWER_COLLAPSE},
++		{"qcom,saw2-spm-cmd-ret", MSM_SPM_MODE_RETENTION},
++	};
++
++	 /* Get the right SPM device */
++	spm_dev = msm_spm_get_device(pdev);
++	if (IS_ERR_OR_NULL(spm_dev))
 +		return -EINVAL;
 +
-+	set_start_addr(drv, start_addr);
-+	flush_shadow(drv, MSM_SPM_REG_SAW2_SPM_CTL);
-+	/* Barrier to ensure we have written the start address */
-+	wmb();
-+
-+	/* Update our shadow with the status changes, if any */
-+	load_shadow(drv, MSM_SPM_REG_SAW2_SPM_STS);
-+
-+	return 0;
-+}
-+
-+int msm_spm_drv_set_spm_enable(struct msm_spm_driver_data *drv, bool enable)
-+{
-+	u32 value = enable ? 0x01 : 0x00;
-+
-+	/* Update SPM_CTL to enable/disable the SPM */
-+	if ((drv->reg_shadow[MSM_SPM_REG_SAW2_SPM_CTL] & SPM_CTL_ENABLE)
-+								!= value) {
-+		/* Clear the existing value and update */
-+		drv->reg_shadow[MSM_SPM_REG_SAW2_SPM_CTL] &= ~0x1;
-+		drv->reg_shadow[MSM_SPM_REG_SAW2_SPM_CTL] |= value;
-+		flush_shadow(drv, MSM_SPM_REG_SAW2_SPM_CTL);
-+		/* Ensure we have enabled/disabled before returning */
-+		wmb();
++	/* Get the SAW start address */
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		ret = -EINVAL;
++		goto fail;
++	}
++	spm_dev->drv.reg_base_addr = devm_ioremap(&pdev->dev, res->start,
++					resource_size(res));
++	if (!spm_dev->drv.reg_base_addr) {
++		ret = -ENOMEM;
++		goto fail;
 +	}
 +
-+	return 0;
-+}
-+
-+static void flush_seq_data(struct msm_spm_driver_data *drv, u32 *reg_seq_entry)
-+{
-+	int i;
-+
-+	/* Write the 32 byte array into the SPM registers */
-+	for (i = 0; i < NUM_SEQ_ENTRY; i++) {
-+		writel_relaxed(reg_seq_entry[i],
-+			drv->reg_base_addr
-+			+ drv->reg_offsets[MSM_SPM_REG_SAW2_SEQ_ENTRY]
-+			+ 4 * i);
-+	}
-+	/* Ensure that the changes are written */
-+	wmb();
-+}
-+
-+static void write_seq_data(struct msm_spm_driver_data *drv,
-+		u32 *reg_seq_entry, u8 *cmd, u32 *offset)
-+{
-+	u32 cmd_w;
-+	u32 offset_w = *offset / 4;
-+	u8 last_cmd;
-+
-+	while (1) {
-+		int i;
-+
-+		cmd_w = 0;
-+		last_cmd = 0;
-+		cmd_w = reg_seq_entry[offset_w];
-+
-+		for (i = (*offset % 4); i < 4; i++) {
-+			last_cmd = *(cmd++);
-+			cmd_w |=  last_cmd << (i * 8);
-+			(*offset)++;
-+			if (last_cmd == 0x0f)
-+				break;
-+		}
-+
-+		reg_seq_entry[offset_w++] = cmd_w;
-+		if (last_cmd == 0x0f)
-+			break;
++	/* Read the SPM configuration register values */
++	for (i = 0; i < ARRAY_SIZE(spm_of_data); i++) {
++		ret = of_property_read_u32(node, spm_of_data[i].key, &val);
++		if (ret)
++			continue;
++		spm_dev->drv.reg_shadow[spm_of_data[i].id] = val;
 +	}
 +
-+}
-+
-+int msm_spm_drv_init(struct msm_spm_driver_data *drv)
-+{
-+	int i;
-+	int offset = 0;
-+	u32 sequences[NUM_SEQ_ENTRY/4] = {0};
-+
-+	drv->reg_offsets = msm_spm_reg_offsets_saw2_v2_1;
-+
-+	/**
-+	 * Compose the uint32 array based on the individual bytes of the SPM
-+	 * sequence for each low power mode that we read from the DT.
-+	 * The sequences are appended if there is space available in the
-+	 * u32 after the end of the previous sequence.
-+	 */
-+	for (i = 0; i < drv->num_modes; i++) {
-+		drv->modes[i].start_addr = offset;
-+		write_seq_data(drv, &sequences[0], drv->modes[i].cmd, &offset);
++	/* Read the byte arrays for the SPM sleep sequences */
++	for (i = 0; i < ARRAY_SIZE(mode_of_data); i++) {
++		modes[mode_count].start_addr = 0;
++		key = mode_of_data[i].key;
++		modes[mode_count].cmd =
++			(u8 *)of_get_property(node, key, &val);
++		if (!modes[mode_count].cmd)
++			continue;
++		modes[mode_count].mode = mode_of_data[i].id;
++		mode_count++;
 +	}
 +
-+	/* Flush the integer array */
-+	flush_seq_data(drv, &sequences[0]);
++	spm_dev->drv.modes = devm_kcalloc(&pdev->dev, mode_count,
++						sizeof(modes[0]), GFP_KERNEL);
++	if (!spm_dev->drv.modes)
++		return -ENOMEM;
++	spm_dev->drv.num_modes = mode_count;
++	memcpy(spm_dev->drv.modes, &modes[0], sizeof(modes[0]) * mode_count);
 +
-+	/**
-+	 * Initialize the hardware with the control registers that
-+	 * we have read.
-+	 */
-+	for (i = 0; i < MSM_SPM_REG_SAW2_PMIC_DATA_0; i++)
-+		flush_shadow(drv, i);
++	/* Initialize the hardware */
++	ret = msm_spm_drv_init(&spm_dev->drv);
++	if (ret) {
++		kfree(spm_dev->drv.modes);
++		return ret;
++	}
 +
-+	return 0;
++	spm_dev->initialized = true;
++	return ret;
++
++fail:
++	dev_err(&pdev->dev, "SPM device probe failed: %d\n", ret);
++	return ret;
 +}
++
++static struct of_device_id msm_spm_match_table[] = {
++	{.compatible = "qcom,spm-v2.1"},
++	{},
++};
++
++static struct platform_driver msm_spm_device_driver = {
++	.probe = msm_spm_dev_probe,
++	.driver = {
++		.name = "spm-v2",
++		.owner = THIS_MODULE,
++		.of_match_table = msm_spm_match_table,
++	},
++};
++
++static int __init msm_spm_device_init(void)
++{
++	return platform_driver_register(&msm_spm_device_driver);
++}
++device_initcall(msm_spm_device_init);
+diff --git a/include/soc/qcom/spm.h b/include/soc/qcom/spm.h
+new file mode 100644
+index 0000000..29686ef
+--- /dev/null
++++ b/include/soc/qcom/spm.h
+@@ -0,0 +1,38 @@
++/* Copyright (c) 2010-2014, The Linux Foundation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef __QCOM_SPM_H
++#define __QCOM_SPM_H
++
++enum {
++	MSM_SPM_MODE_DISABLED,
++	MSM_SPM_MODE_CLOCK_GATING,
++	MSM_SPM_MODE_RETENTION,
++	MSM_SPM_MODE_GDHS,
++	MSM_SPM_MODE_POWER_COLLAPSE,
++	MSM_SPM_MODE_NR
++};
++
++struct msm_spm_device;
++
++#if defined(CONFIG_QCOM_PM)
++
++int msm_spm_set_low_power_mode(u32 mode);
++
++#else
++
++static inline int msm_spm_set_low_power_mode(u32 mode)
++{ return -ENOSYS; }
++
++#endif  /* CONFIG_QCOM_PM */
++
++#endif  /* __QCOM_SPM_H */
 -- 
 1.9.1
