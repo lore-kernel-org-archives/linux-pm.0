@@ -1,117 +1,97 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: Re: [PATCH v4 2/4] dt-bindings: document Rockchip thermal
-Date: Thu, 04 Sep 2014 09:02:08 +0800
-Message-ID: <5407BA10.2030402@rock-chips.com>
-References: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com> <1409710239-19941-3-git-send-email-caesar.wang@rock-chips.com> <11280986.L6lv82O8Qv@diego>
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+Subject: RE: [PATCH 2/2] cpufreq: ppc-corenet: remove per-cpu variable
+ 'cpu_mask'
+Date: Thu, 4 Sep 2014 02:51:48 +0000
+Message-ID: <21e79b8a95ca443a9844fc2b79ec5379@BY2PR03MB570.namprd03.prod.outlook.com>
+References: <09092df3d8b03df99ee475357c5f5c9cc439c61c.1409629117.git.viresh.kumar@linaro.org>
+	<3d467a39ab1b96dc24ed8a71139d5e030239477f.1409629117.git.viresh.kumar@linaro.org>
+	<6a145a322bd64e14a2d94e8c40151bbe@BY2PR03MB570.namprd03.prod.outlook.com>
+	<CAKohpokQo=Jqgj2CzTH41WbD6F1GpdhksWdg0dm8WLN_CT5KkA@mail.gmail.com>
+	<9fde1bf81522480484897416019b0ee9@BY2PR03MB570.namprd03.prod.outlook.com>
+	<CAKohpo=skCssnm0AZi2rMDUTKg0Xo0p9Sz0KwO1iuapLks=nyg@mail.gmail.com>
+	<d9f1dbc51c9d408ea593d11a95a36ee4@BY2PR03MB570.namprd03.prod.outlook.com>
+ <CAKohpo=Pb88SBg0HwrAtzfRkG5Z9HgsapSmA1PbmqqvP-wQ1qw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <11280986.L6lv82O8Qv@diego>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, zyw@rock-chips.com, addy.ke@rock-chips.com, dmitry.torokhov@gmail.com, zhaoyifeng <zyf@rock-chips.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bl2lp0203.outbound.protection.outlook.com ([207.46.163.203]:7492
+	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751321AbaIDCwE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 3 Sep 2014 22:52:04 -0400
+In-Reply-To: <CAKohpo=Pb88SBg0HwrAtzfRkG5Z9HgsapSmA1PbmqqvP-wQ1qw@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "LeoLi@freescale.com" <LeoLi@freescale.com>, Hongtao Jia <hongtao.jia@freescale.com>
 
-
-=E5=9C=A8 2014=E5=B9=B409=E6=9C=8803=E6=97=A5 16:07, Heiko St=C3=BCbner=
- =E5=86=99=E9=81=93:
-> Am Mittwoch, 3. September 2014, 10:10:37 schrieb Caesar Wang:
->> This add the necessary binding documentation for the thermal
->> found on Rockchip SoCs
->>
->> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
->> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
->> ---
->>   .../devicetree/bindings/thermal/rockchip-thermal.txt | 20
->> ++++++++++++++++++++ 1 file changed, 20 insertions(+)
->>   create mode 100644
->> Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-ther=
-mal.txt
->> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt new=
- file
->> mode 100644
->> index 0000000..1ed4d4c
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->> @@ -0,0 +1,20 @@
->> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
->> +
->> +Required properties:
->> +- compatible: "rockchip,rk3288-tsadc"
->> +- reg: physical base address of the controller and length of memory=
- mapped
->> +       region.
->> +- interrupts: The interrupt number to the cpu. The interrupt specif=
-ier
->> format +	      depends on the interrupt controller.
->> +- clocks: Must contain an entry for each entry in clock-names.
->> +- clock-names: Shall be "tsadc" for the converter-clock, and "apb_p=
-clk" for
->> +	       the peripheral clock.
-> You're using the passive-temp, critical-temp and force-shut-temp prop=
-erties in
-> your driver without declaring them here.
-
-frankly,the about are need be declared. but  there are 4 types[0] for=20
-trip in thermal framework,
-there is no force-shut for me. So I want to change it three additional=20
-properties in [PATCH V4 4/4],
-
-
-[0]
-{
-     THERMAL_TRIP_CRITICAL,
-     THERMAL_TRIP_HOT,
-     THERMAL_TRIP_PASSIVE,
-     THERMAL_TRIP_ACTIVE,
-}
-
-> But more importantly, please use the generic trip-points for this. I =
-guess it
-> shouldn't be a problem to introduce a "forced-shutdown" trippoint [0]=
- for the
-> additional trip-point you have - thermal maintainers, please shout if=
- I'm
-> wrong :-)
-
-It's a good option.
-I can send a patch,but I don't know whether the thermal maintainers wil=
-l=20
-accept it.
-
-Maybe,they have a better way to suggest it.:-)
-
-
-PS:I will sent a new patch If I still have no received their suggestion=
-s=20
-in two days.
-
->
-> Heiko
->
->
-> [0] in a separate patch, changing
-> - thermal_trip_type enum in include/linux/thermal.h
-> - trip_types mapping in drivers/thermal/of-thermal.c
-> - Documentation/devicetree/bindings/thermal/thermal.txt
->
->> +
->> +Example:
->> +tsadc: tsadc@ff280000 {
->> +	compatible =3D "rockchip,rk3288-tsadc";
->> +	reg =3D <0xff280000 0x100>;
->> +	interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
->> +	clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
->> +	clock-names =3D "tsadc", "apb_pclk";
->> +};
->
->
->
-
---=20
-Best regards,
-Caesar
+Q2FuJ3QgYWdyZWUgeW91IG1vcmUuDQpBcyBJIGtub3csIHRoZXJlIGlzIG5vIHN1Y2ggZnVuY3Rp
+b24gdG8gZ2V0IG1hc2sgb2Ygb25saW5lIGFuZCBvZmZsaW5lIGNwdXMgaW4gYSBjbHVzdGVyLg0K
+DQpUaGFua3MsDQpZdWFudGlhbg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
+b206IFZpcmVzaCBLdW1hciBbbWFpbHRvOnZpcmVzaC5rdW1hckBsaW5hcm8ub3JnXQ0KPiBTZW50
+OiBXZWRuZXNkYXksIFNlcHRlbWJlciAwMywgMjAxNCA1OjUwIFBNDQo+IFRvOiBUYW5nIFl1YW50
+aWFuLUIyOTk4Mw0KPiBDYzogUmFmYWVsIFd5c29ja2k7IGxpbmFyby1rZXJuZWxAbGlzdHMubGlu
+YXJvLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBMaQ0KPiBZYW5nLUxlby1SNTg0NzI7
+IEppYSBIb25ndGFvLUIzODk1MQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvMl0gY3B1ZnJlcTog
+cHBjLWNvcmVuZXQ6IHJlbW92ZSBwZXItY3B1IHZhcmlhYmxlDQo+ICdjcHVfbWFzaycNCj4gDQo+
+IE9uIDMgU2VwdGVtYmVyIDIwMTQgMTM6MzIsIFl1YW50aWFuIFRhbmcgPFl1YW50aWFuLlRhbmdA
+ZnJlZXNjYWxlLmNvbT4NCj4gd3JvdGU6DQo+ID4gVGVzdCBjb25maXJtZWQgd2hhdCBJIGFtIGNv
+bmNlcm5lZC4gUGF0Y2ggMSBpcyB3b3JraW5nIGJ1dCBwYXRjaCAyIGRpZG4ndA0KPiB3b3JraW5n
+IGluIGhvdHBsdWcgY2FzZS4NCj4gPiAodGVzdGVkIG9uIHQ0MjQwIHBsYXRmb3JtIHdpdGggMyBj
+bHVzdGVyIGFuZCA4IGNwdXMgaW4gZWFjaCBjbHVzdGVyLCBrZXJuZWwNCj4gdmVyc2lvbiBpcyAz
+LjEyKS4NCj4gDQo+IDooDQo+IA0KPiA+IExvZyBpcyBhcyBmb2xsb3dzOg0KPiA+IHJvb3RAdDQy
+NDByZGI6fiMgY2QgL3N5cy9kZXZpY2VzL3N5c3RlbS8NCj4gPiByb290QHQ0MjQwcmRiOi9zeXMv
+ZGV2aWNlcy9zeXN0ZW0jIGxzIGNsb2NrZXZlbnRzICBjbG9ja3NvdXJjZSAgY3B1DQo+ID4gZWRh
+YyByb290QHQ0MjQwcmRiOi9zeXMvZGV2aWNlcy9zeXN0ZW0jIGNkIGNwdS8NCj4gPiByb290QHQ0
+MjQwcmRiOi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1IyBscw0KPiA+IGNwdTAgIGNwdTEgIGNwdTEw
+ICBjcHUxMSAgY3B1MTIgIGNwdTEzICBjcHUxNCAgY3B1MTUgIGNwdTE2DQo+IGNwdTE3DQo+ID4g
+Y3B1MTggIGNwdTE5ICBjcHUyICBjcHUyMCAgY3B1MjEgIGNwdTIyICBjcHUyMyAgY3B1MyAgY3B1
+NGNwdTUNCj4gY3B1NiAgY3B1NyAgY3B1OCAgY3B1OSAga2VybmVsX21heCAgb2ZmbGluZSAgb25s
+aW5lICBwb3NzaWJsZSAgcHJlc2VudA0KPiBwcm9iZSAgcmVsZWFzZSAgdWV2ZW50IHJvb3RAdDQy
+NDByZGI6L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUjIGNhdCBjcHU4Lw0KPiA+IGFsdGl2ZWNfaWRs
+ZSAgICAgICAgICAgIGFsdGl2ZWNfaWRsZV93YWl0X3RpbWUgIGNhY2hlLw0KPiBjcHVmcmVxLyAg
+ICAgICAgICAgICAgICBvbmxpbmUgICAgICAgICAgICAgICAgICBwaHlzaWNhbF9pZA0KPiBwaXIg
+ICAgICAgICAgICAgICAgICAgICBwdzIwX3N0YXRlICAgICAgICAgICAgICBwdzIwX3dhaXRfdGlt
+ZQ0KPiBzbXRfc25vb3plX2RlbGF5ICAgICAgICBzdWJzeXN0ZW0vICAgICAgICAgICAgICB0b3Bv
+bG9neS8NCj4gdWV2ZW50DQo+ID4gcm9vdEB0NDI0MHJkYjovc3lzL2RldmljZXMvc3lzdGVtL2Nw
+dSMgY2F0IGNwdTgvY3B1ZnJlcS9hZmZlY3RlZF9jcHVzDQo+ID4gOCA5IDEwIDExIDEyIDEzIDE0
+IDE1DQo+ID4gcm9vdEB0NDI0MHJkYjovc3lzL2RldmljZXMvc3lzdGVtL2NwdSMgZWNobyAwID4g
+Y3B1OC9vbmxpbmUgQ2Fubm90IHNldA0KPiA+IGFmZmluaXR5IGZvciBpcnEgNDY3IHJvb3RAdDQy
+NDByZGI6L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUjIGVjaG8gMCA+DQo+ID4gY3B1OS9vbmxpbmUg
+cm9vdEB0NDI0MHJkYjovc3lzL2RldmljZXMvc3lzdGVtL2NwdSMgY2F0DQo+ID4gY3B1MTAvY3B1
+ZnJlcS9hZmZlY3RlZF9jcHVzDQo+ID4gMTAgMTEgMTIgMTMgMTQgMTUNCj4gPiByb290QHQ0MjQw
+cmRiOi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1IyBlY2hvIDAgPiBjcHUxMC9vbmxpbmUNCj4gPiBy
+b290QHQ0MjQwcmRiOi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1IyBlY2hvIDAgPiBjcHUxMS9vbmxp
+bmUNCj4gPiByb290QHQ0MjQwcmRiOi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1IyBlY2hvIDAgPiBj
+cHUxMi9vbmxpbmUNCj4gPiByb290QHQ0MjQwcmRiOi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1IyBl
+Y2hvIDAgPiBjcHUxMy9vbmxpbmUNCj4gPiByb290QHQ0MjQwcmRiOi9zeXMvZGV2aWNlcy9zeXN0
+ZW0vY3B1IyBlY2hvIDAgPiBjcHUxNC9vbmxpbmUNCj4gPiByb290QHQ0MjQwcmRiOi9zeXMvZGV2
+aWNlcy9zeXN0ZW0vY3B1IyBlY2hvIDAgPiBjcHUxNS9vbmxpbmUNCj4gPiByb290QHQ0MjQwcmRi
+Oi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1IyBlY2hvIDEgPiBjcHU5L29ubGluZQ0KPiA+IHNtcF84
+NXh4X2tpY2tfY3B1OiBDYW4gbm90IHN0YXJ0IENQVSAjOS4gU3RhcnQgQ1BVICM4IGZpcnN0Lg0K
+PiA+IHNtcDogZmFpbGVkIHN0YXJ0aW5nIGNwdSA5IChyYyAtMikNCj4gPiAtc2g6IGVjaG86IHdy
+aXRlIGVycm9yOiBObyBzdWNoIGZpbGUgb3IgZGlyZWN0b3J5DQo+IA0KPiBJIGRvbid0IHVuZGVy
+c3RhbmQgaG93IGlzIHRoaXMgcmVsYXRlZCB0byBteSBwYXRjaD8gQW5kIHRoZSBzdWNjZXNzZnVs
+IHNlcXVlbmNlDQo+IGJlbG93IGhhcyBDUFUxNCBoZXJlIGluc3RlYWQgb2YgOC4uIFNvIHRoaXMg
+ZXJyb3IgbWlnaHQgY29tZSB3aXRob3V0IG15IHBhdGNoDQo+IGFzIHdlbGwgaWYgdGhpcyBzZXF1
+ZW5jZSBpcyBmb2xsb3dlZC4uDQo+IA0KPiA+IHJvb3RAdDQyNDByZGI6L3N5cy9kZXZpY2VzL3N5
+c3RlbS9jcHUjIGVjaG8gMSA+IGNwdTEwL29ubGluZQ0KPiA+IHJvb3RAdDQyNDByZGI6L3N5cy9k
+ZXZpY2VzL3N5c3RlbS9jcHUjIGNhdCBjcHUxMC9jcHVmcmVxL2FmZmVjdGVkX2NwdXMNCj4gPiAx
+MA0KPiA+IHJvb3RAdDQyNDByZGI6L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUjIGVjaG8gMSA+IGNw
+dTExL29ubGluZQ0KPiA+IHN5c2ZzOiBjYW5ub3QgY3JlYXRlIGR1cGxpY2F0ZSBmaWxlbmFtZSAn
+L2RldmljZXMvc3lzdGVtL2NwdS9jcHUxMC9jcHVmcmVxJw0KPiA+IC0tLS0tLS0tLS0tLVsgY3V0
+IGhlcmUgXS0tLS0tLS0tLS0tLQ0KPiA+IFdBUk5JTkc6IGF0IGZzL3N5c2ZzL2Rpci5jOjUyNg0K
+PiANCj4gSSB0aGluayBJIGtub3cgd2h5IHRoaXMgaGFwcGVuZWQuDQo+IA0KPiBEb2VzIGNwdV9j
+b3JlX21hc2soKSBnaXZlcyBtYXNrIG9mIE9OTFkgT25saW5lIENQVXMgPyBJICpzdHJvbmdseSog
+YmVsaWV2ZSBZRVMNCj4gbG9va2luZyBhdCBhYm92ZSBjcmFzaC4NCj4gDQo+IElmIHdlIGNhbiBj
+aGFuZ2UgdGhhdCB3aXRoIHNvbWUgb3RoZXIgcm91dGluZSB3aGljaCBnaXZlcyBtYXNrIG9mIGFs
+bA0KPiAob25saW5lK29mZmxpbmUpDQo+IENQVXMgdGhlbiB0aGlzIGNyYXNoIG1pZ2h0IGdvIGF3
+YXkuLg0KPiANCj4gQmVjYXVzZSBvZiB0aGF0LCBJIGJlbGlldmUgdGhlcmUgaXMgYW5vdGhlciBw
+cm9ibGVtIGluIHlvdXIgZHJpdmVyIGV2ZW4gd2l0aG91dCBteQ0KPiBwYXRjaC4gRG8gdGhpcyB0
+byBnZXQgc2ltaWxhciBjcmFzaDoNCj4gDQo+IC0gYnVpbGQgZHJpdmVyIGFzIG1vZHVsZSBhbmQg
+ZG9uJ3QgbG9hZCBpdCBieSBkZWZhdWx0DQo+IC0gYm9vdCB5b3VyIHN5c3RlbQ0KPiAtIG9mZmxp
+bmUgQ1BVcyA4IHRvIDE1IGFzIHlvdSBkaWQgYWJvdmUuDQo+IC0gaW5zZXJ0IG1vZHVsZQ0KPiAt
+IHRyeSB0byBvbmxpbmUgY29yZXMgYXMgeW91IGRpZCBhYm92ZS4NCj4gDQo+IC0tDQo+IHZpcmVz
+aA0K
