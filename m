@@ -1,180 +1,94 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 4/9] ARM: zynq: PM: Enable DDR clock stop
-Date: Thu, 04 Sep 2014 14:16:09 +0200
-Message-ID: <54085809.9050605@linaro.org>
-References: <1409692754-13437-1-git-send-email-soren.brinkmann@xilinx.com> <1409692754-13437-5-git-send-email-soren.brinkmann@xilinx.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/3] sched: Add new API wake_up_if_idle() to wake up the
+ idle cpu
+Date: Thu, 04 Sep 2014 14:53:00 +0200
+Message-ID: <540860AC.3030905@linaro.org>
+References: <1409815075-4180-1-git-send-email-chuansheng.liu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
+Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1409692754-13437-5-git-send-email-soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, Michal Simek <michal.simek-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
-Cc: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f170.google.com ([74.125.82.170]:60293 "EHLO
+	mail-we0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962AbaIDMxG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 08:53:06 -0400
+Received: by mail-we0-f170.google.com with SMTP id p10so10219511wes.29
+        for <linux-pm@vger.kernel.org>; Thu, 04 Sep 2014 05:53:04 -0700 (PDT)
+In-Reply-To: <1409815075-4180-1-git-send-email-chuansheng.liu@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chuansheng Liu <chuansheng.liu@intel.com>, peterz@infradead.org, luto@amacapital.net, rjw@rjwysocki.net, mingo@redhat.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, changcheng.liu@intel.com, xiaoming.wang@intel.com, souvik.k.chakravarty@intel.com
 
-On 09/02/2014 11:19 PM, Soren Brinkmann wrote:
-> The DDR controller can detect idle periods and leverage low power
-> features clock stop. When new requests occur, the DDRC resumes
-> normal operation.
+On 09/04/2014 09:17 AM, Chuansheng Liu wrote:
+> Implementing one new API wake_up_if_idle(), which is used to
+> wake up the idle CPU.
 >
-> Signed-off-by: Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
+> Suggested-by: Andy Lutomirski <luto@amacapital.net>
+> Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 
-Acked-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Hi Chuanseng,
+
+in the future, please prefix the patches with the version number and a=20
+changelog.
+
+Thanks
+
+   -- Daniel
+
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 > ---
-> v2:
->   - properly document return value for zynq_pm_ioremap
->   - change zynq_pm_late_init signature to return void
->   - add kernel doc to late_init()
->   - fix kernel doc
->   - only enable clock-stop during boot and leave out self-refresh. Th=
-e
->     self-refresh penalty is apparently not-negligible
-> ---
->   arch/arm/mach-zynq/Makefile |  2 +-
->   arch/arm/mach-zynq/common.c |  1 +
->   arch/arm/mach-zynq/common.h |  2 ++
->   arch/arm/mach-zynq/pm.c     | 83 ++++++++++++++++++++++++++++++++++=
-+++++++++++
->   4 files changed, 87 insertions(+), 1 deletion(-)
->   create mode 100644 arch/arm/mach-zynq/pm.c
+>   include/linux/sched.h |    1 +
+>   kernel/sched/core.c   |   19 +++++++++++++++++++
+>   2 files changed, 20 insertions(+)
 >
-> diff --git a/arch/arm/mach-zynq/Makefile b/arch/arm/mach-zynq/Makefil=
-e
-> index 1b25d92ebf22..820dff6e1eba 100644
-> --- a/arch/arm/mach-zynq/Makefile
-> +++ b/arch/arm/mach-zynq/Makefile
-> @@ -3,7 +3,7 @@
->   #
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 857ba40..3f89ac1 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1024,6 +1024,7 @@ struct sched_domain_topology_level {
+>   extern struct sched_domain_topology_level *sched_domain_topology;
 >
->   # Common support
-> -obj-y				:=3D common.o slcr.o
-> +obj-y				:=3D common.o slcr.o pm.o
->   CFLAGS_REMOVE_hotplug.o		=3D-march=3Darmv6k
->   CFLAGS_hotplug.o 		=3D-Wa,-march=3Darmv7-a -mcpu=3Dcortex-a9
->   obj-$(CONFIG_HOTPLUG_CPU)	+=3D hotplug.o
-> diff --git a/arch/arm/mach-zynq/common.c b/arch/arm/mach-zynq/common.=
-c
-> index 3cb7c198615a..6bd13e5ce6b7 100644
-> --- a/arch/arm/mach-zynq/common.c
-> +++ b/arch/arm/mach-zynq/common.c
-> @@ -101,6 +101,7 @@ static int __init zynq_get_revision(void)
->   static void __init zynq_init_late(void)
->   {
->   	zynq_core_pm_init();
-> +	zynq_pm_late_init();
+>   extern void set_sched_topology(struct sched_domain_topology_level *=
+tl);
+> +extern void wake_up_if_idle(int cpu);
+>
+>   #ifdef CONFIG_SCHED_DEBUG
+>   # define SD_INIT_NAME(type)		.name =3D #type
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 1211575..b818548 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -1620,6 +1620,25 @@ static void ttwu_queue_remote(struct task_stru=
+ct *p, int cpu)
+>   	}
 >   }
 >
->   /**
-> diff --git a/arch/arm/mach-zynq/common.h b/arch/arm/mach-zynq/common.=
-h
-> index 596ef0b5067c..0edbb6997b1c 100644
-> --- a/arch/arm/mach-zynq/common.h
-> +++ b/arch/arm/mach-zynq/common.h
-> @@ -40,6 +40,8 @@ extern void __iomem *zynq_scu_base;
->   /* Hotplug */
->   extern void zynq_platform_cpu_die(unsigned int cpu);
->
-> +void zynq_pm_late_init(void);
+> +void wake_up_if_idle(int cpu)
+> +{
+> +	struct rq *rq =3D cpu_rq(cpu);
+> +	unsigned long flags;
 > +
->   static inline void zynq_core_pm_init(void)
+> +	if (!is_idle_task(rq->curr))
+> +		return;
+> +
+> +	if (set_nr_if_polling(rq->idle)) {
+> +		trace_sched_wake_idle_without_ipi(cpu);
+> +	} else {
+> +		raw_spin_lock_irqsave(&rq->lock, flags);
+> +		if (is_idle_task(rq->curr))
+> +			smp_send_reschedule(cpu);
+> +		/* Else cpu is not in idle, do nothing here */
+> +		raw_spin_unlock_irqrestore(&rq->lock, flags);
+> +	}
+> +}
+> +
+>   bool cpus_share_cache(int this_cpu, int that_cpu)
 >   {
->   	/* A9 clock gating */
-> diff --git a/arch/arm/mach-zynq/pm.c b/arch/arm/mach-zynq/pm.c
-> new file mode 100644
-> index 000000000000..911fcf865be8
-> --- /dev/null
-> +++ b/arch/arm/mach-zynq/pm.c
-> @@ -0,0 +1,83 @@
-> +/*
-> + * Zynq power management
-> + *
-> + *  Copyright (C) 2012 - 2014 Xilinx
-> + *
-> + *  S=C3=B6ren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
-> + *
-> + * This program is free software: you can redistribute it and/or mod=
-ify
-> + * it under the terms of the GNU General Public License as published=
- by
-> + * the Free Software Foundation, either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program.  If not, see <http://www.gnu.org/license=
-s/>.
-> + */
-> +
-> +#include <linux/io.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_device.h>
-> +#include "common.h"
-> +
-> +/* register offsets */
-> +#define DDRC_CTRL_REG1_OFFS		0x60
-> +#define DDRC_DRAM_PARAM_REG3_OFFS	0x20
-> +
-> +/* bitfields */
-> +#define DDRC_CLOCKSTOP_MASK	BIT(23)
-> +#define DDRC_SELFREFRESH_MASK	BIT(12)
-> +
-> +static void __iomem *ddrc_base;
-> +
-> +/**
-> + * zynq_pm_ioremap() - Create IO mappings
-> + * @comp:	DT compatible string
-> + * Return: Pointer to the mapped memory or NULL.
-> + *
-> + * Remap the memory region for a compatible DT node.
-> + */
-> +static void __iomem *zynq_pm_ioremap(const char *comp)
-> +{
-> +	struct device_node *np;
-> +	void __iomem *base =3D NULL;
-> +
-> +	np =3D of_find_compatible_node(NULL, NULL, comp);
-> +	if (np) {
-> +		base =3D of_iomap(np, 0);
-> +		of_node_put(np);
-> +	} else {
-> +		pr_warn("%s: no compatible node found for '%s'\n", __func__,
-> +				comp);
-> +	}
-> +
-> +	return base;
-> +}
-> +
-> +/**
-> + * zynq_pm_late_init() - Power management init
-> + *
-> + * Initialization of power management related featurs and infrastruc=
-ture.
-> + */
-> +void __init zynq_pm_late_init(void)
-> +{
-> +	u32 reg;
-> +
-> +	ddrc_base =3D zynq_pm_ioremap("xlnx,zynq-ddrc-a05");
-> +	if (!ddrc_base) {
-> +		pr_warn("%s: Unable to map DDRC IO memory.\n", __func__);
-> +	} else {
-> +		/*
-> +		 * Enable DDRC clock stop feature. The HW takes care of
-> +		 * entering/exiting the correct mode depending
-> +		 * on activity state.
-> +		 */
-> +		reg =3D readl(ddrc_base + DDRC_DRAM_PARAM_REG3_OFFS);
-> +		reg |=3D DDRC_CLOCKSTOP_MASK;
-> +		writel(reg, ddrc_base + DDRC_DRAM_PARAM_REG3_OFFS);
-> +	}
-> +}
+>   	return per_cpu(sd_llc_id, this_cpu) =3D=3D per_cpu(sd_llc_id, that=
+_cpu);
 >
 
 
@@ -186,8 +100,3 @@ r ARM SoCs
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
