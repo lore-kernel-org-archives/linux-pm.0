@@ -1,91 +1,47 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v9 4/6] ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
-Date: Thu, 04 Sep 2014 06:30:13 -0700
-Message-ID: <7hfvg74ioq.fsf@paris.lan>
-References: <1406707663-16656-1-git-send-email-thomas.ab@samsung.com>
-	<1406707663-16656-5-git-send-email-thomas.ab@samsung.com>
-	<53DA8BB9.6020702@samsung.com> <53DA8D85.3050106@gmail.com>
-	<7hbnrc6px3.fsf@paris.lan> <53F7DA13.6090305@gmail.com>
-	<CADWw7OgAS-z-UOrJU-hL2fzuefJmLtCTg57jYk2Df7f5KfLJmA@mail.gmail.com>
-	<7h8umc60we.fsf@paris.lan>
-	<CADWw7OgW+o3tB=ptnsy-PsmXmNv8oXzt_WfK6NswQiEWWwAzNA@mail.gmail.com>
-	<CAGa+x85-Anb+HsSUQRaaeex19-HK+yZDW0UpFBwAtsQ8Sf2Aqg@mail.gmail.com>
-	<CAGa+x86jU8MR=r_xuaiorbNNyqrezb0b6Ozy-MPg9HvsARESOw@mail.gmail.com>
-	<CAJuA9ajtsrY7zSDMs=c6BZ0AqERoBgvq++dTF4Dn673zGMfcgQ@mail.gmail.com>
-	<CAMAWPa-8h5PNhgT+ApBhA8p=i+4oFOnYnQsQ4mK1JKwwAhpvpQ@mail.gmail.com>
-	<CAJuA9ah5M_pXRMXPB6o7JLhgVUHM7kYo9HOV6Yxv4Z=hKMdG=w@mail.gmail.com>
-	<7hmwah6cop.fsf@paris.lan>
-	<CAJuA9ahe=9gdTaGcRb69syvRfwkkGMgDiiNfOMA9TBo42cWVZw@mail.gmail.com>
-	<CAJuA9ag2pybyLDUyW43wMQu4PA1cB4V9c1bc7WB3xjqzhqNGTw@mail.gmail.com>
-	<7hsik847p2.fsf@paris.lan>
-	<CAJuA9aiXwgxrS_AYw5tt5GryhrtoOpK2RhhLcjxShNqswiCmqA@mail.gmail.com>
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH 3/3] cpuidle: Using the wake_up_all_idle_cpus() to wake
+ up all idle cpus
+Date: Thu, 4 Sep 2014 13:39:38 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01E6B3E3@SHSMSX101.ccr.corp.intel.com>
+References: <1409815075-4180-1-git-send-email-chuansheng.liu@intel.com>
+ <1409815075-4180-3-git-send-email-chuansheng.liu@intel.com>
+ <540862AA.7060907@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAJuA9aiXwgxrS_AYw5tt5GryhrtoOpK2RhhLcjxShNqswiCmqA@mail.gmail.com>
-	(Thomas Abraham's message of "Thu, 4 Sep 2014 15:52:38 +0530")
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: Chander Kashyap <k.chander@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, Heiko =?utf-8?Q?St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <540862AA.7060907@linaro.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "peterz@infradead.org" <peterz@infradead.org>, "luto@amacapital.net" <luto@amacapital.net>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "mingo@redhat.com" <mingo@redhat.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Thomas Abraham <ta.omasab@gmail.com> writes:
-
-> On Thu, Sep 4, 2014 at 4:45 AM, Kevin Hilman <khilman@kernel.org> wrote:
->> Hi Thomas,
->>
->> Thomas Abraham <ta.omasab@gmail.com> writes:
->>
->> [...]
->>
->>> A new branch [1] has been created using commits from exynos5-v3.17-rc1
->>> branch + cpufreq + regulator + temp fixes. I have tested this branch
->>> on Exynos5800 Chromebook2 and cpufreq works fine with both ondemand
->>> and performance governors. Please let me know if there are any issues
->>> with this new branch. It is based on v3.17-rc3.
->>
->> Excellent!  Thank you.
->>
->> The only thing missing now is the CPUidle support for 5800, and all
->> that's needed for that is the compatible string patch[1] which Daniel
->> has queued up.
->>
->> With that patch, display + CPUidle + CPUfreq are working pretty well on
->> my exynos5800/chromebook2 with the big.LITTLE switcher disabled.  If I
->> turn on the switcher, it boots OK, but as soon as I try to run powertop
->> (upstream v2.6.1) it gets stuck.  Have you tried this branch with the
->> switcher enabled?
->
-> Yes, I have tested switcher + cpufreq + cpuidle with this branch and
-> there are no issues found. I haven't tested with powertop yet. I will
-> try and do that and let you know the result.
->
-> You mentioned that when you run powertop, it gets stuck. When that
-> happens, is there any log on the console or does system just turn
-> unresponsive?
-
-The console is not responsive, but kernel seems busy because I see
-periodic timeout messages from the samsung clock driver.
-
-Note that I see these messages when things are functioning normally
-also.
-
-Kevin
-
-
-[1]
-[  337.832031] wait_until_divider_stable: timeout in divider stablization
-[  337.847024] wait_until_divider_stable: timeout in divider stablization
-[  337.862024] wait_until_divider_stable: timeout in divider stablization
-[  337.957028] wait_until_divider_stable: timeout in divider stablization
-[  337.972024] wait_until_divider_stable: timeout in divider stablization
-[  337.987024] wait_until_divider_stable: timeout in divider stablization
-[  340.082029] wait_until_divider_stable: timeout in divider stablization
-[  340.097024] wait_until_divider_stable: timeout in divider stablization
-[  340.112024] wait_until_divider_stable: timeout in divider stablization
-[  346.242030] wait_until_divider_stable: timeout in divider stablization
-[  346.257024] wait_until_divider_stable: timeout in divider stablization
-[  346.272024] wait_until_divider_stable: timeout in divider stablization
-[  348.322029] wait_until_divider_stable: timeout in divider stablization
-[  348.337025] wait_until_divider_stable: timeout in divider stablization
-[  348.352024] wait_until_divider_stable: timeout in divider stablization
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
+W21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBUaHVyc2RheSwgU2Vw
+dGVtYmVyIDA0LCAyMDE0IDk6MDIgUE0NCj4gVG86IExpdSwgQ2h1YW5zaGVuZzsgcGV0ZXJ6QGlu
+ZnJhZGVhZC5vcmc7IGx1dG9AYW1hY2FwaXRhbC5uZXQ7DQo+IHJqd0Byand5c29ja2kubmV0OyBt
+aW5nb0ByZWRoYXQuY29tDQo+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtl
+cm5lbEB2Z2VyLmtlcm5lbC5vcmc7IExpdSwgQ2hhbmdjaGVuZzsNCj4gV2FuZywgWGlhb21pbmc7
+IENoYWtyYXZhcnR5LCBTb3V2aWsgSw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDMvM10gY3B1aWRs
+ZTogVXNpbmcgdGhlIHdha2VfdXBfYWxsX2lkbGVfY3B1cygpIHRvIHdha2UgdXANCj4gYWxsIGlk
+bGUgY3B1cw0KPiANCj4gT24gMDkvMDQvMjAxNCAwOToxNyBBTSwgQ2h1YW5zaGVuZyBMaXUgd3Jv
+dGU6DQo+ID4gQ3VycmVudGx5IGtpY2tfYWxsX2NwdXNfc3luYygpIG9yIHNtcF9jYWxsX2Z1bmN0
+aW9uKCkgY2FuIG5vdA0KPiA+IGJyZWFrIHRoZSBwb2xsaW5nIGlkbGUgY3B1IGltbWVkaWF0ZWx5
+Lg0KPiA+DQo+ID4gSGVyZSB1c2luZyB3YWtlX3VwX2FsbF9pZGxlX2NwdXMoKSB3aGljaCBjYW4g
+d2FrZSB1cCB0aGUgcG9sbGluZyBpZGxlDQo+ID4gY3B1IHF1aWNrbHkgaXMgbXVjaCBoZWxwZnVs
+IGZvciBwb3dlci4NCj4gDQo+IEFja2VkLWJ5OiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxlemNh
+bm9AbGluYXJvLm9yZz4NCj4gDQo+IFNvIElJVUMsIGtpY2tfYWxsX2NwdXNfc3luYyBpcyBhIGJy
+b2tlbiBmdW5jdGlvbiwgcmlnaHQgPw0KPiANCj4gV291bGRuJ3QgbWFrZSBzZW5zZSB0byByZXBs
+YWNlIGFsbCBjYWxscyB0byBraWNrX2FsbF9jcHVzIGJ5DQo+IHdha2VfdXBfYWxsX2lkbGVfY3B1
+cyA/IGFuZCByZW1vdmUgdGhpcyBicm9rZW4gZnVuY3Rpb24gPw0KTXkgaW5pdGlhbCBwYXRjaChW
+MSkgaW5kZWVkIGRvIGl0LCBidXQgQW5keSBwb2ludGVkIG91dCBzb21lIGNhbGxlcnMgb2Yga2lj
+a19hbGxfY3B1c19zeW5jKCkNCnJlYWxseSB3YW50IHRoZSBvbGQgYmVoYXZpb3IuDQoNCk15IGZh
+dWx0IGFnYWluIHRoYXQgZG8gbm90IGhhdmUgdGhlIGRldGFpbGVkIGNoYW5nZWxvZyBmb3IgdGhl
+IHBhdGNoZXMuDQoNClBhc3RlZCB0aGUgY29tbWVudHMgZnJvbSBBbmR5Og0KPT0NCj4gQ3VycmVu
+dGx5IHVzaW5nIHNtcF9jYWxsX2Z1bmN0aW9uKCkganVzdCB3b2tlIHVwIHRoZSBjb3JyZXNwb25k
+aW5nDQo+IGNwdSwgYnV0IGNhbiBub3QgYnJlYWsgdGhlIHBvbGxpbmcgaWRsZSBsb29wLg0KPg0K
+PiBIZXJlIHVzaW5nIHRoZSBuZXcgc2NoZWQgQVBJIHdha2VfdXBfaWZfaWRsZSgpIHRvIGltcGxl
+bWVudCBpdC4NCg0Ka2lja19hbGxfY3B1c19zeW5jIGhhcyBvdGhlciBjYWxsZXJzLCBhbmQgdGhv
+c2Ugb3RoZXIgY2FsbGVycyB3YW50IHRoZQ0Kb2xkIGJlaGF2aW9yLiAgSSB0aGluayB0aGlzIHNo
+b3VsZCBiZSBhIG5ldyBmdW5jdGlvbi4NCg0KLS1BbmR5DQo9PQ0KDQoNCg==
