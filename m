@@ -1,119 +1,59 @@
-From: Ran Shalit <ranshalit@gmail.com>
-Subject: Re: External devices
-Date: Thu, 4 Sep 2014 14:11:53 +0300
-Message-ID: <CAJ2oMhKnQczVwLhO0hHyJHCgc6UkV5g7sc3Gnnoq+ktUVYw+pQ@mail.gmail.com>
-References: <CAJ2oMhKRA+0Ge_m=-zFqgTxcZbuGMNAOvBQKP=_GyWRwvfsKFw@mail.gmail.com>
-	<CAGAs2Amw1jvmDxL8+uXU4XW3u6Mxr7LKP4EiP8taTNQ2OpnWNw@mail.gmail.com>
-	<CAJ2oMhL=wuWA3Ga4bdeqvW0QA-cccLA0BfVRDKyLuykyChqu7w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 00/15] power_supply: Fixes & cleanups
+Date: Thu,  4 Sep 2014 17:30:04 +0530
+Message-ID: <cover.1409831636.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f43.google.com ([209.85.192.43]:38502 "EHLO
-	mail-qg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753187AbaIDLLy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 07:11:54 -0400
-Received: by mail-qg0-f43.google.com with SMTP id f51so9900866qge.30
-        for <linux-pm@vger.kernel.org>; Thu, 04 Sep 2014 04:11:53 -0700 (PDT)
-In-Reply-To: <CAJ2oMhL=wuWA3Ga4bdeqvW0QA-cccLA0BfVRDKyLuykyChqu7w@mail.gmail.com>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:56346 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753774AbaIDMAt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 08:00:49 -0400
+Received: by mail-pa0-f52.google.com with SMTP id eu11so19916311pac.39
+        for <linux-pm@vger.kernel.org>; Thu, 04 Sep 2014 05:00:45 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: AYAN KUMAR HALDER <ayankumarh@gmail.com>
-Cc: linux-pm@vger.kernel.org, kernelnewbies <kernelnewbies@kernelnewbies.org>
+To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org
+Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Ayan,
+Hi Guys,
 
-When adding some external device to power management, doesn't it need
-to belong to power domain  ( /debug/pm_debug/count ).
-What is the power domain of external device ?
+I was required to work on a battery driver and found some fixes/cleanups while
+going through the core.
 
-Thanks
-Ran
+First two are fixes and rest are cleanups. Please see if they make any sense at
+all.
 
-On Wed, Sep 3, 2014 at 11:23 PM, Ran Shalit <ranshalit@gmail.com> wrote:
-> Hi Ayan,
-> Thanks very much for the explanations, it makes things a bit more
-> clearer than before, but I still have some question marks.
->
-> "System moving to idle state would correspond to most devices in  a
-> runtime-pm idle state. Each device enter into idle state when its
-> corresponding driver invokes so"
->
-> How does the driver invokes moving to idle state ?  Is it the smae as
-> invoking runtime suspend by the driver ?
-> What is the difference between idle state to runtime suspend ?
-> Are you familiar with any character device example for using PM ?
->
-> Thanks, Ran
->
->
->
-> On Wed, Sep 3, 2014 at 11:01 AM, AYAN KUMAR HALDER <ayankumarh@gmail.com> wrote:
->>> 1. Are external devices can be integrated into the runtime
->>> suspend/resume , or are they outside the subject of PM ? for example I
->>> have external dsp connected to omap, can it be integrated to the PM ?
->>> If it is controled through character device how can it be tailored
->>> into the generic PM ?
->>
->> Any external device can be integrated in runtime-pm framework provided
->> its device driver or subsystem driver has runtime pm operations
->> (namely dev_pm_ops->.runtime_suspend/resume/idle).
->>
->> Runtime suspend/resume is called by your driver to suspend the
->> respective device. It can do so by incrementing/decrementing the usage
->> count via pm_runtime_get and pm_runtime_put or by directly calling
->> pm_runtime_suspend/pm_request_resume.
->> So your char device driver for omap has to enable runtime pm for the
->> device by calling pm_runtime_set_active() and pm_runtime_enable() from
->> its init/probe methods.
->> Whenever the driver needs to wakeup the device(say on receiving a
->> interrupt), it can call runtime_pm_get. After handling the interrupt,
->> if the driver wants to suspend the device, it can call runtime_pm_put.
->>
->> My statements are generic as I am unaware how the dsp functions.
->>
->>> 2. When the system moves to idle does it then automatically call all
->>> tuntime suspend of all devices ?
->>>
->> As I have mentioned in my previous reply that the runtime-pm is device
->> specific(and not system specific). so each device driver calls its
->> runtime suspend/resume for its corresponding devices whenever it feels
->> so. The runtime-pm framework has some policies like it checks if the
->> device to be suspended has any active children or not, etc
->>
->> System moving to idle state would correspond to most devices in  a
->> runtime-pm idle state. Each device enter into idle state when its
->> corresponding driver invokes so. Each device is independently moved to
->> idle/suspend/resume state unless their exist a parent-child
->> relationship between the devices.
->>
->> Runtime power management is different from system power management (ie
->> suspend to RAM/Disk) in which the PM framework calls the suspend and
->> resume of all the devices(sequentially). However, these suspend/resume
->> functions are different from runtime suspend/resume functions.
->> eg
->> static const struct dev_pm_ops usb_device_pm_ops = {
->>         .prepare =      usb_dev_prepare,
->>         .complete =     usb_dev_complete,
->>
->> /* the following two functions are system power management's
->> suspend/resume functions which are invoked by PM framework when the
->> system suspends/hibernates.  */
->>
->>         .suspend =      usb_dev_suspend,
->>         .resume =       usb_dev_resume,
->>         .freeze =       usb_dev_freeze,
->>         .thaw =         usb_dev_thaw,
->>         .poweroff =     usb_dev_poweroff,
->>         .restore =      usb_dev_restore,
->> #ifdef CONFIG_USB_SUSPEND
->> /* the following three functions are runtime power management's
->> suspend/resume/idle functions invoked by the driver when it wants to
->> put the corresponding device in suspend/idle/resume state.  */
->>         .runtime_suspend =      usb_runtime_suspend,
->>         .runtime_resume =       usb_runtime_resume,
->>         .runtime_idle =         usb_runtime_idle,
->> #endif
->> };
->>
->> Regards,
->> Ayan Kumar Halder
+Pushed here: git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/linux.git battery/fixes
+
+--
+viresh
+
+Viresh Kumar (15):
+  power-supply: Don't over-allocate memory for "supplied-from" array
+  power-supply: Return early if "power-supplies" property isn't valid
+  Documentation: Charger Manager: Fix spelling mistakes
+  power-supply: Forward declare structs together
+  power-supply: Drop unnecessary typecasts
+  power-supply: Use 'break' instead of 'continue' to end loop
+  power-supply: Rearrange code to remove duplicate lines
+  power-supply: Propagate error returned by
+    power_supply_find_supply_from_node()
+  power-supply: Don't return -EINVAL from
+    __power_supply_find_supply_from_node()
+  power-supply: Drop useless 'if (ret.intval)' statements
+  power-supply: Mark 'if' blocks in power_supply_changed_work() with
+    'likely'
+  power-supply: Use PTR_ERR_OR_ZERO() routine
+  power-supply: Check for failures only when we can fail
+  power-supply: Avoid unnecessary 'goto' statements
+  power_supply: Don't iterate over devices to return -EPROBE_DEFER
+
+ Documentation/power/charger-manager.txt |   2 +-
+ drivers/power/power_supply_core.c       | 100 +++++++++++++++-----------------
+ drivers/power/power_supply_leds.c       |  19 ++----
+ drivers/power/power_supply_sysfs.c      |  21 +++----
+ include/linux/power_supply.h            |   3 +-
+ 5 files changed, 64 insertions(+), 81 deletions(-)
+
+-- 
+2.0.3.693.g996b0fd
+
