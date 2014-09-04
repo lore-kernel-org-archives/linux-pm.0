@@ -1,36 +1,54 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: ppc-corenet: remove per-cpu variable 'cpu_mask'
-Date: Thu, 4 Sep 2014 10:07:23 +0530
-Message-ID: <CAKohpok5fBvi3UFEszL8in=-TWJ8CG6p9gcUXeEG0322afS-QA@mail.gmail.com>
-References: <09092df3d8b03df99ee475357c5f5c9cc439c61c.1409629117.git.viresh.kumar@linaro.org>
-	<3d467a39ab1b96dc24ed8a71139d5e030239477f.1409629117.git.viresh.kumar@linaro.org>
-	<6a145a322bd64e14a2d94e8c40151bbe@BY2PR03MB570.namprd03.prod.outlook.com>
-	<CAKohpokQo=Jqgj2CzTH41WbD6F1GpdhksWdg0dm8WLN_CT5KkA@mail.gmail.com>
-	<9fde1bf81522480484897416019b0ee9@BY2PR03MB570.namprd03.prod.outlook.com>
-	<CAKohpo=skCssnm0AZi2rMDUTKg0Xo0p9Sz0KwO1iuapLks=nyg@mail.gmail.com>
-	<d9f1dbc51c9d408ea593d11a95a36ee4@BY2PR03MB570.namprd03.prod.outlook.com>
-	<CAKohpo=Pb88SBg0HwrAtzfRkG5Z9HgsapSmA1PbmqqvP-wQ1qw@mail.gmail.com>
-	<21e79b8a95ca443a9844fc2b79ec5379@BY2PR03MB570.namprd03.prod.outlook.com>
-	<CAKohpokZ9vGJzD0G8n=rg8qQJEuZZpuz=X7XNn_UarKbyOmQxw@mail.gmail.com>
-	<2248223d9db143108dc32ad5f43a145e@BY2PR03MB570.namprd03.prod.outlook.com>
+Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
+Date: Thu, 4 Sep 2014 11:38:59 +0530
+Message-ID: <CAKohpom0+bbyffZML2tJjXQDc+2q4PM8sVkL5pDA5WX=rmvtKA@mail.gmail.com>
+References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com>
+	<CAKohpomLW17B=Sk42tczzDF+VGwn7hT521osWPi5TcgqpCPZ_w@mail.gmail.com>
+	<53296AD0.5090908@linux.vnet.ibm.com>
+	<19131121.D211TBerqb@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f172.google.com ([209.85.214.172]:41619 "EHLO
-	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755587AbaIDEhY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 00:37:24 -0400
-Received: by mail-ob0-f172.google.com with SMTP id wo20so6937792obc.3
-        for <linux-pm@vger.kernel.org>; Wed, 03 Sep 2014 21:37:24 -0700 (PDT)
-In-Reply-To: <2248223d9db143108dc32ad5f43a145e@BY2PR03MB570.namprd03.prod.outlook.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <19131121.D211TBerqb@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Patrick Marlier <patrick.marlier@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Yuantian Tang <Yuantian.Tang@freescale.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "LeoLi@freescale.com" <LeoLi@freescale.com>, Hongtao Jia <hongtao.jia@freescale.com>
 
-On 4 September 2014 10:03, Yuantian Tang <Yuantian.Tang@freescale.com> wrote:
-> What about the other arch? Can they deal with this situation?
+On 19 March 2014 19:49, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 
-Yes for most of them (speacially ARM), because they fulfill the
-requirement of CPUFreq
-core. i.e. set policy->cpus to all online+offline CPUs.
+> That said, for the intel_pstate case ->stop() as proposed by Dirk is demonstrably
+> sufficient and there are no other ->setpolicy drivers in sight wanting or needing
+> anything else.
+>
+> So to me, (1) the new ->stop() should *only* be called for ->setpolicy drivers,
+> because the purpose of it should be to "allow ->setpolicy drivers to do what the
+> GOV_STOP will do for regular drivers" as you put it above, and (2) some code in
+> the original intel_pstate's ->exit() may/should stay in there (instead of being
+> moved to the new ->stop()), which is the only possibly remaining issue here.
+>
+> The whole discussion about possibly re-using ->stop() for ->target drivers goes
+> in a totally wrong direction, because *if* ->target drivers need a new callback
+> to be executed around where ->stop() is called for ->setpolicy drivers, *then*
+> that has to be a *different* callback.
+>
+> And by the way, ->get() in fact has a different meaning for ->setpolicy drivers,
+> so it would be good to consider logical separation of ->setpolicy and ->target
+> drivers so that each kind has its own separate set of callbacks with no overlaps.
+> That would make it easier to avoid breakage resulting from changes made with
+> ->setpolicy drivers that also affect ->target drivers in unpredictable ways and
+> the other way around.
+
+Okay, I have picked up a very old thread but it looks more sensible to start
+replying here..
+
+Preeti (Cc'd) wants to do something similar, i.e. reduce freq of a
+core before it
+goes down. And the driver is probably: drivers/cpufreq/powernv-cpufreq.c, which
+is ->target() type.
+
+Now should we reuse the same callback ->stop_cpu() or implement a new one?
+I don't know if adding a new callback would be a good idea here..
+
+--
+viresh
