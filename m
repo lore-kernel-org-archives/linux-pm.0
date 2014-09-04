@@ -1,70 +1,63 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 13/15] drivers: sh: Leave disabling of unused PM domains
- to genpd
-Date: Thu, 4 Sep 2014 09:33:51 +0900
-Message-ID: <20140904003351.GB13821@verge.net.au>
-References: <1409741551-16437-1-git-send-email-ulf.hansson@linaro.org>
- <1409741551-16437-14-git-send-email-ulf.hansson@linaro.org>
+From: Brian Norris <computersforpeace@gmail.com>
+Subject: [stable -3.14] PM backports for pm_test / CONFIG_PM_DEBUG
+Date: Wed, 3 Sep 2014 18:02:19 -0700
+Message-ID: <20140904010219.GA18411@ld-irv-0074>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:45999 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933102AbaIDBCZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Sep 2014 21:02:25 -0400
 Content-Disposition: inline
-In-Reply-To: <1409741551-16437-14-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: stable@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Zhang Rui <rui.zhang@intel.com>
 
-On Wed, Sep 03, 2014 at 12:52:29PM +0200, Ulf Hansson wrote:
-> Since genpd at late init, will try to disable unused PM domains we
-> don't need to do it from here as well.
-> 
-> Cc: Simon Horman <horms@verge.net.au>
-> Cc: Magnus Damm <magnus.damm@gmail.com>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Hi,
 
+If I enable CONFIG_PM_DEBUG on a 3.14.y kernel, I can see the following
+results:
 
-Acked-by: Simon Horman <horms+renesas@verge.net.au>
+    # cat /sys/power/state
+    freeze standby mem
+    # cat /sys/power/pm_test
+    [none] core processors platform devices freezer
+    # echo core > /sys/power/pm_test
+    # cat /sys/power/state
+    [   22.581289] Unsupported pm_test mode for freeze state, please choose none/freezer/devices/platform.
+    standby mem
 
-> ---
->  drivers/sh/pm_runtime.c | 11 -----------
->  1 file changed, 11 deletions(-)
-> 
-> diff --git a/drivers/sh/pm_runtime.c b/drivers/sh/pm_runtime.c
-> index 72f6381..fe2c2d5 100644
-> --- a/drivers/sh/pm_runtime.c
-> +++ b/drivers/sh/pm_runtime.c
-> @@ -75,8 +75,6 @@ static struct pm_clk_notifier_block platform_bus_notifier = {
->  	.con_ids = { NULL, },
->  };
->  
-> -static bool default_pm_on;
-> -
->  static int __init sh_pm_runtime_init(void)
->  {
->  	if (IS_ENABLED(CONFIG_ARCH_SHMOBILE_MULTI)) {
-> @@ -96,16 +94,7 @@ static int __init sh_pm_runtime_init(void)
->  			return 0;
->  	}
->  
-> -	default_pm_on = true;
->  	pm_clk_add_notifier(&platform_bus_type, &platform_bus_notifier);
->  	return 0;
->  }
->  core_initcall(sh_pm_runtime_init);
-> -
-> -static int __init sh_pm_runtime_late_init(void)
-> -{
-> -	if (default_pm_on)
-> -		pm_genpd_poweroff_unused();
-> -	return 0;
-> -}
-> -late_initcall(sh_pm_runtime_late_init);
-> -- 
-> 1.9.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Note how 'freeze' is dropped from the supported states, and I get an
+extra printk message when I'm just checking if the state is valid.
+
+It looks like if I backport a few fixes, I get more sane behavior, where
+the warnings (and -EAGAIN) appear only when I actually try to enter an
+unsupported test mode:
+
+    # echo core > /sys/power/pm_test
+    # cat /sys/power/state
+    freeze standby mem
+    # echo freeze > /sys/power/state
+    [   27.833141] PM: Unsupported test mode for freeze state,please choose none/freezer/devices/platform.
+    sh: echo: write error: Resource temporarily unavailable
+
+I think I've narrowed it down to this commit that should be backported
+to -stable (for 3.9+?):
+
+    43e8317b0bba PM / sleep: Use valid_state() for platform-dependent sleep states only
+
+But it needs to drag along this dependency too:
+
+    27ddcc6596e5 PM / sleep: Add state field to pm_states[] entries
+
+While at this, it looks like this commit might be deserving of -stable
+(3.9+). I haven't tested this one, as I don't have a good freeze+cpuidle
+setup; it just shows up in the commit log with an interesting
+description and a 'Fixes' tag:
+
+    f3f125324fc1 PM / suspend: Make cpuidle work in the "freeze" state
+
+Regards,
+Brian
