@@ -1,90 +1,43 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v5 7/7] arm: dts: qcom: Add idle states device nodes for 8974
-Date: Thu,  4 Sep 2014 16:35:32 -0600
-Message-ID: <1409870132-16929-8-git-send-email-lina.iyer@linaro.org>
-References: <1409870132-16929-1-git-send-email-lina.iyer@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq_opp: Fixed the order of argument for kcalloc.
+Date: Fri, 05 Sep 2014 01:48 +0200
+Message-ID: <156662991.4EXBqE3pLR@vostro.rjw.lan>
+References: <1408180966-15493-1-git-send-email-moon.linux@yahoo.com> <5408D4A5.5040103@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f182.google.com ([209.85.192.182]:63673 "EHLO
-	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756000AbaIDWgf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 18:36:35 -0400
-Received: by mail-pd0-f182.google.com with SMTP id fp1so14494354pdb.41
-        for <linux-pm@vger.kernel.org>; Thu, 04 Sep 2014 15:36:35 -0700 (PDT)
-In-Reply-To: <1409870132-16929-1-git-send-email-lina.iyer@linaro.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:60734 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750974AbaIDX2k (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 19:28:40 -0400
+In-Reply-To: <5408D4A5.5040103@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: daniel.lezcano@linaro.org, lorenzo.pieralisi@arm.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org
-Cc: linux-pm@vger.kernel.org, msivasub@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Anand Moon <moon.linux@yahoo.com>, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Add allowable C-States for each cpu using the cpu-idle-states node.
-ARM spec dictates WFI as the default idle state at 0. Support standalone
-power collapse (power down that does not affect any SoC idle states) for
-each cpu.
+On Thursday, September 04, 2014 02:07:49 PM Stephen Boyd wrote:
+> On 08/16/14 02:22, Anand Moon wrote:
+> > These changes fix the argument to the kcalloc
+> >         @n: number of elements.
+> >         @size: element size.
+> >         @flags: the type of memory to allocate (see kmalloc).
+> >
+> >         void *kcalloc(size_t n, size_t size, gfp_t flags)
+> >
+> > Signed-off-by: Anand Moon <moon.linux@yahoo.com>
+> > ---
+> 
+> Oops.
+> 
+> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+> 
+> Can this be picked up?
 
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
- arch/arm/boot/dts/qcom-msm8974.dtsi | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+It could be if I could find it.  Which is not the case, unfortunately.
 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index 0580bc2..041c8b6 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -21,6 +21,7 @@
- 			reg = <0>;
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc0>;
-+			cpu-idle-states = <&CPU_WFI &CPU_SPC>;
- 		};
- 
- 		CPU1: cpu@1 {
-@@ -30,6 +31,7 @@
- 			reg = <1>;
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc1>;
-+			cpu-idle-states = <&CPU_WFI &CPU_SPC>;
- 		};
- 
- 		CPU2: cpu@2 {
-@@ -39,6 +41,7 @@
- 			reg = <2>;
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc2>;
-+			cpu-idle-states = <&CPU_WFI &CPU_SPC>;
- 		};
- 
- 		CPU3: cpu@3 {
-@@ -48,6 +51,7 @@
- 			reg = <3>;
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc3>;
-+			cpu-idle-states = <&CPU_WFI &CPU_SPC>;
- 		};
- 
- 		L2: l2-cache {
-@@ -55,6 +59,22 @@
- 			cache-level = <2>;
- 			qcom,saw = <&saw_l2>;
- 		};
-+
-+		idle-states {
-+			CPU_WFI: cpu-idle-state-0 {
-+				compatible = "qcom,idle-state-wfi", "arm,idle-state";
-+				entry-latency-us = <1>;
-+				exit-latency-us = <1>;
-+				min-residency-us = <2>;
-+			};
-+
-+			CPU_SPC: cpu-idle-state-1 {
-+				compatible = "qcom,idle-state-spc", "arm,idle-state";
-+				entry-latency-us = <150>;
-+				exit-latency-us = <200>;
-+				min-residency-us = <2000>;
-+			};
-+		};
- 	};
- 
- 	cpu-pmu {
--- 
-1.9.1
+Anybody care to resend it?
+
+Rafael
 
