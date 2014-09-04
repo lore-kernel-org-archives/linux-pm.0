@@ -1,33 +1,32 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 3/3] cpuidle: Using the wake_up_all_idle_cpus() to wake
- up all idle cpus
-Date: Thu, 4 Sep 2014 17:47:10 +0200
-Message-ID: <20140904154710.GH346@worktop.programming.kicks-ass.net>
-References: <1409815075-4180-1-git-send-email-chuansheng.liu@intel.com>
- <1409815075-4180-3-git-send-email-chuansheng.liu@intel.com>
- <540862AA.7060907@linaro.org>
- <27240C0AC20F114CBF8149A2696CBE4A01E6B3E3@SHSMSX101.ccr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: [PATCH v2 0/2] sched/idle : find the best idle CPU with cpuidle info
+Date: Thu, 04 Sep 2014 11:32:08 -0400
+Message-ID: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org>
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:47337 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbaIDPrO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 11:47:14 -0400
-Content-Disposition: inline
-In-Reply-To: <27240C0AC20F114CBF8149A2696CBE4A01E6B3E3@SHSMSX101.ccr.corp.intel.com>
+Received: from relais.videotron.ca ([24.201.245.36]:60017 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751298AbaIDPr5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 11:47:57 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "luto@amacapital.net" <luto@amacapital.net>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "mingo@redhat.com" <mingo@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Liu, Changcheng" <changcheng.liu@intel.com>, "Wang, Xiaoming" <xiaoming.wang@intel.com>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-On Thu, Sep 04, 2014 at 01:39:38PM +0000, Liu, Chuansheng wrote:
-> > So IIUC, kick_all_cpus_sync is a broken function, right ?
+This is a rework of the series initially posted by Daniel Lezcano here:
 
-> kick_all_cpus_sync has other callers, and those other callers want the
-> old behavior.  I think this should be a new function.
+http://news.gmane.org/group/gmane.linux.power-management.general/thread=44161
 
-Correct, things like arch/powerpc/mm/pgtable_64.c:pmdp_clear_flush()
-really want the old behaviour. It basically uses
-local_irq_disable()/local_irq_enable() vs kick_all_cpus_sync() as a RCU
-like serialization primitive.
+Those patches were straightened up, commit logs are more comprehensive,
+bugs were fixed, etc.
+
+
+ drivers/cpuidle/cpuidle.c |  6 ++++++
+ kernel/sched/fair.c       | 43 ++++++++++++++++++++++++++++++++++-------
+ kernel/sched/idle.c       |  6 ++++++
+ kernel/sched/sched.h      | 39 +++++++++++++++++++++++++++++++++++++
+ 4 files changed, 87 insertions(+), 7 deletions(-)
+
+
+Nicolas
+
