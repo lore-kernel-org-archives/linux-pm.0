@@ -1,202 +1,298 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v9 4/8] arm64: add PSCI CPU_SUSPEND based cpu_suspend support
-Date: Fri,  5 Sep 2014 18:34:53 +0100
-Message-ID: <1409938498-17984-5-git-send-email-lorenzo.pieralisi@arm.com>
+Subject: [PATCH v9 2/8] arm64: kernel: refactor the CPU suspend API for retention states
+Date: Fri,  5 Sep 2014 18:34:51 +0100
+Message-ID: <1409938498-17984-3-git-send-email-lorenzo.pieralisi@arm.com>
 References: <1409938498-17984-1-git-send-email-lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:54607 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:54483 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754746AbaIERe4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Sep 2014 13:34:56 -0400
+	with ESMTP id S1754373AbaIERey (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Sep 2014 13:34:54 -0400
 In-Reply-To: <1409938498-17984-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <k.chander@samsung.com>, Geoff
 
-This patch implements the cpu_suspend cpu operations method through
-the PSCI CPU SUSPEND API. The PSCI implementation translates the idle state
-index passed by the cpu_suspend core call into a valid PSCI state according=
- to
-the PSCI states initialized at boot through the cpu_init_idle() CPU
-operations hook.
+CPU suspend is the standard kernel interface to be used to enter
+low-power states on ARM64 systems. Current cpu_suspend implementation
+by default assumes that all low power states are losing the CPU context,
+so the CPU registers must be saved and cleaned to DRAM upon state
+entry. Furthermore, the current cpu_suspend() implementation assumes
+that if the CPU suspend back-end method returns when called, this has
+to be considered an error regardless of the return code (which can be
+successful) since the CPU was not expected to return from a code path that
+is different from cpu_resume code path - eg returning from the reset vector=
+.
 
-The PSCI CPU suspend operation hook checks if the PSCI state is a
-standby state. If it is, it calls the PSCI suspend implementation
-straight away, without saving any context. If the state is a power
-down state the kernel calls the __cpu_suspend API (that saves the CPU
-context) and passed the PSCI suspend finisher as a parameter so that PSCI
-can be called by the __cpu_suspend implementation after saving and flushing
-the context as last function before power down.
+All in all this means that the current API does not cope well with low-powe=
+r
+states that preserve the CPU context when entered (ie retention states),
+since first of all the context is saved for nothing on state entry for
+those states and a successful state entry can return as a normal function
+return, which is considered an error by the current CPU suspend
+implementation.
 
-For power down states, entry point is set to cpu_resume physical address,
-that represents the default kernel execution address following a CPU reset.
+This patch refactors the cpu_suspend() API so that it can be split in
+two separate functionalities. The arm64 cpu_suspend API just provides
+a wrapper around CPU suspend operation hook. A new function is
+introduced (for architecture code use only) for states that require
+context saving upon entry:
 
-Reviewed-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+__cpu_suspend(unsigned long arg, int (*fn)(unsigned long))
+
+__cpu_suspend() saves the context on function entry and calls the
+so called suspend finisher (ie fn) to complete the suspend operation.
+The finisher is not expected to return, unless it fails in which case
+the error is propagated back to the __cpu_suspend caller.
+
+The API refactoring results in the following pseudo code call sequence for =
+a
+suspending CPU, when triggered from a kernel subsystem:
+
+/*
+ * int cpu_suspend(unsigned long idx)
+ * @idx: idle state index
+ */
+{
+-> cpu_suspend(idx)
+=09|---> CPU operations suspend hook called, if present
+=09=09|--> if (retention_state)
+=09=09=09|--> direct suspend back-end call (eg PSCI suspend)
+=09=09     else
+=09=09=09|--> __cpu_suspend(idx, &back_end_finisher);
+}
+
+By refactoring the cpu_suspend API this way, the CPU operations back-end
+has a chance to detect whether idle states require state saving or not
+and can call the required suspend operations accordingly either through
+simple function call or indirectly through __cpu_suspend() which carries ou=
+t
+state saving and suspend finisher dispatching to complete idle state entry.
+
 Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
 Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 ---
- arch/arm64/kernel/psci.c | 104 +++++++++++++++++++++++++++++++++++++++++++=
-++++
- 1 file changed, 104 insertions(+)
+ arch/arm64/include/asm/suspend.h |  1 +
+ arch/arm64/kernel/sleep.S        | 47 ++++++++++++++++++++++++++++--------=
+---
+ arch/arm64/kernel/suspend.c      | 48 ++++++++++++++++++++++++------------=
+----
+ 3 files changed, 64 insertions(+), 32 deletions(-)
 
-diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
-index 5539547..866c1c8 100644
---- a/arch/arm64/kernel/psci.c
-+++ b/arch/arm64/kernel/psci.c
-@@ -21,6 +21,7 @@
- #include <linux/reboot.h>
- #include <linux/pm.h>
- #include <linux/delay.h>
-+#include <linux/slab.h>
- #include <uapi/linux/psci.h>
-=20
- #include <asm/compiler.h>
-@@ -28,6 +29,7 @@
- #include <asm/errno.h>
- #include <asm/psci.h>
- #include <asm/smp_plat.h>
-+#include <asm/suspend.h>
- #include <asm/system_misc.h>
-=20
- #define PSCI_POWER_STATE_TYPE_STANDBY=09=090
-@@ -65,6 +67,8 @@ enum psci_function {
- =09PSCI_FN_MAX,
+diff --git a/arch/arm64/include/asm/suspend.h b/arch/arm64/include/asm/susp=
+end.h
+index e9c149c..456d67c 100644
+--- a/arch/arm64/include/asm/suspend.h
++++ b/arch/arm64/include/asm/suspend.h
+@@ -21,6 +21,7 @@ struct sleep_save_sp {
+ =09phys_addr_t save_ptr_stash_phys;
  };
 =20
-+static DEFINE_PER_CPU_READ_MOSTLY(struct psci_power_state *, psci_power_st=
-ate);
-+
- static u32 psci_function_id[PSCI_FN_MAX];
++extern int __cpu_suspend(unsigned long arg, int (*fn)(unsigned long));
+ extern void cpu_resume(void);
+ extern int cpu_suspend(unsigned long);
 =20
- static int psci_to_linux_errno(int errno)
-@@ -93,6 +97,18 @@ static u32 psci_power_state_pack(struct psci_power_state=
- state)
- =09=09 & PSCI_0_2_POWER_STATE_AFFL_MASK);
- }
-=20
-+static void psci_power_state_unpack(u32 power_state,
-+=09=09=09=09    struct psci_power_state *state)
-+{
-+=09state->id =3D (power_state & PSCI_0_2_POWER_STATE_ID_MASK) >>
-+=09=09=09PSCI_0_2_POWER_STATE_ID_SHIFT;
-+=09state->type =3D (power_state & PSCI_0_2_POWER_STATE_TYPE_MASK) >>
-+=09=09=09PSCI_0_2_POWER_STATE_TYPE_SHIFT;
-+=09state->affinity_level =3D
-+=09=09=09(power_state & PSCI_0_2_POWER_STATE_AFFL_MASK) >>
-+=09=09=09PSCI_0_2_POWER_STATE_AFFL_SHIFT;
-+}
-+
+diff --git a/arch/arm64/kernel/sleep.S b/arch/arm64/kernel/sleep.S
+index b192572..a564b44 100644
+--- a/arch/arm64/kernel/sleep.S
++++ b/arch/arm64/kernel/sleep.S
+@@ -49,28 +49,39 @@
+ =09orr=09\dst, \dst, \mask=09=09// dst|=3D(aff3>>rs3)
+ =09.endm
  /*
-  * The following two functions are invoked via the invoke_psci_fn pointer
-  * and will not be inlined, allowing us to piggyback on the AAPCS.
-@@ -199,6 +215,63 @@ static int psci_migrate_info_type(void)
- =09return err;
+- * Save CPU state for a suspend.  This saves callee registers, and allocat=
+es
+- * space on the kernel stack to save the CPU specific registers + some
+- * other data for resume.
++ * Save CPU state for a suspend and execute the suspend finisher.
++ * On success it will return 0 through cpu_resume - ie through a CPU
++ * soft/hard reboot from the reset vector.
++ * On failure it returns the suspend finisher return value or force
++ * -EOPNOTSUPP if the finisher erroneously returns 0 (the suspend finisher
++ * is not allowed to return, if it does this must be considered failure).
++ * It saves callee registers, and allocates space on the kernel stack
++ * to save the CPU specific registers + some other data for resume.
+  *
+  *  x0 =3D suspend finisher argument
++ *  x1 =3D suspend finisher function pointer
+  */
+-ENTRY(__cpu_suspend)
++ENTRY(__cpu_suspend_enter)
+ =09stp=09x29, lr, [sp, #-96]!
+ =09stp=09x19, x20, [sp,#16]
+ =09stp=09x21, x22, [sp,#32]
+ =09stp=09x23, x24, [sp,#48]
+ =09stp=09x25, x26, [sp,#64]
+ =09stp=09x27, x28, [sp,#80]
++=09/*
++=09 * Stash suspend finisher and its argument in x20 and x19
++=09 */
++=09mov=09x19, x0
++=09mov=09x20, x1
+ =09mov=09x2, sp
+ =09sub=09sp, sp, #CPU_SUSPEND_SZ=09// allocate cpu_suspend_ctx
+-=09mov=09x1, sp
++=09mov=09x0, sp
+ =09/*
+-=09 * x1 now points to struct cpu_suspend_ctx allocated on the stack
++=09 * x0 now points to struct cpu_suspend_ctx allocated on the stack
+ =09 */
+-=09str=09x2, [x1, #CPU_CTX_SP]
+-=09ldr=09x2, =3Dsleep_save_sp
+-=09ldr=09x2, [x2, #SLEEP_SAVE_SP_VIRT]
++=09str=09x2, [x0, #CPU_CTX_SP]
++=09ldr=09x1, =3Dsleep_save_sp
++=09ldr=09x1, [x1, #SLEEP_SAVE_SP_VIRT]
+ #ifdef CONFIG_SMP
+ =09mrs=09x7, mpidr_el1
+ =09ldr=09x9, =3Dmpidr_hash
+@@ -82,11 +93,21 @@ ENTRY(__cpu_suspend)
+ =09ldp=09w3, w4, [x9, #MPIDR_HASH_SHIFTS]
+ =09ldp=09w5, w6, [x9, #(MPIDR_HASH_SHIFTS + 8)]
+ =09compute_mpidr_hash x8, x3, x4, x5, x6, x7, x10
+-=09add=09x2, x2, x8, lsl #3
++=09add=09x1, x1, x8, lsl #3
+ #endif
+-=09bl=09__cpu_suspend_finisher
++=09bl=09__cpu_suspend_save
++=09/*
++=09 * Grab suspend finisher in x20 and its argument in x19
++=09 */
++=09mov=09x0, x19
++=09mov=09x1, x20
++=09/*
++=09 * We are ready for power down, fire off the suspend finisher
++=09 * in x1, with argument in x0
++=09 */
++=09blr=09x1
+         /*
+-=09 * Never gets here, unless suspend fails.
++=09 * Never gets here, unless suspend finisher fails.
+ =09 * Successful cpu_suspend should return from cpu_resume, returning
+ =09 * through this code path is considered an error
+ =09 * If the return value is set to 0 force x0 =3D -EOPNOTSUPP
+@@ -103,7 +124,7 @@ ENTRY(__cpu_suspend)
+ =09ldp=09x27, x28, [sp, #80]
+ =09ldp=09x29, lr, [sp], #96
+ =09ret
+-ENDPROC(__cpu_suspend)
++ENDPROC(__cpu_suspend_enter)
+ =09.ltorg
+=20
+ /*
+diff --git a/arch/arm64/kernel/suspend.c b/arch/arm64/kernel/suspend.c
+index 55a99b9..13ad4db 100644
+--- a/arch/arm64/kernel/suspend.c
++++ b/arch/arm64/kernel/suspend.c
+@@ -9,22 +9,19 @@
+ #include <asm/suspend.h>
+ #include <asm/tlbflush.h>
+=20
+-extern int __cpu_suspend(unsigned long);
++extern int __cpu_suspend_enter(unsigned long arg, int (*fn)(unsigned long)=
+);
+ /*
+- * This is called by __cpu_suspend() to save the state, and do whatever
++ * This is called by __cpu_suspend_enter() to save the state, and do whate=
+ver
+  * flushing is required to ensure that when the CPU goes to sleep we have
+  * the necessary data available when the caches are not searched.
+  *
+- * @arg: Argument to pass to suspend operations
+- * @ptr: CPU context virtual address
+- * @save_ptr: address of the location where the context physical address
+- *            must be saved
++ * ptr: CPU context virtual address
++ * save_ptr: address of the location where the context physical address
++ *           must be saved
+  */
+-int __cpu_suspend_finisher(unsigned long arg, struct cpu_suspend_ctx *ptr,
+-=09=09=09   phys_addr_t *save_ptr)
++void notrace __cpu_suspend_save(struct cpu_suspend_ctx *ptr,
++=09=09=09=09phys_addr_t *save_ptr)
+ {
+-=09int cpu =3D smp_processor_id();
+-
+ =09*save_ptr =3D virt_to_phys(ptr);
+=20
+ =09cpu_do_suspend(ptr);
+@@ -35,8 +32,6 @@ int __cpu_suspend_finisher(unsigned long arg, struct cpu_=
+suspend_ctx *ptr,
+ =09 */
+ =09__flush_dcache_area(ptr, sizeof(*ptr));
+ =09__flush_dcache_area(save_ptr, sizeof(*save_ptr));
+-
+-=09return cpu_ops[cpu]->cpu_suspend(arg);
  }
 =20
-+static int __maybe_unused cpu_psci_cpu_init_idle(struct device_node *cpu_n=
-ode,
-+=09=09=09=09=09=09 unsigned int cpu)
-+{
-+=09int i, ret, count =3D 0;
-+=09struct psci_power_state *psci_states;
-+=09struct device_node *state_node;
-+
-+=09/*
-+=09 * If the PSCI cpu_suspend function hook has not been initialized
-+=09 * idle states must not be enabled, so bail out
-+=09 */
-+=09if (!psci_ops.cpu_suspend)
-+=09=09return -EOPNOTSUPP;
-+
-+=09/* Count idle states */
-+=09while ((state_node =3D of_parse_phandle(cpu_node, "cpu-idle-states",
-+=09=09=09=09=09      count))) {
-+=09=09count++;
-+=09=09of_node_put(state_node);
-+=09}
-+
-+=09if (!count)
-+=09=09return -ENODEV;
-+
-+=09psci_states =3D kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
-+=09if (!psci_states)
-+=09=09return -ENOMEM;
-+
-+=09for (i =3D 0; i < count; i++) {
-+=09=09u32 psci_power_state;
-+
-+=09=09state_node =3D of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+
-+=09=09ret =3D of_property_read_u32(state_node,
-+=09=09=09=09=09   "arm,psci-suspend-param",
-+=09=09=09=09=09   &psci_power_state);
-+=09=09if (ret) {
-+=09=09=09pr_warn(" * %s missing arm,psci-suspend-param property\n",
-+=09=09=09=09state_node->full_name);
-+=09=09=09of_node_put(state_node);
-+=09=09=09goto free_mem;
-+=09=09}
-+
-+=09=09of_node_put(state_node);
-+=09=09pr_debug("psci-power-state %#x index %d\n", psci_power_state,
-+=09=09=09=09=09=09=09    i);
-+=09=09psci_power_state_unpack(psci_power_state, &psci_states[i]);
-+=09}
-+=09/* Idle states parsed correctly, initialize per-cpu pointer */
-+=09per_cpu(psci_power_state, cpu) =3D psci_states;
-+=09return 0;
-+
-+free_mem:
-+=09kfree(psci_states);
-+=09return ret;
-+}
-+
- static int get_set_conduit_method(struct device_node *np)
- {
- =09const char *method;
-@@ -436,8 +509,39 @@ static int cpu_psci_cpu_kill(unsigned int cpu)
- #endif
- #endif
+ /*
+@@ -56,15 +51,15 @@ void __init cpu_suspend_set_dbg_restorer(void (*hw_bp_r=
+estore)(void *))
+ }
 =20
-+static int psci_suspend_finisher(unsigned long index)
-+{
-+=09struct psci_power_state *state =3D __get_cpu_var(psci_power_state);
-+
-+=09return psci_ops.cpu_suspend(state[index - 1],
-+=09=09=09=09    virt_to_phys(cpu_resume));
+ /**
+- * cpu_suspend
++ * cpu_suspend() - function to enter a low-power state
++ * @arg: argument to pass to CPU suspend operations
+  *
+- * @arg: argument to pass to the finisher function
++ * Return: 0 on success, -EOPNOTSUPP if CPU suspend hook not initialized, =
+CPU
++ * operations back-end error code otherwise.
+  */
+ int cpu_suspend(unsigned long arg)
+ {
+-=09struct mm_struct *mm =3D current->active_mm;
+-=09int ret, cpu =3D smp_processor_id();
+-=09unsigned long flags;
++=09int cpu =3D smp_processor_id();
+=20
+ =09/*
+ =09 * If cpu_ops have not been registered or suspend
+@@ -72,6 +67,21 @@ int cpu_suspend(unsigned long arg)
+ =09 */
+ =09if (!cpu_ops[cpu] || !cpu_ops[cpu]->cpu_suspend)
+ =09=09return -EOPNOTSUPP;
++=09return cpu_ops[cpu]->cpu_suspend(arg);
 +}
 +
-+static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
++/*
++ * __cpu_suspend
++ *
++ * arg: argument to pass to the finisher function
++ * fn: finisher function pointer
++ *
++ */
++int __cpu_suspend(unsigned long arg, int (*fn)(unsigned long))
 +{
++=09struct mm_struct *mm =3D current->active_mm;
 +=09int ret;
-+=09struct psci_power_state *state =3D __get_cpu_var(psci_power_state);
-+=09/*
-+=09 * idle state index 0 corresponds to wfi, should never be called
-+=09 * from the cpu_suspend operations
-+=09 */
-+=09if (WARN_ON_ONCE(!index))
-+=09=09return -EINVAL;
-+
-+=09if (state->type =3D=3D PSCI_POWER_STATE_TYPE_STANDBY)
-+=09=09ret =3D psci_ops.cpu_suspend(state[index - 1], 0);
-+=09else
-+=09=09ret =3D __cpu_suspend(index, psci_suspend_finisher);
-+
-+=09return ret;
-+}
-+
- const struct cpu_operations cpu_psci_ops =3D {
- =09.name=09=09=3D "psci",
-+#ifdef CONFIG_CPU_IDLE
-+=09.cpu_init_idle=09=3D cpu_psci_cpu_init_idle,
-+=09.cpu_suspend=09=3D cpu_psci_cpu_suspend,
-+#endif
- #ifdef CONFIG_SMP
- =09.cpu_init=09=3D cpu_psci_cpu_init,
- =09.cpu_prepare=09=3D cpu_psci_cpu_prepare,
++=09unsigned long flags;
+=20
+ =09/*
+ =09 * From this point debug exceptions are disabled to prevent
+@@ -86,7 +96,7 @@ int cpu_suspend(unsigned long arg)
+ =09 * page tables, so that the thread address space is properly
+ =09 * set-up on function return.
+ =09 */
+-=09ret =3D __cpu_suspend(arg);
++=09ret =3D __cpu_suspend_enter(arg, fn);
+ =09if (ret =3D=3D 0) {
+ =09=09cpu_switch_mm(mm->pgd, mm);
+ =09=09flush_tlb_all();
+@@ -95,7 +105,7 @@ int cpu_suspend(unsigned long arg)
+ =09=09 * Restore per-cpu offset before any kernel
+ =09=09 * subsystem relying on it has a chance to run.
+ =09=09 */
+-=09=09set_my_cpu_offset(per_cpu_offset(cpu));
++=09=09set_my_cpu_offset(per_cpu_offset(smp_processor_id()));
+=20
+ =09=09/*
+ =09=09 * Restore HW breakpoint registers to sane values
 --=20
 1.9.1
 
