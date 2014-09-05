@@ -1,74 +1,65 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH v2 11/15] clk: qcom: Add support for Krait clocks
-Date: Fri,  5 Sep 2014 15:47:31 -0700
-Message-ID: <1409957256-23729-13-git-send-email-sboyd@codeaurora.org>
+Subject: [PATCH v2 14/15] cpufreq: Add module to register cpufreq on Krait CPUs
+Date: Fri,  5 Sep 2014 15:47:34 -0700
+Message-ID: <1409957256-23729-16-git-send-email-sboyd@codeaurora.org>
 References: <1409957256-23729-1-git-send-email-sboyd@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1409957256-23729-1-git-send-email-sboyd@codeaurora.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Mike Turquette <mturquette@linaro.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The Krait clocks are made up of a series of muxes and a divider
-that choose between a fixed rate clock and dedicated HFPLLs for
-each CPU. Instead of using mmio accesses to remux parents, the
-Krait implementation exposes the remux control via cp15
-registers. Support these clocks.
+Register a cpufreq-generic device whenever we detect that a
+"qcom,krait" compatible CPU is present in DT.
 
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/clk/qcom/Kconfig     |   4 ++
- drivers/clk/qcom/Makefile    |   1 +
- drivers/clk/qcom/clk-krait.c | 166 +++++++++++++++++++++++++++++++++++++++++++
- drivers/clk/qcom/clk-krait.h |  49 +++++++++++++
- 4 files changed, 220 insertions(+)
- create mode 100644 drivers/clk/qcom/clk-krait.c
- create mode 100644 drivers/clk/qcom/clk-krait.h
+ drivers/cpufreq/Kconfig.arm    |   9 ++
+ drivers/cpufreq/Makefile       |   1 +
+ drivers/cpufreq/qcom-cpufreq.c | 199 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 209 insertions(+)
+ create mode 100644 drivers/cpufreq/qcom-cpufreq.c
 
-diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index 3ff19a51a933..2fd07b17e10e 100644
---- a/drivers/clk/qcom/Kconfig
-+++ b/drivers/clk/qcom/Kconfig
-@@ -78,3 +78,7 @@ config QCOM_HFPLL
- 	  Support for the high-frequency PLLs present on Qualcomm devices.
- 	  Say Y if you want to support CPU frequency scaling on devices
- 	  such as MSM8974, APQ8084, etc.
-+
-+config KRAIT_CLOCKS
-+	bool
-+	select KRAIT_L2_ACCESSORS
-diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
-index db39912cffec..c7fda5e9dcc7 100644
---- a/drivers/clk/qcom/Makefile
-+++ b/drivers/clk/qcom/Makefile
-@@ -6,6 +6,7 @@ clk-qcom-y += clk-pll.o
- clk-qcom-y += clk-rcg.o
- clk-qcom-y += clk-rcg2.o
- clk-qcom-y += clk-branch.o
-+clk-qcom-$(CONFIG_KRAIT_CLOCKS) += clk-krait.o
- clk-qcom-y += clk-hfpll.o
- clk-qcom-y += reset.o
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index b0b0ca1e9aac..5eb3bbce2f58 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -129,6 +129,15 @@ config ARM_OMAP2PLUS_CPUFREQ
+ 	depends on ARCH_OMAP2PLUS
+ 	default ARCH_OMAP2PLUS
  
-diff --git a/drivers/clk/qcom/clk-krait.c b/drivers/clk/qcom/clk-krait.c
++config ARM_QCOM_CPUFREQ
++	tristate "Qualcomm based"
++	depends on ARCH_QCOM
++	select PM_OPP
++	help
++	  This adds the CPUFreq driver for Qualcomm SoC based boards.
++
++	  If in doubt, say N.
++
+ config ARM_S3C_CPUFREQ
+ 	bool
+ 	help
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index e8efe9b8d55f..b345bca5fa09 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -61,6 +61,7 @@ obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+ obj-$(CONFIG_ARM_INTEGRATOR)		+= integrator-cpufreq.o
+ obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
+ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
++obj-$(CONFIG_ARM_QCOM_CPUFREQ)		+= qcom-cpufreq.o
+ obj-$(CONFIG_PXA25x)			+= pxa2xx-cpufreq.o
+ obj-$(CONFIG_PXA27x)			+= pxa2xx-cpufreq.o
+ obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
+diff --git a/drivers/cpufreq/qcom-cpufreq.c b/drivers/cpufreq/qcom-cpufreq.c
 new file mode 100644
-index 000000000000..615bfbee1b6a
+index 000000000000..aa8eb97144b6
 --- /dev/null
-+++ b/drivers/clk/qcom/clk-krait.c
-@@ -0,0 +1,166 @@
-+/*
-+ * Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
++++ b/drivers/cpufreq/qcom-cpufreq.c
+@@ -0,0 +1,199 @@
++/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 and
@@ -82,212 +73,191 @@ index 000000000000..615bfbee1b6a
 +
 +#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/delay.h>
++#include <linux/cpu.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
 +#include <linux/err.h>
-+#include <linux/clk-provider.h>
-+#include <linux/spinlock.h>
++#include <linux/io.h>
++#include <linux/slab.h>
++#include <linux/pm_opp.h>
++#include <linux/init.h>
 +
-+#include <asm/krait-l2-accessors.h>
-+
-+#include "clk-krait.h"
-+
-+/* Secondary and primary muxes share the same cp15 register */
-+static DEFINE_SPINLOCK(krait_clock_reg_lock);
-+
-+#define LPL_SHIFT	8
-+static void __krait_mux_set_sel(struct krait_mux_clk *mux, int sel)
++static void __init get_krait_bin_format_a(int *speed, int *pvs, int *pvs_ver)
 +{
-+	unsigned long flags;
-+	u32 regval;
++	void __iomem *base;
++	u32 pte_efuse;
 +
-+	spin_lock_irqsave(&krait_clock_reg_lock, flags);
-+	regval = krait_get_l2_indirect_reg(mux->offset);
-+	regval &= ~(mux->mask << mux->shift);
-+	regval |= (sel & mux->mask) << mux->shift;
-+	if (mux->lpl) {
-+		regval &= ~(mux->mask << (mux->shift + LPL_SHIFT));
-+		regval |= (sel & mux->mask) << (mux->shift + LPL_SHIFT);
++	*speed = *pvs = *pvs_ver = 0;
++
++	base = ioremap(0x007000c0, 4);
++	if (!base) {
++		pr_warn("Unable to read efuse data. Defaulting to 0!\n");
++		return;
 +	}
-+	krait_set_l2_indirect_reg(mux->offset, regval);
-+	spin_unlock_irqrestore(&krait_clock_reg_lock, flags);
 +
-+	/* Wait for switch to complete. */
-+	mb();
-+	udelay(1);
++	pte_efuse = readl_relaxed(base);
++	iounmap(base);
++
++	*speed = pte_efuse & 0xf;
++	if (*speed == 0xf)
++		*speed = (pte_efuse >> 4) & 0xf;
++
++	if (*speed == 0xf) {
++		*speed = 0;
++		pr_warn("Speed bin: Defaulting to %d\n", *speed);
++	} else {
++		pr_info("Speed bin: %d\n", *speed);
++	}
++
++	*pvs = (pte_efuse >> 10) & 0x7;
++	if (*pvs == 0x7)
++		*pvs = (pte_efuse >> 13) & 0x7;
++
++	if (*pvs == 0x7) {
++		*pvs = 0;
++		pr_warn("PVS bin: Defaulting to %d\n", *pvs);
++	} else {
++		pr_info("PVS bin: %d\n", *pvs);
++	}
 +}
 +
-+static int krait_mux_set_parent(struct clk_hw *hw, u8 index)
++static void __init get_krait_bin_format_b(int *speed, int *pvs, int *pvs_ver)
 +{
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
-+	u32 sel;
++	u32 pte_efuse, redundant_sel;
++	void __iomem *base;
 +
-+	sel = clk_mux_reindex(index, mux->parent_map, 0);
-+	mux->en_mask = sel;
-+	/* Don't touch mux if CPU is off as it won't work */
-+	if (__clk_is_enabled(hw->clk))
-+		__krait_mux_set_sel(mux, sel);
++	*speed = 0;
++	*pvs = 0;
++	*pvs_ver = 0;
++
++	base = ioremap(0xfc4b80b0, 8);
++	if (!base) {
++		pr_warn("Unable to read efuse data. Defaulting to 0!\n");
++		return;
++	}
++
++	pte_efuse = readl_relaxed(base);
++	redundant_sel = (pte_efuse >> 24) & 0x7;
++	*speed = pte_efuse & 0x7;
++	/* 4 bits of PVS are in efuse register bits 31, 8-6. */
++	*pvs = ((pte_efuse >> 28) & 0x8) | ((pte_efuse >> 6) & 0x7);
++	*pvs_ver = (pte_efuse >> 4) & 0x3;
++
++	switch (redundant_sel) {
++	case 1:
++		*speed = (pte_efuse >> 27) & 0xf;
++		break;
++	case 2:
++		*pvs = (pte_efuse >> 27) & 0xf;
++		break;
++	}
++
++	/* Check SPEED_BIN_BLOW_STATUS */
++	if (pte_efuse & BIT(3)) {
++		pr_info("Speed bin: %d\n", *speed);
++	} else {
++		pr_warn("Speed bin not set. Defaulting to 0!\n");
++		*speed = 0;
++	}
++
++	/* Check PVS_BLOW_STATUS */
++	pte_efuse = readl_relaxed(base + 0x4) & BIT(21);
++	if (pte_efuse) {
++		pr_info("PVS bin: %d\n", *pvs);
++	} else {
++		pr_warn("PVS bin not set. Defaulting to 0!\n");
++		*pvs = 0;
++	}
++
++	pr_info("PVS version: %d\n", *pvs_ver);
++	iounmap(base);
++}
++
++static int __init qcom_cpufreq_populate_opps(void)
++{
++	int len, num_rows, i, k;
++	char table_name[] = "qcom,speedXX-pvsXX-bin-vXX";
++	struct device_node *np;
++	struct device *dev;
++	int cpu = 0;
++	int speed, pvs, pvs_ver;
++	int cols;
++
++	np = of_find_node_by_name(NULL, "qcom,pvs");
++	if (!np)
++		pr_warn("Can't find PVS node\n");
++
++	if (of_property_read_bool(np, "qcom,pvs-format-a")) {
++		get_krait_bin_format_a(&speed, &pvs, &pvs_ver);
++		cols = 2;
++	} else {
++		get_krait_bin_format_b(&speed, &pvs, &pvs_ver);
++		cols = 3;
++	}
++
++	snprintf(table_name, sizeof(table_name),
++			"qcom,speed%d-pvs%d-bin-v%d", speed, pvs, pvs_ver);
++again:
++	dev = get_cpu_device(cpu);
++	if (!dev)
++		return -ENODEV;
++
++	if (!of_find_property(np, table_name, &len))
++		return -EINVAL;
++
++	len /= sizeof(u32);
++	if (len % cols || len == 0)
++		return -EINVAL;
++
++	num_rows = len / cols;
++
++	for (i = 0, k = 0; i < num_rows; i++) {
++		u32 freq, volt;
++
++		of_property_read_u32_index(np, table_name, k++, &freq);
++		of_property_read_u32_index(np, table_name, k++, &volt);
++		while (k % cols)
++			k++; /* Skip uA entries if present */
++		if (dev_pm_opp_add(dev, freq, volt))
++			pr_warn("failed to add OPP %u\n", freq);
++	}
++
++	if (cpu++ < num_possible_cpus())
++		goto again;
++
 +	return 0;
 +}
 +
-+static u8 krait_mux_get_parent(struct clk_hw *hw)
++static int __init qcom_cpufreq_driver_init(void)
 +{
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
-+	u32 sel;
++	struct platform_device_info devinfo = { .name = "cpufreq-generic", };
++	struct device *cpu_dev;
++	struct device_node *np;
++	struct platform_device *pdev;
 +
-+	sel = krait_get_l2_indirect_reg(mux->offset);
-+	sel >>= mux->shift;
-+	sel &= mux->mask;
-+	mux->en_mask = sel;
++	cpu_dev = get_cpu_device(0);
++	if (!cpu_dev)
++		return -ENODEV;
 +
-+	return clk_mux_get_parent(hw, sel, mux->parent_map, 0);
++	np = of_node_get(cpu_dev->of_node);
++	if (!np)
++		return -ENOENT;
++
++	if (!of_device_is_compatible(np, "qcom,krait")) {
++		of_node_put(np);
++		return -ENODEV;
++	}
++	of_node_put(np);
++
++	qcom_cpufreq_populate_opps();
++	pdev = platform_device_register_full(&devinfo);
++
++	return PTR_ERR_OR_ZERO(pdev);
 +}
++module_init(qcom_cpufreq_driver_init);
 +
-+static struct clk *krait_mux_get_safe_parent(struct clk_hw *hw)
-+{
-+	int i;
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
-+	int num_parents = __clk_get_num_parents(hw->clk);
-+
-+	i = mux->safe_sel;
-+	for (i = 0; i < num_parents; i++)
-+		if (mux->safe_sel == mux->parent_map[i])
-+			break;
-+
-+	return clk_get_parent_by_index(hw->clk, i);
-+}
-+
-+static int krait_mux_enable(struct clk_hw *hw)
-+{
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
-+
-+	__krait_mux_set_sel(mux, mux->en_mask);
-+
-+	return 0;
-+}
-+
-+static void krait_mux_disable(struct clk_hw *hw)
-+{
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
-+
-+	__krait_mux_set_sel(mux, mux->safe_sel);
-+}
-+
-+const struct clk_ops krait_mux_clk_ops = {
-+	.enable = krait_mux_enable,
-+	.disable = krait_mux_disable,
-+	.set_parent = krait_mux_set_parent,
-+	.get_parent = krait_mux_get_parent,
-+	.determine_rate = __clk_mux_determine_rate_closest,
-+	.get_safe_parent = krait_mux_get_safe_parent,
-+};
-+EXPORT_SYMBOL_GPL(krait_mux_clk_ops);
-+
-+/* The divider can divide by 2, 4, 6 and 8. But we only really need div-2. */
-+static long krait_div2_round_rate(struct clk_hw *hw, unsigned long rate,
-+				  unsigned long *parent_rate)
-+{
-+	*parent_rate = __clk_round_rate(__clk_get_parent(hw->clk), rate * 2);
-+	return DIV_ROUND_UP(*parent_rate, 2);
-+}
-+
-+static int krait_div2_set_rate(struct clk_hw *hw, unsigned long rate,
-+			unsigned long parent_rate)
-+{
-+	struct krait_div2_clk *d = to_krait_div2_clk(hw);
-+	unsigned long flags;
-+	u32 val;
-+	u32 mask = BIT(d->width) - 1;
-+
-+	if (d->lpl)
-+		mask |= mask << (d->shift + LPL_SHIFT);
-+
-+	spin_lock_irqsave(&krait_clock_reg_lock, flags);
-+	val = krait_get_l2_indirect_reg(d->offset);
-+	val &= ~mask;
-+	krait_set_l2_indirect_reg(d->offset, val);
-+	spin_unlock_irqrestore(&krait_clock_reg_lock, flags);
-+
-+	return 0;
-+}
-+
-+static unsigned long
-+krait_div2_recalc_rate(struct clk_hw *hw, unsigned long parent_rate)
-+{
-+	struct krait_div2_clk *d = to_krait_div2_clk(hw);
-+	u32 mask = BIT(d->width) - 1;
-+	u32 div;
-+
-+	div = krait_get_l2_indirect_reg(d->offset);
-+	div >>= d->shift;
-+	div &= mask;
-+	div = (div + 1) * 2;
-+
-+	return DIV_ROUND_UP(parent_rate, div);
-+}
-+
-+const struct clk_ops krait_div2_clk_ops = {
-+	.round_rate = krait_div2_round_rate,
-+	.set_rate = krait_div2_set_rate,
-+	.recalc_rate = krait_div2_recalc_rate,
-+};
-+EXPORT_SYMBOL_GPL(krait_div2_clk_ops);
-diff --git a/drivers/clk/qcom/clk-krait.h b/drivers/clk/qcom/clk-krait.h
-new file mode 100644
-index 000000000000..5d0063538e5d
---- /dev/null
-+++ b/drivers/clk/qcom/clk-krait.h
-@@ -0,0 +1,49 @@
-+/*
-+ * Copyright (c) 2013, The Linux Foundation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#ifndef __QCOM_CLK_KRAIT_H
-+#define __QCOM_CLK_KRAIT_H
-+
-+#include <linux/clk-provider.h>
-+
-+struct krait_mux_clk {
-+	unsigned int	*parent_map;
-+	bool		has_safe_parent;
-+	u8		safe_sel;
-+	u32		offset;
-+	u32		mask;
-+	u32		shift;
-+	u32		en_mask;
-+	bool		lpl;
-+
-+	struct clk_hw	hw;
-+};
-+
-+#define to_krait_mux_clk(_hw) container_of(_hw, struct krait_mux_clk, hw)
-+
-+extern const struct clk_ops krait_mux_clk_ops;
-+
-+struct krait_div2_clk {
-+	u32		offset;
-+	u8		width;
-+	u32		shift;
-+	bool		lpl;
-+
-+	struct clk_hw	hw;
-+};
-+
-+#define to_krait_div2_clk(_hw) container_of(_hw, struct krait_div2_clk, hw)
-+
-+extern const struct clk_ops krait_div2_clk_ops;
-+
-+#endif
++MODULE_DESCRIPTION("Qualcomm CPUfreq driver");
++MODULE_LICENSE("GPL v2");
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 hosted by The Linux Foundation
