@@ -1,46 +1,44 @@
-From: Francis Moreau <francis.moro@gmail.com>
-Subject: Re: [PATCH 3.10.y+] PM / sleep: Use valid_state() for platform-dependent
- sleep states only
-Date: Fri, 05 Sep 2014 08:29:09 +0200
-Message-ID: <54095835.7000207@gmail.com>
-References: <1849024.CHOUso6H2K@vostro.rjw.lan> <1409865665-5375-1-git-send-email-computersforpeace@gmail.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: [PATCH 0/2] cpufreq/powernv: Set core pstate to a minimum just
+ before hotplugging it out
+Date: Fri, 05 Sep 2014 12:30:30 +0530
+Message-ID: <20140905065952.2831.66731.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1409865665-5375-1-git-send-email-computersforpeace@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <computersforpeace@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: stable@vger.kernel.org, linux-pm@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e39.co.us.ibm.com ([32.97.110.160]:41672 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbaIEHAm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Sep 2014 03:00:42 -0400
+Received: from /spool/local
+	by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Fri, 5 Sep 2014 01:00:42 -0600
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: viresh.kumar@linaro.org, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, dirk.j.brandewie@intel.com, shreyas@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, patrick.marlier@gmail.com, dirk.brandewie@gmail.com, svaidy@linux.vnet.ibm.com
 
-Hello,
+Today cpus go to winkle when they are offlined. Since it is the deepest
+idle state that we have, it is expected to save good amount of power as compared
+to online state, where cores can enter nap/fastsleep only which are
+shallower idle states.
+However we observed no powersavings with winkle as compared to nap/fastsleep
+and traced the problem to the pstate of the core being kept at a high even
+when the core is offline. This can keep the socket pstate high, thus burning
+power unnecessarily. This patchset fixes this issue.
 
-On 09/04/2014 11:21 PM, Brian Norris wrote:
-> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> 
-> [Upstream commit 43e8317b0bba1d6eb85f38a4a233d82d7c20d732]
-> 
-> Use the observation that, for platform-dependent sleep states
-> (PM_SUSPEND_STANDBY, PM_SUSPEND_MEM), a given state is either
-> always supported or always unsupported and store that information
-> in pm_states[] instead of calling valid_state() every time we
-> need to check it.
-> 
-> Also do not use valid_state() for PM_SUSPEND_FREEZE, which is always
-> valid, and move the pm_test_level validity check for PM_SUSPEND_FREEZE
-> directly into enter_state().
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: <stable@vger.kernel.org> # 3.10+: 27ddcc6596e5: PM / sleep: Add state field to pm_states[] entries
-> Cc: <stable@vger.kernel.org> # 3.10+
-> ---
-> This is a backport request for these two commits upstream:
-> 
->     27ddcc6596e5 PM / sleep: Add state field to pm_states[] entries
->     43e8317b0bba PM / sleep: Use valid_state() for platform-dependent sleep states only
-> 
+---
 
-Wouldn't it be cleaner to have 2 separate backports then ?
+Preeti U Murthy (2):
+      cpufreq: Allow stop CPU callback to be used by all cpufreq drivers
+      powernv/cpufreq: Set the pstate of the last hotplugged out cpu in policy->cpus to minimum
 
-Thanks for the backport anyways.
+
+ drivers/cpufreq/cpufreq.c         |    2 +-
+ drivers/cpufreq/powernv-cpufreq.c |    9 +++++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+--
+
