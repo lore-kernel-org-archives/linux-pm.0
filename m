@@ -1,106 +1,118 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v6 0/5] ARM: EXYNOS: cpuidle: fix AFTR mode on boards with
- secure firmware enabled
-Date: Fri, 05 Sep 2014 15:51:23 +0200
-Message-ID: <1409925088-4705-1-git-send-email-b.zolnierkie@samsung.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI and power management fixes for 3.17-rc4
+Date: Fri, 5 Sep 2014 16:41:19 +0200
+Message-ID: <CAJZ5v0i298zi_tQf2XfQo12dQHR3Kn7jBYfyH6RxiAWz_eE0yQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, b.zolnierkie@samsung.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linuxfoundation.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi Linus,
 
-This patch series adds support for AFTR idle mode on boards with
-secure firmware enabled and allows EXYNOS cpuidle driver usage on
-Exynos4x12 SoCs.
+Please pull from
 
-It has been tested on Trats2 board (using Exynos4412 SoC with secure
-firmware enabled) on which AFTR mode reduces power consumption by ~12%
-when EXYNOS cpuidle driver is enabled (in both cases the default
-exynos_defconfig config is used and CPU1-3 are offlined).
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.17-rc4
 
-Currently Exynos4412 SoC support is limited to Trats2 board.
+to receive ACPI and power management fixes for v3.17-rc4 with
+top-most commit 9aa4e2f6ac2e5d0729f5982fd0b070123808381e
 
-Depends on:
-- next-20140904 branch of linux-next kernel tree
-- "irqchip: Properly fetch the per cpu offset" patch
-  (https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg716674.html)
-- [PATCH v3 0/5] Firmware-assisted suspend/resume of Exynos SoCs
-  (https://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35921.html)
+ Merge branches 'pm-sleep', 'powercap', 'pm-domains' and 'pm-cpufreq'
 
-Changes since v5:
-- rebased on top of next-20140904 +
-  "irqchip: Properly fetch the per cpu offset" patch
-  (https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg716674.html)
-  [PATCH v3 0/5] Firmware-assisted suspend/resume of Exynos SoCs
-  (https://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35921.html)
-- limit Exynos4412 SoC support to Trats2 board for now
+on top of commit 69e273c0b0a3c337a521d083374c918dc52c666f
 
-Changes since v4:
-- rebased on top of next-20140804 +
-  [PATCH v5][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
-  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35262.html)
-  [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
-  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
-- call exynos_save_cp15() only on A9 type core (this is needed for the future
-  Exynos3250 SoC support)
+ Linux 3.17-rc3
 
-Changes since v3:
-- rebased on top of next-20140804 +
-  [PATCH v4][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
-  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35192.html)
-  [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
-  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
-- (re-)added patch fixing S5P_CENTRAL_SEQ_OPTION register setup
+These are regression fixes (ACPI sysfs, ACPI video, suspend test),
+ACPI cpuidle deadlock fix, missing runtime validation of ACPI _DSD
+output, a fix and a new CPU ID for the RAPL driver, new blacklist
+entry for the ACPI EC driver and a couple of trivial cleanups
+(intel_pstate and generic PM domains).
 
-Changes since v2:
-- rebased on top of next-20140708 +
-  [PATCH 5/6] ARM: EXYNOS: Fix suspend/resume sequencies
-  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32809.html)
-  [with rejects fixed]
-  [PATCH 6/6] ARM: EXYNOS: Register cpuidle device only on Exynos4210 and 5250
-  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32808.html)
-  [PATCH 0/2] Firmware-assisted suspend/resume of Exynos SoCs
-  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32991.html)
-  [with rejects fixed in patch #2]
-- addressed review comments from Tomasz Figa and Daniel Lezcano
+Specifics:
 
-Changes since v1:
-- synced against next-20140602
-- added missing Acked-by-s
+ - Fix for recently broken test_suspend= command line argument
+   (Rafael J Wysocki).
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+ - Fixes for regressions related to the ACPI video driver caused
+   by switching the default to native backlight handling in 3.16
+   from Hans de Goede.
+
+ - Fix for a sysfs attribute of ACPI device objects that returns
+   stale values sometimes due to the fact that they are cached
+   instead of executing the appropriate method (_SUN) every time
+   (broken in 3.14).  From Yasuaki Ishimatsu.
+
+ - Fix for a deadlock between cpuidle_lock and cpu_hotplug.lock
+   in the ACPI processor driver from Jiri Kosina.
+
+ - Runtime output validation for the ACPI _DSD device configuration
+   object missing from the support for it that has been introduced
+   recently.  From Mika Westerberg.
+
+ - Fix for an unuseful and misleading RAPL (Running Average Power
+   Limit) domain detection message in the RAPL driver from Jacob Pan.
+
+ - New Intel Haswell CPU ID for the RAPL driver from Jason Baron.
+
+ - New Clevo W350etq blacklist entry for the ACPI EC driver
+   from Lan Tianyu.
+
+ - Cleanups for the intel_pstate driver and the core generic PM
+   domains code from Gabriele Mazzotta and Geert Uytterhoeven.
+
+Thanks!
 
 
-Bartlomiej Zolnierkiewicz (5):
-  ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by static inlines
-  ARM: EXYNOS: add AFTR mode support to firmware do_idle method
-  ARM: EXYNOS: cpuidle: add secure firmware support to AFTR mode code
-  ARM: EXYNOS: PM: fix register setup for AFTR mode code
-  ARM: EXYNOS: cpuidle: allow driver usage on Exynos4x12 SoCs
+---------------
 
- arch/arm/include/asm/firmware.h |  2 +-
- arch/arm/mach-exynos/common.h   |  5 ++++
- arch/arm/mach-exynos/exynos.c   |  5 +++-
- arch/arm/mach-exynos/firmware.c | 34 ++++++++++++++++-------
- arch/arm/mach-exynos/pm.c       | 60 ++++++++++++++++++++++++-----------------
- 5 files changed, 71 insertions(+), 35 deletions(-)
+Gabriele Mazzotta (1):
+      cpufreq: intel_pstate: Remove unneeded variable
 
--- 
-1.8.2.3
+Geert Uytterhoeven (1):
+      PM / domains: Make generic_pm_domain.name const
+
+Hans de Goede (3):
+      ACPI / video: Fix use_native_backlight selection logic
+      ACPI / video: Add a disable_native_backlight quirk
+      ACPI / video: Disable native_backlight on HP ENVY 15 Notebook PC
+
+Jacob Pan (1):
+      powercap / RAPL: change domain detection message
+
+Jason Baron (1):
+      powercap / RAPL: add support for CPU model 0x3f
+
+Jiri Kosina (1):
+      ACPI / cpuidle: fix deadlock between cpuidle_lock and cpu_hotplug.lock
+
+Lan Tianyu (1):
+      ACPI / EC: Add msi quirk for Clevo W350etq
+
+Mika Westerberg (1):
+      ACPICA: ACPI 5.1: Add support for runtime validation of _DSD package.
+
+Rafael J. Wysocki (1):
+      PM / sleep: Fix test_suspend= command line option
+
+Yasuaki Ishimatsu (1):
+      ACPI / scan: not cache _SUN value in struct acpi_device_pnp
+
+---------------
+
+ drivers/acpi/acpica/nsprepkg.c | 39 ++++++++++++++++++++++++++++++++++++
+ drivers/acpi/ec.c              |  4 ++++
+ drivers/acpi/processor_idle.c  |  4 ++--
+ drivers/acpi/scan.c            | 15 +++++++-------
+ drivers/acpi/video.c           | 45 ++++++++++++++++++++++++++++++++++++++++--
+ drivers/cpufreq/intel_pstate.c |  4 ----
+ drivers/powercap/intel_rapl.c  |  8 ++++----
+ include/acpi/acpi_bus.h        |  1 -
+ include/linux/pm_domain.h      |  2 +-
+ kernel/power/power.h           |  1 +
+ kernel/power/suspend.c         |  2 +-
+ kernel/power/suspend_test.c    | 31 ++++++++++++++++++-----------
+ 12 files changed, 122 insertions(+), 34 deletions(-)
