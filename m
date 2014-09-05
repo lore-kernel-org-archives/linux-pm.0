@@ -1,74 +1,64 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH v2 12/15] clk: qcom: Add KPSS ACC/GCC driver
-Date: Fri,  5 Sep 2014 15:47:32 -0700
-Message-ID: <1409957256-23729-14-git-send-email-sboyd@codeaurora.org>
+Subject: [PATCH v2 14/15] cpufreq: Add module to register cpufreq on Krait CPUs
+Date: Fri,  5 Sep 2014 15:47:35 -0700
+Message-ID: <1409957256-23729-17-git-send-email-sboyd@codeaurora.org>
 References: <1409957256-23729-1-git-send-email-sboyd@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1409957256-23729-1-git-send-email-sboyd@codeaurora.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Mike Turquette <mturquette@linaro.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The ACC and GCC regions present in KPSSv1 contain registers to
-control clocks and power to each Krait CPU and L2. For CPUfreq
-purposes probe these devices and expose a mux clock that chooses
-between PXO and PLL8.
+Register a cpufreq-generic device whenever we detect that a
+"qcom,krait" compatible CPU is present in DT.
 
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/clk/qcom/Kconfig    |  8 ++++
- drivers/clk/qcom/Makefile   |  1 +
- drivers/clk/qcom/kpss-xcc.c | 94 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 103 insertions(+)
- create mode 100644 drivers/clk/qcom/kpss-xcc.c
+ drivers/cpufreq/Kconfig.arm    |   9 ++
+ drivers/cpufreq/Makefile       |   1 +
+ drivers/cpufreq/qcom-cpufreq.c | 199 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 209 insertions(+)
+ create mode 100644 drivers/cpufreq/qcom-cpufreq.c
 
-diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index 2fd07b17e10e..6bf73773f75a 100644
---- a/drivers/clk/qcom/Kconfig
-+++ b/drivers/clk/qcom/Kconfig
-@@ -79,6 +79,14 @@ config QCOM_HFPLL
- 	  Say Y if you want to support CPU frequency scaling on devices
- 	  such as MSM8974, APQ8084, etc.
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index b0b0ca1e9aac..5eb3bbce2f58 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -129,6 +129,15 @@ config ARM_OMAP2PLUS_CPUFREQ
+ 	depends on ARCH_OMAP2PLUS
+ 	default ARCH_OMAP2PLUS
  
-+config KPSS_XCC
-+	tristate "KPSS Clock Controller"
-+	depends on COMMON_CLK_QCOM
++config ARM_QCOM_CPUFREQ
++	tristate "Qualcomm based"
++	depends on ARCH_QCOM
++	select PM_OPP
 +	help
-+	  Support for the Krait ACC and GCC clock controllers. Say Y
-+	  if you want to support CPU frequency scaling on devices such
-+	  as MSM8960, APQ8064, etc.
++	  This adds the CPUFreq driver for Qualcomm SoC based boards.
 +
- config KRAIT_CLOCKS
++	  If in doubt, say N.
++
+ config ARM_S3C_CPUFREQ
  	bool
- 	select KRAIT_L2_ACCESSORS
-diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
-index c7fda5e9dcc7..d85491bfc053 100644
---- a/drivers/clk/qcom/Makefile
-+++ b/drivers/clk/qcom/Makefile
-@@ -18,4 +18,5 @@ obj-$(CONFIG_MSM_GCC_8960) += gcc-msm8960.o
- obj-$(CONFIG_MSM_GCC_8974) += gcc-msm8974.o
- obj-$(CONFIG_MSM_MMCC_8960) += mmcc-msm8960.o
- obj-$(CONFIG_MSM_MMCC_8974) += mmcc-msm8974.o
-+obj-$(CONFIG_KPSS_XCC) += kpss-xcc.o
- obj-$(CONFIG_QCOM_HFPLL) += hfpll.o
-diff --git a/drivers/clk/qcom/kpss-xcc.c b/drivers/clk/qcom/kpss-xcc.c
+ 	help
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index e8efe9b8d55f..b345bca5fa09 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -61,6 +61,7 @@ obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+ obj-$(CONFIG_ARM_INTEGRATOR)		+= integrator-cpufreq.o
+ obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
+ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
++obj-$(CONFIG_ARM_QCOM_CPUFREQ)		+= qcom-cpufreq.o
+ obj-$(CONFIG_PXA25x)			+= pxa2xx-cpufreq.o
+ obj-$(CONFIG_PXA27x)			+= pxa2xx-cpufreq.o
+ obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
+diff --git a/drivers/cpufreq/qcom-cpufreq.c b/drivers/cpufreq/qcom-cpufreq.c
 new file mode 100644
-index 000000000000..9c49496afa6a
+index 000000000000..aa8eb97144b6
 --- /dev/null
-+++ b/drivers/clk/qcom/kpss-xcc.c
-@@ -0,0 +1,94 @@
++++ b/drivers/cpufreq/qcom-cpufreq.c
+@@ -0,0 +1,199 @@
 +/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -82,86 +72,191 @@ index 000000000000..9c49496afa6a
 + */
 +
 +#include <linux/kernel.h>
-+#include <linux/init.h>
 +#include <linux/module.h>
++#include <linux/cpu.h>
++#include <linux/of.h>
 +#include <linux/platform_device.h>
 +#include <linux/err.h>
 +#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/clk.h>
-+#include <linux/clk-provider.h>
++#include <linux/slab.h>
++#include <linux/pm_opp.h>
++#include <linux/init.h>
 +
-+static const char *aux_parents[] = {
-+	"pll8_vote",
-+	"pxo",
-+};
-+
-+static unsigned int aux_parent_map[] = {
-+	3,
-+	0,
-+};
-+
-+static const struct of_device_id kpss_xcc_match_table[] = {
-+	{ .compatible = "qcom,kpss-acc-v1", .data = (void *)1UL },
-+	{ .compatible = "qcom,kpss-gcc" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, kpss_xcc_match_table);
-+
-+static int kpss_xcc_driver_probe(struct platform_device *pdev)
++static void __init get_krait_bin_format_a(int *speed, int *pvs, int *pvs_ver)
 +{
-+	const struct of_device_id *id;
-+	struct clk *clk;
-+	struct resource *res;
 +	void __iomem *base;
-+	const char *name;
++	u32 pte_efuse;
 +
-+	id = of_match_device(kpss_xcc_match_table, &pdev->dev);
-+	if (!id)
-+		return -ENODEV;
++	*speed = *pvs = *pvs_ver = 0;
 +
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(base))
-+		return PTR_ERR(base);
-+
-+	if (id->data) {
-+		if (of_property_read_string_index(pdev->dev.of_node,
-+					"clock-output-names", 0, &name))
-+			return -ENODEV;
-+		base += 0x14;
-+	} else {
-+		name = "acpu_l2_aux";
-+		base += 0x28;
++	base = ioremap(0x007000c0, 4);
++	if (!base) {
++		pr_warn("Unable to read efuse data. Defaulting to 0!\n");
++		return;
 +	}
 +
-+	clk = clk_register_mux_table(&pdev->dev, name, aux_parents,
-+				     ARRAY_SIZE(aux_parents), 0, base, 0, 0x3,
-+				     0, aux_parent_map, NULL);
++	pte_efuse = readl_relaxed(base);
++	iounmap(base);
 +
-+	platform_set_drvdata(pdev, clk);
++	*speed = pte_efuse & 0xf;
++	if (*speed == 0xf)
++		*speed = (pte_efuse >> 4) & 0xf;
 +
-+	return PTR_ERR_OR_ZERO(clk);
++	if (*speed == 0xf) {
++		*speed = 0;
++		pr_warn("Speed bin: Defaulting to %d\n", *speed);
++	} else {
++		pr_info("Speed bin: %d\n", *speed);
++	}
++
++	*pvs = (pte_efuse >> 10) & 0x7;
++	if (*pvs == 0x7)
++		*pvs = (pte_efuse >> 13) & 0x7;
++
++	if (*pvs == 0x7) {
++		*pvs = 0;
++		pr_warn("PVS bin: Defaulting to %d\n", *pvs);
++	} else {
++		pr_info("PVS bin: %d\n", *pvs);
++	}
 +}
 +
-+static int kpss_xcc_driver_remove(struct platform_device *pdev)
++static void __init get_krait_bin_format_b(int *speed, int *pvs, int *pvs_ver)
 +{
-+	clk_unregister_mux(platform_get_drvdata(pdev));
++	u32 pte_efuse, redundant_sel;
++	void __iomem *base;
++
++	*speed = 0;
++	*pvs = 0;
++	*pvs_ver = 0;
++
++	base = ioremap(0xfc4b80b0, 8);
++	if (!base) {
++		pr_warn("Unable to read efuse data. Defaulting to 0!\n");
++		return;
++	}
++
++	pte_efuse = readl_relaxed(base);
++	redundant_sel = (pte_efuse >> 24) & 0x7;
++	*speed = pte_efuse & 0x7;
++	/* 4 bits of PVS are in efuse register bits 31, 8-6. */
++	*pvs = ((pte_efuse >> 28) & 0x8) | ((pte_efuse >> 6) & 0x7);
++	*pvs_ver = (pte_efuse >> 4) & 0x3;
++
++	switch (redundant_sel) {
++	case 1:
++		*speed = (pte_efuse >> 27) & 0xf;
++		break;
++	case 2:
++		*pvs = (pte_efuse >> 27) & 0xf;
++		break;
++	}
++
++	/* Check SPEED_BIN_BLOW_STATUS */
++	if (pte_efuse & BIT(3)) {
++		pr_info("Speed bin: %d\n", *speed);
++	} else {
++		pr_warn("Speed bin not set. Defaulting to 0!\n");
++		*speed = 0;
++	}
++
++	/* Check PVS_BLOW_STATUS */
++	pte_efuse = readl_relaxed(base + 0x4) & BIT(21);
++	if (pte_efuse) {
++		pr_info("PVS bin: %d\n", *pvs);
++	} else {
++		pr_warn("PVS bin not set. Defaulting to 0!\n");
++		*pvs = 0;
++	}
++
++	pr_info("PVS version: %d\n", *pvs_ver);
++	iounmap(base);
++}
++
++static int __init qcom_cpufreq_populate_opps(void)
++{
++	int len, num_rows, i, k;
++	char table_name[] = "qcom,speedXX-pvsXX-bin-vXX";
++	struct device_node *np;
++	struct device *dev;
++	int cpu = 0;
++	int speed, pvs, pvs_ver;
++	int cols;
++
++	np = of_find_node_by_name(NULL, "qcom,pvs");
++	if (!np)
++		pr_warn("Can't find PVS node\n");
++
++	if (of_property_read_bool(np, "qcom,pvs-format-a")) {
++		get_krait_bin_format_a(&speed, &pvs, &pvs_ver);
++		cols = 2;
++	} else {
++		get_krait_bin_format_b(&speed, &pvs, &pvs_ver);
++		cols = 3;
++	}
++
++	snprintf(table_name, sizeof(table_name),
++			"qcom,speed%d-pvs%d-bin-v%d", speed, pvs, pvs_ver);
++again:
++	dev = get_cpu_device(cpu);
++	if (!dev)
++		return -ENODEV;
++
++	if (!of_find_property(np, table_name, &len))
++		return -EINVAL;
++
++	len /= sizeof(u32);
++	if (len % cols || len == 0)
++		return -EINVAL;
++
++	num_rows = len / cols;
++
++	for (i = 0, k = 0; i < num_rows; i++) {
++		u32 freq, volt;
++
++		of_property_read_u32_index(np, table_name, k++, &freq);
++		of_property_read_u32_index(np, table_name, k++, &volt);
++		while (k % cols)
++			k++; /* Skip uA entries if present */
++		if (dev_pm_opp_add(dev, freq, volt))
++			pr_warn("failed to add OPP %u\n", freq);
++	}
++
++	if (cpu++ < num_possible_cpus())
++		goto again;
++
 +	return 0;
 +}
 +
-+static struct platform_driver kpss_xcc_driver = {
-+	.probe = kpss_xcc_driver_probe,
-+	.remove = kpss_xcc_driver_remove,
-+	.driver = {
-+		.name = "kpss-xcc",
-+		.of_match_table = kpss_xcc_match_table,
-+		.owner = THIS_MODULE,
-+	},
-+};
-+module_platform_driver(kpss_xcc_driver);
++static int __init qcom_cpufreq_driver_init(void)
++{
++	struct platform_device_info devinfo = { .name = "cpufreq-generic", };
++	struct device *cpu_dev;
++	struct device_node *np;
++	struct platform_device *pdev;
 +
++	cpu_dev = get_cpu_device(0);
++	if (!cpu_dev)
++		return -ENODEV;
++
++	np = of_node_get(cpu_dev->of_node);
++	if (!np)
++		return -ENOENT;
++
++	if (!of_device_is_compatible(np, "qcom,krait")) {
++		of_node_put(np);
++		return -ENODEV;
++	}
++	of_node_put(np);
++
++	qcom_cpufreq_populate_opps();
++	pdev = platform_device_register_full(&devinfo);
++
++	return PTR_ERR_OR_ZERO(pdev);
++}
++module_init(qcom_cpufreq_driver_init);
++
++MODULE_DESCRIPTION("Qualcomm CPUfreq driver");
 +MODULE_LICENSE("GPL v2");
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
