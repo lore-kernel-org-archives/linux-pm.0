@@ -1,28 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 0/2] cpufreq/powernv: Set core pstate to a minimum just
- before hotplugging it out
-Date: Fri, 5 Sep 2014 13:11:22 +0530
-Message-ID: <CAKohpo=chEW_TtXWCHa3OEwrqU25TPBES4icjMVxL6nezrf8+w@mail.gmail.com>
-References: <20140905073812.3629.29175.stgit@preeti.in.ibm.com>
+From: Brian Norris <computersforpeace@gmail.com>
+Subject: Re: [PATCH 3.10.y+] PM / sleep: Use valid_state() for
+ platform-dependent sleep states only
+Date: Fri, 5 Sep 2014 00:45:12 -0700
+Message-ID: <20140905074512.GA12218@brian-ubuntu>
+References: <1849024.CHOUso6H2K@vostro.rjw.lan>
+ <1409865665-5375-1-git-send-email-computersforpeace@gmail.com>
+ <54095835.7000207@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140905073812.3629.29175.stgit@preeti.in.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <54095835.7000207@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Shreyas Prabhu <shreyas@linux.vnet.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Patrick Marlier <patrick.marlier@gmail.com>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Francis Moreau <francis.moro@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, linux-pm@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 5 September 2014 13:09, Preeti U Murthy <preeti@linux.vnet.ibm.com> wrote:
-> Today cpus go to winkle when they are offlined. Since it is the deepest
-> idle state that we have, it is expected to save good amount of power as compared
-> to online state, where cores can enter nap/fastsleep only which are
-> shallower idle states.
-> However we observed no powersavings with winkle as compared to nap/fastsleep
-> and traced the problem to the pstate of the core being kept at a high even
-> when the core is offline. This can keep the socket pstate high, thus burning
-> power unnecessarily. This patchset fixes this issue.
->
-> Changes in V2: Changed smp_call_function_any() to smp_call_function_single() in Patch[2/2]
+On Fri, Sep 05, 2014 at 08:29:09AM +0200, Francis Moreau wrote:
+> On 09/04/2014 11:21 PM, Brian Norris wrote:
+[...]
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Cc: <stable@vger.kernel.org> # 3.10+: 27ddcc6596e5: PM / sleep: Add state field to pm_states[] entries
+> > Cc: <stable@vger.kernel.org> # 3.10+
+> > ---
+> > This is a backport request for these two commits upstream:
+> > 
+> >     27ddcc6596e5 PM / sleep: Add state field to pm_states[] entries
+> >     43e8317b0bba PM / sleep: Use valid_state() for platform-dependent sleep states only
+> > 
+> 
+> Wouldn't it be cleaner to have 2 separate backports then ?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+The first is purely a dependency for the second. It has no value on its
+own. So I thought the above form made sense and followed the process
+mentioned in Documentation/stable_kernel_rules.txt.
+
+Admittedly, it's a little asymmetric. But I really don't know what the
+"best" option is, since I'd prefer not having to send around any patch
+text at all, unless the backport is not trivial (these apply cleanly).
+
+Related: I don't feel like Documentation/stable_kernel_rules.txt is very
+clear under the "Procedure" section. It lists a series of
+non-sequential steps, some of which are mutually exclusive.
+
+Any tips on making my post-merge -stable submissions better are
+appreciated. And recommendations on improving the text (or just my
+interpretation) of Documentation/stable_kernel_rules.txt are welcome
+too.
+
+Brian
