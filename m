@@ -1,173 +1,773 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH v2 05/15] clk: Add safe switch hook
-Date: Fri,  5 Sep 2014 15:47:25 -0700
-Message-ID: <1409957256-23729-7-git-send-email-sboyd@codeaurora.org>
+Subject: [PATCH v2 15/15] ARM: dts: qcom: Add necessary DT data for Krait cpufreq
+Date: Fri,  5 Sep 2014 15:47:36 -0700
+Message-ID: <1409957256-23729-18-git-send-email-sboyd@codeaurora.org>
 References: <1409957256-23729-1-git-send-email-sboyd@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1409957256-23729-1-git-send-email-sboyd@codeaurora.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Mike Turquette <mturquette@linaro.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Sometimes clocks can't accept their parent source turning off
-while the source is reprogrammed to a different rate. Most
-notably some CPU clocks require a way to switch away from the
-current PLL they're running on, reprogram that PLL to a new rate,
-and then switch back to the PLL with the new rate once they're
-done.  Add a hook that drivers can implement allowing them to
-return a 'safe parent' that they can switch their parent to while
-the upstream source is reprogrammed.
+Add the necessary DT nodes and data so we can probe the cpufreq
+driver on MSM devices with Krait CPUs.
 
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/clk/clk.c            | 53 ++++++++++++++++++++++++++++++++++++++------
- include/linux/clk-private.h  |  2 ++
- include/linux/clk-provider.h |  1 +
- 3 files changed, 49 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-index 255ec8c92919..b23e2b9c9102 100644
---- a/drivers/clk/clk.c
-+++ b/drivers/clk/clk.c
-@@ -1368,6 +1368,7 @@ static void clk_calc_subtree(struct clk *clk, unsigned long new_rate,
- 			     struct clk *new_parent, u8 p_index)
- {
- 	struct clk *child;
-+	struct clk *parent;
+We can go faster than this, but I've limited it to the safe frequencies
+until we have regulator support where we would need to increase the
+voltages from whatever the bootloader picks before going faster.
+
+ arch/arm/boot/dts/qcom-apq8064.dtsi | 230 ++++++++++++++++++++++++++
+ arch/arm/boot/dts/qcom-msm8960.dtsi |  49 ++++++
+ arch/arm/boot/dts/qcom-msm8974.dtsi | 311 +++++++++++++++++++++++++++++++++++-
+ 3 files changed, 586 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
+index 92bf793622c3..f01296bdb8f4 100644
+--- a/arch/arm/boot/dts/qcom-apq8064.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
+@@ -21,6 +21,9 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc0>;
+ 			qcom,saw = <&saw0>;
++			clocks = <&kraitcc 0>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
  
- 	clk->new_rate = new_rate;
- 	clk->new_parent = new_parent;
-@@ -1377,6 +1378,17 @@ static void clk_calc_subtree(struct clk *clk, unsigned long new_rate,
- 	if (new_parent && new_parent != clk->parent)
- 		new_parent->new_child = clk;
+ 		cpu@1 {
+@@ -31,6 +34,9 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc1>;
+ 			qcom,saw = <&saw1>;
++			clocks = <&kraitcc 1>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
  
-+	if (clk->ops->get_safe_parent) {
-+		parent = clk->ops->get_safe_parent(clk->hw);
-+		if (parent) {
-+			p_index = clk_fetch_parent_index(clk, parent);
-+			clk->safe_parent_index = p_index;
-+			clk->safe_parent = parent;
-+		}
-+	} else {
-+		clk->safe_parent = NULL;
-+	}
+ 		cpu@2 {
+@@ -41,6 +47,9 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc2>;
+ 			qcom,saw = <&saw2>;
++			clocks = <&kraitcc 2>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+ 		cpu@3 {
+@@ -51,6 +60,9 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc3>;
+ 			qcom,saw = <&saw3>;
++			clocks = <&kraitcc 3>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+ 		L2: l2-cache {
+@@ -64,6 +76,214 @@
+ 		interrupts = <1 10 0x304>;
+ 	};
+ 
++	qcom,pvs {
++		qcom,pvs-format-a;
++		qcom,speed0-pvs0-bin-v0 =
++			< 384000000 950000  >,
++			< 486000000 975000  >,
++			< 594000000 1000000  >,
++			< 702000000 1025000  >,
++			< 810000000 1075000  >,
++			< 918000000 1100000  >;
 +
- 	hlist_for_each_entry(child, &clk->children, child_node) {
- 		child->new_rate = clk_recalc(child, new_rate);
- 		clk_calc_subtree(child, child->new_rate, NULL, 0);
-@@ -1459,14 +1471,42 @@ out:
- static struct clk *clk_propagate_rate_change(struct clk *clk, unsigned long event)
- {
- 	struct clk *child, *tmp_clk, *fail_clk = NULL;
-+	struct clk *old_parent;
- 	int ret = NOTIFY_DONE;
- 
--	if (clk->rate == clk->new_rate)
-+	if (clk->rate == clk->new_rate && event != POST_RATE_CHANGE)
- 		return NULL;
- 
-+	switch (event) {
-+	case PRE_RATE_CHANGE:
-+		if (clk->safe_parent)
-+			clk->ops->set_parent(clk->hw, clk->safe_parent_index);
-+		break;
-+	case POST_RATE_CHANGE:
-+		if (clk->safe_parent) {
-+			old_parent = __clk_set_parent_before(clk,
-+							     clk->new_parent);
-+			if (clk->ops->set_rate_and_parent) {
-+				clk->ops->set_rate_and_parent(clk->hw,
-+						clk->new_rate,
-+						clk->new_parent ?
-+						clk->new_parent->rate : 0,
-+						clk->new_parent_index);
-+			} else if (clk->ops->set_parent) {
-+				clk->ops->set_parent(clk->hw,
-+						clk->new_parent_index);
-+			}
-+			__clk_set_parent_after(clk, clk->new_parent,
-+					       old_parent);
-+		}
-+		break;
-+	}
++		qcom,speed0-pvs1-bin-v0 =
++			< 384000000 900000  >,
++			< 486000000 925000  >,
++			< 594000000 950000  >,
++			< 702000000 975000  >,
++			< 810000000 1025000  >,
++			< 918000000 1050000  >;
 +
- 	if (clk->notifier_count) {
--		ret = __clk_notify(clk, event, clk->rate, clk->new_rate);
--		if (ret & NOTIFY_STOP_MASK)
-+		if (event != POST_RATE_CHANGE)
-+			ret = __clk_notify(clk, event, clk->rate,
-+					   clk->new_rate);
-+		if (ret & NOTIFY_STOP_MASK && event != POST_RATE_CHANGE)
- 			fail_clk = clk;
- 	}
++		qcom,speed0-pvs3-bin-v0 =
++			< 384000000 850000  >,
++			< 486000000 875000  >,
++			< 594000000 900000  >,
++			< 702000000 925000  >,
++			< 810000000 975000  >,
++			< 918000000 1000000  >;
++
++		qcom,speed0-pvs4-bin-v0 =
++			< 384000000 850000  >,
++			< 486000000 875000  >,
++			< 594000000 900000  >,
++			< 702000000 925000  >,
++			< 810000000 962500  >,
++			< 918000000 975000  >;
++
++		qcom,speed1-pvs0-bin-v0 =
++			< 384000000 950000  >,
++			< 486000000 950000  >,
++			< 594000000 950000  >,
++			< 702000000 962500  >,
++			< 810000000 1000000  >,
++			< 918000000 1025000  >;
++
++		qcom,speed1-pvs1-bin-v0 =
++			< 384000000 950000  >,
++			< 486000000 950000  >,
++			< 594000000 950000  >,
++			< 702000000 962500  >,
++			< 810000000 975000  >,
++			< 918000000 1000000  >;
++
++		qcom,speed1-pvs2-bin-v0 =
++			< 384000000 925000  >,
++			< 486000000 925000  >,
++			< 594000000 925000  >,
++			< 702000000 925000  >,
++			< 810000000 937500  >,
++			< 918000000 950000  >;
++
++		qcom,speed1-pvs3-bin-v0 =
++			< 384000000 900000  >,
++			< 486000000 900000  >,
++			< 594000000 900000  >,
++			< 702000000 900000  >,
++			< 810000000 900000  >,
++			< 918000000 925000  >;
++
++		qcom,speed1-pvs4-bin-v0 =
++			< 384000000 875000  >,
++			< 486000000 875000  >,
++			< 594000000 875000  >,
++			< 702000000 875000  >,
++			< 810000000 887500  >,
++			< 918000000 900000  >;
++
++		qcom,speed1-pvs5-bin-v0 =
++			< 384000000 875000  >,
++			< 486000000 875000  >,
++			< 594000000 875000  >,
++			< 702000000 875000  >,
++			< 810000000 887500  >,
++			< 918000000 900000  >;
++
++		qcom,speed1-pvs6-bin-v0 =
++			< 384000000 875000  >,
++			< 486000000 875000  >,
++			< 594000000 875000  >,
++			< 702000000 875000  >,
++			< 810000000 887500  >,
++			< 918000000 900000  >;
++
++		qcom,speed2-pvs0-bin-v0 =
++			< 384000000 950000  >,
++			< 486000000 950000  >,
++			< 594000000 950000  >,
++			< 702000000 950000  >,
++			< 810000000 962500  >,
++			< 918000000 975000  >;
++
++		qcom,speed2-pvs1-bin-v0 =
++			< 384000000 925000  >,
++			< 486000000 925000  >,
++			< 594000000 925000  >,
++			< 702000000 925000  >,
++			< 810000000 937500  >,
++			< 918000000 950000  >;
++
++		qcom,speed2-pvs2-bin-v0 =
++			< 384000000 900000  >,
++			< 486000000 900000  >,
++			< 594000000 900000  >,
++			< 702000000 900000  >,
++			< 810000000 912500  >,
++			< 918000000 925000  >;
++
++		qcom,speed2-pvs3-bin-v0 =
++			< 384000000 900000  >,
++			< 486000000 900000  >,
++			< 594000000 900000  >,
++			< 702000000 900000  >,
++			< 810000000 900000  >,
++			< 918000000 912500  >;
++
++		qcom,speed2-pvs4-bin-v0 =
++			< 384000000 875000  >,
++			< 486000000 875000  >,
++			< 594000000 875000  >,
++			< 702000000 875000  >,
++			< 810000000 887500  >,
++			< 918000000 900000  >;
++
++		qcom,speed2-pvs5-bin-v0 =
++			< 384000000 875000  >,
++			< 486000000 875000  >,
++			< 594000000 875000  >,
++			< 702000000 875000  >,
++			< 810000000 887500  >,
++			< 918000000 900000  >;
++
++		qcom,speed2-pvs6-bin-v0 =
++			< 384000000 875000  >,
++			< 486000000 875000  >,
++			< 594000000 875000  >,
++			< 702000000 875000  >,
++			< 810000000 887500  >,
++			< 918000000 900000  >;
++
++		qcom,speed14-pvs0-bin-v0 =
++			< 384000000 950000 >,
++			< 486000000 950000 >,
++			< 594000000 950000 >,
++			< 702000000 962500 >,
++			< 810000000 1000000 >,
++			< 918000000 1025000 >;
++
++		qcom,speed14-pvs1-bin-v0 =
++			< 384000000 950000 >,
++			< 486000000 950000 >,
++			< 594000000 950000 >,
++			< 702000000 962500 >,
++			< 810000000 975000 >,
++			< 918000000 1000000 >;
++
++		qcom,speed14-pvs2-bin-v0 =
++			< 384000000 925000 >,
++			< 486000000 925000 >,
++			< 594000000 925000 >,
++			< 702000000 925000 >,
++			< 810000000 937500 >,
++			< 918000000 950000 >;
++
++		qcom,speed14-pvs3-bin-v0 =
++			< 384000000 900000 >,
++			< 486000000 900000 >,
++			< 594000000 900000 >,
++			< 702000000 900000 >,
++			< 810000000 900000 >,
++			< 918000000 925000 >;
++
++		qcom,speed14-pvs4-bin-v0 =
++			< 384000000 875000 >,
++			< 486000000 875000 >,
++			< 594000000 875000 >,
++			< 702000000 875000 >,
++			< 810000000 887500 >,
++			< 918000000 900000 >;
++
++		qcom,speed14-pvs5-bin-v0 =
++			< 384000000 875000 >,
++			< 486000000 875000 >,
++			< 594000000 875000 >,
++			< 702000000 875000 >,
++			< 810000000 887500 >,
++			< 918000000 900000 >;
++
++		qcom,speed14-pvs6-bin-v0 =
++			< 384000000 875000 >,
++			< 486000000 875000 >,
++			< 594000000 875000 >,
++			< 702000000 875000 >,
++			< 810000000 887500 >,
++			< 918000000 900000 >;
++	};
++
++	kraitcc: clock-controller {
++		compatible = "qcom,krait-cc-v1";
++		#clock-cells = <1>;
++	};
++
+ 	soc: soc {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -92,21 +312,31 @@
+ 		acc0: clock-controller@2088000 {
+ 			compatible = "qcom,kpss-acc-v1";
+ 			reg = <0x02088000 0x1000>, <0x02008000 0x1000>;
++			clock-output-names = "acpu0_aux";
+ 		};
  
-@@ -1508,7 +1548,8 @@ static void clk_change_rate(struct clk *clk)
- 	else if (clk->parent)
- 		best_parent_rate = clk->parent->rate;
+ 		acc1: clock-controller@2098000 {
+ 			compatible = "qcom,kpss-acc-v1";
+ 			reg = <0x02098000 0x1000>, <0x02008000 0x1000>;
++			clock-output-names = "acpu1_aux";
+ 		};
  
--	if (clk->new_parent && clk->new_parent != clk->parent) {
-+	if (clk->new_parent && clk->new_parent != clk->parent &&
-+			!clk->safe_parent) {
- 		old_parent = __clk_set_parent_before(clk, clk->new_parent);
+ 		acc2: clock-controller@20a8000 {
+ 			compatible = "qcom,kpss-acc-v1";
+ 			reg = <0x020a8000 0x1000>, <0x02008000 0x1000>;
++			clock-output-names = "acpu2_aux";
+ 		};
  
- 		if (clk->ops->set_rate_and_parent) {
-@@ -1528,9 +1569,6 @@ static void clk_change_rate(struct clk *clk)
+ 		acc3: clock-controller@20b8000 {
+ 			compatible = "qcom,kpss-acc-v1";
+ 			reg = <0x020b8000 0x1000>, <0x02008000 0x1000>;
++			clock-output-names = "acpu3_aux";
++		};
++
++		l2cc: clock-controller@2011000 {
++			compatible = "qcom,kpss-gcc";
++			reg = <0x2011000 0x1000>;
++			clock-output-names = "acpu_l2_aux";
+ 		};
  
- 	clk->rate = clk_recalc(clk, best_parent_rate);
+ 		saw0: regulator@2089000 {
+diff --git a/arch/arm/boot/dts/qcom-msm8960.dtsi b/arch/arm/boot/dts/qcom-msm8960.dtsi
+index 5303e53e34dc..c034e3df2679 100644
+--- a/arch/arm/boot/dts/qcom-msm8960.dtsi
++++ b/arch/arm/boot/dts/qcom-msm8960.dtsi
+@@ -23,6 +23,10 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc0>;
+ 			qcom,saw = <&saw0>;
++			clocks = <&kraitcc 0>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
++
+ 		};
  
--	if (clk->notifier_count && old_rate != clk->rate)
--		__clk_notify(clk, POST_RATE_CHANGE, old_rate, clk->rate);
--
- 	hlist_for_each_entry(child, &clk->children, child_node) {
- 		/* Skip children who will be reparented to another clock */
- 		if (child->new_parent && child->new_parent != clk)
-@@ -1604,6 +1642,7 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
- 	/* change the rates */
- 	clk_change_rate(top);
+ 		cpu@1 {
+@@ -33,6 +37,10 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc1>;
+ 			qcom,saw = <&saw1>;
++			clocks = <&kraitcc 1>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
++
+ 		};
  
-+	clk_propagate_rate_change(top, POST_RATE_CHANGE);
- out:
- 	clk_prepare_unlock();
+ 		L2: l2-cache {
+@@ -47,6 +55,39 @@
+ 		qcom,no-pc-write;
+ 	};
  
-diff --git a/include/linux/clk-private.h b/include/linux/clk-private.h
-index efbf70b9fd84..f48684af4d8f 100644
---- a/include/linux/clk-private.h
-+++ b/include/linux/clk-private.h
-@@ -38,8 +38,10 @@ struct clk {
- 	struct clk		**parents;
- 	u8			num_parents;
- 	u8			new_parent_index;
-+	u8			safe_parent_index;
- 	unsigned long		rate;
- 	unsigned long		new_rate;
-+	struct clk		*safe_parent;
- 	struct clk		*new_parent;
- 	struct clk		*new_child;
- 	unsigned long		flags;
-diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
-index 32d39613d217..6dec0b306336 100644
---- a/include/linux/clk-provider.h
-+++ b/include/linux/clk-provider.h
-@@ -170,6 +170,7 @@ struct clk_ops {
- 					struct clk **best_parent_clk);
- 	int		(*set_parent)(struct clk_hw *hw, u8 index);
- 	u8		(*get_parent)(struct clk_hw *hw);
-+	struct clk	*(*get_safe_parent)(struct clk_hw *hw);
- 	int		(*set_rate)(struct clk_hw *hw, unsigned long rate,
- 				    unsigned long parent_rate);
- 	int		(*set_rate_and_parent)(struct clk_hw *hw,
++	qcom,pvs {
++		qcom,pvs-format-a;
++			/* Hz		uV */
++		qcom,speed0-pvs0-bin-v0 =
++			<  384000000  950000 >,
++			<  486000000  975000 >,
++			<  594000000 1000000 >,
++			<  702000000 1025000 >,
++			<  810000000 1075000 >,
++			<  918000000 1100000 >;
++
++		qcom,speed0-pvs1-bin-v0 =
++			<  384000000  900000 >,
++			<  486000000  925000 >,
++			<  594000000  950000 >,
++			<  702000000  975000 >,
++			<  810000000 1025000 >,
++			<  918000000 1050000 >;
++
++		qcom,speed0-pvs3-bin-v0 =
++			<  384000000  850000 >,
++			<  486000000  875000 >,
++			<  594000000  900000 >,
++			<  702000000  925000 >,
++			<  810000000  975000 >,
++			<  918000000 1000000 >;
++	};
++
++	kraitcc: clock-controller {
++		compatible = "qcom,krait-cc-v1";
++		#clock-cells = <1>;
++	};
++
+ 	soc: soc {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -100,11 +141,19 @@
+ 		acc0: clock-controller@2088000 {
+ 			compatible = "qcom,kpss-acc-v1";
+ 			reg = <0x02088000 0x1000>, <0x02008000 0x1000>;
++			clock-output-names = "acpu0_aux";
+ 		};
+ 
+ 		acc1: clock-controller@2098000 {
+ 			compatible = "qcom,kpss-acc-v1";
+ 			reg = <0x02098000 0x1000>, <0x02008000 0x1000>;
++			clock-output-names = "acpu1_aux";
++		};
++
++		l2cc: clock-controller@2011000 {
++			compatible = "qcom,kpss-gcc";
++			reg = <0x2011000 0x1000>;
++			clock-output-names = "acpu_l2_aux";
+ 		};
+ 
+ 		saw0: regulator@2089000 {
+diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
+index 69dca2aca25a..567a40186136 100644
+--- a/arch/arm/boot/dts/qcom-msm8974.dtsi
++++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+@@ -14,40 +14,52 @@
+ 		#size-cells = <0>;
+ 		interrupts = <1 9 0xf04>;
+ 
+-		cpu@0 {
++		cpu0: cpu@0 {
+ 			compatible = "qcom,krait";
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			device_type = "cpu";
+ 			reg = <0>;
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc0>;
++			clocks = <&kraitcc 0>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+-		cpu@1 {
++		cpu1: cpu@1 {
+ 			compatible = "qcom,krait";
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			device_type = "cpu";
+ 			reg = <1>;
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc1>;
++			clocks = <&kraitcc 1>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+-		cpu@2 {
++		cpu2: cpu@2 {
+ 			compatible = "qcom,krait";
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			device_type = "cpu";
+ 			reg = <2>;
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc2>;
++			clocks = <&kraitcc 2>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+-		cpu@3 {
++		cpu3: cpu@3 {
+ 			compatible = "qcom,krait";
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			device_type = "cpu";
+ 			reg = <3>;
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc3>;
++			clocks = <&kraitcc 3>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 
+ 		L2: l2-cache {
+@@ -71,6 +83,267 @@
+ 		clock-frequency = <19200000>;
+ 	};
+ 
++	qcom,pvs {
++		qcom,pvs-format-b;
++			/* Hz		uV	ua */
++		qcom,speed0-pvs0-bin-v0 =
++			<  300000000  815000  73 >,
++			<  345600000  825000  85 >,
++			<  422400000  835000 104 >,
++			<  499200000  845000 124 >,
++			<  576000000  855000 144 >,
++			<  652800000  865000 165 >,
++			<  729600000  875000 186 >,
++			<  806400000  890000 208 >,
++			<  883200000  900000 229 >,
++			<  960000000  915000 252 >;
++
++		qcom,speed0-pvs1-bin-v0 =
++			<  300000000  800000  73 >,
++			<  345600000  810000  85 >,
++			<  422400000  820000 104 >,
++			<  499200000  830000 124 >,
++			<  576000000  840000 144 >,
++			<  652800000  850000 165 >,
++			<  729600000  860000 186 >,
++			<  806400000  875000 208 >,
++			<  883200000  885000 229 >,
++			<  960000000  895000 252 >;
++
++		qcom,speed0-pvs2-bin-v0 =
++			<  300000000  785000  73 >,
++			<  345600000  795000  85 >,
++			<  422400000  805000 104 >,
++			<  499200000  815000 124 >,
++			<  576000000  825000 144 >,
++			<  652800000  835000 165 >,
++			<  729600000  845000 186 >,
++			<  806400000  855000 208 >,
++			<  883200000  865000 229 >,
++			<  960000000  875000 252 >;
++
++		qcom,speed0-pvs3-bin-v0 =
++			<  300000000  775000  73 >,
++			<  345600000  780000  85 >,
++			<  422400000  790000 104 >,
++			<  499200000  800000 124 >,
++			<  576000000  810000 144 >,
++			<  652800000  820000 165 >,
++			<  729600000  830000 186 >,
++			<  806400000  840000 208 >,
++			<  883200000  850000 229 >,
++			<  960000000  860000 252 >;
++
++		qcom,speed0-pvs4-bin-v0 =
++			<  300000000  775000  73 >,
++			<  345600000  775000  85 >,
++			<  422400000  780000 104 >,
++			<  499200000  790000 124 >,
++			<  576000000  800000 144 >,
++			<  652800000  810000 165 >,
++			<  729600000  820000 186 >,
++			<  806400000  830000 208 >,
++			<  883200000  840000 229 >,
++			<  960000000  850000 252 >;
++
++		qcom,speed0-pvs5-bin-v0 =
++			<  300000000  750000  73 >,
++			<  345600000  760000  85 >,
++			<  422400000  770000 104 >,
++			<  499200000  780000 124 >,
++			<  576000000  790000 144 >,
++			<  652800000  800000 165 >,
++			<  729600000  810000 186 >,
++			<  806400000  820000 208 >,
++			<  883200000  830000 229 >,
++			<  960000000  840000 252 >;
++
++		qcom,speed0-pvs6-bin-v0 =
++			<  300000000  750000  73 >,
++			<  345600000  750000  85 >,
++			<  422400000  760000 104 >,
++			<  499200000  770000 124 >,
++			<  576000000  780000 144 >,
++			<  652800000  790000 165 >,
++			<  729600000  800000 186 >,
++			<  806400000  810000 208 >,
++			<  883200000  820000 229 >,
++			<  960000000  830000 252 >;
++
++		qcom,speed2-pvs0-bin-v0 =
++			<  300000000  800000  72 >,
++			<  345600000  800000  83 >,
++			<  422400000  805000 102 >,
++			<  499200000  815000 121 >,
++			<  576000000  825000 141 >,
++			<  652800000  835000 161 >,
++			<  729600000  845000 181 >,
++			<  806400000  855000 202 >,
++			<  883200000  865000 223 >,
++			<  960000000  875000 245 >;
++
++		qcom,speed2-pvs1-bin-v0 =
++			<  300000000  800000  72 >,
++			<  345600000  800000  83 >,
++			<  422400000  800000 102 >,
++			<  499200000  800000 121 >,
++			<  576000000  810000 141 >,
++			<  652800000  820000 161 >,
++			<  729600000  830000 181 >,
++			<  806400000  840000 202 >,
++			<  883200000  850000 223 >,
++			<  960000000  860000 245 >;
++
++		qcom,speed2-pvs2-bin-v0 =
++			<  300000000  775000  72 >,
++			<  345600000  775000  83 >,
++			<  422400000  775000 102 >,
++			<  499200000  785000 121 >,
++			<  576000000  795000 141 >,
++			<  652800000  805000 161 >,
++			<  729600000  815000 181 >,
++			<  806400000  825000 202 >,
++			<  883200000  835000 223 >,
++			<  960000000  845000 245 >;
++
++		qcom,speed2-pvs3-bin-v0 =
++			<  300000000  775000  72 >,
++			<  345600000  775000  83 >,
++			<  422400000  775000 102 >,
++			<  499200000  775000 121 >,
++			<  576000000  780000 141 >,
++			<  652800000  790000 161 >,
++			<  729600000  800000 181 >,
++			<  806400000  810000 202 >,
++			<  883200000  820000 223 >,
++			<  960000000  830000 245 >;
++
++		qcom,speed2-pvs4-bin-v0 =
++			<  300000000  775000  72 >,
++			<  345600000  775000  83 >,
++			<  422400000  775000 102 >,
++			<  499200000  775000 121 >,
++			<  576000000  775000 141 >,
++			<  652800000  780000 161 >,
++			<  729600000  790000 181 >,
++			<  806400000  800000 202 >,
++			<  883200000  810000 223 >,
++			<  960000000  820000 245 >;
++
++		qcom,speed2-pvs5-bin-v0 =
++			<  300000000  750000  72 >,
++			<  345600000  750000  83 >,
++			<  422400000  750000 102 >,
++			<  499200000  750000 121 >,
++			<  576000000  760000 141 >,
++			<  652800000  770000 161 >,
++			<  729600000  780000 181 >,
++			<  806400000  790000 202 >,
++			<  883200000  800000 223 >,
++			<  960000000  810000 245 >;
++
++		qcom,speed2-pvs6-bin-v0 =
++			<  300000000  750000  72 >,
++			<  345600000  750000  83 >,
++			<  422400000  750000 102 >,
++			<  499200000  750000 121 >,
++			<  576000000  750000 141 >,
++			<  652800000  760000 161 >,
++			<  729600000  770000 181 >,
++			<  806400000  780000 202 >,
++			<  883200000  790000 223 >,
++			<  960000000  800000 245 >;
++
++		qcom,speed1-pvs0-bin-v0 =
++			<  300000000  775000  72 >,
++			<  345600000  775000  83 >,
++			<  422400000  775000 101 >,
++			<  499200000  780000 120 >,
++			<  576000000  790000 139 >,
++			<  652800000  800000 159 >,
++			<  729600000  810000 180 >,
++			<  806400000  820000 200 >,
++			<  883200000  830000 221 >,
++			<  960000000  840000 242 >;
++
++		qcom,speed1-pvs1-bin-v0 =
++			<  300000000  775000  72 >,
++			<  345600000  775000  83 >,
++			<  422400000  775000 101 >,
++			<  499200000  775000 120 >,
++			<  576000000  775000 139 >,
++			<  652800000  785000 159 >,
++			<  729600000  795000 180 >,
++			<  806400000  805000 200 >,
++			<  883200000  815000 221 >,
++			<  960000000  825000 242 >;
++
++		qcom,speed1-pvs2-bin-v0 =
++			<  300000000  750000  72 >,
++			<  345600000  750000  83 >,
++			<  422400000  750000 101 >,
++			<  499200000  750000 120 >,
++			<  576000000  760000 139 >,
++			<  652800000  770000 159 >,
++			<  729600000  780000 180 >,
++			<  806400000  790000 200 >,
++			<  883200000  800000 221 >,
++			<  960000000  810000 242 >;
++
++		qcom,speed1-pvs3-bin-v0 =
++			<  300000000  750000  72 >,
++			<  345600000  750000  83 >,
++			<  422400000  750000 101 >,
++			<  499200000  750000 120 >,
++			<  576000000  750000 139 >,
++			<  652800000  755000 159 >,
++			<  729600000  765000 180 >,
++			<  806400000  775000 200 >,
++			<  883200000  785000 221 >,
++			<  960000000  795000 242 >;
++
++		qcom,speed1-pvs4-bin-v0 =
++			<  300000000  750000  72 >,
++			<  345600000  750000  83 >,
++			<  422400000  750000 101 >,
++			<  499200000  750000 120 >,
++			<  576000000  750000 139 >,
++			<  652800000  750000 159 >,
++			<  729600000  755000 180 >,
++			<  806400000  765000 200 >,
++			<  883200000  775000 221 >,
++			<  960000000  785000 242 >;
++
++		qcom,speed1-pvs5-bin-v0 =
++			<  300000000  725000  72 >,
++			<  345600000  725000  83 >,
++			<  422400000  725000 101 >,
++			<  499200000  725000 120 >,
++			<  576000000  725000 139 >,
++			<  652800000  735000 159 >,
++			<  729600000  745000 180 >,
++			<  806400000  755000 200 >,
++			<  883200000  765000 221 >,
++			<  960000000  775000 242 >;
++
++		qcom,speed1-pvs6-bin-v0 =
++			<  300000000  725000  72 >,
++			<  345600000  725000  83 >,
++			<  422400000  725000 101 >,
++			<  499200000  725000 120 >,
++			<  576000000  725000 139 >,
++			<  652800000  725000 159 >,
++			<  729600000  735000 180 >,
++			<  806400000  745000 200 >,
++			<  883200000  755000 221 >,
++			<  960000000  765000 242 >;
++	};
++
++	kraitcc: clock-controller {
++		compatible = "qcom,krait-cc-v2";
++		#clock-cells = <1>;
++	};
++
+ 	soc: soc {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -144,6 +417,36 @@
+ 			};
+ 		};
+ 
++		clock-controller@f9016000 {
++			compatible = "qcom,hfpll";
++			reg = <0xf9016000 0x30>;
++			clock-output-names = "hfpll_l2";
++		};
++
++		clock-controller@f908a000 {
++			compatible = "qcom,hfpll";
++			reg = <0xf908a000 0x30>, <0xf900a000 0x30>;
++			clock-output-names = "hfpll0";
++		};
++
++		clock-controller@f909a000 {
++			compatible = "qcom,hfpll";
++			reg = <0xf909a000 0x30>, <0xf900a000 0x30>;
++			clock-output-names = "hfpll1";
++		};
++
++		clock-controller@f90aa000 {
++			compatible = "qcom,hfpll";
++			reg = <0xf90aa000 0x30>, <0xf900a000 0x30>;
++			clock-output-names = "hfpll2";
++		};
++
++		clock-controller@f90ba000 {
++			compatible = "qcom,hfpll";
++			reg = <0xf90ba000 0x30>, <0xf900a000 0x30>;
++			clock-output-names = "hfpll3";
++		};
++
+ 		saw_l2: regulator@f9012000 {
+ 			compatible = "qcom,saw2";
+ 			reg = <0xf9012000 0x1000>;
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 hosted by The Linux Foundation
