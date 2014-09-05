@@ -1,65 +1,106 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v6 4/5] ARM: EXYNOS: PM: fix register setup for AFTR mode code
-Date: Fri, 05 Sep 2014 15:51:27 +0200
-Message-ID: <1409925088-4705-5-git-send-email-b.zolnierkie@samsung.com>
-References: <1409925088-4705-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1409925088-4705-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH v6 0/5] ARM: EXYNOS: cpuidle: fix AFTR mode on boards with
+ secure firmware enabled
+Date: Fri, 05 Sep 2014 15:51:23 +0200
+Message-ID: <1409925088-4705-1-git-send-email-b.zolnierkie@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Add S5P_CENTRAL_SEQ_OPTION register setup to cpuidle AFTR mode code
-by moving the relevant code from exynos_pm_suspend() (used only by
-suspend) to exynos_pm_central_suspend() (used by both suspend and
-AFTR).  Without this setup AFTR mode doesn't show any benefit over
-WFI one (at least on Exynos4412 SoC).  When this setup is applied
-AFTR mode reduces power consumption by ~12% (as measured on Trats2
-board).
+Hi,
 
-This change is a preparation for adding secure firmware support to
-EXYNOS cpuidle driver.
+This patch series adds support for AFTR idle mode on boards with
+secure firmware enabled and allows EXYNOS cpuidle driver usage on
+Exynos4x12 SoCs.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
----
-v6:
-- no changes
+It has been tested on Trats2 board (using Exynos4412 SoC with secure
+firmware enabled) on which AFTR mode reduces power consumption by ~12%
+when EXYNOS cpuidle driver is enabled (in both cases the default
+exynos_defconfig config is used and CPU1-3 are offlined).
 
- arch/arm/mach-exynos/pm.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+Currently Exynos4412 SoC support is limited to Trats2 board.
 
-diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-index e0b6885..3cee123 100644
---- a/arch/arm/mach-exynos/pm.c
-+++ b/arch/arm/mach-exynos/pm.c
-@@ -169,6 +169,10 @@ static void exynos_pm_central_suspend(void)
- 	tmp = pmu_raw_readl(S5P_CENTRAL_SEQ_CONFIGURATION);
- 	tmp &= ~S5P_CENTRAL_LOWPWR_CFG;
- 	pmu_raw_writel(tmp, S5P_CENTRAL_SEQ_CONFIGURATION);
-+
-+	/* Setting SEQ_OPTION register */
-+	pmu_raw_writel(S5P_USE_STANDBY_WFI0 | S5P_USE_STANDBY_WFE0,
-+		       S5P_CENTRAL_SEQ_OPTION);
- }
- 
- static int exynos_pm_central_resume(void)
-@@ -291,15 +295,8 @@ static void exynos_pm_prepare(void)
- 
- static int exynos_pm_suspend(void)
- {
--	unsigned long tmp;
--
- 	exynos_pm_central_suspend();
- 
--	/* Setting SEQ_OPTION register */
--
--	tmp = (S5P_USE_STANDBY_WFI0 | S5P_USE_STANDBY_WFE0);
--	pmu_raw_writel(tmp, S5P_CENTRAL_SEQ_OPTION);
--
- 	if (read_cpuid_part() == ARM_CPU_PART_CORTEX_A9)
- 		exynos_cpu_save_register();
- 
+Depends on:
+- next-20140904 branch of linux-next kernel tree
+- "irqchip: Properly fetch the per cpu offset" patch
+  (https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg716674.html)
+- [PATCH v3 0/5] Firmware-assisted suspend/resume of Exynos SoCs
+  (https://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35921.html)
+
+Changes since v5:
+- rebased on top of next-20140904 +
+  "irqchip: Properly fetch the per cpu offset" patch
+  (https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg716674.html)
+  [PATCH v3 0/5] Firmware-assisted suspend/resume of Exynos SoCs
+  (https://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35921.html)
+- limit Exynos4412 SoC support to Trats2 board for now
+
+Changes since v4:
+- rebased on top of next-20140804 +
+  [PATCH v5][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35262.html)
+  [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
+- call exynos_save_cp15() only on A9 type core (this is needed for the future
+  Exynos3250 SoC support)
+
+Changes since v3:
+- rebased on top of next-20140804 +
+  [PATCH v4][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35192.html)
+  [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
+- (re-)added patch fixing S5P_CENTRAL_SEQ_OPTION register setup
+
+Changes since v2:
+- rebased on top of next-20140708 +
+  [PATCH 5/6] ARM: EXYNOS: Fix suspend/resume sequencies
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32809.html)
+  [with rejects fixed]
+  [PATCH 6/6] ARM: EXYNOS: Register cpuidle device only on Exynos4210 and 5250
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32808.html)
+  [PATCH 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32991.html)
+  [with rejects fixed in patch #2]
+- addressed review comments from Tomasz Figa and Daniel Lezcano
+
+Changes since v1:
+- synced against next-20140602
+- added missing Acked-by-s
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (5):
+  ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by static inlines
+  ARM: EXYNOS: add AFTR mode support to firmware do_idle method
+  ARM: EXYNOS: cpuidle: add secure firmware support to AFTR mode code
+  ARM: EXYNOS: PM: fix register setup for AFTR mode code
+  ARM: EXYNOS: cpuidle: allow driver usage on Exynos4x12 SoCs
+
+ arch/arm/include/asm/firmware.h |  2 +-
+ arch/arm/mach-exynos/common.h   |  5 ++++
+ arch/arm/mach-exynos/exynos.c   |  5 +++-
+ arch/arm/mach-exynos/firmware.c | 34 ++++++++++++++++-------
+ arch/arm/mach-exynos/pm.c       | 60 ++++++++++++++++++++++++-----------------
+ 5 files changed, 71 insertions(+), 35 deletions(-)
+
 -- 
 1.8.2.3
