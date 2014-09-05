@@ -1,48 +1,98 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH Resend] cpufreq_opp: Fixed the order of argument for kcalloc.
-Date: Fri,  5 Sep 2014 08:38:30 +0530
-Message-ID: <79b874a04ead23dc710c30edbe0eec4c5cff9be7.1409886422.git.viresh.kumar@linaro.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [RFC PATCH 0/5] devfreq: Add devfreq-event class to provide raw data
+ for devfreq device
+Date: Fri, 05 Sep 2014 13:30:14 +0900
+Message-ID: <1409891419-28560-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:43159 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751299AbaIEDIk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 23:08:40 -0400
-Received: by mail-pa0-f48.google.com with SMTP id hz1so478301pad.21
-        for <linux-pm@vger.kernel.org>; Thu, 04 Sep 2014 20:08:39 -0700 (PDT)
+Received: from mailout3.samsung.com ([203.254.224.33]:35504 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750711AbaIEEaY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Sep 2014 00:30:24 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, sboyd@codeaurora.org, moon.linux@yahoo.com
+To: myungjoo.ham@samsung.com, linux-pm@vger.kernel.org
+Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, a.kesavan@samsung.com, kgene.kim@samsung.com, tomasz.figa@gmail.com, b.zolnierkie@samsung.com, nm@ti.com, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Chanwoo Choi <cw00.choi@samsung.com>
 
-From: Anand Moon <moon.linux@yahoo.com>
+This patchset add new devfreq_event class to provide raw data to determine
+current utilization of device  which is used for devfreq governor.
+But, This patchset is just initial version and must need more implementaion
+and updates.
 
-These changes fix the argument to the kcalloc
-        @n: number of elements.
-        @size: element size.
-        @flags: the type of memory to allocate (see kmalloc).
+Although this patchset has not enough feature to support devfreq-event class,
+I send this RFC patchset to share current implementation. Please feel free to
+give comment and advice.
 
-        void *kcalloc(size_t n, size_t size, gfp_t flags)
+[Description of devfreq-event class]
+This patchset add new devfreq_event class for devfreq_event device which provide
+raw data (e.g., memory bus utilization/GPU utilization). This raw data from
+devfreq_event data would be used for the governor of devfreq subsystem.
+- devfreq_event device : Provide raw data for governor of existing devfreq device
+- devfreq device       : Monitor device state and change frequency/voltage of device
+                         using the raw data from devfreq_event device
 
-Signed-off-by: Anand Moon <moon.linux@yahoo.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
----
- drivers/cpufreq/cpufreq_opp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The devfreq subsystem support generic DVFS(Dynamic Voltage/Frequency Scaling)
+for Non-CPU Devices. The devfreq device would dertermine current device state
+using various governor (e.g., ondemand, performance, powersave). After completed
+determination of system state, devfreq device would change the frequency/voltage
+of devfreq device according to the result of governor.
 
-diff --git a/drivers/cpufreq/cpufreq_opp.c b/drivers/cpufreq/cpufreq_opp.c
-index f7a32d2..773bcde 100644
---- a/drivers/cpufreq/cpufreq_opp.c
-+++ b/drivers/cpufreq/cpufreq_opp.c
-@@ -60,7 +60,7 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
- 		goto out;
- 	}
- 
--	freq_table = kcalloc(sizeof(*freq_table), (max_opps + 1), GFP_ATOMIC);
-+	freq_table = kcalloc((max_opps + 1), sizeof(*freq_table), GFP_ATOMIC);
- 	if (!freq_table) {
- 		ret = -ENOMEM;
- 		goto out;
+But, devfreq governor must need basic data which indicates current device state.
+Existing devfreq subsystem only consider devfreq device which check current system
+state and determine proper system state using basic data. There is no subsystem
+for device providing basic data to devfreq device.
+
+The devfreq subsystem must need devfreq_event device(data-provider device) for
+existing devfreq device. So, this patch add new devfreq_event class for
+devfreq_event device which read various basic data(e.g, memory bus utilization,
+GPU utilization) and provide measured data to existing devfreq device through
+standard APIs of devfreq_event class.
+
+The following description explains the feature of two kind of devfreq class:
+- devfreq class (existing)
+ : devfreq consumer device use raw data from devfreq_event device for
+   determining proper current system state and change voltage/frequency
+   dynamically using various governors.
+- devfreq_event class (new)
+ : Provide measured raw data to devfreq device for governor
+
+[For example]
+If board dts includes PPMU_DMC0/DMC1/CPU event node,
+would show following sysfs entry. Also devfreq driver(e.g., exynos4_bus.c)
+can get the instance of devfreq-event device by using provided API and then
+get raw data which reflect the current utilization of device.
+
+-sh-3.2# pwd
+/sys/class/devfreq_event
+-sh-3.2# ls -al
+total 0
+drwxr-xr-x  2 root root 0 Jan  1 21:06 .
+drwxr-xr-x 45 root root 0 Jan  1 21:06 ..
+lrwxrwxrwx  1 root root 0 Jan  1 21:06 event.0 -> ../../devices/soc/106a0000.ppmu_dmc0/devfreq_event/event.0
+lrwxrwxrwx  1 root root 0 Jan  1 21:06 event.1 -> ../../devices/soc/106b0000.ppmu_dmc1/devfreq_event/event.1
+lrwxrwxrwx  1 root root 0 Jan  1 21:06 event.2 -> ../../devices/soc/106c0000.ppmu_cpu/devfreq_event/event.2
+
+Chanwoo Choi (5):
+  devfreq: Add new devfreq_event class to provide basic data for devfreq governor
+  devfreq: event: Add exynos-ppmu devfreq evnet driver
+  ARM: dts: Add PPMU dt node for Exynos3250
+  ARM: dts: Add PPMU dt node for Exynos4 SoC
+  ARM: dts: Add dt node fo PPMU_CPU/DMC0/DMC1 for exynos4412-trats2
+
+ arch/arm/boot/dts/exynos3250.dtsi       |  66 +++++
+ arch/arm/boot/dts/exynos4.dtsi          |  96 ++++++++
+ arch/arm/boot/dts/exynos4210.dtsi       |   8 +
+ arch/arm/boot/dts/exynos4412-trats2.dts |  29 +++
+ drivers/devfreq/Kconfig                 |  12 +
+ drivers/devfreq/Makefile                |   5 +-
+ drivers/devfreq/devfreq-event.c         | 251 +++++++++++++++++++
+ drivers/devfreq/event/Makefile          |   2 +
+ drivers/devfreq/event/exynos-ppmu.c     | 410 ++++++++++++++++++++++++++++++++
+ include/linux/devfreq.h                 |  97 ++++++++
+ 10 files changed, 975 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/devfreq/devfreq-event.c
+ create mode 100644 drivers/devfreq/event/Makefile
+ create mode 100644 drivers/devfreq/event/exynos-ppmu.c
+
 -- 
-2.0.3.693.g996b0fd
+1.8.0
 
