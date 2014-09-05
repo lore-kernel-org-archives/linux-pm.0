@@ -1,56 +1,48 @@
-From: Chirantan Ekbote <chirantan@chromium.org>
-Subject: Re: [PATCH] PM / sleep: add configurable delay for pm_test
-Date: Thu, 4 Sep 2014 19:11:23 -0700
-Message-ID: <CAJFHJroY_uBdRPVBPgCggchpAQ1n+jb=QjzNvy0cP-WLmsAPNA@mail.gmail.com>
-References: <1409788535-28264-1-git-send-email-computersforpeace@gmail.com>
-	<20140904071412.GA29832@amd>
-	<20140904175450.GB18411@ld-irv-0074>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140904175450.GB18411@ld-irv-0074>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <computersforpeace@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH Resend] cpufreq_opp: Fixed the order of argument for kcalloc.
+Date: Fri,  5 Sep 2014 08:38:30 +0530
+Message-ID: <79b874a04ead23dc710c30edbe0eec4c5cff9be7.1409886422.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:43159 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751299AbaIEDIk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Sep 2014 23:08:40 -0400
+Received: by mail-pa0-f48.google.com with SMTP id hz1so478301pad.21
+        for <linux-pm@vger.kernel.org>; Thu, 04 Sep 2014 20:08:39 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, sboyd@codeaurora.org, moon.linux@yahoo.com
 
-On Thu, Sep 4, 2014 at 10:54 AM, Brian Norris
-<computersforpeace@gmail.com> wrote:
-> On Thu, Sep 04, 2014 at 09:14:12AM +0200, Pavel Machek wrote:
->> > When CONFIG_PM_DEBUG=y, we provide a sysfs file (/sys/power/pm_test) for
->> > selecting one of a few suspend test modes, where rather than entering a
->> > full suspend state, the kernel will perform some subset of suspend
->> > steps, wait 5 seconds, and then resume back to normal operation.
->> >
->> > This mode is useful for (among other things) observing the state of the
->> > system just before entering a sleep mode, for debugging or analysis
->> > purposes. However, a constant 5 second wait is not sufficient for some
->> > sorts of analysis; for example, on an SoC, one might want to use
->> > external tools to probe the power states of various on-chip controllers
->> > or clocks.
->>
->> When you are doing this kind of analysis, perhaps directly modifying
->> kernel source is the way to go ...?
->
-> That's what I've been doing for now, but I have a few engineers who need
-> to do this sort of testing and aren't kernel developers. I could
-> continue to maintain my own patch for this, but I just thought I'd see
-> what others thought.
->
-> Is there a good reason this can't be in mainline? These features are
-> hidden behind a Kconfig symbol called PM_DEBUG anyway, and I think this
-> classifies as a pretty simple extension to the limited existing PM
-> debugging options.
->
+From: Anand Moon <moon.linux@yahoo.com>
 
-We're currently carrying a similar patch in the chrome os kernel tree.
-I would also like to see this go into mainline.
+These changes fix the argument to the kcalloc
+        @n: number of elements.
+        @size: element size.
+        @flags: the type of memory to allocate (see kmalloc).
 
--Chirantan
+        void *kcalloc(size_t n, size_t size, gfp_t flags)
 
-> Regards,
-> Brian
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Anand Moon <moon.linux@yahoo.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+---
+ drivers/cpufreq/cpufreq_opp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/cpufreq_opp.c b/drivers/cpufreq/cpufreq_opp.c
+index f7a32d2..773bcde 100644
+--- a/drivers/cpufreq/cpufreq_opp.c
++++ b/drivers/cpufreq/cpufreq_opp.c
+@@ -60,7 +60,7 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+ 		goto out;
+ 	}
+ 
+-	freq_table = kcalloc(sizeof(*freq_table), (max_opps + 1), GFP_ATOMIC);
++	freq_table = kcalloc((max_opps + 1), sizeof(*freq_table), GFP_ATOMIC);
+ 	if (!freq_table) {
+ 		ret = -ENOMEM;
+ 		goto out;
+-- 
+2.0.3.693.g996b0fd
+
