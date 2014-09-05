@@ -1,78 +1,42 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v3 0/9] PM / Domains: Generic OF-based support
-Date: Fri, 05 Sep 2014 08:39:07 -0700
-Message-ID: <7h61h2yt44.fsf@paris.lan>
-References: <1409838756-31963-1-git-send-email-ulf.hansson@linaro.org>
+From: AYAN KUMAR HALDER <ayankumarh@gmail.com>
+Subject: Re: External devices
+Date: Fri, 5 Sep 2014 21:43:33 +0530
+Message-ID: <CAGAs2A=nmNqMYNLvzPsBbysfV3LtkxJQzEpN+SZcL1cMVdMbmQ@mail.gmail.com>
+References: <CAJ2oMhKRA+0Ge_m=-zFqgTxcZbuGMNAOvBQKP=_GyWRwvfsKFw@mail.gmail.com>
+	<CAGAs2Amw1jvmDxL8+uXU4XW3u6Mxr7LKP4EiP8taTNQ2OpnWNw@mail.gmail.com>
+	<CAJ2oMhL=wuWA3Ga4bdeqvW0QA-cccLA0BfVRDKyLuykyChqu7w@mail.gmail.com>
+	<CAJ2oMhKnQczVwLhO0hHyJHCgc6UkV5g7sc3Gnnoq+ktUVYw+pQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1409838756-31963-1-git-send-email-ulf.hansson@linaro.org> (Ulf
-	Hansson's message of "Thu, 4 Sep 2014 15:52:27 +0200")
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:56454 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbaIEQNe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Sep 2014 12:13:34 -0400
+Received: by mail-pd0-f178.google.com with SMTP id y13so16127467pdi.9
+        for <linux-pm@vger.kernel.org>; Fri, 05 Sep 2014 09:13:33 -0700 (PDT)
+In-Reply-To: <CAJ2oMhKnQczVwLhO0hHyJHCgc6UkV5g7sc3Gnnoq+ktUVYw+pQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ran Shalit <ranshalit@gmail.com>
+Cc: linux-pm@vger.kernel.org, kernelnewbies <kernelnewbies@kernelnewbies.org>
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+> When adding some external device to power management, doesn't it need
+> to belong to power domain  ( /debug/pm_debug/count ).
 
-> Changes in v3:
-> 	- Aligned on terminology, now using "PM domain" in comments and commit
-> 	- messages/headers.
-> 	- Improved English and grammar in comments and commit messages/headers.
-> 	- Adopted proposal from Geert, to have compile-time-check wrapper
-> 	  functions for the API that adds xlate_simple and xlate_onecell
-> 	  providers.
->  	- Renamed "domain_num" to "num_domains", in genpd_onecell_data struct.
-> 	- Handle non-contiguous arrays for onecell PM domain providers.
-> 	- Rebased the Exynos patch to follow the new genpd API changes.
->
->
-> Changes in v2:
-> 	- Fix the ACPI patch, it didn't even compile for CONFIG_ACPI.
-> 	- Updated some comments in code and in commit messages.
-> 	- Fixed the dev_pm_domain_attach API to handle EPROBE_DEFER properly.
-> 	- Rebased the ARM Exynos patch.
-> 	- Added some Tested-by tags.
->
->
-> This patchset has a bit of a history and some parts of it has been posted
-> earlier.
->
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2014-June/262725.html
->
-> In the first revision I intentially didn't increase version number of the
-> patches, since I think it would have cause more confusion than clarity.
->
-> A summary of changes in V1 and since the last patchset, from the link above:
-> 	- Instead of letting driver core handling the device to power domain
-> 	binding/unbinding, follow the behavior of how the ACPI power domain
-> 	is handled.
->
->
-> This is a summary of what these patches are intended to do:
->
-> 1)
-> Add generic power domain OF-based support which also includes APIs to handle
-> attach/detach of generic power domains to devices.
->
-> 2)
-> Adding a common API to attach/detach power domains and include support for the
-> ACPI and the generic power domain in there.
->
-> 3)
-> From subsystem level code, at probe/remove, convert from invoking the ACPI
-> specific power domain attach/detach functions to the new common attach/detach
-> APIs.
->
-> 4)
-> Add support for the AMBA bus to attach/detach power domains, using the new
-> common APIs.
->
-> 5)
-> Convert Exynos to use the new generic power domain OF support.
->
-> Obviously, there are dependencies througout this patchset, which means if they
-> get accepted the all need to go together. It might also be convenient to share
-> them through an immutable branch.
+Power Domains are decided by system designer. A board can be divided
+into multiple power domains which can be powered on/off or
+voltage/current regulated independently as each power domain is
+controlled by a power regulator.
 
-Reviewed-by: Kevin Hilman <khilman@linaro.org>
+> What is the power domain of external device ?
+The right person to answer this question will be your system designer.
+You may look into the board schematics to find out power regulator of
+your external device. Each power domain is controlled by a power
+regulator.
+
+It is not necessary for you to consider power domains if you do not
+wish to power up/down or regulate the voltage /current while running
+Linux on the board. Another generic way to do runtime-power management
+of various devices would be to perform clock scaling/gating (assuming
+you know the clock domains of your system).
