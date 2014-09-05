@@ -1,7 +1,7 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
 Subject: [PATCH v2 04/15] clk: divider: Make generic for usage elsewhere
-Date: Fri,  5 Sep 2014 15:47:24 -0700
-Message-ID: <1409957256-23729-6-git-send-email-sboyd@codeaurora.org>
+Date: Fri,  5 Sep 2014 15:47:23 -0700
+Message-ID: <1409957256-23729-5-git-send-email-sboyd@codeaurora.org>
 References: <1409957256-23729-1-git-send-email-sboyd@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1409957256-23729-1-git-send-email-sboyd@codeaurora.org>
@@ -385,7 +385,7 @@ index 18a9de29df0e..78ecd8af8740 100644
  	val |= value << divider->shift;
  	clk_writel(val, divider->reg);
 diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
-index 92a00b61370a..5058fb98dbfb 100644
+index ba97e25c1115..32d39613d217 100644
 --- a/include/linux/clk-provider.h
 +++ b/include/linux/clk-provider.h
 @@ -342,6 +342,17 @@ struct clk_divider {
