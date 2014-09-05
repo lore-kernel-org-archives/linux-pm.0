@@ -1,72 +1,28 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] powernv/cpufreq: Set the pstate of the last hotplugged
- out cpu in policy->cpus to minimum
-Date: Fri, 05 Sep 2014 12:31:41 +0530
-Message-ID: <20140905070134.2831.8175.stgit@preeti.in.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] powernv/cpufreq: Set the pstate of the last
+ hotplugged out cpu in policy->cpus to minimum
+Date: Fri, 5 Sep 2014 12:37:40 +0530
+Message-ID: <CAKohpokThCn3ze7KZ0zZNN8zyVCxjdL=pGBhWcAvVr9T23RxSg@mail.gmail.com>
 References: <20140905065952.2831.66731.stgit@preeti.in.ibm.com>
+	<20140905070134.2831.8175.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:52364 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755837AbaIEHBw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 5 Sep 2014 03:01:52 -0400
-Received: from /spool/local
-	by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Fri, 5 Sep 2014 03:01:52 -0400
-In-Reply-To: <20140905065952.2831.66731.stgit@preeti.in.ibm.com>
+Received: from mail-oi0-f46.google.com ([209.85.218.46]:55360 "EHLO
+	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751688AbaIEHHk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Sep 2014 03:07:40 -0400
+Received: by mail-oi0-f46.google.com with SMTP id h136so7478345oig.5
+        for <linux-pm@vger.kernel.org>; Fri, 05 Sep 2014 00:07:40 -0700 (PDT)
+In-Reply-To: <20140905070134.2831.8175.stgit@preeti.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: viresh.kumar@linaro.org, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, dirk.j.brandewie@intel.com, shreyas@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, patrick.marlier@gmail.com, dirk.brandewie@gmail.com, svaidy@linux.vnet.ibm.com
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Shreyas Prabhu <shreyas@linux.vnet.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Patrick Marlier <patrick.marlier@gmail.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-Its possible today that the pstate of a core is held at a high even after the
-entire core is hotplugged out if a load had just run on  the hotplugged cpu. This is
-fair, since it is assumed that the pstate does not matter to a cpu in a deep idle
-state, which is the expected state of a hotplugged core on powerpc. However on powerpc,
-the pstate at a socket level is held at the maximum of the pstates of each core. Even
-if the pstates of the active cores on that socket is low, the socket pstate is held
-high due to the pstate of the hotplugged core in the above mentioned scenario. This
-can cost significant amount of power loss for no good.
+On 5 September 2014 12:31, Preeti U Murthy <preeti@linux.vnet.ibm.com> wrote:
 
-Besides, since it is a non active core, nothing can be done from the kernel's end
-to set the frequency of the core right. Hence make use of the stop_cpu callback
-to explicitly set the pstate of the core to a minimum when the last cpu of the
-core gets hotplugged out.
+> +       smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
-
- drivers/cpufreq/powernv-cpufreq.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 379c083..7bb988e 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -317,6 +317,14 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return cpufreq_table_validate_and_show(policy, powernv_freqs);
- }
- 
-+static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
-+{
-+	struct powernv_smp_call_data freq_data;
-+
-+	freq_data.pstate_id = powernv_pstate_info.min;
-+	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-+}
-+
- static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.name		= "powernv-cpufreq",
- 	.flags		= CPUFREQ_CONST_LOOPS,
-@@ -324,6 +332,7 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= powernv_cpufreq_target_index,
- 	.get		= powernv_cpufreq_get,
-+	.stop_cpu	= powernv_cpufreq_stop_cpu,
- 	.attr		= powernv_cpu_freq_attr,
- };
- 
-
+We will surely have a single CPU alive at this point, so should we call
+this function on policy->cpu directly ?
