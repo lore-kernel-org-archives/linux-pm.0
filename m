@@ -1,326 +1,253 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v9 5/8] drivers: cpuidle: implement DT based idle states infrastructure
-Date: Fri,  5 Sep 2014 18:34:54 +0100
-Message-ID: <1409938498-17984-6-git-send-email-lorenzo.pieralisi@arm.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Subject: [PATCH v9 6/8] drivers: cpuidle: CPU idle ARM64 driver
+Date: Fri,  5 Sep 2014 18:34:55 +0100
+Message-ID: <1409938498-17984-7-git-send-email-lorenzo.pieralisi@arm.com>
 References: <1409938498-17984-1-git-send-email-lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:54705 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754715AbaIERe6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Sep 2014 13:34:58 -0400
-In-Reply-To: <1409938498-17984-1-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1409938498-17984-1-git-send-email-lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Charles Garcia Tobin <Charles.Garcia-Tobin-5wv7dgnIgG8@public.gmane.org>, Nicolas Pitre <nico-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Amit Kucheria <amit.kucheria-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Antti Miettinen <ananaza-X3B1VOXEql0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Capella <sebcape-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Chander Kashyap <k.chander-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Geoff
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <k.chander@samsung.com>, Geoff
 
-On most common ARM systems, the low-power states a CPU can be put into are
-not discoverable in HW and require device tree bindings to describe
-power down suspend operations and idle states parameters.
+This patch implements a generic CPU idle driver for ARM64 machines.
 
-In order to enable DT based idle states and configure idle drivers, this
-patch implements the bulk infrastructure required to parse the device tree
-idle states bindings and initialize the corresponding CPUidle driver states
-data.
+It relies on the DT idle states infrastructure to initialize idle
+states count and respective parameters. Current code assumes the driver
+is managing idle states on all possible CPUs but can be easily
+generalized to support heterogenous systems and build cpumasks at
+runtime using MIDRs or DT cpu nodes compatible properties.
 
-The parsing API accepts a start index that defines the first idle state
-that should be initialized by the parsing code in order to give new and
-legacy driver flexibility over which states should be parsed using the
-new DT mechanism.
+The driver relies on the arm64 CPU operations to call the idle
+initialization hook used to parse and save suspend back-end specific
+idle states information upon probing.
 
-The idle states node(s) is obtained from the phandle list of the first cpu
-in the driver cpumask;  the kernel checks that the idle state node phandle
-is the same for all CPUs in the driver cpumask before declaring the idle st=
-ate
-as valid and start parsing its content.
+Idle state index 0 is always initialized as a simple wfi state, ie always
+considered present and functional on all ARM64 platforms.
 
-The idle state enter function pointer is initialized through DT match
-structures passed in by the CPUidle driver, so that ARM legacy code can
-cope with platform specific idle entry method based on compatible
-string matching and the code used to initialize the enter function pointer
-can be moved to the DT generic layer.
+Idle state indices higher than 0 trigger idle state entry by calling
+the cpu_suspend function, that triggers the suspend operation through
+the CPU operations suspend back-end hook. cpu_suspend passes the idle
+state index as a parameter so that the CPU operations suspend back-end
+can retrieve the required idle state data by using the idle state
+index to execute a look-up on its internal data structures.
 
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Reviewed-by: Ashwin Chaugule <ashwin.chaugule-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Reviewed-by: Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
 ---
- drivers/cpuidle/Kconfig          |   3 +
- drivers/cpuidle/Makefile         |   1 +
- drivers/cpuidle/dt_idle_states.c | 213 +++++++++++++++++++++++++++++++++++=
+ drivers/cpuidle/Kconfig         |   5 ++
+ drivers/cpuidle/Kconfig.arm64   |  14 +++++
+ drivers/cpuidle/Makefile        |   4 ++
+ drivers/cpuidle/cpuidle-arm64.c | 133 ++++++++++++++++++++++++++++++++++++=
 ++++
- drivers/cpuidle/dt_idle_states.h |   7 ++
- 4 files changed, 224 insertions(+)
- create mode 100644 drivers/cpuidle/dt_idle_states.c
- create mode 100644 drivers/cpuidle/dt_idle_states.h
+ 4 files changed, 156 insertions(+)
+ create mode 100644 drivers/cpuidle/Kconfig.arm64
+ create mode 100644 drivers/cpuidle/cpuidle-arm64.c
 
 diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 32748c3..8deb934 100644
+index 8deb934..c5029c1 100644
 --- a/drivers/cpuidle/Kconfig
 +++ b/drivers/cpuidle/Kconfig
-@@ -25,6 +25,9 @@ config CPU_IDLE_GOV_MENU
- =09bool "Menu governor (for tickless system)"
- =09default y
-=20
-+config DT_IDLE_STATES
-+=09bool
-+
- menu "ARM CPU Idle Drivers"
- depends on ARM
+@@ -33,6 +33,11 @@ depends on ARM
  source "drivers/cpuidle/Kconfig.arm"
+ endmenu
+=20
++menu "ARM64 CPU Idle Drivers"
++depends on ARM64
++source "drivers/cpuidle/Kconfig.arm64"
++endmenu
++
+ menu "MIPS CPU Idle Drivers"
+ depends on MIPS
+ source "drivers/cpuidle/Kconfig.mips"
+diff --git a/drivers/cpuidle/Kconfig.arm64 b/drivers/cpuidle/Kconfig.arm64
+new file mode 100644
+index 0000000..d0a08ed
+--- /dev/null
++++ b/drivers/cpuidle/Kconfig.arm64
+@@ -0,0 +1,14 @@
++#
++# ARM64 CPU Idle drivers
++#
++
++config ARM64_CPUIDLE
++=09bool "Generic ARM64 CPU idle Driver"
++=09select ARM64_CPU_SUSPEND
++=09select DT_IDLE_STATES
++=09help
++=09  Select this to enable generic cpuidle driver for ARM64.
++=09  It provides a generic idle driver whose idle states are configured
++=09  at run-time through DT nodes. The CPUidle suspend backend is
++=09  initialized by calling the CPU operations init idle hook
++=09  provided by architecture code.
 diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index 11edb31..002b653 100644
+index 002b653..4d177b9 100644
 --- a/drivers/cpuidle/Makefile
 +++ b/drivers/cpuidle/Makefile
-@@ -4,6 +4,7 @@
-=20
- obj-y +=3D cpuidle.o driver.o governor.o sysfs.o governors/
- obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) +=3D coupled.o
-+obj-$(CONFIG_DT_IDLE_STATES)=09=09  +=3D dt_idle_states.o
+@@ -23,6 +23,10 @@ obj-$(CONFIG_ARM_EXYNOS_CPUIDLE)        +=3D cpuidle-exy=
+nos.o
+ obj-$(CONFIG_MIPS_CPS_CPUIDLE)=09=09+=3D cpuidle-cps.o
 =20
  ##########################################################################=
-########
- # ARM SoC drivers
-diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_sta=
-tes.c
+#####
++# ARM64 drivers
++obj-$(CONFIG_ARM64_CPUIDLE)=09=09+=3D cpuidle-arm64.o
++
++##########################################################################=
+#####
+ # POWERPC drivers
+ obj-$(CONFIG_PSERIES_CPUIDLE)=09=09+=3D cpuidle-pseries.o
+ obj-$(CONFIG_POWERNV_CPUIDLE)=09=09+=3D cpuidle-powernv.o
+diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm6=
+4.c
 new file mode 100644
-index 0000000..52f4d11
+index 0000000..50997ea
 --- /dev/null
-+++ b/drivers/cpuidle/dt_idle_states.c
-@@ -0,0 +1,213 @@
++++ b/drivers/cpuidle/cpuidle-arm64.c
+@@ -0,0 +1,133 @@
 +/*
-+ * DT idle states parsing code.
++ * ARM64 generic CPU idle driver.
 + *
 + * Copyright (C) 2014 ARM Ltd.
-+ * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
++ * Author: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
 + */
 +
-+#define pr_fmt(fmt) "DT idle-states: " fmt
++#define pr_fmt(fmt) "CPUidle arm64: " fmt
 +
 +#include <linux/cpuidle.h>
 +#include <linux/cpumask.h>
-+#include <linux/errno.h>
++#include <linux/cpu_pm.h>
 +#include <linux/kernel.h>
 +#include <linux/module.h>
 +#include <linux/of.h>
-+#include <linux/of_device.h>
++
++#include <asm/cpuidle.h>
++#include <asm/suspend.h>
 +
 +#include "dt_idle_states.h"
 +
-+static int init_state_node(struct cpuidle_state *idle_state,
-+=09=09=09   const struct of_device_id *matches,
-+=09=09=09   struct device_node *state_node)
++/*
++ * arm64_enter_idle_state - Programs CPU to enter the specified state
++ *
++ * dev: cpuidle device
++ * drv: cpuidle driver
++ * idx: state index
++ *
++ * Called from the CPUidle framework to program the device to the
++ * specified target state selected by the governor.
++ */
++static int arm64_enter_idle_state(struct cpuidle_device *dev,
++=09=09=09=09  struct cpuidle_driver *drv, int idx)
 +{
-+=09int err;
-+=09const struct of_device_id *match_id;
++=09int ret;
 +
-+=09match_id =3D of_match_node(matches, state_node);
-+=09if (!match_id)
-+=09=09return -ENODEV;
-+=09/*
-+=09 * CPUidle drivers are expected to initialize the const void *data
-+=09 * pointer of the passed in struct of_device_id array to the idle
-+=09 * state enter function.
-+=09 */
-+=09idle_state->enter =3D match_id->data;
++=09if (!idx) {
++=09=09cpu_do_idle();
++=09=09return idx;
++=09}
 +
-+=09err =3D of_property_read_u32(state_node, "wakeup-latency-us",
-+=09=09=09=09   &idle_state->exit_latency);
-+=09if (err) {
-+=09=09u32 entry_latency, exit_latency;
-+
-+=09=09err =3D of_property_read_u32(state_node, "entry-latency-us",
-+=09=09=09=09=09   &entry_latency);
-+=09=09if (err) {
-+=09=09=09pr_debug(" * %s missing entry-latency-us property\n",
-+=09=09=09=09 state_node->full_name);
-+=09=09=09return -EINVAL;
-+=09=09}
-+
-+=09=09err =3D of_property_read_u32(state_node, "exit-latency-us",
-+=09=09=09=09=09   &exit_latency);
-+=09=09if (err) {
-+=09=09=09pr_debug(" * %s missing exit-latency-us property\n",
-+=09=09=09=09 state_node->full_name);
-+=09=09=09return -EINVAL;
-+=09=09}
++=09ret =3D cpu_pm_enter();
++=09if (!ret) {
 +=09=09/*
-+=09=09 * If wakeup-latency-us is missing, default to entry+exit
-+=09=09 * latencies as defined in idle states bindings
++=09=09 * Pass idle state index to cpu_suspend which in turn will
++=09=09 * call the CPU ops suspend protocol with idle index as a
++=09=09 * parameter.
 +=09=09 */
-+=09=09idle_state->exit_latency =3D entry_latency + exit_latency;
++=09=09ret =3D cpu_suspend(idx);
++
++=09=09cpu_pm_exit();
 +=09}
 +
-+=09err =3D of_property_read_u32(state_node, "min-residency-us",
-+=09=09=09=09   &idle_state->target_residency);
-+=09if (err) {
-+=09=09pr_debug(" * %s missing min-residency-us property\n",
-+=09=09=09     state_node->full_name);
-+=09=09return -EINVAL;
-+=09}
-+
-+=09idle_state->flags =3D CPUIDLE_FLAG_TIME_VALID;
-+=09if (of_property_read_bool(state_node, "local-timer-stop"))
-+=09=09idle_state->flags |=3D CPUIDLE_FLAG_TIMER_STOP;
-+=09/*
-+=09 * TODO:
-+=09 *=09replace with kstrdup and pointer assignment when name
-+=09 *=09and desc become string pointers
-+=09 */
-+=09strncpy(idle_state->name, state_node->name, CPUIDLE_NAME_LEN - 1);
-+=09strncpy(idle_state->desc, state_node->name, CPUIDLE_DESC_LEN - 1);
-+=09return 0;
++=09return ret ? -1 : idx;
 +}
++
++static struct cpuidle_driver arm64_idle_driver =3D {
++=09.name =3D "arm64_idle",
++=09.owner =3D THIS_MODULE,
++=09/*
++=09 * State at index 0 is standby wfi and considered standard
++=09 * on all ARM platforms. If in some platforms simple wfi
++=09 * can't be used as "state 0", DT bindings must be implemented
++=09 * to work around this issue and allow installing a special
++=09 * handler for idle state index 0.
++=09 */
++=09.states[0] =3D {
++=09=09.enter                  =3D arm64_enter_idle_state,
++=09=09.exit_latency           =3D 1,
++=09=09.target_residency       =3D 1,
++=09=09.power_usage=09=09=3D UINT_MAX,
++=09=09.flags                  =3D CPUIDLE_FLAG_TIME_VALID,
++=09=09.name                   =3D "WFI",
++=09=09.desc                   =3D "ARM64 WFI",
++=09}
++};
++
++static const struct of_device_id arm64_idle_state_match[] __initconst =3D =
+{
++=09{ .compatible =3D "arm,idle-state",
++=09  .data =3D arm64_enter_idle_state },
++=09{ },
++};
 +
 +/*
-+ * Check that the idle state is uniform across all CPUs in the CPUidle dri=
-ver
-+ * cpumask
++ * arm64_idle_init
++ *
++ * Registers the arm64 specific cpuidle driver with the cpuidle
++ * framework. It relies on core code to parse the idle states
++ * and initialize them using driver data structures accordingly.
 + */
-+static bool idle_state_valid(struct device_node *state_node, unsigned int =
-idx,
-+=09=09=09     const cpumask_t *cpumask)
++static int __init arm64_idle_init(void)
 +{
-+=09int cpu;
-+=09struct device_node *cpu_node, *curr_state_node;
-+=09bool valid =3D true;
++=09int cpu, ret;
++=09struct cpuidle_driver *drv =3D &arm64_idle_driver;
 +
 +=09/*
-+=09 * Compare idle state phandles for index idx on all CPUs in the
-+=09 * CPUidle driver cpumask. Start from next logical cpu following
-+=09 * cpumask_first(cpumask) since that's the CPU state_node was
-+=09 * retrieved from. If a mismatch is found bail out straight
-+=09 * away since we certainly hit a firmware misconfiguration.
++=09 * Initialize idle states data, starting at index 1.
++=09 * This driver is DT only, if no DT idle states are detected (ret =3D=
+=3D 0)
++=09 * let the driver initialization fail accordingly since there is no
++=09 * reason to initialize the idle driver if only wfi is supported.
 +=09 */
-+=09for (cpu =3D cpumask_next(cpumask_first(cpumask), cpumask);
-+=09     cpu < nr_cpu_ids; cpu =3D cpumask_next(cpu, cpumask)) {
-+=09=09cpu_node =3D of_cpu_device_node_get(cpu);
-+=09=09curr_state_node =3D of_parse_phandle(cpu_node, "cpu-idle-states",
-+=09=09=09=09=09=09   idx);
-+=09=09if (state_node !=3D curr_state_node)
-+=09=09=09valid =3D false;
-+
-+=09=09of_node_put(curr_state_node);
-+=09=09of_node_put(cpu_node);
-+=09=09if (!valid)
-+=09=09=09break;
++=09ret =3D dt_init_idle_driver(drv, arm64_idle_state_match, 1);
++=09if (ret <=3D 0) {
++=09=09if (ret)
++=09=09=09pr_err("failed to initialize idle states\n");
++=09=09return ret ? : -ENODEV;
 +=09}
 +
-+=09return valid;
-+}
-+
-+/**
-+ * dt_init_idle_driver() - Parse the DT idle states and initialize the
-+ *=09=09=09   idle driver states array
-+ * @drv:=09  Pointer to CPU idle driver to be initialized
-+ * @matches:=09  Array of of_device_id match structures to search in for
-+ *=09=09  compatible idle state nodes. The data pointer for each valid
-+ *=09=09  struct of_device_id entry in the matches array must point to
-+ *=09=09  a function with the following signature, that corresponds to
-+ *=09=09  the CPUidle state enter function signature:
-+ *
-+ *=09=09  int (*)(struct cpuidle_device *dev,
-+ *=09=09=09  struct cpuidle_driver *drv,
-+ *=09=09=09  int index);
-+ *
-+ * @start_idx:    First idle state index to be initialized
-+ *
-+ * If DT idle states are detected and are valid the state count and states
-+ * array entries in the cpuidle driver are initialized accordingly startin=
-g
-+ * from index start_idx.
-+ *
-+ * Return: number of valid DT idle states parsed, <0 on failure
-+ */
-+int dt_init_idle_driver(struct cpuidle_driver *drv,
-+=09=09=09const struct of_device_id *matches,
-+=09=09=09unsigned int start_idx)
-+{
-+=09struct cpuidle_state *idle_state;
-+=09struct device_node *state_node, *cpu_node;
-+=09int i, err =3D 0;
-+=09const cpumask_t *cpumask;
-+=09unsigned int state_idx =3D start_idx;
-+
-+=09if (state_idx >=3D CPUIDLE_STATE_MAX)
-+=09=09return -EINVAL;
 +=09/*
-+=09 * We get the idle states for the first logical cpu in the
-+=09 * driver mask (or cpu_possible_mask if the driver cpumask is not set)
-+=09 * and we check through idle_state_valid() if they are uniform
-+=09 * across CPUs, otherwise we hit a firmware misconfiguration.
++=09 * Call arch CPU operations in order to initialize
++=09 * idle states suspend back-end specific data
 +=09 */
-+=09cpumask =3D drv->cpumask ? : cpu_possible_mask;
-+=09cpu_node =3D of_cpu_device_node_get(cpumask_first(cpumask));
-+
-+=09for (i =3D 0; ; i++) {
-+=09=09state_node =3D of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+=09=09if (!state_node)
-+=09=09=09break;
-+
-+=09=09if (!idle_state_valid(state_node, i, cpumask)) {
-+=09=09=09pr_warn("%s idle state not valid, bailing out\n",
-+=09=09=09=09state_node->full_name);
-+=09=09=09err =3D -EINVAL;
-+=09=09=09break;
++=09for_each_possible_cpu(cpu) {
++=09=09ret =3D cpu_init_idle(cpu);
++=09=09if (ret) {
++=09=09=09pr_err("CPU %d failed to init idle CPU ops\n", cpu);
++=09=09=09return ret;
 +=09=09}
-+
-+=09=09if (state_idx =3D=3D CPUIDLE_STATE_MAX) {
-+=09=09=09pr_warn("State index reached static CPU idle driver states array =
-size\n");
-+=09=09=09break;
-+=09=09}
-+
-+=09=09idle_state =3D &drv->states[state_idx++];
-+=09=09err =3D init_state_node(idle_state, matches, state_node);
-+=09=09if (err) {
-+=09=09=09pr_err("Parsing idle state node %s failed with err %d\n",
-+=09=09=09       state_node->full_name, err);
-+=09=09=09err =3D -EINVAL;
-+=09=09=09break;
-+=09=09}
-+=09=09of_node_put(state_node);
 +=09}
 +
-+=09of_node_put(state_node);
-+=09of_node_put(cpu_node);
-+=09if (err)
-+=09=09return err;
-+=09/*
-+=09 * Update the driver state count only if some valid DT idle states
-+=09 * were detected
-+=09 */
-+=09if (i)
-+=09=09drv->state_count =3D state_idx;
++=09ret =3D cpuidle_register(drv, NULL);
++=09if (ret) {
++=09=09pr_err("failed to register cpuidle driver\n");
++=09=09return ret;
++=09}
 +
-+=09/*
-+=09 * Return the number of present and valid DT idle states, which can
-+=09 * also be 0 on platforms with missing DT idle states or legacy DT
-+=09 * configuration predating the DT idle states bindings.
-+=09 */
-+=09return i;
++=09return 0;
 +}
-+EXPORT_SYMBOL_GPL(dt_init_idle_driver);
-diff --git a/drivers/cpuidle/dt_idle_states.h b/drivers/cpuidle/dt_idle_sta=
-tes.h
-new file mode 100644
-index 0000000..4818134
---- /dev/null
-+++ b/drivers/cpuidle/dt_idle_states.h
-@@ -0,0 +1,7 @@
-+#ifndef __DT_IDLE_STATES
-+#define __DT_IDLE_STATES
-+
-+int dt_init_idle_driver(struct cpuidle_driver *drv,
-+=09=09=09const struct of_device_id *matches,
-+=09=09=09unsigned int start_idx);
-+#endif
++device_initcall(arm64_idle_init);
 --=20
 1.9.1
 
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
