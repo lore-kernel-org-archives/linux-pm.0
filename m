@@ -1,7 +1,7 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH v2 08/15] clk: qcom: Add HFPLL driver
-Date: Fri,  5 Sep 2014 15:47:28 -0700
-Message-ID: <1409957256-23729-10-git-send-email-sboyd@codeaurora.org>
+Subject: [PATCH v2 05/15] clk: Add safe switch hook
+Date: Fri,  5 Sep 2014 15:47:25 -0700
+Message-ID: <1409957256-23729-7-git-send-email-sboyd@codeaurora.org>
 References: <1409957256-23729-1-git-send-email-sboyd@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,160 +21,153 @@ To: Mike Turquette <mturquette@linaro.org>
 Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On some devices (MSM8974 for example), the HFPLLs are
-instantiated within the Krait processor subsystem as separate
-register regions. Add a driver for these PLLs so that we can
-provide HFPLL clocks for use by the system.
+Sometimes clocks can't accept their parent source turning off
+while the source is reprogrammed to a different rate. Most
+notably some CPU clocks require a way to switch away from the
+current PLL they're running on, reprogram that PLL to a new rate,
+and then switch back to the PLL with the new rate once they're
+done.  Add a hook that drivers can implement allowing them to
+return a 'safe parent' that they can switch their parent to while
+the upstream source is reprogrammed.
 
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/clk/qcom/Kconfig  |   8 ++++
- drivers/clk/qcom/Makefile |   1 +
- drivers/clk/qcom/hfpll.c  | 110 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 119 insertions(+)
- create mode 100644 drivers/clk/qcom/hfpll.c
+ drivers/clk/clk.c            | 53 ++++++++++++++++++++++++++++++++++++++------
+ include/linux/clk-private.h  |  2 ++
+ include/linux/clk-provider.h |  1 +
+ 3 files changed, 49 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index 1107351ed346..3ff19a51a933 100644
---- a/drivers/clk/qcom/Kconfig
-+++ b/drivers/clk/qcom/Kconfig
-@@ -70,3 +70,11 @@ config MSM_MMCC_8974
- 	  Support for the multimedia clock controller on msm8974 devices.
- 	  Say Y if you want to support multimedia devices such as display,
- 	  graphics, video encode/decode, camera, etc.
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index 255ec8c92919..b23e2b9c9102 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -1368,6 +1368,7 @@ static void clk_calc_subtree(struct clk *clk, unsigned long new_rate,
+ 			     struct clk *new_parent, u8 p_index)
+ {
+ 	struct clk *child;
++	struct clk *parent;
+ 
+ 	clk->new_rate = new_rate;
+ 	clk->new_parent = new_parent;
+@@ -1377,6 +1378,17 @@ static void clk_calc_subtree(struct clk *clk, unsigned long new_rate,
+ 	if (new_parent && new_parent != clk->parent)
+ 		new_parent->new_child = clk;
+ 
++	if (clk->ops->get_safe_parent) {
++		parent = clk->ops->get_safe_parent(clk->hw);
++		if (parent) {
++			p_index = clk_fetch_parent_index(clk, parent);
++			clk->safe_parent_index = p_index;
++			clk->safe_parent = parent;
++		}
++	} else {
++		clk->safe_parent = NULL;
++	}
 +
-+config QCOM_HFPLL
-+	tristate "High-Frequency PLL (HFPLL) Clock Controller"
-+	depends on COMMON_CLK_QCOM
-+	help
-+	  Support for the high-frequency PLLs present on Qualcomm devices.
-+	  Say Y if you want to support CPU frequency scaling on devices
-+	  such as MSM8974, APQ8084, etc.
-diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
-index f1e54065e4dc..db39912cffec 100644
---- a/drivers/clk/qcom/Makefile
-+++ b/drivers/clk/qcom/Makefile
-@@ -17,3 +17,4 @@ obj-$(CONFIG_MSM_GCC_8960) += gcc-msm8960.o
- obj-$(CONFIG_MSM_GCC_8974) += gcc-msm8974.o
- obj-$(CONFIG_MSM_MMCC_8960) += mmcc-msm8960.o
- obj-$(CONFIG_MSM_MMCC_8974) += mmcc-msm8974.o
-+obj-$(CONFIG_QCOM_HFPLL) += hfpll.o
-diff --git a/drivers/clk/qcom/hfpll.c b/drivers/clk/qcom/hfpll.c
-new file mode 100644
-index 000000000000..701a377d35c1
---- /dev/null
-+++ b/drivers/clk/qcom/hfpll.c
-@@ -0,0 +1,110 @@
-+/*
-+ * Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
+ 	hlist_for_each_entry(child, &clk->children, child_node) {
+ 		child->new_rate = clk_recalc(child, new_rate);
+ 		clk_calc_subtree(child, child->new_rate, NULL, 0);
+@@ -1459,14 +1471,42 @@ out:
+ static struct clk *clk_propagate_rate_change(struct clk *clk, unsigned long event)
+ {
+ 	struct clk *child, *tmp_clk, *fail_clk = NULL;
++	struct clk *old_parent;
+ 	int ret = NOTIFY_DONE;
+ 
+-	if (clk->rate == clk->new_rate)
++	if (clk->rate == clk->new_rate && event != POST_RATE_CHANGE)
+ 		return NULL;
+ 
++	switch (event) {
++	case PRE_RATE_CHANGE:
++		if (clk->safe_parent)
++			clk->ops->set_parent(clk->hw, clk->safe_parent_index);
++		break;
++	case POST_RATE_CHANGE:
++		if (clk->safe_parent) {
++			old_parent = __clk_set_parent_before(clk,
++							     clk->new_parent);
++			if (clk->ops->set_rate_and_parent) {
++				clk->ops->set_rate_and_parent(clk->hw,
++						clk->new_rate,
++						clk->new_parent ?
++						clk->new_parent->rate : 0,
++						clk->new_parent_index);
++			} else if (clk->ops->set_parent) {
++				clk->ops->set_parent(clk->hw,
++						clk->new_parent_index);
++			}
++			__clk_set_parent_after(clk, clk->new_parent,
++					       old_parent);
++		}
++		break;
++	}
 +
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/of.h>
-+#include <linux/clk.h>
-+#include <linux/clk-provider.h>
-+#include <linux/regmap.h>
-+
-+#include "clk-regmap.h"
-+#include "clk-hfpll.h"
-+
-+static const struct hfpll_data hdata = {
-+	.mode_reg = 0x00,
-+	.l_reg = 0x04,
-+	.m_reg = 0x08,
-+	.n_reg = 0x0c,
-+	.user_reg = 0x10,
-+	.config_reg = 0x14,
-+	.config_val = 0x430405d,
-+	.status_reg = 0x1c,
-+	.lock_bit = 16,
-+
-+	.user_val = 0x8,
-+	.user_vco_mask = 0x100000,
-+	.low_vco_max_rate = 1248000000,
-+	.min_rate = 537600000UL,
-+	.max_rate = 2900000000UL,
-+};
-+
-+static const struct of_device_id qcom_hfpll_match_table[] = {
-+	{ .compatible = "qcom,hfpll" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, qcom_hfpll_match_table);
-+
-+static struct regmap_config hfpll_regmap_config = {
-+	.reg_bits	= 32,
-+	.reg_stride	= 4,
-+	.val_bits	= 32,
-+	.max_register	= 0x30,
-+	.fast_io	= true,
-+};
-+
-+static int qcom_hfpll_probe(struct platform_device *pdev)
-+{
-+	struct clk *clk;
-+	struct resource *res;
-+	struct device *dev = &pdev->dev;
-+	void __iomem *base;
-+	struct regmap *regmap;
-+	struct clk_hfpll *h;
-+	struct clk_init_data init = {
-+		.parent_names = (const char *[]){ "xo" },
-+		.num_parents = 1,
-+		.ops = &clk_ops_hfpll,
-+	};
-+
-+	h = devm_kzalloc(dev, sizeof(*h), GFP_KERNEL);
-+	if (!h)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(base))
-+		return PTR_ERR(base);
-+
-+	regmap = devm_regmap_init_mmio(&pdev->dev, base, &hfpll_regmap_config);
-+	if (IS_ERR(regmap))
-+		return PTR_ERR(regmap);
-+
-+	if (of_property_read_string_index(dev->of_node, "clock-output-names",
-+						  0, &init.name))
-+		return -ENODEV;
-+
-+	h->d = &hdata;
-+	h->clkr.hw.init = &init;
-+	spin_lock_init(&h->lock);
-+
-+	clk = devm_clk_register_regmap(&pdev->dev, &h->clkr);
-+
-+	return PTR_ERR_OR_ZERO(clk);
-+}
-+
-+static struct platform_driver qcom_hfpll_driver = {
-+	.probe		= qcom_hfpll_probe,
-+	.driver		= {
-+		.name	= "qcom-hfpll",
-+		.owner	= THIS_MODULE,
-+		.of_match_table = qcom_hfpll_match_table,
-+	},
-+};
-+module_platform_driver(qcom_hfpll_driver);
-+
-+MODULE_DESCRIPTION("QCOM HFPLL Clock Driver");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:qcom-hfpll");
+ 	if (clk->notifier_count) {
+-		ret = __clk_notify(clk, event, clk->rate, clk->new_rate);
+-		if (ret & NOTIFY_STOP_MASK)
++		if (event != POST_RATE_CHANGE)
++			ret = __clk_notify(clk, event, clk->rate,
++					   clk->new_rate);
++		if (ret & NOTIFY_STOP_MASK && event != POST_RATE_CHANGE)
+ 			fail_clk = clk;
+ 	}
+ 
+@@ -1508,7 +1548,8 @@ static void clk_change_rate(struct clk *clk)
+ 	else if (clk->parent)
+ 		best_parent_rate = clk->parent->rate;
+ 
+-	if (clk->new_parent && clk->new_parent != clk->parent) {
++	if (clk->new_parent && clk->new_parent != clk->parent &&
++			!clk->safe_parent) {
+ 		old_parent = __clk_set_parent_before(clk, clk->new_parent);
+ 
+ 		if (clk->ops->set_rate_and_parent) {
+@@ -1528,9 +1569,6 @@ static void clk_change_rate(struct clk *clk)
+ 
+ 	clk->rate = clk_recalc(clk, best_parent_rate);
+ 
+-	if (clk->notifier_count && old_rate != clk->rate)
+-		__clk_notify(clk, POST_RATE_CHANGE, old_rate, clk->rate);
+-
+ 	hlist_for_each_entry(child, &clk->children, child_node) {
+ 		/* Skip children who will be reparented to another clock */
+ 		if (child->new_parent && child->new_parent != clk)
+@@ -1604,6 +1642,7 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
+ 	/* change the rates */
+ 	clk_change_rate(top);
+ 
++	clk_propagate_rate_change(top, POST_RATE_CHANGE);
+ out:
+ 	clk_prepare_unlock();
+ 
+diff --git a/include/linux/clk-private.h b/include/linux/clk-private.h
+index efbf70b9fd84..f48684af4d8f 100644
+--- a/include/linux/clk-private.h
++++ b/include/linux/clk-private.h
+@@ -38,8 +38,10 @@ struct clk {
+ 	struct clk		**parents;
+ 	u8			num_parents;
+ 	u8			new_parent_index;
++	u8			safe_parent_index;
+ 	unsigned long		rate;
+ 	unsigned long		new_rate;
++	struct clk		*safe_parent;
+ 	struct clk		*new_parent;
+ 	struct clk		*new_child;
+ 	unsigned long		flags;
+diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
+index 32d39613d217..6dec0b306336 100644
+--- a/include/linux/clk-provider.h
++++ b/include/linux/clk-provider.h
+@@ -170,6 +170,7 @@ struct clk_ops {
+ 					struct clk **best_parent_clk);
+ 	int		(*set_parent)(struct clk_hw *hw, u8 index);
+ 	u8		(*get_parent)(struct clk_hw *hw);
++	struct clk	*(*get_safe_parent)(struct clk_hw *hw);
+ 	int		(*set_rate)(struct clk_hw *hw, unsigned long rate,
+ 				    unsigned long parent_rate);
+ 	int		(*set_rate_and_parent)(struct clk_hw *hw,
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 hosted by The Linux Foundation
