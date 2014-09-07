@@ -1,69 +1,95 @@
-From: AYAN KUMAR HALDER <ayankumarh@gmail.com>
-Subject: Re: External devices
-Date: Mon, 8 Sep 2014 01:52:41 +0530
-Message-ID: <CAGAs2AmsawCi72FR1W3Zv-n5dg63wKP4YSyKk=LSZDA6CagLrQ@mail.gmail.com>
-References: <CAJ2oMhKRA+0Ge_m=-zFqgTxcZbuGMNAOvBQKP=_GyWRwvfsKFw@mail.gmail.com>
-	<CAGAs2Amw1jvmDxL8+uXU4XW3u6Mxr7LKP4EiP8taTNQ2OpnWNw@mail.gmail.com>
-	<CAJ2oMhL=wuWA3Ga4bdeqvW0QA-cccLA0BfVRDKyLuykyChqu7w@mail.gmail.com>
-	<CAJ2oMhKnQczVwLhO0hHyJHCgc6UkV5g7sc3Gnnoq+ktUVYw+pQ@mail.gmail.com>
-	<CAGAs2A=nmNqMYNLvzPsBbysfV3LtkxJQzEpN+SZcL1cMVdMbmQ@mail.gmail.com>
-	<CAJ2oMh+EoX+G1wz4X7hBNFE_56=8eq_DVxEy20=nc1vZURu2tQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3 1/9] ACPI / PM: Let acpi_dev_pm_detach() return an error code
+Date: Mon, 08 Sep 2014 00:12:04 +0200
+Message-ID: <1971236.2OpvqOp5Mv@vostro.rjw.lan>
+References: <1409838756-31963-1-git-send-email-ulf.hansson@linaro.org> <1409838756-31963-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:58306 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751589AbaIGUWm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 7 Sep 2014 16:22:42 -0400
-Received: by mail-pa0-f54.google.com with SMTP id lj1so2426011pab.41
-        for <linux-pm@vger.kernel.org>; Sun, 07 Sep 2014 13:22:42 -0700 (PDT)
-In-Reply-To: <CAJ2oMh+EoX+G1wz4X7hBNFE_56=8eq_DVxEy20=nc1vZURu2tQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1409838756-31963-2-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
-To: Ran Shalit <ranshalit@gmail.com>
-Cc: linux-pm@vger.kernel.org, kernelnewbies <kernelnewbies@kernelnewbies.org>
 
->
-> I am required to put some external device (led brightness) into
-> minimal brightness when the system gets to idle.
-Please elaborate on "System gets to idle state."
-Do you mean the system is suspended ? ------- case 1
-or the device has moved to idle state?     ------- case 2
+On Thursday, September 04, 2014 03:52:28 PM Ulf Hansson wrote:
+> To give callers the option of acting on a errors while removing the
+> pm_domain ops for the device in the ACPI PM domain, let
+> acpi_dev_pm_detach() return an int to provide the error code.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
 
-> The control on led brightness value is done as part of dedicated
-> character device which was written for the purpose of brightness
-> control (which uses i2c bus)
-> I wander if this is possible using the linux PM capabilities, and how
-> this should be done.
-In either case it should be possible as per my understanding. You need
-to implement
-it in the appropriate PM handlers.
-case1 ----> write the appropriate code in driver->pm->suspend
-case2 ----> write the appropriate code in driver->pm->runtime_idle
+I can take this patch alone for 3.8 if that helps.
 
-Regards,
-Ayan Kumar Halder
+> ---
+>  drivers/acpi/device_pm.c | 8 +++++++-
+>  include/linux/acpi.h     | 7 +++++--
+>  2 files changed, 12 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+> index 67075f8..0d52ce1 100644
+> --- a/drivers/acpi/device_pm.c
+> +++ b/drivers/acpi/device_pm.c
+> @@ -1055,6 +1055,8 @@ static struct dev_pm_domain acpi_general_pm_domain = {
+>   *
+>   * Callers must ensure proper synchronization of this function with power
+>   * management callbacks.
+> + *
+> + * Returns 0 on successfully attached PM domain or negative error code.
+>   */
+>  int acpi_dev_pm_attach(struct device *dev, bool power_on)
+>  {
+> @@ -1087,8 +1089,10 @@ EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
+>   *
+>   * Callers must ensure proper synchronization of this function with power
+>   * management callbacks.
+> + *
+> + * Returns 0 on successfully detached PM domain or negative error code.
+>   */
+> -void acpi_dev_pm_detach(struct device *dev, bool power_off)
+> +int acpi_dev_pm_detach(struct device *dev, bool power_off)
+>  {
+>  	struct acpi_device *adev = ACPI_COMPANION(dev);
+>  
+> @@ -1107,7 +1111,9 @@ void acpi_dev_pm_detach(struct device *dev, bool power_off)
+>  			acpi_device_wakeup(adev, ACPI_STATE_S0, false);
+>  			acpi_dev_pm_low_power(dev, adev, ACPI_STATE_S0);
+>  		}
+> +		return 0;
+>  	}
+> +	return -EINVAL;
+>  }
+>  EXPORT_SYMBOL_GPL(acpi_dev_pm_detach);
+>  #endif /* CONFIG_PM */
+> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> index 807cbc4..c83cca5 100644
+> --- a/include/linux/acpi.h
+> +++ b/include/linux/acpi.h
+> @@ -587,7 +587,7 @@ static inline int acpi_subsys_freeze(struct device *dev) { return 0; }
+>  #if defined(CONFIG_ACPI) && defined(CONFIG_PM)
+>  struct acpi_device *acpi_dev_pm_get_node(struct device *dev);
+>  int acpi_dev_pm_attach(struct device *dev, bool power_on);
+> -void acpi_dev_pm_detach(struct device *dev, bool power_off);
+> +int acpi_dev_pm_detach(struct device *dev, bool power_off);
+>  #else
+>  static inline struct acpi_device *acpi_dev_pm_get_node(struct device *dev)
+>  {
+> @@ -597,7 +597,10 @@ static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
+>  {
+>  	return -ENODEV;
+>  }
+> -static inline void acpi_dev_pm_detach(struct device *dev, bool power_off) {}
+> +static inline int acpi_dev_pm_detach(struct device *dev, bool power_off)
+> +{
+> +	return -ENODEV;
+> +}
+>  #endif
+>  
+>  #ifdef CONFIG_ACPI
+> 
 
-> Thanks,
-> Ran
->
-> On Fri, Sep 5, 2014 at 7:13 PM, AYAN KUMAR HALDER <ayankumarh@gmail.com> wrote:
->>> When adding some external device to power management, doesn't it need
->>> to belong to power domain  ( /debug/pm_debug/count ).
->>
->> Power Domains are decided by system designer. A board can be divided
->> into multiple power domains which can be powered on/off or
->> voltage/current regulated independently as each power domain is
->> controlled by a power regulator.
->>
->>> What is the power domain of external device ?
->> The right person to answer this question will be your system designer.
->> You may look into the board schematics to find out power regulator of
->> your external device. Each power domain is controlled by a power
->> regulator.
->>
->> It is not necessary for you to consider power domains if you do not
->> wish to power up/down or regulate the voltage /current while running
->> Linux on the board. Another generic way to do runtime-power management
->> of various devices would be to perform clock scaling/gating (assuming
->> you know the clock domains of your system).
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
