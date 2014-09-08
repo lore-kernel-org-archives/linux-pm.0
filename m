@@ -1,271 +1,265 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 4/5] ARM: shmobile: R-Mobile: Add DT support for PM domains
-Date: Mon,  8 Sep 2014 15:35:43 +0200
-Message-ID: <1410183344-14756-5-git-send-email-geert+renesas@glider.be>
+From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Subject: [PATCH/RFC 3/5] ARM: shmobile: R-Mobile: Store SYSC base address in rmobile_pm_domain
+Date: Mon,  8 Sep 2014 15:35:42 +0200
+Message-ID: <1410183344-14756-4-git-send-email-geert+renesas@glider.be>
 References: <1410183344-14756-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1410183344-14756-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1410183344-14756-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <philipp.zabel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Populate the PM domains from DT, and provide support to hook up devices
-to their respective PM domain.
+Replace the hardcoded addresses for accessing the SYSC PM domain
+registers by register offsets, relative to the SYSC base address stored
+in struct rmobile_pm_domain.
 
-The always-on power area (e.g. C5 on r8a7740) is created as a PM domain
-without software control, to allow Run-Time management of module clocks
-for hardware blocks inside this area in the future.
-Power-on/off latencies are supported.
+In the future, the SYSC base address will come from DT.
 
-Limitations and special cases in the non-DT case are handled through
-rmobile_pm_quirks(). Checks for hardcoded PM domain indices should be
-replaced by the analysis of relations between devices and PM domains in
-DT.
-
-Initialization is done from core_initcall(), as the
-"renesas,intc-irqpin" driver uses postcore_initcall().
-
-This is functionally almost equivalent to the non-DT case. Missing are
-Run-Time management of the module clocks (pm_clk_*()), and device
-latencies.
-
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 ---
- arch/arm/mach-shmobile/Kconfig      |   3 +-
- arch/arm/mach-shmobile/pm-rmobile.c | 145 +++++++++++++++++++++++++++++++++++-
- 2 files changed, 145 insertions(+), 3 deletions(-)
+ arch/arm/mach-shmobile/pm-r8a7740.c | 14 ++++++++++++++
+ arch/arm/mach-shmobile/pm-rmobile.c | 24 +++++++++++++-----------
+ arch/arm/mach-shmobile/pm-rmobile.h |  1 +
+ arch/arm/mach-shmobile/pm-sh7372.c  | 11 +++++++++++
+ 4 files changed, 39 insertions(+), 11 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
-index 21f457b56c01..ad007d3b384f 100644
---- a/arch/arm/mach-shmobile/Kconfig
-+++ b/arch/arm/mach-shmobile/Kconfig
-@@ -6,6 +6,7 @@ config PM_RCAR
- 
- config PM_RMOBILE
- 	bool
-+	select PM_GENERIC_DOMAINS
- 
- config ARCH_RCAR_GEN1
- 	bool
-@@ -21,7 +22,7 @@ config ARCH_RCAR_GEN2
- 
- config ARCH_RMOBILE
- 	bool
--	select PM_RMOBILE if PM && !ARCH_SHMOBILE_MULTI
-+	select PM_RMOBILE if PM
- 	select SYS_SUPPORTS_SH_CMT
- 	select SYS_SUPPORTS_SH_TMU
- 
-diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
-index 578446af6e7b..5628bf2b0cb7 100644
---- a/arch/arm/mach-shmobile/pm-rmobile.c
-+++ b/arch/arm/mach-shmobile/pm-rmobile.c
-@@ -3,6 +3,7 @@
-  *
-  * Copyright (C) 2012  Renesas Solutions Corp.
-  * Copyright (C) 2012  Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-+ * Copyright (C) 2014  Glider bvba
-  *
-  * based on pm-sh7372.c
-  *  Copyright (C) 2011 Magnus Damm
-@@ -13,9 +14,13 @@
+diff --git a/arch/arm/mach-shmobile/pm-r8a7740.c b/arch/arm/mach-shmobile/pm-r8a7740.c
+index 23254c31efd9..627fec98c785 100644
+--- a/arch/arm/mach-shmobile/pm-r8a7740.c
++++ b/arch/arm/mach-shmobile/pm-r8a7740.c
+@@ -9,10 +9,14 @@
+  * for more details.
   */
  #include <linux/console.h>
- #include <linux/delay.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/of_platform.h>
- #include <linux/platform_device.h>
- #include <linux/pm.h>
- #include <linux/pm_clock.h>
-+#include <linux/slab.h>
- #include <asm/io.h>
++#include <linux/io.h>
+ #include <linux/suspend.h>
++
+ #include "common.h"
  #include "pm-rmobile.h"
  
-@@ -30,8 +35,12 @@
- static int rmobile_pd_power_down(struct generic_pm_domain *genpd)
- {
- 	struct rmobile_pm_domain *rmobile_pd = to_rmobile_pd(genpd);
--	unsigned int mask = 1 << rmobile_pd->bit_shift;
-+	unsigned int mask;
- 
-+	if (rmobile_pd->bit_shift == ~0)
-+		return -EBUSY;
++#define SYSC_BASE	IOMEM(0xe6180000)
 +
-+	mask = 1 << rmobile_pd->bit_shift;
- 	if (rmobile_pd->suspend) {
- 		int ret = rmobile_pd->suspend();
- 
-@@ -61,10 +70,14 @@ static int rmobile_pd_power_down(struct generic_pm_domain *genpd)
- static int __rmobile_pd_power_up(struct rmobile_pm_domain *rmobile_pd,
- 				 bool do_resume)
+ #if defined(CONFIG_PM) && !defined(CONFIG_ARCH_MULTIPLATFORM)
+ static int r8a7740_pd_a4s_suspend(void)
  {
--	unsigned int mask = 1 << rmobile_pd->bit_shift;
-+	unsigned int mask;
+@@ -35,40 +39,50 @@ static int r8a7740_pd_a3sp_suspend(void)
+ static struct rmobile_pm_domain r8a7740_pm_domains[] = {
+ 	{
+ 		.genpd.name	= "A4LC",
++		.base		= SYSC_BASE,
+ 		.bit_shift	= 1,
+ 	}, {
+ //		.genpd.name	= "A4MP",
++//		.base		= SYSC_BASE,
+ //		.bit_shift	= 2,
+ //	}, {
+ //		.genpd.name	= "D4",
++//		.base		= SYSC_BASE,
+ //		.bit_shift	= 3,
+ //	}, {
+ 		.genpd.name	= "A4R",
++		.base		= SYSC_BASE,
+ 		.bit_shift	= 5,
+ 	}, {
+ 		.genpd.name	= "A3RV",
++		.base		= SYSC_BASE,
+ 		.bit_shift	= 6,
+ 	}, {
+ 		.genpd.name	= "A4S",
++		.base		= SYSC_BASE,
+ 		.bit_shift	= 10,
+ 		.gov		= &pm_domain_always_on_gov,
+ 		.no_debug	= true,
+ 		.suspend	= r8a7740_pd_a4s_suspend,
+ 	}, {
+ 		.genpd.name	= "A3SP",
++		.base		= SYSC_BASE,
+ 		.bit_shift	= 11,
+ 		.gov		= &pm_domain_always_on_gov,
+ 		.no_debug	= true,
+ 		.suspend	= r8a7740_pd_a3sp_suspend,
+ 	}, {
+ 		.genpd.name	= "A3SM",
++		.base		= SYSC_BASE,
+ 		.bit_shift	= 12,
+ 		.gov		= &pm_domain_always_on_gov,
+ 	}, {
+ 		.genpd.name	= "A3SG",
++		.base		= SYSC_BASE,
+ 		.bit_shift	= 13,
+ 	}, {
+ 		.genpd.name	= "A4SU",
++		.base		= SYSC_BASE,
+ 		.bit_shift	= 20,
+ 	},
+ };
+diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+index 717e6413d29c..578446af6e7b 100644
+--- a/arch/arm/mach-shmobile/pm-rmobile.c
++++ b/arch/arm/mach-shmobile/pm-rmobile.c
+@@ -20,9 +20,9 @@
+ #include "pm-rmobile.h"
+ 
+ /* SYSC */
+-#define SPDCR		IOMEM(0xe6180008)
+-#define SWUCR		IOMEM(0xe6180014)
+-#define PSTR		IOMEM(0xe6180080)
++#define SPDCR	0x08	/* SYS Power Down Control Register */
++#define SWUCR	0x14	/* SYS Wakeup Control Register */
++#define PSTR	0x80	/* Power Status Register */
+ 
+ #define PSTR_RETRIES	100
+ #define PSTR_DELAY_US	10
+@@ -39,12 +39,12 @@ static int rmobile_pd_power_down(struct generic_pm_domain *genpd)
+ 			return ret;
+ 	}
+ 
+-	if (__raw_readl(PSTR) & mask) {
++	if (__raw_readl(rmobile_pd->base + PSTR) & mask) {
+ 		unsigned int retry_count;
+-		__raw_writel(mask, SPDCR);
++		__raw_writel(mask, rmobile_pd->base + SPDCR);
+ 
+ 		for (retry_count = PSTR_RETRIES; retry_count; retry_count--) {
+-			if (!(__raw_readl(SPDCR) & mask))
++			if (!(__raw_readl(rmobile_pd->base + SPDCR) & mask))
+ 				break;
+ 			cpu_relax();
+ 		}
+@@ -52,7 +52,8 @@ static int rmobile_pd_power_down(struct generic_pm_domain *genpd)
+ 
+ 	if (!rmobile_pd->no_debug)
+ 		pr_debug("%s: Power off, 0x%08x -> PSTR = 0x%08x\n",
+-			 genpd->name, mask, __raw_readl(PSTR));
++			 genpd->name, mask,
++			 __raw_readl(rmobile_pd->base + PSTR));
+ 
+ 	return 0;
+ }
+@@ -64,13 +65,13 @@ static int __rmobile_pd_power_up(struct rmobile_pm_domain *rmobile_pd,
  	unsigned int retry_count;
  	int ret = 0;
  
-+	if (rmobile_pd->bit_shift == ~0)
-+		return 0;
-+
-+	mask = 1 << rmobile_pd->bit_shift;
- 	if (__raw_readl(rmobile_pd->base + PSTR) & mask)
+-	if (__raw_readl(PSTR) & mask)
++	if (__raw_readl(rmobile_pd->base + PSTR) & mask)
  		goto out;
  
-@@ -117,6 +130,8 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
- 	__rmobile_pd_power_up(rmobile_pd, false);
- }
+-	__raw_writel(mask, SWUCR);
++	__raw_writel(mask, rmobile_pd->base + SWUCR);
  
-+#ifdef CONFIG_ARCH_SHMOBILE_LEGACY
-+
- void rmobile_init_domains(struct rmobile_pm_domain domains[], int num)
- {
- 	int j;
-@@ -132,6 +147,7 @@ void rmobile_add_device_to_domain_td(const char *domain_name,
- 	struct device *dev = &pdev->dev;
+ 	for (retry_count = 2 * PSTR_RETRIES; retry_count; retry_count--) {
+-		if (!(__raw_readl(SWUCR) & mask))
++		if (!(__raw_readl(rmobile_pd->base + SWUCR) & mask))
+ 			break;
+ 		if (retry_count > PSTR_RETRIES)
+ 			udelay(PSTR_DELAY_US);
+@@ -82,7 +83,8 @@ static int __rmobile_pd_power_up(struct rmobile_pm_domain *rmobile_pd,
  
- 	__pm_genpd_name_add_device(domain_name, dev, td);
-+	// FIXME Not yet done from DT
- 	if (pm_clk_no_clocks(dev))
- 		pm_clk_add(dev, NULL);
- }
-@@ -139,6 +155,7 @@ void rmobile_add_device_to_domain_td(const char *domain_name,
- void rmobile_add_devices_to_domains(struct pm_domain_device data[],
- 				    int size)
- {
-+	// FIXME Not yet done from DT
- 	struct gpd_timing_data latencies = {
- 		.stop_latency_ns = DEFAULT_DEV_LATENCY_NS,
- 		.start_latency_ns = DEFAULT_DEV_LATENCY_NS,
-@@ -151,3 +168,127 @@ void rmobile_add_devices_to_domains(struct pm_domain_device data[],
- 		rmobile_add_device_to_domain_td(data[j].domain_name,
- 						data[j].pdev, &latencies);
- }
-+
-+#else /* !CONFIG_ARCH_SHMOBILE_LEGACY */
-+
-+static int r8a7740_pd_a4s_suspend(void)
-+{
-+	/*
-+	 * The A4S domain contains the CPU core and therefore it should
-+	 * only be turned off if the CPU is in use.
-+	 */
-+	return -EBUSY;
-+}
-+
-+static int r8a7740_pd_a3sp_suspend(void)
-+{
-+	/*
-+	 * Serial consoles make use of SCIF hardware located in A3SP,
-+	 * keep such power domain on if "no_console_suspend" is set.
-+	 */
-+	return console_suspend_enabled ? 0 : -EBUSY;
-+}
-+
-+// FIXME Quirks
-+static bool rmobile_pm_quirks(struct rmobile_pm_domain *pd)
-+{
-+	unsigned int idx = pd->bit_shift;
-+	const char *name = pd->genpd.name;
-+
-+	if (idx == 2 || idx == 3) {
-+		// Do not enable
-+		pr_info("Skipping pm domain %s\n", name);
-+		return false;
-+	}
-+	if (idx == 10) {
-+		pr_info("%s is parent of CPU domain\n", name);
-+		pd->gov = &pm_domain_always_on_gov;
-+		pd->suspend = r8a7740_pd_a4s_suspend;
-+	}
-+	if (idx == 11) {
-+		pr_info("%s contains serial console\n", name);
-+		pd->gov = &pm_domain_always_on_gov;
-+		pd->suspend = r8a7740_pd_a3sp_suspend;
-+	}
-+	if (idx == 12) {
-+		pr_info("%s contains CPU\n", name);
-+		pd->gov = &pm_domain_always_on_gov;
-+	}
-+
-+	return true;
-+}
-+
-+static int rmobile_add_pm_domains(void __iomem *base,
-+				  struct device_node *parent,
-+				  struct generic_pm_domain *genpd_parent)
-+{
-+	struct device_node *np;
-+
-+	for_each_child_of_node(parent, np) {
-+		struct rmobile_pm_domain *pd;
-+		u32 idx = ~0;
-+		u32 latency;
-+
-+		if (of_property_read_u32(np, "reg", &idx)) {
-+			/* always-on domain */
-+		}
-+
-+		pd = kzalloc(sizeof(*pd), GFP_KERNEL);
-+		if (!pd)
-+			return -ENOMEM;
-+
-+		pd->genpd.name = np->name;
-+		if (!of_property_read_u32(np, "power-on-latency", &latency))
-+			pd->genpd.power_on_latency_ns = latency;
-+		if (!of_property_read_u32(np, "power-off-latency", &latency))
-+			pd->genpd.power_off_latency_ns = latency;
-+		pd->base = base;
-+		pd->bit_shift = idx;
-+
-+		if (!rmobile_pm_quirks(pd)) {
-+			kfree(pd);
-+			continue;
-+		}
-+
-+		rmobile_init_pm_domain(pd);
-+		if (genpd_parent)
-+			pm_genpd_add_subdomain(genpd_parent, &pd->genpd);
-+
-+		of_genpd_add_provider_simple(np, &pd->genpd);
-+
-+		rmobile_add_pm_domains(base, np, &pd->genpd);
-+	}
-+	return 0;
-+}
-+
-+static __init int rmobile_init_pm_domains(void)
-+{
-+	struct device_node *np, *pmd;
+ 	if (!rmobile_pd->no_debug)
+ 		pr_debug("%s: Power on, 0x%08x -> PSTR = 0x%08x\n",
+-			 rmobile_pd->genpd.name, mask, __raw_readl(PSTR));
++			 rmobile_pd->genpd.name, mask,
++			 __raw_readl(rmobile_pd->base + PSTR));
+ 
+ out:
+ 	if (ret == 0 && rmobile_pd->resume && do_resume)
+diff --git a/arch/arm/mach-shmobile/pm-rmobile.h b/arch/arm/mach-shmobile/pm-rmobile.h
+index 8f66b343162b..0602130bb260 100644
+--- a/arch/arm/mach-shmobile/pm-rmobile.h
++++ b/arch/arm/mach-shmobile/pm-rmobile.h
+@@ -21,6 +21,7 @@ struct rmobile_pm_domain {
+ 	struct dev_power_governor *gov;
+ 	int (*suspend)(void);
+ 	void (*resume)(void);
 +	void __iomem *base;
-+	int ret = 0;
+ 	unsigned int bit_shift;
+ 	bool no_debug;
+ };
+diff --git a/arch/arm/mach-shmobile/pm-sh7372.c b/arch/arm/mach-shmobile/pm-sh7372.c
+index 7e5c2676c489..7181a280b3b5 100644
+--- a/arch/arm/mach-shmobile/pm-sh7372.c
++++ b/arch/arm/mach-shmobile/pm-sh7372.c
+@@ -45,6 +45,8 @@
+ #define PLLC01STPCR IOMEM(0xe61500c8)
+ 
+ /* SYSC */
++#define SYSC_BASE IOMEM(0xe6180000)
 +
-+	for_each_compatible_node(np, NULL, "renesas,sysc-rmobile") {
-+		base = of_iomap(np, 0);
-+		if (!base) {
-+			pr_warn("%s cannot map reg 0\n", np->full_name);
-+			continue;
-+		}
-+
-+		pmd = of_find_node_by_name(np, "pm-domains");
-+		if (!pmd) {
-+			pr_warn("%s lacks pm-domains node\n", np->full_name);
-+			continue;
-+		}
-+
-+		ret = rmobile_add_pm_domains(base, pmd, NULL);
-+		of_node_put(pmd);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return ret;
-+}
-+
-+core_initcall(rmobile_init_pm_domains);
-+
-+#endif /* !CONFIG_ARCH_SHMOBILE_LEGACY */
+ #define SBAR IOMEM(0xe6180020)
+ #define WUPRMSK IOMEM(0xe6180028)
+ #define WUPSMSK IOMEM(0xe618002c)
+@@ -118,24 +120,28 @@ static struct rmobile_pm_domain sh7372_pm_domains[] = {
+ 		.genpd.name = "A4LC",
+ 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
+ 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
++		.base = SYSC_BASE,
+ 		.bit_shift = 1,
+ 	},
+ 	{
+ 		.genpd.name = "A4MP",
+ 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
+ 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
++		.base = SYSC_BASE,
+ 		.bit_shift = 2,
+ 	},
+ 	{
+ 		.genpd.name = "D4",
+ 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
+ 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
++		.base = SYSC_BASE,
+ 		.bit_shift = 3,
+ 	},
+ 	{
+ 		.genpd.name = "A4R",
+ 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
+ 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
++		.base = SYSC_BASE,
+ 		.bit_shift = 5,
+ 		.suspend = sh7372_a4r_pd_suspend,
+ 		.resume = sh7372_intcs_resume,
+@@ -144,18 +150,21 @@ static struct rmobile_pm_domain sh7372_pm_domains[] = {
+ 		.genpd.name = "A3RV",
+ 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
+ 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
++		.base = SYSC_BASE,
+ 		.bit_shift = 6,
+ 	},
+ 	{
+ 		.genpd.name = "A3RI",
+ 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
+ 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
++		.base = SYSC_BASE,
+ 		.bit_shift = 8,
+ 	},
+ 	{
+ 		.genpd.name = "A4S",
+ 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
+ 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
++		.base = SYSC_BASE,
+ 		.bit_shift = 10,
+ 		.gov = &pm_domain_always_on_gov,
+ 		.no_debug = true,
+@@ -166,6 +175,7 @@ static struct rmobile_pm_domain sh7372_pm_domains[] = {
+ 		.genpd.name = "A3SP",
+ 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
+ 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
++		.base = SYSC_BASE,
+ 		.bit_shift = 11,
+ 		.gov = &pm_domain_always_on_gov,
+ 		.no_debug = true,
+@@ -175,6 +185,7 @@ static struct rmobile_pm_domain sh7372_pm_domains[] = {
+ 		.genpd.name = "A3SG",
+ 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
+ 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
++		.base = SYSC_BASE,
+ 		.bit_shift = 13,
+ 	},
+ };
 -- 
 1.9.1
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
