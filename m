@@ -1,111 +1,60 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM / sysfs: avoid shadowing variables
-Date: Mon, 08 Sep 2014 23:03:41 +0200
-Message-ID: <1603754.lEBGCkFl5s@vostro.rjw.lan>
-References: <1410158880-11413-1-git-send-email-johannes@sipsolutions.net>
+Subject: Re: [PATCH v3 2/9] PM / Domains: Add generic OF-based PM domain look-up
+Date: Mon, 08 Sep 2014 23:04:23 +0200
+Message-ID: <5191943.peyCs6gZVs@vostro.rjw.lan>
+References: <1409838756-31963-1-git-send-email-ulf.hansson@linaro.org> <3075771.rIWPm62y5x@vostro.rjw.lan> <CAPDyKFovLmajQORVT1Mf01J5L7O73JNDFz=gr3fXKvF5xZGCdQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62614 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:49567 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754173AbaIHUoO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Sep 2014 16:44:14 -0400
-In-Reply-To: <1410158880-11413-1-git-send-email-johannes@sipsolutions.net>
+	with SMTP id S1753416AbaIHUo4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Sep 2014 16:44:56 -0400
+In-Reply-To: <CAPDyKFovLmajQORVT1Mf01J5L7O73JNDFz=gr3fXKvF5xZGCdQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Johannes Berg <johannes.berg@intel.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dre>
 
-On Monday, September 08, 2014 08:48:00 AM Johannes Berg wrote:
-> From: Johannes Berg <johannes.berg@intel.com>
+On Monday, September 08, 2014 09:26:20 AM Ulf Hansson wrote:
+> On 8 September 2014 00:13, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Thursday, September 04, 2014 03:52:29 PM Ulf Hansson wrote:
+> >> From: Tomasz Figa <t.figa@samsung.com>
+> >>
+> >> This patch introduces generic code to perform PM domain look-up using
+> >> device tree and automatically bind devices to their PM domains.
+> >>
+> >> Generic device tree bindings are introduced to specify PM domains of
+> >> devices in their device tree nodes.
+> >>
+> >> Backwards compatibility with legacy Samsung-specific PM domain bindings
+> >> is provided, but for now the new code is not compiled when
+> >> CONFIG_ARCH_EXYNOS is selected to avoid collision with legacy code.
+> >> This will change as soon as the Exynos PM domain code gets converted to
+> >> use the generic framework in further patch.
+> >>
+> >> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >> [Ulf:Added attach|detach functions, fixed review comments]
+> >> Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+> >
+> > However, for this one (and consequently the rest) I need an ACK from the
+> > people who maintain the bindings.
 > 
-> The global variable "enabled" is shadowed in a number of
-> functions in this file, rename it to "_enabled" to avoid
-> that. For consistency, also rename "disabled" and move
-> them both into the #ifdef where they're needed.
+> These DT bindings have been discussed between Tomasz and devicetree
+> maintainers previously. So I think there are fine.
 > 
-> Signed-off-by: Johannes Berg <johannes.berg@intel.com>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Also, when browsing the mail-archives, I found an ack from Rob Herrring:
+> http://lists.infradead.org/pipermail/linux-arm-kernel/2014-March/237989.html
+> 
+> I realize that I didn't put the DT maintainers on the to-line when
+> posting this patch, but just the devicetree list. I have now included
+> them on this reply, but maybe I should repost instead. What do you
+> think? Are you happy with the above ack from Rob?
 
-Queued up for 3.18, thanks!
+That should be sufficient, but I wonder why you didn't add it to the patch
+to start with?
 
-> ---
->  drivers/base/power/sysfs.c | 24 +++++++++++++-----------
->  1 file changed, 13 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-> index 95b181d1ca6d..a9d26ed11bf4 100644
-> --- a/drivers/base/power/sysfs.c
-> +++ b/drivers/base/power/sysfs.c
-> @@ -92,9 +92,6 @@
->   *	wakeup_count - Report the number of wakeup events related to the device
->   */
->  
-> -static const char enabled[] = "enabled";
-> -static const char disabled[] = "disabled";
-> -
->  const char power_group_name[] = "power";
->  EXPORT_SYMBOL_GPL(power_group_name);
->  
-> @@ -336,11 +333,14 @@ static DEVICE_ATTR(pm_qos_remote_wakeup, 0644,
->  #endif /* CONFIG_PM_RUNTIME */
->  
->  #ifdef CONFIG_PM_SLEEP
-> +static const char _enabled[] = "enabled";
-> +static const char _disabled[] = "disabled";
-> +
->  static ssize_t
->  wake_show(struct device * dev, struct device_attribute *attr, char * buf)
->  {
->  	return sprintf(buf, "%s\n", device_can_wakeup(dev)
-> -		? (device_may_wakeup(dev) ? enabled : disabled)
-> +		? (device_may_wakeup(dev) ? _enabled : _disabled)
->  		: "");
->  }
->  
-> @@ -357,11 +357,11 @@ wake_store(struct device * dev, struct device_attribute *attr,
->  	cp = memchr(buf, '\n', n);
->  	if (cp)
->  		len = cp - buf;
-> -	if (len == sizeof enabled - 1
-> -			&& strncmp(buf, enabled, sizeof enabled - 1) == 0)
-> +	if (len == sizeof _enabled - 1
-> +			&& strncmp(buf, _enabled, sizeof _enabled - 1) == 0)
->  		device_set_wakeup_enable(dev, 1);
-> -	else if (len == sizeof disabled - 1
-> -			&& strncmp(buf, disabled, sizeof disabled - 1) == 0)
-> +	else if (len == sizeof _disabled - 1
-> +			&& strncmp(buf, _disabled, sizeof _disabled - 1) == 0)
->  		device_set_wakeup_enable(dev, 0);
->  	else
->  		return -EINVAL;
-> @@ -570,7 +570,8 @@ static ssize_t async_show(struct device *dev, struct device_attribute *attr,
->  			  char *buf)
->  {
->  	return sprintf(buf, "%s\n",
-> -			device_async_suspend_enabled(dev) ? enabled : disabled);
-> +			device_async_suspend_enabled(dev) ?
-> +				_enabled : _disabled);
->  }
->  
->  static ssize_t async_store(struct device *dev, struct device_attribute *attr,
-> @@ -582,9 +583,10 @@ static ssize_t async_store(struct device *dev, struct device_attribute *attr,
->  	cp = memchr(buf, '\n', n);
->  	if (cp)
->  		len = cp - buf;
-> -	if (len == sizeof enabled - 1 && strncmp(buf, enabled, len) == 0)
-> +	if (len == sizeof _enabled - 1 && strncmp(buf, _enabled, len) == 0)
->  		device_enable_async_suspend(dev);
-> -	else if (len == sizeof disabled - 1 && strncmp(buf, disabled, len) == 0)
-> +	else if (len == sizeof _disabled - 1 &&
-> +		 strncmp(buf, _disabled, len) == 0)
->  		device_disable_async_suspend(dev);
->  	else
->  		return -EINVAL;
-> 
+Rafael
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
