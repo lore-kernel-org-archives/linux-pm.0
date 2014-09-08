@@ -1,151 +1,82 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 3/9] PM / Domains: Add APIs to attach/detach a PM domain for a device
-Date: Tue, 09 Sep 2014 00:11:53 +0200
-Message-ID: <2898464.MGK3rBhRTU@vostro.rjw.lan>
-References: <1409838756-31963-1-git-send-email-ulf.hansson@linaro.org> <1409838756-31963-4-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: [PATCH] Hibernate: Do not assume the first e820 area to be RAM
+Date: Tue, 09 Sep 2014 00:52:55 +0200
+Message-ID: <1561567.ev2pEO8C5v@vostro.rjw.lan>
+References: <1407754252-22779-1-git-send-email-jlee@suse.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1409838756-31963-4-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1407754252-22779-1-git-send-email-jlee@suse.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 04, 2014 03:52:30 PM Ulf Hansson wrote:
-> To maintain scalability let's add common methods to attach and detach
-> a PM domain for a device, dev_pm_domain_attach|detach().
+On Monday, August 11, 2014 06:50:52 PM Lee, Chun-Yi wrote:
+> In arch/x86/kernel/setup.c::trim_bios_range(), the codes introduced
+> by 1b5576e6 (base on d8a9e6a5), it updates the first 4Kb of memory
+> to be E820_RESERVED region. That's because it's a BIOS owned area
+> but generally not listed in the E820 table:
 > 
-> Typically dev_pm_domain_attach() shall be invoked from subsystem level
-> code at the probe phase to try to attach a device to its PM domain.
-> The reversed actions may be done a the remove phase and then by invoking
-> dev_pm_domain_detach().
+> [    0.000000] e820: BIOS-provided physical RAM map:
+> [    0.000000] BIOS-e820: [mem 0x0000000000000000-0x0000000000096fff] usable
+> [    0.000000] BIOS-e820: [mem 0x0000000000097000-0x0000000000097fff] reserved
+> ...
+> [    0.000000] e820: update [mem 0x00000000-0x00000fff] usable ==> reserved
+> [    0.000000] e820: remove [mem 0x000a0000-0x000fffff] usable
 > 
-> The supported PM domains at this point are the ACPI and the generic
-> PM domains.
+> But the region of first 4Kb didn't register to nosave memory:
 > 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+> [    0.000000] PM: Registered nosave memory: [mem 0x00097000-0x00097fff]
+> [    0.000000] PM: Registered nosave memory: [mem 0x000a0000-0x000fffff]
+> 
+> The codes in e820_mark_nosave_regions() assumes the first e820 area to be
+> RAM, so it causes the first 4Kb E820_RESERVED region ignored when register
+> to nosave. This patch removed assumption of the first e820 area.
+> 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+
+Thomas, Ingo, Peter, any objections here?
+
+If not, do you want to handle it or do you want me to do that?
+
 > ---
->  drivers/base/power/common.c | 56 +++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pm.h          | 14 ++++++++++++
->  2 files changed, 70 insertions(+)
+>  arch/x86/kernel/e820.c | 7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-> index df2e5ee..9a86b16 100644
-> --- a/drivers/base/power/common.c
-> +++ b/drivers/base/power/common.c
-> @@ -11,6 +11,8 @@
->  #include <linux/export.h>
->  #include <linux/slab.h>
->  #include <linux/pm_clock.h>
-> +#include <linux/acpi.h>
-> +#include <linux/pm_domain.h>
+> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+> index 988c00a..d595240 100644
+> --- a/arch/x86/kernel/e820.c
+> +++ b/arch/x86/kernel/e820.c
+> @@ -682,18 +682,17 @@ void __init parse_e820_ext(u64 phys_addr, u32 data_len)
+>   * hibernation (32 bit) or software suspend and suspend to RAM (64 bit).
+>   *
+>   * This function requires the e820 map to be sorted and without any
+> - * overlapping entries and assumes the first e820 area to be RAM.
+> + * overlapping entries.
+>   */
+>  void __init e820_mark_nosave_regions(unsigned long limit_pfn)
+>  {
+>  	int i;
+>  	unsigned long pfn;
 >  
->  /**
->   * dev_pm_get_subsys_data - Create or refcount power.subsys_data for device.
-> @@ -82,3 +84,57 @@ int dev_pm_put_subsys_data(struct device *dev)
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_put_subsys_data);
-> +
-> +/**
-> + * dev_pm_domain_attach - Attach a device to its PM domain.
-> + * @dev: Device to attach.
-> + * @power_on: Used to indicate whether we should power on the device.
-> + *
-> + * The @dev may only be attached to a single PM domain. By iterating through
-> + * the available alternatives we try to find a valid PM domain for the device.
-> + *
-> + * This function should typically be invoked from subsystem level code during
-> + * the probe phase. Especially for those that holds devices which requires
-> + * power management through PM domains.
-> + *
-> + * Callers must ensure proper synchronization of this function with power
-> + * management callbacks.
-> + *
-> + * Returns 0 on successfully attached PM domain or negative error code.
-> + */
-> +int dev_pm_domain_attach(struct device *dev, bool power_on)
-> +{
-> +	int ret;
-> +
-> +	ret = acpi_dev_pm_attach(dev, power_on);
-> +	if (!ret || ret == -EPROBE_DEFER)
-
-acpi_dev_pm_attach() doesn't return EPROBE_DEFER and there are no plans for it
-to do that.  IIRC, I pointed that out to you in the previous round (or even
-earlier).  Please remove this check, it is pointless.
-
-> +		return ret;
-> +
-> +	return genpd_dev_pm_attach(dev);
-
-And why don't you write this as
-
-	ret = acpi_dev_pm_attach(dev, power_on);
-	if (ret)
-		ret = genpd_dev_pm_attach(dev);
-
-	return ret;
-
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_domain_attach);
-> +
-> +/**
-> + * dev_pm_domain_detach - Detach a device from its PM domain.
-> + * @dev: Device to attach.
-> + * @power_off: Used to indicate whether we should power off the device.
-> + *
-> + * The @dev may be attached to a PM domain. By iterating through the available
-> + * alternatives we detach it from its PM domain.
-> + *
-> + * This functions will reverse the actions from dev_pm_domain_attach() and thus
-> + * detach the @dev from its PM domain. Typically it should be invoked from
-> + * subsystem level code during the remove phase.
-> + *
-> + * Callers must ensure proper synchronization of this function with power
-> + * management callbacks.
-> + *
-> + * Returns 0 on successfully detached PM domain or negative error code.
-> + */
-> +int dev_pm_domain_detach(struct device *dev, bool power_off)
-> +{
-> +	if (acpi_dev_pm_detach(dev, power_off))
-> +		return genpd_dev_pm_detach(dev);
-
-And analogously here?  Or the other way around?  Just please make them both
-look analogously.
-
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_domain_detach);
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 72c0fe0..8176b07 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -621,6 +621,20 @@ struct dev_pm_domain {
->  	struct dev_pm_ops	ops;
->  };
+> -	pfn = PFN_DOWN(e820.map[0].addr + e820.map[0].size);
+> -	for (i = 1; i < e820.nr_map; i++) {
+> +	for (i = 0; i < e820.nr_map; i++) {
+>  		struct e820entry *ei = &e820.map[i];
 >  
-> +#ifdef CONFIG_PM
-> +extern int dev_pm_domain_attach(struct device *dev, bool power_on);
-> +extern int dev_pm_domain_detach(struct device *dev, bool power_off);
-> +#else
-> +static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
-> +{
-> +	return -ENODEV;
-> +}
-> +static inline int dev_pm_domain_detach(struct device *dev, bool power_off)
-> +{
-> +	return -ENODEV;
-> +}
-> +#endif
-> +
->  /*
->   * The PM_EVENT_ messages are also used by drivers implementing the legacy
->   * suspend framework, based on the ->suspend() and ->resume() callbacks common
+> -		if (pfn < PFN_UP(ei->addr))
+> +		if (i > 0 && pfn < PFN_UP(ei->addr))
+>  			register_nosave_region(pfn, PFN_UP(ei->addr));
+>  
+>  		pfn = PFN_DOWN(ei->addr + ei->size);
 > 
 
 -- 
