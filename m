@@ -1,84 +1,159 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] Hibernate: Do not assume the first e820 area to be RAM
-Date: Tue, 09 Sep 2014 00:52:55 +0200
-Message-ID: <1561567.ev2pEO8C5v@vostro.rjw.lan>
-References: <1407754252-22779-1-git-send-email-jlee@suse.com>
+From: Khiem Nguyen <khiem.nguyen.xt@renesas.com>
+Subject: Re: [PATCH/RFC 2/5] PM / Domains: Add DT bindings for the R-Mobile
+ System Controller
+Date: Tue, 09 Sep 2014 07:44:11 +0900
+Message-ID: <540E313B.8000305@renesas.com>
+References: <1410183344-14756-1-git-send-email-geert+renesas@glider.be> <1410183344-14756-3-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1407754252-22779-1-git-send-email-jlee@suse.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from relmlor4.renesas.com ([210.160.252.174]:39834 "EHLO
+	relmlie3.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754665AbaIHWoN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Sep 2014 18:44:13 -0400
+In-Reply-To: <1410183344-14756-3-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, khiem.nguyen.xt@renesas.com, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On Monday, August 11, 2014 06:50:52 PM Lee, Chun-Yi wrote:
-> In arch/x86/kernel/setup.c::trim_bios_range(), the codes introduced
-> by 1b5576e6 (base on d8a9e6a5), it updates the first 4Kb of memory
-> to be E820_RESERVED region. That's because it's a BIOS owned area
-> but generally not listed in the E820 table:
-> 
-> [    0.000000] e820: BIOS-provided physical RAM map:
-> [    0.000000] BIOS-e820: [mem 0x0000000000000000-0x0000000000096fff] usable
-> [    0.000000] BIOS-e820: [mem 0x0000000000097000-0x0000000000097fff] reserved
-> ...
-> [    0.000000] e820: update [mem 0x00000000-0x00000fff] usable ==> reserved
-> [    0.000000] e820: remove [mem 0x000a0000-0x000fffff] usable
-> 
-> But the region of first 4Kb didn't register to nosave memory:
-> 
-> [    0.000000] PM: Registered nosave memory: [mem 0x00097000-0x00097fff]
-> [    0.000000] PM: Registered nosave memory: [mem 0x000a0000-0x000fffff]
-> 
-> The codes in e820_mark_nosave_regions() assumes the first e820 area to be
-> RAM, so it causes the first 4Kb E820_RESERVED region ignored when register
-> to nosave. This patch removed assumption of the first e820 area.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+Hi Geert, 
 
-Thomas, Ingo, Peter, any objections here?
+Thanks for your patch.
 
-If not, do you want to handle it or do you want me to do that?
-
+On 9/8/2014 10:35 PM, Geert Uytterhoeven wrote:
+> A.o., the Renesas R-Mobile System Controller provides power management
+> support, following the generic PM domain bindings in
+> Documentation/devicetree/bindings/power/power_domain.txt.
+> 
+> For now this supports the R-Mobile A1 (r8a7740) only, but it should be
+> sufficiently generic to handle other members of the SH-Mobile/R-Mobile
+> family in the future.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > ---
->  arch/x86/kernel/e820.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
+>  .../bindings/power/renesas,sysc-rmobile.txt        | 106 +++++++++++++++++++++
+>  1 file changed, 106 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
 > 
-> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-> index 988c00a..d595240 100644
-> --- a/arch/x86/kernel/e820.c
-> +++ b/arch/x86/kernel/e820.c
-> @@ -682,18 +682,17 @@ void __init parse_e820_ext(u64 phys_addr, u32 data_len)
->   * hibernation (32 bit) or software suspend and suspend to RAM (64 bit).
->   *
->   * This function requires the e820 map to be sorted and without any
-> - * overlapping entries and assumes the first e820 area to be RAM.
-> + * overlapping entries.
->   */
->  void __init e820_mark_nosave_regions(unsigned long limit_pfn)
->  {
->  	int i;
->  	unsigned long pfn;
->  
-> -	pfn = PFN_DOWN(e820.map[0].addr + e820.map[0].size);
-> -	for (i = 1; i < e820.nr_map; i++) {
-> +	for (i = 0; i < e820.nr_map; i++) {
->  		struct e820entry *ei = &e820.map[i];
->  
-> -		if (pfn < PFN_UP(ei->addr))
-> +		if (i > 0 && pfn < PFN_UP(ei->addr))
->  			register_nosave_region(pfn, PFN_UP(ei->addr));
->  
->  		pfn = PFN_DOWN(ei->addr + ei->size);
+> diff --git a/Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt b/Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
+> new file mode 100644
+> index 000000000000..8d9d64df0088
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
+> @@ -0,0 +1,106 @@
+> +DT bindings for the Renesas R-Mobile System Controller
+> +
+> +== System Controller Node ==
+> +
+> +The R-Mobile System Controller provides the following functions:
+> +  - Boot mode management,
+> +  - Reset generation,
+> +  - Power management.
+> +
+> +Required properties:
+> +- compatible: Should be "renesas,sysc-<soctype>", "renesas,sysc-rmobile" as
+> +	      fallback.
+> +	      Examples with soctypes are:
+> +		- "renesas,sysc-r8a7740" (R-Mobile A1)
+> +- reg: Two address start and address range blocks for the device:
+> +         - The first block refers to the normally accessible registers,
+> +         - the second block refers to the registers protected by the HPB
+> +	   semaphore.
+> +
+> +Optional nodes:
+> +- pm-domains: This node contains a hierarchy of PM domain nodes, which should
+> +  match the Power Area Hierarchy in the Power Domain Specifications section of
+> +  the device's datasheet.
+> +
+> +
+> +== PM Domain Nodes ==
+> +
+> +Each of the PM domain nodes represents a PM domain, as documented by the
+> +generic PM domain bindings in
+> +Documentation/devicetree/bindings/power/power_domain.txt.
+> +
+> +The nodes should be named by the real power area names, and thus their names
+> +should be unique.
+> +
+> +Required properties:
+> +  - #power-domain-cells: Must be 0.
+> +
+> +Optional properties:
+> +- reg: If the PM domain is not always-on, this property must contain the bit
+> +       index number for the corresponding power area in the various Power
+> +       Control and Status Registers. The parent's node must contain the
+> +       following two properties:
+> +	 - #address-cells: Must be 1,
+> +	 - #address-cells: Must be 0.
+
+Should it be "#size-cells: Must be 0." ?
+
+> +       If the PM domain is always-on, this property must be omitted.
+> +- power-on-latency: Power-on latency of the PM domain, in ns,
+> +- power-off-latency: Power-off latency of the PM domain, in ns.
+> +
+> +
+> +Example:
+> +
+> +This shows a subset of the r8a7740 PM domain hierarchy, containing the
+> +C5 "always-on" domain, 2 of its subdomains (A4S and A4SU), and the A3SP domain,
+> +which is a subdomain of A4S.
+> +
+> +	sysc: system-controller@e6180000 {
+> +		compatible = "renesas,sysc-r8a7740", "renesas,sysc-rmobile";
+> +		reg = <0xe6180000 8000>, <0xe6188000 8000>;
+> +
+> +		pm-domains {
+> +			pd_c5: c5 {
+> +				#address-cells = <1>;
+> +				#size-cells = <0>;
+> +				#power-domain-cells = <0>;
+> +
+> +				pd_a4s: a4s@10 {
+> +					reg = <10>;
+> +					#address-cells = <1>;
+> +					#size-cells = <0>;
+> +					#power-domain-cells = <0>;
+> +					power-on-latency = <250000>;
+> +					power-off-latency = <250000>;
+> +
+> +					pd_a3sp: a3sp@11 {
+> +						reg = <11>;
+> +						#power-domain-cells = <0>;
+> +						power-on-latency = <250000>;
+> +						power-off-latency = <250000>;
+> +					};
+> +				};
+> +
+> +				pd_a4su: a4su@20 {
+> +					reg = <20>;
+> +					#power-domain-cells = <0>;
+> +					power-on-latency = <250000>;
+> +					power-off-latency = <250000>;
+> +				};
+> +			};
+> +		};
+> +	};
+> +
+> +
+> +== PM Domain Consumers ==
+> +
+> +Hardware blocks belonging to a PM domain should contain a "power-domains"
+> +property that is a phandle pointing to the corresponding PM domain node.
+> +
+> +Example:
+> +
+> +	tpu: pwm@e6600000 {
+> +		compatible = "renesas,tpu-r8a7740", "renesas,tpu";
+> +		reg = <0xe6600000 0x100>;
+> +		clocks = <&mstp3_clks R8A7740_CLK_TPU0>;
+> +		power-domains = <&pd_a3sp>;
+> +		#pwm-cells = <3>;
+> +	};
 > 
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Best regards,
+KHIEM Nguyen
