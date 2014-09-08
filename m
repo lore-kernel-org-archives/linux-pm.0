@@ -1,154 +1,84 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: PROBLEM: Kernel OOPS and possible system freeze after concurrent
- writing to cpufreq/scaling_governor (Resend)
-Date: Mon, 8 Sep 2014 16:26:42 +0530
-Message-ID: <CAKohpo=DeQQq505U_EDsJ+5dPGPuSOypx_YbTYW5owj4FDYLpA@mail.gmail.com>
-References: <1405522398.2348.42.camel@x200t>
-	<1406185912.2406.3.camel@x200t>
-	<CAKohpomo_Qoc-ioC-L-n6z19SLMgCfzebec7pqkq9y86gt61HA@mail.gmail.com>
-	<1406277769.2399.4.camel@x200t>
-	<CAKohpomDkU1nBP4+1EkSdDxQESD+1b6kmaELVfGEifqTL+ZOdg@mail.gmail.com>
-	<1410164208.6159.18.camel@x200t>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2] thermal: rcar: Add binding docs for new R-Car Gen2 SoCs
+Date: Mon, 8 Sep 2014 13:02:50 +0200
+Message-ID: <CAMuHMdWceJ3H_LYHkAr+W_yKtRj9ghzad1A-stWAuHoNi555tw@mail.gmail.com>
+References: <1409213552-5713-1-git-send-email-geert+renesas@glider.be>
+	<20140906161357.GA3573@developer>
+	<CAMuHMdW_BYT8ughx=-j3Y+5Bd1Jkb3An8D=uTNcXa6rU3nfNQg@mail.gmail.com>
+	<20140908104835.GB3573@developer>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=001a11c2eb5293ba1305028bac8b
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f46.google.com ([209.85.218.46]:53933 "EHLO
-	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbaIHK4n (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Sep 2014 06:56:43 -0400
-Received: by mail-oi0-f46.google.com with SMTP id g201so1399927oib.33
-        for <linux-pm@vger.kernel.org>; Mon, 08 Sep 2014 03:56:42 -0700 (PDT)
-In-Reply-To: <1410164208.6159.18.camel@x200t>
+Received: from mail-lb0-f172.google.com ([209.85.217.172]:48104 "EHLO
+	mail-lb0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753636AbaIHLCx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Sep 2014 07:02:53 -0400
+In-Reply-To: <20140908104835.GB3573@developer>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Zhang Rui <rui.zhang@intel.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 
---001a11c2eb5293ba1305028bac8b
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hi Eduardo,
 
-On 8 September 2014 13:46, Robert Sch=C3=B6ne <robert.schoene@tu-dresden.de=
-> wrote:
-> (Sorry for the resend, I forgot to disable my S/MIME signature)
+On Mon, Sep 8, 2014 at 12:48 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
+> On Sat, Sep 06, 2014 at 08:10:13PM +0200, Geert Uytterhoeven wrote:
+>> On Sat, Sep 6, 2014 at 6:13 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
+>> > On Thu, Aug 28, 2014 at 10:12:32AM +0200, Geert Uytterhoeven wrote:
+>> >>   - r8a7792 (R-Car V2H)
+>> >>   - r8a7793 (R-Car M2-N)
+>> >>   - r8a7794 (R-Car E2)
+>> >>
+>> >> r8a7791 is now called "R-Car M2-W".
+>> >>
+>> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> >
+>> > I don't have any concerns on this patch and will be adding to my next
+>> > branch. But before that, I have one simple question. Although the
+>>
+>> Thanks!
+>>
+>> > binding description mention about soc types, the rcar thermal driver do
+>> > not differentiate soc types, only supports the "renesas,rcar-thermal"
+>> > compatible.
+>> >
+>> > Do you care explaining why we need the soc specific compatibles?
+>>
+>> The reason we also have the SoC-specific values is that we are not
+>> 100% sure the thermal IP cores in the Renesas R-Car Gen1 and R-Car Gen2
+>> series are really identical.
+>>
+>> Currently the driver treats all of them the same, but if we ever discover
+>> a difference, and the driver needs to start distinguishing among different
+>> versions, we will need to have the SoC-specific values in the DTSes to
+>> do so.
 >
-> The patch you suggested did not work, so I introduced a new mutex in the
-> patch below.
+> In this case, wouldn't make sense to find out first the differences
+> before changing DT documentation?
 
-Okay, let me apologize first. This thread has taken much longer than I
-expected, to some level due to me. I have changed my job recently
-and have been running busy with new assignments, etc..
+That may be too late, if a DTS is in active use.
 
-> I am not happy with adding just another mutex, but it fixes my problem
-> of changing governors concurrently.
+We cannot have new SoC-specific values in a DTS if they're not documented,
+as checkpatch would complain.
 
-So, yeah back to the problem.
+> Otherwise, you may also figure out that there is no difference and
+> then send a patch to remove the changes you are sending now
+> (or even removing the -<soc specific> parts).
 
-Can you please try attached patch with the revert earlier suggested?
-To make it clear again, cherry-pick: 19c7630 and then apply  this
-patch.
+Removing SoC-specific parts cannot be done, as some of they are already
+in use in existing DTSes. These are supposed to be backwards-compatible.
 
-Let me know if it still doesn't work for you..
+We are doing the same for (most) other Renesas hardware blocks.
 
-I don't have a local setup to test this and so its just compile tested.
+Thanks!
 
-Cc'd few more people who also reported similar issues.
+Gr{oetje,eeting}s,
+
+                        Geert
 
 --
-viresh
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---001a11c2eb5293ba1305028bac8b
-Content-Type: text/x-patch; charset=US-ASCII;
-	name="0001-cpufreq-Track-governor-state-with-policy-governor_st.patch"
-Content-Disposition: attachment;
-	filename="0001-cpufreq-Track-governor-state-with-policy-governor_st.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hztp0lit0
-
-RnJvbSAyNTA2ODZiZmRiYjE4M2E5ZDc5OGIwNzFkMzI5NzJiNjVkMzVjOTE1IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8MjUwNjg2YmZkYmIxODNhOWQ3OThiMDcxZDMyOTcy
-YjY1ZDM1YzkxNS4xNDEwMTczMTEyLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogTW9uLCA4IFNlcCAy
-MDE0IDE2OjAxOjE1ICswNTMwClN1YmplY3Q6IFtQQVRDSF0gY3B1ZnJlcTogVHJhY2sgZ292ZXJu
-b3Itc3RhdGUgd2l0aCAncG9saWN5LT5nb3Zlcm5vcl9zdGF0ZScKCkV2ZW4gYWZ0ZXIgc2VyaWFs
-aXppbmcgY2FsbHMgdG8gX19jcHVmcmVxX2dvdmVybm9yKCkgdGhlcmUgYXJlIHNvbWUgcmFjZXMg
-bGVmdC4KVGhlIHJhY2VzIGFyZSBhcm91bmQgZG9pbmcgdGhlIGludmFsaWQgb3BlcmF0aW9uIGR1
-cmluZyBzb21lIHN0YXRlIG9mIGNwdWZyZXEKZ292ZXJub3JzLiBGb3IgZXhhbXBsZSwgd2hpbGUg
-dGhlIGdvdmVybm9yIGlzIGluIENQVUZSRVFfR09WX1BPTElDWV9FWElUIHN0YXRlLAp3ZSBjYW4n
-dCBkbyBDUFVGUkVRX0dPVl9TVEFSVCB3aXRob3V0IGZpcnN0IGRvaW5nIENQVUZSRVFfR09WX1BP
-TElDWV9JTklULgoKQWxsIHRoZXNlIGNhc2VzIHdlcmVuJ3QgaGFuZGxlZCBlbGVnYW50bHkgaW4g
-X19jcHVmcmVxX2dvdmVybm9yKCkgYW5kIHNvIHRoZXJlCndlcmUgZW5vdWdoIGNoYW5jZXMgdGhh
-dCB0aGluZ3MgbWF5IGdvIHdyb25nIHdoZW4gZ292ZXJub3JzIGFyZSBjaGFuZ2VkIHdpdGgKbXVs
-dGlwbGUgdGhyZWFkLgoKVGhpcyBwYXRjaCByZW5hbWVzIGFuIGV4aXN0aW5nIGZpZWxkICdwb2xp
-Y3ktPmdvdmVybm9yX2VuYWJsZWQnIHdpdGgKJ3BvbGljeS0+Z292ZXJub3Jfc3RhdGUnIHdoaWNo
-IGNhbiBoYXZlIG1vcmUgdmFsdWVzIHRoYW4gMCAmIDEgbm93LgoKV2UgbWFpbnRhaW4gdGhlIGN1
-cnJlbnQgc3RhdGUgb2YgZ292ZXJub3JzIGZvciBlYWNoIHBvbGljeSBub3cgYW5kIHJlamVjdCBh
-bnkKaW52YWxpZCBvcGVyYXRpb24uCgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVz
-aC5rdW1hckBsaW5hcm8ub3JnPgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgICAgICAg
-ICAgfCAyNiArKysrKysrKysrKysrLS0tLS0tLS0tLS0tLQogZHJpdmVycy9jcHVmcmVxL2NwdWZy
-ZXFfZ292ZXJub3IuYyB8ICAyICstCiBpbmNsdWRlL2xpbnV4L2NwdWZyZXEuaCAgICAgICAgICAg
-IHwgIDIgKy0KIDMgZmlsZXMgY2hhbmdlZCwgMTUgaW5zZXJ0aW9ucygrKSwgMTUgZGVsZXRpb25z
-KC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYyBiL2RyaXZlcnMvY3B1
-ZnJlcS9jcHVmcmVxLmMKaW5kZXggYTdjZWFlMy4uYzU5NzM2MSAxMDA2NDQKLS0tIGEvZHJpdmVy
-cy9jcHVmcmVxL2NwdWZyZXEuYworKysgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCkBAIC05
-MzUsNiArOTM1LDcgQEAgc3RhdGljIHZvaWQgY3B1ZnJlcV9pbml0X3BvbGljeShzdHJ1Y3QgY3B1
-ZnJlcV9wb2xpY3kgKnBvbGljeSkKIAlzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgbmV3X3BvbGljeTsK
-IAlpbnQgcmV0ID0gMDsKIAorCXBvbGljeS0+Z292ZXJub3Jfc3RhdGUgPSBDUFVGUkVRX0dPVl9Q
-T0xJQ1lfRVhJVDsKIAltZW1jcHkoJm5ld19wb2xpY3ksIHBvbGljeSwgc2l6ZW9mKCpwb2xpY3kp
-KTsKIAogCS8qIFVwZGF0ZSBnb3Zlcm5vciBvZiBuZXdfcG9saWN5IHRvIHRoZSBnb3Zlcm5vciB1
-c2VkIGJlZm9yZSBob3RwbHVnICovCkBAIC0xOTc2LDcgKzE5NzcsNyBAQCBFWFBPUlRfU1lNQk9M
-X0dQTChjcHVmcmVxX2RyaXZlcl90YXJnZXQpOwogc3RhdGljIGludCBfX2NwdWZyZXFfZ292ZXJu
-b3Ioc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3ksCiAJCQkJCXVuc2lnbmVkIGludCBldmVu
-dCkKIHsKLQlpbnQgcmV0OworCWludCByZXQsIHN0YXRlOwogCiAJLyogT25seSBtdXN0IGJlIGRl
-ZmluZWQgd2hlbiBkZWZhdWx0IGdvdmVybm9yIGlzIGtub3duIHRvIGhhdmUgbGF0ZW5jeQogCSAg
-IHJlc3RyaWN0aW9ucywgbGlrZSBlLmcuIGNvbnNlcnZhdGl2ZSBvciBvbmRlbWFuZC4KQEAgLTIw
-MTIsMTkgKzIwMTMsMjEgQEAgc3RhdGljIGludCBfX2NwdWZyZXFfZ292ZXJub3Ioc3RydWN0IGNw
-dWZyZXFfcG9saWN5ICpwb2xpY3ksCiAJCSBwb2xpY3ktPmNwdSwgZXZlbnQpOwogCiAJbXV0ZXhf
-bG9jaygmY3B1ZnJlcV9nb3Zlcm5vcl9sb2NrKTsKKwlzdGF0ZSA9IHBvbGljeS0+Z292ZXJub3Jf
-c3RhdGU7CisKKwkvKiBDaGVjayBpZiBvcGVyYXRpb24gaXMgcGVybWl0dGVkIG9yIG5vdCAqLwog
-CWlmIChwb2xpY3ktPmdvdmVybm9yX2J1c3kKLQkgICAgfHwgKHBvbGljeS0+Z292ZXJub3JfZW5h
-YmxlZCAmJiBldmVudCA9PSBDUFVGUkVRX0dPVl9TVEFSVCkKLQkgICAgfHwgKCFwb2xpY3ktPmdv
-dmVybm9yX2VuYWJsZWQKLQkgICAgJiYgKGV2ZW50ID09IENQVUZSRVFfR09WX0xJTUlUUyB8fCBl
-dmVudCA9PSBDUFVGUkVRX0dPVl9TVE9QKSkpIHsKKwkgICAgfHwgKHN0YXRlID09IENQVUZSRVFf
-R09WX1NUQVJUICYmIGV2ZW50ICE9IENQVUZSRVFfR09WX0xJTUlUUyAmJiBldmVudCAhPSBDUFVG
-UkVRX0dPVl9TVE9QKQorCSAgICB8fCAoc3RhdGUgPT0gQ1BVRlJFUV9HT1ZfU1RPUCAmJiBldmVu
-dCAhPSBDUFVGUkVRX0dPVl9TVEFSVCAmJiBldmVudCAhPSBDUFVGUkVRX0dPVl9QT0xJQ1lfRVhJ
-VCkKKwkgICAgfHwgKHN0YXRlID09IENQVUZSRVFfR09WX1BPTElDWV9JTklUICYmIGV2ZW50ICE9
-IENQVUZSRVFfR09WX1NUQVJUICYmIGV2ZW50ICE9IENQVUZSRVFfR09WX1BPTElDWV9FWElUKQor
-CSAgICB8fCAoc3RhdGUgPT0gQ1BVRlJFUV9HT1ZfUE9MSUNZX0VYSVQgJiYgZXZlbnQgIT0gQ1BV
-RlJFUV9HT1ZfUE9MSUNZX0lOSVQpKSB7CiAJCW11dGV4X3VubG9jaygmY3B1ZnJlcV9nb3Zlcm5v
-cl9sb2NrKTsKIAkJcmV0dXJuIC1FQlVTWTsKIAl9CiAKIAlwb2xpY3ktPmdvdmVybm9yX2J1c3kg
-PSB0cnVlOwotCWlmIChldmVudCA9PSBDUFVGUkVRX0dPVl9TVE9QKQotCQlwb2xpY3ktPmdvdmVy
-bm9yX2VuYWJsZWQgPSBmYWxzZTsKLQllbHNlIGlmIChldmVudCA9PSBDUFVGUkVRX0dPVl9TVEFS
-VCkKLQkJcG9saWN5LT5nb3Zlcm5vcl9lbmFibGVkID0gdHJ1ZTsKKwlpZiAoZXZlbnQgIT0gQ1BV
-RlJFUV9HT1ZfTElNSVRTKQorCQlwb2xpY3ktPmdvdmVybm9yX3N0YXRlID0gZXZlbnQ7CiAKIAlt
-dXRleF91bmxvY2soJmNwdWZyZXFfZ292ZXJub3JfbG9jayk7CiAKQEAgLTIwMzUsMTMgKzIwMzgs
-MTAgQEAgc3RhdGljIGludCBfX2NwdWZyZXFfZ292ZXJub3Ioc3RydWN0IGNwdWZyZXFfcG9saWN5
-ICpwb2xpY3ksCiAJCQlwb2xpY3ktPmdvdmVybm9yLT5pbml0aWFsaXplZCsrOwogCQllbHNlIGlm
-IChldmVudCA9PSBDUFVGUkVRX0dPVl9QT0xJQ1lfRVhJVCkKIAkJCXBvbGljeS0+Z292ZXJub3It
-PmluaXRpYWxpemVkLS07Ci0JfSBlbHNlIHsKKwl9IGVsc2UgaWYgKGV2ZW50ICE9IENQVUZSRVFf
-R09WX0xJTUlUUykgewogCQkvKiBSZXN0b3JlIG9yaWdpbmFsIHZhbHVlcyAqLwogCQltdXRleF9s
-b2NrKCZjcHVmcmVxX2dvdmVybm9yX2xvY2spOwotCQlpZiAoZXZlbnQgPT0gQ1BVRlJFUV9HT1Zf
-U1RPUCkKLQkJCXBvbGljeS0+Z292ZXJub3JfZW5hYmxlZCA9IHRydWU7Ci0JCWVsc2UgaWYgKGV2
-ZW50ID09IENQVUZSRVFfR09WX1NUQVJUKQotCQkJcG9saWN5LT5nb3Zlcm5vcl9lbmFibGVkID0g
-ZmFsc2U7CisJCXBvbGljeS0+Z292ZXJub3Jfc3RhdGUgPSBzdGF0ZTsKIAkJbXV0ZXhfdW5sb2Nr
-KCZjcHVmcmVxX2dvdmVybm9yX2xvY2spOwogCX0KIApkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVm
-cmVxL2NwdWZyZXFfZ292ZXJub3IuYyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxX2dvdmVybm9y
-LmMKaW5kZXggMWI0NDQ5Ni4uZDE3MzE4MSAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL2Nw
-dWZyZXFfZ292ZXJub3IuYworKysgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcV9nb3Zlcm5vci5j
-CkBAIC0xNzQsNyArMTc0LDcgQEAgdm9pZCBnb3ZfcXVldWVfd29yayhzdHJ1Y3QgZGJzX2RhdGEg
-KmRic19kYXRhLCBzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwKIAlpbnQgaTsKIAogCW11
-dGV4X2xvY2soJmNwdWZyZXFfZ292ZXJub3JfbG9jayk7Ci0JaWYgKCFwb2xpY3ktPmdvdmVybm9y
-X2VuYWJsZWQpCisJaWYgKHBvbGljeS0+Z292ZXJub3Jfc3RhdGUgIT0gQ1BVRlJFUV9HT1ZfU1RB
-UlQpCiAJCWdvdG8gb3V0X3VubG9jazsKIAogCWlmICghYWxsX2NwdXMpIHsKZGlmZiAtLWdpdCBh
-L2luY2x1ZGUvbGludXgvY3B1ZnJlcS5oIGIvaW5jbHVkZS9saW51eC9jcHVmcmVxLmgKaW5kZXgg
-YzdhYTk2Yi4uMzlkZGQzZSAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9jcHVmcmVxLmgKKysr
-IGIvaW5jbHVkZS9saW51eC9jcHVmcmVxLmgKQEAgLTgxLDcgKzgxLDcgQEAgc3RydWN0IGNwdWZy
-ZXFfcG9saWN5IHsKIAl1bnNpZ25lZCBpbnQJCXBvbGljeTsgLyogc2VlIGFib3ZlICovCiAJc3Ry
-dWN0IGNwdWZyZXFfZ292ZXJub3IJKmdvdmVybm9yOyAvKiBzZWUgYmVsb3cgKi8KIAl2b2lkCQkJ
-KmdvdmVybm9yX2RhdGE7Ci0JYm9vbAkJCWdvdmVybm9yX2VuYWJsZWQ7IC8qIGdvdmVybm9yIHN0
-YXJ0L3N0b3AgZmxhZyAqLworCWJvb2wJCQlnb3Zlcm5vcl9zdGF0ZTsgLyogR292ZXJub3IncyBj
-dXJyZW50IHN0YXRlICovCiAJYm9vbAkJCWdvdmVybm9yX2J1c3k7CiAKIAlzdHJ1Y3Qgd29ya19z
-dHJ1Y3QJdXBkYXRlOyAvKiBpZiB1cGRhdGVfcG9saWN5KCkgbmVlZHMgdG8gYmUKLS0gCjIuMC4z
-LjY5My5nOTk2YjBmZAoK
---001a11c2eb5293ba1305028bac8b--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
