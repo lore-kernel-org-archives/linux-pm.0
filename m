@@ -1,391 +1,94 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 5/5] ARM: shmobile: r8a7740 dtsi: Add PM domain support
-Date: Mon,  8 Sep 2014 15:35:44 +0200
-Message-ID: <1410183344-14756-6-git-send-email-geert+renesas@glider.be>
-References: <1410183344-14756-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1410183344-14756-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
+Subject: [PATCH/RFC 0/5] ARM: shmobile: R-Mobile: Prototype DT PM domain support
+Date: Mon,  8 Sep 2014 15:35:39 +0200
+Message-ID: <1410183344-14756-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from michel.telenet-ops.be ([195.130.137.88]:39486 "EHLO
+	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753731AbaIHNf5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Sep 2014 09:35:57 -0400
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 Cc: Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
-List-Id: linux-pm@vger.kernel.org
 
-Add a device node for the System Controller, with subnodes that
-represent the hardware power area hierarchy.
-Hook up all devices to their respective PM domains.
+	Hi all,
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- arch/arm/boot/dts/r8a7740.dtsi | 121 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 121 insertions(+)
+This patch series contains prototype code to enable DT support for PM domains
+on Renesas R-Mobile SoCs.
 
-diff --git a/arch/arm/boot/dts/r8a7740.dtsi b/arch/arm/boot/dts/r8a7740.dtsi
-index 1067a96c8425..35cf1fac01b5 100644
---- a/arch/arm/boot/dts/r8a7740.dtsi
-+++ b/arch/arm/boot/dts/r8a7740.dtsi
-@@ -25,6 +25,7 @@
- 			device_type = "cpu";
- 			reg = <0x0>;
- 			clock-frequency = <800000000>;
-+			power-domains = <&pd_a3sm>;
- 		};
- 	};
- 
-@@ -46,6 +47,7 @@
- 		reg = <0xe6138000 0x170>;
- 		interrupts = <0 58 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7740_CLK_CMT1>;
-+		power-domains = <&pd_c5>;
- 		clock-names = "fck";
- 
- 		renesas,channels-mask = <0x3f>;
-@@ -71,6 +73,7 @@
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH>;
-+		power-domains = <&pd_a4s>;
- 	};
- 
- 	/* irqpin1: IRQ8 - IRQ15 */
-@@ -91,6 +94,7 @@
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH>;
-+		power-domains = <&pd_a4s>;
- 	};
- 
- 	/* irqpin2: IRQ16 - IRQ23 */
-@@ -111,6 +115,7 @@
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH>;
-+		power-domains = <&pd_a4s>;
- 	};
- 
- 	/* irqpin3: IRQ24 - IRQ31 */
-@@ -131,6 +136,7 @@
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH>;
-+		power-domains = <&pd_a4s>;
- 	};
- 
- 	ether: ethernet@e9a00000 {
-@@ -139,6 +145,7 @@
- 		      <0xe9a01800 0x800>;
- 		interrupts = <0 110 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7740_CLK_GETHER>;
-+		power-domains = <&pd_a4s>;
- 		phy-mode = "mii";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -155,6 +162,7 @@
- 			      0 203 IRQ_TYPE_LEVEL_HIGH
- 			      0 204 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp1_clks R8A7740_CLK_IIC0>;
-+		power-domains = <&pd_a4r>;
- 		status = "disabled";
- 	};
- 
-@@ -168,6 +176,7 @@
- 			      0 72 IRQ_TYPE_LEVEL_HIGH
- 			      0 73 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7740_CLK_IIC1>;
-+		power-domains = <&pd_a3sp>;
- 		status = "disabled";
- 	};
- 
-@@ -177,6 +186,7 @@
- 		interrupts = <0 100 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7740_CLK_SCIFA0>;
- 		clock-names = "sci_ick";
-+		power-domains = <&pd_a3sp>;
- 		status = "disabled";
- 	};
- 
-@@ -186,6 +196,7 @@
- 		interrupts = <0 101 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7740_CLK_SCIFA1>;
- 		clock-names = "sci_ick";
-+		power-domains = <&pd_a3sp>;
- 		status = "disabled";
- 	};
- 
-@@ -195,6 +206,7 @@
- 		interrupts = <0 102 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7740_CLK_SCIFA0>;
- 		clock-names = "sci_ick";
-+		power-domains = <&pd_a3sp>;
- 		status = "disabled";
- 	};
- 
-@@ -204,6 +216,7 @@
- 		interrupts = <0 103 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7740_CLK_SCIFA3>;
- 		clock-names = "sci_ick";
-+		power-domains = <&pd_a3sp>;
- 		status = "disabled";
- 	};
- 
-@@ -213,6 +226,7 @@
- 		interrupts = <0 104 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7740_CLK_SCIFA4>;
- 		clock-names = "sci_ick";
-+		power-domains = <&pd_a3sp>;
- 		status = "disabled";
- 	};
- 
-@@ -222,6 +236,7 @@
- 		interrupts = <0 105 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7740_CLK_SCIFA5>;
- 		clock-names = "sci_ick";
-+		power-domains = <&pd_a3sp>;
- 		status = "disabled";
- 	};
- 
-@@ -231,6 +246,7 @@
- 		interrupts = <0 106 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7740_CLK_SCIFA6>;
- 		clock-names = "sci_ick";
-+		power-domains = <&pd_a3sp>;
- 		status = "disabled";
- 	};
- 
-@@ -240,6 +256,7 @@
- 		interrupts = <0 107 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7740_CLK_SCIFA7>;
- 		clock-names = "sci_ick";
-+		power-domains = <&pd_a3sp>;
- 		status = "disabled";
- 	};
- 
-@@ -249,6 +266,7 @@
- 		interrupts = <0 108 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp2_clks R8A7740_CLK_SCIFB>;
- 		clock-names = "sci_ick";
-+		power-domains = <&pd_a3sp>;
- 		status = "disabled";
- 	};
- 
-@@ -267,12 +285,14 @@
- 			<&irqpin2 4 0>, <&irqpin2 5 0>, <&irqpin2 6 0>, <&irqpin2 7 0>,
- 			<&irqpin3 0 0>, <&irqpin3 1 0>, <&irqpin3 2 0>, <&irqpin3 3 0>,
- 			<&irqpin3 4 0>, <&irqpin3 5 0>, <&irqpin3 6 0>, <&irqpin3 7 0>;
-+			power-domains = <&pd_c5>;
- 	};
- 
- 	tpu: pwm@e6600000 {
- 		compatible = "renesas,tpu-r8a7740", "renesas,tpu";
- 		reg = <0xe6600000 0x100>;
- 		clocks = <&mstp3_clks R8A7740_CLK_TPU0>;
-+		power-domains = <&pd_a3sp>;
- 		status = "disabled";
- 		#pwm-cells = <3>;
- 	};
-@@ -283,6 +303,7 @@
- 		interrupts = <0 56 IRQ_TYPE_LEVEL_HIGH
- 			      0 57 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7740_CLK_MMC>;
-+		power-domains = <&pd_a3sp>;
- 		status = "disabled";
- 	};
- 
-@@ -293,6 +314,7 @@
- 			      0 118 IRQ_TYPE_LEVEL_HIGH
- 			      0 119 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7740_CLK_SDHI0>;
-+		power-domains = <&pd_a3sp>;
- 		cap-sd-highspeed;
- 		cap-sdio-irq;
- 		status = "disabled";
-@@ -305,6 +327,7 @@
- 			      0 122 IRQ_TYPE_LEVEL_HIGH
- 			      0 123 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7740_CLK_SDHI1>;
-+		power-domains = <&pd_a3sp>;
- 		cap-sd-highspeed;
- 		cap-sdio-irq;
- 		status = "disabled";
-@@ -317,6 +340,7 @@
- 			      0 126 IRQ_TYPE_LEVEL_HIGH
- 			      0 127 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp4_clks R8A7740_CLK_SDHI2>;
-+		power-domains = <&pd_a3sp>;
- 		cap-sd-highspeed;
- 		cap-sdio-irq;
- 		status = "disabled";
-@@ -328,6 +352,7 @@
- 		reg = <0xfe1f0000 0x400>;
- 		interrupts = <0 9 0x4>;
- 		clocks = <&mstp3_clks R8A7740_CLK_FSI>;
-+		power-domains = <&pd_a4mp>;
- 		status = "disabled";
- 	};
- 
-@@ -379,6 +404,7 @@
- 			compatible = "renesas,r8a7740-cpg-clocks";
- 			reg = <0xe6150000 0x10000>;
- 			clocks = <&extal1_clk>, <&extalr_clk>;
-+			power-domains = <&pd_c5>;
- 			#clock-cells = <1>;
- 			clock-output-names = "system", "pllc0", "pllc1",
- 					     "pllc2", "r",
-@@ -393,6 +419,7 @@
- 			compatible = "renesas,r8a7740-div6-clock", "renesas,cpg-div6-clock";
- 			reg = <0xe6150080 4>;
- 			clocks = <&pllc1_div2_clk>;
-+			power-domains = <&pd_c5>;
- 			#clock-cells = <0>;
- 			clock-output-names = "sub";
- 		};
-@@ -401,6 +428,7 @@
- 		pllc1_div2_clk: pllc1_div2_clk {
- 			compatible = "fixed-factor-clock";
- 			clocks = <&cpg_clocks R8A7740_CLK_PLLC1>;
-+			power-domains = <&pd_c5>;
- 			#clock-cells = <0>;
- 			clock-div = <2>;
- 			clock-mult = <1>;
-@@ -409,6 +437,7 @@
- 		extal1_div2_clk: extal1_div2_clk {
- 			compatible = "fixed-factor-clock";
- 			clocks = <&extal1_clk>;
-+			power-domains = <&pd_c5>;
- 			#clock-cells = <0>;
- 			clock-div = <2>;
- 			clock-mult = <1>;
-@@ -420,6 +449,7 @@
- 			compatible = "renesas,r8a7740-mstp-clocks", "renesas,cpg-mstp-clocks";
- 			reg = <0xe6150080 4>;
- 			clocks = <&sub_clk>, <&sub_clk>;
-+			power-domains = <&pd_c5>;
- 			#clock-cells = <1>;
- 			renesas,clock-indices = <
- 				R8A7740_CLK_SUBCK R8A7740_CLK_SUBCK2
-@@ -435,6 +465,7 @@
- 				 <&cpg_clocks R8A7740_CLK_B>,
- 				 <&sub_clk>, <&sub_clk>,
- 				 <&cpg_clocks R8A7740_CLK_B>;
-+			power-domains = <&pd_c5>;
- 			#clock-cells = <1>;
- 			renesas,clock-indices = <
- 				R8A7740_CLK_CEU21 R8A7740_CLK_CEU20 R8A7740_CLK_TMU0
-@@ -456,6 +487,7 @@
- 				 <&sub_clk>, <&sub_clk>, <&sub_clk>,
- 				 <&sub_clk>, <&sub_clk>, <&sub_clk>,
- 				 <&sub_clk>;
-+			power-domains = <&pd_c5>;
- 			#clock-cells = <1>;
- 			renesas,clock-indices = <
- 				R8A7740_CLK_SCIFA6 R8A7740_CLK_SCIFA7
-@@ -483,6 +515,7 @@
- 				 <&cpg_clocks R8A7740_CLK_HP>,
- 				 <&cpg_clocks R8A7740_CLK_HP>,
- 				 <&cpg_clocks R8A7740_CLK_HP>;
-+			power-domains = <&pd_c5>;
- 			#clock-cells = <1>;
- 			renesas,clock-indices = <
- 				R8A7740_CLK_CMT1 R8A7740_CLK_FSI R8A7740_CLK_IIC1
-@@ -500,6 +533,7 @@
- 				 <&cpg_clocks R8A7740_CLK_HP>,
- 				 <&cpg_clocks R8A7740_CLK_HP>,
- 				 <&cpg_clocks R8A7740_CLK_HP>;
-+			power-domains = <&pd_c5>;
- 			#clock-cells = <1>;
- 			renesas,clock-indices = <
- 				R8A7740_CLK_USBH R8A7740_CLK_SDHI2
-@@ -509,4 +543,91 @@
- 				"usbhost", "sdhi2", "usbfunc", "usphy";
- 		};
- 	};
-+
-+	sysc: system-controller@e6180000 {
-+		compatible = "renesas,sysc-r8a7740", "renesas,sysc-rmobile";
-+		reg = <0xe6180000 8000>, <0xe6188000 8000>;
-+
-+		pm-domains {
-+			pd_c5: c5 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				#power-domain-cells = <0>;
-+
-+				pd_a4lc: a4lc@1 {
-+					reg = <1>;
-+					#power-domain-cells = <0>;
-+					power-on-latency = <250000>;
-+					power-off-latency = <250000>;
-+				};
-+
-+				pd_a4mp: a4mp@2 {
-+					reg = <2>;
-+					#power-domain-cells = <0>;
-+					power-on-latency = <250000>;
-+					power-off-latency = <250000>;
-+				};
-+
-+				pd_d4: d4@3 {
-+					reg = <3>;
-+					#power-domain-cells = <0>;
-+					power-on-latency = <250000>;
-+					power-off-latency = <250000>;
-+				};
-+
-+				pd_a4r: a4r@5 {
-+					reg = <5>;
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					#power-domain-cells = <0>;
-+					power-on-latency = <250000>;
-+					power-off-latency = <250000>;
-+
-+					pd_a3rv: a3rv@6 {
-+						reg = <6>;
-+						#power-domain-cells = <0>;
-+						power-on-latency = <250000>;
-+						power-off-latency = <250000>;
-+					};
-+				};
-+
-+				pd_a4s: a4s@10 {
-+					reg = <10>;
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					#power-domain-cells = <0>;
-+					power-on-latency = <250000>;
-+					power-off-latency = <250000>;
-+
-+					pd_a3sp: a3sp@11 {
-+						reg = <11>;
-+						#power-domain-cells = <0>;
-+						power-on-latency = <250000>;
-+						power-off-latency = <250000>;
-+					};
-+
-+					pd_a3sm: a3sm@12 {
-+						reg = <12>;
-+						#power-domain-cells = <0>;
-+						power-on-latency = <250000>;
-+						power-off-latency = <250000>;
-+					};
-+
-+					pd_a3sg: a3sg@13 {
-+						reg = <13>;
-+						#power-domain-cells = <0>;
-+						power-on-latency = <250000>;
-+						power-off-latency = <250000>;
-+					};
-+				};
-+
-+				pd_a4su: a4su@20 {
-+					reg = <20>;
-+					#power-domain-cells = <0>;
-+					power-on-latency = <250000>;
-+					power-off-latency = <250000>;
-+				};
-+			};
-+		};
-+	};
- };
--- 
-1.9.1
+Currently it's limited to R-Mobile A1 (r8a7740), but given the similarity of
+the SYSC System-Controller on the various SH-Mobile/R-Mobile SoCs, and the
+abstraction of PM domains in DT, it should be sufficiently generic to handle
+other SoCs in the future (e.g. SH-Mobile AP4 (sh7372), SH-Mobile AG5 (sh73a0),
+R-Mobile APE6 (r8a73a4)).
 
+Despite my request to add support for non-contiguous arrays for onecell PM
+domain providers, I went for representing the SoC's power area hierarchy as a
+hierarchy in DT, with multiple PM domain nodes, and using "#power-domain-cells
+= <0>" (see also the P.S. below).  The code to support a proper hiearchy turned
+out to be surprisingly clean and simple(r).
+
+Dependencies:
+  - "[PATCH 00/11] ARM: shmobile: r8a7740/armadillo legacy prototype pm domain
+    support", sent by me (www.spinics.net/lists/arm-kernel/msg358037.html),
+  - "[PATCH v3 0/9] PM / Domains: Generic OF-based support", sent by Ulf
+    Hansson (www.spinics.net/lists/arm-kernel/msg357003.html),
+  - "[PATCH 00/15] PM / Domains: Cleanups and remove superfluous APIs", sent by
+    Ulf Hansson (www.spinics.net/lists/linux-samsung-soc/msg36407.html).
+
+Note that this still won't work as-is, this is just an RFC.
+More fixes are needed in sh-mobile platform glue, and to resolve the bad
+interaction with drivers/sh/pm_runtime.c and clk_disable_unused().
+But none of these matter for e.g. discussing DT bindings.
+With those fixed/worked around, functionality is almost equivalent to the
+non-DT case.  Missing are Run-Time management of the module clocks
+(pm_clk_*()), and device latencies.
+
+Thanks for your comments!
+
+Geert Uytterhoeven (5):
+  PM / Domains: Add DT bindings for power-on/off latencies
+  PM / Domains: Add DT bindings for the R-Mobile System Controller
+  ARM: shmobile: R-Mobile: Store SYSC base address in rmobile_pm_domain
+  ARM: shmobile: R-Mobile: Add DT support for PM domains
+  ARM: shmobile: r8a7740 dtsi: Add PM domain support
+
+ .../devicetree/bindings/power/power_domain.txt     |   6 +
+ .../bindings/power/renesas,sysc-rmobile.txt        | 106 +++++++++++++
+ arch/arm/boot/dts/r8a7740.dtsi                     | 121 +++++++++++++++
+ arch/arm/mach-shmobile/Kconfig                     |   3 +-
+ arch/arm/mach-shmobile/pm-r8a7740.c                |  14 ++
+ arch/arm/mach-shmobile/pm-rmobile.c                | 169 +++++++++++++++++++--
+ arch/arm/mach-shmobile/pm-rmobile.h                |   1 +
+ arch/arm/mach-shmobile/pm-sh7372.c                 |  11 ++
+ 8 files changed, 417 insertions(+), 14 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
+
+P.S. I did try "#power-domain-cells = <1>", but the hassle with sparse
+     definitions and error-prone multiple arrays (not unlikely, but even worse
+     than with the SMTP clock specifiers) was just too much. Not to mention
+     representing the C5 "always-on" power area...
+
+	renesas,pm-domain-indices = <
+		R8A7740_PD_A4LC R8A7740_PD_A4MP R8A7740_PD_D4
+		R8A7740_PD_A4R R8A7740_PD_A3RV R8A7740_PD_A4S
+		R8A7740_PD_A3SP R8A7740_PD_A3SM R8A7740_PD_A3SG
+		R8A7740_PD_A4SU
+	>;
+	renesas,pm-domain-names =
+		"A4LC", "A4MP", "D4", "A4R", "A3RV", "A4S", "A3SP",
+		"A3SM", "A3SG", "A4SU";
+	renesas,pm-domain-parents =
+		"", "", "", "", "A4R", "", "A4S", "A4S", "A4S", "";
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
