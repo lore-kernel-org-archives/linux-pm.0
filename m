@@ -1,81 +1,74 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Patch v4 12/16] x86, irq, ACPI: Implement interface to support
- ACPI based IOAPIC hot-addition
-Date: Tue, 9 Sep 2014 14:20:12 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1409091417120.11037@nanos>
-References: <1409192561-19744-1-git-send-email-jiang.liu@linux.intel.com> <1409192561-19744-13-git-send-email-jiang.liu@linux.intel.com>
+Subject: Re: [Patch v4 14/16] x86, irq: Introduce helper to check whether an
+ IOAPIC has been registered
+Date: Tue, 9 Sep 2014 14:37:18 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1409091433150.11037@nanos>
+References: <1409192561-19744-1-git-send-email-jiang.liu@linux.intel.com> <1409192561-19744-15-git-send-email-jiang.liu@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1409192561-19744-13-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1409192561-19744-15-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-pci-owner@vger.kernel.org
 To: Jiang Liu <jiang.liu@linux.intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Grant Likely <grant.likely@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Grant Likely <grant.likely@linaro.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 On Thu, 28 Aug 2014, Jiang Liu wrote:
->  EXPORT_SYMBOL(acpi_register_ioapic);
-> diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-> index 6e67af0c5f99..b286461cabf9 100644
-> --- a/arch/x86/kernel/apic/io_apic.c
-> +++ b/arch/x86/kernel/apic/io_apic.c
-> @@ -3851,7 +3851,13 @@ static int bad_ioapic_register(int idx)
->  
->  static int find_free_ioapic_entry(void)
->  {
-> -	return nr_ioapics;
-> +	int idx;
-> +
-> +	for (idx = 0; idx < MAX_IO_APICS; idx++)
-> +		if (ioapics[idx].nr_registers == 0)
-> +			return idx;
-> +
-> +	return MAX_IO_APICS;
+
+> Introduce acpi_ioapic_registered() to check whether an IOAPIC has already
+> been registered, it will be used when enabling IOAPIC hotplug.
+> 
+> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+> ---
+>  arch/x86/include/asm/io_apic.h |    1 +
+>  arch/x86/kernel/acpi/boot.c    |   11 +++++++++++
+>  arch/x86/kernel/apic/io_apic.c |   11 +++++++++++
+>  include/linux/acpi.h           |    1 +
+>  4 files changed, 24 insertions(+)
+> 
+> diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+> index ce63cf34c93c..0db2b7037e4b 100644
+> --- a/arch/x86/include/asm/io_apic.h
+> +++ b/arch/x86/include/asm/io_apic.h
+> @@ -191,6 +191,7 @@ extern void mp_unmap_irq(int irq);
+>  extern int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+>  			      struct ioapic_domain_cfg *cfg);
+>  extern int mp_unregister_ioapic(u32 gsi_base);
+> +extern int mp_ioapic_registered(u32 gsi_base);
+>  extern int mp_irqdomain_map(struct irq_domain *domain, unsigned int virq,
+>  			    irq_hw_number_t hwirq);
+>  extern void mp_irqdomain_unmap(struct irq_domain *domain, unsigned int virq);
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> index 560a6d1cb0f4..6aa796f77b71 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -810,6 +810,17 @@ int acpi_unregister_ioapic(acpi_handle handle, u32 gsi_base)
 >  }
+>  EXPORT_SYMBOL(acpi_unregister_ioapic);
 >  
->  int mp_register_ioapic(int id, u32 address, u32 gsi_base,
-> @@ -3867,8 +3873,15 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
->  	}
->  	for_each_ioapic(ioapic)
->  		if (ioapics[ioapic].mp_config.apicaddr == address) {
-> -			pr_warn("address 0x%x conflicts with IOAPIC%d\n",
-> -				address, ioapic);
-> +			/*
-> +			 * IOAPIC unit may also be visible in PCI scope.
-> +			 * When ioapic PCI driver's probe() is called,
-> +			 * the IOAPIC unit may have already been initialized
-> +			 * at boot time.
-> +			 */
-> +			if (!ioapic_initialized)
-> +				pr_warn("address 0x%x conflicts with IOAPIC%d\n",
-> +					address, ioapic);
-
-Hmm. This smells fishy. Why do we allow multiple initializations of
-the same IOAPIC in the first place. Either it's done via ACPI or via
-PCI, but not both.
-
->  			return -EEXIST;
->  		}
->  
-> @@ -3918,6 +3931,14 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
->  	ioapics[idx].irqdomain = NULL;
->  	ioapics[idx].irqdomain_cfg = *cfg;
->  
-> +	if (ioapic_initialized) {
-
-I have a hard time to understand this conditional. Why can't we do
-that unconditionally?
-
-> +		if (mp_irqdomain_create(idx)) {
-> +			clear_fixmap(FIX_IO_APIC_BASE_0 + idx);
-> +			return -ENOMEM;
-> +		}
-> +		alloc_ioapic_saved_registers(idx);
-> +	}
+> +int acpi_ioapic_registered(acpi_handle handle, u32 gsi_base)
+> +{
+> +	int ret;
 > +
->  	if (gsi_cfg->gsi_end >= gsi_top)
->  		gsi_top = gsi_cfg->gsi_end + 1;
->  	if (nr_ioapics <= idx)
+> +	down_write(&acpi_ioapic_rwsem);
+
+Why down_write? You are merily checking whether the thing is
+registered already.
+
+> +	ret  = mp_ioapic_registered(gsi_base);
+> +	up_write(&acpi_ioapic_rwsem);
+> +
+> +	return ret;
+> +}
+
+So I assume that this is for a particular caller in the apci ioapic
+hotplug code and that call site has its own serialization. Otherwise
+the return value is not protected at all.
+
+Please add a Docbook comment to that function, and document the
+locking rules as thats pretty non obvious.
+
+The such is missing in some other patches as well.
 
 Thanks,
 
