@@ -1,52 +1,41 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Hibernate: Do not assume the first e820 area to be RAM
-Date: Tue, 9 Sep 2014 09:18:56 +0200
-Message-ID: <20140909071856.GA27512@amd>
-References: <1407754252-22779-1-git-send-email-jlee@suse.com>
- <1561567.ev2pEO8C5v@vostro.rjw.lan>
+From: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
+Subject: Re: [PATCH 1/2] cpufreq: serialize calls to __cpufreq_governor()
+Date: Tue, 09 Sep 2014 09:29:35 +0200
+Message-ID: <1410247775.25768.13.camel@x200t>
+References: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1561567.ev2pEO8C5v@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Len Brown <len.brown@intel.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>
+Content-Type: text/plain; charset="UTF-7"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.zih.tu-dresden.de ([141.30.67.72]:33588 "EHLO
+	mailout1.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754035AbaIIH3q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 03:29:46 -0400
+In-Reply-To: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, prarit@redhat.com, skannan@codeaurora.org
 
-On Tue 2014-09-09 00:52:55, Rafael J. Wysocki wrote:
-> On Monday, August 11, 2014 06:50:52 PM Lee, Chun-Yi wrote:
-> > In arch/x86/kernel/setup.c::trim_bios_range(), the codes introduced
-> > by 1b5576e6 (base on d8a9e6a5), it updates the first 4Kb of memory
-> > to be E820_RESERVED region. That's because it's a BIOS owned area
-> > but generally not listed in the E820 table:
-> > 
-> > [    0.000000] e820: BIOS-provided physical RAM map:
-> > [    0.000000] BIOS-e820: [mem 0x0000000000000000-0x0000000000096fff] usable
-> > [    0.000000] BIOS-e820: [mem 0x0000000000097000-0x0000000000097fff] reserved
-> > ...
-> > [    0.000000] e820: update [mem 0x00000000-0x00000fff] usable ==> reserved
-> > [    0.000000] e820: remove [mem 0x000a0000-0x000fffff] usable
-> > 
-> > But the region of first 4Kb didn't register to nosave memory:
-> > 
-> > [    0.000000] PM: Registered nosave memory: [mem 0x00097000-0x00097fff]
-> > [    0.000000] PM: Registered nosave memory: [mem 0x000a0000-0x000fffff]
-> > 
-> > The codes in e820_mark_nosave_regions() assumes the first e820 area to be
-> > RAM, so it causes the first 4Kb E820_RESERVED region ignored when register
-> > to nosave. This patch removed assumption of the first e820 area.
-> > 
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Len Brown <len.brown@intel.com>
-> > Cc: Pavel Machek <pavel@ucw.cz>
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: Ingo Molnar <mingo@redhat.com>
-> > Cc: "H. Peter Anvin" <hpa@zytor.com>
-> > Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+Even though the test fixed my initital problem, my test system (which
+runs the kernel with this patch applied) just crashed when changing
+frequencies. This might be connected to the patch.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+I'll have another look into it and let you know.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+Am Dienstag, den 09.09.2014, 09:46 +-0530 schrieb Viresh Kumar:
++AD4 This commit was earlier commited in kernel as:
++AD4 19c7630 cpufreq: serialize calls to +AF8AXw-cpufreq+AF8-governor()
++AD4 
++AD4 and was later reverted by Srivatsa:
++AD4 56d07db cpufreq: Remove temporary fix for race between CPU hotplug and sysfs-writes
++AD4 
++AD4 When this commit was first introduced it was written for races during hotplug
++AD4 and because we got some other solution to take care of the races with hotplug we
++AD4 reverted it.
++AD4 
++AD4 But (as I also said in the revert patch: https://lkml.org/lkml/2013/9/10/61)
++AD4 there are more cases where this is required.
+
+
