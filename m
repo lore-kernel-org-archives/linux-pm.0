@@ -1,133 +1,114 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v4 2/4] dt-bindings: document Rockchip thermal
-Date: Tue, 09 Sep 2014 10:27:17 +0800
-Message-ID: <1410229637.8085.158.camel@rzhang1-toshiba>
-References: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com>
-	 <1409710239-19941-3-git-send-email-caesar.wang@rock-chips.com>
-	 <11280986.L6lv82O8Qv@diego> <5407BA10.2030402@rock-chips.com>
+From: kgene@kernel.org
+Subject: RE: [PATCH v6 0/5] ARM: EXYNOS: cpuidle: fix AFTR mode on boards with
+ secure firmware enabled
+Date: Tue, 09 Sep 2014 12:34:21 +0900
+Message-ID: <034a01cfcbde$f1a98270$d4fc8750$@kernel.org>
+References: <1409925088-4705-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:11177 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755486AbaIIC1d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 8 Sep 2014 22:27:33 -0400
-In-Reply-To: <5407BA10.2030402@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1409925088-4705-1-git-send-email-b.zolnierkie@samsung.com>
+Content-language: ko
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>
+Cc: 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Sachin Kamat' <sachin.kamat@linaro.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Kyungmin Park' <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <caesar.wang@rock-chips.com>
-Cc: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>, edubezval@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, zyw@rock-chips.com, addy.ke@rock-chips.com, dmitry.torokhov@gmail.com, zhaoyifeng <zyf@rock-chips.com>
 
-On Thu, 2014-09-04 at 09:02 +0800, Caesar Wang wrote:
-> =E5=9C=A8 2014=E5=B9=B409=E6=9C=8803=E6=97=A5 16:07, Heiko St=C3=BCbn=
-er =E5=86=99=E9=81=93:
-> > Am Mittwoch, 3. September 2014, 10:10:37 schrieb Caesar Wang:
-> >> This add the necessary binding documentation for the thermal
-> >> found on Rockchip SoCs
-> >>
-> >> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
-> >> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
-> >> ---
-> >>   .../devicetree/bindings/thermal/rockchip-thermal.txt | 20
-> >> ++++++++++++++++++++ 1 file changed, 20 insertions(+)
-> >>   create mode 100644
-> >> Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-th=
-ermal.txt
-> >> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt n=
-ew file
-> >> mode 100644
-> >> index 0000000..1ed4d4c
-> >> --- /dev/null
-> >> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.t=
-xt
-> >> @@ -0,0 +1,20 @@
-> >> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
-> >> +
-> >> +Required properties:
-> >> +- compatible: "rockchip,rk3288-tsadc"
-> >> +- reg: physical base address of the controller and length of memo=
-ry mapped
-> >> +       region.
-> >> +- interrupts: The interrupt number to the cpu. The interrupt spec=
-ifier
-> >> format +	      depends on the interrupt controller.
-> >> +- clocks: Must contain an entry for each entry in clock-names.
-> >> +- clock-names: Shall be "tsadc" for the converter-clock, and "apb=
-_pclk" for
-> >> +	       the peripheral clock.
-> > You're using the passive-temp, critical-temp and force-shut-temp pr=
-operties in
-> > your driver without declaring them here.
->=20
-> frankly,the about are need be declared. but  there are 4 types[0] for=
-=20
-> trip in thermal framework,
-> there is no force-shut for me. So I want to change it three additiona=
-l=20
-> properties in [PATCH V4 4/4],
->=20
->=20
-> [0]
-> {
->      THERMAL_TRIP_CRITICAL,
->      THERMAL_TRIP_HOT,
->      THERMAL_TRIP_PASSIVE,
->      THERMAL_TRIP_ACTIVE,
-> }
->=20
-this sounds reasonable to me.
+Bartlomiej Zolnierkiewicz wrote:
+> 
+> Hi,
+> 
+Hi,
 
-> > But more importantly, please use the generic trip-points for this. =
-I guess it
-> > shouldn't be a problem to introduce a "forced-shutdown" trippoint [=
-0] for the
-> > additional trip-point you have - thermal maintainers, please shout =
-if I'm
-> > wrong :-)
->=20
-what is the difference between a critical trip point and a
-"forced-shutdown" trip point?
-Thermal core will do a shutdown in case the critical trip point is
-triggered.
+> This patch series adds support for AFTR idle mode on boards with
+> secure firmware enabled and allows EXYNOS cpuidle driver usage on
+> Exynos4x12 SoCs.
+> 
+> It has been tested on Trats2 board (using Exynos4412 SoC with secure
+> firmware enabled) on which AFTR mode reduces power consumption by ~12%
 
-thanks,
-rui
-> It's a good option.
-> I can send a patch,but I don't know whether the thermal maintainers w=
-ill=20
-> accept it.
->=20
-> Maybe,they have a better way to suggest it.:-)
->=20
->=20
-> PS:I will sent a new patch If I still have no received their suggesti=
-ons=20
-> in two days.
->=20
-> >
-> > Heiko
-> >
-> >
-> > [0] in a separate patch, changing
-> > - thermal_trip_type enum in include/linux/thermal.h
-> > - trip_types mapping in drivers/thermal/of-thermal.c
-> > - Documentation/devicetree/bindings/thermal/thermal.txt
-> >
-> >> +
-> >> +Example:
-> >> +tsadc: tsadc@ff280000 {
-> >> +	compatible =3D "rockchip,rk3288-tsadc";
-> >> +	reg =3D <0xff280000 0x100>;
-> >> +	interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-> >> +	clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-> >> +	clock-names =3D "tsadc", "apb_pclk";
-> >> +};
-> >
-> >
-> >
->=20
+Nice.
 
+> when EXYNOS cpuidle driver is enabled (in both cases the default
+> exynos_defconfig config is used and CPU1-3 are offlined).
+> 
+> Currently Exynos4412 SoC support is limited to Trats2 board.
+> 
+> Depends on:
+> - next-20140904 branch of linux-next kernel tree
+> - "irqchip: Properly fetch the per cpu offset" patch
+>   (https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg716674.html)
+> - [PATCH v3 0/5] Firmware-assisted suspend/resume of Exynos SoCs
+>   (https://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35921.html)
+> 
+OK this series looks good to me, I will take this series once above patches are
+landed.
 
+Thanks,
+Kukjin
+
+> Changes since v5:
+> - rebased on top of next-20140904 +
+>   "irqchip: Properly fetch the per cpu offset" patch
+>   (https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg716674.html)
+>   [PATCH v3 0/5] Firmware-assisted suspend/resume of Exynos SoCs
+>   (https://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35921.html)
+> - limit Exynos4412 SoC support to Trats2 board for now
+> 
+> Changes since v4:
+> - rebased on top of next-20140804 +
+>   [PATCH v5][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
+>   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35262.html)
+>   [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+>   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
+> - call exynos_save_cp15() only on A9 type core (this is needed for the future
+>   Exynos3250 SoC support)
+> 
+> Changes since v3:
+> - rebased on top of next-20140804 +
+>   [PATCH v4][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
+>   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35192.html)
+>   [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+>   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
+> - (re-)added patch fixing S5P_CENTRAL_SEQ_OPTION register setup
+> 
+> Changes since v2:
+> - rebased on top of next-20140708 +
+>   [PATCH 5/6] ARM: EXYNOS: Fix suspend/resume sequencies
+>   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32809.html)
+>   [with rejects fixed]
+>   [PATCH 6/6] ARM: EXYNOS: Register cpuidle device only on Exynos4210 and 5250
+>   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32808.html)
+>   [PATCH 0/2] Firmware-assisted suspend/resume of Exynos SoCs
+>   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32991.html)
+>   [with rejects fixed in patch #2]
+> - addressed review comments from Tomasz Figa and Daniel Lezcano
+> 
+> Changes since v1:
+> - synced against next-20140602
+> - added missing Acked-by-s
+> 
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+> 
+> 
+> Bartlomiej Zolnierkiewicz (5):
+>   ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by static inlines
+>   ARM: EXYNOS: add AFTR mode support to firmware do_idle method
+>   ARM: EXYNOS: cpuidle: add secure firmware support to AFTR mode code
+>   ARM: EXYNOS: PM: fix register setup for AFTR mode code
+>   ARM: EXYNOS: cpuidle: allow driver usage on Exynos4x12 SoCs
+> 
+>  arch/arm/include/asm/firmware.h |  2 +-
+>  arch/arm/mach-exynos/common.h   |  5 ++++
+>  arch/arm/mach-exynos/exynos.c   |  5 +++-
+>  arch/arm/mach-exynos/firmware.c | 34 ++++++++++++++++-------
+>  arch/arm/mach-exynos/pm.c       | 60 ++++++++++++++++++++++++-----------------
+>  5 files changed, 71 insertions(+), 35 deletions(-)
+> 
+> --
+> 1.8.2.3
