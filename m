@@ -1,60 +1,57 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v4 5/9] i2c: core: Convert to dev_pm_domain_attach|detach()
-Date: Tue,  9 Sep 2014 13:36:06 +0200
-Message-ID: <1410262570-22785-6-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v4 6/9] mmc: sdio: Convert to dev_pm_domain_attach|detach()
+Date: Tue,  9 Sep 2014 13:36:07 +0200
+Message-ID: <1410262570-22785-7-git-send-email-ulf.hansson@linaro.org>
 References: <1409838756-31963-1-git-send-email-ulf.hansson@linaro.org>
  <1410262570-22785-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f46.google.com ([209.85.215.46]:56744 "EHLO
+	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932431AbaIILg5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 07:36:57 -0400
+Received: by mail-la0-f46.google.com with SMTP id pv20so19400031lab.33
+        for <linux-pm@vger.kernel.org>; Tue, 09 Sep 2014 04:36:56 -0700 (PDT)
 In-Reply-To: <1410262570-22785-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Ulf Hansson <ulf.hansson@linaro.org>, linux-i2c@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc@vger.kernel.org
 
-Previously only the ACPI PM domain was supported by the i2c bus.
+Previously only the ACPI PM domain was supported by the sdio bus.
 
 Let's convert to the common attach/detach functions for PM domains,
 which currently means we are extending the support to include the
 generic PM domain as well.
 
-Cc: linux-i2c@vger.kernel.org
+Cc: linux-mmc@vger.kernel.org
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 Reviewed-by: Kevin Hilman <khilman@linaro.org>
 ---
- drivers/i2c/i2c-core.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/mmc/core/sdio_bus.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index 632057a..3cd8f11 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -279,10 +279,13 @@ static int i2c_device_probe(struct device *dev)
- 	if (status < 0)
- 		return status;
- 
--	acpi_dev_pm_attach(&client->dev, true);
--	status = driver->probe(client, i2c_match_id(driver->id_table, client));
--	if (status)
--		acpi_dev_pm_detach(&client->dev, true);
-+	status = dev_pm_domain_attach(&client->dev, true);
-+	if (status != -EPROBE_DEFER) {
-+		status = driver->probe(client, i2c_match_id(driver->id_table,
-+					client));
-+		if (status)
-+			dev_pm_domain_detach(&client->dev, true);
-+	}
- 
- 	return status;
- }
-@@ -302,7 +305,7 @@ static int i2c_device_remove(struct device *dev)
- 		status = driver->remove(client);
+diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
+index 4fa8fef9..1df0fc6 100644
+--- a/drivers/mmc/core/sdio_bus.c
++++ b/drivers/mmc/core/sdio_bus.c
+@@ -315,7 +315,7 @@ int sdio_add_func(struct sdio_func *func)
+ 	ret = device_add(&func->dev);
+ 	if (ret == 0) {
+ 		sdio_func_set_present(func);
+-		acpi_dev_pm_attach(&func->dev, false);
++		dev_pm_domain_attach(&func->dev, false);
  	}
  
--	acpi_dev_pm_detach(&client->dev, true);
-+	dev_pm_domain_detach(&client->dev, true);
- 	return status;
- }
+ 	return ret;
+@@ -332,7 +332,7 @@ void sdio_remove_func(struct sdio_func *func)
+ 	if (!sdio_func_present(func))
+ 		return;
  
+-	acpi_dev_pm_detach(&func->dev, false);
++	dev_pm_domain_detach(&func->dev, false);
+ 	device_del(&func->dev);
+ 	put_device(&func->dev);
+ }
 -- 
 1.9.1
 
