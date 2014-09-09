@@ -1,262 +1,63 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v2] ARM: l2c: parse cache properties from ePAPR
-	definitions
-Date: Tue, 9 Sep 2014 11:02:02 +0100
-Message-ID: <20140909100202.GE12361@n2100.arm.linux.org.uk>
-References: <1410246633-23407-1-git-send-email-linus.walleij@linaro.org>
+From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Subject: RE: [PATCH v2 1/7] mfd: Add support for DA9150 combined charger &
+ fuel-gauge device
+Date: Tue, 9 Sep 2014 10:32:40 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337AB5144B5@SW-EX-MBX01.diasemi.com>
+References: <cover.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
+ <d6c7de200c9447dbafa74ee76739da943a0b73b2.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
+ <53FF16BC.9050701@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-leds-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1410246633-23407-1-git-send-email-linus.walleij@linaro.org>
-Sender: linux-leds-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Will Deacon <will.deacon@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <53FF16BC.9050701-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Language: en-US
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Varka Bhadram <varkabhadram-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
+Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Sep 09, 2014 at 09:10:33AM +0200, Linus Walleij wrote:
-> When both 'cache-size' and 'cache-sets' are specified for a L2 cache
-> controller node, parse those properties and set up the
-> set size based on which type of L2 cache controller we are using.
-> 
-> Update the L2 cache controller Device Tree binding with the optional
-> 'cache-size', 'cache-sets', 'cache-block-size' and 'cache-line-size'
-> properties. These come from the ePAPR specification.
-> 
-> Using the cache size, number of sets and cache line size we can
-> calculate desired associativity of the L2 cache. This is done
-> by the calculation:
-> 
->     set size = cache size / sets
->     ways = set size / line size
->     way size = cache size / ways
->     associativity = way size / line size
-
-Right, and from that we get:
-
-	set_size = cache_size / sets
-	ways = cache_size / (sets * line_size)
-	way_size = cache_size / (cache_size / (sets * line_size))
-	way_size = sets * line_size
-	associativity = sets
-
-the last of which disagrees with arch/powerpc/kernel/cacheinfo.c, which
-calculates associativity as:
-
-	(size / nr_sets) / line_size
-
-which is "ways".
-
-In any case, "ways" refers to the number in "N-way set associative cache".
-
-> 
-> This patch is an extended version based on the initial patch
-> by Florian Fainelli.
-> 
-> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
->  Documentation/devicetree/bindings/arm/l2cc.txt |   6 ++
->  arch/arm/mm/cache-l2x0.c                       | 134 +++++++++++++++++++++++++
->  2 files changed, 140 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/l2cc.txt b/Documentation/devicetree/bindings/arm/l2cc.txt
-> index af527ee111c2..b77343914c66 100644
-> --- a/Documentation/devicetree/bindings/arm/l2cc.txt
-> +++ b/Documentation/devicetree/bindings/arm/l2cc.txt
-> @@ -44,6 +44,12 @@ Optional properties:
->    I/O coherent mode. Valid only when the arm,pl310-cache compatible
->    string is used.
->  - interrupts : 1 combined interrupt.
-> +- cache-size : specifies the size in bytes of the cache
-> +- cache-sets : specifies the number of associativity sets of the cache
-> +- cache-block-size : specifies the size in bytes of a cache block
-> +- cache-line-size : specifies the size in bytes of a line in the cache,
-> +  if this is not specified, the line size is assumed to be equal to the
-> +  cache block size
->  - cache-id-part: cache id part number to be used if it is not present
->    on hardware
->  - wt-override: If present then L2 is forced to Write through mode
-> diff --git a/arch/arm/mm/cache-l2x0.c b/arch/arm/mm/cache-l2x0.c
-> index 5f2c988a06ac..8157b913f3f3 100644
-> --- a/arch/arm/mm/cache-l2x0.c
-> +++ b/arch/arm/mm/cache-l2x0.c
-> @@ -945,6 +945,134 @@ static int l2_wt_override;
->   * pass it though the device tree */
->  static u32 cache_id_part_number_from_dt;
->  
-> +static void __init l2x0_cache_size_of_parse(const struct device_node *np,
-> +					    u32 *aux_val, u32 *aux_mask,
-> +					    u32 max_set_size,
-> +					    u32 max_associativity)
-> +{
-> +	u32 mask = 0, val = 0;
-> +	u32 cache_size = 0, sets = 0;
-> +	u32 set_size = 0, set_size_bits = 1;
-> +	u32 ways = 0, way_size = 0;
-> +	u32 blocksize = 0;
-> +	u32 linesize = 0;
-> +	u32 assoc = 0;
-> +
-> +	of_property_read_u32(np, "cache-size", &cache_size);
-> +	of_property_read_u32(np, "cache-sets", &sets);
-> +	of_property_read_u32(np, "cache-block-size", &blocksize);
-> +	of_property_read_u32(np, "cache-line-size", &linesize);
-> +
-> +	if (!cache_size || !sets)
-> +		return;
-> +
-> +	/* All these l2 caches have the same line = block size actually */
-> +	if (!linesize) {
-> +		if (blocksize) {
-> +			/* If linesize if not given, it is equal to blocksize */
-> +			linesize = blocksize;
-> +		} else {
-> +			/* Fall back to known size */
-> +			linesize = CACHE_LINE_SIZE;
-> +		}
-> +	}
-> +
-> +	if (linesize != CACHE_LINE_SIZE)
-> +		pr_warn("L2C OF: DT supplied line size %d bytes does "
-> +			"not match hardware line size of %d bytes\n",
-> +			linesize,
-> +			CACHE_LINE_SIZE);
-> +
-> +	set_size = cache_size / sets;
-> +	ways = set_size / linesize;
-> +	way_size = cache_size / ways;
-> +
-> +	if (set_size > max_set_size) {
-> +		pr_warn("L2C: set size %dKB is too large\n", set_size >> 10);
-> +		return;
-> +	}
-> +
-> +	/*
-> +	 * This cache is set associative. By increasing associativity
-> +	 * we increase the number of blocks per set.
-> +	 */
-> +	assoc = way_size / linesize;
-> +	if (assoc > max_associativity) {
-> +		pr_err("L2C OF: cache setting yield too high associativity\n");
-> +		pr_err("L2C OF: %d calculated, max %d\n",
-> +		       assoc, max_associativity);
-> +		return;
-> +	}
-> +	/* This is the PL3x0 case */
-> +	if (max_associativity == 16 && (assoc != 8 && assoc != 16)) {
-> +		pr_err("L2C OF: cache setting yield illegal associativity\n");
-> +		pr_err("L2C OF: %d calculated, only 8 and 16 legal\n", assoc);
-> +		return;
-> +	}
-> +
-> +	mask |= L2X0_AUX_CTRL_ASSOC_MASK;
-> +
-> +	/*
-> +	 * Special checks for the PL310 that only has two settings and
-> +	 * cannot be set to fully associative.
-> +	 */
-> +	if (max_associativity == 16) {
-> +		if (assoc == 16)
-> +			val |= L310_AUX_CTRL_ASSOCIATIVITY_16;
-> +		/* Else bit is left zero == 8 way associativity */
-> +	} else {
-> +		val |= (assoc << L2X0_AUX_CTRL_ASSOC_SHIFT);
-> +	}
-> +
-> +	pr_debug("L2C OF: cache size: %d bytes (%dKB)\n",
-> +		 cache_size, cache_size >> 10);
-> +	pr_debug("L2C OF: set size: %d bytes (%d KB)\n",
-> +		 set_size, set_size >> 10);
-> +	pr_debug("L2C OF: line size: %d bytes\n", linesize);
-> +	pr_debug("L2C OF: ways: %d ways\n", ways);
-> +	pr_debug("L2C OF: way size: %d bytes\n", way_size);
-> +	pr_debug("L2C OF: associativity: %d\n", assoc);
-> +
-> +	switch (set_size >> 10) {
-> +	case 512:
-> +		set_size_bits = 6;
-> +		break;
-> +	case 256:
-> +		set_size_bits = 5;
-> +		break;
-> +	case 128:
-> +		set_size_bits = 4;
-> +		break;
-> +	case 64:
-> +		set_size_bits = 3;
-> +		break;
-> +	case 32:
-> +		set_size_bits = 2;
-> +		break;
-> +	case 16:
-> +		set_size_bits = 1;
-> +		break;
-> +	default:
-> +		pr_err("L2C OF: cache way size: %d KB is not mapped\n",
-> +		       way_size);
-> +		break;
-> +	}
-> +
-> +	/*
-> +	 * The l2x0 TRMs call this size "way size" but that is incorrect:
-> +	 * the thing being configured in these register bits is actually
-> +	 * the cache set size, so the variable here has the right name
-> +	 * but the register bit definitions following the TRM are not
-> +	 * in archaic naming.
-> +	 */
-> +	mask |= L2C_AUX_CTRL_WAY_SIZE_MASK;
-> +	val |= (set_size_bits << L2C_AUX_CTRL_WAY_SIZE_SHIFT);
-
-This is not correct.  There is no confusion with ARMs terminology, ARMs
-terminology is correct.  This is the way size, and that comes from the
-way_size you calculated above.
-
-What's slightly confusing is the "associtivity" term, but as I prove
-above, it's exactly the same as "ways" (which is what's used in ARM
-documentation.)
-
-So really all this code can be simplified.
-
-Here's a useful table, for an 8 way cache:
-
-Way size        Tag bits        Index bits      log2(num_sets)	num_sets
-16KB            18              9               9               512
-32KB            17              10              10              1024
-64KB            16              11              11              2048
-128KB           17              12              12              4096
-256KB           18              13              13              8192
-
-The tag/index bits there refer to the virtual address.
-
-Now, since:
-
-	way_size * num_ways = cache_size = set_size * num_sets
-
-and (see the bookshelf below for this...):
-
-	num_ways * num_sets * line_size = cache_size
-
-if we halve the number of ways in a set, keeping the same number of sets
-(hence keeping the same number of index bits), the cache size is halved,
-and the set size is also halved.
-
-So, way size and set size are not the same thing...
-
-
-An easier way to think about this is by thinking of the cache as a
-bookshelf.  Here's a PDF which illustrates this:
-
-http://csillustrated.berkeley.edu/PDFs/handouts/cache-3-associativity-handout.pdf
-
-So:
-
-- the number of slots = number of sets
-- size of each slot = size of each book * number of books
-     slot_size = line_size * num_ways
-- cache size = slot_size * num_slots
-- the number of books in each slot is the number of ways
-
--- 
-FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
-according to speedtest.net.
+T24gQXVndXN0IDI4LCAyMDE0IDEyOjQ3LCBWYXJrYSBCaGFkcmFtIHdyb3RlOg0KDQo+IE9uIDA4
+LzI4LzIwMTQgMDQ6MTggUE0sIEFkYW0gVGhvbXNvbiB3cm90ZToNCj4gDQo+ICguLi4pDQo+IA0K
+PiA+ICtzdGF0aWMgaW50IGRhOTE1MF9wcm9iZShzdHJ1Y3QgaTJjX2NsaWVudCAqY2xpZW50LA0K
+PiA+ICsJCQljb25zdCBzdHJ1Y3QgaTJjX2RldmljZV9pZCAqaWQpDQo+ID4gK3sNCj4gPiArCXN0
+cnVjdCBkYTkxNTAgKmRhOTE1MDsNCj4gPiArCWludCByZXQ7DQo+ID4gKw0KPiA+ICsJZGE5MTUw
+ID0gZGV2bV9remFsbG9jKCZjbGllbnQtPmRldiwgc2l6ZW9mKHN0cnVjdCBkYTkxNTApLCBHRlBf
+S0VSTkVMKTsNCj4gPiArCWlmIChkYTkxNTAgPT0gTlVMTCkNCj4gPiArCQlyZXR1cm4gLUVOT01F
+TTsNCj4gDQo+IGRhOTE1MCA9IGRldm1fa3phbGxvYygmY2xpZW50LT5kZXYsIHNpemVvZigqZGE5
+MTUwKSwgR0ZQX0tFUk5FTCk7DQo+IGlmICghZGE5MTUwKQ0KPiAJcmV0dXJuIC1FTk9NRU07DQoN
+Ck9rLCBubyByZWFsIGRpZmZlcmVuY2UsIGJ1dCBjYW4gY2hhbmdlIGl0Lg0KDQo+IA0KPiA+ICsJ
+ZGE5MTUwLT5kZXYgPSAmY2xpZW50LT5kZXY7DQo+ID4gKwlkYTkxNTAtPmlycSA9IGNsaWVudC0+
+aXJxOw0KPiA+ICsJaTJjX3NldF9jbGllbnRkYXRhKGNsaWVudCwgZGE5MTUwKTsNCj4gPiArCWRl
+dl9zZXRfZHJ2ZGF0YShkYTkxNTAtPmRldiwgZGE5MTUwKTsNCj4gPiArDQo+ID4gKwlkYTkxNTAt
+PnJlZ21hcCA9IGRldm1fcmVnbWFwX2luaXRfaTJjKGNsaWVudCwgJmRhOTE1MF9yZWdtYXBfY29u
+ZmlnKTsNCj4gPiArCWlmIChJU19FUlIoZGE5MTUwLT5yZWdtYXApKSB7DQo+ID4gKwkJcmV0ID0g
+UFRSX0VSUihkYTkxNTAtPnJlZ21hcCk7DQo+ID4gKwkJZGV2X2VycihkYTkxNTAtPmRldiwgIkZh
+aWxlZCB0byBhbGxvY2F0ZSByZWdpc3RlciBtYXA6ICVkXG4iLA0KPiA+ICsJCQlyZXQpOw0KPiA+
+ICsJCXJldHVybiByZXQ7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJcmV0dXJuIGRhOTE1MF9kZXZp
+Y2VfaW5pdChkYTkxNTApOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IGRhOTE1MF9y
+ZW1vdmUoc3RydWN0IGkyY19jbGllbnQgKmNsaWVudCkNCj4gPiArew0KPiA+ICsJc3RydWN0IGRh
+OTE1MCAqZGE5MTUwID0gaTJjX2dldF9jbGllbnRkYXRhKGNsaWVudCk7DQo+ID4gKw0KPiA+ICsJ
+ZGE5MTUwX2RldmljZV9leGl0KGRhOTE1MCk7DQo+ID4gKw0KPiA+ICsJcmV0dXJuIDA7DQo+ID4g
+K30NCj4gPiArDQo+ID4gK3N0YXRpYyB2b2lkIGRhOTE1MF9zaHV0ZG93bihzdHJ1Y3QgaTJjX2Ns
+aWVudCAqY2xpZW50KQ0KPiA+ICt7DQo+ID4gKwlzdHJ1Y3QgZGE5MTUwICpkYTkxNTAgPSBpMmNf
+Z2V0X2NsaWVudGRhdGEoY2xpZW50KTsNCj4gPiArDQo+ID4gKwlkYTkxNTBfZGV2aWNlX3NodXRk
+b3duKGRhOTE1MCk7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgaTJj
+X2RldmljZV9pZCBkYTkxNTBfaTJjX2lkW10gPSB7DQo+ID4gKwl7ICJkYTkxNTAiLCAwIH0sDQo+
+ID4gKwl7IH0NCj4gPiArfTsNCj4gPiArTU9EVUxFX0RFVklDRV9UQUJMRShpMmMsIGRhOTE1MF9p
+MmNfaWQpOw0KPiA+ICsNCj4gPiArc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgZGE5
+MTUwX29mX21hdGNoW10gPSB7DQo+ID4gKwl7IC5jb21wYXRpYmxlID0gImRsZyxkYTkxNTAiLCB9
+LA0KPiA+ICsJeyB9DQo+ID4gK307DQo+ID4gKw0KPiANCj4gbWlzc2VkIE1PRFVMRV9ERVZJQ0Vf
+VEFCTEUob2YsIC4uLikgICA/DQoNCk9rLCB3aWxsIGFkZCB0aGF0IGluLg0KDQo+IA0KPiA+ICtz
+dGF0aWMgc3RydWN0IGkyY19kcml2ZXIgZGE5MTUwX2RyaXZlciA9IHsNCj4gPiArCS5kcml2ZXIJ
+PSB7DQo+ID4gKwkJLm5hbWUJPSAiZGE5MTUwIiwNCj4gPiArCQkub3duZXIJPSBUSElTX01PRFVM
+RSwNCj4gDQo+IE5vIG5lZWQgdG8gdXBkYXRlIHRoaXMgZmllbGQuLi4NCg0KT2ssIHdpbGwgcmVt
+b3ZlIC5vd25lciBzZXR0aW5nLg0KDQo+IA0KPiA+ICsJCS5vZl9tYXRjaF90YWJsZSA9IG9mX21h
+dGNoX3B0cihkYTkxNTBfb2ZfbWF0Y2gpLA0KPiA+ICsJfSwNCj4gPiArCS5wcm9iZQkJPSBkYTkx
+NTBfcHJvYmUsDQo+ID4gKwkucmVtb3ZlCQk9IGRhOTE1MF9yZW1vdmUsDQo+ID4gKwkuc2h1dGRv
+d24JPSBkYTkxNTBfc2h1dGRvd24sDQo+ID4gKwkuaWRfdGFibGUJPSBkYTkxNTBfaTJjX2lkLA0K
+PiA+ICt9Ow0KPiA+ICsNCj4gPiArbW9kdWxlX2kyY19kcml2ZXIoZGE5MTUwX2RyaXZlcik7DQo+
+ID4gKw0KPiA+ICtNT0RVTEVfREVTQ1JJUFRJT04oIkkyQyBEcml2ZXIgZm9yIERBOTE1MCIpOw0K
+PiA+ICtNT0RVTEVfQVVUSE9SKCJBZGFtIFRob21zb24NCj4gPEFkYW0uVGhvbXNvbi5PcGVuc291
+cmNlQGRpYXNlbWkuY29tIik7DQo+ID4gK01PRFVMRV9MSUNFTlNFKCJHUEwiKTsNCj4gPg0KPiAt
+LQ0KPiBSZWdhcmRzLA0KPiBWYXJrYSBCaGFkcmFtLg0KDQo=
