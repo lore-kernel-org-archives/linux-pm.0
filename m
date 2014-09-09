@@ -1,40 +1,55 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v4 0/9] PM / Domains: Generic OF-based support
-Date: Tue, 9 Sep 2014 14:45:52 +0200
-Message-ID: <CAPDyKFr8OM3k0iJROvFOPN=UG=XfwJ7HBu1Yms8Yo=0C0fvW0A@mail.gmail.com>
-References: <1409838756-31963-1-git-send-email-ulf.hansson@linaro.org>
-	<1410262570-22785-1-git-send-email-ulf.hansson@linaro.org>
-	<20140909115446.GW2601@sirena.org.uk>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3 09/10] cpufreq: cpu0: rename driver and internals to 'cpufreq_generic'
+Date: Tue, 09 Sep 2014 15:29:21 +0200
+Message-ID: <2522658.WeeDA1knhn@vostro.rjw.lan>
+References: <cover.1409201048.git.viresh.kumar@linaro.org> <540E435D.1070706@codeaurora.org> <CAKohpokisuO8vQ+p5sq-ojYjU55YQm+Q==+rEWCa95J37j_a7w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20140909115446.GW2601@sirena.org.uk>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:57929 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756194AbaIINJy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 09:09:54 -0400
+In-Reply-To: <CAKohpokisuO8vQ+p5sq-ojYjU55YQm+Q==+rEWCa95J37j_a7w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>
 
-On 9 September 2014 13:54, Mark Brown <broonie@kernel.org> wrote:
-> On Tue, Sep 09, 2014 at 01:36:01PM +0200, Ulf Hansson wrote:
->> Changes in v4:
->>       - Rebased patch "PM / Domains: Add generic OF-based PM domain look-up" -
->>         and updated the author and the commit message.
->>       - Adopted review comments for "PM / Domains: Add APIs to attach/detach
->>         a PM domain for a device".
->>       - Updated author and commit message for "ARM: exynos: Move to generic
->>         PM domain DT bindings".
->>       - Added some acks and reviewed by tags.
->>       - Started to use the "--in-reply-to" option to git-send-email. It should
->>         provide the option to show a better diffstat per patch.
->
-> Please don't send serieses in reply to earlier versions, it buries
-> things in the middle of old discussions which can mean they don't get
-> noticed, especially when you're sending multiple large patch serieses at
-> the same time.
+On Tuesday, September 09, 2014 10:17:54 AM Viresh Kumar wrote:
+> On 9 September 2014 05:31, Stephen Boyd <sboyd@codeaurora.org> wrote:
+> > On 09/08/14 16:52, Rafael J. Wysocki wrote:
+> >> So more bikeshedding. :-)
+> 
+> :)
+> 
+> >> Isn't "generic" somewhat too broad?  Surely it doesn't cover x86.  And does
+> >> it actually cover anything without clocks/regulators?
+> 
+> It can work without regulators but not clocks.
+> 
+> > I thought when you bikeshed you have to come up with a different color ;-)
+> >
+> > Perhaps "cpufreq_cpus"?
+> 
+> I don't have any affection to the word 'generic' here and it can be anything
+> we want it to be. But yeah, we shouldn't let these patches wait for that for
+> too long :)
+> 
+> What name do you suggest Rafael?
+> 
+> - cpufreq_generic
+> - cpufreq_cpus
+> - cpufreq_dt
 
-Sorry, I just thought that it simplified life in this particular case. :-)
+If it relies on DTs being used, this probably is the right name to call it.
 
-If additional versions needs to be posted I will follow your advise. Thanks!
+> - cpufreq_platform
+> - cpufreq_cpuX
+> 
+> Let me know and I will prepare pending patches accordingly :)
 
-Kind regards
-Uffe
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
