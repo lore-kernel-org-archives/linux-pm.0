@@ -1,123 +1,216 @@
 From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: [RFC v1 0/6] CPPC as a PID backend
-Date: Tue,  9 Sep 2014 18:12:02 -0400
-Message-ID: <1410300728-26637-1-git-send-email-ashwin.chaugule@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:43324 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbaIIWM2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 18:12:28 -0400
-Received: by mail-pd0-f181.google.com with SMTP id w10so4798436pde.26
-        for <linux-pm@vger.kernel.org>; Tue, 09 Sep 2014 15:12:28 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 4/6] PID: Add new function pointers to read multiple registers
+Date: Tue,  9 Sep 2014 18:12:06 -0400
+Message-ID: <1410300728-26637-5-git-send-email-ashwin.chaugule@linaro.org>
+References: <1410300728-26637-1-git-send-email-ashwin.chaugule@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1410300728-26637-1-git-send-email-ashwin.chaugule@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: dirk.j.brandewie@intel.com
 Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-acpi@lists.linaro.org, Ashwin Chaugule <ashwin.chaugule@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-This patchset introduces CPPC(Collaborative Processor Performance Control) as a backend
-to the PID governor. The PID governor from intel_pstate.c maps cleanly onto some CPPC
-interfaces.
-e.g. The CPU performance requests are made on a continuous scale as against discrete pstate
-levels. The CPU performance feedback over an interval is gauged using platform specific
-counters which are also described by CPPC.
+There are cases where it is more efficient to read multiple
+counters or registers at once. To enable such reads, add new
+function pointers for the backend drivers. This is especially
+useful when the registers are memory mapped (e.g. in PCC) and
+the platform is signalled via a Doorbell to update multiple
+registers at once. In contrast, we'd have to ring the Doorbell
+for every register Read.
 
-Although CPPC describes several other registers to provide more hints to the platform,
-Linux as of today does not have the infrastructure to make use of those registers.
-Some of the CPPC specific information could be made available from the scheduler as
-part of the CPUfreq and Scheduler intergration work. Until then PID can be used as the
-front end for CPPC.
+Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+---
+ drivers/cpufreq/intel_pid_ctrl.c | 49 ++++++++++++++++++++++++++++++++++------
+ drivers/cpufreq/pid_ctrl.c       | 34 ++++++----------------------
+ drivers/cpufreq/pid_ctrl.h       |  2 ++
+ 3 files changed, 51 insertions(+), 34 deletions(-)
 
-Beyond code restructuring and renaming, this patchset does not change the logic from the
-intel_pstate.c driver. Kernel compilation times were compared with the original intel_pstate.c,
-intel backend(intel_pid_ctrl.c) and the CPPC backend and no significant overheads were noticed.
-
-Testing was performed on a Thinkpad X240 laptop.
-
-PID_CTRL + INTEL_PSTATE:
-=======================
-real	5m37.742s
-user	18m42.575s
-sys	1m0.521s
-
-
-PID_CTRL + CPPC_PID_CTRL:
-========================
-real	5m48.321s
-user	18m24.487s
-sys	0m59.327s
-
-
-ORIGINAL INTEL_PSTATE:
-======================
-real	5m40.642s
-user	18m37.411s
-sys	1m0.185s
-
-
-The complete patchset including the PCC hacks used for testing is available in [4].
-
-
-Changes since V0: [1]
--	Split intel_pstate.c into a generic PID governor and platform specific backend.
--	Add CPPC accessors as PID backend.
-
-
-CPPC:
-====
-
-CPPC (Collaborative Processor Performance Control) is a new way to control CPU
-performance using an abstract continous scale as against a discretized P-state scale
-which is tied to CPU frequency only. It is defined in the ACPI 5.0+ spec. In brief,
-the basic operation involves:
-- OS makes a CPU performance request. (Can provide min and max tolerable bounds)
-
-- Platform (such as BMC) is free to optimize request within requested bounds depending
-on power/thermal budgets etc.
-
-- Platform conveys its decision back to OS
-
-The communication between OS and platform occurs through another medium called (PCC)
-Platform communication Channel. This is a generic mailbox like mechanism which includes
-doorbell semantics to indicate register updates. The PCC driver is being discussed in a
-separate patchset [3] and is not included here, since CPPC is only one client of PCC.
-
-Finer details about the PCC and CPPC spec are available in the latest ACPI 5.1
-specification.[2]
-
-[1] - http://lwn.net/Articles/608715/
-[2] - http://www.uefi.org/sites/default/files/resources/ACPI_5_1release.pdf
-[3] - http://comments.gmane.org/gmane.linux.acpi.devel/70299
-[4] - http://git.linaro.org/people/ashwin.chaugule/leg-kernel.git/shortlog/refs/heads/cppc-pid-no_freq_domain
-
-
-
-Ashwin Chaugule (6):
-  PID Controller governor
-  PID: Move Turbo detection into backend driver
-  PID: Move Baytrail specific accessors into backend driver
-  PID: Add new function pointers to read multiple registers
-  PID: Rename counters to make them more generic
-  PID: Add CPPC (Collaborative Processor Performance) backend driver
-
- Documentation/cpu-freq/intel-pstate.txt |   43 --
- Documentation/cpu-freq/pid_ctrl.txt     |   41 ++
- drivers/cpufreq/Kconfig                 |   19 +
- drivers/cpufreq/Kconfig.x86             |    2 +-
- drivers/cpufreq/Makefile                |    4 +-
- drivers/cpufreq/cppc_pid_ctrl.c         |  406 +++++++++++++
- drivers/cpufreq/intel_pid_ctrl.c        |  408 +++++++++++++
- drivers/cpufreq/intel_pstate.c          | 1012 -------------------------------
- drivers/cpufreq/pid_ctrl.c              |  615 +++++++++++++++++++
- drivers/cpufreq/pid_ctrl.h              |  113 ++++
- 10 files changed, 1606 insertions(+), 1057 deletions(-)
- delete mode 100644 Documentation/cpu-freq/intel-pstate.txt
- create mode 100644 Documentation/cpu-freq/pid_ctrl.txt
- create mode 100644 drivers/cpufreq/cppc_pid_ctrl.c
- create mode 100644 drivers/cpufreq/intel_pid_ctrl.c
- delete mode 100644 drivers/cpufreq/intel_pstate.c
- create mode 100644 drivers/cpufreq/pid_ctrl.c
- create mode 100644 drivers/cpufreq/pid_ctrl.h
-
+diff --git a/drivers/cpufreq/intel_pid_ctrl.c b/drivers/cpufreq/intel_pid_ctrl.c
+index a858981..73faaf8 100644
+--- a/drivers/cpufreq/intel_pid_ctrl.c
++++ b/drivers/cpufreq/intel_pid_ctrl.c
+@@ -37,6 +37,7 @@ struct vid_data {
+ };
+ 
+ static struct vid_data vid_data;
++static struct cpu_defaults *cpuinfo;
+ 
+ struct perf_limits limits = {
+ 	.no_turbo = 0,
+@@ -171,6 +172,37 @@ static void core_set_pstate(struct cpudata *cpudata, int pstate)
+ 	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+ }
+ 
++static void intel_get_pstates(struct cpudata *cpu)
++{
++	cpu->pstate.min_pstate = cpuinfo->funcs.get_min();
++	cpu->pstate.max_pstate = cpuinfo->funcs.get_max();
++
++	if (cpuinfo->funcs.get_turbo)
++		cpu->pstate.turbo_pstate = cpuinfo->funcs.get_turbo();
++	else
++		cpu->pstate.turbo_pstate = cpu->pstate.max_pstate;
++}
++
++static void intel_get_sample(struct cpudata *cpu)
++{
++	u64 aperf, mperf;
++
++	rdmsrl(MSR_IA32_APERF, aperf);
++	rdmsrl(MSR_IA32_MPERF, mperf);
++
++	aperf = aperf >> FRAC_BITS;
++	mperf = mperf >> FRAC_BITS;
++
++	cpu->sample.aperf = aperf;
++	cpu->sample.mperf = mperf;
++
++	cpu->sample.aperf -= cpu->prev_aperf;
++	cpu->sample.mperf -= cpu->prev_mperf;
++
++	cpu->prev_aperf = aperf;
++	cpu->prev_mperf = mperf;
++}
++
+ static struct cpu_defaults core_params = {
+ 	.pid_policy = {
+ 		.sample_rate_ms = 10,
+@@ -181,9 +213,11 @@ static struct cpu_defaults core_params = {
+ 		.i_gain_pct = 0,
+ 	},
+ 	.funcs = {
++		.get_turbo = core_get_turbo_pstate,
++		.get_sample = intel_get_sample,
++		.get_pstates = intel_get_pstates,
+ 		.get_max = core_get_max_pstate,
+ 		.get_min = core_get_min_pstate,
+-		.get_turbo = core_get_turbo_pstate,
+ 		.set = core_set_pstate,
+ 	},
+ };
+@@ -198,9 +232,11 @@ static struct cpu_defaults byt_params = {
+ 		.i_gain_pct = 4,
+ 	},
+ 	.funcs = {
++		.get_turbo = byt_get_turbo_pstate,
++		.get_sample = intel_get_sample,
++		.get_pstates = intel_get_pstates,
+ 		.get_max = byt_get_max_pstate,
+ 		.get_min = byt_get_min_pstate,
+-		.get_turbo = byt_get_turbo_pstate,
+ 		.set = byt_set_pstate,
+ 	},
+ };
+@@ -327,7 +363,6 @@ static inline bool intel_pid_ctrl_platform_pwr_mgmt_exists(void)
+ static int __init intel_pid_ctrl_init(void)
+ {
+ 	const struct x86_cpu_id *id;
+-	struct cpu_defaults *cpu_info;
+ 
+ 	if (no_load)
+ 		return -ENODEV;
+@@ -343,15 +378,15 @@ static int __init intel_pid_ctrl_init(void)
+ 	if (intel_pid_ctrl_platform_pwr_mgmt_exists())
+ 		return -ENODEV;
+ 
+-	cpu_info = (struct cpu_defaults *)id->driver_data;
++	cpuinfo = (struct cpu_defaults *)id->driver_data;
+ 
+-	if (intel_pid_ctrl_msrs_not_valid(cpu_info))
++	if (intel_pid_ctrl_msrs_not_valid(cpuinfo))
+ 		return -ENODEV;
+ 
+ 	pr_info("Intel PID controller driver initializing.\n");
+ 
+-	register_pid_params(&cpu_info->pid_policy);
+-	register_cpu_funcs(&cpu_info->funcs);
++	register_pid_params(&cpuinfo->pid_policy);
++	register_cpu_funcs(&cpuinfo->funcs);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/cpufreq/pid_ctrl.c b/drivers/cpufreq/pid_ctrl.c
+index 8eb9739..a011f05 100644
+--- a/drivers/cpufreq/pid_ctrl.c
++++ b/drivers/cpufreq/pid_ctrl.c
+@@ -311,14 +311,7 @@ static inline void pid_ctrl_pstate_decrease(struct cpudata *cpu, int steps)
+ 
+ static void pid_ctrl_get_cpu_pstates(struct cpudata *cpu)
+ {
+-	cpu->pstate.min_pstate = pstate_funcs.get_min();
+-	cpu->pstate.max_pstate = pstate_funcs.get_max();
+-
+-	if (pstate_funcs.get_turbo)
+-		cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
+-	else
+-		cpu->pstate.turbo_pstate = cpu->pstate.max_pstate;
+-
++	pstate_funcs.get_pstates(cpu);
+ 	pid_ctrl_set_pstate(cpu, cpu->pstate.min_pstate);
+ }
+ 
+@@ -342,25 +335,12 @@ static inline void pid_ctrl_calc_busy(struct cpudata *cpu)
+ 
+ static inline void pid_ctrl_sample(struct cpudata *cpu)
+ {
+-	u64 aperf, mperf;
+-
+-	rdmsrl(MSR_IA32_APERF, aperf);
+-	rdmsrl(MSR_IA32_MPERF, mperf);
+-
+-	aperf = aperf >> FRAC_BITS;
+-	mperf = mperf >> FRAC_BITS;
+-
+ 	cpu->last_sample_time = cpu->sample.time;
+ 	cpu->sample.time = ktime_get();
+-	cpu->sample.aperf = aperf;
+-	cpu->sample.mperf = mperf;
+-	cpu->sample.aperf -= cpu->prev_aperf;
+-	cpu->sample.mperf -= cpu->prev_mperf;
+ 
+-	pid_ctrl_calc_busy(cpu);
++	pstate_funcs.get_sample(cpu);
+ 
+-	cpu->prev_aperf = aperf;
+-	cpu->prev_mperf = mperf;
++	pid_ctrl_calc_busy(cpu);
+ }
+ 
+ static inline void pid_ctrl_set_sample_time(struct cpudata *cpu)
+@@ -585,8 +565,8 @@ EXPORT_SYMBOL_GPL(register_pid_params);
+ 
+ void register_cpu_funcs(struct pstate_funcs *funcs)
+ {
+-	pstate_funcs.get_max   = funcs->get_max;
+-	pstate_funcs.get_min   = funcs->get_min;
++	pstate_funcs.get_pstates = funcs->get_pstates;
++	pstate_funcs.get_sample = funcs->get_sample;
+ 	pstate_funcs.get_turbo = funcs->get_turbo;
+ 	pstate_funcs.set       = funcs->set;
+ }
+@@ -596,8 +576,8 @@ static int __init pid_ctrl_init(void)
+ {
+ 	int cpu, rc = 0;
+ 
+-	if (!pstate_funcs.get_max ||
+-			!pstate_funcs.get_min ||
++	if (!pstate_funcs.get_pstates ||
++			!pstate_funcs.get_sample ||
+ 			!pstate_funcs.set ||
+ 			!pid_params.sample_rate_ms) {
+ 		pr_err("Err registering pstate func accessors\n");
+diff --git a/drivers/cpufreq/pid_ctrl.h b/drivers/cpufreq/pid_ctrl.h
+index 40b352a..7f732e6 100644
+--- a/drivers/cpufreq/pid_ctrl.h
++++ b/drivers/cpufreq/pid_ctrl.h
+@@ -73,6 +73,8 @@ struct cpudata {
+ struct pstate_funcs {
+ 	int (*get_max)(void);
+ 	int (*get_min)(void);
++	void (*get_pstates)(struct cpudata *);
++	void (*get_sample)(struct cpudata *);
+ 	int (*get_turbo)(void);
+ 	void (*set)(struct cpudata*, int pstate);
+ };
 -- 
 1.9.1
-
