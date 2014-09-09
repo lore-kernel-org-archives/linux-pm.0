@@ -1,30 +1,195 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V3 09/10] cpufreq: cpu0: rename driver and internals to
- 'cpufreq_generic'
-Date: Mon, 08 Sep 2014 17:01:33 -0700
-Message-ID: <540E435D.1070706@codeaurora.org>
-References: <cover.1409201048.git.viresh.kumar@linaro.org> <540E3933.8000904@codeaurora.org> <1721663.ItCsG3Tt8O@vostro.rjw.lan> <3644672.iCZ87qpZY4@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <3644672.iCZ87qpZY4@vostro.rjw.lan>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, shawn.guo@linaro.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, santosh.shilimkar@ti.com, thomas.petazzoni@free-electrons.com, pramod.gurav@smartplayin.com
+From: Anup Chenthamarakshan <anupc@chromium.org>
+Subject: [PATCH] intel_pstate: track and export frequency residency stats via sysfs.
+Date: Mon,  8 Sep 2014 17:10:24 -0700
+Message-ID: <1410221424-20590-1-git-send-email-anupc@chromium.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f73.google.com ([209.85.220.73]:65329 "EHLO
+	mail-pa0-f73.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754506AbaIIAKk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Sep 2014 20:10:40 -0400
+Received: by mail-pa0-f73.google.com with SMTP id kx10so402028pab.2
+        for <linux-pm@vger.kernel.org>; Mon, 08 Sep 2014 17:10:39 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: Sameer Nanda <snanda@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Anup Chenthamarakshan <anupc@chromium.org>
 
-On 09/08/14 16:52, Rafael J. Wysocki wrote:
-> So more bikeshedding. :-)
->
-> Isn't "generic" somewhat too broad?  Surely it doesn't cover x86.  And does
-> it actually cover anything without clocks/regulators?
->
+Exported stats appear in
+<sysfs>/devices/system/cpu/intel_pstate/time_in_state as follows:
 
-I thought when you bikeshed you have to come up with a different color ;-)
+## CPU 0
+400000 3647
+500000 24342
+600000 144150
+700000 202469
+## CPU 1
+400000 4813
+500000 22628
+600000 149564
+700000 211885
+800000 173890
 
-Perhaps "cpufreq_cpus"?
+Signed-off-by: Anup Chenthamarakshan <anupc@chromium.org>
+---
+ drivers/cpufreq/intel_pstate.c | 77 ++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 74 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 0668b38..7be89bd 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -84,6 +84,11 @@ struct _pid {
+ 	int32_t last_err;
+ };
+ 
++struct pstate_stat {
++	int pstate;
++	u64 time;
++};
++
+ struct cpudata {
+ 	int cpu;
+ 
+@@ -97,6 +102,9 @@ struct cpudata {
+ 	u64	prev_aperf;
+ 	u64	prev_mperf;
+ 	struct sample sample;
++
++	struct pstate_stat *stat;
++	u64	last_updated;
+ };
+ 
+ static struct cpudata **all_cpu_data;
+@@ -218,6 +226,18 @@ static inline void intel_pstate_reset_all_pid(void)
+ 	}
+ }
+ 
++static void intel_pstate_account_time_to_current_pstate(struct cpudata *cpu)
++{
++	/* Handle the initial call from intel_pstate_init_cpu */
++	if (likely(cpu->stat)) {
++		u64 now = jiffies;
++		int index = cpu->pstate.current_pstate - cpu->pstate.min_pstate;
++
++		cpu->stat[index].time += now - cpu->last_updated;
++		cpu->last_updated = now;
++	}
++}
++
+ /************************** debugfs begin ************************/
+ static int pid_param_set(void *data, u64 val)
+ {
+@@ -323,6 +343,40 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+ 	return count;
+ }
+ 
++static ssize_t show_time_in_state(struct kobject *kobj, struct attribute *attr,
++				char *buf)
++{
++	unsigned int cpu;
++	struct cpudata *cpudata;
++	int i, len = 0, total_states;
++
++	for_each_online_cpu(cpu) {
++		if (!all_cpu_data[cpu])
++			continue;
++
++		cpudata = all_cpu_data[cpu];
++		len += snprintf(buf + len, PAGE_SIZE - len, "## CPU %d\n", cpu);
++		if (len >= PAGE_SIZE)
++			return len;
++
++		total_states = cpudata->pstate.turbo_pstate -
++			cpudata->pstate.min_pstate + 1;
++
++		intel_pstate_account_time_to_current_pstate(cpudata);
++
++		for (i = 0; i < total_states; i++) {
++			len += snprintf(buf + len, PAGE_SIZE - len, "%d %llu\n",
++					cpudata->stat[i].pstate * 100000,
++					cpudata->stat[i].time);
++
++			if (len >= PAGE_SIZE)
++				return len;
++		}
++	}
++
++	return len;
++}
++
+ show_one(no_turbo, no_turbo);
+ show_one(max_perf_pct, max_perf_pct);
+ show_one(min_perf_pct, min_perf_pct);
+@@ -331,10 +385,13 @@ define_one_global_rw(no_turbo);
+ define_one_global_rw(max_perf_pct);
+ define_one_global_rw(min_perf_pct);
+ 
++define_one_global_ro(time_in_state);
++
+ static struct attribute *intel_pstate_attributes[] = {
+ 	&no_turbo.attr,
+ 	&max_perf_pct.attr,
+ 	&min_perf_pct.attr,
++	&time_in_state.attr,
+ 	NULL
+ };
+ 
+@@ -525,9 +582,11 @@ static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
+ 
+ 	trace_cpu_frequency(pstate * 100000, cpu->cpu);
+ 
+-	cpu->pstate.current_pstate = pstate;
+-
+ 	pstate_funcs.set(cpu, pstate);
++
++	intel_pstate_account_time_to_current_pstate(cpu);
++
++	cpu->pstate.current_pstate = pstate;
+ }
+ 
+ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+@@ -751,6 +810,7 @@ static void intel_pstate_stop_cpu(struct cpufreq_policy *policy)
+ 
+ 	del_timer_sync(&all_cpu_data[cpu_num]->timer);
+ 	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
++	kfree(all_cpu_data[cpu_num]->stat);
+ 	kfree(all_cpu_data[cpu_num]);
+ 	all_cpu_data[cpu_num] = NULL;
+ }
+@@ -758,7 +818,7 @@ static void intel_pstate_stop_cpu(struct cpufreq_policy *policy)
+ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	struct cpudata *cpu;
+-	int rc;
++	int rc, i, total_states;
+ 	u64 misc_en;
+ 
+ 	rc = intel_pstate_init_cpu(policy->cpu);
+@@ -787,6 +847,16 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 	cpumask_set_cpu(policy->cpu, policy->cpus);
+ 
++	total_states = cpu->pstate.turbo_pstate - cpu->pstate.min_pstate + 1;
++	cpu->stat = kcalloc(total_states, sizeof(struct pstate_stat),
++			GFP_KERNEL);
++
++	if (cpu->stat)
++		for (i = 0; i < total_states; i++)
++			cpu->stat[i].pstate = i + cpu->pstate.min_pstate;
++
++	cpu->last_updated = get_jiffies_64();
++
+ 	return 0;
+ }
+ 
+@@ -958,6 +1028,7 @@ out:
+ 	for_each_online_cpu(cpu) {
+ 		if (all_cpu_data[cpu]) {
+ 			del_timer_sync(&all_cpu_data[cpu]->timer);
++			kfree(all_cpu_data[cpu]->stat);
+ 			kfree(all_cpu_data[cpu]);
+ 		}
+ 	}
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+1.8.3.2
+
