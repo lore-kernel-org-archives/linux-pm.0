@@ -1,109 +1,67 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: [PATCH 2/6] PID: Move Turbo detection into backend driver
-Date: Tue,  9 Sep 2014 18:12:04 -0400
-Message-ID: <1410300728-26637-3-git-send-email-ashwin.chaugule@linaro.org>
-References: <1410300728-26637-1-git-send-email-ashwin.chaugule@linaro.org>
+From: Anup Chenthamarakshan <anupc@chromium.org>
+Subject: Re: [PATCH] intel_pstate: track and export frequency residency stats
+ via sysfs.
+Date: Tue, 9 Sep 2014 16:22:29 -0700
+Message-ID: <20140909232229.GA28142@google.com>
+References: <1410221424-20590-1-git-send-email-anupc@chromium.org>
+ <540F1981.1090805@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1410300728-26637-1-git-send-email-ashwin.chaugule@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <540F1981.1090805@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: dirk.j.brandewie@intel.com
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-acpi@lists.linaro.org, Ashwin Chaugule <ashwin.chaugule@linaro.org>
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, Sameer Nanda <snanda@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Move X86 specific turbo detection logic into platform
-specific PID backend driver.
+On Tue, Sep 09, 2014 at 08:15:13AM -0700, Dirk Brandewie wrote:
+> On 09/08/2014 05:10 PM, Anup Chenthamarakshan wrote:
+> > Exported stats appear in
+> > <sysfs>/devices/system/cpu/intel_pstate/time_in_state as follows:
+> > 
+> > ## CPU 0
+> > 400000 3647
+> > 500000 24342
+> > 600000 144150
+> > 700000 202469
+> > ## CPU 1
+> > 400000 4813
+> > 500000 22628
+> > 600000 149564
+> > 700000 211885
+> > 800000 173890
+> > 
+> > Signed-off-by: Anup Chenthamarakshan <anupc@chromium.org>
+> 
+> What is this information being used for?
 
-Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
----
- drivers/cpufreq/intel_pid_ctrl.c | 15 ++++++++++++++-
- drivers/cpufreq/pid_ctrl.c       | 13 +++++++------
- 2 files changed, 21 insertions(+), 7 deletions(-)
+I'm using P-state residency information in power consumption tests to calculate
+proportion of time spent in each P-state across all processors (one global set
+of percentages, corresponding to each P-state). This is used to validate new
+changes from the power perspective. Essentially, sanity checks to flag changes
+with large difference in P-state residency.
 
-diff --git a/drivers/cpufreq/intel_pid_ctrl.c b/drivers/cpufreq/intel_pid_ctrl.c
-index ebab074..9ad7d5e 100644
---- a/drivers/cpufreq/intel_pid_ctrl.c
-+++ b/drivers/cpufreq/intel_pid_ctrl.c
-@@ -58,6 +58,11 @@ static int byt_get_max_pstate(void)
- static int byt_get_turbo_pstate(void)
- {
- 	u64 value;
-+	u64 misc_en;
-+
-+	rdmsrl(MSR_IA32_MISC_ENABLE, misc_en);
-+	if (misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE)
-+		return byt_get_max_pstate();
- 
- 	rdmsrl(BYT_TURBO_RATIOS, value);
- 	return value & 0x7F;
-@@ -124,12 +129,20 @@ static int core_get_turbo_pstate(void)
- {
- 	u64 value;
- 	int nont, ret;
-+	u64 misc_en;
- 
--	rdmsrl(MSR_NHM_TURBO_RATIO_LIMIT, value);
- 	nont = core_get_max_pstate();
-+	rdmsrl(MSR_IA32_MISC_ENABLE, misc_en);
-+
-+	if (misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE)
-+		return nont;
-+
-+	rdmsrl(MSR_NHM_TURBO_RATIO_LIMIT, value);
- 	ret = ((value) & 255);
-+
- 	if (ret <= nont)
- 		ret = nont;
-+
- 	return ret;
- }
- 
-diff --git a/drivers/cpufreq/pid_ctrl.c b/drivers/cpufreq/pid_ctrl.c
-index b273ce1..516b95f 100644
---- a/drivers/cpufreq/pid_ctrl.c
-+++ b/drivers/cpufreq/pid_ctrl.c
-@@ -313,10 +313,15 @@ static void pid_ctrl_get_cpu_pstates(struct cpudata *cpu)
- {
- 	cpu->pstate.min_pstate = pstate_funcs.get_min();
- 	cpu->pstate.max_pstate = pstate_funcs.get_max();
--	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
-+
-+	if (pstate_funcs.get_turbo)
-+		cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
-+	else
-+		cpu->pstate.turbo_pstate = cpu->pstate.max_pstate;
- 
- 	if (pstate_funcs.get_vid)
- 		pstate_funcs.get_vid(cpu);
-+
- 	pid_ctrl_set_pstate(cpu, cpu->pstate.min_pstate);
- }
- 
-@@ -532,7 +537,6 @@ static int pid_ctrl_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct cpudata *cpu;
- 	int rc;
--	u64 misc_en;
- 
- 	rc = pid_ctrl_init_cpu(policy->cpu);
- 	if (rc)
-@@ -540,9 +544,7 @@ static int pid_ctrl_cpu_init(struct cpufreq_policy *policy)
- 
- 	cpu = all_cpu_data[policy->cpu];
- 
--	rdmsrl(MSR_IA32_MISC_ENABLE, misc_en);
--	if (misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ||
--		cpu->pstate.max_pstate == cpu->pstate.turbo_pstate) {
-+	if (cpu->pstate.max_pstate == cpu->pstate.turbo_pstate) {
- 		limits.turbo_disabled = 1;
- 		limits.no_turbo = 1;
- 	}
-@@ -598,7 +600,6 @@ static int __init pid_ctrl_init(void)
- {
- 	int cpu, rc = 0;
- 
--
- 	if (!pstate_funcs.get_max ||
- 			!pstate_funcs.get_min ||
- 			!pstate_funcs.set ||
--- 
-1.9.1
+So far, we've been using the data exported by acpi-cpufreq to track this.
+
+> 
+> Tracking the current P state request for each core is only part of the 
+> story.  The processor aggregates the requests from all cores and then decides
+> what frequency the package will run at, this evaluation happens at ~1ms time
+> frame.  If a core is idle then it loses its vote for that package frequency will
+> be and its frequency will be zero even though it may have been requesting
+> a high P state when it went idle.  Tracking the residency of the requested
+> P state doesn't provide much useful information other than ensuring the the 
+> requests are changing over time IMHO.
+
+This is exactly why we're trying to track it.
+
+> 
+> This interface will not be supportable with upcoming processors using
+> hardware P states as documented in volume 3 of the current SDM Section 14.4
+> http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-manual-325462.pdf
+> The OS will have no way of knowing what the P state requests are for a
+> given core are.
+
+Will there be any means to determine the proportion of time spent in different
+HWP-states when HWP gets enabled (maybe at a package level)?
