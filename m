@@ -1,39 +1,42 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 5/7 v6] ARM: l2c: parse 'cache-size' and 'cache-sets' properties
-Date: Tue, 9 Sep 2014 09:14:13 +0200
-Message-ID: <CACRpkdapk1t+8DnY_ojWm+76=D=7k-wnrm11J6dbpPDkCM_WhQ@mail.gmail.com>
-References: <1410176286-32533-1-git-send-email-linus.walleij@linaro.org>
-	<4685530.jbNLD4yaA8@wuerfel>
-	<CACRpkdb_bS0P-fGxogiyCzG9CRPhJK1Gro=H3X1Ks_-UoXh52w@mail.gmail.com>
-	<3479071.8nx1ubr8a9@wuerfel>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH/RFC 2/5] PM / Domains: Add DT bindings for the R-Mobile
+ System Controller
+Date: Tue, 9 Sep 2014 09:16:34 +0200
+Message-ID: <CAMuHMdWRT=ZjXLVtPKJ1ppYLACQhBHJxZRxf6cnGkfC2dLxOOQ@mail.gmail.com>
+References: <1410183344-14756-1-git-send-email-geert+renesas@glider.be>
+	<1410183344-14756-3-git-send-email-geert+renesas@glider.be>
+	<540E313B.8000305@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-leds-owner@vger.kernel.org>
-In-Reply-To: <3479071.8nx1ubr8a9@wuerfel>
-Sender: linux-leds-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Florian Fainelli <florian@openwrt.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Will Deacon <will.deacon@arm.com>, Rob Herring <robh@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f43.google.com ([209.85.215.43]:57359 "EHLO
+	mail-la0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755982AbaIIHQg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 03:16:36 -0400
+In-Reply-To: <540E313B.8000305@renesas.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Khiem Nguyen <khiem.nguyen.xt@renesas.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Mon, Sep 8, 2014 at 3:16 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> [Me]
->> I can add a comment explaining that ARMs terminology does
->> not match the academic terminology or something, and say that
->> the thing we poke into "way-size" is actually "set size", if we agree
->> that is what we're seeing here.
+Hi Khiem-san,
+
+On Tue, Sep 9, 2014 at 12:44 AM, Khiem Nguyen
+<khiem.nguyen.xt@renesas.com> wrote:
+>> +      - #address-cells: Must be 1,
+>> +      - #address-cells: Must be 0.
 >
-> Let's see again: 16KB way-size * 8 ways = 128KB, that seems correct.
-> 16KB way-size / 32B line-size = 512 sets, that also seems realistic.
-> 128KB cache-size / 512 sets = 256B set-size. 256B / 32B = 8 ways,
-> so everything fits together.
+> Should it be "#size-cells: Must be 0." ?
 
-I've sent a v2 version of the patch using the terminology and calculations
-from this thread, and it yields the right numbers, for PB1176, I will check
-with the values from other RealView platforms to see if they also give the
-same result back.
+Yes, obviously. Thanks, will fix.
 
-I had to squash Florians & my patch, it didn't make sense to have them
-artificially separate.
+Gr{oetje,eeting}s,
 
-Yours,
-Linus Walleij
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
