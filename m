@@ -1,114 +1,163 @@
-From: kgene@kernel.org
-Subject: RE: [PATCH v6 0/5] ARM: EXYNOS: cpuidle: fix AFTR mode on boards with
- secure firmware enabled
-Date: Tue, 09 Sep 2014 12:34:21 +0900
-Message-ID: <034a01cfcbde$f1a98270$d4fc8750$@kernel.org>
-References: <1409925088-4705-1-git-send-email-b.zolnierkie@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 2/2] cpufreq: Track governor-state with 'policy->governor_state'
+Date: Tue,  9 Sep 2014 09:46:40 +0530
+Message-ID: <0aa5f4741d082889309313ff3d9c70b39ddcb48d.1410235439.git.viresh.kumar@linaro.org>
+References: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1409925088-4705-1-git-send-email-b.zolnierkie@samsung.com>
-Content-language: ko
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>
-Cc: 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Sachin Kamat' <sachin.kamat@linaro.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Kyungmin Park' <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:62588 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbaIIEQ7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 00:16:59 -0400
+Received: by mail-pa0-f45.google.com with SMTP id rd3so3889900pab.4
+        for <linux-pm@vger.kernel.org>; Mon, 08 Sep 2014 21:16:59 -0700 (PDT)
+In-Reply-To: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
+In-Reply-To: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
+References: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, robert.schoene@tu-dresden.de, prarit@redhat.com, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-Hi,
+Even after serializing calls to __cpufreq_governor() there are some rac=
+es left.
+The races are around doing the invalid operation during some state of c=
+pufreq
+governors. For example, while the governor is in CPUFREQ_GOV_POLICY_EXI=
+T state,
+we can't do CPUFREQ_GOV_START without first doing CPUFREQ_GOV_POLICY_IN=
+IT.
 
-> This patch series adds support for AFTR idle mode on boards with
-> secure firmware enabled and allows EXYNOS cpuidle driver usage on
-> Exynos4x12 SoCs.
-> 
-> It has been tested on Trats2 board (using Exynos4412 SoC with secure
-> firmware enabled) on which AFTR mode reduces power consumption by ~12%
+All these cases weren't handled elegantly in __cpufreq_governor() and s=
+o there
+were enough chances that things may go wrong when governors are changed=
+ with
+multiple thread in parallel.
 
-Nice.
+This patch renames an existing field 'policy->governor_enabled' as
+'policy->governor_state' which can have values other than 0 & 1 now. It=
+s type is
+also changed to 'int' from 'bool'.
 
-> when EXYNOS cpuidle driver is enabled (in both cases the default
-> exynos_defconfig config is used and CPU1-3 are offlined).
-> 
-> Currently Exynos4412 SoC support is limited to Trats2 board.
-> 
-> Depends on:
-> - next-20140904 branch of linux-next kernel tree
-> - "irqchip: Properly fetch the per cpu offset" patch
->   (https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg716674.html)
-> - [PATCH v3 0/5] Firmware-assisted suspend/resume of Exynos SoCs
->   (https://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35921.html)
-> 
-OK this series looks good to me, I will take this series once above patches are
-landed.
+We maintain the current state of governors for each policy now and reje=
+ct any
+invalid operation.
 
-Thanks,
-Kukjin
+Reported-and-tested-by: Robert Sch=C3=B6ne <robert.schoene@tu-dresden.d=
+e>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c          | 26 +++++++++++++-------------
+ drivers/cpufreq/cpufreq_governor.c |  2 +-
+ include/linux/cpufreq.h            |  2 +-
+ 3 files changed, 15 insertions(+), 15 deletions(-)
 
-> Changes since v5:
-> - rebased on top of next-20140904 +
->   "irqchip: Properly fetch the per cpu offset" patch
->   (https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg716674.html)
->   [PATCH v3 0/5] Firmware-assisted suspend/resume of Exynos SoCs
->   (https://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35921.html)
-> - limit Exynos4412 SoC support to Trats2 board for now
-> 
-> Changes since v4:
-> - rebased on top of next-20140804 +
->   [PATCH v5][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
->   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35262.html)
->   [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
->   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
-> - call exynos_save_cp15() only on A9 type core (this is needed for the future
->   Exynos3250 SoC support)
-> 
-> Changes since v3:
-> - rebased on top of next-20140804 +
->   [PATCH v4][next-20140804] ARM: EXYNOS: Fix suspend/resume sequences
->   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg35192.html)
->   [PATCH v2 0/2] Firmware-assisted suspend/resume of Exynos SoCs
->   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34282.html)
-> - (re-)added patch fixing S5P_CENTRAL_SEQ_OPTION register setup
-> 
-> Changes since v2:
-> - rebased on top of next-20140708 +
->   [PATCH 5/6] ARM: EXYNOS: Fix suspend/resume sequencies
->   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32809.html)
->   [with rejects fixed]
->   [PATCH 6/6] ARM: EXYNOS: Register cpuidle device only on Exynos4210 and 5250
->   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32808.html)
->   [PATCH 0/2] Firmware-assisted suspend/resume of Exynos SoCs
->   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg32991.html)
->   [with rejects fixed in patch #2]
-> - addressed review comments from Tomasz Figa and Daniel Lezcano
-> 
-> Changes since v1:
-> - synced against next-20140602
-> - added missing Acked-by-s
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
-> 
-> Bartlomiej Zolnierkiewicz (5):
->   ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by static inlines
->   ARM: EXYNOS: add AFTR mode support to firmware do_idle method
->   ARM: EXYNOS: cpuidle: add secure firmware support to AFTR mode code
->   ARM: EXYNOS: PM: fix register setup for AFTR mode code
->   ARM: EXYNOS: cpuidle: allow driver usage on Exynos4x12 SoCs
-> 
->  arch/arm/include/asm/firmware.h |  2 +-
->  arch/arm/mach-exynos/common.h   |  5 ++++
->  arch/arm/mach-exynos/exynos.c   |  5 +++-
->  arch/arm/mach-exynos/firmware.c | 34 ++++++++++++++++-------
->  arch/arm/mach-exynos/pm.c       | 60 ++++++++++++++++++++++++-----------------
->  5 files changed, 71 insertions(+), 35 deletions(-)
-> 
-> --
-> 1.8.2.3
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index a7ceae3..c597361 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -935,6 +935,7 @@ static void cpufreq_init_policy(struct cpufreq_poli=
+cy *policy)
+ 	struct cpufreq_policy new_policy;
+ 	int ret =3D 0;
+=20
++	policy->governor_state =3D CPUFREQ_GOV_POLICY_EXIT;
+ 	memcpy(&new_policy, policy, sizeof(*policy));
+=20
+ 	/* Update governor of new_policy to the governor used before hotplug =
+*/
+@@ -1976,7 +1977,7 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_target);
+ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 					unsigned int event)
+ {
+-	int ret;
++	int ret, state;
+=20
+ 	/* Only must be defined when default governor is known to have latenc=
+y
+ 	   restrictions, like e.g. conservative or ondemand.
+@@ -2012,19 +2013,21 @@ static int __cpufreq_governor(struct cpufreq_po=
+licy *policy,
+ 		 policy->cpu, event);
+=20
+ 	mutex_lock(&cpufreq_governor_lock);
++	state =3D policy->governor_state;
++
++	/* Check if operation is permitted or not */
+ 	if (policy->governor_busy
+-	    || (policy->governor_enabled && event =3D=3D CPUFREQ_GOV_START)
+-	    || (!policy->governor_enabled
+-	    && (event =3D=3D CPUFREQ_GOV_LIMITS || event =3D=3D CPUFREQ_GOV_S=
+TOP))) {
++	    || (state =3D=3D CPUFREQ_GOV_START && event !=3D CPUFREQ_GOV_LIMI=
+TS && event !=3D CPUFREQ_GOV_STOP)
++	    || (state =3D=3D CPUFREQ_GOV_STOP && event !=3D CPUFREQ_GOV_START=
+ && event !=3D CPUFREQ_GOV_POLICY_EXIT)
++	    || (state =3D=3D CPUFREQ_GOV_POLICY_INIT && event !=3D CPUFREQ_GO=
+V_START && event !=3D CPUFREQ_GOV_POLICY_EXIT)
++	    || (state =3D=3D CPUFREQ_GOV_POLICY_EXIT && event !=3D CPUFREQ_GO=
+V_POLICY_INIT)) {
+ 		mutex_unlock(&cpufreq_governor_lock);
+ 		return -EBUSY;
+ 	}
+=20
+ 	policy->governor_busy =3D true;
+-	if (event =3D=3D CPUFREQ_GOV_STOP)
+-		policy->governor_enabled =3D false;
+-	else if (event =3D=3D CPUFREQ_GOV_START)
+-		policy->governor_enabled =3D true;
++	if (event !=3D CPUFREQ_GOV_LIMITS)
++		policy->governor_state =3D event;
+=20
+ 	mutex_unlock(&cpufreq_governor_lock);
+=20
+@@ -2035,13 +2038,10 @@ static int __cpufreq_governor(struct cpufreq_po=
+licy *policy,
+ 			policy->governor->initialized++;
+ 		else if (event =3D=3D CPUFREQ_GOV_POLICY_EXIT)
+ 			policy->governor->initialized--;
+-	} else {
++	} else if (event !=3D CPUFREQ_GOV_LIMITS) {
+ 		/* Restore original values */
+ 		mutex_lock(&cpufreq_governor_lock);
+-		if (event =3D=3D CPUFREQ_GOV_STOP)
+-			policy->governor_enabled =3D true;
+-		else if (event =3D=3D CPUFREQ_GOV_START)
+-			policy->governor_enabled =3D false;
++		policy->governor_state =3D state;
+ 		mutex_unlock(&cpufreq_governor_lock);
+ 	}
+=20
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufr=
+eq_governor.c
+index 1b44496..d173181 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -174,7 +174,7 @@ void gov_queue_work(struct dbs_data *dbs_data, stru=
+ct cpufreq_policy *policy,
+ 	int i;
+=20
+ 	mutex_lock(&cpufreq_governor_lock);
+-	if (!policy->governor_enabled)
++	if (policy->governor_state !=3D CPUFREQ_GOV_START)
+ 		goto out_unlock;
+=20
+ 	if (!all_cpus) {
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index c7aa96b..fb20fc5 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -81,7 +81,7 @@ struct cpufreq_policy {
+ 	unsigned int		policy; /* see above */
+ 	struct cpufreq_governor	*governor; /* see below */
+ 	void			*governor_data;
+-	bool			governor_enabled; /* governor start/stop flag */
++	int			governor_state; /* Governor's current state */
+ 	bool			governor_busy;
+=20
+ 	struct work_struct	update; /* if update_policy() needs to be
+--=20
+2.0.3.693.g996b0fd
+
