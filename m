@@ -1,40 +1,60 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RESEND PATCH 2/2] power: max8925: Use of_get_child_by_name
-Date: Tue, 09 Sep 2014 11:47:15 +0200
-Message-ID: <1410256035-24051-2-git-send-email-k.kozlowski@samsung.com>
-References: <1410256035-24051-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:61285 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756055AbaIIJra (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 05:47:30 -0400
-In-reply-to: <1410256035-24051-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 00/11] ARM: shmobile: r8a7740/armadillo legacy prototype
+ pm domain support
+Date: Tue, 9 Sep 2014 11:48:23 +0200
+Message-ID: <CAMuHMdWZ_MZQo5QyZmZCx-EHvxOvO==gnoefDqsipHqfSLPXww@mail.gmail.com>
+References: <1409320217-13278-1-git-send-email-geert+renesas@glider.be>
+	<20140909022649.GC31320@verge.net.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <20140909022649.GC31320@verge.net.au>
+Sender: linux-sh-owner@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-Use of_get_child_by_name to obtain reference to charger node instead of
-of_find_node_by_name which can walk outside of the parent node.
+Hi Simon, Magnus,
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
----
- drivers/power/max8925_power.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Tue, Sep 9, 2014 at 4:26 AM, Simon Horman <horms@verge.net.au> wrote:
+> I would like Magnus's opinion but mine is that the non-WIP patches
+> could be queued up. At least patch 1 and 2. Possibly others if
+> they don't depend (other than diff noise) on WIP patches.
 
-diff --git a/drivers/power/max8925_power.c b/drivers/power/max8925_power.c
-index 0cf237808d47..a6d45eef64dd 100644
---- a/drivers/power/max8925_power.c
-+++ b/drivers/power/max8925_power.c
-@@ -443,7 +443,7 @@ max8925_power_dt_init(struct platform_device *pdev)
- 	if (!nproot)
- 		return pdev->dev.platform_data;
- 
--	np = of_find_node_by_name(nproot, "charger");
-+	np = of_get_child_by_name(nproot, "charger");
- 	if (!np) {
- 		dev_err(&pdev->dev, "failed to find charger node\n");
- 		return NULL;
--- 
-1.9.1
+The legacy platforms are meant to be extinct in the near future, but
+Armadillo-legacy already has some PM domain support, so adding a
+little bit more can't hurt much, IMHO.
 
+Besides diff noise, there should not be any dependencies on WIP patches.
+
+> With the WIP patches, I am not entirely opposed to merging them
+> too, so long as they move things in a good direction. And in particular
+> don't break anything.
+
+"[PATCH 03/11] [WIP] ARM: shmobile: armadillo800eva legacy: Add
+missing A3SP pm domain devices" should be OK, as this turned out to be
+intended behavior.
+
+"[PATCH 10/11] [WIP] ARM: shmobile: r8a7740: Add A4SU pm domain
+ support" probably introduces a regression for USB, as the domain is now
+powered down after boot-up. I haven't tried USB on Armadillo yet, though.
+So don't apply this one.
+
+"[PATCH 11/11] [WIP] ARM: shmobile: r8a7740: Add A3SM pm domain
+ support" should be safe.
+
+I would not apply the other WIP patches that add C99-commented-out code.
+These issues must be fixed for DT as well.
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
