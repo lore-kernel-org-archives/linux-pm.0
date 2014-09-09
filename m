@@ -1,69 +1,60 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v4 4/9] drivercore / platform: Convert to dev_pm_domain_attach|detach()
-Date: Tue,  9 Sep 2014 13:36:05 +0200
-Message-ID: <1410262570-22785-5-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v4 5/9] i2c: core: Convert to dev_pm_domain_attach|detach()
+Date: Tue,  9 Sep 2014 13:36:06 +0200
+Message-ID: <1410262570-22785-6-git-send-email-ulf.hansson@linaro.org>
 References: <1409838756-31963-1-git-send-email-ulf.hansson@linaro.org>
  <1410262570-22785-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1410262570-22785-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Ulf Hansson <ulf.hansson@linaro.org>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Previously only the ACPI PM domain was supported by the platform bus.
+Previously only the ACPI PM domain was supported by the i2c bus.
 
 Let's convert to the common attach/detach functions for PM domains,
 which currently means we are extending the support to include the
 generic PM domain as well.
 
+Cc: linux-i2c@vger.kernel.org
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
 Reviewed-by: Kevin Hilman <khilman@linaro.org>
 ---
- drivers/base/platform.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ drivers/i2c/i2c-core.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index ab4f4ce..904be3d 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -506,11 +506,12 @@ static int platform_drv_probe(struct device *_dev)
- 	if (ret < 0)
- 		return ret;
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index 632057a..3cd8f11 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -279,10 +279,13 @@ static int i2c_device_probe(struct device *dev)
+ 	if (status < 0)
+ 		return status;
  
--	acpi_dev_pm_attach(_dev, true);
--
--	ret = drv->probe(dev);
--	if (ret)
--		acpi_dev_pm_detach(_dev, true);
-+	ret = dev_pm_domain_attach(_dev, true);
-+	if (ret != -EPROBE_DEFER) {
-+		ret = drv->probe(dev);
-+		if (ret)
-+			dev_pm_domain_detach(_dev, true);
+-	acpi_dev_pm_attach(&client->dev, true);
+-	status = driver->probe(client, i2c_match_id(driver->id_table, client));
+-	if (status)
+-		acpi_dev_pm_detach(&client->dev, true);
++	status = dev_pm_domain_attach(&client->dev, true);
++	if (status != -EPROBE_DEFER) {
++		status = driver->probe(client, i2c_match_id(driver->id_table,
++					client));
++		if (status)
++			dev_pm_domain_detach(&client->dev, true);
 +	}
  
- 	if (drv->prevent_deferred_probe && ret == -EPROBE_DEFER) {
- 		dev_warn(_dev, "probe deferral not supported\n");
-@@ -532,7 +533,7 @@ static int platform_drv_remove(struct device *_dev)
- 	int ret;
- 
- 	ret = drv->remove(dev);
--	acpi_dev_pm_detach(_dev, true);
-+	dev_pm_domain_detach(_dev, true);
- 
- 	return ret;
+ 	return status;
  }
-@@ -543,7 +544,7 @@ static void platform_drv_shutdown(struct device *_dev)
- 	struct platform_device *dev = to_platform_device(_dev);
+@@ -302,7 +305,7 @@ static int i2c_device_remove(struct device *dev)
+ 		status = driver->remove(client);
+ 	}
  
- 	drv->shutdown(dev);
--	acpi_dev_pm_detach(_dev, true);
-+	dev_pm_domain_detach(_dev, true);
+-	acpi_dev_pm_detach(&client->dev, true);
++	dev_pm_domain_detach(&client->dev, true);
+ 	return status;
  }
  
- /**
 -- 
 1.9.1
 
