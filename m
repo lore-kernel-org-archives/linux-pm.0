@@ -1,41 +1,41 @@
-From: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH 1/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Tue, 09 Sep 2014 09:29:35 +0200
-Message-ID: <1410247775.25768.13.camel@x200t>
+Date: Tue, 9 Sep 2014 13:05:59 +0530
+Message-ID: <CAKohpomN_4R5vt+_BfsVGTCVDrUhkens_=ptSMOOdJQaRPc-aw@mail.gmail.com>
 References: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
+	<1410247775.25768.13.camel@x200t>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-7"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.zih.tu-dresden.de ([141.30.67.72]:33588 "EHLO
-	mailout1.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754035AbaIIH3q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 03:29:46 -0400
-In-Reply-To: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
+Received: from mail-ob0-f179.google.com ([209.85.214.179]:52166 "EHLO
+	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932155AbaIIHgD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 03:36:03 -0400
+Received: by mail-ob0-f179.google.com with SMTP id uz6so11722375obc.38
+        for <linux-pm@vger.kernel.org>; Tue, 09 Sep 2014 00:36:00 -0700 (PDT)
+In-Reply-To: <1410247775.25768.13.camel@x200t>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, prarit@redhat.com, skannan@codeaurora.org
+To: =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>
 
-Even though the test fixed my initital problem, my test system (which
-runs the kernel with this patch applied) just crashed when changing
-frequencies. This might be connected to the patch.
+On 9 September 2014 12:59, Robert Sch=C3=B6ne <robert.schoene@tu-dresde=
+n.de> wrote:
+> Even though the test fixed my initital problem, my test system (which
+> runs the kernel with this patch applied) just crashed when changing
 
-I'll have another look into it and let you know.
+Only this patch ? or both 1/2 & 2/2 ??
 
+> frequencies. This might be connected to the patch.
+>
+> I'll have another look into it and let you know.
 
-Am Dienstag, den 09.09.2014, 09:46 +-0530 schrieb Viresh Kumar:
-+AD4 This commit was earlier commited in kernel as:
-+AD4 19c7630 cpufreq: serialize calls to +AF8AXw-cpufreq+AF8-governor()
-+AD4 
-+AD4 and was later reverted by Srivatsa:
-+AD4 56d07db cpufreq: Remove temporary fix for race between CPU hotplug and sysfs-writes
-+AD4 
-+AD4 When this commit was first introduced it was written for races during hotplug
-+AD4 and because we got some other solution to take care of the races with hotplug we
-+AD4 reverted it.
-+AD4 
-+AD4 But (as I also said in the revert patch: https://lkml.org/lkml/2013/9/10/61)
-+AD4 there are more cases where this is required.
+Hmm, that's strange. Probably some other (existing) bug woken up with
+this change.. Also this patch will come into picture while changing gov=
+ernor
+tunables and not during frequency switches.. So they looked a bit unrel=
+ated
+to me..
 
-
+Yeah, please let us know if this breaks anything.
