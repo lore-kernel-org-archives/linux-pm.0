@@ -1,67 +1,67 @@
 From: Anup Chenthamarakshan <anupc@chromium.org>
 Subject: Re: [PATCH] intel_pstate: track and export frequency residency stats
  via sysfs.
-Date: Tue, 9 Sep 2014 16:22:29 -0700
-Message-ID: <20140909232229.GA28142@google.com>
+Date: Tue, 9 Sep 2014 16:31:41 -0700
+Message-ID: <20140909233141.GB28142@google.com>
 References: <1410221424-20590-1-git-send-email-anupc@chromium.org>
- <540F1981.1090805@gmail.com>
+ <CAKohponb199_zt11M2J39yHn45MjFMSrT+hPBp7rbqiHu4vKpQ@mail.gmail.com>
+ <CAN1Daczk+YT3ETviCL5d7xLGKzRL+AAo1z6rLs=r+j5+r45-xw@mail.gmail.com>
+ <CAOh2x==oX4HN2NJ=bMUzyuL0K9KdrmV7HjRctX9dio7yw-4sbQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:51233 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752565AbaIIXbp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 19:31:45 -0400
+Received: by mail-pa0-f49.google.com with SMTP id lf10so4476524pab.22
+        for <linux-pm@vger.kernel.org>; Tue, 09 Sep 2014 16:31:44 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <540F1981.1090805@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, Sameer Nanda <snanda@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <CAOh2x==oX4HN2NJ=bMUzyuL0K9KdrmV7HjRctX9dio7yw-4sbQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, Sameer Nanda <snanda@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tue, Sep 09, 2014 at 08:15:13AM -0700, Dirk Brandewie wrote:
-> On 09/08/2014 05:10 PM, Anup Chenthamarakshan wrote:
-> > Exported stats appear in
-> > <sysfs>/devices/system/cpu/intel_pstate/time_in_state as follows:
-> > 
-> > ## CPU 0
-> > 400000 3647
-> > 500000 24342
-> > 600000 144150
-> > 700000 202469
-> > ## CPU 1
-> > 400000 4813
-> > 500000 22628
-> > 600000 149564
-> > 700000 211885
-> > 800000 173890
-> > 
-> > Signed-off-by: Anup Chenthamarakshan <anupc@chromium.org>
+On Tue, Sep 09, 2014 at 11:56:18AM +0530, Viresh Kumar wrote:
+> On Tue, Sep 9, 2014 at 11:02 AM, Anup Chenthamarakshan
+> <anupc@chromium.org> wrote:
+> > I had initially tried reusing cpufreq_stats.c to export stats.
+> > Calling cpufreq_stats_update() via the cpufreq notifier added
+> > some amount of overhead while switching frequencies. Specifically,
+> > looking up the index of the new frequency in freq_table_get_index()
+> > is a linear search through all available frequencies (vs a single
+> > subtraction with custom stats export). Also, the notifier mechanism
 > 
-> What is this information being used for?
+> I don't think just this linear search will make things so bad..
 
-I'm using P-state residency information in power consumption tests to calculate
-proportion of time spent in each P-state across all processors (one global set
-of percentages, corresponding to each P-state). This is used to validate new
-changes from the power perspective. Essentially, sanity checks to flag changes
-with large difference in P-state residency.
-
-So far, we've been using the data exported by acpi-cpufreq to track this.
+Linear search usually slows down transition to higher P-states because
+it has to go through the full list (and the list is longer in intel_pstate
+compared to acpi-cpufreq). But, yes, this is probably not a bottleneck.
 
 > 
-> Tracking the current P state request for each core is only part of the 
-> story.  The processor aggregates the requests from all cores and then decides
-> what frequency the package will run at, this evaluation happens at ~1ms time
-> frame.  If a core is idle then it loses its vote for that package frequency will
-> be and its frequency will be zero even though it may have been requesting
-> a high P state when it went idle.  Tracking the residency of the requested
-> P state doesn't provide much useful information other than ensuring the the 
-> requests are changing over time IMHO.
+> > itself added a level of indirection before calling stats_update.
+> 
+> Probably some other notifier is registered which is taking considerable
+> amount of time.. Try checking what all registered with cpufreq-core.
 
-This is exactly why we're trying to track it.
+There was no other notifier which was listening to freq transitions events.
 
 > 
-> This interface will not be supportable with upcoming processors using
-> hardware P states as documented in volume 3 of the current SDM Section 14.4
-> http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-manual-325462.pdf
-> The OS will have no way of knowing what the P state requests are for a
-> given core are.
+> > There is a 5X increase in time taken to complete intel_pstate_set_pstate
+> > while using cpufreq_stats compared to having custom stats exported.
+> 
+> Try calling cpufreq_stat_notifier_trans() directly instead of a notifier
+> and lets see if this makes it any better.
 
-Will there be any means to determine the proportion of time spent in different
-HWP-states when HWP gets enabled (maybe at a package level)?
+Here's a comparison of time taken to run intel_pstate_set_pstate() using
+different approaches:
+                                  average time for a transition
+no stats                                      4.7us
+intel_pstate-stats                            5.7us
+direct call to cpufreq_stat_notifier_trans    8.1us
+cpufreq-notifier-event                       10.6us
+
+
+I was wrong about the 5x increase (got tripped by calls to
+intel_pstate_set_pstate where no change in P-state actually happened)
