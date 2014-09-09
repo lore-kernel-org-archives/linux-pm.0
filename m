@@ -1,56 +1,82 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v4 0/9] PM / Domains: Generic OF-based support
-Date: Tue, 9 Sep 2014 12:54:46 +0100
-Message-ID: <20140909115446.GW2601@sirena.org.uk>
-References: <1409838756-31963-1-git-send-email-ulf.hansson@linaro.org>
- <1410262570-22785-1-git-send-email-ulf.hansson@linaro.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Patch v4 12/16] x86, irq, ACPI: Implement interface to support
+ ACPI based IOAPIC hot-addition
+Date: Tue, 9 Sep 2014 14:20:12 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1409091417120.11037@nanos>
+References: <1409192561-19744-1-git-send-email-jiang.liu@linux.intel.com> <1409192561-19744-13-git-send-email-jiang.liu@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="yZxAaITavNk3ADw/"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1410262570-22785-1-git-send-email-ulf.hansson@linaro.org>
+In-Reply-To: <1409192561-19744-13-git-send-email-jiang.liu@linux.intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Grant Likely <grant.likely@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, 28 Aug 2014, Jiang Liu wrote:
+>  EXPORT_SYMBOL(acpi_register_ioapic);
+> diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+> index 6e67af0c5f99..b286461cabf9 100644
+> --- a/arch/x86/kernel/apic/io_apic.c
+> +++ b/arch/x86/kernel/apic/io_apic.c
+> @@ -3851,7 +3851,13 @@ static int bad_ioapic_register(int idx)
+>  
+>  static int find_free_ioapic_entry(void)
+>  {
+> -	return nr_ioapics;
+> +	int idx;
+> +
+> +	for (idx = 0; idx < MAX_IO_APICS; idx++)
+> +		if (ioapics[idx].nr_registers == 0)
+> +			return idx;
+> +
+> +	return MAX_IO_APICS;
+>  }
+>  
+>  int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+> @@ -3867,8 +3873,15 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+>  	}
+>  	for_each_ioapic(ioapic)
+>  		if (ioapics[ioapic].mp_config.apicaddr == address) {
+> -			pr_warn("address 0x%x conflicts with IOAPIC%d\n",
+> -				address, ioapic);
+> +			/*
+> +			 * IOAPIC unit may also be visible in PCI scope.
+> +			 * When ioapic PCI driver's probe() is called,
+> +			 * the IOAPIC unit may have already been initialized
+> +			 * at boot time.
+> +			 */
+> +			if (!ioapic_initialized)
+> +				pr_warn("address 0x%x conflicts with IOAPIC%d\n",
+> +					address, ioapic);
 
---yZxAaITavNk3ADw/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hmm. This smells fishy. Why do we allow multiple initializations of
+the same IOAPIC in the first place. Either it's done via ACPI or via
+PCI, but not both.
 
-On Tue, Sep 09, 2014 at 01:36:01PM +0200, Ulf Hansson wrote:
-> Changes in v4:
-> 	- Rebased patch "PM / Domains: Add generic OF-based PM domain look-up" -
-> 	  and updated the author and the commit message.
-> 	- Adopted review comments for "PM / Domains: Add APIs to attach/detach
-> 	  a PM domain for a device".
-> 	- Updated author and commit message for "ARM: exynos: Move to generic
-> 	  PM domain DT bindings".
-> 	- Added some acks and reviewed by tags.
-> 	- Started to use the "--in-reply-to" option to git-send-email. It should
-> 	  provide the option to show a better diffstat per patch.
+>  			return -EEXIST;
+>  		}
+>  
+> @@ -3918,6 +3931,14 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+>  	ioapics[idx].irqdomain = NULL;
+>  	ioapics[idx].irqdomain_cfg = *cfg;
+>  
+> +	if (ioapic_initialized) {
 
-Please don't send serieses in reply to earlier versions, it buries
-things in the middle of old discussions which can mean they don't get
-noticed, especially when you're sending multiple large patch serieses at
-the same time.
+I have a hard time to understand this conditional. Why can't we do
+that unconditionally?
 
---yZxAaITavNk3ADw/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+> +		if (mp_irqdomain_create(idx)) {
+> +			clear_fixmap(FIX_IO_APIC_BASE_0 + idx);
+> +			return -ENOMEM;
+> +		}
+> +		alloc_ioapic_saved_registers(idx);
+> +	}
+> +
+>  	if (gsi_cfg->gsi_end >= gsi_top)
+>  		gsi_top = gsi_cfg->gsi_end + 1;
+>  	if (nr_ioapics <= idx)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Thanks,
 
-iQEcBAEBAgAGBQJUDuqGAAoJECTWi3JdVIfQH9sH/3Td7uTj0Fz8dDmg/UngLTCZ
-ia57OO1tMIIzMeZBgSOnZI+JjlNo5LAtIqXl02gCpdGWtZKqXbG0dh8BKCwsPI5X
-bGA73PSJJpfCLW9qQGthYDeX5p7faY+KumKFu/1AFVKfsG0anciv80Zc4ud7WL5j
-f//rRBcJZGGWqup8nqmMMTOb3alvOtpzz+IB9VUPmuU23kvYELkFgjRFTcT8wiVL
-3m9T8xoCSdFYwbiqCWRuCjlR4cGgz0M8k43Abe19TBejE8sdJV+YJgChD5tjnFdC
-LKjiuQ6/EzeeCcip9n7Nf7V+F/OSlpFO79QR53E4Za9IFoBYOrFIu1ynsTldVzA=
-=nYah
------END PGP SIGNATURE-----
-
---yZxAaITavNk3ADw/--
+	tglx
