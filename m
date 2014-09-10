@@ -1,133 +1,123 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [PATCH] Hibernate: Do not assume the first e820 area to be RAM
-Date: Wed, 10 Sep 2014 21:43:47 +0800
-Message-ID: <20140910134347.GB18567@linux-rxt1.site>
-References: <1407754252-22779-1-git-send-email-jlee@suse.com>
- <1561567.ev2pEO8C5v@vostro.rjw.lan>
- <CAE9FiQUROUAxFk8_gtMp0Fu6aBLbL8GtKhJg0Y-01s4n3BDjtw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:34029 "EHLO
-	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751219AbaIJNoE (ORCPT
-	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
-	Wed, 10 Sep 2014 09:44:04 -0400
-Content-Disposition: inline
-In-Reply-To: <CAE9FiQUROUAxFk8_gtMp0Fu6aBLbL8GtKhJg0Y-01s4n3BDjtw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: [PATCH] cpufreq, release policy->rwsem on error
+Date: Wed, 10 Sep 2014 10:12:08 -0400
+Message-ID: <1410358328-27303-1-git-send-email-prarit@redhat.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Prarit Bhargava <prarit@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Takashi Iwai <tiwai@suse.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Yinghai, 
+I have not been able to reliably reproduce the hardware failure that caused
+the warning.  In order to reproduce this I resorted to (sorry for the
+cut-and-paste)
 
-Thanks for your review, first!
+	diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+	index 728a2d8..c7724d2 100644
+	--- a/drivers/cpufreq/pcc-cpufreq.c
+	+++ b/drivers/cpufreq/pcc-cpufreq.c
+	@@ -146,6 +146,8 @@ static unsigned int pcc_get_freq(unsigned int cpu)
+		u32 input_buffer;
+		u32 output_buffer;
 
-On Tue, Sep 09, 2014 at 11:08:45PM -0700, Yinghai Lu wrote:
-> On Mon, Sep 8, 2014 at 3:52 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Monday, August 11, 2014 06:50:52 PM Lee, Chun-Yi wrote:
-> >> In arch/x86/kernel/setup.c::trim_bios_range(), the codes introduced
-> >> by 1b5576e6 (base on d8a9e6a5), it updates the first 4Kb of memory
-> >> to be E820_RESERVED region. That's because it's a BIOS owned area
-> >> but generally not listed in the E820 table:
-> >>
-> >> [    0.000000] e820: BIOS-provided physical RAM map:
-> >> [    0.000000] BIOS-e820: [mem 0x0000000000000000-0x0000000000096fff] usable
-> >> [    0.000000] BIOS-e820: [mem 0x0000000000097000-0x0000000000097fff] reserved
-> >> ...
-> >> [    0.000000] e820: update [mem 0x00000000-0x00000fff] usable ==> reserved
-> >> [    0.000000] e820: remove [mem 0x000a0000-0x000fffff] usable
-> >>
-> >> But the region of first 4Kb didn't register to nosave memory:
-> >>
-> >> [    0.000000] PM: Registered nosave memory: [mem 0x00097000-0x00097fff]
-> >> [    0.000000] PM: Registered nosave memory: [mem 0x000a0000-0x000fffff]
-> >>
-> >> The codes in e820_mark_nosave_regions() assumes the first e820 area to be
-> >> RAM, so it causes the first 4Kb E820_RESERVED region ignored when register
-> >> to nosave. This patch removed assumption of the first e820 area.
-> >>
-> >> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> >> Cc: Len Brown <len.brown@intel.com>
-> >> Cc: Pavel Machek <pavel@ucw.cz>
-> >> Cc: Thomas Gleixner <tglx@linutronix.de>
-> >> Cc: Ingo Molnar <mingo@redhat.com>
-> >> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> >> Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
-> >
-> > Thomas, Ingo, Peter, any objections here?
-> >
-> > If not, do you want to handle it or do you want me to do that?
-> 
-> Did it address any regression?
-> 
+	+       return 0;
+	+
+		spin_lock(&pcc_lock);
 
-I found this situation when comparing the e820 region with nosave memory address.
-But, I don't know any real machine which has bug report against this.
+		pr_debug("get: get_freq for CPU %d\n", cpu);
 
-> >
-> >> ---
-> >>  arch/x86/kernel/e820.c | 7 +++----
-> >>  1 file changed, 3 insertions(+), 4 deletions(-)
-> >>
-> >> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-> >> index 988c00a..d595240 100644
-> >> --- a/arch/x86/kernel/e820.c
-> >> +++ b/arch/x86/kernel/e820.c
-> >> @@ -682,18 +682,17 @@ void __init parse_e820_ext(u64 phys_addr, u32 data_len)
-> >>   * hibernation (32 bit) or software suspend and suspend to RAM (64 bit).
-> >>   *
-> >>   * This function requires the e820 map to be sorted and without any
-> >> - * overlapping entries and assumes the first e820 area to be RAM.
-> >> + * overlapping entries.
-> >>   */
-> >>  void __init e820_mark_nosave_regions(unsigned long limit_pfn)
-> >>  {
-> >>       int i;
-> >>       unsigned long pfn;
-> >>
-> >> -     pfn = PFN_DOWN(e820.map[0].addr + e820.map[0].size);
-> >> -     for (i = 1; i < e820.nr_map; i++) {
-> >> +     for (i = 0; i < e820.nr_map; i++) {
-> >>               struct e820entry *ei = &e820.map[i];
-> >>
-> >> -             if (pfn < PFN_UP(ei->addr))
-> >> +             if (i > 0 && pfn < PFN_UP(ei->addr))
-> >>                       register_nosave_region(pfn, PFN_UP(ei->addr));
-> 
-> could avoid the i > 0 checking.
-> 
-> >>
-> >>               pfn = PFN_DOWN(ei->addr + ei->size);
-> >>
-> >
-> 
-> following would be better ?
-> 
-> @@ -682,15 +682,14 @@ void __init parse_e820_ext(u64 phys_addr, u32 data_len)
->   * hibernation (32 bit) or software suspend and suspend to RAM (64 bit).
->   *
->   * This function requires the e820 map to be sorted and without any
-> - * overlapping entries and assumes the first e820 area to be RAM.
-> + * overlapping entries.
->   */
->  void __init e820_mark_nosave_regions(unsigned long limit_pfn)
->  {
->      int i;
-> -    unsigned long pfn;
-> +    unsigned long pfn = 0;
-> 
-> -    pfn = PFN_DOWN(e820.map[0].addr + e820.map[0].size);
-> -    for (i = 1; i < e820.nr_map; i++) {
-> +    for (i = 0; i < e820.nr_map; i++) {
->          struct e820entry *ei = &e820.map[i];
-> 
->          if (pfn < PFN_UP(ei->addr))
+to simulate the cpufreq_driver->get() hardware failure.
 
-Yes, thanks for your suggestion, your change can avoid the i > 0 checking.
-I will send v2 patch to add your improvement.
+---8<---
 
+While debugging a cpufreq-related hardware failure on a system I saw the
+following lockdep warning:
 
-Thanks a lot!
-Joey Lee
+ =========================
+ [ BUG: held lock freed! ] 3.17.0-rc4+ #1 Tainted: G            E
+ -------------------------
+ insmod/2247 is freeing memory ffff88006e1b1400-ffff88006e1b17ff, with a lock still held there!
+  (&policy->rwsem){+.+...}, at: [<ffffffff8156d37d>] __cpufreq_add_dev.isra.21+0x47d/0xb80
+ 3 locks held by insmod/2247:
+  #0:  (subsys mutex#5){+.+.+.}, at: [<ffffffff81485579>] subsys_interface_register+0x69/0x120
+  #1:  (cpufreq_rwsem){.+.+.+}, at: [<ffffffff8156cf73>] __cpufreq_add_dev.isra.21+0x73/0xb80
+  #2:  (&policy->rwsem){+.+...}, at: [<ffffffff8156d37d>] __cpufreq_add_dev.isra.21+0x47d/0xb80
+
+ stack backtrace:
+ CPU: 0 PID: 2247 Comm: insmod Tainted: G            E  3.17.0-rc4+ #1
+ Hardware name: HP ProLiant MicroServer Gen8, BIOS J06 08/24/2013
+  0000000000000000 000000008f3063c4 ffff88006f87bb30 ffffffff8171b358
+  ffff88006bcf3750 ffff88006f87bb68 ffffffff810e09e1 ffff88006e1b1400
+  ffffea0001b86c00 ffffffff8156d327 ffff880073003500 0000000000000246
+ Call Trace:
+  [<ffffffff8171b358>] dump_stack+0x4d/0x66
+  [<ffffffff810e09e1>] debug_check_no_locks_freed+0x171/0x180
+  [<ffffffff8156d327>] ? __cpufreq_add_dev.isra.21+0x427/0xb80
+  [<ffffffff8121412b>] kfree+0xab/0x2b0
+  [<ffffffff8156d327>] __cpufreq_add_dev.isra.21+0x427/0xb80
+  [<ffffffff81724cf7>] ? _raw_spin_unlock+0x27/0x40
+  [<ffffffffa003517f>] ? pcc_cpufreq_do_osc+0x17f/0x17f [pcc_cpufreq]
+  [<ffffffff8156da8e>] cpufreq_add_dev+0xe/0x10
+  [<ffffffff814855d1>] subsys_interface_register+0xc1/0x120
+  [<ffffffff8156bcf2>] cpufreq_register_driver+0x112/0x340
+  [<ffffffff8121415a>] ? kfree+0xda/0x2b0
+  [<ffffffffa003517f>] ? pcc_cpufreq_do_osc+0x17f/0x17f [pcc_cpufreq]
+  [<ffffffffa003562e>] pcc_cpufreq_init+0x4af/0xe81 [pcc_cpufreq]
+  [<ffffffffa003517f>] ? pcc_cpufreq_do_osc+0x17f/0x17f [pcc_cpufreq]
+  [<ffffffff81002144>] do_one_initcall+0xd4/0x210
+  [<ffffffff811f7472>] ? __vunmap+0xd2/0x120
+  [<ffffffff81127155>] load_module+0x1315/0x1b70
+  [<ffffffff811222a0>] ? store_uevent+0x70/0x70
+  [<ffffffff811229d9>] ? copy_module_from_fd.isra.44+0x129/0x180
+  [<ffffffff81127b86>] SyS_finit_module+0xa6/0xd0
+  [<ffffffff81725b69>] system_call_fastpath+0x16/0x1b
+ cpufreq: __cpufreq_add_dev: ->get() failed
+insmod: ERROR: could not insert module pcc-cpufreq.ko: No such device
+
+The warning occurs in the __cpufreq_add_dev() code which does
+
+        down_write(&policy->rwsem);
+	...
+        if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
+                policy->cur = cpufreq_driver->get(policy->cpu);
+                if (!policy->cur) {
+                        pr_err("%s: ->get() failed\n", __func__);
+                        goto err_get_freq;
+                }
+
+If cpufreq_driver->get(policy->cpu) returns an error we execute the
+code at err_get_freq, which does not up the policy->rwsem.  This causes
+the lockdep warning.
+
+Trivial patch to up the policy->rwsem in the error path.
+
+After the patch has been applied, and an error occurs in the
+cpufreq_driver->get(policy->cpu) call we will now see
+
+cpufreq: __cpufreq_add_dev: ->get() failed
+cpufreq: __cpufreq_add_dev: ->get() failed
+modprobe: ERROR: could not insert 'pcc_cpufreq': No such device
+
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
+---
+ drivers/cpufreq/cpufreq.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index d9fdedd..aadaed0 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1289,6 +1289,8 @@ err_get_freq:
+ 		per_cpu(cpufreq_cpu_data, j) = NULL;
+ 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
++	up_write(&policy->rwsem);
++
+ 	if (cpufreq_driver->exit)
+ 		cpufreq_driver->exit(policy);
+ err_set_policy_cpu:
+-- 
+1.7.9.3
