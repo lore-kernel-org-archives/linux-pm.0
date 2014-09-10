@@ -1,57 +1,79 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCHv2 2/4] cpufreq: cpufreq-dt: extend with platform_data
-Date: Wed, 10 Sep 2014 18:02:59 +0530
-Message-ID: <CAKohpo=EPrwbu7RhyXAXeq2U9uV2BeLZHrMKTg3oAF1oZb0QmA@mail.gmail.com>
-References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
-	<1410350908-11316-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<1410350908-11316-3-git-send-email-thomas.petazzoni@free-electrons.com>
-	<CAKohpokH4ZoM=+i3wW73o_Xf26ysBaXbNNzGUB0ofcc0EkK3WA@mail.gmail.com>
-	<20140910142841.17ae320a@free-electrons.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RFC PATCH 0/3] PM / clock_ops: allow to specify custom
+ pm_clk_notifier callback
+Date: Wed, 10 Sep 2014 14:34:02 +0200
+Message-ID: <CAMuHMdXRx6QUs2zhsXXz6aia0=v521+_B4NR61JVv61aWnwyPw@mail.gmail.com>
+References: <1406313096-29761-1-git-send-email-grygorii.strashko@ti.com>
+	<7hr3zln692.fsf@linaro.org>
+	<540F0381.7010500@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f49.google.com ([209.85.219.49]:48266 "EHLO
-	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbaIJMdA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 08:33:00 -0400
-Received: by mail-oa0-f49.google.com with SMTP id m19so1722767oag.8
-        for <linux-pm@vger.kernel.org>; Wed, 10 Sep 2014 05:33:00 -0700 (PDT)
-In-Reply-To: <20140910142841.17ae320a@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <540F0381.7010500@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, Ben Dooks <ben.dooks@codethink.co.uk>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Grant Likely <grant.likely@secretlab.ca>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Arnd Bergmann <arnd.bergmann@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
 
-On 10 September 2014 17:58, Thomas Petazzoni
-<thomas.petazzoni@free-electrons.com> wrote:
-> Dear Viresh Kumar,
->
-> On Wed, 10 Sep 2014 17:52:59 +0530, Viresh Kumar wrote:
->> On 10 September 2014 17:38, Thomas Petazzoni
->> <thomas.petazzoni@free-electrons.com> wrote:
->> > +       dt_cpufreq_driver.driver_data = dev_get_platdata(&pdev->dev);
+Hi Grygorii,
+
+On Tue, Sep 9, 2014 at 3:41 PM, Grygorii Strashko
+<grygorii.strashko@ti.com> wrote:
+>>> Also, It updates Keystone 2 platform code to provide custom
+>>> callback which fills list of clocks for Device with all clocks assigned to this
+>>> Device in DT.
+>>> More over, It's safe for Keystone 2 to perform CLK PM domain initialization
+>>> at device's binding time instead of device's creation time.
+>>>
+>>> I've posted these patches because I need fully enable Runtime PM on Keystone 2
+>>> where all HW modules are controlled using clocks only. That's why CLK PM domain
+>>> fits our needs perfectly.
 >>
->> I don't think this is right. What if platform device's platform data
->> is freed later?
->> That's why its always better to duplicate that structure instead of playing with
->> pointers.
+>> Heh, doesn't seem like a perfect fit to me ;)
+>>
+>>> Also, on Keystone 2 clocks are initialized early and
+>>> they are available at device creation time. The main problems from my side are:
+>>>   - every time when support for new HW modules is added the ".con_ids" array
+>>>     need to be checked and updated;
+>>>   - restriction for clock's names in DT - to be named using only above con_ids
+>>>     It's ugly.
+>>>
+>>> I hope, this approach to be accepted at least as temporal solution until
+>>> the generic solution is not found.
+>>
+>> Sorry if I missed it, but is there ongoing discussion of a more generic
+>> solution other than this one:
 >
-> Isn't the piece of code registering the platform_device supposed to
-> make sure that platform_data doesn't disappear? At least, in PATCH 3/4,
+> Yep. :( But It's ongoing more than 2 months already and seems there is no
+> light at the end of tunnel.
+>
+>>
+>>> [1] Previously, same problem was discussed in, but no final solution was accepted:
+>>>   "[PATCH/RFC 0/4] of: Register clocks for Runtime PM with PM core"
+>>>   https://lkml.org/lkml/2014/4/24/1118
+>>
+>> Personally, I still like Geert's approach better.
+>>
+>
+> Unfortunately, Geert is not going to continue working on it (as I know).
 
-I don't know. I remember this from the days when I used to write individual
-drivers for SPEAr platform... Its been some time now that I have seen this :)
+For the record, I had postponed working on it, as we had an interim solution for
+multiplatform shmobile being broken in mainline (drivers/sh/pm_runtime.c).
 
-> I'm using platform_device_register_data(), which does a kmemdup() of
-> the custom data being passed before assigning the struct
-> device->platform_data field.
+Currently I'm tackling "real" power domains. As this is incompatible with
+the above hack (you can attach only one power domain to a device, as Ulf
+had pointed out before --- Hm, why is the DT property called "power-domains"
+(plural) then?), I'll have to revisit anyway, and get back to it.
+Furthermore, not all shmobile SoCs have such fine-grained power domains
+as sh7372/sh73a0/r8a7740/r8a73a4, so we still need something better there.
 
-Atleast in your case it isn't required to copy anymore but this driver can be
-used by others which may not guarantee that..
+Gr{oetje,eeting}s,
 
-> But if you like, I can add one more memory copy :)
+                        Geert
 
-Its not what I like, as wasting memory isn't sensible at all.. But about what's
-the right thing to do to make this code un-breakable..
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-@Arnd: Any inputs?
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
