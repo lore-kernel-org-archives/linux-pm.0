@@ -1,633 +1,666 @@
-From: "Ivan T. Ivanov" <iivanov@mm-sol.com>
-Subject: [PATCH] thermal: Add QPNP PMIC temperature alarm driver
-Date: Wed, 10 Sep 2014 18:13:08 +0300
-Message-ID: <1410361988-22809-1-git-send-email-iivanov@mm-sol.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCH v2 1/1] thermal: introduce clock cooling device
+Date: Wed, 10 Sep 2014 11:33:36 -0400
+Message-ID: <1410363216-24615-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ns.mm-sol.com ([37.157.136.199]:43548 "EHLO extserv.mm-sol.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751140AbaIJPNY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 10 Sep 2014 11:13:24 -0400
+Received: from mail-qc0-f172.google.com ([209.85.216.172]:41620 "EHLO
+	mail-qc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751190AbaIJPdy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 11:33:54 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>
-Cc: "Ivan T. Ivanov" <iivanov@mm-sol.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, David Collins <collinsd@codeaurora.org>
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <eduardo.valentin@ti.com>, Mike Turquette <mturquette@linaro.org>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-arm-kernel@lists.infradead.org, Eduardo Valentin <edubezval@gmail.com>
 
-Add support for the temperature alarm peripheral found inside
-Qualcomm plug-and-play (QPNP) PMIC chips.  The temperature alarm
-peripheral outputs a pulse on an interrupt line whenever the
-thermal over temperature stage value changes.  Implement an ISR
-to manage this interrupt.
+From: Eduardo Valentin <eduardo.valentin@ti.com>
 
-Register a thermal zone device in sysfs with mulitple trip points
-corresponding to the physical threshold temperatures between over
-temperature stages.  The temperature reported by this thermal
-zone device should reflect the actual PMIC die temperature if an
-ADC is present on the given PMIC.  If no ADC is present, then the
-reported temperature should be estimated from the over
-temperature stage value.
+This patch introduces a new thermal cooling device based on common clock
+framework. The original motivation to write this cooling device is to be
+able to cool down thermal zones using clocks that feed co-processors, such
+as GPUs, DSPs, Image Processing Co-processors, etc. But it is written
+in a way that it can be used on top of any clock.
 
-Send a notification to userspace via sysfs_notify() whenever the
-over temperature stage value changes.
+The implementation is pretty straight forward. The code creates
+a thermal cooling device based on a pair of a struct device and a clock name.
+The struct device is assumed to be usable by the OPP layer. The OPP layer
+is used as source of the list of possible frequencies. The (cpufreq) frequency
+table is then used as a map from frequencies to cooling states. Cooling
+states are indexes to the frequency table.
 
-Cc: David Collins <collinsd@codeaurora.org>
-Signed-off-by: Ivan T. Ivanov <iivanov@mm-sol.com>
+The logic sits on top of common clock framework, specifically on clock
+pre notifications. Any PRE_RATE_CHANGE is hijacked, and the transition is
+only allowed when the new rate is within the thermal limit (cooling state -> freq).
+
+When a thermal cooling device state transition is requested, the clock
+is also checked to verify if the current clock rate is within the new
+thermal limit.
+
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Mike Turquette <mturquette@linaro.org>
+Cc: Nishanth Menon <nm@ti.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- .../bindings/thermal/qpnp-temp-alarm.txt           |  27 ++
- drivers/thermal/Kconfig                            |  12 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/qpnp-temp-alarm.c                  | 519 +++++++++++++++++++++
- 4 files changed, 559 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/qpnp-temp-alarm.txt
- create mode 100644 drivers/thermal/qpnp-temp-alarm.c
+ drivers/thermal/Kconfig         |  12 +
+ drivers/thermal/Makefile        |   3 +
+ drivers/thermal/clock_cooling.c | 485 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/clock_cooling.h   |  65 ++++++
+ 4 files changed, 565 insertions(+)
+ create mode 100644 drivers/thermal/clock_cooling.c
+ create mode 100644 include/linux/clock_cooling.h
 
-diff --git a/Documentation/devicetree/bindings/thermal/qpnp-temp-alarm.txt b/Documentation/devicetree/bindings/thermal/qpnp-temp-alarm.txt
-new file mode 100644
-index 0000000..7eecb74
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/qpnp-temp-alarm.txt
-@@ -0,0 +1,27 @@
-+Qualcomm QPNP PMIC Temperature Alarm
-+
-+QPNP temperature alarm peripherals are found inside of Qualcomm PMIC chips
-+that utilize the Qualcomm SPMI implementation. These peripherals provide an
-+interrupt signal and status register to identify high PMIC die temperature.
-+
-+Required properties:
-+- compatible:      Should contain "qcom,qpnp-temp-alarm".
-+- reg:             Specifies the SPMI address temperature alarm device.
-+- interrupts:      PMIC temperature alarm interrupt
-+
-+Optional properties:
-+- label:           A string used as a descriptive name for this thermal
-+                   device. This name should be 19 characters or less.
-+- io-channels:     Should contain IIO channel specifier
-+- io-channel-names: "thermal". The ADC channel for volatage reading.
-+
-+Example:
-+
-+	thermal-alarm@2400 {
-+		compatible = "qcom,qpnp-temp-alarm";
-+		reg = <0x2400>;
-+		interrupts = <0 0x24 0 IRQ_TYPE_EDGE_RISING>;
-+		label = "pm8941_tz";
-+		io-channels = <&pm8941_vadc VADC_DIE_TEMP>;
-+		io-channel-names = "thermal";
-+	};
+---
+Changelog:
+
+Differences from V1:
+. Fixed comments done by Pavel. Mainly on copyrights and type casting.
+
 diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 693208e..7371cf9 100644
+index 693208e..1ffede8 100644
 --- a/drivers/thermal/Kconfig
 +++ b/drivers/thermal/Kconfig
-@@ -248,4 +248,16 @@ depends on ARCH_STI && OF
- source "drivers/thermal/st/Kconfig"
- endmenu
+@@ -102,6 +102,18 @@ config CPU_THERMAL
  
-+config QPNP_TEMP_ALARM
-+	tristate "Qualcomm QPNP Temperature Alarm"
-+	depends on OF && REGMAP_SPMI
+ 	  If you want this support, you should say Y here.
+ 
++config CLOCK_THERMAL
++	bool "Generic clock cooling support"
++	depends on COMMON_CLK
++	depends on PM_OPP
 +	help
-+	  This enables a thermal sysfs driver for Qualcomm plug-and-play (QPNP)
-+	  PMIC devices. It shows up in sysfs as a thermal zone with multiple
-+	  trip points. The temperature reported by the thermal zone reflects the
-+	  real time die temperature if an ADC is present or an estimate of the
-+	  temperature based upon the over temperature stage value. Enabling the
-+	  thermal zone device via the mode file results in shifting PMIC over
-+	  temperature shutdown control from hardware to software.
++	  This entry implements the generic clock cooling mechanism through
++	  frequency clipping. Typically used to cool off co-processors. The
++	  device that is configured to use this cooling mechanism will be
++	  controlled to reduce clock frequency whenever temperature is high.
 +
- endif
++	  If you want this support, you should say Y here.
++
+ config THERMAL_EMULATION
+ 	bool "Thermal emulation mode support"
+ 	help
 diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 31e232f..f54ba76 100644
+index 31e232f..76840ae 100644
 --- a/drivers/thermal/Makefile
 +++ b/drivers/thermal/Makefile
-@@ -33,3 +33,4 @@ obj-$(CONFIG_INTEL_SOC_DTS_THERMAL)	+= intel_soc_dts_thermal.o
- obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
- obj-$(CONFIG_ACPI_INT3403_THERMAL)	+= int3403_thermal.o
- obj-$(CONFIG_ST_THERMAL)	+= st/
-+obj-$(CONFIG_QPNP_TEMP_ALARM)	+= qpnp-temp-alarm.o
-diff --git a/drivers/thermal/qpnp-temp-alarm.c b/drivers/thermal/qpnp-temp-alarm.c
+@@ -17,6 +17,9 @@ thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE)	+= user_space.o
+ # cpufreq cooling
+ thermal_sys-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
+ 
++# clock cooling
++thermal_sys-$(CONFIG_CLOCK_THERMAL)	+= clock_cooling.o
++
+ # platform thermal drivers
+ obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
+ obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
+diff --git a/drivers/thermal/clock_cooling.c b/drivers/thermal/clock_cooling.c
 new file mode 100644
-index 0000000..9974059
+index 0000000..1b4ff0f
 --- /dev/null
-+++ b/drivers/thermal/qpnp-temp-alarm.c
-@@ -0,0 +1,519 @@
++++ b/drivers/thermal/clock_cooling.c
+@@ -0,0 +1,485 @@
 +/*
-+ * Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
++ *  drivers/thermal/clock_cooling.c
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
++ *  Copyright (C) 2014 Eduardo Valentin <edubezval@gmail.com>
 + *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
++ *  Copyright (C) 2013	Texas Instruments Inc.
++ *  Contact:  Eduardo Valentin <eduardo.valentin@ti.com>
++ *
++ *  Highly based on cpu_cooling.c.
++ *  Copyright (C) 2012	Samsung Electronics Co., Ltd(http://www.samsung.com)
++ *  Copyright (C) 2012  Amit Daniel <amit.kachhap@linaro.org>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
 + */
-+
-+#include <linux/delay.h>
++#include <linux/clk.h>
++#include <linux/cpufreq.h>
++#include <linux/device.h>
 +#include <linux/err.h>
-+#include <linux/iio/consumer.h>
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
++#include <linux/idr.h>
++#include <linux/mutex.h>
++#include <linux/pm_opp.h>
++#include <linux/slab.h>
 +#include <linux/thermal.h>
++#include <linux/clock_cooling.h>
 +
-+#define QPNP_TM_REG_TYPE		0x04
-+#define QPNP_TM_REG_SUBTYPE		0x05
-+#define QPNP_TM_REG_STATUS		0x08
-+#define QPNP_TM_REG_SHUTDOWN_CTRL1	0x40
-+#define QPNP_TM_REG_SHUTDOWN_CTRL2	0x42
-+#define QPNP_TM_REG_ALARM_CTRL		0x46
++/**
++ * struct clock_cooling_device - data for cooling device with clock
++ * @id: unique integer value corresponding to each clock_cooling_device
++ *	registered.
++ * @dev: struct device pointer to the device being used to cool off using
++ *       clock frequencies.
++ * @cdev: thermal_cooling_device pointer to keep track of the
++ *	registered cooling device.
++ * @clk_rate_change_nb: reference to notifier block used to receive clock
++ *                      rate changes.
++ * @freq_table: frequency table used to keep track of available frequencies.
++ * @clock_state: integer value representing the current state of clock
++ *	cooling	devices.
++ * @clock_val: integer value representing the absolute value of the clipped
++ *	frequency.
++ * @clk: struct clk reference used to enforce clock limits.
++ * @lock: mutex lock to protect this struct.
++ *
++ * This structure is required for keeping information of each
++ * clock_cooling_device registered. In order to prevent corruption of this a
++ * mutex @lock is used.
++ */
++struct clock_cooling_device {
++	int id;
++	struct device *dev;
++	struct thermal_cooling_device *cdev;
++	struct notifier_block clk_rate_change_nb;
++	struct cpufreq_frequency_table *freq_table;
++	unsigned long clock_state;
++	unsigned long clock_val;
++	struct clk *clk;
++	struct mutex lock; /* lock to protect the content of this struct */
++};
++#define to_clock_cooling_device(x) \
++		container_of(x, struct clock_cooling_device, clk_rate_change_nb)
++static DEFINE_IDR(clock_idr);
++static DEFINE_MUTEX(cooling_clock_lock);
 +
-+#define QPNP_TM_TYPE			0x09
-+#define QPNP_TM_SUBTYPE			0x08
++/**
++ * clock_cooling_get_idr - function to get an unique id.
++ * @id: int * value generated by this function.
++ *
++ * This function will populate @id with an unique
++ * id, using the idr API.
++ *
++ * Return: 0 on success, an error code on failure.
++ */
++static int clock_cooling_get_idr(int *id)
++{
++	int ret;
 +
-+#define STATUS_STAGE_MASK		0x03
++	mutex_lock(&cooling_clock_lock);
++	ret = idr_alloc(&clock_idr, NULL, 0, 0, GFP_KERNEL);
++	mutex_unlock(&cooling_clock_lock);
++	if (unlikely(ret < 0))
++		return ret;
++	*id = ret;
 +
-+#define SHUTDOWN_CTRL1_OVERRIDE_STAGE3	0x80
-+#define SHUTDOWN_CTRL1_OVERRIDE_STAGE2	0x40
-+#define SHUTDOWN_CTRL1_THRESHOLD_MASK	0x03
++	return 0;
++}
 +
-+#define SHUTDOWN_CTRL2_CLEAR_STAGE3	0x80
-+#define SHUTDOWN_CTRL2_CLEAR_STAGE2	0x40
++/**
++ * release_idr - function to free the unique id.
++ * @id: int value representing the unique id.
++ */
++static void release_idr(int id)
++{
++	mutex_lock(&cooling_clock_lock);
++	idr_remove(&clock_idr, id);
++	mutex_unlock(&cooling_clock_lock);
++}
 +
-+#define ALARM_CTRL_FORCE_ENABLE		0x80
-+#define ALARM_CTRL_FOLLOW_HW_ENABLE	0x01
++/* Below code defines functions to be used for clock as cooling device */
 +
-+/*
-+ * Trip point values based on threshold control
-+ * 0 = {105 C, 125 C, 145 C}
-+ * 1 = {110 C, 130 C, 150 C}
-+ * 2 = {115 C, 135 C, 155 C}
-+ * 3 = {120 C, 140 C, 160 C}
-+*/
-+#define TEMP_STAGE_STEP			20000	/* Stage step: 20.000 C */
-+#define TEMP_STAGE_HYSTERESIS		2000
-+
-+#define TEMP_THRESH_MIN			105000	/* Threshold Min: 105 C */
-+#define TEMP_THRESH_STEP		5000	/* Threshold step: 5 C */
-+
-+#define THRESH_MIN			0
-+#define THRESH_MAX			3
-+
-+/* Trip points from most critical to least critical */
-+#define TRIP_STAGE3			0
-+#define TRIP_STAGE2			1
-+#define TRIP_STAGE1			2
-+#define TRIP_NUM			3
-+
-+/* Delay between TEMP_STAT IRQ going high and status value changing in ms */
-+#define READ_DELAY_MS			40
-+
-+/* 2000 uV/K */
-+#define MICRO_VOLTS_TO_MILI_CELSIUS(x)	((x) / 2 - 273150)
-+
-+/* Temperature in Milli Celsius reported during stage 0 if no ADC is present */
-+#define DEFAULT_TEMP			37000
-+
-+struct qpnp_tm_chip {
-+	struct delayed_work		work;
-+	struct regmap			*map;
-+	struct device			*dev;
-+	struct thermal_zone_device	*tz_dev;
-+	enum thermal_device_mode	mode;
-+	const char			*tm_name;
-+	int				irq;
-+	long				temp;
-+	unsigned int			thresh;
-+	unsigned int			stage;
-+	unsigned int			prev_stage;
-+	unsigned int			base;
-+	struct iio_channel		*adc;
++enum clock_cooling_property {
++	GET_LEVEL,
++	GET_FREQ,
++	GET_MAXL,
 +};
 +
-+static inline int qpnp_tm_read(struct qpnp_tm_chip *chip, u16 addr, u8 *buf)
-+{
-+	return regmap_bulk_read(chip->map, chip->base + addr, buf, 1);
-+}
-+
-+static inline int qpnp_tm_write(struct qpnp_tm_chip *chip, u16 addr, u8 *buf)
-+{
-+	return regmap_bulk_write(chip->map, chip->base + addr, buf, 1);
-+}
-+
-+static int qpnp_tm_shutdown_override(struct qpnp_tm_chip *chip, bool enable)
-+{
-+	u8 reg;
-+
-+	reg = chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
-+
-+	if (enable) {
-+		reg |= SHUTDOWN_CTRL1_OVERRIDE_STAGE2;
-+		reg |= SHUTDOWN_CTRL1_OVERRIDE_STAGE3;
-+	}
-+
-+	return qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, &reg);
-+}
-+
-+/*
-+ * This function updates the internal temp value based on the
-+ * current thermal stage and threshold as well as the previous stage
++/**
++ * clock_cooling_get_property - fetch a property of interest for a give cpu.
++ * @ccdev: clock cooling device reference
++ * @input: query parameter
++ * @output: query return
++ * @property: type of query (frequency, level, max level)
++ *
++ * This is the common function to
++ * 1. get maximum clock cooling states
++ * 2. translate frequency to cooling state
++ * 3. translate cooling state to frequency
++ * Note that the code may be not in good shape
++ * but it is written in this way in order to:
++ * a) reduce duplicate code as most of the code can be shared.
++ * b) make sure the logic is consistent when translating between
++ *    cooling states and frequencies.
++ *
++ * Return: 0 on success, -EINVAL when invalid parameters are passed.
 + */
-+static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
++static int clock_cooling_get_property(struct clock_cooling_device *ccdev,
++				      unsigned long input,
++				      unsigned long *output,
++				      enum clock_cooling_property property)
 +{
-+	unsigned int stage;
-+	int rc;
-+	u8 reg;
++	int i;
++	unsigned long max_level = 0, level = 0;
++	unsigned int freq = CPUFREQ_ENTRY_INVALID;
++	int descend = -1;
++	struct cpufreq_frequency_table *pos, *table = ccdev->freq_table;
 +
-+	rc = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-+	if (rc < 0)
-+		return rc;
-+
-+	stage = reg & STATUS_STAGE_MASK;
-+
-+	if (stage > chip->stage) {
-+		/* increasing stage, use lower bound */
-+		chip->temp = (stage - 1) * TEMP_STAGE_STEP +
-+			     chip->thresh * TEMP_THRESH_STEP +
-+			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
-+	} else if (stage < chip->stage) {
-+		/* decreasing stage, use upper bound */
-+		chip->temp = stage * TEMP_STAGE_STEP +
-+			     chip->thresh * TEMP_THRESH_STEP -
-+			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
-+	}
-+
-+	chip->stage = stage;
-+
-+	return 0;
-+}
-+
-+static int qpnp_tz_get_temp(struct thermal_zone_device *thermal,
-+			   unsigned long *temp)
-+{
-+	struct qpnp_tm_chip *chip = thermal->devdata;
-+	int rc, uv;
-+
-+	if (!temp)
++	if (!output)
 +		return -EINVAL;
 +
-+	if (IS_ERR(chip->adc)) {
-+		rc = qpnp_tm_update_temp_no_adc(chip);
-+		if (rc < 0)
-+			return rc;
-+	} else {
-+		rc = iio_read_channel_processed(chip->adc, &uv);
-+		if (rc < 0)
-+			return rc;
-+
-+		chip->temp = MICRO_VOLTS_TO_MILI_CELSIUS(uv);
-+	}
-+
-+	*temp = chip->temp < 0 ? 0 : chip->temp;
-+
-+	return 0;
-+}
-+
-+static int qpnp_tz_get_mode(struct thermal_zone_device *thermal,
-+			    enum thermal_device_mode *mode)
-+{
-+	struct qpnp_tm_chip *chip = thermal->devdata;
-+
-+	if (!mode)
++	if (!table)
 +		return -EINVAL;
 +
-+	*mode = chip->mode;
++	cpufreq_for_each_valid_entry(pos, table) {
++		/* ignore duplicate entry */
++		if (freq == pos->frequency)
++			continue;
 +
-+	return 0;
++		/* get the frequency order */
++		if (freq != CPUFREQ_ENTRY_INVALID && descend == -1)
++			descend = freq > pos->frequency;
++
++		freq = pos->frequency;
++		max_level++;
++	}
++
++	/* No valid cpu frequency entry */
++	if (max_level == 0)
++		return -EINVAL;
++
++	/* max_level is an index, not a counter */
++	max_level--;
++
++	/* get max level */
++	if (property == GET_MAXL) {
++		*output = max_level;
++		return 0;
++	}
++
++	if (property == GET_FREQ)
++		level = descend ? input : (max_level - input);
++
++	i = 0;
++	cpufreq_for_each_valid_entry(pos, table) {
++		/* ignore duplicate entry */
++		if (freq == pos->frequency)
++			continue;
++
++		/* now we have a valid frequency entry */
++		freq = pos->frequency;
++
++		if (property == GET_LEVEL && (unsigned int)input == freq) {
++			/* get level by frequency */
++			*output = descend ? i : (max_level - i);
++			return 0;
++		}
++		if (property == GET_FREQ && level == i) {
++			/* get frequency by level */
++			*output = freq;
++			return 0;
++		}
++		i++;
++	}
++
++	return -EINVAL;
 +}
 +
-+static int qpnp_tz_set_mode(struct thermal_zone_device *thermal,
-+			    enum thermal_device_mode mode)
++/**
++ * clock_cooling_get_level - return the cooling level of given clock cooling.
++ * @cdev: reference of a thermal cooling device of used as clock cooling device
++ * @freq: the frequency of interest
++ *
++ * This function will match the cooling level corresponding to the
++ * requested @freq and return it.
++ *
++ * Return: The matched cooling level on success or THERMAL_CSTATE_INVALID
++ * otherwise.
++ */
++unsigned long clock_cooling_get_level(struct thermal_cooling_device *cdev,
++				      unsigned long freq)
 +{
-+	struct qpnp_tm_chip *chip = thermal->devdata;
-+	int rc;
++	struct clock_cooling_device *ccdev = cdev->devdata;
++	unsigned long val;
 +
-+	if (mode == chip->mode)
++	if (clock_cooling_get_property(ccdev, (unsigned long)freq, &val,
++				       GET_LEVEL))
++		return THERMAL_CSTATE_INVALID;
++
++	return val;
++}
++EXPORT_SYMBOL_GPL(clock_cooling_get_level);
++
++/**
++ * clock_cooling_get_frequency - get the absolute value of frequency from level.
++ * @ccdev: clock cooling device reference
++ * @level: cooling level
++ *
++ * This function matches cooling level with frequency. Based on a cooling level
++ * of frequency, equals cooling state of cpu cooling device, it will return
++ * the corresponding frequency.
++ *	e.g level=0 --> 1st MAX FREQ, level=1 ---> 2nd MAX FREQ, .... etc
++ *
++ * Return: 0 on error, the corresponding frequency otherwise.
++ */
++static unsigned long
++clock_cooling_get_frequency(struct clock_cooling_device *ccdev,
++			    unsigned long level)
++{
++	int ret = 0;
++	unsigned long freq;
++
++	ret = clock_cooling_get_property(ccdev, level, &freq, GET_FREQ);
++	if (ret)
 +		return 0;
 +
-+	if (mode == THERMAL_DEVICE_ENABLED)
-+		rc = qpnp_tm_shutdown_override(chip, true);
-+	else
-+		rc = qpnp_tm_shutdown_override(chip, false);
-+
-+	chip->mode = mode;
-+
-+	return rc;
++	return freq;
 +}
 +
-+static int qpnp_tz_get_trip_type(struct thermal_zone_device *thermal, int trip,
-+			       enum thermal_trip_type *type)
-+{
-+	if (trip < 0 || !type)
-+		return -EINVAL;
-+
-+	switch (trip) {
-+	case TRIP_STAGE3:
-+		*type = THERMAL_TRIP_CRITICAL;
-+		break;
-+	case TRIP_STAGE2:
-+		*type = THERMAL_TRIP_HOT;
-+		break;
-+	case TRIP_STAGE1:
-+		*type = THERMAL_TRIP_HOT;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int qpnp_tz_get_trip_temp(struct thermal_zone_device *thermal, int trip,
-+				unsigned long *temp)
-+{
-+	struct qpnp_tm_chip *chip = thermal->devdata;
-+	int thresh_temp;
-+
-+	if (trip < 0 || !temp)
-+		return -EINVAL;
-+
-+	thresh_temp = chip->thresh * TEMP_THRESH_STEP + TEMP_THRESH_MIN;
-+
-+	switch (trip) {
-+	case TRIP_STAGE3:
-+		thresh_temp += 2 * TEMP_STAGE_STEP;
-+		break;
-+	case TRIP_STAGE2:
-+		thresh_temp += TEMP_STAGE_STEP;
-+		break;
-+	case TRIP_STAGE1:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	*temp = thresh_temp;
-+
-+	return 0;
-+}
-+
-+static int qpnp_tz_get_crit_temp(struct thermal_zone_device *thermal,
-+				 unsigned long *temp)
-+{
-+	struct qpnp_tm_chip *chip = thermal->devdata;
-+
-+	if (!temp)
-+		return -EINVAL;
-+
-+	*temp = chip->thresh * TEMP_THRESH_STEP + TEMP_THRESH_MIN +
-+		2 * TEMP_STAGE_STEP;
-+
-+	return 0;
-+}
-+
-+static irqreturn_t qpnp_tm_isr(int irq, void *data)
-+{
-+	struct qpnp_tm_chip *chip = data;
-+
-+	schedule_delayed_work(&chip->work, msecs_to_jiffies(READ_DELAY_MS) + 1);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static void qpnp_tm_work(struct work_struct *work)
-+{
-+	struct delayed_work *dwork;
-+	struct qpnp_tm_chip *chip;
-+	int rc, uv;
-+	u8 reg;
-+
-+	dwork = container_of(work, struct delayed_work, work);
-+	chip = container_of(dwork, struct qpnp_tm_chip, work);
-+
-+	if (IS_ERR(chip->adc)) {
-+		rc = qpnp_tm_update_temp_no_adc(chip);
-+		if (rc < 0)
-+			return;
-+	} else {
-+		rc = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-+		if (rc < 0)
-+			return;
-+
-+		chip->stage = reg & STATUS_STAGE_MASK;
-+
-+		rc = iio_read_channel_processed(chip->adc, &uv);
-+		if (rc < 0)
-+			return;
-+
-+		chip->temp = MICRO_VOLTS_TO_MILI_CELSIUS(uv);
-+	}
-+
-+	if (chip->stage != chip->prev_stage) {
-+		chip->prev_stage = chip->stage;
-+
-+		dev_warn(chip->dev, "Thermal alarm stage %u, threshold %u, temp %ld mC\n",
-+			 chip->stage, chip->thresh, chip->temp);
-+
-+		thermal_zone_device_update(chip->tz_dev);
-+
-+		/* Notify user space */
-+		sysfs_notify(&chip->tz_dev->device.kobj, NULL, "type");
-+	}
-+}
-+
-+/*
-+ * This function initializes the internal temp value based on only the
-+ * current thermal stage and threshold. Setup threshold control and
-+ * disable shutdown override.
++/**
++ * clock_cooling_apply - function to apply frequency clipping.
++ * @ccdev: clock_cooling_device pointer containing frequency clipping data.
++ * @cooling_state: value of the cooling state.
++ *
++ * Function used to make sure the clock layer is aware of current thermal
++ * limits. The limits are applied by updating the clock rate in case it is
++ * higher than the corresponding frequency based on the requested cooling_state.
++ *
++ * Return: 0 on success, an error code otherwise (-EINVAL in case wrong
++ * cooling state).
 + */
-+static int qpnp_tm_init(struct qpnp_tm_chip *chip)
++static int clock_cooling_apply(struct clock_cooling_device *ccdev,
++			       unsigned long cooling_state)
 +{
-+	int rc;
-+	u8 reg;
++	unsigned long clip_freq, cur_freq;
++	int ret = 0;
 +
-+	chip->thresh = THRESH_MIN;
-+	chip->temp = DEFAULT_TEMP;
++	/* Here we write the clipping */
++	/* Check if the old cooling action is same as new cooling action */
++	if (ccdev->clock_state == cooling_state)
++		return 0;
 +
-+	rc = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-+	if (rc < 0)
-+		return rc;
++	clip_freq = clock_cooling_get_frequency(ccdev, cooling_state);
++	if (!clip_freq)
++		return -EINVAL;
 +
-+	chip->stage = reg & STATUS_STAGE_MASK;
++	cur_freq = clk_get_rate(ccdev->clk);
 +
-+	if (chip->stage)
-+		chip->temp = chip->thresh * TEMP_THRESH_STEP +
-+			     (chip->stage - 1) * TEMP_STAGE_STEP +
-+			     TEMP_THRESH_MIN;
++	mutex_lock(&ccdev->lock);
++	ccdev->clock_state = cooling_state;
++	ccdev->clock_val = clip_freq;
++	/* enforce clock level */
++	if (cur_freq > clip_freq)
++		ret = clk_set_rate(ccdev->clk, clip_freq);
++	mutex_unlock(&ccdev->lock);
 +
-+	/*
-+	 * Set threshold and disable software override of stage 2 and 3
-+	 * shutdowns.
-+	 */
-+	reg = chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
-+	rc = qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, &reg);
-+	if (rc < 0)
-+		return rc;
-+
-+	/* Enable the thermal alarm PMIC module in always-on mode. */
-+	reg = ALARM_CTRL_FORCE_ENABLE;
-+	rc = qpnp_tm_write(chip, QPNP_TM_REG_ALARM_CTRL, &reg);
-+
-+	return rc;
++	return ret;
 +}
 +
-+static struct thermal_zone_device_ops qpnp_tz_ops = {
-+	.get_temp = qpnp_tz_get_temp,
-+	.get_mode = qpnp_tz_get_mode,
-+	.set_mode = qpnp_tz_set_mode,
-+	.get_trip_type = qpnp_tz_get_trip_type,
-+	.get_trip_temp = qpnp_tz_get_trip_temp,
-+	.get_crit_temp = qpnp_tz_get_crit_temp,
-+};
-+
-+static int qpnp_tm_probe(struct platform_device *pdev)
++/**
++ * clock_cooling_clock_notifier - notifier callback on clock rate changes.
++ * @nb:	struct notifier_block * with callback info.
++ * @event: value showing clock event for which this function invoked.
++ * @data: callback-specific data
++ *
++ * Callback to hijack the notification on clock transition.
++ * Every time there is a clock change, we intercept all pre change events
++ * and block the transition in case the new rate infringes thermal limits.
++ *
++ * Return: NOTIFY_DONE (success) or NOTIFY_BAD (new_rate > thermal limit).
++ */
++static int clock_cooling_clock_notifier(struct notifier_block *nb,
++					unsigned long event, void *data)
 +{
-+	struct qpnp_tm_chip *chip;
-+	struct device_node *node;
-+	struct resource *res;
-+	u8 type, subtype;
-+	int rc = 0;
++	struct clk_notifier_data *ndata = data;
++	struct clock_cooling_device *ccdev = to_clock_cooling_device(nb);
 +
-+	node = pdev->dev.of_node;
-+
-+	chip = devm_kzalloc(&pdev->dev, sizeof(*chip), GFP_KERNEL);
-+	if (!chip)
-+		return -ENOMEM;
-+
-+	dev_set_drvdata(&pdev->dev, chip);
-+
-+	chip->dev = &pdev->dev;
-+	INIT_DELAYED_WORK(&chip->work, qpnp_tm_work);
-+
-+	chip->map = dev_get_regmap(chip->dev->parent, NULL);
-+	if (!chip->map)
-+		return -ENXIO;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_REG, 0);
-+	if (!res)
-+		return -ENXIO;
-+
-+	chip->base = res->start;
-+
-+	rc = qpnp_tm_read(chip, QPNP_TM_REG_TYPE, &type);
-+	if (rc < 0) {
-+		dev_err(&pdev->dev, "could not read type\n");
-+		return rc;
++	switch (event) {
++	case PRE_RATE_CHANGE:
++		/*
++		 * checks on current state
++		 * TODO: current method is not best we can find as it
++		 * allows possibly voltage transitions, in case DVFS
++		 * layer is also hijacking clock pre notifications.
++		 */
++		if (ndata->new_rate > ccdev->clock_val)
++			return NOTIFY_BAD;
++		/* fall through */
++	case POST_RATE_CHANGE:
++	case ABORT_RATE_CHANGE:
++	default:
++		return NOTIFY_DONE;
 +	}
-+
-+	rc = qpnp_tm_read(chip, QPNP_TM_REG_SUBTYPE, &subtype);
-+	if (rc < 0) {
-+		dev_err(&pdev->dev, "could not read subtype\n");
-+		return rc;
-+	}
-+
-+	if (type != QPNP_TM_TYPE || subtype != QPNP_TM_SUBTYPE) {
-+		dev_err(&pdev->dev, "invalid type %02x or subtype %02x\n",
-+			type, subtype);
-+		return -ENODEV;
-+	}
-+
-+	chip->irq = platform_get_irq(pdev, 0);
-+	if (chip->irq < 0)
-+		return chip->irq;
-+
-+	chip->tm_name = of_get_property(node, "label", NULL);
-+	if (!chip->tm_name)
-+		chip->tm_name = dev_name(chip->dev);
-+
-+	chip->adc = iio_channel_get(chip->dev, "thermal");
-+	if (PTR_ERR(chip->adc) == -EPROBE_DEFER)
-+		return PTR_ERR(chip->adc);
-+
-+	rc = qpnp_tm_init(chip);
-+	if (rc < 0) {
-+		dev_err(&pdev->dev, "init failed\n");
-+		return rc;
-+	}
-+
-+	/* Start in HW control. Switch to SW control when user changes mode. */
-+	chip->mode = THERMAL_DEVICE_DISABLED;
-+
-+	chip->tz_dev = thermal_zone_device_register(chip->tm_name, TRIP_NUM, 0,
-+						    chip, &qpnp_tz_ops, NULL,
-+						    0, 0);
-+	if (IS_ERR(chip->tz_dev)) {
-+		dev_err(&pdev->dev, "TZ registration failed\n");
-+		return PTR_ERR(chip->tz_dev);
-+	}
-+
-+	rc = devm_request_irq(chip->dev, chip->irq, qpnp_tm_isr,
-+			      IRQF_TRIGGER_RISING, chip->tm_name, chip);
-+	if (rc < 0)
-+		thermal_zone_device_unregister(chip->tz_dev);
-+
-+	return rc;
 +}
 +
-+static int qpnp_tm_remove(struct platform_device *pdev)
-+{
-+	struct qpnp_tm_chip *chip = dev_get_drvdata(&pdev->dev);
++/* clock cooling device thermal callback functions are defined below */
 +
-+	cancel_delayed_work_sync(&chip->work);
-+	thermal_zone_device_unregister(chip->tz_dev);
-+	qpnp_tm_shutdown_override(chip, false);
++/**
++ * clock_cooling_get_max_state - callback function to get the max cooling state.
++ * @cdev: thermal cooling device pointer.
++ * @state: fill this variable with the max cooling state.
++ *
++ * Callback for the thermal cooling device to return the clock
++ * max cooling state.
++ *
++ * Return: 0 on success, an error code otherwise.
++ */
++static int clock_cooling_get_max_state(struct thermal_cooling_device *cdev,
++				       unsigned long *state)
++{
++	struct clock_cooling_device *ccdev = cdev->devdata;
++	unsigned long count = 0;
++	int ret;
++
++	ret = clock_cooling_get_property(ccdev, 0, &count, GET_MAXL);
++	if (!ret)
++		*state = count;
++
++	return ret;
++}
++
++/**
++ * clock_cooling_get_cur_state - function to get the current cooling state.
++ * @cdev: thermal cooling device pointer.
++ * @state: fill this variable with the current cooling state.
++ *
++ * Callback for the thermal cooling device to return the clock
++ * current cooling state.
++ *
++ * Return: 0 (success)
++ */
++static int clock_cooling_get_cur_state(struct thermal_cooling_device *cdev,
++				       unsigned long *state)
++{
++	struct clock_cooling_device *ccdev = cdev->devdata;
++
++	*state = ccdev->clock_state;
 +
 +	return 0;
 +}
 +
-+#ifdef CONFIG_PM_SLEEP
-+static int qpnp_tm_suspend(struct device *dev)
++/**
++ * clock_cooling_set_cur_state - function to set the current cooling state.
++ * @cdev: thermal cooling device pointer.
++ * @state: set this variable to the current cooling state.
++ *
++ * Callback for the thermal cooling device to change the clock cooling
++ * current cooling state.
++ *
++ * Return: 0 on success, an error code otherwise.
++ */
++static int clock_cooling_set_cur_state(struct thermal_cooling_device *cdev,
++				       unsigned long state)
 +{
-+	struct qpnp_tm_chip *chip = dev_get_drvdata(dev);
++	struct clock_cooling_device *clock_device = cdev->devdata;
 +
-+	/* Clear override bits in suspend to allow hardware control */
-+	qpnp_tm_shutdown_override(chip, false);
-+
-+	return 0;
++	return clock_cooling_apply(clock_device, state);
 +}
 +
-+static int qpnp_tm_resume(struct device *dev)
++/* Bind clock callbacks to thermal cooling device ops */
++static struct thermal_cooling_device_ops const clock_cooling_ops = {
++	.get_max_state = clock_cooling_get_max_state,
++	.get_cur_state = clock_cooling_get_cur_state,
++	.set_cur_state = clock_cooling_set_cur_state,
++};
++
++/**
++ * clock_cooling_register - function to create clock cooling device.
++ * @dev: struct device pointer to the device used as clock cooling device.
++ * @clock_name: string containing the clock used as cooling mechanism.
++ *
++ * This interface function registers the clock cooling device with the name
++ * "thermal-clock-%x". The cooling device is based on clock frequencies.
++ * The struct device is assumed to be capable of DVFS transitions.
++ * The OPP layer is used to fetch and fill the available frequencies for
++ * the referred device. The ordered frequency table is used to control
++ * the clock cooling device cooling states and to limit clock transitions
++ * based on the cooling state requested by the thermal framework.
++ *
++ * Return: a valid struct thermal_cooling_device pointer on success,
++ * on failure, it returns a corresponding ERR_PTR().
++ */
++struct thermal_cooling_device *
++clock_cooling_register(struct device *dev, const char *clock_name)
 +{
-+	struct qpnp_tm_chip *chip = dev_get_drvdata(dev);
++	struct thermal_cooling_device *cdev;
++	struct clock_cooling_device *ccdev = NULL;
++	char dev_name[THERMAL_NAME_LENGTH];
++	int ret = 0;
 +
-+	/* Override hardware actions so software can control */
-+	if (chip->mode == THERMAL_DEVICE_ENABLED)
-+		qpnp_tm_shutdown_override(chip, true);
++	ccdev = devm_kzalloc(dev, sizeof(*ccdev), GFP_KERNEL);
++	if (!ccdev)
++		return ERR_PTR(-ENOMEM);
 +
-+	return 0;
++	ccdev->dev = dev;
++	ccdev->clk = devm_clk_get(dev, clock_name);
++	if (IS_ERR(ccdev->clk))
++		return ERR_CAST(ccdev->clk);
++
++	ret = clock_cooling_get_idr(&ccdev->id);
++	if (ret)
++		return ERR_PTR(-EINVAL);
++
++	snprintf(dev_name, sizeof(dev_name), "thermal-clock-%d", ccdev->id);
++
++	cdev = thermal_cooling_device_register(dev_name, ccdev,
++					       &clock_cooling_ops);
++	if (IS_ERR(cdev)) {
++		release_idr(ccdev->id);
++		return ERR_PTR(-EINVAL);
++	}
++	ccdev->cdev = cdev;
++	ccdev->clk_rate_change_nb.notifier_call = clock_cooling_clock_notifier;
++
++	/* Assuming someone has already filled the opp table for this device */
++	ret = dev_pm_opp_init_cpufreq_table(dev, &ccdev->freq_table);
++	if (ret) {
++		release_idr(ccdev->id);
++		return ERR_PTR(ret);
++	}
++	ccdev->clock_state = 0;
++	ccdev->clock_val = clock_cooling_get_frequency(ccdev, 0);
++
++	clk_notifier_register(ccdev->clk, &ccdev->clk_rate_change_nb);
++
++	return cdev;
 +}
++EXPORT_SYMBOL_GPL(clock_cooling_register);
 +
-+static const struct dev_pm_ops qpnp_tm_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(qpnp_tm_suspend, qpnp_tm_resume)
-+};
++/**
++ * clock_cooling_unregister - function to remove clock cooling device.
++ * @cdev: thermal cooling device pointer.
++ *
++ * This interface function unregisters the "thermal-clock-%x" cooling device.
++ */
++void clock_cooling_unregister(struct thermal_cooling_device *cdev)
++{
++	struct clock_cooling_device *ccdev;
 +
-+#define QPNP_TM_PM_OPS	(&qpnp_tm_pm_ops)
-+#else
-+#define QPNP_TM_PM_OPS	NULL
-+#endif
++	if (!cdev)
++		return;
 +
-+static struct of_device_id qpnp_tm_match_table[] = {
-+	{ .compatible = "qcom,qpnp-temp-alarm" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, qpnp_tm_match_table);
++	ccdev = cdev->devdata;
 +
-+static struct platform_driver qpnp_tm_driver = {
-+	.driver = {
-+		.name = "qpnp-temp-alarm",
-+		.of_match_table = qpnp_tm_match_table,
-+		.owner = THIS_MODULE,
-+		.pm = QPNP_TM_PM_OPS,
-+	},
-+	.probe  = qpnp_tm_probe,
-+	.remove = qpnp_tm_remove,
-+};
-+module_platform_driver(qpnp_tm_driver);
++	clk_notifier_unregister(ccdev->clk, &ccdev->clk_rate_change_nb);
++	dev_pm_opp_free_cpufreq_table(ccdev->dev, &ccdev->freq_table);
 +
-+MODULE_DESCRIPTION("QPNP PMIC Temperature Alarm driver");
-+MODULE_LICENSE("GPL v2");
++	thermal_cooling_device_unregister(ccdev->cdev);
++	release_idr(ccdev->id);
++}
++EXPORT_SYMBOL_GPL(clock_cooling_unregister);
+diff --git a/include/linux/clock_cooling.h b/include/linux/clock_cooling.h
+new file mode 100644
+index 0000000..4d1019d
+--- /dev/null
++++ b/include/linux/clock_cooling.h
+@@ -0,0 +1,65 @@
++/*
++ *  linux/include/linux/clock_cooling.h
++ *
++ *  Copyright (C) 2014 Eduardo Valentin <edubezval@gmail.com>
++ *
++ *  Copyright (C) 2013	Texas Instruments Inc.
++ *  Contact:  Eduardo Valentin <eduardo.valentin@ti.com>
++ *
++ *  Highly based on cpu_cooling.c.
++ *  Copyright (C) 2012	Samsung Electronics Co., Ltd(http://www.samsung.com)
++ *  Copyright (C) 2012  Amit Daniel <amit.kachhap@linaro.org>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ */
++
++#ifndef __CPU_COOLING_H__
++#define __CPU_COOLING_H__
++
++#include <linux/of.h>
++#include <linux/thermal.h>
++#include <linux/cpumask.h>
++
++#ifdef CONFIG_CLOCK_THERMAL
++/**
++ * clock_cooling_register - function to create clock cooling device.
++ * @dev: struct device pointer to the device used as clock cooling device.
++ * @clock_name: string containing the clock used as cooling mechanism.
++ */
++struct thermal_cooling_device *
++clock_cooling_register(struct device *dev, const char *clock_name);
++
++/**
++ * clock_cooling_unregister - function to remove clock cooling device.
++ * @cdev: thermal cooling device pointer.
++ */
++void clock_cooling_unregister(struct thermal_cooling_device *cdev);
++
++unsigned long clock_cooling_get_level(struct thermal_cooling_device *cdev,
++				      unsigned long freq);
++#else /* !CONFIG_CLOCK_THERMAL */
++static inline struct thermal_cooling_device *
++clock_cooling_register(struct device *dev, const char *clock_name)
++{
++	return NULL;
++}
++static inline
++void clock_cooling_unregister(struct thermal_cooling_device *cdev)
++{
++}
++static inline
++unsigned long clock_cooling_get_level(struct thermal_cooling_device *cdev,
++				      unsigned long freq)
++{
++	return THERMAL_CSTATE_INVALID;
++}
++#endif	/* CONFIG_CLOCK_THERMAL */
++
++#endif /* __CPU_COOLING_H__ */
 -- 
 1.9.1
 
