@@ -1,109 +1,109 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: Re: [PATCH v4 3/4] ARM: dts: add main Thermal info to rk3288
-Date: Wed, 10 Sep 2014 10:49:05 +0800
-Message-ID: <540FBC21.2090504@rock-chips.com>
-References: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com> <1409710239-19941-4-git-send-email-caesar.wang@rock-chips.com> <3426113.Zcq8V2S7cg@diego>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: Re: [Patch v4 12/16] x86, irq, ACPI: Implement interface to support
+ ACPI based IOAPIC hot-addition
+Date: Wed, 10 Sep 2014 11:13:06 +0800
+Message-ID: <540FC1C2.40100@linux.intel.com>
+References: <1409192561-19744-1-git-send-email-jiang.liu@linux.intel.com> <1409192561-19744-13-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.10.1409091417120.11037@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.137]:53060 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751767AbaIJCtP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 22:49:15 -0400
-In-Reply-To: <3426113.Zcq8V2S7cg@diego>
+Received: from mga09.intel.com ([134.134.136.24]:8887 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751925AbaIJDNY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 9 Sep 2014 23:13:24 -0400
+In-Reply-To: <alpine.DEB.2.10.1409091417120.11037@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, zyw@rock-chips.com, addy.ke@rock-chips.com, dmitry.torokhov@gmail.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Grant Likely <grant.likely@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 
-Hi Heiko,
 
-=E5=9C=A8 2014=E5=B9=B409=E6=9C=8809=E6=97=A5 19:37, Heiko St=C3=BCbner=
- =E5=86=99=E9=81=93:
-> Am Mittwoch, 3. September 2014, 10:10:38 schrieb Caesar Wang:
->> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
->> ---
->>   arch/arm/boot/dts/rk3288.dtsi | 18 ++++++++++++++++++
->>   1 file changed, 18 insertions(+)
->>
->> diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk328=
-8.dtsi
->> index 36be7bb..3d672e3 100644
->> --- a/arch/arm/boot/dts/rk3288.dtsi
->> +++ b/arch/arm/boot/dts/rk3288.dtsi
->> @@ -224,6 +224,17 @@
->>   		status =3D "disabled";
->>   	};
->>
->> +	tsadc: tsadc@ff280000 {
-> please keep the list of nodes sorted by register address. So when loo=
-king at
-> my v3.18-next/dts branch, it should be after uart4: serial@ff1c0000 a=
-nd before
-> usb_host0_ehci: usb@ff500000 .
->
 
-oh...,I will fix it.
->> +		compatible =3D "rockchip,rk3288-tsadc";
->> +		reg =3D <0xff280000 0x100>;
->> +		interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
->> +		clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
->> +		clock-names =3D "tsadc", "apb_pclk";
->> +		pinctrl-names =3D "default";
->> +		pinctrl-1 =3D <&tsadc_int>;
->> +		status =3D "disabled";
->> +	};
+On 2014/9/9 20:20, Thomas Gleixner wrote:
+> On Thu, 28 Aug 2014, Jiang Liu wrote:
+>>  EXPORT_SYMBOL(acpi_register_ioapic);
+>> diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+>> index 6e67af0c5f99..b286461cabf9 100644
+>> --- a/arch/x86/kernel/apic/io_apic.c
+>> +++ b/arch/x86/kernel/apic/io_apic.c
+>> @@ -3851,7 +3851,13 @@ static int bad_ioapic_register(int idx)
+>>  
+>>  static int find_free_ioapic_entry(void)
+>>  {
+>> -	return nr_ioapics;
+>> +	int idx;
 >> +
->>   	/* NOTE: ohci@ff520000 doesn't actually work on hardware */
->>
->>   	usb_hsic: usb@ff5c0000 {
->> @@ -611,5 +622,12 @@
->>   				rockchip,pins =3D <5 15 3 &pcfg_pull_none>;
->>   			};
->>   		};
+>> +	for (idx = 0; idx < MAX_IO_APICS; idx++)
+>> +		if (ioapics[idx].nr_registers == 0)
+>> +			return idx;
 >> +
->> +		tsadc {
->> +			tsadc_int: tsadc-int {
->> +				rockchip,pins =3D <0 10 RK_FUNC_1 &pcfg_pull_up>;
->> +			};
->> +		};
-> After looking this up in the schematics I see that this is the
-> overtemperature-protection output pin ... labeled OTP_OUT.
-> So I'd think the pinconfig should reflect this pin-name, especially a=
-s tsadc-int
-> suggests, that this would be an interrupt leading into the tsadc, whi=
-le in
-> fact it is an output to a separate circuit.
->
-Maybe,I guess  your mean as the follows .
-Please correct it and  Laugh out if I got it wrong.
+>> +	return MAX_IO_APICS;
+>>  }
+>>  
+>>  int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+>> @@ -3867,8 +3873,15 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+>>  	}
+>>  	for_each_ioapic(ioapic)
+>>  		if (ioapics[ioapic].mp_config.apicaddr == address) {
+>> -			pr_warn("address 0x%x conflicts with IOAPIC%d\n",
+>> -				address, ioapic);
+>> +			/*
+>> +			 * IOAPIC unit may also be visible in PCI scope.
+>> +			 * When ioapic PCI driver's probe() is called,
+>> +			 * the IOAPIC unit may have already been initialized
+>> +			 * at boot time.
+>> +			 */
+>> +			if (!ioapic_initialized)
+>> +				pr_warn("address 0x%x conflicts with IOAPIC%d\n",
+>> +					address, ioapic);
+> 
+> Hmm. This smells fishy. Why do we allow multiple initializations of
+> the same IOAPIC in the first place. Either it's done via ACPI or via
+> PCI, but not both.
+The ACPI subsystem will register and initialize all IOAPICs when walking
+ACPI MADT table during boot, before initializing PCI subsystem.
+Later when binding ioapic PCI driver to IOAPIC PCI device, it will try
+to register the IOAPIC device again.
 
-tsadc {
-             otp_out: otp-out {
-                 rockchip,pins =3D <0 10 RK_FUNC_GPIO &pcfg_pull_none>;
-             };
+After this patchset is applied, we could remove the !ioapic_initialized
+check. We check acpi_ioapic_register() before calling
+acpi_register_ioapic(). So the check becomes redundant.
+Or we could remove the temporary code from this patch.
 
-             tsadc_int: tsadc-int {
-                 rockchip,pins =3D <0 10 RK_FUNC_1 &pcfg_pull_none>;
-             };
-         };
-Then,I deal with the otp_out in thermal driver.
-I believe The "otp_out" will restart board if it's a high active.
-
-tsadc_int: tsadc-int {
-+				rockchip,pins =3D <0 10 RK_FUNC_1 &pcfg_pull_up>;
-+			};
-
-But,I think the about will be implemented in thermal driver.
-> Heiko
->
->
->
-
---=20
-Best regards,
-Caesar
-
-
+> 
+>>  			return -EEXIST;
+>>  		}
+>>  
+>> @@ -3918,6 +3931,14 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+>>  	ioapics[idx].irqdomain = NULL;
+>>  	ioapics[idx].irqdomain_cfg = *cfg;
+>>  
+>> +	if (ioapic_initialized) {
+> 
+> I have a hard time to understand this conditional. Why can't we do
+> that unconditionally?
+How about following comments?
+/*
+ * If mp_register_ioapic() is called during early boot stage when
+ * walking ACPI/SFI/DT tables, it's too early to create irqdomain,
+ * we are still using bootmem allocator. So delay it to setup_IO_APIC().
+ */
+Regards!
+Gerry
+> 
+>> +		if (mp_irqdomain_create(idx)) {
+>> +			clear_fixmap(FIX_IO_APIC_BASE_0 + idx);
+>> +			return -ENOMEM;
+>> +		}
+>> +		alloc_ioapic_saved_registers(idx);
+>> +	}
+>> +
+>>  	if (gsi_cfg->gsi_end >= gsi_top)
+>>  		gsi_top = gsi_cfg->gsi_end + 1;
+>>  	if (nr_ioapics <= idx)
+> 
+> Thanks,
+> 
+> 	tglx
+> 
