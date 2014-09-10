@@ -1,14 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/4] cpufreq: cpufreq-dt: remove warning about regulators
-Date: Wed, 10 Sep 2014 16:00:38 +0530
-Message-ID: <CAKohpokpmoyiDwY-1P3ujetfddVAZ=1A4GD+YRvFOfT5L7CD7g@mail.gmail.com>
+Subject: Re: [PATCH 0/4] cpufreq-dt, platform_data based proposal
+Date: Wed, 10 Sep 2014 16:08:51 +0530
+Message-ID: <CAKohpo=C99cqO2FLoAex6NiCFVPY5ZmWcvdyxG_T-fHJjo+W=A@mail.gmail.com>
 References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
 	<1410342112-13264-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<1410342112-13264-5-git-send-email-thomas.petazzoni@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1410342112-13264-5-git-send-email-thomas.petazzoni@free-electrons.com>
+In-Reply-To: <1410342112-13264-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
@@ -16,27 +15,40 @@ List-Id: linux-pm@vger.kernel.org
 
 On 10 September 2014 15:11, Thomas Petazzoni
 <thomas.petazzoni@free-electrons.com> wrote:
-> The cpufreq-dt driver tries to get a regulator for each CPU. This
-> regulator is optional, but when not present, a scary message "failed
-> to get cpuX regulator" is displayed. Since the regulator is really
-> optional, we cannot sanely display any useful message, so this commit
-> simply gets rid of this problematic message.
->
-> Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-> ---
->  drivers/cpufreq/cpufreq-dt.c | 3 ---
->  1 file changed, 3 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> index 35d396e..8060022 100644
-> --- a/drivers/cpufreq/cpufreq-dt.c
-> +++ b/drivers/cpufreq/cpufreq-dt.c
-> @@ -149,9 +149,6 @@ try_again:
->                         reg = reg_cpu;
->                         goto try_again;
->                 }
-> -
-> -               dev_warn(cpu_dev, "failed to get cpu%d regulator: %ld\n",
-> -                        cpu, PTR_ERR(cpu_reg));
+> And with Viresh not accepting any machine specific driver, it
 
-What about converting it to dev_dbg() instead?
+Its not that we aren't accepting any drivers at all, but if we can reuse
+existing infrastructure then we better use it for long term maintainability.
+
+But there is another view here which Mike objected to, sometime back.
+Its also not a good idea to push everything onto a virtual-cpu-clock
+driver..
+
+I had something in mind to get that fixed, but this thread hasn't allowed
+me to work on that as it should be finished first.
+
+Probably we can add some callbacks to the cpufreq-cpu0 driver. For
+example if somebody wants to do something crazy enough in their
+->target() routine then they can just register their callback and we
+will call it instead of cpufreq-dt's target() routine..
+
+That way we can still reuse the common part..
+
+> results in platforms like Armada XP having no solution to support
+> cpufreq...
+>
+> So this proposal consists in adding a platform_data flag for the
+> cpufreq-dt driver, which allows platform code to tell whether CPU
+> clocks are shared or are independent.
+>
+> If you don't like platform_data, we can also register two different
+> platform_driver for the two different cases, simply with different
+> names.
+>
+> Another approach would be to lift the ban on machine-specific cpufreq
+> drivers, since the generic driver is not capable of handling all
+> situations.
+
+The platform-data solution is better than any other here :), and that
+will get fixed once we get all this including which driver to probe from
+DT..
