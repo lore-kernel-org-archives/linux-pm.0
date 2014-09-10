@@ -1,28 +1,71 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 0/4] cpufreq-dt, platform_data based proposal
-Date: Wed, 10 Sep 2014 11:15:49 -0700
-Message-ID: <54109555.3020003@codeaurora.org>
-References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com> <1410342112-13264-1-git-send-email-thomas.petazzoni@free-electrons.com> <2947757.7VG6XCG6t9@wuerfel>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [RFC v1 0/6] CPPC as a PID backend
+Date: Wed, 10 Sep 2014 14:21:15 -0400
+Message-ID: <CAJ5Y-eaKeyfF8hyN3fqoKEOH-+Z8ubogGFNtsKG3g75g9qnOWA@mail.gmail.com>
+References: <1410300728-26637-1-git-send-email-ashwin.chaugule@linaro.org>
+	<541071CF.9030901@gmail.com>
+	<CAJ5Y-eYRiq8ZFuKQHR0cDBWQfp7eEQLVfzvXNHpxOwEFQZeEeg@mail.gmail.com>
+	<54108AE7.8020600@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <2947757.7VG6XCG6t9@wuerfel>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, linaro-kernel@lists.linaro.org
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Viresh Kumar <viresh.kumar@linaro.org>, Lior Amsalem <alior@marvell.com>, Rob Herring <rob.herring@linaro.org>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Tawfik Bayouk <tawfik@marvell.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Rafael Wysocki <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Thomas Abraham <thomas.ab@samsung.com>, Mike Turquette <mike.turquette@linaro.org>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Sachin Kamat <spk.linux@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:64456 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751653AbaIJSVQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 14:21:16 -0400
+Received: by mail-wi0-f170.google.com with SMTP id em10so8324wid.3
+        for <linux-pm@vger.kernel.org>; Wed, 10 Sep 2014 11:21:15 -0700 (PDT)
+In-Reply-To: <54108AE7.8020600@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "rwells@codeaurora.org" <rwells@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, Len Brown <len.brown@intel.com>, "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
 
-On 09/10/14 02:53, Arnd Bergmann wrote:
+On 10 September 2014 13:31, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+> On 09/10/2014 09:11 AM, Ashwin Chaugule wrote:
+>> On 10 September 2014 11:44, Dirk Brandewie <dirk.brandewie@gmail.com>
+>> With the current split I think you will still be able to maintain
+>> Intel specific changes for the future in the backend driver. The PID
+>> algorithm seems platform independent anyway and the PID knobs are
+>> exported to userspace for platform specific tuning. The Intel backend
+>> driver should be unaffected by the CPPC (ACPI) backend. We can also
+>> make them mutually exclusive at runtime.
 >
-> Most of us will be at LCU next week, so I'd suggest we solve this
-> problem using the 'lock everyone into one room without beer until
-> we come up with a working approach' method.
 >
+> We could make it runtime selectable whether to use CPPC or the
+> native mechanisms for P state enumeration and selection but we would
+> get into an awful black/white list situation that would not make
+> anyone happy.
+>
+> Using CPPC on Intel platforms implies using HWP which is already
+> planned for in intel_pstate.  I am not aware of any effort to support
+> CPPC on Intel platforms that do not support HWP.  For Intel platforms
+> using CPPC is NOT needed or desirable IMHO.  We had many conversations
+> over many months while CPPC was being defined and made the decision
+> to not use this mechanism on Intel Linux platforms.
 
-I'll be at connect Tuesday to mid-Thursday. I'd like to be included if
-such a discussion happens.
+Ok. There is no intention to force CPPC usage on Intel platforms. We
+could make the CPPC backend unavailable on Intel platforms at compile
+time. The idea behind this patchset is to mainly separate out the PID
+algorithm so it can be used by anyone who can support it, with or
+without CPPC. For ARM64 , using CPPC is useful to unify all the ARM
+implementations which choose to design counters as either memory
+mapped or sysregs or whatever, while keeping the PID algorithm the
+same.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+>>
+>> Or are you suggesting using PID + CPPC as another driver? IIUC, that
+>> would lead to a lot of redundancy.
+>>
+>
+> The redundancy is actually pretty small IMHO if you take out the
+> enumeration/init code the code shared at runtime is pretty small
+> sample/calc_busy/PID.
+
+This is exactly all there is in pid_ctrl.c. If HWP is enabled, do you
+plan to modify these generic PID bits in a platform specific manner?
+If not, then it seems that the HWP accessors could live in the intel
+pid backend driver?
+
+Cheers,
+Ashwin
