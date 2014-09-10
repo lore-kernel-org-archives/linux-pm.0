@@ -1,36 +1,92 @@
-From: Benson Leung <bleung@chromium.org>
-Subject: Re: [PATCH] bq27x00_battery: Add support to bq27742
-Date: Wed, 10 Sep 2014 11:30:35 +0800
-Message-ID: <CANLzEkuy7KrbAbEDYC6k2cxFfdcLa8vLju0jt3oUSCWa9VnO5A@mail.gmail.com>
-References: <1410290435-16976-1-git-send-email-puthik@chromium.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f170.google.com ([209.85.220.170]:53693 "EHLO
-	mail-vc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbaIJDag (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 23:30:36 -0400
-Received: by mail-vc0-f170.google.com with SMTP id hy4so3325236vcb.15
-        for <linux-pm@vger.kernel.org>; Tue, 09 Sep 2014 20:30:35 -0700 (PDT)
-In-Reply-To: <1410290435-16976-1-git-send-email-puthik@chromium.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: dt: Support platforms with separate clock lines for each CPU
+Date: Wed, 10 Sep 2014 09:59:07 +0530
+Message-ID: <fcb88cd21f31a467d2d49911c2505082837f72ea.1410323179.git.viresh.kumar@linaro.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, shawn.guo@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, t.figa@samsung.com, santosh.shilimkar@ti.com, thomas.petazzoni@free-electrons.com, pramod.gurav@smartplayin.com, rob.herring@linaro.org, mike.turquette@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Puthikorn Voravootivat <puthik@chromium.org>
-Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Gwendal Grignou <gwendal@chromium.org>, Rhyland Klein <rklein@nvidia.com>, Olof Johansson <olofj@chromium.org>
 
-On Wed, Sep 10, 2014 at 3:20 AM, Puthikorn Voravootivat
-<puthik@chromium.org> wrote:
-> Add support to bq27742 in bq27x00 driver. bq27742 register
-> addresses are mostly mostly the same as bq27500 addresses
-> with minor differences.
->
-> Signed-off-by: Puthikorn Voravootivat <puthik@chromium.org>
-> Reviewed-by: Gwendal Grignou <gwendal@chromium.org>
-> Reviewed-by: Rhyland Klein <rklein@nvidia.com>
+There has been lots of discussion over mailing lists about how to get CPU's
+clock sharing information for platforms as CPUFreq core depends on that. It
+doesn't look that there will be any immediate solution to that as there are
+multiple views over how to get that from DT.
 
- Reviewed-by: Benson Leung <bleung@chromium.org>
+But there are platforms (already upstreamed) which depend on this requirement
+and are waiting for a solution to sail through.
 
+The common thing about them (Krait and Mvebu) is that all CPUs have independent
+clock lines and that makes things easier for us.
+
+So, this patch creates another Kconfig option to indicate if all CPUs share same
+clock line or all have independent. The complex cases of multiple clusters
+having separate clock lines, but having same for all CPUs within a cluster isn't
+addressed yet.
+
+This is a *short-term* solution for getting these platforms up an running and a
+DT based solution should be upstreamed soon.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Yesterday again I was pinged by Thomas about the status of this work and the
+thread isn't going anywhere. He is blocked with just this to get his platform
+running on mainline.
+
+Will it be possible to get this through as a temporary solution?
+
+ drivers/cpufreq/Kconfig      |  9 +++++++++
+ drivers/cpufreq/cpufreq-dt.c | 17 +++++++++++++++--
+ 2 files changed, 24 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 3489f8f..a755227 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -196,6 +196,15 @@ config CPUFREQ_DT
+ 
+ 	  If in doubt, say N.
+ 
++config CPUFREQ_DT_INDEPENDENT_CLOCKS
++	bool "CPUs change clocks independently"
++	depends on CPUFREQ_DT
++	help
++	  Selecting this will make cpufreq-dt driver believe that all CPUs have
++	  independent clock lines and so all will have separate 'struct
++	  cpufreq_policy' instances for them. This must be replaced by proper DT
++	  bindings later on.
++
+ menu "x86 CPU frequency scaling drivers"
+ depends on X86
+ source "drivers/cpufreq/Kconfig.x86"
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index e002650..dbb6f22 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -266,9 +266,22 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->driver_data = priv;
+ 
+ 	policy->clk = cpu_clk;
+-	ret = cpufreq_generic_init(policy, freq_table, transition_latency);
+-	if (ret)
++	ret = cpufreq_table_validate_and_show(policy, freq_table);
++	if (ret) {
++		dev_err(cpu_dev, "%s: invalid frequency table: %d\n", __func__,
++			ret);
+ 		goto out_cooling_unregister;
++	}
++
++	policy->cpuinfo.transition_latency = transition_latency;
++
++#ifndef CONFIG_CPUFREQ_DT_INDEPENDENT_CLOCKS
++	/*
++	 * The driver only supports the SMP configuartion where all processors
++	 * share the clock and voltage and clock.
++	 */
++	cpumask_setall(policy->cpus);
++#endif
+ 
+ 	return 0;
+ 
 -- 
-Benson Leung
-Software Engineer, Chrom* OS
-bleung@chromium.org
+2.0.3.693.g996b0fd
