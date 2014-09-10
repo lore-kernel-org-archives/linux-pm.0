@@ -1,95 +1,109 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: Re: [Patch v4 14/16] x86, irq: Introduce helper to check whether
- an IOAPIC has been registered
-Date: Wed, 10 Sep 2014 10:46:43 +0800
-Message-ID: <540FBB93.4020509@linux.intel.com>
-References: <1409192561-19744-1-git-send-email-jiang.liu@linux.intel.com> <1409192561-19744-15-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.10.1409091433150.11037@nanos>
+From: Caesar Wang <caesar.wang@rock-chips.com>
+Subject: Re: [PATCH v4 3/4] ARM: dts: add main Thermal info to rk3288
+Date: Wed, 10 Sep 2014 10:49:05 +0800
+Message-ID: <540FBC21.2090504@rock-chips.com>
+References: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com> <1409710239-19941-4-git-send-email-caesar.wang@rock-chips.com> <3426113.Zcq8V2S7cg@diego>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.10.1409091433150.11037@nanos>
-Sender: linux-pci-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Grant Likely <grant.likely@linaro.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from regular1.263xmail.com ([211.150.99.137]:53060 "EHLO
+	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751767AbaIJCtP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Sep 2014 22:49:15 -0400
+In-Reply-To: <3426113.Zcq8V2S7cg@diego>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, zyw@rock-chips.com, addy.ke@rock-chips.com, dmitry.torokhov@gmail.com
 
+Hi Heiko,
 
-
-On 2014/9/9 20:37, Thomas Gleixner wrote:
-> On Thu, 28 Aug 2014, Jiang Liu wrote:
-> 
->> Introduce acpi_ioapic_registered() to check whether an IOAPIC has already
->> been registered, it will be used when enabling IOAPIC hotplug.
->>
->> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+=E5=9C=A8 2014=E5=B9=B409=E6=9C=8809=E6=97=A5 19:37, Heiko St=C3=BCbner=
+ =E5=86=99=E9=81=93:
+> Am Mittwoch, 3. September 2014, 10:10:38 schrieb Caesar Wang:
+>> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
 >> ---
->>  arch/x86/include/asm/io_apic.h |    1 +
->>  arch/x86/kernel/acpi/boot.c    |   11 +++++++++++
->>  arch/x86/kernel/apic/io_apic.c |   11 +++++++++++
->>  include/linux/acpi.h           |    1 +
->>  4 files changed, 24 insertions(+)
+>>   arch/arm/boot/dts/rk3288.dtsi | 18 ++++++++++++++++++
+>>   1 file changed, 18 insertions(+)
 >>
->> diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
->> index ce63cf34c93c..0db2b7037e4b 100644
->> --- a/arch/x86/include/asm/io_apic.h
->> +++ b/arch/x86/include/asm/io_apic.h
->> @@ -191,6 +191,7 @@ extern void mp_unmap_irq(int irq);
->>  extern int mp_register_ioapic(int id, u32 address, u32 gsi_base,
->>  			      struct ioapic_domain_cfg *cfg);
->>  extern int mp_unregister_ioapic(u32 gsi_base);
->> +extern int mp_ioapic_registered(u32 gsi_base);
->>  extern int mp_irqdomain_map(struct irq_domain *domain, unsigned int virq,
->>  			    irq_hw_number_t hwirq);
->>  extern void mp_irqdomain_unmap(struct irq_domain *domain, unsigned int virq);
->> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
->> index 560a6d1cb0f4..6aa796f77b71 100644
->> --- a/arch/x86/kernel/acpi/boot.c
->> +++ b/arch/x86/kernel/acpi/boot.c
->> @@ -810,6 +810,17 @@ int acpi_unregister_ioapic(acpi_handle handle, u32 gsi_base)
->>  }
->>  EXPORT_SYMBOL(acpi_unregister_ioapic);
->>  
->> +int acpi_ioapic_registered(acpi_handle handle, u32 gsi_base)
->> +{
->> +	int ret;
->> +
->> +	down_write(&acpi_ioapic_rwsem);
-> 
-> Why down_write? You are merily checking whether the thing is
-> registered already.
-Yeah, a down_read() should be enough:)
+>> diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk328=
+8.dtsi
+>> index 36be7bb..3d672e3 100644
+>> --- a/arch/arm/boot/dts/rk3288.dtsi
+>> +++ b/arch/arm/boot/dts/rk3288.dtsi
+>> @@ -224,6 +224,17 @@
+>>   		status =3D "disabled";
+>>   	};
+>>
+>> +	tsadc: tsadc@ff280000 {
+> please keep the list of nodes sorted by register address. So when loo=
+king at
+> my v3.18-next/dts branch, it should be after uart4: serial@ff1c0000 a=
+nd before
+> usb_host0_ehci: usb@ff500000 .
+>
 
->> +	ret  = mp_ioapic_registered(gsi_base);
->> +	up_write(&acpi_ioapic_rwsem);
+oh...,I will fix it.
+>> +		compatible =3D "rockchip,rk3288-tsadc";
+>> +		reg =3D <0xff280000 0x100>;
+>> +		interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
+>> +		clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
+>> +		clock-names =3D "tsadc", "apb_pclk";
+>> +		pinctrl-names =3D "default";
+>> +		pinctrl-1 =3D <&tsadc_int>;
+>> +		status =3D "disabled";
+>> +	};
 >> +
->> +	return ret;
->> +}
-> 
-> So I assume that this is for a particular caller in the apci ioapic
-> hotplug code and that call site has its own serialization. Otherwise
-> the return value is not protected at all.
-> 
-> Please add a Docbook comment to that function, and document the
-> locking rules as thats pretty non obvious.
-How about this comments about locking rules?
-/*
- * Locks related to IOAPIC hotplug
- * Hotplug side:
- *      ->lock_device_hotplug() //device_hotplug_lock
- *              ->acpi_ioapic_rwsem
- *                      ->ioapic_lock
- * Interrupt mapping side:
- *      ->acpi_ioapic_rwsem
- *              ->ioapic_mutex
- *                      ->ioapic_lock
- */
-Regards!
-Gerry
-> 
-> The such is missing in some other patches as well.
-> 
-> Thanks,
-> 
-> 	tglx
-> 
+>>   	/* NOTE: ohci@ff520000 doesn't actually work on hardware */
+>>
+>>   	usb_hsic: usb@ff5c0000 {
+>> @@ -611,5 +622,12 @@
+>>   				rockchip,pins =3D <5 15 3 &pcfg_pull_none>;
+>>   			};
+>>   		};
+>> +
+>> +		tsadc {
+>> +			tsadc_int: tsadc-int {
+>> +				rockchip,pins =3D <0 10 RK_FUNC_1 &pcfg_pull_up>;
+>> +			};
+>> +		};
+> After looking this up in the schematics I see that this is the
+> overtemperature-protection output pin ... labeled OTP_OUT.
+> So I'd think the pinconfig should reflect this pin-name, especially a=
+s tsadc-int
+> suggests, that this would be an interrupt leading into the tsadc, whi=
+le in
+> fact it is an output to a separate circuit.
+>
+Maybe,I guess  your mean as the follows .
+Please correct it and  Laugh out if I got it wrong.
+
+tsadc {
+             otp_out: otp-out {
+                 rockchip,pins =3D <0 10 RK_FUNC_GPIO &pcfg_pull_none>;
+             };
+
+             tsadc_int: tsadc-int {
+                 rockchip,pins =3D <0 10 RK_FUNC_1 &pcfg_pull_none>;
+             };
+         };
+Then,I deal with the otp_out in thermal driver.
+I believe The "otp_out" will restart board if it's a high active.
+
+tsadc_int: tsadc-int {
++				rockchip,pins =3D <0 10 RK_FUNC_1 &pcfg_pull_up>;
++			};
+
+But,I think the about will be implemented in thermal driver.
+> Heiko
+>
+>
+>
+
+--=20
+Best regards,
+Caesar
+
+
