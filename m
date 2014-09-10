@@ -1,57 +1,50 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH] cpufreq: dt: Support platforms with separate clock
- lines for each CPU
-Date: Wed, 10 Sep 2014 08:29:37 +0200
-Message-ID: <20140910082937.0780fd28@free-electrons.com>
-References: <fcb88cd21f31a467d2d49911c2505082837f72ea.1410323179.git.viresh.kumar@linaro.org>
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+Subject: RE: [PATCH 1/2] cpufreq: ppc-corenet: remove duplicate update of
+ cpu_data
+Date: Wed, 10 Sep 2014 06:19:31 +0000
+Message-ID: <719d2a46508b4ff0b34d48d10d06c104@BY2PR03MB570.namprd03.prod.outlook.com>
+References: <09092df3d8b03df99ee475357c5f5c9cc439c61c.1409629117.git.viresh.kumar@linaro.org>
+	<CAKohpo=bz7H1CUUNGq_u33oKLnzzgPcqxyMOvC-S_dT8UE0S9A@mail.gmail.com>
+	<0f6e492c7d1f4ccfbb98def3aba8ce48@BY2PR03MB570.namprd03.prod.outlook.com>
+ <CAKohpo=nLFxv3gpxZLseVYSqGRdyktRzj8GGv5oC20Lq6=s0wA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:34665 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750766AbaIJG3y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 02:29:54 -0400
-In-Reply-To: <fcb88cd21f31a467d2d49911c2505082837f72ea.1410323179.git.viresh.kumar@linaro.org>
+Received: from mail-bn1bbn0108.outbound.protection.outlook.com ([157.56.111.108]:9600
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750998AbaIJGeD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 10 Sep 2014 02:34:03 -0400
+In-Reply-To: <CAKohpo=nLFxv3gpxZLseVYSqGRdyktRzj8GGv5oC20Lq6=s0wA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, shawn.guo@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, t.figa@samsung.com, santosh.shilimkar@ti.com, pramod.gurav@smartplayin.com, rob.herring@linaro.org, mike.turquette@linaro.org
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Hongbo Zhang <hongbo.zhang@freescale.com>, "LeoLi@freescale.com" <LeoLi@freescale.com>
 
-Dear Viresh Kumar,
-
-On Wed, 10 Sep 2014 09:59:07 +0530, Viresh Kumar wrote:
-
-> Yesterday again I was pinged by Thomas about the status of this work and the
-> thread isn't going anywhere. He is blocked with just this to get his platform
-> running on mainline.
-> 
-> Will it be possible to get this through as a temporary solution?
-
-A compile time conditional does not work, as it isn't compatible with
-multiplatform: what if in the same kernel you want to support two
-platforms that use cpufreq-dt, one having a single clock for all CPUs,
-and one having one clock per CPU.
-
-I'm still confused as to what is the problem with the DT binding
-surrounding this driver. Isn't it simply a matter of adding a clocks =
-<...> property to all CPUs, and that's it?
-
-Viresh told me there was an issue related to comparing the clocks in
-the driver to find out which CPUs share which clocks. But that is not a
-DT binding issue, it's an implementation detail. Since the driver is
-purely for DT platforms (as its name suggest), comparing phandles could
-work as a temporary solution. And since it's just an implementation
-detail that doesn't affect the DT binding, we could change the
-implementation later to use a proper clock API like clk_is_same(clk1,
-clk2) that would tell us if the clocks are the same.
-
-But I have probably missed some of the complexity of this.
-
-Thanks,
-
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+T2ssIHN1cmUuDQoNClRoYW5rcywNCll1YW50aWFuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdl
+LS0tLS0NCj4gRnJvbTogVmlyZXNoIEt1bWFyIFttYWlsdG86dmlyZXNoLmt1bWFyQGxpbmFyby5v
+cmddDQo+IFNlbnQ6IFdlZG5lc2RheSwgU2VwdGVtYmVyIDEwLCAyMDE0IDE6MzkgUE0NCj4gVG86
+IFRhbmcgWXVhbnRpYW4tQjI5OTgzDQo+IENjOiBSYWZhZWwgV3lzb2NraTsgTGlzdHMgbGluYXJv
+LWtlcm5lbDsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBaaGFuZw0KPiBIb25nYm8tQjQ1OTM5
+OyBMaSBZYW5nLUxlby1SNTg0NzINCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzJdIGNwdWZyZXE6
+IHBwYy1jb3JlbmV0OiByZW1vdmUgZHVwbGljYXRlIHVwZGF0ZSBvZg0KPiBjcHVfZGF0YQ0KPiAN
+Cj4gT24gMTAgU2VwdGVtYmVyIDIwMTQgMTE6MDAsIFl1YW50aWFuIFRhbmcgPFl1YW50aWFuLlRh
+bmdAZnJlZXNjYWxlLmNvbT4NCj4gd3JvdGU6DQo+ID4+IE9uIDIgU2VwdGVtYmVyIDIwMTQgMDk6
+MTEsIFZpcmVzaCBLdW1hciA8dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+IHdyb3RlOg0KPiA+PiA+
+ICdjcHVfZGF0YScgaXMgdXBkYXRlZCBmb3IgcG9saWN5LT5jcHUgZmlyc3QgYW5kIHRoZW4gZm9y
+IGFsbCBDUFVzDQo+ID4+ID4gaW4NCj4gPj4gPiBwb2xpY3ktPmNwdXMuIHBvbGljeS0+Y3B1cyBp
+cyBndWFyYW50ZWVkIHRvIGNvbnRhaW4gcG9saWN5LT5jcHUgYXMNCj4gPj4gPiBwb2xpY3ktPndl
+bGwgYW5kIHNvDQo+ID4+ID4gdGhlIGZpcnN0IHdyaXRlIHRvICdjcHVfZGF0YScgZm9yIHBvbGlj
+eS0+Y3B1IGlzIHJlZHVuZGFudC4gUmVtb3ZlIGl0Lg0KPiANCj4gPiBZZWFoLCB5b3VyIHBhdGNo
+IHNob3VsZCBiZSBvaywgYnV0IGlzIGl0IHRoZSBiZXN0IHNvbHV0aW9uPw0KPiA+IEkgd2FzIHRo
+aW5raW5nIGFib3V0IGEgZmluYWwgc29sdXRpb24ganVzdCBsaWtlIEFSTSBkaWQuDQo+IA0KPiBJ
+IHdhcyB0YWxraW5nIGFib3V0IGFuIEFjayBmb3IganVzdCAxLzIgd2hlcmUgd2UgYXJlIGRvaW5n
+IHNvbWUgY2xlYW51cCwgd2hpY2gNCj4gc2hvdWxkbid0IGJyZWFrIGFueXRoaW5nLg0KPiANCj4g
+UmVnYXJkaW5nIHRoZSBzZWNvbmQgcGF0Y2gsIHllcyB5b3Ugc2hvdWxkIGNvbWUgdXAgd2l0aCBz
+b21ldGhpbmcgdGhhdCBjYW4NCj4gZ2l2ZSBhIGxpc3Qgb2Ygb25saW5lK29mZmxpbmUgQ1BVcyBs
+aWtlIEFSTSBhbmQgZXZlbiBzb21lIHBwYyBkcml2ZXJzLg0KPiBXZSBjYW4gaGFuZGxlIHRoYXQg
+c2VwYXJhdGVseSBhbmQgdGhpcyBwYXRjaCBjYW4gYmUgY29tbWl0ZWQgYnkgUmFmYWVsLi4NCj4g
+DQo+IEVpdGhlciB5b3UgY2FuIGdpdmUgYSByZXBsYWNlbWVudCBwYXRjaCBmb3IgMi8yIG9yIHlv
+dSBjYW4gbGV0IG1lIGtub3cgd2hhdCB0bw0KPiBkbyBhbmQgd2lsbCBoZWxwIHRoZXJlLg0K
