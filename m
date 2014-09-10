@@ -1,41 +1,39 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 0/2] sched/idle : find the best idle CPU with cpuidle info
-Date: Thu, 11 Sep 2014 01:50:57 +0200
-Message-ID: <1484410.hWBxOXjTnL@vostro.rjw.lan>
-References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org> <4753245.VagS0oaVYJ@vostro.rjw.lan> <alpine.LFD.2.11.1409101918330.16533@knanqh.ubzr>
+From: Anup Chenthamarakshan <anupc@chromium.org>
+Subject: Re: [PATCH] intel_pstate: track and export frequency residency stats
+ via sysfs.
+Date: Wed, 10 Sep 2014 16:39:05 -0700
+Message-ID: <20140910233905.GA2439@google.com>
+References: <1410221424-20590-1-git-send-email-anupc@chromium.org>
+ <54107EC2.1010501@intel.com>
+ <20140910221508.GA18951@google.com>
+ <1610826.tK4V65ABJD@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60809 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752186AbaIJXb3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 19:31:29 -0400
-In-Reply-To: <alpine.LFD.2.11.1409101918330.16533@knanqh.ubzr>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:54446 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176AbaIJXjJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 19:39:09 -0400
+Received: by mail-pa0-f51.google.com with SMTP id kx10so8598021pab.10
+        for <linux-pm@vger.kernel.org>; Wed, 10 Sep 2014 16:39:08 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1610826.tK4V65ABJD@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Sameer Nanda <snanda@chromium.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, September 10, 2014 07:25:37 PM Nicolas Pitre wrote:
-> On Thu, 11 Sep 2014, Rafael J. Wysocki wrote:
-> 
-> > On Wednesday, September 10, 2014 05:35:27 PM Nicolas Pitre wrote:
-> > > 
-> > > Ping.
+On Thu, Sep 11, 2014 at 12:49:48AM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, September 10, 2014 03:15:08 PM Anup Chenthamarakshan wrote:
 > > 
-> > Is this urgent, and if so, then why?
+> > Tools like powertop and turbostat are not present by default on all systems,
+> > so it is not always possible to use them :(
 > 
-> What makes you think this could be urgent?
+> Which systems are you referring to in particular?
+
+We're testing on Chrome OS devices (Chromebooks).
+
 > 
-> After almost a week after the original posting without any feedback, one 
-> may simply wonder if things could have accidentally fell into a crack, 
-> that's all.
-
-Well, they didn't, but some recipients have been traveling quite a bit lately
-and are in the process of dealing with their email backlogs ...
-
-Sorry about being less responsive than expected.
-
-Rafael
-
+> -- 
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
