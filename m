@@ -1,42 +1,49 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v3] ARM: l2c: parse cache properties from ePAPR definitions
-Date: Wed, 10 Sep 2014 12:44:16 +0200
-Message-ID: <CACRpkdaLJ6Y+5WXyV1f1UUjiSJ5s2YbG=trKvonbwWLv2aDf4g@mail.gmail.com>
-References: <1410339572-23694-1-git-send-email-linus.walleij@linaro.org>
-	<4196671.LQ3YKNLqVB@wuerfel>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/4] cpufreq: allow driver-specific flags
+Date: Wed, 10 Sep 2014 16:19:25 +0530
+Message-ID: <CAKohpom4=nbg510bUb20C6rsG8r184YQ0SiPmPkxj8_8Y04+Bg@mail.gmail.com>
+References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
+	<1410342112-13264-1-git-send-email-thomas.petazzoni@free-electrons.com>
+	<1410342112-13264-2-git-send-email-thomas.petazzoni@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-leds-owner@vger.kernel.org>
-In-Reply-To: <4196671.LQ3YKNLqVB@wuerfel>
-Sender: linux-leds-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Will Deacon <will.deacon@arm.com>, Rob Herring <robh@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1410342112-13264-2-git-send-email-thomas.petazzoni@free-electrons.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 10, 2014 at 11:44 AM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Wednesday 10 September 2014 10:59:32 Linus Walleij wrote:
-
->> +     pr_info("L2C OF: override cache size: %d bytes (%dKB)\n",
->> +             cache_size, cache_size >> 10);
->> +     pr_info("L2C OF: override line size: %d bytes\n", line_size);
->> +     pr_info("L2C OF: override way size: %d bytes (%dKB)\n",
->> +             way_size, way_size >> 10);
->> +     pr_info("L2C OF: override associativity: %d\n", *associativity);
+On 10 September 2014 15:11, Thomas Petazzoni
+<thomas.petazzoni@free-electrons.com> wrote:
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 138336b..fa35601 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -218,7 +218,7 @@ __ATTR(_name, 0644, show_##_name, store_##_name)
 >
-> I think it would be really nice to print both the original setting
-> and the setting from DT here.
+>  struct cpufreq_driver {
+>         char                    name[CPUFREQ_NAME_LEN];
+> -       u8                      flags;
+> +       unsigned int            flags;
+>
+>         /* needed by all drivers */
+>         int     (*init)         (struct cpufreq_policy *policy);
+> @@ -308,10 +308,13 @@ struct cpufreq_driver {
+>   */
+>  #define CPUFREQ_NEED_INITIAL_FREQ_CHECK        (1 << 5)
+>
+> +#define CPUFREQ_DRIVER_FLAGS_MASK (0xFFFF0000)
 
-There is already some code printing the original setting, even
-if it's cryptic, this is in __l2c_init():
-L2C: DT/platform modifies aux control register: 0x02020fff -> 0x02030fff
+The flags field is used today to pass on information to cpufreq core and
+I believe it better stays that way only. Also all these changes might later
+be reverted and so we better don't change usage of variables..
 
-boot value -> augmented value
+Instead of this add a "void *driver_data" field in this structure and fill that
+with your structure. This can be later used for other purposes as well..
 
-If you mean that you want me to modify that debug code to provide
-more verbose pretty-print I am happy to do so, but as a separate
-patch.
+Also this will just add few more bytes to the cpufreq-driver structure which
+wouldn't have many instances in a compiled kernel, and so space isn't a
+problem..
 
-The rest of the stuff I have fixed...
-
-Yours,
-Linus Walleij
+Otherwise things looked good to me in your complete series..
