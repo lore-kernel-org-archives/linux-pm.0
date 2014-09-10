@@ -1,59 +1,41 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: dt: Support platforms with separate clock lines
- for each CPU
-Date: Wed, 10 Sep 2014 12:12:11 +0530
-Message-ID: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
-References: <fcb88cd21f31a467d2d49911c2505082837f72ea.1410323179.git.viresh.kumar@linaro.org>
-	<20140910082937.0780fd28@free-electrons.com>
+Subject: Re: [PATCH] intel_pstate: track and export frequency residency stats
+ via sysfs.
+Date: Wed, 10 Sep 2014 12:19:51 +0530
+Message-ID: <CAKohpo=GWbWNFg7=w-Lw5w4fWk1+okRwv0rQwX82XMTg8s_9Lw@mail.gmail.com>
+References: <1410221424-20590-1-git-send-email-anupc@chromium.org>
+	<CAKohponb199_zt11M2J39yHn45MjFMSrT+hPBp7rbqiHu4vKpQ@mail.gmail.com>
+	<CAN1Daczk+YT3ETviCL5d7xLGKzRL+AAo1z6rLs=r+j5+r45-xw@mail.gmail.com>
+	<CAOh2x==oX4HN2NJ=bMUzyuL0K9KdrmV7HjRctX9dio7yw-4sbQ@mail.gmail.com>
+	<20140909233141.GB28142@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f53.google.com ([209.85.219.53]:38116 "EHLO
-	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbaIJGmM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 02:42:12 -0400
-Received: by mail-oa0-f53.google.com with SMTP id eb12so12348515oac.26
-        for <linux-pm@vger.kernel.org>; Tue, 09 Sep 2014 23:42:11 -0700 (PDT)
-In-Reply-To: <20140910082937.0780fd28@free-electrons.com>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:43365 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751497AbaIJGtv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 02:49:51 -0400
+Received: by mail-ob0-f172.google.com with SMTP id wp18so1816172obc.17
+        for <linux-pm@vger.kernel.org>; Tue, 09 Sep 2014 23:49:51 -0700 (PDT)
+In-Reply-To: <20140909233141.GB28142@google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>
+To: Anup Chenthamarakshan <anupc@chromium.org>
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, Sameer Nanda <snanda@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 10 September 2014 11:59, Thomas Petazzoni
-<thomas.petazzoni@free-electrons.com> wrote:
-> A compile time conditional does not work, as it isn't compatible with
-> multiplatform: what if in the same kernel you want to support two
-> platforms that use cpufreq-dt, one having a single clock for all CPUs,
-> and one having one clock per CPU.
-
-Yeah, that's a known problem. Should have mentioned this in logs.
-
-> I'm still confused as to what is the problem with the DT binding
-> surrounding this driver. Isn't it simply a matter of adding a clocks =
-> <...> property to all CPUs, and that's it?
+On 10 September 2014 05:01, Anup Chenthamarakshan <anupc@chromium.org> wrote:
+> Here's a comparison of time taken to run intel_pstate_set_pstate() using
+> different approaches:
+>                                   average time for a transition
+> no stats                                      4.7us
+> intel_pstate-stats                            5.7us
+> direct call to cpufreq_stat_notifier_trans    8.1us
+> cpufreq-notifier-event                       10.6us
 >
-> Viresh told me there was an issue related to comparing the clocks in
-> the driver to find out which CPUs share which clocks. But that is not a
-> DT binding issue, it's an implementation detail. Since the driver is
-> purely for DT platforms (as its name suggest), comparing phandles could
-> work as a temporary solution. And since it's just an implementation
-> detail that doesn't affect the DT binding, we could change the
-> implementation later to use a proper clock API like clk_is_same(clk1,
-> clk2) that would tell us if the clocks are the same.
 >
-> But I have probably missed some of the complexity of this.
+> I was wrong about the 5x increase (got tripped by calls to
+> intel_pstate_set_pstate where no change in P-state actually happened)
 
-(Couldn't give you these links yesterday as I was done for the day and
-was replying from my phone (In our private chat))
-
-https://lkml.org/lkml/2014/6/26/577
-https://lkml.org/lkml/2014/7/1/565
-https://lkml.org/lkml/2014/7/3/813
-http://lists.infradead.org/pipermail/linux-arm-kernel/2014-July/275520.html
-
-So these are few mails I could pick, specially from Mike, where he pointed
-out why getting a clk-API for this is a bad idea.
-
---
-viresh
+Okay, lets see if this is the right thing to do or not first. So
+finish your discussion with
+Dirk and then we will see what's the best way to do it.
