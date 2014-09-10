@@ -1,61 +1,83 @@
-From: Ran Shalit <ranshalit@gmail.com>
-Subject: Re: suspend/resume PM criterion for application
-Date: Wed, 10 Sep 2014 22:31:44 +0300
-Message-ID: <CAJ2oMh+9q12EEV3u2oXMnAVijSGORCC6JGpScdSqDWdDHuK=-A@mail.gmail.com>
-References: <CAJ2oMh+xmgC9mfT5QqEmMMek7SOqYE2QLVV6sPvK0CF5+56hDg@mail.gmail.com>
-	<17893.1410371984@turing-police.cc.vt.edu>
-	<CAJ2oMhJpTQjgDgEgOqvLVJg7LQjtHg2by71=98uH=vq59zTmDg@mail.gmail.com>
-	<20227.1410374378@turing-police.cc.vt.edu>
-	<CAJ2oMhLnP7TpP3caycqVS0xHRE3tf=+2vREE6H1NradsmFmH4A@mail.gmail.com>
-	<23104.1410377100@turing-police.cc.vt.edu>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Patch v4 12/16] x86, irq, ACPI: Implement interface to support
+ ACPI based IOAPIC hot-addition
+Date: Wed, 10 Sep 2014 22:06:02 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1409102202530.4178@nanos>
+References: <1409192561-19744-1-git-send-email-jiang.liu@linux.intel.com> <1409192561-19744-13-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.10.1409091417120.11037@nanos> <540FC1C2.40100@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f47.google.com ([209.85.216.47]:33263 "EHLO
-	mail-qa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752307AbaIJTbp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 15:31:45 -0400
-Received: by mail-qa0-f47.google.com with SMTP id x12so17993962qac.34
-        for <linux-pm@vger.kernel.org>; Wed, 10 Sep 2014 12:31:45 -0700 (PDT)
-In-Reply-To: <23104.1410377100@turing-police.cc.vt.edu>
+Received: from www.linutronix.de ([62.245.132.108]:35795 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752954AbaIJUGn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 16:06:43 -0400
+In-Reply-To: <540FC1C2.40100@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
-Cc: kernelnewbies <kernelnewbies@kernelnewbies.org>, linux-pm@vger.kernel.org
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Grant Likely <grant.likely@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 
-On Wed, Sep 10, 2014 at 10:25 PM,  <Valdis.Kletnieks@vt.edu> wrote:
-> On Wed, 10 Sep 2014 21:58:48 +0300, Ran Shalit said:
->
->> 1. How can I make a process to notice this inactivity ? Do you think
->> it can be implemented by some periodic process who check if there is
->> activity ? It returns to the original question I raised, that I will
->> use some periodic process who checks maybe cpu load or something like
->> that. What do you think ?
->
-> That's going to depend on your system and what processes are running.
->
-> You may have an MP3 player going that doesn't take much CPU at all - but
-> shutting down because the user hasn't hit a button in 47 minutes will probably
-> irritate the user no end.  Or there may be a screensaver running that takes
-> twice as much CPU as the MP3 player, but is totally OK on the system
-> suspending whenever the rest of the system wants it.
->
-> You're going to have to look at your system design, and decide for yourself
-> what the criteria are.
->
->
->> 2. What Do you mean here by process ?  Do you mean SW process which
->> register for suspend notification (how do we do this) ? What about
->> devices which register for suspend/resume. Must they accept the
->> suspend ?
->
-> I believe Android already has libraries and monitor processes for this.
->
-> It's really hard to give more specific advice without knowing what your
-> hardware, software, and usage is.
+On Wed, 10 Sep 2014, Jiang Liu wrote:
+> >>  int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+> >> @@ -3867,8 +3873,15 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+> >>  	}
+> >>  	for_each_ioapic(ioapic)
+> >>  		if (ioapics[ioapic].mp_config.apicaddr == address) {
+> >> -			pr_warn("address 0x%x conflicts with IOAPIC%d\n",
+> >> -				address, ioapic);
+> >> +			/*
+> >> +			 * IOAPIC unit may also be visible in PCI scope.
+> >> +			 * When ioapic PCI driver's probe() is called,
+> >> +			 * the IOAPIC unit may have already been initialized
+> >> +			 * at boot time.
+> >> +			 */
+> >> +			if (!ioapic_initialized)
+> >> +				pr_warn("address 0x%x conflicts with IOAPIC%d\n",
+> >> +					address, ioapic);
+> > 
+> > Hmm. This smells fishy. Why do we allow multiple initializations of
+> > the same IOAPIC in the first place. Either it's done via ACPI or via
+> > PCI, but not both.
+> The ACPI subsystem will register and initialize all IOAPICs when walking
+> ACPI MADT table during boot, before initializing PCI subsystem.
+> Later when binding ioapic PCI driver to IOAPIC PCI device, it will try
+> to register the IOAPIC device again.
+> 
+> After this patchset is applied, we could remove the !ioapic_initialized
+> check. We check acpi_ioapic_register() before calling
+> acpi_register_ioapic(). So the check becomes redundant.
+> Or we could remove the temporary code from this patch.
 
-Ok, Thanks, I just tried to understand and learn from your previous answer.
-I have OMAP Soc and knows that the linux SDK supports suspend/resume
-and other mechnism. I did n't hear about the notification before.
+How about removing the disfunctional ioapic PCI driver first and then
+implementing the whole thing cleanly?
+ 
+> > 
+> >>  			return -EEXIST;
+> >>  		}
+> >>  
+> >> @@ -3918,6 +3931,14 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+> >>  	ioapics[idx].irqdomain = NULL;
+> >>  	ioapics[idx].irqdomain_cfg = *cfg;
+> >>  
+> >> +	if (ioapic_initialized) {
+> > 
+> > I have a hard time to understand this conditional. Why can't we do
+> > that unconditionally?
+> How about following comments?
+> /*
+>  * If mp_register_ioapic() is called during early boot stage when
+>  * walking ACPI/SFI/DT tables, it's too early to create irqdomain,
+>  * we are still using bootmem allocator. So delay it to setup_IO_APIC().
+>  */
 
-Thanks, Ran
+Fine, but then the "if (ioapic_initialized)" conditional still does
+not make sense. We surely have some global non ioapic specific
+indicator that bootmem is done and the proper memory allocator is
+available, right?
+
+Aside of that is there a point to walk those tables before we actually
+can make any use of their content?
+
+Thanks,
+
+	tglx
