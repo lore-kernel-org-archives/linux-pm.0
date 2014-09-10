@@ -1,69 +1,73 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] PM / Domains: add debugfs listing of struct
- generic_pm_domain-s
-Date: Wed, 10 Sep 2014 11:27:12 -0700
-Message-ID: <20140910182712.GE14642@kroah.com>
-References: <1410348536-15201-1-git-send-email-m.matraszek@samsung.com>
- <20140910144340.GA17967@kroah.com>
- <1410363493.15593.26.camel@AMDC723>
+From: Valdis.Kletnieks@vt.edu
+Subject: Re: suspend/resume PM criterion for application
+Date: Wed, 10 Sep 2014 14:39:38 -0400
+Message-ID: <20227.1410374378@turing-police.cc.vt.edu>
+References: <CAJ2oMh+xmgC9mfT5QqEmMMek7SOqYE2QLVV6sPvK0CF5+56hDg@mail.gmail.com> <17893.1410371984@turing-police.cc.vt.edu>
+            <CAJ2oMhJpTQjgDgEgOqvLVJg7LQjtHg2by71=98uH=vq59zTmDg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1410363493.15593.26.camel@AMDC723>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Maciej Matraszek <m.matraszek@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: multipart/signed; boundary="==_Exmh_1410374378_2058P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from omr2.cc.vt.edu ([198.82.141.100]:34307 "EHLO omr2.cc.vt.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751701AbaIJSkq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 10 Sep 2014 14:40:46 -0400
+In-Reply-To: Your message of "Wed, 10 Sep 2014 21:23:28 +0300."
+             <CAJ2oMhJpTQjgDgEgOqvLVJg7LQjtHg2by71=98uH=vq59zTmDg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ran Shalit <ranshalit@gmail.com>
+Cc: kernelnewbies <kernelnewbies@kernelnewbies.org>, linux-pm@vger.kernel.org
 
-On Wed, Sep 10, 2014 at 05:38:13PM +0200, Maciej Matraszek wrote:
-> Hi Greg,
-> thanks for your reply!
-> 
-> > > +static int __init pm_genpd_debug_init(void)
-> > > +{
-> > > +	struct dentry *d;
-> > > +
-> > > +	pm_genpd_debugfs_dir = debugfs_create_dir("pm_genpd", NULL);
-> > > +
-> > > +	/* No debugfs */
-> > > +	if (IS_ERR(pm_genpd_debugfs_dir))
-> > > +		return PTR_ERR(pm_genpd_debugfs_dir);
-> > 
-> > You shouldn't care at all, just do this check:
-> > 
-> > > +	if (!pm_genpd_debugfs_dir)
-> > > +		return -ENOMEM;
-> > 
-> > And all will be fine, because:
-> > 
-> > > +	d = debugfs_create_file("pm_genpd_summary", S_IRUGO,
-> > > +			pm_genpd_debugfs_dir, NULL, &pm_genpd_summary_fops);
-> > 
-> > That call will resolve away to nothing if debugfs is not enabled, and it
-> > doesn't make much sense to do anything with an "error" of no debugfs.
-> 
-> Great! I'll fix this bizarre double check.
-> 
-> > 
-> > > +	if (!d)
-> > > +		return -ENOMEM;
-> > > +
-> > > +	return 0;
-> > > +}
-> > > +late_initcall(pm_genpd_debug_init);
-> > > +#endif /* CONFIG_PM_ADVANCED_DEBUG */
-> > 
-> > No tear-down of the debugfs files on shutdown?
-> 
-> In drivers/clk/clk.c, there is no tear-down of debugfs files paired
-> with clk_debug_init(), same with wakeup_sources_debugfs_init() from
-> drivers/base/power/wakeup.c. On the other hand, some subsystems
-> perform it. What would you prefer?
+--==_Exmh_1410374378_2058P
+Content-Type: text/plain; charset=us-ascii
 
-In my quest for symmetry I prefer to see files you add to be removed at
-the proper time. :)
+On Wed, 10 Sep 2014 21:23:28 +0300, Ran Shalit said:
 
-thanks,
+> As far as I understand, suspend/respond PM is not per device, but for
+> all system,
+> and wakeup source will resume again the whole system.
+> I think you mean runtime suspend/resume in the answer.
 
-greg k-h
+The original question didn't specify. You said "suspending that application",
+not the entire system.
+
+And runtime suspend/resume of devices and even the CPU does fit within
+your original question constraints.
+
+If you're looking at system-wide suspend/resume specificially, there's
+two basic schemes in use:
+
+1) User hits a button, acpid or similar notices, and does a suspend to
+disk/ram/papertape/whatever.
+
+2) User hits a button, closes the lid, or a user inactivity timer expires.
+A process notices, and asks all processes which have registered for suspend
+notifications "Is it OK if we suspend?", and if nobody says "Nay", it does it.
+If a process complains, it is repeatedly polled until it finishes whatever it
+was doing and says "OK now".
+
+--==_Exmh_1410374378_2058P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: Exmh version 2.5 07/13/2001
+
+iQIVAwUBVBCa6gdmEQWDXROgAQKZsA//T5px7M1s33QoNM68KevQyjkjuBn0Emhw
+AKxsm8OUYknVFEdqbC4dGqPoxAg+z+hkHBrR1HdbXuP8AaiHKqokpMgHbRs+C1Vx
+it+AlUs63lu9oUXFroWNENdPaPNzpsMnfeI/BqflajaPVpLV30h96kgVlgqeCVZK
+2sXtk+Wvo8iAGRc/jD4nIsJ8XQg2a+l90/GbBthhrOu9f1ErKm+sQDAqyWeNraX/
+6+gVaBv1Ht1X1J0EL3lT+/dpbD2qAOkSZBsgQD0qhBZ/PvkzxXTbX4KH769tUN8p
+G0jo4k2YR3Z5Gfg3grhkJmT+JsjTTPCAuybLpx81OyokWUk7UN11IxO3IcsHBKno
+yHQfWr7c41dYGJfdnziYYEqHQcZKsNMzN8RUWJ06jdCOyz5XX95iIulwpx6oofxV
+z+Fset3X6Uwwlaq4zxBbKd8eX1++Sn9Zi0EsGUFp97LT2ZIuDyxO8h78N9EMMxd9
+y03UO+2qcxjOatIlay7wPVPp2l0RyMpHN27fO5E5peBtda713g9s69dzcopOg7P5
+SJ24DtDEL1WwiUJx8BB1bVhyhR/yCq+DcfxxSUSdwUh6WTHfn7dSaxKt3PtaeTvo
+eklbDjLOK6ttj/Auutp/h5N9o92PCMyIi4RME3gm9Lg3abXszRk6fqmOKMSmpTrU
+DfVnwmz4x7g=
+=qt8b
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1410374378_2058P--
