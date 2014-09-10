@@ -1,71 +1,50 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [RFC v1 0/6] CPPC as a PID backend
-Date: Wed, 10 Sep 2014 14:21:15 -0400
-Message-ID: <CAJ5Y-eaKeyfF8hyN3fqoKEOH-+Z8ubogGFNtsKG3g75g9qnOWA@mail.gmail.com>
-References: <1410300728-26637-1-git-send-email-ashwin.chaugule@linaro.org>
-	<541071CF.9030901@gmail.com>
-	<CAJ5Y-eYRiq8ZFuKQHR0cDBWQfp7eEQLVfzvXNHpxOwEFQZeEeg@mail.gmail.com>
-	<54108AE7.8020600@gmail.com>
+From: Ran Shalit <ranshalit@gmail.com>
+Subject: Re: suspend/resume PM criterion for application
+Date: Wed, 10 Sep 2014 21:23:28 +0300
+Message-ID: <CAJ2oMhJpTQjgDgEgOqvLVJg7LQjtHg2by71=98uH=vq59zTmDg@mail.gmail.com>
+References: <CAJ2oMh+xmgC9mfT5QqEmMMek7SOqYE2QLVV6sPvK0CF5+56hDg@mail.gmail.com>
+	<17893.1410371984@turing-police.cc.vt.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f170.google.com ([209.85.212.170]:64456 "EHLO
-	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751653AbaIJSVQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 14:21:16 -0400
-Received: by mail-wi0-f170.google.com with SMTP id em10so8324wid.3
-        for <linux-pm@vger.kernel.org>; Wed, 10 Sep 2014 11:21:15 -0700 (PDT)
-In-Reply-To: <54108AE7.8020600@gmail.com>
+Received: from mail-qc0-f175.google.com ([209.85.216.175]:53732 "EHLO
+	mail-qc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752625AbaIJSX3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 14:23:29 -0400
+Received: by mail-qc0-f175.google.com with SMTP id c9so19804674qcz.6
+        for <linux-pm@vger.kernel.org>; Wed, 10 Sep 2014 11:23:28 -0700 (PDT)
+In-Reply-To: <17893.1410371984@turing-police.cc.vt.edu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "rwells@codeaurora.org" <rwells@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, Len Brown <len.brown@intel.com>, "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: kernelnewbies <kernelnewbies@kernelnewbies.org>, linux-pm@vger.kernel.org
 
-On 10 September 2014 13:31, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
-> On 09/10/2014 09:11 AM, Ashwin Chaugule wrote:
->> On 10 September 2014 11:44, Dirk Brandewie <dirk.brandewie@gmail.com>
->> With the current split I think you will still be able to maintain
->> Intel specific changes for the future in the backend driver. The PID
->> algorithm seems platform independent anyway and the PID knobs are
->> exported to userspace for platform specific tuning. The Intel backend
->> driver should be unaffected by the CPPC (ACPI) backend. We can also
->> make them mutually exclusive at runtime.
+On Wed, Sep 10, 2014 at 8:59 PM,  <Valdis.Kletnieks@vt.edu> wrote:
+> On Wed, 10 Sep 2014 20:26:48 +0300, Ran Shalit said:
 >
+>> What is usually the criterion for PM (power management) suspending
+>> that application shall use ? Is it according to minimum threshold for
+>> cpu load (as indication for no process) ?
 >
-> We could make it runtime selectable whether to use CPPC or the
-> native mechanisms for P state enumeration and selection but we would
-> get into an awful black/white list situation that would not make
-> anyone happy.
+> That will be highly application dependent.  Something that checks your email
+> in the background may not care at all, as long as it gets network
+> access every 5 minutes or so, and the entire system can power down for 4 minutes
+> and 58 seconds as far as it cares.  If it's doing media streaming, it may
+> insist on having at least one CPU burst per screen refresh, and the CPU can
+> go to sleep for the rest of the 1/30th of  a second.
 >
-> Using CPPC on Intel platforms implies using HWP which is already
-> planned for in intel_pstate.  I am not aware of any effort to support
-> CPPC on Intel platforms that do not support HWP.  For Intel platforms
-> using CPPC is NOT needed or desirable IMHO.  We had many conversations
-> over many months while CPPC was being defined and made the decision
-> to not use this mechanism on Intel Linux platforms.
-
-Ok. There is no intention to force CPPC usage on Intel platforms. We
-could make the CPPC backend unavailable on Intel platforms at compile
-time. The idea behind this patchset is to mainly separate out the PID
-algorithm so it can be used by anyone who can support it, with or
-without CPPC. For ARM64 , using CPPC is useful to unify all the ARM
-implementations which choose to design counters as either memory
-mapped or sysregs or whatever, while keeping the PID algorithm the
-same.
-
->>
->> Or are you suggesting using PID + CPPC as another driver? IIUC, that
->> would lead to a lot of redundancy.
->>
+>> How usually it is performed, i.e.  is it some periodic process, which
+>> wakes up periodically to check criterion for cpu load ? If so, isn't
+>> it problematic in PM terms, becuase it mean that the system is resumed
+>> periodically (as a result of the the periodic timer's interrupt), and
+>> all devices are resumed ?
 >
-> The redundancy is actually pretty small IMHO if you take out the
-> enumeration/init code the code shared at runtime is pretty small
-> sample/calc_busy/PID.
+> No, it can be done on a per-device basis.
+>
+> 'powertop' is a possibly useful tool for playing with this stuff that will
+> let you look at power management on the fly.
 
-This is exactly all there is in pid_ctrl.c. If HWP is enabled, do you
-plan to modify these generic PID bits in a platform specific manner?
-If not, then it seems that the HWP accessors could live in the intel
-pid backend driver?
-
-Cheers,
-Ashwin
+As far as I understand, suspend/respond PM is not per device, but for
+all system,
+and wakeup source will resume again the whole system.
+I think you mean runtime suspend/resume in the answer.
