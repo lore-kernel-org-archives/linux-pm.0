@@ -1,57 +1,55 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 1/7] mfd: Add support for DA9150 combined charger &
- fuel-gauge device
-Date: Wed, 10 Sep 2014 10:51:19 +0100
-Message-ID: <20140910095119.GO30307@lee--X1>
-References: <cover.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
- <d6c7de200c9447dbafa74ee76739da943a0b73b2.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
- <53FF16BC.9050701@gmail.com>
- <2E89032DDAA8B9408CB92943514A0337AB5144B5@SW-EX-MBX01.diasemi.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 0/4] cpufreq-dt, platform_data based proposal
+Date: Wed, 10 Sep 2014 11:53:27 +0200
+Message-ID: <2947757.7VG6XCG6t9@wuerfel>
+References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com> <1410342112-13264-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f176.google.com ([209.85.213.176]:53507 "EHLO
-	mail-ig0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752344AbaIJJv0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 05:51:26 -0400
-Received: by mail-ig0-f176.google.com with SMTP id hn18so6180460igb.15
-        for <linux-pm@vger.kernel.org>; Wed, 10 Sep 2014 02:51:25 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <2E89032DDAA8B9408CB92943514A0337AB5144B5@SW-EX-MBX01.diasemi.com>
+Received: from mout.kundenserver.de ([212.227.126.131]:64945 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbaIJJxf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 05:53:35 -0400
+In-Reply-To: <1410342112-13264-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
-Cc: Varka Bhadram <varkabhadram@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+To: linaro-kernel@lists.linaro.org
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Viresh Kumar <viresh.kumar@linaro.org>, Lior Amsalem <alior@marvell.com>, Rob Herring <rob.herring@linaro.org>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Tawfik Bayouk <tawfik@marvell.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Rafael Wysocki <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Thomas Abraham <thomas.ab@samsung.com>, Mike Turquette <mike.turquette@linaro.org>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Sachin Kamat <spk.linux@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>
 
-On Tue, 09 Sep 2014, Opensource [Adam Thomson] wrote:
-> On August 28, 2014 12:47, Varka Bhadram wrote:
->=20
-> > On 08/28/2014 04:18 PM, Adam Thomson wrote:
-> >=20
-> > (...)
-> >=20
-> > > +static int da9150_probe(struct i2c_client *client,
-> > > +			const struct i2c_device_id *id)
-> > > +{
-> > > +	struct da9150 *da9150;
-> > > +	int ret;
-> > > +
-> > > +	da9150 =3D devm_kzalloc(&client->dev, sizeof(struct da9150), GF=
-P_KERNEL);
-> > > +	if (da9150 =3D=3D NULL)
-> > > +		return -ENOMEM;
-> >=20
-> > da9150 =3D devm_kzalloc(&client->dev, sizeof(*da9150), GFP_KERNEL);
-> > if (!da9150)
-> > 	return -ENOMEM;
->=20
-> Ok, no real difference, but can change it.
+On Wednesday 10 September 2014 11:41:48 Thomas Petazzoni wrote:
+> We don't seem to be anywhere near reaching an agreement on a DT
+> binding to represent the topology of CPU clocks in a system, because
+> it's a complicated matter. Mike doesn't want to add a clock API that
+> would allow the generic cpufreq driver to find out which CPUs share
+> clocks, as he believes this is part of the hardware description and
+> should therefore be described in the DT rather than "guessed"
+> dynamically at boot time by looking at the clocks referenced by each
+> CPU. And with Viresh not accepting any machine specific driver, it
+> results in platforms like Armada XP having no solution to support
+> cpufreq...
+> 
+> So this proposal consists in adding a platform_data flag for the
+> cpufreq-dt driver, which allows platform code to tell whether CPU
+> clocks are shared or are independent.
+> 
+> If you don't like platform_data, we can also register two different
+> platform_driver for the two different cases, simply with different
+> names.
+> 
+> Another approach would be to lift the ban on machine-specific cpufreq
+> drivers, since the generic driver is not capable of handling all
+> situations.
 
-Not functionally, but we like to do things as succinctly as possible.
+Using platform_data works nicely if you register the cpufreq device
+from the platform code, but that is a particular thing that has
+been bugging me for a long time and that I really want to get rid
+of: We don't want to introduce platform-specific files for ARM64,
+so we have to solve this anyway by just looking at DT, and whatever
+solution we end up with should work for both ARM32 and ARM64.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Most of us will be at LCU next week, so I'd suggest we solve this
+problem using the 'lock everyone into one room without beer until
+we come up with a working approach' method.
+
+	Arnd
