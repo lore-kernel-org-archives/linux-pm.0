@@ -1,152 +1,226 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [RFC v1 0/6] CPPC as a PID backend
-Date: Wed, 10 Sep 2014 08:44:15 -0700
-Message-ID: <541071CF.9030901@gmail.com>
-References: <1410300728-26637-1-git-send-email-ashwin.chaugule@linaro.org>
+From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Subject: RE: [PATCH v2 1/7] mfd: Add support for DA9150 combined charger &
+ fuel-gauge device
+Date: Wed, 10 Sep 2014 15:58:56 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337AB514846@SW-EX-MBX01.diasemi.com>
+References: <cover.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
+ <d6c7de200c9447dbafa74ee76739da943a0b73b2.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
+ <20140828163608.GY24579@lee--X1>
+ <2E89032DDAA8B9408CB92943514A0337AB5144CE@SW-EX-MBX01.diasemi.com>
+ <20140910094951.GN30307@lee--X1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f170.google.com ([209.85.192.170]:42639 "EHLO
-	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751808AbaIJPoT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 11:44:19 -0400
-In-Reply-To: <1410300728-26637-1-git-send-email-ashwin.chaugule@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20140910094951.GN30307@lee--X1>
+Content-Language: en-US
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Cc: Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: dirk.brandewie@gmail.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-acpi@lists.linaro.org
 
-Hi Ashwin,
-
-I think the CPPC based driver should be a separate driver.
-
-We made the conscious decision to not use any of the ACPI mechanisms
-to enumerate or control P state selection.  Experience over the years
-has shown that the quality/accuracy of the BIOS/ACPI implementations
-vary widely across OEM's and platform types from a single OEM. Features
-that always work on a server platform from a given OEM may not work or
-provide bad information on client platforms for example.
-
-Another reason for doing intel_pstate was to be able to land intel specific
-features and fixes without breaking other architectures as the power
-management capabilities of the platform evolve. As processors that support
-Hardware P states (HWP) as described in section 14.4 of the current SDM
-come into the market intel_pstate will change to not doing much other
-than enabling HWP and providing an interface to forward user configuration
-requests to the processor if the user chooses to enable HWP otherwise the
-current mechanisms will be used.  This is why the intel_pstate sysfs
-interface is the way it is to be able to map cleanly to HWP and provide
-an abstract interface going forward.
-
-Having separate drivers allows the system integrator/user to select the
-most appropriate mechanism for their system.
-
---Dirk
-
-On 09/09/2014 03:12 PM, Ashwin Chaugule wrote:
-> This patchset introduces CPPC(Collaborative Processor Performance Control) as a backend
-> to the PID governor. The PID governor from intel_pstate.c maps cleanly onto some CPPC
-> interfaces.
-> e.g. The CPU performance requests are made on a continuous scale as against discrete pstate
-> levels. The CPU performance feedback over an interval is gauged using platform specific
-> counters which are also described by CPPC.
->
-> Although CPPC describes several other registers to provide more hints to the platform,
-> Linux as of today does not have the infrastructure to make use of those registers.
-> Some of the CPPC specific information could be made available from the scheduler as
-> part of the CPUfreq and Scheduler intergration work. Until then PID can be used as the
-> front end for CPPC.
->
-> Beyond code restructuring and renaming, this patchset does not change the logic from the
-> intel_pstate.c driver. Kernel compilation times were compared with the original intel_pstate.c,
-> intel backend(intel_pid_ctrl.c) and the CPPC backend and no significant overheads were noticed.
->
-> Testing was performed on a Thinkpad X240 laptop.
->
-> PID_CTRL + INTEL_PSTATE:
-> =======================
-> real	5m37.742s
-> user	18m42.575s
-> sys	1m0.521s
->
->
-> PID_CTRL + CPPC_PID_CTRL:
-> ========================
-> real	5m48.321s
-> user	18m24.487s
-> sys	0m59.327s
->
->
-> ORIGINAL INTEL_PSTATE:
-> ======================
-> real	5m40.642s
-> user	18m37.411s
-> sys	1m0.185s
->
->
-> The complete patchset including the PCC hacks used for testing is available in [4].
->
->
-> Changes since V0: [1]
-> -	Split intel_pstate.c into a generic PID governor and platform specific backend.
-> -	Add CPPC accessors as PID backend.
->
->
-> CPPC:
-> ====
->
-> CPPC (Collaborative Processor Performance Control) is a new way to control CPU
-> performance using an abstract continous scale as against a discretized P-state scale
-> which is tied to CPU frequency only. It is defined in the ACPI 5.0+ spec. In brief,
-> the basic operation involves:
-> - OS makes a CPU performance request. (Can provide min and max tolerable bounds)
->
-> - Platform (such as BMC) is free to optimize request within requested bounds depending
-> on power/thermal budgets etc.
->
-> - Platform conveys its decision back to OS
->
-> The communication between OS and platform occurs through another medium called (PCC)
-> Platform communication Channel. This is a generic mailbox like mechanism which includes
-> doorbell semantics to indicate register updates. The PCC driver is being discussed in a
-> separate patchset [3] and is not included here, since CPPC is only one client of PCC.
->
-> Finer details about the PCC and CPPC spec are available in the latest ACPI 5.1
-> specification.[2]
->
-> [1] - http://lwn.net/Articles/608715/
-> [2] - http://www.uefi.org/sites/default/files/resources/ACPI_5_1release.pdf
-> [3] - http://comments.gmane.org/gmane.linux.acpi.devel/70299
-> [4] - http://git.linaro.org/people/ashwin.chaugule/leg-kernel.git/shortlog/refs/heads/cppc-pid-no_freq_domain
->
->
->
-> Ashwin Chaugule (6):
->    PID Controller governor
->    PID: Move Turbo detection into backend driver
->    PID: Move Baytrail specific accessors into backend driver
->    PID: Add new function pointers to read multiple registers
->    PID: Rename counters to make them more generic
->    PID: Add CPPC (Collaborative Processor Performance) backend driver
->
->   Documentation/cpu-freq/intel-pstate.txt |   43 --
->   Documentation/cpu-freq/pid_ctrl.txt     |   41 ++
->   drivers/cpufreq/Kconfig                 |   19 +
->   drivers/cpufreq/Kconfig.x86             |    2 +-
->   drivers/cpufreq/Makefile                |    4 +-
->   drivers/cpufreq/cppc_pid_ctrl.c         |  406 +++++++++++++
->   drivers/cpufreq/intel_pid_ctrl.c        |  408 +++++++++++++
->   drivers/cpufreq/intel_pstate.c          | 1012 -------------------------------
->   drivers/cpufreq/pid_ctrl.c              |  615 +++++++++++++++++++
->   drivers/cpufreq/pid_ctrl.h              |  113 ++++
->   10 files changed, 1606 insertions(+), 1057 deletions(-)
->   delete mode 100644 Documentation/cpu-freq/intel-pstate.txt
->   create mode 100644 Documentation/cpu-freq/pid_ctrl.txt
->   create mode 100644 drivers/cpufreq/cppc_pid_ctrl.c
->   create mode 100644 drivers/cpufreq/intel_pid_ctrl.c
->   delete mode 100644 drivers/cpufreq/intel_pstate.c
->   create mode 100644 drivers/cpufreq/pid_ctrl.c
->   create mode 100644 drivers/cpufreq/pid_ctrl.h
->
-
+T24gU2VwdGVtYmVyIDEwLCAyMDE0IDEwOjUwLCBMZWUgSm9uZXMgd3JvdGU6DQoNCj4gT24gVHVl
+LCAwOSBTZXAgMjAxNCwgT3BlbnNvdXJjZSBbQWRhbSBUaG9tc29uXSB3cm90ZToNCj4gDQo+ID4g
+T24gQXVndXN0IDI4LCAyMDE0IDE3OjM2LCBMZWUgSm9uZXMgd3JvdGU6DQo+ID4NCj4gPiBUaGFu
+a3MgZm9yIHRoZSBmZWVkYmFjay4gQXMgYSBnZW5lcmFsIGNvbW1lbnQgYSBjb3VwbGUgb2YgdGhl
+IGl0ZW1zIHlvdSd2ZQ0KPiA+IGlkZW50aWZpZWQgcmVsYXRlIHRvIGZ1dHVyZSB1cGRhdGVzIChh
+ZGRpdGlvbmFsIGZ1bmN0aW9uYWxpdHkgYmVpbmcgYWRkZWQpLg0KPiA+IEkgYWxyZWFkeSBoYXZl
+IGNvZGUgaW4gcGxhY2UgZm9yIHRoaXMgYnV0IGhhdmUgc3RyaXBwZWQgb3V0IGEgY291cGxlIG9m
+IHRoZQ0KPiA+IGRyaXZlcnMganVzdCB0byByZWR1Y2UgdGhlIGNodXJuIGFuZCBzaXplIG9mIHBh
+dGNoIHN1Ym1pc3Npb24uIFRoZXNlIHdpbGwgYmUNCj4gPiBhZGRlZCBvbmNlIHRoZXNlIHBhdGNo
+ZXMgaGF2ZSBiZWVuIGFjY2VwdGVkLg0KPiA+DQo+ID4gV2hlcmUgdGhpcyBpcyB0aGUgY2FzZSwg
+SSBoYXZlIGFkZGVkIG5vdGVzIGluLWxpbmUgYWdhaW5zdCB0aGUgcmVsZXZhbnQNCj4gPiBjb21t
+ZW50cyB5b3UgbWFkZS4NCj4gPg0KPiA+ID4gT24gVGh1LCAyOCBBdWcgMjAxNCwgQWRhbSBUaG9t
+c29uIHdyb3RlOg0KPiA+ID4NCj4gPiA+ID4gREE5MTUwIGlzIGEgY29tYmluZWQgQ2hhcmdlciBh
+bmQgRnVlbC1HYXVnZSBJQywgd2l0aCBhZGRpdGlvbmFsDQo+ID4gPiA+IEdQSU8gYW5kIEdQQURD
+IGZ1bmN0aW9uYWxpdHkuDQo+ID4gPiA+DQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IEFkYW0gVGhv
+bXNvbiA8QWRhbS5UaG9tc29uLk9wZW5zb3VyY2VAZGlhc2VtaS5jb20+DQo+ID4gPiA+IC0tLQ0K
+PiA+ID4gPiAgZHJpdmVycy9tZmQvS2NvbmZpZyAgICAgICAgICAgICAgICAgIHwgICAxMiArDQo+
+ID4gPiA+ICBkcml2ZXJzL21mZC9NYWtlZmlsZSAgICAgICAgICAgICAgICAgfCAgICAyICsNCj4g
+PiA+ID4gIGRyaXZlcnMvbWZkL2RhOTE1MC1jb3JlLmMgICAgICAgICAgICB8ICAzMzIgKysrKysr
+KysrKw0KPiA+ID4gPiAgZHJpdmVycy9tZmQvZGE5MTUwLWkyYy5jICAgICAgICAgICAgIHwgIDE3
+NiArKysrKysNCj4gPiA+DQo+ID4gPiBEbyB5b3UgYWxzbyBoYXZlIGFub3RoZXIsIHNheSBTUEkg
+dmVyc2lvbj8NCj4gPg0KPiA+IE5vLCBub3QgeWV0LCBidXQgdGhpcyBpcyBzb21ldGhpbmcgdGhh
+dCB3ZSBtYXkgYWRkIGxhdGVyIGFzIHRoZSBkZXZpY2UgZG9lcw0KPiA+IHN1cHBvcnQgU1BJLg0K
+PiANCj4gSSdtIG5vdCBzdXJlIHdlIHdhbnQgdG8gc3BsaXQgdXAgdGhlIGZpbGVzIGxpa2UgdGhp
+cyBmb3IgYW4gJ2lmIHdlDQo+IGRlY2lkZSB0byBwcm9kdWNlIGFuIFNQSSB2YXJpYW50IGluIHRo
+ZSBmdXR1cmUnLiAgSWYgeW91IGRvLCB0aGVuIHlvdQ0KPiBjYW4gc3BsaXQgdGhlIGZpbGVzIHVw
+LiAgVW50aWwgdGhlbiwgc3RpY2sgZXZlcnl0aGluZyBpbiAtY29yZS4NCg0KUmlnaHQuIENhbid0
+IHNheSBJIGFncmVlIGhlcmUsIGJ1dCB3aWxsIHJlZmFjdG9yLg0KDQo+IA0KPiANCj4gPiA+ID4g
+IGluY2x1ZGUvbGludXgvbWZkL2RhOTE1MC9jb3JlLmggICAgICB8ICAgODAgKysrDQo+ID4gPiA+
+ICBpbmNsdWRlL2xpbnV4L21mZC9kYTkxNTAvcGRhdGEuaCAgICAgfCAgIDIxICsNCj4gPiA+ID4g
+IGluY2x1ZGUvbGludXgvbWZkL2RhOTE1MC9yZWdpc3RlcnMuaCB8IDExNTMNCj4gPiA+ICsrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gPiA+ID4gIDcgZmlsZXMgY2hhbmdlZCwg
+MTc3NiBpbnNlcnRpb25zKCspDQo+ID4gPiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9t
+ZmQvZGE5MTUwLWNvcmUuYw0KPiA+ID4gPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvbWZk
+L2RhOTE1MC1pMmMuYw0KPiA+ID4gPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGluY2x1ZGUvbGludXgv
+bWZkL2RhOTE1MC9jb3JlLmgNCj4gPiA+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBpbmNsdWRlL2xp
+bnV4L21mZC9kYTkxNTAvcGRhdGEuaA0KPiA+ID4gPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGluY2x1
+ZGUvbGludXgvbWZkL2RhOTE1MC9yZWdpc3RlcnMuaA0KPiA+ID4gPg0KPiA+ID4gPiBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9tZmQvS2NvbmZpZyBiL2RyaXZlcnMvbWZkL0tjb25maWcNCj4gPiA+ID4g
+aW5kZXggZGU1YWJmMi4uNzZhZGIyYyAxMDA2NDQNCj4gPiA+ID4gLS0tIGEvZHJpdmVycy9tZmQv
+S2NvbmZpZw0KPiA+ID4gPiArKysgYi9kcml2ZXJzL21mZC9LY29uZmlnDQo+ID4gPiA+IEBAIC0x
+ODMsNiArMTgzLDE4IEBAIGNvbmZpZyBNRkRfREE5MDYzDQo+ID4gPiA+ICAJICBBZGRpdGlvbmFs
+IGRyaXZlcnMgbXVzdCBiZSBlbmFibGVkIGluIG9yZGVyIHRvIHVzZSB0aGUgZnVuY3Rpb25hbGl0
+eQ0KPiA+ID4gPiAgCSAgb2YgdGhlIGRldmljZS4NCj4gPiA+ID4NCj4gPiA+ID4gK2NvbmZpZyBN
+RkRfREE5MTUwDQo+ID4gPiA+ICsJYm9vbCAiRGlhbG9nIFNlbWljb25kdWN0b3IgREE5MTUwIENo
+YXJnZXIgRnVlbC1HYXVnZSBjaGlwIg0KPiA+ID4NCj4gPiA+IFdoeSBjYW4ndCB0aGlzIGJlIGJ1
+aWx0IGFzIGEgbW9kdWxlPw0KPiA+DQo+ID4gTm8gcmVhc29uLiBXaWxsIGNoYW5nZSBpdC4NCj4g
+Pg0KPiA+ID4NCj4gPiA+ID4gKwlkZXBlbmRzIG9uIEkyQz15DQo+ID4gPiA+ICsJc2VsZWN0IE1G
+RF9DT1JFDQo+ID4gPiA+ICsJc2VsZWN0IFJFR01BUF9JMkMNCj4gPiA+ID4gKwlzZWxlY3QgUkVH
+TUFQX0lSUQ0KPiA+ID4gPiArCWhlbHANCj4gPiA+ID4gKwkgIFRoaXMgYWRkcyBzdXBwb3J0IGZv
+ciB0aGUgREE5MTUwIGludGVncmF0ZWQgY2hhcmdlciBhbmQgZnVlbC1nYXVnZQ0KPiA+ID4gPiAr
+CSAgY2hpcC4gVGhpcyBkcml2ZXIgcHJvdmlkZXMgY29tbW9uIHN1cHBvcnQgZm9yIGFjY2Vzc2lu
+ZyB0aGUgZGV2aWNlLg0KPiA+ID4gPiArCSAgQWRkaXRpb25hbCBkcml2ZXJzIG11c3QgYmUgZW5h
+YmxlZCBpbiBvcmRlciB0byB1c2UgdGhlIHNwZWNpZmljDQo+ID4gPiA+ICsJICBmZWF0dXJlcyBv
+ZiB0aGUgZGV2aWNlLg0KPiA+ID4gPiArDQo+ID4gPiA+ICBjb25maWcgTUZEX01DMTNYWFgNCj4g
+PiA+ID4gIAl0cmlzdGF0ZQ0KPiA+ID4gPiAgCWRlcGVuZHMgb24gKFNQSV9NQVNURVIgfHwgSTJD
+KQ0KPiA+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9tZmQvTWFrZWZpbGUgYi9kcml2ZXJzL21m
+ZC9NYWtlZmlsZQ0KPiA+ID4gPiBpbmRleCBmMDAxNDg3Li4wOThkZmExIDEwMDY0NA0KPiA+ID4g
+PiAtLS0gYS9kcml2ZXJzL21mZC9NYWtlZmlsZQ0KPiA+ID4gPiArKysgYi9kcml2ZXJzL21mZC9N
+YWtlZmlsZQ0KPiA+ID4gPiBAQCAtMTE0LDYgKzExNCw4IEBAIG9iai0kKENPTkZJR19NRkRfREE5
+MDU1KQkrPSBkYTkwNTUubw0KPiA+ID4gPiAgZGE5MDYzLW9ianMJCQk6PSBkYTkwNjMtY29yZS5v
+IGRhOTA2My1pcnEubyBkYTkwNjMtDQo+IGkyYy5vDQo+ID4gPiA+ICBvYmotJChDT05GSUdfTUZE
+X0RBOTA2MykJKz0gZGE5MDYzLm8NCj4gPiA+ID4NCj4gPiA+ID4gK29iai0kKENPTkZJR19NRkRf
+REE5MTUwKQkrPSBkYTkxNTAtY29yZS5vIGRhOTE1MC1pMmMubw0KPiA+ID4gPiArDQo+ID4gPg0K
+PiA+ID4gRG8gdGhlIG90aGVyIGRyaXZlcnMgc21lbGw/ICBQbGVhc2UgYnV0dCB1cCBhZ2FpbnN0
+IHRoZW0uDQo+ID4gPg0KPiA+ID4gSSdtIG5vdCBlbnRpcmVseSBzdXJlIHdoeSB0aGVyZSBhcmUg
+c28gbWFueSAnXG4ncyBpbiB0aGUgTWFrZWZpbGUhDQo+ID4NCj4gPiBPa2V5IGRva2V5LiBXaWxs
+IGNoYW5nZS4NCj4gPg0KPiA+ID4NCj4gPiA+ID4gIG9iai0kKENPTkZJR19NRkRfTUFYMTQ1Nzcp
+CSs9IG1heDE0NTc3Lm8NCj4gPiA+ID4gIG9iai0kKENPTkZJR19NRkRfTUFYNzc2ODYpCSs9IG1h
+eDc3Njg2Lm8NCj4gPiA+ID4gIG9iai0kKENPTkZJR19NRkRfTUFYNzc2OTMpCSs9IG1heDc3Njkz
+Lm8NCj4gPiA+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWZkL2RhOTE1MC1jb3JlLmMgYi9kcml2
+ZXJzL21mZC9kYTkxNTAtY29yZS5jDQo+ID4gPiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+ID4g
+PiA+IGluZGV4IDAwMDAwMDAuLjAyOWEzMGINCj4gPiA+ID4gLS0tIC9kZXYvbnVsbA0KPiA+ID4g
+PiArKysgYi9kcml2ZXJzL21mZC9kYTkxNTAtY29yZS5jDQo+ID4gPiA+IEBAIC0wLDAgKzEsMzMy
+IEBADQo+ID4gPiA+ICsvKg0KPiA+ID4gPiArICogREE5MTUwIENvcmUgTUZEIERyaXZlcg0KPiA+
+ID4gPiArICoNCj4gPiA+ID4gKyAqIENvcHlyaWdodCAoYykgMjAxNCBEaWFsb2cgU2VtaWNvbmR1
+Y3Rvcg0KPiA+ID4gPiArICoNCj4gPiA+ID4gKyAqIEF1dGhvcjogQWRhbSBUaG9tc29uIDxBZGFt
+LlRob21zb24uT3BlbnNvdXJjZUBkaWFzZW1pLmNvbT4NCj4gPiA+ID4gKyAqDQo+ID4gPiA+ICsg
+KiBUaGlzIHByb2dyYW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgIGl0
+IGFuZC9vciBtb2RpZnkgaXQNCj4gPiA+ID4gKyAqIHVuZGVyICB0aGUgdGVybXMgb2YgIHRoZSBH
+TlUgR2VuZXJhbCAgUHVibGljIExpY2Vuc2UgYXMgcHVibGlzaGVkIGJ5IHRoZQ0KPiA+ID4gPiAr
+ICogRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uOyAgZWl0aGVyIHZlcnNpb24gMiBvZiB0aGUgIExp
+Y2Vuc2UsIG9yIChhdCB5b3VyDQo+ID4gPiA+ICsgKiBvcHRpb24pIGFueSBsYXRlciB2ZXJzaW9u
+Lg0KPiA+ID4gPiArICovDQo+ID4gPiA+ICsNCj4gPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9rZXJu
+ZWwuaD4NCj4gPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4NCj4gPiA+ID4gKyNpbmNs
+dWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4NCj4gPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9z
+bGFiLmg+DQo+ID4gPiA+ICsjaW5jbHVkZSA8bGludXgvaXJxLmg+DQo+ID4gPiA+ICsjaW5jbHVk
+ZSA8bGludXgvaW50ZXJydXB0Lmg+DQo+ID4gPiA+ICsjaW5jbHVkZSA8bGludXgvbWZkL2NvcmUu
+aD4NCj4gPiA+ID4gKw0KPiA+ID4NCj4gPiA+IE5vIHJlYWwgbmVlZCBmb3IgdGhpcyAnXG4nLg0K
+PiA+DQo+ID4gSSBjYW4gY2hhbmdlIHRoaXMsIGJ1dCBteSByZWFzb24gd2FzIHRvIHNlcGFyYXRl
+IGNvbW1vbiBrZXJuZWwgaW5jbHVkZXMgZnJvbQ0KPiA+IGRldmljZSBzcGVjaWZpYyBvbmVzLCBm
+b3IgcmVhZGFiaWxpdHkuDQo+IA0KPiBJdCBpc24ndCBhbnkgbGVzcyByZWFkYWJsZSB3aXRoIHRo
+ZSAnXG4nIHJlbW92ZWQuDQoNCkkgcHJlZmVyIHdpdGgsIGJ1dCBwZXJzb25hbCBwcmVmZXJlbmNl
+IEkgZ3Vlc3MuIEFueXdheSwgd2lsbCB1cGRhdGUuDQoNCj4gDQo+ID4gPiA+ICsjaW5jbHVkZSA8
+bGludXgvbWZkL2RhOTE1MC9jb3JlLmg+DQo+ID4gPiA+ICsjaW5jbHVkZSA8bGludXgvbWZkL2Rh
+OTE1MC9yZWdpc3RlcnMuaD4NCj4gPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9tZmQvZGE5MTUwL3Bk
+YXRhLmg+DQo+ID4gPiA+ICsNCj4gPiA+ID4gK3U4IGRhOTE1MF9yZWdfcmVhZChzdHJ1Y3QgZGE5
+MTUwICpkYTkxNTAsIHUxNiByZWcpDQo+ID4gPiA+ICt7DQo+ID4gPiA+ICsJaW50IHZhbCwgcmV0
+Ow0KPiA+ID4gPiArDQo+ID4gPiA+ICsJcmV0ID0gcmVnbWFwX3JlYWQoZGE5MTUwLT5yZWdtYXAs
+IHJlZywgJnZhbCk7DQo+ID4gPiA+ICsJaWYgKHJldCA8IDApDQo+ID4gPg0KPiA+ID4gV2hhdCBp
+ZiByZXQgPiAwPyAgSXMgdGhhdCBhIGdvb2QgdGhpbmc/IDopDQo+ID4gPg0KPiA+ID4gSnVzdCAn
+aWYgKHJldCknLg0KPiA+DQo+ID4gRmluZSwgd2lsbCBjaGFuZ2UuDQo+ID4NCj4gPiA+DQo+ID4g
+PiA+ICsJCWRldl9lcnIoZGE5MTUwLT5kZXYsICJGYWlsZWQgdG8gcmVhZCBmcm9tIHJlZyAweCV4
+OiAlZFxuIiwNCj4gPiA+ID4gKwkJCXJlZywgcmV0KTsNCj4gPiA+ID4gKw0KPiA+ID4gPiArCXJl
+dHVybiAodTgpIHZhbDsNCj4gPiA+ID4gK30NCj4gPiA+ID4gK0VYUE9SVF9TWU1CT0xfR1BMKGRh
+OTE1MF9yZWdfcmVhZCk7DQo+ID4gPg0KPiA+ID4gTm90IHN1cmUgSSBsaWtlIHRoaXMgYWJzdHJh
+Y3Rpb24gc3R1ZmYuICBJIGNvdWxkIHVuZGVyc3RhbmQgaWYgdGhlcmUNCj4gPiA+IHdlcmUgbG9j
+a2luZyBpbnZvbHZlZCwgYnV0IHRoZXJlIGlzbid0LiAgWW91IGRvbid0IGFwcGVhciB0byBjaGVj
+ayBmb3INCj4gPiA+IGVycm9ycyBpbiB0aGUgc3Vib3JkaW5hdGUgZHJpdmVycyBlaXRoZXIsIHJh
+dGhlciB5b3UganVzdCBwbG91Z2ggb24NCj4gPiA+IGFoZWFkLiAgTm90IHN1cmUgdGhhdCdzIGEg
+Z29vZCBpZGVhIGVpdGhlci4NCj4gPiA+DQo+ID4gPiBBbnlvbmUgaGF2ZSBhIHNlY29uZCBvcGlu
+aW9uPw0KPiA+DQo+ID4gVGhlIHJlYXNvbiBmb3IgdGhlc2UgaXMgYmVjYXVzZSBmdXR1cmUgcGF0
+Y2hlcyB0byBhZGQgYWRkaXRpb25hbCBmdW5jdGlvbmFsaXR5DQo+ID4gd2lsbCBpbnRyb2R1Y2Ug
+STJDIGFjY2VzcyBmdW5jdGlvbnMgd2hpY2ggZG8gbm90IHVzZSByZWdtYXAgYW5kIGFjY2VzcyB0
+aGUNCj4gPiBkZXZpY2UgdmlhIGEgc2VwYXJhdGUgSTJDIGFkZHJlc3MgZm9yIHRoaXMgcHVycG9z
+ZS4gSSB3aWxsIG5lZWQgdG8gcHJvdmlkZQ0KPiA+IGFjY2VzcyBmdW5jdGlvbnMgZm9yIHRoYXQs
+IGFuZCBzbyBoYXZpbmcgYSBjb21tb24gc3R5bGUgb2YgSTJDIGFjY2VzcyBtYWtlcw0KPiA+IHNl
+bnNlIGZvciB0aGlzIGRyaXZlci4gTWVhbnMgYW55IGFjY2VzcyBqdXN0IG5lZWRzIHRvIHByb3Zp
+ZGUgdGhlIE1GRCBwcml2YXRlDQo+ID4gZGF0YSwgYW5kIHRoZSByZWxldmFudCBmdW5jdGlvbnMg
+dGFrZSBjYXJlIG9mIHRoZSByZXN0LiBJIHRoaW5rIHRoaXMgaXMgY2xlYW5lcg0KPiA+IGluIHRo
+aXMgaW5zdGFuY2UuDQo+IA0KPiBTbyBsb25nIGFzIHRoZXNlIGFwcGVhciBzb29uLiAgT3RoZXJ3
+aXNlIGl0J3MganVzdCBjcnVmdC4NCg0KSGF2ZSBvdGhlciBwYXRjaGVzIGFscmVhZHkgaW4gcGxh
+Y2UgYW5kIHJlYWR5IHRvIGdvLiBXaGVuIHRoaXMgcGF0Y2ggc2V0IGlzDQphY2NlcHRlZCwgSSB3
+aWxsIGJlZ2luIHN1Ym1pc3Npb24gb2YgdGhlIHJlbWFpbmluZyBkcml2ZXJzLg0KDQo+IA0KPiBb
+Li4uXQ0KPiANCj4gPiA+ID4gKy8qIEhlbHBlciBmdW5jdGlvbnMgZm9yIHN1Yi1kZXZpY2VzIHRv
+IHJlcXVlc3QvZnJlZSBJUlFzICovDQo+ID4gPiA+ICtpbnQgZGE5MTUwX3JlZ2lzdGVyX2lycShz
+dHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2LCB2b2lkICpkZXZfaWQsDQo+ID4gPiA+ICsJCQlp
+cnFfaGFuZGxlcl90IGhhbmRsZXIsIGNvbnN0IGNoYXIgKm5hbWUpDQo+ID4gPiA+ICt7DQo+ID4g
+PiA+ICsJaW50IGlycSwgcmV0Ow0KPiA+ID4gPiArDQo+ID4gPiA+ICsJaXJxID0gcGxhdGZvcm1f
+Z2V0X2lycV9ieW5hbWUocGRldiwgbmFtZSk7DQo+ID4gPiA+ICsJaWYgKGlycSA8IDApDQo+ID4g
+PiA+ICsJCXJldHVybiBpcnE7DQo+ID4gPiA+ICsNCj4gPiA+ID4gKwlyZXQgPSBkZXZtX3JlcXVl
+c3RfdGhyZWFkZWRfaXJxKCZwZGV2LT5kZXYsIGlycSwgTlVMTCwgaGFuZGxlciwNCj4gPiA+ID4g
+KwkJCQkJSVJRRl9PTkVTSE9ULCBuYW1lLCBkZXZfaWQpOw0KPiA+ID4gPiArCWlmIChyZXQpDQo+
+ID4gPiA+ICsJCWRldl9lcnIoJnBkZXYtPmRldiwgIkZhaWxlZCB0byByZXF1ZXN0IElSUSAlZDog
+JWRcbiIsIGlycSwgcmV0KTsNCj4gPiA+ID4gKw0KPiA+ID4gPiArCXJldHVybiByZXQ7DQo+ID4g
+PiA+ICt9DQo+ID4gPiA+ICtFWFBPUlRfU1lNQk9MX0dQTChkYTkxNTBfcmVnaXN0ZXJfaXJxKTsN
+Cj4gPiA+DQo+ID4gPiBXaHkgZG8gdGhleSBuZWVkIGhlbHA/ICBXaGF0IHByb2JsZW0gZG9lcyBh
+ZGRpbmcgdGhlc2UgbGF5ZXJzIHNvbHZlPw0KPiA+DQo+ID4gTWVhbnMgSSBkb24ndCBoYXZlIHRv
+IGtlZXAgYWRkaW5nIHByaW50IGVycm9yIGxpbmVzIGV2ZXJ5d2hlcmUgZWxzZSBpZiB0aGlzDQo+
+ID4gZnVuY3Rpb24gdGFrZXMgY2FyZSBvZiBpdC4gVGhvdWdodCB0aGF0IHdvdWxkIGJlIGNsZWFu
+ZXIuDQo+IA0KPiBZb3Ugb25seSBuZWVkIHRvIHJlcXVlc3QgZWFjaCBJUlEgb25jZS4gIEl0J3Mg
+anVzdCBtb3JlIGFic3RyYWN0aW9uDQo+IGZvciB0aGUgc2FrZSBvZiBpdC4gIEkgd291bGQgcHJl
+ZmVyIGlmIHlvdSByZW1vdmVkIHRoZW0uDQoNClllcywgYnV0IGluIHRoZSBjaGFyZ2VyIGRyaXZl
+ciBmb3IgZXhhbXBsZSwgdGhlcmUgYXJlIDQgSVJRcyB0byByZXF1ZXN0LiBJZg0KSSBkb24ndCB1
+c2UgdGhpcyBhcHByb2FjaCB0aGUgSVJRIHJlcXVlc3RpbmcgYmVjb21lcyBibG9hdGVkLCBoZW5j
+ZSB3aHkgSSB3ZW50DQpmb3IgYSBjb21tb24gZnVuY3Rpb24gbGlrZSB0aGlzLiBUaG91Z2h0IGdl
+bmVyYWxseSB0aGUgaW50ZW50aW9uIHdhcyB0byBjdXQNCmRvd24gb24gcmVwZWF0ZWQgY29kZT8N
+Cg0KPiANCj4gPiA+ID4gK3ZvaWQgZGE5MTUwX3JlbGVhc2VfaXJxKHN0cnVjdCBwbGF0Zm9ybV9k
+ZXZpY2UgKnBkZXYsIHZvaWQgKmRldl9pZCwNCj4gPiA+ID4gKwkJICAgICAgIGNvbnN0IGNoYXIg
+Km5hbWUpDQo+ID4gPiA+ICt7DQo+ID4gPiA+ICsJaW50IGlycTsNCj4gPiA+ID4gKw0KPiA+ID4g
+PiArCWlycSA9IHBsYXRmb3JtX2dldF9pcnFfYnluYW1lKHBkZXYsIG5hbWUpOw0KPiA+ID4gPiAr
+CWlmIChpcnEgPCAwKQ0KPiA+ID4gPiArCQlyZXR1cm47DQo+ID4gPiA+ICsNCj4gPiA+ID4gKwlk
+ZXZtX2ZyZWVfaXJxKCZwZGV2LT5kZXYsIGlycSwgZGV2X2lkKTsNCj4gPiA+ID4gK30NCj4gPiA+
+ID4gK0VYUE9SVF9TWU1CT0xfR1BMKGRhOTE1MF9yZWxlYXNlX2lycSk7DQo+ID4gPg0KPiA+ID4g
+RG8geW91IGV2ZXIgcmVsZWFzZSB0aGUgSVJRIGFuZCBub3QgdW5iaW5kIHRoZSBkcml2ZXI/DQo+
+ID4gPg0KPiA+ID4gQXJlIHRoZXJlIG9yZGVyaW5nIGlzc3VlcyBhdCBwbGF5IGhlcmU/DQo+ID4g
+Pg0KPiA+ID4gSWYgbm90LCB0aGVyZSdzIG5vIG5lZWQgdG8gY29uZHVjdCBhIG1hbnVhbCBmcmVl
+Lg0KPiA+DQo+ID4gSW4gdGhlIGNoYXJnZXIgZHJpdmVyLCBpbiB0aGUgcmVtb3ZlIGZ1bmN0aW9u
+IHRoZXJlIGlzIGEgbmVlZCBJIGJlbGlldmUgdG8NCj4gPiBmcmVlIHRoZSBJUlFzIGJlZm9yZSBv
+dGhlciBpdGVtcyBhcmUgY2xlYXJlZCB1cCAoZS5nLiBwb3dlcl9zdXBwbHkgY2xhc3NlcyksDQo+
+ID4gc28gdGhpcyBpcyB3aHkgSSBoYXZlIGFkZGVkIHRoaXMgaW4gaGVyZS4NCj4gDQo+IENhbiB5
+b3UgaGFuZGxlIHRoaXMgc2VwYXJhdGVseSBpbiB0aGUgQ2hhcmdlciBkcml2ZXIgdGhlbiBwbGVh
+c2U/DQo+IA0KPiBbLi4uXQ0KDQpJZiBJIGhhdmUgdG8gcmVtb3ZlIHRoZSBJUlEgcmVnaXN0ZXIg
+ZnVuY3Rpb24sIHRoZW4geWVzLCBvdGhlcndpc2UgaXQgbWFrZXMgbW9yZQ0Kc2Vuc2UgdG8gaGF2
+ZSB0aGUgcGFpciBvZiBmdW5jdGlvbnMgaW4gdGhlIE1GRCBjb3JlIEkgd291bGQgc2F5Lg0KDQo+
+IA0KPiA+ID4gPiArCWlmIChwZGF0YSkNCj4gPiA+ID4gKwkJZGE5MTUwLT5pcnFfYmFzZSA9IHBk
+YXRhLT5pcnFfYmFzZTsNCj4gPiA+ID4gKwllbHNlDQo+ID4gPiA+ICsJCWRhOTE1MC0+aXJxX2Jh
+c2UgPSAtMTsNCj4gPiA+DQo+ID4gPiBwZGF0YSA/IHBkYXRhLT5pcnFfYmFzZSA6IC0xOw0KPiA+
+DQo+ID4gVGhpcyBpcyBsZWZ0IHRoaXMgd2F5IGFzIGxhdGVyIHVwZGF0ZXMgdG8gYWRkIGFkZGl0
+aW9uYWwgZnVuY3Rpb25hbGl0eSB3aWxsDQo+ID4gcmVxdWlyZSBhZGR0aW9uYWwgd29yayB0byBi
+ZSBkb25lIHdpdGggdGhlIHBsYXRmb3JtIGRhdGEuIFNlZW1lZCBwb2ludGxlc3MNCj4gPiBjaGFu
+Z2luZyBpdCBoZXJlIGp1c3QgdG8gY2hhbmdlIGl0IGJhY2sgbGF0ZXIuDQo+IA0KPiBZb3UncmUg
+bm90IGNoYW5naW5nIGFueXRoaW5nLCBhcyB0aGlzIGlzIHRoZSBpbnRyb2R1Y3Rpb24gb2YgdGhl
+IGNvZGUuDQo+IEkgY2FuJ3QgdGVsbCB5b3UgaG93IG1hbnkgdGltZXMgSSd2ZSBoZWFyZCAiSSB3
+aWxsIGNoYW5nZSBpdCBsYXRlciIsDQo+IG9yICJkb2luZyBpdCB0aGlzIHdheSB3aWxsIHN1cHBv
+cnQgc3Vic2VxdWVudCBzdWJtaXNzaW9ucyIsIHRoZW4NCj4gcmVjZWl2ZWQgbm8gbW9yZSBwYXRj
+aGVzLiAgSXQncyBva2F5IHRvIGRvIGl0IG5pY2VseSBub3cgYW5kIGV4cGFuZA0KPiBpdCBiYWNr
+IG91dCBpbiB0aGUgbmV3IHBhdGNoZXMuDQo+IA0KPiBbLi4uXQ0KDQpJdCBhcHBlYXJzIHRoYXQg
+d2F5IHRvIHlvdSBidXQgSSBoYXZlIHRvIG1vZGlmeSBteSBjb2RlIGZvciBzdW1iaXNzaW9uIGFz
+IHRoZQ0KbG9jYWwgY29kZSBJIGhhdmUgY292ZXJzIGFsbCBmdW5jdGlvbmFsaXR5LiBBbSBoYXZp
+bmcgdG8gcmVmYWN0b3IgYWdhaW4gYW5kDQphZ2FpbiBqdXN0IHRvIHN1aXQgdGhpcyBpbml0aWFs
+IHN1Ym1pc3Npb24sIGFuZCB0aGVuIEkgaGF2ZSB0byByZXZlcnQgaXQgYmFjaw0KYWdhaW4gd2hl
+biBzdWJtaXR0aW5nIHRoZSBsYXN0IGNvdXBsZSBvZiBkcml2ZXJzLiBUaW1lIGNvbnN1bWluZywg
+YW5kIHF1aXRlDQpmcnVzdHJhdGluZyB3aGVuIHRoZSBpbnRlbnRpb24gd2FzIHRvIG1ha2UgdGhl
+IHdob2xlIHByb2Nlc3MgZWFzaWVyLiBBbnl3YXksDQp3aWxsIHVwZGF0ZSBmb3Igbm93IGFuZCBy
+ZXZlcnQgaW4gc3Vic2VxdWVudCBwYXRjaGVzLg0KDQo+IA0KPiA+ID4gPiArCWRhOTE1MCA9IGRl
+dm1fa3phbGxvYygmY2xpZW50LT5kZXYsIHNpemVvZihzdHJ1Y3QgZGE5MTUwKSwgR0ZQX0tFUk5F
+TCk7DQo+ID4gPg0KPiA+ID4gc2l6ZW9mKCpkYTkxNTApDQo+ID4NCj4gPiBTYW1lIGRpZmZlcmVu
+Y2UsIGJ1dCBvay4NCj4gDQo+IEl0J3MgbW9yZSBzdWNjaW5jdCBhbmQgYWxtb3N0IGFsd2F5cyBk
+b25lIHRoaXMgd2F5IGJlY2F1c2Ugb2YgaXQuDQo+IA0KPiBbLi4uXQ0KPiANCj4gPiA+ID4gK3N0
+cnVjdCBkYTkxNTBfcGRhdGEgew0KPiA+ID4gPiArCWludCBpcnFfYmFzZTsNCj4gPiA+ID4gK307
+DQo+ID4gPg0KPiA+ID4gSnVzdCBwdXQgdGhpcyBpbiBjb3JlLmggYW5kIGRvIGF3YXkgd2l0aHQg
+dGhpcyBoZWFkZXIgZmlsZS4NCj4gPg0KPiA+IFRoZSByZWFzb24gZm9yIHRoaXMgaXMgdGhhdCBJ
+IHdpbGwgYWRkIG1vcmUgcGxhdGZvcm0gZGF0YSBpdGVtcyBsYXRlciB3aXRoDQo+ID4gc3Vic2Vx
+dWVudCBzdWJtaXNzaW9ucyBmb3IgYWRkaXRpb25hbCBmZWF0dXJlcy4gSXQgZmVsdCBjbGVhbmVy
+IHRvIHNlcGFyYXRlIG91dA0KPiA+IHRoZXNlIHN0cnVjdHVyZXMgdGhhbiB0aHJvdyBpdCBpbiB0
+aGUgY29yZS5oIGhlYWRlci4gSG93ZXZlciBpZiBpdCdzIGdvaW5nIHRvDQo+ID4gYmUgYSBwcm9i
+bGVtIEknbGwgZm9sZCB0aGlzIGludG8gY29yZS5oDQo+IA0KPiBNb3JlICJJIHdpbGwicy4gOikN
+Cj4gDQo+IFBsZWFzZSBkbyB3aGF0J3MgcmlnaHQgZm9yICd0aGlzIHN1Ym1pc3Npb24nLiAgSWYg
+dGhpbmdzIGNoYW5nZSBsYXRlcg0KPiB5b3UgY2FuIGFjdCBhY2NvcmRpbmdseS4NCg0KSXQncyBu
+b3QgYSBjYXNlIG9mICdpZiB0aGluZ3MgY2hhbmdlJy4gVGhleSB3aWxsLiBBbnl3YXksIHdpbGwg
+cmVmYWN0b3Igbm93IGFuZA0KcmV2ZXJ0IGxhdGVyLg0KDQo+IA0KPiAtLQ0KPiBMZWUgSm9uZXMN
+Cj4gTGluYXJvIFNUTWljcm9lbGVjdHJvbmljcyBMYW5kaW5nIFRlYW0gTGVhZA0KPiBMaW5hcm8u
+b3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MNCj4gRm9sbG93IExpbmFy
+bzogRmFjZWJvb2sgfCBUd2l0dGVyIHwgQmxvZw0K
