@@ -1,57 +1,42 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH 0/4] cpufreq-dt, platform_data based proposal
-Date: Wed, 10 Sep 2014 12:30:08 +0200
-Message-ID: <20140910123008.3430cd3f@free-electrons.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/4] cpufreq: cpufreq-dt: remove warning about regulators
+Date: Wed, 10 Sep 2014 16:00:38 +0530
+Message-ID: <CAKohpokpmoyiDwY-1P3ujetfddVAZ=1A4GD+YRvFOfT5L7CD7g@mail.gmail.com>
 References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
-	<2947757.7VG6XCG6t9@wuerfel>
-	<20140910121002.148194af@free-electrons.com>
-	<3121183.jngnFR1Zm6@wuerfel>
+	<1410342112-13264-1-git-send-email-thomas.petazzoni@free-electrons.com>
+	<1410342112-13264-5-git-send-email-thomas.petazzoni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <3121183.jngnFR1Zm6@wuerfel>
+In-Reply-To: <1410342112-13264-5-git-send-email-thomas.petazzoni@free-electrons.com>
 Sender: linux-arm-msm-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linaro-kernel@lists.linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Lior Amsalem <alior@marvell.com>, Rob Herring <rob.herring@linaro.org>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Tawfik Bayouk <tawfik@marvell.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Rafael Wysocki <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Thomas Abraham <thomas.ab@samsung.com>, Mike Turquette <mike.turquette@linaro.org>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Sachin Kamat <spk.linux@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
 List-Id: linux-pm@vger.kernel.org
 
-Arnd,
+On 10 September 2014 15:11, Thomas Petazzoni
+<thomas.petazzoni@free-electrons.com> wrote:
+> The cpufreq-dt driver tries to get a regulator for each CPU. This
+> regulator is optional, but when not present, a scary message "failed
+> to get cpuX regulator" is displayed. Since the regulator is really
+> optional, we cannot sanely display any useful message, so this commit
+> simply gets rid of this problematic message.
+>
+> Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+> ---
+>  drivers/cpufreq/cpufreq-dt.c | 3 ---
+>  1 file changed, 3 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index 35d396e..8060022 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -149,9 +149,6 @@ try_again:
+>                         reg = reg_cpu;
+>                         goto try_again;
+>                 }
+> -
+> -               dev_warn(cpu_dev, "failed to get cpu%d regulator: %ld\n",
+> -                        cpu, PTR_ERR(cpu_reg));
 
-On Wed, 10 Sep 2014 12:19:41 +0200, Arnd Bergmann wrote:
-
-> the driver for every new platform we want to support. It would
-> be better to find a way that lets you add new platforms using just
-> new dts files that work with the existing driver.
-
-What do you call a "platform" ? A board or a SoC ? The top-level
-compatible string contain both references to the board and the SoC, and
-my idea was obviously that the cpufreq driver would match against the
-SoC compatible string, not the board one. This definitely allows to
-support additional boards by adding more dts without touching the code.
-
-Of course, it however means that when a new SoC shows up, you'll need
-to adjust the cpufreq driver. But you generally anyway need some kernel
-changes to support a new SoC: .dtsi changes are rarely sufficient to
-completely support a new chip.
-
-> > In the mean time, would it be possible to realize that the existing
-> > generic cpufreq driver simply isn't generic enough, and that we should
-> > accept machine-specific cpufreq drivers for the time being?
-> 
-> That would work for me, to get things going for 3.18, but it's really
-> up to the cpufreq maintainers. Your platform_data based patch set
-> seems like a better solution to me than separate drivers, but I haven't
-> looked at the details.
-
-I personally don't really care: using platform_data, adding a
-machine-specific driver, having two platform_driver for cpufreq-dt with
-different names.
-
-Viresh ?
-
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+What about converting it to dev_dbg() instead?
