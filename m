@@ -1,65 +1,114 @@
-From: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [PATCH v9 6/8] drivers: cpuidle: CPU idle ARM64 driver
-Date: Mon, 8 Sep 2014 17:08:39 +0100
-Message-ID: <20140908160838.GA13778@arm.com>
-References: <1409938498-17984-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1409938498-17984-7-git-send-email-lorenzo.pieralisi@arm.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH] intel_pstate: track and export frequency residency stats
+ via sysfs.
+Date: Wed, 10 Sep 2014 09:39:30 -0700
+Message-ID: <54107EC2.1010501@intel.com>
+References: <1410221424-20590-1-git-send-email-anupc@chromium.org> <540F1981.1090805@gmail.com> <20140909232229.GA28142@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from [217.140.108.86] ([217.140.108.86]:60838 "EHLO
-	foss-mx-na.foss.arm.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751882AbaIJQYD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 12:24:03 -0400
-Content-Disposition: inline
-In-Reply-To: <1409938498-17984-7-git-send-email-lorenzo.pieralisi@arm.com>
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:50221 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751082AbaIJQjd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 12:39:33 -0400
+In-Reply-To: <20140909232229.GA28142@google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Will Deacon <Will.Deacon@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.o>
+To: Anup Chenthamarakshan <anupc@chromium.org>, Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Sameer Nanda <snanda@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Sep 05, 2014 at 06:34:55PM +0100, Lorenzo Pieralisi wrote:
-> This patch implements a generic CPU idle driver for ARM64 machines.
-> 
-> It relies on the DT idle states infrastructure to initialize idle
-> states count and respective parameters. Current code assumes the driver
-> is managing idle states on all possible CPUs but can be easily
-> generalized to support heterogenous systems and build cpumasks at
-> runtime using MIDRs or DT cpu nodes compatible properties.
-> 
-> The driver relies on the arm64 CPU operations to call the idle
-> initialization hook used to parse and save suspend back-end specific
-> idle states information upon probing.
-> 
-> Idle state index 0 is always initialized as a simple wfi state, ie always
-> considered present and functional on all ARM64 platforms.
-> 
-> Idle state indices higher than 0 trigger idle state entry by calling
-> the cpu_suspend function, that triggers the suspend operation through
-> the CPU operations suspend back-end hook. cpu_suspend passes the idle
-> state index as a parameter so that the CPU operations suspend back-end
-> can retrieve the required idle state data by using the idle state
-> index to execute a look-up on its internal data structures.
-> 
-> Reviewed-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> ---
->  drivers/cpuidle/Kconfig         |   5 ++
->  drivers/cpuidle/Kconfig.arm64   |  14 +++++
->  drivers/cpuidle/Makefile        |   4 ++
->  drivers/cpuidle/cpuidle-arm64.c | 133 ++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 156 insertions(+)
->  create mode 100644 drivers/cpuidle/Kconfig.arm64
->  create mode 100644 drivers/cpuidle/cpuidle-arm64.c
+On 09/09/2014 04:22 PM, Anup Chenthamarakshan wrote:
+> On Tue, Sep 09, 2014 at 08:15:13AM -0700, Dirk Brandewie wrote:
+>> On 09/08/2014 05:10 PM, Anup Chenthamarakshan wrote:
+>>> Exported stats appear in
+>>> <sysfs>/devices/system/cpu/intel_pstate/time_in_state as follows:
+>>>
+>>> ## CPU 0
+>>> 400000 3647
+>>> 500000 24342
+>>> 600000 144150
+>>> 700000 202469
+>>> ## CPU 1
+>>> 400000 4813
+>>> 500000 22628
+>>> 600000 149564
+>>> 700000 211885
+>>> 800000 173890
+>>>
+>>> Signed-off-by: Anup Chenthamarakshan <anupc@chromium.org>
+>>
+>> What is this information being used for?
+>
+> I'm using P-state residency information in power consumption tests to calculate
+> proportion of time spent in each P-state across all processors (one global set
+> of percentages, corresponding to each P-state). This is used to validate new
+> changes from the power perspective. Essentially, sanity checks to flag changes
+> with large difference in P-state residency.
+>
+> So far, we've been using the data exported by acpi-cpufreq to track this.
+>
+>>
+>> Tracking the current P state request for each core is only part of the
+>> story.  The processor aggregates the requests from all cores and then decides
+>> what frequency the package will run at, this evaluation happens at ~1ms time
+>> frame.  If a core is idle then it loses its vote for that package frequency will
+>> be and its frequency will be zero even though it may have been requesting
+>> a high P state when it went idle.  Tracking the residency of the requested
+>> P state doesn't provide much useful information other than ensuring the the
+>> requests are changing over time IMHO.
+>
+> This is exactly why we're trying to track it.
 
-Daniel, do you have any preference for how this patch should go in? You
-can either ack it so that I can take it via the arm64 tree or you take
-it separately (though it doesn't make sense on its own without the arm64
-infrastructure in place, we need a bit of synchronisation but it's not
-something difficult).
+My point is that you are tracking the residency of the request and not
+the P state the package was running at.  On a lightly loaded system
+it is not unusual for a core that was very busy and requesting a high
+P state to go idle for several seconds.  In this case that core would
+lose its vote for the package P state but the stats would show that
+the P state was high for a very long time when its real frequency
+was zero.
 
-Thanks.
+There are a couple of ways to get what I consider better information
+about what is actually going on.
 
--- 
-Catalin
+   The current turbostat provides C state residency and calculates the
+   average/effective frequency of the core over its sample time.
+   Turbostat will also measure the power consumption from the CPU point
+   of view if your processor supports the RAPL registers.
+
+   Reading MSR 0x198 MSR_IA32_PERF_STATUS will tell you what the core
+   would run at if it not idle, this reflects the decision that the
+   package made based on current requests.
+
+   Using perf to collect power:pstate_sample event will give information
+   about each sample on the core and give you timestamps to detect idle
+   times.
+
+   Using perf to collect power:cpu_frequency will show when the P state
+   request was changed on each core and is triggered by intel_pstate and
+   acpi_cpufreq.
+
+   Powertop collects that same information as turbostat and a bunch of
+   other information useful in seeing where you could be burning power
+   for no good reason.
+
+For getting an idea of real power turbostat is the easiest to use and
+is available on most systems.  Using perf will give you a very fine grained
+view of what is going on as well as point to the culprit for bad
+behaviour in most cases.
+
+>
+>>
+>> This interface will not be supportable with upcoming processors using
+>> hardware P states as documented in volume 3 of the current SDM Section 14.4
+>> http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-manual-325462.pdf
+>> The OS will have no way of knowing what the P state requests are for a
+>> given core are.
+>
+> Will there be any means to determine the proportion of time spent in different
+> HWP-states when HWP gets enabled (maybe at a package level)?
+>
+Not that I am aware of :-(  There is MSR_PPERF section 14.4.5.1 that will give
+the CPUs view of the amount of productive work/scalability of the current load.
+
+--Dirk
