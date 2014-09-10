@@ -1,160 +1,342 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v3] ARM: l2c: parse cache properties from ePAPR definitions
-Date: Wed, 10 Sep 2014 11:44:52 +0200
-Message-ID: <4196671.LQ3YKNLqVB@wuerfel>
-References: <1410339572-23694-1-git-send-email-linus.walleij@linaro.org>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v2 1/7] mfd: Add support for DA9150 combined charger &
+ fuel-gauge device
+Date: Wed, 10 Sep 2014 10:49:51 +0100
+Message-ID: <20140910094951.GN30307@lee--X1>
+References: <cover.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
+ <d6c7de200c9447dbafa74ee76739da943a0b73b2.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
+ <20140828163608.GY24579@lee--X1>
+ <2E89032DDAA8B9408CB92943514A0337AB5144CE@SW-EX-MBX01.diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.17.24]:65211 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbaIJJpd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 05:45:33 -0400
-In-Reply-To: <1410339572-23694-1-git-send-email-linus.walleij@linaro.org>
+Received: from mail-ig0-f182.google.com ([209.85.213.182]:43845 "EHLO
+	mail-ig0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260AbaIJJt6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 05:49:58 -0400
+Received: by mail-ig0-f182.google.com with SMTP id h18so778641igc.15
+        for <linux-pm@vger.kernel.org>; Wed, 10 Sep 2014 02:49:58 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <2E89032DDAA8B9408CB92943514A0337AB5144CE@SW-EX-MBX01.diasemi.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Will Deacon <will.deacon@arm.com>, Rob Herring <robh@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>
+To: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 
-On Wednesday 10 September 2014 10:59:32 Linus Walleij wrote:
+On Tue, 09 Sep 2014, Opensource [Adam Thomson] wrote:
 
-> diff --git a/Documentation/devicetree/bindings/arm/l2cc.txt b/Documentation/devicetree/bindings/arm/l2cc.txt
-> index af527ee111c2..918b4489ab73 100644
-> --- a/Documentation/devicetree/bindings/arm/l2cc.txt
-> +++ b/Documentation/devicetree/bindings/arm/l2cc.txt
-> @@ -43,7 +43,17 @@ Optional properties:
->  - arm,io-coherent : indicates that the system is operating in an hardware
->    I/O coherent mode. Valid only when the arm,pl310-cache compatible
->    string is used.
-> +- arm,override-auxreg : this boolean property tells the OS implementation of
-> +  the l2cc driver code to override the default cache size, sets (and thus
-> +  associativity) settings from the auxilary control register. This is to be
-> +  used when the boot code does not set up these properties correctly.
+> On August 28, 2014 17:36, Lee Jones wrote:
+>=20
+> Thanks for the feedback. As a general comment a couple of the items y=
+ou've
+> identified relate to future updates (additional functionality being a=
+dded).
+> I already have code in place for this but have stripped out a couple =
+of the
+> drivers just to reduce the churn and size of patch submission. These =
+will be
+> added once these patches have been accepted.
+>=20
+> Where this is the case, I have added notes in-line against the releva=
+nt
+> comments you made.
+>=20
+> > On Thu, 28 Aug 2014, Adam Thomson wrote:
+> >=20
+> > > DA9150 is a combined Charger and Fuel-Gauge IC, with additional
+> > > GPIO and GPADC functionality.
+> > >
+> > > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > > ---
+> > >  drivers/mfd/Kconfig                  |   12 +
+> > >  drivers/mfd/Makefile                 |    2 +
+> > >  drivers/mfd/da9150-core.c            |  332 ++++++++++
+> > >  drivers/mfd/da9150-i2c.c             |  176 ++++++
+> >=20
+> > Do you also have another, say SPI version?
+>=20
+> No, not yet, but this is something that we may add later as the devic=
+e does
+> support SPI.
 
-For the last one, I mentioned this to Russell yesterday on IRC and
-he said he was fine with the approach from the earlier patch without
-this property.
+I'm not sure we want to split up the files like this for an 'if we
+decide to produce an SPI variant in the future'.  If you do, then you
+can split the files up.  Until then, stick everything in -core.
 
->  - interrupts : 1 combined interrupt.
-> +- cache-size : specifies the size in bytes of the cache
-> +- cache-sets : specifies the number of associativity sets of the cache
-> +- cache-block-size : specifies the size in bytes of a cache block
-> +- cache-line-size : specifies the size in bytes of a line in the cache,
-> +  if this is not specified, the line size is assumed to be equal to the
-> +  cache block size
 
-I think this should point to ePAPR for a more detailed description of
-the meanings.
+> > >  include/linux/mfd/da9150/core.h      |   80 +++
+> > >  include/linux/mfd/da9150/pdata.h     |   21 +
+> > >  include/linux/mfd/da9150/registers.h | 1153
+> > ++++++++++++++++++++++++++++++++++
+> > >  7 files changed, 1776 insertions(+)
+> > >  create mode 100644 drivers/mfd/da9150-core.c
+> > >  create mode 100644 drivers/mfd/da9150-i2c.c
+> > >  create mode 100644 include/linux/mfd/da9150/core.h
+> > >  create mode 100644 include/linux/mfd/da9150/pdata.h
+> > >  create mode 100644 include/linux/mfd/da9150/registers.h
+> > >
+> > > diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> > > index de5abf2..76adb2c 100644
+> > > --- a/drivers/mfd/Kconfig
+> > > +++ b/drivers/mfd/Kconfig
+> > > @@ -183,6 +183,18 @@ config MFD_DA9063
+> > >  	  Additional drivers must be enabled in order to use the functi=
+onality
+> > >  	  of the device.
+> > >
+> > > +config MFD_DA9150
+> > > +	bool "Dialog Semiconductor DA9150 Charger Fuel-Gauge chip"
+> >=20
+> > Why can't this be built as a module?
+>=20
+> No reason. Will change it.
+>=20
+> >=20
+> > > +	depends on I2C=3Dy
+> > > +	select MFD_CORE
+> > > +	select REGMAP_I2C
+> > > +	select REGMAP_IRQ
+> > > +	help
+> > > +	  This adds support for the DA9150 integrated charger and fuel-=
+gauge
+> > > +	  chip. This driver provides common support for accessing the d=
+evice.
+> > > +	  Additional drivers must be enabled in order to use the specif=
+ic
+> > > +	  features of the device.
+> > > +
+> > >  config MFD_MC13XXX
+> > >  	tristate
+> > >  	depends on (SPI_MASTER || I2C)
+> > > diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> > > index f001487..098dfa1 100644
+> > > --- a/drivers/mfd/Makefile
+> > > +++ b/drivers/mfd/Makefile
+> > > @@ -114,6 +114,8 @@ obj-$(CONFIG_MFD_DA9055)	+=3D da9055.o
+> > >  da9063-objs			:=3D da9063-core.o da9063-irq.o da9063-i2c.o
+> > >  obj-$(CONFIG_MFD_DA9063)	+=3D da9063.o
+> > >
+> > > +obj-$(CONFIG_MFD_DA9150)	+=3D da9150-core.o da9150-i2c.o
+> > > +
+> >=20
+> > Do the other drivers smell?  Please butt up against them.
+> >=20
+> > I'm not entirely sure why there are so many '\n's in the Makefile!
+>=20
+> Okey dokey. Will change.
+>=20
+> >=20
+> > >  obj-$(CONFIG_MFD_MAX14577)	+=3D max14577.o
+> > >  obj-$(CONFIG_MFD_MAX77686)	+=3D max77686.o
+> > >  obj-$(CONFIG_MFD_MAX77693)	+=3D max77693.o
+> > > diff --git a/drivers/mfd/da9150-core.c b/drivers/mfd/da9150-core.=
+c
+> > > new file mode 100644
+> > > index 0000000..029a30b
+> > > --- /dev/null
+> > > +++ b/drivers/mfd/da9150-core.c
+> > > @@ -0,0 +1,332 @@
+> > > +/*
+> > > + * DA9150 Core MFD Driver
+> > > + *
+> > > + * Copyright (c) 2014 Dialog Semiconductor
+> > > + *
+> > > + * Author: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > > + *
+> > > + * This program is free software; you can redistribute  it and/o=
+r modify it
+> > > + * under  the terms of  the GNU General  Public License as publi=
+shed by the
+> > > + * Free Software Foundation;  either version 2 of the  License, =
+or (at your
+> > > + * option) any later version.
+> > > + */
+> > > +
+> > > +#include <linux/kernel.h>
+> > > +#include <linux/module.h>
+> > > +#include <linux/platform_device.h>
+> > > +#include <linux/slab.h>
+> > > +#include <linux/irq.h>
+> > > +#include <linux/interrupt.h>
+> > > +#include <linux/mfd/core.h>
+> > > +
+> >=20
+> > No real need for this '\n'.
+>=20
+> I can change this, but my reason was to separate common kernel includ=
+es from
+> device specific ones, for readability.=20
 
-> +	/*
-> +	 * Since:
-> +	 * set size = cache size / sets
-> +	 * ways = cache size / (sets * line size)
-> +	 * way size = cache size / (cache size / (sets * line size))
-> +	 * way size = sets * line size
-> +	 * associativity = ways = cache size / way size
-> +	 */
-> +	way_size = sets * line_size;
-> +	*associativity = cache_size / way_size;
+It isn't any less readable with the '\n' removed.
 
-Ah, that's better, it also avoids doing multiple divisions, which
-could potentially all result in divide-by-zero exceptions, and
-you check that neither cache_size nor way_size is zero.
+> > > +#include <linux/mfd/da9150/core.h>
+> > > +#include <linux/mfd/da9150/registers.h>
+> > > +#include <linux/mfd/da9150/pdata.h>
+> > > +
+> > > +u8 da9150_reg_read(struct da9150 *da9150, u16 reg)
+> > > +{
+> > > +	int val, ret;
+> > > +
+> > > +	ret =3D regmap_read(da9150->regmap, reg, &val);
+> > > +	if (ret < 0)
+> >=20
+> > What if ret > 0?  Is that a good thing? :)
+> >=20
+> > Just 'if (ret)'.
+>=20
+> Fine, will change.
+>=20
+> >=20
+> > > +		dev_err(da9150->dev, "Failed to read from reg 0x%x: %d\n",
+> > > +			reg, ret);
+> > > +
+> > > +	return (u8) val;
+> > > +}
+> > > +EXPORT_SYMBOL_GPL(da9150_reg_read);
+> >=20
+> > Not sure I like this abstraction stuff.  I could understand if ther=
+e
+> > were locking involved, but there isn't.  You don't appear to check =
+for
+> > errors in the subordinate drivers either, rather you just plough on
+> > ahead.  Not sure that's a good idea either.
+> >=20
+> > Anyone have a second opinion?
+>=20
+> The reason for these is because future patches to add additional func=
+tionality
+> will introduce I2C access functions which do not use regmap and acces=
+s the
+> device via a separate I2C address for this purpose. I will need to pr=
+ovide
+> access functions for that, and so having a common style of I2C access=
+ makes
+> sense for this driver. Means any access just needs to provide the MFD=
+ private
+> data, and the relevant functions take care of the rest. I think this =
+is cleaner
+> in this instance.
 
-> +	if (way_size > max_way_size) {
-> +		pr_err("L2C OF: set size %dKB is too large\n", way_size);
-> +		return;
-> +	}
-> +
-> +	pr_info("L2C OF: override cache size: %d bytes (%dKB)\n",
-> +		cache_size, cache_size >> 10);
-> +	pr_info("L2C OF: override line size: %d bytes\n", line_size);
-> +	pr_info("L2C OF: override way size: %d bytes (%dKB)\n",
-> +		way_size, way_size >> 10);
-> +	pr_info("L2C OF: override associativity: %d\n", *associativity);
+So long as these appear soon.  Otherwise it's just cruft.
 
-I think it would be really nice to print both the original setting
-and the setting from DT here.
+[...]
 
-> +	switch (way_size >> 10) {
-> +	case 512:
-> +		way_size_bits = 6;
-> +		break;
-> +	case 256:
-> +		way_size_bits = 5;
-> +		break;
-> +	case 128:
-> +		way_size_bits = 4;
-> +		break;
-> +	case 64:
-> +		way_size_bits = 3;
-> +		break;
-> +	case 32:
-> +		way_size_bits = 2;
-> +		break;
-> +	case 16:
-> +		way_size_bits = 1;
-> +		break;
-> +	default:
-> +		pr_err("L2C OF: cache way size illegal: %dKB is not mapped\n",
-> +		       way_size);
-> +		break;
-> +	}
+> > > +/* Helper functions for sub-devices to request/free IRQs */
+> > > +int da9150_register_irq(struct platform_device *pdev, void *dev_=
+id,
+> > > +			irq_handler_t handler, const char *name)
+> > > +{
+> > > +	int irq, ret;
+> > > +
+> > > +	irq =3D platform_get_irq_byname(pdev, name);
+> > > +	if (irq < 0)
+> > > +		return irq;
+> > > +
+> > > +	ret =3D devm_request_threaded_irq(&pdev->dev, irq, NULL, handle=
+r,
+> > > +					IRQF_ONESHOT, name, dev_id);
+> > > +	if (ret)
+> > > +		dev_err(&pdev->dev, "Failed to request IRQ %d: %d\n", irq, ret=
+);
+> > > +
+> > > +	return ret;
+> > > +}
+> > > +EXPORT_SYMBOL_GPL(da9150_register_irq);
+> >=20
+> > Why do they need help?  What problem does adding these layers solve=
+?
+>=20
+> Means I don't have to keep adding print error lines everywhere else i=
+f this
+> function takes care of it. Thought that would be cleaner.
 
-There is probably a nicer way to express this using ilog2, but
-this works for me.
+You only need to request each IRQ once.  It's just more abstraction
+for the sake of it.  I would prefer if you removed them.
 
-> @@ -1250,6 +1388,15 @@ static void __init aurora_of_parse(const struct device_node *np,
->  		mask |= AURORA_ACR_FORCE_WRITE_POLICY_MASK;
->  	}
->  
-> +	l2x0_cache_size_of_parse(np, aux_val, aux_mask, &assoc, SZ_256K);
-> +	if (assoc > 8) {
-> +		pr_err("l2x0 of: cache setting yield too high associativity\n");
-> +		pr_err("l2x0 of: %d calculated, max 8\n", assoc);
-> +	} else {
-> +		mask |= L2X0_AUX_CTRL_ASSOC_MASK;
-> +		val |= (assoc << L2X0_AUX_CTRL_ASSOC_SHIFT);
-> +	}
-> +
+> > > +void da9150_release_irq(struct platform_device *pdev, void *dev_=
+id,
+> > > +		       const char *name)
+> > > +{
+> > > +	int irq;
+> > > +
+> > > +	irq =3D platform_get_irq_byname(pdev, name);
+> > > +	if (irq < 0)
+> > > +		return;
+> > > +
+> > > +	devm_free_irq(&pdev->dev, irq, dev_id);
+> > > +}
+> > > +EXPORT_SYMBOL_GPL(da9150_release_irq);
+> >=20
+> > Do you ever release the IRQ and not unbind the driver?
+> >=20
+> > Are there ordering issues at play here?
+> >=20
+> > If not, there's no need to conduct a manual free.
+>=20
+> In the charger driver, in the remove function there is a need I belie=
+ve to
+> free the IRQs before other items are cleared up (e.g. power_supply cl=
+asses),
+> so this is why I have added this in here.
 
-I think this is completely wrong for aurora:
+Can you handle this separately in the Charger driver then please?
 
-According to
-http://www.marvell.com/embedded-processors/armada-xp/assets/ARMADA-XP-Functional-SpecDatasheet.pdf
+[...]
 
-Way Disabling Mechanism: The L2 controller is a 16/32-way, set associative cache,
-and it supports a Way Disabling mechanism for power reduction by changing the
-cache <Associativity> field in the L2 Auxiliary Control Register (Table 295 p. 692).
+> > > +	if (pdata)
+> > > +		da9150->irq_base =3D pdata->irq_base;
+> > > +	else
+> > > +		da9150->irq_base =3D -1;
+> >=20
+> > pdata ? pdata->irq_base : -1;
+>=20
+> This is left this way as later updates to add additional functionalit=
+y will
+> require addtional work to be done with the platform data. Seemed poin=
+tless
+> changing it here just to change it back later.
 
-and
-Bit	Field		Type/InitVal	Description
-19:17  WaySize  	RO 0x4		Way Size
-					2 = 16KB
-					3 = 32KB
-					4 = 64KB
-					5 = 128KB
-					6 = 256KB
-					7 = 512KB
+You're not changing anything, as this is the introduction of the code.
+I can't tell you how many times I've heard "I will change it later",
+or "doing it this way will support subsequent submissions", then
+received no more patches.  It's okay to do it nicely now and expand
+it back out in the new patches.
 
-16:13  Associativity   RW 0xf		L2 Cache Way  Associative
-					3 = 4: Ways
-					7 = 8: Ways
-					11 = 16: Ways
-					15 = 32: Ways
+[...]
 
-11:10  L2 Size         RO 0x3		L2 Cache Size
-					1 = 0.5MB: 8 ways of 64KB
-					2 = 1MB: 16 ways of 64KB
-					3 = 2MB: 32 ways of 64KB
+> > > +	da9150 =3D devm_kzalloc(&client->dev, sizeof(struct da9150), GF=
+P_KERNEL);
+> >=20
+> > sizeof(*da9150)
+>=20
+> Same difference, but ok.
 
-The encoding for Associativity and L2 size looks completely
-incompatible with both l210 and pl310.
+It's more succinct and almost always done this way because of it.
 
-The easiest way to deal with it is probably to just ignore the
-aurora case and assume that the register is set up correctly,
-which seems to be the case for all the chips we support at this
-point.
+[...]
 
-	Arnd
+> > > +struct da9150_pdata {
+> > > +	int irq_base;
+> > > +};
+> >=20
+> > Just put this in core.h and do away witht this header file.
+>=20
+> The reason for this is that I will add more platform data items later=
+ with
+> subsequent submissions for additional features. It felt cleaner to se=
+parate out
+> these structures than throw it in the core.h header. However if it's =
+going to
+> be a problem I'll fold this into core.h
+
+More "I will"s. :)
+
+Please do what's right for 'this submission'.  If things change later
+you can act accordingly.
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
