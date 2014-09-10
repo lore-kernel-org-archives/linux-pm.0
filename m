@@ -1,44 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCHv2 0/4] cpufreq-dt, platform_data based proposal
-Date: Wed, 10 Sep 2014 18:08:08 +0530
-Message-ID: <CAKohpo=13-2VwtRL3F2dGd2LS52QC0AsVjAQ5JsgadvkzhdwNw@mail.gmail.com>
-References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
-	<1410350908-11316-1-git-send-email-thomas.petazzoni@free-electrons.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH/RFC 4/5] ARM: shmobile: R-Mobile: Add DT support for PM domains
+Date: Wed, 10 Sep 2014 14:40:57 +0200
+Message-ID: <CAMuHMdUcaGNQWmfS4U=XhksscuWh6hk8gA8fOpaUwxSmChDbiQ@mail.gmail.com>
+References: <1410183344-14756-1-git-send-email-geert+renesas@glider.be>
+	<1410183344-14756-5-git-send-email-geert+renesas@glider.be>
+	<7h1trkkc49.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1410350908-11316-1-git-send-email-thomas.petazzoni@free-electrons.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Arnd Bergmann <arnd@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <7h1trkkc49.fsf@deeprootsystems.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10 September 2014 17:38, Thomas Petazzoni
-<thomas.petazzoni@free-electrons.com> wrote:
-> Hello,
->
-> Here is the v2 of the platform_data based proposal to make cpufreq-dt
-> understand when it has a shared clock by all CPUs vs. independent
-> clock for each CPU.
->
-> Changes since v1:
->
->  - Use a 'void *driver_data' in cpufreq_driver instead of extending
->    the existing flags field. Suggested by Viresh.
->
->  - Keep the regulator related warning in cpufreq-dt, but reword it,
->    and move it to the dev_dbg() level instead of dev_warn().
->
-> Thanks,
->
-> Thomas
->
-> Thomas Petazzoni (4):
->   cpufreq: allow driver-specific data
->   cpufreq: cpufreq-dt: extend with platform_data
->   ARM: mvebu: use the cpufreq-dt platform_data for independent clocks
->   cpufreq: cpufreq-dt: adjust message related to regulators
+Hi Kevin,
 
-After Arnd's reply:
+On Tue, Sep 9, 2014 at 6:11 PM, Kevin Hilman <khilman@kernel.org> wrote:
+>> +static int r8a7740_pd_a4s_suspend(void)
+>> +{
+>> +     /*
+>> +      * The A4S domain contains the CPU core and therefore it should
+>> +      * only be turned off if the CPU is in use.
+>> +      */
+>> +     return -EBUSY;
+>> +}
+>
+>
+> Do you have plans to use pm_genpd_attach_cpuidle() for this eventually,
+> maybe by checking if the enclosing node is a CPU?  If not, are there
+> other plans to handle idle for the power domains that contain CPUs?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Yes, the plan is to add more power saving features, and use DT topology
+analysis to get rid of the hardcoded domain logic.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
