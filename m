@@ -1,230 +1,95 @@
-From: "edubezval@gmail.com" <edubezval@gmail.com>
-Subject: Re: [PATCH v4 2/4] dt-bindings: document Rockchip thermal
-Date: Tue, 9 Sep 2014 21:14:18 -0400
-Message-ID: <CAC-25o9qcddZLy8fcwEqWp7g5fXk31xhaQCcALuH+sXDgn5n8w@mail.gmail.com>
-References: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com>
-	<5407BA10.2030402@rock-chips.com>
-	<1410229637.8085.158.camel@rzhang1-toshiba>
-	<8397565.n78cHk4EtL@diego>
-	<20140909150916.GA6095@developer>
-	<1410310946.25559.12.camel@rzhang1-toshiba>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: Re: [Patch v4 14/16] x86, irq: Introduce helper to check whether
+ an IOAPIC has been registered
+Date: Wed, 10 Sep 2014 10:46:43 +0800
+Message-ID: <540FBB93.4020509@linux.intel.com>
+References: <1409192561-19744-1-git-send-email-jiang.liu@linux.intel.com> <1409192561-19744-15-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.10.1409091433150.11037@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1410310946.25559.12.camel@rzhang1-toshiba>
-Sender: linux-doc-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Caesar Wang <caesar.wang@rock-chips.com>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, Eddie Cai <cf@rock-chips.com>, Douglas Anderson <dianders@chromium.org>, dtor <dtor@chromium.org>, Chris Zhong <zyw@rock-chips.com>, "addy.ke@rock-chips.com" <addy.ke@rock-chips.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, zhaoyifeng <zyf@rock-chips.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.10.1409091433150.11037@nanos>
+Sender: linux-pci-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Grant Likely <grant.likely@linaro.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
 
-On Tue, Sep 9, 2014 at 9:02 PM, Zhang Rui <rui.zhang@intel.com> wrote:
-> On Tue, 2014-09-09 at 11:09 -0400, Eduardo Valentin wrote:
->> Hello
+
+On 2014/9/9 20:37, Thomas Gleixner wrote:
+> On Thu, 28 Aug 2014, Jiang Liu wrote:
+> 
+>> Introduce acpi_ioapic_registered() to check whether an IOAPIC has already
+>> been registered, it will be used when enabling IOAPIC hotplug.
 >>
->> On Tue, Sep 09, 2014 at 01:35:31PM +0200, Heiko St=C3=BCbner wrote:
->> > Am Dienstag, 9. September 2014, 10:27:17 schrieb Zhang Rui:
->> > > On Thu, 2014-09-04 at 09:02 +0800, Caesar Wang wrote:
->> > > > =E5=9C=A8 2014=E5=B9=B409=E6=9C=8803=E6=97=A5 16:07, Heiko St=C3=
-=BCbner =E5=86=99=E9=81=93:
->> > > > > Am Mittwoch, 3. September 2014, 10:10:37 schrieb Caesar Wang=
-:
->> > > > >> This add the necessary binding documentation for the therma=
-l
->> > > > >> found on Rockchip SoCs
->> > > > >>
->> > > > >> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
->> > > > >> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
->> > > > >> ---
->> > > > >>
->> > > > >>   .../devicetree/bindings/thermal/rockchip-thermal.txt | 20
->> > > > >>
->> > > > >> ++++++++++++++++++++ 1 file changed, 20 insertions(+)
->> > > > >>
->> > > > >>   create mode 100644
->> > > > >>
->> > > > >> Documentation/devicetree/bindings/thermal/rockchip-thermal.=
-txt
->> > > > >>
->> > > > >> diff --git
->> > > > >> a/Documentation/devicetree/bindings/thermal/rockchip-therma=
-l.txt
->> > > > >> b/Documentation/devicetree/bindings/thermal/rockchip-therma=
-l.txt new
->> > > > >> file
->> > > > >> mode 100644
->> > > > >> index 0000000..1ed4d4c
->> > > > >> --- /dev/null
->> > > > >> +++ b/Documentation/devicetree/bindings/thermal/rockchip-th=
-ermal.txt
->> > > > >> @@ -0,0 +1,20 @@
->> > > > >> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
->> > > > >> +
->> > > > >> +Required properties:
->> > > > >> +- compatible: "rockchip,rk3288-tsadc"
->> > > > >> +- reg: physical base address of the controller and length =
-of memory
->> > > > >> mapped
->> > > > >> +       region.
->> > > > >> +- interrupts: The interrupt number to the cpu. The interru=
-pt specifier
->> > > > >> format +           depends on the interrupt controller.
->> > > > >> +- clocks: Must contain an entry for each entry in clock-na=
-mes.
->> > > > >> +- clock-names: Shall be "tsadc" for the converter-clock, a=
-nd
->> > > > >> "apb_pclk" for +            the peripheral clock.
->> > > > >
->> > > > > You're using the passive-temp, critical-temp and force-shut-=
-temp
->> > > > > properties in your driver without declaring them here.
->> > > >
->> > > > frankly,the about are need be declared. but  there are 4 types=
-[0] for
->> > > > trip in thermal framework,
->> > > > there is no force-shut for me. So I want to change it three ad=
-ditional
->> > > > properties in [PATCH V4 4/4],
->> > > >
->> > > >
->> > > > [0]
->> > > > {
->> > > >
->> > > >      THERMAL_TRIP_CRITICAL,
->> > > >      THERMAL_TRIP_HOT,
->> > > >      THERMAL_TRIP_PASSIVE,
->> > > >      THERMAL_TRIP_ACTIVE,
->> > > >
->> > > > }
->> > >
->> > > this sounds reasonable to me.
->> > >
->> > > > > But more importantly, please use the generic trip-points for=
- this. I
->> > > > > guess it shouldn't be a problem to introduce a "forced-shutd=
-own"
->> > > > > trippoint [0] for the additional trip-point you have - therm=
-al
->> > > > > maintainers, please shout if I'm wrong :-)
->> > >
->> > > what is the difference between a critical trip point and a
->> > > "forced-shutdown" trip point?
->> > > Thermal core will do a shutdown in case the critical trip point =
-is
->> > > triggered.
->> >
->> > The forced-shutdown is where the thermal controller is supposed to=
- also do a
+>> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+>> ---
+>>  arch/x86/include/asm/io_apic.h |    1 +
+>>  arch/x86/kernel/acpi/boot.c    |   11 +++++++++++
+>>  arch/x86/kernel/apic/io_apic.c |   11 +++++++++++
+>>  include/linux/acpi.h           |    1 +
+>>  4 files changed, 24 insertions(+)
 >>
->> Currently, there is no discrimination between hardware configured /
->> triggered thermal shutdown and software detected / triggered thermal=
- shutdown.
->> One way to implement it though is to reuse the critical trip type. E=
-ven
->> if you use more than one trip type it is doable, it will depend on t=
-he
->> priorities you give to software triggered and hardware triggered.
->>
->> > shutdown in hardware. As you said the thermal core will also shutd=
-own at the
->> > critical trip point, I guess we could map Caesar's value like
->> >
->> > trip-point          tsadc
->> > critical            forced-shutdown (the 120 degrees in patch 4)
->>
->> > hot                 critical (the 100 degrees)
->> > ...
->> >
->> >
->>
->> In the case we are planing to expand the trip type range, adding one
->> specific to hardware configurable shutdown makes sense to me too.
-> hmmm, why? you don't want an orderly shutdown? I still do not underst=
-and
-> why we need a hardware shutdown trip point.
-> Say, if we expect the system to be shutdown at 100C, I don't think we
-> have a chance to trigger the hardware shutdown trip point.
-> Further more, if my understanding is right, thermal core won't do
-> anything for the hardware shutdown trip point because the system will=
- be
-> shutdown automatically, right? If this is true, why bother introducin=
-g
-> this to thermal core?
->
+>> diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+>> index ce63cf34c93c..0db2b7037e4b 100644
+>> --- a/arch/x86/include/asm/io_apic.h
+>> +++ b/arch/x86/include/asm/io_apic.h
+>> @@ -191,6 +191,7 @@ extern void mp_unmap_irq(int irq);
+>>  extern int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+>>  			      struct ioapic_domain_cfg *cfg);
+>>  extern int mp_unregister_ioapic(u32 gsi_base);
+>> +extern int mp_ioapic_registered(u32 gsi_base);
+>>  extern int mp_irqdomain_map(struct irq_domain *domain, unsigned int virq,
+>>  			    irq_hw_number_t hwirq);
+>>  extern void mp_irqdomain_unmap(struct irq_domain *domain, unsigned int virq);
+>> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+>> index 560a6d1cb0f4..6aa796f77b71 100644
+>> --- a/arch/x86/kernel/acpi/boot.c
+>> +++ b/arch/x86/kernel/acpi/boot.c
+>> @@ -810,6 +810,17 @@ int acpi_unregister_ioapic(acpi_handle handle, u32 gsi_base)
+>>  }
+>>  EXPORT_SYMBOL(acpi_unregister_ioapic);
+>>  
+>> +int acpi_ioapic_registered(acpi_handle handle, u32 gsi_base)
+>> +{
+>> +	int ret;
+>> +
+>> +	down_write(&acpi_ioapic_rwsem);
+> 
+> Why down_write? You are merily checking whether the thing is
+> registered already.
+Yeah, a down_read() should be enough:)
 
-Some ICs allow configuring the temperature when the shutdown will
-happen. That is, you setup in registers the thermal shutdown
-threshold, and one of the output pin of the IC is wired to, say, the
-processor reset pin. Some other ICs have the threshold hardwired, and
-cannot be configured.
-
-Those options are a last chance to avoid processors to burn, in case
-software really gets stuck at high temperatures.
-
-The only thing that the thermal driver would need to worry is the
-configuration step, that is, writing the value to the registers. In
-the case the thermal core would have a specific trip type for such
-case, the core itself would not do anything, except allowing designing
-a thermal zone with hardware shutdown trips. And thus the thermal
-driver would do the configuration.
-
-
-Currently, the way I see to implement this is to interpret critical
-trips as the threshold to be configured at the IC registers. That is,
-reusing critical trips as orderly power down and as the hardware
-shutdown threshold.
-
-> thanks,
-> rui
->> Alhtough, as I mention, I believe with the current generic trip type=
-s,
->> this situation can be covered already.
->>  Besides, I believe
->> 'forced-shutdown' does not sound a descriptive enough though. I woul=
-d
->> suggest something more specific, say 'hardware-shutdown'.
->>
->> > >
->> > > thanks,
->> > > rui
->> > >
->> > > > It's a good option.
->> > > > I can send a patch,but I don't know whether the thermal mainta=
-iners will
->> > > > accept it.
->> > > >
->> > > > Maybe,they have a better way to suggest it.:-)
->> > > >
->> > > >
->> > > > PS:I will sent a new patch If I still have no received their s=
-uggestions
->> > > > in two days.
->> > > >
->> > > > > Heiko
->> > > > >
->> > > > >
->> > > > > [0] in a separate patch, changing
->> > > > > - thermal_trip_type enum in include/linux/thermal.h
->> > > > > - trip_types mapping in drivers/thermal/of-thermal.c
->> > > > > - Documentation/devicetree/bindings/thermal/thermal.txt
->> > > > >
->> > > > >> +
->> > > > >> +Example:
->> > > > >> +tsadc: tsadc@ff280000 {
->> > > > >> +    compatible =3D "rockchip,rk3288-tsadc";
->> > > > >> +    reg =3D <0xff280000 0x100>;
->> > > > >> +    interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
->> > > > >> +    clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
->> > > > >> +    clock-names =3D "tsadc", "apb_pclk";
->> > > > >> +};
->> >
->>
->
->
-
-
-
---=20
-Eduardo Bezerra Valentin
+>> +	ret  = mp_ioapic_registered(gsi_base);
+>> +	up_write(&acpi_ioapic_rwsem);
+>> +
+>> +	return ret;
+>> +}
+> 
+> So I assume that this is for a particular caller in the apci ioapic
+> hotplug code and that call site has its own serialization. Otherwise
+> the return value is not protected at all.
+> 
+> Please add a Docbook comment to that function, and document the
+> locking rules as thats pretty non obvious.
+How about this comments about locking rules?
+/*
+ * Locks related to IOAPIC hotplug
+ * Hotplug side:
+ *      ->lock_device_hotplug() //device_hotplug_lock
+ *              ->acpi_ioapic_rwsem
+ *                      ->ioapic_lock
+ * Interrupt mapping side:
+ *      ->acpi_ioapic_rwsem
+ *              ->ioapic_mutex
+ *                      ->ioapic_lock
+ */
+Regards!
+Gerry
+> 
+> The such is missing in some other patches as well.
+> 
+> Thanks,
+> 
+> 	tglx
+> 
