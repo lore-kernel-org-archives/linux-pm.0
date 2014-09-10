@@ -1,51 +1,45 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Patch v4 14/16] x86, irq: Introduce helper to check whether an
- IOAPIC has been registered
-Date: Wed, 10 Sep 2014 22:08:00 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1409102206300.4178@nanos>
-References: <1409192561-19744-1-git-send-email-jiang.liu@linux.intel.com> <1409192561-19744-15-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.10.1409091433150.11037@nanos> <540FBB93.4020509@linux.intel.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v2 0/2] sched/idle : find the best idle CPU with cpuidle
+ info
+Date: Wed, 10 Sep 2014 17:35:27 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1409101734470.16533@knanqh.ubzr>
+References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:35822 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751701AbaIJUIb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 16:08:31 -0400
-In-Reply-To: <540FBB93.4020509@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jiang Liu <jiang.liu@linux.intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Grant Likely <grant.likely@linaro.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 
-On Wed, 10 Sep 2014, Jiang Liu wrote:
-> On 2014/9/9 20:37, Thomas Gleixner wrote:
-> >> +	ret  = mp_ioapic_registered(gsi_base);
-> >> +	up_write(&acpi_ioapic_rwsem);
-> >> +
-> >> +	return ret;
-> >> +}
-> > 
-> > So I assume that this is for a particular caller in the apci ioapic
-> > hotplug code and that call site has its own serialization. Otherwise
-> > the return value is not protected at all.
-> > 
-> > Please add a Docbook comment to that function, and document the
-> > locking rules as thats pretty non obvious.
-> How about this comments about locking rules?
-> /*
->  * Locks related to IOAPIC hotplug
->  * Hotplug side:
->  *      ->lock_device_hotplug() //device_hotplug_lock
->  *              ->acpi_ioapic_rwsem
->  *                      ->ioapic_lock
->  * Interrupt mapping side:
->  *      ->acpi_ioapic_rwsem
->  *              ->ioapic_mutex
->  *                      ->ioapic_lock
->  */
 
-That looks asymetric. Why is the hotplug side not taking ioapic_mutex?
+Ping.
 
-Thanks,
 
-	tglx
+On Thu, 4 Sep 2014, Nicolas Pitre wrote:
+
+> This is a rework of the series initially posted by Daniel Lezcano here:
+> 
+> http://news.gmane.org/group/gmane.linux.power-management.general/thread=44161
+> 
+> Those patches were straightened up, commit logs are more comprehensive,
+> bugs were fixed, etc.
+> 
+> 
+>  drivers/cpuidle/cpuidle.c |  6 ++++++
+>  kernel/sched/fair.c       | 43 ++++++++++++++++++++++++++++++++++-------
+>  kernel/sched/idle.c       |  6 ++++++
+>  kernel/sched/sched.h      | 39 +++++++++++++++++++++++++++++++++++++
+>  4 files changed, 87 insertions(+), 7 deletions(-)
+> 
+> 
+> Nicolas
+> 
+> 
+> _______________________________________________
+> linaro-kernel mailing list
+> linaro-kernel@lists.linaro.org
+> http://lists.linaro.org/mailman/listinfo/linaro-kernel
+> 
+> 
