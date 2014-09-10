@@ -1,110 +1,78 @@
 From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: [PATCHv2 2/4] cpufreq: cpufreq-dt: extend with platform_data
-Date: Wed, 10 Sep 2014 14:08:26 +0200
-Message-ID: <1410350908-11316-3-git-send-email-thomas.petazzoni@free-electrons.com>
+Subject: [PATCHv2 1/4] cpufreq: allow driver-specific data
+Date: Wed, 10 Sep 2014 14:08:25 +0200
+Message-ID: <1410350908-11316-2-git-send-email-thomas.petazzoni@free-electrons.com>
 References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
  <1410350908-11316-1-git-send-email-thomas.petazzoni@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:36837 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751094AbaIJMIe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 08:08:34 -0400
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1410350908-11316-1-git-send-email-thomas.petazzoni@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+List-Id: linux-pm@vger.kernel.org
 
-This commit extends the cpufreq-dt driver to take a platform_data
-structure. This structure is for now used to tell the cpufreq-dt
-driver the layout of the clocks on the platform, i.e whether all CPUs
-share the same clock or whether each CPU has a separate clock.
+This commit extends the cpufreq_driver structure with an additional
+'void *driver_data' field that can be filled by the ->probe() function
+of a cpufreq driver to pass additional custom information to the
+driver itself.
+
+A new function called cpufreq_get_driver_data() is added to allow a
+cpufreq driver to retrieve those driver data, since they are typically
+needed from a cpufreq_policy->init() callback, which does not have
+access to the cpufreq_driver structure. This function call is similar
+to the existing cpufreq_get_current_driver() function call.
 
 Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 ---
- drivers/cpufreq/cpufreq-dt.c | 17 +++++++++++++++--
- include/linux/cpufreq-dt.h   | 22 ++++++++++++++++++++++
- 2 files changed, 37 insertions(+), 2 deletions(-)
- create mode 100644 include/linux/cpufreq-dt.h
+ drivers/cpufreq/cpufreq.c | 15 +++++++++++++++
+ include/linux/cpufreq.h   |  2 ++
+ 2 files changed, 17 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index e002650..987bbfa 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -18,6 +18,7 @@
- #include <linux/cpu.h>
- #include <linux/cpu_cooling.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpufreq-dt.h>
- #include <linux/cpumask.h>
- #include <linux/err.h>
- #include <linux/module.h>
-@@ -178,6 +179,7 @@ try_again:
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index d9fdedd..3b01d59 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1728,6 +1728,21 @@ const char *cpufreq_get_current_driver(void)
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_get_current_driver);
  
- static int cpufreq_init(struct cpufreq_policy *policy)
- {
-+	struct cpufreq_dt_platform_data *pd;
- 	struct cpufreq_frequency_table *freq_table;
- 	struct thermal_cooling_device *cdev;
- 	struct device_node *np;
-@@ -266,9 +268,18 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	policy->driver_data = priv;
- 
- 	policy->clk = cpu_clk;
--	ret = cpufreq_generic_init(policy, freq_table, transition_latency);
--	if (ret)
-+	ret = cpufreq_table_validate_and_show(policy, freq_table);
-+	if (ret) {
-+		dev_err(cpu_dev, "%s: invalid frequency table: %d\n", __func__,
-+			ret);
- 		goto out_cooling_unregister;
-+	}
-+
-+	policy->cpuinfo.transition_latency = transition_latency;
-+
-+	pd = cpufreq_get_driver_data();
-+	if (pd && !pd->independent_clocks)
-+		cpumask_setall(policy->cpus);
- 
- 	return 0;
- 
-@@ -334,6 +345,8 @@ static int dt_cpufreq_probe(struct platform_device *pdev)
- 	if (!IS_ERR(cpu_reg))
- 		regulator_put(cpu_reg);
- 
-+	dt_cpufreq_driver.driver_data = dev_get_platdata(&pdev->dev);
-+
- 	ret = cpufreq_register_driver(&dt_cpufreq_driver);
- 	if (ret)
- 		dev_err(cpu_dev, "failed register driver: %d\n", ret);
-diff --git a/include/linux/cpufreq-dt.h b/include/linux/cpufreq-dt.h
-new file mode 100644
-index 0000000..0414009
---- /dev/null
-+++ b/include/linux/cpufreq-dt.h
-@@ -0,0 +1,22 @@
-+/*
-+ * Copyright (C) 2014 Marvell
-+ * Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
++/**
++ *	cpufreq_get_driver_data - return current driver data
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ *	Return the private data of the currently loaded cpufreq
++ *	driver, or NULL if no cpufreq driver is loaded.
 + */
++void *cpufreq_get_driver_data(void)
++{
++	if (cpufreq_driver)
++		return cpufreq_driver->driver_data;
 +
-+#ifndef __CPUFREQ_DT_H__
-+#define __CPUFREQ_DT_H__
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(cpufreq_get_driver_data);
 +
-+struct cpufreq_dt_platform_data {
-+	/*
-+	 * True when each CPU has its own clock to control its
-+	 * frequency, false when all CPUs are controlled by a single
-+	 * clock.
-+	 */
-+	bool independent_clocks;
-+};
-+
-+#endif /* __CPUFREQ_DT_H__ */
+ /*********************************************************************
+  *                     NOTIFIER LISTS INTERFACE                      *
+  *********************************************************************/
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 138336b..503b085 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -219,6 +219,7 @@ __ATTR(_name, 0644, show_##_name, store_##_name)
+ struct cpufreq_driver {
+ 	char			name[CPUFREQ_NAME_LEN];
+ 	u8			flags;
++	void			*driver_data;
+ 
+ 	/* needed by all drivers */
+ 	int	(*init)		(struct cpufreq_policy *policy);
+@@ -312,6 +313,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+ 
+ const char *cpufreq_get_current_driver(void);
++void *cpufreq_get_driver_data(void);
+ 
+ static inline void cpufreq_verify_within_limits(struct cpufreq_policy *policy,
+ 		unsigned int min, unsigned int max)
 -- 
 2.0.0
-
