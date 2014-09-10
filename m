@@ -1,59 +1,41 @@
-From: Yuantian Tang <Yuantian.Tang@freescale.com>
-Subject: RE: [PATCH 1/2] cpufreq: ppc-corenet: remove duplicate update of
- cpu_data
-Date: Wed, 10 Sep 2014 05:30:02 +0000
-Message-ID: <0f6e492c7d1f4ccfbb98def3aba8ce48@BY2PR03MB570.namprd03.prod.outlook.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: ppc-corenet: remove duplicate update of cpu_data
+Date: Wed, 10 Sep 2014 11:09:25 +0530
+Message-ID: <CAKohpo=nLFxv3gpxZLseVYSqGRdyktRzj8GGv5oC20Lq6=s0wA@mail.gmail.com>
 References: <09092df3d8b03df99ee475357c5f5c9cc439c61c.1409629117.git.viresh.kumar@linaro.org>
- <CAKohpo=bz7H1CUUNGq_u33oKLnzzgPcqxyMOvC-S_dT8UE0S9A@mail.gmail.com>
+	<CAKohpo=bz7H1CUUNGq_u33oKLnzzgPcqxyMOvC-S_dT8UE0S9A@mail.gmail.com>
+	<0f6e492c7d1f4ccfbb98def3aba8ce48@BY2PR03MB570.namprd03.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1on0113.outbound.protection.outlook.com ([157.56.110.113]:22944
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750765AbaIJFaG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 10 Sep 2014 01:30:06 -0400
-In-Reply-To: <CAKohpo=bz7H1CUUNGq_u33oKLnzzgPcqxyMOvC-S_dT8UE0S9A@mail.gmail.com>
-Content-Language: en-US
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:62523 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750791AbaIJFj0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 01:39:26 -0400
+Received: by mail-ob0-f172.google.com with SMTP id wp18so1774970obc.17
+        for <linux-pm@vger.kernel.org>; Tue, 09 Sep 2014 22:39:25 -0700 (PDT)
+In-Reply-To: <0f6e492c7d1f4ccfbb98def3aba8ce48@BY2PR03MB570.namprd03.prod.outlook.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Hongbo Zhang <hongbo.zhang@freescale.com>, "LeoLi@freescale.com" <LeoLi@freescale.com>
+To: Yuantian Tang <Yuantian.Tang@freescale.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Hongbo Zhang <hongbo.zhang@freescale.com>, "LeoLi@freescale.com" <LeoLi@freescale.com>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFZpcmVzaCBLdW1hciBbbWFp
-bHRvOnZpcmVzaC5rdW1hckBsaW5hcm8ub3JnXQ0KPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJl
-ciAxMCwgMjAxNCAxMjozMyBQTQ0KPiBUbzogUmFmYWVsIFd5c29ja2k7IFRhbmcgWXVhbnRpYW4t
-QjI5OTgzDQo+IENjOiBMaXN0cyBsaW5hcm8ta2VybmVsOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5v
-cmc7IFpoYW5nIEhvbmdiby1CNDU5Mzk7IExpDQo+IFlhbmctTGVvLVI1ODQ3MjsgVmlyZXNoIEt1
-bWFyDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8yXSBjcHVmcmVxOiBwcGMtY29yZW5ldDogcmVt
-b3ZlIGR1cGxpY2F0ZSB1cGRhdGUgb2YNCj4gY3B1X2RhdGENCj4gDQo+IE9uIDIgU2VwdGVtYmVy
-IDIwMTQgMDk6MTEsIFZpcmVzaCBLdW1hciA8dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+IHdyb3Rl
-Og0KPiA+ICdjcHVfZGF0YScgaXMgdXBkYXRlZCBmb3IgcG9saWN5LT5jcHUgZmlyc3QgYW5kIHRo
-ZW4gZm9yIGFsbCBDUFVzIGluDQo+ID4gcG9saWN5LT5jcHVzLiBwb2xpY3ktPmNwdXMgaXMgZ3Vh
-cmFudGVlZCB0byBjb250YWluIHBvbGljeS0+Y3B1IGFzDQo+ID4gcG9saWN5LT53ZWxsIGFuZCBz
-bw0KPiA+IHRoZSBmaXJzdCB3cml0ZSB0byAnY3B1X2RhdGEnIGZvciBwb2xpY3ktPmNwdSBpcyBy
-ZWR1bmRhbnQuIFJlbW92ZSBpdC4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFZpcmVzaCBLdW1h
-ciA8dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+DQo+ID4gLS0tDQo+ID4gSGkgWXVhbnRpYW4sDQo+
-ID4NCj4gPiBJIHdhcyBsb29raW5nIGludG8gdGhpcyBkcml2ZXIgZHVlIHRvIGlzc3VlcyByZXBv
-cnRlZCBieSBIb25ndGFvDQo+ID4gKGNjJ2QpIGFuZCBmb3VuZCB0aGF0IHdlIGNhbiBsaXZlIHdp
-dGhvdXQgc29tZSBjb2RlLiBUaGVzZSBhcmVuJ3QNCj4gPiBmaXhpbmcgYW55IGJ1Z3MgYW5kIGFy
-ZSBqdXN0IGNsZWFudXBzLg0KPiA+DQo+ID4gSSBkaWRuJ3QgaGFkIGEgY29tcGlsZXIgZm9yIHRo
-aXMgYW5kIHNvIHRoaXMgaXNuJ3QgZXZlbiBjb21waWxlZC4gSXQNCj4gPiB3b3VsZCBiZSBncmVh
-dCBpZiB5b3UgY2FuIHBsZWFzZSByZXZpZXcvdGVzdCB0aGVzZSBwYXRjaGVzLg0KPiA+DQo+ID4g
-IGRyaXZlcnMvY3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMgfCAxIC0NCj4gPiAgMSBmaWxl
-IGNoYW5nZWQsIDEgZGVsZXRpb24oLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Nw
-dWZyZXEvcHBjLWNvcmVuZXQtY3B1ZnJlcS5jDQo+ID4gYi9kcml2ZXJzL2NwdWZyZXEvcHBjLWNv
-cmVuZXQtY3B1ZnJlcS5jDQo+ID4gaW5kZXggMzYwNzA3MC4uYmVlNWRmNyAxMDA2NDQNCj4gPiAt
-LS0gYS9kcml2ZXJzL2NwdWZyZXEvcHBjLWNvcmVuZXQtY3B1ZnJlcS5jDQo+ID4gKysrIGIvZHJp
-dmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYw0KPiA+IEBAIC0xOTksNyArMTk5LDYg
-QEAgc3RhdGljIGludCBjb3JlbmV0X2NwdWZyZXFfY3B1X2luaXQoc3RydWN0DQo+IGNwdWZyZXFf
-cG9saWN5ICpwb2xpY3kpDQo+ID4gICAgICAgICB9DQo+ID4NCj4gPiAgICAgICAgIGRhdGEtPnRh
-YmxlID0gdGFibGU7DQo+ID4gLSAgICAgICBwZXJfY3B1KGNwdV9kYXRhLCBjcHUpID0gZGF0YTsN
-Cj4gPg0KPiA+ICAgICAgICAgLyogdXBkYXRlIC0+Y3B1cyBpZiB3ZSBoYXZlIGNsdXN0ZXIsIG5v
-IGhhcm0gaWYgbm90ICovDQo+ID4gICAgICAgICBjcHVtYXNrX2NvcHkocG9saWN5LT5jcHVzLCBw
-ZXJfY3B1KGNwdV9tYXNrLCBjcHUpKTsNCj4gDQo+IEhpIFl1YW50aWFuLA0KPiANCj4gQ2FuIHdl
-IGdldCB5b3VyIEFjayBmb3IgdGhpcyBwYXRjaCBhdGxlYXN0IHNvIHRoYXQgUmFmYWVsIGNhbiBh
-cHBseSBpdCA/DQpZZWFoLCB5b3VyIHBhdGNoIHNob3VsZCBiZSBvaywgYnV0IGlzIGl0IHRoZSBi
-ZXN0IHNvbHV0aW9uPw0KSSB3YXMgdGhpbmtpbmcgYWJvdXQgYSBmaW5hbCBzb2x1dGlvbiBqdXN0
-IGxpa2UgQVJNIGRpZC4NCg0KVGhhbmtzLA0KWXVhbnRpYW4NCg==
+On 10 September 2014 11:00, Yuantian Tang <Yuantian.Tang@freescale.com> wrote:
+>> On 2 September 2014 09:11, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > 'cpu_data' is updated for policy->cpu first and then for all CPUs in
+>> > policy->cpus. policy->cpus is guaranteed to contain policy->cpu as
+>> > policy->well and so
+>> > the first write to 'cpu_data' for policy->cpu is redundant. Remove it.
+
+> Yeah, your patch should be ok, but is it the best solution?
+> I was thinking about a final solution just like ARM did.
+
+I was talking about an Ack for just 1/2 where we are doing some cleanup,
+which shouldn't break anything.
+
+Regarding the second patch, yes you should come up with something that
+can give a list of online+offline CPUs like ARM and even some ppc drivers.
+We can handle that separately and this patch can be commited by Rafael..
+
+Either you can give a replacement patch for 2/2 or you can let me know what
+to do and will help there.
