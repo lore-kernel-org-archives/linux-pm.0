@@ -1,92 +1,55 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: dt: Support platforms with separate clock lines for each CPU
-Date: Wed, 10 Sep 2014 09:59:07 +0530
-Message-ID: <fcb88cd21f31a467d2d49911c2505082837f72ea.1410323179.git.viresh.kumar@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, shawn.guo@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, t.figa@samsung.com, santosh.shilimkar@ti.com, thomas.petazzoni@free-electrons.com, pramod.gurav@smartplayin.com, rob.herring@linaro.org, mike.turquette@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: ppc-corenet: remove duplicate update of cpu_data
+Date: Wed, 10 Sep 2014 10:02:33 +0530
+Message-ID: <CAKohpo=bz7H1CUUNGq_u33oKLnzzgPcqxyMOvC-S_dT8UE0S9A@mail.gmail.com>
+References: <09092df3d8b03df99ee475357c5f5c9cc439c61c.1409629117.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f48.google.com ([209.85.218.48]:62886 "EHLO
+	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750734AbaIJEce (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 00:32:34 -0400
+Received: by mail-oi0-f48.google.com with SMTP id a141so11658448oig.35
+        for <linux-pm@vger.kernel.org>; Tue, 09 Sep 2014 21:32:33 -0700 (PDT)
+In-Reply-To: <09092df3d8b03df99ee475357c5f5c9cc439c61c.1409629117.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Yuantian Tang <yuantian.tang@freescale.com>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Hongbo Zhang <hongbo.zhang@freescale.com>, Li Yang <leoli@freescale.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-There has been lots of discussion over mailing lists about how to get CPU's
-clock sharing information for platforms as CPUFreq core depends on that. It
-doesn't look that there will be any immediate solution to that as there are
-multiple views over how to get that from DT.
+On 2 September 2014 09:11, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> 'cpu_data' is updated for policy->cpu first and then for all CPUs in
+> policy->cpus. policy->cpus is guaranteed to contain policy->cpu as well and so
+> the first write to 'cpu_data' for policy->cpu is redundant. Remove it.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Hi Yuantian,
+>
+> I was looking into this driver due to issues reported by Hongtao (cc'd) and
+> found that we can live without some code. These aren't fixing any bugs and are
+> just cleanups.
+>
+> I didn't had a compiler for this and so this isn't even compiled. It would be
+> great if you can please review/test these patches.
+>
+>  drivers/cpufreq/ppc-corenet-cpufreq.c | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+> index 3607070..bee5df7 100644
+> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
+> +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+> @@ -199,7 +199,6 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>         }
+>
+>         data->table = table;
+> -       per_cpu(cpu_data, cpu) = data;
+>
+>         /* update ->cpus if we have cluster, no harm if not */
+>         cpumask_copy(policy->cpus, per_cpu(cpu_mask, cpu));
 
-But there are platforms (already upstreamed) which depend on this requirement
-and are waiting for a solution to sail through.
+Hi Yuantian,
 
-The common thing about them (Krait and Mvebu) is that all CPUs have independent
-clock lines and that makes things easier for us.
-
-So, this patch creates another Kconfig option to indicate if all CPUs share same
-clock line or all have independent. The complex cases of multiple clusters
-having separate clock lines, but having same for all CPUs within a cluster isn't
-addressed yet.
-
-This is a *short-term* solution for getting these platforms up an running and a
-DT based solution should be upstreamed soon.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Yesterday again I was pinged by Thomas about the status of this work and the
-thread isn't going anywhere. He is blocked with just this to get his platform
-running on mainline.
-
-Will it be possible to get this through as a temporary solution?
-
- drivers/cpufreq/Kconfig      |  9 +++++++++
- drivers/cpufreq/cpufreq-dt.c | 17 +++++++++++++++--
- 2 files changed, 24 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 3489f8f..a755227 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -196,6 +196,15 @@ config CPUFREQ_DT
- 
- 	  If in doubt, say N.
- 
-+config CPUFREQ_DT_INDEPENDENT_CLOCKS
-+	bool "CPUs change clocks independently"
-+	depends on CPUFREQ_DT
-+	help
-+	  Selecting this will make cpufreq-dt driver believe that all CPUs have
-+	  independent clock lines and so all will have separate 'struct
-+	  cpufreq_policy' instances for them. This must be replaced by proper DT
-+	  bindings later on.
-+
- menu "x86 CPU frequency scaling drivers"
- depends on X86
- source "drivers/cpufreq/Kconfig.x86"
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index e002650..dbb6f22 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -266,9 +266,22 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	policy->driver_data = priv;
- 
- 	policy->clk = cpu_clk;
--	ret = cpufreq_generic_init(policy, freq_table, transition_latency);
--	if (ret)
-+	ret = cpufreq_table_validate_and_show(policy, freq_table);
-+	if (ret) {
-+		dev_err(cpu_dev, "%s: invalid frequency table: %d\n", __func__,
-+			ret);
- 		goto out_cooling_unregister;
-+	}
-+
-+	policy->cpuinfo.transition_latency = transition_latency;
-+
-+#ifndef CONFIG_CPUFREQ_DT_INDEPENDENT_CLOCKS
-+	/*
-+	 * The driver only supports the SMP configuartion where all processors
-+	 * share the clock and voltage and clock.
-+	 */
-+	cpumask_setall(policy->cpus);
-+#endif
- 
- 	return 0;
- 
--- 
-2.0.3.693.g996b0fd
+Can we get your Ack for this patch atleast so that Rafael can apply it ?
