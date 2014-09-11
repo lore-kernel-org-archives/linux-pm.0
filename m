@@ -1,57 +1,55 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 00/11] ARM: shmobile: r8a7740/armadillo legacy prototype
- pm domain support
-Date: Thu, 11 Sep 2014 09:22:42 +0900
-Message-ID: <20140911002242.GE29858@verge.net.au>
-References: <1409320217-13278-1-git-send-email-geert+renesas@glider.be>
- <20140909022649.GC31320@verge.net.au>
- <CAMuHMdWZ_MZQo5QyZmZCx-EHvxOvO==gnoefDqsipHqfSLPXww@mail.gmail.com>
+From: Sameer Nanda <snanda@chromium.org>
+Subject: Re: [PATCH] intel_pstate: track and export frequency residency stats
+ via sysfs.
+Date: Wed, 10 Sep 2014 18:04:41 -0700
+Message-ID: <CANMivWa_kowDefkvLHpY=JoB9JejiJWBZL7fNqeuwQfcMu+hhQ@mail.gmail.com>
+References: <1410221424-20590-1-git-send-email-anupc@chromium.org>
+ <1610826.tK4V65ABJD@vostro.rjw.lan> <20140910233905.GA2439@google.com> <7546673.Ir6ttItgPU@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:58880 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751100AbaIKAWq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 20:22:46 -0400
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdWZ_MZQo5QyZmZCx-EHvxOvO==gnoefDqsipHqfSLPXww@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <7546673.Ir6ttItgPU@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Anup Chenthamarakshan <anupc@chromium.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tue, Sep 09, 2014 at 11:48:23AM +0200, Geert Uytterhoeven wrote:
-> Hi Simon, Magnus,
-> 
-> On Tue, Sep 9, 2014 at 4:26 AM, Simon Horman <horms@verge.net.au> wrote:
-> > I would like Magnus's opinion but mine is that the non-WIP patches
-> > could be queued up. At least patch 1 and 2. Possibly others if
-> > they don't depend (other than diff noise) on WIP patches.
-> 
-> The legacy platforms are meant to be extinct in the near future, but
-> Armadillo-legacy already has some PM domain support, so adding a
-> little bit more can't hurt much, IMHO.
-> 
-> Besides diff noise, there should not be any dependencies on WIP patches.
-> 
-> > With the WIP patches, I am not entirely opposed to merging them
-> > too, so long as they move things in a good direction. And in particular
-> > don't break anything.
-> 
-> "[PATCH 03/11] [WIP] ARM: shmobile: armadillo800eva legacy: Add
-> missing A3SP pm domain devices" should be OK, as this turned out to be
-> intended behavior.
-> 
-> "[PATCH 10/11] [WIP] ARM: shmobile: r8a7740: Add A4SU pm domain
->  support" probably introduces a regression for USB, as the domain is now
-> powered down after boot-up. I haven't tried USB on Armadillo yet, though.
-> So don't apply this one.
-> 
-> "[PATCH 11/11] [WIP] ARM: shmobile: r8a7740: Add A3SM pm domain
->  support" should be safe.
-> 
-> I would not apply the other WIP patches that add C99-commented-out code.
-> These issues must be fixed for DT as well.
+On Wed, Sep 10, 2014 at 5:04 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, September 10, 2014 04:39:05 PM Anup Chenthamarakshan wrote:
+>> On Thu, Sep 11, 2014 at 12:49:48AM +0200, Rafael J. Wysocki wrote:
+>> > On Wednesday, September 10, 2014 03:15:08 PM Anup Chenthamarakshan wrote:
+>> > >
+>> > > Tools like powertop and turbostat are not present by default on all systems,
+>> > > so it is not always possible to use them :(
+>> >
+>> > Which systems are you referring to in particular?
+>>
+>> We're testing on Chrome OS devices (Chromebooks).
+>
+> How big of a deal is it to install the tools mentioned above on such a system?
+>
+> At least turbostat is shipped with the kernel source.
 
-Thanks Geert, that all sounds reasonable to me.
-I will confer with Magnus.
+Given the web browser based front end of Chrome OS, installing these
+tools will only get us so far -- if the system is in developer mode,
+the tools are accessible but when the system is in normal (verified
+boot mode) these tools cannot be launched directly.
+
+We are in the process of switching Chrome OS x86 kernels from ondemand
+governor to intel_pstate.  When debugging power consumption issues,
+losing the ability to easily get CPU frequency related information as
+a side-effect of this switch is less than ideal.
+
+We are happy to spin this patch to expose aperf/mperf based CPU
+frequency information if you think that is the better route to take
+longer term.
+
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+
+
+
+-- 
+Sameer
