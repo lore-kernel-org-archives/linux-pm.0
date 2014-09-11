@@ -1,67 +1,61 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH] intel_pstate: track and export frequency residency stats
- via sysfs.
-Date: Thu, 11 Sep 2014 08:37:26 -0700
-Message-ID: <5411C1B6.5090104@gmail.com>
-References: <1410221424-20590-1-git-send-email-anupc@chromium.org> <1610826.tK4V65ABJD@vostro.rjw.lan> <20140910233905.GA2439@google.com> <7546673.Ir6ttItgPU@vostro.rjw.lan> <CANMivWa_kowDefkvLHpY=JoB9JejiJWBZL7fNqeuwQfcMu+hhQ@mail.gmail.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v4 2/4] dt-bindings: document Rockchip thermal
+Date: Thu, 11 Sep 2014 11:53:27 -0400
+Message-ID: <20140911155324.GA27076@developer>
+References: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com>
+ <1410403012.25559.69.camel@rzhang1-toshiba>
+ <20140911121842.GB26715@developer>
+ <40514790.Xc34lyFLGa@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:54253 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbaIKPh3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Sep 2014 11:37:29 -0400
-In-Reply-To: <CANMivWa_kowDefkvLHpY=JoB9JejiJWBZL7fNqeuwQfcMu+hhQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <40514790.Xc34lyFLGa@wuerfel>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Zhang Rui <rui.zhang@intel.com>, Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>, Caesar Wang <caesar.wang@rock-chips.com>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, Eddie Cai <cf@rock-chips.com>, Douglas Anderson <dianders@chromium.org>, dtor <dtor@chromium.org>, Chris Zhong <zyw@rock-chips.com>, "addy.ke@rock-chips.com" <addy.ke@rock-chips.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, zhaoyifeng <zyf@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sameer Nanda <snanda@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: dirk.brandewie@gmail.com, Anup Chenthamarakshan <anupc@chromium.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/10/2014 06:04 PM, Sameer Nanda wrote:
-> On Wed, Sep 10, 2014 at 5:04 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Wednesday, September 10, 2014 04:39:05 PM Anup Chenthamarakshan wrote:
->>> On Thu, Sep 11, 2014 at 12:49:48AM +0200, Rafael J. Wysocki wrote:
->>>> On Wednesday, September 10, 2014 03:15:08 PM Anup Chenthamarakshan wrote:
->>>>>
->>>>> Tools like powertop and turbostat are not present by default on all systems,
->>>>> so it is not always possible to use them :(
->>>>
->>>> Which systems are you referring to in particular?
->>>
->>> We're testing on Chrome OS devices (Chromebooks).
->>
->> How big of a deal is it to install the tools mentioned above on such a system?
->>
->> At least turbostat is shipped with the kernel source.
->
-> Given the web browser based front end of Chrome OS, installing these
-> tools will only get us so far -- if the system is in developer mode,
-> the tools are accessible but when the system is in normal (verified
-> boot mode) these tools cannot be launched directly.
->
-> We are in the process of switching Chrome OS x86 kernels from ondemand
-> governor to intel_pstate.  When debugging power consumption issues,
-> losing the ability to easily get CPU frequency related information as
-> a side-effect of this switch is less than ideal.
->
-> We are happy to spin this patch to expose aperf/mperf based CPU
-> frequency information if you think that is the better route to take
-> longer term.
+Arnd,
 
-You can get the frequency as measured by intel_pstate from /proc/cpuinfo
-or /sys/devices/system/cpu/cpu[n]/cpufreq/cpuinfo_cur_freq but his is only
-for the most recent sample on cpu[n]
+On Thu, Sep 11, 2014 at 02:32:08PM +0200, Arnd Bergmann wrote:
+> On Thursday 11 September 2014 08:18:43 Eduardo Valentin wrote:
+> > > As what we want is to make thermal driver have a chance to configure the
+> > > hardware shutdown registers, I'm thinking if we can do this without
+> > > representing the hardware shutdown value as a trip point.
+> > > Say,
+> > > 1. parse DT, and get the hardware shutdown temperature value, and store
+> > > it somewhere, e.g. struct __thermal_zone.
+> > > 2. introduce a new parameter, int (*set_hardware_trip)(void *, long *),
+> > > in thermal_zone_of_sensor_register().
+> > > 3. invoke set_hard_trip(tz, hardware_shutdown_temperature_value) in
+> > > thermal_zone_of_sensor_register().
+> > 
+> > The only issue I have with the above proposal is that not all platforms
+> > use DT. Some still boot with boardfiles, for instance. Thus, the
+> > parameter to configure hardware thermal shutdown needs to be common on
+> > thermal core, not specific to of-thermal. Do you agree?
+> 
+> Do you know of a machine that can't yet be converted to DT and that
+> needs this driver? In case of rockchips that is certainly not the
+> case, and we don't care about anybody trying to use board files out
+> of tree, they can just hack the thermal support as well.
 
-reading MSR 0x199 and some reasonable rate will let you graph what request
-is being made on each core.
+I see. Again, the only concern I have is to produce thermal framework APIs
+that would be only in the of-thermal. My point is not specific to this
+patch, or this platform, but with a detail in the above proposal. 
 
->
->>
->> --
->> I speak only for myself.
->> Rafael J. Wysocki, Intel Open Source Technology Center.
->
->
->
+While I agree to have a trip specific to configurable hardware triggered
+thermal shutdown, I just don't see why it needs to be a feature
+implemented only via of-thermal. It has to be properly defined in
+thermal core.
 
+The proposal of of-thermal is not to become a separate/competing thermal
+framework.
+
+> 
+> 	Arnd
+
+Cheers,
+
+Eduardo
