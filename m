@@ -1,40 +1,116 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: error handling in omap_des_hw_init()
-Date: Thu, 11 Sep 2014 10:08:12 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1409111004180.1357-100000@iolanthe.rowland.org>
-References: <1410434766.4966.7.camel@linux-fkkt.site>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:41361 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753831AbaIKOIN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Sep 2014 10:08:13 -0400
-In-Reply-To: <1410434766.4966.7.camel@linux-fkkt.site>
-Sender: linux-pm-owner@vger.kernel.org
+From: Kiran Padwal <kiran.padwal@smartplayin.com>
+Subject: [PATCH] power: Make of_device_id array const
+Date: Thu, 11 Sep 2014 19:41:43 +0530
+Message-ID: <1410444703-27451-1-git-send-email-kiran.padwal@smartplayin.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: sre@kernel.org, dbaryshkov@gmail.com, wmw2@infradead.org, santosh.shilimkar@ti.com, maxime.ripard@free-electrons.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kiran Padwal <kiran.padwal@smartplayin.com>
 List-Id: linux-pm@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: joelf@ti.com, linux-pm@vger.kernel.org
 
-On Thu, 11 Sep 2014, Oliver Neukum wrote:
+Make of_device_id array const, because all OF functions handle it as const.
 
-> Hi,
-> 
-> I am checking the error handling of drivers in connection
-> with pm_runtime_get() and related functions. It looks
-> to me like this driver has a harmful pm_runtime_put_noidle()
-> in its error handling path. Usually as a pm operation fails
-> it doesn't need to be done undone. Are there special circumstances
-> here?
+Signed-off-by: Kiran Padwal <kiran.padwal@smartplayin.com>
+---
+ drivers/power/charger-manager.c         |    2 +-
+ drivers/power/reset/hisi-reboot.c       |    2 +-
+ drivers/power/reset/keystone-reset.c    |    2 +-
+ drivers/power/reset/sun6i-reboot.c      |    2 +-
+ drivers/power/reset/vexpress-poweroff.c |    2 +-
+ drivers/power/reset/xgene-reboot.c      |    2 +-
+ drivers/power/tps65090-charger.c        |    2 +-
+ 7 files changed, 7 insertions(+), 7 deletions(-)
 
-pm_runtime_get_sync() increments the usage counter and then calls
-pm_runtime_resume(), returning its result.  So if the
-pm_runtime_resume() call fails, you might very well want to decrement
-the usage counter again.
-
-Of course, if pm_runtime_resume() fails then there's probably something 
-pretty serious going on (like the device has been hot-unplugged), so 
-error handling might not matter much.
-
-Alan Stern
-
+diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
+index 9e4dab4..eea4dad 100644
+--- a/drivers/power/charger-manager.c
++++ b/drivers/power/charger-manager.c
+@@ -1529,7 +1529,7 @@ static int cm_init_thermal_data(struct charger_manager *cm)
+ 	return ret;
+ }
+ 
+-static struct of_device_id charger_manager_match[] = {
++static const struct of_device_id charger_manager_match[] = {
+ 	{
+ 		.compatible = "charger-manager",
+ 	},
+diff --git a/drivers/power/reset/hisi-reboot.c b/drivers/power/reset/hisi-reboot.c
+index 0c91d02..df2ad92 100644
+--- a/drivers/power/reset/hisi-reboot.c
++++ b/drivers/power/reset/hisi-reboot.c
+@@ -52,7 +52,7 @@ static int hisi_reboot_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static struct of_device_id hisi_reboot_of_match[] = {
++static const struct of_device_id hisi_reboot_of_match[] = {
+ 	{ .compatible = "hisilicon,sysctrl" },
+ 	{}
+ };
+diff --git a/drivers/power/reset/keystone-reset.c b/drivers/power/reset/keystone-reset.c
+index 408a18f..a8c22c3 100644
+--- a/drivers/power/reset/keystone-reset.c
++++ b/drivers/power/reset/keystone-reset.c
+@@ -62,7 +62,7 @@ static void rsctrl_restart(enum reboot_mode mode, const char *cmd)
+ 			   RSCTRL_RESET_MASK, 0);
+ }
+ 
+-static struct of_device_id rsctrl_of_match[] = {
++static const struct of_device_id rsctrl_of_match[] = {
+ 	{.compatible = "ti,keystone-reset", },
+ 	{},
+ };
+diff --git a/drivers/power/reset/sun6i-reboot.c b/drivers/power/reset/sun6i-reboot.c
+index af2cd7f..b3b010f 100644
+--- a/drivers/power/reset/sun6i-reboot.c
++++ b/drivers/power/reset/sun6i-reboot.c
+@@ -70,7 +70,7 @@ static int sun6i_reboot_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static struct of_device_id sun6i_reboot_of_match[] = {
++static const struct of_device_id sun6i_reboot_of_match[] = {
+ 	{ .compatible = "allwinner,sun6i-a31-wdt" },
+ 	{}
+ };
+diff --git a/drivers/power/reset/vexpress-poweroff.c b/drivers/power/reset/vexpress-poweroff.c
+index 4dc102e2..c199d34 100644
+--- a/drivers/power/reset/vexpress-poweroff.c
++++ b/drivers/power/reset/vexpress-poweroff.c
+@@ -72,7 +72,7 @@ DEVICE_ATTR(active, S_IRUGO | S_IWUSR, vexpress_reset_active_show,
+ 
+ enum vexpress_reset_func { FUNC_RESET, FUNC_SHUTDOWN, FUNC_REBOOT };
+ 
+-static struct of_device_id vexpress_reset_of_match[] = {
++static const struct of_device_id vexpress_reset_of_match[] = {
+ 	{
+ 		.compatible = "arm,vexpress-reset",
+ 		.data = (void *)FUNC_RESET,
+diff --git a/drivers/power/reset/xgene-reboot.c b/drivers/power/reset/xgene-reboot.c
+index ecd55f8..b5542bf 100644
+--- a/drivers/power/reset/xgene-reboot.c
++++ b/drivers/power/reset/xgene-reboot.c
+@@ -83,7 +83,7 @@ static int xgene_reboot_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static struct of_device_id xgene_reboot_of_match[] = {
++static const struct of_device_id xgene_reboot_of_match[] = {
+ 	{ .compatible = "apm,xgene-reboot" },
+ 	{}
+ };
+diff --git a/drivers/power/tps65090-charger.c b/drivers/power/tps65090-charger.c
+index 3e8ba97..48e402f 100644
+--- a/drivers/power/tps65090-charger.c
++++ b/drivers/power/tps65090-charger.c
+@@ -344,7 +344,7 @@ static int tps65090_charger_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static struct of_device_id of_tps65090_charger_match[] = {
++static const struct of_device_id of_tps65090_charger_match[] = {
+ 	{ .compatible = "ti,tps65090-charger", },
+ 	{ /* end */ }
+ };
+-- 
+1.7.9.5
