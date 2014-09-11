@@ -1,42 +1,84 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: powernv: Set the cpus to nominal frequency
- during reboot/kexec
-Date: Thu, 11 Sep 2014 17:03:22 +0530
-Message-ID: <CAKohpo=uB252XLfx3tHPA8uk5RPkWB0SPQ_UxzVw70c-DWuHWg@mail.gmail.com>
-References: <1410430423-1246-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: imx: correct thermal driver load sequence
+Date: Thu, 11 Sep 2014 08:16:20 -0400
+Message-ID: <20140911121618.GA26715@developer>
+References: <1410422657-30726-1-git-send-email-b51503@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1410430423-1246-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, David Laight <David.Laight@aculab.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f42.google.com ([209.85.216.42]:48243 "EHLO
+	mail-qa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754377AbaIKMQa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Sep 2014 08:16:30 -0400
+Received: by mail-qa0-f42.google.com with SMTP id j7so192362qaq.15
+        for <linux-pm@vger.kernel.org>; Thu, 11 Sep 2014 05:16:29 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1410422657-30726-1-git-send-email-b51503@freescale.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bai Ping <b51503@freescale.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org
 
-On 11 September 2014 15:43, Shilpasri G Bhat
-<shilpa.bhat@linux.vnet.ibm.com> wrote:
-> This patch ensures the cpus to kexec/reboot at nominal frequency.
-> Nominal frequency is the highest cpu frequency on PowerPC at
-> which the cores can run without getting throttled.
->
-> If the host kernel had set the cpus to a low pstate and then it
-> kexecs/reboots to a cpufreq disabled kernel it would cause the target
-> kernel to perform poorly. It will also increase the boot up time of
-> the target kernel. So set the cpus to high pstate, in this case to
-> nominal frequency before rebooting to avoid such scenarios.
->
-> The reboot notifier will set the cpus to nominal frequncy.
->
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Hello Bai,
+
+On Thu, Sep 11, 2014 at 04:04:17PM +0800, Bai Ping wrote:
+> Thermal driver should be registered after cpufreq driver have
+> been registered and probed. Doing so is to make sure that thermal
+> driver can get the max cpu cooling states correctly when calling
+> get_property.
+> 
+
+OK.
+
+> Signed-off-by: Bai Ping <b51503@freescale.com>
 > ---
-> Changes v2->v3:
-> We return EBUSY when cpufreq governor tries to change the frequency
-> after rebooting is set to true. This results in console being flushed
-> with error messages indicating failed attempts to change the
-> frequency. So instead of returning EBUSY we return 0 to stop the
-> governor from changing the frequency without alerting a failure to
-> do the same on reboot, as this  is not an errorneaos condition.
+>  drivers/thermal/imx_thermal.c | 11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+> index 45af765..d00aaaf 100644
+> --- a/drivers/thermal/imx_thermal.c
+> +++ b/drivers/thermal/imx_thermal.c
+> @@ -1,5 +1,5 @@
+>  /*
+> - * Copyright 2013 Freescale Semiconductor, Inc.
+> + * Copyright 2013-2014 Freescale Semiconductor, Inc.
+>   *
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+The above does not seam to be part of this patch.
+
+>   * This program is free software; you can redistribute it and/or modify
+>   * it under the terms of the GNU General Public License version 2 as
+> @@ -557,7 +557,14 @@ static struct platform_driver imx_thermal = {
+>  	.probe		= imx_thermal_probe,
+>  	.remove		= imx_thermal_remove,
+>  };
+> -module_platform_driver(imx_thermal);
+> +
+> +static int __init imx_thermal_init(void)
+> +{
+> +	return platform_driver_register(&imx_thermal);
+> +}
+> +
+> +late_initcall(imx_thermal_init);
+> +
+
+Have you considered checking if the cpufreq driver is loaded in your
+probe? In case it is not loaded, you may return EPROBE_DEFER.
+
+The problem that I have with the approach above is that it does not have
+effect if you are building this driver as a module. Besides, in some
+platforms, cpufreq also gets initialized in late phase, when most PM
+layers are loaded. Are you sure the cpufreq in your case gets always
+loaded before late init calls?
+
+>  MODULE_AUTHOR("Freescale Semiconductor, Inc.");
+>  MODULE_DESCRIPTION("Thermal driver for Freescale i.MX SoCs");
+> -- 
+> 1.9.1
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
