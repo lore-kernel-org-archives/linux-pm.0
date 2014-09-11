@@ -1,63 +1,36 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: error returns of pm_runtime_get()
-Date: Thu, 11 Sep 2014 02:03:21 +0200
-Message-ID: <2871114.Byp9HpPsJ7@vostro.rjw.lan>
-References: <1409921016.9532.15.camel@linux-fkkt.site> <3017868.AFCp3kOadE@vostro.rjw.lan> <1410354270.12706.22.camel@linux-fkkt.site>
+Subject: Re: [PATCH] intel_pstate: track and export frequency residency stats via sysfs.
+Date: Thu, 11 Sep 2014 02:04:44 +0200
+Message-ID: <7546673.Ir6ttItgPU@vostro.rjw.lan>
+References: <1410221424-20590-1-git-send-email-anupc@chromium.org> <1610826.tK4V65ABJD@vostro.rjw.lan> <20140910233905.GA2439@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60623 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:55552 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751190AbaIJXnw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 19:43:52 -0400
-In-Reply-To: <1410354270.12706.22.camel@linux-fkkt.site>
+	with SMTP id S1751457AbaIJXpO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Sep 2014 19:45:14 -0400
+In-Reply-To: <20140910233905.GA2439@google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+To: Anup Chenthamarakshan <anupc@chromium.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Sameer Nanda <snanda@chromium.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, September 10, 2014 03:04:30 PM Oliver Neukum wrote:
-> On Sat, 2014-09-06 at 01:42 +0200, Rafael J. Wysocki wrote:
-> > On Friday, September 05, 2014 02:43:36 PM Oliver Neukum wrote:
+On Wednesday, September 10, 2014 04:39:05 PM Anup Chenthamarakshan wrote:
+> On Thu, Sep 11, 2014 at 12:49:48AM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, September 10, 2014 03:15:08 PM Anup Chenthamarakshan wrote:
 > > > 
-> > > Hi,
-> > > 
-> > > looking through multiple drivers it seems to me that a great majority
-> > > is returning the error returns of pm_runtime_get() to user space.
-> > > They come quite directly from rpm_resume(). So we are led to return
-> > > things like -EACCESS or -EINVAL from system calls like open()
-> > > where they have no place.
+> > > Tools like powertop and turbostat are not present by default on all systems,
+> > > so it is not always possible to use them :(
 > > 
-> > Aren't those driver bugs?
+> > Which systems are you referring to in particular?
 > 
-> Sure, but almost all drivers using runtime PM are affected.
+> We're testing on Chrome OS devices (Chromebooks).
 
-Well, what can I say?
+How big of a deal is it to install the tools mentioned above on such a system?
 
-> > > So it seems to me like we should filter more or less like this:
-> > > 
-> > > -EBUSY		-> -EBUSY
-> > > -ENOMEM 	-> -ENOMEM
-> > > -EINPROGRES	-> -EAGAIN
-> > > any other error	-> -EIO
-> > > 
-> > > And it would be best to retain the current name of pm_runtime_get()
-> > > and introduce a version with unfiltered error codes.
-> > > What do you think?
-> > 
-> > It doesn't sound right to me.  I may be tired at the moment, but I'm not sure
-> > what the point would be.
-> 
-> The alternative is to make a conversion helper and to go through all
-> drivers. Not nice, but if necessary I'll do it.
-
-I honestly would prefer that.
-
-> But we cannot just return things like -EACCESS for internal reasons
-> while the file permissions are good.
-
-Sure.
+At least turbostat is shipped with the kernel source.
 
 -- 
 I speak only for myself.
