@@ -1,79 +1,74 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI and power management fixes for 3.17-rc5
-Date: Thu, 11 Sep 2014 16:17:46 +0200
-Message-ID: <CAJZ5v0gdcq5S5qLEY_XAWG3LkfLtz6t_+3XRMqCwehstmd2coQ@mail.gmail.com>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: [PATCH] add helper for translation of runtime PM errors
+Date: Thu, 11 Sep 2014 16:18:15 +0200
+Message-ID: <1410445095.21752.4.camel@linux-fkkt.site>
+References: <Pine.LNX.4.44L0.1409111003160.1357-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:36553 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751489AbaIKOSS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Sep 2014 10:18:18 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1409111003160.1357-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net
 
-Hi Linus,
+On Thu, 2014-09-11 at 10:04 -0400, Alan Stern wrote:
+> On Thu, 11 Sep 2014, Oliver Neukum wrote:
+> 
+> > pm_runtime_get() returns specialised error codes. They are not
+> > fit to be returned to user space. This patch adds a helper
+> > for translation.
+> > 
+> > Signed-off-by: Oliver Neukum <oneukum@suse.de>
+> > ---
+> >  include/linux/pm_runtime.h | 25 +++++++++++++++++++++++++
+> >  1 file changed, 25 insertions(+)
+> > 
+> > diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> > index 367f49b..67d078f 100644
+> > --- a/include/linux/pm_runtime.h
+> > +++ b/include/linux/pm_runtime.h
+> > @@ -128,6 +128,27 @@ static inline void pm_runtime_mark_last_busy(struct device *dev)
+> >  	ACCESS_ONCE(dev->power.last_busy) = jiffies;
+> >  }
+> >  
+> > +static inline int pm_runtime_translate_errors(int error)
+> > +{
+> > +	int rv;
+> > +
+> > +	switch (error) {
+> > +	case 0:
+> > +	case -ENOMEM:
+> > +	case -EBUSY:
+> > +		rv = error;
+> > +		break;
+> > +	case -EINPROGRESS:
+> > +		rv = -EAGAIN;
+> > +		break;
+> > +	default:
+> > +		rv = error > 0 ? error : -EIO;
+> > +		break;
+> > +	}
+> > +
+> > +	return rv;
+> > +}
+> 
+> Is this function small enough to be worth inlining?
 
-Please pull from
+I did this because many drivers do
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-3.17-rc5
+if (ret < 0)
+	return ret;
 
-to receive ACPI and power management fixes for v3.17-rc5 with
-top-most commit d2be8992df5d113a57374b7f654d667b8f9b32f4
+So the compiler can optimize a part away. But yes, I'll test.
 
- Merge branches 'acpi-rtc', 'acpi-lpss' and 'acpi-battery'
+	Regards
+		Oliver
 
-on top of commit 2ce7598c9a453e0acd0e07be7be3f5eb39608ebd
 
- Linux 3.17-rc4
 
-These are regression fixes (cpufreq, ACPI battery) and fixes for
-stuff that never worked correctly (ACPI RTC operation region handler
-and PM domain implementation in the ACPI LPSS driver).
-
-Specifics:
-
- - Fix for the cpufreq Operation Performance Points (OPP) code
-   where a recent commit added a kcalloc() call with an incorrect
-   ordering of arguments.  From Anand Moon.
-
- - Reverts of two ACPI battery commits that caused incorrect
-   diagnostic information to be printed to dmesg in some cases
-   from Bj=C3=B8rn Mork.
-
- - Fix for the ACPI RTC operation region handler that applied the
-   & operator to an argument already representing an address and
-   that caused it to overwrite its own argument instead of writing
-   to the address contained in it as expected.  From Chun-Yi Lee.
-
- - Fix for the PM domain implementation in the ACPI LPSS (Low-Power
-   Subsystem) driver where one callback pointer pointed to a wrong
-   routine and one was NULL, but it shouldn't.  From Fu Zhonghui.
-
-Thanks!
-
----------------
-
-Anand Moon (1):
-      cpufreq / OPP: Fix the order of arguments for kcalloc()
-
-Bj=C3=B8rn Mork (2):
-      Revert "ACPI / battery: Fix warning message in acpi_battery_get_s=
-tate()"
-      Revert "ACPI / battery: fix wrong value of capacity_now reported
-when fully charged"
-
-=46u Zhonghui (1):
-      ACPI / LPSS: complete PM entries for LPSS power domain
-
-Lee, Chun-Yi (1):
-      ACPI / RTC: Fix CMOS RTC opregion handler accesses to wrong addre=
-sses
-
----------------
-
- drivers/acpi/acpi_cmos_rtc.c  |  2 +-
- drivers/acpi/acpi_lpss.c      | 10 +++++-----
- drivers/acpi/battery.c        | 14 --------------
- drivers/cpufreq/cpufreq_opp.c |  2 +-
- 4 files changed, 7 insertions(+), 21 deletions(-)
