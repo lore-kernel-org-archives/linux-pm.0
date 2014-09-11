@@ -1,62 +1,93 @@
-From: AYAN KUMAR HALDER <ayankumarh@gmail.com>
-Subject: Re: suspend/resume PM criterion for application
-Date: Thu, 11 Sep 2014 11:02:55 +0530
-Message-ID: <CAGAs2Anafp-S+L5B7meg9ET-ckb=MDFupUQk5DnKTTJ9mWWJXA@mail.gmail.com>
-References: <CAJ2oMh+xmgC9mfT5QqEmMMek7SOqYE2QLVV6sPvK0CF5+56hDg@mail.gmail.com>
-	<17893.1410371984@turing-police.cc.vt.edu>
-	<CAJ2oMhJpTQjgDgEgOqvLVJg7LQjtHg2by71=98uH=vq59zTmDg@mail.gmail.com>
-	<20227.1410374378@turing-police.cc.vt.edu>
-	<CAJ2oMhLnP7TpP3caycqVS0xHRE3tf=+2vREE6H1NradsmFmH4A@mail.gmail.com>
-	<23104.1410377100@turing-police.cc.vt.edu>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: Re: [Patch v4 12/16] x86, irq, ACPI: Implement interface to support
+ ACPI based IOAPIC hot-addition
+Date: Thu, 11 Sep 2014 14:05:32 +0800
+Message-ID: <54113BAC.10505@linux.intel.com>
+References: <1409192561-19744-1-git-send-email-jiang.liu@linux.intel.com> <1409192561-19744-13-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.10.1409091417120.11037@nanos> <540FC1C2.40100@linux.intel.com> <alpine.DEB.2.10.1409102202530.4178@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f173.google.com ([209.85.192.173]:38690 "EHLO
-	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751037AbaIKFc4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Sep 2014 01:32:56 -0400
-Received: by mail-pd0-f173.google.com with SMTP id ft15so10541926pdb.18
-        for <linux-pm@vger.kernel.org>; Wed, 10 Sep 2014 22:32:55 -0700 (PDT)
-In-Reply-To: <23104.1410377100@turing-police.cc.vt.edu>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.10.1409102202530.4178@nanos>
+Sender: linux-pci-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Grant Likely <grant.likely@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
-Cc: Ran Shalit <ranshalit@gmail.com>, linux-pm@vger.kernel.org, kernelnewbies <kernelnewbies@kernelnewbies.org>
 
-On Thu, Sep 11, 2014 at 12:55 AM,  <Valdis.Kletnieks@vt.edu> wrote:
-> On Wed, 10 Sep 2014 21:58:48 +0300, Ran Shalit said:
->
->> 1. How can I make a process to notice this inactivity ? Do you think
->> it can be implemented by some periodic process who check if there is
->> activity ? It returns to the original question I raised, that I will
->> use some periodic process who checks maybe cpu load or something like
->> that. What do you think ?
->
-> That's going to depend on your system and what processes are running.
->
-> You may have an MP3 player going that doesn't take much CPU at all - but
-> shutting down because the user hasn't hit a button in 47 minutes will probably
-> irritate the user no end.  Or there may be a screensaver running that takes
-> twice as much CPU as the MP3 player, but is totally OK on the system
-> suspending whenever the rest of the system wants it.
->
-> You're going to have to look at your system design, and decide for yourself
-> what the criteria are.
+On 2014/9/11 4:06, Thomas Gleixner wrote:
+> On Wed, 10 Sep 2014, Jiang Liu wrote:
+>>>>  int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+>>>> @@ -3867,8 +3873,15 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+>>>>  	}
+>>>>  	for_each_ioapic(ioapic)
+>>>>  		if (ioapics[ioapic].mp_config.apicaddr == address) {
+>>>> -			pr_warn("address 0x%x conflicts with IOAPIC%d\n",
+>>>> -				address, ioapic);
+>>>> +			/*
+>>>> +			 * IOAPIC unit may also be visible in PCI scope.
+>>>> +			 * When ioapic PCI driver's probe() is called,
+>>>> +			 * the IOAPIC unit may have already been initialized
+>>>> +			 * at boot time.
+>>>> +			 */
+>>>> +			if (!ioapic_initialized)
+>>>> +				pr_warn("address 0x%x conflicts with IOAPIC%d\n",
+>>>> +					address, ioapic);
+>>>
+>>> Hmm. This smells fishy. Why do we allow multiple initializations of
+>>> the same IOAPIC in the first place. Either it's done via ACPI or via
+>>> PCI, but not both.
+>> The ACPI subsystem will register and initialize all IOAPICs when walking
+>> ACPI MADT table during boot, before initializing PCI subsystem.
+>> Later when binding ioapic PCI driver to IOAPIC PCI device, it will try
+>> to register the IOAPIC device again.
+>>
+>> After this patchset is applied, we could remove the !ioapic_initialized
+>> check. We check acpi_ioapic_register() before calling
+>> acpi_register_ioapic(). So the check becomes redundant.
+>> Or we could remove the temporary code from this patch.
+> 
+> How about removing the disfunctional ioapic PCI driver first and then
+> implementing the whole thing cleanly?
+Good suggestion:)
 
-Please correct me if my understanding is wrong:-
+>  
+>>>
+>>>>  			return -EEXIST;
+>>>>  		}
+>>>>  
+>>>> @@ -3918,6 +3931,14 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+>>>>  	ioapics[idx].irqdomain = NULL;
+>>>>  	ioapics[idx].irqdomain_cfg = *cfg;
+>>>>  
+>>>> +	if (ioapic_initialized) {
+>>>
+>>> I have a hard time to understand this conditional. Why can't we do
+>>> that unconditionally?
+>> How about following comments?
+>> /*
+>>  * If mp_register_ioapic() is called during early boot stage when
+>>  * walking ACPI/SFI/DT tables, it's too early to create irqdomain,
+>>  * we are still using bootmem allocator. So delay it to setup_IO_APIC().
+>>  */
+> 
+> Fine, but then the "if (ioapic_initialized)" conditional still does
+> not make sense. We surely have some global non ioapic specific
+> indicator that bootmem is done and the proper memory allocator is
+> available, right?
+Flag ioapic_initialized will be used to check whether we have created
+irqdomains for IOAPICs. Currently function arch_dynirq_lower_bound()
+uses that flag, and alloc_irq_from_domain() will use it too later.
 
-I believe that autosuspend feature (for system suspend) is not present
-in kernel. I believe that there is no feature in kernel which checks
-for system ( cpu, devices) inactivity and suspends the entire system.
-System suspend is caused when :-
-1. the user issues a command
-2. The system receives some interrupt or event (lid closing event)
-3. There is an external process which monitors system inactivity and
-suspends the system.
+> 
+> Aside of that is there a point to walk those tables before we actually
+> can make any use of their content?
+At least we depend on walking those tables to detect whether system has
+IOAPICs available:)
 
-For runtime suspend of a device, I believe it is the driver who has
-the complete responsibility to decide when to suspend the device or
-resume it.  The driver can take this decision on user intervention (eg
-when user writes to   /sys/devices/<my-device>/power/* ) or when the
-driver has completed servicing an interrupt and feels it has nothing
-more to do, etc
+Regards!
+Gerry
+> 
+> Thanks,
+> 
+> 	tglx
+> 
