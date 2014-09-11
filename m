@@ -1,18 +1,18 @@
 From: Bai Ping <b51503@freescale.com>
 Subject: [PATCH] thermal: imx: correct thermal driver load sequence
-Date: Thu, 11 Sep 2014 15:50:54 +0800
-Message-ID: <1410421854-30639-1-git-send-email-b51503@freescale.com>
+Date: Thu, 11 Sep 2014 16:04:17 +0800
+Message-ID: <1410422657-30726-1-git-send-email-b51503@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1bbn0103.outbound.protection.outlook.com ([157.56.111.103]:45701
+Received: from mail-bn1bon0117.outbound.protection.outlook.com ([157.56.111.117]:26944
 	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752145AbaIKIGb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 11 Sep 2014 04:06:31 -0400
+	id S1751410AbaIKIUQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Sep 2014 04:20:16 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, eduardo.valentin@ti.com
+To: rui.zhang@intel.com
 Cc: linux-pm@vger.kernel.org
 
 Thermal driver should be registered after cpufreq driver have
