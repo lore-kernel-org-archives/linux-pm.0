@@ -1,18 +1,24 @@
 From: Jiang Liu <jiang.liu@linux.intel.com>
 Subject: Re: [Patch v4 12/16] x86, irq, ACPI: Implement interface to support
  ACPI based IOAPIC hot-addition
-Date: Thu, 11 Sep 2014 14:05:32 +0800
-Message-ID: <54113BAC.10505@linux.intel.com>
+Date: Thu, 11 Sep 2014 14:08:32 +0800
+Message-ID: <54113C60.2080501@linux.intel.com>
 References: <1409192561-19744-1-git-send-email-jiang.liu@linux.intel.com> <1409192561-19744-13-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.10.1409091417120.11037@nanos> <540FC1C2.40100@linux.intel.com> <alpine.DEB.2.10.1409102202530.4178@nanos>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:43814 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752226AbaIKGIk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Sep 2014 02:08:40 -0400
 In-Reply-To: <alpine.DEB.2.10.1409102202530.4178@nanos>
-Sender: linux-pci-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Grant Likely <grant.likely@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+
+
 
 On 2014/9/11 4:06, Thomas Gleixner wrote:
 > On Wed, 10 Sep 2014, Jiang Liu wrote:
@@ -48,8 +54,6 @@ On 2014/9/11 4:06, Thomas Gleixner wrote:
 > 
 > How about removing the disfunctional ioapic PCI driver first and then
 > implementing the whole thing cleanly?
-Good suggestion:)
-
 >  
 >>>
 >>>>  			return -EEXIST;
@@ -74,18 +78,18 @@ Good suggestion:)
 > not make sense. We surely have some global non ioapic specific
 > indicator that bootmem is done and the proper memory allocator is
 > available, right?
-Flag ioapic_initialized will be used to check whether we have created
-irqdomains for IOAPICs. Currently function arch_dynirq_lower_bound()
-uses that flag, and alloc_irq_from_domain() will use it too later.
+Maybe a good name helps here. How about
+bool hotplug = !!ioapic_initialized;
+
+if (hotplug)
+	mp_irqdomain_create(idx);
+
+Regards!
+Gerry	
 
 > 
 > Aside of that is there a point to walk those tables before we actually
 > can make any use of their content?
-At least we depend on walking those tables to detect whether system has
-IOAPICs available:)
-
-Regards!
-Gerry
 > 
 > Thanks,
 > 
