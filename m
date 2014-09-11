@@ -1,67 +1,62 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH v4 3/4] ARM: dts: add main Thermal info to rk3288
-Date: Thu, 11 Sep 2014 15:58:04 +0200
-Message-ID: <6563337.jht9ZmlHCg@diego>
-References: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com>
- <3426113.Zcq8V2S7cg@diego> <540FBC21.2090504@rock-chips.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] add helper for translation of runtime PM errors
+Date: Thu, 11 Sep 2014 10:04:10 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1409111003160.1357-100000@iolanthe.rowland.org>
+References: <1410442129-21130-1-git-send-email-oneukum@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <540FBC21.2090504@rock-chips.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Caesar Wang <caesar.wang@rock-chips.com>
-Cc: huangtao@rock-chips.com, devicetree@vger.kernel.org, addy.ke@rock-chips.com, dmitry.torokhov@gmail.com, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dianders@chromium.org, edubezval@gmail.com, zyw@rock-chips.com, cf@rock-chips.com, rui.zhang@intel.com, dtor@chromium.org, linux-arm-kernel@lists.infradead.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:41356 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752915AbaIKOEN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Sep 2014 10:04:13 -0400
+In-Reply-To: <1410442129-21130-1-git-send-email-oneukum@suse.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.de>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net
 
-SGkgQ2Flc2FyLAoKQW0gTWl0dHdvY2gsIDEwLiBTZXB0ZW1iZXIgMjAxNCwgMTA6NDk6MDUgc2No
-cmllYiBDYWVzYXIgV2FuZzoKPiBIaSBIZWlrbywKPiAKPiDlnKggMjAxNOW5tDA55pyIMDnml6Ug
-MTk6MzcsIEhlaWtvIFN0w7xibmVyIOWGmemBkzoKPiA+IEFtIE1pdHR3b2NoLCAzLiBTZXB0ZW1i
-ZXIgMjAxNCwgMTA6MTA6Mzggc2NocmllYiBDYWVzYXIgV2FuZzoKPiA+PiBTaWduZWQtb2ZmLWJ5
-OiBDYWVzYXIgV2FuZyA8Y2Flc2FyLndhbmdAcm9jay1jaGlwcy5jb20+Cj4gPj4gLS0tCj4gPj4g
-Cj4gPj4gICBhcmNoL2FybS9ib290L2R0cy9yazMyODguZHRzaSB8IDE4ICsrKysrKysrKysrKysr
-KysrKwo+ID4+ICAgMSBmaWxlIGNoYW5nZWQsIDE4IGluc2VydGlvbnMoKykKPiA+PiAKPiA+PiBk
-aWZmIC0tZ2l0IGEvYXJjaC9hcm0vYm9vdC9kdHMvcmszMjg4LmR0c2kKPiA+PiBiL2FyY2gvYXJt
-L2Jvb3QvZHRzL3JrMzI4OC5kdHNpCj4gPj4gaW5kZXggMzZiZTdiYi4uM2Q2NzJlMyAxMDA2NDQK
-PiA+PiAtLS0gYS9hcmNoL2FybS9ib290L2R0cy9yazMyODguZHRzaQo+ID4+ICsrKyBiL2FyY2gv
-YXJtL2Jvb3QvZHRzL3JrMzI4OC5kdHNpCgpbLi4uXQoKPiA+PiBAQCAtNjExLDUgKzYyMiwxMiBA
-QAo+ID4+IAo+ID4+ICAgCQkJCXJvY2tjaGlwLHBpbnMgPSA8NSAxNSAzICZwY2ZnX3B1bGxfbm9u
-ZT47Cj4gPj4gICAJCQkKPiA+PiAgIAkJCX07Cj4gPj4gICAJCQo+ID4+ICAgCQl9Owo+ID4+IAo+
-ID4+ICsKPiA+PiArCQl0c2FkYyB7Cj4gPj4gKwkJCXRzYWRjX2ludDogdHNhZGMtaW50IHsKPiA+
-PiArCQkJCXJvY2tjaGlwLHBpbnMgPSA8MCAxMCBSS19GVU5DXzEgJnBjZmdfcHVsbF91cD47Cj4g
-Pj4gKwkJCX07Cj4gPj4gKwkJfTsKPiA+IAo+ID4gQWZ0ZXIgbG9va2luZyB0aGlzIHVwIGluIHRo
-ZSBzY2hlbWF0aWNzIEkgc2VlIHRoYXQgdGhpcyBpcyB0aGUKPiA+IG92ZXJ0ZW1wZXJhdHVyZS1w
-cm90ZWN0aW9uIG91dHB1dCBwaW4gLi4uIGxhYmVsZWQgT1RQX09VVC4KPiA+IFNvIEknZCB0aGlu
-ayB0aGUgcGluY29uZmlnIHNob3VsZCByZWZsZWN0IHRoaXMgcGluLW5hbWUsIGVzcGVjaWFsbHkg
-YXMKPiA+IHRzYWRjLWludCBzdWdnZXN0cywgdGhhdCB0aGlzIHdvdWxkIGJlIGFuIGludGVycnVw
-dCBsZWFkaW5nIGludG8gdGhlCj4gPiB0c2FkYywgd2hpbGUgaW4gZmFjdCBpdCBpcyBhbiBvdXRw
-dXQgdG8gYSBzZXBhcmF0ZSBjaXJjdWl0Lgo+IAo+IE1heWJlLEkgZ3Vlc3MgIHlvdXIgbWVhbiBh
-cyB0aGUgZm9sbG93cyAuCj4gUGxlYXNlIGNvcnJlY3QgaXQgYW5kICBMYXVnaCBvdXQgaWYgSSBn
-b3QgaXQgd3JvbmcuCgpJJ2xsIG5ldmVyIGxhdWdoIC4uLiBqdXN0IHRyeSBnZXQgdGhlIGJlc3Qg
-c29sdXRpb24gLyB0cnlpbmcgdG8gdW5kZXJzdGFuZCAKYmFja2dyb3VuZHMuCgo+IAo+IHRzYWRj
-IHsKPiAgICAgICAgICAgICAgb3RwX291dDogb3RwLW91dCB7Cj4gICAgICAgICAgICAgICAgICBy
-b2NrY2hpcCxwaW5zID0gPDAgMTAgUktfRlVOQ19HUElPICZwY2ZnX3B1bGxfbm9uZT47Cj4gICAg
-ICAgICAgICAgIH07Cj4gCj4gICAgICAgICAgICAgIHRzYWRjX2ludDogdHNhZGMtaW50IHsKPiAg
-ICAgICAgICAgICAgICAgIHJvY2tjaGlwLHBpbnMgPSA8MCAxMCBSS19GVU5DXzEgJnBjZmdfcHVs
-bF9ub25lPjsKPiAgICAgICAgICAgICAgfTsKPiAgICAgICAgICB9Owo+IFRoZW4sSSBkZWFsIHdp
-dGggdGhlIG90cF9vdXQgaW4gdGhlcm1hbCBkcml2ZXIuCj4gSSBiZWxpZXZlIFRoZSAib3RwX291
-dCIgd2lsbCByZXN0YXJ0IGJvYXJkIGlmIGl0J3MgYSBoaWdoIGFjdGl2ZS4KPiAKPiB0c2FkY19p
-bnQ6IHRzYWRjLWludCB7Cj4gKwkJCQlyb2NrY2hpcCxwaW5zID0gPDAgMTAgUktfRlVOQ18xICZw
-Y2ZnX3B1bGxfdXA+Owo+ICsJCQl9Owo+IAo+IEJ1dCxJIHRoaW5rIHRoZSBhYm91dCB3aWxsIGJl
-IGltcGxlbWVudGVkIGluIHRoZXJtYWwgZHJpdmVyLgoKSSBvbmx5IG1lYW50IHRoZSBwaW4gbmFt
-ZSAodHNhZGMtaW50IC0+IG90cC1vdXQpLiBJbiB0aGUgc2NobWF0aWNzIHRoZSBwaW4gCihjb250
-cm9sbGVkIGJ5IHRoZSB0c2FkYykgaXMgbGFiZWxlZCBvdHBfb3V0IGFuZCBsZWFkcyB0byB0aGUg
-b3ZlcnRlbXBlcmF0dXJlIApwcm90ZWN0aW9uIGNpcmN1aXQgYXMgZXhwZWN0ZWQuIEFuZCBhcyBp
-dCdzIGNvbnRyb2xsZWQgYnkgdGhlIHRzYWRjLCBpdCBzaG91bGQgCm9mIGNvdXJzZSBzdGF5IGFz
-IHRoZSBkZXNpcmVkIGZ1bmNfMS4KCgpIZWlrbwoKX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgt
-YXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3Jn
-L21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
+On Thu, 11 Sep 2014, Oliver Neukum wrote:
+
+> pm_runtime_get() returns specialised error codes. They are not
+> fit to be returned to user space. This patch adds a helper
+> for translation.
+> 
+> Signed-off-by: Oliver Neukum <oneukum@suse.de>
+> ---
+>  include/linux/pm_runtime.h | 25 +++++++++++++++++++++++++
+>  1 file changed, 25 insertions(+)
+> 
+> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> index 367f49b..67d078f 100644
+> --- a/include/linux/pm_runtime.h
+> +++ b/include/linux/pm_runtime.h
+> @@ -128,6 +128,27 @@ static inline void pm_runtime_mark_last_busy(struct device *dev)
+>  	ACCESS_ONCE(dev->power.last_busy) = jiffies;
+>  }
+>  
+> +static inline int pm_runtime_translate_errors(int error)
+> +{
+> +	int rv;
+> +
+> +	switch (error) {
+> +	case 0:
+> +	case -ENOMEM:
+> +	case -EBUSY:
+> +		rv = error;
+> +		break;
+> +	case -EINPROGRESS:
+> +		rv = -EAGAIN;
+> +		break;
+> +	default:
+> +		rv = error > 0 ? error : -EIO;
+> +		break;
+> +	}
+> +
+> +	return rv;
+> +}
+
+Is this function small enough to be worth inlining?
+
+Alan Stern
+
