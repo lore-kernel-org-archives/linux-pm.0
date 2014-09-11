@@ -1,38 +1,59 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v4 2/4] dt-bindings: document Rockchip thermal
-Date: Thu, 11 Sep 2014 14:32:08 +0200
-Message-ID: <40514790.Xc34lyFLGa@wuerfel>
-References: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com> <1410403012.25559.69.camel@rzhang1-toshiba> <20140911121842.GB26715@developer>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH] thermal: exynos: use correct offset for TMU_CONTROL register
+ on Exynos5260
+Date: Thu, 11 Sep 2014 15:00:49 +0200
+Message-ID: <1594947.1Ri7fFnV5h@amdc1032>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140911121842.GB26715@developer>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>, Caesar Wang <caesar.wang@rock-chips.com>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, Eddie Cai <cf@rock-chips.com>, Douglas Anderson <dianders@chromium.org>, dtor <dtor@chromium.org>, Chris Zhong <zyw@rock-chips.com>, "addy.ke@rock-chips.com" <addy.ke@rock-chips.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, zhaoyifeng <zyf@rock-chips.com>
+Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 11 September 2014 08:18:43 Eduardo Valentin wrote:
-> > As what we want is to make thermal driver have a chance to configure the
-> > hardware shutdown registers, I'm thinking if we can do this without
-> > representing the hardware shutdown value as a trip point.
-> > Say,
-> > 1. parse DT, and get the hardware shutdown temperature value, and store
-> > it somewhere, e.g. struct __thermal_zone.
-> > 2. introduce a new parameter, int (*set_hardware_trip)(void *, long *),
-> > in thermal_zone_of_sensor_register().
-> > 3. invoke set_hard_trip(tz, hardware_shutdown_temperature_value) in
-> > thermal_zone_of_sensor_register().
-> 
-> The only issue I have with the above proposal is that not all platforms
-> use DT. Some still boot with boardfiles, for instance. Thus, the
-> parameter to configure hardware thermal shutdown needs to be common on
-> thermal core, not specific to of-thermal. Do you agree?
+In exynos5260_tmu_registers tmu_ctrl entry is erroneously
+assigned twice.  The second assignment (to EXYNOS_TMU_REG_CONTROL1
+define which represents 0x24 value) overrides the first one
+(to EXYNOS_TMU_REG_CONTROL define which represents 0x20 value)
+which results in the wrong (according to the Exynos5260 SoC
+documentation that I have) offset being used for TMU_CONTROL
+register.  Fix it by removing the wrong assignment and then
+remove no longer used EXYNOS_TMU_REG_CONTROL1 define.
 
-Do you know of a machine that can't yet be converted to DT and that
-needs this driver? In case of rockchips that is certainly not the
-case, and we don't care about anybody trying to use board files out
-of tree, they can just hack the thermal support as well.
+Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/thermal/samsung/exynos_tmu_data.c |    1 -
+ drivers/thermal/samsung/exynos_tmu_data.h |    1 -
+ 2 files changed, 2 deletions(-)
 
-	Arnd
+Index: b/drivers/thermal/samsung/exynos_tmu_data.c
+===================================================================
+--- a/drivers/thermal/samsung/exynos_tmu_data.c	2014-09-11 14:41:12.567347442 +0200
++++ b/drivers/thermal/samsung/exynos_tmu_data.c	2014-09-11 14:43:00.211350284 +0200
+@@ -273,7 +273,6 @@ struct exynos_tmu_init_data const exynos
+ static const struct exynos_tmu_registers exynos5260_tmu_registers = {
+ 	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
+ 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
+-	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL1,
+ 	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
+ 	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
+ 	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
+Index: b/drivers/thermal/samsung/exynos_tmu_data.h
+===================================================================
+--- a/drivers/thermal/samsung/exynos_tmu_data.h	2014-09-11 14:41:12.243347433 +0200
++++ b/drivers/thermal/samsung/exynos_tmu_data.h	2014-09-11 14:43:36.167351233 +0200
+@@ -83,7 +83,6 @@
+ #define EXYNOS_MAX_TRIGGER_PER_REG	4
+ 
+ /* Exynos5260 specific */
+-#define EXYNOS_TMU_REG_CONTROL1			0x24
+ #define EXYNOS5260_TMU_REG_INTEN		0xC0
+ #define EXYNOS5260_TMU_REG_INTSTAT		0xC4
+ #define EXYNOS5260_TMU_REG_INTCLEAR		0xC8
