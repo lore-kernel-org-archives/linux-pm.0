@@ -1,226 +1,138 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v4 2/4] dt-bindings: document Rockchip thermal
-Date: Thu, 11 Sep 2014 10:36:52 +0800
-Message-ID: <1410403012.25559.69.camel@rzhang1-toshiba>
-References: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com>
-	 <1410310946.25559.12.camel@rzhang1-toshiba>
-	 <CAC-25o9qcddZLy8fcwEqWp7g5fXk31xhaQCcALuH+sXDgn5n8w@mail.gmail.com>
-	 <1487694.oyLYSrbpA8@diego>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq, release policy->rwsem on error
+Date: Thu, 11 Sep 2014 10:05:43 +0530
+Message-ID: <CAKohpokOk5ef0MZhDA0ntj2NGaQtWpy-c9E_zm=F2tiucH2EtQ@mail.gmail.com>
+References: <1410358328-27303-1-git-send-email-prarit@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1487694.oyLYSrbpA8@diego>
-Sender: linux-doc-owner@vger.kernel.org
-To: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, Caesar Wang <caesar.wang@rock-chips.com>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, Eddie Cai <cf@rock-chips.com>, Douglas Anderson <dianders@chromium.org>, dtor <dtor@chromium.org>, Chris Zhong <zyw@rock-chips.com>, "addy.ke@rock-chips.com" <addy.ke@rock-chips.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, zhaoyifeng <zyf@rock-chips.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f181.google.com ([209.85.214.181]:42989 "EHLO
+	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751972AbaIKEfn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Sep 2014 00:35:43 -0400
+Received: by mail-ob0-f181.google.com with SMTP id vb8so14232695obc.12
+        for <linux-pm@vger.kernel.org>; Wed, 10 Sep 2014 21:35:43 -0700 (PDT)
+In-Reply-To: <1410358328-27303-1-git-send-email-prarit@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, 2014-09-10 at 09:24 +0200, Heiko St=C3=BCbner wrote:
-> Am Dienstag, 9. September 2014, 21:14:18 schrieb edubezval@gmail.com:
-> > Hello,
-> >=20
-> > On Tue, Sep 9, 2014 at 9:02 PM, Zhang Rui <rui.zhang@intel.com> wro=
-te:
-> > > On Tue, 2014-09-09 at 11:09 -0400, Eduardo Valentin wrote:
-> > >> Hello
-> > >>=20
-> > >> On Tue, Sep 09, 2014 at 01:35:31PM +0200, Heiko St=C3=BCbner wro=
-te:
-> > >> > Am Dienstag, 9. September 2014, 10:27:17 schrieb Zhang Rui:
-> > >> > > On Thu, 2014-09-04 at 09:02 +0800, Caesar Wang wrote:
-> > >> > > > =E5=9C=A8 2014=E5=B9=B409=E6=9C=8803=E6=97=A5 16:07, Heiko=
- St=C3=BCbner =E5=86=99=E9=81=93:
-> > >> > > > > Am Mittwoch, 3. September 2014, 10:10:37 schrieb Caesar =
-Wang:
-> > >> > > > >> This add the necessary binding documentation for the th=
-ermal
-> > >> > > > >> found on Rockchip SoCs
-> > >> > > > >>=20
-> > >> > > > >> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
-> > >> > > > >> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
-> > >> > > > >> ---
-> > >> > > > >>=20
-> > >> > > > >>   .../devicetree/bindings/thermal/rockchip-thermal.txt =
-| 20
-> > >> > > > >>=20
-> > >> > > > >> ++++++++++++++++++++ 1 file changed, 20 insertions(+)
-> > >> > > > >>=20
-> > >> > > > >>   create mode 100644
-> > >> > > > >>=20
-> > >> > > > >> Documentation/devicetree/bindings/thermal/rockchip-ther=
-mal.txt
-> > >> > > > >>=20
-> > >> > > > >> diff --git
-> > >> > > > >> a/Documentation/devicetree/bindings/thermal/rockchip-th=
-ermal.txt
-> > >> > > > >> b/Documentation/devicetree/bindings/thermal/rockchip-th=
-ermal.txt
-> > >> > > > >> new
-> > >> > > > >> file
-> > >> > > > >> mode 100644
-> > >> > > > >> index 0000000..1ed4d4c
-> > >> > > > >> --- /dev/null
-> > >> > > > >> +++
-> > >> > > > >> b/Documentation/devicetree/bindings/thermal/rockchip-th=
-ermal.tx
-> > >> > > > >> t
-> > >> > > > >> @@ -0,0 +1,20 @@
-> > >> > > > >> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
-> > >> > > > >> +
-> > >> > > > >> +Required properties:
-> > >> > > > >> +- compatible: "rockchip,rk3288-tsadc"
-> > >> > > > >> +- reg: physical base address of the controller and len=
-gth of
-> > >> > > > >> memory
-> > >> > > > >> mapped
-> > >> > > > >> +       region.
-> > >> > > > >> +- interrupts: The interrupt number to the cpu. The int=
-errupt
-> > >> > > > >> specifier
-> > >> > > > >> format +           depends on the interrupt controller.
-> > >> > > > >> +- clocks: Must contain an entry for each entry in cloc=
-k-names.
-> > >> > > > >> +- clock-names: Shall be "tsadc" for the converter-cloc=
-k, and
-> > >> > > > >> "apb_pclk" for +            the peripheral clock.
-> > >> > > > >=20
-> > >> > > > > You're using the passive-temp, critical-temp and force-s=
-hut-temp
-> > >> > > > > properties in your driver without declaring them here.
-> > >> > > >=20
-> > >> > > > frankly,the about are need be declared. but  there are 4 t=
-ypes[0]
-> > >> > > > for
-> > >> > > > trip in thermal framework,
-> > >> > > > there is no force-shut for me. So I want to change it thre=
-e
-> > >> > > > additional
-> > >> > > > properties in [PATCH V4 4/4],
-> > >> > > >=20
-> > >> > > >=20
-> > >> > > > [0]
-> > >> > > > {
-> > >> > > >=20
-> > >> > > >      THERMAL_TRIP_CRITICAL,
-> > >> > > >      THERMAL_TRIP_HOT,
-> > >> > > >      THERMAL_TRIP_PASSIVE,
-> > >> > > >      THERMAL_TRIP_ACTIVE,
-> > >> > > >=20
-> > >> > > > }
-> > >> > >=20
-> > >> > > this sounds reasonable to me.
-> > >> > >=20
-> > >> > > > > But more importantly, please use the generic trip-points=
- for
-> > >> > > > > this. I
-> > >> > > > > guess it shouldn't be a problem to introduce a "forced-s=
-hutdown"
-> > >> > > > > trippoint [0] for the additional trip-point you have - t=
-hermal
-> > >> > > > > maintainers, please shout if I'm wrong :-)
-> > >> > >=20
-> > >> > > what is the difference between a critical trip point and a
-> > >> > > "forced-shutdown" trip point?
-> > >> > > Thermal core will do a shutdown in case the critical trip po=
-int is
-> > >> > > triggered.
-> > >> >=20
-> > >> > The forced-shutdown is where the thermal controller is suppose=
-d to also
-> > >> > do a>>=20
-> > >> Currently, there is no discrimination between hardware configure=
-d /
-> > >> triggered thermal shutdown and software detected / triggered the=
-rmal
-> > >> shutdown. One way to implement it though is to reuse the critica=
-l trip
-> > >> type. Even if you use more than one trip type it is doable, it w=
-ill
-> > >> depend on the priorities you give to software triggered and hard=
-ware
-> > >> triggered.
-> > >>=20
-> > >> > shutdown in hardware. As you said the thermal core will also s=
-hutdown
-> > >> > at the critical trip point, I guess we could map Caesar's valu=
-e like
-> > >> >=20
-> > >> > trip-point          tsadc
-> > >> > critical            forced-shutdown (the 120 degrees in patch =
-4)
-> > >> >=20
-> > >> > hot                 critical (the 100 degrees)
-> > >> > ...
-> > >>=20
-> > >> In the case we are planing to expand the trip type range, adding=
- one
-> > >> specific to hardware configurable shutdown makes sense to me too=
-=2E
-> > >=20
-> > > hmmm, why? you don't want an orderly shutdown? I still do not und=
-erstand
-> > > why we need a hardware shutdown trip point.
-> > > Say, if we expect the system to be shutdown at 100C, I don't thin=
-k we
-> > > have a chance to trigger the hardware shutdown trip point.
-> > > Further more, if my understanding is right, thermal core won't do
-> > > anything for the hardware shutdown trip point because the system =
-will be
-> > > shutdown automatically, right? If this is true, why bother introd=
-ucing
-> > > this to thermal core?
-> >=20
-> > Some ICs allow configuring the temperature when the shutdown will
-> > happen. That is, you setup in registers the thermal shutdown
-> > threshold, and one of the output pin of the IC is wired to, say, th=
-e
-> > processor reset pin. Some other ICs have the threshold hardwired, a=
-nd
-> > cannot be configured.
-> >=20
-> > Those options are a last chance to avoid processors to burn, in cas=
-e
-> > software really gets stuck at high temperatures.
-> >=20
-> > The only thing that the thermal driver would need to worry is the
-> > configuration step, that is, writing the value to the registers. In
-> > the case the thermal core would have a specific trip type for such
-> > case, the core itself would not do anything, except allowing design=
-ing
-> > a thermal zone with hardware shutdown trips. And thus the thermal
-> > driver would do the configuration.
-> >=20
-> >=20
-> > Currently, the way I see to implement this is to interpret critical
-> > trips as the threshold to be configured at the IC registers. That i=
-s,
-> > reusing critical trips as orderly power down and as the hardware
-> > shutdown threshold.
->=20
-> which was what I also meant to express above [but seemingly failed to=
- do=20
-> properly :-) ].
->=20
-> Critical is specified as "Hardware not reliable", so I'd think it wou=
-ldn't=20
-> matter how the hw is shut down (orderly/unorderly) as long as its don=
-e.
+On 10 September 2014 19:42, Prarit Bhargava <prarit@redhat.com> wrote:
+> I have not been able to reliably reproduce the hardware failure that caused
+> the warning.  In order to reproduce this I resorted to (sorry for the
+> cut-and-paste)
+>
+>         diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+>         index 728a2d8..c7724d2 100644
+>         --- a/drivers/cpufreq/pcc-cpufreq.c
+>         +++ b/drivers/cpufreq/pcc-cpufreq.c
+>         @@ -146,6 +146,8 @@ static unsigned int pcc_get_freq(unsigned int cpu)
+>                 u32 input_buffer;
+>                 u32 output_buffer;
+>
+>         +       return 0;
+>         +
+>                 spin_lock(&pcc_lock);
+>
+>                 pr_debug("get: get_freq for CPU %d\n", cpu);
+>
+> to simulate the cpufreq_driver->get() hardware failure.
+>
+> ---8<---
+>
+> While debugging a cpufreq-related hardware failure on a system I saw the
+> following lockdep warning:
+>
+>  =========================
+>  [ BUG: held lock freed! ] 3.17.0-rc4+ #1 Tainted: G            E
+>  -------------------------
+>  insmod/2247 is freeing memory ffff88006e1b1400-ffff88006e1b17ff, with a lock still held there!
+>   (&policy->rwsem){+.+...}, at: [<ffffffff8156d37d>] __cpufreq_add_dev.isra.21+0x47d/0xb80
+>  3 locks held by insmod/2247:
+>   #0:  (subsys mutex#5){+.+.+.}, at: [<ffffffff81485579>] subsys_interface_register+0x69/0x120
+>   #1:  (cpufreq_rwsem){.+.+.+}, at: [<ffffffff8156cf73>] __cpufreq_add_dev.isra.21+0x73/0xb80
+>   #2:  (&policy->rwsem){+.+...}, at: [<ffffffff8156d37d>] __cpufreq_add_dev.isra.21+0x47d/0xb80
+>
+>  stack backtrace:
+>  CPU: 0 PID: 2247 Comm: insmod Tainted: G            E  3.17.0-rc4+ #1
+>  Hardware name: HP ProLiant MicroServer Gen8, BIOS J06 08/24/2013
+>   0000000000000000 000000008f3063c4 ffff88006f87bb30 ffffffff8171b358
+>   ffff88006bcf3750 ffff88006f87bb68 ffffffff810e09e1 ffff88006e1b1400
+>   ffffea0001b86c00 ffffffff8156d327 ffff880073003500 0000000000000246
+>  Call Trace:
+>   [<ffffffff8171b358>] dump_stack+0x4d/0x66
+>   [<ffffffff810e09e1>] debug_check_no_locks_freed+0x171/0x180
+>   [<ffffffff8156d327>] ? __cpufreq_add_dev.isra.21+0x427/0xb80
+>   [<ffffffff8121412b>] kfree+0xab/0x2b0
+>   [<ffffffff8156d327>] __cpufreq_add_dev.isra.21+0x427/0xb80
+>   [<ffffffff81724cf7>] ? _raw_spin_unlock+0x27/0x40
+>   [<ffffffffa003517f>] ? pcc_cpufreq_do_osc+0x17f/0x17f [pcc_cpufreq]
+>   [<ffffffff8156da8e>] cpufreq_add_dev+0xe/0x10
+>   [<ffffffff814855d1>] subsys_interface_register+0xc1/0x120
+>   [<ffffffff8156bcf2>] cpufreq_register_driver+0x112/0x340
+>   [<ffffffff8121415a>] ? kfree+0xda/0x2b0
+>   [<ffffffffa003517f>] ? pcc_cpufreq_do_osc+0x17f/0x17f [pcc_cpufreq]
+>   [<ffffffffa003562e>] pcc_cpufreq_init+0x4af/0xe81 [pcc_cpufreq]
+>   [<ffffffffa003517f>] ? pcc_cpufreq_do_osc+0x17f/0x17f [pcc_cpufreq]
+>   [<ffffffff81002144>] do_one_initcall+0xd4/0x210
+>   [<ffffffff811f7472>] ? __vunmap+0xd2/0x120
+>   [<ffffffff81127155>] load_module+0x1315/0x1b70
+>   [<ffffffff811222a0>] ? store_uevent+0x70/0x70
+>   [<ffffffff811229d9>] ? copy_module_from_fd.isra.44+0x129/0x180
+>   [<ffffffff81127b86>] SyS_finit_module+0xa6/0xd0
+>   [<ffffffff81725b69>] system_call_fastpath+0x16/0x1b
+>  cpufreq: __cpufreq_add_dev: ->get() failed
+> insmod: ERROR: could not insert module pcc-cpufreq.ko: No such device
+>
+> The warning occurs in the __cpufreq_add_dev() code which does
+>
+>         down_write(&policy->rwsem);
+>         ...
+>         if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
+>                 policy->cur = cpufreq_driver->get(policy->cpu);
+>                 if (!policy->cur) {
+>                         pr_err("%s: ->get() failed\n", __func__);
+>                         goto err_get_freq;
+>                 }
+>
+> If cpufreq_driver->get(policy->cpu) returns an error we execute the
+> code at err_get_freq, which does not up the policy->rwsem.  This causes
+> the lockdep warning.
+>
+> Trivial patch to up the policy->rwsem in the error path.
+>
+> After the patch has been applied, and an error occurs in the
+> cpufreq_driver->get(policy->cpu) call we will now see
+>
+> cpufreq: __cpufreq_add_dev: ->get() failed
+> cpufreq: __cpufreq_add_dev: ->get() failed
+> modprobe: ERROR: could not insert 'pcc_cpufreq': No such device
+>
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  drivers/cpufreq/cpufreq.c |    2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index d9fdedd..aadaed0 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1289,6 +1289,8 @@ err_get_freq:
+>                 per_cpu(cpufreq_cpu_data, j) = NULL;
+>         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>
+> +       up_write(&policy->rwsem);
+> +
+>         if (cpufreq_driver->exit)
+>                 cpufreq_driver->exit(policy);
+>  err_set_policy_cpu:
 
-Hmmm,
+Fixes: "4e97b63 cpufreq: Initialize governor for a new policy under
+policy->rwsem"
+Stable: 3.14+
 
-As what we want is to make thermal driver have a chance to configure th=
-e
-hardware shutdown registers, I'm thinking if we can do this without
-representing the hardware shutdown value as a trip point.
-Say,
-1. parse DT, and get the hardware shutdown temperature value, and store
-it somewhere, e.g. struct __thermal_zone.
-2. introduce a new parameter, int (*set_hardware_trip)(void *, long *),
-in thermal_zone_of_sensor_register().
-3. invoke set_hard_trip(tz, hardware_shutdown_temperature_value) in
-thermal_zone_of_sensor_register().
-
-thanks,
-rui
-
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
