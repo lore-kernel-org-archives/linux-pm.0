@@ -1,61 +1,151 @@
-From: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
-Subject: Re: state[i].transition_latency and state[i].bus_master_latency set
- to 0. BUG?
-Date: Fri, 12 Sep 2014 10:55:24 +0200
-Message-ID: <CAPybu_3u1+TLpFO0ZisWE3UZ+dCsR76AbpQsD+1cSX0ta1Tbbg@mail.gmail.com>
-References: <CAPybu_0wdTRYHwPN6mHdBrx8_RjcEXBWRpBs4HU5LASR16cOQg@mail.gmail.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [REPOST PATCH v4 1/2] PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
+Date: Fri, 12 Sep 2014 11:11:25 +0200
+Message-ID: <CAAObsKBkjqJiJ4OC4FYDXDBSFMFzvbvD_vJ6KzhqyyPCCB-o7g@mail.gmail.com>
+References: <1409759373-22696-1-git-send-email-tomeu.vizoso@collabora.com> <1409759373-22696-2-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAPybu_0wdTRYHwPN6mHdBrx8_RjcEXBWRpBs4HU5LASR16cOQg@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, "alex@qtec.com" <alex@qtec.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1409759373-22696-2-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-Just in case somebody missed this mail in their holiday inbox :)....
+On 3 September 2014 17:49, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
+> Also adds a class type PM_QOS_SUM that aggregates the values by summing them.
+>
+> It can be used by memory controllers to calculate the optimum clock frequency
+> based on the bandwidth needs of the different memory clients.
+>
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Any good ideas for this?
+Hi Rafael,
 
-On Tue, Aug 5, 2014 at 5:37 PM, Ricardo Ribalda Delgado
-<ricardo.ribalda@gmail.com> wrote:
-> Hello!
+will you take this one for 3.18?
+
+Thanks,
+
+Tomeu
+
+> ---
 >
-> I am working with an AMD family 14h Processor. And I believe that the
-> governor is not behaving as expected.
+> v3: * Changed units to be megabits per second
+> ---
+>  Documentation/power/pm_qos_interface.txt |  4 +++-
+>  include/linux/pm_qos.h                   |  5 ++++-
+>  kernel/power/qos.c                       | 27 ++++++++++++++++++++++++++-
+>  3 files changed, 33 insertions(+), 3 deletions(-)
 >
-> On the _PSS table, the transition_latency and bus_master_latency are set to 0.
+> diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
+> index a5da5c7..129f7c0 100644
+> --- a/Documentation/power/pm_qos_interface.txt
+> +++ b/Documentation/power/pm_qos_interface.txt
+> @@ -5,7 +5,8 @@ performance expectations by drivers, subsystems and user space applications on
+>  one of the parameters.
 >
-> The AMDs BIOS development guide (page 60 and 61)
-> http://developer.amd.com/wordpress/media/2012/10/43170_14h_Mod_00h-0Fh_BKDG.pdf
-> they recommend to use value of 0.
+>  Two different PM QoS frameworks are available:
+> -1. PM QoS classes for cpu_dma_latency, network_latency, network_throughput.
+> +1. PM QoS classes for cpu_dma_latency, network_latency, network_throughput,
+> +memory_bandwidth.
+>  2. the per-device PM QoS framework provides the API to manage the per-device latency
+>  constraints and PM QoS flags.
 >
-> Is 0 valid value? The governor will work properly with this value?
->
-> What could be a good default value?
->
-> Is there a way to experimentally measure the latency?
->
-> Thanks for your help!
->
-> Extract from dmesg:
-> [    0.843340] Extracting state 0
-> [    0.843374] State [0]: core_frequency[1650] power[6075]
-> transition_latency[0] bus_master_latency[0] control[0x0] status[0x0]
-> [    0.843481] Extracting state 1
-> [    0.843513] State [1]: core_frequency[1320] power[3712]
-> transition_latency[0] bus_master_latency[0] control[0x1] status[0x1]
-> [    0.843618] Extracting state 2
-> [    0.843652] State [2]: core_frequency[825] power[1472]
-> transition_latency[0] bus_master_latency[0] control[0x2] status[0x2]
-> [    0.843757] Extracting state 3
-> [    0.843790] State [3]: core_frequency[528] power[1008]
-> transition_latency[0] bus_master_latency[0] control[0x3] status[0x3]
+> @@ -13,6 +14,7 @@ Each parameters have defined units:
+>   * latency: usec
+>   * timeout: usec
+>   * throughput: kbs (kilo bit / sec)
+> + * memory bandwidth: mbs (mega bit / sec)
 >
 >
+>  1. PM QoS framework
+> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+> index 9ab4bf7..636e828 100644
+> --- a/include/linux/pm_qos.h
+> +++ b/include/linux/pm_qos.h
+> @@ -15,6 +15,7 @@ enum {
+>         PM_QOS_CPU_DMA_LATENCY,
+>         PM_QOS_NETWORK_LATENCY,
+>         PM_QOS_NETWORK_THROUGHPUT,
+> +       PM_QOS_MEMORY_BANDWIDTH,
+>
+>         /* insert new class ID */
+>         PM_QOS_NUM_CLASSES,
+> @@ -32,6 +33,7 @@ enum pm_qos_flags_status {
+>  #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE       (2000 * USEC_PER_SEC)
+>  #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE       (2000 * USEC_PER_SEC)
+>  #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE        0
+> +#define PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE  0
+>  #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE    0
+>  #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE 0
+>  #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT (-1)
+> @@ -69,7 +71,8 @@ struct dev_pm_qos_request {
+>  enum pm_qos_type {
+>         PM_QOS_UNITIALIZED,
+>         PM_QOS_MAX,             /* return the largest value */
+> -       PM_QOS_MIN              /* return the smallest value */
+> +       PM_QOS_MIN,             /* return the smallest value */
+> +       PM_QOS_SUM              /* return the sum */
+>  };
+>
+>  /*
+> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> index 884b770..5f4c006 100644
+> --- a/kernel/power/qos.c
+> +++ b/kernel/power/qos.c
+> @@ -105,11 +105,27 @@ static struct pm_qos_object network_throughput_pm_qos = {
+>  };
+>
+>
+> +static BLOCKING_NOTIFIER_HEAD(memory_bandwidth_notifier);
+> +static struct pm_qos_constraints memory_bw_constraints = {
+> +       .list = PLIST_HEAD_INIT(memory_bw_constraints.list),
+> +       .target_value = PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE,
+> +       .default_value = PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE,
+> +       .no_constraint_value = PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE,
+> +       .type = PM_QOS_SUM,
+> +       .notifiers = &memory_bandwidth_notifier,
+> +};
+> +static struct pm_qos_object memory_bandwidth_pm_qos = {
+> +       .constraints = &memory_bw_constraints,
+> +       .name = "memory_bandwidth",
+> +};
+> +
+> +
+>  static struct pm_qos_object *pm_qos_array[] = {
+>         &null_pm_qos,
+>         &cpu_dma_pm_qos,
+>         &network_lat_pm_qos,
+> -       &network_throughput_pm_qos
+> +       &network_throughput_pm_qos,
+> +       &memory_bandwidth_pm_qos,
+>  };
+>
+>  static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+> @@ -130,6 +146,9 @@ static const struct file_operations pm_qos_power_fops = {
+>  /* unlocked internal variant */
+>  static inline int pm_qos_get_value(struct pm_qos_constraints *c)
+>  {
+> +       struct plist_node *node;
+> +       int total_value = 0;
+> +
+>         if (plist_head_empty(&c->list))
+>                 return c->no_constraint_value;
+>
+> @@ -140,6 +159,12 @@ static inline int pm_qos_get_value(struct pm_qos_constraints *c)
+>         case PM_QOS_MAX:
+>                 return plist_last(&c->list)->prio;
+>
+> +       case PM_QOS_SUM:
+> +               plist_for_each(node, &c->list)
+> +                       total_value += node->prio;
+> +
+> +               return total_value;
+> +
+>         default:
+>                 /* runtime check for not using enum */
+>                 BUG();
 > --
-> Ricardo Ribalda
-
-
-
--- 
-Ricardo Ribalda
+> 1.9.3
+>
