@@ -1,130 +1,123 @@
-From: Robin Gong <b38343@freescale.com>
-Subject: [PATCH v2 2/3] power: reset: imx-snvs-poweroff: add power off driver for i.mx6
-Date: Fri, 12 Sep 2014 16:48:58 +0800
-Message-ID: <1410511739-31122-3-git-send-email-b38343@freescale.com>
-References: <1410511739-31122-1-git-send-email-b38343@freescale.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH] PM / OPP: Remove ARCH_HAS_OPP completely
+Date: Fri, 12 Sep 2014 05:20:52 -0500
+Message-ID: <CAGo_u6r3jXX2FS-PO5_-+zhHM3i3pVzGYumSYLh7YPNXGV98eg@mail.gmail.com>
+References: <1406551632.5397.17.camel@x220>
+	<1410511111.31130.4.camel@x220>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1410511739-31122-1-git-send-email-b38343@freescale.com>
+In-Reply-To: <1410511111.31130.4.camel@x220>
 Sender: linux-kernel-owner@vger.kernel.org
-To: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, shawn.guo@freescale.com, kernel@pengutronix.de, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, grant.likely@linaro.org, linux@arm.linux.org.uk
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Paul Bolle <pebolle@tiscali.nl>
+Cc: Mark Brown <broonie@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Simon Horman <horms+renesas@verge.net.au>, Tony Lindgren <tony@atomide.com>, Russell King <linux@arm.linux.org.uk>, Magnus Damm <magnus.damm@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add simple power off driver for i.mx6.
+On Fri, Sep 12, 2014 at 3:38 AM, Paul Bolle <pebolle@tiscali.nl> wrote:
+> The Kconfig symbol ARCH_HAS_OPP became redundant in v3.16: commit
+> 049d595a4db3 ("PM / OPP: Make OPP invisible to users in Kconfig")
+> removed the only dependency that used it. Setting it had no effect
+> anymore.
+>
+> So commit 78c5e0bb145d ("PM / OPP: Remove ARCH_HAS_OPP") removed it. For
+> some reason that commit did not remove all select statements for that
+> symbol. These statements are useless. Remove them too.
+>
+> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+> ---
+> Done on top of next-20140912. Tested with git grep only!
+>
+>  arch/arm/mach-omap2/Kconfig    | 5 -----
 
-Signed-off-by: Robin Gong <b38343@freescale.com>
----
- drivers/power/reset/Kconfig             |  6 +++
- drivers/power/reset/Makefile            |  1 +
- drivers/power/reset/imx-snvs-poweroff.c | 69 +++++++++++++++++++++++++++++++++
- 3 files changed, 76 insertions(+)
- create mode 100644 drivers/power/reset/imx-snvs-poweroff.c
+there can be conflict here:
+https://patchwork.kernel.org/patch/4857231/
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index ca41523..c48d9ba 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -45,6 +45,12 @@ config POWER_RESET_HISI
- 	help
- 	  Reboot support for Hisilicon boards.
- 
-+config POWER_RESET_IMX
-+	bool "IMX6 power-off driver"
-+	depends on POWER_RESET && SOC_IMX6
-+	help
-+	  Power off support for i.mx6 boards.
-+
- config POWER_RESET_MSM
- 	bool "Qualcomm MSM power-off driver"
- 	depends on POWER_RESET && ARCH_QCOM
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index a42e70e..2524daf 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -3,6 +3,7 @@ obj-$(CONFIG_POWER_RESET_AXXIA) += axxia-reset.o
- obj-$(CONFIG_POWER_RESET_BRCMSTB) += brcmstb-reboot.o
- obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
- obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
-+obj-$(CONFIG_POWER_RESET_IMX) += imx-snvs-poweroff.o
- obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
- obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
- obj-$(CONFIG_POWER_RESET_RESTART) += restart-poweroff.o
-diff --git a/drivers/power/reset/imx-snvs-poweroff.c b/drivers/power/reset/imx-snvs-poweroff.c
-new file mode 100644
-index 0000000..55603ba
---- /dev/null
-+++ b/drivers/power/reset/imx-snvs-poweroff.c
-@@ -0,0 +1,69 @@
-+/* Power off driver for i.mx6
-+ * Copyright (c) 2014, FREESCALE CORPORATION.  All rights reserved.
-+ *
-+ * based on msm-poweroff.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+
-+#include <asm/system_misc.h>
-+
-+static void __iomem *snvs_base;
-+
-+static void do_imx_poweroff(void)
-+{
-+	u32 value = readl(snvs_base);
-+
-+	/* set TOP and DP_EN bit */
-+	writel(value | 0x60, snvs_base);
-+}
-+
-+static int imx_poweroff_probe(struct platform_device *pdev)
-+{
-+	snvs_base = of_iomap(pdev->dev.of_node, 0);
-+	if (!snvs_base) {
-+		dev_err(&pdev->dev, "failed to get memory\n");
-+		return -EIO;
-+	}
-+
-+	pm_power_off = do_imx_poweroff;
-+	return 0;
-+}
-+
-+static const struct of_device_id of_imx_poweroff_match[] = {
-+	{ .compatible = "fsl,sec-v4.0-poweroff", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, of_imx_poweroff_match);
-+
-+static struct platform_driver imx_poweroff_driver = {
-+	.probe = imx_poweroff_probe,
-+	.driver = {
-+		.name = "imx-snvs-poweroff",
-+		.of_match_table = of_match_ptr(of_imx_poweroff_match),
-+	},
-+};
-+
-+static int __init imx_poweroff_init(void)
-+{
-+	return platform_driver_register(&imx_poweroff_driver);
-+}
-+device_initcall(imx_poweroff_init);
+http://marc.info/?l=linux-omap&m=141047815520894&w=2
+
+
+>  arch/arm/mach-shmobile/Kconfig | 1 -
+>  drivers/devfreq/Kconfig        | 1 -
+>  3 files changed, 7 deletions(-)
+>
+> diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+> index 5b103099626d..f138bd33a463 100644
+> --- a/arch/arm/mach-omap2/Kconfig
+> +++ b/arch/arm/mach-omap2/Kconfig
+> @@ -22,7 +22,6 @@ config ARCH_OMAP4
+>         bool "TI OMAP4"
+>         depends on ARCH_MULTI_V7
+>         select ARCH_OMAP2PLUS
+> -       select ARCH_HAS_OPP
+>         select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
+>         select ARM_CPU_SUSPEND if PM
+>         select ARM_ERRATA_720789
+> @@ -41,7 +40,6 @@ config SOC_OMAP5
+>         bool "TI OMAP5"
+>         depends on ARCH_MULTI_V7
+>         select ARCH_OMAP2PLUS
+> -       select ARCH_HAS_OPP
+>         select ARM_CPU_SUSPEND if PM
+>         select ARM_GIC
+>         select HAVE_ARM_SCU if SMP
+> @@ -53,14 +51,12 @@ config SOC_AM33XX
+>         bool "TI AM33XX"
+>         depends on ARCH_MULTI_V7
+>         select ARCH_OMAP2PLUS
+> -       select ARCH_HAS_OPP
+>         select ARM_CPU_SUSPEND if PM
+>
+>  config SOC_AM43XX
+>         bool "TI AM43x"
+>         depends on ARCH_MULTI_V7
+>         select ARCH_OMAP2PLUS
+> -       select ARCH_HAS_OPP
+>         select ARM_GIC
+>         select MACH_OMAP_GENERIC
+>         select MIGHT_HAVE_CACHE_L2X0
+> @@ -69,7 +65,6 @@ config SOC_DRA7XX
+>         bool "TI DRA7XX"
+>         depends on ARCH_MULTI_V7
+>         select ARCH_OMAP2PLUS
+> -       select ARCH_HAS_OPP
+>         select ARM_CPU_SUSPEND if PM
+>         select ARM_GIC
+>         select HAVE_ARM_ARCH_TIMER
+> diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
+> index 21f457b56c01..f59019dd986e 100644
+> --- a/arch/arm/mach-shmobile/Kconfig
+> +++ b/arch/arm/mach-shmobile/Kconfig
+> @@ -36,7 +36,6 @@ menuconfig ARCH_SHMOBILE_MULTI
+>         select NO_IOPORT_MAP
+>         select PINCTRL
+>         select ARCH_REQUIRE_GPIOLIB
+> -       select ARCH_HAS_OPP
+>
+>  if ARCH_SHMOBILE_MULTI
+>
+> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+> index 3dced0a9eae3..2227e9bf3884 100644
+> --- a/drivers/devfreq/Kconfig
+> +++ b/drivers/devfreq/Kconfig
+> @@ -80,7 +80,6 @@ config ARM_EXYNOS4_BUS_DEVFREQ
+>  config ARM_EXYNOS5_BUS_DEVFREQ
+>         bool "ARM Exynos5250 Bus DEVFREQ Driver"
+>         depends on SOC_EXYNOS5250
+> -       select ARCH_HAS_OPP
+>         select DEVFREQ_GOV_SIMPLE_ONDEMAND
+>         select PM_OPP
+>         help
+> --
+> 1.9.3
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
 -- 
-1.9.1
+---
+Regards,
+Nishanth Menon
