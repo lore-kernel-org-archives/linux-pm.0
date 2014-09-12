@@ -1,19 +1,19 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH 4/6] power: charger-manager: Use power_supply_changed() not
- private uevent.
-Date: Fri, 12 Sep 2014 20:11:25 +0900
-Message-ID: <1410520287-24825-5-git-send-email-jonghwa3.lee@samsung.com>
+Subject: [PATCH 1/6] power: charger-manager: Use alarmtimer for battery
+ monitoring in suspend.
+Date: Fri, 12 Sep 2014 20:11:22 +0900
+Message-ID: <1410520287-24825-2-git-send-email-jonghwa3.lee@samsung.com>
 References: <1410520287-24825-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mailout3.samsung.com ([203.254.224.33]:31529 "EHLO
 	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753419AbaILLLh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Sep 2014 07:11:37 -0400
-Received: from epcpsbgr5.samsung.com
- (u145.gpu120.samsung.co.kr [203.254.230.145])
+	with ESMTP id S1753587AbaILLLf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Sep 2014 07:11:35 -0400
+Received: from epcpsbgr3.samsung.com
+ (u143.gpu120.samsung.co.kr [203.254.230.143])
  by mailout3.samsung.com (Oracle Communications Messaging Server 7u4-24.01
  (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0NBS00E5WCF9H0C0@mailout3.samsung.com> for
+ with ESMTP id <0NBS00GS4CF9K790@mailout3.samsung.com> for
  linux-pm@vger.kernel.org; Fri, 12 Sep 2014 20:11:33 +0900 (KST)
 In-reply-to: <1410520287-24825-1-git-send-email-jonghwa3.lee@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -21,163 +21,495 @@ List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, cw00.choi@samsung.com, myungjoo.ham@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
 
-Whenever battery status is changed, charger manager tries to trigger uevent
-through private interface. This patch modifies it to use power_supply_changed()
-since it belongs to power supply subsystem.
+To guerantee proper charing and managing batteries even in suspend,
+charger-manager has used rtc device with rtc framework interface.
+However, it is better to use alarmtimer for cleaner and more appropriate
+operation.
+This patch makes driver to use alamtimer for polling work in suspend and
+removes all deprecated codes related with using rtc interface.
 
 Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 ---
- drivers/power/charger-manager.c |   81 +++------------------------------------
- 1 file changed, 6 insertions(+), 75 deletions(-)
+ drivers/power/Kconfig                 |    2 +-
+ drivers/power/charger-manager.c       |  287 ++++++++++-----------------------
+ include/linux/power/charger-manager.h |   32 +---
+ 3 files changed, 83 insertions(+), 238 deletions(-)
 
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 73cfcdf..c2613fd 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -315,7 +315,7 @@ config CHARGER_GPIO
+ 
+ config CHARGER_MANAGER
+ 	bool "Battery charger manager for multiple chargers"
+-	depends on REGULATOR && RTC_CLASS
++	depends on REGULATOR
+ 	select EXTCON
+ 	help
+           Say Y to enable charger-manager support, which allows multiple
 diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index a8c73db..1917a26 100644
+index 9e4dab4..88c2bc7 100644
 --- a/drivers/power/charger-manager.c
 +++ b/drivers/power/charger-manager.c
-@@ -35,18 +35,6 @@
- #define CM_DEFAULT_RECHARGE_TEMP_DIFF	50
- #define CM_DEFAULT_CHARGE_TEMP_MAX	500
- 
--static const char * const default_event_names[] = {
--	[CM_EVENT_UNKNOWN] = "Unknown",
--	[CM_EVENT_BATT_FULL] = "Battery Full",
--	[CM_EVENT_BATT_IN] = "Battery Inserted",
--	[CM_EVENT_BATT_OUT] = "Battery Pulled Out",
--	[CM_EVENT_BATT_OVERHEAT] = "Battery Overheat",
--	[CM_EVENT_BATT_COLD] = "Battery Cold",
--	[CM_EVENT_EXT_PWR_IN_OUT] = "External Power Attach/Detach",
--	[CM_EVENT_CHG_START_STOP] = "Charging Start/Stop",
--	[CM_EVENT_OTHERS] = "Other battery events"
--};
--
- /*
-  * Regard CM_JIFFIES_SMALL jiffies is small enough to ignore for
-  * delayed works so that we can run delayed works with CM_JIFFIES_SMALL
-@@ -63,8 +51,6 @@ static const char * const default_event_names[] = {
-  */
- #define CM_RTC_SMALL		(2)
- 
--#define UEVENT_BUF_SIZE		32
--
- static LIST_HEAD(cm_list);
+@@ -69,16 +69,11 @@ static LIST_HEAD(cm_list);
  static DEFINE_MUTEX(cm_list_mtx);
  
-@@ -401,61 +387,6 @@ static int try_charger_restart(struct charger_manager *cm)
+ /* About in-suspend (suspend-again) monitoring */
+-static struct rtc_device *rtc_dev;
+-/*
+- * Backup RTC alarm
+- * Save the wakeup alarm before entering suspend-to-RAM
+- */
+-static struct rtc_wkalrm rtc_wkalarm_save;
++static struct alarm *cm_timer;
++
+ /* Backup RTC alarm time in terms of seconds since 01-01-1970 00:00:00 */
+-static unsigned long rtc_wkalarm_save_time;
+ static bool cm_suspended;
+-static bool cm_rtc_set;
++static bool cm_timer_set;
+ static unsigned long cm_suspend_duration_ms;
+ 
+ /* About normal (not suspended) monitoring */
+@@ -87,9 +82,6 @@ static unsigned long next_polling; /* Next appointed polling time */
+ static struct workqueue_struct *cm_wq; /* init at driver add */
+ static struct delayed_work cm_monitor_work; /* init at driver add */
+ 
+-/* Global charger-manager description */
+-static struct charger_global_desc *g_desc; /* init with setup_charger_manager */
+-
+ /**
+  * is_batt_present - See if the battery presents in place.
+  * @cm: the Charger Manager representing the battery.
+@@ -986,10 +978,13 @@ static bool cm_setup_timer(void)
+ {
+ 	struct charger_manager *cm;
+ 	unsigned int wakeup_ms = UINT_MAX;
+-	bool ret = false;
++	int timer_req = 0;
+ 
+-	mutex_lock(&cm_list_mtx);
++	if (time_after(next_polling, jiffies))
++		CM_MIN_VALID(wakeup_ms,
++			jiffies_to_msecs(next_polling - jiffies));
+ 
++	mutex_lock(&cm_list_mtx);
+ 	list_for_each_entry(cm, &cm_list, entry) {
+ 		unsigned int fbchk_ms = 0;
+ 
+@@ -1009,162 +1004,37 @@ static bool cm_setup_timer(void)
+ 		/* Skip if polling is not required for this CM */
+ 		if (!is_polling_required(cm) && !cm->emergency_stop)
+ 			continue;
++		timer_req++;
+ 		if (cm->desc->polling_interval_ms == 0)
+ 			continue;
+ 		CM_MIN_VALID(wakeup_ms, cm->desc->polling_interval_ms);
+ 	}
+-
+ 	mutex_unlock(&cm_list_mtx);
+ 
+-	if (wakeup_ms < UINT_MAX && wakeup_ms > 0) {
+-		pr_info("Charger Manager wakeup timer: %u ms\n", wakeup_ms);
+-		if (rtc_dev) {
+-			struct rtc_wkalrm tmp;
+-			unsigned long time, now;
+-			unsigned long add = DIV_ROUND_UP(wakeup_ms, 1000);
+-
+-			/*
+-			 * Set alarm with the polling interval (wakeup_ms)
+-			 * except when rtc_wkalarm_save comes first.
+-			 * However, the alarm time should be NOW +
+-			 * CM_RTC_SMALL or later.
+-			 */
+-			tmp.enabled = 1;
+-			rtc_read_time(rtc_dev, &tmp.time);
+-			rtc_tm_to_time(&tmp.time, &now);
+-			if (add < CM_RTC_SMALL)
+-				add = CM_RTC_SMALL;
+-			time = now + add;
++	if (timer_req && cm_timer) {
++		ktime_t now, add;
+ 
+-			ret = true;
++		/*
++		 * Set alarm with the polling interval (wakeup_ms)
++		 * The alarm time should be NOW + CM_RTC_SMALL or later.
++		 */
++		if (wakeup_ms == UINT_MAX ||
++			wakeup_ms < CM_RTC_SMALL * MSEC_PER_SEC)
++			wakeup_ms = 2 * CM_RTC_SMALL * MSEC_PER_SEC;
+ 
+-			if (rtc_wkalarm_save.enabled &&
+-			    rtc_wkalarm_save_time &&
+-			    rtc_wkalarm_save_time < time) {
+-				if (rtc_wkalarm_save_time < now + CM_RTC_SMALL)
+-					time = now + CM_RTC_SMALL;
+-				else
+-					time = rtc_wkalarm_save_time;
++		pr_info("Charger Manager wakeup timer: %u ms\n", wakeup_ms);
+ 
+-				/* The timer is not appointed by CM */
+-				ret = false;
+-			}
++		now = ktime_get_boottime();
++		add = ktime_set(0, wakeup_ms * NSEC_PER_MSEC);
++		alarm_start(cm_timer, ktime_add(now, add));
+ 
+-			pr_info("Waking up after %lu secs\n", time - now);
++		cm_suspend_duration_ms = wakeup_ms;
+ 
+-			rtc_time_to_tm(time, &tmp.time);
+-			rtc_set_alarm(rtc_dev, &tmp);
+-			cm_suspend_duration_ms += wakeup_ms;
+-			return ret;
+-		}
++		return true;
+ 	}
+-
+-	if (rtc_dev)
+-		rtc_set_alarm(rtc_dev, &rtc_wkalarm_save);
+ 	return false;
  }
  
- /**
-- * uevent_notify - Let users know something has changed.
-- * @cm: the Charger Manager representing the battery.
-- * @event: the event string.
-- *
-- * If @event is null, it implies that uevent_notify is called
-- * by resume function. When called in the resume function, cm_suspended
-- * should be already reset to false in order to let uevent_notify
-- * notify the recent event during the suspend to users. While
-- * suspended, uevent_notify does not notify users, but tracks
-- * events so that uevent_notify can notify users later after resumed.
-- */
--static void uevent_notify(struct charger_manager *cm, const char *event)
+-static void _cm_fbchk_in_suspend(struct charger_manager *cm)
 -{
--	static char env_str[UEVENT_BUF_SIZE + 1] = "";
--	static char env_str_save[UEVENT_BUF_SIZE + 1] = "";
+-	unsigned long jiffy_now = jiffies;
 -
--	if (cm_suspended) {
--		/* Nothing in suspended-event buffer */
--		if (env_str_save[0] == 0) {
--			if (!strncmp(env_str, event, UEVENT_BUF_SIZE))
--				return; /* status not changed */
--			strncpy(env_str_save, event, UEVENT_BUF_SIZE);
--			return;
--		}
--
--		if (!strncmp(env_str_save, event, UEVENT_BUF_SIZE))
--			return; /* Duplicated. */
--		strncpy(env_str_save, event, UEVENT_BUF_SIZE);
--		return;
--	}
--
--	if (event == NULL) {
--		/* No messages pending */
--		if (!env_str_save[0])
--			return;
--
--		strncpy(env_str, env_str_save, UEVENT_BUF_SIZE);
--		kobject_uevent(&cm->dev->kobj, KOBJ_CHANGE);
--		env_str_save[0] = 0;
--
--		return;
--	}
--
--	/* status not changed */
--	if (!strncmp(env_str, event, UEVENT_BUF_SIZE))
+-	if (!cm->fullbatt_vchk_jiffies_at)
 -		return;
 -
--	/* save the status and notify the update */
--	strncpy(env_str, event, UEVENT_BUF_SIZE);
--	kobject_uevent(&cm->dev->kobj, KOBJ_CHANGE);
+-	if (g_desc && g_desc->assume_timer_stops_in_suspend)
+-		jiffy_now += msecs_to_jiffies(cm_suspend_duration_ms);
 -
--	dev_info(cm->dev, "%s\n", event);
+-	/* Execute now if it's going to be executed not too long after */
+-	jiffy_now += CM_JIFFIES_SMALL;
+-
+-	if (time_after_eq(jiffy_now, cm->fullbatt_vchk_jiffies_at))
+-		fullbatt_vchk(&cm->fullbatt_vchk_work.work);
 -}
 -
 -/**
-  * fullbatt_vchk - Check voltage drop some times after "FULL" event.
-  *
-  * If a user has designated "fullbatt_vchkdrop_uV" values with
-@@ -485,7 +416,7 @@ static void fullbatt_vchk(struct charger_manager *cm)
- 
- 	if (diff > desc->fullbatt_vchkdrop_uV) {
- 		try_charger_restart(cm);
--		uevent_notify(cm, "Recharging");
-+		power_supply_changed(&cm->charger_psy);
- 	}
+- * cm_suspend_again - Determine whether suspend again or not
+- *
+- * Returns true if the system should be suspended again
+- * Returns false if the system should be woken up
+- */
+-bool cm_suspend_again(void)
+-{
+-	struct charger_manager *cm;
+-	bool ret = false;
+-
+-	if (!g_desc || !g_desc->rtc_only_wakeup || !g_desc->rtc_only_wakeup() ||
+-	    !cm_rtc_set)
+-		return false;
+-
+-	if (cm_monitor())
+-		goto out;
+-
+-	ret = true;
+-	mutex_lock(&cm_list_mtx);
+-	list_for_each_entry(cm, &cm_list, entry) {
+-		_cm_fbchk_in_suspend(cm);
+-
+-		if (cm->status_save_ext_pwr_inserted != is_ext_pwr_online(cm) ||
+-		    cm->status_save_batt != is_batt_present(cm)) {
+-			ret = false;
+-			break;
+-		}
+-	}
+-	mutex_unlock(&cm_list_mtx);
+-
+-	cm_rtc_set = cm_setup_timer();
+-out:
+-	/* It's about the time when the non-CM appointed timer goes off */
+-	if (rtc_wkalarm_save.enabled) {
+-		unsigned long now;
+-		struct rtc_time tmp;
+-
+-		rtc_read_time(rtc_dev, &tmp);
+-		rtc_tm_to_time(&tmp, &now);
+-
+-		if (rtc_wkalarm_save_time &&
+-		    now + CM_RTC_SMALL >= rtc_wkalarm_save_time)
+-			return false;
+-	}
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(cm_suspend_again);
+-
+-/**
+- * setup_charger_manager - initialize charger_global_desc data
+- * @gd: pointer to instance of charger_global_desc
+- */
+-int setup_charger_manager(struct charger_global_desc *gd)
+-{
+-	if (!gd)
+-		return -EINVAL;
+-
+-	if (rtc_dev)
+-		rtc_class_close(rtc_dev);
+-	rtc_dev = NULL;
+-	g_desc = NULL;
+-
+-	if (!gd->rtc_only_wakeup) {
+-		pr_err("The callback rtc_only_wakeup is not given\n");
+-		return -EINVAL;
+-	}
+-
+-	if (gd->rtc_name) {
+-		rtc_dev = rtc_class_open(gd->rtc_name);
+-		if (IS_ERR_OR_NULL(rtc_dev)) {
+-			rtc_dev = NULL;
+-			/* Retry at probe. RTC may be not registered yet */
+-		}
+-	} else {
+-		pr_warn("No wakeup timer is given for charger manager.  "
+-			"In-suspend monitoring won't work.\n");
+-	}
+-
+-	g_desc = gd;
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(setup_charger_manager);
+-
+ /**
+  * charger_extcon_work - enable/diable charger according to the state
+  *			of charger cable
+@@ -1659,6 +1529,12 @@ static inline struct charger_desc *cm_get_drv_data(struct platform_device *pdev)
+ 	return (struct charger_desc *)dev_get_platdata(&pdev->dev);
  }
  
-@@ -516,7 +447,7 @@ static int check_charging_duration(struct charger_manager *cm)
- 		if (duration > desc->charging_max_duration_ms) {
- 			dev_info(cm->dev, "Charging duration exceed %ums\n",
- 				 desc->charging_max_duration_ms);
--			uevent_notify(cm, "Discharging");
-+			power_supply_changed(&cm->charger_psy);
- 			try_charger_enable(cm, false);
- 			ret = true;
- 		}
-@@ -527,7 +458,7 @@ static int check_charging_duration(struct charger_manager *cm)
- 				is_ext_pwr_online(cm)) {
- 			dev_info(cm->dev, "Discharging duration exceed %ums\n",
- 				 desc->discharging_max_duration_ms);
--			uevent_notify(cm, "Recharging");
-+			power_supply_changed(&cm->charger_psy);
- 			try_charger_enable(cm, true);
- 			ret = true;
- 		}
-@@ -606,7 +537,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 	if (temp_alrt) {
- 		cm->emergency_stop = temp_alrt;
- 		if (!try_charger_enable(cm, false))
--			uevent_notify(cm, default_event_names[temp_alrt]);
-+			power_supply_changed(&cm->charger_psy);
++static enum alarmtimer_restart cm_timer_func(struct alarm *alarm, ktime_t now)
++{
++	cm_timer_set = false;
++	return ALARMTIMER_NORESTART;
++}
++
+ static int charger_manager_probe(struct platform_device *pdev)
+ {
+ 	struct charger_desc *desc = cm_get_drv_data(pdev);
+@@ -1667,16 +1543,6 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 	int j = 0;
+ 	union power_supply_propval val;
  
+-	if (g_desc && !rtc_dev && g_desc->rtc_name) {
+-		rtc_dev = rtc_class_open(g_desc->rtc_name);
+-		if (IS_ERR_OR_NULL(rtc_dev)) {
+-			rtc_dev = NULL;
+-			dev_err(&pdev->dev, "Cannot get RTC %s\n",
+-				g_desc->rtc_name);
+-			return -ENODEV;
+-		}
+-	}
+-
+ 	if (!desc) {
+ 		dev_err(&pdev->dev, "No platform data (desc) found\n");
+ 		return -ENODEV;
+@@ -1691,6 +1557,12 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 	cm->dev = &pdev->dev;
+ 	cm->desc = desc;
+ 
++	/* Initialize alarm timer */
++	if (alarmtimer_get_rtcdev()) {
++		cm_timer = devm_kzalloc(cm->dev, sizeof(*cm_timer), GFP_KERNEL);
++		alarm_init(cm_timer, ALARM_BOOTTIME, cm_timer_func);
++	}
++
  	/*
- 	 * Check whole charging duration and discharing duration
-@@ -631,7 +562,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 	} else if (!cm->emergency_stop && is_full_charged(cm) &&
- 			cm->charger_enabled) {
- 		dev_info(cm->dev, "EVENT_HANDLE: Battery Fully Charged\n");
--		uevent_notify(cm, default_event_names[CM_EVENT_BATT_FULL]);
-+		power_supply_changed(&cm->charger_psy);
+ 	 * The following two do not need to be errors.
+ 	 * Users may intentionally ignore those two features.
+@@ -1923,38 +1795,41 @@ static int cm_suspend_noirq(struct device *dev)
+ 	return ret;
+ }
  
- 		try_charger_enable(cm, false);
++static bool cm_need_to_awake(void)
++{
++	struct charger_manager *cm;
++
++	if (cm_timer)
++		return false;
++
++	mutex_lock(&cm_list_mtx);
++	list_for_each_entry(cm, &cm_list, entry) {
++		if (is_charging(cm)) {
++			mutex_unlock(&cm_list_mtx);
++			return true;
++		}
++	}
++	mutex_unlock(&cm_list_mtx);
++
++	return false;
++}
++
+ static int cm_suspend_prepare(struct device *dev)
+ {
+ 	struct charger_manager *cm = dev_get_drvdata(dev);
  
-@@ -640,7 +571,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 		cm->emergency_stop = 0;
- 		if (is_ext_pwr_online(cm)) {
- 			if (!try_charger_enable(cm, true))
--				uevent_notify(cm, "CHARGING");
-+				power_supply_changed(&cm->charger_psy);
- 		}
+-	if (!cm_suspended) {
+-		if (rtc_dev) {
+-			struct rtc_time tmp;
+-			unsigned long now;
+-
+-			rtc_read_alarm(rtc_dev, &rtc_wkalarm_save);
+-			rtc_read_time(rtc_dev, &tmp);
++	if (cm_need_to_awake())
++		return -EBUSY;
+ 
+-			if (rtc_wkalarm_save.enabled) {
+-				rtc_tm_to_time(&rtc_wkalarm_save.time,
+-					       &rtc_wkalarm_save_time);
+-				rtc_tm_to_time(&tmp, &now);
+-				if (now > rtc_wkalarm_save_time)
+-					rtc_wkalarm_save_time = 0;
+-			} else {
+-				rtc_wkalarm_save_time = 0;
+-			}
+-		}
++	if (!cm_suspended)
+ 		cm_suspended = true;
+-	}
+ 
+-	cancel_delayed_work(&cm->fullbatt_vchk_work);
+-	cm->status_save_ext_pwr_inserted = is_ext_pwr_online(cm);
+-	cm->status_save_batt = is_batt_present(cm);
++	cm_timer_set = cm_setup_timer();
+ 
+-	if (!cm_rtc_set) {
+-		cm_suspend_duration_ms = 0;
+-		cm_rtc_set = cm_setup_timer();
++	if (cm_timer_set) {
++		cancel_work_sync(&setup_polling);
++		cancel_delayed_work_sync(&cm_monitor_work);
++		cancel_delayed_work(&cm->fullbatt_vchk_work);
  	}
  
+ 	return 0;
+@@ -1964,18 +1839,21 @@ static void cm_suspend_complete(struct device *dev)
+ {
+ 	struct charger_manager *cm = dev_get_drvdata(dev);
+ 
+-	if (cm_suspended) {
+-		if (rtc_dev) {
+-			struct rtc_wkalrm tmp;
+-
+-			rtc_read_alarm(rtc_dev, &tmp);
+-			rtc_wkalarm_save.pending = tmp.pending;
+-			rtc_set_alarm(rtc_dev, &rtc_wkalarm_save);
+-		}
++	if (cm_suspended)
+ 		cm_suspended = false;
+-		cm_rtc_set = false;
++
++	if (cm_timer_set) {
++		ktime_t remain;
++
++		alarm_cancel(cm_timer);
++		cm_timer_set = false;
++		remain = alarm_expires_remaining(cm_timer);
++		cm_suspend_duration_ms -= ktime_to_ms(remain);
++		schedule_work(&setup_polling);
+ 	}
+ 
++	_cm_monitor(cm);
++
+ 	/* Re-enqueue delayed work (fullbatt_vchk_work) */
+ 	if (cm->fullbatt_vchk_jiffies_at) {
+ 		unsigned long delay = 0;
+@@ -1990,21 +1868,18 @@ static void cm_suspend_complete(struct device *dev)
+ 		}
+ 
+ 		/*
+-		 * Account for cm_suspend_duration_ms if
+-		 * assume_timer_stops_in_suspend is active
++		 * Account for cm_suspend_duration_ms with assuming that
++		 * timer stops in suspend.
+ 		 */
+-		if (g_desc && g_desc->assume_timer_stops_in_suspend) {
+-			if (delay > cm_suspend_duration_ms)
+-				delay -= cm_suspend_duration_ms;
+-			else
+-				delay = 0;
+-		}
++		if (delay > cm_suspend_duration_ms)
++			delay -= cm_suspend_duration_ms;
++		else
++			delay = 0;
+ 
+ 		queue_delayed_work(cm_wq, &cm->fullbatt_vchk_work,
+ 				   msecs_to_jiffies(delay));
+ 	}
+ 	device_set_wakeup_capable(cm->dev, false);
+-	uevent_notify(cm, NULL);
+ }
+ 
+ static const struct dev_pm_ops charger_manager_pm = {
+diff --git a/include/linux/power/charger-manager.h b/include/linux/power/charger-manager.h
+index 07e7945..8e111f3 100644
+--- a/include/linux/power/charger-manager.h
++++ b/include/linux/power/charger-manager.h
+@@ -17,6 +17,7 @@
+ 
+ #include <linux/power_supply.h>
+ #include <linux/extcon.h>
++#include <linux/alarmtimer.h>
+ 
+ enum data_source {
+ 	CM_BATTERY_PRESENT,
+@@ -45,29 +46,6 @@ enum cm_event_types {
+ };
+ 
+ /**
+- * struct charger_global_desc
+- * @rtc_name: the name of RTC used to wake up the system from suspend.
+- * @rtc_only_wakeup:
+- *	If the system is woken up by waekup-sources other than the RTC or
+- *	callbacks, Charger Manager should recognize with
+- *	rtc_only_wakeup() returning false.
+- *	If the RTC given to CM is the only wakeup reason,
+- *	rtc_only_wakeup should return true.
+- * @assume_timer_stops_in_suspend:
+- *	Assume that the jiffy timer stops in suspend-to-RAM.
+- *	When enabled, CM does not rely on jiffies value in
+- *	suspend_again and assumes that jiffies value does not
+- *	change during suspend.
+- */
+-struct charger_global_desc {
+-	char *rtc_name;
+-
+-	bool (*rtc_only_wakeup)(void);
+-
+-	bool assume_timer_stops_in_suspend;
+-};
+-
+-/**
+  * struct charger_cable
+  * @extcon_name: the name of extcon device.
+  * @name: the name of charger cable(external connector).
+@@ -269,22 +247,14 @@ struct charger_manager {
+ 	char psy_name_buf[PSY_NAME_MAX + 1];
+ 	struct power_supply charger_psy;
+ 
+-	bool status_save_ext_pwr_inserted;
+-	bool status_save_batt;
+-
+ 	u64 charging_start_time;
+ 	u64 charging_end_time;
+ };
+ 
+ #ifdef CONFIG_CHARGER_MANAGER
+-extern int setup_charger_manager(struct charger_global_desc *gd);
+-extern bool cm_suspend_again(void);
+ extern void cm_notify_event(struct power_supply *psy,
+ 				enum cm_event_types type, char *msg);
+ #else
+-static inline int setup_charger_manager(struct charger_global_desc *gd)
+-{ return 0; }
+-static inline bool cm_suspend_again(void) { return false; }
+ static inline void cm_notify_event(struct power_supply *psy,
+ 				enum cm_event_types type, char *msg) { }
+ #endif
 -- 
 1.7.9.5
 
