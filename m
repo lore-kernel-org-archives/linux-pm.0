@@ -1,108 +1,63 @@
 From: Paul Bolle <pebolle@tiscali.nl>
-Subject: [PATCH] PM / OPP: Remove ARCH_HAS_OPP completely
-Date: Fri, 12 Sep 2014 10:38:31 +0200
-Message-ID: <1410511111.31130.4.camel@x220>
-References: <1406551632.5397.17.camel@x220>
+Subject: Re: [RFC PATCH 2/5] devfreq: event: Add exynos-ppmu devfreq evnet
+ driver
+Date: Fri, 12 Sep 2014 10:41:14 +0200
+Message-ID: <1410511274.31130.7.camel@x220>
+References: <1409891419-28560-1-git-send-email-cw00.choi@samsung.com>
+	 <1409891419-28560-3-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cpsmtpb-ews10.kpnxchange.com ([213.75.39.15]:50589 "EHLO
-	cpsmtpb-ews10.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751185AbaILIif (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Sep 2014 04:38:35 -0400
-In-Reply-To: <1406551632.5397.17.camel@x220>
+Received: from cpsmtpb-ews07.kpnxchange.com ([213.75.39.10]:54385 "EHLO
+	cpsmtpb-ews07.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753258AbaILIlR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Sep 2014 04:41:17 -0400
+In-Reply-To: <1409891419-28560-3-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Nishanth Menon <nm@ti.com>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Simon Horman <horms+renesas@verge.net.au>, Tony Lindgren <tony@atomide.com>, Russell King <linux@arm.linux.org.uk>, Magnus Damm <magnus.damm@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: myungjoo.ham@samsung.com, linux-pm@vger.kernel.org, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, a.kesavan@samsung.com, kgene.kim@samsung.com, tomasz.figa@gmail.com, b.zolnierkie@samsung.com, nm@ti.com, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-The Kconfig symbol ARCH_HAS_OPP became redundant in v3.16: commit
-049d595a4db3 ("PM / OPP: Make OPP invisible to users in Kconfig")
-removed the only dependency that used it. Setting it had no effect
-anymore.
+On Fri, 2014-09-05 at 13:30 +0900, Chanwoo Choi wrote:
+> This patch add exynos-ppmu devfreq event driver to provider raw data about
+> the utilization of each IP in Exynos SoC series.
+> 
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+> ---
+>  drivers/devfreq/Kconfig             |  10 +
+>  drivers/devfreq/event/Makefile      |   1 +
+>  drivers/devfreq/event/exynos-ppmu.c | 410 ++++++++++++++++++++++++++++++++++++
+>  3 files changed, 421 insertions(+)
+>  create mode 100644 drivers/devfreq/event/exynos-ppmu.c
+> 
+> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+> index ef839e7..4fbbcea 100644
+> --- a/drivers/devfreq/Kconfig
+> +++ b/drivers/devfreq/Kconfig
+> @@ -90,4 +90,14 @@ config ARM_EXYNOS5_BUS_DEVFREQ
+>  
+>  comment "DEVFREQ Event Drivers"
+>  
+> +config DEVFREQ_EVENT_EXYNOS_PPMU
+> +	bool "EXYNOS PPMU (Performance Profiling Monitoring Unit) DEVFREQ event Driver"
+> +	depends on ARCH_EXYNOS
+> +	select ARCH_HAS_OPP
 
-So commit 78c5e0bb145d ("PM / OPP: Remove ARCH_HAS_OPP") removed it. For
-some reason that commit did not remove all select statements for that
-symbol. These statements are useless. Remove them too.
+This select statement can be dropped: see commit 78c5e0bb145d ("PM /
+OPP: Remove ARCH_HAS_OPP").
 
-Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
----
-Done on top of next-20140912. Tested with git grep only!
+By the way: there's a typo in the commit summary ("evnet").
 
- arch/arm/mach-omap2/Kconfig    | 5 -----
- arch/arm/mach-shmobile/Kconfig | 1 -
- drivers/devfreq/Kconfig        | 1 -
- 3 files changed, 7 deletions(-)
+> +	select PM_OPP
+> +	help
+> +	 This add the DEVFREQ event driver for Exynos SoC. It provides PPMU
+> +	 (Performance Profiling Monitoring Unit) counters to estimate the
+> +	 utilization of each module.
+> +
+>  endif # PM_DEVFREQ
 
-diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-index 5b103099626d..f138bd33a463 100644
---- a/arch/arm/mach-omap2/Kconfig
-+++ b/arch/arm/mach-omap2/Kconfig
-@@ -22,7 +22,6 @@ config ARCH_OMAP4
- 	bool "TI OMAP4"
- 	depends on ARCH_MULTI_V7
- 	select ARCH_OMAP2PLUS
--	select ARCH_HAS_OPP
- 	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
- 	select ARM_CPU_SUSPEND if PM
- 	select ARM_ERRATA_720789
-@@ -41,7 +40,6 @@ config SOC_OMAP5
- 	bool "TI OMAP5"
- 	depends on ARCH_MULTI_V7
- 	select ARCH_OMAP2PLUS
--	select ARCH_HAS_OPP
- 	select ARM_CPU_SUSPEND if PM
- 	select ARM_GIC
- 	select HAVE_ARM_SCU if SMP
-@@ -53,14 +51,12 @@ config SOC_AM33XX
- 	bool "TI AM33XX"
- 	depends on ARCH_MULTI_V7
- 	select ARCH_OMAP2PLUS
--	select ARCH_HAS_OPP
- 	select ARM_CPU_SUSPEND if PM
- 
- config SOC_AM43XX
- 	bool "TI AM43x"
- 	depends on ARCH_MULTI_V7
- 	select ARCH_OMAP2PLUS
--	select ARCH_HAS_OPP
- 	select ARM_GIC
- 	select MACH_OMAP_GENERIC
- 	select MIGHT_HAVE_CACHE_L2X0
-@@ -69,7 +65,6 @@ config SOC_DRA7XX
- 	bool "TI DRA7XX"
- 	depends on ARCH_MULTI_V7
- 	select ARCH_OMAP2PLUS
--	select ARCH_HAS_OPP
- 	select ARM_CPU_SUSPEND if PM
- 	select ARM_GIC
- 	select HAVE_ARM_ARCH_TIMER
-diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
-index 21f457b56c01..f59019dd986e 100644
---- a/arch/arm/mach-shmobile/Kconfig
-+++ b/arch/arm/mach-shmobile/Kconfig
-@@ -36,7 +36,6 @@ menuconfig ARCH_SHMOBILE_MULTI
- 	select NO_IOPORT_MAP
- 	select PINCTRL
- 	select ARCH_REQUIRE_GPIOLIB
--	select ARCH_HAS_OPP
- 
- if ARCH_SHMOBILE_MULTI
- 
-diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 3dced0a9eae3..2227e9bf3884 100644
---- a/drivers/devfreq/Kconfig
-+++ b/drivers/devfreq/Kconfig
-@@ -80,7 +80,6 @@ config ARM_EXYNOS4_BUS_DEVFREQ
- config ARM_EXYNOS5_BUS_DEVFREQ
- 	bool "ARM Exynos5250 Bus DEVFREQ Driver"
- 	depends on SOC_EXYNOS5250
--	select ARCH_HAS_OPP
- 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
- 	select PM_OPP
- 	help
--- 
-1.9.3
 
+Paul Bolle
 
