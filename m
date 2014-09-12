@@ -1,51 +1,42 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [PATCH] cpuidle/powernv: Enter fastsleep on checking if deep idle
- states are allowed
-Date: Fri, 12 Sep 2014 16:31:32 +0530
-Message-ID: <20140912110131.7311.86417.stgit@preeti.in.ibm.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] PM / OPP: Remove ARCH_HAS_OPP completely
+Date: Fri, 12 Sep 2014 13:03:42 +0200
+Message-ID: <CAMuHMdUe+GKaYMmbC9JO=Qt7oNiEja0nGbp8oXVS=G4WJHmwJg@mail.gmail.com>
+References: <1406551632.5397.17.camel@x220>
+	<1410511111.31130.4.camel@x220>
+	<CAGo_u6r3jXX2FS-PO5_-+zhHM3i3pVzGYumSYLh7YPNXGV98eg@mail.gmail.com>
+	<1410518771.31130.22.camel@x220>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e32.co.us.ibm.com ([32.97.110.150]:46939 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753419AbaILLBt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Sep 2014 07:01:49 -0400
-Received: from /spool/local
-	by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Fri, 12 Sep 2014 05:01:48 -0600
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1410518771.31130.22.camel@x220>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Paul Bolle <pebolle@tiscali.nl>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Nishanth Menon <nm@ti.com>, Mark Brown <broonie@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Simon Horman <horms+renesas@verge.net.au>, Tony Lindgren <tony@atomide.com>, Russell King <linux@arm.linux.org.uk>, Magnus Damm <magnus.damm@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: mikey@neuling.org, mpe@ellerman.id.au, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
-Cc: linux-pm@vger.kernel.org
 
-Today the procfs interface /proc/sys/kernel/powersave-nap is used to control
-entry into deep idle states beyond snooze. Check for the value of this
-parameter before entering fastsleep. We already do this check for nap in
-power7_idle().
+Hi Paul, Rafael,
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
+On Fri, Sep 12, 2014 at 12:46 PM, Paul Bolle <pebolle@tiscali.nl> wrote:
+>> >  arch/arm/mach-shmobile/Kconfig | 1 -
+>> >  drivers/devfreq/Kconfig        | 1 -
+>
+> Were patches submitted for these two files too? If so, we can probably
+> just drop my patch.
 
- drivers/cpuidle/cpuidle-powernv.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+Rafael said: "I've queued this up for 3.17, thanks!"
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index a64be57..b8ba52e 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -69,6 +69,12 @@ static int fastsleep_loop(struct cpuidle_device *dev,
- 	unsigned long old_lpcr = mfspr(SPRN_LPCR);
- 	unsigned long new_lpcr;
- 
-+	/*
-+	 * Verify if snooze is the only valid cpuidle state
-+	 */
-+	if (!(powersave_nap > 0))
-+		return index;
-+
- 	if (unlikely(system_state < SYSTEM_RUNNING))
- 		return index;
- 
+http://lists.infradead.org/pipermail/linux-arm-kernel/2014-July/274681.html
 
+But it's not in -next.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
