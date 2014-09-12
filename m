@@ -1,52 +1,61 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 3/7 v6] power: reset: driver for the Versatile syscon reboot
-Date: Fri, 12 Sep 2014 10:55:19 +0200
-Message-ID: <CACRpkdbE8z3N_7FQzooVsd=UvUeoRhPqO5=foTGn7U=ag0ML9g@mail.gmail.com>
-References: <1410176286-32533-1-git-send-email-linus.walleij@linaro.org>
-	<1410176286-32533-4-git-send-email-linus.walleij@linaro.org>
+From: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
+Subject: Re: state[i].transition_latency and state[i].bus_master_latency set
+ to 0. BUG?
+Date: Fri, 12 Sep 2014 10:55:24 +0200
+Message-ID: <CAPybu_3u1+TLpFO0ZisWE3UZ+dCsR76AbpQsD+1cSX0ta1Tbbg@mail.gmail.com>
+References: <CAPybu_0wdTRYHwPN6mHdBrx8_RjcEXBWRpBs4HU5LASR16cOQg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f45.google.com ([209.85.218.45]:47026 "EHLO
-	mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbaILIzU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Sep 2014 04:55:20 -0400
-Received: by mail-oi0-f45.google.com with SMTP id v63so255202oia.18
-        for <linux-pm@vger.kernel.org>; Fri, 12 Sep 2014 01:55:20 -0700 (PDT)
-In-Reply-To: <1410176286-32533-4-git-send-email-linus.walleij@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAPybu_0wdTRYHwPN6mHdBrx8_RjcEXBWRpBs4HU5LASR16cOQg@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, "alex@qtec.com" <alex@qtec.com>
 List-Id: linux-pm@vger.kernel.org
-To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Will Deacon <will.deacon@arm.com>, Rob Herring <robh@kernel.org>, Linus Walleij <linus.walleij@linaro.org>
 
-On Mon, Sep 8, 2014 at 1:38 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
+Just in case somebody missed this mail in their holiday inbox :)....
 
-> This driver enabled us to drive the reboot of the Versatile family
-> of ARM reference boards. Even though only the RealView boards are
-> supported initially, these boards all have the same procedure for
-> reboot:
+Any good ideas for this?
+
+On Tue, Aug 5, 2014 at 5:37 PM, Ricardo Ribalda Delgado
+<ricardo.ribalda@gmail.com> wrote:
+> Hello!
 >
-> - Write a magic value into an unlocking register
-> - Write another magic value into a reset control register
+> I am working with an AMD family 14h Processor. And I believe that the
+> governor is not behaving as expected.
 >
-> The driver will be reusable for Versatile and possibly also the
-> Integrator family of reference boards.
+> On the _PSS table, the transition_latency and bus_master_latency are set to 0.
 >
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
-> ChangeLog v1->v2:
-> - Do not probe from a platform device, instead use a device_initcall()
->   and look up the syscon device from its node. If that device is
->   not yet registered, the call will be deferred. This is done so that
->   the Linux driver model is not reflected into the device tree, as
->   the reboot property of the syscon is not a separate device.
+> The AMDs BIOS development guide (page 60 and 61)
+> http://developer.amd.com/wordpress/media/2012/10/43170_14h_Mod_00h-0Fh_BKDG.pdf
+> they recommend to use value of 0.
+>
+> Is 0 valid value? The governor will work properly with this value?
+>
+> What could be a good default value?
+>
+> Is there a way to experimentally measure the latency?
+>
+> Thanks for your help!
+>
+> Extract from dmesg:
+> [    0.843340] Extracting state 0
+> [    0.843374] State [0]: core_frequency[1650] power[6075]
+> transition_latency[0] bus_master_latency[0] control[0x0] status[0x0]
+> [    0.843481] Extracting state 1
+> [    0.843513] State [1]: core_frequency[1320] power[3712]
+> transition_latency[0] bus_master_latency[0] control[0x1] status[0x1]
+> [    0.843618] Extracting state 2
+> [    0.843652] State [2]: core_frequency[825] power[1472]
+> transition_latency[0] bus_master_latency[0] control[0x2] status[0x2]
+> [    0.843757] Extracting state 3
+> [    0.843790] State [3]: core_frequency[528] power[1008]
+> transition_latency[0] bus_master_latency[0] control[0x3] status[0x3]
+>
+>
+> --
+> Ricardo Ribalda
 
-Can any of the power maintainers please ACK this patch if it
-looks OK, so it can be pulled in through ARM SoC?
 
-Yours,
-Linus Walleij
+
+-- 
+Ricardo Ribalda
