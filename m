@@ -1,104 +1,137 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 4/4] ARM: shmobile: r8a7740 dtsi: Add missing INTCA clock for irqpin module
-Date: Fri, 12 Sep 2014 15:15:20 +0200
-Message-ID: <1410527720-18061-5-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 2/4] irqchip: renesas-intc-irqpin: Add minimal runtime PM support
+Date: Fri, 12 Sep 2014 15:15:18 +0200
+Message-ID: <1410527720-18061-3-git-send-email-geert+renesas@glider.be>
 References: <1410527720-18061-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from baptiste.telenet-ops.be ([195.130.132.51]:58623 "EHLO
+	baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754678AbaILNP0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Sep 2014 09:15:26 -0400
 In-Reply-To: <1410527720-18061-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, devicetree@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-This clock drives the INTCA irqpin controller modules.
+This is just enough to let pm_clk_*() enable the functional clock, and
+manage it for suspend/resume, if present.
 Before, it was assumed enabled by the bootloader or reset state.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: devicetree@vger.kernel.org
----
- arch/arm/boot/dts/r8a7740.dtsi            | 14 ++++++++++----
- include/dt-bindings/clock/r8a7740-clock.h |  1 +
- 2 files changed, 11 insertions(+), 4 deletions(-)
+To prevent the clock from being disabled while the module is needed for
+wake-up, implement irq_chip.irq_set_wake(), which increments/decrements
+the clock's enable_count when needed.
 
-diff --git a/arch/arm/boot/dts/r8a7740.dtsi b/arch/arm/boot/dts/r8a7740.dtsi
-index d46c213a17ad..502483f4dccb 100644
---- a/arch/arm/boot/dts/r8a7740.dtsi
-+++ b/arch/arm/boot/dts/r8a7740.dtsi
-@@ -71,6 +71,7 @@
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&mstp2_clks R8A7740_CLK_INTCA>;
- 	};
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/irqchip/irq-renesas-intc-irqpin.c | 38 +++++++++++++++++++++++++++----
+ 1 file changed, 34 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/irqchip/irq-renesas-intc-irqpin.c b/drivers/irqchip/irq-renesas-intc-irqpin.c
+index a6b205b72c9b..542e850f4946 100644
+--- a/drivers/irqchip/irq-renesas-intc-irqpin.c
++++ b/drivers/irqchip/irq-renesas-intc-irqpin.c
+@@ -17,6 +17,7 @@
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
  
- 	/* irqpin1: IRQ8 - IRQ15 */
-@@ -91,6 +92,7 @@
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&mstp2_clks R8A7740_CLK_INTCA>;
- 	};
++#include <linux/clk.h>
+ #include <linux/init.h>
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+@@ -30,6 +31,7 @@
+ #include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/platform_data/irq-renesas-intc-irqpin.h>
++#include <linux/pm_runtime.h>
  
- 	/* irqpin2: IRQ16 - IRQ23 */
-@@ -111,6 +113,7 @@
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&mstp2_clks R8A7740_CLK_INTCA>;
- 	};
+ #define INTC_IRQPIN_MAX 8 /* maximum 8 interrupts per driver instance */
  
- 	/* irqpin3: IRQ24 - IRQ31 */
-@@ -131,6 +134,7 @@
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH
- 			      0 149 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&mstp2_clks R8A7740_CLK_INTCA>;
- 	};
+@@ -75,6 +77,7 @@ struct intc_irqpin_priv {
+ 	struct platform_device *pdev;
+ 	struct irq_chip irq_chip;
+ 	struct irq_domain *irq_domain;
++	struct clk *clk;
+ 	bool shared_irqs;
+ 	u8 shared_irq_mask;
+ };
+@@ -270,6 +273,21 @@ static int intc_irqpin_irq_set_type(struct irq_data *d, unsigned int type)
+ 				     value ^ INTC_IRQ_SENSE_VALID);
+ }
  
- 	ether: ethernet@e9a00000 {
-@@ -448,8 +452,8 @@
- 		mstp2_clks: mstp2_clks@e6150138 {
- 			compatible = "renesas,r8a7740-mstp-clocks", "renesas,cpg-mstp-clocks";
- 			reg = <0xe6150138 4>, <0xe6150040 4>;
--			clocks = <&sub_clk>, <&sub_clk>,
--				 <&cpg_clocks R8A7740_CLK_HP>,
-+			clocks = <&sub_clk>, <&cpg_clocks R8A7740_CLK_HP>,
-+				 <&sub_clk>, <&cpg_clocks R8A7740_CLK_HP>,
- 				 <&cpg_clocks R8A7740_CLK_HP>,
- 				 <&cpg_clocks R8A7740_CLK_HP>,
- 				 <&cpg_clocks R8A7740_CLK_HP>,
-@@ -458,7 +462,8 @@
- 				 <&sub_clk>;
- 			#clock-cells = <1>;
- 			renesas,clock-indices = <
--				R8A7740_CLK_SCIFA6 R8A7740_CLK_SCIFA7
-+				R8A7740_CLK_SCIFA6 R8A7740_CLK_INTCA
-+				R8A7740_CLK_SCIFA7
- 				R8A7740_CLK_DMAC1 R8A7740_CLK_DMAC2
- 				R8A7740_CLK_DMAC3 R8A7740_CLK_USBDMAC
- 				R8A7740_CLK_SCIFA5 R8A7740_CLK_SCIFB
-@@ -467,7 +472,8 @@
- 				R8A7740_CLK_SCIFA4
- 			>;
- 			clock-output-names =
--				"scifa6", "scifa7", "dmac1", "dmac2", "dmac3",
-+				"scifa6", "intca",
-+				"scifa7", "dmac1", "dmac2", "dmac3",
- 				"usbdmac", "scifa5", "scifb", "scifa0", "scifa1",
- 				"scifa2", "scifa3", "scifa4";
- 		};
-diff --git a/include/dt-bindings/clock/r8a7740-clock.h b/include/dt-bindings/clock/r8a7740-clock.h
-index f6b4b0fe7a43..476135da0f23 100644
---- a/include/dt-bindings/clock/r8a7740-clock.h
-+++ b/include/dt-bindings/clock/r8a7740-clock.h
-@@ -40,6 +40,7 @@
++static int intc_irqpin_irq_set_wake(struct irq_data *d, unsigned int on)
++{
++	struct intc_irqpin_priv *p = irq_data_get_irq_chip_data(d);
++
++	if (!p->clk)
++		return 0;
++
++	if (on)
++		clk_enable(p->clk);
++	else
++		clk_disable(p->clk);
++
++	return 0;
++}
++
+ static irqreturn_t intc_irqpin_irq_handler(int irq, void *dev_id)
+ {
+ 	struct intc_irqpin_irq *i = dev_id;
+@@ -346,8 +364,7 @@ static int intc_irqpin_probe(struct platform_device *pdev)
+ 	p = devm_kzalloc(dev, sizeof(*p), GFP_KERNEL);
+ 	if (!p) {
+ 		dev_err(dev, "failed to allocate driver data\n");
+-		ret = -ENOMEM;
+-		goto err0;
++		return -ENOMEM;
+ 	}
  
- /* MSTP2 */
- #define R8A7740_CLK_SCIFA6	30
-+#define R8A7740_CLK_INTCA	29
- #define R8A7740_CLK_SCIFA7	22
- #define R8A7740_CLK_DMAC1	18
- #define R8A7740_CLK_DMAC2	17
+ 	/* deal with driver instance configuration */
+@@ -365,6 +382,15 @@ static int intc_irqpin_probe(struct platform_device *pdev)
+ 	p->pdev = pdev;
+ 	platform_set_drvdata(pdev, p);
+ 
++	p->clk = devm_clk_get(dev, NULL);
++	if (IS_ERR(p->clk)) {
++		dev_warn(dev, "unable to get clock\n");
++		p->clk = NULL;
++	}
++
++	pm_runtime_enable(dev);
++	pm_runtime_get_sync(dev);
++
+ 	/* get hold of manadatory IOMEM */
+ 	for (k = 0; k < INTC_IRQPIN_REG_NR; k++) {
+ 		io[k] = platform_get_resource(pdev, IORESOURCE_MEM, k);
+@@ -456,7 +482,8 @@ static int intc_irqpin_probe(struct platform_device *pdev)
+ 	irq_chip->irq_mask = disable_fn;
+ 	irq_chip->irq_unmask = enable_fn;
+ 	irq_chip->irq_set_type = intc_irqpin_irq_set_type;
+-	irq_chip->flags	= IRQCHIP_SKIP_SET_WAKE | IRQCHIP_MASK_ON_SUSPEND;
++	irq_chip->irq_set_wake = intc_irqpin_irq_set_wake;
++	irq_chip->flags	= IRQCHIP_MASK_ON_SUSPEND;
+ 
+ 	p->irq_domain = irq_domain_add_simple(dev->of_node,
+ 					      p->number_of_irqs,
+@@ -508,6 +535,8 @@ static int intc_irqpin_probe(struct platform_device *pdev)
+ err1:
+ 	irq_domain_remove(p->irq_domain);
+ err0:
++	pm_runtime_put(dev);
++	pm_runtime_disable(dev);
+ 	return ret;
+ }
+ 
+@@ -516,7 +545,8 @@ static int intc_irqpin_remove(struct platform_device *pdev)
+ 	struct intc_irqpin_priv *p = platform_get_drvdata(pdev);
+ 
+ 	irq_domain_remove(p->irq_domain);
+-
++	pm_runtime_put(&pdev->dev);
++	pm_runtime_disable(&pdev->dev);
+ 	return 0;
+ }
+ 
 -- 
 1.9.1
 
