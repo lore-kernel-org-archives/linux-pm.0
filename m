@@ -1,34 +1,37 @@
 From: Robin Gong <b38343@freescale.com>
-Subject: [PATCH v2 0/3] add power off driver for i.mx6
-Date: Fri, 12 Sep 2014 16:48:56 +0800
-Message-ID: <1410511739-31122-1-git-send-email-b38343@freescale.com>
+Subject: [PATCH v2 3/3] ARM: configs: imx_v6_v7_defconfig: add power off driver
+Date: Fri, 12 Sep 2014 16:48:59 +0800
+Message-ID: <1410511739-31122-4-git-send-email-b38343@freescale.com>
+References: <1410511739-31122-1-git-send-email-b38343@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1410511739-31122-1-git-send-email-b38343@freescale.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, shawn.guo@freescale.com, kernel@pengutronix.de, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, grant.likely@linaro.org, linux@arm.linux.org.uk
 Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add simple power off driver for i.mx6, including:
-- add basic imx-snvs-poweroff driver in drivers/power/reset
-- add device node in all dts files of i.mx6.
-- enable in config file
+Add power off driver in config file.
 
-Robin Gong (3):
-  ARM: dts: imx6: add pm_power_off support for i.mx6 chips
-  power: reset: imx-snvs-poweroff: add power off driver for i.mx6
-  ARM: configs: imx_v6_v7_defconfig: add power off driver
+Signed-off-by: Robin Gong <b38343@freescale.com>
+---
+ arch/arm/configs/imx_v6_v7_defconfig | 3 +++
+ 1 file changed, 3 insertions(+)
 
- arch/arm/boot/dts/imx6qdl.dtsi          |  5 +++
- arch/arm/boot/dts/imx6sl.dtsi           |  5 +++
- arch/arm/boot/dts/imx6sx.dtsi           |  5 +++
- arch/arm/configs/imx_v6_v7_defconfig    |  3 ++
- drivers/power/reset/Kconfig             |  5 +++
- drivers/power/reset/Makefile            |  1 +
- drivers/power/reset/imx-snvs-poweroff.c | 69 +++++++++++++++++++++++++++++++++
- 7 files changed, 93 insertions(+)
- create mode 100644 drivers/power/reset/imx-snvs-poweroff.c
-
+diff --git a/arch/arm/configs/imx_v6_v7_defconfig b/arch/arm/configs/imx_v6_v7_defconfig
+index 16cfec4..a310e61 100644
+--- a/arch/arm/configs/imx_v6_v7_defconfig
++++ b/arch/arm/configs/imx_v6_v7_defconfig
+@@ -165,6 +165,9 @@ CONFIG_SPI_IMX=y
+ CONFIG_GPIO_SYSFS=y
+ CONFIG_GPIO_MC9S08DZ60=y
+ CONFIG_GPIO_STMPE=y
++CONFIG_POWER_SUPPLY=y
++CONFIG_POWER_RESET=y
++CONFIG_POWER_RESET_IMX=y
+ # CONFIG_HWMON is not set
+ CONFIG_WATCHDOG=y
+ CONFIG_IMX2_WDT=y
 -- 
 1.9.1
