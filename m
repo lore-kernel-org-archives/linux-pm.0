@@ -1,43 +1,108 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v6 2/8] mfd: max14577: Map charger device to its own of_node
-Date: Fri, 12 Sep 2014 08:53:54 +0200
-Message-ID: <1410504840-23543-3-git-send-email-k.kozlowski@samsung.com>
-References: <1410504840-23543-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1410504840-23543-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+From: Paul Bolle <pebolle@tiscali.nl>
+Subject: [PATCH] PM / OPP: Remove ARCH_HAS_OPP completely
+Date: Fri, 12 Sep 2014 10:38:31 +0200
+Message-ID: <1410511111.31130.4.camel@x220>
+References: <1406551632.5397.17.camel@x220>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cpsmtpb-ews10.kpnxchange.com ([213.75.39.15]:50589 "EHLO
+	cpsmtpb-ews10.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751185AbaILIif (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Sep 2014 04:38:35 -0400
+In-Reply-To: <1406551632.5397.17.camel@x220>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Nishanth Menon <nm@ti.com>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Simon Horman <horms+renesas@verge.net.au>, Tony Lindgren <tony@atomide.com>, Russell King <linux@arm.linux.org.uk>, Magnus Damm <magnus.damm@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Add a "maxim,max14577-charger" of_compatible to the mfd_cell so the
-MFD child device (the charger) will have its own of_node set. This will
-be used by the max14577 charger driver in next patches to obtain battery
-configuration from DTS.
+The Kconfig symbol ARCH_HAS_OPP became redundant in v3.16: commit
+049d595a4db3 ("PM / OPP: Make OPP invisible to users in Kconfig")
+removed the only dependency that used it. Setting it had no effect
+anymore.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
-Acked-by: Lee Jones <lee.jones@linaro.org>
-Acked-by: Andrew Morton <akpm@linux-foundation.org>
+So commit 78c5e0bb145d ("PM / OPP: Remove ARCH_HAS_OPP") removed it. For
+some reason that commit did not remove all select statements for that
+symbol. These statements are useless. Remove them too.
+
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 ---
- drivers/mfd/max14577.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Done on top of next-20140912. Tested with git grep only!
 
-diff --git a/drivers/mfd/max14577.c b/drivers/mfd/max14577.c
-index 4a5e885383f8..6599407b5624 100644
---- a/drivers/mfd/max14577.c
-+++ b/drivers/mfd/max14577.c
-@@ -35,7 +35,10 @@ static const struct mfd_cell max14577_devs[] = {
- 		.name = "max14577-regulator",
- 		.of_compatible = "maxim,max14577-regulator",
- 	},
--	{ .name = "max14577-charger", },
-+	{
-+		.name = "max14577-charger",
-+		.of_compatible = "maxim,max14577-charger",
-+	},
- };
+ arch/arm/mach-omap2/Kconfig    | 5 -----
+ arch/arm/mach-shmobile/Kconfig | 1 -
+ drivers/devfreq/Kconfig        | 1 -
+ 3 files changed, 7 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+index 5b103099626d..f138bd33a463 100644
+--- a/arch/arm/mach-omap2/Kconfig
++++ b/arch/arm/mach-omap2/Kconfig
+@@ -22,7 +22,6 @@ config ARCH_OMAP4
+ 	bool "TI OMAP4"
+ 	depends on ARCH_MULTI_V7
+ 	select ARCH_OMAP2PLUS
+-	select ARCH_HAS_OPP
+ 	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
+ 	select ARM_CPU_SUSPEND if PM
+ 	select ARM_ERRATA_720789
+@@ -41,7 +40,6 @@ config SOC_OMAP5
+ 	bool "TI OMAP5"
+ 	depends on ARCH_MULTI_V7
+ 	select ARCH_OMAP2PLUS
+-	select ARCH_HAS_OPP
+ 	select ARM_CPU_SUSPEND if PM
+ 	select ARM_GIC
+ 	select HAVE_ARM_SCU if SMP
+@@ -53,14 +51,12 @@ config SOC_AM33XX
+ 	bool "TI AM33XX"
+ 	depends on ARCH_MULTI_V7
+ 	select ARCH_OMAP2PLUS
+-	select ARCH_HAS_OPP
+ 	select ARM_CPU_SUSPEND if PM
  
- static const struct mfd_cell max77836_devs[] = {
+ config SOC_AM43XX
+ 	bool "TI AM43x"
+ 	depends on ARCH_MULTI_V7
+ 	select ARCH_OMAP2PLUS
+-	select ARCH_HAS_OPP
+ 	select ARM_GIC
+ 	select MACH_OMAP_GENERIC
+ 	select MIGHT_HAVE_CACHE_L2X0
+@@ -69,7 +65,6 @@ config SOC_DRA7XX
+ 	bool "TI DRA7XX"
+ 	depends on ARCH_MULTI_V7
+ 	select ARCH_OMAP2PLUS
+-	select ARCH_HAS_OPP
+ 	select ARM_CPU_SUSPEND if PM
+ 	select ARM_GIC
+ 	select HAVE_ARM_ARCH_TIMER
+diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
+index 21f457b56c01..f59019dd986e 100644
+--- a/arch/arm/mach-shmobile/Kconfig
++++ b/arch/arm/mach-shmobile/Kconfig
+@@ -36,7 +36,6 @@ menuconfig ARCH_SHMOBILE_MULTI
+ 	select NO_IOPORT_MAP
+ 	select PINCTRL
+ 	select ARCH_REQUIRE_GPIOLIB
+-	select ARCH_HAS_OPP
+ 
+ if ARCH_SHMOBILE_MULTI
+ 
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 3dced0a9eae3..2227e9bf3884 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -80,7 +80,6 @@ config ARM_EXYNOS4_BUS_DEVFREQ
+ config ARM_EXYNOS5_BUS_DEVFREQ
+ 	bool "ARM Exynos5250 Bus DEVFREQ Driver"
+ 	depends on SOC_EXYNOS5250
+-	select ARCH_HAS_OPP
+ 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
+ 	select PM_OPP
+ 	help
 -- 
-1.9.1
+1.9.3
+
+
