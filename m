@@ -1,57 +1,59 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 0/4] ARM: shmobile: r8a7740: Handle implicitly enabled clocks
-Date: Fri, 12 Sep 2014 15:15:16 +0200
-Message-ID: <1410527720-18061-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
+Subject: [PATCH 3/4] ARM: shmobile: r8a7740 legacy: Add missing INTCA clock for irqpin module
+Date: Fri, 12 Sep 2014 15:15:19 +0200
+Message-ID: <1410527720-18061-4-git-send-email-geert+renesas@glider.be>
+References: <1410527720-18061-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from xavier.telenet-ops.be ([195.130.132.52]:35298 "EHLO
+	xavier.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754466AbaILNPY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Sep 2014 09:15:24 -0400
+In-Reply-To: <1410527720-18061-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 Cc: linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
-List-Id: linux-pm@vger.kernel.org
 
-	Hi all,
+This clock drives the irqpin controller modules.
+Before, it was assumed enabled by the bootloader or reset state.
 
-This patch series fixes an issue with the INTCA module clock, which we
-currently assume enabled by the bootloader or reset state.
-If this clock was not enabled before booting Linux, the intc-irqpin driver
-and all devices connected to it (buttons, RTC on i2c-gpio) don't work.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ arch/arm/mach-shmobile/clock-r8a7740.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-To fix this, the clock is added to the system, and is managed in the driver
-through runtime PM, taking into account wake-up sources (gpio-keys, RTC alarm).
-
-There's one remaining issue for armadillo-legacy, which has support for the LCD
-controller. Although the shmobile_lcd_fb driver doesn't use MERAM on r8a7740
-(unlike on sh7372), the MERAM (Media RAM) and ICB (MERAM Interconnect Buffer)
-clocks must be enabled to show a picture on the display. However, the MERAM
-doesn't have any device associated with it, so it's non-trivial to hook it up.
-
-This patch series is based on renesas-devel-20140911-v3.17-rc4 and
-irqchip/for-next.
-
-Geert Uytterhoeven (4):
-  irqchip: renesas-intc-irqpin: Add helper variable dev = &pdev->dev
-  irqchip: renesas-intc-irqpin: Add minimal runtime PM support
-  ARM: shmobile: r8a7740 legacy: Add missing INTCA clock for irqpin
-    module
-  ARM: shmobile: r8a7740 dtsi: Add missing INTCA clock for irqpin module
-
- arch/arm/boot/dts/r8a7740.dtsi            | 14 ++++--
- arch/arm/mach-shmobile/clock-r8a7740.c    |  7 ++-
- drivers/irqchip/irq-renesas-intc-irqpin.c | 83 +++++++++++++++++++++----------
- include/dt-bindings/clock/r8a7740-clock.h |  1 +
- 4 files changed, 73 insertions(+), 32 deletions(-)
-
+diff --git a/arch/arm/mach-shmobile/clock-r8a7740.c b/arch/arm/mach-shmobile/clock-r8a7740.c
+index 0794f0426e70..6cb1de220612 100644
+--- a/arch/arm/mach-shmobile/clock-r8a7740.c
++++ b/arch/arm/mach-shmobile/clock-r8a7740.c
+@@ -455,7 +455,7 @@ enum {
+ 	MSTP128, MSTP127, MSTP125,
+ 	MSTP116, MSTP111, MSTP100, MSTP117,
+ 
+-	MSTP230,
++	MSTP230, MSTP229,
+ 	MSTP222,
+ 	MSTP218, MSTP217, MSTP216, MSTP214,
+ 	MSTP207, MSTP206, MSTP204, MSTP203, MSTP202, MSTP201, MSTP200,
+@@ -479,6 +479,7 @@ static struct clk mstp_clks[MSTP_NR] = {
+ 	[MSTP100] = SH_CLK_MSTP32(&div4_clks[DIV4_B],	SMSTPCR1,  0, 0), /* LCDC0 */
+ 
+ 	[MSTP230] = SH_CLK_MSTP32(&div6_clks[DIV6_SUB],	SMSTPCR2, 30, 0), /* SCIFA6 */
++	[MSTP229] = SH_CLK_MSTP32(&div6_clks[DIV4_HP],	SMSTPCR2, 29, 0), /* INTCA */
+ 	[MSTP222] = SH_CLK_MSTP32(&div6_clks[DIV6_SUB],	SMSTPCR2, 22, 0), /* SCIFA7 */
+ 	[MSTP218] = SH_CLK_MSTP32(&div4_clks[DIV4_HP],  SMSTPCR2, 18, 0), /* DMAC1 */
+ 	[MSTP217] = SH_CLK_MSTP32(&div4_clks[DIV4_HP],  SMSTPCR2, 17, 0), /* DMAC2 */
+@@ -575,6 +576,10 @@ static struct clk_lookup lookups[] = {
+ 	CLKDEV_DEV_ID("sh-dma-engine.0",	&mstp_clks[MSTP218]),
+ 	CLKDEV_DEV_ID("sh-sci.7",		&mstp_clks[MSTP222]),
+ 	CLKDEV_DEV_ID("e6cd0000.serial",	&mstp_clks[MSTP222]),
++	CLKDEV_DEV_ID("renesas_intc_irqpin.0",	&mstp_clks[MSTP229]),
++	CLKDEV_DEV_ID("renesas_intc_irqpin.1",	&mstp_clks[MSTP229]),
++	CLKDEV_DEV_ID("renesas_intc_irqpin.2",	&mstp_clks[MSTP229]),
++	CLKDEV_DEV_ID("renesas_intc_irqpin.3",	&mstp_clks[MSTP229]),
+ 	CLKDEV_DEV_ID("sh-sci.6",		&mstp_clks[MSTP230]),
+ 	CLKDEV_DEV_ID("e6cc0000.serial",	&mstp_clks[MSTP230]),
+ 
 -- 
 1.9.1
 
-Thanks!
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
