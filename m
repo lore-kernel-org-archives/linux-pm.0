@@ -1,42 +1,42 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / OPP: Remove ARCH_HAS_OPP completely
-Date: Fri, 12 Sep 2014 13:03:42 +0200
-Message-ID: <CAMuHMdUe+GKaYMmbC9JO=Qt7oNiEja0nGbp8oXVS=G4WJHmwJg@mail.gmail.com>
-References: <1406551632.5397.17.camel@x220>
-	<1410511111.31130.4.camel@x220>
-	<CAGo_u6r3jXX2FS-PO5_-+zhHM3i3pVzGYumSYLh7YPNXGV98eg@mail.gmail.com>
-	<1410518771.31130.22.camel@x220>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1410518771.31130.22.camel@x220>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Paul Bolle <pebolle@tiscali.nl>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Nishanth Menon <nm@ti.com>, Mark Brown <broonie@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Simon Horman <horms+renesas@verge.net.au>, Tony Lindgren <tony@atomide.com>, Russell King <linux@arm.linux.org.uk>, Magnus Damm <magnus.damm@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
+From: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [PATCH 0/6] Renew charger manager driver for optimized operation.
+Date: Fri, 12 Sep 2014 20:11:21 +0900
+Message-ID: <1410520287-24825-1-git-send-email-jonghwa3.lee@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:50891 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752905AbaILLLc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Sep 2014 07:11:32 -0400
+Received: from epcpsbgr3.samsung.com
+ (u143.gpu120.samsung.co.kr [203.254.230.143])
+ by mailout2.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0NBS002HDCF69Y00@mailout2.samsung.com> for
+ linux-pm@vger.kernel.org; Fri, 12 Sep 2014 20:11:30 +0900 (KST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, cw00.choi@samsung.com, myungjoo.ham@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
 
-Hi Paul, Rafael,
+Jonghwa Lee (6):
+  power: charger-manager: Use alarmtimer for battery monitoring in
+    suspend.
+  power: charger-manager: Monitoring temperature becomes mandatory
+    option.
+  power: charger-manager: Remove deprecated function,
+    cm_notify_event().
+  power: charger-manager: Use power_supply_changed() not private
+    uevent.
+  power: charger-manager: Fix to use CHARGE_NOW/FULL property
+    correctly.
+  power: charger-manager: Rearrange data and monitor focusing battery
+    status.
 
-On Fri, Sep 12, 2014 at 12:46 PM, Paul Bolle <pebolle@tiscali.nl> wrote:
->> >  arch/arm/mach-shmobile/Kconfig | 1 -
->> >  drivers/devfreq/Kconfig        | 1 -
->
-> Were patches submitted for these two files too? If so, we can probably
-> just drop my patch.
+ .../bindings/power_supply/charger-manager.txt      |   84 +-
+ drivers/power/Kconfig                              |    3 +-
+ drivers/power/charger-manager.c                    | 2127 +++++++-------------
+ include/linux/power/charger-manager.h              |  308 ++-
+ 4 files changed, 887 insertions(+), 1635 deletions(-)
 
-Rafael said: "I've queued this up for 3.17, thanks!"
-
-http://lists.infradead.org/pipermail/linux-arm-kernel/2014-July/274681.html
-
-But it's not in -next.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+1.7.9.5
