@@ -1,54 +1,34 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH 0/4] ARM: shmobile: r8a7740: Handle implicitly enabled
- clocks
-Date: Sun, 14 Sep 2014 02:54:46 -0400
-Message-ID: <20140914065446.GO21986@titan.lakedaemon.net>
-References: <1410527720-18061-1-git-send-email-geert+renesas@glider.be>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [v4,1/9] ACPI / PM: Let acpi_dev_pm_detach() return an error code
+Date: Sun, 14 Sep 2014 18:38:58 +0200
+Message-ID: <6318611.DnX9cEgMjk@vostro.rjw.lan>
+References: <1410262570-22785-2-git-send-email-ulf.hansson@linaro.org> <20140912210553.GA27924@core.coreip.homeip.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1410527720-18061-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20140912210553.GA27924@core.coreip.homeip.net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, Philipp Zabel <philipp.zabel@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Wolfram Sang <wsa@the-dreams.de>, Stephen Boyd <sboyd@codeaurora.org>, Linus Walleij <linus.walleij@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chris Ball <chris@printf.net>, linux-acpi@vger.kernel.org, Simon Horman <horms@verge.net.au>, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 12, 2014 at 03:15:16PM +0200, Geert Uytterhoeven wrote:
-> 	Hi all,
+On Friday, September 12, 2014 02:05:53 PM Dmitry Torokhov wrote:
+> Hi Ulf,
 > 
-> This patch series fixes an issue with the INTCA module clock, which we
-> currently assume enabled by the bootloader or reset state.
-> If this clock was not enabled before booting Linux, the intc-irqpin driver
-> and all devices connected to it (buttons, RTC on i2c-gpio) don't work.
+> On Tue, Sep 09, 2014 at 01:36:02PM +0200, Ulf Hansson wrote:
+> > To give callers the option of acting on a errors while removing the
+> > pm_domain ops for the device in the ACPI PM domain, let
+> > acpi_dev_pm_detach() return an int to provide the error code.
 > 
-> To fix this, the clock is added to the system, and is managed in the driver
-> through runtime PM, taking into account wake-up sources (gpio-keys, RTC alarm).
-> 
-> There's one remaining issue for armadillo-legacy, which has support for the LCD
-> controller. Although the shmobile_lcd_fb driver doesn't use MERAM on r8a7740
-> (unlike on sh7372), the MERAM (Media RAM) and ICB (MERAM Interconnect Buffer)
-> clocks must be enabled to show a picture on the display. However, the MERAM
-> doesn't have any device associated with it, so it's non-trivial to hook it up.
-> 
-> This patch series is based on renesas-devel-20140911-v3.17-rc4 and
-> irqchip/for-next.
-> 
-> Geert Uytterhoeven (4):
->   irqchip: renesas-intc-irqpin: Add helper variable dev = &pdev->dev
->   irqchip: renesas-intc-irqpin: Add minimal runtime PM support
->   ARM: shmobile: r8a7740 legacy: Add missing INTCA clock for irqpin
->     module
->   ARM: shmobile: r8a7740 dtsi: Add missing INTCA clock for irqpin module
-> 
->  arch/arm/boot/dts/r8a7740.dtsi            | 14 ++++--
->  arch/arm/mach-shmobile/clock-r8a7740.c    |  7 ++-
->  drivers/irqchip/irq-renesas-intc-irqpin.c | 83 +++++++++++++++++++++----------
->  include/dt-bindings/clock/r8a7740-clock.h |  1 +
->  4 files changed, 73 insertions(+), 32 deletions(-)
+> So how would callers handle the errors? As far as I can see
+> acpi_dev_pm_detach() is called from ->remove() and ->shutdown() methods, where
+> there is no meaningful strategy to handle errors as you are past the point of
+> no return and you keep on tearing down the device.
 
-Patches 1 and 2 applied to irqchip/core
+This is specifically for what patch [3/9] is doing AFAICS.  
 
-thx,
+The existing callers don't need to worry about this.
 
-Jason.
+Rafael
+
