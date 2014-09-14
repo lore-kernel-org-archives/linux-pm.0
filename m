@@ -1,34 +1,39 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [v4,1/9] ACPI / PM: Let acpi_dev_pm_detach() return an error code
-Date: Sun, 14 Sep 2014 18:38:58 +0200
-Message-ID: <6318611.DnX9cEgMjk@vostro.rjw.lan>
-References: <1410262570-22785-2-git-send-email-ulf.hansson@linaro.org> <20140912210553.GA27924@core.coreip.homeip.net>
+Subject: Re: [REPOST PATCH v4 1/2] PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
+Date: Sun, 14 Sep 2014 19:06:22 +0200
+Message-ID: <3009588.qOkltIoajF@vostro.rjw.lan>
+References: <1409759373-22696-1-git-send-email-tomeu.vizoso@collabora.com> <1409759373-22696-2-git-send-email-tomeu.vizoso@collabora.com> <CAAObsKBkjqJiJ4OC4FYDXDBSFMFzvbvD_vJ6KzhqyyPCCB-o7g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20140912210553.GA27924@core.coreip.homeip.net>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, Philipp Zabel <philipp.zabel@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Wolfram Sang <wsa@the-dreams.de>, Stephen Boyd <sboyd@codeaurora.org>, Linus Walleij <linus.walleij@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chris Ball <chris@printf.net>, linux-acpi@vger.kernel.org, Simon Horman <horms@verge.net.au>, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:53192 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752359AbaINQqt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Sep 2014 12:46:49 -0400
+In-Reply-To: <CAAObsKBkjqJiJ4OC4FYDXDBSFMFzvbvD_vJ6KzhqyyPCCB-o7g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Terje =?ISO-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>
 
-On Friday, September 12, 2014 02:05:53 PM Dmitry Torokhov wrote:
-> Hi Ulf,
+On Friday, September 12, 2014 11:11:25 AM Tomeu Vizoso wrote:
+> On 3 September 2014 17:49, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
+> > Also adds a class type PM_QOS_SUM that aggregates the values by summing them.
+> >
+> > It can be used by memory controllers to calculate the optimum clock frequency
+> > based on the bandwidth needs of the different memory clients.
+> >
+> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> > Acked-by: Pavel Machek <pavel@ucw.cz>
 > 
-> On Tue, Sep 09, 2014 at 01:36:02PM +0200, Ulf Hansson wrote:
-> > To give callers the option of acting on a errors while removing the
-> > pm_domain ops for the device in the ACPI PM domain, let
-> > acpi_dev_pm_detach() return an int to provide the error code.
+> Hi Rafael,
 > 
-> So how would callers handle the errors? As far as I can see
-> acpi_dev_pm_detach() is called from ->remove() and ->shutdown() methods, where
-> there is no meaningful strategy to handle errors as you are past the point of
-> no return and you keep on tearing down the device.
+> will you take this one for 3.18?
 
-This is specifically for what patch [3/9] is doing AFAICS.  
+Quite likely, but I'm traveling now, so I'll do that after I'm back home
+in a few days.  I'll write to you if there are any problems.
 
-The existing callers don't need to worry about this.
-
-Rafael
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
