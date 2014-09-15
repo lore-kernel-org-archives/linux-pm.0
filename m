@@ -1,75 +1,55 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle/powernv: Enter fastsleep on checking if deep
- idle states are allowed
-Date: Mon, 15 Sep 2014 14:22:00 +0530
-Message-ID: <5416A8B0.8040603@linux.vnet.ibm.com>
-References: <20140912110131.7311.86417.stgit@preeti.in.ibm.com> <1410764352.32643.2.camel@concordia>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1410764352.32643.2.camel@concordia>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey@neuling.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH v3 1/4] PM / Runtime: Add getter for quering the IRQ safe option
+Date: Mon, 15 Sep 2014 12:13:50 +0200
+Message-ID: <1410776033-22156-2-git-send-email-k.kozlowski@samsung.com>
+References: <1410776033-22156-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:62688 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753737AbaIOKOi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Sep 2014 06:14:38 -0400
+In-reply-to: <1410776033-22156-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-On 09/15/2014 12:29 PM, Michael Ellerman wrote:
-> On Fri, 2014-09-12 at 16:31 +0530, Preeti U Murthy wrote:
->> Today the procfs interface /proc/sys/kernel/powersave-nap is used to control
->> entry into deep idle states beyond snooze. Check for the value of this
->> parameter before entering fastsleep. We already do this check for nap in
->> power7_idle().
->>
->> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->> ---
->>
->>  drivers/cpuidle/cpuidle-powernv.c |    6 ++++++
->>  1 file changed, 6 insertions(+)
->>
->> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
->> index a64be57..b8ba52e 100644
->> --- a/drivers/cpuidle/cpuidle-powernv.c
->> +++ b/drivers/cpuidle/cpuidle-powernv.c
->> @@ -69,6 +69,12 @@ static int fastsleep_loop(struct cpuidle_device *dev,
->>  	unsigned long old_lpcr = mfspr(SPRN_LPCR);
->>  	unsigned long new_lpcr;
->>  
->> +	/*
->> +	 * Verify if snooze is the only valid cpuidle state
->> +	 */
->> +	if (!(powersave_nap > 0))
->> +		return index;
->> +
->>  	if (unlikely(system_state < SYSTEM_RUNNING))
->>  		return index;
-> 
-> Doesn't the above mean we are just going to keep trying to go into fastsleep
-> again and again? Or does the idle code work out that it didn't work based on
-> the fact that we didn't sleep for the right period?
+Add a simple getter pm_runtime_is_irq_safe() for quering whether runtime
+PM IRQ safe was set or not.
 
-Thats right. The idle code figures that its judgment to enter fastsleep
-was not correct and applies a correction factor to its future decisions
-. This correction factor is intended to influence the cpuidle governor's
-decision on choosing an idle state for the cpu based on the history of
-wakeups. Hence a shallower idle state will be chosen here on in the
-above circumstance.
+Various bus drivers implementing runtime PM may use choose to suspend
+differently based on IRQ safeness status of child driver (e.g. do not
+unprepare the clock if IRQ safe is not set).
 
-> 
-> We were talking about getting rid of powersave_nap altogether, but I think we
-> decided we couldn't, I forget.
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ include/linux/pm_runtime.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Isn't this a helpful knob to disable cpuidle at runtime? Currently we
-check the value of powersave_nap before entering both nap and fastsleep.
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index 367f49b9a1c9..44d74f0f182e 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -128,6 +128,11 @@ static inline void pm_runtime_mark_last_busy(struct device *dev)
+ 	ACCESS_ONCE(dev->power.last_busy) = jiffies;
+ }
+ 
++static inline bool pm_runtime_is_irq_safe(struct device *dev)
++{
++	return dev->power.irq_safe;
++}
++
+ #else /* !CONFIG_PM_RUNTIME */
+ 
+ static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
+@@ -167,6 +172,7 @@ static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+ 
+ static inline void pm_runtime_no_callbacks(struct device *dev) {}
+ static inline void pm_runtime_irq_safe(struct device *dev) {}
++static inline bool pm_runtime_is_irq_safe(struct device *dev) { return false; }
+ 
+ static inline bool pm_runtime_callbacks_present(struct device *dev) { return false; }
+ static inline void pm_runtime_mark_last_busy(struct device *dev) {}
+-- 
+1.9.1
 
-Regards
-Preeti U Murthy
-> 
-> cheers
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
