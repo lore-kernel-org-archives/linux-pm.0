@@ -1,119 +1,88 @@
-From: Georgi Djakov <gdjakov@mm-sol.com>
-Subject: Re: [PATCH RESEND] thermal: Add QPNP PMIC temperature alarm driver
-Date: Mon, 15 Sep 2014 19:02:46 +0300
-Message-ID: <54170DA6.6050001@mm-sol.com>
-References: <1410793383-30097-1-git-send-email-iivanov@mm-sol.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 3/7 v6] power: reset: driver for the Versatile syscon
+ reboot
+Date: Mon, 15 Sep 2014 18:06:31 +0200
+Message-ID: <20140915160630.GA19960@earth.universe>
+References: <1410176286-32533-1-git-send-email-linus.walleij@linaro.org>
+ <1410176286-32533-4-git-send-email-linus.walleij@linaro.org>
+ <CACRpkdbE8z3N_7FQzooVsd=UvUeoRhPqO5=foTGn7U=ag0ML9g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1410793383-30097-1-git-send-email-iivanov@mm-sol.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: "Ivan T. Ivanov" <iivanov@mm-sol.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.19.201]:37576 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752731AbaIOQGn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Sep 2014 12:06:43 -0400
+Content-Disposition: inline
+In-Reply-To: <CACRpkdbE8z3N_7FQzooVsd=UvUeoRhPqO5=foTGn7U=ag0ML9g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Will Deacon <will.deacon@arm.com>, Rob Herring <robh@kernel.org>
 
-Hi,
 
-On 09/15/2014 06:03 PM, Ivan T. Ivanov wrote:
-> Add support for the temperature alarm peripheral found inside
-> Qualcomm plug-and-play (QPNP) PMIC chips.  The temperature alarm
-> peripheral outputs a pulse on an interrupt line whenever the
-> thermal over temperature stage value changes.  Implement an ISR
-> to manage this interrupt.
-> 
-> Register a thermal zone device in sysfs with mulitple trip points
+--LZvS9be/3tNcYl/X
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-s/mulitple/multiple/
+On Fri, Sep 12, 2014 at 10:55:19AM +0200, Linus Walleij wrote:
+> On Mon, Sep 8, 2014 at 1:38 PM, Linus Walleij <linus.walleij@linaro.org> =
+wrote:
+> > This driver enabled us to drive the reboot of the Versatile family
+> > of ARM reference boards. Even though only the RealView boards are
+> > supported initially, these boards all have the same procedure for
+> > reboot:
+> >
+> > - Write a magic value into an unlocking register
+> > - Write another magic value into a reset control register
+> >
+> > The driver will be reusable for Versatile and possibly also the
+> > Integrator family of reference boards.
+> >
+> > Cc: Sebastian Reichel <sre@kernel.org>
+> > Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> > Cc: David Woodhouse <dwmw2@infradead.org>
+> > Acked-by: Arnd Bergmann <arnd@arndb.de>
+> > Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+> > ---
+> > ChangeLog v1->v2:
+> > - Do not probe from a platform device, instead use a device_initcall()
+> >   and look up the syscon device from its node. If that device is
+> >   not yet registered, the call will be deferred. This is done so that
+> >   the Linux driver model is not reflected into the device tree, as
+> >   the reboot property of the syscon is not a separate device.
+>=20
+> Can any of the power maintainers please ACK this patch if it
+> looks OK, so it can be pulled in through ARM SoC?
 
-> corresponding to the physical threshold temperatures between over
-> temperature stages.  The temperature reported by this thermal
-> zone device should reflect the actual PMIC die temperature if an
-> ADC is present on the given PMIC.  If no ADC is present, then the
-> reported temperature should be estimated from the over
-> temperature stage value.
-> 
-> Send a notification to userspace via sysfs_notify() whenever the
-> over temperature stage value changes.
-> 
-> Cc: David Collins <collinsd@codeaurora.org>
-> Signed-off-by: Ivan T. Ivanov <iivanov@mm-sol.com>
-> ---
->  .../bindings/thermal/qpnp-temp-alarm.txt           |  27 ++
->  drivers/thermal/Kconfig                            |  12 +
->  drivers/thermal/Makefile                           |   1 +
->  drivers/thermal/qpnp-temp-alarm.c                  | 519 +++++++++++++++++++++
->  4 files changed, 559 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/qpnp-temp-alarm.txt
->  create mode 100644 drivers/thermal/qpnp-temp-alarm.c
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/qpnp-temp-alarm.txt b/Documentation/devicetree/bindings/thermal/qpnp-temp-alarm.txt
-> new file mode 100644
-> index 0000000..7eecb74
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/qpnp-temp-alarm.txt
-> @@ -0,0 +1,27 @@
-> +Qualcomm QPNP PMIC Temperature Alarm
-> +
-> +QPNP temperature alarm peripherals are found inside of Qualcomm PMIC chips
-> +that utilize the Qualcomm SPMI implementation. These peripherals provide an
-> +interrupt signal and status register to identify high PMIC die temperature.
-> +
-> +Required properties:
-> +- compatible:      Should contain "qcom,qpnp-temp-alarm".
-> +- reg:             Specifies the SPMI address temperature alarm device.
+Sorry for the delay:
 
-SPMI address _of_ the temperature alarm device?
+Acked-By: Sebastian Reichel <sre@kernel.org>
 
-> +- interrupts:      PMIC temperature alarm interrupt
-> +
-> +Optional properties:
-> +- label:           A string used as a descriptive name for this thermal
-> +                   device. This name should be 19 characters or less.
-> +- io-channels:     Should contain IIO channel specifier
-> +- io-channel-names: "thermal". The ADC channel for temperature reading.
+-- Sebastian
 
-Maybe can be rephrased better such as:
-- io-channel-names: should contain "thermal" for the temperature reading ADC channel
+--LZvS9be/3tNcYl/X
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> +
-> +Example:
-> +
-> +	thermal-alarm@2400 {
-> +		compatible = "qcom,qpnp-temp-alarm";
-> +		reg = <0x2400>;
-> +		interrupts = <0 0x24 0 IRQ_TYPE_EDGE_RISING>;
-> +		label = "pm8941_tz";
-> +		io-channels = <&pm8941_vadc VADC_DIE_TEMP>;
-> +		io-channel-names = "thermal";
-> +	};
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Maybe describe the trip points in the DT?
+iQIcBAEBCgAGBQJUFw6GAAoJENju1/PIO/qa/5gP/1/mANjT74n6efoS/vG6+U2n
+vr/wC9rIvN3x2yXf86wNusjguMjOZgo/C9u27KzCPM+peyCBqqi1GDA+/4eWpSw+
+ygGelfGAUcLKhUGNa+RTltUFXIbReu/SOfjNllZzGjCRa9H36Cho6z/7FlleMGxj
+TtNlQcDQwqYqIOHnEQVu2JiXRIZ4d26ZGRKCtXoJnL2ZzvjAUyrCCoMUaYC6j/eU
+ctzzkW6nQpVUAWTKmxo8sjSkbe9T9ZybaDF7tIEE+E2xRHN2gfRuUK8a6nHiiqiO
+3mw3y+jzvaHDlsFlQIXlnNxlsKiS/0XxwMwys1wCPcxgoeWeb59/6PSGA5eIBlvX
+IFigLYaPWFn54GDbEm9joX8jN1NDy6TNwybei0b58PD/x3sce3JzzasZUAmcF5i2
+y8DAsJTE1v4PLTl5A/gUGV6vbRU7aD8ZA5RcIMs0/mRCf3Au5ND9O5yk18tXAe5x
+X2TB5mV0srcgplfYz/PrByH8mBSZM1m/R8yF3WpbM5GfrCU/Q1izN94jBorttZ+P
+eQTsX9UE4Z8RCYWx3LVZdbho30fYstxyz8u58xXhNj3omdnMYtmHa8aKgpBaH/Bv
+NY7AwxKPjAwmZXNPiIkszdN5mhLr9AN4x2Few+ulK53Y2pjhuuYd1G0KWKdpf5+0
+7M7hDKRuDmTWVAFGYcbQ
+=xt/A
+-----END PGP SIGNATURE-----
 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 693208e..7371cf9 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -248,4 +248,16 @@ depends on ARCH_STI && OF
->  source "drivers/thermal/st/Kconfig"
->  endmenu
->  
-> +config QPNP_TEMP_ALARM
-> +	tristate "Qualcomm QPNP Temperature Alarm"
-> +	depends on OF && REGMAP_SPMI
-
-Seems to depend on IIO too.
-
-> +	help
-> +	  This enables a thermal sysfs driver for Qualcomm plug-and-play (QPNP)
-> +	  PMIC devices. It shows up in sysfs as a thermal zone with multiple
-> +	  trip points. The temperature reported by the thermal zone reflects the
-> +	  real time die temperature if an ADC is present or an estimate of the
-> +	  temperature based upon the over temperature stage value. Enabling the
-> +	  thermal zone device via the mode file results in shifting PMIC over
-> +	  temperature shutdown control from hardware to software.
-> +
-[..]
-
-BR,
-Georgi
+--LZvS9be/3tNcYl/X--
