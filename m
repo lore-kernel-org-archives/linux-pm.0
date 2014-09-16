@@ -1,8 +1,8 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC v2 05/12] PM / Domains: Add helper variable np =
- dev->of_node
-Date: Tue, 16 Sep 2014 20:48:52 +0200
-Message-ID: <1410893339-6361-6-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH/RFC v2 06/12] PM / Domains: Retrieve PM QoS device latencies
+ from DT
+Date: Tue, 16 Sep 2014 20:48:53 +0200
+Message-ID: <1410893339-6361-7-git-send-email-geert+renesas@glider.be>
 References: <1410893339-6361-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,61 +27,43 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 v2:
   - New
 ---
- drivers/base/power/domain.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/base/power/domain.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 3fa15b6c54f09b36..e1cbde985d4de606 100644
+index e1cbde985d4de606..7b166911be541229 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -2130,17 +2130,18 @@ static struct generic_pm_domain *of_genpd_get_from_provider(
-  */
- int genpd_dev_pm_attach(struct device *dev)
- {
-+	struct device_node *np = dev->of_node;
+@@ -2133,6 +2133,8 @@ int genpd_dev_pm_attach(struct device *dev)
+ 	struct device_node *np = dev->of_node;
  	struct of_phandle_args pd_args;
  	struct generic_pm_domain *pd;
++	struct gpd_timing_data td;
++	u32 latency;
  	int ret;
  
--	if (!dev->of_node)
-+	if (!np)
- 		return -ENODEV;
- 
- 	if (dev->pm_domain)
- 		return -EEXIST;
- 
--	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
-+	ret = of_parse_phandle_with_args(np, "power-domains",
- 					"#power-domain-cells", 0, &pd_args);
- 	if (ret < 0) {
- 		if (ret != -ENOENT)
-@@ -2151,8 +2152,7 @@ int genpd_dev_pm_attach(struct device *dev)
- 		 * (for backwards compatibility of DT ABI)
- 		 */
- 		pd_args.args_count = 0;
--		pd_args.np = of_parse_phandle(dev->of_node,
--						"samsung,power-domain", 0);
-+		pd_args.np = of_parse_phandle(np, "samsung,power-domain", 0);
- 		if (!pd_args.np)
- 			return -ENOENT;
- 	}
-@@ -2161,7 +2161,7 @@ int genpd_dev_pm_attach(struct device *dev)
- 	if (IS_ERR(pd)) {
- 		dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
- 			__func__, PTR_ERR(pd));
--		of_node_put(dev->of_node);
-+		of_node_put(np);
+ 	if (!np)
+@@ -2165,10 +2167,20 @@ int genpd_dev_pm_attach(struct device *dev)
  		return PTR_ERR(pd);
  	}
  
-@@ -2177,7 +2177,7 @@ int genpd_dev_pm_attach(struct device *dev)
- 	if (ret < 0) {
- 		dev_err(dev, "failed to add to PM domain %s: %d",
- 			pd->name, ret);
--		of_node_put(dev->of_node);
-+		of_node_put(np);
- 		return ret;
- 	}
++	memset(&td, 0, sizeof(td));
++	if (!of_property_read_u32(np, "stop-latency", &latency))
++		td.stop_latency_ns = latency;
++	if (!of_property_read_u32(np, "start-latency", &latency))
++		td.start_latency_ns = latency;
++	if (!of_property_read_u32(np, "save-state-latency", &latency))
++		td.save_state_latency_ns = latency;
++	if (!of_property_read_u32(np, "restore-state-latency", &latency))
++		td.restore_state_latency_ns = latency;
++
+ 	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
  
+ 	while (1) {
+-		ret = pm_genpd_add_device(pd, dev);
++		ret = __pm_genpd_add_device(pd, dev, &td);
+ 		if (ret != -EAGAIN)
+ 			break;
+ 		cond_resched();
 -- 
 1.9.1
