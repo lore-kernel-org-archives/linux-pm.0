@@ -1,44 +1,45 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH trivial] PM / Domains: Spelling s/domian/domain/
-Date: Tue, 16 Sep 2014 21:59:39 +0200
-Message-ID: <1410897579-28240-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from michel.telenet-ops.be ([195.130.137.88]:53999 "EHLO
-	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754890AbaIPT7i (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Sep 2014 15:59:38 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Subject: [PATCH 12/22] cpuidle: Replace strnicmp with strncasecmp
+Date: Tue, 16 Sep 2014 22:51:26 +0200
+Message-ID: <1410900696-6481-13-git-send-email-linux@rasmusvillemoes.dk>
+References: <1410900696-6481-1-git-send-email-linux@rasmusvillemoes.dk>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1410900696-6481-1-git-send-email-linux@rasmusvillemoes.dk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jiri Kosina <trivial@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+The kernel used to contain two functions for length-delimited,
+case-insensitive string comparison, strnicmp with correct semantics
+and a slightly buggy strncasecmp. The latter is the POSIX name, so
+strnicmp was renamed to strncasecmp, and strnicmp made into a wrapper
+for the new strncasecmp to avoid breaking existing users.
+
+To allow the compat wrapper strnicmp to be removed at some point in
+the future, and to avoid the extra indirection cost, do
+s/strnicmp/strncasecmp/g.
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/base/power/domain.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpuidle/governor.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index cf4651a15a5753e5..e6a11ca3ce2634ab 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1833,7 +1833,7 @@ int pm_genpd_name_detach_cpuidle(const char *name)
- /* Default device callbacks for generic PM domains. */
+diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
+index ca89412..fb9f511 100644
+--- a/drivers/cpuidle/governor.c
++++ b/drivers/cpuidle/governor.c
+@@ -28,7 +28,7 @@ static struct cpuidle_governor * __cpuidle_find_governor(const char *str)
+ 	struct cpuidle_governor *gov;
  
- /**
-- * pm_genpd_default_save_state - Default "save device state" for PM domians.
-+ * pm_genpd_default_save_state - Default "save device state" for PM domains.
-  * @dev: Device to handle.
-  */
- static int pm_genpd_default_save_state(struct device *dev)
-@@ -1856,7 +1856,7 @@ static int pm_genpd_default_save_state(struct device *dev)
- }
+ 	list_for_each_entry(gov, &cpuidle_governors, governor_list)
+-		if (!strnicmp(str, gov->name, CPUIDLE_NAME_LEN))
++		if (!strncasecmp(str, gov->name, CPUIDLE_NAME_LEN))
+ 			return gov;
  
- /**
-- * pm_genpd_default_restore_state - Default PM domians "restore device state".
-+ * pm_genpd_default_restore_state - Default PM domains "restore device state".
-  * @dev: Device to handle.
-  */
- static int pm_genpd_default_restore_state(struct device *dev)
+ 	return NULL;
 -- 
-1.9.1
-
+2.0.4
