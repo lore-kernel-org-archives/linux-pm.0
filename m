@@ -1,34 +1,107 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v5 0/4] amba/dma: pl330: add Power Management support
-Date: Tue, 16 Sep 2014 18:28:28 +0200
-Message-ID: <1410884908.18259.4.camel@AMDC1943>
-References: <1410872360-27029-1-git-send-email-k.kozlowski@samsung.com>
- <20140916161820.GM12361@n2100.arm.linux.org.uk>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 08/10] ARM: OMAP5/DRA7: PM: cpuidle MPU CSWR support
+Date: Tue, 16 Sep 2014 11:34:42 -0500
+Message-ID: <541866A2.70007@ti.com>
+References: <1408716154-26101-1-git-send-email-nm@ti.com> <1408716154-26101-9-git-send-email-nm@ti.com> <7hvbpdbvb1.fsf@paris.lan> <CAGo_u6o7vAf=syzDTyxh0-kOhmzAmtdG_ardgFgoPQofrGdxUQ@mail.gmail.com> <53FE3477.2020207@ti.com> <7hegw1bs30.fsf@paris.lan> <20140905211847.GB31011@kahuna>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <20140916161820.GM12361@n2100.arm.linux.org.uk>
-Sender: linux-doc-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140905211847.GB31011@kahuna>
+Sender: linux-kernel-owner@vger.kernel.org
+To: daniel.lezcano@linaro.org
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>, Paul Walmsley <paul@pwsan.com>, Tony Lindgren <tony@atomide.com>, Keerthy <j-keerthy@ti.com>, lkml <linux-kernel@vger.kernel.org>, Tero Kristo <t-kristo@ti.com>, =?windows-1252?Q?Beno=EEt_Cousson?= <bcousson@baylibre.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@linaro.org>, linux-pm <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On wto, 2014-09-16 at 17:18 +0100, Russell King - ARM Linux wrote:
-> On Tue, Sep 16, 2014 at 02:59:16PM +0200, Krzysztof Kozlowski wrote:
-> > Any comments are welcome.
+
+Daniel,
+
+On 09/05/2014 04:18 PM, Nishanth Menon wrote:
+> Daniel,
 > 
-> Thanks, I'm happy with patches 2 and 3.  What's the merge plan for them?
+> On 13:22-20140827, Kevin Hilman wrote:
+>> Santosh Shilimkar <santosh.shilimkar@ti.com> writes:
+>>
+>>> On Wednesday 27 August 2014 03:35 PM, Nishanth Menon wrote:
+>>>> On Wed, Aug 27, 2014 at 2:13 PM, Kevin Hilman
+>>>> <khilman@deeprootsystems.com> wrote:
+>>>>> + Daniel (cpuidle maintainer)
+>>>> [...]
+>>>>>> +static int omap_enter_idle_smp(struct cpuidle_device *dev,
+>>>>>> +                            struct cpuidle_driver *drv,
+>>>>>> +                            int index)
+>>>>>> +{
+>>>>>> +     struct idle_statedata *cx = state_ptr + index;
+>>>>>> +     unsigned long flag;
+>>>>>> +
+>>>>>> +     raw_spin_lock_irqsave(&mpu_lock, flag);
+>>>>>> +     cx->mpu_state_vote++;
+>>>>>> +     if (cx->mpu_state_vote == num_online_cpus()) {
+>>>>>> +             pwrdm_set_logic_retst(mpu_pd, cx->mpu_logic_state);
+>>>>>> +             omap_set_pwrdm_state(mpu_pd, cx->mpu_state);
+>>>>>> +     }
+>>>>>> +     raw_spin_unlock_irqrestore(&mpu_lock, flag);
+>>>>>> +
+>>>>>> +     omap4_enter_lowpower(dev->cpu, cx->cpu_state);
+>>>>>> +
+>>>>>> +     raw_spin_lock_irqsave(&mpu_lock, flag);
+>>>>>> +     if (cx->mpu_state_vote == num_online_cpus())
+>>>>>> +             omap_set_pwrdm_state(mpu_pd, PWRDM_POWER_ON);
+>>>>>> +     cx->mpu_state_vote--;
+>>>>>> +     raw_spin_unlock_irqrestore(&mpu_lock, flag);
+>>>>>> +
+>>>>>> +     return index;
+>>>>>> +}
+>>>>>
+>>>>> Hmm, maybe OMAP5/DRA7 CPUidle driver should be a new one based on MCPM?
+>>>>
+>>>> Trying to understand benefit of MCPM here - at least without a deeper
+>>>> understanding of mcpm infrastructure benefits (first look seemed a
+>>>> little heavy for OMAP5/DRA7 needs).
+>>>>
+>>>> Neither DRA7/OMAP5 are multi-cluster, the SoCs are not targetted for
+>>>> "OFF" of CPU1/0, we have mercury hardware to help with context and
+>>>> sync issues.
+>>>>
+>>>> Being able to reuse most of existing OMAP4 infrastructure code is
+>>>> useful as well to leave the existing omap4 framework as being lighter
+>>>> in complexity -esp in a cpuidle like hot path?
+>>>>
+>>>> The spin_lock is only for the programming of MPU power domain in a
+>>>> consistent manner - I suppose might have been the trigger for
+>>>> proposing mcpm?
+>>>>
+>>> Mostly not....
+>>>
+>>> I think this is coming because last time Nicolas Pitre tried to convert
+>>> the OMAP CPUIdle into MCPM but because of various ordering requirements,
+>>> OMAP wasn't suitable and then the plan was dropped later.
+>>>
+>>> Just to make clear, OMAP OMAP5/DRA7 as well the ordering requirement
+>>> remains the same for deeper states. Its just the mercury retention state
+>>> which we are able to enter without ordering requirements and hence
+>>> the voting scheme.
+>>
+>> Ah, OK.  This is the part that I'm missing.  So for deeper states you'll
+>> need to be using omap_enter_idle_coupled()
+>>
+>>> Hope this clarifies to you as well as Kevin just in case he missed the
+>>> part of the deeper C-states requirements.
+>>
+>> Yes, thanks for clarifying.
+>>
+>> That being said, I think MCPM can now do essentially what the coupled
+>> states code is doing. Even so, that's probably not a reason to hold up
+>> this patch, but Daniel gets to make that call.
+> 
+> 
+> Gentle ping.. You can find the discussion and the patch here:
+> https://patchwork.kernel.org/patch/4764661/
+> 
 
-I think everything could be picked by dmaengine maintainers because the
-pl330 is the cause of all these patches. On the other hand I could
-submit the patches to your patch tracking system.
+Ping on this again.. we are pretty close to approaching v3.18 merge
+window and this discussion has'nt gotten further.
 
-However I still don't have necessary reviews/acks from PM (patch 1/4)
-and dmaengine (patch 4/4). Anyway can I assume that you acked patch 2
-and 3?
-
-Best regards,
-Krzysztof
-
-
+-- 
+Regards,
+Nishanth Menon
