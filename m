@@ -1,101 +1,55 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v5 3/4] amba: Don't unprepare the clocks if device driver wants
- IRQ safe runtime PM
-Date: Tue, 16 Sep 2014 14:59:19 +0200
-Message-ID: <1410872360-27029-4-git-send-email-k.kozlowski@samsung.com>
-References: <1410872360-27029-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1410872360-27029-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH RESEND 1/2] power: max8925: Fix NULL ptr dereference on memory
+ allocation failure
+Date: Tue, 16 Sep 2014 18:10:40 +0200
+Message-ID: <1410883841-8276-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:41488 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754075AbaIPQKw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Sep 2014 12:10:52 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-The AMBA bus driver defines runtime Power Management functions which
-disable and unprepare AMBA bus clock. This is problematic for runtime PM
-because unpreparing a clock might sleep so it is not interrupt safe.
-
-However some drivers may want to implement runtime PM functions in
-interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
-bus driver should only disable/enable the clock in runtime suspend and
-resume callbacks.
-
-Detect the device driver behavior after calling its probe function and
-store it. During runtime suspend/resume deal with clocks according to
-stored value.
+Check the return value of devm_kzalloc() to fix possible NULL pointer
+dereference and properly exit the probe() on memory allocation failure.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/amba/bus.c       | 29 +++++++++++++++++++++++++----
- include/linux/amba/bus.h |  1 +
- 2 files changed, 26 insertions(+), 4 deletions(-)
+ drivers/power/max8925_power.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
-index 3cf61a127ee5..e8fd5706954f 100644
---- a/drivers/amba/bus.c
-+++ b/drivers/amba/bus.c
-@@ -94,8 +94,18 @@ static int amba_pm_runtime_suspend(struct device *dev)
- 	struct amba_device *pcdev = to_amba_device(dev);
- 	int ret = pm_generic_runtime_suspend(dev);
+diff --git a/drivers/power/max8925_power.c b/drivers/power/max8925_power.c
+index b4513f284bbc..0cf237808d47 100644
+--- a/drivers/power/max8925_power.c
++++ b/drivers/power/max8925_power.c
+@@ -452,13 +452,14 @@ max8925_power_dt_init(struct platform_device *pdev)
+ 	pdata = devm_kzalloc(&pdev->dev,
+ 			sizeof(struct max8925_power_pdata),
+ 			GFP_KERNEL);
++	if (!pdata)
++		goto ret;
  
--	if (ret == 0 && dev->driver)
--		clk_disable_unprepare(pcdev->pclk);
-+	if (ret == 0 && dev->driver) {
-+		/*
-+		 * Drivers should not change pm_runtime_irq_safe()
-+		 * after probe.
-+		 */
-+		WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
-+
-+		if (pcdev->irq_safe)
-+			clk_disable(pcdev->pclk);
-+		else
-+			clk_disable_unprepare(pcdev->pclk);
-+	}
+ 	of_property_read_u32(np, "topoff-threshold", &topoff_threshold);
+ 	of_property_read_u32(np, "batt-detect", &batt_detect);
+ 	of_property_read_u32(np, "fast-charge", &fast_charge);
+ 	of_property_read_u32(np, "no-insert-detect", &no_insert_detect);
+ 	of_property_read_u32(np, "no-temp-support", &no_temp_support);
+-	of_node_put(np);
  
- 	return ret;
+ 	pdata->batt_detect = batt_detect;
+ 	pdata->fast_charge = fast_charge;
+@@ -466,6 +467,8 @@ max8925_power_dt_init(struct platform_device *pdev)
+ 	pdata->no_insert_detect = no_insert_detect;
+ 	pdata->no_temp_support = no_temp_support;
+ 
++ret:
++	of_node_put(np);
+ 	return pdata;
  }
-@@ -106,7 +116,16 @@ static int amba_pm_runtime_resume(struct device *dev)
- 	int ret;
- 
- 	if (dev->driver) {
--		ret = clk_prepare_enable(pcdev->pclk);
-+		/*
-+		 * Drivers should not change pm_runtime_irq_safe()
-+		 * after probe.
-+		 */
-+		WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
-+
-+		if (pcdev->irq_safe)
-+			ret = clk_enable(pcdev->pclk);
-+		else
-+			ret = clk_prepare_enable(pcdev->pclk);
- 		/* Failure is probably fatal to the system, but... */
- 		if (ret)
- 			return ret;
-@@ -191,8 +210,10 @@ static int amba_probe(struct device *dev)
- 		pm_runtime_enable(dev);
- 
- 		ret = pcdrv->probe(pcdev, id);
--		if (ret == 0)
-+		if (ret == 0) {
-+			pcdev->irq_safe = pm_runtime_is_irq_safe(dev);
- 			break;
-+		}
- 
- 		pm_runtime_disable(dev);
- 		pm_runtime_set_suspended(dev);
-diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
-index ad52027a9cbf..ce101e4497d6 100644
---- a/include/linux/amba/bus.h
-+++ b/include/linux/amba/bus.h
-@@ -32,6 +32,7 @@ struct amba_device {
- 	struct clk		*pclk;
- 	unsigned int		periphid;
- 	unsigned int		irq[AMBA_NR_IRQS];
-+	unsigned int		irq_safe:1;
- };
- 
- struct amba_driver {
+ #else
 -- 
 1.9.1
+
