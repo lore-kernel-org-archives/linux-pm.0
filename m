@@ -1,32 +1,64 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v4 3/4] amba: Don't unprepare the clocks if device
-	driver wants IRQ safe runtime PM
-Date: Tue, 16 Sep 2014 10:20:06 +0100
-Message-ID: <20140916092006.GG12361@n2100.arm.linux.org.uk>
-References: <1410857494-15936-1-git-send-email-k.kozlowski@samsung.com> <1410857494-15936-4-git-send-email-k.kozlowski@samsung.com>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v6 0/8] charger/mfd: max14577: Add support for MAX77836
+Date: Tue, 16 Sep 2014 11:30:00 +0200
+Message-ID: <20140916093000.GA31655@earth.universe>
+References: <1410504840-23543-1-git-send-email-k.kozlowski@samsung.com>
+ <20140915225220.GH25162@lee--X1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="W/nzBZO5zC0uMSeA"
+Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1410857494-15936-4-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+In-Reply-To: <20140915225220.GH25162@lee--X1>
+Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Sep 16, 2014 at 10:51:33AM +0200, Krzysztof Kozlowski wrote:
-> @@ -191,8 +210,11 @@ static int amba_probe(struct device *dev)
->  		pm_runtime_enable(dev);
->  
->  		ret = pcdrv->probe(pcdev, id);
-> -		if (ret == 0)
-> +		if (ret == 0) {
-> +			if (pm_runtime_is_irq_safe(dev))
-> +				pcdev->irq_safe = 1;
 
-Patch looks good, though I'd prefer this to always explicitly initialise
-pcdev->irq_safe each time a probe succeeds.
+--W/nzBZO5zC0uMSeA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
-according to speedtest.net.
+Hi,
+
+On Mon, Sep 15, 2014 at 11:52:20PM +0100, Lee Jones wrote:
+> On Fri, 12 Sep 2014, Krzysztof Kozlowski wrote:
+> > This is a sixth version of patches adding support for
+> > MAX77836 device to the max14577 drivers.
+> >=20
+> > This patchset has been on the lists for quite long time and was already
+> > reviewed by all necessary maintainers except power supply.
+> > I need acks from power supply subsystem (patches: 3, 5-8).
+>=20
+> Give this set a few more days for the Power guys to respond.  If they
+> don't, ping me and I will just apply the set.
+
+Acked-By: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+
+-- Sebastian
+
+--W/nzBZO5zC0uMSeA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJUGAMYAAoJENju1/PIO/qac50P/3csfMvdBoikhV+JQWXFVTN9
+6P5fFBSQb2OG4GhE44vjRt2vLWOkjyOb4ohHTTgPrYXexsm+l87k1OmTloIXNScr
+Mfeiv9RtUYRgpY2TgOXrYbKKtX4QmSYqRB3SNrlH6IeyStQaKeDPRl0MtkuBtMBu
+/D8Coq2F5GvmKe53Faiv0ulbcyvuFesajy6zBHhvvZet1RTPDz2ixBG1bm4B84Nj
+Xk5FJzhgfGYag6kFr8Zv7uIKTVMz2dAncdnRiS5jH2TanFaZt1p4WA4E8okqp0gN
+7xSkbj2T1WxQJt6r4RYPs6bjcQZ+cVj7VvrGFNJaB0IW2jOg+tOh+sm4FIAW106c
+U7NYR/mHXTahVlI3ZGpVWKKH0Kfv9ceEGHp54V4nPBfF5D5JPgpPZFpMBqZt/ARQ
+mInE6lxR5L99zu8d+NfYWjyRi3vip4ZrTJzuEu6WV4okPpJxI09PgjYT/PruQjX8
+llAPuBqpvUoPNOYedmsHYUzj2lRLRNMt8OBPNGhwfKnU+t/X/rb20A7chgatwC6m
+VGNJ2V7I4+injByz0ImLnHAyaroJ8+oHVw+ee59LZBcaTBbriom+QUDRf/XXCi4n
+33SPeR0FXmoC23GfAHgR2F0nR+GVPax5ZaPMz6dWlnq3joWufbofDpW0RqEeLDwS
+B43dc0Gw+jlplFJ8q0aM
+=Wz+R
+-----END PGP SIGNATURE-----
+
+--W/nzBZO5zC0uMSeA--
