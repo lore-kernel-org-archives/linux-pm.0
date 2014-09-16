@@ -1,66 +1,32 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v4 1/4] PM / Runtime: Add getter for quering the IRQ safe option
-Date: Tue, 16 Sep 2014 10:51:31 +0200
-Message-ID: <1410857494-15936-2-git-send-email-k.kozlowski@samsung.com>
-References: <1410857494-15936-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1410857494-15936-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v4 3/4] amba: Don't unprepare the clocks if device
+	driver wants IRQ safe runtime PM
+Date: Tue, 16 Sep 2014 10:20:06 +0100
+Message-ID: <20140916092006.GG12361@n2100.arm.linux.org.uk>
+References: <1410857494-15936-1-git-send-email-k.kozlowski@samsung.com> <1410857494-15936-4-git-send-email-k.kozlowski@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1410857494-15936-4-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add a simple getter pm_runtime_is_irq_safe() for quering whether runtime
-PM IRQ safe was set or not.
+On Tue, Sep 16, 2014 at 10:51:33AM +0200, Krzysztof Kozlowski wrote:
+> @@ -191,8 +210,11 @@ static int amba_probe(struct device *dev)
+>  		pm_runtime_enable(dev);
+>  
+>  		ret = pcdrv->probe(pcdev, id);
+> -		if (ret == 0)
+> +		if (ret == 0) {
+> +			if (pm_runtime_is_irq_safe(dev))
+> +				pcdev->irq_safe = 1;
 
-Various bus drivers implementing runtime PM may use choose to suspend
-differently based on IRQ safeness status of child driver (e.g. do not
-unprepare the clock if IRQ safe is not set).
+Patch looks good, though I'd prefer this to always explicitly initialise
+pcdev->irq_safe each time a probe succeeds.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
----
- Documentation/power/runtime_pm.txt | 4 ++++
- include/linux/pm_runtime.h         | 6 ++++++
- 2 files changed, 10 insertions(+)
-
-diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-index f32ce5419573..397b81593142 100644
---- a/Documentation/power/runtime_pm.txt
-+++ b/Documentation/power/runtime_pm.txt
-@@ -468,6 +468,10 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
-     - set the power.irq_safe flag for the device, causing the runtime-PM
-       callbacks to be invoked with interrupts off
- 
-+  bool pm_runtime_is_irq_safe(struct device *dev);
-+    - return true if power.irq_safe flag was set for the device, causing
-+      the runtime-PM callbacks to be invoked with interrupts off
-+
-   void pm_runtime_mark_last_busy(struct device *dev);
-     - set the power.last_busy field to the current time
- 
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 367f49b9a1c9..44d74f0f182e 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -128,6 +128,11 @@ static inline void pm_runtime_mark_last_busy(struct device *dev)
- 	ACCESS_ONCE(dev->power.last_busy) = jiffies;
- }
- 
-+static inline bool pm_runtime_is_irq_safe(struct device *dev)
-+{
-+	return dev->power.irq_safe;
-+}
-+
- #else /* !CONFIG_PM_RUNTIME */
- 
- static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
-@@ -167,6 +172,7 @@ static inline bool pm_runtime_enabled(struct device *dev) { return false; }
- 
- static inline void pm_runtime_no_callbacks(struct device *dev) {}
- static inline void pm_runtime_irq_safe(struct device *dev) {}
-+static inline bool pm_runtime_is_irq_safe(struct device *dev) { return false; }
- 
- static inline bool pm_runtime_callbacks_present(struct device *dev) { return false; }
- static inline void pm_runtime_mark_last_busy(struct device *dev) {}
 -- 
-1.9.1
+FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
+according to speedtest.net.
