@@ -1,7 +1,7 @@
 From: Zhang Rui <rui.zhang@intel.com>
 Subject: Re: [PATCH v4 2/4] dt-bindings: document Rockchip thermal
-Date: Tue, 16 Sep 2014 15:23:53 +0800
-Message-ID: <1410852233.25559.173.camel@rzhang1-toshiba>
+Date: Tue, 16 Sep 2014 15:45:22 +0800
+Message-ID: <1410853522.1280.0.camel@rzhang1-toshiba>
 References: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com>
 	 <1410403012.25559.69.camel@rzhang1-toshiba>
 	 <20140911121842.GB26715@developer> <40514790.Xc34lyFLGa@wuerfel>
@@ -15,6 +15,7 @@ Sender: linux-doc-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Arnd Bergmann <arnd@arndb.de>, Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>, Caesar Wang <caesar.wang@rock-chips.com>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, Eddie Cai <cf@rock-chips.com>, Douglas Anderson <dianders@chromium.org>, dtor <dtor@chromium.org>, Chris Zhong <zyw@rock-chips.com>, "addy.ke@rock-chips.com" <addy.ke@rock-chips.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, zhaoyifeng <zyf@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
+
 
 On Thu, 2014-09-11 at 11:53 -0400, Eduardo Valentin wrote:
 > Arnd,
@@ -56,7 +57,8 @@ On Thu, 2014-09-11 at 11:53 -0400, Eduardo Valentin wrote:
 > 
 Agreed.
 And I think we can have such feature in thermal core.
-But again I don't think we should represent it as an trip point. 
+But again I don't think we should represent it as an trip point.
+Instead, we can have a separate parameter for
 
 thanks,
 rui
@@ -66,5 +68,6 @@ rui
 > Cheers,
 > 
 > Eduardo
+
 
 
