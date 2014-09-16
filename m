@@ -1,40 +1,23 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH RESEND 2/2] power: max8925: Use of_get_child_by_name
-Date: Tue, 16 Sep 2014 18:10:41 +0200
-Message-ID: <1410883841-8276-2-git-send-email-k.kozlowski@samsung.com>
-References: <1410883841-8276-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:20479 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754150AbaIPQKw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Sep 2014 12:10:52 -0400
-In-reply-to: <1410883841-8276-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v5 0/4] amba/dma: pl330: add Power Management support
+Date: Tue, 16 Sep 2014 17:18:20 +0100
+Message-ID: <20140916161820.GM12361@n2100.arm.linux.org.uk>
+References: <1410872360-27029-1-git-send-email-k.kozlowski@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1410872360-27029-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-Use of_get_child_by_name to obtain reference to charger node instead of
-of_find_node_by_name which can walk outside of the parent node.
+On Tue, Sep 16, 2014 at 02:59:16PM +0200, Krzysztof Kozlowski wrote:
+> Any comments are welcome.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
----
- drivers/power/max8925_power.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks, I'm happy with patches 2 and 3.  What's the merge plan for them?
 
-diff --git a/drivers/power/max8925_power.c b/drivers/power/max8925_power.c
-index 0cf237808d47..a6d45eef64dd 100644
---- a/drivers/power/max8925_power.c
-+++ b/drivers/power/max8925_power.c
-@@ -443,7 +443,7 @@ max8925_power_dt_init(struct platform_device *pdev)
- 	if (!nproot)
- 		return pdev->dev.platform_data;
- 
--	np = of_find_node_by_name(nproot, "charger");
-+	np = of_get_child_by_name(nproot, "charger");
- 	if (!np) {
- 		dev_err(&pdev->dev, "failed to find charger node\n");
- 		return NULL;
 -- 
-1.9.1
-
+FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
+according to speedtest.net.
