@@ -1,130 +1,68 @@
 From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH] PM / OPP: Remove ARCH_HAS_OPP completely
-Date: Tue, 16 Sep 2014 09:23:33 +0900
-Message-ID: <20140916002333.GI9847@verge.net.au>
-References: <1406551632.5397.17.camel@x220>
- <1410511111.31130.4.camel@x220>
- <20140916000916.GD9847@verge.net.au>
+Subject: Re: [PATCH 3/4] ARM: shmobile: r8a7740 legacy: Add missing INTCA
+ clock for irqpin module
+Date: Tue, 16 Sep 2014 09:40:06 +0900
+Message-ID: <20140916004006.GC26557@verge.net.au>
+References: <1410527720-18061-1-git-send-email-geert+renesas@glider.be>
+ <1410527720-18061-4-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:37076 "EHLO
+Received: from kirsty.vergenet.net ([202.4.237.240]:34647 "EHLO
 	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757093AbaIPAXn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Sep 2014 20:23:43 -0400
+	with ESMTP id S1754305AbaIPAkQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Sep 2014 20:40:16 -0400
 Content-Disposition: inline
-In-Reply-To: <20140916000916.GD9847@verge.net.au>
+In-Reply-To: <1410527720-18061-4-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Bolle <pebolle@tiscali.nl>
-Cc: Mark Brown <broonie@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Nishanth Menon <nm@ti.com>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Tony Lindgren <tony@atomide.com>, Russell King <linux@arm.linux.org.uk>, Magnus Damm <magnus.damm@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Magnus Damm <magnus.damm@gmail.com>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, Sep 16, 2014 at 09:09:17AM +0900, Simon Horman wrote:
-> On Fri, Sep 12, 2014 at 10:38:31AM +0200, Paul Bolle wrote:
-> > The Kconfig symbol ARCH_HAS_OPP became redundant in v3.16: commit
-> > 049d595a4db3 ("PM / OPP: Make OPP invisible to users in Kconfig")
-> > removed the only dependency that used it. Setting it had no effect
-> > anymore.
-> > 
-> > So commit 78c5e0bb145d ("PM / OPP: Remove ARCH_HAS_OPP") removed it. For
-> > some reason that commit did not remove all select statements for that
-> > symbol. These statements are useless. Remove them too.
-> > 
-> > Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
-> > ---
-> > Done on top of next-20140912. Tested with git grep only!
+On Fri, Sep 12, 2014 at 03:15:19PM +0200, Geert Uytterhoeven wrote:
+> This clock drives the irqpin controller modules.
+> Before, it was assumed enabled by the bootloader or reset state.
 > 
-> Hi Paul,
-> 
-> could you break the shmobile portion out into a separate patch
-> for me to take through my renesas tree?
-> 
-> I am concerned that taking those changes via a different
-> route will result in conflicts as arch/arm/mach-shmobile/Kconfig
-> is often updated.
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Of course the above comment is redundant if Rafael
-has already taken this patch.
+Thanks, I have queued this up.
 
+> ---
+>  arch/arm/mach-shmobile/clock-r8a7740.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
 > 
-> >  arch/arm/mach-omap2/Kconfig    | 5 -----
-> >  arch/arm/mach-shmobile/Kconfig | 1 -
-> >  drivers/devfreq/Kconfig        | 1 -
-> >  3 files changed, 7 deletions(-)
-> > 
-> > diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-> > index 5b103099626d..f138bd33a463 100644
-> > --- a/arch/arm/mach-omap2/Kconfig
-> > +++ b/arch/arm/mach-omap2/Kconfig
-> > @@ -22,7 +22,6 @@ config ARCH_OMAP4
-> >  	bool "TI OMAP4"
-> >  	depends on ARCH_MULTI_V7
-> >  	select ARCH_OMAP2PLUS
-> > -	select ARCH_HAS_OPP
-> >  	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
-> >  	select ARM_CPU_SUSPEND if PM
-> >  	select ARM_ERRATA_720789
-> > @@ -41,7 +40,6 @@ config SOC_OMAP5
-> >  	bool "TI OMAP5"
-> >  	depends on ARCH_MULTI_V7
-> >  	select ARCH_OMAP2PLUS
-> > -	select ARCH_HAS_OPP
-> >  	select ARM_CPU_SUSPEND if PM
-> >  	select ARM_GIC
-> >  	select HAVE_ARM_SCU if SMP
-> > @@ -53,14 +51,12 @@ config SOC_AM33XX
-> >  	bool "TI AM33XX"
-> >  	depends on ARCH_MULTI_V7
-> >  	select ARCH_OMAP2PLUS
-> > -	select ARCH_HAS_OPP
-> >  	select ARM_CPU_SUSPEND if PM
-> >  
-> >  config SOC_AM43XX
-> >  	bool "TI AM43x"
-> >  	depends on ARCH_MULTI_V7
-> >  	select ARCH_OMAP2PLUS
-> > -	select ARCH_HAS_OPP
-> >  	select ARM_GIC
-> >  	select MACH_OMAP_GENERIC
-> >  	select MIGHT_HAVE_CACHE_L2X0
-> > @@ -69,7 +65,6 @@ config SOC_DRA7XX
-> >  	bool "TI DRA7XX"
-> >  	depends on ARCH_MULTI_V7
-> >  	select ARCH_OMAP2PLUS
-> > -	select ARCH_HAS_OPP
-> >  	select ARM_CPU_SUSPEND if PM
-> >  	select ARM_GIC
-> >  	select HAVE_ARM_ARCH_TIMER
-> > diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
-> > index 21f457b56c01..f59019dd986e 100644
-> > --- a/arch/arm/mach-shmobile/Kconfig
-> > +++ b/arch/arm/mach-shmobile/Kconfig
-> > @@ -36,7 +36,6 @@ menuconfig ARCH_SHMOBILE_MULTI
-> >  	select NO_IOPORT_MAP
-> >  	select PINCTRL
-> >  	select ARCH_REQUIRE_GPIOLIB
-> > -	select ARCH_HAS_OPP
-> >  
-> >  if ARCH_SHMOBILE_MULTI
-> >  
-> > diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> > index 3dced0a9eae3..2227e9bf3884 100644
-> > --- a/drivers/devfreq/Kconfig
-> > +++ b/drivers/devfreq/Kconfig
-> > @@ -80,7 +80,6 @@ config ARM_EXYNOS4_BUS_DEVFREQ
-> >  config ARM_EXYNOS5_BUS_DEVFREQ
-> >  	bool "ARM Exynos5250 Bus DEVFREQ Driver"
-> >  	depends on SOC_EXYNOS5250
-> > -	select ARCH_HAS_OPP
-> >  	select DEVFREQ_GOV_SIMPLE_ONDEMAND
-> >  	select PM_OPP
-> >  	help
-> > -- 
-> > 1.9.3
-> > 
-> > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> diff --git a/arch/arm/mach-shmobile/clock-r8a7740.c b/arch/arm/mach-shmobile/clock-r8a7740.c
+> index 0794f0426e70..6cb1de220612 100644
+> --- a/arch/arm/mach-shmobile/clock-r8a7740.c
+> +++ b/arch/arm/mach-shmobile/clock-r8a7740.c
+> @@ -455,7 +455,7 @@ enum {
+>  	MSTP128, MSTP127, MSTP125,
+>  	MSTP116, MSTP111, MSTP100, MSTP117,
+>  
+> -	MSTP230,
+> +	MSTP230, MSTP229,
+>  	MSTP222,
+>  	MSTP218, MSTP217, MSTP216, MSTP214,
+>  	MSTP207, MSTP206, MSTP204, MSTP203, MSTP202, MSTP201, MSTP200,
+> @@ -479,6 +479,7 @@ static struct clk mstp_clks[MSTP_NR] = {
+>  	[MSTP100] = SH_CLK_MSTP32(&div4_clks[DIV4_B],	SMSTPCR1,  0, 0), /* LCDC0 */
+>  
+>  	[MSTP230] = SH_CLK_MSTP32(&div6_clks[DIV6_SUB],	SMSTPCR2, 30, 0), /* SCIFA6 */
+> +	[MSTP229] = SH_CLK_MSTP32(&div6_clks[DIV4_HP],	SMSTPCR2, 29, 0), /* INTCA */
+>  	[MSTP222] = SH_CLK_MSTP32(&div6_clks[DIV6_SUB],	SMSTPCR2, 22, 0), /* SCIFA7 */
+>  	[MSTP218] = SH_CLK_MSTP32(&div4_clks[DIV4_HP],  SMSTPCR2, 18, 0), /* DMAC1 */
+>  	[MSTP217] = SH_CLK_MSTP32(&div4_clks[DIV4_HP],  SMSTPCR2, 17, 0), /* DMAC2 */
+> @@ -575,6 +576,10 @@ static struct clk_lookup lookups[] = {
+>  	CLKDEV_DEV_ID("sh-dma-engine.0",	&mstp_clks[MSTP218]),
+>  	CLKDEV_DEV_ID("sh-sci.7",		&mstp_clks[MSTP222]),
+>  	CLKDEV_DEV_ID("e6cd0000.serial",	&mstp_clks[MSTP222]),
+> +	CLKDEV_DEV_ID("renesas_intc_irqpin.0",	&mstp_clks[MSTP229]),
+> +	CLKDEV_DEV_ID("renesas_intc_irqpin.1",	&mstp_clks[MSTP229]),
+> +	CLKDEV_DEV_ID("renesas_intc_irqpin.2",	&mstp_clks[MSTP229]),
+> +	CLKDEV_DEV_ID("renesas_intc_irqpin.3",	&mstp_clks[MSTP229]),
+>  	CLKDEV_DEV_ID("sh-sci.6",		&mstp_clks[MSTP230]),
+>  	CLKDEV_DEV_ID("e6cc0000.serial",	&mstp_clks[MSTP230]),
+>  
+> -- 
+> 1.9.1
 > 
