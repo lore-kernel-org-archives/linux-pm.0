@@ -1,130 +1,81 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC v2 00/12] ARM: shmobile: R-Mobile: Prototype DT PM domain
- support
-Date: Tue, 16 Sep 2014 20:48:47 +0200
-Message-ID: <1410893339-6361-1-git-send-email-geert+renesas@glider.be>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v5 3/4] amba: Don't unprepare the clocks if device
+	driver wants IRQ safe runtime PM
+Date: Tue, 16 Sep 2014 20:52:55 +0100
+Message-ID: <20140916195255.GN12361@n2100.arm.linux.org.uk>
+References: <1410872360-27029-1-git-send-email-k.kozlowski@samsung.com> <1410872360-27029-4-git-send-email-k.kozlowski@samsung.com> <CAPDyKFrNYxSx3KwOLg0Bgw2TCtsC2-1YXjo1kSms2ie_b8sNww@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
-Cc: devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:59295 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755234AbaIPTxX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Sep 2014 15:53:23 -0400
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFrNYxSx3KwOLg0Bgw2TCtsC2-1YXjo1kSms2ie_b8sNww@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-	Hi all,
+On Tue, Sep 16, 2014 at 08:25:25PM +0200, Ulf Hansson wrote:
+> On 16 September 2014 14:59, Krzysztof Kozlowski <k.kozlowski@samsung.com> wrote:
+> > The AMBA bus driver defines runtime Power Management functions which
+> > disable and unprepare AMBA bus clock. This is problematic for runtime PM
+> > because unpreparing a clock might sleep so it is not interrupt safe.
+> >
+> > However some drivers may want to implement runtime PM functions in
+> > interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
+> > bus driver should only disable/enable the clock in runtime suspend and
+> > resume callbacks.
+> >
+> > Detect the device driver behavior after calling its probe function and
+> > store it. During runtime suspend/resume deal with clocks according to
+> > stored value.
+> >
+> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > ---
+> >  drivers/amba/bus.c       | 29 +++++++++++++++++++++++++----
+> >  include/linux/amba/bus.h |  1 +
+> >  2 files changed, 26 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+> > index 3cf61a127ee5..e8fd5706954f 100644
+> > --- a/drivers/amba/bus.c
+> > +++ b/drivers/amba/bus.c
+> > @@ -94,8 +94,18 @@ static int amba_pm_runtime_suspend(struct device *dev)
+> >         struct amba_device *pcdev = to_amba_device(dev);
+> >         int ret = pm_generic_runtime_suspend(dev);
+> >
+> > -       if (ret == 0 && dev->driver)
+> > -               clk_disable_unprepare(pcdev->pclk);
+> > +       if (ret == 0 && dev->driver) {
+> > +               /*
+> > +                * Drivers should not change pm_runtime_irq_safe()
+> > +                * after probe.
+> > +                */
+> > +               WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
+> 
+> Do we really need a WARN_ON here. Driver shouldn't update their
+> irq_safe value dynamically, right!?
 
-This patch series contains prototype code to enable DT support for PM domains
-on Renesas R-Mobile SoCs.
+The driver shouldn't update it dynamically, and this makes sure *that*
+is enforced since we end up depending on that property.  Hence the
+check is sensible (and I even suggested it.)
 
-Currently it's limited to R-Mobile A1 (r8a7740), but given the similarity of
-the SYSC System-Controller on the various SH-Mobile/R-Mobile SoCs, and the
-abstraction of PM domains in DT, it should be sufficiently generic to handle
-other SoCs in the future (e.g. SH-Mobile AP4 (sh7372), SH-Mobile AG5 (sh73a0),
-R-Mobile APE6 (r8a73a4)).
+> > +
+> > +               if (pcdev->irq_safe)
+> > +                       clk_disable(pcdev->pclk);
+> 
+> Since the irq_safe flag, could be considered as a special case, an
+> option for these cases - could be to leave the clock to be entirely
+> handled from the driver's runtime PM callback instead.
 
-Changes compared to v1 (more detailed changelogs in the individual patches):
-  - Several new patches: [02], [04], [05], [06], [07], [11], [12],
-  - Run-Time management of the module clocks, making the hack in
-    drivers/sh/pm_runtime.c obsolete for DT platforms using genpd.
-    More about this below[*].
-  - Addition of PM QoS device latencies, specified from DT.
-  - Addition of build glue, so this builds and runs without additional
-    changes, incl. s2ram.
+Too many sub-clauses to make much sense of that statement.
 
-This means that functionality-wise, the DT version is now on par with the
-legacy version, so I can continue focussing on fixing the common limitations,
-and the quirks in rmobile_pm_quirks() in a DT-friendly way.
-
-Thanks for your comments!
-
-Dependencies:
-  - "[PATCH 00/11] ARM: shmobile: r8a7740/armadillo legacy prototype pm domain
-    support", sent by me (www.spinics.net/lists/arm-kernel/msg358037.html),
-  - "[PATCH v4 0/9] PM / Domains: Generic OF-based support", sent by Ulf
-    Hansson (http://www.spinics.net/lists/arm-kernel/msg360672.html),
-  - Simon Horman's renesas-devel-20140916v2-v3.17-rc5,
-  - Rafael J. Wysocki's linux-pm.git#linux-next,
-  - Jason Cooper's linux.git#irqchip/for-next.
-
-For your convenience, I've also pushed this to
-git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git#rmobile-genpd
-
-Geert Uytterhoeven (12):
-  [01] PM / Domains: Add DT bindings for power-on/off latencies
-  [02] PM / Domains: Add DT bindings for PM QoS device latencies
-  [03] PM / Domains: Add DT bindings for the R-Mobile System Controller
-  [04] PM / Domains: Add genpd attach/detach callbacks
-  [05] PM / Domains: Add helper variable np = dev->of_node
-  [06] PM / Domains: Retrieve PM QoS device latencies from DT
-  [07] ARM: shmobile: R-Mobile: Use generic_pm_domain.attach_dev() for pm_clk
-    setup
-  [08] ARM: shmobile: R-Mobile: Store SYSC base address in rmobile_pm_domain
-  [09] ARM: shmobile: R-Mobile: Add DT support for PM domains
-  [10] ARM: shmobile: r8a7740 dtsi: Add PM domain support
-  [11] ARM: shmobile: r8a7740 dtsi: Add PM QoS device latencies
-  [12] drivers: sh: Disable PM runtime for multi-platform r8a7740 with genpd
-
- .../devicetree/bindings/power/power_domain.txt     |  16 ++
- .../bindings/power/renesas,sysc-rmobile.txt        | 111 +++++++++
- arch/arm/boot/dts/r8a7740.dtsi                     | 257 +++++++++++++++++++++
- arch/arm/mach-shmobile/Kconfig                     |   3 +-
- arch/arm/mach-shmobile/pm-r8a7740.c                |  14 ++
- arch/arm/mach-shmobile/pm-rmobile.c                | 187 +++++++++++++--
- arch/arm/mach-shmobile/pm-rmobile.h                |   3 +-
- arch/arm/mach-shmobile/pm-sh7372.c                 |  11 +
- drivers/base/power/domain.c                        |  38 ++-
- drivers/sh/pm_runtime.c                            |   2 +
- include/linux/pm_domain.h                          |   2 +
- 11 files changed, 620 insertions(+), 24 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
+I don't want drivers messing around with this stuff.  This is the /bus/
+clock, not a device specific clock.
 
 -- 
-1.9.1
-
-[*] Run-Time management of the module clocks is a continuing story...
-
-  - The hack in drivers/sh/pm_runtime.c used the pm_clk_notifier on the
-    platform bus. This (a) is not compatible with genpd (and thus with SoCs
-    where we want to use genpd to manage the power areas), as there can be only
-    one PM domain attached to a device, and (b) affects all platform devices,
-    not only the on-SoC devices we want to manage.
-
-  - This series uses genpd to handle the module clocks. This works fine for
-    R-Mobile, as it has fine-grained power areas. It does require representing
-    the (documented) C5 always-on power area in DT, as now all on-SoC devices
-    need a phandle to a PM domain to manage their clocks.
-    For R-Car SoCs, this will be more complicated, as there are only power
-    areas for CPU cores and co-processors (e.g. SH-4A and SGX), so I'll have
-    to "invent" an always-on area, and put it in DT?
-    While genpd is touted as the solution for complex Run-Time management of
-    clocks, I feel like it's forcing a Linux-solution in DT, which should
-    represent the hardware. On Renesas SoCs, the module clocks are not related
-    to the power areas, but they're a property of the Clock Pulse Generator's
-    Module Standby functionality, hence my earlier proposal [A] below.
-
-  - Related discussions:
-      [A] "[PATCH/RFC 0/4] of: Register clocks for Runtime PM with PM core", by
-          me (https://lkml.org/lkml/2014/4/24/1118),
-      [B] "[RFC PATCH 0/3] PM / clock_ops: allow to specify custom
-	  pm_clk_notifier callback", by Grygorii Strashko
-	  (https://lkml.org/lkml/2014/7/25/630).
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
+according to speedtest.net.
