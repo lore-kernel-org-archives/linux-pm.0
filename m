@@ -1,42 +1,139 @@
-From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v6 0/8] charger/mfd: max14577: Add support for MAX77836
-Date: Tue, 16 Sep 2014 11:47:02 +0200
-Message-ID: <1410860822.16106.3.camel@AMDC1943>
-References: <1410504840-23543-1-git-send-email-k.kozlowski@samsung.com>
- <20140915225220.GH25162@lee--X1> <20140916093000.GA31655@earth.universe>
+From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v2 1/7] mfd: Add support for DA9150 combined charger &
+ fuel-gauge device
+Date: Tue, 16 Sep 2014 10:50:21 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337AB514E7C@SW-EX-MBX01.diasemi.com>
+References: <cover.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
+ <d6c7de200c9447dbafa74ee76739da943a0b73b2.1409145187.git.Adam.Thomson.Opensource@diasemi.com>
+ <20140828163608.GY24579@lee--X1>
+ <2E89032DDAA8B9408CB92943514A0337AB5144CE@SW-EX-MBX01.diasemi.com>
+ <20140910094951.GN30307@lee--X1>
+ <2E89032DDAA8B9408CB92943514A0337AB514846@SW-EX-MBX01.diasemi.com>
+ <20140915223924.GC25162@lee--X1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <20140916093000.GA31655-SfvFxonMDyemK9LvCR3Hrw@public.gmane.org>
-Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail1.bemta5.messagelabs.com ([195.245.231.141]:40095 "EHLO
+	mail1.bemta5.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750875AbaIPKu3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Sep 2014 06:50:29 -0400
+In-Reply-To: <20140915223924.GC25162@lee--X1>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@kernel.org>, "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 
-On wto, 2014-09-16 at 11:30 +0200, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Mon, Sep 15, 2014 at 11:52:20PM +0100, Lee Jones wrote:
-> > On Fri, 12 Sep 2014, Krzysztof Kozlowski wrote:
-> > > This is a sixth version of patches adding support for
-> > > MAX77836 device to the max14577 drivers.
-> > > 
-> > > This patchset has been on the lists for quite long time and was already
-> > > reviewed by all necessary maintainers except power supply.
-> > > I need acks from power supply subsystem (patches: 3, 5-8).
-> > 
-> > Give this set a few more days for the Power guys to respond.  If they
-> > don't, ping me and I will just apply the set.
-> 
-> Acked-By: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> 
-> -- Sebastian
-
-Thank you.
-
-Lee,
-Could you pick up whole patchset with Sebastian's ack?
-
-Best regards,
-Krzysztof
+T24gU2VwdGVtYmVyIDE1LCAyMDE0IDIzOjM5LCBMZWUgSm9uZXMgd3JvdGU6DQoNCj4gT24gV2Vk
+LCAxMCBTZXAgMjAxNCwgT3BlbnNvdXJjZSBbQWRhbSBUaG9tc29uXSB3cm90ZToNCj4gPiBPbiBT
+ZXB0ZW1iZXIgMTAsIDIwMTQgMTA6NTAsIExlZSBKb25lcyB3cm90ZToNCj4gPiA+IE9uIFR1ZSwg
+MDkgU2VwIDIwMTQsIE9wZW5zb3VyY2UgW0FkYW0gVGhvbXNvbl0gd3JvdGU6DQo+ID4gPg0KPiA+
+ID4gPiBPbiBBdWd1c3QgMjgsIDIwMTQgMTc6MzYsIExlZSBKb25lcyB3cm90ZToNCj4gPiA+ID4N
+Cj4gPiA+ID4gVGhhbmtzIGZvciB0aGUgZmVlZGJhY2suIEFzIGEgZ2VuZXJhbCBjb21tZW50IGEg
+Y291cGxlIG9mIHRoZSBpdGVtcyB5b3UndmUNCj4gPiA+ID4gaWRlbnRpZmllZCByZWxhdGUgdG8g
+ZnV0dXJlIHVwZGF0ZXMgKGFkZGl0aW9uYWwgZnVuY3Rpb25hbGl0eSBiZWluZyBhZGRlZCkuDQo+
+ID4gPiA+IEkgYWxyZWFkeSBoYXZlIGNvZGUgaW4gcGxhY2UgZm9yIHRoaXMgYnV0IGhhdmUgc3Ry
+aXBwZWQgb3V0IGEgY291cGxlIG9mIHRoZQ0KPiA+ID4gPiBkcml2ZXJzIGp1c3QgdG8gcmVkdWNl
+IHRoZSBjaHVybiBhbmQgc2l6ZSBvZiBwYXRjaCBzdWJtaXNzaW9uLiBUaGVzZSB3aWxsIGJlDQo+
+ID4gPiA+IGFkZGVkIG9uY2UgdGhlc2UgcGF0Y2hlcyBoYXZlIGJlZW4gYWNjZXB0ZWQuDQo+ID4g
+PiA+DQo+ID4gPiA+IFdoZXJlIHRoaXMgaXMgdGhlIGNhc2UsIEkgaGF2ZSBhZGRlZCBub3RlcyBp
+bi1saW5lIGFnYWluc3QgdGhlIHJlbGV2YW50DQo+ID4gPiA+IGNvbW1lbnRzIHlvdSBtYWRlLg0K
+PiA+ID4gPg0KPiA+ID4gPiA+IE9uIFRodSwgMjggQXVnIDIwMTQsIEFkYW0gVGhvbXNvbiB3cm90
+ZToNCj4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gREE5MTUwIGlzIGEgY29tYmluZWQgQ2hhcmdlciBh
+bmQgRnVlbC1HYXVnZSBJQywgd2l0aCBhZGRpdGlvbmFsDQo+ID4gPiA+ID4gPiBHUElPIGFuZCBH
+UEFEQyBmdW5jdGlvbmFsaXR5Lg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IFNpZ25lZC1vZmYt
+Ynk6IEFkYW0gVGhvbXNvbg0KPiA8QWRhbS5UaG9tc29uLk9wZW5zb3VyY2VAZGlhc2VtaS5jb20+
+DQo+ID4gPiA+ID4gPiAtLS0NCj4gPiA+ID4gPiA+ICBkcml2ZXJzL21mZC9LY29uZmlnICAgICAg
+ICAgICAgICAgICAgfCAgIDEyICsNCj4gPiA+ID4gPiA+ICBkcml2ZXJzL21mZC9NYWtlZmlsZSAg
+ICAgICAgICAgICAgICAgfCAgICAyICsNCj4gPiA+ID4gPiA+ICBkcml2ZXJzL21mZC9kYTkxNTAt
+Y29yZS5jICAgICAgICAgICAgfCAgMzMyICsrKysrKysrKysNCj4gPiA+ID4gPiA+ICBkcml2ZXJz
+L21mZC9kYTkxNTAtaTJjLmMgICAgICAgICAgICAgfCAgMTc2ICsrKysrKw0KPiANCj4gWy4uLl0N
+Cj4gDQo+ID4gPiA+ID4gPiArLyogSGVscGVyIGZ1bmN0aW9ucyBmb3Igc3ViLWRldmljZXMgdG8g
+cmVxdWVzdC9mcmVlIElSUXMgKi8NCj4gPiA+ID4gPiA+ICtpbnQgZGE5MTUwX3JlZ2lzdGVyX2ly
+cShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2LCB2b2lkICpkZXZfaWQsDQo+ID4gPiA+ID4g
+PiArCQkJaXJxX2hhbmRsZXJfdCBoYW5kbGVyLCBjb25zdCBjaGFyICpuYW1lKQ0KPiA+ID4gPiA+
+ID4gK3sNCj4gPiA+ID4gPiA+ICsJaW50IGlycSwgcmV0Ow0KPiA+ID4gPiA+ID4gKw0KPiA+ID4g
+PiA+ID4gKwlpcnEgPSBwbGF0Zm9ybV9nZXRfaXJxX2J5bmFtZShwZGV2LCBuYW1lKTsNCj4gPiA+
+ID4gPiA+ICsJaWYgKGlycSA8IDApDQo+ID4gPiA+ID4gPiArCQlyZXR1cm4gaXJxOw0KPiA+ID4g
+PiA+ID4gKw0KPiA+ID4gPiA+ID4gKwlyZXQgPSBkZXZtX3JlcXVlc3RfdGhyZWFkZWRfaXJxKCZw
+ZGV2LT5kZXYsIGlycSwgTlVMTCwgaGFuZGxlciwNCj4gPiA+ID4gPiA+ICsJCQkJCUlSUUZfT05F
+U0hPVCwgbmFtZSwgZGV2X2lkKTsNCj4gPiA+ID4gPiA+ICsJaWYgKHJldCkNCj4gPiA+ID4gPiA+
+ICsJCWRldl9lcnIoJnBkZXYtPmRldiwgIkZhaWxlZCB0byByZXF1ZXN0IElSUSAlZDogJWRcbiIs
+IGlycSwNCj4gcmV0KTsNCj4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ICsJcmV0dXJuIHJldDsN
+Cj4gPiA+ID4gPiA+ICt9DQo+ID4gPiA+ID4gPiArRVhQT1JUX1NZTUJPTF9HUEwoZGE5MTUwX3Jl
+Z2lzdGVyX2lycSk7DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBXaHkgZG8gdGhleSBuZWVkIGhlbHA/
+ICBXaGF0IHByb2JsZW0gZG9lcyBhZGRpbmcgdGhlc2UgbGF5ZXJzIHNvbHZlPw0KPiA+ID4gPg0K
+PiA+ID4gPiBNZWFucyBJIGRvbid0IGhhdmUgdG8ga2VlcCBhZGRpbmcgcHJpbnQgZXJyb3IgbGlu
+ZXMgZXZlcnl3aGVyZSBlbHNlIGlmIHRoaXMNCj4gPiA+ID4gZnVuY3Rpb24gdGFrZXMgY2FyZSBv
+ZiBpdC4gVGhvdWdodCB0aGF0IHdvdWxkIGJlIGNsZWFuZXIuDQo+ID4gPg0KPiA+ID4gWW91IG9u
+bHkgbmVlZCB0byByZXF1ZXN0IGVhY2ggSVJRIG9uY2UuICBJdCdzIGp1c3QgbW9yZSBhYnN0cmFj
+dGlvbg0KPiA+ID4gZm9yIHRoZSBzYWtlIG9mIGl0LiAgSSB3b3VsZCBwcmVmZXIgaWYgeW91IHJl
+bW92ZWQgdGhlbS4NCj4gPg0KPiA+IFllcywgYnV0IGluIHRoZSBjaGFyZ2VyIGRyaXZlciBmb3Ig
+ZXhhbXBsZSwgdGhlcmUgYXJlIDQgSVJRcyB0byByZXF1ZXN0LiBJZg0KPiA+IEkgZG9uJ3QgdXNl
+IHRoaXMgYXBwcm9hY2ggdGhlIElSUSByZXF1ZXN0aW5nIGJlY29tZXMgYmxvYXRlZCwgaGVuY2Ug
+d2h5IEkgd2VudA0KPiA+IGZvciBhIGNvbW1vbiBmdW5jdGlvbiBsaWtlIHRoaXMuIFRob3VnaHQg
+Z2VuZXJhbGx5IHRoZSBpbnRlbnRpb24gd2FzIHRvIGN1dA0KPiA+IGRvd24gb24gcmVwZWF0ZWQg
+Y29kZT8NCj4gDQo+IElmIHlvdSdyZSB3b3JyaWVkIGFib3V0IGJsb2F0IGluIC5wcm9iZSgpIGl0
+J3Mgb2theSB0byBkZWZpbmUgYSBuZXcNCj4gZnVuY3Rpb24gd2l0aGluIHRoZSBjaGFyZ2VyIGRy
+aXZlcjsgaG93ZXZlciwgY3JlYXRpbmcgYSBjYWxsLWJhY2sgaW50bw0KPiB0aGUgTUZEIGRyaXZl
+ciBsaWtlIHRoaXMgSSB0aGluayBpdCBvdmVyLWtpbGwgZm9yIDQgcmVxdWVzdHMuDQoNCkkgY291
+bGQgZG8gc29tZXRoaW5nIGp1c3QgaW4gdGhlIGNoYXJnZXIsIGJ1dCB3aHkgbm90IGhhdmUgc29t
+ZXRoaW5nIHdoaWNoIGNhbg0KYmUgdXNlZCBmb3IgYWxsIHN1Yi1kZXZpY2VzPyBUaGVyZSBpcyBh
+bHNvIGFuIElSUSB1c2VkIGluIHRoZSBJSU8gQURDIGRyaXZlciBhbmQNCnRoZXJlIHdpbGwgYmUg
+YW5vdGhlciBpbiB0aGUgbGF0ZXIgZnVlbC1nYXVnZSBkcml2ZXIgdG9vLiBEb2Vzbid0IG1ha2Ug
+c2Vuc2UgdG8NCm1lIG5vdCB0byBkbyBpbiB0aGUgTUZEIGNvZGUgd2hlbiB0aGF0IHdpbGwgcHJv
+dmlkZSBhIHNpbXBsZSBjb21tb24gY2FsbCBmb3IgYWxsDQpzdWItZGV2aWNlcy4gV2hhdCBpcyB5
+b3VyIGNvbmNlcm4gd2l0aCBhZGRpbmcgc29tZXRoaW5nIGxpa2UgdGhpcywganVzdCBzbyBJJ20N
+CmNsZWFyPw0KDQo+IA0KPiA+ID4gPiA+ID4gK3ZvaWQgZGE5MTUwX3JlbGVhc2VfaXJxKHN0cnVj
+dCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYsIHZvaWQgKmRldl9pZCwNCj4gPiA+ID4gPiA+ICsJCSAg
+ICAgICBjb25zdCBjaGFyICpuYW1lKQ0KPiA+ID4gPiA+ID4gK3sNCj4gPiA+ID4gPiA+ICsJaW50
+IGlycTsNCj4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ICsJaXJxID0gcGxhdGZvcm1fZ2V0X2ly
+cV9ieW5hbWUocGRldiwgbmFtZSk7DQo+ID4gPiA+ID4gPiArCWlmIChpcnEgPCAwKQ0KPiA+ID4g
+PiA+ID4gKwkJcmV0dXJuOw0KPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gKwlkZXZtX2ZyZWVf
+aXJxKCZwZGV2LT5kZXYsIGlycSwgZGV2X2lkKTsNCj4gPiA+ID4gPiA+ICt9DQo+ID4gPiA+ID4g
+PiArRVhQT1JUX1NZTUJPTF9HUEwoZGE5MTUwX3JlbGVhc2VfaXJxKTsNCj4gPiA+ID4gPg0KPiA+
+ID4gPiA+IERvIHlvdSBldmVyIHJlbGVhc2UgdGhlIElSUSBhbmQgbm90IHVuYmluZCB0aGUgZHJp
+dmVyPw0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gQXJlIHRoZXJlIG9yZGVyaW5nIGlzc3VlcyBhdCBw
+bGF5IGhlcmU/DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBJZiBub3QsIHRoZXJlJ3Mgbm8gbmVlZCB0
+byBjb25kdWN0IGEgbWFudWFsIGZyZWUuDQo+ID4gPiA+DQo+ID4gPiA+IEluIHRoZSBjaGFyZ2Vy
+IGRyaXZlciwgaW4gdGhlIHJlbW92ZSBmdW5jdGlvbiB0aGVyZSBpcyBhIG5lZWQgSSBiZWxpZXZl
+IHRvDQo+ID4gPiA+IGZyZWUgdGhlIElSUXMgYmVmb3JlIG90aGVyIGl0ZW1zIGFyZSBjbGVhcmVk
+IHVwIChlLmcuIHBvd2VyX3N1cHBseSBjbGFzc2VzKSwNCj4gPiA+ID4gc28gdGhpcyBpcyB3aHkg
+SSBoYXZlIGFkZGVkIHRoaXMgaW4gaGVyZS4NCj4gPiA+DQo+ID4gPiBDYW4geW91IGhhbmRsZSB0
+aGlzIHNlcGFyYXRlbHkgaW4gdGhlIENoYXJnZXIgZHJpdmVyIHRoZW4gcGxlYXNlPw0KPiA+ID4N
+Cj4gPiA+IFsuLi5dDQo+ID4NCj4gPiBJZiBJIGhhdmUgdG8gcmVtb3ZlIHRoZSBJUlEgcmVnaXN0
+ZXIgZnVuY3Rpb24sIHRoZW4geWVzLCBvdGhlcndpc2UgaXQgbWFrZXMgbW9yZQ0KPiA+IHNlbnNl
+IHRvIGhhdmUgdGhlIHBhaXIgb2YgZnVuY3Rpb25zIGluIHRoZSBNRkQgY29yZSBJIHdvdWxkIHNh
+eS4NCj4gDQo+IEkgd291bGQgcHJlZmVyIHlvdSB0byByZW1vdmUgdGhlIGNhbGwtYmFjayBwbGVh
+c2UuDQoNClJpZ2h0Lg0KDQo+IA0KPiA+ID4gPiA+ID4gKwlpZiAocGRhdGEpDQo+ID4gPiA+ID4g
+PiArCQlkYTkxNTAtPmlycV9iYXNlID0gcGRhdGEtPmlycV9iYXNlOw0KPiA+ID4gPiA+ID4gKwll
+bHNlDQo+ID4gPiA+ID4gPiArCQlkYTkxNTAtPmlycV9iYXNlID0gLTE7DQo+ID4gPiA+ID4NCj4g
+PiA+ID4gPiBwZGF0YSA/IHBkYXRhLT5pcnFfYmFzZSA6IC0xOw0KPiA+ID4gPg0KPiA+ID4gPiBU
+aGlzIGlzIGxlZnQgdGhpcyB3YXkgYXMgbGF0ZXIgdXBkYXRlcyB0byBhZGQgYWRkaXRpb25hbCBm
+dW5jdGlvbmFsaXR5IHdpbGwNCj4gPiA+ID4gcmVxdWlyZSBhZGR0aW9uYWwgd29yayB0byBiZSBk
+b25lIHdpdGggdGhlIHBsYXRmb3JtIGRhdGEuIFNlZW1lZCBwb2ludGxlc3MNCj4gPiA+ID4gY2hh
+bmdpbmcgaXQgaGVyZSBqdXN0IHRvIGNoYW5nZSBpdCBiYWNrIGxhdGVyLg0KPiA+ID4NCj4gPiA+
+IFlvdSdyZSBub3QgY2hhbmdpbmcgYW55dGhpbmcsIGFzIHRoaXMgaXMgdGhlIGludHJvZHVjdGlv
+biBvZiB0aGUgY29kZS4NCj4gPiA+IEkgY2FuJ3QgdGVsbCB5b3UgaG93IG1hbnkgdGltZXMgSSd2
+ZSBoZWFyZCAiSSB3aWxsIGNoYW5nZSBpdCBsYXRlciIsDQo+ID4gPiBvciAiZG9pbmcgaXQgdGhp
+cyB3YXkgd2lsbCBzdXBwb3J0IHN1YnNlcXVlbnQgc3VibWlzc2lvbnMiLCB0aGVuDQo+ID4gPiBy
+ZWNlaXZlZCBubyBtb3JlIHBhdGNoZXMuICBJdCdzIG9rYXkgdG8gZG8gaXQgbmljZWx5IG5vdyBh
+bmQgZXhwYW5kDQo+ID4gPiBpdCBiYWNrIG91dCBpbiB0aGUgbmV3IHBhdGNoZXMuDQo+ID4gPg0K
+PiA+ID4gWy4uLl0NCj4gPg0KPiA+IEl0IGFwcGVhcnMgdGhhdCB3YXkgdG8geW91IGJ1dCBJIGhh
+dmUgdG8gbW9kaWZ5IG15IGNvZGUgZm9yIHN1bWJpc3Npb24gYXMgdGhlDQo+ID4gbG9jYWwgY29k
+ZSBJIGhhdmUgY292ZXJzIGFsbCBmdW5jdGlvbmFsaXR5LiBBbSBoYXZpbmcgdG8gcmVmYWN0b3Ig
+YWdhaW4gYW5kDQo+ID4gYWdhaW4ganVzdCB0byBzdWl0IHRoaXMgaW5pdGlhbCBzdWJtaXNzaW9u
+LCBhbmQgdGhlbiBJIGhhdmUgdG8gcmV2ZXJ0IGl0IGJhY2sNCj4gPiBhZ2FpbiB3aGVuIHN1Ym1p
+dHRpbmcgdGhlIGxhc3QgY291cGxlIG9mIGRyaXZlcnMuIFRpbWUgY29uc3VtaW5nLCBhbmQgcXVp
+dGUNCj4gPiBmcnVzdHJhdGluZyB3aGVuIHRoZSBpbnRlbnRpb24gd2FzIHRvIG1ha2UgdGhlIHdo
+b2xlIHByb2Nlc3MgZWFzaWVyLiBBbnl3YXksDQo+ID4gd2lsbCB1cGRhdGUgZm9yIG5vdyBhbmQg
+cmV2ZXJ0IGluIHN1YnNlcXVlbnQgcGF0Y2hlcy4NCj4gDQo+IEkgc2luY2VyZWx5IGhvcGUgdGhl
+IHJlZmFjdG9yaW5ncyB3b24ndCBhZGQgdG9vIG11Y2ggZWZmb3J0LCBidXQgaXQncw0KPiBkaWZm
+aWN1bHQgdG8gaGF2ZSBvbmUgcnVsZSBmb3IgdGhlIG1hc3NlcyBhbmQgZGlmZmVyZW50IG9uZXMg
+Zm9yDQo+IG90aGVycy4NCg0KSSBkbyB1bmRlcnN0YW5kIHRoYXQsIGFuZCB0aGF0J3MgZmFpciBl
+bm91Z2guIElzIGp1c3QgZnJ1c3RyYXRpbmcgd2hlbiB5b3UncmUNCnRyeWluZyB0byBkbyBhIHBy
+b3BlciBqb2IuIEFueXdheSwgYW0gc3VyZSBJJ2xsIGxpdmUuIDopDQoNCj4gDQo+IC0tDQo+IExl
+ZSBKb25lcw0KPiBMaW5hcm8gU1RNaWNyb2VsZWN0cm9uaWNzIExhbmRpbmcgVGVhbSBMZWFkDQo+
+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29Dcw0KPiBGb2xs
+b3cgTGluYXJvOiBGYWNlYm9vayB8IFR3aXR0ZXIgfCBCbG9nDQo=
