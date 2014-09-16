@@ -1,14 +1,12 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC v2 08/12] ARM: shmobile: R-Mobile: Store SYSC base address
- in rmobile_pm_domain
-Date: Tue, 16 Sep 2014 20:48:55 +0200
-Message-ID: <1410893339-6361-9-git-send-email-geert+renesas@glider.be>
-References: <1410893339-6361-1-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH/RFC v2 00/12] ARM: shmobile: R-Mobile: Prototype DT PM domain
+ support
+Date: Tue, 16 Sep 2014 20:48:47 +0200
+Message-ID: <1410893339-6361-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1410893339-6361-1-git-send-email-geert+renesas@glider.be>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -22,254 +20,111 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pa
 Cc: devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Replace the hardcoded addresses for accessing the SYSC PM domain
-registers by register offsets, relative to the SYSC base address stored
-in struct rmobile_pm_domain.
+	Hi all,
 
-In the future, the SYSC base address will come from DT.
+This patch series contains prototype code to enable DT support for PM domains
+on Renesas R-Mobile SoCs.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-v2:
-  - No changes
----
- arch/arm/mach-shmobile/pm-r8a7740.c | 14 ++++++++++++++
- arch/arm/mach-shmobile/pm-rmobile.c | 24 +++++++++++++-----------
- arch/arm/mach-shmobile/pm-rmobile.h |  1 +
- arch/arm/mach-shmobile/pm-sh7372.c  | 11 +++++++++++
- 4 files changed, 39 insertions(+), 11 deletions(-)
+Currently it's limited to R-Mobile A1 (r8a7740), but given the similarity of
+the SYSC System-Controller on the various SH-Mobile/R-Mobile SoCs, and the
+abstraction of PM domains in DT, it should be sufficiently generic to handle
+other SoCs in the future (e.g. SH-Mobile AP4 (sh7372), SH-Mobile AG5 (sh73a0),
+R-Mobile APE6 (r8a73a4)).
 
-diff --git a/arch/arm/mach-shmobile/pm-r8a7740.c b/arch/arm/mach-shmobile/pm-r8a7740.c
-index 23254c31efd98a77..627fec98c7859d32 100644
---- a/arch/arm/mach-shmobile/pm-r8a7740.c
-+++ b/arch/arm/mach-shmobile/pm-r8a7740.c
-@@ -9,10 +9,14 @@
-  * for more details.
-  */
- #include <linux/console.h>
-+#include <linux/io.h>
- #include <linux/suspend.h>
-+
- #include "common.h"
- #include "pm-rmobile.h"
- 
-+#define SYSC_BASE	IOMEM(0xe6180000)
-+
- #if defined(CONFIG_PM) && !defined(CONFIG_ARCH_MULTIPLATFORM)
- static int r8a7740_pd_a4s_suspend(void)
- {
-@@ -35,40 +39,50 @@ static int r8a7740_pd_a3sp_suspend(void)
- static struct rmobile_pm_domain r8a7740_pm_domains[] = {
- 	{
- 		.genpd.name	= "A4LC",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 1,
- 	}, {
- //		.genpd.name	= "A4MP",
-+//		.base		= SYSC_BASE,
- //		.bit_shift	= 2,
- //	}, {
- //		.genpd.name	= "D4",
-+//		.base		= SYSC_BASE,
- //		.bit_shift	= 3,
- //	}, {
- 		.genpd.name	= "A4R",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 5,
- 	}, {
- 		.genpd.name	= "A3RV",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 6,
- 	}, {
- 		.genpd.name	= "A4S",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 10,
- 		.gov		= &pm_domain_always_on_gov,
- 		.no_debug	= true,
- 		.suspend	= r8a7740_pd_a4s_suspend,
- 	}, {
- 		.genpd.name	= "A3SP",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 11,
- 		.gov		= &pm_domain_always_on_gov,
- 		.no_debug	= true,
- 		.suspend	= r8a7740_pd_a3sp_suspend,
- 	}, {
- 		.genpd.name	= "A3SM",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 12,
- 		.gov		= &pm_domain_always_on_gov,
- 	}, {
- 		.genpd.name	= "A3SG",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 13,
- 	}, {
- 		.genpd.name	= "A4SU",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 20,
- 	},
- };
-diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
-index 4c8e47179fdd333b..063a5f3bda8e927d 100644
---- a/arch/arm/mach-shmobile/pm-rmobile.c
-+++ b/arch/arm/mach-shmobile/pm-rmobile.c
-@@ -20,9 +20,9 @@
- #include "pm-rmobile.h"
- 
- /* SYSC */
--#define SPDCR		IOMEM(0xe6180008)
--#define SWUCR		IOMEM(0xe6180014)
--#define PSTR		IOMEM(0xe6180080)
-+#define SPDCR	0x08	/* SYS Power Down Control Register */
-+#define SWUCR	0x14	/* SYS Wakeup Control Register */
-+#define PSTR	0x80	/* Power Status Register */
- 
- #define PSTR_RETRIES	100
- #define PSTR_DELAY_US	10
-@@ -39,12 +39,12 @@ static int rmobile_pd_power_down(struct generic_pm_domain *genpd)
- 			return ret;
- 	}
- 
--	if (__raw_readl(PSTR) & mask) {
-+	if (__raw_readl(rmobile_pd->base + PSTR) & mask) {
- 		unsigned int retry_count;
--		__raw_writel(mask, SPDCR);
-+		__raw_writel(mask, rmobile_pd->base + SPDCR);
- 
- 		for (retry_count = PSTR_RETRIES; retry_count; retry_count--) {
--			if (!(__raw_readl(SPDCR) & mask))
-+			if (!(__raw_readl(rmobile_pd->base + SPDCR) & mask))
- 				break;
- 			cpu_relax();
- 		}
-@@ -52,7 +52,8 @@ static int rmobile_pd_power_down(struct generic_pm_domain *genpd)
- 
- 	if (!rmobile_pd->no_debug)
- 		pr_debug("%s: Power off, 0x%08x -> PSTR = 0x%08x\n",
--			 genpd->name, mask, __raw_readl(PSTR));
-+			 genpd->name, mask,
-+			 __raw_readl(rmobile_pd->base + PSTR));
- 
- 	return 0;
- }
-@@ -64,13 +65,13 @@ static int __rmobile_pd_power_up(struct rmobile_pm_domain *rmobile_pd,
- 	unsigned int retry_count;
- 	int ret = 0;
- 
--	if (__raw_readl(PSTR) & mask)
-+	if (__raw_readl(rmobile_pd->base + PSTR) & mask)
- 		goto out;
- 
--	__raw_writel(mask, SWUCR);
-+	__raw_writel(mask, rmobile_pd->base + SWUCR);
- 
- 	for (retry_count = 2 * PSTR_RETRIES; retry_count; retry_count--) {
--		if (!(__raw_readl(SWUCR) & mask))
-+		if (!(__raw_readl(rmobile_pd->base + SWUCR) & mask))
- 			break;
- 		if (retry_count > PSTR_RETRIES)
- 			udelay(PSTR_DELAY_US);
-@@ -82,7 +83,8 @@ static int __rmobile_pd_power_up(struct rmobile_pm_domain *rmobile_pd,
- 
- 	if (!rmobile_pd->no_debug)
- 		pr_debug("%s: Power on, 0x%08x -> PSTR = 0x%08x\n",
--			 rmobile_pd->genpd.name, mask, __raw_readl(PSTR));
-+			 rmobile_pd->genpd.name, mask,
-+			 __raw_readl(rmobile_pd->base + PSTR));
- 
- out:
- 	if (ret == 0 && rmobile_pd->resume && do_resume)
-diff --git a/arch/arm/mach-shmobile/pm-rmobile.h b/arch/arm/mach-shmobile/pm-rmobile.h
-index 8f66b343162b0411..0602130bb260c31d 100644
---- a/arch/arm/mach-shmobile/pm-rmobile.h
-+++ b/arch/arm/mach-shmobile/pm-rmobile.h
-@@ -21,6 +21,7 @@ struct rmobile_pm_domain {
- 	struct dev_power_governor *gov;
- 	int (*suspend)(void);
- 	void (*resume)(void);
-+	void __iomem *base;
- 	unsigned int bit_shift;
- 	bool no_debug;
- };
-diff --git a/arch/arm/mach-shmobile/pm-sh7372.c b/arch/arm/mach-shmobile/pm-sh7372.c
-index 7e5c2676c48902f1..7181a280b3b541af 100644
---- a/arch/arm/mach-shmobile/pm-sh7372.c
-+++ b/arch/arm/mach-shmobile/pm-sh7372.c
-@@ -45,6 +45,8 @@
- #define PLLC01STPCR IOMEM(0xe61500c8)
- 
- /* SYSC */
-+#define SYSC_BASE IOMEM(0xe6180000)
-+
- #define SBAR IOMEM(0xe6180020)
- #define WUPRMSK IOMEM(0xe6180028)
- #define WUPSMSK IOMEM(0xe618002c)
-@@ -118,24 +120,28 @@ static struct rmobile_pm_domain sh7372_pm_domains[] = {
- 		.genpd.name = "A4LC",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 1,
- 	},
- 	{
- 		.genpd.name = "A4MP",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 2,
- 	},
- 	{
- 		.genpd.name = "D4",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 3,
- 	},
- 	{
- 		.genpd.name = "A4R",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 5,
- 		.suspend = sh7372_a4r_pd_suspend,
- 		.resume = sh7372_intcs_resume,
-@@ -144,18 +150,21 @@ static struct rmobile_pm_domain sh7372_pm_domains[] = {
- 		.genpd.name = "A3RV",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 6,
- 	},
- 	{
- 		.genpd.name = "A3RI",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 8,
- 	},
- 	{
- 		.genpd.name = "A4S",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 10,
- 		.gov = &pm_domain_always_on_gov,
- 		.no_debug = true,
-@@ -166,6 +175,7 @@ static struct rmobile_pm_domain sh7372_pm_domains[] = {
- 		.genpd.name = "A3SP",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 11,
- 		.gov = &pm_domain_always_on_gov,
- 		.no_debug = true,
-@@ -175,6 +185,7 @@ static struct rmobile_pm_domain sh7372_pm_domains[] = {
- 		.genpd.name = "A3SG",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 13,
- 	},
- };
+Changes compared to v1 (more detailed changelogs in the individual patches):
+  - Several new patches: [02], [04], [05], [06], [07], [11], [12],
+  - Run-Time management of the module clocks, making the hack in
+    drivers/sh/pm_runtime.c obsolete for DT platforms using genpd.
+    More about this below[*].
+  - Addition of PM QoS device latencies, specified from DT.
+  - Addition of build glue, so this builds and runs without additional
+    changes, incl. s2ram.
+
+This means that functionality-wise, the DT version is now on par with the
+legacy version, so I can continue focussing on fixing the common limitations,
+and the quirks in rmobile_pm_quirks() in a DT-friendly way.
+
+Thanks for your comments!
+
+Dependencies:
+  - "[PATCH 00/11] ARM: shmobile: r8a7740/armadillo legacy prototype pm domain
+    support", sent by me (www.spinics.net/lists/arm-kernel/msg358037.html),
+  - "[PATCH v4 0/9] PM / Domains: Generic OF-based support", sent by Ulf
+    Hansson (http://www.spinics.net/lists/arm-kernel/msg360672.html),
+  - Simon Horman's renesas-devel-20140916v2-v3.17-rc5,
+  - Rafael J. Wysocki's linux-pm.git#linux-next,
+  - Jason Cooper's linux.git#irqchip/for-next.
+
+For your convenience, I've also pushed this to
+git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git#rmobile-genpd
+
+Geert Uytterhoeven (12):
+  [01] PM / Domains: Add DT bindings for power-on/off latencies
+  [02] PM / Domains: Add DT bindings for PM QoS device latencies
+  [03] PM / Domains: Add DT bindings for the R-Mobile System Controller
+  [04] PM / Domains: Add genpd attach/detach callbacks
+  [05] PM / Domains: Add helper variable np = dev->of_node
+  [06] PM / Domains: Retrieve PM QoS device latencies from DT
+  [07] ARM: shmobile: R-Mobile: Use generic_pm_domain.attach_dev() for pm_clk
+    setup
+  [08] ARM: shmobile: R-Mobile: Store SYSC base address in rmobile_pm_domain
+  [09] ARM: shmobile: R-Mobile: Add DT support for PM domains
+  [10] ARM: shmobile: r8a7740 dtsi: Add PM domain support
+  [11] ARM: shmobile: r8a7740 dtsi: Add PM QoS device latencies
+  [12] drivers: sh: Disable PM runtime for multi-platform r8a7740 with genpd
+
+ .../devicetree/bindings/power/power_domain.txt     |  16 ++
+ .../bindings/power/renesas,sysc-rmobile.txt        | 111 +++++++++
+ arch/arm/boot/dts/r8a7740.dtsi                     | 257 +++++++++++++++++++++
+ arch/arm/mach-shmobile/Kconfig                     |   3 +-
+ arch/arm/mach-shmobile/pm-r8a7740.c                |  14 ++
+ arch/arm/mach-shmobile/pm-rmobile.c                | 187 +++++++++++++--
+ arch/arm/mach-shmobile/pm-rmobile.h                |   3 +-
+ arch/arm/mach-shmobile/pm-sh7372.c                 |  11 +
+ drivers/base/power/domain.c                        |  38 ++-
+ drivers/sh/pm_runtime.c                            |   2 +
+ include/linux/pm_domain.h                          |   2 +
+ 11 files changed, 620 insertions(+), 24 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
+
 -- 
 1.9.1
+
+[*] Run-Time management of the module clocks is a continuing story...
+
+  - The hack in drivers/sh/pm_runtime.c used the pm_clk_notifier on the
+    platform bus. This (a) is not compatible with genpd (and thus with SoCs
+    where we want to use genpd to manage the power areas), as there can be only
+    one PM domain attached to a device, and (b) affects all platform devices,
+    not only the on-SoC devices we want to manage.
+
+  - This series uses genpd to handle the module clocks. This works fine for
+    R-Mobile, as it has fine-grained power areas. It does require representing
+    the (documented) C5 always-on power area in DT, as now all on-SoC devices
+    need a phandle to a PM domain to manage their clocks.
+    For R-Car SoCs, this will be more complicated, as there are only power
+    areas for CPU cores and co-processors (e.g. SH-4A and SGX), so I'll have
+    to "invent" an always-on area, and put it in DT?
+    While genpd is touted as the solution for complex Run-Time management of
+    clocks, I feel like it's forcing a Linux-solution in DT, which should
+    represent the hardware. On Renesas SoCs, the module clocks are not related
+    to the power areas, but they're a property of the Clock Pulse Generator's
+    Module Standby functionality, hence my earlier proposal [A] below.
+
+  - Related discussions:
+      [A] "[PATCH/RFC 0/4] of: Register clocks for Runtime PM with PM core", by
+          me (https://lkml.org/lkml/2014/4/24/1118),
+      [B] "[RFC PATCH 0/3] PM / clock_ops: allow to specify custom
+	  pm_clk_notifier callback", by Grygorii Strashko
+	  (https://lkml.org/lkml/2014/7/25/630).
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
