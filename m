@@ -1,107 +1,126 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 08/10] ARM: OMAP5/DRA7: PM: cpuidle MPU CSWR support
-Date: Tue, 16 Sep 2014 11:34:42 -0500
-Message-ID: <541866A2.70007@ti.com>
-References: <1408716154-26101-1-git-send-email-nm@ti.com> <1408716154-26101-9-git-send-email-nm@ti.com> <7hvbpdbvb1.fsf@paris.lan> <CAGo_u6o7vAf=syzDTyxh0-kOhmzAmtdG_ardgFgoPQofrGdxUQ@mail.gmail.com> <53FE3477.2020207@ti.com> <7hegw1bs30.fsf@paris.lan> <20140905211847.GB31011@kahuna>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v5 3/4] amba: Don't unprepare the clocks if device driver
+ wants IRQ safe runtime PM
+Date: Tue, 16 Sep 2014 20:25:25 +0200
+Message-ID: <CAPDyKFrNYxSx3KwOLg0Bgw2TCtsC2-1YXjo1kSms2ie_b8sNww@mail.gmail.com>
+References: <1410872360-27029-1-git-send-email-k.kozlowski@samsung.com>
+	<1410872360-27029-4-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140905211847.GB31011@kahuna>
-Sender: linux-kernel-owner@vger.kernel.org
-To: daniel.lezcano@linaro.org
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>, Paul Walmsley <paul@pwsan.com>, Tony Lindgren <tony@atomide.com>, Keerthy <j-keerthy@ti.com>, lkml <linux-kernel@vger.kernel.org>, Tero Kristo <t-kristo@ti.com>, =?windows-1252?Q?Beno=EEt_Cousson?= <bcousson@baylibre.com>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@linaro.org>, linux-pm <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1410872360-27029-4-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Russell King <linux@arm.linux.org.uk>
+Cc: Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
+On 16 September 2014 14:59, Krzysztof Kozlowski <k.kozlowski@samsung.com> wrote:
+> The AMBA bus driver defines runtime Power Management functions which
+> disable and unprepare AMBA bus clock. This is problematic for runtime PM
+> because unpreparing a clock might sleep so it is not interrupt safe.
+>
+> However some drivers may want to implement runtime PM functions in
+> interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
+> bus driver should only disable/enable the clock in runtime suspend and
+> resume callbacks.
+>
+> Detect the device driver behavior after calling its probe function and
+> store it. During runtime suspend/resume deal with clocks according to
+> stored value.
+>
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> ---
+>  drivers/amba/bus.c       | 29 +++++++++++++++++++++++++----
+>  include/linux/amba/bus.h |  1 +
+>  2 files changed, 26 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+> index 3cf61a127ee5..e8fd5706954f 100644
+> --- a/drivers/amba/bus.c
+> +++ b/drivers/amba/bus.c
+> @@ -94,8 +94,18 @@ static int amba_pm_runtime_suspend(struct device *dev)
+>         struct amba_device *pcdev = to_amba_device(dev);
+>         int ret = pm_generic_runtime_suspend(dev);
+>
+> -       if (ret == 0 && dev->driver)
+> -               clk_disable_unprepare(pcdev->pclk);
+> +       if (ret == 0 && dev->driver) {
+> +               /*
+> +                * Drivers should not change pm_runtime_irq_safe()
+> +                * after probe.
+> +                */
+> +               WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
 
-Daniel,
+Do we really need a WARN_ON here. Driver shouldn't update their
+irq_safe value dynamically, right!?
 
-On 09/05/2014 04:18 PM, Nishanth Menon wrote:
-> Daniel,
-> 
-> On 13:22-20140827, Kevin Hilman wrote:
->> Santosh Shilimkar <santosh.shilimkar@ti.com> writes:
->>
->>> On Wednesday 27 August 2014 03:35 PM, Nishanth Menon wrote:
->>>> On Wed, Aug 27, 2014 at 2:13 PM, Kevin Hilman
->>>> <khilman@deeprootsystems.com> wrote:
->>>>> + Daniel (cpuidle maintainer)
->>>> [...]
->>>>>> +static int omap_enter_idle_smp(struct cpuidle_device *dev,
->>>>>> +                            struct cpuidle_driver *drv,
->>>>>> +                            int index)
->>>>>> +{
->>>>>> +     struct idle_statedata *cx = state_ptr + index;
->>>>>> +     unsigned long flag;
->>>>>> +
->>>>>> +     raw_spin_lock_irqsave(&mpu_lock, flag);
->>>>>> +     cx->mpu_state_vote++;
->>>>>> +     if (cx->mpu_state_vote == num_online_cpus()) {
->>>>>> +             pwrdm_set_logic_retst(mpu_pd, cx->mpu_logic_state);
->>>>>> +             omap_set_pwrdm_state(mpu_pd, cx->mpu_state);
->>>>>> +     }
->>>>>> +     raw_spin_unlock_irqrestore(&mpu_lock, flag);
->>>>>> +
->>>>>> +     omap4_enter_lowpower(dev->cpu, cx->cpu_state);
->>>>>> +
->>>>>> +     raw_spin_lock_irqsave(&mpu_lock, flag);
->>>>>> +     if (cx->mpu_state_vote == num_online_cpus())
->>>>>> +             omap_set_pwrdm_state(mpu_pd, PWRDM_POWER_ON);
->>>>>> +     cx->mpu_state_vote--;
->>>>>> +     raw_spin_unlock_irqrestore(&mpu_lock, flag);
->>>>>> +
->>>>>> +     return index;
->>>>>> +}
->>>>>
->>>>> Hmm, maybe OMAP5/DRA7 CPUidle driver should be a new one based on MCPM?
->>>>
->>>> Trying to understand benefit of MCPM here - at least without a deeper
->>>> understanding of mcpm infrastructure benefits (first look seemed a
->>>> little heavy for OMAP5/DRA7 needs).
->>>>
->>>> Neither DRA7/OMAP5 are multi-cluster, the SoCs are not targetted for
->>>> "OFF" of CPU1/0, we have mercury hardware to help with context and
->>>> sync issues.
->>>>
->>>> Being able to reuse most of existing OMAP4 infrastructure code is
->>>> useful as well to leave the existing omap4 framework as being lighter
->>>> in complexity -esp in a cpuidle like hot path?
->>>>
->>>> The spin_lock is only for the programming of MPU power domain in a
->>>> consistent manner - I suppose might have been the trigger for
->>>> proposing mcpm?
->>>>
->>> Mostly not....
->>>
->>> I think this is coming because last time Nicolas Pitre tried to convert
->>> the OMAP CPUIdle into MCPM but because of various ordering requirements,
->>> OMAP wasn't suitable and then the plan was dropped later.
->>>
->>> Just to make clear, OMAP OMAP5/DRA7 as well the ordering requirement
->>> remains the same for deeper states. Its just the mercury retention state
->>> which we are able to enter without ordering requirements and hence
->>> the voting scheme.
->>
->> Ah, OK.  This is the part that I'm missing.  So for deeper states you'll
->> need to be using omap_enter_idle_coupled()
->>
->>> Hope this clarifies to you as well as Kevin just in case he missed the
->>> part of the deeper C-states requirements.
->>
->> Yes, thanks for clarifying.
->>
->> That being said, I think MCPM can now do essentially what the coupled
->> states code is doing. Even so, that's probably not a reason to hold up
->> this patch, but Daniel gets to make that call.
-> 
-> 
-> Gentle ping.. You can find the discussion and the patch here:
-> https://patchwork.kernel.org/patch/4764661/
-> 
+> +
+> +               if (pcdev->irq_safe)
+> +                       clk_disable(pcdev->pclk);
 
-Ping on this again.. we are pretty close to approaching v3.18 merge
-window and this discussion has'nt gotten further.
+Since the irq_safe flag, could be considered as a special case, an
+option for these cases - could be to leave the clock to be entirely
+handled from the driver's runtime PM callback instead.
 
--- 
-Regards,
-Nishanth Menon
+I wonder if that could simplify both for the driver and for the amba bus?
+
+Russell, what do you think? Is it a bad idea?
+
+> +               else
+> +                       clk_disable_unprepare(pcdev->pclk);
+> +       }
+>
+>         return ret;
+>  }
+> @@ -106,7 +116,16 @@ static int amba_pm_runtime_resume(struct device *dev)
+>         int ret;
+>
+>         if (dev->driver) {
+> -               ret = clk_prepare_enable(pcdev->pclk);
+> +               /*
+> +                * Drivers should not change pm_runtime_irq_safe()
+> +                * after probe.
+> +                */
+> +               WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
+> +
+> +               if (pcdev->irq_safe)
+> +                       ret = clk_enable(pcdev->pclk);
+> +               else
+> +                       ret = clk_prepare_enable(pcdev->pclk);
+>                 /* Failure is probably fatal to the system, but... */
+>                 if (ret)
+>                         return ret;
+> @@ -191,8 +210,10 @@ static int amba_probe(struct device *dev)
+>                 pm_runtime_enable(dev);
+>
+>                 ret = pcdrv->probe(pcdev, id);
+> -               if (ret == 0)
+> +               if (ret == 0) {
+> +                       pcdev->irq_safe = pm_runtime_is_irq_safe(dev);
+
+I suggest to remove the local copy of this flag and to use
+pm_runtime_is_irq_safe(dev) directly instead.
+
+>                         break;
+> +               }
+>
+>                 pm_runtime_disable(dev);
+>                 pm_runtime_set_suspended(dev);
+> diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
+> index ad52027a9cbf..ce101e4497d6 100644
+> --- a/include/linux/amba/bus.h
+> +++ b/include/linux/amba/bus.h
+> @@ -32,6 +32,7 @@ struct amba_device {
+>         struct clk              *pclk;
+>         unsigned int            periphid;
+>         unsigned int            irq[AMBA_NR_IRQS];
+> +       unsigned int            irq_safe:1;
+>  };
+>
+>  struct amba_driver {
+> --
+> 1.9.1
+>
+
+Kind regards
+Uffe
