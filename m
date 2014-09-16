@@ -1,113 +1,70 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 4/4] ARM: shmobile: r8a7740 dtsi: Add missing INTCA clock
- for irqpin module
-Date: Tue, 16 Sep 2014 09:41:14 +0900
-Message-ID: <20140916004113.GD26557@verge.net.au>
-References: <1410527720-18061-1-git-send-email-geert+renesas@glider.be>
- <1410527720-18061-5-git-send-email-geert+renesas@glider.be>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v4 2/4] dt-bindings: document Rockchip thermal
+Date: Tue, 16 Sep 2014 15:23:53 +0800
+Message-ID: <1410852233.25559.173.camel@rzhang1-toshiba>
+References: <1409710239-19941-1-git-send-email-caesar.wang@rock-chips.com>
+	 <1410403012.25559.69.camel@rzhang1-toshiba>
+	 <20140911121842.GB26715@developer> <40514790.Xc34lyFLGa@wuerfel>
+	 <20140911155324.GA27076@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1410527720-18061-5-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Magnus Damm <magnus.damm@gmail.com>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <20140911155324.GA27076@developer>
+Sender: linux-doc-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>, Caesar Wang <caesar.wang@rock-chips.com>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, Eddie Cai <cf@rock-chips.com>, Douglas Anderson <dianders@chromium.org>, dtor <dtor@chromium.org>, Chris Zhong <zyw@rock-chips.com>, "addy.ke@rock-chips.com" <addy.ke@rock-chips.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, zhaoyifeng <zyf@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 12, 2014 at 03:15:20PM +0200, Geert Uytterhoeven wrote:
-> This clock drives the INTCA irqpin controller modules.
-> Before, it was assumed enabled by the bootloader or reset state.
+On Thu, 2014-09-11 at 11:53 -0400, Eduardo Valentin wrote:
+> Arnd,
 > 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Cc: devicetree@vger.kernel.org
+> On Thu, Sep 11, 2014 at 02:32:08PM +0200, Arnd Bergmann wrote:
+> > On Thursday 11 September 2014 08:18:43 Eduardo Valentin wrote:
+> > > > As what we want is to make thermal driver have a chance to configure the
+> > > > hardware shutdown registers, I'm thinking if we can do this without
+> > > > representing the hardware shutdown value as a trip point.
+> > > > Say,
+> > > > 1. parse DT, and get the hardware shutdown temperature value, and store
+> > > > it somewhere, e.g. struct __thermal_zone.
+> > > > 2. introduce a new parameter, int (*set_hardware_trip)(void *, long *),
+> > > > in thermal_zone_of_sensor_register().
+> > > > 3. invoke set_hard_trip(tz, hardware_shutdown_temperature_value) in
+> > > > thermal_zone_of_sensor_register().
+> > > 
+> > > The only issue I have with the above proposal is that not all platforms
+> > > use DT. Some still boot with boardfiles, for instance. Thus, the
+> > > parameter to configure hardware thermal shutdown needs to be common on
+> > > thermal core, not specific to of-thermal. Do you agree?
+> > 
+> > Do you know of a machine that can't yet be converted to DT and that
+> > needs this driver? In case of rockchips that is certainly not the
+> > case, and we don't care about anybody trying to use board files out
+> > of tree, they can just hack the thermal support as well.
+> 
+> I see. Again, the only concern I have is to produce thermal framework APIs
+> that would be only in the of-thermal. My point is not specific to this
+> patch, or this platform, but with a detail in the above proposal. 
+> 
+> While I agree to have a trip specific to configurable hardware triggered
+> thermal shutdown, I just don't see why it needs to be a feature
+> implemented only via of-thermal. It has to be properly defined in
+> thermal core.
+> 
+> The proposal of of-thermal is not to become a separate/competing thermal
+> framework.
+> 
+Agreed.
+And I think we can have such feature in thermal core.
+But again I don't think we should represent it as an trip point. 
 
-Thanks, I have queued this up.
+thanks,
+rui
+> > 
+> > 	Arnd
+> 
+> Cheers,
+> 
+> Eduardo
 
-> ---
->  arch/arm/boot/dts/r8a7740.dtsi            | 14 ++++++++++----
->  include/dt-bindings/clock/r8a7740-clock.h |  1 +
->  2 files changed, 11 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/r8a7740.dtsi b/arch/arm/boot/dts/r8a7740.dtsi
-> index d46c213a17ad..502483f4dccb 100644
-> --- a/arch/arm/boot/dts/r8a7740.dtsi
-> +++ b/arch/arm/boot/dts/r8a7740.dtsi
-> @@ -71,6 +71,7 @@
->  			      0 149 IRQ_TYPE_LEVEL_HIGH
->  			      0 149 IRQ_TYPE_LEVEL_HIGH
->  			      0 149 IRQ_TYPE_LEVEL_HIGH>;
-> +		clocks = <&mstp2_clks R8A7740_CLK_INTCA>;
->  	};
->  
->  	/* irqpin1: IRQ8 - IRQ15 */
-> @@ -91,6 +92,7 @@
->  			      0 149 IRQ_TYPE_LEVEL_HIGH
->  			      0 149 IRQ_TYPE_LEVEL_HIGH
->  			      0 149 IRQ_TYPE_LEVEL_HIGH>;
-> +		clocks = <&mstp2_clks R8A7740_CLK_INTCA>;
->  	};
->  
->  	/* irqpin2: IRQ16 - IRQ23 */
-> @@ -111,6 +113,7 @@
->  			      0 149 IRQ_TYPE_LEVEL_HIGH
->  			      0 149 IRQ_TYPE_LEVEL_HIGH
->  			      0 149 IRQ_TYPE_LEVEL_HIGH>;
-> +		clocks = <&mstp2_clks R8A7740_CLK_INTCA>;
->  	};
->  
->  	/* irqpin3: IRQ24 - IRQ31 */
-> @@ -131,6 +134,7 @@
->  			      0 149 IRQ_TYPE_LEVEL_HIGH
->  			      0 149 IRQ_TYPE_LEVEL_HIGH
->  			      0 149 IRQ_TYPE_LEVEL_HIGH>;
-> +		clocks = <&mstp2_clks R8A7740_CLK_INTCA>;
->  	};
->  
->  	ether: ethernet@e9a00000 {
-> @@ -448,8 +452,8 @@
->  		mstp2_clks: mstp2_clks@e6150138 {
->  			compatible = "renesas,r8a7740-mstp-clocks", "renesas,cpg-mstp-clocks";
->  			reg = <0xe6150138 4>, <0xe6150040 4>;
-> -			clocks = <&sub_clk>, <&sub_clk>,
-> -				 <&cpg_clocks R8A7740_CLK_HP>,
-> +			clocks = <&sub_clk>, <&cpg_clocks R8A7740_CLK_HP>,
-> +				 <&sub_clk>, <&cpg_clocks R8A7740_CLK_HP>,
->  				 <&cpg_clocks R8A7740_CLK_HP>,
->  				 <&cpg_clocks R8A7740_CLK_HP>,
->  				 <&cpg_clocks R8A7740_CLK_HP>,
-> @@ -458,7 +462,8 @@
->  				 <&sub_clk>;
->  			#clock-cells = <1>;
->  			renesas,clock-indices = <
-> -				R8A7740_CLK_SCIFA6 R8A7740_CLK_SCIFA7
-> +				R8A7740_CLK_SCIFA6 R8A7740_CLK_INTCA
-> +				R8A7740_CLK_SCIFA7
->  				R8A7740_CLK_DMAC1 R8A7740_CLK_DMAC2
->  				R8A7740_CLK_DMAC3 R8A7740_CLK_USBDMAC
->  				R8A7740_CLK_SCIFA5 R8A7740_CLK_SCIFB
-> @@ -467,7 +472,8 @@
->  				R8A7740_CLK_SCIFA4
->  			>;
->  			clock-output-names =
-> -				"scifa6", "scifa7", "dmac1", "dmac2", "dmac3",
-> +				"scifa6", "intca",
-> +				"scifa7", "dmac1", "dmac2", "dmac3",
->  				"usbdmac", "scifa5", "scifb", "scifa0", "scifa1",
->  				"scifa2", "scifa3", "scifa4";
->  		};
-> diff --git a/include/dt-bindings/clock/r8a7740-clock.h b/include/dt-bindings/clock/r8a7740-clock.h
-> index f6b4b0fe7a43..476135da0f23 100644
-> --- a/include/dt-bindings/clock/r8a7740-clock.h
-> +++ b/include/dt-bindings/clock/r8a7740-clock.h
-> @@ -40,6 +40,7 @@
->  
->  /* MSTP2 */
->  #define R8A7740_CLK_SCIFA6	30
-> +#define R8A7740_CLK_INTCA	29
->  #define R8A7740_CLK_SCIFA7	22
->  #define R8A7740_CLK_DMAC1	18
->  #define R8A7740_CLK_DMAC2	17
-> -- 
-> 1.9.1
-> 
+
