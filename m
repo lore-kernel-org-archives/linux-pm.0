@@ -1,68 +1,84 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC v2 02/12] PM / Domains: Add DT bindings for PM QoS device
- latencies
-Date: Tue, 16 Sep 2014 20:48:49 +0200
-Message-ID: <1410893339-6361-3-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH/RFC v2 04/12] PM / Domains: Add genpd attach/detach callbacks
+Date: Tue, 16 Sep 2014 20:48:51 +0200
+Message-ID: <1410893339-6361-5-git-send-email-geert+renesas@glider.be>
 References: <1410893339-6361-1-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <1410893339-6361-1-git-send-email-geert+renesas@glider.be>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-sh-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
-Cc: devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, linux-arm-kernel@lists.infradead.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-PM QoS device start/stop and save/restore state latencies are more or
-less properties of the hardware.
-In legacy code, they're specified from platform code.
-On DT platforms, their values should come from DT.
+While a PM domain can enable PM runtime management of its devices' module
+clocks by setting
+
+	genpd->dev_ops.stop = pm_clk_suspend;
+	genpd->dev_ops.start = pm_clk_resume;
+
+this also requires registering the clocks with the pm_clk subsystem.
+In the legacy case, this is handled by the platform code, after
+attaching the device to its PM domain.
+
+When the devices are instantiated from DT, devices are attached to their
+PM domains by generic code, leaving no method for the platform-specific
+PM domain code to register their clocks.
+
+Add two callbacks, allowing a PM domain to perform platform-specific
+tasks when a device is attached to or detached from a PM domain.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Should these properties be called "linux,*-latency"?
-
 v2:
   - New
 ---
- Documentation/devicetree/bindings/power/power_domain.txt | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/base/power/domain.c | 12 ++++++++++++
+ include/linux/pm_domain.h   |  2 ++
+ 2 files changed, 14 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-index 7bc421d84367d636..024815bc257723b1 100644
---- a/Documentation/devicetree/bindings/power/power_domain.txt
-+++ b/Documentation/devicetree/bindings/power/power_domain.txt
-@@ -42,12 +42,22 @@ Required properties:
-  - power-domains : A phandle and PM domain specifier as defined by bindings of
-                    the power controller specified by phandle.
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index f09b615e61515d11..3fa15b6c54f09b36 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1418,6 +1418,12 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	if (ret)
+ 		goto out;
  
-+Optional properties:
-+ - stop-latency: Stop latency of the device, in ns,
-+ - start-latency: Start latency of the device, in ns,
-+ - save-state-latency: Save-state latency of the device, in ns,
-+ - restore-state-latency: Restore-state latency of the device, in ns.
++	if (genpd->attach_dev) {
++		ret = genpd->attach_dev(genpd, dev);
++		if (ret)
++			goto out;
++	}
 +
- Example:
+ 	genpd->device_count++;
+ 	genpd->max_off_time_changed = true;
  
- 	leaky-device@12350000 {
- 		compatible = "foo,i-leak-current";
- 		reg = <0x12350000 0x1000>;
- 		power-domains = <&power 0>;
-+		stop-latency = <250000>;
-+		start-latency = <250000>;
-+		save-state-latency = <250000>;
-+		restore-state-latency = <250000>;
- 	};
+@@ -1541,6 +1547,12 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
  
- The node above defines a typical PM domain consumer device, which is located
+ 	spin_unlock_irq(&dev->power.lock);
+ 
++	if (genpd->detach_dev) {
++		ret = genpd->detach_dev(genpd, dev);
++		if (ret)
++			goto out;
++	}
++
+ 	mutex_lock(&gpd_data->lock);
+ 	pdd->dev = NULL;
+ 	mutex_unlock(&gpd_data->lock);
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index ff128c1ec0de231c..ac07918f907b7495 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -73,6 +73,8 @@ struct generic_pm_domain {
+ 	bool cached_power_down_ok;
+ 	struct device_node *of_node; /* Node in device tree */
+ 	struct gpd_cpu_data *cpu_data;
++	int (*attach_dev)(struct generic_pm_domain *domain, struct device *dev);
++	int (*detach_dev)(struct generic_pm_domain *domain, struct device *dev);
+ };
+ 
+ static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
 -- 
 1.9.1
+
