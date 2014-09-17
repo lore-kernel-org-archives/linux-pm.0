@@ -1,76 +1,71 @@
 From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH v5 2/4] dt-bindings: document Rockchip thermal
-Date: Wed, 17 Sep 2014 11:59:11 +0800
-Message-ID: <1410926353-15674-3-git-send-email-caesar.wang@rock-chips.com>
-References: <1410926353-15674-1-git-send-email-caesar.wang@rock-chips.com>
+Subject: [PATCH v5 0/4] Rockchip soc thermal driver
+Date: Wed, 17 Sep 2014 11:59:09 +0800
+Message-ID: <1410926353-15674-1-git-send-email-caesar.wang@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.137]:52458 "EHLO
+Received: from regular1.263xmail.com ([211.150.99.137]:52434 "EHLO
 	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750764AbaIQEAU (ORCPT
+	with ESMTP id S1750799AbaIQEAU (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Sep 2014 00:00:20 -0400
-In-Reply-To: <1410926353-15674-1-git-send-email-caesar.wang@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, arnd@arndb.de
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, dmitry.torokhov@gmail.com, addy.ke@rock-chips.com, zyf@rock-chips.com, cjf@rock-chips.com, Caesar Wang <caesar.wang@rock-chips.com>
 
-This add the necessary binding documentation for the thermal
-found on Rockchip SoCs
+The Patch fix some code-style from Eduardo's and Heiko's omments.
 
-Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
-Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
----
- .../bindings/thermal/rockchip-thermal.txt          | 41 ++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+But, The rui.zhang, Eduardo and Heiko are talking about hw-shut-temp
+The Patch isn't still fix it.
+
+Changes in v5:
+        * address comments from Eduardo Valentin,rui.zhang and Heiko Stubner:
+        - with BIT() macro
+        - manage clocks in suspend/resume.
+	- license is fixed as GPLv2 .
+	- #include "thermal_core.h"->#include <linux/thermal.h>
+	- use the generic trip-points.the hw-shut-temp isn't generic trip-points.
+	- The method of binding and unbinding be fixed.
+	- The pin-name tsadc->otp_out
+
+Changes in v4:
+        * address comments from Jonathan Cameron,huangtao and zhaoyifeng:
+        - this series thermal driver still be put in driver/thermal/
+        - modify the thermal driver description.
+
+Changes in v3:(add dts configure)
+        * address comments from Dmitry Torokhov and Arnd Bergmann:
+        - fix clock-names in rockchip-thermal.txt
+        - remove rockchip_thermal_control() in rockchip_set_mode()
+        - fix some code style.
+        - add dts configure.
+
+Changes in v2:
+        * address comments from Heiko Stubner:
+        - fix dt-bindings in rockchip-thermal.txt
+        - remove Author mark
+        - rename TSADC_XXX->TSADCV2_XXX,it eill ready to merge compatible other SoCs.
+        - fix a identation
+        - remove clk_set_rate(),it's no necessary.
+        - fix the SIMPLE_DEV_PM_OPS() function  style.
+
+Tested on rk3288 SDK board
+
+Caesar Wang (4):
+  thermal: rockchip: add driver for Thermal
+  dt-bindings: document Rockchip thermal
+  ARM: dts: add main Thermal info to rk3288
+  ARM: dts: enable Thermal on rk3288-evb board
+
+ .../bindings/thermal/rockchip-thermal.txt          |  41 ++
+ arch/arm/boot/dts/rk3288-evb.dtsi                  |  18 +
+ arch/arm/boot/dts/rk3288.dtsi                      |  18 +
+ drivers/thermal/Kconfig                            |   9 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/rockchip_thermal.c                 | 790 +++++++++++++++++++++
+ 6 files changed, 877 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+ create mode 100644 drivers/thermal/rockchip_thermal.c
 
-diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-new file mode 100644
-index 0000000..6fc8bc3
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-@@ -0,0 +1,41 @@
-+* Temperature Sensor ADC (TSADC) on rockchip SoCs
-+
-+Required properties:
-+- compatible: "rockchip,rk3288-tsadc"
-+- reg: physical base address of the controller and length of memory mapped
-+       region.
-+- interrupts: The interrupt number to the cpu. The interrupt specifier format
-+	      depends on the interrupt controller.
-+- clocks: Must contain an entry for each entry in clock-names.
-+- clock-names: Shall be "tsadc" for the converter-clock, and "apb_pclk" for
-+	       the peripheral clock.
-+- num-trips:  number of total trip points, this is required, set it 0 if none,
-+  	      if greater than 0, the following properties must be defined;
-+- tripN-temp: temperature of trip point N, should be in ascending order;
-+- tripN-type: type of trip point N, should be one of "active" "passive" "hot"
-+	      "critical";
-+- tripN-cdev-num: number of the cooling devices which can be bound to trip
-+		  point N, this is required if trip point N is defined, set it 0 if none,
-+		  otherwise the following cooling device names must be defined;
-+- tripN-cdev-nameM: name of the No. M cooling device of trip point N;
-+
-+Example:
-+tsadc: tsadc@ff280000 {
-+	compatible = "rockchip,rk3288-tsadc";
-+	reg = <0xff280000 0x100>;
-+	interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-+	clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-+	clock-names = "tsadc", "apb_pclk";
-+
-+	num-trips = <2>;
-+
-+	trip0-temp = <80>;
-+	trip0-type = "passive";
-+	trip0-cdev-num = <1>;
-+	trip0-cdev-name0 = "thermal-cpufreq-0";
-+
-+	trip1-temp = <100>;
-+	trip1-type = "critical";
-+	trip1-cdev-num = <1>;
-+	trip1-cdev-name0 = "thermal-cpufreq-0";
-+};
 -- 
 1.9.1
 
