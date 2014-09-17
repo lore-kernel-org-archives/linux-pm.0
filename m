@@ -1,247 +1,61 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v4 4/4] dma: pl330: add Power Management support
-Date: Wed, 17 Sep 2014 20:42:55 +0200
-Message-ID: <CAPDyKFqoLQh=FYg33LTSp-HTs-oJDT4y_K6hGRoiu9zDxOX9sw@mail.gmail.com>
-References: <1410857494-15936-1-git-send-email-k.kozlowski@samsung.com>
-	<1410857494-15936-5-git-send-email-k.kozlowski@samsung.com>
+From: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH v5 2/4] dt-bindings: document Rockchip thermal
+Date: Wed, 17 Sep 2014 12:48:16 -0700
+Message-ID: <CAD=FV=Vq4zSBv-=OxHD4sGbAgLh_ebe29PR6RU_sQe4XspsPsw@mail.gmail.com>
+References: <1410926353-15674-1-git-send-email-caesar.wang@rock-chips.com>
+	<1410926353-15674-3-git-send-email-caesar.wang@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1410857494-15936-5-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1410926353-15674-3-git-send-email-caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tao Huang <huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Eddie Cai <cf-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Dmitry Torokhov <dtor-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Addy Ke <addy.ke-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, zyf <zyf-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, =?UTF-8?B?6ZmI5riQ6aOe?= <cjf-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 16 September 2014 10:51, Krzysztof Kozlowski <k.kozlowski@samsung.com> wrote:
-> This patch adds both normal PM suspend/resume support and runtime PM
-> support to pl330 DMA engine driver.
+Caesar,
+
+On Tue, Sep 16, 2014 at 8:59 PM, Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org> wrote:
+> This add the necessary binding documentation for the thermal
+> found on Rockchip SoCs
 >
-> The runtime power management for pl330 DMA driver allows gating of AMBA
-> clock (PDMA) in FSYS clock domain, when the device is not processing any
-> requests. This is necessary to enter low power modes on Exynos SoCs
-> (e.g. LPA on Exynos4x12 or W-AFTR on Exynos3250).
->
-> Runtime PM resuming of the device may happen in atomic context (during
-> call device_issue_pending()) so pm_runtime_irq_safe() is used. This will
-> lead only to disabling/enabling of the clock but this is sufficient for
-> gating the clock and for reducing energy usage.
->
-> During system sleep the AMBA bus clock is also unprepared.
->
-> Suggested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Signed-off-by: zhaoyifeng <zyf-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+> Signed-off-by: Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 > ---
->  drivers/dma/pl330.c | 77 ++++++++++++++++++++++++++++++++++++++++++++++++++---
->  1 file changed, 73 insertions(+), 4 deletions(-)
+>  .../bindings/thermal/rockchip-thermal.txt          | 41 ++++++++++++++++++++++
+>  1 file changed, 41 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
 >
-> diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
-> index 4839bfa74a10..9c014874c33d 100644
-> --- a/drivers/dma/pl330.c
-> +++ b/drivers/dma/pl330.c
-> @@ -27,6 +27,7 @@
->  #include <linux/of.h>
->  #include <linux/of_dma.h>
->  #include <linux/err.h>
-> +#include <linux/pm_runtime.h>
->
->  #include "dmaengine.h"
->  #define PL330_MAX_CHAN         8
-> @@ -1958,6 +1959,7 @@ static void pl330_tasklet(unsigned long data)
->         struct dma_pl330_chan *pch = (struct dma_pl330_chan *)data;
->         struct dma_pl330_desc *desc, *_dt;
->         unsigned long flags;
-> +       bool power_down = false;
->
->         spin_lock_irqsave(&pch->lock, flags);
->
-> @@ -1972,10 +1974,17 @@ static void pl330_tasklet(unsigned long data)
->         /* Try to submit a req imm. next to the last completed cookie */
->         fill_queue(pch);
->
-> -       /* Make sure the PL330 Channel thread is active */
-> -       spin_lock(&pch->thread->dmac->lock);
-> -       _start(pch->thread);
-> -       spin_unlock(&pch->thread->dmac->lock);
-> +       if (list_empty(&pch->work_list)) {
-> +               spin_lock(&pch->thread->dmac->lock);
-> +               _stop(pch->thread);
-> +               spin_unlock(&pch->thread->dmac->lock);
-> +               power_down = true;
-> +       } else {
-> +               /* Make sure the PL330 Channel thread is active */
-> +               spin_lock(&pch->thread->dmac->lock);
-> +               _start(pch->thread);
-> +               spin_unlock(&pch->thread->dmac->lock);
-> +       }
->
->         while (!list_empty(&pch->completed_list)) {
->                 dma_async_tx_callback callback;
-> @@ -1990,6 +1999,12 @@ static void pl330_tasklet(unsigned long data)
->                 if (pch->cyclic) {
->                         desc->status = PREP;
->                         list_move_tail(&desc->node, &pch->work_list);
-> +                       if (power_down) {
-> +                               spin_lock(&pch->thread->dmac->lock);
-> +                               _start(pch->thread);
-> +                               spin_unlock(&pch->thread->dmac->lock);
-> +                               power_down = false;
-> +                       }
->                 } else {
->                         desc->status = FREE;
->                         list_move_tail(&desc->node, &pch->dmac->desc_pool);
-> @@ -2004,6 +2019,10 @@ static void pl330_tasklet(unsigned long data)
->                 }
->         }
->         spin_unlock_irqrestore(&pch->lock, flags);
+> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+> new file mode 100644
+> index 0000000..6fc8bc3
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+> @@ -0,0 +1,41 @@
+> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
 > +
-> +       /* If work list empty, power down */
-> +       if (power_down)
-> +               pm_runtime_put(pch->dmac->ddma.dev);
->  }
->
->  bool pl330_filter(struct dma_chan *chan, void *param)
-> @@ -2073,6 +2092,7 @@ static int pl330_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd, unsigned
->
->         switch (cmd) {
->         case DMA_TERMINATE_ALL:
-> +               pm_runtime_get_sync(pl330->ddma.dev);
->                 spin_lock_irqsave(&pch->lock, flags);
->
->                 spin_lock(&pl330->lock);
-> @@ -2099,10 +2119,14 @@ static int pl330_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd, unsigned
->                         dma_cookie_complete(&desc->txd);
->                 }
->
-> +               if (!list_empty(&pch->work_list))
-> +                       pm_runtime_put(pl330->ddma.dev);
-> +
->                 list_splice_tail_init(&pch->submitted_list, &pl330->desc_pool);
->                 list_splice_tail_init(&pch->work_list, &pl330->desc_pool);
->                 list_splice_tail_init(&pch->completed_list, &pl330->desc_pool);
->                 spin_unlock_irqrestore(&pch->lock, flags);
-> +               pm_runtime_put(pl330->ddma.dev);
->                 break;
->         case DMA_SLAVE_CONFIG:
->                 slave_config = (struct dma_slave_config *)arg;
-> @@ -2138,6 +2162,7 @@ static void pl330_free_chan_resources(struct dma_chan *chan)
->
->         tasklet_kill(&pch->task);
->
-> +       pm_runtime_get_sync(pch->dmac->ddma.dev);
->         spin_lock_irqsave(&pch->lock, flags);
->
->         pl330_release_channel(pch->thread);
-> @@ -2147,6 +2172,7 @@ static void pl330_free_chan_resources(struct dma_chan *chan)
->                 list_splice_tail_init(&pch->work_list, &pch->dmac->desc_pool);
->
->         spin_unlock_irqrestore(&pch->lock, flags);
-> +       pm_runtime_put(pch->dmac->ddma.dev);
->  }
->
->  static enum dma_status
-> @@ -2162,6 +2188,15 @@ static void pl330_issue_pending(struct dma_chan *chan)
->         unsigned long flags;
->
->         spin_lock_irqsave(&pch->lock, flags);
-> +       if (list_empty(&pch->work_list)) {
-> +               /*
-> +                * Warn on nothing pending. Empty submitted_list may
-> +                * break our pm_runtime usage counter as it is
-> +                * updated on work_list emptiness status.
-> +                */
-> +               WARN_ON(list_empty(&pch->submitted_list));
-> +               pm_runtime_get_sync(pch->dmac->ddma.dev);
-> +       }
->         list_splice_tail_init(&pch->submitted_list, &pch->work_list);
->         spin_unlock_irqrestore(&pch->lock, flags);
->
-> @@ -2585,6 +2620,34 @@ static int pl330_dma_device_slave_caps(struct dma_chan *dchan,
->         return 0;
->  }
->
-> +/*
-> + * Assume that IRQ safe runtime PM is chosen in probe and amba bus driver
-> + * will only disable/enable the clock in runtime PM suspend/resume.
-> + */
-> +static int __maybe_unused pl330_suspend(struct device *dev)
-> +{
-> +       struct amba_device *pcdev = to_amba_device(dev);
-> +
-> +       if (!pm_runtime_suspended(dev))
-> +               amba_pclk_disable(pcdev);
+> +Required properties:
+> +- compatible: "rockchip,rk3288-tsadc"
+> +- reg: physical base address of the controller and length of memory mapped
+> +       region.
+> +- interrupts: The interrupt number to the cpu. The interrupt specifier format
+> +             depends on the interrupt controller.
+> +- clocks: Must contain an entry for each entry in clock-names.
+> +- clock-names: Shall be "tsadc" for the converter-clock, and "apb_pclk" for
+> +              the peripheral clock.
+> +- num-trips:  number of total trip points, this is required, set it 0 if none,
+> +             if greater than 0, the following properties must be defined;
 
-I would suggest to use pm_runtime_force_suspend() instead of the above.
+nit: there is whitespace damage (space before tab) on the line before
+this one.  It's more obvious in the patch you uploaded to gerrit which
+highlights this in red:
 
-> +       amba_pclk_unprepare(pcdev);
-> +
-> +       return 0;
-> +}
-> +
-> +static int __maybe_unused pl330_resume(struct device *dev)
-> +{
-> +       struct amba_device *pcdev = to_amba_device(dev);
-> +
-> +       amba_pclk_prepare(pcdev);
-> +       if (!pm_runtime_suspended(dev))
-> +               return amba_pclk_enable(pcdev);
+https://chromium-review.googlesource.com/#/c/213967/5/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
 
-The above if statement could be replaced with pm_runtime_force_resume().
+Did you run your patches through checkpatch before submitting?
 
-Doing that, means the amba_pclk_enable|disable() don't need to be
-exported from the AMBA bus header, but entirely handled by the AMBA
-bus itself.
-
-> +
-> +       return 0;
-> +}
-> +
-> +static SIMPLE_DEV_PM_OPS(pl330_pm, pl330_suspend, pl330_resume);
-> +
->  static int
->  pl330_probe(struct amba_device *adev, const struct amba_id *id)
->  {
-> @@ -2738,6 +2801,9 @@ pl330_probe(struct amba_device *adev, const struct amba_id *id)
->                 pcfg->data_buf_dep, pcfg->data_bus_width / 8, pcfg->num_chan,
->                 pcfg->num_peri, pcfg->num_events);
->
-
-You need pm_runtime_set_active() here as well.
-
-> +       pm_runtime_irq_safe(&adev->dev);
-> +       pm_runtime_put_noidle(&adev->dev);
-
-Why pm_runtime_put_noidle(), that seems like you might end up leaving
-the device in active state - unless you get some request. Likely not
-what you want?
-
-A final question, have you considered using runtime PM autosuspend
-feature. Any reason to why not?
-
-> +
->         return 0;
->  probe_err3:
->         /* Idle the DMAC */
-> @@ -2764,6 +2830,8 @@ static int pl330_remove(struct amba_device *adev)
->         struct pl330_dmac *pl330 = amba_get_drvdata(adev);
->         struct dma_pl330_chan *pch, *_p;
->
-> +       pm_runtime_get_noresume(pl330->ddma.dev);
-> +
->         if (adev->dev.of_node)
->                 of_dma_controller_free(adev->dev.of_node);
->
-> @@ -2802,6 +2870,7 @@ static struct amba_driver pl330_driver = {
->         .drv = {
->                 .owner = THIS_MODULE,
->                 .name = "dma-pl330",
-> +               .pm = &pl330_pm,
->         },
->         .id_table = pl330_ids,
->         .probe = pl330_probe,
-> --
-> 1.9.1
->
-
-Kind regards
-Uffe
+-Doug
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
