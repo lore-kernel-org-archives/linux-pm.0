@@ -1,90 +1,46 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] ACPI / cpuidle: fix deadlock between cpuidle_lock and
- cpu_hotplug.lock
-Date: Wed, 17 Sep 2014 14:11:12 +0530
-Message-ID: <20140917084112.GC31806@in.ibm.com>
-References: <alpine.LNX.2.00.1409031404110.12309@pobox.suse.cz>
- <alpine.LNX.2.00.1409031503140.12309@pobox.suse.cz>
-Reply-To: ego@linux.vnet.ibm.com
+From: Robin Gong <b38343@freescale.com>
+Subject: [PATCH v3 0/3] add power off driver for i.mx6
+Date: Wed, 17 Sep 2014 17:57:57 +0800
+Message-ID: <1410947881-7345-1-git-send-email-b38343@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.1409031503140.12309@pobox.suse.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Oleg Nesterov <oleg@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-by2on0110.outbound.protection.outlook.com ([207.46.100.110]:11691
+	"EHLO na01-by2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751938AbaIQJvg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 17 Sep 2014 05:51:36 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, shawn.guo@freescale.com, kernel@pengutronix.de, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, grant.likely@linaro.org, linux@arm.linux.org.uk
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hi Jiri,
+Add simple power off driver for i.mx6, including:
+- add basic imx-snvs-poweroff driver in drivers/power/reset
+- add device node in all dts files of i.mx6.
+- enable in config file
 
-On Wed, Sep 03, 2014 at 03:04:28PM +0200, Jiri Kosina wrote:
-> There is a following AB-BA dependency between cpu_hotplug.lock and 
-> cpuidle_lock:
-> 
-> 1) cpu_hotplug.lock -> cpuidle_lock
-> enable_nonboot_cpus()
->  _cpu_up()
->   cpu_hotplug_being()
->    LOCK(cpu_hotplug.lock)
->  cpu_notify()
->   ...
->   acpi_processor_hotplug()
->    cpuidle_pause_and_lock()
->     LOCK(cpuidle_lock)
-> 
-> 2) cpuidle_lock -> cpu_hotplug.lock
-> acpi_os_execute_deferred() workqueue
->  ...
->  acpi_processor_cst_has_changed()
->   cpuidle_pause_and_lock()
->    LOCK(cpuidle_lock)
->   get_online_cpus()
->    LOCK(cpu_hotplug.lock)
-> 
-> Fix this by reversing the order acpi_processor_cst_has_changed() does 
-> thigs -- let it first execute the protection against CPU hotplug by 
-> calling get_online_cpus() and obtain the cpuidle lock only after that (and 
-> perform the symmentric change when allowing CPUs hotplug again and 
-> dropping cpuidle lock).
-> 
-> Spotted by lockdep.
-> 
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Change from v2:
+- remove useless included head files
+- split device binding doc from dts patch
+- add description for the case that PMIC_ON_REQ not used as external power
+  control
 
-Looks good to me.
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Robin Gong (3):
+  ARM: dts: imx6: add pm_power_off support for i.mx6 chips
+  power: reset: imx-snvs-poweroff: add power off driver for i.mx6
+  ARM: configs: imx_v6_v7_defconfig: add power off driver
 
-> ---
->  drivers/acpi/processor_idle.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-> index 3dca36d..17f9ec5 100644
-> --- a/drivers/acpi/processor_idle.c
-> +++ b/drivers/acpi/processor_idle.c
-> @@ -1071,9 +1071,9 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr)
-> 
->  	if (pr->id == 0 && cpuidle_get_driver() == &acpi_idle_driver) {
-> 
-> -		cpuidle_pause_and_lock();
->  		/* Protect against cpu-hotplug */
->  		get_online_cpus();
-> +		cpuidle_pause_and_lock();
-> 
->  		/* Disable all cpuidle devices */
->  		for_each_online_cpu(cpu) {
-> @@ -1100,8 +1100,8 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr)
->  				cpuidle_enable_device(dev);
->  			}
->  		}
-> -		put_online_cpus();
->  		cpuidle_resume_and_unlock();
-> +		put_online_cpus();
->  	}
-> 
->  	return 0;
-> -- 
-> Jiri Kosina
-> SUSE Labs
-> 
+ arch/arm/boot/dts/imx6qdl.dtsi          |  5 +++
+ arch/arm/boot/dts/imx6sl.dtsi           |  5 +++
+ arch/arm/boot/dts/imx6sx.dtsi           |  5 +++
+ arch/arm/configs/imx_v6_v7_defconfig    |  3 ++
+ drivers/power/reset/Kconfig             |  5 +++
+ drivers/power/reset/Makefile            |  1 +
+ drivers/power/reset/imx-snvs-poweroff.c | 69 +++++++++++++++++++++++++++++++++
+ 7 files changed, 93 insertions(+)
+ create mode 100644 drivers/power/reset/imx-snvs-poweroff.c
+
+-- 
+1.9.1
+
