@@ -1,56 +1,29 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH v5 3/4] ARM: dts: add main Thermal info to rk3288
-Date: Wed, 17 Sep 2014 11:59:12 +0800
-Message-ID: <1410926353-15674-4-git-send-email-caesar.wang@rock-chips.com>
-References: <1410926353-15674-1-git-send-email-caesar.wang@rock-chips.com>
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1410926353-15674-1-git-send-email-caesar.wang@rock-chips.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, arnd@arndb.de
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, dmitry.torokhov@gmail.com, addy.ke@rock-chips.com, zyf@rock-chips.com, cjf@rock-chips.com, Caesar Wang <caesar.wang@rock-chips.com>
+From: Shawn Guo <shawn.guo@freescale.com>
+Subject: Re: [PATCH v2 1/3] ARM: dts: imx6: add pm_power_off support for
+ i.mx6 chips
+Date: Wed, 17 Sep 2014 12:50:02 +0800
+Message-ID: <20140917045001.GG4796@dragon>
+References: <1410511739-31122-1-git-send-email-b38343@freescale.com>
+ <1410511739-31122-2-git-send-email-b38343@freescale.com>
+ <20140917021044.GD4796@dragon> <20140917034514.GF27452@Robin-OptiPlex-780>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20140917034514.GF27452@Robin-OptiPlex-780>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Robin Gong <b38343@freescale.com>
+Cc: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, kernel@pengutronix.de, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, grant.likely@linaro.org, linux@arm.linux.org.uk, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
----
- arch/arm/boot/dts/rk3288.dtsi | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+On Wed, Sep 17, 2014 at 11:45:15AM +0800, Robin Gong wrote:
+> > BTW, the commit log of the driver patch [[PATCH v2 2/3] ] should be
+> > improved.
+> > 
+> > Shawn
+> >
+> You mean the above info need added into commit log ,right?
 
-diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
-index 36be7bb..ba7ad94 100644
---- a/arch/arm/boot/dts/rk3288.dtsi
-+++ b/arch/arm/boot/dts/rk3288.dtsi
-@@ -215,6 +215,17 @@
- 		status = "disabled";
- 	};
- 
-+	tsadc: tsadc@ff280000 {
-+		compatible = "rockchip,rk3288-tsadc";
-+		reg = <0xff280000 0x100>;
-+		interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-+		clock-names = "tsadc", "apb_pclk";
-+		pinctrl-names = "default";
-+		pinctrl-1 = <&otp_out>;
-+		status = "disabled";
-+	};
-+
- 	usb_host0_ehci: usb@ff500000 {
- 		compatible = "generic-ehci";
- 		reg = <0xff500000 0x100>;
-@@ -611,5 +622,12 @@
- 				rockchip,pins = <5 15 3 &pcfg_pull_none>;
- 			};
- 		};
-+
-+		tsadc {
-+			otp_out: otp-out {
-+				rockchip,pins = <0 10 RK_FUNC_1 &pcfg_pull_up>;
-+			};
-+		};
-+
- 	};
- };
--- 
-1.9.1
+Yes, that's what I mean.
 
-
+Shawn
