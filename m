@@ -1,75 +1,90 @@
-From: Robin Gong <b38343-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Subject: Re: [PATCH v2 1/3] ARM: dts: imx6: add pm_power_off support for
- i.mx6 chips
-Date: Wed, 17 Sep 2014 16:16:22 +0800
-Message-ID: <20140917081609.GA6274@Robin-OptiPlex-780>
-References: <1410511739-31122-1-git-send-email-b38343@freescale.com>
- <1410511739-31122-2-git-send-email-b38343@freescale.com>
- <20140917021044.GD4796@dragon> <20140917034514.GF27452@Robin-OptiPlex-780>
- <20140917060649.GJ4992@pengutronix.de>
- <20140917071736.GA5545@Robin-OptiPlex-780>
- <20140917072437.GP4992@pengutronix.de>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ACPI / cpuidle: fix deadlock between cpuidle_lock and
+ cpu_hotplug.lock
+Date: Wed, 17 Sep 2014 14:11:12 +0530
+Message-ID: <20140917084112.GC31806@in.ibm.com>
+References: <alpine.LNX.2.00.1409031404110.12309@pobox.suse.cz>
+ <alpine.LNX.2.00.1409031503140.12309@pobox.suse.cz>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20140917072437.GP4992-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: Shawn Guo <shawn.guo-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <alpine.LNX.2.00.1409031503140.12309@pobox.suse.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Oleg Nesterov <oleg@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 17, 2014 at 09:24:37AM +0200, Sascha Hauer wrote:
-> On Wed, Sep 17, 2014 at 03:17:38PM +0800, Robin Gong wrote:
-> > On Wed, Sep 17, 2014 at 08:06:49AM +0200, Sascha Hauer wrote:
-> > > On Wed, Sep 17, 2014 at 11:45:15AM +0800, Robin Gong wrote:
-> > > > On Wed, Sep 17, 2014 at 10:10:45AM +0800, Shawn Guo wrote:
-> > > > > On Fri, Sep 12, 2014 at 04:48:57PM +0800, Robin Gong wrote:
-> > > > > > All chips of i.mx6 can be powered off by programming SNVS.
-> > > > > > For example :
-> > > > > > On i.mx6q-sabresd board, PMIC_ON_REQ connect with external
-> > > > > > pmic ON/OFF pin, that will cause the whole PMIC powered off
-> > > > > > except VSNVS. And system can restart once PMIC_ON_REQ goes
-> > > > > > high by push POWRER key.
-> > > > > 
-> > > > > What's the behavior for those boards on which PMIC_ON_REQ isn't
-> > > > > connected to anywhere?
-> > > > >
-> > > > System can't be powered off if not connect PMIC_ON_REQ. Although all of our
-> > > > reference design for i.mx6 chips are connecting  PMIC_ON_REQ with external
-> > > > PMIC, we need consider others may not use external PMIC. I'll add the info
-> > > > into commit log or Kconfig.
-> > > 
-> > > You should add the information to the dtsi file in form of a
-> > > status = "disabled" property so that boards that actually have the
-> > > feature can enable it.
-> > > 
-> > > Sascha
-> > Hi Sacha, but that's  SOC level feature and it's harmless even if others don't
-> > want to use this pin to control external PMIC.
+Hi Jiri,
+
+On Wed, Sep 03, 2014 at 03:04:28PM +0200, Jiri Kosina wrote:
+> There is a following AB-BA dependency between cpu_hotplug.lock and 
+> cpuidle_lock:
 > 
-> Harmless? If a pm_power_off hook is registered I expect it to work, but
-> it doesn't work when my board does not have the connection between the
-> PMIC and the SoC. Even worse, if my board has some custom power of
-> method you overwrite my method in the snvs poweroff driver with a method
-> that does not work on my board.
+> 1) cpu_hotplug.lock -> cpuidle_lock
+> enable_nonboot_cpus()
+>  _cpu_up()
+>   cpu_hotplug_being()
+>    LOCK(cpu_hotplug.lock)
+>  cpu_notify()
+>   ...
+>   acpi_processor_hotplug()
+>    cpuidle_pause_and_lock()
+>     LOCK(cpuidle_lock)
 > 
-> Sascha
-Sorry, I suppose PMIC_ON_REQ is the only way to control external power ON/OFF.
-If they don't use PMIC_ON_REQ, I assume they drop poweroff feature.
-Yes, I agree with you that set status as 'disable' in DTS make things clear if
-they want to use other pins to control external power. But I'm not sure whether
-we need consider this special case to 'disable' the soc level feature and
-re-enable on many boards level DTS? Also, I don't understand why they give up
-PMIC_ON_REQ and consume another pin to do the same thing....But I'm ok if both
-you and Shawn agree with it.
+> 2) cpuidle_lock -> cpu_hotplug.lock
+> acpi_os_execute_deferred() workqueue
+>  ...
+>  acpi_processor_cst_has_changed()
+>   cpuidle_pause_and_lock()
+>    LOCK(cpuidle_lock)
+>   get_online_cpus()
+>    LOCK(cpu_hotplug.lock)
 > 
+> Fix this by reversing the order acpi_processor_cst_has_changed() does 
+> thigs -- let it first execute the protection against CPU hotplug by 
+> calling get_online_cpus() and obtain the cpuidle lock only after that (and 
+> perform the symmentric change when allowing CPUs hotplug again and 
+> dropping cpuidle lock).
+> 
+> Spotted by lockdep.
+> 
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+Looks good to me.
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+
+> ---
+>  drivers/acpi/processor_idle.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+> index 3dca36d..17f9ec5 100644
+> --- a/drivers/acpi/processor_idle.c
+> +++ b/drivers/acpi/processor_idle.c
+> @@ -1071,9 +1071,9 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr)
+> 
+>  	if (pr->id == 0 && cpuidle_get_driver() == &acpi_idle_driver) {
+> 
+> -		cpuidle_pause_and_lock();
+>  		/* Protect against cpu-hotplug */
+>  		get_online_cpus();
+> +		cpuidle_pause_and_lock();
+> 
+>  		/* Disable all cpuidle devices */
+>  		for_each_online_cpu(cpu) {
+> @@ -1100,8 +1100,8 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr)
+>  				cpuidle_enable_device(dev);
+>  			}
+>  		}
+> -		put_online_cpus();
+>  		cpuidle_resume_and_unlock();
+> +		put_online_cpus();
+>  	}
+> 
+>  	return 0;
 > -- 
-> Pengutronix e.K.                           |                             |
-> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Jiri Kosina
+> SUSE Labs
+> 
