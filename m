@@ -1,183 +1,96 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v3 2/3] power: reset: imx-snvs-poweroff: add power off
- driver for i.mx6
-Date: Wed, 17 Sep 2014 18:52:44 +0100
-Message-ID: <20140917175244.GC7983@leverpostej>
-References: <1410947881-7345-1-git-send-email-b38343@freescale.com>
- <1410947881-7345-3-git-send-email-b38343@freescale.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v5 3/4] amba: Don't unprepare the clocks if device driver
+ wants IRQ safe runtime PM
+Date: Wed, 17 Sep 2014 19:59:11 +0200
+Message-ID: <CAPDyKFrbC6Qh1mENctZQo1y3Mb3w3fSE8X3iYnChrmxhUpBXkQ@mail.gmail.com>
+References: <1410872360-27029-1-git-send-email-k.kozlowski@samsung.com>
+	<1410872360-27029-4-git-send-email-k.kozlowski@samsung.com>
+	<CAPDyKFrNYxSx3KwOLg0Bgw2TCtsC2-1YXjo1kSms2ie_b8sNww@mail.gmail.com>
+	<20140916195255.GN12361@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:60422 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756121AbaIQRwt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Sep 2014 13:52:49 -0400
-Content-Disposition: inline
-In-Reply-To: <1410947881-7345-3-git-send-email-b38343@freescale.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <20140916195255.GN12361@n2100.arm.linux.org.uk>
+Sender: linux-doc-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Robin Gong <b38343@freescale.com>
-Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "galak@codeaurora.org" <galak@codeaurora.org>, "shawn.guo@freescale.com" <shawn.guo@freescale.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Sep 17, 2014 at 10:57:59AM +0100, Robin Gong wrote:
-> This driver register pm_power_off with snvs power off function. If
-> your boards NOT use PMIC_ON_REQ to turn on/off external pmic, or use
-> other pin to do, please disable the driver in dts, otherwise, your
-> pm_power_off maybe overwrote by this driver.
-> 
-> Signed-off-by: Robin Gong <b38343@freescale.com>
-> ---
->  .../bindings/power_supply/imx-snvs-poweroff.txt    |   23 +++++++
->  drivers/power/reset/Kconfig                        |    9 +++
->  drivers/power/reset/Makefile                       |    1 +
->  drivers/power/reset/imx-snvs-poweroff.c            |   66 ++++++++++++++++++++
->  4 files changed, 99 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
->  create mode 100644 drivers/power/reset/imx-snvs-poweroff.c
-> 
-> diff --git a/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt b/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
-> new file mode 100644
-> index 0000000..6caf64e
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
-> @@ -0,0 +1,23 @@
-> +i.mx6 Poweroff Driver
-> +
-> +SNVS_LPCR in SNVS module can power off the whole system by pull
-> +PMIC_ON_REQ low if PMIC_ON_REQ is connected with external PMIC.
-> +If you don't want to use PMIC_ON_REQ as power on/off control,
-> +please set status='disabled' to disable this driver.
-> +
-> +Required Properties:
-> +-compatible: "fsl,sec-v4.0-poweroff"
-> +-reg: Specifies the physical address of the SNVS_LPCR register
+On 16 September 2014 21:52, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> On Tue, Sep 16, 2014 at 08:25:25PM +0200, Ulf Hansson wrote:
+>> On 16 September 2014 14:59, Krzysztof Kozlowski <k.kozlowski@samsung.com> wrote:
+>> > The AMBA bus driver defines runtime Power Management functions which
+>> > disable and unprepare AMBA bus clock. This is problematic for runtime PM
+>> > because unpreparing a clock might sleep so it is not interrupt safe.
+>> >
+>> > However some drivers may want to implement runtime PM functions in
+>> > interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
+>> > bus driver should only disable/enable the clock in runtime suspend and
+>> > resume callbacks.
+>> >
+>> > Detect the device driver behavior after calling its probe function and
+>> > store it. During runtime suspend/resume deal with clocks according to
+>> > stored value.
+>> >
+>> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>> > ---
+>> >  drivers/amba/bus.c       | 29 +++++++++++++++++++++++++----
+>> >  include/linux/amba/bus.h |  1 +
+>> >  2 files changed, 26 insertions(+), 4 deletions(-)
+>> >
+>> > diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+>> > index 3cf61a127ee5..e8fd5706954f 100644
+>> > --- a/drivers/amba/bus.c
+>> > +++ b/drivers/amba/bus.c
+>> > @@ -94,8 +94,18 @@ static int amba_pm_runtime_suspend(struct device *dev)
+>> >         struct amba_device *pcdev = to_amba_device(dev);
+>> >         int ret = pm_generic_runtime_suspend(dev);
+>> >
+>> > -       if (ret == 0 && dev->driver)
+>> > -               clk_disable_unprepare(pcdev->pclk);
+>> > +       if (ret == 0 && dev->driver) {
+>> > +               /*
+>> > +                * Drivers should not change pm_runtime_irq_safe()
+>> > +                * after probe.
+>> > +                */
+>> > +               WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
+>>
+>> Do we really need a WARN_ON here. Driver shouldn't update their
+>> irq_safe value dynamically, right!?
+>
+> The driver shouldn't update it dynamically, and this makes sure *that*
+> is enforced since we end up depending on that property.  Hence the
+> check is sensible (and I even suggested it.)
 
-As you describe above, this is part of the SNVS module. So why does this
-need a separate node?
+The WARN_ON could be nice to have, but I think this is a task for PM
+core to handle.
 
-Surely there should just be a property on the SNVS node that desribers
-whether or not this can be used?
+Copying flags shouldn't be needed for each an every instance of a
+driver/bus that manage irq_safe devices. That's my main point.
 
-Mark.
+>
+>> > +
+>> > +               if (pcdev->irq_safe)
+>> > +                       clk_disable(pcdev->pclk);
+>>
+>> Since the irq_safe flag, could be considered as a special case, an
+>> option for these cases - could be to leave the clock to be entirely
+>> handled from the driver's runtime PM callback instead.
+>
+> Too many sub-clauses to make much sense of that statement.
 
-> +
-> +Example:
-> +	snvs@020cc000 {
-> +		compatible = "fsl,sec-v4.0-mon", "simple-bus";
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		ranges = <0 0x020cc000 0x4000>;
-> +		.....
-> +		snvs-poweroff@38 {
-> +			compatible = "fsl,sec-v4.0-poweroff";
-> +			reg = <0x38 0x4>;
-> +		};
-> +	}
-> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> index ca41523..b26c547 100644
-> --- a/drivers/power/reset/Kconfig
-> +++ b/drivers/power/reset/Kconfig
-> @@ -45,6 +45,15 @@ config POWER_RESET_HISI
->  	help
->  	  Reboot support for Hisilicon boards.
->  
-> +config POWER_RESET_IMX
-> +	bool "IMX6 power-off driver"
-> +	depends on POWER_RESET && SOC_IMX6
-> +	help
-> +	  This driver support power off external PMIC by PMIC_ON_REQ on i.mx6
-> +	  boards.If you want to use other pin to control external power,please
-> +	  say N here or disable in dts to make sure pm_power_off never be
-> +	  overwrote wrongly by this driver.
-> +
->  config POWER_RESET_MSM
->  	bool "Qualcomm MSM power-off driver"
->  	depends on POWER_RESET && ARCH_QCOM
-> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> index a42e70e..2524daf 100644
-> --- a/drivers/power/reset/Makefile
-> +++ b/drivers/power/reset/Makefile
-> @@ -3,6 +3,7 @@ obj-$(CONFIG_POWER_RESET_AXXIA) += axxia-reset.o
->  obj-$(CONFIG_POWER_RESET_BRCMSTB) += brcmstb-reboot.o
->  obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
->  obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
-> +obj-$(CONFIG_POWER_RESET_IMX) += imx-snvs-poweroff.o
->  obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
->  obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
->  obj-$(CONFIG_POWER_RESET_RESTART) += restart-poweroff.o
-> diff --git a/drivers/power/reset/imx-snvs-poweroff.c b/drivers/power/reset/imx-snvs-poweroff.c
-> new file mode 100644
-> index 0000000..d726ac4
-> --- /dev/null
-> +++ b/drivers/power/reset/imx-snvs-poweroff.c
-> @@ -0,0 +1,66 @@
-> +/* Power off driver for i.mx6
-> + * Copyright (c) 2014, FREESCALE CORPORATION.  All rights reserved.
-> + *
-> + * based on msm-poweroff.c
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 and
-> + * only version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#include <linux/err.h>
-> +#include <linux/init.h>
-> +#include <linux/io.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/platform_device.h>
-> +
-> +static void __iomem *snvs_base;
-> +
-> +static void do_imx_poweroff(void)
-> +{
-> +	u32 value = readl(snvs_base);
-> +
-> +	/* set TOP and DP_EN bit */
-> +	writel(value | 0x60, snvs_base);
-> +}
-> +
-> +static int imx_poweroff_probe(struct platform_device *pdev)
-> +{
-> +	snvs_base = of_iomap(pdev->dev.of_node, 0);
-> +	if (!snvs_base) {
-> +		dev_err(&pdev->dev, "failed to get memory\n");
-> +		return -EIO;
-> +	}
-> +
-> +	pm_power_off = do_imx_poweroff;
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id of_imx_poweroff_match[] = {
-> +	{ .compatible = "fsl,sec-v4.0-poweroff", },
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, of_imx_poweroff_match);
-> +
-> +static struct platform_driver imx_poweroff_driver = {
-> +	.probe = imx_poweroff_probe,
-> +	.driver = {
-> +		.name = "imx-snvs-poweroff",
-> +		.of_match_table = of_match_ptr(of_imx_poweroff_match),
-> +	},
-> +};
-> +
-> +static int __init imx_poweroff_init(void)
-> +{
-> +	return platform_driver_register(&imx_poweroff_driver);
-> +}
-> +device_initcall(imx_poweroff_init);
-> -- 
-> 1.7.9.5
-> 
-> 
+Sorry, agree. :-)
+
+>
+> I don't want drivers messing around with this stuff.  This is the /bus/
+> clock, not a device specific clock.
+
+For irq_safe devices, driver's will need to handle the
+clk_prepare|unprepare during system PM anyway. That's the reason to
+why I suggested this.
+
+On the other hand I agree with you, it's a bus clock...
+
+Kind regards
+Uffe
