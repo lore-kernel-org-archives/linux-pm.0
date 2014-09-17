@@ -1,7 +1,7 @@
 From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH v5 4/4] ARM: dts: enable Thermal on rk3288-evb board
-Date: Wed, 17 Sep 2014 11:59:13 +0800
-Message-ID: <1410926353-15674-5-git-send-email-caesar.wang@rock-chips.com>
+Subject: [PATCH v5 3/4] ARM: dts: add main Thermal info to rk3288
+Date: Wed, 17 Sep 2014 11:59:12 +0800
+Message-ID: <1410926353-15674-4-git-send-email-caesar.wang@rock-chips.com>
 References: <1410926353-15674-1-git-send-email-caesar.wang@rock-chips.com>
 Return-path: <linux-doc-owner@vger.kernel.org>
 In-Reply-To: <1410926353-15674-1-git-send-email-caesar.wang@rock-chips.com>
@@ -12,38 +12,44 @@ List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
 ---
- arch/arm/boot/dts/rk3288-evb.dtsi | 18 ++++++++++++++++++
+ arch/arm/boot/dts/rk3288.dtsi | 18 ++++++++++++++++++
  1 file changed, 18 insertions(+)
 
-diff --git a/arch/arm/boot/dts/rk3288-evb.dtsi b/arch/arm/boot/dts/rk3288-evb.dtsi
-index 2964370..b68d21b 100644
---- a/arch/arm/boot/dts/rk3288-evb.dtsi
-+++ b/arch/arm/boot/dts/rk3288-evb.dtsi
-@@ -101,6 +101,24 @@
- 	status = "okay";
- };
+diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
+index 36be7bb..ba7ad94 100644
+--- a/arch/arm/boot/dts/rk3288.dtsi
++++ b/arch/arm/boot/dts/rk3288.dtsi
+@@ -215,6 +215,17 @@
+ 		status = "disabled";
+ 	};
  
-+&tsadc {
-+        num-trips = <2>;
++	tsadc: tsadc@ff280000 {
++		compatible = "rockchip,rk3288-tsadc";
++		reg = <0xff280000 0x100>;
++		interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
++		clock-names = "tsadc", "apb_pclk";
++		pinctrl-names = "default";
++		pinctrl-1 = <&otp_out>;
++		status = "disabled";
++	};
 +
-+        trip0-temp = <80>;
-+        trip0-type = "passive";
-+        trip0-cdev-num = <1>;
-+        trip0-cdev-name0 = "thermal-cpufreq-0";
+ 	usb_host0_ehci: usb@ff500000 {
+ 		compatible = "generic-ehci";
+ 		reg = <0xff500000 0x100>;
+@@ -611,5 +622,12 @@
+ 				rockchip,pins = <5 15 3 &pcfg_pull_none>;
+ 			};
+ 		};
 +
-+        trip1-temp = <100>;
-+        trip1-type = "critical";
-+        trip1-cdev-num = <1>;
-+        trip1-cdev-name0 = "thermal-cpufreq-0";
++		tsadc {
++			otp_out: otp-out {
++				rockchip,pins = <0 10 RK_FUNC_1 &pcfg_pull_up>;
++			};
++		};
 +
-+        hw-shut-temp = <120>;
-+
-+        status = "okay";
-+};
-+
- &pinctrl {
- 	buttons {
- 		pwrbtn: pwrbtn {
+ 	};
+ };
 -- 
 1.9.1
 
