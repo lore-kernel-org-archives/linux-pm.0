@@ -1,334 +1,331 @@
-From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH 1/2] power: smb347-charger: Support devicetree binding for
- smb347 driver.
-Date: Wed, 17 Sep 2014 11:47:23 +0900
-Message-ID: <1410922044-4170-2-git-send-email-jonghwa3.lee@samsung.com>
-References: <1410922044-4170-1-git-send-email-jonghwa3.lee@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1410922044-4170-1-git-send-email-jonghwa3.lee@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, pavel@ucw.cz, Jonghwa Lee <jonghwa3.lee@samsung.com>
+From: Peter Teoh <htmldeveloper@gmail.com>
+Subject: Re: suspend/resume PM criterion for application
+Date: Tue, 16 Sep 2014 23:16:52 -0400
+Message-ID: <CAHnt0GUbX3iyb5SGqX2zfB1zB8V3q3KZ0ta0yOUHPbzBbOeXbA@mail.gmail.com>
+References: <CAJ2oMh+xmgC9mfT5QqEmMMek7SOqYE2QLVV6sPvK0CF5+56hDg@mail.gmail.com>
+	<17893.1410371984@turing-police.cc.vt.edu>
+	<CAJ2oMhJpTQjgDgEgOqvLVJg7LQjtHg2by71=98uH=vq59zTmDg@mail.gmail.com>
+	<20227.1410374378@turing-police.cc.vt.edu>
+	<CAJ2oMhLnP7TpP3caycqVS0xHRE3tf=+2vREE6H1NradsmFmH4A@mail.gmail.com>
+	<23104.1410377100@turing-police.cc.vt.edu>
+	<CAGAs2Anafp-S+L5B7meg9ET-ckb=MDFupUQk5DnKTTJ9mWWJXA@mail.gmail.com>
+	<CAJ2oMhJdAr0akNJoVXafvW95zzK+MKWbf=b79+EuKm60L3CKdg@mail.gmail.com>
+	<CAJ2oMhL1+RBw5ifB_CcuTK2nKRhCfKLXZZd4k6GzT9q6p8RTAA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============4113408845614584725=="
+Return-path: <kernelnewbies-bounces@kernelnewbies.org>
+In-Reply-To: <CAJ2oMhL1+RBw5ifB_CcuTK2nKRhCfKLXZZd4k6GzT9q6p8RTAA@mail.gmail.com>
+List-Unsubscribe: <http://lists.kernelnewbies.org/mailman/listinfo/kernelnewbies>,
+	<mailto:kernelnewbies-request@kernelnewbies.org?subject=unsubscribe>
+List-Archive: <http://lists.kernelnewbies.org/pipermail/kernelnewbies>
+List-Post: <mailto:kernelnewbies@kernelnewbies.org>
+List-Help: <mailto:kernelnewbies-request@kernelnewbies.org?subject=help>
+List-Subscribe: <http://lists.kernelnewbies.org/mailman/listinfo/kernelnewbies>,
+	<mailto:kernelnewbies-request@kernelnewbies.org?subject=subscribe>
+Sender: kernelnewbies-bounces@kernelnewbies.org
+Errors-To: kernelnewbies-bounces@kernelnewbies.org
+To: Ran Shalit <ranshalit@gmail.com>
+Cc: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>, linux-pm@vger.kernel.org, AYAN KUMAR HALDER <ayankumarh@gmail.com>, kernelnewbies <kernelnewbies@kernelnewbies.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch makes smb347 charger driver to support dt binding. All legacy
-platform data now can be parsed from dt.
-Because of that smb347 is i2c client driver, IRQ number can be passed
-automatically through client's irq variable if it is defined in dt.
-No more to use requesting gpio to irq manually in dt-way.
+--===============4113408845614584725==
+Content-Type: multipart/alternative; boundary=bcaec548a399a7e6a305033a4c6a
 
-Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Acked-by : Chanwoo Choi <cw00.choi@samsung.com>
-Acked-by : Myungjoo Ham <myungjoo.ham@samsung.com>
----
- .../bindings/power_supply/smb347_charger.txt       |   57 ++++++++
- .../devicetree/bindings/vendor-prefixes.txt        |    1 +
- drivers/power/smb347-charger.c                     |  144 +++++++++++++++-----
- 3 files changed, 167 insertions(+), 35 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power_supply/smb347_charger.txt
+--bcaec548a399a7e6a305033a4c6a
+Content-Type: text/plain; charset=UTF-8
 
-diff --git a/Documentation/devicetree/bindings/power_supply/smb347_charger.txt b/Documentation/devicetree/bindings/power_supply/smb347_charger.txt
-new file mode 100644
-index 0000000..91570a5
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power_supply/smb347_charger.txt
-@@ -0,0 +1,57 @@
-+smb347_charger bindings
-+~~~~~~~~~~~~~~~~~~~~~~~~
-+
-+[Required porperties]
-+- compatible : "summit,smb347"
-+- reg : Slave address for i2c interface
-+# At least one of followings should be set
-+  - enable-usb-charging
-+  - enable-otg-charging
-+  - enable-mains-charging
-+
-+[Optional properties]
-+- interrupt-parent : The phandle for the interrupt controller
-+- interrupts : Interrupt line index for mapping
-+- enable-chg-ctrl : Enable charging control
-+		<0> : SW (i2c interface)
-+		<1> : Pin control (Active Low)
-+		<2> : Pin control (Active High)
-+# Charging constraints
-+- max-chg-curr : Maximum current for charging (in uA)
-+- max-chg-volt : Maximum voltage for charging (in uV)
-+- pre-chg-curr : Pre-charging current (in uA)
-+- term-curr : Charging cycle termination current (in uA)
-+- fast-volt-thershold : Voltage threshold to transit to fast charge mode (in uV)
-+- mains-curr-limit : Maximum input current from AC/DC input (in uA)
-+- usb-curr-limit : Maximum input current from USB input (in uA)
-+
-+# Related thermometer monitoring (in degree C)
-+- chip-temp-threshold : Chip temperature for thermal regulaton.   <100, 130>
-+- soft-cold-temp-limit : Cold battery temperature for soft alarm. <0, 15>*
-+- soft-hot-temp-limit : Hot battery temperature for soft alarm.   <40, 55>
-+- hard-cold-temp-limit : Cold battery temperature for hard alarm. <0, 15>*
-+- hard-hot-temp-limit : Hot battery temperature for hard alarm.   <55, 65>
-+(* The written temperature has +5'C offset. 0'C -> -5'C, 15'C -> 10'C)
-+- soft-comp-method : Soft temperature limit compensation method
-+	(Not defined) : Use default setting
-+		<0> : Compensation none
-+		<1> : Charge current compensation
-+		<2> : Voltage compensation
-+
-+Example:
-+	smb347@7f {
-+		compatible = "summit,smb347";
-+		reg = <0x7f>;
-+		status = "okay";
-+
-+		max-chg-curr = <1800000>;
-+		mains-curr-limit = <2000000>;
-+		usb-curr-limit = <450000>;
-+
-+		chip-temp-thershold = <110>;
-+
-+		enable-usb-charging;
-+		enable-mains-charging;
-+
-+		enable-chg-ctrl = <2>;	/* Pin control (Active High) */
-+	};
-diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
-index 13fda72..616e2a1 100644
---- a/Documentation/devicetree/bindings/vendor-prefixes.txt
-+++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
-@@ -121,6 +121,7 @@ spansion	Spansion Inc.
- st	STMicroelectronics
- ste	ST-Ericsson
- stericsson	ST-Ericsson
-+summit	Summit microelectronics
- synology	Synology, Inc.
- ti	Texas Instruments
- tlm	Trusted Logic Mobility
-diff --git a/drivers/power/smb347-charger.c b/drivers/power/smb347-charger.c
-index acf84e8..8073879 100644
---- a/drivers/power/smb347-charger.c
-+++ b/drivers/power/smb347-charger.c
-@@ -835,20 +835,28 @@ static int smb347_irq_init(struct smb347_charger *smb,
- 			   struct i2c_client *client)
- {
- 	const struct smb347_charger_platform_data *pdata = smb->pdata;
--	int ret, irq = gpio_to_irq(pdata->irq_gpio);
-+	int ret;
- 
--	ret = gpio_request_one(pdata->irq_gpio, GPIOF_IN, client->name);
--	if (ret < 0)
--		goto fail;
-+	/* Requesting GPIO for IRQ is only needed in non-DT way */
-+	if (!client->irq) {
-+		int irq = gpio_to_irq(pdata->irq_gpio);
-+		ret = devm_gpio_request_one(smb->dev, pdata->irq_gpio,
-+						GPIOF_IN, client->name);
-+		if (ret < 0)
-+			goto out;
- 
--	ret = request_threaded_irq(irq, NULL, smb347_interrupt,
--				   IRQF_TRIGGER_FALLING, client->name, smb);
-+		client->irq = irq;
-+	}
-+
-+	ret = devm_request_threaded_irq(smb->dev, client->irq, NULL,
-+					smb347_interrupt, IRQF_TRIGGER_FALLING,
-+					client->name, smb);
- 	if (ret < 0)
--		goto fail_gpio;
-+		goto out;
- 
- 	ret = smb347_set_writable(smb, true);
- 	if (ret < 0)
--		goto fail_irq;
-+		goto out;
- 
- 	/*
- 	 * Configure the STAT output to be suitable for interrupts: disable
-@@ -858,20 +866,10 @@ static int smb347_irq_init(struct smb347_charger *smb,
- 				 CFG_STAT_ACTIVE_HIGH | CFG_STAT_DISABLED,
- 				 CFG_STAT_DISABLED);
- 	if (ret < 0)
--		goto fail_readonly;
--
--	smb347_set_writable(smb, false);
--	client->irq = irq;
--	return 0;
-+		client->irq = 0;
- 
--fail_readonly:
- 	smb347_set_writable(smb, false);
--fail_irq:
--	free_irq(irq, smb);
--fail_gpio:
--	gpio_free(pdata->irq_gpio);
--fail:
--	client->irq = 0;
-+out:
- 	return ret;
- }
- 
-@@ -1180,6 +1178,80 @@ static bool smb347_readable_reg(struct device *dev, unsigned int reg)
- 	return smb347_volatile_reg(dev, reg);
- }
- 
-+static void smb347_dt_parse_pdata(struct device_node *np,
-+				 struct smb347_charger_platform_data *pdata)
-+{
-+	/* Charing constraints */
-+	of_property_read_u32(np, "max-chg-curr", &pdata->max_charge_current);
-+	of_property_read_u32(np, "max-chg-volt", &pdata->max_charge_voltage);
-+	of_property_read_u32(np, "pre-chg-curr", &pdata->pre_charge_current);
-+	of_property_read_u32(np, "term-curr", &pdata->termination_current);
-+	of_property_read_u32(np, "fast-volt-threshold",
-+						&pdata->pre_to_fast_voltage);
-+	of_property_read_u32(np, "mains-curr-limit",
-+						&pdata->mains_current_limit);
-+	of_property_read_u32(np, "usb-curr-limit",
-+						&pdata->usb_hc_current_limit);
-+
-+	/* For thermometer monitoring */
-+	of_property_read_u32(np, "chip-temp-threshold",
-+				&pdata->chip_temp_threshold);
-+	if (of_property_read_u32(np, "soft-cold-temp-limit",
-+				&pdata->soft_cold_temp_limit))
-+		pdata->soft_cold_temp_limit = SMB347_TEMP_USE_DEFAULT;
-+	if (of_property_read_u32(np, "soft-hot-temp-limit",
-+				&pdata->soft_hot_temp_limit))
-+		pdata->soft_hot_temp_limit = SMB347_TEMP_USE_DEFAULT;
-+	if (of_property_read_u32(np, "hard-cold-temp-limit",
-+				&pdata->hard_cold_temp_limit))
-+		pdata->hard_cold_temp_limit = SMB347_TEMP_USE_DEFAULT;
-+	if (of_property_read_u32(np, "hard-hot-temp-limit",
-+				&pdata->hard_hot_temp_limit))
-+		pdata->hard_hot_temp_limit = SMB347_TEMP_USE_DEFAULT;
-+
-+	/* Suspend when battery temperature is outside hard limits */
-+	if ((pdata->hard_cold_temp_limit != SMB347_TEMP_USE_DEFAULT)
-+		|| (pdata->hard_hot_temp_limit != SMB347_TEMP_USE_DEFAULT))
-+		pdata->suspend_on_hard_temp_limit = true;
-+
-+	if (of_property_read_u32(np, "soft-comp-method",
-+				&pdata->soft_temp_limit_compensation))
-+		pdata->soft_temp_limit_compensation =
-+				SMB347_SOFT_TEMP_COMPENSATE_DEFAULT;
-+
-+	of_property_read_u32(np, "chg-curr-comp",
-+				&pdata->charge_current_compensation);
-+
-+	/* Supported charging mode */
-+	pdata->use_mains = of_property_read_bool(np, "enable-mains-charging");
-+	pdata->use_usb = of_property_read_bool(np, "enable-usb-charging");
-+	pdata->use_usb_otg = of_property_read_bool(np, "enable-otg-charging");
-+
-+	/* Enable charging method */
-+	of_property_read_u32(np, "enable-chg-ctrl", &pdata->enable_control);
-+
-+	/* If IRQ is enabled or not */
-+	if (!of_get_property(np, "interrupts", NULL))
-+		pdata->irq_gpio = -1;
-+
-+	return;
-+}
-+
-+static struct smb347_charger_platform_data
-+			*smb347_get_platdata(struct device *dev)
-+{
-+	struct smb347_charger_platform_data *pdata = NULL;
-+
-+	if (dev->of_node) {
-+		pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
-+		smb347_dt_parse_pdata(dev->of_node, pdata);
-+	} else {
-+		pdata = dev_get_platdata(dev);
-+	}
-+
-+	return pdata;
-+}
-+
- static const struct regmap_config smb347_regmap = {
- 	.reg_bits	= 8,
- 	.val_bits	= 8,
-@@ -1192,27 +1264,25 @@ static int smb347_probe(struct i2c_client *client,
- 			const struct i2c_device_id *id)
- {
- 	static char *battery[] = { "smb347-battery" };
--	const struct smb347_charger_platform_data *pdata;
- 	struct device *dev = &client->dev;
- 	struct smb347_charger *smb;
- 	int ret;
- 
--	pdata = dev->platform_data;
--	if (!pdata)
--		return -EINVAL;
--
--	if (!pdata->use_mains && !pdata->use_usb)
--		return -EINVAL;
--
- 	smb = devm_kzalloc(dev, sizeof(*smb), GFP_KERNEL);
- 	if (!smb)
- 		return -ENOMEM;
- 
-+	smb->pdata = smb347_get_platdata(dev);
-+	if (!smb->pdata)
-+		return -ENODEV;
-+
-+	if (!smb->pdata->use_mains && !smb->pdata->use_usb)
-+		return -EINVAL;
-+
- 	i2c_set_clientdata(client, smb);
- 
- 	mutex_init(&smb->lock);
- 	smb->dev = &client->dev;
--	smb->pdata = pdata;
- 
- 	smb->regmap = devm_regmap_init_i2c(client, &smb347_regmap);
- 	if (IS_ERR(smb->regmap))
-@@ -1257,7 +1327,6 @@ static int smb347_probe(struct i2c_client *client,
- 	smb->battery.properties = smb347_battery_properties;
- 	smb->battery.num_properties = ARRAY_SIZE(smb347_battery_properties);
- 
--
- 	ret = power_supply_register(dev, &smb->battery);
- 	if (ret < 0) {
- 		if (smb->pdata->use_usb)
-@@ -1271,7 +1340,7 @@ static int smb347_probe(struct i2c_client *client,
- 	 * Interrupt pin is optional. If it is connected, we setup the
- 	 * interrupt support here.
- 	 */
--	if (pdata->irq_gpio >= 0) {
-+	if (smb->pdata->irq_gpio >= 0) {
- 		ret = smb347_irq_init(smb, client);
- 		if (ret < 0) {
- 			dev_warn(dev, "failed to initialize IRQ: %d\n", ret);
-@@ -1288,11 +1357,8 @@ static int smb347_remove(struct i2c_client *client)
- {
- 	struct smb347_charger *smb = i2c_get_clientdata(client);
- 
--	if (client->irq) {
-+	if (client->irq)
- 		smb347_irq_disable(smb);
--		free_irq(client->irq, smb);
--		gpio_free(smb->pdata->irq_gpio);
--	}
- 
- 	power_supply_unregister(&smb->battery);
- 	if (smb->pdata->use_usb)
-@@ -1308,9 +1374,17 @@ static const struct i2c_device_id smb347_id[] = {
- };
- MODULE_DEVICE_TABLE(i2c, smb347_id);
- 
-+#ifdef CONFIG_OF
-+static struct of_device_id of_smb347_ids[] = {
-+	{ .compatible = "summit,smb347" },
-+	{},
-+};
-+#endif
-+
- static struct i2c_driver smb347_driver = {
- 	.driver = {
- 		.name = "smb347",
-+		.of_match_table = of_match_ptr(of_smb347_ids),
- 	},
- 	.probe        = smb347_probe,
- 	.remove       = smb347_remove,
+On Sun, Sep 14, 2014 at 2:11 AM, Ran Shalit <ranshalit@gmail.com> wrote:
+
+> On Thu, Sep 11, 2014 at 12:24 PM, Ran Shalit <ranshalit@gmail.com> wrote:
+> > On Thu, Sep 11, 2014 at 8:32 AM, AYAN KUMAR HALDER <ayankumarh@gmail.com>
+> wrote:
+> >> On Thu, Sep 11, 2014 at 12:55 AM,  <Valdis.Kletnieks@vt.edu> wrote:
+> >>> On Wed, 10 Sep 2014 21:58:48 +0300, Ran Shalit said:
+> >>>
+> >>>> 1. How can I make a process to notice this inactivity ? Do you think
+> >>>> it can be implemented by some periodic process who check if there is
+> >>>> activity ? It returns to the original question I raised, that I will
+> >>>> use some periodic process who checks maybe cpu load or something like
+> >>>> that. What do you think ?
+> >>>
+> >>> That's going to depend on your system and what processes are running.
+> >>>
+> >>> You may have an MP3 player going that doesn't take much CPU at all -
+> but
+> >>> shutting down because the user hasn't hit a button in 47 minutes will
+> probably
+> >>> irritate the user no end.  Or there may be a screensaver running that
+> takes
+> >>> twice as much CPU as the MP3 player, but is totally OK on the system
+> >>> suspending whenever the rest of the system wants it.
+> >>>
+> >>> You're going to have to look at your system design, and decide for
+> yourself
+> >>> what the criteria are.
+> >>
+> >> Please correct me if my understanding is wrong:-
+> >>
+> >> I believe that autosuspend feature (for system suspend) is not present
+> >> in kernel. I believe that there is no feature in kernel which checks
+> >> for system ( cpu, devices) inactivity and suspends the entire system.
+> >> System suspend is caused when :-
+> >> 1. the user issues a command
+> >> 2. The system receives some interrupt or event (lid closing event)
+> >> 3. There is an external process which monitors system inactivity and
+> >> suspends the system.
+> >>
+> >> For runtime suspend of a device, I believe it is the driver who has
+> >> the complete responsibility to decide when to suspend the device or
+> >> resume it.  The driver can take this decision on user intervention (eg
+> >> when user writes to   /sys/devices/<my-device>/power/* ) or when the
+> >> driver has completed servicing an interrupt and feels it has nothing
+> >> more to do, etc
+> >
+> > Thanks Vlaid, Ayan,
+> >
+> > I am a bit yet struggling for couple of days on this PM issue, and I
+> > would appreciate your continous advise.
+> > The system requirement I have is as following:
+> > 1. make everything as automatic as possible , so that there won't be
+> > any need to add any userspace application for the matter.
+> > 2. wakeup from all relevant wakeup sources
+> > 3. should not use sysfs (it should be disabled from kernel)
+> > 4. platform is OMAP3530.
+>
+
+a.   look into /arch/arm/mach-omap2 of kernel source and grep for "sleep"
+and "wakeup" functionality:   power management is just managing with the
+different frequencies of the the CPU.   as far as I can tell, once sleep,
+only uart pin can be used for waking up....not sure.
+
+b.   read this:
+
+http://e2e.ti.com/support/dsp/omap_applications_processors/f/447/t/30005.aspx
+
+http://www.ti.com/lit/an/slva310b/slva310b.pdf   (read page 2, which
+describe the different powerup-sequence of the CPU, "Powering-Up Sequence".
+
+
+c.   the technology brand name for omap3530 is "DVFS"....search for this
+inside the arch/arm kernel source.....you can find lots of sample codes
+there.
+
+(don't confuse with another omap CPU brand name "DeepSleep" but is PM for
+another type of omap cpu.)
+
+d.   http://www.ti.com/product/omap3530 --> on the right is a DVSDK +
+Android source code for 3530....grep the codes for the above keywords...
+
+hopefully it helps?
+
+
+
+> >
+> > Now, As I understand thus far, I have the following options (
+> > requirement 3 above I will ignore, don't know how to handle it yet,
+> > and assume for meanwhile that I have sysfs) :
+> > 1. use suspend scheme (no runtime PM)
+> >     1.a. create some kernel thread who check cpu load and will decide
+> > to disable system only if its below some minimum threshold (which
+> > should indicate no activity)
+> >     1.b. initialize all HW interrupts (gpio, uart, etc) as wakeup sources
+> >     with this scheme only this thread is responsible for the suspend,
+> > and there is no use of the runtime PM, right ?
+> >
+> > 2. use runtime PM scheme :
+> >     With this scheme I don't understand how some device will wake the
+> > system , or doesn't it need to  ? If a driver wakes up maybe it need
+> > to deliver some info to system    ?
+> >
+> > I think option 1 is also easier to support, what do you think about both
+> ?
+> >
+> > Thanks!!
+> > Ran
+>
+> Does Anyone have any suggestions and feedback on the above requirements ?
+>
+> Thank you,
+> Ran
+>
+> _______________________________________________
+> Kernelnewbies mailing list
+> Kernelnewbies@kernelnewbies.org
+> http://lists.kernelnewbies.org/mailman/listinfo/kernelnewbies
+>
+
+
+
 -- 
-1.7.9.5
+Regards,
+Peter Teoh
+
+--bcaec548a399a7e6a305033a4c6a
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
+te">On Sun, Sep 14, 2014 at 2:11 AM, Ran Shalit <span dir=3D"ltr">&lt;<a hr=
+ef=3D"mailto:ranshalit@gmail.com" target=3D"_blank">ranshalit@gmail.com</a>=
+&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0px=
+ 0px 0px 0.8ex;border-left-width:1px;border-left-color:rgb(204,204,204);bor=
+der-left-style:solid;padding-left:1ex"><div class=3D""><div class=3D"h5">On=
+ Thu, Sep 11, 2014 at 12:24 PM, Ran Shalit &lt;<a href=3D"mailto:ranshalit@=
+gmail.com">ranshalit@gmail.com</a>&gt; wrote:<br>
+&gt; On Thu, Sep 11, 2014 at 8:32 AM, AYAN KUMAR HALDER &lt;<a href=3D"mail=
+to:ayankumarh@gmail.com">ayankumarh@gmail.com</a>&gt; wrote:<br>
+&gt;&gt; On Thu, Sep 11, 2014 at 12:55 AM,=C2=A0 &lt;<a href=3D"mailto:Vald=
+is.Kletnieks@vt.edu">Valdis.Kletnieks@vt.edu</a>&gt; wrote:<br>
+&gt;&gt;&gt; On Wed, 10 Sep 2014 21:58:48 +0300, Ran Shalit said:<br>
+&gt;&gt;&gt;<br>
+&gt;&gt;&gt;&gt; 1. How can I make a process to notice this inactivity ? Do=
+ you think<br>
+&gt;&gt;&gt;&gt; it can be implemented by some periodic process who check i=
+f there is<br>
+&gt;&gt;&gt;&gt; activity ? It returns to the original question I raised, t=
+hat I will<br>
+&gt;&gt;&gt;&gt; use some periodic process who checks maybe cpu load or som=
+ething like<br>
+&gt;&gt;&gt;&gt; that. What do you think ?<br>
+&gt;&gt;&gt;<br>
+&gt;&gt;&gt; That&#39;s going to depend on your system and what processes a=
+re running.<br>
+&gt;&gt;&gt;<br>
+&gt;&gt;&gt; You may have an MP3 player going that doesn&#39;t take much CP=
+U at all - but<br>
+&gt;&gt;&gt; shutting down because the user hasn&#39;t hit a button in 47 m=
+inutes will probably<br>
+&gt;&gt;&gt; irritate the user no end.=C2=A0 Or there may be a screensaver =
+running that takes<br>
+&gt;&gt;&gt; twice as much CPU as the MP3 player, but is totally OK on the =
+system<br>
+&gt;&gt;&gt; suspending whenever the rest of the system wants it.<br>
+&gt;&gt;&gt;<br>
+&gt;&gt;&gt; You&#39;re going to have to look at your system design, and de=
+cide for yourself<br>
+&gt;&gt;&gt; what the criteria are.<br>
+&gt;&gt;<br>
+&gt;&gt; Please correct me if my understanding is wrong:-<br>
+&gt;&gt;<br>
+&gt;&gt; I believe that autosuspend feature (for system suspend) is not pre=
+sent<br>
+&gt;&gt; in kernel. I believe that there is no feature in kernel which chec=
+ks<br>
+&gt;&gt; for system ( cpu, devices) inactivity and suspends the entire syst=
+em.<br>
+&gt;&gt; System suspend is caused when :-<br>
+&gt;&gt; 1. the user issues a command<br>
+&gt;&gt; 2. The system receives some interrupt or event (lid closing event)=
+<br>
+&gt;&gt; 3. There is an external process which monitors system inactivity a=
+nd<br>
+&gt;&gt; suspends the system.<br>
+&gt;&gt;<br>
+&gt;&gt; For runtime suspend of a device, I believe it is the driver who ha=
+s<br>
+&gt;&gt; the complete responsibility to decide when to suspend the device o=
+r<br>
+&gt;&gt; resume it.=C2=A0 The driver can take this decision on user interve=
+ntion (eg<br>
+&gt;&gt; when user writes to=C2=A0 =C2=A0/sys/devices/&lt;my-device&gt;/pow=
+er/* ) or when the<br>
+&gt;&gt; driver has completed servicing an interrupt and feels it has nothi=
+ng<br>
+&gt;&gt; more to do, etc<br>
+&gt;<br>
+&gt; Thanks Vlaid, Ayan,<br>
+&gt;<br>
+&gt; I am a bit yet struggling for couple of days on this PM issue, and I<b=
+r>
+&gt; would appreciate your continous advise.<br>
+&gt; The system requirement I have is as following:<br>
+&gt; 1. make everything as automatic as possible , so that there won&#39;t =
+be<br>
+&gt; any need to add any userspace application for the matter.<br>
+&gt; 2. wakeup from all relevant wakeup sources<br>
+&gt; 3. should not use sysfs (it should be disabled from kernel)<br>
+&gt; 4. platform is OMAP3530.<br></div></div></blockquote><div><br>a. =C2=
+=A0 look into=C2=A0/arch/arm/mach-omap2 of kernel source and grep for &quot=
+;sleep&quot; and &quot;wakeup&quot; functionality: =C2=A0 power management =
+is just managing with the different frequencies of the the CPU. =C2=A0 as f=
+ar as I can tell, once sleep, only uart pin can be used for waking up....no=
+t sure.</div><div><br></div><div>b. =C2=A0 read this:</div><div><br></div><=
+div><a href=3D"http://e2e.ti.com/support/dsp/omap_applications_processors/f=
+/447/t/30005.aspx">http://e2e.ti.com/support/dsp/omap_applications_processo=
+rs/f/447/t/30005.aspx</a></div><div><br></div><div><a href=3D"http://www.ti=
+.com/lit/an/slva310b/slva310b.pdf">http://www.ti.com/lit/an/slva310b/slva31=
+0b.pdf</a> =C2=A0 (read page 2, which describe the different powerup-sequen=
+ce of the CPU, &quot;Powering-Up Sequence&quot;. =C2=A0=C2=A0<br></div><div=
+><br></div><div>c. =C2=A0 the technology brand name for omap3530 is &quot;D=
+VFS&quot;....search for this inside the arch/arm kernel source.....you can =
+find lots of sample codes there.</div><div><br></div><div>(don&#39;t confus=
+e with another omap CPU brand name &quot;DeepSleep&quot; but is PM for anot=
+her type of omap cpu.)</div><div><br></div><div>d. =C2=A0 <a href=3D"http:/=
+/www.ti.com/product/omap3530">http://www.ti.com/product/omap3530</a> --&gt;=
+ on the right is a DVSDK + Android source code for 3530....grep the codes f=
+or the above keywords...<br></div><div><br></div><div>hopefully it helps?</=
+div><div><br></div><div>=C2=A0<br></div><blockquote class=3D"gmail_quote" s=
+tyle=3D"margin:0px 0px 0px 0.8ex;border-left-width:1px;border-left-color:rg=
+b(204,204,204);border-left-style:solid;padding-left:1ex"><div class=3D""><d=
+iv class=3D"h5">
+&gt;<br>
+&gt; Now, As I understand thus far, I have the following options (<br>
+&gt; requirement 3 above I will ignore, don&#39;t know how to handle it yet=
+,<br>
+&gt; and assume for meanwhile that I have sysfs) :<br>
+&gt; 1. use suspend scheme (no runtime PM)<br>
+&gt;=C2=A0 =C2=A0 =C2=A01.a. create some kernel thread who check cpu load a=
+nd will decide<br>
+&gt; to disable system only if its below some minimum threshold (which<br>
+&gt; should indicate no activity)<br>
+&gt;=C2=A0 =C2=A0 =C2=A01.b. initialize all HW interrupts (gpio, uart, etc)=
+ as wakeup sources<br>
+&gt;=C2=A0 =C2=A0 =C2=A0with this scheme only this thread is responsible fo=
+r the suspend,<br>
+&gt; and there is no use of the runtime PM, right ?<br>
+&gt;<br>
+&gt; 2. use runtime PM scheme :<br>
+&gt;=C2=A0 =C2=A0 =C2=A0With this scheme I don&#39;t understand how some de=
+vice will wake the<br>
+&gt; system , or doesn&#39;t it need to=C2=A0 ? If a driver wakes up maybe =
+it need<br>
+&gt; to deliver some info to system=C2=A0 =C2=A0 ?<br>
+&gt;<br>
+&gt; I think option 1 is also easier to support, what do you think about bo=
+th ?<br>
+&gt;<br>
+&gt; Thanks!!<br>
+&gt; Ran<br>
+<br>
+</div></div>Does Anyone have any suggestions and feedback on the above requ=
+irements ?<br>
+<br>
+Thank you,<br>
+<div class=3D""><div class=3D"h5">Ran<br>
+<br>
+_______________________________________________<br>
+Kernelnewbies mailing list<br>
+<a href=3D"mailto:Kernelnewbies@kernelnewbies.org">Kernelnewbies@kernelnewb=
+ies.org</a><br>
+<a href=3D"http://lists.kernelnewbies.org/mailman/listinfo/kernelnewbies" t=
+arget=3D"_blank">http://lists.kernelnewbies.org/mailman/listinfo/kernelnewb=
+ies</a><br>
+</div></div></blockquote></div><br><br clear=3D"all"><div><br></div>-- <br>=
+Regards,<br>Peter Teoh
+</div></div>
+
+--bcaec548a399a7e6a305033a4c6a--
+
+
+--===============4113408845614584725==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Kernelnewbies mailing list
+Kernelnewbies@kernelnewbies.org
+http://lists.kernelnewbies.org/mailman/listinfo/kernelnewbies
+
+--===============4113408845614584725==--
