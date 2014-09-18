@@ -1,69 +1,59 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 03/19] ACPI: add ACPI_TYPE_LOCAL_REFERENCE support to acpi_extract_package()
-Date: Thu, 18 Sep 2014 09:53:34 +0800
-Message-ID: <1411005230-2227-4-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 02/19] ACPI: make acpi_create_platform_device() an external API
+Date: Thu, 18 Sep 2014 09:53:33 +0800
+Message-ID: <1411005230-2227-3-git-send-email-rui.zhang@intel.com>
 References: <1411005230-2227-1-git-send-email-rui.zhang@intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:5126 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756686AbaIRByR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 17 Sep 2014 21:54:17 -0400
 In-Reply-To: <1411005230-2227-1-git-send-email-rui.zhang@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 Cc: rjw@rjwysocki.net, lenb@kernel.org, eduardo.valentin@ti.com, Zhang Rui <rui.zhang@intel.com>
-List-Id: linux-pm@vger.kernel.org
-
-Add ACPI_TYPE_LOCAL_REFERENCE support to acpi_extract_package(),
-so that we can use this helper for more cases like _ART/_TRT.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/acpi/utils.c | 28 +++++++++++++++++++++++++++-
- 1 file changed, 27 insertions(+), 1 deletion(-)
+ drivers/acpi/acpi_platform.c | 1 +
+ include/linux/acpi.h         | 7 +++++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
-index 07c8c5a..1ed7aba 100644
---- a/drivers/acpi/utils.c
-+++ b/drivers/acpi/utils.c
-@@ -149,6 +149,21 @@ acpi_extract_package(union acpi_object *package,
- 				break;
- 			}
- 			break;
-+		case ACPI_TYPE_LOCAL_REFERENCE:
-+			switch (format_string[i]) {
-+			case 'R':
-+				size_required += sizeof(void *);
-+				tail_offset += sizeof(void *);
-+				break;
-+			default:
-+				printk(KERN_WARNING PREFIX "Invalid package element"
-+					      " [%d] got reference,"
-+					      " expecting [%c]\n",
-+					      i, format_string[i]);
-+				return AE_BAD_DATA;
-+				break;
-+			}
-+			break;
+diff --git a/drivers/acpi/acpi_platform.c b/drivers/acpi/acpi_platform.c
+index 2bf9082..a3c89a1 100644
+--- a/drivers/acpi/acpi_platform.c
++++ b/drivers/acpi/acpi_platform.c
+@@ -113,3 +113,4 @@ struct platform_device *acpi_create_platform_device(struct acpi_device *adev)
+ 	kfree(resources);
+ 	return pdev;
+ }
++EXPORT_SYMBOL_GPL(acpi_create_platform_device);
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index 807cbc4..3dd743d 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -432,6 +432,7 @@ static inline bool acpi_driver_match_device(struct device *dev,
+ int acpi_device_uevent_modalias(struct device *, struct kobj_uevent_env *);
+ int acpi_device_modalias(struct device *, char *, int);
  
- 		case ACPI_TYPE_PACKAGE:
- 		default:
-@@ -247,7 +262,18 @@ acpi_extract_package(union acpi_object *package,
- 				break;
- 			}
- 			break;
--
-+		case ACPI_TYPE_LOCAL_REFERENCE:
-+			switch (format_string[i]) {
-+			case 'R':
-+				*(void **)head =
-+				    (void *)element->reference.handle;
-+				head += sizeof(void *);
-+				break;
-+			default:
-+				/* Should never get here */
-+				break;
-+			}
-+			break;
- 		case ACPI_TYPE_PACKAGE:
- 			/* TBD: handle nested packages... */
- 		default:
++struct platform_device *acpi_create_platform_device(struct acpi_device *);
+ #define ACPI_PTR(_ptr)	(_ptr)
+ 
+ #else	/* !CONFIG_ACPI */
+@@ -523,6 +524,12 @@ static inline int acpi_device_modalias(struct device *dev,
+ 	return -ENODEV;
+ }
+ 
++static inline struct platform_device *acpi_create_platform_device(
++				struct acpi_device *)
++{
++	return NULL;
++}
++
+ #define ACPI_PTR(_ptr)	(NULL)
+ 
+ #endif	/* !CONFIG_ACPI */
 -- 
 1.8.3.2
 
