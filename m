@@ -1,299 +1,878 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 14/19] Thermal: introduce INT3402 thermal driver
-Date: Thu, 18 Sep 2014 09:53:45 +0800
-Message-ID: <1411005230-2227-15-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 15/19] Thermal: introduce int3403 thermal driver
+Date: Thu, 18 Sep 2014 09:53:46 +0800
+Message-ID: <1411005230-2227-16-git-send-email-rui.zhang@intel.com>
 References: <1411005230-2227-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1411005230-2227-1-git-send-email-rui.zhang@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
-Cc: rjw@rjwysocki.net, lenb@kernel.org, eduardo.valentin@ti.com, Aaron Lu <aaron.lu@intel.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: rjw@rjwysocki.net, lenb@kernel.org, eduardo.valentin@ti.com, Lan Tianyu <tianyu.lan@intel.com>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Aaron Lu <aaron.lu@intel.com>
+From: Lan Tianyu <tianyu.lan@intel.com>
 
-ACPI INT3402 device object could report temperature for the memory module.
-To expose such information to user space, a thermal zone device is registered
-for it so that the thermal sysfs interface can expose such information for
-userspace to use.
+ACPI INT3403 device object can be used to retrieve temperature date
+from temperature sensors present in the system, and to expose
+device' performance control.
 
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+The previous INT3403 thermal driver supports temperature reporting only,
+thus remove it and introduce this new & enhanced one.
+
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
+ drivers/thermal/Kconfig                           |  15 -
+ drivers/thermal/Makefile                          |   1 -
+ drivers/thermal/int3403_thermal.c                 | 296 -------------
  drivers/thermal/int340x_thermal/Makefile          |   1 +
- drivers/thermal/int340x_thermal/int3402_thermal.c | 242 ++++++++++++++++++++++
- include/linux/thermal.h                           |   2 +
- 3 files changed, 245 insertions(+)
- create mode 100644 drivers/thermal/int340x_thermal/int3402_thermal.c
+ drivers/thermal/int340x_thermal/int3403_thermal.c | 489 ++++++++++++++++++++++
+ 5 files changed, 490 insertions(+), 312 deletions(-)
+ delete mode 100644 drivers/thermal/int3403_thermal.c
+ create mode 100644 drivers/thermal/int340x_thermal/int3403_thermal.c
 
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index b34c5f5..6f93e5c 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -207,21 +207,6 @@ config X86_PKG_TEMP_THERMAL
+ 	  two trip points which can be set by user to get notifications via thermal
+ 	  notification methods.
+ 
+-config ACPI_INT3403_THERMAL
+-	tristate "ACPI INT3403 thermal driver"
+-	depends on X86 && ACPI
+-	help
+-	  Newer laptops and tablets that use ACPI may have thermal sensors
+-	  outside the core CPU/SOC for thermal safety reasons. These
+-	  temperature sensors are also exposed for the OS to use via the so
+-	  called INT3403 ACPI object. This driver will, on devices that have
+-	  such sensors, expose the temperature information from these sensors
+-	  to userspace via the normal thermal framework. This means that a wide
+-	  range of applications and GUI widgets can show this information to
+-	  the user or use this information for making decisions. For example,
+-	  the Intel Thermal Daemon can use this information to allow the user
+-	  to select his laptop to run without turning on the fans.
+-
+ config INTEL_SOC_DTS_THERMAL
+ 	tristate "Intel SoCs DTS thermal driver"
+ 	depends on X86 && IOSF_MBI
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 216503e..39b85b5 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -31,6 +31,5 @@ obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+ obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
+ obj-$(CONFIG_INTEL_SOC_DTS_THERMAL)	+= intel_soc_dts_thermal.o
+ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
+-obj-$(CONFIG_ACPI_INT3403_THERMAL)	+= int3403_thermal.o
+ obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
+ obj-$(CONFIG_ST_THERMAL)	+= st/
+diff --git a/drivers/thermal/int3403_thermal.c b/drivers/thermal/int3403_thermal.c
+deleted file mode 100644
+index 17554ee..0000000
+--- a/drivers/thermal/int3403_thermal.c
++++ /dev/null
+@@ -1,296 +0,0 @@
+-/*
+- * ACPI INT3403 thermal driver
+- * Copyright (c) 2013, Intel Corporation.
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms and conditions of the GNU General Public License,
+- * version 2, as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/types.h>
+-#include <linux/acpi.h>
+-#include <linux/thermal.h>
+-
+-#define INT3403_TYPE_SENSOR		0x03
+-#define INT3403_PERF_CHANGED_EVENT	0x80
+-#define INT3403_THERMAL_EVENT		0x90
+-
+-#define DECI_KELVIN_TO_MILLI_CELSIUS(t, off) (((t) - (off)) * 100)
+-#define KELVIN_OFFSET	2732
+-#define MILLI_CELSIUS_TO_DECI_KELVIN(t, off) (((t) / 100) + (off))
+-
+-#define ACPI_INT3403_CLASS		"int3403"
+-#define ACPI_INT3403_FILE_STATE		"state"
+-
+-struct int3403_sensor {
+-	struct thermal_zone_device *tzone;
+-	unsigned long *thresholds;
+-	unsigned long	crit_temp;
+-	int		crit_trip_id;
+-	unsigned long	psv_temp;
+-	int		psv_trip_id;
+-};
+-
+-static int sys_get_curr_temp(struct thermal_zone_device *tzone,
+-				unsigned long *temp)
+-{
+-	struct acpi_device *device = tzone->devdata;
+-	unsigned long long tmp;
+-	acpi_status status;
+-
+-	status = acpi_evaluate_integer(device->handle, "_TMP", NULL, &tmp);
+-	if (ACPI_FAILURE(status))
+-		return -EIO;
+-
+-	*temp = DECI_KELVIN_TO_MILLI_CELSIUS(tmp, KELVIN_OFFSET);
+-
+-	return 0;
+-}
+-
+-static int sys_get_trip_hyst(struct thermal_zone_device *tzone,
+-		int trip, unsigned long *temp)
+-{
+-	struct acpi_device *device = tzone->devdata;
+-	unsigned long long hyst;
+-	acpi_status status;
+-
+-	status = acpi_evaluate_integer(device->handle, "GTSH", NULL, &hyst);
+-	if (ACPI_FAILURE(status))
+-		return -EIO;
+-
+-	/*
+-	 * Thermal hysteresis represents a temperature difference.
+-	 * Kelvin and Celsius have same degree size. So the
+-	 * conversion here between tenths of degree Kelvin unit
+-	 * and Milli-Celsius unit is just to multiply 100.
+-	 */
+-	*temp = hyst * 100;
+-
+-	return 0;
+-}
+-
+-static int sys_get_trip_temp(struct thermal_zone_device *tzone,
+-		int trip, unsigned long *temp)
+-{
+-	struct acpi_device *device = tzone->devdata;
+-	struct int3403_sensor *obj = acpi_driver_data(device);
+-
+-	if (trip == obj->crit_trip_id)
+-		*temp = obj->crit_temp;
+-	else if (trip == obj->psv_trip_id)
+-		*temp = obj->psv_temp;
+-	else {
+-		/*
+-		 * get_trip_temp is a mandatory callback but
+-		 * PATx method doesn't return any value, so return
+-		 * cached value, which was last set from user space.
+-		 */
+-		*temp = obj->thresholds[trip];
+-	}
+-
+-	return 0;
+-}
+-
+-static int sys_get_trip_type(struct thermal_zone_device *thermal,
+-		int trip, enum thermal_trip_type *type)
+-{
+-	struct acpi_device *device = thermal->devdata;
+-	struct int3403_sensor *obj = acpi_driver_data(device);
+-
+-	/* Mandatory callback, may not mean much here */
+-	if (trip == obj->crit_trip_id)
+-		*type = THERMAL_TRIP_CRITICAL;
+-	else
+-		*type = THERMAL_TRIP_PASSIVE;
+-
+-	return 0;
+-}
+-
+-int sys_set_trip_temp(struct thermal_zone_device *tzone, int trip,
+-							unsigned long temp)
+-{
+-	struct acpi_device *device = tzone->devdata;
+-	acpi_status status;
+-	char name[10];
+-	int ret = 0;
+-	struct int3403_sensor *obj = acpi_driver_data(device);
+-
+-	snprintf(name, sizeof(name), "PAT%d", trip);
+-	if (acpi_has_method(device->handle, name)) {
+-		status = acpi_execute_simple_method(device->handle, name,
+-				MILLI_CELSIUS_TO_DECI_KELVIN(temp,
+-							KELVIN_OFFSET));
+-		if (ACPI_FAILURE(status))
+-			ret = -EIO;
+-		else
+-			obj->thresholds[trip] = temp;
+-	} else {
+-		ret = -EIO;
+-		dev_err(&device->dev, "sys_set_trip_temp: method not found\n");
+-	}
+-
+-	return ret;
+-}
+-
+-static struct thermal_zone_device_ops tzone_ops = {
+-	.get_temp = sys_get_curr_temp,
+-	.get_trip_temp = sys_get_trip_temp,
+-	.get_trip_type = sys_get_trip_type,
+-	.set_trip_temp = sys_set_trip_temp,
+-	.get_trip_hyst =  sys_get_trip_hyst,
+-};
+-
+-static void acpi_thermal_notify(struct acpi_device *device, u32 event)
+-{
+-	struct int3403_sensor *obj;
+-
+-	if (!device)
+-		return;
+-
+-	obj = acpi_driver_data(device);
+-	if (!obj)
+-		return;
+-
+-	switch (event) {
+-	case INT3403_PERF_CHANGED_EVENT:
+-		break;
+-	case INT3403_THERMAL_EVENT:
+-		thermal_zone_device_update(obj->tzone);
+-		break;
+-	default:
+-		dev_err(&device->dev, "Unsupported event [0x%x]\n", event);
+-		break;
+-	}
+-}
+-
+-static int sys_get_trip_crt(struct acpi_device *device, unsigned long *temp)
+-{
+-	unsigned long long crt;
+-	acpi_status status;
+-
+-	status = acpi_evaluate_integer(device->handle, "_CRT", NULL, &crt);
+-	if (ACPI_FAILURE(status))
+-		return -EIO;
+-
+-	*temp = DECI_KELVIN_TO_MILLI_CELSIUS(crt, KELVIN_OFFSET);
+-
+-	return 0;
+-}
+-
+-static int sys_get_trip_psv(struct acpi_device *device, unsigned long *temp)
+-{
+-	unsigned long long psv;
+-	acpi_status status;
+-
+-	status = acpi_evaluate_integer(device->handle, "_PSV", NULL, &psv);
+-	if (ACPI_FAILURE(status))
+-		return -EIO;
+-
+-	*temp = DECI_KELVIN_TO_MILLI_CELSIUS(psv, KELVIN_OFFSET);
+-
+-	return 0;
+-}
+-
+-static int acpi_int3403_add(struct acpi_device *device)
+-{
+-	int result = 0;
+-	unsigned long long ptyp;
+-	acpi_status status;
+-	struct int3403_sensor *obj;
+-	unsigned long long trip_cnt;
+-	int trip_mask = 0;
+-
+-	if (!device)
+-		return -EINVAL;
+-
+-	status = acpi_evaluate_integer(device->handle, "PTYP", NULL, &ptyp);
+-	if (ACPI_FAILURE(status))
+-		return -EINVAL;
+-
+-	if (ptyp != INT3403_TYPE_SENSOR)
+-		return -EINVAL;
+-
+-	obj = devm_kzalloc(&device->dev, sizeof(*obj), GFP_KERNEL);
+-	if (!obj)
+-		return -ENOMEM;
+-
+-	device->driver_data = obj;
+-
+-	status = acpi_evaluate_integer(device->handle, "PATC", NULL,
+-						&trip_cnt);
+-	if (ACPI_FAILURE(status))
+-		trip_cnt = 0;
+-
+-	if (trip_cnt) {
+-		/* We have to cache, thresholds can't be readback */
+-		obj->thresholds = devm_kzalloc(&device->dev,
+-					sizeof(*obj->thresholds) * trip_cnt,
+-					GFP_KERNEL);
+-		if (!obj->thresholds)
+-			return -ENOMEM;
+-		trip_mask = BIT(trip_cnt) - 1;
+-	}
+-
+-	obj->psv_trip_id = -1;
+-	if (!sys_get_trip_psv(device, &obj->psv_temp))
+-		obj->psv_trip_id = trip_cnt++;
+-
+-	obj->crit_trip_id = -1;
+-	if (!sys_get_trip_crt(device, &obj->crit_temp))
+-		obj->crit_trip_id = trip_cnt++;
+-
+-	obj->tzone = thermal_zone_device_register(acpi_device_bid(device),
+-				trip_cnt, trip_mask, device, &tzone_ops,
+-				NULL, 0, 0);
+-	if (IS_ERR(obj->tzone)) {
+-		result = PTR_ERR(obj->tzone);
+-		return result;
+-	}
+-
+-	strcpy(acpi_device_name(device), "INT3403");
+-	strcpy(acpi_device_class(device), ACPI_INT3403_CLASS);
+-
+-	return 0;
+-}
+-
+-static int acpi_int3403_remove(struct acpi_device *device)
+-{
+-	struct int3403_sensor *obj;
+-
+-	obj = acpi_driver_data(device);
+-	thermal_zone_device_unregister(obj->tzone);
+-
+-	return 0;
+-}
+-
+-ACPI_MODULE_NAME("int3403");
+-static const struct acpi_device_id int3403_device_ids[] = {
+-	{"INT3403", 0},
+-	{"", 0},
+-};
+-MODULE_DEVICE_TABLE(acpi, int3403_device_ids);
+-
+-static struct acpi_driver acpi_int3403_driver = {
+-	.name = "INT3403",
+-	.class = ACPI_INT3403_CLASS,
+-	.ids = int3403_device_ids,
+-	.ops = {
+-		.add = acpi_int3403_add,
+-		.remove = acpi_int3403_remove,
+-		.notify = acpi_thermal_notify,
+-		},
+-};
+-
+-module_acpi_driver(acpi_int3403_driver);
+-
+-MODULE_AUTHOR("Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>");
+-MODULE_LICENSE("GPL v2");
+-MODULE_DESCRIPTION("ACPI INT3403 thermal driver");
 diff --git a/drivers/thermal/int340x_thermal/Makefile b/drivers/thermal/int340x_thermal/Makefile
-index e10a53b..67c98fd 100644
+index 67c98fd..c4a5c50 100644
 --- a/drivers/thermal/int340x_thermal/Makefile
 +++ b/drivers/thermal/int340x_thermal/Makefile
-@@ -1 +1,2 @@
+@@ -1,2 +1,3 @@
  obj-$(CONFIG_INT340X_THERMAL)	+= int3400_thermal.o
-+obj-$(CONFIG_INT340X_THERMAL)	+= int3402_thermal.o
-diff --git a/drivers/thermal/int340x_thermal/int3402_thermal.c b/drivers/thermal/int340x_thermal/int3402_thermal.c
+ obj-$(CONFIG_INT340X_THERMAL)	+= int3402_thermal.o
++obj-$(CONFIG_INT340X_THERMAL)	+= int3403_thermal.o
+diff --git a/drivers/thermal/int340x_thermal/int3403_thermal.c b/drivers/thermal/int340x_thermal/int3403_thermal.c
 new file mode 100644
-index 0000000..2eb27cb
+index 0000000..fea2b63
 --- /dev/null
-+++ b/drivers/thermal/int340x_thermal/int3402_thermal.c
-@@ -0,0 +1,242 @@
++++ b/drivers/thermal/int340x_thermal/int3403_thermal.c
+@@ -0,0 +1,489 @@
 +/*
-+ * INT3402 thermal driver for memory temperature reporting
++ * ACPI INT3403 thermal driver
++ * Copyright (c) 2013, Intel Corporation.
 + *
-+ * Copyright (C) 2014, Intel Corporation
-+ * Authors: Aaron Lu <aaron.lu@intel.com>
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
 + */
 +
++#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/platform_device.h>
++#include <linux/init.h>
++#include <linux/types.h>
 +#include <linux/acpi.h>
 +#include <linux/thermal.h>
++#include <linux/platform_device.h>
 +
-+#define ACPI_ACTIVE_COOLING_MAX_NR 10
++#define INT3403_TYPE_SENSOR		0x03
++#define INT3403_TYPE_CHARGER		0x0B
++#define INT3403_TYPE_BATTERY		0x0C
++#define INT3403_PERF_CHANGED_EVENT	0x80
++#define INT3403_THERMAL_EVENT		0x90
 +
-+struct active_trip {
-+	unsigned long temp;
-+	int id;
-+	bool valid;
++#define DECI_KELVIN_TO_MILLI_CELSIUS(t, off) (((t) - (off)) * 100)
++#define KELVIN_OFFSET	2732
++#define MILLI_CELSIUS_TO_DECI_KELVIN(t, off) (((t) / 100) + (off))
++
++struct int3403_sensor {
++	struct thermal_zone_device *tzone;
++	unsigned long *thresholds;
++	unsigned long	crit_temp;
++	int		crit_trip_id;
++	unsigned long	psv_temp;
++	int		psv_trip_id;
++
 +};
 +
-+struct int3402_thermal_data {
-+	unsigned long *aux_trips;
-+	int aux_trip_nr;
-+	unsigned long psv_temp;
-+	int psv_trip_id;
-+	unsigned long crt_temp;
-+	int crt_trip_id;
-+	unsigned long hot_temp;
-+	int hot_trip_id;
-+	struct active_trip act_trips[ACPI_ACTIVE_COOLING_MAX_NR];
-+	acpi_handle *handle;
++struct int3403_performance_state {
++	u64 performance;
++	u64 power;
++	u64 latency;
++	u64 linear;
++	u64 control;
++	u64 raw_performace;
++	char *raw_unit;
++	int reserved;
 +};
 +
-+static int int3402_thermal_get_zone_temp(struct thermal_zone_device *zone,
-+					 unsigned long *temp)
++struct int3403_cdev {
++	struct thermal_cooling_device *cdev;
++	unsigned long max_state;
++};
++
++struct int3403_priv {
++	struct platform_device *pdev;
++	struct acpi_device *adev;
++	unsigned long long type;
++	void *priv;
++};
++
++static int sys_get_curr_temp(struct thermal_zone_device *tzone,
++				unsigned long *temp)
 +{
-+	struct int3402_thermal_data *d = zone->devdata;
++	struct int3403_priv *priv = tzone->devdata;
++	struct acpi_device *device = priv->adev;
 +	unsigned long long tmp;
 +	acpi_status status;
 +
-+	status = acpi_evaluate_integer(d->handle, "_TMP", NULL, &tmp);
-+	if (ACPI_FAILURE(status))
-+		return -ENODEV;
-+
-+	/* _TMP returns the temperature in tenths of degrees Kelvin */
-+	*temp = DECI_KELVIN_TO_MILLICELSIUS(tmp);
-+
-+	return 0;
-+}
-+
-+static int int3402_thermal_get_trip_temp(struct thermal_zone_device *zone,
-+					 int trip, unsigned long *temp)
-+{
-+	struct int3402_thermal_data *d = zone->devdata;
-+	int i;
-+
-+	if (trip < d->aux_trip_nr)
-+		*temp = d->aux_trips[trip];
-+	else if (trip == d->crt_trip_id)
-+		*temp = d->crt_temp;
-+	else if (trip == d->psv_trip_id)
-+		*temp = d->psv_temp;
-+	else if (trip == d->hot_trip_id)
-+		*temp = d->hot_temp;
-+	else {
-+		for (i = 0; i < ACPI_ACTIVE_COOLING_MAX_NR; i++) {
-+			if (d->act_trips[i].valid &&
-+			    d->act_trips[i].id == trip) {
-+				*temp = d->act_trips[i].temp;
-+				break;
-+			}
-+		}
-+		if (i == ACPI_ACTIVE_COOLING_MAX_NR)
-+			return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static int int3402_thermal_get_trip_type(struct thermal_zone_device *zone,
-+					 int trip, enum thermal_trip_type *type)
-+{
-+	struct int3402_thermal_data *d = zone->devdata;
-+	int i;
-+
-+	if (trip < d->aux_trip_nr)
-+		*type = THERMAL_TRIP_PASSIVE;
-+	else if (trip == d->crt_trip_id)
-+		*type = THERMAL_TRIP_CRITICAL;
-+	else if (trip == d->hot_trip_id)
-+		*type = THERMAL_TRIP_HOT;
-+	else if (trip == d->psv_trip_id)
-+		*type = THERMAL_TRIP_PASSIVE;
-+	else {
-+		for (i = 0; i < ACPI_ACTIVE_COOLING_MAX_NR; i++) {
-+			if (d->act_trips[i].valid &&
-+			    d->act_trips[i].id == trip) {
-+				*type = THERMAL_TRIP_ACTIVE;
-+				break;
-+			}
-+		}
-+		if (i == ACPI_ACTIVE_COOLING_MAX_NR)
-+			return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+int int3402_thermal_set_trip_temp(struct thermal_zone_device *zone, int trip,
-+				  unsigned long temp)
-+{
-+	struct int3402_thermal_data *d = zone->devdata;
-+	acpi_status status;
-+	char name[10];
-+
-+	snprintf(name, sizeof(name), "PAT%d", trip);
-+	status = acpi_execute_simple_method(d->handle, name,
-+			MILLICELSIUS_TO_DECI_KELVIN(temp));
++	status = acpi_evaluate_integer(device->handle, "_TMP", NULL, &tmp);
 +	if (ACPI_FAILURE(status))
 +		return -EIO;
 +
-+	d->aux_trips[trip] = temp;
++	*temp = DECI_KELVIN_TO_MILLI_CELSIUS(tmp, KELVIN_OFFSET);
++
 +	return 0;
 +}
 +
-+static struct thermal_zone_device_ops int3402_thermal_zone_ops = {
-+	.get_temp       = int3402_thermal_get_zone_temp,
-+	.get_trip_temp	= int3402_thermal_get_trip_temp,
-+	.get_trip_type	= int3402_thermal_get_trip_type,
-+	.set_trip_temp	= int3402_thermal_set_trip_temp,
++static int sys_get_trip_hyst(struct thermal_zone_device *tzone,
++		int trip, unsigned long *temp)
++{
++	struct int3403_priv *priv = tzone->devdata;
++	struct acpi_device *device = priv->adev;
++	unsigned long long hyst;
++	acpi_status status;
++
++	status = acpi_evaluate_integer(device->handle, "GTSH", NULL, &hyst);
++	if (ACPI_FAILURE(status))
++		return -EIO;
++
++	*temp = DECI_KELVIN_TO_MILLI_CELSIUS(hyst, KELVIN_OFFSET);
++
++	return 0;
++}
++
++static int sys_get_trip_temp(struct thermal_zone_device *tzone,
++		int trip, unsigned long *temp)
++{
++	struct int3403_priv *priv = tzone->devdata;
++	struct int3403_sensor *obj = priv->priv;
++
++	if (priv->type != INT3403_TYPE_SENSOR || !obj)
++		return -EINVAL;
++
++	if (trip == obj->crit_trip_id)
++		*temp = obj->crit_temp;
++	else if (trip == obj->psv_trip_id)
++		*temp = obj->psv_temp;
++	else {
++		/*
++		 * get_trip_temp is a mandatory callback but
++		 * PATx method doesn't return any value, so return
++		 * cached value, which was last set from user space
++		 */
++		*temp = obj->thresholds[trip];
++	}
++
++	return 0;
++}
++
++static int sys_get_trip_type(struct thermal_zone_device *thermal,
++		int trip, enum thermal_trip_type *type)
++{
++	struct int3403_priv *priv = thermal->devdata;
++	struct int3403_sensor *obj = priv->priv;
++
++	/* Mandatory callback, may not mean much here */
++	if (trip == obj->crit_trip_id)
++		*type = THERMAL_TRIP_CRITICAL;
++	else
++		*type = THERMAL_TRIP_PASSIVE;
++
++	return 0;
++}
++
++int sys_set_trip_temp(struct thermal_zone_device *tzone, int trip,
++							unsigned long temp)
++{
++	struct int3403_priv *priv = tzone->devdata;
++	struct acpi_device *device = priv->adev;
++	struct int3403_sensor *obj = priv->priv;
++	acpi_status status;
++	char name[10];
++	int ret = 0;
++
++	snprintf(name, sizeof(name), "PAT%d", trip);
++	if (acpi_has_method(device->handle, name)) {
++		status = acpi_execute_simple_method(device->handle, name,
++				MILLI_CELSIUS_TO_DECI_KELVIN(temp,
++							KELVIN_OFFSET));
++		if (ACPI_FAILURE(status))
++			ret = -EIO;
++		else
++			obj->thresholds[trip] = temp;
++	} else {
++		ret = -EIO;
++		dev_err(&device->dev, "sys_set_trip_temp: method not found\n");
++	}
++
++	return ret;
++}
++
++static struct thermal_zone_device_ops tzone_ops = {
++	.get_temp = sys_get_curr_temp,
++	.get_trip_temp = sys_get_trip_temp,
++	.get_trip_type = sys_get_trip_type,
++	.set_trip_temp = sys_set_trip_temp,
++	.get_trip_hyst =  sys_get_trip_hyst,
 +};
 +
-+static struct thermal_zone_params int3402_thermal_params = {
++static struct thermal_zone_params int3403_thermal_params = {
 +	.governor_name = "user_space",
 +	.no_hwmon = true,
 +};
 +
-+static int int3402_thermal_get_temp(acpi_handle handle, char *name,
-+				    unsigned long *temp)
++static void int3403_notify(acpi_handle handle,
++		u32 event, void *data)
 +{
-+	unsigned long long r;
++	struct int3403_priv *priv = data;
++	struct int3403_sensor *obj;
++
++	if (!priv)
++		return;
++
++	obj = priv->priv;
++	if (priv->type != INT3403_TYPE_SENSOR || !obj)
++		return;
++
++	switch (event) {
++	case INT3403_PERF_CHANGED_EVENT:
++		break;
++	case INT3403_THERMAL_EVENT:
++		thermal_zone_device_update(obj->tzone);
++		break;
++	default:
++		dev_err(&priv->pdev->dev, "Unsupported event [0x%x]\n", event);
++		break;
++	}
++}
++
++static int sys_get_trip_crt(struct acpi_device *device, unsigned long *temp)
++{
++	unsigned long long crt;
 +	acpi_status status;
 +
-+	status = acpi_evaluate_integer(handle, name, NULL, &r);
++	status = acpi_evaluate_integer(device->handle, "_CRT", NULL, &crt);
 +	if (ACPI_FAILURE(status))
 +		return -EIO;
 +
-+	*temp = DECI_KELVIN_TO_MILLICELSIUS(r);
++	*temp = DECI_KELVIN_TO_MILLI_CELSIUS(crt, KELVIN_OFFSET);
++
 +	return 0;
 +}
 +
-+static int int3402_thermal_probe(struct platform_device *pdev)
++static int sys_get_trip_psv(struct acpi_device *device, unsigned long *temp)
 +{
-+	struct acpi_device *adev = ACPI_COMPANION(&pdev->dev);
-+	struct int3402_thermal_data *d;
-+	struct thermal_zone_device *zone;
++	unsigned long long psv;
 +	acpi_status status;
++
++	status = acpi_evaluate_integer(device->handle, "_PSV", NULL, &psv);
++	if (ACPI_FAILURE(status))
++		return -EIO;
++
++	*temp = DECI_KELVIN_TO_MILLI_CELSIUS(psv, KELVIN_OFFSET);
++
++	return 0;
++}
++
++static int int3403_sensor_add(struct int3403_priv *priv)
++{
++	int result = 0;
++	acpi_status status;
++	struct int3403_sensor *obj;
 +	unsigned long long trip_cnt;
-+	int trip_mask = 0, i;
++	int trip_mask = 0;
 +
-+	if (!acpi_has_method(adev->handle, "_TMP"))
-+		return -ENODEV;
-+
-+	d = devm_kzalloc(&pdev->dev, sizeof(*d), GFP_KERNEL);
-+	if (!d)
++	obj = devm_kzalloc(&priv->pdev->dev, sizeof(*obj), GFP_KERNEL);
++	if (!obj)
 +		return -ENOMEM;
 +
-+	status = acpi_evaluate_integer(adev->handle, "PATC", NULL, &trip_cnt);
++	priv->priv = obj;
++
++	status = acpi_evaluate_integer(priv->adev->handle, "PATC", NULL,
++						&trip_cnt);
 +	if (ACPI_FAILURE(status))
 +		trip_cnt = 0;
-+	else {
-+		d->aux_trips = devm_kzalloc(&pdev->dev,
-+				sizeof(*d->aux_trips) * trip_cnt, GFP_KERNEL);
-+		if (!d->aux_trips)
-+			return -ENOMEM;
-+		trip_mask = trip_cnt - 1;
-+		d->handle = adev->handle;
-+		d->aux_trip_nr = trip_cnt;
++
++	if (trip_cnt) {
++		/* We have to cache, thresholds can't be readback */
++		obj->thresholds = devm_kzalloc(&priv->pdev->dev,
++					sizeof(*obj->thresholds) * trip_cnt,
++					GFP_KERNEL);
++		if (!obj->thresholds) {
++			result = -ENOMEM;
++			goto err_free_obj;
++		}
++		trip_mask = BIT(trip_cnt) - 1;
 +	}
 +
-+	d->crt_trip_id = -1;
-+	if (!int3402_thermal_get_temp(adev->handle, "_CRT", &d->crt_temp))
-+		d->crt_trip_id = trip_cnt++;
-+	d->hot_trip_id = -1;
-+	if (!int3402_thermal_get_temp(adev->handle, "_HOT", &d->hot_temp))
-+		d->hot_trip_id = trip_cnt++;
-+	d->psv_trip_id = -1;
-+	if (!int3402_thermal_get_temp(adev->handle, "_PSV", &d->psv_temp))
-+		d->psv_trip_id = trip_cnt++;
-+	for (i = 0; i < ACPI_ACTIVE_COOLING_MAX_NR; i++) {
-+		char name[5] = { '_', 'A', 'C', '0' + i, '\0' };
-+		if (int3402_thermal_get_temp(adev->handle, name,
-+					     &d->act_trips[i].temp))
-+			break;
-+		d->act_trips[i].id = trip_cnt++;
-+		d->act_trips[i].valid = true;
++	obj->psv_trip_id = -1;
++	if (!sys_get_trip_psv(priv->adev, &obj->psv_temp))
++		obj->psv_trip_id = trip_cnt++;
++
++	obj->crit_trip_id = -1;
++	if (!sys_get_trip_crt(priv->adev, &obj->crit_temp))
++		obj->crit_trip_id = trip_cnt++;
++
++	obj->tzone = thermal_zone_device_register(acpi_device_bid(priv->adev),
++				trip_cnt, trip_mask, priv, &tzone_ops,
++				&int3403_thermal_params, 0, 0);
++	if (IS_ERR(obj->tzone)) {
++		result = PTR_ERR(obj->tzone);
++		obj->tzone = NULL;
++		goto err_free_obj;
 +	}
 +
-+	zone = thermal_zone_device_register(acpi_device_bid(adev), trip_cnt,
-+					    trip_mask, d,
-+					    &int3402_thermal_zone_ops,
-+					    &int3402_thermal_params,
-+					    0, 0);
-+	if (IS_ERR(zone))
-+		return PTR_ERR(zone);
-+	platform_set_drvdata(pdev, zone);
++	result = acpi_install_notify_handler(priv->adev->handle,
++			ACPI_DEVICE_NOTIFY, int3403_notify,
++			(void *)priv);
++	if (result)
++		goto err_free_obj;
 +
 +	return 0;
++
++ err_free_obj:
++	if (obj->tzone)
++		thermal_zone_device_unregister(obj->tzone);
++	kfree(obj->thresholds);
++	kfree(obj);
++	return result;
 +}
 +
-+static int int3402_thermal_remove(struct platform_device *pdev)
++static int int3403_sensor_remove(struct int3403_priv *priv)
 +{
-+	struct thermal_zone_device *zone = platform_get_drvdata(pdev);
++	struct int3403_sensor *obj = priv->priv;
 +
-+	thermal_zone_device_unregister(zone);
++	thermal_zone_device_unregister(obj->tzone);
++	kfree(obj->thresholds);
++	kfree(obj);
 +	return 0;
 +}
 +
-+static const struct acpi_device_id int3402_thermal_match[] = {
-+	{"INT3402", 0},
-+	{}
++/* INT3403 Cooling devices */
++static int int3403_get_max_state(struct thermal_cooling_device *cdev,
++				 unsigned long *state)
++{
++	struct int3403_priv *priv = cdev->devdata;
++	struct int3403_cdev *obj = priv->priv;
++
++	*state = obj->max_state;
++	return 0;
++}
++
++static int int3403_get_cur_state(struct thermal_cooling_device *cdev,
++				 unsigned long *state)
++{
++	struct int3403_priv *priv = cdev->devdata;
++	unsigned long long level;
++	acpi_status status;
++
++	status = acpi_evaluate_integer(priv->adev->handle, "PPPC", NULL, &level);
++	if (ACPI_SUCCESS(status)) {
++		*state = level;
++		return 0;
++	} else
++		return -EINVAL;
++}
++
++static int
++int3403_set_cur_state(struct thermal_cooling_device *cdev, unsigned long state)
++{
++	struct int3403_priv *priv = cdev->devdata;
++	acpi_status status;
++
++	status = acpi_execute_simple_method(priv->adev->handle, "SPPC", state);
++	if (ACPI_SUCCESS(status))
++		return 0;
++	else
++		return -EINVAL;
++}
++
++static const struct thermal_cooling_device_ops int3403_cooling_ops = {
++	.get_max_state = int3403_get_max_state,
++	.get_cur_state = int3403_get_cur_state,
++	.set_cur_state = int3403_set_cur_state,
 +};
 +
-+MODULE_DEVICE_TABLE(acpi, int3402_thermal_match);
++static int int3403_cdev_add(struct int3403_priv *priv)
++{
++	int result = 0;
++	acpi_status status;
++	struct int3403_cdev *obj;
++	struct acpi_buffer buf = { ACPI_ALLOCATE_BUFFER, NULL };
++	union acpi_object *p;
 +
-+static struct platform_driver int3402_thermal_driver = {
-+	.probe = int3402_thermal_probe,
-+	.remove = int3402_thermal_remove,
++	obj = devm_kzalloc(&priv->pdev->dev, sizeof(*obj), GFP_KERNEL);
++	if (!obj)
++		return -ENOMEM;
++
++	status = acpi_evaluate_object(priv->adev->handle, "PPSS", NULL, &buf);
++	if (ACPI_FAILURE(status)) {
++		result = -ENODEV;
++		goto end;
++	}
++
++	p = buf.pointer;
++	if (!p || (p->type != ACPI_TYPE_PACKAGE)) {
++		printk(KERN_WARNING "Invalid PPSS data\n");
++		result = -EFAULT;
++		goto end;
++	}
++
++	obj->max_state = p->package.count - 1;
++	obj->cdev =
++		thermal_cooling_device_register(acpi_device_bid(priv->adev),
++				priv, &int3403_cooling_ops);
++	if (IS_ERR(obj->cdev))
++		result = PTR_ERR(obj->cdev);
++
++	priv->priv = obj;
++
++	/* TODO: add ACPI notification support */
++end:
++	if (result)
++		kfree(obj);
++	return result;
++}
++
++static int int3403_cdev_remove(struct int3403_priv *priv)
++{
++	struct int3403_cdev *obj = priv->priv;
++
++	thermal_cooling_device_unregister(obj->cdev);
++	kfree(priv->priv);
++	return 0;
++}
++
++static int int3403_add(struct platform_device *pdev)
++{
++	struct int3403_priv *priv;
++	int result = 0;
++	acpi_status status;
++
++	priv = devm_kzalloc(&pdev->dev, sizeof(struct int3403_priv),
++			    GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	priv->pdev = pdev;
++	priv->adev = ACPI_COMPANION(&(pdev->dev));
++	if (!priv->adev) {
++		result = -EINVAL;
++		goto err;
++	}
++
++	status = acpi_evaluate_integer(priv->adev->handle, "PTYP",
++				       NULL, &priv->type);
++	if (ACPI_FAILURE(status)) {
++		result = -EINVAL;
++		goto err;
++	}
++
++	platform_set_drvdata(pdev, priv);
++	switch (priv->type) {
++	case INT3403_TYPE_SENSOR:
++		result = int3403_sensor_add(priv);
++		break;
++	case INT3403_TYPE_CHARGER:
++	case INT3403_TYPE_BATTERY:
++		result = int3403_cdev_add(priv);
++		break;
++	default:
++		result = -EINVAL;
++	}
++
++	if (result)
++		goto err;
++	return result;
++
++err:
++	kfree(priv);
++	return result;
++}
++
++static int int3403_remove(struct platform_device *pdev)
++{
++	struct int3403_priv *priv = platform_get_drvdata(pdev);
++
++	switch (priv->type) {
++	case INT3403_TYPE_SENSOR:
++		int3403_sensor_remove(priv);
++		break;
++	case INT3403_TYPE_CHARGER:
++	case INT3403_TYPE_BATTERY:
++		int3403_cdev_remove(priv);
++		break;
++	default:
++		break;
++	}
++
++	kfree(priv);
++	return 0;
++}
++
++static const struct acpi_device_id int3403_device_ids[] = {
++	{"INT3403", 0},
++	{"", 0},
++};
++MODULE_DEVICE_TABLE(acpi, int3403_device_ids);
++
++static struct platform_driver int3403_driver = {
++	.probe = int3403_add,
++	.remove = int3403_remove,
 +	.driver = {
-+		   .name = "int3402 thermal",
-+		   .owner = THIS_MODULE,
-+		   .acpi_match_table = int3402_thermal_match,
-+		   },
++		.name = "int3403 thermal",
++		.owner  = THIS_MODULE,
++		.acpi_match_table = int3403_device_ids,
++	},
 +};
 +
-+module_platform_driver(int3402_thermal_driver);
++module_platform_driver(int3403_driver);
 +
-+MODULE_DESCRIPTION("INT3402 Thermal driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 79ce6b9..ef90838 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -46,6 +46,8 @@
- #define CELSIUS_TO_KELVIN(t)	((t)*10+2732)
- #define DECI_KELVIN_TO_MILLICELSIUS_WITH_OFFSET(t, off) (((t) - (off)) * 100)
- #define DECI_KELVIN_TO_MILLICELSIUS(t) DECI_KELVIN_TO_MILLICELSIUS_WITH_OFFSET(t, 2732)
-+#define MILLICELSIUS_TO_DECI_KELVIN_WITH_OFFSET(t, off) (((t) / 100) + (off))
-+#define MILLICELSIUS_TO_DECI_KELVIN(t) MILLICELSIUS_TO_DECI_KELVIN_WITH_OFFSET(t, 2732)
- 
- /* Adding event notification support elements */
- #define THERMAL_GENL_FAMILY_NAME                "thermal_event"
++MODULE_AUTHOR("Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>");
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("ACPI INT3403 thermal driver");
 -- 
 1.8.3.2
 
