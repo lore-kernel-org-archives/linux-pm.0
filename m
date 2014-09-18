@@ -1,560 +1,199 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 18/19] Thermal: introduce INT3406 thermal driver
-Date: Thu, 18 Sep 2014 09:53:49 +0800
-Message-ID: <1411005230-2227-19-git-send-email-rui.zhang@intel.com>
-References: <1411005230-2227-1-git-send-email-rui.zhang@intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1411005230-2227-1-git-send-email-rui.zhang@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
-Cc: rjw@rjwysocki.net, lenb@kernel.org, eduardo.valentin@ti.com, Aaron Lu <aaron.lu@intel.com>, Zhang Rui <rui.zhang@intel.com>
+From: Robin Gong <b38343@freescale.com>
+Subject: Re: [PATCH v3 2/3] power: reset: imx-snvs-poweroff: add power off
+ driver for i.mx6
+Date: Thu, 18 Sep 2014 10:21:27 +0800
+Message-ID: <20140918022125.GA8150@Robin-OptiPlex-780>
+References: <1410947881-7345-1-git-send-email-b38343@freescale.com>
+ <1410947881-7345-3-git-send-email-b38343@freescale.com>
+ <20140917175244.GC7983@leverpostej>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20140917175244.GC7983@leverpostej>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, Pawel Moll <Pawel.Moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "sre@kernel.org" <sre@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "shawn.guo@freescale.com" <shawn.guo@freescale.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "galak@codeaurora.org" <galak@codeaurora.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Aaron Lu <aaron.lu@intel.com>
-
-INT3406 ACPI device object resembles an ACPI video output device, but its
-_BCM is said to be deprecated and should not be used. So we will make
-use of the raw interface to do the actual cooling. Due to this, the
-backlight core has some modifications. Also, to re-use some of the ACPI
-video module's code, one function has been exported.
-
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/acpi/video.c                              |  78 ++++----
- drivers/thermal/int340x_thermal/Makefile          |   1 +
- drivers/thermal/int340x_thermal/int3406_thermal.c | 230 ++++++++++++++++++++++
- drivers/video/backlight/backlight.c               |  44 +++--
- include/acpi/video.h                              |  20 ++
- include/linux/backlight.h                         |   2 +
- 6 files changed, 323 insertions(+), 52 deletions(-)
- create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
-
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index 8268843..b260432 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -186,19 +186,6 @@ struct acpi_video_device_cap {
- 	u8 _DDC:1;		/* Return the EDID for this device */
- };
- 
--struct acpi_video_brightness_flags {
--	u8 _BCL_no_ac_battery_levels:1;	/* no AC/Battery levels in _BCL */
--	u8 _BCL_reversed:1;		/* _BCL package is in a reversed order */
--	u8 _BQC_use_index:1;		/* _BQC returns an index value */
--};
--
--struct acpi_video_device_brightness {
--	int curr;
--	int count;
--	int *levels;
--	struct acpi_video_brightness_flags flags;
--};
--
- struct acpi_video_device {
- 	unsigned long device_id;
- 	struct acpi_video_device_flags flags;
-@@ -344,7 +331,7 @@ static const struct thermal_cooling_device_ops video_cooling_ops = {
-  */
- 
- static int
--acpi_video_device_lcd_query_levels(struct acpi_video_device *device,
-+acpi_video_device_lcd_query_levels(acpi_handle handle,
- 				   union acpi_object **levels)
- {
- 	int status;
-@@ -354,7 +341,7 @@ acpi_video_device_lcd_query_levels(struct acpi_video_device *device,
- 
- 	*levels = NULL;
- 
--	status = acpi_evaluate_object(device->dev->handle, "_BCL", NULL, &buffer);
-+	status = acpi_evaluate_object(handle, "_BCL", NULL, &buffer);
- 	if (!ACPI_SUCCESS(status))
- 		return status;
- 	obj = (union acpi_object *)buffer.pointer;
-@@ -943,29 +930,18 @@ static int acpi_video_bqc_quirk(struct acpi_video_device *device,
- 	return 0;
- }
- 
--
--/*
-- *  Arg:
-- *	device	: video output device (LCD, CRT, ..)
-- *
-- *  Return Value:
-- *	Maximum brightness level
-- *
-- *  Allocate and initialize device->brightness.
-- */
--
--static int
--acpi_video_init_brightness(struct acpi_video_device *device)
-+int acpi_video_get_levels(struct acpi_device *device,
-+			  struct acpi_video_device_brightness **dev_br)
- {
- 	union acpi_object *obj = NULL;
- 	int i, max_level = 0, count = 0, level_ac_battery = 0;
--	unsigned long long level, level_old;
- 	union acpi_object *o;
- 	struct acpi_video_device_brightness *br = NULL;
--	int result = -EINVAL;
-+	int result = 0;
- 	u32 value;
- 
--	if (!ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
-+	if (!ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device->handle,
-+								&obj))) {
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available "
- 						"LCD brightness level\n"));
- 		goto out;
-@@ -1038,6 +1014,38 @@ acpi_video_init_brightness(struct acpi_video_device *device)
- 			    "Found unordered _BCL package"));
- 
- 	br->count = count;
-+	*dev_br = br;
-+
-+out:
-+	kfree(obj);
-+	return result;
-+out_free:
-+	kfree(br);
-+	goto out;
-+}
-+EXPORT_SYMBOL(acpi_video_get_levels);
-+
-+/*
-+ *  Arg:
-+ *	device	: video output device (LCD, CRT, ..)
-+ *
-+ *  Return Value:
-+ *	Maximum brightness level
-+ *
-+ *  Allocate and initialize device->brightness.
-+ */
-+
-+static int
-+acpi_video_init_brightness(struct acpi_video_device *device)
-+{
-+	int i, max_level = 0;
-+	unsigned long long level, level_old;
-+	struct acpi_video_device_brightness *br = NULL;
-+	int result = -EINVAL;
-+
-+	result = acpi_video_get_levels(device->dev, &br);
-+	if (result)
-+		return result;
- 	device->brightness = br;
- 
- 	/* _BQC uses INDEX while _BCL uses VALUE in some laptops */
-@@ -1080,17 +1088,13 @@ acpi_video_init_brightness(struct acpi_video_device *device)
- 		goto out_free_levels;
- 
- 	ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--			  "found %d brightness levels\n", count - 2));
--	kfree(obj);
--	return result;
-+			  "found %d brightness levels\n", br->count - 2));
-+	return 0;
- 
- out_free_levels:
- 	kfree(br->levels);
--out_free:
- 	kfree(br);
--out:
- 	device->brightness = NULL;
--	kfree(obj);
- 	return result;
- }
- 
-diff --git a/drivers/thermal/int340x_thermal/Makefile b/drivers/thermal/int340x_thermal/Makefile
-index ffe40bf..e3e2eb2 100644
---- a/drivers/thermal/int340x_thermal/Makefile
-+++ b/drivers/thermal/int340x_thermal/Makefile
-@@ -1,4 +1,5 @@
- obj-$(CONFIG_INT340X_THERMAL)	+= int3400_thermal.o
- obj-$(CONFIG_INT340X_THERMAL)	+= int3402_thermal.o
- obj-$(CONFIG_INT340X_THERMAL)	+= int3403_thermal.o
-+obj-$(CONFIG_INT340X_THERMAL)	+= int3406_thermal.o
- obj-$(CONFIG_ACPI_THERMAL_REL)	+= acpi_thermal_rel.o
-diff --git a/drivers/thermal/int340x_thermal/int3406_thermal.c b/drivers/thermal/int340x_thermal/int3406_thermal.c
-new file mode 100644
-index 0000000..162ddee
---- /dev/null
-+++ b/drivers/thermal/int340x_thermal/int3406_thermal.c
-@@ -0,0 +1,230 @@
-+/*
-+ * INT3406 thermal driver for display participant device
-+ *
-+ * Copyright (C) 2014, Intel Corporation
-+ * Authors: Aaron Lu <aaron.lu@intel.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/acpi.h>
-+#include <linux/backlight.h>
-+#include <linux/thermal.h>
-+#include <acpi/video.h>
-+
-+#define INT3406_BRIGHTNESS_LIMITS_CHANGED	0x80
-+
-+struct int3406_thermal_data {
-+	int upper_limit;
-+	int upper_limit_index;
-+	int lower_limit;
-+	int lower_limit_index;
-+	acpi_handle handle;
-+	struct acpi_video_device_brightness *br;
-+	struct backlight_device *raw_bd;
-+	struct thermal_cooling_device *cooling_dev;
-+};
-+
-+static int int3406_thermal_to_raw(int level, struct int3406_thermal_data *d)
-+{
-+	int max_level = d->br->levels[d->br->count - 1];
-+	int raw_max = d->raw_bd->props.max_brightness;
-+
-+	return level * raw_max / max_level;
-+}
-+
-+static int int3406_thermal_to_acpi(int level, struct int3406_thermal_data *d)
-+{
-+	int raw_max = d->raw_bd->props.max_brightness;
-+	int max_level = d->br->levels[d->br->count - 1];
-+
-+	return level * max_level / raw_max;
-+}
-+
-+static int
-+int3406_thermal_get_max_state(struct thermal_cooling_device *cooling_dev,
-+			      unsigned long *state)
-+{
-+	struct int3406_thermal_data *d = cooling_dev->devdata;
-+	int index = d->lower_limit_index ? d->lower_limit_index : 2;
-+
-+	*state = d->br->count - 1 - index;
-+	return 0;
-+}
-+
-+static int
-+int3406_thermal_set_cur_state(struct thermal_cooling_device *cooling_dev,
-+			      unsigned long state)
-+{
-+	struct int3406_thermal_data *d = cooling_dev->devdata;
-+	int level, raw_level;
-+
-+	if (state > d->br->count - 3)
-+		return -EINVAL;
-+
-+	state = d->br->count - 1 - state;
-+	level = d->br->levels[state];
-+
-+	if ((d->upper_limit && level > d->upper_limit) ||
-+	    (d->lower_limit && level < d->lower_limit))
-+		return -EINVAL;
-+
-+	raw_level = int3406_thermal_to_raw(level, d);
-+	return backlight_device_set_brightness(d->raw_bd, raw_level);
-+}
-+
-+static int
-+int3406_thermal_get_cur_state(struct thermal_cooling_device *cooling_dev,
-+			      unsigned long *state)
-+{
-+	struct int3406_thermal_data *d = cooling_dev->devdata;
-+	int raw_level, level, i;
-+
-+	raw_level = d->raw_bd->props.brightness;
-+	level = int3406_thermal_to_acpi(raw_level, d);
-+
-+	/*
-+	 * There is no 1:1 mapping between the firmware interface level with the
-+	 * raw interface level, we will have to find one that is close enough.
-+	 */
-+	for (i = 2; i < d->br->count - 1; i++) {
-+		if (level >= d->br->levels[i] && level <= d->br->levels[i + 1])
-+			break;
-+	}
-+
-+	*state = i;
-+	return 0;
-+}
-+
-+static const struct thermal_cooling_device_ops video_cooling_ops = {
-+	.get_max_state = int3406_thermal_get_max_state,
-+	.get_cur_state = int3406_thermal_get_cur_state,
-+	.set_cur_state = int3406_thermal_set_cur_state,
-+};
-+
-+static int int3406_thermal_get_index(int *array, int nr, int value)
-+{
-+	int i;
-+
-+	for (i = 0; i < nr; i++) {
-+		if (array[i] == value)
-+			break;
-+	}
-+	return i == nr ? -ENOENT : i;
-+}
-+
-+static void int3406_thermal_get_limit(struct int3406_thermal_data *d)
-+{
-+	acpi_status status;
-+	unsigned long long lower_limit, upper_limit;
-+	int index;
-+
-+	status = acpi_evaluate_integer(d->handle, "DDDL", NULL, &lower_limit);
-+	if (ACPI_SUCCESS(status)) {
-+		index = int3406_thermal_get_index(d->br->levels, d->br->count,
-+						  lower_limit);
-+		if (index > 0) {
-+			d->lower_limit = (int)lower_limit;
-+			d->lower_limit_index = index;
-+		}
-+	}
-+
-+	status = acpi_evaluate_integer(d->handle, "DDPC", NULL, &upper_limit);
-+	if (ACPI_SUCCESS(status)) {
-+		index = int3406_thermal_get_index(d->br->levels, d->br->count,
-+						  upper_limit);
-+		if (index > 0) {
-+			d->upper_limit = (int)upper_limit;
-+			d->upper_limit_index = index;
-+		}
-+	}
-+}
-+
-+static void int3406_notify(acpi_handle handle, u32 event, void *data)
-+{
-+	if (event == INT3406_BRIGHTNESS_LIMITS_CHANGED)
-+		int3406_thermal_get_limit(data);
-+}
-+
-+static int int3406_thermal_probe(struct platform_device *pdev)
-+{
-+	struct acpi_device *adev = ACPI_COMPANION(&pdev->dev);
-+	struct int3406_thermal_data *d;
-+	struct backlight_device *bd;
-+	int ret;
-+
-+	if (!ACPI_HANDLE(&pdev->dev))
-+		return -ENODEV;
-+
-+	d = devm_kzalloc(&pdev->dev, sizeof(*d), GFP_KERNEL);
-+	if (!d)
-+		return -ENOMEM;
-+	d->handle = ACPI_HANDLE(&pdev->dev);
-+
-+	bd = backlight_device_get_by_type(BACKLIGHT_RAW);
-+	if (!bd)
-+		return -ENODEV;
-+	d->raw_bd = bd;
-+
-+	ret = acpi_video_get_levels(ACPI_COMPANION(&pdev->dev), &d->br);
-+	if (ret)
-+		return ret;
-+
-+	int3406_thermal_get_limit(d);
-+
-+	d->cooling_dev = thermal_cooling_device_register(acpi_device_bid(adev),
-+							 d, &video_cooling_ops);
-+	if (IS_ERR(d->cooling_dev))
-+		goto err;
-+
-+	ret = acpi_install_notify_handler(adev->handle, ACPI_DEVICE_NOTIFY,
-+					  int3406_notify, d);
-+	if (ret)
-+		goto err_cdev;
-+
-+	platform_set_drvdata(pdev, d);
-+
-+	return 0;
-+
-+err_cdev:
-+	thermal_cooling_device_unregister(d->cooling_dev);
-+err:
-+	kfree(d->br);
-+	return -ENODEV;
-+}
-+
-+static int int3406_thermal_remove(struct platform_device *pdev)
-+{
-+	struct int3406_thermal_data *d = platform_get_drvdata(pdev);
-+
-+	thermal_cooling_device_unregister(platform_get_drvdata(pdev));
-+	kfree(d->br);
-+	return 0;
-+}
-+
-+static const struct acpi_device_id int3406_thermal_match[] = {
-+	{"INT3406", 0},
-+	{}
-+};
-+
-+MODULE_DEVICE_TABLE(acpi, int3406_thermal_match);
-+
-+static struct platform_driver int3406_thermal_driver = {
-+	.probe = int3406_thermal_probe,
-+	.remove = int3406_thermal_remove,
-+	.driver = {
-+		   .name = "int3406 thermal",
-+		   .owner = THIS_MODULE,
-+		   .acpi_match_table = int3406_thermal_match,
-+		   },
-+};
-+
-+module_platform_driver(int3406_thermal_driver);
-+
-+MODULE_DESCRIPTION("INT3406 Thermal driver");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index bddc8b1..bea7493 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -164,28 +164,19 @@ static ssize_t brightness_show(struct device *dev,
- 	return sprintf(buf, "%d\n", bd->props.brightness);
- }
- 
--static ssize_t brightness_store(struct device *dev,
--		struct device_attribute *attr, const char *buf, size_t count)
-+int backlight_device_set_brightness(struct backlight_device *bd, int brightness)
- {
--	int rc;
--	struct backlight_device *bd = to_backlight_device(dev);
--	unsigned long brightness;
--
--	rc = kstrtoul(buf, 0, &brightness);
--	if (rc)
--		return rc;
--
--	rc = -ENXIO;
-+	int rc = -ENXIO;
- 
- 	mutex_lock(&bd->ops_lock);
- 	if (bd->ops) {
- 		if (brightness > bd->props.max_brightness)
- 			rc = -EINVAL;
- 		else {
--			pr_debug("set brightness to %lu\n", brightness);
-+			pr_debug("set brightness to %u\n", brightness);
- 			bd->props.brightness = brightness;
- 			backlight_update_status(bd);
--			rc = count;
-+			rc = 0;
- 		}
- 	}
- 	mutex_unlock(&bd->ops_lock);
-@@ -194,6 +185,23 @@ static ssize_t brightness_store(struct device *dev,
- 
- 	return rc;
- }
-+EXPORT_SYMBOL(backlight_device_set_brightness);
-+
-+static ssize_t brightness_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	int rc;
-+	struct backlight_device *bd = to_backlight_device(dev);
-+	unsigned long brightness;
-+
-+	rc = kstrtoul(buf, 0, &brightness);
-+	if (rc)
-+		return rc;
-+
-+	rc = backlight_device_set_brightness(bd, brightness);
-+
-+	return rc ? rc : count;
-+}
- static DEVICE_ATTR_RW(brightness);
- 
- static ssize_t type_show(struct device *dev, struct device_attribute *attr,
-@@ -380,7 +388,7 @@ struct backlight_device *backlight_device_register(const char *name,
- }
- EXPORT_SYMBOL(backlight_device_register);
- 
--bool backlight_device_registered(enum backlight_type type)
-+struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
- {
- 	bool found = false;
- 	struct backlight_device *bd;
-@@ -394,7 +402,13 @@ bool backlight_device_registered(enum backlight_type type)
- 	}
- 	mutex_unlock(&backlight_dev_list_mutex);
- 
--	return found;
-+	return found ? bd : NULL;
-+}
-+EXPORT_SYMBOL(backlight_device_get_by_type);
-+
-+bool backlight_device_registered(enum backlight_type type)
-+{
-+	return backlight_device_get_by_type(type) ? true : false;
- }
- EXPORT_SYMBOL(backlight_device_registered);
- 
-diff --git a/include/acpi/video.h b/include/acpi/video.h
-index 843ef1a..956300d 100644
---- a/include/acpi/video.h
-+++ b/include/acpi/video.h
-@@ -3,6 +3,19 @@
- 
- #include <linux/errno.h> /* for ENODEV */
- 
-+struct acpi_video_brightness_flags {
-+	u8 _BCL_no_ac_battery_levels:1;	/* no AC/Battery levels in _BCL */
-+	u8 _BCL_reversed:1;		/* _BCL package is in a reversed order */
-+	u8 _BQC_use_index:1;		/* _BQC returns an index value */
-+};
-+
-+struct acpi_video_device_brightness {
-+	int curr;
-+	int count;
-+	int *levels;
-+	struct acpi_video_brightness_flags flags;
-+};
-+
- struct acpi_device;
- 
- #define ACPI_VIDEO_CLASS	"video"
-@@ -22,6 +35,8 @@ extern void acpi_video_unregister(void);
- extern void acpi_video_unregister_backlight(void);
- extern int acpi_video_get_edid(struct acpi_device *device, int type,
- 			       int device_id, void **edid);
-+extern int acpi_video_get_levels(struct acpi_device *device,
-+				struct acpi_video_device_brightness **dev_br);
- extern bool acpi_video_verify_backlight_support(void);
- #else
- static inline int acpi_video_register(void) { return 0; }
-@@ -32,6 +47,11 @@ static inline int acpi_video_get_edid(struct acpi_device *device, int type,
- {
- 	return -ENODEV;
- }
-+static int acpi_video_get_levels(struct acpi_device *device,
-+			struct acpi_video_device_brightness **dev_br)
-+{
-+	return -ENODEV;
-+}
- static inline bool acpi_video_verify_backlight_support(void) { return false; }
- #endif
- 
-diff --git a/include/linux/backlight.h b/include/linux/backlight.h
-index adb14a8..c59a020 100644
---- a/include/linux/backlight.h
-+++ b/include/linux/backlight.h
-@@ -140,6 +140,8 @@ extern void backlight_force_update(struct backlight_device *bd,
- extern bool backlight_device_registered(enum backlight_type type);
- extern int backlight_register_notifier(struct notifier_block *nb);
- extern int backlight_unregister_notifier(struct notifier_block *nb);
-+extern struct backlight_device *backlight_device_get_by_type(enum backlight_type type);
-+extern int backlight_device_set_brightness(struct backlight_device *bd, int brightness);
- 
- #define to_backlight_device(obj) container_of(obj, struct backlight_device, dev)
- 
--- 
-1.8.3.2
-
+On Wed, Sep 17, 2014 at 06:52:44PM +0100, Mark Rutland wrote:
+> On Wed, Sep 17, 2014 at 10:57:59AM +0100, Robin Gong wrote:
+> > This driver register pm_power_off with snvs power off function. If
+> > your boards NOT use PMIC_ON_REQ to turn on/off external pmic, or use
+> > other pin to do, please disable the driver in dts, otherwise, your
+> > pm_power_off maybe overwrote by this driver.
+> > 
+> > Signed-off-by: Robin Gong <b38343@freescale.com>
+> > ---
+> >  .../bindings/power_supply/imx-snvs-poweroff.txt    |   23 +++++++
+> >  drivers/power/reset/Kconfig                        |    9 +++
+> >  drivers/power/reset/Makefile                       |    1 +
+> >  drivers/power/reset/imx-snvs-poweroff.c            |   66 ++++++++++++++++++++
+> >  4 files changed, 99 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
+> >  create mode 100644 drivers/power/reset/imx-snvs-poweroff.c
+> > 
+> > diff --git a/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt b/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
+> > new file mode 100644
+> > index 0000000..6caf64e
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
+> > @@ -0,0 +1,23 @@
+> > +i.mx6 Poweroff Driver
+> > +
+> > +SNVS_LPCR in SNVS module can power off the whole system by pull
+> > +PMIC_ON_REQ low if PMIC_ON_REQ is connected with external PMIC.
+> > +If you don't want to use PMIC_ON_REQ as power on/off control,
+> > +please set status='disabled' to disable this driver.
+> > +
+> > +Required Properties:
+> > +-compatible: "fsl,sec-v4.0-poweroff"
+> > +-reg: Specifies the physical address of the SNVS_LPCR register
+> 
+> As you describe above, this is part of the SNVS module. So why does this
+> need a separate node?
+> 
+> Surely there should just be a property on the SNVS node that desribers
+> whether or not this can be used?
+> 
+> Mark.
+>
+Yes, put this function in rtc-snvs make things easier, honestly,this is our way
+in internal tree. But looks more and more power off driver put in drivers/power
+/reset,so we decided to add new power off driver. If it is ok to register
+pm_power_off hook in drivers/rtc/rtc-snvs.c, I can drop this patch.
+> > +
+> > +Example:
+> > +	snvs@020cc000 {
+> > +		compatible = "fsl,sec-v4.0-mon", "simple-bus";
+> > +		#address-cells = <1>;
+> > +		#size-cells = <1>;
+> > +		ranges = <0 0x020cc000 0x4000>;
+> > +		.....
+> > +		snvs-poweroff@38 {
+> > +			compatible = "fsl,sec-v4.0-poweroff";
+> > +			reg = <0x38 0x4>;
+> > +		};
+> > +	}
+> > diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+> > index ca41523..b26c547 100644
+> > --- a/drivers/power/reset/Kconfig
+> > +++ b/drivers/power/reset/Kconfig
+> > @@ -45,6 +45,15 @@ config POWER_RESET_HISI
+> >  	help
+> >  	  Reboot support for Hisilicon boards.
+> >  
+> > +config POWER_RESET_IMX
+> > +	bool "IMX6 power-off driver"
+> > +	depends on POWER_RESET && SOC_IMX6
+> > +	help
+> > +	  This driver support power off external PMIC by PMIC_ON_REQ on i.mx6
+> > +	  boards.If you want to use other pin to control external power,please
+> > +	  say N here or disable in dts to make sure pm_power_off never be
+> > +	  overwrote wrongly by this driver.
+> > +
+> >  config POWER_RESET_MSM
+> >  	bool "Qualcomm MSM power-off driver"
+> >  	depends on POWER_RESET && ARCH_QCOM
+> > diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+> > index a42e70e..2524daf 100644
+> > --- a/drivers/power/reset/Makefile
+> > +++ b/drivers/power/reset/Makefile
+> > @@ -3,6 +3,7 @@ obj-$(CONFIG_POWER_RESET_AXXIA) += axxia-reset.o
+> >  obj-$(CONFIG_POWER_RESET_BRCMSTB) += brcmstb-reboot.o
+> >  obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
+> >  obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
+> > +obj-$(CONFIG_POWER_RESET_IMX) += imx-snvs-poweroff.o
+> >  obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
+> >  obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
+> >  obj-$(CONFIG_POWER_RESET_RESTART) += restart-poweroff.o
+> > diff --git a/drivers/power/reset/imx-snvs-poweroff.c b/drivers/power/reset/imx-snvs-poweroff.c
+> > new file mode 100644
+> > index 0000000..d726ac4
+> > --- /dev/null
+> > +++ b/drivers/power/reset/imx-snvs-poweroff.c
+> > @@ -0,0 +1,66 @@
+> > +/* Power off driver for i.mx6
+> > + * Copyright (c) 2014, FREESCALE CORPORATION.  All rights reserved.
+> > + *
+> > + * based on msm-poweroff.c
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2 and
+> > + * only version 2 as published by the Free Software Foundation.
+> > + *
+> > + * This program is distributed in the hope that it will be useful,
+> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + * GNU General Public License for more details.
+> > + *
+> > + */
+> > +
+> > +#include <linux/err.h>
+> > +#include <linux/init.h>
+> > +#include <linux/io.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/of.h>
+> > +#include <linux/of_address.h>
+> > +#include <linux/platform_device.h>
+> > +
+> > +static void __iomem *snvs_base;
+> > +
+> > +static void do_imx_poweroff(void)
+> > +{
+> > +	u32 value = readl(snvs_base);
+> > +
+> > +	/* set TOP and DP_EN bit */
+> > +	writel(value | 0x60, snvs_base);
+> > +}
+> > +
+> > +static int imx_poweroff_probe(struct platform_device *pdev)
+> > +{
+> > +	snvs_base = of_iomap(pdev->dev.of_node, 0);
+> > +	if (!snvs_base) {
+> > +		dev_err(&pdev->dev, "failed to get memory\n");
+> > +		return -EIO;
+> > +	}
+> > +
+> > +	pm_power_off = do_imx_poweroff;
+> > +	return 0;
+> > +}
+> > +
+> > +static const struct of_device_id of_imx_poweroff_match[] = {
+> > +	{ .compatible = "fsl,sec-v4.0-poweroff", },
+> > +	{},
+> > +};
+> > +MODULE_DEVICE_TABLE(of, of_imx_poweroff_match);
+> > +
+> > +static struct platform_driver imx_poweroff_driver = {
+> > +	.probe = imx_poweroff_probe,
+> > +	.driver = {
+> > +		.name = "imx-snvs-poweroff",
+> > +		.of_match_table = of_match_ptr(of_imx_poweroff_match),
+> > +	},
+> > +};
+> > +
+> > +static int __init imx_poweroff_init(void)
+> > +{
+> > +	return platform_driver_register(&imx_poweroff_driver);
+> > +}
+> > +device_initcall(imx_poweroff_init);
+> > -- 
+> > 1.7.9.5
+> > 
+> > 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
