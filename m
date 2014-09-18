@@ -1,199 +1,93 @@
-From: Robin Gong <b38343@freescale.com>
-Subject: Re: [PATCH v3 2/3] power: reset: imx-snvs-poweroff: add power off
- driver for i.mx6
-Date: Thu, 18 Sep 2014 10:21:27 +0800
-Message-ID: <20140918022125.GA8150@Robin-OptiPlex-780>
-References: <1410947881-7345-1-git-send-email-b38343@freescale.com>
- <1410947881-7345-3-git-send-email-b38343@freescale.com>
- <20140917175244.GC7983@leverpostej>
+From: Caesar Wang <caesar.wang@rock-chips.com>
+Subject: Re: [PATCH v5 2/4] dt-bindings: document Rockchip thermal
+Date: Thu, 18 Sep 2014 10:33:05 +0800
+Message-ID: <541A4461.4080101@rock-chips.com>
+References: <1410926353-15674-1-git-send-email-caesar.wang@rock-chips.com> <1410926353-15674-3-git-send-email-caesar.wang@rock-chips.com> <CAD=FV=Vq4zSBv-=OxHD4sGbAgLh_ebe29PR6RU_sQe4XspsPsw@mail.gmail.com> <20140917201347.GD25297@core.coreip.homeip.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20140917175244.GC7983@leverpostej>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, Pawel Moll <Pawel.Moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "sre@kernel.org" <sre@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "shawn.guo@freescale.com" <shawn.guo@freescale.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "galak@codeaurora.org" <galak@codeaurora.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from regular1.263xmail.com ([211.150.99.131]:50465 "EHLO
+	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757377AbaIRCdO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Sep 2014 22:33:14 -0400
+In-Reply-To: <20140917201347.GD25297@core.coreip.homeip.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Doug Anderson <dianders@chromium.org>
+Cc: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, edubezval@gmail.com, Arnd Bergmann <arnd@arndb.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, Eddie Cai <cf@rock-chips.com>, Dmitry Torokhov <dtor@chromium.org>, Addy Ke <addy.ke@rock-chips.com>, zyf <zyf@rock-chips.com>, =?UTF-8?B?6ZmI5riQ6aOe?= <cjf@rock-chips.com>
 
-On Wed, Sep 17, 2014 at 06:52:44PM +0100, Mark Rutland wrote:
-> On Wed, Sep 17, 2014 at 10:57:59AM +0100, Robin Gong wrote:
-> > This driver register pm_power_off with snvs power off function. If
-> > your boards NOT use PMIC_ON_REQ to turn on/off external pmic, or use
-> > other pin to do, please disable the driver in dts, otherwise, your
-> > pm_power_off maybe overwrote by this driver.
-> > 
-> > Signed-off-by: Robin Gong <b38343@freescale.com>
-> > ---
-> >  .../bindings/power_supply/imx-snvs-poweroff.txt    |   23 +++++++
-> >  drivers/power/reset/Kconfig                        |    9 +++
-> >  drivers/power/reset/Makefile                       |    1 +
-> >  drivers/power/reset/imx-snvs-poweroff.c            |   66 ++++++++++++++++++++
-> >  4 files changed, 99 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
-> >  create mode 100644 drivers/power/reset/imx-snvs-poweroff.c
-> > 
-> > diff --git a/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt b/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
-> > new file mode 100644
-> > index 0000000..6caf64e
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
-> > @@ -0,0 +1,23 @@
-> > +i.mx6 Poweroff Driver
-> > +
-> > +SNVS_LPCR in SNVS module can power off the whole system by pull
-> > +PMIC_ON_REQ low if PMIC_ON_REQ is connected with external PMIC.
-> > +If you don't want to use PMIC_ON_REQ as power on/off control,
-> > +please set status='disabled' to disable this driver.
-> > +
-> > +Required Properties:
-> > +-compatible: "fsl,sec-v4.0-poweroff"
-> > +-reg: Specifies the physical address of the SNVS_LPCR register
-> 
-> As you describe above, this is part of the SNVS module. So why does this
-> need a separate node?
-> 
-> Surely there should just be a property on the SNVS node that desribers
-> whether or not this can be used?
-> 
-> Mark.
+
+=E5=9C=A8 2014=E5=B9=B409=E6=9C=8818=E6=97=A5 04:13, Dmitry Torokhov =E5=
+=86=99=E9=81=93:
+> On Wed, Sep 17, 2014 at 12:48:16PM -0700, Doug Anderson wrote:
+>> Caesar,
+>>
+>> On Tue, Sep 16, 2014 at 8:59 PM, Caesar Wang <caesar.wang@rock-chips=
+=2Ecom> wrote:
+>>> This add the necessary binding documentation for the thermal
+>>> found on Rockchip SoCs
+>>>
+>>> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
+>>> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+>>> ---
+>>>   .../bindings/thermal/rockchip-thermal.txt          | 41 +++++++++=
++++++++++++++
+>>>   1 file changed, 41 insertions(+)
+>>>   create mode 100644 Documentation/devicetree/bindings/thermal/rock=
+chip-thermal.txt
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-the=
+rmal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.t=
+xt
+>>> new file mode 100644
+>>> index 0000000..6fc8bc3
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.tx=
+t
+>>> @@ -0,0 +1,41 @@
+>>> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
+>>> +
+>>> +Required properties:
+>>> +- compatible: "rockchip,rk3288-tsadc"
+>>> +- reg: physical base address of the controller and length of memor=
+y mapped
+>>> +       region.
+>>> +- interrupts: The interrupt number to the cpu. The interrupt speci=
+fier format
+>>> +             depends on the interrupt controller.
+>>> +- clocks: Must contain an entry for each entry in clock-names.
+>>> +- clock-names: Shall be "tsadc" for the converter-clock, and "apb_=
+pclk" for
+>>> +              the peripheral clock.
+>>> +- num-trips:  number of total trip points, this is required, set i=
+t 0 if none,
+>>> +             if greater than 0, the following properties must be d=
+efined;
+>> nit: there is whitespace damage (space before tab) on the line befor=
+e
+>> this one.  It's more obvious in the patch you uploaded to gerrit whi=
+ch
+>> highlights this in red:
+>>
+>> https://chromium-review.googlesource.com/#/c/213967/5/Documentation/=
+devicetree/bindings/thermal/rockchip-thermal.txt
+>>
+>> Did you run your patches through checkpatch before submitting?
+> FWIW vim users like me can put the following in their .vimrc file to
+> have whitespace damage visible right away:
 >
-Yes, put this function in rtc-snvs make things easier, honestly,this is our way
-in internal tree. But looks more and more power off driver put in drivers/power
-/reset,so we decided to add new power off driver. If it is ok to register
-pm_power_off hook in drivers/rtc/rtc-snvs.c, I can drop this patch.
-> > +
-> > +Example:
-> > +	snvs@020cc000 {
-> > +		compatible = "fsl,sec-v4.0-mon", "simple-bus";
-> > +		#address-cells = <1>;
-> > +		#size-cells = <1>;
-> > +		ranges = <0 0x020cc000 0x4000>;
-> > +		.....
-> > +		snvs-poweroff@38 {
-> > +			compatible = "fsl,sec-v4.0-poweroff";
-> > +			reg = <0x38 0x4>;
-> > +		};
-> > +	}
-> > diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> > index ca41523..b26c547 100644
-> > --- a/drivers/power/reset/Kconfig
-> > +++ b/drivers/power/reset/Kconfig
-> > @@ -45,6 +45,15 @@ config POWER_RESET_HISI
-> >  	help
-> >  	  Reboot support for Hisilicon boards.
-> >  
-> > +config POWER_RESET_IMX
-> > +	bool "IMX6 power-off driver"
-> > +	depends on POWER_RESET && SOC_IMX6
-> > +	help
-> > +	  This driver support power off external PMIC by PMIC_ON_REQ on i.mx6
-> > +	  boards.If you want to use other pin to control external power,please
-> > +	  say N here or disable in dts to make sure pm_power_off never be
-> > +	  overwrote wrongly by this driver.
-> > +
-> >  config POWER_RESET_MSM
-> >  	bool "Qualcomm MSM power-off driver"
-> >  	depends on POWER_RESET && ARCH_QCOM
-> > diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> > index a42e70e..2524daf 100644
-> > --- a/drivers/power/reset/Makefile
-> > +++ b/drivers/power/reset/Makefile
-> > @@ -3,6 +3,7 @@ obj-$(CONFIG_POWER_RESET_AXXIA) += axxia-reset.o
-> >  obj-$(CONFIG_POWER_RESET_BRCMSTB) += brcmstb-reboot.o
-> >  obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
-> >  obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
-> > +obj-$(CONFIG_POWER_RESET_IMX) += imx-snvs-poweroff.o
-> >  obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
-> >  obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
-> >  obj-$(CONFIG_POWER_RESET_RESTART) += restart-poweroff.o
-> > diff --git a/drivers/power/reset/imx-snvs-poweroff.c b/drivers/power/reset/imx-snvs-poweroff.c
-> > new file mode 100644
-> > index 0000000..d726ac4
-> > --- /dev/null
-> > +++ b/drivers/power/reset/imx-snvs-poweroff.c
-> > @@ -0,0 +1,66 @@
-> > +/* Power off driver for i.mx6
-> > + * Copyright (c) 2014, FREESCALE CORPORATION.  All rights reserved.
-> > + *
-> > + * based on msm-poweroff.c
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify
-> > + * it under the terms of the GNU General Public License version 2 and
-> > + * only version 2 as published by the Free Software Foundation.
-> > + *
-> > + * This program is distributed in the hope that it will be useful,
-> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> > + * GNU General Public License for more details.
-> > + *
-> > + */
-> > +
-> > +#include <linux/err.h>
-> > +#include <linux/init.h>
-> > +#include <linux/io.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/module.h>
-> > +#include <linux/of.h>
-> > +#include <linux/of_address.h>
-> > +#include <linux/platform_device.h>
-> > +
-> > +static void __iomem *snvs_base;
-> > +
-> > +static void do_imx_poweroff(void)
-> > +{
-> > +	u32 value = readl(snvs_base);
-> > +
-> > +	/* set TOP and DP_EN bit */
-> > +	writel(value | 0x60, snvs_base);
-> > +}
-> > +
-> > +static int imx_poweroff_probe(struct platform_device *pdev)
-> > +{
-> > +	snvs_base = of_iomap(pdev->dev.of_node, 0);
-> > +	if (!snvs_base) {
-> > +		dev_err(&pdev->dev, "failed to get memory\n");
-> > +		return -EIO;
-> > +	}
-> > +
-> > +	pm_power_off = do_imx_poweroff;
-> > +	return 0;
-> > +}
-> > +
-> > +static const struct of_device_id of_imx_poweroff_match[] = {
-> > +	{ .compatible = "fsl,sec-v4.0-poweroff", },
-> > +	{},
-> > +};
-> > +MODULE_DEVICE_TABLE(of, of_imx_poweroff_match);
-> > +
-> > +static struct platform_driver imx_poweroff_driver = {
-> > +	.probe = imx_poweroff_probe,
-> > +	.driver = {
-> > +		.name = "imx-snvs-poweroff",
-> > +		.of_match_table = of_match_ptr(of_imx_poweroff_match),
-> > +	},
-> > +};
-> > +
-> > +static int __init imx_poweroff_init(void)
-> > +{
-> > +	return platform_driver_register(&imx_poweroff_driver);
-> > +}
-> > +device_initcall(imx_poweroff_init);
-> > -- 
-> > 1.7.9.5
-> > 
-> > 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> :highlight RedundantSpaces ctermbg=3Dred guibg=3Dred
+> :match RedundantSpaces /\s\+$\| \+\ze\t/
+>
+> Thanks.
+
+It's a very useful, Thank you  for sharing.
+
+
+--=20
+Best regards,
+Caesar
+
+
