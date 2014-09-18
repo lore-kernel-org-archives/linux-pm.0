@@ -1,24 +1,22 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 06/33] thermal: exynos: remove needless
- therm_trip_[mode,mask]_shift abstractions
-Date: Thu, 18 Sep 2014 17:27:23 +0200
-Message-ID: <1411054070-25757-7-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH 09/33] thermal: exynos: remove needless emul_time_shift
+ abstraction
+Date: Thu, 18 Sep 2014 17:27:26 +0200
+Message-ID: <1411054070-25757-10-git-send-email-b.zolnierkie@samsung.com>
 References: <1411054070-25757-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1411054070-25757-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Naveen Krishna Chatradhi <ch.naveen@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-reg->therm_trip_mode_shift and reg->therm_trip_mode_mask are
-used only in exynos_tmu_control() and accessed only if
-pdata->noise_cancel_mode is non-zero.  pdata->noise_cancel
-field is not defined on Exynos4210 (also therm_trip_mode_shift
-and therm_trip_mode_mask entries are not even assigned in
-exynos4210_tmu_registers but they are assigned to identical
-values for all other SoC types) so the abstractions are not
-needed and can be removed.
+reg->emul_time_shift is used only in exynos_tmu_set_emulation()
+and accessed only if TMU_SUPPORT_EMUL_TIME flag is set.  This
+flag is not set for Exynos4210 and Exynos5440 (reg->emul_time_shift
+field is not even assigned in exynos[4210,5440]_tmu_registers
+and is assigned to identical value for all other SoC types) so
+the abstraction is not needed and can be removed.
 
 There should be no functional changes caused by this patch.
 
@@ -30,97 +28,81 @@ Cc: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c      |  5 ++---
- drivers/thermal/samsung/exynos_tmu.h      |  4 ----
- drivers/thermal/samsung/exynos_tmu_data.c | 10 ----------
- 3 files changed, 2 insertions(+), 17 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c      | 4 ++--
+ drivers/thermal/samsung/exynos_tmu.h      | 2 --
+ drivers/thermal/samsung/exynos_tmu_data.c | 4 ----
+ 3 files changed, 2 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 1527b25..7c9793a 100644
+index 974c337..a4ed576 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -289,9 +289,8 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
- 	con |= (pdata->gain << EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT);
+@@ -365,8 +365,8 @@ static int exynos_tmu_set_emulation(void *drv_data, unsigned long temp)
+ 		temp /= MCELSIUS;
  
- 	if (pdata->noise_cancel_mode) {
--		con &= ~(reg->therm_trip_mode_mask <<
--					reg->therm_trip_mode_shift);
--		con |= (pdata->noise_cancel_mode << reg->therm_trip_mode_shift);
-+		con &= ~(EXYNOS_TMU_TRIP_MODE_MASK << EXYNOS_TMU_TRIP_MODE_SHIFT);
-+		con |= (pdata->noise_cancel_mode << EXYNOS_TMU_TRIP_MODE_SHIFT);
- 	}
- 
- 	if (on) {
+ 		if (TMU_SUPPORTS(pdata, EMUL_TIME)) {
+-			val &= ~(EXYNOS_EMUL_TIME_MASK << reg->emul_time_shift);
+-			val |= (EXYNOS_EMUL_TIME << reg->emul_time_shift);
++			val &= ~(EXYNOS_EMUL_TIME_MASK << EXYNOS_EMUL_TIME_SHIFT);
++			val |= (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT);
+ 		}
+ 		val &= ~(EXYNOS_EMUL_DATA_MASK << EXYNOS_EMUL_DATA_SHIFT);
+ 		val |= (temp_to_code(data, temp) << EXYNOS_EMUL_DATA_SHIFT) |
 diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index 5bcf7a8..6341d74 100644
+index 649a654..6567293 100644
 --- a/drivers/thermal/samsung/exynos_tmu.h
 +++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -77,8 +77,6 @@ enum soc_type {
-  * bitfields. The register validity, offsets and bitfield values may vary
-  * slightly across different exynos SOC's.
-  * @tmu_ctrl: TMU main controller register.
-- * @therm_trip_mode_shift: shift bits of tripping mode in tmu_ctrl register.
-- * @therm_trip_mode_mask: mask bits of tripping mode in tmu_ctrl register.
-  * @therm_trip_en_shift: shift bits of tripping enable in tmu_ctrl register.
-  * @tmu_cur_temp: register containing the current temperature of the TMU.
-  * @threshold_th0: Register containing first set of rising levels.
-@@ -106,8 +104,6 @@ enum soc_type {
+@@ -96,7 +96,6 @@ enum soc_type {
+  * @intclr_rise_mask: mask bits of all rising interrupt bits.
+  * @intclr_fall_mask: mask bits of all rising interrupt bits.
+  * @emul_con: TMU emulation controller register.
+- * @emul_time_shift: shift bits of emulation time.
+  * @tmu_irqstatus: register to find which TMU generated interrupts.
+  * @tmu_pmin: register to get/set the Pmin value.
   */
- struct exynos_tmu_registers {
- 	u32	tmu_ctrl;
--	u32	therm_trip_mode_shift;
--	u32	therm_trip_mode_mask;
- 	u32	therm_trip_en_shift;
+@@ -126,7 +125,6 @@ struct exynos_tmu_registers {
+ 	u32	intclr_rise_mask;
  
- 	u32	tmu_cur_temp;
+ 	u32	emul_con;
+-	u32	emul_time_shift;
+ 
+ 	u32	tmu_irqstatus;
+ 	u32	tmu_pmin;
 diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index 988e327..22a0ade 100644
+index 3ae0376..b9a3778 100644
 --- a/drivers/thermal/samsung/exynos_tmu_data.c
 +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -84,8 +84,6 @@ struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
- #if defined(CONFIG_SOC_EXYNOS3250)
- static const struct exynos_tmu_registers exynos3250_tmu_registers = {
- 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
--	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
--	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
- 	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
- 	.tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
- 	.threshold_th0 = EXYNOS_THD_TEMP_RISE,
-@@ -163,8 +161,6 @@ struct exynos_tmu_init_data const exynos3250_default_tmu_data = {
- #if defined(CONFIG_SOC_EXYNOS4412) || defined(CONFIG_SOC_EXYNOS5250)
- static const struct exynos_tmu_registers exynos4412_tmu_registers = {
- 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
--	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
--	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
- 	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
- 	.tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
- 	.threshold_th0 = EXYNOS_THD_TEMP_RISE,
-@@ -255,8 +251,6 @@ struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
- #if defined(CONFIG_SOC_EXYNOS5260)
- static const struct exynos_tmu_registers exynos5260_tmu_registers = {
- 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
--	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
--	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
- 	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
- 	.tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
- 	.threshold_th0 = EXYNOS_THD_TEMP_RISE,
-@@ -336,8 +330,6 @@ struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
- #if defined(CONFIG_SOC_EXYNOS5420)
- static const struct exynos_tmu_registers exynos5420_tmu_registers = {
- 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
--	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
--	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
- 	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
- 	.tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
- 	.threshold_th0 = EXYNOS_THD_TEMP_RISE,
-@@ -425,8 +417,6 @@ struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
- #if defined(CONFIG_SOC_EXYNOS5440)
- static const struct exynos_tmu_registers exynos5440_tmu_registers = {
- 	.tmu_ctrl = EXYNOS5440_TMU_S0_7_CTRL,
--	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
--	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
- 	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
- 	.tmu_cur_temp = EXYNOS5440_TMU_S0_7_TEMP,
- 	.threshold_th0 = EXYNOS5440_TMU_S0_7_TH0,
+@@ -99,7 +99,6 @@ static const struct exynos_tmu_registers exynos3250_tmu_registers = {
+ 	.intclr_rise_mask = EXYNOS_TMU_RISE_INT_MASK,
+ 	.intclr_fall_mask = EXYNOS_TMU_FALL_INT_MASK,
+ 	.emul_con = EXYNOS_EMUL_CON,
+-	.emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
+ };
+ 
+ #define EXYNOS3250_TMU_DATA \
+@@ -175,7 +174,6 @@ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
+ 	.intclr_rise_mask = EXYNOS_TMU_RISE_INT_MASK,
+ 	.intclr_fall_mask = EXYNOS_TMU_FALL_INT_MASK,
+ 	.emul_con = EXYNOS_EMUL_CON,
+-	.emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
+ };
+ 
+ #define EXYNOS4412_TMU_DATA \
+@@ -263,7 +261,6 @@ static const struct exynos_tmu_registers exynos5260_tmu_registers = {
+ 	.intclr_rise_mask = EXYNOS5260_TMU_RISE_INT_MASK,
+ 	.intclr_fall_mask = EXYNOS5260_TMU_FALL_INT_MASK,
+ 	.emul_con = EXYNOS5260_EMUL_CON,
+-	.emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
+ };
+ 
+ #define __EXYNOS5260_TMU_DATA	\
+@@ -341,7 +338,6 @@ static const struct exynos_tmu_registers exynos5420_tmu_registers = {
+ 	.intclr_rise_mask = EXYNOS_TMU_RISE_INT_MASK,
+ 	.intclr_fall_mask = EXYNOS_TMU_FALL_INT_MASK,
+ 	.emul_con = EXYNOS_EMUL_CON,
+-	.emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
+ };
+ 
+ #define __EXYNOS5420_TMU_DATA	\
 -- 
 1.8.2.3
