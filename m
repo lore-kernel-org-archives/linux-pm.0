@@ -1,115 +1,187 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 05/19] Thermal: int3400 thermal: add capability to detect supporting UUIDs
-Date: Thu, 18 Sep 2014 09:53:36 +0800
-Message-ID: <1411005230-2227-6-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 06/19] Thermal: int3400 thermal: register to thermal framework
+Date: Thu, 18 Sep 2014 09:53:37 +0800
+Message-ID: <1411005230-2227-7-git-send-email-rui.zhang@intel.com>
 References: <1411005230-2227-1-git-send-email-rui.zhang@intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:58946 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932119AbaIRByZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 17 Sep 2014 21:54:25 -0400
 In-Reply-To: <1411005230-2227-1-git-send-email-rui.zhang@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 Cc: rjw@rjwysocki.net, lenb@kernel.org, eduardo.valentin@ti.com, Zhang Rui <rui.zhang@intel.com>
-List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/thermal/int340x_thermal/int3400_thermal.c | 69 +++++++++++++++++++++++
- 1 file changed, 69 insertions(+)
+ drivers/thermal/Kconfig                           |   1 +
+ drivers/thermal/int340x_thermal/int3400_thermal.c | 103 ++++++++++++++++++++++
+ 2 files changed, 104 insertions(+)
 
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 6f5a87a..b34c5f5 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -237,6 +237,7 @@ config INTEL_SOC_DTS_THERMAL
+ config INT340X_THERMAL
+ 	tristate "ACPI INT340X thermal drivers"
+ 	depends on X86 && ACPI
++	select THERMAL_GOV_USER_SPACE
+ 	help
+ 	  Newer laptops and tablets that use ACPI may have thermal sensors and
+ 	  other devices with thermal control capabilities outside the core
 diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index 308c185..65c63ba 100644
+index 65c63ba..9104b4f 100644
 --- a/drivers/thermal/int340x_thermal/int3400_thermal.c
 +++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -41,14 +41,79 @@ struct trt {
- 	u64 reverved4;
- };
+@@ -13,6 +13,7 @@
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ #include <linux/acpi.h>
++#include <linux/thermal.h>
  
-+enum int3400_thermal_uuid {
-+	INT3400_THERMAL_PASSIVE_1,
-+	INT3400_THERMAL_PASSIVE_2,
-+	INT3400_THERMAL_ACTIVE,
-+	INT3400_THERMAL_CRITICAL,
-+	INT3400_THERMAL_COOLING_MODE,
-+	INT3400_THERMAL_MAXIMUM_UUID,
-+};
-+
-+static u8 *int3400_thermal_uuids[INT3400_THERMAL_MAXIMUM_UUID] = {
-+	"42A441D6-AE6A-462b-A84B-4A8CE79027D3",
-+	"9E04115A-AE87-4D1C-9500-0F3E340BFE75",
-+	"3A95C389-E4B8-4629-A526-C52C88626BAE",
-+	"97C68AE7-15FA-499c-B8C9-5DA81D606E0A",
-+	"16CAF1B7-DD38-40ed-B1C1-1B8A1913D531",
-+};
-+
+ struct art {
+ 	acpi_handle source;
+@@ -60,6 +61,8 @@ static u8 *int3400_thermal_uuids[INT3400_THERMAL_MAXIMUM_UUID] = {
+ 
  struct int3400_thermal_priv {
  	struct acpi_device *adev;
++	struct thermal_zone_device *thermal;
++	int mode;
  	int art_count;
  	struct art *arts;
  	int trt_count;
- 	struct trt *trts;
-+	u8 uuid_bitmap;
- };
+@@ -114,6 +117,36 @@ static int int3400_thermal_get_uuids(struct int3400_thermal_priv *priv)
+ 	return result;
+ }
  
-+static int int3400_thermal_get_uuids(struct int3400_thermal_priv *priv)
++static int int3400_thermal_run_osc(acpi_handle handle,
++				enum int3400_thermal_uuid uuid, bool enable)
 +{
-+	struct acpi_buffer buf = { ACPI_ALLOCATE_BUFFER, NULL};
-+	union acpi_object *obja, *objb;
-+	int i, j;
-+	int result = 0;
++	u32 ret, buf[2];
 +	acpi_status status;
++	int result = 0;
++	struct acpi_osc_context context = {
++		.uuid_str = int3400_thermal_uuids[uuid],
++		.rev = 1,
++		.cap.length = 8,
++	};
 +
-+	status = acpi_evaluate_object(priv->adev->handle, "IDSP", NULL, &buf);
-+	if (ACPI_FAILURE(status))
-+		return -ENODEV;
++	buf[OSC_QUERY_DWORD] = 0;
++	buf[OSC_SUPPORT_DWORD] = enable;
 +
-+	obja = (union acpi_object *)buf.pointer;
-+	if (obja->type != ACPI_TYPE_PACKAGE) {
-+		result = -EINVAL;
-+		goto end;
-+	}
++	context.cap.pointer = buf;
 +
-+	for (i = 0; i < obja->package.count; i++) {
-+		objb = &obja->package.elements[i];
-+		if (objb->type != ACPI_TYPE_BUFFER) {
-+			result = -EINVAL;
-+			goto end;
-+		}
++	status = acpi_run_osc(handle, &context);
++	if (ACPI_SUCCESS(status)) {
++		ret = *((u32 *)(context.ret.pointer + 4));
++		if (ret != enable)
++			result = -EPERM;
++	} else
++		result = -EPERM;
 +
-+		/* UUID must be 16 bytes */
-+		if (objb->buffer.length != 16) {
-+			result = -EINVAL;
-+			goto end;
-+		}
-+
-+		for (j = 0; j < INT3400_THERMAL_MAXIMUM_UUID; j++) {
-+			u8 uuid[16];
-+
-+			acpi_str_to_uuid(int3400_thermal_uuids[j], uuid);
-+			if (!strncmp(uuid, objb->buffer.pointer, 16)) {
-+				priv->uuid_bitmap |= (1 << j);
-+				break;
-+			}
-+		}
-+	}
-+
-+end:
-+	kfree(buf.pointer);
++	kfree(context.ret.pointer);
 +	return result;
 +}
++
 +
  static int parse_art(struct int3400_thermal_priv *priv)
  {
  	acpi_handle handle = priv->adev->handle;
-@@ -193,6 +258,10 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+@@ -243,6 +276,61 @@ static int parse_trt(struct int3400_thermal_priv *priv)
+ 	return result;
+ }
  
- 	priv->adev = adev;
- 
-+	result = int3400_thermal_get_uuids(priv);
-+	if (result)
-+		goto free_priv;
++static int int3400_thermal_get_temp(struct thermal_zone_device *thermal,
++			unsigned long *temp)
++{
++	*temp = 20 * 1000; /* faked temp sensor with 20C */
++	return 0;
++}
 +
- 	result = parse_art(priv);
- 	if (result)
- 		goto free_priv;
++static int int3400_thermal_get_mode(struct thermal_zone_device *thermal,
++				enum thermal_device_mode *mode)
++{
++	struct int3400_thermal_priv *priv = thermal->devdata;
++
++	if (!priv)
++		return -EINVAL;
++
++	*mode = priv->mode;
++
++	return 0;
++}
++
++static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
++				enum thermal_device_mode mode)
++{
++	struct int3400_thermal_priv *priv = thermal->devdata;
++	bool enable;
++	int result = 0;
++
++	if (!priv)
++		return -EINVAL;
++
++	if (mode == THERMAL_DEVICE_ENABLED)
++		enable = true;
++	else if (mode == THERMAL_DEVICE_DISABLED)
++		enable = false;
++	else
++		return -EINVAL;
++
++	if (enable != priv->mode) {
++		priv->mode = enable;
++		/* currently, only PASSIVE COOLING is supported */
++		result = int3400_thermal_run_osc(priv->adev->handle,
++					INT3400_THERMAL_PASSIVE_1, enable);
++	}
++	return result;
++}
++
++static struct thermal_zone_device_ops int3400_thermal_ops = {
++	.get_temp = int3400_thermal_get_temp,
++};
++
++static struct thermal_zone_params int3400_thermal_params = {
++	.governor_name = "user_space",
++	.no_hwmon = true,
++};
++
+ static int int3400_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct acpi_device *adev = ACPI_COMPANION(&pdev->dev);
+@@ -272,7 +360,21 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, priv);
+ 
++	if (priv->uuid_bitmap & 1 << INT3400_THERMAL_PASSIVE_1) {
++		int3400_thermal_ops.get_mode = int3400_thermal_get_mode;
++		int3400_thermal_ops.set_mode = int3400_thermal_set_mode;
++	}
++	priv->thermal = thermal_zone_device_register("INT3400 Thermal", 0, 0,
++						priv, &int3400_thermal_ops,
++						&int3400_thermal_params, 0, 0);
++	if (IS_ERR(priv->thermal)) {
++		result = PTR_ERR(priv->thermal);
++		goto free_trt;
++	}
++
+ 	return 0;
++free_trt:
++	kfree(priv->trts);
+ free_art:
+ 	kfree(priv->arts);
+ free_priv:
+@@ -284,6 +386,7 @@ static int int3400_thermal_remove(struct platform_device *pdev)
+ {
+ 	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
+ 
++	thermal_zone_device_unregister(priv->thermal);
+ 	kfree(priv->trts);
+ 	kfree(priv->arts);
+ 	kfree(priv);
 -- 
 1.8.3.2
 
