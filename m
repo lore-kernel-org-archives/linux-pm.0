@@ -1,20 +1,17 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 30/33] thermal: exynos: remove test_mux pdata field
-Date: Thu, 18 Sep 2014 17:27:47 +0200
-Message-ID: <1411054070-25757-31-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH 32/33] thermal: exynos: remove __EXYNOS5420_TMU_DATA macro
+Date: Thu, 18 Sep 2014 17:27:49 +0200
+Message-ID: <1411054070-25757-33-git-send-email-b.zolnierkie@samsung.com>
 References: <1411054070-25757-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1411054070-25757-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Naveen Krishna Chatradhi <ch.naveen@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Replace pdata->test_mux check in get_con_reg() by explicitly
-checking for SoC type.
-
-Also since the used pdata->test_mux value is always identical
-use it directly and remove pdata->test_mux completely.
+__EXYNOS5420_TMU_DATA macro is now identical to __EXYNOS5260_TMU_DATA
+one and can be removed.
 
 There should be no functional changes caused by this patch.
 
@@ -26,66 +23,63 @@ Cc: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c      | 5 +++--
- drivers/thermal/samsung/exynos_tmu.h      | 2 --
- drivers/thermal/samsung/exynos_tmu_data.c | 2 --
- 3 files changed, 3 insertions(+), 6 deletions(-)
+ drivers/thermal/samsung/exynos_tmu_data.c | 40 ++-----------------------------
+ 1 file changed, 2 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 367f4eb..80961e3 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -193,8 +193,9 @@ static u32 get_con_reg(struct exynos_tmu_data *data, u32 con)
- {
- 	struct exynos_tmu_platform_data *pdata = data->pdata;
- 
--	if (pdata->test_mux)
--		con |= (pdata->test_mux << EXYNOS4412_MUX_ADDR_SHIFT);
-+	if (data->soc == SOC_ARCH_EXYNOS4412 ||
-+	    data->soc == SOC_ARCH_EXYNOS3250)
-+		con |= (EXYNOS4412_MUX_ADDR_VALUE << EXYNOS4412_MUX_ADDR_SHIFT);
- 
- 	con &= ~(EXYNOS_TMU_REF_VOLTAGE_MASK << EXYNOS_TMU_REF_VOLTAGE_SHIFT);
- 	con |= pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT;
-diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index 2eb4cb9..8de0f82 100644
---- a/drivers/thermal/samsung/exynos_tmu.h
-+++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -89,7 +89,6 @@ enum soc_type {
-  * @first_point_trim: temp value of the first point trimming
-  * @second_point_trim: temp value of the second point trimming
-  * @default_temp_offset: default temperature offset in case of no trimming
-- * @test_mux; information if SoC supports test MUX
-  * @cal_type: calibration type for temperature
-  * @freq_clip_table: Table representing frequency reduction percentage.
-  * @freq_tab_count: Count of the above table as frequency reduction may
-@@ -115,7 +114,6 @@ struct exynos_tmu_platform_data {
- 	u8 first_point_trim;
- 	u8 second_point_trim;
- 	u8 default_temp_offset;
--	u8 test_mux;
- 
- 	enum calibration_type cal_type;
- 	enum soc_type type;
 diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index d90b050..708c3e1 100644
+index 02a1c34..592c470 100644
 --- a/drivers/thermal/samsung/exynos_tmu_data.c
 +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -109,7 +109,6 @@ struct exynos_tmu_init_data const exynos3250_default_tmu_data = {
- 		{
- 			EXYNOS3250_TMU_DATA,
- 			.type = SOC_ARCH_EXYNOS3250,
--			.test_mux = EXYNOS4412_MUX_ADDR_VALUE,
- 		},
- 	},
- 	.tmu_count = 1,
-@@ -160,7 +159,6 @@ struct exynos_tmu_init_data const exynos4412_default_tmu_data = {
- 		{
- 			EXYNOS4412_TMU_DATA,
- 			.type = SOC_ARCH_EXYNOS4412,
--			.test_mux = EXYNOS4412_MUX_ADDR_VALUE,
- 		},
- 	},
- 	.tmu_count = 1,
+@@ -216,48 +216,12 @@ struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
+ 	.tmu_count = 5,
+ };
+ 
+-#define __EXYNOS5420_TMU_DATA	\
+-	.threshold_falling = 10, \
+-	.trigger_levels[0] = 85, \
+-	.trigger_levels[1] = 103, \
+-	.trigger_levels[2] = 110, \
+-	.trigger_levels[3] = 120, \
+-	.trigger_enable[0] = true, \
+-	.trigger_enable[1] = true, \
+-	.trigger_enable[2] = true, \
+-	.trigger_enable[3] = false, \
+-	.trigger_type[0] = THROTTLE_ACTIVE, \
+-	.trigger_type[1] = THROTTLE_ACTIVE, \
+-	.trigger_type[2] = SW_TRIP, \
+-	.trigger_type[3] = HW_TRIP, \
+-	.max_trigger_level = 4, \
+-	.non_hw_trigger_levels = 3, \
+-	.gain = 8, \
+-	.reference_voltage = 16, \
+-	.noise_cancel_mode = 4, \
+-	.cal_type = TYPE_ONE_POINT_TRIMMING, \
+-	.efuse_value = 55, \
+-	.min_efuse_value = 40, \
+-	.max_efuse_value = 100, \
+-	.first_point_trim = 25, \
+-	.second_point_trim = 85, \
+-	.default_temp_offset = 50, \
+-	.freq_tab[0] = { \
+-		.freq_clip_max = 800 * 1000, \
+-		.temp_level = 85, \
+-	}, \
+-	.freq_tab[1] = { \
+-		.freq_clip_max = 200 * 1000, \
+-		.temp_level = 103, \
+-	}, \
+-	.freq_tab_count = 2, \
+-
+ #define EXYNOS5420_TMU_DATA \
+-	__EXYNOS5420_TMU_DATA \
++	__EXYNOS5260_TMU_DATA \
+ 	.type = SOC_ARCH_EXYNOS5420
+ 
+ #define EXYNOS5420_TMU_DATA_SHARED \
+-	__EXYNOS5420_TMU_DATA \
++	__EXYNOS5260_TMU_DATA \
+ 	.type = SOC_ARCH_EXYNOS5420_TRIMINFO
+ 
+ struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
 -- 
 1.8.2.3
