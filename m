@@ -1,112 +1,66 @@
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
-Date: Thu, 18 Sep 2014 08:41:11 +0530
-Message-ID: <541A4D4F.1090307@linux.vnet.ibm.com>
-References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: [PATCH 1/1] Cpufreq: Keep cpufreq sysfs nodes across S2RAM/S2DISK when using intel_pstate driver.
+Date: Thu, 18 Sep 2014 15:03:07 +0800
+Message-ID: <1411023787-11458-1-git-send-email-tianyu.lan@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:48665 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757416AbaIRDLY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Sep 2014 23:11:24 -0400
-Received: from /spool/local
-	by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Thu, 18 Sep 2014 13:11:21 +1000
-In-Reply-To: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Received: from mga01.intel.com ([192.55.52.88]:5265 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751339AbaIRHGv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 18 Sep 2014 03:06:51 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa@MIT.EDU>, "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: Lan Tianyu <tianyu.lan@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+Cpufreq core introduces cpufreq_suspended flag to let cpufreq sysfs nodes
+across S2RAM/S2DISK. But the flag is only set in the cpufreq_suspend()
+for cpufreq drivers which have target or target_index callback. This
+skips intel_pstate driver. This patch is to set the flag before checking
+target or target_index callback.
 
-In this patch series we use winkle for offlined cores. I successfully
-tested the working of this with subcore functionality.
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+---
+ drivers/cpufreq/cpufreq.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Test scenario was as follows:
-1. Set SMT mode to 1, Set subores-per-core to 1
-2. Offline a core, in this case cpu 32 (sending it to winkle)
-3. Set subcores-per-core to 4
-4. Online the core
-5. Start a guest (Topology 1 core 2 threads) on a subcore, in this case
-on cpu 36
-
-This works without any glitch.
-
-Thanks,
-Shreyas
-
-On Monday 25 August 2014 11:31 PM, Shreyas B. Prabhu wrote:
-> Fast sleep is an idle state, where the core and the L1 and L2
-> caches are brought down to a threshold voltage. This also means that
-> the communication between L2 and L3 caches have to be fenced. However
-> the current P8 chips have a bug wherein this fencing between L2 and
-> L3 caches get delayed by a cpu cycle. This can delay L3 response to
-> the other cpus if they request for data during this time. Thus they
-> would fetch the same data from the memory which could lead to data
-> corruption if L3 cache is not flushed.
-> Patch 4 adds support to work around this.
-> 
-> 'Deep Winkle' is a deeper idle state where core and private L2 are powered
-> off. While it offers higher power savings, it is at the cost of losing
-> hypervisor register state and higher latency.
-> Patch 5-9 adds support for winkle and uses it for offline cpus.
-> 
-> Patch 1 - Moves parameters required discover idle states to a location 
-> common to both cpuidle driver and powernv core code
-> Patch 2 - Populates idle state details from device tree
-> Patch 3 - Enables cpus to run guest after waking up from fastsleep/winkle
-> 
-> 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Srivatsa S. Bhat <srivatsa@MIT.EDU>
-> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: devicetree@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> 
-> Preeti U Murthy (2):
->   cpuidle/powernv: Populate cpuidle state details by querying the
->     device-tree
->   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
-> 
-> Shreyas B. Prabhu (6):
->   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
->     fast-sleep
->   powerpc/powernv: Add OPAL call to save and restore
->   powerpc: Adding macro for accessing Thread Switch Control Register
->   powerpc/powernv: Add winkle infrastructure
->   powerpc/powernv: Discover and enable winkle
->   powerpc/powernv: Enter deepest supported idle state in offline
-> 
-> Srivatsa S. Bhat (1):
->   powerpc/powernv: Enable Offline CPUs to enter deep idle states
-> 
->  arch/powerpc/include/asm/machdep.h             |   4 +
->  arch/powerpc/include/asm/opal.h                |  10 ++
->  arch/powerpc/include/asm/paca.h                |   3 +
->  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
->  arch/powerpc/include/asm/processor.h           |   6 +-
->  arch/powerpc/include/asm/reg.h                 |   1 +
->  arch/powerpc/kernel/asm-offsets.c              |   1 +
->  arch/powerpc/kernel/exceptions-64s.S           |  37 ++---
->  arch/powerpc/kernel/idle.c                     |  30 ++++
->  arch/powerpc/kernel/idle_power7.S              |  83 +++++++++-
->  arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
->  arch/powerpc/platforms/powernv/powernv.h       |   8 +
->  arch/powerpc/platforms/powernv/setup.c         | 217 +++++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/smp.c           |  13 +-
->  arch/powerpc/platforms/powernv/subcore.c       |  15 ++
->  drivers/cpuidle/cpuidle-powernv.c              |  40 ++++-
->  16 files changed, 439 insertions(+), 33 deletions(-)
-> 
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index d9fdedd..eb9bb78 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1656,6 +1656,8 @@ void cpufreq_suspend(void)
+ 	if (!cpufreq_driver)
+ 		return;
+ 
++	cpufreq_suspended = true;
++
+ 	if (!has_target())
+ 		return;
+ 
+@@ -1670,8 +1672,6 @@ void cpufreq_suspend(void)
+ 			pr_err("%s: Failed to suspend driver: %p\n", __func__,
+ 				policy);
+ 	}
+-
+-	cpufreq_suspended = true;
+ }
+ 
+ /**
+@@ -1687,13 +1687,13 @@ void cpufreq_resume(void)
+ 	if (!cpufreq_driver)
+ 		return;
+ 
++	cpufreq_suspended = false;
++
+ 	if (!has_target())
+ 		return;
+ 
+ 	pr_debug("%s: Resuming Governors\n", __func__);
+ 
+-	cpufreq_suspended = false;
+-
+ 	list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
+ 		if (cpufreq_driver->resume && cpufreq_driver->resume(policy))
+ 			pr_err("%s: Failed to resume driver: %p\n", __func__,
+-- 
+1.8.4.rc0.1.g8f6a3e5.dirty
 
