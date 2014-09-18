@@ -1,99 +1,149 @@
-From: Sanjay Singh Rawat <sanjay.rawat@linaro.org>
-Subject: Re: [PATCH] thermal: show supported policies
-Date: Thu, 18 Sep 2014 15:32:07 +0530
-Message-ID: <541AAD9F.9070504@linaro.org>
-References: <1410865062-28995-1-git-send-email-sanjay.rawat@linaro.org> <1411001832.1280.23.camel@rzhang1-toshiba>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v4 4/4] dma: pl330: add Power Management support
+Date: Thu, 18 Sep 2014 12:09:56 +0200
+Message-ID: <1411034996.23919.9.camel@AMDC1943>
+References: <1410857494-15936-1-git-send-email-k.kozlowski@samsung.com>
+ <1410857494-15936-5-git-send-email-k.kozlowski@samsung.com>
+ <CAPDyKFqoLQh=FYg33LTSp-HTs-oJDT4y_K6hGRoiu9zDxOX9sw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:60276 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756662AbaIRKBb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Sep 2014 06:01:31 -0400
-Received: by mail-pd0-f181.google.com with SMTP id w10so1092843pde.12
-        for <linux-pm@vger.kernel.org>; Thu, 18 Sep 2014 03:01:30 -0700 (PDT)
-In-Reply-To: <1411001832.1280.23.camel@rzhang1-toshiba>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-reply-to: <CAPDyKFqoLQh=FYg33LTSp-HTs-oJDT4y_K6hGRoiu9zDxOX9sw@mail.gmail.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-thanks for the review Rui
+On =C5=9Bro, 2014-09-17 at 20:42 +0200, Ulf Hansson wrote:
+> On 16 September 2014 10:51, Krzysztof Kozlowski <k.kozlowski@samsung.=
+com> wrote:
 
-On Thursday 18 September 2014 06:27 AM, Zhang Rui wrote:
-> On Tue, 2014-09-16 at 16:27 +0530, Sanjay Singh Rawat wrote:
->> With knowledge of supported thermal policies from this attribute, it helps in
->> setting the policy without failure from the available ones.
->>
-> Hmmm, I think it's better to reuse the "policy" attribute.
-> Say,
-> #cat policy
-> user_space [step_wise] fair_share
-> I'm not sure if this will break any userspace as it's an ABI change, but
-> we can give it a try, right?
+[...]
 
-Looks good, but might break. So thought of simplified way of doing.
+> >
+> > @@ -2585,6 +2620,34 @@ static int pl330_dma_device_slave_caps(struc=
+t dma_chan *dchan,
+> >         return 0;
+> >  }
+> >
+> > +/*
+> > + * Assume that IRQ safe runtime PM is chosen in probe and amba bus=
+ driver
+> > + * will only disable/enable the clock in runtime PM suspend/resume=
+=2E
+> > + */
+> > +static int __maybe_unused pl330_suspend(struct device *dev)
+> > +{
+> > +       struct amba_device *pcdev =3D to_amba_device(dev);
+> > +
+> > +       if (!pm_runtime_suspended(dev))
+> > +               amba_pclk_disable(pcdev);
+>=20
+> I would suggest to use pm_runtime_force_suspend() instead of the abov=
+e.
 
->
-> thanks,
-> -rui
->> Signed-off-by: Sanjay Singh Rawat <sanjay.rawat@linaro.org>
->> ---
->>   drivers/thermal/thermal_core.c | 24 ++++++++++++++++++++++++
->>   1 file changed, 24 insertions(+)
->>
->> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
->> index 71b0ec0..6caefcd 100644
->> --- a/drivers/thermal/thermal_core.c
->> +++ b/drivers/thermal/thermal_core.c
->> @@ -772,6 +772,25 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
->>   	return sprintf(buf, "%s\n", tz->governor->name);
->>   }
->>   
->> +static ssize_t
->> +available_policy_show(struct device *dev, struct device_attribute *devattr,
->> +			char *buf)
->> +{
->> +	ssize_t i = 0;
->> +	struct thermal_governor *temp;
->> +	struct thermal_zone_device *tz = to_thermal_zone(dev);
->> +
->> +	mutex_lock(&tz->lock);
->> +
->> +	list_for_each_entry(temp, &thermal_governor_list, governor_list)
->> +		i += sprintf(&buf[i], "%s ", temp->name);
->> +
->> +	mutex_unlock(&tz->lock);
->> +	i += sprintf(&buf[i], "\n");
->> +
->> +	return i;
->> +}
->> +
->>   #ifdef CONFIG_THERMAL_EMULATION
->>   static ssize_t
->>   emul_temp_store(struct device *dev, struct device_attribute *attr,
->> @@ -805,6 +824,7 @@ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
->>   static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
->>   static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
->>   static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
->> +static DEVICE_ATTR(available_policy, S_IRUGO, available_policy_show, NULL);
->>   
->>   /* sys I/F for cooling device */
->>   #define to_cooling_device(_dev)	\
->> @@ -1538,6 +1558,10 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
->>   	if (result)
->>   		goto unregister;
->>   
->> +	result = device_create_file(&tz->device, &dev_attr_available_policy);
->> +	if (result)
->> +		goto unregister;
->> +
->>   	/* Update 'this' zone's governor information */
->>   	mutex_lock(&thermal_governor_lock);
->>   
->
+Sure, I can change it but... (see below)
 
--- 
-sanjay
+>=20
+> > +       amba_pclk_unprepare(pcdev);
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +static int __maybe_unused pl330_resume(struct device *dev)
+> > +{
+> > +       struct amba_device *pcdev =3D to_amba_device(dev);
+> > +
+> > +       amba_pclk_prepare(pcdev);
+> > +       if (!pm_runtime_suspended(dev))
+> > +               return amba_pclk_enable(pcdev);
+>=20
+> The above if statement could be replaced with pm_runtime_force_resume=
+().
+
+But that would lead to runtime resuming the device even when it is not
+needed. We don't have to fully wakeup the device during resume operatio=
+n
+when the device was runtime suspended before suspend.
+
+>=20
+> Doing that, means the amba_pclk_enable|disable() don't need to be
+> exported from the AMBA bus header, but entirely handled by the AMBA
+> bus itself.
+>=20
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +static SIMPLE_DEV_PM_OPS(pl330_pm, pl330_suspend, pl330_resume);
+> > +
+> >  static int
+> >  pl330_probe(struct amba_device *adev, const struct amba_id *id)
+> >  {
+> > @@ -2738,6 +2801,9 @@ pl330_probe(struct amba_device *adev, const s=
+truct amba_id *id)
+> >                 pcfg->data_buf_dep, pcfg->data_bus_width / 8, pcfg-=
+>num_chan,
+> >                 pcfg->num_peri, pcfg->num_events);
+> >
+>=20
+> You need pm_runtime_set_active() here as well.
+
+This is done by amba/bus.c. Do I have to do it again?
+
+>=20
+> > +       pm_runtime_irq_safe(&adev->dev);
+> > +       pm_runtime_put_noidle(&adev->dev);
+>=20
+> Why pm_runtime_put_noidle(), that seems like you might end up leaving
+> the device in active state - unless you get some request. Likely not
+> what you want?
+
+Hmmm... I am sorry but I do not get the point here. It could be
+pm_runtime_put() as well because initially we start with counter
+incremented by amba/bus.c.
+
+
+> A final question, have you considered using runtime PM autosuspend
+> feature. Any reason to why not?
+
+There is no reason, I just implemented the easier way. I was hoping for
+such ideas of improvement. I'll add autosuspend.
+
+
+Thanks for feedback, I really appreciate it!
+
+Best regards,
+Krzysztof
+
+>=20
+> > +
+> >         return 0;
+> >  probe_err3:
+> >         /* Idle the DMAC */
+> > @@ -2764,6 +2830,8 @@ static int pl330_remove(struct amba_device *a=
+dev)
+> >         struct pl330_dmac *pl330 =3D amba_get_drvdata(adev);
+> >         struct dma_pl330_chan *pch, *_p;
+> >
+> > +       pm_runtime_get_noresume(pl330->ddma.dev);
+> > +
+> >         if (adev->dev.of_node)
+> >                 of_dma_controller_free(adev->dev.of_node);
+> >
+> > @@ -2802,6 +2870,7 @@ static struct amba_driver pl330_driver =3D {
+> >         .drv =3D {
+> >                 .owner =3D THIS_MODULE,
+> >                 .name =3D "dma-pl330",
+> > +               .pm =3D &pl330_pm,
+> >         },
+> >         .id_table =3D pl330_ids,
+> >         .probe =3D pl330_probe,
+> > --
+> > 1.9.1
+> >
+>=20
+> Kind regards
+> Uffe
 
