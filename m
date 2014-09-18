@@ -1,93 +1,112 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: Re: [PATCH v5 2/4] dt-bindings: document Rockchip thermal
-Date: Thu, 18 Sep 2014 10:33:05 +0800
-Message-ID: <541A4461.4080101@rock-chips.com>
-References: <1410926353-15674-1-git-send-email-caesar.wang@rock-chips.com> <1410926353-15674-3-git-send-email-caesar.wang@rock-chips.com> <CAD=FV=Vq4zSBv-=OxHD4sGbAgLh_ebe29PR6RU_sQe4XspsPsw@mail.gmail.com> <20140917201347.GD25297@core.coreip.homeip.net>
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
+Date: Thu, 18 Sep 2014 08:41:11 +0530
+Message-ID: <541A4D4F.1090307@linux.vnet.ibm.com>
+References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.131]:50465 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757377AbaIRCdO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Sep 2014 22:33:14 -0400
-In-Reply-To: <20140917201347.GD25297@core.coreip.homeip.net>
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:48665 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757416AbaIRDLY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Sep 2014 23:11:24 -0400
+Received: from /spool/local
+	by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
+	Thu, 18 Sep 2014 13:11:21 +1000
+In-Reply-To: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Doug Anderson <dianders@chromium.org>
-Cc: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, edubezval@gmail.com, Arnd Bergmann <arnd@arndb.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, Eddie Cai <cf@rock-chips.com>, Dmitry Torokhov <dtor@chromium.org>, Addy Ke <addy.ke@rock-chips.com>, zyf <zyf@rock-chips.com>, =?UTF-8?B?6ZmI5riQ6aOe?= <cjf@rock-chips.com>
+To: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa@MIT.EDU>, "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
+Hi,
 
-=E5=9C=A8 2014=E5=B9=B409=E6=9C=8818=E6=97=A5 04:13, Dmitry Torokhov =E5=
-=86=99=E9=81=93:
-> On Wed, Sep 17, 2014 at 12:48:16PM -0700, Doug Anderson wrote:
->> Caesar,
->>
->> On Tue, Sep 16, 2014 at 8:59 PM, Caesar Wang <caesar.wang@rock-chips=
-=2Ecom> wrote:
->>> This add the necessary binding documentation for the thermal
->>> found on Rockchip SoCs
->>>
->>> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
->>> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
->>> ---
->>>   .../bindings/thermal/rockchip-thermal.txt          | 41 +++++++++=
-+++++++++++++
->>>   1 file changed, 41 insertions(+)
->>>   create mode 100644 Documentation/devicetree/bindings/thermal/rock=
-chip-thermal.txt
->>>
->>> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-the=
-rmal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.t=
-xt
->>> new file mode 100644
->>> index 0000000..6fc8bc3
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.tx=
-t
->>> @@ -0,0 +1,41 @@
->>> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
->>> +
->>> +Required properties:
->>> +- compatible: "rockchip,rk3288-tsadc"
->>> +- reg: physical base address of the controller and length of memor=
-y mapped
->>> +       region.
->>> +- interrupts: The interrupt number to the cpu. The interrupt speci=
-fier format
->>> +             depends on the interrupt controller.
->>> +- clocks: Must contain an entry for each entry in clock-names.
->>> +- clock-names: Shall be "tsadc" for the converter-clock, and "apb_=
-pclk" for
->>> +              the peripheral clock.
->>> +- num-trips:  number of total trip points, this is required, set i=
-t 0 if none,
->>> +             if greater than 0, the following properties must be d=
-efined;
->> nit: there is whitespace damage (space before tab) on the line befor=
-e
->> this one.  It's more obvious in the patch you uploaded to gerrit whi=
-ch
->> highlights this in red:
->>
->> https://chromium-review.googlesource.com/#/c/213967/5/Documentation/=
-devicetree/bindings/thermal/rockchip-thermal.txt
->>
->> Did you run your patches through checkpatch before submitting?
-> FWIW vim users like me can put the following in their .vimrc file to
-> have whitespace damage visible right away:
->
-> :highlight RedundantSpaces ctermbg=3Dred guibg=3Dred
-> :match RedundantSpaces /\s\+$\| \+\ze\t/
->
-> Thanks.
+In this patch series we use winkle for offlined cores. I successfully
+tested the working of this with subcore functionality.
 
-It's a very useful, Thank you  for sharing.
+Test scenario was as follows:
+1. Set SMT mode to 1, Set subores-per-core to 1
+2. Offline a core, in this case cpu 32 (sending it to winkle)
+3. Set subcores-per-core to 4
+4. Online the core
+5. Start a guest (Topology 1 core 2 threads) on a subcore, in this case
+on cpu 36
 
+This works without any glitch.
 
---=20
-Best regards,
-Caesar
+Thanks,
+Shreyas
 
+On Monday 25 August 2014 11:31 PM, Shreyas B. Prabhu wrote:
+> Fast sleep is an idle state, where the core and the L1 and L2
+> caches are brought down to a threshold voltage. This also means that
+> the communication between L2 and L3 caches have to be fenced. However
+> the current P8 chips have a bug wherein this fencing between L2 and
+> L3 caches get delayed by a cpu cycle. This can delay L3 response to
+> the other cpus if they request for data during this time. Thus they
+> would fetch the same data from the memory which could lead to data
+> corruption if L3 cache is not flushed.
+> Patch 4 adds support to work around this.
+> 
+> 'Deep Winkle' is a deeper idle state where core and private L2 are powered
+> off. While it offers higher power savings, it is at the cost of losing
+> hypervisor register state and higher latency.
+> Patch 5-9 adds support for winkle and uses it for offline cpus.
+> 
+> Patch 1 - Moves parameters required discover idle states to a location 
+> common to both cpuidle driver and powernv core code
+> Patch 2 - Populates idle state details from device tree
+> Patch 3 - Enables cpus to run guest after waking up from fastsleep/winkle
+> 
+> 
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Srivatsa S. Bhat <srivatsa@MIT.EDU>
+> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Grant Likely <grant.likely@linaro.org>
+> Cc: devicetree@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> 
+> Preeti U Murthy (2):
+>   cpuidle/powernv: Populate cpuidle state details by querying the
+>     device-tree
+>   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
+> 
+> Shreyas B. Prabhu (6):
+>   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
+>     fast-sleep
+>   powerpc/powernv: Add OPAL call to save and restore
+>   powerpc: Adding macro for accessing Thread Switch Control Register
+>   powerpc/powernv: Add winkle infrastructure
+>   powerpc/powernv: Discover and enable winkle
+>   powerpc/powernv: Enter deepest supported idle state in offline
+> 
+> Srivatsa S. Bhat (1):
+>   powerpc/powernv: Enable Offline CPUs to enter deep idle states
+> 
+>  arch/powerpc/include/asm/machdep.h             |   4 +
+>  arch/powerpc/include/asm/opal.h                |  10 ++
+>  arch/powerpc/include/asm/paca.h                |   3 +
+>  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
+>  arch/powerpc/include/asm/processor.h           |   6 +-
+>  arch/powerpc/include/asm/reg.h                 |   1 +
+>  arch/powerpc/kernel/asm-offsets.c              |   1 +
+>  arch/powerpc/kernel/exceptions-64s.S           |  37 ++---
+>  arch/powerpc/kernel/idle.c                     |  30 ++++
+>  arch/powerpc/kernel/idle_power7.S              |  83 +++++++++-
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
+>  arch/powerpc/platforms/powernv/powernv.h       |   8 +
+>  arch/powerpc/platforms/powernv/setup.c         | 217 +++++++++++++++++++++++++
+>  arch/powerpc/platforms/powernv/smp.c           |  13 +-
+>  arch/powerpc/platforms/powernv/subcore.c       |  15 ++
+>  drivers/cpuidle/cpuidle-powernv.c              |  40 ++++-
+>  16 files changed, 439 insertions(+), 33 deletions(-)
+> 
 
