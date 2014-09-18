@@ -1,166 +1,90 @@
-From: Tomeu Vizoso <tomeu@tomeuvizoso.net>
-Subject: Re: [PATCH v5 2/4] dt-bindings: document Rockchip thermal
-Date: Thu, 18 Sep 2014 16:19:26 +0200
-Message-ID: <CAAObsKCYGEBNEvDTs=iQD9KT0YomQWHg0W-vwHG4nLZbqogF=g@mail.gmail.com>
-References: <1410926353-15674-1-git-send-email-caesar.wang@rock-chips.com>
- <1410926353-15674-3-git-send-email-caesar.wang@rock-chips.com>
- <CAAObsKA61Ano85P6PehOY7WqR0FgTz_Rfur8UAt56ZXoNyoyqQ@mail.gmail.com> <541ADD58.7070901@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f172.google.com ([209.85.216.172]:52016 "EHLO
-	mail-qc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756037AbaIROTr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Sep 2014 10:19:47 -0400
-In-Reply-To: <541ADD58.7070901@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 00/33] thermal: exynos: convert the driver to use per-SoC type
+ operations
+Date: Thu, 18 Sep 2014 17:27:17 +0200
+Message-ID: <1411054070-25757-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Naveen Krishna Chatradhi <ch.naveen@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <caesar.wang@rock-chips.com>
-Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, Arnd Bergmann <arnd@arndb.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-doc@vger.kernel.org, huangtao@rock-chips.com, cf@rock-chips.com, dianders@chromium.org, dtor@chromium.org, dmitry.torokhov@gmail.com, addy.ke@rock-chips.com, zyf@rock-chips.com, cjf@rock-chips.com
 
-On 18 September 2014 15:25, Caesar Wang <caesar.wang@rock-chips.com> wr=
-ote:
-> Tomeu,
->
-> =E5=9C=A8 2014=E5=B9=B409=E6=9C=8818=E6=97=A5 17:27, Tomeu Vizoso =E5=
-=86=99=E9=81=93:
->>
->> On 17 September 2014 05:59, Caesar Wang <caesar.wang@rock-chips.com>
->> wrote:
->>>
->>> This add the necessary binding documentation for the thermal
->>> found on Rockchip SoCs
->>
->> Hi Caesar,
->>
->> is there any reason to not use the existing thermal bindings? You ca=
-n
->> find a description in
->> Documentation/devicetree/bindings/thermal/thermal.txt and example co=
-de
->> in omap, or in the patches for Tegra recently posted by Mikko
->> Perttunen.
->>
->> Regards,
->>
->> Tomeu
->
->
-> Why should I use the existing thermal bindings?
+Hi,
 
-Because otherwise, you are asking to merge duplicated code. There's a
-generic way to define thermal zones, trip points, cooling devices,
-etc. And also code to parse and plug them together. Why add
-soc-specific code to do the same?
+This patch series replaces the hardware registers abstractions in
+the Exynos thermal driver by the usage of per-SoC type operations.
+Such solution provides simpler, easier to understand code and
+allows removal of ~250 LOCs (~11% of the whole source code) from
+the driver.  Some other driver improvements are now also possible
+thanks to these changes but are scheduled at later time (like
+consolidating code for clearing IRQs using INTCLEAR register).
 
-> I believe omap,tegar and rockchip are  the three seperate thermals dr=
-iver.
+The patchset should not cause any functionality changes.  This
+means that unless there are some bugs in the patches itself there
+should be no behavior changes for the driver (this also includes
+lack of changes in the way hardware is accessed by the driver).
 
-Yes, and OMAP is already using the generic bindings, and the proposed
-patches for Tegra as well, and I think it would make sense for
-Rockchip to also use them (unless I'm missing something).
+All testing was done on (Exynos4412 SoC based) ODROID U3 board
+(some additional patches are needed to make the Exynos thermal
+driver work on this hardware).
 
-Regards,
+Depends on:
+- 'next' branch of linux-soc-thermal.git kernel tree from Eduardo
+- [PATCH] thermal: exynos: use correct offset for TMU_CONTROL
+  register on Exynos5260
+  (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg36529.html)
 
-Tomeu
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-> So far, I submitted the series Patchs for rockchip thermal.
->
->>
->>> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
->>> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
->>> ---
->>>   .../bindings/thermal/rockchip-thermal.txt          | 41
->>> ++++++++++++++++++++++
->>>   1 file changed, 41 insertions(+)
->>>   create mode 100644
->>> Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->>>
->>> diff --git
->>> a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->>> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->>> new file mode 100644
->>> index 0000000..6fc8bc3
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.tx=
-t
->>> @@ -0,0 +1,41 @@
->>> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
->>> +
->>> +Required properties:
->>> +- compatible: "rockchip,rk3288-tsadc"
->>> +- reg: physical base address of the controller and length of memor=
-y
->>> mapped
->>> +       region.
->>> +- interrupts: The interrupt number to the cpu. The interrupt speci=
-fier
->>> format
->>> +             depends on the interrupt controller.
->>> +- clocks: Must contain an entry for each entry in clock-names.
->>> +- clock-names: Shall be "tsadc" for the converter-clock, and "apb_=
-pclk"
->>> for
->>> +              the peripheral clock.
->>> +- num-trips:  number of total trip points, this is required, set i=
-t 0 if
->>> none,
->>> +             if greater than 0, the following properties must be
->>> defined;
->>> +- tripN-temp: temperature of trip point N, should be in ascending =
-order;
->>> +- tripN-type: type of trip point N, should be one of "active" "pas=
-sive"
->>> "hot"
->>> +             "critical";
->>> +- tripN-cdev-num: number of the cooling devices which can be bound=
- to
->>> trip
->>> +                 point N, this is required if trip point N is defi=
-ned,
->>> set it 0 if none,
->>> +                 otherwise the following cooling device names must=
- be
->>> defined;
->>> +- tripN-cdev-nameM: name of the No. M cooling device of trip point=
- N;
->>> +
->>> +Example:
->>> +tsadc: tsadc@ff280000 {
->>> +       compatible =3D "rockchip,rk3288-tsadc";
->>> +       reg =3D <0xff280000 0x100>;
->>> +       interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
->>> +       clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
->>> +       clock-names =3D "tsadc", "apb_pclk";
->>> +
->>> +       num-trips =3D <2>;
->>> +
->>> +       trip0-temp =3D <80>;
->>> +       trip0-type =3D "passive";
->>> +       trip0-cdev-num =3D <1>;
->>> +       trip0-cdev-name0 =3D "thermal-cpufreq-0";
->>> +
->>> +       trip1-temp =3D <100>;
->>> +       trip1-type =3D "critical";
->>> +       trip1-cdev-num =3D <1>;
->>> +       trip1-cdev-name0 =3D "thermal-cpufreq-0";
->>> +};
->>> --
->>> 1.9.1
->>>
->>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-pm"=
- in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
->>
->>
->
-> --
-> Best regards,
-> Caesar
->
->
+
+Bartlomiej Zolnierkiewicz (33):
+  thermal: exynos: remove needless triminfo_data abstraction
+  thermal: exynos: remove needless tmu_status abstraction
+  thermal: exynos: remove needless threshold_temp abstraction
+  thermal: exynos: remove needless triminfo_ctrl abstraction
+  thermal: exynos: remove needless test_mux_addr_shift abstraction
+  thermal: exynos: remove needless therm_trip_[mode,mask]_shift
+    abstractions
+  thermal: exynos: remove needless therm_trip_en_shift abstraction
+  thermal: exynos: remove needless emul_temp_shift abstraction
+  thermal: exynos: remove needless emul_time_shift abstraction
+  thermal: exynos: replace tmu_irqstatus check by Exynos5440 one
+  thermal: exynos: replace tmu_pmin check by Exynos5440 one
+  thermal: exynos: simplify HW_TRIP level setting
+  thermal: exynos: replace threshold_falling check by Exynos SoC type
+    one
+  thermal: exynos: remove TMU_SUPPORT_READY_STATUS flag
+  thermal: exynos: remove TMU_SUPPORT_TRIM_RELOAD flag
+  thermal: exynos: add sanitize_temp_error() helper
+  thermal: exynos: add get_th_reg() helper
+  thermal: exynos: add ->tmu_initialize method
+  thermal: exynos: add get_con_reg() helper
+  thermal: exynos: add ->tmu_control method
+  thermal: exynos: add ->tmu_read method
+  thermal: exynos: add get_emul_con_reg() helper
+  thermal: exynos: add ->tmu_set_emulation method
+  thermal: exynos: add ->tmu_clear_irqs method
+  thermal: exynos: remove TMU_SUPPORT_FALLING_TRIP flag
+  thermal: exynos: remove TMU_SUPPORT_EMUL_TIME flag
+  thermal: exynos: remove TMU_SUPPORT_EMULATION flag
+  thermal: exynos: remove TMU_SUPPORT_ADDRESS_MULTIPLE flag
+  thermal: exynos: remove TMU_SUPPORT_MULTI_INST flag
+  thermal: exynos: remove test_mux pdata field
+  thermal: exynos: remove SoC type ifdefs
+  thermal: exynos: remove __EXYNOS5420_TMU_DATA macro
+  thermal: exynos: remove exynos_tmu_data.h include
+
+ drivers/thermal/samsung/exynos_thermal_common.h |   1 -
+ drivers/thermal/samsung/exynos_tmu.c            | 706 +++++++++++++++++-------
+ drivers/thermal/samsung/exynos_tmu.h            | 131 +----
+ drivers/thermal/samsung/exynos_tmu_data.c       | 260 +--------
+ drivers/thermal/samsung/exynos_tmu_data.h       | 174 ------
+ 5 files changed, 509 insertions(+), 763 deletions(-)
+ delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
+
+-- 
+1.8.2.3
