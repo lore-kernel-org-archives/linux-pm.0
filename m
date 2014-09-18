@@ -1,7 +1,7 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 16/19] Thermal: int340x_thermal: expose acpi thermal relationship tables
-Date: Thu, 18 Sep 2014 09:53:47 +0800
-Message-ID: <1411005230-2227-17-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 17/19] Thermal: int3400_thermal: use acpi_thermal_rel parsing APIs
+Date: Thu, 18 Sep 2014 09:53:48 +0800
+Message-ID: <1411005230-2227-18-git-send-email-rui.zhang@intel.com>
 References: <1411005230-2227-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1411005230-2227-1-git-send-email-rui.zhang@intel.com>
@@ -12,559 +12,237 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-ACPI 4.0 introduced two thermal relationship tables via _ART
-(active cooling) and  _TRT (passive cooling) objects. These
-tables contain many to many relationships among thermal sensors
-and cooling devices.
-
-This patch parses _ART and _TRT and makes the result available to
-the userspace via an misc device interface. At the same time,
-kernel drivers can also request parsing results from internal
-kernel APIs.
-
-The results include source and target devices, influence, and
-sampling rate in case of _TRT. For _ART, the result shows source
-device, target device, and weight percentage.
+ACPI _TRT and _ART parsing code has been moved to acpi_thermal_rel such
+that it can be used by other devices in the future. Use the parsing APIs
+in acpi_thermal_rel.c instead.
 
 Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/thermal/Kconfig                            |   5 +
- drivers/thermal/int340x_thermal/Makefile           |   1 +
- drivers/thermal/int340x_thermal/acpi_thermal_rel.c | 400 +++++++++++++++++++++
- drivers/thermal/int340x_thermal/acpi_thermal_rel.h |  84 +++++
- 4 files changed, 490 insertions(+)
- create mode 100644 drivers/thermal/int340x_thermal/acpi_thermal_rel.c
- create mode 100644 drivers/thermal/int340x_thermal/acpi_thermal_rel.h
+ drivers/thermal/int340x_thermal/int3400_thermal.c | 172 ++--------------------
+ 1 file changed, 13 insertions(+), 159 deletions(-)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 6f93e5c..3a89292 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -223,6 +223,7 @@ config INT340X_THERMAL
- 	tristate "ACPI INT340X thermal drivers"
- 	depends on X86 && ACPI
- 	select THERMAL_GOV_USER_SPACE
-+	select ACPI_THERMAL_REL
- 	help
- 	  Newer laptops and tablets that use ACPI may have thermal sensors and
- 	  other devices with thermal control capabilities outside the core
-@@ -237,6 +238,10 @@ config INT340X_THERMAL
- 	  information to allow the user to select his laptop to run without
- 	  turning on the fans.
- 
-+config ACPI_THERMAL_REL
-+	tristate
-+	depends on ACPI
-+
- menu "Texas Instruments thermal drivers"
- source "drivers/thermal/ti-soc-thermal/Kconfig"
- endmenu
-diff --git a/drivers/thermal/int340x_thermal/Makefile b/drivers/thermal/int340x_thermal/Makefile
-index c4a5c50..ffe40bf 100644
---- a/drivers/thermal/int340x_thermal/Makefile
-+++ b/drivers/thermal/int340x_thermal/Makefile
-@@ -1,3 +1,4 @@
- obj-$(CONFIG_INT340X_THERMAL)	+= int3400_thermal.o
- obj-$(CONFIG_INT340X_THERMAL)	+= int3402_thermal.o
- obj-$(CONFIG_INT340X_THERMAL)	+= int3403_thermal.o
-+obj-$(CONFIG_ACPI_THERMAL_REL)	+= acpi_thermal_rel.o
-diff --git a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
-new file mode 100644
-index 0000000..0d8db80
---- /dev/null
-+++ b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
-@@ -0,0 +1,400 @@
-+/* acpi_thermal_rel.c driver for exporting ACPI thermal relationship
-+ *
-+ * Copyright (c) 2014 Intel Corp
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ */
-+
-+/*
-+ * Two functionalities included:
-+ * 1. Export _TRT, _ART, via misc device interface to the userspace.
-+ * 2. Provide parsing result to kernel drivers
-+ *
-+ */
-+#include <linux/init.h>
-+#include <linux/export.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/platform_device.h>
-+#include <linux/io.h>
-+#include <linux/acpi.h>
-+#include <linux/uaccess.h>
-+#include <linux/miscdevice.h>
+diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
+index 9104b4f..edc1cce 100644
+--- a/drivers/thermal/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
+@@ -14,33 +14,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/acpi.h>
+ #include <linux/thermal.h>
+-
+-struct art {
+-	acpi_handle source;
+-	acpi_handle target;
+-	u64 weight;
+-	u64 ac0_max;
+-	u64 ac1_max;
+-	u64 ac2_max;
+-	u64 ac3_max;
+-	u64 ac4_max;
+-	u64 ac5_max;
+-	u64 ac6_max;
+-	u64 ac7_max;
+-	u64 ac8_max;
+-	u64 ac9_max;
+-};
+-
+-struct trt {
+-	acpi_handle source;
+-	acpi_handle target;
+-	u64 influence;
+-	u64 sampling_period;
+-	u64 reverved1;
+-	u64 reverved2;
+-	u64 reverved3;
+-	u64 reverved4;
+-};
 +#include "acpi_thermal_rel.h"
+ 
+ enum int3400_thermal_uuid {
+ 	INT3400_THERMAL_PASSIVE_1,
+@@ -68,6 +42,7 @@ struct int3400_thermal_priv {
+ 	int trt_count;
+ 	struct trt *trts;
+ 	u8 uuid_bitmap;
++	int rel_misc_dev_res;
+ };
+ 
+ static int int3400_thermal_get_uuids(struct int3400_thermal_priv *priv)
+@@ -146,136 +121,6 @@ static int int3400_thermal_run_osc(acpi_handle handle,
+ 	return result;
+ }
+ 
+-
+-static int parse_art(struct int3400_thermal_priv *priv)
+-{
+-	acpi_handle handle = priv->adev->handle;
+-	acpi_status status;
+-	int result = 0;
+-	int i;
+-	struct acpi_device *adev;
+-	union acpi_object *p;
+-	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+-	struct acpi_buffer element = { 0, NULL };
+-	struct acpi_buffer art_format = {
+-				sizeof("RRNNNNNNNNNNN"), "RRNNNNNNNNNNN" };
+-
+-	if (!acpi_has_method(handle, "_ART"))
+-		return 0;
+-
+-	status = acpi_evaluate_object(handle, "_ART", NULL, &buffer);
+-	if (ACPI_FAILURE(status))
+-		return -ENODEV;
+-
+-	p = buffer.pointer;
+-	if (!p || (p->type != ACPI_TYPE_PACKAGE)) {
+-		pr_err("Invalid _ART data\n");
+-		result = -EFAULT;
+-		goto end;
+-	}
+-
+-	/* ignore p->package.elements[0], as this is _ART Revision field */
+-	priv->art_count = p->package.count - 1;
+-	priv->arts = kzalloc(sizeof(struct art) * priv->art_count, GFP_KERNEL);
+-	if (!priv->arts) {
+-		result = -ENOMEM;
+-		goto end;
+-	}
+-
+-	for (i = 0; i < priv->art_count; i++) {
+-		struct art *art = &(priv->arts[i]);
+-
+-		element.length = sizeof(struct art);
+-		element.pointer = art;
+-
+-		status = acpi_extract_package(&(p->package.elements[i + 1]),
+-					      &art_format, &element);
+-		if (ACPI_FAILURE(status)) {
+-			pr_err("Invalid _ART data");
+-			result = -EFAULT;
+-			kfree(priv->arts);
+-			goto end;
+-		}
+-		result = acpi_bus_get_device(art->source, &adev);
+-		if (!result)
+-			acpi_create_platform_device(adev, NULL);
+-		else
+-			pr_warn("Failed to get source ACPI device\n");
+-		result = acpi_bus_get_device(art->target, &adev);
+-		if (!result)
+-			acpi_create_platform_device(adev, NULL);
+-		else
+-			pr_warn("Failed to get source ACPI device\n");
+-	}
+-end:
+-	kfree(buffer.pointer);
+-	return result;
+-}
+-
+-static int parse_trt(struct int3400_thermal_priv *priv)
+-{
+-	acpi_handle handle = priv->adev->handle;
+-	acpi_status status;
+-	int result = 0;
+-	int i;
+-	struct acpi_device *adev;
+-	union acpi_object *p;
+-	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+-	struct acpi_buffer element = { 0, NULL };
+-	struct acpi_buffer trt_format = { sizeof("RRNNNNNN"), "RRNNNNNN" };
+-
+-	if (!acpi_has_method(handle, "_TRT"))
+-		return 0;
+-
+-	status = acpi_evaluate_object(handle, "_TRT", NULL, &buffer);
+-	if (ACPI_FAILURE(status))
+-		return -ENODEV;
+-
+-	p = buffer.pointer;
+-	if (!p || (p->type != ACPI_TYPE_PACKAGE)) {
+-		pr_err("Invalid _TRT data\n");
+-		result = -EFAULT;
+-		goto end;
+-	}
+-
+-	priv->trt_count = p->package.count;
+-	priv->trts = kzalloc(sizeof(struct trt) * priv->trt_count, GFP_KERNEL);
+-	if (!priv->trts) {
+-		result = -ENOMEM;
+-		goto end;
+-	}
+-
+-	for (i = 0; i < priv->trt_count; i++) {
+-		struct trt *trt = &(priv->trts[i]);
+-
+-		element.length = sizeof(struct trt);
+-		element.pointer = trt;
+-
+-		status = acpi_extract_package(&(p->package.elements[i]),
+-					      &trt_format, &element);
+-		if (ACPI_FAILURE(status)) {
+-			pr_err("Invalid _ART data");
+-			result = -EFAULT;
+-			kfree(priv->trts);
+-			goto end;
+-		}
+-
+-		result = acpi_bus_get_device(trt->source, &adev);
+-		if (!result)
+-			acpi_create_platform_device(adev, NULL);
+-		else
+-			pr_warn("Failed to get source ACPI device\n");
+-		result = acpi_bus_get_device(trt->target, &adev);
+-		if (!result)
+-			acpi_create_platform_device(adev, NULL);
+-		else
+-			pr_warn("Failed to get target ACPI device\n");
+-	}
+-end:
+-	kfree(buffer.pointer);
+-	return result;
+-}
+-
+ static int int3400_thermal_get_temp(struct thermal_zone_device *thermal,
+ 			unsigned long *temp)
+ {
+@@ -350,11 +195,14 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+ 	if (result)
+ 		goto free_priv;
+ 
+-	result = parse_art(priv);
++	result = acpi_parse_art(priv->adev->handle, &priv->art_count,
++				&priv->arts, true);
+ 	if (result)
+ 		goto free_priv;
+ 
+-	result = parse_trt(priv);
 +
-+static acpi_handle acpi_thermal_rel_handle;
-+static DEFINE_SPINLOCK(acpi_thermal_rel_chrdev_lock);
-+static int acpi_thermal_rel_chrdev_count;	/* #times opened */
-+static int acpi_thermal_rel_chrdev_exclu;	/* already open exclusive? */
++	result = acpi_parse_trt(priv->adev->handle, &priv->trt_count,
++				&priv->trts, true);
+ 	if (result)
+ 		goto free_art;
+ 
+@@ -372,6 +220,9 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+ 		goto free_trt;
+ 	}
+ 
++	priv->rel_misc_dev_res = acpi_thermal_rel_misc_device_add(
++							priv->adev->handle);
 +
-+static int acpi_thermal_rel_open(struct inode *inode, struct file *file)
-+{
-+	spin_lock(&acpi_thermal_rel_chrdev_lock);
-+	if (acpi_thermal_rel_chrdev_exclu ||
-+	    (acpi_thermal_rel_chrdev_count && (file->f_flags & O_EXCL))) {
-+		spin_unlock(&acpi_thermal_rel_chrdev_lock);
-+		return -EBUSY;
-+	}
+ 	return 0;
+ free_trt:
+ 	kfree(priv->trts);
+@@ -386,6 +237,9 @@ static int int3400_thermal_remove(struct platform_device *pdev)
+ {
+ 	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
+ 
++	if (!priv->rel_misc_dev_res)
++		acpi_thermal_rel_misc_device_remove(priv->adev->handle);
 +
-+	if (file->f_flags & O_EXCL)
-+		acpi_thermal_rel_chrdev_exclu = 1;
-+	acpi_thermal_rel_chrdev_count++;
-+
-+	spin_unlock(&acpi_thermal_rel_chrdev_lock);
-+
-+	return nonseekable_open(inode, file);
-+}
-+
-+static int acpi_thermal_rel_release(struct inode *inode, struct file *file)
-+{
-+	spin_lock(&acpi_thermal_rel_chrdev_lock);
-+	acpi_thermal_rel_chrdev_count--;
-+	acpi_thermal_rel_chrdev_exclu = 0;
-+	spin_unlock(&acpi_thermal_rel_chrdev_lock);
-+
-+	return 0;
-+}
-+
-+/**
-+ * acpi_parse_trt - Thermal Relationship Table _TRT for passive cooling
-+ *
-+ * @handle: ACPI handle of the device contains _TRT
-+ * @art_count: the number of valid entries resulted from parsing _TRT
-+ * @artp: pointer to pointer of array of art entries in parsing result
-+ * @create_dev: whether to create platform devices for target and source
-+ *
-+ */
-+int acpi_parse_trt(acpi_handle handle, int *trt_count, struct trt **trtp,
-+		bool create_dev)
-+{
-+	acpi_status status;
-+	int result = 0;
-+	int i;
-+	int nr_bad_entries = 0;
-+	struct trt *trts;
-+	struct acpi_device *adev;
-+	union acpi_object *p;
-+	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-+	struct acpi_buffer element = { 0, NULL };
-+	struct acpi_buffer trt_format = { sizeof("RRNNNNNN"), "RRNNNNNN" };
-+
-+	if (!acpi_has_method(handle, "_TRT"))
-+		return 0;
-+
-+	status = acpi_evaluate_object(handle, "_TRT", NULL, &buffer);
-+	if (ACPI_FAILURE(status))
-+		return -ENODEV;
-+
-+	p = buffer.pointer;
-+	if (!p || (p->type != ACPI_TYPE_PACKAGE)) {
-+		pr_err("Invalid _TRT data\n");
-+		result = -EFAULT;
-+		goto end;
-+	}
-+
-+	*trt_count = p->package.count;
-+	trts = kzalloc(*trt_count * sizeof(struct trt), GFP_KERNEL);
-+	if (!trts) {
-+		result = -ENOMEM;
-+		goto end;
-+	}
-+
-+	for (i = 0; i < *trt_count; i++) {
-+		struct trt *trt = &trts[i - nr_bad_entries];
-+
-+		element.length = sizeof(struct trt);
-+		element.pointer = trt;
-+
-+		status = acpi_extract_package(&(p->package.elements[i]),
-+					      &trt_format, &element);
-+		if (ACPI_FAILURE(status)) {
-+			nr_bad_entries++;
-+			pr_warn("_TRT package %d is invalid, ignored\n", i);
-+			continue;
-+		}
-+		if (!create_dev)
-+			continue;
-+
-+		result = acpi_bus_get_device(trt->source, &adev);
-+		if (!result)
-+			acpi_create_platform_device(adev);
-+		else
-+			pr_warn("Failed to get source ACPI device\n");
-+
-+		result = acpi_bus_get_device(trt->target, &adev);
-+		if (!result)
-+			acpi_create_platform_device(adev);
-+		else
-+			pr_warn("Failed to get target ACPI device\n");
-+	}
-+
-+	*trtp = trts;
-+	/* don't count bad entries */
-+	*trt_count -= nr_bad_entries;
-+end:
-+	kfree(buffer.pointer);
-+	return result;
-+}
-+EXPORT_SYMBOL(acpi_parse_trt);
-+
-+/**
-+ * acpi_parse_art - Parse Active Relationship Table _ART
-+ *
-+ * @handle: ACPI handle of the device contains _ART
-+ * @art_count: the number of valid entries resulted from parsing _ART
-+ * @artp: pointer to pointer of array of art entries in parsing result
-+ * @create_dev: whether to create platform devices for target and source
-+ *
-+ */
-+int acpi_parse_art(acpi_handle handle, int *art_count, struct art **artp,
-+		bool create_dev)
-+{
-+	acpi_status status;
-+	int result = 0;
-+	int i;
-+	int nr_bad_entries = 0;
-+	struct art *arts;
-+	struct acpi_device *adev;
-+	union acpi_object *p;
-+	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-+	struct acpi_buffer element = { 0, NULL };
-+	struct acpi_buffer art_format =	{
-+		sizeof("RRNNNNNNNNNNN"), "RRNNNNNNNNNNN" };
-+
-+	if (!acpi_has_method(handle, "_ART"))
-+		return 0;
-+
-+	status = acpi_evaluate_object(handle, "_ART", NULL, &buffer);
-+	if (ACPI_FAILURE(status))
-+		return -ENODEV;
-+
-+	p = buffer.pointer;
-+	if (!p || (p->type != ACPI_TYPE_PACKAGE)) {
-+		pr_err("Invalid _ART data\n");
-+		result = -EFAULT;
-+		goto end;
-+	}
-+
-+	/* ignore p->package.elements[0], as this is _ART Revision field */
-+	*art_count = p->package.count - 1;
-+	arts = kzalloc(*art_count * sizeof(struct art), GFP_KERNEL);
-+	if (!arts) {
-+		result = -ENOMEM;
-+		goto end;
-+	}
-+
-+	for (i = 0; i < *art_count; i++) {
-+		struct art *art = &arts[i - nr_bad_entries];
-+
-+		element.length = sizeof(struct art);
-+		element.pointer = art;
-+
-+		status = acpi_extract_package(&(p->package.elements[i + 1]),
-+					      &art_format, &element);
-+		if (ACPI_FAILURE(status)) {
-+			pr_warn("_ART package %d is invalid, ignored", i);
-+			nr_bad_entries++;
-+			continue;
-+		}
-+		if (!create_dev)
-+			continue;
-+
-+		if (art->source) {
-+			result = acpi_bus_get_device(art->source, &adev);
-+			if (!result)
-+				acpi_create_platform_device(adev);
-+			else
-+				pr_warn("Failed to get source ACPI device\n");
-+		}
-+		if (art->target) {
-+			result = acpi_bus_get_device(art->target, &adev);
-+			if (!result)
-+				acpi_create_platform_device(adev);
-+			else
-+				pr_warn("Failed to get source ACPI device\n");
-+		}
-+	}
-+
-+	*artp = arts;
-+	/* don't count bad entries */
-+	*art_count -= nr_bad_entries;
-+end:
-+	kfree(buffer.pointer);
-+	return result;
-+}
-+EXPORT_SYMBOL(acpi_parse_art);
-+
-+
-+/* get device name from acpi handle */
-+static void get_single_name(acpi_handle handle, char *name)
-+{
-+	struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER};
-+
-+	if (ACPI_FAILURE(acpi_get_name(handle, ACPI_SINGLE_NAME, &buffer)))
-+		pr_warn("Failed get name from handle\n");
-+	else {
-+		memcpy(name, buffer.pointer, ACPI_NAME_SIZE);
-+		kfree(buffer.pointer);
-+	}
-+}
-+
-+static int fill_art(char __user *ubuf)
-+{
-+	int i;
-+	int ret;
-+	int count;
-+	int art_len;
-+	struct art *arts = NULL;
-+	union art_object *art_user;
-+
-+	ret = acpi_parse_art(acpi_thermal_rel_handle, &count, &arts, false);
-+	if (ret)
-+		goto free_art;
-+	art_len = count * sizeof(union art_object);
-+	art_user = kzalloc(art_len, GFP_KERNEL);
-+	if (!art_user) {
-+		ret = -ENOMEM;
-+		goto free_art;
-+	}
-+	/* now fill in user art data */
-+	for (i = 0; i < count; i++) {
-+		/* userspace art needs device name instead of acpi reference */
-+		get_single_name(arts[i].source, art_user[i].source_device);
-+		get_single_name(arts[i].target, art_user[i].target_device);
-+		/* copy the rest int data in addition to source and target */
-+		memcpy(&art_user[i].weight, &arts[i].weight,
-+			sizeof(u64) * (ACPI_NR_ART_ELEMENTS - 2));
-+	}
-+
-+	if (copy_to_user(ubuf, art_user, art_len))
-+		ret = -EFAULT;
-+	kfree(art_user);
-+free_art:
-+	kfree(arts);
-+	return ret;
-+}
-+
-+static int fill_trt(char __user *ubuf)
-+{
-+	int i;
-+	int ret;
-+	int count;
-+	int trt_len;
-+	struct trt *trts = NULL;
-+	union trt_object *trt_user;
-+
-+	ret = acpi_parse_trt(acpi_thermal_rel_handle, &count, &trts, false);
-+	if (ret)
-+		goto free_trt;
-+	trt_len = count * sizeof(union trt_object);
-+	trt_user = kzalloc(trt_len, GFP_KERNEL);
-+	if (!trt_user) {
-+		ret = -ENOMEM;
-+		goto free_trt;
-+	}
-+	/* now fill in user trt data */
-+	for (i = 0; i < count; i++) {
-+		/* userspace trt needs device name instead of acpi reference */
-+		get_single_name(trts[i].source, trt_user[i].source_device);
-+		get_single_name(trts[i].target, trt_user[i].target_device);
-+		trt_user[i].sample_period = trts[i].sample_period;
-+		trt_user[i].influence = trts[i].influence;
-+	}
-+
-+	if (copy_to_user(ubuf, trt_user, trt_len))
-+		ret = -EFAULT;
-+	kfree(trt_user);
-+free_trt:
-+	kfree(trts);
-+	return ret;
-+}
-+
-+static long acpi_thermal_rel_ioctl(struct file *f, unsigned int cmd,
-+				   unsigned long __arg)
-+{
-+	int ret = 0;
-+	unsigned long length = 0;
-+	unsigned long count = 0;
-+	char __user *arg = (void __user *)__arg;
-+	struct trt *trts;
-+	struct art *arts;
-+
-+	switch (cmd) {
-+	case ACPI_THERMAL_GET_TRT_COUNT:
-+		ret = acpi_parse_trt(acpi_thermal_rel_handle, (int *)&count,
-+				&trts, false);
-+		kfree(trts);
-+		if (!ret)
-+			return put_user(count, (unsigned long __user *)__arg);
-+		return ret;
-+	case ACPI_THERMAL_GET_TRT_LEN:
-+		ret = acpi_parse_trt(acpi_thermal_rel_handle, (int *)&count,
-+				&trts, false);
-+		kfree(trts);
-+		length = count * sizeof(union trt_object);
-+		if (!ret)
-+			return put_user(length, (unsigned long __user *)__arg);
-+		return ret;
-+	case ACPI_THERMAL_GET_TRT:
-+		return fill_trt(arg);
-+	case ACPI_THERMAL_GET_ART_COUNT:
-+		ret = acpi_parse_art(acpi_thermal_rel_handle, (int *)&count,
-+				&arts, false);
-+		kfree(arts);
-+		if (!ret)
-+			return put_user(count, (unsigned long __user *)__arg);
-+		return ret;
-+	case ACPI_THERMAL_GET_ART_LEN:
-+		ret = acpi_parse_art(acpi_thermal_rel_handle, (int *)&count,
-+				&arts, false);
-+		kfree(arts);
-+		length = count * sizeof(union art_object);
-+		if (!ret)
-+			return put_user(length, (unsigned long __user *)__arg);
-+		return ret;
-+
-+	case ACPI_THERMAL_GET_ART:
-+		return fill_art(arg);
-+
-+	default:
-+		return -ENOTTY;
-+	}
-+}
-+
-+static const struct file_operations acpi_thermal_rel_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= acpi_thermal_rel_open,
-+	.release	= acpi_thermal_rel_release,
-+	.unlocked_ioctl	= acpi_thermal_rel_ioctl,
-+	.llseek		= no_llseek,
-+};
-+
-+static struct miscdevice acpi_thermal_rel_misc_device = {
-+	.minor	= MISC_DYNAMIC_MINOR,
-+	"acpi_thermal_rel",
-+	&acpi_thermal_rel_fops
-+};
-+
-+int acpi_thermal_rel_misc_device_add(acpi_handle handle)
-+{
-+	acpi_thermal_rel_handle = handle;
-+
-+	return misc_register(&acpi_thermal_rel_misc_device);
-+}
-+EXPORT_SYMBOL(acpi_thermal_rel_misc_device_add);
-+
-+int acpi_thermal_rel_misc_device_remove(acpi_handle handle)
-+{
-+	misc_deregister(&acpi_thermal_rel_misc_device);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(acpi_thermal_rel_misc_device_remove);
-+
-+MODULE_AUTHOR("Zhang Rui <rui.zhang@intel.com>");
-+MODULE_AUTHOR("Jacob Pan <jacob.jun.pan@intel.com");
-+MODULE_DESCRIPTION("Intel acpi thermal rel misc dev driver");
-+MODULE_LICENSE("GPL v2");
-diff --git a/drivers/thermal/int340x_thermal/acpi_thermal_rel.h b/drivers/thermal/int340x_thermal/acpi_thermal_rel.h
-new file mode 100644
-index 0000000..f00700b
---- /dev/null
-+++ b/drivers/thermal/int340x_thermal/acpi_thermal_rel.h
-@@ -0,0 +1,84 @@
-+#ifndef __ACPI_ACPI_THERMAL_H
-+#define __ACPI_ACPI_THERMAL_H
-+
-+#include <asm/ioctl.h>
-+
-+#define ACPI_THERMAL_MAGIC 's'
-+
-+#define ACPI_THERMAL_GET_TRT_LEN _IOR(ACPI_THERMAL_MAGIC, 1, unsigned long)
-+#define ACPI_THERMAL_GET_ART_LEN _IOR(ACPI_THERMAL_MAGIC, 2, unsigned long)
-+#define ACPI_THERMAL_GET_TRT_COUNT _IOR(ACPI_THERMAL_MAGIC, 3, unsigned long)
-+#define ACPI_THERMAL_GET_ART_COUNT _IOR(ACPI_THERMAL_MAGIC, 4, unsigned long)
-+
-+#define ACPI_THERMAL_GET_TRT	_IOR(ACPI_THERMAL_MAGIC, 5, unsigned long)
-+#define ACPI_THERMAL_GET_ART	_IOR(ACPI_THERMAL_MAGIC, 6, unsigned long)
-+
-+struct art {
-+	acpi_handle source;
-+	acpi_handle target;
-+	u64 weight;
-+	u64 ac0_max;
-+	u64 ac1_max;
-+	u64 ac2_max;
-+	u64 ac3_max;
-+	u64 ac4_max;
-+	u64 ac5_max;
-+	u64 ac6_max;
-+	u64 ac7_max;
-+	u64 ac8_max;
-+	u64 ac9_max;
-+} __packed;
-+
-+struct trt {
-+	acpi_handle source;
-+	acpi_handle target;
-+	u64 influence;
-+	u64 sample_period;
-+	u64 reverved1;
-+	u64 reverved2;
-+	u64 reverved3;
-+	u64 reverved4;
-+} __packed;
-+
-+#define ACPI_NR_ART_ELEMENTS 13
-+/* for usrspace */
-+union art_object {
-+	struct {
-+		char source_device[8]; /* ACPI single name */
-+		char target_device[8]; /* ACPI single name */
-+		u64 weight;
-+		u64 ac0_max_level;
-+		u64 ac1_max_level;
-+		u64 ac2_max_level;
-+		u64 ac3_max_level;
-+		u64 ac4_max_level;
-+		u64 ac5_max_level;
-+		u64 ac6_max_level;
-+		u64 ac7_max_level;
-+		u64 ac8_max_level;
-+		u64 ac9_max_level;
-+	};
-+	u64 __data[ACPI_NR_ART_ELEMENTS];
-+};
-+
-+union trt_object {
-+	struct {
-+		char source_device[8]; /* ACPI single name */
-+		char target_device[8]; /* ACPI single name */
-+		u64 influence;
-+		u64 sample_period;
-+		u64 reserved[4];
-+	};
-+	u64 __data[8];
-+};
-+
-+#ifdef __KERNEL__
-+int acpi_thermal_rel_misc_device_add(acpi_handle handle);
-+int acpi_thermal_rel_misc_device_remove(acpi_handle handle);
-+int acpi_parse_art(acpi_handle handle, int *art_count, struct art **arts,
-+		bool create_dev);
-+int acpi_parse_trt(acpi_handle handle, int *trt_count, struct trt **trts,
-+		bool create_dev);
-+#endif
-+
-+#endif /* __ACPI_ACPI_THERMAL_H */
+ 	thermal_zone_device_unregister(priv->thermal);
+ 	kfree(priv->trts);
+ 	kfree(priv->arts);
 -- 
 1.8.3.2
 
