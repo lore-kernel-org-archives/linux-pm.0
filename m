@@ -1,122 +1,62 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [v4,1/9] ACPI / PM: Let acpi_dev_pm_detach() return an error code
-Date: Fri, 19 Sep 2014 01:13:21 +0200
-Message-ID: <58813810.nrS47mt5xk@vostro.rjw.lan>
-References: <1410262570-22785-2-git-send-email-ulf.hansson@linaro.org> <20140917234331.GA28771@core.coreip.homeip.net> <CAPDyKFoPBfAYfP9gwSxWvdUvNSjMxxNeJ_BfRkgvOZLTNpzJXA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Amit Pundir <amit.pundir@linaro.org>
+Subject: [PATCH v2] PM: Print pending wakeup IRQ preventing suspend
+Date: Fri, 19 Sep 2014 04:52:35 +0530
+Message-ID: <1411082555-4425-1-git-send-email-amit.pundir@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64684 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751978AbaIRWxo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Sep 2014 18:53:44 -0400
-In-Reply-To: <CAPDyKFoPBfAYfP9gwSxWvdUvNSjMxxNeJ_BfRkgvOZLTNpzJXA@mail.gmail.com>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:54309 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147AbaIRXXJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Sep 2014 19:23:09 -0400
+Received: by mail-pa0-f45.google.com with SMTP id rd3so2510530pab.32
+        for <linux-pm@vger.kernel.org>; Thu, 18 Sep 2014 16:23:09 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, Philipp Zabel <philipp.zabel@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Wolfram Sang <wsa@the-dreams.de>, Stephen Boyd <sboyd@codeaurora.org>, Linus Walleij <linus.walleij@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chris Ball <chris@printf.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Ben Dooks <ben-linux@f>
+To: linux-kernel@vger.kernel.org
+Cc: Todd Poynor <toddpoynor@google.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Android Kernel Team <kernel-team@android.com>, Amit Pundir <amit.pundir@linaro.org>
 
-On Thursday, September 18, 2014 02:35:44 AM Ulf Hansson wrote:
-> On 18 September 2014 01:43, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> > On Thu, Sep 18, 2014 at 01:20:49AM +0200, Ulf Hansson wrote:
-> >> On 17 September 2014 22:10, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> >> > On Wed, Sep 17, 2014 at 08:25:44PM +0200, Ulf Hansson wrote:
-> >> >> On 16 September 2014 01:36, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> >> > On Monday, September 15, 2014 09:53:59 AM Dmitry Torokhov wrote:
-> >> >> >> On Sun, Sep 14, 2014 at 06:38:58PM +0200, Rafael J. Wysocki wrote:
-> >> >> >> > On Friday, September 12, 2014 02:05:53 PM Dmitry Torokhov wrote:
-> >> >> >> > > Hi Ulf,
-> >> >> >> > >
-> >> >> >> > > On Tue, Sep 09, 2014 at 01:36:02PM +0200, Ulf Hansson wrote:
-> >> >> >> > > > To give callers the option of acting on a errors while removing the
-> >> >> >> > > > pm_domain ops for the device in the ACPI PM domain, let
-> >> >> >> > > > acpi_dev_pm_detach() return an int to provide the error code.
-> >> >> >> > >
-> >> >> >> > > So how would callers handle the errors? As far as I can see
-> >> >> >> > > acpi_dev_pm_detach() is called from ->remove() and ->shutdown() methods, where
-> >> >> >> > > there is no meaningful strategy to handle errors as you are past the point of
-> >> >> >> > > no return and you keep on tearing down the device.
-> >> >>
-> >> >> The benefit is only relevant when ACPI and genpd PM domains would
-> >> >> co-exist. In that case we might be able to skip genpd_dev_pm_detach()
-> >> >> if acpi_dev_pm_detach() succeeds. So, currently there are  no benefit,
-> >> >> but still it doesn't hurt.
-> >> >
-> >> > It doe snot have any negative material effect, the drawback is purely
-> >> > from API perspective.
-> >> >
-> >> >>
-> >> >> >> >
-> >> >> >> > This is specifically for what patch [3/9] is doing AFAICS.
-> >> >> >> >
-> >> >> >> > The existing callers don't need to worry about this.
-> >> >> >>
-> >> >> >> OK, so I have the very same comment about patch 3 then: we have
-> >> >> >> dev_pm_domain_detach() returning error. How would the callers handle errors?
-> >> >> >
-> >> >> > Ulf?
-> >> >>
-> >> >> I see your point. How about making dev_pm_domain_detach() to be a void
-> >> >> function instead?
-> >> >
-> >> > Yes, please.
-> >>
-> >> OK!
-> >>
-> >> >
-> >> >>
-> >> >> >
-> >> >> >> WRT this patch: I'd rater we did not just return generic "error code" just
-> >> >> >> because we do not know who manages PD for the device. Can we add API to check
-> >> >> >> if we are using ACPI to manage power domains? Then patch #3 could check if it
-> >> >> >> needs to use ACPI or generic power domain API.
-> >> >>
-> >> >> The problem is scalability. If we have other PM domains implementation
-> >> >> in future, each of them need to be checked prior invoking the attach
-> >> >> functions.
-> >> >> Also, how would we distinguish between genpd and a new PM domain XYZ?
-> >> >
-> >> > I do not think that trying all available methods to detach a pm domain,
-> >> > i.e.
-> >> >
-> >> >         err = acpi_dev_pm_detach();
-> >> >         if (err)
-> >> >                 err = blah_dev_pm_detach();
-> >> >         if (err)
-> >> >                 err = flab_dev_pm_detach();
-> >> >         if (err)
-> >> >                 err = gen_dev_pm_detach();
-> >> >
-> >> > is any better from scalability point of view. If you need to do that you
-> >> > will probably have to store something like "struct pd_ops *pd_ops" in
-> >> > your device and call appropriate implementation via it.
-> >>
-> >> No, that's not needed. Go ahead and have look at both ACPI and genpd,
-> >> the interesting part is the validation of struct dev_pm_domain pointer
-> >> in the struct device. That's all there is to it, no additional data
-> >> are required.
-> >
-> > OK, so can you simply put the needed method into struct dev_pm_domain and then
-> > dev_pm_domain_detach() would become:
-> >
-> > void dev_pm_domain_detach(struct device *dev, bool power_off)
-> > {
-> >         if (dev->pm_domain)
-> >                 dev->pm_domain->detach(dev, power_off);
-> > }
-> >
-> > Thanks.
-> 
-> Ohh, didn't quite follow that this is what you meant. That would be a
-> great improvement, I will adopt in the next version.
+From: Todd Poynor <toddpoynor@google.com>
 
+Currently when a pending wakeup irq stops suspend, it can be difficult
+to determine why suspend was prevented and which IRQ was actually
+responsible. In order to help debug such situation, this patch prints the
+IRQ number and action name of that pending wakeup irq.
 
-         if (dev->pm_domain && dev->pm_domain->detach)
-                 dev->pm_domain->detach(dev, power_off);
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: Android Kernel Team <kernel-team@android.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Todd Poynor <toddpoynor@google.com>
+[Amit Pundir: Reworded the commit message]
+Signed-off-by: Amit Pundir <amit.pundir@linaro.org>
+---
+Resending this patch assuming that it might have got lost in between merge
+window rush last time and now people might have some time to look at it.
+ 
+ kernel/irq/pm.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-
-Pretty please.
-
-Rafael
+diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
+index abcd6ca..c2bc8d9 100644
+--- a/kernel/irq/pm.c
++++ b/kernel/irq/pm.c
+@@ -109,8 +109,13 @@ int check_wakeup_irqs(void)
+ 		 * can abort suspend.
+ 		 */
+ 		if (irqd_is_wakeup_set(&desc->irq_data)) {
+-			if (desc->depth == 1 && desc->istate & IRQS_PENDING)
++			if (desc->depth == 1 && desc->istate & IRQS_PENDING) {
++				pr_info("Wakeup IRQ %d %s pending, suspend aborted\n",
++					irq,
++					desc->action && desc->action->name ?
++					desc->action->name : "");
+ 				return -EBUSY;
++			}
+ 			continue;
+ 		}
+ 		/*
+-- 
+1.9.1
 
