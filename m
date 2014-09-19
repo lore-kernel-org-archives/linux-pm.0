@@ -1,120 +1,77 @@
 From: Lucas Stach <l.stach@pengutronix.de>
-Subject: [PATCH 1/5] cpufreq: cpu0: disable unsupported OPPs
-Date: Fri, 19 Sep 2014 18:16:17 +0200
-Message-ID: <1411143381-10516-2-git-send-email-l.stach@pengutronix.de>
+Subject: [PATCH 2/5] clk: imx5: add step clock, used when reprogramming PLL1
+Date: Fri, 19 Sep 2014 18:16:18 +0200
+Message-ID: <1411143381-10516-3-git-send-email-l.stach@pengutronix.de>
 References: <1411143381-10516-1-git-send-email-l.stach@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48955 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48956 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756797AbaISQQg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Sep 2014 12:16:36 -0400
+	with ESMTP id S1756797AbaISQQi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Sep 2014 12:16:38 -0400
 In-Reply-To: <1411143381-10516-1-git-send-email-l.stach@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Shawn Guo <shawn.guo@freescale.com>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, kernel@pengutronix.de
 
-If the regulator connected to the CPU voltage plane doesn't
-support an OPP specified voltage with the acceptable tolerance
-it's better to just disable the OPP instead of constantly
-failing the voltage scaling later on.
+This is the bypass clock used to feed the ARM partition
+while we reprogram PLL1 to another clock.
 
 Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
 ---
- drivers/cpufreq/cpufreq-cpu0.c | 60 ++++++++++++++++++++++++++----------------
- 1 file changed, 37 insertions(+), 23 deletions(-)
+ arch/arm/mach-imx/clk-imx51-imx53.c    | 9 ++++++++-
+ include/dt-bindings/clock/imx5-clock.h | 4 +++-
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 0d2172b07765..83296bd2089e 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -117,6 +117,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- {
- 	struct device_node *np;
- 	int ret;
-+	unsigned long opp_freq = 0, min_uV = ~0, max_uV = 0, tol;
+diff --git a/arch/arm/mach-imx/clk-imx51-imx53.c b/arch/arm/mach-imx/clk-imx51-imx53.c
+index 72d65214223e..aafccf4b47c2 100644
+--- a/arch/arm/mach-imx/clk-imx51-imx53.c
++++ b/arch/arm/mach-imx/clk-imx51-imx53.c
+@@ -125,6 +125,8 @@ static const char *mx53_spdif_xtal_sel[] = { "osc", "ckih", "ckih2", "pll4_sw",
+ static const char *spdif_sel[] = { "pll1_sw", "pll2_sw", "pll3_sw", "spdif_xtal_sel", };
+ static const char *spdif0_com_sel[] = { "spdif0_podf", "ssi1_root_gate", };
+ static const char *mx51_spdif1_com_sel[] = { "spdif1_podf", "ssi2_root_gate", };
++static const char *step_sels[] = { "lp_apm", };
++static const char *cpu_podf_sels[] = { "pll1_sw", "step_sel" };
  
- 	cpu_dev = get_cpu_device(0);
- 	if (!cpu_dev) {
-@@ -155,42 +156,55 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 	/* OPPs might be populated at runtime, don't check for error here */
- 	of_init_opp_table(cpu_dev);
+ static struct clk *clk[IMX5_CLK_END];
+ static struct clk_onecell_data clk_data;
+@@ -193,7 +195,9 @@ static void __init mx5_clocks_common_init(void __iomem *ccm_base)
+ 	clk[IMX5_CLK_USB_PHY_PODF]	= imx_clk_divider("usb_phy_podf", "usb_phy_pred", MXC_CCM_CDCDR, 0, 3);
+ 	clk[IMX5_CLK_USB_PHY_SEL]	= imx_clk_mux("usb_phy_sel", MXC_CCM_CSCMR1, 26, 1,
+ 						usb_phy_sel_str, ARRAY_SIZE(usb_phy_sel_str));
+-	clk[IMX5_CLK_CPU_PODF]		= imx_clk_divider("cpu_podf", "pll1_sw", MXC_CCM_CACRR, 0, 3);
++	clk[IMX5_CLK_STEP_SEL]		= imx_clk_mux("step_sel", MXC_CCM_CCSR, 7, 2, step_sels, ARRAY_SIZE(step_sels));
++	clk[IMX5_CLK_CPU_PODF_SEL]	= imx_clk_mux("cpu_podf_sel", MXC_CCM_CCSR, 2, 1, cpu_podf_sels, ARRAY_SIZE(cpu_podf_sels));
++	clk[IMX5_CLK_CPU_PODF]		= imx_clk_divider("cpu_podf", "cpu_podf_sel", MXC_CCM_CACRR, 0, 3);
+ 	clk[IMX5_CLK_DI_PRED]		= imx_clk_divider("di_pred", "pll3_sw", MXC_CCM_CDCDR, 6, 3);
+ 	clk[IMX5_CLK_IIM_GATE]		= imx_clk_gate2("iim_gate", "ipg", MXC_CCM_CCGR0, 30);
+ 	clk[IMX5_CLK_UART1_IPG_GATE]	= imx_clk_gate2("uart1_ipg_gate", "ipg", MXC_CCM_CCGR1, 6);
+@@ -551,6 +555,9 @@ static void __init mx53_clocks_init(struct device_node *np)
+ 	/* move can bus clk to 24MHz */
+ 	clk_set_parent(clk[IMX5_CLK_CAN_SEL], clk[IMX5_CLK_LP_APM]);
  
--	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
--	if (ret) {
--		pr_err("failed to init cpufreq table: %d\n", ret);
--		goto out_put_clk;
--	}
--
- 	of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
++	/* make sure step clock is running from 24MHz */
++	clk_set_parent(clk[IMX5_CLK_STEP_SEL], clk[IMX5_CLK_LP_APM]);
++
+ 	clk_prepare_enable(clk[IMX5_CLK_IIM_GATE]);
+ 	imx_print_silicon_rev("i.MX53", mx53_revision());
+ 	clk_disable_unprepare(clk[IMX5_CLK_IIM_GATE]);
+diff --git a/include/dt-bindings/clock/imx5-clock.h b/include/dt-bindings/clock/imx5-clock.h
+index 5f2667ecd98e..1a36ff4ace1e 100644
+--- a/include/dt-bindings/clock/imx5-clock.h
++++ b/include/dt-bindings/clock/imx5-clock.h
+@@ -198,6 +198,8 @@
+ #define IMX5_CLK_OCRAM			186
+ #define IMX5_CLK_SAHARA_IPG_GATE	187
+ #define IMX5_CLK_SATA_REF		188
+-#define IMX5_CLK_END			189
++#define IMX5_CLK_STEP_SEL		189
++#define IMX5_CLK_CPU_PODF_SEL		190
++#define IMX5_CLK_END			191
  
- 	if (of_property_read_u32(np, "clock-latency", &transition_latency))
- 		transition_latency = CPUFREQ_ETERNAL;
- 
- 	if (!IS_ERR(cpu_reg)) {
--		struct dev_pm_opp *opp;
--		unsigned long min_uV, max_uV;
--		int i;
--
- 		/*
--		 * OPP is maintained in order of increasing frequency, and
--		 * freq_table initialised from OPP is therefore sorted in the
--		 * same order.
-+		 * Disable any OPPs where the connected regulator isn't able to
-+		 * provide the specified voltage and record minimum and maximum
-+		 * voltage levels.
- 		 */
--		for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
--			;
--		rcu_read_lock();
--		opp = dev_pm_opp_find_freq_exact(cpu_dev,
--				freq_table[0].frequency * 1000, true);
--		min_uV = dev_pm_opp_get_voltage(opp);
--		opp = dev_pm_opp_find_freq_exact(cpu_dev,
--				freq_table[i-1].frequency * 1000, true);
--		max_uV = dev_pm_opp_get_voltage(opp);
--		rcu_read_unlock();
-+		while (1) {
-+			struct dev_pm_opp *opp;
-+			unsigned long opp_uV;
-+
-+			rcu_read_lock();
-+			opp = dev_pm_opp_find_freq_ceil(cpu_dev, &opp_freq);
-+			if (IS_ERR(opp)) {
-+				rcu_read_unlock();
-+				break;
-+			}
-+			opp_uV = dev_pm_opp_get_voltage(opp);
-+			rcu_read_unlock();
-+
-+			tol = opp_uV * voltage_tolerance / 100;
-+			if (regulator_is_supported_voltage(cpu_reg, opp_uV,
-+							   opp_uV + tol)) {
-+				if (opp_uV < min_uV)
-+					min_uV = opp_uV;
-+				if (opp_uV > max_uV)
-+					max_uV = opp_uV;
-+			} else {
-+				dev_pm_opp_disable(cpu_dev, opp_freq);
-+			}
-+
-+			opp_freq++;
-+		}
-+
- 		ret = regulator_set_voltage_time(cpu_reg, min_uV, max_uV);
- 		if (ret > 0)
- 			transition_latency += ret * 1000;
- 	}
- 
-+	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-+	if (ret) {
-+		pr_err("failed to init cpufreq table: %d\n", ret);
-+		goto out_put_clk;
-+	}
-+
- 	ret = cpufreq_register_driver(&cpu0_cpufreq_driver);
- 	if (ret) {
- 		pr_err("failed register driver: %d\n", ret);
+ #endif /* __DT_BINDINGS_CLOCK_IMX5_H */
 -- 
 2.1.0
 
