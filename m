@@ -1,36 +1,135 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/5] cpufreq: cpu0: disable unsupported OPPs
-Date: Fri, 19 Sep 2014 09:49:39 -0700
-Message-ID: <CAKohpo=s+X8dXZpcj5q5exR+Q=E-CxTNbdYem4D=zHeQ3A_qXA@mail.gmail.com>
-References: <1411143381-10516-1-git-send-email-l.stach@pengutronix.de>
-	<1411143381-10516-2-git-send-email-l.stach@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Pramod Gurav <pramod.gurav@smartplayin.com>
+Subject: [PATCH] thermal: ti-soc-thermal: Switch to using managed resources
+Date: Fri, 19 Sep 2014 23:35:09 +0530
+Message-ID: <1411149909-13007-1-git-send-email-pramod.gurav@smartplayin.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f169.google.com ([209.85.214.169]:49808 "EHLO
-	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756002AbaISQtk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Sep 2014 12:49:40 -0400
-Received: by mail-ob0-f169.google.com with SMTP id wm4so1917396obc.28
-        for <linux-pm@vger.kernel.org>; Fri, 19 Sep 2014 09:49:39 -0700 (PDT)
-In-Reply-To: <1411143381-10516-2-git-send-email-l.stach@pengutronix.de>
+Received: from smtp93.ord1c.emailsrvr.com ([108.166.43.93]:35453 "EHLO
+	smtp93.ord1c.emailsrvr.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756107AbaISSFY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Sep 2014 14:05:24 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>, Mark Brown <broonie@kernel.org>
-Cc: Shawn Guo <shawn.guo@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <kernel@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Pramod Gurav <pramod.gurav@smartplayin.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 
-Cc'ing Mark Brown to get his views on the idea.
+This change switches to managed resource APIs to allocated resources
+such as irq, clock. Hence does away with release statements of the
+same resorces in error lables and remove function.
 
-On 19 September 2014 09:16, Lucas Stach <l.stach@pengutronix.de> wrote:
-> If the regulator connected to the CPU voltage plane doesn't
-> support an OPP specified voltage with the acceptable tolerance
-> it's better to just disable the OPP instead of constantly
-> failing the voltage scaling later on.
->
-> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-> ---
->  drivers/cpufreq/cpufreq-cpu0.c | 60 ++++++++++++++++++++++++++----------------
->  1 file changed, 37 insertions(+), 23 deletions(-)
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
+---
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c | 46 ++++++++---------------------
+ 1 file changed, 12 insertions(+), 34 deletions(-)
 
-And this file doesn't exist anymore (its renamed). Rebase over
-Rafael's linux-next branch for that.
+diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+index 634b6ce..e068dd5 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
++++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+@@ -1060,7 +1060,7 @@ static int ti_bandgap_tshut_init(struct ti_bandgap *bgp,
+ 	int status;
+ 
+ 	/* Request for gpio_86 line */
+-	status = gpio_request(gpio_nr, "tshut");
++	status = devm_gpio_request(&pdev->dev, gpio_nr, "tshut");
+ 	if (status < 0) {
+ 		dev_err(bgp->dev, "Could not request for TSHUT GPIO:%i\n", 86);
+ 		return status;
+@@ -1071,11 +1071,12 @@ static int ti_bandgap_tshut_init(struct ti_bandgap *bgp,
+ 		return status;
+ 	}
+ 
+-	status = request_irq(gpio_to_irq(gpio_nr), ti_bandgap_tshut_irq_handler,
+-			     IRQF_TRIGGER_RISING, "tshut", NULL);
++	status = devm_request_irq(&pdev->dev, gpio_to_irq(gpio_nr),
++				  ti_bandgap_tshut_irq_handler,
++				  IRQF_TRIGGER_RISING, "tshut", NULL);
+ 	if (status) {
+-		gpio_free(gpio_nr);
+ 		dev_err(bgp->dev, "request irq failed for TSHUT");
++		return status;
+ 	}
+ 
+ 	return 0;
+@@ -1104,7 +1105,7 @@ static int ti_bandgap_talert_init(struct ti_bandgap *bgp,
+ 		dev_err(&pdev->dev, "get_irq failed\n");
+ 		return bgp->irq;
+ 	}
+-	ret = request_threaded_irq(bgp->irq, NULL,
++	ret = devm_request_threaded_irq(&pdev->dev, bgp->irq, NULL,
+ 				   ti_bandgap_talert_irq_handler,
+ 				   IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
+ 				   "talert", bgp);
+@@ -1212,21 +1213,17 @@ int ti_bandgap_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	bgp->fclock = clk_get(NULL, bgp->conf->fclock_name);
+-	ret = IS_ERR(bgp->fclock);
+-	if (ret) {
++	bgp->fclock = devm_clk_get(NULL, bgp->conf->fclock_name);
++	if (IS_ERR(bgp->fclock)) {
+ 		dev_err(&pdev->dev, "failed to request fclock reference\n");
+-		ret = PTR_ERR(bgp->fclock);
+-		goto free_irqs;
++		return PTR_ERR(bgp->fclock);
+ 	}
+ 
+-	bgp->div_clk = clk_get(NULL,  bgp->conf->div_ck_name);
+-	ret = IS_ERR(bgp->div_clk);
+-	if (ret) {
++	bgp->div_clk = devm_clk_get(NULL,  bgp->conf->div_ck_name);
++	if (IS_ERR(bgp->div_clk)) {
+ 		dev_err(&pdev->dev,
+ 			"failed to request div_ts_ck clock ref\n");
+-		ret = PTR_ERR(bgp->div_clk);
+-		goto free_irqs;
++		return PTR_ERR(bgp->div_clk);
+ 	}
+ 
+ 	for (i = 0; i < bgp->conf->sensor_count; i++) {
+@@ -1251,7 +1248,6 @@ int ti_bandgap_probe(struct platform_device *pdev)
+ 	    clk_rate <= 0) {
+ 		ret = -ENODEV;
+ 		dev_err(&pdev->dev, "wrong clock rate (%d)\n", clk_rate);
+-		goto put_clks;
+ 	}
+ 
+ 	ret = clk_set_rate(bgp->div_clk, clk_rate);
+@@ -1357,14 +1353,6 @@ remove_sensors:
+ disable_clk:
+ 	if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
+ 		clk_disable_unprepare(bgp->fclock);
+-put_clks:
+-	clk_put(bgp->fclock);
+-	clk_put(bgp->div_clk);
+-free_irqs:
+-	if (TI_BANDGAP_HAS(bgp, TSHUT)) {
+-		free_irq(gpio_to_irq(bgp->tshut_gpio), NULL);
+-		gpio_free(bgp->tshut_gpio);
+-	}
+ 
+ 	return ret;
+ }
+@@ -1388,16 +1376,6 @@ int ti_bandgap_remove(struct platform_device *pdev)
+ 
+ 	if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
+ 		clk_disable_unprepare(bgp->fclock);
+-	clk_put(bgp->fclock);
+-	clk_put(bgp->div_clk);
+-
+-	if (TI_BANDGAP_HAS(bgp, TALERT))
+-		free_irq(bgp->irq, bgp);
+-
+-	if (TI_BANDGAP_HAS(bgp, TSHUT)) {
+-		free_irq(gpio_to_irq(bgp->tshut_gpio), NULL);
+-		gpio_free(bgp->tshut_gpio);
+-	}
+ 
+ 	return 0;
+ }
+-- 
+1.8.3.2
+
