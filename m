@@ -1,136 +1,190 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v5 11/11] ACPI / PM: Convert acpi_dev_pm_detach() into a static function
-Date: Fri, 19 Sep 2014 20:27:44 +0200
-Message-ID: <1411151264-16245-12-git-send-email-ulf.hansson@linaro.org>
-References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v2 1/2] sched: let the scheduler see CPU idle states
+Date: Fri, 19 Sep 2014 14:30:55 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1409191425360.8647@knanqh.ubzr>
+References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org> <1409844730-12273-2-git-send-email-nicolas.pitre@linaro.org> <20140918173733.GQ4723@linux.vnet.ibm.com> <alpine.LFD.2.11.1409181425080.8647@knanqh.ubzr> <20140918231715.GO2848@worktop.localdomain>
+ <20140918232832.GC3037@worktop.localdomain>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f177.google.com ([209.85.192.177]:59362 "EHLO
-	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757799AbaISS21 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Sep 2014 14:28:27 -0400
-Received: by mail-pd0-f177.google.com with SMTP id fp1so431498pdb.36
-        for <linux-pm@vger.kernel.org>; Fri, 19 Sep 2014 11:28:26 -0700 (PDT)
-In-Reply-To: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
+Received: from mail-qc0-f171.google.com ([209.85.216.171]:37028 "EHLO
+	mail-qc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757622AbaISSa7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Sep 2014 14:30:59 -0400
+Received: by mail-qc0-f171.google.com with SMTP id x3so3533614qcv.2
+        for <linux-pm@vger.kernel.org>; Fri, 19 Sep 2014 11:30:58 -0700 (PDT)
+In-Reply-To: <20140918232832.GC3037@worktop.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Ingo Molnar <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-The ->detach() callback for the PM domain has now been fully adopted,
-thus there no users left of the acpi_dev_pm_detach() API. This allow us
-to convert it into a static function.
+On Fri, 19 Sep 2014, Peter Zijlstra wrote:
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/acpi/device_pm.c | 69 ++++++++++++++++++++++++------------------------
- include/linux/acpi.h     |  2 --
- 2 files changed, 34 insertions(+), 37 deletions(-)
+> On Fri, Sep 19, 2014 at 01:17:15AM +0200, Peter Zijlstra wrote:
+> > On Thu, Sep 18, 2014 at 02:32:25PM -0400, Nicolas Pitre wrote:
+> > > On Thu, 18 Sep 2014, Paul E. McKenney wrote:
+> > 
+> > > > So what is it that you really need to do here?
+> > > 
+> > > In short, we don't want the cpufreq data to go away (see the 2 scenarios 
+> > > above) while the scheduler is looking at it.  The scheduler uses the 
+> > > provided accessors (see patch 2/2) so we can put any protection 
+> > > mechanism we want in them.  A simple spinlock could do just as well 
+> > > which should be good enough.
+> > 
+> > rq->lock disables interrupts so on that something like
+> > kick_all_cpus_sync() will guarantee what you need --
+> > wake_up_all_idle_cpus() will not.
+> 
+> Something like so then?
 
-diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
-index eec5ed5..bea6896 100644
---- a/drivers/acpi/device_pm.c
-+++ b/drivers/acpi/device_pm.c
-@@ -1041,6 +1041,40 @@ static struct dev_pm_domain acpi_general_pm_domain = {
- };
- 
- /**
-+ * acpi_dev_pm_detach - Remove ACPI power management from the device.
-+ * @dev: Device to take care of.
-+ * @power_off: Whether or not to try to remove power from the device.
-+ *
-+ * Remove the device from the general ACPI PM domain and remove its wakeup
-+ * notifier.  If @power_off is set, additionally remove power from the device if
-+ * possible.
-+ *
-+ * Callers must ensure proper synchronization of this function with power
-+ * management callbacks.
-+ */
-+static void acpi_dev_pm_detach(struct device *dev, bool power_off)
-+{
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
-+
-+	if (adev && dev->pm_domain == &acpi_general_pm_domain) {
-+		dev->pm_domain = NULL;
-+		acpi_remove_pm_notifier(adev);
-+		if (power_off) {
-+			/*
-+			 * If the device's PM QoS resume latency limit or flags
-+			 * have been exposed to user space, they have to be
-+			 * hidden at this point, so that they don't affect the
-+			 * choice of the low-power state to put the device into.
-+			 */
-+			dev_pm_qos_hide_latency_limit(dev);
-+			dev_pm_qos_hide_flags(dev);
-+			acpi_device_wakeup(adev, ACPI_STATE_S0, false);
-+			acpi_dev_pm_low_power(dev, adev, ACPI_STATE_S0);
-+		}
-+	}
-+}
-+
-+/**
-  * acpi_dev_pm_attach - Prepare device for ACPI power management.
-  * @dev: Device to prepare.
-  * @power_on: Whether or not to power on the device.
-@@ -1077,39 +1111,4 @@ int acpi_dev_pm_attach(struct device *dev, bool power_on)
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
--
--/**
-- * acpi_dev_pm_detach - Remove ACPI power management from the device.
-- * @dev: Device to take care of.
-- * @power_off: Whether or not to try to remove power from the device.
-- *
-- * Remove the device from the general ACPI PM domain and remove its wakeup
-- * notifier.  If @power_off is set, additionally remove power from the device if
-- * possible.
-- *
-- * Callers must ensure proper synchronization of this function with power
-- * management callbacks.
-- */
--void acpi_dev_pm_detach(struct device *dev, bool power_off)
--{
--	struct acpi_device *adev = ACPI_COMPANION(dev);
--
--	if (adev && dev->pm_domain == &acpi_general_pm_domain) {
--		dev->pm_domain = NULL;
--		acpi_remove_pm_notifier(adev);
--		if (power_off) {
--			/*
--			 * If the device's PM QoS resume latency limit or flags
--			 * have been exposed to user space, they have to be
--			 * hidden at this point, so that they don't affect the
--			 * choice of the low-power state to put the device into.
--			 */
--			dev_pm_qos_hide_latency_limit(dev);
--			dev_pm_qos_hide_flags(dev);
--			acpi_device_wakeup(adev, ACPI_STATE_S0, false);
--			acpi_dev_pm_low_power(dev, adev, ACPI_STATE_S0);
--		}
--	}
--}
--EXPORT_SYMBOL_GPL(acpi_dev_pm_detach);
- #endif /* CONFIG_PM */
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 807cbc4..b7926bb 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -587,7 +587,6 @@ static inline int acpi_subsys_freeze(struct device *dev) { return 0; }
- #if defined(CONFIG_ACPI) && defined(CONFIG_PM)
- struct acpi_device *acpi_dev_pm_get_node(struct device *dev);
- int acpi_dev_pm_attach(struct device *dev, bool power_on);
--void acpi_dev_pm_detach(struct device *dev, bool power_off);
- #else
- static inline struct acpi_device *acpi_dev_pm_get_node(struct device *dev)
- {
-@@ -597,7 +596,6 @@ static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
- {
- 	return -ENODEV;
- }
--static inline void acpi_dev_pm_detach(struct device *dev, bool power_off) {}
- #endif
- 
- #ifdef CONFIG_ACPI
--- 
-1.9.1
+I'll trust you for anything that relates to RCU as its subtleties are 
+still escaping my mind.
 
+Still, the commit log refers to idle_put_state() which is no more, and 
+that should be adjusted.
+
+> 
+> ---
+> Subject: sched: let the scheduler see CPU idle states
+> From: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Date: Thu, 04 Sep 2014 11:32:09 -0400
+> 
+> When the cpu enters idle, it stores the cpuidle state pointer in its
+> struct rq instance which in turn could be used to make a better decision
+> when balancing tasks.
+> 
+> As soon as the cpu exits its idle state, the struct rq reference is
+> cleared.
+> 
+> There are a couple of situations where the idle state pointer could be changed
+> while it is being consulted:
+> 
+> 1. For x86/acpi with dynamic c-states, when a laptop switches from battery
+>    to AC that could result on removing the deeper idle state. The acpi driver
+>    triggers:
+> 	'acpi_processor_cst_has_changed'
+> 		'cpuidle_pause_and_lock'
+> 			'cpuidle_uninstall_idle_handler'
+> 				'kick_all_cpus_sync'.
+> 
+> All cpus will exit their idle state and the pointed object will be set to
+> NULL.
+> 
+> 2. The cpuidle driver is unloaded. Logically that could happen but not
+> in practice because the drivers are always compiled in and 95% of them are
+> not coded to unregister themselves.  In any case, the unloading code must
+> call 'cpuidle_unregister_device', that calls 'cpuidle_pause_and_lock'
+> leading to 'kick_all_cpus_sync' as mentioned above.
+> 
+> A race can happen if we use the pointer and then one of these two scenarios
+> occurs at the same moment.
+> 
+> In order to be safe, the idle state pointer stored in the rq must be
+> used inside a rcu_read_lock section where we are protected with the
+> 'rcu_barrier' in the 'cpuidle_uninstall_idle_handler' function. The
+> idle_get_state() and idle_put_state() accessors should be used to that
+> effect.
+> 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Signed-off-by: Nicolas Pitre <nico@linaro.org>
+> ---
+>  drivers/cpuidle/cpuidle.c |    6 ++++++
+>  kernel/sched/idle.c       |    6 ++++++
+>  kernel/sched/sched.h      |   29 +++++++++++++++++++++++++++++
+>  3 files changed, 41 insertions(+)
+> 
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -225,6 +225,12 @@ void cpuidle_uninstall_idle_handler(void
+>  		initialized = 0;
+>  		wake_up_all_idle_cpus();
+>  	}
+> +
+> +	/*
+> +	 * Make sure external observers (such as the scheduler)
+> +	 * are done looking at pointed idle states.
+> +	 */
+> +	kick_all_cpus_sync();
+>  }
+>  
+>  /**
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -147,6 +147,9 @@ static void cpuidle_idle_call(void)
+>  	    clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
+>  		goto use_default;
+>  
+> +	/* Take note of the planned idle state. */
+> +	idle_set_state(this_rq(), &drv->states[next_state]);
+> +
+>  	/*
+>  	 * Enter the idle state previously returned by the governor decision.
+>  	 * This function will block until an interrupt occurs and will take
+> @@ -154,6 +157,9 @@ static void cpuidle_idle_call(void)
+>  	 */
+>  	entered_state = cpuidle_enter(drv, dev, next_state);
+>  
+> +	/* The cpu is no longer idle or about to enter idle. */
+> +	idle_set_state(this_rq(), NULL);
+> +
+>  	if (broadcast)
+>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
+>  
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -14,6 +14,7 @@
+>  #include "cpuacct.h"
+>  
+>  struct rq;
+> +struct cpuidle_state;
+>  
+>  /* task_struct::on_rq states: */
+>  #define TASK_ON_RQ_QUEUED	1
+> @@ -640,6 +641,11 @@ struct rq {
+>  #ifdef CONFIG_SMP
+>  	struct llist_head wake_list;
+>  #endif
+> +
+> +#ifdef CONFIG_CPU_IDLE
+> +	/* Must be inspected within a rcu lock section */
+> +	struct cpuidle_state *idle_state;
+> +#endif
+>  };
+>  
+>  static inline int cpu_of(struct rq *rq)
+> @@ -1193,6 +1199,29 @@ static inline void idle_exit_fair(struct
+>  
+>  #endif
+>  
+> +#ifdef CONFIG_CPU_IDLE
+> +static inline void idle_set_state(struct rq *rq,
+> +				  struct cpuidle_state *idle_state)
+> +{
+> +	rq->idle_state = idle_state;
+> +}
+> +
+> +static inline struct cpuidle_state *idle_get_state(struct rq *rq)
+> +{
+> +	return rq->idle_state;
+> +}
+> +#else
+> +static inline void idle_set_state(struct rq *rq,
+> +				  struct cpuidle_state *idle_state)
+> +{
+> +}
+> +
+> +static inline struct cpuidle_state *idle_get_state(struct rq *rq)
+> +{
+> +	return NULL;
+> +}
+> +#endif
+> +
+>  extern void sysrq_sched_debug_show(void);
+>  extern void sched_init_granularity(void);
+>  extern void update_max_interval(void);
+> 
+> 
