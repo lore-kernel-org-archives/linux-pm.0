@@ -1,32 +1,81 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2] PM: Print pending wakeup IRQ preventing suspend
-Date: Fri, 19 Sep 2014 13:21:37 +0200
-Message-ID: <20140919112137.GA13233@amd>
-References: <1411082555-4425-1-git-send-email-amit.pundir@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54259 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751251AbaISLVl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Sep 2014 07:21:41 -0400
-Content-Disposition: inline
-In-Reply-To: <1411082555-4425-1-git-send-email-amit.pundir@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Pramod Gurav <pramod.gurav@smartplayin.com>
+Subject: [PATCH] power: reset: use restart_notifier mechanism for msm poweroff
+Date: Fri, 19 Sep 2014 17:36:55 +0530
+Message-ID: <1411128415-20381-1-git-send-email-pramod.gurav@smartplayin.com>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+Cc: Pramod Gurav <pramod.gurav@smartplayin.com>, Guenter Roeck <linux@roeck-us.net>, Josh Cartwright <joshc@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Amit Pundir <amit.pundir@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Todd Poynor <toddpoynor@google.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Android Kernel Team <kernel-team@android.com>
 
-On Fri 2014-09-19 04:52:35, Amit Pundir wrote:
-> From: Todd Poynor <toddpoynor@google.com>
-> 
-> Currently when a pending wakeup irq stops suspend, it can be difficult
-> to determine why suspend was prevented and which IRQ was actually
-> responsible. In order to help debug such situation, this patch prints the
-> IRQ number and action name of that pending wakeup irq.
-> 
+This change uses replaces use of arm_pm_restart with recently introduced
+reset mechanism in Linux kernel called restart_notifier.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Josh Cartwright <joshc@codeaurora.org>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-pm@vger.kernel.org
+
+Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
+
+---
+
+This patch is tested on DB8074 Target and are based on patchset [1]
+by Guenter Roeck.
+
+[1]: https://patchwork.kernel.org/patch/4746721/
+
+ drivers/power/reset/msm-poweroff.c |   18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
+index 774f9a3..59b368c 100644
+--- a/drivers/power/reset/msm-poweroff.c
++++ b/drivers/power/reset/msm-poweroff.c
+@@ -24,17 +24,21 @@
+ #include <asm/system_misc.h>
+ 
+ static void __iomem *msm_ps_hold;
++static struct notifier_block restart_nb;
+ 
+-static void do_msm_restart(enum reboot_mode reboot_mode, const char *cmd)
++static int do_msm_restart(struct notifier_block *nb, unsigned long action,
++			   void *data)
+ {
+ 	writel(0, msm_ps_hold);
+ 	mdelay(10000);
++
++	return NOTIFY_DONE;
+ }
+ 
+ static void do_msm_poweroff(void)
+ {
+ 	/* TODO: Add poweroff capability */
+-	do_msm_restart(REBOOT_HARD, NULL);
++	do_msm_restart(&restart_nb, 0, NULL);
+ }
+ 
+ static int msm_restart_probe(struct platform_device *pdev)
+@@ -47,8 +51,16 @@ static int msm_restart_probe(struct platform_device *pdev)
+ 	if (IS_ERR(msm_ps_hold))
+ 		return PTR_ERR(msm_ps_hold);
+ 
++	restart_nb.notifier_call = do_msm_restart;
++	restart_nb.priority = 128;
++	if (register_restart_handler(&restart_nb)) {
++		dev_err(&pdev->dev,
++			"failed to setup restart handler.\n");
++			restart_nb.notifier_call = NULL;
++	}
++
+ 	pm_power_off = do_msm_poweroff;
+-	arm_pm_restart = do_msm_restart;
++
+ 	return 0;
+ }
+ 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.9.5
