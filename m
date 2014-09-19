@@ -1,33 +1,42 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v5 00/11] PM / Domains: Generic OF-based support
-Date: Fri, 19 Sep 2014 11:48:49 -0700
-Message-ID: <20140919184849.GA14832@core.coreip.homeip.net>
-References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
+From: Todd E Brandt <todd.e.brandt@linux.intel.com>
+Subject: [PATCH] new suspend_resume trace event for console resume
+Date: Fri, 19 Sep 2014 14:07:12 -0700
+Message-ID: <20140919210711.GA15652@linux.intel.com>
+Reply-To: todd.e.brandt@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:43286 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757831AbaISVHN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 19 Sep 2014 17:07:13 -0400
 Content-Disposition: inline
-In-Reply-To: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Hi Ulf,
+This patch adds another suspend_resume trace event for analyze_suspend
+to capture. The resume_console call can take several hundred milliseconds
+if the printk buffer is full of debug info. The tool will now inform 
+testers of the wasted time and encourage them to disable it in
+production builds.
 
-On Fri, Sep 19, 2014 at 08:27:33PM +0200, Ulf Hansson wrote:
-> Changes in v5:
-> 	- Converted dev_pm_domain_detach() to a void function
-> 	- Added a ->detach() callback to the PM domain struct, invoked from the
-> 	  dev_pm_domain_detach().
-> 	- Make ACPI and genpd both assign the ->detach() callback at successfull
-> 	  attachment.
-> 	- The above changes made it possible to make acpi_pm_domain_detach() to
-> 	  be static, added a separate patch for that.
+Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
+----
+ kernel/power/suspend.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Thank you for making these changes. For the series:
-
-Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
--- 
-Dmitry
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 18c6219..e837dd6 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -361,7 +361,9 @@ int suspend_devices_and_enter(suspend_state_t state)
+ 	suspend_test_start();
+ 	dpm_resume_end(PMSG_RESUME);
+ 	suspend_test_finish("resume devices");
++	trace_suspend_resume(TPS("resume_console"), state, true);
+ 	resume_console();
++	trace_suspend_resume(TPS("resume_console"), state, false);
+ 
+  Close:
+ 	platform_suspend_end(state);
