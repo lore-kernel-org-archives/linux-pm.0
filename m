@@ -1,73 +1,36 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: [PATCH 5/5] ARM: imx53: add cpufreq support
-Date: Fri, 19 Sep 2014 18:16:21 +0200
-Message-ID: <1411143381-10516-6-git-send-email-l.stach@pengutronix.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/5] cpufreq: cpu0: disable unsupported OPPs
+Date: Fri, 19 Sep 2014 09:49:39 -0700
+Message-ID: <CAKohpo=s+X8dXZpcj5q5exR+Q=E-CxTNbdYem4D=zHeQ3A_qXA@mail.gmail.com>
 References: <1411143381-10516-1-git-send-email-l.stach@pengutronix.de>
+	<1411143381-10516-2-git-send-email-l.stach@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48981 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757190AbaISQQx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Sep 2014 12:16:53 -0400
-In-Reply-To: <1411143381-10516-1-git-send-email-l.stach@pengutronix.de>
+Received: from mail-ob0-f169.google.com ([209.85.214.169]:49808 "EHLO
+	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756002AbaISQtk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Sep 2014 12:49:40 -0400
+Received: by mail-ob0-f169.google.com with SMTP id wm4so1917396obc.28
+        for <linux-pm@vger.kernel.org>; Fri, 19 Sep 2014 09:49:39 -0700 (PDT)
+In-Reply-To: <1411143381-10516-2-git-send-email-l.stach@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawn.guo@freescale.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, kernel@pengutronix.de
+To: Lucas Stach <l.stach@pengutronix.de>, Mark Brown <broonie@kernel.org>
+Cc: Shawn Guo <shawn.guo@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <kernel@pengutronix.de>
 
-Instanciate the platform device for the generic cpufreq-cpu0
-driver and add all required properties to the DT.
+Cc'ing Mark Brown to get his views on the idea.
 
-Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
----
- arch/arm/boot/dts/imx53.dtsi   | 13 ++++++++++++-
- arch/arm/mach-imx/mach-imx53.c |  4 ++++
- 2 files changed, 16 insertions(+), 1 deletion(-)
+On 19 September 2014 09:16, Lucas Stach <l.stach@pengutronix.de> wrote:
+> If the regulator connected to the CPU voltage plane doesn't
+> support an OPP specified voltage with the acceptable tolerance
+> it's better to just disable the OPP instead of constantly
+> failing the voltage scaling later on.
+>
+> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> ---
+>  drivers/cpufreq/cpufreq-cpu0.c | 60 ++++++++++++++++++++++++++----------------
+>  1 file changed, 37 insertions(+), 23 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx53.dtsi b/arch/arm/boot/dts/imx53.dtsi
-index 64fa27b36be0..bd5226a7ea20 100644
---- a/arch/arm/boot/dts/imx53.dtsi
-+++ b/arch/arm/boot/dts/imx53.dtsi
-@@ -46,10 +46,21 @@
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--		cpu@0 {
-+		cpu0: cpu@0 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a8";
- 			reg = <0x0>;
-+			clocks = <&clks IMX5_CLK_ARM>;
-+			clock-latency = <61036>;
-+			voltage-tolerance = <5>;
-+			operating-points = <
-+				/* kHz */
-+				 166666  850000
-+				 400000  900000
-+				 800000 1050000
-+				1000000 1200000
-+				1200000 1300000
-+			>;
- 		};
- 	};
- 
-diff --git a/arch/arm/mach-imx/mach-imx53.c b/arch/arm/mach-imx/mach-imx53.c
-index 03dd6ea13acc..4eb6849c52d2 100644
---- a/arch/arm/mach-imx/mach-imx53.c
-+++ b/arch/arm/mach-imx/mach-imx53.c
-@@ -38,9 +38,13 @@ static void __init imx53_dt_init(void)
- 	imx_aips_allow_unprivileged_access("fsl,imx53-aipstz");
- }
- 
-+static struct platform_device imx53_cpufreq_pdev = { .name = "cpufreq-cpu0", };
-+
- static void __init imx53_init_late(void)
- {
- 	imx53_pm_init();
-+
-+	platform_device_register(&imx53_cpufreq_pdev);
- }
- 
- static const char * const imx53_dt_board_compat[] __initconst = {
--- 
-2.1.0
-
+And this file doesn't exist anymore (its renamed). Rebase over
+Rafael's linux-next branch for that.
