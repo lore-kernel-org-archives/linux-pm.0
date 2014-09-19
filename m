@@ -1,77 +1,173 @@
 From: Lucas Stach <l.stach@pengutronix.de>
-Subject: [PATCH 2/5] clk: imx5: add step clock, used when reprogramming PLL1
-Date: Fri, 19 Sep 2014 18:16:18 +0200
-Message-ID: <1411143381-10516-3-git-send-email-l.stach@pengutronix.de>
+Subject: [PATCH 3/5] clk: imx: add CPU clock type
+Date: Fri, 19 Sep 2014 18:16:19 +0200
+Message-ID: <1411143381-10516-4-git-send-email-l.stach@pengutronix.de>
 References: <1411143381-10516-1-git-send-email-l.stach@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48956 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48972 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756797AbaISQQi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Sep 2014 12:16:38 -0400
+	with ESMTP id S1757190AbaISQQr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Sep 2014 12:16:47 -0400
 In-Reply-To: <1411143381-10516-1-git-send-email-l.stach@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Shawn Guo <shawn.guo@freescale.com>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, kernel@pengutronix.de
 
-This is the bypass clock used to feed the ARM partition
-while we reprogram PLL1 to another clock.
+From: Lucas Stach <dev@lynxeye.de>
 
-Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+This implements a virtual clock used to abstract away
+all the steps needed in order to change the ARM clock,
+so we don't have to push all this clock handling into
+the cpufreq driver.
+
+While it will be used for i.MX53 at first it is generic
+enough to be used on i.MX6 later on.
+
+Signed-off-by: Lucas Stach <dev@lynxeye.de>
 ---
- arch/arm/mach-imx/clk-imx51-imx53.c    | 9 ++++++++-
- include/dt-bindings/clock/imx5-clock.h | 4 +++-
- 2 files changed, 11 insertions(+), 2 deletions(-)
+ arch/arm/mach-imx/Makefile  |   2 +-
+ arch/arm/mach-imx/clk-cpu.c | 104 ++++++++++++++++++++++++++++++++++++++++++++
+ arch/arm/mach-imx/clk.h     |   4 ++
+ 3 files changed, 109 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm/mach-imx/clk-cpu.c
 
-diff --git a/arch/arm/mach-imx/clk-imx51-imx53.c b/arch/arm/mach-imx/clk-imx51-imx53.c
-index 72d65214223e..aafccf4b47c2 100644
---- a/arch/arm/mach-imx/clk-imx51-imx53.c
-+++ b/arch/arm/mach-imx/clk-imx51-imx53.c
-@@ -125,6 +125,8 @@ static const char *mx53_spdif_xtal_sel[] = { "osc", "ckih", "ckih2", "pll4_sw",
- static const char *spdif_sel[] = { "pll1_sw", "pll2_sw", "pll3_sw", "spdif_xtal_sel", };
- static const char *spdif0_com_sel[] = { "spdif0_podf", "ssi1_root_gate", };
- static const char *mx51_spdif1_com_sel[] = { "spdif1_podf", "ssi2_root_gate", };
-+static const char *step_sels[] = { "lp_apm", };
-+static const char *cpu_podf_sels[] = { "pll1_sw", "step_sel" };
+diff --git a/arch/arm/mach-imx/Makefile b/arch/arm/mach-imx/Makefile
+index ac88599ca080..4d6071351f4f 100644
+--- a/arch/arm/mach-imx/Makefile
++++ b/arch/arm/mach-imx/Makefile
+@@ -12,7 +12,7 @@ obj-$(CONFIG_SOC_IMX31) += mm-imx3.o cpu-imx31.o clk-imx31.o iomux-imx31.o ehci-
+ obj-$(CONFIG_SOC_IMX35) += mm-imx3.o cpu-imx35.o clk-imx35.o ehci-imx35.o pm-imx3.o
  
- static struct clk *clk[IMX5_CLK_END];
- static struct clk_onecell_data clk_data;
-@@ -193,7 +195,9 @@ static void __init mx5_clocks_common_init(void __iomem *ccm_base)
- 	clk[IMX5_CLK_USB_PHY_PODF]	= imx_clk_divider("usb_phy_podf", "usb_phy_pred", MXC_CCM_CDCDR, 0, 3);
- 	clk[IMX5_CLK_USB_PHY_SEL]	= imx_clk_mux("usb_phy_sel", MXC_CCM_CSCMR1, 26, 1,
- 						usb_phy_sel_str, ARRAY_SIZE(usb_phy_sel_str));
--	clk[IMX5_CLK_CPU_PODF]		= imx_clk_divider("cpu_podf", "pll1_sw", MXC_CCM_CACRR, 0, 3);
-+	clk[IMX5_CLK_STEP_SEL]		= imx_clk_mux("step_sel", MXC_CCM_CCSR, 7, 2, step_sels, ARRAY_SIZE(step_sels));
-+	clk[IMX5_CLK_CPU_PODF_SEL]	= imx_clk_mux("cpu_podf_sel", MXC_CCM_CCSR, 2, 1, cpu_podf_sels, ARRAY_SIZE(cpu_podf_sels));
-+	clk[IMX5_CLK_CPU_PODF]		= imx_clk_divider("cpu_podf", "cpu_podf_sel", MXC_CCM_CACRR, 0, 3);
- 	clk[IMX5_CLK_DI_PRED]		= imx_clk_divider("di_pred", "pll3_sw", MXC_CCM_CDCDR, 6, 3);
- 	clk[IMX5_CLK_IIM_GATE]		= imx_clk_gate2("iim_gate", "ipg", MXC_CCM_CCGR0, 30);
- 	clk[IMX5_CLK_UART1_IPG_GATE]	= imx_clk_gate2("uart1_ipg_gate", "ipg", MXC_CCM_CCGR1, 6);
-@@ -551,6 +555,9 @@ static void __init mx53_clocks_init(struct device_node *np)
- 	/* move can bus clk to 24MHz */
- 	clk_set_parent(clk[IMX5_CLK_CAN_SEL], clk[IMX5_CLK_LP_APM]);
+ imx5-pm-$(CONFIG_PM) += pm-imx5.o
+-obj-$(CONFIG_SOC_IMX5) += cpu-imx5.o clk-imx51-imx53.o $(imx5-pm-y)
++obj-$(CONFIG_SOC_IMX5) += cpu-imx5.o clk-imx51-imx53.o clk-cpu.o $(imx5-pm-y)
  
-+	/* make sure step clock is running from 24MHz */
-+	clk_set_parent(clk[IMX5_CLK_STEP_SEL], clk[IMX5_CLK_LP_APM]);
+ obj-$(CONFIG_COMMON_CLK) += clk-pllv1.o clk-pllv2.o clk-pllv3.o clk-gate2.o \
+ 			    clk-pfd.o clk-busy.o clk.o \
+diff --git a/arch/arm/mach-imx/clk-cpu.c b/arch/arm/mach-imx/clk-cpu.c
+new file mode 100644
+index 000000000000..ffba96228d3b
+--- /dev/null
++++ b/arch/arm/mach-imx/clk-cpu.c
+@@ -0,0 +1,104 @@
++/*
++ * Copyright (c) 2014 Lucas Stach <l.stach@pengutronix.de>, Pengutronix
++ *
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ */
 +
- 	clk_prepare_enable(clk[IMX5_CLK_IIM_GATE]);
- 	imx_print_silicon_rev("i.MX53", mx53_revision());
- 	clk_disable_unprepare(clk[IMX5_CLK_IIM_GATE]);
-diff --git a/include/dt-bindings/clock/imx5-clock.h b/include/dt-bindings/clock/imx5-clock.h
-index 5f2667ecd98e..1a36ff4ace1e 100644
---- a/include/dt-bindings/clock/imx5-clock.h
-+++ b/include/dt-bindings/clock/imx5-clock.h
-@@ -198,6 +198,8 @@
- #define IMX5_CLK_OCRAM			186
- #define IMX5_CLK_SAHARA_IPG_GATE	187
- #define IMX5_CLK_SATA_REF		188
--#define IMX5_CLK_END			189
-+#define IMX5_CLK_STEP_SEL		189
-+#define IMX5_CLK_CPU_PODF_SEL		190
-+#define IMX5_CLK_END			191
++#include <linux/clk.h>
++#include <linux/clk-provider.h>
++#include <linux/slab.h>
++
++struct clk_cpu {
++	struct clk_hw	hw;
++	struct clk	*div, *mux, *pll, *step;
++};
++
++static inline struct clk_cpu *to_clk_cpu(struct clk_hw *hw)
++{
++	return container_of(hw, struct clk_cpu, hw);
++}
++
++static unsigned long clk_cpu_recalc_rate(struct clk_hw *hw,
++					 unsigned long parent_rate)
++{
++	struct clk_cpu *cpu = to_clk_cpu(hw);
++
++	return clk_get_rate(cpu->div);
++}
++
++static long clk_cpu_round_rate(struct clk_hw *hw, unsigned long rate,
++			       unsigned long *prate)
++{
++	struct clk_cpu *cpu = to_clk_cpu(hw);
++
++	return clk_round_rate(cpu->pll, rate);
++}
++
++static int clk_cpu_set_rate(struct clk_hw *hw, unsigned long rate,
++			    unsigned long parent_rate)
++{
++	struct clk_cpu *cpu = to_clk_cpu(hw);
++	int ret;
++
++	/* switch to PLL bypass clock */
++	ret = clk_set_parent(cpu->mux, cpu->step);
++	if (ret)
++		return ret;
++
++	/* reprogram PLL */
++	ret = clk_set_rate(cpu->pll, rate);
++	if (ret) {
++		clk_set_parent(cpu->mux, cpu->pll);
++		return ret;
++	}
++	/* switch back to PLL clock */
++	clk_set_parent(cpu->mux, cpu->pll);
++
++	/* Ensure the divider is what we expect */
++	clk_set_rate(cpu->div, rate);
++
++	return 0;
++}
++
++static const struct clk_ops clk_cpu_ops = {
++	.recalc_rate	= clk_cpu_recalc_rate,
++	.round_rate	= clk_cpu_round_rate,
++	.set_rate	= clk_cpu_set_rate,
++};
++
++struct clk *imx_clk_cpu(const char *name, const char *parent_name,
++		struct clk *div, struct clk *mux, struct clk *pll,
++		struct clk *step)
++{
++	struct clk_cpu *cpu;
++	struct clk *clk;
++	struct clk_init_data init;
++
++	cpu = kzalloc(sizeof(*cpu), GFP_KERNEL);
++	if (!cpu)
++		return ERR_PTR(-ENOMEM);
++
++	cpu->div = div;
++	cpu->mux = mux;
++	cpu->pll = pll;
++	cpu->step = step;
++
++	init.name = name;
++	init.ops = &clk_cpu_ops;
++	init.flags = 0;
++	init.parent_names = &parent_name;
++	init.num_parents = 1;
++
++	cpu->hw.init = &init;
++
++	clk = clk_register(NULL, &cpu->hw);
++	if (IS_ERR(clk))
++		kfree(cpu);
++
++	return clk;
++}
+diff --git a/arch/arm/mach-imx/clk.h b/arch/arm/mach-imx/clk.h
+index d5ba76fee115..5de8b53ec208 100644
+--- a/arch/arm/mach-imx/clk.h
++++ b/arch/arm/mach-imx/clk.h
+@@ -128,4 +128,8 @@ static inline struct clk *imx_clk_fixed_factor(const char *name,
+ 			CLK_SET_RATE_PARENT, mult, div);
+ }
  
- #endif /* __DT_BINDINGS_CLOCK_IMX5_H */
++struct clk *imx_clk_cpu(const char *name, const char *parent_name,
++		struct clk *div, struct clk *mux, struct clk *pll,
++		struct clk *step);
++
+ #endif
 -- 
 2.1.0
 
