@@ -1,33 +1,106 @@
-From: Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH 0/3] Introduce of_match_machine() helper
-Date: Fri, 19 Sep 2014 16:12:45 +0300
-Message-ID: <20140919131245.GQ26779@tbergstrom-lnx.Nvidia.com>
-References: <1407452515-2390-1-git-send-email-ttynkkynen@nvidia.com>
- <53FB7642.1000808@wwwdotorg.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH] power: reset: use restart_notifier mechanism for msm
+ poweroff
+Date: Fri, 19 Sep 2014 06:53:09 -0700
+Message-ID: <541C3545.3090700@roeck-us.net>
+References: <1411128415-20381-1-git-send-email-pramod.gurav@smartplayin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <53FB7642.1000808-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:35766 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756716AbaISNxQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Sep 2014 09:53:16 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XUyce-001S6M-1n
+	for linux-pm@vger.kernel.org; Fri, 19 Sep 2014 13:53:16 +0000
+In-Reply-To: <1411128415-20381-1-git-send-email-pramod.gurav@smartplayin.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pramod Gurav <pramod.gurav@smartplayin.com>, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+Cc: Josh Cartwright <joshc@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org
 
-On Mon, Aug 25, 2014 at 07:45:38PM +0200, Stephen Warren wrote:
-> On 08/07/2014 05:01 PM, Tuomas Tynkkynen wrote:
-> > Some mach-specific drivers that don't require their own node in the device tree
-> > (for example drivers/soc/*, cpufreq, cpuidle etc.) want to match on the device
-> > tree root compatible property instead. Instead of open-coding (and forgetting
-> > to call of_node_put on the root node) everywhere, add a helper to the OF core.
-> 
-> Tuomas, I assume there will be a new version of this series to address 
-> the review comments? For now, I'm not intending on applying this.
+On 09/19/2014 05:06 AM, Pramod Gurav wrote:
+> This change uses replaces use of arm_pm_restart with recently introduced
+> reset mechanism in Linux kernel called restart_notifier.
+>
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: Josh Cartwright <joshc@codeaurora.org>
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> Cc: David Woodhouse <dwmw2@infradead.org>
+> Cc: Stephen Boyd <sboyd@codeaurora.org>
+> Cc: linux-pm@vger.kernel.org
+>
+> Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
+>
+> ---
+>
+> This patch is tested on DB8074 Target and are based on patchset [1]
+> by Guenter Roeck.
+>
+> [1]: https://patchwork.kernel.org/patch/4746721/
+>
+>   drivers/power/reset/msm-poweroff.c |   18 +++++++++++++++---
+>   1 file changed, 15 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
+> index 774f9a3..59b368c 100644
+> --- a/drivers/power/reset/msm-poweroff.c
+> +++ b/drivers/power/reset/msm-poweroff.c
+> @@ -24,17 +24,21 @@
+>   #include <asm/system_misc.h>
+>
+>   static void __iomem *msm_ps_hold;
+> +static struct notifier_block restart_nb;
+>
+> -static void do_msm_restart(enum reboot_mode reboot_mode, const char *cmd)
+> +static int do_msm_restart(struct notifier_block *nb, unsigned long action,
+> +			   void *data)
+>   {
+>   	writel(0, msm_ps_hold);
+>   	mdelay(10000);
+> +
+> +	return NOTIFY_DONE;
+>   }
+>
+>   static void do_msm_poweroff(void)
+>   {
+>   	/* TODO: Add poweroff capability */
+> -	do_msm_restart(REBOOT_HARD, NULL);
+> +	do_msm_restart(&restart_nb, 0, NULL);
+>   }
+>
+>   static int msm_restart_probe(struct platform_device *pdev)
+> @@ -47,8 +51,16 @@ static int msm_restart_probe(struct platform_device *pdev)
+>   	if (IS_ERR(msm_ps_hold))
+>   		return PTR_ERR(msm_ps_hold);
+>
+> +	restart_nb.notifier_call = do_msm_restart;
+> +	restart_nb.priority = 128;
 
-Given that Tuomas's internship ended, I'm willing to push this patch set
-forward, if there is interest. So are people still interested in this idea
-or should we drop it?
+Since the structure is static, you might as well initialize it there
+and save a few bytes of code.
 
-Thanks,
+> +	if (register_restart_handler(&restart_nb)) {
+> +		dev_err(&pdev->dev,
+> +			"failed to setup restart handler.\n");
 
-Peter.
+'failed to register ...' might be a bit better wording.
+
+> +			restart_nb.notifier_call = NULL;
+
+No need to set notifier_call to NULL.
+
+> +	}
+> +
+>   	pm_power_off = do_msm_poweroff;
+> -	arm_pm_restart = do_msm_restart;
+> +
+>   	return 0;
+>   }
+>
+>
+
