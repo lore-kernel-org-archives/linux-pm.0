@@ -1,72 +1,34 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM: Print pending wakeup IRQ preventing suspend
-Date: Sun, 21 Sep 2014 02:08:53 +0200
-Message-ID: <1869677.4PrY1mNKsC@vostro.rjw.lan>
-References: <1411082555-4425-1-git-send-email-amit.pundir@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Heiko Stuebner <heiko@sntech.de>
+Subject: [PATCH v2 0/3] gpio-charger: add devicetree support
+Date: Sun, 21 Sep 2014 22:05:20 +0200
+Message-ID: <1411329923-15912-1-git-send-email-heiko@sntech.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60617 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751067AbaITXtJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 20 Sep 2014 19:49:09 -0400
-In-Reply-To: <1411082555-4425-1-git-send-email-amit.pundir@linaro.org>
+Received: from gloria.sntech.de ([95.129.55.99]:37226 "EHLO gloria.sntech.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751603AbaIUUGS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 21 Sep 2014 16:06:18 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Amit Pundir <amit.pundir@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Todd Poynor <toddpoynor@google.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Android Kernel Team <kernel-team@android.com>
+To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dianders@chromium.org, heiko@sntech.de
 
-On Friday, September 19, 2014 04:52:35 AM Amit Pundir wrote:
-> From: Todd Poynor <toddpoynor@google.com>
-> 
-> Currently when a pending wakeup irq stops suspend, it can be difficult
-> to determine why suspend was prevented and which IRQ was actually
-> responsible. In order to help debug such situation, this patch prints the
-> IRQ number and action name of that pending wakeup irq.
-> 
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: Android Kernel Team <kernel-team@android.com>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> Signed-off-by: Todd Poynor <toddpoynor@google.com>
-> [Amit Pundir: Reworded the commit message]
-> Signed-off-by: Amit Pundir <amit.pundir@linaro.org>
-> ---
-> Resending this patch assuming that it might have got lost in between merge
-> window rush last time and now people might have some time to look at it.
->  
->  kernel/irq/pm.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-> index abcd6ca..c2bc8d9 100644
-> --- a/kernel/irq/pm.c
-> +++ b/kernel/irq/pm.c
-> @@ -109,8 +109,13 @@ int check_wakeup_irqs(void)
+This series adds devicetree support to the gpio-charger and fixes a small
+issue with the return value of gpio_get_value.
 
-check_wakeup_irqs() is going away in 3.18, please see linux-next (or the
-pm-genirq branch of linux-pm.git) for details.
+changes since v1:
+- adapt binding example to show how the charger fits into the
+  power-supplies structure
 
->  		 * can abort suspend.
->  		 */
->  		if (irqd_is_wakeup_set(&desc->irq_data)) {
-> -			if (desc->depth == 1 && desc->istate & IRQS_PENDING)
-> +			if (desc->depth == 1 && desc->istate & IRQS_PENDING) {
-> +				pr_info("Wakeup IRQ %d %s pending, suspend aborted\n",
-> +					irq,
-> +					desc->action && desc->action->name ?
-> +					desc->action->name : "");
->  				return -EBUSY;
-> +			}
->  			continue;
->  		}
->  		/*
-> 
+Heiko Stuebner (3):
+  dt-bindings: document gpio-charger bindings
+  power: gpio-charger: add device tree support
+  power: gpio-charger: do not use gpio value directly
+
+ .../bindings/power_supply/gpio-charger.txt         | 27 +++++++++
+ drivers/power/gpio-charger.c                       | 68 ++++++++++++++++++++--
+ 2 files changed, 91 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power_supply/gpio-charger.txt
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.9.0
+
