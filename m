@@ -1,48 +1,56 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v5 01/11] PM / Domains: Add a detach callback to the
- struct dev_pm_domain
-Date: Mon, 22 Sep 2014 13:15:21 +0200
-Message-ID: <CAMuHMdX7twqW5A1LS-RqoZHRmqZdLVCaACr45GrtyA843iVA_Q@mail.gmail.com>
-References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
-	<1411151264-16245-2-git-send-email-ulf.hansson@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] new suspend_resume trace event for console resume
+Date: Mon, 22 Sep 2014 16:04:09 +0200
+Message-ID: <4154231.oR0n14TklK@vostro.rjw.lan>
+References: <20140919210711.GA15652@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f179.google.com ([209.85.217.179]:61256 "EHLO
-	mail-lb0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752856AbaIVLPX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Sep 2014 07:15:23 -0400
-In-Reply-To: <1411151264-16245-2-git-send-email-ulf.hansson@linaro.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:52721 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753936AbaIVNoW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Sep 2014 09:44:22 -0400
+In-Reply-To: <20140919210711.GA15652@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.>
+To: todd.e.brandt@linux.intel.com
+Cc: linux-pm@vger.kernel.org
 
-On Fri, Sep 19, 2014 at 8:27 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -619,6 +619,7 @@ extern int dev_pm_put_subsys_data(struct device *dev);
->   */
->  struct dev_pm_domain {
->         struct dev_pm_ops       ops;
-> +       void (*detach)(struct device *, bool);
+On Friday, September 19, 2014 02:07:12 PM Todd E Brandt wrote:
+> This patch adds another suspend_resume trace event for analyze_suspend
+> to capture. The resume_console call can take several hundred milliseconds
+> if the printk buffer is full of debug info. The tool will now inform 
+> testers of the wasted time and encourage them to disable it in
+> production builds.
+> 
+> Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
 
-I think it would help to add the parameter names, especially for
-the "bool" parameter:
+Queued up for 3.18, thanks!
 
-void (*detach)(struct device *dev, bool power_off);
+> ----
+>  kernel/power/suspend.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index 18c6219..e837dd6 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -361,7 +361,9 @@ int suspend_devices_and_enter(suspend_state_t state)
+>  	suspend_test_start();
+>  	dpm_resume_end(PMSG_RESUME);
+>  	suspend_test_finish("resume devices");
+> +	trace_suspend_resume(TPS("resume_console"), state, true);
+>  	resume_console();
+> +	trace_suspend_resume(TPS("resume_console"), state, false);
+>  
+>   Close:
+>  	platform_suspend_end(state);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
->  };
->
->  /*
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
