@@ -1,30 +1,177 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH v2 1/3] dt-bindings: document gpio-charger bindings
-Date: Mon, 22 Sep 2014 09:51:43 -0700
-Message-ID: <CAD=FV=V1wQfXvyx5XP-KwdES=MKzBBFi2977+U=SzCMvxaS8Kg@mail.gmail.com>
-References: <1411329923-15912-1-git-send-email-heiko@sntech.de>
-	<1411329923-15912-2-git-send-email-heiko@sntech.de>
+From: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Subject: [PATCH RESEND] PM / sleep: Fix racing timers
+Date: Mon, 22 Sep 2014 10:07:03 -0700
+Message-ID: <1411405623-7869-1-git-send-email-soren.brinkmann@xilinx.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1411329923-15912-2-git-send-email-heiko@sntech.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>
-Cc: sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Heiko Stuebner <heiko.stuebner@bq.com>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:58808 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753542AbaIVRHQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Sep 2014 13:07:16 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Soren Brinkmann <soren.brinkmann@xilinx.com>
 
-Heiko,
+On platforms that do not power off during suspend, successfully enterin=
+g
+suspend races with timers.
 
-On Sun, Sep 21, 2014 at 1:05 PM, Heiko Stuebner <heiko@sntech.de> wrote:
-> From: Heiko Stuebner <heiko.stuebner@bq.com>
->
-> This documents the binding for the gpio-charger power-supply.
->
-> Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
-> ---
->  .../bindings/power_supply/gpio-charger.txt         | 27 ++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
+The race happening in a couple of location is:
 
-It is not an area I'm an expert on, but this seems pretty reasonable to me.
+  1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
+     ...
+  2. syscore_suspend()
+      -> timekeeping_suspend()
+       -> clockevents_notify(SUSPEND)
+        -> tick_suspend()   	(timers are turned off here)
+     ...
+  3. wfi            		(wait for wake-IRQ here)
 
-Reviewed-by: Doug Anderson <dianders@chromium.org>
+Between steps 1 and 2 the timers can still generate interrupts that are
+not handled and stay pending until step 3. That pending IRQ causes an
+immediate - spurious - wake.
+
+The solution is to move the clockevents suspend/resume notification
+out of the syscore_suspend step and explictly call them at the appropri=
+ate
+time in the suspend/hibernation paths. I.e. timers are suspend _before_
+IRQs get disabled. And accordingly in the resume path.
+
+Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+---
+Hi,
+
+there was not a lot of discussion on the last submission. Just one comm=
+ent from
+Rafael (https://lkml.org/lkml/2014/8/26/780), which - as I outlined in =
+my
+response, does not apply, IMHO, since the platform does not re-enable
+interrupts. Hence, I still believe fixing this in the core is the appro=
+priate
+way.
+
+	Thanks,
+	S=C3=B6ren
+
+Changes since RFC:
+ - remove resume notification from syscore_resume path.
+---
+ kernel/power/hibernate.c  | 9 +++++++++
+ kernel/power/suspend.c    | 5 +++++
+ kernel/time/timekeeping.c | 3 ---
+ 3 files changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index a9dfa79b6bab..76f15644aec8 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -285,6 +285,8 @@ static int create_image(int platform_mode)
+ 	if (error || hibernation_test(TEST_CPUS))
+ 		goto Enable_cpus;
+=20
++	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
++
+ 	local_irq_disable();
+=20
+ 	error =3D syscore_suspend();
+@@ -316,6 +318,7 @@ static int create_image(int platform_mode)
+ 	syscore_resume();
+=20
+  Enable_irqs:
++	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
+ 	local_irq_enable();
+=20
+  Enable_cpus:
+@@ -438,6 +441,8 @@ static int resume_target_kernel(bool platform_mode)
+ 	if (error)
+ 		goto Enable_cpus;
+=20
++	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
++
+ 	local_irq_disable();
+=20
+ 	error =3D syscore_suspend();
+@@ -472,6 +477,7 @@ static int resume_target_kernel(bool platform_mode)
+ 	syscore_resume();
+=20
+  Enable_irqs:
++	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
+ 	local_irq_enable();
+=20
+  Enable_cpus:
+@@ -550,6 +556,8 @@ int hibernation_platform_enter(void)
+ 	if (error)
+ 		goto Platform_finish;
+=20
++	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
++
+ 	local_irq_disable();
+ 	syscore_suspend();
+ 	if (pm_wakeup_pending()) {
+@@ -563,6 +571,7 @@ int hibernation_platform_enter(void)
+=20
+  Power_up:
+ 	syscore_resume();
++	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
+ 	local_irq_enable();
+ 	enable_nonboot_cpus();
+=20
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 18c62195660f..ded3c7d6731f 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -12,6 +12,7 @@
+ #include <linux/delay.h>
+ #include <linux/errno.h>
+ #include <linux/init.h>
++#include <linux/clockchips.h>
+ #include <linux/console.h>
+ #include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+@@ -294,6 +295,8 @@ static int suspend_enter(suspend_state_t state, boo=
+l *wakeup)
+ 	if (error || suspend_test(TEST_CPUS))
+ 		goto Enable_cpus;
+=20
++	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
++
+ 	arch_suspend_disable_irqs();
+ 	BUG_ON(!irqs_disabled());
+=20
+@@ -311,6 +314,8 @@ static int suspend_enter(suspend_state_t state, boo=
+l *wakeup)
+ 		syscore_resume();
+ 	}
+=20
++	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
++
+ 	arch_suspend_enable_irqs();
+ 	BUG_ON(irqs_disabled());
+=20
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index ec1791fae965..5b6696772ffc 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -1189,8 +1189,6 @@ static void timekeeping_resume(void)
+=20
+ 	touch_softlockup_watchdog();
+=20
+-	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
+-
+ 	/* Resume hrtimers */
+ 	hrtimers_resume();
+ }
+@@ -1243,7 +1241,6 @@ static int timekeeping_suspend(void)
+ 	write_seqcount_end(&tk_core.seq);
+ 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
+=20
+-	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
+ 	clocksource_suspend();
+ 	clockevents_suspend();
+=20
+--=20
+2.1.0.1.g27b9230
+
