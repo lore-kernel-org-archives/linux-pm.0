@@ -1,62 +1,86 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: [PATCH v2 1/3] dt-bindings: document gpio-charger bindings
-Date: Sun, 21 Sep 2014 22:05:21 +0200
-Message-ID: <1411329923-15912-2-git-send-email-heiko@sntech.de>
-References: <1411329923-15912-1-git-send-email-heiko@sntech.de>
+From: Pramod Gurav <pramod.gurav@smartplayin.com>
+Subject: [PATCH v2] power: reset: use restart_notifier mechanism for msm-poweroff
+Date: Mon, 22 Sep 2014 13:12:54 +0530
+Message-ID: <1411371774-6834-1-git-send-email-pramod.gurav@smartplayin.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:37238 "EHLO gloria.sntech.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752085AbaIUUGU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 21 Sep 2014 16:06:20 -0400
-In-Reply-To: <1411329923-15912-1-git-send-email-heiko@sntech.de>
+Received: from smtp77.ord1c.emailsrvr.com ([108.166.43.77]:47155 "EHLO
+	smtp77.ord1c.emailsrvr.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753181AbaIVHjY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Sep 2014 03:39:24 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dianders@chromium.org, heiko@sntech.de, Heiko Stuebner <heiko.stuebner@bq.com>
+To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+Cc: Pramod Gurav <pramod.gurav@smartplayin.com>, Guenter Roeck <linux@roeck-us.net>, Josh Cartwright <joshc@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org
 
-From: Heiko Stuebner <heiko.stuebner@bq.com>
+This change replaces use of arm_pm_restart with recently introduced
+reset mechanism in Linux kernel called restart_notifier.
 
-This documents the binding for the gpio-charger power-supply.
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Josh Cartwright <joshc@codeaurora.org>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-pm@vger.kernel.org
 
-Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
+Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
 ---
- .../bindings/power_supply/gpio-charger.txt         | 27 ++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power_supply/gpio-charger.txt
+Tested on Dragonboard APQ8074
 
-diff --git a/Documentation/devicetree/bindings/power_supply/gpio-charger.txt b/Documentation/devicetree/bindings/power_supply/gpio-charger.txt
-new file mode 100644
-index 0000000..adbb5dc
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power_supply/gpio-charger.txt
-@@ -0,0 +1,27 @@
-+gpio-charger
+Changes since v1:
+- Initialized restart_nb with its declaration
+- Removed return check for register_restart_handler as it always
+  returns 0 as per Guenter's suggestion to Josh's similar patch.
+  This takes care of Guenter's comments on error logs and NULL
+  initialization of restart_nb.notifier_call.
+
+ drivers/power/reset/msm-poweroff.c |   17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
+index 774f9a3..db73238 100644
+--- a/drivers/power/reset/msm-poweroff.c
++++ b/drivers/power/reset/msm-poweroff.c
+@@ -24,17 +24,24 @@
+ #include <asm/system_misc.h>
+ 
+ static void __iomem *msm_ps_hold;
+-
+-static void do_msm_restart(enum reboot_mode reboot_mode, const char *cmd)
++static int do_msm_restart(struct notifier_block *nb, unsigned long action,
++			   void *data)
+ {
+ 	writel(0, msm_ps_hold);
+ 	mdelay(10000);
 +
-+Required properties :
-+ - compatible : "gpio-charger"
-+ - gpios : GPIO indicating the charger presence.
-+   See GPIO binding in bindings/gpio/gpio.txt .
-+ - charger-type : power supply type, one of
-+     unknown
-+     battery
-+     ups
-+     mains
-+     usb-sdp (USB standard downstream port)
-+     usb-dcp (USB dedicated charging port)
-+     usb-cdp (USB charging downstream port)
-+     usb-aca (USB accessory charger adapter)
++	return NOTIFY_DONE;
+ }
+ 
++static struct notifier_block restart_nb = {
++	.notifier_call = do_msm_restart,
++	.priority = 128,
++};
 +
-+Example:
+ static void do_msm_poweroff(void)
+ {
+ 	/* TODO: Add poweroff capability */
+-	do_msm_restart(REBOOT_HARD, NULL);
++	do_msm_restart(&restart_nb, 0, NULL);
+ }
+ 
+ static int msm_restart_probe(struct platform_device *pdev)
+@@ -47,8 +54,10 @@ static int msm_restart_probe(struct platform_device *pdev)
+ 	if (IS_ERR(msm_ps_hold))
+ 		return PTR_ERR(msm_ps_hold);
+ 
++	register_restart_handler(&restart_nb);
 +
-+	usb_charger: charger {
-+		compatible = "gpio-charger";
-+		charger-type = "usb-sdp";
-+		gpios = <&gpf0 2 0 0 0>;
-+	}
+ 	pm_power_off = do_msm_poweroff;
+-	arm_pm_restart = do_msm_restart;
 +
-+	battery {
-+		power-supplies = <&usb_charger>;
-+	};
+ 	return 0;
+ }
+ 
 -- 
-1.9.0
+1.7.9.5
 
