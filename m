@@ -1,159 +1,60 @@
 From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH v2 2/3] power: gpio-charger: add device tree support
-Date: Mon, 22 Sep 2014 09:48:33 -0700
-Message-ID: <CAD=FV=W6q7wMDWWDkwdC_KF4EHJt2q8afxSGCpPEC+Nk2Jp2Ag@mail.gmail.com>
+Subject: Re: [PATCH v2 3/3] power: gpio-charger: do not use gpio value directly
+Date: Mon, 22 Sep 2014 09:50:55 -0700
+Message-ID: <CAD=FV=Vkz1e-AEQv30YS-hFos59RES_4qNbH6Wu1UQvfAWLW8A@mail.gmail.com>
 References: <1411329923-15912-1-git-send-email-heiko@sntech.de>
-	<1411329923-15912-3-git-send-email-heiko@sntech.de>
+	<1411329923-15912-4-git-send-email-heiko@sntech.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1411329923-15912-3-git-send-email-heiko@sntech.de>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f173.google.com ([209.85.220.173]:42186 "EHLO
+	mail-vc0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754500AbaIVQu5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Sep 2014 12:50:57 -0400
+Received: by mail-vc0-f173.google.com with SMTP id le20so4403524vcb.18
+        for <linux-pm@vger.kernel.org>; Mon, 22 Sep 2014 09:50:55 -0700 (PDT)
+In-Reply-To: <1411329923-15912-4-git-send-email-heiko@sntech.de>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Heiko Stuebner <heiko@sntech.de>
 Cc: sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Heiko Stuebner <heiko.stuebner@bq.com>
-List-Id: linux-pm@vger.kernel.org
 
-Heiko
+Heiko,
 
 On Sun, Sep 21, 2014 at 1:05 PM, Heiko Stuebner <heiko@sntech.de> wrote:
 > From: Heiko Stuebner <heiko.stuebner@bq.com>
 >
-> Add the ability to parse gpio-charger data from a devicetree node.
+> Some gpio implementations return interesting values for gpio_get_value when
+> the value is not 0 - as seen on a imx6sl board. Therefore do not use the
+> value returned from gpio_get_value directly but simply check for 0 or not 0.
 >
 > Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
 > ---
->  drivers/power/gpio-charger.c | 66 ++++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 63 insertions(+), 3 deletions(-)
+>  drivers/power/gpio-charger.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
 > diff --git a/drivers/power/gpio-charger.c b/drivers/power/gpio-charger.c
-> index a0024b2..5fe6879 100644
+> index 5fe6879..ce99a29 100644
 > --- a/drivers/power/gpio-charger.c
 > +++ b/drivers/power/gpio-charger.c
-> @@ -22,6 +22,8 @@
->  #include <linux/platform_device.h>
->  #include <linux/power_supply.h>
->  #include <linux/slab.h>
-> +#include <linux/of.h>
-> +#include <linux/of_gpio.h>
+> @@ -57,7 +57,7 @@ static int gpio_charger_get_property(struct power_supply *psy,
 >
->  #include <linux/power/gpio-charger.h>
->
-> @@ -69,17 +71,68 @@ static enum power_supply_property gpio_charger_properties[] = {
->         POWER_SUPPLY_PROP_ONLINE,
->  };
->
-> +static
-> +struct gpio_charger_platform_data *gpio_charger_parse_dt(struct device *dev)
-> +{
-> +       struct device_node *np = dev->of_node;
-> +       struct gpio_charger_platform_data *pdata;
-> +       const char *chargetype;
-> +       enum of_gpio_flags flags;
-> +       int ret;
-> +
-> +       if (!np)
-> +               return ERR_PTR(-ENOENT);
-> +
-> +       pdata = devm_kzalloc(dev, sizeof(struct gpio_charger_platform_data),
+>         switch (psp) {
+>         case POWER_SUPPLY_PROP_ONLINE:
+> -               val->intval = gpio_get_value_cansleep(pdata->gpio);
+> +               val->intval = gpio_get_value_cansleep(pdata->gpio) ? 1 : 0;
 
-nit: sizeof(*pdata) is smaller / cleaner.
+There is a common practice about using "!!" for this.  AKA:
+"val->intval = !!gpio_get_value_cansleep(pdata->gpio);".
 
-> +                            GFP_KERNEL);
-> +       if (!pdata)
-> +               return ERR_PTR(-ENOMEM);
-> +
-> +       pdata->name = np->name;
-> +
-> +       pdata->gpio = of_get_gpio_flags(np, 0, &flags);
+>                 val->intval ^= pdata->gpio_active_low;
 
-It would be nice to check the gpio for errors here, including handling
-the possibility of EPROBE_DEFER.
+It seems like while you're at it you could also fix
+"pdata->gpio_active_low" to have the "!!", just to be safe.
 
+...if you don't fix this, perhaps you should fix your last patch to
+add a "!!", like:
 
-> +       pdata->gpio_active_low = flags & OF_GPIO_ACTIVE_LOW;
-> +
-> +       pdata->type = POWER_SUPPLY_TYPE_UNKNOWN;
-> +       ret = of_property_read_string(np, "charger-type", &chargetype);
-> +       if (ret >= 0) {
-> +               if (!strncmp("unknown", chargetype, 7))
-> +                       pdata->type = POWER_SUPPLY_TYPE_UNKNOWN;
-> +               else if (!strncmp("battery", chargetype, 7))
-> +                       pdata->type = POWER_SUPPLY_TYPE_BATTERY;
-> +               else if (!strncmp("ups", chargetype, 3))
-> +                       pdata->type = POWER_SUPPLY_TYPE_UPS;
-> +               else if (!strncmp("mains", chargetype, 5))
-> +                       pdata->type = POWER_SUPPLY_TYPE_MAINS;
-> +               else if (!strncmp("usb-sdp", chargetype, 7))
-> +                       pdata->type = POWER_SUPPLY_TYPE_USB;
-> +               else if (!strncmp("usb-dcp", chargetype, 7))
-> +                       pdata->type = POWER_SUPPLY_TYPE_USB_DCP;
-> +               else if (!strncmp("usb-cdp", chargetype, 7))
-> +                       pdata->type = POWER_SUPPLY_TYPE_USB_CDP;
-> +               else if (!strncmp("usb-aca", chargetype, 7))
-> +                       pdata->type = POWER_SUPPLY_TYPE_USB_ACA;
-> +               else
-> +                       dev_warn(dev, "unknown charger type %s\n", chargetype);
-> +       }
-> +
-> +       return pdata;
-> +}
-> +
->  static int gpio_charger_probe(struct platform_device *pdev)
->  {
-> -       const struct gpio_charger_platform_data *pdata = pdev->dev.platform_data;
-> +       struct gpio_charger_platform_data *pdata = pdev->dev.platform_data;
+  pdata->gpio_active_low = !!(flags & OF_GPIO_ACTIVE_LOW);
 
-Do you really need to remove const?  If I remember correctly the const
-here is not saying that the variable "pdata" won't change but that the
-data pointed to by pdata won't change.  I think that's still the case
-(from the perspective of this function).
-
-
->         struct gpio_charger *gpio_charger;
->         struct power_supply *charger;
->         int ret;
->         int irq;
->
->         if (!pdata) {
-> -               dev_err(&pdev->dev, "No platform data\n");
-> -               return -EINVAL;
-> +               pdata = gpio_charger_parse_dt(&pdev->dev);
-> +               if (IS_ERR(pdata)) {
-> +                       dev_err(&pdev->dev, "No platform data\n");
-> +                       return -EINVAL;
-
-Probably should pass back the error code since it might be
-EPROBE_DEFER.  ...and <sigh> I guess you need the special case of
-"don't print if it's EPROBE_DEFER".  I almost wish we had a helper
-function for that.  ;)
-
-
-> +               }
->         }
->
->         if (!gpio_is_valid(pdata->gpio)) {
-> @@ -189,6 +242,12 @@ static int gpio_charger_resume(struct device *dev)
->  static SIMPLE_DEV_PM_OPS(gpio_charger_pm_ops,
->                 gpio_charger_suspend, gpio_charger_resume);
->
-> +static const struct of_device_id gpio_charger_match[] = {
-> +       { .compatible = "gpio-charger" },
-> +       { }
-> +};
-> +MODULE_DEVICE_TABLE(of, gpio_charger_match);
-> +
->  static struct platform_driver gpio_charger_driver = {
->         .probe = gpio_charger_probe,
->         .remove = gpio_charger_remove,
-> @@ -196,6 +255,7 @@ static struct platform_driver gpio_charger_driver = {
->                 .name = "gpio-charger",
->                 .owner = THIS_MODULE,
->                 .pm = &gpio_charger_pm_ops,
-> +               .of_match_table = of_match_ptr(gpio_charger_match),
-
-Given that you don't have any #ifdefs with "CONFIG_OF", I think
-gpio_charger_match will always exist.  It seems like you should remove
-the of_match_ptr or add some #ifdefs.  I can't quite keep up with what
-the currently suggested best practice is here, though.
-
--Doug
+...technically OF_GPIO_ACTIVE_LOW is 0x1 so it's not a bug, but...
