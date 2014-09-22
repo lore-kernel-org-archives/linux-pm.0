@@ -1,55 +1,50 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] new suspend_resume trace event for console resume
-Date: Mon, 22 Sep 2014 16:04:09 +0200
-Message-ID: <4154231.oR0n14TklK@vostro.rjw.lan>
-References: <20140919210711.GA15652@linux.intel.com>
+Subject: Re: [PATCH trivial] PM / Domains: Spelling s/domian/domain/
+Date: Mon, 22 Sep 2014 16:04:52 +0200
+Message-ID: <1514200.c92a0jFWZ0@vostro.rjw.lan>
+References: <1410897579-28240-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52721 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753936AbaIVNoW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Sep 2014 09:44:22 -0400
-In-Reply-To: <20140919210711.GA15652@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1410897579-28240-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Jiri Kosina <trivial@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: todd.e.brandt@linux.intel.com
-Cc: linux-pm@vger.kernel.org
 
-On Friday, September 19, 2014 02:07:12 PM Todd E Brandt wrote:
-> This patch adds another suspend_resume trace event for analyze_suspend
-> to capture. The resume_console call can take several hundred milliseconds
-> if the printk buffer is full of debug info. The tool will now inform 
-> testers of the wasted time and encourage them to disable it in
-> production builds.
-> 
-> Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
+On Tuesday, September 16, 2014 09:59:39 PM Geert Uytterhoeven wrote:
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
 Queued up for 3.18, thanks!
 
-> ----
->  kernel/power/suspend.c | 2 ++
->  1 file changed, 2 insertions(+)
+> ---
+>  drivers/base/power/domain.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index 18c6219..e837dd6 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -361,7 +361,9 @@ int suspend_devices_and_enter(suspend_state_t state)
->  	suspend_test_start();
->  	dpm_resume_end(PMSG_RESUME);
->  	suspend_test_finish("resume devices");
-> +	trace_suspend_resume(TPS("resume_console"), state, true);
->  	resume_console();
-> +	trace_suspend_resume(TPS("resume_console"), state, false);
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index cf4651a15a5753e5..e6a11ca3ce2634ab 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1833,7 +1833,7 @@ int pm_genpd_name_detach_cpuidle(const char *name)
+>  /* Default device callbacks for generic PM domains. */
 >  
->   Close:
->  	platform_suspend_end(state);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  /**
+> - * pm_genpd_default_save_state - Default "save device state" for PM domians.
+> + * pm_genpd_default_save_state - Default "save device state" for PM domains.
+>   * @dev: Device to handle.
+>   */
+>  static int pm_genpd_default_save_state(struct device *dev)
+> @@ -1856,7 +1856,7 @@ static int pm_genpd_default_save_state(struct device *dev)
+>  }
+>  
+>  /**
+> - * pm_genpd_default_restore_state - Default PM domians "restore device state".
+> + * pm_genpd_default_restore_state - Default PM domains "restore device state".
+>   * @dev: Device to handle.
+>   */
+>  static int pm_genpd_default_restore_state(struct device *dev)
+> 
 
 -- 
 I speak only for myself.
