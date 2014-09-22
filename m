@@ -1,46 +1,59 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v2] power: reset: use restart_notifier mechanism for
- msm-poweroff
-Date: Mon, 22 Sep 2014 10:30:41 -0700
-Message-ID: <20140922173041.GE10233@codeaurora.org>
-References: <1411371774-6834-1-git-send-email-pramod.gurav@smartplayin.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v6 2/4] amba: Add helper macros for (un)preparing AMBA clock
+Date: Mon, 22 Sep 2014 20:56:47 +0200
+Message-ID: <CAPDyKFpADBgR90_4s6Dxa8GSQ3F2kQFf6Az-J85D_1ZVD6=A5A@mail.gmail.com>
+References: <1411379189-3017-1-git-send-email-k.kozlowski@samsung.com>
+	<1411379189-3017-3-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1411371774-6834-1-git-send-email-pramod.gurav@smartplayin.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Pramod Gurav <pramod.gurav@smartplayin.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Josh Cartwright <joshc@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f46.google.com ([209.85.216.46]:56244 "EHLO
+	mail-qa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752760AbaIVS4s (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Sep 2014 14:56:48 -0400
+Received: by mail-qa0-f46.google.com with SMTP id x12so581867qac.5
+        for <linux-pm@vger.kernel.org>; Mon, 22 Sep 2014 11:56:48 -0700 (PDT)
+In-Reply-To: <1411379189-3017-3-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 09/22, Pramod Gurav wrote:
-> diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
-> index 774f9a3..db73238 100644
-> --- a/drivers/power/reset/msm-poweroff.c
-> +++ b/drivers/power/reset/msm-poweroff.c
-> @@ -24,17 +24,24 @@
->  #include <asm/system_misc.h>
+On 22 September 2014 11:46, Krzysztof Kozlowski <k.kozlowski@samsung.com> wrote:
+> Add amba_pclk_prepare() and amba_pclk_unprepare() macros for handling
+> the AMBA bus clock by device drivers.
+>
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> ---
+>  include/linux/amba/bus.h | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
+> index fdd7e1b61f60..ad52027a9cbf 100644
+> --- a/include/linux/amba/bus.h
+> +++ b/include/linux/amba/bus.h
+> @@ -92,6 +92,12 @@ void amba_release_regions(struct amba_device *);
+>  #define amba_pclk_disable(d)   \
+>         do { if (!IS_ERR((d)->pclk)) clk_disable((d)->pclk); } while (0)
+>
+> +#define amba_pclk_prepare(d)   \
+> +       (IS_ERR((d)->pclk) ? 0 : clk_prepare((d)->pclk))
 
-We can remove this include now too?
+You don't need the IS_ERR, because amba_probe will fail if it won't be
+able to fetch the clock.
 
->  
->  static void __iomem *msm_ps_hold;
-> -
-[...]
-> @@ -47,8 +54,10 @@ static int msm_restart_probe(struct platform_device *pdev)
->  	if (IS_ERR(msm_ps_hold))
->  		return PTR_ERR(msm_ps_hold);
->  
-> +	register_restart_handler(&restart_nb);
+Same comment below.
+
+Kind regards
+Uffe
+
 > +
->  	pm_power_off = do_msm_poweroff;
-> -	arm_pm_restart = do_msm_restart;
+> +#define amba_pclk_unprepare(d) \
+> +       do { if (!IS_ERR((d)->pclk)) clk_unprepare((d)->pclk); } while (0)
 > +
-
-And it looks like we should be including <linux/pm.h> for the
-pm_power_off hook?
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+>  /* Some drivers don't use the struct amba_device */
+>  #define AMBA_CONFIG_BITS(a) (((a) >> 24) & 0xff)
+>  #define AMBA_REV_BITS(a) (((a) >> 20) & 0x0f)
+> --
+> 1.9.1
+>
