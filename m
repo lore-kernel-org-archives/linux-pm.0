@@ -1,73 +1,43 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] Cpufreq: Keep cpufreq sysfs nodes across S2RAM/S2DISK when using intel_pstate driver.
-Date: Mon, 22 Sep 2014 16:07:42 +0200
-Message-ID: <8879768.rKXiR3iWPo@vostro.rjw.lan>
-References: <1411023787-11458-1-git-send-email-tianyu.lan@intel.com>
+Subject: Re: [PATCH v5 00/11] PM / Domains: Generic OF-based support
+Date: Mon, 22 Sep 2014 16:19:54 +0200
+Message-ID: <2161168.GXttgFlE1X@vostro.rjw.lan>
+References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org> <20140919184849.GA14832@core.coreip.homeip.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1411023787-11458-1-git-send-email-tianyu.lan@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>, viresh.kumar@linaro.org, 'Dirk Brandewie' <dirk.j.brandewie@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 'Dirk Brandewie' <dirk.brandewie@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64403 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753858AbaIVOAI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Sep 2014 10:00:08 -0400
+In-Reply-To: <20140919184849.GA14832@core.coreip.homeip.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>
 
-On Thursday, September 18, 2014 03:03:07 PM Lan Tianyu wrote:
-> Cpufreq core introduces cpufreq_suspended flag to let cpufreq sysfs nodes
-> across S2RAM/S2DISK. But the flag is only set in the cpufreq_suspend()
-> for cpufreq drivers which have target or target_index callback. This
-> skips intel_pstate driver. This patch is to set the flag before checking
-> target or target_index callback.
+On Friday, September 19, 2014 11:48:49 AM Dmitry Torokhov wrote:
+> Hi Ulf,
 > 
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> On Fri, Sep 19, 2014 at 08:27:33PM +0200, Ulf Hansson wrote:
+> > Changes in v5:
+> > 	- Converted dev_pm_domain_detach() to a void function
+> > 	- Added a ->detach() callback to the PM domain struct, invoked from the
+> > 	  dev_pm_domain_detach().
+> > 	- Make ACPI and genpd both assign the ->detach() callback at successfull
+> > 	  attachment.
+> > 	- The above changes made it possible to make acpi_pm_domain_detach() to
+> > 	  be static, added a separate patch for that.
+> 
+> Thank you for making these changes. For the series:
+> 
+> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Viresh, Dirk, this looks like a fix that should go into 3.17, so I'm
-queuing it up accordingly.  Please let me know if that's not correct.
+I've queued up this patchset for 3.18 (I fixed up the two minor issues pointed
+to by Geert in the process).
 
-> ---
->  drivers/cpufreq/cpufreq.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index d9fdedd..eb9bb78 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1656,6 +1656,8 @@ void cpufreq_suspend(void)
->  	if (!cpufreq_driver)
->  		return;
->  
-> +	cpufreq_suspended = true;
-> +
->  	if (!has_target())
->  		return;
->  
-> @@ -1670,8 +1672,6 @@ void cpufreq_suspend(void)
->  			pr_err("%s: Failed to suspend driver: %p\n", __func__,
->  				policy);
->  	}
-> -
-> -	cpufreq_suspended = true;
->  }
->  
->  /**
-> @@ -1687,13 +1687,13 @@ void cpufreq_resume(void)
->  	if (!cpufreq_driver)
->  		return;
->  
-> +	cpufreq_suspended = false;
-> +
->  	if (!has_target())
->  		return;
->  
->  	pr_debug("%s: Resuming Governors\n", __func__);
->  
-> -	cpufreq_suspended = false;
-> -
->  	list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
->  		if (cpufreq_driver->resume && cpufreq_driver->resume(policy))
->  			pr_err("%s: Failed to resume driver: %p\n", __func__,
-> 
+Thanks everyone!
 
 -- 
 I speak only for myself.
