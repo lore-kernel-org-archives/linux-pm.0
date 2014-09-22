@@ -1,97 +1,101 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v6 0/4] amba/dma: pl330: add Power Management support
-Date: Mon, 22 Sep 2014 11:46:25 +0200
-Message-ID: <1411379189-3017-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-doc-owner@vger.kernel.org>
-Sender: linux-doc-owner@vger.kernel.org
+Subject: [PATCH v6 3/4] amba: Don't unprepare the clocks if device driver wants
+ IRQ safe runtime PM
+Date: Mon, 22 Sep 2014 11:46:28 +0200
+Message-ID: <1411379189-3017-4-git-send-email-k.kozlowski@samsung.com>
+References: <1411379189-3017-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1411379189-3017-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+The AMBA bus driver defines runtime Power Management functions which
+disable and unprepare AMBA bus clock. This is problematic for runtime PM
+because unpreparing a clock might sleep so it is not interrupt safe.
 
+However some drivers may want to implement runtime PM functions in
+interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
+bus driver should only disable/enable the clock in runtime suspend and
+resume callbacks.
 
-Changes since v5:
-=================
-1. Patch 1/4: Add Ulf Hansson's reviewed-by.
-2. Patch 4/4: Use PM runtime autosuspend (suggested by Ulf Hansson).
-3. Rebase on next-20140922. 
+Detect the device driver behavior after calling its probe function and
+store it. During runtime suspend/resume deal with clocks according to
+stored value.
 
-Changes since v4:
-1. Patch 3/4: Explicitly initialize amba_device.irq_safe field after
-   probing driver (suggested by Russell King).
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ drivers/amba/bus.c       | 29 +++++++++++++++++++++++++----
+ include/linux/amba/bus.h |  1 +
+ 2 files changed, 26 insertions(+), 4 deletions(-)
 
-Changes since v3:
-1. Patch 1/4: Document new API in Documentation/power/runtime_pm.txt
-   (pointed by Alan Stern).
-
-Changes since v2:
-1. Add patch 1 (PM / Runtime: Add getter for quering the IRQ safe option)
-2. Add patch 2 (amba: Add helper macros for (un)preparing AMBA clock)
-3. Patch 3/4: Rewrite the idea. If IRQ safe runtime PM is set then
-   do not unprepare/prepare the clocks. Suggested by Russell King.
-4. Patch 4/4: During system sleep unprepare the clock.
-
-Changes since v1:
-1. Add patch 1 (amba: Allow AMBA drivers to use their own runtime PM).
-2. Patch 2/2: Apply Michal Simek's suggestions.
-3. Patch 2/2: Fix atomic context safeness in pl330_issue_pending().
-
-
-Description:
-============
-This is sixth version of patches adding runtime PM to the pl330
-driver.
-
-The runtime PM of pl330 driver requires interrupt safe suspend/resume
-callbacks which is in conflict with current amba bus driver.
-The latter also unprepares and prepares the AMBA bus clock which
-is not safe for atomic context.
-
-The patchset solves this in patch 3/4 by handling clocks in different
-way if device driver set interrupt safe runtime PM.
-
-Any comments are welcome.
-
-
-Tested on boards with pl330 DMA driver:
- - Trats2 (Exynos4212)
- - Samsung Gear2-like development board (Exynos3250)
-
-
-TODO/ideas:
-===========
-Consider renaming existing pm_runtime_irq_safe() function to keep
-up with naming convention after adding pm_runtime_is_irq_safe() in
-patch 1/4.
-This naming:
- - pm_runtime_irq_safe() as setter,
- - pm_runtime_is_irq_safe() as getter,
-is contradictory to naming of other PM runtime functions, e.g.:
- - pm_runtime_set_active() as setter,
- - pm_runtime_active() as getter.
-I didn't change the naming of pm_runtime_irq_safe() because I wanted
-to minimize the impact of the patches.
-
-
-Best regards,
-Krzysztof Kozlowski
-
-
-Krzysztof Kozlowski (4):
-  PM / Runtime: Add getter for quering the IRQ safe option
-  amba: Add helper macros for (un)preparing AMBA clock
-  amba: Don't unprepare the clocks if device driver wants IRQ safe
-    runtime PM
-  dma: pl330: add Power Management support
-
- Documentation/power/runtime_pm.txt |  4 ++
- drivers/amba/bus.c                 | 29 +++++++++++--
- drivers/dma/pl330.c                | 87 ++++++++++++++++++++++++++++++++++++--
- include/linux/amba/bus.h           |  7 +++
- include/linux/pm_runtime.h         |  6 +++
- 5 files changed, 125 insertions(+), 8 deletions(-)
-
+diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+index 3cf61a127ee5..e8fd5706954f 100644
+--- a/drivers/amba/bus.c
++++ b/drivers/amba/bus.c
+@@ -94,8 +94,18 @@ static int amba_pm_runtime_suspend(struct device *dev)
+ 	struct amba_device *pcdev = to_amba_device(dev);
+ 	int ret = pm_generic_runtime_suspend(dev);
+ 
+-	if (ret == 0 && dev->driver)
+-		clk_disable_unprepare(pcdev->pclk);
++	if (ret == 0 && dev->driver) {
++		/*
++		 * Drivers should not change pm_runtime_irq_safe()
++		 * after probe.
++		 */
++		WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
++
++		if (pcdev->irq_safe)
++			clk_disable(pcdev->pclk);
++		else
++			clk_disable_unprepare(pcdev->pclk);
++	}
+ 
+ 	return ret;
+ }
+@@ -106,7 +116,16 @@ static int amba_pm_runtime_resume(struct device *dev)
+ 	int ret;
+ 
+ 	if (dev->driver) {
+-		ret = clk_prepare_enable(pcdev->pclk);
++		/*
++		 * Drivers should not change pm_runtime_irq_safe()
++		 * after probe.
++		 */
++		WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
++
++		if (pcdev->irq_safe)
++			ret = clk_enable(pcdev->pclk);
++		else
++			ret = clk_prepare_enable(pcdev->pclk);
+ 		/* Failure is probably fatal to the system, but... */
+ 		if (ret)
+ 			return ret;
+@@ -191,8 +210,10 @@ static int amba_probe(struct device *dev)
+ 		pm_runtime_enable(dev);
+ 
+ 		ret = pcdrv->probe(pcdev, id);
+-		if (ret == 0)
++		if (ret == 0) {
++			pcdev->irq_safe = pm_runtime_is_irq_safe(dev);
+ 			break;
++		}
+ 
+ 		pm_runtime_disable(dev);
+ 		pm_runtime_set_suspended(dev);
+diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
+index ad52027a9cbf..ce101e4497d6 100644
+--- a/include/linux/amba/bus.h
++++ b/include/linux/amba/bus.h
+@@ -32,6 +32,7 @@ struct amba_device {
+ 	struct clk		*pclk;
+ 	unsigned int		periphid;
+ 	unsigned int		irq[AMBA_NR_IRQS];
++	unsigned int		irq_safe:1;
+ };
+ 
+ struct amba_driver {
 -- 
 1.9.1
-
