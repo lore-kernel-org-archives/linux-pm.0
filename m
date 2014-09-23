@@ -1,36 +1,45 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: [PATCH v4 0/3] gpio-charger: add devicetree support
-Date: Tue, 23 Sep 2014 22:42:13 +0200
-Message-ID: <1411504936-21026-1-git-send-email-heiko@sntech.de>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dianders@chromium.org, heiko@sntech.de
+From: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Subject: [PATCH v4 3/3] power: gpio-charger: do not use gpio value directly
+Date: Tue, 23 Sep 2014 22:42:16 +0200
+Message-ID: <1411504936-21026-4-git-send-email-heiko@sntech.de>
+References: <1411504936-21026-1-git-send-email-heiko@sntech.de>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1411504936-21026-1-git-send-email-heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, Heiko Stuebner <heiko.stuebner-K3U4GQvHnyU@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This series adds devicetree support to the gpio-charger and fixes a small
-issue with the return value of gpio_get_value.
+From: Heiko Stuebner <heiko.stuebner-K3U4GQvHnyU@public.gmane.org>
 
-changes since v3:
-- remove of_match_ptr. All used of_xx function have stubs for !OF
-  and of_device_id also is always defined, so no need for of_match_ptr
-changes since v2:
-- fix (hopefully all) issues pointed out by Doug Anderson
-- add missing of_node assignment to charger
-changes since v1:
-- adapt binding example to show how the charger fits into the
-  power-supplies structure
+Some gpio implementations return interesting values for gpio_get_value when
+the value is not 0 - as seen on a imx6sl board. Therefore do not use the
+value returned from gpio_get_value directly but simply check for 0 or not 0.
 
+Signed-off-by: Heiko Stuebner <heiko.stuebner-K3U4GQvHnyU@public.gmane.org>
+Reviewed-by: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Tested-by: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+---
+ drivers/power/gpio-charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Heiko Stuebner (3):
-  dt-bindings: document gpio-charger bindings
-  power: gpio-charger: add device tree support
-  power: gpio-charger: do not use gpio value directly
-
- .../bindings/power_supply/gpio-charger.txt         | 27 ++++++++
- drivers/power/gpio-charger.c                       | 74 +++++++++++++++++++++-
- 2 files changed, 98 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power_supply/gpio-charger.txt
-
+diff --git a/drivers/power/gpio-charger.c b/drivers/power/gpio-charger.c
+index 22f084a..7d4eab2 100644
+--- a/drivers/power/gpio-charger.c
++++ b/drivers/power/gpio-charger.c
+@@ -57,7 +57,7 @@ static int gpio_charger_get_property(struct power_supply *psy,
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_ONLINE:
+-		val->intval = gpio_get_value_cansleep(pdata->gpio);
++		val->intval = !!gpio_get_value_cansleep(pdata->gpio);
+ 		val->intval ^= pdata->gpio_active_low;
+ 		break;
+ 	default:
 -- 
 2.1.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
