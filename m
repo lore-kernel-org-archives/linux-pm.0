@@ -1,144 +1,62 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v4 4/4] dma: pl330: add Power Management support
-Date: Tue, 23 Sep 2014 17:39:39 +0200
-Message-ID: <CAPDyKFoaP74t7ZWM66=jDgRcY-9FBM1OxMiZKL++HAO1m19DWg@mail.gmail.com>
-References: <1410857494-15936-1-git-send-email-k.kozlowski@samsung.com>
-	<1410857494-15936-5-git-send-email-k.kozlowski@samsung.com>
-	<CAPDyKFqoLQh=FYg33LTSp-HTs-oJDT4y_K6hGRoiu9zDxOX9sw@mail.gmail.com>
-	<1411034996.23919.9.camel@AMDC1943>
+From: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH v2 2/3] power: gpio-charger: add device tree support
+Date: Tue, 23 Sep 2014 08:59:43 -0700
+Message-ID: <CAD=FV=Wc-V6nYTSTPJe4mtyCvGH2CpOhOY37XDFQTP97hXOi_g@mail.gmail.com>
+References: <1411329923-15912-1-git-send-email-heiko@sntech.de>
+	<1411329923-15912-3-git-send-email-heiko@sntech.de>
+	<CAD=FV=W6q7wMDWWDkwdC_KF4EHJt2q8afxSGCpPEC+Nk2Jp2Ag@mail.gmail.com>
+	<1549304.qklrgkYl3q@phil>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f50.google.com ([209.85.192.50]:43998 "EHLO
-	mail-qg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755450AbaIWPjl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 11:39:41 -0400
-Received: by mail-qg0-f50.google.com with SMTP id q107so4491233qgd.23
-        for <linux-pm@vger.kernel.org>; Tue, 23 Sep 2014 08:39:39 -0700 (PDT)
-In-Reply-To: <1411034996.23919.9.camel@AMDC1943>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1549304.qklrgkYl3q@phil>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 18 September 2014 12:09, Krzysztof Kozlowski <k.kozlowski@samsung.co=
-m> wrote:
-> On =C5=9Bro, 2014-09-17 at 20:42 +0200, Ulf Hansson wrote:
->> On 16 September 2014 10:51, Krzysztof Kozlowski <k.kozlowski@samsung=
-=2Ecom> wrote:
->
-> [...]
->
+Heiko,
+
+On Tue, Sep 23, 2014 at 5:03 AM, Heiko St=C3=BCbner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org> w=
+rote:
+> Am Montag, 22. September 2014, 09:48:33 schrieb Doug Anderson:
+>> > @@ -196,6 +255,7 @@ static struct platform_driver gpio_charger_dri=
+ver =3D {
 >> >
->> > @@ -2585,6 +2620,34 @@ static int pl330_dma_device_slave_caps(stru=
-ct dma_chan *dchan,
->> >         return 0;
->> >  }
+>> >                 .name =3D "gpio-charger",
+>> >                 .owner =3D THIS_MODULE,
+>> >                 .pm =3D &gpio_charger_pm_ops,
 >> >
->> > +/*
->> > + * Assume that IRQ safe runtime PM is chosen in probe and amba bu=
-s driver
->> > + * will only disable/enable the clock in runtime PM suspend/resum=
-e.
->> > + */
->> > +static int __maybe_unused pl330_suspend(struct device *dev)
->> > +{
->> > +       struct amba_device *pcdev =3D to_amba_device(dev);
->> > +
->> > +       if (!pm_runtime_suspended(dev))
->> > +               amba_pclk_disable(pcdev);
+>> > +               .of_match_table =3D of_match_ptr(gpio_charger_matc=
+h),
 >>
->> I would suggest to use pm_runtime_force_suspend() instead of the abo=
-ve.
+>> Given that you don't have any #ifdefs with "CONFIG_OF", I think
+>> gpio_charger_match will always exist.  It seems like you should remo=
+ve
+>> the of_match_ptr or add some #ifdefs.  I can't quite keep up with wh=
+at
+>> the currently suggested best practice is here, though.
 >
-> Sure, I can change it but... (see below)
->
->>
->> > +       amba_pclk_unprepare(pcdev);
->> > +
->> > +       return 0;
->> > +}
->> > +
->> > +static int __maybe_unused pl330_resume(struct device *dev)
->> > +{
->> > +       struct amba_device *pcdev =3D to_amba_device(dev);
->> > +
->> > +       amba_pclk_prepare(pcdev);
->> > +       if (!pm_runtime_suspended(dev))
->> > +               return amba_pclk_enable(pcdev);
->>
->> The above if statement could be replaced with pm_runtime_force_resum=
-e().
->
-> But that would lead to runtime resuming the device even when it is no=
-t
-> needed. We don't have to fully wakeup the device during resume operat=
-ion
-> when the device was runtime suspended before suspend.
+> I've kept the of_match_ptr in v3. The dt parsing functions (of_read_f=
+oo,...)
+> define stubs for the !CONFIG_OF case which we use here in this case a=
+nd
+> of_match_ptr is also defined differently for both OF and !OF, so it f=
+eels like
+> it should be there ;-)
 
-That's true - but that's not a big issue I believe. I think the below
-problems are worse. :-)
+=2E..I was thinking you'd get a compile-time warning about
+gpio_charger_match not being used.  ...but I can't seem to trigger it
+with my compiler settings.  In any case, I'm fairly certain that in
+the !CONFIG_OF case (plus non-module case) that "gpio_charger_match"
+will be defined but not used in your code.
 
-1) You don't disable runtime PM, thus not preventing the runtime PM
-callbacks from being invoked.
-2) You don't update the runtime PM status, thus not reflecting the
-actual state of the device.
-
-Both the above may cause unbalanced clk_enable|disable calls.
-
-Don't get me wrong, I certainly think the "don't do runtime PM resume
-during system PM resume" is interesting to solve. But that it's a
-common problem and should be supported by the runtime PM API somehow
-instead. I have been thinking of extending the
-pm_runtime_force_resume() API to support this, let's see when that
-happens. :-)
-
->
->>
->> Doing that, means the amba_pclk_enable|disable() don't need to be
->> exported from the AMBA bus header, but entirely handled by the AMBA
->> bus itself.
->>
->> > +
->> > +       return 0;
->> > +}
->> > +
->> > +static SIMPLE_DEV_PM_OPS(pl330_pm, pl330_suspend, pl330_resume);
->> > +
->> >  static int
->> >  pl330_probe(struct amba_device *adev, const struct amba_id *id)
->> >  {
->> > @@ -2738,6 +2801,9 @@ pl330_probe(struct amba_device *adev, const =
-struct amba_id *id)
->> >                 pcfg->data_buf_dep, pcfg->data_bus_width / 8, pcfg=
-->num_chan,
->> >                 pcfg->num_peri, pcfg->num_events);
->> >
->>
->> You need pm_runtime_set_active() here as well.
->
-> This is done by amba/bus.c. Do I have to do it again?
-
-Ohh, you are right! No need to add it!
-
->
->>
->> > +       pm_runtime_irq_safe(&adev->dev);
->> > +       pm_runtime_put_noidle(&adev->dev);
->>
->> Why pm_runtime_put_noidle(), that seems like you might end up leavin=
-g
->> the device in active state - unless you get some request. Likely not
->> what you want?
->
-> Hmmm... I am sorry but I do not get the point here. It could be
-> pm_runtime_put() as well because initially we start with counter
-> incremented by amba/bus.c.
-
-The "no_idle" version will prevent the device from going inactive,
-unless a new cycle of pm_runtime_get() to pm_runtime_put() happens,
-which there are no guarantees of.
-
-Kind regards
-Uffe
+I was under the impression that of_match_ptr was defined differently
+for OF and !OF so that you could use it in the case where the
+structure itself (gpio_charger_match) had #ifdefs around it...
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
