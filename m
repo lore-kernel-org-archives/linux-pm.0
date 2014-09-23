@@ -1,132 +1,107 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Subject: Re: [PATCH v8 6/8] drivers: cpuidle: CPU idle ARM64 driver
-Date: Tue, 23 Sep 2014 15:35:14 +0200
-Message-ID: <4228539.nCGoXxuRMK@amdc1032>
-References: <1409585324-3678-7-git-send-email-lorenzo.pieralisi@arm.com>
- <20140912103257.GB24416@localhost> <20140912112643.GA10623@red-moon>
+Date: Tue, 23 Sep 2014 15:42:48 +0200
+Message-ID: <2444560.uIlK6FC0A9@amdc1032>
+References: <1409585324-3678-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <20140911085727.GA25773@e102568-lin.cambridge.arm.com>
+ <5415C968.90303@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:33259 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751860AbaIWNfZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 09:35:25 -0400
-In-reply-to: <20140912112643.GA10623@red-moon>
+Received: from mailout4.samsung.com ([203.254.224.34]:33238 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754743AbaIWNmy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 09:42:54 -0400
+In-reply-to: <5415C968.90303@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <Will.Deacon@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Geoff Levand <geoff@infradead.org>, Peter
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <Will.Deacon@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>
 
 
 Hi,
 
-On Friday, September 12, 2014 12:26:43 PM Lorenzo Pieralisi wrote:
-> On Fri, Sep 12, 2014 at 11:32:57AM +0100, Catalin Marinas wrote:
-> > Daniel, Lorenzo,
+On Sunday, September 14, 2014 06:59:20 PM Tomasz Figa wrote:
+> [dropping my old @samsung.com address]
+> 
+> On 11.09.2014 10:57, Lorenzo Pieralisi wrote:
+> > On Thu, Sep 11, 2014 at 09:28:06AM +0100, Daniel Lezcano wrote:
+> >> On 09/05/2014 05:34 PM, Lorenzo Pieralisi wrote:
+> >>> On Fri, Sep 05, 2014 at 10:21:20AM +0100, Will Deacon wrote:
+> >>>> On Thu, Sep 04, 2014 at 06:29:10PM +0100, Lorenzo Pieralisi wrote:
+> >>>>> On Thu, Sep 04, 2014 at 05:03:20PM +0100, Catalin Marinas wrote:
+> >>>>>> On Wed, Sep 03, 2014 at 06:37:40PM +0100, Lorenzo Pieralisi wrote:
+> >>>>>>> This patch should be ready to go too, is it ok if I split the series
+> >>>>>>> in arm64 arch specific patches (will ask Catalin to pull) and CPUidle ones
+> >>>>>>> (inclusive of DT bindings and !!this patch!!) and send two separate pull
+> >>>>>>> requests ?
+> >>>>>>
+> >>>>>> If Daniel/Rafael don't have any objection, I can take the whole series
+> >>>>>> through the arm64 tree (it seems that patches have been already acked by
+> >>>>>> Daniel).
+> >>>>>
+> >>>>> Thanks a lot Catalin. Since this one is a brand new CPUidle driver and it
+> >>>>> follows a different pattern from arm legacy drivers I would like to get
+> >>>>> Daniel's ack on this patch too before pushing it. For the records I have
+> >>>>> just added two pr_err to signal driver probing error, ultraminor changes
+> >>>>> that do not justify a repost.
+> >>>>>
+> >>>>> If Samsung guys do not manifest themselves I would drop patch 8 from
+> >>>>> the series till it gets tested and its patch dependency queued too.
+> >>>>
+> >>>> The last patch also has a dependency, as you mentioned to Daniel. I think
+> >>>> we can certainly merge the arm64 parts, and if Daniel doesn't object, then
+> >>>> we can take the driver stuff too but leaving the exynos bits out (i.e. drop
+> >>>> the last patch).
+> >>>>
+> >>>> Anyway, if you could repost with the acks you've collected and rearrange it
+> >>>> so the arm64 patches are first in the series, that would be great.
+> >>>
+> >>> I can repost it with the acks and rearrange the patches, but for the
+> >>> pull request I have to know what code can be merged, since there are
+> >>> some arm64 patches (PSCI and CPUidle arm64 back-end) that are strictly
+> >>> tied to the arm64 CPUidle driver, so I *have* to know if the arm64
+> >>> CPUidle driver (this patch) can get merged and that requires an ack.
+> >>>
+> >>> If I do not hear from Samsung guys I will drop patch 8.
+> >>
+> >> Well I would prefer to have this patch merged (Cc'ing Tomasz).
 > > 
-> > On Thu, Sep 11, 2014 at 10:32:48AM +0100, Daniel Lezcano wrote:
-> > > On 09/11/2014 10:57 AM, Lorenzo Pieralisi wrote:
-> > > > There is no ARM code in my series. So to sum it up:
-> > > >
-> > > > a) I send a pull request to Catalin for arm64 patches on top of the branch
-> > > >     you are creating with my patches
-> > >  >
-> > > > b) You take care of merging the CPUidle related patches through your
-> > > >     tree
-> > > >
-> > > > Is the above what you meant ?
-> > > 
-> > > Right, that allows to share a branch across the trees and resolve the 
-> > > dependencies when a patchset is touching different subsystems.
-> > > 
-> > > I realize the dependency is inverted regarding what I proposed 
-> > > initially, so it is up to Catalin to create the branch and I will share 
-> > > it with him.
+> > Ok, but:
 > > 
-> > I created the branch below with the arm64 specific patches for cpuidle.
-> > I won't rebase it and it should appear in -next tomorrow.
+> > a) I only compile tested it
+> > b) There is a dts patch dependency for patch 8 to apply cleanly and it
+> >    hasn't been acked (I can't really do it since I can't test it)
 > > 
-> > Lorenzo, please send a pull request to Daniel with the additional
-> > patches on top of the arm64 branch. Thanks.
+> >    http://lists.infradead.org/pipermail/linux-arm-kernel/2014-July/274179.html
+> > 
+> > So, what should we do ? Tomasz ?
 > 
-> Thank you very much, done. Pull request attached for information.
+> Sorry for late reply. I don't work for Samsung anymore so I don't focus
+> that much on areas other than I still maintain.
 > 
-> As Daniel knows, last two patches are still pending, waiting for Samsung
-> acks, and will be dropped if we do not get them in time.
+> As for b) I believe all my patches have been already merged and now
+> we're just waiting for Kukjin to apply Bart's patch (although it's been
+> sitting on the ML since July, so probably needs rebasing).
 > 
-> Lorenzo
-> 
-> The following changes since commit 18910ab0d916b1a87016d69efd027714a80521dd:
-> 
->   arm64: add PSCI CPU_SUSPEND based cpu_suspend support (2014-09-12 10:48:56 +0100)
-> 
-> are available in the git repository at:
-> 
->   git://linux-arm.org/linux-2.6-lp.git for-upstream/arm-generic-cpuidle
-> 
-> for you to fetch changes up to dda773655f9b97570884c4396ad4d63daf177107:
-> 
->   drivers: cpuidle: initialize Exynos driver through DT (2014-09-12 11:37:43 +0100)
-> 
-> ----------------------------------------------------------------
-> Bartlomiej Zolnierkiewicz (1):
->       ARM: dts: add CPU nodes for Exynos4 SoCs
+> About the patch 8 alone, somebody would have to test it. Maybe Bart or
+> Krzysztof could find some time to look at this? Other than that, I'm not
+> quite sure about entry latency you specified. It would look like
+> entering the state takes longer time than leaving, which I believe is
+> not the case. However I can't find any place in the code which would use
+> entry latency, so it might not be that important for now.
 
-This patch got broken during merge.  It differs from the version I posted
-on the list by not having the closing "};" which causes a dtb build failure:
+I tested this patch series on both Exynos4210 (Origen board) and Exynos5250
+(Arndale board).  On Exynos4210 AFTR cpuidle mode is still working fine
+with the patch series applied.  On Exynos5250 AFTR is not working but it is
+an upstream problem (same happens with v3.17-rc4).
 
-Error: arch/arm/boot/dts/exynos4210-origen.dts:21.1-2 syntax error
-FATAL ERROR: Unable to parse input tree
-make[1]: *** [arch/arm/boot/dts/exynos4210-origen.dtb] Error 1
-make: *** [dtbs] Error 2
-make: *** Waiting for unfinished jobs....
+Lorenzo, you can add
 
-Please regenarate your branch with the fixed version of the patch
-(you can squash the fix below to the broken patch).
+Tested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
----
- arch/arm/boot/dts/exynos4210.dtsi |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: b/arch/arm/boot/dts/exynos4210.dtsi
-===================================================================
---- a/arch/arm/boot/dts/exynos4210.dtsi	2014-09-23 14:14:29.793571708 +0200
-+++ b/arch/arm/boot/dts/exynos4210.dtsi	2014-09-23 14:17:22.029565827 +0200
-@@ -39,6 +39,7 @@
- 			<&clock CLK_OUT_CPU>, <&clock CLK_XXTI>,
- 			<&clock CLK_XUSBXTI>;
- 		#clock-cells = <1>;
-+	};
- 
- 	cpus {
- 		#address-cells = <1>;
-
-> Lorenzo Pieralisi (4):
->       drivers: cpuidle: implement DT based idle states infrastructure
->       drivers: cpuidle: CPU idle ARM64 driver
->       drivers: cpuidle: initialize big.LITTLE driver through DT
->       drivers: cpuidle: initialize Exynos driver through DT
-> 
->  arch/arm/boot/dts/exynos4210.dtsi          |  27 ++++
->  arch/arm/boot/dts/exynos4212.dtsi          |  17 +++
->  arch/arm/boot/dts/exynos4412.dtsi          |  29 ++++
->  arch/arm/boot/dts/exynos5250.dtsi          |  11 ++
->  arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts |  23 ++++
->  drivers/cpuidle/Kconfig                    |   8 ++
->  drivers/cpuidle/Kconfig.arm                |   2 +
->  drivers/cpuidle/Kconfig.arm64              |  14 ++
->  drivers/cpuidle/Makefile                   |   5 +
->  drivers/cpuidle/cpuidle-arm64.c            | 133 ++++++++++++++++++
->  drivers/cpuidle/cpuidle-big_little.c       |  19 +++
->  drivers/cpuidle/cpuidle-exynos.c           |  18 ++-
->  drivers/cpuidle/dt_idle_states.c           | 213 +++++++++++++++++++++++++++++
->  drivers/cpuidle/dt_idle_states.h           |   7 +
->  14 files changed, 525 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/cpuidle/Kconfig.arm64
->  create mode 100644 drivers/cpuidle/cpuidle-arm64.c
->  create mode 100644 drivers/cpuidle/dt_idle_states.c
->  create mode 100644 drivers/cpuidle/dt_idle_states.h
+to the Exynos patch (patch #8).
 
 Best regards,
 --
