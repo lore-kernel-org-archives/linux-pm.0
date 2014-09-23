@@ -1,91 +1,144 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: NULL pointer dereference in swsusp_free with 3.17-rc5
-Date: Tue, 23 Sep 2014 17:24:46 +0200
-Message-ID: <2218322.ridXK8jFtJ@vostro.rjw.lan>
-References: <87zjdq8k7i.fsf@nemi.mork.no>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v4 4/4] dma: pl330: add Power Management support
+Date: Tue, 23 Sep 2014 17:39:39 +0200
+Message-ID: <CAPDyKFoaP74t7ZWM66=jDgRcY-9FBM1OxMiZKL++HAO1m19DWg@mail.gmail.com>
+References: <1410857494-15936-1-git-send-email-k.kozlowski@samsung.com>
+	<1410857494-15936-5-git-send-email-k.kozlowski@samsung.com>
+	<CAPDyKFqoLQh=FYg33LTSp-HTs-oJDT4y_K6hGRoiu9zDxOX9sw@mail.gmail.com>
+	<1411034996.23919.9.camel@AMDC1943>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50123 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932242AbaIWPFA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 11:05:00 -0400
-In-Reply-To: <87zjdq8k7i.fsf@nemi.mork.no>
+Received: from mail-qg0-f50.google.com ([209.85.192.50]:43998 "EHLO
+	mail-qg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755450AbaIWPjl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 11:39:41 -0400
+Received: by mail-qg0-f50.google.com with SMTP id q107so4491233qgd.23
+        for <linux-pm@vger.kernel.org>; Tue, 23 Sep 2014 08:39:39 -0700 (PDT)
+In-Reply-To: <1411034996.23919.9.camel@AMDC1943>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>
-Cc: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-T24gVHVlc2RheSwgU2VwdGVtYmVyIDIzLCAyMDE0IDA0OjUwOjI1IFBNIEJqw7hybiBNb3JrIHdy
-b3RlOgo+IEhlbGxvLAo+IAo+IEkganVzdCB0ZXN0ZWQgRGViaWFucyBleHBlcmltZW50YWwgdjMu
-MTctcmM1IGJ1aWxkIGFuZCBnb3QgdGhpcyBhZnRlcgo+IHJlc3VtaW5nIGZyb20gaGliZXJuYXRp
-b246Cj4gCj4gQlVHOiB1bmFibGUgdG8gaGFuZGxlIGtlcm5lbCBOVUxMIHBvaW50ZXIgZGVyZWZl
-cmVuY2UgYXQgICAgICAgICAgIChudWxsKQo+IElQOiBbPGZmZmZmZmZmODEwYThjYzE+XSBzd3N1
-c3BfZnJlZSsweDIxLzB4MTkwCj4gUEdEIGIzOWMyMDY3IFBVRCBiMzljMTA2NyBQTUQgMCAKPiBP
-b3BzOiAwMDAwIFsjMV0gU01QIAo+IE1vZHVsZXMgbGlua2VkIGluOiBjdHIgY2NtIHh0X211bHRp
-cG9ydCBpcHRhYmxlX2ZpbHRlciBpcF90YWJsZXMgYnJpZGdlIGF1ZnMoQykgYm5lcCB4dF9obCBu
-Zl9sb2dfaXB2NiBuZl9sb2dfY29tbW9uIHh0X0xPRyBiaW5mbXRfbWlzYyBpcDZ0YWJsZV9maWx0
-ZXIgaXA2X3RhYmxlcyB4X3RhYmxlcyBuZnNkIGF1dGhfcnBjZ3NzIG9pZF9yZWdpc3RyeSBuZnNf
-YWNsIG5mcyBsb2NrZCBmc2NhY2hlIHN1bnJwYyA4MDIxcSBnYXJwIHN0cCBtcnAgbGxjIHR1biBs
-b29wIGZ1c2Ugam95ZGV2IGFyYzQgaXdsbXZtIG1hYzgwMjExIHNuZF9oZGFfY29kZWNfY29uZXhh
-bnQgaXdsd2lmaSBzbmRfaGRhX2NvZGVjX2dlbmVyaWMgaVRDT193ZHQgaVRDT192ZW5kb3Jfc3Vw
-cG9ydCBjZmc4MDIxMSBjb3JldGVtcCBrdm1faW50ZWwga3ZtIHBzbW91c2UgZXZkZXYgc2VyaW9f
-cmF3IGNkY19hY20gY2RjX21iaW0gY2RjX3dkbSB1dmN2aWRlbyBjZGNfbmNtIHZpZGVvYnVmMl92
-bWFsbG9jIHZpZGVvYnVmMl9tZW1vcHMgdXNibmV0IG1paSB2aWRlb2J1ZjJfY29yZSB2NGwyX2Nv
-bW1vbiB2aWRlb2RldiBtZWRpYSBpMmNfaTgwMSBscGNfaWNoIG1mZF9jb3JlIHNuZF9oZGFfaW50
-ZWwgc25kX2hkYV9jb250cm9sbGVyIHNuZF9oZGFfY29kZWMgc25kX2h3ZGVwIHNuZF9wY21fb3Nz
-IHNuZF9taXhlcl9vc3Mgc25kX3BjbSBzaHBjaHAgc25kX3RpbWVyIG1laV9tZSBtZWkgd21pIHRo
-aW5rcGFkX2FjcGkgbnZyYW0gaTkxNSBzbmQgc291bmRjb3JlIGFjIGJhdHRlcnkgZWNiIGRybV9r
-bXNfaGVscGVyIGRybSB0cG1fdGlzIGFjcGlfY3B1ZnJlcSB0cG0gaTJjX2FsZ29fYml0IGkyY2Nv
-cmUgdmlkZW8gYnR1c2IgYmx1ZXRvb3RoIHByb2Nlc3NvciByZmtpbGwgYnV0dG9uIGV4dDQgY3Jj
-MTYgbWJjYWNoZSBqYmQyIG5iZCBzZF9tb2QgY3JjX3QxMGRpZiBjcmN0MTBkaWZfZ2VuZXJpYyBz
-ZyBzcl9tb2QgY2Ryb20gY3JjdDEwZGlmX2NvbW1vbiBhaGNpIGxpYmFoY2kgbGliYXRhIHNjc2lf
-bW9kIHRoZXJtYWwgdGhlcm1hbF9zeXMgdWhjaV9oY2QgZWhjaV9wY2kgZWhjaV9oY2QgdXNiY29y
-ZSB1c2JfY29tbW9uIGUxMDAwZSBwdHAgcHBzX2NvcmUKPiBDUFU6IDEgUElEOiA0ODk4IENvbW06
-IHMyZGlzayBUYWludGVkOiBHICAgICAgICAgQyAgICAgMy4xNy1yYzUtYW1kNjQgIzEgRGViaWFu
-IDMuMTd+cmM1LTF+ZXhwMQo+IEhhcmR3YXJlIG5hbWU6IExFTk9WTyAyNzc2TEVHLzI3NzZMRUcs
-IEJJT1MgNkVFVDU1V1cgKDMuMTUgKSAxMi8xOS8yMDExCj4gdGFzazogZmZmZjg4MDIzMTU1ZWE0
-MCB0aTogZmZmZjg4MDBiM2IxNDAwMCB0YXNrLnRpOiBmZmZmODgwMGIzYjE0MDAwCj4gUklQOiAw
-MDEwOls8ZmZmZmZmZmY4MTBhOGNjMT5dICBbPGZmZmZmZmZmODEwYThjYzE+XSBzd3N1c3BfZnJl
-ZSsweDIxLzB4MTkwCj4gUlNQOiAwMDE4OmZmZmY4ODAwYjNiMTdlYTggIEVGTEFHUzogMDAwMTAy
-NDYKPiBSQVg6IDAwMDAwMDAwMDAwMDAwMDAgUkJYOiBmZmZmODgwMGIzOWJhYjAwIFJDWDogMDAw
-MDAwMDAwMDAwMDAwMQo+IFJEWDogZmZmZjg4MDBiMzliYWIxMCBSU0k6IGZmZmY4ODAwYjM5YmFi
-MDAgUkRJOiAwMDAwMDAwMDAwMDAwMDAwCj4gUkJQOiAwMDAwMDAwMDAwMDAwMDEwIFIwODogMDAw
-MDAwMDAwMDAwMDAwMCBSMDk6IDAwMDAwMDAwMDAwMDAwMDAKPiBSMTA6IGZmZmY4ODAwYjM5YmFi
-MTAgUjExOiAwMDAwMDAwMDAwMDAwMjQ2IFIxMjogZmZmZmVhMDAwMDAwMDAwMAo+IFIxMzogZmZm
-Zjg4MDIzMmY0ODVhMCBSMTQ6IGZmZmY4ODAyM2FjMjdjZDggUjE1OiBmZmZmODgwMjMyOTI3NTkw
-Cj4gRlM6ICAwMDAwN2Y0MDZkODNiNzAwKDAwMDApIEdTOmZmZmY4ODAyM2JjODAwMDAoMDAwMCkg
-a25sR1M6MDAwMDAwMDAwMDAwMDAwMAo+IENTOiAgMDAxMCBEUzogMDAwMCBFUzogMDAwMCBDUjA6
-IDAwMDAwMDAwODAwNTAwM2IKPiBDUjI6IDAwMDAwMDAwMDAwMDAwMDAgQ1IzOiAwMDAwMDAwMGIz
-YTYyMDAwIENSNDogMDAwMDAwMDAwMDAwMDdlMAo+IFN0YWNrOgo+ICBmZmZmODgwMGIzOWJhYjAw
-IDAwMDAwMDAwMDAwMDAwMTAgZmZmZjg4MDIzMjkyNzU5MCBmZmZmZmZmZjgxMGFjYjRhCj4gIGZm
-ZmY4ODAwYjM5YmFiMDAgZmZmZmZmZmY4MTFhOTU1YSBmZmZmODgwMGIzOWJhYjEwIDAwMDAwMDAw
-MDAwMDAwMDAKPiAgZmZmZjg4MDIzMTU1ZjA5OCBmZmZmZmZmZjgxYTZiOGMwIGZmZmY4ODAyMzE1
-NWVhNDAgMDAwMDAwMDAwMDAwMDAwNwo+IENhbGwgVHJhY2U6Cj4gIFs8ZmZmZmZmZmY4MTBhY2I0
-YT5dID8gc25hcHNob3RfcmVsZWFzZSsweDJhLzB4YjAKPiAgWzxmZmZmZmZmZjgxMWE5NTVhPl0g
-PyBfX2ZwdXQrMHhjYS8weDFkMAo+ICBbPGZmZmZmZmZmODEwODA2Mjc+XSA/IHRhc2tfd29ya19y
-dW4rMHg5Ny8weGQwCj4gIFs8ZmZmZmZmZmY4MTAxMmQ4OT5dID8gZG9fbm90aWZ5X3Jlc3VtZSsw
-eDY5LzB4YTAKPiAgWzxmZmZmZmZmZjgxNTE0NTJhPl0gPyBpbnRfc2lnbmFsKzB4MTIvMHgxNwo+
-IENvZGU6IDY2IDJlIDBmIDFmIDg0IDAwIDAwIDAwIDAwIDAwIDY2IDY2IDY2IDY2IDkwIDQxIDU0
-IDQ4IDhiIDA1IGJhIDYyIDljIDAwIDQ5IGJjIDAwIDAwIDAwIDAwIDAwIGVhIGZmIGZmIDQ4IDhi
-IDNkIGExIDYyIDljIDAwIDU1IDUzIDw0OD4gOGIgMTAgNDggODkgNTAgMTggNDggOGIgNTIgMjAg
-NDggYzcgNDAgMjggMDAgMDAgMDAgMDAgYzcgNDAgCj4gUklQICBbPGZmZmZmZmZmODEwYThjYzE+
-XSBzd3N1c3BfZnJlZSsweDIxLzB4MTkwCj4gIFJTUCA8ZmZmZjg4MDBiM2IxN2VhOD4KPiBDUjI6
-IDAwMDAwMDAwMDAwMDAwMDAKPiAtLS1bIGVuZCB0cmFjZSBmMDJiZTg2YTFlYzBjY2NiIF0tLS0K
-PiAKPiAKPiBUaGlzIGlzIHRoZSBmaXJzdCAzLjE3LXJjIEkgdHJ5LCBzbyBpdCBtaWdodCBiZSBh
-biBpc3N1ZSBmcm9tIDMuMTctcmMxLgo+IHYzLjE2IGlzIGZpbmUuCj4gCj4gVGhpcyBwcm9ibGVt
-IHNlZW1zIHRvIGJlIHJlbGlhYmx5IHJlcGVhdGFibGUgc28gSSBjYW4gdHJ5IHRvIG5hcnJvdyBp
-dAo+IGRvd24gYSBiaXQuCgpXZWxsLCBwbGVhc2UgZG8uCgpJIHdvdWxkIHN1c3BlY3Qgb25lIG9m
-IHRoZXNlIGNvbW1pdHM6Cgo4NGM5MWI3YWUwN2MgUE0gLyBoaWJlcm5hdGU6IGF2b2lkIHVuc2Fm
-ZSBwYWdlcyBpbiBlODIwIHJlc2VydmVkIHJlZ2lvbnMKMGY3ZDgzZTg1ZGJkIFBNIC8gSGliZXJu
-YXRlOiBUb3VjaCBTb2Z0IExvY2t1cCBXYXRjaGRvZyBpbiBydHJlZV9uZXh0X25vZGUKOTA0N2Vi
-NjI5ZTVjIFBNIC8gSGliZXJuYXRlOiBSZW1vdmUgdGhlIG9sZCBtZW1vcnktYml0bWFwIGltcGxl
-bWVudGF0aW9uCjZlZmRlMzhmMDc2OSBQTSAvIEhpYmVybmF0ZTogSXRlcmF0ZSBvdmVyIHNldCBi
-aXRzIGluc3RlYWQgb2YgUEZOcyBpbiBzd3N1c3BfZnJlZSgpCjNhMjBjYjE3Nzk2MSBQTSAvIEhp
-YmVybmF0ZTogSW1wbGVtZW50IHBvc2l0aW9uIGtlZXBpbmcgaW4gcmFkaXggdHJlZQowN2EzMzgy
-MzZmZGMgUE0gLyBIaWJlcm5hdGU6IEFkZCBtZW1vcnlfcnRyZWVfZmluZF9iaXQgZnVuY3Rpb24K
-ZjQ2OWYwMmRjNmZhIFBNIC8gSGliZXJuYXRlOiBDcmVhdGUgYSBSYWRpeC1UcmVlIHRvIHN0b3Jl
-IG1lbW9yeSBiaXRtYXAKCnNvIEkgZ3Vlc3MgeW91IGNhbiBzdGFydCBmcm9tIGNoZWNraW5nIHRo
-ZW0gKHRoZSB0b3BtcG9zdCBvbmUgaXMgdGhlIGxhdGVzdCkuCgpSYWZhZWwK
+On 18 September 2014 12:09, Krzysztof Kozlowski <k.kozlowski@samsung.co=
+m> wrote:
+> On =C5=9Bro, 2014-09-17 at 20:42 +0200, Ulf Hansson wrote:
+>> On 16 September 2014 10:51, Krzysztof Kozlowski <k.kozlowski@samsung=
+=2Ecom> wrote:
+>
+> [...]
+>
+>> >
+>> > @@ -2585,6 +2620,34 @@ static int pl330_dma_device_slave_caps(stru=
+ct dma_chan *dchan,
+>> >         return 0;
+>> >  }
+>> >
+>> > +/*
+>> > + * Assume that IRQ safe runtime PM is chosen in probe and amba bu=
+s driver
+>> > + * will only disable/enable the clock in runtime PM suspend/resum=
+e.
+>> > + */
+>> > +static int __maybe_unused pl330_suspend(struct device *dev)
+>> > +{
+>> > +       struct amba_device *pcdev =3D to_amba_device(dev);
+>> > +
+>> > +       if (!pm_runtime_suspended(dev))
+>> > +               amba_pclk_disable(pcdev);
+>>
+>> I would suggest to use pm_runtime_force_suspend() instead of the abo=
+ve.
+>
+> Sure, I can change it but... (see below)
+>
+>>
+>> > +       amba_pclk_unprepare(pcdev);
+>> > +
+>> > +       return 0;
+>> > +}
+>> > +
+>> > +static int __maybe_unused pl330_resume(struct device *dev)
+>> > +{
+>> > +       struct amba_device *pcdev =3D to_amba_device(dev);
+>> > +
+>> > +       amba_pclk_prepare(pcdev);
+>> > +       if (!pm_runtime_suspended(dev))
+>> > +               return amba_pclk_enable(pcdev);
+>>
+>> The above if statement could be replaced with pm_runtime_force_resum=
+e().
+>
+> But that would lead to runtime resuming the device even when it is no=
+t
+> needed. We don't have to fully wakeup the device during resume operat=
+ion
+> when the device was runtime suspended before suspend.
 
+That's true - but that's not a big issue I believe. I think the below
+problems are worse. :-)
+
+1) You don't disable runtime PM, thus not preventing the runtime PM
+callbacks from being invoked.
+2) You don't update the runtime PM status, thus not reflecting the
+actual state of the device.
+
+Both the above may cause unbalanced clk_enable|disable calls.
+
+Don't get me wrong, I certainly think the "don't do runtime PM resume
+during system PM resume" is interesting to solve. But that it's a
+common problem and should be supported by the runtime PM API somehow
+instead. I have been thinking of extending the
+pm_runtime_force_resume() API to support this, let's see when that
+happens. :-)
+
+>
+>>
+>> Doing that, means the amba_pclk_enable|disable() don't need to be
+>> exported from the AMBA bus header, but entirely handled by the AMBA
+>> bus itself.
+>>
+>> > +
+>> > +       return 0;
+>> > +}
+>> > +
+>> > +static SIMPLE_DEV_PM_OPS(pl330_pm, pl330_suspend, pl330_resume);
+>> > +
+>> >  static int
+>> >  pl330_probe(struct amba_device *adev, const struct amba_id *id)
+>> >  {
+>> > @@ -2738,6 +2801,9 @@ pl330_probe(struct amba_device *adev, const =
+struct amba_id *id)
+>> >                 pcfg->data_buf_dep, pcfg->data_bus_width / 8, pcfg=
+->num_chan,
+>> >                 pcfg->num_peri, pcfg->num_events);
+>> >
+>>
+>> You need pm_runtime_set_active() here as well.
+>
+> This is done by amba/bus.c. Do I have to do it again?
+
+Ohh, you are right! No need to add it!
+
+>
+>>
+>> > +       pm_runtime_irq_safe(&adev->dev);
+>> > +       pm_runtime_put_noidle(&adev->dev);
+>>
+>> Why pm_runtime_put_noidle(), that seems like you might end up leavin=
+g
+>> the device in active state - unless you get some request. Likely not
+>> what you want?
+>
+> Hmmm... I am sorry but I do not get the point here. It could be
+> pm_runtime_put() as well because initially we start with counter
+> incremented by amba/bus.c.
+
+The "no_idle" version will prevent the device from going inactive,
+unless a new cycle of pm_runtime_get() to pm_runtime_put() happens,
+which there are no guarantees of.
+
+Kind regards
+Uffe
