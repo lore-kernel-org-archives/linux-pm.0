@@ -1,54 +1,82 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v5 00/11] PM / Domains: Generic OF-based support
-Date: Mon, 22 Sep 2014 18:42:10 -0700
-Message-ID: <20140923014210.GC27755@sirena.org.uk>
-References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
- <20140919184849.GA14832@core.coreip.homeip.net>
- <2161168.GXttgFlE1X@vostro.rjw.lan>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [RFC PATCH 2/5] devfreq: event: Add exynos-ppmu devfreq evnet
+ driver
+Date: Tue, 23 Sep 2014 11:11:26 +0900
+Message-ID: <5420D6CE.7050606@samsung.com>
+References: <1409891419-28560-1-git-send-email-cw00.choi@samsung.com>
+ <1409891419-28560-3-git-send-email-cw00.choi@samsung.com>
+ <1410511274.31130.7.camel@x220>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="OBd5C1Lgu00Gd/Tn"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:58253 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752203AbaIWBnA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Sep 2014 21:43:00 -0400
-Content-Disposition: inline
-In-Reply-To: <2161168.GXttgFlE1X@vostro.rjw.lan>
+Received: from mailout3.samsung.com ([203.254.224.33]:29369 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755742AbaIWCLa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Sep 2014 22:11:30 -0400
+In-reply-to: <1410511274.31130.7.camel@x220>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org>
+To: Paul Bolle <pebolle@tiscali.nl>
+Cc: myungjoo.ham@samsung.com, linux-pm@vger.kernel.org, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, a.kesavan@samsung.com, kgene.kim@samsung.com, tomasz.figa@gmail.com, b.zolnierkie@samsung.com, nm@ti.com, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
+Hi Paul,
 
---OBd5C1Lgu00Gd/Tn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On 09/12/2014 05:41 PM, Paul Bolle wrote:
+> On Fri, 2014-09-05 at 13:30 +0900, Chanwoo Choi wrote:
+>> This patch add exynos-ppmu devfreq event driver to provider raw data about
+>> the utilization of each IP in Exynos SoC series.
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+>> ---
+>>  drivers/devfreq/Kconfig             |  10 +
+>>  drivers/devfreq/event/Makefile      |   1 +
+>>  drivers/devfreq/event/exynos-ppmu.c | 410 ++++++++++++++++++++++++++++++++++++
+>>  3 files changed, 421 insertions(+)
+>>  create mode 100644 drivers/devfreq/event/exynos-ppmu.c
+>>
+>> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+>> index ef839e7..4fbbcea 100644
+>> --- a/drivers/devfreq/Kconfig
+>> +++ b/drivers/devfreq/Kconfig
+>> @@ -90,4 +90,14 @@ config ARM_EXYNOS5_BUS_DEVFREQ
+>>  
+>>  comment "DEVFREQ Event Drivers"
+>>  
+>> +config DEVFREQ_EVENT_EXYNOS_PPMU
+>> +	bool "EXYNOS PPMU (Performance Profiling Monitoring Unit) DEVFREQ event Driver"
+>> +	depends on ARCH_EXYNOS
+>> +	select ARCH_HAS_OPP
+> 
+> This select statement can be dropped: see commit 78c5e0bb145d ("PM /
+> OPP: Remove ARCH_HAS_OPP").
 
-On Mon, Sep 22, 2014 at 04:19:54PM +0200, Rafael J. Wysocki wrote:
+I'll drop it. 
 
-> I've queued up this patchset for 3.18 (I fixed up the two minor issues pointed
-> to by Geert in the process).
+> 
+> By the way: there's a typo in the commit summary ("evnet").
 
-Oh, dear.  I'd been hoping to be able to test the series on my s3c4xx
-system but I don't get home until tomorrow :/
+My mistake, I'll fix typo.
 
-Acked-by: Mark Brown <broonie@kernel.org>
+Thanks for your review.
+Chanwoo Choi
 
---OBd5C1Lgu00Gd/Tn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+> 
+>> +	select PM_OPP
+>> +	help
+>> +	 This add the DEVFREQ event driver for Exynos SoC. It provides PPMU
+>> +	 (Performance Profiling Monitoring Unit) counters to estimate the
+>> +	 utilization of each module.
+>> +
+>>  endif # PM_DEVFREQ
+> 
+> 
+> Paul Bolle
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUIM/vAAoJECTWi3JdVIfQlxwIAIPKQprgzvY8a4fK0TjhoGUn
-jMITRs1ZYhixNtmdzjbRvxsdo0RlLOGEYKW87+7xqOwIF809e6Pd4/mCJWukqqWP
-/mMYYyRagraHTBZCo0ue3RLdkqAQjEb9FhjFw0OWyDF/lqc07DWumXdyvGcO9PGO
-JxHL3uMkopv+r55NPdF3Ofjuh0Wz7FS1JDApfk2xfFxlayYcjIhsMDWgaeKg1Epu
-nd6oVALP6efeAdprk13Nxip5GybC7UsNYQTc2xH+gEDypoCy+t8BjVcIZVXuJsEp
-WDYxu1XoSykubUyx46COhHdlUZHfFhIhu0QZ+etTY0fmyVrIPmoJClFoumiOTng=
-=vg1B
------END PGP SIGNATURE-----
-
---OBd5C1Lgu00Gd/Tn--
