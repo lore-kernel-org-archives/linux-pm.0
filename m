@@ -1,82 +1,95 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [RFC PATCH 2/5] devfreq: event: Add exynos-ppmu devfreq evnet
- driver
-Date: Tue, 23 Sep 2014 11:11:26 +0900
-Message-ID: <5420D6CE.7050606@samsung.com>
-References: <1409891419-28560-1-git-send-email-cw00.choi@samsung.com>
- <1409891419-28560-3-git-send-email-cw00.choi@samsung.com>
- <1410511274.31130.7.camel@x220>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+From: Pramod Gurav <pramod.gurav@smartplayin.com>
+Subject: [PATCH v3] power: reset: use restart_notifier mechanism for msm-poweroff
+Date: Tue, 23 Sep 2014 11:38:40 +0530
+Message-ID: <1411452520-29589-1-git-send-email-pramod.gurav@smartplayin.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:29369 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755742AbaIWCLa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Sep 2014 22:11:30 -0400
-In-reply-to: <1410511274.31130.7.camel@x220>
+Received: from smtp117.ord1c.emailsrvr.com ([108.166.43.117]:35527 "EHLO
+	smtp117.ord1c.emailsrvr.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754003AbaIWGFN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 02:05:13 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Bolle <pebolle@tiscali.nl>
-Cc: myungjoo.ham@samsung.com, linux-pm@vger.kernel.org, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, a.kesavan@samsung.com, kgene.kim@samsung.com, tomasz.figa@gmail.com, b.zolnierkie@samsung.com, nm@ti.com, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: Pramod Gurav <pramod.gurav@smartplayin.com>, Guenter Roeck <linux@roeck-us.net>, Josh Cartwright <joshc@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org
 
-Hi Paul,
+This change replaces use of arm_pm_restart with recently introduced
+reset mechanism in Linux kernel called restart_notifier.
 
-On 09/12/2014 05:41 PM, Paul Bolle wrote:
-> On Fri, 2014-09-05 at 13:30 +0900, Chanwoo Choi wrote:
->> This patch add exynos-ppmu devfreq event driver to provider raw data about
->> the utilization of each IP in Exynos SoC series.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
->> ---
->>  drivers/devfreq/Kconfig             |  10 +
->>  drivers/devfreq/event/Makefile      |   1 +
->>  drivers/devfreq/event/exynos-ppmu.c | 410 ++++++++++++++++++++++++++++++++++++
->>  3 files changed, 421 insertions(+)
->>  create mode 100644 drivers/devfreq/event/exynos-ppmu.c
->>
->> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
->> index ef839e7..4fbbcea 100644
->> --- a/drivers/devfreq/Kconfig
->> +++ b/drivers/devfreq/Kconfig
->> @@ -90,4 +90,14 @@ config ARM_EXYNOS5_BUS_DEVFREQ
->>  
->>  comment "DEVFREQ Event Drivers"
->>  
->> +config DEVFREQ_EVENT_EXYNOS_PPMU
->> +	bool "EXYNOS PPMU (Performance Profiling Monitoring Unit) DEVFREQ event Driver"
->> +	depends on ARCH_EXYNOS
->> +	select ARCH_HAS_OPP
-> 
-> This select statement can be dropped: see commit 78c5e0bb145d ("PM /
-> OPP: Remove ARCH_HAS_OPP").
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Josh Cartwright <joshc@codeaurora.org>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-pm@vger.kernel.org
 
-I'll drop it. 
+Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
+---
+Tested on Dragonboard APQ8074
 
-> 
-> By the way: there's a typo in the commit summary ("evnet").
+Changes since v2:
+- Removed unwanted header file and added linux/pm.h
 
-My mistake, I'll fix typo.
+Changes since v1:
+- Initialized restart_nb with its declaration
+- Removed return check for register_restart_handler as it always
+  returns 0 as per Guenter's suggestion to Josh's similar patch.
+  This takes care of Guenter's comments on error logs and NULL
+  initialization of restart_nb.notifier_call.
+---
+ drivers/power/reset/msm-poweroff.c |   20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
-Thanks for your review.
-Chanwoo Choi
-
-> 
->> +	select PM_OPP
->> +	help
->> +	 This add the DEVFREQ event driver for Exynos SoC. It provides PPMU
->> +	 (Performance Profiling Monitoring Unit) counters to estimate the
->> +	 utilization of each module.
->> +
->>  endif # PM_DEVFREQ
-> 
-> 
-> Paul Bolle
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
+index 774f9a3..4702efd 100644
+--- a/drivers/power/reset/msm-poweroff.c
++++ b/drivers/power/reset/msm-poweroff.c
+@@ -20,21 +20,27 @@
+ #include <linux/platform_device.h>
+ #include <linux/module.h>
+ #include <linux/reboot.h>
+-
+-#include <asm/system_misc.h>
++#include <linux/pm.h>
+ 
+ static void __iomem *msm_ps_hold;
+-
+-static void do_msm_restart(enum reboot_mode reboot_mode, const char *cmd)
++static int do_msm_restart(struct notifier_block *nb, unsigned long action,
++			   void *data)
+ {
+ 	writel(0, msm_ps_hold);
+ 	mdelay(10000);
++
++	return NOTIFY_DONE;
+ }
+ 
++static struct notifier_block restart_nb = {
++	.notifier_call = do_msm_restart,
++	.priority = 128,
++};
++
+ static void do_msm_poweroff(void)
+ {
+ 	/* TODO: Add poweroff capability */
+-	do_msm_restart(REBOOT_HARD, NULL);
++	do_msm_restart(&restart_nb, 0, NULL);
+ }
+ 
+ static int msm_restart_probe(struct platform_device *pdev)
+@@ -47,8 +53,10 @@ static int msm_restart_probe(struct platform_device *pdev)
+ 	if (IS_ERR(msm_ps_hold))
+ 		return PTR_ERR(msm_ps_hold);
+ 
++	register_restart_handler(&restart_nb);
++
+ 	pm_power_off = do_msm_poweroff;
+-	arm_pm_restart = do_msm_restart;
++
+ 	return 0;
+ }
+ 
+-- 
+1.7.9.5
 
