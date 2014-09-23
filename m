@@ -1,63 +1,36 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: [PATCH v3 1/3] dt-bindings: document gpio-charger bindings
-Date: Tue, 23 Sep 2014 13:59:03 +0200
-Message-ID: <1411473545-3290-2-git-send-email-heiko@sntech.de>
-References: <1411473545-3290-1-git-send-email-heiko@sntech.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:53229 "EHLO gloria.sntech.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751429AbaIWL7l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 23 Sep 2014 07:59:41 -0400
-In-Reply-To: <1411473545-3290-1-git-send-email-heiko@sntech.de>
-Sender: linux-pm-owner@vger.kernel.org
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH v2 2/3] power: gpio-charger: add device tree support
+Date: Tue, 23 Sep 2014 14:03:17 +0200
+Message-ID: <1549304.qklrgkYl3q@phil>
+References: <1411329923-15912-1-git-send-email-heiko@sntech.de> <1411329923-15912-3-git-send-email-heiko@sntech.de> <CAD=FV=W6q7wMDWWDkwdC_KF4EHJt2q8afxSGCpPEC+Nk2Jp2Ag@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAD=FV=W6q7wMDWWDkwdC_KF4EHJt2q8afxSGCpPEC+Nk2Jp2Ag@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Doug Anderson <dianders@chromium.org>
+Cc: sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dianders@chromium.org, heiko@sntech.de, Heiko Stuebner <heiko.stuebner@bq.com>
 
-From: Heiko Stuebner <heiko.stuebner@bq.com>
+Am Montag, 22. September 2014, 09:48:33 schrieb Doug Anderson:
+> > @@ -196,6 +255,7 @@ static struct platform_driver gpio_charger_driver = {
+> > 
+> >                 .name = "gpio-charger",
+> >                 .owner = THIS_MODULE,
+> >                 .pm = &gpio_charger_pm_ops,
+> > 
+> > +               .of_match_table = of_match_ptr(gpio_charger_match),
+> 
+> Given that you don't have any #ifdefs with "CONFIG_OF", I think
+> gpio_charger_match will always exist.  It seems like you should remove
+> the of_match_ptr or add some #ifdefs.  I can't quite keep up with what
+> the currently suggested best practice is here, though.
 
-This documents the binding for the gpio-charger power-supply.
+I've kept the of_match_ptr in v3. The dt parsing functions (of_read_foo,...) 
+define stubs for the !CONFIG_OF case which we use here in this case and 
+of_match_ptr is also defined differently for both OF and !OF, so it feels like 
+it should be there ;-)
 
-Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
-Reviewed-by: Doug Anderson <dianders@chromium.org>
----
- .../bindings/power_supply/gpio-charger.txt         | 27 ++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power_supply/gpio-charger.txt
 
-diff --git a/Documentation/devicetree/bindings/power_supply/gpio-charger.txt b/Documentation/devicetree/bindings/power_supply/gpio-charger.txt
-new file mode 100644
-index 0000000..adbb5dc
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power_supply/gpio-charger.txt
-@@ -0,0 +1,27 @@
-+gpio-charger
-+
-+Required properties :
-+ - compatible : "gpio-charger"
-+ - gpios : GPIO indicating the charger presence.
-+   See GPIO binding in bindings/gpio/gpio.txt .
-+ - charger-type : power supply type, one of
-+     unknown
-+     battery
-+     ups
-+     mains
-+     usb-sdp (USB standard downstream port)
-+     usb-dcp (USB dedicated charging port)
-+     usb-cdp (USB charging downstream port)
-+     usb-aca (USB accessory charger adapter)
-+
-+Example:
-+
-+	usb_charger: charger {
-+		compatible = "gpio-charger";
-+		charger-type = "usb-sdp";
-+		gpios = <&gpf0 2 0 0 0>;
-+	}
-+
-+	battery {
-+		power-supplies = <&usb_charger>;
-+	};
--- 
-2.1.0
-
+Heiko
