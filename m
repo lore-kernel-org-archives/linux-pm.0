@@ -1,111 +1,94 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v8 6/8] drivers: cpuidle: CPU idle ARM64 driver
-Date: Tue, 23 Sep 2014 15:42:48 +0200
-Message-ID: <2444560.uIlK6FC0A9@amdc1032>
-References: <1409585324-3678-1-git-send-email-lorenzo.pieralisi@arm.com>
- <20140911085727.GA25773@e102568-lin.cambridge.arm.com>
- <5415C968.90303@gmail.com>
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
+Subject: NULL pointer dereference in swsusp_free with 3.17-rc5
+Date: Tue, 23 Sep 2014 16:50:25 +0200
+Message-ID: <87zjdq8k7i.fsf@nemi.mork.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:33238 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754743AbaIWNmy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 09:42:54 -0400
-In-reply-to: <5415C968.90303@gmail.com>
+Received: from canardo.mork.no ([148.122.252.1]:53648 "EHLO canardo.mork.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932067AbaIWOu2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 10:50:28 -0400
+Received: from nemi.mork.no (nemi.mork.no [IPv6:2001:4641:0:2:e8b:fdff:fe08:971])
+	(authenticated bits=0)
+	by canardo.mork.no (8.14.4/8.14.4) with ESMTP id s8NEoQPu023241
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES128-SHA bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 23 Sep 2014 16:50:26 +0200
+Received: from bjorn by nemi.mork.no with local (Exim 4.80)
+	(envelope-from <bjorn@mork.no>)
+	id 1XWRQA-0001VW-5U
+	for linux-pm@vger.kernel.org; Tue, 23 Sep 2014 16:50:26 +0200
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <Will.Deacon@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>
+To: linux-pm@vger.kernel.org
+
+Hello,
+
+I just tested Debians experimental v3.17-rc5 build and got this after
+resuming from hibernation:
+
+BUG: unable to handle kernel NULL pointer dereference at           (nul=
+l)
+IP: [<ffffffff810a8cc1>] swsusp_free+0x21/0x190
+PGD b39c2067 PUD b39c1067 PMD 0=20
+Oops: 0000 [#1] SMP=20
+Modules linked in: ctr ccm xt_multiport iptable_filter ip_tables bridge=
+ aufs(C) bnep xt_hl nf_log_ipv6 nf_log_common xt_LOG binfmt_misc ip6tab=
+le_filter ip6_tables x_tables nfsd auth_rpcgss oid_registry nfs_acl nfs=
+ lockd fscache sunrpc 8021q garp stp mrp llc tun loop fuse joydev arc4 =
+iwlmvm mac80211 snd_hda_codec_conexant iwlwifi snd_hda_codec_generic iT=
+CO_wdt iTCO_vendor_support cfg80211 coretemp kvm_intel kvm psmouse evde=
+v serio_raw cdc_acm cdc_mbim cdc_wdm uvcvideo cdc_ncm videobuf2_vmalloc=
+ videobuf2_memops usbnet mii videobuf2_core v4l2_common videodev media =
+i2c_i801 lpc_ich mfd_core snd_hda_intel snd_hda_controller snd_hda_code=
+c snd_hwdep snd_pcm_oss snd_mixer_oss snd_pcm shpchp snd_timer mei_me m=
+ei wmi thinkpad_acpi nvram i915 snd soundcore ac battery ecb drm_kms_he=
+lper drm tpm_tis acpi_cpufreq tpm i2c_algo_bit i2ccore video btusb blue=
+tooth processor rfkill button ext4 crc16 mbcache jbd2 nbd sd_mod crc_t1=
+0dif crct10dif_generic sg sr_mod cdrom crct10dif_common ahci libahci li=
+bata scsi_mod thermal thermal_sys uhci_hcd ehci_pci ehci_hcd usbcore us=
+b_common e1000e ptp pps_core
+CPU: 1 PID: 4898 Comm: s2disk Tainted: G         C     3.17-rc5-amd64 #=
+1 Debian 3.17~rc5-1~exp1
+Hardware name: LENOVO 2776LEG/2776LEG, BIOS 6EET55WW (3.15 ) 12/19/2011
+task: ffff88023155ea40 ti: ffff8800b3b14000 task.ti: ffff8800b3b14000
+RIP: 0010:[<ffffffff810a8cc1>]  [<ffffffff810a8cc1>] swsusp_free+0x21/0=
+x190
+RSP: 0018:ffff8800b3b17ea8  EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8800b39bab00 RCX: 0000000000000001
+RDX: ffff8800b39bab10 RSI: ffff8800b39bab00 RDI: 0000000000000000
+RBP: 0000000000000010 R08: 0000000000000000 R09: 0000000000000000
+R10: ffff8800b39bab10 R11: 0000000000000246 R12: ffffea0000000000
+R13: ffff880232f485a0 R14: ffff88023ac27cd8 R15: ffff880232927590
+=46S:  00007f406d83b700(0000) GS:ffff88023bc80000(0000) knlGS:000000000=
+0000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000000 CR3: 00000000b3a62000 CR4: 00000000000007e0
+Stack:
+ ffff8800b39bab00 0000000000000010 ffff880232927590 ffffffff810acb4a
+ ffff8800b39bab00 ffffffff811a955a ffff8800b39bab10 0000000000000000
+ ffff88023155f098 ffffffff81a6b8c0 ffff88023155ea40 0000000000000007
+Call Trace:
+ [<ffffffff810acb4a>] ? snapshot_release+0x2a/0xb0
+ [<ffffffff811a955a>] ? __fput+0xca/0x1d0
+ [<ffffffff81080627>] ? task_work_run+0x97/0xd0
+ [<ffffffff81012d89>] ? do_notify_resume+0x69/0xa0
+ [<ffffffff8151452a>] ? int_signal+0x12/0x17
+Code: 66 2e 0f 1f 84 00 00 00 00 00 66 66 66 66 90 41 54 48 8b 05 ba 62=
+ 9c 00 49 bc 00 00 00 00 00 ea ff ff 48 8b 3d a1 62 9c 00 55 53 <48> 8b=
+ 10 48 89 50 18 48 8b 52 20 48 c7 40 28 00 00 00 00 c7 40=20
+RIP  [<ffffffff810a8cc1>] swsusp_free+0x21/0x190
+ RSP <ffff8800b3b17ea8>
+CR2: 0000000000000000
+---[ end trace f02be86a1ec0cccb ]---
 
 
-Hi,
+This is the first 3.17-rc I try, so it might be an issue from 3.17-rc1.
+v3.16 is fine.
 
-On Sunday, September 14, 2014 06:59:20 PM Tomasz Figa wrote:
-> [dropping my old @samsung.com address]
-> 
-> On 11.09.2014 10:57, Lorenzo Pieralisi wrote:
-> > On Thu, Sep 11, 2014 at 09:28:06AM +0100, Daniel Lezcano wrote:
-> >> On 09/05/2014 05:34 PM, Lorenzo Pieralisi wrote:
-> >>> On Fri, Sep 05, 2014 at 10:21:20AM +0100, Will Deacon wrote:
-> >>>> On Thu, Sep 04, 2014 at 06:29:10PM +0100, Lorenzo Pieralisi wrote:
-> >>>>> On Thu, Sep 04, 2014 at 05:03:20PM +0100, Catalin Marinas wrote:
-> >>>>>> On Wed, Sep 03, 2014 at 06:37:40PM +0100, Lorenzo Pieralisi wrote:
-> >>>>>>> This patch should be ready to go too, is it ok if I split the series
-> >>>>>>> in arm64 arch specific patches (will ask Catalin to pull) and CPUidle ones
-> >>>>>>> (inclusive of DT bindings and !!this patch!!) and send two separate pull
-> >>>>>>> requests ?
-> >>>>>>
-> >>>>>> If Daniel/Rafael don't have any objection, I can take the whole series
-> >>>>>> through the arm64 tree (it seems that patches have been already acked by
-> >>>>>> Daniel).
-> >>>>>
-> >>>>> Thanks a lot Catalin. Since this one is a brand new CPUidle driver and it
-> >>>>> follows a different pattern from arm legacy drivers I would like to get
-> >>>>> Daniel's ack on this patch too before pushing it. For the records I have
-> >>>>> just added two pr_err to signal driver probing error, ultraminor changes
-> >>>>> that do not justify a repost.
-> >>>>>
-> >>>>> If Samsung guys do not manifest themselves I would drop patch 8 from
-> >>>>> the series till it gets tested and its patch dependency queued too.
-> >>>>
-> >>>> The last patch also has a dependency, as you mentioned to Daniel. I think
-> >>>> we can certainly merge the arm64 parts, and if Daniel doesn't object, then
-> >>>> we can take the driver stuff too but leaving the exynos bits out (i.e. drop
-> >>>> the last patch).
-> >>>>
-> >>>> Anyway, if you could repost with the acks you've collected and rearrange it
-> >>>> so the arm64 patches are first in the series, that would be great.
-> >>>
-> >>> I can repost it with the acks and rearrange the patches, but for the
-> >>> pull request I have to know what code can be merged, since there are
-> >>> some arm64 patches (PSCI and CPUidle arm64 back-end) that are strictly
-> >>> tied to the arm64 CPUidle driver, so I *have* to know if the arm64
-> >>> CPUidle driver (this patch) can get merged and that requires an ack.
-> >>>
-> >>> If I do not hear from Samsung guys I will drop patch 8.
-> >>
-> >> Well I would prefer to have this patch merged (Cc'ing Tomasz).
-> > 
-> > Ok, but:
-> > 
-> > a) I only compile tested it
-> > b) There is a dts patch dependency for patch 8 to apply cleanly and it
-> >    hasn't been acked (I can't really do it since I can't test it)
-> > 
-> >    http://lists.infradead.org/pipermail/linux-arm-kernel/2014-July/274179.html
-> > 
-> > So, what should we do ? Tomasz ?
-> 
-> Sorry for late reply. I don't work for Samsung anymore so I don't focus
-> that much on areas other than I still maintain.
-> 
-> As for b) I believe all my patches have been already merged and now
-> we're just waiting for Kukjin to apply Bart's patch (although it's been
-> sitting on the ML since July, so probably needs rebasing).
-> 
-> About the patch 8 alone, somebody would have to test it. Maybe Bart or
-> Krzysztof could find some time to look at this? Other than that, I'm not
-> quite sure about entry latency you specified. It would look like
-> entering the state takes longer time than leaving, which I believe is
-> not the case. However I can't find any place in the code which would use
-> entry latency, so it might not be that important for now.
+This problem seems to be reliably repeatable so I can try to narrow it
+down a bit.
 
-I tested this patch series on both Exynos4210 (Origen board) and Exynos5250
-(Arndale board).  On Exynos4210 AFTR cpuidle mode is still working fine
-with the patch series applied.  On Exynos5250 AFTR is not working but it is
-an upstream problem (same happens with v3.17-rc4).
 
-Lorenzo, you can add
-
-Tested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-to the Exynos patch (patch #8).
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
+Bj=C3=B8rn (not subscribed, so please CC me)
