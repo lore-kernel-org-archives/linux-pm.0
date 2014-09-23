@@ -1,94 +1,91 @@
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Subject: NULL pointer dereference in swsusp_free with 3.17-rc5
-Date: Tue, 23 Sep 2014 16:50:25 +0200
-Message-ID: <87zjdq8k7i.fsf@nemi.mork.no>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: NULL pointer dereference in swsusp_free with 3.17-rc5
+Date: Tue, 23 Sep 2014 17:24:46 +0200
+Message-ID: <2218322.ridXK8jFtJ@vostro.rjw.lan>
+References: <87zjdq8k7i.fsf@nemi.mork.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from canardo.mork.no ([148.122.252.1]:53648 "EHLO canardo.mork.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932067AbaIWOu2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 10:50:28 -0400
-Received: from nemi.mork.no (nemi.mork.no [IPv6:2001:4641:0:2:e8b:fdff:fe08:971])
-	(authenticated bits=0)
-	by canardo.mork.no (8.14.4/8.14.4) with ESMTP id s8NEoQPu023241
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES128-SHA bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 23 Sep 2014 16:50:26 +0200
-Received: from bjorn by nemi.mork.no with local (Exim 4.80)
-	(envelope-from <bjorn@mork.no>)
-	id 1XWRQA-0001VW-5U
-	for linux-pm@vger.kernel.org; Tue, 23 Sep 2014 16:50:26 +0200
+Received: from v094114.home.net.pl ([79.96.170.134]:50123 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932242AbaIWPFA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 11:05:00 -0400
+In-Reply-To: <87zjdq8k7i.fsf@nemi.mork.no>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>
+Cc: linux-pm@vger.kernel.org
 
-Hello,
+T24gVHVlc2RheSwgU2VwdGVtYmVyIDIzLCAyMDE0IDA0OjUwOjI1IFBNIEJqw7hybiBNb3JrIHdy
+b3RlOgo+IEhlbGxvLAo+IAo+IEkganVzdCB0ZXN0ZWQgRGViaWFucyBleHBlcmltZW50YWwgdjMu
+MTctcmM1IGJ1aWxkIGFuZCBnb3QgdGhpcyBhZnRlcgo+IHJlc3VtaW5nIGZyb20gaGliZXJuYXRp
+b246Cj4gCj4gQlVHOiB1bmFibGUgdG8gaGFuZGxlIGtlcm5lbCBOVUxMIHBvaW50ZXIgZGVyZWZl
+cmVuY2UgYXQgICAgICAgICAgIChudWxsKQo+IElQOiBbPGZmZmZmZmZmODEwYThjYzE+XSBzd3N1
+c3BfZnJlZSsweDIxLzB4MTkwCj4gUEdEIGIzOWMyMDY3IFBVRCBiMzljMTA2NyBQTUQgMCAKPiBP
+b3BzOiAwMDAwIFsjMV0gU01QIAo+IE1vZHVsZXMgbGlua2VkIGluOiBjdHIgY2NtIHh0X211bHRp
+cG9ydCBpcHRhYmxlX2ZpbHRlciBpcF90YWJsZXMgYnJpZGdlIGF1ZnMoQykgYm5lcCB4dF9obCBu
+Zl9sb2dfaXB2NiBuZl9sb2dfY29tbW9uIHh0X0xPRyBiaW5mbXRfbWlzYyBpcDZ0YWJsZV9maWx0
+ZXIgaXA2X3RhYmxlcyB4X3RhYmxlcyBuZnNkIGF1dGhfcnBjZ3NzIG9pZF9yZWdpc3RyeSBuZnNf
+YWNsIG5mcyBsb2NrZCBmc2NhY2hlIHN1bnJwYyA4MDIxcSBnYXJwIHN0cCBtcnAgbGxjIHR1biBs
+b29wIGZ1c2Ugam95ZGV2IGFyYzQgaXdsbXZtIG1hYzgwMjExIHNuZF9oZGFfY29kZWNfY29uZXhh
+bnQgaXdsd2lmaSBzbmRfaGRhX2NvZGVjX2dlbmVyaWMgaVRDT193ZHQgaVRDT192ZW5kb3Jfc3Vw
+cG9ydCBjZmc4MDIxMSBjb3JldGVtcCBrdm1faW50ZWwga3ZtIHBzbW91c2UgZXZkZXYgc2VyaW9f
+cmF3IGNkY19hY20gY2RjX21iaW0gY2RjX3dkbSB1dmN2aWRlbyBjZGNfbmNtIHZpZGVvYnVmMl92
+bWFsbG9jIHZpZGVvYnVmMl9tZW1vcHMgdXNibmV0IG1paSB2aWRlb2J1ZjJfY29yZSB2NGwyX2Nv
+bW1vbiB2aWRlb2RldiBtZWRpYSBpMmNfaTgwMSBscGNfaWNoIG1mZF9jb3JlIHNuZF9oZGFfaW50
+ZWwgc25kX2hkYV9jb250cm9sbGVyIHNuZF9oZGFfY29kZWMgc25kX2h3ZGVwIHNuZF9wY21fb3Nz
+IHNuZF9taXhlcl9vc3Mgc25kX3BjbSBzaHBjaHAgc25kX3RpbWVyIG1laV9tZSBtZWkgd21pIHRo
+aW5rcGFkX2FjcGkgbnZyYW0gaTkxNSBzbmQgc291bmRjb3JlIGFjIGJhdHRlcnkgZWNiIGRybV9r
+bXNfaGVscGVyIGRybSB0cG1fdGlzIGFjcGlfY3B1ZnJlcSB0cG0gaTJjX2FsZ29fYml0IGkyY2Nv
+cmUgdmlkZW8gYnR1c2IgYmx1ZXRvb3RoIHByb2Nlc3NvciByZmtpbGwgYnV0dG9uIGV4dDQgY3Jj
+MTYgbWJjYWNoZSBqYmQyIG5iZCBzZF9tb2QgY3JjX3QxMGRpZiBjcmN0MTBkaWZfZ2VuZXJpYyBz
+ZyBzcl9tb2QgY2Ryb20gY3JjdDEwZGlmX2NvbW1vbiBhaGNpIGxpYmFoY2kgbGliYXRhIHNjc2lf
+bW9kIHRoZXJtYWwgdGhlcm1hbF9zeXMgdWhjaV9oY2QgZWhjaV9wY2kgZWhjaV9oY2QgdXNiY29y
+ZSB1c2JfY29tbW9uIGUxMDAwZSBwdHAgcHBzX2NvcmUKPiBDUFU6IDEgUElEOiA0ODk4IENvbW06
+IHMyZGlzayBUYWludGVkOiBHICAgICAgICAgQyAgICAgMy4xNy1yYzUtYW1kNjQgIzEgRGViaWFu
+IDMuMTd+cmM1LTF+ZXhwMQo+IEhhcmR3YXJlIG5hbWU6IExFTk9WTyAyNzc2TEVHLzI3NzZMRUcs
+IEJJT1MgNkVFVDU1V1cgKDMuMTUgKSAxMi8xOS8yMDExCj4gdGFzazogZmZmZjg4MDIzMTU1ZWE0
+MCB0aTogZmZmZjg4MDBiM2IxNDAwMCB0YXNrLnRpOiBmZmZmODgwMGIzYjE0MDAwCj4gUklQOiAw
+MDEwOls8ZmZmZmZmZmY4MTBhOGNjMT5dICBbPGZmZmZmZmZmODEwYThjYzE+XSBzd3N1c3BfZnJl
+ZSsweDIxLzB4MTkwCj4gUlNQOiAwMDE4OmZmZmY4ODAwYjNiMTdlYTggIEVGTEFHUzogMDAwMTAy
+NDYKPiBSQVg6IDAwMDAwMDAwMDAwMDAwMDAgUkJYOiBmZmZmODgwMGIzOWJhYjAwIFJDWDogMDAw
+MDAwMDAwMDAwMDAwMQo+IFJEWDogZmZmZjg4MDBiMzliYWIxMCBSU0k6IGZmZmY4ODAwYjM5YmFi
+MDAgUkRJOiAwMDAwMDAwMDAwMDAwMDAwCj4gUkJQOiAwMDAwMDAwMDAwMDAwMDEwIFIwODogMDAw
+MDAwMDAwMDAwMDAwMCBSMDk6IDAwMDAwMDAwMDAwMDAwMDAKPiBSMTA6IGZmZmY4ODAwYjM5YmFi
+MTAgUjExOiAwMDAwMDAwMDAwMDAwMjQ2IFIxMjogZmZmZmVhMDAwMDAwMDAwMAo+IFIxMzogZmZm
+Zjg4MDIzMmY0ODVhMCBSMTQ6IGZmZmY4ODAyM2FjMjdjZDggUjE1OiBmZmZmODgwMjMyOTI3NTkw
+Cj4gRlM6ICAwMDAwN2Y0MDZkODNiNzAwKDAwMDApIEdTOmZmZmY4ODAyM2JjODAwMDAoMDAwMCkg
+a25sR1M6MDAwMDAwMDAwMDAwMDAwMAo+IENTOiAgMDAxMCBEUzogMDAwMCBFUzogMDAwMCBDUjA6
+IDAwMDAwMDAwODAwNTAwM2IKPiBDUjI6IDAwMDAwMDAwMDAwMDAwMDAgQ1IzOiAwMDAwMDAwMGIz
+YTYyMDAwIENSNDogMDAwMDAwMDAwMDAwMDdlMAo+IFN0YWNrOgo+ICBmZmZmODgwMGIzOWJhYjAw
+IDAwMDAwMDAwMDAwMDAwMTAgZmZmZjg4MDIzMjkyNzU5MCBmZmZmZmZmZjgxMGFjYjRhCj4gIGZm
+ZmY4ODAwYjM5YmFiMDAgZmZmZmZmZmY4MTFhOTU1YSBmZmZmODgwMGIzOWJhYjEwIDAwMDAwMDAw
+MDAwMDAwMDAKPiAgZmZmZjg4MDIzMTU1ZjA5OCBmZmZmZmZmZjgxYTZiOGMwIGZmZmY4ODAyMzE1
+NWVhNDAgMDAwMDAwMDAwMDAwMDAwNwo+IENhbGwgVHJhY2U6Cj4gIFs8ZmZmZmZmZmY4MTBhY2I0
+YT5dID8gc25hcHNob3RfcmVsZWFzZSsweDJhLzB4YjAKPiAgWzxmZmZmZmZmZjgxMWE5NTVhPl0g
+PyBfX2ZwdXQrMHhjYS8weDFkMAo+ICBbPGZmZmZmZmZmODEwODA2Mjc+XSA/IHRhc2tfd29ya19y
+dW4rMHg5Ny8weGQwCj4gIFs8ZmZmZmZmZmY4MTAxMmQ4OT5dID8gZG9fbm90aWZ5X3Jlc3VtZSsw
+eDY5LzB4YTAKPiAgWzxmZmZmZmZmZjgxNTE0NTJhPl0gPyBpbnRfc2lnbmFsKzB4MTIvMHgxNwo+
+IENvZGU6IDY2IDJlIDBmIDFmIDg0IDAwIDAwIDAwIDAwIDAwIDY2IDY2IDY2IDY2IDkwIDQxIDU0
+IDQ4IDhiIDA1IGJhIDYyIDljIDAwIDQ5IGJjIDAwIDAwIDAwIDAwIDAwIGVhIGZmIGZmIDQ4IDhi
+IDNkIGExIDYyIDljIDAwIDU1IDUzIDw0OD4gOGIgMTAgNDggODkgNTAgMTggNDggOGIgNTIgMjAg
+NDggYzcgNDAgMjggMDAgMDAgMDAgMDAgYzcgNDAgCj4gUklQICBbPGZmZmZmZmZmODEwYThjYzE+
+XSBzd3N1c3BfZnJlZSsweDIxLzB4MTkwCj4gIFJTUCA8ZmZmZjg4MDBiM2IxN2VhOD4KPiBDUjI6
+IDAwMDAwMDAwMDAwMDAwMDAKPiAtLS1bIGVuZCB0cmFjZSBmMDJiZTg2YTFlYzBjY2NiIF0tLS0K
+PiAKPiAKPiBUaGlzIGlzIHRoZSBmaXJzdCAzLjE3LXJjIEkgdHJ5LCBzbyBpdCBtaWdodCBiZSBh
+biBpc3N1ZSBmcm9tIDMuMTctcmMxLgo+IHYzLjE2IGlzIGZpbmUuCj4gCj4gVGhpcyBwcm9ibGVt
+IHNlZW1zIHRvIGJlIHJlbGlhYmx5IHJlcGVhdGFibGUgc28gSSBjYW4gdHJ5IHRvIG5hcnJvdyBp
+dAo+IGRvd24gYSBiaXQuCgpXZWxsLCBwbGVhc2UgZG8uCgpJIHdvdWxkIHN1c3BlY3Qgb25lIG9m
+IHRoZXNlIGNvbW1pdHM6Cgo4NGM5MWI3YWUwN2MgUE0gLyBoaWJlcm5hdGU6IGF2b2lkIHVuc2Fm
+ZSBwYWdlcyBpbiBlODIwIHJlc2VydmVkIHJlZ2lvbnMKMGY3ZDgzZTg1ZGJkIFBNIC8gSGliZXJu
+YXRlOiBUb3VjaCBTb2Z0IExvY2t1cCBXYXRjaGRvZyBpbiBydHJlZV9uZXh0X25vZGUKOTA0N2Vi
+NjI5ZTVjIFBNIC8gSGliZXJuYXRlOiBSZW1vdmUgdGhlIG9sZCBtZW1vcnktYml0bWFwIGltcGxl
+bWVudGF0aW9uCjZlZmRlMzhmMDc2OSBQTSAvIEhpYmVybmF0ZTogSXRlcmF0ZSBvdmVyIHNldCBi
+aXRzIGluc3RlYWQgb2YgUEZOcyBpbiBzd3N1c3BfZnJlZSgpCjNhMjBjYjE3Nzk2MSBQTSAvIEhp
+YmVybmF0ZTogSW1wbGVtZW50IHBvc2l0aW9uIGtlZXBpbmcgaW4gcmFkaXggdHJlZQowN2EzMzgy
+MzZmZGMgUE0gLyBIaWJlcm5hdGU6IEFkZCBtZW1vcnlfcnRyZWVfZmluZF9iaXQgZnVuY3Rpb24K
+ZjQ2OWYwMmRjNmZhIFBNIC8gSGliZXJuYXRlOiBDcmVhdGUgYSBSYWRpeC1UcmVlIHRvIHN0b3Jl
+IG1lbW9yeSBiaXRtYXAKCnNvIEkgZ3Vlc3MgeW91IGNhbiBzdGFydCBmcm9tIGNoZWNraW5nIHRo
+ZW0gKHRoZSB0b3BtcG9zdCBvbmUgaXMgdGhlIGxhdGVzdCkuCgpSYWZhZWwK
 
-I just tested Debians experimental v3.17-rc5 build and got this after
-resuming from hibernation:
-
-BUG: unable to handle kernel NULL pointer dereference at           (nul=
-l)
-IP: [<ffffffff810a8cc1>] swsusp_free+0x21/0x190
-PGD b39c2067 PUD b39c1067 PMD 0=20
-Oops: 0000 [#1] SMP=20
-Modules linked in: ctr ccm xt_multiport iptable_filter ip_tables bridge=
- aufs(C) bnep xt_hl nf_log_ipv6 nf_log_common xt_LOG binfmt_misc ip6tab=
-le_filter ip6_tables x_tables nfsd auth_rpcgss oid_registry nfs_acl nfs=
- lockd fscache sunrpc 8021q garp stp mrp llc tun loop fuse joydev arc4 =
-iwlmvm mac80211 snd_hda_codec_conexant iwlwifi snd_hda_codec_generic iT=
-CO_wdt iTCO_vendor_support cfg80211 coretemp kvm_intel kvm psmouse evde=
-v serio_raw cdc_acm cdc_mbim cdc_wdm uvcvideo cdc_ncm videobuf2_vmalloc=
- videobuf2_memops usbnet mii videobuf2_core v4l2_common videodev media =
-i2c_i801 lpc_ich mfd_core snd_hda_intel snd_hda_controller snd_hda_code=
-c snd_hwdep snd_pcm_oss snd_mixer_oss snd_pcm shpchp snd_timer mei_me m=
-ei wmi thinkpad_acpi nvram i915 snd soundcore ac battery ecb drm_kms_he=
-lper drm tpm_tis acpi_cpufreq tpm i2c_algo_bit i2ccore video btusb blue=
-tooth processor rfkill button ext4 crc16 mbcache jbd2 nbd sd_mod crc_t1=
-0dif crct10dif_generic sg sr_mod cdrom crct10dif_common ahci libahci li=
-bata scsi_mod thermal thermal_sys uhci_hcd ehci_pci ehci_hcd usbcore us=
-b_common e1000e ptp pps_core
-CPU: 1 PID: 4898 Comm: s2disk Tainted: G         C     3.17-rc5-amd64 #=
-1 Debian 3.17~rc5-1~exp1
-Hardware name: LENOVO 2776LEG/2776LEG, BIOS 6EET55WW (3.15 ) 12/19/2011
-task: ffff88023155ea40 ti: ffff8800b3b14000 task.ti: ffff8800b3b14000
-RIP: 0010:[<ffffffff810a8cc1>]  [<ffffffff810a8cc1>] swsusp_free+0x21/0=
-x190
-RSP: 0018:ffff8800b3b17ea8  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: ffff8800b39bab00 RCX: 0000000000000001
-RDX: ffff8800b39bab10 RSI: ffff8800b39bab00 RDI: 0000000000000000
-RBP: 0000000000000010 R08: 0000000000000000 R09: 0000000000000000
-R10: ffff8800b39bab10 R11: 0000000000000246 R12: ffffea0000000000
-R13: ffff880232f485a0 R14: ffff88023ac27cd8 R15: ffff880232927590
-=46S:  00007f406d83b700(0000) GS:ffff88023bc80000(0000) knlGS:000000000=
-0000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000000 CR3: 00000000b3a62000 CR4: 00000000000007e0
-Stack:
- ffff8800b39bab00 0000000000000010 ffff880232927590 ffffffff810acb4a
- ffff8800b39bab00 ffffffff811a955a ffff8800b39bab10 0000000000000000
- ffff88023155f098 ffffffff81a6b8c0 ffff88023155ea40 0000000000000007
-Call Trace:
- [<ffffffff810acb4a>] ? snapshot_release+0x2a/0xb0
- [<ffffffff811a955a>] ? __fput+0xca/0x1d0
- [<ffffffff81080627>] ? task_work_run+0x97/0xd0
- [<ffffffff81012d89>] ? do_notify_resume+0x69/0xa0
- [<ffffffff8151452a>] ? int_signal+0x12/0x17
-Code: 66 2e 0f 1f 84 00 00 00 00 00 66 66 66 66 90 41 54 48 8b 05 ba 62=
- 9c 00 49 bc 00 00 00 00 00 ea ff ff 48 8b 3d a1 62 9c 00 55 53 <48> 8b=
- 10 48 89 50 18 48 8b 52 20 48 c7 40 28 00 00 00 00 c7 40=20
-RIP  [<ffffffff810a8cc1>] swsusp_free+0x21/0x190
- RSP <ffff8800b3b17ea8>
-CR2: 0000000000000000
----[ end trace f02be86a1ec0cccb ]---
-
-
-This is the first 3.17-rc I try, so it might be an issue from 3.17-rc1.
-v3.16 is fine.
-
-This problem seems to be reliably repeatable so I can try to narrow it
-down a bit.
-
-
-Bj=C3=B8rn (not subscribed, so please CC me)
