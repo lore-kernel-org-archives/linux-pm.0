@@ -1,130 +1,136 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC] fbdev: sh_mobile_hdmi: Re-init regs before irq re-enable on resume
-Date: Tue, 23 Sep 2014 14:21:58 +0200
-Message-ID: <1411474918-2955-1-git-send-email-geert+renesas@glider.be>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v8 6/8] drivers: cpuidle: CPU idle ARM64 driver
+Date: Tue, 23 Sep 2014 15:35:14 +0200
+Message-ID: <4228539.nCGoXxuRMK@amdc1032>
+References: <1409585324-3678-7-git-send-email-lorenzo.pieralisi@arm.com>
+ <20140912103257.GB24416@localhost> <20140912112643.GA10623@red-moon>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from baptiste.telenet-ops.be ([195.130.132.51]:52026 "EHLO
-	baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753199AbaIWMWF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 08:22:05 -0400
+Received: from mailout2.samsung.com ([203.254.224.25]:33259 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751860AbaIWNfZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 09:35:25 -0400
+In-reply-to: <20140912112643.GA10623@red-moon>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <Will.Deacon@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Geoff Levand <geoff@infradead.org>, Peter
 
-When the PM domain containing the HDMI hardware block is powered down,
-the HDMI register values (incl. interrupt polarity settings) are lost.
-During resume, after powering up the PM domain, interrupts are
-re-enabled, and an interrupt storm happens due to incorrect interrupt
-polarity settings:
 
-    irq 163: nobody cared (try booting with the "irqpoll" option)
-    ...
-    Disabling IRQ #163
+Hi,
 
-To fix this, re-initialize the interrupt polarity settings, and the
-htop1 register block (if present), during resume.
+On Friday, September 12, 2014 12:26:43 PM Lorenzo Pieralisi wrote:
+> On Fri, Sep 12, 2014 at 11:32:57AM +0100, Catalin Marinas wrote:
+> > Daniel, Lorenzo,
+> > 
+> > On Thu, Sep 11, 2014 at 10:32:48AM +0100, Daniel Lezcano wrote:
+> > > On 09/11/2014 10:57 AM, Lorenzo Pieralisi wrote:
+> > > > There is no ARM code in my series. So to sum it up:
+> > > >
+> > > > a) I send a pull request to Catalin for arm64 patches on top of the branch
+> > > >     you are creating with my patches
+> > >  >
+> > > > b) You take care of merging the CPUidle related patches through your
+> > > >     tree
+> > > >
+> > > > Is the above what you meant ?
+> > > 
+> > > Right, that allows to share a branch across the trees and resolve the 
+> > > dependencies when a patchset is touching different subsystems.
+> > > 
+> > > I realize the dependency is inverted regarding what I proposed 
+> > > initially, so it is up to Catalin to create the branch and I will share 
+> > > it with him.
+> > 
+> > I created the branch below with the arm64 specific patches for cpuidle.
+> > I won't rebase it and it should appear in -next tomorrow.
+> > 
+> > Lorenzo, please send a pull request to Daniel with the additional
+> > patches on top of the arm64 branch. Thanks.
+> 
+> Thank you very much, done. Pull request attached for information.
+> 
+> As Daniel knows, last two patches are still pending, waiting for Samsung
+> acks, and will be dropped if we do not get them in time.
+> 
+> Lorenzo
+> 
+> The following changes since commit 18910ab0d916b1a87016d69efd027714a80521dd:
+> 
+>   arm64: add PSCI CPU_SUSPEND based cpu_suspend support (2014-09-12 10:48:56 +0100)
+> 
+> are available in the git repository at:
+> 
+>   git://linux-arm.org/linux-2.6-lp.git for-upstream/arm-generic-cpuidle
+> 
+> for you to fetch changes up to dda773655f9b97570884c4396ad4d63daf177107:
+> 
+>   drivers: cpuidle: initialize Exynos driver through DT (2014-09-12 11:37:43 +0100)
+> 
+> ----------------------------------------------------------------
+> Bartlomiej Zolnierkiewicz (1):
+>       ARM: dts: add CPU nodes for Exynos4 SoCs
 
-As the .suspend_noirq() and .resume_noirq() callbacks are not called
-when using the generic PM domain, the normal .resume() callback is used,
-and the device interrupt needs to be disabled/enabled manually.
+This patch got broken during merge.  It differs from the version I posted
+on the list by not having the closing "};" which causes a dtb build failure:
 
-This fixes resume from s2ram with power down of the A4MP PM domain on
-r8a7740/Armadillo.
+Error: arch/arm/boot/dts/exynos4210-origen.dts:21.1-2 syntax error
+FATAL ERROR: Unable to parse input tree
+make[1]: *** [arch/arm/boot/dts/exynos4210-origen.dtb] Error 1
+make: *** [dtbs] Error 2
+make: *** Waiting for unfinished jobs....
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Please regenarate your branch with the fixed version of the patch
+(you can squash the fix below to the broken patch).
+
 ---
-Is there a specific reason why the .suspend_noirq() and .resume_noirq()
-callbacks are not called when using genpd, unlike .suspend(),
-.suspend_late(), .resume_early(), and .resume()?
----
- drivers/video/fbdev/sh_mobile_hdmi.c | 44 ++++++++++++++++++++++++++++++++++--
- 1 file changed, 42 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/exynos4210.dtsi |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/sh_mobile_hdmi.c b/drivers/video/fbdev/sh_mobile_hdmi.c
-index 9a33ee0413fb584d..7c72a3f02056445d 100644
---- a/drivers/video/fbdev/sh_mobile_hdmi.c
-+++ b/drivers/video/fbdev/sh_mobile_hdmi.c
-@@ -281,6 +281,7 @@ struct sh_hdmi {
- 	u8 edid_block_addr;
- 	u8 edid_segment_nr;
- 	u8 edid_blocks;
-+	int irq;
- 	struct clk *hdmi_clk;
- 	struct device *dev;
- 	struct delayed_work edid_work;
-@@ -1299,6 +1300,7 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
- 	hdmi->dev = &pdev->dev;
- 	hdmi->entity.owner = THIS_MODULE;
- 	hdmi->entity.ops = &sh_hdmi_ops;
-+	hdmi->irq = irq;
+Index: b/arch/arm/boot/dts/exynos4210.dtsi
+===================================================================
+--- a/arch/arm/boot/dts/exynos4210.dtsi	2014-09-23 14:14:29.793571708 +0200
++++ b/arch/arm/boot/dts/exynos4210.dtsi	2014-09-23 14:17:22.029565827 +0200
+@@ -39,6 +39,7 @@
+ 			<&clock CLK_OUT_CPU>, <&clock CLK_XXTI>,
+ 			<&clock CLK_XUSBXTI>;
+ 		#clock-cells = <1>;
++	};
  
- 	hdmi->hdmi_clk = clk_get(&pdev->dev, "ick");
- 	if (IS_ERR(hdmi->hdmi_clk)) {
-@@ -1415,12 +1417,11 @@ static int __exit sh_hdmi_remove(struct platform_device *pdev)
- {
- 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(platform_get_drvdata(pdev));
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	int irq = platform_get_irq(pdev, 0);
- 
- 	snd_soc_unregister_codec(&pdev->dev);
- 
- 	/* No new work will be scheduled, wait for running ISR */
--	free_irq(irq, hdmi);
-+	free_irq(hdmi->irq, hdmi);
- 	/* Wait for already scheduled work */
- 	cancel_delayed_work_sync(&hdmi->edid_work);
- 	pm_runtime_put(&pdev->dev);
-@@ -1435,10 +1436,49 @@ static int __exit sh_hdmi_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int sh_hdmi_suspend(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct sh_hdmi *hdmi = entity_to_sh_hdmi(platform_get_drvdata(pdev));
-+
-+	disable_irq(hdmi->irq);
-+	/* Wait for already scheduled work */
-+	cancel_delayed_work_sync(&hdmi->edid_work);
-+	return 0;
-+}
-+
-+static int sh_hdmi_resume(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct sh_mobile_hdmi_info *pdata = dev_get_platdata(dev);
-+	struct sh_hdmi *hdmi = entity_to_sh_hdmi(platform_get_drvdata(pdev));
-+
-+	/* Re-init interrupt polarity */
-+	if (pdata->flags & HDMI_OUTPUT_PUSH_PULL)
-+		hdmi_bit_set(hdmi, 0x02, 0x02, HDMI_SYSTEM_CTRL);
-+
-+	if (pdata->flags & HDMI_OUTPUT_POLARITY_HI)
-+		hdmi_bit_set(hdmi, 0x01, 0x01, HDMI_SYSTEM_CTRL);
-+
-+	/* Re-init htop1 */
-+	if (hdmi->htop1)
-+		sh_hdmi_htop1_init(hdmi);
-+
-+	/* Now it's safe to enable interrupts again */
-+	enable_irq(hdmi->irq);
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops sh_hdmi_pm_ops = {
-+	.suspend	= sh_hdmi_suspend,
-+	.resume		= sh_hdmi_resume,
-+};
-+
- static struct platform_driver sh_hdmi_driver = {
- 	.remove		= __exit_p(sh_hdmi_remove),
- 	.driver = {
- 		.name	= "sh-mobile-hdmi",
-+		.pm	= &sh_hdmi_pm_ops,
- 	},
- };
- 
--- 
-1.9.1
+ 	cpus {
+ 		#address-cells = <1>;
+
+> Lorenzo Pieralisi (4):
+>       drivers: cpuidle: implement DT based idle states infrastructure
+>       drivers: cpuidle: CPU idle ARM64 driver
+>       drivers: cpuidle: initialize big.LITTLE driver through DT
+>       drivers: cpuidle: initialize Exynos driver through DT
+> 
+>  arch/arm/boot/dts/exynos4210.dtsi          |  27 ++++
+>  arch/arm/boot/dts/exynos4212.dtsi          |  17 +++
+>  arch/arm/boot/dts/exynos4412.dtsi          |  29 ++++
+>  arch/arm/boot/dts/exynos5250.dtsi          |  11 ++
+>  arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts |  23 ++++
+>  drivers/cpuidle/Kconfig                    |   8 ++
+>  drivers/cpuidle/Kconfig.arm                |   2 +
+>  drivers/cpuidle/Kconfig.arm64              |  14 ++
+>  drivers/cpuidle/Makefile                   |   5 +
+>  drivers/cpuidle/cpuidle-arm64.c            | 133 ++++++++++++++++++
+>  drivers/cpuidle/cpuidle-big_little.c       |  19 +++
+>  drivers/cpuidle/cpuidle-exynos.c           |  18 ++-
+>  drivers/cpuidle/dt_idle_states.c           | 213 +++++++++++++++++++++++++++++
+>  drivers/cpuidle/dt_idle_states.h           |   7 +
+>  14 files changed, 525 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/cpuidle/Kconfig.arm64
+>  create mode 100644 drivers/cpuidle/cpuidle-arm64.c
+>  create mode 100644 drivers/cpuidle/dt_idle_states.c
+>  create mode 100644 drivers/cpuidle/dt_idle_states.h
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
