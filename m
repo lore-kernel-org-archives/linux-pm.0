@@ -1,64 +1,57 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v6 2/4] amba: Add helper macros for (un)preparing AMBA clock
-Date: Tue, 23 Sep 2014 09:30:36 +0200
-Message-ID: <1411457436.8863.3.camel@AMDC1943>
-References: <1411379189-3017-1-git-send-email-k.kozlowski@samsung.com>
- <1411379189-3017-3-git-send-email-k.kozlowski@samsung.com>
- <CAPDyKFpADBgR90_4s6Dxa8GSQ3F2kQFf6Az-J85D_1ZVD6=A5A@mail.gmail.com>
+From: Paul Bolle <pebolle@tiscali.nl>
+Subject: [PATCH] PM / devfreq: Remove ARCH_HAS_OPP completely
+Date: Tue, 23 Sep 2014 10:14:13 +0200
+Message-ID: <1411460053.20236.11.camel@x220>
+References: <1406551632.5397.17.camel@x220> <1410511111.31130.4.camel@x220>
+	 <20140916000916.GD9847@verge.net.au> <20140916002333.GI9847@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <CAPDyKFpADBgR90_4s6Dxa8GSQ3F2kQFf6Az-J85D_1ZVD6=A5A@mail.gmail.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cpsmtpb-ews05.kpnxchange.com ([213.75.39.8]:63060 "EHLO
+	cpsmtpb-ews05.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751989AbaIWIOP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 04:14:15 -0400
+In-Reply-To: <20140916002333.GI9847@verge.net.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On pon, 2014-09-22 at 20:56 +0200, Ulf Hansson wrote:
-> On 22 September 2014 11:46, Krzysztof Kozlowski <k.kozlowski@samsung.com> wrote:
-> > Add amba_pclk_prepare() and amba_pclk_unprepare() macros for handling
-> > the AMBA bus clock by device drivers.
-> >
-> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > ---
-> >  include/linux/amba/bus.h | 6 ++++++
-> >  1 file changed, 6 insertions(+)
-> >
-> > diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
-> > index fdd7e1b61f60..ad52027a9cbf 100644
-> > --- a/include/linux/amba/bus.h
-> > +++ b/include/linux/amba/bus.h
-> > @@ -92,6 +92,12 @@ void amba_release_regions(struct amba_device *);
-> >  #define amba_pclk_disable(d)   \
-> >         do { if (!IS_ERR((d)->pclk)) clk_disable((d)->pclk); } while (0)
-> >
-> > +#define amba_pclk_prepare(d)   \
-> > +       (IS_ERR((d)->pclk) ? 0 : clk_prepare((d)->pclk))
-> 
-> You don't need the IS_ERR, because amba_probe will fail if it won't be
-> able to fetch the clock.
-> 
-> Same comment below.
+The Kconfig symbol ARCH_HAS_OPP became redundant in v3.16: commit
+049d595a4db3 ("PM / OPP: Make OPP invisible to users in Kconfig")
+removed the only dependency that used it. Setting it had no effect
+anymore.
 
-Right, I followed the convention for amba_pclk_enable but this is not
-needed. I'll change it and send new version.
+So commit 78c5e0bb145d ("PM / OPP: Remove ARCH_HAS_OPP") removed it. For
+some reason that commit did not remove all select statements for that
+symbol. These statements are now useless. Remove one from devfreq too.
 
-Best regards,
-Krzysztof
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+Sent previously as part of the treewide patch "PM / OPP: Remove
+ARCH_HAS_OPP completely". But it turns out the changes for omap2 are
+already queued in omap-for-v3.18/soc (but not in linux-next!). Besides,
+Simon Horman wanted the shmobile change split off. As a result this
+change needs to be sent separately.
 
-> 
-> Kind regards
-> Uffe
-> 
-> > +
-> > +#define amba_pclk_unprepare(d) \
-> > +       do { if (!IS_ERR((d)->pclk)) clk_unprepare((d)->pclk); } while (0)
-> > +
-> >  /* Some drivers don't use the struct amba_device */
-> >  #define AMBA_CONFIG_BITS(a) (((a) >> 24) & 0xff)
-> >  #define AMBA_REV_BITS(a) (((a) >> 20) & 0x0f)
-> > --
-> > 1.9.1
-> >
+Done on top of next-20140922. Tested by grepping the tree.
+
+ drivers/devfreq/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 3dced0a9eae3..2227e9bf3884 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -80,7 +80,6 @@ config ARM_EXYNOS4_BUS_DEVFREQ
+ config ARM_EXYNOS5_BUS_DEVFREQ
+ 	bool "ARM Exynos5250 Bus DEVFREQ Driver"
+ 	depends on SOC_EXYNOS5250
+-	select ARCH_HAS_OPP
+ 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
+ 	select PM_OPP
+ 	help
+-- 
+1.9.3
 
