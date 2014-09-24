@@ -1,70 +1,78 @@
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Subject: Re: NULL pointer dereference in swsusp_free with 3.17-rc5
-Date: Wed, 24 Sep 2014 12:17:18 +0200
-Message-ID: <87vbodiaq9.fsf@nemi.mork.no>
-References: <87zjdq8k7i.fsf@nemi.mork.no> <2218322.ridXK8jFtJ@vostro.rjw.lan>
-	<878ulaxn6d.fsf@nemi.mork.no> <1435748.4Qh6HZyMEY@vostro.rjw.lan>
-	<87vbodihrd.fsf@nemi.mork.no> <20140924095111.GC10438@suse.de>
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [PATCH v10 0/6] cpufreq: use generic cpufreq drivers for exynos
+ platforms
+Date: Wed, 24 Sep 2014 13:08:37 +0200
+Message-ID: <5422A635.2020607@gmail.com>
+References: <1411531078-10671-1-git-send-email-thomas.ab@samsung.com> <026501cfd7ca$0857a140$1906e3c0$@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from canardo.mork.no ([148.122.252.1]:40579 "EHLO canardo.mork.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754448AbaIXKRh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 06:17:37 -0400
-In-Reply-To: <20140924095111.GC10438@suse.de> (Joerg Roedel's message of "Wed,
-	24 Sep 2014 11:51:11 +0200")
+Received: from mail-we0-f174.google.com ([74.125.82.174]:39396 "EHLO
+	mail-we0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751281AbaIXLIk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 07:08:40 -0400
+In-Reply-To: <026501cfd7ca$0857a140$1906e3c0$@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joerg Roedel <jroedel@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: Kukjin Kim <kgene@kernel.org>, 'Thomas Abraham' <thomas.ab@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, cw00.choi@samsung.com
 
-Joerg Roedel <jroedel@suse.de> writes:
+On 24.09.2014 09:34, Kukjin Kim wrote:
+> Thomas Abraham wrote:
+>>
+>> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+>> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
+>> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
+>> driver.
+>>
+>> This patch series is dependent on two other patches
+>> 1. ARM: dts: add CPU nodes for Exynos4 SoCs
+>>    - https://lkml.org/lkml/2014/7/21/315
+>> 2. clk: exynos4: remove duplicate div_core2 divider clock instantiation
+>>    - http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34859.html
 
->> @@ -1343,7 +1343,15 @@ void swsusp_free(void)
->>  {
->>         unsigned long fb_pfn, fr_pfn;
->> =20
->> +WARN_ON(!forbidden_pages_map);
->> +if (!forbidden_pages_map)
->> +       return;
->> +
->>         memory_bm_position_reset(forbidden_pages_map);
->> +WARN_ON(!free_pages_map);
->> +if (!free_pages_map)
->> +       return;
->> +
->>         memory_bm_position_reset(free_pages_map);
->
-> ... the old code did not check for a valid forbidden_pages_map and
-> free_pages_map either, so it should crash there too.
+I have applied 2) to Samsung clock tree.
 
-Well, it did test AFAICS...  The 3.16 code is
+>>
+>> Thomas Abraham (6):
+>>   clk: samsung: add infrastructure to register cpu clocks
+>>   clk: samsung: add cpu clock configuration data and instantiate cpu clock
+>>   ARM: dts: Exynos: add CPU OPP and regulator supply property
+>>   ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
+>>   cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
+>>   clk: samsung: remove unused clock aliases and update clock flags
+>>
+>>  arch/arm/boot/dts/exynos4210-origen.dts         |    4 +
+>>  arch/arm/boot/dts/exynos4210-trats.dts          |    4 +
+>>  arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 +
+>>  arch/arm/boot/dts/exynos4210.dtsi               |   14 +-
+>>  arch/arm/boot/dts/exynos5250-arndale.dts        |    4 +
+>>  arch/arm/boot/dts/exynos5250-smdk5250.dts       |    4 +
+>>  arch/arm/boot/dts/exynos5250-snow.dts           |    4 +
+>>  arch/arm/boot/dts/exynos5250.dtsi               |   25 ++-
+>>  arch/arm/boot/dts/exynos5420.dtsi               |   38 +++
+>>  arch/arm/mach-exynos/exynos.c                   |   24 ++-
+>>  drivers/clk/samsung/Makefile                    |    2 +-
+>>  drivers/clk/samsung/clk-cpu.c                   |  335 +++++++++++++++++++++++
+>>  drivers/clk/samsung/clk-cpu.h                   |   91 ++++++
+>>  drivers/clk/samsung/clk-exynos4.c               |   63 +++--
+>>  drivers/clk/samsung/clk-exynos5250.c            |   44 +++-
+>>  drivers/clk/samsung/clk-exynos5420.c            |   72 +++++-
+>>  drivers/cpufreq/Kconfig.arm                     |   22 --
+>>  drivers/cpufreq/Makefile                        |    2 -
+>>  include/dt-bindings/clock/exynos5250.h          |    1 +
+>>  include/dt-bindings/clock/exynos5420.h          |    2 +
+> 
+> Looks good to me,
+> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+> 
+> BTW, who will handle this series? I think this is already ready for v3.18.
 
-int swsusp_page_is_forbidden(struct page *page)
-{
-        return forbidden_pages_map ?
-                memory_bm_test_bit(forbidden_pages_map, page_to_pfn(pag=
-e)) : 0;
-}
+I believe Viresh already acked this series too and since it does quite a
+lot of shuffling in clock code, I'd prefer to take this through clock
+tree, but apparently there is a dependency on patch 1), which already
+went through another tree?
 
-=2E.
-
-void swsusp_free(void)
-{
-=2E.
-                                if (swsusp_page_is_forbidden(page) &&
-                                    swsusp_page_is_free(page)) {
-                                        swsusp_unset_page_forbidden(pag=
-e);
-                                        swsusp_unset_page_free(page);
-                                        __free_page(page);
-                                }
-
-
-
-
-
-
-Bj=C3=B8rn
+Best regards,
+Tomasz
