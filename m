@@ -1,48 +1,26 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH 2/3] thermal: core: fix: Initialize the max_state variable to 0
-Date: Wed, 24 Sep 2014 10:27:11 +0200
-Message-ID: <1411547232-21493-3-git-send-email-l.majewski@samsung.com>
-References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH 0/3] thermal: fix: Various fixes for thermal subsystem
+Date: Wed, 24 Sep 2014 10:27:09 +0200
+Message-ID: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Pointer to the uninitialized max_state variable is passed to get the
-maximal cooling state.
-For CPU cooling device (cpu_cooling.c) the cpufreq_get_max_state() is
-called, which even when error occurs will return the max_state variable
-unchanged.
-Since error for ->get_max_state() is not checked, the automatically
-allocated value of max_state is used for (upper > max_state) comparison.
-For any possible max_state value it is very unlikely that it will be less
-than upper.
-As a consequence, the cooling device is bind even without the backed
-cpufreq table initialized.
+This little patch series comprises fixes for step_wise governor and
+thermal core.
 
-This initialization will prevent from accidental binding trip points to
-cpu freq cooling frequencies when cpufreq driver itself is not yet fully
-initialized.
+Lukasz Majewski (3):
+  thermal: step_wise: fix: Prevent from binary overflow when trend is
+    dropping
+  thermal: core: fix: Initialize the max_state variable to 0
+  thermal: core: fix: Check return code of the ->get_max_state()
+    callback
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
----
- drivers/thermal/thermal_core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/step_wise.c    | 2 +-
+ drivers/thermal/thermal_core.c | 8 +++++---
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 454884a..747618a 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -927,7 +927,7 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
- 	struct thermal_instance *pos;
- 	struct thermal_zone_device *pos1;
- 	struct thermal_cooling_device *pos2;
--	unsigned long max_state;
-+	unsigned long max_state = 0;
- 	int result;
- 
- 	if (trip >= tz->trips || (trip < 0 && trip != THERMAL_TRIPS_NONE))
 -- 
 2.0.0.rc2
