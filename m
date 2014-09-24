@@ -1,185 +1,71 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v6 1/5] qcom: spm: Add Subsystem Power Manager driver
-Date: Wed, 24 Sep 2014 11:21:51 -0600
-Message-ID: <20140924172151.GD422@ilina-mac>
+Subject: Re: [PATCH v6 2/5] arm: dts: qcom: Add SPM device bindings for 8974
+Date: Wed, 24 Sep 2014 11:23:45 -0600
+Message-ID: <20140924172345.GE422@ilina-mac>
 References: <1411516281-58328-1-git-send-email-lina.iyer@linaro.org>
- <1411516281-58328-2-git-send-email-lina.iyer@linaro.org>
- <F743E5F0-28C1-4A9D-A27D-73EA70A01B46@codeaurora.org>
+ <1411516281-58328-3-git-send-email-lina.iyer@linaro.org>
+ <5422621E.2050509@smartplayin.com>
+ <20140924134939.GA422@ilina-mac>
+ <5422FD8D.8080307@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <F743E5F0-28C1-4A9D-A27D-73EA70A01B46@codeaurora.org>
+In-Reply-To: <5422FD8D.8080307@codeaurora.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
-To: Kumar Gala <galak@codeaurora.org>
-Cc: sboyd@codeaurora.org, daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, khilman@linaro.org, msivasub@codeaurora.org, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Pramod Gurav <pramod.gurav@smartplayin.com>, galak@codeaurora.org, daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, khilman@linaro.org, msivasub@codeaurora.org, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 24 2014 at 10:33 -0600, Kumar Gala wrote:
->
->On Sep 23, 2014, at 6:51 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
->
->> Based on work by many authors, available at codeaurora.org
+On Wed, Sep 24 2014 at 11:21 -0600, Stephen Boyd wrote:
+>On 09/24/14 06:49, Lina Iyer wrote:
+>> On Wed, Sep 24 2014 at 00:14 -0600, Pramod Gurav wrote:
+>>> Hi Lina,
+>>>
+>>> On Wednesday 24 September 2014 05:21 AM, Lina Iyer wrote:
+>>>> Add SPM device bindings for QCOM 8974 based cpus. SPM is the sub-system
+>>>> power manager and controls the logic around the cores (cpu and L2).
+>>>>
+>>>> Each core has an instance of SPM and controls only that core. Each cpu
+>>>> SPM is configured to support WFI and SPC (standalone-power collapse).
+>>>>
+>>>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>>>> ---
+>>>>  arch/arm/boot/dts/qcom-msm8974-pm.dtsi | 69
+>>>> ++++++++++++++++++++++++++++++++++
+>>>>  arch/arm/boot/dts/qcom-msm8974.dtsi    | 10 +++--
+>>>>  2 files changed, 75 insertions(+), 4 deletions(-)
+>>>>  create mode 100644 arch/arm/boot/dts/qcom-msm8974-pm.dtsi
+>>>
+>>> <snip>
+>>>
+>>>> +};
+>>>> diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi
+>>>> b/arch/arm/boot/dts/qcom-msm8974.dtsi
+>>>> index 69dca2a..0580bc2 100644
+>>>> --- a/arch/arm/boot/dts/qcom-msm8974.dtsi
+>>>> +++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+>>>> @@ -14,7 +14,7 @@
+>>>>          #size-cells = <0>;
+>>>>          interrupts = <1 9 0xf04>;
+>>>>
+>>>> -        cpu@0 {
+>>>> +        CPU0: cpu@0 {
+>>> Lina, Stephen boyd has sent some DT change for krait-cpufreq which also
+>>> renames this node to "cpu0: cpu@0". If you both could sync up and agree
+>>> on a common naming('cpu0' with caps or not caps) for this node.
+>>>
+>> Sure. Will work with Stephen on that.
 >>
->> SPM is a hardware block that controls the peripheral logic surroundi=
-ng
->> the application cores (cpu/l$). When the core executes WFI instructi=
-on,
->> the SPM takes over the putting the core in low power state as
->> configured. The wake up for the SPM is an interrupt at the GIC, whic=
-h
->> then completes the rest of low power mode sequence and brings the co=
-re
->> out of low power mode.
->>
->> The SPM has a set of control registers that configure the SPMs
->> individually based on the type of the core and the runtime condition=
-s.
->> SPM is a finite state machine block to which a sequence is provided =
-and
->> it interprets the bytes  and executes them in sequence. Each low pow=
-er
->> mode that the core can enter into is provided to the SPM as a sequen=
-ce.
->>
->> Configure the SPM to set the core (cpu or L2) into its low power mod=
-e,
->> the index of the first command in the sequence is set in the SPM_CTL
->> register. When the core executes ARM wfi instruction, it triggers th=
-e
->> SPM state machine to start executing from that index. The SPM state
->> machine waits until the interrupt occurs and starts executing the re=
-st
->> of the sequence until it hits the end of the sequence. The end of th=
-e
->> sequence jumps the core out of its low power mode.
->>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->> [lina: simplify the driver for initial submission, clean up and upda=
-te
->> commit text]
->> ---
->> Documentation/devicetree/bindings/arm/msm/spm.txt |  43 +++
->> drivers/soc/qcom/Kconfig                          |   8 +
->> drivers/soc/qcom/Makefile                         |   1 +
->> drivers/soc/qcom/spm.c                            | 388 ++++++++++++=
-++++++++++
->> include/soc/qcom/spm.h                            |  38 +++
->> 5 files changed, 478 insertions(+)
->> create mode 100644 Documentation/devicetree/bindings/arm/msm/spm.txt
->> create mode 100644 drivers/soc/qcom/spm.c
->> create mode 100644 include/soc/qcom/spm.h
->>
->> diff --git a/Documentation/devicetree/bindings/arm/msm/spm.txt b/Doc=
-umentation/devicetree/bindings/arm/msm/spm.txt
->> new file mode 100644
->> index 0000000..2ff2454
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/arm/msm/spm.txt
->> @@ -0,0 +1,43 @@
->> +* Subsystem Power Manager (SPM)
->> +
->> +Qualcomm Snapdragons have SPM hardware blocks to control the Applic=
-ation
->> +Processor Sub-System power. These SPM blocks run individual state m=
-achine
->> +to determine what the core (L2 or Krait/Scorpion) would do when the=
- WFI
->> +instruction is executed by the core.
->> +
->> +The devicetree representation of the SPM block should be:
->> +
->> +Required properties
->> +
->> +- compatible: Must be -
->> +		 "qcom,spm-v2.1"
->> +- reg: The physical address and the size of the SPM's memory mapped=
- registers
->> +- qcom,cpu: phandle for the CPU that the SPM block is attached to.
->> +	This field is required on only for SPMs that control the CPU.
 >
->Let=E2=80=99s make this just cpu-handle instead of qcom,cpu.  The conc=
-ept of a handle to a cpu is pretty generic.
+>This doesn't seem like a big deal. I imagine Kumar can resolve the
+>conflict if the two patches merge at the same time.
 >
-Okay. Will look into it.
-You mean just the property name, right?
+I can use the lower case names, if thats common. I see that being used
+for referring to <&acc> in that file, but ofcourse <&L2> exists as well.
+Any preference?
 
->> +- qcom,saw2-clk-div: SAW2 configuration register to program the SPM=
- runtime
->> +	clocks. The register for this property is MSM_SPM_REG_SAW2_CFG.
->
->(add details on how this is used to compute timer tick.  Is it timer t=
-ick =3D saw_clk/saw2-clk-div?  What is valid range of values)
->
-The SPM spec is not available for open use. The range of values is
-irrelevant for the SPM clocks, usually, its a constant for an SoC, but
-may vary between the SoC. Its how the SPM on the SoC interprets it.=20
-
->> +- qcom,saw2-delays: The SPM delay values that SPM sequences would r=
-efer to.
->> +	The register for this property is MSM_SPM_REG_SAW2_SPM_DLY.
->
->Didn=E2=80=99t Stephen asked about splitting this up? Or at least trea=
-ting it as an array of 3 values?
->
-Yes he did. My response was similar to the clk-div values, its not
-something you can change without hardware spec documentation.
-And I need to mix the three values up, anyways before I write to the
-register. Splitting it up, doesnt help understanding/configuring the SP=
-M
-any better, so didnt change it.
-
->> +- qcom,saw2-enable: The SPM control register to enable/disable the =
-sleep state
->> +	machine. The register for this property is MSM_SPM_REG_SAW2_SPM_CT=
-L.
->
->Can this just be a boolean (exist or not), if so, probably change it t=
-o qcom,saw2-disable (so lack of property means enable)?
->
-Okay, sure.
-
->> +
->> +Optional properties
->> +
->> +- qcom,saw2-spm-cmd-wfi: The WFI command sequence
->
->probably add something like: =E2=80=9Carray of bytes =E2=80=A6=E2=80=9D=
- (want to convey the data type somehow, is there a max length?)
->
-Okay.
-
->> +- qcom,saw2-spm-cmd-spc: The Standalone PC command sequence
->
->probably add something like: =E2=80=9Carray of bytes =E2=80=A6=E2=80=9D=
- (want to convey the data type somehow, is there a max length?)
->
-Okay.
-
->> +
->> +Example:
->> +	spm@f9089000 {
->> +		compatible =3D "qcom,spm-v2.1";
->> +		#address-cells =3D <1>;
->> +		#size-cells =3D <1>;
->> +		reg =3D <0xf9089000 0x1000>;
->> +		qcom,cpu =3D <&CPU0>;
->> +		qcom,saw2-clk-div =3D <0x1>;
->> +		qcom,saw2-delays =3D <0x20000400>;
->> +		qcom,saw2-enable =3D <0x1>;
->> +		qcom,saw2-spm-cmd-wfi =3D [03 0b 0f];
->> +		qcom,saw2-spm-cmd-spc =3D [00 20 50 80 60 70 10 92
->> +				a0 b0 03 68 70 3b 92 a0 b0
->> +				82 2b 50 10 30 02 22 30 0f];
->> +	};
->
->- k
->
->
->--=20
->Employee of Qualcomm Innovation Center, Inc.
->Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hos=
-ted by The Linux Foundation
+>-- 
+>Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+>hosted by The Linux Foundation
 >
