@@ -1,119 +1,93 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Thu, 25 Sep 2014 01:46:51 +0200
-Message-ID: <1478598.DgG2vI5Y04@vostro.rjw.lan>
-References: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
+From: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3] PM / AVS: rockchip-io: add driver handling Rockchip io domains
+Date: Wed, 24 Sep 2014 16:27:07 -0700
+Message-ID: <7hwq8sk3as.fsf@deeprootsystems.com>
+References: <1410475735-10278-1-git-send-email-dianders@chromium.org>
+	<7hy4tog61r.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56125 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750793AbaIXX1C convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 19:27:02 -0400
-In-Reply-To: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <7hy4tog61r.fsf-1D3HCaltpLuhEniVeURVKkEOCMrvLtNR@public.gmane.org> (Kevin Hilman's message of
+	"Fri, 12 Sep 2014 09:25:04 -0700")
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Addy Ke <addy.ke-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Sonny Rao <sonnyrao-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, robert.schoene@tu-dresden.de, prarit@redhat.com, skannan@codeaurora.org
 
-On Tuesday, September 09, 2014 09:46:39 AM Viresh Kumar wrote:
-> This commit was earlier commited in kernel as:
-> 19c7630 cpufreq: serialize calls to __cpufreq_governor()
->=20
-> and was later reverted by Srivatsa:
-> 56d07db cpufreq: Remove temporary fix for race between CPU hotplug an=
-d sysfs-writes
->=20
-> When this commit was first introduced it was written for races during=
- hotplug
-> and because we got some other solution to take care of the races with=
- hotplug we
-> reverted it.
->=20
-> But (as I also said in the revert patch: https://lkml.org/lkml/2013/9=
-/10/61)
-> there are more cases where this is required.
->=20
-> Recently Robert shown an instance where changing governors with multi=
-ple threads
-> leads to following warnings:
->=20
-> ------------[ cut here ]------------
-> WARNING: CPU: 1 PID: 2458 at drivers/cpufreq/cpufreq_governor.c:261 c=
-pufreq_governor_dbs+0x6d2/0x740()
-> CPU: 1 PID: 2458 Comm: tee Tainted: G           OE 3.16.0-rc6+ #1
-> Hardware name: FUJITSU ESPRIMO P700/D3061-A1, BIOS V4.6.4.0 R1.12.0 f=
-or D3061-A1x 07/04/2011
->  0000000000000009 ffff8800ae403b78 ffffffff8173b0bf 0000000000000000
->  ffff8800ae403bb0 ffffffff8106c82d 0000000000000000 ffff88022fa27000
->  0000000000000005 0000000000000002 ffffffff81cd5d00 ffff8800ae403bc0
-> Call Trace:
->  [<ffffffff8173b0bf>] dump_stack+0x45/0x56
->  [<ffffffff8106c82d>] warn_slowpath_common+0x7d/0xa0
->  [<ffffffff8106c90a>] warn_slowpath_null+0x1a/0x20
->  [<ffffffff815e4a12>] cpufreq_governor_dbs+0x6d2/0x740
->  [<ffffffff810941fc>] ? notifier_call_chain+0x4c/0x70
->  [<ffffffff815e2757>] od_cpufreq_governor_dbs+0x17/0x20
->  [<ffffffff815dea50>] __cpufreq_governor+0xb0/0x2a0
->  [<ffffffff815ded8c>] cpufreq_set_policy+0x14c/0x2f0
->  [<ffffffff815df796>] store_scaling_governor+0x96/0xf0
->  [<ffffffff815df100>] ? cpufreq_update_policy+0x1d0/0x1d0
->  [<ffffffff815de3c9>] store+0x79/0xc0
->  [<ffffffff81245bed>] sysfs_kf_write+0x3d/0x50
->  [<ffffffff81245120>] kernfs_fop_write+0xe0/0x160
->  [<ffffffff811d00d7>] vfs_write+0xb7/0x1f0
->  [<ffffffff811d0c76>] SyS_write+0x46/0xb0
->  [<ffffffff817439ff>] tracesys+0xe1/0xe6
-> ---[ end trace a2dad7e42b22c796 ]---
-> BUG: unable to handle kernel NULL pointer dereference at           (n=
-ull)
-> IP: [<ffffffff815e4395>] cpufreq_governor_dbs+0x55/0x740
-> PGD 36a05067 PUD b47df067 PMD 0
-> Oops: 0000 [#1] SMP
->=20
-> Robert also provided a small script to reproduce it:
-> crash_governor.sh:
-> for I in `seq 1000`
-> do
->         echo ondemand | sudo tee /sys/devices/system/cpu/cpu*/cpufreq=
-/scaling_governor
->         echo userspace | sudo tee /sys/devices/system/cpu/cpu*/cpufre=
-q/scaling_governor
-> done
->=20
-> runme.sh:
-> for I in `seq 8`
-> do
->         ./crash_governor.sh &
-> done
->=20
-> Just run runme.sh to crash your system :)
->=20
-> Introduce an additional variable which would guarantee serialization =
-of
-> __cpufreq_governor() routine.
->=20
-> Reported-and-tested-by: Robert Sch=C3=B6ne <robert.schoene@tu-dresden=
-=2Ede>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> Hi Rafael,
->=20
-> These fixes the issues reported by Robert. There is slight change aft=
-er Robert
-> tested my initial patch, 'bool' is replaced by 'int' for 'governor_st=
-ate'.
->=20
-> Regardingn stable trees, I am not too sure. The first patch of this s=
-eries was
-> earlier applied on 3.12 and then was reverted quickly in the same rel=
-ease.
->=20
-> So, the best we can do is 3.12+.
+Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> writes:
 
-What's the current status of this series?
+> Rafael,
+>
+> Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> writes:
+>
+>> From: Heiko St=C3=BCbner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+>>
+>> IO domain voltages on some Rockchip SoCs are variable but need to be
+>> kept in sync between the regulators and the SoC using a special
+>> register.
+>>
+>> A specific example using rk3288:
+>> - If the regulator hooked up to a pin like SDMMC0_VDD is 3.3V then
+>>   bit 7 of GRF_IO_VSEL needs to be 0.  If the regulator hooked up to
+>>   that same pin is 1.8V then bit 7 of GRF_IO_VSEL needs to be 1.
+>>
+>> Said another way, this driver simply handles keeping bits in the SoC=
+'s
+>> general register file (GRF) in sync with the actual value of a volta=
+ge
+>> hooked up to the pins.
+>>
+>> Note that this driver specifically doesn't include:
+>> - any logic for deciding what voltage we should set regulators to
+>> - any logic for deciding whether regulators (or internal SoC blocks)
+>>   should have power or not have power
+>>
+>> If there were some other software that had the smarts of making
+>> decisions about regulators, it would work in conjunction with this
+>> driver.  When that other software adjusted a regulator's voltage the=
+n
+>> this driver would handle telling the SoC about it.  A good example i=
+s
+>> vqmmc for SD.  In that case the dw_mmc driver simply is told about a
+>> regulator.  It changes the regulator between 3.3V and 1.8V at the
+>> right time.  This driver notices the change and makes sure that the
+>> SoC is on the same page.
+>>
+>> Signed-off-by: Heiko St=C3=BCbner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+>> Signed-off-by: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+>> Reviewed-by: Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>
+>> ---
+>> Changes in v3:
+>> - Changed compatible string as per Santosh.
+>
+> Thanks, I like the new string better.
+>
+>> - Added code docs about the slop in 1.8V and 3.3V as per Santosh.
+>> - Moved some #defines to the top as per Santosh.
+>
+> All nice changes, thanks Santosh!
+>
+> Reviewed-by: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>
+> Rafael, how do you want to handle drivers/avs/* ?  Along with Nishant=
+h,
+> I'm maintaining everything there currently (only one driver :)), and
+> since I recommended $SUBJECT driver go into drivers/avs[1], I'm happy=
+ to
+> queue it for you and update MAINTAINERS to cover drivers/avs/* instea=
+d
+> of just smartreflex.c.
+>
+> Let me know how you'd like to proceed.
 
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+=46or the benefit of the archives... Rafael and I talked off-list and
+agreed that I'll queue it up for him and update MAINTAINERS to reflect
+maintenance of drivesr/power/avs
+
+Kevin
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
