@@ -1,56 +1,105 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v7 1/5] PM / Runtime: Add getter for quering the IRQ
-	safe option
-Date: Wed, 24 Sep 2014 20:52:22 +0100
-Message-ID: <20140924195222.GB5182@n2100.arm.linux.org.uk>
-References: <20140924175302.GB1231@amd> <Pine.LNX.4.44L0.1409241544070.1580-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 00/27] add pm_runtime_last_busy_and_autosuspend() helper
+Date: Wed, 24 Sep 2014 22:28:07 +0200
+Message-ID: <6374313.I12loOK9hA@vostro.rjw.lan>
+References: <1411575342-31048-1-git-send-email-vinod.koul@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1409241544070.1580-100000@iolanthe.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Pavel Machek <pavel@ucw.cz>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Randy Dunlap <rdunlap@infradead.org>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1411575342-31048-1-git-send-email-vinod.koul@intel.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Vinod Koul <vinod.koul@intel.com>
+Cc: linux-kernel@vger.kernel.org, subhransu.s.prusty@intel.com, Alan Stern <stern@rowland.harvard.edu>, Alexandre Courbot <acourbot@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, Andy Gross <agross@codeaurora.org>, Baruch Siach <baruch@tkos.co.il>, Ben Skeggs <bskeggs@redhat.com>, Bjorn Andersson <bjorn.andersson@sonymobile.com>, "Chew, Chiau Ee" <chiau.ee.chew@intel.com>, Chris Ball <chris@printf.net>, Dan Carpenter <dan.carpenter@oracle.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, David Herrmann <dh.herrmann@gmail.com>, dmaengine@vger.kernel.org, dri-devel@lists.freedesktop.org, "Du, Wenkai" <wenkai.du@intel.com>, Grant Grundler <grundler@chromium.org>, Ilia Mirkin <imirkin@alum.mit.edu>, intel-gfx@lists.freedesktop.org, "Ivan T. Ivanov" <iivanov@mm-sol.com>, Jaehoon Chung <jh80.chung@samsung.com>, Jani Nikula <jani.nikul>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 24, 2014 at 03:47:17PM -0400, Alan Stern wrote:
-> On Wed, 24 Sep 2014, Pavel Machek wrote:
+On Wednesday, September 24, 2014 09:44:50 PM Vinod Koul wrote:
+> This patch series adds a simple macro pm_runtime_last_busy_and_autosuspend()
+> which invokes pm_runtime_mark_last_busy() and pm_runtime_put_autosuspend()
+> sequentially. Then we do a tree wide update of current patterns which are
+> present. As evident from log below this pattern is frequent in the
+> kernel.
 > 
-> > On Wed 2014-09-24 15:50:08, Krzysztof Kozlowski wrote:
-> > > Add a simple getter pm_runtime_is_irq_safe() for quering whether runtime
-> > > PM IRQ safe was set or not.
-> > > 
-> > > Various bus drivers implementing runtime PM may use choose to suspend
-> > > differently based on IRQ safeness status of child driver (e.g. do not
-> > > unprepare the clock if IRQ safe is not set).
-> > > 
-> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > 
-> > Are you sure this is good interface?
-> > 
-> > "Tell me if another function works this or that way".
-> > 
-> > That's certainly not traditional interface, and it seems dangerous to
-> > me. Callbacks now have different semantic requirements based on value
-> > of some flag...
-> > 
-> > Would it be possible to have two sets of callbacks, one irq safe and
-> > one not?
+> This series can be found at
+> git://git.kernel.org/pub/scm/linux/kernel/git/vkoul/slave-dma.git
+> topic/pm_runtime_last_busy_and_autosuspend
 > 
-> Or maybe add a flag to the bus-specific device structures, indicating
-> specifically whether or not the clock should be unprepared during a
-> runtime suspend.  Then individual drivers could set this flag or not, 
-> independent of the irq-safe setting.
+> Fengguang's kbuild has tested it so it shouldn't break things for anyone.
+> Barring one patch (explictyly mentioned in its changelog) rest are simple
+> replacements.
+> 
+> If all are okay, this should be merged thru PM tree as it depends on macro
+> addition.
+> 
+> Subhransu S. Prusty (1):
+>   PM: Add helper pm_runtime_last_busy_and_autosuspend()
+> 
+> Vinod Koul (26):
+>   dmaengine: ste_dma: use pm_runtime_last_busy_and_autosuspend helper
+>   extcon: arizona: use pm_runtime_last_busy_and_autosuspend helper
+>   drm/i915: use pm_runtime_last_busy_and_autosuspend helper
+>   drm/nouveau: use pm_runtime_last_busy_and_autosuspend helper
+>   drm/radeon: use pm_runtime_last_busy_and_autosuspend helper
+>   vga_switcheroo: use pm_runtime_last_busy_and_autosuspend helper
+>   i2c: designware: use pm_runtime_last_busy_and_autosuspend helper
+>   i2c: omap: use pm_runtime_last_busy_and_autosuspend helper
+>   i2c: qup: use pm_runtime_last_busy_and_autosuspend helper
+>   mfd: ab8500-gpadc: use pm_runtime_last_busy_and_autosuspend helper
+>   mfd: arizona: use pm_runtime_last_busy_and_autosuspend helper
+>   mei: use pm_runtime_last_busy_and_autosuspend helper
+>   mmc: use pm_runtime_last_busy_and_autosuspend helper
+>   mmc: mmci: use pm_runtime_last_busy_and_autosuspend helper
+>   mmc: omap_hsmmc: use pm_runtime_last_busy_and_autosuspend helper
+>   mmc: sdhci-pxav3: use pm_runtime_last_busy_and_autosuspend helper
+>   mmc: sdhci: use pm_runtime_last_busy_and_autosuspend helper
+>   NFC: trf7970a: use pm_runtime_last_busy_and_autosuspend helper
+>   pm2301-charger: use pm_runtime_last_busy_and_autosuspend helper
+>   spi: omap2-mcspi: use pm_runtime_last_busy_and_autosuspend helper
+>   spi: orion: use pm_runtime_last_busy_and_autosuspend helper
+>   spi: ti-qspi: use pm_runtime_last_busy_and_autosuspend helper
+>   spi: core: use pm_runtime_last_busy_and_autosuspend helper
+>   tty: serial: omap: use pm_runtime_last_busy_and_autosuspend helper
+>   usb: musb: omap2430: use pm_runtime_last_busy_and_autosuspend helper
+>   video: fbdev: use pm_runtime_last_busy_and_autosuspend helper
+> 
+>  Documentation/power/runtime_pm.txt          |    4 ++
+>  drivers/dma/ste_dma40.c                     |   30 ++++---------
+>  drivers/extcon/extcon-arizona.c             |    6 +--
+>  drivers/gpu/drm/i915/intel_pm.c             |    3 +-
+>  drivers/gpu/drm/nouveau/nouveau_connector.c |    3 +-
+>  drivers/gpu/drm/nouveau/nouveau_drm.c       |    9 +---
+>  drivers/gpu/drm/radeon/radeon_connectors.c  |   15 ++----
+>  drivers/gpu/drm/radeon/radeon_drv.c         |    5 +-
+>  drivers/gpu/drm/radeon/radeon_kms.c         |    6 +--
+>  drivers/gpu/vga/vga_switcheroo.c            |    7 +--
+>  drivers/i2c/busses/i2c-designware-core.c    |    3 +-
+>  drivers/i2c/busses/i2c-omap.c               |    6 +--
+>  drivers/i2c/busses/i2c-qup.c                |    3 +-
+>  drivers/mfd/ab8500-gpadc.c                  |    6 +--
+>  drivers/mfd/arizona-irq.c                   |    3 +-
+>  drivers/misc/mei/client.c                   |   12 ++----
+>  drivers/mmc/core/core.c                     |    3 +-
+>  drivers/mmc/host/mmci.c                     |   12 ++----
+>  drivers/mmc/host/omap_hsmmc.c               |   19 ++-------
+>  drivers/mmc/host/sdhci-pxav3.c              |    6 +--
+>  drivers/mmc/host/sdhci.c                    |    3 +-
+>  drivers/nfc/trf7970a.c                      |    3 +-
+>  drivers/power/pm2301_charger.c              |    3 +-
+>  drivers/spi/spi-omap2-mcspi.c               |    9 +---
+>  drivers/spi/spi-orion.c                     |    3 +-
+>  drivers/spi/spi-ti-qspi.c                   |    5 +-
+>  drivers/spi/spi.c                           |    6 +--
+>  drivers/tty/serial/omap-serial.c            |   60 +++++++++------------------
+>  drivers/usb/musb/omap2430.c                 |    6 +--
+>  drivers/video/fbdev/auo_k190x.c             |    9 +---
+>  include/linux/pm_runtime.h                  |    6 +++
+>  31 files changed, 97 insertions(+), 177 deletions(-)
 
-What you're proposing is _less_ safe, because with your proposal, you
-now have the possibility that drivers will tell runtime PM that it has
-IRQ safe callbacks, but the bus code tries to prepare/unprepare the
-clock, which causes a might-sleep-if warning.
+OK, I guess this is as good as it gets.
 
-This is fragile.
+What tree would you like it go through?
+
 
 -- 
-FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
-according to speedtest.net.
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
