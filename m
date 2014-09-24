@@ -1,7 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v7 1/5] PM / Runtime: Add getter for quering the IRQ safe option
-Date: Wed, 24 Sep 2014 15:50:08 +0200
-Message-ID: <1411566612-32277-2-git-send-email-k.kozlowski@samsung.com>
+Subject: [PATCH v7 3/5] amba: Don't unprepare the clocks if device driver wants
+ IRQ safe runtime PM
+Date: Wed, 24 Sep 2014 15:50:10 +0200
+Message-ID: <1411566612-32277-4-git-send-email-k.kozlowski@samsung.com>
 References: <1411566612-32277-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1411566612-32277-1-git-send-email-k.kozlowski@samsung.com>
@@ -10,58 +11,91 @@ To: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.co
 Cc: Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add a simple getter pm_runtime_is_irq_safe() for quering whether runtime
-PM IRQ safe was set or not.
+The AMBA bus driver defines runtime Power Management functions which
+disable and unprepare AMBA bus clock. This is problematic for runtime PM
+because unpreparing a clock might sleep so it is not interrupt safe.
 
-Various bus drivers implementing runtime PM may use choose to suspend
-differently based on IRQ safeness status of child driver (e.g. do not
-unprepare the clock if IRQ safe is not set).
+However some drivers may want to implement runtime PM functions in
+interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
+bus driver should only disable/enable the clock in runtime suspend and
+resume callbacks.
+
+Detect the device driver behavior after calling its probe function and
+store it. During runtime suspend/resume deal with clocks according to
+stored value.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- Documentation/power/runtime_pm.txt | 4 ++++
- include/linux/pm_runtime.h         | 6 ++++++
- 2 files changed, 10 insertions(+)
+ drivers/amba/bus.c       | 29 +++++++++++++++++++++++++----
+ include/linux/amba/bus.h |  1 +
+ 2 files changed, 26 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-index f32ce5419573..397b81593142 100644
---- a/Documentation/power/runtime_pm.txt
-+++ b/Documentation/power/runtime_pm.txt
-@@ -468,6 +468,10 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
-     - set the power.irq_safe flag for the device, causing the runtime-PM
-       callbacks to be invoked with interrupts off
+diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+index 3cf61a127ee5..e8fd5706954f 100644
+--- a/drivers/amba/bus.c
++++ b/drivers/amba/bus.c
+@@ -94,8 +94,18 @@ static int amba_pm_runtime_suspend(struct device *dev)
+ 	struct amba_device *pcdev = to_amba_device(dev);
+ 	int ret = pm_generic_runtime_suspend(dev);
  
-+  bool pm_runtime_is_irq_safe(struct device *dev);
-+    - return true if power.irq_safe flag was set for the device, causing
-+      the runtime-PM callbacks to be invoked with interrupts off
+-	if (ret == 0 && dev->driver)
+-		clk_disable_unprepare(pcdev->pclk);
++	if (ret == 0 && dev->driver) {
++		/*
++		 * Drivers should not change pm_runtime_irq_safe()
++		 * after probe.
++		 */
++		WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
 +
-   void pm_runtime_mark_last_busy(struct device *dev);
-     - set the power.last_busy field to the current time
++		if (pcdev->irq_safe)
++			clk_disable(pcdev->pclk);
++		else
++			clk_disable_unprepare(pcdev->pclk);
++	}
  
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 367f49b9a1c9..44d74f0f182e 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -128,6 +128,11 @@ static inline void pm_runtime_mark_last_busy(struct device *dev)
- 	ACCESS_ONCE(dev->power.last_busy) = jiffies;
+ 	return ret;
  }
+@@ -106,7 +116,16 @@ static int amba_pm_runtime_resume(struct device *dev)
+ 	int ret;
  
-+static inline bool pm_runtime_is_irq_safe(struct device *dev)
-+{
-+	return dev->power.irq_safe;
-+}
+ 	if (dev->driver) {
+-		ret = clk_prepare_enable(pcdev->pclk);
++		/*
++		 * Drivers should not change pm_runtime_irq_safe()
++		 * after probe.
++		 */
++		WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
 +
- #else /* !CONFIG_PM_RUNTIME */
++		if (pcdev->irq_safe)
++			ret = clk_enable(pcdev->pclk);
++		else
++			ret = clk_prepare_enable(pcdev->pclk);
+ 		/* Failure is probably fatal to the system, but... */
+ 		if (ret)
+ 			return ret;
+@@ -191,8 +210,10 @@ static int amba_probe(struct device *dev)
+ 		pm_runtime_enable(dev);
  
- static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
-@@ -167,6 +172,7 @@ static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+ 		ret = pcdrv->probe(pcdev, id);
+-		if (ret == 0)
++		if (ret == 0) {
++			pcdev->irq_safe = pm_runtime_is_irq_safe(dev);
+ 			break;
++		}
  
- static inline void pm_runtime_no_callbacks(struct device *dev) {}
- static inline void pm_runtime_irq_safe(struct device *dev) {}
-+static inline bool pm_runtime_is_irq_safe(struct device *dev) { return false; }
+ 		pm_runtime_disable(dev);
+ 		pm_runtime_set_suspended(dev);
+diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
+index bb352d0bd737..fd0c0bfa1d38 100644
+--- a/include/linux/amba/bus.h
++++ b/include/linux/amba/bus.h
+@@ -32,6 +32,7 @@ struct amba_device {
+ 	struct clk		*pclk;
+ 	unsigned int		periphid;
+ 	unsigned int		irq[AMBA_NR_IRQS];
++	unsigned int		irq_safe:1;
+ };
  
- static inline bool pm_runtime_callbacks_present(struct device *dev) { return false; }
- static inline void pm_runtime_mark_last_busy(struct device *dev) {}
+ struct amba_driver {
 -- 
 1.9.1
