@@ -1,46 +1,87 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH RESEND] thermal: Add QPNP PMIC temperature alarm driver
-Date: Wed, 24 Sep 2014 14:24:12 -0400
-Message-ID: <20140924182410.GD27076@developer>
-References: <1410793383-30097-1-git-send-email-iivanov@mm-sol.com>
- <20140915153052.GB27076@developer>
- <1411570570.18580.72.camel@iivanov-dev>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v5 3/4] ARM: tegra: Add thermal trip points for Jetson TK1
+Date: Wed, 24 Sep 2014 14:32:06 -0400
+Message-ID: <20140924183204.GE27076@developer>
+References: <1408616242-21009-1-git-send-email-mperttunen@nvidia.com>
+ <1408616242-21009-4-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f47.google.com ([209.85.192.47]:64753 "EHLO
-	mail-qg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751736AbaIXSYN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 14:24:13 -0400
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1411570570.18580.72.camel@iivanov-dev>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1408616242-21009-4-git-send-email-mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, juha-matti.tilli-X3B1VOXEql0@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
 
-Hello Ivan,
+Hello Mikko,
 
-On Wed, Sep 24, 2014 at 05:56:10PM +0300, Ivan T. Ivanov wrote:
-> On Mon, 2014-09-15 at 11:30 -0400, Eduardo Valentin wrote:
-> > Hey Ivan,
-> > 
-> > Please give us at least a two weeks time frame before resending your
-> > patches.
+On Thu, Aug 21, 2014 at 01:17:21PM +0300, Mikko Perttunen wrote:
+> This adds critical trip points to the Jetson TK1 device tree.
+> The device will do a controlled shutdown when either the CPU, GPU
+> or MEM thermal zone reaches 101 degrees Celsius.
 > 
-> Hi Eduardo, 
-> 
-> Should I wait for more comments or I can post updated
-> version of this patch?
+> Signed-off-by: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+> v5: added cooling-maps nodes
 > 
 
-Please, if you have a new version, I would prefer you send it as V2. I
-am specially interested about the cooling parts of it, and the DT usage.
+OK. But no cooling map entry in it. What was the reason again you don't
+need/want to add the maps?
 
-> Regards,
-> Ivan
+>  arch/arm/boot/dts/tegra124-jetson-tk1.dts | 41 +++++++++++++++++++++++++++++++
+>  1 file changed, 41 insertions(+)
 > 
-
-Thanks for sharing your driver.
-
-Eduardo
+> diff --git a/arch/arm/boot/dts/tegra124-jetson-tk1.dts b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+> index 0cdb5cf..bcdab7f 100644
+> --- a/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+> +++ b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+> @@ -1876,4 +1876,45 @@
+>  			 <&tegra_car TEGRA124_CLK_EXTERN1>;
+>  		clock-names = "pll_a", "pll_a_out0", "mclk";
+>  	};
+> +
+> +	thermal-zones {
+> +		cpu {
+> +			trips {
+> +				trip@0 {
+> +					temperature = <101000>;
+> +					hysteresis = <0>;
+> +					type = "critical";
+> +				};
+> +			};
+> +
+> +			cooling-maps {
+> +			};
+> +		};
+> +
+> +		mem {
+> +			trips {
+> +				trip@0 {
+> +					temperature = <101000>;
+> +					hysteresis = <0>;
+> +					type = "critical";
+> +				};
+> +			};
+> +
+> +			cooling-maps {
+> +			};
+> +		};
+> +
+> +		gpu {
+> +			trips {
+> +				trip@0 {
+> +					temperature = <101000>;
+> +					hysteresis = <0>;
+> +					type = "critical";
+> +				};
+> +			};
+> +
+> +			cooling-maps {
+> +			};
+> +		};
+> +	};
+>  };
+> -- 
+> 1.8.1.5
+> 
