@@ -1,598 +1,244 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v5 4/4] thermal: Add Tegra SOCTHERM thermal management
- driver
-Date: Wed, 24 Sep 2014 15:18:32 -0400
-Message-ID: <20140924191829.GA16529@developer>
-References: <1408616242-21009-1-git-send-email-mperttunen@nvidia.com>
- <1408616242-21009-5-git-send-email-mperttunen@nvidia.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v6 1/5] qcom: spm: Add Subsystem Power Manager driver
+Date: Wed, 24 Sep 2014 13:29:45 -0600
+Message-ID: <20140924192945.GC1004@ilina-mac.local>
+References: <1411516281-58328-1-git-send-email-lina.iyer@linaro.org>
+ <1411516281-58328-2-git-send-email-lina.iyer@linaro.org>
+ <F743E5F0-28C1-4A9D-A27D-73EA70A01B46@codeaurora.org>
+ <20140924172151.GD422@ilina-mac>
+ <4BFC9B4E-A3D0-422E-9B55-0DB9F4B04EE9@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1408616242-21009-5-git-send-email-mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, juha-matti.tilli-X3B1VOXEql0@public.gmane.org
+In-Reply-To: <4BFC9B4E-A3D0-422E-9B55-0DB9F4B04EE9@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Kumar Gala <galak@codeaurora.org>
+Cc: sboyd@codeaurora.org, daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, khilman@linaro.org, msivasub@codeaurora.org, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Sep 24 2014 at 11:53 -0600, Kumar Gala wrote:
+>
+>On Sep 24, 2014, at 12:21 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>
+>> On Wed, Sep 24 2014 at 10:33 -0600, Kumar Gala wrote:
+>>>
+>>> On Sep 23, 2014, at 6:51 PM, Lina Iyer <lina.iyer@linaro.org> wrote=
+:
+>>>
+>>>> Based on work by many authors, available at codeaurora.org
+>>>>
+>>>> SPM is a hardware block that controls the peripheral logic surroun=
+ding
+>>>> the application cores (cpu/l$). When the core executes WFI instruc=
+tion,
+>>>> the SPM takes over the putting the core in low power state as
+>>>> configured. The wake up for the SPM is an interrupt at the GIC, wh=
+ich
+>>>> then completes the rest of low power mode sequence and brings the =
+core
+>>>> out of low power mode.
+>>>>
+>>>> The SPM has a set of control registers that configure the SPMs
+>>>> individually based on the type of the core and the runtime conditi=
+ons.
+>>>> SPM is a finite state machine block to which a sequence is provide=
+d and
+>>>> it interprets the bytes  and executes them in sequence. Each low p=
+ower
+>>>> mode that the core can enter into is provided to the SPM as a sequ=
+ence.
+>>>>
+>>>> Configure the SPM to set the core (cpu or L2) into its low power m=
+ode,
+>>>> the index of the first command in the sequence is set in the SPM_C=
+TL
+>>>> register. When the core executes ARM wfi instruction, it triggers =
+the
+>>>> SPM state machine to start executing from that index. The SPM stat=
+e
+>>>> machine waits until the interrupt occurs and starts executing the =
+rest
+>>>> of the sequence until it hits the end of the sequence. The end of =
+the
+>>>> sequence jumps the core out of its low power mode.
+>>>>
+>>>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>>>> [lina: simplify the driver for initial submission, clean up and up=
+date
+>>>> commit text]
+>>>> ---
+>>>> Documentation/devicetree/bindings/arm/msm/spm.txt |  43 +++
+>>>> drivers/soc/qcom/Kconfig                          |   8 +
+>>>> drivers/soc/qcom/Makefile                         |   1 +
+>>>> drivers/soc/qcom/spm.c                            | 388 ++++++++++=
+++++++++++++
+>>>> include/soc/qcom/spm.h                            |  38 +++
+>>>> 5 files changed, 478 insertions(+)
+>>>> create mode 100644 Documentation/devicetree/bindings/arm/msm/spm.t=
+xt
+>>>> create mode 100644 drivers/soc/qcom/spm.c
+>>>> create mode 100644 include/soc/qcom/spm.h
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/arm/msm/spm.txt b/D=
+ocumentation/devicetree/bindings/arm/msm/spm.txt
+>>>> new file mode 100644
+>>>> index 0000000..2ff2454
+>>>> --- /dev/null
+>>>> +++ b/Documentation/devicetree/bindings/arm/msm/spm.txt
+>>>> @@ -0,0 +1,43 @@
+>>>> +* Subsystem Power Manager (SPM)
+>>>> +
+>>>> +Qualcomm Snapdragons have SPM hardware blocks to control the Appl=
+ication
+>>>> +Processor Sub-System power. These SPM blocks run individual state=
+ machine
+>>>> +to determine what the core (L2 or Krait/Scorpion) would do when t=
+he WFI
+>>>> +instruction is executed by the core.
+>>>> +
+>>>> +The devicetree representation of the SPM block should be:
+>>>> +
+>>>> +Required properties
+>>>> +
+>>>> +- compatible: Must be -
+>>>> +		 "qcom,spm-v2.1"
+>>>> +- reg: The physical address and the size of the SPM's memory mapp=
+ed registers
+>>>> +- qcom,cpu: phandle for the CPU that the SPM block is attached to=
+=2E
+>>>> +	This field is required on only for SPMs that control the CPU.
+>>>
+>>> Let=E2=80=99s make this just cpu-handle instead of qcom,cpu.  The c=
+oncept of a handle to a cpu is pretty generic.
+>>>
+>> Okay. Will look into it.
+>> You mean just the property name, right?
+>
+>Correct.
+>
+>>
+>>>> +- qcom,saw2-clk-div: SAW2 configuration register to program the S=
+PM runtime
+>>>> +	clocks. The register for this property is MSM_SPM_REG_SAW2_CFG.
+>>>
+>>> (add details on how this is used to compute timer tick.  Is it time=
+r tick =3D saw_clk/saw2-clk-div?  What is valid range of values)
+>>>
+>> The SPM spec is not available for open use. The range of values is
+>> irrelevant for the SPM clocks, usually, its a constant for an SoC, b=
+ut
+>> may vary between the SoC. Its how the SPM on the SoC interprets it.
+>
+>Does the meaning of the divisor value change from SoC to SoC (not the =
+value itself)?
+>
+>Is it not always:
+>
+>timer tick =3D sys_ref_clk / (qcom,saw2-clk-div + 1)
+>
+It is, in this case. But its not something you deviate from the spec.
 
-Mikko,
+>>>> +- qcom,saw2-delays: The SPM delay values that SPM sequences would=
+ refer to.
+>>>> +	The register for this property is MSM_SPM_REG_SAW2_SPM_DLY.
+>>>
+>>> Didn=E2=80=99t Stephen asked about splitting this up? Or at least t=
+reating it as an array of 3 values?
+>>>
+>> Yes he did. My response was similar to the clk-div values, its not
+>> something you can change without hardware spec documentation.
+>> And I need to mix the three values up, anyways before I write to the
+>> register. Splitting it up, doesnt help understanding/configuring the=
+ SPM
+>> any better, so didnt change it.
+>
+>Hmm, will this value change from SPM to SPM on the same SoC?  I=E2=80=99=
+m not a fan of allowing random register values to get poked into the HW=
+ from DT.  While this one case might end up being acceptable, its a ter=
+rible practice and not something I want use in the habit of doing.
+>
+Ah. Tough proposition! The SPM sequence is a bunch of random register
+values, which is not open to interpretation without the programming
+guides. I am not sure how I can use DT for saving all the register data
+then.
 
-On Thu, Aug 21, 2014 at 01:17:22PM +0300, Mikko Perttunen wrote:
-> This adds support for the Tegra SOCTHERM thermal sensing and management
-> system found in the Tegra124 system-on-chip. This initial driver supports
-> temperature polling for four thermal zones.
-> 
-> Signed-off-by: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> ---
-> v5:
-> - changed tsample_ate to 480
-> - constified structs
-> - added missing --i
-> - read shifted_ft from TSENSOR8 fuse
-> - use precise divison function when calculating
->   calibration values
-> 
->  drivers/thermal/Kconfig          |  10 +
->  drivers/thermal/Makefile         |   1 +
->  drivers/thermal/tegra_soctherm.c | 471 +++++++++++++++++++++++++++++++++++++++
->  3 files changed, 482 insertions(+)
->  create mode 100644 drivers/thermal/tegra_soctherm.c
-> 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 693208e..fd9d049 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -175,6 +175,16 @@ config ARMADA_THERMAL
->  	  Enable this option if you want to have support for thermal management
->  	  controller present in Armada 370 and Armada XP SoC.
->  
-> +config TEGRA_SOCTHERM
-> +	tristate "Tegra SOCTHERM thermal management"
-> +	depends on ARCH_TEGRA
-> +	help
-> +	  Enable this option for integrated thermal management support on NVIDIA
-> +	  Tegra124 systems-on-chip. The driver supports four thermal zones
-> +	  (CPU, GPU, MEM, PLLX). Cooling devices can be bound to the thermal
-> +	  zones to manage temperatures. This option is also required for the
-> +	  emergency thermal reset (thermtrip) feature to function.
-> +
->  config DB8500_CPUFREQ_COOLING
->  	tristate "DB8500 cpufreq cooling"
->  	depends on ARCH_U8500
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 31e232f..f0b94d5 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -33,3 +33,4 @@ obj-$(CONFIG_INTEL_SOC_DTS_THERMAL)	+= intel_soc_dts_thermal.o
->  obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
->  obj-$(CONFIG_ACPI_INT3403_THERMAL)	+= int3403_thermal.o
->  obj-$(CONFIG_ST_THERMAL)	+= st/
-> +obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra_soctherm.o
-> diff --git a/drivers/thermal/tegra_soctherm.c b/drivers/thermal/tegra_soctherm.c
-> new file mode 100644
-> index 0000000..3742e24
-> --- /dev/null
-> +++ b/drivers/thermal/tegra_soctherm.c
-> @@ -0,0 +1,471 @@
-> +/*
-> + * drivers/thermal/tegra_soctherm.c
-> + *
-> + * Copyright (c) 2014, NVIDIA CORPORATION.  All rights reserved.
-> + *
-> + * Author:
-> + *	Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> + *
-> + * This software is licensed under the terms of the GNU General Public
-> + * License version 2, as published by the Free Software Foundation, and
-> + * may be copied, distributed, and modified under those terms.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/err.h>
-> +#include <linux/io.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/reset.h>
-> +#include <linux/thermal.h>
-> +#include <linux/delay.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/bitops.h>
-> +#include <soc/tegra/fuse.h>
-> +
-> +#define SENSOR_CONFIG0				0
-> +#define		SENSOR_CONFIG0_STOP		BIT(0)
-> +#define		SENSOR_CONFIG0_TALL_SHIFT	8
-> +#define		SENSOR_CONFIG0_TCALC_OVER	BIT(4)
-> +#define		SENSOR_CONFIG0_OVER		BIT(3)
-> +#define		SENSOR_CONFIG0_CPTR_OVER	BIT(2)
-> +#define SENSOR_CONFIG1				4
-> +#define		SENSOR_CONFIG1_TSAMPLE_SHIFT	0
-> +#define		SENSOR_CONFIG1_TIDDQ_EN_SHIFT	15
-> +#define		SENSOR_CONFIG1_TEN_COUNT_SHIFT	24
-> +#define		SENSOR_CONFIG1_TEMP_ENABLE	BIT(31)
-> +#define SENSOR_CONFIG2				8
-> +#define		SENSOR_CONFIG2_THERMA_SHIFT	16
-> +#define		SENSOR_CONFIG2_THERMB_SHIFT	0
-> +
-> +#define SENSOR_PDIV				0x1c0
-> +#define		SENSOR_PDIV_T124		0x8888
-> +#define SENSOR_HOTSPOT_OFF			0x1c4
-> +#define		SENSOR_HOTSPOT_OFF_T124		0x00060600
-> +#define SENSOR_TEMP1				0x1c8
-> +#define SENSOR_TEMP2				0x1cc
-> +
-> +#define SENSOR_TEMP_MASK			0xffff
-> +#define READBACK_VALUE_MASK			0xff00
-> +#define READBACK_VALUE_SHIFT			8
-> +#define READBACK_ADD_HALF			BIT(7)
-> +#define READBACK_NEGATE				BIT(1)
-> +
-> +#define FUSE_TSENSOR8_CALIB			0x180
-> +#define FUSE_SPARE_REALIGNMENT_REG_0		0x1fc
-> +
-> +#define FUSE_TSENSOR_CALIB_CP_TS_BASE_MASK	0x1fff
-> +#define FUSE_TSENSOR_CALIB_FT_TS_BASE_MASK	(0x1fff << 13)
-> +#define FUSE_TSENSOR_CALIB_FT_TS_BASE_SHIFT	13
-> +
-> +#define FUSE_TSENSOR8_CALIB_CP_TS_BASE_MASK	0x3ff
-> +#define FUSE_TSENSOR8_CALIB_FT_TS_BASE_MASK	(0x7ff << 10)
-> +#define FUSE_TSENSOR8_CALIB_FT_TS_BASE_SHIFT	10
-> +
-> +#define FUSE_SPARE_REALIGNMENT_REG_SHIFT_CP_MASK 0x3f
-> +#define FUSE_SPARE_REALIGNMENT_REG_SHIFT_FT_MASK (0x1f << 21)
-> +#define FUSE_SPARE_REALIGNMENT_REG_SHIFT_FT_SHIFT 21
-> +
-> +#define NOMINAL_CALIB_FT_T124			105
-> +#define NOMINAL_CALIB_CP_T124			25
-> +
-> +struct tegra_tsensor_configuration {
-> +	u32 tall, tsample, tiddq_en, ten_count;
-> +	u32 pdiv, tsample_ate, pdiv_ate;
-> +};
-> +
-> +struct tegra_tsensor {
-> +	u32 base;
-> +	u32 calib_fuse_offset;
-> +	/* Correction values used to modify values read from calibration fuses */
-> +	s32 fuse_corr_alpha, fuse_corr_beta;
-> +};
-> +
-> +struct tegra_thermctl_zone {
-> +	void __iomem *temp_reg;
-> +	int temp_shift;
-> +};
-> +
-> +static const struct tegra_tsensor_configuration t124_tsensor_config = {
-> +	.tall = 16300,
-> +	.tsample = 120,
-> +	.tiddq_en = 1,
-> +	.ten_count = 1,
-> +	.pdiv = 8,
-> +	.tsample_ate = 480,
-> +	.pdiv_ate = 8
-> +};
-> +
-> +static const struct tegra_tsensor t124_tsensors[] = {
-> +	{
-> +		.base = 0xc0,
-> +		.calib_fuse_offset = 0x098,
-> +		.fuse_corr_alpha = 1135400,
-> +		.fuse_corr_beta = -6266900,
-> +	},
-> +	{
-> +		.base = 0xe0,
-> +		.calib_fuse_offset = 0x084,
-> +		.fuse_corr_alpha = 1122220,
-> +		.fuse_corr_beta = -5700700,
-> +	},
-> +	{
-> +		.base = 0x100,
-> +		.calib_fuse_offset = 0x088,
-> +		.fuse_corr_alpha = 1127000,
-> +		.fuse_corr_beta = -6768200,
-> +	},
-> +	{
-> +		.base = 0x120,
-> +		.calib_fuse_offset = 0x12c,
-> +		.fuse_corr_alpha = 1110900,
-> +		.fuse_corr_beta = -6232000,
-> +	},
-> +	{
-> +		.base = 0x140,
-> +		.calib_fuse_offset = 0x158,
-> +		.fuse_corr_alpha = 1122300,
-> +		.fuse_corr_beta = -5936400,
-> +	},
-> +	{
-> +		.base = 0x160,
-> +		.calib_fuse_offset = 0x15c,
-> +		.fuse_corr_alpha = 1145700,
-> +		.fuse_corr_beta = -7124600,
-> +	},
-> +	{
-> +		.base = 0x180,
-> +		.calib_fuse_offset = 0x154,
-> +		.fuse_corr_alpha = 1120100,
-> +		.fuse_corr_beta = -6000500,
-> +	},
-> +	{
-> +		.base = 0x1a0,
-> +		.calib_fuse_offset = 0x160,
-> +		.fuse_corr_alpha = 1106500,
-> +		.fuse_corr_beta = -6729300,
-> +	},
-> +};
-> +
-> +struct tegra_soctherm {
-> +	struct reset_control *reset;
-> +	struct clk *clock_tsensor;
-> +	struct clk *clock_soctherm;
-> +	void __iomem *regs;
-> +
-> +	struct thermal_zone_device *thermctl_tzs[4];
-> +};
-> +
-> +struct tsensor_shared_calibration {
-> +	u32 base_cp, base_ft;
-> +	u32 actual_temp_cp, actual_temp_ft;
-> +};
-> +
-> +static int calculate_shared_calibration(struct tsensor_shared_calibration *r)
-> +{
-> +	u32 val;
-> +	u32 shifted_cp, shifted_ft;
-> +	int err;
-> +
-> +	err = tegra_fuse_readl(FUSE_TSENSOR8_CALIB, &val);
-> +	if (err)
-> +		return err;
-> +	r->base_cp = val & FUSE_TSENSOR8_CALIB_CP_TS_BASE_MASK;
-> +	r->base_ft = (val & FUSE_TSENSOR8_CALIB_FT_TS_BASE_MASK)
-> +		>> FUSE_TSENSOR8_CALIB_FT_TS_BASE_SHIFT;
-> +	val = ((val & FUSE_SPARE_REALIGNMENT_REG_SHIFT_FT_MASK)
-> +		>> FUSE_SPARE_REALIGNMENT_REG_SHIFT_FT_SHIFT);
-> +	shifted_ft = sign_extend32(val, 4);
-> +
-> +	err = tegra_fuse_readl(FUSE_SPARE_REALIGNMENT_REG_0, &val);
-> +	if (err)
-> +		return err;
-> +	shifted_cp = sign_extend32(val, 5);
-> +
-> +	r->actual_temp_cp = 2 * NOMINAL_CALIB_CP_T124 + shifted_cp;
-> +	r->actual_temp_ft = 2 * NOMINAL_CALIB_FT_T124 + shifted_ft;
-> +
-> +	return 0;
-> +}
-> +
-> +static s64 div64_s64_precise(s64 a, s64 b)
-> +{
-> +	s64 r, al;
-> +
-> +	/* Scale up for increased precision division */
-> +	al = a << 16;
-> +
-> +	r = div64_s64(al * 2 + 1, 2 * b);
-> +	return r >> 16;
-> +}
-> +
-> +static int calculate_tsensor_calibration(
-> +	const struct tegra_tsensor *sensor,
-> +	struct tsensor_shared_calibration shared,
-> +	u32 *calib
-> +)
-> +{
-> +	u32 val;
-> +	s32 actual_tsensor_ft, actual_tsensor_cp;
-> +	s32 delta_sens, delta_temp;
-> +	s32 mult, div;
-> +	s16 therma, thermb;
-> +	int err;
-> +
-> +	err = tegra_fuse_readl(sensor->calib_fuse_offset, &val);
-> +	if (err)
-> +		return err;
-> +
-> +	actual_tsensor_cp = (shared.base_cp * 64) + sign_extend32(val, 12);
-> +	val = (val & FUSE_TSENSOR_CALIB_FT_TS_BASE_MASK)
-> +		>> FUSE_TSENSOR_CALIB_FT_TS_BASE_SHIFT;
-> +	actual_tsensor_ft = (shared.base_ft * 32) + sign_extend32(val, 12);
-> +
-> +	delta_sens = actual_tsensor_ft - actual_tsensor_cp;
-> +	delta_temp = shared.actual_temp_ft - shared.actual_temp_cp;
-> +
-> +	mult = t124_tsensor_config.pdiv * t124_tsensor_config.tsample_ate;
-> +	div = t124_tsensor_config.tsample * t124_tsensor_config.pdiv_ate;
-> +
-> +	therma = div64_s64_precise((s64) delta_temp * (1LL << 13) * mult,
-> +		(s64) delta_sens * div);
-> +	thermb = div64_s64_precise(
-> +		((s64) actual_tsensor_ft * shared.actual_temp_cp) -
-> +		((s64) actual_tsensor_cp * shared.actual_temp_ft),
-> +		(s64) delta_sens);
-> +
-> +	therma = div64_s64_precise((s64) therma * sensor->fuse_corr_alpha,
-> +		(s64) 1000000LL);
-> +	thermb = div64_s64_precise((s64) thermb * sensor->fuse_corr_alpha +
-> +		sensor->fuse_corr_beta,
-> +		(s64) 1000000LL);
-> +
-> +	*calib = ((u16)(therma) << SENSOR_CONFIG2_THERMA_SHIFT) |
-> +		((u16)thermb << SENSOR_CONFIG2_THERMB_SHIFT);
-> +
-> +	return 0;
-> +}
-> +
-> +static int enable_tsensor(struct tegra_soctherm *tegra,
-> +			  const struct tegra_tsensor *sensor,
-> +			  struct tsensor_shared_calibration shared)
-> +{
-> +	void * __iomem base = tegra->regs + sensor->base;
+I agree its nice to have nice readable parameters in the DT, but, isnt
+the purpose of the DT, the hardware configuration? In an alternate way
+to do this, I could put all these register writes into the driver itsel=
+f
+for each SoC. Ugly as it may be, it would solve the problem. However,
+the device node then just has the compatible string in it and may be
+some configurable elements. I fail to see the big picture of the use of
+DT in such a case.
 
-I get sparse complaining about this declaration. For the sake of keeping
-a clean static checks, can you please:
--       void * __iomem base = tegra->regs + sensor->base;
-+       void __iomem * base = tegra->regs + sensor->base;
+=46WIW, I do understand your stance with DT, and for the most part agre=
+e
+with it.
 
 
-Can you also please check the remaining sparse errors?
-  CHECK   drivers/thermal/tegra_soctherm.c
-  drivers/thermal/tegra_soctherm.c:260:43: warning: incorrect type in
-  initializer (different address spaces)
-  drivers/thermal/tegra_soctherm.c:260:43:    expected void *[noderef]
-  <asn:2>base
-  drivers/thermal/tegra_soctherm.c:260:43:    got void [noderef]
-  <asn:2>*
-  drivers/thermal/tegra_soctherm.c:271:9: warning: incorrect type in
-  argument 2 (different address spaces)
-  drivers/thermal/tegra_soctherm.c:271:9:    expected void volatile
-  [noderef] <asn:2>*addr
-  drivers/thermal/tegra_soctherm.c:271:9:    got void *
-  drivers/thermal/tegra_soctherm.c:279:9: warning: incorrect type in
-  argument 2 (different address spaces)
-  drivers/thermal/tegra_soctherm.c:279:9:    expected void volatile
-  [noderef] <asn:2>*addr
-  drivers/thermal/tegra_soctherm.c:279:9:    got void *
-  drivers/thermal/tegra_soctherm.c:281:9: warning: incorrect type in
-  argument 2 (different address spaces)
-  drivers/thermal/tegra_soctherm.c:281:9:    expected void volatile
-  [noderef] <asn:2>*addr
-  drivers/thermal/tegra_soctherm.c:281:9:    got void *
-  drivers/thermal/tegra_soctherm.c:347:25: warning: incorrect type in
-  argument 1 (different address spaces)
-  drivers/thermal/tegra_soctherm.c:347:25:    expected void const *ptr
-  drivers/thermal/tegra_soctherm.c:347:25:    got void [noderef]
-  <asn:2>*regs
-  drivers/thermal/tegra_soctherm.c:349:37: warning: incorrect type in
-  argument 1 (different address spaces)
-  drivers/thermal/tegra_soctherm.c:349:37:    expected void const *ptr
-  drivers/thermal/tegra_soctherm.c:349:37:    got void [noderef]
-  <asn:2>*regs
-  drivers/thermal/tegra_soctherm.c:271:9: warning: dereference of
-  noderef expression
-  drivers/thermal/tegra_soctherm.c:279:9: warning: dereference of
-  noderef expression
-  drivers/thermal/tegra_soctherm.c:281:9: warning: dereference of
-  noderef expression
-
-> +	unsigned int val;
-> +	u32 calib;
-> +	int err;
-> +
-> +	err = calculate_tsensor_calibration(sensor, shared, &calib);
-> +	if (err)
-> +		return err;
-> +
-> +	val = 0;
-> +	val |= t124_tsensor_config.tall << SENSOR_CONFIG0_TALL_SHIFT;
-> +	writel(val, base + SENSOR_CONFIG0);
-> +
-> +	val = 0;
-> +	val |= (t124_tsensor_config.tsample - 1) <<
-> +		SENSOR_CONFIG1_TSAMPLE_SHIFT;
-> +	val |= t124_tsensor_config.tiddq_en << SENSOR_CONFIG1_TIDDQ_EN_SHIFT;
-> +	val |= t124_tsensor_config.ten_count << SENSOR_CONFIG1_TEN_COUNT_SHIFT;
-> +	val |= SENSOR_CONFIG1_TEMP_ENABLE;
-> +	writel(val, base + SENSOR_CONFIG1);
-> +
-> +	writel(calib, base + SENSOR_CONFIG2);
-> +
-> +	return 0;
-> +}
-> +
-> +/* Translate from soctherm readback format to millicelsius.
-> + * The soctherm readback format in bits is as follows:
-> + *   TTTTTTTT H______N
-> + * where T's contain the temperature in Celsius,
-> + * H denotes an addition of 0.5 Celsius and N denotes negation
-> + * of the final value.
-> + */
-> +static inline long translate_temp(u16 val)
-> +{
-> +	long t;
-> +
-> +	t = ((val & READBACK_VALUE_MASK) >> READBACK_VALUE_SHIFT) * 1000;
-> +	if (val & READBACK_ADD_HALF)
-> +		t += 500;
-> +	if (val & READBACK_NEGATE)
-> +		t *= -1;
-> +
-> +	return t;
-> +}
-> +
-> +static int tegra_thermctl_get_temp(void *data, long *out_temp)
-> +{
-> +	struct tegra_thermctl_zone *zone = data;
-> +	u32 val;
-> +
-> +	val = (readl(zone->temp_reg) >> zone->temp_shift) & SENSOR_TEMP_MASK;
-> +	*out_temp = translate_temp(val);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id tegra_soctherm_of_match[] = {
-> +	{ .compatible = "nvidia,tegra124-soctherm" },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(of, tegra_soctherm_of_match);
-> +
-> +static const int thermctl_temp_offsets[] = {
-> +	SENSOR_TEMP1, SENSOR_TEMP2, SENSOR_TEMP1, SENSOR_TEMP2
-> +};
-> +
-> +static const int thermctl_temp_shifts[] = {
-> +	16, 16, 0, 0
-> +};
-> +
-> +static int tegra_soctherm_probe(struct platform_device *pdev)
-> +{
-> +	struct tegra_soctherm *tegra;
-> +	struct thermal_zone_device *tz;
-> +	struct tsensor_shared_calibration shared_calib;
-> +	int i;
-> +	int err = 0;
-> +
-> +	const struct tegra_tsensor *tsensors = t124_tsensors;
-> +
-> +	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
-> +	if (!tegra)
-> +		return -ENOMEM;
-> +
-> +	tegra->regs = devm_ioremap_resource(&pdev->dev,
-> +		platform_get_resource(pdev, IORESOURCE_MEM, 0));
-> +	if (IS_ERR(tegra->regs)) {
-> +		dev_err(&pdev->dev, "can't get registers");
-> +		return PTR_ERR(tegra->regs);
-> +	}
-> +
-> +	tegra->reset = devm_reset_control_get(&pdev->dev, "soctherm");
-> +	if (IS_ERR(tegra->reset)) {
-> +		dev_err(&pdev->dev, "can't get soctherm reset\n");
-> +		return PTR_ERR(tegra->reset);
-> +	}
-> +
-> +	tegra->clock_tsensor = devm_clk_get(&pdev->dev, "tsensor");
-> +	if (IS_ERR(tegra->clock_tsensor)) {
-> +		dev_err(&pdev->dev, "can't get clock tsensor\n");
-> +		return PTR_ERR(tegra->clock_tsensor);
-> +	}
-> +
-> +	tegra->clock_soctherm = devm_clk_get(&pdev->dev, "soctherm");
-> +	if (IS_ERR(tegra->clock_soctherm)) {
-> +		dev_err(&pdev->dev, "can't get clock soctherm\n");
-> +		return PTR_ERR(tegra->clock_soctherm);
-> +	}
-> +
-> +	reset_control_assert(tegra->reset);
-> +
-> +	err = clk_prepare_enable(tegra->clock_soctherm);
-> +	if (err) {
-> +		reset_control_deassert(tegra->reset);
-> +		return err;
-> +	}
-> +
-> +	err = clk_prepare_enable(tegra->clock_tsensor);
-> +	if (err) {
-> +		clk_disable_unprepare(tegra->clock_soctherm);
-> +		reset_control_deassert(tegra->reset);
-> +		return err;
-> +	}
-> +
-> +	reset_control_deassert(tegra->reset);
-> +
-> +	/* Initialize raw sensors */
-> +
-> +	err = calculate_shared_calibration(&shared_calib);
-> +	if (err)
-> +		goto disable_clocks;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(t124_tsensors); ++i) {
-> +		err = enable_tsensor(tegra, tsensors + i, shared_calib);
-> +		if (err)
-> +			goto disable_clocks;
-> +	}
-> +
-> +	writel(SENSOR_PDIV_T124, tegra->regs + SENSOR_PDIV);
-> +	writel(SENSOR_HOTSPOT_OFF_T124, tegra->regs + SENSOR_HOTSPOT_OFF);
-> +
-> +	/* Initialize thermctl sensors */
-> +
-> +	for (i = 0; i < ARRAY_SIZE(tegra->thermctl_tzs); ++i) {
-> +		struct tegra_thermctl_zone *zone =
-> +			devm_kzalloc(&pdev->dev, sizeof(*zone), GFP_KERNEL);
-> +		if (!zone) {
-> +			err = -ENOMEM;
-> +			--i;
-> +			goto unregister_tzs;
-> +		}
-> +
-> +		zone->temp_reg = tegra->regs + thermctl_temp_offsets[i];
-> +		zone->temp_shift = thermctl_temp_shifts[i];
-> +
-> +		tz = thermal_zone_of_sensor_register(
-> +			&pdev->dev, i, zone, tegra_thermctl_get_temp, NULL);
-> +		if (IS_ERR(tz)) {
-> +			err = PTR_ERR(tz);
-> +			dev_err(&pdev->dev, "failed to register sensor: %d\n",
-> +				err);
-> +			--i;
-> +			goto unregister_tzs;
-> +		}
-> +
-> +		tegra->thermctl_tzs[i] = tz;
-> +	}
-> +
-> +	return 0;
-> +
-> +unregister_tzs:
-> +	for (; i >= 0; i--)
-> +		thermal_zone_of_sensor_unregister(&pdev->dev,
-> +						  tegra->thermctl_tzs[i]);
-> +
-> +disable_clocks:
-> +	clk_disable_unprepare(tegra->clock_tsensor);
-> +	clk_disable_unprepare(tegra->clock_soctherm);
-> +
-> +	return err;
-> +}
-> +
-> +static int tegra_soctherm_remove(struct platform_device *pdev)
-> +{
-> +	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
-> +	int i;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(tegra->thermctl_tzs); ++i) {
-> +		thermal_zone_of_sensor_unregister(&pdev->dev,
-> +						  tegra->thermctl_tzs[i]);
-> +	}
-> +
-> +	clk_disable_unprepare(tegra->clock_tsensor);
-> +	clk_disable_unprepare(tegra->clock_soctherm);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver tegra_soctherm_driver = {
-> +	.probe = tegra_soctherm_probe,
-> +	.remove = tegra_soctherm_remove,
-> +	.driver = {
-> +		.name = "tegra_soctherm",
-> +		.of_match_table = tegra_soctherm_of_match,
-> +	},
-> +};
-> +module_platform_driver(tegra_soctherm_driver);
-> +
-> +MODULE_AUTHOR("Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>");
-> +MODULE_DESCRIPTION("Tegra SOCTHERM thermal management driver");
-> +MODULE_LICENSE("GPL v2");
-> -- 
-> 1.8.1.5
-> 
+>>>> +- qcom,saw2-enable: The SPM control register to enable/disable th=
+e sleep state
+>>>> +	machine. The register for this property is MSM_SPM_REG_SAW2_SPM_=
+CTL.
+>>>
+>>> Can this just be a boolean (exist or not), if so, probably change i=
+t to qcom,saw2-disable (so lack of property means enable)?
+>>>
+>> Okay, sure.
+>>
+>>>> +
+>>>> +Optional properties
+>>>> +
+>>>> +- qcom,saw2-spm-cmd-wfi: The WFI command sequence
+>>>
+>>> probably add something like: =E2=80=9Carray of bytes =E2=80=A6=E2=80=
+=9D (want to convey the data type somehow, is there a max length?)
+>>>
+>> Okay.
+>>
+>>>> +- qcom,saw2-spm-cmd-spc: The Standalone PC command sequence
+>>>
+>>> probably add something like: =E2=80=9Carray of bytes =E2=80=A6=E2=80=
+=9D (want to convey the data type somehow, is there a max length?)
+>>>
+>> Okay.
+>>
+>>>> +
+>>>> +Example:
+>>>> +	spm@f9089000 {
+>>>> +		compatible =3D "qcom,spm-v2.1";
+>>>> +		#address-cells =3D <1>;
+>>>> +		#size-cells =3D <1>;
+>>>> +		reg =3D <0xf9089000 0x1000>;
+>>>> +		qcom,cpu =3D <&CPU0>;
+>>>> +		qcom,saw2-clk-div =3D <0x1>;
+>>>> +		qcom,saw2-delays =3D <0x20000400>;
+>>>> +		qcom,saw2-enable =3D <0x1>;
+>>>> +		qcom,saw2-spm-cmd-wfi =3D [03 0b 0f];
+>>>> +		qcom,saw2-spm-cmd-spc =3D [00 20 50 80 60 70 10 92
+>>>> +				a0 b0 03 68 70 3b 92 a0 b0
+>>>> +				82 2b 50 10 30 02 22 30 0f];
+>>>> +	};
+>>>
+>>> - k
+>>>
+>>>
+>>> --
+>>> Employee of Qualcomm Innovation Center, Inc.
+>>> Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, =
+hosted by The Linux Foundation
+>>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-arm-=
+msm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>--=20
+>Employee of Qualcomm Innovation Center, Inc.
+>Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hos=
+ted by The Linux Foundation
+>
