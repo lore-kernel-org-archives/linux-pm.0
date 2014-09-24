@@ -1,65 +1,41 @@
-From: Kukjin Kim <kgene@kernel.org>
-Subject: RE: [PATCH v10 0/6] cpufreq: use generic cpufreq drivers for exynos
- platforms
-Date: Wed, 24 Sep 2014 16:34:53 +0900
-Message-ID: <026501cfd7ca$0857a140$1906e3c0$@kernel.org>
-References: <1411531078-10671-1-git-send-email-thomas.ab@samsung.com>
+From: Peter De Schrijver <pdeschrijver@nvidia.com>
+Subject: Re: [PATCH 0/3] Introduce of_match_machine() helper
+Date: Wed, 24 Sep 2014 10:44:39 +0300
+Message-ID: <20140924074439.GA25537@tbergstrom-lnx.Nvidia.com>
+References: <1407452515-2390-1-git-send-email-ttynkkynen@nvidia.com>
+ <53FB7642.1000808@wwwdotorg.org>
+ <20140919131245.GQ26779@tbergstrom-lnx.Nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1411531078-10671-1-git-send-email-thomas.ab@samsung.com>
-Content-language: ko
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: 'Thomas Abraham' <thomas.ab@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, tomasz.figa@gmail.com, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, cw00.choi@samsung.com
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:3240 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752054AbaIXHov (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 03:44:51 -0400
+Content-Disposition: inline
+In-Reply-To: <20140919131245.GQ26779@tbergstrom-lnx.Nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-Thomas Abraham wrote:
+On Fri, Sep 19, 2014 at 04:12:45PM +0300, Peter De Schrijver wrote:
+> On Mon, Aug 25, 2014 at 07:45:38PM +0200, Stephen Warren wrote:
+> > On 08/07/2014 05:01 PM, Tuomas Tynkkynen wrote:
+> > > Some mach-specific drivers that don't require their own node in the device tree
+> > > (for example drivers/soc/*, cpufreq, cpuidle etc.) want to match on the device
+> > > tree root compatible property instead. Instead of open-coding (and forgetting
+> > > to call of_node_put on the root node) everywhere, add a helper to the OF core.
+> > 
+> > Tuomas, I assume there will be a new version of this series to address 
+> > the review comments? For now, I'm not intending on applying this.
 > 
-> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
-> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
-> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
-> driver.
-> 
-> This patch series is dependent on two other patches
-> 1. ARM: dts: add CPU nodes for Exynos4 SoCs
->    - https://lkml.org/lkml/2014/7/21/315
-> 2. clk: exynos4: remove duplicate div_core2 divider clock instantiation
->    - http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34859.html
-> 
-> Thomas Abraham (6):
->   clk: samsung: add infrastructure to register cpu clocks
->   clk: samsung: add cpu clock configuration data and instantiate cpu clock
->   ARM: dts: Exynos: add CPU OPP and regulator supply property
->   ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
->   cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
->   clk: samsung: remove unused clock aliases and update clock flags
-> 
->  arch/arm/boot/dts/exynos4210-origen.dts         |    4 +
->  arch/arm/boot/dts/exynos4210-trats.dts          |    4 +
->  arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 +
->  arch/arm/boot/dts/exynos4210.dtsi               |   14 +-
->  arch/arm/boot/dts/exynos5250-arndale.dts        |    4 +
->  arch/arm/boot/dts/exynos5250-smdk5250.dts       |    4 +
->  arch/arm/boot/dts/exynos5250-snow.dts           |    4 +
->  arch/arm/boot/dts/exynos5250.dtsi               |   25 ++-
->  arch/arm/boot/dts/exynos5420.dtsi               |   38 +++
->  arch/arm/mach-exynos/exynos.c                   |   24 ++-
->  drivers/clk/samsung/Makefile                    |    2 +-
->  drivers/clk/samsung/clk-cpu.c                   |  335 +++++++++++++++++++++++
->  drivers/clk/samsung/clk-cpu.h                   |   91 ++++++
->  drivers/clk/samsung/clk-exynos4.c               |   63 +++--
->  drivers/clk/samsung/clk-exynos5250.c            |   44 +++-
->  drivers/clk/samsung/clk-exynos5420.c            |   72 +++++-
->  drivers/cpufreq/Kconfig.arm                     |   22 --
->  drivers/cpufreq/Makefile                        |    2 -
->  include/dt-bindings/clock/exynos5250.h          |    1 +
->  include/dt-bindings/clock/exynos5420.h          |    2 +
+> Given that Tuomas's internship ended, I'm willing to push this patch set
+> forward, if there is interest. So are people still interested in this idea
+> or should we drop it?
 
-Looks good to me,
-Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+Seems there's no interest. I won't bother with this then.
 
-BTW, who will handle this series? I think this is already ready for v3.18.
+Cheers,
 
-- Kukjin
+Peter.
