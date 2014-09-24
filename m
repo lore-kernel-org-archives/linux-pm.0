@@ -1,8 +1,7 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v7 1/5] ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by
- static inlines
-Date: Wed, 24 Sep 2014 14:24:44 +0200
-Message-ID: <1411561488-1739-2-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v7 2/5] ARM: add AFTR mode support to firmware do_idle method
+Date: Wed, 24 Sep 2014 14:24:45 +0200
+Message-ID: <1411561488-1739-3-git-send-email-b.zolnierkie@samsung.com>
 References: <1411561488-1739-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1411561488-1739-1-git-send-email-b.zolnierkie@samsung.com>
@@ -11,71 +10,93 @@ To: Kukjin Kim <kgene.kim@samsung.com>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Replace EXYNOS_BOOT_VECTOR_ADDR and EXYNOS_BOOT_VECTOR_FLAG macros
-by exynos_boot_vector_addr() and exynos_boot_vector_flag() static
-inlines.
+On some platforms (i.e. EXYNOS ones) more than one idle mode is
+available and we need to distinguish them in firmware do_idle method.
+
+Add mode parameter to do_idle firmware method and AFTR mode support
+to EXYNOS do_idle implementation.
+
+This change is a preparation for adding secure firmware support to
+EXYNOS cpuidle driver.
 
 This patch shouldn't cause any functionality changes.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
 v7:
-- no changes
+- fixed build on Tegra
+- updated summary line
 
- arch/arm/mach-exynos/pm.c | 32 ++++++++++++++++++++------------
- 1 file changed, 20 insertions(+), 12 deletions(-)
+ arch/arm/include/asm/firmware.h        |  2 +-
+ arch/arm/mach-exynos/common.h          |  5 +++++
+ arch/arm/mach-exynos/firmware.c        | 10 ++++++++--
+ arch/arm/mach-tegra/cpuidle-tegra114.c |  2 +-
+ 4 files changed, 15 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-index 047ac30..3407fc1 100644
---- a/arch/arm/mach-exynos/pm.c
-+++ b/arch/arm/mach-exynos/pm.c
-@@ -128,16 +128,23 @@ static int exynos_irq_set_wake(struct irq_data *data, unsigned int state)
- 	return -ENOENT;
- }
+diff --git a/arch/arm/include/asm/firmware.h b/arch/arm/include/asm/firmware.h
+index 5904f59..89aefe1 100644
+--- a/arch/arm/include/asm/firmware.h
++++ b/arch/arm/include/asm/firmware.h
+@@ -28,7 +28,7 @@ struct firmware_ops {
+ 	/*
+ 	 * Enters CPU idle mode
+ 	 */
+-	int (*do_idle)(void);
++	int (*do_idle)(unsigned long mode);
+ 	/*
+ 	 * Sets boot address of specified physical CPU
+ 	 */
+diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
+index c218200..2d830df 100644
+--- a/arch/arm/mach-exynos/common.h
++++ b/arch/arm/mach-exynos/common.h
+@@ -119,6 +119,11 @@ extern void __iomem *sysram_base_addr;
+ extern void __iomem *pmu_base_addr;
+ void exynos_sysram_init(void);
  
--#define EXYNOS_BOOT_VECTOR_ADDR	(samsung_rev() == EXYNOS4210_REV_1_1 ? \
--			pmu_base_addr + S5P_INFORM7 : \
--			(samsung_rev() == EXYNOS4210_REV_1_0 ? \
--			(sysram_base_addr + 0x24) : \
--			pmu_base_addr + S5P_INFORM0))
--#define EXYNOS_BOOT_VECTOR_FLAG	(samsung_rev() == EXYNOS4210_REV_1_1 ? \
--			pmu_base_addr + S5P_INFORM6 : \
--			(samsung_rev() == EXYNOS4210_REV_1_0 ? \
--			(sysram_base_addr + 0x20) : \
--			pmu_base_addr + S5P_INFORM1))
-+static inline void __iomem *exynos_boot_vector_addr(void)
-+{
-+	if (samsung_rev() == EXYNOS4210_REV_1_1)
-+		return pmu_base_addr + S5P_INFORM7;
-+	else if (samsung_rev() == EXYNOS4210_REV_1_0)
-+		return sysram_base_addr + 0x24;
-+	return pmu_base_addr + S5P_INFORM0;
-+}
++enum {
++	FW_DO_IDLE_SLEEP,
++	FW_DO_IDLE_AFTR,
++};
 +
-+static inline void __iomem *exynos_boot_vector_flag(void)
-+{
-+	if (samsung_rev() == EXYNOS4210_REV_1_1)
-+		return pmu_base_addr + S5P_INFORM6;
-+	else if (samsung_rev() == EXYNOS4210_REV_1_0)
-+		return sysram_base_addr + 0x20;
-+	return pmu_base_addr + S5P_INFORM1;
-+}
+ void exynos_firmware_init(void);
  
- #define S5P_CHECK_AFTR  0xFCBA0D10
- #define S5P_CHECK_SLEEP 0x00000BAD
-@@ -222,8 +229,9 @@ static void exynos_set_wakeupmask(long mask)
+ extern u32 exynos_get_eint_wake_mask(void);
+diff --git a/arch/arm/mach-exynos/firmware.c b/arch/arm/mach-exynos/firmware.c
+index f5e626d..e57b7c3 100644
+--- a/arch/arm/mach-exynos/firmware.c
++++ b/arch/arm/mach-exynos/firmware.c
+@@ -28,9 +28,15 @@
+ #define EXYNOS_BOOT_ADDR	0x8
+ #define EXYNOS_BOOT_FLAG	0xc
  
- static void exynos_cpu_set_boot_vector(long flags)
+-static int exynos_do_idle(void)
++static int exynos_do_idle(unsigned long mode)
  {
--	__raw_writel(virt_to_phys(exynos_cpu_resume), EXYNOS_BOOT_VECTOR_ADDR);
--	__raw_writel(flags, EXYNOS_BOOT_VECTOR_FLAG);
-+	__raw_writel(virt_to_phys(exynos_cpu_resume),
-+		     exynos_boot_vector_addr());
-+	__raw_writel(flags, exynos_boot_vector_flag());
+-	exynos_smc(SMC_CMD_SLEEP, 0, 0, 0);
++	switch (mode) {
++	case FW_DO_IDLE_AFTR:
++		exynos_smc(SMC_CMD_CPU0AFTR, 0, 0, 0);
++		break;
++	case FW_DO_IDLE_SLEEP:
++		exynos_smc(SMC_CMD_SLEEP, 0, 0, 0);
++	}
+ 	return 0;
  }
  
- static int exynos_aftr_finisher(unsigned long flags)
+diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-tegra/cpuidle-tegra114.c
+index e3ebdce..425b6c8 100644
+--- a/arch/arm/mach-tegra/cpuidle-tegra114.c
++++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
+@@ -49,7 +49,7 @@ static int tegra114_idle_power_down(struct cpuidle_device *dev,
+ 	call_firmware_op(prepare_idle);
+ 
+ 	/* Do suspend by ourselves if the firmware does not implement it */
+-	if (call_firmware_op(do_idle) == -ENOSYS)
++	if (call_firmware_op(do_idle, 0) == -ENOSYS)
+ 		cpu_suspend(0, tegra30_sleep_cpu_secondary_finish);
+ 
+ 	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
 -- 
 1.8.2.3
