@@ -1,47 +1,68 @@
-From: "Ivan T. Ivanov" <iivanov-NEYub+7Iv8PQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH RESEND] thermal: Add QPNP PMIC temperature alarm driver
-Date: Wed, 24 Sep 2014 23:30:57 +0300
-Message-ID: <1411590657.9536.1.camel@mm-sol.com>
-References: <1410793383-30097-1-git-send-email-iivanov@mm-sol.com>
-	 <20140915153052.GB27076@developer> <1411570570.18580.72.camel@iivanov-dev>
-	 <20140924182410.GD27076@developer>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 02/19] ACPI: make acpi_create_platform_device() an external API
+Date: Wed, 24 Sep 2014 23:55:22 +0200
+Message-ID: <1979074.zrlxj1J4Ov@vostro.rjw.lan>
+References: <1411005230-2227-1-git-send-email-rui.zhang@intel.com> <1411005230-2227-3-git-send-email-rui.zhang@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20140924182410.GD27076@developer>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Collins <collinsd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:62798 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750891AbaIXVff (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 17:35:35 -0400
+In-Reply-To: <1411005230-2227-3-git-send-email-rui.zhang@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org, eduardo.valentin@ti.com
 
-On Wed, 2014-09-24 at 14:24 -0400, Eduardo Valentin wrote:
-> Hello Ivan,
+On Thursday, September 18, 2014 09:53:33 AM Zhang Rui wrote:
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/acpi/acpi_platform.c | 1 +
+>  include/linux/acpi.h         | 7 +++++++
+>  2 files changed, 8 insertions(+)
 > 
-> On Wed, Sep 24, 2014 at 05:56:10PM +0300, Ivan T. Ivanov wrote:
-> > On Mon, 2014-09-15 at 11:30 -0400, Eduardo Valentin wrote:
-> > > Hey Ivan,
-> > > 
-> > > Please give us at least a two weeks time frame before resending your
-> > > patches.
-> > 
-> > Hi Eduardo, 
-> > 
-> > Should I wait for more comments or I can post updated
-> > version of this patch?
-> > 
+> diff --git a/drivers/acpi/acpi_platform.c b/drivers/acpi/acpi_platform.c
+> index 2bf9082..a3c89a1 100644
+> --- a/drivers/acpi/acpi_platform.c
+> +++ b/drivers/acpi/acpi_platform.c
+> @@ -113,3 +113,4 @@ struct platform_device *acpi_create_platform_device(struct acpi_device *adev)
+>  	kfree(resources);
+>  	return pdev;
+>  }
+> +EXPORT_SYMBOL_GPL(acpi_create_platform_device);
+> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> index 807cbc4..3dd743d 100644
+> --- a/include/linux/acpi.h
+> +++ b/include/linux/acpi.h
+> @@ -432,6 +432,7 @@ static inline bool acpi_driver_match_device(struct device *dev,
+>  int acpi_device_uevent_modalias(struct device *, struct kobj_uevent_env *);
+>  int acpi_device_modalias(struct device *, char *, int);
+>  
+> +struct platform_device *acpi_create_platform_device(struct acpi_device *);
+
+But then please drop the header from internal.h.
+
+>  #define ACPI_PTR(_ptr)	(_ptr)
+>  
+>  #else	/* !CONFIG_ACPI */
+> @@ -523,6 +524,12 @@ static inline int acpi_device_modalias(struct device *dev,
+>  	return -ENODEV;
+>  }
+>  
+> +static inline struct platform_device *acpi_create_platform_device(
+> +				struct acpi_device *)
+> +{
+> +	return NULL;
+> +}
+> +
+>  #define ACPI_PTR(_ptr)	(NULL)
+>  
+>  #endif	/* !CONFIG_ACPI */
 > 
-> Please, if you have a new version, I would prefer you send it as V2. I
-> am specially interested about the cooling parts of it, and the DT usage.
 
-I really don't know what to say about cooling, there is no cooling.
-It is supposed that system just shut down, in case of overheat, 
-I believe.
-
-Regards,
-Ivan
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
