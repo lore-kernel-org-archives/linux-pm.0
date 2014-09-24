@@ -1,95 +1,65 @@
-From: Pramod Gurav <pramod.gurav@smartplayin.com>
-Subject: Re: [PATCH v6 2/5] arm: dts: qcom: Add SPM device bindings for 8974
-Date: Wed, 24 Sep 2014 11:48:06 +0530
-Message-ID: <5422621E.2050509@smartplayin.com>
-References: <1411516281-58328-1-git-send-email-lina.iyer@linaro.org> <1411516281-58328-3-git-send-email-lina.iyer@linaro.org>
+From: Kukjin Kim <kgene@kernel.org>
+Subject: RE: [PATCH v10 0/6] cpufreq: use generic cpufreq drivers for exynos
+ platforms
+Date: Wed, 24 Sep 2014 16:34:53 +0900
+Message-ID: <026501cfd7ca$0857a140$1906e3c0$@kernel.org>
+References: <1411531078-10671-1-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp85.ord1c.emailsrvr.com ([108.166.43.85]:42747 "EHLO
-	smtp85.ord1c.emailsrvr.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750744AbaIXGOp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 02:14:45 -0400
-In-Reply-To: <1411516281-58328-3-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1411531078-10671-1-git-send-email-thomas.ab@samsung.com>
+Content-language: ko
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: 'Thomas Abraham' <thomas.ab@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, tomasz.figa@gmail.com, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, cw00.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: galak@codeaurora.org, sboyd@codeaurora.org, daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, khilman@linaro.org, msivasub@codeaurora.org, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org
 
-Hi Lina,
-
-On Wednesday 24 September 2014 05:21 AM, Lina Iyer wrote:
-> Add SPM device bindings for QCOM 8974 based cpus. SPM is the sub-system
-> power manager and controls the logic around the cores (cpu and L2).
+Thomas Abraham wrote:
 > 
-> Each core has an instance of SPM and controls only that core. Each cpu
-> SPM is configured to support WFI and SPC (standalone-power collapse).
+> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
+> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
+> driver.
 > 
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> ---
->  arch/arm/boot/dts/qcom-msm8974-pm.dtsi | 69 ++++++++++++++++++++++++++++++++++
->  arch/arm/boot/dts/qcom-msm8974.dtsi    | 10 +++--
->  2 files changed, 75 insertions(+), 4 deletions(-)
->  create mode 100644 arch/arm/boot/dts/qcom-msm8974-pm.dtsi
-
-<snip>
-
-> +};
-> diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-> index 69dca2a..0580bc2 100644
-> --- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-> +++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-> @@ -14,7 +14,7 @@
->  		#size-cells = <0>;
->  		interrupts = <1 9 0xf04>;
->  
-> -		cpu@0 {
-> +		CPU0: cpu@0 {
-Lina, Stephen boyd has sent some DT change for krait-cpufreq which also
-renames this node to "cpu0: cpu@0". If you both could sync up and agree
-on a common naming('cpu0' with caps or not caps) for this node.
-
-Best Regards
-Pramod
-
->  			compatible = "qcom,krait";
->  			enable-method = "qcom,kpss-acc-v2";
->  			device_type = "cpu";
-> @@ -23,7 +23,7 @@
->  			qcom,acc = <&acc0>;
->  		};
->  
-> -		cpu@1 {
-> +		CPU1: cpu@1 {
-Ditto
->  			compatible = "qcom,krait";
->  			enable-method = "qcom,kpss-acc-v2";
->  			device_type = "cpu";
-> @@ -32,7 +32,7 @@
->  			qcom,acc = <&acc1>;
->  		};
->  
-> -		cpu@2 {
-> +		CPU2: cpu@2 {
-Ditto
->  			compatible = "qcom,krait";
->  			enable-method = "qcom,kpss-acc-v2";
->  			device_type = "cpu";
-> @@ -41,7 +41,7 @@
->  			qcom,acc = <&acc2>;
->  		};
->  
-> -		cpu@3 {
-> +		CPU3: cpu@3 {
-Ditto
->  			compatible = "qcom,krait";
->  			enable-method = "qcom,kpss-acc-v2";
->  			device_type = "cpu";
-> @@ -238,3 +238,5 @@
->  		};
->  	};
->  };
-> +
-> +#include "qcom-msm8974-pm.dtsi"
+> This patch series is dependent on two other patches
+> 1. ARM: dts: add CPU nodes for Exynos4 SoCs
+>    - https://lkml.org/lkml/2014/7/21/315
+> 2. clk: exynos4: remove duplicate div_core2 divider clock instantiation
+>    - http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34859.html
 > 
+> Thomas Abraham (6):
+>   clk: samsung: add infrastructure to register cpu clocks
+>   clk: samsung: add cpu clock configuration data and instantiate cpu clock
+>   ARM: dts: Exynos: add CPU OPP and regulator supply property
+>   ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
+>   cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
+>   clk: samsung: remove unused clock aliases and update clock flags
+> 
+>  arch/arm/boot/dts/exynos4210-origen.dts         |    4 +
+>  arch/arm/boot/dts/exynos4210-trats.dts          |    4 +
+>  arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 +
+>  arch/arm/boot/dts/exynos4210.dtsi               |   14 +-
+>  arch/arm/boot/dts/exynos5250-arndale.dts        |    4 +
+>  arch/arm/boot/dts/exynos5250-smdk5250.dts       |    4 +
+>  arch/arm/boot/dts/exynos5250-snow.dts           |    4 +
+>  arch/arm/boot/dts/exynos5250.dtsi               |   25 ++-
+>  arch/arm/boot/dts/exynos5420.dtsi               |   38 +++
+>  arch/arm/mach-exynos/exynos.c                   |   24 ++-
+>  drivers/clk/samsung/Makefile                    |    2 +-
+>  drivers/clk/samsung/clk-cpu.c                   |  335 +++++++++++++++++++++++
+>  drivers/clk/samsung/clk-cpu.h                   |   91 ++++++
+>  drivers/clk/samsung/clk-exynos4.c               |   63 +++--
+>  drivers/clk/samsung/clk-exynos5250.c            |   44 +++-
+>  drivers/clk/samsung/clk-exynos5420.c            |   72 +++++-
+>  drivers/cpufreq/Kconfig.arm                     |   22 --
+>  drivers/cpufreq/Makefile                        |    2 -
+>  include/dt-bindings/clock/exynos5250.h          |    1 +
+>  include/dt-bindings/clock/exynos5420.h          |    2 +
+
+Looks good to me,
+Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+
+BTW, who will handle this series? I think this is already ready for v3.18.
+
+- Kukjin
