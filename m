@@ -1,578 +1,143 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v6 1/5] qcom: spm: Add Subsystem Power Manager driver
-Date: Tue, 23 Sep 2014 19:58:41 -0600
-Message-ID: <20140924015841.GA70472@pluto>
-References: <1411516281-58328-1-git-send-email-lina.iyer@linaro.org>
- <1411516281-58328-2-git-send-email-lina.iyer@linaro.org>
+From: Pramod Gurav <pramod.gurav@smartplayin.com>
+Subject: Re: [PATCH v3] power: reset: use restart_notifier mechanism for msm-poweroff
+Date: Wed, 24 Sep 2014 07:38:05 +0530
+Message-ID: <54222785.5030605@smartplayin.com>
+References: <1411452520-29589-1-git-send-email-pramod.gurav@smartplayin.com> <542112FD.7080302@smartplayin.com> <2C40727B-BF1E-46AC-9189-6B35E358220E@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f177.google.com ([209.85.213.177]:40675 "EHLO
-	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753457AbaIXB6p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 21:58:45 -0400
-Received: by mail-ig0-f177.google.com with SMTP id h3so5703996igd.16
-        for <linux-pm@vger.kernel.org>; Tue, 23 Sep 2014 18:58:45 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1411516281-58328-2-git-send-email-lina.iyer@linaro.org>
+Received: from smtp117.ord1c.emailsrvr.com ([108.166.43.117]:39279 "EHLO
+	smtp117.ord1c.emailsrvr.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754738AbaIXCIP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 22:08:15 -0400
+In-Reply-To: <2C40727B-BF1E-46AC-9189-6B35E358220E@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: galak@codeaurora.org, sboyd@codeaurora.org, daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: khilman@linaro.org, msivasub@codeaurora.org, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org
+To: Kumar Gala <galak@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Josh Cartwright <joshc@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-msm <linux-arm-msm@vger.kernel.org>
 
-On Tue, Sep 23 2014 at 17:51 -0600, Lina Iyer wrote:
->Based on work by many authors, available at codeaurora.org
->
->SPM is a hardware block that controls the peripheral logic surrounding
->the application cores (cpu/l$). When the core executes WFI instruction,
->the SPM takes over the putting the core in low power state as
->configured. The wake up for the SPM is an interrupt at the GIC, which
->then completes the rest of low power mode sequence and brings the core
->out of low power mode.
->
->The SPM has a set of control registers that configure the SPMs
->individually based on the type of the core and the runtime conditions.
->SPM is a finite state machine block to which a sequence is provided and
->it interprets the bytes  and executes them in sequence. Each low power
->mode that the core can enter into is provided to the SPM as a sequence.
->
->Configure the SPM to set the core (cpu or L2) into its low power mode,
->the index of the first command in the sequence is set in the SPM_CTL
->register. When the core executes ARM wfi instruction, it triggers the
->SPM state machine to start executing from that index. The SPM state
->machine waits until the interrupt occurs and starts executing the rest
->of the sequence until it hits the end of the sequence. The end of the
->sequence jumps the core out of its low power mode.
->
->Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->[lina: simplify the driver for initial submission, clean up and update
->commit text]
->---
-> Documentation/devicetree/bindings/arm/msm/spm.txt |  43 +++
-> drivers/soc/qcom/Kconfig                          |   8 +
-> drivers/soc/qcom/Makefile                         |   1 +
-> drivers/soc/qcom/spm.c                            | 388 ++++++++++++++++++++++
-> include/soc/qcom/spm.h                            |  38 +++
-> 5 files changed, 478 insertions(+)
-> create mode 100644 Documentation/devicetree/bindings/arm/msm/spm.txt
-> create mode 100644 drivers/soc/qcom/spm.c
-> create mode 100644 include/soc/qcom/spm.h
->
->diff --git a/Documentation/devicetree/bindings/arm/msm/spm.txt b/Documentation/devicetree/bindings/arm/msm/spm.txt
->new file mode 100644
->index 0000000..2ff2454
->--- /dev/null
->+++ b/Documentation/devicetree/bindings/arm/msm/spm.txt
->@@ -0,0 +1,43 @@
->+* Subsystem Power Manager (SPM)
->+
->+Qualcomm Snapdragons have SPM hardware blocks to control the Application
->+Processor Sub-System power. These SPM blocks run individual state machine
->+to determine what the core (L2 or Krait/Scorpion) would do when the WFI
->+instruction is executed by the core.
->+
->+The devicetree representation of the SPM block should be:
->+
->+Required properties
->+
->+- compatible: Must be -
->+		 "qcom,spm-v2.1"
->+- reg: The physical address and the size of the SPM's memory mapped registers
->+- qcom,cpu: phandle for the CPU that the SPM block is attached to.
->+	This field is required on only for SPMs that control the CPU.
->+- qcom,saw2-clk-div: SAW2 configuration register to program the SPM runtime
->+	clocks. The register for this property is MSM_SPM_REG_SAW2_CFG.
->+- qcom,saw2-delays: The SPM delay values that SPM sequences would refer to.
->+	The register for this property is MSM_SPM_REG_SAW2_SPM_DLY.
->+- qcom,saw2-enable: The SPM control register to enable/disable the sleep state
->+	machine. The register for this property is MSM_SPM_REG_SAW2_SPM_CTL.
->+
->+Optional properties
->+
->+- qcom,saw2-spm-cmd-wfi: The WFI command sequence
->+- qcom,saw2-spm-cmd-spc: The Standalone PC command sequence
->+
->+Example:
->+	spm@f9089000 {
->+		compatible = "qcom,spm-v2.1";
->+		#address-cells = <1>;
->+		#size-cells = <1>;
->+		reg = <0xf9089000 0x1000>;
->+		qcom,cpu = <&CPU0>;
->+		qcom,saw2-clk-div = <0x1>;
->+		qcom,saw2-delays = <0x20000400>;
->+		qcom,saw2-enable = <0x1>;
->+		qcom,saw2-spm-cmd-wfi = [03 0b 0f];
->+		qcom,saw2-spm-cmd-spc = [00 20 50 80 60 70 10 92
->+				a0 b0 03 68 70 3b 92 a0 b0
->+				82 2b 50 10 30 02 22 30 0f];
->+	};
->diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
->index 7dcd554..cd249c4 100644
->--- a/drivers/soc/qcom/Kconfig
->+++ b/drivers/soc/qcom/Kconfig
->@@ -11,3 +11,11 @@ config QCOM_GSBI
->
-> config QCOM_SCM
-> 	bool
->+
->+config QCOM_PM
->+	bool "Qualcomm Power Management"
->+	depends on PM && ARCH_QCOM
->+	help
->+	  QCOM Platform specific power driver to manage cores and L2 low power
->+	  modes. It interface with various system drivers to put the cores in
->+	  low power modes.
->diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
->index 70d52ed..20b329f 100644
->--- a/drivers/soc/qcom/Makefile
->+++ b/drivers/soc/qcom/Makefile
->@@ -1,3 +1,4 @@
-> obj-$(CONFIG_QCOM_GSBI)	+=	qcom_gsbi.o
->+obj-$(CONFIG_QCOM_PM)	+=	spm.o
-> CFLAGS_scm.o :=$(call as-instr,.arch_extension sec,-DREQUIRES_SEC=1)
-> obj-$(CONFIG_QCOM_SCM) += scm.o scm-boot.o
->diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
->new file mode 100644
->index 0000000..1fa6a96
->--- /dev/null
->+++ b/drivers/soc/qcom/spm.c
->@@ -0,0 +1,388 @@
->+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
->+ *
->+ * This program is free software; you can redistribute it and/or modify
->+ * it under the terms of the GNU General Public License version 2 and
->+ * only version 2 as published by the Free Software Foundation.
->+ *
->+ * This program is distributed in the hope that it will be useful,
->+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
->+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->+ * GNU General Public License for more details.
->+ *
->+ */
->+
->+#include <linux/module.h>
->+#include <linux/kernel.h>
->+#include <linux/delay.h>
->+#include <linux/init.h>
->+#include <linux/io.h>
->+#include <linux/slab.h>
->+#include <linux/of.h>
->+#include <linux/of_address.h>
->+#include <linux/err.h>
->+#include <linux/platform_device.h>
->+
->+#include <soc/qcom/spm.h>
->+
->+#define NUM_SEQ_ENTRY 32
->+#define SPM_CTL_ENABLE BIT(0)
->+
->+enum {
->+	MSM_SPM_REG_SAW2_CFG,
->+	MSM_SPM_REG_SAW2_AVS_CTL,
->+	MSM_SPM_REG_SAW2_AVS_HYSTERESIS,
->+	MSM_SPM_REG_SAW2_SPM_CTL,
->+	MSM_SPM_REG_SAW2_PMIC_DLY,
->+	MSM_SPM_REG_SAW2_AVS_LIMIT,
->+	MSM_SPM_REG_SAW2_AVS_DLY,
->+	MSM_SPM_REG_SAW2_SPM_DLY,
->+	MSM_SPM_REG_SAW2_PMIC_DATA_0,
->+	MSM_SPM_REG_SAW2_PMIC_DATA_1,
->+	MSM_SPM_REG_SAW2_PMIC_DATA_2,
->+	MSM_SPM_REG_SAW2_PMIC_DATA_3,
->+	MSM_SPM_REG_SAW2_PMIC_DATA_4,
->+	MSM_SPM_REG_SAW2_PMIC_DATA_5,
->+	MSM_SPM_REG_SAW2_PMIC_DATA_6,
->+	MSM_SPM_REG_SAW2_PMIC_DATA_7,
->+	MSM_SPM_REG_SAW2_RST,
->+
->+	MSM_SPM_REG_NR_INITIALIZE = MSM_SPM_REG_SAW2_RST,
->+
->+	MSM_SPM_REG_SAW2_ID,
->+	MSM_SPM_REG_SAW2_SECURE,
->+	MSM_SPM_REG_SAW2_STS0,
->+	MSM_SPM_REG_SAW2_STS1,
->+	MSM_SPM_REG_SAW2_STS2,
->+	MSM_SPM_REG_SAW2_VCTL,
->+	MSM_SPM_REG_SAW2_SEQ_ENTRY,
->+	MSM_SPM_REG_SAW2_SPM_STS,
->+	MSM_SPM_REG_SAW2_AVS_STS,
->+	MSM_SPM_REG_SAW2_PMIC_STS,
->+	MSM_SPM_REG_SAW2_VERSION,
->+
->+	MSM_SPM_REG_NR,
->+};
->+
->+static u32 reg_offsets_saw2_v2_1[MSM_SPM_REG_NR] = {
->+	[MSM_SPM_REG_SAW2_SECURE]		= 0x00,
->+	[MSM_SPM_REG_SAW2_ID]			= 0x04,
->+	[MSM_SPM_REG_SAW2_CFG]			= 0x08,
->+	[MSM_SPM_REG_SAW2_SPM_STS]		= 0x0C,
->+	[MSM_SPM_REG_SAW2_AVS_STS]		= 0x10,
->+	[MSM_SPM_REG_SAW2_PMIC_STS]		= 0x14,
->+	[MSM_SPM_REG_SAW2_RST]			= 0x18,
->+	[MSM_SPM_REG_SAW2_VCTL]			= 0x1C,
->+	[MSM_SPM_REG_SAW2_AVS_CTL]		= 0x20,
->+	[MSM_SPM_REG_SAW2_AVS_LIMIT]		= 0x24,
->+	[MSM_SPM_REG_SAW2_AVS_DLY]		= 0x28,
->+	[MSM_SPM_REG_SAW2_AVS_HYSTERESIS]	= 0x2C,
->+	[MSM_SPM_REG_SAW2_SPM_CTL]		= 0x30,
->+	[MSM_SPM_REG_SAW2_SPM_DLY]		= 0x34,
->+	[MSM_SPM_REG_SAW2_PMIC_DATA_0]		= 0x40,
->+	[MSM_SPM_REG_SAW2_PMIC_DATA_1]		= 0x44,
->+	[MSM_SPM_REG_SAW2_PMIC_DATA_2]		= 0x48,
->+	[MSM_SPM_REG_SAW2_PMIC_DATA_3]		= 0x4C,
->+	[MSM_SPM_REG_SAW2_PMIC_DATA_4]		= 0x50,
->+	[MSM_SPM_REG_SAW2_PMIC_DATA_5]		= 0x54,
->+	[MSM_SPM_REG_SAW2_PMIC_DATA_6]		= 0x58,
->+	[MSM_SPM_REG_SAW2_PMIC_DATA_7]		= 0x5C,
->+	[MSM_SPM_REG_SAW2_SEQ_ENTRY]		= 0x80,
->+	[MSM_SPM_REG_SAW2_VERSION]		= 0xFD0,
->+};
-I should probably remove the registers that we would not ever read/write
-in this driver.
+Hi Kumar,
 
->+
->+struct spm_of {
->+	char *key;
->+	u32 id;
->+};
->+
->+struct msm_spm_mode {
->+	u32 mode;
->+	u32 start_addr;
->+};
->+
->+struct msm_spm_driver_data {
->+	void __iomem *reg_base_addr;
->+	u32 *reg_offsets;
->+	struct msm_spm_mode *modes;
->+	u32 num_modes;
->+};
->+
->+struct msm_spm_device {
->+	bool initialized;
->+	struct msm_spm_driver_data drv;
->+};
->+
->+static DEFINE_PER_CPU_SHARED_ALIGNED(struct msm_spm_device, msm_cpu_spm_device);
->+
->+static const struct of_device_id msm_spm_match_table[] __initconst;
->+
->+static int msm_spm_drv_set_low_power_mode(struct msm_spm_driver_data *drv,
->+						u32 mode)
->+{
->+	int i;
->+	u32 start_addr = 0;
->+	u32 ctl_val;
->+
->+	for (i = 0; i < drv->num_modes; i++) {
->+		if (drv->modes[i].mode == mode) {
->+			start_addr = drv->modes[i].start_addr;
->+			break;
->+		}
->+	}
->+
->+	if (i == drv->num_modes)
->+		return -EINVAL;
->+
->+	/* Update bits 10:4 in the SPM CTL register */
->+	ctl_val = readl_relaxed(drv->reg_base_addr +
->+			drv->reg_offsets[MSM_SPM_REG_SAW2_SPM_CTL]);
->+	start_addr &= 0x7F;
->+	start_addr <<= 4;
->+	ctl_val &= 0xFFFFF80F;
->+	ctl_val |= start_addr;
->+	writel_relaxed(ctl_val, drv->reg_base_addr +
->+			drv->reg_offsets[MSM_SPM_REG_SAW2_SPM_CTL]);
->+	/* Ensure we have written the start address */
->+	wmb();
->+
->+	return 0;
->+}
->+
->+static int msm_spm_drv_set_spm_enable(struct msm_spm_driver_data *drv,
->+					bool enable)
->+{
->+	u32 value = enable ? 0x01 : 0x00;
->+	u32 ctl_val;
->+
->+	ctl_val = readl_relaxed(drv->reg_base_addr +
->+			drv->reg_offsets[MSM_SPM_REG_SAW2_SPM_CTL]);
->+
->+	/* Update SPM_CTL to enable/disable the SPM */
->+	if ((ctl_val & SPM_CTL_ENABLE) != value) {
->+		/* Clear the existing value and update */
->+		ctl_val &= ~0x1;
->+		ctl_val |= value;
->+		writel_relaxed(ctl_val, drv->reg_base_addr +
->+			drv->reg_offsets[MSM_SPM_REG_SAW2_SPM_CTL]);
->+
->+		/* Ensure we have enabled/disabled before returning */
->+		wmb();
->+	}
->+
->+	return 0;
->+}
->+
->+/**
->+ * msm_spm_set_low_power_mode() - Configure SPM start address for low power mode
->+ * @mode: SPM LPM mode to enter
->+ */
->+int msm_spm_set_low_power_mode(u32 mode)
->+{
->+	struct msm_spm_device *dev = &__get_cpu_var(msm_cpu_spm_device);
->+	int ret = -EINVAL;
->+
->+	if (!dev->initialized)
->+		return -ENXIO;
->+
->+	if (mode == MSM_SPM_MODE_DISABLED)
->+		ret = msm_spm_drv_set_spm_enable(&dev->drv, false);
->+	else if (!msm_spm_drv_set_spm_enable(&dev->drv, true))
->+		ret = msm_spm_drv_set_low_power_mode(&dev->drv, mode);
->+
->+	return ret;
->+}
->+EXPORT_SYMBOL(msm_spm_set_low_power_mode);
->+
->+static void append_seq_data(u32 *reg_seq_entry, u8 *cmd, u32 *offset)
->+{
->+	u32 cmd_w;
->+	u32 offset_w = *offset / 4;
->+	u8 last_cmd;
->+
->+	while (1) {
->+		int i;
->+
->+		cmd_w = 0;
->+		last_cmd = 0;
->+		cmd_w = reg_seq_entry[offset_w];
->+
->+		for (i = (*offset % 4); i < 4; i++) {
->+			last_cmd = *(cmd++);
->+			cmd_w |=  last_cmd << (i * 8);
->+			(*offset)++;
->+			if (last_cmd == 0x0f)
->+				break;
->+		}
->+
->+		reg_seq_entry[offset_w++] = cmd_w;
->+		if (last_cmd == 0x0f)
->+			break;
->+	}
->+}
->+
->+static int msm_spm_seq_init(struct msm_spm_device *spm_dev,
->+			struct platform_device *pdev)
->+{
->+	int i;
->+	u8 *cmd;
->+	void *addr;
->+	u32 val;
->+	u32 count = 0;
->+	int offset = 0;
->+	struct msm_spm_mode modes[MSM_SPM_MODE_NR];
->+	u32 sequences[NUM_SEQ_ENTRY/4] = {0};
->+	struct msm_spm_driver_data *drv = &spm_dev->drv;
->+
->+	/* SPM sleep sequences */
->+	struct spm_of mode_of_data[] = {
->+		{"qcom,saw2-spm-cmd-wfi", MSM_SPM_MODE_CLOCK_GATING},
->+		{"qcom,saw2-spm-cmd-spc", MSM_SPM_MODE_POWER_COLLAPSE},
->+	};
->+
->+	/**
->+	 * Compose the u32 array based on the individual bytes of the SPM
->+	 * sequence for each low power mode that we read from the DT.
->+	 * The sequences are appended if there is space available in the
->+	 * u32 after the end of the previous sequence.
->+	 */
->+
->+	for (i = 0; i < ARRAY_SIZE(mode_of_data); i++) {
->+		cmd = (u8 *)of_get_property(pdev->dev.of_node,
->+						mode_of_data[i].key, &val);
->+		if (!cmd)
->+			continue;
->+		/* The last in the sequence should be 0x0F */
->+		if (cmd[val - 1] != 0x0F)
->+			continue;
->+		modes[count].mode = mode_of_data[i].id;
->+		modes[count].start_addr = offset;
->+		append_seq_data(&sequences[0], cmd, &offset);
->+		count++;
->+	}
->+
->+	/* Write the idle state sequences to SPM */
->+	drv->modes = devm_kcalloc(&pdev->dev, count,
->+					sizeof(modes[0]), GFP_KERNEL);
->+	if (!drv->modes)
->+		return -ENOMEM;
->+
->+	drv->num_modes = count;
->+	memcpy(drv->modes, modes, sizeof(modes[0]) * count);
->+
->+	/* Flush the integer array */
->+	addr = drv->reg_base_addr +
->+			drv->reg_offsets[MSM_SPM_REG_SAW2_SEQ_ENTRY];
->+	for (i = 0; i < ARRAY_SIZE(sequences); i++, addr += 4)
->+		writel_relaxed(sequences[i], addr);
->+
->+	/* Ensure we flush the writes */
->+	wmb();
->+
->+	return 0;
->+}
->+
->+static struct msm_spm_device *msm_spm_get_device(struct platform_device *pdev)
->+{
->+	struct msm_spm_device *dev = NULL;
->+	struct device_node *cpu_node;
->+	u32 cpu;
->+
->+	cpu_node = of_parse_phandle(pdev->dev.of_node, "qcom,cpu", 0);
->+	if (cpu_node) {
->+		for_each_possible_cpu(cpu) {
->+			if (of_get_cpu_node(cpu, NULL) == cpu_node)
->+				dev = &per_cpu(msm_cpu_spm_device, cpu);
->+		}
->+	}
->+
->+	return dev;
->+}
->+
->+static int msm_spm_dev_probe(struct platform_device *pdev)
->+{
->+	int ret;
->+	int i;
->+	u32 val;
->+	struct msm_spm_device *spm_dev;
->+	struct resource *res;
->+	const struct of_device_id *match_id;
->+
->+	/* SPM Configuration registers */
->+	struct spm_of spm_of_data[] = {
->+		{"qcom,saw2-clk-div", MSM_SPM_REG_SAW2_CFG},
->+		{"qcom,saw2-enable", MSM_SPM_REG_SAW2_SPM_CTL},
->+		{"qcom,saw2-delays", MSM_SPM_REG_SAW2_SPM_DLY},
->+	};
->+
->+	 /* Get the right SPM device */
->+	spm_dev = msm_spm_get_device(pdev);
->+	if (IS_ERR_OR_NULL(spm_dev))
->+		return -EINVAL;
->+
->+	/* Get the SPM start address */
->+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->+	if (!res) {
->+		ret = -EINVAL;
->+		goto fail;
->+	}
->+	spm_dev->drv.reg_base_addr = devm_ioremap(&pdev->dev, res->start,
->+					resource_size(res));
->+	if (!spm_dev->drv.reg_base_addr) {
->+		ret = -ENOMEM;
->+		goto fail;
->+	}
->+
->+	match_id = of_match_node(msm_spm_match_table, pdev->dev.of_node);
->+	if (!match_id)
->+		return -ENODEV;
->+
->+	/* Use the register offsets for the SPM version in use */
->+	spm_dev->drv.reg_offsets = (u32 *)match_id->data;
->+	if (!spm_dev->drv.reg_offsets)
->+		return -EFAULT;
->+
->+	/* Read the SPM idle state sequences */
->+	ret = msm_spm_seq_init(spm_dev, pdev);
->+	if (ret)
->+		return ret;
->+
->+	/* Read the SPM register values */
->+	for (i = 0; i < ARRAY_SIZE(spm_of_data); i++) {
->+		ret = of_property_read_u32(pdev->dev.of_node,
->+					spm_of_data[i].key, &val);
->+		if (ret)
->+			continue;
->+		writel_relaxed(val, spm_dev->drv.reg_base_addr +
->+				spm_dev->drv.reg_offsets[spm_of_data[i].id]);
->+	}
->+
->+	/* Flush all writes */
->+	wmb();
->+
->+	spm_dev->initialized = true;
->+	return ret;
->+fail:
->+	dev_err(&pdev->dev, "SPM device probe failed: %d\n", ret);
->+	return ret;
->+}
->+
->+static const struct of_device_id msm_spm_match_table[] __initconst = {
->+	{.compatible = "qcom,spm-v2.1", .data = reg_offsets_saw2_v2_1},
->+	{ },
->+};
->+
->+
->+static struct platform_driver msm_spm_device_driver = {
->+	.probe = msm_spm_dev_probe,
->+	.driver = {
->+		.name = "spm",
->+		.owner = THIS_MODULE,
->+		.of_match_table = msm_spm_match_table,
->+	},
->+};
->+
->+static int __init msm_spm_device_init(void)
->+{
->+	return platform_driver_register(&msm_spm_device_driver);
->+}
->+device_initcall(msm_spm_device_init);
->diff --git a/include/soc/qcom/spm.h b/include/soc/qcom/spm.h
->new file mode 100644
->index 0000000..29686ef
->--- /dev/null
->+++ b/include/soc/qcom/spm.h
->@@ -0,0 +1,38 @@
->+/* Copyright (c) 2010-2014, The Linux Foundation. All rights reserved.
->+ *
->+ * This program is free software; you can redistribute it and/or modify
->+ * it under the terms of the GNU General Public License version 2 and
->+ * only version 2 as published by the Free Software Foundation.
->+ *
->+ * This program is distributed in the hope that it will be useful,
->+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
->+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->+ * GNU General Public License for more details.
->+ */
->+
->+#ifndef __QCOM_SPM_H
->+#define __QCOM_SPM_H
->+
->+enum {
->+	MSM_SPM_MODE_DISABLED,
->+	MSM_SPM_MODE_CLOCK_GATING,
->+	MSM_SPM_MODE_RETENTION,
->+	MSM_SPM_MODE_GDHS,
->+	MSM_SPM_MODE_POWER_COLLAPSE,
->+	MSM_SPM_MODE_NR
->+};
->+
->+struct msm_spm_device;
->+
->+#if defined(CONFIG_QCOM_PM)
->+
->+int msm_spm_set_low_power_mode(u32 mode);
->+
->+#else
->+
->+static inline int msm_spm_set_low_power_mode(u32 mode)
->+{ return -ENOSYS; }
->+
->+#endif  /* CONFIG_QCOM_PM */
->+
->+#endif  /* __QCOM_SPM_H */
->-- 
->1.9.1
->
+On 23-09-2014 11:18 PM, Kumar Gala wrote:
+>=20
+> On Sep 23, 2014, at 1:28 AM, Pramod Gurav <pramod.gurav@smartplayin.c=
+om> wrote:
+>=20
+>> +linux-arm-msm
+>> On Tuesday 23 September 2014 11:38 AM, Pramod Gurav wrote:
+>>> This change replaces use of arm_pm_restart with recently introduced
+>>> reset mechanism in Linux kernel called restart_notifier.
+>=20
+> Can you update the commit message to include details about the priori=
+ty level we are setting it to.
+>=20
+> Probably something like Josh had:
+>=20
+> Choose priority 128, as according to documentation, this mechanism "i=
+s
+> sufficient to restart the entire system=94.
+Will update the commit message.
+>=20
+> Hmm, what happens if we have ps_hold restart and msm-poweroff enabled=
+=2E  Which one should have priority?
+In case of A-family/apq8064, the ps_hold register region is owned by
+pinctrl hence the reset is implemented in pinctrl driver as the region
+is already mapped there.
+I have had a discussion with Stephen Boyd and was informed that ps_hold
+register region in apq8074/B-family are moved to its own region and we
+need to reset it through pinctrl.
+
+So, for b family there is no need for ps_hold to be configured/muxed in
+pinctrl and Josh's changes wont execute. Hence msm-poweroff wil be the
+default reset as 128 in the default priority.
+
+Hope I was able to put it well to answer your comment.
+>=20
+>>>
+>>> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+>>> Cc: Guenter Roeck <linux@roeck-us.net>
+>>> Cc: Josh Cartwright <joshc@codeaurora.org>
+>>> Cc: Sebastian Reichel <sre@kernel.org>
+>>> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>>> Cc: David Woodhouse <dwmw2@infradead.org>
+>>> Cc: Stephen Boyd <sboyd@codeaurora.org>
+>>> Cc: linux-pm@vger.kernel.org
+>>>
+>>> Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
+>>> ---
+>>> Tested on Dragonboard APQ8074
+>>>
+>>> Changes since v2:
+>>> - Removed unwanted header file and added linux/pm.h
+>>>
+>>> Changes since v1:
+>>> - Initialized restart_nb with its declaration
+>>> - Removed return check for register_restart_handler as it always
+>>>  returns 0 as per Guenter's suggestion to Josh's similar patch.
+>>>  This takes care of Guenter's comments on error logs and NULL
+>>>  initialization of restart_nb.notifier_call.
+>>> ---
+>>> drivers/power/reset/msm-poweroff.c |   20 ++++++++++++++------
+>>> 1 file changed, 14 insertions(+), 6 deletions(-)
+>>>
+>>> diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/res=
+et/msm-poweroff.c
+>>> index 774f9a3..4702efd 100644
+>>> --- a/drivers/power/reset/msm-poweroff.c
+>>> +++ b/drivers/power/reset/msm-poweroff.c
+>>> @@ -20,21 +20,27 @@
+>>> #include <linux/platform_device.h>
+>>> #include <linux/module.h>
+>>> #include <linux/reboot.h>
+>>> -
+>>> -#include <asm/system_misc.h>
+>>> +#include <linux/pm.h>
+>>>
+>>> static void __iomem *msm_ps_hold;
+>>> -
+>>> -static void do_msm_restart(enum reboot_mode reboot_mode, const cha=
+r *cmd)
+>>> +static int do_msm_restart(struct notifier_block *nb, unsigned long=
+ action,
+>>> +			   void *data)
+>>> {
+>>> 	writel(0, msm_ps_hold);
+>>> 	mdelay(10000);
+>>> +
+>>> +	return NOTIFY_DONE;
+>>> }
+>>>
+>>> +static struct notifier_block restart_nb =3D {
+>>> +	.notifier_call =3D do_msm_restart,
+>>> +	.priority =3D 128,
+>>> +};
+>>> +
+>>> static void do_msm_poweroff(void)
+>>> {
+>>> 	/* TODO: Add poweroff capability */
+>>> -	do_msm_restart(REBOOT_HARD, NULL);
+>>> +	do_msm_restart(&restart_nb, 0, NULL);
+>>> }
+>>>
+>>> static int msm_restart_probe(struct platform_device *pdev)
+>>> @@ -47,8 +53,10 @@ static int msm_restart_probe(struct platform_dev=
+ice *pdev)
+>>> 	if (IS_ERR(msm_ps_hold))
+>>> 		return PTR_ERR(msm_ps_hold);
+>>>
+>>> +	register_restart_handler(&restart_nb);
+>>> +
+>>> 	pm_power_off =3D do_msm_poweroff;
+>>> -	arm_pm_restart =3D do_msm_restart;
+>>> +
+>>> 	return 0;
+>>> }
+>>>
+>>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-arm-=
+msm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>=20
