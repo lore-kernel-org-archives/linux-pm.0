@@ -1,8 +1,7 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH 3/3] thermal: core: fix: Check return code of the
- ->get_max_state() callback
-Date: Wed, 24 Sep 2014 10:27:12 +0200
-Message-ID: <1411547232-21493-4-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH 2/3] thermal: core: fix: Initialize the max_state variable to 0
+Date: Wed, 24 Sep 2014 10:27:11 +0200
+Message-ID: <1411547232-21493-3-git-send-email-l.majewski@samsung.com>
 References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
@@ -11,37 +10,39 @@ To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Without this check it was possible to execute cooling device binding code
-even when wrong max cooling state was read.
+Pointer to the uninitialized max_state variable is passed to get the
+maximal cooling state.
+For CPU cooling device (cpu_cooling.c) the cpufreq_get_max_state() is
+called, which even when error occurs will return the max_state variable
+unchanged.
+Since error for ->get_max_state() is not checked, the automatically
+allocated value of max_state is used for (upper > max_state) comparison.
+For any possible max_state value it is very unlikely that it will be less
+than upper.
+As a consequence, the cooling device is bind even without the backed
+cpufreq table initialized.
+
+This initialization will prevent from accidental binding trip points to
+cpu freq cooling frequencies when cpufreq driver itself is not yet fully
+initialized.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
- drivers/thermal/thermal_core.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/thermal/thermal_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 747618a..8a4dc35 100644
+index 454884a..747618a 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -928,7 +928,7 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+@@ -927,7 +927,7 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+ 	struct thermal_instance *pos;
  	struct thermal_zone_device *pos1;
  	struct thermal_cooling_device *pos2;
- 	unsigned long max_state = 0;
--	int result;
-+	int result, ret;
+-	unsigned long max_state;
++	unsigned long max_state = 0;
+ 	int result;
  
  	if (trip >= tz->trips || (trip < 0 && trip != THERMAL_TRIPS_NONE))
- 		return -EINVAL;
-@@ -945,7 +945,9 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
- 	if (tz != pos1 || cdev != pos2)
- 		return -EINVAL;
- 
--	cdev->ops->get_max_state(cdev, &max_state);
-+	ret = cdev->ops->get_max_state(cdev, &max_state);
-+	if (ret)
-+		return ret;
- 
- 	/* lower default 0, upper default max_state */
- 	lower = lower == THERMAL_NO_LIMIT ? 0 : lower;
 -- 
 2.0.0.rc2
