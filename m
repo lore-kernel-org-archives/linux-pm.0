@@ -1,93 +1,107 @@
-From: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3] PM / AVS: rockchip-io: add driver handling Rockchip io domains
-Date: Wed, 24 Sep 2014 16:27:07 -0700
-Message-ID: <7hwq8sk3as.fsf@deeprootsystems.com>
-References: <1410475735-10278-1-git-send-email-dianders@chromium.org>
-	<7hy4tog61r.fsf@deeprootsystems.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v5 4/4] thermal: Add Tegra SOCTHERM thermal management
+ driver
+Date: Wed, 24 Sep 2014 19:24:00 -0400
+Message-ID: <20140924232347.GA16539@developer>
+References: <1408616242-21009-1-git-send-email-mperttunen@nvidia.com>
+ <1408616242-21009-5-git-send-email-mperttunen@nvidia.com>
+ <20140924191829.GA16529@developer>
+ <54231C3D.6040900@kapsi.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <7hy4tog61r.fsf-1D3HCaltpLuhEniVeURVKkEOCMrvLtNR@public.gmane.org> (Kevin Hilman's message of
-	"Fri, 12 Sep 2014 09:25:04 -0700")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Addy Ke <addy.ke-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Sonny Rao <sonnyrao-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f182.google.com ([209.85.216.182]:33342 "EHLO
+	mail-qc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751755AbaIXX2F (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 19:28:05 -0400
+Content-Disposition: inline
+In-Reply-To: <54231C3D.6040900@kapsi.fi>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Cc: Mikko Perttunen <mperttunen@nvidia.com>, rui.zhang@intel.com, swarren@wwwdotorg.org, thierry.reding@gmail.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, juha-matti.tilli@iki.fi
 
-Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> writes:
+Hello,
 
-> Rafael,
->
-> Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> writes:
->
->> From: Heiko St=C3=BCbner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
->>
->> IO domain voltages on some Rockchip SoCs are variable but need to be
->> kept in sync between the regulators and the SoC using a special
->> register.
->>
->> A specific example using rk3288:
->> - If the regulator hooked up to a pin like SDMMC0_VDD is 3.3V then
->>   bit 7 of GRF_IO_VSEL needs to be 0.  If the regulator hooked up to
->>   that same pin is 1.8V then bit 7 of GRF_IO_VSEL needs to be 1.
->>
->> Said another way, this driver simply handles keeping bits in the SoC=
-'s
->> general register file (GRF) in sync with the actual value of a volta=
-ge
->> hooked up to the pins.
->>
->> Note that this driver specifically doesn't include:
->> - any logic for deciding what voltage we should set regulators to
->> - any logic for deciding whether regulators (or internal SoC blocks)
->>   should have power or not have power
->>
->> If there were some other software that had the smarts of making
->> decisions about regulators, it would work in conjunction with this
->> driver.  When that other software adjusted a regulator's voltage the=
-n
->> this driver would handle telling the SoC about it.  A good example i=
-s
->> vqmmc for SD.  In that case the dw_mmc driver simply is told about a
->> regulator.  It changes the regulator between 3.3V and 1.8V at the
->> right time.  This driver notices the change and makes sure that the
->> SoC is on the same page.
->>
->> Signed-off-by: Heiko St=C3=BCbner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
->> Signed-off-by: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
->> Reviewed-by: Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>
->> ---
->> Changes in v3:
->> - Changed compatible string as per Santosh.
->
-> Thanks, I like the new string better.
->
->> - Added code docs about the slop in 1.8V and 3.3V as per Santosh.
->> - Moved some #defines to the top as per Santosh.
->
-> All nice changes, thanks Santosh!
->
-> Reviewed-by: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->
-> Rafael, how do you want to handle drivers/avs/* ?  Along with Nishant=
-h,
-> I'm maintaining everything there currently (only one driver :)), and
-> since I recommended $SUBJECT driver go into drivers/avs[1], I'm happy=
- to
-> queue it for you and update MAINTAINERS to cover drivers/avs/* instea=
-d
-> of just smartreflex.c.
->
-> Let me know how you'd like to proceed.
 
-=46or the benefit of the archives... Rafael and I talked off-list and
-agreed that I'll queue it up for him and update MAINTAINERS to reflect
-maintenance of drivesr/power/avs
+On Wed, Sep 24, 2014 at 10:32:13PM +0300, Mikko Perttunen wrote:
+> On 09/24/2014 10:18 PM, Eduardo Valentin wrote:
+> >
+> > Mikko,
+> >
+> > On Thu, Aug 21, 2014 at 01:17:22PM +0300, Mikko Perttunen wrote:
+> >> ...
+> >> +
+> >> +static int enable_tsensor(struct tegra_soctherm *tegra,
+> >> +			  const struct tegra_tsensor *sensor,
+> >> +			  struct tsensor_shared_calibration shared)
+> >> +{
+> >> +	void * __iomem base = tegra->regs + sensor->base;
+> >
+> > I get sparse complaining about this declaration. For the sake of keeping
+> > a clean static checks, can you please:
+> > -       void * __iomem base = tegra->regs + sensor->base;
+> > +       void __iomem * base = tegra->regs + sensor->base;
+> >
+> 
+> Sure.
 
-Kevin
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+Good.
+
+> 
+> >
+> > Can you also please check the remaining sparse errors?
+> >    CHECK   drivers/thermal/tegra_soctherm.c
+> >    drivers/thermal/tegra_soctherm.c:260:43: warning: incorrect type in
+> >    initializer (different address spaces)
+> >    drivers/thermal/tegra_soctherm.c:260:43:    expected void *[noderef]
+> >    <asn:2>base
+> >    drivers/thermal/tegra_soctherm.c:260:43:    got void [noderef]
+> >    <asn:2>*
+> >    drivers/thermal/tegra_soctherm.c:271:9: warning: incorrect type in
+> >    argument 2 (different address spaces)
+> >    drivers/thermal/tegra_soctherm.c:271:9:    expected void volatile
+> >    [noderef] <asn:2>*addr
+> >    drivers/thermal/tegra_soctherm.c:271:9:    got void *
+> >    drivers/thermal/tegra_soctherm.c:279:9: warning: incorrect type in
+> >    argument 2 (different address spaces)
+> >    drivers/thermal/tegra_soctherm.c:279:9:    expected void volatile
+> >    [noderef] <asn:2>*addr
+> >    drivers/thermal/tegra_soctherm.c:279:9:    got void *
+> >    drivers/thermal/tegra_soctherm.c:281:9: warning: incorrect type in
+> >    argument 2 (different address spaces)
+> >    drivers/thermal/tegra_soctherm.c:281:9:    expected void volatile
+> >    [noderef] <asn:2>*addr
+> >    drivers/thermal/tegra_soctherm.c:281:9:    got void *
+> >    drivers/thermal/tegra_soctherm.c:347:25: warning: incorrect type in
+> >    argument 1 (different address spaces)
+> >    drivers/thermal/tegra_soctherm.c:347:25:    expected void const *ptr
+> >    drivers/thermal/tegra_soctherm.c:347:25:    got void [noderef]
+> >    <asn:2>*regs
+> >    drivers/thermal/tegra_soctherm.c:349:37: warning: incorrect type in
+> >    argument 1 (different address spaces)
+> >    drivers/thermal/tegra_soctherm.c:349:37:    expected void const *ptr
+> >    drivers/thermal/tegra_soctherm.c:349:37:    got void [noderef]
+> >    <asn:2>*regs
+> >    drivers/thermal/tegra_soctherm.c:271:9: warning: dereference of
+> >    noderef expression
+> >    drivers/thermal/tegra_soctherm.c:279:9: warning: dereference of
+> >    noderef expression
+> >    drivers/thermal/tegra_soctherm.c:281:9: warning: dereference of
+> >    noderef expression
+> >
+> 
+> Most of these seem to be caused by the above-mentioned swapping of 
+> __iomem and *. The ones on lines 347 and 349 are more peculiar, though. 
+> Apparently sparse doesn't like using IS_ERR and PTR_ERR on the void 
+> __iomem * pointer returned by devm_ioremap_resource. Looks like this has 
+> been discussed before (https://lkml.org/lkml/2013/6/17/216) and sparse 
+> should have been patched to ignore this situation, so I'm not sure why 
+> it's complaining about it. Anyway, there shouldn't be any issue here.
+
+Sounds good to me.
+
+> 
+> Mikko
+> 
