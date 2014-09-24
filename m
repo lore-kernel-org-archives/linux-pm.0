@@ -1,84 +1,46 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v7 0/8] charger/mfd: max14577: Add support for MAX77836
-Date: Wed, 24 Sep 2014 12:55:49 +0100
-Message-ID: <20140924115549.GL19999@lee--X1>
-References: <1411472603-11821-1-git-send-email-k.kozlowski@samsung.com>
- <20140924100325.GB19999@lee--X1>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH on mfd-regulator-power-v3.17] charger: max14577: Fix build
+ breakage when compiled as module
+Date: Wed, 24 Sep 2014 14:00:06 +0200
+Message-ID: <1411560006-16471-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f182.google.com ([209.85.223.182]:35175 "EHLO
-	mail-ie0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751284AbaIXLz4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 07:55:56 -0400
-Received: by mail-ie0-f182.google.com with SMTP id tp5so6097889ieb.13
-        for <linux-pm@vger.kernel.org>; Wed, 24 Sep 2014 04:55:55 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20140924100325.GB19999@lee--X1>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
+Cc: Mark Brown <broonie@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 
-Mark, Sebastian,
+The charger's module device table used the same name as regulator drive=
+r
+causing a build break when charger was compiled as a module:
 
-Please don't pull this in yet!  There is an issue with the set.
+drivers/power/max14577_charger.c:598:1: error: =E2=80=98__mod_platform_=
+_max14577_regulator_id_device_table=E2=80=99 aliased to undefined symbo=
+l =E2=80=98max14577_regulator_id=E2=80=99
+make[2]: *** [drivers/power/max14577_charger.o] Error 1
 
-I'll reply to this mail once it's been rectified.
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Reported-by: kbuild test robot <fengguang.wu@intel.com>
+---
+ drivers/power/max14577_charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Kind regards,
-Lee
-
-> The following changes since commit a497c3ba1d97fc69c1e78e7b96435ba8c2=
-cb42ee:
->=20
->   Linux 3.16-rc2 (2014-06-21 19:02:54 -1000)
->=20
-> are available in the git repository at:
->=20
->   git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git tags/mfd-=
-regulator-power-v3.17
->=20
-> for you to fetch changes up to f453d80f908254293bf453a2d7e68974e2abc2=
-af:
->=20
->   Documentation: charger: max14577: Document exported sysfs entry (20=
-14-09-24 10:58:07 +0100)
->=20
-> ----------------------------------------------------------------
-> Immutable branch between MFD, Regulator and Power due for v3.17
->=20
-> ----------------------------------------------------------------
-> Krzysztof Kozlowski (8):
->       mfd: max14577: Add defines for MAX77836 charger
->       mfd: max14577: Map charger device to its own of_node
->       charger: max14577: Add support for MAX77836 charger
->       regulator/mfd: max14577: Export symbols for calculating charger=
- current
->       charger: max14577: Configure battery-dependent settings from DT=
-S and sysfs
->       power: max17040: Add ID for MAX77836 Fuel Gauge block
->       devicetree: mfd: max14577: Add device tree bindings document
->       Documentation: charger: max14577: Document exported sysfs entry
->=20
->  Documentation/ABI/testing/sysfs-class-power        |  14 +
->  Documentation/devicetree/bindings/mfd/max14577.txt | 146 ++++++++
->  drivers/mfd/max14577.c                             | 100 +++++-
->  drivers/power/Kconfig                              |   5 +-
->  drivers/power/max14577_charger.c                   | 370 +++++++++++=
-++++++++--
->  drivers/power/max17040_battery.c                   |   3 +-
->  drivers/regulator/max14577.c                       |  80 +----
->  include/linux/mfd/max14577-private.h               |  95 ++++--
->  include/linux/mfd/max14577.h                       |  30 ++
->  9 files changed, 704 insertions(+), 139 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/mfd/max14577.tx=
-t
->=20
-
+diff --git a/drivers/power/max14577_charger.c b/drivers/power/max14577_=
+charger.c
+index c2e87c41d853..0a2bc7277026 100644
+--- a/drivers/power/max14577_charger.c
++++ b/drivers/power/max14577_charger.c
+@@ -595,7 +595,7 @@ static const struct platform_device_id max14577_cha=
+rger_id[] =3D {
+ 	{ "max77836-charger", MAXIM_DEVICE_TYPE_MAX77836, },
+ 	{ }
+ };
+-MODULE_DEVICE_TABLE(platform, max14577_regulator_id);
++MODULE_DEVICE_TABLE(platform, max14577_charger_id);
+=20
+ static struct platform_driver max14577_charger_driver =3D {
+ 	.driver =3D {
 --=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+1.9.1
