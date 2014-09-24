@@ -1,65 +1,47 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH v5 00/11] PM / Domains: Generic OF-based support
-Date: Wed, 24 Sep 2014 16:59:57 +0300
-Message-ID: <5422CE5D.4010003@ti.com>
-References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
- <2161168.GXttgFlE1X@vostro.rjw.lan> <5422BC97.6080608@ti.com>
- <1724421.fbdO6SWIjA@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1724421.fbdO6SWIjA@vostro.rjw.lan>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Wolfram Sang <wsa@the-dreams.de>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, linux-acpi@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, devicetree@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Chris Ball <chris@printf.net>, Simon Horman <horms@verge.net.au>, Ben Dooks <ben-linux@fluff.org>, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>Ma
+From: Kumar Gala <galak@codeaurora.org>
+Subject: Re: [PATCH v6 2/5] arm: dts: qcom: Add SPM device bindings for 8974
+Date: Wed, 24 Sep 2014 09:03:35 -0500
+Message-ID: <714DF939-F8F4-4CB3-817A-16FA43E5A2C7@codeaurora.org>
+References: <1411516281-58328-1-git-send-email-lina.iyer@linaro.org> <1411516281-58328-3-git-send-email-lina.iyer@linaro.org> <5422621E.2050509@smartplayin.com> <20140924134939.GA422@ilina-mac>
+Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.11.231]:42316 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751271AbaIXODl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 10:03:41 -0400
+In-Reply-To: <20140924134939.GA422@ilina-mac>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Pramod Gurav <pramod.gurav@smartplayin.com>, sboyd@codeaurora.org, daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, khilman@linaro.org, msivasub@codeaurora.org, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org
 
-On 09/24/2014 04:51 PM, Rafael J. Wysocki wrote:
-> On Wednesday, September 24, 2014 03:44:07 PM Grygorii Strashko wrote:
->> Hi Rafael,
->>
->> On 09/22/2014 05:19 PM, Rafael J. Wysocki wrote:
->>> On Friday, September 19, 2014 11:48:49 AM Dmitry Torokhov wrote:
->>>> Hi Ulf,
->>>>
->>>> On Fri, Sep 19, 2014 at 08:27:33PM +0200, Ulf Hansson wrote:
->>>>> Changes in v5:
->>>>> 	- Converted dev_pm_domain_detach() to a void function
->>>>> 	- Added a ->detach() callback to the PM domain struct, invoked from the
->>>>> 	  dev_pm_domain_detach().
->>>>> 	- Make ACPI and genpd both assign the ->detach() callback at successfull
->>>>> 	  attachment.
->>>>> 	- The above changes made it possible to make acpi_pm_domain_detach() to
->>>>> 	  be static, added a separate patch for that.
->>>>
->>>> Thank you for making these changes. For the series:
->>>>
->>>> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->>>
->>> I've queued up this patchset for 3.18 (I fixed up the two minor issues pointed
->>> to by Geert in the process).
->>>
->>
->> Could you point me on branch where I can find these patches?
->> Also, are there any chances to have these patches  in next/linux-next.git,
->> so they will become available for testing and re-using?
->
-> It is in the bleeding-edge branch of the linux-pm.git tree at the moment,
-> which is rebased quite often, but you can use it for testing.
->
-> It should appear in linux-next tomorrow.
->
 
-Thank you.
+On Sep 24, 2014, at 8:49 AM, Lina Iyer <lina.iyer@linaro.org> wrote:
 
-Regards,
-- grygorii
+> On Wed, Sep 24 2014 at 00:14 -0600, Pramod Gurav wrote:
+>> Hi Lina,
+>> 
+>> On Wednesday 24 September 2014 05:21 AM, Lina Iyer wrote:
+>>> Add SPM device bindings for QCOM 8974 based cpus. SPM is the sub-system
+>>> power manager and controls the logic around the cores (cpu and L2).
+>>> 
+>>> Each core has an instance of SPM and controls only that core. Each cpu
+>>> SPM is configured to support WFI and SPC (standalone-power collapse).
+>>> 
+>>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>>> ---
+>>> arch/arm/boot/dts/qcom-msm8974-pm.dtsi | 69 ++++++++++++++++++++++++++++++++++
+>>> arch/arm/boot/dts/qcom-msm8974.dtsi    | 10 +++--
+>>> 2 files changed, 75 insertions(+), 4 deletions(-)
+>>> create mode 100644 arch/arm/boot/dts/qcom-msm8974-pm.dtsi
+
+please also have a dts for 8084 as part of this patch series.
+
+- k
+
+-- 
+Employee of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+
