@@ -1,50 +1,93 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v7 5/5] ARM: EXYNOS: cpuidle: allow driver usage on Exynos4x12
- SoCs
-Date: Wed, 24 Sep 2014 14:24:48 +0200
-Message-ID: <1411561488-1739-6-git-send-email-b.zolnierkie@samsung.com>
-References: <1411561488-1739-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1411561488-1739-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
+From: Thomas Abraham <ta.omasab@gmail.com>
+Subject: Re: [PATCH v10 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
+Date: Wed, 24 Sep 2014 17:56:54 +0530
+Message-ID: <CAJuA9ai8f1wut5v2iZN4YJfJ1tEWyo4WXJtjLAF9bYLj214fuA@mail.gmail.com>
+References: <1411531078-10671-1-git-send-email-thomas.ab@samsung.com>
+	<026501cfd7ca$0857a140$1906e3c0$@kernel.org>
+	<5422A635.2020607@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <5422A635.2020607@gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Kukjin Kim <kgene@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lukasz Majewski <l.majewski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Viresh Kumar <viresh.kumar@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Register cpuidle platform device on Exynos4x12 SoCs allowing EXYNOS
-cpuidle driver usage on these SoCs.
+Hi Tomasz,
 
-AFTR mode reduces power consumption on Trats2 board (Exynos4412 SoC
-with secure firmware enabled) by ~12% when EXYNOS cpuidle driver is
-enabled (in both cases the default exynos_defconfig config is used
-and CPU1-3 are offlined).
+On Wed, Sep 24, 2014 at 4:38 PM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+> On 24.09.2014 09:34, Kukjin Kim wrote:
+>> Thomas Abraham wrote:
+>>>
+>>> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+>>> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
+>>> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
+>>> driver.
+>>>
+>>> This patch series is dependent on two other patches
+>>> 1. ARM: dts: add CPU nodes for Exynos4 SoCs
+>>>    - https://lkml.org/lkml/2014/7/21/315
+>>> 2. clk: exynos4: remove duplicate div_core2 divider clock instantiation
+>>>    - http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34859.html
+>
+> I have applied 2) to Samsung clock tree.
 
-Currently Exynos4412 SoC support is limited to Trats2 board.
+Ok.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
----
-v7:
-- no changes
+>
+>>>
+>>> Thomas Abraham (6):
+>>>   clk: samsung: add infrastructure to register cpu clocks
+>>>   clk: samsung: add cpu clock configuration data and instantiate cpu clock
+>>>   ARM: dts: Exynos: add CPU OPP and regulator supply property
+>>>   ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
+>>>   cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
+>>>   clk: samsung: remove unused clock aliases and update clock flags
+>>>
+>>>  arch/arm/boot/dts/exynos4210-origen.dts         |    4 +
+>>>  arch/arm/boot/dts/exynos4210-trats.dts          |    4 +
+>>>  arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 +
+>>>  arch/arm/boot/dts/exynos4210.dtsi               |   14 +-
+>>>  arch/arm/boot/dts/exynos5250-arndale.dts        |    4 +
+>>>  arch/arm/boot/dts/exynos5250-smdk5250.dts       |    4 +
+>>>  arch/arm/boot/dts/exynos5250-snow.dts           |    4 +
+>>>  arch/arm/boot/dts/exynos5250.dtsi               |   25 ++-
+>>>  arch/arm/boot/dts/exynos5420.dtsi               |   38 +++
+>>>  arch/arm/mach-exynos/exynos.c                   |   24 ++-
+>>>  drivers/clk/samsung/Makefile                    |    2 +-
+>>>  drivers/clk/samsung/clk-cpu.c                   |  335 +++++++++++++++++++++++
+>>>  drivers/clk/samsung/clk-cpu.h                   |   91 ++++++
+>>>  drivers/clk/samsung/clk-exynos4.c               |   63 +++--
+>>>  drivers/clk/samsung/clk-exynos5250.c            |   44 +++-
+>>>  drivers/clk/samsung/clk-exynos5420.c            |   72 +++++-
+>>>  drivers/cpufreq/Kconfig.arm                     |   22 --
+>>>  drivers/cpufreq/Makefile                        |    2 -
+>>>  include/dt-bindings/clock/exynos5250.h          |    1 +
+>>>  include/dt-bindings/clock/exynos5420.h          |    2 +
+>>
+>> Looks good to me,
+>> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+>>
+>> BTW, who will handle this series? I think this is already ready for v3.18.
+>
+> I believe Viresh already acked this series too and since it does quite a
+> lot of shuffling in clock code, I'd prefer to take this through clock
+> tree, but apparently there is a dependency on patch 1), which already
+> went through another tree?
 
- arch/arm/mach-exynos/exynos.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Not yet. The v2 version of the patch does not cleanly apply and needs
+to be refreshed.
+Bartlomiej, would be posting an updated version of this patch?
 
-diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-index d57f136..2f2f7b2 100644
---- a/arch/arm/mach-exynos/exynos.c
-+++ b/arch/arm/mach-exynos/exynos.c
-@@ -319,7 +319,10 @@ static void __init exynos_dt_machine_init(void)
- 		exynos_sysram_init();
- 
- 	if (of_machine_is_compatible("samsung,exynos4210") ||
--			of_machine_is_compatible("samsung,exynos5250"))
-+	    of_machine_is_compatible("samsung,exynos4212") ||
-+	    (of_machine_is_compatible("samsung,exynos4412") &&
-+	     of_machine_is_compatible("samsung,trats2")) ||
-+	    of_machine_is_compatible("samsung,exynos5250"))
- 		platform_device_register(&exynos_cpuidle);
- 
- 	platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
--- 
-1.8.2.3
+Thanks,
+Thomas.
+
+>
+> Best regards,
+> Tomasz
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
