@@ -1,82 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 03/19] ACPI: add ACPI_TYPE_LOCAL_REFERENCE support to acpi_extract_package()
-Date: Wed, 24 Sep 2014 23:58:54 +0200
-Message-ID: <18113181.Bfj08FO0BU@vostro.rjw.lan>
-References: <1411005230-2227-1-git-send-email-rui.zhang@intel.com> <1411005230-2227-4-git-send-email-rui.zhang@intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v6 2/5] arm: dts: qcom: Add SPM device bindings for 8974
+Date: Wed, 24 Sep 2014 14:46:23 -0700
+Message-ID: <54233BAF.5080100@codeaurora.org>
+References: <1411516281-58328-1-git-send-email-lina.iyer@linaro.org> <1411516281-58328-3-git-send-email-lina.iyer@linaro.org> <5422621E.2050509@smartplayin.com> <20140924134939.GA422@ilina-mac> <5422FD8D.8080307@codeaurora.org> <20140924172345.GE422@ilina-mac>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50260 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751930AbaIXVjF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 17:39:05 -0400
-In-Reply-To: <1411005230-2227-4-git-send-email-rui.zhang@intel.com>
+Received: from smtp.codeaurora.org ([198.145.11.231]:56341 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750793AbaIXVq0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 17:46:26 -0400
+In-Reply-To: <20140924172345.GE422@ilina-mac>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org, eduardo.valentin@ti.com
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Pramod Gurav <pramod.gurav@smartplayin.com>, galak@codeaurora.org, daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, khilman@linaro.org, msivasub@codeaurora.org, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org
 
-On Thursday, September 18, 2014 09:53:34 AM Zhang Rui wrote:
-> Add ACPI_TYPE_LOCAL_REFERENCE support to acpi_extract_package(),
-> so that we can use this helper for more cases like _ART/_TRT.
-> 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+On 09/24/14 10:23, Lina Iyer wrote:
+> On Wed, Sep 24 2014 at 11:21 -0600, Stephen Boyd wrote:
+>> On 09/24/14 06:49, Lina Iyer wrote:
+>>> On Wed, Sep 24 2014 at 00:14 -0600, Pramod Gurav wrote:
+>>>> Hi Lina,
+>>>>
+>>>> On Wednesday 24 September 2014 05:21 AM, Lina Iyer wrote:
+>>>>> Add SPM device bindings for QCOM 8974 based cpus. SPM is the
+>>>>> sub-system
+>>>>> power manager and controls the logic around the cores (cpu and L2).
+>>>>>
+>>>>> Each core has an instance of SPM and controls only that core. Each
+>>>>> cpu
+>>>>> SPM is configured to support WFI and SPC (standalone-power collapse).
+>>>>>
+>>>>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>>>>> ---
+>>>>>  arch/arm/boot/dts/qcom-msm8974-pm.dtsi | 69
+>>>>> ++++++++++++++++++++++++++++++++++
+>>>>>  arch/arm/boot/dts/qcom-msm8974.dtsi    | 10 +++--
+>>>>>  2 files changed, 75 insertions(+), 4 deletions(-)
+>>>>>  create mode 100644 arch/arm/boot/dts/qcom-msm8974-pm.dtsi
+>>>>
+>>>> <snip>
+>>>>
+>>>>> +};
+>>>>> diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi
+>>>>> b/arch/arm/boot/dts/qcom-msm8974.dtsi
+>>>>> index 69dca2a..0580bc2 100644
+>>>>> --- a/arch/arm/boot/dts/qcom-msm8974.dtsi
+>>>>> +++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+>>>>> @@ -14,7 +14,7 @@
+>>>>>          #size-cells = <0>;
+>>>>>          interrupts = <1 9 0xf04>;
+>>>>>
+>>>>> -        cpu@0 {
+>>>>> +        CPU0: cpu@0 {
+>>>> Lina, Stephen boyd has sent some DT change for krait-cpufreq which
+>>>> also
+>>>> renames this node to "cpu0: cpu@0". If you both could sync up and
+>>>> agree
+>>>> on a common naming('cpu0' with caps or not caps) for this node.
+>>>>
+>>> Sure. Will work with Stephen on that.
+>>>
+>>
+>> This doesn't seem like a big deal. I imagine Kumar can resolve the
+>> conflict if the two patches merge at the same time.
+>>
+> I can use the lower case names, if thats common. I see that being used
+> for referring to <&acc> in that file, but ofcourse <&L2> exists as well.
+> Any preference?
+>
 
-ACK
+No preference. Uppercase at least matches L2 and that matches what's in
+the ePAPR so that seems nice.
 
-> ---
->  drivers/acpi/utils.c | 28 +++++++++++++++++++++++++++-
->  1 file changed, 27 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
-> index 07c8c5a..1ed7aba 100644
-> --- a/drivers/acpi/utils.c
-> +++ b/drivers/acpi/utils.c
-> @@ -149,6 +149,21 @@ acpi_extract_package(union acpi_object *package,
->  				break;
->  			}
->  			break;
-> +		case ACPI_TYPE_LOCAL_REFERENCE:
-> +			switch (format_string[i]) {
-> +			case 'R':
-> +				size_required += sizeof(void *);
-> +				tail_offset += sizeof(void *);
-> +				break;
-> +			default:
-> +				printk(KERN_WARNING PREFIX "Invalid package element"
-> +					      " [%d] got reference,"
-> +					      " expecting [%c]\n",
-> +					      i, format_string[i]);
-> +				return AE_BAD_DATA;
-> +				break;
-> +			}
-> +			break;
->  
->  		case ACPI_TYPE_PACKAGE:
->  		default:
-> @@ -247,7 +262,18 @@ acpi_extract_package(union acpi_object *package,
->  				break;
->  			}
->  			break;
-> -
-> +		case ACPI_TYPE_LOCAL_REFERENCE:
-> +			switch (format_string[i]) {
-> +			case 'R':
-> +				*(void **)head =
-> +				    (void *)element->reference.handle;
-> +				head += sizeof(void *);
-> +				break;
-> +			default:
-> +				/* Should never get here */
-> +				break;
-> +			}
-> +			break;
->  		case ACPI_TYPE_PACKAGE:
->  			/* TBD: handle nested packages... */
->  		default:
-> 
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
+
