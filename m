@@ -1,101 +1,40 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v7 3/5] amba: Don't unprepare the clocks if device driver wants
- IRQ safe runtime PM
-Date: Wed, 24 Sep 2014 15:50:10 +0200
-Message-ID: <1411566612-32277-4-git-send-email-k.kozlowski@samsung.com>
+Subject: [PATCH v7 5/5] amba: Remove unused amba_pclk_enable/disable macros
+Date: Wed, 24 Sep 2014 15:50:12 +0200
+Message-ID: <1411566612-32277-6-git-send-email-k.kozlowski@samsung.com>
 References: <1411566612-32277-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-doc-owner@vger.kernel.org>
 In-reply-to: <1411566612-32277-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-doc-owner@vger.kernel.org
 To: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-The AMBA bus driver defines runtime Power Management functions which
-disable and unprepare AMBA bus clock. This is problematic for runtime PM
-because unpreparing a clock might sleep so it is not interrupt safe.
-
-However some drivers may want to implement runtime PM functions in
-interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
-bus driver should only disable/enable the clock in runtime suspend and
-resume callbacks.
-
-Detect the device driver behavior after calling its probe function and
-store it. During runtime suspend/resume deal with clocks according to
-stored value.
+Remove the amba_pclk_enable and amba_pclk_disable macros because they
+are not used by the drivers.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/amba/bus.c       | 29 +++++++++++++++++++++++++----
- include/linux/amba/bus.h |  1 +
- 2 files changed, 26 insertions(+), 4 deletions(-)
+ include/linux/amba/bus.h | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
-index 3cf61a127ee5..e8fd5706954f 100644
---- a/drivers/amba/bus.c
-+++ b/drivers/amba/bus.c
-@@ -94,8 +94,18 @@ static int amba_pm_runtime_suspend(struct device *dev)
- 	struct amba_device *pcdev = to_amba_device(dev);
- 	int ret = pm_generic_runtime_suspend(dev);
- 
--	if (ret == 0 && dev->driver)
--		clk_disable_unprepare(pcdev->pclk);
-+	if (ret == 0 && dev->driver) {
-+		/*
-+		 * Drivers should not change pm_runtime_irq_safe()
-+		 * after probe.
-+		 */
-+		WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
-+
-+		if (pcdev->irq_safe)
-+			clk_disable(pcdev->pclk);
-+		else
-+			clk_disable_unprepare(pcdev->pclk);
-+	}
- 
- 	return ret;
- }
-@@ -106,7 +116,16 @@ static int amba_pm_runtime_resume(struct device *dev)
- 	int ret;
- 
- 	if (dev->driver) {
--		ret = clk_prepare_enable(pcdev->pclk);
-+		/*
-+		 * Drivers should not change pm_runtime_irq_safe()
-+		 * after probe.
-+		 */
-+		WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
-+
-+		if (pcdev->irq_safe)
-+			ret = clk_enable(pcdev->pclk);
-+		else
-+			ret = clk_prepare_enable(pcdev->pclk);
- 		/* Failure is probably fatal to the system, but... */
- 		if (ret)
- 			return ret;
-@@ -191,8 +210,10 @@ static int amba_probe(struct device *dev)
- 		pm_runtime_enable(dev);
- 
- 		ret = pcdrv->probe(pcdev, id);
--		if (ret == 0)
-+		if (ret == 0) {
-+			pcdev->irq_safe = pm_runtime_is_irq_safe(dev);
- 			break;
-+		}
- 
- 		pm_runtime_disable(dev);
- 		pm_runtime_set_suspended(dev);
 diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
-index bb352d0bd737..fd0c0bfa1d38 100644
+index fd0c0bfa1d38..275e4a346de7 100644
 --- a/include/linux/amba/bus.h
 +++ b/include/linux/amba/bus.h
-@@ -32,6 +32,7 @@ struct amba_device {
- 	struct clk		*pclk;
- 	unsigned int		periphid;
- 	unsigned int		irq[AMBA_NR_IRQS];
-+	unsigned int		irq_safe:1;
- };
+@@ -87,12 +87,6 @@ struct amba_device *amba_find_device(const char *, struct device *, unsigned int
+ int amba_request_regions(struct amba_device *, const char *);
+ void amba_release_regions(struct amba_device *);
  
- struct amba_driver {
+-#define amba_pclk_enable(d)	\
+-	(IS_ERR((d)->pclk) ? 0 : clk_enable((d)->pclk))
+-
+-#define amba_pclk_disable(d)	\
+-	do { if (!IS_ERR((d)->pclk)) clk_disable((d)->pclk); } while (0)
+-
+ static inline void amba_pclk_prepare(struct amba_device *dev)
+ {
+ 	clk_prepare(dev->pclk);
 -- 
 1.9.1
+
