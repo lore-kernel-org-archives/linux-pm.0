@@ -1,289 +1,95 @@
-From: Thomas Abraham <thomas.ab@samsung.com>
-Subject: [PATCH v10 3/6] ARM: dts: Exynos: add CPU OPP and regulator supply
- property
-Date: Wed, 24 Sep 2014 09:27:55 +0530
-Message-ID: <1411531078-10671-4-git-send-email-thomas.ab@samsung.com>
-References: <1411531078-10671-1-git-send-email-thomas.ab@samsung.com>
- <1411531078-10671-2-git-send-email-thomas.ab@samsung.com>
- <1411531078-10671-3-git-send-email-thomas.ab@samsung.com>
+From: Pramod Gurav <pramod.gurav@smartplayin.com>
+Subject: Re: [PATCH v6 2/5] arm: dts: qcom: Add SPM device bindings for 8974
+Date: Wed, 24 Sep 2014 11:48:06 +0530
+Message-ID: <5422621E.2050509@smartplayin.com>
+References: <1411516281-58328-1-git-send-email-lina.iyer@linaro.org> <1411516281-58328-3-git-send-email-lina.iyer@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:31454 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753409AbaIXDrV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Sep 2014 23:47:21 -0400
-In-reply-to: <1411531078-10671-3-git-send-email-thomas.ab@samsung.com>
+Received: from smtp85.ord1c.emailsrvr.com ([108.166.43.85]:42747 "EHLO
+	smtp85.ord1c.emailsrvr.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750744AbaIXGOp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 02:14:45 -0400
+In-Reply-To: <1411516281-58328-3-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, tomasz.figa@gmail.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, heiko@sntech.de, cw00.choi@samsung.com, Doug Anderson <dianders@chromium.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Andreas Faerber <afaerber@suse.de>, Sachin Kamat <sachin.kamat@linaro.org>
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: galak@codeaurora.org, sboyd@codeaurora.org, daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, khilman@linaro.org, msivasub@codeaurora.org, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org
 
-For Exynos 4210/5250/5420 based platforms, add CPU operating points and CPU
-regulator supply properties for migrating from Exynos specific cpufreq driver
-to using generic cpufreq drivers.
+Hi Lina,
 
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Doug Anderson <dianders@chromium.org>
-Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-Cc: Andreas Faerber <afaerber@suse.de>
-Cc: Sachin Kamat <sachin.kamat@linaro.org>
-Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-Reviewed-by: Andreas Farber <afaerber@suse.de>
-Tested-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-Tested-by: Chander Kashyap <k.chander@samsung.com>
----
- arch/arm/boot/dts/exynos4210-origen.dts         |    4 ++
- arch/arm/boot/dts/exynos4210-trats.dts          |    4 ++
- arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 ++
- arch/arm/boot/dts/exynos4210.dtsi               |   14 ++++++++-
- arch/arm/boot/dts/exynos5250-arndale.dts        |    4 ++
- arch/arm/boot/dts/exynos5250-smdk5250.dts       |    4 ++
- arch/arm/boot/dts/exynos5250-snow.dts           |    4 ++
- arch/arm/boot/dts/exynos5250.dtsi               |   25 ++++++++++++++-
- arch/arm/boot/dts/exynos5420.dtsi               |   38 +++++++++++++++++++++++
- 9 files changed, 99 insertions(+), 2 deletions(-)
+On Wednesday 24 September 2014 05:21 AM, Lina Iyer wrote:
+> Add SPM device bindings for QCOM 8974 based cpus. SPM is the sub-system
+> power manager and controls the logic around the cores (cpu and L2).
+> 
+> Each core has an instance of SPM and controls only that core. Each cpu
+> SPM is configured to support WFI and SPC (standalone-power collapse).
+> 
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> ---
+>  arch/arm/boot/dts/qcom-msm8974-pm.dtsi | 69 ++++++++++++++++++++++++++++++++++
+>  arch/arm/boot/dts/qcom-msm8974.dtsi    | 10 +++--
+>  2 files changed, 75 insertions(+), 4 deletions(-)
+>  create mode 100644 arch/arm/boot/dts/qcom-msm8974-pm.dtsi
 
-diff --git a/arch/arm/boot/dts/exynos4210-origen.dts b/arch/arm/boot/dts/exynos4210-origen.dts
-index f767c42..887dded 100644
---- a/arch/arm/boot/dts/exynos4210-origen.dts
-+++ b/arch/arm/boot/dts/exynos4210-origen.dts
-@@ -334,3 +334,7 @@
- 		};
- 	};
- };
-+
-+&cpu0 {
-+	cpu0-supply = <&buck1_reg>;
-+};
-diff --git a/arch/arm/boot/dts/exynos4210-trats.dts b/arch/arm/boot/dts/exynos4210-trats.dts
-index f516da9..66119dd 100644
---- a/arch/arm/boot/dts/exynos4210-trats.dts
-+++ b/arch/arm/boot/dts/exynos4210-trats.dts
-@@ -446,3 +446,7 @@
- 		};
- 	};
- };
-+
-+&cpu0 {
-+	cpu0-supply = <&varm_breg>;
-+};
-diff --git a/arch/arm/boot/dts/exynos4210-universal_c210.dts b/arch/arm/boot/dts/exynos4210-universal_c210.dts
-index d50eb3a..bf0a39c 100644
---- a/arch/arm/boot/dts/exynos4210-universal_c210.dts
-+++ b/arch/arm/boot/dts/exynos4210-universal_c210.dts
-@@ -492,3 +492,7 @@
- &mdma1 {
- 	reg = <0x12840000 0x1000>;
- };
-+
-+&cpu0 {
-+	cpu0-supply = <&vdd_arm_reg>;
-+};
-diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
-index bcc9e63..69bac07 100644
---- a/arch/arm/boot/dts/exynos4210.dtsi
-+++ b/arch/arm/boot/dts/exynos4210.dtsi
-@@ -35,10 +35,22 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 
--		cpu@900 {
-+		cpu0: cpu@900 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a9";
- 			reg = <0x900>;
-+			clocks = <&clock CLK_ARM_CLK>;
-+			clock-names = "cpu";
-+			clock-latency = <160000>;
-+
-+			operating-points = <
-+				1200000 1250000
-+				1000000 1150000
-+				800000	1075000
-+				500000	975000
-+				400000	975000
-+				200000	950000
-+			>;
- 		};
- 
- 		cpu@901 {
-diff --git a/arch/arm/boot/dts/exynos5250-arndale.dts b/arch/arm/boot/dts/exynos5250-arndale.dts
-index 3acd97e..da2b3e1 100644
---- a/arch/arm/boot/dts/exynos5250-arndale.dts
-+++ b/arch/arm/boot/dts/exynos5250-arndale.dts
-@@ -563,3 +563,7 @@
- 		};
- 	};
- };
-+
-+&cpu0 {
-+	cpu0-supply = <&buck2_reg>;
-+};
-diff --git a/arch/arm/boot/dts/exynos5250-smdk5250.dts b/arch/arm/boot/dts/exynos5250-smdk5250.dts
-index 6a0f4c0..0eedb88 100644
---- a/arch/arm/boot/dts/exynos5250-smdk5250.dts
-+++ b/arch/arm/boot/dts/exynos5250-smdk5250.dts
-@@ -406,3 +406,7 @@
- 		};
- 	};
- };
-+
-+&cpu0 {
-+	cpu0-supply = <&buck2_reg>;
-+};
-diff --git a/arch/arm/boot/dts/exynos5250-snow.dts b/arch/arm/boot/dts/exynos5250-snow.dts
-index e51fcef..f954e82 100644
---- a/arch/arm/boot/dts/exynos5250-snow.dts
-+++ b/arch/arm/boot/dts/exynos5250-snow.dts
-@@ -624,4 +624,8 @@
- 	num-cs = <1>;
- };
- 
-+&cpu0 {
-+	cpu0-supply = <&buck2_reg>;
-+};
-+
- #include "cros-ec-keyboard.dtsi"
-diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
-index f21b9aa..d4b418e 100644
---- a/arch/arm/boot/dts/exynos5250.dtsi
-+++ b/arch/arm/boot/dts/exynos5250.dtsi
-@@ -58,11 +58,34 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 
--		cpu@0 {
-+		cpu0: cpu@0 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a15";
- 			reg = <0>;
- 			clock-frequency = <1700000000>;
-+
-+			clocks = <&clock CLK_ARM_CLK>;
-+			clock-names = "cpu";
-+			clock-latency = <140000>;
-+
-+			operating-points = <
-+				1700000 1300000
-+				1600000 1250000
-+				1500000 1225000
-+				1400000 1200000
-+				1300000 1150000
-+				1200000 1125000
-+				1100000 1100000
-+				1000000 1075000
-+				 900000 1050000
-+				 800000 1025000
-+				 700000 1012500
-+				 600000 1000000
-+				 500000  975000
-+				 400000  950000
-+				 300000  937500
-+				 200000  925000
-+			>;
- 		};
- 		cpu@1 {
- 			device_type = "cpu";
-diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
-index bfe056d..912deeb 100644
---- a/arch/arm/boot/dts/exynos5420.dtsi
-+++ b/arch/arm/boot/dts/exynos5420.dtsi
-@@ -59,8 +59,26 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a15";
- 			reg = <0x0>;
-+			clocks = <&clock CLK_ARM_CLK>;
-+			clock-names = "cpu-cluster.0";
- 			clock-frequency = <1800000000>;
- 			cci-control-port = <&cci_control1>;
-+			clock-latency = <140000>;
-+
-+			operating-points = <
-+				1800000 1250000
-+				1700000 1212500
-+				1600000 1175000
-+				1500000 1137500
-+				1400000 1112500
-+				1300000 1062500
-+				1200000 1037500
-+				1100000 1012500
-+				1000000 987500
-+				 900000 962500
-+				 800000 937500
-+				 700000 912500
-+			>;
- 		};
- 
- 		cpu1: cpu@1 {
-@@ -69,6 +87,7 @@
- 			reg = <0x1>;
- 			clock-frequency = <1800000000>;
- 			cci-control-port = <&cci_control1>;
-+			clock-latency = <140000>;
- 		};
- 
- 		cpu2: cpu@2 {
-@@ -77,6 +96,7 @@
- 			reg = <0x2>;
- 			clock-frequency = <1800000000>;
- 			cci-control-port = <&cci_control1>;
-+			clock-latency = <140000>;
- 		};
- 
- 		cpu3: cpu@3 {
-@@ -85,14 +105,29 @@
- 			reg = <0x3>;
- 			clock-frequency = <1800000000>;
- 			cci-control-port = <&cci_control1>;
-+			clock-latency = <140000>;
- 		};
- 
- 		cpu4: cpu@100 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a7";
- 			reg = <0x100>;
-+			clocks = <&clock CLK_KFC_CLK>;
-+			clock-names = "cpu-cluster.1";
- 			clock-frequency = <1000000000>;
- 			cci-control-port = <&cci_control0>;
-+			clock-latency = <140000>;
-+
-+			operating-points = <
-+				1300000 1275000
-+				1200000 1212500
-+				1100000 1162500
-+				1000000 1112500
-+				 900000 1062500
-+				 800000 1025000
-+				 700000 975000
-+				 600000 937500
-+			>;
- 		};
- 
- 		cpu5: cpu@101 {
-@@ -101,6 +136,7 @@
- 			reg = <0x101>;
- 			clock-frequency = <1000000000>;
- 			cci-control-port = <&cci_control0>;
-+			clock-latency = <140000>;
- 		};
- 
- 		cpu6: cpu@102 {
-@@ -109,6 +145,7 @@
- 			reg = <0x102>;
- 			clock-frequency = <1000000000>;
- 			cci-control-port = <&cci_control0>;
-+			clock-latency = <140000>;
- 		};
- 
- 		cpu7: cpu@103 {
-@@ -117,6 +154,7 @@
- 			reg = <0x103>;
- 			clock-frequency = <1000000000>;
- 			cci-control-port = <&cci_control0>;
-+			clock-latency = <140000>;
- 		};
- 	};
- 
--- 
-1.6.6.rc2
+<snip>
 
+> +};
+> diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
+> index 69dca2a..0580bc2 100644
+> --- a/arch/arm/boot/dts/qcom-msm8974.dtsi
+> +++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+> @@ -14,7 +14,7 @@
+>  		#size-cells = <0>;
+>  		interrupts = <1 9 0xf04>;
+>  
+> -		cpu@0 {
+> +		CPU0: cpu@0 {
+Lina, Stephen boyd has sent some DT change for krait-cpufreq which also
+renames this node to "cpu0: cpu@0". If you both could sync up and agree
+on a common naming('cpu0' with caps or not caps) for this node.
+
+Best Regards
+Pramod
+
+>  			compatible = "qcom,krait";
+>  			enable-method = "qcom,kpss-acc-v2";
+>  			device_type = "cpu";
+> @@ -23,7 +23,7 @@
+>  			qcom,acc = <&acc0>;
+>  		};
+>  
+> -		cpu@1 {
+> +		CPU1: cpu@1 {
+Ditto
+>  			compatible = "qcom,krait";
+>  			enable-method = "qcom,kpss-acc-v2";
+>  			device_type = "cpu";
+> @@ -32,7 +32,7 @@
+>  			qcom,acc = <&acc1>;
+>  		};
+>  
+> -		cpu@2 {
+> +		CPU2: cpu@2 {
+Ditto
+>  			compatible = "qcom,krait";
+>  			enable-method = "qcom,kpss-acc-v2";
+>  			device_type = "cpu";
+> @@ -41,7 +41,7 @@
+>  			qcom,acc = <&acc2>;
+>  		};
+>  
+> -		cpu@3 {
+> +		CPU3: cpu@3 {
+Ditto
+>  			compatible = "qcom,krait";
+>  			enable-method = "qcom,kpss-acc-v2";
+>  			device_type = "cpu";
+> @@ -238,3 +238,5 @@
+>  		};
+>  	};
+>  };
+> +
+> +#include "qcom-msm8974-pm.dtsi"
+> 
