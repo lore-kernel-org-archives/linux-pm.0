@@ -1,78 +1,84 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH v10 0/6] cpufreq: use generic cpufreq drivers for exynos
- platforms
-Date: Wed, 24 Sep 2014 13:08:37 +0200
-Message-ID: <5422A635.2020607@gmail.com>
-References: <1411531078-10671-1-git-send-email-thomas.ab@samsung.com> <026501cfd7ca$0857a140$1906e3c0$@kernel.org>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v7 0/8] charger/mfd: max14577: Add support for MAX77836
+Date: Wed, 24 Sep 2014 12:55:49 +0100
+Message-ID: <20140924115549.GL19999@lee--X1>
+References: <1411472603-11821-1-git-send-email-k.kozlowski@samsung.com>
+ <20140924100325.GB19999@lee--X1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f174.google.com ([74.125.82.174]:39396 "EHLO
-	mail-we0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751281AbaIXLIk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 07:08:40 -0400
-In-Reply-To: <026501cfd7ca$0857a140$1906e3c0$@kernel.org>
+Received: from mail-ie0-f182.google.com ([209.85.223.182]:35175 "EHLO
+	mail-ie0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751284AbaIXLz4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Sep 2014 07:55:56 -0400
+Received: by mail-ie0-f182.google.com with SMTP id tp5so6097889ieb.13
+        for <linux-pm@vger.kernel.org>; Wed, 24 Sep 2014 04:55:55 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20140924100325.GB19999@lee--X1>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kukjin Kim <kgene@kernel.org>, 'Thomas Abraham' <thomas.ab@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, cw00.choi@samsung.com
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, devicetree@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 
-On 24.09.2014 09:34, Kukjin Kim wrote:
-> Thomas Abraham wrote:
->>
->> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
->> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
->> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
->> driver.
->>
->> This patch series is dependent on two other patches
->> 1. ARM: dts: add CPU nodes for Exynos4 SoCs
->>    - https://lkml.org/lkml/2014/7/21/315
->> 2. clk: exynos4: remove duplicate div_core2 divider clock instantiation
->>    - http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34859.html
+Mark, Sebastian,
 
-I have applied 2) to Samsung clock tree.
+Please don't pull this in yet!  There is an issue with the set.
 
->>
->> Thomas Abraham (6):
->>   clk: samsung: add infrastructure to register cpu clocks
->>   clk: samsung: add cpu clock configuration data and instantiate cpu clock
->>   ARM: dts: Exynos: add CPU OPP and regulator supply property
->>   ARM: Exynos: switch to using generic cpufreq driver for Exynos4210/5250/5420
->>   cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
->>   clk: samsung: remove unused clock aliases and update clock flags
->>
->>  arch/arm/boot/dts/exynos4210-origen.dts         |    4 +
->>  arch/arm/boot/dts/exynos4210-trats.dts          |    4 +
->>  arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 +
->>  arch/arm/boot/dts/exynos4210.dtsi               |   14 +-
->>  arch/arm/boot/dts/exynos5250-arndale.dts        |    4 +
->>  arch/arm/boot/dts/exynos5250-smdk5250.dts       |    4 +
->>  arch/arm/boot/dts/exynos5250-snow.dts           |    4 +
->>  arch/arm/boot/dts/exynos5250.dtsi               |   25 ++-
->>  arch/arm/boot/dts/exynos5420.dtsi               |   38 +++
->>  arch/arm/mach-exynos/exynos.c                   |   24 ++-
->>  drivers/clk/samsung/Makefile                    |    2 +-
->>  drivers/clk/samsung/clk-cpu.c                   |  335 +++++++++++++++++++++++
->>  drivers/clk/samsung/clk-cpu.h                   |   91 ++++++
->>  drivers/clk/samsung/clk-exynos4.c               |   63 +++--
->>  drivers/clk/samsung/clk-exynos5250.c            |   44 +++-
->>  drivers/clk/samsung/clk-exynos5420.c            |   72 +++++-
->>  drivers/cpufreq/Kconfig.arm                     |   22 --
->>  drivers/cpufreq/Makefile                        |    2 -
->>  include/dt-bindings/clock/exynos5250.h          |    1 +
->>  include/dt-bindings/clock/exynos5420.h          |    2 +
-> 
-> Looks good to me,
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-> 
-> BTW, who will handle this series? I think this is already ready for v3.18.
+I'll reply to this mail once it's been rectified.
 
-I believe Viresh already acked this series too and since it does quite a
-lot of shuffling in clock code, I'd prefer to take this through clock
-tree, but apparently there is a dependency on patch 1), which already
-went through another tree?
+Kind regards,
+Lee
 
-Best regards,
-Tomasz
+> The following changes since commit a497c3ba1d97fc69c1e78e7b96435ba8c2=
+cb42ee:
+>=20
+>   Linux 3.16-rc2 (2014-06-21 19:02:54 -1000)
+>=20
+> are available in the git repository at:
+>=20
+>   git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git tags/mfd-=
+regulator-power-v3.17
+>=20
+> for you to fetch changes up to f453d80f908254293bf453a2d7e68974e2abc2=
+af:
+>=20
+>   Documentation: charger: max14577: Document exported sysfs entry (20=
+14-09-24 10:58:07 +0100)
+>=20
+> ----------------------------------------------------------------
+> Immutable branch between MFD, Regulator and Power due for v3.17
+>=20
+> ----------------------------------------------------------------
+> Krzysztof Kozlowski (8):
+>       mfd: max14577: Add defines for MAX77836 charger
+>       mfd: max14577: Map charger device to its own of_node
+>       charger: max14577: Add support for MAX77836 charger
+>       regulator/mfd: max14577: Export symbols for calculating charger=
+ current
+>       charger: max14577: Configure battery-dependent settings from DT=
+S and sysfs
+>       power: max17040: Add ID for MAX77836 Fuel Gauge block
+>       devicetree: mfd: max14577: Add device tree bindings document
+>       Documentation: charger: max14577: Document exported sysfs entry
+>=20
+>  Documentation/ABI/testing/sysfs-class-power        |  14 +
+>  Documentation/devicetree/bindings/mfd/max14577.txt | 146 ++++++++
+>  drivers/mfd/max14577.c                             | 100 +++++-
+>  drivers/power/Kconfig                              |   5 +-
+>  drivers/power/max14577_charger.c                   | 370 +++++++++++=
+++++++++--
+>  drivers/power/max17040_battery.c                   |   3 +-
+>  drivers/regulator/max14577.c                       |  80 +----
+>  include/linux/mfd/max14577-private.h               |  95 ++++--
+>  include/linux/mfd/max14577.h                       |  30 ++
+>  9 files changed, 704 insertions(+), 139 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/max14577.tx=
+t
+>=20
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
