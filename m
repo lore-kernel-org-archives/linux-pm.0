@@ -1,41 +1,42 @@
 From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH/RFC v2 02/12] PM / Domains: Add DT bindings for PM QoS device latencies
-Date: Thu, 25 Sep 2014 14:31:40 -0700
-Message-ID: <7heguzbd4z.fsf@deeprootsystems.com>
+Subject: Re: [PATCH/RFC v2 04/12] PM / Domains: Add genpd attach/detach callbacks
+Date: Thu, 25 Sep 2014 14:33:55 -0700
+Message-ID: <7h61gbbd18.fsf@deeprootsystems.com>
 References: <1410893339-6361-1-git-send-email-geert+renesas@glider.be>
-	<1410893339-6361-3-git-send-email-geert+renesas@glider.be>
+	<1410893339-6361-5-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:42727 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751595AbaIYVbm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Sep 2014 17:31:42 -0400
-In-Reply-To: <1410893339-6361-3-git-send-email-geert+renesas@glider.be> (Geert
-	Uytterhoeven's message of "Tue, 16 Sep 2014 20:48:49 +0200")
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1410893339-6361-5-git-send-email-geert+renesas@glider.be> (Geert
+	Uytterhoeven's message of "Tue, 16 Sep 2014 20:48:51 +0200")
+Sender: linux-sh-owner@vger.kernel.org
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 Geert Uytterhoeven <geert+renesas@glider.be> writes:
 
-> PM QoS device start/stop and save/restore state latencies are more or
-> less properties of the hardware.
-> In legacy code, they're specified from platform code.
-> On DT platforms, their values should come from DT.
+> While a PM domain can enable PM runtime management of its devices' module
+> clocks by setting
+>
+> 	genpd->dev_ops.stop = pm_clk_suspend;
+> 	genpd->dev_ops.start = pm_clk_resume;
+>
+> this also requires registering the clocks with the pm_clk subsystem.
+> In the legacy case, this is handled by the platform code, after
+> attaching the device to its PM domain.
+>
+> When the devices are instantiated from DT, devices are attached to their
+> PM domains by generic code, leaving no method for the platform-specific
+> PM domain code to register their clocks.
+>
+> Add two callbacks, allowing a PM domain to perform platform-specific
+> tasks when a device is attached to or detached from a PM domain.
 >
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> Should these properties be called "linux,*-latency"?
 
-Hmm, the start/stop latencies are clearly properties of the hardware,
-but the save/restore latencies seem to be a function of the driver.
-e.g., some drivers may keep a shadow copy of their registers in memory
-so the save time is minimized.
+Nice, I like this approach!
 
-I don't have too strong of an opinion on this, but probably the drivers
-should just add their own values to the start/stop latencies to add the
-linux specific overhead.
+Acked-by: Kevin Hilman <khilman@linaro.org>
 
 Kevin
