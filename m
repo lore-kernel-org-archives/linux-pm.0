@@ -1,33 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / Domains: Remove legacy API for adding devices through DT
-Date: Fri, 26 Sep 2014 01:38:49 +0200
-Message-ID: <2421607.ZNPMXALrer@vostro.rjw.lan>
-References: <1411660199-2022-1-git-send-email-ulf.hansson@linaro.org> <7hppej9ws2.fsf@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [REPOST PATCH v4 1/2] PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
+Date: Fri, 26 Sep 2014 01:51:14 +0200
+Message-ID: <2373913.b8GhYem2Rt@vostro.rjw.lan>
+References: <1409759373-22696-1-git-send-email-tomeu.vizoso@collabora.com> <1960419.9oqpSxvdev@vostro.rjw.lan> <CAAObsKC0PcfBTJv8zZYUiys4NxvS=JMd3jjedUam5oZ4tNLwhA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53238 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751708AbaIYXTA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 19:19:00 -0400
-In-Reply-To: <7hppej9ws2.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAAObsKC0PcfBTJv8zZYUiys4NxvS=JMd3jjedUam5oZ4tNLwhA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Terje =?ISO-8859-1?Q?Bergstr=F6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Javier Martinez Canillas <javier.martinez-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>
 
-On Thursday, September 25, 2014 03:10:21 PM Kevin Hilman wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
-> 
-> > There are no active clients of the legacy API and we now also have a
-> > better way to handle genpd DT support. So let's remove the legacy API.
+On Wednesday, September 24, 2014 03:31:55 PM Tomeu Vizoso wrote:
+> On 24 September 2014 15:32, Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> wrote:
+> > On Wednesday, September 24, 2014 10:42:13 AM Tomeu Vizoso wrote:
+> >> On 14 September 2014 19:06, Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> wrote:
+> >> > On Friday, September 12, 2014 11:11:25 AM Tomeu Vizoso wrote:
+> >> >> On 3 September 2014 17:49, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org> wrote:
+> >> >> > Also adds a class type PM_QOS_SUM that aggregates the values by summing them.
+> >> >> >
+> >> >> > It can be used by memory controllers to calculate the optimum clock frequency
+> >> >> > based on the bandwidth needs of the different memory clients.
+> >> >> >
+> >> >> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+> >> >> > Acked-by: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+> >> >>
+> >> >> Hi Rafael,
+> >> >>
+> >> >> will you take this one for 3.18?
+> >> >
+> >> > Quite likely, but I'm traveling now, so I'll do that after I'm back home
+> >> > in a few days.  I'll write to you if there are any problems.
+> >>
+> >> Don't want to be annoying, but thought I might ping you just in case
+> >> this fell through the cracks.
 > >
-> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > No, it didn't.
+> >
+> > I'm wondering about patch [2/2], though.  I'm assuming that you'll push you
+> > later through the Tegra DRM driver, right?
 > 
-> Acked-by: Kevin Hilman <khilman@linaro.org>
+> Yes, that was Stephen's suggestion:
+> 
+> https://lkml.org/lkml/2014/8/25/439
 
-I'vew queued this up for 3.18, but the ACK didn't make it.
+OK, patch [1/2] queued up for 3.18, thanks!
 
 -- 
 I speak only for myself.
