@@ -1,18 +1,18 @@
 From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [RFC PATCH 2/4] ARM: keystone: pm: switch to use generic pm domains
-Date: Thu, 25 Sep 2014 15:23:10 -0700
-Message-ID: <7hlhp79w6p.fsf@deeprootsystems.com>
+Subject: Re: [RFC PATCH 4/4] ARM: dts: k2hk-evm: add pm domains for net, qmss and knav_dmas
+Date: Thu, 25 Sep 2014 15:27:30 -0700
+Message-ID: <7hd2aj9vzh.fsf@deeprootsystems.com>
 References: <1411657537-25238-1-git-send-email-grygorii.strashko@ti.com>
-	<1411657537-25238-3-git-send-email-grygorii.strashko@ti.com>
+	<1411657537-25238-5-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:45192 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.19.201]:45423 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752247AbaIYWXM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Sep 2014 18:23:12 -0400
-In-Reply-To: <1411657537-25238-3-git-send-email-grygorii.strashko@ti.com>
-	(Grygorii Strashko's message of "Thu, 25 Sep 2014 18:05:35 +0300")
+	id S1751772AbaIYW1c (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 25 Sep 2014 18:27:32 -0400
+In-Reply-To: <1411657537-25238-5-git-send-email-grygorii.strashko@ti.com>
+	(Grygorii Strashko's message of "Thu, 25 Sep 2014 18:05:37 +0300")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Grygorii Strashko <grygorii.strashko@ti.com>
@@ -20,66 +20,46 @@ Cc: santosh.shilimkar@ti.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uyt
 
 Grygorii Strashko <grygorii.strashko@ti.com> writes:
 
-> This patch switches Keystone 2 PM code to use Generic PM domains
-> instead of PM  clock domains because of the lack of DT support
-> for the last.
->
-> Keystone 2 PM domain should be specified per device for which
-> Runtime PM has to be enabled and handles the list of functional clocks
-> to enable/disable device.
->
-> Example:
->  qmss_domain: qmss_pm_controller {
-> 	compatible = "ti,keystone-pm-controller";
-> 	clocks = <&chipclk13>;
-> 	#power-domain-cells = <0>;
->  };
->
->  qmss: qmss@2a40000 {
-> 	compatible = "ti,keystone-navigator-qmss";
-> 	...
-> 	power-domains = <&qmss_domain>;
+> Add Keystone PM domains nodes for NetCP, NetCPx, QMSS, KNAV-DMA
+> devices.
 >
 > Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
-
-[...]
-
-> +static int keystone_pm_domain_power_off(struct generic_pm_domain *genpd)
-> +{
-> +	int ret;
-> +	struct keystone_domain *dm = container_of(genpd,
-> +						  struct keystone_domain,
-> +						  base);
+> ---
+>  arch/arm/boot/dts/k2hk-evm.dts | 31 +++++++++++++++++++++++++++++++
+>  1 file changed, 31 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/k2hk-evm.dts b/arch/arm/boot/dts/k2hk-evm.dts
+> index 91371f7..a7b468c 100644
+> --- a/arch/arm/boot/dts/k2hk-evm.dts
+> +++ b/arch/arm/boot/dts/k2hk-evm.dts
+> @@ -58,6 +58,13 @@
+>  				clock-output-names = "refclk-ddr3b";
+>  			};
+>  		};
 > +
-> +	/* Enable reset clocks for all devices in the PU domain */
+> +		qmss_domain: qmss_pm_controller {
+> +			compatible = "ti,keystone-gpc";
+> +			clocks = <&chipclk13>;
+> +			#power-domain-cells = <0>;
+> +		};
 
-This says enable clocks...
+Hmm, I'm still a bit confused by what you're attempting to do here.
+Unless I'm missing someting, clocks are properties of the device, not
+the pm-domain...
 
-> +	ret = pm_clk_suspend(dm->dev);
+>  		qmss: qmss@2a40000 {
+>  			compatible = "ti,keystone-navigator-qmss";
+>  			dma-coherent;
+> @@ -65,6 +72,8 @@
+>  			#size-cells = <1>;
+>  			clocks = <&chipclk13>;
+>  			ranges;
+> +			power-domains = <&qmss_domain>;
 
-...but this calls clk_disable().
+...  Also, each of the pm domains is duplicating the list of clocks from
+the device node, so I'm not sure what this is accomplishing.
 
-> +	if (ret)
-> +		dev_err(dm->dev, "can't turn off clocks %d\n", ret);
-> +
-> +	return ret;
-> +}
-> +
-> +static int keystone_pm_domain_power_on(struct generic_pm_domain *genpd)
-> +{
-> +	int ret;
-> +	struct keystone_domain *dm = container_of(genpd,
-> +						  struct keystone_domain,
-> +						  base);
-> +
-> +	/* Disable reset clocks for all devices in the PU domain */
-
-And this says disable clocks...
-
-> +	ret = pm_clk_resume(dm->dev);
-
-...but this calls clk_enable().
-
--ECONFUSED.
+Why not just have a single, more generic power domain that gets the list
+of clocks from the device node.
 
 Kevin
