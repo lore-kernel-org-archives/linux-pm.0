@@ -1,73 +1,110 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH v5 00/11] PM / Domains: Generic OF-based support
-Date: Thu, 25 Sep 2014 13:21:24 +0200
-Message-ID: <20140925112122.GA22753@ulmo>
-References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="DocE+STaALJfprDB"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>, Dm
+From: Pramod Gurav <pramod.gurav@smartplayin.com>
+Subject: [PATCH v4] power: reset: use restart_notifier mechanism for msm-poweroff
+Date: Thu, 25 Sep 2014 17:03:51 +0530
+Message-ID: <1411644831-2931-1-git-send-email-pramod.gurav@smartplayin.com>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+Cc: Pramod Gurav <pramod.gurav@smartplayin.com>, Guenter Roeck <linux@roeck-us.net>, Josh Cartwright <joshc@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+This change replaces use of arm_pm_restart with recently introduced
+reset mechanism in Linux kernel called restart_notifier.
 
---DocE+STaALJfprDB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Choosing priority 128, which is default priority, as according to 
+documentation, this mechanism is sufficient to restart the entire system.
 
-I just noticed these patches because they conflicted with some of the
-local patches I had to add a very similar framework. One of the reasons
-why I hadn't posted these publicly yet is because the platform where I
-want to use this (Tegra) is somewhat quirky when it comes to power
-domains.
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Josh Cartwright <joshc@codeaurora.org>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-pm@vger.kernel.org
 
-On Tegra these domains are called power gates and they currently have
-their own API. We've been looking at migrating things over to some
-generic framework for some time and PM domains do seem like a good fit.
-However one of the quirks regarding these domains on Tegra is that a
-fixed sequence exists that needs to be respected when enabling or
-disabling a power partition. The exact sequence can be found in the
-drivers/soc/tegra/pmc.c driver's tegra_powergate_sequence_power_up()
-function. Essentially we need to call into the clock and reset drivers
-at very specific moments during the operations that the PMC does.
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
+---
+Why reset handler in pinctrl-msm wont collide with reset
+in poweroff-msm.c in this patch:
 
-One solution to this would be to make the needed clocks and resets
-available to the power domain driver via DT, but then we have the
-problem that two drivers would be controlling the same resources. For
-example drivers could still want to disable the clock for more fine-
-grained power management. Furthermore for some devices it may turn out
-that turning the domain off and on introduces too much latency to be
-useful.
+In case of apq8064, the ps_hold register region is owned by
+pinctrl hence the reset is implemented in pinctrl driver as
+the region is already mapped there.
+Whereas ps_hold register region in apq8074 are moved to its 
+own region. So, for apq8074 there is no need for ps_hold to
+be configured/muxed in pinctrl and Josh's changes wont execute.
+Hence msm-poweroff wil be the default reset as 128 in the 
+default priority.
 
-Does anyone have any better ideas on how to make that work with this
-generic PM domain framework? Or is Tegra just too special to be a good
-fit?
+Tested on Dragonboard APQ8074
 
-Thierry
+Changes since v3:
+- Updated Commit message about default priority chosen and how ps_hold
+  in a and b family are different.
 
---DocE+STaALJfprDB
-Content-Type: application/pgp-signature
+Changes since v2:
+- Removed unwanted header file and added linux/pm.h
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Changes since v1:
+- Initialized restart_nb with its declaration
+- Removed return check for register_restart_handler as it always
+  returns 0 as per Guenter's suggestion to Josh's similar patch.
+  This takes care of Guenter's comments on error logs and NULL
+  initialization of restart_nb.notifier_call.
+---
+ drivers/power/reset/msm-poweroff.c |   20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
-iQIcBAEBAgAGBQJUI/qyAAoJEN0jrNd/PrOhhQYQAKj4ChY1io8nNFaZnX51r2fl
-qsRhAHbpjBN57qi+hDlrZ63/hyIr1OENDurHSNh2RF7pT8y50w9ldP6YEkcntzbH
-ufi8IGf/NMaz7tz64TGGO7GRavXdMpq9ki523glCMBCISBdGltTpHtUFatpKBqSY
-znhzXUN52RHG4FW3CCaFVhW6PDgkuuNdtFPLUHPU02+7B9nE3MSYI1xqNtxw4zJu
-UV9nnnql88FZ4TRUbtEEy39D1HXNUbGKEnzC3p7y5H4jfwSNNcwKVoTt7p69o46j
-9FKacQWG0MRiy8Hfgf6/8/TXdFbsCm0Grj2I6N10YHAFzWqoHWSAe1wrUKb/Y0iN
-/NxCBzqnsju2uCzE6RinrAyc1zZcpiTl39DGR++IjejD2L5jGGE3DX5vK3XGJCk3
-63PXCaYi+9ZFBKkchhglw1m9pl6OKZDkFJXtnCIpZuPMl+Cte4pD2xM7f3m+c+Za
-IJHsgtnIZpY1kbxYMgXM7tq4g1l1UX+suMxfZAzHxeVGH/7/73lfqQ7hA3UtzxM/
-3iV+cYD3gHBxBKAFfnm968y0uCFakrK3C+4sePGMfKOva5quKkkp/d+vOSBc2zdd
-hXdGYJ4gxEJPQK0ifbUNu/NMRgTuaFgqADJyIvs5TsKueZqz6WICmOQjgt+KKQJB
-LOFMT3PsJ2VDcQ9ijtaE
-=IKvD
------END PGP SIGNATURE-----
-
---DocE+STaALJfprDB--
+diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
+index 774f9a3..4702efd 100644
+--- a/drivers/power/reset/msm-poweroff.c
++++ b/drivers/power/reset/msm-poweroff.c
+@@ -20,21 +20,27 @@
+ #include <linux/platform_device.h>
+ #include <linux/module.h>
+ #include <linux/reboot.h>
+-
+-#include <asm/system_misc.h>
++#include <linux/pm.h>
+ 
+ static void __iomem *msm_ps_hold;
+-
+-static void do_msm_restart(enum reboot_mode reboot_mode, const char *cmd)
++static int do_msm_restart(struct notifier_block *nb, unsigned long action,
++			   void *data)
+ {
+ 	writel(0, msm_ps_hold);
+ 	mdelay(10000);
++
++	return NOTIFY_DONE;
+ }
+ 
++static struct notifier_block restart_nb = {
++	.notifier_call = do_msm_restart,
++	.priority = 128,
++};
++
+ static void do_msm_poweroff(void)
+ {
+ 	/* TODO: Add poweroff capability */
+-	do_msm_restart(REBOOT_HARD, NULL);
++	do_msm_restart(&restart_nb, 0, NULL);
+ }
+ 
+ static int msm_restart_probe(struct platform_device *pdev)
+@@ -47,8 +53,10 @@ static int msm_restart_probe(struct platform_device *pdev)
+ 	if (IS_ERR(msm_ps_hold))
+ 		return PTR_ERR(msm_ps_hold);
+ 
++	register_restart_handler(&restart_nb);
++
+ 	pm_power_off = do_msm_poweroff;
+-	arm_pm_restart = do_msm_restart;
++
+ 	return 0;
+ }
+ 
+-- 
+1.7.9.5
