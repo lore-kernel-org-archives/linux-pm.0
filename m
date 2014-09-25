@@ -1,103 +1,112 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [GIT PULL] PM / AVS changes for v3.18 - v2
-Date: Thu, 25 Sep 2014 22:42:37 +0200
-Message-ID: <38173516.KG4f94aNi3@vostro.rjw.lan>
-References: <7ha95nikqh.fsf@linaro.org>
+Subject: Re: [GIT PULL] cpuidle ARM new material for 3.18
+Date: Thu, 25 Sep 2014 22:44:12 +0200
+Message-ID: <3265300.Xd1zHC1T4i@vostro.rjw.lan>
+References: <5424063E.4020500@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64626 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:51260 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751307AbaIYUWr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 16:22:47 -0400
-In-Reply-To: <7ha95nikqh.fsf@linaro.org>
+	with SMTP id S1750889AbaIYUYW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 16:24:22 -0400
+In-Reply-To: <5424063E.4020500@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, nm@ti.com, dianders@chromium.org, heiko@sntech.de, broonie@kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Kevin Hilman <khilman@linaro.org>
 
-On Thursday, September 25, 2014 12:05:42 PM Kevin Hilman wrote:
+On Thursday, September 25, 2014 02:10:38 PM Daniel Lezcano wrote:
+> 
+> [resent because of the missing Cc]
+> 
 > Hi Rafael,
->=20
-> The first pull request was missing a dependency on a feature that wen=
-t
-> in through Mark Brown's regulator tree, so it wouldn't actually compi=
-le
-> properly by itself.  This version pulls in that topic branch from Mar=
-ks
-> tree (topic/voltage-ev branch, already part of -next), and now compil=
-es fine.
+> 
+> this pull request contains the following changes:
+> 
+>   * Lorenzo Pieralisi implemented a framework to initialize the ARM 
+> cpuidle drivers with the DT. As an example, it provided a couple of 
+> drivers using it: arm64 and big little. The former one is a new driver 
+> while the latter is a change. There was also a patch for Exynos allowing 
+> to use this framework but as it depends on a change in Samsung's tree, I 
+> postponed this patch until the change is visible after the merge. The 
+> set of changes depends on some other changes made in the ARM64 tree, for 
+> this reason a shared branch is used. This is why there is a merge from 
+> arm64 in my pull request. I believe we already used this procedure.
+> 
+>   * Kevin Hilman added the compatible string for the exynos 5800 in the DT
 
 Pulled, thanks!
 
-I'll push it to Linus after the Mark's material has been merged to avoi=
-d
-git log confusion.
+I'd appreciate earlier pull requests in the future, though.
 
 Rafael
 
 
-> The following changes since commit 7d1311b93e58ed55f3a31cc8f94c4b8fe9=
-88a2b9:
->=20
->   Linux 3.17-rc1 (2014-08-16 10:40:26 -0600)
->=20
+> The following changes since commit 0f33be009b89d2268e94194dc4fd01a7851b6d51:
+> 
+>    Linux 3.17-rc6 (2014-09-21 15:43:02 -0700)
+> 
 > are available in the git repository at:
->=20
->   git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux.git tag=
-s/avs-for-3.18
->=20
-> for you to fetch changes up to cd8caa18deff6d2d87a4e3161b4dd8c6da3c4f=
-38:
->=20
->   Merge branch 'topic/voltage-ev' of git://git.kernel.org/pub/scm/lin=
-ux/kernel/git/broonie/regulator into avs-next (2014-09-25 09:57:57 -070=
-0)
->=20
+> 
+>    https://git.linaro.org/people/daniel.lezcano/linux.git cpuidle/3.18
+> 
+> for you to fetch changes up to d2e5c871ed8a250f7ee1fe34dd52ed5757363fba:
+> 
+>    drivers: cpuidle: initialize big.LITTLE driver through DT (2014-09-25 
+> 10:52:21 +0200)
+> 
 > ----------------------------------------------------------------
-> PM / AVS changes for v3.18
->=20
-> - Add new driver for Rockchip IO voltage domains
-> - update MAINTAINERS to reflect maintenance of drivers/power/avs/*
->=20
-> ----------------------------------------------------------------
-> Heiko St=C3=BCbner (2):
->       regulator: core: Add REGULATOR_EVENT_PRE_VOLTAGE_CHANGE (and AB=
-ORT)
->       PM / AVS: rockchip-io: add driver handling Rockchip io domains
->=20
-> Kevin Hilman (2):
->       MAINTAINERS: update entry for drivers/power/avs
->       Merge branch 'topic/voltage-ev' of git://git.kernel.org/.../bro=
-onie/regulator into avs-next
->=20
->  Documentation/devicetree/bindings/power/rockchip-io-domain.txt |  83=
- +++++++++++++++++++
->  MAINTAINERS                                                    |   4=
- +-
->  drivers/power/avs/Kconfig                                      |   8=
- ++
->  drivers/power/avs/Makefile                                     |   1=
- +
->  drivers/power/avs/rockchip-io-domain.c                         | 351=
- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
-+++++++++
->  drivers/regulator/core.c                                       |  63=
- +++++++++++++--
->  include/linux/regulator/consumer.h                             |  20=
- +++++
->  7 files changed, 521 insertions(+), 9 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/power/rockchip-=
-io-domain.txt
->  create mode 100644 drivers/power/avs/rockchip-io-domain.c
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Daniel Lezcano (1):
+>        Merge branch 'for-next/cpuidle' of 
+> git://git.kernel.org/.../arm64/linux into cpuidle/3.18
+> 
+> Kevin Hilman (1):
+>        cpuidle: big.LITTLE: add Exynos5800 compatible string
+> 
+> Lorenzo Pieralisi (7):
+>        Documentation: arm: define DT idle states bindings
+>        arm64: kernel: refactor the CPU suspend API for retention states
+>        arm64: kernel: introduce cpu_init_idle CPU operation
+>        arm64: add PSCI CPU_SUSPEND based cpu_suspend support
+>        drivers: cpuidle: implement DT based idle states infrastructure
+>        drivers: cpuidle: CPU idle ARM64 driver
+>        drivers: cpuidle: initialize big.LITTLE driver through DT
+> 
+>   Documentation/devicetree/bindings/arm/cpus.txt     |   8 +
+>   .../devicetree/bindings/arm/idle-states.txt        | 679 
+> +++++++++++++++++++++
+>   Documentation/devicetree/bindings/arm/psci.txt     |  14 +-
+>   arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts         |  23 +
+>   arch/arm64/include/asm/cpu_ops.h                   |   3 +
+>   arch/arm64/include/asm/cpuidle.h                   |  13 +
+>   arch/arm64/include/asm/suspend.h                   |   1 +
+>   arch/arm64/kernel/Makefile                         |   1 +
+>   arch/arm64/kernel/cpuidle.c                        |  31 +
+>   arch/arm64/kernel/psci.c                           | 104 ++++
+>   arch/arm64/kernel/sleep.S                          |  47 +-
+>   arch/arm64/kernel/suspend.c                        |  48 +-
+>   drivers/cpuidle/Kconfig                            |   8 +
+>   drivers/cpuidle/Kconfig.arm                        |   1 +
+>   drivers/cpuidle/Kconfig.arm64                      |  14 +
+>   drivers/cpuidle/Makefile                           |   5 +
+>   drivers/cpuidle/cpuidle-arm64.c                    | 133 ++++
+>   drivers/cpuidle/cpuidle-big_little.c               |  20 +
+>   drivers/cpuidle/dt_idle_states.c                   | 213 +++++++
+>   drivers/cpuidle/dt_idle_states.h                   |   7 +
+>   20 files changed, 1340 insertions(+), 33 deletions(-)
+>   create mode 100644 Documentation/devicetree/bindings/arm/idle-states.txt
+>   create mode 100644 arch/arm64/include/asm/cpuidle.h
+>   create mode 100644 arch/arm64/kernel/cpuidle.c
+>   create mode 100644 drivers/cpuidle/Kconfig.arm64
+>   create mode 100644 drivers/cpuidle/cpuidle-arm64.c
+>   create mode 100644 drivers/cpuidle/dt_idle_states.c
+>   create mode 100644 drivers/cpuidle/dt_idle_states.h
+> 
+> 
+> 
 
---=20
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
