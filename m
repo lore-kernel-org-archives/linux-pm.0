@@ -1,63 +1,68 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v7 1/5] PM / Runtime: Add getter for quering the IRQ safe option
-Date: Thu, 25 Sep 2014 09:57:52 +0200
-Message-ID: <CAPDyKFqcpTjxVB0VsWPNaAbJ-1HNzmKuCesmr8x=HY1_5mQXTg@mail.gmail.com>
-References: <20140924175302.GB1231@amd>
-	<Pine.LNX.4.44L0.1409241544070.1580-100000@iolanthe.rowland.org>
-	<20140924195222.GB5182@n2100.arm.linux.org.uk>
+Subject: Re: [PATCH 01/27] PM: Add helper pm_runtime_last_busy_and_autosuspend()
+Date: Thu, 25 Sep 2014 10:13:55 +0200
+Message-ID: <CAPDyKFpcUPkx5-YCbjKBCLA7MrGoq_szVLWv6B+AQfU8aJBJ4A@mail.gmail.com>
+References: <1411575342-31048-1-git-send-email-vinod.koul@intel.com>
+	<1411575342-31048-2-git-send-email-vinod.koul@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <20140924195222.GB5182@n2100.arm.linux.org.uk>
-Sender: linux-doc-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Randy Dunlap <rdunlap@infradead.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f53.google.com ([209.85.216.53]:51420 "EHLO
+	mail-qa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbaIYIN4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 04:13:56 -0400
+Received: by mail-qa0-f53.google.com with SMTP id cm18so4262552qab.12
+        for <linux-pm@vger.kernel.org>; Thu, 25 Sep 2014 01:13:55 -0700 (PDT)
+In-Reply-To: <1411575342-31048-2-git-send-email-vinod.koul@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vinod Koul <vinod.koul@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, subhransu.s.prusty@intel.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 
-On 24 September 2014 21:52, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Wed, Sep 24, 2014 at 03:47:17PM -0400, Alan Stern wrote:
->> On Wed, 24 Sep 2014, Pavel Machek wrote:
->>
->> > On Wed 2014-09-24 15:50:08, Krzysztof Kozlowski wrote:
->> > > Add a simple getter pm_runtime_is_irq_safe() for quering whether runtime
->> > > PM IRQ safe was set or not.
->> > >
->> > > Various bus drivers implementing runtime PM may use choose to suspend
->> > > differently based on IRQ safeness status of child driver (e.g. do not
->> > > unprepare the clock if IRQ safe is not set).
->> > >
->> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->> > > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
->> >
->> > Are you sure this is good interface?
->> >
->> > "Tell me if another function works this or that way".
->> >
->> > That's certainly not traditional interface, and it seems dangerous to
->> > me. Callbacks now have different semantic requirements based on value
->> > of some flag...
->> >
->> > Would it be possible to have two sets of callbacks, one irq safe and
->> > one not?
->>
->> Or maybe add a flag to the bus-specific device structures, indicating
->> specifically whether or not the clock should be unprepared during a
->> runtime suspend.  Then individual drivers could set this flag or not,
->> independent of the irq-safe setting.
+On 24 September 2014 18:14, Vinod Koul <vinod.koul@intel.com> wrote:
+> From: Subhransu S. Prusty <subhransu.s.prusty@intel.com>
 >
-> What you're proposing is _less_ safe, because with your proposal, you
-> now have the possibility that drivers will tell runtime PM that it has
-> IRQ safe callbacks, but the bus code tries to prepare/unprepare the
-> clock, which causes a might-sleep-if warning.
+> pm_runtime_mark_last_busy and pm_runtime_put_autosuspend are used together
+> in quite a lot of places. Add a helper for these.
+> Also updated Documentation for this
 >
-> This is fragile.
+> Signed-off-by: Subhransu S. Prusty <subhransu.s.prusty@intel.com>
+> Signed-off-by: Vinod Koul <vinod.koul@intel.com>
+> ---
+>  Documentation/power/runtime_pm.txt |    4 ++++
+>  include/linux/pm_runtime.h         |    6 ++++++
+>  2 files changed, 10 insertions(+), 0 deletions(-)
+>
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index f32ce54..5d9565b 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -490,6 +490,10 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
+>        power.use_autosuspend isn't set, otherwise returns the expiration time
+>        in jiffies
+>
+> +   int pm_runtime_last_busy_and_autosuspend(struct device *dev);
+> +    - invoke pm_runtime_mark_last_busy(dev) and then run
+> +      pm_runtime_put_autosuspend(dev) and return its result
+> +
+>  It is safe to execute the following helper functions from interrupt context:
+>
+>  pm_request_idle()
+> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> index 367f49b..256ec50 100644
+> --- a/include/linux/pm_runtime.h
+> +++ b/include/linux/pm_runtime.h
+> @@ -277,4 +277,10 @@ static inline void pm_runtime_dont_use_autosuspend(struct device *dev)
+>         __pm_runtime_use_autosuspend(dev, false);
+>  }
+>
+> +static inline int pm_runtime_last_busy_and_autosuspend(struct device *dev)
 
-I agree.
+This doesn't help code readability I think. The function name is quite
+long as Pavel also pointed out. :-)
 
-I would also like to feed another argument into this discussion on why
-I like the new API. Currently the generic power domain accesses
-"dev->power.irq_safe" directly.
+And, I also lack the "put" prefix, following the other functions in
+the runtime PM API - which would make the name even longer. :-)
 
 Kind regards
 Uffe
