@@ -1,89 +1,74 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 00/27] add
-	pm_runtime_last_busy_and_autosuspend() helper
-Date: Thu, 25 Sep 2014 21:54:36 +0200
-Message-ID: <32849712.0gtj7BlKY3@vostro.rjw.lan>
-References: <1411575342-31048-1-git-send-email-vinod.koul@intel.com>
- <20140925142201.GD28045@saruman> <20140925142758.GB1316@katana>
+Subject: Re: [PATCH 00/13] ARM: shmobile: R-Mobile: DT PM domain support
+Date: Thu, 25 Sep 2014 22:19:27 +0200
+Message-ID: <3136347.ncZoJtR6MK@vostro.rjw.lan>
+References: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <20140925142758.GB1316@katana>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Wolfram Sang <wsa@the-dreams.de>, Vinod Koul <vinod.koul@intel.com>
-Cc: linux-wireless@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, patches@opensource.wolfsonmicro.com, linux-doc@vger.kernel.org, Seungwon Jeon <tgih.jun@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Chris Ball <chris@printf.net>, dri-devel@lists.freedesktop.org, Marcin Wojtas <mw@semihalf.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, David Herrmann <dh.herrmann@gmail.com>, Shinya Kuribayashi <skuribay@pobox.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Jingoo Han <jg1.han@samsung.com>, Jaehoon Chung <jh80.chung@samsung.com>, Jani Nikula <jani.nikula@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Alan Stern <stern@rowland.harvard.edu>, Ben Skeggs <bskeggs@redhat.com>, Bjorn Andersson <bjorn.andersson@sonymobile.com>, Dave Airlie <airlied@redhat.com>, Ulf Hansson <ulf.hanss>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 25, 2014 04:27:58 PM Wolfram Sang wrote:
+On Thursday, September 25, 2014 06:28:27 PM Geert Uytterhoeven wrote:
+> 	Hi Rafael, Simon, Magnus,
 > 
-> --Bn2rw/3z4jIqBvZU
-> Content-Type: text/plain; charset=us-ascii
-> Content-Disposition: inline
-> Content-Transfer-Encoding: quoted-printable
+> This patch series enables DT support for PM domains on Renesas R-Mobile SoCs.
 > 
-> On Thu, Sep 25, 2014 at 09:22:01AM -0500, Felipe Balbi wrote:
-> > On Thu, Sep 25, 2014 at 01:27:18PM +0530, Vinod Koul wrote:
-> > > On Wed, Sep 24, 2014 at 03:32:19PM -0500, Felipe Balbi wrote:
-> > > > > > > OK, I guess this is as good as it gets.
-> > > > > > >=20
-> > > > > > > What tree would you like it go through?
-> > > > > >=20
-> > > > > > Do we really need this new helper ? I mean, the very moment when =
-> we
-> > > > > > decide to implement ->runtime_idle() we will need to get rid of t=
-> his
-> > > > > > change. I wonder if it's really valid...
-> > > > >=20
-> > > > > I'm not sure I'm following?  This seems to simply implement what dr=
-> ivers
-> > > > > have been doing already as one function.  Why would it be invalid t=
-> o reduce
-> > > > > code duplication?
-> > > >=20
-> > > > For two reasons:
-> > > >=20
-> > > > 1) the helper has no inteligence whatsoever. It just calls the same
-> > > > functions.
-> > > >=20
-> > > > 2) the duplication will vanish whenever someone implements
-> > > > ->runtime_idle() and have that call pm_runtime_autosuspend() (like PCI
-> > > > and USB buses are doing today). This will just be yet another line th=
-> at
-> > > > needs to change.
-> > > >=20
-> > > > Frankly though, no strong feelings, I just think it's a commit that
-> > > > doesn't bring that any benefits other than looking like one line was
-> > > > removed.
-> > > and yes that is what it tries to do nothing more nothing less. If in fu=
-> ture
-> > > there are no users (today we have quite a few), then we can remove the =
-> dead
-> > > macro, no harm. But that is not the situation today.
-> >=20
-> > as I said, a commit that's bound to be useless. It's not like you're
-> > saving 10 lines of code, it's only one. Replacing two simple lines with
-> > a function which takes <joke> almost as many characters to type </joke>.
-> >=20
-> > IMO, this is pretty useless and I'd rather not see them in the drivers I
-> > maintain, sorry.
+> Currently it's limited to R-Mobile A1 (r8a7740), but given the similarity of
+> the SYSC System-Controller on the various SH-Mobile/R-Mobile SoCs, and the
+> abstraction of PM domains in DT, it should be sufficiently generic to handle
+> other SoCs in the future (e.g. SH-Mobile AP4 (sh7372), SH-Mobile AG5 (sh73a0),
+> R-Mobile APE6 (r8a73a4)).
 > 
-> It is not a NACK from me; yet from a high-level perspective I agree with
-> Felipe.
+> Changes compared to v2 (more detailed changelogs in the individual patches):
+>   - Minor changes to attach/detach callbacks,
+>   - Really add the A4MP and D4 PM domains, as fixes are available (see
+>     dependencies below),
+>   - Scan DT topology to identify special PM domains (CPUs and console),
+>   - Move PM domain power-on/off latencies to a separate patch.
+> 
+> Changes compared to v1 (more detailed changelogs in the individual patches):
+>   - Several new patches: PM QoS device latencies in DT, attach/detach
+>     callbacks,
+>   - Run-Time management of the module clocks, making the hack in
+>     drivers/sh/pm_runtime.c obsolete for DT platforms using genpd,
+>   - Addition of PM QoS device latencies, specified from DT,
+>   - Addition of build glue, so this builds and runs without additional
+>     changes, incl. s2ram.
+> 
+> This means that functionality-wise, the DT version is now on par with the
+> legacy version ("[PATCH v2 00/11] ARM: shmobile: r8a7740/armadillo800eva legacy
+> PM domain support").
+> 
+> Dependencies:
+>   - Simon Horman's renesas-devel-20140924-v3.17-rc6,
+>   - Rafael J. Wysocki's linux-pm.git#linux-next,
+>   - Jason Cooper's linux.git#irqchip/for-next.
+>   - "ARM: shmobile: R-Mobile: Store SYSC base address in rmobile_pm_domain"
+>     depends on the legacy version of this series, but if the legacy version
+>     will never be accepted, the conflicts are trivial to resolve (drop changes
+>     to non-existing PM domains),
+>   - Working resume from s2ram depends on:
+>       - "[PATCH/RFC] fbdev: sh_mobile_hdmi: Re-init regs before irq re-enable
+> 	on resume",
+>       - "[PATCH] ARM: hw_breakpoint: Trap undef instruction exceptions on
+> 	wake-up", or an alternative solution.
+>   - Working "no_console_suspend" handling depends on "[PATCH 06/13] ARM:
+>     shmobile: armadillo800eva dts: Add chosen/stdout-path".
+> 
+> For your convenience, I've also pushed this (incl. its dependencies) to
+> git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git#rmobile-genpd
+> 
+> Rafael: If you accept "PM / Domains: Add genpd attach/detach callbacks", it
+> would be good to get this patch in v3.18-rc1, as it's the only hard dependency
+> on linux-pm.git for the rest of this series. The other parts have relaxed
+> ordering constraints due to the separation of code and DTS.
 
-OK
-
-I'd rather not merge something that driver people don't want to use.
-
-Vinod?
+OK, this one looks good to me, so I can push it for 3.18.
 
 -- 
 I speak only for myself.
