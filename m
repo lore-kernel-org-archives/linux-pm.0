@@ -1,12 +1,12 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 03/13] PM / Domains: Add DT bindings for PM QoS device
- latencies
-Date: Thu, 25 Sep 2014 18:28:30 +0200
-Message-ID: <1411662520-22795-4-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v3 12/13] ARM: shmobile: r8a7740 dtsi: Add preliminary PM
+ domain latencies
+Date: Thu, 25 Sep 2014 18:28:39 +0200
+Message-ID: <1411662520-22795-13-git-send-email-geert+renesas@glider.be>
 References: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
@@ -22,49 +22,45 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, 
 Cc: devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-PM QoS device start/stop and save/restore state latencies are more or
-less properties of the hardware.
-In legacy code, they're specified from platform code.
-On DT platforms, their values should come from DT.
-
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-Should these properties be called "linux,*-latency"?
-
-v3:
-  - No changes
-v2:
-  - New
-
- Documentation/devicetree/bindings/power/power_domain.txt | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-index 7bc421d84367d636..024815bc257723b1 100644
---- a/Documentation/devicetree/bindings/power/power_domain.txt
-+++ b/Documentation/devicetree/bindings/power/power_domain.txt
-@@ -42,12 +42,22 @@ Required properties:
-  - power-domains : A phandle and PM domain specifier as defined by bindings of
-                    the power controller specified by phandle.
- 
-+Optional properties:
-+ - stop-latency: Stop latency of the device, in ns,
-+ - start-latency: Start latency of the device, in ns,
-+ - save-state-latency: Save-state latency of the device, in ns,
-+ - restore-state-latency: Restore-state latency of the device, in ns.
-+
- Example:
- 
- 	leaky-device@12350000 {
- 		compatible = "foo,i-leak-current";
- 		reg = <0x12350000 0x1000>;
- 		power-domains = <&power 0>;
-+		stop-latency = <250000>;
-+		start-latency = <250000>;
-+		save-state-latency = <250000>;
-+		restore-state-latency = <250000>;
- 	};
- 
- The node above defines a typical PM domain consumer device, which is located
--- 
-1.9.1
+Rm9yIG5vdyB1c2UgMjUwIMK1cywganVzdCBsaWtlIHRoZSBsZWdhY3kgcGxhdGZvcm0gY29kZSBk
+b2VzLgoKU2lnbmVkLW9mZi1ieTogR2VlcnQgVXl0dGVyaG9ldmVuIDxnZWVydCtyZW5lc2FzQGds
+aWRlci5iZT4KLS0tCnYzOgogIC0gTmV3LCBzcGxpdCBvZmYgZnJvbSAiQVJNOiBzaG1vYmlsZTog
+cjhhNzc0MCBkdHNpOiBBZGQgUE0gZG9tYWluCiAgICBzdXBwb3J0Ii4KCiBhcmNoL2FybS9ib290
+L2R0cy9yOGE3NzQwLmR0c2kgfCAyMCArKysrKysrKysrKysrKysrKysrKwogMSBmaWxlIGNoYW5n
+ZWQsIDIwIGluc2VydGlvbnMoKykKCmRpZmYgLS1naXQgYS9hcmNoL2FybS9ib290L2R0cy9yOGE3
+NzQwLmR0c2kgYi9hcmNoL2FybS9ib290L2R0cy9yOGE3NzQwLmR0c2kKaW5kZXggNGZlYWQ0ODBh
+NDA1YmViZS4uZWQwYWRlYjYxYTFhZDhlYyAxMDA2NDQKLS0tIGEvYXJjaC9hcm0vYm9vdC9kdHMv
+cjhhNzc0MC5kdHNpCisrKyBiL2FyY2gvYXJtL2Jvb3QvZHRzL3I4YTc3NDAuZHRzaQpAQCAtNTYz
+LDE2ICs1NjMsMjIgQEAKIAkJCQlwZF9hNGxjOiBhNGxjQDEgewogCQkJCQlyZWcgPSA8MT47CiAJ
+CQkJCSNwb3dlci1kb21haW4tY2VsbHMgPSA8MD47CisJCQkJCXBvd2VyLW9uLWxhdGVuY3kgPSA8
+MjUwMDAwPjsKKwkJCQkJcG93ZXItb2ZmLWxhdGVuY3kgPSA8MjUwMDAwPjsKIAkJCQl9OwogCiAJ
+CQkJcGRfYTRtcDogYTRtcEAyIHsKIAkJCQkJcmVnID0gPDI+OwogCQkJCQkjcG93ZXItZG9tYWlu
+LWNlbGxzID0gPDA+OworCQkJCQlwb3dlci1vbi1sYXRlbmN5ID0gPDI1MDAwMD47CisJCQkJCXBv
+d2VyLW9mZi1sYXRlbmN5ID0gPDI1MDAwMD47CiAJCQkJfTsKIAogCQkJCXBkX2Q0OiBkNEAzIHsK
+IAkJCQkJcmVnID0gPDM+OwogCQkJCQkjcG93ZXItZG9tYWluLWNlbGxzID0gPDA+OworCQkJCQlw
+b3dlci1vbi1sYXRlbmN5ID0gPDI1MDAwMD47CisJCQkJCXBvd2VyLW9mZi1sYXRlbmN5ID0gPDI1
+MDAwMD47CiAJCQkJfTsKIAogCQkJCXBkX2E0cjogYTRyQDUgewpAQCAtNTgwLDEwICs1ODYsMTQg
+QEAKIAkJCQkJI2FkZHJlc3MtY2VsbHMgPSA8MT47CiAJCQkJCSNzaXplLWNlbGxzID0gPDA+Owog
+CQkJCQkjcG93ZXItZG9tYWluLWNlbGxzID0gPDA+OworCQkJCQlwb3dlci1vbi1sYXRlbmN5ID0g
+PDI1MDAwMD47CisJCQkJCXBvd2VyLW9mZi1sYXRlbmN5ID0gPDI1MDAwMD47CiAKIAkJCQkJcGRf
+YTNydjogYTNydkA2IHsKIAkJCQkJCXJlZyA9IDw2PjsKIAkJCQkJCSNwb3dlci1kb21haW4tY2Vs
+bHMgPSA8MD47CisJCQkJCQlwb3dlci1vbi1sYXRlbmN5ID0gPDI1MDAwMD47CisJCQkJCQlwb3dl
+ci1vZmYtbGF0ZW5jeSA9IDwyNTAwMDA+OwogCQkJCQl9OwogCQkJCX07CiAKQEAgLTU5MiwyNiAr
+NjAyLDM2IEBACiAJCQkJCSNhZGRyZXNzLWNlbGxzID0gPDE+OwogCQkJCQkjc2l6ZS1jZWxscyA9
+IDwwPjsKIAkJCQkJI3Bvd2VyLWRvbWFpbi1jZWxscyA9IDwwPjsKKwkJCQkJcG93ZXItb24tbGF0
+ZW5jeSA9IDwyNTAwMDA+OworCQkJCQlwb3dlci1vZmYtbGF0ZW5jeSA9IDwyNTAwMDA+OwogCiAJ
+CQkJCXBkX2Ezc3A6IGEzc3BAMTEgewogCQkJCQkJcmVnID0gPDExPjsKIAkJCQkJCSNwb3dlci1k
+b21haW4tY2VsbHMgPSA8MD47CisJCQkJCQlwb3dlci1vbi1sYXRlbmN5ID0gPDI1MDAwMD47CisJ
+CQkJCQlwb3dlci1vZmYtbGF0ZW5jeSA9IDwyNTAwMDA+OwogCQkJCQl9OwogCiAJCQkJCXBkX2Ez
+c206IGEzc21AMTIgewogCQkJCQkJcmVnID0gPDEyPjsKIAkJCQkJCSNwb3dlci1kb21haW4tY2Vs
+bHMgPSA8MD47CisJCQkJCQlwb3dlci1vbi1sYXRlbmN5ID0gPDI1MDAwMD47CisJCQkJCQlwb3dl
+ci1vZmYtbGF0ZW5jeSA9IDwyNTAwMDA+OwogCQkJCQl9OwogCiAJCQkJCXBkX2Ezc2c6IGEzc2dA
+MTMgewogCQkJCQkJcmVnID0gPDEzPjsKIAkJCQkJCSNwb3dlci1kb21haW4tY2VsbHMgPSA8MD47
+CisJCQkJCQlwb3dlci1vbi1sYXRlbmN5ID0gPDI1MDAwMD47CisJCQkJCQlwb3dlci1vZmYtbGF0
+ZW5jeSA9IDwyNTAwMDA+OwogCQkJCQl9OwogCQkJCX07CiAKIAkJCQlwZF9hNHN1OiBhNHN1QDIw
+IHsKIAkJCQkJcmVnID0gPDIwPjsKIAkJCQkJI3Bvd2VyLWRvbWFpbi1jZWxscyA9IDwwPjsKKwkJ
+CQkJcG93ZXItb24tbGF0ZW5jeSA9IDwyNTAwMDA+OworCQkJCQlwb3dlci1vZmYtbGF0ZW5jeSA9
+IDwyNTAwMDA+OwogCQkJCX07CiAJCQl9OwogCQl9OwotLSAKMS45LjEKCgpfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxp
+bmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
+LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
