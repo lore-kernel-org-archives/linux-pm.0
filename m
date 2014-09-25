@@ -1,98 +1,63 @@
-From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: Re: [PATCH v5 4/4] thermal: Add Tegra SOCTHERM thermal management
- driver
-Date: Thu, 25 Sep 2014 10:55:19 +0300
-Message-ID: <5423CA67.1060308@kapsi.fi>
-References: <1408616242-21009-1-git-send-email-mperttunen@nvidia.com> <1408616242-21009-5-git-send-email-mperttunen@nvidia.com> <20140924191829.GA16529@developer> <54231C3D.6040900@kapsi.fi> <20140925055953.GA12423@ulmo>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v7 1/5] PM / Runtime: Add getter for quering the IRQ safe option
+Date: Thu, 25 Sep 2014 09:57:52 +0200
+Message-ID: <CAPDyKFqcpTjxVB0VsWPNaAbJ-1HNzmKuCesmr8x=HY1_5mQXTg@mail.gmail.com>
+References: <20140924175302.GB1231@amd>
+	<Pine.LNX.4.44L0.1409241544070.1580-100000@iolanthe.rowland.org>
+	<20140924195222.GB5182@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140925055953.GA12423@ulmo>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Mikko Perttunen <mperttunen@nvidia.com>, rui.zhang@intel.com, swarren@wwwdotorg.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, juha-matti.tilli@iki.fi
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <20140924195222.GB5182@n2100.arm.linux.org.uk>
+Sender: linux-doc-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Randy Dunlap <rdunlap@infradead.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/25/2014 08:59 AM, Thierry Reding wrote:
-> On Wed, Sep 24, 2014 at 10:32:13PM +0300, Mikko Perttunen wrote:
->> On 09/24/2014 10:18 PM, Eduardo Valentin wrote:
->>>
->>> Mikko,
->>>
->>> On Thu, Aug 21, 2014 at 01:17:22PM +0300, Mikko Perttunen wrote:
->>>> ...
->>>> +
->>>> +static int enable_tsensor(struct tegra_soctherm *tegra,
->>>> +			  const struct tegra_tsensor *sensor,
->>>> +			  struct tsensor_shared_calibration shared)
->>>> +{
->>>> +	void * __iomem base = tegra->regs + sensor->base;
->>>
->>> I get sparse complaining about this declaration. For the sake of keeping
->>> a clean static checks, can you please:
->>> -       void * __iomem base = tegra->regs + sensor->base;
->>> +       void __iomem * base = tegra->regs + sensor->base;
->>>
+On 24 September 2014 21:52, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> On Wed, Sep 24, 2014 at 03:47:17PM -0400, Alan Stern wrote:
+>> On Wed, 24 Sep 2014, Pavel Machek wrote:
 >>
->> Sure.
+>> > On Wed 2014-09-24 15:50:08, Krzysztof Kozlowski wrote:
+>> > > Add a simple getter pm_runtime_is_irq_safe() for quering whether runtime
+>> > > PM IRQ safe was set or not.
+>> > >
+>> > > Various bus drivers implementing runtime PM may use choose to suspend
+>> > > differently based on IRQ safeness status of child driver (e.g. do not
+>> > > unprepare the clock if IRQ safe is not set).
+>> > >
+>> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>> > > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> >
+>> > Are you sure this is good interface?
+>> >
+>> > "Tell me if another function works this or that way".
+>> >
+>> > That's certainly not traditional interface, and it seems dangerous to
+>> > me. Callbacks now have different semantic requirements based on value
+>> > of some flag...
+>> >
+>> > Would it be possible to have two sets of callbacks, one irq safe and
+>> > one not?
 >>
->>> Can you also please check the remaining sparse errors?
->>>    CHECK   drivers/thermal/tegra_soctherm.c
->>>    drivers/thermal/tegra_soctherm.c:260:43: warning: incorrect type in
->>>    initializer (different address spaces)
->>>    drivers/thermal/tegra_soctherm.c:260:43:    expected void *[noderef]
->>>    <asn:2>base
->>>    drivers/thermal/tegra_soctherm.c:260:43:    got void [noderef]
->>>    <asn:2>*
->>>    drivers/thermal/tegra_soctherm.c:271:9: warning: incorrect type in
->>>    argument 2 (different address spaces)
->>>    drivers/thermal/tegra_soctherm.c:271:9:    expected void volatile
->>>    [noderef] <asn:2>*addr
->>>    drivers/thermal/tegra_soctherm.c:271:9:    got void *
->>>    drivers/thermal/tegra_soctherm.c:279:9: warning: incorrect type in
->>>    argument 2 (different address spaces)
->>>    drivers/thermal/tegra_soctherm.c:279:9:    expected void volatile
->>>    [noderef] <asn:2>*addr
->>>    drivers/thermal/tegra_soctherm.c:279:9:    got void *
->>>    drivers/thermal/tegra_soctherm.c:281:9: warning: incorrect type in
->>>    argument 2 (different address spaces)
->>>    drivers/thermal/tegra_soctherm.c:281:9:    expected void volatile
->>>    [noderef] <asn:2>*addr
->>>    drivers/thermal/tegra_soctherm.c:281:9:    got void *
->>>    drivers/thermal/tegra_soctherm.c:347:25: warning: incorrect type in
->>>    argument 1 (different address spaces)
->>>    drivers/thermal/tegra_soctherm.c:347:25:    expected void const *ptr
->>>    drivers/thermal/tegra_soctherm.c:347:25:    got void [noderef]
->>>    <asn:2>*regs
->>>    drivers/thermal/tegra_soctherm.c:349:37: warning: incorrect type in
->>>    argument 1 (different address spaces)
->>>    drivers/thermal/tegra_soctherm.c:349:37:    expected void const *ptr
->>>    drivers/thermal/tegra_soctherm.c:349:37:    got void [noderef]
->>>    <asn:2>*regs
->>>    drivers/thermal/tegra_soctherm.c:271:9: warning: dereference of
->>>    noderef expression
->>>    drivers/thermal/tegra_soctherm.c:279:9: warning: dereference of
->>>    noderef expression
->>>    drivers/thermal/tegra_soctherm.c:281:9: warning: dereference of
->>>    noderef expression
->>>
->>
->> Most of these seem to be caused by the above-mentioned swapping of __iomem
->> and *. The ones on lines 347 and 349 are more peculiar, though. Apparently
->> sparse doesn't like using IS_ERR and PTR_ERR on the void __iomem * pointer
->> returned by devm_ioremap_resource. Looks like this has been discussed before
->> (https://lkml.org/lkml/2013/6/17/216) and sparse should have been patched to
->> ignore this situation, so I'm not sure why it's complaining about it.
->> Anyway, there shouldn't be any issue here.
+>> Or maybe add a flag to the bus-specific device structures, indicating
+>> specifically whether or not the clock should be unprepared during a
+>> runtime suspend.  Then individual drivers could set this flag or not,
+>> independent of the irq-safe setting.
 >
-> If I apply the change suggested by Eduardo above then all of the above
-> warnings go away for me. That's with sparse 0.5.0. According to the
-> email thread above a patch for this was applied in 0.4.5.
+> What you're proposing is _less_ safe, because with your proposal, you
+> now have the possibility that drivers will tell runtime PM that it has
+> IRQ safe callbacks, but the bus code tries to prepare/unprepare the
+> clock, which causes a might-sleep-if warning.
+>
+> This is fragile.
 
-Ah, good. I didn't actually run sparse, just checked by eye. Maybe I 
-should have run it.
+I agree.
 
->
-> Thierry
->
+I would also like to feed another argument into this discussion on why
+I like the new API. Currently the generic power domain accesses
+"dev->power.irq_safe" directly.
+
+Kind regards
+Uffe
