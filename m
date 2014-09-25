@@ -1,106 +1,127 @@
-From: Joerg Roedel <jroedel@suse.de>
-Subject: Re: NULL pointer dereference in swsusp_free with 3.17-rc5
-Date: Thu, 25 Sep 2014 11:13:18 +0200
-Message-ID: <20140925091318.GA4269@suse.de>
-References: <87zjdq8k7i.fsf@nemi.mork.no>
- <20140924095111.GC10438@suse.de>
- <87vbodiaq9.fsf@nemi.mork.no>
- <19091504.rBv2mCrhao@vostro.rjw.lan>
- <87egv0i2sl.fsf@nemi.mork.no>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: Re: [PATCH v7 2/5] ARM: add AFTR mode support to firmware do_idle
+ method
+Date: Thu, 25 Sep 2014 18:16:03 +0900
+Message-ID: <5423DD53.3030805@samsung.com>
+References: <1411561488-1739-1-git-send-email-b.zolnierkie@samsung.com> <1411561488-1739-3-git-send-email-b.zolnierkie@samsung.com> <5423D104.4050809@samsung.com> <20140925090310.GA12046@ulmo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:33814 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751603AbaIYJNW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Sep 2014 05:13:22 -0400
-Content-Disposition: inline
-In-Reply-To: <87egv0i2sl.fsf@nemi.mork.no>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140925090310.GA12046@ulmo>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linaro-kernel@lists.linaro.org, linux-tegra@vger.kernel.org, Thierry Reding <treding@nvidia.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: =?iso-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On Thu, Sep 25, 2014 at 09:20:58AM +0200, Bj=F8rn Mork wrote:
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->=20
-> > I've decided to go with a revert for 3.17, as we don't seem to have=
- an immediate
-> > fix and the final 3.17 may be as close as this Sunday.  So I'm goin=
-g to send my
-> > final pull request for 3.17 to Linus tomorrow or early on Friday.
->=20
-> Sounds safest to me, FWIW.
+On 09/25/14 18:03, Thierry Reding wrote:
+> On Thu, Sep 25, 2014 at 05:23:32PM +0900, Kukjin Kim wrote:
+>> On 09/24/14 21:24, Bartlomiej Zolnierkiewicz wrote:
+>>> On some platforms (i.e. EXYNOS ones) more than one idle mode is
+>>> available and we need to distinguish them in firmware do_idle method.
+>>>
+>>> Add mode parameter to do_idle firmware method and AFTR mode support
+>>> to EXYNOS do_idle implementation.
+>>>
+>>> This change is a preparation for adding secure firmware support to
+>>> EXYNOS cpuidle driver.
+>>>
+>>> This patch shouldn't cause any functionality changes.
+>>>
+>>> Signed-off-by: Bartlomiej Zolnierkiewicz<b.zolnierkie@samsung.com>
+>>> Acked-by: Kyungmin Park<kyungmin.park@samsung.com>
+>>> ---
+>>> v7:
+>>> - fixed build on Tegra
+>>> - updated summary line
+>>>
+>>>   arch/arm/include/asm/firmware.h        |  2 +-
+>>>   arch/arm/mach-exynos/common.h          |  5 +++++
+>>>   arch/arm/mach-exynos/firmware.c        | 10 ++++++++--
+>>>   arch/arm/mach-tegra/cpuidle-tegra114.c |  2 +-
+>>>   4 files changed, 15 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/arch/arm/include/asm/firmware.h b/arch/arm/include/asm/firmware.h
+>>> index 5904f59..89aefe1 100644
+>>> --- a/arch/arm/include/asm/firmware.h
+>>> +++ b/arch/arm/include/asm/firmware.h
+>>> @@ -28,7 +28,7 @@ struct firmware_ops {
+>>>   	/*
+>>>   	 * Enters CPU idle mode
+>>>   	 */
+>>> -	int (*do_idle)(void);
+>>> +	int (*do_idle)(unsigned long mode);
+>>>   	/*
+>>>   	 * Sets boot address of specified physical CPU
+>>>   	 */
+>>> diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
+>>> index c218200..2d830df 100644
+>>> --- a/arch/arm/mach-exynos/common.h
+>>> +++ b/arch/arm/mach-exynos/common.h
+>>> @@ -119,6 +119,11 @@ extern void __iomem *sysram_base_addr;
+>>>   extern void __iomem *pmu_base_addr;
+>>>   void exynos_sysram_init(void);
+>>>
+>>> +enum {
+>>> +	FW_DO_IDLE_SLEEP,
+>>> +	FW_DO_IDLE_AFTR,
+>>> +};
+>>> +
+>>>   void exynos_firmware_init(void);
+>>>
+>>>   extern u32 exynos_get_eint_wake_mask(void);
+>>> diff --git a/arch/arm/mach-exynos/firmware.c b/arch/arm/mach-exynos/firmware.c
+>>> index f5e626d..e57b7c3 100644
+>>> --- a/arch/arm/mach-exynos/firmware.c
+>>> +++ b/arch/arm/mach-exynos/firmware.c
+>>> @@ -28,9 +28,15 @@
+>>>   #define EXYNOS_BOOT_ADDR	0x8
+>>>   #define EXYNOS_BOOT_FLAG	0xc
+>>>
+>>> -static int exynos_do_idle(void)
+>>> +static int exynos_do_idle(unsigned long mode)
+>>>   {
+>>> -	exynos_smc(SMC_CMD_SLEEP, 0, 0, 0);
+>>> +	switch (mode) {
+>>> +	case FW_DO_IDLE_AFTR:
+>>> +		exynos_smc(SMC_CMD_CPU0AFTR, 0, 0, 0);
+>>> +		break;
+>>> +	case FW_DO_IDLE_SLEEP:
+>>> +		exynos_smc(SMC_CMD_SLEEP, 0, 0, 0);
+>>> +	}
+>>>   	return 0;
+>>>   }
+>>>
+>>> diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-tegra/cpuidle-tegra114.c
+>>> index e3ebdce..425b6c8 100644
+>>> --- a/arch/arm/mach-tegra/cpuidle-tegra114.c
+>>> +++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
+>>> @@ -49,7 +49,7 @@ static int tegra114_idle_power_down(struct cpuidle_device *dev,
+>>>   	call_firmware_op(prepare_idle);
+>>>
+>>>   	/* Do suspend by ourselves if the firmware does not implement it */
+>>> -	if (call_firmware_op(do_idle) == -ENOSYS)
+>>> +	if (call_firmware_op(do_idle, 0) == -ENOSYS)
+>>>   		cpu_suspend(0, tegra30_sleep_cpu_secondary_finish);
+>>>
+>>>   	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT,&dev->cpu);
+>>
+>> + Thierry(using nvidia.com e-mail address)
+>>
+>> Hi Thierry,
+>>
+>> For supporting AFTR mode in call_firmware_op(do_idle), need to modify tegra
+>> stuff as you can see. The functionality will be same with before. Is it OK
+>> to you? If you have no objection, I'd like to take this series into samsung
+>> tree.
+>
+> I'm only aware of any devices using TrustedFirmware on Tegra, which is
+> what the above code handles. The implementation for TrustedFirmware does
+> not implement do_idle() (yet?) so I don't think this patch would cause
+> any damage.
+>
+> Acked-by: Thierry Reding<treding@nvidia.com>
+>
+Thanks, I've applied this whole series.
 
-Yes, sorry for the delay, I am still fighting with my cold and couldn't
-get around to send a fix sooner :/
-
-> For the next round of this, I think the only missing part was some te=
-st
-> like
->=20
->         if (!forbidden_pages_map || !free_pages_map)
->            goto return_without_freeing_anything;
-
-Right, this is pretty much the fix. Can you please test the attached
-patch?
-
-> And BTW, I believe it would be useful if at least one more person in =
-the
-> world tested hibernation between each release ;-)
-
-Well, I tested these patches on at least 4 or 5 different hardware
-configurations. I also know of other people testing hibernation with -r=
-c
-kernels, but this is the first report of this issue I have seen. I
-wonder what it different in your setup so that you trigger this bug.
-
-Anyway, it would be great if you could test the patch below :)
-
-Thanks,
-
-	Joerg
-
-=46rom fe599eff60cfbfbb1f894dc476ee28f38aef954b Mon Sep 17 00:00:00 200=
-1
-=46rom: Joerg Roedel <jroedel@suse.de>
-Date: Thu, 25 Sep 2014 11:04:40 +0200
-Subject: [PATCH] PM: Hibernate: Fix NULL pointer access in swsusp_free
-
-The optimized version of swsusp_free does not check the
-bitmap pointers anymore, which may cause a NULL pointer
-dereference and a kernel crash. Fix it by adding the checks
-and bail out if one of them is NULL.
-
-Reported-by: Bj=F8rn Mork <bjorn@mork.no>
-Signed-off-by: Joerg Roedel <jroedel@suse.de>
----
- kernel/power/snapshot.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index c4b8093..791a618 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1343,6 +1343,9 @@ void swsusp_free(void)
- {
- 	unsigned long fb_pfn, fr_pfn;
-=20
-+	if (!forbidden_pages_map || !free_pages_map)
-+		goto out;
-+
- 	memory_bm_position_reset(forbidden_pages_map);
- 	memory_bm_position_reset(free_pages_map);
-=20
-@@ -1370,6 +1373,7 @@ loop:
- 		goto loop;
- 	}
-=20
-+out:
- 	nr_copy_pages =3D 0;
- 	nr_meta_pages =3D 0;
- 	restore_pblist =3D NULL;
---=20
-1.8.4.5
-
+- Kukjin
