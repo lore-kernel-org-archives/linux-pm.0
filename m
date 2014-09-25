@@ -1,118 +1,81 @@
-From: Stefan Wahren <info@lategoodbye.de>
-Subject: Re: ARM: mx28: cpufreq-cpu0 support?
-Date: Thu, 25 Sep 2014 20:24:00 +0200
-Message-ID: <54245DC0.8020700@lategoodbye.de>
-References: <53F9B4BF.2050802@lategoodbye.de>	<20140825080123.GA12289@dragon>	<53FB1041.5010208@lategoodbye.de>	<CAOMZO5CG7mw5W4D3fRPE3TGxQ6-3pTtDJrsNnieN8XKE9dGofQ@mail.gmail.com>	<CAOMZO5CnuWJ9EaLUW8DYFU1Dzeh=92tux0zoUBKoW-L=VWZhhg@mail.gmail.com>	<540412A9.4090806@lategoodbye.de>	<CAOMZO5A7-66LJtv4O2TghN3gVzme4N6JFMYd8TV7zXhUhsXedQ@mail.gmail.com>	<542093C0.1040004@lategoodbye.de>	<CAOMZO5A0of3_arOx2z0_t7xN37jQjJ5uU4gwcsgCuSdpBJJVzw@mail.gmail.com>	<54232D9C.5070404@lategoodbye.de> <CAOMZO5BN8APenWCsy7uHbYNQ4q0-QxorAdGPKBHOHPcUzp2PYg@mail.gmail.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: [GIT PULL] PM / AVS changes for v3.18 - v2
+Date: Thu, 25 Sep 2014 12:05:42 -0700
+Message-ID: <7ha95nikqh.fsf@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOMZO5BN8APenWCsy7uHbYNQ4q0-QxorAdGPKBHOHPcUzp2PYg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, Fabio Estevam <fabio.estevam@freescale.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Otavio Salvador <otavio@ossystems.com.br>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:64032 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817AbaIYTFp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 15:05:45 -0400
+Received: by mail-pd0-f180.google.com with SMTP id r10so11113518pdi.25
+        for <linux-pm@vger.kernel.org>; Thu, 25 Sep 2014 12:05:45 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, nm@ti.com, dianders@chromium.org, heiko@sntech.de, broonie@kernel.org
 
-Hi,
+Hi Rafael,
 
-i added linux-pm list.
+The first pull request was missing a dependency on a feature that went
+in through Mark Brown's regulator tree, so it wouldn't actually compile
+properly by itself.  This version pulls in that topic branch from Marks
+tree (topic/voltage-ev branch, already part of -next), and now compiles=
+ fine.
 
-Am 24.09.2014 23:47, schrieb Fabio Estevam:
-> On Wed, Sep 24, 2014 at 5:46 PM, Stefan Wahren <info@lategoodbye.de> wrote:
->
->> thanks, registering cpufreq-cpu0 and adding missing properties reg & clocks
->> did the trick.
->>
->> Now the sys interface of cpufreq is available and the mxs-regulator seems to
->> handle frequency change. But the frequency selection do not work as
->> expected. If i set cpu frequency to 454736, 392727 or 261818 kHz, the
->
-> Why 454736 instead of 454MHz? Same for the other values.
+Kevin
 
-I took these values from the cpufreq driver in the Freescale BSP and 
-they are in the datasheet, too. If i take 454000 and so one, i will get 
-this nice oops:
+The following changes since commit 7d1311b93e58ed55f3a31cc8f94c4b8fe988=
+a2b9:
 
-root@duckbill:~# modprobe cpufreq-cpu0
-[   95.764654] cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted 
-freq: 454736 KHz
-[   95.773146] cpufreq_cpu0: failed to find OPP for 454736842
-[   95.778692] cpufreq: __target_index: Failed to change cpu frequency: -34
-[   95.786235] ------------[ cut here ]------------
-[   95.790913] kernel BUG at drivers/cpufreq/cpufreq.c:1249!
-[   95.796342] Internal error: Oops - BUG: 0 [#1] ARM
-[   95.801154] Modules linked in: cpufreq_cpu0(+)
-[   95.805673] CPU: 0 PID: 446 Comm: modprobe Not tainted 
-3.17.0-rc4-00268-ge789d1c-dirty #17
-[   95.813965] task: c6fa8980 ti: c6c86000 task.ti: c6c86000
-[   95.819409] PC is at cpufreq_add_dev+0x530/0x5b4
-[   95.824069] LR is at mark_held_locks+0x74/0x9c
-[...]
+  Linux 3.17-rc1 (2014-08-16 10:40:26 -0600)
 
->
->> cpufreq driver change it silently to 240000 kHz.
->
-> 24MHz is the osc clock. It seems you did not turn on the PLL0.
->
-> Check the POWER bit of HW_CLKCTRL_PLL0CTRL0 register.
->
+are available in the git repository at:
 
-240000 kHz = 240 MHz
+  git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux.git tags/=
+avs-for-3.18
 
-I fixed this specific problem by setting the clock reference in the DT 
-to ref_cpu instead of cpu. After that i'm able to set 392727, 360000, 
-261818 and 64000 kHz. Unfortunately the highest and default value 454736 
-is not selectable:
+for you to fetch changes up to cd8caa18deff6d2d87a4e3161b4dd8c6da3c4f38=
+:
 
-[   38.901842] cpu cpu0: Looking up cpu0-supply from device tree
-[   38.904082] freq_table: table entry 0: 64000 kHz
-[   38.904141] freq_table: table entry 1: 261818 kHz
-[   38.904176] freq_table: table entry 2: 360000 kHz
-[   38.904206] freq_table: table entry 3: 392727 kHz
-[   38.904235] freq_table: table entry 4: 454736 kHz
-[   38.908050] freq_table: request for verification of policy (64000 - 
-454736 kHz) for cpu 0
-[   38.908116] freq_table: verification lead to (64000 - 454736 kHz) for 
-cpu 0
-[   38.908176] freq_table: request for verification of policy (64000 - 
-454736 kHz) for cpu 0
-[   38.908220] freq_table: verification lead to tage: vddd register val 30
-root@duckbill:/sys/devices/system/cpu/cpu0/cpufreq# echo "454736" > 
-scaling_setspeed
-[  595.671708] cpufreq_cpu0: failed to find OPP for 454736842
-[  595.677272] cpufreq: __target_index: Failed to change cpu frequency: -34
+  Merge branch 'topic/voltage-ev' of git://git.kernel.org/pub/scm/linux=
+/kernel/git/broonie/regulator into avs-next (2014-09-25 09:57:57 -0700)
 
-That looks like a bug in cpufreq.
+----------------------------------------------------------------
+PM / AVS changes for v3.18
 
-Best regards
-Stefan
+- Add new driver for Rockchip IO voltage domains
+- update MAINTAINERS to reflect maintenance of drivers/power/avs/*
 
-PS: Here is my relevant DT:
+----------------------------------------------------------------
+Heiko St=C3=BCbner (2):
+      regulator: core: Add REGULATOR_EVENT_PRE_VOLTAGE_CHANGE (and ABOR=
+T)
+      PM / AVS: rockchip-io: add driver handling Rockchip io domains
 
-############# imx28.dtsi
+Kevin Hilman (2):
+      MAINTAINERS: update entry for drivers/power/avs
+      Merge branch 'topic/voltage-ev' of git://git.kernel.org/.../broon=
+ie/regulator into avs-next
 
-[...]
+ Documentation/devicetree/bindings/power/rockchip-io-domain.txt |  83 +=
+++++++++++++++++++
+ MAINTAINERS                                                    |   4 +=
+-
+ drivers/power/avs/Kconfig                                      |   8 +=
++
+ drivers/power/avs/Makefile                                     |   1 +
+ drivers/power/avs/rockchip-io-domain.c                         | 351 +=
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
++++++++
+ drivers/regulator/core.c                                       |  63 +=
+++++++++++++--
+ include/linux/regulator/consumer.h                             |  20 +=
+++++
+ 7 files changed, 521 insertions(+), 9 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/rockchip-io=
+-domain.txt
+ create mode 100644 drivers/power/avs/rockchip-io-domain.c
 
-cpus {
-	#address-cells = <1>;
-	#size-cells = <0>;
-
-	cpu@0 {
-		compatible = "arm,arm926ej-s";
-		device_type = "cpu";
-		reg = <0x0>;
-		operating-points = <
-			/* kHz	uV */
-			454736  1550000
-			392727  1475000
-			360000  1375000
-			261818  1275000
-			64000   1050000
-		>;
-		clocks = <&clks 4>;
-		clock-latency = <61036>; /* two CLK32 periods */
-		cpu0-supply = <&reg_vddd>;
-	};
-};
-
-[...]
