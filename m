@@ -1,75 +1,43 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 00/13] ARM: shmobile: R-Mobile: DT PM domain support
-Date: Thu, 25 Sep 2014 22:19:27 +0200
-Message-ID: <3136347.ncZoJtR6MK@vostro.rjw.lan>
-References: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
+Subject: Re: NULL pointer dereference in swsusp_free with 3.17-rc5
+Date: Thu, 25 Sep 2014 22:26:03 +0200
+Message-ID: <3373215.T4kTmy0SBC@vostro.rjw.lan>
+References: <87zjdq8k7i.fsf@nemi.mork.no> <20140925091318.GA4269@suse.de> <87sijg6kcf.fsf@nemi.mork.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:53343 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750933AbaIYUGN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 16:06:13 -0400
+In-Reply-To: <87sijg6kcf.fsf@nemi.mork.no>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>
+Cc: Joerg Roedel <jroedel@suse.de>, linux-pm@vger.kernel.org
 
-On Thursday, September 25, 2014 06:28:27 PM Geert Uytterhoeven wrote:
-> 	Hi Rafael, Simon, Magnus,
-> 
-> This patch series enables DT support for PM domains on Renesas R-Mobile SoCs.
-> 
-> Currently it's limited to R-Mobile A1 (r8a7740), but given the similarity of
-> the SYSC System-Controller on the various SH-Mobile/R-Mobile SoCs, and the
-> abstraction of PM domains in DT, it should be sufficiently generic to handle
-> other SoCs in the future (e.g. SH-Mobile AP4 (sh7372), SH-Mobile AG5 (sh73a0),
-> R-Mobile APE6 (r8a73a4)).
-> 
-> Changes compared to v2 (more detailed changelogs in the individual patches):
->   - Minor changes to attach/detach callbacks,
->   - Really add the A4MP and D4 PM domains, as fixes are available (see
->     dependencies below),
->   - Scan DT topology to identify special PM domains (CPUs and console),
->   - Move PM domain power-on/off latencies to a separate patch.
-> 
-> Changes compared to v1 (more detailed changelogs in the individual patches):
->   - Several new patches: PM QoS device latencies in DT, attach/detach
->     callbacks,
->   - Run-Time management of the module clocks, making the hack in
->     drivers/sh/pm_runtime.c obsolete for DT platforms using genpd,
->   - Addition of PM QoS device latencies, specified from DT,
->   - Addition of build glue, so this builds and runs without additional
->     changes, incl. s2ram.
-> 
-> This means that functionality-wise, the DT version is now on par with the
-> legacy version ("[PATCH v2 00/11] ARM: shmobile: r8a7740/armadillo800eva legacy
-> PM domain support").
-> 
-> Dependencies:
->   - Simon Horman's renesas-devel-20140924-v3.17-rc6,
->   - Rafael J. Wysocki's linux-pm.git#linux-next,
->   - Jason Cooper's linux.git#irqchip/for-next.
->   - "ARM: shmobile: R-Mobile: Store SYSC base address in rmobile_pm_domain"
->     depends on the legacy version of this series, but if the legacy version
->     will never be accepted, the conflicts are trivial to resolve (drop changes
->     to non-existing PM domains),
->   - Working resume from s2ram depends on:
->       - "[PATCH/RFC] fbdev: sh_mobile_hdmi: Re-init regs before irq re-enable
-> 	on resume",
->       - "[PATCH] ARM: hw_breakpoint: Trap undef instruction exceptions on
-> 	wake-up", or an alternative solution.
->   - Working "no_console_suspend" handling depends on "[PATCH 06/13] ARM:
->     shmobile: armadillo800eva dts: Add chosen/stdout-path".
-> 
-> For your convenience, I've also pushed this (incl. its dependencies) to
-> git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git#rmobile-genpd
-> 
-> Rafael: If you accept "PM / Domains: Add genpd attach/detach callbacks", it
-> would be good to get this patch in v3.18-rc1, as it's the only hard dependency
-> on linux-pm.git for the rest of this series. The other parts have relaxed
-> ordering constraints due to the separation of code and DTS.
+On Thursday, September 25, 2014 12:54:56 PM Bj=C3=B8rn Mork wrote:
+> Joerg Roedel <jroedel@suse.de> writes:
+> > On Thu, Sep 25, 2014 at 09:20:58AM +0200, Bj=C3=B8rn Mork wrote:
+> >> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 
-OK, this one looks good to me, so I can push it for 3.18.
+[cut]
 
--- 
+>=20
+> > Anyway, it would be great if you could test the patch below :)
+>=20
+> The patch works fine for me.  Thanks.  I look forward to the next
+> revision of this set.  It looks like a really nice cleanup. And I am
+> sorry that I didn't catch the bug earlier in the 3.17 cycle.
+
+I'm only going to revert the commit in question as the rest should just
+work without this one, only less efficiently.
+
+So I'll be waiting for a resend of it with the patch that you've just t=
+ested
+folded in after 3.18-rc is out.
+
+--=20
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
