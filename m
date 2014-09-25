@@ -1,47 +1,53 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH 01/27] PM: Add helper
- pm_runtime_last_busy_and_autosuspend()
-Date: Thu, 25 Sep 2014 13:30:38 +0530
-Message-ID: <20140925080038.GX24663@intel.com>
-References: <1411575342-31048-1-git-send-email-vinod.koul@intel.com>
- <1411575342-31048-2-git-send-email-vinod.koul@intel.com>
- <20140924175410.GC1231@amd>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140924175410.GC1231@amd>
-Sender: linux-doc-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, subhransu.s.prusty@intel.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Randy Dunlap <rdunlap@infradead.org>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: [RFC PATCH V3 0/3] PM/CPU: Parallel enalbing nonboot cpus with resume devices
+Date: Thu, 25 Sep 2014 16:32:02 +0800
+Message-ID: <1411633925-9018-1-git-send-email-tianyu.lan@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:61732 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751601AbaIYIgO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 25 Sep 2014 04:36:14 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: peterz@infradead.org, mingo@kernel.org, rafael.j.wysocki@intel.com, toshi.kani@hp.com, akpm@linux-foundation.org, tianyu.lan@intel.com, ktkhai@parallels.com, fabf@skynet.be, laijs@cn.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, srivatsa@mit.edu, viresh.kumar@linaro.org
+Cc: todd.e.brandt@linux.intel.com, tipbot@zytor.com, wangyun@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, Sep 24, 2014 at 07:54:10PM +0200, Pavel Machek wrote:
-> On Wed 2014-09-24 21:44:51, Vinod Koul wrote:
-> > From: Subhransu S. Prusty <subhransu.s.prusty@intel.com>
-> > 
-> > pm_runtime_mark_last_busy and pm_runtime_put_autosuspend are used together
-> > in quite a lot of places. Add a helper for these.
-> > Also updated Documentation for this
-> 
-> With function name as long as the implementation... I'm not sure if
-> this is good helper :-).
-am all ears if that is a general consensus to cut down on length and
-suggestions welcome :)
+This patchset is to parallel enabling nonboot cpus with resuming devices
+during system resume in order to accelerate S2RAM. From test result on
+a 8 logical core Haswell machine, system resume time reduces from 347ms
+to 217ms with this patchset.
+
+In the current world, all nonboot cpus are enabled serially during system
+resume. System resume sequence is that boot cpu enables nonboot cpu one by
+one and then resume devices. Before resuming devices, there are few tasks
+assigned to nonboot cpus after they are brought up. This wastes cpu usage.
+
+This patchset is to allow boot cpu to go forward to resume devices after
+bringing up one nonboot cpu and starting a thread. The thread will be in
+charge of bringing up other frozen cpus. The thread will be scheduled to
+the first online cpu to run . This makes enabling cpu2~x parallel with
+resuming devices.
+
+Patch 2 is to change the policy of init MTRR/PAT for nonboot cpus. Original
+code is to init all nonboot cpus' MTRR/PAT after all nonboot cpus coming online
+during system resume. Now parallel enabling nonboot cpus with resuming devices and
+nonboot cpus will be assigned with tasks before all cpus are online. So
+it's necessary to do init MTRR/PAT just after one nonboot cpus comes online
+just like dynamic single cpu online. 
+
+Patch 3 is to guarantee that all cpus are online before changing cpufreq_suspended
+flag in the cpufreq_resume() to avoid breaking cpufreq subsystem.
+
+Lan Tianyu (3):
+  PM/CPU: Parallel enalbing nonboot cpus with resume devices
+  X86/CPU: Initialize MTRR/PAT when each cpu is online during system
+    resume.
+  Cpufreq: Hold cpu_add_remove_lock before change cpufreq_suspended flag
+
+ drivers/cpufreq/cpufreq.c |  2 ++
+ kernel/cpu.c              | 64 +++++++++++++++++++++++++++++++++++++++--------
+ 2 files changed, 55 insertions(+), 11 deletions(-)
 
 -- 
-~Vinod
+1.8.4.rc0.1.g8f6a3e5.dirty
 
-> 									Pavel
-> 
-> > +static inline int pm_runtime_last_busy_and_autosuspend(struct device *dev)
-> > +{
-> > +	pm_runtime_mark_last_busy(dev);
-> > +	return pm_runtime_put_autosuspend(dev);
-> > +}
-> 
-> -- 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
--- 
