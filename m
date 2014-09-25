@@ -1,51 +1,55 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH] power: max14577: Fix circular config SYSFS dependency
-Date: Thu, 25 Sep 2014 09:05:31 +0200
-Message-ID: <1411628731-8458-1-git-send-email-k.kozlowski@samsung.com>
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
+Subject: Re: NULL pointer dereference in swsusp_free with 3.17-rc5
+Date: Thu, 25 Sep 2014 09:20:58 +0200
+Message-ID: <87egv0i2sl.fsf@nemi.mork.no>
+References: <87zjdq8k7i.fsf@nemi.mork.no> <20140924095111.GC10438@suse.de>
+	<87vbodiaq9.fsf@nemi.mork.no> <19091504.rBv2mCrhao@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:51848 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751543AbaIYHFn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 03:05:43 -0400
+Received: from canardo.mork.no ([148.122.252.1]:58914 "EHLO canardo.mork.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750877AbaIYHVW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 03:21:22 -0400
+In-Reply-To: <19091504.rBv2mCrhao@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Thu, 25 Sep 2014 01:44:12 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Lee Jones <lee.jones@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Joerg Roedel <jroedel@suse.de>, linux-pm@vger.kernel.org
 
-Make the max14577 charger driver depending on SYSFS instead selecting
-it. This fixes warning on x86_64 with allmodconfig:
+"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 
-scripts/kconfig/conf --allmodconfig Kconfig
-fs/sysfs/Kconfig:1:error: recursive dependency detected!
-fs/sysfs/Kconfig:1:	symbol SYSFS is selected by CHARGER_MAX14577
-drivers/power/Kconfig:327:	symbol CHARGER_MAX14577 depends on POWER_SUPPLY
-drivers/power/Kconfig:1:	symbol POWER_SUPPLY is selected by HID_SONY
-drivers/hid/Kconfig:638:	symbol HID_SONY depends on NEW_LEDS
-drivers/leds/Kconfig:8:	symbol NEW_LEDS is selected by SENSORS_APPLESMC
-drivers/hwmon/Kconfig:299:	symbol SENSORS_APPLESMC depends on HWMON
-drivers/hwmon/Kconfig:5:	symbol HWMON is selected by EEEPC_LAPTOP
-drivers/platform/x86/Kconfig:496:	symbol EEEPC_LAPTOP depends on HOTPLUG_PCI
-drivers/pci/hotplug/Kconfig:5:	symbol HOTPLUG_PCI depends on SYSFS
+> I've decided to go with a revert for 3.17, as we don't seem to have a=
+n immediate
+> fix and the final 3.17 may be as close as this Sunday.  So I'm going =
+to send my
+> final pull request for 3.17 to Linus tomorrow or early on Friday.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/power/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Sounds safest to me, FWIW.
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 04e1d2fe2201..0108c2af005b 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -327,7 +327,7 @@ config CHARGER_MANAGER
- config CHARGER_MAX14577
- 	tristate "Maxim MAX14577/77836 battery charger driver"
- 	depends on MFD_MAX14577
--	select SYSFS
-+	depends on SYSFS
- 	help
- 	  Say Y to enable support for the battery charger control sysfs and
- 	  platform data of MAX14577/77836 MUICs.
--- 
-1.9.1
+=46or the next round of this, I think the only missing part was some te=
+st
+like
+
+        if (!forbidden_pages_map || !free_pages_map)
+           goto return_without_freeing_anything;
+
+at the beginning of swsusp_free().  I think we can agree that it isn't
+necessary to repeat that test for every page like the old code did :-)
+
+But I I believe it would be useful to analyze exactly why this is
+necessary, and possibly add a comment with that explanation.  I don't
+have any other arguments for the test than the old code and the oops.
+If this is how it is designed then that would be nice to spell out.  If
+not, then maybe there is a flaw somewhere else that should be fixed
+instead.
+
+And BTW, I believe it would be useful if at least one more person in th=
+e
+world tested hibernation between each release ;-)
+
+
+Bj=C3=B8rn
 
