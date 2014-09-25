@@ -1,65 +1,141 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v7 1/5] PM / Runtime: Add getter for quering the IRQ safe
- option
-Date: Thu, 25 Sep 2014 09:28:09 +0200
-Message-ID: <1411630089.8568.7.camel@AMDC1943>
-References: <1411566612-32277-1-git-send-email-k.kozlowski@samsung.com>
- <1411566612-32277-2-git-send-email-k.kozlowski@samsung.com>
- <20140924175302.GB1231@amd>
+From: Pramod Gurav <pramod.gurav@smartplayin.com>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: Switch to using managed resources
+Date: Thu, 25 Sep 2014 13:07:15 +0530
+Message-ID: <5423C62B.1030709@smartplayin.com>
+References: <1411149909-13007-1-git-send-email-pramod.gurav@smartplayin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <20140924175302.GB1231@amd>
-Sender: linux-doc-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp117.ord1c.emailsrvr.com ([108.166.43.117]:37544 "EHLO
+	smtp117.ord1c.emailsrvr.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751122AbaIYHdl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 03:33:41 -0400
+In-Reply-To: <1411149909-13007-1-git-send-email-pramod.gurav@smartplayin.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com
+Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 
-On =C5=9Bro, 2014-09-24 at 19:53 +0200, Pavel Machek wrote:
-> On Wed 2014-09-24 15:50:08, Krzysztof Kozlowski wrote:
-> > Add a simple getter pm_runtime_is_irq_safe() for quering whether ru=
-ntime
-> > PM IRQ safe was set or not.
-> >=20
-> > Various bus drivers implementing runtime PM may use choose to suspe=
-nd
-> > differently based on IRQ safeness status of child driver (e.g. do n=
-ot
-> > unprepare the clock if IRQ safe is not set).
-> >=20
-> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
->=20
-> Are you sure this is good interface?
->=20
-> "Tell me if another function works this or that way".
->=20
-> That's certainly not traditional interface, and it seems dangerous to
-> me. Callbacks now have different semantic requirements based on value
-> of some flag...
++Valentin
 
-Yes... but to me that semantic change looks similar to the PM runtime
-code which behaves differently when the flag is set. Some PM runtime
-functions might sleep or might not... depending on the flag.
-
-> Would it be possible to have two sets of callbacks, one irq safe and
-> one not?
-
-That would require changing the callbacks during probe of each driver.
-It is possible - I'm fine with that. However we still would need some
-kind of interface for selecting the callbacks according to irq safe
-status - something like pm_runtime_is_irq_safe():
-
-static int amba_probe(struct device *dev)
-{
-=2E..
-	if (pm_runtime_is_irq_safe())
-		dev->driver->pm =3D &amba_pm_irq_safe;
-	else
-		dev->driver->pm =3D &amba_pm;
-
-Best regards,
-Krzysztof
-
-
+On Friday 19 September 2014 11:35 PM, Pramod Gurav wrote:
+> This change switches to managed resource APIs to allocated resources
+> such as irq, clock. Hence does away with release statements of the
+> same resorces in error lables and remove function.
+> 
+> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
+> ---
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.c | 46 ++++++++---------------------
+>  1 file changed, 12 insertions(+), 34 deletions(-)
+> 
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> index 634b6ce..e068dd5 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> @@ -1060,7 +1060,7 @@ static int ti_bandgap_tshut_init(struct ti_bandgap *bgp,
+>  	int status;
+>  
+>  	/* Request for gpio_86 line */
+> -	status = gpio_request(gpio_nr, "tshut");
+> +	status = devm_gpio_request(&pdev->dev, gpio_nr, "tshut");
+>  	if (status < 0) {
+>  		dev_err(bgp->dev, "Could not request for TSHUT GPIO:%i\n", 86);
+>  		return status;
+> @@ -1071,11 +1071,12 @@ static int ti_bandgap_tshut_init(struct ti_bandgap *bgp,
+>  		return status;
+>  	}
+>  
+> -	status = request_irq(gpio_to_irq(gpio_nr), ti_bandgap_tshut_irq_handler,
+> -			     IRQF_TRIGGER_RISING, "tshut", NULL);
+> +	status = devm_request_irq(&pdev->dev, gpio_to_irq(gpio_nr),
+> +				  ti_bandgap_tshut_irq_handler,
+> +				  IRQF_TRIGGER_RISING, "tshut", NULL);
+>  	if (status) {
+> -		gpio_free(gpio_nr);
+>  		dev_err(bgp->dev, "request irq failed for TSHUT");
+> +		return status;
+>  	}
+>  
+>  	return 0;
+> @@ -1104,7 +1105,7 @@ static int ti_bandgap_talert_init(struct ti_bandgap *bgp,
+>  		dev_err(&pdev->dev, "get_irq failed\n");
+>  		return bgp->irq;
+>  	}
+> -	ret = request_threaded_irq(bgp->irq, NULL,
+> +	ret = devm_request_threaded_irq(&pdev->dev, bgp->irq, NULL,
+>  				   ti_bandgap_talert_irq_handler,
+>  				   IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
+>  				   "talert", bgp);
+> @@ -1212,21 +1213,17 @@ int ti_bandgap_probe(struct platform_device *pdev)
+>  		}
+>  	}
+>  
+> -	bgp->fclock = clk_get(NULL, bgp->conf->fclock_name);
+> -	ret = IS_ERR(bgp->fclock);
+> -	if (ret) {
+> +	bgp->fclock = devm_clk_get(NULL, bgp->conf->fclock_name);
+> +	if (IS_ERR(bgp->fclock)) {
+>  		dev_err(&pdev->dev, "failed to request fclock reference\n");
+> -		ret = PTR_ERR(bgp->fclock);
+> -		goto free_irqs;
+> +		return PTR_ERR(bgp->fclock);
+>  	}
+>  
+> -	bgp->div_clk = clk_get(NULL,  bgp->conf->div_ck_name);
+> -	ret = IS_ERR(bgp->div_clk);
+> -	if (ret) {
+> +	bgp->div_clk = devm_clk_get(NULL,  bgp->conf->div_ck_name);
+> +	if (IS_ERR(bgp->div_clk)) {
+>  		dev_err(&pdev->dev,
+>  			"failed to request div_ts_ck clock ref\n");
+> -		ret = PTR_ERR(bgp->div_clk);
+> -		goto free_irqs;
+> +		return PTR_ERR(bgp->div_clk);
+>  	}
+>  
+>  	for (i = 0; i < bgp->conf->sensor_count; i++) {
+> @@ -1251,7 +1248,6 @@ int ti_bandgap_probe(struct platform_device *pdev)
+>  	    clk_rate <= 0) {
+>  		ret = -ENODEV;
+>  		dev_err(&pdev->dev, "wrong clock rate (%d)\n", clk_rate);
+> -		goto put_clks;
+>  	}
+>  
+>  	ret = clk_set_rate(bgp->div_clk, clk_rate);
+> @@ -1357,14 +1353,6 @@ remove_sensors:
+>  disable_clk:
+>  	if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
+>  		clk_disable_unprepare(bgp->fclock);
+> -put_clks:
+> -	clk_put(bgp->fclock);
+> -	clk_put(bgp->div_clk);
+> -free_irqs:
+> -	if (TI_BANDGAP_HAS(bgp, TSHUT)) {
+> -		free_irq(gpio_to_irq(bgp->tshut_gpio), NULL);
+> -		gpio_free(bgp->tshut_gpio);
+> -	}
+>  
+>  	return ret;
+>  }
+> @@ -1388,16 +1376,6 @@ int ti_bandgap_remove(struct platform_device *pdev)
+>  
+>  	if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
+>  		clk_disable_unprepare(bgp->fclock);
+> -	clk_put(bgp->fclock);
+> -	clk_put(bgp->div_clk);
+> -
+> -	if (TI_BANDGAP_HAS(bgp, TALERT))
+> -		free_irq(bgp->irq, bgp);
+> -
+> -	if (TI_BANDGAP_HAS(bgp, TSHUT)) {
+> -		free_irq(gpio_to_irq(bgp->tshut_gpio), NULL);
+> -		gpio_free(bgp->tshut_gpio);
+> -	}
+>  
+>  	return 0;
+>  }
+> 
