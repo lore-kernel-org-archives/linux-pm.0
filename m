@@ -1,159 +1,118 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH v5 00/11] PM / Domains: Generic OF-based support
-Date: Thu, 25 Sep 2014 18:56:26 +0200
-Message-ID: <20140925165625.GC30382@ulmo>
-References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
- <20140925112122.GA22753@ulmo>
- <CAPDyKFp8oK6KAujU44NEwT2vL2_BBPSMuGPkyppHdonPfOmUrQ@mail.gmail.com>
+From: Stefan Wahren <info@lategoodbye.de>
+Subject: Re: ARM: mx28: cpufreq-cpu0 support?
+Date: Thu, 25 Sep 2014 20:24:00 +0200
+Message-ID: <54245DC0.8020700@lategoodbye.de>
+References: <53F9B4BF.2050802@lategoodbye.de>	<20140825080123.GA12289@dragon>	<53FB1041.5010208@lategoodbye.de>	<CAOMZO5CG7mw5W4D3fRPE3TGxQ6-3pTtDJrsNnieN8XKE9dGofQ@mail.gmail.com>	<CAOMZO5CnuWJ9EaLUW8DYFU1Dzeh=92tux0zoUBKoW-L=VWZhhg@mail.gmail.com>	<540412A9.4090806@lategoodbye.de>	<CAOMZO5A7-66LJtv4O2TghN3gVzme4N6JFMYd8TV7zXhUhsXedQ@mail.gmail.com>	<542093C0.1040004@lategoodbye.de>	<CAOMZO5A0of3_arOx2z0_t7xN37jQjJ5uU4gwcsgCuSdpBJJVzw@mail.gmail.com>	<54232D9C.5070404@lategoodbye.de> <CAOMZO5BN8APenWCsy7uHbYNQ4q0-QxorAdGPKBHOHPcUzp2PYg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="yVhtmJPUSI46BTXb"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFp8oK6KAujU44NEwT2vL2_BBPSMuGPkyppHdonPfOmUrQ@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>Mark Brown <br>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOMZO5BN8APenWCsy7uHbYNQ4q0-QxorAdGPKBHOHPcUzp2PYg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Fabio Estevam <festevam@gmail.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, Fabio Estevam <fabio.estevam@freescale.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Otavio Salvador <otavio@ossystems.com.br>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
---yVhtmJPUSI46BTXb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+i added linux-pm list.
 
-On Thu, Sep 25, 2014 at 05:29:10PM +0200, Ulf Hansson wrote:
-> On 25 September 2014 13:21, Thierry Reding <thierry.reding@gmail.com> wro=
-te:
-> > I just noticed these patches because they conflicted with some of the
-> > local patches I had to add a very similar framework. One of the reasons
-> > why I hadn't posted these publicly yet is because the platform where I
-> > want to use this (Tegra) is somewhat quirky when it comes to power
-> > domains.
->=20
-> It's great that more things goes on in this area. :-)
->=20
-> >
-> > On Tegra these domains are called power gates and they currently have
-> > their own API. We've been looking at migrating things over to some
-> > generic framework for some time and PM domains do seem like a good fit.
-> > However one of the quirks regarding these domains on Tegra is that a
-> > fixed sequence exists that needs to be respected when enabling or
-> > disabling a power partition. The exact sequence can be found in the
-> > drivers/soc/tegra/pmc.c driver's tegra_powergate_sequence_power_up()
-> > function. Essentially we need to call into the clock and reset drivers
-> > at very specific moments during the operations that the PMC does.
->=20
-> I am not sure I fully understand how the power gating actually
-> happens. How is it triggered?
+Am 24.09.2014 23:47, schrieb Fabio Estevam:
+> On Wed, Sep 24, 2014 at 5:46 PM, Stefan Wahren <info@lategoodbye.de> wrote:
+>
+>> thanks, registering cpufreq-cpu0 and adding missing properties reg & clocks
+>> did the trick.
+>>
+>> Now the sys interface of cpufreq is available and the mxs-regulator seems to
+>> handle frequency change. But the frequency selection do not work as
+>> expected. If i set cpu frequency to 454736, 392727 or 261818 kHz, the
+>
+> Why 454736 instead of 454MHz? Same for the other values.
 
-Drivers explicitly call the custom API. So all drivers that need to turn
-on power partitions have a call to tegra_powergate_sequence_power_up()
-in .probe() and tegra_powergate_power_off() in .remove().
+I took these values from the cpufreq driver in the Freescale BSP and 
+they are in the datasheet, too. If i take 454000 and so one, i will get 
+this nice oops:
 
-> > One solution to this would be to make the needed clocks and resets
-> > available to the power domain driver via DT, but then we have the
-> > problem that two drivers would be controlling the same resources. For
-> > example drivers could still want to disable the clock for more fine-
-> > grained power management.
->=20
-> Sorry, but I think I need a better understanding to be able to comment.
->=20
-> But maybe, drivers could implement runtime PM support and define
-> runtime PM callbacks. From the callbacks those will handle clocks and
-> resets, is not that enough? What more is needed from a PM domain point
-> of view?
+root@duckbill:~# modprobe cpufreq-cpu0
+[   95.764654] cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted 
+freq: 454736 KHz
+[   95.773146] cpufreq_cpu0: failed to find OPP for 454736842
+[   95.778692] cpufreq: __target_index: Failed to change cpu frequency: -34
+[   95.786235] ------------[ cut here ]------------
+[   95.790913] kernel BUG at drivers/cpufreq/cpufreq.c:1249!
+[   95.796342] Internal error: Oops - BUG: 0 [#1] ARM
+[   95.801154] Modules linked in: cpufreq_cpu0(+)
+[   95.805673] CPU: 0 PID: 446 Comm: modprobe Not tainted 
+3.17.0-rc4-00268-ge789d1c-dirty #17
+[   95.813965] task: c6fa8980 ti: c6c86000 task.ti: c6c86000
+[   95.819409] PC is at cpufreq_add_dev+0x530/0x5b4
+[   95.824069] LR is at mark_held_locks+0x74/0x9c
+[...]
 
-Let me quote the actual power up sequence code:
+>
+>> cpufreq driver change it silently to 240000 kHz.
+>
+> 24MHz is the osc clock. It seems you did not turn on the PLL0.
+>
+> Check the POWER bit of HW_CLKCTRL_PLL0CTRL0 register.
+>
 
-	int tegra_powergate_sequence_power_up(int id, struct clk *clk,
-					      struct reset_control *rst)
-	{
-		int ret;
+240000 kHz = 240 MHz
 
-		reset_control_assert(rst);
+I fixed this specific problem by setting the clock reference in the DT 
+to ref_cpu instead of cpu. After that i'm able to set 392727, 360000, 
+261818 and 64000 kHz. Unfortunately the highest and default value 454736 
+is not selectable:
 
-		ret =3D tegra_powergate_power_on(id);
-		if (ret)
-			goto err_power;
+[   38.901842] cpu cpu0: Looking up cpu0-supply from device tree
+[   38.904082] freq_table: table entry 0: 64000 kHz
+[   38.904141] freq_table: table entry 1: 261818 kHz
+[   38.904176] freq_table: table entry 2: 360000 kHz
+[   38.904206] freq_table: table entry 3: 392727 kHz
+[   38.904235] freq_table: table entry 4: 454736 kHz
+[   38.908050] freq_table: request for verification of policy (64000 - 
+454736 kHz) for cpu 0
+[   38.908116] freq_table: verification lead to (64000 - 454736 kHz) for 
+cpu 0
+[   38.908176] freq_table: request for verification of policy (64000 - 
+454736 kHz) for cpu 0
+[   38.908220] freq_table: verification lead to tage: vddd register val 30
+root@duckbill:/sys/devices/system/cpu/cpu0/cpufreq# echo "454736" > 
+scaling_setspeed
+[  595.671708] cpufreq_cpu0: failed to find OPP for 454736842
+[  595.677272] cpufreq: __target_index: Failed to change cpu frequency: -34
 
-		ret =3D clk_prepare_enable(clk);
-		if (ret)
-			goto err_clk;
+That looks like a bug in cpufreq.
 
-		usleep_range(10, 20);
+Best regards
+Stefan
 
-		ret =3D tegra_powergate_remove_clamping(id);
-		if (ret)
-			goto err_clamp;
+PS: Here is my relevant DT:
 
-		usleep_range(10, 20);
-		reset_control_deassert(rst);
+############# imx28.dtsi
 
-		return 0;
+[...]
 
-	err_clamp:
-		clk_disable_unprepare(clk);
-	err_clk:
-		tegra_powergate_power_off(id);
-	err_power:
-		return ret;
-	}
-	EXPORT_SYMBOL(tegra_powergate_sequence_power_up);
+cpus {
+	#address-cells = <1>;
+	#size-cells = <0>;
 
-The critical part is that we need to enable the clock after the
-partition has been powered, but before the clamps are removed.
-Implementing this with runtime PM support in drivers won't work
-because the power domain driver has to do both the powering up
-and removing the clamps, so there's no place to inject the call
-to enable the clock.
+	cpu@0 {
+		compatible = "arm,arm926ej-s";
+		device_type = "cpu";
+		reg = <0x0>;
+		operating-points = <
+			/* kHz	uV */
+			454736  1550000
+			392727  1475000
+			360000  1375000
+			261818  1275000
+			64000   1050000
+		>;
+		clocks = <&clks 4>;
+		clock-latency = <61036>; /* two CLK32 periods */
+		cpu0-supply = <&reg_vddd>;
+	};
+};
 
-> > Furthermore for some devices it may turn out
-> > that turning the domain off and on introduces too much latency to be
-> > useful.
->=20
-> This should be handled by the generic PM domain governor. Through the
-> per device QOS, you are able to set latencies constraints which could
-> prevent a PM domain from being gated.
-
-Okay, that sounds good.
-
-> > Does anyone have any better ideas on how to make that work with this
-> > generic PM domain framework? Or is Tegra just too special to be a good
-> > fit?
->=20
-> I certainly think it's worth a try, I would be surprised if we
-> shouldn't be able to address requirements from Tegra.
->=20
-> As you might have figured out, I am dedicated to improve the generic
-> power domain such it could fit more SOCs than today, thus I am also
-> hoping for more SOC to start to convert to it.
-
-I do have code that seems to work in most cases without following the
-above sequence, but there are no guarantees, so I'm reluctant to make
-that change.
-
-Thierry
-
---yVhtmJPUSI46BTXb
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBAgAGBQJUJEk5AAoJEN0jrNd/PrOhIa8P/A+ly9JKUyQQrd3zOes5xayn
-OHRfLIe+chrrqUnf58cWVqNgfTlH38jqSnE7BlHBPrWPfJeTm9MG5gLbF9BlMx88
-D385iKUbR35GzHiXBwWog7TEUU8dVIilmULIlGMXXZ0IUexGdLVU7pjXvir/42OS
-eAWYuDanpK4FOh9eQFHRrtE1Mwd38CbzjBNsGFGeKJiGNqHMi8PlbGTlXS48JG64
-3lOeZyWdPUTi38EJjaWMInO+UL16mz5Joz81VOiPEXp/dHUrRbIFqM3gerBqfBej
-fyUKoxWuxRLPV7yf30NnLqmC3wdk0bvDlU4X4qih9imqRcEP+K6YnVOtjNtDnyhM
-xsljZcpu4CYqPj7r5BIC2UUmrkgiVooX8DvaOVU7o7UK0MR1fBSN0ILzNYDXFvxl
-fFStHyYvGmTg8gDR68Q20Xxh9kI1/9Oe36btTH1r3LjbGn2dRigD9ZavwLP16Jvo
-c/HsAVoaUAlCi1g3Y2xP9lUVG7bSoG/jf2sL3e+kmo25RqZR/tj9hfNu6gopeMe5
-glkESwbX8BhX2R3KJhD+CVDk7yVCim7ytB3CZRayijHAGD9J1L/1Z1pAp28YOszv
-tGFfGs3Y3+I4s/IXZG6zjHhxFdxQHOHe9GMhCz6wO51RUEKbnJJ5rs7v+dHTlH31
-6O2idJ/sM6J0QPFbV/89
-=8tId
------END PGP SIGNATURE-----
-
---yVhtmJPUSI46BTXb--
+[...]
