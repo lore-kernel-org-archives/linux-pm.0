@@ -1,88 +1,119 @@
-From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Subject: [PATCH v3 01/13] PM / Domains: Add genpd attach/detach callbacks
-Date: Thu, 25 Sep 2014 18:28:28 +0200
-Message-ID: <1411662520-22795-2-git-send-email-geert+renesas@glider.be>
-References: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1411662520-22795-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <philipp.zabel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 00/13] ARM: shmobile: R-Mobile: DT PM domain support
+Date: Thu, 25 Sep 2014 18:28:27 +0200
+Message-ID: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from baptiste.telenet-ops.be ([195.130.132.51]:51788 "EHLO
+	baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753861AbaIYQ2z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 12:28:55 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-While a PM domain can enable PM runtime management of its devices' module
-clocks by setting
+	Hi Rafael, Simon, Magnus,
 
-	genpd->dev_ops.stop = pm_clk_suspend;
-	genpd->dev_ops.start = pm_clk_resume;
+This patch series enables DT support for PM domains on Renesas R-Mobile SoCs.
 
-this also requires registering the clocks with the pm_clk subsystem.
-In the legacy case, this is handled by the platform code, after
-attaching the device to its PM domain.
+Currently it's limited to R-Mobile A1 (r8a7740), but given the similarity of
+the SYSC System-Controller on the various SH-Mobile/R-Mobile SoCs, and the
+abstraction of PM domains in DT, it should be sufficiently generic to handle
+other SoCs in the future (e.g. SH-Mobile AP4 (sh7372), SH-Mobile AG5 (sh73a0),
+R-Mobile APE6 (r8a73a4)).
 
-When the devices are instantiated from DT, devices are attached to their
-PM domains by generic code, leaving no method for the platform-specific
-PM domain code to register their clocks.
+Changes compared to v2 (more detailed changelogs in the individual patches):
+  - Minor changes to attach/detach callbacks,
+  - Really add the A4MP and D4 PM domains, as fixes are available (see
+    dependencies below),
+  - Scan DT topology to identify special PM domains (CPUs and console),
+  - Move PM domain power-on/off latencies to a separate patch.
 
-Add two callbacks, allowing a PM domain to perform platform-specific
-tasks when a device is attached to or detached from a PM domain.
+Changes compared to v1 (more detailed changelogs in the individual patches):
+  - Several new patches: PM QoS device latencies in DT, attach/detach
+    callbacks,
+  - Run-Time management of the module clocks, making the hack in
+    drivers/sh/pm_runtime.c obsolete for DT platforms using genpd,
+  - Addition of PM QoS device latencies, specified from DT,
+  - Addition of build glue, so this builds and runs without additional
+    changes, incl. s2ram.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Reviewed-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
----
-v3:
-  - Add Reviewed-by (Ulf: are you still OK with the changes in v3?)
-  - Move calling of the callbacks to a point where dev->pm_domain is
-    valid, so the domain parameter is no longer needed,
-  - Make callbacks return void.
-v2:
-  - New
+This means that functionality-wise, the DT version is now on par with the
+legacy version ("[PATCH v2 00/11] ARM: shmobile: r8a7740/armadillo800eva legacy
+PM domain support").
 
- drivers/base/power/domain.c | 6 ++++++
- include/linux/pm_domain.h   | 2 ++
- 2 files changed, 8 insertions(+)
+Dependencies:
+  - Simon Horman's renesas-devel-20140924-v3.17-rc6,
+  - Rafael J. Wysocki's linux-pm.git#linux-next,
+  - Jason Cooper's linux.git#irqchip/for-next.
+  - "ARM: shmobile: R-Mobile: Store SYSC base address in rmobile_pm_domain"
+    depends on the legacy version of this series, but if the legacy version
+    will never be accepted, the conflicts are trivial to resolve (drop changes
+    to non-existing PM domains),
+  - Working resume from s2ram depends on:
+      - "[PATCH/RFC] fbdev: sh_mobile_hdmi: Re-init regs before irq re-enable
+	on resume",
+      - "[PATCH] ARM: hw_breakpoint: Trap undef instruction exceptions on
+	wake-up", or an alternative solution.
+  - Working "no_console_suspend" handling depends on "[PATCH 06/13] ARM:
+    shmobile: armadillo800eva dts: Add chosen/stdout-path".
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index cd400575ee0ee89c..6e36bb09e7d9c144 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1436,6 +1436,9 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- 
- 	spin_unlock_irq(&dev->power.lock);
- 
-+	if (genpd->attach_dev)
-+		genpd->attach_dev(dev);
-+
- 	mutex_lock(&gpd_data->lock);
- 	gpd_data->base.dev = dev;
- 	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
-@@ -1528,6 +1531,9 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
- 	genpd->device_count--;
- 	genpd->max_off_time_changed = true;
- 
-+	if (genpd->detach_dev)
-+		genpd->detach_dev(dev);
-+
- 	spin_lock_irq(&dev->power.lock);
- 
- 	dev->pm_domain = NULL;
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 292079d8da6b8a78..9a93e622bdea3f79 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -73,6 +73,8 @@ struct generic_pm_domain {
- 	bool cached_power_down_ok;
- 	struct device_node *of_node; /* Node in device tree */
- 	struct gpd_cpu_data *cpu_data;
-+	void (*attach_dev)(struct device *dev);
-+	void (*detach_dev)(struct device *dev);
- };
- 
- static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
+For your convenience, I've also pushed this (incl. its dependencies) to
+git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git#rmobile-genpd
+
+Rafael: If you accept "PM / Domains: Add genpd attach/detach callbacks", it
+would be good to get this patch in v3.18-rc1, as it's the only hard dependency
+on linux-pm.git for the rest of this series. The other parts have relaxed
+ordering constraints due to the separation of code and DTS.
+
+Question: Can we use the preliminary PM domain power-on/off and QoS device
+latencie patches (the last 2) as-is, or should we refine them first?
+
+Thanks!
+
+Geert Uytterhoeven (13):
+  PM / Domains: Add genpd attach/detach callbacks
+  PM / Domains: Add DT bindings for power-on/off latencies
+  PM / Domains: Add DT bindings for PM QoS device latencies
+  PM / Domains: Add DT bindings for the R-Mobile System Controller
+  PM / Domains: Add helper variable np = dev->of_node
+  PM / Domains: Retrieve PM QoS device latencies from DT
+  ARM: shmobile: R-Mobile: Use generic_pm_domain.attach_dev() for pm_clk
+    setup
+  ARM: shmobile: R-Mobile: Store SYSC base address in rmobile_pm_domain
+  ARM: shmobile: R-Mobile: Add DT support for PM domains
+  ARM: shmobile: r8a7740 dtsi: Add PM domain support
+  drivers: sh: Disable PM runtime for multi-platform r8a7740 with genpd
+  ARM: shmobile: r8a7740 dtsi: Add preliminary PM domain latencies
+  ARM: shmobile: r8a7740 dtsi: Add preliminary PM QoS device latencies
+
+ .../devicetree/bindings/power/power_domain.txt     |  16 ++
+ .../bindings/power/renesas,sysc-rmobile.txt        | 111 +++++++++
+ arch/arm/boot/dts/r8a7740.dtsi                     | 257 +++++++++++++++++++++
+ arch/arm/mach-shmobile/Kconfig                     |   3 +-
+ arch/arm/mach-shmobile/pm-r8a7740.c                |  14 ++
+ arch/arm/mach-shmobile/pm-rmobile.c                | 236 +++++++++++++++++--
+ arch/arm/mach-shmobile/pm-rmobile.h                |   3 +-
+ arch/arm/mach-shmobile/pm-sh7372.c                 |  11 +
+ drivers/base/power/domain.c                        |  32 ++-
+ drivers/sh/pm_runtime.c                            |   2 +
+ include/linux/pm_domain.h                          |   2 +
+ 11 files changed, 663 insertions(+), 24 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/renesas,sysc-rmobile.txt
+
 -- 
 1.9.1
 
+Gr{oetje,eeting}s,
+
+						Geert
+
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
