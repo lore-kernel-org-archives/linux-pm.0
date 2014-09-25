@@ -1,74 +1,117 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: max14577: Fix circular config SYSFS dependency
-Date: Thu, 25 Sep 2014 16:17:06 +0200
-Message-ID: <20140925141706.GA21125@earth.universe>
-References: <1411628731-8458-1-git-send-email-k.kozlowski@samsung.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: [RFC PATCH 4/4] ARM: dts: k2hk-evm: add pm domains for net, qmss and knav_dmas
+Date: Thu, 25 Sep 2014 18:05:37 +0300
+Message-ID: <1411657537-25238-5-git-send-email-grygorii.strashko@ti.com>
+References: <1411657537-25238-1-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="x+6KMIRAuhnl3hBn"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:47968 "EHLO mail.kernel.org"
+Received: from bear.ext.ti.com ([192.94.94.41]:42132 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752520AbaIYORO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Sep 2014 10:17:14 -0400
-Content-Disposition: inline
-In-Reply-To: <1411628731-8458-1-git-send-email-k.kozlowski@samsung.com>
+	id S1752585AbaIYPGX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 25 Sep 2014 11:06:23 -0400
+In-Reply-To: <1411657537-25238-1-git-send-email-grygorii.strashko@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>, Lee Jones <lee.jones@linaro.org>
+To: santosh.shilimkar@ti.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, ben.dooks@codethink.co.uk, laurent.pinchart@ideasonboard.com, grant.likely@secretlab.ca, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
 
+Add Keystone PM domains nodes for NetCP, NetCPx, QMSS, KNAV-DMA
+devices.
 
---x+6KMIRAuhnl3hBn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+---
+ arch/arm/boot/dts/k2hk-evm.dts | 31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
 
-On Thu, Sep 25, 2014 at 09:05:31AM +0200, Krzysztof Kozlowski wrote:
-> Make the max14577 charger driver depending on SYSFS instead selecting
-> it. This fixes warning on x86_64 with allmodconfig:
->=20
-> scripts/kconfig/conf --allmodconfig Kconfig
-> fs/sysfs/Kconfig:1:error: recursive dependency detected!
-> fs/sysfs/Kconfig:1:	symbol SYSFS is selected by CHARGER_MAX14577
-> drivers/power/Kconfig:327:	symbol CHARGER_MAX14577 depends on POWER_SUPPLY
-> drivers/power/Kconfig:1:	symbol POWER_SUPPLY is selected by HID_SONY
-> drivers/hid/Kconfig:638:	symbol HID_SONY depends on NEW_LEDS
-> drivers/leds/Kconfig:8:	symbol NEW_LEDS is selected by SENSORS_APPLESMC
-> drivers/hwmon/Kconfig:299:	symbol SENSORS_APPLESMC depends on HWMON
-> drivers/hwmon/Kconfig:5:	symbol HWMON is selected by EEEPC_LAPTOP
-> drivers/platform/x86/Kconfig:496:	symbol EEEPC_LAPTOP depends on HOTPLUG_=
-PCI
-> drivers/pci/hotplug/Kconfig:5:	symbol HOTPLUG_PCI depends on SYSFS
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+diff --git a/arch/arm/boot/dts/k2hk-evm.dts b/arch/arm/boot/dts/k2hk-evm.dts
+index 91371f7..a7b468c 100644
+--- a/arch/arm/boot/dts/k2hk-evm.dts
++++ b/arch/arm/boot/dts/k2hk-evm.dts
+@@ -58,6 +58,13 @@
+ 				clock-output-names = "refclk-ddr3b";
+ 			};
+ 		};
++
++		qmss_domain: qmss_pm_controller {
++			compatible = "ti,keystone-gpc";
++			clocks = <&chipclk13>;
++			#power-domain-cells = <0>;
++		};
++
+ 		qmss: qmss@2a40000 {
+ 			compatible = "ti,keystone-navigator-qmss";
+ 			dma-coherent;
+@@ -65,6 +72,8 @@
+ 			#size-cells = <1>;
+ 			clocks = <&chipclk13>;
+ 			ranges;
++			power-domains = <&qmss_domain>;
++
+ 			queue-range	= <0 0x4000>;
+ 			linkram0	= <0x100000 0x8000>;
+ 			linkram1	= <0x0 0x10000>;
+@@ -192,12 +201,20 @@
+ 			};
+ 		}; /* qmss */
+ 
++		knav_dmas_domain: knav_dmas_pm_controller {
++			compatible = "ti,keystone-gpc";
++			clocks = <&clkpa>, <&clkxge>;
++			#power-domain-cells = <0>;
++		};
++
+ 		knav_dmas: knav_dmas@0 {
+ 			compatible = "ti,keystone-navigator-dma";
+ 			clocks = <&clkpa>, <&clkxge>;
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			ranges;
++			power-domains = <&knav_dmas_domain>;
++
+ 			ti,navigator-cloud-address = <0x23a80000 0x23a90000
+ 						   0x23aa0000 0x23ab0000>;
+ 
+@@ -222,6 +239,12 @@
+ 			};
+ 		};
+ 
++		netcp_domain: netcp_pm_controller {
++			compatible = "ti,keystone-gpc";
++			clocks = <&clkpa>, <&clkcpgmac>, <&chipclk12>;
++			#power-domain-cells = <0>;
++		};
++
+ 		netcp: netcp@2090000 {
+ 			reg = <0x2620110 0x8>;
+ 			reg-names = "efuse";
+@@ -229,6 +252,7 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			ranges;
++			power-domains = <&netcp_domain>;
+ 
+ 			clocks = <&clkpa>, <&clkcpgmac>, <&chipclk12>;
+ 			dma-coherent;
+@@ -302,11 +326,18 @@
+ 			};
+ 		};
+ 
++		netcpx_domain: netcpx_pm_controller {
++			compatible = "ti,keystone-gpc";
++			clocks = <&clkxge>;
++			#power-domain-cells = <0>;
++		};
++
+ 		netcpx: netcpx@2f00000 {
+ 			compatible = "ti,netcp-1.0";
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			ranges;
++			power-domains = <&netcpx_domain>;
+ 
+ 			clocks = <&clkxge>;
+ 			clock-names = "clk_xge";
+-- 
+1.9.1
 
-http://git.infradead.org/battery-2.6.git/commit/6a91e854442cf950d9cb8068916=
-67d16c4a41d88
-
--- Sebastian
-
---x+6KMIRAuhnl3hBn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUJCPiAAoJENju1/PIO/qaahgP/AkRCq8Nhdv7Jqo2vJib8/gr
-IAqdohuUnyuAlqIqwgGiSbFI07ypUV3UMFNT6ITDQ03/EOgKx5vGT1NLK/qFDQDj
-pk4p+XXDtODISYM1QphPOLOxSbEjVRBIgbpWHktkNvqR56YnSKvDxyxfSt0atSpA
-GhAWCwGAkYwCUkpnxLcLhiwFVDtzt2sTN5yQnKykLHMqn+hgBCTDy/xpMiLDzabJ
-kQMW3BoaDPY5IOBtimQzGQhYDfXoPg/0fr/vptfLGyGM9QyCtVu/CSGxA1NZo7ZT
-Sw6kSMsDFUTiOlCi/HuxZW4kmszWQ5Oj/h9dUTcESooV9QVwjGKfH5iuqJM6zlpC
-0cCJaWSNJjG64oxkbRENX504nQ9TRyZGtdVQV+t3nd4n0V+jNj4Pyh860j/mB1XQ
-OvzTLp6ILuZjYnQcAVZyKOTAAKVVvoddJsM/HYhwI3ZpaosHuBztl7L6GlA/B+OL
-BIIUmk6DE7RGI/UDGbPCbTAieAo2Z0wBggwQvDz2VOGDOwKAsWHVSR8p9dH1JVXS
-VHWq3wnEc9NRn/X4g/ylR5BnoEtbU7+aDzzATj9IE9Fyw0P9DMKJr4cUyNnuxxeC
-UgupEgeJ4vKEYCNbI/FBwSWhvfnWQbn7I2EYUjkqaVcKGSAR7v1w2ejHK4zHta5X
-x43EnIb0N9V1Y1sEhPUB
-=MFKD
------END PGP SIGNATURE-----
-
---x+6KMIRAuhnl3hBn--
