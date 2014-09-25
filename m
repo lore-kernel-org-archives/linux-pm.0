@@ -1,28 +1,25 @@
 From: Lina Iyer <lina.iyer@linaro.org>
 Subject: Re: [PATCH v3 3/4] irq: Allow multiple clients to register for irq
  affinity notification
-Date: Thu, 25 Sep 2014 09:43:02 -0600
-Message-ID: <20140925154209.GF1004@ilina-mac.local>
+Date: Thu, 25 Sep 2014 09:50:27 -0600
+Message-ID: <20140925155027.GG1004@ilina-mac.local>
 References: <1409170479-29955-1-git-send-email-lina.iyer@linaro.org>
  <1409170479-29955-4-git-send-email-lina.iyer@linaro.org>
  <alpine.DEB.2.10.1408272239190.3323@nanos>
  <20140902184305.GB91995@ilina-mac.local>
  <alpine.DEB.2.10.1409022109050.3333@nanos>
- <20140924221023.GD1004@ilina-mac.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:44055 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753917AbaIYPnH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 11:43:07 -0400
-Received: by mail-pa0-f45.google.com with SMTP id rd3so1375096pab.32
-        for <linux-pm@vger.kernel.org>; Thu, 25 Sep 2014 08:43:06 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20140924221023.GD1004@ilina-mac.local>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.10.1409022109050.3333@nanos>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: khilman@linaro.org, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, daniel.lezcano@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: khilman@linaro.org, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tglx@linutronix.de, rjw@rjwysocki.net
+
+Resending...
+Hoping to retain the thread information, this time.
 
 On Tue, Sep 02 2014 at 14:56 -0600, Thomas Gleixner wrote:
 >On Tue, 2 Sep 2014, Lina Iyer wrote:
@@ -348,4 +345,3 @@ information.
 
 Thanks,
 Lina
-
