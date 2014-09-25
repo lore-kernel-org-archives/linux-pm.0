@@ -1,81 +1,90 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: [GIT PULL] PM / AVS changes for v3.18 - v2
-Date: Thu, 25 Sep 2014 12:05:42 -0700
-Message-ID: <7ha95nikqh.fsf@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 00/27] add
+	pm_runtime_last_busy_and_autosuspend() helper
+Date: Thu, 25 Sep 2014 21:54:36 +0200
+Message-ID: <32849712.0gtj7BlKY3@vostro.rjw.lan>
+References: <1411575342-31048-1-git-send-email-vinod.koul@intel.com>
+ <20140925142201.GD28045@saruman> <20140925142758.GB1316@katana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:64032 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751817AbaIYTFp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 15:05:45 -0400
-Received: by mail-pd0-f180.google.com with SMTP id r10so11113518pdi.25
-        for <linux-pm@vger.kernel.org>; Thu, 25 Sep 2014 12:05:45 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <20140925142758.GB1316@katana>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Wolfram Sang <wsa@the-dreams.de>, Vinod Koul <vinod.koul@intel.com>
+Cc: linux-wireless@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, patches@opensource.wolfsonmicro.com, linux-doc@vger.kernel.org, Seungwon Jeon <tgih.jun@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Chris Ball <chris@printf.net>, dri-devel@lists.freedesktop.org, Marcin Wojtas <mw@semihalf.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, David Herrmann <dh.herrmann@gmail.com>, Shinya Kuribayashi <skuribay@pobox.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Jingoo Han <jg1.han@samsung.com>, Jaehoon Chung <jh80.chung@samsung.com>, Jani Nikula <jani.nikula@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Alan Stern <stern@rowland.harvard.edu>, Ben Skeggs <bskeggs@redhat.com>, Bjorn Andersson <bjorn.andersson@sonymobile.com>, Dave Airlie <airlied@redhat.com>, Ulf Hansson <ulf.hanss>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, nm@ti.com, dianders@chromium.org, heiko@sntech.de, broonie@kernel.org
 
-Hi Rafael,
+On Thursday, September 25, 2014 04:27:58 PM Wolfram Sang wrote:
+> 
+> --Bn2rw/3z4jIqBvZU
+> Content-Type: text/plain; charset=us-ascii
+> Content-Disposition: inline
+> Content-Transfer-Encoding: quoted-printable
+> 
+> On Thu, Sep 25, 2014 at 09:22:01AM -0500, Felipe Balbi wrote:
+> > On Thu, Sep 25, 2014 at 01:27:18PM +0530, Vinod Koul wrote:
+> > > On Wed, Sep 24, 2014 at 03:32:19PM -0500, Felipe Balbi wrote:
+> > > > > > > OK, I guess this is as good as it gets.
+> > > > > > >=20
+> > > > > > > What tree would you like it go through?
+> > > > > >=20
+> > > > > > Do we really need this new helper ? I mean, the very moment when =
+> we
+> > > > > > decide to implement ->runtime_idle() we will need to get rid of t=
+> his
+> > > > > > change. I wonder if it's really valid...
+> > > > >=20
+> > > > > I'm not sure I'm following?  This seems to simply implement what dr=
+> ivers
+> > > > > have been doing already as one function.  Why would it be invalid t=
+> o reduce
+> > > > > code duplication?
+> > > >=20
+> > > > For two reasons:
+> > > >=20
+> > > > 1) the helper has no inteligence whatsoever. It just calls the same
+> > > > functions.
+> > > >=20
+> > > > 2) the duplication will vanish whenever someone implements
+> > > > ->runtime_idle() and have that call pm_runtime_autosuspend() (like PCI
+> > > > and USB buses are doing today). This will just be yet another line th=
+> at
+> > > > needs to change.
+> > > >=20
+> > > > Frankly though, no strong feelings, I just think it's a commit that
+> > > > doesn't bring that any benefits other than looking like one line was
+> > > > removed.
+> > > and yes that is what it tries to do nothing more nothing less. If in fu=
+> ture
+> > > there are no users (today we have quite a few), then we can remove the =
+> dead
+> > > macro, no harm. But that is not the situation today.
+> >=20
+> > as I said, a commit that's bound to be useless. It's not like you're
+> > saving 10 lines of code, it's only one. Replacing two simple lines with
+> > a function which takes <joke> almost as many characters to type </joke>.
+> >=20
+> > IMO, this is pretty useless and I'd rather not see them in the drivers I
+> > maintain, sorry.
+> 
+> It is not a NACK from me; yet from a high-level perspective I agree with
+> Felipe.
 
-The first pull request was missing a dependency on a feature that went
-in through Mark Brown's regulator tree, so it wouldn't actually compile
-properly by itself.  This version pulls in that topic branch from Marks
-tree (topic/voltage-ev branch, already part of -next), and now compiles=
- fine.
+OK
 
-Kevin
+I'd rather not merge something that driver people don't want to use.
 
-The following changes since commit 7d1311b93e58ed55f3a31cc8f94c4b8fe988=
-a2b9:
+Vinod?
 
-  Linux 3.17-rc1 (2014-08-16 10:40:26 -0600)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux.git tags/=
-avs-for-3.18
-
-for you to fetch changes up to cd8caa18deff6d2d87a4e3161b4dd8c6da3c4f38=
-:
-
-  Merge branch 'topic/voltage-ev' of git://git.kernel.org/pub/scm/linux=
-/kernel/git/broonie/regulator into avs-next (2014-09-25 09:57:57 -0700)
-
-----------------------------------------------------------------
-PM / AVS changes for v3.18
-
-- Add new driver for Rockchip IO voltage domains
-- update MAINTAINERS to reflect maintenance of drivers/power/avs/*
-
-----------------------------------------------------------------
-Heiko St=C3=BCbner (2):
-      regulator: core: Add REGULATOR_EVENT_PRE_VOLTAGE_CHANGE (and ABOR=
-T)
-      PM / AVS: rockchip-io: add driver handling Rockchip io domains
-
-Kevin Hilman (2):
-      MAINTAINERS: update entry for drivers/power/avs
-      Merge branch 'topic/voltage-ev' of git://git.kernel.org/.../broon=
-ie/regulator into avs-next
-
- Documentation/devicetree/bindings/power/rockchip-io-domain.txt |  83 +=
-++++++++++++++++++
- MAINTAINERS                                                    |   4 +=
--
- drivers/power/avs/Kconfig                                      |   8 +=
-+
- drivers/power/avs/Makefile                                     |   1 +
- drivers/power/avs/rockchip-io-domain.c                         | 351 +=
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
-+++++++
- drivers/regulator/core.c                                       |  63 +=
-++++++++++++--
- include/linux/regulator/consumer.h                             |  20 +=
-++++
- 7 files changed, 521 insertions(+), 9 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/rockchip-io=
--domain.txt
- create mode 100644 drivers/power/avs/rockchip-io-domain.c
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
