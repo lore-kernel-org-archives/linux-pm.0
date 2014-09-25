@@ -1,45 +1,40 @@
-From: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
-Subject: Re: [PATCH 1/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Thu, 25 Sep 2014 08:07:28 +0200
-Message-ID: <1411625248.18835.10.camel@x200t>
-References: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
-	 <1478598.DgG2vI5Y04@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-7"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.zih.tu-dresden.de ([141.30.67.72]:47611 "EHLO
-	mailout1.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750793AbaIYGHi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 02:07:38 -0400
-In-Reply-To: <1478598.DgG2vI5Y04@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCHv3 0/4] cpufreq: Use cpufreq-cpu0 driver for Exynos3250
+Date: Thu, 25 Sep 2014 16:05:03 +0900
+Message-ID: <1411628707-8496-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, tomasz.figa@gmail.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, kyungmin.park@samsung.com, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, prarit@redhat.com, skannan@codeaurora.org
 
-+AD4 What's the current status of this series?
-+AD4 
-We had some iterations of patches, but the only solution that works for
-me is the patch with the coarse-grained lock that I sent at Mon, 08 Sep
-2014 10:16:48 CEST +AFs-1+AF0
-Viresh is pretty occupied lately, but he told me that he might do the
-tests himself when the current period of busyness is over as he is
-supplied with a test system. I'm not sure about his current status (busy
-or testing). 
+This patchset use cpufreq-cpu0 driver to support Exynos3250 cpufreq. So, this
+patchset is based on following patchset[1] by Thomas Abraham.
+[1] [PATCH v10 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
+    - http://www.spinics.net/lists/arm-kernel/msg364790.html
 
-+AFs-1+AF0 http://permalink.gmane.org/gmane.linux.power-management.general/49272
+Changes from v2:
+- Rebased on new patchset[1] by Thomas Abraham
+  and for-next branch of samsunc-clk.git of Tomasz Figa
+
+Changes from v1:
+- Rebased on new patchset[1] by Thomas Abraham
+- Modify clk-cpu.c to support Exynos3250
+- Drop documentation patch on previous patchset[2]
+ [2] http://www.spinics.net/lists/cpufreq/msg10265.html
+- Add only operating-points for Exynos3250 without armclk-divider-table
+
+Chanwoo Choi (4):
+  clk: samsung: exynos3250: Add cpu clock configuration data and instaniate cpu clock
+  clk: samsung: exynos3250: Update clock flags related to CPU to use cpu-clock type
+  ARM: exynos: Add exynos3250 compatible to use generic cpufreq driver
+  ARM: dts: Add CPU OPP and regulator supply property for Exynos3250
+
+ arch/arm/boot/dts/exynos3250.dtsi    | 15 +++++++++++
+ arch/arm/mach-exynos/exynos.c        |  1 +
+ drivers/clk/samsung/clk-cpu.h        |  4 +++
+ drivers/clk/samsung/clk-exynos3250.c | 49 ++++++++++++++++++++++++++++--------
+ 4 files changed, 59 insertions(+), 10 deletions(-)
 
 -- 
-
-Dipl.-Inf. Robert Schoene
-Computer Scientist - R+ACY-D Energy Efficient Computing
-
-Technische Universitaet Dresden
-Center for Information Services and High Performance Computing
-Distributed and Data Intensive Computing
-01062 Dresden
-Tel.: +-49 (351) 463-42483
-Fax : +-49 (351) 463-37773
-E-Mail: Robert.Schoene+AEA-tu-dresden.de
-
+1.8.0
