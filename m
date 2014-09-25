@@ -1,44 +1,51 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv3 3/4] ARM: exynos: Add exynos3250 compatible to use generic
- cpufreq driver
-Date: Thu, 25 Sep 2014 16:05:06 +0900
-Message-ID: <1411628707-8496-4-git-send-email-cw00.choi@samsung.com>
-References: <1411628707-8496-1-git-send-email-cw00.choi@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH] power: max14577: Fix circular config SYSFS dependency
+Date: Thu, 25 Sep 2014 09:05:31 +0200
+Message-ID: <1411628731-8458-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:50367 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750871AbaIYHFW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 03:05:22 -0400
-In-reply-to: <1411628707-8496-1-git-send-email-cw00.choi@samsung.com>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:51848 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751543AbaIYHFn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 03:05:43 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, tomasz.figa@gmail.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, kyungmin.park@samsung.com, Chanwoo Choi <cw00.choi@samsung.com>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Lee Jones <lee.jones@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-This patch add exynos3250 compatible string to exynos_cpufreq_matches
-for supporting generic cpufreq driver on Exynos3250.
+Make the max14577 charger driver depending on SYSFS instead selecting
+it. This fixes warning on x86_64 with allmodconfig:
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>
+scripts/kconfig/conf --allmodconfig Kconfig
+fs/sysfs/Kconfig:1:error: recursive dependency detected!
+fs/sysfs/Kconfig:1:	symbol SYSFS is selected by CHARGER_MAX14577
+drivers/power/Kconfig:327:	symbol CHARGER_MAX14577 depends on POWER_SUPPLY
+drivers/power/Kconfig:1:	symbol POWER_SUPPLY is selected by HID_SONY
+drivers/hid/Kconfig:638:	symbol HID_SONY depends on NEW_LEDS
+drivers/leds/Kconfig:8:	symbol NEW_LEDS is selected by SENSORS_APPLESMC
+drivers/hwmon/Kconfig:299:	symbol SENSORS_APPLESMC depends on HWMON
+drivers/hwmon/Kconfig:5:	symbol HWMON is selected by EEEPC_LAPTOP
+drivers/platform/x86/Kconfig:496:	symbol EEEPC_LAPTOP depends on HOTPLUG_PCI
+drivers/pci/hotplug/Kconfig:5:	symbol HOTPLUG_PCI depends on SYSFS
+
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/arm/mach-exynos/exynos.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/power/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-index 8923d37..1318d69 100644
---- a/arch/arm/mach-exynos/exynos.c
-+++ b/arch/arm/mach-exynos/exynos.c
-@@ -285,6 +285,7 @@ static const struct of_device_id exynos_cpufreq_matches[] = {
- 	{ .compatible = "samsung,exynos5420", .data = "arm-bL-cpufreq-dt" },
- 	{ .compatible = "samsung,exynos5250", .data = "cpufreq-cpu0" },
- 	{ .compatible = "samsung,exynos4210", .data = "cpufreq-cpu0" },
-+	{ .compatible = "samsung,exynos3250", .data = "cpufreq-cpu0" },
- 	{ .compatible = "samsung,exynos5440", .data = "exynos5440-cpufreq" },
- 	{ /* sentinel */ }
- };
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 04e1d2fe2201..0108c2af005b 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -327,7 +327,7 @@ config CHARGER_MANAGER
+ config CHARGER_MAX14577
+ 	tristate "Maxim MAX14577/77836 battery charger driver"
+ 	depends on MFD_MAX14577
+-	select SYSFS
++	depends on SYSFS
+ 	help
+ 	  Say Y to enable support for the battery charger control sysfs and
+ 	  platform data of MAX14577/77836 MUICs.
 -- 
-1.8.0
+1.9.1
 
