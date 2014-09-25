@@ -1,14 +1,14 @@
 From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH/RFC v2 04/12] PM / Domains: Add genpd attach/detach callbacks
-Date: Thu, 25 Sep 2014 14:33:55 -0700
-Message-ID: <7h61gbbd18.fsf@deeprootsystems.com>
+Subject: Re: [PATCH/RFC v2 05/12] PM / Domains: Add helper variable np = dev->of_node
+Date: Thu, 25 Sep 2014 14:36:01 -0700
+Message-ID: <7hwq8r9yda.fsf@deeprootsystems.com>
 References: <1410893339-6361-1-git-send-email-geert+renesas@glider.be>
-	<1410893339-6361-5-git-send-email-geert+renesas@glider.be>
+	<1410893339-6361-6-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1410893339-6361-5-git-send-email-geert+renesas@glider.be> (Geert
-	Uytterhoeven's message of "Tue, 16 Sep 2014 20:48:51 +0200")
+In-Reply-To: <1410893339-6361-6-git-send-email-geert+renesas@glider.be> (Geert
+	Uytterhoeven's message of "Tue, 16 Sep 2014 20:48:52 +0200")
 Sender: linux-sh-owner@vger.kernel.org
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
@@ -16,26 +16,12 @@ List-Id: linux-pm@vger.kernel.org
 
 Geert Uytterhoeven <geert+renesas@glider.be> writes:
 
-> While a PM domain can enable PM runtime management of its devices' module
-> clocks by setting
->
-> 	genpd->dev_ops.stop = pm_clk_suspend;
-> 	genpd->dev_ops.start = pm_clk_resume;
->
-> this also requires registering the clocks with the pm_clk subsystem.
-> In the legacy case, this is handled by the platform code, after
-> attaching the device to its PM domain.
->
-> When the devices are instantiated from DT, devices are attached to their
-> PM domains by generic code, leaving no method for the platform-specific
-> PM domain code to register their clocks.
->
-> Add two callbacks, allowing a PM domain to perform platform-specific
-> tasks when a device is attached to or detached from a PM domain.
->
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Nice, I like this approach!
+Maybe a short changelog answering "why?" (just a cleanup), and saying
+there are no functional changes.
+
+Otherwise,
 
 Acked-by: Kevin Hilman <khilman@linaro.org>
 
