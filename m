@@ -1,49 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 11/22] cpufreq: Replace strnicmp with strncasecmp
-Date: Fri, 26 Sep 2014 01:53:12 +0200
-Message-ID: <2042736.or0GtPEZK6@vostro.rjw.lan>
-References: <1410900696-6481-1-git-send-email-linux@rasmusvillemoes.dk> <1410900696-6481-12-git-send-email-linux@rasmusvillemoes.dk> <CAKohpon9GjRb_Eimecss1aVXRCGJ+d=78ZFOOOfg8qCFyqumzw@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 1/1] power: Add simple gpio-restart driver
+Date: Fri, 26 Sep 2014 01:41:46 +0200
+Message-ID: <20140925234145.GA2063@earth.universe>
+References: <1409167431-21155-1-git-send-email-davidriley@chromium.org>
+ <1409167431-21155-2-git-send-email-davidriley@chromium.org>
+ <541BB278.9010701@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="tThc/1wpZn/ma/RB"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56014 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752991AbaIYXdW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 19:33:22 -0400
-In-Reply-To: <CAKohpon9GjRb_Eimecss1aVXRCGJ+d=78ZFOOOfg8qCFyqumzw@mail.gmail.com>
+Received: from mail.kernel.org ([198.145.19.201]:48555 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751875AbaIYXlw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 25 Sep 2014 19:41:52 -0400
+Content-Disposition: inline
+In-Reply-To: <541BB278.9010701@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tuesday, September 16, 2014 02:22:49 PM Viresh Kumar wrote:
-> On 16 September 2014 13:51, Rasmus Villemoes <linux@rasmusvillemoes.dk> wrote:
-> > The kernel used to contain two functions for length-delimited,
-> > case-insensitive string comparison, strnicmp with correct semantics
-> > and a slightly buggy strncasecmp. The latter is the POSIX name, so
-> > strnicmp was renamed to strncasecmp, and strnicmp made into a wrapper
-> > for the new strncasecmp to avoid breaking existing users.
+
+--tThc/1wpZn/ma/RB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Guenter,
+
+On Thu, Sep 18, 2014 at 09:35:04PM -0700, Guenter Roeck wrote:
+> On 08/27/2014 12:23 PM, David Riley wrote:
+> >This driver registers a restart handler to set a GPIO line high/low
+> >to reset a board based on devicetree bindings.
 > >
-> > To allow the compat wrapper strnicmp to be removed at some point in
-> > the future, and to avoid the extra indirection cost, do
-> > s/strnicmp/strncasecmp/g.
-> >
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Cc: linux-pm@vger.kernel.org
-> > Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> > ---
-> >  drivers/cpufreq/cpufreq.c | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> Not really sure about the implementation of these routines but the
-> changes look fine.
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >Signed-off-by: David Riley <davidriley@chromium.org>
+>=20
+> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
-Queued up for 3.18, thanks!
+Is there an immutable branch available with your restart handler
+stuff, which I can pull into battery-2.6.git?
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+-- Sebastian
+
+--tThc/1wpZn/ma/RB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJUJKg5AAoJENju1/PIO/qa9zUQAJNPtR7q96NaF92VxP9928oY
+gNufxPNDB34jP28DvUR1b4y3+4dzoSvg0nmuEgxxubpWsGEHms73NPkdglwksFyL
+ksS34PNljHaWIHsVGeOaHIJNf6/IjEn0fxzGAZ6Y4UbCPjDC8VZbjImSCrrDzt2p
+o7aRpHDndbjzK3FpfCS9bXdov7duhQ1F8XeCVuzNAH7xu2HtJC7OQxTohguHwBvT
+96CkBpuJqv6DNuxf9Fu+aJWeybcEDihR1cyzaS19S/CH0F6nRKH8+wy2OiAvJ1YP
+gQQLNZza93gX4vX6uISzoWoVbAt2PDJr5RtutNHvycQWfAyUFbRFmGLwG6kHwPOH
+gEnX1eiGezaaGIG2IWkX4fk3gkqadcqi20qM9vJQWtuir3OO69OuzvC//WCVXmHD
+ONrqH3pxoZtOivuMxXm9P39UIrWQHKrjJZWAS7xi3FJ2Oozb3raubtIIE8hhAico
+tg1FwPAlCh1KLqKVcnHlyPQaOC1Nbbi1xT12KD7xMxKWnih4+7NL9i7VUh7Pk8Mu
+L9psUpJKyUh7A2jSZxmqiJ/ILr4Lw3i6R/ku8oqcknIT9Kr0R7CCQmHiF/AXFQ6i
+DYRdkSNE8M10qkIRvZ58FiN6GQJDt4+z+Y62atup2OxKPTpnowUEnUtzsBHApcb4
+p+JPdnBPyGFtI2OeR80j
+=Jfs2
+-----END PGP SIGNATURE-----
+
+--tThc/1wpZn/ma/RB--
