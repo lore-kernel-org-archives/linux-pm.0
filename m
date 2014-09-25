@@ -1,83 +1,126 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 09/11] ARM: shmobile: r8a7740/armadillo legacy: Add A4R pm domain support
-Date: Thu, 25 Sep 2014 18:15:40 +0200
-Message-ID: <1411661742-4767-10-git-send-email-geert+renesas@glider.be>
-References: <1411661742-4767-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from michel.telenet-ops.be ([195.130.137.88]:45298 "EHLO
-	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753072AbaIYQPz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 12:15:55 -0400
-In-Reply-To: <1411661742-4767-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH 00/27] add
+	pm_runtime_last_busy_and_autosuspend() helper
+Date: Thu, 25 Sep 2014 16:27:58 +0200
+Message-ID: <20140925142758.GB1316@katana>
+References: <1411575342-31048-1-git-send-email-vinod.koul@intel.com>
+ <6374313.I12loOK9hA@vostro.rjw.lan>
+ <20140924201558.GX17997@saruman>
+ <2322320.9rETJijE2n@vostro.rjw.lan>
+ <20140924203219.GZ17997@saruman> <20140925075718.GW24663@intel.com>
+ <20140925142201.GD28045@saruman>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============0697962180=="
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <20140925142201.GD28045@saruman>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Felipe Balbi <balbi@ti.com>
+Cc: linux-wireless@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, patches@opensource.wolfsonmicro.com, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Chris Ball <chris@printf.net>, dri-devel@lists.freedesktop.org, Marcin Wojtas <mw@semihalf.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, David Herrmann <dh.herrmann@gmail.com>, Shinya Kuribayashi <skuribay@pobox.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Vinod Koul <vinod.koul@intel.com>, Jingoo Han <jg1.han@samsung.com>, Seungwon Jeon <tgih.jun@samsung.com>, Jaehoon Chung <jh80.chung@samsung.com>, Jani Nikula <jani.nikula@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Alan Stern <stern@rowland.harvard.edu>, Ben Skeggs <bskeggs@redhat.com>, Bjorn Andersson <bjorn.andersson@sonymobile.>
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Add support for the A4R power domain, and hook up the A3RV subdomain,
-and the CEU0, TMU0, and IIC0 hardware blocks.
-This domain also contains the Realtime CPU (SH-4A), Realtime CPU debug
-modules, H-UDI, RT-SHwy, INTCS, RT-HPB, VIO6C, JPU, RTDMAC1/2, SSP,
-MSIOF0, CMT0, ICB, DREQPAK (RT), 2DDMAC, IPMMUI, and 2DG hardware
-blocks, but these are currently not used by any driver.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-v2:
-  - No changes
+--===============0697962180==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Bn2rw/3z4jIqBvZU"
+Content-Disposition: inline
 
- arch/arm/mach-shmobile/board-armadillo800eva.c | 1 +
- arch/arm/mach-shmobile/pm-r8a7740.c            | 4 ++++
- arch/arm/mach-shmobile/setup-r8a7740.c         | 2 ++
- 3 files changed, 7 insertions(+)
 
-diff --git a/arch/arm/mach-shmobile/board-armadillo800eva.c b/arch/arm/mach-shmobile/board-armadillo800eva.c
-index c37d7b697a35322d..2632beaad6c838c2 100644
---- a/arch/arm/mach-shmobile/board-armadillo800eva.c
-+++ b/arch/arm/mach-shmobile/board-armadillo800eva.c
-@@ -1236,6 +1236,7 @@ static void __init eva_init(void)
- 		{ "A4LC", &hdmi_lcdc_device },
- 		{ "A4MP", &hdmi_device },
- 		{ "A4MP", &fsi_device },
-+		{ "A4R",  &ceu0_device },
- 		{ "A4S",  &sh_eth_device },
- 		{ "A3SP", &pwm_device },
- 		{ "A3SP", &sdhi0_device },
-diff --git a/arch/arm/mach-shmobile/pm-r8a7740.c b/arch/arm/mach-shmobile/pm-r8a7740.c
-index 6697ac00eff72957..7226c3543ecdc0ea 100644
---- a/arch/arm/mach-shmobile/pm-r8a7740.c
-+++ b/arch/arm/mach-shmobile/pm-r8a7740.c
-@@ -43,6 +43,9 @@ static struct rmobile_pm_domain r8a7740_pm_domains[] = {
- 		.genpd.name	= "D4",
- 		.bit_shift	= 3,
- 	}, {
-+		.genpd.name	= "A4R",
-+		.bit_shift	= 5,
-+	}, {
- 		.genpd.name	= "A3RV",
- 		.bit_shift	= 6,
- 	}, {
-@@ -66,6 +69,7 @@ static struct rmobile_pm_domain r8a7740_pm_domains[] = {
- void __init r8a7740_init_pm_domains(void)
- {
- 	rmobile_init_domains(r8a7740_pm_domains, ARRAY_SIZE(r8a7740_pm_domains));
-+	pm_genpd_add_subdomain_names("A4R", "A3RV");
- 	pm_genpd_add_subdomain_names("A4S", "A3SP");
- 	pm_genpd_add_subdomain_names("A4S", "A3SG");
- }
-diff --git a/arch/arm/mach-shmobile/setup-r8a7740.c b/arch/arm/mach-shmobile/setup-r8a7740.c
-index dbf8a93ccc4f412d..b77c226ab891a5dd 100644
---- a/arch/arm/mach-shmobile/setup-r8a7740.c
-+++ b/arch/arm/mach-shmobile/setup-r8a7740.c
-@@ -746,6 +746,8 @@ static void r8a7740_i2c_workaround(struct platform_device *pdev)
- void __init r8a7740_add_standard_devices(void)
- {
- 	static struct pm_domain_device domain_devices[] __initdata = {
-+		{ "A4R",  &tmu0_device },
-+		{ "A4R",  &i2c0_device },
- 		{ "A4S",  &irqpin0_device },
- 		{ "A4S",  &irqpin1_device },
- 		{ "A4S",  &irqpin2_device },
--- 
-1.9.1
+--Bn2rw/3z4jIqBvZU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, Sep 25, 2014 at 09:22:01AM -0500, Felipe Balbi wrote:
+> On Thu, Sep 25, 2014 at 01:27:18PM +0530, Vinod Koul wrote:
+> > On Wed, Sep 24, 2014 at 03:32:19PM -0500, Felipe Balbi wrote:
+> > > > > > OK, I guess this is as good as it gets.
+> > > > > >=20
+> > > > > > What tree would you like it go through?
+> > > > >=20
+> > > > > Do we really need this new helper ? I mean, the very moment when =
+we
+> > > > > decide to implement ->runtime_idle() we will need to get rid of t=
+his
+> > > > > change. I wonder if it's really valid...
+> > > >=20
+> > > > I'm not sure I'm following?  This seems to simply implement what dr=
+ivers
+> > > > have been doing already as one function.  Why would it be invalid t=
+o reduce
+> > > > code duplication?
+> > >=20
+> > > For two reasons:
+> > >=20
+> > > 1) the helper has no inteligence whatsoever. It just calls the same
+> > > functions.
+> > >=20
+> > > 2) the duplication will vanish whenever someone implements
+> > > ->runtime_idle() and have that call pm_runtime_autosuspend() (like PCI
+> > > and USB buses are doing today). This will just be yet another line th=
+at
+> > > needs to change.
+> > >=20
+> > > Frankly though, no strong feelings, I just think it's a commit that
+> > > doesn't bring that any benefits other than looking like one line was
+> > > removed.
+> > and yes that is what it tries to do nothing more nothing less. If in fu=
+ture
+> > there are no users (today we have quite a few), then we can remove the =
+dead
+> > macro, no harm. But that is not the situation today.
+>=20
+> as I said, a commit that's bound to be useless. It's not like you're
+> saving 10 lines of code, it's only one. Replacing two simple lines with
+> a function which takes <joke> almost as many characters to type </joke>.
+>=20
+> IMO, this is pretty useless and I'd rather not see them in the drivers I
+> maintain, sorry.
+
+It is not a NACK from me; yet from a high-level perspective I agree with
+Felipe.
+
+
+--Bn2rw/3z4jIqBvZU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUJCZuAAoJEBQN5MwUoCm2jzAP/0uNlfLXi5fqmFvgh5egMX44
+Awl2fFUmc3+ZEwe23znHmWxWFQwxjpwRaGlXN2yVwhPZfvYZE4RCAGIGNrqzpZSv
+qzqeYbcNa3os06IQQ0x2CSsB27ay5QJsqomMrmeU5qBXlZI9c6AlxKLFubkIKXgV
+mtwD415hSXBv4oAsbJvwV7zDvWPkvwmy+sircUTem/aXH1YlmkOQYAkskBxbE456
+5/b+4IlyaVbnNzYT/TmHfH5Gk0uCvd5EOG00up8itDUQyjbXbRsMRvyZj5KPCFvP
+QCitjmxtnTvqNgoT997fAzBvkW/RoooTajOynTNwD5bo150g5vMDqzPhdDRpe+H8
+xplm3ukStUlouRYM3IcOSyAP6ngx464UiJ+6df189XTe58y8Vy1uvwY9sniUkH4/
+HjVG2XfwVewxy7WXtOqQEC+SBqAWYIe/J+L+GLNyvETyDV5blHWQKBwbhXIhNBFZ
+2JFDp8dJx/798USWsMmKMA1Rx8B52aO8xNVC1qxqom1Ua+EfnUs8rzGToTKK0iyW
+e8ZgwBDKgDIFLk160zldynIyFLuJepA/jjQHUUdO16YEe2gGHi/Pz6axA9v68A8l
+GgrR9I5vUBxFvELY4d8UH6zknXVgpKMNheRza9EUy6AxsYzAeFD6TLfUOdun1M6I
+Vogk8ikO5me6suf8bPAj
+=9gUi
+-----END PGP SIGNATURE-----
+
+--Bn2rw/3z4jIqBvZU--
+
+--===============0697962180==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Intel-gfx mailing list
+Intel-gfx@lists.freedesktop.org
+http://lists.freedesktop.org/mailman/listinfo/intel-gfx
+
+--===============0697962180==--
