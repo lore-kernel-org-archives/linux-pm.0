@@ -1,145 +1,80 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: [RFC PATCH 1/4] PM / clock_ops: Add pm_clk_add_clk()
-Date: Thu, 25 Sep 2014 18:05:34 +0300
-Message-ID: <1411657537-25238-2-git-send-email-grygorii.strashko@ti.com>
-References: <1411657537-25238-1-git-send-email-grygorii.strashko@ti.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v5 00/11] PM / Domains: Generic OF-based support
+Date: Thu, 25 Sep 2014 17:29:10 +0200
+Message-ID: <CAPDyKFp8oK6KAujU44NEwT2vL2_BBPSMuGPkyppHdonPfOmUrQ@mail.gmail.com>
+References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
+	<20140925112122.GA22753@ulmo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1411657537-25238-1-git-send-email-grygorii.strashko@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: santosh.shilimkar@ti.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org
-Cc: ulf.hansson@linaro.org, Grygorii Strashko <grygorii.strashko@ti.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, grant.likely@secretlab.ca, ben.dooks@codethink.co.uk, laurent.pinchart@ideasonboard.com, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f178.google.com ([209.85.216.178]:41666 "EHLO
+	mail-qc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753248AbaIYP3L (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 11:29:11 -0400
+Received: by mail-qc0-f178.google.com with SMTP id x13so5327990qcv.9
+        for <linux-pm@vger.kernel.org>; Thu, 25 Sep 2014 08:29:10 -0700 (PDT)
+In-Reply-To: <20140925112122.GA22753@ulmo>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>Mark Brown <br>
 
-From: Geert Uytterhoeven <geert+renesas@glider.be>
+On 25 September 2014 13:21, Thierry Reding <thierry.reding@gmail.com> wrote:
+> I just noticed these patches because they conflicted with some of the
+> local patches I had to add a very similar framework. One of the reasons
+> why I hadn't posted these publicly yet is because the platform where I
+> want to use this (Tegra) is somewhat quirky when it comes to power
+> domains.
 
-The existing pm_clk_add() allows to pass a clock by con_id. However,
-when referring to a specific clock from DT, no con_id is available.
+It's great that more things goes on in this area. :-)
 
-Add pm_clk_add_clk(), which allows to specify the struct clk * directly.
+>
+> On Tegra these domains are called power gates and they currently have
+> their own API. We've been looking at migrating things over to some
+> generic framework for some time and PM domains do seem like a good fit.
+> However one of the quirks regarding these domains on Tegra is that a
+> fixed sequence exists that needs to be respected when enabling or
+> disabling a power partition. The exact sequence can be found in the
+> drivers/soc/tegra/pmc.c driver's tegra_powergate_sequence_power_up()
+> function. Essentially we need to call into the clock and reset drivers
+> at very specific moments during the operations that the PMC does.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
----
- drivers/base/power/clock_ops.c | 41 +++++++++++++++++++++++++++++++----------
- include/linux/pm_clock.h       |  8 ++++++++
- 2 files changed, 39 insertions(+), 10 deletions(-)
+I am not sure I fully understand how the power gating actually
+happens. How is it triggered?
 
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index b99e6c0..4ac586d 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -53,7 +53,8 @@ static inline int __pm_clk_enable(struct device *dev, struct clk *clk)
-  */
- static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
- {
--	ce->clk = clk_get(dev, ce->con_id);
-+	if (!ce->clk)
-+		ce->clk = clk_get(dev, ce->con_id);
- 	if (IS_ERR(ce->clk)) {
- 		ce->status = PCE_STATUS_ERROR;
- 	} else {
-@@ -63,15 +64,8 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
- 	}
- }
- 
--/**
-- * pm_clk_add - Start using a device clock for power management.
-- * @dev: Device whose clock is going to be used for power management.
-- * @con_id: Connection ID of the clock.
-- *
-- * Add the clock represented by @con_id to the list of clocks used for
-- * the power management of @dev.
-- */
--int pm_clk_add(struct device *dev, const char *con_id)
-+static int __pm_clk_add(struct device *dev, const char *con_id,
-+			struct clk *clk)
- {
- 	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce;
-@@ -93,6 +87,8 @@ int pm_clk_add(struct device *dev, const char *con_id)
- 			kfree(ce);
- 			return -ENOMEM;
- 		}
-+	} else {
-+		ce->clk = clk;
- 	}
- 
- 	pm_clk_acquire(dev, ce);
-@@ -104,6 +100,31 @@ int pm_clk_add(struct device *dev, const char *con_id)
- }
- 
- /**
-+ * pm_clk_add - Start using a device clock for power management.
-+ * @dev: Device whose clock is going to be used for power management.
-+ * @con_id: Connection ID of the clock.
-+ *
-+ * Add the clock represented by @con_id to the list of clocks used for
-+ * the power management of @dev.
-+ */
-+int pm_clk_add(struct device *dev, const char *con_id)
-+{
-+	return __pm_clk_add(dev, con_id, NULL);
-+}
-+
-+/**
-+ * pm_clk_add_clk - Start using a device clock for power management.
-+ * @dev: Device whose clock is going to be used for power management.
-+ * @clk: Clock pointer
-+ *
-+ * Add the clock to the list of clocks used for the power management of @dev.
-+ */
-+int pm_clk_add_clk(struct device *dev, struct clk *clk)
-+{
-+	return __pm_clk_add(dev, NULL, clk);
-+}
-+
-+/**
-  * __pm_clk_remove - Destroy PM clock entry.
-  * @ce: PM clock entry to destroy.
-  */
-diff --git a/include/linux/pm_clock.h b/include/linux/pm_clock.h
-index 8348866..0b00396 100644
---- a/include/linux/pm_clock.h
-+++ b/include/linux/pm_clock.h
-@@ -18,6 +18,8 @@ struct pm_clk_notifier_block {
- 	char *con_ids[];
- };
- 
-+struct clk;
-+
- #ifdef CONFIG_PM_CLK
- static inline bool pm_clk_no_clocks(struct device *dev)
- {
-@@ -29,6 +31,7 @@ extern void pm_clk_init(struct device *dev);
- extern int pm_clk_create(struct device *dev);
- extern void pm_clk_destroy(struct device *dev);
- extern int pm_clk_add(struct device *dev, const char *con_id);
-+extern int pm_clk_add_clk(struct device *dev, struct clk *clk);
- extern void pm_clk_remove(struct device *dev, const char *con_id);
- extern int pm_clk_suspend(struct device *dev);
- extern int pm_clk_resume(struct device *dev);
-@@ -51,6 +54,11 @@ static inline int pm_clk_add(struct device *dev, const char *con_id)
- {
- 	return -EINVAL;
- }
-+
-+static inline int pm_clk_add_clk(struct device *dev, struct clk *clk)
-+{
-+	return -EINVAL;
-+}
- static inline void pm_clk_remove(struct device *dev, const char *con_id)
- {
- }
--- 
-1.9.1
+>
+> One solution to this would be to make the needed clocks and resets
+> available to the power domain driver via DT, but then we have the
+> problem that two drivers would be controlling the same resources. For
+> example drivers could still want to disable the clock for more fine-
+> grained power management.
+
+Sorry, but I think I need a better understanding to be able to comment.
+
+But maybe, drivers could implement runtime PM support and define
+runtime PM callbacks. From the callbacks those will handle clocks and
+resets, is not that enough? What more is needed from a PM domain point
+of view?
+
+> Furthermore for some devices it may turn out
+> that turning the domain off and on introduces too much latency to be
+> useful.
+
+This should be handled by the generic PM domain governor. Through the
+per device QOS, you are able to set latencies constraints which could
+prevent a PM domain from being gated.
+
+>
+> Does anyone have any better ideas on how to make that work with this
+> generic PM domain framework? Or is Tegra just too special to be a good
+> fit?
+
+I certainly think it's worth a try, I would be surprised if we
+shouldn't be able to address requirements from Tegra.
+
+As you might have figured out, I am dedicated to improve the generic
+power domain such it could fit more SOCs than today, thus I am also
+hoping for more SOC to start to convert to it.
+
+Kind regards
+Uffe
