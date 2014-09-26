@@ -1,131 +1,91 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v5 00/11] PM / Domains: Generic OF-based support
-Date: Thu, 25 Sep 2014 17:27:57 -0700
-Message-ID: <20140926002757.GJ10233@codeaurora.org>
-References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
- <20140925112122.GA22753@ulmo>
- <CAPDyKFp8oK6KAujU44NEwT2vL2_BBPSMuGPkyppHdonPfOmUrQ@mail.gmail.com>
- <20140925165625.GC30382@ulmo>
+From: Shawn Guo <shawn.guo@freescale.com>
+Subject: Re: [PATCH 3/5] clk: imx: add CPU clock type
+Date: Fri, 26 Sep 2014 10:59:34 +0800
+Message-ID: <20140926025933.GA31948@dragon>
+References: <1411143381-10516-1-git-send-email-l.stach@pengutronix.de>
+ <1411143381-10516-4-git-send-email-l.stach@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1on0134.outbound.protection.outlook.com ([157.56.110.134]:50660
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753214AbaIZDAB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 25 Sep 2014 23:00:01 -0400
 Content-Disposition: inline
-In-Reply-To: <20140925165625.GC30382@ulmo>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>Mark Brown <b>
+In-Reply-To: <1411143381-10516-4-git-send-email-l.stach@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, kernel@pengutronix.de
 
-On 09/25, Thierry Reding wrote:
-> On Thu, Sep 25, 2014 at 05:29:10PM +0200, Ulf Hansson wrote:
-> > On 25 September 2014 13:21, Thierry Reding <thierry.reding@gmail.com> wrote:
-> > > I just noticed these patches because they conflicted with some of the
-> > > local patches I had to add a very similar framework. One of the reasons
-> > > why I hadn't posted these publicly yet is because the platform where I
-> > > want to use this (Tegra) is somewhat quirky when it comes to power
-> > > domains.
-> > 
-> > It's great that more things goes on in this area. :-)
-> > 
-> > >
-> > > On Tegra these domains are called power gates and they currently have
-> > > their own API. We've been looking at migrating things over to some
-> > > generic framework for some time and PM domains do seem like a good fit.
-> > > However one of the quirks regarding these domains on Tegra is that a
-> > > fixed sequence exists that needs to be respected when enabling or
-> > > disabling a power partition. The exact sequence can be found in the
-> > > drivers/soc/tegra/pmc.c driver's tegra_powergate_sequence_power_up()
-> > > function. Essentially we need to call into the clock and reset drivers
-> > > at very specific moments during the operations that the PMC does.
-> > 
-> > I am not sure I fully understand how the power gating actually
-> > happens. How is it triggered?
+On Fri, Sep 19, 2014 at 06:16:19PM +0200, Lucas Stach wrote:
+> From: Lucas Stach <dev@lynxeye.de>
 > 
-> Drivers explicitly call the custom API. So all drivers that need to turn
-> on power partitions have a call to tegra_powergate_sequence_power_up()
-> in .probe() and tegra_powergate_power_off() in .remove().
+> This implements a virtual clock used to abstract away
+> all the steps needed in order to change the ARM clock,
+> so we don't have to push all this clock handling into
+> the cpufreq driver.
 > 
-> > > One solution to this would be to make the needed clocks and resets
-> > > available to the power domain driver via DT, but then we have the
-> > > problem that two drivers would be controlling the same resources. For
-> > > example drivers could still want to disable the clock for more fine-
-> > > grained power management.
-> > 
-> > Sorry, but I think I need a better understanding to be able to comment.
-> > 
-> > But maybe, drivers could implement runtime PM support and define
-> > runtime PM callbacks. From the callbacks those will handle clocks and
-> > resets, is not that enough? What more is needed from a PM domain point
-> > of view?
+> While it will be used for i.MX53 at first it is generic
+> enough to be used on i.MX6 later on.
 > 
-> Let me quote the actual power up sequence code:
-> 
-> 	int tegra_powergate_sequence_power_up(int id, struct clk *clk,
-> 					      struct reset_control *rst)
-> 	{
-> 		int ret;
-> 
-> 		reset_control_assert(rst);
-> 
-> 		ret = tegra_powergate_power_on(id);
-> 		if (ret)
-> 			goto err_power;
-> 
-> 		ret = clk_prepare_enable(clk);
-> 		if (ret)
-> 			goto err_clk;
-> 
-> 		usleep_range(10, 20);
-> 
-> 		ret = tegra_powergate_remove_clamping(id);
-> 		if (ret)
-> 			goto err_clamp;
-> 
-> 		usleep_range(10, 20);
-> 		reset_control_deassert(rst);
-> 
-> 		return 0;
-> 
-> 	err_clamp:
-> 		clk_disable_unprepare(clk);
-> 	err_clk:
-> 		tegra_powergate_power_off(id);
-> 	err_power:
-> 		return ret;
-> 	}
-> 	EXPORT_SYMBOL(tegra_powergate_sequence_power_up);
-> 
-> The critical part is that we need to enable the clock after the
-> partition has been powered, but before the clamps are removed.
-> Implementing this with runtime PM support in drivers won't work
-> because the power domain driver has to do both the powering up
-> and removing the clamps, so there's no place to inject the call
-> to enable the clock.
+> Signed-off-by: Lucas Stach <dev@lynxeye.de>
 
-FWIW, Qualcomm platforms have pretty much the same design. Our
-power domain controls live in the same register space as the
-clocks and resets. Is Tegra the same way? To power on/off a
-domain we need to go and forcefully turn a clock on and assert a
-reset or perhaps we need the clock to be off and assert a reset.
-It depends on the domain.
+Is this intentional to use a different email address than your usual
+one?
 
-Historically we've supported this by requiring all drivers to
-disable their clocks and deassert any resets before calling into
-this code (we put this behind the regulator API). Then we're free
-to do whatever is necessary to power on/off, eventally leaving
-the clocks off if they were forced on and finally giving control
-to the drivers so they can manage their own clocks and resets. It
-would be better for us to take ownership of the clocks and resets
-in the domain so we don't have this prerequisite of clocks being
-off before calling into the domain code. I plan to do pretty much
-Kevin outlined and use runtime PM, power domains, and per-device
-pm QoS to figure out if we should gate clocks (clk_disable), or
-if we go to a lower power mode where we unprepare clocks
-(clk_unprepare), or if we go to the lowest power mode where we
-apply clamps, etc. (called power collapse for us). Then the
-drivers just interact with runtime PM and QoS and they aren't
-aware of all this SoC glue.
+> ---
+>  arch/arm/mach-imx/Makefile  |   2 +-
+>  arch/arm/mach-imx/clk-cpu.c | 104 ++++++++++++++++++++++++++++++++++++++++++++
+>  arch/arm/mach-imx/clk.h     |   4 ++
+>  3 files changed, 109 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/arm/mach-imx/clk-cpu.c
+> 
+> diff --git a/arch/arm/mach-imx/Makefile b/arch/arm/mach-imx/Makefile
+> index ac88599ca080..4d6071351f4f 100644
+> --- a/arch/arm/mach-imx/Makefile
+> +++ b/arch/arm/mach-imx/Makefile
+> @@ -12,7 +12,7 @@ obj-$(CONFIG_SOC_IMX31) += mm-imx3.o cpu-imx31.o clk-imx31.o iomux-imx31.o ehci-
+>  obj-$(CONFIG_SOC_IMX35) += mm-imx3.o cpu-imx35.o clk-imx35.o ehci-imx35.o pm-imx3.o
+>  
+>  imx5-pm-$(CONFIG_PM) += pm-imx5.o
+> -obj-$(CONFIG_SOC_IMX5) += cpu-imx5.o clk-imx51-imx53.o $(imx5-pm-y)
+> +obj-$(CONFIG_SOC_IMX5) += cpu-imx5.o clk-imx51-imx53.o clk-cpu.o $(imx5-pm-y)
+>  
+>  obj-$(CONFIG_COMMON_CLK) += clk-pllv1.o clk-pllv2.o clk-pllv3.o clk-gate2.o \
+>  			    clk-pfd.o clk-busy.o clk.o \
+> diff --git a/arch/arm/mach-imx/clk-cpu.c b/arch/arm/mach-imx/clk-cpu.c
+> new file mode 100644
+> index 000000000000..ffba96228d3b
+> --- /dev/null
+> +++ b/arch/arm/mach-imx/clk-cpu.c
+> @@ -0,0 +1,104 @@
+> +/*
+> + * Copyright (c) 2014 Lucas Stach <l.stach@pengutronix.de>, Pengutronix
+> + *
+> + * The code contained herein is licensed under the GNU General Public
+> + * License. You may obtain a copy of the GNU General Public License
+> + * Version 2 or later at the following locations:
+> + *
+> + * http://www.opensource.org/licenses/gpl-license.html
+> + * http://www.gnu.org/copyleft/gpl.html
+> + */
+> +
+> +#include <linux/clk.h>
+> +#include <linux/clk-provider.h>
+> +#include <linux/slab.h>
+> +
+> +struct clk_cpu {
+> +	struct clk_hw	hw;
+> +	struct clk	*div, *mux, *pll, *step;
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+This is personal taste, so I'm not strong on this.  But I feel having
+them on multiple lines makes the later addition/removal of struct clk
+pointers a bit easier.
+
+Other than these trivial comments, the patch looks good to me.
+
+Shawn
+
+> +};
