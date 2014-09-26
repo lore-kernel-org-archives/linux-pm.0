@@ -1,37 +1,85 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v3 3/4] irq: Allow multiple clients to register for irq
-	affinity notification
-Date: Fri, 26 Sep 2014 10:40:03 +0100
-Message-ID: <20140926094003.GL5182@n2100.arm.linux.org.uk>
-References: <1409170479-29955-1-git-send-email-lina.iyer@linaro.org> <1409170479-29955-4-git-send-email-lina.iyer@linaro.org> <alpine.DEB.2.10.1408272239190.3323@nanos> <20140902184305.GB91995@ilina-mac.local> <alpine.DEB.2.10.1409022109050.3333@nanos> <7htx3vbfqr.fsf@deeprootsystems.com> <alpine.DEB.2.11.1409261129220.4567@nanos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Mikko Perttunen <cyndis@kapsi.fi>
+Subject: [PATCH v6 3/4] ARM: tegra: Add thermal trip points for Jetson TK1
+Date: Fri, 26 Sep 2014 12:43:12 +0300
+Message-ID: <1411724593-4037-4-git-send-email-cyndis@kapsi.fi>
+References: <1411724593-4037-1-git-send-email-cyndis@kapsi.fi>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:43722 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753185AbaIZJkR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 05:40:17 -0400
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.11.1409261129220.4567@nanos>
+Received: from mail.kapsi.fi ([217.30.184.167]:58217 "EHLO mail.kapsi.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751422AbaIZJng (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 26 Sep 2014 05:43:36 -0400
+In-Reply-To: <1411724593-4037-1-git-send-email-cyndis@kapsi.fi>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Kevin Hilman <khilman@kernel.org>, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>, linux-arm-kernel@lists.infradead.org
+To: edubezval@gmail.com, swarren@wwwdotorg.org, thierry.reding@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, juha-matti.tilli@iki.fi, Mikko Perttunen <mperttunen@nvidia.com>
 
-On Fri, Sep 26, 2014 at 11:29:56AM +0200, Thomas Gleixner wrote:
-> On Thu, 25 Sep 2014, Kevin Hilman wrote:
-> > Maybe I'm missing something, or maybe we're just lucky and nobody uses
-> > them together, but irq_set_affinity_notifier() only allows a single
-> > notifier to be registered at any given time.  So if you had a system
-> 
-> A single notifier per irq .....
+From: Mikko Perttunen <mperttunen@nvidia.com>
 
-So what about two drivers wanting to use this notifier, but sharing an
-interrupt?
+This adds critical trip points to the Jetson TK1 device tree.
+The device will do a controlled shutdown when either the CPU, GPU
+or MEM thermal zone reaches 101 degrees Celsius.
 
-It sounds to me like this notifier was misdesigned from the very start,
-and it should always have supported multiple notifiers.
+Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+---
+v6: added comments to cooling map nodes
 
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts | 44 +++++++++++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
+
+diff --git a/arch/arm/boot/dts/tegra124-jetson-tk1.dts b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+index 0cdb5cf..66a5eaf 100644
+--- a/arch/arm/boot/dts/tegra124-jetson-tk1.dts
++++ b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
+@@ -1876,4 +1876,48 @@
+ 			 <&tegra_car TEGRA124_CLK_EXTERN1>;
+ 		clock-names = "pll_a", "pll_a_out0", "mclk";
+ 	};
++
++	thermal-zones {
++		cpu {
++			trips {
++				trip@0 {
++					temperature = <101000>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				/* There are currently no cooling maps because there are no cooling devices */
++			};
++		};
++
++		mem {
++			trips {
++				trip@0 {
++					temperature = <101000>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				/* There are currently no cooling maps because there are no cooling devices */
++			};
++		};
++
++		gpu {
++			trips {
++				trip@0 {
++					temperature = <101000>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				/* There are currently no cooling maps because there are no cooling devices */
++			};
++		};
++	};
+ };
 -- 
-FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
-according to speedtest.net.
+2.1.0
+
