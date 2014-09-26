@@ -1,49 +1,55 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] cpufreq: integrator: fix integrator_cpufreq_remove return type
-Date: Fri, 26 Sep 2014 22:19:12 +0200
-Message-ID: <1845195.odREGsY0qB@wuerfel>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 1/1] power: Add simple gpio-restart driver
+Date: Fri, 26 Sep 2014 22:23:24 +0200
+Message-ID: <20140926202323.GA27687@earth.universe>
+References: <1409167431-21155-1-git-send-email-davidriley@chromium.org>
+ <1409167431-21155-2-git-send-email-davidriley@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.17.13]:55610 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755205AbaIZUTq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 16:19:46 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1409167431-21155-2-git-send-email-davidriley@chromium.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: David Riley <davidriley@chromium.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Guenter Roeck <linux@roeck-us.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Anton Vorontsov <anton@enomsg.org>, Marc Carino <marc.ceeeee@gmail.com>, Anders Berg <anders.berg@lsi.com>, Laxman Dewangan <ldewangan@nvidia.com>, Ivan Khoronzhuk <ivan.khoronzhuk@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Haojian Zhuang <haojian.zhuang@linaro.org>, Jamie Lentin <jm@lentin.co.uk>, Doug Anderson <dianders@chromium.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-When building this driver as a module, we get a helpful warning
-about the return type:
 
-drivers/cpufreq/integrator-cpufreq.c:232:2: warning: initialization from incompatible pointer type
-  .remove = __exit_p(integrator_cpufreq_remove),
+--d6Gm4EdcadzBjdND
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-If the remove callback returns void, the caller gets an undefined
-value as it expects an integer to be returned. This fixes the
-problem by passing down the value from cpufreq_unregister_driver.
+Hi,
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
-Found while testing the integrator multiplatform patches from Linus Walleij,
-this shows up as a new warning in allmodconfig.
+On Wed, Aug 27, 2014 at 12:23:51PM -0700, David Riley wrote:
+> This driver registers a restart handler to set a GPIO line high/low
+> to reset a board based on devicetree bindings.
 
-diff --git a/drivers/cpufreq/integrator-cpufreq.c b/drivers/cpufreq/integrator-cpufreq.c
-index c1320528b9d0..6bd69adc3c5e 100644
---- a/drivers/cpufreq/integrator-cpufreq.c
-+++ b/drivers/cpufreq/integrator-cpufreq.c
-@@ -213,9 +213,9 @@ static int __init integrator_cpufreq_probe(struct platform_device *pdev)
- 	return cpufreq_register_driver(&integrator_driver);
- }
- 
--static void __exit integrator_cpufreq_remove(struct platform_device *pdev)
-+static int __exit integrator_cpufreq_remove(struct platform_device *pdev)
- {
--	cpufreq_unregister_driver(&integrator_driver);
-+	return cpufreq_unregister_driver(&integrator_driver);
- }
- 
- static const struct of_device_id integrator_cpufreq_match[] = {
+http://git.infradead.org/battery-2.6.git/commit/371bb20d6927f204ef5a7887ecddb06b2501c0d9
 
+-- Sebastian
+
+--d6Gm4EdcadzBjdND
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJUJcs7AAoJENju1/PIO/qaay0P/1J8596X5x4Mk64OACKaA01R
+zBm0FeLq4kqyGL5/mMAYQUTia2EtwPgx85ErTHH0LpkDZo/C2VLUxZQuDJXDinLK
+3rh/IwB+86VsT8C88Vr+H1dhpJD/mjRXmU1sWJF2B4wtRAKQmKqG2zjOZ2RdcFTr
+dwHvVatqgbf/K20LhRHJUvNQFZ9FwwCig5BeqnA/Buv4i0a3/11HdhOFhErqWNOW
+fGX/RNWTTfplQyagtlKIDlEWgy5IVhIpyATuc4/7qmZwNwheBYnYJHcmY2KegVfF
+FmC8xXD5VD98ywDDedCFG34fpz2N8boJMLmqH3C9HdAWu+upNJNSkrv9WIb7mYy3
+OOV3u9bIxip95CRUNQLjTRjd/TyJABH3hVv8NOgetGHpnmWzZzBmA0LkdfZOTW00
+DmHzEA+K5erQ8dJ6LFlDTm9xOgoT0++7trNwAMqVRMY8DkbgfJUJqpmwePD52CiO
+Of4WLY/lpuJYe5ryqIj26Yyz9kbsCT3oFP5mRT2d0sud7ehhcLoGIRMdAlXIcVD5
+uM+iNzvhBb9wqJJMiw8R6j0T2n8gnHBvyyut/JOUvgOUHiVbq8Z5q5tv7qhdjNxP
+SZwmVnTWGK5hwMjfA4NX8zFWTg9og64PLstHnIcn2RP3OTnL5m2Y2WM3365yZlzR
+KeGcqGvUU3yXsrWwAC8+
+=aOB6
+-----END PGP SIGNATURE-----
+
+--d6Gm4EdcadzBjdND--
