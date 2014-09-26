@@ -1,164 +1,79 @@
-From: Robin Gong <b38343@freescale.com>
-Subject: [PATCH v4 2/3] power: reset: imx-snvs-poweroff: add power off driver for i.mx6
-Date: Fri, 26 Sep 2014 11:59:06 +0800
-Message-ID: <1411703947-31956-3-git-send-email-b38343@freescale.com>
-References: <1411703947-31956-1-git-send-email-b38343@freescale.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH v5 00/11] PM / Domains: Generic OF-based support
+Date: Thu, 25 Sep 2014 22:08:03 -0700
+Message-ID: <7hvbob6kb0.fsf@deeprootsystems.com>
+References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
+	<20140925112122.GA22753@ulmo>
+	<CAPDyKFp8oK6KAujU44NEwT2vL2_BBPSMuGPkyppHdonPfOmUrQ@mail.gmail.com>
+	<20140925165625.GC30382@ulmo> <20140926002757.GJ10233@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1411703947-31956-1-git-send-email-b38343@freescale.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, shawn.guo@freescale.com, kernel@pengutronix.de, LW@KARO-electronics.de, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, grant.likely@linaro.org, linux@arm.linux.org.uk
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20140926002757.GJ10233@codeaurora.org> (Stephen Boyd's message
+	of "Thu, 25 Sep 2014 17:27:57 -0700")
+Sender: linux-acpi-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>Ma
 List-Id: linux-pm@vger.kernel.org
 
-This driver register pm_power_off with snvs power off function. If
-your boards NOT use PMIC_ON_REQ to turn on/off external pmic, or use
-other pin to do, please disable the driver in dts, otherwise, your
-pm_power_off maybe overwrote by this driver.
+Stephen Boyd <sboyd@codeaurora.org> writes:
 
-Signed-off-by: Robin Gong <b38343@freescale.com>
----
- .../bindings/power_supply/imx-snvs-poweroff.txt    |   23 +++++++
- drivers/power/reset/Kconfig                        |    9 +++
- drivers/power/reset/Makefile                       |    1 +
- drivers/power/reset/imx-snvs-poweroff.c            |   66 ++++++++++++++++++++
- 4 files changed, 99 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
- create mode 100644 drivers/power/reset/imx-snvs-poweroff.c
+> On 09/25, Thierry Reding wrote:
 
-diff --git a/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt b/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
-new file mode 100644
-index 0000000..dc7c9ba
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
-@@ -0,0 +1,23 @@
-+i.mx6 Poweroff Driver
-+
-+SNVS_LPCR in SNVS module can power off the whole system by pull
-+PMIC_ON_REQ low if PMIC_ON_REQ is connected with external PMIC.
-+If you don't want to use PMIC_ON_REQ as power on/off control,
-+please set status='disabled' to disable this driver.
-+
-+Required Properties:
-+-compatible: "fsl,sec-v4.0-poweroff"
-+-reg: Specifies the physical address of the SNVS_LPCR register
-+
-+Example:
-+	snvs@020cc000 {
-+		compatible = "fsl,sec-v4.0-mon", "simple-bus";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges = <0 0x020cc000 0x4000>;
-+		.....
-+		snvs_poweroff: snvs-poweroff@38 {
-+			compatible = "fsl,sec-v4.0-poweroff";
-+			reg = <0x38 0x4>;
-+		};
-+	}
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index ca41523..b26c547 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -45,6 +45,15 @@ config POWER_RESET_HISI
- 	help
- 	  Reboot support for Hisilicon boards.
- 
-+config POWER_RESET_IMX
-+	bool "IMX6 power-off driver"
-+	depends on POWER_RESET && SOC_IMX6
-+	help
-+	  This driver support power off external PMIC by PMIC_ON_REQ on i.mx6
-+	  boards.If you want to use other pin to control external power,please
-+	  say N here or disable in dts to make sure pm_power_off never be
-+	  overwrote wrongly by this driver.
-+
- config POWER_RESET_MSM
- 	bool "Qualcomm MSM power-off driver"
- 	depends on POWER_RESET && ARCH_QCOM
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index a42e70e..2524daf 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -3,6 +3,7 @@ obj-$(CONFIG_POWER_RESET_AXXIA) += axxia-reset.o
- obj-$(CONFIG_POWER_RESET_BRCMSTB) += brcmstb-reboot.o
- obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
- obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
-+obj-$(CONFIG_POWER_RESET_IMX) += imx-snvs-poweroff.o
- obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
- obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
- obj-$(CONFIG_POWER_RESET_RESTART) += restart-poweroff.o
-diff --git a/drivers/power/reset/imx-snvs-poweroff.c b/drivers/power/reset/imx-snvs-poweroff.c
-new file mode 100644
-index 0000000..ad6ce50
---- /dev/null
-+++ b/drivers/power/reset/imx-snvs-poweroff.c
-@@ -0,0 +1,66 @@
-+/* Power off driver for i.mx6
-+ * Copyright (c) 2014, FREESCALE CORPORATION.  All rights reserved.
-+ *
-+ * based on msm-poweroff.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+
-+static void __iomem *snvs_base;
-+
-+static void do_imx_poweroff(void)
-+{
-+	u32 value = readl(snvs_base);
-+
-+	/* set TOP and DP_EN bit */
-+	writel(value | 0x60, snvs_base);
-+}
-+
-+static int imx_poweroff_probe(struct platform_device *pdev)
-+{
-+	snvs_base = of_iomap(pdev->dev.of_node, 0);
-+	if (!snvs_base) {
-+		dev_err(&pdev->dev, "failed to get memory\n");
-+		return -ENODEV;
-+	}
-+
-+	pm_power_off = do_imx_poweroff;
-+	return 0;
-+}
-+
-+static const struct of_device_id of_imx_poweroff_match[] = {
-+	{ .compatible = "fsl,sec-v4.0-poweroff", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, of_imx_poweroff_match);
-+
-+static struct platform_driver imx_poweroff_driver = {
-+	.probe = imx_poweroff_probe,
-+	.driver = {
-+		.name = "imx-snvs-poweroff",
-+		.of_match_table = of_match_ptr(of_imx_poweroff_match),
-+	},
-+};
-+
-+static int __init imx_poweroff_init(void)
-+{
-+	return platform_driver_register(&imx_poweroff_driver);
-+}
-+device_initcall(imx_poweroff_init);
--- 
-1.7.9.5
+[...]
+
+>> The critical part is that we need to enable the clock after the
+>> partition has been powered, but before the clamps are removed.
+>> Implementing this with runtime PM support in drivers won't work
+>> because the power domain driver has to do both the powering up
+>> and removing the clamps, so there's no place to inject the call
+>> to enable the clock.
+>
+> FWIW, Qualcomm platforms have pretty much the same design. Our
+> power domain controls live in the same register space as the
+> clocks and resets. Is Tegra the same way? To power on/off a
+> domain we need to go and forcefully turn a clock on and assert a
+> reset or perhaps we need the clock to be off and assert a reset.
+> It depends on the domain.
+>
+
+> Historically we've supported this by requiring all drivers to
+> disable their clocks and deassert any resets before calling into
+> this code (we put this behind the regulator API). Then we're free
+> to do whatever is necessary to power on/off, eventally leaving
+> the clocks off if they were forced on and finally giving control
+> to the drivers so they can manage their own clocks and resets. It
+> would be better for us to take ownership of the clocks and resets
+> in the domain so we don't have this prerequisite of clocks being
+> off before calling into the domain code. I plan to do pretty much
+> Kevin outlined and use runtime PM, power domains, and per-device
+> pm QoS to figure out if we should gate clocks (clk_disable), or
+> if we go to a lower power mode where we unprepare clocks
+> (clk_unprepare), or if we go to the lowest power mode where we
+> apply clamps, etc. (called power collapse for us). Then the
+> drivers just interact with runtime PM and QoS and they aren't
+> aware of all this SoC glue.
+
+Excellent!  I'm glad you're heading in that direction.  One other
+important point here is that keeping drivers "simple" like this makes it
+much easier for them to stay portable across SoCs.
+
+Also, neither tegra or qcom are unique here.
+
+FWIW, OMAP has similar ordering requirements, and quite a bit of "stuff"
+to properly get a device and powerdomain to actually power down (and
+power up) properly.  The OMAP implementation pre-dates runtime PM, power
+domains etc. so we hid all of this behind the omap_hwmod abstraction and
+the omap_device API where all clocks, resets, and various other magic is
+handled, and so that device drivers didn't have to care about the details.
+
+These days, those APIs are now used by the OMAP pm_domain implementation
+(which pre-dates genpd), so drivers (still) don't have to care about the
+details only have to care about runtime PM and QoS.  After genpd came
+along, the goal was to convert OMAP to it, but well, other circumstances
+have changed things such that those working in that area are, um...,
+somewhat less focused on OMAP. ;)
+
+Kevin
+
+
