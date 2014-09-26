@@ -1,92 +1,77 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 05/13] PM / Domains: Add helper variable np = dev->of_node
-Date: Fri, 26 Sep 2014 10:43:22 +0200
-Message-ID: <CAPDyKFpiTBKEJHTF9cK20GTqEgx=4UNt52sKi0dQ7NsZNhfFOA@mail.gmail.com>
+Subject: Re: [PATCH v3 07/13] ARM: shmobile: R-Mobile: Use generic_pm_domain.attach_dev()
+ for pm_clk setup
+Date: Fri, 26 Sep 2014 10:45:50 +0200
+Message-ID: <CAPDyKFrWKOENKxF1JBrtwYfQNTVjsQPqws3UTfGXy_4Uqog+pg@mail.gmail.com>
 References: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
-	<1411662520-22795-6-git-send-email-geert+renesas@glider.be>
+	<1411662520-22795-8-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1411662520-22795-6-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <1411662520-22795-8-git-send-email-geert+renesas@glider.be>
 Sender: linux-sh-owner@vger.kernel.org
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On 25 September 2014 18:28, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-
-Why?
-
+> Use the just introduced genpd attach/detach callbacks to register the
+> devices' module clocks, instead of doing it directly, to make it
+> DT-proof.
+>
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Normally I think this kind of cleanup patches is a bit unnecessary,
-but I don't have strong opinions.
-
-Kind regards
-Uffe
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 > ---
 > v3:
->   - No changes
+>   - Update for callback signature changes,
 > v2:
 >   - New
 >
->  drivers/base/power/domain.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+>  arch/arm/mach-shmobile/pm-rmobile.c | 15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
 >
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 6e36bb09e7d9c144..0ebc6bb31c9c227f 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2171,17 +2171,18 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
->   */
->  int genpd_dev_pm_attach(struct device *dev)
+> diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+> index 717e6413d29cb998..ae846dfcd69293f7 100644
+> --- a/arch/arm/mach-shmobile/pm-rmobile.c
+> +++ b/arch/arm/mach-shmobile/pm-rmobile.c
+> @@ -101,6 +101,17 @@ static bool rmobile_pd_active_wakeup(struct device *dev)
+>         return true;
+>  }
+>
+> +static void rmobile_pd_attach_dev(struct device *dev)
+> +{
+> +       if (pm_clk_no_clocks(dev))
+> +               pm_clk_add(dev, NULL);
+> +}
+> +
+> +static void rmobile_pd_detach_dev(struct device *dev)
+> +{
+> +       pm_clk_remove(dev, NULL);
+> +}
+> +
+>  static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
 >  {
-> +       struct device_node *np = dev->of_node;
->         struct of_phandle_args pd_args;
->         struct generic_pm_domain *pd;
->         int ret;
+>         struct generic_pm_domain *genpd = &rmobile_pd->genpd;
+> @@ -112,6 +123,8 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+>         genpd->dev_ops.active_wakeup    = rmobile_pd_active_wakeup;
+>         genpd->power_off                = rmobile_pd_power_down;
+>         genpd->power_on                 = rmobile_pd_power_up;
+> +       genpd->attach_dev               = rmobile_pd_attach_dev;
+> +       genpd->detach_dev               = rmobile_pd_detach_dev;
+>         __rmobile_pd_power_up(rmobile_pd, false);
+>  }
 >
-> -       if (!dev->of_node)
-> +       if (!np)
->                 return -ENODEV;
+> @@ -130,8 +143,6 @@ void rmobile_add_device_to_domain_td(const char *domain_name,
+>         struct device *dev = &pdev->dev;
 >
->         if (dev->pm_domain)
->                 return -EEXIST;
+>         __pm_genpd_name_add_device(domain_name, dev, td);
+> -       if (pm_clk_no_clocks(dev))
+> -               pm_clk_add(dev, NULL);
+>  }
 >
-> -       ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
-> +       ret = of_parse_phandle_with_args(np, "power-domains",
->                                         "#power-domain-cells", 0, &pd_args);
->         if (ret < 0) {
->                 if (ret != -ENOENT)
-> @@ -2192,8 +2193,7 @@ int genpd_dev_pm_attach(struct device *dev)
->                  * (for backwards compatibility of DT ABI)
->                  */
->                 pd_args.args_count = 0;
-> -               pd_args.np = of_parse_phandle(dev->of_node,
-> -                                               "samsung,power-domain", 0);
-> +               pd_args.np = of_parse_phandle(np, "samsung,power-domain", 0);
->                 if (!pd_args.np)
->                         return -ENOENT;
->         }
-> @@ -2202,7 +2202,7 @@ int genpd_dev_pm_attach(struct device *dev)
->         if (IS_ERR(pd)) {
->                 dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
->                         __func__, PTR_ERR(pd));
-> -               of_node_put(dev->of_node);
-> +               of_node_put(np);
->                 return PTR_ERR(pd);
->         }
->
-> @@ -2218,7 +2218,7 @@ int genpd_dev_pm_attach(struct device *dev)
->         if (ret < 0) {
->                 dev_err(dev, "failed to add to PM domain %s: %d",
->                         pd->name, ret);
-> -               of_node_put(dev->of_node);
-> +               of_node_put(np);
->                 return ret;
->         }
->
+>  void rmobile_add_devices_to_domains(struct pm_domain_device data[],
 > --
 > 1.9.1
 >
