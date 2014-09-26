@@ -1,108 +1,96 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH 3/5] clk: imx: add CPU clock type
-Date: Fri, 26 Sep 2014 12:10:58 +0200
-Message-ID: <1411726258.2761.1.camel@pengutronix.de>
-References: <1411143381-10516-1-git-send-email-l.stach@pengutronix.de>
- <1411143381-10516-4-git-send-email-l.stach@pengutronix.de>
- <20140926025933.GA31948@dragon>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH v6 0/4] Tegra124 soctherm driver
+Date: Fri, 26 Sep 2014 12:19:19 +0200
+Message-ID: <20140926101918.GM31106@ulmo>
+References: <1411724593-4037-1-git-send-email-cyndis@kapsi.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140926025933.GA31948@dragon>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Shawn Guo <shawn.guo@freescale.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="jdM5ZcN/ZcXXVwZs"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1411724593-4037-1-git-send-email-cyndis@kapsi.fi>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mikko Perttunen <cyndis@kapsi.fi>
+Cc: edubezval@gmail.com, swarren@wwwdotorg.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, juha-matti.tilli@iki.fi
 List-Id: linux-pm@vger.kernel.org
 
-Am Freitag, den 26.09.2014, 10:59 +0800 schrieb Shawn Guo:
-> On Fri, Sep 19, 2014 at 06:16:19PM +0200, Lucas Stach wrote:
-> > From: Lucas Stach <dev@lynxeye.de>
-> > 
-> > This implements a virtual clock used to abstract away
-> > all the steps needed in order to change the ARM clock,
-> > so we don't have to push all this clock handling into
-> > the cpufreq driver.
-> > 
-> > While it will be used for i.MX53 at first it is generic
-> > enough to be used on i.MX6 later on.
-> > 
-> > Signed-off-by: Lucas Stach <dev@lynxeye.de>
-> 
-> Is this intentional to use a different email address than your usual
-> one?
 
-Urgh no. That's a remnant from starting this code at home without
-setting the proper git environment. Thanks for the hint.
+--jdM5ZcN/ZcXXVwZs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> > ---
-> >  arch/arm/mach-imx/Makefile  |   2 +-
-> >  arch/arm/mach-imx/clk-cpu.c | 104 ++++++++++++++++++++++++++++++++++++++++++++
-> >  arch/arm/mach-imx/clk.h     |   4 ++
-> >  3 files changed, 109 insertions(+), 1 deletion(-)
-> >  create mode 100644 arch/arm/mach-imx/clk-cpu.c
-> > 
-> > diff --git a/arch/arm/mach-imx/Makefile b/arch/arm/mach-imx/Makefile
-> > index ac88599ca080..4d6071351f4f 100644
-> > --- a/arch/arm/mach-imx/Makefile
-> > +++ b/arch/arm/mach-imx/Makefile
-> > @@ -12,7 +12,7 @@ obj-$(CONFIG_SOC_IMX31) += mm-imx3.o cpu-imx31.o clk-imx31.o iomux-imx31.o ehci-
-> >  obj-$(CONFIG_SOC_IMX35) += mm-imx3.o cpu-imx35.o clk-imx35.o ehci-imx35.o pm-imx3.o
-> >  
-> >  imx5-pm-$(CONFIG_PM) += pm-imx5.o
-> > -obj-$(CONFIG_SOC_IMX5) += cpu-imx5.o clk-imx51-imx53.o $(imx5-pm-y)
-> > +obj-$(CONFIG_SOC_IMX5) += cpu-imx5.o clk-imx51-imx53.o clk-cpu.o $(imx5-pm-y)
-> >  
-> >  obj-$(CONFIG_COMMON_CLK) += clk-pllv1.o clk-pllv2.o clk-pllv3.o clk-gate2.o \
-> >  			    clk-pfd.o clk-busy.o clk.o \
-> > diff --git a/arch/arm/mach-imx/clk-cpu.c b/arch/arm/mach-imx/clk-cpu.c
-> > new file mode 100644
-> > index 000000000000..ffba96228d3b
-> > --- /dev/null
-> > +++ b/arch/arm/mach-imx/clk-cpu.c
-> > @@ -0,0 +1,104 @@
-> > +/*
-> > + * Copyright (c) 2014 Lucas Stach <l.stach@pengutronix.de>, Pengutronix
-> > + *
-> > + * The code contained herein is licensed under the GNU General Public
-> > + * License. You may obtain a copy of the GNU General Public License
-> > + * Version 2 or later at the following locations:
-> > + *
-> > + * http://www.opensource.org/licenses/gpl-license.html
-> > + * http://www.gnu.org/copyleft/gpl.html
-> > + */
-> > +
-> > +#include <linux/clk.h>
-> > +#include <linux/clk-provider.h>
-> > +#include <linux/slab.h>
-> > +
-> > +struct clk_cpu {
-> > +	struct clk_hw	hw;
-> > +	struct clk	*div, *mux, *pll, *step;
-> 
-> This is personal taste, so I'm not strong on this.  But I feel having
-> them on multiple lines makes the later addition/removal of struct clk
-> pointers a bit easier.
-> 
-> Other than these trivial comments, the patch looks good to me.
-> 
-> Shawn
-> 
-> > +};
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Fri, Sep 26, 2014 at 12:43:09PM +0300, Mikko Perttunen wrote:
+> Hi,
+>=20
+> this series adds support for the thermal monitoring features of the
+> soctherm unit on the Tegra124 SoC.=20
+>=20
+> The branch is also available in my github repo,
+>   git://github.com/cyndis/linux.git soctherm-v6
+>=20
+> Thanks,
+> Mikko
+>=20
+> Mikko Perttunen (4):
+>   of: Add bindings for nvidia,tegra124-soctherm
+>   ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
+>   ARM: tegra: Add thermal trip points for Jetson TK1
+>   thermal: Add Tegra SOCTHERM thermal management driver
+>=20
+>  .../devicetree/bindings/thermal/tegra-soctherm.txt |  53 +++
+>  arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  44 ++
+>  arch/arm/boot/dts/tegra124.dtsi                    |  47 ++
+>  drivers/thermal/Kconfig                            |  10 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/tegra_soctherm.c                   | 471 +++++++++++++++=
+++++++
+>  include/dt-bindings/thermal/tegra124-soctherm.h    |  13 +
+>  7 files changed, 639 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/tegra-socth=
+erm.txt
+>  create mode 100644 drivers/thermal/tegra_soctherm.c
+>  create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
 
--- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
+One thing that I've wanted to start doing for a while now is request
+patch submissions like this to come accompanied with a way on how to
+test them. Ideally this would be in a scripted way that can test for
+success programatically, but it doesn't necessarily have to be if it
+turns out too difficult or impractical to do.
+
+The goal is to eventually come up with a test suite that can run the
+majority of test cases automatically to make it easy to test for any
+regressions. And even if tests can't be run automatically it'd still
+be an advantage to have them all collected in some repository, since
+it saves a lot of typing and time to run tests, and it will give us
+a standard set of tests that everybody can verify changes against.
+
+I realize that it's somewhat unfair to start requesting this from you
+now, but we've got to start somewhere. Could you give a short summary
+of how you test this? What are the interfaces that the kernel exposes
+for these thermal drivers?
+
+Thierry
+
+--jdM5ZcN/ZcXXVwZs
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJUJT2mAAoJEN0jrNd/PrOhGE8P/20gBfQEJ3cCQ2ZJNuDk7OsQ
+FmJOXkeGyAmpogK5uLut2eFolmlnpuPIRxDVUuyLpiac8GPwl7AgpsbkUmI7u54O
+Zt7gSwLE6jwKHS73fIK9CX+qWBrcXHAZD2n5nyVT58xPKaaXVWSFOBsCtGP7bNrj
+bXOLlIYlSburzUvPe3Xte2XmFXUMkDnx9ye7bYORiIdhVKH6hW/1sJeAHHRZmtcX
+mtx5ZJs6nR0bZhArmYVZinHDqRMas9tHS57pkGzkEFOUj1MG6L0doyyPn/38bg94
+vpiAK7Y+CnlRlC+Boa92X0h5SHvUPsDyjv1t38DebPcWze24XHwMfJxZbNfu6mRo
++JJ9heFyB4kcxOaoStpClen5OlqFGK0fFy9FrRaXrbTNsPD+W54GrwwH1BVeAZPp
+EEBho/Zw+O3rJNYupXv2JmDdsO1jdaVRyW+pgZmYYv8ssOE2xIWvCipN+DOO67Gx
+y9yts8RCcwLx4j5oHfp27O6XVVgcv5r6AKyNdH33r9PDjViIruQxj6YUdsr9IZl2
+XSkd1KmvH6tlhO3j2560gfQA9Ain/VovJpmjfAkfGrDP2iL2y4QmPYGxEE9y0wvC
+UVfyOmaNAnCMdbAhvDPJvHKXnXsBCbcR57qDtoEP6bxLS0le0JvFawynDjaVwzS2
+hH89fpS0+VCFKTWiFjpK
+=m7uS
+-----END PGP SIGNATURE-----
+
+--jdM5ZcN/ZcXXVwZs--
