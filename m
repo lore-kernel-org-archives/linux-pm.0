@@ -1,69 +1,107 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v6 1/5] qcom: spm: Add Subsystem Power Manager driver
-Date: Fri, 26 Sep 2014 11:19:30 -0600
-Message-ID: <20140926171930.GF390@ilina-mac.local>
-References: <1411516281-58328-1-git-send-email-lina.iyer@linaro.org>
- <1411516281-58328-2-git-send-email-lina.iyer@linaro.org>
- <7h61ga48sq.fsf@deeprootsystems.com>
+From: Rakib Mullick <rakib.mullick@gmail.com>
+Subject: [PATCH] cpuidle: Minor optimization in cpuidle governor finding.
+Date: Fri, 26 Sep 2014 23:28:20 +0600
+Message-ID: <1411752500.1447.4.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f182.google.com ([209.85.192.182]:41836 "EHLO
-	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755653AbaIZRTf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 13:19:35 -0400
-Received: by mail-pd0-f182.google.com with SMTP id y10so1429944pdj.41
-        for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2014 10:19:35 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <7h61ga48sq.fsf@deeprootsystems.com>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:44199 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755042AbaIZR2l (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 13:28:41 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: galak@codeaurora.org, sboyd@codeaurora.org, daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Andrew Morton <akpm@linux-foundation.org>
 
-On Fri, Sep 26 2014 at 10:59 -0600, Kevin Hilman wrote:
->Lina Iyer <lina.iyer@linaro.org> writes:
->
->> Based on work by many authors, available at codeaurora.org
->>
->> SPM is a hardware block that controls the peripheral logic surrounding
->> the application cores (cpu/l$). When the core executes WFI instruction,
->> the SPM takes over the putting the core in low power state as
->> configured. The wake up for the SPM is an interrupt at the GIC, which
->> then completes the rest of low power mode sequence and brings the core
->> out of low power mode.
->>
->> The SPM has a set of control registers that configure the SPMs
->> individually based on the type of the core and the runtime conditions.
->> SPM is a finite state machine block to which a sequence is provided and
->> it interprets the bytes  and executes them in sequence. Each low power
->> mode that the core can enter into is provided to the SPM as a sequence.
->>
->> Configure the SPM to set the core (cpu or L2) into its low power mode,
->> the index of the first command in the sequence is set in the SPM_CTL
->> register. When the core executes ARM wfi instruction, it triggers the
->> SPM state machine to start executing from that index. The SPM state
->> machine waits until the interrupt occurs and starts executing the rest
->> of the sequence until it hits the end of the sequence. The end of the
->> sequence jumps the core out of its low power mode.
->>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->
->[...]
->
->> +enum {
->> +	MSM_SPM_REG_SAW2_CFG,
->> +	MSM_SPM_REG_SAW2_AVS_CTL,
->> +	MSM_SPM_REG_SAW2_AVS_HYSTERESIS,
+ Currently in __cpuidle_find_governor(), strnicmp() is used to
+find which governor (menu or ladder) to register where CPUIDLE_NAME_LEN
+is passed strnicmp()'s comparision max limit. But, "menu" or "ladder"
+these strings are much smaller than CPUIDLE_NAME_LEN. To avoid it
+this patch introduces len field on cpuidle_governor structure, which
+is statically initialized to the size of length of governor name. Later
+on this size has been passed as strnicmp()'s length param. Another
+advantage this patch introduces, before calling strnicmp() by checking
+the size of governor name length we can determine whether to call
+strnicmp() i.e a shortcut.
 
->Do you really need the MSM_SPM_REG_ prefix on all of these?  As these
->names are all local to the driver, the extra prefix isn't needed IMO.
->
-Nope, I dont.. I will remove them.
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+---
 
->Also, consdiering that SPM seems to be sub-block of SAW2, the fact that
->the SPM shows up twice in some of the names is a bit confusing.
->
-I understand. I will fix that.
+diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
+index ca89412..f601cc5 100644
+--- a/drivers/cpuidle/governor.c
++++ b/drivers/cpuidle/governor.c
+@@ -20,16 +20,21 @@ struct cpuidle_governor *cpuidle_curr_governor;
+ /**
+  * __cpuidle_find_governor - finds a governor of the specified name
+  * @str: the name
++ * @size: length of str
+  *
+  * Must be called with cpuidle_lock acquired.
+  */
+-static struct cpuidle_governor * __cpuidle_find_governor(const char *str)
++static struct cpuidle_governor *__cpuidle_find_governor(const char *str,
++							size_t size)
+ {
+ 	struct cpuidle_governor *gov;
+ 
+-	list_for_each_entry(gov, &cpuidle_governors, governor_list)
+-		if (!strnicmp(str, gov->name, CPUIDLE_NAME_LEN))
++	list_for_each_entry(gov, &cpuidle_governors, governor_list) {
++		if (size != gov->len)
++			continue;
++		if (!strnicmp(str, gov->name, gov->len))
+ 			return gov;
++	}
+ 
+ 	return NULL;
+ }
+@@ -85,7 +90,7 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
+ 		return -ENODEV;
+ 
+ 	mutex_lock(&cpuidle_lock);
+-	if (__cpuidle_find_governor(gov->name) == NULL) {
++	if (__cpuidle_find_governor(gov->name, gov->len) == NULL) {
+ 		ret = 0;
+ 		list_add_tail(&gov->governor_list, &cpuidle_governors);
+ 		if (!cpuidle_curr_governor ||
+diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+index 044ee0d..91aff9c 100644
+--- a/drivers/cpuidle/governors/ladder.c
++++ b/drivers/cpuidle/governors/ladder.c
+@@ -177,6 +177,7 @@ static void ladder_reflect(struct cpuidle_device *dev, int index)
+ 
+ static struct cpuidle_governor ladder_governor = {
+ 	.name =		"ladder",
++	.len =		6,
+ 	.rating =	10,
+ 	.enable =	ladder_enable_device,
+ 	.select =	ladder_select_state,
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 34db2fb..23de182 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -477,6 +477,7 @@ static int menu_enable_device(struct cpuidle_driver *drv,
+ 
+ static struct cpuidle_governor menu_governor = {
+ 	.name =		"menu",
++	.len =		4,
+ 	.rating =	20,
+ 	.enable =	menu_enable_device,
+ 	.select =	menu_select,
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 25e0df6..bb9b5bd 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -198,6 +198,7 @@ struct cpuidle_governor {
+ 	char			name[CPUIDLE_NAME_LEN];
+ 	struct list_head 	governor_list;
+ 	unsigned int		rating;
++	size_t			len;
+ 
+ 	int  (*enable)		(struct cpuidle_driver *drv,
+ 					struct cpuidle_device *dev);
 
->
+
