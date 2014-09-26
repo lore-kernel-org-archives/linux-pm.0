@@ -1,52 +1,49 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v6 1/5] qcom: spm: Add Subsystem Power Manager driver
-Date: Fri, 26 Sep 2014 12:30:40 -0700
-Message-ID: <7hr3yy2n8f.fsf@deeprootsystems.com>
-References: <1411516281-58328-1-git-send-email-lina.iyer@linaro.org>
-	<1411516281-58328-2-git-send-email-lina.iyer@linaro.org>
-	<1F7E5951-7704-4ADE-A1D1-2E380FF2540A@codeaurora.org>
-	<20140924184750.GA1004@ilina-mac.local>
-	<7hwq8q2og3.fsf@deeprootsystems.com>
-	<20140926191253.GH390@ilina-mac.local>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] cpufreq: integrator: fix integrator_cpufreq_remove return type
+Date: Fri, 26 Sep 2014 22:19:12 +0200
+Message-ID: <1845195.odREGsY0qB@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:50845 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754111AbaIZTam (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 26 Sep 2014 15:30:42 -0400
-In-Reply-To: <20140926191253.GH390@ilina-mac.local> (Lina Iyer's message of
-	"Fri, 26 Sep 2014 13:12:53 -0600")
+Received: from mout.kundenserver.de ([212.227.17.13]:55610 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755205AbaIZUTq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 16:19:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Kumar Gala <galak@codeaurora.org>, sboyd@codeaurora.org, daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-Lina Iyer <lina.iyer@linaro.org> writes:
+When building this driver as a module, we get a helpful warning
+about the return type:
 
-> On Fri, Sep 26 2014 at 13:04 -0600, Kevin Hilman wrote:
->>Lina Iyer <lina.iyer@linaro.org> writes:
->>
->>> On Wed, Sep 24 2014 at 12:07 -0600, Kumar Gala wrote:
+drivers/cpufreq/integrator-cpufreq.c:232:2: warning: initialization from incompatible pointer type
+  .remove = __exit_p(integrator_cpufreq_remove),
 
-[...]
+If the remove callback returns void, the caller gets an undefined
+value as it expects an integer to be returned. This fixes the
+problem by passing down the value from cpufreq_unregister_driver.
 
->>>>
->>>>General comment, lets use qcom instead of msm for various things.
->>>>
->>>>[snip]
->>>>
->>> OK, Done. I renamed all msm_ functions to qcom_ functions as well.
->>>
->>
->>Does that apply to the other parts of this series too?  like the msm-pm
->>and cpuidle layers?
->>
-> Yes, there are no more msm's anymore :)
->
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+Found while testing the integrator multiplatform patches from Linus Walleij,
+this shows up as a new warning in allmodconfig.
 
-<can of worms>
+diff --git a/drivers/cpufreq/integrator-cpufreq.c b/drivers/cpufreq/integrator-cpufreq.c
+index c1320528b9d0..6bd69adc3c5e 100644
+--- a/drivers/cpufreq/integrator-cpufreq.c
++++ b/drivers/cpufreq/integrator-cpufreq.c
+@@ -213,9 +213,9 @@ static int __init integrator_cpufreq_probe(struct platform_device *pdev)
+ 	return cpufreq_register_driver(&integrator_driver);
+ }
+ 
+-static void __exit integrator_cpufreq_remove(struct platform_device *pdev)
++static int __exit integrator_cpufreq_remove(struct platform_device *pdev)
+ {
+-	cpufreq_unregister_driver(&integrator_driver);
++	return cpufreq_unregister_driver(&integrator_driver);
+ }
+ 
+ static const struct of_device_id integrator_cpufreq_match[] = {
 
-What about Documentation/devicetree/bindings/arm/msm?
-
-</can of worms>
