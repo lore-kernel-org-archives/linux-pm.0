@@ -1,94 +1,88 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [RFC PATCH 2/4] ARM: keystone: pm: switch to use generic pm domains
-Date: Fri, 26 Sep 2014 19:40:40 +0300
-Message-ID: <54259708.1030801@ti.com>
-References: <1411657537-25238-1-git-send-email-grygorii.strashko@ti.com>	<1411657537-25238-3-git-send-email-grygorii.strashko@ti.com> <7hlhp79w6p.fsf@deeprootsystems.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH v6 1/5] qcom: spm: Add Subsystem Power Manager driver
+Date: Fri, 26 Sep 2014 09:59:33 -0700
+Message-ID: <7h61ga48sq.fsf@deeprootsystems.com>
+References: <1411516281-58328-1-git-send-email-lina.iyer@linaro.org>
+	<1411516281-58328-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:34842 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753918AbaIZQlY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 26 Sep 2014 12:41:24 -0400
-In-Reply-To: <7hlhp79w6p.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1411516281-58328-2-git-send-email-lina.iyer@linaro.org> (Lina
+	Iyer's message of "Tue, 23 Sep 2014 17:51:17 -0600")
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: galak@codeaurora.org, sboyd@codeaurora.org, daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: santosh.shilimkar@ti.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, ben.dooks@codethink.co.uk, laurent.pinchart@ideasonboard.com, grant.likely@secretlab.ca, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On 09/26/2014 01:23 AM, Kevin Hilman wrote:
-> Grygorii Strashko <grygorii.strashko@ti.com> writes:
->
->> This patch switches Keystone 2 PM code to use Generic PM domains
->> instead of PM  clock domains because of the lack of DT support
->> for the last.
->>
->> Keystone 2 PM domain should be specified per device for which
->> Runtime PM has to be enabled and handles the list of functional clocks
->> to enable/disable device.
->>
->> Example:
->>   qmss_domain: qmss_pm_controller {
->> 	compatible = "ti,keystone-pm-controller";
->> 	clocks = <&chipclk13>;
->> 	#power-domain-cells = <0>;
->>   };
->>
->>   qmss: qmss@2a40000 {
->> 	compatible = "ti,keystone-navigator-qmss";
->> 	...
->> 	power-domains = <&qmss_domain>;
->>
->> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
->
-> [...]
->
->> +static int keystone_pm_domain_power_off(struct generic_pm_domain *genpd)
->> +{
->> +	int ret;
->> +	struct keystone_domain *dm = container_of(genpd,
->> +						  struct keystone_domain,
->> +						  base);
->> +
->> +	/* Enable reset clocks for all devices in the PU domain */
->
-> This says enable clocks...
->
->> +	ret = pm_clk_suspend(dm->dev);
->
-> ...but this calls clk_disable().
->
->> +	if (ret)
->> +		dev_err(dm->dev, "can't turn off clocks %d\n", ret);
->> +
->> +	return ret;
->> +}
->> +
->> +static int keystone_pm_domain_power_on(struct generic_pm_domain *genpd)
->> +{
->> +	int ret;
->> +	struct keystone_domain *dm = container_of(genpd,
->> +						  struct keystone_domain,
->> +						  base);
->> +
->> +	/* Disable reset clocks for all devices in the PU domain */
->
-> And this says disable clocks...
->
->> +	ret = pm_clk_resume(dm->dev);
->
-> ...but this calls clk_enable().
->
-> -ECONFUSED.
->
+Lina Iyer <lina.iyer@linaro.org> writes:
 
-Will update.
+> Based on work by many authors, available at codeaurora.org
+>
+> SPM is a hardware block that controls the peripheral logic surrounding
+> the application cores (cpu/l$). When the core executes WFI instruction,
+> the SPM takes over the putting the core in low power state as
+> configured. The wake up for the SPM is an interrupt at the GIC, which
+> then completes the rest of low power mode sequence and brings the core
+> out of low power mode.
+>
+> The SPM has a set of control registers that configure the SPMs
+> individually based on the type of the core and the runtime conditions.
+> SPM is a finite state machine block to which a sequence is provided and
+> it interprets the bytes  and executes them in sequence. Each low power
+> mode that the core can enter into is provided to the SPM as a sequence.
+>
+> Configure the SPM to set the core (cpu or L2) into its low power mode,
+> the index of the first command in the sequence is set in the SPM_CTL
+> register. When the core executes ARM wfi instruction, it triggers the
+> SPM state machine to start executing from that index. The SPM state
+> machine waits until the interrupt occurs and starts executing the rest
+> of the sequence until it hits the end of the sequence. The end of the
+> sequence jumps the core out of its low power mode.
+>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 
-Thanks you for comments.
+[...]
 
-Regards,
--grygorii
+> +enum {
+> +	MSM_SPM_REG_SAW2_CFG,
+> +	MSM_SPM_REG_SAW2_AVS_CTL,
+> +	MSM_SPM_REG_SAW2_AVS_HYSTERESIS,
+> +	MSM_SPM_REG_SAW2_SPM_CTL,
+> +	MSM_SPM_REG_SAW2_PMIC_DLY,
+> +	MSM_SPM_REG_SAW2_AVS_LIMIT,
+> +	MSM_SPM_REG_SAW2_AVS_DLY,
+> +	MSM_SPM_REG_SAW2_SPM_DLY,
+> +	MSM_SPM_REG_SAW2_PMIC_DATA_0,
+> +	MSM_SPM_REG_SAW2_PMIC_DATA_1,
+> +	MSM_SPM_REG_SAW2_PMIC_DATA_2,
+> +	MSM_SPM_REG_SAW2_PMIC_DATA_3,
+> +	MSM_SPM_REG_SAW2_PMIC_DATA_4,
+> +	MSM_SPM_REG_SAW2_PMIC_DATA_5,
+> +	MSM_SPM_REG_SAW2_PMIC_DATA_6,
+> +	MSM_SPM_REG_SAW2_PMIC_DATA_7,
+> +	MSM_SPM_REG_SAW2_RST,
+> +
+> +	MSM_SPM_REG_NR_INITIALIZE = MSM_SPM_REG_SAW2_RST,
+> +
+> +	MSM_SPM_REG_SAW2_ID,
+> +	MSM_SPM_REG_SAW2_SECURE,
+> +	MSM_SPM_REG_SAW2_STS0,
+> +	MSM_SPM_REG_SAW2_STS1,
+> +	MSM_SPM_REG_SAW2_STS2,
+> +	MSM_SPM_REG_SAW2_VCTL,
+> +	MSM_SPM_REG_SAW2_SEQ_ENTRY,
+> +	MSM_SPM_REG_SAW2_SPM_STS,
+> +	MSM_SPM_REG_SAW2_AVS_STS,
+> +	MSM_SPM_REG_SAW2_PMIC_STS,
+> +	MSM_SPM_REG_SAW2_VERSION,
+> +
+> +	MSM_SPM_REG_NR,
+> +};
 
+Do you really need the MSM_SPM_REG_ prefix on all of these?  As these
+names are all local to the driver, the extra prefix isn't needed IMO.
 
+Also, consdiering that SPM seems to be sub-block of SAW2, the fact that
+the SPM shows up twice in some of the names is a bit confusing.
 
+Kevin
