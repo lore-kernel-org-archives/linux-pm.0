@@ -1,68 +1,45 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: charger-manager: Fix NULL pointer exception with
- missing cm-fuel-gauge
-Date: Fri, 26 Sep 2014 17:12:17 +0200
-Message-ID: <20140926151216.GA21641@earth.universe>
-References: <1411730823-9667-1-git-send-email-k.kozlowski@samsung.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v3 02/13] PM / Domains: Add DT bindings for power-on/off
+ latencies
+Date: Fri, 26 Sep 2014 08:28:35 -0700
+Message-ID: <20140926152835.GK10233@codeaurora.org>
+References: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
+ <1411662520-22795-3-git-send-email-geert+renesas@glider.be>
+ <CAPDyKFrAv9oyBzX764+CWkOxfN1kN_MddB3ks1q69+TnmnHXuQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="xHFwDpU9dbj6ez1V"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:39913 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754654AbaIZPMY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 26 Sep 2014 11:12:24 -0400
+Received: from smtp.codeaurora.org ([198.145.11.231]:38019 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754160AbaIZP2i (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 11:28:38 -0400
 Content-Disposition: inline
-In-Reply-To: <1411730823-9667-1-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <CAPDyKFrAv9oyBzX764+CWkOxfN1kN_MddB3ks1q69+TnmnHXuQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Anton Vorontsov <anton@enomsg.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, stable@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
+> On 25 September 2014 18:28, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> > +Optional properties:
+> > + - power-on-latency: Power-on latency of the PM domain, in ns,
+> > + - power-off-latency: Power-off latency of the PM domain, in ns.
+> > +
+> >  Example:
+> >
+> >         power: power-controller@12340000 {
+> >                 compatible = "foo,power-controller";
+> >                 reg = <0x12340000 0x1000>;
+> >                 #power-domain-cells = <1>;
+> > +               power-on-latency = <250000>;
+> > +               power-off-latency = <250000>;
 
---xHFwDpU9dbj6ez1V
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This assumes every power domain within a power controller has the
+same latencies? That isn't always true. This should be an array
+of values corresponding to the number of power domains if
+#power-domain-cells is 1, or just one value if the cell count is
+0.
 
-Hi,
-
-On Fri, Sep 26, 2014 at 01:27:03PM +0200, Krzysztof Kozlowski wrote:
-> NULL pointer exception happens during charger-manager probe if
-> 'cm-fuel-gauge' property is not present.
->=20
-> ...
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Cc: <stable@vger.kernel.org>
-> Fixes: 856ee6115e2d ("charger-manager: Support deivce tree in charger man=
-ager driver")
-
-http://git.infradead.org/battery-2.6.git/commit/661a88860274e059fdb744dfaa9=
-8c045db7b5d1d
-
--- Sebastian
-
---xHFwDpU9dbj6ez1V
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUJYJQAAoJENju1/PIO/qaC0cQAIyq8Kqn5b+O+glUpIsVDROV
-v97wyWTEpH3nTS/JlZnKJ5U3b0HwWDbFJRfCWtYuh57L5qFAWBP9dsK2U3yvRlJz
-CIcEQHnDLzVgBNsRlmZDSvP9B5wdAIWRYsDviPezSQrglQQxWr4Qvxj3T3O/Q7JR
-qmNF6mKpNFVELFy3/1+qRabtdo01T+PR4h7q3T3MYVeqUgQmdJOCTp+TtLb7geHU
-26fouFuMvWB23jYr1vE4NtQbtMvoI00uUaAhQmf3saxTKsuj610lc1L4dul7jGsv
-S1ivONWNHWhLd2vcVeGH9UQHobkJ7K2gDTd81d+k2fsbFGJZJe5mTMFnKl18CVhM
-Dul3oo5EPtIoc00Xsm4EuJ6x84/izaNzxxfe6/hsq9AXPn4okV16qHI7nM8dNmkg
-oOKp3CyKrkYNtU6TYaHvtE/XRAciQCsCVY8KcnZ8J4el4HZltmif0QrZOmKQB+1A
-h27U6IrZFRbneK6Am4nounS4DXX3ZoD8xvEIYCzna69+6Re0kCGvs5+YRQFsOfri
-KSk3rz7ixkqRlTZ6rGKuY2aqSZQfZkT+AvQ9FO/i0uoQ7Zow7lMuK8uf69uef+kz
-jKyNtevTQFqDZZKpOxBGaA0XVcuTFXIQvXJcZ0gaehNg9mAnfEUnQ/enaS3mZPTJ
-YdJ4KgNt7EXx8zR2u+UB
-=zS5o
------END PGP SIGNATURE-----
-
---xHFwDpU9dbj6ez1V--
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
