@@ -1,93 +1,56 @@
-From: Shawn Guo <shawn.guo@freescale.com>
-Subject: Re: [PATCH 5/5] ARM: imx53: add cpufreq support
-Date: Fri, 26 Sep 2014 11:02:37 +0800
-Message-ID: <20140926030236.GB31948@dragon>
-References: <1411143381-10516-1-git-send-email-l.stach@pengutronix.de>
- <1411143381-10516-6-git-send-email-l.stach@pengutronix.de>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v2 1/1] power: Add simple gpio-restart driver
+Date: Thu, 25 Sep 2014 20:28:30 -0700
+Message-ID: <5424DD5E.3040809@roeck-us.net>
+References: <1409167431-21155-1-git-send-email-davidriley@chromium.org> <1409167431-21155-2-git-send-email-davidriley@chromium.org> <541BB278.9010701@roeck-us.net> <20140925234145.GA2063@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1411143381-10516-6-git-send-email-l.stach@pengutronix.de>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:33203 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752482AbaIZD2g (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 23:28:36 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XXMCx-000fgY-Te
+	for linux-pm@vger.kernel.org; Fri, 26 Sep 2014 03:28:36 +0000
+In-Reply-To: <20140925234145.GA2063@earth.universe>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, Sep 19, 2014 at 06:16:21PM +0200, Lucas Stach wrote:
-> Instanciate the platform device for the generic cpufreq-cpu0
-> driver and add all required properties to the DT.
-> 
-> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-> ---
->  arch/arm/boot/dts/imx53.dtsi   | 13 ++++++++++++-
->  arch/arm/mach-imx/mach-imx53.c |  4 ++++
+On 09/25/2014 04:41 PM, Sebastian Reichel wrote:
+> Hi Guenter,
+>
+> On Thu, Sep 18, 2014 at 09:35:04PM -0700, Guenter Roeck wrote:
+>> On 08/27/2014 12:23 PM, David Riley wrote:
+>>> This driver registers a restart handler to set a GPIO line high/low
+>>> to reset a board based on devicetree bindings.
+>>>
+>>> Signed-off-by: David Riley <davidriley@chromium.org>
+>>
+>> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+>
+> Is there an immutable branch available with your restart handler
+> stuff, which I can pull into battery-2.6.git?
+>
+> -- Sebastian
+>
 
-Please split dts and kernel changes.
 
->  2 files changed, 16 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm/boot/dts/imx53.dtsi b/arch/arm/boot/dts/imx53.dtsi
-> index 64fa27b36be0..bd5226a7ea20 100644
-> --- a/arch/arm/boot/dts/imx53.dtsi
-> +++ b/arch/arm/boot/dts/imx53.dtsi
-> @@ -46,10 +46,21 @@
->  	cpus {
->  		#address-cells = <1>;
->  		#size-cells = <0>;
-> -		cpu@0 {
-> +		cpu0: cpu@0 {
->  			device_type = "cpu";
->  			compatible = "arm,cortex-a8";
->  			reg = <0x0>;
-> +			clocks = <&clks IMX5_CLK_ARM>;
-> +			clock-latency = <61036>;
-> +			voltage-tolerance = <5>;
-> +			operating-points = <
-> +				/* kHz */
-> +				 166666  850000
-> +				 400000  900000
-> +				 800000 1050000
-> +				1000000 1200000
-> +				1200000 1300000
-> +			>;
->  		};
->  	};
->  
-> diff --git a/arch/arm/mach-imx/mach-imx53.c b/arch/arm/mach-imx/mach-imx53.c
-> index 03dd6ea13acc..4eb6849c52d2 100644
-> --- a/arch/arm/mach-imx/mach-imx53.c
-> +++ b/arch/arm/mach-imx/mach-imx53.c
-> @@ -38,9 +38,13 @@ static void __init imx53_dt_init(void)
->  	imx_aips_allow_unprivileged_access("fsl,imx53-aipstz");
->  }
->  
-> +static struct platform_device imx53_cpufreq_pdev = { .name = "cpufreq-cpu0", };
-> +
->  static void __init imx53_init_late(void)
->  {
->  	imx53_pm_init();
-> +
-> +	platform_device_register(&imx53_cpufreq_pdev);
+Hi Sebastian,
 
-It should be a bit easier to call the following.
+Unfortunately not.
 
-	platform_device_register_simple("cpufreq-cpu0", -1, NULL, 0);
+Andrew has the patches in his tree and will hopefully send the set to Linus
+during the next commit window. Not sure if/how I could create an immutable
+branch from the commits in his repository, especially since (if I understand
+it correctly) he re-creates his tree on a regular basis, which is changing
+the SHAs and, unless I am missing something, the commit dates.
 
-Shawn
+[ Not really sure how to best handle situations like that .. ]
 
->  }
->  
->  static const char * const imx53_dt_board_compat[] __initconst = {
-> -- 
-> 2.1.0
-> 
+Guenter
+
