@@ -1,112 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: BUG: sleeping function called from invalid context at drivers/cpufreq/cpufreq.c:370
-Date: Fri, 26 Sep 2014 16:10:51 +0200
-Message-ID: <2420500.gangrFEl78@vostro.rjw.lan>
-References: <20140924081845.572814794@infradead.org> <1411712697.6005.7.camel@marge.simpson.net> <1411718040.6005.18.camel@marge.simpson.net>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [GIT PULL] PM / AVS changes for v3.18 - v2
+Date: Fri, 26 Sep 2014 07:23:21 -0700
+Message-ID: <7hmw9m795y.fsf@deeprootsystems.com>
+References: <7ha95nikqh.fsf@linaro.org> <20140926081534.GA27755@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50585 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753782AbaIZNvB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 09:51:01 -0400
-In-Reply-To: <1411718040.6005.18.camel@marge.simpson.net>
+Received: from mail.kernel.org ([198.145.19.201]:34913 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755166AbaIZOXX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 26 Sep 2014 10:23:23 -0400
+In-Reply-To: <20140926081534.GA27755@sirena.org.uk> (Mark Brown's message of
+	"Fri, 26 Sep 2014 09:15:34 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Galbraith <umgwanakikbuti@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, nm@ti.com, dianders@chromium.org, heiko@sntech.de
 
-On Friday, September 26, 2014 09:54:00 AM Mike Galbraith wrote:
-> On Fri, 2014-09-26 at 08:24 +0200, Mike Galbraith wrote: 
-> > (the hazards of multitasking.. post escaped early, and went to mostly
-> > the wrong folks)
-> > 
-> > 
-> > While testing some scheduler patches, the below pcc-cpufreq
-> > might_sleep() gripe fell out.
-> 
-> Because the bits below from 8fec051e didn't make the lock go away first.
-> Reverting only pcc-cpufreq back to notifier.. works.
+Mark Brown <broonie@kernel.org> writes:
 
-OK, thanks!
+> On Thu, Sep 25, 2014 at 12:05:42PM -0700, Kevin Hilman wrote:
+>
+>> The first pull request was missing a dependency on a feature that went
+>> in through Mark Brown's regulator tree, so it wouldn't actually compile
+>> properly by itself.  This version pulls in that topic branch from Marks
+>> tree (topic/voltage-ev branch, already part of -next), and now compiles fine.
+>
+> Please in future don't pull anything in from my tree without a signed
+> tag (speak to me if there isn't one).
 
-I may just apply the below, but I'd prefer to keep things consistent overall.
-I need to think about this for a while.
+Sorry about that.
 
-> --------------------- drivers/cpufreq/integrator-cpufreq.c ---------------------
-> index 0e27844e8c2d..e5122f1bfe78 100644
-> @@ -122,7 +122,7 @@ static int integrator_set_target(struct cpufreq_policy *policy,
->  		return 0;
->  	}
->  
-> -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-> +	cpufreq_freq_transition_begin(policy, &freqs);
->  
->  	cm_osc = __raw_readl(cm_base + INTEGRATOR_HDR_OSC_OFFSET);
->  
-> @@ -143,7 +143,7 @@ static int integrator_set_target(struct cpufreq_policy *policy,
->  	 */
->  	set_cpus_allowed(current, cpus_allowed);
->  
-> -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-> +	cpufreq_freq_transition_end(policy, &freqs, 0);
->  
->  	return 0;
->  }
-> 
-> > On Thu, 2014-09-25 at 15:59 +0200, Mike Galbraith wrote:
-> > 
-> > > pcc-cpufreq: spin_lock() -> wait_event() -> gripe() gripe() gripe()...
-> > > 
-> > > [   50.756280] BUG: sleeping function called from invalid context at drivers/cpufreq/cpufreq.c:370
-> > > [   50.850582] in_atomic(): 1, irqs_disabled(): 0, pid: 2636, name: modprobe
-> > > [   50.926744] Preemption disabled at:[<ffffffffa04d74d7>] pcc_cpufreq_target+0x27/0x200 [pcc_cpufreq]
-> > > [   51.025044]
-> > > [   51.045454] CPU: 57 PID: 2636 Comm: modprobe Tainted: G            E  3.17.0-default #7
-> > > [   51.136727] Hardware name: Hewlett-Packard ProLiant DL980 G7, BIOS P66 07/07/2010
-> > > [   51.218484]  00000000ffffffff ffff88026c46b828 ffffffff81589dbd 0000000000000000
-> > > [   51.300293]  ffff880037978090 ffff88026c46b848 ffffffff8108e1df ffff880037978090
-> > > [   51.382666]  0000000000000000 ffff88026c46b878 ffffffff8108e298 ffff88026d73ec00
-> > > [   51.464884] Call Trace:
-> > > [   51.495159]  [<ffffffff81589dbd>] dump_stack+0x4d/0x90
-> > > [   51.555439]  [<ffffffff8108e1df>] ___might_sleep+0x10f/0x180
-> > > [   51.620610]  [<ffffffff8108e298>] __might_sleep+0x48/0xd0
-> > > [   51.684774]  [<ffffffff8145b905>] cpufreq_freq_transition_begin+0x75/0x140 drivers/cpufreq/cpufreq.c:370 wait_event(policy->transition_wait, !policy->transition_ongoing);
-> > > [   51.767992]  [<ffffffff8108fc99>] ? preempt_count_add+0xb9/0xc0
-> > > [   51.833294]  [<ffffffffa04d7513>] pcc_cpufreq_target+0x63/0x200 [pcc_cpufreq] drivers/cpufreq/pcc-cpufreq.c:207 spin_lock(&pcc_lock);
-> > > [   51.930204]  [<ffffffff810e0d0f>] ? update_ts_time_stats+0x7f/0xb0
-> > > [   52.009288]  [<ffffffff8145be55>] __cpufreq_driver_target+0x85/0x170
-> > > [   52.082479]  [<ffffffff8145e4c8>] od_check_cpu+0xa8/0xb0
-> > > [   52.143874]  [<ffffffff8145ef10>] dbs_check_cpu+0x180/0x1d0
-> > > [   52.207329]  [<ffffffff8145f310>] cpufreq_governor_dbs+0x3b0/0x720
-> > > [   52.276916]  [<ffffffff8145ebe3>] od_cpufreq_governor_dbs+0x33/0xe0
-> > > [   52.349048]  [<ffffffff814593d9>] __cpufreq_governor+0xa9/0x210
-> > > [   52.415040]  [<ffffffff81459fb2>] cpufreq_set_policy+0x1e2/0x2e0
-> > > [   52.480473]  [<ffffffff8145a6cc>] cpufreq_init_policy+0x8c/0x110
-> > > [   52.545829]  [<ffffffff8145c9a0>] ? cpufreq_update_policy+0x1b0/0x1b0
-> > > [   52.615796]  [<ffffffff8108fb99>] ? preempt_count_sub+0xb9/0x100
-> > > [   52.681961]  [<ffffffff8145c6c6>] __cpufreq_add_dev+0x596/0x6b0
-> > > [   52.746288]  [<ffffffffa016c608>] ? pcc_cpufreq_probe+0x4b4/0x4b4 [pcc_cpufreq]
-> > > [   52.830472]  [<ffffffff8145c7ee>] cpufreq_add_dev+0xe/0x10
-> > > [   52.894106]  [<ffffffff81408e81>] subsys_interface_register+0xc1/0xf0
-> > > [   52.970763]  [<ffffffff8108fb99>] ? preempt_count_sub+0xb9/0x100
-> > > [   53.038953]  [<ffffffff8145b3d7>] cpufreq_register_driver+0x117/0x2a0
-> > > [   53.110751]  [<ffffffffa016c65d>] pcc_cpufreq_init+0x55/0x9f8 [pcc_cpufreq]
-> > > [   53.186920]  [<ffffffffa016c608>] ? pcc_cpufreq_probe+0x4b4/0x4b4 [pcc_cpufreq]
-> > > [   53.267583]  [<ffffffff81000298>] do_one_initcall+0xc8/0x1f0
-> > > [   53.330601]  [<ffffffff811a731d>] ? __vunmap+0x9d/0x100
-> > > [   53.388285]  [<ffffffff810eb9a0>] do_init_module+0x30/0x1b0
-> > > [   53.451958]  [<ffffffff810edfa6>] load_module+0x686/0x710
-> > > [   53.514007]  [<ffffffff810ebb20>] ? do_init_module+0x1b0/0x1b0
-> > > [   53.581246]  [<ffffffff810ee1db>] SyS_init_module+0x9b/0xc0
-> > > [   53.644024]  [<ffffffff8158f7a9>] system_call_fastpath+0x16/0x1b
-> > > 
-> > 
-> > 
-> 
-> 
+Had there been more than one patch in this topic branch, or it wasn't
+based directly on an -rc tag, I would've waited for confirmation about
+it being stable, but since it was a single patch, based directly on an
+-rc tag, I assumed it was stable.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+In the future, I'll be sure to request a signed tag.
+
+Kevin
