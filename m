@@ -1,95 +1,109 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v5 00/11] PM / Domains: Generic OF-based support
-Date: Fri, 26 Sep 2014 10:06:24 +0200
-Message-ID: <CAMuHMdWq9ZySdt8sQpBFq=X7LR5a=vZkowNZoB8NHztTisG+NQ@mail.gmail.com>
-References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
-	<20140925112122.GA22753@ulmo>
-	<7hppej8glk.fsf@deeprootsystems.com>
-	<20140926073125.GB31106@ulmo>
+Subject: Re: [PATCH v3 10/13] ARM: shmobile: r8a7740 dtsi: Add PM domain support
+Date: Fri, 26 Sep 2014 10:13:06 +0200
+Message-ID: <CAMuHMdWfyL3eju+GF1M_h9gvTLsO=3NniFjhP6SRgiQ_-H2gyw@mail.gmail.com>
+References: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
+	<1411662520-22795-11-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20140926073125.GB31106@ulmo>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@g>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1411662520-22795-11-git-send-email-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Thierry,
+On Thu, Sep 25, 2014 at 6:28 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> Add a device node for the System Controller, with subnodes that
+> represent the hardware power area hierarchy.
+> Hook up all devices to their respective PM domains.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-On Fri, Sep 26, 2014 at 9:31 AM, Thierry Reding
-<thierry.reding@gmail.com> wrote:
-> On Thu, Sep 25, 2014 at 03:45:11PM -0700, Kevin Hilman wrote:
->> Thierry Reding <thierry.reding@gmail.com> writes:
->> > I just noticed these patches because they conflicted with some of the
->> > local patches I had to add a very similar framework. One of the reasons
->> > why I hadn't posted these publicly yet is because the platform where I
->> > want to use this (Tegra) is somewhat quirky when it comes to power
->> > domains.
->> >
->> > On Tegra these domains are called power gates and they currently have
->> > their own API. We've been looking at migrating things over to some
->> > generic framework for some time and PM domains do seem like a good fit.
->> > However one of the quirks regarding these domains on Tegra is that a
->> > fixed sequence exists that needs to be respected when enabling or
->> > disabling a power partition. The exact sequence can be found in the
->> > drivers/soc/tegra/pmc.c driver's tegra_powergate_sequence_power_up()
->> > function. Essentially we need to call into the clock and reset drivers
->> > at very specific moments during the operations that the PMC does.
->> >
->> > One solution to this would be to make the needed clocks and resets
->> > available to the power domain driver via DT, but then we have the
->> > problem that two drivers would be controlling the same resources. For
->> > example drivers could still want to disable the clock for more fine-
->> > grained power management.
->>
->> I think you're on the right path here.  You can get rid of this conflict
->> by removing the direct/manual clock management from the drivers, and
->> using runtime PM instead: s/clk_enable/pm_runtime_get_sync/,
->> s/clk_disable/pm_runtime_put_sync/.  When using runtime PM, those calls
->> trickle down through the power domain driver, which can manage the
->> device clocks, as well as any additional clocks and resets needed for
->> power gating.
->
-> Okay. The DT part of it is going to be pretty nasty (as usual) because
-> we currently have the clocks and resets within the device's device tree
-> node (which I think is where they really belong).
->
-> So one possibility would be to move the clocks and resets to the power
-> domain controller's node, like so:
->
->         pmc@... {
->                 power-domains {
->                         ...
->
->                         sata@... {
->                                 clocks = <&tegra_car 124>;
->                                 resets = <&tegra_car 124>;
->                         };
+> diff --git a/arch/arm/boot/dts/r8a7740.dtsi b/arch/arm/boot/dts/r8a7740.dtsi
+> index 502483f4dccb2f45..4fead480a405bebe 100644
+> --- a/arch/arm/boot/dts/r8a7740.dtsi
+> +++ b/arch/arm/boot/dts/r8a7740.dtsi
+
+> @@ -383,6 +408,7 @@
+>                         compatible = "renesas,r8a7740-cpg-clocks";
+>                         reg = <0xe6150000 0x10000>;
+>                         clocks = <&extal1_clk>, <&extalr_clk>;
+> +                       power-domains = <&pd_c5>;
+>                         #clock-cells = <1>;
+>                         clock-output-names = "system", "pllc0", "pllc1",
+>                                              "pllc2", "r",
+> @@ -397,6 +423,7 @@
+>                         compatible = "renesas,r8a7740-div6-clock", "renesas,cpg-div6-clock";
+>                         reg = <0xe6150080 4>;
+>                         clocks = <&pllc1_div2_clk>;
+> +                       power-domains = <&pd_c5>;
+>                         #clock-cells = <0>;
+>                         clock-output-names = "sub";
 >                 };
->         };
->
-> An alternative would be to make the power-domain controller look up the
-> clock within the user's device tree node. That could be problematic,
-> because while the module clock is always the first clock in current
-> device trees, there aren't ordering guarantees, so we'd have to rely on
-> the clock name.
+> @@ -405,6 +432,7 @@
+>                 pllc1_div2_clk: pllc1_div2_clk {
+>                         compatible = "fixed-factor-clock";
+>                         clocks = <&cpg_clocks R8A7740_CLK_PLLC1>;
+> +                       power-domains = <&pd_c5>;
+>                         #clock-cells = <0>;
+>                         clock-div = <2>;
+>                         clock-mult = <1>;
+> @@ -413,6 +441,7 @@
+>                 extal1_div2_clk: extal1_div2_clk {
+>                         compatible = "fixed-factor-clock";
+>                         clocks = <&extal1_clk>;
+> +                       power-domains = <&pd_c5>;
+>                         #clock-cells = <0>;
+>                         clock-div = <2>;
+>                         clock-mult = <1>;
+> @@ -424,6 +453,7 @@
+>                         compatible = "renesas,r8a7740-mstp-clocks", "renesas,cpg-mstp-clocks";
+>                         reg = <0xe6150080 4>;
+>                         clocks = <&sub_clk>, <&sub_clk>;
+> +                       power-domains = <&pd_c5>;
+>                         #clock-cells = <1>;
+>                         renesas,clock-indices = <
+>                                 R8A7740_CLK_SUBCK R8A7740_CLK_SUBCK2
+> @@ -439,6 +469,7 @@
+>                                  <&cpg_clocks R8A7740_CLK_B>,
+>                                  <&sub_clk>, <&sub_clk>,
+>                                  <&cpg_clocks R8A7740_CLK_B>;
+> +                       power-domains = <&pd_c5>;
+>                         #clock-cells = <1>;
+>                         renesas,clock-indices = <
+>                                 R8A7740_CLK_CEU21 R8A7740_CLK_CEU20 R8A7740_CLK_TMU0
+> @@ -460,6 +491,7 @@
+>                                  <&sub_clk>, <&sub_clk>, <&sub_clk>,
+>                                  <&sub_clk>, <&sub_clk>, <&sub_clk>,
+>                                  <&sub_clk>;
+> +                       power-domains = <&pd_c5>;
+>                         #clock-cells = <1>;
+>                         renesas,clock-indices = <
+>                                 R8A7740_CLK_SCIFA6 R8A7740_CLK_INTCA
+> @@ -489,6 +521,7 @@
+>                                  <&cpg_clocks R8A7740_CLK_HP>,
+>                                  <&cpg_clocks R8A7740_CLK_HP>,
+>                                  <&cpg_clocks R8A7740_CLK_HP>;
+> +                       power-domains = <&pd_c5>;
+>                         #clock-cells = <1>;
+>                         renesas,clock-indices = <
+>                                 R8A7740_CLK_CMT1 R8A7740_CLK_FSI R8A7740_CLK_IIC1
+> @@ -506,6 +539,7 @@
+>                                  <&cpg_clocks R8A7740_CLK_HP>,
+>                                  <&cpg_clocks R8A7740_CLK_HP>,
+>                                  <&cpg_clocks R8A7740_CLK_HP>;
+> +                       power-domains = <&pd_c5>;
+>                         #clock-cells = <1>;
+>                         renesas,clock-indices = <
+>                                 R8A7740_CLK_USBH R8A7740_CLK_SDHI2
 
-Or on some other way.
-Do you have a separate hardware block that controls all (and only) the
-module clocks?
+Woosh, looks like I've been too eager adding links to the pd_c5 "always on"
+PM domain to any node that has a clocks property. This must not be done for
+the clocks. They are not instantiated as platform devices.
 
-On shmobile SoCs, all module clocks are controlled using the MSTP
-(Module SToP) clocks.
-
-In my old RFC series "[PATCH/RFC 0/4] of: Register clocks for Runtime PM
-with PM core" (https://lkml.org/lkml/2014/4/24/1118) the MSTP clock driver
-advertised using a new CLK_RUNTIME_PM flag that its clocks are module
-clocks and thus suitable for runtime PM.
-
-There were some issues with that series, but the general idea of letting a
-clock driver advertise that all its clocks are module clocks could still be
-useful. Then the power domain driver knows which clocks to manage.
+Thanks to Grygorii for questioning me.
 
 Gr{oetje,eeting}s,
 
