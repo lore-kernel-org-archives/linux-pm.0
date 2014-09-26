@@ -1,114 +1,94 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
 Subject: Re: [PATCH v6 0/4] Tegra124 soctherm driver
-Date: Fri, 26 Sep 2014 13:48:53 +0200
-Message-ID: <20140926114852.GO31106@ulmo>
-References: <1411724593-4037-1-git-send-email-cyndis@kapsi.fi>
- <20140926101918.GM31106@ulmo>
- <54253E7C.9080704@kapsi.fi>
+Date: Fri, 26 Sep 2014 15:00:11 +0300
+Message-ID: <5425554B.7060102@kapsi.fi>
+References: <1411724593-4037-1-git-send-email-cyndis@kapsi.fi> <20140926101918.GM31106@ulmo> <54253E7C.9080704@kapsi.fi> <20140926114852.GO31106@ulmo>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="qcTtWMBd/uZDG7+Y"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <54253E7C.9080704-/1wQRMveznE@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
-Cc: Mikko Perttunen <cyndis-/1wQRMveznE@public.gmane.org>, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, juha-matti.tilli-X3B1VOXEql0@public.gmane.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kapsi.fi ([217.30.184.167]:51850 "EHLO mail.kapsi.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753707AbaIZMAQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 26 Sep 2014 08:00:16 -0400
+In-Reply-To: <20140926114852.GO31106@ulmo>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Mikko Perttunen <cyndis@kapsi.fi>, edubezval@gmail.com, swarren@wwwdotorg.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, juha-matti.tilli@iki.fi
 
+On 09/26/2014 02:48 PM, Thierry Reding wrote:
+> On Fri, Sep 26, 2014 at 01:22:52PM +0300, Mikko Perttunen wrote:
+>> On 09/26/2014 01:19 PM, Thierry Reding wrote:
+>>> On Fri, Sep 26, 2014 at 12:43:09PM +0300, Mikko Perttunen wrote:
+>>>> Hi,
+>>>>
+>>>> this series adds support for the thermal monitoring features of the
+>>>> soctherm unit on the Tegra124 SoC.
+>>>>
+>>>> The branch is also available in my github repo,
+>>>>    git://github.com/cyndis/linux.git soctherm-v6
+>>>>
+>>>> Thanks,
+>>>> Mikko
+>>>>
+>>>> Mikko Perttunen (4):
+>>>>    of: Add bindings for nvidia,tegra124-soctherm
+>>>>    ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
+>>>>    ARM: tegra: Add thermal trip points for Jetson TK1
+>>>>    thermal: Add Tegra SOCTHERM thermal management driver
+>>>>
+>>>>   .../devicetree/bindings/thermal/tegra-soctherm.txt |  53 +++
+>>>>   arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  44 ++
+>>>>   arch/arm/boot/dts/tegra124.dtsi                    |  47 ++
+>>>>   drivers/thermal/Kconfig                            |  10 +
+>>>>   drivers/thermal/Makefile                           |   1 +
+>>>>   drivers/thermal/tegra_soctherm.c                   | 471 +++++++++++++++++++++
+>>>>   include/dt-bindings/thermal/tegra124-soctherm.h    |  13 +
+>>>>   7 files changed, 639 insertions(+)
+>>>>   create mode 100644 Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
+>>>>   create mode 100644 drivers/thermal/tegra_soctherm.c
+>>>>   create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
+>>>
+>>> One thing that I've wanted to start doing for a while now is request
+>>> patch submissions like this to come accompanied with a way on how to
+>>> test them. Ideally this would be in a scripted way that can test for
+>>> success programatically, but it doesn't necessarily have to be if it
+>>> turns out too difficult or impractical to do.
+>>
+>> Indeed, that would be very useful.
+>>
+>>>
+>>> The goal is to eventually come up with a test suite that can run the
+>>> majority of test cases automatically to make it easy to test for any
+>>> regressions. And even if tests can't be run automatically it'd still
+>>> be an advantage to have them all collected in some repository, since
+>>> it saves a lot of typing and time to run tests, and it will give us
+>>> a standard set of tests that everybody can verify changes against.
+>>>
+>>> I realize that it's somewhat unfair to start requesting this from you
+>>> now, but we've got to start somewhere. Could you give a short summary
+>>> of how you test this? What are the interfaces that the kernel exposes
+>>> for these thermal drivers?
+>>
+>> You need to enable the driver in Device Drivers -> Generic Thermal sysfs
+>> driver -> Tegra SOCTHERM thermal management. Then, you should see
+>> directories appear in /sys/class/thermal. You can also use the `tmon' tool
+>> included in the kernel tree to quickly see values; that's what I use for
+>> testing.
+>
+> Okay. So what are expected values for these temperatures? It's going to
+> be pretty much impossible to say what the correct value is on a given
+> board at any time, but perhaps a "test" could consist of checking that
+> all temperatures are within a reasonable range.
 
---qcTtWMBd/uZDG7+Y
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Jetson TK1, at least without the CL-DVFS series, I get around 32 
+Celsius. If you want to account for cpu/gpufreq then I guess something 
+like 25-70 would be a good range.
 
-On Fri, Sep 26, 2014 at 01:22:52PM +0300, Mikko Perttunen wrote:
-> On 09/26/2014 01:19 PM, Thierry Reding wrote:
-> >On Fri, Sep 26, 2014 at 12:43:09PM +0300, Mikko Perttunen wrote:
-> >>Hi,
-> >>
-> >>this series adds support for the thermal monitoring features of the
-> >>soctherm unit on the Tegra124 SoC.
-> >>
-> >>The branch is also available in my github repo,
-> >>   git://github.com/cyndis/linux.git soctherm-v6
-> >>
-> >>Thanks,
-> >>Mikko
-> >>
-> >>Mikko Perttunen (4):
-> >>   of: Add bindings for nvidia,tegra124-soctherm
-> >>   ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
-> >>   ARM: tegra: Add thermal trip points for Jetson TK1
-> >>   thermal: Add Tegra SOCTHERM thermal management driver
-> >>
-> >>  .../devicetree/bindings/thermal/tegra-soctherm.txt |  53 +++
-> >>  arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  44 ++
-> >>  arch/arm/boot/dts/tegra124.dtsi                    |  47 ++
-> >>  drivers/thermal/Kconfig                            |  10 +
-> >>  drivers/thermal/Makefile                           |   1 +
-> >>  drivers/thermal/tegra_soctherm.c                   | 471 ++++++++++++=
-+++++++++
-> >>  include/dt-bindings/thermal/tegra124-soctherm.h    |  13 +
-> >>  7 files changed, 639 insertions(+)
-> >>  create mode 100644 Documentation/devicetree/bindings/thermal/tegra-so=
-ctherm.txt
-> >>  create mode 100644 drivers/thermal/tegra_soctherm.c
-> >>  create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
-> >
-> >One thing that I've wanted to start doing for a while now is request
-> >patch submissions like this to come accompanied with a way on how to
-> >test them. Ideally this would be in a scripted way that can test for
-> >success programatically, but it doesn't necessarily have to be if it
-> >turns out too difficult or impractical to do.
->=20
-> Indeed, that would be very useful.
->=20
-> >
-> >The goal is to eventually come up with a test suite that can run the
-> >majority of test cases automatically to make it easy to test for any
-> >regressions. And even if tests can't be run automatically it'd still
-> >be an advantage to have them all collected in some repository, since
-> >it saves a lot of typing and time to run tests, and it will give us
-> >a standard set of tests that everybody can verify changes against.
-> >
-> >I realize that it's somewhat unfair to start requesting this from you
-> >now, but we've got to start somewhere. Could you give a short summary
-> >of how you test this? What are the interfaces that the kernel exposes
-> >for these thermal drivers?
->=20
-> You need to enable the driver in Device Drivers -> Generic Thermal sysfs
-> driver -> Tegra SOCTHERM thermal management. Then, you should see
-> directories appear in /sys/class/thermal. You can also use the `tmon' tool
-> included in the kernel tree to quickly see values; that's what I use for
-> testing.
+>
+> Thierry
+>
 
-Okay. So what are expected values for these temperatures? It's going to
-be pretty much impossible to say what the correct value is on a given
-board at any time, but perhaps a "test" could consist of checking that
-all temperatures are within a reasonable range.
+Mikko
 
-Thierry
-
---qcTtWMBd/uZDG7+Y
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBAgAGBQJUJVKkAAoJEN0jrNd/PrOhcBQP/05pvp1Sfw3Jt8lW8+ZVEVY3
-OsgKUZqecwRLHFtSB28rWGSS5DdDbNsLav89qW7SAQstN5pb/y454rc1mha/Y56+
-LxYb25pFN492CuvAiWfkmzr1MWS0ytGvc/IAUyld0vpzvsmDPCELMS2WoNJQwLPM
-KNnlqsLRGvgbfrsjdRTHUmCgjGHU6iP4UtBgHPNcUMUmHmuCadjbJ2J/jJ6a6Saf
-HPbAjOgI6pHiwjg5k+mig9DCBGUioCiTK1FWvYReS8uY0CgUJKZDR/1iY4bKsDs6
-NEiTqXN14WJp8Ai6sQlz4GiA0J72LxNHY1o+rv2yUuJACtG7aKf6lqkY04o6y5tY
-7bY8OcE/Pl/2DWkfKagXbREzZVAOLr1jy1fzp0M1k9vgYzutGGgf+KuzuQ54D+fC
-S06WaOwgFr+i0bskhOWAHyJWYapYj/MDA9n+5ygCFG+RExKWXtqx0C7eVWLCq/Gf
-AsJ6Pppg8JlXVh3+6PygE83ac1rPIuJBvmDeIwyRcZV2JBnXbklVB1nz3nR9AHzG
-bnXlwe+95MnP4vEWvW7ews00worfugxBubUor/2O0SVnxqsn/qIE/fRI2+0yyqoA
-wyeBKkNmSWeGPH9bXuXE4VKdYRP3wwDcTy857aGcGAZLfXQhkqz5/+bJhVni29Rk
-j4XdQCCC3ct1qG5ycXKI
-=2bSu
------END PGP SIGNATURE-----
-
---qcTtWMBd/uZDG7+Y--
