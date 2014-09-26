@@ -1,149 +1,58 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 1/6] cpufreq: dt: disable unsupported OPPs
-Date: Fri, 26 Sep 2014 23:55:55 +0200
-Message-ID: <3967829.hlAL1lU4Xl@vostro.rjw.lan>
-References: <1411738864-26549-1-git-send-email-l.stach@pengutronix.de>
+Subject: Re: [PATCH] PM / Domains: Add missing header file
+Date: Sat, 27 Sep 2014 00:07:29 +0200
+Message-ID: <1798331.sYPFUlDYVR@vostro.rjw.lan>
+References: <1411725443-17328-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57542 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:49783 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755881AbaIZVgF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 17:36:05 -0400
-In-Reply-To: <1411738864-26549-1-git-send-email-l.stach@pengutronix.de>
+	with SMTP id S1754811AbaIZVri (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 17:47:38 -0400
+In-Reply-To: <1411725443-17328-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Shawn Guo <shawn.guo@freescale.com>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>
 
-On Friday, September 26, 2014 03:40:59 PM Lucas Stach wrote:
-> If the regulator connected to the CPU voltage plane doesn't
-> support an OPP specified voltage with the acceptable tolerance
-> it's better to just disable the OPP instead of constantly
-> failing the voltage scaling later on.
+On Friday, September 26, 2014 11:57:23 AM Ulf Hansson wrote:
+> The commit below, starts using errno values in pm.h header file. But it
+> didn't include the header for these, let's add it.
 > 
-> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> 46420dd73b800f87a19af13af5883855cf38cb08
+> (PM / Domains: Add APIs to attach/detach a PM domain for a device)
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+> 
+> Rafael, feel free to squash this change into the commit that was causing the
+> issue.
 
-Why do you need this to be part of the whole series?  Is there any
-hard dependency on it?
+First, it's more convenient for me to apply a fix at this point.
+
+Second ->
 
 > ---
-> v2:
-> - rebase on top of pm/linux-next
-> ---
->  drivers/cpufreq/cpufreq-dt.c | 66 +++++++++++++++++++++++++++-----------------
->  1 file changed, 40 insertions(+), 26 deletions(-)
+>  include/linux/pm.h | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> index 6bbb8b913446..4485c8eccdc2 100644
-> --- a/drivers/cpufreq/cpufreq-dt.c
-> +++ b/drivers/cpufreq/cpufreq-dt.c
-> @@ -185,6 +185,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->  	struct device *cpu_dev;
->  	struct regulator *cpu_reg;
->  	struct clk *cpu_clk;
-> +	unsigned long min_uV = ~0, max_uV = 0;
->  	unsigned int transition_latency;
->  	int ret;
->  
-> @@ -204,16 +205,10 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->  	/* OPPs might be populated at runtime, don't check for error here */
->  	of_init_opp_table(cpu_dev);
->  
-> -	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-> -	if (ret) {
-> -		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
-> -		goto out_put_node;
-> -	}
-> -
->  	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
->  	if (!priv) {
->  		ret = -ENOMEM;
-> -		goto out_free_table;
-> +		goto out_put_node;
->  	}
->  
->  	of_property_read_u32(np, "voltage-tolerance", &priv->voltage_tolerance);
-> @@ -222,30 +217,49 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->  		transition_latency = CPUFREQ_ETERNAL;
->  
->  	if (!IS_ERR(cpu_reg)) {
-> -		struct dev_pm_opp *opp;
-> -		unsigned long min_uV, max_uV;
-> -		int i;
-> -
->  		/*
-> -		 * OPP is maintained in order of increasing frequency, and
-> -		 * freq_table initialised from OPP is therefore sorted in the
-> -		 * same order.
-> +		 * Disable any OPPs where the connected regulator isn't able to
-> +		 * provide the specified voltage and record minimum and maximum
-> +		 * voltage levels.
->  		 */
-> -		for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
-> -			;
-> -		rcu_read_lock();
-> -		opp = dev_pm_opp_find_freq_exact(cpu_dev,
-> -				freq_table[0].frequency * 1000, true);
-> -		min_uV = dev_pm_opp_get_voltage(opp);
-> -		opp = dev_pm_opp_find_freq_exact(cpu_dev,
-> -				freq_table[i-1].frequency * 1000, true);
-> -		max_uV = dev_pm_opp_get_voltage(opp);
-> -		rcu_read_unlock();
-> +		while (1) {
-> +			struct dev_pm_opp *opp;
-> +			unsigned long opp_freq = 0, opp_uV, tol_uV;
-> +
-> +			rcu_read_lock();
-> +			opp = dev_pm_opp_find_freq_ceil(cpu_dev, &opp_freq);
-> +			if (IS_ERR(opp)) {
-> +				rcu_read_unlock();
-> +				break;
-> +			}
-> +			opp_uV = dev_pm_opp_get_voltage(opp);
-> +			rcu_read_unlock();
-> +
-> +			tol_uV = opp_uV * priv->voltage_tolerance / 100;
-> +			if (regulator_is_supported_voltage(cpu_reg, opp_uV,
-> +							   opp_uV + tol_uV)) {
-> +				if (opp_uV < min_uV)
-> +					min_uV = opp_uV;
-> +				if (opp_uV > max_uV)
-> +					max_uV = opp_uV;
-> +			} else {
-> +				dev_pm_opp_disable(cpu_dev, opp_freq);
-> +			}
-> +
-> +			opp_freq++;
-> +		}
-> +
->  		ret = regulator_set_voltage_time(cpu_reg, min_uV, max_uV);
->  		if (ret > 0)
->  			transition_latency += ret * 1000;
->  	}
->  
-> +	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-> +	if (ret) {
-> +		pr_err("failed to init cpufreq table: %d\n", ret);
-> +		goto out_free_priv;
-> +	}
-> +
->  	/*
->  	 * For now, just loading the cooling device;
->  	 * thermal DT code takes care of matching them.
-> @@ -275,9 +289,9 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->  
->  out_cooling_unregister:
->  	cpufreq_cooling_unregister(priv->cdev);
-> -	kfree(priv);
-> -out_free_table:
->  	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
-> +out_free_priv:
-> +	kfree(priv);
->  out_put_node:
->  	of_node_put(np);
->  out_put_reg_clk:
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index c4cbf48..69df420 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -27,6 +27,7 @@
+>  #include <linux/wait.h>
+>  #include <linux/timer.h>
+>  #include <linux/completion.h>
+> +#include <linux/errno.h>
+
+-> Can you please move the dev_pm_domain_attach/detach() headers to
+include/linux/pm_domain.h instead?
+
+>  /*
+>   * Callbacks for platform drivers to implement.
 > 
 
 -- 
