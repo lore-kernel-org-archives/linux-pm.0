@@ -1,91 +1,93 @@
 From: Shawn Guo <shawn.guo@freescale.com>
-Subject: Re: [PATCH 3/5] clk: imx: add CPU clock type
-Date: Fri, 26 Sep 2014 10:59:34 +0800
-Message-ID: <20140926025933.GA31948@dragon>
+Subject: Re: [PATCH 5/5] ARM: imx53: add cpufreq support
+Date: Fri, 26 Sep 2014 11:02:37 +0800
+Message-ID: <20140926030236.GB31948@dragon>
 References: <1411143381-10516-1-git-send-email-l.stach@pengutronix.de>
- <1411143381-10516-4-git-send-email-l.stach@pengutronix.de>
+ <1411143381-10516-6-git-send-email-l.stach@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1on0134.outbound.protection.outlook.com ([157.56.110.134]:50660
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753214AbaIZDAB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Sep 2014 23:00:01 -0400
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <1411143381-10516-4-git-send-email-l.stach@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1411143381-10516-6-git-send-email-l.stach@pengutronix.de>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, kernel@pengutronix.de
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 19, 2014 at 06:16:19PM +0200, Lucas Stach wrote:
-> From: Lucas Stach <dev@lynxeye.de>
+On Fri, Sep 19, 2014 at 06:16:21PM +0200, Lucas Stach wrote:
+> Instanciate the platform device for the generic cpufreq-cpu0
+> driver and add all required properties to the DT.
 > 
-> This implements a virtual clock used to abstract away
-> all the steps needed in order to change the ARM clock,
-> so we don't have to push all this clock handling into
-> the cpufreq driver.
-> 
-> While it will be used for i.MX53 at first it is generic
-> enough to be used on i.MX6 later on.
-> 
-> Signed-off-by: Lucas Stach <dev@lynxeye.de>
-
-Is this intentional to use a different email address than your usual
-one?
-
+> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
 > ---
->  arch/arm/mach-imx/Makefile  |   2 +-
->  arch/arm/mach-imx/clk-cpu.c | 104 ++++++++++++++++++++++++++++++++++++++++++++
->  arch/arm/mach-imx/clk.h     |   4 ++
->  3 files changed, 109 insertions(+), 1 deletion(-)
->  create mode 100644 arch/arm/mach-imx/clk-cpu.c
+>  arch/arm/boot/dts/imx53.dtsi   | 13 ++++++++++++-
+>  arch/arm/mach-imx/mach-imx53.c |  4 ++++
+
+Please split dts and kernel changes.
+
+>  2 files changed, 16 insertions(+), 1 deletion(-)
 > 
-> diff --git a/arch/arm/mach-imx/Makefile b/arch/arm/mach-imx/Makefile
-> index ac88599ca080..4d6071351f4f 100644
-> --- a/arch/arm/mach-imx/Makefile
-> +++ b/arch/arm/mach-imx/Makefile
-> @@ -12,7 +12,7 @@ obj-$(CONFIG_SOC_IMX31) += mm-imx3.o cpu-imx31.o clk-imx31.o iomux-imx31.o ehci-
->  obj-$(CONFIG_SOC_IMX35) += mm-imx3.o cpu-imx35.o clk-imx35.o ehci-imx35.o pm-imx3.o
+> diff --git a/arch/arm/boot/dts/imx53.dtsi b/arch/arm/boot/dts/imx53.dtsi
+> index 64fa27b36be0..bd5226a7ea20 100644
+> --- a/arch/arm/boot/dts/imx53.dtsi
+> +++ b/arch/arm/boot/dts/imx53.dtsi
+> @@ -46,10 +46,21 @@
+>  	cpus {
+>  		#address-cells = <1>;
+>  		#size-cells = <0>;
+> -		cpu@0 {
+> +		cpu0: cpu@0 {
+>  			device_type = "cpu";
+>  			compatible = "arm,cortex-a8";
+>  			reg = <0x0>;
+> +			clocks = <&clks IMX5_CLK_ARM>;
+> +			clock-latency = <61036>;
+> +			voltage-tolerance = <5>;
+> +			operating-points = <
+> +				/* kHz */
+> +				 166666  850000
+> +				 400000  900000
+> +				 800000 1050000
+> +				1000000 1200000
+> +				1200000 1300000
+> +			>;
+>  		};
+>  	};
 >  
->  imx5-pm-$(CONFIG_PM) += pm-imx5.o
-> -obj-$(CONFIG_SOC_IMX5) += cpu-imx5.o clk-imx51-imx53.o $(imx5-pm-y)
-> +obj-$(CONFIG_SOC_IMX5) += cpu-imx5.o clk-imx51-imx53.o clk-cpu.o $(imx5-pm-y)
+> diff --git a/arch/arm/mach-imx/mach-imx53.c b/arch/arm/mach-imx/mach-imx53.c
+> index 03dd6ea13acc..4eb6849c52d2 100644
+> --- a/arch/arm/mach-imx/mach-imx53.c
+> +++ b/arch/arm/mach-imx/mach-imx53.c
+> @@ -38,9 +38,13 @@ static void __init imx53_dt_init(void)
+>  	imx_aips_allow_unprivileged_access("fsl,imx53-aipstz");
+>  }
 >  
->  obj-$(CONFIG_COMMON_CLK) += clk-pllv1.o clk-pllv2.o clk-pllv3.o clk-gate2.o \
->  			    clk-pfd.o clk-busy.o clk.o \
-> diff --git a/arch/arm/mach-imx/clk-cpu.c b/arch/arm/mach-imx/clk-cpu.c
-> new file mode 100644
-> index 000000000000..ffba96228d3b
-> --- /dev/null
-> +++ b/arch/arm/mach-imx/clk-cpu.c
-> @@ -0,0 +1,104 @@
-> +/*
-> + * Copyright (c) 2014 Lucas Stach <l.stach@pengutronix.de>, Pengutronix
-> + *
-> + * The code contained herein is licensed under the GNU General Public
-> + * License. You may obtain a copy of the GNU General Public License
-> + * Version 2 or later at the following locations:
-> + *
-> + * http://www.opensource.org/licenses/gpl-license.html
-> + * http://www.gnu.org/copyleft/gpl.html
-> + */
+> +static struct platform_device imx53_cpufreq_pdev = { .name = "cpufreq-cpu0", };
 > +
-> +#include <linux/clk.h>
-> +#include <linux/clk-provider.h>
-> +#include <linux/slab.h>
+>  static void __init imx53_init_late(void)
+>  {
+>  	imx53_pm_init();
 > +
-> +struct clk_cpu {
-> +	struct clk_hw	hw;
-> +	struct clk	*div, *mux, *pll, *step;
+> +	platform_device_register(&imx53_cpufreq_pdev);
 
-This is personal taste, so I'm not strong on this.  But I feel having
-them on multiple lines makes the later addition/removal of struct clk
-pointers a bit easier.
+It should be a bit easier to call the following.
 
-Other than these trivial comments, the patch looks good to me.
+	platform_device_register_simple("cpufreq-cpu0", -1, NULL, 0);
 
 Shawn
 
-> +};
+>  }
+>  
+>  static const char * const imx53_dt_board_compat[] __initconst = {
+> -- 
+> 2.1.0
+> 
