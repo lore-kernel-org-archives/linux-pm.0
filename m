@@ -1,56 +1,49 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2 1/1] power: Add simple gpio-restart driver
-Date: Thu, 25 Sep 2014 20:28:30 -0700
-Message-ID: <5424DD5E.3040809@roeck-us.net>
-References: <1409167431-21155-1-git-send-email-davidriley@chromium.org> <1409167431-21155-2-git-send-email-davidriley@chromium.org> <541BB278.9010701@roeck-us.net> <20140925234145.GA2063@earth.universe>
+From: Robin Gong <b38343@freescale.com>
+Subject: [PATCH v4 0/3] add power off driver for i.mx6
+Date: Fri, 26 Sep 2014 11:59:04 +0800
+Message-ID: <1411703947-31956-1-git-send-email-b38343@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:33203 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752482AbaIZD2g (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Sep 2014 23:28:36 -0400
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XXMCx-000fgY-Te
-	for linux-pm@vger.kernel.org; Fri, 26 Sep 2014 03:28:36 +0000
-In-Reply-To: <20140925234145.GA2063@earth.universe>
+Received: from mail-by2on0104.outbound.protection.outlook.com ([207.46.100.104]:5857
+	"EHLO na01-by2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752893AbaIZDwg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 25 Sep 2014 23:52:36 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, shawn.guo@freescale.com, kernel@pengutronix.de, LW@KARO-electronics.de, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, grant.likely@linaro.org, linux@arm.linux.org.uk
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 09/25/2014 04:41 PM, Sebastian Reichel wrote:
-> Hi Guenter,
->
-> On Thu, Sep 18, 2014 at 09:35:04PM -0700, Guenter Roeck wrote:
->> On 08/27/2014 12:23 PM, David Riley wrote:
->>> This driver registers a restart handler to set a GPIO line high/low
->>> to reset a board based on devicetree bindings.
->>>
->>> Signed-off-by: David Riley <davidriley@chromium.org>
->>
->> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
->
-> Is there an immutable branch available with your restart handler
-> stuff, which I can pull into battery-2.6.git?
->
-> -- Sebastian
->
+Add simple power off driver for i.mx6, including:
+- add basic imx-snvs-poweroff driver in drivers/power/reset
+- add device node in all dts files of i.mx6.
+- enable in config file
 
+Change from v3:
+- disable poweroff driver in soc level dts and enable it in board level dts
+- replace 'EIO' with 'ENODEV' while of_iomap fail.
+Change from v2:
+- remove useless included head files
+- split device binding doc from dts patch
+- add description for the case that PMIC_ON_REQ not used as external power
+  control
 
-Hi Sebastian,
+Robin Gong (3):
+  ARM: dts: imx6: add pm_power_off support for i.mx6 chips
+  power: reset: imx-snvs-poweroff: add power off driver for i.mx6
+  ARM: configs: imx_v6_v7_defconfig: add power off driver
 
-Unfortunately not.
+ arch/arm/boot/dts/imx6qdl.dtsi          |  5 +++
+ arch/arm/boot/dts/imx6sl.dtsi           |  5 +++
+ arch/arm/boot/dts/imx6sx.dtsi           |  5 +++
+ arch/arm/configs/imx_v6_v7_defconfig    |  3 ++
+ drivers/power/reset/Kconfig             |  5 +++
+ drivers/power/reset/Makefile            |  1 +
+ drivers/power/reset/imx-snvs-poweroff.c | 69 +++++++++++++++++++++++++++++++++
+ 7 files changed, 93 insertions(+)
+ create mode 100644 drivers/power/reset/imx-snvs-poweroff.c
 
-Andrew has the patches in his tree and will hopefully send the set to Linus
-during the next commit window. Not sure if/how I could create an immutable
-branch from the commits in his repository, especially since (if I understand
-it correctly) he re-creates his tree on a regular basis, which is changing
-the SHAs and, unless I am missing something, the commit dates.
-
-[ Not really sure how to best handle situations like that .. ]
-
-Guenter
+-- 
+1.9.1
 
