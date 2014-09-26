@@ -1,52 +1,136 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [GIT PULL] PM / AVS changes for v3.18 - v2
-Date: Fri, 26 Sep 2014 09:15:34 +0100
-Message-ID: <20140926081534.GA27755@sirena.org.uk>
-References: <7ha95nikqh.fsf@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v3 13/13] ARM: shmobile: r8a7740 dtsi: Add preliminary PM
+ QoS device latencies
+Date: Fri, 26 Sep 2014 10:16:48 +0200
+Message-ID: <CAMuHMdWa_TDz6EyeXGDo-WGJyr15mhA4fH6r45hz8joNdkBbeQ@mail.gmail.com>
+References: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
+	<1411662520-22795-14-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gBii9oQw/U9UOygZ"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:42978 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753725AbaIZIQD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 04:16:03 -0400
-Content-Disposition: inline
-In-Reply-To: <7ha95nikqh.fsf@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1411662520-22795-14-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, nm@ti.com, dianders@chromium.org, heiko@sntech.de
 
+On Thu, Sep 25, 2014 at 6:28 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> diff --git a/arch/arm/boot/dts/r8a7740.dtsi b/arch/arm/boot/dts/r8a7740.dtsi
+> index ed0adeb61a1ad8ec..713170442b7bd4b2 100644
+> --- a/arch/arm/boot/dts/r8a7740.dtsi
+> +++ b/arch/arm/boot/dts/r8a7740.dtsi
 
---gBii9oQw/U9UOygZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> @@ -409,6 +509,10 @@
+>                         reg = <0xe6150000 0x10000>;
+>                         clocks = <&extal1_clk>, <&extalr_clk>;
+>                         power-domains = <&pd_c5>;
+> +                       stop-latency = <250000>;
+> +                       start-latency = <250000>;
+> +                       save-state-latency = <250000>;
+> +                       restore-state-latency = <250000>;
+>                         #clock-cells = <1>;
+>                         clock-output-names = "system", "pllc0", "pllc1",
+>                                              "pllc2", "r",
+> @@ -424,6 +528,10 @@
+>                         reg = <0xe6150080 4>;
+>                         clocks = <&pllc1_div2_clk>;
+>                         power-domains = <&pd_c5>;
+> +                       stop-latency = <250000>;
+> +                       start-latency = <250000>;
+> +                       save-state-latency = <250000>;
+> +                       restore-state-latency = <250000>;
+>                         #clock-cells = <0>;
+>                         clock-output-names = "sub";
+>                 };
+> @@ -433,6 +541,10 @@
+>                         compatible = "fixed-factor-clock";
+>                         clocks = <&cpg_clocks R8A7740_CLK_PLLC1>;
+>                         power-domains = <&pd_c5>;
+> +                       stop-latency = <250000>;
+> +                       start-latency = <250000>;
+> +                       save-state-latency = <250000>;
+> +                       restore-state-latency = <250000>;
+>                         #clock-cells = <0>;
+>                         clock-div = <2>;
+>                         clock-mult = <1>;
+> @@ -442,6 +554,10 @@
+>                         compatible = "fixed-factor-clock";
+>                         clocks = <&extal1_clk>;
+>                         power-domains = <&pd_c5>;
+> +                       stop-latency = <250000>;
+> +                       start-latency = <250000>;
+> +                       save-state-latency = <250000>;
+> +                       restore-state-latency = <250000>;
+>                         #clock-cells = <0>;
+>                         clock-div = <2>;
+>                         clock-mult = <1>;
+> @@ -454,6 +570,10 @@
+>                         reg = <0xe6150080 4>;
+>                         clocks = <&sub_clk>, <&sub_clk>;
+>                         power-domains = <&pd_c5>;
+> +                       stop-latency = <250000>;
+> +                       start-latency = <250000>;
+> +                       save-state-latency = <250000>;
+> +                       restore-state-latency = <250000>;
+>                         #clock-cells = <1>;
+>                         renesas,clock-indices = <
+>                                 R8A7740_CLK_SUBCK R8A7740_CLK_SUBCK2
+> @@ -470,6 +590,10 @@
+>                                  <&sub_clk>, <&sub_clk>,
+>                                  <&cpg_clocks R8A7740_CLK_B>;
+>                         power-domains = <&pd_c5>;
+> +                       stop-latency = <250000>;
+> +                       start-latency = <250000>;
+> +                       save-state-latency = <250000>;
+> +                       restore-state-latency = <250000>;
+>                         #clock-cells = <1>;
+>                         renesas,clock-indices = <
+>                                 R8A7740_CLK_CEU21 R8A7740_CLK_CEU20 R8A7740_CLK_TMU0
+> @@ -492,6 +616,10 @@
+>                                  <&sub_clk>, <&sub_clk>, <&sub_clk>,
+>                                  <&sub_clk>;
+>                         power-domains = <&pd_c5>;
+> +                       stop-latency = <250000>;
+> +                       start-latency = <250000>;
+> +                       save-state-latency = <250000>;
+> +                       restore-state-latency = <250000>;
+>                         #clock-cells = <1>;
+>                         renesas,clock-indices = <
+>                                 R8A7740_CLK_SCIFA6 R8A7740_CLK_INTCA
+> @@ -522,6 +650,10 @@
+>                                  <&cpg_clocks R8A7740_CLK_HP>,
+>                                  <&cpg_clocks R8A7740_CLK_HP>;
+>                         power-domains = <&pd_c5>;
+> +                       stop-latency = <250000>;
+> +                       start-latency = <250000>;
+> +                       save-state-latency = <250000>;
+> +                       restore-state-latency = <250000>;
+>                         #clock-cells = <1>;
+>                         renesas,clock-indices = <
+>                                 R8A7740_CLK_CMT1 R8A7740_CLK_FSI R8A7740_CLK_IIC1
+> @@ -540,6 +672,10 @@
+>                                  <&cpg_clocks R8A7740_CLK_HP>,
+>                                  <&cpg_clocks R8A7740_CLK_HP>;
+>                         power-domains = <&pd_c5>;
+> +                       stop-latency = <250000>;
+> +                       start-latency = <250000>;
+> +                       save-state-latency = <250000>;
+> +                       restore-state-latency = <250000>;
+>                         #clock-cells = <1>;
+>                         renesas,clock-indices = <
+>                                 R8A7740_CLK_USBH R8A7740_CLK_SDHI2
 
-On Thu, Sep 25, 2014 at 12:05:42PM -0700, Kevin Hilman wrote:
+Same here, as there should be no power-domains properties in the clocks
+nodes, there should be no latencies specified neither.
 
-> The first pull request was missing a dependency on a feature that went
-> in through Mark Brown's regulator tree, so it wouldn't actually compile
-> properly by itself.  This version pulls in that topic branch from Marks
-> tree (topic/voltage-ev branch, already part of -next), and now compiles fine.
+Gr{oetje,eeting}s,
 
-Please in future don't pull anything in from my tree without a signed
-tag (speak to me if there isn't one).
+                        Geert
 
---gBii9oQw/U9UOygZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUJSClAAoJECTWi3JdVIfQ/vUH/AgV3nHO0CqM3o1iT0U1Lh8q
-jIFYviY63AC2VVIZm6graZpEplsYelOMpSrR6L4a5GW2x4KUQDwsuK+HMilJYxvR
-7xsckvqeah3CQxUc2iRYZwqs5UY6lwSJtrYj2Bzzd5lfe8M2Nywfifq4rlV45Bo/
-gZrHCCaAR3tcM1wr9PV7J0AQTVwYmLIXsthVbf2TDJosVMtLLYK8ppJRhRwFZobH
-zVn0bDVviYUkkC0ZaZ1XrtSgVVRZg0eU6aYN/v4rYEqwqeASMLbRkNYRScb5g35O
-Ic18G3sp9w35k6jJLIadBOHkEegmX2zM1X/MVZh89t5+TfXbib3g8Y8qHA5vsmo=
-=9WGB
------END PGP SIGNATURE-----
-
---gBii9oQw/U9UOygZ--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
