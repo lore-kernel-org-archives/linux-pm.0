@@ -1,178 +1,139 @@
 From: Lucas Stach <l.stach@pengutronix.de>
-Subject: [PATCH v2 3/6] clk: imx: add CPU clock type
-Date: Fri, 26 Sep 2014 15:41:01 +0200
-Message-ID: <1411738864-26549-3-git-send-email-l.stach@pengutronix.de>
-References: <1411738864-26549-1-git-send-email-l.stach@pengutronix.de>
+Subject: [PATCH v2 1/6] cpufreq: dt: disable unsupported OPPs
+Date: Fri, 26 Sep 2014 15:40:59 +0200
+Message-ID: <1411738864-26549-1-git-send-email-l.stach@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:39557 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:39573 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754635AbaIZNlM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 09:41:12 -0400
-In-Reply-To: <1411738864-26549-1-git-send-email-l.stach@pengutronix.de>
+	with ESMTP id S1754363AbaIZNlV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 09:41:21 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Shawn Guo <shawn.guo@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
 
-This implements a virtual clock used to abstract away
-all the steps needed in order to change the ARM clock,
-so we don't have to push all this clock handling into
-the cpufreq driver.
-
-While it will be used for i.MX53 at first it is generic
-enough to be used on i.MX6 later on.
+If the regulator connected to the CPU voltage plane doesn't
+support an OPP specified voltage with the acceptable tolerance
+it's better to just disable the OPP instead of constantly
+failing the voltage scaling later on.
 
 Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
 ---
 v2:
-- split clk into multiple line
-- fix my email address
+- rebase on top of pm/linux-next
 ---
- arch/arm/mach-imx/Makefile  |   2 +-
- arch/arm/mach-imx/clk-cpu.c | 107 ++++++++++++++++++++++++++++++++++++++++++++
- arch/arm/mach-imx/clk.h     |   4 ++
- 3 files changed, 112 insertions(+), 1 deletion(-)
- create mode 100644 arch/arm/mach-imx/clk-cpu.c
+ drivers/cpufreq/cpufreq-dt.c | 66 +++++++++++++++++++++++++++-----------------
+ 1 file changed, 40 insertions(+), 26 deletions(-)
 
-diff --git a/arch/arm/mach-imx/Makefile b/arch/arm/mach-imx/Makefile
-index 23c02932bf84..0e708a9d607d 100644
---- a/arch/arm/mach-imx/Makefile
-+++ b/arch/arm/mach-imx/Makefile
-@@ -12,7 +12,7 @@ obj-$(CONFIG_SOC_IMX31) += mm-imx3.o cpu-imx31.o clk-imx31.o iomux-imx31.o ehci-
- obj-$(CONFIG_SOC_IMX35) += mm-imx3.o cpu-imx35.o clk-imx35.o ehci-imx35.o pm-imx3.o
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index 6bbb8b913446..4485c8eccdc2 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -185,6 +185,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	struct device *cpu_dev;
+ 	struct regulator *cpu_reg;
+ 	struct clk *cpu_clk;
++	unsigned long min_uV = ~0, max_uV = 0;
+ 	unsigned int transition_latency;
+ 	int ret;
  
- imx5-pm-$(CONFIG_PM) += pm-imx5.o
--obj-$(CONFIG_SOC_IMX5) += cpu-imx5.o clk-imx51-imx53.o $(imx5-pm-y)
-+obj-$(CONFIG_SOC_IMX5) += cpu-imx5.o clk-imx51-imx53.o clk-cpu.o $(imx5-pm-y)
+@@ -204,16 +205,10 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	/* OPPs might be populated at runtime, don't check for error here */
+ 	of_init_opp_table(cpu_dev);
  
- obj-$(CONFIG_COMMON_CLK) += clk-pllv1.o clk-pllv2.o clk-pllv3.o clk-gate2.o \
- 			    clk-pfd.o clk-busy.o clk.o \
-diff --git a/arch/arm/mach-imx/clk-cpu.c b/arch/arm/mach-imx/clk-cpu.c
-new file mode 100644
-index 000000000000..aa1c345e2a19
---- /dev/null
-+++ b/arch/arm/mach-imx/clk-cpu.c
-@@ -0,0 +1,107 @@
-+/*
-+ * Copyright (c) 2014 Lucas Stach <l.stach@pengutronix.de>, Pengutronix
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * http://www.opensource.org/licenses/gpl-license.html
-+ * http://www.gnu.org/copyleft/gpl.html
-+ */
+-	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+-	if (ret) {
+-		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
+-		goto out_put_node;
+-	}
+-
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+ 	if (!priv) {
+ 		ret = -ENOMEM;
+-		goto out_free_table;
++		goto out_put_node;
+ 	}
+ 
+ 	of_property_read_u32(np, "voltage-tolerance", &priv->voltage_tolerance);
+@@ -222,30 +217,49 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 		transition_latency = CPUFREQ_ETERNAL;
+ 
+ 	if (!IS_ERR(cpu_reg)) {
+-		struct dev_pm_opp *opp;
+-		unsigned long min_uV, max_uV;
+-		int i;
+-
+ 		/*
+-		 * OPP is maintained in order of increasing frequency, and
+-		 * freq_table initialised from OPP is therefore sorted in the
+-		 * same order.
++		 * Disable any OPPs where the connected regulator isn't able to
++		 * provide the specified voltage and record minimum and maximum
++		 * voltage levels.
+ 		 */
+-		for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
+-			;
+-		rcu_read_lock();
+-		opp = dev_pm_opp_find_freq_exact(cpu_dev,
+-				freq_table[0].frequency * 1000, true);
+-		min_uV = dev_pm_opp_get_voltage(opp);
+-		opp = dev_pm_opp_find_freq_exact(cpu_dev,
+-				freq_table[i-1].frequency * 1000, true);
+-		max_uV = dev_pm_opp_get_voltage(opp);
+-		rcu_read_unlock();
++		while (1) {
++			struct dev_pm_opp *opp;
++			unsigned long opp_freq = 0, opp_uV, tol_uV;
 +
-+#include <linux/clk.h>
-+#include <linux/clk-provider.h>
-+#include <linux/slab.h>
++			rcu_read_lock();
++			opp = dev_pm_opp_find_freq_ceil(cpu_dev, &opp_freq);
++			if (IS_ERR(opp)) {
++				rcu_read_unlock();
++				break;
++			}
++			opp_uV = dev_pm_opp_get_voltage(opp);
++			rcu_read_unlock();
 +
-+struct clk_cpu {
-+	struct clk_hw	hw;
-+	struct clk	*div;
-+	struct clk	*mux;
-+	struct clk	*pll;
-+	struct clk	*step;
-+};
++			tol_uV = opp_uV * priv->voltage_tolerance / 100;
++			if (regulator_is_supported_voltage(cpu_reg, opp_uV,
++							   opp_uV + tol_uV)) {
++				if (opp_uV < min_uV)
++					min_uV = opp_uV;
++				if (opp_uV > max_uV)
++					max_uV = opp_uV;
++			} else {
++				dev_pm_opp_disable(cpu_dev, opp_freq);
++			}
 +
-+static inline struct clk_cpu *to_clk_cpu(struct clk_hw *hw)
-+{
-+	return container_of(hw, struct clk_cpu, hw);
-+}
++			opp_freq++;
++		}
 +
-+static unsigned long clk_cpu_recalc_rate(struct clk_hw *hw,
-+					 unsigned long parent_rate)
-+{
-+	struct clk_cpu *cpu = to_clk_cpu(hw);
-+
-+	return clk_get_rate(cpu->div);
-+}
-+
-+static long clk_cpu_round_rate(struct clk_hw *hw, unsigned long rate,
-+			       unsigned long *prate)
-+{
-+	struct clk_cpu *cpu = to_clk_cpu(hw);
-+
-+	return clk_round_rate(cpu->pll, rate);
-+}
-+
-+static int clk_cpu_set_rate(struct clk_hw *hw, unsigned long rate,
-+			    unsigned long parent_rate)
-+{
-+	struct clk_cpu *cpu = to_clk_cpu(hw);
-+	int ret;
-+
-+	/* switch to PLL bypass clock */
-+	ret = clk_set_parent(cpu->mux, cpu->step);
-+	if (ret)
-+		return ret;
-+
-+	/* reprogram PLL */
-+	ret = clk_set_rate(cpu->pll, rate);
+ 		ret = regulator_set_voltage_time(cpu_reg, min_uV, max_uV);
+ 		if (ret > 0)
+ 			transition_latency += ret * 1000;
+ 	}
+ 
++	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
 +	if (ret) {
-+		clk_set_parent(cpu->mux, cpu->pll);
-+		return ret;
++		pr_err("failed to init cpufreq table: %d\n", ret);
++		goto out_free_priv;
 +	}
-+	/* switch back to PLL clock */
-+	clk_set_parent(cpu->mux, cpu->pll);
 +
-+	/* Ensure the divider is what we expect */
-+	clk_set_rate(cpu->div, rate);
-+
-+	return 0;
-+}
-+
-+static const struct clk_ops clk_cpu_ops = {
-+	.recalc_rate	= clk_cpu_recalc_rate,
-+	.round_rate	= clk_cpu_round_rate,
-+	.set_rate	= clk_cpu_set_rate,
-+};
-+
-+struct clk *imx_clk_cpu(const char *name, const char *parent_name,
-+		struct clk *div, struct clk *mux, struct clk *pll,
-+		struct clk *step)
-+{
-+	struct clk_cpu *cpu;
-+	struct clk *clk;
-+	struct clk_init_data init;
-+
-+	cpu = kzalloc(sizeof(*cpu), GFP_KERNEL);
-+	if (!cpu)
-+		return ERR_PTR(-ENOMEM);
-+
-+	cpu->div = div;
-+	cpu->mux = mux;
-+	cpu->pll = pll;
-+	cpu->step = step;
-+
-+	init.name = name;
-+	init.ops = &clk_cpu_ops;
-+	init.flags = 0;
-+	init.parent_names = &parent_name;
-+	init.num_parents = 1;
-+
-+	cpu->hw.init = &init;
-+
-+	clk = clk_register(NULL, &cpu->hw);
-+	if (IS_ERR(clk))
-+		kfree(cpu);
-+
-+	return clk;
-+}
-diff --git a/arch/arm/mach-imx/clk.h b/arch/arm/mach-imx/clk.h
-index d5ba76fee115..5de8b53ec208 100644
---- a/arch/arm/mach-imx/clk.h
-+++ b/arch/arm/mach-imx/clk.h
-@@ -128,4 +128,8 @@ static inline struct clk *imx_clk_fixed_factor(const char *name,
- 			CLK_SET_RATE_PARENT, mult, div);
- }
+ 	/*
+ 	 * For now, just loading the cooling device;
+ 	 * thermal DT code takes care of matching them.
+@@ -275,9 +289,9 @@ static int cpufreq_init(struct cpufreq_policy *policy)
  
-+struct clk *imx_clk_cpu(const char *name, const char *parent_name,
-+		struct clk *div, struct clk *mux, struct clk *pll,
-+		struct clk *step);
-+
- #endif
+ out_cooling_unregister:
+ 	cpufreq_cooling_unregister(priv->cdev);
+-	kfree(priv);
+-out_free_table:
+ 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
++out_free_priv:
++	kfree(priv);
+ out_put_node:
+ 	of_node_put(np);
+ out_put_reg_clk:
 -- 
 2.1.0
 
