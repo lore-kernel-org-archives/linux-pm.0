@@ -1,93 +1,63 @@
 From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH v6 3/3] ARM: dts: add main Thermal info to rk3288
-Date: Fri, 26 Sep 2014 22:33:12 +0800
-Message-ID: <1411741992-18890-4-git-send-email-caesar.wang@rock-chips.com>
-References: <1411741992-18890-1-git-send-email-caesar.wang@rock-chips.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.133]:35412 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755547AbaIZOem (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 10:34:42 -0400
-In-Reply-To: <1411741992-18890-1-git-send-email-caesar.wang@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v6 0/3] Rockchip soc thermal driver
+Date: Fri, 26 Sep 2014 22:33:09 +0800
+Message-ID: <1411741992-18890-1-git-send-email-caesar.wang@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com
 Cc: dmitry.torokhov@gmail.com, arnd@arndb.de, zyf@rock-chips.com, dianders@chromium.org, cjf@rock-chips.com, zhengsq@rock-chips.com, linux-rockchip@list.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dbasehore@chromium.org, Caesar Wang <caesar.wang@rock-chips.com>
+List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
----
- arch/arm/boot/dts/rk3288.dtsi | 44 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+Changes in v6:
+        * address comments from Tomeu Vizoso.
+        - use thermal's generic framework.
 
-diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
-index 36be7bb..6092d34 100644
---- a/arch/arm/boot/dts/rk3288.dtsi
-+++ b/arch/arm/boot/dts/rk3288.dtsi
-@@ -15,6 +15,7 @@
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/pinctrl/rockchip.h>
- #include <dt-bindings/clock/rk3288-cru.h>
-+#include <dt-bindings/thermal/thermal.h>
- #include "skeleton.dtsi"
- 
- / {
-@@ -215,6 +216,43 @@
- 		status = "disabled";
- 	};
- 
-+        thermal-zones {
-+                cpu {
-+                        polling-delay-passive = <2000>;
-+                        polling-delay = <1000>;
-+
-+                        thermal-sensors =
-+                                <&tsadc 0>;
-+
-+                        trips {
-+                                cpu_alert0: cpu_alert {
-+                                        temperature = <80000>; /* millicelsius */
-+                                        hysteresis = <2000>; /* millicelsius */
-+                                        type = "passive";
-+                                };
-+                                cpu_crit: cpu_crit {
-+                                        temperature = <120000>; /* millicelsius */
-+                                        hysteresis = <2000>; /* millicelsius */
-+                                        type = "critical";
-+                                };
-+                        };
-+                };
-+        };
-+
-+        tsadc: tsadc@ff280000 {
-+                compatible = "rockchip,rk3288-tsadc";
-+                reg = <0xff280000 0x100>;
-+                interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-+                clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-+                clock-names = "tsadc", "apb_pclk";
-+                pinctrl-names = "tsadc_int";
-+                pinctrl-0 = <&otp_out>;
-+                reset-gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
-+
-+                #thermal-sensor-cells = <1>;
-+                hw-shut-temp = <115000>;
-+        };
-+
- 	usb_host0_ehci: usb@ff500000 {
- 		compatible = "generic-ehci";
- 		reg = <0xff500000 0x100>;
-@@ -611,5 +649,11 @@
- 				rockchip,pins = <5 15 3 &pcfg_pull_none>;
- 			};
- 		};
-+
-+                tsadc {
-+                        otp_out: otp-out {
-+                                rockchip,pins = <0 10 RK_FUNC_1 &pcfg_pull_none>;
-+                    };
-+                };
- 	};
- };
+Changes in v5:
+        * address comments from Eduardo Valentin,rui.zhang and Heiko Stubner:
+        - with BIT() macro
+        - manage clocks in suspend/resume.
+	- license is fixed as GPLv2 .
+	- #include "thermal_core.h"->#include <linux/thermal.h>
+	- use the generic trip-points.the hw-shut-temp isn't generic trip-points.
+	- The method of binding and unbinding be fixed.
+	- The pin-name tsadc->otp_out
+
+Changes in v4:
+        * address comments from Jonathan Cameron,huangtao and zhaoyifeng:
+        - this series thermal driver still be put in driver/thermal/
+        - modify the thermal driver description.
+
+Changes in v3:(add dts configure)
+        * address comments from Dmitry Torokhov and Arnd Bergmann:
+        - fix clock-names in rockchip-thermal.txt
+        - remove rockchip_thermal_control() in rockchip_set_mode()
+        - fix some code style.
+        - add dts configure.
+
+Changes in v2:
+        * address comments from Heiko Stubner:
+        - fix dt-bindings in rockchip-thermal.txt
+        - remove Author mark
+        - rename TSADC_XXX->TSADCV2_XXX,it eill ready to merge compatible other SoCs.
+        - fix a identation
+        - remove clk_set_rate(),it's no necessary.
+        - fix the SIMPLE_DEV_PM_OPS() function  style.
+
+Tested on rk3288 SDK board and pinky-v1 board.
+
+Caesar Wang (3):
+  thermal: rockchip: add driver for Thermal
+  dt-bindings: document Rockchip thermal
+  ARM: dts: add main Thermal info to rk3288
+
+ .../bindings/thermal/rockchip-thermal.txt          |  32 ++
+ arch/arm/boot/dts/rk3288.dtsi                      |  44 ++
+ drivers/thermal/Kconfig                            |  10 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/rockchip_thermal.c                 | 605 +++++++++++++++++++++
+ 5 files changed, 692 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+ create mode 100644 drivers/thermal/rockchip_thermal.c
+
 -- 
 1.9.1
-
-
