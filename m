@@ -1,41 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [GIT PULL] PM / AVS changes for v3.18 - v2
-Date: Fri, 26 Sep 2014 15:40:55 +0200
-Message-ID: <3441765.RqZP2CZNTR@vostro.rjw.lan>
-References: <7ha95nikqh.fsf@linaro.org> <20140926081534.GA27755@sirena.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: [PATCH] cpufreq: dt: fix potential double put of cpu OF node
+Date: Fri, 26 Sep 2014 15:33:46 +0200
+Message-ID: <1411738426-18375-1-git-send-email-l.stach@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50198 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753782AbaIZNVF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 09:21:05 -0400
-In-Reply-To: <20140926081534.GA27755@sirena.org.uk>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:45800 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754825AbaIZNdt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 09:33:49 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, nm@ti.com, dianders@chromium.org, heiko@sntech.de
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
 
-On Friday, September 26, 2014 09:15:34 AM Mark Brown wrote:
-> 
-> --gBii9oQw/U9UOygZ
-> Content-Type: text/plain; charset=us-ascii
-> Content-Disposition: inline
-> 
-> On Thu, Sep 25, 2014 at 12:05:42PM -0700, Kevin Hilman wrote:
-> 
-> > The first pull request was missing a dependency on a feature that went
-> > in through Mark Brown's regulator tree, so it wouldn't actually compile
-> > properly by itself.  This version pulls in that topic branch from Marks
-> > tree (topic/voltage-ev branch, already part of -next), and now compiles fine.
-> 
-> Please in future don't pull anything in from my tree without a signed
-> tag (speak to me if there isn't one).
+If cpufreq_generic_init() fails we jump into the resource
+cleanup path which contains a of_node_put() call. Another
+instance of this has already been called at that time
+resulting a double decrement of the refcount.
 
-I was assuming that this was discussed with you in advance.
+Fix this by calling of_node_put() only after we are sure
+that nothing has gone wrong.
 
-Should I drop the branch?
+Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+---
+ drivers/cpufreq/cpufreq-dt.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Rafael
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index e00265066a75..6bbb8b913446 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -259,7 +259,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 		else
+ 			priv->cdev = cdev;
+ 	}
+-	of_node_put(np);
+ 
+ 	priv->cpu_dev = cpu_dev;
+ 	priv->cpu_reg = cpu_reg;
+@@ -270,6 +269,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	if (ret)
+ 		goto out_cooling_unregister;
+ 
++	of_node_put(np);
++
+ 	return 0;
+ 
+ out_cooling_unregister:
+-- 
+2.1.0
 
