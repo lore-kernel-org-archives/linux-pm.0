@@ -1,78 +1,108 @@
-From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: Re: [PATCH v6 0/4] Tegra124 soctherm driver
-Date: Fri, 26 Sep 2014 13:22:52 +0300
-Message-ID: <54253E7C.9080704@kapsi.fi>
-References: <1411724593-4037-1-git-send-email-cyndis@kapsi.fi> <20140926101918.GM31106@ulmo>
+From: Kiran Padwal <kiran.padwal@smartplayin.com>
+Subject: Re: [PATCH v2] thermal: Add QPNP PMIC temperature alarm driver
+Date: Fri, 26 Sep 2014 16:51:50 +0530
+Message-ID: <54254C4E.3070807@smartplayin.com>
+References: <1411651825-14240-1-git-send-email-iivanov@mm-sol.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140926101918.GM31106@ulmo>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>, Mikko Perttunen <cyndis@kapsi.fi>
-Cc: edubezval@gmail.com, swarren@wwwdotorg.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, juha-matti.tilli@iki.fi
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp101.ord1c.emailsrvr.com ([108.166.43.101]:49024 "EHLO
+	smtp101.ord1c.emailsrvr.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753714AbaIZLYC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 07:24:02 -0400
+In-Reply-To: <1411651825-14240-1-git-send-email-iivanov@mm-sol.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
 
-On 09/26/2014 01:19 PM, Thierry Reding wrote:
-> On Fri, Sep 26, 2014 at 12:43:09PM +0300, Mikko Perttunen wrote:
->> Hi,
->>
->> this series adds support for the thermal monitoring features of the
->> soctherm unit on the Tegra124 SoC.
->>
->> The branch is also available in my github repo,
->>    git://github.com/cyndis/linux.git soctherm-v6
->>
->> Thanks,
->> Mikko
->>
->> Mikko Perttunen (4):
->>    of: Add bindings for nvidia,tegra124-soctherm
->>    ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
->>    ARM: tegra: Add thermal trip points for Jetson TK1
->>    thermal: Add Tegra SOCTHERM thermal management driver
->>
->>   .../devicetree/bindings/thermal/tegra-soctherm.txt |  53 +++
->>   arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  44 ++
->>   arch/arm/boot/dts/tegra124.dtsi                    |  47 ++
->>   drivers/thermal/Kconfig                            |  10 +
->>   drivers/thermal/Makefile                           |   1 +
->>   drivers/thermal/tegra_soctherm.c                   | 471 +++++++++++++++++++++
->>   include/dt-bindings/thermal/tegra124-soctherm.h    |  13 +
->>   7 files changed, 639 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
->>   create mode 100644 drivers/thermal/tegra_soctherm.c
->>   create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
->
-> One thing that I've wanted to start doing for a while now is request
-> patch submissions like this to come accompanied with a way on how to
-> test them. Ideally this would be in a scripted way that can test for
-> success programatically, but it doesn't necessarily have to be if it
-> turns out too difficult or impractical to do.
+On Thursday 25 September 2014 07:00 PM, Ivan T. Ivanov wrote:
+> Add support for the temperature alarm peripheral found inside
+> Qualcomm plug-and-play (QPNP) PMIC chips.  The temperature alarm
+> peripheral outputs a pulse on an interrupt line whenever the
+> thermal over temperature stage value changes.  Implement an ISR
+> to manage this interrupt.
+>=20
 
-Indeed, that would be very useful.
+<snip>
 
->
-> The goal is to eventually come up with a test suite that can run the
-> majority of test cases automatically to make it easy to test for any
-> regressions. And even if tests can't be run automatically it'd still
-> be an advantage to have them all collected in some repository, since
-> it saves a lot of typing and time to run tests, and it will give us
-> a standard set of tests that everybody can verify changes against.
->
-> I realize that it's somewhat unfair to start requesting this from you
-> now, but we've got to start somewhere. Could you give a short summary
-> of how you test this? What are the interfaces that the kernel exposes
-> for these thermal drivers?
+> + * This function updates the internal temp value based on the
+> + * current thermal stage and threshold as well as the previous stage
+> + */
+> +static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
+> +{
+> +	unsigned int stage;
+> +	int rc;
+> +	u8 reg;
+> +
+> +	rc =3D qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
+> +	if (rc < 0)
+> +		return rc;
+> +
+> +	stage =3D reg & STATUS_STAGE_MASK;
 
-You need to enable the driver in Device Drivers -> Generic Thermal sysfs 
-driver -> Tegra SOCTHERM thermal management. Then, you should see 
-directories appear in /sys/class/thermal. You can also use the `tmon' 
-tool included in the kernel tree to quickly see values; that's what I 
-use for testing.
+During compilation, getting a waring as below,
 
->
-> Thierry
->
+drivers/thermal/qpnp-temp-alarm.c: In function =91qpnp_tm_update_temp_n=
+o_adc=92:
+drivers/thermal/qpnp-temp-alarm.c:135:8: warning: =91reg=92 may be used=
+ uninitialized in this function [-Wmaybe-uninitialized]
+  stage =3D reg & STATUS_STAGE_MASK;
 
-Mikko
+> +
+> +	if (stage > chip->stage) {
+> +		/* increasing stage, use lower bound */
+> +		chip->temp =3D (stage - 1) * TEMP_STAGE_STEP +
+> +			     chip->thresh * TEMP_THRESH_STEP +
+> +			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
+> +	} else if (stage < chip->stage) {
+> +		/* decreasing stage, use upper bound */
+> +		chip->temp =3D stage * TEMP_STAGE_STEP +
+> +			     chip->thresh * TEMP_THRESH_STEP -
+> +			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
+> +	}
+> +
+> +	chip->stage =3D stage;
+> +
+> +	return 0;
+> +}
+> +
+
+<snip>
+
+> +
+> +#define QPNP_TM_PM_OPS	(&qpnp_tm_pm_ops)
+> +#else
+> +#define QPNP_TM_PM_OPS	NULL
+> +#endif
+> +
+> +static struct of_device_id qpnp_tm_match_table[] =3D {
+
+It must be static const struct of_device_id, because all OF functions h=
+andle it as const.
+
+Thanks,
+--Kiran
+
+> +	{ .compatible =3D "qcom,spmi-temp-alarm" },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(of, qpnp_tm_match_table);
+> +
+> +static struct platform_driver qpnp_tm_driver =3D {
+> +	.driver =3D {
+> +		.name =3D "spmi-temp-alarm",
+> +		.of_match_table =3D qpnp_tm_match_table,
+> +		.pm =3D QPNP_TM_PM_OPS,
+> +	},
+> +	.probe  =3D qpnp_tm_probe,
+> +	.remove =3D qpnp_tm_remove,
+> +};
+> +module_platform_driver(qpnp_tm_driver);
+> +
+> +MODULE_ALIAS("platform:spmi-temp-alarm");
+> +MODULE_DESCRIPTION("QPNP PMIC Temperature Alarm driver");
+> +MODULE_LICENSE("GPL v2");
+>=20
+
