@@ -1,67 +1,131 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 1/1] power: Add simple gpio-restart driver
-Date: Fri, 26 Sep 2014 01:41:46 +0200
-Message-ID: <20140925234145.GA2063@earth.universe>
-References: <1409167431-21155-1-git-send-email-davidriley@chromium.org>
- <1409167431-21155-2-git-send-email-davidriley@chromium.org>
- <541BB278.9010701@roeck-us.net>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v5 00/11] PM / Domains: Generic OF-based support
+Date: Thu, 25 Sep 2014 17:27:57 -0700
+Message-ID: <20140926002757.GJ10233@codeaurora.org>
+References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
+ <20140925112122.GA22753@ulmo>
+ <CAPDyKFp8oK6KAujU44NEwT2vL2_BBPSMuGPkyppHdonPfOmUrQ@mail.gmail.com>
+ <20140925165625.GC30382@ulmo>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="tThc/1wpZn/ma/RB"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:48555 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751875AbaIYXlw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Sep 2014 19:41:52 -0400
-Content-Disposition: inline
-In-Reply-To: <541BB278.9010701@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-
-
---tThc/1wpZn/ma/RB
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20140925165625.GC30382@ulmo>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>Mark Brown <b>
+List-Id: linux-pm@vger.kernel.org
 
-Hi Guenter,
+On 09/25, Thierry Reding wrote:
+> On Thu, Sep 25, 2014 at 05:29:10PM +0200, Ulf Hansson wrote:
+> > On 25 September 2014 13:21, Thierry Reding <thierry.reding@gmail.com> wrote:
+> > > I just noticed these patches because they conflicted with some of the
+> > > local patches I had to add a very similar framework. One of the reasons
+> > > why I hadn't posted these publicly yet is because the platform where I
+> > > want to use this (Tegra) is somewhat quirky when it comes to power
+> > > domains.
+> > 
+> > It's great that more things goes on in this area. :-)
+> > 
+> > >
+> > > On Tegra these domains are called power gates and they currently have
+> > > their own API. We've been looking at migrating things over to some
+> > > generic framework for some time and PM domains do seem like a good fit.
+> > > However one of the quirks regarding these domains on Tegra is that a
+> > > fixed sequence exists that needs to be respected when enabling or
+> > > disabling a power partition. The exact sequence can be found in the
+> > > drivers/soc/tegra/pmc.c driver's tegra_powergate_sequence_power_up()
+> > > function. Essentially we need to call into the clock and reset drivers
+> > > at very specific moments during the operations that the PMC does.
+> > 
+> > I am not sure I fully understand how the power gating actually
+> > happens. How is it triggered?
+> 
+> Drivers explicitly call the custom API. So all drivers that need to turn
+> on power partitions have a call to tegra_powergate_sequence_power_up()
+> in .probe() and tegra_powergate_power_off() in .remove().
+> 
+> > > One solution to this would be to make the needed clocks and resets
+> > > available to the power domain driver via DT, but then we have the
+> > > problem that two drivers would be controlling the same resources. For
+> > > example drivers could still want to disable the clock for more fine-
+> > > grained power management.
+> > 
+> > Sorry, but I think I need a better understanding to be able to comment.
+> > 
+> > But maybe, drivers could implement runtime PM support and define
+> > runtime PM callbacks. From the callbacks those will handle clocks and
+> > resets, is not that enough? What more is needed from a PM domain point
+> > of view?
+> 
+> Let me quote the actual power up sequence code:
+> 
+> 	int tegra_powergate_sequence_power_up(int id, struct clk *clk,
+> 					      struct reset_control *rst)
+> 	{
+> 		int ret;
+> 
+> 		reset_control_assert(rst);
+> 
+> 		ret = tegra_powergate_power_on(id);
+> 		if (ret)
+> 			goto err_power;
+> 
+> 		ret = clk_prepare_enable(clk);
+> 		if (ret)
+> 			goto err_clk;
+> 
+> 		usleep_range(10, 20);
+> 
+> 		ret = tegra_powergate_remove_clamping(id);
+> 		if (ret)
+> 			goto err_clamp;
+> 
+> 		usleep_range(10, 20);
+> 		reset_control_deassert(rst);
+> 
+> 		return 0;
+> 
+> 	err_clamp:
+> 		clk_disable_unprepare(clk);
+> 	err_clk:
+> 		tegra_powergate_power_off(id);
+> 	err_power:
+> 		return ret;
+> 	}
+> 	EXPORT_SYMBOL(tegra_powergate_sequence_power_up);
+> 
+> The critical part is that we need to enable the clock after the
+> partition has been powered, but before the clamps are removed.
+> Implementing this with runtime PM support in drivers won't work
+> because the power domain driver has to do both the powering up
+> and removing the clamps, so there's no place to inject the call
+> to enable the clock.
 
-On Thu, Sep 18, 2014 at 09:35:04PM -0700, Guenter Roeck wrote:
-> On 08/27/2014 12:23 PM, David Riley wrote:
-> >This driver registers a restart handler to set a GPIO line high/low
-> >to reset a board based on devicetree bindings.
-> >
-> >Signed-off-by: David Riley <davidriley@chromium.org>
->=20
-> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+FWIW, Qualcomm platforms have pretty much the same design. Our
+power domain controls live in the same register space as the
+clocks and resets. Is Tegra the same way? To power on/off a
+domain we need to go and forcefully turn a clock on and assert a
+reset or perhaps we need the clock to be off and assert a reset.
+It depends on the domain.
 
-Is there an immutable branch available with your restart handler
-stuff, which I can pull into battery-2.6.git?
+Historically we've supported this by requiring all drivers to
+disable their clocks and deassert any resets before calling into
+this code (we put this behind the regulator API). Then we're free
+to do whatever is necessary to power on/off, eventally leaving
+the clocks off if they were forced on and finally giving control
+to the drivers so they can manage their own clocks and resets. It
+would be better for us to take ownership of the clocks and resets
+in the domain so we don't have this prerequisite of clocks being
+off before calling into the domain code. I plan to do pretty much
+Kevin outlined and use runtime PM, power domains, and per-device
+pm QoS to figure out if we should gate clocks (clk_disable), or
+if we go to a lower power mode where we unprepare clocks
+(clk_unprepare), or if we go to the lowest power mode where we
+apply clamps, etc. (called power collapse for us). Then the
+drivers just interact with runtime PM and QoS and they aren't
+aware of all this SoC glue.
 
--- Sebastian
-
---tThc/1wpZn/ma/RB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUJKg5AAoJENju1/PIO/qa9zUQAJNPtR7q96NaF92VxP9928oY
-gNufxPNDB34jP28DvUR1b4y3+4dzoSvg0nmuEgxxubpWsGEHms73NPkdglwksFyL
-ksS34PNljHaWIHsVGeOaHIJNf6/IjEn0fxzGAZ6Y4UbCPjDC8VZbjImSCrrDzt2p
-o7aRpHDndbjzK3FpfCS9bXdov7duhQ1F8XeCVuzNAH7xu2HtJC7OQxTohguHwBvT
-96CkBpuJqv6DNuxf9Fu+aJWeybcEDihR1cyzaS19S/CH0F6nRKH8+wy2OiAvJ1YP
-gQQLNZza93gX4vX6uISzoWoVbAt2PDJr5RtutNHvycQWfAyUFbRFmGLwG6kHwPOH
-gEnX1eiGezaaGIG2IWkX4fk3gkqadcqi20qM9vJQWtuir3OO69OuzvC//WCVXmHD
-ONrqH3pxoZtOivuMxXm9P39UIrWQHKrjJZWAS7xi3FJ2Oozb3raubtIIE8hhAico
-tg1FwPAlCh1KLqKVcnHlyPQaOC1Nbbi1xT12KD7xMxKWnih4+7NL9i7VUh7Pk8Mu
-L9psUpJKyUh7A2jSZxmqiJ/ILr4Lw3i6R/ku8oqcknIT9Kr0R7CCQmHiF/AXFQ6i
-DYRdkSNE8M10qkIRvZ58FiN6GQJDt4+z+Y62atup2OxKPTpnowUEnUtzsBHApcb4
-p+JPdnBPyGFtI2OeR80j
-=Jfs2
------END PGP SIGNATURE-----
-
---tThc/1wpZn/ma/RB--
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
