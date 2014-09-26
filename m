@@ -1,136 +1,60 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v3 13/13] ARM: shmobile: r8a7740 dtsi: Add preliminary PM
- QoS device latencies
-Date: Fri, 26 Sep 2014 10:16:48 +0200
-Message-ID: <CAMuHMdWa_TDz6EyeXGDo-WGJyr15mhA4fH6r45hz8joNdkBbeQ@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3 02/13] PM / Domains: Add DT bindings for power-on/off latencies
+Date: Fri, 26 Sep 2014 10:19:50 +0200
+Message-ID: <CAPDyKFrAv9oyBzX764+CWkOxfN1kN_MddB3ks1q69+TnmnHXuQ@mail.gmail.com>
 References: <1411662520-22795-1-git-send-email-geert+renesas@glider.be>
-	<1411662520-22795-14-git-send-email-geert+renesas@glider.be>
+	<1411662520-22795-3-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1411662520-22795-14-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1411662520-22795-3-git-send-email-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Sep 25, 2014 at 6:28 PM, Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
-> diff --git a/arch/arm/boot/dts/r8a7740.dtsi b/arch/arm/boot/dts/r8a7740.dtsi
-> index ed0adeb61a1ad8ec..713170442b7bd4b2 100644
-> --- a/arch/arm/boot/dts/r8a7740.dtsi
-> +++ b/arch/arm/boot/dts/r8a7740.dtsi
+On 25 September 2014 18:28, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> PM domain power on/off-latencies are properties of the hardware.
+> In legacy code, they're specified from platform code.
+> On DT platforms, their values should come from DT.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Acked-by: Kevin Hilman <khilman@linaro.org>
 
-> @@ -409,6 +509,10 @@
->                         reg = <0xe6150000 0x10000>;
->                         clocks = <&extal1_clk>, <&extalr_clk>;
->                         power-domains = <&pd_c5>;
-> +                       stop-latency = <250000>;
-> +                       start-latency = <250000>;
-> +                       save-state-latency = <250000>;
-> +                       restore-state-latency = <250000>;
->                         #clock-cells = <1>;
->                         clock-output-names = "system", "pllc0", "pllc1",
->                                              "pllc2", "r",
-> @@ -424,6 +528,10 @@
->                         reg = <0xe6150080 4>;
->                         clocks = <&pllc1_div2_clk>;
->                         power-domains = <&pd_c5>;
-> +                       stop-latency = <250000>;
-> +                       start-latency = <250000>;
-> +                       save-state-latency = <250000>;
-> +                       restore-state-latency = <250000>;
->                         #clock-cells = <0>;
->                         clock-output-names = "sub";
->                 };
-> @@ -433,6 +541,10 @@
->                         compatible = "fixed-factor-clock";
->                         clocks = <&cpg_clocks R8A7740_CLK_PLLC1>;
->                         power-domains = <&pd_c5>;
-> +                       stop-latency = <250000>;
-> +                       start-latency = <250000>;
-> +                       save-state-latency = <250000>;
-> +                       restore-state-latency = <250000>;
->                         #clock-cells = <0>;
->                         clock-div = <2>;
->                         clock-mult = <1>;
-> @@ -442,6 +554,10 @@
->                         compatible = "fixed-factor-clock";
->                         clocks = <&extal1_clk>;
->                         power-domains = <&pd_c5>;
-> +                       stop-latency = <250000>;
-> +                       start-latency = <250000>;
-> +                       save-state-latency = <250000>;
-> +                       restore-state-latency = <250000>;
->                         #clock-cells = <0>;
->                         clock-div = <2>;
->                         clock-mult = <1>;
-> @@ -454,6 +570,10 @@
->                         reg = <0xe6150080 4>;
->                         clocks = <&sub_clk>, <&sub_clk>;
->                         power-domains = <&pd_c5>;
-> +                       stop-latency = <250000>;
-> +                       start-latency = <250000>;
-> +                       save-state-latency = <250000>;
-> +                       restore-state-latency = <250000>;
->                         #clock-cells = <1>;
->                         renesas,clock-indices = <
->                                 R8A7740_CLK_SUBCK R8A7740_CLK_SUBCK2
-> @@ -470,6 +590,10 @@
->                                  <&sub_clk>, <&sub_clk>,
->                                  <&cpg_clocks R8A7740_CLK_B>;
->                         power-domains = <&pd_c5>;
-> +                       stop-latency = <250000>;
-> +                       start-latency = <250000>;
-> +                       save-state-latency = <250000>;
-> +                       restore-state-latency = <250000>;
->                         #clock-cells = <1>;
->                         renesas,clock-indices = <
->                                 R8A7740_CLK_CEU21 R8A7740_CLK_CEU20 R8A7740_CLK_TMU0
-> @@ -492,6 +616,10 @@
->                                  <&sub_clk>, <&sub_clk>, <&sub_clk>,
->                                  <&sub_clk>;
->                         power-domains = <&pd_c5>;
-> +                       stop-latency = <250000>;
-> +                       start-latency = <250000>;
-> +                       save-state-latency = <250000>;
-> +                       restore-state-latency = <250000>;
->                         #clock-cells = <1>;
->                         renesas,clock-indices = <
->                                 R8A7740_CLK_SCIFA6 R8A7740_CLK_INTCA
-> @@ -522,6 +650,10 @@
->                                  <&cpg_clocks R8A7740_CLK_HP>,
->                                  <&cpg_clocks R8A7740_CLK_HP>;
->                         power-domains = <&pd_c5>;
-> +                       stop-latency = <250000>;
-> +                       start-latency = <250000>;
-> +                       save-state-latency = <250000>;
-> +                       restore-state-latency = <250000>;
->                         #clock-cells = <1>;
->                         renesas,clock-indices = <
->                                 R8A7740_CLK_CMT1 R8A7740_CLK_FSI R8A7740_CLK_IIC1
-> @@ -540,6 +672,10 @@
->                                  <&cpg_clocks R8A7740_CLK_HP>,
->                                  <&cpg_clocks R8A7740_CLK_HP>;
->                         power-domains = <&pd_c5>;
-> +                       stop-latency = <250000>;
-> +                       start-latency = <250000>;
-> +                       save-state-latency = <250000>;
-> +                       restore-state-latency = <250000>;
->                         #clock-cells = <1>;
->                         renesas,clock-indices = <
->                                 R8A7740_CLK_USBH R8A7740_CLK_SDHI2
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Same here, as there should be no power-domains properties in the clocks
-nodes, there should be no latencies specified neither.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> ---
+> v3:
+>   - No changes
+> v2:
+>   - Add Acked-by
+>
+>  Documentation/devicetree/bindings/power/power_domain.txt | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> index 98c16672ab5f49e0..7bc421d84367d636 100644
+> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> @@ -19,12 +19,18 @@ Required properties:
+>     providing multiple PM domains (e.g. power controllers), but can be any value
+>     as specified by device tree binding documentation of particular provider.
+>
+> +Optional properties:
+> + - power-on-latency: Power-on latency of the PM domain, in ns,
+> + - power-off-latency: Power-off latency of the PM domain, in ns.
+> +
+>  Example:
+>
+>         power: power-controller@12340000 {
+>                 compatible = "foo,power-controller";
+>                 reg = <0x12340000 0x1000>;
+>                 #power-domain-cells = <1>;
+> +               power-on-latency = <250000>;
+> +               power-off-latency = <250000>;
+>         };
+>
+>  The node above defines a power controller that is a PM domain provider and
+> --
+> 1.9.1
+>
