@@ -1,87 +1,71 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH 08/10] power/reset: keystone: Register with kernel restart handler
-Date: Fri, 26 Sep 2014 17:57:16 -0700
-Message-ID: <1411779438-23127-9-git-send-email-linux@roeck-us.net>
+Subject: [PATCH 04/10] power/reset: xgene: Use local variable dev instead of pdev->dev
+Date: Fri, 26 Sep 2014 17:57:12 -0700
+Message-ID: <1411779438-23127-5-git-send-email-linux@roeck-us.net>
 References: <1411779438-23127-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1411779438-23127-1-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Ivan Khoronzhuk <ivan.khoronzhuk@ti.com>
+Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Loc Ho <lho@apm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Register with kernel restart handler instead of setting arm_pm_restart directly.
+Using a local variable dev to point to the device is simpler then repeatedly
+dereferencing pdev->dev.
 
-Move notifier registration to the end of the probe function to avoid having to
-implement error handling.
-
-Cc: Ivan Khoronzhuk <ivan.khoronzhuk@ti.com>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Loc Ho <lho@apm.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/power/reset/keystone-reset.c | 18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+ drivers/power/reset/xgene-reboot.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/power/reset/keystone-reset.c b/drivers/power/reset/keystone-reset.c
-index 408a18f..9d46586 100644
---- a/drivers/power/reset/keystone-reset.c
-+++ b/drivers/power/reset/keystone-reset.c
-@@ -12,9 +12,9 @@
+diff --git a/drivers/power/reset/xgene-reboot.c b/drivers/power/reset/xgene-reboot.c
+index aac0287..1bab003 100644
+--- a/drivers/power/reset/xgene-reboot.c
++++ b/drivers/power/reset/xgene-reboot.c
+@@ -33,7 +33,7 @@
+ #include <asm/system_misc.h>
  
- #include <linux/io.h>
- #include <linux/module.h>
-+#include <linux/notifier.h>
- #include <linux/reboot.h>
- #include <linux/regmap.h>
--#include <asm/system_misc.h>
- #include <linux/mfd/syscon.h>
- #include <linux/of_platform.h>
+ struct xgene_reboot_context {
+-	struct platform_device *pdev;
++	struct device *dev;
+ 	void *csr;
+ 	u32 mask;
+ };
+@@ -53,27 +53,28 @@ static void xgene_restart(char str, const char *cmd)
+ 	while (time_before(jiffies, timeout))
+ 		cpu_relax();
  
-@@ -52,7 +52,8 @@ static inline int rsctrl_enable_rspll_write(void)
- 				  RSCTRL_KEY_MASK, RSCTRL_KEY);
+-	dev_emerg(&ctx->pdev->dev, "Unable to restart system\n");
++	dev_emerg(ctx->dev, "Unable to restart system\n");
  }
  
--static void rsctrl_restart(enum reboot_mode mode, const char *cmd)
-+static int rsctrl_restart_handler(struct notifier_block *this,
-+				  unsigned long mode, void *cmd)
+ static int xgene_reboot_probe(struct platform_device *pdev)
  {
- 	/* enable write access to RSTCTRL */
- 	rsctrl_enable_rspll_write();
-@@ -60,8 +61,15 @@ static void rsctrl_restart(enum reboot_mode mode, const char *cmd)
- 	/* reset the SOC */
- 	regmap_update_bits(pllctrl_regs, rspll_offset + RSCTRL_RG,
- 			   RSCTRL_RESET_MASK, 0);
-+
-+	return NOTIFY_DONE;
- }
+ 	struct xgene_reboot_context *ctx;
++	struct device *dev = &pdev->dev;
  
-+static struct notifier_block rsctrl_restart_nb = {
-+	.notifier_call = rsctrl_restart_handler,
-+	.priority = 128,
-+};
-+
- static struct of_device_id rsctrl_of_match[] = {
- 	{.compatible = "ti,keystone-reset", },
- 	{},
-@@ -114,8 +122,6 @@ static int rsctrl_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
+-	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
++	ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
+ 	if (!ctx)
+ 		return -ENOMEM;
  
--	arm_pm_restart = rsctrl_restart;
--
- 	/* disable a reset isolation for all module clocks */
- 	ret = regmap_write(pllctrl_regs, rspll_offset + RSISO_RG, 0);
- 	if (ret)
-@@ -147,6 +153,10 @@ static int rsctrl_probe(struct platform_device *pdev)
- 			return ret;
+-	ctx->csr = of_iomap(pdev->dev.of_node, 0);
++	ctx->csr = of_iomap(dev->of_node, 0);
+ 	if (!ctx->csr) {
+-		dev_err(&pdev->dev, "can not map resource\n");
++		dev_err(dev, "can not map resource\n");
+ 		return -ENODEV;
  	}
  
-+	ret = register_restart_handler(&rsctrl_restart_nb);
-+	if (ret)
-+		dev_err(dev, "cannot register restart handler (err=%d)\n", ret);
-+
- 	return 0;
- }
+-	if (of_property_read_u32(pdev->dev.of_node, "mask", &ctx->mask))
++	if (of_property_read_u32(dev->of_node, "mask", &ctx->mask))
+ 		ctx->mask = 0xFFFFFFFF;
+ 
+-	ctx->pdev = pdev;
++	ctx->dev = dev;
+ 	arm_pm_restart = xgene_restart;
+ 	xgene_restart_ctx = ctx;
  
 -- 
 1.9.1
