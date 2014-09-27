@@ -1,77 +1,157 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH 09/10] power/reset: hisi: Register with kernel restart handler
-Date: Fri, 26 Sep 2014 17:57:17 -0700
-Message-ID: <1411779438-23127-10-git-send-email-linux@roeck-us.net>
-References: <1411779438-23127-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1411779438-23127-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Haojian Zhuang <haojian.zhuang@linaro.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v7 0/7] QCOM 8974 and 8084 cpuidle driver
+Date: Fri, 26 Sep 2014 18:58:08 -0600
+Message-ID: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:50109 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752561AbaI0A63 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 20:58:29 -0400
+Received: by mail-pa0-f51.google.com with SMTP id eu11so12706099pac.38
+        for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2014 17:58:28 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
 
-Register with kernel restart handler instead of setting arm_pm_restart directly.
+Changes since v6:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg11012.html ]
+- SPM device nodes merged with existing SAW DT nodes
+- SPM register information is handled within the driver
+- Clean up from using 'msm' to 'qcom'
+	- Shorten some enumerations as well
+- Review comments from v6 addressed
+- New: Support for 8084 SoC
+	- Not tested. I do not have a board with this SoC, but the SPM
+	configuration should be identical for WFI and SPC
 
-Cc: Haojian Zhuang <haojian.zhuang@linaro.org>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
- drivers/power/reset/hisi-reboot.c | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+Changes since v5:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10559.html ]
+- Merge spm-devices.c and spm.c into one file and one patch
+	- Simplify implementation of the driver.
+	- Update documentation mapping the DT properties with corresponding
+	  SPM register information.
+- Removed scm-boot changes for quad core warmboot, its has been pulled in.
 
-diff --git a/drivers/power/reset/hisi-reboot.c b/drivers/power/reset/hisi-reboot.c
-index 0c91d02..e9774b0 100644
---- a/drivers/power/reset/hisi-reboot.c
-+++ b/drivers/power/reset/hisi-reboot.c
-@@ -14,27 +14,36 @@
- #include <linux/delay.h>
- #include <linux/io.h>
- #include <linux/module.h>
-+#include <linux/notifier.h>
- #include <linux/of_address.h>
- #include <linux/platform_device.h>
- #include <linux/reboot.h>
- 
- #include <asm/proc-fns.h>
--#include <asm/system_misc.h>
- 
- static void __iomem *base;
- static u32 reboot_offset;
- 
--static void hisi_restart(enum reboot_mode mode, const char *cmd)
-+static int hisi_restart_handler(struct notifier_block *this,
-+				unsigned long mode, void *cmd)
- {
- 	writel_relaxed(0xdeadbeef, base + reboot_offset);
- 
- 	while (1)
- 		cpu_do_idle();
-+
-+	return NOTIFY_DONE;
- }
- 
-+static struct notifier_block hisi_restart_nb = {
-+	.notifier_call = hisi_restart_handler,
-+	.priority = 128,
-+};
-+
- static int hisi_reboot_probe(struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
-+	int err;
- 
- 	base = of_iomap(np, 0);
- 	if (!base) {
-@@ -47,7 +56,10 @@ static int hisi_reboot_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	arm_pm_restart = hisi_restart;
-+	err = register_restart_handler(&hisi_restart_nb);
-+	if (err)
-+		dev_err(&pdev->dev, "cannot register restart handler (err=%d)\n",
-+			err);
- 
- 	return 0;
- }
+Changes since v4:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10327.html ]
+- Update to the v8 of ARM generic idle states patches
+- Use platform device model for cpuidle-qcom
+- Clean up msm-pm.c to remove unnecessary include files and functions
+- Update commit text and documentation for all idle states
+- Remove scm-boot relocate patch from this series, submitted earlier
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10518.html ]
+
+Changes since v3:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10288.html ]
+- Fix CONFIG_QCOM_PM Kconfig as bool
+- More clean ups in spm.c and spm-devices.c
+	- Removed and re-organized data structures to make initialization simple
+	- Remove export of sequence flush functions
+	- Updated commit text
+	- Comments for use of barriers.
+- Rebase on top of 3.17-rc1
+
+Changes since v2:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10148.html ]
+- Prune all the drivers to support basic WFI and power down cpuidle
+  functionality. Remove debug code.
+- Integrate KConfig changes into the drivers' patches.
+- Use Lorenzo's ARM idle-states patches as the basis for reading cpuidle
+  c-states from DT.
+  [ http://marc.info/?l=linux-pm&m=140794514812383&w=2 ]
+- Incorporate review comments
+- Rebase on top of 3.16
+
+Changes since v1/RFC:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10065.html ]
+- Remove hotplug from the patch series. Will submit it separately.
+- Fix SPM drivers per the review comments
+- Modify patch sequence to compile SPM drivers independent of msm-pm, so as to
+  allow wfi() calls to use SPM even without SoC interface driver.
+
+8074/8084 like any ARM SoC can do architectural clock gating, that helps save
+on power, but not enough of leakage power.  Leakage power of the SoC can be
+further reduced by turning off power to the core. To aid this, every core (cpu
+and L2) is accompanied by a Sub-system Power Manager (SPM), that can be
+configured to indicate the low power mode, the core would be put into and the
+SPM programs the peripheral h/w accordingly to enter low power and turn off the
+power rail to the core.
+
+The idle invocation hierarchy - 
+
+	CPUIDLE
+	|
+	cpuidle-qcom.c [CPUIdle driver]
+	|
+	------>	pm.c [SoC Interface layer for QCOM chipsets]
+		|
+		------> spm.c [SPM driver]
+		|
+		------> scm-boot.c [SCM interface layer]		
+			|
+------------------------|--------------------------
+(EL)			Secure Monitor Code
+			|
+			|
+			wfi(); 
+------------------------|--------------------------
+(HW)			[CPU] {clock gate}
+			|
+			-----> [SPM] {statemachine}
+			
+
+The patchset does the following -
+
+- Introduce the SPM driver to control power to the core
+
+- Add device bindings for 8974 CPU SPM devices 
+
+- Add device bindings for 8084 CPU SPM devices
+
+- Introduce the SoC interface layer to configure SPM per the core's idle state.
+
+- Add CPUIDLE driver for QCOM cpus, using ARM generic idle state definitions.
+
+- Add device bindings for 8974 idle-states - WFI and SPC
+
+- Add device bindings for 8084 idle-states - WFI and SPC
+
+Thanks,
+Lina
+
+
+
+Lina Iyer (7):
+  qcom: spm: Add Subsystem Power Manager driver
+  arm: dts: qcom: Add SPM device bindings for 8974
+  arm: dts: qcom: Add SPM device bindings for 8084
+  qcom: pm: Add cpu low power mode functions
+  qcom: cpuidle: Add cpuidle driver for QCOM cpus
+  arm: dts: qcom: Add idle states device nodes for 8974
+  arm: dts: qcom: Add idle states device nodes for 8084
+
+ .../bindings/arm/msm/qcom,idle-state.txt           |  72 +++++++
+ .../devicetree/bindings/arm/msm/qcom,saw2.txt      |  10 +-
+ arch/arm/boot/dts/qcom-apq8084.dtsi                |  46 ++++-
+ arch/arm/boot/dts/qcom-msm8974.dtsi                |  46 ++++-
+ drivers/cpuidle/Kconfig.arm                        |   7 +
+ drivers/cpuidle/Makefile                           |   1 +
+ drivers/cpuidle/cpuidle-qcom.c                     |  89 +++++++++
+ drivers/soc/qcom/Kconfig                           |   8 +
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/pm.c                              | 109 +++++++++++
+ drivers/soc/qcom/spm.c                             | 216 +++++++++++++++++++++
+ include/soc/qcom/pm.h                              |  26 +++
+ include/soc/qcom/spm.h                             |  35 ++++
+ 13 files changed, 658 insertions(+), 8 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+ create mode 100644 drivers/cpuidle/cpuidle-qcom.c
+ create mode 100644 drivers/soc/qcom/pm.c
+ create mode 100644 drivers/soc/qcom/spm.c
+ create mode 100644 include/soc/qcom/pm.h
+ create mode 100644 include/soc/qcom/spm.h
+
 -- 
 1.9.1
+
