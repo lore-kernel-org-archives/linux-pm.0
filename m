@@ -1,97 +1,115 @@
-From: Juha-Matti Tilli <juha-matti.tilli@iki.fi>
-Subject: Re: [PATCH v6 4/4] thermal: Add Tegra SOCTHERM thermal management
- driver
-Date: Sat, 27 Sep 2014 15:06:49 +0300
-Message-ID: <20140927120649.GA70809@sandfort.unics.fi>
-References: <1411724593-4037-1-git-send-email-cyndis@kapsi.fi>
- <1411724593-4037-5-git-send-email-cyndis@kapsi.fi>
- <20140926114533.GN31106@ulmo> <5425CC6F.2020309@kapsi.fi>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: BUG: sleeping function called from invalid context at drivers/cpufreq/cpufreq.c:370
+Date: Sat, 27 Sep 2014 21:57:59 +0200
+Message-ID: <2063016.pueklnzY3W@vostro.rjw.lan>
+References: <20140924081845.572814794@infradead.org> <2457441.tHFXzSCneW@vostro.rjw.lan> <1411798486.5097.46.camel@marge.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <5425CC6F.2020309@kapsi.fi>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Cc: Mikko Perttunen <cyndis@kapsi.fi>, linux-pm@vger.kernel.org, swarren@wwwdotorg.org, linux-kernel@vger.kernel.org, Mikko Perttunen <mperttunen@nvidia.com>, edubezval@gmail.com, Thierry Reding <thierry.reding@gmail.com>, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:52608 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752154AbaI0TiI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Sep 2014 15:38:08 -0400
+In-Reply-To: <1411798486.5097.46.camel@marge.simpson.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mike Galbraith <umgwanakikbuti@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Fri, Sep 26, 2014 at 11:28:31PM +0300, Mikko Perttunen wrote:
-> > I think a more idiomatic way to write this would be:
-> >
-> > static int
-> > calculate_tsensor_calibration(const struct tegra_tsensor *sensor,
-> >                               struct tsensor_shared_calibration shared,
-> >                               u32 *calib)
-[snip]
-> >
-> > While at it, perhaps make shared a const * instead of passing it in by
-> > value?
+On Saturday, September 27, 2014 08:14:46 AM Mike Galbraith wrote:
+> On Sat, 2014-09-27 at 00:44 +0200, Rafael J. Wysocki wrote:
 > 
-> That is possible, but I'm not sure what the difference would be. Is 
-> there a style rule forbidding by-value compound types? (Also if I change 
-> the style, it would go over 80 characters by even more.)
+> > Shouldn't that be pcc-cpufreq.c rather?
+> 
+> Yeah, silly mouse copy/pasted the wrong gitk bits.
+> 
+> > Also moving the spin_lock(&pcc_lock) after the cpufreq_freq_transition_begin()
+> > should fix the problem too (like the below).  Have you tried that?
+> 
+> Have now.  Yup, works and is prettier.
 
-I guess the idea is that it's more space- and time-efficient to pass
-compound types as pointers instead of by value. Kernel stack is quite
-limited in size, so allocating structs from stack in this way quickly
-eats up the stack. Furthermore, there's less machine language
-instructions in the function call if passed as a pointer, because when
-passed as a value, each member of the struct needs to be pushed to the
-stack separately (unless the member size is smaller than word length of
-the machine architecture, in which case the compiler may optimize a
-bit). So it's faster, too, to pass by pointer. In the case of kernel
-coding, of these problems the limited stack size is far more serious.
+OK, thanks!
 
-In this case, however, the current struct is only 16 bytes vs 4/8 bytes
-for a pointer, so it shouldn't matter that much. But IMO as a general
-rule it's a far better style to pass compound types as pointers. I would
-definitely pass by pointer here instead of passing by value even given
-that the advantages in this particular case are limited. You should
-consider the possibility that in a future driver version struct
-tsensor_shared_calibration may become larger, and thus the code will be
-closer to stack overflow if the one who increases the size of struct
-tsensor_shared_calibration doesn't notice that it is passed by value.
+Below it goes again with full changelog.
 
-There are always ways to structure the code so that it looks fine and
-the additional "const *" will not cause the line length to become >80
-chars. In my opinion, line length considerations should never play a
-role on deciding whether to pass by value or pass by pointer. I don't
-understand why you think this particular function would have line length
-problems. In my opinion, the following is 78 chars max:
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: cpufreq: pcc-cpufreq: Fix wait_event() under spinlock
 
-static int 
-calculate_tsensor_calibration(const struct tegra_tsensor *sensor,
-                              const struct tsensor_shared_calibration *shared,
-                              u32 *calib)
+Fix the following bug introduced by commit 8fec051eea73 (cpufreq:
+Convert existing drivers to use cpufreq_freq_transition_{begin|end})
+that forgot to move the spin_lock() in pcc_cpufreq_target() past
+cpufreq_freq_transition_begin() which calls wait_event():
 
-Of course, if you want to have "static int" on the same line as the
-function name, then you'll have problems but even those can be avoided
-so that the code still looks fine:
+BUG: sleeping function called from invalid context at drivers/cpufreq/cpufreq.c:370
+in_atomic(): 1, irqs_disabled(): 0, pid: 2636, name: modprobe
+Preemption disabled at:[<ffffffffa04d74d7>] pcc_cpufreq_target+0x27/0x200 [pcc_cpufreq]
+[   51.025044]
+CPU: 57 PID: 2636 Comm: modprobe Tainted: G            E  3.17.0-default #7
+Hardware name: Hewlett-Packard ProLiant DL980 G7, BIOS P66 07/07/2010
+ 00000000ffffffff ffff88026c46b828 ffffffff81589dbd 0000000000000000
+ ffff880037978090 ffff88026c46b848 ffffffff8108e1df ffff880037978090
+ 0000000000000000 ffff88026c46b878 ffffffff8108e298 ffff88026d73ec00
+Call Trace:
+ [<ffffffff81589dbd>] dump_stack+0x4d/0x90
+ [<ffffffff8108e1df>] ___might_sleep+0x10f/0x180
+ [<ffffffff8108e298>] __might_sleep+0x48/0xd0
+ [<ffffffff8145b905>] cpufreq_freq_transition_begin+0x75/0x140 drivers/cpufreq/cpufreq.c:370 wait_event(policy->transition_wait, !policy->transition_ongoing);
+ [<ffffffff8108fc99>] ? preempt_count_add+0xb9/0xc0
+ [<ffffffffa04d7513>] pcc_cpufreq_target+0x63/0x200 [pcc_cpufreq] drivers/cpufreq/pcc-cpufreq.c:207 spin_lock(&pcc_lock);
+ [<ffffffff810e0d0f>] ? update_ts_time_stats+0x7f/0xb0
+ [<ffffffff8145be55>] __cpufreq_driver_target+0x85/0x170
+ [<ffffffff8145e4c8>] od_check_cpu+0xa8/0xb0
+ [<ffffffff8145ef10>] dbs_check_cpu+0x180/0x1d0
+ [<ffffffff8145f310>] cpufreq_governor_dbs+0x3b0/0x720
+ [<ffffffff8145ebe3>] od_cpufreq_governor_dbs+0x33/0xe0
+ [<ffffffff814593d9>] __cpufreq_governor+0xa9/0x210
+ [<ffffffff81459fb2>] cpufreq_set_policy+0x1e2/0x2e0
+ [<ffffffff8145a6cc>] cpufreq_init_policy+0x8c/0x110
+ [<ffffffff8145c9a0>] ? cpufreq_update_policy+0x1b0/0x1b0
+ [<ffffffff8108fb99>] ? preempt_count_sub+0xb9/0x100
+ [<ffffffff8145c6c6>] __cpufreq_add_dev+0x596/0x6b0
+ [<ffffffffa016c608>] ? pcc_cpufreq_probe+0x4b4/0x4b4 [pcc_cpufreq]
+ [<ffffffff8145c7ee>] cpufreq_add_dev+0xe/0x10
+ [<ffffffff81408e81>] subsys_interface_register+0xc1/0xf0
+ [<ffffffff8108fb99>] ? preempt_count_sub+0xb9/0x100
+ [<ffffffff8145b3d7>] cpufreq_register_driver+0x117/0x2a0
+ [<ffffffffa016c65d>] pcc_cpufreq_init+0x55/0x9f8 [pcc_cpufreq]
+ [<ffffffffa016c608>] ? pcc_cpufreq_probe+0x4b4/0x4b4 [pcc_cpufreq]
+ [<ffffffff81000298>] do_one_initcall+0xc8/0x1f0
+ [<ffffffff811a731d>] ? __vunmap+0x9d/0x100
+ [<ffffffff810eb9a0>] do_init_module+0x30/0x1b0
+ [<ffffffff810edfa6>] load_module+0x686/0x710
+ [<ffffffff810ebb20>] ? do_init_module+0x1b0/0x1b0
+ [<ffffffff810ee1db>] SyS_init_module+0x9b/0xc0
+ [<ffffffff8158f7a9>] system_call_fastpath+0x16/0x1b
 
-static int calculate_tsensor_calibration(const struct tegra_tsensor *sensor,
-                                         const struct
-                                             tsensor_shared_calibration *shared,
-                                         u32 *calib)
+Fixes: 8fec051eea73 (cpufreq: Convert existing drivers to use cpufreq_freq_transition_{begin|end})
+Reported-and-tested-by: Mike Galbraith <umgwanakikbuti@gmail.com>
+Cc: 3.15+ <stable@vger.kernel.org> # 3.15+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/pcc-cpufreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Anyway, the root cause of line length problems here is overlong
-identifiers. For example, "calculate_tsensor_calibration" is in my
-opinion too long for a function name. You could easily abbreviate it to
-"calc_tsensor_calib" without losing any information. Similarly, "struct
-tsensor_shared_calibration" could be easily abbreviated to "struct
-tsensor_shared_calib". Then you could have easily:
-
-static int calc_tsensor_calib(const struct tegra_tsensor *sensor,
-                              const struct tsensor_shared_calib *shared,
-                              u32 *calib)
-
-without being even close to the 80-character line length limitation.
+Index: linux-pm/drivers/cpufreq/pcc-cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/pcc-cpufreq.c
++++ linux-pm/drivers/cpufreq/pcc-cpufreq.c
+@@ -204,7 +204,6 @@ static int pcc_cpufreq_target(struct cpu
+ 	u32 input_buffer;
+ 	int cpu;
+ 
+-	spin_lock(&pcc_lock);
+ 	cpu = policy->cpu;
+ 	pcc_cpu_data = per_cpu_ptr(pcc_cpu_info, cpu);
+ 
+@@ -216,6 +215,7 @@ static int pcc_cpufreq_target(struct cpu
+ 	freqs.old = policy->cur;
+ 	freqs.new = target_freq;
+ 	cpufreq_freq_transition_begin(policy, &freqs);
++	spin_lock(&pcc_lock);
+ 
+ 	input_buffer = 0x1 | (((target_freq * 100)
+ 			       / (ioread32(&pcch_hdr->nominal) * 1000)) << 8);
