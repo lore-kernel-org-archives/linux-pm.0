@@ -1,98 +1,77 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH 06/10] power/reset: xgene: Register with kernel restart handler
-Date: Fri, 26 Sep 2014 17:57:14 -0700
-Message-ID: <1411779438-23127-7-git-send-email-linux@roeck-us.net>
+Subject: [PATCH 09/10] power/reset: hisi: Register with kernel restart handler
+Date: Fri, 26 Sep 2014 17:57:17 -0700
+Message-ID: <1411779438-23127-10-git-send-email-linux@roeck-us.net>
 References: <1411779438-23127-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:40502 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750960AbaI0A5s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 20:57:48 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1411779438-23127-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Loc Ho <lho@apm.com>
+Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Haojian Zhuang <haojian.zhuang@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
 Register with kernel restart handler instead of setting arm_pm_restart directly.
 
-This patch also addresses the following compile warning.
-
-drivers/power/reset/xgene-reboot.c: In function 'xgene_reboot_probe':
-drivers/power/reset/xgene-reboot.c:77:17: warning:
-	assignment from incompatible pointer type [enabled by default]
-
-The warning was due to a mismatch between the type of arm_pm_restart
-and the restart function.
-
-Cc: Loc Ho <lho@apm.com>
+Cc: Haojian Zhuang <haojian.zhuang@linaro.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/power/reset/xgene-reboot.c | 25 ++++++++++++++++---------
- 1 file changed, 16 insertions(+), 9 deletions(-)
+ drivers/power/reset/hisi-reboot.c | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/power/reset/xgene-reboot.c b/drivers/power/reset/xgene-reboot.c
-index ae470b8..1e7f5f5 100644
---- a/drivers/power/reset/xgene-reboot.c
-+++ b/drivers/power/reset/xgene-reboot.c
-@@ -26,32 +26,36 @@
-  */
+diff --git a/drivers/power/reset/hisi-reboot.c b/drivers/power/reset/hisi-reboot.c
+index 0c91d02..e9774b0 100644
+--- a/drivers/power/reset/hisi-reboot.c
++++ b/drivers/power/reset/hisi-reboot.c
+@@ -14,27 +14,36 @@
  #include <linux/delay.h>
  #include <linux/io.h>
+ #include <linux/module.h>
 +#include <linux/notifier.h>
- #include <linux/of_device.h>
  #include <linux/of_address.h>
  #include <linux/platform_device.h>
-+#include <linux/reboot.h>
- #include <linux/stat.h>
- #include <linux/slab.h>
+ #include <linux/reboot.h>
+ 
+ #include <asm/proc-fns.h>
 -#include <asm/system_misc.h>
  
- struct xgene_reboot_context {
- 	struct device *dev;
- 	void *csr;
- 	u32 mask;
-+	struct notifier_block restart_handler;
- };
+ static void __iomem *base;
+ static u32 reboot_offset;
  
--static struct xgene_reboot_context *xgene_restart_ctx;
--
--static void xgene_restart(char str, const char *cmd)
-+static int xgene_restart_handler(struct notifier_block *this,
-+				 unsigned long mode, void *cmd)
+-static void hisi_restart(enum reboot_mode mode, const char *cmd)
++static int hisi_restart_handler(struct notifier_block *this,
++				unsigned long mode, void *cmd)
  {
--	struct xgene_reboot_context *ctx = xgene_restart_ctx;
-+	struct xgene_reboot_context *ctx =
-+		container_of(this, struct xgene_reboot_context,
-+			     restart_handler);
+ 	writel_relaxed(0xdeadbeef, base + reboot_offset);
  
- 	/* Issue the reboot */
--	if (ctx)
--		writel(ctx->mask, ctx->csr);
-+	writel(ctx->mask, ctx->csr);
- 
- 	mdelay(1000);
- 
- 	dev_emerg(ctx->dev, "Unable to restart system\n");
+ 	while (1)
+ 		cpu_do_idle();
 +
 +	return NOTIFY_DONE;
  }
  
- static int xgene_reboot_probe(struct platform_device *pdev)
-@@ -73,8 +77,11 @@ static int xgene_reboot_probe(struct platform_device *pdev)
- 		ctx->mask = 0xFFFFFFFF;
++static struct notifier_block hisi_restart_nb = {
++	.notifier_call = hisi_restart_handler,
++	.priority = 128,
++};
++
+ static int hisi_reboot_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
++	int err;
  
- 	ctx->dev = dev;
--	arm_pm_restart = xgene_restart;
--	xgene_restart_ctx = ctx;
-+	ctx->restart_handler.notifier_call = xgene_restart_handler;
-+	ctx->restart_handler.priority = 128;
-+	err = register_restart_handler(&ctx->restart_handler);
+ 	base = of_iomap(np, 0);
+ 	if (!base) {
+@@ -47,7 +56,10 @@ static int hisi_reboot_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+ 
+-	arm_pm_restart = hisi_restart;
++	err = register_restart_handler(&hisi_restart_nb);
 +	if (err)
-+		dev_err(dev, "cannot register restart handler (err=%d)\n", err);
++		dev_err(&pdev->dev, "cannot register restart handler (err=%d)\n",
++			err);
  
  	return 0;
  }
 -- 
 1.9.1
-
