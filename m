@@ -1,109 +1,83 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH 10/10] power/reset: brcmstb: Register with kernel restart handler
-Date: Fri, 26 Sep 2014 17:57:18 -0700
-Message-ID: <1411779438-23127-11-git-send-email-linux@roeck-us.net>
-References: <1411779438-23127-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1411779438-23127-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Marc Carino <marc.ceeeee@gmail.com>, Brian Norris <computersforpeace@gmail.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v7 6/7] arm: dts: qcom: Add idle states device nodes for 8974
+Date: Fri, 26 Sep 2014 18:58:14 -0600
+Message-ID: <1411779495-39724-7-git-send-email-lina.iyer@linaro.org>
+References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Register with kernel restart handler instead of setting arm_pm_restart directly.
+Add allowable C-States for each cpu using the cpu-idle-states node.
+ARM spec dictates WFI as the default idle state at 0. Support standalone
+power collapse (power down that does not affect any SoC idle states) for
+each cpu.
 
-Cc: Marc Carino <marc.ceeeee@gmail.com>
-Cc: Brian Norris <computersforpeace@gmail.com>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/power/reset/brcmstb-reboot.c | 26 ++++++++++++++++++--------
- 1 file changed, 18 insertions(+), 8 deletions(-)
+ arch/arm/boot/dts/qcom-msm8974.dtsi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/drivers/power/reset/brcmstb-reboot.c b/drivers/power/reset/brcmstb-reboot.c
-index 3f23692..3306241 100644
---- a/drivers/power/reset/brcmstb-reboot.c
-+++ b/drivers/power/reset/brcmstb-reboot.c
-@@ -16,6 +16,7 @@
- #include <linux/init.h>
- #include <linux/io.h>
- #include <linux/jiffies.h>
-+#include <linux/notifier.h>
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
- #include <linux/of_platform.h>
-@@ -26,8 +27,6 @@
- #include <linux/smp.h>
- #include <linux/mfd/syscon.h>
+diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
+index 828f5bb..cb710ce 100644
+--- a/arch/arm/boot/dts/qcom-msm8974.dtsi
++++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+@@ -22,6 +22,7 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc0>;
+ 			qcom,saw = <&saw0>;
++			cpu-idle-states = <&CPU_WFI &CPU_SPC>;
+ 		};
  
--#include <asm/system_misc.h>
--
- #define RESET_SOURCE_ENABLE_REG 1
- #define SW_MASTER_RESET_REG 2
+ 		cpu@1 {
+@@ -32,6 +33,7 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc1>;
+ 			qcom,saw = <&saw1>;
++			cpu-idle-states = <&CPU_WFI &CPU_SPC>;
+ 		};
  
-@@ -35,7 +34,8 @@ static struct regmap *regmap;
- static u32 rst_src_en;
- static u32 sw_mstr_rst;
+ 		cpu@2 {
+@@ -42,6 +44,7 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc2>;
+ 			qcom,saw = <&saw2>;
++			cpu-idle-states = <&CPU_WFI &CPU_SPC>;
+ 		};
  
--static void brcmstb_reboot(enum reboot_mode mode, const char *cmd)
-+static int brcmstb_restart_handler(struct notifier_block *this,
-+				   unsigned long mode, void *cmd)
- {
- 	int rc;
- 	u32 tmp;
-@@ -43,31 +43,38 @@ static void brcmstb_reboot(enum reboot_mode mode, const char *cmd)
- 	rc = regmap_write(regmap, rst_src_en, 1);
- 	if (rc) {
- 		pr_err("failed to write rst_src_en (%d)\n", rc);
--		return;
-+		return NOTIFY_DONE;
- 	}
+ 		cpu@3 {
+@@ -52,6 +55,7 @@
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc3>;
+ 			qcom,saw = <&saw3>;
++			cpu-idle-states = <&CPU_WFI &CPU_SPC>;
+ 		};
  
- 	rc = regmap_read(regmap, rst_src_en, &tmp);
- 	if (rc) {
- 		pr_err("failed to read rst_src_en (%d)\n", rc);
--		return;
-+		return NOTIFY_DONE;
- 	}
- 
- 	rc = regmap_write(regmap, sw_mstr_rst, 1);
- 	if (rc) {
- 		pr_err("failed to write sw_mstr_rst (%d)\n", rc);
--		return;
-+		return NOTIFY_DONE;
- 	}
- 
- 	rc = regmap_read(regmap, sw_mstr_rst, &tmp);
- 	if (rc) {
- 		pr_err("failed to read sw_mstr_rst (%d)\n", rc);
--		return;
-+		return NOTIFY_DONE;
- 	}
- 
- 	while (1)
- 		;
+ 		L2: l2-cache {
+@@ -59,6 +63,22 @@
+ 			cache-level = <2>;
+ 			qcom,saw = <&saw_l2>;
+ 		};
 +
-+	return NOTIFY_DONE;
- }
- 
-+static struct notifier_block brcmstb_restart_nb = {
-+	.notifier_call = brcmstb_restart_handler,
-+	.priority = 128,
-+};
++		idle-states {
++			CPU_WFI: wfi {
++				compatible = "qcom,idle-state-wfi", "arm,idle-state";
++				entry-latency-us = <1>;
++				exit-latency-us = <1>;
++				min-residency-us = <2>;
++			};
 +
- static int brcmstb_reboot_probe(struct platform_device *pdev)
- {
- 	int rc;
-@@ -93,7 +100,10 @@ static int brcmstb_reboot_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
++			CPU_SPC: spc {
++				compatible = "qcom,idle-state-spc", "arm,idle-state";
++				entry-latency-us = <150>;
++				exit-latency-us = <200>;
++				min-residency-us = <2000>;
++			};
++		};
+ 	};
  
--	arm_pm_restart = brcmstb_reboot;
-+	rc = register_restart_handler(&brcmstb_restart_nb);
-+	if (rc)
-+		dev_err(&pdev->dev,
-+			"cannot register restart handler (err=%d)\n", rc);
- 
- 	return 0;
- }
+ 	cpu-pmu {
 -- 
 1.9.1
