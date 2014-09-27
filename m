@@ -1,63 +1,78 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RESEND PATCH] acpi-cpufreq: get the cur_freq from acpi_processor_performance states
-Date: Sat, 27 Sep 2014 22:01:46 +0200
-Message-ID: <2361937.mQR3H5xj3F@vostro.rjw.lan>
-References: <53F589C3.4050504@huawei.com> <2075276.PKjjuvNeys@vostro.rjw.lan> <54264C0B.1000607@huawei.com>
+From: Mike Turquette <mike.turquette@linaro.org>
+Subject: Re: [PATCH 1/4] cpufreq: allow driver-specific flags
+Date: Sat, 27 Sep 2014 15:44:34 -0700
+Message-ID: <20140927224434.19023.35708@quantum>
+References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
+ <1410342112-13264-1-git-send-email-thomas.petazzoni@free-electrons.com>
+ <1410342112-13264-2-git-send-email-thomas.petazzoni@free-electrons.com>
+ <CAKohpom4=nbg510bUb20C6rsG8r184YQ0SiPmPkxj8_8Y04+Bg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55987 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751828AbaI0Tlx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Sep 2014 15:41:53 -0400
-In-Reply-To: <54264C0B.1000607@huawei.com>
+Received: from mail-pd0-f174.google.com ([209.85.192.174]:51829 "EHLO
+	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753178AbaI0Wo5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Sep 2014 18:44:57 -0400
+Received: by mail-pd0-f174.google.com with SMTP id g10so14303760pdj.19
+        for <linux-pm@vger.kernel.org>; Sat, 27 Sep 2014 15:44:57 -0700 (PDT)
+In-Reply-To: <CAKohpom4=nbg510bUb20C6rsG8r184YQ0SiPmPkxj8_8Y04+Bg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wang Weidong <wangweidong1@huawei.com>
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org >> \"linux-kernel@vger.kernel.org\"" <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
 
-On Saturday, September 27, 2014 01:32:59 PM Wang Weidong wrote:
-> On 2014/9/27 7:21, Rafael J. Wysocki wrote:
-> > On Thursday, August 21, 2014 01:55:15 PM Wang Weidong wrote:
-> >> As the initialized freq_tables maybe different from the p-states
-> >> values, so the array index is different as well.
-> >>
-> >> p-states value: [2400 2400 2000 ...], while the freq_tables:
-> >> [2400 2000 ... CPUFREQ_TABLE_END]. After setted the freqs 2000,
-> >> the perf->state is 3 while the freqs_table's index should be 2.
-> >> So when call the get_cur_freq_on_cpu, the freqs value we get
-> >> is 2400.
-> >>
-> >> So, fix the problem with the correct tables.
-> > 
-> > What you're saying is basically that freq_table and perf->states
-> > diverge at one point.  Shouldn't we re-generate freq_table in that
-> > case instead of fixing up get_cur_freq_on_cpu() only in a quite
-> > indirect way? 
-> > 
-> Hi Rafael,
+Quoting Viresh Kumar (2014-09-10 03:49:25)
+> On 10 September 2014 15:11, Thomas Petazzoni
+> <thomas.petazzoni@free-electrons.com> wrote:
+> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> > index 138336b..fa35601 100644
+> > --- a/include/linux/cpufreq.h
+> > +++ b/include/linux/cpufreq.h
+> > @@ -218,7 +218,7 @@ __ATTR(_name, 0644, show_##_name, store_##_name)
+> >
+> >  struct cpufreq_driver {
+> >         char                    name[CPUFREQ_NAME_LEN];
+> > -       u8                      flags;
+> > +       unsigned int            flags;
+> >
+> >         /* needed by all drivers */
+> >         int     (*init)         (struct cpufreq_policy *policy);
+> > @@ -308,10 +308,13 @@ struct cpufreq_driver {
+> >   */
+> >  #define CPUFREQ_NEED_INITIAL_FREQ_CHECK        (1 << 5)
+> >
+> > +#define CPUFREQ_DRIVER_FLAGS_MASK (0xFFFF0000)
 > 
-> Thanks for your reply.
-> 
-> You mean that we should re-generate the freq_table in that case?
-> Could we fix the table init like this:
-> 
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -779,7 +779,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> 
->         /* table init */
->         for (i = 0; i < perf->state_count; i++) {
-> -               if (i > 0 && perf->states[i].core_frequency >=
-> +               if (i > 0 && perf->states[i].core_frequency >
->                     data->freq_table[valid_states-1].frequency / 1000)
->                         continue;
-> 
-> when the value is same, we just keep the value into the freq_table.
+> The flags field is used today to pass on information to cpufreq core and
+> I believe it better stays that way only. Also all these changes might later
+> be reverted and so we better don't change usage of variables..
 
-That would only be OK if it is guaranteed that the set of available
-states hasn't changed, which I'm not sure is the case.
+I have another use case for exposing driver flags and I have created a
+similar patch to this locally in my git tree.
 
-Rafael
+Basically some cpufreq drivers may block or sleep during their
+.set_target callback, and others will not. E.g. the former case is the
+common pattern to use the clock framework and the regulator framework,
+both of which hold mutexes and may have slow operations and the latter
+case is more like the Intel P-state driver with just some register
+writes.
 
+For the energy-aware scheduling work it is desirable to know if the
+cpufreq driver can do a "fast" transition of it might sleep, since that
+affects whether we adjust the cpu frequency from the scheduler context
+of whether need to put new work on the workqueue (e.g. waking up a
+kthread dedicated to calling .set_target).
+
+Regards,
+Mike
+
+> 
+> Instead of this add a "void *driver_data" field in this structure and fill that
+> with your structure. This can be later used for other purposes as well..
+> 
+> Also this will just add few more bytes to the cpufreq-driver structure which
+> wouldn't have many instances in a compiled kernel, and so space isn't a
+> problem..
+> 
+> Otherwise things looked good to me in your complete series..
