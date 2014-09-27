@@ -1,90 +1,87 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v7 7/7] arm: dts: qcom: Add idle states device nodes for 8084
-Date: Fri, 26 Sep 2014 18:58:15 -0600
-Message-ID: <1411779495-39724-8-git-send-email-lina.iyer@linaro.org>
-References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:35855 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751601AbaI0A6o (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Sep 2014 20:58:44 -0400
-Received: by mail-pa0-f51.google.com with SMTP id eu11so12706380pac.38
-        for <linux-pm@vger.kernel.org>; Fri, 26 Sep 2014 17:58:44 -0700 (PDT)
-In-Reply-To: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH 08/10] power/reset: keystone: Register with kernel restart handler
+Date: Fri, 26 Sep 2014 17:57:16 -0700
+Message-ID: <1411779438-23127-9-git-send-email-linux@roeck-us.net>
+References: <1411779438-23127-1-git-send-email-linux@roeck-us.net>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1411779438-23127-1-git-send-email-linux@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Ivan Khoronzhuk <ivan.khoronzhuk@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
 
-Add allowable C-States for each cpu using the cpu-idle-states node.
-ARM spec dictates WFI as the default idle state at 0. Support standalone
-power collapse (power down that does not affect any SoC idle states) for
-each cpu.
+Register with kernel restart handler instead of setting arm_pm_restart directly.
 
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Move notifier registration to the end of the probe function to avoid having to
+implement error handling.
+
+Cc: Ivan Khoronzhuk <ivan.khoronzhuk@ti.com>
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- arch/arm/boot/dts/qcom-apq8084.dtsi | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/power/reset/keystone-reset.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
-index 3dda230..a1ea1c0 100644
---- a/arch/arm/boot/dts/qcom-apq8084.dtsi
-+++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
-@@ -19,6 +19,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc0>;
- 			qcom,saw = <&saw0>;
-+			cpu-idle-states = <&CPU_WFI &CPU_SPC>;
- 		};
+diff --git a/drivers/power/reset/keystone-reset.c b/drivers/power/reset/keystone-reset.c
+index 408a18f..9d46586 100644
+--- a/drivers/power/reset/keystone-reset.c
++++ b/drivers/power/reset/keystone-reset.c
+@@ -12,9 +12,9 @@
  
- 		cpu@1 {
-@@ -29,6 +30,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc1>;
- 			qcom,saw = <&saw1>;
-+			cpu-idle-states = <&CPU_WFI &CPU_SPC>;
- 		};
+ #include <linux/io.h>
+ #include <linux/module.h>
++#include <linux/notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/regmap.h>
+-#include <asm/system_misc.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/of_platform.h>
  
- 		cpu@2 {
-@@ -39,6 +41,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc2>;
- 			qcom,saw = <&saw2>;
-+			cpu-idle-states = <&CPU_WFI &CPU_SPC>;
- 		};
+@@ -52,7 +52,8 @@ static inline int rsctrl_enable_rspll_write(void)
+ 				  RSCTRL_KEY_MASK, RSCTRL_KEY);
+ }
  
- 		cpu@3 {
-@@ -49,6 +52,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc3>;
- 			qcom,saw = <&saw3>;
-+			cpu-idle-states = <&CPU_WFI &CPU_SPC>;
- 		};
- 
- 		L2: l2-cache {
-@@ -56,6 +60,22 @@
- 			cache-level = <2>;
- 			qcom,saw = <&saw_l2>;
- 		};
+-static void rsctrl_restart(enum reboot_mode mode, const char *cmd)
++static int rsctrl_restart_handler(struct notifier_block *this,
++				  unsigned long mode, void *cmd)
+ {
+ 	/* enable write access to RSTCTRL */
+ 	rsctrl_enable_rspll_write();
+@@ -60,8 +61,15 @@ static void rsctrl_restart(enum reboot_mode mode, const char *cmd)
+ 	/* reset the SOC */
+ 	regmap_update_bits(pllctrl_regs, rspll_offset + RSCTRL_RG,
+ 			   RSCTRL_RESET_MASK, 0);
 +
-+		idle-states {
-+			CPU_WFI: wfi {
-+				compatible = "qcom,idle-state-wfi", "arm,idle-state";
-+				entry-latency-us = <1>;
-+				exit-latency-us = <1>;
-+				min-residency-us = <2>;
-+			};
-+
-+			CPU_SPC: spc {
-+				compatible = "qcom,idle-state-spc", "arm,idle-state";
-+				entry-latency-us = <150>;
-+				exit-latency-us = <200>;
-+				min-residency-us = <2000>;
-+			};
-+		};
- 	};
++	return NOTIFY_DONE;
+ }
  
- 	cpu-pmu {
++static struct notifier_block rsctrl_restart_nb = {
++	.notifier_call = rsctrl_restart_handler,
++	.priority = 128,
++};
++
+ static struct of_device_id rsctrl_of_match[] = {
+ 	{.compatible = "ti,keystone-reset", },
+ 	{},
+@@ -114,8 +122,6 @@ static int rsctrl_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
+-	arm_pm_restart = rsctrl_restart;
+-
+ 	/* disable a reset isolation for all module clocks */
+ 	ret = regmap_write(pllctrl_regs, rspll_offset + RSISO_RG, 0);
+ 	if (ret)
+@@ -147,6 +153,10 @@ static int rsctrl_probe(struct platform_device *pdev)
+ 			return ret;
+ 	}
+ 
++	ret = register_restart_handler(&rsctrl_restart_nb);
++	if (ret)
++		dev_err(dev, "cannot register restart handler (err=%d)\n", ret);
++
+ 	return 0;
+ }
+ 
 -- 
 1.9.1
-
