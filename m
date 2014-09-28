@@ -1,53 +1,94 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 1/3] arm: ls1: add CPU hotplug platform support
-Date: Sun, 28 Sep 2014 15:27:26 +0100
-Message-ID: <20140928142726.GH5182@n2100.arm.linux.org.uk>
-References: <1411730703-25836-1-git-send-email-chenhui.zhao@freescale.com> <1411730703-25836-2-git-send-email-chenhui.zhao@freescale.com> <20140926122003.GP5182@n2100.arm.linux.org.uk> <20140926124614.GD7422@leverpostej> <20140926130311.GQ5182@n2100.arm.linux.org.uk> <20140926132038.GF7422@leverpostej> <CADRPPNQULzPhHt3Kk1EUnPRkfFOPGsWY4AqWEv=AdBc5y-Gg+Q@mail.gmail.com>
+From: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH 00/27] add
+	pm_runtime_last_busy_and_autosuspend() helper
+Date: Sun, 28 Sep 2014 21:07:19 +0530
+Message-ID: <20140928153719.GG1638@intel.com>
+References: <1411575342-31048-1-git-send-email-vinod.koul@intel.com>
+ <20140925142201.GD28045@saruman> <20140925142758.GB1316@katana>
+ <32849712.0gtj7BlKY3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
 Content-Disposition: inline
-In-Reply-To: <CADRPPNQULzPhHt3Kk1EUnPRkfFOPGsWY4AqWEv=AdBc5y-Gg+Q@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Li Yang <leoli@freescale.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Chenhui Zhao <chenhui.zhao@freescale.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhuoyu.Zhang@freescale.com" <Zhuoyu.Zhang@freescale.com>, "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+In-Reply-To: <32849712.0gtj7BlKY3@vostro.rjw.lan>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-wireless@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, patches@opensource.wolfsonmicro.com, Wolfram Sang <wsa@the-dreams.de>, linux-mmc@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Chris Ball <chris@printf.net>, dri-devel@lists.freedesktop.org, Marcin Wojtas <mw@semihalf.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, David Herrmann <dh.herrmann@gmail.com>, Shinya Kuribayashi <skuribay@pobox.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Jingoo Han <jg1.han@samsung.com>, Seungwon Jeon <tgih.jun@samsung.com>, Jaehoon Chung <jh80.chung@samsung.com>, Jani Nikula <jani.nikula@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Alan Stern <stern@rowland.harvard.edu>, Ben Skeggs <bskeggs@redhat.com>, Bjorn Andersson <bjorn.andersson@sonymobile.com>, Dave Airlie <airlied@>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Sep 28, 2014 at 06:57:18PM +0800, Li Yang wrote:
-> On Fri, Sep 26, 2014 at 9:20 PM, Mark Rutland <mark.rutland@arm.com> wrote:
-> >> > This looks to be a carbon copy of the vexpress pseudo-hotplug in
-> >> > arch/arm/mach-vexpress/hotplug.c, which is obviously broken in the way
-> >> > you describe above. Perhaps we should go about ripping that out?
-> >>
-> >> The Versatile Express does not support suspend so the only problem case
-> >> is kexec.  However, isn't this support needed for big.LITTLE, and as
-> >> the Versatile Express is the platform which these features get developed
-> >> on, having working CPU hotplug seems rather fundamental for ARM kernel
-> >> feature development.
-> >>
-> >> In that regard, Versatile Express is something of a special case.
-> >
-> > It is admittedly helpful during development to perform pseudo-hotplug on
-> > Versatile Express. I have a local patch adding vexpress_cpu_disable so I
-> > can test for bugs that only trigger if CPU0 is hotplugged.
-> >
-> > Given that, perhaps we should make it clearer that Versatile Express is
-> > not a reference implementation for CPU hotplug; add some Kconfig (e.g.
-> > VEXPRESS_PSEUDO_HOTPLUG) that depends on !KEXEC && !SUSPEND, and putting
-> > a note in hotplug.c stating it's not suitable as a reference
-> > implementation.
-> >
-> > ...but perhaps that's overkill.
+On Thu, Sep 25, 2014 at 09:54:36PM +0200, Rafael J. Wysocki wrote:
+> On Thursday, September 25, 2014 04:27:58 PM Wolfram Sang wrote:
+> > 
+> > --Bn2rw/3z4jIqBvZU
+> > Content-Type: text/plain; charset=us-ascii
+> > Content-Disposition: inline
+> > Content-Transfer-Encoding: quoted-printable
+> > 
+> > On Thu, Sep 25, 2014 at 09:22:01AM -0500, Felipe Balbi wrote:
+> > > On Thu, Sep 25, 2014 at 01:27:18PM +0530, Vinod Koul wrote:
+> > > > On Wed, Sep 24, 2014 at 03:32:19PM -0500, Felipe Balbi wrote:
+> > > > > > > > OK, I guess this is as good as it gets.
+> > > > > > > >=20
+> > > > > > > > What tree would you like it go through?
+> > > > > > >=20
+> > > > > > > Do we really need this new helper ? I mean, the very moment when =
+> > we
+> > > > > > > decide to implement ->runtime_idle() we will need to get rid of t=
+> > his
+> > > > > > > change. I wonder if it's really valid...
+> > > > > >=20
+> > > > > > I'm not sure I'm following?  This seems to simply implement what dr=
+> > ivers
+> > > > > > have been doing already as one function.  Why would it be invalid t=
+> > o reduce
+> > > > > > code duplication?
+> > > > >=20
+> > > > > For two reasons:
+> > > > >=20
+> > > > > 1) the helper has no inteligence whatsoever. It just calls the same
+> > > > > functions.
+> > > > >=20
+> > > > > 2) the duplication will vanish whenever someone implements
+> > > > > ->runtime_idle() and have that call pm_runtime_autosuspend() (like PCI
+> > > > > and USB buses are doing today). This will just be yet another line th=
+> > at
+> > > > > needs to change.
+> > > > >=20
+> > > > > Frankly though, no strong feelings, I just think it's a commit that
+> > > > > doesn't bring that any benefits other than looking like one line was
+> > > > > removed.
+> > > > and yes that is what it tries to do nothing more nothing less. If in fu=
+> > ture
+> > > > there are no users (today we have quite a few), then we can remove the =
+> > dead
+> > > > macro, no harm. But that is not the situation today.
+> > >=20
+> > > as I said, a commit that's bound to be useless. It's not like you're
+> > > saving 10 lines of code, it's only one. Replacing two simple lines with
+> > > a function which takes <joke> almost as many characters to type </joke>.
+> > >=20
+> > > IMO, this is pretty useless and I'd rather not see them in the drivers I
+> > > maintain, sorry.
+> > 
+> > It is not a NACK from me; yet from a high-level perspective I agree with
+> > Felipe.
 > 
-> I agree that the pseudo-hotplug is breaking the kexec.  However, I
-> don't think it breaks the system suspend case as tasks and interrupts
-> have been moved out of the non-booting CPU.  The pseudo-hotplug would
-> be even better than real hotplug as it introduces less latency.
-
-Sorry, that's not an acceptable reason to use it.
-
-NAK.
+> OK
+> 
+> I'd rather not merge something that driver people don't want to use.
+> 
+> Vinod?
+There have been quite a few ACKs as well. Either way am okay. If you feel
+this will get removed as discussed, then there is no point in merging
 
 -- 
-FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
-according to speedtest.net.
+~Vinod
