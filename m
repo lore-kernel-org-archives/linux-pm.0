@@ -1,67 +1,56 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH] PM / Domains: Move dev_pm_domain_attach|detach() to
- pm_domain.h
-Date: Mon, 29 Sep 2014 14:54:34 +0200
-Message-ID: <20140929125434.GB1327@katana>
-References: <1411991927-19654-1-git-send-email-ulf.hansson@linaro.org>
+From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Subject: Re: [PATCH v6 4/4] thermal: Add Tegra SOCTHERM thermal management
+ driver
+Date: Mon, 29 Sep 2014 16:37:54 +0300
+Message-ID: <542960B2.1010200@kapsi.fi>
+References: <1411724593-4037-1-git-send-email-cyndis@kapsi.fi> <1411724593-4037-5-git-send-email-cyndis@kapsi.fi> <20140926114533.GN31106@ulmo> <5425CC6F.2020309@kapsi.fi> <20140929082904.GF12506@ulmo>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="v9Ux+11Zm5mwPlX6"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sauhun.de ([89.238.76.85]:58396 "EHLO pokefinder.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752182AbaI2MyJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 29 Sep 2014 08:54:09 -0400
-Content-Disposition: inline
-In-Reply-To: <1411991927-19654-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140929082904.GF12506@ulmo>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Mikko Perttunen <cyndis@kapsi.fi>, edubezval@gmail.com, swarren@wwwdotorg.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, juha-matti.tilli@iki.fi, Mikko Perttunen <mperttunen@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
+On 09/29/2014 11:29 AM, Thierry Reding wrote:
+> On Fri, Sep 26, 2014 at 11:28:31PM +0300, Mikko Perttunen wrote:
+>> On 09/26/2014 02:45 PM, Thierry Reding wrote:
+> [...]
+>>> I think a more idiomatic way to write this would be:
+>>>
+>>> static int
+>>> calculate_tsensor_calibration(const struct tegra_tsensor *sensor,
+>>> 			      struct tsensor_shared_calibration shared,
+>>> 			      u32 *calib)
+>>
+>> If I do that, it will go over the 80 character limit by quite a few
+>> characters, which is why I didn't use that style. Personally I'm fine with
+>> either style.
+>
+> The above doesn't exceed the 80 character limit. Putting the return
+> value and the static keyword on a separate line is a pretty common way
+> to reduce line length.
 
---v9Ux+11Zm5mwPlX6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Good point, I didn't think of doing that. I usually never use the above 
+style, but clearly here it is the best choice.
 
-On Mon, Sep 29, 2014 at 01:58:47PM +0200, Ulf Hansson wrote:
-> The commit below, started using errno values in pm.h header file. It
-> also failed to include the header for these, thus it caused compiler
-> errors.
->=20
-> 46420dd73b800f87a19af13af5883855cf38cb08
-> (PM / Domains: Add APIs to attach/detach a PM domain for a device)
->=20
-> Instead of including the errno header to pm.h, let's move the functions
-> to pm_domain.h, since it's a better match.
->=20
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-For the I2C part:
-
-Acked-by: Wolfram Sang <wsa@the-dreams.de>
-
---v9Ux+11Zm5mwPlX6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUKVaKAAoJEBQN5MwUoCm2SsUQAIqH5prUFvW/dJeB4cr5RNYH
-cKNlwyJw8kOJT0ZaxgfcTIBRxgvAZIFPuHskmangOY2ZOzotuEvz55jW4eYWVVrf
-+I5QMzFLHUjpMxwnwcrRGf9oS2oAfd41xwnq+/rkPYPzFv9/zekEhgTGhOYOhBnw
-wpImzzuouhGKDiaER/wl334cGLFLX8wZKo4DkCqstwKxg2ykqsB8CP3Z+BNNM0X/
-ke/+glW5HXqZI6WKxKmauJ6pSyB9L388Q1AL+eNvtGnk61OzD6/wP5Lk2cBDqPbA
-X1rqxKhhozQQv4nYfmgrqiVpXwB9bc7yKAFEietxMQOBvA28StF+m10/07rI5XWn
-Tyb9McECqqVd5Z8kL9WwZgKomlq9p7EHbGDXqUhTQS0xkbiNLN0vf7J2r4DIS+f7
-CIF2Pt7ALpUgGOLFG9CGlb87Y/xiFfsauFbz0dnNvIYfxo6Nm6kECK3+wGScJKUg
-NAQBY9Yo9wPnmLEZ8OWt+mzly5pDLfhL/gGEu7PcUw8aQ93qAxlI0so7ftlIbXDX
-Xj7xMS8S7yc+Dt5FlXXgZqvD2uJA4JtlSBwujnwA4BY3rrsh8yotB0DC/R1Vy2Ft
-7wkXYlQkZ977CHvCzwPx9dcVgOQhrj0M6wQkmFk9ZgPbwPE33BgN7FPedlZMGP40
-FrQVy3HV2BRf6uQQ5D4r
-=RJC8
------END PGP SIGNATURE-----
-
---v9Ux+11Zm5mwPlX6--
+>
+>>>
+>>> While at it, perhaps make shared a const * instead of passing it in by
+>>> value?
+>>
+>> That is possible, but I'm not sure what the difference would be. Is there a
+>> style rule forbidding by-value compound types? (Also if I change the style,
+>> it would go over 80 characters by even more.)
+>
+> No it doesn't. The below fits within 80 characters per line just fine:
+>
+> static int
+> calculate_tsensor_calibration(const struct tegra_tsensor *sensor,
+> 			      const struct tsensor_shared_calibration *shared,
+> 			      u32 *calib)
+>
+> Thierry
+>
