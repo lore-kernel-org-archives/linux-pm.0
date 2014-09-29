@@ -1,45 +1,73 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 1/6] cpufreq: dt: disable unsupported OPPs
-Date: Tue, 30 Sep 2014 01:42:31 +0200
-Message-ID: <1915959.KRxr8m7sM7@vostro.rjw.lan>
-References: <1411738864-26549-1-git-send-email-l.stach@pengutronix.de> <3967829.hlAL1lU4Xl@vostro.rjw.lan> <1411979088.2625.1.camel@pengutronix.de>
+Subject: Re: [PATCH 1/1] Cpufreq: Keep cpufreq sysfs nodes across S2RAM/S2DISK when using intel_pstate driver.
+Date: Tue, 30 Sep 2014 01:44:05 +0200
+Message-ID: <5318779.3lMVbcv1i3@vostro.rjw.lan>
+References: <1411023787-11458-1-git-send-email-tianyu.lan@intel.com> <CAKohpokht4=7XCftPYa5PqpPMN-O-5b_RjJ3BgHnxjYV4VzyTg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61663 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:62514 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753102AbaI2XWf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 19:22:35 -0400
-In-Reply-To: <1411979088.2625.1.camel@pengutronix.de>
+	with SMTP id S1751028AbaI2XYK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 19:24:10 -0400
+In-Reply-To: <CAKohpokht4=7XCftPYa5PqpPMN-O-5b_RjJ3BgHnxjYV4VzyTg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Shawn Guo <shawn.guo@freescale.com>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lan Tianyu <tianyu.lan@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Monday, September 29, 2014 10:24:48 AM Lucas Stach wrote:
-> Am Freitag, den 26.09.2014, 23:55 +0200 schrieb Rafael J. Wysocki:
-> > On Friday, September 26, 2014 03:40:59 PM Lucas Stach wrote:
-> > > If the regulator connected to the CPU voltage plane doesn't
-> > > support an OPP specified voltage with the acceptable tolerance
-> > > it's better to just disable the OPP instead of constantly
-> > > failing the voltage scaling later on.
-> > > 
-> > > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-> > 
-> > Why do you need this to be part of the whole series?  Is there any
-> > hard dependency on it?
-> > 
-> No there isn't any hard dependency. It's just that one of the boards I
-> was testing this series with needs this to properly disable one invalid
-> OPP.
+On Monday, September 29, 2014 01:20:44 AM Viresh Kumar wrote:
+> Sorry for being late on this. Was away for a week for Linaro Connect followed
+> by a week of vacations :(
 > 
-> So it's no problem to rip this one out of the series. Sorry for the
-> confusion.
+> On 18 September 2014 00:03, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> > Cpufreq core introduces cpufreq_suspended flag to let cpufreq sysfs nodes
+> > across S2RAM/S2DISK. But the flag is only set in the cpufreq_suspend()
+> > for cpufreq drivers which have target or target_index callback. This
+> > skips intel_pstate driver. This patch is to set the flag before checking
+> > target or target_index callback.
+> 
+> Oh yes, this looks to be the right thing to do..
+> 
+> > Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> > ---
+> >  drivers/cpufreq/cpufreq.c | 8 ++++----
+> >  1 file changed, 4 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index d9fdedd..eb9bb78 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -1656,6 +1656,8 @@ void cpufreq_suspend(void)
+> >         if (!cpufreq_driver)
+> >                 return;
+> >
+> > +       cpufreq_suspended = true;
+> > +
+> >         if (!has_target())
+> >                 return;
+> >
+> > @@ -1670,8 +1672,6 @@ void cpufreq_suspend(void)
+> >                         pr_err("%s: Failed to suspend driver: %p\n", __func__,
+> >                                 policy);
+> >         }
+> > -
+> > -       cpufreq_suspended = true;
+> 
+> But this change is buggy.. Because you are updating 'cpufreq_suspended'
+> before actually stopping the governor, any calls to __cpufreq_governor()
+> will be converted to NO-operations because of this in __cpufreq_governor():
+> 
+> /* Don't start any governor operations if we are entering suspend */
+> if (cpufreq_suspended)
+>     return 0;
+> 
+> And so the governor's will never stop :(
+> 
+> So you need to keep the above line where it was :)
 
-OK
-
-Please resend it as a separate fix, then.
+OK, so please send a fix for that against the Linus' tree.
 
 -- 
 I speak only for myself.
