@@ -1,63 +1,37 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PULL REQUEST] PM / devfreq: for Rafael / Linux 3.18
-Date: Mon, 29 Sep 2014 11:31:06 +0000 (GMT)
-Message-ID: <1424153707.90221411990265171.JavaMail.weblogic@epmlwas08a>
-Reply-To: myungjoo.ham@samsung.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: serialize calls to __cpufreq_governor()
+Date: Mon, 29 Sep 2014 17:08:00 +0530
+Message-ID: <CAKohpo=WumLcZAH1ezwBV1yCYO_q9mzSMb+2ZnQOf_r+50ToGQ@mail.gmail.com>
+References: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
+	<54294299.1060208@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:48684 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751814AbaI2LbI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 07:31:08 -0400
-Received: from epcpsbgr2.samsung.com
- (u142.gpu120.samsung.co.kr [203.254.230.142])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0NCN00CNJUNUEO60@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Mon, 29 Sep 2014 20:31:06 +0900 (KST)
-MIME-version: 1.0
+Received: from mail-qc0-f170.google.com ([209.85.216.170]:41110 "EHLO
+	mail-qc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751601AbaI2LiB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 07:38:01 -0400
+Received: by mail-qc0-f170.google.com with SMTP id m20so1109411qcx.1
+        for <linux-pm@vger.kernel.org>; Mon, 29 Sep 2014 04:38:01 -0700 (PDT)
+In-Reply-To: <54294299.1060208@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rafael.j.wysocki@intel.com
-Cc: myungjoo.ham@gmail.com, linux-pm@vger.kernel.org, punit.agrawal@arm.com, orjan.eide@arm.com, pebolle@tiscali.nl, =?euc-kr?Q?=C7=D4=B8=ED=C1=D6?= <myungjoo.ham@samsung.com>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>, Saravana Kannan <skannan@codeaurora.org>
 
-LS0tLS1CRUdJTiBQR1AgU0lHTkVEIE1FU1NBR0UtLS0tLQ0KSGFzaDogU0hBMQ0KDQoNCkRlYXIg
-UmFmYWVsLA0KDQpIZXJlIGdvZXMgYSBwdWxsIHJlcXVlc3QgZm9yIExpbnV4IDMuMTggZnJvbSBk
-ZXZmcmVxLmdpdC4NCg0KDQoNClRoZSBmb2xsb3dpbmcgY2hhbmdlcyBzaW5jZSBjb21taXQgZmU4
-MmRjZWM2NDQyNDQ2NzZkNTVhMTM4NGM5NThkNWY2Nzk3OWFkYjoNCg0KICBMaW51eCAzLjE3LXJj
-NyAoMjAxNC0wOS0yOCAxNDoyOTowNyAtMDcwMCkNCg0KYXJlIGF2YWlsYWJsZSBpbiB0aGUgZ2l0
-IHJlcG9zaXRvcnkgYXQ6DQoNCiAgZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9r
-ZXJuZWwvZ2l0L216eC9kZXZmcmVxLmdpdCB0YWdzL3B1bGxfcmVxXzIwMTQwOTI5DQoNCmZvciB5
-b3UgdG8gZmV0Y2ggY2hhbmdlcyB1cCB0byA4MWRhNTdlNjQ5MTlmNDVlNzJkOGU1NTFmNDdjZTM4
-Njg2Y2UwZTc4Og0KDQogIFBNIC8gZGV2ZnJlcTogZXh5bm9zOiBFbmFibGUgYnVpbGRpbmcgZXh5
-bm9zIFBQTVUgYXMgbW9kdWxlICgyMDE0LTA5LTI5IDIwOjIyOjM2ICswOTAwKQ0KDQotIC0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0NClB1bGwgcmVxdWVzdCBmb3IgUmFmYWVsLCB0YXJnZXR0aW5nIExpbnV4IDMuMTgNCg0KLSAt
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tDQpQYXVsIEJvbGxlICgxKToNCiAgICAgIFBNIC8gZGV2ZnJlcTogUmVtb3ZlIEFSQ0hf
-SEFTX09QUCBjb21wbGV0ZWx5DQoNClB1bml0IEFncmF3YWwgKDEpOg0KICAgICAgUE0gLyBkZXZm
-cmVxOiBleHlub3M6IEVuYWJsZSBidWlsZGluZyBleHlub3MgUFBNVSBhcyBtb2R1bGUNCg0KQXJq
-YW4gRWlkZSAoMSk6DQogICAgICBQTSAvIGRldmZyZXE6IEV4cG9ydCBoZWxwZXIgZnVuY3Rpb25z
-IGZvciBkcml2ZXJzDQoNCiBkcml2ZXJzL2RldmZyZXEvS2NvbmZpZyAgICAgICAgICAgICAgfCAz
-ICstLQ0KIGRyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMgICAgICAgICAgICB8IDMgKysrDQogZHJp
-dmVycy9kZXZmcmVxL2V4eW5vcy9leHlub3NfcHBtdS5jIHwgMyArKysNCiAzIGZpbGVzIGNoYW5n
-ZWQsIDcgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCi0tLS0tQkVHSU4gUEdQIFNJR05B
-VFVSRS0tLS0tDQpWZXJzaW9uOiBHbnVQRyB2MS40LjE0IChHTlUvTGludXgpDQoNCmlRSWNCQUVC
-QWdBR0JRSlVLVUlzQUFvSkVCT2h1cnZXQm9DSzQxRVAvUnZSNzBCdTZzUkRsTm5mQXNsTGIvTXUN
-ClFBcHN2bGtRRXV3WkNUbVRkbTdBZ2tHbEZzOEx4Q0Ywbk1kdlI5V25TSnJKL09oRGxxR1c4YW5U
-cjJ2bFBvZjMNCk4wWkJEdFQxd29JRjhZOHpHaDJjazJmR1RlZkowS0JJQUlmcUJhYmtMaW0wZkpP
-YXlLM0tvUHBhcmYybHI4MVkNCllxbmZjaVNmazMrSFNSanZ4NDR2Z1lmTUdwQ3o2SUMzdHpKWEQy
-TUFJbUg1NE5KcG04UEJsSHFQUFA5MG5MdmENCjMvcGkzdnZtVmRpdVFGcDlyR3ZqNGJ4YSt6NEpj
-REZhay81Y2h6a08xc09zNXlUejVDUTBlZ2ZrZ1V1MWtLVnUNClBDemJ3Y2h0anR1S2dzT2pBSyti
-Z3g3MjBSQ25qQXF6K1FibUVQR2lXTGRKMnFkZXNmbXhsVisyMWFFZnFBaHUNCmRFZ1VlRXRYTHJV
-NWhCVnI0bnlGcFZGWHc1K0tMK0k5R2lONVgwbkxJditZbllTMjE5WEpwT0J0T2RBM2JEeSsNCnZx
-ZkdOSVdIa05pZmxSZ0phS2J0eXNKVzM1TGFXSnBqb0VpMGxvRHJSMGJpb2J2VHFyZ3NGNU5GRG44
-eVVqcTcNCklheXFzWnU5Q1BCaVExN2RQN0U4QVRSd3Erc09xNDNnb2VjUnRlbE9YZzY0bXJMRVM2
-ZlAwOWM4UlNHRDdjNlUNCmVYRlhUSWdUMFZPMElQOXNpRWUxazlBdzdUZDVTbk45aGQ2cnJUQ0F4
-RXlCNkU0OGY4TkIwUUJWRUxIMlNxZm4NClVqREl6TTVUQVZPdGpFQU8rTlFTTVZWWDVwUUx0Nkpa
-dnA5V0s0QkFrSy93U1IyL1MyanZRVkhlc1lXYll0K0kNCjhlanczNGhDYStsWitaMVJjYk54DQo9
-bFlqVw0KLS0tLS1FTkQgUEdQIFNJR05BVFVSRS0tLS0tDQo=
+On 29 September 2014 16:59, Prarit Bhargava <prarit@redhat.com> wrote:
 
+> This is exactly the same issue I mentioned a few weeks ago and traced back to
+> 955ef4833574636819cd269cfbae12f79cbde63a which drops the lock around the
+> CPUFREQ_GOV_POLICY_EXIT __cpufreq_governor() call.
+>
+> Just my two cents -- I don't think that adding a new lock/locking scheme is the
+> way to fix this.
 
+Me and Robert are just inches away from fixing it. Just that the
+remote testing by
+Robert and patches from me aren't working well together.. I need to do
+this myself
+and have a board to reproduce it now.. But would take some time to get going...
+
+And yes, I am also against another lock here :)
