@@ -1,69 +1,85 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH] cpufreq: dt: fix potential double put of cpu OF node
-Date: Mon, 29 Sep 2014 10:28:33 +0200
-Message-ID: <1411979313.2625.3.camel@pengutronix.de>
-References: <1411738426-18375-1-git-send-email-l.stach@pengutronix.de>
-	 <1703114.zkNSWdhuh9@vostro.rjw.lan>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v6 4/4] thermal: Add Tegra SOCTHERM thermal management
+ driver
+Date: Mon, 29 Sep 2014 10:29:05 +0200
+Message-ID: <20140929082904.GF12506@ulmo>
+References: <1411724593-4037-1-git-send-email-cyndis@kapsi.fi>
+ <1411724593-4037-5-git-send-email-cyndis@kapsi.fi>
+ <20140926114533.GN31106@ulmo>
+ <5425CC6F.2020309@kapsi.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:38977 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751176AbaI2I2g (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 04:28:36 -0400
-In-Reply-To: <1703114.zkNSWdhuh9@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="cyV/sMl4KAhiehtf"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <5425CC6F.2020309-/1wQRMveznE@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+Cc: Mikko Perttunen <cyndis-/1wQRMveznE@public.gmane.org>, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, juha-matti.tilli-X3B1VOXEql0@public.gmane.org, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-Am Samstag, den 27.09.2014, 00:14 +0200 schrieb Rafael J. Wysocki:
-> On Friday, September 26, 2014 03:33:46 PM Lucas Stach wrote:
-> > If cpufreq_generic_init() fails we jump into the resource
-> > cleanup path which contains a of_node_put() call. Another
-> > instance of this has already been called at that time
-> > resulting a double decrement of the refcount.
-> > 
-> > Fix this by calling of_node_put() only after we are sure
-> > that nothing has gone wrong.
-> > 
-> > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-> 
-> -stable material?
-> 
-The relevant code that exposed this bug was only merged in 3.17, so this
-patch is only -stable if it goes in after 3.17 final.
 
-> > ---
-> >  drivers/cpufreq/cpufreq-dt.c | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> > index e00265066a75..6bbb8b913446 100644
-> > --- a/drivers/cpufreq/cpufreq-dt.c
-> > +++ b/drivers/cpufreq/cpufreq-dt.c
-> > @@ -259,7 +259,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
-> >  		else
-> >  			priv->cdev = cdev;
-> >  	}
-> > -	of_node_put(np);
-> >  
-> >  	priv->cpu_dev = cpu_dev;
-> >  	priv->cpu_reg = cpu_reg;
-> > @@ -270,6 +269,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
-> >  	if (ret)
-> >  		goto out_cooling_unregister;
-> >  
-> > +	of_node_put(np);
-> > +
-> >  	return 0;
-> >  
-> >  out_cooling_unregister:
-> > 
-> 
+--cyV/sMl4KAhiehtf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
+On Fri, Sep 26, 2014 at 11:28:31PM +0300, Mikko Perttunen wrote:
+> On 09/26/2014 02:45 PM, Thierry Reding wrote:
+[...]
+> > I think a more idiomatic way to write this would be:
+> >
+> > static int
+> > calculate_tsensor_calibration(const struct tegra_tsensor *sensor,
+> > 			      struct tsensor_shared_calibration shared,
+> > 			      u32 *calib)
+>=20
+> If I do that, it will go over the 80 character limit by quite a few
+> characters, which is why I didn't use that style. Personally I'm fine with
+> either style.
 
+The above doesn't exceed the 80 character limit. Putting the return
+value and the static keyword on a separate line is a pretty common way
+to reduce line length.
+
+> >
+> >While at it, perhaps make shared a const * instead of passing it in by
+> >value?
+>=20
+> That is possible, but I'm not sure what the difference would be. Is there=
+ a
+> style rule forbidding by-value compound types? (Also if I change the styl=
+e,
+> it would go over 80 characters by even more.)
+
+No it doesn't. The below fits within 80 characters per line just fine:
+
+static int
+calculate_tsensor_calibration(const struct tegra_tsensor *sensor,
+			      const struct tsensor_shared_calibration *shared,
+			      u32 *calib)
+
+Thierry
+
+--cyV/sMl4KAhiehtf
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJUKRhQAAoJEN0jrNd/PrOhLQ0P/iG7NEpJ0qlOMQD8oZX2hwsK
+hvMMFsS8d1ZdPVAKFDMUiur00lDLC3i9b/3WzotWNSWW4qtBWso4VI6wVygvtWIz
+KtLfoJPhBEn681p9kRzUnU1J2gG3hh0AYoFbp5mAsguuYVDMWVcOwNihfngrAxie
+H2ERRquXgJXngoD38DXhH0LftX6XkCK/irmc464/WKibRz7ZFhj835uSjxvMBhLZ
+3W//C41ABuQubyP29xg1qhvZ+g0EyHhAYkLi8JWXSKy7dwY2QoHJP75lYshMoNJt
+wzWVO4t8XMLmXKU8+5+w/s2IYb46JKrBHFOORncBM22QqGQ7EgSGkH2Ibq2pNRNc
+6twGAnQbFVQEi+KgM9GlZZa38T2EPIRB+7peRrDu7KBnmYIwbw4aunyA5Ilav9zd
+2C4eZp4TxK8wIqbKI1KN67crpza3rhlT+8jS9RFKPwURvFI6rL+okhzr1YEKz18D
+F3NYC4qhCykka/tZZjHcEwGE9H8XFLBwV6y7MpnAcP9wK0gq0T1axZsxREAWyADn
+YGwthpHGgNUa8GMu2fwI6JNybkP4K0mHlJqOya709xSuh3k39AFjB9gvnyQkMqPX
+m77qHFjiui31y7A82X30bZbZGGaJMLFYu6roXROd3bICLTBmzjF7telxCXDQQ4aC
+p79iiuJu9OkPIeNLu32a
+=J8Bb
+-----END PGP SIGNATURE-----
+
+--cyV/sMl4KAhiehtf--
