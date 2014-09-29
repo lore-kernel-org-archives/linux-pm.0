@@ -1,77 +1,163 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v7 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
-Date: Mon, 29 Sep 2014 18:22:28 +0100
-Message-ID: <20140929172228.GA5929@e102568-lin.cambridge.arm.com>
-References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
- <1411779495-39724-6-git-send-email-lina.iyer@linaro.org>
- <20140929153154.GF2165@e102568-lin.cambridge.arm.com>
- <20140929161625.GD1170@ilina-mac.local>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v1 2/4] ARM: keystone: pm: switch to use generic pm domains
+Date: Mon, 29 Sep 2014 22:30:49 +0200
+Message-ID: <CAMuHMdVhu4-ZOK3QHQTzCViRvvoQ7H-pZLe4GkwGkzBBfJ8ayw@mail.gmail.com>
+References: <1412001499-19369-1-git-send-email-grygorii.strashko@ti.com>
+	<1412001499-19369-3-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20140929161625.GD1170@ilina-mac.local>
-Content-Disposition: inline
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f175.google.com ([209.85.217.175]:56959 "EHLO
+	mail-lb0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750970AbaI2Uav (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 16:30:51 -0400
+In-Reply-To: <1412001499-19369-3-git-send-email-grygorii.strashko@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On Mon, Sep 29, 2014 at 05:16:25PM +0100, Lina Iyer wrote:
+Hi Grygorii,
 
-[...]
+On Mon, Sep 29, 2014 at 4:38 PM, Grygorii Strashko
+<grygorii.strashko@ti.com> wrote:
+> This patch switches Keystone 2 PM code to use Generic PM domains
+> instead of PM clock domains because of the lack of DT support
+> for the last.
 
-> >> +processors when execute the wfi instruction will gate their internal clocks.
-> >> +QCOM cpus use this instruction as a trigger for the SPM state machine. Usually
-> >> +with a cpu entering WFI, the SPM is configured to do clock-gating as well. The
-> >> +SPM state machine waits for the interrrupt to trigger the core back in to
-> >
-> >s/interrrupt/interrupt/
-> >
-> >> +active. When all CPUs in the SoC, clock gate using the ARM wfi instruction, the
-> >> +second level cache usually can also clock gate sensing no cpu activity. When a
-> >> +cpu is ready to run, it needs the cache to be active before starting execution.
-> >> +Allowing the SPM to execute the clock gating statemachine and waiting for
-> >
-> >s/statemachine/state machine/
-> >
-> >You are defining a generic binding for Qualcomm idle states, so it should
-> >not be tied to a specific cache level (ie L2 gating), otherwise if the
-> >same state shows up in a future system with L3 you are back to square
-> >one.
-> >
-> >"Platform WFI" or something like that ? You got what I mean.
-> >
-> I am not, I am just explaining the difference between Architectural and
-> Platform WFI and how the WFI on the core, can help L2 enter shallower
-> idle states, which is true for L3 as well (provided there is enough time
-> and we are not allowed to do power down states).
+Thanks, this looks interesting, as today I've been digging deeper into the
+!CONFIG_PM_RUNTIME case for my patch series, and ended up with something
+similar...
 
-I wanted to say that instead of referring to L2 you can refer to the
-computing system as a whole, it is a computing subsystem clock gating.
+> --- a/arch/arm/mach-keystone/pm_domain.c
+> +++ b/arch/arm/mach-keystone/pm_domain.c
+> @@ -12,69 +12,110 @@
+>   * version 2, as published by the Free Software Foundation.
+>   */
+>
+> +#include <linux/clk.h>
+>  #include <linux/init.h>
+> -#include <linux/pm_runtime.h>
+>  #include <linux/pm_clock.h>
+> +#include <linux/pm_domain.h>
+>  #include <linux/platform_device.h>
+> -#include <linux/clk-provider.h>
+>  #include <linux/of.h>
+>
+> -#ifdef CONFIG_PM_RUNTIME
+> -static int keystone_pm_runtime_suspend(struct device *dev)
+> +#ifdef CONFIG_PM_GENERIC_DOMAINS
+> +
+> +struct keystone_domain {
+> +       struct generic_pm_domain base;
+> +       struct device   *dev;
+> +};
+> +
+> +void keystone_pm_domain_attach_dev(struct device *dev)
+>  {
+> +       struct clk *clk;
+>         int ret;
+> +       int i = 0;
+>
+>         dev_dbg(dev, "%s\n", __func__);
+>
+> -       ret = pm_generic_runtime_suspend(dev);
+> -       if (ret)
+> -               return ret;
+> -
+> -       ret = pm_clk_suspend(dev);
+> +       ret = pm_clk_create(dev);
+>         if (ret) {
+> -               pm_generic_runtime_resume(dev);
+> -               return ret;
+> +               dev_err(dev, "pm_clk_create failed %d\n", ret);
+> +               return;
+> +       };
+> +
+> +       while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
+> +               ret = pm_clk_add_clk(dev, clk);
 
-Instead of referring to L2, refer to cache hierarchy, generically.
+This is an important difference compared to the non-DT pm_clk_notify()
+version for !CONFIG_PM_RUNTIME.
 
-It is just a nitpick to make your life easier in the future.
+You do call pm_clk_create() and pm_clk_add_clk(), while
+pm_clk_notify() doesn't. Hence for the latter, the clocklist is always empty.
 
-[...]
+> +               if (ret) {
+> +                       dev_err(dev, "pm_clk_add_clk failed %d\n", ret);
+> +                       goto clk_err;
+> +               };
+>         }
+>
+> -       return 0;
+> +       if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
+> +               ret = pm_clk_resume(dev);
 
-> >> +static int qcom_cpuidle_probe(struct platform_device *pdev)
-> >> +{
-> >> +	struct cpuidle_driver *drv = &qcom_cpuidle_driver;
-> >> +	int ret;
-> >> +
-> >> +	qcom_idle_enter = (void *)(pdev->dev.platform_data);
-> >
-> >Casting a void* to a void* does not seem that useful to me, and that's valid
-> >for other CPUidle drivers too, the cast can be removed unless you explain
-> >to me what it is for.
-> >
-> Sure, I dont need it. 
-> 
-> Thanks for your time, Lorenzo.
+As a consequence of the above, calling pm_clk_resume() here just works,
+and there's no need for the separate enable_clock()/disable_clock()
+functions, like in drivers/base/power/clock_ops.c.
 
-You are welcome, thanks for you patience in converting the driver to the
-new DT API.
+> +               if (ret) {
+> +                       dev_err(dev, "pm_clk_resume failed %d\n", ret);
+> +                       goto clk_err;
+> +               };
+> +       }
+> +       return;
+> +
+> +clk_err:
+> +       pm_clk_destroy(dev);
+>  }
+>
+> -static int keystone_pm_runtime_resume(struct device *dev)
+> +void keystone_pm_domain_detach_dev(struct device *dev)
+>  {
+>         dev_dbg(dev, "%s\n", __func__);
+> -
+> -       pm_clk_resume(dev);
+> -
+> -       return pm_generic_runtime_resume(dev);
+> +       pm_clk_destroy(dev);
+>  }
+> -#endif
+>
+> -static struct dev_pm_domain keystone_pm_domain = {
+> -       .ops = {
+> -               SET_RUNTIME_PM_OPS(keystone_pm_runtime_suspend,
+> -                                  keystone_pm_runtime_resume, NULL)
+> -               USE_PLATFORM_PM_SLEEP_OPS
+> +static const struct keystone_domain keystone_domain = {
+> +       .base = {
+> +               .name = "keystone",
+> +               .attach_dev = keystone_pm_domain_attach_dev,
+> +               .detach_dev = keystone_pm_domain_detach_dev,
+> +               .dev_ops = {
+> +                       .stop = pm_clk_suspend,
+> +                       .start = pm_clk_resume,
 
-Lorenzo
+Same here: the clocks will be disabled/enabled on system suspend/resume,
+which is not the case for the non-DT case.
+
+Rafael: shouldn't pm_clk_notify() in drivers/base/power/clock_ops.c
+behave the same as above?
+Or is there a good reason the non-PM runtime version doesn't call pm_clk_add()?
+
+Then the two versions (CONFIG_PM_RUNTIME enabled vs. disabled) can become
+more similar, and perhaps be merged.
+
+> +               },
+> +               .power_off_latency_ns = 25000,
+> +               .power_on_latency_ns = 2000000,
+>         },
+>  };
+
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
