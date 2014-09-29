@@ -1,116 +1,54 @@
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
-Date: Mon, 29 Sep 2014 15:53:06 +0530
-Message-ID: <5429330A.7000103@linux.vnet.ibm.com>
-References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com> <541A4D4F.1090307@linux.vnet.ibm.com>
+From: Pramod Gurav <pramod.gurav@smartplayin.com>
+Subject: Re: [PATCH v7 1/7] qcom: spm: Add Subsystem Power Manager driver
+Date: Mon, 29 Sep 2014 15:59:18 +0530
+Message-ID: <5429347E.1000004@smartplayin.com>
+References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org> <1411779495-39724-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:52019 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751688AbaI2KX2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 06:23:28 -0400
-Received: from /spool/local
-	by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Mon, 29 Sep 2014 20:23:26 +1000
-In-Reply-To: <541A4D4F.1090307@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1411779495-39724-2-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa@MIT.EDU>, "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-Hi,
-Any updates on this patch series?
+Hi Lina,
 
-On Thursday 18 September 2014 08:41 AM, Shreyas B Prabhu wrote:
-> Hi,
-> 
-> In this patch series we use winkle for offlined cores. I successfully
-> tested the working of this with subcore functionality.
-> 
-> Test scenario was as follows:
-> 1. Set SMT mode to 1, Set subores-per-core to 1
-> 2. Offline a core, in this case cpu 32 (sending it to winkle)
-> 3. Set subcores-per-core to 4
-> 4. Online the core
-> 5. Start a guest (Topology 1 core 2 threads) on a subcore, in this case
-> on cpu 36
-> 
-> This works without any glitch.
-> 
-> Thanks,
-> Shreyas
-> 
-> On Monday 25 August 2014 11:31 PM, Shreyas B. Prabhu wrote:
->> Fast sleep is an idle state, where the core and the L1 and L2
->> caches are brought down to a threshold voltage. This also means that
->> the communication between L2 and L3 caches have to be fenced. However
->> the current P8 chips have a bug wherein this fencing between L2 and
->> L3 caches get delayed by a cpu cycle. This can delay L3 response to
->> the other cpus if they request for data during this time. Thus they
->> would fetch the same data from the memory which could lead to data
->> corruption if L3 cache is not flushed.
->> Patch 4 adds support to work around this.
->>
->> 'Deep Winkle' is a deeper idle state where core and private L2 are powered
->> off. While it offers higher power savings, it is at the cost of losing
->> hypervisor register state and higher latency.
->> Patch 5-9 adds support for winkle and uses it for offline cpus.
->>
->> Patch 1 - Moves parameters required discover idle states to a location 
->> common to both cpuidle driver and powernv core code
->> Patch 2 - Populates idle state details from device tree
->> Patch 3 - Enables cpus to run guest after waking up from fastsleep/winkle
->>
->>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
->> Cc: Srivatsa S. Bhat <srivatsa@MIT.EDU>
->> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
->> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
->> Cc: Rob Herring <robh+dt@kernel.org>
->> Cc: Grant Likely <grant.likely@linaro.org>
->> Cc: devicetree@vger.kernel.org
->> Cc: linux-pm@vger.kernel.org
->> Cc: linuxppc-dev@lists.ozlabs.org
->>
->> Preeti U Murthy (2):
->>   cpuidle/powernv: Populate cpuidle state details by querying the
->>     device-tree
->>   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
->>
->> Shreyas B. Prabhu (6):
->>   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
->>     fast-sleep
->>   powerpc/powernv: Add OPAL call to save and restore
->>   powerpc: Adding macro for accessing Thread Switch Control Register
->>   powerpc/powernv: Add winkle infrastructure
->>   powerpc/powernv: Discover and enable winkle
->>   powerpc/powernv: Enter deepest supported idle state in offline
->>
->> Srivatsa S. Bhat (1):
->>   powerpc/powernv: Enable Offline CPUs to enter deep idle states
->>
->>  arch/powerpc/include/asm/machdep.h             |   4 +
->>  arch/powerpc/include/asm/opal.h                |  10 ++
->>  arch/powerpc/include/asm/paca.h                |   3 +
->>  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
->>  arch/powerpc/include/asm/processor.h           |   6 +-
->>  arch/powerpc/include/asm/reg.h                 |   1 +
->>  arch/powerpc/kernel/asm-offsets.c              |   1 +
->>  arch/powerpc/kernel/exceptions-64s.S           |  37 ++---
->>  arch/powerpc/kernel/idle.c                     |  30 ++++
->>  arch/powerpc/kernel/idle_power7.S              |  83 +++++++++-
->>  arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
->>  arch/powerpc/platforms/powernv/powernv.h       |   8 +
->>  arch/powerpc/platforms/powernv/setup.c         | 217 +++++++++++++++++++++++++
->>  arch/powerpc/platforms/powernv/smp.c           |  13 +-
->>  arch/powerpc/platforms/powernv/subcore.c       |  15 ++
->>  drivers/cpuidle/cpuidle-powernv.c              |  40 ++++-
->>  16 files changed, 439 insertions(+), 33 deletions(-)
->>
+After enabling CONFIG_DEBUG_SECTION_MISMATCH I see few section mismatch
+warnings like:
 
+WARNING: drivers/soc/qcom/built-in.o(.text+0x2f0): Section mismatch in
+reference from the function spm_dev_probe() to the (unknown reference)
+.init.rodata:(unknown)
+The function spm_dev_probe() references
+the (unknown reference) __initconst (unknown).
+This is often because spm_dev_probe lacks a __initconst
+annotation or the annotation of (unknown) is wrong.
+
+On Saturday 27 September 2014 06:28 AM, Lina Iyer wrote:
+> Based on work by many authors, available at codeaurora.org
+> 
+> SPM is a hardware block that controls the peripheral logic surrounding
+> the application cores (cpu/l$). When the core executes WFI instruction,
+> the SPM takes over the putting the core in low power state as
+> configured. The wake up for the SPM is an interrupt at the GIC, which
+
+..
+
+> +
+> +static const struct of_device_id spm_match_table[] __initconst = {
+Removing __initconst fixes the warning.
+
+> +	{ .compatible = "qcom,msm8974-saw2-v2.1-cpu",
+> +	  .data = &spm_reg_8974_8084_cpu },
+> +	{ .compatible = "qcom,apq8084-saw2-v2.1-cpu",
+> +	  .data = &spm_reg_8974_8084_cpu },
+> +	{ },
+> +};
+> +
+> +static int spm_dev_probe(struct platform_device *pdev)
+> +{
+
+Thanks
+Pramod
