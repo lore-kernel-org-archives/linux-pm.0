@@ -1,37 +1,29 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/4] cpufreq: allow driver-specific flags
-Date: Mon, 29 Sep 2014 01:54:51 -0700
-Message-ID: <CAKohpo=8ernJ=bMJKB5K90nsvy4UpJH67dOnFCi80uyRR3EDvw@mail.gmail.com>
-References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
-	<1410342112-13264-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<1410342112-13264-2-git-send-email-thomas.petazzoni@free-electrons.com>
-	<CAKohpom4=nbg510bUb20C6rsG8r184YQ0SiPmPkxj8_8Y04+Bg@mail.gmail.com>
-	<20140927224434.19023.35708@quantum>
+Subject: Re: [LKP] Unable to change cpufreq governor
+Date: Mon, 29 Sep 2014 02:03:18 -0700
+Message-ID: <CAKohpomdDx6gePLzODGZ7zaQMFxg9Yr=WykOQsQiNTac8bkEVw@mail.gmail.com>
+References: <5412832E.7000406@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20140927224434.19023.35708@quantum>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Mike Turquette <mike.turquette@linaro.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f50.google.com ([209.85.216.50]:57866 "EHLO
+	mail-qa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750970AbaI2JDT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 05:03:19 -0400
+Received: by mail-qa0-f50.google.com with SMTP id x12so585732qac.37
+        for <linux-pm@vger.kernel.org>; Mon, 29 Sep 2014 02:03:19 -0700 (PDT)
+In-Reply-To: <5412832E.7000406@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, LKP <lkp@01.org>, Fengguang Wu <fengguang.wu@intel.com>
 
-On 27 September 2014 15:44, Mike Turquette <mike.turquette@linaro.org> wrote:
-> I have another use case for exposing driver flags and I have created a
-> similar patch to this locally in my git tree.
+On 11 September 2014 22:22, Aaron Lu <aaron.lu@intel.com> wrote:
+> Hi Viresh,
 >
-> Basically some cpufreq drivers may block or sleep during their
-> .set_target callback, and others will not. E.g. the former case is the
-> common pattern to use the clock framework and the regulator framework,
-> both of which hold mutexes and may have slow operations and the latter
-> case is more like the Intel P-state driver with just some register
-> writes.
->
-> For the energy-aware scheduling work it is desirable to know if the
-> cpufreq driver can do a "fast" transition of it might sleep, since that
-> affects whether we adjust the cpu frequency from the scheduler context
-> of whether need to put new work on the workqueue (e.g. waking up a
-> kthread dedicated to calling .set_target).
+> The script used in LKP to change cpufreq governor triggered a lot of
+> errors on different test boxes with your branch:
+> https://git.linaro.org/people/vireshk/linux cpufreq/governor-fixes
 
-I wasn't against exposing the flags but using the same variable to store
-driver specific data.
+Oh, that was just an testing branch. Anyway will see if that is going
+to be pushed to mainline.
