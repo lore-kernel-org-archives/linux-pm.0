@@ -1,37 +1,69 @@
-From: Peter De Schrijver <pdeschrijver@nvidia.com>
-Subject: Re: [PATCH v6 4/4] thermal: Add Tegra SOCTHERM thermal management
- driver
-Date: Mon, 29 Sep 2014 11:14:03 +0300
-Message-ID: <20140929081403.GF25537@tbergstrom-lnx.Nvidia.com>
-References: <1411724593-4037-1-git-send-email-cyndis@kapsi.fi>
- <1411724593-4037-5-git-send-email-cyndis@kapsi.fi>
- <20140926114533.GN31106@ulmo> <5425CC6F.2020309@kapsi.fi>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/1] Cpufreq: Keep cpufreq sysfs nodes across S2RAM/S2DISK
+ when using intel_pstate driver.
+Date: Mon, 29 Sep 2014 01:20:44 -0700
+Message-ID: <CAKohpokht4=7XCftPYa5PqpPMN-O-5b_RjJ3BgHnxjYV4VzyTg@mail.gmail.com>
+References: <1411023787-11458-1-git-send-email-tianyu.lan@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:7567 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751037AbaI2IOH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 04:14:07 -0400
-Content-Disposition: inline
-In-Reply-To: <5425CC6F.2020309@kapsi.fi>
+Received: from mail-qc0-f169.google.com ([209.85.216.169]:36014 "EHLO
+	mail-qc0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330AbaI2IUp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 04:20:45 -0400
+Received: by mail-qc0-f169.google.com with SMTP id r5so8313989qcx.14
+        for <linux-pm@vger.kernel.org>; Mon, 29 Sep 2014 01:20:44 -0700 (PDT)
+In-Reply-To: <1411023787-11458-1-git-send-email-tianyu.lan@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Mikko Perttunen <cyndis@kapsi.fi>, edubezval@gmail.com, swarren@wwwdotorg.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, juha-matti.tilli@iki.fi, Mikko Perttunen <mperttunen@nvidia.com>
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-> >
-> >>+struct tegra_tsensor_configuration {
-> >>+	u32 tall, tsample, tiddq_en, ten_count;
-> >>+	u32 pdiv, tsample_ate, pdiv_ate;
-> >
-> >What's the significance of the "ate" suffix?
-> 
-> Again, no idea.
+Sorry for being late on this. Was away for a week for Linaro Connect followed
+by a week of vacations :(
 
-I presume it's Automated Test Equipment refering to the device to test silicon
-coming back from the fab.
+On 18 September 2014 00:03, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> Cpufreq core introduces cpufreq_suspended flag to let cpufreq sysfs nodes
+> across S2RAM/S2DISK. But the flag is only set in the cpufreq_suspend()
+> for cpufreq drivers which have target or target_index callback. This
+> skips intel_pstate driver. This patch is to set the flag before checking
+> target or target_index callback.
 
-Cheers,
+Oh yes, this looks to be the right thing to do..
 
-Peter.
+> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index d9fdedd..eb9bb78 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1656,6 +1656,8 @@ void cpufreq_suspend(void)
+>         if (!cpufreq_driver)
+>                 return;
+>
+> +       cpufreq_suspended = true;
+> +
+>         if (!has_target())
+>                 return;
+>
+> @@ -1670,8 +1672,6 @@ void cpufreq_suspend(void)
+>                         pr_err("%s: Failed to suspend driver: %p\n", __func__,
+>                                 policy);
+>         }
+> -
+> -       cpufreq_suspended = true;
+
+But this change is buggy.. Because you are updating 'cpufreq_suspended'
+before actually stopping the governor, any calls to __cpufreq_governor()
+will be converted to NO-operations because of this in __cpufreq_governor():
+
+/* Don't start any governor operations if we are entering suspend */
+if (cpufreq_suspended)
+    return 0;
+
+And so the governor's will never stop :(
+
+So you need to keep the above line where it was :)
