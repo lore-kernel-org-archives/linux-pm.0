@@ -1,85 +1,69 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v6 4/4] thermal: Add Tegra SOCTHERM thermal management
- driver
-Date: Mon, 29 Sep 2014 10:29:05 +0200
-Message-ID: <20140929082904.GF12506@ulmo>
-References: <1411724593-4037-1-git-send-email-cyndis@kapsi.fi>
- <1411724593-4037-5-git-send-email-cyndis@kapsi.fi>
- <20140926114533.GN31106@ulmo>
- <5425CC6F.2020309@kapsi.fi>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH v2 6/6] ARM: imx53: add cpufreq support
+Date: Mon, 29 Sep 2014 10:33:48 +0200
+Message-ID: <1411979628.2625.5.camel@pengutronix.de>
+References: <1411738864-26549-1-git-send-email-l.stach@pengutronix.de>
+	 <1411738864-26549-6-git-send-email-l.stach@pengutronix.de>
+	 <20140928041513.GI12999@dragon>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cyV/sMl4KAhiehtf"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <5425CC6F.2020309-/1wQRMveznE@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
-Cc: Mikko Perttunen <cyndis-/1wQRMveznE@public.gmane.org>, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, juha-matti.tilli-X3B1VOXEql0@public.gmane.org, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:35957 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750936AbaI2Idz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 04:33:55 -0400
+In-Reply-To: <20140928041513.GI12999@dragon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shawn Guo <shawn.guo@freescale.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
 
+Am Sonntag, den 28.09.2014, 12:15 +0800 schrieb Shawn Guo:
+> On Fri, Sep 26, 2014 at 03:41:04PM +0200, Lucas Stach wrote:
+> > Instanciate device for the generic cpufreq-dt driver.
+> > 
+> > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> 
+> I assume that I should only apply this patch after the cpufreq-dt change
+> gets merged and shows up on my base.
+> 
+> Shawn
+> 
+I would think its safe to merge this patch. The cpufreq-dt change will
+be merged with 3.18. Until then the worst that could happen is that the
+cpufreq driver doesn't bind to the mx5 cpu device.
 
---cyV/sMl4KAhiehtf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> > ---
+> > v2:
+> > - new patch, split out from DTS changes and rebased
+> >   with new name for cpufreq driver
+> > ---
+> >  arch/arm/mach-imx/mach-imx53.c | 2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > diff --git a/arch/arm/mach-imx/mach-imx53.c b/arch/arm/mach-imx/mach-imx53.c
+> > index 03dd6ea13acc..7587cf0cba3e 100644
+> > --- a/arch/arm/mach-imx/mach-imx53.c
+> > +++ b/arch/arm/mach-imx/mach-imx53.c
+> > @@ -41,6 +41,8 @@ static void __init imx53_dt_init(void)
+> >  static void __init imx53_init_late(void)
+> >  {
+> >  	imx53_pm_init();
+> > +
+> > +	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+> >  }
+> >  
+> >  static const char * const imx53_dt_board_compat[] __initconst = {
+> > -- 
+> > 2.1.0
+> > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-On Fri, Sep 26, 2014 at 11:28:31PM +0300, Mikko Perttunen wrote:
-> On 09/26/2014 02:45 PM, Thierry Reding wrote:
-[...]
-> > I think a more idiomatic way to write this would be:
-> >
-> > static int
-> > calculate_tsensor_calibration(const struct tegra_tsensor *sensor,
-> > 			      struct tsensor_shared_calibration shared,
-> > 			      u32 *calib)
->=20
-> If I do that, it will go over the 80 character limit by quite a few
-> characters, which is why I didn't use that style. Personally I'm fine with
-> either style.
+-- 
+Pengutronix e.K.             | Lucas Stach                 |
+Industrial Linux Solutions   | http://www.pengutronix.de/  |
 
-The above doesn't exceed the 80 character limit. Putting the return
-value and the static keyword on a separate line is a pretty common way
-to reduce line length.
-
-> >
-> >While at it, perhaps make shared a const * instead of passing it in by
-> >value?
->=20
-> That is possible, but I'm not sure what the difference would be. Is there=
- a
-> style rule forbidding by-value compound types? (Also if I change the styl=
-e,
-> it would go over 80 characters by even more.)
-
-No it doesn't. The below fits within 80 characters per line just fine:
-
-static int
-calculate_tsensor_calibration(const struct tegra_tsensor *sensor,
-			      const struct tsensor_shared_calibration *shared,
-			      u32 *calib)
-
-Thierry
-
---cyV/sMl4KAhiehtf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBAgAGBQJUKRhQAAoJEN0jrNd/PrOhLQ0P/iG7NEpJ0qlOMQD8oZX2hwsK
-hvMMFsS8d1ZdPVAKFDMUiur00lDLC3i9b/3WzotWNSWW4qtBWso4VI6wVygvtWIz
-KtLfoJPhBEn681p9kRzUnU1J2gG3hh0AYoFbp5mAsguuYVDMWVcOwNihfngrAxie
-H2ERRquXgJXngoD38DXhH0LftX6XkCK/irmc464/WKibRz7ZFhj835uSjxvMBhLZ
-3W//C41ABuQubyP29xg1qhvZ+g0EyHhAYkLi8JWXSKy7dwY2QoHJP75lYshMoNJt
-wzWVO4t8XMLmXKU8+5+w/s2IYb46JKrBHFOORncBM22QqGQ7EgSGkH2Ibq2pNRNc
-6twGAnQbFVQEi+KgM9GlZZa38T2EPIRB+7peRrDu7KBnmYIwbw4aunyA5Ilav9zd
-2C4eZp4TxK8wIqbKI1KN67crpza3rhlT+8jS9RFKPwURvFI6rL+okhzr1YEKz18D
-F3NYC4qhCykka/tZZjHcEwGE9H8XFLBwV6y7MpnAcP9wK0gq0T1axZsxREAWyADn
-YGwthpHGgNUa8GMu2fwI6JNybkP4K0mHlJqOya709xSuh3k39AFjB9gvnyQkMqPX
-m77qHFjiui31y7A82X30bZbZGGaJMLFYu6roXROd3bICLTBmzjF7telxCXDQQ4aC
-p79iiuJu9OkPIeNLu32a
-=J8Bb
------END PGP SIGNATURE-----
-
---cyV/sMl4KAhiehtf--
