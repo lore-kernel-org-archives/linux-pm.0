@@ -1,69 +1,96 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH v2 6/6] ARM: imx53: add cpufreq support
-Date: Mon, 29 Sep 2014 10:33:48 +0200
-Message-ID: <1411979628.2625.5.camel@pengutronix.de>
-References: <1411738864-26549-1-git-send-email-l.stach@pengutronix.de>
-	 <1411738864-26549-6-git-send-email-l.stach@pengutronix.de>
-	 <20140928041513.GI12999@dragon>
+From: Anders Berg <anders.berg@avagotech.com>
+Subject: Re: [PATCH 07/10] power/reset: axxia: Register with kernel restart handler
+Date: Mon, 29 Sep 2014 10:40:22 +0200
+Message-ID: <CAE0=X_3f2ZXpJ6yLJbzhz5yKTAEuh_-Ncq3+P0FTP4rxzwaapw@mail.gmail.com>
+References: <1411779438-23127-1-git-send-email-linux@roeck-us.net>
+	<1411779438-23127-8-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:35957 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750936AbaI2Idz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 04:33:55 -0400
-In-Reply-To: <20140928041513.GI12999@dragon>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1411779438-23127-8-git-send-email-linux@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Anders Berg <anders.berg@lsi.com>
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawn.guo@freescale.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
 
-Am Sonntag, den 28.09.2014, 12:15 +0800 schrieb Shawn Guo:
-> On Fri, Sep 26, 2014 at 03:41:04PM +0200, Lucas Stach wrote:
-> > Instanciate device for the generic cpufreq-dt driver.
-> > 
-> > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-> 
-> I assume that I should only apply this patch after the cpufreq-dt change
-> gets merged and shows up on my base.
-> 
-> Shawn
-> 
-I would think its safe to merge this patch. The cpufreq-dt change will
-be merged with 3.18. Until then the worst that could happen is that the
-cpufreq driver doesn't bind to the mx5 cpu device.
+On Sat, Sep 27, 2014 at 2:57 AM, Guenter Roeck <linux@roeck-us.net> wrote:
+> Register with kernel restart handler instead of setting arm_pm_restart
+> directly.
+>
+> Cc: Anders Berg <anders.berg@lsi.com>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> ---
+>  drivers/power/reset/axxia-reset.c | 19 ++++++++++++++-----
+>  1 file changed, 14 insertions(+), 5 deletions(-)
+>
 
-> > ---
-> > v2:
-> > - new patch, split out from DTS changes and rebased
-> >   with new name for cpufreq driver
-> > ---
-> >  arch/arm/mach-imx/mach-imx53.c | 2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > diff --git a/arch/arm/mach-imx/mach-imx53.c b/arch/arm/mach-imx/mach-imx53.c
-> > index 03dd6ea13acc..7587cf0cba3e 100644
-> > --- a/arch/arm/mach-imx/mach-imx53.c
-> > +++ b/arch/arm/mach-imx/mach-imx53.c
-> > @@ -41,6 +41,8 @@ static void __init imx53_dt_init(void)
-> >  static void __init imx53_init_late(void)
-> >  {
-> >  	imx53_pm_init();
-> > +
-> > +	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
-> >  }
-> >  
-> >  static const char * const imx53_dt_board_compat[] __initconst = {
-> > -- 
-> > 2.1.0
-> > 
+Works fine.
+
+Tested-by: Anders Berg <anders.berg@avagotech.com>
+
+/Anders
+
+> diff --git a/drivers/power/reset/axxia-reset.c b/drivers/power/reset/axxia-reset.c
+> index 3b1f8d6..2a772d9 100644
+> --- a/drivers/power/reset/axxia-reset.c
+> +++ b/drivers/power/reset/axxia-reset.c
+> @@ -19,14 +19,12 @@
+>  #include <linux/kernel.h>
+>  #include <linux/mfd/syscon.h>
+>  #include <linux/module.h>
+> +#include <linux/notifier.h>
+>  #include <linux/of.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/reboot.h>
+>  #include <linux/regmap.h>
+>
+> -#include <asm/system_misc.h>
+> -
+> -
+>  #define SC_CRIT_WRITE_KEY      0x1000
+>  #define SC_LATCH_ON_RESET      0x1004
+>  #define SC_RESET_CONTROL       0x1008
+> @@ -39,7 +37,8 @@
+>
+>  static struct regmap *syscon;
+>
+> -static void do_axxia_restart(enum reboot_mode reboot_mode, const char *cmd)
+> +static int axxia_restart_handler(struct notifier_block *this,
+> +                                unsigned long mode, void *cmd)
+>  {
+>         /* Access Key (0xab) */
+>         regmap_write(syscon, SC_CRIT_WRITE_KEY, 0xab);
+> @@ -50,11 +49,19 @@ static void do_axxia_restart(enum reboot_mode reboot_mode, const char *cmd)
+>         /* Assert chip reset */
+>         regmap_update_bits(syscon, SC_RESET_CONTROL,
+>                            RSTCTL_RST_CHIP, RSTCTL_RST_CHIP);
+> +
+> +       return NOTIFY_DONE;
+>  }
+>
+> +static struct notifier_block axxia_restart_nb = {
+> +       .notifier_call = axxia_restart_handler,
+> +       .priority = 128,
+> +};
+> +
+>  static int axxia_reset_probe(struct platform_device *pdev)
+>  {
+>         struct device *dev = &pdev->dev;
+> +       int err;
+>
+>         syscon = syscon_regmap_lookup_by_phandle(dev->of_node, "syscon");
+>         if (IS_ERR(syscon)) {
+> @@ -62,7 +69,9 @@ static int axxia_reset_probe(struct platform_device *pdev)
+>                 return PTR_ERR(syscon);
+>         }
+>
+> -       arm_pm_restart = do_axxia_restart;
+> +       err = register_restart_handler(&axxia_restart_nb);
+> +       if (err)
+> +               dev_err(dev, "cannot register restart handler (err=%d)\n", err);
+>
+>         return 0;
+>  }
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
--- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
-
+> 1.9.1
+>
