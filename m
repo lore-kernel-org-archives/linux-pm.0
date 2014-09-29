@@ -1,27 +1,40 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Mon, 29 Sep 2014 02:50:48 -0700
-Message-ID: <CAKohponApVw0ssVjxSkYqRmmmGYTKtYzjLR41Oqtm-CZg-OsaQ@mail.gmail.com>
-References: <efa1d8ae3e7b227b73a951d6072fa211d3cfe593.1410235439.git.viresh.kumar@linaro.org>
-	<1478598.DgG2vI5Y04@vostro.rjw.lan>
+Subject: Re: [PATCHv3 3/4] ARM: exynos: Add exynos3250 compatible to use
+ generic cpufreq driver
+Date: Mon, 29 Sep 2014 02:58:25 -0700
+Message-ID: <CAKohpokXNEYZBqsKyJDMUCZA7BY_E0=G5eVmTx_cBKvAyoSi9w@mail.gmail.com>
+References: <1411628707-8496-1-git-send-email-cw00.choi@samsung.com>
+	<1411628707-8496-4-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f53.google.com ([209.85.192.53]:41906 "EHLO
-	mail-qg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750911AbaI2Jut (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 05:50:49 -0400
-Received: by mail-qg0-f53.google.com with SMTP id a108so427524qge.26
-        for <linux-pm@vger.kernel.org>; Mon, 29 Sep 2014 02:50:49 -0700 (PDT)
-In-Reply-To: <1478598.DgG2vI5Y04@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1411628707-8496-4-git-send-email-cw00.choi@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>, Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>
 
-On 24 September 2014 16:46, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> What's the current status of this series?
+On 25 September 2014 00:05, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> This patch add exynos3250 compatible string to exynos_cpufreq_matches
+> for supporting generic cpufreq driver on Exynos3250.
+>
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Cc: Tomasz Figa <tomasz.figa@gmail.com>
+> Cc: Thomas Abraham <thomas.ab@samsung.com>
+> ---
+>  arch/arm/mach-exynos/exynos.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+> index 8923d37..1318d69 100644
+> --- a/arch/arm/mach-exynos/exynos.c
+> +++ b/arch/arm/mach-exynos/exynos.c
+> @@ -285,6 +285,7 @@ static const struct of_device_id exynos_cpufreq_matches[] = {
+>         { .compatible = "samsung,exynos5420", .data = "arm-bL-cpufreq-dt" },
+>         { .compatible = "samsung,exynos5250", .data = "cpufreq-cpu0" },
+>         { .compatible = "samsung,exynos4210", .data = "cpufreq-cpu0" },
+> +       { .compatible = "samsung,exynos3250", .data = "cpufreq-cpu0" },
 
-Started working again after two weeks today only and so it might
-take some days for things to get stable at my end. Should be able
-to test things after that..
+cpufreq-cpu0 is renamed to cpufreq-dt now.
