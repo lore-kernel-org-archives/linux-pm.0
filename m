@@ -1,91 +1,80 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 08/10] power/reset: keystone: Register with kernel restart handler
-Date: Tue, 30 Sep 2014 10:48:34 -0700
-Message-ID: <1412099316-23167-9-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 09/10] power/reset: hisi: Register with kernel restart handler
+Date: Tue, 30 Sep 2014 10:48:35 -0700
+Message-ID: <1412099316-23167-10-git-send-email-linux@roeck-us.net>
 References: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Ivan Khoronzhuk <ivan.khoronzhuk@ti.com>
+Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Haojian Zhuang <haojian.zhuang@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 Register with kernel restart handler instead of setting arm_pm_restart directly.
 
-Move notifier registration to the end of the probe function to avoid having to
-implement error handling.
-
-Cc: Ivan Khoronzhuk <ivan.khoronzhuk@ti.com>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Tested-by: Ivan Khoronzhuk <ivan.khoronzhuk@ti.com>
+Cc: Haojian Zhuang <haojian.zhuang@linaro.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/power/reset/keystone-reset.c | 20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+ drivers/power/reset/hisi-reboot.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/reset/keystone-reset.c b/drivers/power/reset/keystone-reset.c
-index 408a18f..4b6b12e 100644
---- a/drivers/power/reset/keystone-reset.c
-+++ b/drivers/power/reset/keystone-reset.c
-@@ -12,9 +12,9 @@
- 
+diff --git a/drivers/power/reset/hisi-reboot.c b/drivers/power/reset/hisi-reboot.c
+index 0c91d02..5385460 100644
+--- a/drivers/power/reset/hisi-reboot.c
++++ b/drivers/power/reset/hisi-reboot.c
+@@ -14,27 +14,36 @@
+ #include <linux/delay.h>
  #include <linux/io.h>
  #include <linux/module.h>
 +#include <linux/notifier.h>
+ #include <linux/of_address.h>
+ #include <linux/platform_device.h>
  #include <linux/reboot.h>
- #include <linux/regmap.h>
+ 
+ #include <asm/proc-fns.h>
 -#include <asm/system_misc.h>
- #include <linux/mfd/syscon.h>
- #include <linux/of_platform.h>
  
-@@ -52,7 +52,8 @@ static inline int rsctrl_enable_rspll_write(void)
- 				  RSCTRL_KEY_MASK, RSCTRL_KEY);
- }
+ static void __iomem *base;
+ static u32 reboot_offset;
  
--static void rsctrl_restart(enum reboot_mode mode, const char *cmd)
-+static int rsctrl_restart_handler(struct notifier_block *this,
-+				  unsigned long mode, void *cmd)
+-static void hisi_restart(enum reboot_mode mode, const char *cmd)
++static int hisi_restart_handler(struct notifier_block *this,
++				unsigned long mode, void *cmd)
  {
- 	/* enable write access to RSTCTRL */
- 	rsctrl_enable_rspll_write();
-@@ -60,8 +61,15 @@ static void rsctrl_restart(enum reboot_mode mode, const char *cmd)
- 	/* reset the SOC */
- 	regmap_update_bits(pllctrl_regs, rspll_offset + RSCTRL_RG,
- 			   RSCTRL_RESET_MASK, 0);
+ 	writel_relaxed(0xdeadbeef, base + reboot_offset);
+ 
+ 	while (1)
+ 		cpu_do_idle();
 +
 +	return NOTIFY_DONE;
  }
  
-+static struct notifier_block rsctrl_restart_nb = {
-+	.notifier_call = rsctrl_restart_handler,
++static struct notifier_block hisi_restart_nb = {
++	.notifier_call = hisi_restart_handler,
 +	.priority = 128,
 +};
 +
- static struct of_device_id rsctrl_of_match[] = {
- 	{.compatible = "ti,keystone-reset", },
- 	{},
-@@ -114,8 +122,6 @@ static int rsctrl_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
+ static int hisi_reboot_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
++	int err;
  
--	arm_pm_restart = rsctrl_restart;
--
- 	/* disable a reset isolation for all module clocks */
- 	ret = regmap_write(pllctrl_regs, rspll_offset + RSISO_RG, 0);
- 	if (ret)
-@@ -147,7 +153,11 @@ static int rsctrl_probe(struct platform_device *pdev)
- 			return ret;
+ 	base = of_iomap(np, 0);
+ 	if (!base) {
+@@ -47,9 +56,12 @@ static int hisi_reboot_probe(struct platform_device *pdev)
+ 		return -EINVAL;
  	}
  
+-	arm_pm_restart = hisi_restart;
++	err = register_restart_handler(&hisi_restart_nb);
++	if (err)
++		dev_err(&pdev->dev, "cannot register restart handler (err=%d)\n",
++			err);
+ 
 -	return 0;
-+	ret = register_restart_handler(&rsctrl_restart_nb);
-+	if (ret)
-+		dev_err(dev, "cannot register restart handler (err=%d)\n", ret);
-+
-+	return ret;
++	return err;
  }
  
- static struct platform_driver rsctrl_driver = {
+ static struct of_device_id hisi_reboot_of_match[] = {
 -- 
 1.9.1
