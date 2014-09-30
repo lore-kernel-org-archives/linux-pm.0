@@ -1,49 +1,72 @@
 From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v7 4/7] qcom: pm: Add cpu low power mode functions
-Date: Tue, 30 Sep 2014 10:35:45 -0700
-Message-ID: <7h4mvp105q.fsf@deeprootsystems.com>
+Subject: Re: [PATCH v7 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
+Date: Tue, 30 Sep 2014 10:41:14 -0700
+Message-ID: <7hmw9hypj9.fsf@deeprootsystems.com>
 References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
-	<1411779495-39724-5-git-send-email-lina.iyer@linaro.org>
-	<5429ED1D.5060809@codeaurora.org>
-	<20140930160310.GC528@ilina-mac.local>
+	<1411779495-39724-6-git-send-email-lina.iyer@linaro.org>
+	<20140929153154.GF2165@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:35867 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.19.201]:36372 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752193AbaI3Rfr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Sep 2014 13:35:47 -0400
-In-Reply-To: <20140930160310.GC528@ilina-mac.local> (Lina Iyer's message of
-	"Tue, 30 Sep 2014 10:03:10 -0600")
+	id S1752109AbaI3RlQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 30 Sep 2014 13:41:16 -0400
+In-Reply-To: <20140929153154.GF2165@e102568-lin.cambridge.arm.com> (Lorenzo
+	Pieralisi's message of "Mon, 29 Sep 2014 16:31:55 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, daniel.lezcano@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Lina Iyer <lina.iyer@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>
 
-Lina Iyer <lina.iyer@linaro.org> writes:
+Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
 
-> On Mon, Sep 29 2014 at 17:37 -0600, Stephen Boyd wrote:
->>On 09/26/14 17:58, Lina Iyer wrote:
->>> Based on work by many authors, available at codeaurora.org
->>>
->>
->>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->>> [lina: simplify the driver for an initial submission, add commit text
->>> description of idle states]
->>
->>Maintainer tags don't really make sense unless there is another author.
->>
-> Hmm.. Since this patch is a derivative work, I wanted to clarify, what
-> changed seems important. The work was done by many authors. Adding
-> signed-off from everybody who could have contributed to the patch
-> downstream is confusing.
-> I would be okay removing it.
+> Hi Lina,
+>
+> On Sat, Sep 27, 2014 at 01:58:13AM +0100, Lina Iyer wrote:
+>> Add cpuidle driver interface to allow cpus to go into C-States. Use the
+>> cpuidle DT interface common across ARM architectures to provide the
+>> C-State information to the cpuidle framework.
+>> 
+>> Supported modes at this time are clock gating (wfi) and cpu power down
+>> (Standalone PC or spc).
+>> 
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> ---
+>>  .../bindings/arm/msm/qcom,idle-state.txt           | 72 +++++++++++++++++
+>>  drivers/cpuidle/Kconfig.arm                        |  7 ++
+>>  drivers/cpuidle/Makefile                           |  1 +
+>>  drivers/cpuidle/cpuidle-qcom.c                     | 89 ++++++++++++++++++++++
+>>  4 files changed, 169 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+>>  create mode 100644 drivers/cpuidle/cpuidle-qcom.c
+>> 
+>> diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+>> new file mode 100644
+>> index 0000000..47095b9
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+>> @@ -0,0 +1,72 @@
+>> +QCOM Idle States for cpuidle driver
+>> +
+>> +ARM provides idle-state node to define the cpuidle states, as defined in [1].
+>> +cpuidle-qcom is the cpuidle driver for Qualcomm SoCs and uses these idle
+>> +states. Idle states have different enter/exit latency and residency values.
+>> +The idle states supported by the QCOM SoC are defined as -
+>> +
+>> +    * WFI
+>> +    * Retention
+>> +    * Standalone Power Collapse (Standalone PC or SPC)
+>> +    * Power Collapse (PC)
+>> +
+>> +WFI: WFI does a little more in addition to architectural clock gating.  ARM
+>
+> This may be misleading. Call it PlatformWFI or something like that, not WFI if
+> that's not what it is.
 
-Yes, you should remove it, but move the "Based on work by many authors"
-part to just before your signoff.  Also, it's considered good manners to
-name any significant contributors if there are a few standouts.  Also,
-the "available at codeaurora.org" is wanting a link, ideally to a
-specific commit, or a branch so original code can easily be found.
+This gets at a little pet peeve of mine: 
+
+IMO, naming any state with "WFI" is a bit confusing, because typically
+*every* idle state is entered by one (or more) CPU executing WFI, no?
 
 Kevin
- 
