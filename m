@@ -1,66 +1,104 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 2/4] ARM: exynos: Ensure PM domains are powered at initialization
-Date: Tue, 30 Sep 2014 14:43:51 +0200
-Message-ID: <1412081033-8136-3-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 4/4] PM / Domains: Enforce PM domains to stay powered during boot
+Date: Tue, 30 Sep 2014 14:43:53 +0200
+Message-ID: <1412081033-8136-5-git-send-email-ulf.hansson@linaro.org>
 References: <1412081033-8136-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f182.google.com ([209.85.217.182]:58897 "EHLO
-	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbaI3MoJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 08:44:09 -0400
-Received: by mail-lb0-f182.google.com with SMTP id z11so8158454lbi.27
-        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 05:44:07 -0700 (PDT)
+Received: from mail-la0-f47.google.com ([209.85.215.47]:43010 "EHLO
+	mail-la0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbaI3MoN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 08:44:13 -0400
+Received: by mail-la0-f47.google.com with SMTP id mc6so20394232lab.34
+        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 05:44:11 -0700 (PDT)
 In-Reply-To: <1412081033-8136-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-At ->probe() it's common practice for drivers/subsystems to bring their
-devices to full power and without depending on CONFIG_PM_RUNTIME.
+When there are more than one device in a PM domain these will obviously
+be probed at different times. Depending on timing and the implemented
+support for runtime PM in a driver/subsystem, genpd may be advised to
+power off a PM domain after a successful probe sequence.
 
-We could also expect that drivers/subsystems requires their device's
-corresponding PM domains to be powered, to successfully complete a
-->probe() sequence.
+Ideally we should have relied on the driver/subsystem, through runtime
+PM, to bring their device's PM domain into powered state prior doing
+probing if such requirement exist.
 
-Align to the behavior above, by ensuring all PM domains are powered
-prior initialization of a generic PM domain.
+Since this is not a common practice by drivers/subsystems, enforcing
+such a change doesn't seem viable.
 
-Do note, since the generic PM domain will try to power off unused PM
-domains at late_init, there are no increased power consumption over
-time.
+Instead, let's improve the situation, by preventing genpd from powering
+off any of the PM domains until late_init. At that point genpd already
+tries to power off unused PM domains, so it seems like a decent match.
+
+Cases which can't be covered within the window of until late_init needs
+to be adressed separately and likely through a more common long term
+solution.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- arch/arm/mach-exynos/pm_domains.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/base/power/domain.c | 17 ++++++++++++++++-
+ include/linux/pm_domain.h   |  1 +
+ 2 files changed, 17 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
-index 20f2671..58e18e9 100644
---- a/arch/arm/mach-exynos/pm_domains.c
-+++ b/arch/arm/mach-exynos/pm_domains.c
-@@ -112,7 +112,7 @@ static __init int exynos4_pm_init_power_domain(void)
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index cfb76e8..3dbadfd 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -451,10 +451,12 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
+ 	 * (2) The domain is waiting for its master to power up.
+ 	 * (3) One of the domain's devices is being resumed right now.
+ 	 * (4) System suspend is in progress.
++	 * (5) late_init hasn't completed to allow it.
+ 	 */
+ 	if (genpd->status == GPD_STATE_POWER_OFF
+ 	    || genpd->status == GPD_STATE_WAIT_MASTER
+-	    || genpd->resume_count > 0 || genpd->prepared_count > 0)
++	    || genpd->resume_count > 0 || genpd->prepared_count > 0
++	    || genpd->keep_power)
+ 		return 0;
  
- 	for_each_compatible_node(np, NULL, "samsung,exynos4210-pd") {
- 		struct exynos_pm_domain *pd;
--		int on, i;
-+		int i;
- 		struct device *dev;
+ 	if (atomic_read(&genpd->sd_count) > 0)
+@@ -724,6 +726,18 @@ void pm_genpd_poweroff_unused(void)
  
- 		pdev = of_find_device_by_node(np);
-@@ -155,9 +155,10 @@ static __init int exynos4_pm_init_power_domain(void)
- 			clk_put(pd->oscclk);
- 
- no_clk:
--		on = __raw_readl(pd->base + 0x4) & INT_LOCAL_PWR_EN;
-+		if (!(__raw_readl(pd->base + 0x4) & INT_LOCAL_PWR_EN))
-+			exynos_pd_power_on(&pd->pd);
- 
--		pm_genpd_init(&pd->pd, NULL, !on);
-+		pm_genpd_init(&pd->pd, NULL, false);
- 		of_genpd_add_provider_simple(np, &pd->pd);
- 	}
- 
+ static int __init genpd_poweroff_unused(void)
+ {
++	struct generic_pm_domain *genpd;
++
++	mutex_lock(&gpd_list_lock);
++
++	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
++		genpd_acquire_lock(genpd);
++		genpd->keep_power = false;
++		genpd_release_lock(genpd);
++	}
++
++	mutex_unlock(&gpd_list_lock);
++
+ 	pm_genpd_poweroff_unused();
+ 	return 0;
+ }
+@@ -1854,6 +1868,7 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+ 	genpd->status = GPD_STATE_ACTIVE;
+ 	init_waitqueue_head(&genpd->status_wait_queue);
+ 	genpd->poweroff_task = NULL;
++	genpd->keep_power = true;
+ 	genpd->resume_count = 0;
+ 	genpd->device_count = 0;
+ 	genpd->max_off_time_ns = -1;
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index ad4aa87..d87ef6a 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -58,6 +58,7 @@ struct generic_pm_domain {
+ 	enum gpd_status status;	/* Current state of the domain */
+ 	wait_queue_head_t status_wait_queue;
+ 	struct task_struct *poweroff_task;	/* Powering off task */
++	bool keep_power;		/* Flag to keep power until late_init */
+ 	unsigned int resume_count;	/* Number of devices being resumed */
+ 	unsigned int device_count;	/* Number of devices */
+ 	unsigned int suspended_count;	/* System suspend device counter */
 -- 
 1.9.1
 
