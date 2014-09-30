@@ -1,48 +1,149 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH v2 2/2] sched/fair: leverage the idle state info when
- choosing the "idlest" cpu
-Date: Tue, 30 Sep 2014 19:15:00 -0400 (EDT)
-Message-ID: <alpine.LFD.2.11.1409301904150.5311@knanqh.ubzr>
-References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org> <1409844730-12273-3-git-send-email-nicolas.pitre@linaro.org> <542B277D.7050103@redhat.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f48.google.com ([209.85.216.48]:53003 "EHLO
-	mail-qa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbaI3XPG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 19:15:06 -0400
-Received: by mail-qa0-f48.google.com with SMTP id f12so3515243qad.21
-        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 16:15:05 -0700 (PDT)
-In-Reply-To: <542B277D.7050103@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Feng Kan <fkan@apm.com>
+Subject: [PATCH RESEND V9 1/6] power: reset: Add generic SYSCON register mapped reset
+Date: Tue, 30 Sep 2014 16:25:03 -0700
+Message-ID: <1412119508-22864-2-git-send-email-fkan@apm.com>
+References: <1412119508-22864-1-git-send-email-fkan@apm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1412119508-22864-1-git-send-email-fkan@apm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux@roeck-us.net, dbaryshkov@gmail.com, catalin.marinas@arm.com, dwmw2@infradead.org, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, patches@apm.com, linux-pm@vger.kernel.org, will.deacon@arm.com
+Cc: Feng Kan <fkan@apm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Rik van Riel <riel@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-On Tue, 30 Sep 2014, Rik van Riel wrote:
+Add a generic SYSCON register mapped reset mechanism.
 
-> On 09/04/2014 11:32 AM, Nicolas Pitre wrote:
-> > The code in find_idlest_cpu() looks for the CPU with the smallest
-> > load. However, if multiple CPUs are idle, the first idle CPU is
-> > selected irrespective of the depth of its idle state.
-> > 
-> > Among the idle CPUs we should pick the one with with the shallowest
-> > idle state, or the latest to have gone idle if all idle CPUs are in
-> > the same state.  The later applies even when cpuidle is configured
-> > out.
-> > 
-> > This patch doesn't cover the following issues:
-> 
-> The main thing it does not cover is already running tasks that
-> get woken up again, since select_idle_sibling() covers everything
-> except for newly forked and newly executed tasks.
+Signed-off-by: Feng Kan <fkan@apm.com>
+---
+ drivers/power/reset/Kconfig         |  5 ++
+ drivers/power/reset/Makefile        |  1 +
+ drivers/power/reset/syscon-reboot.c | 96 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 102 insertions(+)
+ create mode 100644 drivers/power/reset/syscon-reboot.c
 
-True. Now that you bring this up, I remember that Peter mentioned it as 
-well.
-
-> I am looking at adding similar logic to select_idle_sibling()
-
-OK thanks.
-
-
-Nicolas
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index 1915dde..a863fa1 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -143,4 +143,9 @@ config POWER_RESET_KEYSTONE
+ 	help
+ 	  Reboot support for the KEYSTONE SoCs.
+ 
++config POWER_RESET_SYSCON
++	bool "Generic SYSCON regmap reset driver"
++	depends on POWER_RESET && MFD_SYSCON && OF
++	help
++	  Reboot support for generic SYSCON mapped register reset.
+ endif
+diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+index 01e401d..76ce1c5 100644
+--- a/drivers/power/reset/Makefile
++++ b/drivers/power/reset/Makefile
+@@ -16,3 +16,4 @@ obj-$(CONFIG_POWER_RESET_VERSATILE) += arm-versatile-reboot.o
+ obj-$(CONFIG_POWER_RESET_VEXPRESS) += vexpress-poweroff.o
+ obj-$(CONFIG_POWER_RESET_XGENE) += xgene-reboot.o
+ obj-$(CONFIG_POWER_RESET_KEYSTONE) += keystone-reset.o
++obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
+diff --git a/drivers/power/reset/syscon-reboot.c b/drivers/power/reset/syscon-reboot.c
+new file mode 100644
+index 0000000..948e0ee
+--- /dev/null
++++ b/drivers/power/reset/syscon-reboot.c
+@@ -0,0 +1,96 @@
++/*
++ * Generic Syscon Reboot Driver
++ *
++ * Copyright (c) 2013, Applied Micro Circuits Corporation
++ * Author: Feng Kan <fkan@apm.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++#include <linux/io.h>
++#include <linux/of_device.h>
++#include <linux/of_address.h>
++#include <linux/platform_device.h>
++#include <linux/notifier.h>
++#include <linux/mfd/syscon.h>
++#include <linux/regmap.h>
++#include <linux/reboot.h>
++
++struct syscon_reboot_context {
++	struct regmap *map;
++	u32 offset;
++	u32 mask;
++	struct notifier_block restart_handler;
++};
++
++static struct syscon_reboot_context *syscon_reboot_ctx;
++
++static int syscon_restart_handle(struct notifier_block *this,
++					unsigned long mode, void *cmd)
++{
++	struct syscon_reboot_context *ctx = syscon_reboot_ctx;
++	unsigned long timeout;
++
++	/* Issue the reboot */
++	if (ctx->map)
++		regmap_write(ctx->map, ctx->offset, ctx->mask);
++
++	timeout = jiffies + HZ;
++	while (time_before(jiffies, timeout))
++		cpu_relax();
++
++	pr_emerg("Unable to restart system\n");
++	return NOTIFY_DONE;
++}
++
++static int syscon_reboot_probe(struct platform_device *pdev)
++{
++	struct syscon_reboot_context *ctx;
++	struct device *dev = &pdev->dev;
++	int err;
++
++	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
++	if (!ctx)
++		return -ENOMEM;
++
++	ctx->map = syscon_regmap_lookup_by_phandle(dev->of_node, "regmap");
++	if (IS_ERR(ctx->map))
++		return PTR_ERR(ctx->map);
++
++	if (of_property_read_u32(pdev->dev.of_node, "offset", &ctx->offset))
++		return -EINVAL;
++
++	if (of_property_read_u32(pdev->dev.of_node, "mask", &ctx->mask))
++		return -EINVAL;
++
++	ctx->restart_handler.notifier_call = syscon_restart_handle;
++	ctx->restart_handler.priority = 128;
++	err = register_restart_handler(&ctx->restart_handler);
++	if (err)
++		dev_err(dev, "can't register restart notifier (err=%d)\n", err);
++
++	syscon_reboot_ctx = ctx;
++
++	return 0;
++}
++
++static struct of_device_id syscon_reboot_of_match[] = {
++	{ .compatible = "syscon-reboot" },
++	{}
++};
++
++static struct platform_driver syscon_reboot_driver = {
++	.probe = syscon_reboot_probe,
++	.driver = {
++		.name = "syscon-reboot",
++		.of_match_table = syscon_reboot_of_match,
++	},
++};
++module_platform_driver(syscon_reboot_driver);
+-- 
+1.9.1
