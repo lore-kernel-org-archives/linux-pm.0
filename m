@@ -1,74 +1,168 @@
-From: "Moore, Robert" <robert.moore@intel.com>
-Subject: RE: [PATCH 4/5] ACPICA: Introduce acpi_enable_all_wakeup_gpes()
-Date: Tue, 30 Sep 2014 15:52:16 +0000
-Message-ID: <94F2FBAB4432B54E8AACC7DFDE6C92E37D20AA35@ORSMSX112.amr.corp.intel.com>
-References: <1622293.rpSt5UtDk3@vostro.rjw.lan>
- <4021848.ZWdxDcq97A@vostro.rjw.lan>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v7 4/7] qcom: pm: Add cpu low power mode functions
+Date: Tue, 30 Sep 2014 10:03:10 -0600
+Message-ID: <20140930160310.GC528@ilina-mac.local>
+References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
+ <1411779495-39724-5-git-send-email-lina.iyer@linaro.org>
+ <5429ED1D.5060809@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:32591 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751159AbaI3PwV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Sep 2014 11:52:21 -0400
-In-Reply-To: <4021848.ZWdxDcq97A@vostro.rjw.lan>
-Content-Language: en-US
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:59397 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbaI3QDP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 12:03:15 -0400
+Received: by mail-pd0-f180.google.com with SMTP id fp1so5436759pdb.11
+        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 09:03:15 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <5429ED1D.5060809@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org
 
-SWYgeW91IG5lZWQgaXQsIHN1cmUuDQpMZXQgbWUga25vdyB3aGVuIHRoZXJlIGlzIGFuIEFDUElD
-QSB2ZXJzaW9uDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBSYWZh
-ZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJqd0Byand5c29ja2kubmV0XQ0KPiBTZW50OiBNb25kYXks
-IFNlcHRlbWJlciAyOSwgMjAxNCA1OjI2IFBNDQo+IFRvOiBBQ1BJIERldmVsIE1hbGluZyBMaXN0
-OyBNb29yZSwgUm9iZXJ0DQo+IENjOiBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0OyBaaGFuZywg
-UnVpOyBMaW51eCBQTSBsaXN0DQo+IFN1YmplY3Q6IFtQQVRDSCA0LzVdIEFDUElDQTogSW50cm9k
-dWNlIGFjcGlfZW5hYmxlX2FsbF93YWtldXBfZ3BlcygpDQo+IA0KPiBGcm9tOiBSYWZhZWwgSi4g
-V3lzb2NraSA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+DQo+IA0KPiBBZGQgYSByb3V0aW5l
-IGZvciBob3N0IE9TZXMgdG8gZW5hYmxlIGFsbCB3YWtldXAgR1BFcyBhbmQgZGlzYWJsZSBhbGwg
-b2YNCj4gdGhlIG5vbi13YWtldXAgb25lcyBhdCB0aGUgc2FtZSB0aW1lLg0KPiANCj4gSXQgd2ls
-bCBiZSB1c2VkIGZvciB0aGUgaGFuZGxpbmcgb2YgR1BFIHdha2V1cCBmcm9tIHN1c3BlbmQtdG8t
-aWRsZSBpbg0KPiBMaW51eC4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBKLiBXeXNvY2tp
-IDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4NCj4gLS0tDQo+IA0KPiBCb2IsIHBsZWFzZSBs
-ZXQgbWUga25vdyBpZiBJIGNhbiBmYXN0LXRyYWNrIHRoaXMgb25lLg0KPiANCj4gLS0tDQo+ICBk
-cml2ZXJzL2FjcGkvYWNwaWNhL2V2eGZncGUuYyB8ICAgMzIgKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysNCj4gIGluY2x1ZGUvYWNwaS9hY3BpeGYuaCAgICAgICAgIHwgICAgMSArDQo+
-ICAyIGZpbGVzIGNoYW5nZWQsIDMzIGluc2VydGlvbnMoKykNCj4gDQo+IEluZGV4OiBsaW51eC1w
-bS9kcml2ZXJzL2FjcGkvYWNwaWNhL2V2eGZncGUuYw0KPiA9PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09DQo+IC0tLSBsaW51
-eC1wbS5vcmlnL2RyaXZlcnMvYWNwaS9hY3BpY2EvZXZ4ZmdwZS5jDQo+ICsrKyBsaW51eC1wbS9k
-cml2ZXJzL2FjcGkvYWNwaWNhL2V2eGZncGUuYw0KPiBAQCAtNTk2LDYgKzU5NiwzOCBAQCBhY3Bp
-X3N0YXR1cyBhY3BpX2VuYWJsZV9hbGxfcnVudGltZV9ncGVzDQo+IA0KPiAgQUNQSV9FWFBPUlRf
-U1lNQk9MKGFjcGlfZW5hYmxlX2FsbF9ydW50aW1lX2dwZXMpDQo+IA0KPiArLyoqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioNCj4gKyoqKioqKioqDQo+ICsgKg0KPiArICogRlVOQ1RJT046ICAgIGFjcGlfZW5hYmxlX2Fs
-bF93YWtldXBfZ3Blcw0KPiArICoNCj4gKyAqIFBBUkFNRVRFUlM6ICBOb25lDQo+ICsgKg0KPiAr
-ICogUkVUVVJOOiAgICAgIFN0YXR1cw0KPiArICoNCj4gKyAqIERFU0NSSVBUSU9OOiBFbmFibGUg
-YWxsICJ3YWtldXAiIEdQRXMgYW5kIGRpc2FibGUgYWxsIG9mIHRoZSBvdGhlcg0KPiBHUEVzLCBp
-bg0KPiArICogICAgICAgICAgICAgIGFsbCBHUEUgYmxvY2tzLg0KPiArICoNCj4gKw0KPiArKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioNCj4gKyoqKioqKiovDQo+ICsNCj4gK2FjcGlfc3RhdHVzIGFjcGlfZW5hYmxl
-X2FsbF93YWtldXBfZ3Blcyh2b2lkKSB7DQo+ICsJYWNwaV9zdGF0dXMgc3RhdHVzOw0KPiArDQo+
-ICsJQUNQSV9GVU5DVElPTl9UUkFDRShhY3BpX2VuYWJsZV9hbGxfd2FrZXVwX2dwZXMpOw0KPiAr
-DQo+ICsJc3RhdHVzID0gYWNwaV91dF9hY3F1aXJlX211dGV4KEFDUElfTVRYX0VWRU5UUyk7DQo+
-ICsJaWYgKEFDUElfRkFJTFVSRShzdGF0dXMpKSB7DQo+ICsJCXJldHVybl9BQ1BJX1NUQVRVUyhz
-dGF0dXMpOw0KPiArCX0NCj4gKw0KPiArCXN0YXR1cyA9IGFjcGlfaHdfZW5hYmxlX2FsbF93YWtl
-dXBfZ3BlcygpOw0KPiArCSh2b2lkKWFjcGlfdXRfcmVsZWFzZV9tdXRleChBQ1BJX01UWF9FVkVO
-VFMpOw0KPiArDQo+ICsJcmV0dXJuX0FDUElfU1RBVFVTKHN0YXR1cyk7DQo+ICt9DQo+ICsNCj4g
-K0FDUElfRVhQT1JUX1NZTUJPTChhY3BpX2VuYWJsZV9hbGxfd2FrZXVwX2dwZXMpDQo+ICsNCj4g
-DQo+IC8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqDQo+ICoqKioqKg0KPiAgICoNCj4gICAqIEZVTkNUSU9OOiAg
-ICBhY3BpX2luc3RhbGxfZ3BlX2Jsb2NrDQo+IEluZGV4OiBsaW51eC1wbS9pbmNsdWRlL2FjcGkv
-YWNwaXhmLmgNCj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PQ0KPiAtLS0gbGludXgtcG0ub3JpZy9pbmNsdWRlL2FjcGkv
-YWNwaXhmLmgNCj4gKysrIGxpbnV4LXBtL2luY2x1ZGUvYWNwaS9hY3BpeGYuaA0KPiBAQCAtNjky
-LDYgKzY5Miw3IEBAIEFDUElfSFdfREVQRU5ERU5UX1JFVFVSTl9TVEFUVVMoYWNwaV9zdGENCj4g
-IAkJCQkJCSAgICAgKmV2ZW50X3N0YXR1cykpDQo+ICBBQ1BJX0hXX0RFUEVOREVOVF9SRVRVUk5f
-U1RBVFVTKGFjcGlfc3RhdHVzIGFjcGlfZGlzYWJsZV9hbGxfZ3Blcyh2b2lkKSkNCj4gQUNQSV9I
-V19ERVBFTkRFTlRfUkVUVVJOX1NUQVRVUyhhY3BpX3N0YXR1cw0KPiBhY3BpX2VuYWJsZV9hbGxf
-cnVudGltZV9ncGVzKHZvaWQpKQ0KPiArQUNQSV9IV19ERVBFTkRFTlRfUkVUVVJOX1NUQVRVUyhh
-Y3BpX3N0YXR1cw0KPiArYWNwaV9lbmFibGVfYWxsX3dha2V1cF9ncGVzKHZvaWQpKQ0KPiANCj4g
-IEFDUElfSFdfREVQRU5ERU5UX1JFVFVSTl9TVEFUVVMoYWNwaV9zdGF0dXMNCj4gIAkJCQlhY3Bp
-X2dldF9ncGVfZGV2aWNlKHUzMiBncGVfaW5kZXgsDQoNCg==
+On Mon, Sep 29 2014 at 17:37 -0600, Stephen Boyd wrote:
+>On 09/26/14 17:58, Lina Iyer wrote:
+>> Based on work by many authors, available at codeaurora.org
+>>
+>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> [lina: simplify the driver for an initial submission, add commit text
+>> description of idle states]
+>
+>Maintainer tags don't really make sense unless there is another author.
+>
+Hmm.. Since this patch is a derivative work, I wanted to clarify, what
+changed seems important. The work was done by many authors. Adding
+signed-off from everybody who could have contributed to the patch
+downstream is confusing.
+I would be okay removing it.
+
+> +
+[...]
+>> +static int qcom_pm_collapse(unsigned long int unused)
+>> +{
+>> +	int ret;
+>> +	u32 flag;
+>> +
+>> +	ret = set_up_boot_address(cpu_resume, raw_smp_processor_id());
+>
+>Preemption better be off here, so why are we using raw_smp_processor_id()?
+>
+True, so raw_ returns without premeption disable, no?
+
+>> +	if (ret) {
+>> +		pr_err("Failed to set warm boot address for cpu %d\n",
+>> +				raw_smp_processor_id());
+>
+>Stuff cpu into a local variable?
+>
+Yeah
+>> +		return ret;
+>> +	}
+>> +
+>> +	flag = SCM_L2_ON & SCM_FLUSH_FLAG_MASK;
+>> +	scm_call_atomic1(SCM_SVC_BOOT, SCM_CMD_TERMINATE_PC, flag);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +/**
+>> + * qcom_cpu_pm_enter_sleep(): Enter a low power mode on current cpu
+>> + *
+>> + * @mode - sleep mode to enter
+>> + *
+>> + * The code should be called with interrupts disabled and on the core on
+>> + * which the low power mode is to be executed.
+>> + *
+>> + */
+>> +static int qcom_cpu_pm_enter_sleep(enum pm_sleep_mode mode)
+>> +{
+>> +	int ret;
+>> +
+>> +	switch (mode) {
+>> +	case PM_SLEEP_MODE_SPC:
+>> +		qcom_spm_set_low_power_mode(SPM_MODE_POWER_COLLAPSE);
+>
+>Isn't it a one-to-one between PM_SLEEP_MODE_SPC and
+>SPM_MODE_POWER_COLLAPSE? The enum to enum map seems overly complicated.
+>
+Not really. SPM modes, differ when the idle state has to notify RPM. It
+does not have 2 enums for those modes, but uses an overloaded enum with
+an additional flag.
+
+>> +		ret = cpu_suspend(0, qcom_pm_collapse);
+>> +		break;
+>> +	default:
+>> +	case PM_SLEEP_MODE_WFI:
+>> +		qcom_spm_set_low_power_mode(SPM_MODE_CLOCK_GATING);
+>> +		ret = cpu_do_idle();
+>> +		break;
+>> +	}
+>> +
+>> +	local_irq_enable();
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +static struct platform_device qcom_cpuidle_device = {
+>> +	.name              = "qcom_cpuidle",
+>> +	.id                = -1,
+>> +	.dev.platform_data = qcom_cpu_pm_enter_sleep,
+>> +};
+>
+>This doesn't need to be static. Use platform_device_register_full() instead.
+>
+Okay
+>> +
+>> +static int __init qcom_pm_device_init(void)
+>> +{
+>> +	platform_device_register(&qcom_cpuidle_device);
+>> +
+>> +	return 0;
+>> +}
+>> +device_initcall(qcom_pm_device_init);
+>
+>modules?
+>
+Why? An earlier initialization helps with power saving
+
+>> diff --git a/include/soc/qcom/pm.h b/include/soc/qcom/pm.h
+>> new file mode 100644
+>> index 0000000..563b9c3
+>> --- /dev/null
+>> +++ b/include/soc/qcom/pm.h
+>> @@ -0,0 +1,26 @@
+>> +/*
+>> + * Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
+>> + *
+>> + * This software is licensed under the terms of the GNU General Public
+>> + * License version 2, as published by the Free Software Foundation, and
+>> + * may be copied, distributed, and modified under those terms.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + */
+>> +
+>> +#ifndef __QCOM_PM_H
+>> +#define __QCOM_PM_H
+>> +
+>> +enum pm_sleep_mode {
+>> +	PM_SLEEP_MODE_WFI,
+>> +	PM_SLEEP_MODE_RET,
+>> +	PM_SLEEP_MODE_SPC,
+>> +	PM_SLEEP_MODE_PC,
+>> +	PM_SLEEP_MODE_NR,
+>> +};
+>> +
+>> +#endif  /* __QCOM_PM_H */
+>
+>Hopefully this header is not necessary.
+>
+>-- 
+>Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+>hosted by The Linux Foundation
+>
