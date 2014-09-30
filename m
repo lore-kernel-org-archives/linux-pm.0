@@ -1,77 +1,32 @@
-From: Puthikorn Voravootivat <puthik@chromium.org>
-Subject: [PATCH] bq27x00_battery: Fix flag reading for bq27742
-Date: Tue, 30 Sep 2014 11:18:56 -0700
-Message-ID: <1412101136-26037-1-git-send-email-puthik@chromium.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 3/4] PM / Domains: Expect PM domains being powered at initialization
+Date: Tue, 30 Sep 2014 11:21:43 -0700
+Message-ID: <7h61g5ynns.fsf@deeprootsystems.com>
+References: <1412081033-8136-1-git-send-email-ulf.hansson@linaro.org>
+	<1412081033-8136-4-git-send-email-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f202.google.com ([209.85.223.202]:64292 "EHLO
-	mail-ie0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751074AbaI3STI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 14:19:08 -0400
-Received: by mail-ie0-f202.google.com with SMTP id rd18so31194iec.3
-        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 11:19:07 -0700 (PDT)
+Received: from mail.kernel.org ([198.145.19.201]:40265 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751832AbaI3SVp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 30 Sep 2014 14:21:45 -0400
+In-Reply-To: <1412081033-8136-4-git-send-email-ulf.hansson@linaro.org> (Ulf
+	Hansson's message of "Tue, 30 Sep 2014 14:43:52 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, Gwendal Grignou <gwendal@chromium.org>, Rhyland Klein <rklein@nvidia.com>, Benson Leung <bleung@chromium.org>, Olof Johansson <olofj@chromium.org>, Puthikorn Voravootivat <puthik@chromium.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
 
-This patch fix the following issues.
-- Flag for bq27742 is 2 bytes contracy to 1 byte for older hardware
-- Don't read FLAG_CI as bq27742 does not have it
-- Use Battery full capacity register as last measure discharge
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-Signed-off-by: Puthikorn Voravootivat <puthik@chromium.org>
-Reviewed-by: Benson Leung <bleung@chromium.org>
----
-The incremental patch of [PATCH v2] bq27x00_battery: Add support to bq27742
-Sorry, I didn't see that the old patch was already applied.
- drivers/power/bq27x00_battery.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+> At ->probe() it's common practice for drivers/subsystems to bring their
+> devices to full power and without depending on CONFIG_PM_RUNTIME.
 
-diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_battery.c
-index 5b9f0ea..e3bacfe 100644
---- a/drivers/power/bq27x00_battery.c
-+++ b/drivers/power/bq27x00_battery.c
-@@ -254,9 +254,11 @@ static inline int bq27x00_battery_read_nac(struct bq27x00_device_info *di)
- {
- 	int flags;
- 	bool is_bq27500 = di->chip == BQ27500;
-+	bool is_bq27742 = di->chip == BQ27742;
- 	bool is_higher = bq27xxx_is_chip_version_higher(di);
-+	bool flags_1b = !(is_bq27500 || is_bq27742);
- 
--	flags = bq27x00_read(di, BQ27x00_REG_FLAGS, !is_bq27500);
-+	flags = bq27x00_read(di, BQ27x00_REG_FLAGS, flags_1b);
- 	if (flags >= 0 && !is_higher && (flags & BQ27000_FLAG_CI))
- 		return -ENODATA;
- 
-@@ -436,13 +438,14 @@ static void bq27x00_update(struct bq27x00_device_info *di)
- 	bool is_bq27500 = di->chip == BQ27500;
- 	bool is_bq27425 = di->chip == BQ27425;
- 	bool is_bq27742 = di->chip == BQ27742;
-+	bool flags_1b = !(is_bq27500 || is_bq27742);
- 
--	cache.flags = bq27x00_read(di, BQ27x00_REG_FLAGS, !is_bq27500);
-+	cache.flags = bq27x00_read(di, BQ27x00_REG_FLAGS, flags_1b);
- 	if ((cache.flags & 0xff) == 0xff)
- 		/* read error */
- 		cache.flags = -1;
- 	if (cache.flags >= 0) {
--		if (!is_bq27500 && !is_bq27425
-+		if (!is_bq27500 && !is_bq27425 && !is_bq27742
- 				&& (cache.flags & BQ27000_FLAG_CI)) {
- 			dev_info(di->dev, "battery is not calibrated! ignoring capacity values\n");
- 			cache.capacity = -ENODATA;
-@@ -470,9 +473,7 @@ static void bq27x00_update(struct bq27x00_device_info *di)
- 					bq27x00_battery_read_time(di,
- 							BQ27x00_REG_TTF);
- 			}
--			if (!is_bq27742)
--				cache.charge_full =
--					bq27x00_battery_read_lmd(di);
-+			cache.charge_full = bq27x00_battery_read_lmd(di);
- 			cache.health = bq27x00_battery_read_health(di);
- 		}
- 		cache.temperature = bq27x00_battery_read_temperature(di);
--- 
-2.1.0.rc2.206.gedb03e5
+If they're not using pm_runtime to bring the device to full power,
+shouldn't these drivers be using pm_runtime_set_active()?  (or maybe
+pm_runtime_force_resume()?)
 
+Wouldn't using those force the genpd to stay powered on?
+
+Kevin
