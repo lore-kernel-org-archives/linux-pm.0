@@ -1,65 +1,105 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: arm_big_little: set 'physical_cluster' for each CPU
-Date: Tue, 30 Sep 2014 09:55:20 +0530
-Message-ID: <f2259e8d3cb418bce091b484e09718e9d7204b57.1412051036.git.viresh.kumar@linaro.org>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: stable@vger.kernel.org
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, tixy@linaro.org, broonie@linaro.org, viresh kumar <viresh.kumar@linaro.org>
+From: Kiran Padwal <kiran.padwal@smartplayin.com>
+Subject: Re: [PATCH v2] thermal: Add QPNP PMIC temperature alarm driver
+Date: Tue, 30 Sep 2014 10:00:23 +0530
+Message-ID: <542A31DF.7020402@smartplayin.com>
+References: <1411651825-14240-1-git-send-email-iivanov@mm-sol.com>  <54254C4E.3070807@smartplayin.com> <1411998865.5395.5.camel@iivanov-dev>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1411998865.5395.5.camel@iivanov-dev>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: viresh kumar <viresh.kumar@linaro.org>
+On Monday 29 September 2014 07:24 PM, Ivan T. Ivanov wrote:
+> On Fri, 2014-09-26 at 16:51 +0530, Kiran Padwal wrote:
+>> On Thursday 25 September 2014 07:00 PM, Ivan T. Ivanov wrote:
+>>> Add support for the temperature alarm peripheral found inside
+>>> Qualcomm plug-and-play (QPNP) PMIC chips.  The temperature alarm
+>>> peripheral outputs a pulse on an interrupt line whenever the
+>>> thermal over temperature stage value changes.  Implement an ISR
+>>> to manage this interrupt.
+>>>
+>>
+>> <snip>
+>>
+>>> + * This function updates the internal temp value based on the
+>>> + * current thermal stage and threshold as well as the previous sta=
+ge
+>>> + */
+>>> +static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
+>>> +{
+>>> +	unsigned int stage;
+>>> +	int rc;
+>>> +	u8 reg;
+>>> +
+>>> +	rc =3D qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
+>>> +	if (rc < 0)
+>>> +		return rc;
+>>> +
+>>> +	stage =3D reg & STATUS_STAGE_MASK;
+>>
+>> During compilation, getting a waring as below,
+>>
+>> drivers/thermal/qpnp-temp-alarm.c: In function =E2=80=98qpnp_tm_upda=
+te_temp_no_adc=E2=80=99:
+>> drivers/thermal/qpnp-temp-alarm.c:135:8: warning: =E2=80=98reg=E2=80=
+=99 may be used uninitialized in this function [-Wmaybe-uninitialized]
+>>   stage =3D reg & STATUS_STAGE_MASK;
+>=20
+> Could you share compiler version and options which you are using.
+> I am unable to trigger this warning. Looking code I can not=20
+> see how this could happen.
 
-Upstream commit ID: 8f3ba3d3257be80636ed15cc221d6a2efb6a6e82
+I have Linaro cross tool chain with version-4.8.3 and I am simply doing=
+ "make zImage" without any option.
 
-We have a per-CPU variable for managing which cluster a CPU belongs to.
-Currently, physical_cluster is set for policy->cpu only which leads to
-the following on some SoC's:
-
- - There are two clusters:
-   - Cluster 0 has four ARM Cortex A7 CPUs (slower ones): 0,1,2,3
-   - Cluster 1 has four ARM Cortex A15 CPUs (faster ones): 4,5,6,7
- - CPUs are booted in order 0,1..7 and so initially policy->cpu for A7 cluster
-   would be 0 and for A15 cluster would be 4.
- - Now CPU4 (i.e. A15_0) is hotplugged out and so policy->cpu for A15 cluster
-   becomes 5 (i.e. A15_1).
- - But physical cluster is only set for CPU0 and CPU4 in ARM big LITTLE driver
-   and isn't updated.
- - Now freq change request comes for A15 cluster and we would try to update freq
-   of physical_cluster of CPU5, i.e. A15_1. And it is currently set to zero
-   (default value of uninitialized global variables).
- - And so we actually try to change freq of A7 cluster instead of A15.
- - This also results in kernel crash as sometimes we might request freq above
-   A7's limit and CPU may behave badly..
-
-Fix this by initializing physical_cluster for all CPUs of a policy.
-
-Based on previous work by Xin Wang.
-
-Cc: <stable@vger.kernel.org> # 3.13
-Cc: <stable@vger.kernel.org> # 3.14
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/arm_big_little.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 5519933..ee409f0 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -446,9 +446,12 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- 	}
- 
- 	if (cur_cluster < MAX_CLUSTERS) {
-+		int cpu;
-+
- 		cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
- 
--		per_cpu(physical_cluster, policy->cpu) = cur_cluster;
-+		for_each_cpu(cpu, policy->cpus)
-+			per_cpu(physical_cluster, cpu) = cur_cluster;
- 	} else {
- 		/* Assumption: during init, we are always running on A15 */
- 		per_cpu(physical_cluster, policy->cpu) = A15_CLUSTER;
--- 
-2.0.3.693.g996b0fd
+Thanks,
+--Kiran
+>=20
+>>
+>>> +
+>>> +	if (stage > chip->stage) {
+>>> +		/* increasing stage, use lower bound */
+>>> +		chip->temp =3D (stage - 1) * TEMP_STAGE_STEP +
+>>> +			     chip->thresh * TEMP_THRESH_STEP +
+>>> +			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
+>>> +	} else if (stage < chip->stage) {
+>>> +		/* decreasing stage, use upper bound */
+>>> +		chip->temp =3D stage * TEMP_STAGE_STEP +
+>>> +			     chip->thresh * TEMP_THRESH_STEP -
+>>> +			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
+>>> +	}
+>>> +
+>>> +	chip->stage =3D stage;
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>
+>> <snip>
+>>
+>>> +
+>>> +#define QPNP_TM_PM_OPS	(&qpnp_tm_pm_ops)
+>>> +#else
+>>> +#define QPNP_TM_PM_OPS	NULL
+>>> +#endif
+>>> +
+>>> +static struct of_device_id qpnp_tm_match_table[] =3D {
+>>
+>> It must be static const struct of_device_id, because all OF function=
+s handle it as const.
+>=20
+> Sure, will fix it.
+>=20
+> Thank you,
+> Ivan
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arm-m=
+sm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>=20
