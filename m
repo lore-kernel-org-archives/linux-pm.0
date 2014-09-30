@@ -1,91 +1,72 @@
-From: Ben Hutchings <ben@decadent.org.uk>
-Subject: Re: Bug#763320: linux-image-3.16-2-amd64: intel_idle enabled for
- Intel Atom S1260, causes high CPU temperature when idle
-Date: Tue, 30 Sep 2014 01:13:07 +0100
-Message-ID: <1412035987.9388.72.camel@decadent.org.uk>
-References: <20140929095709.3255.93208.reportbug@izoard.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2] bq27x00_battery: Add support to bq27742
+Date: Tue, 30 Sep 2014 03:45:57 +0200
+Message-ID: <20140930014557.GA16998@earth.universe>
+References: <1412025911-26809-1-git-send-email-puthik@chromium.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha512";
-	protocol="application/pgp-signature"; boundary="=-/x80jG4m5tRqm08w3KHg"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="XsQoSWH+UP9D9v3l"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:60438 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754178AbaI3ANb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Sep 2014 20:13:31 -0400
-In-Reply-To: <20140929095709.3255.93208.reportbug@izoard.lan>
+Received: from mail.kernel.org ([198.145.19.201]:48673 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751906AbaI3BqE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 29 Sep 2014 21:46:04 -0400
+Content-Disposition: inline
+In-Reply-To: <1412025911-26809-1-git-send-email-puthik@chromium.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jan Kiszka <jan.kiszka@siemens.com>, Len Brown <len.brown@intel.com>
-Cc: Christophe Thil <christophe@thil.de>, 763320@bugs.debian.org, linux-pm@vger.kernel.org
+To: Puthikorn Voravootivat <puthik@chromium.org>
+Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, Gwendal Grignou <gwendal@chromium.org>, Rhyland Klein <rklein@nvidia.com>, Benson Leung <bleung@chromium.org>, Olof Johansson <olofj@chromium.org>
 
 
---=-/x80jG4m5tRqm08w3KHg
-Content-Type: text/plain; charset="UTF-8"
+--XsQoSWH+UP9D9v3l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2014-09-29 at 11:57 +0200, Christophe Thil wrote:
-> Package: src:linux
-> Version: 3.16.3-2
-> Severity: normal
+Hi,
+
+On Mon, Sep 29, 2014 at 02:25:11PM -0700, Puthikorn Voravootivat wrote:
+> Add support to bq27742 in bq27x00 driver. bq27742 register
+> addresses are mostly mostly the same as bq27500 addresses
+> with minor differences.
 >=20
-> Dear Maintainer,
->=20
-> with Kernel 3.16, intel_idle is enabled for the Intel Atom S1260 CPU
-> (Centerton SoC). This leads to a +20=C2=B0C temperature increase when the=
- CPU
-> is idle, exceeding the 100=C2=B0C alarm threshold for passive cooled syst=
-ems
-> like the Supermicro X9SBAA-F.
->=20
-> With 3.14, intel_idle was blacklisted for this CPU, which runs fine. If
-> 3.16 is booted with intel_idle.max_cstate=3D0 processor.max_cstate=3D0,
-> which disables the intel_idle, the CPU also stays cool.
-[...]
+> Signed-off-by: Puthikorn Voravootivat <puthik@chromium.org>
+> Reviewed-by: Gwendal Grignou <gwendal@chromium.org>
+> Reviewed-by: Rhyland Klein <rklein@nvidia.com>
+> Reviewed-by: Benson Leung <bleung@chromium.org>
+> ---
+> Change log
+> v2: Fix flags/full capacity register read
 
-It looks like the relevant change is:
+Please convert this into an incremental patch, since I already
+applied v1:
 
-commit acead1b0fac5b10d0ae3f1cc5f7820b9f9f924f5
-Author: Jan Kiszka <jan.kiszka@siemens.com>
-Date:   Sat Jan 25 22:24:22 2014 +0100
+http://git.infradead.org/battery-2.6.git/commit/628ef02c56e515430dd8d843912=
+6dd0ecb8ce8bb
 
-    intel_idle: Add CPU model 54 (Atom N2000 series)
-   =20
-    Add CPU ID for Atom N2600/N2800 processors. Datasheets indicate support
-    for this, detailed information about potential quirks or limitations ar=
-e
-    missing, though. So we just reuse the definition for the previous ATOM
-    series. [...]
+-- Sebastian
 
-as those processors are part of the same Atom generation as Centerton.
-
-I think that more specific ID matching is required here.
-
-Ben.
-
---=20
-Ben Hutchings
-The two most common things in the universe are hydrogen and stupidity.
-
---=-/x80jG4m5tRqm08w3KHg
+--XsQoSWH+UP9D9v3l
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQIVAwUAVCn1nee/yOyVhhEJAQroqw/+KEwvGXlohmb2l2YqW4gpZQdGGPis3sFY
-IDWDeI2prwTuPw4k4XvarZiyjjZHAVyhaYYRDMCUUoEf/JbN42SDYtbkSeA8806+
-nRDnUdoxrsEDNSp0hs9YmaVLQiofT/5FDo10bOExmqEUX7mkALHjpCuDjcty1wZI
-yfNdBpCYsXaguKoF48lm4e3wfirjr+Alktp0ToHWW9y4PXFYiBIiVSoKB9Nrrp7F
-J8TGHrn5ZuTYGlzhl+GjG9Ktdh/irxrQUPc27+ThUrc61FYXX9JxXsm+H4LAtzAM
-N8O1lJxtVqxDpirVUdeKcN3qIKXfLwFbL321eKighRBh4xR6+tbIWZkFYKQsYBKk
-z11cvgdrBxZmr8AI+7qBpTlnE83aXlDKtLLyWSRRmJ/s/urZ+LXreg9tZ3FY5Iu0
-A//nTyfq/3iT1m94GGhHO47bZOdS1XSqQ31sXhWgMnOaej4U1eh9XT7a16GrJ99d
-w5FMguMv/4ZP9TsqDeJ0xjAZ+2jnx8uETqlFSD89b8jf/Q/UXYCV4LnXEH5JqDl+
-+IrpujI9rCEURiJJm471O8gBIRDvyebKyh05Q1magQNy6H+njgdaocAtZ+MAz+Le
-X+uxfXJmtjaGL3eFFv0wtJW+xUhI6q3s7nTMxvZ399FRXYJ4q6WvY6ctuKE2NM2G
-219lZxsxxWE=
-=1leu
+iQIcBAEBCgAGBQJUKgtVAAoJENju1/PIO/qaD8EP/Aqw5TyaUWCYtj3foQbSPVfs
+Y8kcfO9a5SFuGLhG/VeyxRIUu0AkphgJeHzWQdTgBfI6IJ1AAKsEghAUxc1uyF2H
+nYqNXPoGrWla/GCyQwbm5/bNCcQfJqQVwvKLeV9Uj7/ng149sy0i4IV+S/5+73wI
+8BLWLQ2XeWft+kxUonVhLQkYabk8v4whroEPu9w5zbxXHy7vjQAg2FyHC0lzhNfd
+YA9PSwfwTHKjhq3OJxmg1xek2xhUu+kq4LBPyxFonSXrWoqiW/dgHY/5IQ0RQ+4Z
+YFMBVwPCaaVb6L+GG/EKt0jKobzucwOxKEYVNd6xsWlW/vMUZNFLmmIDGwZM5E26
+yZ7rUuSvIDnG6YR2Sxgy/3RWRgWgFzMtKBW17c2bmOdpET35P7Zlz2Grbvs/xFZR
+YT7VFUTyiTE4cy9E1noNvuQupItgy3VugfNIcwgKps0NRPNPHoK+vQaJX9sVefUy
+MXFChTnoQdx4tZH/F7g8ePvKe0lvEd9JutpkU6YJn5Cku8i4yJlpSPsuutG7eTGz
+d2xxBbxGBSQD6BFSzV2CvrnvALKjHTgujtPeo6O3Mfp+vxFwsaueVy3JHLTcWnOt
+0pP7LsBd3u4VtDFyffK148u0AZC0ODjtTC7Q2aVKijCxMx1Ey96InVmvTiFQuuYx
+SHZb/1S+U9rXmSE7k6mo
+=whSP
 -----END PGP SIGNATURE-----
 
---=-/x80jG4m5tRqm08w3KHg--
+--XsQoSWH+UP9D9v3l--
