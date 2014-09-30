@@ -1,113 +1,74 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v7 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
-Date: Tue, 30 Sep 2014 09:46:32 -0600
-Message-ID: <20140930154632.GB528@ilina-mac.local>
-References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
- <1411779495-39724-6-git-send-email-lina.iyer@linaro.org>
- <5429E8D6.6080101@codeaurora.org>
- <20140930085849.GA11393@e102568-lin.cambridge.arm.com>
+From: "Moore, Robert" <robert.moore@intel.com>
+Subject: RE: [PATCH 4/5] ACPICA: Introduce acpi_enable_all_wakeup_gpes()
+Date: Tue, 30 Sep 2014 15:52:16 +0000
+Message-ID: <94F2FBAB4432B54E8AACC7DFDE6C92E37D20AA35@ORSMSX112.amr.corp.intel.com>
+References: <1622293.rpSt5UtDk3@vostro.rjw.lan>
+ <4021848.ZWdxDcq97A@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:57632 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751005AbaI3Pqi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 11:46:38 -0400
-Received: by mail-pa0-f49.google.com with SMTP id lj1so3866521pab.22
-        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 08:46:37 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20140930085849.GA11393@e102568-lin.cambridge.arm.com>
+Received: from mga14.intel.com ([192.55.52.115]:32591 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751159AbaI3PwV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 30 Sep 2014 11:52:21 -0400
+In-Reply-To: <4021848.ZWdxDcq97A@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, Sep 30 2014 at 02:58 -0600, Lorenzo Pieralisi wrote:
->On Tue, Sep 30, 2014 at 12:18:46AM +0100, Stephen Boyd wrote:
->> On 09/26/14 17:58, Lina Iyer wrote:
->> > diff --git a/drivers/cpuidle/cpuidle-qcom.c b/drivers/cpuidle/cpuidle-qcom.c
-[...]
-> > +static int qcom_lpm_enter_wfi(struct cpuidle_device *dev,
->> > +				struct cpuidle_driver *drv, int index)
->> > +{
->> > +	qcom_idle_enter(PM_SLEEP_MODE_WFI);
->>
->> Why can't we just pass index here? It would be nice to not need to
->> include soc/qcom/pm.h in this file.
->
->I think this is definitely worth exploring.
->
-Sorry, I explained in the other thread. I feel that we are dispersing
-the translation information all over the place in doing so. The reason
-being, the compatible flag is not passed over to pm.c and I believe this
-is where it should be.
-
->> > +	return index;
->> > +}
->> > +
->> > +static int qcom_lpm_enter_spc(struct cpuidle_device *dev,
->> > +				struct cpuidle_driver *drv, int index)
->> > +{
->> > +	cpu_pm_enter();
->> > +	qcom_idle_enter(PM_SLEEP_MODE_SPC);
->> > +	cpu_pm_exit();
->> > +
->> > +	return index;
->> > +}
->> > +
->> > +static struct cpuidle_driver qcom_cpuidle_driver = {
->> > +	.name	= "qcom_cpuidle",
->> > +	.owner	= THIS_MODULE,
->> > +};
->> > +
->> > +static const struct of_device_id qcom_idle_state_match[] __initconst = {
->> > +	{ .compatible = "qcom,idle-state-wfi", .data = qcom_lpm_enter_wfi },
->> > +	{ .compatible = "qcom,idle-state-spc", .data = qcom_lpm_enter_spc },
->> > +	{ },
->> > +};
-This is the onward translation from QCOM's idle states to cpuidle's
-states and passing cpuidle index value to SoC layer, opens up
-possibility for errors.
-
->> > +
->> > +static int qcom_cpuidle_probe(struct platform_device *pdev)
->> > +{
->> > +	struct cpuidle_driver *drv = &qcom_cpuidle_driver;
->> > +	int ret;
->> > +
->> > +	qcom_idle_enter = (void *)(pdev->dev.platform_data);
->> > +	if (!qcom_idle_enter)
->> > +		return -EFAULT;
->>
->> Error code looks a little wrong. -ENODEV?
->>
->> > +
->> > +	 /* Probe for other states including platform WFI */
->> > +	ret = dt_init_idle_driver(drv, qcom_idle_state_match, 0);
->> > +	if (ret <= 0) {
->> > +		pr_err("%s: No cpuidle state found.\n", __func__);
->>
->> This would be true if ret == 0, but if it's < 0 that isn't true. Drop
->> the print?
->
->I think we can safely drop the print, DT parsing code already barfs on
->error. Maybe you want to keep the (ret == 0) case to signal that driver
->was probed but no idle states were found.
->
-OK
->> > +		return ret;
->> > +	}
->> > +
->> > +	ret = cpuidle_register(drv, NULL);
->> > +	if (ret) {
->> > +		pr_err("%s: failed to register cpuidle driver\n", __func__);
->>
->> This seems redundant given that cpuidle_register() already prints an
->> error when it fails.
->
->Yes, I will drop it from arm64 driver too as part of a minor clean-up
->when the merge window closes (also other drivers do that, and as you say
->it is redundant).
->
-OK
->
+SWYgeW91IG5lZWQgaXQsIHN1cmUuDQpMZXQgbWUga25vdyB3aGVuIHRoZXJlIGlzIGFuIEFDUElD
+QSB2ZXJzaW9uDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBSYWZh
+ZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJqd0Byand5c29ja2kubmV0XQ0KPiBTZW50OiBNb25kYXks
+IFNlcHRlbWJlciAyOSwgMjAxNCA1OjI2IFBNDQo+IFRvOiBBQ1BJIERldmVsIE1hbGluZyBMaXN0
+OyBNb29yZSwgUm9iZXJ0DQo+IENjOiBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0OyBaaGFuZywg
+UnVpOyBMaW51eCBQTSBsaXN0DQo+IFN1YmplY3Q6IFtQQVRDSCA0LzVdIEFDUElDQTogSW50cm9k
+dWNlIGFjcGlfZW5hYmxlX2FsbF93YWtldXBfZ3BlcygpDQo+IA0KPiBGcm9tOiBSYWZhZWwgSi4g
+V3lzb2NraSA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+DQo+IA0KPiBBZGQgYSByb3V0aW5l
+IGZvciBob3N0IE9TZXMgdG8gZW5hYmxlIGFsbCB3YWtldXAgR1BFcyBhbmQgZGlzYWJsZSBhbGwg
+b2YNCj4gdGhlIG5vbi13YWtldXAgb25lcyBhdCB0aGUgc2FtZSB0aW1lLg0KPiANCj4gSXQgd2ls
+bCBiZSB1c2VkIGZvciB0aGUgaGFuZGxpbmcgb2YgR1BFIHdha2V1cCBmcm9tIHN1c3BlbmQtdG8t
+aWRsZSBpbg0KPiBMaW51eC4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBKLiBXeXNvY2tp
+IDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4NCj4gLS0tDQo+IA0KPiBCb2IsIHBsZWFzZSBs
+ZXQgbWUga25vdyBpZiBJIGNhbiBmYXN0LXRyYWNrIHRoaXMgb25lLg0KPiANCj4gLS0tDQo+ICBk
+cml2ZXJzL2FjcGkvYWNwaWNhL2V2eGZncGUuYyB8ICAgMzIgKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysNCj4gIGluY2x1ZGUvYWNwaS9hY3BpeGYuaCAgICAgICAgIHwgICAgMSArDQo+
+ICAyIGZpbGVzIGNoYW5nZWQsIDMzIGluc2VydGlvbnMoKykNCj4gDQo+IEluZGV4OiBsaW51eC1w
+bS9kcml2ZXJzL2FjcGkvYWNwaWNhL2V2eGZncGUuYw0KPiA9PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09DQo+IC0tLSBsaW51
+eC1wbS5vcmlnL2RyaXZlcnMvYWNwaS9hY3BpY2EvZXZ4ZmdwZS5jDQo+ICsrKyBsaW51eC1wbS9k
+cml2ZXJzL2FjcGkvYWNwaWNhL2V2eGZncGUuYw0KPiBAQCAtNTk2LDYgKzU5NiwzOCBAQCBhY3Bp
+X3N0YXR1cyBhY3BpX2VuYWJsZV9hbGxfcnVudGltZV9ncGVzDQo+IA0KPiAgQUNQSV9FWFBPUlRf
+U1lNQk9MKGFjcGlfZW5hYmxlX2FsbF9ydW50aW1lX2dwZXMpDQo+IA0KPiArLyoqKioqKioqKioq
+KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
+KioNCj4gKyoqKioqKioqDQo+ICsgKg0KPiArICogRlVOQ1RJT046ICAgIGFjcGlfZW5hYmxlX2Fs
+bF93YWtldXBfZ3Blcw0KPiArICoNCj4gKyAqIFBBUkFNRVRFUlM6ICBOb25lDQo+ICsgKg0KPiAr
+ICogUkVUVVJOOiAgICAgIFN0YXR1cw0KPiArICoNCj4gKyAqIERFU0NSSVBUSU9OOiBFbmFibGUg
+YWxsICJ3YWtldXAiIEdQRXMgYW5kIGRpc2FibGUgYWxsIG9mIHRoZSBvdGhlcg0KPiBHUEVzLCBp
+bg0KPiArICogICAgICAgICAgICAgIGFsbCBHUEUgYmxvY2tzLg0KPiArICoNCj4gKw0KPiArKioq
+KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
+KioqKioqKioqKioNCj4gKyoqKioqKiovDQo+ICsNCj4gK2FjcGlfc3RhdHVzIGFjcGlfZW5hYmxl
+X2FsbF93YWtldXBfZ3Blcyh2b2lkKSB7DQo+ICsJYWNwaV9zdGF0dXMgc3RhdHVzOw0KPiArDQo+
+ICsJQUNQSV9GVU5DVElPTl9UUkFDRShhY3BpX2VuYWJsZV9hbGxfd2FrZXVwX2dwZXMpOw0KPiAr
+DQo+ICsJc3RhdHVzID0gYWNwaV91dF9hY3F1aXJlX211dGV4KEFDUElfTVRYX0VWRU5UUyk7DQo+
+ICsJaWYgKEFDUElfRkFJTFVSRShzdGF0dXMpKSB7DQo+ICsJCXJldHVybl9BQ1BJX1NUQVRVUyhz
+dGF0dXMpOw0KPiArCX0NCj4gKw0KPiArCXN0YXR1cyA9IGFjcGlfaHdfZW5hYmxlX2FsbF93YWtl
+dXBfZ3BlcygpOw0KPiArCSh2b2lkKWFjcGlfdXRfcmVsZWFzZV9tdXRleChBQ1BJX01UWF9FVkVO
+VFMpOw0KPiArDQo+ICsJcmV0dXJuX0FDUElfU1RBVFVTKHN0YXR1cyk7DQo+ICt9DQo+ICsNCj4g
+K0FDUElfRVhQT1JUX1NZTUJPTChhY3BpX2VuYWJsZV9hbGxfd2FrZXVwX2dwZXMpDQo+ICsNCj4g
+DQo+IC8qKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
+KioqKioqKioqKioqKioqKioqKioqDQo+ICoqKioqKg0KPiAgICoNCj4gICAqIEZVTkNUSU9OOiAg
+ICBhY3BpX2luc3RhbGxfZ3BlX2Jsb2NrDQo+IEluZGV4OiBsaW51eC1wbS9pbmNsdWRlL2FjcGkv
+YWNwaXhmLmgNCj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PQ0KPiAtLS0gbGludXgtcG0ub3JpZy9pbmNsdWRlL2FjcGkv
+YWNwaXhmLmgNCj4gKysrIGxpbnV4LXBtL2luY2x1ZGUvYWNwaS9hY3BpeGYuaA0KPiBAQCAtNjky
+LDYgKzY5Miw3IEBAIEFDUElfSFdfREVQRU5ERU5UX1JFVFVSTl9TVEFUVVMoYWNwaV9zdGENCj4g
+IAkJCQkJCSAgICAgKmV2ZW50X3N0YXR1cykpDQo+ICBBQ1BJX0hXX0RFUEVOREVOVF9SRVRVUk5f
+U1RBVFVTKGFjcGlfc3RhdHVzIGFjcGlfZGlzYWJsZV9hbGxfZ3Blcyh2b2lkKSkNCj4gQUNQSV9I
+V19ERVBFTkRFTlRfUkVUVVJOX1NUQVRVUyhhY3BpX3N0YXR1cw0KPiBhY3BpX2VuYWJsZV9hbGxf
+cnVudGltZV9ncGVzKHZvaWQpKQ0KPiArQUNQSV9IV19ERVBFTkRFTlRfUkVUVVJOX1NUQVRVUyhh
+Y3BpX3N0YXR1cw0KPiArYWNwaV9lbmFibGVfYWxsX3dha2V1cF9ncGVzKHZvaWQpKQ0KPiANCj4g
+IEFDUElfSFdfREVQRU5ERU5UX1JFVFVSTl9TVEFUVVMoYWNwaV9zdGF0dXMNCj4gIAkJCQlhY3Bp
+X2dldF9ncGVfZGV2aWNlKHUzMiBncGVfaW5kZXgsDQoNCg==
