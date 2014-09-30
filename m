@@ -1,34 +1,46 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 00/10] power/reset: Register drivers with restart handler
-Date: Tue, 30 Sep 2014 10:48:26 -0700
-Message-ID: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 02/10] power/reset: xgene: Return -ENOMEM if out of memory
+Date: Tue, 30 Sep 2014 10:48:28 -0700
+Message-ID: <1412099316-23167-3-git-send-email-linux@roeck-us.net>
+References: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:39018 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752718AbaI3Rsm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 13:48:42 -0400
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:52380 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752959AbaI3Rsr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 13:48:47 -0400
+In-Reply-To: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
+Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Loc Ho <lho@apm.com>
 
-Convert drivers to use the kernel restart handler instead of setting
-arm_pm_restart directly.
+It is customary to return an error code of -ENOMEM if the system
+is out of memory. Also, in that case, the infrastructure will report
+an error, so it is unnecessary to report it again.
 
-This patch set depends on the kernel restart handler patchset submitted
-earlier.
+Cc: Loc Ho <lho@apm.com>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+ drivers/power/reset/xgene-reboot.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Patch 01/10 was tested with qemu. All other patches were compile tested only.
+diff --git a/drivers/power/reset/xgene-reboot.c b/drivers/power/reset/xgene-reboot.c
+index ecd55f8..20cf7c3 100644
+--- a/drivers/power/reset/xgene-reboot.c
++++ b/drivers/power/reset/xgene-reboot.c
+@@ -61,10 +61,8 @@ static int xgene_reboot_probe(struct platform_device *pdev)
+ 	struct xgene_reboot_context *ctx;
+ 
+ 	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
+-	if (!ctx) {
+-		dev_err(&pdev->dev, "out of memory for context\n");
+-		return -ENODEV;
+-	}
++	if (!ctx)
++		return -ENOMEM;
+ 
+ 	ctx->csr = of_iomap(pdev->dev.of_node, 0);
+ 	if (!ctx->csr) {
+-- 
+1.9.1
 
-Some of the restart handlers loop forever after the reset instruction was
-executed. It might makes sense to use mdelay() instead and return if resetting
-the system failed. I did not implement that since I do not know what reasonable
-delays would be.
-
-The series does not include drivers to be introduced in the next commit window
-(at91, versatile, st-poweroff). Those can be converted later. I also did not
-convert the sun6i driver, in the assumption that it will be removed since the
-sunxi watchdog driver will register a restart handler for the architecture.
-
-v2: Added Tested-by: and Acked-by: tags where received.
-    Return error if restart handler registration fails.
