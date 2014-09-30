@@ -1,116 +1,54 @@
-From: Joerg Roedel <joro@8bytes.org>
-Subject: [PATCH] PM / Hibernate: Iterate over set bits instead of PFNs in swsusp_free()
-Date: Tue, 30 Sep 2014 13:31:29 +0200
-Message-ID: <1412076689-7001-1-git-send-email-joro@8bytes.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 0/4] PM / Domains: Fix race conditions during boot
+Date: Tue, 30 Sep 2014 14:43:49 +0200
+Message-ID: <1412081033-8136-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 8bytes.org ([81.169.241.247]:59079 "EHLO theia.8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751190AbaI3Lbf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Sep 2014 07:31:35 -0400
+Received: from mail-la0-f43.google.com ([209.85.215.43]:37090 "EHLO
+	mail-la0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbaI3MoG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 08:44:06 -0400
+Received: by mail-la0-f43.google.com with SMTP id gb8so10293165lab.2
+        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 05:44:01 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, joro@8bytes.org, jroedel@suse.de
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-From: Joerg Roedel <jroedel@suse.de>
+When there are more than one device in a PM domain these will obviously
+be probed at different times. Depending on timing and the implemented
+support for runtime PM in a driver/subsystem, genpd may be advised to
+power off a PM domain after a successful probe sequence.
+    
+Ideally we should have relied on the driver/subsystem, through runtime
+PM, to bring their device's PM domain into powered state prior doing
+probing if such requirement exist.
+    
+Since this is not a common practice by drivers/subsystems, enforcing
+such a change doesn't seem viable.
+    
+Instead, let's improve the situation, by preventing genpd from powering
+off any of the PM domains until late_init. At that point genpd already
+tries to power off unused PM domains, so it seems like a decent match.
+    
+Cases which can't be covered within the window of until late_init needs
+to be adressed separately and likely through a more common long term
+solution.
 
-The existing implementation of swsusp_free iterates over all
-pfns in the system and checks every bit in the two memory
-bitmaps.
 
-This doesn't scale very well with large numbers of pfns,
-especially when the bitmaps are not populated very densly.
-Change the algorithm to iterate over the set bits in the
-bitmaps instead to make it scale better in large memory
-configurations.
+Ulf Hansson (4):
+  PM / Domains: Remove pm_genpd_dev_need_restore() API
+  ARM: exynos: Ensure PM domains are powered at initialization
+  PM / Domains: Expect PM domains being powered at initialization
+  PM / Domains: Enforce PM domains to stay powered during boot
 
-Also add a memory_bm_clear_current() helper function that
-clears the bit for the last position returned from the
-memory bitmap.
+ arch/arm/mach-exynos/pm_domains.c   |  7 ++++---
+ arch/arm/mach-s3c64xx/pm.c          |  4 ++--
+ arch/arm/mach-shmobile/pm-r8a7779.c |  2 +-
+ arch/arm/mach-shmobile/pm-rmobile.c |  2 +-
+ drivers/base/power/domain.c         | 42 ++++++++++++++++---------------------
+ include/linux/pm_domain.h           |  7 +++----
+ 6 files changed, 29 insertions(+), 35 deletions(-)
 
-This new version adds a !NULL check for the memory bitmaps
-before they are walked. Not doing so causes a kernel crash
-when the bitmaps are NULL.
-
-Signed-off-by: Joerg Roedel <jroedel@suse.de>
----
- kernel/power/snapshot.c | 54 +++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 39 insertions(+), 15 deletions(-)
-
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index f1604d8..791a618 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -725,6 +725,14 @@ static void memory_bm_clear_bit(struct memory_bitmap *bm, unsigned long pfn)
- 	clear_bit(bit, addr);
- }
- 
-+static void memory_bm_clear_current(struct memory_bitmap *bm)
-+{
-+	int bit;
-+
-+	bit = max(bm->cur.node_bit - 1, 0);
-+	clear_bit(bit, bm->cur.node->data);
-+}
-+
- static int memory_bm_test_bit(struct memory_bitmap *bm, unsigned long pfn)
- {
- 	void *addr;
-@@ -1333,23 +1341,39 @@ static struct memory_bitmap copy_bm;
- 
- void swsusp_free(void)
- {
--	struct zone *zone;
--	unsigned long pfn, max_zone_pfn;
-+	unsigned long fb_pfn, fr_pfn;
- 
--	for_each_populated_zone(zone) {
--		max_zone_pfn = zone_end_pfn(zone);
--		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
--			if (pfn_valid(pfn)) {
--				struct page *page = pfn_to_page(pfn);
--
--				if (swsusp_page_is_forbidden(page) &&
--				    swsusp_page_is_free(page)) {
--					swsusp_unset_page_forbidden(page);
--					swsusp_unset_page_free(page);
--					__free_page(page);
--				}
--			}
-+	if (!forbidden_pages_map || !free_pages_map)
-+		goto out;
-+
-+	memory_bm_position_reset(forbidden_pages_map);
-+	memory_bm_position_reset(free_pages_map);
-+
-+loop:
-+	fr_pfn = memory_bm_next_pfn(free_pages_map);
-+	fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
-+
-+	/*
-+	 * Find the next bit set in both bitmaps. This is guaranteed to
-+	 * terminate when fb_pfn == fr_pfn == BM_END_OF_MAP.
-+	 */
-+	do {
-+		if (fb_pfn < fr_pfn)
-+			fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
-+		if (fr_pfn < fb_pfn)
-+			fr_pfn = memory_bm_next_pfn(free_pages_map);
-+	} while (fb_pfn != fr_pfn);
-+
-+	if (fr_pfn != BM_END_OF_MAP && pfn_valid(fr_pfn)) {
-+		struct page *page = pfn_to_page(fr_pfn);
-+
-+		memory_bm_clear_current(forbidden_pages_map);
-+		memory_bm_clear_current(free_pages_map);
-+		__free_page(page);
-+		goto loop;
- 	}
-+
-+out:
- 	nr_copy_pages = 0;
- 	nr_meta_pages = 0;
- 	restore_pblist = NULL;
 -- 
 1.9.1
 
