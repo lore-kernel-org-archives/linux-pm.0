@@ -1,46 +1,65 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH v7 3/5] ARM: dts: add RK3xxx CPU Thermal data
-Date: Tue, 30 Sep 2014 11:35:53 -0700
-Message-ID: <CAD=FV=Wyv9P9cvTFEfD5_0BzgFNC5nyduT0THKKwERkX4-cY0Q@mail.gmail.com>
-References: <1411900693-30484-1-git-send-email-caesar.wang@rock-chips.com>
-	<1411900693-30484-4-git-send-email-caesar.wang@rock-chips.com>
-	<CAD=FV=WRYeW4giA+yRWmXGxAvdG38GcW-7tA39SZDH1GPamf6A@mail.gmail.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH v7 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
+Date: Tue, 30 Sep 2014 11:41:19 -0700
+Message-ID: <7h8ul1x86o.fsf@deeprootsystems.com>
+References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
+	<1411779495-39724-6-git-send-email-lina.iyer@linaro.org>
+	<20140929153154.GF2165@e102568-lin.cambridge.arm.com>
+	<7hmw9hypj9.fsf@deeprootsystems.com>
+	<alpine.LFD.2.11.1409301349260.5311@knanqh.ubzr>
+	<CAMAWPa_ZGxOA3KfAPWhfRhJ8KcYYQvgXM9JwzmNwHKPTbchWSA@mail.gmail.com>
+	<alpine.LFD.2.11.1409301428020.5311@knanqh.ubzr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <CAD=FV=WRYeW4giA+yRWmXGxAvdG38GcW-7tA39SZDH1GPamf6A@mail.gmail.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Caesar Wang <caesar.wang@rock-chips.com>
-Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Arnd Bergmann <arnd@arndb.de>, zyf <zyf@rock-chips.com>, linux-rockchip@lists.infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Eddie Cai <cf@rock-chips.com>, Derek Basehore <dbasehore@chromium.org>, Tao Huang <huangtao@rock-chips.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.19.201]:41129 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750836AbaI3SlV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 30 Sep 2014 14:41:21 -0400
+In-Reply-To: <alpine.LFD.2.11.1409301428020.5311@knanqh.ubzr> (Nicolas Pitre's
+	message of "Tue, 30 Sep 2014 14:30:07 -0400 (EDT)")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "galak@codeaurora.org" <galak@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>
 
-Hi,
+Nicolas Pitre <nicolas.pitre@linaro.org> writes:
 
-On Tue, Sep 30, 2014 at 11:24 AM, Doug Anderson <dianders@chromium.org> wrote:
-> Caesar,
+> On Tue, 30 Sep 2014, Kevin Hilman wrote:
 >
-> On Sun, Sep 28, 2014 at 3:38 AM, Caesar Wang <caesar.wang@rock-chips.com> wrote:
->> This patch changes a dtsi file to contain the thermal data
->> on RK3288 and later SoCs. This data will
->> enable a thermal shutdown over 125C.
->>
->> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
->> ---
->>  arch/arm/boot/dts/rk3xxx-cpu-thermal.dtsi | 32 +++++++++++++++++++++++++++++++
->>  1 file changed, 32 insertions(+)
->>  create mode 100644 arch/arm/boot/dts/rk3xxx-cpu-thermal.dtsi
->
-> I haven't done lots of review of this series, but I did notice that
-> this file has bad spacing.  It's fairly obvious in your gerrit patch
-> <https://chromium-review.googlesource.com/#/c/220270/1/arch/arm/boot/dts/rk3xxx-cpu-thermal.dtsi>
-> because gerrit (by default) shows you "tab" characters...
->
-> In general you should use tab for indentation, not spaces.  You seem
-> to use a mix of the two.
+>> On Tue, Sep 30, 2014 at 10:51 AM, Nicolas Pitre
+>> <nicolas.pitre@linaro.org> wrote:
+>> > On Tue, 30 Sep 2014, Kevin Hilman wrote:
+>> >
+>> >> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
 
-I suppose I should also point out that it's generally not great to
-name things "rk3xxx" since it makes too many predictions about how
-future products will behave.  It's better to name things after the
-first relevant product.  I'd just name this "rk3288-cpu-thermal.dtsi".
+[...]
 
--Doug
+>> >> > This may be misleading. Call it PlatformWFI or something like that, not WFI if
+>> >> > that's not what it is.
+>> >>
+>> >> This gets at a little pet peeve of mine:
+>> >>
+>> >> IMO, naming any state with "WFI" is a bit confusing, because typically
+>> >> *every* idle state is entered by one (or more) CPU executing WFI, no?
+>> >
+>> > Agreed.
+>> >
+>> > The only state called "WFI" should be the one that only executes the WFI
+>> > instruction without any other hardware setup around it.
+>> 
+>> Well, I would go even further in that none of the states should be
+>> called WFI, because WFI is used to enter all of them.
+>
+> Fair enough.
+>
+> So let's fix this by finding a name for that state that consists of only 
+> executing WFI and that every SOC has.
+>
+> Suggestions?
+
+The DT idle-states binding doc (though seemingly written more with
+arm64 and SBSA in mind) uses "standby" for the shallowest idle.
+
+Kevin
+
