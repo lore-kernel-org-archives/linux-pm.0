@@ -1,46 +1,42 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [RFC PATCH 07/16] c6x: support poweroff through poweroff handler call chain
-Date: Tue, 30 Sep 2014 11:00:47 -0700
-Message-ID: <1412100056-15517-8-git-send-email-linux@roeck-us.net>
+Subject: [RFC PATCH 09/16] metag: support poweroff through poweroff handler call chain
+Date: Tue, 30 Sep 2014 11:00:49 -0700
+Message-ID: <1412100056-15517-10-git-send-email-linux@roeck-us.net>
 References: <1412100056-15517-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-mips-bounce@linux-mips.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:42520 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753622AbaI3SBb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 14:01:31 -0400
 In-Reply-To: <1412100056-15517-1-git-send-email-linux@roeck-us.net>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-help: <mailto:ecartis@linux-mips.org?Subject=help>
-List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
-List-software: Ecartis version 1.0.0
-List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
-List-owner: <mailto:ralf@linux-mips.org>
-List-post: <mailto:linux-mips@linux-mips.org>
-List-archive: <http://www.linux-mips.org/archives/linux-mips/>
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org, linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org, linux-mips@linux-mips.org, linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, xen-devel@lists.xenproject.org, Guenter Roeck <linux@roeck-us.net>, Mark Salter <msalter@redhat.com>, Aurelien Jacquiot <a-jacquiot@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org, linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org, linux-mips@linux-mips.org, linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, xen-devel@lists.xenproject.org, Guenter Roeck <linux@roeck-us.net>, James Hogan <james.hogan@imgtec.com>
 
 The kernel core now supports a poweroff handler call chain
 to remove power from the system. Call it if pm_power_off
 is set to NULL.
 
-Cc: Mark Salter <msalter@redhat.com>
-Cc: Aurelien Jacquiot <a-jacquiot@ti.com>
+Cc: James Hogan <james.hogan@imgtec.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- arch/c6x/kernel/process.c | 2 ++
+ arch/metag/kernel/process.c | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/arch/c6x/kernel/process.c b/arch/c6x/kernel/process.c
-index 57d2ea8..ddf088e 100644
---- a/arch/c6x/kernel/process.c
-+++ b/arch/c6x/kernel/process.c
-@@ -75,6 +75,8 @@ void machine_power_off(void)
+diff --git a/arch/metag/kernel/process.c b/arch/metag/kernel/process.c
+index 483dff9..ff7f3eb 100644
+--- a/arch/metag/kernel/process.c
++++ b/arch/metag/kernel/process.c
+@@ -92,6 +92,8 @@ void machine_power_off(void)
  {
  	if (pm_power_off)
  		pm_power_off();
 +	else
 +		do_kernel_poweroff();
- 	halt_loop();
+ 	smp_send_stop();
+ 	hard_processor_halt(HALT_OK);
  }
- 
 -- 
 1.9.1
+
