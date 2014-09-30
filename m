@@ -1,45 +1,46 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 2/4] ARM: exynos: Ensure PM domains are powered at initialization
-Date: Tue, 30 Sep 2014 11:33:18 -0700
-Message-ID: <7hiok5x8k1.fsf@deeprootsystems.com>
-References: <1412081033-8136-1-git-send-email-ulf.hansson@linaro.org>
-	<1412081033-8136-3-git-send-email-ulf.hansson@linaro.org>
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [PATCH v7 3/5] ARM: dts: add RK3xxx CPU Thermal data
+Date: Tue, 30 Sep 2014 11:35:53 -0700
+Message-ID: <CAD=FV=Wyv9P9cvTFEfD5_0BzgFNC5nyduT0THKKwERkX4-cY0Q@mail.gmail.com>
+References: <1411900693-30484-1-git-send-email-caesar.wang@rock-chips.com>
+	<1411900693-30484-4-git-send-email-caesar.wang@rock-chips.com>
+	<CAD=FV=WRYeW4giA+yRWmXGxAvdG38GcW-7tA39SZDH1GPamf6A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:40798 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751347AbaI3SdU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Sep 2014 14:33:20 -0400
-In-Reply-To: <1412081033-8136-3-git-send-email-ulf.hansson@linaro.org> (Ulf
-	Hansson's message of "Tue, 30 Sep 2014 14:43:51 +0200")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <CAD=FV=WRYeW4giA+yRWmXGxAvdG38GcW-7tA39SZDH1GPamf6A@mail.gmail.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Caesar Wang <caesar.wang@rock-chips.com>
+Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Arnd Bergmann <arnd@arndb.de>, zyf <zyf@rock-chips.com>, linux-rockchip@lists.infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Eddie Cai <cf@rock-chips.com>, Derek Basehore <dbasehore@chromium.org>, Tao Huang <huangtao@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+Hi,
 
-> At ->probe() it's common practice for drivers/subsystems to bring their
-> devices to full power and without depending on CONFIG_PM_RUNTIME.
+On Tue, Sep 30, 2014 at 11:24 AM, Doug Anderson <dianders@chromium.org> wrote:
+> Caesar,
 >
-> We could also expect that drivers/subsystems requires their device's
-> corresponding PM domains to be powered, to successfully complete a
-> ->probe() sequence.
+> On Sun, Sep 28, 2014 at 3:38 AM, Caesar Wang <caesar.wang@rock-chips.com> wrote:
+>> This patch changes a dtsi file to contain the thermal data
+>> on RK3288 and later SoCs. This data will
+>> enable a thermal shutdown over 125C.
+>>
+>> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+>> ---
+>>  arch/arm/boot/dts/rk3xxx-cpu-thermal.dtsi | 32 +++++++++++++++++++++++++++++++
+>>  1 file changed, 32 insertions(+)
+>>  create mode 100644 arch/arm/boot/dts/rk3xxx-cpu-thermal.dtsi
 >
-> Align to the behavior above, by ensuring all PM domains are powered
-> prior initialization of a generic PM domain.
+> I haven't done lots of review of this series, but I did notice that
+> this file has bad spacing.  It's fairly obvious in your gerrit patch
+> <https://chromium-review.googlesource.com/#/c/220270/1/arch/arm/boot/dts/rk3xxx-cpu-thermal.dtsi>
+> because gerrit (by default) shows you "tab" characters...
 >
-> Do note, since the generic PM domain will try to power off unused PM
-> domains at late_init, there are no increased power consumption over
-> time.
+> In general you should use tab for indentation, not spaces.  You seem
+> to use a mix of the two.
 
-IMO "no increased power consumption" is a bit misleading because
-boot-time power consumption may have a major increase when all power
-domains are powered on.  Sure, they will eventually (hopefully) be
-turned off in after late_initcall, but there will still be an impact.
+I suppose I should also point out that it's generally not great to
+name things "rk3xxx" since it makes too many predictions about how
+future products will behave.  It's better to name things after the
+first relevant product.  I'd just name this "rk3288-cpu-thermal.dtsi".
 
-I guess the Samsung folks should comment here on whether that is
-significant.
-
-Kevin
+-Doug
