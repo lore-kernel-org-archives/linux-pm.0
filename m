@@ -1,40 +1,55 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v2] thermal: Add QPNP PMIC temperature alarm driver
-Date: Tue, 30 Sep 2014 12:46:18 -0700
-Message-ID: <542B088A.1050601@codeaurora.org>
-References: <1411651825-14240-1-git-send-email-iivanov@mm-sol.com>	  <54254C4E.3070807@smartplayin.com> <1411998865.5395.5.camel@iivanov-dev>	 <542A31DF.7020402@smartplayin.com> <1412062606.5395.10.camel@iivanov-dev>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/4] PM / Domains: Fix race conditions during boot
+Date: Tue, 30 Sep 2014 22:08:46 +0200
+Message-ID: <6902885.zdj1puMRg5@vostro.rjw.lan>
+References: <1412081033-8136-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:58780 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751165AbaI3TqV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 15:46:21 -0400
-In-Reply-To: <1412062606.5395.10.camel@iivanov-dev>
+Received: from v094114.home.net.pl ([79.96.170.134]:65362 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750939AbaI3Tsu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 15:48:50 -0400
+In-Reply-To: <1412081033-8136-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Ivan T. Ivanov" <iivanov@mm-sol.com>, Kiran Padwal <kiran.padwal@smartplayin.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
 
-On 09/30/14 00:36, Ivan T. Ivanov wrote:
-> On Tue, 2014-09-30 at 10:00 +0530, Kiran Padwal wrote:
->>
->> I have Linaro cross tool chain with version-4.8.3 and I am simply doing "make zImage" without any option.
-> Hm, no warnings with arm-unknown-linux-gnueabi-gcc (GCC) 4.6.3 and
-> arm-linux-gnueabihf-gcc (crosstool-NG linaro-1.13.1-4.9-2014.09, but
-> indeed arm-linux-gnueabihf-gcc (crosstool-NG linaro-1.13.1-4.8-2014.03.
->
-> I will say that this is false positive :-). Please update your tool-chain.
+On Tuesday, September 30, 2014 02:43:49 PM Ulf Hansson wrote:
+> When there are more than one device in a PM domain these will obviously
+> be probed at different times. Depending on timing and the implemented
+> support for runtime PM in a driver/subsystem, genpd may be advised to
+> power off a PM domain after a successful probe sequence.
+>     
+> Ideally we should have relied on the driver/subsystem, through runtime
+> PM, to bring their device's PM domain into powered state prior doing
+> probing if such requirement exist.
+>     
+> Since this is not a common practice by drivers/subsystems, enforcing
+> such a change doesn't seem viable.
+>     
+> Instead, let's improve the situation, by preventing genpd from powering
+> off any of the PM domains until late_init. At that point genpd already
+> tries to power off unused PM domains, so it seems like a decent match.
+>     
+> Cases which can't be covered within the window of until late_init needs
+> to be adressed separately and likely through a more common long term
+> solution.
 
-Hopefully you're joking. Once this merges someone will find the warning
-and complain. Telling them to upgrade their compiler isn't going to work.
+The history here is that we started with something like what the patches
+do and then realized that on some systems we don't want certain power domains
+to be powered on even for a while (for reasons I can't recall today,
+unfortunately).  So this may not be the case any more, but I'm not actually
+sure and it would be good to check.
 
-I wonder if checking for rc != 0 instead of rc < 0 would silence the
-warning? Or get rid of the entire wrapper function and just use regmap
-functions directly.
+Also I'm pretty sure we'd like to do the opposite (that is, leave things
+in low-power states until we need to access them) going forward, so I'm
+seeing this as a step back.
+
+What's the real motivation here?
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
