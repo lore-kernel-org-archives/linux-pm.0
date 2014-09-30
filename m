@@ -1,65 +1,120 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v7 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
-Date: Tue, 30 Sep 2014 11:41:19 -0700
-Message-ID: <7h8ul1x86o.fsf@deeprootsystems.com>
-References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
-	<1411779495-39724-6-git-send-email-lina.iyer@linaro.org>
-	<20140929153154.GF2165@e102568-lin.cambridge.arm.com>
-	<7hmw9hypj9.fsf@deeprootsystems.com>
-	<alpine.LFD.2.11.1409301349260.5311@knanqh.ubzr>
-	<CAMAWPa_ZGxOA3KfAPWhfRhJ8KcYYQvgXM9JwzmNwHKPTbchWSA@mail.gmail.com>
-	<alpine.LFD.2.11.1409301428020.5311@knanqh.ubzr>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 4/5] ACPICA: Introduce acpi_enable_all_wakeup_gpes()
+Date: Tue, 30 Sep 2014 21:52:28 +0200
+Message-ID: <3883340.iE5nWN8xny@vostro.rjw.lan>
+References: <1622293.rpSt5UtDk3@vostro.rjw.lan> <4021848.ZWdxDcq97A@vostro.rjw.lan> <94F2FBAB4432B54E8AACC7DFDE6C92E37D20AA35@ORSMSX112.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:41129 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750836AbaI3SlV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Sep 2014 14:41:21 -0400
-In-Reply-To: <alpine.LFD.2.11.1409301428020.5311@knanqh.ubzr> (Nicolas Pitre's
-	message of "Tue, 30 Sep 2014 14:30:07 -0400 (EDT)")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <94F2FBAB4432B54E8AACC7DFDE6C92E37D20AA35@ORSMSX112.amr.corp.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Moore, Robert" <robert.moore@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "galak@codeaurora.org" <galak@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>
 
-Nicolas Pitre <nicolas.pitre@linaro.org> writes:
+On Tuesday, September 30, 2014 03:52:16 PM Moore, Robert wrote:
+> If you need it, sure.
 
-> On Tue, 30 Sep 2014, Kevin Hilman wrote:
->
->> On Tue, Sep 30, 2014 at 10:51 AM, Nicolas Pitre
->> <nicolas.pitre@linaro.org> wrote:
->> > On Tue, 30 Sep 2014, Kevin Hilman wrote:
->> >
->> >> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
+Thanks!
 
-[...]
+I hope this applies to https://patchwork.kernel.org/patch/4999321/ too?
 
->> >> > This may be misleading. Call it PlatformWFI or something like that, not WFI if
->> >> > that's not what it is.
->> >>
->> >> This gets at a little pet peeve of mine:
->> >>
->> >> IMO, naming any state with "WFI" is a bit confusing, because typically
->> >> *every* idle state is entered by one (or more) CPU executing WFI, no?
->> >
->> > Agreed.
->> >
->> > The only state called "WFI" should be the one that only executes the WFI
->> > instruction without any other hardware setup around it.
->> 
->> Well, I would go even further in that none of the states should be
->> called WFI, because WFI is used to enter all of them.
->
-> Fair enough.
->
-> So let's fix this by finding a name for that state that consists of only 
-> executing WFI and that every SOC has.
->
-> Suggestions?
+> Let me know when there is an ACPICA version
 
-The DT idle-states binding doc (though seemingly written more with
-arm64 and SBSA in mind) uses "standby" for the shallowest idle.
+OK
 
-Kevin
 
+> > -----Original Message-----
+> > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> > Sent: Monday, September 29, 2014 5:26 PM
+> > To: ACPI Devel Maling List; Moore, Robert
+> > Cc: Linux Kernel Mailing List; Zhang, Rui; Linux PM list
+> > Subject: [PATCH 4/5] ACPICA: Introduce acpi_enable_all_wakeup_gpes()
+> > 
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Add a routine for host OSes to enable all wakeup GPEs and disable all of
+> > the non-wakeup ones at the same time.
+> > 
+> > It will be used for the handling of GPE wakeup from suspend-to-idle in
+> > Linux.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> > 
+> > Bob, please let me know if I can fast-track this one.
+> > 
+> > ---
+> >  drivers/acpi/acpica/evxfgpe.c |   32 ++++++++++++++++++++++++++++++++
+> >  include/acpi/acpixf.h         |    1 +
+> >  2 files changed, 33 insertions(+)
+> > 
+> > Index: linux-pm/drivers/acpi/acpica/evxfgpe.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/acpi/acpica/evxfgpe.c
+> > +++ linux-pm/drivers/acpi/acpica/evxfgpe.c
+> > @@ -596,6 +596,38 @@ acpi_status acpi_enable_all_runtime_gpes
+> > 
+> >  ACPI_EXPORT_SYMBOL(acpi_enable_all_runtime_gpes)
+> > 
+> > +/**********************************************************************
+> > +********
+> > + *
+> > + * FUNCTION:    acpi_enable_all_wakeup_gpes
+> > + *
+> > + * PARAMETERS:  None
+> > + *
+> > + * RETURN:      Status
+> > + *
+> > + * DESCRIPTION: Enable all "wakeup" GPEs and disable all of the other
+> > GPEs, in
+> > + *              all GPE blocks.
+> > + *
+> > +
+> > +***********************************************************************
+> > +*******/
+> > +
+> > +acpi_status acpi_enable_all_wakeup_gpes(void) {
+> > +	acpi_status status;
+> > +
+> > +	ACPI_FUNCTION_TRACE(acpi_enable_all_wakeup_gpes);
+> > +
+> > +	status = acpi_ut_acquire_mutex(ACPI_MTX_EVENTS);
+> > +	if (ACPI_FAILURE(status)) {
+> > +		return_ACPI_STATUS(status);
+> > +	}
+> > +
+> > +	status = acpi_hw_enable_all_wakeup_gpes();
+> > +	(void)acpi_ut_release_mutex(ACPI_MTX_EVENTS);
+> > +
+> > +	return_ACPI_STATUS(status);
+> > +}
+> > +
+> > +ACPI_EXPORT_SYMBOL(acpi_enable_all_wakeup_gpes)
+> > +
+> > 
+> > /*************************************************************************
+> > ******
+> >   *
+> >   * FUNCTION:    acpi_install_gpe_block
+> > Index: linux-pm/include/acpi/acpixf.h
+> > ===================================================================
+> > --- linux-pm.orig/include/acpi/acpixf.h
+> > +++ linux-pm/include/acpi/acpixf.h
+> > @@ -692,6 +692,7 @@ ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_sta
+> >  						     *event_status))
+> >  ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status acpi_disable_all_gpes(void))
+> > ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status
+> > acpi_enable_all_runtime_gpes(void))
+> > +ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status
+> > +acpi_enable_all_wakeup_gpes(void))
+> > 
+> >  ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status
+> >  				acpi_get_gpe_device(u32 gpe_index,
+> 
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
