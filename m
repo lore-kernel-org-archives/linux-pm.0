@@ -1,141 +1,144 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: [PATCH resend] cpufreq: dt: disable unsupported OPPs
-Date: Tue, 30 Sep 2014 17:29:10 +0200
-Message-ID: <1412090950-20835-1-git-send-email-l.stach@pengutronix.de>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v7 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
+Date: Tue, 30 Sep 2014 09:41:42 -0600
+Message-ID: <20140930154142.GA528@ilina-mac.local>
+References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
+ <1411779495-39724-6-git-send-email-lina.iyer@linaro.org>
+ <5429E8D6.6080101@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:50884 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751028AbaI3P3R (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 11:29:17 -0400
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:44226 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751518AbaI3Plt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 11:41:49 -0400
+Received: by mail-pa0-f47.google.com with SMTP id rd3so9405104pab.34
+        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 08:41:49 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <5429E8D6.6080101@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org
 
-If the regulator connected to the CPU voltage plane doesn't
-support an OPP specified voltage with the acceptable tolerance
-it's better to just disable the OPP instead of constantly
-failing the voltage scaling later on.
+On Mon, Sep 29 2014 at 17:18 -0600, Stephen Boyd wrote:
+>On 09/26/14 17:58, Lina Iyer wrote:
+>> diff --git a/drivers/cpuidle/cpuidle-qcom.c b/drivers/cpuidle/cpuidle-qcom.c
+>> new file mode 100644
+>> index 0000000..2fcf79a
+>> --- /dev/null
+>> +++ b/drivers/cpuidle/cpuidle-qcom.c
+>> @@ -0,0 +1,89 @@
+>> +/*
+>> + * Copyright (c) 2014, Linaro Limited.
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 and
+>> + * only version 2 as published by the Free Software Foundation.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + */
+>> +
+>> +#include <linux/cpu_pm.h>
+>> +#include <linux/cpuidle.h>
+>> +#include <linux/module.h>
+>> +#include <linux/of.h>
+>> +#include <linux/of_device.h>
+>> +#include <linux/platform_device.h>
+>> +
+>> +#include <soc/qcom/pm.h>
+>> +#include "dt_idle_states.h"
+>> +
+>> +static void (*qcom_idle_enter)(enum pm_sleep_mode);
+>> +
+>> +static int qcom_lpm_enter_wfi(struct cpuidle_device *dev,
+>> +				struct cpuidle_driver *drv, int index)
+>> +{
+>> +	qcom_idle_enter(PM_SLEEP_MODE_WFI);
+>
+>Why can't we just pass index here? It would be nice to not need to
+>include soc/qcom/pm.h in this file.
+>
 
-Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
----
-resend:
-- no functional change, split out from the imx5 cpufreq series
-v2:
-- rebase on top of pm/linux-next
----
- drivers/cpufreq/cpufreq-cpu0.c | 66 +++++++++++++++++++++++++-----------------
- 1 file changed, 40 insertions(+), 26 deletions(-)
+This is the right place, the translation of QCOM's idle states is done
+while registering and needs to be translated back to QCOM's idle states.
+The interpretation of idle state bindings to the QCOM is hence
+contained in one place.
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index a5f8c5f5f4f4..5d73efbd0240 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -185,6 +185,7 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
- 	struct device *cpu_dev;
- 	struct regulator *cpu_reg;
- 	struct clk *cpu_clk;
-+	unsigned long min_uV = ~0, max_uV = 0;
- 	unsigned int transition_latency;
- 	int ret;
- 
-@@ -204,16 +205,10 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
- 	/* OPPs might be populated at runtime, don't check for error here */
- 	of_init_opp_table(cpu_dev);
- 
--	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
--	if (ret) {
--		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
--		goto out_put_node;
--	}
--
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
- 	if (!priv) {
- 		ret = -ENOMEM;
--		goto out_free_table;
-+		goto out_put_node;
- 	}
- 
- 	of_property_read_u32(np, "voltage-tolerance", &priv->voltage_tolerance);
-@@ -222,30 +217,49 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
- 		transition_latency = CPUFREQ_ETERNAL;
- 
- 	if (!IS_ERR(cpu_reg)) {
--		struct dev_pm_opp *opp;
--		unsigned long min_uV, max_uV;
--		int i;
--
- 		/*
--		 * OPP is maintained in order of increasing frequency, and
--		 * freq_table initialised from OPP is therefore sorted in the
--		 * same order.
-+		 * Disable any OPPs where the connected regulator isn't able to
-+		 * provide the specified voltage and record minimum and maximum
-+		 * voltage levels.
- 		 */
--		for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
--			;
--		rcu_read_lock();
--		opp = dev_pm_opp_find_freq_exact(cpu_dev,
--				freq_table[0].frequency * 1000, true);
--		min_uV = dev_pm_opp_get_voltage(opp);
--		opp = dev_pm_opp_find_freq_exact(cpu_dev,
--				freq_table[i-1].frequency * 1000, true);
--		max_uV = dev_pm_opp_get_voltage(opp);
--		rcu_read_unlock();
-+		while (1) {
-+			struct dev_pm_opp *opp;
-+			unsigned long opp_freq = 0, opp_uV, tol_uV;
-+
-+			rcu_read_lock();
-+			opp = dev_pm_opp_find_freq_ceil(cpu_dev, &opp_freq);
-+			if (IS_ERR(opp)) {
-+				rcu_read_unlock();
-+				break;
-+			}
-+			opp_uV = dev_pm_opp_get_voltage(opp);
-+			rcu_read_unlock();
-+
-+			tol_uV = opp_uV * priv->voltage_tolerance / 100;
-+			if (regulator_is_supported_voltage(cpu_reg, opp_uV,
-+							   opp_uV + tol_uV)) {
-+				if (opp_uV < min_uV)
-+					min_uV = opp_uV;
-+				if (opp_uV > max_uV)
-+					max_uV = opp_uV;
-+			} else {
-+				dev_pm_opp_disable(cpu_dev, opp_freq);
-+			}
-+
-+			opp_freq++;
-+		}
-+
- 		ret = regulator_set_voltage_time(cpu_reg, min_uV, max_uV);
- 		if (ret > 0)
- 			transition_latency += ret * 1000;
- 	}
- 
-+	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-+	if (ret) {
-+		pr_err("failed to init cpufreq table: %d\n", ret);
-+		goto out_free_priv;
-+	}
-+
- 	/*
- 	 * For now, just loading the cooling device;
- 	 * thermal DT code takes care of matching them.
-@@ -274,9 +288,9 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
- 
- out_cooling_unregister:
- 	cpufreq_cooling_unregister(priv->cdev);
--	kfree(priv);
--out_free_table:
- 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
-+out_free_priv:
-+	kfree(priv);
- out_put_node:
- 	of_node_put(np);
- out_put_reg_clk:
--- 
-2.1.0
+>> +
+>> +	return index;
+>> +}
+>> +
+>> +static int qcom_lpm_enter_spc(struct cpuidle_device *dev,
+>> +				struct cpuidle_driver *drv, int index)
+>> +{
+>> +	cpu_pm_enter();
+>> +	qcom_idle_enter(PM_SLEEP_MODE_SPC);
+>> +	cpu_pm_exit();
+>> +
+>> +	return index;
+>> +}
+>> +
+>> +static struct cpuidle_driver qcom_cpuidle_driver = {
+>> +	.name	= "qcom_cpuidle",
+>> +	.owner	= THIS_MODULE,
+>> +};
+>> +
+>> +static const struct of_device_id qcom_idle_state_match[] __initconst = {
+>> +	{ .compatible = "qcom,idle-state-wfi", .data = qcom_lpm_enter_wfi },
+>> +	{ .compatible = "qcom,idle-state-spc", .data = qcom_lpm_enter_spc },
+>> +	{ },
+>> +};
+>> +
+>> +static int qcom_cpuidle_probe(struct platform_device *pdev)
+>> +{
+>> +	struct cpuidle_driver *drv = &qcom_cpuidle_driver;
+>> +	int ret;
+>> +
+>> +	qcom_idle_enter = (void *)(pdev->dev.platform_data);
+>> +	if (!qcom_idle_enter)
+>> +		return -EFAULT;
+>
+>Error code looks a little wrong. -ENODEV?
+>
+The dev is there, not just the expected platform data.
+I can change.
 
+>> +
+>> +	 /* Probe for other states including platform WFI */
+>> +	ret = dt_init_idle_driver(drv, qcom_idle_state_match, 0);
+>> +	if (ret <= 0) {
+>> +		pr_err("%s: No cpuidle state found.\n", __func__);
+>
+>This would be true if ret == 0, but if it's < 0 that isn't true. Drop
+>the print?
+>
+Okay
+>> +		return ret;
+>> +	}
+>> +
+>> +	ret = cpuidle_register(drv, NULL);
+>> +	if (ret) {
+>> +		pr_err("%s: failed to register cpuidle driver\n", __func__);
+>
+>This seems redundant given that cpuidle_register() already prints an
+>error when it fails.
+>
+
+>> +		return ret;
+>> +	}
+>> +
+>> +	return 0;
+>
+>Could just be return cpuidle_register(drv, NULL);
+>
+Sure.
+
+>-- 
+>Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+>hosted by The Linux Foundation
+>
