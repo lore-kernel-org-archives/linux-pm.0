@@ -1,50 +1,40 @@
-From: Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH v2 2/2] sched/fair: leverage the idle state info when
- choosing the "idlest" cpu
-Date: Tue, 30 Sep 2014 17:58:21 -0400
-Message-ID: <542B277D.7050103@redhat.com>
-References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org> <1409844730-12273-3-git-send-email-nicolas.pitre@linaro.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v7 00/11] kernel: Add support for restart handler call
+ chain
+Date: Tue, 30 Sep 2014 15:30:00 -0700
+Message-ID: <20140930223000.GA20946@roeck-us.net>
+References: <1408495538-27480-1-git-send-email-linux@roeck-us.net>
+ <20140930142002.e09ef32392a2b5a7c81e5e57@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1409844730-12273-3-git-send-email-nicolas.pitre@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20140930142002.e09ef32392a2b5a7c81e5e57@linux-foundation.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Wim Van Sebroeck <wim@iguana.be>, Catalin Marinas <catalin.marinas@arm.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-watchdog@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Heiko Stuebner <heiko@sntech.de>, Jonas Jensen <jonas.jensen@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tomasz Figa <t.figa@samsung.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-On 09/04/2014 11:32 AM, Nicolas Pitre wrote:
-> The code in find_idlest_cpu() looks for the CPU with the smallest
-> load. However, if multiple CPUs are idle, the first idle CPU is
-> selected irrespective of the depth of its idle state.
+On Tue, Sep 30, 2014 at 02:20:02PM -0700, Andrew Morton wrote:
+> On Tue, 19 Aug 2014 17:45:27 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
 > 
-> Among the idle CPUs we should pick the one with with the shallowest
-> idle state, or the latest to have gone idle if all idle CPUs are in
-> the same state.  The later applies even when cpuidle is configured
-> out.
+> > Introduce a system restart handler call chain to solve the described problems.
 > 
-> This patch doesn't cover the following issues:
+> So someone has merged eight of these patches into linux-next but these
+> three:
+> 
+> watchdog-s3c2410-add-restart-handler.patch
+> clk-samsung-register-restart-handlers-for-s3c2412-and-s3c2443.patch
+> clk-rockchip-add-restart-handler.patch
+> 
+> were omitted.  What's up?
 
-The main thing it does not cover is already running tasks that
-get woken up again, since select_idle_sibling() covers everything
-except for newly forked and newly executed tasks.
+Most likely PBKC on my side; Looks like I forgot to add those when I created
+the immutable branch for others to merge. Sorry for that :-(.
 
-I am looking at adding similar logic to select_idle_sibling()
+Having said that, I somehow thought that the clock patches would go in through
+the clock tree. Heiko, did I get that wrong ? Separately, I sent a pull request
+that includes the watchdog patch to Wim.
 
-- -- 
-All rights reversed
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQEcBAEBAgAGBQJUKyd9AAoJEM553pKExN6DXZgH/1R26XfYv2FzYV9IGbty3vVx
-1kMPozdb7jRAUR8+WkUgs7ntkbqau2hC/nTjDsSsiLQwXdjaDdqvnbt8Y6srI1es
-/Z+IRaIPGx24D7D6nB5sLgsAq6DsANUdtFK3TsED8+07LbiY71o64YQ3X1IEVyRO
-FKBcDw9+DBPGVySKIdMm0h2txdnQ3Jy2lM3nKV8tBFheRuOhU4Rv/fumEYAUYvDV
-J9y91RhKOeEJYmaYL6oQYtZgBqhDoJmh/0DjOrK6H71oZYiNWeIUxtieNXaNQp7B
-Rd8khOVFLsf/qZK6qjmgnfO9Mm5ij/PvrALOBZt8O9KAD3/v3kXfWIm9tO1NDZU=
-=kTdn
------END PGP SIGNATURE-----
+Thanks,
+Guenter
