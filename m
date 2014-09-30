@@ -1,48 +1,141 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 3/4] PM / Domains: Expect PM domains being powered at initialization
-Date: Tue, 30 Sep 2014 15:24:29 +0200
-Message-ID: <CAMuHMdVzt2QoAk4ge7UyaA=F_iOf_7BQ8ycw15OAo4Twidd9ow@mail.gmail.com>
-References: <1412081033-8136-1-git-send-email-ulf.hansson@linaro.org>
-	<1412081033-8136-4-git-send-email-ulf.hansson@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: [PATCH resend] cpufreq: dt: disable unsupported OPPs
+Date: Tue, 30 Sep 2014 17:29:10 +0200
+Message-ID: <1412090950-20835-1-git-send-email-l.stach@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f42.google.com ([209.85.215.42]:62603 "EHLO
-	mail-la0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbaI3NYb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 09:24:31 -0400
-Received: by mail-la0-f42.google.com with SMTP id mk6so3901197lab.29
-        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 06:24:29 -0700 (PDT)
-In-Reply-To: <1412081033-8136-4-git-send-email-ulf.hansson@linaro.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50884 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751028AbaI3P3R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 11:29:17 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org
 
-On Tue, Sep 30, 2014 at 2:43 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> At ->probe() it's common practice for drivers/subsystems to bring their
-> devices to full power and without depending on CONFIG_PM_RUNTIME.
->
-> We could also expect that drivers/subsystems requires their device's
-> corresponding PM domains to be powered, to successfully complete a
-> ->probe() sequence.
->
-> Align the generic PM domain to the behavior above, by enforcing a PM
-> domain to be powered at initialization. Since all callers of
-> pm_genpd_init() already provides "false" as the value for the "is_off"
-> parameter, let's make it clear by removing this option.
->
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+If the regulator connected to the CPU voltage plane doesn't
+support an OPP specified voltage with the acceptable tolerance
+it's better to just disable the OPP instead of constantly
+failing the voltage scaling later on.
 
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+---
+resend:
+- no functional change, split out from the imx5 cpufreq series
+v2:
+- rebase on top of pm/linux-next
+---
+ drivers/cpufreq/cpufreq-cpu0.c | 66 +++++++++++++++++++++++++-----------------
+ 1 file changed, 40 insertions(+), 26 deletions(-)
 
-Gr{oetje,eeting}s,
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index a5f8c5f5f4f4..5d73efbd0240 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -185,6 +185,7 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+ 	struct device *cpu_dev;
+ 	struct regulator *cpu_reg;
+ 	struct clk *cpu_clk;
++	unsigned long min_uV = ~0, max_uV = 0;
+ 	unsigned int transition_latency;
+ 	int ret;
+ 
+@@ -204,16 +205,10 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+ 	/* OPPs might be populated at runtime, don't check for error here */
+ 	of_init_opp_table(cpu_dev);
+ 
+-	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+-	if (ret) {
+-		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
+-		goto out_put_node;
+-	}
+-
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+ 	if (!priv) {
+ 		ret = -ENOMEM;
+-		goto out_free_table;
++		goto out_put_node;
+ 	}
+ 
+ 	of_property_read_u32(np, "voltage-tolerance", &priv->voltage_tolerance);
+@@ -222,30 +217,49 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+ 		transition_latency = CPUFREQ_ETERNAL;
+ 
+ 	if (!IS_ERR(cpu_reg)) {
+-		struct dev_pm_opp *opp;
+-		unsigned long min_uV, max_uV;
+-		int i;
+-
+ 		/*
+-		 * OPP is maintained in order of increasing frequency, and
+-		 * freq_table initialised from OPP is therefore sorted in the
+-		 * same order.
++		 * Disable any OPPs where the connected regulator isn't able to
++		 * provide the specified voltage and record minimum and maximum
++		 * voltage levels.
+ 		 */
+-		for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
+-			;
+-		rcu_read_lock();
+-		opp = dev_pm_opp_find_freq_exact(cpu_dev,
+-				freq_table[0].frequency * 1000, true);
+-		min_uV = dev_pm_opp_get_voltage(opp);
+-		opp = dev_pm_opp_find_freq_exact(cpu_dev,
+-				freq_table[i-1].frequency * 1000, true);
+-		max_uV = dev_pm_opp_get_voltage(opp);
+-		rcu_read_unlock();
++		while (1) {
++			struct dev_pm_opp *opp;
++			unsigned long opp_freq = 0, opp_uV, tol_uV;
++
++			rcu_read_lock();
++			opp = dev_pm_opp_find_freq_ceil(cpu_dev, &opp_freq);
++			if (IS_ERR(opp)) {
++				rcu_read_unlock();
++				break;
++			}
++			opp_uV = dev_pm_opp_get_voltage(opp);
++			rcu_read_unlock();
++
++			tol_uV = opp_uV * priv->voltage_tolerance / 100;
++			if (regulator_is_supported_voltage(cpu_reg, opp_uV,
++							   opp_uV + tol_uV)) {
++				if (opp_uV < min_uV)
++					min_uV = opp_uV;
++				if (opp_uV > max_uV)
++					max_uV = opp_uV;
++			} else {
++				dev_pm_opp_disable(cpu_dev, opp_freq);
++			}
++
++			opp_freq++;
++		}
++
+ 		ret = regulator_set_voltage_time(cpu_reg, min_uV, max_uV);
+ 		if (ret > 0)
+ 			transition_latency += ret * 1000;
+ 	}
+ 
++	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
++	if (ret) {
++		pr_err("failed to init cpufreq table: %d\n", ret);
++		goto out_free_priv;
++	}
++
+ 	/*
+ 	 * For now, just loading the cooling device;
+ 	 * thermal DT code takes care of matching them.
+@@ -274,9 +288,9 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+ 
+ out_cooling_unregister:
+ 	cpufreq_cooling_unregister(priv->cdev);
+-	kfree(priv);
+-out_free_table:
+ 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
++out_free_priv:
++	kfree(priv);
+ out_put_node:
+ 	of_node_put(np);
+ out_put_reg_clk:
+-- 
+2.1.0
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
