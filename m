@@ -1,65 +1,131 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH v2 00/11] ARM: shmobile: r8a7740/armadillo800eva legacy PM
- domain support
-Date: Tue, 30 Sep 2014 17:05:17 +0900
-Message-ID: <CANqRtoR8NS2dBj6-8cvhzg8Kf78-zhOYHjyE727qormWCbn17w@mail.gmail.com>
-References: <1411661742-4767-1-git-send-email-geert+renesas@glider.be>
-	<20140930042047.GA24253@verge.net.au>
-	<CAMuHMdUgP6OEt6G4VhHoDncz+17j-bDu7u_pcHM0ETmqsDKOiA@mail.gmail.com>
-	<CANqRtoS+bur8DA0+gG0Q0hL9RLsQdOLyfSUbgE_6nZ8mCST0Jg@mail.gmail.com>
-	<CAMuHMdXP9tFX9FZnH_dR86DkKbP_YZcWAF-hF48BtVfGYRTsFw@mail.gmail.com>
-	<CANqRtoS0XgyuMBxU3CcVyQNg=r=MuA_OfJEDJbVsq-m9EHF9UA@mail.gmail.com>
-	<CAMuHMdWzg0bnoT0kURFe8h2aw4CYKoHN1SMYt0S3-Dno-e=8Xw@mail.gmail.com>
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
+Date: Tue, 30 Sep 2014 13:42:05 +0530
+Message-ID: <542A65D5.4090003@linux.vnet.ibm.com>
+References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com> <541A4D4F.1090307@linux.vnet.ibm.com> <5429330A.7000103@linux.vnet.ibm.com> <128377046.aOTypBOIY8@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdWzg0bnoT0kURFe8h2aw4CYKoHN1SMYt0S3-Dno-e=8Xw@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:35105 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752029AbaI3IMV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 04:12:21 -0400
+Received: from /spool/local
+	by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
+	Tue, 30 Sep 2014 18:12:19 +1000
+In-Reply-To: <128377046.aOTypBOIY8@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-Hi Geert,
+Hi Rafael,
 
-On Tue, Sep 30, 2014 at 4:41 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> Hi Magnus,
->
-> On Tue, Sep 30, 2014 at 9:32 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
->>>> So what is a good way to proceed with this series I wonder?
+On Tuesday 30 September 2014 04:58 AM, Rafael J. Wysocki wrote:
+> On Monday, September 29, 2014 03:53:06 PM Shreyas B Prabhu wrote:
+>> Hi,
+>> Any updates on this patch series?
+> 
+> I have a couple of patches from there in my tree it seems.  Please have a look
+> at linux-pm.git/linux-next and please let me know if that's the case.
+> 
+
+I checked linux-pm.git/linux-net (Last commit 067c17382165). None of the patches
+in this series are present in the tree. 
+
+
+> 
+>> On Thursday 18 September 2014 08:41 AM, Shreyas B Prabhu wrote:
+>>> Hi,
 >>>
->>> There are two options:
->>>   1. Drop the two patches that introduce the D4 and A4MP PM domains,
->>>   2. Amend the patches that introduce the D4 and A4MP PM domains to
->>>      comment out the entries in the table in pm-r8a7740.c, like was done in
->>>      the first submission.
+>>> In this patch series we use winkle for offlined cores. I successfully
+>>> tested the working of this with subcore functionality.
 >>>
->>> Both will cause conflicts when applying the successive patches.
+>>> Test scenario was as follows:
+>>> 1. Set SMT mode to 1, Set subores-per-core to 1
+>>> 2. Offline a core, in this case cpu 32 (sending it to winkle)
+>>> 3. Set subcores-per-core to 4
+>>> 4. Online the core
+>>> 5. Start a guest (Topology 1 core 2 threads) on a subcore, in this case
+>>> on cpu 36
 >>>
->>> If you don't care about bisectability, you can implement option 2 as a
->>> separate change, after applying the whole series.
+>>> This works without any glitch.
+>>>
+>>> Thanks,
+>>> Shreyas
+>>>
+>>> On Monday 25 August 2014 11:31 PM, Shreyas B. Prabhu wrote:
+>>>> Fast sleep is an idle state, where the core and the L1 and L2
+>>>> caches are brought down to a threshold voltage. This also means that
+>>>> the communication between L2 and L3 caches have to be fenced. However
+>>>> the current P8 chips have a bug wherein this fencing between L2 and
+>>>> L3 caches get delayed by a cpu cycle. This can delay L3 response to
+>>>> the other cpus if they request for data during this time. Thus they
+>>>> would fetch the same data from the memory which could lead to data
+>>>> corruption if L3 cache is not flushed.
+>>>> Patch 4 adds support to work around this.
+>>>>
+>>>> 'Deep Winkle' is a deeper idle state where core and private L2 are powered
+>>>> off. While it offers higher power savings, it is at the cost of losing
+>>>> hypervisor register state and higher latency.
+>>>> Patch 5-9 adds support for winkle and uses it for offline cpus.
+>>>>
+>>>> Patch 1 - Moves parameters required discover idle states to a location 
+>>>> common to both cpuidle driver and powernv core code
+>>>> Patch 2 - Populates idle state details from device tree
+>>>> Patch 3 - Enables cpus to run guest after waking up from fastsleep/winkle
+>>>>
+>>>>
+>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>> Cc: Paul Mackerras <paulus@samba.org>
+>>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>>>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>>>> Cc: Srivatsa S. Bhat <srivatsa@MIT.EDU>
+>>>> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+>>>> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+>>>> Cc: Rob Herring <robh+dt@kernel.org>
+>>>> Cc: Grant Likely <grant.likely@linaro.org>
+>>>> Cc: devicetree@vger.kernel.org
+>>>> Cc: linux-pm@vger.kernel.org
+>>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>>>
+>>>> Preeti U Murthy (2):
+>>>>   cpuidle/powernv: Populate cpuidle state details by querying the
+>>>>     device-tree
+>>>>   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
+>>>>
+>>>> Shreyas B. Prabhu (6):
+>>>>   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
+>>>>     fast-sleep
+>>>>   powerpc/powernv: Add OPAL call to save and restore
+>>>>   powerpc: Adding macro for accessing Thread Switch Control Register
+>>>>   powerpc/powernv: Add winkle infrastructure
+>>>>   powerpc/powernv: Discover and enable winkle
+>>>>   powerpc/powernv: Enter deepest supported idle state in offline
+>>>>
+>>>> Srivatsa S. Bhat (1):
+>>>>   powerpc/powernv: Enable Offline CPUs to enter deep idle states
+>>>>
+>>>>  arch/powerpc/include/asm/machdep.h             |   4 +
+>>>>  arch/powerpc/include/asm/opal.h                |  10 ++
+>>>>  arch/powerpc/include/asm/paca.h                |   3 +
+>>>>  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
+>>>>  arch/powerpc/include/asm/processor.h           |   6 +-
+>>>>  arch/powerpc/include/asm/reg.h                 |   1 +
+>>>>  arch/powerpc/kernel/asm-offsets.c              |   1 +
+>>>>  arch/powerpc/kernel/exceptions-64s.S           |  37 ++---
+>>>>  arch/powerpc/kernel/idle.c                     |  30 ++++
+>>>>  arch/powerpc/kernel/idle_power7.S              |  83 +++++++++-
+>>>>  arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
+>>>>  arch/powerpc/platforms/powernv/powernv.h       |   8 +
+>>>>  arch/powerpc/platforms/powernv/setup.c         | 217 +++++++++++++++++++++++++
+>>>>  arch/powerpc/platforms/powernv/smp.c           |  13 +-
+>>>>  arch/powerpc/platforms/powernv/subcore.c       |  15 ++
+>>>>  drivers/cpuidle/cpuidle-powernv.c              |  40 ++++-
+>>>>  16 files changed, 439 insertions(+), 33 deletions(-)
+>>>>
 >>
->> Thanks for leading the way! From my side I don't have any special
->> feeling, so why don't you and Simon decide?
->
-> OK.
->
->> If it was up to me only then I think option #1 that simply reduces the
->> feature set seems rather natural, but perhaps it requires a lot of
->> rework of the patches. If we go with option #1 we can always
->> incrementally add D4 and A4MP later I assume.
->
-> Yes we can.
+> 
 
-Thanks for the clarification.
-
-> Please wait a bit, I'm looking into the !CONFIG_PM_RUNTIME case.
-> Mostly multi-platform, but it may affect legacy too, where there's interaction
-> with the drivers/sh/pm_runtime.c hack.
-
-I see, thanks for looking into that. No need for stop-and-go
-development rush though...
-
-Cheers,
-
-/ magnus
