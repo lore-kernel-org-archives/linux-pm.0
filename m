@@ -1,37 +1,46 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [RFC PATCH 11/16] sh: support poweroff through poweroff handler call chain
-Date: Tue, 30 Sep 2014 11:00:51 -0700
-Message-ID: <1412100056-15517-12-git-send-email-linux@roeck-us.net>
+Subject: [RFC PATCH 07/16] c6x: support poweroff through poweroff handler call chain
+Date: Tue, 30 Sep 2014 11:00:47 -0700
+Message-ID: <1412100056-15517-8-git-send-email-linux@roeck-us.net>
 References: <1412100056-15517-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-sh-owner@vger.kernel.org>
+Return-path: <linux-mips-bounce@linux-mips.org>
 In-Reply-To: <1412100056-15517-1-git-send-email-linux@roeck-us.net>
-Sender: linux-sh-owner@vger.kernel.org
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-help: <mailto:ecartis@linux-mips.org?Subject=help>
+List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
+List-software: Ecartis version 1.0.0
+List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
+List-owner: <mailto:ralf@linux-mips.org>
+List-post: <mailto:linux-mips@linux-mips.org>
+List-archive: <http://www.linux-mips.org/archives/linux-mips/>
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org, linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org, linux-mips@linux-mips.org, linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, xen-devel@lists.xenproject.org, Guenter Roeck <linux@roeck-us.net>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org, linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org, linux-mips@linux-mips.org, linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, xen-devel@lists.xenproject.org, Guenter Roeck <linux@roeck-us.net>, Mark Salter <msalter@redhat.com>, Aurelien Jacquiot <a-jacquiot@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
 The kernel core now supports a poweroff handler call chain
 to remove power from the system. Call it if pm_power_off
 is set to NULL.
 
+Cc: Mark Salter <msalter@redhat.com>
+Cc: Aurelien Jacquiot <a-jacquiot@ti.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- arch/sh/kernel/reboot.c | 2 ++
+ arch/c6x/kernel/process.c | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/arch/sh/kernel/reboot.c b/arch/sh/kernel/reboot.c
-index 04afe5b..8e68926 100644
---- a/arch/sh/kernel/reboot.c
-+++ b/arch/sh/kernel/reboot.c
-@@ -53,6 +53,8 @@ static void native_machine_power_off(void)
+diff --git a/arch/c6x/kernel/process.c b/arch/c6x/kernel/process.c
+index 57d2ea8..ddf088e 100644
+--- a/arch/c6x/kernel/process.c
++++ b/arch/c6x/kernel/process.c
+@@ -75,6 +75,8 @@ void machine_power_off(void)
  {
  	if (pm_power_off)
  		pm_power_off();
 +	else
 +		do_kernel_poweroff();
+ 	halt_loop();
  }
  
- static void native_machine_halt(void)
 -- 
 1.9.1
-
