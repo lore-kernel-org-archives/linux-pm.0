@@ -1,75 +1,94 @@
-From: Wang Weidong <wangweidong1@huawei.com>
-Subject: Re: [RESEND PATCH] acpi-cpufreq: get the cur_freq from acpi_processor_performance
- states
-Date: Tue, 30 Sep 2014 15:09:45 +0800
-Message-ID: <542A5739.6040207@huawei.com>
-References: <53F589C3.4050504@huawei.com> <2075276.PKjjuvNeys@vostro.rjw.lan> <54264C0B.1000607@huawei.com> <2361937.mQR3H5xj3F@vostro.rjw.lan>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2 00/11] ARM: shmobile: r8a7740/armadillo800eva legacy PM
+ domain support
+Date: Tue, 30 Sep 2014 09:16:38 +0200
+Message-ID: <CAMuHMdUgP6OEt6G4VhHoDncz+17j-bDu7u_pcHM0ETmqsDKOiA@mail.gmail.com>
+References: <1411661742-4767-1-git-send-email-geert+renesas@glider.be>
+	<20140930042047.GA24253@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga02-in.huawei.com ([119.145.14.65]:1697 "EHLO
-	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750846AbaI3HJy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 03:09:54 -0400
-In-Reply-To: <2361937.mQR3H5xj3F@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <20140930042047.GA24253@verge.net.au>
+Sender: linux-sh-owner@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org >> \"linux-kernel@vger.kernel.org\"" <linux-kernel@vger.kernel.org>
 
-On 2014/9/28 4:01, Rafael J. Wysocki wrote:
-> On Saturday, September 27, 2014 01:32:59 PM Wang Weidong wrote:
->> On 2014/9/27 7:21, Rafael J. Wysocki wrote:
->>> On Thursday, August 21, 2014 01:55:15 PM Wang Weidong wrote:
->>>> As the initialized freq_tables maybe different from the p-states
->>>> values, so the array index is different as well.
->>>>
->>>> p-states value: [2400 2400 2000 ...], while the freq_tables:
->>>> [2400 2000 ... CPUFREQ_TABLE_END]. After setted the freqs 2000,
->>>> the perf->state is 3 while the freqs_table's index should be 2.
->>>> So when call the get_cur_freq_on_cpu, the freqs value we get
->>>> is 2400.
->>>>
->>>> So, fix the problem with the correct tables.
->>>
->>> What you're saying is basically that freq_table and perf->states
->>> diverge at one point.  Shouldn't we re-generate freq_table in that
->>> case instead of fixing up get_cur_freq_on_cpu() only in a quite
->>> indirect way? 
->>>
->> Hi Rafael,
->>
->> Thanks for your reply.
->>
->> You mean that we should re-generate the freq_table in that case?
->> Could we fix the table init like this:
->>
->> --- a/drivers/cpufreq/acpi-cpufreq.c
->> +++ b/drivers/cpufreq/acpi-cpufreq.c
->> @@ -779,7 +779,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>
->>         /* table init */
->>         for (i = 0; i < perf->state_count; i++) {
->> -               if (i > 0 && perf->states[i].core_frequency >=
->> +               if (i > 0 && perf->states[i].core_frequency >
->>                     data->freq_table[valid_states-1].frequency / 1000)
->>                         continue;
->>
->> when the value is same, we just keep the value into the freq_table.
-> 
-> That would only be OK if it is guaranteed that the set of available
-> states hasn't changed, which I'm not sure is the case.
-> 
-> Rafael
-> 
+Hi Simon,
 
-Yep, ACPI maybe will dynamic to report the states to the OS . So I should consider it again.
+On Tue, Sep 30, 2014 at 6:20 AM, Simon Horman <horms@verge.net.au> wrote:
+> On Thu, Sep 25, 2014 at 06:15:31PM +0200, Geert Uytterhoeven wrote:
+>> This series improves PM domain support for r8a7740/armadillo800eva legacy,
+>> mimicking (parts of) the existing PM domain support for sh7372/mackerel.
+>>
+>> More specifically, they
+>>   - Add missing devices to existing PM domains,
+>>   - Add missing PM domains, hooking up devices and subdomains,
+>>
+>> Changes in v2:
+>>   - Dropped FIXMes on behavior that turned out to be expected,
+>>   - Hook up the HDMI-Link hardware block,
+>>   - Really add the A4MP and D4 PM domains, as fixes are available (see
+>>     dependencies below),
+>>   - Move special CPU domain handling from A4S to A3SM,
+>>
+>> There are a few dependencies to make resume from s2ram work:
+>>   - "[PATCH/RFC] fbdev: sh_mobile_hdmi: Re-init regs before irq re-enable on
+>>     resume",
+>>   - "[PATCH] ARM: hw_breakpoint: Trap undef instruction exceptions on wake-up",
+>>     or an alternative solution.
+>>
+>> Apart from that, I'm not aware of any regressions (except perhaps for USB,
+>> which I was unable to get working anyway).
+>
+> Hi Geert,
+>
+> what is your feeling about (me) queueing up part of all of this series now?
 
-Regards,
-Wang
-> 
-> .
-> 
+If you (Magnus?) can live with non-working resume from s2ram for now,
+it can be queued for v3.19.
 
+I don't think I can improve on the HDMI fix without getting docs and spending
+(much) time to get HDMI working on Armadillo.
 
+The hw_breakpoint fix has to be replaced by something better/acceptable,
+I'm working on that.
+
+>> Please note that DT/multi-platform PM domain support is added in an (almost)
+>> independent series.
+>>
+>> Thanks!
+>>
+>> Geert Uytterhoeven (11):
+>>   ARM: shmobile: r8a7740: Add missing A3SP pm domain devices
+>>   ARM: shmobile: r8a7740: Add missing A4S pm domain devices
+>>   ARM: shmobile: armadillo800eva legacy: Add missing A3SP pm domain
+>>     devices
+>>   ARM: shmobile: armadillo800eva legacy: Add missing A4S pm domain
+>>     devices
+>>   ARM: shmobile: r8a7740: Add A3RV pm domain support
+>>   ARM: shmobile: r8a7740: Add A3SG pm domain support
+>>   ARM: shmobile: r8a7740/armadillo legacy: Add A4MP pm domain support
+>>   ARM: shmobile: r8a7740: Add D4 pm domain support
+>>   ARM: shmobile: r8a7740/armadillo legacy: Add A4R pm domain support
+>>   ARM: shmobile: r8a7740: Add A4SU pm domain support
+>>   ARM: shmobile: r8a7740: Add A3SM pm domain support
+>>
+>>  arch/arm/mach-shmobile/board-armadillo800eva.c | 12 +++++++++-
+>>  arch/arm/mach-shmobile/pm-r8a7740.c            | 32 ++++++++++++++++++++++----
+>>  arch/arm/mach-shmobile/setup-r8a7740.c         | 11 +++++++++
+>>  3 files changed, 50 insertions(+), 5 deletions(-)
+>>
+>> --
+>> 1.9.1
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
