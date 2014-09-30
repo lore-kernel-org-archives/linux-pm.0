@@ -1,72 +1,34 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v7 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
-Date: Tue, 30 Sep 2014 10:41:14 -0700
-Message-ID: <7hmw9hypj9.fsf@deeprootsystems.com>
-References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
-	<1411779495-39724-6-git-send-email-lina.iyer@linaro.org>
-	<20140929153154.GF2165@e102568-lin.cambridge.arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v2 00/10] power/reset: Register drivers with restart handler
+Date: Tue, 30 Sep 2014 10:48:26 -0700
+Message-ID: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:36372 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752109AbaI3RlQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Sep 2014 13:41:16 -0400
-In-Reply-To: <20140929153154.GF2165@e102568-lin.cambridge.arm.com> (Lorenzo
-	Pieralisi's message of "Mon, 29 Sep 2014 16:31:55 +0100")
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:39018 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752718AbaI3Rsm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 13:48:42 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Lina Iyer <lina.iyer@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
 
-Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
+Convert drivers to use the kernel restart handler instead of setting
+arm_pm_restart directly.
 
-> Hi Lina,
->
-> On Sat, Sep 27, 2014 at 01:58:13AM +0100, Lina Iyer wrote:
->> Add cpuidle driver interface to allow cpus to go into C-States. Use the
->> cpuidle DT interface common across ARM architectures to provide the
->> C-State information to the cpuidle framework.
->> 
->> Supported modes at this time are clock gating (wfi) and cpu power down
->> (Standalone PC or spc).
->> 
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->> ---
->>  .../bindings/arm/msm/qcom,idle-state.txt           | 72 +++++++++++++++++
->>  drivers/cpuidle/Kconfig.arm                        |  7 ++
->>  drivers/cpuidle/Makefile                           |  1 +
->>  drivers/cpuidle/cpuidle-qcom.c                     | 89 ++++++++++++++++++++++
->>  4 files changed, 169 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
->>  create mode 100644 drivers/cpuidle/cpuidle-qcom.c
->> 
->> diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
->> new file mode 100644
->> index 0000000..47095b9
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
->> @@ -0,0 +1,72 @@
->> +QCOM Idle States for cpuidle driver
->> +
->> +ARM provides idle-state node to define the cpuidle states, as defined in [1].
->> +cpuidle-qcom is the cpuidle driver for Qualcomm SoCs and uses these idle
->> +states. Idle states have different enter/exit latency and residency values.
->> +The idle states supported by the QCOM SoC are defined as -
->> +
->> +    * WFI
->> +    * Retention
->> +    * Standalone Power Collapse (Standalone PC or SPC)
->> +    * Power Collapse (PC)
->> +
->> +WFI: WFI does a little more in addition to architectural clock gating.  ARM
->
-> This may be misleading. Call it PlatformWFI or something like that, not WFI if
-> that's not what it is.
+This patch set depends on the kernel restart handler patchset submitted
+earlier.
 
-This gets at a little pet peeve of mine: 
+Patch 01/10 was tested with qemu. All other patches were compile tested only.
 
-IMO, naming any state with "WFI" is a bit confusing, because typically
-*every* idle state is entered by one (or more) CPU executing WFI, no?
+Some of the restart handlers loop forever after the reset instruction was
+executed. It might makes sense to use mdelay() instead and return if resetting
+the system failed. I did not implement that since I do not know what reasonable
+delays would be.
 
-Kevin
+The series does not include drivers to be introduced in the next commit window
+(at91, versatile, st-poweroff). Those can be converted later. I also did not
+convert the sun6i driver, in the assumption that it will be removed since the
+sunxi watchdog driver will register a restart handler for the architecture.
+
+v2: Added Tested-by: and Acked-by: tags where received.
+    Return error if restart handler registration fails.
