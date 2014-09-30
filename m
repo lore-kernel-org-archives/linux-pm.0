@@ -1,7 +1,7 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 05/10] power/reset: xgene: Use mdelay instead of jiffies based timeout
-Date: Tue, 30 Sep 2014 10:48:31 -0700
-Message-ID: <1412099316-23167-6-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 03/10] power/reset: xgene: Drop devm_kfree
+Date: Tue, 30 Sep 2014 10:48:29 -0700
+Message-ID: <1412099316-23167-4-git-send-email-linux@roeck-us.net>
 References: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
@@ -10,43 +10,25 @@ To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Loc Ho <lho@apm.com>
 List-Id: linux-pm@vger.kernel.org
 
-jiffies are not running at this stage of system shutdown, meaning an
-error in the reset function would never be reported. Replace with mdelay().
+Calling devm_kfree is unnecessary. Drop it.
 
 Cc: Loc Ho <lho@apm.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/power/reset/xgene-reboot.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/power/reset/xgene-reboot.c | 1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/drivers/power/reset/xgene-reboot.c b/drivers/power/reset/xgene-reboot.c
-index 1bab003..ae470b8 100644
+index 20cf7c3..aac0287 100644
 --- a/drivers/power/reset/xgene-reboot.c
 +++ b/drivers/power/reset/xgene-reboot.c
-@@ -24,6 +24,7 @@
-  * For system shutdown, this is board specify. If a board designer
-  * implements GPIO shutdown, use the gpio-poweroff.c driver.
-  */
-+#include <linux/delay.h>
- #include <linux/io.h>
- #include <linux/of_device.h>
- #include <linux/of_address.h>
-@@ -43,15 +44,12 @@ static struct xgene_reboot_context *xgene_restart_ctx;
- static void xgene_restart(char str, const char *cmd)
- {
- 	struct xgene_reboot_context *ctx = xgene_restart_ctx;
--	unsigned long timeout;
+@@ -66,7 +66,6 @@ static int xgene_reboot_probe(struct platform_device *pdev)
  
- 	/* Issue the reboot */
- 	if (ctx)
- 		writel(ctx->mask, ctx->csr);
- 
--	timeout = jiffies + HZ;
--	while (time_before(jiffies, timeout))
--		cpu_relax();
-+	mdelay(1000);
- 
- 	dev_emerg(ctx->dev, "Unable to restart system\n");
- }
+ 	ctx->csr = of_iomap(pdev->dev.of_node, 0);
+ 	if (!ctx->csr) {
+-		devm_kfree(&pdev->dev, ctx);
+ 		dev_err(&pdev->dev, "can not map resource\n");
+ 		return -ENODEV;
+ 	}
 -- 
 1.9.1
