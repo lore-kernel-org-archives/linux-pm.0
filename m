@@ -1,127 +1,69 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / Hibernate: Iterate over set bits instead of PFNs in swsusp_free()
-Date: Tue, 30 Sep 2014 22:35:23 +0200
-Message-ID: <2920129.yzcCzgQ8kg@vostro.rjw.lan>
-References: <1412076689-7001-1-git-send-email-joro@8bytes.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v7 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
+Date: Tue, 30 Sep 2014 14:36:52 -0600
+Message-ID: <20140930203652.GE528@ilina-mac.local>
+References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
+ <1411779495-39724-6-git-send-email-lina.iyer@linaro.org>
+ <20140929153154.GF2165@e102568-lin.cambridge.arm.com>
+ <7hmw9hypj9.fsf@deeprootsystems.com>
+ <alpine.LFD.2.11.1409301349260.5311@knanqh.ubzr>
+ <CAMAWPa_ZGxOA3KfAPWhfRhJ8KcYYQvgXM9JwzmNwHKPTbchWSA@mail.gmail.com>
+ <alpine.LFD.2.11.1409301428020.5311@knanqh.ubzr>
+ <7h8ul1x86o.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59574 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750935AbaI3UP1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 16:15:27 -0400
-In-Reply-To: <1412076689-7001-1-git-send-email-joro@8bytes.org>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:55983 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751159AbaI3Ug5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 16:36:57 -0400
+Received: by mail-pa0-f50.google.com with SMTP id kx10so6038974pab.37
+        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 13:36:57 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <7h8ul1x86o.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joerg Roedel <joro@8bytes.org>
-Cc: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jroedel@suse.de
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "galak@codeaurora.org" <galak@codeaurora.org>
 
-On Tuesday, September 30, 2014 01:31:29 PM Joerg Roedel wrote:
-> From: Joerg Roedel <jroedel@suse.de>
-> 
-> The existing implementation of swsusp_free iterates over all
-> pfns in the system and checks every bit in the two memory
-> bitmaps.
-> 
-> This doesn't scale very well with large numbers of pfns,
-> especially when the bitmaps are not populated very densly.
-> Change the algorithm to iterate over the set bits in the
-> bitmaps instead to make it scale better in large memory
-> configurations.
-> 
-> Also add a memory_bm_clear_current() helper function that
-> clears the bit for the last position returned from the
-> memory bitmap.
-> 
-> This new version adds a !NULL check for the memory bitmaps
-> before they are walked. Not doing so causes a kernel crash
-> when the bitmaps are NULL.
-> 
-> Signed-off-by: Joerg Roedel <jroedel@suse.de>
+On Tue, Sep 30 2014 at 12:41 -0600, Kevin Hilman wrote:
+>Nicolas Pitre <nicolas.pitre@linaro.org> writes:
+>
+>> On Tue, 30 Sep 2014, Kevin Hilman wrote:
+>>
+>>> On Tue, Sep 30, 2014 at 10:51 AM, Nicolas Pitre
+>>> <nicolas.pitre@linaro.org> wrote:
+>>> > On Tue, 30 Sep 2014, Kevin Hilman wrote:
+>>> >
+>>> >> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
+>
+>[...]
+>
+>>> >> > This may be misleading. Call it PlatformWFI or something like that, not WFI if
+>>> >> > that's not what it is.
+>>> >>
+>>> >> This gets at a little pet peeve of mine:
+>>> >>
+>>> >> IMO, naming any state with "WFI" is a bit confusing, because typically
+>>> >> *every* idle state is entered by one (or more) CPU executing WFI, no?
+>>> >
+>>> > Agreed.
+>>> >
+>>> > The only state called "WFI" should be the one that only executes the WFI
+>>> > instruction without any other hardware setup around it.
+>>>
+>>> Well, I would go even further in that none of the states should be
+>>> called WFI, because WFI is used to enter all of them.
+>>
+>> Fair enough.
+>>
+>> So let's fix this by finding a name for that state that consists of only
+>> executing WFI and that every SOC has.
+>>
+>> Suggestions?
+>
+>The DT idle-states binding doc (though seemingly written more with
+>arm64 and SBSA in mind) uses "standby" for the shallowest idle.
+>
+Standby - looks good to me.
 
-Queued up for 3.18, thanks!
-
-> ---
->  kernel/power/snapshot.c | 54 +++++++++++++++++++++++++++++++++++--------------
->  1 file changed, 39 insertions(+), 15 deletions(-)
-> 
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index f1604d8..791a618 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -725,6 +725,14 @@ static void memory_bm_clear_bit(struct memory_bitmap *bm, unsigned long pfn)
->  	clear_bit(bit, addr);
->  }
->  
-> +static void memory_bm_clear_current(struct memory_bitmap *bm)
-> +{
-> +	int bit;
-> +
-> +	bit = max(bm->cur.node_bit - 1, 0);
-> +	clear_bit(bit, bm->cur.node->data);
-> +}
-> +
->  static int memory_bm_test_bit(struct memory_bitmap *bm, unsigned long pfn)
->  {
->  	void *addr;
-> @@ -1333,23 +1341,39 @@ static struct memory_bitmap copy_bm;
->  
->  void swsusp_free(void)
->  {
-> -	struct zone *zone;
-> -	unsigned long pfn, max_zone_pfn;
-> +	unsigned long fb_pfn, fr_pfn;
->  
-> -	for_each_populated_zone(zone) {
-> -		max_zone_pfn = zone_end_pfn(zone);
-> -		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
-> -			if (pfn_valid(pfn)) {
-> -				struct page *page = pfn_to_page(pfn);
-> -
-> -				if (swsusp_page_is_forbidden(page) &&
-> -				    swsusp_page_is_free(page)) {
-> -					swsusp_unset_page_forbidden(page);
-> -					swsusp_unset_page_free(page);
-> -					__free_page(page);
-> -				}
-> -			}
-> +	if (!forbidden_pages_map || !free_pages_map)
-> +		goto out;
-> +
-> +	memory_bm_position_reset(forbidden_pages_map);
-> +	memory_bm_position_reset(free_pages_map);
-> +
-> +loop:
-> +	fr_pfn = memory_bm_next_pfn(free_pages_map);
-> +	fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
-> +
-> +	/*
-> +	 * Find the next bit set in both bitmaps. This is guaranteed to
-> +	 * terminate when fb_pfn == fr_pfn == BM_END_OF_MAP.
-> +	 */
-> +	do {
-> +		if (fb_pfn < fr_pfn)
-> +			fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
-> +		if (fr_pfn < fb_pfn)
-> +			fr_pfn = memory_bm_next_pfn(free_pages_map);
-> +	} while (fb_pfn != fr_pfn);
-> +
-> +	if (fr_pfn != BM_END_OF_MAP && pfn_valid(fr_pfn)) {
-> +		struct page *page = pfn_to_page(fr_pfn);
-> +
-> +		memory_bm_clear_current(forbidden_pages_map);
-> +		memory_bm_clear_current(free_pages_map);
-> +		__free_page(page);
-> +		goto loop;
->  	}
-> +
-> +out:
->  	nr_copy_pages = 0;
->  	nr_meta_pages = 0;
->  	restore_pblist = NULL;
-> 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
