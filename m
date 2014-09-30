@@ -1,79 +1,125 @@
-From: Kiran Padwal <kiran.padwal@smartplayin.com>
-Subject: Re: [PATCH v2] thermal: Add QPNP PMIC temperature alarm driver
-Date: Tue, 30 Sep 2014 14:16:53 +0530
-Message-ID: <542A6DFD.7020107@smartplayin.com>
-References: <1411651825-14240-1-git-send-email-iivanov@mm-sol.com>   <54254C4E.3070807@smartplayin.com> <1411998865.5395.5.camel@iivanov-dev>  <542A31DF.7020402@smartplayin.com> <1412062606.5395.10.camel@iivanov-dev>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v7 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
+Date: Tue, 30 Sep 2014 09:58:49 +0100
+Message-ID: <20140930085849.GA11393@e102568-lin.cambridge.arm.com>
+References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
+ <1411779495-39724-6-git-send-email-lina.iyer@linaro.org>
+ <5429E8D6.6080101@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp101.ord1c.emailsrvr.com ([108.166.43.101]:59503 "EHLO
-	smtp101.ord1c.emailsrvr.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751718AbaI3ItH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 04:49:07 -0400
-In-Reply-To: <1412062606.5395.10.camel@iivanov-dev>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <5429E8D6.6080101@codeaurora.org>
+Content-Disposition: inline
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Lina Iyer <lina.iyer@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
 
-On Tuesday 30 September 2014 01:06 PM, Ivan T. Ivanov wrote:
-> On Tue, 2014-09-30 at 10:00 +0530, Kiran Padwal wrote:
->> On Monday 29 September 2014 07:24 PM, Ivan T. Ivanov wrote:
->>> On Fri, 2014-09-26 at 16:51 +0530, Kiran Padwal wrote:
->>>> On Thursday 25 September 2014 07:00 PM, Ivan T. Ivanov wrote:
->>>>> Add support for the temperature alarm peripheral found inside
->>>>> Qualcomm plug-and-play (QPNP) PMIC chips.  The temperature alarm
->>>>> peripheral outputs a pulse on an interrupt line whenever the
->>>>> thermal over temperature stage value changes.  Implement an ISR
->>>>> to manage this interrupt.
->>>>>
->>>>
->>>> <snip>
->>>>
->>>>> + * This function updates the internal temp value based on the
->>>>> + * current thermal stage and threshold as well as the previous s=
-tage
->>>>> + */
->>>>> +static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
->>>>> +{
->>>>> +	unsigned int stage;
->>>>> +	int rc;
->>>>> +	u8 reg;
->>>>> +
->>>>> +	rc =3D qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
->>>>> +	if (rc < 0)
->>>>> +		return rc;
->>>>> +
->>>>> +	stage =3D reg & STATUS_STAGE_MASK;
->>>>
->>>> During compilation, getting a waring as below,
->>>>
->>>> drivers/thermal/qpnp-temp-alarm.c: In function =E2=80=98qpnp_tm_up=
-date_temp_no_adc=E2=80=99:
->>>> drivers/thermal/qpnp-temp-alarm.c:135:8: warning: =E2=80=98reg=E2=80=
-=99 may be used uninitialized in this function [-Wmaybe-uninitialized]
->>>>   stage =3D reg & STATUS_STAGE_MASK;
->>>
->>> Could you share compiler version and options which you are using.
->>> I am unable to trigger this warning. Looking code I can not=20
->>> see how this could happen.
->>
->> I have Linaro cross tool chain with version-4.8.3 and I am simply do=
-ing "make zImage" without any option.
->=20
-> Hm, no warnings with arm-unknown-linux-gnueabi-gcc (GCC) 4.6.3 and
-> arm-linux-gnueabihf-gcc (crosstool-NG linaro-1.13.1-4.9-2014.09, but
-> indeed arm-linux-gnueabihf-gcc (crosstool-NG linaro-1.13.1-4.8-2014.0=
-3.
->=20
-> I will say that this is false positive :-). Please update your tool-c=
-hain.
->=20
+On Tue, Sep 30, 2014 at 12:18:46AM +0100, Stephen Boyd wrote:
+> On 09/26/14 17:58, Lina Iyer wrote:
+> > diff --git a/drivers/cpuidle/cpuidle-qcom.c b/drivers/cpuidle/cpuidle-qcom.c
+> > new file mode 100644
+> > index 0000000..2fcf79a
+> > --- /dev/null
+> > +++ b/drivers/cpuidle/cpuidle-qcom.c
+> > @@ -0,0 +1,89 @@
+> > +/*
+> > + * Copyright (c) 2014, Linaro Limited.
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2 and
+> > + * only version 2 as published by the Free Software Foundation.
+> > + *
+> > + * This program is distributed in the hope that it will be useful,
+> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + * GNU General Public License for more details.
+> > + *
+> > + */
+> > +
+> > +#include <linux/cpu_pm.h>
+> > +#include <linux/cpuidle.h>
+> > +#include <linux/module.h>
+> > +#include <linux/of.h>
+> > +#include <linux/of_device.h>
+> > +#include <linux/platform_device.h>
+> > +
+> > +#include <soc/qcom/pm.h>
+> > +#include "dt_idle_states.h"
+> > +
+> > +static void (*qcom_idle_enter)(enum pm_sleep_mode);
+> > +
+> > +static int qcom_lpm_enter_wfi(struct cpuidle_device *dev,
+> > +				struct cpuidle_driver *drv, int index)
+> > +{
+> > +	qcom_idle_enter(PM_SLEEP_MODE_WFI);
+> 
+> Why can't we just pass index here? It would be nice to not need to
+> include soc/qcom/pm.h in this file.
 
-Thanks to verify, I will do that.
+I think this is definitely worth exploring.
 
-Thanks,
---Kiran
+> > +	return index;
+> > +}
+> > +
+> > +static int qcom_lpm_enter_spc(struct cpuidle_device *dev,
+> > +				struct cpuidle_driver *drv, int index)
+> > +{
+> > +	cpu_pm_enter();
+> > +	qcom_idle_enter(PM_SLEEP_MODE_SPC);
+> > +	cpu_pm_exit();
+> > +
+> > +	return index;
+> > +}
+> > +
+> > +static struct cpuidle_driver qcom_cpuidle_driver = {
+> > +	.name	= "qcom_cpuidle",
+> > +	.owner	= THIS_MODULE,
+> > +};
+> > +
+> > +static const struct of_device_id qcom_idle_state_match[] __initconst = {
+> > +	{ .compatible = "qcom,idle-state-wfi", .data = qcom_lpm_enter_wfi },
+> > +	{ .compatible = "qcom,idle-state-spc", .data = qcom_lpm_enter_spc },
+> > +	{ },
+> > +};
+> > +
+> > +static int qcom_cpuidle_probe(struct platform_device *pdev)
+> > +{
+> > +	struct cpuidle_driver *drv = &qcom_cpuidle_driver;
+> > +	int ret;
+> > +
+> > +	qcom_idle_enter = (void *)(pdev->dev.platform_data);
+> > +	if (!qcom_idle_enter)
+> > +		return -EFAULT;
+> 
+> Error code looks a little wrong. -ENODEV?
+> 
+> > +
+> > +	 /* Probe for other states including platform WFI */
+> > +	ret = dt_init_idle_driver(drv, qcom_idle_state_match, 0);
+> > +	if (ret <= 0) {
+> > +		pr_err("%s: No cpuidle state found.\n", __func__);
+> 
+> This would be true if ret == 0, but if it's < 0 that isn't true. Drop
+> the print?
 
+I think we can safely drop the print, DT parsing code already barfs on
+error. Maybe you want to keep the (ret == 0) case to signal that driver
+was probed but no idle states were found.
 
+> > +		return ret;
+> > +	}
+> > +
+> > +	ret = cpuidle_register(drv, NULL);
+> > +	if (ret) {
+> > +		pr_err("%s: failed to register cpuidle driver\n", __func__);
+> 
+> This seems redundant given that cpuidle_register() already prints an
+> error when it fails.
+
+Yes, I will drop it from arm64 driver too as part of a minor clean-up
+when the merge window closes (also other drivers do that, and as you say
+it is redundant).
+
+Lorenzo
