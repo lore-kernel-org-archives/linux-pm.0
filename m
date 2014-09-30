@@ -1,64 +1,46 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: [RFC PATCH 02/16] hwmon: (ab8500) Call kernel_power_off instead of pm_power_off
-Date: Tue, 30 Sep 2014 11:00:42 -0700
-Message-ID: <1412100056-15517-3-git-send-email-linux@roeck-us.net>
+From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Subject: [RFC PATCH 14/16] x86/xen: support poweroff through poweroff handler call chain
+Date: Tue, 30 Sep 2014 11:00:54 -0700
+Message-ID: <1412100056-15517-15-git-send-email-linux@roeck-us.net>
 References: <1412100056-15517-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-mips-bounce@linux-mips.org>
-In-Reply-To: <1412100056-15517-1-git-send-email-linux@roeck-us.net>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-help: <mailto:ecartis@linux-mips.org?Subject=help>
-List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
-List-software: Ecartis version 1.0.0
-List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
-List-owner: <mailto:ralf@linux-mips.org>
-List-post: <mailto:linux-mips@linux-mips.org>
-List-archive: <http://www.linux-mips.org/archives/linux-mips/>
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org, linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org, linux-mips@linux-mips.org, linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, xen-devel@lists.xenproject.org, Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.de>
+Return-path: <linux-metag-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1412100056-15517-1-git-send-email-linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Sender: linux-metag-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-c6x-dev-jPsnJVOj+W6hPH1hqNUYSQ@public.gmane.org, linux-ia64-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-metag-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-parisc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Konrad Rzeszutek Wilk <konrad.wilk-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Boris Ostrovsky <boris.ostrovsky-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Drivers should not call pm_power_off directly; it is not guaranteed
-to be non-NULL. Call kernel_power_off instead.
+The kernel core now supports a poweroff handler call chain
+to remove power from the system. Call it if pm_power_off
+is set to NULL.
 
-Cc: Jean Delvare <jdelvare@suse.de>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
+Cc: Boris Ostrovsky <boris.ostrovsky-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
+Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
+Cc: Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: H. Peter Anvin <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>
+Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
 ---
-I already submitted this patch separately as non-RFC. It is included
-in this series for completeness.
+ arch/x86/xen/enlighten.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
- drivers/hwmon/ab8500.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/hwmon/ab8500.c b/drivers/hwmon/ab8500.c
-index d844dc8..8b6a4f4 100644
---- a/drivers/hwmon/ab8500.c
-+++ b/drivers/hwmon/ab8500.c
-@@ -6,7 +6,7 @@
-  *
-  * When the AB8500 thermal warning temperature is reached (threshold cannot
-  * be changed by SW), an interrupt is set, and if no further action is taken
-- * within a certain time frame, pm_power off will be called.
-+ * within a certain time frame, kernel_power_off will be called.
-  *
-  * When AB8500 thermal shutdown temperature is reached a hardware shutdown of
-  * the AB8500 will occur.
-@@ -21,6 +21,7 @@
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/power/ab8500.h>
-+#include <linux/reboot.h>
- #include <linux/slab.h>
- #include <linux/sysfs.h>
- #include "abx500.h"
-@@ -106,7 +107,7 @@ static void ab8500_thermal_power_off(struct work_struct *work)
- 
- 	dev_warn(&abx500_data->pdev->dev, "Power off due to critical temp\n");
- 
--	pm_power_off();
-+	kernel_power_off();
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index c0cb11f..645d00f 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -1322,6 +1322,8 @@ static void xen_machine_power_off(void)
+ {
+ 	if (pm_power_off)
+ 		pm_power_off();
++	else
++		do_kernel_poweroff();
+ 	xen_reboot(SHUTDOWN_poweroff);
  }
  
- static ssize_t ab8500_show_name(struct device *dev,
 -- 
 1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-metag" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
