@@ -1,71 +1,88 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 04/10] power/reset: xgene: Use local variable dev instead of pdev->dev
-Date: Tue, 30 Sep 2014 10:48:30 -0700
-Message-ID: <1412099316-23167-5-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 07/10] power/reset: axxia: Register with kernel restart handler
+Date: Tue, 30 Sep 2014 10:48:33 -0700
+Message-ID: <1412099316-23167-8-git-send-email-linux@roeck-us.net>
 References: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Loc Ho <lho@apm.com>
+Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Anders Berg <anders.berg@lsi.com>
 List-Id: linux-pm@vger.kernel.org
 
-Using a local variable dev to point to the device is simpler then repeatedly
-dereferencing pdev->dev.
+Register with kernel restart handler instead of setting arm_pm_restart
+directly.
 
-Cc: Loc Ho <lho@apm.com>
+Cc: Anders Berg <anders.berg@lsi.com>
+Tested-by: Anders Berg <anders.berg@avagotech.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/power/reset/xgene-reboot.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ drivers/power/reset/axxia-reset.c | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/power/reset/xgene-reboot.c b/drivers/power/reset/xgene-reboot.c
-index aac0287..1bab003 100644
---- a/drivers/power/reset/xgene-reboot.c
-+++ b/drivers/power/reset/xgene-reboot.c
-@@ -33,7 +33,7 @@
- #include <asm/system_misc.h>
+diff --git a/drivers/power/reset/axxia-reset.c b/drivers/power/reset/axxia-reset.c
+index 3b1f8d6..4e4cd1c 100644
+--- a/drivers/power/reset/axxia-reset.c
++++ b/drivers/power/reset/axxia-reset.c
+@@ -19,14 +19,12 @@
+ #include <linux/kernel.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/module.h>
++#include <linux/notifier.h>
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/reboot.h>
+ #include <linux/regmap.h>
  
- struct xgene_reboot_context {
--	struct platform_device *pdev;
-+	struct device *dev;
- 	void *csr;
- 	u32 mask;
- };
-@@ -53,27 +53,28 @@ static void xgene_restart(char str, const char *cmd)
- 	while (time_before(jiffies, timeout))
- 		cpu_relax();
+-#include <asm/system_misc.h>
+-
+-
+ #define SC_CRIT_WRITE_KEY	0x1000
+ #define SC_LATCH_ON_RESET	0x1004
+ #define SC_RESET_CONTROL	0x1008
+@@ -39,7 +37,8 @@
  
--	dev_emerg(&ctx->pdev->dev, "Unable to restart system\n");
-+	dev_emerg(ctx->dev, "Unable to restart system\n");
+ static struct regmap *syscon;
+ 
+-static void do_axxia_restart(enum reboot_mode reboot_mode, const char *cmd)
++static int axxia_restart_handler(struct notifier_block *this,
++				 unsigned long mode, void *cmd)
+ {
+ 	/* Access Key (0xab) */
+ 	regmap_write(syscon, SC_CRIT_WRITE_KEY, 0xab);
+@@ -50,11 +49,19 @@ static void do_axxia_restart(enum reboot_mode reboot_mode, const char *cmd)
+ 	/* Assert chip reset */
+ 	regmap_update_bits(syscon, SC_RESET_CONTROL,
+ 			   RSTCTL_RST_CHIP, RSTCTL_RST_CHIP);
++
++	return NOTIFY_DONE;
  }
  
- static int xgene_reboot_probe(struct platform_device *pdev)
++static struct notifier_block axxia_restart_nb = {
++	.notifier_call = axxia_restart_handler,
++	.priority = 128,
++};
++
+ static int axxia_reset_probe(struct platform_device *pdev)
  {
- 	struct xgene_reboot_context *ctx;
-+	struct device *dev = &pdev->dev;
+ 	struct device *dev = &pdev->dev;
++	int err;
  
--	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
-+	ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
- 	if (!ctx)
- 		return -ENOMEM;
- 
--	ctx->csr = of_iomap(pdev->dev.of_node, 0);
-+	ctx->csr = of_iomap(dev->of_node, 0);
- 	if (!ctx->csr) {
--		dev_err(&pdev->dev, "can not map resource\n");
-+		dev_err(dev, "can not map resource\n");
- 		return -ENODEV;
+ 	syscon = syscon_regmap_lookup_by_phandle(dev->of_node, "syscon");
+ 	if (IS_ERR(syscon)) {
+@@ -62,9 +69,11 @@ static int axxia_reset_probe(struct platform_device *pdev)
+ 		return PTR_ERR(syscon);
  	}
  
--	if (of_property_read_u32(pdev->dev.of_node, "mask", &ctx->mask))
-+	if (of_property_read_u32(dev->of_node, "mask", &ctx->mask))
- 		ctx->mask = 0xFFFFFFFF;
+-	arm_pm_restart = do_axxia_restart;
++	err = register_restart_handler(&axxia_restart_nb);
++	if (err)
++		dev_err(dev, "cannot register restart handler (err=%d)\n", err);
  
--	ctx->pdev = pdev;
-+	ctx->dev = dev;
- 	arm_pm_restart = xgene_restart;
- 	xgene_restart_ctx = ctx;
+-	return 0;
++	return err;
+ }
  
+ static const struct of_device_id of_axxia_reset_match[] = {
 -- 
 1.9.1
