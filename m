@@ -1,69 +1,48 @@
-From: Joe Swantek <joseph.swantek@gmail.com>
-Subject: [PATCH] PM / suspend: Catch wake-up requests in suspend_again
-Date: Tue, 30 Sep 2014 17:20:02 -0500
-Message-ID: <1412115602-5204-1-git-send-email-jswantek@motorola.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v2 2/2] sched/fair: leverage the idle state info when
+ choosing the "idlest" cpu
+Date: Tue, 30 Sep 2014 19:15:00 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1409301904150.5311@knanqh.ubzr>
+References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org> <1409844730-12273-3-git-send-email-nicolas.pitre@linaro.org> <542B277D.7050103@redhat.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f182.google.com ([209.85.213.182]:58632 "EHLO
-	mail-ig0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbaI3Wg5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 18:36:57 -0400
+Received: from mail-qa0-f48.google.com ([209.85.216.48]:53003 "EHLO
+	mail-qa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750850AbaI3XPG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 19:15:06 -0400
+Received: by mail-qa0-f48.google.com with SMTP id f12so3515243qad.21
+        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 16:15:05 -0700 (PDT)
+In-Reply-To: <542B277D.7050103@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Joe Swantek <jswantek@motorola.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-It is possible during the processing of suspend_again() that a
-wake-up request (i.e. pm_stay_awake()) be made by a driver in response
-to an outside event (i.e. hw interrupt, etc.). Currently, when
-suspend_again() requests to re-enter suspend, suspend_enter() runs
-to re-enter suspend. The pm_wakeup_pending() function is called to check
-for any wake-up requests. However, this function is essentially disabled
-because the events_check_enabled flag is set to false by the previous
-run through suspend_enter(). This causes any wake-up request made
-during the processing of suspend_again() to be delayed until the next
-time the kernel resumes sometime in the future.
+On Tue, 30 Sep 2014, Rik van Riel wrote:
 
-To resolve this issue, if suspend_again() votes to re-enter
-suspend_enter() the count of wake-up requests is re-evaluated
-and the events_check_enabled flag set correctly based on the
-presence of wake-up requests that occurred during suspend_again().
+> On 09/04/2014 11:32 AM, Nicolas Pitre wrote:
+> > The code in find_idlest_cpu() looks for the CPU with the smallest
+> > load. However, if multiple CPUs are idle, the first idle CPU is
+> > selected irrespective of the depth of its idle state.
+> > 
+> > Among the idle CPUs we should pick the one with with the shallowest
+> > idle state, or the latest to have gone idle if all idle CPUs are in
+> > the same state.  The later applies even when cpuidle is configured
+> > out.
+> > 
+> > This patch doesn't cover the following issues:
+> 
+> The main thing it does not cover is already running tasks that
+> get woken up again, since select_idle_sibling() covers everything
+> except for newly forked and newly executed tasks.
 
-Signed-off-by: Joe Swantek <jswantek@motorola.com>
----
- kernel/power/suspend.c | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+True. Now that you bring this up, I remember that Peter mentioned it as 
+well.
 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 18c6219..f619492 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -188,8 +188,25 @@ static void platform_suspend_recover(suspend_state_t state)
- 
- static bool platform_suspend_again(suspend_state_t state)
- {
--	return state != PM_SUSPEND_FREEZE && suspend_ops->suspend_again ?
-+	int count;
-+	bool suspend = state != PM_SUSPEND_FREEZE &&
-+		suspend_ops->suspend_again ?
- 		suspend_ops->suspend_again() : false;
-+
-+	if (suspend) {
-+		/*
-+		 * pm_get_wakeup_count() gets an updated count of wakeup events
-+		 * that have occured and will return false (i.e. abort suspend)
-+		 * if a wakeup event has been started during suspend_again() and
-+		 * is still active. pm_save_wakeup_count() stores the count
-+		 * and enables pm_wakeup_pending() to properly analyze wakeup
-+		 * events before entering suspend in suspend_enter().
-+		 */
-+		suspend = pm_get_wakeup_count(&count, false) &&
-+			  pm_save_wakeup_count(count);
-+	}
-+
-+	return suspend;
- }
- 
- static int suspend_test(int level)
--- 
-1.9.1
+> I am looking at adding similar logic to select_idle_sibling()
 
+OK thanks.
+
+
+Nicolas
