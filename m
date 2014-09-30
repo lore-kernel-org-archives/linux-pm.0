@@ -1,49 +1,75 @@
 From: Feng Kan <fkan@apm.com>
-Subject: [PATCH RESEND V9 4/6] arm64: dts: Add X-Gene reboot driver dts node
-Date: Tue, 30 Sep 2014 16:25:06 -0700
-Message-ID: <1412119508-22864-5-git-send-email-fkan@apm.com>
-References: <1412119508-22864-1-git-send-email-fkan@apm.com>
+Subject: [PATCH RESEND V9 0/6] Add generic syscon reboot driver
+Date: Tue, 30 Sep 2014 16:25:02 -0700
+Message-ID: <1412119508-22864-1-git-send-email-fkan@apm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1412119508-22864-1-git-send-email-fkan@apm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux@roeck-us.net, dbaryshkov@gmail.com, catalin.marinas@arm.com, dwmw2@infradead.org, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, patches@apm.com, linux-pm@vger.kernel.org, will.deacon@arm.com
 Cc: Feng Kan <fkan@apm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add X-Gene platform reboot driver dts node.
+Enable reboot driver for the X-Gene platform. Add generic syscon reboot
+driver. Replace X-Gene reboot driver with the generic syscon reboot
+driver.
 
-Signed-off-by: Feng Kan <fkan@apm.com>
----
- arch/arm64/boot/dts/apm-storm.dtsi | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+V9 Change:
+        - rebase on Guenter Roeck's reset handler patch set now in linux next.
+	  This allows for a generic reset to be call rather than the arm
+          specific reset handler.
 
-diff --git a/arch/arm64/boot/dts/apm-storm.dtsi b/arch/arm64/boot/dts/apm-storm.dtsi
-index f391972..cfde5f8 100644
---- a/arch/arm64/boot/dts/apm-storm.dtsi
-+++ b/arch/arm64/boot/dts/apm-storm.dtsi
-@@ -103,6 +103,11 @@
- 		#size-cells = <2>;
- 		ranges;
- 
-+		scu: system-clk-controller@17000000 {
-+			compatible = "apm,xgene-scu","syscon";
-+			reg = <0x0 0x17000000 0x0 0x400>;
-+		};
-+
- 		clocks {
- 			#address-cells = <2>;
- 			#size-cells = <2>;
-@@ -442,5 +447,11 @@
- 			clocks = <&rngpkaclk 0>;
- 		};
- 
-+		reboot: reboot@17000014 {
-+			compatible = "syscon-reboot";
-+			regmap = <&scu>;
-+			offset = <0x14>;
-+			mask = <0x1>;
-+		};
- 	};
- };
+V8 Change:
+        - change Kconfig to depend on ARM || ARM64 || COMPILE_TEST
+
+V7 Change:
+        - Seem V3 on, the patches were not making in to the mailinglist.
+        - Fix build error produced by other ARCH while including this
+          driver. Set to depend on arm64 ARCH for now.
+
+V6 Change:
+        - Add documentation for scu node.
+
+V5 Change:
+        - Documentation update, endian and access size.
+
+V4 Change:
+        - Remove old X-Gene reboot driver
+        - Add generic syscon reboot driver
+        - Add DTS and Kconfig for X-Gene reboot using syscon method
+
+V3 Change:
+        - Remove the reboot driver's use of acpi resource patch.
+        - Change the reboot driver to use syscon to parse out
+          system clock register. Remove the old method of getting
+          register from the reboot driver directly.
+        - Remove documentation since its now simple.
+
+V2 Change:
+        - Add support for using ACPI resource.
+
+
+Feng Kan (6):
+  power: reset: Add generic SYSCON register mapped reset
+  Documentation: power: reset: Add documentation for generic SYSCON
+    reboot driver
+  Documentation: arm64: add SCU dts binding documentation to linux
+    kernel
+  arm64: dts: Add X-Gene reboot driver dts node
+  arm64: Select reboot driver for X-Gene platform
+  power: reset: Remove X-Gene reboot driver
+
+ Documentation/devicetree/bindings/arm/apm/scu.txt  |  17 ++++
+ .../bindings/power/reset/syscon-reboot.txt         |  23 +++++
+ arch/arm64/Kconfig                                 |   2 +
+ arch/arm64/boot/dts/apm-storm.dtsi                 |  11 +++
+ drivers/power/reset/Kconfig                        |  11 +--
+ drivers/power/reset/Makefile                       |   2 +-
+ drivers/power/reset/syscon-reboot.c                |  96 +++++++++++++++++++
+ drivers/power/reset/xgene-reboot.c                 | 103 ---------------------
+ 8 files changed, 155 insertions(+), 110 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/apm/scu.txt
+ create mode 100644 Documentation/devicetree/bindings/power/reset/syscon-reboot.txt
+ create mode 100644 drivers/power/reset/syscon-reboot.c
+ delete mode 100644 drivers/power/reset/xgene-reboot.c
+
 -- 
 1.9.1
