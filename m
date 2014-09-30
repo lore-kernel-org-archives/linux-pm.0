@@ -1,115 +1,73 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 01/10] power/reset: vexpress: Register with kernel restart handler
-Date: Tue, 30 Sep 2014 10:48:27 -0700
-Message-ID: <1412099316-23167-2-git-send-email-linux@roeck-us.net>
-References: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v7 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
+Date: Tue, 30 Sep 2014 13:51:41 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1409301349260.5311@knanqh.ubzr>
+References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org> <1411779495-39724-6-git-send-email-lina.iyer@linaro.org> <20140929153154.GF2165@e102568-lin.cambridge.arm.com> <7hmw9hypj9.fsf@deeprootsystems.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <7hmw9hypj9.fsf@deeprootsystems.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "galak@codeaurora.org" <galak@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Use the kernel restart handler instead of setting arm_pm_restart directly.
-This allows for more than one restart handler in the system.
+On Tue, 30 Sep 2014, Kevin Hilman wrote:
 
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
- drivers/power/reset/vexpress-poweroff.c | 40 ++++++++++++++++++++++++---------
- 1 file changed, 30 insertions(+), 10 deletions(-)
+> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
+> 
+> > Hi Lina,
+> >
+> > On Sat, Sep 27, 2014 at 01:58:13AM +0100, Lina Iyer wrote:
+> >> Add cpuidle driver interface to allow cpus to go into C-States. Use the
+> >> cpuidle DT interface common across ARM architectures to provide the
+> >> C-State information to the cpuidle framework.
+> >> 
+> >> Supported modes at this time are clock gating (wfi) and cpu power down
+> >> (Standalone PC or spc).
+> >> 
+> >> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> >> ---
+> >>  .../bindings/arm/msm/qcom,idle-state.txt           | 72 +++++++++++++++++
+> >>  drivers/cpuidle/Kconfig.arm                        |  7 ++
+> >>  drivers/cpuidle/Makefile                           |  1 +
+> >>  drivers/cpuidle/cpuidle-qcom.c                     | 89 ++++++++++++++++++++++
+> >>  4 files changed, 169 insertions(+)
+> >>  create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+> >>  create mode 100644 drivers/cpuidle/cpuidle-qcom.c
+> >> 
+> >> diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+> >> new file mode 100644
+> >> index 0000000..47095b9
+> >> --- /dev/null
+> >> +++ b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+> >> @@ -0,0 +1,72 @@
+> >> +QCOM Idle States for cpuidle driver
+> >> +
+> >> +ARM provides idle-state node to define the cpuidle states, as defined in [1].
+> >> +cpuidle-qcom is the cpuidle driver for Qualcomm SoCs and uses these idle
+> >> +states. Idle states have different enter/exit latency and residency values.
+> >> +The idle states supported by the QCOM SoC are defined as -
+> >> +
+> >> +    * WFI
+> >> +    * Retention
+> >> +    * Standalone Power Collapse (Standalone PC or SPC)
+> >> +    * Power Collapse (PC)
+> >> +
+> >> +WFI: WFI does a little more in addition to architectural clock gating.  ARM
+> >
+> > This may be misleading. Call it PlatformWFI or something like that, not WFI if
+> > that's not what it is.
+> 
+> This gets at a little pet peeve of mine: 
+> 
+> IMO, naming any state with "WFI" is a bit confusing, because typically
+> *every* idle state is entered by one (or more) CPU executing WFI, no?
 
-diff --git a/drivers/power/reset/vexpress-poweroff.c b/drivers/power/reset/vexpress-poweroff.c
-index 4dc102e2..9dfc9ce 100644
---- a/drivers/power/reset/vexpress-poweroff.c
-+++ b/drivers/power/reset/vexpress-poweroff.c
-@@ -12,14 +12,14 @@
-  */
- 
- #include <linux/delay.h>
-+#include <linux/notifier.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
- #include <linux/platform_device.h>
-+#include <linux/reboot.h>
- #include <linux/stat.h>
- #include <linux/vexpress.h>
- 
--#include <asm/system_misc.h>
--
- static void vexpress_reset_do(struct device *dev, const char *what)
- {
- 	int err = -ENOENT;
-@@ -43,11 +43,19 @@ static void vexpress_power_off(void)
- 
- static struct device *vexpress_restart_device;
- 
--static void vexpress_restart(enum reboot_mode reboot_mode, const char *cmd)
-+static int vexpress_restart(struct notifier_block *this, unsigned long mode,
-+			     void *cmd)
- {
- 	vexpress_reset_do(vexpress_restart_device, "restart");
-+
-+	return NOTIFY_DONE;
- }
- 
-+static struct notifier_block vexpress_restart_nb = {
-+	.notifier_call = vexpress_restart,
-+	.priority = 128,
-+};
-+
- static ssize_t vexpress_reset_active_show(struct device *dev,
- 		struct device_attribute *attr, char *buf)
- {
-@@ -86,12 +94,28 @@ static struct of_device_id vexpress_reset_of_match[] = {
- 	{}
- };
- 
-+static int _vexpress_register_restart_handler(struct device *dev)
-+{
-+	int err;
-+
-+	vexpress_restart_device = dev;
-+	err = register_restart_handler(&vexpress_restart_nb);
-+	if (err) {
-+		dev_err(dev, "cannot register restart handler (err=%d)\n", err);
-+		return err;
-+	}
-+	device_create_file(dev, &dev_attr_active);
-+
-+	return 0;
-+}
-+
- static int vexpress_reset_probe(struct platform_device *pdev)
- {
- 	enum vexpress_reset_func func;
- 	const struct of_device_id *match =
- 			of_match_device(vexpress_reset_of_match, &pdev->dev);
- 	struct regmap *regmap;
-+	int ret = 0;
- 
- 	if (match)
- 		func = (enum vexpress_reset_func)match->data;
-@@ -110,18 +134,14 @@ static int vexpress_reset_probe(struct platform_device *pdev)
- 		break;
- 	case FUNC_RESET:
- 		if (!vexpress_restart_device)
--			vexpress_restart_device = &pdev->dev;
--		arm_pm_restart = vexpress_restart;
--		device_create_file(&pdev->dev, &dev_attr_active);
-+			ret = _vexpress_register_restart_handler(&pdev->dev);
- 		break;
- 	case FUNC_REBOOT:
--		vexpress_restart_device = &pdev->dev;
--		arm_pm_restart = vexpress_restart;
--		device_create_file(&pdev->dev, &dev_attr_active);
-+		ret = _vexpress_register_restart_handler(&pdev->dev);
- 		break;
- 	};
- 
--	return 0;
-+	return ret;
- }
- 
- static const struct platform_device_id vexpress_reset_id_table[] = {
--- 
-1.9.1
+Agreed.
+
+The only state called "WFI" should be the one that only executes the WFI 
+instruction without any other hardware setup around it.
+
+
+Nicolas
