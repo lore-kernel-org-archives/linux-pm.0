@@ -1,39 +1,111 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH v2 1/4] PM / Domains: Remove pm_genpd_dev_need_restore() API
-Date: Wed, 01 Oct 2014 18:36:47 +0200
-Message-ID: <542C2D9F.8060005@samsung.com>
-References: <1412174494-15346-1-git-send-email-ulf.hansson@linaro.org>
- <1412174494-15346-2-git-send-email-ulf.hansson@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1412174494-15346-2-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Beata Michalska <b.michalska@samsung.com>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] PM / clock_ops: Fix crash in clocks management code if !CONFIG_PM_RUNTIME
+Date: Wed,  1 Oct 2014 20:38:17 +0200
+Message-ID: <1412188697-15317-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-sh-owner@vger.kernel.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-On 01/10/14 16:41, Ulf Hansson wrote:
-> There are currently no users of this API, let's remove it.
+Unlike the clocks management code for runtime PM, the code used for
+system suspend does not check the pm_clock_entry.status field.
+If pm_clk_acquire() failed, ce->status will be PCE_STATUS_ERROR, and
+ce->clk will be a negative error code (e.g. 0xfffffffe = -2 = -ENOENT).
 
-The sad fact is that removal of pm_genpd_dev_need_restore() calls
-from arch/arm/mach-exynos/pm_domains.c introduces regressions in
-multiple exynos drivers (I'm sure it breaks media drivers).
-I think before doing such changes all relevant drivers should be
-updated first. I need to take a closer look again, but it seems
-after dropping the pm_genpd_dev_need_restore() calls, client
-driver's runtime_resume() callback is not being called in response
-to first pm_runtime_get(_sync) call, even if a device is runtime
-pm active.
+Depending on the clock implementation, suspend or resume may crash with:
 
-More details can be found in commit ebc35c726298ba3fdebba316a
-'ARM: EXYNOS: register devices in 'need_restore' state for pm_domains'.
+    Unable to handle kernel NULL pointer dereference at virtual address 00000026
 
-The above only happens when devices are added to an inactive power
-domain, then I guess patch 2/4 is also an attempt to address this
-issue ?
+(CCF clk_disable() has an IS_ERR_OR_NULL() check, while CCF clk_enable()
+ only has a NULL check; pre-CCF implementations may behave differently)
 
---
-Thanks,
-Sylwester
+While just checking for PCE_STATUS_ERROR would be sufficient, it doesn't
+hurt to use the same state machine as is done for runtime PM, as this
+makes the two versions more similar, and eligible for a future
+consolidation.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+This crash started to happen on armadillo-legacy during s2ram if
+CONFIG_PM_RUNTIME is not set after applying "[PATCH v2 07/11] ARM:
+shmobile: r8a7740/armadillo legacy: Add A4MP pm domain support"
+(http://www.spinics.net/linux/lists/arm-kernel/msg365438.html), as
+there's no NULL clock for the HDMI device.
+
+Most existing code calling pm_clk_suspend()/pm_clk_resume() is protected
+by a check for CONFIG_PM_RUNTIME (davinci, keystone, omap1,
+drivers/sh/pm_runtime.c), so it was not affected by this bug.
+
+Exceptions are:
+  - arch/arm/mach-shmobile/pm-r8a7779.c (marzen),
+  - arch/arm/mach-shmobile/pm-rmobile.c (r8a7740/armadillo and
+    sh7372/mackerel),
+but it's difficult to assess from the code whether the bug is really
+triggered on these platforms.
+
+Grygorii Strashko's "[PATCH v1 2/4] ARM: keystone: pm: switch to use
+generic pm domains" is not affected, as pm_clk_add_clk() is only called
+for existing clocks.
+
+If it crashes on marzen or mackerel, I think this fix needs to be
+applied to stable, too. I don't have access to marzen or mackerel boards,
+though.
+
+How to test:
+  - Build a kernel with CONFIG_PM_SLEEP/CONFIG_SUSPEND enabled, but
+    CONFIG_PM_RUNTIME disabled,
+  - echo 0 > /sys/module/printk/parameters/console_suspend,
+  - echo mem > /sys/power/state,
+  - wake up using e.g. gpio-keys or serial console activity.
+---
+ drivers/base/power/clock_ops.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+index b99e6c06ee678ecb..78369305e0698109 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -368,8 +368,13 @@ int pm_clk_suspend(struct device *dev)
+ 
+ 	spin_lock_irqsave(&psd->lock, flags);
+ 
+-	list_for_each_entry_reverse(ce, &psd->clock_list, node)
+-		clk_disable(ce->clk);
++	list_for_each_entry_reverse(ce, &psd->clock_list, node) {
++		if (ce->status < PCE_STATUS_ERROR) {
++			if (ce->status == PCE_STATUS_ENABLED)
++				clk_disable(ce->clk);
++			ce->status = PCE_STATUS_ACQUIRED;
++		}
++	}
+ 
+ 	spin_unlock_irqrestore(&psd->lock, flags);
+ 
+@@ -385,6 +390,7 @@ int pm_clk_resume(struct device *dev)
+ 	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clock_entry *ce;
+ 	unsigned long flags;
++	int ret;
+ 
+ 	dev_dbg(dev, "%s()\n", __func__);
+ 
+@@ -394,8 +400,13 @@ int pm_clk_resume(struct device *dev)
+ 
+ 	spin_lock_irqsave(&psd->lock, flags);
+ 
+-	list_for_each_entry(ce, &psd->clock_list, node)
+-		__pm_clk_enable(dev, ce->clk);
++	list_for_each_entry(ce, &psd->clock_list, node) {
++		if (ce->status < PCE_STATUS_ERROR) {
++			ret = __pm_clk_enable(dev, ce->clk);
++			if (!ret)
++				ce->status = PCE_STATUS_ENABLED;
++		}
++	}
+ 
+ 	spin_unlock_irqrestore(&psd->lock, flags);
+ 
+-- 
+1.9.1
+
