@@ -1,32 +1,44 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 00/15] power_supply: Fixes & cleanups
-Date: Wed, 1 Oct 2014 08:49:30 +0530
-Message-ID: <CAKohponEJ+dC5Y4R1-e=YyHTknhrOu-DyPM63oCagfqqOzxA3g@mail.gmail.com>
-References: <cover.1409831636.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH resend] cpufreq: dt: disable unsupported OPPs
+Date: Wed, 1 Oct 2014 08:59:17 +0530
+Message-ID: <CAKohpomH6V3akJjSQZS-xWubC6xUzfJihWcNT0FpYM98qvayNQ@mail.gmail.com>
+References: <1412090950-20835-1-git-send-email-l.stach@pengutronix.de>
+	<2197100.Nocxtjmizk@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f52.google.com ([209.85.218.52]:50118 "EHLO
-	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833AbaJADTb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 23:19:31 -0400
-Received: by mail-oi0-f52.google.com with SMTP id a3so202277oib.39
-        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 20:19:30 -0700 (PDT)
-In-Reply-To: <cover.1409831636.git.viresh.kumar@linaro.org>
+Received: from mail-ob0-f176.google.com ([209.85.214.176]:41157 "EHLO
+	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751166AbaJAD3S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 23:29:18 -0400
+Received: by mail-ob0-f176.google.com with SMTP id vb8so241790obc.7
+        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 20:29:18 -0700 (PDT)
+In-Reply-To: <2197100.Nocxtjmizk@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Anton Vorontsov <anton@enomsg.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lucas Stach <l.stach@pengutronix.de>, Mark Brown <broonie@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 4 September 2014 17:30, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Hi Guys,
+On 1 October 2014 01:23, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, September 30, 2014 05:29:10 PM Lucas Stach wrote:
+>> If the regulator connected to the CPU voltage plane doesn't
+>> support an OPP specified voltage with the acceptable tolerance
+>> it's better to just disable the OPP instead of constantly
+>> failing the voltage scaling later on.
+>>
+>> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+>> ---
+>> resend:
+>> - no functional change, split out from the imx5 cpufreq series
+>> v2:
+>> - rebase on top of pm/linux-next
 >
-> I was required to work on a battery driver and found some fixes/cleanups while
-> going through the core.
->
-> First two are fixes and rest are cleanups. Please see if they make any sense at
-> all.
->
-> Pushed here: git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/linux.git battery/fixes
+> This makes sense to me, but I need ACKs from people who are more familiar
+> with OPPs in general.
 
-Ping!!
+@Rafael: Where is this gone?
+
+http://permalink.gmane.org/gmane.linux.power-management.general/49384
+
+I am quite sure you applied this.. Have you dropped this while playing with
+branches ?
