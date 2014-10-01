@@ -1,77 +1,161 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Xen-devel] [PATCH v1 1/2] genirq: Fix error path for resuming
- irqs
-Date: Thu, 2 Oct 2014 01:45:03 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1410020109400.4269@nanos>
-References: <1403913865-31614-1-git-send-email-dbasehore@chromium.org> <CAGAzgsqEwVFHh2+Xtmraxb6Xwt_Rz2iTsOz+R+P-wmc4Vq9-mg@mail.gmail.com> <2820251.cyKiTY1p5v@vostro.rjw.lan> <6351010.TOHuEbTbVD@vostro.rjw.lan>
- <CAGAzgso4WUMF+DiOk8=WV62LdMhcQ6osPjdbEwiOnW1JXfUAFA@mail.gmail.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v2 3/4] PM / Domains: Expect PM domains being powered at
+ initialization
+Date: Thu, 2 Oct 2014 08:50:19 +0900
+Message-ID: <20141001235019.GC15551@verge.net.au>
+References: <1412174494-15346-1-git-send-email-ulf.hansson@linaro.org>
+ <1412174494-15346-4-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:40563 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751798AbaJAXpR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Oct 2014 19:45:17 -0400
-In-Reply-To: <CAGAzgso4WUMF+DiOk8=WV62LdMhcQ6osPjdbEwiOnW1JXfUAFA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1412174494-15346-4-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
-To: "dbasehore ." <dbasehore@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, linux-kernel <linux-kernel@vger.kernel.org>, xen-devel@lists.xenproject.org, Laxman Dewangan <ldewangan@nvidia.com>, Ian Campbell <ian.campbell@citrix.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Eric Biederman <ebiederm@xmission.com>
 
-On Wed, 1 Oct 2014, dbasehore . wrote:
-> On Wed, Oct 1, 2014 at 3:30 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+On Wed, Oct 01, 2014 at 04:41:33PM +0200, Ulf Hansson wrote:
+> At ->probe() it's common practice for drivers/subsystems to bring their
+> devices to full power and without depending on CONFIG_PM_RUNTIME.
+> 
+> We could also expect that drivers/subsystems requires their device's
+> corresponding PM domains to be powered, to successfully complete a
+> ->probe() sequence.
+> 
+> Align the generic PM domain to the behavior above, by enforcing a PM
+> domain to be powered at initialization.
+> 
+> Previous patch changed the only call of pm_genpd_init() with "true" for
+> the "is_off" parameter into "false". Thus all calls of pm_genpd_init()
+> now uses "false" as the value for "is_off".
+> 
+> To make it clear that genpd currently only supports powered PM domains
+> at init, let's also remove the "is_off" parameter from the API.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  arch/arm/mach-exynos/pm_domains.c   | 2 +-
+>  arch/arm/mach-s3c64xx/pm.c          | 4 ++--
+>  arch/arm/mach-shmobile/pm-r8a7779.c | 2 +-
+>  arch/arm/mach-shmobile/pm-rmobile.c | 2 +-
+>  drivers/base/power/domain.c         | 5 ++---
+>  include/linux/pm_domain.h           | 4 ++--
+>  6 files changed, 9 insertions(+), 10 deletions(-)
 
-Please stop top-posting and trim the quoted text. This is not your
-$corp mail drop.
+I am mildly concerned about the potential for conflicts in
+arch/arm/mach-shmobile/. But I think that taking this through Rafael's tree
+is consistent with how we have handled things before.
 
-> dpm_resume_noirq is not early enough for the Xen stuff, but should be
-> early enough for other stuff. This patch is mostly just a bandage on
-> top of the broken IRQF_EARLY_RESUME code.
+So, providing it can appear in v3.18-rc1, in which case I can
+rebase anything in my tree to avoid conflicts bubling up:
 
-You are getting it really backwards.
+Acked-by: Simon Horman <horms+renesas@verge.net.au>
 
-The IRQF_EARLY_RESUME stuff was introduced on behalf of XEN and now
-you are claiming in your changelog that:
- 
-> >> > >> This regression was introduced in 9bab0b7f "genirq: Add IRQF_RESUME_EARLY"
-
-So you are fixing a 3+ years old regression here? Do you have any
-prove that the code worked before that commit 9bab0b7f went in during
-the 3.2 merge window?
-
-No, you don't. Simply because the XEN suspend/resume stuff was not
-working at all before that. So it's not a regression.
-
-It either was a wrong design decision back then which did not take an
-error path into account or the things have changed in a way that this
-mechanism does not work anymore.
-
-I agree with Rafael that this should be solved differently. Though I'm
-not really convinced of the proposed syscore solution, simply because
-it will introduce another "tolerated" way for people to work around
-totally unrelated shortcomings of other parts of the suspend/resume
-machinery.
-
-You noticed yourself that
-
-> .... some rtc drivers started using IRQF_EARLY_RESUME. I can't think
-> of any reason those drivers would need to be resumed early. This
-> way, the flag wouldn't even be there for people to mistakenly add.
-
-Now the question is WHY XEN is so special that it needs all these
-extra features and mechanisms all over the place?
-
-I have not looked into the guts of XEN that deep that I can judge that
-and I have no intention to do so as I want to preserve my mental
-sanity, but I have not seen any reasonable explanation WHY:
-
-> dpm_resume_noirq is not early enough for the Xen stuff
-
-Is it just because XEN works that way and XEN folks are not willing or
-able to make it different? Or is there any fundamental and reasonable
-technical reason why XEN needs to have the extra treatment while the
-rest of the world does not?
-
-Thanks,
-
-	tglx
+> diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
+> index 58e18e9..f2e5096 100644
+> --- a/arch/arm/mach-exynos/pm_domains.c
+> +++ b/arch/arm/mach-exynos/pm_domains.c
+> @@ -158,7 +158,7 @@ no_clk:
+>  		if (!(__raw_readl(pd->base + 0x4) & INT_LOCAL_PWR_EN))
+>  			exynos_pd_power_on(&pd->pd);
+>  
+> -		pm_genpd_init(&pd->pd, NULL, false);
+> +		pm_genpd_init(&pd->pd, NULL);
+>  		of_genpd_add_provider_simple(np, &pd->pd);
+>  	}
+>  
+> diff --git a/arch/arm/mach-s3c64xx/pm.c b/arch/arm/mach-s3c64xx/pm.c
+> index aaf7bea..42dead0 100644
+> --- a/arch/arm/mach-s3c64xx/pm.c
+> +++ b/arch/arm/mach-s3c64xx/pm.c
+> @@ -315,10 +315,10 @@ int __init s3c64xx_pm_init(void)
+>  
+>  	for (i = 0; i < ARRAY_SIZE(s3c64xx_always_on_pm_domains); i++)
+>  		pm_genpd_init(&s3c64xx_always_on_pm_domains[i]->pd,
+> -			      &pm_domain_always_on_gov, false);
+> +			      &pm_domain_always_on_gov);
+>  
+>  	for (i = 0; i < ARRAY_SIZE(s3c64xx_pm_domains); i++)
+> -		pm_genpd_init(&s3c64xx_pm_domains[i]->pd, NULL, false);
+> +		pm_genpd_init(&s3c64xx_pm_domains[i]->pd, NULL);
+>  
+>  #ifdef CONFIG_S3C_DEV_FB
+>  	if (dev_get_platdata(&s3c_device_fb.dev))
+> diff --git a/arch/arm/mach-shmobile/pm-r8a7779.c b/arch/arm/mach-shmobile/pm-r8a7779.c
+> index 82fe3d7..c20ef44 100644
+> --- a/arch/arm/mach-shmobile/pm-r8a7779.c
+> +++ b/arch/arm/mach-shmobile/pm-r8a7779.c
+> @@ -83,7 +83,7 @@ static void r8a7779_init_pm_domain(struct r8a7779_pm_domain *r8a7779_pd)
+>  {
+>  	struct generic_pm_domain *genpd = &r8a7779_pd->genpd;
+>  
+> -	pm_genpd_init(genpd, NULL, false);
+> +	pm_genpd_init(genpd, NULL);
+>  	genpd->dev_ops.stop = pm_clk_suspend;
+>  	genpd->dev_ops.start = pm_clk_resume;
+>  	genpd->dev_ops.active_wakeup = pd_active_wakeup;
+> diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+> index 818de2f..e6a0490 100644
+> --- a/arch/arm/mach-shmobile/pm-rmobile.c
+> +++ b/arch/arm/mach-shmobile/pm-rmobile.c
+> @@ -107,7 +107,7 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+>  	struct generic_pm_domain *genpd = &rmobile_pd->genpd;
+>  	struct dev_power_governor *gov = rmobile_pd->gov;
+>  
+> -	pm_genpd_init(genpd, gov ? : &simple_qos_governor, false);
+> +	pm_genpd_init(genpd, gov ? : &simple_qos_governor);
+>  	genpd->dev_ops.stop		= pm_clk_suspend;
+>  	genpd->dev_ops.start		= pm_clk_resume;
+>  	genpd->dev_ops.active_wakeup	= rmobile_pd_active_wakeup;
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 36871b3..cfb76e8 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1836,10 +1836,9 @@ static int pm_genpd_default_restore_state(struct device *dev)
+>   * pm_genpd_init - Initialize a generic I/O PM domain object.
+>   * @genpd: PM domain object to initialize.
+>   * @gov: PM domain governor to associate with the domain (may be NULL).
+> - * @is_off: Initial value of the domain's power_is_off field.
+>   */
+>  void pm_genpd_init(struct generic_pm_domain *genpd,
+> -		   struct dev_power_governor *gov, bool is_off)
+> +		   struct dev_power_governor *gov)
+>  {
+>  	if (IS_ERR_OR_NULL(genpd))
+>  		return;
+> @@ -1852,7 +1851,7 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+>  	INIT_WORK(&genpd->power_off_work, genpd_power_off_work_fn);
+>  	genpd->in_progress = 0;
+>  	atomic_set(&genpd->sd_count, 0);
+> -	genpd->status = is_off ? GPD_STATE_POWER_OFF : GPD_STATE_ACTIVE;
+> +	genpd->status = GPD_STATE_ACTIVE;
+>  	init_waitqueue_head(&genpd->status_wait_queue);
+>  	genpd->poweroff_task = NULL;
+>  	genpd->resume_count = 0;
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index a21dfa9..ad4aa87 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -140,7 +140,7 @@ extern int pm_genpd_name_attach_cpuidle(const char *name, int state);
+>  extern int pm_genpd_detach_cpuidle(struct generic_pm_domain *genpd);
+>  extern int pm_genpd_name_detach_cpuidle(const char *name);
+>  extern void pm_genpd_init(struct generic_pm_domain *genpd,
+> -			  struct dev_power_governor *gov, bool is_off);
+> +			  struct dev_power_governor *gov);
+>  
+>  extern int pm_genpd_poweron(struct generic_pm_domain *genpd);
+>  extern int pm_genpd_name_poweron(const char *domain_name);
+> @@ -206,7 +206,7 @@ static inline int pm_genpd_name_detach_cpuidle(const char *name)
+>  	return -ENOSYS;
+>  }
+>  static inline void pm_genpd_init(struct generic_pm_domain *genpd,
+> -				 struct dev_power_governor *gov, bool is_off)
+> +				 struct dev_power_governor *gov)
+>  {
+>  }
+>  static inline int pm_genpd_poweron(struct generic_pm_domain *genpd)
+> -- 
+> 1.9.1
+> 
