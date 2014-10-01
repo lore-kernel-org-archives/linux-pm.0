@@ -1,46 +1,47 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH 2/4] ARM: exynos: Ensure PM domains are powered at initialization
-Date: Wed, 01 Oct 2014 13:23:46 +0200
-Message-ID: <542BE442.9040505@gmail.com>
-References: <1412081033-8136-1-git-send-email-ulf.hansson@linaro.org>	<1412081033-8136-3-git-send-email-ulf.hansson@linaro.org> <7hiok5x8k1.fsf@deeprootsystems.com>
+From: "Ivan T. Ivanov" <iivanov-NEYub+7Iv8PQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH v2] thermal: Add QPNP PMIC temperature alarm driver
+Date: Wed, 01 Oct 2014 14:36:28 +0300
+Message-ID: <1412163388.26751.39.camel@iivanov-dev>
+References: <1411651825-14240-1-git-send-email-iivanov@mm-sol.com>
+		  <54254C4E.3070807@smartplayin.com> <1411998865.5395.5.camel@iivanov-dev>
+		 <542A31DF.7020402@smartplayin.com> <1412062606.5395.10.camel@iivanov-dev>
+	 <542B088A.1050601@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <7hiok5x8k1.fsf@deeprootsystems.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <542B088A.1050601-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Kiran Padwal <kiran.padwal-edOiRQu9Xnj5XLMNweQjbQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Collins <collinsd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 30.09.2014 20:33, Kevin Hilman wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
+On Tue, 2014-09-30 at 12:46 -0700, Stephen Boyd wrote:
+> On 09/30/14 00:36, Ivan T. Ivanov wrote:
+> > On Tue, 2014-09-30 at 10:00 +0530, Kiran Padwal wrote:
+> >>
+> >> I have Linaro cross tool chain with version-4.8.3 and I am simply doing "make zImage" without any option.
+> > Hm, no warnings with arm-unknown-linux-gnueabi-gcc (GCC) 4.6.3 and
+> > arm-linux-gnueabihf-gcc (crosstool-NG linaro-1.13.1-4.9-2014.09, but
+> > indeed arm-linux-gnueabihf-gcc (crosstool-NG linaro-1.13.1-4.8-2014.03.
+> >
+> > I will say that this is false positive :-). Please update your tool-chain.
 > 
->> At ->probe() it's common practice for drivers/subsystems to bring their
->> devices to full power and without depending on CONFIG_PM_RUNTIME.
->>
->> We could also expect that drivers/subsystems requires their device's
->> corresponding PM domains to be powered, to successfully complete a
->> ->probe() sequence.
->>
->> Align to the behavior above, by ensuring all PM domains are powered
->> prior initialization of a generic PM domain.
->>
->> Do note, since the generic PM domain will try to power off unused PM
->> domains at late_init, there are no increased power consumption over
->> time.
-> 
-> IMO "no increased power consumption" is a bit misleading because
-> boot-time power consumption may have a major increase when all power
-> domains are powered on.  Sure, they will eventually (hopefully) be
-> turned off in after late_initcall, but there will still be an impact.
-> 
-> I guess the Samsung folks should comment here on whether that is
-> significant.
+> Hopefully you're joking. Once this merges someone will find the warning
+> and complain. Telling them to upgrade their compiler isn't going to work.
 
-Unfortunately this series has not been posted to linux-samsung-soc
-mailing list and I'm a formerly-Samsung folk now, so it hasn't really
-reached there.
+If it is known to be buggy why not?
 
-Best regards,
-Tomasz
+> 
+> I wonder if checking for rc != 0 instead of rc < 0 would silence the
+> warning? 
+
+No. Anyway, will find some way to silence this warning.
+
+Thanks,
+Ivan
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
