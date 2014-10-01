@@ -1,49 +1,94 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 2/4] ARM: exynos: Ensure PM domains are powered at initialization
-Date: Wed, 01 Oct 2014 21:50:08 +0200
-Message-ID: <6158232.Yd6ncToJoF@vostro.rjw.lan>
-References: <1412174494-15346-1-git-send-email-ulf.hansson@linaro.org> <1412174494-15346-3-git-send-email-ulf.hansson@linaro.org> <542C2972.9070002@samsung.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] PM / clock_ops: Fix crash in clocks management code if !CONFIG_PM_RUNTIME
+Date: Wed, 1 Oct 2014 21:31:32 +0200
+Message-ID: <CAMuHMdVY+vTmSBmH6LOfRdDCk6VRk7tcYfr5EWo0zwaKtP49ag@mail.gmail.com>
+References: <1412188697-15317-1-git-send-email-geert+renesas@glider.be>
+	<23953734.KObJ4iLFUI@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <542C2972.9070002@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Sylwester Nawrocki <s.nawrocki@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Beata Michalska <b.michalska@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f47.google.com ([209.85.215.47]:37705 "EHLO
+	mail-la0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751185AbaJATbe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Oct 2014 15:31:34 -0400
+In-Reply-To: <23953734.KObJ4iLFUI@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wednesday, October 01, 2014 06:18:58 PM Sylwester Nawrocki wrote:
-> On 01/10/14 16:41, Ulf Hansson wrote:
-> > At ->probe() it's common practice for drivers/subsystems to bring their
-> > devices to full power and without depending on CONFIG_PM_RUNTIME.
-> > 
-> > We could also expect that drivers/subsystems requires their device's
-> > corresponding PM domains to be powered, to successfully complete a
-> > ->probe() sequence.
-> > 
-> > Align to the behavior above, by ensuring all PM domains are powered
-> > prior initialization of a generic PM domain.
-> > 
-> > Do note, since the generic PM domain will try to power off unused PM
-> > domains at late_init, there should be no increased power consumption
-> > over time, but potentially during boot.
-> 
-> Wouldn't it be a better idea to power on the power domains which are
-> turned off only when CONFIG_PM_RUNTIME is not enabled ? I had a plan
-> to submit a patch doing that but unfortunately this has fallen through
-> the cracks. At the moment mach-exynos/pm_domains.c is not even built in
-> when CONFIG_PM_RUNTIME is disabled.
-> 
-> I don't like the behaviour introduced in this patch to be the default,
-> i.e. turning all possible power domains during boot sequence, even if
-> some are not used and not needed. While we're trying to decrease the
-> power consumption in any possible way this doesn't help at all.
+Hi Rafael,
 
-Agreed (as stated before).
+On Wed, Oct 1, 2014 at 9:47 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, October 01, 2014 08:38:17 PM Geert Uytterhoeven wrote:
+>> Unlike the clocks management code for runtime PM, the code used for
+>> system suspend does not check the pm_clock_entry.status field.
+>> If pm_clk_acquire() failed, ce->status will be PCE_STATUS_ERROR, and
+>> ce->clk will be a negative error code (e.g. 0xfffffffe = -2 = -ENOENT).
+>>
+>> Depending on the clock implementation, suspend or resume may crash with:
+>>
+>>     Unable to handle kernel NULL pointer dereference at virtual address 00000026
+>>
+>> (CCF clk_disable() has an IS_ERR_OR_NULL() check, while CCF clk_enable()
+>>  only has a NULL check; pre-CCF implementations may behave differently)
+>>
+>> While just checking for PCE_STATUS_ERROR would be sufficient, it doesn't
+>> hurt to use the same state machine as is done for runtime PM, as this
+>> makes the two versions more similar, and eligible for a future
+>> consolidation.
+>>
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> ---
+>> This crash started to happen on armadillo-legacy during s2ram if
+>> CONFIG_PM_RUNTIME is not set after applying "[PATCH v2 07/11] ARM:
+>> shmobile: r8a7740/armadillo legacy: Add A4MP pm domain support"
+>> (http://www.spinics.net/linux/lists/arm-kernel/msg365438.html), as
+>> there's no NULL clock for the HDMI device.
+>>
+>> Most existing code calling pm_clk_suspend()/pm_clk_resume() is protected
+>> by a check for CONFIG_PM_RUNTIME (davinci, keystone, omap1,
+>> drivers/sh/pm_runtime.c), so it was not affected by this bug.
+>>
+>> Exceptions are:
+>>   - arch/arm/mach-shmobile/pm-r8a7779.c (marzen),
+>>   - arch/arm/mach-shmobile/pm-rmobile.c (r8a7740/armadillo and
+>>     sh7372/mackerel),
+>> but it's difficult to assess from the code whether the bug is really
+>> triggered on these platforms.
+>>
+>> Grygorii Strashko's "[PATCH v1 2/4] ARM: keystone: pm: switch to use
+>> generic pm domains" is not affected, as pm_clk_add_clk() is only called
+>> for existing clocks.
+>>
+>> If it crashes on marzen or mackerel, I think this fix needs to be
+>> applied to stable, too. I don't have access to marzen or mackerel boards,
+>> though.
+>>
+>> How to test:
+>>   - Build a kernel with CONFIG_PM_SLEEP/CONFIG_SUSPEND enabled, but
+>>     CONFIG_PM_RUNTIME disabled,
+>>   - echo 0 > /sys/module/printk/parameters/console_suspend,
+>>   - echo mem > /sys/power/state,
+>>   - wake up using e.g. gpio-keys or serial console activity.
+>
+> Do I think correctly that this would be 3.18 material?
 
-And I'm wondering why that comment of mine was ignored?
+Yes indeed, so Simon can queue up the R-Mobile PM domain bits that will
+trigger this on armadillo for 3.19.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+If it can be triggered on marzen or mackerel now, I think we need it in
+stable, too.
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
