@@ -1,44 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH resend] cpufreq: dt: disable unsupported OPPs
-Date: Wed, 1 Oct 2014 08:59:17 +0530
-Message-ID: <CAKohpomH6V3akJjSQZS-xWubC6xUzfJihWcNT0FpYM98qvayNQ@mail.gmail.com>
-References: <1412090950-20835-1-git-send-email-l.stach@pengutronix.de>
-	<2197100.Nocxtjmizk@vostro.rjw.lan>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v7 00/11] kernel: Add support for restart handler call
+ chain
+Date: Tue, 30 Sep 2014 20:28:53 -0700
+Message-ID: <542B74F5.1080102@roeck-us.net>
+References: <1408495538-27480-1-git-send-email-linux@roeck-us.net>	<20140930142002.e09ef32392a2b5a7c81e5e57@linux-foundation.org>	<20140930223000.GA20946@roeck-us.net> <20141001094001.2b85f54c@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f176.google.com ([209.85.214.176]:41157 "EHLO
-	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751166AbaJAD3S (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Sep 2014 23:29:18 -0400
-Received: by mail-ob0-f176.google.com with SMTP id vb8so241790obc.7
-        for <linux-pm@vger.kernel.org>; Tue, 30 Sep 2014 20:29:18 -0700 (PDT)
-In-Reply-To: <2197100.Nocxtjmizk@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20141001094001.2b85f54c@canb.auug.org.au>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Russell King <linux@arm.linux.org.uk>, Wim Van Sebroeck <wim@iguana.be>, Catalin Marinas <catalin.marinas@arm.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-watchdog@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Heiko Stuebner <heiko@sntech.de>, Jonas Jensen <jonas.jensen@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tomasz Figa <t.figa@samsung.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Mike Turquette <mturquette@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lucas Stach <l.stach@pengutronix.de>, Mark Brown <broonie@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 1 October 2014 01:23, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, September 30, 2014 05:29:10 PM Lucas Stach wrote:
->> If the regulator connected to the CPU voltage plane doesn't
->> support an OPP specified voltage with the acceptable tolerance
->> it's better to just disable the OPP instead of constantly
->> failing the voltage scaling later on.
->>
->> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
->> ---
->> resend:
->> - no functional change, split out from the imx5 cpufreq series
->> v2:
->> - rebase on top of pm/linux-next
+On 09/30/2014 04:40 PM, Stephen Rothwell wrote:
+> Hi Guenter,
 >
-> This makes sense to me, but I need ACKs from people who are more familiar
-> with OPPs in general.
+> On Tue, 30 Sep 2014 15:30:00 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
+>>
+>> On Tue, Sep 30, 2014 at 02:20:02PM -0700, Andrew Morton wrote:
+>>> On Tue, 19 Aug 2014 17:45:27 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
+>>>
+>>>> Introduce a system restart handler call chain to solve the described problems.
+>>>
+>>> So someone has merged eight of these patches into linux-next but these
+>>> three:
+>>>
+>>> watchdog-s3c2410-add-restart-handler.patch
+>>> clk-samsung-register-restart-handlers-for-s3c2412-and-s3c2443.patch
+>>> clk-rockchip-add-restart-handler.patch
+>>>
+>>> were omitted.  What's up?
+>>
+>> Most likely PBKC on my side; Looks like I forgot to add those when I created
+>> the immutable branch for others to merge. Sorry for that :-(.
+>>
+>> Having said that, I somehow thought that the clock patches would go in through
+>> the clock tree. Heiko, did I get that wrong ? Separately, I sent a pull request
+>> that includes the watchdog patch to Wim.
+>
+> So far, that immutable branch has been merged into the battery tree
+> (and thus into linux-next) by Sebastian in order to add (I assume):
+>
+> 18a702e0de98 power: reset: use restart_notifier mechanism for msm-poweroff
+> 371bb20d6927 power: Add simple gpio-restart driver
+>
+> on top of it.
+>
+> So, I guess the watchdog and clk trees also need to merge that
+> immutable branch and then add their respective patches from the mmotm
+> series to their trees.
+>
+Yes, and now I remember why I did not include those patches: They are not
+authored by myself. I thought it was not appropriate for me to include them
+in the branch I created. Maybe flawed thinking, but that was my reasoning.
 
-@Rafael: Where is this gone?
-
-http://permalink.gmane.org/gmane.linux.power-management.general/49384
-
-I am quite sure you applied this.. Have you dropped this while playing with
-branches ?
+Guenter
