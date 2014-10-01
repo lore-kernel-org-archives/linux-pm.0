@@ -1,59 +1,79 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v7 00/11] kernel: Add support for restart handler call
- chain
-Date: Tue, 30 Sep 2014 20:28:53 -0700
-Message-ID: <542B74F5.1080102@roeck-us.net>
-References: <1408495538-27480-1-git-send-email-linux@roeck-us.net>	<20140930142002.e09ef32392a2b5a7c81e5e57@linux-foundation.org>	<20140930223000.GA20946@roeck-us.net> <20141001094001.2b85f54c@canb.auug.org.au>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/4] PM / Domains: Fix race conditions during boot
+Date: Wed, 1 Oct 2014 09:35:45 +0200
+Message-ID: <CAPDyKFoUUyN2Tqt+RmiyVfB4ymqTiQ-TT1Z6ZvWS87ZGKi-Cog@mail.gmail.com>
+References: <1412081033-8136-1-git-send-email-ulf.hansson@linaro.org>
+	<6902885.zdj1puMRg5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20141001094001.2b85f54c@canb.auug.org.au>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Russell King <linux@arm.linux.org.uk>, Wim Van Sebroeck <wim@iguana.be>, Catalin Marinas <catalin.marinas@arm.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-watchdog@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Heiko Stuebner <heiko@sntech.de>, Jonas Jensen <jonas.jensen@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tomasz Figa <t.figa@samsung.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Mike Turquette <mturquette@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f50.google.com ([209.85.192.50]:60789 "EHLO
+	mail-qg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbaJAHfq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Oct 2014 03:35:46 -0400
+Received: by mail-qg0-f50.google.com with SMTP id q107so168834qgd.9
+        for <linux-pm@vger.kernel.org>; Wed, 01 Oct 2014 00:35:45 -0700 (PDT)
+In-Reply-To: <6902885.zdj1puMRg5@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
 
-On 09/30/2014 04:40 PM, Stephen Rothwell wrote:
-> Hi Guenter,
->
-> On Tue, 30 Sep 2014 15:30:00 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
+On 30 September 2014 22:08, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, September 30, 2014 02:43:49 PM Ulf Hansson wrote:
+>> When there are more than one device in a PM domain these will obviously
+>> be probed at different times. Depending on timing and the implemented
+>> support for runtime PM in a driver/subsystem, genpd may be advised to
+>> power off a PM domain after a successful probe sequence.
 >>
->> On Tue, Sep 30, 2014 at 02:20:02PM -0700, Andrew Morton wrote:
->>> On Tue, 19 Aug 2014 17:45:27 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
->>>
->>>> Introduce a system restart handler call chain to solve the described problems.
->>>
->>> So someone has merged eight of these patches into linux-next but these
->>> three:
->>>
->>> watchdog-s3c2410-add-restart-handler.patch
->>> clk-samsung-register-restart-handlers-for-s3c2412-and-s3c2443.patch
->>> clk-rockchip-add-restart-handler.patch
->>>
->>> were omitted.  What's up?
+>> Ideally we should have relied on the driver/subsystem, through runtime
+>> PM, to bring their device's PM domain into powered state prior doing
+>> probing if such requirement exist.
 >>
->> Most likely PBKC on my side; Looks like I forgot to add those when I created
->> the immutable branch for others to merge. Sorry for that :-(.
+>> Since this is not a common practice by drivers/subsystems, enforcing
+>> such a change doesn't seem viable.
 >>
->> Having said that, I somehow thought that the clock patches would go in through
->> the clock tree. Heiko, did I get that wrong ? Separately, I sent a pull request
->> that includes the watchdog patch to Wim.
+>> Instead, let's improve the situation, by preventing genpd from powering
+>> off any of the PM domains until late_init. At that point genpd already
+>> tries to power off unused PM domains, so it seems like a decent match.
+>>
+>> Cases which can't be covered within the window of until late_init needs
+>> to be adressed separately and likely through a more common long term
+>> solution.
 >
-> So far, that immutable branch has been merged into the battery tree
-> (and thus into linux-next) by Sebastian in order to add (I assume):
+> The history here is that we started with something like what the patches
+> do and then realized that on some systems we don't want certain power domains
+> to be powered on even for a while (for reasons I can't recall today,
+> unfortunately).  So this may not be the case any more, but I'm not actually
+> sure and it would be good to check.
 >
-> 18a702e0de98 power: reset: use restart_notifier mechanism for msm-poweroff
-> 371bb20d6927 power: Add simple gpio-restart driver
->
-> on top of it.
->
-> So, I guess the watchdog and clk trees also need to merge that
-> immutable branch and then add their respective patches from the mmotm
-> series to their trees.
->
-Yes, and now I remember why I did not include those patches: They are not
-authored by myself. I thought it was not appropriate for me to include them
-in the branch I created. Maybe flawed thinking, but that was my reasoning.
+> Also I'm pretty sure we'd like to do the opposite (that is, leave things
+> in low-power states until we need to access them) going forward, so I'm
+> seeing this as a step back.
 
-Guenter
+I agree that this would be the best set up and this is my intent to
+have genpd support in the long run. But, today, genpd together with
+how drivers/subsystems handles ->probe() just doesn't work. We need to
+fix that first.
+
+>
+> What's the real motivation here?
+
+Let me try to summarize the arguments.
+
+1) Even if CONFIG_PM_RUNTIME is enabled, we have no mechanism to use
+for drivers/subsystems to bring device's PM domains into powered state
+before doing ->probe(). Well, of course, they could use
+pm_runtime_get_sync() in that path, but that's just not the common
+practice and there are good reasons to why.
+
+So, even if we figured out a solution for drivers/subsystems to
+support the above, it's not reasonable to think we can adopt each of
+them shortly. We need a fix in genpd.
+
+2) For !CONFIG_PM_RUNTIME, drivers/subsystem are completely unable to
+bring a PM domain into powered state. The only solution is to make
+sure the PM domain gets initialized in powered state.
+
+Kind regards
+Uffe
