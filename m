@@ -1,72 +1,62 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 00/15] power_supply: Fixes & cleanups
-Date: Wed, 1 Oct 2014 17:08:29 +0200
-Message-ID: <20141001150829.GB969@earth.universe>
-References: <cover.1409831636.git.viresh.kumar@linaro.org>
- <CAKohponEJ+dC5Y4R1-e=YyHTknhrOu-DyPM63oCagfqqOzxA3g@mail.gmail.com>
+Subject: Re: [PATCH RESEND V9 1/6] power: reset: Add generic SYSCON register
+ mapped reset
+Date: Wed, 1 Oct 2014 17:18:47 +0200
+Message-ID: <20141001151847.GC969@earth.universe>
+References: <1412119508-22864-1-git-send-email-fkan@apm.com>
+ <1412119508-22864-2-git-send-email-fkan@apm.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="H+4ONPRPur6+Ovig"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:33175 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751330AbaJAPIe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 1 Oct 2014 11:08:34 -0400
+	protocol="application/pgp-signature"; boundary="f+W+jCU1fRNres8c"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAKohponEJ+dC5Y4R1-e=YyHTknhrOu-DyPM63oCagfqqOzxA3g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1412119508-22864-2-git-send-email-fkan@apm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Feng Kan <fkan@apm.com>
+Cc: linux@roeck-us.net, dbaryshkov@gmail.com, catalin.marinas@arm.com, dwmw2@infradead.org, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, patches@apm.com, linux-pm@vger.kernel.org, will.deacon@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Anton Vorontsov <anton@enomsg.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
 
---H+4ONPRPur6+Ovig
+--f+W+jCU1fRNres8c
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Oct 01, 2014 at 08:49:30AM +0530, Viresh Kumar wrote:
-> On 4 September 2014 17:30, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > I was required to work on a battery driver and found some
-> > fixes/cleanups while going through the core.
-> >
-> > First two are fixes and rest are cleanups. Please see if they
-> > make any sense at all.
-> >
-> > Pushed here: git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/linu=
-x.git battery/fixes
+On Tue, Sep 30, 2014 at 04:25:03PM -0700, Feng Kan wrote:
+> Add a generic SYSCON register mapped reset mechanism.
 >=20
-> Ping!!
+> Signed-off-by: Feng Kan <fkan@apm.com>
 
-I merged the patchset two weeks ago to the battery-2.6 tree [0], so
-they should be in linux-next already.
+I have merged the driver and its documentation to battery-2.6.git.
+This should make it possible for the changes in arch/arm to be
+merged via ARM maintainers in 3.19.
 
-[0] git://git.infradead.org/battery-2.6.git master
+Please fix Guenter's comments in an incremental patch.
 
 -- Sebastian
 
---H+4ONPRPur6+Ovig
+--f+W+jCU1fRNres8c
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJULBjtAAoJENju1/PIO/qafhQQAJXv4fKkrOxpWBtWXw52bZ39
-Hg5MNCbaZPoACdMhAorgZA0qbxZXfQQwDVsEK+pzeBYSHY8WBSQIiJMNCmicAmK1
-IkR/U7YFJ68SEZ6tBOlL0xNdpdmhEK1agRFtV0LtPFT7gomDnoS8Kb4Sd/LwffqQ
-e2wk1gX1I4iWg2zeOOeC48/cI03NS9SRr2b2hyqkfoE5hg+QG2jxaWMQq1gEyDbV
-499tqxtj1H4MICrziFaCAOmIOB9tNoQ4Affi8n9yL9Mg0qmE0wjCaHF/0iKZvDE0
-cIPO/0SyLty9WYcL4QOezmUBU7sSPUvtiAmmf2v7Z2/RP3L4m61tpG18XYpQvWGp
-LjTQPd/aFvfPO6ZPXgD34BZqviRJA3dQWZVpgi1TwVG/X5pmYQVjr+1gryfiAcoe
-hHExfHuIjszRsde49Gy3vmRTECS9Dg9mbEaBAGUpfe2eP7TUqJt+FOQ4cP5mnCxH
-aRgW8HZcdCKwOzyFnCBWXgRy2793VjcqdC0JM+UKccR5C8zHvMGOgdbbpsxwbVJK
-9gcNrL8g4srwf87vg0ZLboSbS6H2xI8UjHh0m7l2VU2QoFAsuBPmpX8xDwtLAV/X
-oVhD1K8cKwQbOZxw09Q2AKEsvw4GYhVrN6btjgJIy2Dd9Xtji/7GGPnTgAkkqHuH
-cNFTx/q84/MtPLDv0jhs
-=UXji
+iQIcBAEBCgAGBQJULBtXAAoJENju1/PIO/qaXt0QAKfkOi4VdkhHh1accK88okd2
++p+kTrPg59ThLxj/Idk3Ag/nq1F8YDWnTr81PPgjrErWFslBp0G0hVdr5WECIzNL
+DIcpn3vzUgHD24Es1//PIDZ9Jw+HErJL2X3fsnKSOYkKr+UlLI01AJd7Kcu4Ht5g
+hoTeVj9T316KlcTh/fSkQCN6k01+XcOCN83mUshi0hbsVdE7H+6k/anot+W7aqDG
+4EwmmqFdfj1hA87T8eQD0wrRRhItueK12/XSuPdClNRJmNUrK4rDV1B7IXK/S7Lk
+Z17AlZvL6LGM58+LPXDl7zuYcc60xdUwtZgaIBT1N8ptXYqRZn9sMaumo9gLMAmU
+xVHw4QsBJ4KSa/2Nx9FbmJ99gWOgElfz+ex5j0upBckYTBglWb4T82H/yseUPD2O
+BAO16C7rbluODx6N4T6rI3V5T3XgoRdvH8D7xcEYa/avE2Nj6LpC2tF91cJ8myBo
+Ev8FgISgsN7Snsqg6fD91zDyj8XhEgF7nuHSRTfZgtcLC8BwLsgvbJP2WFtPE2V6
+EUKvnfi0JIXD+K0w1v7X68ZZUkgnseww4Xmp1U7OK7JpgOWiB3kRPb7dK49DAhIe
+Z4QF4QoUkKDUAzZe3IXkztobknYjLUHpqAdDwLO0J2onpAioncQfCFyhFt4s+Qwt
+M3aGjXZ6f81rUDSAo/zH
+=OrXN
 -----END PGP SIGNATURE-----
 
---H+4ONPRPur6+Ovig--
+--f+W+jCU1fRNres8c--
