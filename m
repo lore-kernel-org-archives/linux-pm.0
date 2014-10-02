@@ -1,77 +1,53 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 2/4] ARM: exynos: Ensure PM domains are powered at initialization
-Date: Thu, 2 Oct 2014 11:42:13 +0200
-Message-ID: <CAPDyKFrRw-cATC0r7y6jyr2jiu2z8tKjETs0nmeOhEeuW8=hRg@mail.gmail.com>
-References: <1412174494-15346-1-git-send-email-ulf.hansson@linaro.org>
-	<1412174494-15346-3-git-send-email-ulf.hansson@linaro.org>
-	<542C2972.9070002@samsung.com>
-	<6158232.Yd6ncToJoF@vostro.rjw.lan>
+From: David Vrabel <david.vrabel-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [Xen-devel] [RFC PATCH 14/16] x86/xen: support poweroff through
+ poweroff handler call chain
+Date: Thu, 2 Oct 2014 10:45:40 +0100
+Message-ID: <542D1EC4.10100@citrix.com>
+References: <1412100056-15517-1-git-send-email-linux@roeck-us.net> <1412100056-15517-15-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f174.google.com ([209.85.216.174]:39019 "EHLO
-	mail-qc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750954AbaJBJmO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 05:42:14 -0400
-Received: by mail-qc0-f174.google.com with SMTP id m20so1725485qcx.5
-        for <linux-pm@vger.kernel.org>; Thu, 02 Oct 2014 02:42:13 -0700 (PDT)
-In-Reply-To: <6158232.Yd6ncToJoF@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-metag-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1412100056-15517-15-git-send-email-linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Sender: linux-metag-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-ia64-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-c6x-dev-jPsnJVOj+W6hPH1hqNUYSQ@public.gmane.org, linux-parisc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org, Boris Ostrovsky <boris.ostrovsky-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, linux-metag-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sylwester Nawrocki <s.nawrocki@samsung.com>
-Cc: Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Beat
 
-On 1 October 2014 21:50, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, October 01, 2014 06:18:58 PM Sylwester Nawrocki wrote:
->> On 01/10/14 16:41, Ulf Hansson wrote:
->> > At ->probe() it's common practice for drivers/subsystems to bring their
->> > devices to full power and without depending on CONFIG_PM_RUNTIME.
->> >
->> > We could also expect that drivers/subsystems requires their device's
->> > corresponding PM domains to be powered, to successfully complete a
->> > ->probe() sequence.
->> >
->> > Align to the behavior above, by ensuring all PM domains are powered
->> > prior initialization of a generic PM domain.
->> >
->> > Do note, since the generic PM domain will try to power off unused PM
->> > domains at late_init, there should be no increased power consumption
->> > over time, but potentially during boot.
->>
->> Wouldn't it be a better idea to power on the power domains which are
->> turned off only when CONFIG_PM_RUNTIME is not enabled ? I had a plan
->> to submit a patch doing that but unfortunately this has fallen through
->> the cracks. At the moment mach-exynos/pm_domains.c is not even built in
->> when CONFIG_PM_RUNTIME is disabled.
+On 30/09/14 19:00, Guenter Roeck wrote:
+> The kernel core now supports a poweroff handler call chain
+> to remove power from the system. Call it if pm_power_off
+> is set to NULL.
+> 
+> Cc: Konrad Rzeszutek Wilk <konrad.wilk-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
+> Cc: Boris Ostrovsky <boris.ostrovsky-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
+> Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
+> Cc: Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+> Cc: H. Peter Anvin <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>
+> Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+> ---
+>  arch/x86/xen/enlighten.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+> index c0cb11f..645d00f 100644
+> --- a/arch/x86/xen/enlighten.c
+> +++ b/arch/x86/xen/enlighten.c
+> @@ -1322,6 +1322,8 @@ static void xen_machine_power_off(void)
+>  {
+>  	if (pm_power_off)
+>  		pm_power_off();
+> +	else
+> +		do_kernel_poweroff();
 
-Yes, that's the approach I also intend to take in the next step.
+Why isn't this if (pm_power_off) check in do_kernel_poweroff()?
 
-But, it's not that simple. Since this requires a mechanism for drivers
-to bring their device's PM domains into power state prior doing probe.
-We don't have such today. I do have some ideas about this, but I think
-we need to keep that as a separate discussion.
+That way when you finally remove pm_power_off you need only update one
+place.  A quick skim of the other archs suggest this would work for them
+too.
 
->>
->> I don't like the behaviour introduced in this patch to be the default,
->> i.e. turning all possible power domains during boot sequence, even if
->> some are not used and not needed. While we're trying to decrease the
->> power consumption in any possible way this doesn't help at all.
-
-This will hit only during boot, until late_init. Unless you have a
-platform that keeps rebooting all the time, is this really a big
-worry?
-
-Still, I certainly agree that we should strive for a solution where
-it's possible to leave PM domains powered off at init. It's should be
-too hard to support this from genpd point of view, but
-drivers/subsystems will need some adaptations.
-
->
-> Agreed (as stated before).
->
-> And I'm wondering why that comment of mine was ignored?
-
-Sorry, if missed to comment of that. I guess I have at this point.
-
-Kind regards
-Uffe
+David
+--
+To unsubscribe from this list: send the line "unsubscribe linux-metag" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
