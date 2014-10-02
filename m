@@ -1,37 +1,40 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: cpufreq v3.17-rc7 error: "cpufreq: cpufreq_resume: Failed to
- start governor for policy: f6909a00"
-Date: Thu, 02 Oct 2014 13:55:11 +0200
-Message-ID: <1412250911.3060.13.camel@x41>
-References: <1412250350.3060.9.camel@x41>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH resend] cpufreq: dt: disable unsupported OPPs
+Date: Thu, 02 Oct 2014 13:57:55 +0200
+Message-ID: <1412251075.4875.3.camel@pengutronix.de>
+References: <1412090950-20835-1-git-send-email-l.stach@pengutronix.de>
+	 <2197100.Nocxtjmizk@vostro.rjw.lan>
+	 <CAKohpomH6V3akJjSQZS-xWubC6xUzfJihWcNT0FpYM98qvayNQ@mail.gmail.com>
+	 <4618249.XhLIrkx56O@vostro.rjw.lan>
+	 <CAKohpon9buGWmcXH9+PmtatmbnOro+gU84zkskPjNZ6fiM5SLQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cpsmtpb-ews06.kpnxchange.com ([213.75.39.9]:58791 "EHLO
-	cpsmtpb-ews06.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751208AbaJBLzO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 07:55:14 -0400
-In-Reply-To: <1412250350.3060.9.camel@x41>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:51093 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbaJBL6A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 07:58:00 -0400
+In-Reply-To: <CAKohpon9buGWmcXH9+PmtatmbnOro+gU84zkskPjNZ6fiM5SLQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Paul Bolle schreef op do 02-10-2014 om 13:45 [+0200]:
-> Running v3.17-rc7 I see a new (for me) error, apparently during each
-> resume (from suspend) or thaw (from hibernate):
->      cpufreq: cpufreq_resume: Failed to start governor for policy: f6909a00
+Am Donnerstag, den 02.10.2014, 10:54 +0530 schrieb Viresh Kumar:
+> On 2 October 2014 02:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > Would you mind sending it again with the fix folded in for me?
+> 
+> Done.
 
-So there are only two recent commits:
-    7106e02baed4 ("cpufreq: release policy->rwsem on error")
-    8e30444e1530 ("cpufreq: fix cpufreq suspend/resume for
-        intel_pstate")
+I don't know how it makes sense to fold the fix into this patch. It has
+nothing to do with the rename.
+If you want to fold the fix in the relevant patch this would be
+"cpufreq: cpu0: Move per-cluster initialization code to ->init()"
 
-Would it be useful to test whether reverting the oldest commit,
-8e30444e1530 ("cpufreq: fix cpufreq suspend/resume for intel_pstate"),
-changes anything?
-
-
-Paul Bolle
+Regards,
+Lucas
+-- 
+Pengutronix e.K.             | Lucas Stach                 |
+Industrial Linux Solutions   | http://www.pengutronix.de/  |
 
