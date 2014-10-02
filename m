@@ -1,34 +1,65 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH 7/7] ARM: multi_v7_defconfig: Enable Maxim 77693 charger
-Date: Thu, 02 Oct 2014 14:22:08 +0200
-Message-ID: <1412252528-30148-8-git-send-email-k.kozlowski@samsung.com>
-References: <1412252528-30148-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1412252528-30148-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org, linux-api@vger.kernel.org
-Cc: Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Russell King <linux@arm.linux.org.uk>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: cpufreq: Unable to set cpufreq to maximum
+Date: Thu, 2 Oct 2014 15:17:47 +0200 (CEST)
+Message-ID: <936524880.154802.1412255867221.JavaMail.open-xchange@oxbaltgw07.schlund.de>
+Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.17.24]:56247 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751507AbaJBNRv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 09:17:51 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, festevam@gmail.com, gregkh@linuxfoundation.org
 
-Enable the max77693 charger driver used on Trats2 board. This allows
-querying the charging status through power supply interface.
+Hi,
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
----
- arch/arm/configs/multi_v7_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+i currently try to get cpufreq-cpu0 aka cpufreq-dt running on Freescale i.MX28
+(ARM). First i ported the regulator driver and now i want to test it with
+cpufreq-cpu0. Everything works fine except changing back to maximum frequency
+454736 kHz. I get the following error:
 
-diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
-index a25549d015e8..54367775aade 100644
---- a/arch/arm/configs/multi_v7_defconfig
-+++ b/arch/arm/configs/multi_v7_defconfig
-@@ -248,6 +248,7 @@ CONFIG_GPIO_TPS6586X=y
- CONFIG_GPIO_TPS65910=y
- CONFIG_BATTERY_SBS=y
- CONFIG_CHARGER_TPS65090=y
-+CONFIG_CHARGER_MAX77693=y
- CONFIG_POWER_RESET_AS3722=y
- CONFIG_POWER_RESET_GPIO=y
- CONFIG_POWER_RESET_SUN6I=y
--- 
-1.9.1
+root@duckbill:/sys/devices/system/cpu/cpu0/cpufreq# echo "454736" >
+scaling_setspeed
+[ 1111.226006] cpu cpu0: failed to find OPP for 454736842
+[ 1111.231399] cpufreq: __target_index: Failed to change cpu frequency: -34
+
+I'm using 3.17.0-rc7-00466-g6f28c5c-dirty #1 Thu Oct 2 12:07:49 UTC 2014
+armv5tejl GNU/Linux and here is the relevant part of the dts file:
+
+cpus {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	cpu@0 {
+		compatible = "arm,arm926ej-s";
+		device_type = "cpu";
+		reg = <0x0>;
+		operating-points = <
+			/* kHz	uV */
+			454736  1550000
+			392727  1475000
+			360000  1375000
+			261818  1275000
+			64000   1050000
+		>;
+		clocks = <&clks 4>;
+		clock-latency = <61036>; /* two CLK32 periods */
+		cpu0-supply = <&reg_vddd>;
+	};
+};
+
+It looks to me like a rounding problem.
+
+For the complete history look at:
+http://www.spinics.net/lists/arm-kernel/msg365504.html
+
+Any ideas?
+
+Best regards
+
+Stefan
