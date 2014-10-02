@@ -1,27 +1,42 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH resend] cpufreq: dt: disable unsupported OPPs
-Date: Thu, 2 Oct 2014 10:54:35 +0530
-Message-ID: <CAKohpon9buGWmcXH9+PmtatmbnOro+gU84zkskPjNZ6fiM5SLQ@mail.gmail.com>
-References: <1412090950-20835-1-git-send-email-l.stach@pengutronix.de>
-	<2197100.Nocxtjmizk@vostro.rjw.lan>
-	<CAKohpomH6V3akJjSQZS-xWubC6xUzfJihWcNT0FpYM98qvayNQ@mail.gmail.com>
-	<4618249.XhLIrkx56O@vostro.rjw.lan>
+Subject: Re: [PATCH 00/15] power_supply: Fixes & cleanups
+Date: Thu, 2 Oct 2014 10:56:22 +0530
+Message-ID: <CAKohponoXcoomxbr5PykMP2RLwsZ5ar90C=XZkcF_g-cfTUP2g@mail.gmail.com>
+References: <cover.1409831636.git.viresh.kumar@linaro.org>
+	<CAKohponEJ+dC5Y4R1-e=YyHTknhrOu-DyPM63oCagfqqOzxA3g@mail.gmail.com>
+	<20141001150829.GB969@earth.universe>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f172.google.com ([209.85.214.172]:34780 "EHLO
-	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbaJBFYg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 01:24:36 -0400
-Received: by mail-ob0-f172.google.com with SMTP id wo20so1570093obc.17
-        for <linux-pm@vger.kernel.org>; Wed, 01 Oct 2014 22:24:36 -0700 (PDT)
-In-Reply-To: <4618249.XhLIrkx56O@vostro.rjw.lan>
+Received: from mail-oi0-f44.google.com ([209.85.218.44]:41116 "EHLO
+	mail-oi0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751567AbaJBF0X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 01:26:23 -0400
+Received: by mail-oi0-f44.google.com with SMTP id x69so1374902oia.31
+        for <linux-pm@vger.kernel.org>; Wed, 01 Oct 2014 22:26:23 -0700 (PDT)
+In-Reply-To: <20141001150829.GB969@earth.universe>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lucas Stach <l.stach@pengutronix.de>, Mark Brown <broonie@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Anton Vorontsov <anton@enomsg.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On 2 October 2014 02:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> Would you mind sending it again with the fix folded in for me?
+On 1 October 2014 20:38, Sebastian Reichel <sre@kernel.org> wrote:
+> On Wed, Oct 01, 2014 at 08:49:30AM +0530, Viresh Kumar wrote:
+>> On 4 September 2014 17:30, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > I was required to work on a battery driver and found some
+>> > fixes/cleanups while going through the core.
+>> >
+>> > First two are fixes and rest are cleanups. Please see if they
+>> > make any sense at all.
+>> >
+>> > Pushed here: git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/linux.git battery/fixes
+>>
+>> Ping!!
+>
+> I merged the patchset two weeks ago to the battery-2.6 tree [0], so
+> they should be in linux-next already.
 
-Done.
+Oh I thought there would be some counter comments atleast
+and so didn't bother checking linux-next for it :)
+
+Thanks.
