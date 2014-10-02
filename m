@@ -1,139 +1,82 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v7 4/7] qcom: pm: Add cpu low power mode functions
-Date: Thu, 2 Oct 2014 10:50:36 +0100
-Message-ID: <20141002095036.GA1938@e102568-lin.cambridge.arm.com>
-References: <1411779495-39724-1-git-send-email-lina.iyer@linaro.org>
- <1411779495-39724-5-git-send-email-lina.iyer@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 2/4] ARM: exynos: Ensure PM domains are powered at initialization
+Date: Thu, 2 Oct 2014 11:55:25 +0200
+Message-ID: <CAPDyKFqeU7nUXa=DD6X2mTHj6z+ZWfEo6rtQYdp11vm_ndyewA@mail.gmail.com>
+References: <1412174494-15346-1-git-send-email-ulf.hansson@linaro.org>
+	<1412174494-15346-3-git-send-email-ulf.hansson@linaro.org>
+	<542C2972.9070002@samsung.com>
+	<6158232.Yd6ncToJoF@vostro.rjw.lan>
+	<CAPDyKFrRw-cATC0r7y6jyr2jiu2z8tKjETs0nmeOhEeuW8=hRg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1411779495-39724-5-git-send-email-lina.iyer@linaro.org>
-Content-Disposition: inline
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f42.google.com ([209.85.192.42]:60160 "EHLO
+	mail-qg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751442AbaJBJz0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 05:55:26 -0400
+Received: by mail-qg0-f42.google.com with SMTP id z60so1677848qgd.29
+        for <linux-pm@vger.kernel.org>; Thu, 02 Oct 2014 02:55:25 -0700 (PDT)
+In-Reply-To: <CAPDyKFrRw-cATC0r7y6jyr2jiu2z8tKjETs0nmeOhEeuW8=hRg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Beat
 
-On Sat, Sep 27, 2014 at 01:58:12AM +0100, Lina Iyer wrote:
+On 2 October 2014 11:42, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 1 October 2014 21:50, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Wednesday, October 01, 2014 06:18:58 PM Sylwester Nawrocki wrote:
+>>> On 01/10/14 16:41, Ulf Hansson wrote:
+>>> > At ->probe() it's common practice for drivers/subsystems to bring their
+>>> > devices to full power and without depending on CONFIG_PM_RUNTIME.
+>>> >
+>>> > We could also expect that drivers/subsystems requires their device's
+>>> > corresponding PM domains to be powered, to successfully complete a
+>>> > ->probe() sequence.
+>>> >
+>>> > Align to the behavior above, by ensuring all PM domains are powered
+>>> > prior initialization of a generic PM domain.
+>>> >
+>>> > Do note, since the generic PM domain will try to power off unused PM
+>>> > domains at late_init, there should be no increased power consumption
+>>> > over time, but potentially during boot.
+>>>
+>>> Wouldn't it be a better idea to power on the power domains which are
+>>> turned off only when CONFIG_PM_RUNTIME is not enabled ? I had a plan
+>>> to submit a patch doing that but unfortunately this has fallen through
+>>> the cracks. At the moment mach-exynos/pm_domains.c is not even built in
+>>> when CONFIG_PM_RUNTIME is disabled.
+>
+> Yes, that's the approach I also intend to take in the next step.
+>
+> But, it's not that simple. Since this requires a mechanism for drivers
+> to bring their device's PM domains into power state prior doing probe.
+> We don't have such today. I do have some ideas about this, but I think
+> we need to keep that as a separate discussion.
+>
+>>>
+>>> I don't like the behaviour introduced in this patch to be the default,
+>>> i.e. turning all possible power domains during boot sequence, even if
+>>> some are not used and not needed. While we're trying to decrease the
+>>> power consumption in any possible way this doesn't help at all.
+>
+> This will hit only during boot, until late_init. Unless you have a
+> platform that keeps rebooting all the time, is this really a big
+> worry?
+>
+> Still, I certainly agree that we should strive for a solution where
+> it's possible to leave PM domains powered off at init. It's should be
 
-[...]
+/s/ It's should/ It shouldn't
 
-> diff --git a/drivers/soc/qcom/pm.c b/drivers/soc/qcom/pm.c
-> new file mode 100644
-> index 0000000..a2f7d72
-> --- /dev/null
-> +++ b/drivers/soc/qcom/pm.c
-> @@ -0,0 +1,109 @@
-> +/* Copyright (c) 2010-2014, The Linux Foundation. All rights reserved.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 and
-> + * only version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/platform_device.h>
-> +
-> +#include <asm/proc-fns.h>
-> +#include <asm/suspend.h>
-> +
-> +#include <soc/qcom/pm.h>
-> +#include <soc/qcom/scm.h>
-> +#include <soc/qcom/scm-boot.h>
-> +#include <soc/qcom/spm.h>
-> +
-> +#define SCM_CMD_TERMINATE_PC	(0x2)
-> +#define SCM_FLUSH_FLAG_MASK	(0x3)
-> +#define SCM_L2_ON 		(0x0)
-> +#define SCM_L2_OFF		(0x1)
-> +
-> +
-> +static int set_up_boot_address(void *entry, int cpu)
-> +{
-> +	static int flags[NR_CPUS] = {
-> +		SCM_FLAG_WARMBOOT_CPU0,
-> +		SCM_FLAG_WARMBOOT_CPU1,
-> +		SCM_FLAG_WARMBOOT_CPU2,
-> +		SCM_FLAG_WARMBOOT_CPU3,
-> +	};
-> +	static DEFINE_PER_CPU(void *, last_known_entry);
-> +
-> +	if (entry == per_cpu(last_known_entry, cpu))
-> +		return 0;
-> +
-> +	per_cpu(last_known_entry, cpu) = entry;
-> +	return scm_set_boot_addr(virt_to_phys(entry), flags[cpu]);
-> +}
-> +
-> +static int qcom_pm_collapse(unsigned long int unused)
-> +{
-> +	int ret;
-> +	u32 flag;
-> +
-> +	ret = set_up_boot_address(cpu_resume, raw_smp_processor_id());
-> +	if (ret) {
-> +		pr_err("Failed to set warm boot address for cpu %d\n",
-> +				raw_smp_processor_id());
-> +		return ret;
-> +	}
-> +
-> +	flag = SCM_L2_ON & SCM_FLUSH_FLAG_MASK;
-> +	scm_call_atomic1(SCM_SVC_BOOT, SCM_CMD_TERMINATE_PC, flag);
-
-Function call above does not return IIUC (ie it returns through cpu_resume),
-add a comment to clarify please.
-
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * qcom_cpu_pm_enter_sleep(): Enter a low power mode on current cpu
-> + *
-> + * @mode - sleep mode to enter
-> + *
-> + * The code should be called with interrupts disabled and on the core on
-> + * which the low power mode is to be executed.
-> + *
-> + */
-> +static int qcom_cpu_pm_enter_sleep(enum pm_sleep_mode mode)
-> +{
-> +	int ret;
-> +
-> +	switch (mode) {
-> +	case PM_SLEEP_MODE_SPC:
-> +		qcom_spm_set_low_power_mode(SPM_MODE_POWER_COLLAPSE);
-> +		ret = cpu_suspend(0, qcom_pm_collapse);
-> +		break;
-> +	default:
-> +	case PM_SLEEP_MODE_WFI:
-> +		qcom_spm_set_low_power_mode(SPM_MODE_CLOCK_GATING);
-> +		ret = cpu_do_idle();
-
-Hmmm...are we sure the ret value you get from cpu_do_idle() is correct ?
-
-Maybe I am missing something but I do not think that the cpu_do_idle
-implementation (in assembly files mm/proc-* called through cpu_do_idle()
-macro) returns a proper value, it seems to me that it "returns" whatever is
-present in r0 at the time of the call, which might not be what you want.
-
-Am I missing something here ? I do not think you should rely on the
-cpu_do_idle() return value, at least for the moment.
-
-> +		break;
-> +	}
-> +
-> +	local_irq_enable();
-
-This looks wrong to me. You end up running the CPU PM notifiers with irqs
-enabled, among other issues.
-
-Lorenzo
+> too hard to support this from genpd point of view, but
+> drivers/subsystems will need some adaptations.
+>
+>>
+>> Agreed (as stated before).
+>>
+>> And I'm wondering why that comment of mine was ignored?
+>
+> Sorry, if missed to comment of that. I guess I have at this point.
+>
+> Kind regards
+> Uffe
