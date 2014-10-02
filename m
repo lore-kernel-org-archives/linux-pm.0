@@ -1,173 +1,102 @@
-From: Rik van Riel <riel@redhat.com>
-Subject: [PATCH RFC] sched,idle: teach select_idle_sibling about idle states
-Date: Thu, 2 Oct 2014 13:15:48 -0400
-Message-ID: <20141002131548.6cd377d5@cuia.bos.redhat.com>
-References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org>
-	<1409844730-12273-3-git-send-email-nicolas.pitre@linaro.org>
-	<542B277D.7050103@redhat.com>
-	<alpine.LFD.2.11.1409301904150.5311@knanqh.ubzr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: Feng Kan <fkan@apm.com>
+Subject: [PATCH 1/1] power: reset: corrections for simple syscon reboot driver
+Date: Thu,  2 Oct 2014 11:24:15 -0700
+Message-ID: <1412274255-1315-1-git-send-email-fkan@apm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:40304 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751510AbaJBRSW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 2 Oct 2014 13:18:22 -0400
-In-Reply-To: <alpine.LFD.2.11.1409301904150.5311@knanqh.ubzr>
+Received: from exprod5og122.obsmtp.com ([64.18.0.192]:38180 "HELO
+	exprod5og122.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751290AbaJBSYO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 14:24:14 -0400
+Received: by mail-pa0-f48.google.com with SMTP id eu11so3108911pac.21
+        for <linux-pm@vger.kernel.org>; Thu, 02 Oct 2014 11:24:12 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+To: linux@roeck-us.net, dbaryshkov@gmail.com, linux-kernel@vger.kernel.org, patches@apm.com, linux-pm@vger.kernel.org, ser@kernel.org
+Cc: Feng Kan <fkan@apm.com>
 
-On Tue, 30 Sep 2014 19:15:00 -0400 (EDT)
-Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
-> On Tue, 30 Sep 2014, Rik van Riel wrote:
+This patch is to fix some bugs in reboot driver. Which includes auto selection
+of the MFD_SYSCON for the driver, use of container to locate restart handler,
+correction of the count down failure timer and ordering of the header file.
 
-> > The main thing it does not cover is already running tasks that
-> > get woken up again, since select_idle_sibling() covers everything
-> > except for newly forked and newly executed tasks.
-> 
-> True. Now that you bring this up, I remember that Peter mentioned it as 
-> well.
-> 
-> > I am looking at adding similar logic to select_idle_sibling()
-> 
-> OK thanks.
-
-This patch is ugly. I have not bothered cleaning it up, because it
-causes a regression with hackbench. Apparently for hackbench (and
-potentially other sync wakeups), locality is more important than
-idleness.
-
-We may need to add a third clause before the search, something
-along the lines of, to ensure target gets selected if neither
-target or i are idle and the wakeup is synchronous...
-
-    if (sync_wakeup && cpu_of(target)->nr_running == 1)
-	return target;
-
-I still need to run tests with other workloads, too.
-
-Another consideration is that search costs with this patch
-are potentially much increased. I suspect we may want to simply
-propagate the load on each sched_group up the tree hierarchically,
-with delta accounting and propagating the info upwards only when
-the delta is significant, like done in __update_tg_runnable_avg.
-
----8<---
-
-Subject: sched,idle: teach select_idle_sibling about idle states
-
-Change select_idle_sibling to take cpu idle exit latency into
-account.  First preference is to select the cpu with the lowest
-exit latency from a completely idle sched_group inside the CPU;
-if that is not available, we pick the CPU with the lowest exit
-latency in any sched_group.
-
-This increases the total search time of select_idle_sibling,
-we may want to look into propagating load info up the sched_group
-tree in some way. That information would also be useful to prevent
-the wake_affine logic from causing a load imbalance between
-sched_groups.
-
-It is not clear when locality (from staying on the old CPU) beats
-a lower idle exit latency. Having information on whether the CPU
-drops content from the CPU caches in certain idle states would
-help with that, but with multiple CPUs bound together in the same
-physical CPU core, the hardware often does not do what we tell it,
-anyway...
-
-Signed-off-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Feng Kan <fkan@apm.com>
 ---
- kernel/sched/fair.c | 47 +++++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 41 insertions(+), 6 deletions(-)
+ drivers/power/reset/Kconfig         |  3 ++-
+ drivers/power/reset/syscon-reboot.c | 25 ++++++++++---------------
+ 2 files changed, 12 insertions(+), 16 deletions(-)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 10a5a28..12540cd 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4465,41 +4465,76 @@ static int select_idle_sibling(struct task_struct *p, int target)
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index addb26a..3b451e1 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -120,6 +120,7 @@ config POWER_RESET_KEYSTONE
+ 
+ config POWER_RESET_SYSCON
+ 	bool "Generic SYSCON regmap reset driver"
+-	depends on POWER_RESET && MFD_SYSCON && OF
++	depends on POWER_RESET && OF
++	select MFD_SYSCON
+ 	help
+ 	  Reboot support for generic SYSCON mapped register reset.
+diff --git a/drivers/power/reset/syscon-reboot.c b/drivers/power/reset/syscon-reboot.c
+index 948e0ee..90dfdbf 100644
+--- a/drivers/power/reset/syscon-reboot.c
++++ b/drivers/power/reset/syscon-reboot.c
+@@ -14,14 +14,15 @@
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  */
++#include <linux/delay.h>
+ #include <linux/io.h>
+-#include <linux/of_device.h>
+-#include <linux/of_address.h>
+-#include <linux/platform_device.h>
+ #include <linux/notifier.h>
+ #include <linux/mfd/syscon.h>
+-#include <linux/regmap.h>
++#include <linux/of_address.h>
++#include <linux/of_device.h>
++#include <linux/platform_device.h>
+ #include <linux/reboot.h>
++#include <linux/regmap.h>
+ 
+ struct syscon_reboot_context {
+ 	struct regmap *map;
+@@ -30,21 +31,17 @@ struct syscon_reboot_context {
+ 	struct notifier_block restart_handler;
+ };
+ 
+-static struct syscon_reboot_context *syscon_reboot_ctx;
+-
+ static int syscon_restart_handle(struct notifier_block *this,
+ 					unsigned long mode, void *cmd)
  {
- 	struct sched_domain *sd;
- 	struct sched_group *sg;
-+	unsigned int min_exit_latency_thread = UINT_MAX;
-+	unsigned int min_exit_latency_core = UINT_MAX;
-+	int shallowest_idle_thread = -1;
-+	int shallowest_idle_core = -1;
- 	int i = task_cpu(p);
+-	struct syscon_reboot_context *ctx = syscon_reboot_ctx;
+-	unsigned long timeout;
++	struct syscon_reboot_context *ctx =
++			container_of(this, struct syscon_reboot_context,
++					restart_handler);
  
-+	/* target always has some code running and is not in an idle state */
- 	if (idle_cpu(target))
- 		return target;
+ 	/* Issue the reboot */
+-	if (ctx->map)
+-		regmap_write(ctx->map, ctx->offset, ctx->mask);
++	regmap_write(ctx->map, ctx->offset, ctx->mask);
  
- 	/*
- 	 * If the prevous cpu is cache affine and idle, don't be stupid.
-+	 * XXX: does i's exit latency exceed sysctl_sched_migration_cost?
- 	 */
- 	if (i != target && cpus_share_cache(i, target) && idle_cpu(i))
- 		return i;
+-	timeout = jiffies + HZ;
+-	while (time_before(jiffies, timeout))
+-		cpu_relax();
++	mdelay(1000);
  
- 	/*
- 	 * Otherwise, iterate the domains and find an elegible idle cpu.
-+	 * First preference is finding a totally idle core with a thread
-+	 * in a shallow idle state; second preference is whatever idle
-+	 * thread has the shallowest idle state anywhere.
- 	 */
- 	sd = rcu_dereference(per_cpu(sd_llc, target));
- 	for_each_lower_domain(sd) {
- 		sg = sd->groups;
- 		do {
-+			unsigned int min_sg_exit_latency = UINT_MAX;
-+			int shallowest_sg_idle_thread = -1;
-+			bool all_idle = true;
-+
- 			if (!cpumask_intersects(sched_group_cpus(sg),
- 						tsk_cpus_allowed(p)))
- 				goto next;
+ 	pr_emerg("Unable to restart system\n");
+ 	return NOTIFY_DONE;
+@@ -76,8 +73,6 @@ static int syscon_reboot_probe(struct platform_device *pdev)
+ 	if (err)
+ 		dev_err(dev, "can't register restart notifier (err=%d)\n", err);
  
- 			for_each_cpu(i, sched_group_cpus(sg)) {
--				if (i == target || !idle_cpu(i))
--					goto next;
-+				struct rq *rq;
-+				struct cpuidle_state *idle;
-+
-+				if (i == target || !idle_cpu(i)) {
-+					all_idle = false;
-+					continue;
-+				}
-+
-+				rq = cpu_rq(i);
-+				idle = idle_get_state(rq);
-+
-+				if (idle && idle->exit_latency < min_sg_exit_latency) {
-+					min_sg_exit_latency = idle->exit_latency;
-+					shallowest_sg_idle_thread = i;
-+				}
-+			}
-+
-+			if (all_idle && min_sg_exit_latency < min_exit_latency_core) {
-+				shallowest_idle_core = shallowest_sg_idle_thread;
-+				min_exit_latency_core = min_sg_exit_latency;
-+			} else if (min_sg_exit_latency < min_exit_latency_thread) {
-+				shallowest_idle_thread = shallowest_sg_idle_thread;
-+				min_exit_latency_thread = min_sg_exit_latency;
- 			}
- 
--			target = cpumask_first_and(sched_group_cpus(sg),
--					tsk_cpus_allowed(p));
--			goto done;
- next:
- 			sg = sg->next;
- 		} while (sg != sd->groups);
- 	}
--done:
-+	if (shallowest_idle_core >= 0)
-+		target = shallowest_idle_core;
-+	else if (shallowest_idle_thread >= 0)
-+		target = shallowest_idle_thread;
-+
- 	return target;
+-	syscon_reboot_ctx = ctx;
+-
+ 	return 0;
  }
  
+-- 
+1.9.1
 
