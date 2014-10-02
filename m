@@ -1,59 +1,132 @@
-From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Subject: Re: [Xen-devel] [RFC PATCH 14/16] x86/xen: support poweroff through
- poweroff handler call chain
-Date: Thu, 02 Oct 2014 06:27:08 -0700
-Message-ID: <542D52AC.3040009@roeck-us.net>
-References: <1412100056-15517-1-git-send-email-linux@roeck-us.net> <1412100056-15517-15-git-send-email-linux@roeck-us.net> <542D1EC4.10100@citrix.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 1/4] PM / Domains: Remove pm_genpd_dev_need_restore() API
+Date: Thu, 2 Oct 2014 15:30:40 +0200
+Message-ID: <CAPDyKFozS+J_sTZykF=9tVJsCByby_BDuQmGiMt-Uw-qC4Tzuw@mail.gmail.com>
+References: <1412174494-15346-1-git-send-email-ulf.hansson@linaro.org>
+	<1412174494-15346-2-git-send-email-ulf.hansson@linaro.org>
+	<542C2D9F.8060005@samsung.com>
+	<CAPDyKFq+9G+n3qaj+Ls9i4sOi_BdOGzk5SypDzEMZJwAJMa97Q@mail.gmail.com>
+	<542D3E45.5020908@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-metag-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <542D1EC4.10100-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org>
-Sender: linux-metag-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: David Vrabel <david.vrabel-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-ia64-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-c6x-dev-jPsnJVOj+W6hPH1hqNUYSQ@public.gmane.org, linux-parisc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org, Boris Ostrovsky <boris.ostrovsky-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, linux-metag-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <542D3E45.5020908@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun
 List-Id: linux-pm@vger.kernel.org
 
-On 10/02/2014 02:45 AM, David Vrabel wrote:
-> On 30/09/14 19:00, Guenter Roeck wrote:
->> The kernel core now supports a poweroff handler call chain
->> to remove power from the system. Call it if pm_power_off
->> is set to NULL.
+On 2 October 2014 14:00, Sylwester Nawrocki <s.nawrocki@samsung.com> wrote:
+> Hello Ulf,
+>
+> On 02/10/14 11:09, Ulf Hansson wrote:
+>> On 1 October 2014 18:36, Sylwester Nawrocki <s.nawrocki@samsung.com> wrote:
+>>> On 01/10/14 16:41, Ulf Hansson wrote:
+>>>> There are currently no users of this API, let's remove it.
 >>
->> Cc: Konrad Rzeszutek Wilk <konrad.wilk-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
->> Cc: Boris Ostrovsky <boris.ostrovsky-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
->> Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
->> Cc: Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
->> Cc: H. Peter Anvin <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>
->> Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
->> ---
->>   arch/x86/xen/enlighten.c | 2 ++
->>   1 file changed, 2 insertions(+)
+>> Hi Sylwester,
 >>
->> diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
->> index c0cb11f..645d00f 100644
->> --- a/arch/x86/xen/enlighten.c
->> +++ b/arch/x86/xen/enlighten.c
->> @@ -1322,6 +1322,8 @@ static void xen_machine_power_off(void)
->>   {
->>   	if (pm_power_off)
->>   		pm_power_off();
->> +	else
->> +		do_kernel_poweroff();
+>> Thanks for your reply!
+>>
+>>> The sad fact is that removal of pm_genpd_dev_need_restore() calls
+>>> from arch/arm/mach-exynos/pm_domains.c introduces regressions in
+>>> multiple exynos drivers (I'm sure it breaks media drivers).
+>>
+>> The fact that you need pm_genpd_dev_need_restore() is really worrying.
+>> That indicates that exynos are suffering from this race condition I am
+>> trying to fix in this patchset.
+>>
+>>> I think before doing such changes all relevant drivers should be
+>>> updated first. I need to take a closer look again, but it seems
+>>> after dropping the pm_genpd_dev_need_restore() calls, client
+>>> driver's runtime_resume() callback is not being called in response
+>>> to first pm_runtime_get(_sync) call, even if a device is runtime
+>>> pm active.
 >
-> Why isn't this if (pm_power_off) check in do_kernel_poweroff()?
+> Sorry, I meant to say "inactive" here.
+
+Ahh, now I see the approach.
+
+Correct me if I am wrong, but I think in principle these exynos
+drivers don't use pm_runtime_set_active() during ->probe() and are
+instead relying on CONFIG_PM_RUNTIME to be enabled.
+
+That's not a good behaviour. If these drivers are build without
+CONFIG_PM_RUNTIME - they won't work.
+
+I guess I have pointed out this in earlier discussions around runtime
+PM, I have seen quite some driver's getting their support for runtime
+PM wrong.
+
 >
-> That way when you finally remove pm_power_off you need only update one
-> place.  A quick skim of the other archs suggest this would work for them
-> too.
+>> Why would runtime PM callbacks be invoked when the device are runtime
+>> PM active? That's prevented by the runtime PM core and is the expected
+>> behaviour.
+>>
+>> pm_genpd_dev_need_restore() is not the solution, besides that it gives
+>> you the option to lie about device's runtime PM state to genpd. Thus,
+>> if you are really lucky, that might workaround your issues. :-)
 >
+> Might be, nevertheless so far it more or less worked for us. At least
+> I'm sure without it everything breaks right away.
 
-Good idea. I'll do that for the next version of the patch set.
+I see. Obviously we must not break exynos, let's try to figure out the
+best way forward.
 
-Guenter
+>
+>> I will happily help out in fixing drivers for exynos. Would be nice if
+>> you could provide me with a list of which driver/subsystems that seems
+>> broken. HW, wise I have a exynos 5250 and exynos 5422 on my desk, so
+>> those I can test.
+>
+> For exynos5 I would check exynos-gsc and s5p-mfc (see kernel logs below).
 
+Thanks, I will have look and run some tests on exynos 5. Let you know soon.
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-metag" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I could take care of other, exynos4 drivers. But I believe the fix
+> belongs in the PM core, I doubt we can solve in the driver a problem
+> which only occurs to one instance (first probed) of a device from a set
+> of devices in the power domain.
+>
+>>> More details can be found in commit ebc35c726298ba3fdebba316a
+>>> 'ARM: EXYNOS: register devices in 'need_restore' state for pm_domains'.
+>>>
+>>> The above only happens when devices are added to an inactive power
+>>> domain, then I guess patch 2/4 is also an attempt to address this
+>>> issue ?
+>>
+>> Yes.
+>>
+>> I would really appreciate if you could run a test with the complete
+>> patchset and see if that resolves the issues.
+>
+> Sure, is there a git tree I could fetch all the relevant patches from ?
+> I'm not sure what the base tree for this series, I could only apply
+> first 2 patches from this thread, on top of the generic OF PM domain
+> patches. And that didn't solve issues which are seen in the logs below.
+
+You have two options:
+
+1) Use/build Rafaels tree. Apply my patches on the bleeding edge
+branch.That's also what I use a work base.
+http://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+
+2) Use/build Stephen Rothwell's linux-next tree. I can confirm the
+patches applies on the master branch as of today.
+http://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+
+I really appreciate your help here, thanks!
+
+>
+> Nevertheless, as Rafael pointed out, enabling all power domains
+> unconditionally seems a step backwards. It would be nice to have
+> resolved the race in a away the power domains remain in state left
+> by the firmware and are being enabled only before any client device
+> actually needs it.
+
+You are right, but I am not sure we can do this in one go - since it
+depends on if we can fix this on PM core of if we need need
+adaptations in drivers/subsystems.
+
+Kind regards
+Uffe
