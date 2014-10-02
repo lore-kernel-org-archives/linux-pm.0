@@ -1,165 +1,83 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [PATCH RESEND] PM / sleep: Fix racing timers
-Date: Thu, 2 Oct 2014 09:01:15 -0700
-Message-ID: <fadb1f7b-82bf-4dbd-bfd4-ca24daca0a8f@BN1AFFO11FD060.protection.gbl>
-References: <1411405623-7869-1-git-send-email-soren.brinkmann@xilinx.com>
- <1860362.OyoLA3GxVJ@vostro.rjw.lan>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: cpufreq: Unable to set cpufreq to maximum
+Date: Thu, 2 Oct 2014 18:10:33 +0200 (CEST)
+Message-ID: <325740080.166772.1412266233250.JavaMail.open-xchange@oxbaltgw03.schlund.de>
+References: <936524880.154802.1412255867221.JavaMail.open-xchange@oxbaltgw07.schlund.de> <1412258352.4875.5.camel@pengutronix.de> <878902771.162556.1412262099998.JavaMail.open-xchange@oxbaltgw01.schlund.de> <1412263338.2313.1.camel@pengutronix.de>
+Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1860362.OyoLA3GxVJ@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.187]:64341 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753129AbaJBQKh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 12:10:37 -0400
+In-Reply-To: <1412263338.2313.1.camel@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, gregkh@linuxfoundation.org, festevam@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-Hi Rafael,
+Hi Lucas,
 
-On Tue, 2014-09-23 at 01:01AM +0200, Rafael J. Wysocki wrote:
-> On Monday, September 22, 2014 10:07:03 AM Soren Brinkmann wrote:
-> > On platforms that do not power off during suspend, successfully ent=
-ering
-> > suspend races with timers.
-> >=20
-> > The race happening in a couple of location is:
-> >=20
-> >   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
-> >      ...
-> >   2. syscore_suspend()
-> >       -> timekeeping_suspend()
-> >        -> clockevents_notify(SUSPEND)
-> >         -> tick_suspend()   	(timers are turned off here)
-> >      ...
-> >   3. wfi            		(wait for wake-IRQ here)
-> >=20
-> > Between steps 1 and 2 the timers can still generate interrupts that=
- are
-> > not handled and stay pending until step 3. That pending IRQ causes =
-an
-> > immediate - spurious - wake.
-> >=20
-> > The solution is to move the clockevents suspend/resume notification
-> > out of the syscore_suspend step and explictly call them at the appr=
-opriate
-> > time in the suspend/hibernation paths. I.e. timers are suspend _bef=
-ore_
-> > IRQs get disabled. And accordingly in the resume path.
-> >=20
-> > Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> > ---
-> > Hi,
-> >=20
-> > there was not a lot of discussion on the last submission. Just one =
-comment from
-> > Rafael (https://lkml.org/lkml/2014/8/26/780), which - as I outlined=
- in my
-> > response, does not apply, IMHO, since the platform does not re-enab=
-le
-> > interrupts.
->=20
-> Well, you just don't agree with it.
->=20
-> The problem with your approach is that timer interrupts aren't actual=
-ly as
-> special as you think and any other IRQF_NO_SUSPEND interrupts would h=
-ave caused
-> similar issues to appear under specific conditions.
->=20
-> The solution I would suggest and that actually covers all IRQF_NO_SUS=
-PEND
-> interrupts would be to use a wait_event() loop like the one in freeze=
-_enter()
-> (on top of the current linux-next or the pm-genirq branch of linux-pm=
-=2Egit),
-> but wait for pm_abort_suspend to become true, to implement system sus=
-pend.
+> Lucas Stach <l.stach@pengutronix.de> hat am 2. Oktober 2014 um 17:22
+> geschrieben:
+>
+> [...]
+> >
+> > >
+> > > Does it work if you just change this OPP to 454737 kHz?
+> > >
+> >
+> > Yes after that i can change it with userspace governor. But i get this
+> > warning
+> > during modprobe:
+> >
+> > root@duckbill:~# modprobe cpufreq-cpu0
+> > [ 48.573808] cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted freq:
+> > 454736 KHz
+> > [ 48.604871] cpufreq: __cpufreq_add_dev: CPU0: Unlisted initial frequency
+> > changed to: 454737 KHz
+> >
+> > I'm not sure if it's okay.
+> >
+> It's harmless in your case. But to get rid of it you might try the
+> attached patch which may be an acceptable solution.
+>
+ 
+thanks a lot. The warning disappear after apply this patch :)
+ 
+Stefan
 
-sorry, it took me a while since I needed to get some dependencies porte=
-d
-to the pm-genirq base. Once I had that, it reproduced my original issue=
-=2E
-So far so good. I then looked into finding a solution following your
-guidance. I'm not sure I really found what you had in mind, but below i=
-s
-what I came up with, which seems to do it.
-Please let me know how far off I am.
-
-	Thanks,
-	S=C3=B6ren
-
--------8<------------------8<----------------8<----------------8<------=
----------
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index c2744b30d5d9..a4f9914571f1 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -25,7 +25,7 @@
- bool events_check_enabled __read_mostly;
-=20
- /* If set and the system is suspending, terminate the suspend. */
--static bool pm_abort_suspend __read_mostly;
-+bool pm_abort_suspend __read_mostly;
-=20
- /*
-  * Combined counters of registered wakeup events and wakeup events in =
-progress.
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 6dadb25cb0d8..e6a6de8f76d0 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -33,6 +33,7 @@
-=20
- static const char *pm_labels[] =3D { "mem", "standby", "freeze", };
- const char *pm_states[PM_SUSPEND_MAX];
-+extern bool pm_abort_suspend;
-=20
- static const struct platform_suspend_ops *suspend_ops;
- static const struct platform_freeze_ops *freeze_ops;
-@@ -294,25 +295,27 @@ static int suspend_enter(suspend_state_t state, b=
-ool *wakeup)
- 	if (error || suspend_test(TEST_CPUS))
- 		goto Enable_cpus;
-=20
--	arch_suspend_disable_irqs();
--	BUG_ON(!irqs_disabled());
--
--	error =3D syscore_suspend();
--	if (!error) {
--		*wakeup =3D pm_wakeup_pending();
--		if (!(suspend_test(TEST_CORE) || *wakeup)) {
--			trace_suspend_resume(TPS("machine_suspend"),
--				state, true);
--			error =3D suspend_ops->enter(state);
--			trace_suspend_resume(TPS("machine_suspend"),
--				state, false);
--			events_check_enabled =3D false;
-+	while (!pm_abort_suspend) {
-+		arch_suspend_disable_irqs();
-+		BUG_ON(!irqs_disabled());
-+
-+		error =3D syscore_suspend();
-+		if (!error) {
-+			*wakeup =3D pm_wakeup_pending();
-+			if (!(suspend_test(TEST_CORE) || *wakeup)) {
-+				trace_suspend_resume(TPS("machine_suspend"),
-+					state, true);
-+				error =3D suspend_ops->enter(state);
-+				trace_suspend_resume(TPS("machine_suspend"),
-+					state, false);
-+				events_check_enabled =3D false;
-+			}
-+			syscore_resume();
- 		}
--		syscore_resume();
--	}
-=20
--	arch_suspend_enable_irqs();
--	BUG_ON(irqs_disabled());
-+		arch_suspend_enable_irqs();
-+		BUG_ON(irqs_disabled());
-+	}
-=20
-  Enable_cpus:
- 	enable_nonboot_cpus();
+> ------------------------------>8-----------------------------------
+> From db9e708edf6451b619ee73f68c3fcde2eccd7b0c Mon Sep 17 00:00:00 2001
+> From: Lucas Stach <l.stach@pengutronix.de>
+> Date: Thu, 2 Oct 2014 17:20:09 +0200
+> Subject: [PATCH] cpufreq: generic: try preserve some accuracy while
+> converting
+> from Hz to kHz
+>
+> ---
+> drivers/cpufreq/cpufreq.c | 2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index d9fdeddcef96..459830c6576f 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -187,7 +187,7 @@ unsigned int cpufreq_generic_get(unsigned int cpu)
+> return 0;
+> }
+>
+> - return clk_get_rate(policy->clk) / 1000;
+> + return DIV_ROUND_CLOSEST(clk_get_rate(policy->clk), 1000);
+> }
+> EXPORT_SYMBOL_GPL(cpufreq_generic_get);
+>
+> --
+> 2.1.0
+>
+> --
+> Pengutronix e.K. | Lucas Stach |
+> Industrial Linux Solutions | http://www.pengutronix.de/ |
+>
