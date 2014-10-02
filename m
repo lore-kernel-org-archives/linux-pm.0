@@ -1,107 +1,93 @@
 From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/3] powerpc/kvm/book3s_hv: Enable CPUs to run guest
- after waking up from fast-sleep
-Date: Thu, 02 Oct 2014 22:09:37 +0530
-Message-ID: <542D7FC9.4080205@linux.vnet.ibm.com>
-References: <1412149560-2953-1-git-send-email-shreyas@linux.vnet.ibm.com> <1412149560-2953-3-git-send-email-shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 0/3] powernv/cpuidle: Fastsleep workaround and fixes
+Date: Thu, 02 Oct 2014 22:10:47 +0530
+Message-ID: <542D800F.60200@linux.vnet.ibm.com>
+References: <1412149560-2953-1-git-send-email-shreyas@linux.vnet.ibm.com> <2978842.I7Hdqv7lNe@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:54076 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753062AbaJBQjs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 12:39:48 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:39267 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752357AbaJBQk4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 12:40:56 -0400
 Received: from /spool/local
-	by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Fri, 3 Oct 2014 02:39:46 +1000
-In-Reply-To: <1412149560-2953-3-git-send-email-shreyas@linux.vnet.ibm.com>
+	Fri, 3 Oct 2014 02:40:54 +1000
+In-Reply-To: <2978842.I7Hdqv7lNe@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "Srivatsa S. Bhat" <srivatsa@mit.edu>, "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-CCing Rafael J. Wysocki and linux-pm@vger.kernel.org
 
-On Wednesday 01 October 2014 01:15 PM, Shreyas B. Prabhu wrote:
-> When guests have to be launched, the secondary threads which are offline
-> are woken up to run the guests. Today these threads wake up from nap
-> and check if they have to run guests. Now that the offline secondary
-> threads can go to fastsleep or going ahead a deeper idle state such as winkle,
-> add this check in the wakeup from any of the deep idle states path as well.
+
+On Thursday 02 October 2014 02:16 AM, Rafael J. Wysocki wrote:
+> On Wednesday, October 01, 2014 01:15:57 PM Shreyas B. Prabhu wrote:
+>> Fast sleep is an idle state, where the core and the L1 and L2
+>> caches are brought down to a threshold voltage. This also means that
+>> the communication between L2 and L3 caches have to be fenced. However
+>> the current P8 chips have a bug wherein this fencing between L2 and
+>> L3 caches get delayed by a cpu cycle. This can delay L3 response to
+>> the other cpus if they request for data during this time. Thus they
+>> would fetch the same data from the memory which could lead to data
+>> corruption if L3 cache is not flushed. 
+>>
+>> This series overcomes above problem in kernel.
+>>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Cc: Srivatsa S. Bhat <srivatsa@mit.edu>
+>> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+>> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+>>
+>> v2:
+>> Rebased on 3.17-rc7
+>> Split from 'powerpc/powernv: Support for fastsleep and winkle'
+>>
+>> v1:
+>> https://lkml.org/lkml/2014/8/25/446
+>>
+>> Preeti U Murthy (1):
+>>   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
+>>
+>> Shreyas B. Prabhu (1):
+>>   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
+>>     fast-sleep
+>>
+>> Srivatsa S. Bhat (1):
+>>   powerpc/powernv: Enable Offline CPUs to enter deep idle states
+>>
+>>  arch/powerpc/include/asm/machdep.h             |   3 +
+>>  arch/powerpc/include/asm/opal.h                |   7 ++
+>>  arch/powerpc/include/asm/processor.h           |   4 +-
+>>  arch/powerpc/kernel/exceptions-64s.S           |  35 ++++----
+>>  arch/powerpc/kernel/idle.c                     |  19 ++++
+>>  arch/powerpc/kernel/idle_power7.S              |   2 +-
+>>  arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+>>  arch/powerpc/platforms/powernv/powernv.h       |   7 ++
+>>  arch/powerpc/platforms/powernv/setup.c         | 118 +++++++++++++++++++++++++
+>>  arch/powerpc/platforms/powernv/smp.c           |  11 ++-
+>>  drivers/cpuidle/cpuidle-powernv.c              |  13 ++-
+>>  11 files changed, 194 insertions(+), 26 deletions(-)
 > 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Suggested-by: "Srivatsa S. Bhat" <srivatsa@mit.edu>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> [ Changelog added by <preeti@linux.vnet.ibm.com> ]
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/exceptions-64s.S | 35 ++++++++++++++++-------------------
->  1 file changed, 16 insertions(+), 19 deletions(-)
+> [2/3] seems to be missig from the series.
 > 
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 050f79a..c64f3cc0 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -100,25 +100,8 @@ system_reset_pSeries:
->  	SET_SCRATCH0(r13)
->  #ifdef CONFIG_PPC_P7_NAP
->  BEGIN_FTR_SECTION
-> -	/* Running native on arch 2.06 or later, check if we are
-> -	 * waking up from nap. We only handle no state loss and
-> -	 * supervisor state loss. We do -not- handle hypervisor
-> -	 * state loss at this time.
-> -	 */
-> -	mfspr	r13,SPRN_SRR1
-> -	rlwinm.	r13,r13,47-31,30,31
-> -	beq	9f
+> Also, since that mostly modifies arch/powerpc, I think it should go through
+> that tree.  I'm fine with the cpuidle-powernv changes in [1/3] and [3/3].
 > 
-> -	/* waking up from powersave (nap) state */
-> -	cmpwi	cr1,r13,2
-> -	/* Total loss of HV state is fatal, we could try to use the
-> -	 * PIR to locate a PACA, then use an emergency stack etc...
-> -	 * OPAL v3 based powernv platforms have new idle states
-> -	 * which fall in this catagory.
-> -	 */
-> -	bgt	cr1,8f
->  	GET_PACA(r13)
-> -
->  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->  	li	r0,KVM_HWTHREAD_IN_KERNEL
->  	stb	r0,HSTATE_HWTHREAD_STATE(r13)
-> @@ -131,13 +114,27 @@ BEGIN_FTR_SECTION
->  1:
->  #endif
-> 
-> +	/* Running native on arch 2.06 or later, check if we are
-> +	 * waking up from nap. We only handle no state loss and
-> +	 * supervisor state loss. We do -not- handle hypervisor
-> +	 * state loss at this time.
-> +	 */
-> +	mfspr	r13,SPRN_SRR1
-> +	rlwinm.	r13,r13,47-31,30,31
-> +	beq	9f
-> +
-> +	/* waking up from powersave (nap) state */
-> +	cmpwi	cr1,r13,2
-> +	GET_PACA(r13)
-> +
-> +	bgt	cr1,8f
-> +
->  	beq	cr1,2f
->  	b	power7_wakeup_noloss
->  2:	b	power7_wakeup_loss
-> 
->  	/* Fast Sleep wakeup on PowerNV */
-> -8:	GET_PACA(r13)
-> -	b 	power7_wakeup_tb_loss
-> +8:	b 	power7_wakeup_tb_loss
-> 
->  9:
->  END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
-> 
+Hi Rafael, 
+
+Thanks for looking into this. The second patch is an independent fix in the 
+powerpc exception handler. To be safe I am ccing you and linux-pm list on that
+patch now. 
+
+
+Thanks, 
+Shreyas
 
