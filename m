@@ -1,42 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 00/15] power_supply: Fixes & cleanups
-Date: Thu, 2 Oct 2014 10:56:22 +0530
-Message-ID: <CAKohponoXcoomxbr5PykMP2RLwsZ5ar90C=XZkcF_g-cfTUP2g@mail.gmail.com>
-References: <cover.1409831636.git.viresh.kumar@linaro.org>
-	<CAKohponEJ+dC5Y4R1-e=YyHTknhrOu-DyPM63oCagfqqOzxA3g@mail.gmail.com>
-	<20141001150829.GB969@earth.universe>
+From: Vince Hsu <vinceh@nvidia.com>
+Subject: [PATCH] cpufreq: respect the min/max settings from user space
+Date: Thu, 2 Oct 2014 14:55:00 +0800
+Message-ID: <1412232900-11238-1-git-send-email-vinceh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f44.google.com ([209.85.218.44]:41116 "EHLO
-	mail-oi0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751567AbaJBF0X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 01:26:23 -0400
-Received: by mail-oi0-f44.google.com with SMTP id x69so1374902oia.31
-        for <linux-pm@vger.kernel.org>; Wed, 01 Oct 2014 22:26:23 -0700 (PDT)
-In-Reply-To: <20141001150829.GB969@earth.universe>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:5049 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750935AbaJBGym (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 02:54:42 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Anton Vorontsov <anton@enomsg.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: viresh.kumar@linaro.org, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bilhuang@nvidia.com, dgreid@google.com, olofj@chromium.org, Vince Hsu <vinceh@nvidia.com>
 
-On 1 October 2014 20:38, Sebastian Reichel <sre@kernel.org> wrote:
-> On Wed, Oct 01, 2014 at 08:49:30AM +0530, Viresh Kumar wrote:
->> On 4 September 2014 17:30, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> > I was required to work on a battery driver and found some
->> > fixes/cleanups while going through the core.
->> >
->> > First two are fixes and rest are cleanups. Please see if they
->> > make any sense at all.
->> >
->> > Pushed here: git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/linux.git battery/fixes
->>
->> Ping!!
->
-> I merged the patchset two weeks ago to the battery-2.6 tree [0], so
-> they should be in linux-next already.
+When the user space tries to set scaling_(max|min)_freq through
+sysfs, the cpufreq_set_policy() asks other driver's opinions
+for the max/min frequencies. Some device drivers, like Tegra
+CPU EDP which is not upstreamed yet though, may constrain the
+CPU maximum frequency dynamically because of board design.
+So if the user space access happens and some driver is capping
+the cpu frequency at the same time, the user_policy->(max|min)
+is overridden by the capped value, and that's not expected by
+the user space. And if the user space is not invoked again,
+the CPU will always be capped by the user_policy->(max|min)
+even no drivers limit the CPU frequency any more.
 
-Oh I thought there would be some counter comments atleast
-and so didn't bother checking linux-next for it :)
+This patch preserves the user specified min/max settings, so that
+every time the cpufreq policy is updated, the new max/min can
+be re-evaluated correctly based on the user's expection and
+the present device drivers' status.
 
-Thanks.
+Signed-off-by: Vince Hsu <vinceh@nvidia.com>
+---
+Hi,
+
+I'm not sure if any platform that is supported mainlin might have this
+issue, and this patch is complie tested only. We hit the problem when 
+the laptop_mode tool configures the scaling_max_freq and the Tegra
+CPU EDP driver is limiting the CPU maximum frequency.
+
+ drivers/cpufreq/cpufreq.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 24bf76fba141..c007cf2a3d2a 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -524,7 +524,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ static ssize_t store_##file_name					\
+ (struct cpufreq_policy *policy, const char *buf, size_t count)		\
+ {									\
+-	int ret;							\
++	int ret, temp;						\
+ 	struct cpufreq_policy new_policy;				\
+ 									\
+ 	ret = cpufreq_get_policy(&new_policy, policy->cpu);		\
+@@ -535,8 +535,10 @@ static ssize_t store_##file_name					\
+ 	if (ret != 1)							\
+ 		return -EINVAL;						\
+ 									\
++	temp = new_policy.object;					\
+ 	ret = cpufreq_set_policy(policy, &new_policy);		\
+-	policy->user_policy.object = policy->object;			\
++	if (!ret)							\
++		policy->user_policy.object = temp;			\
+ 									\
+ 	return ret ? ret : count;					\
+ }
+-- 
+1.9.1
+
