@@ -1,46 +1,186 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / Domains: Rename cpu_data to cpuidle_data
-Date: Thu, 2 Oct 2014 21:17:58 +0200
-Message-ID: <CAMuHMdWSJ4URPS+c0yfGJ4_DXh1ZgWqycuawfrsaEERLm9UASg@mail.gmail.com>
-References: <1412277154-5853-1-git-send-email-ulf.hansson@linaro.org>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH v1 2/4] ARM: keystone: pm: switch to use generic pm domains
+Date: Thu, 2 Oct 2014 15:17:40 -0400
+Message-ID: <542DA4D4.4070202@ti.com>
+References: <1412001499-19369-1-git-send-email-grygorii.strashko@ti.com> <1412001499-19369-3-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f51.google.com ([209.85.215.51]:50857 "EHLO
-	mail-la0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbaJBTSA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Oct 2014 15:18:00 -0400
-Received: by mail-la0-f51.google.com with SMTP id ge10so3021129lab.10
-        for <linux-pm@vger.kernel.org>; Thu, 02 Oct 2014 12:17:59 -0700 (PDT)
-In-Reply-To: <1412277154-5853-1-git-send-email-ulf.hansson@linaro.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:51517 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751793AbaJBTSU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 2 Oct 2014 15:18:20 -0400
+In-Reply-To: <1412001499-19369-3-git-send-email-grygorii.strashko@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Grygorii Strashko <grygorii.strashko@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-On Thu, Oct 2, 2014 at 9:12 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> The "cpu_data" are defined for some archs and thus conflicting with the
-> "cpu_data" member in the struct gpd_cpu_data. This causes a compiler
-> error for those archs.
->
-> Let's fix it by rename the member to cpuidle_data. In this context it
-> also seems appropriate to rename the struct to gpd_cpuidle_data to
-> better reflect its use.
+On Monday 29 September 2014 10:38 AM, Grygorii Strashko wrote:
+> This patch switches Keystone 2 PM code to use Generic PM domains
+> instead of PM clock domains because of the lack of DT support
+> for the last.
+> 
+> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> ---
+>  .../devicetree/bindings/power/ti,keystone-gpc.txt  |  31 ++++++
+>  arch/arm/mach-keystone/Kconfig                     |   1 +
+>  arch/arm/mach-keystone/pm_domain.c                 | 115 ++++++++++++++-------
+>  3 files changed, 110 insertions(+), 37 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/power/ti,keystone-gpc.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/power/ti,keystone-gpc.txt b/Documentation/devicetree/bindings/power/ti,keystone-gpc.txt
+> new file mode 100644
+> index 0000000..43af1fc
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/ti,keystone-gpc.txt
+> @@ -0,0 +1,31 @@
+> +* TI Keystone 2 Generic PM Controller
+> +
+> +The TI Keystone 2 Generic PM Controller is responsible for Clock gating
+> +for each controlled IP module.
+> +
+> +Required properties:
+> +- compatible: Should be "ti,keystone-gpc"
+> +- #power-domain-cells: Should be 0, see below:
+> +
+> +The gpc node is a power-controller as documented by the generic power domain
+> +bindings in Documentation/devicetree/bindings/power/power_domain.txt.
+> +
+> +Example:
+> +
+> +	pm_controller: pm-controller {
+> +		compatible = "ti,keystone-gpc";
+'gpc' doesn't make it clear. May be 'keystone-powerdomain' ?
+> +		#power-domain-cells = <0>;
+> +	};
+> +
+> +	netcp: netcp@2090000 {
+> +		reg = <0x2620110 0x8>;
+> +		reg-names = "efuse";
+> +		...
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		ranges;
+> +		power-domains = <&pm_controller>;
+> +
+> +		clocks = <&clkpa>, <&clkcpgmac>, <&chipclk12>;
+> +		dma-coherent;
+> +	}
+> diff --git a/arch/arm/mach-keystone/Kconfig b/arch/arm/mach-keystone/Kconfig
+> index e571084..0132bde 100644
+> --- a/arch/arm/mach-keystone/Kconfig
+> +++ b/arch/arm/mach-keystone/Kconfig
+> @@ -9,6 +9,7 @@ config ARCH_KEYSTONE
+>  	select COMMON_CLK_KEYSTONE
+>  	select ARCH_SUPPORTS_BIG_ENDIAN
+>  	select ZONE_DMA if ARM_LPAE
+> +	select PM_GENERIC_DOMAINS if PM
+>  	help
+>  	  Support for boards based on the Texas Instruments Keystone family of
+>  	  SoCs.
+> diff --git a/arch/arm/mach-keystone/pm_domain.c b/arch/arm/mach-keystone/pm_domain.c
+> index ca79dda..3eb5257 100644
+> --- a/arch/arm/mach-keystone/pm_domain.c
+> +++ b/arch/arm/mach-keystone/pm_domain.c
+> @@ -12,69 +12,110 @@
+>   * version 2, as published by the Free Software Foundation.
+>   */
+>  
+> +#include <linux/clk.h>
+>  #include <linux/init.h>
+> -#include <linux/pm_runtime.h>
+>  #include <linux/pm_clock.h>
+> +#include <linux/pm_domain.h>
+>  #include <linux/platform_device.h>
+> -#include <linux/clk-provider.h>
+>  #include <linux/of.h>
+>  
+> -#ifdef CONFIG_PM_RUNTIME
+> -static int keystone_pm_runtime_suspend(struct device *dev)
+> +#ifdef CONFIG_PM_GENERIC_DOMAINS
+> +
+> +struct keystone_domain {
+> +	struct generic_pm_domain base;
+> +	struct device	*dev;
+> +};
+> +
+> +void keystone_pm_domain_attach_dev(struct device *dev)
+>  {
+> +	struct clk *clk;
+>  	int ret;
+> +	int i = 0;
+>  
+>  	dev_dbg(dev, "%s\n", __func__);
+>  
+> -	ret = pm_generic_runtime_suspend(dev);
+> -	if (ret)
+> -		return ret;
+> -
+> -	ret = pm_clk_suspend(dev);
+> +	ret = pm_clk_create(dev);
+>  	if (ret) {
+> -		pm_generic_runtime_resume(dev);
+> -		return ret;
+> +		dev_err(dev, "pm_clk_create failed %d\n", ret);
+> +		return;
+> +	};
+> +
+> +	while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
+> +		ret = pm_clk_add_clk(dev, clk);
+> +		if (ret) {
+> +			dev_err(dev, "pm_clk_add_clk failed %d\n", ret);
+> +			goto clk_err;
+> +		};
+>  	}
+>  
+> -	return 0;
+> +	if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
+> +		ret = pm_clk_resume(dev);
+> +		if (ret) {
+> +			dev_err(dev, "pm_clk_resume failed %d\n", ret);
+> +			goto clk_err;
+> +		};
+> +	}
+> +	return;
+> +
+> +clk_err:
+> +	pm_clk_destroy(dev);
+>  }
+>  
+> -static int keystone_pm_runtime_resume(struct device *dev)
+> +void keystone_pm_domain_detach_dev(struct device *dev)
+>  {
+>  	dev_dbg(dev, "%s\n", __func__);
+> -
+> -	pm_clk_resume(dev);
+> -
+> -	return pm_generic_runtime_resume(dev);
+> +	pm_clk_destroy(dev);
+>  }
+> -#endif
+>  
+> -static struct dev_pm_domain keystone_pm_domain = {
+> -	.ops = {
+> -		SET_RUNTIME_PM_OPS(keystone_pm_runtime_suspend,
+> -				   keystone_pm_runtime_resume, NULL)
+> -		USE_PLATFORM_PM_SLEEP_OPS
+> +static const struct keystone_domain keystone_domain = {
+> +	.base = {
+> +		.name = "keystone",
+> +		.attach_dev = keystone_pm_domain_attach_dev,
+> +		.detach_dev = keystone_pm_domain_detach_dev,
+> +		.dev_ops = {
+> +			.stop = pm_clk_suspend,
+> +			.start = pm_clk_resume,
+> +		},
+> +		.power_off_latency_ns = 25000,
+> +		.power_on_latency_ns = 2000000,
+Did you cook up these numbers ?
 
-Thanks!
+Other than that patch looks fine to me. If Kevin is happy
+with overall approach then we can proceed with this.
 
-> Fixes: f48c767ce895 (PM / Domains: Move dev_pm_domain_attach|detach() to pm_domain.h)
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Regards,
+Santosh
