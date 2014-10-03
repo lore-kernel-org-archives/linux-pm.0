@@ -1,59 +1,56 @@
-From: Mike Galbraith <umgwanakikbuti@gmail.com>
-Subject: Re: [PATCH RFC] sched,idle: teach select_idle_sibling about idle
- states
-Date: Fri, 03 Oct 2014 15:05:31 +0200
-Message-ID: <1412341531.5128.16.camel@marge.simpson.net>
-References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org>
-	 <1409844730-12273-3-git-send-email-nicolas.pitre@linaro.org>
-	 <542B277D.7050103@redhat.com>
-	 <alpine.LFD.2.11.1409301904150.5311@knanqh.ubzr>
-	 <20141002131548.6cd377d5@cuia.bos.redhat.com>
-	 <1412317384.5149.19.camel@marge.simpson.net>
-	 <20141003075012.GF10583@worktop.programming.kicks-ass.net>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [RFC PATCH 05/16] arm64: support poweroff through poweroff handler
+ call chain
+Date: Fri, 03 Oct 2014 06:12:23 -0700
+Message-ID: <542EA0B7.5040007@roeck-us.net>
+References: <1412100056-15517-1-git-send-email-linux@roeck-us.net> <1412100056-15517-6-git-send-email-linux@roeck-us.net> <20141003103056.GB14110@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f45.google.com ([209.85.215.45]:52416 "EHLO
-	mail-la0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462AbaJCNFg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Oct 2014 09:05:36 -0400
-In-Reply-To: <20141003075012.GF10583@worktop.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <20141003103056.GB14110@localhost>
+Sender: linux-sh-owner@vger.kernel.org
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-c6x-dev@linux-c6x.org" <linux-c6x-dev@linux-c6x.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "linux-metag@vger.kernel.org" <linux-metag@vger.kernel.org>, "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, Will Deacon <Will.Deacon@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Rik van Riel <riel@redhat.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Ingo Molnar <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-On Fri, 2014-10-03 at 09:50 +0200, Peter Zijlstra wrote: 
-> On Fri, Oct 03, 2014 at 08:23:04AM +0200, Mike Galbraith wrote:
+On 10/03/2014 03:30 AM, Catalin Marinas wrote:
+> On Tue, Sep 30, 2014 at 07:00:45PM +0100, Guenter Roeck wrote:
+>> The kernel core now supports a poweroff handler call chain
+>> to remove power from the system. Call it if pm_power_off
+>> is set to NULL.
+>>
+>> Cc: Catalin Marinas <catalin.marinas@arm.com>
+>> Cc: Will Deacon <will.deacon@arm.com>
+>> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+>> ---
+>>   arch/arm64/kernel/process.c | 2 ++
+>>   1 file changed, 2 insertions(+)
+>>
+>> diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
+>> index 398ab05..cc0c63e 100644
+>> --- a/arch/arm64/kernel/process.c
+>> +++ b/arch/arm64/kernel/process.c
+>> @@ -157,6 +157,8 @@ void machine_power_off(void)
+>>   	smp_send_stop();
+>>   	if (pm_power_off)
+>>   		pm_power_off();
+>> +	else
+>> +		do_kernel_poweroff();
+>
+> Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+>
+> As others already stated, I think we should eventually remove
+> pm_power_off entirely.
+>
 
-> > A generic boo hiss aimed in the general direction of all of this let's
-> > go look at every possibility on every wakeup stuff.  Less is more.
-> 
-> I hear you, can you see actual slowdown with the patch? While the worst
-> case doesn't change, it does make the average case equal to the worst
-> case iteration -- where we previously would average out at inspecting
-> half the CPUs before finding an idle one, we'd now always inspect all of
-> them in order to compare all idle ones on their properties.
-> 
-> Also, with the latest generation of Haswell Xeons having 18 cores (36
-> threads) this is one massively painful loop for sure.
+Hi Catalin,
+yes, already working on it. As suggested by others, I'll move pm_power_off
+to a central location (no need to declare the same variable for each
+architecture) and hide the call to it in do_kernel_poweroff() as a
+first step. You'll see this in the next version of the series.
+This will make it much easier to remove it later on.
 
-Yeah, the things are getting too damn big.  I didn't try the patch and
-measure anything, my gut instantly said "nope, not worth it".
-  
-> I'm just not sure what to do about it.. I suppose we can artificially
-> split it into smaller groups, but I bet that'll hurt some, but if we can
-> show it gains more we might still be able to do it. The only real
-> problem is actual numbers/workloads (isn't it always) :/
-> 
-> One thing I suppose we could try is keeping a 'busy' flag at the
-> llc domain which is set when all CPUs are busy (we'll clear it from
-> new_idle) that way we can avoid the entire iteration if we know its
-> pointless.
-
-On one of those huge packages, heck, even on a 8 core that could save a
-substantial number of busy box cycles.
-
--Mike
+Thanks,
+Guenter
 
