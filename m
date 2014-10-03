@@ -1,65 +1,107 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH RFC] sched,idle: teach select_idle_sibling about idle
- states
-Date: Fri, 3 Oct 2014 09:50:12 +0200
-Message-ID: <20141003075012.GF10583@worktop.programming.kicks-ass.net>
-References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org>
- <1409844730-12273-3-git-send-email-nicolas.pitre@linaro.org>
- <542B277D.7050103@redhat.com>
- <alpine.LFD.2.11.1409301904150.5311@knanqh.ubzr>
- <20141002131548.6cd377d5@cuia.bos.redhat.com>
- <1412317384.5149.19.camel@marge.simpson.net>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 2/3] thermal: core: fix: Initialize the max_state variable
+ to 0
+Date: Fri, 03 Oct 2014 10:26:28 +0200
+Message-ID: <20141003102628.7a8f36f7@amdc2363>
+References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
+ <1411547232-21493-3-git-send-email-l.majewski@samsung.com>
+ <20141002222649.GB11510@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:45780 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754AbaJCHuT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Oct 2014 03:50:19 -0400
-Content-Disposition: inline
-In-Reply-To: <1412317384.5149.19.camel@marge.simpson.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <20141002222649.GB11510@developer>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Galbraith <umgwanakikbuti@gmail.com>
-Cc: Rik van Riel <riel@redhat.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Ingo Molnar <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-On Fri, Oct 03, 2014 at 08:23:04AM +0200, Mike Galbraith wrote:
-> On Thu, 2014-10-02 at 13:15 -0400, Rik van Riel wrote:
+Hi Eduardo,
+
+> Hello Lukasz,
 > 
-> > Subject: sched,idle: teach select_idle_sibling about idle states
-> > 
-> > Change select_idle_sibling to take cpu idle exit latency into
-> > account.  First preference is to select the cpu with the lowest
-> > exit latency from a completely idle sched_group inside the CPU;
-> > if that is not available, we pick the CPU with the lowest exit
-> > latency in any sched_group.
-> > 
-> > This increases the total search time of select_idle_sibling,
-> > we may want to look into propagating load info up the sched_group
-> > tree in some way. That information would also be useful to prevent
-> > the wake_affine logic from causing a load imbalance between
-> > sched_groups.
+> On Wed, Sep 24, 2014 at 10:27:11AM +0200, Lukasz Majewski wrote:
+> > Pointer to the uninitialized max_state variable is passed to get the
+> > maximal cooling state.
+> > For CPU cooling device (cpu_cooling.c) the cpufreq_get_max_state()
+> > is called, which even when error occurs will return the max_state
+> > variable unchanged.
+> > Since error for ->get_max_state() is not checked, the automatically
 > 
-> A generic boo hiss aimed in the general direction of all of this let's
-> go look at every possibility on every wakeup stuff.  Less is more.
+> 
+> Good that you added a fix in your series for this.
+> 
+> 
+> > allocated value of max_state is used for (upper > max_state)
+> > comparison. For any possible max_state value it is very unlikely
+> > that it will be less than upper.
+> > As a consequence, the cooling device is bind even without the backed
+> > cpufreq table initialized.
+> > 
+> > This initialization will prevent from accidental binding trip
+> > points to cpu freq cooling frequencies when cpufreq driver itself
+> > is not yet fully initialized.
+> 
+> Although I agree with the fix, as long as we also include a check for
+> the .get_max_state return value,  I believe the problem you are
+> describing is about initialization sequence.
 
-I hear you, can you see actual slowdown with the patch? While the worst
-case doesn't change, it does make the average case equal to the worst
-case iteration -- where we previously would average out at inspecting
-half the CPUs before finding an idle one, we'd now always inspect all of
-them in order to compare all idle ones on their properties.
+As you pointed out - the problem here is with initialization sequence.
+Thermal and cpufreq cores are initialized very early.
 
-Also, with the latest generation of Haswell Xeons having 18 cores (36
-threads) this is one massively painful loop for sure.
+However, the get_max_state() for cpu_cooling.c device (as it is the
+pervasive way of cooling things) accesses cpufreq policy to get the
+freq_table and count available states.
 
-I'm just not sure what to do about it.. I suppose we can artificially
-split it into smaller groups, but I bet that'll hurt some, but if we can
-show it gains more we might still be able to do it. The only real
-problem is actual numbers/workloads (isn't it always) :/
+The issue here is with late initialization of cpufreq policy.
 
-One thing I suppose we could try is keeping a 'busy' flag at the
-llc domain which is set when all CPUs are busy (we'll clear it from
-new_idle) that way we can avoid the entire iteration if we know its
-pointless.
+Up till now the cpu_cooling device was bind even when the
+get_max_state() returned -EINVAL and everything worked after late
+cpufreq policy initialization. However, during this time window the
+thermal driver is not configured.
 
-Hmm...
+> 
+> In general, I believe we need a better
+> sequencing between thermal and cpufreq subsystems. One way out is to
+> include a check for cpufreq driver in the thermal driver, and return
+> -EPROBE_DEFER  when cpufreq is not ready.
+
+I think that we could return -EPROBE_DEFER when cpufreq's policy is not
+yet available and subscribe to cpufreq notifier to call
+bind_cooling_device then.
+
+Let's wait for Zhang opinion since he looks after the thermal core code.
+
+> 
+> > 
+> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > ---
+> >  drivers/thermal/thermal_core.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/thermal/thermal_core.c
+> > b/drivers/thermal/thermal_core.c index 454884a..747618a 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -927,7 +927,7 @@ int thermal_zone_bind_cooling_device(struct
+> > thermal_zone_device *tz, struct thermal_instance *pos;
+> >  	struct thermal_zone_device *pos1;
+> >  	struct thermal_cooling_device *pos2;
+> > -	unsigned long max_state;
+> > +	unsigned long max_state = 0;
+> >  	int result;
+> >  
+> >  	if (trip >= tz->trips || (trip < 0 && trip !=
+> > THERMAL_TRIPS_NONE)) -- 
+> > 2.0.0.rc2
+> > 
+> 
+
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
