@@ -1,69 +1,43 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 1/1] power: reset: corrections for simple syscon reboot
- driver
-Date: Fri, 3 Oct 2014 04:36:46 +0200
-Message-ID: <20141003023646.GB6361@earth.universe>
-References: <1412274255-1315-1-git-send-email-fkan@apm.com>
+From: Mike Galbraith <umgwanakikbuti@gmail.com>
+Subject: Re: [PATCH RFC] sched,idle: teach select_idle_sibling about idle
+ states
+Date: Fri, 03 Oct 2014 08:04:23 +0200
+Message-ID: <1412316263.5149.9.camel@marge.simpson.net>
+References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org>
+	 <1409844730-12273-3-git-send-email-nicolas.pitre@linaro.org>
+	 <542B277D.7050103@redhat.com>
+	 <alpine.LFD.2.11.1409301904150.5311@knanqh.ubzr>
+	 <20141002131548.6cd377d5@cuia.bos.redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="/WwmFnJnmDyWGHa4"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:54792 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752594AbaJCCgw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 2 Oct 2014 22:36:52 -0400
-Content-Disposition: inline
-In-Reply-To: <1412274255-1315-1-git-send-email-fkan@apm.com>
+Received: from mail-lb0-f180.google.com ([209.85.217.180]:38455 "EHLO
+	mail-lb0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751189AbaJCGE2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Oct 2014 02:04:28 -0400
+In-Reply-To: <20141002131548.6cd377d5@cuia.bos.redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Feng Kan <fkan@apm.com>
-Cc: linux@roeck-us.net, dbaryshkov@gmail.com, linux-kernel@vger.kernel.org, patches@apm.com, linux-pm@vger.kernel.org
+To: Rik van Riel <riel@redhat.com>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
+On Thu, 2014-10-02 at 13:15 -0400, Rik van Riel wrote:
 
---/WwmFnJnmDyWGHa4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> This patch is ugly. I have not bothered cleaning it up, because it
+> causes a regression with hackbench. Apparently for hackbench (and
+> potentially other sync wakeups), locality is more important than
+> idleness.
+> 
+> We may need to add a third clause before the search, something
+> along the lines of, to ensure target gets selected if neither
+> target or i are idle and the wakeup is synchronous...
+> 
+>     if (sync_wakeup && cpu_of(target)->nr_running == 1)
+> 	return target;
 
-Hi,
+I recommend you forget that trusting sync hint ever sprang to mind, it
+is often a big fat lie.
 
-On Thu, Oct 02, 2014 at 11:24:15AM -0700, Feng Kan wrote:
-> This patch is to fix some bugs in reboot driver. Which includes auto sele=
-ction
-> of the MFD_SYSCON for the driver, use of container to locate restart hand=
-ler,
-> correction of the count down failure timer and ordering of the header fil=
-e.
->=20
-> Signed-off-by: Feng Kan <fkan@apm.com>
+-Mike
 
-Thanks, applied (incl. Guenter's latest suggestion):
-
-http://git.infradead.org/battery-2.6.git/commit/afaebbdbd48ada5ead707d6a90c=
-e4b604e1d77d4
-
--- Sebastian
-
---/WwmFnJnmDyWGHa4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJULgu+AAoJENju1/PIO/qaU/wQAJNhuvtfqGeUs/CWyBqwuLgc
-Tn6G+ZGq9FAQFnSK0udvmd5dI8OtjtC3nwdhuH+GYwr6OTEPmWzUDD+WZn3SwIs8
-0CBRBqXe3tebZuxPE64jHXiabTGAvuBQ4FBS/YQYMI2FOAbfX2r8bsVUcvBm0zJq
-q6Hfxqnh2c95+3AOnN5n2KBl6QnedVq2bGsrdUkylhfyjsM9LDb9YvDnzXzAU64F
-iMWeu18Ok+gKzTRfral0OtinDVAQ7Sagq78nVLPHvMouXADU2Rl3amK+aBalE/PI
-1S7U1q5kuU9LyE1LyzwbgUkPiu/D41s97N2UsivGTT7JkPBwbQ8cteYH0TiFHqN2
-ldXZo5rtxW2mZ+RsvkZ/3MSfexXcFKAdTRG1y3KKhIdJFTgWV/bYrguuVSHaWGoe
-ZUZZdaLaniFlkxTCR06f+8NGxsVX3bhWMtdZE9cj3uODim2E3Otsq/0zZD/4PXiP
-LwTLYFmoDCode1bQS0DhpoUzMxSK8CvT15HS8EwxHu/QGzKM3qOuLKgQ5rmFiOZs
-gbyipXdzgcYXAh6Rrzqz2GQMIJ9hk3SloA1gQFN8kydQGnYjYOBdWLVZ/Skduf6Y
-EbyFEeO9p/kdZWInk0WkZH58u1px19D5iBMdDkiX+D00+HuJfnIWtcCl8P1kivUZ
-DxY2k94fLMCydgv6P/0O
-=jaD/
------END PGP SIGNATURE-----
-
---/WwmFnJnmDyWGHa4--
