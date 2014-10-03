@@ -1,72 +1,69 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI and power management fixes for final 3.17
-Date: Fri, 3 Oct 2014 03:37:02 +0200
-Message-ID: <CAJZ5v0j0msewTyUSkgFPap03BtjCxmVQABg61X_QVR6u-QtXFg@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 1/1] power: reset: corrections for simple syscon reboot
+ driver
+Date: Fri, 3 Oct 2014 04:36:46 +0200
+Message-ID: <20141003023646.GB6361@earth.universe>
+References: <1412274255-1315-1-git-send-email-fkan@apm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="/WwmFnJnmDyWGHa4"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.19.201]:54792 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752594AbaJCCgw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 2 Oct 2014 22:36:52 -0400
+Content-Disposition: inline
+In-Reply-To: <1412274255-1315-1-git-send-email-fkan@apm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Feng Kan <fkan@apm.com>
+Cc: linux@roeck-us.net, dbaryshkov@gmail.com, linux-kernel@vger.kernel.org, patches@apm.com, linux-pm@vger.kernel.org
 
-Hi Linus,
 
-Please pull from
+--/WwmFnJnmDyWGHa4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-3.17-final
+Hi,
 
-to receive ACPI and power management fixes for final v3.17
-with top-most commit abcadddc85a4c9595b0a5ede34f2ee876fe4155f
+On Thu, Oct 02, 2014 at 11:24:15AM -0700, Feng Kan wrote:
+> This patch is to fix some bugs in reboot driver. Which includes auto sele=
+ction
+> of the MFD_SYSCON for the driver, use of container to locate restart hand=
+ler,
+> correction of the count down failure timer and ordering of the header fil=
+e.
+>=20
+> Signed-off-by: Feng Kan <fkan@apm.com>
 
- Merge branches 'pm-cpufreq' and 'acpi-video'
+Thanks, applied (incl. Guenter's latest suggestion):
 
-on top of commit fe82dcec644244676d55a1384c958d5f67979adb
+http://git.infradead.org/battery-2.6.git/commit/afaebbdbd48ada5ead707d6a90c=
+e4b604e1d77d4
 
- Linux 3.17-rc7
+-- Sebastian
 
-These are three regression fixes (cpufreq core, pcc-cpufreq,
-i915 / ACPI) and one trivial fix for a callback return value
-mismatch in the cpufreq integrator driver.
+--/WwmFnJnmDyWGHa4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Specifics:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
- - A recent cpufreq core fix went too far and introduced a regression
-   in the system suspend code path.  Fix from Viresh Kumar.
+iQIcBAEBCgAGBQJULgu+AAoJENju1/PIO/qaU/wQAJNhuvtfqGeUs/CWyBqwuLgc
+Tn6G+ZGq9FAQFnSK0udvmd5dI8OtjtC3nwdhuH+GYwr6OTEPmWzUDD+WZn3SwIs8
+0CBRBqXe3tebZuxPE64jHXiabTGAvuBQ4FBS/YQYMI2FOAbfX2r8bsVUcvBm0zJq
+q6Hfxqnh2c95+3AOnN5n2KBl6QnedVq2bGsrdUkylhfyjsM9LDb9YvDnzXzAU64F
+iMWeu18Ok+gKzTRfral0OtinDVAQ7Sagq78nVLPHvMouXADU2Rl3amK+aBalE/PI
+1S7U1q5kuU9LyE1LyzwbgUkPiu/D41s97N2UsivGTT7JkPBwbQ8cteYH0TiFHqN2
+ldXZo5rtxW2mZ+RsvkZ/3MSfexXcFKAdTRG1y3KKhIdJFTgWV/bYrguuVSHaWGoe
+ZUZZdaLaniFlkxTCR06f+8NGxsVX3bhWMtdZE9cj3uODim2E3Otsq/0zZD/4PXiP
+LwTLYFmoDCode1bQS0DhpoUzMxSK8CvT15HS8EwxHu/QGzKM3qOuLKgQ5rmFiOZs
+gbyipXdzgcYXAh6Rrzqz2GQMIJ9hk3SloA1gQFN8kydQGnYjYOBdWLVZ/Skduf6Y
+EbyFEeO9p/kdZWInk0WkZH58u1px19D5iBMdDkiX+D00+HuJfnIWtcCl8P1kivUZ
+DxY2k94fLMCydgv6P/0O
+=jaD/
+-----END PGP SIGNATURE-----
 
- - An ACPI-related commit in the i915 driver that fixed backlight
-   problems for some Thinkpads inadvertently broke a Dell machine
-   (in 3.16).  Fix from Aaron Lu.
-
- - The pcc-cpufreq driver was broken during the 3.15 cycle by a
-   commit that put wait_event() under a spinlock by mistake.  Fix
-   that (Rafael J Wysocki).
-
- - The return value type of integrator_cpufreq_remove() is void, but
-   should be int.  Fix from Arnd Bergmann.
-
-Thanks!
-
----------------
-
-Aaron Lu (1):
-      ACPI / i915: Update the condition to ignore firmware backlight
-change request
-
-Arnd Bergmann (1):
-      cpufreq: integrator: fix integrator_cpufreq_remove return type
-
-Rafael J. Wysocki (1):
-      cpufreq: pcc-cpufreq: Fix wait_event() under spinlock
-
-Viresh Kumar (1):
-      cpufreq: update 'cpufreq_suspended' after stopping governors
-
----------------
-
- drivers/cpufreq/cpufreq.c             |  7 ++++---
- drivers/cpufreq/integrator-cpufreq.c  |  4 ++--
- drivers/cpufreq/pcc-cpufreq.c         |  2 +-
- drivers/gpu/drm/i915/intel_opregion.c | 16 +++++++++++-----
- 4 files changed, 18 insertions(+), 11 deletions(-)
+--/WwmFnJnmDyWGHa4--
