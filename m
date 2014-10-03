@@ -1,73 +1,122 @@
-From: Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH RFC] sched,idle: teach select_idle_sibling about idle
- states
-Date: Fri, 03 Oct 2014 11:37:31 -0400
-Message-ID: <542EC2BB.5030907@redhat.com>
-References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org> <1409844730-12273-3-git-send-email-nicolas.pitre@linaro.org> <542B277D.7050103@redhat.com> <alpine.LFD.2.11.1409301904150.5311@knanqh.ubzr> <20141002131548.6cd377d5@cuia.bos.redhat.com> <1412317384.5149.19.camel@marge.simpson.net> <20141003075012.GF10583@worktop.programming.kicks-ass.net> <542EB29A.2050704@redhat.com> <20141003144651.GI10583@worktop.programming.kicks-ass.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v3 07/13] ARM: shmobile: R-Mobile: Use generic_pm_domain.attach_dev()
+ for pm_clk setup
+Date: Fri, 3 Oct 2014 18:01:17 +0200 (CEST)
+Message-ID: <alpine.DEB.2.02.1410031756580.14789@ayla.of.borg>
+References: <1411662520-22795-1-git-send-email-geert+renesas@glider.be> <1411662520-22795-8-git-send-email-geert+renesas@glider.be> <CAMuHMdVZmhpKcRO0rnXFMu7RJ4zFNPdvzuW=TBpvE5B4JviAZA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:37213 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753598AbaJCPiF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 3 Oct 2014 11:38:05 -0400
-In-Reply-To: <20141003144651.GI10583@worktop.programming.kicks-ass.net>
+Received: from andre.telenet-ops.be ([195.130.132.53]:53646 "EHLO
+	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbaJCQBZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Oct 2014 12:01:25 -0400
+In-Reply-To: <CAMuHMdVZmhpKcRO0rnXFMu7RJ4zFNPdvzuW=TBpvE5B4JviAZA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <umgwanakikbuti@gmail.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Ingo Molnar <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-On 10/03/2014 10:46 AM, Peter Zijlstra wrote:
-> On Fri, Oct 03, 2014 at 10:28:42AM -0400, Rik van Riel wrote:
-
->> The current code has the potential to be quite painful on systems
->> with a large number of cores per chip, so we will have to change
->> things anyway...
+On Fri, 26 Sep 2014, Geert Uytterhoeven wrote:
+> On Thu, Sep 25, 2014 at 6:28 PM, Geert Uytterhoeven
+> <geert+renesas@glider.be> wrote:
+> > diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+> > index 717e6413d29cb998..ae846dfcd69293f7 100644
+> > --- a/arch/arm/mach-shmobile/pm-rmobile.c
+> > +++ b/arch/arm/mach-shmobile/pm-rmobile.c
+> > @@ -101,6 +101,17 @@ static bool rmobile_pd_active_wakeup(struct device *dev)
+> >         return true;
+> >  }
+> >
+> > +static void rmobile_pd_attach_dev(struct device *dev)
+> > +{
+> > +       if (pm_clk_no_clocks(dev))
+> > +               pm_clk_add(dev, NULL);
 > 
-> What I said.. so far we've failed at coming up with anything sane 
-> though, so far we've found that 2 cpus is too small a slice to look
-> at and we're fairly sure 18/36 is too large :-)
+> With !CONFIG_PM_RUNTIME, this doesn't work well in the DT case,
+> as the clocks are no longer enabled by runtime PM
+> (some clocks may have been enabled by boot loader/reset state though).
+> 
+> In the legacy case, this works more or less, as genpd takes over after
+> the pm_clk domain has been initialized, which implies enabling the clocks
+> if !CONFIG_PM_RUNTIME.
+> 
+> Will fix...
 
-Some more brainstorming points...
+The patch below fixes that.
 
-1) We should probably (lazily/batched?) propagate load information
-   up the sched_group tree.  This will be useful for wake_affine,
-   load_balancing, find_idlest_cpu, and select_idle_sibling
+I'll update the whole series, and will repost after v3.18-rc1, after the
+prerequisites are in.
 
-2) With both find_idlest_cpu and select_idle_sibling walking down
-   the tree from the LLC level, they could probably share code
+>From cf40afcfab65fef8e6e6fa84bd3b49434afcb5eb Mon Sep 17 00:00:00 2001
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Date: Wed, 1 Oct 2014 20:05:53 +0200
+Subject: [PATCH] ARM: shmobile: R-Mobile: Enable module clocks if !CONFIG_PM_RUNTIME
 
-3) Counting both blocked and runnable load may give better long
-   term stability of loads, resulting in a reduction in work
-   preserving behaviour, but an improvement in locality - this
-   could be worthwhile, but it is hard to say in advance
+ARM: shmobile: R-Mobile: Enable module clocks if !CONFIG_PM_RUNTIME
 
-4) We can be pretty sure that CPU makers are not going to stop
-   at a mere 18 cores. We need to subdivide things below the LLC
-   level, turning select_idle_sibling and find_idlest_cpu into
-   a tree walk.
+If CONFIG_PM_RUNTIME is not set, the clocks must be enabled before the
+devices can be used.  Also add missing pm_clk_create()/pm_clk_destroy()
+calls.
 
-   This means whatever selection criteria are used by these need
-   to be propagated up the sched_group tree. This, in turn, means
-   we probably need to restrict ourselves to things that do not get
-   changed/updated too often.
+Currently these clocks are enabled by the !CONFIG_PM_RUNTIME version of
+pm_clk_notify, activated by the hack in drivers/sh/pm_runtime.c, but
+this will go away soon (at least for DT, cfr. "[PATCH] drivers: sh:
+Disable PM runtime for multi-platform r8a7740 with genpd").
 
-Am I overlooking anything?
+On detach, disabling the clocks is already handled by pm_clk_destroy().
+On system suspend/resume, disabling/enabling clocks is already handled
+from the genpd->dev_ops.{start,stop}() callbacks.
 
-- -- 
-All rights reversed
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+This depends on "PM / clock_ops: Fix crash in clocks management code if
+!CONFIG_PM_RUNTIME".
 
-iQEcBAEBAgAGBQJULsK7AAoJEM553pKExN6DtBEIAIJWwDPXfrIN6D4yH+/sY7Xg
-cDRVDS978OW8GMx3/IqOD90PIvx/l/pttIHHkAcMfDv2Lv8QhiGJEX+OMQg9ETPq
-bA31A5t3V3Wlnfc/0xeIMrebc2P3Wfe5s2DApiYPQbDzh47BimDJyeC/9XSqKyvk
-CuOZR02t4/20axGwZhl8hk7vGTJhlJWPuh5RUHWjRi2shoHJM90nfZh144GDO3S7
-EfiNlC9ZT9z9MYUL6FvCGA7yF+fwzIPE4ppU/KeoDVHsav2OKadV+MjsTQ/IHti2
-p0Heu80jEmWW3/zv9zeMpa8jv6Xg8kNsaW709ZSBAzphen5g9sch170A0SdZCiU=
-=gUXr
------END PGP SIGNATURE-----
+ arch/arm/mach-shmobile/pm-rmobile.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+index 80be5848adc8f15c..e5a2c568d96cdd6b 100644
+--- a/arch/arm/mach-shmobile/pm-rmobile.c
++++ b/arch/arm/mach-shmobile/pm-rmobile.c
+@@ -121,13 +121,23 @@ static bool rmobile_pd_active_wakeup(struct device *dev)
+ 
+ static void rmobile_pd_attach_dev(struct device *dev)
+ {
+-	if (pm_clk_no_clocks(dev))
+-		pm_clk_add(dev, NULL);
++	int error;
++
++	error = pm_clk_create(dev);
++	if (error) {
++		dev_err(dev, "pm_clk_create failed %d\n", error);
++		return;
++	}
++
++	pm_clk_add(dev, NULL);
++
++	if (!IS_ENABLED(CONFIG_PM_RUNTIME))
++		pm_clk_resume(dev);
+ }
+ 
+ static void rmobile_pd_detach_dev(struct device *dev)
+ {
+-	pm_clk_remove(dev, NULL);
++	pm_clk_destroy(dev);
+ }
+ 
+ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+-- 
+1.9.1
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
