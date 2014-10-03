@@ -1,104 +1,59 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 3/3] thermal: core: fix: Check return code of the
- ->get_max_state() callback
-Date: Fri, 03 Oct 2014 12:40:54 +0200
-Message-ID: <20141003124054.404ac26c@amdc2363>
-References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
- <1411547232-21493-4-git-send-email-l.majewski@samsung.com>
- <20141002222441.GA11510@developer>
+From: Mike Galbraith <umgwanakikbuti@gmail.com>
+Subject: Re: [PATCH RFC] sched,idle: teach select_idle_sibling about idle
+ states
+Date: Fri, 03 Oct 2014 15:05:31 +0200
+Message-ID: <1412341531.5128.16.camel@marge.simpson.net>
+References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org>
+	 <1409844730-12273-3-git-send-email-nicolas.pitre@linaro.org>
+	 <542B277D.7050103@redhat.com>
+	 <alpine.LFD.2.11.1409301904150.5311@knanqh.ubzr>
+	 <20141002131548.6cd377d5@cuia.bos.redhat.com>
+	 <1412317384.5149.19.camel@marge.simpson.net>
+	 <20141003075012.GF10583@worktop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:12322 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750852AbaJCKlX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Oct 2014 06:41:23 -0400
-In-reply-to: <20141002222441.GA11510@developer>
+Received: from mail-la0-f45.google.com ([209.85.215.45]:52416 "EHLO
+	mail-la0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751462AbaJCNFg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Oct 2014 09:05:36 -0400
+In-Reply-To: <20141003075012.GF10583@worktop.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Rik van Riel <riel@redhat.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Ingo Molnar <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-Hi Eduardo, Rui,
+On Fri, 2014-10-03 at 09:50 +0200, Peter Zijlstra wrote: 
+> On Fri, Oct 03, 2014 at 08:23:04AM +0200, Mike Galbraith wrote:
 
-> On Wed, Sep 24, 2014 at 10:27:12AM +0200, Lukasz Majewski wrote:
-> > Without this check it was possible to execute cooling device
-> > binding code even when wrong max cooling state was read.
-> > 
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > A generic boo hiss aimed in the general direction of all of this let's
+> > go look at every possibility on every wakeup stuff.  Less is more.
 > 
-> Acked-by: Eduardo Valentin <edubezval@gmail.com>
+> I hear you, can you see actual slowdown with the patch? While the worst
+> case doesn't change, it does make the average case equal to the worst
+> case iteration -- where we previously would average out at inspecting
+> half the CPUs before finding an idle one, we'd now always inspect all of
+> them in order to compare all idle ones on their properties.
 > 
-> Rui, are you taking these patches? Do you prefer me to collect them?
+> Also, with the latest generation of Haswell Xeons having 18 cores (36
+> threads) this is one massively painful loop for sure.
 
-I'd like to ask you NOT to apply those patches.
-
-In short: It will cause regression on all non Exynos boards.
-
-Explanation:
-
-Up till now the cpu_cooling device was bind even when the
-get_max_state() returned -EINVAL and everything worked after late
-cpufreq policy initialization.
-
-However, during this time window the thermal driver is not properly
-configured.
-
-Applying PATCH2/3 and PATCH3/3 would cause bind error without any
-further occasion for re-bind. As a result THERAL will not be present
-on the target system.
-
-It works on the Exynos boards, since at the report_trigger() function, 
-when first trip point is reached, it is checked if cpu_cooling device
-is bind. If it is not (due to "fixes" at PATCH2/3 and PATCH3/3) it
-is rebind then.
-
-Due to above, I think that it would be best to leave things as they are
-now and prepare proper fix as suggested by Eduardo.
-
+Yeah, the things are getting too damn big.  I didn't try the patch and
+measure anything, my gut instantly said "nope, not worth it".
+  
+> I'm just not sure what to do about it.. I suppose we can artificially
+> split it into smaller groups, but I bet that'll hurt some, but if we can
+> show it gains more we might still be able to do it. The only real
+> problem is actual numbers/workloads (isn't it always) :/
 > 
-> Cheers
-> 
-> Eduardo
-> 
-> > ---
-> >  drivers/thermal/thermal_core.c | 6 ++++--
-> >  1 file changed, 4 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/thermal/thermal_core.c
-> > b/drivers/thermal/thermal_core.c index 747618a..8a4dc35 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -928,7 +928,7 @@ int thermal_zone_bind_cooling_device(struct
-> > thermal_zone_device *tz, struct thermal_zone_device *pos1;
-> >  	struct thermal_cooling_device *pos2;
-> >  	unsigned long max_state = 0;
-> > -	int result;
-> > +	int result, ret;
-> >  
-> >  	if (trip >= tz->trips || (trip < 0 && trip !=
-> > THERMAL_TRIPS_NONE)) return -EINVAL;
-> > @@ -945,7 +945,9 @@ int thermal_zone_bind_cooling_device(struct
-> > thermal_zone_device *tz, if (tz != pos1 || cdev != pos2)
-> >  		return -EINVAL;
-> >  
-> > -	cdev->ops->get_max_state(cdev, &max_state);
-> > +	ret = cdev->ops->get_max_state(cdev, &max_state);
-> > +	if (ret)
-> > +		return ret;
-> >  
-> >  	/* lower default 0, upper default max_state */
-> >  	lower = lower == THERMAL_NO_LIMIT ? 0 : lower;
-> > -- 
-> > 2.0.0.rc2
-> > 
+> One thing I suppose we could try is keeping a 'busy' flag at the
+> llc domain which is set when all CPUs are busy (we'll clear it from
+> new_idle) that way we can avoid the entire iteration if we know its
+> pointless.
 
+On one of those huge packages, heck, even on a 8 core that could save a
+substantial number of busy box cycles.
 
+-Mike
 
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
