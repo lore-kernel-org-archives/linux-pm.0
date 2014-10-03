@@ -1,41 +1,50 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v5 3/4] ARM: tegra: Add thermal trip points for Jetson TK1
-Date: Fri, 3 Oct 2014 21:57:24 +0200
-Message-ID: <20141003195723.GA6074@amd>
-References: <1408616242-21009-1-git-send-email-mperttunen@nvidia.com>
- <1408616242-21009-4-git-send-email-mperttunen@nvidia.com>
- <20140924183204.GE27076@developer>
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [PATCH v7 5/5] ARM: dts: enable Thermal on rk3288-evb board
+Date: Fri, 3 Oct 2014 14:21:03 -0700
+Message-ID: <CAD=FV=V6c1tGxxTTDyExRkW0fqFVY6v2OxJauoJ_xwZdXX0Tmg@mail.gmail.com>
+References: <1411900693-30484-1-git-send-email-caesar.wang@rock-chips.com>
+	<1411900693-30484-6-git-send-email-caesar.wang@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140924183204.GE27076@developer>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Mikko Perttunen <mperttunen@nvidia.com>, rui.zhang@intel.com, swarren@wwwdotorg.org, thierry.reding@gmail.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, juha-matti.tilli@iki.fi
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1411900693-30484-6-git-send-email-caesar.wang@rock-chips.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Caesar Wang <caesar.wang@rock-chips.com>
+Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Arnd Bergmann <arnd@arndb.de>, zyf <zyf@rock-chips.com>, linux-rockchip@lists.infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Eddie Cai <cf@rock-chips.com>, Derek Basehore <dbasehore@chromium.org>, Tao Huang <huangtao@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2014-09-24 14:32:06, Eduardo Valentin wrote:
-> Hello Mikko,
-> 
-> On Thu, Aug 21, 2014 at 01:17:21PM +0300, Mikko Perttunen wrote:
-> > This adds critical trip points to the Jetson TK1 device tree.
-> > The device will do a controlled shutdown when either the CPU, GPU
-> > or MEM thermal zone reaches 101 degrees Celsius.
+Caesar,
 
-> > +			trips {
-> > +				trip@0 {
-> > +					temperature = <101000>;
-> > +					hysteresis = <0>;
-> > +					type = "critical";
-> > +				};
+On Sun, Sep 28, 2014 at 3:38 AM, Caesar Wang <caesar.wang@rock-chips.com> wrote:
+> when a thermal shutdown at 125C.Via GPIO give PMIC,
+> Reset the entire chip.
+>
+> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+> ---
+>  arch/arm/boot/dts/rk3288-evb.dtsi | 5 +++++
+>  1 file changed, 5 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/rk3288-evb.dtsi b/arch/arm/boot/dts/rk3288-evb.dtsi
+> index 2964370..a6872aa 100644
+> --- a/arch/arm/boot/dts/rk3288-evb.dtsi
+> +++ b/arch/arm/boot/dts/rk3288-evb.dtsi
+> @@ -101,6 +101,11 @@
+>         status = "okay";
+>  };
+>
+> +&tsadc {
+> +       reset-gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
 
-Would it be still time to switch to some more reasonable unit, like
-degrees celsius? milicelsius is a bit of overkill.. ACPI uses
-deciCelsius, but .. celsius should be enough.
+I don't see "reset-gpios" mentioned in the bindings or the code.  I
+think you can just remove this, right?
 
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> +       status = "okay";
+> +};
+> +
+>  &pinctrl {
+>         buttons {
+>                 pwrbtn: pwrbtn {
+> --
+> 1.9.1
+>
+>
