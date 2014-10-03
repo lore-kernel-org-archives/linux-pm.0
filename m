@@ -1,107 +1,119 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 2/3] thermal: core: fix: Initialize the max_state variable
- to 0
-Date: Fri, 03 Oct 2014 10:26:28 +0200
-Message-ID: <20141003102628.7a8f36f7@amdc2363>
-References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
- <1411547232-21493-3-git-send-email-l.majewski@samsung.com>
- <20141002222649.GB11510@developer>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 0/4] PM / Domains: Fix race conditions during boot
+Date: Fri, 3 Oct 2014 11:47:37 +0200
+Message-ID: <CAPDyKFqteXGe0nfZMDcM2v1Z_Q_e+=0t2KD3MjPEJjN6+EzG+g@mail.gmail.com>
+References: <1412174494-15346-1-git-send-email-ulf.hansson@linaro.org>
+	<7h38b6rm2l.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20141002222649.GB11510@developer>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f181.google.com ([209.85.216.181]:34197 "EHLO
+	mail-qc0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbaJCJri (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Oct 2014 05:47:38 -0400
+Received: by mail-qc0-f181.google.com with SMTP id r5so683845qcx.40
+        for <linux-pm@vger.kernel.org>; Fri, 03 Oct 2014 02:47:37 -0700 (PDT)
+In-Reply-To: <7h38b6rm2l.fsf@deeprootsystems.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
 
-Hi Eduardo,
+On 3 October 2014 03:14, Kevin Hilman <khilman@kernel.org> wrote:
+> Ulf, Rafael,
+>
+> Ulf Hansson <ulf.hansson@linaro.org> writes:
+>
+>> When there are more than one device in a PM domain these will obviously
+>> be probed at different times. Depending on timing and the implemented
+>> support for runtime PM in a driver/subsystem, genpd may be advised to
+>> power off a PM domain after a successful probe sequence.
+>>
+>> Ideally we should have relied on the driver/subsystem, through runtime
+>> PM, to bring their device's PM domain into powered state prior doing
+>> probing if such requirement exist.
+>
+> I think I've stumbled on a related problem, or maybe the same one.
+>
+> Even if platform-specific init code has initialized a device with
+> pm_runtime_set_active(), it seems that the genpd domain can still
+> power off before before all of its devices are probed.
+>
+> This is because pm_genpd_poweroff() requires there to be a driver
+> when it's checking if a device is pm_runtime_suspended() which will not
+> be the case if the driver has not been probed yet.
+>
+> Consider this case: There are several devices in the domain that haven't
+> been probed yet (dev->driver == NULL), but have been marked with
+> pm_runtime_set_active() + _get_noresume(), so pm_runtime_suspended() == false.
 
-> Hello Lukasz,
-> 
-> On Wed, Sep 24, 2014 at 10:27:11AM +0200, Lukasz Majewski wrote:
-> > Pointer to the uninitialized max_state variable is passed to get the
-> > maximal cooling state.
-> > For CPU cooling device (cpu_cooling.c) the cpufreq_get_max_state()
-> > is called, which even when error occurs will return the max_state
-> > variable unchanged.
-> > Since error for ->get_max_state() is not checked, the automatically
-> 
-> 
-> Good that you added a fix in your series for this.
-> 
-> 
-> > allocated value of max_state is used for (upper > max_state)
-> > comparison. For any possible max_state value it is very unlikely
-> > that it will be less than upper.
-> > As a consequence, the cooling device is bind even without the backed
-> > cpufreq table initialized.
-> > 
-> > This initialization will prevent from accidental binding trip
-> > points to cpu freq cooling frequencies when cpufreq driver itself
-> > is not yet fully initialized.
-> 
-> Although I agree with the fix, as long as we also include a check for
-> the .get_max_state return value,  I believe the problem you are
-> describing is about initialization sequence.
+I haven't seen this kind of set up before. Are you invoking
+pm_runtime_enable() here as well?
 
-As you pointed out - the problem here is with initialization sequence.
-Thermal and cpufreq cores are initialized very early.
+I am not sure pm_runtime_get_noresume() is a good idea, since that
+will prevent the device from going inactive - even after the driver
+has probed it. Unless the driver do pm_runtime_put_sync twice of
+course. :-)
 
-However, the get_max_state() for cpu_cooling.c device (as it is the
-pervasive way of cooling things) accesses cpufreq policy to get the
-freq_table and count available states.
+On the other hand, if you have done pm_runtime_enable() your certainly
+need to prevent the device some going inactive...
 
-The issue here is with late initialization of cpufreq policy.
+>
+> Then, one of devices is in the domain is probed, and during the probe it
+> does a _get_sync(), sets some stuff up, and then does _put_sync().
+> After the probe, because of the _put_sync(), the genpd
+> ->runtime_suspend() will be triggered, causing it to attempt a
+> _genpd_poweroff().  Since the rest of the devices in the domain haven't
+> (yet) been probed, their dev->driver pointers are all still NULL, so the
+> pm_runtime_suspended() check will not be attempted for them.
+>
+> The result is that the genpd will poweroff after the first device is
+> probed, but before the others have had a chance to probe, which is not
+> exactly desired behavior for a genpd that has been initialized as
+> powered on.
+>
+> With the hack below[1], I'm able to avoid that problem, but am not
+> completely sure yet if this is safe in general.
+>
+> Rafael, do you remember why that check for dev->driver is needed?
+> Without digging deeper (which I'll do tomorrow), seems to me that
+> checking pm_runtime_suspended() on devices without drivers is a
+> reasonable thing to do since they can be initailzed by platform code
+> before they are probed.   If you think this is OK, I'll cook up a real
+> patch with a changelog.
+>
+> Ulf, I'm not sure if this is the same problem you're having, but do you
+> think this would solve your problem if the drivers are properly
+> initialized?
 
-Up till now the cpu_cooling device was bind even when the
-get_max_state() returned -EINVAL and everything worked after late
-cpufreq policy initialization. However, during this time window the
-thermal driver is not configured.
+Unfortunately no.
 
-> 
-> In general, I believe we need a better
-> sequencing between thermal and cpufreq subsystems. One way out is to
-> include a check for cpufreq driver in the thermal driver, and return
-> -EPROBE_DEFER  when cpufreq is not ready.
+I am using the DT initialization path so all my devices aren't being
+added to the PM domain before drivers starts to probe them.
 
-I think that we could return -EPROBE_DEFER when cpufreq's policy is not
-yet available and subscribe to cpufreq notifier to call
-bind_cooling_device then.
+Instead they are added when each device gets probed, thus the PM
+domain can still power off between devices being probed.
 
-Let's wait for Zhang opinion since he looks after the thermal core code.
+>
+> Kevin
+>
+>
+> [1]
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 568bf3172bef..17b0d9466d98 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -471,7 +471,7 @@ static int pm_genpd_poweroff(struct
+> generic_pm_domain *genpd)
+>                 if (stat > PM_QOS_FLAGS_NONE)
+>                         return -EBUSY;
+>
+> -               if (pdd->dev->driver && (!pm_runtime_suspended(pdd->dev)
+> +               if ((!pm_runtime_suspended(pdd->dev)
+>                     || pdd->dev->power.irq_safe))
+>                         not_suspended++;
+>         }
+> --
 
-> 
-> > 
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > ---
-> >  drivers/thermal/thermal_core.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/thermal/thermal_core.c
-> > b/drivers/thermal/thermal_core.c index 454884a..747618a 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -927,7 +927,7 @@ int thermal_zone_bind_cooling_device(struct
-> > thermal_zone_device *tz, struct thermal_instance *pos;
-> >  	struct thermal_zone_device *pos1;
-> >  	struct thermal_cooling_device *pos2;
-> > -	unsigned long max_state;
-> > +	unsigned long max_state = 0;
-> >  	int result;
-> >  
-> >  	if (trip >= tz->trips || (trip < 0 && trip !=
-> > THERMAL_TRIPS_NONE)) -- 
-> > 2.0.0.rc2
-> > 
-> 
-
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Kind regards
+Uffe
