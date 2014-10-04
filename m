@@ -1,54 +1,63 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: [PATCH 1/2] cpufreq: cpu0: Improve debug about matching OPP
-Date: Sat,  4 Oct 2014 20:26:03 +0000
-Message-ID: <1412454365-17804-2-git-send-email-stefan.wahren@i2se.com>
-References: <1412454365-17804-1-git-send-email-stefan.wahren@i2se.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH] power: ab8500_fg: Fix build warning
+Date: Sat,  4 Oct 2014 16:31:13 -0700
+Message-ID: <1412465473-13495-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.17.13]:62910 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751034AbaJDU01 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 4 Oct 2014 16:26:27 -0400
-In-Reply-To: <1412454365-17804-1-git-send-email-stefan.wahren@i2se.com>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:39314 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751033AbaJDXb2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 4 Oct 2014 19:31:28 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, shawn.guo@freescale.com, Stefan Wahren <stefan.wahren@i2se.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
 
-During test of new DT OPPs it's very helpful to print the matching
-OPP in case of frequency change. So it will be easier to find frequency
-rounding issues in the dts file.
+Fix
 
-Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+drivers/power/ab8500_fg.c: In function 'ab8500_fg_probe':
+drivers/power/ab8500_fg.c:2989:27:
+		warning: 'i' may be used uninitialized in this function
+drivers/power/ab8500_fg.c:2972:15: note: 'i' was declared here
+
+which actually points to a real bug.
+
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/cpufreq/cpufreq-cpu0.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/power/ab8500_fg.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index a5f8c5f..ef3d618 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -57,6 +57,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
- 	old_freq = clk_get_rate(cpu_clk) / 1000;
+diff --git a/drivers/power/ab8500_fg.c b/drivers/power/ab8500_fg.c
+index 3cb4178..217da4b 100644
+--- a/drivers/power/ab8500_fg.c
++++ b/drivers/power/ab8500_fg.c
+@@ -2969,7 +2969,7 @@ static struct device_attribute ab8505_fg_sysfs_psy_attrs[] = {
  
- 	if (!IS_ERR(cpu_reg)) {
-+		unsigned long opp_freq;
-+
- 		rcu_read_lock();
- 		opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq_Hz);
- 		if (IS_ERR(opp)) {
-@@ -66,9 +68,12 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
- 			return PTR_ERR(opp);
- 		}
- 		volt = dev_pm_opp_get_voltage(opp);
-+		opp_freq = dev_pm_opp_get_freq(opp);
- 		rcu_read_unlock();
- 		tol = volt * priv->voltage_tolerance / 100;
- 		volt_old = regulator_get_voltage(cpu_reg);
-+		dev_dbg(cpu_dev, "Found OPP: %ld kHz, %ld uV\n",
-+			opp_freq / 1000, volt);
+ static int ab8500_fg_sysfs_psy_create_attrs(struct device *dev)
+ {
+-	unsigned int i, j;
++	unsigned int i;
+ 	struct power_supply *psy = dev_get_drvdata(dev);
+ 	struct ab8500_fg *di;
+ 
+@@ -2978,14 +2978,15 @@ static int ab8500_fg_sysfs_psy_create_attrs(struct device *dev)
+ 	if (((is_ab8505(di->parent) || is_ab9540(di->parent)) &&
+ 	     abx500_get_chip_id(dev->parent) >= AB8500_CUT2P0)
+ 	    || is_ab8540(di->parent)) {
+-		for (j = 0; j < ARRAY_SIZE(ab8505_fg_sysfs_psy_attrs); j++)
+-			if (device_create_file(dev, &ab8505_fg_sysfs_psy_attrs[j]))
++		for (i = 0; i < ARRAY_SIZE(ab8505_fg_sysfs_psy_attrs); i++)
++			if (device_create_file(dev,
++					       &ab8505_fg_sysfs_psy_attrs[i]))
+ 				goto sysfs_psy_create_attrs_failed_ab8505;
  	}
+ 	return 0;
+ sysfs_psy_create_attrs_failed_ab8505:
+ 	dev_err(dev, "Failed creating sysfs psy attrs for ab8505.\n");
+-	while (j--)
++	while (i--)
+ 		device_remove_file(dev, &ab8505_fg_sysfs_psy_attrs[i]);
  
- 	dev_dbg(cpu_dev, "%u MHz, %ld mV --> %u MHz, %ld mV\n",
+ 	return -EIO;
 -- 
-1.7.9.5
+1.9.1
 
