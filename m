@@ -1,55 +1,83 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] drivers: base: power: domain: Use 'pm_cpu_data' instead
- of 'cpu_data' for compiling break
-Date: Sat, 4 Oct 2014 09:00:37 -0700
-Message-ID: <20141004160037.GB16969@kroah.com>
-References: <54300206.3020206@gmail.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH v2 5/6] ARM: dts: imx53: add cpufreq-dt support
+Date: Sat, 4 Oct 2014 21:36:18 +0200 (CEST)
+Message-ID: <894888049.208559.1412451378291.JavaMail.open-xchange@oxbaltgw55.schlund.de>
+References: <1411738864-26549-1-git-send-email-l.stach@pengutronix.de> <1411738864-26549-5-git-send-email-l.stach@pengutronix.de>
+Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:52579 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750934AbaJDQBe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 4 Oct 2014 12:01:34 -0400
-Content-Disposition: inline
-In-Reply-To: <54300206.3020206@gmail.com>
+Received: from mout.kundenserver.de ([212.227.17.10]:50904 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbaJDTg6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 4 Oct 2014 15:36:58 -0400
+In-Reply-To: <1411738864-26549-5-git-send-email-l.stach@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Gang <gang.chen.5i5j@gmail.com>
-Cc: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, ulf.hansson@linaro.org, khilman@linaro.org, geert+renesas@glider.be, tomasz.figa@gmail.com, richard@nod.at, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Shawn Guo <shawn.guo@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lucas Stach <l.stach@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>
 
-On Sat, Oct 04, 2014 at 10:19:50PM +0800, Chen Gang wrote:
-> 'cpu_data' is too common to be already used by some architectures (e.g.
-> um, m32r, and mn10300), so need use 'pm_cpu_data' instead of, or cause
-> compiling break. The related error (with allmodconfig under um):
-> 
->     CC      drivers/base/platform.o
->   In file included from ./arch/x86/um/asm/processor.h:31:0,
->                    from ./arch/um/include/asm/uaccess.h:16,
->                    from ./arch/um/include/asm/thread_info.h:13,
->                    from include/linux/thread_info.h:54,
->                    from include/asm-generic/current.h:4,
->                    from arch/um/include/generated/asm/current.h:1,
->                    from include/linux/mutex.h:13,
->                    from include/linux/kernfs.h:13,
->                    from include/linux/sysfs.h:15,
->                    from include/linux/kobject.h:21,
->                    from include/linux/device.h:17,
->                    from include/linux/platform_device.h:14,
->                    from drivers/base/platform.c:14:
->   ./arch/um/include/asm/processor-generic.h:107:19: error: expected identifier or '(' before '&' token
->    #define cpu_data (&boot_cpu_data)
->                      ^
->   include/linux/pm_domain.h:74:23: note: in expansion of macro 'cpu_data'
->     struct gpd_cpu_data *cpu_data;
->                        ^
-> 
-> Also need notice about 80 columns boundary.
+Hi Lucas,
+ 
+i know the patch is already applied, but ...
 
-I don't object to this change at all, but it could be easier to solve
-this by fixing up 'cpu_data' to be named something a bit less "generic"?
-What does x86 use for this data type?
-
-thanks,
-
-greg k-h
+> Lucas Stach <l.stach@pengutronix.de> hat am 26. September 2014 um 15:41
+> geschrieben:
+>
+>
+> Add all required properties for the cpufreq-dt driver.
+>
+> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> ---
+> v2:
+> - split out device instantiation
+> ---
+> arch/arm/boot/dts/imx53.dtsi | 13 ++++++++++++-
+> 1 file changed, 12 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/arm/boot/dts/imx53.dtsi b/arch/arm/boot/dts/imx53.dtsi
+> index c6c58c1c00e3..aa2fb2f3616d 100644
+> --- a/arch/arm/boot/dts/imx53.dtsi
+> +++ b/arch/arm/boot/dts/imx53.dtsi
+> @@ -46,10 +46,21 @@
+> cpus {
+> #address-cells = <1>;
+> #size-cells = <0>;
+> - cpu@0 {
+> + cpu0: cpu@0 {
+> device_type = "cpu";
+> compatible = "arm,cortex-a8";
+> reg = <0x0>;
+> + clocks = <&clks IMX5_CLK_ARM>;
+> + clock-latency = <61036>;
+> + voltage-tolerance = <5>;
+> + operating-points = <
+> + /* kHz */
+> + 166666 850000
+ 
+shouldn't it be "166667 850000"?
+ 
+I ran into the same issue on i.MX28. If i round down the frequencies the voltage
+of the next higher OPP will be set.
+ 
+Best regards
+ 
+Stefan
+ 
+> + 400000 900000
+> + 800000 1050000
+> + 1000000 1200000
+> + 1200000 1300000
+> + >;
+> };
+> };
+>
+> --
+> 2.1.0
+>
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
