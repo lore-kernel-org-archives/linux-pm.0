@@ -1,70 +1,65 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: ab8500_fg: Fix build warning
-Date: Sun, 5 Oct 2014 02:12:29 +0200
-Message-ID: <20141005001229.GA5763@earth.universe>
-References: <1412465473-13495-1-git-send-email-linux@roeck-us.net>
+From: Chen Gang <gang.chen.5i5j@gmail.com>
+Subject: Re: [PATCH] drivers: base: power: domain: Use 'pm_cpu_data' instead
+ of 'cpu_data' for compiling break
+Date: Sun, 05 Oct 2014 09:13:09 +0800
+Message-ID: <54309B25.2020403@gmail.com>
+References: <54300206.3020206@gmail.com> <20141004160037.GB16969@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="BXVAT5kNtrzKuDFl"
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:45701 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751033AbaJEAMe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 4 Oct 2014 20:12:34 -0400
-Content-Disposition: inline
-In-Reply-To: <1412465473-13495-1-git-send-email-linux@roeck-us.net>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:40269 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbaJEBHX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 4 Oct 2014 21:07:23 -0400
+In-Reply-To: <20141004160037.GB16969@kroah.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, ulf.hansson@linaro.org, khilman@linaro.org, geert+renesas@glider.be, tomasz.figa@gmail.com, richard@nod.at, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On 10/5/14 0:00, Greg KH wrote:
+> On Sat, Oct 04, 2014 at 10:19:50PM +0800, Chen Gang wrote:
+>> 'cpu_data' is too common to be already used by some architectures (e.g.
+>> um, m32r, and mn10300), so need use 'pm_cpu_data' instead of, or cause
+>> compiling break. The related error (with allmodconfig under um):
+>>
+>>     CC      drivers/base/platform.o
+>>   In file included from ./arch/x86/um/asm/processor.h:31:0,
+>>                    from ./arch/um/include/asm/uaccess.h:16,
+>>                    from ./arch/um/include/asm/thread_info.h:13,
+>>                    from include/linux/thread_info.h:54,
+>>                    from include/asm-generic/current.h:4,
+>>                    from arch/um/include/generated/asm/current.h:1,
+>>                    from include/linux/mutex.h:13,
+>>                    from include/linux/kernfs.h:13,
+>>                    from include/linux/sysfs.h:15,
+>>                    from include/linux/kobject.h:21,
+>>                    from include/linux/device.h:17,
+>>                    from include/linux/platform_device.h:14,
+>>                    from drivers/base/platform.c:14:
+>>   ./arch/um/include/asm/processor-generic.h:107:19: error: expected identifier or '(' before '&' token
+>>    #define cpu_data (&boot_cpu_data)
+>>                      ^
+>>   include/linux/pm_domain.h:74:23: note: in expansion of macro 'cpu_data'
+>>     struct gpd_cpu_data *cpu_data;
+>>                        ^
+>>
+>> Also need notice about 80 columns boundary.
+> 
+> I don't object to this change at all, but it could be easier to solve
+> this by fixing up 'cpu_data' to be named something a bit less "generic"?
+> What does x86 use for this data type?
+> 
 
---BXVAT5kNtrzKuDFl
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It is for some kinds of arm cpu (I let this patch pass arm s3c600
+def_config building).  Other architectures did not use it, at present.
 
-Hi,
+If necessary to complete the comments, please let me know, I shall send
+patch v2 for it.
 
-On Sat, Oct 04, 2014 at 04:31:13PM -0700, Guenter Roeck wrote:
-> Fix
->=20
-> drivers/power/ab8500_fg.c: In function 'ab8500_fg_probe':
-> drivers/power/ab8500_fg.c:2989:27:
-> 		warning: 'i' may be used uninitialized in this function
-> drivers/power/ab8500_fg.c:2972:15: note: 'i' was declared here
->=20
-> which actually points to a real bug.
->=20
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Thanks.
+-- 
+Chen Gang
 
-Thanks, pushed:
-
-http://git.infradead.org/battery-2.6.git/commit/7881c64716f3a7d60b325ed0ad4=
-d15f49b474a43
-
--- Sebastian
-
---BXVAT5kNtrzKuDFl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUMIztAAoJENju1/PIO/qa4SQP/AtDh41iGmXqp3r183bdrj7q
-7sRHJGILlMODjOkZVr/Th1vLBQR0ojhOXt/CnY30wmM/VuJW2UrEm00LNw8fanf3
-s8izCQdsxvKjb9+56JmU8qLUFkcF4to49aVbbIVzFfClrzHLWKwl7PBaOz6m0WSC
-F8H1BjSYm8bUUBRkzoJ6eBOyGhWaKp5GpXbnWS0ifQ9G2rf2xbtKdAxctyaPq0Uv
-a5ocSJc8iaNf5aW1HLfDFvsOea4Us9PcX5xAI8+lgHT90iY5O27pEFdFW5qDNAnU
-6alWrhQFSIjqDiOCc808XRjH6JvQOYrdjSZQJ2R5n/KwEchIBZkvo2hmw5GzXVi6
-zIxHqYV7fBSB5+1b1fiqduiKbII6kQMmJErAlhKwx5Sp++cKA20ueloqVSj+rHJK
-jfpk9/TAbmJTp1mvlucWI7KXUUDlRq9W1vdZv6hjwk/zSGc7X/qG04LhGvdNXcfC
-fLs7uAUydKzCWPqTpUwAbf2bH9X5VrrDntDYFOalvMqY5F4bWaLPQf2+ZPVPzYEQ
-kZ57vsXI211Mi+tev7bGJOhV6B/l7fHCMqsT7nTOkr8fKuLF5DvaJGyPVhI3cppj
-wInoT6dflKkm4oKjqTr3Poxhwv8OTQ3JUY+s5FOEbT7IB4FJGoKYixBRUQTCgX8K
-9PiJ28nt/ilDRFDN11Dl
-=XUCN
------END PGP SIGNATURE-----
-
---BXVAT5kNtrzKuDFl--
+Open, share, and attitude like air, water, and life which God blessed
