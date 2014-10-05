@@ -1,221 +1,33 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] drivers: base: power: domain: Use 'pm_cpu_data' instead of 'cpu_data' for compiling break
-Date: Sun, 05 Oct 2014 23:32:53 +0200
-Message-ID: <3581264.gqojuoeKz2@vostro.rjw.lan>
-References: <54300206.3020206@gmail.com>
+Subject: Re: [PATCH 0/2] cpufreq: cpu0: Improvements for cpu0_set_target()
+Date: Sun, 05 Oct 2014 23:34:17 +0200
+Message-ID: <3655188.0cIJZFUFYF@vostro.rjw.lan>
+References: <1412454365-17804-1-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51149 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:59873 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751965AbaJEVMu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Oct 2014 17:12:50 -0400
-In-Reply-To: <54300206.3020206@gmail.com>
+	with SMTP id S1751798AbaJEVON (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Oct 2014 17:14:13 -0400
+In-Reply-To: <1412454365-17804-1-git-send-email-stefan.wahren@i2se.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Gang <gang.chen.5i5j@gmail.com>
-Cc: pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, ulf.hansson@linaro.org, khilman@linaro.org, geert+renesas@glider.be, tomasz.figa@gmail.com, richard@nod.at, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, shawn.guo@freescale.com
 
-On Saturday, October 04, 2014 10:19:50 PM Chen Gang wrote:
-> 'cpu_data' is too common to be already used by some architectures (e.g.
-> um, m32r, and mn10300), so need use 'pm_cpu_data' instead of, or cause
-> compiling break. The related error (with allmodconfig under um):
+On Saturday, October 04, 2014 08:26:02 PM Stefan Wahren wrote:
+> This patch series contains 2 improvements for cpu0_set_target().
 > 
->     CC      drivers/base/platform.o
->   In file included from ./arch/x86/um/asm/processor.h:31:0,
->                    from ./arch/um/include/asm/uaccess.h:16,
->                    from ./arch/um/include/asm/thread_info.h:13,
->                    from include/linux/thread_info.h:54,
->                    from include/asm-generic/current.h:4,
->                    from arch/um/include/generated/asm/current.h:1,
->                    from include/linux/mutex.h:13,
->                    from include/linux/kernfs.h:13,
->                    from include/linux/sysfs.h:15,
->                    from include/linux/kobject.h:21,
->                    from include/linux/device.h:17,
->                    from include/linux/platform_device.h:14,
->                    from drivers/base/platform.c:14:
->   ./arch/um/include/asm/processor-generic.h:107:19: error: expected identifier or '(' before '&' token
->    #define cpu_data (&boot_cpu_data)
->                      ^
->   include/linux/pm_domain.h:74:23: note: in expansion of macro 'cpu_data'
->     struct gpd_cpu_data *cpu_data;
->                        ^
+> Stefan Wahren (2):
+>   cpufreq: cpu0: Improve debug about matching OPP
+>   cpufreq: cpu0: Handle regulator_get_voltage() failure
 > 
-> Also need notice about 80 columns boundary.
-> 
-> 
-> Signed-off-by: Chen Gang <gang.chen.5i5j@gmail.com>
+>  drivers/cpufreq/cpufreq-cpu0.c |    9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
 
-This problem has already been fixed by a patch from Ulf Hansson that's
-in my tree (along with the commit that introduced the problem in the first
-place).
-
-And you forgot to say that the problem was only occuring in linux-next.
-
-I'm sorry for everyone's loss of time related to this.
-
-> ---
->  drivers/base/power/domain.c | 54 ++++++++++++++++++++++-----------------------
->  include/linux/pm_domain.h   |  2 +-
->  2 files changed, 28 insertions(+), 28 deletions(-)
-> 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 18cc68d..d8d2739 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -142,13 +142,13 @@ static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
->  {
->  	s64 usecs64;
->  
-> -	if (!genpd->cpu_data)
-> +	if (!genpd->pm_cpu_data)
->  		return;
->  
->  	usecs64 = genpd->power_on_latency_ns;
->  	do_div(usecs64, NSEC_PER_USEC);
-> -	usecs64 += genpd->cpu_data->saved_exit_latency;
-> -	genpd->cpu_data->idle_state->exit_latency = usecs64;
-> +	usecs64 += genpd->pm_cpu_data->saved_exit_latency;
-> +	genpd->pm_cpu_data->idle_state->exit_latency = usecs64;
->  }
->  
->  /**
-> @@ -188,9 +188,9 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
->  		return 0;
->  	}
->  
-> -	if (genpd->cpu_data) {
-> +	if (genpd->pm_cpu_data) {
->  		cpuidle_pause_and_lock();
-> -		genpd->cpu_data->idle_state->disabled = true;
-> +		genpd->pm_cpu_data->idle_state->disabled = true;
->  		cpuidle_resume_and_unlock();
->  		goto out;
->  	}
-> @@ -513,17 +513,17 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
->  		}
->  	}
->  
-> -	if (genpd->cpu_data) {
-> +	if (genpd->pm_cpu_data) {
->  		/*
-> -		 * If cpu_data is set, cpuidle should turn the domain off when
-> -		 * the CPU in it is idle.  In that case we don't decrement the
-> -		 * subdomain counts of the master domains, so that power is not
-> -		 * removed from the current domain prematurely as a result of
-> -		 * cutting off the masters' power.
-> +		 * If pm_cpu_data is set, cpuidle should turn the domain off
-> +		 * when the CPU in it is idle.  In that case we don't decrement
-> +		 * the subdomain counts of the master domains, so that power is
-> +		 * not removed from the current domain prematurely as a result
-> +		 * of cutting off the masters' power.
->  		 */
->  		genpd->status = GPD_STATE_POWER_OFF;
->  		cpuidle_pause_and_lock();
-> -		genpd->cpu_data->idle_state->disabled = false;
-> +		genpd->pm_cpu_data->idle_state->disabled = false;
->  		cpuidle_resume_and_unlock();
->  		goto out;
->  	}
-> @@ -1698,7 +1698,7 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
->  int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state)
->  {
->  	struct cpuidle_driver *cpuidle_drv;
-> -	struct gpd_cpu_data *cpu_data;
-> +	struct gpd_cpu_data *pm_cpu_data;
->  	struct cpuidle_state *idle_state;
->  	int ret = 0;
->  
-> @@ -1707,12 +1707,12 @@ int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state)
->  
->  	genpd_acquire_lock(genpd);
->  
-> -	if (genpd->cpu_data) {
-> +	if (genpd->pm_cpu_data) {
->  		ret = -EEXIST;
->  		goto out;
->  	}
-> -	cpu_data = kzalloc(sizeof(*cpu_data), GFP_KERNEL);
-> -	if (!cpu_data) {
-> +	pm_cpu_data = kzalloc(sizeof(*pm_cpu_data), GFP_KERNEL);
-> +	if (!pm_cpu_data) {
->  		ret = -ENOMEM;
->  		goto out;
->  	}
-> @@ -1730,9 +1730,9 @@ int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state)
->  		ret = -EAGAIN;
->  		goto err;
->  	}
-> -	cpu_data->idle_state = idle_state;
-> -	cpu_data->saved_exit_latency = idle_state->exit_latency;
-> -	genpd->cpu_data = cpu_data;
-> +	pm_cpu_data->idle_state = idle_state;
-> +	pm_cpu_data->saved_exit_latency = idle_state->exit_latency;
-> +	genpd->pm_cpu_data = pm_cpu_data;
->  	genpd_recalc_cpu_exit_latency(genpd);
->  
->   out:
-> @@ -1743,7 +1743,7 @@ int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state)
->  	cpuidle_driver_unref();
->  
->   err_drv:
-> -	kfree(cpu_data);
-> +	kfree(pm_cpu_data);
->  	goto out;
->  }
->  
-> @@ -1766,7 +1766,7 @@ int pm_genpd_name_attach_cpuidle(const char *name, int state)
->   */
->  int pm_genpd_detach_cpuidle(struct generic_pm_domain *genpd)
->  {
-> -	struct gpd_cpu_data *cpu_data;
-> +	struct gpd_cpu_data *pm_cpu_data;
->  	struct cpuidle_state *idle_state;
->  	int ret = 0;
->  
-> @@ -1775,20 +1775,20 @@ int pm_genpd_detach_cpuidle(struct generic_pm_domain *genpd)
->  
->  	genpd_acquire_lock(genpd);
->  
-> -	cpu_data = genpd->cpu_data;
-> -	if (!cpu_data) {
-> +	pm_cpu_data = genpd->pm_cpu_data;
-> +	if (!pm_cpu_data) {
->  		ret = -ENODEV;
->  		goto out;
->  	}
-> -	idle_state = cpu_data->idle_state;
-> +	idle_state = pm_cpu_data->idle_state;
->  	if (!idle_state->disabled) {
->  		ret = -EAGAIN;
->  		goto out;
->  	}
-> -	idle_state->exit_latency = cpu_data->saved_exit_latency;
-> +	idle_state->exit_latency = pm_cpu_data->saved_exit_latency;
->  	cpuidle_driver_unref();
-> -	genpd->cpu_data = NULL;
-> -	kfree(cpu_data);
-> +	genpd->pm_cpu_data = NULL;
-> +	kfree(pm_cpu_data);
->  
->   out:
->  	genpd_release_lock(genpd);
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 9004743..a73b825 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -71,7 +71,7 @@ struct generic_pm_domain {
->  	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
->  	bool max_off_time_changed;
->  	bool cached_power_down_ok;
-> -	struct gpd_cpu_data *cpu_data;
-> +	struct gpd_cpu_data *pm_cpu_data;
->  	void (*attach_dev)(struct device *dev);
->  	void (*detach_dev)(struct device *dev);
->  };
-> 
+We renamed cpufreq-cpu0 to cpufreq-dt in the meantime.
 
 -- 
 I speak only for myself.
