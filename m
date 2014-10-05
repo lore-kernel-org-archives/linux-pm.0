@@ -1,151 +1,222 @@
-From: Vladimir Zapolskiy <vz@mleia.com>
-Subject: Re: [PATCH] thermal: fix multiple disbalanced device node counters
-Date: Sun, 05 Oct 2014 16:36:32 +0300
-Message-ID: <54314960.1060309@mleia.com>
-References: <1411948066-9118-1-git-send-email-vz@mleia.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] drivers: base: power: domain: Use 'pm_cpu_data' instead of 'cpu_data' for compiling break
+Date: Sun, 05 Oct 2014 23:32:53 +0200
+Message-ID: <3581264.gqojuoeKz2@vostro.rjw.lan>
+References: <54300206.3020206@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from li271-223.members.linode.com ([178.79.152.223]:39622 "EHLO
-	mail.mleia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751010AbaJENgn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 5 Oct 2014 09:36:43 -0400
-In-Reply-To: <1411948066-9118-1-git-send-email-vz@mleia.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:51149 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751965AbaJEVMu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Oct 2014 17:12:50 -0400
+In-Reply-To: <54300206.3020206@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Chen Gang <gang.chen.5i5j@gmail.com>
+Cc: pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, ulf.hansson@linaro.org, khilman@linaro.org, geert+renesas@glider.be, tomasz.figa@gmail.com, richard@nod.at, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
 
-Dear Eduardo, Zhang,
+On Saturday, October 04, 2014 10:19:50 PM Chen Gang wrote:
+> 'cpu_data' is too common to be already used by some architectures (e.g.
+> um, m32r, and mn10300), so need use 'pm_cpu_data' instead of, or cause
+> compiling break. The related error (with allmodconfig under um):
+> 
+>     CC      drivers/base/platform.o
+>   In file included from ./arch/x86/um/asm/processor.h:31:0,
+>                    from ./arch/um/include/asm/uaccess.h:16,
+>                    from ./arch/um/include/asm/thread_info.h:13,
+>                    from include/linux/thread_info.h:54,
+>                    from include/asm-generic/current.h:4,
+>                    from arch/um/include/generated/asm/current.h:1,
+>                    from include/linux/mutex.h:13,
+>                    from include/linux/kernfs.h:13,
+>                    from include/linux/sysfs.h:15,
+>                    from include/linux/kobject.h:21,
+>                    from include/linux/device.h:17,
+>                    from include/linux/platform_device.h:14,
+>                    from drivers/base/platform.c:14:
+>   ./arch/um/include/asm/processor-generic.h:107:19: error: expected identifier or '(' before '&' token
+>    #define cpu_data (&boot_cpu_data)
+>                      ^
+>   include/linux/pm_domain.h:74:23: note: in expansion of macro 'cpu_data'
+>     struct gpd_cpu_data *cpu_data;
+>                        ^
+> 
+> Also need notice about 80 columns boundary.
+> 
+> 
+> Signed-off-by: Chen Gang <gang.chen.5i5j@gmail.com>
 
-On 29.09.2014 02:47, Vladimir Zapolskiy wrote:
-> Here on function return all temporarily used device nodes shall
-> decrement their usage counter. The problems are found with device
-> nodes allocated by for_each_child_of_node(), of_parse_phandle()
-> and of_find_node_by_name(), fix all problems at once.
+This problem has already been fixed by a patch from Ulf Hansson that's
+in my tree (along with the commit that introduced the problem in the first
+place).
 
-ping. The bugfix is quite straightforward, please review.
+And you forgot to say that the problem was only occuring in linux-next.
 
-> Signed-off-by: Vladimir Zapolskiy<vz@mleia.com>
-> Cc: devicetree@vger.kernel.org
-> Cc: Zhang Rui<rui.zhang@intel.com>
-> Cc: Eduardo Valentin<edubezval@gmail.com>
+I'm sorry for everyone's loss of time related to this.
+
 > ---
->   drivers/thermal/of-thermal.c |   40 ++++++++++++++++++++++++++++++++--------
->   1 file changed, 32 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index f8eb625..62143ba 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -387,15 +387,18 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
->   				int (*get_trend)(void *, long *))
->   {
->   	struct device_node *np, *child, *sensor_np;
-> +	struct thermal_zone_device *tzd = ERR_PTR(-ENODEV);
->
->   	np = of_find_node_by_name(NULL, "thermal-zones");
->   	if (!np)
->   		return ERR_PTR(-ENODEV);
->
-> -	if (!dev || !dev->of_node)
-> +	if (!dev || !dev->of_node) {
-> +		of_node_put(np);
->   		return ERR_PTR(-EINVAL);
-> +	}
->
-> -	sensor_np = dev->of_node;
-> +	sensor_np = of_node_get(dev->of_node);
->
->   	for_each_child_of_node(np, child) {
->   		struct of_phandle_args sensor_specs;
-> @@ -422,16 +425,21 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
->   		}
->
->   		if (sensor_specs.np == sensor_np&&  id == sensor_id) {
-> -			of_node_put(np);
-> -			return thermal_zone_of_add_sensor(child, sensor_np,
-> -							  data,
-> -							  get_temp,
-> -							  get_trend);
-> +			tzd = thermal_zone_of_add_sensor(child, sensor_np,
-> +							 data,
-> +							 get_temp,
-> +							 get_trend);
-> +			of_node_put(sensor_specs.np);
-> +			of_node_put(child);
-> +			goto exit;
->   		}
-> +		of_node_put(sensor_specs.np);
->   	}
-> +exit:
-> +	of_node_put(sensor_np);
->   	of_node_put(np);
->
-> -	return ERR_PTR(-ENODEV);
-> +	return tzd;
->   }
->   EXPORT_SYMBOL_GPL(thermal_zone_of_sensor_register);
->
-> @@ -623,6 +631,7 @@ static int thermal_of_populate_trip(struct device_node *np,
->
->   	/* Required for cooling map matching */
->   	trip->np = np;
-> +	of_node_get(np);
->
->   	return 0;
->   }
-> @@ -730,9 +739,14 @@ finish:
->   	return tz;
->
->   free_tbps:
-> +	for (i = 0; i<  tz->num_tbps; i++)
-> +		of_node_put(tz->tbps[i].cooling_device);
->   	kfree(tz->tbps);
->   free_trips:
-> +	for (i = 0; i<  tz->ntrips; i++)
-> +		of_node_put(tz->trips[i].np);
->   	kfree(tz->trips);
-> +	of_node_put(gchild);
->   free_tz:
->   	kfree(tz);
->   	of_node_put(child);
-> @@ -742,7 +756,13 @@ free_tz:
->
->   static inline void of_thermal_free_zone(struct __thermal_zone *tz)
->   {
-> +	int i;
-> +
-> +	for (i = 0; i<  tz->num_tbps; i++)
-> +		of_node_put(tz->tbps[i].cooling_device);
->   	kfree(tz->tbps);
-> +	for (i = 0; i<  tz->ntrips; i++)
-> +		of_node_put(tz->trips[i].np);
->   	kfree(tz->trips);
->   	kfree(tz);
->   }
-> @@ -814,10 +834,13 @@ int __init of_parse_thermal_zones(void)
->   			/* attempting to build remaining zones still */
->   		}
->   	}
-> +	of_node_put(np);
->
->   	return 0;
->
->   exit_free:
-> +	of_node_put(child);
-> +	of_node_put(np);
->   	of_thermal_free_zone(tz);
->
->   	/* no memory available, so free what we have built */
-> @@ -859,4 +882,5 @@ void of_thermal_destroy_zones(void)
->   		kfree(zone->ops);
->   		of_thermal_free_zone(zone->devdata);
->   	}
-> +	of_node_put(np);
->   }
+>  drivers/base/power/domain.c | 54 ++++++++++++++++++++++-----------------------
+>  include/linux/pm_domain.h   |  2 +-
+>  2 files changed, 28 insertions(+), 28 deletions(-)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 18cc68d..d8d2739 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -142,13 +142,13 @@ static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
+>  {
+>  	s64 usecs64;
+>  
+> -	if (!genpd->cpu_data)
+> +	if (!genpd->pm_cpu_data)
+>  		return;
+>  
+>  	usecs64 = genpd->power_on_latency_ns;
+>  	do_div(usecs64, NSEC_PER_USEC);
+> -	usecs64 += genpd->cpu_data->saved_exit_latency;
+> -	genpd->cpu_data->idle_state->exit_latency = usecs64;
+> +	usecs64 += genpd->pm_cpu_data->saved_exit_latency;
+> +	genpd->pm_cpu_data->idle_state->exit_latency = usecs64;
+>  }
+>  
+>  /**
+> @@ -188,9 +188,9 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
+>  		return 0;
+>  	}
+>  
+> -	if (genpd->cpu_data) {
+> +	if (genpd->pm_cpu_data) {
+>  		cpuidle_pause_and_lock();
+> -		genpd->cpu_data->idle_state->disabled = true;
+> +		genpd->pm_cpu_data->idle_state->disabled = true;
+>  		cpuidle_resume_and_unlock();
+>  		goto out;
+>  	}
+> @@ -513,17 +513,17 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
+>  		}
+>  	}
+>  
+> -	if (genpd->cpu_data) {
+> +	if (genpd->pm_cpu_data) {
+>  		/*
+> -		 * If cpu_data is set, cpuidle should turn the domain off when
+> -		 * the CPU in it is idle.  In that case we don't decrement the
+> -		 * subdomain counts of the master domains, so that power is not
+> -		 * removed from the current domain prematurely as a result of
+> -		 * cutting off the masters' power.
+> +		 * If pm_cpu_data is set, cpuidle should turn the domain off
+> +		 * when the CPU in it is idle.  In that case we don't decrement
+> +		 * the subdomain counts of the master domains, so that power is
+> +		 * not removed from the current domain prematurely as a result
+> +		 * of cutting off the masters' power.
+>  		 */
+>  		genpd->status = GPD_STATE_POWER_OFF;
+>  		cpuidle_pause_and_lock();
+> -		genpd->cpu_data->idle_state->disabled = false;
+> +		genpd->pm_cpu_data->idle_state->disabled = false;
+>  		cpuidle_resume_and_unlock();
+>  		goto out;
+>  	}
+> @@ -1698,7 +1698,7 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
+>  int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state)
+>  {
+>  	struct cpuidle_driver *cpuidle_drv;
+> -	struct gpd_cpu_data *cpu_data;
+> +	struct gpd_cpu_data *pm_cpu_data;
+>  	struct cpuidle_state *idle_state;
+>  	int ret = 0;
+>  
+> @@ -1707,12 +1707,12 @@ int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state)
+>  
+>  	genpd_acquire_lock(genpd);
+>  
+> -	if (genpd->cpu_data) {
+> +	if (genpd->pm_cpu_data) {
+>  		ret = -EEXIST;
+>  		goto out;
+>  	}
+> -	cpu_data = kzalloc(sizeof(*cpu_data), GFP_KERNEL);
+> -	if (!cpu_data) {
+> +	pm_cpu_data = kzalloc(sizeof(*pm_cpu_data), GFP_KERNEL);
+> +	if (!pm_cpu_data) {
+>  		ret = -ENOMEM;
+>  		goto out;
+>  	}
+> @@ -1730,9 +1730,9 @@ int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state)
+>  		ret = -EAGAIN;
+>  		goto err;
+>  	}
+> -	cpu_data->idle_state = idle_state;
+> -	cpu_data->saved_exit_latency = idle_state->exit_latency;
+> -	genpd->cpu_data = cpu_data;
+> +	pm_cpu_data->idle_state = idle_state;
+> +	pm_cpu_data->saved_exit_latency = idle_state->exit_latency;
+> +	genpd->pm_cpu_data = pm_cpu_data;
+>  	genpd_recalc_cpu_exit_latency(genpd);
+>  
+>   out:
+> @@ -1743,7 +1743,7 @@ int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state)
+>  	cpuidle_driver_unref();
+>  
+>   err_drv:
+> -	kfree(cpu_data);
+> +	kfree(pm_cpu_data);
+>  	goto out;
+>  }
+>  
+> @@ -1766,7 +1766,7 @@ int pm_genpd_name_attach_cpuidle(const char *name, int state)
+>   */
+>  int pm_genpd_detach_cpuidle(struct generic_pm_domain *genpd)
+>  {
+> -	struct gpd_cpu_data *cpu_data;
+> +	struct gpd_cpu_data *pm_cpu_data;
+>  	struct cpuidle_state *idle_state;
+>  	int ret = 0;
+>  
+> @@ -1775,20 +1775,20 @@ int pm_genpd_detach_cpuidle(struct generic_pm_domain *genpd)
+>  
+>  	genpd_acquire_lock(genpd);
+>  
+> -	cpu_data = genpd->cpu_data;
+> -	if (!cpu_data) {
+> +	pm_cpu_data = genpd->pm_cpu_data;
+> +	if (!pm_cpu_data) {
+>  		ret = -ENODEV;
+>  		goto out;
+>  	}
+> -	idle_state = cpu_data->idle_state;
+> +	idle_state = pm_cpu_data->idle_state;
+>  	if (!idle_state->disabled) {
+>  		ret = -EAGAIN;
+>  		goto out;
+>  	}
+> -	idle_state->exit_latency = cpu_data->saved_exit_latency;
+> +	idle_state->exit_latency = pm_cpu_data->saved_exit_latency;
+>  	cpuidle_driver_unref();
+> -	genpd->cpu_data = NULL;
+> -	kfree(cpu_data);
+> +	genpd->pm_cpu_data = NULL;
+> +	kfree(pm_cpu_data);
+>  
+>   out:
+>  	genpd_release_lock(genpd);
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 9004743..a73b825 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -71,7 +71,7 @@ struct generic_pm_domain {
+>  	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
+>  	bool max_off_time_changed;
+>  	bool cached_power_down_ok;
+> -	struct gpd_cpu_data *cpu_data;
+> +	struct gpd_cpu_data *pm_cpu_data;
+>  	void (*attach_dev)(struct device *dev);
+>  	void (*detach_dev)(struct device *dev);
+>  };
+> 
 
---
-With best wishes,
-Vladimir
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
