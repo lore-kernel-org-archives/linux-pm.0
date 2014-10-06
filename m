@@ -1,44 +1,47 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCHv2 0/4] cpufreq-dt, platform_data based proposal
-Date: Mon, 6 Oct 2014 09:19:05 +0200
-Message-ID: <20141006091905.4e0d976a@free-electrons.com>
-References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
-	<1410350908-11316-1-git-send-email-thomas.petazzoni@free-electrons.com>
+From: Peter De Schrijver <pdeschrijver@nvidia.com>
+Subject: Re: [PATCH v5 3/4] ARM: tegra: Add thermal trip points for Jetson TK1
+Date: Mon, 6 Oct 2014 10:24:57 +0300
+Message-ID: <20141006072457.GM9139@tbergstrom-lnx.Nvidia.com>
+References: <1408616242-21009-1-git-send-email-mperttunen@nvidia.com>
+ <1408616242-21009-4-git-send-email-mperttunen@nvidia.com>
+ <20140924183204.GE27076@developer> <20141003195723.GA6074@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1410350908-11316-1-git-send-email-thomas.petazzoni@free-electrons.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:13739 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbaJFHZB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 03:25:01 -0400
+Content-Disposition: inline
+In-Reply-To: <20141003195723.GA6074@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Mikko Perttunen <mperttunen@nvidia.com>, rui.zhang@intel.com, swarren@wwwdotorg.org, thierry.reding@gmail.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, juha-matti.tilli@iki.fi
 
-Hello,
-
-On Wed, 10 Sep 2014 14:08:24 +0200, Thomas Petazzoni wrote:
-
-> Thomas Petazzoni (4):
->   cpufreq: allow driver-specific data
->   cpufreq: cpufreq-dt: extend with platform_data
->   ARM: mvebu: use the cpufreq-dt platform_data for independent clocks
->   cpufreq: cpufreq-dt: adjust message related to regulators
+On Fri, Oct 03, 2014 at 09:57:24PM +0200, Pavel Machek wrote:
+> On Wed 2014-09-24 14:32:06, Eduardo Valentin wrote:
+> > Hello Mikko,
+> > 
+> > On Thu, Aug 21, 2014 at 01:17:21PM +0300, Mikko Perttunen wrote:
+> > > This adds critical trip points to the Jetson TK1 device tree.
+> > > The device will do a controlled shutdown when either the CPU, GPU
+> > > or MEM thermal zone reaches 101 degrees Celsius.
 > 
->  arch/arm/mach-mvebu/pmsu.c   |  8 +++++++-
->  drivers/cpufreq/cpufreq-dt.c | 21 +++++++++++++++++----
->  drivers/cpufreq/cpufreq.c    | 15 +++++++++++++++
->  include/linux/cpufreq-dt.h   | 22 ++++++++++++++++++++++
->  include/linux/cpufreq.h      |  2 ++
->  5 files changed, 63 insertions(+), 5 deletions(-)
->  create mode 100644 include/linux/cpufreq-dt.h
+> > > +			trips {
+> > > +				trip@0 {
+> > > +					temperature = <101000>;
+> > > +					hysteresis = <0>;
+> > > +					type = "critical";
+> > > +				};
+> 
+> Would it be still time to switch to some more reasonable unit, like
+> degrees celsius? milicelsius is a bit of overkill.. ACPI uses
+> deciCelsius, but .. celsius should be enough.
+> 
 
-Since this series was Acked-by Viresh, would it be possible to get it
-merged for 3.18 ?
+We should be using deciKelvin then.
 
-Thanks,
+Cheers,
 
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+Peter.
