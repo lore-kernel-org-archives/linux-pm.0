@@ -1,40 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Stefan Wahren <stefan.wahren@i2se.com>
 Subject: Re: cpufreq: Unable to set cpufreq to maximum
-Date: Mon, 6 Oct 2014 14:20:24 +0530
-Message-ID: <CAKohponTCFnOHeELg+vpz-=a3xR7xrppZiuss09a2UGCLCptnQ@mail.gmail.com>
-References: <936524880.154802.1412255867221.JavaMail.open-xchange@oxbaltgw07.schlund.de>
-	<1412258352.4875.5.camel@pengutronix.de>
-	<878902771.162556.1412262099998.JavaMail.open-xchange@oxbaltgw01.schlund.de>
-	<1412263338.2313.1.camel@pengutronix.de>
-	<CAKohpom_kJadzUiPAT9GBJjvcu=38L9fO1atoi24xGwrq9XDFg@mail.gmail.com>
-	<54323990.6000401@i2se.com>
+Date: Mon, 06 Oct 2014 11:13:36 +0200
+Message-ID: <54325D40.10604@i2se.com>
+References: <936524880.154802.1412255867221.JavaMail.open-xchange@oxbaltgw07.schlund.de>	<1412258352.4875.5.camel@pengutronix.de>	<878902771.162556.1412262099998.JavaMail.open-xchange@oxbaltgw01.schlund.de>	<1412263338.2313.1.camel@pengutronix.de>	<CAKohpom_kJadzUiPAT9GBJjvcu=38L9fO1atoi24xGwrq9XDFg@mail.gmail.com>	<54323990.6000401@i2se.com> <CAKohponTCFnOHeELg+vpz-=a3xR7xrppZiuss09a2UGCLCptnQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f177.google.com ([209.85.214.177]:38239 "EHLO
-	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752149AbaJFIuZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 04:50:25 -0400
-Received: by mail-ob0-f177.google.com with SMTP id uy5so3459071obc.22
-        for <linux-pm@vger.kernel.org>; Mon, 06 Oct 2014 01:50:24 -0700 (PDT)
-In-Reply-To: <54323990.6000401@i2se.com>
+Received: from mout.kundenserver.de ([212.227.126.130]:49961 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751680AbaJFJNp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 05:13:45 -0400
+In-Reply-To: <CAKohponTCFnOHeELg+vpz-=a3xR7xrppZiuss09a2UGCLCptnQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>, Shawn Guo <shawn.guo@freescale.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@freescale.com>
 Cc: Lucas Stach <l.stach@pengutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Fabio Estevam <festevam@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 6 October 2014 12:11, Stefan Wahren <stefan.wahren@i2se.com> wrote:
-> Ignoring errors isn't a solution. I have another idea. I've looked a
-> little bit at the code in the cpufreq-(cpu0/dt). Usually the frequencies
-> are rounded down, but in cpu0_set_target() with
-> dev_pm_opp_find_freq_ceil(cpu_dev, &freq_Hz) they are rounded up. From
-> my point of view that's wrong.
+Am 06.10.2014 um 10:50 schrieb Viresh Kumar:
+> On 6 October 2014 12:11, Stefan Wahren <stefan.wahren@i2se.com> wrote:
+>> Ignoring errors isn't a solution. I have another idea. I've looked a
+>> little bit at the code in the cpufreq-(cpu0/dt). Usually the frequencies
+>> are rounded down, but in cpu0_set_target() with
+>> dev_pm_opp_find_freq_ceil(cpu_dev, &freq_Hz) they are rounded up. From
+>> my point of view that's wrong.
+> @Shawn ??
+>
+>> I fixed the problem by decreasing frequency in DT and replacing
+>> dev_pm_opp_find_freq_ceil() with dev_pm_opp_find_freq_floor() in
+>> cpufreq-cpu0.c . Unfortunatelly this will break all other DTS files with
+>> roundings in OPPs.
+> I am still not sure how this fixed your problem..
 
-@Shawn ??
+Sorry, about the confusion. The main problem about setting cpufreq to
+maximum has been fixed by DT settings. Above i talked about an idea to
+fix the confusing warning after fixing the main problem:
 
-> I fixed the problem by decreasing frequency in DT and replacing
-> dev_pm_opp_find_freq_ceil() with dev_pm_opp_find_freq_floor() in
-> cpufreq-cpu0.c . Unfortunatelly this will break all other DTS files with
-> roundings in OPPs.
+root@duckbill:~# modprobe cpufreq-cpu0
+[   48.573808] cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted
+freq: 454736 KHz
+[   48.604871] cpufreq: __cpufreq_add_dev: CPU0: Unlisted initial
+frequency changed to: 454737 KHz
 
-I am still not sure how this fixed your problem..
+But the best solution would be a more intelligent function like
+dev_pm_opp_find_freq_nearest() which find the OPP with the smallest
+frequency distance. So nobody of the DTS users has to care about
+frequency rounding.
+
+Currently i'm trying to adapt the DTS file to the driver and that's not
+the intention of devicetree.
+
+Stefan
