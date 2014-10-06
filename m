@@ -1,53 +1,155 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq: Unable to set cpufreq to maximum
-Date: Mon, 6 Oct 2014 16:48:14 +0530
-Message-ID: <CAKohponQY7O+Pn4KP4NAsQ0a12TEZDGtb93c=Qt3rCfR7hAYgg@mail.gmail.com>
-References: <936524880.154802.1412255867221.JavaMail.open-xchange@oxbaltgw07.schlund.de>
-	<1412258352.4875.5.camel@pengutronix.de>
-	<878902771.162556.1412262099998.JavaMail.open-xchange@oxbaltgw01.schlund.de>
-	<1412263338.2313.1.camel@pengutronix.de>
-	<CAKohpom_kJadzUiPAT9GBJjvcu=38L9fO1atoi24xGwrq9XDFg@mail.gmail.com>
-	<54323990.6000401@i2se.com>
-	<CAKohponTCFnOHeELg+vpz-=a3xR7xrppZiuss09a2UGCLCptnQ@mail.gmail.com>
-	<54325D40.10604@i2se.com>
-	<CAKohpokbWGu9KBixMTCUbv9RobfYmpZjNDdYEJ78V-5b9D7_Wg@mail.gmail.com>
-	<54326985.2030207@i2se.com>
-	<CAKohpon2VHvfCkGWYQyz1=jhiS4zifX6iY50WV71oGpa2TNSYQ@mail.gmail.com>
-	<54327924.9090600@i2se.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH] power: charger-manager: Avoid recursive thermal get_temp call
+Date: Mon, 06 Oct 2014 18:00:12 +0200
+Message-ID: <1412611212-24803-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f176.google.com ([209.85.214.176]:52629 "EHLO
-	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbaJFLSP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 07:18:15 -0400
-Received: by mail-ob0-f176.google.com with SMTP id m8so3636142obr.35
-        for <linux-pm@vger.kernel.org>; Mon, 06 Oct 2014 04:18:14 -0700 (PDT)
-In-Reply-To: <54327924.9090600@i2se.com>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:37747 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbaJFQA2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 12:00:28 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: Shawn Guo <shawn.guo@freescale.com>, Lucas Stach <l.stach@pengutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Fabio Estevam <festevam@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Anton Vorontsov <anton@enomsg.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-On 6 October 2014 16:42, Stefan Wahren <stefan.wahren@i2se.com> wrote:
-> Am 06.10.2014 um 12:16 schrieb Viresh Kumar:
->> On 6 October 2014 15:35, Stefan Wahren <stefan.wahren@i2se.com> wrote:
->>> but cpufreq-cpu0 will select next lower
->> Where did this come from in the above theory ?
->>
->
-> I was wrong. cpufreq-cpu0 will search for a higher OPP than 454736842
-> and fails:
->
-> [ 1111.226006] cpu cpu0: failed to find OPP for 454736842
+The charger manager supports POWER_SUPPLY_PROP_TEMP property and acts
+as a thermal zone if any of these conditions match:
+1. Fuel gauge used by charger manager supports POWER_SUPPLY_PROP_TEMP.
+2. 'cm-thermal-zone' property is present in DTS (then it will supersede
+   the fuel gauge temperature property).
 
-I have been talking about this error all this time:
+However in case 1 (fuel gauge reports temperature and 'cm-thermal-zone'
+is not set) the charger manager forwards its get_temp calls to fuel
+gauge thermal zone.
 
-[   48.573808] cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted freq:
-454736 KHz
-[   48.604871] cpufreq: __cpufreq_add_dev: CPU0: Unlisted initial frequency
-changed to: 454737 KHz
+This leads to reporting by lockdep a false positive deadlock for thermal
+zone's mutex because of nested calls to thermal_zone_get_temp(). This is
+false positive because these are different mutexes: one for charger
+manager thermal zone and second for fuel gauge thermal zone.
 
-And this has nothing to do with the error you just pasted. For the above two
-errors cpufreq-cpu0's ->target_index() isn't called at all and so it doesn't
-make a difference..
+Get rid of false lockdep alert and recursive call by accessing fuel gauge
+temperature through power supply property instead of thermal zone API.
+
+The lockdep report:
+[    2.540339] charger-manager charger-manager@0: Ignoring full-battery voltage threshold as it is not supplied
+[    2.540351] charger-manager charger-manager@0: Ignoring full-battery full capacity threshold as it is not supplied
+[    2.546296]
+[    2.546302] =============================================
+[    2.546305] [ INFO: possible recursive locking detected ]
+[    2.546312] 3.17.0-rc6-next-20140926-00012-gbb13895e46af-dirty #39 Not tainted
+[    2.546316] ---------------------------------------------
+[    2.546321] swapper/0/1 is trying to acquire lock:
+[    2.546348]  (&tz->lock){+.+...}, at: [<c0321d24>] thermal_zone_get_temp+0x38/0x68
+[    2.546352]
+[    2.546352] but task is already holding lock:
+[    2.546369]  (&tz->lock){+.+...}, at: [<c0321d24>] thermal_zone_get_temp+0x38/0x68
+[    2.546373]
+[    2.546373] other info that might help us debug this:
+[    2.546376]  Possible unsafe locking scenario:
+[    2.546376]
+[    2.546378]        CPU0
+[    2.546380]        ----
+[    2.546386]   lock(&tz->lock);
+[    2.546392]   lock(&tz->lock);
+[    2.546394]
+[    2.546394]  *** DEADLOCK ***
+[    2.546394]
+[    2.546397]  May be due to missing lock nesting notation
+[    2.546397]
+[    2.546401] 2 locks held by swapper/0/1:
+[    2.546430]  #0:  (&dev->mutex){......}, at: [<c02720c4>] __driver_attach+0x58/0x98
+[    2.546448]  #1:  (&tz->lock){+.+...}, at: [<c0321d24>] thermal_zone_get_temp+0x38/0x68
+[    2.546451]
+[    2.546451] stack backtrace:
+[    2.546460] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.17.0-rc6-next-20140926-00012-gbb13895e46af-dirty #39
+[    2.546497] [<c00140f0>] (unwind_backtrace) from [<c0011228>] (show_stack+0x10/0x14)
+[    2.546526] [<c0011228>] (show_stack) from [<c046158c>] (dump_stack+0x70/0xbc)
+[    2.546554] [<c046158c>] (dump_stack) from [<c005e32c>] (validate_chain.isra.24+0x718/0x890)
+[    2.546569] [<c005e32c>] (validate_chain.isra.24) from [<c005f0a0>] (__lock_acquire+0x498/0xa78)
+[    2.546581] [<c005f0a0>] (__lock_acquire) from [<c005fb50>] (lock_acquire+0x78/0xb8)
+[    2.546594] [<c005fb50>] (lock_acquire) from [<c0464260>] (mutex_lock_nested+0x64/0x458)
+[    2.546605] [<c0464260>] (mutex_lock_nested) from [<c0321d24>] (thermal_zone_get_temp+0x38/0x68)
+[    2.546634] [<c0321d24>] (thermal_zone_get_temp) from [<c031f1e0>] (charger_get_property+0x10c/0x348)
+[    2.546649] [<c031f1e0>] (charger_get_property) from [<c031af18>] (power_supply_read_temp+0x28/0x58)
+[    2.546662] [<c031af18>] (power_supply_read_temp) from [<c0321d38>] (thermal_zone_get_temp+0x4c/0x68)
+[    2.546676] [<c0321d38>] (thermal_zone_get_temp) from [<c03233d8>] (thermal_zone_device_update+0x24/0x9c)
+[    2.546687] [<c03233d8>] (thermal_zone_device_update) from [<c0323874>] (thermal_zone_device_register+0x424/0x550)
+[    2.546701] [<c0323874>] (thermal_zone_device_register) from [<c031b3c0>] (__power_supply_register+0x2a4/0x348)
+[    2.546714] [<c031b3c0>] (__power_supply_register) from [<c031ff64>] (charger_manager_probe+0x600/0xe5c)
+[    2.546727] [<c031ff64>] (charger_manager_probe) from [<c0273384>] (platform_drv_probe+0x48/0xa4)
+[    2.546746] [<c0273384>] (platform_drv_probe) from [<c0271f54>] (driver_probe_device+0x10c/0x224)
+[    2.546760] [<c0271f54>] (driver_probe_device) from [<c0272100>] (__driver_attach+0x94/0x98)
+[    2.546772] [<c0272100>] (__driver_attach) from [<c0270780>] (bus_for_each_dev+0x54/0x88)
+[    2.546784] [<c0270780>] (bus_for_each_dev) from [<c027173c>] (bus_add_driver+0xd4/0x1d0)
+[    2.546797] [<c027173c>] (bus_add_driver) from [<c027271c>] (driver_register+0x78/0xf4)
+[    2.546809] [<c027271c>] (driver_register) from [<c0008984>] (do_one_initcall+0x80/0x1d4)
+[    2.546829] [<c0008984>] (do_one_initcall) from [<c0612d60>] (kernel_init_freeable+0x10c/0x1d8)
+[    2.546847] [<c0612d60>] (kernel_init_freeable) from [<c045c238>] (kernel_init+0x8/0xec)
+[    2.546863] [<c045c238>] (kernel_init) from [<c000e828>] (ret_from_fork+0x14/0x2c)
+[    2.551396] charger-manager charger-manager@0: 'chg-reg' regulator's externally_control is 0
+
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ drivers/power/charger-manager.c       | 21 +++++++++++----------
+ include/linux/power/charger-manager.h |  2 --
+ 2 files changed, 11 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
+index c1ed3c99c059..871fb91429c8 100644
+--- a/drivers/power/charger-manager.c
++++ b/drivers/power/charger-manager.c
+@@ -559,16 +559,18 @@ static int cm_get_battery_temperature(struct charger_manager *cm,
+ 	if (!cm->desc->measure_battery_temp)
+ 		return -ENODEV;
+ 
+-#ifdef CONFIG_THERMAL
+-	ret = thermal_zone_get_temp(cm->tzd_batt, (unsigned long *)temp);
+-	if (!ret)
+-		/* Calibrate temperature unit */
+-		*temp /= 100;
+-#else
+-	ret = cm->fuel_gauge->get_property(cm->fuel_gauge,
++	if (IS_ENABLED(CONFIG_THERMAL) && cm->tzd_batt) {
++		ret = thermal_zone_get_temp(cm->tzd_batt, (unsigned long *)temp);
++		if (!ret)
++			/* Calibrate temperature unit */
++			*temp /= 100;
++	} else {
++		/* No external thermometer or no CONFIG_THERMAL */
++		ret = cm->fuel_gauge->get_property(cm->fuel_gauge,
+ 				POWER_SUPPLY_PROP_TEMP,
+ 				(union power_supply_propval *)temp);
+-#endif
++	}
++
+ 	return ret;
+ }
+ 
+@@ -1501,9 +1503,8 @@ static int cm_init_thermal_data(struct charger_manager *cm)
+ 		cm->charger_psy.num_properties++;
+ 		cm->desc->measure_battery_temp = true;
+ 	}
+-#ifdef CONFIG_THERMAL
+-	cm->tzd_batt = cm->fuel_gauge->tzd;
+ 
++#ifdef CONFIG_THERMAL
+ 	if (ret && desc->thermal_zone) {
+ 		cm->tzd_batt =
+ 			thermal_zone_get_zone_by_name(desc->thermal_zone);
+diff --git a/include/linux/power/charger-manager.h b/include/linux/power/charger-manager.h
+index 07e7945a1ff2..743ed6d472c6 100644
+--- a/include/linux/power/charger-manager.h
++++ b/include/linux/power/charger-manager.h
+@@ -256,9 +256,7 @@ struct charger_manager {
+ 	struct power_supply *fuel_gauge;
+ 	struct power_supply **charger_stat;
+ 
+-#ifdef CONFIG_THERMAL
+ 	struct thermal_zone_device *tzd_batt;
+-#endif
+ 	bool charger_enabled;
+ 
+ 	unsigned long fullbatt_vchk_jiffies_at;
+-- 
+1.9.1
+
