@@ -1,81 +1,66 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/4] cpufreq: allow driver-specific flags
-Date: Mon, 6 Oct 2014 09:26:26 +0530
-Message-ID: <CAKohpokiKnXe+UiQBJnyry+FqWT=HgyijLNFWZ0tUj6DygzELQ@mail.gmail.com>
-References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
-	<1410342112-13264-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<1410342112-13264-2-git-send-email-thomas.petazzoni@free-electrons.com>
-	<CAKohpom4=nbg510bUb20C6rsG8r184YQ0SiPmPkxj8_8Y04+Bg@mail.gmail.com>
-	<20140927224434.19023.35708@quantum>
-	<CAKohpo=8ernJ=bMJKB5K90nsvy4UpJH67dOnFCi80uyRR3EDvw@mail.gmail.com>
-	<20141005004102.4379.42626@quantum>
+Subject: Re: cpufreq: Unable to set cpufreq to maximum
+Date: Mon, 6 Oct 2014 09:51:30 +0530
+Message-ID: <CAKohpom_kJadzUiPAT9GBJjvcu=38L9fO1atoi24xGwrq9XDFg@mail.gmail.com>
+References: <936524880.154802.1412255867221.JavaMail.open-xchange@oxbaltgw07.schlund.de>
+	<1412258352.4875.5.camel@pengutronix.de>
+	<878902771.162556.1412262099998.JavaMail.open-xchange@oxbaltgw01.schlund.de>
+	<1412263338.2313.1.camel@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20141005004102.4379.42626@quantum>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Mike Turquette <mike.turquette@linaro.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f178.google.com ([209.85.214.178]:57838 "EHLO
+	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750720AbaJFEVa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 00:21:30 -0400
+Received: by mail-ob0-f178.google.com with SMTP id wn1so3310284obc.23
+        for <linux-pm@vger.kernel.org>; Sun, 05 Oct 2014 21:21:30 -0700 (PDT)
+In-Reply-To: <1412263338.2313.1.camel@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: Stefan Wahren <stefan.wahren@i2se.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Fabio Estevam <festevam@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 5 October 2014 06:11, Mike Turquette <mike.turquette@linaro.org> wrote:
-> For reference, here is a patch that I've had locally in my tree for a
-> couples months. I'm using it while prototyping some ways to integrate
-> CPUfreq with the scheduler. It is almost identical to Thomas's approach
-> but it doesn't try to mask off some flags. Additionally it does NOT
-> change the u8 return type, which is currently how struct
-> cpufreq_driver->flags is defined today. This is probably not good and
-> should be an unsigned int or unsigned long so that the api is a bit more
-> forward-looking.
-
-Probably yes.
-
-> From 0053dfc6b09fa0c5923b7dcba23b67c1c005cb88 Mon Sep 17 00:00:00 2001
-> From: Mike Turquette <mturquette@linaro.org>
-> Date: Sun, 3 Aug 2014 21:25:38 -0700
-> Subject: [PATCH] cpufreq: new function to query driver for flags
+On 2 October 2014 20:52, Lucas Stach <l.stach@pengutronix.de> wrote:
+> It's harmless in your case. But to get rid of it you might try the
+> attached patch which may be an acceptable solution.
 >
-> Signed-off-by: Mike Turquette <mturquette@linaro.org>
+> ------------------------------>8-----------------------------------
+> From db9e708edf6451b619ee73f68c3fcde2eccd7b0c Mon Sep 17 00:00:00 2001
+> From: Lucas Stach <l.stach@pengutronix.de>
+> Date: Thu, 2 Oct 2014 17:20:09 +0200
+> Subject: [PATCH] cpufreq: generic: try preserve some accuracy while
+> converting
+>  from Hz to kHz
+>
 > ---
->  drivers/cpufreq/cpufreq.c | 9 +++++++++
->  include/linux/cpufreq.h   | 1 +
->  2 files changed, 10 insertions(+)
+>  drivers/cpufreq/cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
 > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 1abb44d..515e905 100644
+> index d9fdeddcef96..459830c6576f 100644
 > --- a/drivers/cpufreq/cpufreq.c
 > +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2003,6 +2003,15 @@ int cpufreq_driver_target(struct cpufreq_policy *policy,
+> @@ -187,7 +187,7 @@ unsigned int cpufreq_generic_get(unsigned int cpu)
+>                 return 0;
+>         }
+>
+> -       return clk_get_rate(policy->clk) / 1000;
+> +       return DIV_ROUND_CLOSEST(clk_get_rate(policy->clk), 1000);
 >  }
->  EXPORT_SYMBOL_GPL(cpufreq_driver_target);
->
-> +u8 cpufreq_driver_get_flags(void)
-> +{
-> +       if (!cpufreq_driver)
-> +               return 0;
+>  EXPORT_SYMBOL_GPL(cpufreq_generic_get);
 
-Probably you need to return some error here. How would the caller know if
-there is no cpufreq-driver there..
+Absolutely NOT..
 
-> +       return cpufreq_driver->flags;
-> +}
-> +EXPORT_SYMBOL_GPL(cpufreq_driver_get_flags);
-> +
->  /*
->   * when "event" is CPUFREQ_GOV_LIMITS
->   */
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 221f0eb..5a97f5f 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -417,6 +417,7 @@ int cpufreq_driver_target(struct cpufreq_policy *policy,
->  int __cpufreq_driver_target(struct cpufreq_policy *policy,
->                                    unsigned int target_freq,
->                                    unsigned int relation);
-> +u8 cpufreq_driver_get_flags(void);
->  int cpufreq_register_governor(struct cpufreq_governor *governor);
->  void cpufreq_unregister_governor(struct cpufreq_governor *governor);
->
-> --
-> 1.8.3.2
->
+This can't be an acceptable solution to the problem you have in your DT.
+This routine is used for getting the current frequency of a CPU and we
+can't play with that..
+
+The problem that Stefan is getting is: The boot loader has programmed
+cpu to a frequency which isn't present in your DT table. And so kernel
+tries to adjust CPU frequency to one of the listed frequencies.
+
+Solutions:
+- Add another entry to your DT table to reflect the currently programmed
+frequency.
+- Just ignore the error, as that is just for information.
