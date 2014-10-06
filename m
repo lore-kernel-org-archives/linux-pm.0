@@ -1,68 +1,44 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [PATCH 1/2] cpufreq: cpu0: Improve debug about matching OPP
-Date: Mon, 06 Oct 2014 08:50:06 +0200
-Message-ID: <54323B9E.2020407@i2se.com>
-References: <1412454365-17804-1-git-send-email-stefan.wahren@i2se.com>	<1412454365-17804-2-git-send-email-stefan.wahren@i2se.com> <CAKohpokKZ9bc_=CSsy8W000egE1hM60pH1pn2Uxcdxv3oYS1EQ@mail.gmail.com>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCHv2 0/4] cpufreq-dt, platform_data based proposal
+Date: Mon, 6 Oct 2014 09:19:05 +0200
+Message-ID: <20141006091905.4e0d976a@free-electrons.com>
+References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
+	<1410350908-11316-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.131]:62406 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750888AbaJFGuN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 02:50:13 -0400
-In-Reply-To: <CAKohpokKZ9bc_=CSsy8W000egE1hM60pH1pn2Uxcdxv3oYS1EQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1410350908-11316-1-git-send-email-thomas.petazzoni@free-electrons.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@freescale.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
+List-Id: linux-pm@vger.kernel.org
 
-Am 06.10.2014 um 07:13 schrieb Viresh Kumar:
-> On 5 October 2014 01:56, Stefan Wahren <stefan.wahren@i2se.com> wrote:
->> During test of new DT OPPs it's very helpful to print the matching
->> OPP in case of frequency change. So it will be easier to find frequency
->> rounding issues in the dts file.
->>
->> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
->> ---
->>  drivers/cpufreq/cpufreq-cpu0.c |    5 +++++
->>  1 file changed, 5 insertions(+)
->>
->> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
->> index a5f8c5f..ef3d618 100644
->> --- a/drivers/cpufreq/cpufreq-cpu0.c
->> +++ b/drivers/cpufreq/cpufreq-cpu0.c
->> @@ -57,6 +57,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
->>         old_freq = clk_get_rate(cpu_clk) / 1000;
->>
->>         if (!IS_ERR(cpu_reg)) {
->> +               unsigned long opp_freq;
->> +
->>                 rcu_read_lock();
->>                 opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq_Hz);
->>                 if (IS_ERR(opp)) {
->> @@ -66,9 +68,12 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
->>                         return PTR_ERR(opp);
->>                 }
->>                 volt = dev_pm_opp_get_voltage(opp);
->> +               opp_freq = dev_pm_opp_get_freq(opp);
->>                 rcu_read_unlock();
->>                 tol = volt * priv->voltage_tolerance / 100;
->>                 volt_old = regulator_get_voltage(cpu_reg);
->> +               dev_dbg(cpu_dev, "Found OPP: %ld kHz, %ld uV\n",
->> +                       opp_freq / 1000, volt);
-> What about using dev_pm_opp_get_freq() directly in dev_dbg() instead of
-> creating a separate variable?
+Hello,
 
-I wasn't sure because of the read lock and wanted to avoid any delays.
-If it's okay i will change it.
+On Wed, 10 Sep 2014 14:08:24 +0200, Thomas Petazzoni wrote:
 
->
->>         }
->>
->>         dev_dbg(cpu_dev, "%u MHz, %ld mV --> %u MHz, %ld mV\n",
->> --
->> 1.7.9.5
->>
+> Thomas Petazzoni (4):
+>   cpufreq: allow driver-specific data
+>   cpufreq: cpufreq-dt: extend with platform_data
+>   ARM: mvebu: use the cpufreq-dt platform_data for independent clocks
+>   cpufreq: cpufreq-dt: adjust message related to regulators
+> 
+>  arch/arm/mach-mvebu/pmsu.c   |  8 +++++++-
+>  drivers/cpufreq/cpufreq-dt.c | 21 +++++++++++++++++----
+>  drivers/cpufreq/cpufreq.c    | 15 +++++++++++++++
+>  include/linux/cpufreq-dt.h   | 22 ++++++++++++++++++++++
+>  include/linux/cpufreq.h      |  2 ++
+>  5 files changed, 63 insertions(+), 5 deletions(-)
+>  create mode 100644 include/linux/cpufreq-dt.h
 
+Since this series was Acked-by Viresh, would it be possible to get it
+merged for 3.18 ?
 
+Thanks,
+
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
