@@ -1,47 +1,59 @@
-From: Peter De Schrijver <pdeschrijver@nvidia.com>
-Subject: Re: [PATCH v5 3/4] ARM: tegra: Add thermal trip points for Jetson TK1
-Date: Mon, 6 Oct 2014 10:24:57 +0300
-Message-ID: <20141006072457.GM9139@tbergstrom-lnx.Nvidia.com>
-References: <1408616242-21009-1-git-send-email-mperttunen@nvidia.com>
- <1408616242-21009-4-git-send-email-mperttunen@nvidia.com>
- <20140924183204.GE27076@developer> <20141003195723.GA6074@amd>
+From: Frans Klaver <frans.klaver@xsens.com>
+Subject: [PATCH v3 0/2] Add support for ltc2952 poweroff
+Date: Mon, 6 Oct 2014 10:40:34 +0200
+Message-ID: <1412584836-27677-1-git-send-email-frans.klaver@xsens.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:13739 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbaJFHZB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 03:25:01 -0400
-Content-Disposition: inline
-In-Reply-To: <20141003195723.GA6074@amd>
+Received: from filter1.ibarracuda.nl ([83.247.7.10]:46829 "EHLO
+	filter1.ibarracuda.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751387AbaJFIli (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 04:41:38 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Mikko Perttunen <mperttunen@nvidia.com>, rui.zhang@intel.com, swarren@wwwdotorg.org, thierry.reding@gmail.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, juha-matti.tilli@iki.fi
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Frans Klaver <frans.klaver@xsens.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, =?UTF-8?q?Ren=C3=A9=20Moll?= <linux@r-moll.nl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Fri, Oct 03, 2014 at 09:57:24PM +0200, Pavel Machek wrote:
-> On Wed 2014-09-24 14:32:06, Eduardo Valentin wrote:
-> > Hello Mikko,
-> > 
-> > On Thu, Aug 21, 2014 at 01:17:21PM +0300, Mikko Perttunen wrote:
-> > > This adds critical trip points to the Jetson TK1 device tree.
-> > > The device will do a controlled shutdown when either the CPU, GPU
-> > > or MEM thermal zone reaches 101 degrees Celsius.
-> 
-> > > +			trips {
-> > > +				trip@0 {
-> > > +					temperature = <101000>;
-> > > +					hysteresis = <0>;
-> > > +					type = "critical";
-> > > +				};
-> 
-> Would it be still time to switch to some more reasonable unit, like
-> degrees celsius? milicelsius is a bit of overkill.. ACPI uses
-> deciCelsius, but .. celsius should be enough.
-> 
+This is version 3 of the series that adds support for the ltc2952 power=
+path chip.
 
-We should be using deciKelvin then.
+This series adds a driver for the LTC2952, an external power control ch=
+ip, which
+signals the OS to shut down. Additionally this driver lets the kernel p=
+ower
+down the board.
 
-Cheers,
+This driver was tested with:
+  - kernel version 3.15.8, 3.17-rc7
+  - ARM based processor (TI AM335x series)
 
-Peter.
+v2..v3:
+  - Allow absence of button input pin (and document that)
+  - Fix some whitespace issues
+  - Straighten out control flow here and there
+  - Get rid of gpio array. This was only used in setup/cleanup cases. I=
+t never mattered elsewhere
+  - Add some explanation to the commit message that introduces the driv=
+er
+  - Add other contributors
+  - Update Ren=C3=A9's e-mail; his Xsens e-mail is no longer valid
+  - Now also tested on v3.17-rc7
+
+Ren=C3=A9 Moll (2):
+  power: reset: add LTC2952 poweroff support
+  power: reset: document LTC2952 poweroff support
+
+ .../bindings/power/reset/ltc2952-poweroff.txt      |  31 ++
+ drivers/power/reset/Kconfig                        |  10 +
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/ltc2952-poweroff.c             | 381 +++++++++++++=
+++++++++
+ 4 files changed, 423 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/ltc29=
+52-poweroff.txt
+ create mode 100644 drivers/power/reset/ltc2952-poweroff.c
+
+--=20
+2.1.0
+
