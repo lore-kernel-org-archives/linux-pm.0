@@ -1,29 +1,46 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: respect the min/max settings from user space
-Date: Mon, 6 Oct 2014 10:25:24 +0530
-Message-ID: <CAKohpo=LFLRimA=_PH_OK4XddpphciaZdDEc2dirJifKnL=4Tw@mail.gmail.com>
-References: <1412232900-11238-1-git-send-email-vinceh@nvidia.com>
-	<CAKohpon=dwc--SSbwjREdrALfXH=7QCw8UJnyVX5x3TCKB=7Bw@mail.gmail.com>
-	<54321F90.2010103@nvidia.com>
+Subject: Re: [PATCH] cpufreq: Documentation: Add missing optional properties
+Date: Mon, 6 Oct 2014 10:34:30 +0530
+Message-ID: <CAKohponEgdaDfdqkTgVX=F7nhoF59Tjce-ZsTLO1G=+x=gHROA@mail.gmail.com>
+References: <1412454058-17725-1-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f54.google.com ([209.85.218.54]:43114 "EHLO
-	mail-oi0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751363AbaJFEzZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 00:55:25 -0400
-Received: by mail-oi0-f54.google.com with SMTP id v63so3091985oia.41
-        for <linux-pm@vger.kernel.org>; Sun, 05 Oct 2014 21:55:24 -0700 (PDT)
-In-Reply-To: <54321F90.2010103@nvidia.com>
+Received: from mail-ob0-f179.google.com ([209.85.214.179]:45004 "EHLO
+	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbaJFFEb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 01:04:31 -0400
+Received: by mail-ob0-f179.google.com with SMTP id wp4so3405877obc.10
+        for <linux-pm@vger.kernel.org>; Sun, 05 Oct 2014 22:04:31 -0700 (PDT)
+In-Reply-To: <1412454058-17725-1-git-send-email-stefan.wahren@i2se.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vince Hsu <vinceh@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bill Huang <bilhuang@nvidia.com>, dgreid@google.com, olofj@chromium.org
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@freescale.com>
 
-On 6 October 2014 10:20, Vince Hsu <vinceh@nvidia.com> wrote:
-> I did test with Chrome kernel on Tegra platform. I can't do that with
-> mainline kernel because we haven't had the CPU EDP driver upstream yet.
+On 5 October 2014 01:50, Stefan Wahren <stefan.wahren@i2se.com> wrote:
+> The devicetree binding for cpufreq-cpu0 lacks the optional properties
+> clocks and cpu-supply. This patch adds them to the documentation.
+>
+> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+> ---
+>  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |    2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> index 366690c..bafcaea 100644
+> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> @@ -14,6 +14,8 @@ Optional properties:
+>  - operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt for
+>    details. OPPs *must* be supplied either via DT, i.e. this property, or
+>    populated at runtime.
+> +- clocks: Specify the CPU clock
+> +- cpu-supply: Specify the regulator which feeds the CPU
+>  - clock-latency: Specify the possible maximum transition latency for clock,
+>    in unit of nanoseconds.
+>  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
 
-You should have mentioned this clearly :)
-
-Looks fine to me then.
+The driver doesn't use them directly and so they aren't mentioned here.
+They are probably mentioned in cpu's DT properties and that's all I
+believe..
