@@ -1,87 +1,81 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH v2 00/11] ARM: shmobile: r8a7740/armadillo800eva legacy PM
- domain support
-Date: Mon, 6 Oct 2014 10:42:28 +0900
-Message-ID: <CANqRtoRiK1gAg6rPDwk5CSxASguyyfjb=sHeFQJ6G2Loqx1row@mail.gmail.com>
-References: <1411661742-4767-1-git-send-email-geert+renesas@glider.be>
-	<20140930042047.GA24253@verge.net.au>
-	<CAMuHMdUgP6OEt6G4VhHoDncz+17j-bDu7u_pcHM0ETmqsDKOiA@mail.gmail.com>
-	<CANqRtoS+bur8DA0+gG0Q0hL9RLsQdOLyfSUbgE_6nZ8mCST0Jg@mail.gmail.com>
-	<CAMuHMdXP9tFX9FZnH_dR86DkKbP_YZcWAF-hF48BtVfGYRTsFw@mail.gmail.com>
-	<CANqRtoS0XgyuMBxU3CcVyQNg=r=MuA_OfJEDJbVsq-m9EHF9UA@mail.gmail.com>
-	<CAMuHMdWzg0bnoT0kURFe8h2aw4CYKoHN1SMYt0S3-Dno-e=8Xw@mail.gmail.com>
-	<20140930081305.GS16823@verge.net.au>
-	<CAMuHMdV-D+qic4Tt9bYQRmEsLsu5ojX+rfeEGRaWGwfvm9c_cA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/4] cpufreq: allow driver-specific flags
+Date: Mon, 6 Oct 2014 09:26:26 +0530
+Message-ID: <CAKohpokiKnXe+UiQBJnyry+FqWT=HgyijLNFWZ0tUj6DygzELQ@mail.gmail.com>
+References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
+	<1410342112-13264-1-git-send-email-thomas.petazzoni@free-electrons.com>
+	<1410342112-13264-2-git-send-email-thomas.petazzoni@free-electrons.com>
+	<CAKohpom4=nbg510bUb20C6rsG8r184YQ0SiPmPkxj8_8Y04+Bg@mail.gmail.com>
+	<20140927224434.19023.35708@quantum>
+	<CAKohpo=8ernJ=bMJKB5K90nsvy4UpJH67dOnFCi80uyRR3EDvw@mail.gmail.com>
+	<20141005004102.4379.42626@quantum>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:34322 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751809AbaJFBm3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Oct 2014 21:42:29 -0400
-In-Reply-To: <CAMuHMdV-D+qic4Tt9bYQRmEsLsu5ojX+rfeEGRaWGwfvm9c_cA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <20141005004102.4379.42626@quantum>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Mike Turquette <mike.turquette@linaro.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi Geert,
+On 5 October 2014 06:11, Mike Turquette <mike.turquette@linaro.org> wrote:
+> For reference, here is a patch that I've had locally in my tree for a
+> couples months. I'm using it while prototyping some ways to integrate
+> CPUfreq with the scheduler. It is almost identical to Thomas's approach
+> but it doesn't try to mask off some flags. Additionally it does NOT
+> change the u8 return type, which is currently how struct
+> cpufreq_driver->flags is defined today. This is probably not good and
+> should be an unsigned int or unsigned long so that the api is a bit more
+> forward-looking.
 
-On Sat, Oct 4, 2014 at 12:23 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> Hi Simon, Magnus,
->
-> On Tue, Sep 30, 2014 at 10:13 AM, Simon Horman <horms@verge.net.au> wrote:
->> On Tue, Sep 30, 2014 at 09:41:27AM +0200, Geert Uytterhoeven wrote:
->>> On Tue, Sep 30, 2014 at 9:32 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
->>> >>> So what is a good way to proceed with this series I wonder?
->>> >>
->>> >> There are two options:
->>> >>   1. Drop the two patches that introduce the D4 and A4MP PM domains,
->>> >>   2. Amend the patches that introduce the D4 and A4MP PM domains to
->>> >>      comment out the entries in the table in pm-r8a7740.c, like was done in
->>> >>      the first submission.
->>> >>
->>> >> Both will cause conflicts when applying the successive patches.
->>> >>
->>> >> If you don't care about bisectability, you can implement option 2 as a
->>> >> separate change, after applying the whole series.
->>> >
->>> > Thanks for leading the way! From my side I don't have any special
->>> > feeling, so why don't you and Simon decide?
->>>
->>> OK.
->>>
->>> > If it was up to me only then I think option #1 that simply reduces the
->>> > feature set seems rather natural, but perhaps it requires a lot of
->>> > rework of the patches. If we go with option #1 we can always
->>> > incrementally add D4 and A4MP later I assume.
->>>
->>> Yes we can.
->>>
->>> Please wait a bit, I'm looking into the !CONFIG_PM_RUNTIME case.
->>> Mostly multi-platform, but it may affect legacy too, where there's interaction
->>> with the drivers/sh/pm_runtime.c hack.
->
-> I posted a fix for the !CONFIG_PM_RUNTIME problem
-> "[PATCH] PM / clock_ops: Fix crash in clocks management code if
-> !CONFIG_PM_RUNTIME"
-> (https://lkml.org/lkml/2014/10/1/506). I hope to see that fix in v3.18-rc1.
->
->> I also feel that option 1 is slightly nicer. But I'm happy
->> to consider option 2 if its a better fit for you.
->>
->> As always I'm happy to wait and will now do so.
->
-> The fix for the HDMI-related interrupt storm, also affecting A4MP, is in
-> fbdev's next, so I expect to see that in v3.18-rc1.
->
-> For D4, a final solution seems to be a long-term plan...
-> I'll disable powering down the D4 power area, and will repost the patches
-> after v3.18-rc1, when the other prerequisites are in.
+Probably yes.
 
-Sounds good. Thanks for your efforts!
+> From 0053dfc6b09fa0c5923b7dcba23b67c1c005cb88 Mon Sep 17 00:00:00 2001
+> From: Mike Turquette <mturquette@linaro.org>
+> Date: Sun, 3 Aug 2014 21:25:38 -0700
+> Subject: [PATCH] cpufreq: new function to query driver for flags
+>
+> Signed-off-by: Mike Turquette <mturquette@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 9 +++++++++
+>  include/linux/cpufreq.h   | 1 +
+>  2 files changed, 10 insertions(+)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 1abb44d..515e905 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2003,6 +2003,15 @@ int cpufreq_driver_target(struct cpufreq_policy *policy,
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_driver_target);
+>
+> +u8 cpufreq_driver_get_flags(void)
+> +{
+> +       if (!cpufreq_driver)
+> +               return 0;
 
-Cheers,
+Probably you need to return some error here. How would the caller know if
+there is no cpufreq-driver there..
 
-/ magnus
+> +       return cpufreq_driver->flags;
+> +}
+> +EXPORT_SYMBOL_GPL(cpufreq_driver_get_flags);
+> +
+>  /*
+>   * when "event" is CPUFREQ_GOV_LIMITS
+>   */
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 221f0eb..5a97f5f 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -417,6 +417,7 @@ int cpufreq_driver_target(struct cpufreq_policy *policy,
+>  int __cpufreq_driver_target(struct cpufreq_policy *policy,
+>                                    unsigned int target_freq,
+>                                    unsigned int relation);
+> +u8 cpufreq_driver_get_flags(void);
+>  int cpufreq_register_governor(struct cpufreq_governor *governor);
+>  void cpufreq_unregister_governor(struct cpufreq_governor *governor);
+>
+> --
+> 1.8.3.2
+>
