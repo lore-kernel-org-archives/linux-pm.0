@@ -1,81 +1,68 @@
 From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: cpufreq: Unable to set cpufreq to maximum
-Date: Mon, 06 Oct 2014 08:41:20 +0200
-Message-ID: <54323990.6000401@i2se.com>
-References: <936524880.154802.1412255867221.JavaMail.open-xchange@oxbaltgw07.schlund.de>	<1412258352.4875.5.camel@pengutronix.de>	<878902771.162556.1412262099998.JavaMail.open-xchange@oxbaltgw01.schlund.de>	<1412263338.2313.1.camel@pengutronix.de> <CAKohpom_kJadzUiPAT9GBJjvcu=38L9fO1atoi24xGwrq9XDFg@mail.gmail.com>
+Subject: Re: [PATCH 1/2] cpufreq: cpu0: Improve debug about matching OPP
+Date: Mon, 06 Oct 2014 08:50:06 +0200
+Message-ID: <54323B9E.2020407@i2se.com>
+References: <1412454365-17804-1-git-send-email-stefan.wahren@i2se.com>	<1412454365-17804-2-git-send-email-stefan.wahren@i2se.com> <CAKohpokKZ9bc_=CSsy8W000egE1hM60pH1pn2Uxcdxv3oYS1EQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.131]:52656 "EHLO
+Received: from mout.kundenserver.de ([212.227.126.131]:62406 "EHLO
 	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbaJFGlZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 02:41:25 -0400
-In-Reply-To: <CAKohpom_kJadzUiPAT9GBJjvcu=38L9fO1atoi24xGwrq9XDFg@mail.gmail.com>
+	with ESMTP id S1750888AbaJFGuN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 02:50:13 -0400
+In-Reply-To: <CAKohpokKZ9bc_=CSsy8W000egE1hM60pH1pn2Uxcdxv3oYS1EQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Lucas Stach <l.stach@pengutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Fabio Estevam <festevam@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@freescale.com>
 
-Am 06.10.2014 um 06:21 schrieb Viresh Kumar:
-> On 2 October 2014 20:52, Lucas Stach <l.stach@pengutronix.de> wrote:
->> It's harmless in your case. But to get rid of it you might try the
->> attached patch which may be an acceptable solution.
+Am 06.10.2014 um 07:13 schrieb Viresh Kumar:
+> On 5 October 2014 01:56, Stefan Wahren <stefan.wahren@i2se.com> wrote:
+>> During test of new DT OPPs it's very helpful to print the matching
+>> OPP in case of frequency change. So it will be easier to find frequency
+>> rounding issues in the dts file.
 >>
->> ------------------------------>8-----------------------------------
->> From db9e708edf6451b619ee73f68c3fcde2eccd7b0c Mon Sep 17 00:00:00 2001
->> From: Lucas Stach <l.stach@pengutronix.de>
->> Date: Thu, 2 Oct 2014 17:20:09 +0200
->> Subject: [PATCH] cpufreq: generic: try preserve some accuracy while
->> converting
->>  from Hz to kHz
->>
+>> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
 >> ---
->>  drivers/cpufreq/cpufreq.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>  drivers/cpufreq/cpufreq-cpu0.c |    5 +++++
+>>  1 file changed, 5 insertions(+)
 >>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index d9fdeddcef96..459830c6576f 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -187,7 +187,7 @@ unsigned int cpufreq_generic_get(unsigned int cpu)
->>                 return 0;
+>> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+>> index a5f8c5f..ef3d618 100644
+>> --- a/drivers/cpufreq/cpufreq-cpu0.c
+>> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+>> @@ -57,6 +57,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+>>         old_freq = clk_get_rate(cpu_clk) / 1000;
+>>
+>>         if (!IS_ERR(cpu_reg)) {
+>> +               unsigned long opp_freq;
+>> +
+>>                 rcu_read_lock();
+>>                 opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq_Hz);
+>>                 if (IS_ERR(opp)) {
+>> @@ -66,9 +68,12 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+>>                         return PTR_ERR(opp);
+>>                 }
+>>                 volt = dev_pm_opp_get_voltage(opp);
+>> +               opp_freq = dev_pm_opp_get_freq(opp);
+>>                 rcu_read_unlock();
+>>                 tol = volt * priv->voltage_tolerance / 100;
+>>                 volt_old = regulator_get_voltage(cpu_reg);
+>> +               dev_dbg(cpu_dev, "Found OPP: %ld kHz, %ld uV\n",
+>> +                       opp_freq / 1000, volt);
+> What about using dev_pm_opp_get_freq() directly in dev_dbg() instead of
+> creating a separate variable?
+
+I wasn't sure because of the read lock and wanted to avoid any delays.
+If it's okay i will change it.
+
+>
 >>         }
 >>
->> -       return clk_get_rate(policy->clk) / 1000;
->> +       return DIV_ROUND_CLOSEST(clk_get_rate(policy->clk), 1000);
->>  }
->>  EXPORT_SYMBOL_GPL(cpufreq_generic_get);
-> Absolutely NOT..
->
-> This can't be an acceptable solution to the problem you have in your DT.
-> This routine is used for getting the current frequency of a CPU and we
-> can't play with that..
+>>         dev_dbg(cpu_dev, "%u MHz, %ld mV --> %u MHz, %ld mV\n",
+>> --
+>> 1.7.9.5
+>>
 
-I thought about it and agree with you.
 
-> The problem that Stefan is getting is: The boot loader has programmed
-> cpu to a frequency which isn't present in your DT table. And so kernel
-> tries to adjust CPU frequency to one of the listed frequencies.
-
-Here comes the real problem, i'm not able to specify the exact frequency
-of the cpu. The clock has a value in Hz, but in the DT we have kHz. So
-there are always rounding issues. The question is how to handle it.
-
-> Solutions:
-> - Add another entry to your DT table to reflect the currently programmed
-> frequency.
-> - Just ignore the error, as that is just for information.
-
-Ignoring errors isn't a solution. I have another idea. I've looked a
-little bit at the code in the cpufreq-(cpu0/dt). Usually the frequencies
-are rounded down, but in cpu0_set_target() with
-dev_pm_opp_find_freq_ceil(cpu_dev, &freq_Hz) they are rounded up. From
-my point of view that's wrong.
-
-I fixed the problem by decreasing frequency in DT and replacing
-dev_pm_opp_find_freq_ceil() with dev_pm_opp_find_freq_floor() in
-cpufreq-cpu0.c . Unfortunatelly this will break all other DTS files with
-roundings in OPPs.
-
-Stefan
