@@ -1,119 +1,152 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 2/3] thermal: core: fix: Initialize the max_state
- variable to 0
-Date: Mon, 6 Oct 2014 14:01:13 -0400
-Message-ID: <20141006180110.GA5524@developer>
-References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
- <1411547232-21493-3-git-send-email-l.majewski@samsung.com>
- <20141002222649.GB11510@developer>
- <20141003102628.7a8f36f7@amdc2363>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: Switch to using managed
+ resources
+Date: Mon, 6 Oct 2014 14:41:03 -0400
+Message-ID: <20141006184101.GB5524@developer>
+References: <1411149909-13007-1-git-send-email-pramod.gurav@smartplayin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f51.google.com ([209.85.216.51]:43714 "EHLO
-	mail-qa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752318AbaJFSBZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 14:01:25 -0400
+Received: from mail-qg0-f51.google.com ([209.85.192.51]:39891 "EHLO
+	mail-qg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753011AbaJFSlL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Oct 2014 14:41:11 -0400
 Content-Disposition: inline
-In-Reply-To: <20141003102628.7a8f36f7@amdc2363>
+In-Reply-To: <1411149909-13007-1-git-send-email-pramod.gurav@smartplayin.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org
+To: Pramod Gurav <pramod.gurav@smartplayin.com>
+Cc: linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 
-On Fri, Oct 03, 2014 at 10:26:28AM +0200, Lukasz Majewski wrote:
-> Hi Eduardo,
-> 
-> > Hello Lukasz,
-> > 
-> > On Wed, Sep 24, 2014 at 10:27:11AM +0200, Lukasz Majewski wrote:
-> > > Pointer to the uninitialized max_state variable is passed to get the
-> > > maximal cooling state.
-> > > For CPU cooling device (cpu_cooling.c) the cpufreq_get_max_state()
-> > > is called, which even when error occurs will return the max_state
-> > > variable unchanged.
-> > > Since error for ->get_max_state() is not checked, the automatically
-> > 
-> > 
-> > Good that you added a fix in your series for this.
-> > 
-> > 
-> > > allocated value of max_state is used for (upper > max_state)
-> > > comparison. For any possible max_state value it is very unlikely
-> > > that it will be less than upper.
-> > > As a consequence, the cooling device is bind even without the backed
-> > > cpufreq table initialized.
-> > > 
-> > > This initialization will prevent from accidental binding trip
-> > > points to cpu freq cooling frequencies when cpufreq driver itself
-> > > is not yet fully initialized.
-> > 
-> > Although I agree with the fix, as long as we also include a check for
-> > the .get_max_state return value,  I believe the problem you are
-> > describing is about initialization sequence.
-> 
-> As you pointed out - the problem here is with initialization sequence.
-> Thermal and cpufreq cores are initialized very early.
-> 
-> However, the get_max_state() for cpu_cooling.c device (as it is the
-> pervasive way of cooling things) accesses cpufreq policy to get the
-> freq_table and count available states.
-> 
-> The issue here is with late initialization of cpufreq policy.
-> 
-> Up till now the cpu_cooling device was bind even when the
-> get_max_state() returned -EINVAL and everything worked after late
-> cpufreq policy initialization. However, during this time window the
-> thermal driver is not configured.
-> 
-> > 
-> > In general, I believe we need a better
-> > sequencing between thermal and cpufreq subsystems. One way out is to
-> > include a check for cpufreq driver in the thermal driver, and return
-> > -EPROBE_DEFER  when cpufreq is not ready.
-> 
-> I think that we could return -EPROBE_DEFER when cpufreq's policy is not
-> yet available and subscribe to cpufreq notifier to call
-> bind_cooling_device then.
+Hello Pramod,
 
-I agree with this approach, as long as we keep the existing users of
-cpufreq cooling in a working state.
+On Fri, Sep 19, 2014 at 11:35:09PM +0530, Pramod Gurav wrote:
+> This change switches to managed resource APIs to allocated resources
+> such as irq, clock. Hence does away with release statements of the
+> same resorces in error lables and remove function.
+> 
+> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
+> ---
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.c | 46 ++++++++---------------------
+>  1 file changed, 12 insertions(+), 34 deletions(-)
+> 
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> index 634b6ce..e068dd5 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> @@ -1060,7 +1060,7 @@ static int ti_bandgap_tshut_init(struct ti_bandgap *bgp,
+>  	int status;
+>  
+>  	/* Request for gpio_86 line */
+> -	status = gpio_request(gpio_nr, "tshut");
+> +	status = devm_gpio_request(&pdev->dev, gpio_nr, "tshut");
+>  	if (status < 0) {
+>  		dev_err(bgp->dev, "Could not request for TSHUT GPIO:%i\n", 86);
+>  		return status;
+> @@ -1071,11 +1071,12 @@ static int ti_bandgap_tshut_init(struct ti_bandgap *bgp,
+>  		return status;
+>  	}
+>  
+> -	status = request_irq(gpio_to_irq(gpio_nr), ti_bandgap_tshut_irq_handler,
+> -			     IRQF_TRIGGER_RISING, "tshut", NULL);
+> +	status = devm_request_irq(&pdev->dev, gpio_to_irq(gpio_nr),
+> +				  ti_bandgap_tshut_irq_handler,
+> +				  IRQF_TRIGGER_RISING, "tshut", NULL);
+>  	if (status) {
+> -		gpio_free(gpio_nr);
+>  		dev_err(bgp->dev, "request irq failed for TSHUT");
+> +		return status;
+>  	}
+>  
+>  	return 0;
+> @@ -1104,7 +1105,7 @@ static int ti_bandgap_talert_init(struct ti_bandgap *bgp,
+>  		dev_err(&pdev->dev, "get_irq failed\n");
+>  		return bgp->irq;
+>  	}
+> -	ret = request_threaded_irq(bgp->irq, NULL,
+> +	ret = devm_request_threaded_irq(&pdev->dev, bgp->irq, NULL,
+>  				   ti_bandgap_talert_irq_handler,
+>  				   IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
+>  				   "talert", bgp);
+> @@ -1212,21 +1213,17 @@ int ti_bandgap_probe(struct platform_device *pdev)
+>  		}
+>  	}
+>  
+> -	bgp->fclock = clk_get(NULL, bgp->conf->fclock_name);
+> -	ret = IS_ERR(bgp->fclock);
+> -	if (ret) {
+> +	bgp->fclock = devm_clk_get(NULL, bgp->conf->fclock_name);
+> +	if (IS_ERR(bgp->fclock)) {
+>  		dev_err(&pdev->dev, "failed to request fclock reference\n");
+> -		ret = PTR_ERR(bgp->fclock);
+> -		goto free_irqs;
+> +		return PTR_ERR(bgp->fclock);
+>  	}
+>  
+> -	bgp->div_clk = clk_get(NULL,  bgp->conf->div_ck_name);
+> -	ret = IS_ERR(bgp->div_clk);
+> -	if (ret) {
+> +	bgp->div_clk = devm_clk_get(NULL,  bgp->conf->div_ck_name);
 
-Cheers
+How the manager is supposed to handle  and free the clocks' resources if
+no dev is passed to devm_ functions?
 
-> 
-> Let's wait for Zhang opinion since he looks after the thermal core code.
-> 
-> > 
-> > > 
-> > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > > ---
-> > >  drivers/thermal/thermal_core.c | 2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/thermal/thermal_core.c
-> > > b/drivers/thermal/thermal_core.c index 454884a..747618a 100644
-> > > --- a/drivers/thermal/thermal_core.c
-> > > +++ b/drivers/thermal/thermal_core.c
-> > > @@ -927,7 +927,7 @@ int thermal_zone_bind_cooling_device(struct
-> > > thermal_zone_device *tz, struct thermal_instance *pos;
-> > >  	struct thermal_zone_device *pos1;
-> > >  	struct thermal_cooling_device *pos2;
-> > > -	unsigned long max_state;
-> > > +	unsigned long max_state = 0;
-> > >  	int result;
-> > >  
-> > >  	if (trip >= tz->trips || (trip < 0 && trip !=
-> > > THERMAL_TRIPS_NONE)) -- 
-> > > 2.0.0.rc2
-> > > 
-> > 
-> 
-> 
-> 
+> +	if (IS_ERR(bgp->div_clk)) {
+>  		dev_err(&pdev->dev,
+>  			"failed to request div_ts_ck clock ref\n");
+> -		ret = PTR_ERR(bgp->div_clk);
+> -		goto free_irqs;
+> +		return PTR_ERR(bgp->div_clk);
+>  	}
+>  
+>  	for (i = 0; i < bgp->conf->sensor_count; i++) {
+> @@ -1251,7 +1248,6 @@ int ti_bandgap_probe(struct platform_device *pdev)
+>  	    clk_rate <= 0) {
+>  		ret = -ENODEV;
+>  		dev_err(&pdev->dev, "wrong clock rate (%d)\n", clk_rate);
+> -		goto put_clks;
+>  	}
+>  
+>  	ret = clk_set_rate(bgp->div_clk, clk_rate);
+> @@ -1357,14 +1353,6 @@ remove_sensors:
+>  disable_clk:
+>  	if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
+>  		clk_disable_unprepare(bgp->fclock);
+> -put_clks:
+> -	clk_put(bgp->fclock);
+> -	clk_put(bgp->div_clk);
+> -free_irqs:
+> -	if (TI_BANDGAP_HAS(bgp, TSHUT)) {
+> -		free_irq(gpio_to_irq(bgp->tshut_gpio), NULL);
+> -		gpio_free(bgp->tshut_gpio);
+> -	}
+>  
+>  	return ret;
+>  }
+> @@ -1388,16 +1376,6 @@ int ti_bandgap_remove(struct platform_device *pdev)
+>  
+>  	if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
+>  		clk_disable_unprepare(bgp->fclock);
+> -	clk_put(bgp->fclock);
+> -	clk_put(bgp->div_clk);
+> -
+> -	if (TI_BANDGAP_HAS(bgp, TALERT))
+> -		free_irq(bgp->irq, bgp);
+> -
+> -	if (TI_BANDGAP_HAS(bgp, TSHUT)) {
+> -		free_irq(gpio_to_irq(bgp->tshut_gpio), NULL);
+> -		gpio_free(bgp->tshut_gpio);
+> -	}
+>  
+>  	return 0;
+>  }
 > -- 
-> Best regards,
+> 1.8.3.2
 > 
-> Lukasz Majewski
-> 
-> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
