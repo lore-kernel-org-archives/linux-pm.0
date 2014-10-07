@@ -1,36 +1,33 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 05/44] mfd: as3722: Drop reference to pm_power_off from
- devicetree bindings
-Date: Tue, 7 Oct 2014 09:31:31 -0700
-Message-ID: <20141007163131.GE28835@roeck-us.net>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-6-git-send-email-linux@roeck-us.net>
- <543412F7.8040909@landley.net>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: Potential cpufreq backports for v3.10 LTS
+Date: Tue, 7 Oct 2014 09:46:43 -0700
+Message-ID: <20141007164643.GA3748@kroah.com>
+References: <20141007114844.GT4609@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:33293 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752036AbaJGQqo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Oct 2014 12:46:44 -0400
 Content-Disposition: inline
-In-Reply-To: <543412F7.8040909@landley.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, lguest@lists.ozlabs.org, linux-acpi@vger.kernel.org, linux-alpha@vger.kernel.org, linux-am33-list@redhat.com, linux-cris-kernel@axis.com, linux-efi@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-m32r-ja@ml.linux-m32r.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-tegra@vger.kernel.org, linux-xtensa@linux-xtensa.org, openipmi-developer@lists.sourceforge.net, user-mode-linux-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org, linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org, linux-mips@linux-mips.org, linux-parisc@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, xen-devel@lists.xenproject.org, Rob Herring <robh+>
+In-Reply-To: <20141007114844.GT4609@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Xiaoguang Chen <chenxg@marvell.com>, Stratos Karafotis <stratosk@semaphore.gr>, Andreas Schwab <schwab@linux-m68k.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Amit Kucheria <amit.kucheria@linaro.org>, stable@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, Oct 07, 2014 at 11:21:11AM -0500, Rob Landley wrote:
-> On 10/07/14 00:28, Guenter Roeck wrote:
-> > Devicetree bindings are supposed to be operating system independent
-> > and should thus not describe how a specific functionality is implemented
-> > in Linux.
+On Tue, Oct 07, 2014 at 12:48:44PM +0100, Mark Brown wrote:
+> Hi,
 > 
-> So your argument is that linux/Documentation/devicetree/bindings should
-> not be specific to Linux. Merely hosted in the Linux kernel source
-> repository.
+> The power management team at Linaro has had a look at the cpufreq
+> updates since the v3.10 LTS and identified a few patches that look
+> like they should be in there.  The most recent of these is from v3.12 so
+> they won't apply to any of the more recent stable kernels.
 > 
-> Well that's certainly a point of view.
+>  - 59a6342203a7a cpufreq: Fix governor start/stop race condition
 > 
-Not specifically my argument, really, and nothing new either. But, yes, I do
-think that devicetree bindings descriptions should not include implementation
-details, especially since those may change over time (as is the case here).
+>    This looks like a straight race condition fix.
 
-Thanks,
-Guenter
+That is not a commit id in Linus's tree :(
+
