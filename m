@@ -1,29 +1,29 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH 6/7] arm: dts: qcom: Add idle states device nodes for 8974
-Date: Tue,  7 Oct 2014 15:31:24 -0600
-Message-ID: <1412717485-16892-6-git-send-email-lina.iyer@linaro.org>
+From: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 7/7] arm: dts: qcom: Add idle states device nodes for 8084
+Date: Tue,  7 Oct 2014 15:31:25 -0600
+Message-ID: <1412717485-16892-7-git-send-email-lina.iyer@linaro.org>
 References: <1412717485-16892-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1412717485-16892-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1412717485-16892-1-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 Add allowable C-States for each cpu using the cpu-idle-states node.
-Support Standby and Standalone power collapse (power down that does not
+Support standby and standalone power collapse (power down that does not
 affect any SoC idle states) for each cpu.
 
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- arch/arm/boot/dts/qcom-msm8974.dtsi | 20 ++++++++++++++++++++
+ arch/arm/boot/dts/qcom-apq8084.dtsi | 20 ++++++++++++++++++++
  1 file changed, 20 insertions(+)
 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index 70c4329..a5e51fe 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -22,6 +22,7 @@
+diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
+index 1581b12..68eb4bb1 100644
+--- a/arch/arm/boot/dts/qcom-apq8084.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
+@@ -19,6 +19,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc0>;
  			qcom,saw = <&saw0>;
@@ -31,7 +31,7 @@ index 70c4329..a5e51fe 100644
  		};
  
  		cpu@1 {
-@@ -32,6 +33,7 @@
+@@ -29,6 +30,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc1>;
  			qcom,saw = <&saw1>;
@@ -39,7 +39,7 @@ index 70c4329..a5e51fe 100644
  		};
  
  		cpu@2 {
-@@ -42,6 +44,7 @@
+@@ -39,6 +41,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc2>;
  			qcom,saw = <&saw2>;
@@ -47,7 +47,7 @@ index 70c4329..a5e51fe 100644
  		};
  
  		cpu@3 {
-@@ -52,6 +55,7 @@
+@@ -49,6 +52,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc3>;
  			qcom,saw = <&saw3>;
@@ -55,7 +55,7 @@ index 70c4329..a5e51fe 100644
  		};
  
  		L2: l2-cache {
-@@ -59,6 +63,22 @@
+@@ -56,6 +60,22 @@
  			cache-level = <2>;
  			qcom,saw = <&saw_l2>;
  		};
@@ -80,3 +80,8 @@ index 70c4329..a5e51fe 100644
  	cpu-pmu {
 -- 
 1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
