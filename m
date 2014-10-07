@@ -1,58 +1,63 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: Potential cpufreq backports for v3.10 LTS
-Date: Tue, 7 Oct 2014 18:08:00 +0100
-Message-ID: <20141007170800.GL4609@sirena.org.uk>
-References: <20141007114844.GT4609@sirena.org.uk>
- <20141007164643.GA3748@kroah.com>
+From: Rob Landley <rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org>
+Subject: Re: [PATCH 05/44] mfd: as3722: Drop reference to pm_power_off from
+ devicetree bindings
+Date: Tue, 07 Oct 2014 12:10:58 -0500
+Message-ID: <54341EA2.6010806@landley.net>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net> <1412659726-29957-6-git-send-email-linux@roeck-us.net> <543412F7.8040909@landley.net> <20141007163131.GE28835@roeck-us.net> <54341BF1.9020001@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="mYOwxzDtEZWltKxP"
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20141007164643.GA3748@kroah.com>
-Sender: stable-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Xiaoguang Chen <chenxg@marvell.com>, Stratos Karafotis <stratosk@semaphore.gr>, Andreas Schwab <schwab@linux-m68k.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Amit Kucheria <amit.kucheria@linaro.org>, stable@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-metag-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <54341BF1.9020001-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: linux-metag-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: David Daney <ddaney.cavm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, adi-buildroot-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lguest-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-alpha-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-am33-list-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-cris-kernel-VrBV9hrLPhE@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hexagon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-m32r-ja-rQhvJZKUsGBRYuoOT4C5/9i2O/JbrIOy@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-s390-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-xtensa-PjhNF2WwrV/0Sa2dR60CXw@public.gmane.org, openipmi-developer-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, user-mode-linux-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-c6x-dev-jPsnJVOj+W6hPH1hqNUYSQ@public.gmane.org, linux-ia64-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-m68k-cunTk1MwBs8S/qaLPR03pWD2FQJk+8+b@public.gmane.org, linux-metag-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-parisc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org, Rob Herring <robh+>
 List-Id: linux-pm@vger.kernel.org
 
+On 10/07/14 11:59, David Daney wrote:
+> On 10/07/2014 09:31 AM, Guenter Roeck wrote:
+>> On Tue, Oct 07, 2014 at 11:21:11AM -0500, Rob Landley wrote:
+>>> On 10/07/14 00:28, Guenter Roeck wrote:
+>>>> Devicetree bindings are supposed to be operating system independent
+>>>> and should thus not describe how a specific functionality is
+>>>> implemented
+>>>> in Linux.
+>>>
+>>> So your argument is that linux/Documentation/devicetree/bindings should
+>>> not be specific to Linux. Merely hosted in the Linux kernel source
+>>> repository.
+>>>
+>>> Well that's certainly a point of view.
+>>>
+>> Not specifically my argument, really, and nothing new either. But,
+>> yes, I do
+>> think that devicetree bindings descriptions should not include
+>> implementation
+>> details, especially since those may change over time (as is the case
+>> here).
+>>
+> 
+> I fully agree.
+> 
+> Many device trees come from outside the kernel (i.e. they are supplied
+> by the system boot environment).  Obviously these device trees cannot be
+> changed at the whim of kernel developers, *and* it is perfectly
+> reasonable to think that software other than the Linux kernel will run
+> on this type of system too.
+> 
+> So yes, it is really true, device trees are not a Linux kernel private
+> implementation detail, they are really an external ABI that, although
+> documented in the kernel source tree, cannot be changed in incompatible
+> ways as time progresses.
 
---mYOwxzDtEZWltKxP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Ah. Existing thing with backstory among the in-crowd, so I'll assume
+"git subtree" was previously suggested and you had that discussion
+already and decided against it.
 
-On Tue, Oct 07, 2014 at 09:46:43AM -0700, Greg Kroah-Hartman wrote:
-> On Tue, Oct 07, 2014 at 12:48:44PM +0100, Mark Brown wrote:
+Carry on,
 
-> > The power management team at Linaro has had a look at the cpufreq
-> > updates since the v3.10 LTS and identified a few patches that look
-> > like they should be in there.  The most recent of these is from v3.12 so
-> > they won't apply to any of the more recent stable kernels.
-
-> >  - 59a6342203a7a cpufreq: Fix governor start/stop race condition
-
-> >    This looks like a straight race condition fix.
-
-> That is not a commit id in Linus's tree :(
-
-Interesting, I was able to cherry-pick it...  looks like the upstream
-version is 95731eb.  In any case at roughly the same time you sent your
-mail it's been drawn to my attention off-list that this was subsequently
-reverted so please ignore this one.  The others should be fine though.
-
---mYOwxzDtEZWltKxP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUNB3wAAoJECTWi3JdVIfQpeEH/2CC5NumQx2L8q9kWE8hFDDS
-BwTK1aRGMeRB2bym8CifQ3kkynb3Sirj3ZaXd6dHduOAdlpK7NubeSFZlixXcNOs
-Z/80bFiQJlWG9N8HbsYqD+mPzm9QY2zVr48wluQtql4oK3/qtW7qWTwTeOAUlHbL
-P5TeFV9U0mMun+kTf7D67QUOjKOW9Ph5axLg9EFLjIKo1yQGMi85+cKG9Q2YOnrI
-GaBEL4lJaQaATyCSgc0GVRgJ/n3g1Z4WpwdfUJqIiW1vU5LGfJEkfF2BbB7FO1v+
-u1q/pwKDZf4e59O9RS8JARGh6mwrCouIugl2nsheZm/w+GF1BHCVzTuPrUTGObQ=
-=0o9k
------END PGP SIGNATURE-----
-
---mYOwxzDtEZWltKxP--
+Rob
+--
+To unsubscribe from this list: send the line "unsubscribe linux-metag" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
