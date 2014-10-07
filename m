@@ -1,105 +1,120 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: Potential cpufreq backports for v3.10 LTS
-Date: Tue, 7 Oct 2014 13:14:14 +0100
-Message-ID: <20141007121414.GD4609@sirena.org.uk>
-References: <20141007114844.GT4609@sirena.org.uk>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH] power: charger-manager: Avoid recursive thermal get_temp
+ call
+Date: Tue, 07 Oct 2014 14:50:05 +0200
+Message-ID: <1412686205.15309.1.camel@AMDC1943>
+References: <1412611212-24803-1-git-send-email-k.kozlowski@samsung.com>
+ <54334E00.9030403@samsung.com> <1412665994.11780.3.camel@AMDC1943>
+ <5433BE0D.6000306@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="k8ylJtLa18RSEDYA"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20141007114844.GT4609@sirena.org.uk>
-Sender: cpufreq-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Xiaoguang Chen <chenxg@marvell.com>, Stratos Karafotis <stratosk@semaphore.gr>, Andreas Schwab <schwab@linux-m68k.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, stable@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:30880 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751094AbaJGMuJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Oct 2014 08:50:09 -0400
+In-reply-to: <5433BE0D.6000306@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: jonghwa3.lee@samsung.com
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Anton Vorontsov <anton@enomsg.org>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On wto, 2014-10-07 at 19:18 +0900, jonghwa3.lee@samsung.com wrote:
+> On 2014=EB=85=84 10=EC=9B=94 07=EC=9D=BC 16:13, Krzysztof Kozlowski w=
+rote:
+>=20
+> >=20
+> > On wto, 2014-10-07 at 11:20 +0900, jonghwa3.lee@samsung.com wrote:
+> >> Hi,
+> >> On 2014=EB=85=84 10=EC=9B=94 07=EC=9D=BC 01:00, Krzysztof Kozlowsk=
+i wrote:
+> >>
+> >>> The charger manager supports POWER_SUPPLY_PROP_TEMP property and =
+acts
+> >>> as a thermal zone if any of these conditions match:
+> >>> 1. Fuel gauge used by charger manager supports POWER_SUPPLY_PROP_=
+TEMP.
+> >>> 2. 'cm-thermal-zone' property is present in DTS (then it will sup=
+ersede
+> >>>    the fuel gauge temperature property).
+> >>>
+> >>> However in case 1 (fuel gauge reports temperature and 'cm-thermal=
+-zone'
+> >>> is not set) the charger manager forwards its get_temp calls to fu=
+el
+> >>> gauge thermal zone.
+> >>>
+> >>> This leads to reporting by lockdep a false positive deadlock for =
+thermal
+> >>> zone's mutex because of nested calls to thermal_zone_get_temp(). =
+This is
+> >>> false positive because these are different mutexes: one for charg=
+er
+> >>> manager thermal zone and second for fuel gauge thermal zone.
+> >>>
+> >>
+> >>
+> >> Yes, this happens because power_supply_subsystem automatically cre=
+ates
+> >> thermal_zone when POWER_SUPPLY_PROP_TEMP is available at the time =
+of
+> >> power_supply registering. And as you point out, it makes duplicate=
+ thermal_zone
+> >> when some power_supply references other power_supply's. I hope it =
+would become
+> >> to be a selectable option or change the manner of charger-manager =
+itself (if the
+> >> charger-manager is only one who references other power_supply's te=
+mperature
+> >> sensing ability).
+> >>
+> >> Anyway, the code looks fine to me.
+> >>
+> >> Acked-by : Jonghwa Lee <jonghwa3.lee@samsung.com>
+> >=20
+> > Thank you for looking at patch. However later I started to wonder
+> > whether my fix is sufficient. For the case when fuel gauge is used =
+as
+> > source of temperature it is. But for the case when external sensor =
+is
+> > used it is not - still there will be recursive call and false posit=
+ive
+> > from lockdep.
+> >=20
+> > Also minor fix is needed in my patch - s/IS_ENABLED/config_enabled/=
+=2E
+> >=20
+> > I can send a v2 fixing this but first question - what about second
+> > recursive issue (when external sensor is used instead of fuel gauge=
+)?
+> >=20
+>=20
+>=20
+> Yes, you're right, it still had problem for external temperature sens=
+or case.
+> How about we change the core not to make duplicate thermal zone if it=
+ already
+> existed. It's not the common case, but it looks worthy.
+>=20
+> like as below,
+>=20
+> static int psy_register_thermal(struct power_supply *psy)
+> {
+> ...
+> +	if (psy->tzd)
+> +		return 0;
+> ...
+>=20
+> We also needs some modification at charger-manager driver, however we=
+ can avoid
+> recursive call problem with this way :)
 
---k8ylJtLa18RSEDYA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, that would remove recursive call but this would also remove therma=
+l
+zone for charger manager's power supply. Does anyone (user space?)
+depend and use charger managers thermal zone?
 
-On Tue, Oct 07, 2014 at 12:48:44PM +0100, Mark Brown wrote:
-> Hi,
->=20
-> The power management team at Linaro has had a look at the cpufreq
-> updates since the v3.10 LTS and identified a few patches that look
-> like they should be in there.  The most recent of these is from v3.12 so
-> they won't apply to any of the more recent stable kernels.
+Best regards,
+Krzysztof
 
-CCing in the actual stable list rather than the nonexistant linux-stable.
-
->  - 59a6342203a7a cpufreq: Fix governor start/stop race condition
->=20
->    This looks like a straight race condition fix.
->=20
->  - 19c763031acb8 cpufreq: serialize calls to __cpufreq_governor()
->=20
->    The commit message here outlines a scenario where this change fixes a
->    crash which seems like stable material to me.  There is a context
->    change that needs a fixup but it's fairly trivial:
->=20
-> diff --cc drivers/cpufreq/cpufreq.c
-> index c34d4423f298,7e6baa58a7f2..000000000000
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@@ -1586,8 -1692,10 +1586,9 @@@ static int __cpufreq_governor(struct cp
->   						policy->cpu, event);
->  =20
->   	mutex_lock(&cpufreq_governor_lock);
-> - 	if ((!policy->governor_enabled && (event =3D=3D CPUFREQ_GOV_STOP)) ||
->  -	if (policy->governor_busy
->  -	    || (policy->governor_enabled && event =3D=3D CPUFREQ_GOV_START)
->  -	    || (!policy->governor_enabled
->  -	    && (event =3D=3D CPUFREQ_GOV_LIMITS || event =3D=3D CPUFREQ_GOV_ST=
-OP))) {
-> ++	if (policy->governor_busy ||
-> ++	    (!policy->governor_enabled && (event =3D=3D CPUFREQ_GOV_STOP)) ||
->  +	    (policy->governor_enabled && (event =3D=3D CPUFREQ_GOV_START))) {
->   		mutex_unlock(&cpufreq_governor_lock);
->   		return -EBUSY;
->   	}
->=20
->  - a857c0b9e24e3 cpufreq: Fix wrong time unit conversion
->=20
->    As noted in the changelog this is a bugfix for non-tick based
->    systems like full dynticks ones.
->=20
-> There's also this:
->=20
->  - dfa5bb622555d cpufreq: ondemand: Change the calculation of target freq=
-uency
->=20
->    This is a small patch which delivers a useful performance improvement
->    but it's not a bug fix and it does touch the cpufreq core so it
->    doesn't seem to really fit.  On the other hand I've got user reports
->    that it fixes problems with some multicluster systems that can scale
->    cluster frequencies independently (the additional stability in the
->    frequencies selected avoids poor interaction with scheduler as cpufreq
->    ramps the frequency while the scheduler moves load away from the
->    cluster), it's simple and it's quite well isolated so I wanted to
->    mention it.
->=20
-> Thanks,
-> Mark
-
-
-
---k8ylJtLa18RSEDYA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUM9kWAAoJECTWi3JdVIfQa2EH/iD6394bs1u/pFD66944zoTH
-YS2eBz3Liuyf/yC0qao9ke2B0joxp+5nIme22SrFq3OT7zns2xJPouc2QUqAOyfA
-uCg9tc/sIyf8XVKekZMPxuwG3bjNnm3T5e4Mg89kWCZansGPUrY/WbYAiG3CNBm8
-WkK6Kaa84I0Bv3eH2pscsDsICGBWz+rKc3wGBRtCm8AmPD7nKu/W6MVTFc6yy7LK
-ymLtkvFSES+isj1v6r7G45KcvjkFyAu+hLwm2+HtojCxK0zoXSqJbNtaE+jOmRU6
-QdhAWkxE2kjIB8PLOFpjYQCzW10ZA7mO1B7Zz2yKaLB7u965fVKhF7tJzmnSNec=
-=O1Xe
------END PGP SIGNATURE-----
-
---k8ylJtLa18RSEDYA--
