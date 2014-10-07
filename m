@@ -1,129 +1,66 @@
-From: jonghwa3.lee@samsung.com
-Subject: Re: [PATCH] power: charger-manager: Avoid recursive thermal get_temp
- call
-Date: Tue, 07 Oct 2014 22:05:28 +0900
-Message-ID: <5433E518.40300@samsung.com>
-References: <1412611212-24803-1-git-send-email-k.kozlowski@samsung.com>
- <54334E00.9030403@samsung.com> <1412665994.11780.3.camel@AMDC1943>
- <5433BE0D.6000306@samsung.com> <1412686205.15309.1.camel@AMDC1943>
+From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Subject: RE: [PATCH 2/8] mfd: da9150: Add DT binding documentation for core
+Date: Tue, 7 Oct 2014 13:47:01 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337AB518CFE@SW-EX-MBX01.diasemi.com>
+References: <cover.1411396718.git.Adam.Thomson.Opensource@diasemi.com>
+ <b71815ff49a1cabe2c7907a96cc1be34f924648e.1411396719.git.Adam.Thomson.Opensource@diasemi.com>
+ <5426932E.7060609@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1412686205.15309.1.camel@AMDC1943>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Anton Vorontsov <anton@enomsg.org>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5426932E.7060609-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Language: en-US
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, "linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>, "linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2014=EB=85=84 10=EC=9B=94 07=EC=9D=BC 21:50, Krzysztof Kozlowski wro=
-te:
-
-> On wto, 2014-10-07 at 19:18 +0900, jonghwa3.lee@samsung.com wrote:
->> On 2014=EB=85=84 10=EC=9B=94 07=EC=9D=BC 16:13, Krzysztof Kozlowski =
-wrote:
->>
->>>
->>> On wto, 2014-10-07 at 11:20 +0900, jonghwa3.lee@samsung.com wrote:
->>>> Hi,
->>>> On 2014=EB=85=84 10=EC=9B=94 07=EC=9D=BC 01:00, Krzysztof Kozlowsk=
-i wrote:
->>>>
->>>>> The charger manager supports POWER_SUPPLY_PROP_TEMP property and =
-acts
->>>>> as a thermal zone if any of these conditions match:
->>>>> 1. Fuel gauge used by charger manager supports POWER_SUPPLY_PROP_=
-TEMP.
->>>>> 2. 'cm-thermal-zone' property is present in DTS (then it will sup=
-ersede
->>>>>    the fuel gauge temperature property).
->>>>>
->>>>> However in case 1 (fuel gauge reports temperature and 'cm-thermal=
--zone'
->>>>> is not set) the charger manager forwards its get_temp calls to fu=
-el
->>>>> gauge thermal zone.
->>>>>
->>>>> This leads to reporting by lockdep a false positive deadlock for =
-thermal
->>>>> zone's mutex because of nested calls to thermal_zone_get_temp(). =
-This is
->>>>> false positive because these are different mutexes: one for charg=
-er
->>>>> manager thermal zone and second for fuel gauge thermal zone.
->>>>>
->>>>
->>>>
->>>> Yes, this happens because power_supply_subsystem automatically cre=
-ates
->>>> thermal_zone when POWER_SUPPLY_PROP_TEMP is available at the time =
-of
->>>> power_supply registering. And as you point out, it makes duplicate=
- thermal_zone
->>>> when some power_supply references other power_supply's. I hope it =
-would become
->>>> to be a selectable option or change the manner of charger-manager =
-itself (if the
->>>> charger-manager is only one who references other power_supply's te=
-mperature
->>>> sensing ability).
->>>>
->>>> Anyway, the code looks fine to me.
->>>>
->>>> Acked-by : Jonghwa Lee <jonghwa3.lee@samsung.com>
->>>
->>> Thank you for looking at patch. However later I started to wonder
->>> whether my fix is sufficient. For the case when fuel gauge is used =
-as
->>> source of temperature it is. But for the case when external sensor =
-is
->>> used it is not - still there will be recursive call and false posit=
-ive
->>> from lockdep.
->>>
->>> Also minor fix is needed in my patch - s/IS_ENABLED/config_enabled/=
-=2E
->>>
->>> I can send a v2 fixing this but first question - what about second
->>> recursive issue (when external sensor is used instead of fuel gauge=
-)?
->>>
->>
->>
->> Yes, you're right, it still had problem for external temperature sen=
-sor case.
->> How about we change the core not to make duplicate thermal zone if i=
-t already
->> existed. It's not the common case, but it looks worthy.
->>
->> like as below,
->>
->> static int psy_register_thermal(struct power_supply *psy)
->> {
->> ...
->> +	if (psy->tzd)
->> +		return 0;
->> ...
->>
->> We also needs some modification at charger-manager driver, however w=
-e can avoid
->> recursive call problem with this way :)
->=20
-> Yes, that would remove recursive call but this would also remove ther=
-mal
-> zone for charger manager's power supply. Does anyone (user space?)
-> depend and use charger managers thermal zone?
->=20
-
-
-AFAIK, no,, charger manager's thermal zone means nothing but just repli=
-ca of
-other thermal zone related with battery. It is better to remove it.
-
-Thanks,
-Jonghwa.
-
-> Best regards,
-> Krzysztof
->=20
->=20
+T24gU2VwdGVtYmVyIDI3LCAyMDE0IDExOjM3LCBKb25hdGhhbiBDYW1lcm9uIHdyb3RlOg0KDQo+
+IE9uIDIzLzA5LzE0IDExOjUzLCBBZGFtIFRob21zb24gd3JvdGU6DQo+ID4gU2lnbmVkLW9mZi1i
+eTogQWRhbSBUaG9tc29uIDxBZGFtLlRob21zb24uT3BlbnNvdXJjZUBkaWFzZW1pLmNvbT4NCj4g
+T2J2aW91c2x5IHRoaXMgcmVhbGx5IHdhbnRzIGEgcmV2aWV3IGZyb20gb25lIG9mIHRoZSBkZXZp
+Y2UgdHJlZSBndXlzLCBidXQgSQ0KPiBoYXZlIGEgZmV3DQo+IGJpdHMgYmFzZWQgb24gd2hhdCBN
+YXJrIGhhcyByZWNlbnRseSBzYWlkIGluIG90aGVyIHJldmlld3MgOykNCj4gPiAtLS0NCj4gPiAg
+RG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL21mZC9kYTkxNTAudHh0IHwgNDENCj4g
+KysrKysrKysrKysrKysrKysrKysrKysrDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA0MSBpbnNlcnRp
+b25zKCspDQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
+YmluZGluZ3MvbWZkL2RhOTE1MC50eHQNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0
+aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbWZkL2RhOTE1MC50eHQNCj4gYi9Eb2N1bWVudGF0aW9u
+L2RldmljZXRyZWUvYmluZGluZ3MvbWZkL2RhOTE1MC50eHQNCj4gPiBuZXcgZmlsZSBtb2RlIDEw
+MDY0NA0KPiA+IGluZGV4IDAwMDAwMDAuLmQ3ZGUxNTANCj4gPiAtLS0gL2Rldi9udWxsDQo+ID4g
+KysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL21mZC9kYTkxNTAudHh0DQo+
+ID4gQEAgLTAsMCArMSw0MSBAQA0KPiA+ICtEaWFsb2cgU2VtaWNvbmR1Y3RvciBEQTkxNTAgQ29t
+YmluZWQgQ2hhcmdlci9GdWVsLUdhdWdlIE1GRCBiaW5kaW5ncw0KPiA+ICsNCj4gPiArREE5MTUw
+IGNvbnNpc3RzIG9mIGEgZ3JvdXAgb2Ygc3ViLWRldmljZXMgKEkyQyBPbmx5KToNCj4gV2hhdCBk
+b2VzIEkyQyBvbmx5IGFkZCB0byB0aGUgZGVzY3JpcHRpb24/DQoNCk5vdGhpbmcgcmVhbGx5LiBX
+aWxsIHJlbW92ZS4NCg0KPiA+ICsNCj4gPiArRGV2aWNlCQkJIERlc2NyaXB0aW9uDQo+ID4gKy0t
+LS0tLQkJCSAtLS0tLS0tLS0tLQ0KPiA+ICtkYTkxNTAtZ3BhZGMJCTogSUlPIC0gR1BBREMNCj4g
+R2l2ZW4gdXN1YWwgYXZlcnNpb24gdG8gYW55dGhpbmcgZHJpdmVyIHNwZWNpZmljIGluIHRoZSBk
+ZXZpY2UgdHJlZSBkZXNjcmlwdGlvbg0KPiB5b3UgcHJvYmFibHkNCj4ganVzdCB3YW50IHRvIGRl
+c2NyaWJlIHdoYXQgdGhleSBkbyByYXRoZXIgdGhhbiB3aGF0IHN1YnN5c3RlbSBwcm92aWRlcyB0
+aGUgZHJpdmVyLg0KDQpPaywgY2FuIHVwZGF0ZSBhY2NvcmRpbmdseS4NCg0KPiANCj4gPiArZGE5
+MTUwLWNoYXJnZXIJCTogUG93ZXIgU3VwcGx5IChDaGFyZ2VyKQ0KPiA+ICsNCj4gPiArPT09PT09
+DQo+ID4gKw0KPiA+ICtSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiA+ICstIGNvbXBhdGlibGUgOiBT
+aG91bGQgYmUgImRsZyxkYTkxNTAiDQo+ID4gKy0gcmVnOiBTcGVjaWZpZXMgdGhlIEkyQyBzbGF2
+ZSBhZGRyZXNzDQo+ID4gKy0gaW50ZXJydXB0LXBhcmVudDogU3BlY2lmaWVzIHRoZSBwaGFuZGxl
+IG9mIHRoZSBpbnRlcnJ1cHQgY29udHJvbGxlciB0byB3aGljaA0KPiA+ICsgIHRoZSBJUlFzIGZy
+b20gZGE5MTUwIGFyZSBkZWxpdmVyZWQgdG8uDQo+ID4gKy0gaW50ZXJydXB0czogSVJRIGxpbmUg
+aW5mbyBmb3IgZGE5MTUwIGNoaXAuDQo+IENyb3NzIHJlZmVyIHRvIHRoZSBzdGFuZGFyZCBpbnRl
+cnJ1cHRzIGRvYyBmb3IgdGhlc2UuLi4NCj4gDQoNCk9rLCBjYW4gZG8gdGhhdC4NCg0KPiA+ICst
+IGludGVycnVwdC1jb250cm9sbGVyOiBkYTkxNTAgaGFzIGludGVybmFsIElSUXMgKG93biBJUlEg
+ZG9tYWluKS4NCj4gPiArDQo+ID4gK1N1Yi1kZXZpY2VzOg0KPiA+ICstIGRhOTE1MC1ncGFkYzog
+U2VlIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9paW8vYWRjL2RhOTE1MC0NCj4g
+Z3BhZGMudHh0DQo+ID4gKy0gZGE5MTUwLWNoYXJnZXI6IFNlZSBEb2N1bWVudGF0aW9uL2Rldmlj
+ZXRyZWUvYmluZGluZ3MvcG93ZXIvZGE5MTUwLQ0KPiBjaGFyZ2VyLnR4dA0KPiA+ICsNCj4gPiAr
+DQo+ID4gK0V4YW1wbGU6DQo+ID4gKw0KPiA+ICsJY2hhcmdlcl9mZzogZGE5MTUwQDU4IHsNCj4g
+PiArCQljb21wYXRpYmxlID0gImRsZyxkYTkxNTAiOw0KPiA+ICsJCXJlZyA9IDwweDU4PjsNCj4g
+PiArCQlpbnRlcnJ1cHQtcGFyZW50ID0gPCZncGlvNj47DQo+ID4gKwkJaW50ZXJydXB0cyA9IDwx
+MSBJUlFfVFlQRV9MRVZFTF9MT1c+Ow0KPiA+ICsJCWludGVycnVwdC1jb250cm9sbGVyOw0KPiA+
+ICsNCj4gPiArCQlncGFkYzogZGE5MTUwLWdwYWRjIHsNCj4gPiArCQkJLi4uDQo+ID4gKwkJfTsN
+Cj4gPiArDQo+ID4gKwkJZGE5MTUwLWNoYXJnZXIgew0KPiA+ICsJCQkuLi4NCj4gPiArCQl9Ow0K
+PiA+ICsJfTsNCj4gPiAtLQ0KPiA+IDEuOS4zDQo+ID4NCj4gPiAtLQ0KPiA+IFRvIHVuc3Vic2Ny
+aWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1paW8i
+IGluDQo+ID4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5v
+cmcNCj4gPiBNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21h
+am9yZG9tby1pbmZvLmh0bWwNCj4gPg0K
