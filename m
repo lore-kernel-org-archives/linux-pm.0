@@ -1,58 +1,58 @@
-From: David Daney <ddaney.cavm@gmail.com>
-Subject: Re: [PATCH 05/44] mfd: as3722: Drop reference to pm_power_off from
- devicetree bindings
-Date: Tue, 07 Oct 2014 09:59:29 -0700
-Message-ID: <54341BF1.9020001@gmail.com>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-6-git-send-email-linux@roeck-us.net>
- <543412F7.8040909@landley.net> <20141007163131.GE28835@roeck-us.net>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: Potential cpufreq backports for v3.10 LTS
+Date: Tue, 7 Oct 2014 18:08:00 +0100
+Message-ID: <20141007170800.GL4609@sirena.org.uk>
+References: <20141007114844.GT4609@sirena.org.uk>
+ <20141007164643.GA3748@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <20141007163131.GE28835@roeck-us.net>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Guenter Roeck <linux@roeck-us.net>, Rob Landley <rob@landley.net>
-Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, linux-xtensa@linux-xtensa.org, Mark Rutland <mark.rutland@arm.com>, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, linux-acpi@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, xen-devel@lists.xenproject.org, devicetree@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com, linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org, Rob
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="mYOwxzDtEZWltKxP"
+Return-path: <stable-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20141007164643.GA3748@kroah.com>
+Sender: stable-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Xiaoguang Chen <chenxg@marvell.com>, Stratos Karafotis <stratosk@semaphore.gr>, Andreas Schwab <schwab@linux-m68k.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Amit Kucheria <amit.kucheria@linaro.org>, stable@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10/07/2014 09:31 AM, Guenter Roeck wrote:
-> On Tue, Oct 07, 2014 at 11:21:11AM -0500, Rob Landley wrote:
->> On 10/07/14 00:28, Guenter Roeck wrote:
->>> Devicetree bindings are supposed to be operating system independent
->>> and should thus not describe how a specific functionality is implemented
->>> in Linux.
->>
->> So your argument is that linux/Documentation/devicetree/bindings should
->> not be specific to Linux. Merely hosted in the Linux kernel source
->> repository.
->>
->> Well that's certainly a point of view.
->>
-> Not specifically my argument, really, and nothing new either. But, yes, I do
-> think that devicetree bindings descriptions should not include implementation
-> details, especially since those may change over time (as is the case here).
->
 
-I fully agree.
+--mYOwxzDtEZWltKxP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Many device trees come from outside the kernel (i.e. they are supplied 
-by the system boot environment).  Obviously these device trees cannot be 
-changed at the whim of kernel developers, *and* it is perfectly 
-reasonable to think that software other than the Linux kernel will run 
-on this type of system too.
+On Tue, Oct 07, 2014 at 09:46:43AM -0700, Greg Kroah-Hartman wrote:
+> On Tue, Oct 07, 2014 at 12:48:44PM +0100, Mark Brown wrote:
 
-So yes, it is really true, device trees are not a Linux kernel private 
-implementation detail, they are really an external ABI that, although 
-documented in the kernel source tree, cannot be changed in incompatible 
-ways as time progresses.
+> > The power management team at Linaro has had a look at the cpufreq
+> > updates since the v3.10 LTS and identified a few patches that look
+> > like they should be in there.  The most recent of these is from v3.12 so
+> > they won't apply to any of the more recent stable kernels.
 
-David Daney
+> >  - 59a6342203a7a cpufreq: Fix governor start/stop race condition
+
+> >    This looks like a straight race condition fix.
+
+> That is not a commit id in Linus's tree :(
+
+Interesting, I was able to cherry-pick it...  looks like the upstream
+version is 95731eb.  In any case at roughly the same time you sent your
+mail it's been drawn to my attention off-list that this was subsequently
+reverted so please ignore this one.  The others should be fine though.
+
+--mYOwxzDtEZWltKxP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUNB3wAAoJECTWi3JdVIfQpeEH/2CC5NumQx2L8q9kWE8hFDDS
+BwTK1aRGMeRB2bym8CifQ3kkynb3Sirj3ZaXd6dHduOAdlpK7NubeSFZlixXcNOs
+Z/80bFiQJlWG9N8HbsYqD+mPzm9QY2zVr48wluQtql4oK3/qtW7qWTwTeOAUlHbL
+P5TeFV9U0mMun+kTf7D67QUOjKOW9Ph5axLg9EFLjIKo1yQGMi85+cKG9Q2YOnrI
+GaBEL4lJaQaATyCSgc0GVRgJ/n3g1Z4WpwdfUJqIiW1vU5LGfJEkfF2BbB7FO1v+
+u1q/pwKDZf4e59O9RS8JARGh6mwrCouIugl2nsheZm/w+GF1BHCVzTuPrUTGObQ=
+=0o9k
+-----END PGP SIGNATURE-----
+
+--mYOwxzDtEZWltKxP--
