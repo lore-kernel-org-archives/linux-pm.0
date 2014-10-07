@@ -1,95 +1,82 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH 2/7] arm: dts: qcom: Add power-controller device node for 8974 Krait CPUs
-Date: Tue,  7 Oct 2014 15:31:20 -0600
-Message-ID: <1412717485-16892-2-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH 6/7] arm: dts: qcom: Add idle states device nodes for 8974
+Date: Tue,  7 Oct 2014 15:31:24 -0600
+Message-ID: <1412717485-16892-6-git-send-email-lina.iyer@linaro.org>
 References: <1412717485-16892-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f173.google.com ([209.85.192.173]:34926 "EHLO
-	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750865AbaJGVbx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Oct 2014 17:31:53 -0400
-Received: by mail-pd0-f173.google.com with SMTP id g10so5736874pdj.32
-        for <linux-pm@vger.kernel.org>; Tue, 07 Oct 2014 14:31:52 -0700 (PDT)
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1412717485-16892-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Each Krait CPU in the QCOM 8974 SoC has an SAW power controller to
-regulate the power to the cpu and aide the core in entering idle states.
-Reference the SAW instance and associate the instance with the CPU core.
+Add allowable C-States for each cpu using the cpu-idle-states node.
+Support Standby and Standalone power collapse (power down that does not
+affect any SoC idle states) for each cpu.
 
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- arch/arm/boot/dts/qcom-msm8974.dtsi | 26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/qcom-msm8974.dtsi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
 diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index 69dca2a..70c4329 100644
+index 70c4329..a5e51fe 100644
 --- a/arch/arm/boot/dts/qcom-msm8974.dtsi
 +++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -21,6 +21,7 @@
- 			reg = <0>;
+@@ -22,6 +22,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc0>;
-+			qcom,saw = <&saw0>;
+ 			qcom,saw = <&saw0>;
++			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
  		};
  
  		cpu@1 {
-@@ -30,6 +31,7 @@
- 			reg = <1>;
+@@ -32,6 +33,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc1>;
-+			qcom,saw = <&saw1>;
+ 			qcom,saw = <&saw1>;
++			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
  		};
  
  		cpu@2 {
-@@ -39,6 +41,7 @@
- 			reg = <2>;
+@@ -42,6 +44,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc2>;
-+			qcom,saw = <&saw2>;
+ 			qcom,saw = <&saw2>;
++			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
  		};
  
  		cpu@3 {
-@@ -48,6 +51,7 @@
- 			reg = <3>;
+@@ -52,6 +55,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc3>;
-+			qcom,saw = <&saw3>;
+ 			qcom,saw = <&saw3>;
++			cpu-idle-states = <&CPU_STBY &CPU_SPC>;
  		};
  
  		L2: l2-cache {
-@@ -144,7 +148,27 @@
- 			};
+@@ -59,6 +63,22 @@
+ 			cache-level = <2>;
+ 			qcom,saw = <&saw_l2>;
  		};
++
++		idle-states {
++			CPU_STBY: standby {
++				compatible = "qcom,idle-state-stby", "arm,idle-state";
++				entry-latency-us = <1>;
++				exit-latency-us = <1>;
++				min-residency-us = <2>;
++			};
++
++			CPU_SPC: spc {
++				compatible = "qcom,idle-state-spc", "arm,idle-state";
++				entry-latency-us = <150>;
++				exit-latency-us = <200>;
++				min-residency-us = <2000>;
++			};
++		};
+ 	};
  
--		saw_l2: regulator@f9012000 {
-+		saw0: power-controller@f9089000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
-+			reg = <0xf9089000 0x1000>;
-+		};
-+
-+		saw1: power-controller@f9099000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
-+			reg = <0xf9099000 0x1000>;
-+		};
-+
-+		saw2: power-controller@f90a9000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
-+			reg = <0xf90a9000 0x1000>;
-+		};
-+
-+		saw3: power-controller@f90b9000 {
-+			compatible = "qcom,msm8974-saw2-v2.1-cpu";
-+			reg = <0xf90b9000 0x1000>;
-+		};
-+
-+		saw_l2: power-controller@f9012000 {
- 			compatible = "qcom,saw2";
- 			reg = <0xf9012000 0x1000>;
- 			regulator;
+ 	cpu-pmu {
 -- 
 1.9.1
-
