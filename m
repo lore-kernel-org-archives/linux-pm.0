@@ -1,63 +1,53 @@
-From: Rob Landley <rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org>
-Subject: Re: [PATCH 05/44] mfd: as3722: Drop reference to pm_power_off from
- devicetree bindings
-Date: Tue, 07 Oct 2014 12:10:58 -0500
-Message-ID: <54341EA2.6010806@landley.net>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net> <1412659726-29957-6-git-send-email-linux@roeck-us.net> <543412F7.8040909@landley.net> <20141007163131.GE28835@roeck-us.net> <54341BF1.9020001@gmail.com>
+From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Subject: Re: [PATCH v2 04/15] clk: divider: Make generic for usage elsewhere
+Date: Tue, 07 Oct 2014 18:27:35 +0100
+Message-ID: <54342287.7020005@linaro.org>
+References: <1409957256-23729-1-git-send-email-sboyd@codeaurora.org> <1409957256-23729-5-git-send-email-sboyd@codeaurora.org> <542EE5FE.9080806@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-metag-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <54341BF1.9020001-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: linux-metag-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: David Daney <ddaney.cavm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, adi-buildroot-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lguest-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-alpha-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-am33-list-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-cris-kernel-VrBV9hrLPhE@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hexagon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-m32r-ja-rQhvJZKUsGBRYuoOT4C5/9i2O/JbrIOy@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-s390-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-xtensa-PjhNF2WwrV/0Sa2dR60CXw@public.gmane.org, openipmi-developer-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, user-mode-linux-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-c6x-dev-jPsnJVOj+W6hPH1hqNUYSQ@public.gmane.org, linux-ia64-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-m68k-cunTk1MwBs8S/qaLPR03pWD2FQJk+8+b@public.gmane.org, linux-metag-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-parisc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org, Rob Herring <robh+>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <542EE5FE.9080806@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10/07/14 11:59, David Daney wrote:
-> On 10/07/2014 09:31 AM, Guenter Roeck wrote:
->> On Tue, Oct 07, 2014 at 11:21:11AM -0500, Rob Landley wrote:
->>> On 10/07/14 00:28, Guenter Roeck wrote:
->>>> Devicetree bindings are supposed to be operating system independent
->>>> and should thus not describe how a specific functionality is
->>>> implemented
->>>> in Linux.
->>>
->>> So your argument is that linux/Documentation/devicetree/bindings should
->>> not be specific to Linux. Merely hosted in the Linux kernel source
->>> repository.
->>>
->>> Well that's certainly a point of view.
->>>
->> Not specifically my argument, really, and nothing new either. But,
->> yes, I do
->> think that devicetree bindings descriptions should not include
->> implementation
->> details, especially since those may change over time (as is the case
->> here).
+Hi Stephen,
+
+Just noticed this regression while testing the patch on Arndale board.
+
+https://bugs.linaro.org/show_bug.cgi?id=740
+
+
+--srini
+
+On 03/10/14 19:07, Stephen Boyd wrote:
+> On 09/05/14 15:47, Stephen Boyd wrote:
+>> +
+>> +int divider_get_val(unsigned long rate, unsigned long parent_rate,
+>> +		    const struct clk_div_table *table, u8 width,
+>> +		    unsigned long flags)
+>> +{
+>>   	unsigned int div, value;
+>> -	unsigned long flags = 0;
+>> -	u32 val;
 >>
-> 
-> I fully agree.
-> 
-> Many device trees come from outside the kernel (i.e. they are supplied
-> by the system boot environment).  Obviously these device trees cannot be
-> changed at the whim of kernel developers, *and* it is perfectly
-> reasonable to think that software other than the Linux kernel will run
-> on this type of system too.
-> 
-> So yes, it is really true, device trees are not a Linux kernel private
-> implementation detail, they are really an external ABI that, although
-> documented in the kernel source tree, cannot be changed in incompatible
-> ways as time progresses.
-
-Ah. Existing thing with backstory among the in-crowd, so I'll assume
-"git subtree" was previously suggested and you had that discussion
-already and decided against it.
-
-Carry on,
-
-Rob
---
-To unsubscribe from this list: send the line "unsubscribe linux-metag" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>   	div = DIV_ROUND_UP(parent_rate, rate);
+>>
+>> -	if (!_is_valid_div(divider, div))
+>> +	if (!_is_valid_div(table, div, flags))
+>>   		return -EINVAL;
+>>
+>> -	value = _get_val(divider, div);
+>> +	value = _get_val(table, div, flags);
+>> +
+>> +	min_t(unsigned int, value, div_mask(width));
+>> +
+>> +	return 0;
+>
+> This should be return value, not return 0.
+>
+>> +}
+>> +EXPORT_SYMBOL_GPL(divider_get_val);
+>>
