@@ -1,49 +1,58 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+From: Mark Brown <broonie@kernel.org>
 Subject: Re: Potential cpufreq backports for v3.10 LTS
-Date: Tue, 7 Oct 2014 15:56:24 -0700
-Message-ID: <20141007225624.GA8171@kroah.com>
+Date: Wed, 8 Oct 2014 00:07:19 +0100
+Message-ID: <20141007230719.GP4609@sirena.org.uk>
 References: <20141007114844.GT4609@sirena.org.uk>
  <20141007164643.GA3748@kroah.com>
  <20141007170800.GL4609@sirena.org.uk>
  <20141007200458.GA12028@kroah.com>
- <20141007204505.GL4609@sirena.org.uk>
- <20141007215807.GA29188@kroah.com>
- <20141007225006.GM4609@sirena.org.uk>
+ <54345CFB.7070101@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:39368 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752353AbaJGW4Y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Oct 2014 18:56:24 -0400
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="NsYpzUZ4z5mp8BBz"
+Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20141007225006.GM4609@sirena.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <54345CFB.7070101@semaphore.gr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Xiaoguang Chen <chenxg@marvell.com>, Andreas Schwab <schwab@linux-m68k.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Amit Kucheria <amit.kucheria@linaro.org>, stable@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Xiaoguang Chen <chenxg@marvell.com>, Stratos Karafotis <stratosk@semaphore.gr>, Andreas Schwab <schwab@linux-m68k.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Amit Kucheria <amit.kucheria@linaro.org>, stable@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, Oct 07, 2014 at 11:50:06PM +0100, Mark Brown wrote:
-> On Tue, Oct 07, 2014 at 02:58:07PM -0700, Greg Kroah-Hartman wrote:
-> > On Tue, Oct 07, 2014 at 09:45:05PM +0100, Mark Brown wrote:
-> 
-> > > Actually I thinkoed here, as I said in reply to the stable mail the
-> > > problematic patch was "19c763031acb8 cpufreq: serialize calls to
-> > > __cpufreq_governor()" which was reverted in "56d07db cpufreq: Remove
-> > > temporary fix for race between CPU hotplug and sysfs-writes".  The above
-> > > commit ID (95731eb) should be good.
-> 
-> > > Sorry about the confusion here.
-> 
-> > Ok, I'm still confused.  I've applied 3 patches to the 3.10-stable
-> > queue, in this order:
-> 
-> To the best of my ability to assess:
-> 
-> > 	19c763031acb831a5ab9c1a701b7fedda073eb3f	cpufreq: serialize calls to __cpufreq_governor()
-> 
-> This one is bad.
 
-Ok, now deleted, thanks for letting me know.
+--NsYpzUZ4z5mp8BBz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-greg k-h
+On Wed, Oct 08, 2014 at 12:36:59AM +0300, Stratos Karafotis wrote:
+
+> For your information, commits:
+
+> - 61c63e5ed3b9 cpufreq: Remove unused APERF/MPERF support
+> - cffe4e0e7413 cpufreq: Remove unused function __cpufreq_driver_getavg()
+
+> remove unused code (no other functional changes) as a result of
+> commit dfa5bb622555. They all were part of the same patch set.
+
+> I'm not familiar with the procedure of patch inclusion in stable trees,
+> so please forgive me if this mail is just noise.
+
+If they're just cleanups and not producing a functional change then the
+standard thing would be to leave them out of stable.
+
+--NsYpzUZ4z5mp8BBz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUNHInAAoJECTWi3JdVIfQOB8IAIJGtQeG5wj0/eMMWXyDeQir
+c4rpD8yGRsRXYYXWBYqAcabkQbsyrRLSBZ86EBgMmnl98N1QtswWjO8ivFUHeR25
+OxqE/AOCov6EMSAaOfguxdi2ufFuNY64B+65qlDl1/ADMjDyTFpQJP0ln7+eA0cU
+1yqdKrv5lanAOMq08vbwAnq/Za0DbLB9sPqWknWBbBwYQIQlqDXiJFTP1ZZ7TUiO
+Vi37Y6TI7qrYSd224yVKSugcOFVjLF0HxUrc1aRHPqz7gfG3ounHCeUdKgYg7IzU
+sqEdX3sSJB3u8xoTnwtYYIOsKydW0Zc6Af/cCYH0PnCQq4uRCnmnINS8xGAIl1U=
+=USVq
+-----END PGP SIGNATURE-----
+
+--NsYpzUZ4z5mp8BBz--
