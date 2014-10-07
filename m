@@ -1,46 +1,65 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+From: Mark Brown <broonie@kernel.org>
 Subject: Re: Potential cpufreq backports for v3.10 LTS
-Date: Tue, 7 Oct 2014 13:04:58 -0700
-Message-ID: <20141007200458.GA12028@kroah.com>
+Date: Tue, 7 Oct 2014 21:45:05 +0100
+Message-ID: <20141007204505.GL4609@sirena.org.uk>
 References: <20141007114844.GT4609@sirena.org.uk>
  <20141007164643.GA3748@kroah.com>
  <20141007170800.GL4609@sirena.org.uk>
+ <20141007200458.GA12028@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:38183 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752776AbaJGUE7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Oct 2014 16:04:59 -0400
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="7ARfeEU66NqbnwsW"
+Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20141007170800.GL4609@sirena.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
+In-Reply-To: <20141007200458.GA12028@kroah.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Xiaoguang Chen <chenxg@marvell.com>, Stratos Karafotis <stratosk@semaphore.gr>, Andreas Schwab <schwab@linux-m68k.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Amit Kucheria <amit.kucheria@linaro.org>, stable@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 07, 2014 at 06:08:00PM +0100, Mark Brown wrote:
-> On Tue, Oct 07, 2014 at 09:46:43AM -0700, Greg Kroah-Hartman wrote:
-> > On Tue, Oct 07, 2014 at 12:48:44PM +0100, Mark Brown wrote:
-> 
-> > > The power management team at Linaro has had a look at the cpufreq
-> > > updates since the v3.10 LTS and identified a few patches that look
-> > > like they should be in there.  The most recent of these is from v3.12 so
-> > > they won't apply to any of the more recent stable kernels.
-> 
-> > >  - 59a6342203a7a cpufreq: Fix governor start/stop race condition
-> 
-> > >    This looks like a straight race condition fix.
-> 
-> > That is not a commit id in Linus's tree :(
-> 
-> Interesting, I was able to cherry-pick it...  looks like the upstream
-> version is 95731eb.  In any case at roughly the same time you sent your
-> mail it's been drawn to my attention off-list that this was subsequently
-> reverted so please ignore this one.  The others should be fine though.
 
-Ok, I've queued the others up now.
+--7ARfeEU66NqbnwsW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-thanks,
+On Tue, Oct 07, 2014 at 01:04:58PM -0700, Greg Kroah-Hartman wrote:
+> On Tue, Oct 07, 2014 at 06:08:00PM +0100, Mark Brown wrote:
 
-greg k-h
+> > > >  - 59a6342203a7a cpufreq: Fix governor start/stop race condition
+
+> > > >    This looks like a straight race condition fix.
+
+> > > That is not a commit id in Linus's tree :(
+
+> > Interesting, I was able to cherry-pick it...  looks like the upstream
+> > version is 95731eb.  In any case at roughly the same time you sent your
+> > mail it's been drawn to my attention off-list that this was subsequently
+> > reverted so please ignore this one.  The others should be fine though.
+
+> Ok, I've queued the others up now.
+
+Actually I thinkoed here, as I said in reply to the stable mail the
+problematic patch was "19c763031acb8 cpufreq: serialize calls to
+__cpufreq_governor()" which was reverted in "56d07db cpufreq: Remove
+temporary fix for race between CPU hotplug and sysfs-writes".  The above
+commit ID (95731eb) should be good.
+
+Sorry about the confusion here.
+
+--7ARfeEU66NqbnwsW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUNFDQAAoJECTWi3JdVIfQAIsH/1UwKgGNblfPb1ZXzUbk2ysM
+gxPVaRFl46kw8/bKapuUV07N2L0GXO6DyLobcSUtS31Obp55UX+CueODPoL5u4dM
+z3ODFo2u5Dyal1HrFOz+qpGhovWNlaEPIBXwX7tvYpHQC6sQ925urNhE1ZzTglYB
+Tlzw/rEDhs9jWK7s+RCXqV78Krtaic61jq+QxqBh/snfm/9+XkNIdY58SUHVdDkD
+83SIJxBuJHFIlADqsFQ8pSZYeRagpie/FF1F/aoXwv3YgZ3kU7H1SSXYYO9DTyQ6
+MehjmCEEJ90FiinJ9mzmrY40P7GR9Hzy48GiYOrY/8f1VP0OmguqC6mPF3iVNAs=
+=fXvQ
+-----END PGP SIGNATURE-----
+
+--7ARfeEU66NqbnwsW--
