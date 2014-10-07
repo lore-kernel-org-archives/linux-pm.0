@@ -1,11 +1,9 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: =?UTF-8?q?=5BPATCH=203/3=5D=20power=3A=20of=5Fbattery=3A=20Initial=20support=20for=20of-based=20battery=20specification=20driver=2E?=
-Date: Tue, 07 Oct 2014 19:58:38 +0900
-Message-ID: <1412679518-21499-4-git-send-email-jonghwa3.lee@samsung.com>
+Subject: [PATCH 1/3] power: core: Add generic interface to get battery
+ specification.
+Date: Tue, 07 Oct 2014 19:58:36 +0900
+Message-ID: <1412679518-21499-2-git-send-email-jonghwa3.lee@samsung.com>
 References: <1412679518-21499-1-git-send-email-jonghwa3.lee@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1412679518-21499-1-git-send-email-jonghwa3.lee@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -13,203 +11,138 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, pavel@ucw.cz, jenny.tc@intel.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This driver supports battery specification through the generic interfac=
-e of
-power_supply subsystem. All data are parsed from device tree and it exa=
-ctly
-matches with power_supply_info's content.
+In power supply system, battery specification's dealt as static
+information regardless of battery chainging. And it often assumed
+fuelgauge's role to hold battery specification even same driver is
+used with different batteries. To make subsystem handles above cases
+properly, this patch adds helper functions to manager the battery
+specification.
 
 Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 ---
- .../bindings/power_supply/of_battery.txt           |   34 +++++++
- drivers/power/Kconfig                              |    7 ++
- drivers/power/Makefile                             |    1 +
- drivers/power/of_battery.c                         |  100 ++++++++++++=
-++++++++
- 4 files changed, 142 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power_supply/of_b=
-attery.txt
- create mode 100644 drivers/power/of_battery.c
+ drivers/power/power_supply_core.c |   91 +++++++++++++++++++++++++++++++++++++
+ include/linux/power_supply.h      |    7 +++
+ 2 files changed, 98 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power_supply/of_battery.=
-txt b/Documentation/devicetree/bindings/power_supply/of_battery.txt
-new file mode 100644
-index 0000000..5ccd2a1
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power_supply/of_battery.txt
-@@ -0,0 +1,34 @@
-+of_battery bindings
-+~~~~~~~~~~~~~~~~~~~
+diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+index 078afd6..59207d9 100644
+--- a/drivers/power/power_supply_core.c
++++ b/drivers/power/power_supply_core.c
+@@ -653,6 +653,97 @@ static void __exit power_supply_class_exit(void)
+ subsys_initcall(power_supply_class_init);
+ module_exit(power_supply_class_exit);
+ 
++/****************************************************************
++ *                   Battery information interface              *
++ ****************************************************************/
 +
-+This documentation describes how to define data in device tree
-+to use of_battery driver. All properties are just matched with
-+power_supply_info's.
++ATOMIC_NOTIFIER_HEAD(psy_battery_info_notifier);
++static LIST_HEAD(psy_battery_info_list);
 +
-+Required properties :
-+ - battery-name : battery's name for identifying.
-+
-+Optional properties :
-+ - voltage_max : Maximum voltage of the battery (uV).
-+ - voltage_min : Minimum voltage of the battery (uV).
-+ - charge_full : Full capacity of the battery (uAh).
-+ - charge_empty : Empty capacity of the battery (uAh).
-+ - energy_full : Full capacity of the battery (uWh).
-+ - energy_empty : Empty capacity of the battery (uWh).
-+ - temperature_max : Maximum temperature for the battery (deci 'C)
-+ - temperature_min : Minium temperature for the battery (deci 'C)
-+
-+Example:
-+	battery {
-+		main-battery {
-+			battery-name =3D "battery";
-+			voltage-max =3D <4350000>;
-+			charge-full =3D <2500000>;
-+			temperature_max =3D <600>;
-+			temperature_min =3D <(-100)>;
-+		};
-+		backup-battery {
-+			battery-name =3D "coin-battery";
-+			voltage-max =3D <3000000>;
-+		};
-+	};
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 73cfcdf..c324ac6 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -36,6 +36,13 @@ config GENERIC_ADC_BATTERY
- 	  Say Y here to enable support for the generic battery driver
- 	  which uses IIO framework to read adc.
-=20
-+config BATTERY_OF
-+	tristate "Generic of-based battery specification driver"
-+	depends on OF
-+	help
-+	  Say Y here to enable support for the of-based generic battery
-+	  specification driver which gives static battery data.
-+
- config MAX8925_POWER
- 	tristate "MAX8925 battery charger support"
- 	depends on MFD_MAX8925
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index dfa8942..38a83aa 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -6,6 +6,7 @@ power_supply-$(CONFIG_LEDS_TRIGGERS)	+=3D power_supply_=
-leds.o
-=20
- obj-$(CONFIG_POWER_SUPPLY)	+=3D power_supply.o
- obj-$(CONFIG_GENERIC_ADC_BATTERY)	+=3D generic-adc-battery.o
-+obj-$(CONFIG_BATTERY_OF)	+=3D of_battery.o
-=20
- obj-$(CONFIG_PDA_POWER)		+=3D pda_power.o
- obj-$(CONFIG_APM_POWER)		+=3D apm_power.o
-diff --git a/drivers/power/of_battery.c b/drivers/power/of_battery.c
-new file mode 100644
-index 0000000..3c66765
---- /dev/null
-+++ b/drivers/power/of_battery.c
-@@ -0,0 +1,100 @@
-+/*
-+ * OF-based battery specification driver
-+ *
-+ * This driver supports generic interface to get static battery data.
-+ *
-+ * Copyright =C2=A9 2014 Jonghwa Lee <jonghwa3.lee@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modif=
-y
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/power_supply.h>
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <linux/of.h>
-+
-+static struct power_supply_info *of_get_battery_info(struct device_nod=
-e *np)
-+{
++struct psy_battery_info {
++	struct list_head entry;
 +	struct power_supply_info *info;
++};
 +
-+	info =3D kzalloc(sizeof(*info), GFP_KERNEL);
-+	if (!info)
-+		return ERR_PTR(-ENOMEM);
++enum battery_info_notifier_events {
++	PSY_BATT_INFO_REGISTERED,
++	PSY_BATT_INFO_UNREGISTERED,
++};
 +
-+	if (of_property_read_string(np, "battery-name", &info->name)) {
-+		kfree(info);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	of_property_read_u32(np, "voltage_max", &info->voltage_max_design);
-+	of_property_read_u32(np, "voltage_min", &info->voltage_min_design);
-+	of_property_read_u32(np, "charge_full", &info->charge_full_design);
-+	of_property_read_u32(np, "charge_empty", &info->charge_empty_design);
-+	of_property_read_u32(np, "energy_full", &info->energy_full_design);
-+	of_property_read_u32(np, "energy_empty", &info->energy_empty_design);
-+	of_property_read_u32(np, "temperature_max", &info->temperature_max);
-+	of_property_read_u32(np, "temperature_min", &info->temperature_min);
-+
-+	return info;
++int psy_battery_info_notifier_register(struct notifier_block *nb)
++{
++	return atomic_notifier_chain_register(&psy_battery_info_notifier, nb);
 +}
++EXPORT_SYMBOL_GPL(psy_battery_info_notifier_register);
 +
-+static int __init psy_of_battery_init(void)
++void psy_battery_info_notifier_unregister(struct notifier_block *nb)
 +{
-+	struct power_supply_info *info;
-+	struct device_node *np, *child;
-+	int ret;
++	atomic_notifier_chain_unregister(&psy_battery_info_notifier, nb);
++}
++EXPORT_SYMBOL_GPL(psy_battery_info_notifier_unregister);
 +
-+	np =3D of_find_node_by_name(NULL, "battery");
-+	if (!np)
-+		return -ENODEV;
++struct power_supply_info *psy_get_battery_info(const char *name)
++{
++	struct psy_battery_info *battery;
 +
-+	for_each_child_of_node(np, child) {
-+		info =3D of_get_battery_info(child);
-+		if (IS_ERR(info)) {
-+			pr_err("Failed to get battery information (%ld)\n",
-+				PTR_ERR(info));
-+			continue;
-+		}
-+		ret =3D psy_register_battery_info(info);
-+		if (ret) {
-+			pr_err("Failed to register battery information (%d)\n",
-+				ret);
-+			kfree(info);
-+			continue;
-+		}
++	/* Sanity check */
++	if (!name)
++		goto err_out;
++
++	list_for_each_entry(battery, &psy_battery_info_list, entry) {
++		if (!strcmp(battery->info->name, name))
++			return battery->info;
 +	}
++
++err_out:
++	return NULL;
++}
++EXPORT_SYMBOL(psy_get_battery_info);
++
++int psy_register_battery_info(struct power_supply_info *info)
++{
++	struct psy_battery_info *battery;
++
++	/* Sanity check */
++	if (!info->name)
++		return -EINVAL;
++
++	/* Check if same data is existed */
++	list_for_each_entry(battery, &psy_battery_info_list, entry)
++		if (!strcmp(battery->info->name, info->name))
++			return -EEXIST;
++
++	battery = kzalloc(sizeof(*battery), GFP_KERNEL);
++	if (!battery)
++		return -ENOMEM;
++
++	battery->info = info;
++	list_add_tail(&battery->entry, &psy_battery_info_list);
++
++	atomic_notifier_call_chain(&psy_battery_info_notifier,
++				PSY_BATT_INFO_REGISTERED, info);
 +
 +	return 0;
 +}
-+module_init(psy_of_battery_init);
++EXPORT_SYMBOL(psy_register_battery_info);
 +
-+static void __exit psy_of_battery_exit(void)
++void psy_unregister_battery_info(struct power_supply_info *info)
 +{
-+	struct power_supply_info *info;
-+	struct device_node *np, *child;
-+	const char *name;
++	struct psy_battery_info *battery, *tmp;
 +
-+	np =3D of_find_node_by_name(NULL, "battery");
-+	if (!np)
-+		return;
-+
-+	for_each_child_of_node(np, child) {
-+		if (!of_property_read_string(np, "battery-name", &name))
-+			continue;
-+
-+		info =3D psy_get_battery_info(name);
-+		if (IS_ERR(info))
-+			continue;
-+
-+		psy_unregister_battery_info(info);
++	list_for_each_entry_safe(battery, tmp, &psy_battery_info_list, entry) {
++		if (battery->info == info) {
++			list_del(&battery->entry);
++			kfree(battery);
++			return;
++		}
 +	}
-+}
-+module_exit(psy_of_battery_exit);
 +
-+MODULE_AUTHOR("Jonghwa Lee <jonhgwa3.lee@samsung.com>");
-+MODULE_DESCRIPTION("of battery specification driver");
-+MODULE_LICENSE("GPL");
---=20
++	atomic_notifier_call_chain(&psy_battery_info_notifier,
++				PSY_BATT_INFO_UNREGISTERED, info);
++}
++EXPORT_SYMBOL(psy_unregister_battery_info);
++
+ MODULE_DESCRIPTION("Universal power supply monitor class");
+ MODULE_AUTHOR("Ian Molton <spyro@f2s.com>, "
+ 	      "Szabolcs Gyurko, "
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index f3dea41..99306aa 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -276,6 +276,13 @@ extern int power_supply_powers(struct power_supply *psy, struct device *dev);
+ /* For APM emulation, think legacy userspace. */
+ extern struct class *power_supply_class;
+ 
++/* Battery information helper */
++extern int psy_battery_info_notifier_register(struct notifier_block *);
++extern void psy_battery_info_notifier_unregister(struct notifier_block *);
++extern struct power_supply_info *psy_get_battery_info(const char *);
++extern int psy_register_battery_info(struct power_supply_info *);
++extern void psy_unregister_battery_info(struct power_supply_info *);
++
+ static inline bool power_supply_is_amp_property(enum power_supply_property psp)
+ {
+ 	switch (psp) {
+-- 
 1.7.9.5
