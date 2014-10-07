@@ -1,31 +1,58 @@
-From: Richard Weinberger <richard@nod.at>
-Subject: Re: [PATCH 08/44] kernel: Move pm_power_off to common code
-Date: Tue, 07 Oct 2014 15:58:47 +0200
-Message-ID: <5433F197.8040801@nod.at>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-9-git-send-email-linux@roeck-us.net>
+From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Subject: RE: [PATCH 3/8] iio: Add support for DA9150 GPADC
+Date: Tue, 7 Oct 2014 14:55:55 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337AB518D23@SW-EX-MBX01.diasemi.com>
+References: <cover.1411396718.git.Adam.Thomson.Opensource@diasemi.com>
+ <ee4c56931f326d8ee9c1313c44456bce2dec8b8c.1411396719.git.Adam.Thomson.Opensource@diasemi.com>
+ <5426964A.3050407@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <1412659726-29957-9-git-send-email-linux@roeck-us.net>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org
-Cc: Jonas Bonn <jonas@southpole.se>, linux-mips@linux-mips.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, Steven Miao <realmz6@gmail.com>, linux-xtensa@linux-xtensa.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>, Thomas Gleixner <tglx@linutronix.de>, Lennox Wu <lennox.wu@gmail.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, Jesper Nilsson <jesper.nilsson@axis.com>, lguest@lists.ozlabs.org, Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org, Len Brown <len.brown@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5426964A.3050407-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Language: en-US
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, "linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>, "linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am 07.10.2014 07:28, schrieb Guenter Roeck:
->  arch/um/kernel/reboot.c            |  2 --
-
-Acked-by: Richard Weinberger <richard@nod.at>
-
-Thanks,
-//richard
+T24gU2VwdGVtYmVyIDI3LCAyMDE0IDExOjUwLCBKb25hdGhhbiBDYW1lcm9uIHdyb3RlOg0KDQo+
+IE9uIDIzLzA5LzE0IDExOjUzLCBBZGFtIFRob21zb24gd3JvdGU6DQo+ID4gVGhpcyBwYXRjaCBh
+ZGRzIHN1cHBvcnQgZm9yIERBOTE1MCBDaGFyZ2VyICYgRnVlbC1HYXVnZSBJQyBHUEFEQy4NCg0K
+PiA+ICsNCj4gPiArc3RhdGljIGlubGluZSBpbnQgZGE5MTUwX2dwYWRjX2dwaW9fNnZfdm9sdGFn
+ZV9ub3coaW50IHJhd192YWwpDQo+ID4gK3sNCj4gPiArCS8qIENvbnZlcnQgdG8gbVYgKi8NCj4g
+PiArCXJldHVybiAoNiAqICgocmF3X3ZhbCAqIDEwMDApICsgNTAwKSkgLyAxMDI0Ow0KPiBUaGVz
+ZSBjb3VsZCBhbGwgYmUgZXhwcmVzc2VkIGFzIHJhdyB2YWx1ZXMgd2l0aCBvZmZzZXRzDQo+IGFu
+ZCBzY2FsZXMgKGFuZCB0aGF0IHdvdWxkIGJlIHByZWZlcnJlZCkuDQo+IEUuZy4gVGhpcyBvbmUg
+aGFzIG9mZnNldCA1MDAwMDAgYW5kIHNjYWxlIDYwMDAvMTAyNCBvciBldmVuDQo+IGJldHRlciB1
+c2UgSUlPX1ZBTF9GUkFDVElPTkFMX0xPRzIgZm9yIHNjYWxlIHdpdGggdmFsMSA9IDYwMDANCj4g
+YW5kIHZhbDIgPSAobG9nXzIgMTAyNCkgPSAxMC4NCj4gDQoNCldoYXQgeW91J3ZlIHN1Z2dlc3Rl
+ZCBpc24ndCBjb3JyZWN0LiBUaGUgcHJvYmxlbSBoZXJlIGlzIHRoYXQgdGhlIG9mZnNldCBpcw0K
+YWRkZWQgZmlyc3QgdG8gdGhlIHJhdyBBREMgcmVhZGluZywgd2l0aG91dCBmYWN0b3JpbmcgdGhl
+IEFEQyB2YWx1ZSBhY2NvcmRpbmdseQ0KdG8gbWF0Y2ggdGhlIGZhY3RvciBvZiB0aGUgb2Zmc2V0
+LiBJZiB3ZSB0YWtlIHRoZSBvcmlnaW5hbCBlcXVhdGlvbiBwcm92aWRlZCBmb3INCnRoaXMgY2hh
+bm5lbCBvZiB0aGUgQURDLCB0aGUgb2Zmc2V0IGlzIGFjdHVhbGx5IDAuNSB3aGljaCBzaG91bGQg
+YmUgYWRkZWQgdG8gdGhlDQpyYXcgQURDIHZhbHVlLiBUaGlzIGRvZXNuJ3QgZml0IGludG8gdGhl
+IGltcGxlbWVudGF0aW9uIGluIHRoZSBrZXJuZWwgYXMgd2UNCmNhbid0IHVzZSBmbG9hdGluZyBw
+b2ludC4gSWYgd2UgbXVsdGlwbHkgdGhlIG9mZnNldCBidXQgbm90IHRoZSByYXcgQURDIHZhbHVl
+LA0KdGhlbiBhZGQgdGhlbSBiZWZvcmUgYXBwbHlpbmcgdGhlIHNjYWxlIGZhY3RvciwgdGhlbiB0
+aGUgcmVzdWx0IGlzIHdyb25nIGF0IHRoZQ0KZW5kLiBCYXNpY2FsbHkgeW91IG5lZWQgYSBzY2Fs
+ZSBmb3IgdGhlIHJhdyBBREMgdmFsdWUgdG8gbWF0Y2ggdGhlIG9mZnNldCBzY2FsZQ0Kc28geW91
+IGNhbiBhY2hpZXZlIHRoZSBjb3JyZWN0IHJlc3VsdHMsIHdoaWNoIGlzIHdoYXQgbXkgY2FsY3Vs
+YXRpb24gZG9lcy4NCkJ1dCB0aGF0IHNlZW1zIGltcG9zc2libGUgd2l0aCB0aGUgY3VycmVudCBy
+YXd8b2Zmc2V0fHNjYWxlIG1ldGhvZC4NCg0KPiA+ICsJcmV0ID0gaWlvX21hcF9hcnJheV9yZWdp
+c3RlcihpbmRpb19kZXYsIGRhOTE1MF9ncGFkY19kZWZhdWx0X21hcHMpOw0KPiA+ICsJaWYgKHJl
+dCkgew0KPiA+ICsJCWRldl9lcnIoZGV2LCAiRmFpbGVkIHRvIHJlZ2lzdGVyIElJTyBtYXBzOiAl
+ZFxuIiwgcmV0KTsNCj4gPiArCQlyZXR1cm4gcmV0Ow0KPiA+ICsJfQ0KPiBJJ2Qgc3VnZ2VzdCBk
+b2luZyB0aGUgZGV2bV9yZXF1ZXN0X3RocmVhZF9pcnEgYmVmb3JlIHRoZSBpaW9fbWFwX2FycmF5
+DQo+IHN0dWZmLiAgVGhpcyBpcyBwdXJlbHkgdG8gYXZvaWQgdGhlIG9yZGVyIGR1cmluZyByZW1v
+dmUgbm90IGJlaW5nDQo+IG9idmlvdXNseSBjb3JyZWN0IGFzIGl0IGlzbid0IHRoZSByZXZlcnNl
+IG9mIGR1cmluZyBwcm9iZS4NCg0KT2ssIHNob3VsZCBzdGlsbCB3b3JrIG9rIHRoYXQgd2F5IHNv
+IGNhbiB1cGRhdGUuDQoNCj4gPiArc3RhdGljIGludCBkYTkxNTBfZ3BhZGNfcmVtb3ZlKHN0cnVj
+dCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gK3sNCj4gPiArCXN0cnVjdCBpaW9fZGV2ICpp
+bmRpb19kZXYgPSBwbGF0Zm9ybV9nZXRfZHJ2ZGF0YShwZGV2KTsNCj4gPiArDQo+ID4gKwlpaW9f
+bWFwX2FycmF5X3VucmVnaXN0ZXIoaW5kaW9fZGV2KTsNCj4gVHdpY2UgaW4gb25lIGRheS4gIEkn
+bSBkZWZpbml0ZWx5IHRoaW5raW5nIHdlIHNob3VsZCBhZGQgYQ0KPiBkZXZtIHZlcnNpb24gb2Yg
+aWlvX21hcF9hcnJheV9yZWdpc3Rlci4uLg0KDQpJIGFzc3VtZSB5b3UgbWVhbiBoZXJlIHRoYXQg
+aWlvX2RldmljZV91bnJlZ2lzdGVyKCkgc2hvdWxkIGNvbWUgZmlyc3Q/IFdpbGwNCnVwZGF0ZS4N
+Cg==
