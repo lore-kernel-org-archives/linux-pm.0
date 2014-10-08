@@ -1,28 +1,33 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: Powering down unused PM domains
-Date: Tue, 07 Oct 2014 20:29:04 -0700
-Message-ID: <7h7g0bp7cv.fsf@deeprootsystems.com>
-References: <CAMuHMdUwbOEfLcu_UVKq_iHx5Qzn7ne1+cwt58C0ntTZBf1esg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCHv2 0/4] cpufreq-dt, platform_data based proposal
+Date: Wed, 8 Oct 2014 11:21:42 +0530
+Message-ID: <CAKohpokbTQKzz3jt7dkEnD-cziAk4+a8CcQMPNuyzAVMeMfS1g@mail.gmail.com>
+References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com>
+	<2152065.1YrbYhlbqO@vostro.rjw.lan>
+	<CAKohpokWtoM3t6nt-6+ja1=8Xy=vJd7ahz-9vTRn4wDQ8tc+kg@mail.gmail.com>
+	<6228666.uuRIPi9Yy4@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:50273 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752692AbaJHD3H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Oct 2014 23:29:07 -0400
-In-Reply-To: <CAMuHMdUwbOEfLcu_UVKq_iHx5Qzn7ne1+cwt58C0ntTZBf1esg@mail.gmail.com>
-	(Geert Uytterhoeven's message of "Tue, 7 Oct 2014 21:09:27 +0200")
+Received: from mail-oi0-f51.google.com ([209.85.218.51]:42604 "EHLO
+	mail-oi0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750983AbaJHFvn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Oct 2014 01:51:43 -0400
+Received: by mail-oi0-f51.google.com with SMTP id h136so3698655oig.24
+        for <linux-pm@vger.kernel.org>; Tue, 07 Oct 2014 22:51:42 -0700 (PDT)
+In-Reply-To: <6228666.uuRIPi9Yy4@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
 
-Geert Uytterhoeven <geert@linux-m68k.org> writes:
+On 8 October 2014 05:29, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> So can you please send me links to the patches?  I probably can find them,
+> but honestly I have too little time for other stuff already.
 
-[...]
+Sure:
 
-> P.S. Will any of you be at ELC-E next week, for further PM domain discussions?
-
-I'll be there.
-
-Kevin
+https://patchwork.kernel.org/patch/4876641/
+https://patchwork.kernel.org/patch/4876651/
+https://patchwork.kernel.org/patch/4876661/
+https://patchwork.kernel.org/patch/4876671/
