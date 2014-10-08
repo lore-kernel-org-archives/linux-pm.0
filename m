@@ -1,46 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/2] allow cpufreq drivers to export flags
-Date: Wed, 8 Oct 2014 13:49:40 +0530
-Message-ID: <CAKohpo=7VxrgdK9zPP89Px3aTiGhFihJ3uetC680fONDgE6O8Q@mail.gmail.com>
-References: <CAKohpo=7q9bDcHRxLehNLX6A2idGxUy3jEWvQ+EGbKOQG-MH2g@mail.gmail.com>
-	<1412754534-14068-1-git-send-email-mturquette@linaro.org>
-	<CAKohpo=9XG7XiLxBf=yo7=QCruawYxqPctC6kqB+syERFCoT6Q@mail.gmail.com>
-	<20141008101115.1835927a@free-electrons.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: Powering down unused PM domains
+Date: Wed, 8 Oct 2014 11:05:04 +0100
+Message-ID: <20141008100504.GS4609@sirena.org.uk>
+References: <CAMuHMdUwbOEfLcu_UVKq_iHx5Qzn7ne1+cwt58C0ntTZBf1esg@mail.gmail.com>
+ <7h7g0bp7cv.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20141008101115.1835927a@free-electrons.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>Tuukka Tikkanen <tu>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="GIrCAcOpC7mETZ4T"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:40268 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754555AbaJHKFo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Oct 2014 06:05:44 -0400
+Content-Disposition: inline
+In-Reply-To: <7h7g0bp7cv.fsf@deeprootsystems.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
 
-On 8 October 2014 13:41, Thomas Petazzoni
-<thomas.petazzoni@free-electrons.com> wrote:
-> On Wed, 8 Oct 2014 13:24:30 +0530, Viresh Kumar wrote:
->> On 8 October 2014 13:18, Mike Turquette <mturquette@linaro.org> wrote:
 
->> > This series is partially in response to a discussion around DT bindings
->> > for CPUfreq drivers [0], but it is also needed for on-going work to
->> > integrate CPUfreq with the scheduler. In particular a scheduler-driven
+--GIrCAcOpC7mETZ4T
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> Well, when one has to merge a large number of changes, we often
-> recommend to merge them piece by piece, which is what Mike is trying to
-> do here. So we cannot at the same time ask developers to merge things
-> in small pieces that are easy to review and to merge everything
-> together because the users of a given API are not there yet.
+On Tue, Oct 07, 2014 at 08:29:04PM -0700, Kevin Hilman wrote:
+> Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
->From the wording of Mike it looks like:
-- This is required by cpufreq drivers - today
-- And this will also be useful for scheduler
+> [...]
 
-The first point doesn't stand true anymore. Lets wait for Mike's reply and
-see his opinion.
+> > P.S. Will any of you be at ELC-E next week, for further PM domain discussions?
 
-And then the patches are so small and there are no objections against
-them. I don't think getting them with the scheduler changes is that bad
-of an idea. In worst case, what if he has to redesign his idea? The new
-routines will stay without a caller then :)
+> I'll be there.
 
---
-viresh
+Me too, though I'll be doing other things on Tuesday.
+
+--GIrCAcOpC7mETZ4T
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUNQxQAAoJECTWi3JdVIfQA4MH/26T6afo0giT7xM2jLYV/T0I
+aJgU7mcxuC6kyvgdvgKaVlxbCCpOzbjaJabjYdoAn8w5rHJOtMIiLaEJ+n6iJnm3
+a1N8dhAJagbYkESnYrIDS1jiPUUjGyUAcFVYCH20ZLQdDPO3eWyKAoZ1qACm1oKX
+bqgPunTSugV1hNFaT479Mw2B2SjkGCZPAO1UGzSGSdSoF3Hm5DvoB++sgb0s6CVG
+YzD4mvOF2HruWnWbpOq0+nbs5Zmza/A1ek547HiFPB1KQpPpoP9hzodPTv8FrSOL
+H7hCLJlc2fwnyHnio4bTDY6sZqF82ey/fP5wn7nT1g74R9SPhIOIRjBf+ckFFVc=
+=TZ1H
+-----END PGP SIGNATURE-----
+
+--GIrCAcOpC7mETZ4T--
