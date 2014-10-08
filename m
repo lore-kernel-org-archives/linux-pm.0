@@ -1,82 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Powering down unused PM domains (was: Re: [PATCH 0/4] PM / Domains: Fix race conditions during boot)
-Date: Wed, 08 Oct 2014 15:49:38 +0200
-Message-ID: <4392705.brmbgySLJa@vostro.rjw.lan>
-References: <CAMuHMdUwbOEfLcu_UVKq_iHx5Qzn7ne1+cwt58C0ntTZBf1esg@mail.gmail.com> <CAPDyKFrJ7x-MS79OqxPOUWVearpp6AQP160+9QXnhVXWnH9aWw@mail.gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v3 3/4] irq: Allow multiple clients to register for irq
+ affinity notification
+Date: Wed, 8 Oct 2014 16:20:28 +0200 (CEST)
+Message-ID: <alpine.DEB.2.11.1410081607510.4292@nanos>
+References: <1409170479-29955-1-git-send-email-lina.iyer@linaro.org> <1409170479-29955-4-git-send-email-lina.iyer@linaro.org> <alpine.DEB.2.10.1408272239190.3323@nanos> <20140902184305.GB91995@ilina-mac.local> <alpine.DEB.2.10.1409022109050.3333@nanos>
+ <7htx3vbfqr.fsf@deeprootsystems.com> <alpine.DEB.2.11.1409261129220.4567@nanos> <20140926094003.GL5182@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrJ7x-MS79OqxPOUWVearpp6AQP160+9QXnhVXWnH9aWw@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:38080 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbaJHOUk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Oct 2014 10:20:40 -0400
+In-Reply-To: <20140926094003.GL5182@n2100.arm.linux.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Kevin Hilman <khilman@kernel.org>, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>, linux-arm-kernel@lists.infradead.org
 
-On Wednesday, October 08, 2014 02:00:50 PM Ulf Hansson wrote:
-> On 7 October 2014 21:09, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > Hi Ulf,
-> >
-> > On Tue, Sep 30, 2014 at 2:43 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >> Instead, let's improve the situation, by preventing genpd from powering
-> >> off any of the PM domains until late_init. At that point genpd already
-> >> tries to power off unused PM domains, so it seems like a decent match.
-> >
-> > Note that powering off unused PM domains is currently limited to
-> > CONFIG_PM_RUNTIME=y.
-> > If CONFIG_PM_RUNTIME is disabled, unused PM domains are not powered down,
-> > and may even stay powered-up during system suspend.
+On Fri, 26 Sep 2014, Russell King - ARM Linux wrote:
+> On Fri, Sep 26, 2014 at 11:29:56AM +0200, Thomas Gleixner wrote:
+> > On Thu, 25 Sep 2014, Kevin Hilman wrote:
+> > > Maybe I'm missing something, or maybe we're just lucky and nobody uses
+> > > them together, but irq_set_affinity_notifier() only allows a single
+> > > notifier to be registered at any given time.  So if you had a system
+> > 
+> > A single notifier per irq .....
 > 
-> Right. That's obviously not an acceptable behaviour, we can do better.
+> So what about two drivers wanting to use this notifier, but sharing an
+> interrupt?
 > 
-> >
-> > With CONFIG_PM_RUNTIME=y, we have:
-> >   A1. All PM domains are powered up during initialization.
-> >   A2. After initialization, all unused PM domains are powered down by the
-> >       genpd_poweroff_unused() late_initcall.
-> >       "unused" means PM domains containing no active devices and no active
-> >       subdomains. I.e. PM domains containing (a) only suspended devices, or
-> >       (b) no[*] devices at all will be powered down.
-> >   A3. PM domains will be powered up or down, depending on devices moving from
-> >       inactive to active state, or vice versa. This includes system suspend,
-> >       which can be considered some form of devices moving to an inactive
-> >       state.
-> >
-> > In contrast, with CONFIG_PM_RUNTIME=n, we have:
-> >   B1. All PM domains are powered up during initialization,
-> >   B2. After initialization, PM domains just stay powered up,
-> >   B3. PM domains will be powered down on system suspend, and powered up on
-> >       system resume, based on the dev_pm_ops of the PM domain each device
-> >       belongs to.
-> >
-> > While operation A2 is PM domain-centric (it walks the list of genpd domains),
-> > A3 and B3 are device-centric (A3 operates on one specific device, B3 walks the
-> > list of devices).
-> > Hence B3 never touches PM domains that don't contain any devices[*].
-> > So these PM domains are kept powered-up if CONFIG_PM_RUNTIME=n, even on
-> > system suspend.
-> >
-> > Shouldn't PM domains without devices be powered down at some point?
-> > When? In B2, or in B3?
-> 
-> I agree with Rafael and Sylwester, that it would be an advantage if PM
-> domains can be initialized in powered off state. Simply because, those
-> may then be left in powered off state all the time, if they are
-> unused.
-> 
-> That's been my long term approach, but let's see if we can get there
-> without the intermediate step proposed in this patchset...
-> 
-> Now, to support the above and to solve the race conditions, we need to
-> be able to power up the PM domain, prior probing of a device. I am
-> thinking of a solution aimed to affect subsystem level code (buses)
-> and not drivers, since we need keep the impact on a reasonable level.
+> It sounds to me like this notifier was misdesigned from the very start,
+> and it should always have supported multiple notifiers.
 
-That sounds like a good approach to me.
+Well, it was designed for a particular usecase which does not require
+multiple notifiers. And we wanted it as simple as possible.
 
-Also that should work regardless of whether or not the drivers in question
-implement runtime PM callbacks.
+So while we could make it take multiple notifiers, it's just wrong for
+the use case in question. QoS wants a system wide overview and not a
+gazillion notifiers with life time issues etc.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+So the proper solution is a general notifier, which gets called if any
+interrupt affinity changes. That allows the QoS code or any other
+interested party to gain a coherent per CPU knowledge.
+
+That also avoid the whole lifetime issues of notifiers on interrupts,
+when they are teared down and the descriptor gets freed. Of course
+such a teardown or a simple disable_irq should inform the QoS code as
+well so it knows that the CPU is not longer targeted by this
+interrupt. Nothing we want to whack into a per irq notifier, really.
+
+Thoughts?
+
+	tglx
