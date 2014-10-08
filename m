@@ -1,49 +1,41 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Wed, 8 Oct 2014 12:34:52 +0530
-Message-ID: <CAKohpo=rEYgH+PSmkP8X8J0u69Kyp1W7JzBFOiOsiCOFSdyAiw@mail.gmail.com>
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+Subject: Re: [PATCH 08/44] kernel: Move pm_power_off to common code
+Date: Wed, 8 Oct 2014 09:25:45 +0200
+Message-ID: <20141008072545.GA30087@axis.com>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-9-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f50.google.com ([209.85.218.50]:48752 "EHLO
-	mail-oi0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751108AbaJHHEw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Oct 2014 03:04:52 -0400
-Received: by mail-oi0-f50.google.com with SMTP id i138so6558865oig.37
-        for <linux-pm@vger.kernel.org>; Wed, 08 Oct 2014 00:04:52 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-mips-bounce@linux-mips.org>
+Content-Disposition: inline
+In-Reply-To: <1412659726-29957-9-git-send-email-linux@roeck-us.net>
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-help: <mailto:ecartis@linux-mips.org?Subject=help>
+List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
+List-software: Ecartis version 1.0.0
+List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
+List-owner: <mailto:ralf@linux-mips.org>
+List-post: <mailto:linux-mips@linux-mips.org>
+List-archive: <http://www.linux-mips.org/archives/linux-mips/>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "adi-buildroot-devel@lists.sourceforge.net" <adi-buildroot-devel@lists.sourceforge.net>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lguest@lists.ozlabs.org" <lguest@lists.ozlabs.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>, "linux-am33-list@redhat.com" <linux-am33-list@redhat.com>, linux-cris-kernel <linux-cris-kernel@axis.com>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>, "linux-m32r-ja@ml.linux-m32r.org" <linux-m32r-ja@ml.linux-m32r.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@list>
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>, Prarit Bhargava <prarit@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>
 
-On 25 September 2014 11:37, Robert Sch=C3=B6ne <robert.schoene@tu-dresd=
-en.de> wrote:
-> We had some iterations of patches, but the only solution that works f=
-or
-> me is the patch with the coarse-grained lock that I sent at Mon, 08 S=
-ep
-> 2014 10:16:48 CEST [1]
-> Viresh is pretty occupied lately, but he told me that he might do the
-> tests himself when the current period of busyness is over as he is
-> supplied with a test system. I'm not sure about his current status (b=
-usy
-> or testing).
+On Tue, Oct 07, 2014 at 07:28:10AM +0200, Guenter Roeck wrote:
+> pm_power_off is defined for all architectures. Move it to common code.
+> 
+> Have all architectures call do_kernel_poweroff instead of pm_power_off.
+> Some architectures point pm_power_off to machine_power_off. For those,
+> call do_kernel_poweroff from machine_power_off instead.
 
-Hi Robert/Prarit,
+For the CRIS parts:
 
-The last state of my branch: cpufreq/governor-fixes you tested had
-few bugs in it and so you weren't able to even tests things up.
+>  arch/cris/kernel/process.c         |  4 +---
 
-I couldn't manage to test my patches on a multi-cluster system
-(couldn't get it up yet :( ), but was able to do that on a dual-core
-ARM-cortexA15 board. And could simply find the bugs there.
+Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
-I have updated my branch with the changes now and it would be
-great if you can confirm if they fix your issues or not.
 
-git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/governor-fix=
-es
-
---
-viresh
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
