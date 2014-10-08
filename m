@@ -1,39 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCHv2 0/4] cpufreq-dt, platform_data based proposal
-Date: Wed, 08 Oct 2014 01:59:49 +0200
-Message-ID: <6228666.uuRIPi9Yy4@vostro.rjw.lan>
-References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com> <2152065.1YrbYhlbqO@vostro.rjw.lan> <CAKohpokWtoM3t6nt-6+ja1=8Xy=vJd7ahz-9vTRn4wDQ8tc+kg@mail.gmail.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: Powering down unused PM domains
+Date: Tue, 07 Oct 2014 20:29:04 -0700
+Message-ID: <7h7g0bp7cv.fsf@deeprootsystems.com>
+References: <CAMuHMdUwbOEfLcu_UVKq_iHx5Qzn7ne1+cwt58C0ntTZBf1esg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokWtoM3t6nt-6+ja1=8Xy=vJd7ahz-9vTRn4wDQ8tc+kg@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.19.201]:50273 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752692AbaJHD3H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Oct 2014 23:29:07 -0400
+In-Reply-To: <CAMuHMdUwbOEfLcu_UVKq_iHx5Qzn7ne1+cwt58C0ntTZBf1esg@mail.gmail.com>
+	(Geert Uytterhoeven's message of "Tue, 7 Oct 2014 21:09:27 +0200")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
 
-On Tuesday, October 07, 2014 09:00:16 AM Viresh Kumar wrote:
-> On 7 October 2014 04:23, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > I'm still seeing discussion going on about patch [1/4], though.
-> 
-> That's V1's 1/4 and we finalized V2..
-> 
-> > Is that irrelevant?
-> 
-> No.
-> 
-> > Also I'd prefer Viresh to tell me that this is 3.18 material instead of
-> > sending ACKs in random replies and hoping that I'll notice them.  I may
-> > not.
-> 
-> Hmm, so yeah its for 3.18..
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
-OK
+[...]
 
-So can you please send me links to the patches?  I probably can find them,
-but honestly I have too little time for other stuff already.
+> P.S. Will any of you be at ELC-E next week, for further PM domain discussions?
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+I'll be there.
+
+Kevin
