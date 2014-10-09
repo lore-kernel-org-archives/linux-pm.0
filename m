@@ -1,49 +1,69 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 3/3] power: of_battery: Initial support for of-based
- battery specification driver.
-Date: Thu, 9 Oct 2014 12:44:15 +0200
-Message-ID: <20141009104415.GA7699@amd>
-References: <1412679518-21499-1-git-send-email-jonghwa3.lee@samsung.com>
- <1412679518-21499-4-git-send-email-jonghwa3.lee@samsung.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 12/44] mfd: ab8500-sysctrl: Register with kernel poweroff
+ handler
+Date: Thu, 9 Oct 2014 11:49:27 +0100
+Message-ID: <20141009104927.GN20647@lee--X1>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-13-git-send-email-linux@roeck-us.net>
+ <20141007080048.GB25331@lee--X1>
+ <20141009103656.GF17836@e104818-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47490 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751663AbaJIKoS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Oct 2014 06:44:18 -0400
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1412679518-21499-4-git-send-email-jonghwa3.lee@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20141009103656.GF17836@e104818-lin.cambridge.arm.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Guenter Roeck <linux@roeck-us.net>, "linux-m32r-ja@ml.linux-m32r.org" <linux-m32r-ja@ml.linux-m32r.org>, "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>, Linus Walleij <linus.walleij@linaro.org>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, "lguest@lists.ozlabs.org" <lguest@lists.ozlabs.org>, "linux-c6x-dev@linux-c6x.org" <linux-c6x-dev@linux-c6x.org>, "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, devicetree@vger.k
 List-Id: linux-pm@vger.kernel.org
-To: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, jenny.tc@intel.com
 
-On Tue 2014-10-07 19:58:38, Jonghwa Lee wrote:
-> This driver supports battery specification through the generic interf=
-ace of
-> power_supply subsystem. All data are parsed from device tree and it e=
-xactly
-> matches with power_supply_info's content.
+On Thu, 09 Oct 2014, Catalin Marinas wrote:
+
+> On Tue, Oct 07, 2014 at 09:00:48AM +0100, Lee Jones wrote:
+> > On Mon, 06 Oct 2014, Guenter Roeck wrote:
+> > > --- a/drivers/mfd/ab8500-sysctrl.c
+> > > +++ b/drivers/mfd/ab8500-sysctrl.c
+> > > @@ -6,6 +6,7 @@
+> >=20
+> > [...]
+> >=20
+> > > +static int ab8500_power_off(struct notifier_block *this, unsigne=
+d long unused1,
+> > > +			    void *unused2)
+> > >  {
+> > >  	sigset_t old;
+> > >  	sigset_t all;
+> > > @@ -34,11 +36,6 @@ static void ab8500_power_off(void)
+> > >  	struct power_supply *psy;
+> > >  	int ret;
+> > > =20
+> > > -	if (sysctrl_dev =3D=3D NULL) {
+> > > -		pr_err("%s: sysctrl not initialized\n", __func__);
+> > > -		return;
+> > > -	}
+> >=20
+> > Can you explain the purpose of this change please?
 >=20
-> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+> I guess it's because the sysctrl_dev is already initialised when
+> registering the power_off handler, so there isn't a way to call the
+> above function with a NULL sysctrl_dev. Probably even with the origin=
+al
+> code you didn't need this check (after some race fix in
+> ab8500_sysctrl_remove but races is one of the things Guenter's patche=
+s
+> try to address).
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Sounds reasonable, although I think this change should be part of
+another patch.
 
-> +++ b/drivers/power/of_battery.c
-> @@ -0,0 +1,100 @@
-> +/*
-> + * OF-based battery specification driver
-> + *
-> + * This driver supports generic interface to get static battery data=
-=2E
-> + *
-> + * Copyright =A9 2014 Jonghwa Lee <jonghwa3.lee@samsung.com>
-
-I'd replace it with (c).
-									Pavel
 --=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
