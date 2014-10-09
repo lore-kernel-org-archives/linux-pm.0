@@ -1,62 +1,63 @@
-From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Subject: Re: [PATCH 12/44] mfd: ab8500-sysctrl: Register with kernel poweroff
- handler
-Date: Thu, 9 Oct 2014 08:54:04 -0700
-Message-ID: <20141009155404.GC31987@roeck-us.net>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-13-git-send-email-linux@roeck-us.net>
- <20141007080048.GB25331@lee--X1>
- <20141009103656.GF17836@e104818-lin.cambridge.arm.com>
- <20141009104927.GN20647@lee--X1>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v8 4/7] qcom: pm: Add cpu low power mode functions
+Date: Thu, 9 Oct 2014 09:56:43 -0600
+Message-ID: <20141009155643.GB1277@ilina-mac.local>
+References: <1412718106-17049-1-git-send-email-lina.iyer@linaro.org>
+ <1412718106-17049-5-git-send-email-lina.iyer@linaro.org>
+ <5435E245.1090507@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20141009104927.GN20647@lee--X1>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, "linux-m32r-ja-rQhvJZKUsGBRYuoOT4C5/9i2O/JbrIOy@public.gmane.org" <linux-m32r-ja-rQhvJZKUsGBRYuoOT4C5/9i2O/JbrIOy@public.gmane.org>, "linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org" <linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, "linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-ia64-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-ia64-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-xtensa-PjhNF2WwrV/0Sa2dR60CXw@public.gmane.org" <linux-xtensa-PjhNF2WwrV/0Sa2dR60CXw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org" <devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org>, "linux-s390-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-s390-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "lguest-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <lguest-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-c6x-dev-jPsnJVOj+W6hPH1hqNUYSQ@public.gmane.org" <linux-c6x-dev-jPsnJVOj+W6hPH1hqNUYSQ@public.gmane.org>, "linux-hexagon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-hexagon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org" <xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org>, devicetree
+In-Reply-To: <5435E245.1090507@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 09, 2014 at 11:49:27AM +0100, Lee Jones wrote:
-> On Thu, 09 Oct 2014, Catalin Marinas wrote:
-> 
-> > On Tue, Oct 07, 2014 at 09:00:48AM +0100, Lee Jones wrote:
-> > > On Mon, 06 Oct 2014, Guenter Roeck wrote:
-> > > > --- a/drivers/mfd/ab8500-sysctrl.c
-> > > > +++ b/drivers/mfd/ab8500-sysctrl.c
-> > > > @@ -6,6 +6,7 @@
-> > > 
-> > > [...]
-> > > 
-> > > > +static int ab8500_power_off(struct notifier_block *this, unsigned long unused1,
-> > > > +			    void *unused2)
-> > > >  {
-> > > >  	sigset_t old;
-> > > >  	sigset_t all;
-> > > > @@ -34,11 +36,6 @@ static void ab8500_power_off(void)
-> > > >  	struct power_supply *psy;
-> > > >  	int ret;
-> > > >  
-> > > > -	if (sysctrl_dev == NULL) {
-> > > > -		pr_err("%s: sysctrl not initialized\n", __func__);
-> > > > -		return;
-> > > > -	}
-> > > 
-> > > Can you explain the purpose of this change please?
-> > 
-> > I guess it's because the sysctrl_dev is already initialised when
-> > registering the power_off handler, so there isn't a way to call the
-> > above function with a NULL sysctrl_dev. Probably even with the original
-> > code you didn't need this check (after some race fix in
-> > ab8500_sysctrl_remove but races is one of the things Guenter's patches
-> > try to address).
-> 
-> Sounds reasonable, although I think this change should be part of
-> another patch.
-> 
-Turns out the options are to either drop the check or to use the device
-managed function to register the poweroff handler. I decided to keep
-the check and use the device managed function.
+On Wed, Oct 08 2014 at 19:17 -0600, Stephen Boyd wrote:
+>On 10/07/2014 02:41 PM, Lina Iyer wrote:
+>
+>>+
+>>+static struct platform_device qcom_cpuidle_device = {
+>>+	.name              = "qcom_cpuidle",
+>>+	.id                = -1,
+>>+	.dev.platform_data = qcom_cpu_pm_enter_sleep,
+>>+};
+>>+
+>
+>Same comment as last time, doesn't need to be static.
+>
+Ok, sorry I missed it.
 
-Guenter
+>>+static int __init qcom_pm_device_init(void)
+>>+{
+>>+	platform_device_register(&qcom_cpuidle_device);
+>>+
+>
+>This is wrong. We're going to register a platform device whenever this 
+>file is included in a kernel. This is then going to try and probe the 
+>qcom_cpuidle device which is going to fail and print an error message 
+>if we're not running on a qcom device.
+Why would this file be compiled on a non-qcom target? The file has a
+dependency on ARCH_QCOM (as it should be) and would not be compiled on a
+non-qcom target.
+
+>This is one reason why I've 
+>been arguing to get rid of this file and just put it inside the spm 
+>driver. That way we don't ever add the cpuidle device and:
+That is a poor excuse for removing this file, which has a purpose.
+Putting all this SCM code inside SPM is not a good design. SPM is a
+driver, doesnt know about SCM et al. Why would you want to clobber that
+file with all these irrelevant code? 8660 does not have a secure mode,
+but still uses an SPM. So all this code is pretty useless there, not
+that we are supporting 8660 at this time, just as an example.
+>
+> a) We know the SPM hardware is configured and ready to be used
+Its just one line check to see if the SPM hardware exists. There is no
+error otherwise.
+> b) We don't get this annoying warning and have some weird device in 
+>sysfs on non-qcom devices
+We wont compile this file on non-qcom device, so the point is moot.
+Well, we may see the error, if the cpuidle framework is not compiled in.
+But putthing this in SPM doesnt solve that problem either.
