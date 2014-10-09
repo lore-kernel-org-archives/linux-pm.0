@@ -1,57 +1,54 @@
-From: Valdis.Kletnieks@vt.edu
+From: Nishanth Menon <nm@ti.com>
 Subject: Re: cpuidle - minimum time for sleep
-Date: Thu, 09 Oct 2014 15:01:43 -0400
-Message-ID: <11792.1412881303@turing-police.cc.vt.edu>
-References: <CAJ2oMhJXi-wxZJFcmm3LsTQOC35tAVKwr1PihUc0CmbnNtfPVQ@mail.gmail.com>
+Date: Thu, 9 Oct 2014 14:20:39 -0500
+Message-ID: <5436E007.7000909@ti.com>
+References: <CAJ2oMhJXi-wxZJFcmm3LsTQOC35tAVKwr1PihUc0CmbnNtfPVQ@mail.gmail.com> <11792.1412881303@turing-police.cc.vt.edu>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1412881303_2528P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from omr1.cc.vt.edu ([198.82.141.52]:55193 "EHLO omr1.cc.vt.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751310AbaJITDX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 9 Oct 2014 15:03:23 -0400
-In-Reply-To: Your message of "Thu, 09 Oct 2014 21:28:23 +0300."
-             <CAJ2oMhJXi-wxZJFcmm3LsTQOC35tAVKwr1PihUc0CmbnNtfPVQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Ran Shalit <ranshalit@gmail.com>
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <11792.1412881303@turing-police.cc.vt.edu>
+Sender: linux-omap-owner@vger.kernel.org
+To: Valdis.Kletnieks@vt.edu, Ran Shalit <ranshalit@gmail.com>
 Cc: kernelnewbies <kernelnewbies@kernelnewbies.org>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-embedded@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
---==_Exmh_1412881303_2528P
-Content-Type: text/plain; charset=us-ascii
+On 10/09/2014 02:01 PM, Valdis.Kletnieks@vt.edu wrote:
+> On Thu, 09 Oct 2014 21:28:23 +0300, Ran Shalit said:
+> 
+>> Does anybody know what is the minimum expected time for sleep period
+>> with the cpuidle ?
+> 
+> Both processor dependent and sleep level dependent.  There's a certain
+> amount of latency induced by the hardware waking up.
+> 
+> Look at /sys/devices/system/cpu/cpu*/cpuidle/state*/latency
+> 
+Yes, that is correct. the sleep and wakeup time are dependent on the
+power state we attempt (may or maynot achieve)
 
-On Thu, 09 Oct 2014 21:28:23 +0300, Ran Shalit said:
+I personally toggle an unused pin using padmux register write with
+weak pull up/down in controlled tests (mostly using disable =1 for
+states I am not measuring), then capture pinctrl toggles using [1]
+into a csv for many thousands of iterations then use the conservative
+values. I usually do this at the slowest frequency to capture the
+worst case values that i feed into cpuidle_driver.states.exit_latency
+and appropriate value for target_residency - I usually ignore
+power_usage as the value is never a constant and depends on quiet a
+few factors that i cannot discuss in public domain.
 
-> Does anybody know what is the minimum expected time for sleep period
-> with the cpuidle ?
+Here are some helpful links on OMAP specific strategies (these may be
+a little old, but just search for CPUIDLE latency measure in google)
 
-Both processor dependent and sleep level dependent.  There's a certain
-amount of latency induced by the hardware waking up.
+https://lwn.net/Articles/384146/
 
-Look at /sys/devices/system/cpu/cpu*/cpuidle/state*/latency
+http://www.omappedia.org/wiki/Power_Management_Device_Latencies_Measurement
 
---==_Exmh_1412881303_2528P
-Content-Type: application/pgp-signature
+http://lists.linaro.org/pipermail/linaro-dev/2010-August/000568.html
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: Exmh version 2.5 07/13/2001
 
-iQIVAwUBVDbblgdmEQWDXROgAQJQrw/9Gf1ytV1qtQYLulg2riYyv3un2hhmgDzt
-Tdf/j72Lfzue13I8THDRlGhey3wVyc3nb1z+OC/LsDXGffKYw1Qjydayl115O1tg
-64tFE6RVDA+OM0rML67IrJqpjVZOcaqOra4VbxwnyRhWp6OGl2GgeNctsS2LvSd7
-+gnFe5CgTc4Al/TvkEPnx+zg+TPUZb4lVyFLFyONuUAVorr5lqL22sFNsqvDGwif
-qjn23FwVLK60FXfPu+8Cfbl364EtIe0UzeojW6VEyQ8IPTV/D6fhrbW3SOTP6RW3
-AQFdOAKwl4xCQ0xTK6vjbJbWqcK0o/l/ZuAdFsaQ7wlglGXL1U0Jtbzqo09YVHbN
-KoyRWAdrJX9lIbsroDoB50z27YkFeu3dGpgR5dMFQVleFME2Xy4TsgN/HCrS9j4/
-QseUn2oTEl9uAduEEDnN3Suzx4fZw/HaTBUm7poME9Lo+vsjQhGnTGZWiN09RT4y
-oNnEaqsjh4+Dld2B+72qseVb5efPnJAoNouv5xYEco3znCCtZnExPLxkBFs1PN4C
-hH/RyWcWbHO+3QwggodloKVdn42j/AoD9dQ+2YR9L9shOlRCdVE8rfqymaHZp7DS
-tDcZDSvspBws7WizdQkI3lxTslXrN8tAlPzHt3v78GaZIPnyGF46LlEEnLgLnXg5
-l5afbLqOLuc=
-=ojUa
------END PGP SIGNATURE-----
+[1] https://www.saleae.com/
 
---==_Exmh_1412881303_2528P--
+-- 
+Regards,
+Nishanth Menon
