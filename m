@@ -1,151 +1,55 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: fix multiple disbalanced device node counters
-Date: Thu, 09 Oct 2014 09:38:57 +0800
-Message-ID: <1412818737.13621.3.camel@rzhang1-toshiba>
-References: <1411948066-9118-1-git-send-email-vz@mleia.com>
+Subject: Re: [PATCH 1/3] thermal: step_wise: fix: Prevent from binary
+ overflow when trend is dropping
+Date: Thu, 09 Oct 2014 11:14:18 +0800
+Message-ID: <1412824458.13621.5.camel@rzhang1-toshiba>
+References: <1411547232-21493-1-git-send-email-l.majewski@samsung.com>
+	 <1411547232-21493-2-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:50863 "EHLO mga11.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:63299 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751223AbaJIBjh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 8 Oct 2014 21:39:37 -0400
-In-Reply-To: <1411948066-9118-1-git-send-email-vz@mleia.com>
+	id S1751125AbaJIDOW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 8 Oct 2014 23:14:22 -0400
+In-Reply-To: <1411547232-21493-2-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vladimir Zapolskiy <vz@mleia.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org
 
-Hi, Eduardo,
-
-On Mon, 2014-09-29 at 02:47 +0300, Vladimir Zapolskiy wrote:
-> Here on function return all temporarily used device nodes shall
-> decrement their usage counter. The problems are found with device
-> nodes allocated by for_each_child_of_node(), of_parse_phandle()
-> and of_find_node_by_name(), fix all problems at once.
+On Wed, 2014-09-24 at 10:27 +0200, Lukasz Majewski wrote:
+> It turns out that some boards can have instance->lower greater than 0 and
+> when thermal trend is dropping it results with next_target equal to -1.
 > 
-can you please take this patch?
+> Since the next_target is defined as unsigned long it is interpreted as
+> 0xFFFFFFFF and larger than instance->upper.
+> As a result the next_target is set to instance->upper which ramps up to
+> maximal cooling device target when the temperature is steadily decreasing.
+> 
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+
+applied.
 
 thanks,
 rui
-> Signed-off-by: Vladimir Zapolskiy <vz@mleia.com>
-> Cc: devicetree@vger.kernel.org
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
 > ---
->  drivers/thermal/of-thermal.c |   40 ++++++++++++++++++++++++++++++++--------
->  1 file changed, 32 insertions(+), 8 deletions(-)
+>  drivers/thermal/step_wise.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index f8eb625..62143ba 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -387,15 +387,18 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
->  				int (*get_trend)(void *, long *))
->  {
->  	struct device_node *np, *child, *sensor_np;
-> +	struct thermal_zone_device *tzd = ERR_PTR(-ENODEV);
->  
->  	np = of_find_node_by_name(NULL, "thermal-zones");
->  	if (!np)
->  		return ERR_PTR(-ENODEV);
->  
-> -	if (!dev || !dev->of_node)
-> +	if (!dev || !dev->of_node) {
-> +		of_node_put(np);
->  		return ERR_PTR(-EINVAL);
-> +	}
->  
-> -	sensor_np = dev->of_node;
-> +	sensor_np = of_node_get(dev->of_node);
->  
->  	for_each_child_of_node(np, child) {
->  		struct of_phandle_args sensor_specs;
-> @@ -422,16 +425,21 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
->  		}
->  
->  		if (sensor_specs.np == sensor_np && id == sensor_id) {
-> -			of_node_put(np);
-> -			return thermal_zone_of_add_sensor(child, sensor_np,
-> -							  data,
-> -							  get_temp,
-> -							  get_trend);
-> +			tzd = thermal_zone_of_add_sensor(child, sensor_np,
-> +							 data,
-> +							 get_temp,
-> +							 get_trend);
-> +			of_node_put(sensor_specs.np);
-> +			of_node_put(child);
-> +			goto exit;
->  		}
-> +		of_node_put(sensor_specs.np);
->  	}
-> +exit:
-> +	of_node_put(sensor_np);
->  	of_node_put(np);
->  
-> -	return ERR_PTR(-ENODEV);
-> +	return tzd;
->  }
->  EXPORT_SYMBOL_GPL(thermal_zone_of_sensor_register);
->  
-> @@ -623,6 +631,7 @@ static int thermal_of_populate_trip(struct device_node *np,
->  
->  	/* Required for cooling map matching */
->  	trip->np = np;
-> +	of_node_get(np);
->  
->  	return 0;
->  }
-> @@ -730,9 +739,14 @@ finish:
->  	return tz;
->  
->  free_tbps:
-> +	for (i = 0; i < tz->num_tbps; i++)
-> +		of_node_put(tz->tbps[i].cooling_device);
->  	kfree(tz->tbps);
->  free_trips:
-> +	for (i = 0; i < tz->ntrips; i++)
-> +		of_node_put(tz->trips[i].np);
->  	kfree(tz->trips);
-> +	of_node_put(gchild);
->  free_tz:
->  	kfree(tz);
->  	of_node_put(child);
-> @@ -742,7 +756,13 @@ free_tz:
->  
->  static inline void of_thermal_free_zone(struct __thermal_zone *tz)
->  {
-> +	int i;
-> +
-> +	for (i = 0; i < tz->num_tbps; i++)
-> +		of_node_put(tz->tbps[i].cooling_device);
->  	kfree(tz->tbps);
-> +	for (i = 0; i < tz->ntrips; i++)
-> +		of_node_put(tz->trips[i].np);
->  	kfree(tz->trips);
->  	kfree(tz);
->  }
-> @@ -814,10 +834,13 @@ int __init of_parse_thermal_zones(void)
->  			/* attempting to build remaining zones still */
->  		}
->  	}
-> +	of_node_put(np);
->  
->  	return 0;
->  
->  exit_free:
-> +	of_node_put(child);
-> +	of_node_put(np);
->  	of_thermal_free_zone(tz);
->  
->  	/* no memory available, so free what we have built */
-> @@ -859,4 +882,5 @@ void of_thermal_destroy_zones(void)
->  		kfree(zone->ops);
->  		of_thermal_free_zone(zone->devdata);
->  	}
-> +	of_node_put(np);
->  }
+> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+> index 3b54c2c..fdd1f52 100644
+> --- a/drivers/thermal/step_wise.c
+> +++ b/drivers/thermal/step_wise.c
+> @@ -77,7 +77,7 @@ static unsigned long get_target_state(struct thermal_instance *instance,
+>  			next_target = instance->upper;
+>  		break;
+>  	case THERMAL_TREND_DROPPING:
+> -		if (cur_state == instance->lower) {
+> +		if (cur_state <= instance->lower) {
+>  			if (!throttle)
+>  				next_target = THERMAL_NO_TARGET;
+>  		} else {
 
 
