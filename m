@@ -1,33 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Add sfi based cpufreq driver support
-Date: Thu, 9 Oct 2014 15:48:08 +0530
-Message-ID: <CAKohpok9d4AK4qmERqtnGYBtZx=wnP5fdECOT6t1NFEGfAQ_2g@mail.gmail.com>
-References: <20141007140734.GB24200@intel-desktop>
-	<CAKohpokLcZPcMUjXYNNxDcwHUzsL1ejYBYd0cDmnAHQu+cBYGA@mail.gmail.com>
-	<20141008191454.GA6504@intel-desktop>
-	<CAKohpom+Ey75QStm_xsVeC7arN_5a3+q_Nf8pvadTxNaLBKCEw@mail.gmail.com>
-	<20141009180826.GA32265@intel-desktop>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH 08/44] kernel: Move pm_power_off to common code
+Date: Thu, 9 Oct 2014 11:28:55 +0100
+Message-ID: <20141009102855.GE17836@e104818-lin.cambridge.arm.com>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-9-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f49.google.com ([209.85.218.49]:56647 "EHLO
-	mail-oi0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751326AbaJIKSJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Oct 2014 06:18:09 -0400
-Received: by mail-oi0-f49.google.com with SMTP id a3so1952731oib.22
-        for <linux-pm@vger.kernel.org>; Thu, 09 Oct 2014 03:18:08 -0700 (PDT)
-In-Reply-To: <20141009180826.GA32265@intel-desktop>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-mips-bounce@linux-mips.org>
+Content-Disposition: inline
+In-Reply-To: <1412659726-29957-9-git-send-email-linux@roeck-us.net>
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-help: <mailto:ecartis@linux-mips.org?Subject=help>
+List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
+List-software: Ecartis version 1.0.0
+List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
+List-owner: <mailto:ralf@linux-mips.org>
+List-post: <mailto:linux-mips@linux-mips.org>
+List-archive: <http://www.linux-mips.org/archives/linux-mips/>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "adi-buildroot-devel@lists.sourceforge.net" <adi-buildroot-devel@lists.sourceforge.net>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lguest@lists.ozlabs.org" <lguest@lists.ozlabs.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>, "linux-am33-list@redhat.com" <linux-am33-list@redhat.com>, "linux-cris-kernel@axis.com" <linux-cris-kernel@axis.com>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>, "linux-m32r-ja@ml.linux-m32r.org" <linux-m32r-ja@ml.linux-m32r.org>, "linuxppc-dev@lists.ozlabs.org" <linuxp>
 List-Id: linux-pm@vger.kernel.org
-To: "Kasagar, Srinidhi" <srinidhi.kasagar@intel.com>
-Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, vishwesh.m.rudramuni@intel.com
 
-On 9 October 2014 23:38, Kasagar, Srinidhi <srinidhi.kasagar@intel.com> wrote:
-> I guess if you offline a cpu and then bring it online, then even though
-> there is no change in frequency, the core calls ->target_index().
+On Tue, Oct 07, 2014 at 06:28:10AM +0100, Guenter Roeck wrote:
+> diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
+> index e0ef8ba..db396bb 100644
+> --- a/arch/arm64/kernel/process.c
+> +++ b/arch/arm64/kernel/process.c
+> @@ -94,8 +94,6 @@ void soft_restart(unsigned long addr)
+>  /*
+>   * Function pointers to optional machine specific functions
+>   */
+> -void (*pm_power_off)(void);
+> -EXPORT_SYMBOL_GPL(pm_power_off);
+> 
+>  void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *cmd);
+> 
+> @@ -155,8 +153,7 @@ void machine_power_off(void)
+>  {
+>         local_irq_disable();
+>         smp_send_stop();
+> -       if (pm_power_off)
+> -               pm_power_off();
+> +       do_kernel_poweroff();
+>  }
 
-No.
-
-> am i missing something?
-
-Yes.
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
