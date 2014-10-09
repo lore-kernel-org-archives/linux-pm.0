@@ -1,63 +1,69 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH RFC] sched,idle: teach select_idle_sibling about idle
- states
-Date: Thu, 9 Oct 2014 18:04:24 +0200
-Message-ID: <20141009160424.GT4750@worktop.programming.kicks-ass.net>
-References: <1409844730-12273-1-git-send-email-nicolas.pitre@linaro.org>
- <1409844730-12273-3-git-send-email-nicolas.pitre@linaro.org>
- <542B277D.7050103@redhat.com>
- <alpine.LFD.2.11.1409301904150.5311@knanqh.ubzr>
- <20141002131548.6cd377d5@cuia.bos.redhat.com>
- <1412317384.5149.19.camel@marge.simpson.net>
- <20141003075012.GF10583@worktop.programming.kicks-ass.net>
- <542EB29A.2050704@redhat.com>
- <20141003144651.GI10583@worktop.programming.kicks-ass.net>
- <542EC2BB.5030907@redhat.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v4 2/2] power: reset: document LTC2952 poweroff support
+Date: Thu, 9 Oct 2014 09:09:36 -0700
+Message-ID: <20141009160935.GF31987@roeck-us.net>
+References: <1412866242-6474-1-git-send-email-frans.klaver@xsens.com>
+ <1412866242-6474-3-git-send-email-frans.klaver@xsens.com>
+ <20141009150756.GC18384@leverpostej>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:40972 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbaJIQE1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Oct 2014 12:04:27 -0400
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:60788 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbaJIQJm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Oct 2014 12:09:42 -0400
 Content-Disposition: inline
-In-Reply-To: <542EC2BB.5030907@redhat.com>
+In-Reply-To: <20141009150756.GC18384@leverpostej>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rik van Riel <riel@redhat.com>
-Cc: Mike Galbraith <umgwanakikbuti@gmail.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Ingo Molnar <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Frans Klaver <frans.klaver@xsens.com>, Sebastian Reichel <sre@kernel.org>, =?iso-8859-1?Q?Ren=E9?= Moll <linux@r-moll.nl>, Tjerk Hofmeijer <tjerk.hofmeijer@xsens.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On Fri, Oct 03, 2014 at 11:37:31AM -0400, Rik van Riel wrote:
-> Some more brainstorming points...
-> 
-> 1) We should probably (lazily/batched?) propagate load information
->    up the sched_group tree.  This will be useful for wake_affine,
->    load_balancing, find_idlest_cpu, and select_idle_sibling
-> 
-> 2) With both find_idlest_cpu and select_idle_sibling walking down
->    the tree from the LLC level, they could probably share code
-> 
-> 3) Counting both blocked and runnable load may give better long
->    term stability of loads, resulting in a reduction in work
->    preserving behaviour, but an improvement in locality - this
->    could be worthwhile, but it is hard to say in advance
-> 
-> 4) We can be pretty sure that CPU makers are not going to stop
->    at a mere 18 cores. We need to subdivide things below the LLC
->    level, turning select_idle_sibling and find_idlest_cpu into
->    a tree walk.
-> 
->    This means whatever selection criteria are used by these need
->    to be propagated up the sched_group tree. This, in turn, means
->    we probably need to restrict ourselves to things that do not get
->    changed/updated too often.
-> 
-> Am I overlooking anything?
+On Thu, Oct 09, 2014 at 04:07:56PM +0100, Mark Rutland wrote:
+> Hi,
+>=20
+> On Thu, Oct 09, 2014 at 03:50:42PM +0100, Frans Klaver wrote:
+> > From: Ren=E9 Moll <linux@r-moll.nl>
+> >=20
+> > Signed-off-by: Ren=E9 Moll <linux@r-moll.nl>
+> > Signed-off-by: Tjerk Hofmeijer <tjerk.hofmeijer@xsens.com>
+> > Signed-off-by: Frans Klaver <frans.klaver@xsens.com>
+> > ---
+> >  .../bindings/power/reset/ltc2952-poweroff.txt      | 31 ++++++++++=
+++++++++++++
+> >  1 file changed, 31 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/power/reset/l=
+tc2952-poweroff.txt
+> >=20
+> > diff --git a/Documentation/devicetree/bindings/power/reset/ltc2952-=
+poweroff.txt b/Documentation/devicetree/bindings/power/reset/ltc2952-po=
+weroff.txt
+> > new file mode 100644
+> > index 0000000..c3f3d9e
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power/reset/ltc2952-powerof=
+f.txt
+> > @@ -0,0 +1,31 @@
+> > +Binding for the LTC2952 PowerPath controller
+> > +
+> > +This chip is used to externally trigger a system shut down. Once t=
+he trigger
+> > +has been sent, the chips watchdog has to be reset to gracefully sh=
+ut down.
+>=20
+> s/chips/chip's/
+>=20
+> > If +the Linux systems decides to shut down, it powers off the platf=
+orm
+> > via the +poweroff signal.
+>=20
+> This sentence can go; the binding should describe the hardware rather
+> than the Linux behaviour.
+>=20
+Maybe find an operating system independent wording and describe what th=
+e
+implementation should do. Or is that out of scope as well ?
 
-Well, we can certainly try something like that; but your last point
-seems like a contradition; seeing how _the_ important point for
-select_idle_sibling() is the actual idle state, and that per definition
-is something that can change/update often.
-
-But yes, the only viable option is some artificial breakup of the
-topology and we can indeed try and bridge the gap with some caching.
+Thanks,
+Guenter
