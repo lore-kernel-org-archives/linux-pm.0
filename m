@@ -1,56 +1,262 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH 20/21] thermal: exynos: Make Exynos5250 TMU compatible with
- Exynos4412
-Date: Thu, 09 Oct 2014 18:38:56 +0200
-Message-ID: <1412872737-624-21-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH 19/21] thermal: exynos: Remove exynos_tmu_data.c file
+Date: Thu, 09 Oct 2014 18:38:55 +0200
+Message-ID: <1412872737-624-20-git-send-email-l.majewski@samsung.com>
 References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:58917 "EHLO
+Received: from mailout2.samsung.com ([203.254.224.25]:58912 "EHLO
 	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751118AbaJIQkc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Oct 2014 12:40:32 -0400
+	with ESMTP id S1752694AbaJIQk2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Oct 2014 12:40:28 -0400
 In-reply-to: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
 Cc: "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Linux PM list <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 
-Since both SoCs have the same TMU IP block embedded on them, it is
-not necessary to maintain separate compatible entry.
+Data already present in the exynos_tmu_data.c file has been moved to the
+appropriate device tree files.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
- arch/arm/boot/dts/exynos5250.dtsi    | 2 +-
- drivers/thermal/samsung/exynos_tmu.c | 3 ---
- 2 files changed, 1 insertion(+), 4 deletions(-)
+ drivers/thermal/samsung/exynos_tmu_data.c | 228 ------------------------------
+ 1 file changed, 228 deletions(-)
+ delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
 
-diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
-index e71ec78..3426bab 100644
---- a/arch/arm/boot/dts/exynos5250.dtsi
-+++ b/arch/arm/boot/dts/exynos5250.dtsi
-@@ -238,7 +238,7 @@
- 	};
- 
- 	tmu: tmu@10060000 {
--		compatible = "samsung,exynos5250-tmu";
-+		compatible = "samsung,exynos4412-tmu";
- 		reg = <0x10060000 0x100>;
- 		interrupts = <0 65 0>;
- 		clocks = <&clock CLK_TMU>;
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index e26042a..f1e8c9b 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -753,9 +753,6 @@ static const struct of_device_id exynos_tmu_match[] = {
- 		.compatible = "samsung,exynos4412-tmu",
- 	},
- 	{
--		.compatible = "samsung,exynos5250-tmu",
+diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
+deleted file mode 100644
+index a993f3d..0000000
+--- a/drivers/thermal/samsung/exynos_tmu_data.c
++++ /dev/null
+@@ -1,228 +0,0 @@
+-/*
+- * exynos_tmu_data.c - Samsung EXYNOS tmu data file
+- *
+- *  Copyright (C) 2013 Samsung Electronics
+- *  Amit Daniel Kachhap <amit.daniel@samsung.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+- *
+- */
+-
+-#include "exynos_thermal_common.h"
+-#include "exynos_tmu.h"
+-
+-struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
+-	.tmu_data = {
+-		{
+-		.threshold = 80,
+-		.trigger_levels[0] = 5,
+-		.trigger_levels[1] = 20,
+-		.trigger_levels[2] = 30,
+-		.trigger_enable[0] = true,
+-		.trigger_enable[1] = true,
+-		.trigger_enable[2] = true,
+-		.trigger_enable[3] = false,
+-		.trigger_type[0] = THROTTLE_ACTIVE,
+-		.trigger_type[1] = THROTTLE_ACTIVE,
+-		.trigger_type[2] = SW_TRIP,
+-		.max_trigger_level = 4,
+-		.non_hw_trigger_levels = 3,
+-		.gain = 15,
+-		.reference_voltage = 7,
+-		.cal_type = TYPE_ONE_POINT_TRIMMING,
+-		.min_efuse_value = 40,
+-		.max_efuse_value = 100,
+-		.first_point_trim = 25,
+-		.second_point_trim = 85,
+-		.default_temp_offset = 50,
+-		.type = SOC_ARCH_EXYNOS4210,
+-		},
 -	},
--	{
- 		.compatible = "samsung,exynos5260-tmu",
- 	},
- 	{
+-	.tmu_count = 1,
+-};
+-
+-#define EXYNOS3250_TMU_DATA \
+-	.threshold_falling = 10, \
+-	.trigger_levels[0] = 70, \
+-	.trigger_levels[1] = 95, \
+-	.trigger_levels[2] = 110, \
+-	.trigger_levels[3] = 120, \
+-	.trigger_enable[0] = true, \
+-	.trigger_enable[1] = true, \
+-	.trigger_enable[2] = true, \
+-	.trigger_enable[3] = false, \
+-	.trigger_type[0] = THROTTLE_ACTIVE, \
+-	.trigger_type[1] = THROTTLE_ACTIVE, \
+-	.trigger_type[2] = SW_TRIP, \
+-	.trigger_type[3] = HW_TRIP, \
+-	.max_trigger_level = 4, \
+-	.non_hw_trigger_levels = 3, \
+-	.gain = 8, \
+-	.reference_voltage = 16, \
+-	.noise_cancel_mode = 4, \
+-	.cal_type = TYPE_TWO_POINT_TRIMMING, \
+-	.efuse_value = 55, \
+-	.min_efuse_value = 40, \
+-	.max_efuse_value = 100, \
+-	.first_point_trim = 25, \
+-	.second_point_trim = 85, \
+-	.default_temp_offset = 50
+-
+-struct exynos_tmu_init_data const exynos3250_default_tmu_data = {
+-	.tmu_data = {
+-		{
+-			EXYNOS3250_TMU_DATA,
+-			.type = SOC_ARCH_EXYNOS3250,
+-		},
+-	},
+-	.tmu_count = 1,
+-};
+-
+-#define EXYNOS4412_TMU_DATA \
+-	.threshold_falling = 10, \
+-	.trigger_levels[0] = 70, \
+-	.trigger_levels[1] = 95, \
+-	.trigger_levels[2] = 110, \
+-	.trigger_levels[3] = 120, \
+-	.trigger_enable[0] = true, \
+-	.trigger_enable[1] = true, \
+-	.trigger_enable[2] = true, \
+-	.trigger_enable[3] = false, \
+-	.trigger_type[0] = THROTTLE_ACTIVE, \
+-	.trigger_type[1] = THROTTLE_ACTIVE, \
+-	.trigger_type[2] = SW_TRIP, \
+-	.trigger_type[3] = HW_TRIP, \
+-	.max_trigger_level = 4, \
+-	.non_hw_trigger_levels = 3, \
+-	.gain = 8, \
+-	.reference_voltage = 16, \
+-	.noise_cancel_mode = 4, \
+-	.cal_type = TYPE_ONE_POINT_TRIMMING, \
+-	.efuse_value = 55, \
+-	.min_efuse_value = 40, \
+-	.max_efuse_value = 100, \
+-	.first_point_trim = 25, \
+-	.second_point_trim = 85, \
+-	.default_temp_offset = 50
+-
+-struct exynos_tmu_init_data const exynos4412_default_tmu_data = {
+-	.tmu_data = {
+-		{
+-			EXYNOS4412_TMU_DATA,
+-			.type = SOC_ARCH_EXYNOS4412,
+-		},
+-	},
+-	.tmu_count = 1,
+-};
+-
+-struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
+-	.tmu_data = {
+-		{
+-			EXYNOS4412_TMU_DATA,
+-			.type = SOC_ARCH_EXYNOS5250,
+-		},
+-	},
+-	.tmu_count = 1,
+-};
+-
+-#define __EXYNOS5260_TMU_DATA	\
+-	.threshold_falling = 10, \
+-	.trigger_levels[0] = 85, \
+-	.trigger_levels[1] = 103, \
+-	.trigger_levels[2] = 110, \
+-	.trigger_levels[3] = 120, \
+-	.trigger_enable[0] = true, \
+-	.trigger_enable[1] = true, \
+-	.trigger_enable[2] = true, \
+-	.trigger_enable[3] = false, \
+-	.trigger_type[0] = THROTTLE_ACTIVE, \
+-	.trigger_type[1] = THROTTLE_ACTIVE, \
+-	.trigger_type[2] = SW_TRIP, \
+-	.trigger_type[3] = HW_TRIP, \
+-	.max_trigger_level = 4, \
+-	.non_hw_trigger_levels = 3, \
+-	.gain = 8, \
+-	.reference_voltage = 16, \
+-	.noise_cancel_mode = 4, \
+-	.cal_type = TYPE_ONE_POINT_TRIMMING, \
+-	.efuse_value = 55, \
+-	.min_efuse_value = 40, \
+-	.max_efuse_value = 100, \
+-	.first_point_trim = 25, \
+-	.second_point_trim = 85, \
+-	.default_temp_offset = 50,
+-
+-#define EXYNOS5260_TMU_DATA \
+-	__EXYNOS5260_TMU_DATA \
+-	.type = SOC_ARCH_EXYNOS5260
+-
+-struct exynos_tmu_init_data const exynos5260_default_tmu_data = {
+-	.tmu_data = {
+-		{ EXYNOS5260_TMU_DATA },
+-		{ EXYNOS5260_TMU_DATA },
+-		{ EXYNOS5260_TMU_DATA },
+-		{ EXYNOS5260_TMU_DATA },
+-		{ EXYNOS5260_TMU_DATA },
+-	},
+-	.tmu_count = 5,
+-};
+-
+-#define EXYNOS5420_TMU_DATA \
+-	__EXYNOS5260_TMU_DATA \
+-	.type = SOC_ARCH_EXYNOS5420
+-
+-#define EXYNOS5420_TMU_DATA_SHARED \
+-	__EXYNOS5260_TMU_DATA \
+-	.type = SOC_ARCH_EXYNOS5420_TRIMINFO
+-
+-struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
+-	.tmu_data = {
+-		{ EXYNOS5420_TMU_DATA },
+-		{ EXYNOS5420_TMU_DATA },
+-		{ EXYNOS5420_TMU_DATA_SHARED },
+-		{ EXYNOS5420_TMU_DATA_SHARED },
+-		{ EXYNOS5420_TMU_DATA_SHARED },
+-	},
+-	.tmu_count = 5,
+-};
+-
+-#define EXYNOS5440_TMU_DATA \
+-	.trigger_levels[0] = 100, \
+-	.trigger_levels[4] = 105, \
+-	.trigger_enable[0] = 1, \
+-	.trigger_type[0] = SW_TRIP, \
+-	.trigger_type[4] = HW_TRIP, \
+-	.max_trigger_level = 5, \
+-	.non_hw_trigger_levels = 1, \
+-	.gain = 5, \
+-	.reference_voltage = 16, \
+-	.noise_cancel_mode = 4, \
+-	.cal_type = TYPE_ONE_POINT_TRIMMING, \
+-	.efuse_value = 0x5b2d, \
+-	.min_efuse_value = 16, \
+-	.max_efuse_value = 76, \
+-	.first_point_trim = 25, \
+-	.second_point_trim = 70, \
+-	.default_temp_offset = 25, \
+-	.type = SOC_ARCH_EXYNOS5440
+-
+-struct exynos_tmu_init_data const exynos5440_default_tmu_data = {
+-	.tmu_data = {
+-		{ EXYNOS5440_TMU_DATA } ,
+-		{ EXYNOS5440_TMU_DATA } ,
+-		{ EXYNOS5440_TMU_DATA } ,
+-	},
+-	.tmu_count = 3,
+-};
 -- 
 2.0.0.rc2
 
