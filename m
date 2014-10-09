@@ -1,97 +1,70 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v4 2/2] power: reset: document LTC2952 poweroff support
-Date: Thu, 9 Oct 2014 16:07:56 +0100
-Message-ID: <20141009150756.GC18384@leverpostej>
-References: <1412866242-6474-1-git-send-email-frans.klaver@xsens.com>
- <1412866242-6474-3-git-send-email-frans.klaver@xsens.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH 01/44] kernel: Add support for poweroff handler call chain
+Date: Thu, 9 Oct 2014 08:38:36 -0700
+Message-ID: <20141009153836.GA31987@roeck-us.net>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-2-git-send-email-linux@roeck-us.net>
+ <20141009103143.GA6787@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
 Content-Disposition: inline
-In-Reply-To: <1412866242-6474-3-git-send-email-frans.klaver@xsens.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Frans Klaver <frans.klaver@xsens.com>
-Cc: Sebastian Reichel <sre@kernel.org>, =?utf-8?B?UmVuw6k=?= Moll <linux@r-moll.nl>, Tjerk Hofmeijer <tjerk.hofmeijer@xsens.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Guenter Roeck <linux@roeck-us.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+In-Reply-To: <20141009103143.GA6787@amd>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, Len Brown <len.brown@intel.com>, linux-xtensa@linux-xtensa.org, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, Alexander Graf <agraf@suse.de>, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, xen-devel@lists.xenproject.org, devicetree@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com, linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.or
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, Oct 09, 2014 at 12:31:43PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > +/**
+> > + *	register_poweroff_handler_simple - Register function to be called to power off
+> > + *					   the system
+> > + *	@handler:	Function to be called to power off the system
+> > + *	@priority:	Handler priority. For priority guidelines see
+> > + *			register_poweroff_handler.
+> > + *
+> > + *	This is a simplified version of register_poweroff_handler. It does not
+> > + *	take a notifier as argument, but a function pointer. The function
+> > + *	registers a poweroff handler with specified priority. Poweroff
+> > + *	handlers registered with this function can not be unregistered,
+> > + *	and only a single poweroff handler can be installed using it.
+> > + *
+> > + *	This function must not be called from modules and is therefore
+> > + *	not exported.
+> > + *
+> > + *	Returns -EBUSY if a poweroff handler has already been registered
+> > + *	using register_poweroff_handler_simple. Otherwise returns zero,
+> > + *	since atomic_notifier_chain_register() currently always returns zero.
+> > + */
+> > +int register_poweroff_handler_simple(void (*handler)(void), int priority)
+> > +{
+> > +	char symname[KSYM_NAME_LEN];
+> > +
+> > +	if (poweroff_handler_data.handler) {
+> > +		lookup_symbol_name((unsigned long)poweroff_handler_data.handler,
+> > +				   symname);
+> > +		pr_warn("Poweroff function already registered (%s)", symname);
+> > +		lookup_symbol_name((unsigned long)handler, symname);
+> > +		pr_cont(", cannot register %s\n", symname);
+> > +		return -EBUSY;
+> > +	}
+> 
+> Dunno, are you maybe overdoing the debugging infrastructure a bit?
+> This is not going to happen in production, and if it does happen,
+> developer can look the symbol name himself.
 
-On Thu, Oct 09, 2014 at 03:50:42PM +0100, Frans Klaver wrote:
-> From: Ren=C3=A9 Moll <linux@r-moll.nl>
->=20
-> Signed-off-by: Ren=C3=A9 Moll <linux@r-moll.nl>
-> Signed-off-by: Tjerk Hofmeijer <tjerk.hofmeijer@xsens.com>
-> Signed-off-by: Frans Klaver <frans.klaver@xsens.com>
-> ---
->  .../bindings/power/reset/ltc2952-poweroff.txt      | 31 ++++++++++++=
-++++++++++
->  1 file changed, 31 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/reset/ltc=
-2952-poweroff.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/power/reset/ltc2952-po=
-weroff.txt b/Documentation/devicetree/bindings/power/reset/ltc2952-powe=
-roff.txt
-> new file mode 100644
-> index 0000000..c3f3d9e
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/reset/ltc2952-poweroff.=
-txt
-> @@ -0,0 +1,31 @@
-> +Binding for the LTC2952 PowerPath controller
-> +
-> +This chip is used to externally trigger a system shut down. Once the=
- trigger
-> +has been sent, the chips watchdog has to be reset to gracefully shut=
- down.
+On the other side, I don't think it hurts to have that message.
+Anyway, I'll use %ps as suggested by Geert.
 
-s/chips/chip's/
-
-> If +the Linux systems decides to shut down, it powers off the platfor=
-m
-> via the +poweroff signal.
-
-This sentence can go; the binding should describe the hardware rather
-than the Linux behaviour.
-
-Thanks,
-Mark.
-
-> +
-> +Required properties:
-> +
-> +- compatible:		Must be: "lltc,ltc2952"
-> +- watchdog-gpios:	phandle + gpio-specifier for the GPIO connected to=
- the
-> +			chip's watchdog line
-> +- poweroff-gpios:	phandle + gpio-specifier for the GPIO connected to=
- the
-> +			chip's kill line
-> +
-> +Optional properties:
-> +
-> +- trigger-gpios:	phandle + gpio-specifier for the GPIO connected to =
-the
-> +			chip's trigger line. If this property is not set, the
-> +			trigger function is ignored and the chip is kept alive
-> +			until an explicit kill signal is received
-> +
-> +Example:
-> +
-> +ltc2952 {
-> +	compatible =3D "lltc,ltc2952";
-> +
-> +	trigger-gpios =3D <&gpio0 1 GPIO_ACTIVE_LOW>;
-> +	watchdog-gpios =3D <&gpio1 2 GPIO_ACTIVE_HIGH>;
-> +	poweroff-gpios =3D <&gpio0 2 GPIO_ACTIVE_LOW>;
-> +};
-> --=20
-> 2.1.0
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree"=
- in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
+Guenter
