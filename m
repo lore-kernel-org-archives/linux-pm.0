@@ -1,86 +1,57 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v8 4/7] qcom: pm: Add cpu low power mode functions
-Date: Thu, 9 Oct 2014 12:00:57 -0700
-Message-ID: <20141009190057.GA5493@codeaurora.org>
-References: <1412718106-17049-1-git-send-email-lina.iyer@linaro.org>
- <1412718106-17049-5-git-send-email-lina.iyer@linaro.org>
- <5435E245.1090507@codeaurora.org>
- <20141009155643.GB1277@ilina-mac.local>
+From: Valdis.Kletnieks@vt.edu
+Subject: Re: cpuidle - minimum time for sleep
+Date: Thu, 09 Oct 2014 15:01:43 -0400
+Message-ID: <11792.1412881303@turing-police.cc.vt.edu>
+References: <CAJ2oMhJXi-wxZJFcmm3LsTQOC35tAVKwr1PihUc0CmbnNtfPVQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; boundary="==_Exmh_1412881303_2528P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:37807 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbaJITA7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Oct 2014 15:00:59 -0400
-Content-Disposition: inline
-In-Reply-To: <20141009155643.GB1277@ilina-mac.local>
+Received: from omr1.cc.vt.edu ([198.82.141.52]:55193 "EHLO omr1.cc.vt.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751310AbaJITDX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 9 Oct 2014 15:03:23 -0400
+In-Reply-To: Your message of "Thu, 09 Oct 2014 21:28:23 +0300."
+             <CAJ2oMhJXi-wxZJFcmm3LsTQOC35tAVKwr1PihUc0CmbnNtfPVQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: daniel.lezcano@linaro.org, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+To: Ran Shalit <ranshalit@gmail.com>
+Cc: kernelnewbies <kernelnewbies@kernelnewbies.org>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-embedded@vger.kernel.org
 
-On 10/09, Lina Iyer wrote:
-> On Wed, Oct 08 2014 at 19:17 -0600, Stephen Boyd wrote:
-> 
-> >>+static int __init qcom_pm_device_init(void)
-> >>+{
-> >>+	platform_device_register(&qcom_cpuidle_device);
-> >>+
-> >
-> >This is wrong. We're going to register a platform device whenever
-> >this file is included in a kernel. This is then going to try and
-> >probe the qcom_cpuidle device which is going to fail and print an
-> >error message if we're not running on a qcom device.
-> Why would this file be compiled on a non-qcom target? The file has a
-> dependency on ARCH_QCOM (as it should be) and would not be compiled on a
-> non-qcom target.
+--==_Exmh_1412881303_2528P
+Content-Type: text/plain; charset=us-ascii
 
-We will compile this file on non-qcom devices in a multi-platform
-kernel build. Actually that looks like it would be a problem
-because cpuidle_register() will blow away any other registered
-driver on non-qcom devices.
+On Thu, 09 Oct 2014 21:28:23 +0300, Ran Shalit said:
 
-> 
-> >This is one reason why I've been arguing to get rid of this file
-> >and just put it inside the spm driver. That way we don't ever add
-> >the cpuidle device and:
-> That is a poor excuse for removing this file, which has a purpose.
-> Putting all this SCM code inside SPM is not a good design. SPM is a
-> driver, doesnt know about SCM et al. Why would you want to clobber that
-> file with all these irrelevant code? 8660 does not have a secure mode,
-> but still uses an SPM. So all this code is pretty useless there, not
-> that we are supporting 8660 at this time, just as an example.
+> Does anybody know what is the minimum expected time for sleep period
+> with the cpuidle ?
 
-On 8660 we still have to tell the secure code where to jump to
-when we come out of power collapse. The only difference is if
-we execute or don't execute the wfi in the kernel.
+Both processor dependent and sleep level dependent.  There's a certain
+amount of latency induced by the hardware waking up.
 
-The only thing that really matters to me is that we don't add
-useless devices and do things unnecessarily on non-qcom devices
-when this code is compiled in. The easiest way to do that is to
-register a saw driver and then do stuff in probe when the saw
-device appears. We can probably add individual cpuidle devices
-when each CPU's saw probes and register a cpuidle driver once
-based on some static variable after we register the first cpuidle
-device.
+Look at /sys/devices/system/cpu/cpu*/cpuidle/state*/latency
 
-> >
-> >a) We know the SPM hardware is configured and ready to be used
-> Its just one line check to see if the SPM hardware exists. There is no
-> error otherwise.
+--==_Exmh_1412881303_2528P
+Content-Type: application/pgp-signature
 
-I'm talking about a probe ordering dependency that would become
-explicit if we had one file instead of two.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: Exmh version 2.5 07/13/2001
 
-> >b) We don't get this annoying warning and have some weird device
-> >in sysfs on non-qcom devices
-> We wont compile this file on non-qcom device, so the point is moot.
-> Well, we may see the error, if the cpuidle framework is not compiled in.
-> But putthing this in SPM doesnt solve that problem either.
+iQIVAwUBVDbblgdmEQWDXROgAQJQrw/9Gf1ytV1qtQYLulg2riYyv3un2hhmgDzt
+Tdf/j72Lfzue13I8THDRlGhey3wVyc3nb1z+OC/LsDXGffKYw1Qjydayl115O1tg
+64tFE6RVDA+OM0rML67IrJqpjVZOcaqOra4VbxwnyRhWp6OGl2GgeNctsS2LvSd7
++gnFe5CgTc4Al/TvkEPnx+zg+TPUZb4lVyFLFyONuUAVorr5lqL22sFNsqvDGwif
+qjn23FwVLK60FXfPu+8Cfbl364EtIe0UzeojW6VEyQ8IPTV/D6fhrbW3SOTP6RW3
+AQFdOAKwl4xCQ0xTK6vjbJbWqcK0o/l/ZuAdFsaQ7wlglGXL1U0Jtbzqo09YVHbN
+KoyRWAdrJX9lIbsroDoB50z27YkFeu3dGpgR5dMFQVleFME2Xy4TsgN/HCrS9j4/
+QseUn2oTEl9uAduEEDnN3Suzx4fZw/HaTBUm7poME9Lo+vsjQhGnTGZWiN09RT4y
+oNnEaqsjh4+Dld2B+72qseVb5efPnJAoNouv5xYEco3znCCtZnExPLxkBFs1PN4C
+hH/RyWcWbHO+3QwggodloKVdn42j/AoD9dQ+2YR9L9shOlRCdVE8rfqymaHZp7DS
+tDcZDSvspBws7WizdQkI3lxTslXrN8tAlPzHt3v78GaZIPnyGF46LlEEnLgLnXg5
+l5afbLqOLuc=
+=ojUa
+-----END PGP SIGNATURE-----
 
-See above, this file will be compiled and included.
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+--==_Exmh_1412881303_2528P--
