@@ -1,63 +1,62 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [REPOST PATCH v4 1/2] PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
-Date: Fri, 10 Oct 2014 08:59:22 +0200
-Message-ID: <CAAObsKBuDRQy7=zLkmRj9O+Ka0K_z-ejXCyzwttEXmQVkXn2hw@mail.gmail.com>
-References: <1409759373-22696-1-git-send-email-tomeu.vizoso@collabora.com>
- <1960419.9oqpSxvdev@vostro.rjw.lan> <CAAObsKC0PcfBTJv8zZYUiys4NxvS=JMd3jjedUam5oZ4tNLwhA@mail.gmail.com>
- <2373913.b8GhYem2Rt@vostro.rjw.lan>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 21/21] thermal: exynos: Make Exynos3250 TMU compatible with
+ Exynos4412
+Date: Fri, 10 Oct 2014 10:51:18 +0200
+Message-ID: <20141010105118.2f05d40f@amdc2363>
+References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
+ <1412872737-624-22-git-send-email-l.majewski@samsung.com>
+ <54371B7E.5010600@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f54.google.com ([209.85.216.54]:62040 "EHLO
-	mail-qa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbaJJG7n (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Oct 2014 02:59:43 -0400
-In-Reply-To: <2373913.b8GhYem2Rt@vostro.rjw.lan>
+Received: from mailout2.samsung.com ([203.254.224.25]:27073 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751727AbaJJIv7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Oct 2014 04:51:59 -0400
+In-reply-to: <54371B7E.5010600@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Linux PM list <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-On 26 September 2014 01:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, September 24, 2014 03:31:55 PM Tomeu Vizoso wrote:
->> On 24 September 2014 15:32, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Wednesday, September 24, 2014 10:42:13 AM Tomeu Vizoso wrote:
->> >> On 14 September 2014 19:06, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> >> > On Friday, September 12, 2014 11:11:25 AM Tomeu Vizoso wrote:
->> >> >> On 3 September 2014 17:49, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
->> >> >> > Also adds a class type PM_QOS_SUM that aggregates the values by summing them.
->> >> >> >
->> >> >> > It can be used by memory controllers to calculate the optimum clock frequency
->> >> >> > based on the bandwidth needs of the different memory clients.
->> >> >> >
->> >> >> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
->> >> >> > Acked-by: Pavel Machek <pavel@ucw.cz>
->> >> >>
->> >> >> Hi Rafael,
->> >> >>
->> >> >> will you take this one for 3.18?
->> >> >
->> >> > Quite likely, but I'm traveling now, so I'll do that after I'm back home
->> >> > in a few days.  I'll write to you if there are any problems.
->> >>
->> >> Don't want to be annoying, but thought I might ping you just in case
->> >> this fell through the cracks.
->> >
->> > No, it didn't.
->> >
->> > I'm wondering about patch [2/2], though.  I'm assuming that you'll push you
->> > later through the Tegra DRM driver, right?
->>
->> Yes, that was Stephen's suggestion:
->>
->> https://lkml.org/lkml/2014/8/25/439
->
-> OK, patch [1/2] queued up for 3.18, thanks!
+Hi Chanwoo,
 
-Hi Rafael,
+> On 10/10/2014 01:38 AM, Lukasz Majewski wrote:
+> > Since both SoCs have the same TMU IP block embedded on them, it is
+> > not necessary to maintain separate compatible entry.
+> > 
+> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > ---
+> >  drivers/thermal/samsung/exynos_tmu.c | 3 ---
+> >  1 file changed, 3 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/samsung/exynos_tmu.c
+> > b/drivers/thermal/samsung/exynos_tmu.c index f1e8c9b..7818e2f 100644
+> > --- a/drivers/thermal/samsung/exynos_tmu.c
+> > +++ b/drivers/thermal/samsung/exynos_tmu.c
+> > @@ -744,9 +744,6 @@ static irqreturn_t exynos_tmu_irq(int irq, void
+> > *id) 
+> >  static const struct of_device_id exynos_tmu_match[] = {
+> >  	{
+> > -		.compatible = "samsung,exynos3250-tmu",
+> > -	},
+> > -	{
+> 
+> If you want to remove compatible string for Exynos3250,
+> you have to modify it on exynos3250.dtsi.
+> 
 
-I don't see this one in linux-next yet.
+Thanks for pointing this out. I've overlooked this dtsi file.
 
-Regards,
+> Thanks,
+> Chanwoo Choi
 
-Tomeu
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
