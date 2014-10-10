@@ -1,7 +1,7 @@
 From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH v8 3/5] ARM: dts: add RK3288 Thermal data
-Date: Fri, 10 Oct 2014 18:19:39 +0800
-Message-ID: <1412936381-22718-4-git-send-email-caesar.wang@rock-chips.com>
+Subject: [PATCH v8 2/5] dt-bindings: document Rockchip thermal
+Date: Fri, 10 Oct 2014 18:19:38 +0800
+Message-ID: <1412936381-22718-3-git-send-email-caesar.wang@rock-chips.com>
 References: <1412936381-22718-1-git-send-email-caesar.wang@rock-chips.com>
 Return-path: <linux-doc-owner@vger.kernel.org>
 In-Reply-To: <1412936381-22718-1-git-send-email-caesar.wang@rock-chips.com>
@@ -10,78 +10,66 @@ To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, arnd@arndb.de
 Cc: zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, Caesar Wang <caesar.wang@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch changes a dtsi file to contain the thermal data
-on RK3288 and later SoCs. This data will
-enable a thermal shutdown over 125C.
+This add the necessary binding documentation for the thermal
+found on Rockchip SoCs
 
+Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
 Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
 ---
- arch/arm/boot/dts/rk3288-thermal.dtsi | 57 +++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
- create mode 100644 arch/arm/boot/dts/rk3288-thermal.dtsi
+ .../bindings/thermal/rockchip-thermal.txt          | 45 ++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
 
-diff --git a/arch/arm/boot/dts/rk3288-thermal.dtsi b/arch/arm/boot/dts/rk3288-thermal.dtsi
+diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
 new file mode 100644
-index 0000000..c68c090
+index 0000000..d5ff410
 --- /dev/null
-+++ b/arch/arm/boot/dts/rk3288-thermal.dtsi
-@@ -0,0 +1,57 @@
-+/*
-+ * Device Tree Source for RK3288 SoC thermal
-+ *
-+ * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2.  This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
++++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+@@ -0,0 +1,45 @@
++* Temperature Sensor ADC (TSADC) on rockchip SoCs
 +
-+#include <dt-bindings/thermal/thermal.h>
++Required properties:
++- compatible: "rockchip,rk3288-tsadc"
++- reg: physical base address of the controller and length of memory mapped
++       region.
++- interrupts: The interrupt number to the cpu. The interrupt specifier format
++	      depends on the interrupt controller.
++- clocks: Must contain an entry for each entry in clock-names.
++- clock-names: Shall be "tsadc" for the converter-clock, and "apb_pclk" for
++	       the peripheral clock.
++- #thermal-sensor-cells: Should be 1. See ./thermal.txt for a description.
 +
-+reserve_thermal: reserve_thermal {
-+	polling-delay-passive = <500>; /* milliseconds */
-+	polling-delay = <1000>; /* milliseconds */
-+
-+			/* sensor	ID */
-+	thermal-sensors = <&tsadc	0>;
-+
++Exiample:
++tsadc: tsadc@ff280000 {
++	compatible = "rockchip,rk3288-tsadc";
++	reg = <0xff280000 0x100>;
++	interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
++	clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
++	clock-names = "tsadc", "apb_pclk";
 +};
 +
-+cpu_thermal: cpu_thermal {
-+	polling-delay-passive = <500>; /* milliseconds */
-+	polling-delay = <1000>; /* milliseconds */
++Example: referring to thermal sensors:
++thermal-zones {
++       cpu_thermal: cpu_thermal {
++	        polling-delay-passive = <500>; /* milliseconds */
++	        polling-delay = <1000>; /* milliseconds */
 +
-+			/* sensor	ID */
-+	thermal-sensors = <&tsadc	1>;
++			        /* sensor	ID */
++	        thermal-sensors = <&tsadc	1>;
 +
-+	trips {
-+		cpu_alert0: cpu_alert0 {
-+			temperature = <80000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "passive";
-+		};
-+		cpu_crit: cpu_crit {
-+			temperature = <125000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "critical";
-+		};
-+	};
-+};
-+
-+gpu_thermal: gpu_thermal {
-+	polling-delay-passive = <500>; /* milliseconds */
-+	polling-delay = <1000>; /* milliseconds */
-+
-+			/* sensor	ID */
-+	thermal-sensors = <&tsadc	2>;
-+
-+	trips {
-+		gpu_crit: gpu_crit {
-+			temperature = <125000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "critical";
-+		};
-+	};
++	        trips {
++		        cpu_alert0: cpu_alert {
++			        temperature = <80000>; /* millicelsius */
++			        hysteresis = <2000>; /* millicelsius */
++			        type = "passive";
++		        };
++		        cpu_crit: cpu_crit {
++			        temperature = <125000>; /* millicelsius */
++			        hysteresis = <2000>; /* millicelsius */
++			    type = "critical";
++		        };
++	        };
++       };
 +};
 -- 
 1.9.1
