@@ -1,201 +1,59 @@
-From: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
-Subject: Re: [PATCH 1/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Fri, 10 Oct 2014 12:41:29 +0200
-Message-ID: <1412937689.13463.21.camel@x200t>
-References: <CAKohpo=rEYgH+PSmkP8X8J0u69Kyp1W7JzBFOiOsiCOFSdyAiw@mail.gmail.com>
-	 <54353223.7080704@redhat.com>
-	 <CAKohpok+z+bPySa+Kzh2zW+2L8CCG29q6wANe3jd+o80+PnASA@mail.gmail.com>
+From: "Kasagar, Srinidhi" <srinidhi.kasagar@intel.com>
+Subject: Re: [PATCH] cpufreq: Add sfi based cpufreq driver support
+Date: Fri, 10 Oct 2014 16:17:56 +0530
+Message-ID: <20141010104756.GA11415@intel-desktop>
+References: <20141008191454.GA6504@intel-desktop>
+ <CAKohpom+Ey75QStm_xsVeC7arN_5a3+q_Nf8pvadTxNaLBKCEw@mail.gmail.com>
+ <20141009180826.GA32265@intel-desktop>
+ <CAKohpok9d4AK4qmERqtnGYBtZx=wnP5fdECOT6t1NFEGfAQ_2g@mail.gmail.com>
+ <20141009190747.GA31674@intel-desktop>
+ <CAKohponaW8i1as_w-cyrFoyY8PN7VwiRr=mE454Xhhe1C48mng@mail.gmail.com>
+ <20141010165126.GA14463@intel-desktop>
+ <CAKohponh_1zBPZ9PxNACUZ-3WzPnbkpQCwmCmiTDEwGEW5D=Rg@mail.gmail.com>
+ <20141010171401.GA27359@intel-desktop>
+ <CAKohpo=feG4cgKU265X6bVBXTbPX7sAvTbqj=Q1WNF=rehCKEg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="sha-1"; protocol="application/x-pkcs7-signature";
-	boundary="=-LhCeLcasI0Ro0PQCfr6L"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.zih.tu-dresden.de ([141.30.67.73]:36161 "EHLO
-	mailout2.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750950AbaJJKlo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Oct 2014 06:41:44 -0400
-In-Reply-To: <CAKohpok+z+bPySa+Kzh2zW+2L8CCG29q6wANe3jd+o80+PnASA@mail.gmail.com>
+Received: from mga01.intel.com ([192.55.52.88]:63632 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750950AbaJJKsi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 10 Oct 2014 06:48:38 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=feG4cgKU265X6bVBXTbPX7sAvTbqj=Q1WNF=rehCKEg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Prarit Bhargava <prarit@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>
+Cc: "Brandewie, Dirk J" <dirk.j.brandewie@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rudramuni, Vishwesh M" <vishwesh.m.rudramuni@intel.com>
 
+On Fri, Oct 10, 2014 at 02:57:42PM +0530, Viresh Kumar wrote:
+> On 10 October 2014 22:44, Kasagar, Srinidhi <srinidhi.kasagar@intel.com> wrote:
+> > It was called for the sibling cpu of the onlined one.
+> 
+> Still not clear. Can you give me output of this:
+> 
+> cat /sys/devices/system/cpu/cpu*/cpufreq/affected_cpus and
+> cat /sys/devices/system/cpu/cpu*/cpufreq/related_cpus
 
---=-LhCeLcasI0Ro0PQCfr6L
-Content-Type: text/plain; charset="UTF-7"
-Content-Transfer-Encoding: quoted-printable
+# cat /sys/devices/system/cpu/cpu*/cpufreq/affected_cpus      
+0 1
+0 1
+2 3
+2 3
 
+# cat /sys/devices/system/cpu/cpu*/cpufreq/related_cpus
+0 1
+0 1
+2 3
+2 3
 
-+AD4 Robert/Prarit,
-+AD4=20
-+AD4 I thought you guys would test this very quickly as it had been hanging=
- since
-+AD4 long time. What happened ?
-+AD4=20
-+AD4 +AD4 Hey Viresh, this is on my plate for today.  It does look like the=
- panic I sent
-+AD4 +AD4 you yesterday in email does occur when your patches are put into =
-the latest
-+AD4 +AD4 upstream kernel :(.
-+AD4=20
-+AD4 I have tested my patches over mainline only, i.e. v3.17 .
-+AD4=20
-+AD4 Even the branch I mentioned above is based on that.
+> 
+> And then also tell me which CPU are you trying to remove ?
 
-Hi,
+cpu1
 
-This patch makes it worse. Even when changing the governors sequentially
-for all CPUs, it fails. Here is what happens:
+BTW, I had to switch to my own tree to get the issue back (where
+I have my legacy custom cpufreq/core changes. So I suspect my changes
+not the upstream tree)
 
-1. I boot the system. (performance)
-2. An Ubuntu service enables ondemand sequentially for all cpus (ondemand)
-3. I enable performance sequentially (performance)
-4. I enable ondemand sequentially (broken)
-In the last step, ondemand can only be enabled at a single CPU. All others =
-return -EBUSY.
-
-
-More about step 3/4:
-+ACQ cat /sys/devices/system/cpu/cpu+ACo-/cpufreq/scaling+AF8-governor
-performance
-performance
-performance
-performance
-performance
-performance
-performance
-performance
-+ACQ echo ondemand +AHw sudo tee /sys/devices/system/cpu/cpu0/cpufreq/scali=
-ng+AF8-governor
-ondemand
-+ACQ echo ondemand +AHw sudo tee /sys/devices/system/cpu/cpu1/cpufreq/scali=
-ng+AF8-governor
-ondemand
-tee: /sys/devices/system/cpu/cpu1/cpufreq/scaling+AF8-governor: Device or r=
-esource busy
-
-
-Robert
-
---=-LhCeLcasI0Ro0PQCfr6L
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Transfer-Encoding: base64
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIVkjCCBNUw
-ggO9oAMCAQICCFBOxvU9EbRkMA0GCSqGSIb3DQEBCwUAMHExCzAJBgNVBAYTAkRFMRwwGgYDVQQK
-ExNEZXV0c2NoZSBUZWxla29tIEFHMR8wHQYDVQQLExZULVRlbGVTZWMgVHJ1c3QgQ2VudGVyMSMw
-IQYDVQQDExpEZXV0c2NoZSBUZWxla29tIFJvb3QgQ0EgMjAeFw0xNDA3MjIxMjA4MjZaFw0xOTA3
-MDkyMzU5MDBaMFoxCzAJBgNVBAYTAkRFMRMwEQYDVQQKEwpERk4tVmVyZWluMRAwDgYDVQQLEwdE
-Rk4tUEtJMSQwIgYDVQQDExtERk4tVmVyZWluIFBDQSBHbG9iYWwgLSBHMDEwggEiMA0GCSqGSIb3
-DQEBAQUAA4IBDwAwggEKAoIBAQDpm8NnhfkNrvWNVMOWUDU9YuluTO2U1wBblSJ01CDrNI/W7MAx
-BAuZgeKmFNJSoCgjhIt0iQReW+DieMF4yxbLKDU5ey2QRdDtoAB6fL9KDhsAw4bpXCsxEXsM84Ik
-Q4wcOItqaACa7txPeKvSxhObdq3u3ibo7wGvdA/BCaL2a869080UME/15eOkyGKbghoDJzANAmVg
-Te3RCSMqljVYJ9N2xnG2kB3E7f81hn1vM7PbD8URwoqDoZRdQWvY0hD1TP3KUazZve+Sg7va64sW
-VlZDz+HVEz2mHycwzUlU28kTNJpxdcVs6qcLmPkhnSevPqM5OUhqjK3JmfvDEvK9AgMBAAGjggGG
-MIIBgjAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFEm3xs/oPR9/6kR7Eyn38QpwPt5kMB8GA1Ud
-IwQYMBaAFDHDeRu69VPXF+CJei0XbAqzK50zMBIGA1UdEwEB/wQIMAYBAf8CAQIwYgYDVR0gBFsw
-WTARBg8rBgEEAYGtIYIsAQEEAgIwEQYPKwYBBAGBrSGCLAEBBAMAMBEGDysGAQQBga0hgiwBAQQD
-ATAPBg0rBgEEAYGtIYIsAQEEMA0GCysGAQQBga0hgiweMD4GA1UdHwQ3MDUwM6AxoC+GLWh0dHA6
-Ly9wa2kwMzM2LnRlbGVzZWMuZGUvcmwvRFRfUk9PVF9DQV8yLmNybDB4BggrBgEFBQcBAQRsMGow
-LAYIKwYBBQUHMAGGIGh0dHA6Ly9vY3NwMDMzNi50ZWxlc2VjLmRlL29jc3ByMDoGCCsGAQUFBzAC
-hi5odHRwOi8vcGtpMDMzNi50ZWxlc2VjLmRlL2NydC9EVF9ST09UX0NBXzIuY2VyMA0GCSqGSIb3
-DQEBCwUAA4IBAQBjICj9nCGGcr45Rlk5MiW8qQGbDczKfUGchm0KbiyzE1l1sTOSG2EnFv/DstU1
-gvuEKgFJvWa7Zi+ywgZdbj9u4wFaW8pDY1yVtuExpx/VB19N5mWCTjL5w3x6S81NXHTuIfJ1AuxS
-PtLJatOQI25JZzW+f01WpOzML8+3oZeocj7JvEDWWqQIPda8gsO3tzKOsSyOam23NQIZz/U5RFhj
-pyQAELC7/E6vbi84u6VXST/YblBvLJeW3B1GmmWJz67M8uXZn1OzPqEvkqnYC8aEHwTG6x7on321
-e6UC8STFJGMRNMxakyAqeYg6JUKQqWU7fIbTEhUjKfws2sw5W1QXMIIFYTCCBEmgAwIBAgIHF6Qk
-eWhcjjANBgkqhkiG9w0BAQsFADBaMQswCQYDVQQGEwJERTETMBEGA1UEChMKREZOLVZlcmVpbjEQ
-MA4GA1UECxMHREZOLVBLSTEkMCIGA1UEAxMbREZOLVZlcmVpbiBQQ0EgR2xvYmFsIC0gRzAxMB4X
-DTE0MDUyNzE0NTMyOVoXDTE5MDcwOTIzNTkwMFowgYUxCzAJBgNVBAYTAkRFMSgwJgYDVQQKEx9U
-ZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVzZGVuMQwwCgYDVQQLEwNaSUgxHDAaBgNVBAMTE1RV
-IERyZXNkZW4gQ0EgLSBHMDIxIDAeBgkqhkiG9w0BCQEWEXBraUB0dS1kcmVzZGVuLmRlMIIBIjAN
-BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwQ4ek/NE9uzQJ/dQemELBDQVk/yxH2xj2oDs4TNc
-NQo8dyAgopWAoCXiD0JgWU/UWpccRds9jhgz3EU7qnGhT5ILXRmsNQRRCF/pBntyLc9hpWiiz50A
-R8HKfjg4/DnYLw+MGamJL7I2g8dXJNrKRx1cSxIf+8m3sSS939c2rajyZCtnybjnnlM9yKe+LD6o
-Sp90AOUOROCVB5b4d5eEwxa25hCDJ7Uaqyfi2htiQkNhvYXxFL8XqN2a+svPCHRvnex26flyZGWK
-Dnp1SLZvc/mrc6PjQcXZlvJw9NMSQBudsUEsDeB0fqrY9AnJzLY+Nc17+rpdhO5bUbm6jTN7JwID
-AQABo4IB/jCCAfowEgYDVR0TAQH/BAgwBgEB/wIBATAOBgNVHQ8BAf8EBAMCAQYwEQYDVR0gBAow
-CDAGBgRVHSAAMB0GA1UdDgQWBBTFK1OTF4PJ9UZC7UNq37aApkfy4DAfBgNVHSMEGDAWgBRJt8bP
-6D0ff+pEexMp9/EKcD7eZDAcBgNVHREEFTATgRFwa2lAdHUtZHJlc2Rlbi5kZTCBiAYDVR0fBIGA
-MH4wPaA7oDmGN2h0dHA6Ly9jZHAxLnBjYS5kZm4uZGUvZ2xvYmFsLXJvb3QtY2EvcHViL2NybC9j
-YWNybC5jcmwwPaA7oDmGN2h0dHA6Ly9jZHAyLnBjYS5kZm4uZGUvZ2xvYmFsLXJvb3QtY2EvcHVi
-L2NybC9jYWNybC5jcmwwgdcGCCsGAQUFBwEBBIHKMIHHMDMGCCsGAQUFBzABhidodHRwOi8vb2Nz
-cC5wY2EuZGZuLmRlL09DU1AtU2VydmVyL09DU1AwRwYIKwYBBQUHMAKGO2h0dHA6Ly9jZHAxLnBj
-YS5kZm4uZGUvZ2xvYmFsLXJvb3QtY2EvcHViL2NhY2VydC9jYWNlcnQuY3J0MEcGCCsGAQUFBzAC
-hjtodHRwOi8vY2RwMi5wY2EuZGZuLmRlL2dsb2JhbC1yb290LWNhL3B1Yi9jYWNlcnQvY2FjZXJ0
-LmNydDANBgkqhkiG9w0BAQsFAAOCAQEAiYTAQ+DoeD14UcBAq1oKJgw5xCwwxYeBTdXtoNIGGyi4
-P5ANIMOkSiJoeBoU0QGxDcVtjMvrR2ihY7cEHQWmp4pZOAzefNY6sY6N+4zxMA5jTc0/FOLLIsJp
-DA9m1jNr03HO5Q49oO8PrEcyCfM4tQLQleN2yU/MQVY9D0KRbqmFb2M4DKvijbRp+GMogQDMg2NR
-MzxILTqLze7Kl294xg2u9YKnR1iCn/aK3w1gmf2PHfmPq0qrQQB49H5wM45yILSb1CIn/gH8f+Eb
-8ctDB496urh4TxXGfUAT5vr8V9p1lxDJSXH9QPyIHWoeYVKZJgECFFCbKPEGxOIFwUvwTzCCBaYw
-ggSOoAMCAQICBxUmUtdxRCMwDQYJKoZIhvcNAQEFBQAwgYUxCzAJBgNVBAYTAkRFMSgwJgYDVQQK
-Ex9UZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVzZGVuMQwwCgYDVQQLEwNaSUgxHDAaBgNVBAMT
-E1RVIERyZXNkZW4gQ0EgLSBHMDIxIDAeBgkqhkiG9w0BCQEWEXBraUB0dS1kcmVzZGVuLmRlMB4X
-DTEzMDEyODE5NDUxMVoXDTE2MDEyODE5NDUxMVowXjELMAkGA1UEBhMCREUxKDAmBgNVBAoTH1Rl
-Y2huaXNjaGUgVW5pdmVyc2l0YWV0IERyZXNkZW4xDDAKBgNVBAsTA1pJSDEXMBUGA1UEAxMOUm9i
-ZXJ0IFNjaG9lbmUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDFhpH2XvnTtbmW/F0J
-PcKsjiNdpTsETjcfYOQOuMVCewQh+z6HBS390yjAYUcmE8tMN3RznQekiaxHzD5v4qHuwYUy+xHo
-5twBE4QFwHKMeKBPOOu3O85Y29XZiJjMIzruGM4aEh7Smjl+ZejOs/kA3gPW3UMN6B0Qptrj2JiB
-3ySU5VzZf53xLG3SJ6HxYyht51PbGZTzVLacawXNqfFCcOExESItmWFnNTc2UX3yY3PS1gxmDd9o
-S8lfzP2w4+dv1HansTkTY+igenxcIxWF3pHXOSmXnFCra5HO5iJ95JwpzsELB4Y5gRytB+gBMpKz
-CpG4nihQPu62eiFQQD5LAgMBAAGjggI/MIICOzAvBgNVHSAEKDAmMBEGDysGAQQBga0hgiwBAQQD
-ADARBg8rBgEEAYGtIYIsAgEEAwAwCQYDVR0TBAIwADALBgNVHQ8EBAMCBeAwHQYDVR0lBBYwFAYI
-KwYBBQUHAwIGCCsGAQUFBwMEMB0GA1UdDgQWBBT5116c3i5BdxkDbqsKsO5wYkzN1zAfBgNVHSME
-GDAWgBTFK1OTF4PJ9UZC7UNq37aApkfy4DAnBgNVHREEIDAegRxyb2JlcnQuc2Nob2VuZUB0dS1k
-cmVzZGVuLmRlMIGLBgNVHR8EgYMwgYAwPqA8oDqGOGh0dHA6Ly9jZHAxLnBjYS5kZm4uZGUvdHUt
-ZHJlc2Rlbi1jYS9wdWIvY3JsL2dfY2FjcmwuY3JsMD6gPKA6hjhodHRwOi8vY2RwMi5wY2EuZGZu
-LmRlL3R1LWRyZXNkZW4tY2EvcHViL2NybC9nX2NhY3JsLmNybDCB2QYIKwYBBQUHAQEEgcwwgckw
-MwYIKwYBBQUHMAGGJ2h0dHA6Ly9vY3NwLnBjYS5kZm4uZGUvT0NTUC1TZXJ2ZXIvT0NTUDBIBggr
-BgEFBQcwAoY8aHR0cDovL2NkcDEucGNhLmRmbi5kZS90dS1kcmVzZGVuLWNhL3B1Yi9jYWNlcnQv
-Z19jYWNlcnQuY3J0MEgGCCsGAQUFBzAChjxodHRwOi8vY2RwMi5wY2EuZGZuLmRlL3R1LWRyZXNk
-ZW4tY2EvcHViL2NhY2VydC9nX2NhY2VydC5jcnQwDQYJKoZIhvcNAQEFBQADggEBAHBUMei+W+WD
-hzdMi+g4l/Umt1ERMRGhKJ8afUt0PTbvDQ6f9YetsuSmMS7nUBLHFM1HZgHT5ux0YFs3b/6IMLS/
-eKNAJIoX3QKma1yREVrGzcHq0tkIGKGJo9npRQsgbeNjGiXYO23lYTyVXrdTAx05ClDObiEQi27N
-taBKMiauC5unAvsaG+q2FkSWmSIcrONQrU+aB66Emwj55Tq1a7nJC8HyeLmhxg3aCKIT9G7fyHeL
-EO6NxhnQEIeuG3rw7ToytrjdZsVTeo6cXZIFdgMDUBMoLRRC+5HEKNO/ry9wIq7R3AJNDjFBZk8I
-29J4BIIkwXIp/pmnAMeQrXKUM80wggWmMIIEjqADAgECAgcVJlLXcUQjMA0GCSqGSIb3DQEBBQUA
-MIGFMQswCQYDVQQGEwJERTEoMCYGA1UEChMfVGVjaG5pc2NoZSBVbml2ZXJzaXRhZXQgRHJlc2Rl
-bjEMMAoGA1UECxMDWklIMRwwGgYDVQQDExNUVSBEcmVzZGVuIENBIC0gRzAyMSAwHgYJKoZIhvcN
-AQkBFhFwa2lAdHUtZHJlc2Rlbi5kZTAeFw0xMzAxMjgxOTQ1MTFaFw0xNjAxMjgxOTQ1MTFaMF4x
-CzAJBgNVBAYTAkRFMSgwJgYDVQQKEx9UZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVzZGVuMQww
-CgYDVQQLEwNaSUgxFzAVBgNVBAMTDlJvYmVydCBTY2hvZW5lMIIBIjANBgkqhkiG9w0BAQEFAAOC
-AQ8AMIIBCgKCAQEAxYaR9l7507W5lvxdCT3CrI4jXaU7BE43H2DkDrjFQnsEIfs+hwUt/dMowGFH
-JhPLTDd0c50HpImsR8w+b+Kh7sGFMvsR6ObcAROEBcByjHigTzjrtzvOWNvV2YiYzCM67hjOGhIe
-0po5fmXozrP5AN4D1t1DDegdEKba49iYgd8klOVc2X+d8Sxt0ieh8WMobedT2xmU81S2nGsFzanx
-QnDhMREiLZlhZzU3NlF98mNz0tYMZg3faEvJX8z9sOPnb9R2p7E5E2PooHp8XCMVhd6R1zkpl5xQ
-q2uRzuYifeScKc7BCweGOYEcrQfoATKSswqRuJ4oUD7utnohUEA+SwIDAQABo4ICPzCCAjswLwYD
-VR0gBCgwJjARBg8rBgEEAYGtIYIsAQEEAwAwEQYPKwYBBAGBrSGCLAIBBAMAMAkGA1UdEwQCMAAw
-CwYDVR0PBAQDAgXgMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDBDAdBgNVHQ4EFgQU+dde
-nN4uQXcZA26rCrDucGJMzdcwHwYDVR0jBBgwFoAUxStTkxeDyfVGQu1Dat+2gKZH8uAwJwYDVR0R
-BCAwHoEccm9iZXJ0LnNjaG9lbmVAdHUtZHJlc2Rlbi5kZTCBiwYDVR0fBIGDMIGAMD6gPKA6hjho
-dHRwOi8vY2RwMS5wY2EuZGZuLmRlL3R1LWRyZXNkZW4tY2EvcHViL2NybC9nX2NhY3JsLmNybDA+
-oDygOoY4aHR0cDovL2NkcDIucGNhLmRmbi5kZS90dS1kcmVzZGVuLWNhL3B1Yi9jcmwvZ19jYWNy
-bC5jcmwwgdkGCCsGAQUFBwEBBIHMMIHJMDMGCCsGAQUFBzABhidodHRwOi8vb2NzcC5wY2EuZGZu
-LmRlL09DU1AtU2VydmVyL09DU1AwSAYIKwYBBQUHMAKGPGh0dHA6Ly9jZHAxLnBjYS5kZm4uZGUv
-dHUtZHJlc2Rlbi1jYS9wdWIvY2FjZXJ0L2dfY2FjZXJ0LmNydDBIBggrBgEFBQcwAoY8aHR0cDov
-L2NkcDIucGNhLmRmbi5kZS90dS1kcmVzZGVuLWNhL3B1Yi9jYWNlcnQvZ19jYWNlcnQuY3J0MA0G
-CSqGSIb3DQEBBQUAA4IBAQBwVDHovlvlg4c3TIvoOJf1JrdRETERoSifGn1LdD027w0On/WHrbLk
-pjEu51ASxxTNR2YB0+bsdGBbN2/+iDC0v3ijQCSKF90CpmtckRFaxs3B6tLZCBihiaPZ6UULIG3j
-Yxol2Dtt5WE8lV63UwMdOQpQzm4hEItuzbWgSjImrgubpwL7GhvqthZElpkiHKzjUK1PmgeuhJsI
-+eU6tWu5yQvB8ni5ocYN2giiE/Ru38h3ixDujcYZ0BCHrht68O06Mra43WbFU3qOnF2SBXYDA1AT
-KC0UQvuRxCjTv68vcCKu0dwCTQ4xQWZPCNvSeASCJMFyKf6ZpwDHkK1ylDPNMYIDZjCCA2ICAQEw
-gZEwgYUxCzAJBgNVBAYTAkRFMSgwJgYDVQQKEx9UZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVz
-ZGVuMQwwCgYDVQQLEwNaSUgxHDAaBgNVBAMTE1RVIERyZXNkZW4gQ0EgLSBHMDIxIDAeBgkqhkiG
-9w0BCQEWEXBraUB0dS1kcmVzZGVuLmRlAgcVJlLXcUQjMAkGBSsOAwIaBQCgggGpMBgGCSqGSIb3
-DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTAxMDEwNDEyOVowIwYJKoZIhvcN
-AQkEMRYEFPbQ66fzo2RdtZAyKMx+NuL8UbyfMIGiBgkrBgEEAYI3EAQxgZQwgZEwgYUxCzAJBgNV
-BAYTAkRFMSgwJgYDVQQKEx9UZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVzZGVuMQwwCgYDVQQL
-EwNaSUgxHDAaBgNVBAMTE1RVIERyZXNkZW4gQ0EgLSBHMDIxIDAeBgkqhkiG9w0BCQEWEXBraUB0
-dS1kcmVzZGVuLmRlAgcVJlLXcUQjMIGkBgsqhkiG9w0BCRACCzGBlKCBkTCBhTELMAkGA1UEBhMC
-REUxKDAmBgNVBAoTH1RlY2huaXNjaGUgVW5pdmVyc2l0YWV0IERyZXNkZW4xDDAKBgNVBAsTA1pJ
-SDEcMBoGA1UEAxMTVFUgRHJlc2RlbiBDQSAtIEcwMjEgMB4GCSqGSIb3DQEJARYRcGtpQHR1LWRy
-ZXNkZW4uZGUCBxUmUtdxRCMwDQYJKoZIhvcNAQEBBQAEggEADaHfrCKD0qOdRgHu228B0CO2Cle1
-tAzSk5DOmP3C3DYuJQOMXznc/F2np+5iVSlZVAQlkwaR6FxblQsmLzMilR+GMYuoJDphjaRgQ6Sx
-oE7rER1krqxmbu0BGYMV6vh4reWKH03iXJplLEz3bOqoh1kDpt7EaD+hK/8iCjVf6dUqSmRg2RRl
-Pd6Vc0q3qnAqRM6/IzCkwOIogBpnX2mUs/1penwkdwR/Sp9eWw59XeCxrcB/DqsTvFsvlQ2SgA4z
-NUl7uYLRrPNSq7fYNsJAiM8RoG3kd9HUScpCH7uRPb3guWTOCGpHBpPDpJpPMrUKzSLUS7QatyCV
-YSaXoZIxDgAAAAAAAA==
-
-
---=-LhCeLcasI0Ro0PQCfr6L--
-
+Srinidhi
