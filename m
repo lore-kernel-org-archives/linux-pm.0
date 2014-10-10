@@ -1,38 +1,49 @@
-From: "Kasagar, Srinidhi" <srinidhi.kasagar@intel.com>
-Subject: Re: [PATCH] cpufreq: Add sfi based cpufreq driver support
-Date: Fri, 10 Oct 2014 22:21:27 +0530
-Message-ID: <20141010165126.GA14463@intel-desktop>
-References: <20141007140734.GB24200@intel-desktop>
- <CAKohpokLcZPcMUjXYNNxDcwHUzsL1ejYBYd0cDmnAHQu+cBYGA@mail.gmail.com>
- <20141008191454.GA6504@intel-desktop>
- <CAKohpom+Ey75QStm_xsVeC7arN_5a3+q_Nf8pvadTxNaLBKCEw@mail.gmail.com>
- <20141009180826.GA32265@intel-desktop>
- <CAKohpok9d4AK4qmERqtnGYBtZx=wnP5fdECOT6t1NFEGfAQ_2g@mail.gmail.com>
- <20141009190747.GA31674@intel-desktop>
- <CAKohponaW8i1as_w-cyrFoyY8PN7VwiRr=mE454Xhhe1C48mng@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Powering down unused PM domains (was: Re: [PATCH 0/4] PM /
+ Domains: Fix race conditions during boot)
+Date: Fri, 10 Oct 2014 10:55:29 +0200
+Message-ID: <20141010085529.GA27342@amd>
+References: <CAMuHMdUwbOEfLcu_UVKq_iHx5Qzn7ne1+cwt58C0ntTZBf1esg@mail.gmail.com>
+ <CAPDyKFrJ7x-MS79OqxPOUWVearpp6AQP160+9QXnhVXWnH9aWw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:1218 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751727AbaJJIw5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 10 Oct 2014 04:52:57 -0400
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAKohponaW8i1as_w-cyrFoyY8PN7VwiRr=mE454Xhhe1C48mng@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAPDyKFrJ7x-MS79OqxPOUWVearpp6AQP160+9QXnhVXWnH9aWw@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <linux@arm.linux.org.uk>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, vishwesh.m.rudramuni@intel.com
 
-On Thu, Oct 09, 2014 at 04:45:01PM +0530, Viresh Kumar wrote:
-> On 10 October 2014 00:37, Kasagar, Srinidhi <srinidhi.kasagar@intel.com> wrote:
-> > Hmm..I noticed later that I was doing cpumask_copy for my internal experiments.
-> > Even in that case, as you pointed, the ->target_index() was not called
-> > for the onlined CPU, but for the other related CPU.
+Hi!
+
+> > While operation A2 is PM domain-centric (it walks the list of genpd domains),
+> > A3 and B3 are device-centric (A3 operates on one specific device, B3 walks the
+> > list of devices).
+> > Hence B3 never touches PM domains that don't contain any devices[*].
+> > So these PM domains are kept powered-up if CONFIG_PM_RUNTIME=n, even on
+> > system suspend.
+> >
+> > Shouldn't PM domains without devices be powered down at some point?
+> > When? In B2, or in B3?
 > 
-> But why is it getting called for even that ?
-I have not debugged that. However, to double check the same I have rebased to the
-clean upstream tree and I don't see ->target_index() is called for any
-other CPUs during the offline-online path..
+> I agree with Rafael and Sylwester, that it would be an advantage if PM
+> domains can be initialized in powered off state. Simply because, those
+> may then be left in powered off state all the time, if they are
+> unused.
 
-Srinidhi
+Also... powering up all the domains at the same time is quite harsh at
+the battery. Even if they are powered down "soon", it still causes
+spike in current which may trip the battery (especially when battery
+is old and nearly discharged).
+
+> > P.S. Will any of you be at ELC-E next week, for further PM domain discussions?
+> 
+> That would have been great, but I won't be there. Unless I schedule a
+> last minute trip. :-)
+
+I should be there.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
