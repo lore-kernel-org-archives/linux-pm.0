@@ -1,43 +1,203 @@
-From: Prarit Bhargava <prarit@redhat.com>
+From: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
 Subject: Re: [PATCH 1/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Fri, 10 Oct 2014 07:48:08 -0400
-Message-ID: <5437C778.4040108@redhat.com>
-References: <CAKohpo=rEYgH+PSmkP8X8J0u69Kyp1W7JzBFOiOsiCOFSdyAiw@mail.gmail.com> <54353223.7080704@redhat.com> <CAKohpok+z+bPySa+Kzh2zW+2L8CCG29q6wANe3jd+o80+PnASA@mail.gmail.com> <5437C12D.1070803@redhat.com> <CAKohpokDG1_r7eJ5Yykea4orcuEicCUFCrnSo1uTgKW1iJGwRA@mail.gmail.com> <5437C535.3070707@redhat.com> <CAKohpo=_vgxvtJYA_53jdicnRivihAVQuEgoKk7S7MhZctyZkw@mail.gmail.com>
+Date: Fri, 10 Oct 2014 14:01:36 +0200
+Message-ID: <1412942496.13463.28.camel@x200t>
+References: <CAKohpo=rEYgH+PSmkP8X8J0u69Kyp1W7JzBFOiOsiCOFSdyAiw@mail.gmail.com>
+	 <54353223.7080704@redhat.com>
+	 <CAKohpok+z+bPySa+Kzh2zW+2L8CCG29q6wANe3jd+o80+PnASA@mail.gmail.com>
+	 <5437C12D.1070803@redhat.com>
+	 <CAKohpokDG1_r7eJ5Yykea4orcuEicCUFCrnSo1uTgKW1iJGwRA@mail.gmail.com>
+	 <5437C535.3070707@redhat.com>
+	 <CAKohpo=_vgxvtJYA_53jdicnRivihAVQuEgoKk7S7MhZctyZkw@mail.gmail.com>
+	 <5437C778.4040108@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg="sha-1"; protocol="application/x-pkcs7-signature";
+	boundary="=-4MZqRwtN/5tm0gSexgO1"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:36085 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbaJJLsV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 10 Oct 2014 07:48:21 -0400
-In-Reply-To: <CAKohpo=_vgxvtJYA_53jdicnRivihAVQuEgoKk7S7MhZctyZkw@mail.gmail.com>
+Received: from mailout2.zih.tu-dresden.de ([141.30.67.73]:54400 "EHLO
+	mailout2.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751541AbaJJMBt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Oct 2014 08:01:49 -0400
+In-Reply-To: <5437C778.4040108@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: =?UTF-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>
 
 
+--=-4MZqRwtN/5tm0gSexgO1
+Content-Type: text/plain; charset="UTF-7"
+Content-Transfer-Encoding: quoted-printable
 
-On 10/10/2014 07:46 AM, Viresh Kumar wrote:
-> On 10 October 2014 17:08, Prarit Bhargava <prarit@redhat.com> wrote:
->> Yes, I unfortunately have a different set of issues with vanilla 3.17
->> (previously mentioned locking issue).  I've done a quick and dirty hack to get
->> around that, and everything seems okay.
->>
->> I apply your patches and I get a panic the first time I read sysfs
-> 
-> All changes in my patches are touching these routines:
-> - cpufreq_set_policy()
-> - __cpufreq_governor()
-> 
-> And these two doesn't get called in the read path at all. And so I am not sure
-> how can these make things bad for you.
-> 
-> I had doubt on just one change, can you please check the v2 branch once to
-> see if that gives the same problem ?
-> 
+In v2 my system still crashes when concurrently setting the governors
+I wasn't able to get a stack trace.
 
-Yep, trying it now ...
+Robert=20
 
-P.
+Am Freitag, den 10.10.2014, 07:48 -0400 schrieb Prarit Bhargava:
++AD4=20
++AD4 On 10/10/2014 07:46 AM, Viresh Kumar wrote:
++AD4 +AD4 On 10 October 2014 17:08, Prarit Bhargava +ADw-prarit+AEA-redhat.=
+com+AD4 wrote:
++AD4 +AD4APg Yes, I unfortunately have a different set of issues with vanil=
+la 3.17
++AD4 +AD4APg (previously mentioned locking issue).  I've done a quick and d=
+irty hack to get
++AD4 +AD4APg around that, and everything seems okay.
++AD4 +AD4APg
++AD4 +AD4APg I apply your patches and I get a panic the first time I read s=
+ysfs
++AD4 +AD4=20
++AD4 +AD4 All changes in my patches are touching these routines:
++AD4 +AD4 - cpufreq+AF8-set+AF8-policy()
++AD4 +AD4 - +AF8AXw-cpufreq+AF8-governor()
++AD4 +AD4=20
++AD4 +AD4 And these two doesn't get called in the read path at all. And so =
+I am not sure
++AD4 +AD4 how can these make things bad for you.
++AD4 +AD4=20
++AD4 +AD4 I had doubt on just one change, can you please check the v2 branc=
+h once to
++AD4 +AD4 see if that gives the same problem ?
++AD4 +AD4=20
++AD4=20
++AD4 Yep, trying it now ...
++AD4=20
++AD4 P.
+
+--=20
+
+Dipl.-Inf. Robert Schoene
+Computer Scientist - R+ACY-D Energy Efficient Computing
+
+Technische Universitaet Dresden
+Center for Information Services and High Performance Computing
+Distributed and Data Intensive Computing
+01062 Dresden
+Tel.: +-49 (351) 463-42483
+Fax : +-49 (351) 463-37773
+E-Mail: Robert.Schoene+AEA-tu-dresden.de
+
+--=-4MZqRwtN/5tm0gSexgO1
+Content-Type: application/x-pkcs7-signature; name="smime.p7s"
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Transfer-Encoding: base64
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIVkjCCBNUw
+ggO9oAMCAQICCFBOxvU9EbRkMA0GCSqGSIb3DQEBCwUAMHExCzAJBgNVBAYTAkRFMRwwGgYDVQQK
+ExNEZXV0c2NoZSBUZWxla29tIEFHMR8wHQYDVQQLExZULVRlbGVTZWMgVHJ1c3QgQ2VudGVyMSMw
+IQYDVQQDExpEZXV0c2NoZSBUZWxla29tIFJvb3QgQ0EgMjAeFw0xNDA3MjIxMjA4MjZaFw0xOTA3
+MDkyMzU5MDBaMFoxCzAJBgNVBAYTAkRFMRMwEQYDVQQKEwpERk4tVmVyZWluMRAwDgYDVQQLEwdE
+Rk4tUEtJMSQwIgYDVQQDExtERk4tVmVyZWluIFBDQSBHbG9iYWwgLSBHMDEwggEiMA0GCSqGSIb3
+DQEBAQUAA4IBDwAwggEKAoIBAQDpm8NnhfkNrvWNVMOWUDU9YuluTO2U1wBblSJ01CDrNI/W7MAx
+BAuZgeKmFNJSoCgjhIt0iQReW+DieMF4yxbLKDU5ey2QRdDtoAB6fL9KDhsAw4bpXCsxEXsM84Ik
+Q4wcOItqaACa7txPeKvSxhObdq3u3ibo7wGvdA/BCaL2a869080UME/15eOkyGKbghoDJzANAmVg
+Te3RCSMqljVYJ9N2xnG2kB3E7f81hn1vM7PbD8URwoqDoZRdQWvY0hD1TP3KUazZve+Sg7va64sW
+VlZDz+HVEz2mHycwzUlU28kTNJpxdcVs6qcLmPkhnSevPqM5OUhqjK3JmfvDEvK9AgMBAAGjggGG
+MIIBgjAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFEm3xs/oPR9/6kR7Eyn38QpwPt5kMB8GA1Ud
+IwQYMBaAFDHDeRu69VPXF+CJei0XbAqzK50zMBIGA1UdEwEB/wQIMAYBAf8CAQIwYgYDVR0gBFsw
+WTARBg8rBgEEAYGtIYIsAQEEAgIwEQYPKwYBBAGBrSGCLAEBBAMAMBEGDysGAQQBga0hgiwBAQQD
+ATAPBg0rBgEEAYGtIYIsAQEEMA0GCysGAQQBga0hgiweMD4GA1UdHwQ3MDUwM6AxoC+GLWh0dHA6
+Ly9wa2kwMzM2LnRlbGVzZWMuZGUvcmwvRFRfUk9PVF9DQV8yLmNybDB4BggrBgEFBQcBAQRsMGow
+LAYIKwYBBQUHMAGGIGh0dHA6Ly9vY3NwMDMzNi50ZWxlc2VjLmRlL29jc3ByMDoGCCsGAQUFBzAC
+hi5odHRwOi8vcGtpMDMzNi50ZWxlc2VjLmRlL2NydC9EVF9ST09UX0NBXzIuY2VyMA0GCSqGSIb3
+DQEBCwUAA4IBAQBjICj9nCGGcr45Rlk5MiW8qQGbDczKfUGchm0KbiyzE1l1sTOSG2EnFv/DstU1
+gvuEKgFJvWa7Zi+ywgZdbj9u4wFaW8pDY1yVtuExpx/VB19N5mWCTjL5w3x6S81NXHTuIfJ1AuxS
+PtLJatOQI25JZzW+f01WpOzML8+3oZeocj7JvEDWWqQIPda8gsO3tzKOsSyOam23NQIZz/U5RFhj
+pyQAELC7/E6vbi84u6VXST/YblBvLJeW3B1GmmWJz67M8uXZn1OzPqEvkqnYC8aEHwTG6x7on321
+e6UC8STFJGMRNMxakyAqeYg6JUKQqWU7fIbTEhUjKfws2sw5W1QXMIIFYTCCBEmgAwIBAgIHF6Qk
+eWhcjjANBgkqhkiG9w0BAQsFADBaMQswCQYDVQQGEwJERTETMBEGA1UEChMKREZOLVZlcmVpbjEQ
+MA4GA1UECxMHREZOLVBLSTEkMCIGA1UEAxMbREZOLVZlcmVpbiBQQ0EgR2xvYmFsIC0gRzAxMB4X
+DTE0MDUyNzE0NTMyOVoXDTE5MDcwOTIzNTkwMFowgYUxCzAJBgNVBAYTAkRFMSgwJgYDVQQKEx9U
+ZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVzZGVuMQwwCgYDVQQLEwNaSUgxHDAaBgNVBAMTE1RV
+IERyZXNkZW4gQ0EgLSBHMDIxIDAeBgkqhkiG9w0BCQEWEXBraUB0dS1kcmVzZGVuLmRlMIIBIjAN
+BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwQ4ek/NE9uzQJ/dQemELBDQVk/yxH2xj2oDs4TNc
+NQo8dyAgopWAoCXiD0JgWU/UWpccRds9jhgz3EU7qnGhT5ILXRmsNQRRCF/pBntyLc9hpWiiz50A
+R8HKfjg4/DnYLw+MGamJL7I2g8dXJNrKRx1cSxIf+8m3sSS939c2rajyZCtnybjnnlM9yKe+LD6o
+Sp90AOUOROCVB5b4d5eEwxa25hCDJ7Uaqyfi2htiQkNhvYXxFL8XqN2a+svPCHRvnex26flyZGWK
+Dnp1SLZvc/mrc6PjQcXZlvJw9NMSQBudsUEsDeB0fqrY9AnJzLY+Nc17+rpdhO5bUbm6jTN7JwID
+AQABo4IB/jCCAfowEgYDVR0TAQH/BAgwBgEB/wIBATAOBgNVHQ8BAf8EBAMCAQYwEQYDVR0gBAow
+CDAGBgRVHSAAMB0GA1UdDgQWBBTFK1OTF4PJ9UZC7UNq37aApkfy4DAfBgNVHSMEGDAWgBRJt8bP
+6D0ff+pEexMp9/EKcD7eZDAcBgNVHREEFTATgRFwa2lAdHUtZHJlc2Rlbi5kZTCBiAYDVR0fBIGA
+MH4wPaA7oDmGN2h0dHA6Ly9jZHAxLnBjYS5kZm4uZGUvZ2xvYmFsLXJvb3QtY2EvcHViL2NybC9j
+YWNybC5jcmwwPaA7oDmGN2h0dHA6Ly9jZHAyLnBjYS5kZm4uZGUvZ2xvYmFsLXJvb3QtY2EvcHVi
+L2NybC9jYWNybC5jcmwwgdcGCCsGAQUFBwEBBIHKMIHHMDMGCCsGAQUFBzABhidodHRwOi8vb2Nz
+cC5wY2EuZGZuLmRlL09DU1AtU2VydmVyL09DU1AwRwYIKwYBBQUHMAKGO2h0dHA6Ly9jZHAxLnBj
+YS5kZm4uZGUvZ2xvYmFsLXJvb3QtY2EvcHViL2NhY2VydC9jYWNlcnQuY3J0MEcGCCsGAQUFBzAC
+hjtodHRwOi8vY2RwMi5wY2EuZGZuLmRlL2dsb2JhbC1yb290LWNhL3B1Yi9jYWNlcnQvY2FjZXJ0
+LmNydDANBgkqhkiG9w0BAQsFAAOCAQEAiYTAQ+DoeD14UcBAq1oKJgw5xCwwxYeBTdXtoNIGGyi4
+P5ANIMOkSiJoeBoU0QGxDcVtjMvrR2ihY7cEHQWmp4pZOAzefNY6sY6N+4zxMA5jTc0/FOLLIsJp
+DA9m1jNr03HO5Q49oO8PrEcyCfM4tQLQleN2yU/MQVY9D0KRbqmFb2M4DKvijbRp+GMogQDMg2NR
+MzxILTqLze7Kl294xg2u9YKnR1iCn/aK3w1gmf2PHfmPq0qrQQB49H5wM45yILSb1CIn/gH8f+Eb
+8ctDB496urh4TxXGfUAT5vr8V9p1lxDJSXH9QPyIHWoeYVKZJgECFFCbKPEGxOIFwUvwTzCCBaYw
+ggSOoAMCAQICBxUmUtdxRCMwDQYJKoZIhvcNAQEFBQAwgYUxCzAJBgNVBAYTAkRFMSgwJgYDVQQK
+Ex9UZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVzZGVuMQwwCgYDVQQLEwNaSUgxHDAaBgNVBAMT
+E1RVIERyZXNkZW4gQ0EgLSBHMDIxIDAeBgkqhkiG9w0BCQEWEXBraUB0dS1kcmVzZGVuLmRlMB4X
+DTEzMDEyODE5NDUxMVoXDTE2MDEyODE5NDUxMVowXjELMAkGA1UEBhMCREUxKDAmBgNVBAoTH1Rl
+Y2huaXNjaGUgVW5pdmVyc2l0YWV0IERyZXNkZW4xDDAKBgNVBAsTA1pJSDEXMBUGA1UEAxMOUm9i
+ZXJ0IFNjaG9lbmUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDFhpH2XvnTtbmW/F0J
+PcKsjiNdpTsETjcfYOQOuMVCewQh+z6HBS390yjAYUcmE8tMN3RznQekiaxHzD5v4qHuwYUy+xHo
+5twBE4QFwHKMeKBPOOu3O85Y29XZiJjMIzruGM4aEh7Smjl+ZejOs/kA3gPW3UMN6B0Qptrj2JiB
+3ySU5VzZf53xLG3SJ6HxYyht51PbGZTzVLacawXNqfFCcOExESItmWFnNTc2UX3yY3PS1gxmDd9o
+S8lfzP2w4+dv1HansTkTY+igenxcIxWF3pHXOSmXnFCra5HO5iJ95JwpzsELB4Y5gRytB+gBMpKz
+CpG4nihQPu62eiFQQD5LAgMBAAGjggI/MIICOzAvBgNVHSAEKDAmMBEGDysGAQQBga0hgiwBAQQD
+ADARBg8rBgEEAYGtIYIsAgEEAwAwCQYDVR0TBAIwADALBgNVHQ8EBAMCBeAwHQYDVR0lBBYwFAYI
+KwYBBQUHAwIGCCsGAQUFBwMEMB0GA1UdDgQWBBT5116c3i5BdxkDbqsKsO5wYkzN1zAfBgNVHSME
+GDAWgBTFK1OTF4PJ9UZC7UNq37aApkfy4DAnBgNVHREEIDAegRxyb2JlcnQuc2Nob2VuZUB0dS1k
+cmVzZGVuLmRlMIGLBgNVHR8EgYMwgYAwPqA8oDqGOGh0dHA6Ly9jZHAxLnBjYS5kZm4uZGUvdHUt
+ZHJlc2Rlbi1jYS9wdWIvY3JsL2dfY2FjcmwuY3JsMD6gPKA6hjhodHRwOi8vY2RwMi5wY2EuZGZu
+LmRlL3R1LWRyZXNkZW4tY2EvcHViL2NybC9nX2NhY3JsLmNybDCB2QYIKwYBBQUHAQEEgcwwgckw
+MwYIKwYBBQUHMAGGJ2h0dHA6Ly9vY3NwLnBjYS5kZm4uZGUvT0NTUC1TZXJ2ZXIvT0NTUDBIBggr
+BgEFBQcwAoY8aHR0cDovL2NkcDEucGNhLmRmbi5kZS90dS1kcmVzZGVuLWNhL3B1Yi9jYWNlcnQv
+Z19jYWNlcnQuY3J0MEgGCCsGAQUFBzAChjxodHRwOi8vY2RwMi5wY2EuZGZuLmRlL3R1LWRyZXNk
+ZW4tY2EvcHViL2NhY2VydC9nX2NhY2VydC5jcnQwDQYJKoZIhvcNAQEFBQADggEBAHBUMei+W+WD
+hzdMi+g4l/Umt1ERMRGhKJ8afUt0PTbvDQ6f9YetsuSmMS7nUBLHFM1HZgHT5ux0YFs3b/6IMLS/
+eKNAJIoX3QKma1yREVrGzcHq0tkIGKGJo9npRQsgbeNjGiXYO23lYTyVXrdTAx05ClDObiEQi27N
+taBKMiauC5unAvsaG+q2FkSWmSIcrONQrU+aB66Emwj55Tq1a7nJC8HyeLmhxg3aCKIT9G7fyHeL
+EO6NxhnQEIeuG3rw7ToytrjdZsVTeo6cXZIFdgMDUBMoLRRC+5HEKNO/ry9wIq7R3AJNDjFBZk8I
+29J4BIIkwXIp/pmnAMeQrXKUM80wggWmMIIEjqADAgECAgcVJlLXcUQjMA0GCSqGSIb3DQEBBQUA
+MIGFMQswCQYDVQQGEwJERTEoMCYGA1UEChMfVGVjaG5pc2NoZSBVbml2ZXJzaXRhZXQgRHJlc2Rl
+bjEMMAoGA1UECxMDWklIMRwwGgYDVQQDExNUVSBEcmVzZGVuIENBIC0gRzAyMSAwHgYJKoZIhvcN
+AQkBFhFwa2lAdHUtZHJlc2Rlbi5kZTAeFw0xMzAxMjgxOTQ1MTFaFw0xNjAxMjgxOTQ1MTFaMF4x
+CzAJBgNVBAYTAkRFMSgwJgYDVQQKEx9UZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVzZGVuMQww
+CgYDVQQLEwNaSUgxFzAVBgNVBAMTDlJvYmVydCBTY2hvZW5lMIIBIjANBgkqhkiG9w0BAQEFAAOC
+AQ8AMIIBCgKCAQEAxYaR9l7507W5lvxdCT3CrI4jXaU7BE43H2DkDrjFQnsEIfs+hwUt/dMowGFH
+JhPLTDd0c50HpImsR8w+b+Kh7sGFMvsR6ObcAROEBcByjHigTzjrtzvOWNvV2YiYzCM67hjOGhIe
+0po5fmXozrP5AN4D1t1DDegdEKba49iYgd8klOVc2X+d8Sxt0ieh8WMobedT2xmU81S2nGsFzanx
+QnDhMREiLZlhZzU3NlF98mNz0tYMZg3faEvJX8z9sOPnb9R2p7E5E2PooHp8XCMVhd6R1zkpl5xQ
+q2uRzuYifeScKc7BCweGOYEcrQfoATKSswqRuJ4oUD7utnohUEA+SwIDAQABo4ICPzCCAjswLwYD
+VR0gBCgwJjARBg8rBgEEAYGtIYIsAQEEAwAwEQYPKwYBBAGBrSGCLAIBBAMAMAkGA1UdEwQCMAAw
+CwYDVR0PBAQDAgXgMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDBDAdBgNVHQ4EFgQU+dde
+nN4uQXcZA26rCrDucGJMzdcwHwYDVR0jBBgwFoAUxStTkxeDyfVGQu1Dat+2gKZH8uAwJwYDVR0R
+BCAwHoEccm9iZXJ0LnNjaG9lbmVAdHUtZHJlc2Rlbi5kZTCBiwYDVR0fBIGDMIGAMD6gPKA6hjho
+dHRwOi8vY2RwMS5wY2EuZGZuLmRlL3R1LWRyZXNkZW4tY2EvcHViL2NybC9nX2NhY3JsLmNybDA+
+oDygOoY4aHR0cDovL2NkcDIucGNhLmRmbi5kZS90dS1kcmVzZGVuLWNhL3B1Yi9jcmwvZ19jYWNy
+bC5jcmwwgdkGCCsGAQUFBwEBBIHMMIHJMDMGCCsGAQUFBzABhidodHRwOi8vb2NzcC5wY2EuZGZu
+LmRlL09DU1AtU2VydmVyL09DU1AwSAYIKwYBBQUHMAKGPGh0dHA6Ly9jZHAxLnBjYS5kZm4uZGUv
+dHUtZHJlc2Rlbi1jYS9wdWIvY2FjZXJ0L2dfY2FjZXJ0LmNydDBIBggrBgEFBQcwAoY8aHR0cDov
+L2NkcDIucGNhLmRmbi5kZS90dS1kcmVzZGVuLWNhL3B1Yi9jYWNlcnQvZ19jYWNlcnQuY3J0MA0G
+CSqGSIb3DQEBBQUAA4IBAQBwVDHovlvlg4c3TIvoOJf1JrdRETERoSifGn1LdD027w0On/WHrbLk
+pjEu51ASxxTNR2YB0+bsdGBbN2/+iDC0v3ijQCSKF90CpmtckRFaxs3B6tLZCBihiaPZ6UULIG3j
+Yxol2Dtt5WE8lV63UwMdOQpQzm4hEItuzbWgSjImrgubpwL7GhvqthZElpkiHKzjUK1PmgeuhJsI
++eU6tWu5yQvB8ni5ocYN2giiE/Ru38h3ixDujcYZ0BCHrht68O06Mra43WbFU3qOnF2SBXYDA1AT
+KC0UQvuRxCjTv68vcCKu0dwCTQ4xQWZPCNvSeASCJMFyKf6ZpwDHkK1ylDPNMYIDZjCCA2ICAQEw
+gZEwgYUxCzAJBgNVBAYTAkRFMSgwJgYDVQQKEx9UZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVz
+ZGVuMQwwCgYDVQQLEwNaSUgxHDAaBgNVBAMTE1RVIERyZXNkZW4gQ0EgLSBHMDIxIDAeBgkqhkiG
+9w0BCQEWEXBraUB0dS1kcmVzZGVuLmRlAgcVJlLXcUQjMAkGBSsOAwIaBQCgggGpMBgGCSqGSIb3
+DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTAxMDEyMDEzNlowIwYJKoZIhvcN
+AQkEMRYEFKHzT4PiC/eio/pgfQRHfVmc8lBNMIGiBgkrBgEEAYI3EAQxgZQwgZEwgYUxCzAJBgNV
+BAYTAkRFMSgwJgYDVQQKEx9UZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVzZGVuMQwwCgYDVQQL
+EwNaSUgxHDAaBgNVBAMTE1RVIERyZXNkZW4gQ0EgLSBHMDIxIDAeBgkqhkiG9w0BCQEWEXBraUB0
+dS1kcmVzZGVuLmRlAgcVJlLXcUQjMIGkBgsqhkiG9w0BCRACCzGBlKCBkTCBhTELMAkGA1UEBhMC
+REUxKDAmBgNVBAoTH1RlY2huaXNjaGUgVW5pdmVyc2l0YWV0IERyZXNkZW4xDDAKBgNVBAsTA1pJ
+SDEcMBoGA1UEAxMTVFUgRHJlc2RlbiBDQSAtIEcwMjEgMB4GCSqGSIb3DQEJARYRcGtpQHR1LWRy
+ZXNkZW4uZGUCBxUmUtdxRCMwDQYJKoZIhvcNAQEBBQAEggEAFGNED6qQMo5frEvwYB+os3DX8Lnt
+Ep2lxE3B7kMBVBBU+HNEy7yyxAj2tBBuLSPavZBFplExEXUz+Z3bdCBjUEfCjeyhQYzrlBcO2SIW
+6G16EvE6F96ntoc0gOop1sMhPuD+VC06TwPRzaw1mE1lVt+W5wd7KHtSzAYwiw0oV2EJjP9CrJBo
+PNI8rV6jp26LvOIm3fUuRg7bwhb/jyJTru8mZz761jwi1Fbq4FUi8Lyg8pAGYH4CWZ4Vqk3OC+6O
+kLFmgqvvtxmjAjloBfvk8MC7d10hozjRSK0moA1JkSakLHE9aeYEICEPXnYoTSx4HdOhY9RBGR0/
+2/BdqtgeSgAAAAAAAA==
+
+
+--=-4MZqRwtN/5tm0gSexgO1--
+
