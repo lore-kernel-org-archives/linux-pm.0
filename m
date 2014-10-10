@@ -1,149 +1,124 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Prarit Bhargava <prarit@redhat.com>
 Subject: Re: [PATCH 1/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Fri, 10 Oct 2014 19:22:31 +0530
-Message-ID: <CAKohpokag-ppE7WH=jPS6-i_T-5PyaDKyKS8uC+Xt2QGxLHYkw@mail.gmail.com>
-References: <CAKohpo=rEYgH+PSmkP8X8J0u69Kyp1W7JzBFOiOsiCOFSdyAiw@mail.gmail.com>
-	<54353223.7080704@redhat.com>
-	<CAKohpok+z+bPySa+Kzh2zW+2L8CCG29q6wANe3jd+o80+PnASA@mail.gmail.com>
-	<5437C12D.1070803@redhat.com>
-	<CAKohpokDG1_r7eJ5Yykea4orcuEicCUFCrnSo1uTgKW1iJGwRA@mail.gmail.com>
-	<5437C535.3070707@redhat.com>
-	<CAKohpo=_vgxvtJYA_53jdicnRivihAVQuEgoKk7S7MhZctyZkw@mail.gmail.com>
-	<5437C778.4040108@redhat.com>
-	<1412942496.13463.28.camel@x200t>
-	<CAKohpomvrKxnk3ZOtZxZEO+fVWSr5gB1AadtFUib8jsqndDgtg@mail.gmail.com>
-	<1412947425.13463.37.camel@x200t>
+Date: Fri, 10 Oct 2014 09:55:11 -0400
+Message-ID: <5437E53F.2000209@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f49.google.com ([209.85.218.49]:43479 "EHLO
-	mail-oi0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754422AbaJJNwc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Oct 2014 09:52:32 -0400
-Received: by mail-oi0-f49.google.com with SMTP id a3so6449713oib.8
-        for <linux-pm@vger.kernel.org>; Fri, 10 Oct 2014 06:52:31 -0700 (PDT)
-In-Reply-To: <1412947425.13463.37.camel@x200t>
+Received: from mx1.redhat.com ([209.132.183.28]:44584 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754052AbaJJNzY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 10 Oct 2014 09:55:24 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>
-Cc: Prarit Bhargava <prarit@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>
+To: =?ISO-8859-1?Q?Robert_Sch=F6ne?= <robert.schoene@tu-dresden.de>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>
 
-On 10 October 2014 18:53, Robert Sch=C3=B6ne <robert.schoene@tu-dresden=
-=2Ede> wrote:
-> I finally got a stack:
 
-Thanks a lot..
+My test is similar to Robert's.  With 3.17 + Viresh's 3 v2 patches,
 
-> Oct 10 15:19:44 basti kernel: [  395.641363] BUG: unable to handle ke=
-rnel paging request at ffff8800b2783b10
-> Oct 10 15:19:44 basti kernel: [  395.641412] IP: [<ffff8800b2783b10>]=
- 0xffff8800b2783b10
-> Oct 10 15:19:44 basti kernel: [  395.641449] PGD 1fc9067 PUD 1fce067 =
-PMD b2737063 PTE 80000000b2783163
-> Oct 10 15:19:44 basti kernel: [  395.641503] Oops: 0011 [#1] SMP
-> Oct 10 15:19:44 basti kernel: [  395.641533] Modules linked in: sep3_=
-15(OE) pax(OE) nfsv3(E) rfcomm(E) bnep(E) bluetooth(E) nfsd(E) auth_rpc=
-gss(E) binfmt_misc(E) nfs_acl(E) nfs(E) lockd(E) sunrpc(E) fscache(E) s=
-nd_hda_codec_hdmi(E) snd_hda_codec_conexant(E) snd_hda_codec_generic(E)=
- intel_rapl(E) x86_pkg_temp_thermal(E) intel_powerclamp(E) coretemp(E) =
-x86_adapt_driver(OE) snd_hda_intel(E) snd_hda_controller(E) i915(E) kvm=
-_intel(E) snd_hda_codec(E) snd_hwdep(E) kvm(E) snd_pcm(E) crct10dif_pcl=
-mul(E) snd_timer(E) mei_me(E) i2c_algo_bit(E) video(E) drm_kms_helper(E=
-) mei(E) drm(E) crc32_pclmul(E) ghash_clmulni_intel(E) ppdev(E) aesni_i=
-ntel(E) lp(E) parport_pc(E) parport(E) snd(E) aes_x86_64(E) glue_helper=
-(E) lrw(E) gf128mul(E) ablk_helper(E) gpio_ich(E) cryptd(E) soundcore(E=
-) mac_hid(E) lpc_ich(E) serio_raw(E) tpm_infineon(E) psmouse(E) ahci(E)=
- libahci(E) e1000e(E) ptp(E) pps_core(E)
-> Oct 10 15:19:44 basti kernel: [  395.642169] CPU: 6 PID: 3079 Comm: t=
-ee Tainted: G           OE  3.17.0+ #3
-> Oct 10 15:19:44 basti kernel: [  395.642209] Hardware name: FUJITSU E=
-SPRIMO P700/D3061-A1, BIOS V4.6.4.0 R1.12.0 for D3061-A1x 07/04/2011
-> Oct 10 15:19:44 basti kernel: [  395.642262] task: ffff88022bb96400 t=
-i: ffff880227ea4000 task.ti: ffff880227ea4000
-> Oct 10 15:19:44 basti kernel: [  395.642303] RIP: 0010:[<ffff8800b278=
-3b10>]  [<ffff8800b2783b10>] 0xffff8800b2783b10
-> Oct 10 15:19:44 basti kernel: [  395.642352] RSP: 0018:ffff880227ea7b=
-78  EFLAGS: 00010293
-> Oct 10 15:19:44 basti kernel: [  395.642383] RAX: ffff88022ba5d340 RB=
-X: 0000000000000000 RCX: 0000000000000000
-> Oct 10 15:19:44 basti kernel: [  395.642423] RDX: ffff8802314f0a08 RS=
-I: 0000000000000100 RDI: 0000000000000000
-> Oct 10 15:19:44 basti kernel: [  395.642463] RBP: ffff880227ea7ba8 R0=
-8: ffff8802314f0a00 R09: 0000000000000004
-> Oct 10 15:19:44 basti kernel: [  395.642503] R10: ffffffff81d1a660 R1=
-1: 0000000000000246 R12: 0000000000000000
-> Oct 10 15:19:44 basti kernel: [  395.642543] R13: ffff8802314f0a00 R1=
-4: ffff88022ba5d240 R15: 0000000000000002
-> Oct 10 15:19:44 basti kernel: [  395.642583] FS:  00002b1d0969ab80(00=
-00) GS:ffff88023e380000(0000) knlGS:0000000000000000
-> Oct 10 15:19:44 basti kernel: [  395.642629] CS:  0010 DS: 0000 ES: 0=
-000 CR0: 0000000080050033
-> Oct 10 15:19:44 basti kernel: [  395.642662] CR2: ffff8800b2783b10 CR=
-3: 00000000b4e89000 CR4: 00000000000407e0
-> Oct 10 15:19:44 basti kernel: [  395.642717]  ffffffff815e1918 ffff88=
-022ba5d240 ffff8802314f0a00 0000000000000003
-> Oct 10 15:19:44 basti kernel: [  395.642773]  0000000000000002 ffff88=
-023e210ea0 ffff880227ea7c28 ffffffff815e1c06
-> Oct 10 15:19:44 basti kernel: [  395.642828]  0000000000010aa8 ffff88=
-022ba5d258 ffffffff81cd9ab0 ffff88023e210ea0
-> Oct 10 15:19:44 basti kernel: [  395.642885] Call Trace:
-> Oct 10 15:19:44 basti kernel: [  395.642906]  [<ffffffff815e1918>] ? =
-gov_queue_work+0x68/0xd0
-> Oct 10 15:19:44 basti kernel: [  395.642941]  [<ffffffff815e1c06>] cp=
-ufreq_governor_dbs+0x286/0x740
-> Oct 10 15:19:44 basti kernel: [  395.642980]  [<ffffffff815dfd87>] od=
-_cpufreq_governor_dbs+0x17/0x20
-> Oct 10 15:19:44 basti kernel: [  395.643017]  [<ffffffff815dc03f>] __=
-cpufreq_governor+0xdf/0x270
-> Oct 10 15:19:44 basti kernel: [  395.643089]  [<ffffffff815dcd56>] st=
-ore_scaling_governor+0x96/0xf0
-> Oct 10 15:19:44 basti kernel: [  395.643166]  [<ffffffff815db989>] st=
-ore+0x79/0xc0
-> Oct 10 15:19:44 basti kernel: [  395.643232]  [<ffffffff81247c90>] ke=
-rnfs_fop_write+0xe0/0x160
-> Oct 10 15:19:44 basti kernel: [  395.643300]  [<ffffffff811d2bd6>] Sy=
-S_write+0x46/0xb0
-> Oct 10 15:19:44 basti kernel: [  395.643363] Code: 00 00 00 00 00 00 =
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 de 84 2b 02 88 ff ff 80 6a c4=
- 81 ff ff ff ff 40 b5 9c 2b 02 88 ff ff <d0> 35 78 b2 00 88 ff ff 80 be=
- 08 81 ff ff ff ff 00 00 00 00 00
-> Oct 10 15:19:44 basti kernel: [  395.643772]  RSP <ffff880227ea7b78>
-> Oct 10 15:19:44 basti kernel: [  395.643817] ---[ end trace c4d3fedcd=
-d4b353b ]---
+#!/bin/bash
 
-Okay, this is something new..
+i=0
+while [ True ]; do
+	i=$((i+1))
+	echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor &
+	echo "performance" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor &
+	echo "ondemand" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor &
+	echo "performance" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor &
+	if [ $((i % 100)) = 0 ]; then
+		echo $i
+	fi
+done
 
-Would it be possible for you to get the line in cpufreq_governor.c
-file which did this?
-=46or that you can use objdump.
+and I get...
 
-This is how I do it on ARM:
+BUG: unable to handle kernel NULL pointer dereference at           (null)
+IP: [<ffffffff81577052>] cpufreq_governor_dbs+0x52/0x820
+PGD ff5aff067 PUD ff8546067 PMD 0
+Oops: 0000 [#1] SMP
+Modules linked in: sg nfsv3 rpcsec_gss_krb5 nfsv4 dns_resolver nfs fscache
+cfg80211 rfkill x86_pkg_temp_thermal intel_powerclamp coretemp kvm_intel kvm igb
+iTCO_wdt iTCO_vendor_support crct10dif_pclmul crc32_pclmul ptp crc32c_intel
+ioatdma pps_core ghash_clmulni_intel aesni_intel dca lrw gf128mul glue_helper
+ablk_helper cryptd pcspkr sb_edac edac_core shpchp i2c_i801 lpc_ich mfd_core wmi
+ipmi_si ipmi_msghandler nfsd acpi_cpufreq auth_rpcgss nfs_acl lockd grace sunrpc
+xfs libcrc32c sd_mod sr_mod crc_t10dif cdrom crct10dif_common mgag200
+syscopyarea sysfillrect sysimgblt i2c_algo_bit drm_kms_helper ttm isci drm
+libsas ahci libahci scsi_transport_sas libata i2c_core dm_mirror dm_region_hash
+dm_log dm_mod
+CPU: 39 PID: 8576 Comm: doit Tainted: G        W      3.17.0+ #2
+Hardware name: Intel Corporation S2600CP/S2600CP, BIOS
+RMLSDP.86I.00.29.D696.1311111329 11/11/2013
+task: ffff880ff3920000 ti: ffff880ff4190000 task.ti: ffff880ff4190000
+RIP: 0010:[<ffffffff81577052>]  [<ffffffff81577052>] cpufreq_governor_dbs+0x52/0x820
+RSP: 0018:ffff880ff4193a70  EFLAGS: 00010297
+RAX: 0000000000000024 RBX: 0000000000000000 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000009
+RBP: ffff880ff4193ae0 R08: 0000000000000001 R09: 0000000000000001
+R10: 0000000000000000 R11: ffff880ff4193716 R12: ffff880fff62b800
+R13: 0000000000000001 R14: 0000000000000001 R15: ffffffff81bd3b80
+FS:  00007fd0291ee740(0000) GS:ffff881012400000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 0000000000000000 CR3: 0000000ff3cdd000 CR4: 00000000001407e0
+Stack:
+ ffffffff81570c27 00000000fffffffe 0000000000000046 ffffffff81bd3340
+ 0000000000000001 0000000000000246 ffffffff81bd3348 ffffffff810e1a1d
+ ffff880ff4193ae0 ffff880fff62b800 0000000000000001 ffffffff81bd3500
+Call Trace:
+ [<ffffffff81570c27>] ? __cpufreq_governor+0x57/0x230
+ [<ffffffff810e1a1d>] ? trace_hardirqs_on+0xd/0x10
+ [<ffffffff81574f27>] od_cpufreq_governor_dbs+0x17/0x20
+ [<ffffffff81570c62>] __cpufreq_governor+0x92/0x230
+ [<ffffffff81570fd8>] cpufreq_set_policy+0x1d8/0x2b0
+ [<ffffffff8157181d>] store_scaling_governor+0xad/0xf0
+ [<ffffffff81572860>] ? cpufreq_update_policy+0x1f0/0x1f0
+ [<ffffffff815709a0>] ? store+0x70/0xd0
+ [<ffffffff81572303>] ? cpufreq_freq_transition_begin+0xb3/0x140
+ [<ffffffff810d4953>] ? __wake_up+0x23/0x50
+ [<ffffffff815709bb>] store+0x8b/0xd0
+ [<ffffffff812c9174>] sysfs_kf_write+0x44/0x60
+ [<ffffffff812c8a67>] kernfs_fop_write+0xe7/0x170
+ [<ffffffff8124239a>] vfs_write+0xba/0x1f0
+ [<ffffffff81242fe8>] SyS_write+0x58/0xd0
+ [<ffffffff81731769>] system_call_fastpath+0x16/0x1b
+Code: ff 84 c0 0f 84 50 02 00 00 49 8b 5c 24 58 48 85 db 0f 84 59 07 00 00 41 83
+fe 04 0f 84 70 02 00 00 41 83 fe 05 0f 84 3e 02 00 00 <48> 8b 03 44 89 ef ff 50
+20 48 89 45 c0 48 8b 03 83 38 01 0f 84
+RIP  [<ffffffff81577052>] cpufreq_governor_dbs+0x52/0x820
+ RSP <ffff880ff4193a70>
+CR2: 0000000000000000
+---[ end trace 2d1b939e62867d1f ]---
 
-arm-linux-gnueabihf-objdump -r -S -l --disassemble cpufreq_governor.o |=
- less
+This occurs at boot on my system, during systemd setup.  This *does not* happen
+with plain upstream kernel.
 
-If you are using x86 then simply use objdump, otherwise your toolchain =
-will
-have a command for this..
+Robert, OOC ... what happens when you patch in (sorry for the cut-and-paste)
+the following? [warning: complete and total hack.  This "breaks" arm, but the
+original patch that introduced this change broke x86]
 
-Then search for gov_queue_work in this and confirm the length of routin=
-e is
-0xd0 (Came from gov_queue_work+0x68/0xd0) and then tell us what's there
-at 0x68 ...
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 24bf76f..94ac441 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2195,9 +2195,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *polic
+        /* end old governor */
+        if (old_gov) {
+                __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+-               up_write(&policy->rwsem);
+                __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+-               down_write(&policy->rwsem);
+        }
 
-Sorry if you already knew all this, just for completeness I am sharing =
-this :)
+        /* start new governor */
+@@ -2206,9 +2204,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *polic
+                if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
+                        goto out;
 
-If you find some difficulty with this, just attach the file and send it=
- to me +
-let me know what compiler you used, + system architecture.
+-               up_write(&policy->rwsem);
+                __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+-               down_write(&policy->rwsem);
+        }
 
-I tried running your script on a single-cluster (sorry I couldn't get t=
-he other
-board up yet :( ), and couldn't hit this issue.
-
-Once again, thanks for testing.
-
---
-viresh
+P.
