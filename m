@@ -1,39 +1,92 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Add sfi based cpufreq driver support
-Date: Fri, 10 Oct 2014 14:57:42 +0530
-Message-ID: <CAKohpo=feG4cgKU265X6bVBXTbPX7sAvTbqj=Q1WNF=rehCKEg@mail.gmail.com>
-References: <20141007140734.GB24200@intel-desktop>
-	<CAKohpokLcZPcMUjXYNNxDcwHUzsL1ejYBYd0cDmnAHQu+cBYGA@mail.gmail.com>
-	<20141008191454.GA6504@intel-desktop>
-	<CAKohpom+Ey75QStm_xsVeC7arN_5a3+q_Nf8pvadTxNaLBKCEw@mail.gmail.com>
-	<20141009180826.GA32265@intel-desktop>
-	<CAKohpok9d4AK4qmERqtnGYBtZx=wnP5fdECOT6t1NFEGfAQ_2g@mail.gmail.com>
-	<20141009190747.GA31674@intel-desktop>
-	<CAKohponaW8i1as_w-cyrFoyY8PN7VwiRr=mE454Xhhe1C48mng@mail.gmail.com>
-	<20141010165126.GA14463@intel-desktop>
-	<CAKohponh_1zBPZ9PxNACUZ-3WzPnbkpQCwmCmiTDEwGEW5D=Rg@mail.gmail.com>
-	<20141010171401.GA27359@intel-desktop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Caesar Wang <caesar.wang@rock-chips.com>
+Subject: [PATCH v8 0/5] Rockchip soc thermal driver
+Date: Fri, 10 Oct 2014 18:19:36 +0800
+Message-ID: <1412936381-22718-1-git-send-email-caesar.wang@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f50.google.com ([209.85.218.50]:37545 "EHLO
-	mail-oi0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbaJJJ1p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Oct 2014 05:27:45 -0400
-Received: by mail-oi0-f50.google.com with SMTP id i138so6081722oig.9
-        for <linux-pm@vger.kernel.org>; Fri, 10 Oct 2014 02:27:44 -0700 (PDT)
-In-Reply-To: <20141010171401.GA27359@intel-desktop>
+Received: from regular1.263xmail.com ([211.150.99.138]:37563 "EHLO
+	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751058AbaJJKU0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Oct 2014 06:20:26 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Kasagar, Srinidhi" <srinidhi.kasagar@intel.com>
-Cc: "Brandewie, Dirk J" <dirk.j.brandewie@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rudramuni, Vishwesh M" <vishwesh.m.rudramuni@intel.com>
+To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, arnd@arndb.de
+Cc: zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, Caesar Wang <caesar.wang@rock-chips.com>
 
-On 10 October 2014 22:44, Kasagar, Srinidhi <srinidhi.kasagar@intel.com> wrote:
-> It was called for the sibling cpu of the onlined one.
+This series patchs tested on rk3288 SDK board and pinky-v1,v2 board.
+I believe the driver can be used on the rk3288-evb board.
 
-Still not clear. Can you give me output of this:
+Add this driver, The system can reset the entire chip when
+the thermal temperture over 120C, In case of rising over 125C
+when tha hardware shorting,The sodftware will shutdown via "critical".
 
-cat /sys/devices/system/cpu/cpu*/cpufreq/affected_cpus and
-cat /sys/devices/system/cpu/cpu*/cpufreq/related_cpus
+Changes in v8:
+	* address comments from Dmitry Torokhov and Doug Anderson.
+	- add three Teperture Sensors.
+        - support CRU and GPIO reset chip.
+	- rename rk3xxx-cpu-thermal.dtsi as rk3288-thermal.dtsi
+	- alarm-temp via set_trips() callback
+	- remove "reset-gpios"
 
-And then also tell me which CPU are you trying to remove ?
+Changes in v7:
+        - fix get data->clk=0 when in probe() function.
+	- fix some style code.
+	- modify dts,main add rk3xxx-cpu-thermal.dtsi
+
+Changes in v6:
+        * address comments from Tomeu Vizoso.
+        - use thermal's generic framework.
+
+Changes in v5:
+        * address comments from Eduardo Valentin,rui.zhang and Heiko Stubner:
+        - with BIT() macro
+        - manage clocks in suspend/resume.
+	- license is fixed as GPLv2.
+	- #include "thermal_core.h"->#include <linux/thermal.h>
+	- use the generic trip-points.the hw-shut-temp isn't generic trip-points.
+	- The method of binding and unbinding be fixed.
+	- The pin-name tsadc->otp_out
+
+Changes in v4:
+        * address comments from Jonathan Cameron,huangtao and zhaoyifeng:
+        - this series thermal driver still be put in driver/thermal/
+        - modify the thermal driver description.
+
+Changes in v3:(add dts configure)
+        * address comments from Dmitry Torokhov and Arnd Bergmann:
+        - fix clock-names in rockchip-thermal.txt
+        - remove rockchip_thermal_control() in rockchip_set_mode()
+        - fix some code style.
+        - add dts configure.
+
+Changes in v2:
+        * address comments from Heiko Stubner:
+        - fix dt-bindings in rockchip-thermal.txt
+        - remove Author mark
+        - rename TSADC_XXX->TSADCV2_XXX,it eill ready to merge compatible other SoCs.
+        - fix a identation
+        - remove clk_set_rate(),it's no necessary.
+        - fix the SIMPLE_DEV_PM_OPS() function  style.
+
+Caesar Wang (5):
+  thermal: rockchip: add driver for thermal
+  dt-bindings: document Rockchip thermal
+  ARM: dts: add RK3288 Thermal data
+  ARM: dts: add main Thermal info to rk3288
+  ARM: dts: enable Thermal on rk3288-evb board
+
+ .../bindings/thermal/rockchip-thermal.txt          |  45 ++
+ arch/arm/boot/dts/rk3288-evb.dtsi                  |   5 +
+ arch/arm/boot/dts/rk3288-thermal.dtsi              |  58 ++
+ arch/arm/boot/dts/rk3288.dtsi                      |  23 +
+ drivers/thermal/Kconfig                            |   9 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/rockchip_thermal.c                 | 628 +++++++++++++++++++++
+ 7 files changed, 769 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+ create mode 100644 arch/arm/boot/dts/rk3288-thermal.dtsi
+ create mode 100644 drivers/thermal/rockchip_thermal.c
+
+-- 
+1.9.1
+
+
