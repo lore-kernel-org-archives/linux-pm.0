@@ -1,251 +1,27 @@
-From: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
+From: Prarit Bhargava <prarit@redhat.com>
 Subject: Re: [PATCH 1/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Fri, 10 Oct 2014 15:23:45 +0200
-Message-ID: <1412947425.13463.37.camel@x200t>
-References: <CAKohpo=rEYgH+PSmkP8X8J0u69Kyp1W7JzBFOiOsiCOFSdyAiw@mail.gmail.com>
-	 <54353223.7080704@redhat.com>
-	 <CAKohpok+z+bPySa+Kzh2zW+2L8CCG29q6wANe3jd+o80+PnASA@mail.gmail.com>
-	 <5437C12D.1070803@redhat.com>
-	 <CAKohpokDG1_r7eJ5Yykea4orcuEicCUFCrnSo1uTgKW1iJGwRA@mail.gmail.com>
-	 <5437C535.3070707@redhat.com>
-	 <CAKohpo=_vgxvtJYA_53jdicnRivihAVQuEgoKk7S7MhZctyZkw@mail.gmail.com>
-	 <5437C778.4040108@redhat.com> <1412942496.13463.28.camel@x200t>
-	 <CAKohpomvrKxnk3ZOtZxZEO+fVWSr5gB1AadtFUib8jsqndDgtg@mail.gmail.com>
+Date: Fri, 10 Oct 2014 09:40:13 -0400
+Message-ID: <5437E1BD.5020801@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="sha-1"; protocol="application/x-pkcs7-signature";
-	boundary="=-t1xOEt+RTbidFT/sKNRK"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.zih.tu-dresden.de ([141.30.67.72]:33916 "EHLO
-	mailout1.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751704AbaJJNX5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Oct 2014 09:23:57 -0400
-In-Reply-To: <CAKohpomvrKxnk3ZOtZxZEO+fVWSr5gB1AadtFUib8jsqndDgtg@mail.gmail.com>
+Received: from mx1.redhat.com ([209.132.183.28]:44817 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751621AbaJJNk1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 10 Oct 2014 09:40:27 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Prarit Bhargava <prarit@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>
+To: =?ISO-8859-1?Q?Robert_Sch=F6ne?= <robert.schoene@tu-dresden.de>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>
 
 
---=-t1xOEt+RTbidFT/sKNRK
-Content-Type: text/plain; charset="UTF-7"
-Content-Transfer-Encoding: quoted-printable
+> In v2 my system still crashes when concurrently setting the governors
+> I wasn't able to get a stack trace.
+> 
+> Robert 
+> 
 
-I finally got a stack:
+Send me your test script please.
 
-Oct 10 15:19:44 basti kernel: +AFs  395.641363+AF0 BUG: unable to handle ke=
-rnel paging request at ffff8800b2783b10
-Oct 10 15:19:44 basti kernel: +AFs  395.641412+AF0 IP: +AFsAPA-ffff8800b278=
-3b10+AD4AXQ 0xffff8800b2783b10
-Oct 10 15:19:44 basti kernel: +AFs  395.641449+AF0 PGD 1fc9067 PUD 1fce067 =
-PMD b2737063 PTE 80000000b2783163
-Oct 10 15:19:44 basti kernel: +AFs  395.641503+AF0 Oops: 0011 +AFsAIw-1+AF0=
- SMP=20
-Oct 10 15:19:44 basti kernel: +AFs  395.641533+AF0 Modules linked in: sep3+=
-AF8-15(OE) pax(OE) nfsv3(E) rfcomm(E) bnep(E) bluetooth(E) nfsd(E) auth+AF8=
--rpcgss(E) binfmt+AF8-misc(E) nfs+AF8-acl(E) nfs(E) lockd(E) sunrpc(E) fsca=
-che(E) snd+AF8-hda+AF8-codec+AF8-hdmi(E) snd+AF8-hda+AF8-codec+AF8-conexant=
-(E) snd+AF8-hda+AF8-codec+AF8-generic(E) intel+AF8-rapl(E) x86+AF8-pkg+AF8-=
-temp+AF8-thermal(E) intel+AF8-powerclamp(E) coretemp(E) x86+AF8-adapt+AF8-d=
-river(OE) snd+AF8-hda+AF8-intel(E) snd+AF8-hda+AF8-controller(E) i915(E) kv=
-m+AF8-intel(E) snd+AF8-hda+AF8-codec(E) snd+AF8-hwdep(E) kvm(E) snd+AF8-pcm=
-(E) crct10dif+AF8-pclmul(E) snd+AF8-timer(E) mei+AF8-me(E) i2c+AF8-algo+AF8=
--bit(E) video(E) drm+AF8-kms+AF8-helper(E) mei(E) drm(E) crc32+AF8-pclmul(E=
-) ghash+AF8-clmulni+AF8-intel(E) ppdev(E) aesni+AF8-intel(E) lp(E) parport+=
-AF8-pc(E) parport(E) snd(E) aes+AF8-x86+AF8-64(E) glue+AF8-helper(E) lrw(E)=
- gf128mul(E) ablk+AF8-helper(E) gpio+AF8-ich(E) cryptd(E) soundcore(E) mac+=
-AF8-hid(E) lpc+AF8-ich(E) serio+AF8-raw(E) tpm+AF8-infineon(E) psmouse(E) a=
-hci(E) libahci(E) e1000e(E) ptp(E) pps+AF8-core(E)
-Oct 10 15:19:44 basti kernel: +AFs  395.642169+AF0 CPU: 6 PID: 3079 Comm: t=
-ee Tainted: G           OE  3.17.0+- +ACM-3
-Oct 10 15:19:44 basti kernel: +AFs  395.642209+AF0 Hardware name: FUJITSU E=
-SPRIMO P700/D3061-A1, BIOS V4.6.4.0 R1.12.0 for D3061-A1x 07/04/2011
-Oct 10 15:19:44 basti kernel: +AFs  395.642262+AF0 task: ffff88022bb96400 t=
-i: ffff880227ea4000 task.ti: ffff880227ea4000
-Oct 10 15:19:44 basti kernel: +AFs  395.642303+AF0 RIP: 0010:+AFsAPA-ffff88=
-00b2783b10+AD4AXQ  +AFsAPA-ffff8800b2783b10+AD4AXQ 0xffff8800b2783b10
-Oct 10 15:19:44 basti kernel: +AFs  395.642352+AF0 RSP: 0018:ffff880227ea7b=
-78  EFLAGS: 00010293
-Oct 10 15:19:44 basti kernel: +AFs  395.642383+AF0 RAX: ffff88022ba5d340 RB=
-X: 0000000000000000 RCX: 0000000000000000
-Oct 10 15:19:44 basti kernel: +AFs  395.642423+AF0 RDX: ffff8802314f0a08 RS=
-I: 0000000000000100 RDI: 0000000000000000
-Oct 10 15:19:44 basti kernel: +AFs  395.642463+AF0 RBP: ffff880227ea7ba8 R0=
-8: ffff8802314f0a00 R09: 0000000000000004
-Oct 10 15:19:44 basti kernel: +AFs  395.642503+AF0 R10: ffffffff81d1a660 R1=
-1: 0000000000000246 R12: 0000000000000000
-Oct 10 15:19:44 basti kernel: +AFs  395.642543+AF0 R13: ffff8802314f0a00 R1=
-4: ffff88022ba5d240 R15: 0000000000000002
-Oct 10 15:19:44 basti kernel: +AFs  395.642583+AF0 FS:  00002b1d0969ab80(00=
-00) GS:ffff88023e380000(0000) knlGS:0000000000000000
-Oct 10 15:19:44 basti kernel: +AFs  395.642629+AF0 CS:  0010 DS: 0000 ES: 0=
-000 CR0: 0000000080050033
-Oct 10 15:19:44 basti kernel: +AFs  395.642662+AF0 CR2: ffff8800b2783b10 CR=
-3: 00000000b4e89000 CR4: 00000000000407e0
-Oct 10 15:19:44 basti kernel: +AFs  395.642717+AF0  ffffffff815e1918 ffff88=
-022ba5d240 ffff8802314f0a00 0000000000000003
-Oct 10 15:19:44 basti kernel: +AFs  395.642773+AF0  0000000000000002 ffff88=
-023e210ea0 ffff880227ea7c28 ffffffff815e1c06
-Oct 10 15:19:44 basti kernel: +AFs  395.642828+AF0  0000000000010aa8 ffff88=
-022ba5d258 ffffffff81cd9ab0 ffff88023e210ea0
-Oct 10 15:19:44 basti kernel: +AFs  395.642885+AF0 Call Trace:
-Oct 10 15:19:44 basti kernel: +AFs  395.642906+AF0  +AFsAPA-ffffffff815e191=
-8+AD4AXQ ? gov+AF8-queue+AF8-work+-0x68/0xd0
-Oct 10 15:19:44 basti kernel: +AFs  395.642941+AF0  +AFsAPA-ffffffff815e1c0=
-6+AD4AXQ cpufreq+AF8-governor+AF8-dbs+-0x286/0x740
-Oct 10 15:19:44 basti kernel: +AFs  395.642980+AF0  +AFsAPA-ffffffff815dfd8=
-7+AD4AXQ od+AF8-cpufreq+AF8-governor+AF8-dbs+-0x17/0x20
-Oct 10 15:19:44 basti kernel: +AFs  395.643017+AF0  +AFsAPA-ffffffff815dc03=
-f+AD4AXQ +AF8AXw-cpufreq+AF8-governor+-0xdf/0x270
-Oct 10 15:19:44 basti kernel: +AFs  395.643089+AF0  +AFsAPA-ffffffff815dcd5=
-6+AD4AXQ store+AF8-scaling+AF8-governor+-0x96/0xf0
-Oct 10 15:19:44 basti kernel: +AFs  395.643166+AF0  +AFsAPA-ffffffff815db98=
-9+AD4AXQ store+-0x79/0xc0
-Oct 10 15:19:44 basti kernel: +AFs  395.643232+AF0  +AFsAPA-ffffffff81247c9=
-0+AD4AXQ kernfs+AF8-fop+AF8-write+-0xe0/0x160
-Oct 10 15:19:44 basti kernel: +AFs  395.643300+AF0  +AFsAPA-ffffffff811d2bd=
-6+AD4AXQ SyS+AF8-write+-0x46/0xb0
-Oct 10 15:19:44 basti kernel: +AFs  395.643363+AF0 Code: 00 00 00 00 00 00 =
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 de 84 2b 02 88 ff ff 80 6a c4 81 =
-ff ff ff ff 40 b5 9c 2b 02 88 ff ff +ADw-d0+AD4 35 78 b2 00 88 ff ff 80 be =
-08 81 ff ff ff ff 00 00 00 00 00=20
-Oct 10 15:19:44 basti kernel: +AFs  395.643772+AF0  RSP +ADw-ffff880227ea7b=
-78+AD4
-Oct 10 15:19:44 basti kernel: +AFs  395.643817+AF0 ---+AFs end trace c4d3fe=
-dcdd4b353b +AF0----
-
-
-
-Am Freitag, den 10.10.2014, 18:09 +-0530 schrieb Viresh Kumar:
-+AD4 On 10 October 2014 17:31, Robert Sch+APY-ne +ADw-robert.schoene+AEA-tu=
--dresden.de+AD4 wrote:
-+AD4 +AD4 In v2 my system still crashes when concurrently setting the gover=
-nors
-+AD4 +AD4 I wasn't able to get a stack trace.
-+AD4=20
-+AD4 Are you sure its the same crash log or some other bug has got in ?
-+AD4 It would be helpful to have a .jpg of crash even.
-
-
---=-t1xOEt+RTbidFT/sKNRK
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Transfer-Encoding: base64
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIVkjCCBNUw
-ggO9oAMCAQICCFBOxvU9EbRkMA0GCSqGSIb3DQEBCwUAMHExCzAJBgNVBAYTAkRFMRwwGgYDVQQK
-ExNEZXV0c2NoZSBUZWxla29tIEFHMR8wHQYDVQQLExZULVRlbGVTZWMgVHJ1c3QgQ2VudGVyMSMw
-IQYDVQQDExpEZXV0c2NoZSBUZWxla29tIFJvb3QgQ0EgMjAeFw0xNDA3MjIxMjA4MjZaFw0xOTA3
-MDkyMzU5MDBaMFoxCzAJBgNVBAYTAkRFMRMwEQYDVQQKEwpERk4tVmVyZWluMRAwDgYDVQQLEwdE
-Rk4tUEtJMSQwIgYDVQQDExtERk4tVmVyZWluIFBDQSBHbG9iYWwgLSBHMDEwggEiMA0GCSqGSIb3
-DQEBAQUAA4IBDwAwggEKAoIBAQDpm8NnhfkNrvWNVMOWUDU9YuluTO2U1wBblSJ01CDrNI/W7MAx
-BAuZgeKmFNJSoCgjhIt0iQReW+DieMF4yxbLKDU5ey2QRdDtoAB6fL9KDhsAw4bpXCsxEXsM84Ik
-Q4wcOItqaACa7txPeKvSxhObdq3u3ibo7wGvdA/BCaL2a869080UME/15eOkyGKbghoDJzANAmVg
-Te3RCSMqljVYJ9N2xnG2kB3E7f81hn1vM7PbD8URwoqDoZRdQWvY0hD1TP3KUazZve+Sg7va64sW
-VlZDz+HVEz2mHycwzUlU28kTNJpxdcVs6qcLmPkhnSevPqM5OUhqjK3JmfvDEvK9AgMBAAGjggGG
-MIIBgjAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFEm3xs/oPR9/6kR7Eyn38QpwPt5kMB8GA1Ud
-IwQYMBaAFDHDeRu69VPXF+CJei0XbAqzK50zMBIGA1UdEwEB/wQIMAYBAf8CAQIwYgYDVR0gBFsw
-WTARBg8rBgEEAYGtIYIsAQEEAgIwEQYPKwYBBAGBrSGCLAEBBAMAMBEGDysGAQQBga0hgiwBAQQD
-ATAPBg0rBgEEAYGtIYIsAQEEMA0GCysGAQQBga0hgiweMD4GA1UdHwQ3MDUwM6AxoC+GLWh0dHA6
-Ly9wa2kwMzM2LnRlbGVzZWMuZGUvcmwvRFRfUk9PVF9DQV8yLmNybDB4BggrBgEFBQcBAQRsMGow
-LAYIKwYBBQUHMAGGIGh0dHA6Ly9vY3NwMDMzNi50ZWxlc2VjLmRlL29jc3ByMDoGCCsGAQUFBzAC
-hi5odHRwOi8vcGtpMDMzNi50ZWxlc2VjLmRlL2NydC9EVF9ST09UX0NBXzIuY2VyMA0GCSqGSIb3
-DQEBCwUAA4IBAQBjICj9nCGGcr45Rlk5MiW8qQGbDczKfUGchm0KbiyzE1l1sTOSG2EnFv/DstU1
-gvuEKgFJvWa7Zi+ywgZdbj9u4wFaW8pDY1yVtuExpx/VB19N5mWCTjL5w3x6S81NXHTuIfJ1AuxS
-PtLJatOQI25JZzW+f01WpOzML8+3oZeocj7JvEDWWqQIPda8gsO3tzKOsSyOam23NQIZz/U5RFhj
-pyQAELC7/E6vbi84u6VXST/YblBvLJeW3B1GmmWJz67M8uXZn1OzPqEvkqnYC8aEHwTG6x7on321
-e6UC8STFJGMRNMxakyAqeYg6JUKQqWU7fIbTEhUjKfws2sw5W1QXMIIFYTCCBEmgAwIBAgIHF6Qk
-eWhcjjANBgkqhkiG9w0BAQsFADBaMQswCQYDVQQGEwJERTETMBEGA1UEChMKREZOLVZlcmVpbjEQ
-MA4GA1UECxMHREZOLVBLSTEkMCIGA1UEAxMbREZOLVZlcmVpbiBQQ0EgR2xvYmFsIC0gRzAxMB4X
-DTE0MDUyNzE0NTMyOVoXDTE5MDcwOTIzNTkwMFowgYUxCzAJBgNVBAYTAkRFMSgwJgYDVQQKEx9U
-ZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVzZGVuMQwwCgYDVQQLEwNaSUgxHDAaBgNVBAMTE1RV
-IERyZXNkZW4gQ0EgLSBHMDIxIDAeBgkqhkiG9w0BCQEWEXBraUB0dS1kcmVzZGVuLmRlMIIBIjAN
-BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwQ4ek/NE9uzQJ/dQemELBDQVk/yxH2xj2oDs4TNc
-NQo8dyAgopWAoCXiD0JgWU/UWpccRds9jhgz3EU7qnGhT5ILXRmsNQRRCF/pBntyLc9hpWiiz50A
-R8HKfjg4/DnYLw+MGamJL7I2g8dXJNrKRx1cSxIf+8m3sSS939c2rajyZCtnybjnnlM9yKe+LD6o
-Sp90AOUOROCVB5b4d5eEwxa25hCDJ7Uaqyfi2htiQkNhvYXxFL8XqN2a+svPCHRvnex26flyZGWK
-Dnp1SLZvc/mrc6PjQcXZlvJw9NMSQBudsUEsDeB0fqrY9AnJzLY+Nc17+rpdhO5bUbm6jTN7JwID
-AQABo4IB/jCCAfowEgYDVR0TAQH/BAgwBgEB/wIBATAOBgNVHQ8BAf8EBAMCAQYwEQYDVR0gBAow
-CDAGBgRVHSAAMB0GA1UdDgQWBBTFK1OTF4PJ9UZC7UNq37aApkfy4DAfBgNVHSMEGDAWgBRJt8bP
-6D0ff+pEexMp9/EKcD7eZDAcBgNVHREEFTATgRFwa2lAdHUtZHJlc2Rlbi5kZTCBiAYDVR0fBIGA
-MH4wPaA7oDmGN2h0dHA6Ly9jZHAxLnBjYS5kZm4uZGUvZ2xvYmFsLXJvb3QtY2EvcHViL2NybC9j
-YWNybC5jcmwwPaA7oDmGN2h0dHA6Ly9jZHAyLnBjYS5kZm4uZGUvZ2xvYmFsLXJvb3QtY2EvcHVi
-L2NybC9jYWNybC5jcmwwgdcGCCsGAQUFBwEBBIHKMIHHMDMGCCsGAQUFBzABhidodHRwOi8vb2Nz
-cC5wY2EuZGZuLmRlL09DU1AtU2VydmVyL09DU1AwRwYIKwYBBQUHMAKGO2h0dHA6Ly9jZHAxLnBj
-YS5kZm4uZGUvZ2xvYmFsLXJvb3QtY2EvcHViL2NhY2VydC9jYWNlcnQuY3J0MEcGCCsGAQUFBzAC
-hjtodHRwOi8vY2RwMi5wY2EuZGZuLmRlL2dsb2JhbC1yb290LWNhL3B1Yi9jYWNlcnQvY2FjZXJ0
-LmNydDANBgkqhkiG9w0BAQsFAAOCAQEAiYTAQ+DoeD14UcBAq1oKJgw5xCwwxYeBTdXtoNIGGyi4
-P5ANIMOkSiJoeBoU0QGxDcVtjMvrR2ihY7cEHQWmp4pZOAzefNY6sY6N+4zxMA5jTc0/FOLLIsJp
-DA9m1jNr03HO5Q49oO8PrEcyCfM4tQLQleN2yU/MQVY9D0KRbqmFb2M4DKvijbRp+GMogQDMg2NR
-MzxILTqLze7Kl294xg2u9YKnR1iCn/aK3w1gmf2PHfmPq0qrQQB49H5wM45yILSb1CIn/gH8f+Eb
-8ctDB496urh4TxXGfUAT5vr8V9p1lxDJSXH9QPyIHWoeYVKZJgECFFCbKPEGxOIFwUvwTzCCBaYw
-ggSOoAMCAQICBxUmUtdxRCMwDQYJKoZIhvcNAQEFBQAwgYUxCzAJBgNVBAYTAkRFMSgwJgYDVQQK
-Ex9UZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVzZGVuMQwwCgYDVQQLEwNaSUgxHDAaBgNVBAMT
-E1RVIERyZXNkZW4gQ0EgLSBHMDIxIDAeBgkqhkiG9w0BCQEWEXBraUB0dS1kcmVzZGVuLmRlMB4X
-DTEzMDEyODE5NDUxMVoXDTE2MDEyODE5NDUxMVowXjELMAkGA1UEBhMCREUxKDAmBgNVBAoTH1Rl
-Y2huaXNjaGUgVW5pdmVyc2l0YWV0IERyZXNkZW4xDDAKBgNVBAsTA1pJSDEXMBUGA1UEAxMOUm9i
-ZXJ0IFNjaG9lbmUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDFhpH2XvnTtbmW/F0J
-PcKsjiNdpTsETjcfYOQOuMVCewQh+z6HBS390yjAYUcmE8tMN3RznQekiaxHzD5v4qHuwYUy+xHo
-5twBE4QFwHKMeKBPOOu3O85Y29XZiJjMIzruGM4aEh7Smjl+ZejOs/kA3gPW3UMN6B0Qptrj2JiB
-3ySU5VzZf53xLG3SJ6HxYyht51PbGZTzVLacawXNqfFCcOExESItmWFnNTc2UX3yY3PS1gxmDd9o
-S8lfzP2w4+dv1HansTkTY+igenxcIxWF3pHXOSmXnFCra5HO5iJ95JwpzsELB4Y5gRytB+gBMpKz
-CpG4nihQPu62eiFQQD5LAgMBAAGjggI/MIICOzAvBgNVHSAEKDAmMBEGDysGAQQBga0hgiwBAQQD
-ADARBg8rBgEEAYGtIYIsAgEEAwAwCQYDVR0TBAIwADALBgNVHQ8EBAMCBeAwHQYDVR0lBBYwFAYI
-KwYBBQUHAwIGCCsGAQUFBwMEMB0GA1UdDgQWBBT5116c3i5BdxkDbqsKsO5wYkzN1zAfBgNVHSME
-GDAWgBTFK1OTF4PJ9UZC7UNq37aApkfy4DAnBgNVHREEIDAegRxyb2JlcnQuc2Nob2VuZUB0dS1k
-cmVzZGVuLmRlMIGLBgNVHR8EgYMwgYAwPqA8oDqGOGh0dHA6Ly9jZHAxLnBjYS5kZm4uZGUvdHUt
-ZHJlc2Rlbi1jYS9wdWIvY3JsL2dfY2FjcmwuY3JsMD6gPKA6hjhodHRwOi8vY2RwMi5wY2EuZGZu
-LmRlL3R1LWRyZXNkZW4tY2EvcHViL2NybC9nX2NhY3JsLmNybDCB2QYIKwYBBQUHAQEEgcwwgckw
-MwYIKwYBBQUHMAGGJ2h0dHA6Ly9vY3NwLnBjYS5kZm4uZGUvT0NTUC1TZXJ2ZXIvT0NTUDBIBggr
-BgEFBQcwAoY8aHR0cDovL2NkcDEucGNhLmRmbi5kZS90dS1kcmVzZGVuLWNhL3B1Yi9jYWNlcnQv
-Z19jYWNlcnQuY3J0MEgGCCsGAQUFBzAChjxodHRwOi8vY2RwMi5wY2EuZGZuLmRlL3R1LWRyZXNk
-ZW4tY2EvcHViL2NhY2VydC9nX2NhY2VydC5jcnQwDQYJKoZIhvcNAQEFBQADggEBAHBUMei+W+WD
-hzdMi+g4l/Umt1ERMRGhKJ8afUt0PTbvDQ6f9YetsuSmMS7nUBLHFM1HZgHT5ux0YFs3b/6IMLS/
-eKNAJIoX3QKma1yREVrGzcHq0tkIGKGJo9npRQsgbeNjGiXYO23lYTyVXrdTAx05ClDObiEQi27N
-taBKMiauC5unAvsaG+q2FkSWmSIcrONQrU+aB66Emwj55Tq1a7nJC8HyeLmhxg3aCKIT9G7fyHeL
-EO6NxhnQEIeuG3rw7ToytrjdZsVTeo6cXZIFdgMDUBMoLRRC+5HEKNO/ry9wIq7R3AJNDjFBZk8I
-29J4BIIkwXIp/pmnAMeQrXKUM80wggWmMIIEjqADAgECAgcVJlLXcUQjMA0GCSqGSIb3DQEBBQUA
-MIGFMQswCQYDVQQGEwJERTEoMCYGA1UEChMfVGVjaG5pc2NoZSBVbml2ZXJzaXRhZXQgRHJlc2Rl
-bjEMMAoGA1UECxMDWklIMRwwGgYDVQQDExNUVSBEcmVzZGVuIENBIC0gRzAyMSAwHgYJKoZIhvcN
-AQkBFhFwa2lAdHUtZHJlc2Rlbi5kZTAeFw0xMzAxMjgxOTQ1MTFaFw0xNjAxMjgxOTQ1MTFaMF4x
-CzAJBgNVBAYTAkRFMSgwJgYDVQQKEx9UZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVzZGVuMQww
-CgYDVQQLEwNaSUgxFzAVBgNVBAMTDlJvYmVydCBTY2hvZW5lMIIBIjANBgkqhkiG9w0BAQEFAAOC
-AQ8AMIIBCgKCAQEAxYaR9l7507W5lvxdCT3CrI4jXaU7BE43H2DkDrjFQnsEIfs+hwUt/dMowGFH
-JhPLTDd0c50HpImsR8w+b+Kh7sGFMvsR6ObcAROEBcByjHigTzjrtzvOWNvV2YiYzCM67hjOGhIe
-0po5fmXozrP5AN4D1t1DDegdEKba49iYgd8klOVc2X+d8Sxt0ieh8WMobedT2xmU81S2nGsFzanx
-QnDhMREiLZlhZzU3NlF98mNz0tYMZg3faEvJX8z9sOPnb9R2p7E5E2PooHp8XCMVhd6R1zkpl5xQ
-q2uRzuYifeScKc7BCweGOYEcrQfoATKSswqRuJ4oUD7utnohUEA+SwIDAQABo4ICPzCCAjswLwYD
-VR0gBCgwJjARBg8rBgEEAYGtIYIsAQEEAwAwEQYPKwYBBAGBrSGCLAIBBAMAMAkGA1UdEwQCMAAw
-CwYDVR0PBAQDAgXgMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDBDAdBgNVHQ4EFgQU+dde
-nN4uQXcZA26rCrDucGJMzdcwHwYDVR0jBBgwFoAUxStTkxeDyfVGQu1Dat+2gKZH8uAwJwYDVR0R
-BCAwHoEccm9iZXJ0LnNjaG9lbmVAdHUtZHJlc2Rlbi5kZTCBiwYDVR0fBIGDMIGAMD6gPKA6hjho
-dHRwOi8vY2RwMS5wY2EuZGZuLmRlL3R1LWRyZXNkZW4tY2EvcHViL2NybC9nX2NhY3JsLmNybDA+
-oDygOoY4aHR0cDovL2NkcDIucGNhLmRmbi5kZS90dS1kcmVzZGVuLWNhL3B1Yi9jcmwvZ19jYWNy
-bC5jcmwwgdkGCCsGAQUFBwEBBIHMMIHJMDMGCCsGAQUFBzABhidodHRwOi8vb2NzcC5wY2EuZGZu
-LmRlL09DU1AtU2VydmVyL09DU1AwSAYIKwYBBQUHMAKGPGh0dHA6Ly9jZHAxLnBjYS5kZm4uZGUv
-dHUtZHJlc2Rlbi1jYS9wdWIvY2FjZXJ0L2dfY2FjZXJ0LmNydDBIBggrBgEFBQcwAoY8aHR0cDov
-L2NkcDIucGNhLmRmbi5kZS90dS1kcmVzZGVuLWNhL3B1Yi9jYWNlcnQvZ19jYWNlcnQuY3J0MA0G
-CSqGSIb3DQEBBQUAA4IBAQBwVDHovlvlg4c3TIvoOJf1JrdRETERoSifGn1LdD027w0On/WHrbLk
-pjEu51ASxxTNR2YB0+bsdGBbN2/+iDC0v3ijQCSKF90CpmtckRFaxs3B6tLZCBihiaPZ6UULIG3j
-Yxol2Dtt5WE8lV63UwMdOQpQzm4hEItuzbWgSjImrgubpwL7GhvqthZElpkiHKzjUK1PmgeuhJsI
-+eU6tWu5yQvB8ni5ocYN2giiE/Ru38h3ixDujcYZ0BCHrht68O06Mra43WbFU3qOnF2SBXYDA1AT
-KC0UQvuRxCjTv68vcCKu0dwCTQ4xQWZPCNvSeASCJMFyKf6ZpwDHkK1ylDPNMYIDZjCCA2ICAQEw
-gZEwgYUxCzAJBgNVBAYTAkRFMSgwJgYDVQQKEx9UZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVz
-ZGVuMQwwCgYDVQQLEwNaSUgxHDAaBgNVBAMTE1RVIERyZXNkZW4gQ0EgLSBHMDIxIDAeBgkqhkiG
-9w0BCQEWEXBraUB0dS1kcmVzZGVuLmRlAgcVJlLXcUQjMAkGBSsOAwIaBQCgggGpMBgGCSqGSIb3
-DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTAxMDEzMjM0NVowIwYJKoZIhvcN
-AQkEMRYEFM+IEJH6jh6tWf9weuQU63kM3IQjMIGiBgkrBgEEAYI3EAQxgZQwgZEwgYUxCzAJBgNV
-BAYTAkRFMSgwJgYDVQQKEx9UZWNobmlzY2hlIFVuaXZlcnNpdGFldCBEcmVzZGVuMQwwCgYDVQQL
-EwNaSUgxHDAaBgNVBAMTE1RVIERyZXNkZW4gQ0EgLSBHMDIxIDAeBgkqhkiG9w0BCQEWEXBraUB0
-dS1kcmVzZGVuLmRlAgcVJlLXcUQjMIGkBgsqhkiG9w0BCRACCzGBlKCBkTCBhTELMAkGA1UEBhMC
-REUxKDAmBgNVBAoTH1RlY2huaXNjaGUgVW5pdmVyc2l0YWV0IERyZXNkZW4xDDAKBgNVBAsTA1pJ
-SDEcMBoGA1UEAxMTVFUgRHJlc2RlbiBDQSAtIEcwMjEgMB4GCSqGSIb3DQEJARYRcGtpQHR1LWRy
-ZXNkZW4uZGUCBxUmUtdxRCMwDQYJKoZIhvcNAQEBBQAEggEAW6sivdw02hMWdJnL5xAqlIK9865t
-ZdMjFV7aZaIe8fJgtqhckeAKGBe0+jkHocBpM585OQaNml4qpZZfEVV5ULnX8CgxHbWBvQ8errRT
-dJj6aT1Q0Loy10AvxTtOze4hERmWK94OEbNcyNc5h9R1peW1rot4ehTLrqi5PKendhoDGmyQYkbg
-9eW/Zt5Rm4f7HKKcyS955VcMhcVQBp5DWje0Wr6So4E8404UZpTj5QZUd5LonY9cMrnSHy+wMsaB
-4TauB7JxyuwDwVaU98IOuzKFC8Kt724lYK86HuIAP+LeFZieWhYUci3xsX0lrDEFurr5dTq69Dcd
-Ly3QEGD3BQAAAAAAAA==
-
-
---=-t1xOEt+RTbidFT/sKNRK--
-
+P.
