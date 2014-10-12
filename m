@@ -1,40 +1,67 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [RFC PATCH 1/2] acpi: Use syscore instead of pm_power_off_prepare
- to prepare for poweroff
-Date: Sun, 12 Oct 2014 12:59:05 -0700
-Message-ID: <543ADD89.1050702@roeck-us.net>
-References: <1413062057-11657-1-git-send-email-linux@roeck-us.net> <3090667.ydmQKSGePB@vostro.rjw.lan> <543AD7FA.5060706@roeck-us.net> <2189351.ETD7m2XsWr@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [REPOST PATCH v4 1/2] PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
+Date: Sun, 12 Oct 2014 22:21:10 +0200
+Message-ID: <3322444.Yf2zmy7yVQ@vostro.rjw.lan>
+References: <1409759373-22696-1-git-send-email-tomeu.vizoso@collabora.com> <2373913.b8GhYem2Rt@vostro.rjw.lan> <CAAObsKBuDRQy7=zLkmRj9O+Ka0K_z-ejXCyzwttEXmQVkXn2hw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2189351.ETD7m2XsWr@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64769 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752523AbaJLUA5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Oct 2014 16:00:57 -0400
+In-Reply-To: <CAAObsKBuDRQy7=zLkmRj9O+Ka0K_z-ejXCyzwttEXmQVkXn2hw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Terje =?ISO-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>
 
-On 10/12/2014 01:16 PM, Rafael J. Wysocki wrote:
-> On Sunday, October 12, 2014 12:35:22 PM Guenter Roeck wrote:
->> On 10/12/2014 12:45 PM, Rafael J. Wysocki wrote:
->>> On Saturday, October 11, 2014 02:14:16 PM Guenter Roeck wrote:
->>>> The syscore shutdown callback seems to be perfectly suited to prepare for system
->>>> poweroff. Use it instead of pm_power_off_prepare.
->>>
->>> How much testing did that receive?
->>>
->>
->> As I mentioned in patch 0/2, compile tested so far only. Before I start playing
->> with my servers, I wanted to get some feedback if the idea is worth pursuing
->> further or if I am missing something essential.
->
-> Well, it makes sense in principle, but the ordering with respect to the other
-> syscore shutdown things and the migrate_to_reboot_cpu() may be a problem.
->
-> I always get nervous when the ordering of ACPI-related code changes like
-> that and the reason is quite weak this time to be honest.
->
+On Friday, October 10, 2014 08:59:22 AM Tomeu Vizoso wrote:
+> On 26 September 2014 01:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Wednesday, September 24, 2014 03:31:55 PM Tomeu Vizoso wrote:
+> >> On 24 September 2014 15:32, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> > On Wednesday, September 24, 2014 10:42:13 AM Tomeu Vizoso wrote:
+> >> >> On 14 September 2014 19:06, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> >> > On Friday, September 12, 2014 11:11:25 AM Tomeu Vizoso wrote:
+> >> >> >> On 3 September 2014 17:49, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
+> >> >> >> > Also adds a class type PM_QOS_SUM that aggregates the values by summing them.
+> >> >> >> >
+> >> >> >> > It can be used by memory controllers to calculate the optimum clock frequency
+> >> >> >> > based on the bandwidth needs of the different memory clients.
+> >> >> >> >
+> >> >> >> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> >> >> >> > Acked-by: Pavel Machek <pavel@ucw.cz>
+> >> >> >>
+> >> >> >> Hi Rafael,
+> >> >> >>
+> >> >> >> will you take this one for 3.18?
+> >> >> >
+> >> >> > Quite likely, but I'm traveling now, so I'll do that after I'm back home
+> >> >> > in a few days.  I'll write to you if there are any problems.
+> >> >>
+> >> >> Don't want to be annoying, but thought I might ping you just in case
+> >> >> this fell through the cracks.
+> >> >
+> >> > No, it didn't.
+> >> >
+> >> > I'm wondering about patch [2/2], though.  I'm assuming that you'll push you
+> >> > later through the Tegra DRM driver, right?
+> >>
+> >> Yes, that was Stephen's suggestion:
+> >>
+> >> https://lkml.org/lkml/2014/8/25/439
+> >
+> > OK, patch [1/2] queued up for 3.18, thanks!
+> 
+> Hi Rafael,
+> 
+> I don't see this one in linux-next yet.
 
-Ok, no problem; I'll drop it.
+My bad, I skipped the pm-qos branch by mistake.  Sorry about that.
 
-Guenter
+This week I'm attending conferences, but I'll push it to Linus next week
+if the merge windown is still open then.
+
+Rafael
+
