@@ -1,35 +1,33 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCHv2 0/4] cpufreq-dt, platform_data based proposal
-Date: Sun, 12 Oct 2014 22:25:02 +0200
-Message-ID: <1951683.rC8DQ3mkM4@vostro.rjw.lan>
-References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com> <6228666.uuRIPi9Yy4@vostro.rjw.lan> <CAKohpokbTQKzz3jt7dkEnD-cziAk4+a8CcQMPNuyzAVMeMfS1g@mail.gmail.com>
+Subject: Re: [PATCH resend] cpufreq: dt: disable unsupported OPPs
+Date: Sun, 12 Oct 2014 22:27:42 +0200
+Message-ID: <48734362.lRa73hezrZ@vostro.rjw.lan>
+References: <1412090950-20835-1-git-send-email-l.stach@pengutronix.de> <6765047.8AI47Iyegn@vostro.rjw.lan> <CAKohpo=X0q22vv0QkLr2PAiaHuzuTRkzW1P6QbxVYAddDFRRTw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokbTQKzz3jt7dkEnD-cziAk4+a8CcQMPNuyzAVMeMfS1g@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:57103 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752900AbaJLUHc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Oct 2014 16:07:32 -0400
+In-Reply-To: <CAKohpo=X0q22vv0QkLr2PAiaHuzuTRkzW1P6QbxVYAddDFRRTw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lucas Stach <l.stach@pengutronix.de>, Mark Brown <broonie@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wednesday, October 08, 2014 11:21:42 AM Viresh Kumar wrote:
-> On 8 October 2014 05:29, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > So can you please send me links to the patches?  I probably can find them,
-> > but honestly I have too little time for other stuff already.
+On Thursday, October 09, 2014 09:13:54 AM Viresh Kumar wrote:
+> On 9 October 2014 04:06, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > OK, since this has been restored, what am I supposed to do with the
+> > $subject patch?
 > 
-> Sure:
-> 
-> https://patchwork.kernel.org/patch/4876641/
-> https://patchwork.kernel.org/patch/4876651/
-> https://patchwork.kernel.org/patch/4876661/
-> https://patchwork.kernel.org/patch/4876671/
+> Yeah, so the patch looked fine to me. If this can still be applied without
+> Lucas required to resend it, please add my Ack and apply it :)
 
-They didn't apply cleanly for me and I didn't have the time to rebase
-them myself.
+No, it didn't apply for me cleanly.
 
-Thomas, care to rebase the v2 on top of the current Linus' tree and
-resend?
+Lucas, can you please rebase this on top of the current Linus' tree and resend?
 
 -- 
 I speak only for myself.
