@@ -1,47 +1,86 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v1 2/4] ARM: keystone: pm: switch to use generic pm domains
-Date: Sun, 12 Oct 2014 05:57:05 -0700
-Message-ID: <CAMAWPa96Kqg8r3GqJQoiSTspFnHo3gnWxzBtCpei7-nCXN+Dzw@mail.gmail.com>
-References: <1412001499-19369-1-git-send-email-grygorii.strashko@ti.com>
-	<1412001499-19369-3-git-send-email-grygorii.strashko@ti.com>
-	<542DA4D4.4070202@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH 1/2] acpi: Use syscore instead of pm_power_off_prepare to prepare for poweroff
+Date: Sun, 12 Oct 2014 21:45:31 +0200
+Message-ID: <3090667.ydmQKSGePB@vostro.rjw.lan>
+References: <1413062057-11657-1-git-send-email-linux@roeck-us.net> <1413062057-11657-2-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:52760 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751999AbaJLM5J (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 12 Oct 2014 08:57:09 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id C663620204
-	for <linux-pm@vger.kernel.org>; Sun, 12 Oct 2014 12:57:08 +0000 (UTC)
-Received: from mail-lb0-f181.google.com (mail-lb0-f181.google.com [209.85.217.181])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPSA id 1BDF3201C0
-	for <linux-pm@vger.kernel.org>; Sun, 12 Oct 2014 12:57:06 +0000 (UTC)
-Received: by mail-lb0-f181.google.com with SMTP id l4so5129190lbv.40
-        for <linux-pm@vger.kernel.org>; Sun, 12 Oct 2014 05:57:05 -0700 (PDT)
-In-Reply-To: <542DA4D4.4070202@ti.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:54772 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752505AbaJLTZS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Oct 2014 15:25:18 -0400
+In-Reply-To: <1413062057-11657-2-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Santosh Shilimkar <santosh.shilimkar@ti.com>, Grygorii Strashko <grygorii.strashko@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, ulf.hansson@linaro.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, lkml <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
 
-On 10/2/14 12:17 PM, Santosh Shilimkar wrote:
-> On Monday 29 September 2014 10:38 AM, Grygorii Strashko wrote:
->> This patch switches Keystone 2 PM code to use Generic PM domains
->> instead of PM clock domains because of the lack of DT support
->> for the last.
->>
->> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
->> ---
+On Saturday, October 11, 2014 02:14:16 PM Guenter Roeck wrote:
+> The syscore shutdown callback seems to be perfectly suited to prepare for system
+> poweroff. Use it instead of pm_power_off_prepare.
 
-[...]
+How much testing did that receive?
 
->> Other than that patch looks fine to me. If Kevin is happy
->> with overall approach then we can proceed with this.
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Len Brown <len.brown@intel.com>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> ---
+>  drivers/acpi/sleep.c | 21 ++++++++++++++++-----
+>  1 file changed, 16 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+> index 05a31b5..e03c74d 100644
+> --- a/drivers/acpi/sleep.c
+> +++ b/drivers/acpi/sleep.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/suspend.h>
+>  #include <linux/reboot.h>
+> +#include <linux/syscore_ops.h>
+>  #include <linux/acpi.h>
+>  #include <linux/module.h>
+>  #include <asm/io.h>
+> @@ -820,13 +821,23 @@ int acpi_suspend(u32 acpi_state)
+>  	return -EINVAL;
+>  }
+>  
+> -static void acpi_power_off_prepare(void)
+> +static void acpi_shutdown(void)
+>  {
+> -	/* Prepare to power off the system */
+> -	acpi_sleep_prepare(ACPI_STATE_S5);
+> -	acpi_disable_all_gpes();
+> +	switch (system_state) {
+> +	case SYSTEM_POWER_OFF:
+> +		/* Prepare to power off the system */
+> +		acpi_sleep_prepare(ACPI_STATE_S5);
+> +		acpi_disable_all_gpes();
+> +		break;
+> +	default:
+> +		break;
+> +	}
+>  }
+>  
+> +static struct syscore_ops acpi_syscore_ops = {
+> +	.shutdown = acpi_shutdown,
+> +};
+> +
+>  static void acpi_power_off(void)
+>  {
+>  	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
+> @@ -850,7 +861,7 @@ int __init acpi_sleep_init(void)
+>  
+>  	if (acpi_sleep_state_supported(ACPI_STATE_S5)) {
+>  		sleep_states[ACPI_STATE_S5] = 1;
+> -		pm_power_off_prepare = acpi_power_off_prepare;
+> +		register_syscore_ops(&acpi_syscore_ops);
+>  		pm_power_off = acpi_power_off;
+>  	}
+>  
+> 
 
-Looks good to me:
-
-Reviewed-by: Kevin Hilman <khilman@linaro.org>
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
