@@ -1,67 +1,36 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [REPOST PATCH v4 1/2] PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
-Date: Sun, 12 Oct 2014 22:21:10 +0200
-Message-ID: <3322444.Yf2zmy7yVQ@vostro.rjw.lan>
-References: <1409759373-22696-1-git-send-email-tomeu.vizoso@collabora.com> <2373913.b8GhYem2Rt@vostro.rjw.lan> <CAAObsKBuDRQy7=zLkmRj9O+Ka0K_z-ejXCyzwttEXmQVkXn2hw@mail.gmail.com>
+Subject: Re: [PATCHv2 0/4] cpufreq-dt, platform_data based proposal
+Date: Sun, 12 Oct 2014 22:25:02 +0200
+Message-ID: <1951683.rC8DQ3mkM4@vostro.rjw.lan>
+References: <CAKohpo=GiQHJ5eg=TkYAkzvsn=hTNTjSwmH20vitG2Z42zsoDA@mail.gmail.com> <6228666.uuRIPi9Yy4@vostro.rjw.lan> <CAKohpokbTQKzz3jt7dkEnD-cziAk4+a8CcQMPNuyzAVMeMfS1g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64769 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752523AbaJLUA5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Oct 2014 16:00:57 -0400
-In-Reply-To: <CAAObsKBuDRQy7=zLkmRj9O+Ka0K_z-ejXCyzwttEXmQVkXn2hw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokbTQKzz3jt7dkEnD-cziAk4+a8CcQMPNuyzAVMeMfS1g@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Terje =?ISO-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Mikko Perttunen <mperttunen@nvidia.com>
 
-On Friday, October 10, 2014 08:59:22 AM Tomeu Vizoso wrote:
-> On 26 September 2014 01:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Wednesday, September 24, 2014 03:31:55 PM Tomeu Vizoso wrote:
-> >> On 24 September 2014 15:32, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> > On Wednesday, September 24, 2014 10:42:13 AM Tomeu Vizoso wrote:
-> >> >> On 14 September 2014 19:06, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> >> > On Friday, September 12, 2014 11:11:25 AM Tomeu Vizoso wrote:
-> >> >> >> On 3 September 2014 17:49, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
-> >> >> >> > Also adds a class type PM_QOS_SUM that aggregates the values by summing them.
-> >> >> >> >
-> >> >> >> > It can be used by memory controllers to calculate the optimum clock frequency
-> >> >> >> > based on the bandwidth needs of the different memory clients.
-> >> >> >> >
-> >> >> >> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> >> >> >> > Acked-by: Pavel Machek <pavel@ucw.cz>
-> >> >> >>
-> >> >> >> Hi Rafael,
-> >> >> >>
-> >> >> >> will you take this one for 3.18?
-> >> >> >
-> >> >> > Quite likely, but I'm traveling now, so I'll do that after I'm back home
-> >> >> > in a few days.  I'll write to you if there are any problems.
-> >> >>
-> >> >> Don't want to be annoying, but thought I might ping you just in case
-> >> >> this fell through the cracks.
-> >> >
-> >> > No, it didn't.
-> >> >
-> >> > I'm wondering about patch [2/2], though.  I'm assuming that you'll push you
-> >> > later through the Tegra DRM driver, right?
-> >>
-> >> Yes, that was Stephen's suggestion:
-> >>
-> >> https://lkml.org/lkml/2014/8/25/439
-> >
-> > OK, patch [1/2] queued up for 3.18, thanks!
+On Wednesday, October 08, 2014 11:21:42 AM Viresh Kumar wrote:
+> On 8 October 2014 05:29, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > So can you please send me links to the patches?  I probably can find them,
+> > but honestly I have too little time for other stuff already.
 > 
-> Hi Rafael,
+> Sure:
 > 
-> I don't see this one in linux-next yet.
+> https://patchwork.kernel.org/patch/4876641/
+> https://patchwork.kernel.org/patch/4876651/
+> https://patchwork.kernel.org/patch/4876661/
+> https://patchwork.kernel.org/patch/4876671/
 
-My bad, I skipped the pm-qos branch by mistake.  Sorry about that.
+They didn't apply cleanly for me and I didn't have the time to rebase
+them myself.
 
-This week I'm attending conferences, but I'll push it to Linus next week
-if the merge windown is still open then.
+Thomas, care to rebase the v2 on top of the current Linus' tree and
+resend?
 
-Rafael
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
