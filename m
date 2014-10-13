@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v3 4/9] drivercore / platform: Keep PM domain powered during ->probe()
-Date: Mon, 13 Oct 2014 16:02:05 +0200
-Message-ID: <1413208930-26019-5-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v3 6/9] spi: core: Keep PM domain powered during ->probe()
+Date: Mon, 13 Oct 2014 16:02:07 +0200
+Message-ID: <1413208930-26019-7-git-send-email-ulf.hansson@linaro.org>
 References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-Reply-To: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
@@ -18,27 +18,27 @@ domain.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/platform.c | 7 +++++++
+ drivers/spi/spi.c | 7 +++++++
  1 file changed, 7 insertions(+)
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index b2afc29..43897ad 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -509,7 +509,14 @@ static int platform_drv_probe(struct device *_dev)
+diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+index 3907f14..ad1a6f3 100644
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -267,7 +267,14 @@ static int spi_drv_probe(struct device *dev)
  
- 	ret = dev_pm_domain_attach(_dev, true);
+ 	ret = dev_pm_domain_attach(dev, true);
  	if (ret != -EPROBE_DEFER) {
-+		ret = dev_pm_domain_get(_dev->pm_domain);
++		ret = dev_pm_domain_get(dev->pm_domain);
 +		if (ret) {
-+			dev_pm_domain_detach(_dev, true);
++			dev_pm_domain_detach(dev, true);
 +			return ret;
 +		}
 +
- 		ret = drv->probe(dev);
-+		dev_pm_domain_put(_dev->pm_domain);
+ 		ret = sdrv->probe(to_spi_device(dev));
++		dev_pm_domain_put(dev->pm_domain);
  		if (ret)
- 			dev_pm_domain_detach(_dev, true);
+ 			dev_pm_domain_detach(dev, true);
  	}
 -- 
 1.9.1
