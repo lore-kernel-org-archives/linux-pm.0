@@ -1,56 +1,55 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH 3/5] intel_pstate: Don't lose sysfs settings during cpu offline
-Date: Mon, 13 Oct 2014 08:37:42 -0700
-Message-ID: <1413214664-17687-3-git-send-email-dirk.j.brandewie@intel.com>
-References: <1413214664-17687-1-git-send-email-dirk.j.brandewie@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:48013 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754054AbaJMPh5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Oct 2014 11:37:57 -0400
-In-Reply-To: <1413214664-17687-1-git-send-email-dirk.j.brandewie@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [PATCH v9 1/5] thermal: rockchip: add driver for thermal
+Date: Mon, 13 Oct 2014 09:11:20 -0700
+Message-ID: <CAD=FV=XHe65wwf8Q9RA0ZDgb5oQLdyjuZDFy4mD01_t6G6WnHQ@mail.gmail.com>
+References: <1413012563-7690-1-git-send-email-caesar.wang@rock-chips.com>
+	<1413012563-7690-2-git-send-email-caesar.wang@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1413012563-7690-2-git-send-email-caesar.wang@rock-chips.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Caesar Wang <caesar.wang@rock-chips.com>
+Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Arnd Bergmann <arnd@arndb.de>, zyf <zyf@rock-chips.com>, linux-rockchip@lists.infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Eddie Cai <cf@rock-chips.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Derek Basehore <dbasehore@chromium.org>, Tao Huang <huangtao@rock-chips.com>, =?UTF-8?B?6ZmI5riQ6aOe?= <cjf@rock-chips.com>, Shunqian Zheng <zhengsq@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>, stable@vger.kernel.org
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Caesar,
 
-The user may have custom settings don't destroy them during suspend.
+On Sat, Oct 11, 2014 at 12:29 AM, Caesar Wang
+<caesar.wang@rock-chips.com> wrote:
 
-Reference: https://bugzilla.kernel.org/show_bug.cgi?id=80651
+> +static void rk_tsadcv2_initialize(int reset_mode, int chn, void __iomem *regs,
+> +                                 unsigned long hw_shut_temp)
+> +{
+> +       u32 shutdown_value;
+> +
+> +       shutdown_value = rk_tsadcv2_temp_to_code(hw_shut_temp);
+> +
+> +       /* Enable measurements at ~ 10 Hz */
+> +       writel_relaxed(0 | TSADCV2_AUTO_TSHUT_POLARITY_HIGH, regs +
+> +                      TSADCV2_AUTO_CON);
+> +       writel_relaxed(TSADCV2_AUTO_PERIOD_TIME, regs + TSADCV2_AUTO_PERIOD);
+> +       writel_relaxed(TSADCV2_AUTO_PERIOD_HT_TIME, regs +
+> +                      TSADCV2_AUTO_PERIOD_HT);
+> +       writel_relaxed(shutdown_value, regs + TSADCV2_COMP_SHUT(chn));
+> +       writel_relaxed(TSADCV2_HIGHT_INT_DEBOUNCE_TIME, regs +
+> +                      TSADCV2_HIGHT_INT_DEBOUNCE);
+> +       writel_relaxed(TSADCV2_HIGHT_TSHUT_DEBOUNCE_TIME, regs +
+> +                      TSADCV2_HIGHT_TSHUT_DEBOUNCE);
+> +
+> +       if (reset_mode == GPIO)
+> +               writel_relaxed(TSADCV2_SHUT_2GPIO_SRC_EN(chn) |
+> +                              TSADCV2_INT_SRC_EN(chn), regs +
+> +                              TSADCV2_INT_EN);
+> +       else
+> +               writel_relaxed(TSADCV2_SHUT_2CRU_SRC_EN(chn) |
+> +                              TSADCV2_INT_SRC_EN(chn) , regs +
+> +                              TSADCV2_INT_EN);
+> +
+> +       writel_relaxed(TSADCV2_AUTO_SRC_EN(chn) | TSADCV2_AUTO_EN, regs +
+> +                      TSADCV2_AUTO_CON);
 
-Reported-by: Tobias Jakobi <liquid.acid@gmx.net>
-Cc: stable@vger.kernel.org
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Aren't you clobbering the polarity here?
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index a85b262..db03cbb 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -702,7 +702,9 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
- {
- 	struct cpudata *cpu;
- 
--	all_cpu_data[cpunum] = kzalloc(sizeof(struct cpudata), GFP_KERNEL);
-+	if (!all_cpu_data[cpunum])
-+		all_cpu_data[cpunum] = kzalloc(sizeof(struct cpudata),
-+					       GFP_KERNEL);
- 	if (!all_cpu_data[cpunum])
- 		return -ENOMEM;
- 
-@@ -782,8 +784,6 @@ static void intel_pstate_stop_cpu(struct cpufreq_policy *policy)
- 
- 	del_timer_sync(&all_cpu_data[cpu_num]->timer);
- 	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
--	kfree(all_cpu_data[cpu_num]);
--	all_cpu_data[cpu_num] = NULL;
- }
- 
- static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
--- 
-1.9.3
-
+NOTE: I didn't do a full review of this driver, just noticed that
+while looking at another patch and figure'd I'd respond here, too.
