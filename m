@@ -1,69 +1,84 @@
-From: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v1 2/4] ARM: keystone: pm: switch to use generic pm domains
-Date: Mon, 13 Oct 2014 14:13:17 +0300
-Message-ID: <543BB3CD.7040001@ti.com>
-References: <1412001499-19369-1-git-send-email-grygorii.strashko@ti.com>	<1412001499-19369-3-git-send-email-grygorii.strashko@ti.com> <CAMAWPa-sKGu_o0CDLCk_uKofxwOjXiiFBedjEP=OhQFmo+ehCA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v5 07/11] mmc: sdio: Convert to dev_pm_domain_attach|detach()
+Date: Mon, 13 Oct 2014 13:44:44 +0200
+Message-ID: <CAPDyKFpbZiCZMsLP+mq-1UWd1ifX1QZosv8UfnW__J26y+hupQ@mail.gmail.com>
+References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
+	<1411151264-16245-8-git-send-email-ulf.hansson@linaro.org>
+	<20141002002705.GA29177@dtor-ws>
+	<543B3D80.1010704@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAMAWPa-sKGu_o0CDLCk_uKofxwOjXiiFBedjEP=OhQFmo+ehCA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f174.google.com ([209.85.216.174]:58320 "EHLO
+	mail-qc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753744AbaJMLop (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Oct 2014 07:44:45 -0400
+Received: by mail-qc0-f174.google.com with SMTP id m20so4763456qcx.19
+        for <linux-pm@vger.kernel.org>; Mon, 13 Oct 2014 04:44:44 -0700 (PDT)
+In-Reply-To: <543B3D80.1010704@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>Mark Brown <br>
 
-On 10/12/2014 03:56 PM, Kevin Hilman wrote:
-> Hi Grygorii,
->
-> On 9/29/14 7:38 AM, Grygorii Strashko wrote:
->> This patch switches Keystone 2 PM code to use Generic PM domains
->> instead of PM clock domains because of the lack of DT support
->> for the last.
+On 13 October 2014 04:48, Aaron Lu <aaron.lu@intel.com> wrote:
+> On 10/02/2014 08:27 AM, Dmitry Torokhov wrote:
+>> Hi Ulf,
 >>
->> Signed-off-by: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
->
-> IMO, this approach is much better.
->
-> One minor nit below...
->
->> diff --git a/arch/arm/mach-keystone/pm_domain.c b/arch/arm/mach-keystone/pm_domain.c
->> index ca79dda..3eb5257 100644
->> --- a/arch/arm/mach-keystone/pm_domain.c
->> +++ b/arch/arm/mach-keystone/pm_domain.c
->> @@ -12,69 +12,110 @@
->>    * version 2, as published by the Free Software Foundation.
->>    */
+>> On Fri, Sep 19, 2014 at 08:27:40PM +0200, Ulf Hansson wrote:
+>>> Previously only the ACPI PM domain was supported by the sdio bus.
+>>>
+>>> Let's convert to the common attach/detach functions for PM domains,
+>>> which currently means we are extending the support to include the
+>>> generic PM domain as well.
+>>>
+>>> Cc: linux-mmc@vger.kernel.org
+>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>> Reviewed-by: Kevin Hilman <khilman@linaro.org>
+>>> ---
+>>>  drivers/mmc/core/sdio_bus.c | 4 ++--
+>>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
+>>> index 4fa8fef9..1df0fc6 100644
+>>> --- a/drivers/mmc/core/sdio_bus.c
+>>> +++ b/drivers/mmc/core/sdio_bus.c
+>>> @@ -315,7 +315,7 @@ int sdio_add_func(struct sdio_func *func)
+>>>      ret = device_add(&func->dev);
+>>>      if (ret == 0) {
+>>>              sdio_func_set_present(func);
+>>> -            acpi_dev_pm_attach(&func->dev, false);
+>>> +            dev_pm_domain_attach(&func->dev, false);
 >>
->> +#include <linux/clk.h>
->>   #include <linux/init.h>
->> -#include <linux/pm_runtime.h>
->>   #include <linux/pm_clock.h>
->> +#include <linux/pm_domain.h>
->>   #include <linux/platform_device.h>
->> -#include <linux/clk-provider.h>
->>   #include <linux/of.h>
->>
->> -#ifdef CONFIG_PM_RUNTIME
->> -static int keystone_pm_runtime_suspend(struct device *dev)
->> +#ifdef CONFIG_PM_GENERIC_DOMAINS
->> +
->> +struct keystone_domain {
->> + struct generic_pm_domain base;
->> + struct device *dev;
->> +};
+>> Admittedly it is not brought in by your change, but I am a bit worried
+>> about this code. In all other busses we attach power domain to a device
+>> before probing it (and detach if probe fails). Why here we only attach
+>> it to power domain after adding the device to the bus? If driver for the
+>> function has already been loaded the probe() would run without device
+>> being attached to a power domain...
 >
-> I think the name 'base' for this field leads to confusion later in the
-> code, since base usually means something else in drivers.  How about
-> 'genpd'?
+> Sorry for replying late...
+>
+> I see your concern, but it should be safe here. The dev_pm_domain_attach
+> does primarily two things(for ACPI based system): assign the pm_domian
+> field so that later system and runtime PM transitions we have proper
+> callbacks for this device; power on the device if needed.
+>
+> I was using Broadcom BCM43241 SDIO wifi card when developing the code,
+> it doesn't need the pm_domain set in its probe function and since the
+> SDIO wifi card is powered on after system boot, no power on is needed
+> either. That's why I added the attach function after device_add to save
+> a little code(detach if probe fails).
+>
+> Feel free to change the sequence if the current one is a bad one, I'm OK
+> with either case.
 
-Agree. I'll change it.
+Thanks for clarifying this. I plan to change the behaviour according
+to how other buses handles it.
 
-Thanks for your comments.
+Though, the patch will be a part another patchset that handles a
+related initialization problem for the generic PM domain. I will keep
+you guys on cc when I post it.
 
-Regards,
--grygorii
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Kind regards
+Uffe
