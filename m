@@ -1,84 +1,63 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v5 07/11] mmc: sdio: Convert to dev_pm_domain_attach|detach()
-Date: Mon, 13 Oct 2014 13:44:44 +0200
-Message-ID: <CAPDyKFpbZiCZMsLP+mq-1UWd1ifX1QZosv8UfnW__J26y+hupQ@mail.gmail.com>
-References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org>
-	<1411151264-16245-8-git-send-email-ulf.hansson@linaro.org>
-	<20141002002705.GA29177@dtor-ws>
-	<543B3D80.1010704@intel.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
+ to be held for duration of changing governors [v2]
+Date: Mon, 13 Oct 2014 07:52:10 -0400
+Message-ID: <543BBCEA.4080202@redhat.com>
+References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <CAKohpomk0GNJcGKxLX3HuaMBgPiSNzFp5BniyNgRbtoLqPm6bQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f174.google.com ([209.85.216.174]:58320 "EHLO
-	mail-qc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753744AbaJMLop (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Oct 2014 07:44:45 -0400
-Received: by mail-qc0-f174.google.com with SMTP id m20so4763456qcx.19
-        for <linux-pm@vger.kernel.org>; Mon, 13 Oct 2014 04:44:44 -0700 (PDT)
-In-Reply-To: <543B3D80.1010704@intel.com>
+Received: from mx1.redhat.com ([209.132.183.28]:14012 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752204AbaJMLwQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 13 Oct 2014 07:52:16 -0400
+In-Reply-To: <CAKohpomk0GNJcGKxLX3HuaMBgPiSNzFp5BniyNgRbtoLqPm6bQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>Mark Brown <br>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 13 October 2014 04:48, Aaron Lu <aaron.lu@intel.com> wrote:
-> On 10/02/2014 08:27 AM, Dmitry Torokhov wrote:
->> Hi Ulf,
+
+
+On 10/13/2014 06:43 AM, Viresh Kumar wrote:
+> On 1 August 2014 22:48, Stephen Boyd <sboyd@codeaurora.org> wrote:
+>> On 08/01/14 03:27, Prarit Bhargava wrote:
+>>>
+>>> Can you send me the test and the trace of the deadlock?  I'm not creating it with:
+>>>
 >>
->> On Fri, Sep 19, 2014 at 08:27:40PM +0200, Ulf Hansson wrote:
->>> Previously only the ACPI PM domain was supported by the sdio bus.
->>>
->>> Let's convert to the common attach/detach functions for PM domains,
->>> which currently means we are extending the support to include the
->>> generic PM domain as well.
->>>
->>> Cc: linux-mmc@vger.kernel.org
->>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>> Reviewed-by: Kevin Hilman <khilman@linaro.org>
->>> ---
->>>  drivers/mmc/core/sdio_bus.c | 4 ++--
->>>  1 file changed, 2 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
->>> index 4fa8fef9..1df0fc6 100644
->>> --- a/drivers/mmc/core/sdio_bus.c
->>> +++ b/drivers/mmc/core/sdio_bus.c
->>> @@ -315,7 +315,7 @@ int sdio_add_func(struct sdio_func *func)
->>>      ret = device_add(&func->dev);
->>>      if (ret == 0) {
->>>              sdio_func_set_present(func);
->>> -            acpi_dev_pm_attach(&func->dev, false);
->>> +            dev_pm_domain_attach(&func->dev, false);
+>> This was with conservative as the default, and switching to ondemand
 >>
->> Admittedly it is not brought in by your change, but I am a bit worried
->> about this code. In all other busses we attach power domain to a device
->> before probing it (and detach if probe fails). Why here we only attach
->> it to power domain after adding the device to the bus? If driver for the
->> function has already been loaded the probe() would run without device
->> being attached to a power domain...
->
-> Sorry for replying late...
->
-> I see your concern, but it should be safe here. The dev_pm_domain_attach
-> does primarily two things(for ACPI based system): assign the pm_domian
-> field so that later system and runtime PM transitions we have proper
-> callbacks for this device; power on the device if needed.
->
-> I was using Broadcom BCM43241 SDIO wifi card when developing the code,
-> it doesn't need the pm_domain set in its probe function and since the
-> SDIO wifi card is powered on after system boot, no power on is needed
-> either. That's why I added the attach function after device_add to save
-> a little code(detach if probe fails).
->
-> Feel free to change the sequence if the current one is a bad one, I'm OK
-> with either case.
+>> # cd /sys/devices/system/cpu/cpu2/cpufreq
+>> # ls
+>> affected_cpus                  scaling_available_governors
+>> conservative                   scaling_cur_freq
+>> cpuinfo_cur_freq               scaling_driver
+>> cpuinfo_max_freq               scaling_governor
+>> cpuinfo_min_freq               scaling_max_freq
+>> cpuinfo_transition_latency     scaling_min_freq
+>> related_cpus                   scaling_setspeed
+>> scaling_available_frequencies  stats
+>> # cat conservative/down_threshold
+>> 20
+>> # echo ondemand > scaling_governor
+>>
+>>  ======================================================
+>>  [ INFO: possible circular locking dependency detected ]
+>>  3.16.0-rc3-00039-ge1e38f124d87 #47 Not tainted
+>>  -------------------------------------------------------
+>>  sh/75 is trying to acquire lock:
+>>   (s_active#9){++++..}, at: [<c0358a94>] kernfs_remove_by_name_ns+0x3c/0x84
+> 
+> Can you please retry this on mainline? I wasn't able to reproduce it
+> now over 3.17.
+> I am trying this on Exynos b.L implementation..
 
-Thanks for clarifying this. I plan to change the behaviour according
-to how other buses handles it.
+I have 100% reproducibility on latest mainline.
 
-Though, the patch will be a part another patchset that handles a
-related initialization problem for the generic PM domain. I will keep
-you guys on cc when I post it.
+Viresh, please see my next post on the locking issues in cpufreq.
 
-Kind regards
-Uffe
+P.
+
+> 
