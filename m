@@ -1,63 +1,79 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem
- to be held for duration of changing governors [v2]
-Date: Mon, 13 Oct 2014 07:52:10 -0400
-Message-ID: <543BBCEA.4080202@redhat.com>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com> <2066166.pXm4lKLOID@vostro.rjw.lan> <53DA8389.80804@redhat.com> <1917362.abr2Y4p7vh@vostro.rjw.lan> <53DA8A41.2030601@redhat.com> <53DAA60B.6040802@codeaurora.org> <53DAA749.5080506@redhat.com> <53DAA95B.2040505@codeaurora.org> <53DAB038.3050007@redhat.com> <53DABFA6.6090503@codeaurora.org> <53DACA26.1000908@redhat.com> <53DAE592.2030909@codeaurora.org> <53DB6B81.6050400@redhat.com> <53DBCBE8.6010809@codeaurora.org> <CAKohpomk0GNJcGKxLX3HuaMBgPiSNzFp5BniyNgRbtoLqPm6bQ@mail.gmail.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Subject: Re: [PATCH] power/reset: at91-poweroff: Fix error handling and other
+ compiler warnings
+Date: Mon, 13 Oct 2014 13:00:43 +0200
+Message-ID: <20141013110043.GY19438@lukather>
+References: <1412988077-14751-1-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:14012 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752204AbaJMLwQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 Oct 2014 07:52:16 -0400
-In-Reply-To: <CAKohpomk0GNJcGKxLX3HuaMBgPiSNzFp5BniyNgRbtoLqPm6bQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="6749iDyxihQ87e9v"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1412988077-14751-1-git-send-email-linux@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
 
+--6749iDyxihQ87e9v
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 10/13/2014 06:43 AM, Viresh Kumar wrote:
-> On 1 August 2014 22:48, Stephen Boyd <sboyd@codeaurora.org> wrote:
->> On 08/01/14 03:27, Prarit Bhargava wrote:
->>>
->>> Can you send me the test and the trace of the deadlock?  I'm not creating it with:
->>>
->>
->> This was with conservative as the default, and switching to ondemand
->>
->> # cd /sys/devices/system/cpu/cpu2/cpufreq
->> # ls
->> affected_cpus                  scaling_available_governors
->> conservative                   scaling_cur_freq
->> cpuinfo_cur_freq               scaling_driver
->> cpuinfo_max_freq               scaling_governor
->> cpuinfo_min_freq               scaling_max_freq
->> cpuinfo_transition_latency     scaling_min_freq
->> related_cpus                   scaling_setspeed
->> scaling_available_frequencies  stats
->> # cat conservative/down_threshold
->> 20
->> # echo ondemand > scaling_governor
->>
->>  ======================================================
->>  [ INFO: possible circular locking dependency detected ]
->>  3.16.0-rc3-00039-ge1e38f124d87 #47 Not tainted
->>  -------------------------------------------------------
->>  sh/75 is trying to acquire lock:
->>   (s_active#9){++++..}, at: [<c0358a94>] kernfs_remove_by_name_ns+0x3c/0x84
-> 
-> Can you please retry this on mainline? I wasn't able to reproduce it
-> now over 3.17.
-> I am trying this on Exynos b.L implementation..
+On Fri, Oct 10, 2014 at 05:41:17PM -0700, Guenter Roeck wrote:
+> at91_poweroff_get_wakeup_mode can return a negative error code and should
+> therefore not return an enum type. Similar, its result should not be
+> assigned to an enum type. Otherwise, the returned value is never negative,
+> resulting in a compiler warning and a missed error condition, which in tu=
+rn
+> results in writing bad values into a chip register.
+>=20
+> Also fix other compiler warnings which can be easily avoided.
+>=20
+> drivers/power/reset/at91-poweroff.c:74:24:
+> 	warning: type qualifiers ignored on function return type
+> drivers/power/reset/at91-poweroff.c:74:24:
+> 	warning: no previous prototype for 'at91_poweroff_get_wakeup_mode'
+> drivers/power/reset/at91-poweroff.c:83:16:
+> 	warning: comparison between signed and unsigned integer expressions
+> drivers/power/reset/at91-poweroff.c:97:2:
+> 	warning: comparison of unsigned expression < 0 is always false
+>=20
+> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
+> Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 
-I have 100% reproducibility on latest mainline.
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
-Viresh, please see my next post on the locking issues in cpufreq.
+Thanks!
+Maxime
 
-P.
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
 
-> 
+--6749iDyxihQ87e9v
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUO7DbAAoJEBx+YmzsjxAgTLQP/17SGGVwATXs+XQYvnmiQuYJ
+hFkidwe00qYeRDHr1wZwCXlCtjF8PefMrhs/Yd9fP2JQhidgcQV8K6K/JshEk0Yd
+k9w+WM4i1FTsFsrS+ganoBYDUhBdnB1hdo/BluhWQS8L/62DDyw520c63/+nG5RC
+m4tNuQi0rr5GV7RuRd3O5AfCqI3/M24/NVecEcVko97luKT92QlPACZxX+emHU9H
+gQnBFXgT89AvaWGiQwNtoBFzc++P8UtuUvGwjDwvZvyND2NAxjr7tNZ7didaRWJO
+7NX45nCSGUJEA/+7pB5Nz1lBUqAp1wKAGCQ6e9dpyIkKIqn7L3rHIatKUiJCZKDa
+nxX2EAPN6JBOVGt0yyIal/hQh6k3qEITCkQ1KC/y4wGiV4TGHhSV1Wh+gxeBL3fJ
+GkmubNplmjZHgiT4onUOWcTOo/4XW50ajD4yZv3eVvZ8Vws3NDzR87Lc4M5MCxnZ
+Vj1ArghmQjQ5SJEUDXHWatHuSl7x+p/Sgw1uZ7V+EiulydF6YZXbSih6dGkGJ1D/
+PRAlXLPDVqCKIKaoXjM7273cOHkWwoPOvVvBtG9D2hvtdJ7OhmPUKdS3PqsR2gKm
+Ux/LVI45IlvsB5fJF+lL1rPsc9GoigCXWdHcW2S3Xds6dZPVpkLVgpSOllFxp2Ro
+0XD2f/jJIb9QX2nXuGcO
+=Mji5
+-----END PGP SIGNATURE-----
+
+--6749iDyxihQ87e9v--
