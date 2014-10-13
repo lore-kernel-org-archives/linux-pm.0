@@ -1,156 +1,68 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 2/5] cpufreq: intel_pstate: Reflect current no_turbo state correctly
-Date: Mon, 13 Oct 2014 08:37:41 -0700
-Message-ID: <1413214664-17687-2-git-send-email-dirk.j.brandewie@intel.com>
+Subject: [PATCH 5/5] intel_pstate: Correct BYT VID values.
+Date: Mon, 13 Oct 2014 08:37:44 -0700
+Message-ID: <1413214664-17687-5-git-send-email-dirk.j.brandewie@intel.com>
 References: <1413214664-17687-1-git-send-email-dirk.j.brandewie@intel.com>
-Return-path: <stable-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f179.google.com ([209.85.192.179]:60595 "EHLO
+	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754490AbaJMPiA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Oct 2014 11:38:00 -0400
 In-Reply-To: <1413214664-17687-1-git-send-email-dirk.j.brandewie@intel.com>
-Sender: stable-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, dirk.brandewie@gmail.com, Gabriele Mazzotta <gabriele.mzt@gmail.com>, stable@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>, stable@vger.kernel.org
 
-From: Gabriele Mazzotta <gabriele.mzt@gmail.com>
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Some BIOSes modify the state of MSR_IA32_MISC_ENABLE_TURBO_DISABLE
-based on the current power source for the system battery AC vs
-battery. Reflect the correct current state and ability to modify the
-no_turbo sysfs file based on current state of
-MSR_IA32_MISC_ENABLE_TURBO_DISABLE.
+Using a VID value that is not high enough for the requested P state can
+cause machine checks. Add a ceiling function to ensure calulated VIDs
+with fractional values are set to the next highest integer VID value.
 
-References: https://bugzilla.kernel.org/show_bug.cgi?id=83151
+The algorythm for calculating the non-trubo VID from the BIOS writers
+guide is:
+ vid_ratio = (vid_max - vid_min) / (max_pstate - min_pstate)
+ vid = ceiling(vid_min + (req_pstate - min_pstate) * vid_ratio)
+
 
 Cc: stable@vger.kernel.org
-Signed-off-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
 Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 48 +++++++++++++++++++++++++++++++-----------
- 1 file changed, 36 insertions(+), 12 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 0668b38..a85b262 100644
+index 77a87fa..6f6d588 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -138,6 +138,7 @@ struct perf_limits {
- 
- static struct perf_limits limits = {
- 	.no_turbo = 0,
-+	.turbo_disabled = 0,
- 	.max_perf_pct = 100,
- 	.max_perf = int_tofp(1),
- 	.min_perf_pct = 0,
-@@ -218,6 +219,18 @@ static inline void intel_pstate_reset_all_pid(void)
- 	}
+@@ -52,6 +52,17 @@ static inline int32_t div_fp(int32_t x, int32_t y)
+ 	return div_s64((int64_t)x << FRAC_BITS, y);
  }
  
-+static inline void update_turbo_state(void)
++static inline int ceiling_fp(int32_t x)
 +{
-+	u64 misc_en;
-+	struct cpudata *cpu;
++	int mask, ret;
 +
-+	cpu = all_cpu_data[0];
-+	rdmsrl(MSR_IA32_MISC_ENABLE, misc_en);
-+	limits.turbo_disabled =
-+		(misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ||
-+		 cpu->pstate.max_pstate == cpu->pstate.turbo_pstate);
-+}
-+
- /************************** debugfs begin ************************/
- static int pid_param_set(void *data, u64 val)
- {
-@@ -274,6 +287,20 @@ static void __init intel_pstate_debug_expose_params(void)
- 		return sprintf(buf, "%u\n", limits.object);		\
- 	}
- 
-+static ssize_t show_no_turbo(struct kobject *kobj,
-+			     struct attribute *attr, char *buf)
-+{
-+	ssize_t ret;
-+
-+	update_turbo_state();
-+	if (limits.turbo_disabled)
-+		ret = sprintf(buf, "%u\n", limits.turbo_disabled);
-+	else
-+		ret = sprintf(buf, "%u\n", limits.no_turbo);
-+
++	ret = fp_toint(x);
++	mask = (1 << FRAC_BITS) - 1;
++	if (x & mask)
++		ret += 1;
 +	return ret;
 +}
 +
- static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
- 			      const char *buf, size_t count)
- {
-@@ -283,11 +310,14 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
- 	ret = sscanf(buf, "%u", &input);
- 	if (ret != 1)
- 		return -EINVAL;
--	limits.no_turbo = clamp_t(int, input, 0 , 1);
-+
-+	update_turbo_state();
- 	if (limits.turbo_disabled) {
- 		pr_warn("Turbo disabled by BIOS or unavailable on processor\n");
--		limits.no_turbo = limits.turbo_disabled;
-+		return -EPERM;
- 	}
-+	limits.no_turbo = clamp_t(int, input, 0, 1);
-+
- 	return count;
- }
+ struct sample {
+ 	int32_t core_pct_busy;
+ 	u64 aperf;
+@@ -425,7 +436,7 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
+ 		cpudata->vid.ratio);
  
-@@ -323,7 +353,6 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
- 	return count;
- }
+ 	vid_fp = clamp_t(int32_t, vid_fp, cpudata->vid.min, cpudata->vid.max);
+-	vid = fp_toint(vid_fp);
++	vid = ceiling_fp(vid_fp);
  
--show_one(no_turbo, no_turbo);
- show_one(max_perf_pct, max_perf_pct);
- show_one(min_perf_pct, min_perf_pct);
- 
-@@ -501,7 +530,7 @@ static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
- 	int max_perf_adj;
- 	int min_perf;
- 
--	if (limits.no_turbo)
-+	if (limits.no_turbo || limits.turbo_disabled)
- 		max_perf = cpu->pstate.max_pstate;
- 
- 	max_perf_adj = fp_toint(mul_fp(int_tofp(max_perf), limits.max_perf));
-@@ -516,6 +545,8 @@ static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
- {
- 	int max_perf, min_perf;
- 
-+	update_turbo_state();
-+
- 	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
- 
- 	pstate = clamp_t(int, pstate, min_perf, max_perf);
-@@ -716,7 +747,7 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 		limits.min_perf = int_tofp(1);
- 		limits.max_perf_pct = 100;
- 		limits.max_perf = int_tofp(1);
--		limits.no_turbo = limits.turbo_disabled;
-+		limits.no_turbo = 0;
- 		return 0;
- 	}
- 	limits.min_perf_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
-@@ -759,7 +790,6 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct cpudata *cpu;
- 	int rc;
--	u64 misc_en;
- 
- 	rc = intel_pstate_init_cpu(policy->cpu);
- 	if (rc)
-@@ -767,12 +797,6 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
- 
- 	cpu = all_cpu_data[policy->cpu];
- 
--	rdmsrl(MSR_IA32_MISC_ENABLE, misc_en);
--	if (misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ||
--	    cpu->pstate.max_pstate == cpu->pstate.turbo_pstate) {
--		limits.turbo_disabled = 1;
--		limits.no_turbo = 1;
--	}
- 	if (limits.min_perf_pct == 100 && limits.max_perf_pct == 100)
- 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
- 	else
+ 	if (pstate > cpudata->pstate.max_pstate)
+ 		vid = cpudata->vid.turbo;
 -- 
 1.9.3
+
