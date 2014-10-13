@@ -1,34 +1,75 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH resend] cpufreq: dt: disable unsupported OPPs
-Date: Sun, 12 Oct 2014 22:27:42 +0200
-Message-ID: <48734362.lRa73hezrZ@vostro.rjw.lan>
-References: <1412090950-20835-1-git-send-email-l.stach@pengutronix.de> <6765047.8AI47Iyegn@vostro.rjw.lan> <CAKohpo=X0q22vv0QkLr2PAiaHuzuTRkzW1P6QbxVYAddDFRRTw@mail.gmail.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v5 07/11] mmc: sdio: Convert to dev_pm_domain_attach|detach()
+Date: Mon, 13 Oct 2014 10:48:32 +0800
+Message-ID: <543B3D80.1010704@intel.com>
+References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org> <1411151264-16245-8-git-send-email-ulf.hansson@linaro.org> <20141002002705.GA29177@dtor-ws>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57103 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752900AbaJLUHc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Oct 2014 16:07:32 -0400
-In-Reply-To: <CAKohpo=X0q22vv0QkLr2PAiaHuzuTRkzW1P6QbxVYAddDFRRTw@mail.gmail.com>
+Received: from mga09.intel.com ([134.134.136.24]:38071 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753967AbaJMCsk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 12 Oct 2014 22:48:40 -0400
+In-Reply-To: <20141002002705.GA29177@dtor-ws>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lucas Stach <l.stach@pengutronix.de>, Mark Brown <broonie@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>li
 
-On Thursday, October 09, 2014 09:13:54 AM Viresh Kumar wrote:
-> On 9 October 2014 04:06, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > OK, since this has been restored, what am I supposed to do with the
-> > $subject patch?
+On 10/02/2014 08:27 AM, Dmitry Torokhov wrote:
+> Hi Ulf,
 > 
-> Yeah, so the patch looked fine to me. If this can still be applied without
-> Lucas required to resend it, please add my Ack and apply it :)
+> On Fri, Sep 19, 2014 at 08:27:40PM +0200, Ulf Hansson wrote:
+>> Previously only the ACPI PM domain was supported by the sdio bus.
+>>
+>> Let's convert to the common attach/detach functions for PM domains,
+>> which currently means we are extending the support to include the
+>> generic PM domain as well.
+>>
+>> Cc: linux-mmc@vger.kernel.org
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> Reviewed-by: Kevin Hilman <khilman@linaro.org>
+>> ---
+>>  drivers/mmc/core/sdio_bus.c | 4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
+>> index 4fa8fef9..1df0fc6 100644
+>> --- a/drivers/mmc/core/sdio_bus.c
+>> +++ b/drivers/mmc/core/sdio_bus.c
+>> @@ -315,7 +315,7 @@ int sdio_add_func(struct sdio_func *func)
+>>  	ret = device_add(&func->dev);
+>>  	if (ret == 0) {
+>>  		sdio_func_set_present(func);
+>> -		acpi_dev_pm_attach(&func->dev, false);
+>> +		dev_pm_domain_attach(&func->dev, false);
+> 
+> Admittedly it is not brought in by your change, but I am a bit worried
+> about this code. In all other busses we attach power domain to a device
+> before probing it (and detach if probe fails). Why here we only attach
+> it to power domain after adding the device to the bus? If driver for the
+> function has already been loaded the probe() would run without device
+> being attached to a power domain...
 
-No, it didn't apply for me cleanly.
+Sorry for replying late...
 
-Lucas, can you please rebase this on top of the current Linus' tree and resend?
+I see your concern, but it should be safe here. The dev_pm_domain_attach
+does primarily two things(for ACPI based system): assign the pm_domian
+field so that later system and runtime PM transitions we have proper
+callbacks for this device; power on the device if needed.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+I was using Broadcom BCM43241 SDIO wifi card when developing the code,
+it doesn't need the pm_domain set in its probe function and since the
+SDIO wifi card is powered on after system boot, no power on is needed
+either. That's why I added the attach function after device_add to save
+a little code(detach if probe fails).
+
+Feel free to change the sequence if the current one is a bad one, I'm OK
+with either case.
+
+> 
+> Adding Aaron as he's the author of the original change.
+
+Thanks,
+Aaron
