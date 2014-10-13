@@ -1,55 +1,58 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH v9 1/5] thermal: rockchip: add driver for thermal
-Date: Mon, 13 Oct 2014 09:11:20 -0700
-Message-ID: <CAD=FV=XHe65wwf8Q9RA0ZDgb5oQLdyjuZDFy4mD01_t6G6WnHQ@mail.gmail.com>
-References: <1413012563-7690-1-git-send-email-caesar.wang@rock-chips.com>
-	<1413012563-7690-2-git-send-email-caesar.wang@rock-chips.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: re: Thermal: int340x_thermal: expose acpi thermal relationship tables
+Date: Mon, 13 Oct 2014 20:41:11 +0300
+Message-ID: <20141013174111.GA8390@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1413012563-7690-2-git-send-email-caesar.wang@rock-chips.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Caesar Wang <caesar.wang@rock-chips.com>
-Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Arnd Bergmann <arnd@arndb.de>, zyf <zyf@rock-chips.com>, linux-rockchip@lists.infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Eddie Cai <cf@rock-chips.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Derek Basehore <dbasehore@chromium.org>, Tao Huang <huangtao@rock-chips.com>, =?UTF-8?B?6ZmI5riQ6aOe?= <cjf@rock-chips.com>, Shunqian Zheng <zhengsq@rock-chips.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from aserp1040.oracle.com ([141.146.126.69]:23808 "EHLO
+	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752744AbaJMRlY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Oct 2014 13:41:24 -0400
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: jacob.jun.pan@linux.intel.com
+Cc: linux-pm@vger.kernel.org
 
-Caesar,
+Hello Jacob Pan,
 
-On Sat, Oct 11, 2014 at 12:29 AM, Caesar Wang
-<caesar.wang@rock-chips.com> wrote:
+The patch 52b1c69d7e3c: "Thermal: int340x_thermal: expose acpi
+thermal relationship tables" from Sep 3, 2014, leads to the following
+static checker warning:
 
-> +static void rk_tsadcv2_initialize(int reset_mode, int chn, void __iomem *regs,
-> +                                 unsigned long hw_shut_temp)
-> +{
-> +       u32 shutdown_value;
-> +
-> +       shutdown_value = rk_tsadcv2_temp_to_code(hw_shut_temp);
-> +
-> +       /* Enable measurements at ~ 10 Hz */
-> +       writel_relaxed(0 | TSADCV2_AUTO_TSHUT_POLARITY_HIGH, regs +
-> +                      TSADCV2_AUTO_CON);
-> +       writel_relaxed(TSADCV2_AUTO_PERIOD_TIME, regs + TSADCV2_AUTO_PERIOD);
-> +       writel_relaxed(TSADCV2_AUTO_PERIOD_HT_TIME, regs +
-> +                      TSADCV2_AUTO_PERIOD_HT);
-> +       writel_relaxed(shutdown_value, regs + TSADCV2_COMP_SHUT(chn));
-> +       writel_relaxed(TSADCV2_HIGHT_INT_DEBOUNCE_TIME, regs +
-> +                      TSADCV2_HIGHT_INT_DEBOUNCE);
-> +       writel_relaxed(TSADCV2_HIGHT_TSHUT_DEBOUNCE_TIME, regs +
-> +                      TSADCV2_HIGHT_TSHUT_DEBOUNCE);
-> +
-> +       if (reset_mode == GPIO)
-> +               writel_relaxed(TSADCV2_SHUT_2GPIO_SRC_EN(chn) |
-> +                              TSADCV2_INT_SRC_EN(chn), regs +
-> +                              TSADCV2_INT_EN);
-> +       else
-> +               writel_relaxed(TSADCV2_SHUT_2CRU_SRC_EN(chn) |
-> +                              TSADCV2_INT_SRC_EN(chn) , regs +
-> +                              TSADCV2_INT_EN);
-> +
-> +       writel_relaxed(TSADCV2_AUTO_SRC_EN(chn) | TSADCV2_AUTO_EN, regs +
-> +                      TSADCV2_AUTO_CON);
+	drivers/thermal/int340x_thermal/acpi_thermal_rel.c:327 acpi_thermal_rel_ioctl()
+	warn: passing casted pointer '&count' to 'acpi_parse_trt()' 64 vs 32.
 
-Aren't you clobbering the polarity here?
+drivers/thermal/int340x_thermal/acpi_thermal_rel.c
+   315  static long acpi_thermal_rel_ioctl(struct file *f, unsigned int cmd,
+   316                                     unsigned long __arg)
+   317  {
+   318          int ret = 0;
+   319          unsigned long length = 0;
+   320          unsigned long count = 0;
+   321          char __user *arg = (void __user *)__arg;
+   322          struct trt *trts;
+   323          struct art *arts;
+   324  
+   325          switch (cmd) {
+   326          case ACPI_THERMAL_GET_TRT_COUNT:
+   327                  ret = acpi_parse_trt(acpi_thermal_rel_handle, (int *)&count,
+                                                                       ^^^^^^^^^^^^
+The reason for the static checker warning is that this will not work on
+big endian 64 bit systems.  It's most likely not a concern but it's
+still pretty ugly.
 
-NOTE: I didn't do a full review of this driver, just noticed that
-while looking at another patch and figure'd I'd respond here, too.
+You could just make "count" an int and remove the casting.  The copy to
+user will still work if it's an int because the user pointer has been
+casted to unsigned long __user pointer.
+
+   328                                  &trts, false);
+   329                  kfree(trts);
+   330                  if (!ret)
+   331                          return put_user(count, (unsigned long __user *)__arg);
+   332                  return ret;
+   333          case ACPI_THERMAL_GET_TRT_LEN:
+
+regards,
+dan carpenter
