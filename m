@@ -1,75 +1,71 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v5 07/11] mmc: sdio: Convert to dev_pm_domain_attach|detach()
-Date: Mon, 13 Oct 2014 10:48:32 +0800
-Message-ID: <543B3D80.1010704@intel.com>
-References: <1411151264-16245-1-git-send-email-ulf.hansson@linaro.org> <1411151264-16245-8-git-send-email-ulf.hansson@linaro.org> <20141002002705.GA29177@dtor-ws>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v2 2/2] power: charger-manager: Avoid recursive thermal
+ get_temp call
+Date: Mon, 13 Oct 2014 06:01:18 +0000 (GMT)
+Message-ID: <326901692.426181413180076268.JavaMail.weblogic@epmlwas05a>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:38071 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753967AbaJMCsk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 12 Oct 2014 22:48:40 -0400
-In-Reply-To: <20141002002705.GA29177@dtor-ws>
+Received: from mailout3.samsung.com ([203.254.224.33]:42752 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbaJMGBV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Oct 2014 02:01:21 -0400
+Received: from epcpsbgr3.samsung.com
+ (u143.gpu120.samsung.co.kr [203.254.230.143])
+ by mailout3.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0NDD00L77CQ6V3D0@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 13 Oct 2014 15:01:18 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Chris Ball <chris@printf.net>, Russell King <linux@arm.linux.org.uk>li
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Anton Vorontsov <anton@enomsg.org>, =?euc-kr?Q?=C0=CC=C1=BE=C8=AD?= <jonghwa3.lee@samsung.com>, =?euc-kr?Q?=C3=D6=C2=F9=BF=EC?= <cw00.choi@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 10/02/2014 08:27 AM, Dmitry Torokhov wrote:
-> Hi Ulf,
-> 
-> On Fri, Sep 19, 2014 at 08:27:40PM +0200, Ulf Hansson wrote:
->> Previously only the ACPI PM domain was supported by the sdio bus.
->>
->> Let's convert to the common attach/detach functions for PM domains,
->> which currently means we are extending the support to include the
->> generic PM domain as well.
->>
->> Cc: linux-mmc@vger.kernel.org
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> Reviewed-by: Kevin Hilman <khilman@linaro.org>
->> ---
->>  drivers/mmc/core/sdio_bus.c | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
->> index 4fa8fef9..1df0fc6 100644
->> --- a/drivers/mmc/core/sdio_bus.c
->> +++ b/drivers/mmc/core/sdio_bus.c
->> @@ -315,7 +315,7 @@ int sdio_add_func(struct sdio_func *func)
->>  	ret = device_add(&func->dev);
->>  	if (ret == 0) {
->>  		sdio_func_set_present(func);
->> -		acpi_dev_pm_attach(&func->dev, false);
->> +		dev_pm_domain_attach(&func->dev, false);
-> 
-> Admittedly it is not brought in by your change, but I am a bit worried
-> about this code. In all other busses we attach power domain to a device
-> before probing it (and detach if probe fails). Why here we only attach
-> it to power domain after adding the device to the bus? If driver for the
-> function has already been loaded the probe() would run without device
-> being attached to a power domain...
+PiAgIA0KPiAgQWRkIGEgJ25vX3RoZXJtYWwnIHByb3BlcnR5IHRvIHRoZSBwb3dlciBzdXBwbHkg
+Y2xhc3MuIElmIHRydWUgdGhlbg0KPiB0aGVybWFsIHpvbmUgd29uJ3QgYmUgY3JlYXRlZCBmb3Ig
+dGhpcyBwb3dlciBzdXBwbHkgaW4NCj4gcG93ZXJfc3VwcGx5X3JlZ2lzdGVyKCkuDQo+IA0KPiBQ
+b3dlciBzdXBwbHkgZHJpdmVycyBtYXkgd2FudCB0byBzZXQgaXQgaWYgdGhleSBzdXBwb3J0DQo+
+IFBPV0VSX1NVUFBMWV9QUk9QX1RFTVAgYW5kIHRoZXkgYXJlIGZvcndhcmRpbmcgdGhpcyBnZXQg
+cHJvcGVydHkgY2FsbCB0bw0KPiBvdGhlciB0aGVybWFsIHpvbmUuDQo+IA0KPiBJZiB0aGV5IHdv
+bid0IHNldCBpdCBsb2NrZGVwIG1heSByZXBvcnQgZmFsc2UgcG9zaXRpdmUgZGVhZGxvY2sgZm9y
+DQo+IHRoZXJtYWwgem9uZSdzIG11dGV4IGJlY2F1c2Ugb2YgbmVzdGVkIGNhbGxzIHRvIHRoZXJt
+YWxfem9uZV9nZXRfdGVtcCgpLg0KPiBGaXJzdCBpcyB0aGUgY2FsbCB0byB0aGVybWFsX3pvbmVf
+Z2V0X3RlbXAoKSBvZiB0aGUgZHJpdmVyJ3MgdGhlcm1hbA0KPiB6b25lLiBUaGVybWFsIGNvcmUg
+Z2V0cyBQT1dFUl9TVVBQTFlfUFJPUF9URU1QIHByb3BlcnR5IGZyb20gdGhpcw0KPiBkcml2ZXIu
+IFRoZSBkcml2ZXIgdGhlbiBjYWxscyBvdGhlciB0aGVybWFsIHpvbmUgdGhlcm1hbF96b25lX2dl
+dF90ZW1wKCkNCj4gYW5kIHJldHVybnMgcmVzdWx0Lg0KPiANCj4gRXhhbXBsZSBvZiBzdWNoIGRy
+aXZlciBpcyBjaGFyZ2VyIG1hbmFnZXIuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBLcnp5c3p0b2Yg
+S296bG93c2tpIDxrLmtvemxvd3NraUBzYW1zdW5nLmNvbT4NCg0KRG8gd2UgcmVhbGx5IG5lZWQg
+dG8gYWRkIGFub3RoZXIgdmFyaWFibGUgaW4gdGhlIHBzeSBzdHJ1Y3Q/DQpJbiB0aGUgcHJldmlv
+dXMgdGhyZWFkLCBJIHRob3VnaHQgdGhhdCB3YXNuJ3QgbmVlZGVkLCB0aG91Z2guDQoNCg0KQ2hl
+ZXJzLA0KTXl1bmdKb28NCg0KPiANCj4gLS0tDQo+IA0KPiBDaGFuZ2VzIHNpbmNlIHYxOg0KPiAx
+LiBOZXcgcGF0Y2ggKG5ldyBpZGVhKS4NCj4gLS0tDQo+ICBkcml2ZXJzL3Bvd2VyL3Bvd2VyX3N1
+cHBseV9jb3JlLmMgfCAzICsrKw0KPiAgaW5jbHVkZS9saW51eC9wb3dlcl9zdXBwbHkuaCAgICAg
+IHwgNiArKysrKysNCj4gIDIgZmlsZXMgY2hhbmdlZCwgOSBpbnNlcnRpb25zKCspDQo+IA0KPiBk
+aWZmIC0tZ2l0IGEvZHJpdmVycy9wb3dlci9wb3dlcl9zdXBwbHlfY29yZS5jIGIvZHJpdmVycy9w
+b3dlci9wb3dlcl9zdXBwbHlfY29yZS5jDQo+IGluZGV4IDZjYjdmZTVjMDIyZC4uNjk0ZThjZGRk
+NWMxIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3Bvd2VyL3Bvd2VyX3N1cHBseV9jb3JlLmMNCj4g
+KysrIGIvZHJpdmVycy9wb3dlci9wb3dlcl9zdXBwbHlfY29yZS5jDQo+IEBAIC00MTcsNiArNDE3
+LDkgQEAgc3RhdGljIGludCBwc3lfcmVnaXN0ZXJfdGhlcm1hbChzdHJ1Y3QgcG93ZXJfc3VwcGx5
+ICpwc3kpDQo+ICB7DQo+ICAJaW50IGk7DQo+ICANCj4gKwlpZiAocHN5LT5ub190aGVybWFsKQ0K
+PiArCQlyZXR1cm4gMDsNCj4gKw0KPiAgCS8qIFJlZ2lzdGVyIGJhdHRlcnkgem9uZSBkZXZpY2Ug
+cHN5IHJlcG9ydHMgdGVtcGVyYXR1cmUgKi8NCj4gIAlmb3IgKGkgPSAwOyBpIDwgcHN5LT5udW1f
+cHJvcGVydGllczsgaSsrKSB7DQo+ICAJCWlmIChwc3ktPnByb3BlcnRpZXNbaV0gPT0gUE9XRVJf
+U1VQUExZX1BST1BfVEVNUCkgew0KPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9wb3dlcl9z
+dXBwbHkuaCBiL2luY2x1ZGUvbGludXgvcG93ZXJfc3VwcGx5LmgNCj4gaW5kZXggM2VkMDQ5Njcz
+MDIyLi4wOTZkYmNlZDAyYWMgMTAwNjQ0DQo+IC0tLSBhL2luY2x1ZGUvbGludXgvcG93ZXJfc3Vw
+cGx5LmgNCj4gKysrIGIvaW5jbHVkZS9saW51eC9wb3dlcl9zdXBwbHkuaA0KPiBAQCAtMjAwLDYg
+KzIwMCwxMiBAQCBzdHJ1Y3QgcG93ZXJfc3VwcGx5IHsNCj4gIAl2b2lkICgqZXh0ZXJuYWxfcG93
+ZXJfY2hhbmdlZCkoc3RydWN0IHBvd2VyX3N1cHBseSAqcHN5KTsNCj4gIAl2b2lkICgqc2V0X2No
+YXJnZWQpKHN0cnVjdCBwb3dlcl9zdXBwbHkgKnBzeSk7DQo+ICANCj4gKwkvKg0KPiArCSAqIFNl
+dCBpZiB0aGVybWFsIHpvbmUgc2hvdWxkIG5vdCBiZSBjcmVhdGVkIGZvciB0aGlzIHBvd2VyIHN1
+cHBseS4NCj4gKwkgKiBGb3IgZXhhbXBsZSBmb3IgdmlydHVhbCBzdXBwbGllcyBmb3J3YXJkaW5n
+IGNhbGxzIHRvIGFjdHVhbA0KPiArCSAqIHNlbnNvcnMgb3Igb3RoZXIgc3VwcGxpZXMuDQo+ICsJ
+ICovDQo+ICsJYm9vbCBub190aGVybWFsOw0KPiAgCS8qIEZvciBBUE0gZW11bGF0aW9uLCB0aGlu
+ayBsZWdhY3kgdXNlcnNwYWNlLiAqLw0KPiAgCWludCB1c2VfZm9yX2FwbTsNCj4gIA0KPiAtLSAN
+Cj4gMS45LjENCj4gDQo=
 
-Sorry for replying late...
 
-I see your concern, but it should be safe here. The dev_pm_domain_attach
-does primarily two things(for ACPI based system): assign the pm_domian
-field so that later system and runtime PM transitions we have proper
-callbacks for this device; power on the device if needed.
-
-I was using Broadcom BCM43241 SDIO wifi card when developing the code,
-it doesn't need the pm_domain set in its probe function and since the
-SDIO wifi card is powered on after system boot, no power on is needed
-either. That's why I added the attach function after device_add to save
-a little code(detach if probe fails).
-
-Feel free to change the sequence if the current one is a bad one, I'm OK
-with either case.
-
-> 
-> Adding Aaron as he's the author of the original change.
-
-Thanks,
-Aaron
