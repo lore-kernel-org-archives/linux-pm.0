@@ -1,66 +1,69 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq, store_scaling_governor requires policy->rwsem to
- be held for duration of changing governors [v2]
-Date: Mon, 13 Oct 2014 16:13:50 +0530
-Message-ID: <CAKohpomk0GNJcGKxLX3HuaMBgPiSNzFp5BniyNgRbtoLqPm6bQ@mail.gmail.com>
-References: <1406634362-811-1-git-send-email-prarit@redhat.com>
-	<2066166.pXm4lKLOID@vostro.rjw.lan>
-	<53DA8389.80804@redhat.com>
-	<1917362.abr2Y4p7vh@vostro.rjw.lan>
-	<53DA8A41.2030601@redhat.com>
-	<53DAA60B.6040802@codeaurora.org>
-	<53DAA749.5080506@redhat.com>
-	<53DAA95B.2040505@codeaurora.org>
-	<53DAB038.3050007@redhat.com>
-	<53DABFA6.6090503@codeaurora.org>
-	<53DACA26.1000908@redhat.com>
-	<53DAE592.2030909@codeaurora.org>
-	<53DB6B81.6050400@redhat.com>
-	<53DBCBE8.6010809@codeaurora.org>
+From: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v1 2/4] ARM: keystone: pm: switch to use generic pm domains
+Date: Mon, 13 Oct 2014 14:13:17 +0300
+Message-ID: <543BB3CD.7040001@ti.com>
+References: <1412001499-19369-1-git-send-email-grygorii.strashko@ti.com>	<1412001499-19369-3-git-send-email-grygorii.strashko@ti.com> <CAMAWPa-sKGu_o0CDLCk_uKofxwOjXiiFBedjEP=OhQFmo+ehCA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f50.google.com ([209.85.218.50]:52940 "EHLO
-	mail-oi0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753183AbaJMKnu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Oct 2014 06:43:50 -0400
-Received: by mail-oi0-f50.google.com with SMTP id i138so12570211oig.23
-        for <linux-pm@vger.kernel.org>; Mon, 13 Oct 2014 03:43:50 -0700 (PDT)
-In-Reply-To: <53DBCBE8.6010809@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAMAWPa-sKGu_o0CDLCk_uKofxwOjXiiFBedjEP=OhQFmo+ehCA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lenny Szubowicz <lszubowi@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 1 August 2014 22:48, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> On 08/01/14 03:27, Prarit Bhargava wrote:
+On 10/12/2014 03:56 PM, Kevin Hilman wrote:
+> Hi Grygorii,
+>
+> On 9/29/14 7:38 AM, Grygorii Strashko wrote:
+>> This patch switches Keystone 2 PM code to use Generic PM domains
+>> instead of PM clock domains because of the lack of DT support
+>> for the last.
 >>
->> Can you send me the test and the trace of the deadlock?  I'm not creating it with:
+>> Signed-off-by: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
+>
+> IMO, this approach is much better.
+>
+> One minor nit below...
+>
+>> diff --git a/arch/arm/mach-keystone/pm_domain.c b/arch/arm/mach-keystone/pm_domain.c
+>> index ca79dda..3eb5257 100644
+>> --- a/arch/arm/mach-keystone/pm_domain.c
+>> +++ b/arch/arm/mach-keystone/pm_domain.c
+>> @@ -12,69 +12,110 @@
+>>    * version 2, as published by the Free Software Foundation.
+>>    */
 >>
+>> +#include <linux/clk.h>
+>>   #include <linux/init.h>
+>> -#include <linux/pm_runtime.h>
+>>   #include <linux/pm_clock.h>
+>> +#include <linux/pm_domain.h>
+>>   #include <linux/platform_device.h>
+>> -#include <linux/clk-provider.h>
+>>   #include <linux/of.h>
+>>
+>> -#ifdef CONFIG_PM_RUNTIME
+>> -static int keystone_pm_runtime_suspend(struct device *dev)
+>> +#ifdef CONFIG_PM_GENERIC_DOMAINS
+>> +
+>> +struct keystone_domain {
+>> + struct generic_pm_domain base;
+>> + struct device *dev;
+>> +};
 >
-> This was with conservative as the default, and switching to ondemand
->
-> # cd /sys/devices/system/cpu/cpu2/cpufreq
-> # ls
-> affected_cpus                  scaling_available_governors
-> conservative                   scaling_cur_freq
-> cpuinfo_cur_freq               scaling_driver
-> cpuinfo_max_freq               scaling_governor
-> cpuinfo_min_freq               scaling_max_freq
-> cpuinfo_transition_latency     scaling_min_freq
-> related_cpus                   scaling_setspeed
-> scaling_available_frequencies  stats
-> # cat conservative/down_threshold
-> 20
-> # echo ondemand > scaling_governor
->
->  ======================================================
->  [ INFO: possible circular locking dependency detected ]
->  3.16.0-rc3-00039-ge1e38f124d87 #47 Not tainted
->  -------------------------------------------------------
->  sh/75 is trying to acquire lock:
->   (s_active#9){++++..}, at: [<c0358a94>] kernfs_remove_by_name_ns+0x3c/0x84
+> I think the name 'base' for this field leads to confusion later in the
+> code, since base usually means something else in drivers.  How about
+> 'genpd'?
 
-Can you please retry this on mainline? I wasn't able to reproduce it
-now over 3.17.
-I am trying this on Exynos b.L implementation..
+Agree. I'll change it.
+
+Thanks for your comments.
+
+Regards,
+-grygorii
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
