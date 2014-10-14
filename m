@@ -1,8 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH 8/8] power: charger-manager: Use power_supply_*() API for
+Subject: [PATCH 7/8] power: bq2415x_charger: Use power_supply_*() API for
  accessing function attrs
-Date: Tue, 14 Oct 2014 14:20:46 +0200
-Message-ID: <1413289246-31650-9-git-send-email-k.kozlowski@samsung.com>
+Date: Tue, 14 Oct 2014 14:20:45 +0200
+Message-ID: <1413289246-31650-8-git-send-email-k.kozlowski@samsung.com>
 References: <1413289246-31650-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1413289246-31650-1-git-send-email-k.kozlowski@samsung.com>
@@ -18,152 +18,22 @@ supply (.e.g by removing the driver). Replace:
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/power/charger-manager.c | 37 ++++++++++++++++++++-----------------
- 1 file changed, 20 insertions(+), 17 deletions(-)
+ drivers/power/bq2415x_charger.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index b5d272cb7c4a..9e01074d3169 100644
---- a/drivers/power/charger-manager.c
-+++ b/drivers/power/charger-manager.c
-@@ -112,8 +112,8 @@ static bool is_batt_present(struct charger_manager *cm)
- 		if (!psy)
- 			break;
+diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_charger.c
+index d9c457217b6a..81a3a78b92d8 100644
+--- a/drivers/power/bq2415x_charger.c
++++ b/drivers/power/bq2415x_charger.c
+@@ -816,7 +816,8 @@ static int bq2415x_notifier_call(struct notifier_block *nb,
  
--		ret = psy->get_property(psy,
--				POWER_SUPPLY_PROP_PRESENT, &val);
-+		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_PRESENT,
-+				&val);
- 		if (ret == 0 && val.intval)
- 			present = true;
- 		break;
-@@ -127,8 +127,8 @@ static bool is_batt_present(struct charger_manager *cm)
- 				continue;
- 			}
+ 	dev_dbg(bq->dev, "notifier call was called\n");
  
--			ret = psy->get_property(psy, POWER_SUPPLY_PROP_PRESENT,
--					&val);
-+			ret = power_supply_get_property(psy,
-+				POWER_SUPPLY_PROP_PRESENT, &val);
- 			if (ret == 0 && val.intval) {
- 				present = true;
- 				break;
-@@ -164,7 +164,8 @@ static bool is_ext_pwr_online(struct charger_manager *cm)
- 			continue;
- 		}
+-	ret = psy->get_property(psy, POWER_SUPPLY_PROP_CURRENT_MAX, &prop);
++	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_CURRENT_MAX,
++			&prop);
+ 	if (ret != 0)
+ 		return NOTIFY_OK;
  
--		ret = psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &val);
-+		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
-+				&val);
- 		if (ret == 0 && val.intval) {
- 			online = true;
- 			break;
-@@ -192,7 +193,7 @@ static int get_batt_uV(struct charger_manager *cm, int *uV)
- 	if (!fuel_gauge)
- 		return -ENODEV;
- 
--	ret = fuel_gauge->get_property(fuel_gauge,
-+	ret = power_supply_get_property(fuel_gauge,
- 				POWER_SUPPLY_PROP_VOLTAGE_NOW, &val);
- 	if (ret)
- 		return ret;
-@@ -232,7 +233,8 @@ static bool is_charging(struct charger_manager *cm)
- 		}
- 
- 		/* 2. The charger should be online (ext-power) */
--		ret = psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &val);
-+		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
-+				&val);
- 		if (ret) {
- 			dev_warn(cm->dev, "Cannot read ONLINE value from %s\n",
- 				 cm->desc->psy_charger_stat[i]);
-@@ -245,7 +247,8 @@ static bool is_charging(struct charger_manager *cm)
- 		 * 3. The charger should not be FULL, DISCHARGING,
- 		 * or NOT_CHARGING.
- 		 */
--		ret = psy->get_property(psy, POWER_SUPPLY_PROP_STATUS, &val);
-+		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_STATUS,
-+				&val);
- 		if (ret) {
- 			dev_warn(cm->dev, "Cannot read STATUS value from %s\n",
- 				 cm->desc->psy_charger_stat[i]);
-@@ -288,7 +291,7 @@ static bool is_full_charged(struct charger_manager *cm)
- 		val.intval = 0;
- 
- 		/* Not full if capacity of fuel gauge isn't full */
--		ret = fuel_gauge->get_property(fuel_gauge,
-+		ret = power_supply_get_property(fuel_gauge,
- 				POWER_SUPPLY_PROP_CHARGE_FULL, &val);
- 		if (!ret && val.intval > desc->fullbatt_full_capacity)
- 			return true;
-@@ -305,7 +308,7 @@ static bool is_full_charged(struct charger_manager *cm)
- 	if (desc->fullbatt_soc > 0) {
- 		val.intval = 0;
- 
--		ret = fuel_gauge->get_property(fuel_gauge,
-+		ret = power_supply_get_property(fuel_gauge,
- 				POWER_SUPPLY_PROP_CAPACITY, &val);
- 		if (!ret && val.intval >= desc->fullbatt_soc)
- 			return true;
-@@ -589,7 +592,7 @@ static int cm_get_battery_temperature_by_psy(struct charger_manager *cm,
- 	if (!fuel_gauge)
- 		return -ENODEV;
- 
--	return fuel_gauge->get_property(fuel_gauge,
-+	return power_supply_get_property(fuel_gauge,
- 				POWER_SUPPLY_PROP_TEMP,
- 				(union power_supply_propval *)temp);
- }
-@@ -909,7 +912,7 @@ static int charger_get_property(struct power_supply *psy,
- 			ret = -ENODEV;
- 			break;
- 		}
--		ret = fuel_gauge->get_property(fuel_gauge,
-+		ret = power_supply_get_property(fuel_gauge,
- 				POWER_SUPPLY_PROP_CURRENT_NOW, val);
- 		break;
- 	case POWER_SUPPLY_PROP_TEMP:
-@@ -928,7 +931,7 @@ static int charger_get_property(struct power_supply *psy,
- 			break;
- 		}
- 
--		ret = fuel_gauge->get_property(fuel_gauge,
-+		ret = power_supply_get_property(fuel_gauge,
- 					POWER_SUPPLY_PROP_CAPACITY, val);
- 		if (ret)
- 			break;
-@@ -984,7 +987,7 @@ static int charger_get_property(struct power_supply *psy,
- 				break;
- 			}
- 
--			ret = fuel_gauge->get_property(fuel_gauge,
-+			ret = power_supply_get_property(fuel_gauge,
- 						POWER_SUPPLY_PROP_CHARGE_NOW,
- 						val);
- 			if (ret) {
-@@ -1553,7 +1556,7 @@ static int cm_init_thermal_data(struct charger_manager *cm,
- 	int ret;
- 
- 	/* Verify whether fuel gauge provides battery temperature */
--	ret = fuel_gauge->get_property(fuel_gauge,
-+	ret = power_supply_get_property(fuel_gauge,
- 					POWER_SUPPLY_PROP_TEMP, &val);
- 
- 	if (!ret) {
-@@ -1845,13 +1848,13 @@ static int charger_manager_probe(struct platform_device *pdev)
- 	cm->charger_psy.num_properties = psy_default.num_properties;
- 
- 	/* Find which optional psy-properties are available */
--	if (!fuel_gauge->get_property(fuel_gauge,
-+	if (!power_supply_get_property(fuel_gauge,
- 					  POWER_SUPPLY_PROP_CHARGE_NOW, &val)) {
- 		cm->charger_psy.properties[cm->charger_psy.num_properties] =
- 				POWER_SUPPLY_PROP_CHARGE_NOW;
- 		cm->charger_psy.num_properties++;
- 	}
--	if (!fuel_gauge->get_property(fuel_gauge,
-+	if (!power_supply_get_property(fuel_gauge,
- 					  POWER_SUPPLY_PROP_CURRENT_NOW,
- 					  &val)) {
- 		cm->charger_psy.properties[cm->charger_psy.num_properties] =
 -- 
 1.9.1
