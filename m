@@ -1,111 +1,47 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [PATCH] cpuidle/powernv: Populate cpuidle state details by querying
- the device-tree
-Date: Tue, 14 Oct 2014 13:23:00 +0530
-Message-ID: <20141014075259.11810.50996.stgit@preeti.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:59958 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754201AbaJNHxO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 Oct 2014 03:53:14 -0400
-Received: from /spool/local
-	by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Tue, 14 Oct 2014 03:53:13 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com [9.57.198.29])
-	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id CBEEF6E8046
-	for <linux-pm@vger.kernel.org>; Tue, 14 Oct 2014 03:41:54 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id s9E7rA6o7799262
-	for <linux-pm@vger.kernel.org>; Tue, 14 Oct 2014 07:53:10 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s9E7r9ib017297
-	for <linux-pm@vger.kernel.org>; Tue, 14 Oct 2014 03:53:10 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [RFT PATCH] power: bq2415x_charger: Properly handle ENODEV from
+ power_supply_get_by_phandle
+Date: Tue, 14 Oct 2014 10:32:53 +0200
+Message-ID: <1413275573-23014-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: mpe@ellerman.id.au, rjw@rjwysocki.net, benh@kernel.crashing.org
-Cc: shreyas@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
 
-We hard code the metrics relevant for cpuidle states in the kernel today.
-Instead pick them up from the device tree so that they remain relevant
-and updated for the system that the kernel is running on.
+The power_supply_get_by_phandle() on error returns ENODEV or NULL.
+The driver later expects obtained pointer to power supply to be
+valid or NULL. If it is not NULL then it dereferences it in
+bq2415x_notifier_call() which would lead to dereferencing ENODEV-value
+pointer.
 
-Cc: linux-pm@vger.kernel.org
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: devicetree@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+Properly handle the power_supply_get_by_phandle() error case and abort probe.
+
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Fixes: faffd234cf85 ("bq2415x_charger: Add DT support")
+Cc: <stable@vger.kernel.org>
 ---
+ drivers/power/bq2415x_charger.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
- drivers/cpuidle/cpuidle-powernv.c |   27 ++++++++++++++++++++++-----
- 1 file changed, 22 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index fa79392..b57681d 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -165,7 +165,8 @@ static int powernv_add_idle_states(void)
- 	int nr_idle_states = 1; /* Snooze */
- 	int dt_idle_states;
- 	const __be32 *idle_state_flags;
--	u32 len_flags, flags;
-+	const __be32 *idle_state_latency;
-+	u32 len_flags, flags, latency_ns;
- 	int i;
+diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_charger.c
+index e384844a1ae1..d9c457217b6a 100644
+--- a/drivers/power/bq2415x_charger.c
++++ b/drivers/power/bq2415x_charger.c
+@@ -1579,8 +1579,13 @@ static int bq2415x_probe(struct i2c_client *client,
+ 	if (np) {
+ 		bq->notify_psy = power_supply_get_by_phandle(np, "ti,usb-charger-detection");
  
- 	/* Currently we have snooze statically defined */
-@@ -182,18 +183,32 @@ static int powernv_add_idle_states(void)
- 		return nr_idle_states;
+-		if (!bq->notify_psy)
++		if (!bq->notify_psy) {
+ 			return -EPROBE_DEFER;
++		} else if (IS_ERR(bq->notify_psy)) {
++			dev_err(&client->dev, "no 'ti,usb-charger-detection' property\n");
++			ret = PTR_ERR(bq->notify_psy);
++			goto error_2;
++		}
  	}
- 
-+	idle_state_latency = of_get_property(power_mgt,
-+			"ibm,cpu-idle-state-latencies-ns", NULL);
-+	if (!idle_state_latency) {
-+		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
-+		return nr_idle_states;
-+	}
-+
- 	dt_idle_states = len_flags / sizeof(u32);
- 
- 	for (i = 0; i < dt_idle_states; i++) {
- 
- 		flags = be32_to_cpu(idle_state_flags[i]);
-+
-+		/* Cpuidle accepts exit_latency in us and we estimate
-+		 * target residency to be 10x exit_latency
-+		 */
-+		latency_ns = be32_to_cpu(idle_state_latency[i]);
- 		if (flags & IDLE_USE_INST_NAP) {
- 			/* Add NAP state */
- 			strcpy(powernv_states[nr_idle_states].name, "Nap");
- 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
- 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
--			powernv_states[nr_idle_states].exit_latency = 10;
--			powernv_states[nr_idle_states].target_residency = 100;
-+			powernv_states[nr_idle_states].exit_latency =
-+					((unsigned int)latency_ns) / 1000;
-+			powernv_states[nr_idle_states].target_residency =
-+					((unsigned int)latency_ns / 100);
- 			powernv_states[nr_idle_states].enter = &nap_loop;
- 			nr_idle_states++;
- 		}
-@@ -204,8 +219,10 @@ static int powernv_add_idle_states(void)
- 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
- 			powernv_states[nr_idle_states].flags =
- 				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
--			powernv_states[nr_idle_states].exit_latency = 300;
--			powernv_states[nr_idle_states].target_residency = 1000000;
-+			powernv_states[nr_idle_states].exit_latency =
-+					((unsigned int)latency_ns) / 1000;
-+			powernv_states[nr_idle_states].target_residency =
-+					((unsigned int)latency_ns / 100);
- 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
- 			nr_idle_states++;
- 		}
-
+ 	else if (pdata->notify_device)
+ 		bq->notify_psy = power_supply_get_by_name(pdata->notify_device);
+-- 
+1.9.1
