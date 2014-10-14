@@ -1,14 +1,25 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH 6/8] power: apm_power: Use power_supply_*() API for accessing
+Subject: [PATCH 5/8] mfd: ab8500: Use power_supply_*() API for accessing
  function attrs
-Date: Tue, 14 Oct 2014 14:20:44 +0200
-Message-ID: <1413289246-31650-7-git-send-email-k.kozlowski@samsung.com>
+Date: Tue, 14 Oct 2014 14:20:43 +0200
+Message-ID: <1413289246-31650-6-git-send-email-k.kozlowski@samsung.com>
 References: <1413289246-31650-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-reply-to: <1413289246-31650-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Anton Vorontsov <anton@enomsg.org>, Guenter Roeck <linux@roeck-us.net>, Pavel Machek <pavel@ucw.cz>, Myungjoo Ham <myungjoo.ham@samsung.com>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Anton Vorontsov <anton@enomsg.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Pavel Machek <pavel@ucw.cz>, Guenter Roeck <linux@roeck-us.net>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
 Replace direct calls to power supply function attributes with wrappers.
@@ -18,25 +29,33 @@ supply (.e.g by removing the driver). Replace:
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/power/apm_power.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/mfd/ab8500-sysctrl.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/power/apm_power.c b/drivers/power/apm_power.c
-index 39763015b360..2206f9ff6488 100644
---- a/drivers/power/apm_power.c
-+++ b/drivers/power/apm_power.c
-@@ -15,10 +15,10 @@
- #include <linux/apm-emulation.h>
+diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctrl.c
+index 8e0dae59844d..93b2d2c32ca3 100644
+--- a/drivers/mfd/ab8500-sysctrl.c
++++ b/drivers/mfd/ab8500-sysctrl.c
+@@ -49,7 +49,8 @@ static void ab8500_power_off(void)
+ 		if (!psy)
+ 			continue;
  
+-		ret = psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &val);
++		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
++				&val);
  
--#define PSY_PROP(psy, prop, val) (psy->get_property(psy, \
-+#define PSY_PROP(psy, prop, val) (power_supply_get_property(psy, \
- 			 POWER_SUPPLY_PROP_##prop, val))
- 
--#define _MPSY_PROP(prop, val) (main_battery->get_property(main_battery, \
-+#define _MPSY_PROP(prop, val) (power_supply_get_property(main_battery, \
- 							 prop, val))
- 
- #define MPSY_PROP(prop, val) _MPSY_PROP(POWER_SUPPLY_PROP_##prop, val)
+ 		if (!ret && val.intval) {
+ 			charger_present = true;
+@@ -63,8 +64,8 @@ static void ab8500_power_off(void)
+ 	/* Check if battery is known */
+ 	psy = power_supply_get_by_name("ab8500_btemp");
+ 	if (psy) {
+-		ret = psy->get_property(psy, POWER_SUPPLY_PROP_TECHNOLOGY,
+-					&val);
++		ret = power_supply_get_property(psy,
++				POWER_SUPPLY_PROP_TECHNOLOGY, &val);
+ 		if (!ret && val.intval != POWER_SUPPLY_TECHNOLOGY_UNKNOWN) {
+ 			printk(KERN_INFO
+ 			       "Charger \"%s\" is connected with known battery."
 -- 
 1.9.1
