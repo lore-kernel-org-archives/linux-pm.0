@@ -1,63 +1,48 @@
-From: "Elliott, Robert (Server Storage)" <Elliott@hp.com>
-Subject: RE: Locking issues with cpufreq and sysfs
-Date: Tue, 14 Oct 2014 19:18:25 +0000
-Message-ID: <94D0CD8314A33A4D9D801C0FE68B402958CF2E38@G4W3202.americas.hpqcorp.net>
-References: <543BCF9A.1060603@redhat.com>
- <CAKohpokBpQ9zhSU3bJQ9pVv68s6cFg8TNsqi+sJK8V1OQUTWzA@mail.gmail.com>
- <543D6A5C.1060809@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: James Geboski <jgeboski@gmail.com>
+Subject: [PATCH] cpufreq: allow powersave governor as the default without expert mode
+Date: Tue, 14 Oct 2014 17:38:09 -0400
+Message-ID: <1413322689-6195-1-git-send-email-jgeboski@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from g4t3427.houston.hp.com ([15.201.208.55]:33959 "EHLO
-	g4t3427.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755122AbaJNTTe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Oct 2014 15:19:34 -0400
-In-Reply-To: <543D6A5C.1060809@redhat.com>
-Content-Language: en-US
+Received: from mail-qc0-f170.google.com ([209.85.216.170]:32821 "EHLO
+	mail-qc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750971AbaJNVjs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Oct 2014 17:39:48 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, =?utf-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, James Geboski <jgeboski@gmail.com>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgta2VybmVsLW93
-bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LWtlcm5lbC0NCj4gb3duZXJAdmdlci5r
-ZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YgUHJhcml0IEJoYXJnYXZhDQo+IFNlbnQ6IFR1ZXNkYXks
-IDE0IE9jdG9iZXIsIDIwMTQgMToyNCBQTQ0KPiBUbzogVmlyZXNoIEt1bWFyDQo+IENjOiBTYXJh
-dmFuYSBLYW5uYW47IFJhZmFlbCBKLiBXeXNvY2tpOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7
-IExpbnV4DQo+IEtlcm5lbDsgUm9iZXJ0IFNjaMO2bmUNCj4gU3ViamVjdDogUmU6IExvY2tpbmcg
-aXNzdWVzIHdpdGggY3B1ZnJlcSBhbmQgc3lzZnMNCj4gDQo+IE9uIDEwLzE0LzIwMTQgMDM6MTAg
-QU0sIFZpcmVzaCBLdW1hciB3cm90ZToNCj4gPiBPbiAxMyBPY3RvYmVyIDIwMTQgMTg6NDEsIFBy
-YXJpdCBCaGFyZ2F2YSA8cHJhcml0QHJlZGhhdC5jb20+IHdyb3RlOg0KPiA+Pg0KPiA+PiBUaGUg
-bG9ja2luZyBpcyBpbnN1ZmZpY2llbnQgaGVyZSwgVmlyZXNoLiAgSSBubyBsb25nZXIgYmVsaWV2
-ZSB0aGF0IGZpeGVzDQo+ID4+IHRvIHRoaXMgbG9ja2luZyBzY2hlbWUgYXJlIHRoZSByaWdodCB3
-YXkgdG8gbW92ZSBmb3J3YXJkIGhlcmUuICBJJ20NCj4gd29uZGVyaW5nDQo+ID4+IGlmIHdlIGNh
-biBsb29rIGF0IG90aGVyIGFsdGVybmF0aXZlcyBzdWNoIGFzIG1haW50YWluaW5nIGEgcmVmY291
-bnQgb3INCj4gPj4gcGVyaGFwcyB1c2luZyBhIHF1ZXVpbmcgbWVjaGFuaXNtIGZvciBnb3Zlcm5v
-ciBhbmQgcG9saWN5IHJlbGF0ZWQgY2hhbmdlcy4NCj4gPj4NCi4uLg0KPiBTbyBJJ20gcHJvcG9z
-aW5nIHRoYXQgd2UgbW92ZSB0byBhIHNpbmdsZSB0aHJlYWRlZCByZWFkL3dyaXRlIHVzaW5nLCBp
-Zg0KPiBwb3NzaWJsZSwgYSBzaW5nbGUgcG9saWN5IGxvY2sgZm9yIG5vdy4gIFdlIG1pZ2h0IHRy
-YW5zaXRpb24gdGhpcyBiYWNrIHRvIGENCj4gcndzZW0gbGF0ZXIgb24sIGhvd2V2ZXIsIGZvciB0
-aGUgZmlyc3QgYXR0ZW1wdCBhdCBjbGVhbmluZyB0aGlzIHVwIEkgdGhpbmsgd2UNCj4gc2hvdWxk
-IGp1c3Qgc3RpY2sgd2l0aCBhIHNpbXBsZSBsb2NrLiAgSW4gZG9pbmcgdGhhdCwgSU1PIHdlIHJl
-bW92ZQ0KPiBjcHVmcmVxX3J3c2VtOiBwcm90ZWN0cyB0aGUgZHJpdmVyIGZyb20gYmVpbmcgdW5s
-b2FkZWQNCj4gY3B1ZnJlcV9nb3Zlcm5vcl9sb2NrOiBwcm90ZWN0cyB0aGUgY3VycmVudCBnb3Zl
-cm5vcg0KPiBlYWNoIHBvbGljeSBoYXMgYSByd3NlbSAocG9saWN5LT5yd3NlbSk6IHByb3RlY3Rz
-IHRoZSBjcHVmcmVxX3BvbGljeSBzdHJ1Y3QNCj4gDQo+IGFuZCBwb3RlbnRpYWxseQ0KPiBjcHVm
-cmVxX2RyaXZlcl9sb2NrOiBwcm90ZWN0cyB0aGUgY3B1ZnJlcV9jcHVfZGF0YSBhcnJheSBhbmQg
-Y3B1ZnJlcV9kcml2ZXItDQo+ID5ib29zdA0KPiANCj4gQWZ0ZXIgbG9va2luZyBhdCB0aGUgd2F5
-IHRoZSBjb2RlIHdvdWxkIGJlIHN0cnVjdHVyZWQsIEknbSB3b25kZXJpbmcgaWYNCj4gY3B1ZnJl
-cV9nb3Zlcm5vcl9tdXRleDogcHJvdGVjdHMgdGhlIGNwdWZyZXFfZ292ZXJub3JfbGlzdA0KPiBp
-cyBvdmVya2lsbC4gIFRoZSBsb2FkaW5nIG9mIGEgbW9kdWxlIHNob3VsZCBiZSBhdG9taWMgcmVs
-YXRpdmUgdG8gdGhlDQo+IGNwdWZyZXEgY29kZSwgc28gdGhpcyBsb2NrIG1heSBub3QgYmUgcmVx
-dWlyZWQuICAoQWRtaXR0ZWRseSBJIGhhdmVuJ3QNCj4gdGVzdGVkIHRoYXQuLi4pDQo+IA0KPiBU
-aGF0IHdvdWxkIGxlYXZlOg0KPiBnbG9iYWxfa29ial9sb2NrOiBwcm90ZWN0cyB0aGUgImNwdWZy
-ZXEiIGtvYmplY3QNCj4gZWFjaCBwb2xpY3kgaGFzIGEgdHJhbnNpdGlvbl9sb2NrIChwb2xpY3kt
-PnRyYW5zaXRpb24pOiBzeW5jaHJvbml6ZXMNCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBmcmVxdWVuY3kgdHJhbnNpdGlvbnMNCj4gYW5k
-IGEgbmV3IGxvY2ssIHBlcmhhcHMgY2FsbGVkIHBvbGljeS0+bG9jaywgdG8gc2VyaWFsaXplIGFs
-bCBldmVudHMuDQo+IA0KDQpQbGVhc2Uga2VlcCBwZXJmb3JtYW5jZSBpbiBtaW5kIHRvby4gIGNw
-dWZyZXFfZ292ZXJub3JfbG9jaw0KY29udGVudGlvbiBpcyBhIGJpdCBvZiBhbiBpc3N1ZSB3aXRo
-IGhlYXZ5IElPIHdvcmtsb2Fkcw0KYXMgZGVzY3JpYmVkIGluOg0KCWh0dHA6Ly9tYXJjLmluZm8v
-P2w9bGludXgtcG0mbT0xNDA5MjQwNTE1MDM4Mjcmdz0yDQoNCg0KLS0tDQpSb2IgRWxsaW90dCAg
-ICBIUCBTZXJ2ZXIgU3RvcmFnZQ0KDQoNCg0K
+The intel_pstate driver only supports the performance and the powersave
+governors. With the performance governor ensuring the highest possible
+performance settings, userspace tools fail to make any lasting changes.
+In order to allow userspace tools to make modifications to the settings,
+the powersave governor must be in use. This makes having the powersave
+governor as the default convenient for systems where the intel_pstate
+driver is being employed. Having to enable expert mode in the kernel
+configuration is just a headache for such a trivial task.
+
+This patch applies to all kernel versions 2.6.38 or greater after the
+migration from CONFIG_EMBEDDED to CONFIG_EXPERT (6a108a14fa35). Most
+importantly, this applies to kernel versions 3.9 or greater when the
+intel_pstate driver was introduced.
+
+Signed-off-by: James Geboski <jgeboski@gmail.com>
+---
+ drivers/cpufreq/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 3489f8f..73df7db 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -63,7 +63,6 @@ config CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+ 
+ config CPU_FREQ_DEFAULT_GOV_POWERSAVE
+ 	bool "powersave"
+-	depends on EXPERT
+ 	select CPU_FREQ_GOV_POWERSAVE
+ 	help
+ 	  Use the CPUFreq governor 'powersave' as default. This sets
+-- 
+2.1.2
+
