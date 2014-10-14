@@ -1,86 +1,93 @@
 From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH v10 2/5] dt-bindings: document Rockchip thermal
-Date: Wed, 15 Oct 2014 01:10:05 +0800
-Message-ID: <1413306608-11498-3-git-send-email-caesar.wang@rock-chips.com>
+Subject: [PATCH v10 3/5] ARM: dts: add RK3288 Thermal data
+Date: Wed, 15 Oct 2014 01:10:06 +0800
+Message-ID: <1413306608-11498-4-git-send-email-caesar.wang@rock-chips.com>
 References: <1413306608-11498-1-git-send-email-caesar.wang@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from regular1.263xmail.com ([211.150.99.130]:35802 "EHLO
+	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754779AbaJNRK1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Oct 2014 13:10:27 -0400
 In-Reply-To: <1413306608-11498-1-git-send-email-caesar.wang@rock-chips.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, arnd@arndb.de
-Cc: huangtao@rock-chips.com, devicetree@vger.kernel.org, dbasehore@chromium.org, dmitry.torokhov@gmail.com, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, dianders@chromium.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, Caesar Wang <caesar.wang@rock-chips.com>, cf@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, linux-arm-kernel@lists.infradead.org, zyf@rock-chips.com
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, arnd@arndb.de
+Cc: zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, Caesar Wang <caesar.wang@rock-chips.com>
 
-This add the necessary binding documentation for the thermal
-found on Rockchip SoCs
+This patch changes a dtsi file to contain the thermal data
+on RK3288 and later SoCs. This data will
+enable a thermal shutdown over 125C.
 
-Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
 Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
 ---
- .../bindings/thermal/rockchip-thermal.txt          | 45 ++++++++++++++++++++++
- 1 file changed, 45 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+ arch/arm/boot/dts/rk3288-thermal.dtsi | 57 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+ create mode 100644 arch/arm/boot/dts/rk3288-thermal.dtsi
 
-diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+diff --git a/arch/arm/boot/dts/rk3288-thermal.dtsi b/arch/arm/boot/dts/rk3288-thermal.dtsi
 new file mode 100644
-index 0000000..d5ff410
+index 0000000..c68c090
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-@@ -0,0 +1,45 @@
-+* Temperature Sensor ADC (TSADC) on rockchip SoCs
++++ b/arch/arm/boot/dts/rk3288-thermal.dtsi
+@@ -0,0 +1,57 @@
++/*
++ * Device Tree Source for RK3288 SoC thermal
++ *
++ * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2.  This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
 +
-+Required properties:
-+- compatible: "rockchip,rk3288-tsadc"
-+- reg: physical base address of the controller and length of memory mapped
-+       region.
-+- interrupts: The interrupt number to the cpu. The interrupt specifier format
-+	      depends on the interrupt controller.
-+- clocks: Must contain an entry for each entry in clock-names.
-+- clock-names: Shall be "tsadc" for the converter-clock, and "apb_pclk" for
-+	       the peripheral clock.
-+- #thermal-sensor-cells: Should be 1. See ./thermal.txt for a description.
++#include <dt-bindings/thermal/thermal.h>
 +
-+Exiample:
-+tsadc: tsadc@ff280000 {
-+	compatible = "rockchip,rk3288-tsadc";
-+	reg = <0xff280000 0x100>;
-+	interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-+	clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-+	clock-names = "tsadc", "apb_pclk";
++reserve_thermal: reserve_thermal {
++	polling-delay-passive = <500>; /* milliseconds */
++	polling-delay = <1000>; /* milliseconds */
++
++			/* sensor	ID */
++	thermal-sensors = <&tsadc	0>;
++
 +};
 +
-+Example: referring to thermal sensors:
-+thermal-zones {
-+       cpu_thermal: cpu_thermal {
-+	        polling-delay-passive = <500>; /* milliseconds */
-+	        polling-delay = <1000>; /* milliseconds */
++cpu_thermal: cpu_thermal {
++	polling-delay-passive = <500>; /* milliseconds */
++	polling-delay = <1000>; /* milliseconds */
 +
-+			        /* sensor	ID */
-+	        thermal-sensors = <&tsadc	1>;
++			/* sensor	ID */
++	thermal-sensors = <&tsadc	1>;
 +
-+	        trips {
-+		        cpu_alert0: cpu_alert {
-+			        temperature = <80000>; /* millicelsius */
-+			        hysteresis = <2000>; /* millicelsius */
-+			        type = "passive";
-+		        };
-+		        cpu_crit: cpu_crit {
-+			        temperature = <125000>; /* millicelsius */
-+			        hysteresis = <2000>; /* millicelsius */
-+			    type = "critical";
-+		        };
-+	        };
-+       };
++	trips {
++		cpu_alert0: cpu_alert0 {
++			temperature = <80000>; /* millicelsius */
++			hysteresis = <2000>; /* millicelsius */
++			type = "passive";
++		};
++		cpu_crit: cpu_crit {
++			temperature = <125000>; /* millicelsius */
++			hysteresis = <2000>; /* millicelsius */
++			type = "critical";
++		};
++	};
++};
++
++gpu_thermal: gpu_thermal {
++	polling-delay-passive = <500>; /* milliseconds */
++	polling-delay = <1000>; /* milliseconds */
++
++			/* sensor	ID */
++	thermal-sensors = <&tsadc	2>;
++
++	trips {
++		gpu_crit: gpu_crit {
++			temperature = <125000>; /* millicelsius */
++			hysteresis = <2000>; /* millicelsius */
++			type = "critical";
++		};
++	};
 +};
 -- 
 1.9.1
+
+
