@@ -1,101 +1,63 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: Locking issues with cpufreq and sysfs
-Date: Tue, 14 Oct 2014 14:24:28 -0400
-Message-ID: <543D6A5C.1060809@redhat.com>
-References: <543BCF9A.1060603@redhat.com> <CAKohpokBpQ9zhSU3bJQ9pVv68s6cFg8TNsqi+sJK8V1OQUTWzA@mail.gmail.com>
+From: "Elliott, Robert (Server Storage)" <Elliott@hp.com>
+Subject: RE: Locking issues with cpufreq and sysfs
+Date: Tue, 14 Oct 2014 19:18:25 +0000
+Message-ID: <94D0CD8314A33A4D9D801C0FE68B402958CF2E38@G4W3202.americas.hpqcorp.net>
+References: <543BCF9A.1060603@redhat.com>
+ <CAKohpokBpQ9zhSU3bJQ9pVv68s6cFg8TNsqi+sJK8V1OQUTWzA@mail.gmail.com>
+ <543D6A5C.1060809@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:25339 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753601AbaJNSYl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 Oct 2014 14:24:41 -0400
-In-Reply-To: <CAKohpokBpQ9zhSU3bJQ9pVv68s6cFg8TNsqi+sJK8V1OQUTWzA@mail.gmail.com>
+Received: from g4t3427.houston.hp.com ([15.201.208.55]:33959 "EHLO
+	g4t3427.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755122AbaJNTTe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Oct 2014 15:19:34 -0400
+In-Reply-To: <543D6A5C.1060809@redhat.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, =?UTF-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>
+To: Prarit Bhargava <prarit@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, =?utf-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>
 
-
-
-On 10/14/2014 03:10 AM, Viresh Kumar wrote:
-> On 13 October 2014 18:41, Prarit Bhargava <prarit@redhat.com> wrote:
->>
->> The locking is insufficient here, Viresh.  I no longer believe that fixes
->> to this locking scheme are the right way to move forward here.  I'm wondering
->> if we can look at other alternatives such as maintaining a refcount or
->> perhaps using a queuing mechanism for governor and policy related changes.
->>
-
-Here's what I think we should do.  Taking a step back, the purpose of the
-cpufreq sysfs files is to allow userspace to read current cpu frequency
-settings, and to allow userspce to modify the governor and set the max & min
-ranges for cpu frequencies.  This can be done per device or for all cpus
-depending on the driver.
-
-We have to guarantee that bothing reading and writing will always work and that
-write operations will always be atomic relative to userspace.  The current
-implementation of cpufreq does this through the following locks:
-
-cpufreq_driver_lock: protects the cpufreq_cpu_data array and cpufreq_driver->boost
-cpufreq_governor_lock: protects the current governor
-cpufreq_governor_mutex: protects the cpufreq_governor_list
-cpufreq_rwsem: protects the driver from being unloaded
-global_kobj_lock: protects the "cpufreq" kobject
-each policy has a rwsem (policy->rwsem): protects the cpufreq_policy struct
-each policy has a transition_lock (policy->transition): synchronizes
-                                                        frequency transitions
-
-While examining this code I was wondering exactly why we allow multiple readers
-and writers in cpufreq.  I could understand if we felt that this data was
-critical; but it really isn't.  A short delay here isn't that big of a deal IMO
-(if someone can produce a case where a delay would cause a serious problem I'd
- like to hear it).  I don't even think it is safe in most cases to allow readers
-while cpufreq values are changing; if we're changing the governor userspace
-cannot rely on the value of (for example) cpuinfo_max_freq.
-
-So I'm proposing that we move to a single threaded read/write using, if
-possible, a single policy lock for now.  We might transition this back to a
-rwsem later on, however, for the first attempt at cleaning this up I think we
-should just stick with a simple lock.  In doing that, IMO we remove
-
-cpufreq_rwsem: protects the driver from being unloaded
-cpufreq_governor_lock: protects the current governor
-each policy has a rwsem (policy->rwsem): protects the cpufreq_policy struct
-
-and potentially
-
-cpufreq_driver_lock: protects the cpufreq_cpu_data array and cpufreq_driver->boost
-
-After looking at the way the code would be structured, I'm wondering if
-
-cpufreq_governor_mutex: protects the cpufreq_governor_list
-
-is overkill.  The loading of a module should be atomic relative to the cpufreq
-code, so this lock may not be required.  (Admittedly I haven't tested that...)
-
-That would leave:
-
-global_kobj_lock: protects the "cpufreq" kobject
-each policy has a transition_lock (policy->transition): synchronizes
-                                                        frequency transitions
-
-and a new lock, perhaps called policy->lock, to serialize all events.
-
-Pros: We clean all this up to a simpler single threaded model.  Bugs and races
-here would be much easier to handle.  We're currently putting band-aid on
-band-aids in this code ATM and it looks like we're seeing old races expanded
-or new races exposed.
-
-Cons: We lose the ability to do simultaneous reads and writes ... although
-I remain unconvinced that this would ever be safe to do.  ie) If I change the
-governor while at the same time reading, for example, the current cpu
-frequency I cannot rely on that value to be valid.
-
-After that we can add some reference counting to the sysfs file accesses
-so that we can block after the sysfs removal when we change cpufreq
-governors.  I think that would be trivial and that it would resolve any races
-when adding and removing governor's sysfs files.
-
-P.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgta2VybmVsLW93
+bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LWtlcm5lbC0NCj4gb3duZXJAdmdlci5r
+ZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YgUHJhcml0IEJoYXJnYXZhDQo+IFNlbnQ6IFR1ZXNkYXks
+IDE0IE9jdG9iZXIsIDIwMTQgMToyNCBQTQ0KPiBUbzogVmlyZXNoIEt1bWFyDQo+IENjOiBTYXJh
+dmFuYSBLYW5uYW47IFJhZmFlbCBKLiBXeXNvY2tpOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7
+IExpbnV4DQo+IEtlcm5lbDsgUm9iZXJ0IFNjaMO2bmUNCj4gU3ViamVjdDogUmU6IExvY2tpbmcg
+aXNzdWVzIHdpdGggY3B1ZnJlcSBhbmQgc3lzZnMNCj4gDQo+IE9uIDEwLzE0LzIwMTQgMDM6MTAg
+QU0sIFZpcmVzaCBLdW1hciB3cm90ZToNCj4gPiBPbiAxMyBPY3RvYmVyIDIwMTQgMTg6NDEsIFBy
+YXJpdCBCaGFyZ2F2YSA8cHJhcml0QHJlZGhhdC5jb20+IHdyb3RlOg0KPiA+Pg0KPiA+PiBUaGUg
+bG9ja2luZyBpcyBpbnN1ZmZpY2llbnQgaGVyZSwgVmlyZXNoLiAgSSBubyBsb25nZXIgYmVsaWV2
+ZSB0aGF0IGZpeGVzDQo+ID4+IHRvIHRoaXMgbG9ja2luZyBzY2hlbWUgYXJlIHRoZSByaWdodCB3
+YXkgdG8gbW92ZSBmb3J3YXJkIGhlcmUuICBJJ20NCj4gd29uZGVyaW5nDQo+ID4+IGlmIHdlIGNh
+biBsb29rIGF0IG90aGVyIGFsdGVybmF0aXZlcyBzdWNoIGFzIG1haW50YWluaW5nIGEgcmVmY291
+bnQgb3INCj4gPj4gcGVyaGFwcyB1c2luZyBhIHF1ZXVpbmcgbWVjaGFuaXNtIGZvciBnb3Zlcm5v
+ciBhbmQgcG9saWN5IHJlbGF0ZWQgY2hhbmdlcy4NCj4gPj4NCi4uLg0KPiBTbyBJJ20gcHJvcG9z
+aW5nIHRoYXQgd2UgbW92ZSB0byBhIHNpbmdsZSB0aHJlYWRlZCByZWFkL3dyaXRlIHVzaW5nLCBp
+Zg0KPiBwb3NzaWJsZSwgYSBzaW5nbGUgcG9saWN5IGxvY2sgZm9yIG5vdy4gIFdlIG1pZ2h0IHRy
+YW5zaXRpb24gdGhpcyBiYWNrIHRvIGENCj4gcndzZW0gbGF0ZXIgb24sIGhvd2V2ZXIsIGZvciB0
+aGUgZmlyc3QgYXR0ZW1wdCBhdCBjbGVhbmluZyB0aGlzIHVwIEkgdGhpbmsgd2UNCj4gc2hvdWxk
+IGp1c3Qgc3RpY2sgd2l0aCBhIHNpbXBsZSBsb2NrLiAgSW4gZG9pbmcgdGhhdCwgSU1PIHdlIHJl
+bW92ZQ0KPiBjcHVmcmVxX3J3c2VtOiBwcm90ZWN0cyB0aGUgZHJpdmVyIGZyb20gYmVpbmcgdW5s
+b2FkZWQNCj4gY3B1ZnJlcV9nb3Zlcm5vcl9sb2NrOiBwcm90ZWN0cyB0aGUgY3VycmVudCBnb3Zl
+cm5vcg0KPiBlYWNoIHBvbGljeSBoYXMgYSByd3NlbSAocG9saWN5LT5yd3NlbSk6IHByb3RlY3Rz
+IHRoZSBjcHVmcmVxX3BvbGljeSBzdHJ1Y3QNCj4gDQo+IGFuZCBwb3RlbnRpYWxseQ0KPiBjcHVm
+cmVxX2RyaXZlcl9sb2NrOiBwcm90ZWN0cyB0aGUgY3B1ZnJlcV9jcHVfZGF0YSBhcnJheSBhbmQg
+Y3B1ZnJlcV9kcml2ZXItDQo+ID5ib29zdA0KPiANCj4gQWZ0ZXIgbG9va2luZyBhdCB0aGUgd2F5
+IHRoZSBjb2RlIHdvdWxkIGJlIHN0cnVjdHVyZWQsIEknbSB3b25kZXJpbmcgaWYNCj4gY3B1ZnJl
+cV9nb3Zlcm5vcl9tdXRleDogcHJvdGVjdHMgdGhlIGNwdWZyZXFfZ292ZXJub3JfbGlzdA0KPiBp
+cyBvdmVya2lsbC4gIFRoZSBsb2FkaW5nIG9mIGEgbW9kdWxlIHNob3VsZCBiZSBhdG9taWMgcmVs
+YXRpdmUgdG8gdGhlDQo+IGNwdWZyZXEgY29kZSwgc28gdGhpcyBsb2NrIG1heSBub3QgYmUgcmVx
+dWlyZWQuICAoQWRtaXR0ZWRseSBJIGhhdmVuJ3QNCj4gdGVzdGVkIHRoYXQuLi4pDQo+IA0KPiBU
+aGF0IHdvdWxkIGxlYXZlOg0KPiBnbG9iYWxfa29ial9sb2NrOiBwcm90ZWN0cyB0aGUgImNwdWZy
+ZXEiIGtvYmplY3QNCj4gZWFjaCBwb2xpY3kgaGFzIGEgdHJhbnNpdGlvbl9sb2NrIChwb2xpY3kt
+PnRyYW5zaXRpb24pOiBzeW5jaHJvbml6ZXMNCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBmcmVxdWVuY3kgdHJhbnNpdGlvbnMNCj4gYW5k
+IGEgbmV3IGxvY2ssIHBlcmhhcHMgY2FsbGVkIHBvbGljeS0+bG9jaywgdG8gc2VyaWFsaXplIGFs
+bCBldmVudHMuDQo+IA0KDQpQbGVhc2Uga2VlcCBwZXJmb3JtYW5jZSBpbiBtaW5kIHRvby4gIGNw
+dWZyZXFfZ292ZXJub3JfbG9jaw0KY29udGVudGlvbiBpcyBhIGJpdCBvZiBhbiBpc3N1ZSB3aXRo
+IGhlYXZ5IElPIHdvcmtsb2Fkcw0KYXMgZGVzY3JpYmVkIGluOg0KCWh0dHA6Ly9tYXJjLmluZm8v
+P2w9bGludXgtcG0mbT0xNDA5MjQwNTE1MDM4Mjcmdz0yDQoNCg0KLS0tDQpSb2IgRWxsaW90dCAg
+ICBIUCBTZXJ2ZXIgU3RvcmFnZQ0KDQoNCg0K
