@@ -1,44 +1,88 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 7/7] [media] exynos-gsc: Do full clock gating at runtime PM suspend
-Date: Tue, 14 Oct 2014 09:15:40 +0200
-Message-ID: <1413270940-4378-8-git-send-email-ulf.hansson@linaro.org>
-References: <1413270940-4378-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-media-owner@vger.kernel.org>
-In-Reply-To: <1413270940-4378-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-media-owner@vger.kernel.org
-To: Mauro Carvalho Chehab <m.chehab@samsung.com>, linux-media@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 6/6] cpufreq: Loongson1: Add cpufreq driver for Loongson1B
+Date: Tue, 14 Oct 2014 12:52:53 +0530
+Message-ID: <CAKohpomcJM53bnRA7ef-+61KHq0DxTZ=Lf3oEUWejif5X+g_2Q@mail.gmail.com>
+References: <CAJhJPsW+h9DEEEKfhBdz3e4tTxmA_ZBR6SbLr2jY6XJY7pMHhA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJhJPsW+h9DEEEKfhBdz3e4tTxmA_ZBR6SbLr2jY6XJY7pMHhA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kelvin Cheung <keguang.zhang@gmail.com>
+Cc: Mike Turquette <mturquette@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>
 List-Id: linux-pm@vger.kernel.org
 
-To potentially save more power in runtime PM suspend state, let's also
-prepare/unprepare the clock from the runtime PM callbacks.
+On 14 October 2014 12:29, Kelvin Cheung <keguang.zhang@gmail.com> wrote:
+>
+> 2014-10-10 12:40 GMT+08:00 Viresh Kumar <viresh.kumar@linaro.org>:
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/media/platform/exynos-gsc/gsc-core.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+>> > +#include <cpufreq.h>
+>> > +#include <loongson1.h>
+>>
+>> Okay, it looks like I have forgotten some of the C basics :)
+>> But wouldn't the above two lines search for this file in <include/*>, unless
+>> you have compiled it with something like -I include/linux ??
+>> And even then I don't think loongson1.h is present there ..
+>>
+>> What am I missing ?
+>
+>
+> The two header files are located in arch/mips/include/asm/mach-loongson1
 
-diff --git a/drivers/media/platform/exynos-gsc/gsc-core.c b/drivers/media/platform/exynos-gsc/gsc-core.c
-index e48aefa..e90ba09 100644
---- a/drivers/media/platform/exynos-gsc/gsc-core.c
-+++ b/drivers/media/platform/exynos-gsc/gsc-core.c
-@@ -1161,7 +1161,7 @@ static int gsc_runtime_resume(struct device *dev)
- 
- 	pr_debug("gsc%d: state: 0x%lx", gsc->id, gsc->state);
- 
--	ret = clk_enable(gsc->clock);
-+	ret = clk_prepare_enable(gsc->clock);
- 	if (ret)
- 		return ret;
- 
-@@ -1179,7 +1179,7 @@ static int gsc_runtime_suspend(struct device *dev)
- 
- 	ret = gsc_m2m_suspend(gsc);
- 	if (!ret)
--		clk_disable(gsc->clock);
-+		clk_disable_unprepare(gsc->clock);
- 
- 	pr_debug("gsc%d: state: 0x%lx", gsc->id, gsc->state);
- 	return ret;
--- 
-1.9.1
+Okay, but I didn't knew it works this way as well. I thought preprocessor will
+search in include/ and arch/mips/include/ directories only and so you need to
+do this:
+
+#include <asm/mach-loongson1/cpufreq.h>
+
+Do you know why it works directly in your case? Probably for readability above
+might be better ?
+
+>> > +static int ls1x_cpufreq_notifier(struct notifier_block *nb,
+>> > +                                unsigned long val, void *data)
+>> > +{
+>> > +       if (val == CPUFREQ_POSTCHANGE)
+>> > +               current_cpu_data.udelay_val = loops_per_jiffy;
+>> > +
+>> > +       return NOTIFY_OK;
+>> > +}
+>>
+>> Why don't you do this at a single place in mips core instead of every
+>> mips cpufreq driver ?
+>
+>
+> Most of MIPS CPUs use performance counter as the system timer, which is built-in to the CPU core. They can't do cpufreq due to lack of external timer. Therefore, the above section is not a common code.
+
+Not sure if I understood your reply Or you understood mine :)
+Let me try again to clarify the question. On freq change you need
+to update 'current_cpu_data.udelay_val', this is done in both
+loongson drivers.
+
+What I was asking you is to register the notifier in some core code,
+so that this isn't required to be done in all cpufreq drivers.
+
+NOTE: The notifier routine will only be called if cpufreq is enabled
+for the platform..
+
+>> > +static int ls1x_cpufreq_probe(struct platform_device *pdev)
+>> > +{
+>> > +       struct plat_ls1x_cpufreq *pdata = pdev->dev.platform_data;
+>> > +       struct clk *clk;
+>> > +       int ret;
+>> > +
+>>
+>> Try this code here:
+>>
+>> pdata = NULL;
+>>
+>> > +       if (!pdata && !pdata->clk_name && !pdata->osc_clk_name) {
+>>
+>> And tell me what happens here then. :)
+>
+>
+> I will add an error message here.
+
+Did you try what I asked you to? I wasn't talking about the message..
+Though you better add it as well..
+
+What I have asked you will result in kernel crash ..
