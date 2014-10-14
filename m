@@ -1,60 +1,154 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Tue, 14 Oct 2014 12:28:07 +0530
-Message-ID: <CAKohpokBzXG=zSicg5uMGK7=qTCOObG_r4Z4trkRmQxftv0vyw@mail.gmail.com>
-References: <CAKohpo=rEYgH+PSmkP8X8J0u69Kyp1W7JzBFOiOsiCOFSdyAiw@mail.gmail.com>
-	<54353223.7080704@redhat.com>
-	<CAKohpok+z+bPySa+Kzh2zW+2L8CCG29q6wANe3jd+o80+PnASA@mail.gmail.com>
-	<5437C12D.1070803@redhat.com>
-	<CAKohpokDG1_r7eJ5Yykea4orcuEicCUFCrnSo1uTgKW1iJGwRA@mail.gmail.com>
-	<5437C535.3070707@redhat.com>
-	<CAKohpo=_vgxvtJYA_53jdicnRivihAVQuEgoKk7S7MhZctyZkw@mail.gmail.com>
-	<5437C778.4040108@redhat.com>
-	<1412942496.13463.28.camel@x200t>
-	<CAKohpomvrKxnk3ZOtZxZEO+fVWSr5gB1AadtFUib8jsqndDgtg@mail.gmail.com>
-	<1412947425.13463.37.camel@x200t>
-	<CAKohpokag-ppE7WH=jPS6-i_T-5PyaDKyKS8uC+Xt2QGxLHYkw@mail.gmail.com>
-	<1412949926.13463.47.camel@x200t>
+Subject: Re: Locking issues with cpufreq and sysfs
+Date: Tue, 14 Oct 2014 12:40:59 +0530
+Message-ID: <CAKohpokBpQ9zhSU3bJQ9pVv68s6cFg8TNsqi+sJK8V1OQUTWzA@mail.gmail.com>
+References: <543BCF9A.1060603@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f45.google.com ([209.85.218.45]:43180 "EHLO
-	mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751194AbaJNG6H convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Oct 2014 02:58:07 -0400
-Received: by mail-oi0-f45.google.com with SMTP id i138so15732012oig.32
-        for <linux-pm@vger.kernel.org>; Mon, 13 Oct 2014 23:58:07 -0700 (PDT)
-In-Reply-To: <1412949926.13463.47.camel@x200t>
+Received: from mail-oi0-f43.google.com ([209.85.218.43]:46083 "EHLO
+	mail-oi0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752598AbaJNHLA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Oct 2014 03:11:00 -0400
+Received: by mail-oi0-f43.google.com with SMTP id u20so15433322oif.16
+        for <linux-pm@vger.kernel.org>; Tue, 14 Oct 2014 00:10:59 -0700 (PDT)
+In-Reply-To: <543BCF9A.1060603@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>, Prarit Bhargava <prarit@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>
 
-On 10 October 2014 19:35, Robert Sch=C3=B6ne <robert.schoene@tu-dresden=
-=2Ede> wrote:
-> @all:
-> I have to leave now and will not be available for a week.
+On 13 October 2014 18:41, Prarit Bhargava <prarit@redhat.com> wrote:
+> There are several issues with the current locking design of cpufreq.  Most
+
+Sadly yes :(
+
+> [Question: was the original reported deadlock "real"?  Did it really happen or
+> did lockdep only report it (I may have asked this question previously and
+> forgot the answer)?  The reason I ask is that this situation is very similar to
+> USB's device removal in which the sysfs attributes are removed for a device but
+> not the device it was called for.  I actually think that's part of the problem
+> here.]
+
+I am still not sure about those lockdep warnings :(
+
+> The above, obviously, is a complete hack of the code but in a sense does
+> mimic a proper locking fix.  However, even with this fix we are still left
+> with a race in accessing the sysfs files.  Consider the following example,
 >
-> @Viresh:
-> The line you are looking for is 2c8 (260h+68h, length check passed).
-> Here it is with the surrounding instructions:
+> CPU 1: accesses scaling_setspeed to set cpu speed
+>
+> simultaneously,
+>
+> CPU 2: accesses scaling_governor to set governor to ondemand
+>
+> CPU 1 & 2 race ... and this can result in different critical situations.
+> The first is that CPU 1 holds the scalling_setspeed open while CPU attempts
+> to change the governor.  This results in a syfs warning about creating a
+> file with an existing file name which in some cases can lead to additional
+> corruption and a panic.  The second case is that CPU 1's setting of the speed
+> is now done on the new governor -- which may or may not be correct.  In any
+> case an argument could be made that the userspace program doing this type
+> of action should be "smart" enough to confirm simultaneous changes... but
+> in any case the kernel should not panic or corrupt data.
+>
+> The locking is insufficient here, Viresh.  I no longer believe that fixes
+> to this locking scheme are the right way to move forward here.  I'm wondering
+> if we can look at other alternatives such as maintaining a refcount or
+> perhaps using a queuing mechanism for governor and policy related changes.
 
-Thanks..
+Probably this is similar to what I have been trying, i.e. to give access to only
+a single thread to call __cpufreq_governor().
 
-I now understand most of the races you and Prarit have reported.
-=46inally I was able to get my multi-cluster board up and could test th=
-is
-myself :)
+Can you please try the cpufreq/governor-fixes-v4 branch once ?
 
-So you need to try my cpufreq/governor-fixes-v4 branch to confirm if
-this fixes your issues or not.
-
-@Prarit: As Robert probably isn't around this week, would it be possibl=
-e for
-you to test this stuff ?
-
-I will send this as a patchset so that people can review and comment.
-
---
-viresh
+On 13 October 2014 18:41, Prarit Bhargava <prarit@redhat.com> wrote:
+> There are several issues with the current locking design of cpufreq.  Most
+> notably is the panic reported here:
+>
+> http://marc.info/?l=linux-kernel&m=140622451625236&w=2
+>
+> which was introduced by commit 955ef4833574636819cd269cfbae12f79cbde63a,
+> cpufreq: Drop rwsem lock around CPUFREQ_GOV_POLICY_EXIT, which introduces
+> a race in the changing of the cpufreq policy.  This change was introduced
+> because of a lockdep deadlock warning that can be reproduced (on x86 with
+> the acpi_cpufreq driver) via the following debug patch:
+>
+> iff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index b0c18ed..366cfb7 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -885,6 +885,7 @@ static struct freq_attr *acpi_cpufreq_attr[] = {
+>
+>  static struct cpufreq_driver acpi_cpufreq_driver = {
+>         .verify         = cpufreq_generic_frequency_table_verify,
+> +       .flags          = CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
+>         .target_index   = acpi_cpufreq_target,
+>         .bios_limit     = acpi_processor_get_bios_limit,
+>         .init           = acpi_cpufreq_cpu_init,
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 61190f6..4cb488a 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2195,9 +2195,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *polic
+>         /* end old governor */
+>         if (old_gov) {
+>                 __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+> -               up_write(&policy->rwsem);
+>                 __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+> -               down_write(&policy->rwsem);
+>         }
+>
+>         /* start new governor */
+> @@ -2206,9 +2204,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *polic
+>                 if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
+>                         goto out;
+>
+> -               up_write(&policy->rwsem);
+>                 __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+> -               down_write(&policy->rwsem);
+>         }
+>
+>         /* new governor failed, so re-start old one */
+>
+> (which causes the acpi-cpufreq driver to emulate the behaviour of the arm
+> cpufreq driver), and by doing
+>
+> echo ondemand > /sys/devices/system/cpu/cpu5/cpufreq/scaling_governor
+> cat /sys/devices/system/cpu/cpu5/cpufreq/ondemand/*
+> echo conservative > /sys/devices/system/cpu/cpu5/cpufreq/scaling_governor
+> exit 0
+>
+> [Question: was the original reported deadlock "real"?  Did it really happen or
+> did lockdep only report it (I may have asked this question previously and
+> forgot the answer)?  The reason I ask is that this situation is very similar to
+> USB's device removal in which the sysfs attributes are removed for a device but
+> not the device it was called for.  I actually think that's part of the problem
+> here.]
+>
+> The above, obviously, is a complete hack of the code but in a sense does
+> mimic a proper locking fix.  However, even with this fix we are still left
+> with a race in accessing the sysfs files.  Consider the following example,
+>
+> CPU 1: accesses scaling_setspeed to set cpu speed
+>
+> simultaneously,
+>
+> CPU 2: accesses scaling_governor to set governor to ondemand
+>
+> CPU 1 & 2 race ... and this can result in different critical situations.
+> The first is that CPU 1 holds the scalling_setspeed open while CPU attempts
+> to change the governor.  This results in a syfs warning about creating a
+> file with an existing file name which in some cases can lead to additional
+> corruption and a panic.  The second case is that CPU 1's setting of the speed
+> is now done on the new governor -- which may or may not be correct.  In any
+> case an argument could be made that the userspace program doing this type
+> of action should be "smart" enough to confirm simultaneous changes... but
+> in any case the kernel should not panic or corrupt data.
+>
+> The locking is insufficient here, Viresh.  I no longer believe that fixes
+> to this locking scheme are the right way to move forward here.  I'm wondering
+> if we can look at other alternatives such as maintaining a refcount or
+> perhaps using a queuing mechanism for governor and policy related changes.
+>
+> P.
