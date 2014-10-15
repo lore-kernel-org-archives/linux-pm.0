@@ -1,406 +1,253 @@
-From: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
-Subject: [PATCH v2] cpufreq: Add sfi based cpufreq driver support
-Date: Wed, 15 Oct 2014 12:23:16 +0530
-Message-ID: <20141015065309.GA10590@intel-desktop>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v7 4/5] dma: pl330: add Power Management support
+Date: Wed, 15 Oct 2014 09:19:59 +0200
+Message-ID: <CAPDyKFqgsFjWOEyRksuPaWg66W2jr3QrUcKL9b9HCDMpGYRkbg@mail.gmail.com>
+References: <1411566612-32277-1-git-send-email-k.kozlowski@samsung.com>
+	<1411566612-32277-5-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:49380 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751183AbaJOGxk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 15 Oct 2014 02:53:40 -0400
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1411566612-32277-5-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, vishwesh.m.rudramuni@intel.com, srinidhi.kasagar@intel.com
 
-This adds the sfi based cpu freq driver for some of the
-Intel's Silver Mont based atom architectures like
-Merrifield and Moorfield (intel-mid)
+On 24 September 2014 15:50, Krzysztof Kozlowski <k.kozlowski@samsung.com> wrote:
+> This patch adds both normal PM suspend/resume support and runtime PM
+> support to pl330 DMA engine driver.
+>
+> The runtime power management for pl330 DMA driver allows gating of AMBA
+> clock (PDMA) in FSYS clock domain, when the device is not processing any
+> requests. This is necessary to enter low power modes on Exynos SoCs
+> (e.g. LPA on Exynos4x12 or W-AFTR on Exynos3250).
+>
+> Runtime PM resuming of the device may happen in atomic context (during
+> call device_issue_pending()) so pm_runtime_irq_safe() is used. This will
+> lead only to disabling/enabling of the clock but this is sufficient for
+> gating the clock and for reducing energy usage.
+>
+> During system sleep the AMBA bus clock is also unprepared.
+>
+> Suggested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-Signed-off-by: Rudramuni, Vishwesh M <vishwesh.m.rudramuni@intel.com>
-Signed-off-by: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
----
- drivers/cpufreq/Kconfig.x86   |   10 ++
- drivers/cpufreq/Makefile      |    1 +
- drivers/cpufreq/sfi-cpufreq.c |  332 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 343 insertions(+)
- create mode 100644 drivers/cpufreq/sfi-cpufreq.c
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index 89ae88f91895..2bca6a5dcffd 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -57,6 +57,16 @@ config X86_ACPI_CPUFREQ_CPB
- 	  By enabling this option the acpi_cpufreq driver provides the old
- 	  entry in addition to the new boost ones, for compatibility reasons.
- 
-+config X86_SFI_CPUFREQ
-+	tristate "SFI Processor P-States driver"
-+	depends on X86_INTEL_MID && SFI
-+	help
-+	  This adds a CPUFreq driver for some Silver Mont based Intel
-+	  Atom platforms (like INTEL_MID) which utilizes the SFI based
-+	  processor performance states.
-+
-+	  If in doubt, say N.
-+
- config ELAN_CPUFREQ
- 	tristate "AMD Elan SC400 and SC410"
- 	depends on MELAN
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index db6d9a2fea4d..c3b51efd4a85 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -41,6 +41,7 @@ obj-$(CONFIG_X86_P4_CLOCKMOD)		+= p4-clockmod.o
- obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
- obj-$(CONFIG_X86_INTEL_PSTATE)		+= intel_pstate.o
- obj-$(CONFIG_X86_AMD_FREQ_SENSITIVITY)	+= amd_freq_sensitivity.o
-+obj-$(CONFIG_X86_SFI_CPUFREQ)		+= sfi-cpufreq.o
- 
- ##################################################################################
- # ARM SoC drivers
-diff --git a/drivers/cpufreq/sfi-cpufreq.c b/drivers/cpufreq/sfi-cpufreq.c
-new file mode 100644
-index 000000000000..9cba7ae96f6e
---- /dev/null
-+++ b/drivers/cpufreq/sfi-cpufreq.c
-@@ -0,0 +1,332 @@
-+/*
-+ *  SFI Processor P-States Driver
-+ *  Based on ACPI Processor P-States Driver
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  Author: Vishwesh M Rudramuni <vishwesh.m.rudramuni@intel.com>
-+ *  Author: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
-+ */
-+
-+#include <linux/cpufreq.h>
-+#include <linux/cpuidle.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/sfi.h>
-+#include <linux/slab.h>
-+#include <linux/smp.h>
-+
-+#include <asm/msr.h>
-+#include <asm/processor.h>
-+
-+#define SFI_FREQ_MAX		32
-+#define INTEL_MSR_RANGE		0xffff
-+#define INTEL_MSR_BUSRATIO_MASK	0xff00
-+#define SFI_CPU_MAX		8
-+
-+static DEFINE_PER_CPU(struct sfi_cpufreq_data *, drv_data);
-+static DEFINE_MUTEX(performance_mutex);
-+static struct sfi_freq_table_entry sfi_cpufreq_array[SFI_FREQ_MAX];
-+
-+/* sfi_perf_data is a pointer to percpu data. */
-+static struct sfi_processor_performance *sfi_perf_data;
-+static struct cpufreq_driver sfi_cpufreq_driver;
-+static int sfi_cpufreq_num;
-+
-+/* Performance management */
-+struct sfi_processor_px {
-+	u32 core_frequency;	/* megahertz */
-+	u32 transition_latency;	/* microseconds */
-+	u32 control;	/* control value */
-+};
-+
-+struct sfi_processor_performance {
-+	unsigned int state;
-+	unsigned int state_count;
-+	struct sfi_processor_px *states;
-+};
-+
-+struct sfi_cpufreq_data {
-+	struct sfi_processor_performance *sfi_data;
-+	struct cpufreq_frequency_table *freq_table;
-+};
-+
-+static int parse_freq(struct sfi_table_header *table)
-+{
-+	struct sfi_table_simple *sb;
-+	struct sfi_freq_table_entry *pentry;
-+	int total_len;
-+
-+	sb = (struct sfi_table_simple *)table;
-+	if (!sb) {
-+		pr_warn("SFI: Unable to map frequency table\n");
-+		return -ENODEV;
-+	}
-+
-+	if (!sfi_cpufreq_num) {
-+		sfi_cpufreq_num = SFI_GET_NUM_ENTRIES(sb,
-+			 struct sfi_freq_table_entry);
-+		pentry = (struct sfi_freq_table_entry *)sb->pentry;
-+		total_len = sfi_cpufreq_num * sizeof(*pentry);
-+		memcpy(sfi_cpufreq_array, pentry, total_len);
-+	}
-+
-+	return 0;
-+}
-+
-+static int sfi_processor_get_performance_states(
-+			struct sfi_processor_performance *performance)
-+{
-+	int result = 0;
-+	int i;
-+
-+	performance->state_count = sfi_cpufreq_num;
-+	performance->states =
-+	    kmalloc(sizeof(struct sfi_processor_px) * sfi_cpufreq_num,
-+		    GFP_KERNEL);
-+	if (!performance->states)
-+		result = -ENOMEM;
-+
-+	pr_info("Num p-states %d\n", sfi_cpufreq_num);
-+
-+	/* Populate the P-states info from the SFI table */
-+	for (i = 0; i < sfi_cpufreq_num; i++) {
-+		performance->states[i].core_frequency =
-+			sfi_cpufreq_array[i].freq_mhz;
-+		performance->states[i].transition_latency =
-+			sfi_cpufreq_array[i].latency;
-+		performance->states[i].control =
-+			sfi_cpufreq_array[i].ctrl_val;
-+		pr_info("State [%d]: core_frequency[%d] transition_latency[%d] control[0x%x]\n",
-+			i,
-+			(u32) performance->states[i].core_frequency,
-+			(u32) performance->states[i].transition_latency,
-+			(u32) performance->states[i].control);
-+	}
-+
-+	return result;
-+}
-+
-+static int sfi_processor_register_performance(
-+			struct sfi_processor_performance *performance)
-+{
-+	mutex_lock(&performance_mutex);
-+
-+	/* parse the freq table from sfi */
-+	sfi_cpufreq_num = 0;
-+	sfi_table_parse(SFI_SIG_FREQ, NULL, NULL, parse_freq);
-+
-+	sfi_processor_get_performance_states(performance);
-+
-+	mutex_unlock(&performance_mutex);
-+
-+	return 0;
-+}
-+
-+void sfi_processor_unregister_performance(
-+			struct sfi_processor_performance *performance)
-+{
-+	mutex_lock(&performance_mutex);
-+	kfree(performance->states);
-+	mutex_unlock(&performance_mutex);
-+}
-+
-+static unsigned extract_freq(u32 msr, struct sfi_cpufreq_data *data)
-+{
-+	struct cpufreq_frequency_table *pos;
-+	struct sfi_processor_performance *perf;
-+	u32 sfi_ctrl;
-+
-+	msr &= INTEL_MSR_BUSRATIO_MASK;
-+	perf = data->sfi_data;
-+
-+	cpufreq_for_each_entry(pos, data->freq_table) {
-+		sfi_ctrl = perf->states[pos->driver_data].control
-+			& INTEL_MSR_BUSRATIO_MASK;
-+		if (sfi_ctrl == msr)
-+			return pos->frequency;
-+	}
-+	return data->freq_table[0].frequency;
-+}
-+
-+static u32 get_cur_val(const struct cpumask *mask)
-+{
-+	u32 val, dummy;
-+
-+	if (unlikely(cpumask_empty(mask)))
-+		return 0;
-+
-+	rdmsr_on_cpu(cpumask_any(mask), MSR_IA32_PERF_STATUS, &val, &dummy);
-+
-+	return val;
-+}
-+
-+static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
-+{
-+	struct sfi_cpufreq_data *data = per_cpu(drv_data, cpu);
-+	unsigned int cached_freq;
-+
-+	pr_debug("get_cur_freq_on_cpu (%d)\n", cpu);
-+
-+	cached_freq = data->freq_table[data->sfi_data->state].frequency;
-+
-+	return extract_freq(get_cur_val(cpumask_of(cpu)), data);
-+
-+}
-+
-+static int sfi_cpufreq_target(struct cpufreq_policy *policy,
-+				unsigned int index)
-+{
-+	struct sfi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
-+	struct sfi_processor_performance *perf;
-+	unsigned int next_perf_state = 0; /* Index into perf table */
-+	u32 lo, hi;
-+
-+	perf = data->sfi_data;
-+	next_perf_state = data->freq_table[index].driver_data;
-+
-+	rdmsr_on_cpu(policy->cpu, MSR_IA32_PERF_CTL, &lo, &hi);
-+	lo = (lo & ~INTEL_MSR_RANGE) |
-+		((u32) perf->states[next_perf_state].control & INTEL_MSR_RANGE);
-+	wrmsr_on_cpu(policy->cpu, MSR_IA32_PERF_CTL, lo, hi);
-+
-+	perf->state = next_perf_state;
-+
-+	return 0;
-+}
-+
-+static int sfi_cpufreq_cpu_init(struct cpufreq_policy *policy)
-+{
-+	unsigned int i, result = 0, valid_states = 0;
-+	unsigned int cpu = policy->cpu;
-+	struct sfi_cpufreq_data *data;
-+	struct sfi_processor_performance *perf;
-+
-+	pr_debug("%s: CPU:%d\n", __func__, policy->cpu);
-+
-+	data = kzalloc(sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	data->sfi_data = per_cpu_ptr(sfi_perf_data, cpu);
-+	per_cpu(drv_data, cpu) = data;
-+
-+	result = sfi_processor_register_performance(data->sfi_data);
-+	if (result)
-+		goto err_free;
-+
-+	perf = data->sfi_data;
-+	policy->shared_type = CPUFREQ_SHARED_TYPE_HW;
-+
-+	/* capability check */
-+	if (perf->state_count <= 1) {
-+		pr_debug("No P-States\n");
-+		result = -ENODEV;
-+		goto err_unreg;
-+	}
-+
-+	data->freq_table = kzalloc(sizeof(*data->freq_table) *
-+				(perf->state_count+1), GFP_KERNEL);
-+	if (!data->freq_table) {
-+		result = -ENOMEM;
-+		goto err_unreg;
-+	}
-+
-+	/* detect transition latency */
-+	policy->cpuinfo.transition_latency = 0;
-+	for (i = 0; i < perf->state_count; i++) {
-+		if ((perf->states[i].transition_latency * 1000) >
-+		    policy->cpuinfo.transition_latency)
-+			policy->cpuinfo.transition_latency =
-+			    perf->states[i].transition_latency * 1000;
-+
-+		pr_debug("     %cP%d: %d MHz, %d uS\n",
-+			(i == perf->state ? '*' : ' '), i,
-+			(u32) perf->states[i].core_frequency,
-+			(u32) perf->states[i].transition_latency);
-+	}
-+
-+	/* initialize the freq table */
-+	for (i = 0; i < perf->state_count; i++) {
-+		data->freq_table[valid_states].driver_data = i;
-+		data->freq_table[valid_states].frequency =
-+		    perf->states[i].core_frequency * 1000;
-+		valid_states++;
-+	}
-+	data->freq_table[valid_states].frequency = CPUFREQ_TABLE_END;
-+	perf->state = 0;
-+
-+	result = cpufreq_table_validate_and_show(policy, data->freq_table);
-+	if (result)
-+		goto err_freqfree;
-+
-+	pr_debug("CPU%u - SFI performance management activated.\n", cpu);
-+
-+	return result;
-+
-+err_freqfree:
-+	kfree(data->freq_table);
-+err_unreg:
-+	sfi_processor_unregister_performance(perf);
-+err_free:
-+	kfree(data);
-+	per_cpu(drv_data, cpu) = NULL;
-+
-+	return result;
-+}
-+
-+static int sfi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+{
-+	struct sfi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
-+
-+	pr_debug("sfi_cpufreq_cpu_exit\n");
-+
-+	per_cpu(drv_data, policy->cpu) = NULL;
-+	sfi_processor_unregister_performance(data->sfi_data);
-+	kfree(data->freq_table);
-+	kfree(data);
-+
-+	return 0;
-+}
-+
-+static struct cpufreq_driver sfi_cpufreq_driver = {
-+	.flags		= CPUFREQ_CONST_LOOPS,
-+	.get		= get_cur_freq_on_cpu,
-+	.verify		= cpufreq_generic_frequency_table_verify,
-+	.target_index	= sfi_cpufreq_target,
-+	.init		= sfi_cpufreq_cpu_init,
-+	.exit		= sfi_cpufreq_cpu_exit,
-+	.name		= "sfi-cpufreq",
-+	.attr		= cpufreq_generic_attr,
-+};
-+
-+static int __init sfi_cpufreq_init(void)
-+{
-+	sfi_perf_data = alloc_percpu(struct sfi_processor_performance);
-+	if (!sfi_perf_data) {
-+		pr_err("Memory allocation error for sfi_perf_data.\n");
-+		return -ENOMEM;
-+	}
-+
-+	return cpufreq_register_driver(&sfi_cpufreq_driver);
-+}
-+late_initcall(sfi_cpufreq_init);
-+
-+static void __exit sfi_cpufreq_exit(void)
-+{
-+	cpufreq_unregister_driver(&sfi_cpufreq_driver);
-+	free_percpu(sfi_perf_data);
-+}
-+module_exit(sfi_cpufreq_exit);
-+
-+MODULE_AUTHOR("Vishwesh M Rudramuni <vishwesh.m.rudramuni@intel.com>");
-+MODULE_DESCRIPTION("SFI P-States Driver");
-+MODULE_LICENSE("GPL");
--- 
-1.7.9.5
+Kind regards
+Uffe
 
-
--- 
+> ---
+>  drivers/dma/pl330.c | 94 ++++++++++++++++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 90 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
+> index 4839bfa74a10..b123431e62ed 100644
+> --- a/drivers/dma/pl330.c
+> +++ b/drivers/dma/pl330.c
+> @@ -27,6 +27,7 @@
+>  #include <linux/of.h>
+>  #include <linux/of_dma.h>
+>  #include <linux/err.h>
+> +#include <linux/pm_runtime.h>
+>
+>  #include "dmaengine.h"
+>  #define PL330_MAX_CHAN         8
+> @@ -265,6 +266,9 @@ static unsigned cmd_line;
+>
+>  #define NR_DEFAULT_DESC        16
+>
+> +/* Delay for runtime PM autosuspend, ms */
+> +#define PL330_AUTOSUSPEND_DELAY 20
+> +
+>  /* Populated by the PL330 core driver for DMA API driver's info */
+>  struct pl330_config {
+>         u32     periph_id;
+> @@ -1958,6 +1962,7 @@ static void pl330_tasklet(unsigned long data)
+>         struct dma_pl330_chan *pch = (struct dma_pl330_chan *)data;
+>         struct dma_pl330_desc *desc, *_dt;
+>         unsigned long flags;
+> +       bool power_down = false;
+>
+>         spin_lock_irqsave(&pch->lock, flags);
+>
+> @@ -1972,10 +1977,17 @@ static void pl330_tasklet(unsigned long data)
+>         /* Try to submit a req imm. next to the last completed cookie */
+>         fill_queue(pch);
+>
+> -       /* Make sure the PL330 Channel thread is active */
+> -       spin_lock(&pch->thread->dmac->lock);
+> -       _start(pch->thread);
+> -       spin_unlock(&pch->thread->dmac->lock);
+> +       if (list_empty(&pch->work_list)) {
+> +               spin_lock(&pch->thread->dmac->lock);
+> +               _stop(pch->thread);
+> +               spin_unlock(&pch->thread->dmac->lock);
+> +               power_down = true;
+> +       } else {
+> +               /* Make sure the PL330 Channel thread is active */
+> +               spin_lock(&pch->thread->dmac->lock);
+> +               _start(pch->thread);
+> +               spin_unlock(&pch->thread->dmac->lock);
+> +       }
+>
+>         while (!list_empty(&pch->completed_list)) {
+>                 dma_async_tx_callback callback;
+> @@ -1990,6 +2002,12 @@ static void pl330_tasklet(unsigned long data)
+>                 if (pch->cyclic) {
+>                         desc->status = PREP;
+>                         list_move_tail(&desc->node, &pch->work_list);
+> +                       if (power_down) {
+> +                               spin_lock(&pch->thread->dmac->lock);
+> +                               _start(pch->thread);
+> +                               spin_unlock(&pch->thread->dmac->lock);
+> +                               power_down = false;
+> +                       }
+>                 } else {
+>                         desc->status = FREE;
+>                         list_move_tail(&desc->node, &pch->dmac->desc_pool);
+> @@ -2004,6 +2022,12 @@ static void pl330_tasklet(unsigned long data)
+>                 }
+>         }
+>         spin_unlock_irqrestore(&pch->lock, flags);
+> +
+> +       /* If work list empty, power down */
+> +       if (power_down) {
+> +               pm_runtime_mark_last_busy(pch->dmac->ddma.dev);
+> +               pm_runtime_put_autosuspend(pch->dmac->ddma.dev);
+> +       }
+>  }
+>
+>  bool pl330_filter(struct dma_chan *chan, void *param)
+> @@ -2073,6 +2097,7 @@ static int pl330_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd, unsigned
+>
+>         switch (cmd) {
+>         case DMA_TERMINATE_ALL:
+> +               pm_runtime_get_sync(pl330->ddma.dev);
+>                 spin_lock_irqsave(&pch->lock, flags);
+>
+>                 spin_lock(&pl330->lock);
+> @@ -2099,10 +2124,15 @@ static int pl330_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd, unsigned
+>                         dma_cookie_complete(&desc->txd);
+>                 }
+>
+> +               if (!list_empty(&pch->work_list))
+> +                       pm_runtime_put(pl330->ddma.dev);
+> +
+>                 list_splice_tail_init(&pch->submitted_list, &pl330->desc_pool);
+>                 list_splice_tail_init(&pch->work_list, &pl330->desc_pool);
+>                 list_splice_tail_init(&pch->completed_list, &pl330->desc_pool);
+>                 spin_unlock_irqrestore(&pch->lock, flags);
+> +               pm_runtime_mark_last_busy(pl330->ddma.dev);
+> +               pm_runtime_put_autosuspend(pl330->ddma.dev);
+>                 break;
+>         case DMA_SLAVE_CONFIG:
+>                 slave_config = (struct dma_slave_config *)arg;
+> @@ -2138,6 +2168,7 @@ static void pl330_free_chan_resources(struct dma_chan *chan)
+>
+>         tasklet_kill(&pch->task);
+>
+> +       pm_runtime_get_sync(pch->dmac->ddma.dev);
+>         spin_lock_irqsave(&pch->lock, flags);
+>
+>         pl330_release_channel(pch->thread);
+> @@ -2147,6 +2178,8 @@ static void pl330_free_chan_resources(struct dma_chan *chan)
+>                 list_splice_tail_init(&pch->work_list, &pch->dmac->desc_pool);
+>
+>         spin_unlock_irqrestore(&pch->lock, flags);
+> +       pm_runtime_mark_last_busy(pch->dmac->ddma.dev);
+> +       pm_runtime_put_autosuspend(pch->dmac->ddma.dev);
+>  }
+>
+>  static enum dma_status
+> @@ -2162,6 +2195,15 @@ static void pl330_issue_pending(struct dma_chan *chan)
+>         unsigned long flags;
+>
+>         spin_lock_irqsave(&pch->lock, flags);
+> +       if (list_empty(&pch->work_list)) {
+> +               /*
+> +                * Warn on nothing pending. Empty submitted_list may
+> +                * break our pm_runtime usage counter as it is
+> +                * updated on work_list emptiness status.
+> +                */
+> +               WARN_ON(list_empty(&pch->submitted_list));
+> +               pm_runtime_get_sync(pch->dmac->ddma.dev);
+> +       }
+>         list_splice_tail_init(&pch->submitted_list, &pch->work_list);
+>         spin_unlock_irqrestore(&pch->lock, flags);
+>
+> @@ -2585,6 +2627,41 @@ static int pl330_dma_device_slave_caps(struct dma_chan *dchan,
+>         return 0;
+>  }
+>
+> +/*
+> + * Assume that IRQ safe runtime PM is chosen in probe and amba bus driver
+> + * will only disable/enable the clock in runtime PM suspend/resume.
+> + */
+> +static int __maybe_unused pl330_suspend(struct device *dev)
+> +{
+> +       struct amba_device *pcdev = to_amba_device(dev);
+> +       int ret;
+> +
+> +       ret = pm_runtime_force_suspend(dev);
+> +       if (ret)
+> +               return ret;
+> +
+> +       amba_pclk_unprepare(pcdev);
+> +
+> +       return 0;
+> +}
+> +
+> +static int __maybe_unused pl330_resume(struct device *dev)
+> +{
+> +       struct amba_device *pcdev = to_amba_device(dev);
+> +
+> +       amba_pclk_prepare(pcdev);
+> +
+> +       /*
+> +        * TODO: Idea for future. The device should not be woken up after
+> +        * system resume if it is not needed. It could stay runtime suspended
+> +        * waiting for DMA requests. However for safe suspend and resume we
+> +        * forcibly resume the device here.
+> +        */
+> +       return pm_runtime_force_resume(dev);
+> +}
+> +
+> +static SIMPLE_DEV_PM_OPS(pl330_pm, pl330_suspend, pl330_resume);
+> +
+>  static int
+>  pl330_probe(struct amba_device *adev, const struct amba_id *id)
+>  {
+> @@ -2738,6 +2815,12 @@ pl330_probe(struct amba_device *adev, const struct amba_id *id)
+>                 pcfg->data_buf_dep, pcfg->data_bus_width / 8, pcfg->num_chan,
+>                 pcfg->num_peri, pcfg->num_events);
+>
+> +       pm_runtime_irq_safe(&adev->dev);
+> +       pm_runtime_use_autosuspend(&adev->dev);
+> +       pm_runtime_set_autosuspend_delay(&adev->dev, PL330_AUTOSUSPEND_DELAY);
+> +       pm_runtime_mark_last_busy(&adev->dev);
+> +       pm_runtime_put_autosuspend(&adev->dev);
+> +
+>         return 0;
+>  probe_err3:
+>         /* Idle the DMAC */
+> @@ -2764,6 +2847,8 @@ static int pl330_remove(struct amba_device *adev)
+>         struct pl330_dmac *pl330 = amba_get_drvdata(adev);
+>         struct dma_pl330_chan *pch, *_p;
+>
+> +       pm_runtime_get_noresume(pl330->ddma.dev);
+> +
+>         if (adev->dev.of_node)
+>                 of_dma_controller_free(adev->dev.of_node);
+>
+> @@ -2802,6 +2887,7 @@ static struct amba_driver pl330_driver = {
+>         .drv = {
+>                 .owner = THIS_MODULE,
+>                 .name = "dma-pl330",
+> +               .pm = &pl330_pm,
+>         },
+>         .id_table = pl330_ids,
+>         .probe = pl330_probe,
+> --
+> 1.9.1
+>
