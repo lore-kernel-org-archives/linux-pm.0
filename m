@@ -1,64 +1,105 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 2/8] power_supply: sysfs: Use power_supply_*() API for
- accessing function attrs
-Date: Wed, 15 Oct 2014 12:49:59 +0200
-Message-ID: <1413370199.26771.4.camel@AMDC1943>
-References: <1413289246-31650-1-git-send-email-k.kozlowski@samsung.com>
- <1413289246-31650-3-git-send-email-k.kozlowski@samsung.com>
- <20141015103217.GB14266@amd>
+Subject: Re: [RFT PATCH] power: bq2415x_charger: Properly handle ENODEV from
+ power_supply_get_by_phandle
+Date: Wed, 15 Oct 2014 13:11:31 +0200
+Message-ID: <1413371491.26771.15.camel@AMDC1943>
+References: <1413275573-23014-1-git-send-email-k.kozlowski@samsung.com>
+ <20141015090512.GA26651@earth.universe>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20141015103217.GB14266@amd>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Anton Vorontsov <anton@enomsg.org>, Guenter Roeck <linux@roeck-us.net>, Myungjoo Ham <myungjoo.ham@samsung.com>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Return-path: <stable-owner@vger.kernel.org>
+In-reply-to: <20141015090512.GA26651@earth.universe>
+Sender: stable-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On =C5=9Bro, 2014-10-15 at 12:32 +0200, Pavel Machek wrote:
-> On Tue 2014-10-14 14:20:40, Krzysztof Kozlowski wrote:
-> > Replace direct calls to power supply function attributes with wrapp=
-ers.
-> > Wrappers provide safe access access in case of unregistering the po=
-wer
-> > supply (.e.g by removing the driver). Replace:
-> >  - get_property -> power_supply_get_property
-> >  - set_property -> power_supply_set_property
-> >  - property_is_writeable -> power_supply_property_is_writeable
+On =C5=9Bro, 2014-10-15 at 11:05 +0200, Sebastian Reichel wrote:
+> Hi Krzysztof,
+>=20
+> On Tue, Oct 14, 2014 at 10:32:53AM +0200, Krzysztof Kozlowski wrote:
+> > The power_supply_get_by_phandle() on error returns ENODEV or NULL.
+> > The driver later expects obtained pointer to power supply to be
+> > valid or NULL. If it is not NULL then it dereferences it in
+> > bq2415x_notifier_call() which would lead to dereferencing ENODEV-va=
+lue
+> > pointer.
+> >=20
+> > Properly handle the power_supply_get_by_phandle() error case and ab=
+ort probe.
 > >=20
 > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > Fixes: faffd234cf85 ("bq2415x_charger: Add DT support")
+> > Cc: <stable@vger.kernel.org>
 >=20
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-
-Thanks for looking at patches.
-
-
-> > @@ -76,7 +76,7 @@ static ssize_t power_supply_show_property(struct =
-device *dev,
-> >  	if (off =3D=3D POWER_SUPPLY_PROP_TYPE) {
-> >  		value.intval =3D psy->type;
-> >  	} else {
-> > -		ret =3D psy->get_property(psy, off, &value);
-> > +		ret =3D power_supply_get_property(psy, off, &value);
+> That looks valid, but I guess this should change one more thing:
+>=20
+> > ---
+> >  drivers/power/bq2415x_charger.c | 7 ++++++-
+> >  1 file changed, 6 insertions(+), 1 deletion(-)
+> >=20
+> > diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415=
+x_charger.c
+> > index e384844a1ae1..d9c457217b6a 100644
+> > --- a/drivers/power/bq2415x_charger.c
+> > +++ b/drivers/power/bq2415x_charger.c
+> > @@ -1579,8 +1579,13 @@ static int bq2415x_probe(struct i2c_client *=
+client,
+> >  	if (np) {
+> >  		bq->notify_psy =3D power_supply_get_by_phandle(np, "ti,usb-charg=
+er-detection");
 > > =20
+> > -		if (!bq->notify_psy)
+> > +		if (!bq->notify_psy) {
+> >  			return -EPROBE_DEFER;
 >=20
-> One thing.. Your power_supply_get_property (and friends) check for ps=
-y
-> =3D=3D NULL. Is it neccessary / good idea? As far as I can tell, it s=
-hould
-> not really be NULL...
+> this also needs to goto error_2. I guess something as the following
+> is needed:
+>=20
+> if (IS_ERR_OR_NULL(bq->notify_psy)) {
+>     if (bq->notify_psy)
+>         dev_err(&client->dev, "no 'ti,usb-charger-detection' property=
+\n");
+>     ret =3D PTR_ERR(bq->notify_psy);
+>     goto error_2;
+> }
 
-It is not necessary. I thought it would be a good behavior of such
-exported function. You're right that this shouldn't be NULL especially
-because previously it was dereferenced.
+So you do not want to defer the probe? What if notified charger will
+come online after this probe?
 
-Other existing power supply exported functions don't check this so mayb=
-e
-I shouldn't introduce inconsistency.
+Second idea - now I think my change is not compatible with bindings
+(documentation) and could break booting of existing boards which do not
+provide the "ti,usb-charger-detection" property. For example
+arch/arm/boot/dts/omap3-n900.dts
 
-I'll remove the check and re-spin. I'll found ugly typos in commit
-message anyway.
+The "ti,usb-charger-detection" property is marked as optional but my
+patch actually makes it required.
 
-Best regards,
+It should be rather like this:
+
+if (IS_ERR(bq->notify_psy)) {
+    bq->notify_psy =3D NULL;
+    dev_info(&client->dev, "no 'ti,usb-charger-detection' property \n")=
+;
+} else if (!bq->notify_psy) {
+    ret =3D -EPROBE_DEFER;
+    goto error_2;
+}
+
+What do you think?
+
 Krzysztof
+
+> > +		} else if (IS_ERR(bq->notify_psy)) {
+> > +			dev_err(&client->dev, "no 'ti,usb-charger-detection' property\n=
+");
+> > +			ret =3D PTR_ERR(bq->notify_psy);
+> > +			goto error_2;
+> > +		}
+> >  	}
+> >  	else if (pdata->notify_device)
+> >  		bq->notify_psy =3D power_supply_get_by_name(pdata->notify_device=
+);
+>=20
+> -- Sebastian
