@@ -1,295 +1,122 @@
-From: Kelvin Cheung <keguang.zhang@gmail.com>
-Subject: [PATCH 6/6] cpufreq: Loongson1: Add cpufreq driver for Loongson1B (UPDATED)
-Date: Wed, 15 Oct 2014 15:23:32 +0800
-Message-ID: <1413357812-16895-1-git-send-email-keguang.zhang@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-mips@linux-mips.org, ralf@linux-mips.org, Kelvin Cheung <keguang.zhang@gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v7 3/5] amba: Don't unprepare the clocks if device driver
+ wants IRQ safe runtime PM
+Date: Wed, 15 Oct 2014 09:27:02 +0200
+Message-ID: <CAPDyKFqTd06Z74G66=kkM2ZyV9w9Ec3jx-qt4Wmy36ns59oh1w@mail.gmail.com>
+References: <1411566612-32277-1-git-send-email-k.kozlowski@samsung.com>
+	<1411566612-32277-4-git-send-email-k.kozlowski@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f45.google.com ([209.85.192.45]:39011 "EHLO
+	mail-qg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751555AbaJOH1D (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Oct 2014 03:27:03 -0400
+Received: by mail-qg0-f45.google.com with SMTP id q107so465186qgd.32
+        for <linux-pm@vger.kernel.org>; Wed, 15 Oct 2014 00:27:03 -0700 (PDT)
+In-Reply-To: <1411566612-32277-4-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-This patch adds cpufreq driver for Loongson1B which
-is capable of changing the CPU frequency dynamically.
+On 24 September 2014 15:50, Krzysztof Kozlowski <k.kozlowski@samsung.com> wrote:
+> The AMBA bus driver defines runtime Power Management functions which
+> disable and unprepare AMBA bus clock. This is problematic for runtime PM
+> because unpreparing a clock might sleep so it is not interrupt safe.
+>
+> However some drivers may want to implement runtime PM functions in
+> interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
+> bus driver should only disable/enable the clock in runtime suspend and
+> resume callbacks.
+>
+> Detect the device driver behavior after calling its probe function and
+> store it. During runtime suspend/resume deal with clocks according to
+> stored value.
+>
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
----
- drivers/cpufreq/Kconfig        |  10 ++
- drivers/cpufreq/Makefile       |   1 +
- drivers/cpufreq/ls1x-cpufreq.c | 233 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 244 insertions(+)
- create mode 100644 drivers/cpufreq/ls1x-cpufreq.c
+As I stated earlier, I think the local copy of the irq_safe flag and
+the including WARN_ON is a bit unnecessary. Still since Russell
+insisted in having them, I am happy as well. :-)
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index ffe350f..99464d7 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -250,6 +250,16 @@ config LOONGSON2_CPUFREQ
- 
- 	  If in doubt, say N.
- 
-+config LOONGSON1_CPUFREQ
-+	tristate "Loongson1 CPUFreq Driver"
-+	help
-+	  This option adds a CPUFreq driver for loongson1 processors which
-+	  support software configurable cpu frequency.
-+
-+	  For details, take a look at <file:Documentation/cpu-freq/>.
-+
-+	  If in doubt, say N.
-+
- endmenu
- 
- menu "PowerPC CPU frequency scaling drivers"
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index db6d9a2..aca7bd3 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -98,6 +98,7 @@ obj-$(CONFIG_CRIS_MACH_ARTPEC3)		+= cris-artpec3-cpufreq.o
- obj-$(CONFIG_ETRAXFS)			+= cris-etraxfs-cpufreq.o
- obj-$(CONFIG_IA64_ACPI_CPUFREQ)		+= ia64-acpi-cpufreq.o
- obj-$(CONFIG_LOONGSON2_CPUFREQ)		+= loongson2_cpufreq.o
-+obj-$(CONFIG_LOONGSON1_CPUFREQ)		+= ls1x-cpufreq.o
- obj-$(CONFIG_SH_CPU_FREQ)		+= sh-cpufreq.o
- obj-$(CONFIG_SPARC_US2E_CPUFREQ)	+= sparc-us2e-cpufreq.o
- obj-$(CONFIG_SPARC_US3_CPUFREQ)		+= sparc-us3-cpufreq.o
-diff --git a/drivers/cpufreq/ls1x-cpufreq.c b/drivers/cpufreq/ls1x-cpufreq.c
-new file mode 100644
-index 0000000..2655960
---- /dev/null
-+++ b/drivers/cpufreq/ls1x-cpufreq.c
-@@ -0,0 +1,233 @@
-+/*
-+ * CPU Frequency Scaling for Loongson 1 SoC
-+ *
-+ * Copyright (C) 2014 Zhang, Keguang <keguang.zhang@gmail.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2. This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/clk-provider.h>
-+#include <linux/cpu.h>
-+#include <linux/cpufreq.h>
-+#include <linux/delay.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+
-+#include <asm/mach-loongson1/cpufreq.h>
-+#include <asm/mach-loongson1/loongson1.h>
-+
-+static struct {
-+	struct device *dev;
-+	struct clk *clk;	/* CPU clk */
-+	struct clk *mux_clk;	/* MUX of CPU clk */
-+	struct clk *pll_clk;	/* PLL clk */
-+	struct clk *osc_clk;	/* OSC clk */
-+	unsigned int max_freq;
-+	unsigned int min_freq;
-+} ls1x_cpufreq;
-+
-+static int ls1x_cpufreq_notifier(struct notifier_block *nb,
-+				 unsigned long val, void *data)
-+{
-+	if (val == CPUFREQ_POSTCHANGE)
-+		current_cpu_data.udelay_val = loops_per_jiffy;
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block ls1x_cpufreq_notifier_block = {
-+	.notifier_call = ls1x_cpufreq_notifier
-+};
-+
-+static int ls1x_cpufreq_target(struct cpufreq_policy *policy,
-+			       unsigned int index)
-+{
-+	unsigned int old_freq, new_freq;
-+
-+	old_freq = policy->cur;
-+	new_freq = policy->freq_table[index].frequency;
-+
-+	/*
-+	 * The procedure of reconfiguring CPU clk is as below.
-+	 *
-+	 *  - Reparent CPU clk to OSC clk
-+	 *  - Reset CPU clock (very important)
-+	 *  - Reconfigure CPU DIV
-+	 *  - Reparent CPU clk back to CPU DIV clk
-+	 */
-+
-+	dev_dbg(ls1x_cpufreq.dev, "%u KHz --> %u KHz\n", old_freq, new_freq);
-+	clk_set_parent(policy->clk, ls1x_cpufreq.osc_clk);
-+	__raw_writel(__raw_readl(LS1X_CLK_PLL_DIV) | RST_CPU_EN | RST_CPU,
-+		     LS1X_CLK_PLL_DIV);
-+	__raw_writel(__raw_readl(LS1X_CLK_PLL_DIV) & ~(RST_CPU_EN | RST_CPU),
-+		     LS1X_CLK_PLL_DIV);
-+	clk_set_rate(ls1x_cpufreq.mux_clk, new_freq * 1000);
-+	clk_set_parent(policy->clk, ls1x_cpufreq.mux_clk);
-+
-+	return 0;
-+}
-+
-+static int ls1x_cpufreq_init(struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_frequency_table *freq_tbl;
-+	unsigned int pll_freq, freq;
-+	int steps, i, ret;
-+
-+	pll_freq = clk_get_rate(ls1x_cpufreq.pll_clk) / 1000;
-+
-+	steps = 1 << DIV_CPU_WIDTH;
-+	freq_tbl = kzalloc(sizeof(*freq_tbl) * steps, GFP_KERNEL);
-+	if (!freq_tbl) {
-+		dev_err(ls1x_cpufreq.dev,
-+			"failed to alloc cpufreq_frequency_table\n");
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+
-+	for (i = 0; i < (steps - 1); i++) {
-+		freq = pll_freq / (i + 1);
-+		if ((freq < ls1x_cpufreq.min_freq) ||
-+		    (freq > ls1x_cpufreq.max_freq))
-+			freq_tbl[i].frequency = CPUFREQ_ENTRY_INVALID;
-+		else
-+			freq_tbl[i].frequency = freq;
-+		dev_dbg(ls1x_cpufreq.dev,
-+			"cpufreq table: index %d: frequency %d\n", i,
-+			freq_tbl[i].frequency);
-+	}
-+	freq_tbl[i].frequency = CPUFREQ_TABLE_END;
-+
-+	policy->clk = ls1x_cpufreq.clk;
-+	ret = cpufreq_generic_init(policy, freq_tbl, 0);
-+	if (ret)
-+		kfree(freq_tbl);
-+out:
-+	return ret;
-+}
-+
-+static int ls1x_cpufreq_exit(struct cpufreq_policy *policy)
-+{
-+	kfree(policy->freq_table);
-+	return 0;
-+}
-+
-+static struct cpufreq_driver ls1x_cpufreq_driver = {
-+	.name		= "cpufreq-ls1x",
-+	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-+	.verify		= cpufreq_generic_frequency_table_verify,
-+	.target_index	= ls1x_cpufreq_target,
-+	.get		= cpufreq_generic_get,
-+	.init		= ls1x_cpufreq_init,
-+	.exit		= ls1x_cpufreq_exit,
-+	.attr		= cpufreq_generic_attr,
-+};
-+
-+static int ls1x_cpufreq_remove(struct platform_device *pdev)
-+{
-+	cpufreq_unregister_notifier(&ls1x_cpufreq_notifier_block,
-+				    CPUFREQ_TRANSITION_NOTIFIER);
-+	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
-+	clk_put(ls1x_cpufreq.osc_clk);
-+	clk_put(ls1x_cpufreq.clk);
-+
-+	return 0;
-+}
-+
-+static int ls1x_cpufreq_probe(struct platform_device *pdev)
-+{
-+	struct plat_ls1x_cpufreq *pdata = pdev->dev.platform_data;
-+	struct clk *clk;
-+	int ret;
-+
-+	if (!pdata)
-+		return -EINVAL;
-+	if (!pdata->clk_name)
-+		return -EINVAL;
-+	if (!pdata->osc_clk_name)
-+		return -EINVAL;
-+
-+	ls1x_cpufreq.dev = &pdev->dev;
-+
-+	clk = clk_get(NULL, pdata->clk_name);
-+	if (IS_ERR(clk)) {
-+		dev_err(ls1x_cpufreq.dev, "unable to get %s clock\n",
-+			pdata->clk_name);
-+		ret = PTR_ERR(clk);
-+		goto out;
-+	}
-+	ls1x_cpufreq.clk = clk;
-+
-+	clk = clk_get_parent(clk);
-+	if (IS_ERR(clk)) {
-+		dev_err(ls1x_cpufreq.dev, "unable to get parent of %s clock\n",
-+			__clk_get_name(ls1x_cpufreq.clk));
-+		ret = PTR_ERR(clk);
-+		goto err_mux;
-+	}
-+	ls1x_cpufreq.mux_clk = clk;
-+
-+	clk = clk_get_parent(clk);
-+	if (IS_ERR(clk)) {
-+		dev_err(ls1x_cpufreq.dev, "unable to get parent of %s clock\n",
-+			__clk_get_name(ls1x_cpufreq.mux_clk));
-+		ret = PTR_ERR(clk);
-+		goto err_mux;
-+	}
-+	ls1x_cpufreq.pll_clk = clk;
-+
-+	clk = clk_get(NULL, pdata->osc_clk_name);
-+	if (IS_ERR(clk)) {
-+		dev_err(ls1x_cpufreq.dev, "unable to get %s clock\n",
-+			pdata->osc_clk_name);
-+		ret = PTR_ERR(clk);
-+		goto err_mux;
-+	}
-+	ls1x_cpufreq.osc_clk = clk;
-+
-+	ls1x_cpufreq.max_freq = pdata->max_freq;
-+	ls1x_cpufreq.min_freq = pdata->min_freq;
-+
-+	ret = cpufreq_register_driver(&ls1x_cpufreq_driver);
-+	if (ret) {
-+		dev_err(ls1x_cpufreq.dev,
-+			"failed to register cpufreq driver: %d\n", ret);
-+		goto err_driver;
-+	}
-+
-+	ret = cpufreq_register_notifier(&ls1x_cpufreq_notifier_block,
-+					CPUFREQ_TRANSITION_NOTIFIER);
-+
-+	if (!ret)
-+		goto out;
-+
-+	dev_err(ls1x_cpufreq.dev, "failed to register cpufreq notifier: %d\n",
-+		ret);
-+
-+	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
-+err_driver:
-+	clk_put(ls1x_cpufreq.osc_clk);
-+err_mux:
-+	clk_put(ls1x_cpufreq.clk);
-+out:
-+	return ret;
-+}
-+
-+static struct platform_driver ls1x_cpufreq_platdrv = {
-+	.driver = {
-+		.name	= "ls1x-cpufreq",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= ls1x_cpufreq_probe,
-+	.remove		= ls1x_cpufreq_remove,
-+};
-+
-+module_platform_driver(ls1x_cpufreq_platdrv);
-+
-+MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
-+MODULE_DESCRIPTION("Loongson 1 CPUFreq driver");
-+MODULE_LICENSE("GPL");
--- 
-1.9.1
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
+
+> ---
+>  drivers/amba/bus.c       | 29 +++++++++++++++++++++++++----
+>  include/linux/amba/bus.h |  1 +
+>  2 files changed, 26 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+> index 3cf61a127ee5..e8fd5706954f 100644
+> --- a/drivers/amba/bus.c
+> +++ b/drivers/amba/bus.c
+> @@ -94,8 +94,18 @@ static int amba_pm_runtime_suspend(struct device *dev)
+>         struct amba_device *pcdev = to_amba_device(dev);
+>         int ret = pm_generic_runtime_suspend(dev);
+>
+> -       if (ret == 0 && dev->driver)
+> -               clk_disable_unprepare(pcdev->pclk);
+> +       if (ret == 0 && dev->driver) {
+> +               /*
+> +                * Drivers should not change pm_runtime_irq_safe()
+> +                * after probe.
+> +                */
+> +               WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
+> +
+> +               if (pcdev->irq_safe)
+> +                       clk_disable(pcdev->pclk);
+> +               else
+> +                       clk_disable_unprepare(pcdev->pclk);
+> +       }
+>
+>         return ret;
+>  }
+> @@ -106,7 +116,16 @@ static int amba_pm_runtime_resume(struct device *dev)
+>         int ret;
+>
+>         if (dev->driver) {
+> -               ret = clk_prepare_enable(pcdev->pclk);
+> +               /*
+> +                * Drivers should not change pm_runtime_irq_safe()
+> +                * after probe.
+> +                */
+> +               WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
+> +
+> +               if (pcdev->irq_safe)
+> +                       ret = clk_enable(pcdev->pclk);
+> +               else
+> +                       ret = clk_prepare_enable(pcdev->pclk);
+>                 /* Failure is probably fatal to the system, but... */
+>                 if (ret)
+>                         return ret;
+> @@ -191,8 +210,10 @@ static int amba_probe(struct device *dev)
+>                 pm_runtime_enable(dev);
+>
+>                 ret = pcdrv->probe(pcdev, id);
+> -               if (ret == 0)
+> +               if (ret == 0) {
+> +                       pcdev->irq_safe = pm_runtime_is_irq_safe(dev);
+>                         break;
+> +               }
+>
+>                 pm_runtime_disable(dev);
+>                 pm_runtime_set_suspended(dev);
+> diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
+> index bb352d0bd737..fd0c0bfa1d38 100644
+> --- a/include/linux/amba/bus.h
+> +++ b/include/linux/amba/bus.h
+> @@ -32,6 +32,7 @@ struct amba_device {
+>         struct clk              *pclk;
+>         unsigned int            periphid;
+>         unsigned int            irq[AMBA_NR_IRQS];
+> +       unsigned int            irq_safe:1;
+>  };
+>
+>  struct amba_driver {
+> --
+> 1.9.1
+>
