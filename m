@@ -1,109 +1,107 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH] arm64: dts: exynos7: add support for cpuidle core power
- down
-Date: Wed, 15 Oct 2014 10:00:47 +0100
-Message-ID: <20141015090047.GA26484@red-moon>
-References: <1413354920-20165-1-git-send-email-k.chander@samsung.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [RFT PATCH] power: bq2415x_charger: Properly handle ENODEV from
+ power_supply_get_by_phandle
+Date: Wed, 15 Oct 2014 11:05:12 +0200
+Message-ID: <20141015090512.GA26651@earth.universe>
+References: <1413275573-23014-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="ReaqsoxgOBHFXBhH"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:42369 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751257AbaJOJAK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Oct 2014 05:00:10 -0400
-In-Reply-To: <1413354920-20165-1-git-send-email-k.chander@samsung.com>
+Received: from mail.kernel.org ([198.145.19.201]:36598 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751347AbaJOJFV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 15 Oct 2014 05:05:21 -0400
 Content-Disposition: inline
+In-Reply-To: <1413275573-23014-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chander Kashyap <k.chander@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
-On Wed, Oct 15, 2014 at 07:35:20AM +0100, Chander Kashyap wrote:
-> Exynos7 has core power down state where cores can be powered off independently.
-> This patch adds support for this state.
 
-Please tell us more about the idle-state values you are adding, in particular
-entry, exit latencies and min-residency values.
+--ReaqsoxgOBHFXBhH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+Hi Krzysztof,
+
+On Tue, Oct 14, 2014 at 10:32:53AM +0200, Krzysztof Kozlowski wrote:
+> The power_supply_get_by_phandle() on error returns ENODEV or NULL.
+> The driver later expects obtained pointer to power supply to be
+> valid or NULL. If it is not NULL then it dereferences it in
+> bq2415x_notifier_call() which would lead to dereferencing ENODEV-value
+> pointer.
+>=20
+> Properly handle the power_supply_get_by_phandle() error case and abort pr=
+obe.
+>=20
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Fixes: faffd234cf85 ("bq2415x_charger: Add DT support")
+> Cc: <stable@vger.kernel.org>
+
+That looks valid, but I guess this should change one more thing:
+
 > ---
-> This patch has following dependencies:
-> 	- [PATCH v5 0/8] arch: arm64: Enable support for Samsung Exynos7 SoC
-> 		http://www.spinics.net/lists/linux-samsung-soc/msg37047.html
-> 	- [PATCH v9 0/8] ARM generic idle states
-> 		http://permalink.gmane.org/gmane.linux.power-management.general/49224
+>  drivers/power/bq2415x_charger.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_char=
+ger.c
+> index e384844a1ae1..d9c457217b6a 100644
+> --- a/drivers/power/bq2415x_charger.c
+> +++ b/drivers/power/bq2415x_charger.c
+> @@ -1579,8 +1579,13 @@ static int bq2415x_probe(struct i2c_client *client,
+>  	if (np) {
+>  		bq->notify_psy =3D power_supply_get_by_phandle(np, "ti,usb-charger-det=
+ection");
+> =20
+> -		if (!bq->notify_psy)
+> +		if (!bq->notify_psy) {
+>  			return -EPROBE_DEFER;
 
-Series above was merged, so dependency is stale.
+this also needs to goto error_2. I guess something as the following
+is needed:
 
->  arch/arm64/boot/dts/exynos/exynos7.dtsi |   18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/exynos/exynos7.dtsi b/arch/arm64/boot/dts/exynos/exynos7.dtsi
-> index ce221ac..8e0a034 100644
-> --- a/arch/arm64/boot/dts/exynos/exynos7.dtsi
-> +++ b/arch/arm64/boot/dts/exynos/exynos7.dtsi
-> @@ -36,6 +36,7 @@
->  			device_type = "cpu";
->  			compatible = "arm,cortex-a57", "arm,armv8";
->  			enable-method = "psci";
-> +			cpu-idle-states = <&CPU_SLEEP>;
+if (IS_ERR_OR_NULL(bq->notify_psy)) {
+    if (bq->notify_psy)
+        dev_err(&client->dev, "no 'ti,usb-charger-detection' property\n");
+    ret =3D PTR_ERR(bq->notify_psy);
+    goto error_2;
+}
 
-I would add cpu-idle-states phandle after the reg property, as defined
-in the idle states bindings.
+> +		} else if (IS_ERR(bq->notify_psy)) {
+> +			dev_err(&client->dev, "no 'ti,usb-charger-detection' property\n");
+> +			ret =3D PTR_ERR(bq->notify_psy);
+> +			goto error_2;
+> +		}
+>  	}
+>  	else if (pdata->notify_device)
+>  		bq->notify_psy =3D power_supply_get_by_name(pdata->notify_device);
 
->  			reg = <0x0>;
->  		};
->  
-> @@ -43,6 +44,7 @@
->  			device_type = "cpu";
->  			compatible = "arm,cortex-a57", "arm,armv8";
->  			enable-method = "psci";
-> +			cpu-idle-states = <&CPU_SLEEP>;
->  			reg = <0x1>;
->  		};
->  
-> @@ -50,6 +52,7 @@
->  			device_type = "cpu";
->  			compatible = "arm,cortex-a57", "arm,armv8";
->  			enable-method = "psci";
-> +			cpu-idle-states = <&CPU_SLEEP>;
->  			reg = <0x2>;
->  		};
->  
-> @@ -57,8 +60,23 @@
->  			device_type = "cpu";
->  			compatible = "arm,cortex-a57", "arm,armv8";
->  			enable-method = "psci";
-> +			cpu-idle-states = <&CPU_SLEEP>;
->  			reg = <0x3>;
->  		};
-> +
-> +		idle-states {
-> +			entry-method = "arm,psci";
-> +
-> +			CPU_SLEEP: cpu-sleep {
-> +				compatible = "arm,idle-state";
-> +				local-timer-stop;
-> +				arm,psci-suspend-param = <0x0010000>;
-> +				entry-latency-us = <20>;
-> +				exit-latency-us = <150>;
-> +				min-residency-us = <2100>;
-> +				status = "enabled";
+-- Sebastian
 
-status ? This is not a documented property. If you need it please explain
-why, define its bindings and we can see how to accommodate it.
+--ReaqsoxgOBHFXBhH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Thank you,
-Lorenzo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-> +			};
-> +		};
->  	};
->  
->  	psci {
-> -- 
-> 1.7.9.5
-> 
-> 
+iQIcBAEBCgAGBQJUPjjIAAoJENju1/PIO/qawOQP/1CLSkz8hSvXboGRTrSka8/p
+qP/CxLpk4Eym5if7krKduqJcSIJxom2SU6uClCuccSZCZr/ea1ngrPfceC1zMun/
+K4XJsy+pIZFCgDBzN7QlZRosYv0C7s5iq3Of22IRNSCSncUMz10bbh1xOly3ic7a
+gBsxpmzymWF7snSnxaWDay5uGoVAXVcYkFJ9Jx6XObIPSzZA8TsjvJrblZBtOlYy
+6xb0eWOXm/zPzwcLTYu0caUA8jImxePnMNdWbPpu3H8Omup2Kwj76cAOQ9kviik9
+xJYhrAC3Fpmf3u1xaLecjj8+EZ8FFtJpwTa9L4KjC+P5Xxu2ckSfO5b70j65VChf
+l0HceNUjR8YF2ljyan74X3RibA8SlC7YfdgqJ8w8z+vdNtmmVwZyRDf0rx6f+Ahi
+jDkk7nH6dfTNeRqJxadlV28Qf1IOtpA4GAgscVbSZ+71Is35KAiTGMJz20iEVwjk
+aSLovT7LCG2lqjFHZJta12xJHHIKT71811Y+qHX+SP4DcAMxNNqYGjCNJBSnpaDN
+QrIde3lKra7Rj6n+3JIgaKlxswRcIsVy0uZnjGpArYSGT7h70zwPVOHpUMYIQ8q6
+aG9At2Tv/KYRXx0+O6DQtqJq31Hf0WheQkK/ljgo2oLoO4vzBrDIe0j7zEJrETpI
+o2ezf+HhVV+B+IQza7Fv
+=oQ2G
+-----END PGP SIGNATURE-----
 
+--ReaqsoxgOBHFXBhH--
