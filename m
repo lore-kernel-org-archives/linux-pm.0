@@ -1,56 +1,80 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH] arm64: dts: exynos7: add support for cpuidle core power
- down
-Date: Wed, 15 Oct 2014 15:07:59 +0100
-Message-ID: <20141015140759.GB26484@red-moon>
-References: <1413354920-20165-1-git-send-email-k.chander@samsung.com>
- <20141015090047.GA26484@red-moon>
- <20141015130218.GB20034@leverpostej>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [RFT PATCH] power: bq2415x_charger: Properly handle ENODEV from
+ power_supply_get_by_phandle
+Date: Wed, 15 Oct 2014 16:09:57 +0200
+Message-ID: <1413382197.9555.0.camel@AMDC1943>
+References: <1413275573-23014-1-git-send-email-k.kozlowski@samsung.com>
+ <20141015090512.GA26651@earth.universe> <1413371491.26771.15.camel@AMDC1943>
+ <20141015135806.GA5152@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:56137 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751191AbaJOOHU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Oct 2014 10:07:20 -0400
-In-Reply-To: <20141015130218.GB20034@leverpostej>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <20141015135806.GA5152@earth.universe>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Chander Kashyap <k.chander@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>
 
-On Wed, Oct 15, 2014 at 02:02:18PM +0100, Mark Rutland wrote:
-> > > +			CPU_SLEEP: cpu-sleep {
-> > > +				compatible = "arm,idle-state";
-> > > +				local-timer-stop;
-> > > +				arm,psci-suspend-param = <0x0010000>;
-> > > +				entry-latency-us = <20>;
-> > > +				exit-latency-us = <150>;
-> > > +				min-residency-us = <2100>;
-> > > +				status = "enabled";
-> 
-> While status is a relatively standard property, it's absence implies
-> everything is OK. There no need for it here as-is.
-> 
-> Additionally, the canonical value is "okay", not "enabled", so this
-> would fail were we to use of_device_is_available in the idle states
-> parsing.
+On =C5=9Bro, 2014-10-15 at 15:58 +0200, Sebastian Reichel wrote:
+> Hi,
+>=20
+> On Wed, Oct 15, 2014 at 01:11:31PM +0200, Krzysztof Kozlowski wrote:
+> > > [...] I guess something as the following is needed:
+> > >=20
+> > > if (IS_ERR_OR_NULL(bq->notify_psy)) {
+> > >     if (bq->notify_psy)
+> > >         dev_err(&client->dev, "no 'ti,usb-charger-detection' prop=
+erty\n");
+> > >     ret =3D PTR_ERR(bq->notify_psy);
+> > >     goto error_2;
+> > > }
+> >=20
+> > So you do not want to defer the probe? What if notified charger wil=
+l
+> > come online after this probe?
+>=20
+> No, but resources must be freed fore the EPROBE_DEFER case, too.
+> You are right, though, that my snipped does not setup the
+> EPROBE_DEFER return value correctly.
+>=20
+> > Second idea - now I think my change is not compatible with bindings
+> > (documentation) and could break booting of existing boards which do=
+ not
+> > provide the "ti,usb-charger-detection" property. For example
+> > arch/arm/boot/dts/omap3-n900.dts
+> >
+> > The "ti,usb-charger-detection" property is marked as optional but m=
+y
+> > patch actually makes it required.
+> >=20
+> > It should be rather like this:
+> >=20
+> > if (IS_ERR(bq->notify_psy)) {
+> >     bq->notify_psy =3D NULL;
+> >     dev_info(&client->dev, "no 'ti,usb-charger-detection' property =
+\n");
+> > } else if (!bq->notify_psy) {
+> >     ret =3D -EPROBE_DEFER;
+> >     goto error_2;
+> > }
+> >
+> > What do you think?
+>=20
+> I thing the dev_info call should include the error code returned,
+> since its not propagated further:
+>=20
+> dev_info(&client->dev, "no 'ti,usb-charger-detection' property (err=3D=
+%d)\n",
+>          PTR_ERR(by->notify_psy));
+>=20
+> Apart from that it looks fine to me. Can you send a v2?
 
-Good point. I still want it documented in the bindings, keeping in mind
-your remark above.
+Sure, I'll send fixed version.
 
-> > status ? This is not a documented property. If you need it please explain
-> > why, define its bindings and we can see how to accommodate it.
-> 
-> Do we expect that some idle states won't be available on some boards
-> built from the same platform?
-
-I think it is something we should expect and be able to cope with that.
-
-I will add status to idle-states bindings updates for this cycle and patch DT
-parsing code accordingly.
-
-Lorenzo
-
+Best regards,
+Krzysztof
+>=20
+> > [...]
+>=20
+> -- Sebastian
