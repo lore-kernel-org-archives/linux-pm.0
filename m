@@ -1,23 +1,78 @@
-From: Ran Shalit <ranshalit@gmail.com>
-Subject: cpuidle and SW sleep
-Date: Wed, 15 Oct 2014 07:55:46 +0300
-Message-ID: <CAJ2oMh+W5vA96ftyRUA8V9fBx8xGA_26QkDt18A-j3+aw3TG4Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f179.google.com ([209.85.223.179]:59742 "EHLO
-	mail-ie0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbaJOEzr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Oct 2014 00:55:47 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Chander Kashyap <k.chander@samsung.com>
+Subject: [PATCH] arm64: dts: exynos7: add support for cpuidle core power down
+Date: Wed, 15 Oct 2014 12:05:20 +0530
+Message-ID: <1413354920-20165-1-git-send-email-k.chander@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, daniel.lezcano@linaro.org, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, mark.rutland@arm.com, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-Hello,
+Exynos7 has core power down state where cores can be powered off independently.
+This patch adds support for this state.
 
-Is there anyone who can please explain the relation between SW sleep
-(such as udelay), to change of C-state as done by cpuidle ?
-How is wakeup done ? As far as I understand udelay is sw delay not HW.
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+---
+This patch has following dependencies:
+	- [PATCH v5 0/8] arch: arm64: Enable support for Samsung Exynos7 SoC
+		http://www.spinics.net/lists/linux-samsung-soc/msg37047.html
+	- [PATCH v9 0/8] ARM generic idle states
+		http://permalink.gmane.org/gmane.linux.power-management.general/49224
 
-Thanks for you comments,
-Ran
+ arch/arm64/boot/dts/exynos/exynos7.dtsi |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/exynos/exynos7.dtsi b/arch/arm64/boot/dts/exynos/exynos7.dtsi
+index ce221ac..8e0a034 100644
+--- a/arch/arm64/boot/dts/exynos/exynos7.dtsi
++++ b/arch/arm64/boot/dts/exynos/exynos7.dtsi
+@@ -36,6 +36,7 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a57", "arm,armv8";
+ 			enable-method = "psci";
++			cpu-idle-states = <&CPU_SLEEP>;
+ 			reg = <0x0>;
+ 		};
+ 
+@@ -43,6 +44,7 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a57", "arm,armv8";
+ 			enable-method = "psci";
++			cpu-idle-states = <&CPU_SLEEP>;
+ 			reg = <0x1>;
+ 		};
+ 
+@@ -50,6 +52,7 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a57", "arm,armv8";
+ 			enable-method = "psci";
++			cpu-idle-states = <&CPU_SLEEP>;
+ 			reg = <0x2>;
+ 		};
+ 
+@@ -57,8 +60,23 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a57", "arm,armv8";
+ 			enable-method = "psci";
++			cpu-idle-states = <&CPU_SLEEP>;
+ 			reg = <0x3>;
+ 		};
++
++		idle-states {
++			entry-method = "arm,psci";
++
++			CPU_SLEEP: cpu-sleep {
++				compatible = "arm,idle-state";
++				local-timer-stop;
++				arm,psci-suspend-param = <0x0010000>;
++				entry-latency-us = <20>;
++				exit-latency-us = <150>;
++				min-residency-us = <2100>;
++				status = "enabled";
++			};
++		};
+ 	};
+ 
+ 	psci {
+-- 
+1.7.9.5
