@@ -1,47 +1,108 @@
-From: James Geboski <jgeboski@gmail.com>
-Subject: Fwd: [PATCH] cpufreq: allow powersave governor as the default without
- expert mode
-Date: Thu, 16 Oct 2014 08:44:45 -0400
-Message-ID: <CAB61YWNi-wNHK0M7QAEPgc9UHUEMX=DuW7CYgxjmrBogKEiOYA@mail.gmail.com>
-References: <1413454804-19370-1-git-send-email-jgeboski@gmail.com>
- <CAKohpokvx5G5JU_KYePOecRfAgXrOrOt__iagMcHQ2iy05gZLQ@mail.gmail.com> <CAB61YWPUjOFx8W_K923uz1GYZsLvVq+cH=k-fguzndqZhsWUww@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Caesar Wang <caesar.wang@rock-chips.com>
+Subject: [PATCH v11 0/5] Rockchip soc thermal driver
+Date: Thu, 16 Oct 2014 21:31:36 +0800
+Message-ID: <1413466301-25952-1-git-send-email-caesar.wang@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f170.google.com ([209.85.217.170]:48869 "EHLO
-	mail-lb0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750993AbaJPMpH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 08:45:07 -0400
-In-Reply-To: <CAB61YWPUjOFx8W_K923uz1GYZsLvVq+cH=k-fguzndqZhsWUww@mail.gmail.com>
+Received: from regular1.263xmail.com ([211.150.99.132]:43930 "EHLO
+	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751232AbaJPNcH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 09:32:07 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com
+Cc: zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, vladimir_zapolskiy@mentor.com, Caesar Wang <caesar.wang@rock-chips.com>
 
-On Thu, Oct 16, 2014 at 6:27 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 16 October 2014 15:50, James Geboski <jgeboski@gmail.com> wrote:
->> The intel_pstate driver only supports the performance and the powersave
->> governors. With the performance governor ensuring the highest possible
->> performance settings, userspace tools fail to make any lasting changes.
->> In order to allow userspace tools to make modifications to the settings,
->> the powersave governor must be in use. This makes having the powersave
->> governor as the default convenient for systems where the intel_pstate
->> driver is being employed. Having to enable expert mode in the kernel
->> configuration is just a headache for such a trivial task.
->>
->> This patch applies to all kernel versions 2.6.38 or greater after the
->> migration from CONFIG_EMBEDDED to CONFIG_EXPERT (6a108a14fa35). Most
->> importantly, this applies to kernel versions 3.9 or greater when the
->> intel_pstate driver was introduced.
->>
->> Signed-off-by: James Geboski <jgeboski@gmail.com>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->>  drivers/cpufreq/Kconfig | 1 -
->>  1 file changed, 1 deletion(-)
->
-> Why did you resent it? Without any information at all about what has changed?
+This series patchs tested on rk3288 SDK board and pinky-v1,v2 board.
+I believe the driver can be used on the rk3288-evb board.
 
-I added your Acked-by line to the patch message. However, I am apparently
-incompetent with git-send-email. I have replied to the original thread,
-please discard this thread. My apologizes for the excessive noise.
+Add this driver, The system can reset the entire chip when
+the thermal temperture over 120C, In case of rising over 125C
+when tha hardware shorting,The sodftware will shutdown via "critical".
+
+Changes in v11:
+	* address comments from Vladimir Zapolskiy.
+	- fix cpufreq_cooling_unregister() to put in correct position. 
+	- fix "data->chn",at least can get valid Tsensor temp.
+
+Changes in v10:
+	* address comments from Doug Anderson.
+	- fix TSHUT polarity,ensure support TSHUT.
+	- add the decription for rk_tsadcv2_initialize().
+
+Changes in v9:
+	* address comments from Dmitry Torokhov.
+	- fix some style be defined
+	- remove some unused code.
+	- clk_disable_unprepare->clk_disable in suspend()
+
+Changes in v8:
+	* address comments from Dmitry Torokhov and Doug Anderson.
+	- add three Teperture Sensors.
+	- support CRU and GPIO reset chip.
+	- rename rk3xxx-cpu-thermal.dtsi as rk3288-thermal.dtsi
+	- alarm-temp via set_trips() callback
+	- remove "reset-gpios"
+
+Changes in v7:
+	- fix get data->clk=0 when in probe() function.
+	- fix some style code.
+	- modify dts,main add rk3xxx-cpu-thermal.dtsi
+
+Changes in v6:
+	* address comments from Tomeu Vizoso.
+	- use thermal's generic framework.
+
+Changes in v5:
+	* address comments from Eduardo Valentin,rui.zhang and Heiko Stubner:
+	- with BIT() macro
+	- manage clocks in suspend/resume.
+	- license is fixed as GPLv2.
+	- #include "thermal_core.h"->#include <linux/thermal.h>
+	- use the generic trip-points.the hw-shut-temp isn't generic trip-points.
+	- The method of binding and unbinding be fixed.
+	- The pin-name tsadc->otp_out
+
+Changes in v4:
+	* address comments from Jonathan Cameron,huangtao and zhaoyifeng:
+	- this series thermal driver still be put in driver/thermal/
+	- modify the thermal driver description.
+
+Changes in v3:(add dts configure)
+	* address comments from Dmitry Torokhov and Arnd Bergmann:
+	- fix clock-names in rockchip-thermal.txt
+	- remove rockchip_thermal_control() in rockchip_set_mode()
+	- fix some code style.
+	- add dts configure.
+
+Changes in v2:
+	* address comments from Heiko Stubner:
+	- fix dt-bindings in rockchip-thermal.txt
+	- remove Author mark
+	- rename TSADC_XXX->TSADCV2_XXX,it eill ready to merge compatible other SoCs.
+	- fix a identation
+	- remove clk_set_rate(),it's no necessary.
+	- fix the SIMPLE_DEV_PM_OPS() function  style.
+
+Caesar Wang (5):
+  thermal: rockchip: add driver for thermal
+  dt-bindings: document Rockchip thermal
+  ARM: dts: add RK3288 Thermal data
+  ARM: dts: add main Thermal info to rk3288
+  ARM: dts: enable Thermal on rk3288-evb board
+
+ .../bindings/thermal/rockchip-thermal.txt          |  45 ++
+ arch/arm/boot/dts/rk3288-evb.dtsi                  |   5 +
+ arch/arm/boot/dts/rk3288-thermal.dtsi              |  58 ++
+ arch/arm/boot/dts/rk3288.dtsi                      |  23 +
+ drivers/thermal/Kconfig                            |   9 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/rockchip_thermal.c                 | 628 +++++++++++++++++++++
+ 7 files changed, 769 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+ create mode 100644 arch/arm/boot/dts/rk3288-thermal.dtsi
+ create mode 100644 drivers/thermal/rockchip_thermal.c
+
+-- 
+1.9.1
+
+
