@@ -1,101 +1,97 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: allow powersave governor as the default without
- expert mode
-Date: Thu, 16 Oct 2014 13:45:44 +0530
-Message-ID: <CAKohpom5fLHc3aFWuxbj4teGiE08cXLMndthaAKBugWUp-_9kA@mail.gmail.com>
-References: <1413322689-6195-1-git-send-email-jgeboski@gmail.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Fix setting max_perf_pct in
+ performance policy
+Date: Thu, 16 Oct 2014 13:47:16 +0530
+Message-ID: <CAKohpo=xf8vfA7XK5h492xzEkQ-aD2wXw-pFQCqQ7Cxr0NhF-A@mail.gmail.com>
+References: <1413415011-31290-1-git-send-email-pali.rohar@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:62502 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751316AbaJPIPp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 04:15:45 -0400
-Received: by mail-ob0-f179.google.com with SMTP id wp4so2452081obc.24
-        for <linux-pm@vger.kernel.org>; Thu, 16 Oct 2014 01:15:44 -0700 (PDT)
-In-Reply-To: <1413322689-6195-1-git-send-email-jgeboski@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: James Geboski <jgeboski@gmail.com>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1413415011-31290-1-git-send-email-pali.rohar@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On 15 October 2014 03:08, James Geboski <jgeboski@gmail.com> wrote:
-> The intel_pstate driver only supports the performance and the powersave
-> governors. With the performance governor ensuring the highest possible
-> performance settings, userspace tools fail to make any lasting changes.
-> In order to allow userspace tools to make modifications to the settings,
-> the powersave governor must be in use. This makes having the powersave
-> governor as the default convenient for systems where the intel_pstate
-> driver is being employed. Having to enable expert mode in the kernel
-> configuration is just a headache for such a trivial task.
+Cc'ing Dirk.
+
+On 16 October 2014 04:46, Pali Roh=C3=A1r <pali.rohar@gmail.com> wrote:
+> Code which changes policy to powersave changes also max_policy_pct ba=
+sed on
+> max_freq. Code which change max_perf_pct has upper limit base on valu=
+e
+> max_policy_pct. When policy is changing from powersave back to perfor=
+mance
+> then max_policy_pct is not changed. Which means that changing max_per=
+f_pct is
+> not possible to high values if max_freq was too low in powersave poli=
+cy.
 >
-> This patch applies to all kernel versions 2.6.38 or greater after the
-> migration from CONFIG_EMBEDDED to CONFIG_EXPERT (6a108a14fa35). Most
-> importantly, this applies to kernel versions 3.9 or greater when the
-> intel_pstate driver was introduced.
+> Test case:
 >
-> Signed-off-by: James Geboski <jgeboski@gmail.com>
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+> 800000
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+> 3300000
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> performance
+> $ cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+> 100
+>
+> $ echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_gover=
+nor
+> $ echo 800000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+> $ echo 20 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
+>
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> powersave
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+> 800000
+> $ cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+> 20
+>
+> $ echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_gov=
+ernor
+> $ echo 3300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_fre=
+q
+> $ echo 100 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
+>
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> performance
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+> 3300000
+> $ cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+> 24
+>
+> And now intel_pstate driver allows to set maximal value for max_perf_=
+pct based
+> on max_policy_pct which is 24 for previous powersave max_freq 800000.
+>
+> This patch will set default value for max_policy_pct when setting pol=
+icy to
+> performance so it will allow to set also max value for max_perf_pct.
+>
+> Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+> Cc: stable@vger.kernel.org
 > ---
->  drivers/cpufreq/Kconfig | 1 -
->  1 file changed, 1 deletion(-)
+>  drivers/cpufreq/intel_pstate.c |    1 +
+>  1 file changed, 1 insertion(+)
 >
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index 3489f8f..73df7db 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -63,7 +63,6 @@ config CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_p=
+state.c
+> index 0668b38..7547ab5 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -714,6 +714,7 @@ static int intel_pstate_set_policy(struct cpufreq=
+_policy *policy)
+>         if (policy->policy =3D=3D CPUFREQ_POLICY_PERFORMANCE) {
+>                 limits.min_perf_pct =3D 100;
+>                 limits.min_perf =3D int_tofp(1);
+> +               limits.max_policy_pct =3D 100;
+>                 limits.max_perf_pct =3D 100;
+>                 limits.max_perf =3D int_tofp(1);
+>                 limits.no_turbo =3D limits.turbo_disabled;
+> --
+> 1.7.9.5
 >
->  config CPU_FREQ_DEFAULT_GOV_POWERSAVE
->         bool "powersave"
-> -       depends on EXPERT
->         select CPU_FREQ_GOV_POWERSAVE
->         help
->           Use the CPUFreq governor 'powersave' as default. This sets
-
-This was the commit which introduced it:
-
-commit 30d221db4439973076953e2ed44344fa92d1d09f
-Author: Alessandro Guido <alessandro.guido@gmail.com>
-Date:   Fri Apr 18 13:31:13 2008 -0700
-
-    [CPUFREQ] allow use of the powersave governor as the default one
-
-    Allow use of the powersave cpufreq governor as the default one for EMBEDDED
-    configs.
-
-    Signed-off-by: Alessandro Guido <alessandro.guido@gmail.com>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Dave Jones <davej@redhat.com>
----
- drivers/cpufreq/Kconfig             | 9 +++++++++
- drivers/cpufreq/cpufreq_powersave.c | 8 ++++++--
- include/linux/cpufreq.h             | 3 +++
- 3 files changed, 18 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index c159ae6..5f076ae 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -69,6 +69,15 @@ config CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-          the frequency statically to the highest frequency supported by
-          the CPU.
-
-+config CPU_FREQ_DEFAULT_GOV_POWERSAVE
-+       bool "powersave"
-+       depends on EMBEDDED
-+       select CPU_FREQ_GOV_POWERSAVE
-+       help
-+         Use the CPUFreq governor 'powersave' as default. This sets
-+         the frequency statically to the lowest frequency supported by
-+         the CPU.
-+
-
-
-
-And I think it was wrong since ever, it should have been selected by
-EMBEDDED instead
-of a depends here.
-
-For your patch:
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
