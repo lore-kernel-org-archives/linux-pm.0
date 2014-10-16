@@ -1,139 +1,138 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 6/6] cpufreq: Loongson1: Add cpufreq driver for Loongson1B (UPDATED)
-Date: Thu, 16 Oct 2014 13:53:19 +0530
-Message-ID: <CAKohpok9T1mT0Pb9ue0Pe8SMo4e6DEXzBn2mPoTo2rUHG+MTXQ@mail.gmail.com>
-References: <1413357812-16895-1-git-send-email-keguang.zhang@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/4] (CMA_AGGRESSIVE) Add argument hibernation to function shrink_all_memory
+Date: Thu, 16 Oct 2014 10:45:21 +0200
+Message-ID: <1471435.6q4YYkTopF@vostro.rjw.lan>
+References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com> <1413430551-22392-3-git-send-email-zhuhui@xiaomi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1413357812-16895-1-git-send-email-keguang.zhang@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kelvin Cheung <keguang.zhang@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1413430551-22392-3-git-send-email-zhuhui@xiaomi.com>
+Sender: owner-linux-mm@kvack.org
+To: Hui Zhu <zhuhui@xiaomi.com>
+Cc: m.szyprowski@samsung.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 List-Id: linux-pm@vger.kernel.org
 
-This is not how we send updated versions, GIT and other tools will commit
-the "(UPDATED)" part while applying. What you were required to do was
-something like:
+[CC list trimmed]
 
-git format-patch A..B --subject-prefix="PATCH V2"
+On Thursday, October 16, 2014 11:35:49 AM Hui Zhu wrote:
+> Function shrink_all_memory try to free `nr_to_reclaim' of memory.
+> CMA_AGGRESSIVE_SHRINK function will call this functon to free `nr_to_reclaim' of
+> memory.  It need different scan_control with current caller function
+> hibernate_preallocate_memory.
+> 
+> If hibernation is true, the caller is hibernate_preallocate_memory.
+> if not, the caller is CMA alloc function.
+> 
+> Signed-off-by: Hui Zhu <zhuhui@xiaomi.com>
+> ---
+>  include/linux/swap.h    |  3 ++-
+>  kernel/power/snapshot.c |  2 +-
+>  mm/vmscan.c             | 19 +++++++++++++------
+>  3 files changed, 16 insertions(+), 8 deletions(-)
+> 
+> diff --git a/include/linux/swap.h b/include/linux/swap.h
+> index 37a585b..9f2cb43 100644
+> --- a/include/linux/swap.h
+> +++ b/include/linux/swap.h
+> @@ -335,7 +335,8 @@ extern unsigned long mem_cgroup_shrink_node_zone(struct mem_cgroup *mem,
+>  						gfp_t gfp_mask, bool noswap,
+>  						struct zone *zone,
+>  						unsigned long *nr_scanned);
+> -extern unsigned long shrink_all_memory(unsigned long nr_pages);
+> +extern unsigned long shrink_all_memory(unsigned long nr_pages,
+> +				       bool hibernation);
+>  extern int vm_swappiness;
+>  extern int remove_mapping(struct address_space *mapping, struct page *page);
+>  extern unsigned long vm_total_pages;
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index 791a618..a00fc35 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -1657,7 +1657,7 @@ int hibernate_preallocate_memory(void)
+>  	 * NOTE: If this is not done, performance will be hurt badly in some
+>  	 * test cases.
+>  	 */
+> -	shrink_all_memory(saveable - size);
+> +	shrink_all_memory(saveable - size, true);
 
-On 15 October 2014 12:53, Kelvin Cheung <keguang.zhang@gmail.com> wrote:
-> +static int ls1x_cpufreq_remove(struct platform_device *pdev)
-> +{
-> +       cpufreq_unregister_notifier(&ls1x_cpufreq_notifier_block,
-> +                                   CPUFREQ_TRANSITION_NOTIFIER);
-> +       cpufreq_unregister_driver(&ls1x_cpufreq_driver);
-> +       clk_put(ls1x_cpufreq.osc_clk);
-> +       clk_put(ls1x_cpufreq.clk);
-> +
-> +       return 0;
-> +}
-> +
-> +static int ls1x_cpufreq_probe(struct platform_device *pdev)
-> +{
-> +       struct plat_ls1x_cpufreq *pdata = pdev->dev.platform_data;
-> +       struct clk *clk;
-> +       int ret;
-> +
-> +       if (!pdata)
-> +               return -EINVAL;
-> +       if (!pdata->clk_name)
-> +               return -EINVAL;
-> +       if (!pdata->osc_clk_name)
-> +               return -EINVAL;
+Instead of doing this, can you please define
 
-I didn't wanted you to do this, You could have done this:
+__shrink_all_memory()
 
-       if (!pdata || !pdata->clk_name || !pdata->osc_clk_name)
-               return -EINVAL;
+that will take the appropriate struct scan_control as an argument and
+then define two wrappers around that, one for hibernation and one for CMA?
 
-So, just a || instead of && :)
+The way you did it opens a field for bugs caused by passing a wrong value
+as the second argument.
 
+>  
+>  	/*
+>  	 * The number of saveable pages in memory was too high, so apply some
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index dcb4707..fdcfa30 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -3404,7 +3404,7 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
+>  	wake_up_interruptible(&pgdat->kswapd_wait);
+>  }
+>  
+> -#ifdef CONFIG_HIBERNATION
+> +#if defined CONFIG_HIBERNATION || defined CONFIG_CMA_AGGRESSIVE
+>  /*
+>   * Try to free `nr_to_reclaim' of memory, system-wide, and return the number of
+>   * freed pages.
+> @@ -3413,22 +3413,29 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
+>   * LRU order by reclaiming preferentially
+>   * inactive > active > active referenced > active mapped
+>   */
+> -unsigned long shrink_all_memory(unsigned long nr_to_reclaim)
+> +unsigned long shrink_all_memory(unsigned long nr_to_reclaim, bool hibernation)
+>  {
+>  	struct reclaim_state reclaim_state;
+>  	struct scan_control sc = {
+>  		.nr_to_reclaim = nr_to_reclaim,
+> -		.gfp_mask = GFP_HIGHUSER_MOVABLE,
+>  		.priority = DEF_PRIORITY,
+> -		.may_writepage = 1,
+>  		.may_unmap = 1,
+>  		.may_swap = 1,
+> -		.hibernation_mode = 1,
+>  	};
+>  	struct zonelist *zonelist = node_zonelist(numa_node_id(), sc.gfp_mask);
+>  	struct task_struct *p = current;
+>  	unsigned long nr_reclaimed;
+>  
+> +	if (hibernation) {
+> +		sc.hibernation_mode = 1;
+> +		sc.may_writepage = 1;
+> +		sc.gfp_mask = GFP_HIGHUSER_MOVABLE;
+> +	} else {
+> +		sc.hibernation_mode = 0;
+> +		sc.may_writepage = !laptop_mode;
+> +		sc.gfp_mask = GFP_USER | __GFP_MOVABLE | __GFP_HIGHMEM;
+> +	}
 > +
-> +       ls1x_cpufreq.dev = &pdev->dev;
-> +
-> +       clk = clk_get(NULL, pdata->clk_name);
+>  	p->flags |= PF_MEMALLOC;
+>  	lockdep_set_current_reclaim_state(sc.gfp_mask);
+>  	reclaim_state.reclaimed_slab = 0;
+> @@ -3442,7 +3449,7 @@ unsigned long shrink_all_memory(unsigned long nr_to_reclaim)
+>  
+>  	return nr_reclaimed;
+>  }
+> -#endif /* CONFIG_HIBERNATION */
+> +#endif /* CONFIG_HIBERNATION || CONFIG_CMA_AGGRESSIVE */
+>  
+>  /* It's optimal to keep kswapds on the same CPUs as their memory, but
+>     not required for correctness.  So if the last cpu in a node goes
+> 
 
-I believe we agreed for devm_clk_get(), isn't it ?
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
 
-> +       if (IS_ERR(clk)) {
-> +               dev_err(ls1x_cpufreq.dev, "unable to get %s clock\n",
-> +                       pdata->clk_name);
-> +               ret = PTR_ERR(clk);
-> +               goto out;
-> +       }
-> +       ls1x_cpufreq.clk = clk;
-> +
-> +       clk = clk_get_parent(clk);
-> +       if (IS_ERR(clk)) {
-> +               dev_err(ls1x_cpufreq.dev, "unable to get parent of %s clock\n",
-> +                       __clk_get_name(ls1x_cpufreq.clk));
-> +               ret = PTR_ERR(clk);
-> +               goto err_mux;
-> +       }
-> +       ls1x_cpufreq.mux_clk = clk;
-> +
-> +       clk = clk_get_parent(clk);
-> +       if (IS_ERR(clk)) {
-> +               dev_err(ls1x_cpufreq.dev, "unable to get parent of %s clock\n",
-> +                       __clk_get_name(ls1x_cpufreq.mux_clk));
-> +               ret = PTR_ERR(clk);
-> +               goto err_mux;
-> +       }
-> +       ls1x_cpufreq.pll_clk = clk;
-> +
-> +       clk = clk_get(NULL, pdata->osc_clk_name);
-> +       if (IS_ERR(clk)) {
-> +               dev_err(ls1x_cpufreq.dev, "unable to get %s clock\n",
-> +                       pdata->osc_clk_name);
-> +               ret = PTR_ERR(clk);
-> +               goto err_mux;
-> +       }
-> +       ls1x_cpufreq.osc_clk = clk;
-> +
-> +       ls1x_cpufreq.max_freq = pdata->max_freq;
-> +       ls1x_cpufreq.min_freq = pdata->min_freq;
-> +
-> +       ret = cpufreq_register_driver(&ls1x_cpufreq_driver);
-> +       if (ret) {
-> +               dev_err(ls1x_cpufreq.dev,
-> +                       "failed to register cpufreq driver: %d\n", ret);
-> +               goto err_driver;
-> +       }
-> +
-> +       ret = cpufreq_register_notifier(&ls1x_cpufreq_notifier_block,
-> +                                       CPUFREQ_TRANSITION_NOTIFIER);
-> +
-> +       if (!ret)
-> +               goto out;
-> +
-> +       dev_err(ls1x_cpufreq.dev, "failed to register cpufreq notifier: %d\n",
-> +               ret);
-> +
-> +       cpufreq_unregister_driver(&ls1x_cpufreq_driver);
-> +err_driver:
-> +       clk_put(ls1x_cpufreq.osc_clk);
-> +err_mux:
-> +       clk_put(ls1x_cpufreq.clk);
-> +out:
-> +       return ret;
-> +}
-> +
-> +static struct platform_driver ls1x_cpufreq_platdrv = {
-> +       .driver = {
-> +               .name   = "ls1x-cpufreq",
-> +               .owner  = THIS_MODULE,
-> +       },
-> +       .probe          = ls1x_cpufreq_probe,
-> +       .remove         = ls1x_cpufreq_remove,
-> +};
-> +
-> +module_platform_driver(ls1x_cpufreq_platdrv);
-> +
-> +MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
-> +MODULE_DESCRIPTION("Loongson 1 CPUFreq driver");
-> +MODULE_LICENSE("GPL");
-> --
-> 1.9.1
->
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
