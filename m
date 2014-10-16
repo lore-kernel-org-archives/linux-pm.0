@@ -1,8 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v2 6/8] power: apm_power: Use power_supply_*() API for
- accessing function attrs
-Date: Thu, 16 Oct 2014 09:32:55 +0200
-Message-ID: <1413444777-24107-7-git-send-email-k.kozlowski@samsung.com>
+Subject: [PATCH v2 5/8] mfd: ab8500: Use power_supply_*() API for accessing
+ function attrs
+Date: Thu, 16 Oct 2014 09:32:54 +0200
+Message-ID: <1413444777-24107-6-git-send-email-k.kozlowski@samsung.com>
 References: <1413444777-24107-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1413444777-24107-1-git-send-email-k.kozlowski@samsung.com>
@@ -19,26 +19,35 @@ supply (e.g. by removing the driver). Replace:
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Acked-by: Jonghwa Lee <jonghwa3.lee@samusng.com>
 Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/power/apm_power.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/mfd/ab8500-sysctrl.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/power/apm_power.c b/drivers/power/apm_power.c
-index 39763015b360..2206f9ff6488 100644
---- a/drivers/power/apm_power.c
-+++ b/drivers/power/apm_power.c
-@@ -15,10 +15,10 @@
- #include <linux/apm-emulation.h>
+diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctrl.c
+index 8e0dae59844d..93b2d2c32ca3 100644
+--- a/drivers/mfd/ab8500-sysctrl.c
++++ b/drivers/mfd/ab8500-sysctrl.c
+@@ -49,7 +49,8 @@ static void ab8500_power_off(void)
+ 		if (!psy)
+ 			continue;
  
+-		ret = psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &val);
++		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
++				&val);
  
--#define PSY_PROP(psy, prop, val) (psy->get_property(psy, \
-+#define PSY_PROP(psy, prop, val) (power_supply_get_property(psy, \
- 			 POWER_SUPPLY_PROP_##prop, val))
- 
--#define _MPSY_PROP(prop, val) (main_battery->get_property(main_battery, \
-+#define _MPSY_PROP(prop, val) (power_supply_get_property(main_battery, \
- 							 prop, val))
- 
- #define MPSY_PROP(prop, val) _MPSY_PROP(POWER_SUPPLY_PROP_##prop, val)
+ 		if (!ret && val.intval) {
+ 			charger_present = true;
+@@ -63,8 +64,8 @@ static void ab8500_power_off(void)
+ 	/* Check if battery is known */
+ 	psy = power_supply_get_by_name("ab8500_btemp");
+ 	if (psy) {
+-		ret = psy->get_property(psy, POWER_SUPPLY_PROP_TECHNOLOGY,
+-					&val);
++		ret = power_supply_get_property(psy,
++				POWER_SUPPLY_PROP_TECHNOLOGY, &val);
+ 		if (!ret && val.intval != POWER_SUPPLY_TECHNOLOGY_UNKNOWN) {
+ 			printk(KERN_INFO
+ 			       "Charger \"%s\" is connected with known battery."
 -- 
 1.9.1
