@@ -1,65 +1,86 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: PM/runtime issue: Device cannot runtime resume because power domain is
- off during system resume
-Date: Thu, 16 Oct 2014 16:05:02 +0200
-Message-ID: <1413468302.5605.9.camel@AMDC1943>
+From: Matt Fleming <matt@console-pimps.org>
+Subject: Re: [PATCH 42/44] efi: Register poweroff handler with kernel
+ poweroff handler
+Date: Thu, 16 Oct 2014 15:59:27 +0100
+Message-ID: <20141016145927.GI14343@console-pimps.org>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-43-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:43160 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751587AbaJPOFG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 10:05:06 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1412659726-29957-43-git-send-email-linux@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Matt Fleming <matt.fleming@intel.com>, Mark Salter <msalter@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
-
-I encounter issues with DRM/panel driver for Exynos after resuming from
-suspend to RAM. This is reproduced on 3.16 but I think it is applicable
-also to mainline.
-
-The scenario:
-0. DRM DSI is in LCD power domain. Power domain is OFF before
-suspending.
-1. System suspends.
-2. System resumes.
-3. DRM driver:resume().
-4. pm_runtime_get() for DRM DSI driver.
-5. This should enable LCD power domain.
-6. but __pm_genpd_poweron() exits early because:
-   genpd->prepared_count = 3
-   genpd->suspend_power_off = 1
-  in domain.c:183
-
-7. The domain is not powered on but it is marked as active.
-8. The DRM driver thinks everything is OK and proceeds with resume...
-but it fails because whole power domain is OFF.
-
-The question: Shouldn't the power domain be powered up EARLY?
-
-Something like this:
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 40bc2f4072cc..4fdfe404a04c 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -179,8 +179,7 @@ static int __pm_genpd_poweron(struct
-        }
-        finish_wait(&genpd->status_wait_queue, &wait);
+On Mon, 06 Oct, at 10:28:44PM, Guenter Roeck wrote:
+> Register with kernel poweroff handler instead of setting pm_power_off
+> directly. Register with low priority value of 64 since the efi code
+> states that this is a poweroff handler of last resort.
+> 
+> Cc: Matt Fleming <matt.fleming@intel.com>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> ---
+>  drivers/firmware/efi/reboot.c | 23 +++++++++++++++++++----
+>  1 file changed, 19 insertions(+), 4 deletions(-)
  
--       if (genpd->status == GPD_STATE_ACTIVE
--           || (genpd->prepared_count > 0 && genpd->suspend_power_off))
-+       if (genpd->status == GPD_STATE_ACTIVE)
-                return 0;
- 
-        if (genpd->status != GPD_STATE_POWER_OFF) {
+Looks OK to me. Mark?
+
+> diff --git a/drivers/firmware/efi/reboot.c b/drivers/firmware/efi/reboot.c
+> index 9c59d1c..c082439 100644
+> --- a/drivers/firmware/efi/reboot.c
+> +++ b/drivers/firmware/efi/reboot.c
+> @@ -3,6 +3,8 @@
+>   * Copyright (c) 2014 Red Hat, Inc., Mark Salter <msalter@redhat.com>
+>   */
+>  #include <linux/efi.h>
+> +#include <linux/notifier.h>
+> +#include <linux/pm.h>
+>  #include <linux/reboot.h>
+>  
+>  int efi_reboot_quirk_mode = -1;
+> @@ -38,19 +40,32 @@ bool __weak efi_poweroff_required(void)
+>  	return false;
+>  }
+>  
+> -static void efi_power_off(void)
+> +static int efi_power_off(struct notifier_block *this,
+> +			 unsigned long unused1, void *unused2)
+>  {
+>  	efi.reset_system(EFI_RESET_SHUTDOWN, EFI_SUCCESS, 0, NULL);
+> +
+> +	return NOTIFY_DONE;
+>  }
+>  
+> +static struct notifier_block efi_poweroff_nb = {
+> +	.notifier_call = efi_power_off,
+> +	.priority = 64,
+> +};
+> +
+>  static int __init efi_shutdown_init(void)
+>  {
+> +	int ret = 0;
+> +
+>  	if (!efi_enabled(EFI_RUNTIME_SERVICES))
+>  		return -ENODEV;
+>  
+> -	if (efi_poweroff_required())
+> -		pm_power_off = efi_power_off;
+> +	if (efi_poweroff_required()) {
+> +		ret = register_poweroff_handler(&efi_poweroff_nb);
+> +		if (ret)
+> +			pr_err("efi: Failed to register poweroff handler\n");
+> +	}
+>  
+> -	return 0;
+> +	return ret;
+>  }
+>  late_initcall(efi_shutdown_init);
+> -- 
+> 1.9.1
 
 
-If not... how to solve the scenario above?
-
-Best regards,
-Krzyszto
-
+-- 
+Matt Fleming, Intel Open Source Technology Center
