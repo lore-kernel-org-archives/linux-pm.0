@@ -1,8 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v2 3/8] power: 88pm860x_charger: Use power_supply_*() API for
+Subject: [PATCH v2 7/8] power: bq2415x_charger: Use power_supply_*() API for
  accessing function attrs
-Date: Thu, 16 Oct 2014 09:32:52 +0200
-Message-ID: <1413444777-24107-4-git-send-email-k.kozlowski@samsung.com>
+Date: Thu, 16 Oct 2014 09:32:56 +0200
+Message-ID: <1413444777-24107-8-git-send-email-k.kozlowski@samsung.com>
 References: <1413444777-24107-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1413444777-24107-1-git-send-email-k.kozlowski@samsung.com>
@@ -15,63 +15,27 @@ Replace direct calls to power supply function attributes with wrappers.
 Wrappers provide safe access in case of unregistering the power
 supply (e.g. by removing the driver). Replace:
  - get_property -> power_supply_get_property
- - set_property -> power_supply_set_property
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Acked-by: Jonghwa Lee <jonghwa3.lee@samusng.com>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- drivers/power/88pm860x_charger.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/power/bq2415x_charger.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/88pm860x_charger.c b/drivers/power/88pm860x_charger.c
-index de029bbc1cc1..534b3e2e3487 100644
---- a/drivers/power/88pm860x_charger.c
-+++ b/drivers/power/88pm860x_charger.c
-@@ -296,12 +296,13 @@ static int set_charging_fsm(struct pm860x_charger_info *info)
- 	psy = power_supply_get_by_name(pm860x_supplied_to[0]);
- 	if (!psy)
- 		return -EINVAL;
--	ret = psy->get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW, &data);
-+	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+			&data);
- 	if (ret)
- 		return ret;
- 	vbatt = data.intval / 1000;
+diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_charger.c
+index d9c457217b6a..81a3a78b92d8 100644
+--- a/drivers/power/bq2415x_charger.c
++++ b/drivers/power/bq2415x_charger.c
+@@ -816,7 +816,8 @@ static int bq2415x_notifier_call(struct notifier_block *nb,
  
--	ret = psy->get_property(psy, POWER_SUPPLY_PROP_PRESENT, &data);
-+	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_PRESENT, &data);
- 	if (ret)
- 		return ret;
+ 	dev_dbg(bq->dev, "notifier call was called\n");
  
-@@ -430,7 +431,7 @@ static irqreturn_t pm860x_temp_handler(int irq, void *data)
- 	psy = power_supply_get_by_name(pm860x_supplied_to[0]);
- 	if (!psy)
- 		goto out;
--	ret = psy->get_property(psy, POWER_SUPPLY_PROP_TEMP, &temp);
-+	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_TEMP, &temp);
- 	if (ret)
- 		goto out;
- 	value = temp.intval / 10;
-@@ -485,7 +486,8 @@ static irqreturn_t pm860x_done_handler(int irq, void *data)
- 	psy = power_supply_get_by_name(pm860x_supplied_to[0]);
- 	if (!psy)
- 		goto out;
--	ret = psy->get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW, &val);
-+	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+			&val);
- 	if (ret)
- 		goto out;
- 	vbatt = val.intval / 1000;
-@@ -500,7 +502,8 @@ static irqreturn_t pm860x_done_handler(int irq, void *data)
- 	if (ret < 0)
- 		goto out;
- 	if (vbatt > CHARGE_THRESHOLD && ret & STATUS2_CHG)
--		psy->set_property(psy, POWER_SUPPLY_PROP_CHARGE_FULL, &val);
-+		power_supply_set_property(psy, POWER_SUPPLY_PROP_CHARGE_FULL,
-+				&val);
+-	ret = psy->get_property(psy, POWER_SUPPLY_PROP_CURRENT_MAX, &prop);
++	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_CURRENT_MAX,
++			&prop);
+ 	if (ret != 0)
+ 		return NOTIFY_OK;
  
- out:
- 	mutex_unlock(&info->lock);
 -- 
 1.9.1
