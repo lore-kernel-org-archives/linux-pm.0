@@ -1,52 +1,51 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: Vladimir Zapolskiy <vz-ChpfBGZJDbMAvxtiuMwx3w@public.gmane.org>
 Subject: Re: [PATCH v11 1/5] thermal: rockchip: add driver for thermal
-Date: Thu, 16 Oct 2014 15:52:59 -0700
-Message-ID: <20141016225259.GC30009@dtor-ws>
-References: <1413466301-25952-1-git-send-email-caesar.wang@rock-chips.com>
- <1413466301-25952-2-git-send-email-caesar.wang@rock-chips.com>
+Date: Fri, 17 Oct 2014 02:15:40 +0300
+Message-ID: <5440519C.5040001@mleia.com>
+References: <1413466301-25952-1-git-send-email-caesar.wang@rock-chips.com> <1413466301-25952-2-git-send-email-caesar.wang@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1413466301-25952-2-git-send-email-caesar.wang@rock-chips.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Caesar Wang <caesar.wang@rock-chips.com>
-Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, vladimir_zapolskiy@mentor.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1413466301-25952-2-git-send-email-caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Cc: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, zyf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, cjf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, zhengsq-TNX95d0MmH7DzftRWevZcw@public.gmane.org, vladimir_zapolskiy-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi Caesar,
 
-On Thu, Oct 16, 2014 at 09:31:37PM +0800, Caesar Wang wrote:
+On 16.10.2014 16:31, Caesar Wang wrote:
 > Thermal is TS-ADC Controller module supports
 > user-defined mode and automatic mode.
-> 
+>
 > User-defined mode refers,TSADC all the control signals entirely by
 > software writing to register for direct control.
-> 
+>
 > Automaic mode refers to the module automatically poll TSADC output,
 > and the results were checked.If you find that the temperature High
 > in a period of time,an interrupt is generated to the processor
 > down-measures taken;If the temperature over a period of time High,
 > the resulting TSHUT gave CRU module,let it reset the entire chip,
 > or via GPIO give PMIC.
-> 
-> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
-> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+>
+> Signed-off-by: zhaoyifeng<zyf-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+> Signed-off-by: Caesar Wang<caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 > ---
->  drivers/thermal/Kconfig            |   9 +
->  drivers/thermal/Makefile           |   1 +
->  drivers/thermal/rockchip_thermal.c | 688 +++++++++++++++++++++++++++++++++++++
->  3 files changed, 698 insertions(+)
->  create mode 100644 drivers/thermal/rockchip_thermal.c
-> 
+>   drivers/thermal/Kconfig            |   9 +
+>   drivers/thermal/Makefile           |   1 +
+>   drivers/thermal/rockchip_thermal.c | 688 +++++++++++++++++++++++++++++++++++++
+>   3 files changed, 698 insertions(+)
+>   create mode 100644 drivers/thermal/rockchip_thermal.c
+>
 > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
 > index ef5587f..5efcf73 100644
 > --- a/drivers/thermal/Kconfig
 > +++ b/drivers/thermal/Kconfig
 > @@ -133,6 +133,15 @@ config SPEAR_THERMAL
->  	  Enable this to plug the SPEAr thermal sensor driver into the Linux
->  	  thermal framework.
->  
+>   	  Enable this to plug the SPEAr thermal sensor driver into the Linux
+>   	  thermal framework.
+>
 > +config ROCKCHIP_THERMAL
 > +	tristate "Rockchip thermal driver"
 > +	depends on ARCH_ROCKCHIP
@@ -56,21 +55,21 @@ On Thu, Oct 16, 2014 at 09:31:37PM +0800, Caesar Wang wrote:
 > +	  trip point. Cpufreq is used as the cooling device and will throttle
 > +	  CPUs when the Temperature crosses the passive trip point.
 > +
->  config RCAR_THERMAL
->  	tristate "Renesas R-Car thermal driver"
->  	depends on ARCH_SHMOBILE || COMPILE_TEST
+>   config RCAR_THERMAL
+>   	tristate "Renesas R-Car thermal driver"
+>   	depends on ARCH_SHMOBILE || COMPILE_TEST
 > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
 > index 31e232f..21da0a8 100644
 > --- a/drivers/thermal/Makefile
 > +++ b/drivers/thermal/Makefile
 > @@ -19,6 +19,7 @@ thermal_sys-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
->  
->  # platform thermal drivers
->  obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
+>
+>   # platform thermal drivers
+>   obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
 > +obj-$(CONFIG_ROCKCHIP_THERMAL)	+= rockchip_thermal.o
->  obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
->  obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
->  obj-y				+= samsung/
+>   obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
+>   obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
+>   obj-y				+= samsung/
 > diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
 > new file mode 100644
 > index 0000000..4ecc649
@@ -90,16 +89,16 @@ On Thu, Oct 16, 2014 at 09:31:37PM +0800, Caesar Wang wrote:
 > + * more details.
 > + */
 > +
-> +#include <linux/clk.h>
-> +#include <linux/cpu_cooling.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/io.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_irq.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/thermal.h>
+> +#include<linux/clk.h>
+> +#include<linux/cpu_cooling.h>
+> +#include<linux/interrupt.h>
+> +#include<linux/io.h>
+> +#include<linux/module.h>
+> +#include<linux/of.h>
+> +#include<linux/of_address.h>
+> +#include<linux/of_irq.h>
+> +#include<linux/platform_device.h>
+> +#include<linux/thermal.h>
 > +
 > +/**
 > + * If the temperature over a period of time High,
@@ -133,9 +132,6 @@ On Thu, Oct 16, 2014 at 09:31:37PM +0800, Caesar Wang wrote:
 > +	unsigned long hw_shut_temp;
 > +	unsigned long alarm_temp;
 > +	bool irq_enabled;
-
-You set this flag but never check it.
-
 > +	int irq;
 > +	int reset_mode;
 > +	int chn;
@@ -146,11 +142,6 @@ You set this flag but never check it.
 > +
 > +struct rockchip_tsadc_platform_data {
 > +	unsigned long temp_passive;
-
-Why do we need to have passive temperature in chip data? Also I wonder
-why we need temperatures to be unsigned longs instead of "normal"
-unsigned ints.
-
 > +	unsigned long hw_shut_temp;
 > +	int reset_mode;
 > +
@@ -178,13 +169,13 @@ unsigned ints.
 > +
 > +#define TSADCV2_AUTO_EN				BIT(0)
 > +#define TSADCV2_AUTO_DISABLE			~BIT(0)
-> +#define TSADCV2_AUTO_SRC_EN			(0x3ff << 4)
+> +#define TSADCV2_AUTO_SRC_EN			(0x3ff<<  4)
 > +#define TSADCV2_AUTO_TSHUT_POLARITY_HIGH	BIT(8)
 > +#define TSADCV2_AUTO_TSHUT_POLARITY_LOW		~BIT(8)
 > +
 > +#define TSADCV2_INT_SRC_EN(chn)			BIT(chn)
-> +#define TSADCV2_SHUT_2GPIO_SRC_EN(chn)		(0xf << (4 + chn))
-> +#define TSADCV2_SHUT_2CRU_SRC_EN(chn)		(0xf << (8 + chn))
+> +#define TSADCV2_SHUT_2GPIO_SRC_EN(chn)		(0xf<<  (4 + chn))
+> +#define TSADCV2_SHUT_2CRU_SRC_EN(chn)		(0xf<<  (8 + chn))
 > +
 > +#define TSADCV2_INT_PD_CLEAR			~BIT(8)
 > +
@@ -243,7 +234,7 @@ unsigned ints.
 > +	u32 val;
 > +
 > +	val = readl_relaxed(regs + TSADCV2_INT_PD);
-> +	writel_relaxed(val & TSADCV2_INT_PD_CLEAR, regs + TSADCV2_INT_PD);
+> +	writel_relaxed(val&  TSADCV2_INT_PD_CLEAR, regs + TSADCV2_INT_PD);
 > +}
 > +
 > +static u32 rk_tsadcv2_temp_to_code(int temp)
@@ -254,13 +245,13 @@ unsigned ints.
 > +	high = ARRAY_SIZE(v2_code_table) - 1;
 > +	mid = (high + low) / 2;
 > +
-> +	if (temp < v2_code_table[low].temp || temp > v2_code_table[high].temp)
+> +	if (temp<  v2_code_table[low].temp || temp>  v2_code_table[high].temp)
 > +		return 0;
 > +
-> +	while (low <= high) {
+> +	while (low<= high) {
 > +		if (temp == v2_code_table[mid].temp)
 > +			return v2_code_table[mid].code;
-> +		else if (temp < v2_code_table[mid].temp)
+> +		else if (temp<  v2_code_table[mid].temp)
 > +			high = mid - 1;
 > +		else
 > +			low = mid + 1;
@@ -278,14 +269,14 @@ unsigned ints.
 > +	high = ARRAY_SIZE(v2_code_table) - 1;
 > +	mid = (high + low) / 2;
 > +
-> +	if (code > v2_code_table[low].code || code < v2_code_table[high].code)
+> +	if (code>  v2_code_table[low].code || code<  v2_code_table[high].code)
 > +		return 125000; /* No code available,return max temperture */
 > +
-> +	while (low <= high) {
-> +		if (code >= v2_code_table[mid].code && code <
+> +	while (low<= high) {
+> +		if (code>= v2_code_table[mid].code&&  code<
 > +		    v2_code_table[mid - 1].code)
 > +			return v2_code_table[mid].temp;
-> +		else if (code < v2_code_table[mid].code)
+> +		else if (code<  v2_code_table[mid].code)
 > +			low = mid + 1;
 > +		else
 > +			high = mid - 1;
@@ -306,7 +297,7 @@ unsigned ints.
 > +	bool tshut_polarity;
 > +
 > +	val = readl_relaxed(regs + TSADCV2_AUTO_CON);
-> +	tshut_polarity = (val & TSADCV2_AUTO_TSHUT_POLARITY_HIGH) ? true :
+> +	tshut_polarity = (val&  TSADCV2_AUTO_TSHUT_POLARITY_HIGH) ? true :
 > +			  false;
 > +
 > +	return tshut_polarity;
@@ -348,7 +339,7 @@ unsigned ints.
 > +		writel_relaxed(val | TSADCV2_AUTO_EN, regs + TSADCV2_AUTO_CON);
 > +	} else {
 > +		val = readl_relaxed(regs + TSADCV2_AUTO_CON);
-> +		writel_relaxed(val & TSADCV2_AUTO_DISABLE,
+> +		writel_relaxed(val&  TSADCV2_AUTO_DISABLE,
 > +			       regs + TSADCV2_AUTO_CON);
 > +	}
 > +
@@ -362,7 +353,7 @@ unsigned ints.
 > +
 > +	alarm_value = rk_tsadcv2_temp_to_code(alarm_temp);
 > +
-> +	writel_relaxed(alarm_value & TSADCV2_DATA_MASK, regs +
+> +	writel_relaxed(alarm_value&  TSADCV2_DATA_MASK, regs +
 > +		       TSADCV2_COMP_INT(chn));
 > +}
 > +
@@ -394,11 +385,11 @@ unsigned ints.
 > +
 > +	data->alarm_temp = alarm_temp;
 > +
-> +	for (chn = CPU; chn < SENSOR_ID_END; chn++)
+> +	for (chn = CPU; chn<  SENSOR_ID_END; chn++)
 > +		tsadc->set_alarm_temp(chn, data->regs, alarm_temp);
 
-This is not right. You pass in chn (i.e. sensor ID) into the function,
-but then apply the same setting to all zones? Why?
+Do you set_alarm_temp() right for all channels? Why do you pass "chn"
+argument then?
 
 > +}
 > +
@@ -452,9 +443,6 @@ but then apply the same setting to all zones? Why?
 > +		data->irq_enabled = true;
 > +		data->tz[chn]->ops->set_mode(data->tz[chn],
 > +		THERMAL_DEVICE_ENABLED);
-
-Weird indentation.
-
 > +
 > +	} else {
 > +		data->irq_enabled = false;
@@ -471,7 +459,7 @@ Weird indentation.
 > +
 > +	tsadc->irq_handle(data->regs);
 > +
-> +	for (chn = CPU; chn < SENSOR_ID_END; chn++)
+> +	for (chn = CPU; chn<  SENSOR_ID_END; chn++)
 > +		thermal_zone_device_update(data->tz[chn]);
 > +
 > +	return IRQ_HANDLED;
@@ -486,26 +474,14 @@ Weird indentation.
 > +	high = clamp_val(high, LONG_MIN, LONG_MAX);
 > +
 > +	/* Update alarm value to next higher trip point */
-> +	if (data->alarm_temp == data->temp_passive && high <=
+> +	if (data->alarm_temp == data->temp_passive&&  high<=
 > +		tsadc->temp_to_code(data->temp_passive))
 > +		high = data->hw_shut_temp;
 > +
-> +	if (data->alarm_temp >= data->temp_passive && high >
+> +	if (data->alarm_temp>= data->temp_passive&&  high>
 > +		tsadc->temp_to_code(data->temp_passive)) {
 > +		high = data->temp_passive;
 > +	}
-
-I can't quite figure out what we are doing here. We do some calculations
-on "high" but we are not using the result in any shape or form.
-
-I'd expect you do something like:
-
-	alarm_code = tsadc->temp_to_code(high);
-	chn = tsadc_zone_to_channel(zone); <-- need to be written
-	tsadc->set_alarm_temp(chn, data->regs, alarm_code);
-
-and that's it. 
-
 > +
 > +	return 0;
 > +}
@@ -520,18 +496,6 @@ and that's it.
 > +	val = readl_relaxed(data->regs + TSADCV2_DATA(CPU));
 > +	if (val == 0)
 > +		return -EPROBE_DEFER;
-
-I do not think you want to return -EPROBE_DEFER here as -EPROBE_DEFER
-only makes sense in the context of device probing.
-
-How likely for the reading to return 0? Does it happen often if somebody
-tries to read temperature several times in a row and ADC is not fast
-enough to perform the conversion? If we return -EAGAIN or -EBUSY here
-we'll get error entries in system logs. If such occurrence is expected
-and is common maybe you should cache the last successfully measured
-temperature and return it when readl_relaxed() returns 0 instead of
-reporting error?
-
 > +
 > +	*out_temp = tsadc->code_to_temp(val);
 > +
@@ -548,9 +512,6 @@ reporting error?
 > +	val = readl_relaxed(data->regs + TSADCV2_DATA(GPU));
 > +	if (val == 0)
 > +		return -EPROBE_DEFER;
-
-Same comment as for rockchip_thermal_get_cpu_temp().
-
 > +
 > +	*out_temp = tsadc->code_to_temp(val);
 > +
@@ -563,25 +524,16 @@ Same comment as for rockchip_thermal_get_cpu_temp().
 > +{
 > +	int shut_temp, reset_mode;
 > +
-> +	if (of_property_read_u32(np, "hw-shut-temp", &shut_temp)) {
+> +	if (of_property_read_u32(np, "hw-shut-temp",&shut_temp)) {
 > +		dev_warn(dev, "Missing default shutdown temp property\n");
-
-How about "Missing 'hw-shut-temp' property, using default (%d)\n"?
-
 > +		data->hw_shut_temp = data->pdata->hw_shut_temp;
 > +	} else {
 > +		data->hw_shut_temp = shut_temp;
 > +	}
 > +
-> +	if (of_property_read_u32(np, "tsadc-ht-reset-mode", &reset_mode)) {
+> +	if (of_property_read_u32(np, "tsadc-ht-reset-mode",&reset_mode)) {
 > +		dev_warn(dev, "Missing default reset mode property\n");
 > +		data->reset_mode = data->pdata->reset_mode;
-
-"Missing 'tsadc-ht-reset-mode' property, using default (%s)\n",
-	data->reset_mode == GPIO ? "GPIO" : "TSHUT");
-
-?
-
 > +	} else {
 > +		data->reset_mode = reset_mode;
 > +	}
@@ -645,32 +597,32 @@ How about "Missing 'hw-shut-temp' property, using default (%d)\n"?
 > +	if (clk_get_rate(data->clk) == 0)
 > +		return -EPROBE_DEFER;
 > +	ret = clk_set_rate(data->clk, 10000);
-> +	if (ret < 0) {
+> +	if (ret<  0) {
 > +		dev_err(&pdev->dev, "failed to set tsadc clk rate, %d\n", ret);
 > +		return ret;
 > +	}
 > +
 > +	ret = clk_prepare_enable(data->clk);
-> +	if (ret < 0) {
+> +	if (ret<  0) {
 > +		dev_err(&pdev->dev, "failed to enable converter clock\n");
 > +		goto err_clk;
 > +	}
 > +
 > +	ret = clk_prepare_enable(data->pclk);
-> +	if (ret < 0) {
+> +	if (ret<  0) {
 > +		dev_err(&pdev->dev, "failed to enable pclk\n");
 > +		goto err_pclk;
 > +	}
 > +
-> +	cpumask_set_cpu(0, &clip_cpus);
-> +	data->cdev = of_cpufreq_cooling_register(np, &clip_cpus);
+> +	cpumask_set_cpu(0,&clip_cpus);
+> +	data->cdev = of_cpufreq_cooling_register(np,&clip_cpus);
 > +	if (IS_ERR(data->cdev)) {
 > +		dev_err(&pdev->dev, "failed to register cpufreq cooling device\n");
 > +		goto fail_cpufreq_register;
 > +	}
 > +
 > +	data->irq = platform_get_irq(pdev, 0);
-> +	if (data->irq < 0) {
+> +	if (data->irq<  0) {
 > +		dev_err(&pdev->dev, "no irq resource?\n");
 > +		goto fail_irq;
 > +	}
@@ -679,7 +631,7 @@ How about "Missing 'hw-shut-temp' property, using default (%d)\n"?
 > +					&rockchip_thermal_alarm_irq_thread,
 > +					IRQF_ONESHOT, "rockchip_thermal",
 > +					data);
-> +	if (ret < 0) {
+> +	if (ret<  0) {
 > +		dev_err(&pdev->dev,
 > +			"failed to request tsadc irq: %d\n", ret);
 > +		goto fail_irq;
@@ -692,9 +644,11 @@ How about "Missing 'hw-shut-temp' property, using default (%d)\n"?
 > +	rockchip_thermal_initialize(data);
 > +
 > +	/* The system have two valid Teperture Sensors be registered */
-> +	for (chn = CPU; chn < SENSOR_ID_END; chn++) {
+> +	for (chn = CPU; chn<  SENSOR_ID_END; chn++) {
 > +		data->chn = chn;
-> +
+
+Redundant assignment.
+
 > +		if (chn == CPU)
 > +			data->tz[chn] = thermal_zone_of_sensor_register(
 > +					&pdev->dev, chn,
@@ -707,12 +661,14 @@ How about "Missing 'hw-shut-temp' property, using default (%d)\n"?
 > +					data, rockchip_thermal_get_gpu_temp,
 > +					NULL,
 > +					rockchip_thermal_set_trips);
-> +
 > +		if (IS_ERR(data->tz[chn])) {
 > +			ret = PTR_ERR(data->tz[chn]);
 > +			dev_err(&pdev->dev, "failed to register sensor: %d\n",
 > +				ret);
 > +			chn--;
+
+See a comment below about chn.
+
 > +			goto unregister_tzs;
 > +		}
 > +
@@ -727,7 +683,10 @@ How about "Missing 'hw-shut-temp' property, using default (%d)\n"?
 > +	return 0;
 > +
 > +unregister_tzs:
-> +	for (; data->chn >= CPU; data->chn--)
+> +	for (; data->chn>= CPU; data->chn--)
+
+Should be chn instead of data->chn.
+
 > +		thermal_zone_of_sensor_unregister(&pdev->dev, data->tz[chn]);
 > +
 > +fail_irq:
@@ -745,7 +704,14 @@ How about "Missing 'hw-shut-temp' property, using default (%d)\n"?
 > +{
 > +	struct rockchip_thermal_data *data = platform_get_drvdata(pdev);
 > +
-> +	for (; data->chn >= CPU; data->chn--) {
+> +	for (; data->chn>= CPU; data->chn--) {
+
+Try to get rid of data->chn completely, use local variables for iterating.
+
+You introduce only two sensors (CPU and GPU), and probe() is passed
+only if both sensors are configured, so here and below you know how
+many sensors are registered -- exactly 2.
+
 > +		rockchip_thermal_control(data, false, data->chn);
 > +		thermal_zone_of_sensor_unregister(&pdev->dev,
 > +						  data->tz[data->chn]);
@@ -764,11 +730,8 @@ How about "Missing 'hw-shut-temp' property, using default (%d)\n"?
 > +	struct platform_device *pdev = to_platform_device(dev);
 > +	struct rockchip_thermal_data *data = platform_get_drvdata(pdev);
 > +
-> +	for (; data->chn >= CPU; data->chn--)
+> +	for (; data->chn>= CPU; data->chn--)
 > +		rockchip_thermal_control(data, false, data->chn);
-
-I'd rather we did not use and modify data->chn here but rather used
-local index variable.
 > +
 > +	clk_disable(data->clk);
 > +	clk_disable(data->pclk);
@@ -792,12 +755,9 @@ local index variable.
 > +
 > +	rockchip_thermal_initialize(data);
 > +
-> +	for (data->chn = CPU; data->chn < SENSOR_ID_END; data->chn++)
+> +	for (data->chn = CPU; data->chn<  SENSOR_ID_END; data->chn++)
 > +		rockchip_thermal_control(data, true, data->chn);
 > +
-
-Same here.
-
 > +	return 0;
 > +}
 > +#endif
@@ -809,7 +769,7 @@ Same here.
 > +	.driver = {
 > +		   .name = "rockchip-thermal",
 > +		   .owner = THIS_MODULE,
-> +		   .pm = &rockchip_thermal_pm_ops,
+> +		   .pm =&rockchip_thermal_pm_ops,
 > +		   .of_match_table = of_rockchip_thermal_match,
 > +		   },
 > +	.probe = rockchip_thermal_probe,
@@ -822,12 +782,7 @@ Same here.
 > +MODULE_AUTHOR("Rockchip, Inc.");
 > +MODULE_LICENSE("GPL v2");
 > +MODULE_ALIAS("platform:rockchip-thermal");
-> -- 
-> 1.9.1
-> 
-> 
-
-Thanks.
-
--- 
-Dmitry
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
