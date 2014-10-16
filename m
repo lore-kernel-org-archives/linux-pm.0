@@ -1,71 +1,47 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v2 7/7] mfd: ab8500: Decrement the power supply's device
- reference counter
-Date: Thu, 16 Oct 2014 14:41:14 +0200
-Message-ID: <1413463274.18828.1.camel@AMDC1943>
-References: <1413445327-24862-1-git-send-email-k.kozlowski@samsung.com>
- <1413445327-24862-8-git-send-email-k.kozlowski@samsung.com>
- <20141016122901.GA22725@lee--X1>
+From: James Geboski <jgeboski@gmail.com>
+Subject: Fwd: [PATCH] cpufreq: allow powersave governor as the default without
+ expert mode
+Date: Thu, 16 Oct 2014 08:44:45 -0400
+Message-ID: <CAB61YWNi-wNHK0M7QAEPgc9UHUEMX=DuW7CYgxjmrBogKEiOYA@mail.gmail.com>
+References: <1413454804-19370-1-git-send-email-jgeboski@gmail.com>
+ <CAKohpokvx5G5JU_KYePOecRfAgXrOrOt__iagMcHQ2iy05gZLQ@mail.gmail.com> <CAB61YWPUjOFx8W_K923uz1GYZsLvVq+cH=k-fguzndqZhsWUww@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:52969 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752384AbaJPMlT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 08:41:19 -0400
-In-reply-to: <20141016122901.GA22725@lee--X1>
+Received: from mail-lb0-f170.google.com ([209.85.217.170]:48869 "EHLO
+	mail-lb0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750993AbaJPMpH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 08:45:07 -0400
+In-Reply-To: <CAB61YWPUjOFx8W_K923uz1GYZsLvVq+cH=k-fguzndqZhsWUww@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Lv Zheng <lv.zheng@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Anton Vorontsov <anton@enomsg.org>, Pavel Machek <pavel@ucw.cz>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On czw, 2014-10-16 at 14:29 +0200, Lee Jones wrote:
-> On Thu, 16 Oct 2014, Krzysztof Kozlowski wrote:
-> 
-> > Use power_supply_put() to decrement the power supply's device reference
-> > counter.
-> > 
-> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > Acked-by: Pavel Machek <pavel@ucw.cz>
-> 
-> I already Acked this.
+On Thu, Oct 16, 2014 at 6:27 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 16 October 2014 15:50, James Geboski <jgeboski@gmail.com> wrote:
+>> The intel_pstate driver only supports the performance and the powersave
+>> governors. With the performance governor ensuring the highest possible
+>> performance settings, userspace tools fail to make any lasting changes.
+>> In order to allow userspace tools to make modifications to the settings,
+>> the powersave governor must be in use. This makes having the powersave
+>> governor as the default convenient for systems where the intel_pstate
+>> driver is being employed. Having to enable expert mode in the kernel
+>> configuration is just a headache for such a trivial task.
+>>
+>> This patch applies to all kernel versions 2.6.38 or greater after the
+>> migration from CONFIG_EMBEDDED to CONFIG_EXPERT (6a108a14fa35). Most
+>> importantly, this applies to kernel versions 3.9 or greater when the
+>> intel_pstate driver was introduced.
+>>
+>> Signed-off-by: James Geboski <jgeboski@gmail.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  drivers/cpufreq/Kconfig | 1 -
+>>  1 file changed, 1 deletion(-)
+>
+> Why did you resent it? Without any information at all about what has changed?
 
-I think you acked mfd change in my first patchset
-(power_supply_get_property()):
-	[PATCH 5/8] mfd: ab8500: Use power_supply_*() API for accessing
-function attrs
-
-... and this is my second patchset with other API (power_supply_put).
-
-Best regards,
-Krzysztof
-
-
-> 
-> > ---
-> >  drivers/mfd/ab8500-sysctrl.c | 2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctrl.c
-> > index 93b2d2c32ca3..d05a5719cfc4 100644
-> > --- a/drivers/mfd/ab8500-sysctrl.c
-> > +++ b/drivers/mfd/ab8500-sysctrl.c
-> > @@ -51,6 +51,7 @@ static void ab8500_power_off(void)
-> >  
-> >  		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
-> >  				&val);
-> > +		power_supply_put(psy);
-> >  
-> >  		if (!ret && val.intval) {
-> >  			charger_present = true;
-> > @@ -73,6 +74,7 @@ static void ab8500_power_off(void)
-> >  			       pss[i]);
-> >  			machine_restart("charging");
-> >  		}
-> > +		power_supply_put(psy);
-> >  	}
-> >  
-> >  shutdown:
-> 
-
+I added your Acked-by line to the patch message. However, I am apparently
+incompetent with git-send-email. I have replied to the original thread,
+please discard this thread. My apologizes for the excessive noise.
