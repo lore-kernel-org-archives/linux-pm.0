@@ -1,106 +1,31 @@
-From: Guenter Roeck <linux@roeck-us.net>
+From: Matt Fleming <matt@console-pimps.org>
 Subject: Re: [PATCH 42/44] efi: Register poweroff handler with kernel
  poweroff handler
-Date: Thu, 16 Oct 2014 10:27:22 -0700
-Message-ID: <20141016172722.GB25222@roeck-us.net>
+Date: Thu, 16 Oct 2014 18:46:19 +0100
+Message-ID: <20141016174619.GA12020@console-pimps.org>
 References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
  <1412659726-29957-43-git-send-email-linux@roeck-us.net>
  <20141016145927.GI14343@console-pimps.org>
  <1413473093.2985.15.camel@deneb.redhat.com>
+ <20141016172722.GB25222@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:50913 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751449AbaJPR12 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 13:27:28 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1413473093.2985.15.camel@deneb.redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20141016172722.GB25222@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Mark Salter <msalter@redhat.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Matt Fleming <matt.fleming@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mark Salter <msalter@redhat.com>
-Cc: Matt Fleming <matt@console-pimps.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Matt Fleming <matt.fleming@intel.com>
 
-On Thu, Oct 16, 2014 at 11:24:53AM -0400, Mark Salter wrote:
-> On Thu, 2014-10-16 at 15:59 +0100, Matt Fleming wrote:
-> > On Mon, 06 Oct, at 10:28:44PM, Guenter Roeck wrote:
-> > > Register with kernel poweroff handler instead of setting pm_power_off
-> > > directly. Register with low priority value of 64 since the efi code
-> > > states that this is a poweroff handler of last resort.
-> > > 
-> > > Cc: Matt Fleming <matt.fleming@intel.com>
-> > > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> > > ---
-> > >  drivers/firmware/efi/reboot.c | 23 +++++++++++++++++++----
-> > >  1 file changed, 19 insertions(+), 4 deletions(-)
-> >  
-> > Looks OK to me. Mark?
+On Thu, 16 Oct, at 10:27:22AM, Guenter Roeck wrote:
+> Great, thanks a lot for the feedback.
 > 
-> Me too.
-> 
-> Acked-by: Mark Salter <msalter@redhat.com>
-> 
-Great, thanks a lot for the feedback.
+> Matt, is it ok for me to add your Acked-by: ?
 
-Matt, is it ok for me to add your Acked-by: ?
+Sorry, yes.
 
-Thanks,
-Guenter
+Acked-by: Matt Fleming <matt.fleming@intel.com>
 
-> > 
-> > > diff --git a/drivers/firmware/efi/reboot.c b/drivers/firmware/efi/reboot.c
-> > > index 9c59d1c..c082439 100644
-> > > --- a/drivers/firmware/efi/reboot.c
-> > > +++ b/drivers/firmware/efi/reboot.c
-> > > @@ -3,6 +3,8 @@
-> > >   * Copyright (c) 2014 Red Hat, Inc., Mark Salter <msalter@redhat.com>
-> > >   */
-> > >  #include <linux/efi.h>
-> > > +#include <linux/notifier.h>
-> > > +#include <linux/pm.h>
-> > >  #include <linux/reboot.h>
-> > >  
-> > >  int efi_reboot_quirk_mode = -1;
-> > > @@ -38,19 +40,32 @@ bool __weak efi_poweroff_required(void)
-> > >  	return false;
-> > >  }
-> > >  
-> > > -static void efi_power_off(void)
-> > > +static int efi_power_off(struct notifier_block *this,
-> > > +			 unsigned long unused1, void *unused2)
-> > >  {
-> > >  	efi.reset_system(EFI_RESET_SHUTDOWN, EFI_SUCCESS, 0, NULL);
-> > > +
-> > > +	return NOTIFY_DONE;
-> > >  }
-> > >  
-> > > +static struct notifier_block efi_poweroff_nb = {
-> > > +	.notifier_call = efi_power_off,
-> > > +	.priority = 64,
-> > > +};
-> > > +
-> > >  static int __init efi_shutdown_init(void)
-> > >  {
-> > > +	int ret = 0;
-> > > +
-> > >  	if (!efi_enabled(EFI_RUNTIME_SERVICES))
-> > >  		return -ENODEV;
-> > >  
-> > > -	if (efi_poweroff_required())
-> > > -		pm_power_off = efi_power_off;
-> > > +	if (efi_poweroff_required()) {
-> > > +		ret = register_poweroff_handler(&efi_poweroff_nb);
-> > > +		if (ret)
-> > > +			pr_err("efi: Failed to register poweroff handler\n");
-> > > +	}
-> > >  
-> > > -	return 0;
-> > > +	return ret;
-> > >  }
-> > >  late_initcall(efi_shutdown_init);
-> > > -- 
-> > > 1.9.1
-> > 
-> > 
-> 
-> 
+-- 
+Matt Fleming, Intel Open Source Technology Center
