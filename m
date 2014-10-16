@@ -1,73 +1,82 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: [PATCH] Thermal: int3406_thermal: solve the dependency build error
-Date: Thu, 16 Oct 2014 16:58:38 +0800
-Message-ID: <543F88BE.4090307@intel.com>
-References: <CA+r1ZhhoskOXaRSmcrnbdgapi-FsaKf+dnPHTXGkDvkYbvwQ8Q@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 6/6] cpufreq: Loongson1: Add cpufreq driver for Loongson1B (UPDATED)
+Date: Thu, 16 Oct 2014 15:22:42 +0530
+Message-ID: <CAKohpomFP5=eO7hFJyXQqM6_jOGT9gY+f3g3qqKgYwg5rgh3Ag@mail.gmail.com>
+References: <CAJhJPsVV74gVEMpMZfBcnm-=sHivpPZGY==tzT-rXsv82B0Scg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CA+r1ZhhoskOXaRSmcrnbdgapi-FsaKf+dnPHTXGkDvkYbvwQ8Q@mail.gmail.com>
+In-Reply-To: <CAJhJPsVV74gVEMpMZfBcnm-=sHivpPZGY==tzT-rXsv82B0Scg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jim Davis <jim.epost@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org
+To: Kelvin Cheung <keguang.zhang@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10/13/2014 10:43 PM, Jim Davis wrote:
-> Building with the attached random configuration file,
-> 
-> drivers/built-in.o: In function `int3406_thermal_probe':
-> int3406_thermal.c:(.text+0x1d10b8): undefined reference to
-> `acpi_video_get_levels'
-> make: *** [vmlinux] Error 1
+On 16 October 2014 15:00, Kelvin Cheung <keguang.zhang@gmail.com> wrote:
 
-Thanks for the report Jim, below patch should fix this problem:
+Just to let u know, your mails are probably generated in html whereas they
+should be in text mode.
 
-From: Aaron Lu <aaron.lu@intel.com>
-Date: Thu, 16 Oct 2014 16:35:02 +0800
-Subject: [PATCH] Thermal: int3406_thermal: solve the dependency build error
+> 2014-10-16 16:23 GMT+08:00 Viresh Kumar <viresh.kumar@linaro.org>:
+>>
+>> This is not how we send updated versions, GIT and other tools will commit
+>> the "(UPDATED)" part while applying. What you were required to do was
+>> something like:
+>>
+>> git format-patch A..B --subject-prefix="PATCH V2"
+>
+>
+> I use 'updated' because only one patch in the patch set need to be updated.
+> If you insist, I will regenerate this patch.
 
-Jim found that the current kernel may trigger a build error with some
-config: drivers/built-in.o: In function `int3406_thermal_probe':
-int3406_thermal.c:(.text+0x1d10b8): undefined reference to
-`acpi_video_get_levels'. The problem happens when CONFIG_THERMAL=y and
-CONFIG_ACPI_VIDEO=m. Since the ACPI video driver can still work well
-without CONFIG_THERMAL(regarding its main functionality: backlight
-control), solve the problem by removing the select THERMAL line for
-ACPI_VIDEO and adding the select ACPI_VIDEO for INT340X_THERMAL. The
-result is that for kernels that do not have CONFIG_THERMAL selected now,
-the ACPI video driver will not create the cooling device as it did
-before(but works well otherwise).
+Even in that case you can do what I was saying. No, you don't need to resend
+for that reason now. :)
 
-Reported-by: Jim Davis <jim.epost@gmail.com>
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
----
- drivers/acpi/Kconfig    | 1 -
- drivers/thermal/Kconfig | 1 +
- 2 files changed, 1 insertion(+), 1 deletion(-)
+>> On 15 October 2014 12:53, Kelvin Cheung <keguang.zhang@gmail.com> wrote:
+>> > +static int ls1x_cpufreq_remove(struct platform_device *pdev)
+>> > +{
+>> > +       cpufreq_unregister_notifier(&ls1x_cpufreq_notifier_block,
+>> > +                                   CPUFREQ_TRANSITION_NOTIFIER);
+>> > +       cpufreq_unregister_driver(&ls1x_cpufreq_driver);
+>> > +       clk_put(ls1x_cpufreq.osc_clk);
+>> > +       clk_put(ls1x_cpufreq.clk);
+>> > +
+>> > +       return 0;
+>> > +}
+>> > +
+>> > +static int ls1x_cpufreq_probe(struct platform_device *pdev)
+>> > +{
+>> > +       struct plat_ls1x_cpufreq *pdata = pdev->dev.platform_data;
+>> > +       struct clk *clk;
+>> > +       int ret;
+>> > +
+>> > +       if (!pdata)
+>> > +               return -EINVAL;
+>> > +       if (!pdata->clk_name)
+>> > +               return -EINVAL;
+>> > +       if (!pdata->osc_clk_name)
+>> > +               return -EINVAL;
+>>
+>> I didn't wanted you to do this, You could have done this:
+>>
+>>        if (!pdata || !pdata->clk_name || !pdata->osc_clk_name)
+>>                return -EINVAL;
+>>
+>> So, just a || instead of && :)
+>>
+>> > +
+>> > +       ls1x_cpufreq.dev = &pdev->dev;
+>> > +
+>> > +       clk = clk_get(NULL, pdata->clk_name);
+>>
+>> I believe we agreed for devm_clk_get(), isn't it ?
+>
+>
+> In my case I think clk_get() is enough.
 
-diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-index b23fe37f67c0..8a09f98dbb0c 100644
---- a/drivers/acpi/Kconfig
-+++ b/drivers/acpi/Kconfig
-@@ -131,7 +131,6 @@ config ACPI_VIDEO
- 	tristate "Video"
- 	depends on X86 && BACKLIGHT_CLASS_DEVICE
- 	depends on INPUT
--	select THERMAL
- 	help
- 	  This driver implements the ACPI Extensions For Display Adapters
- 	  for integrated graphics devices on motherboard, as specified in
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 9b012ff65220..4e1053a8d774 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -235,6 +235,7 @@ config INT340X_THERMAL
- 	select THERMAL_GOV_USER_SPACE
- 	select ACPI_THERMAL_REL
- 	select ACPI_FAN
-+	select ACPI_VIDEO
- 	help
- 	  Newer laptops and tablets that use ACPI may have thermal sensors and
- 	  other devices with thermal control capabilities outside the core
--- 
-1.9.3
+Obviously its enough but wouldn't it be better to use a infrastructure
+which is somewhat better ?
+
+> Moreover, most of cpufreq drivers use clk_get().
+
+So what? Is that a good enough reason for adopting a good change?
