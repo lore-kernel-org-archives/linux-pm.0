@@ -1,94 +1,39 @@
-From: Hui Zhu <zhuhui@xiaomi.com>
-Subject: [PATCH 4/4] (CMA_AGGRESSIVE) Update page alloc function
-Date: Thu, 16 Oct 2014 11:35:51 +0800
-Message-ID: <1413430551-22392-5-git-send-email-zhuhui@xiaomi.com>
-References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
-Sender: owner-linux-mm@kvack.org
-To: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, m.szyprowski@samsung.com, akpm@linux-foundation.org, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, hannes@cmpxchg.org, riel@redhat.com, mgorman@suse.de, minchan@kernel.org, nasa4836@gmail.com, ddstreet@ieee.org, hughd@google.com, mingo@kernel.org, rientjes@google.com, peterz@infradead.org, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, paulmck@linux.vnet.ibm.com, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, akinobu.mita@gmail.com, lauraa@codeaurora.org, vbabka@suse.cz, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org, Hui Zhu <zhuhui@xiaomi.com>
+From: Vishnu Pratap Singh <vishnu.ps@samsung.com>
+Subject: [PATCH] [kernel]: process: replace printk with pr_err
+Date: Thu, 16 Oct 2014 10:36:35 +0530
+Message-ID: <1413435995-32317-1-git-send-email-vishnu.ps@samsung.com>
+References: <[kernel]: process: replace printk with pr_err>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:63624 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750854AbaJPFJD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 01:09:03 -0400
+In-reply-to: <[kernel]: process: replace printk with pr_err>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: akpm@linux-foundation.org, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: cpgs@samsung.com, pintu.k@samsung.com, vishu13285@gmail.com, Vishnu Pratap Singh <vishnu.ps@samsung.com>
 
-If page alloc function __rmqueue try to get pages from MIGRATE_MOVABLE and
-conditions (cma_alloc_counter, cma_aggressive_free_min, cma_alloc_counter)
-allow, MIGRATE_CMA will be allocated as MIGRATE_MOVABLE first.
+This patch replaces printk(KERN_ERR...) with pr_err found.
 
-Signed-off-by: Hui Zhu <zhuhui@xiaomi.com>
+Signed-off-by: Vishnu Pratap Singh <vishnu.ps@samsung.com>
 ---
- mm/page_alloc.c | 42 +++++++++++++++++++++++++++++++-----------
- 1 file changed, 31 insertions(+), 11 deletions(-)
+ kernel/power/process.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 736d8e1..87bc326 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -65,6 +65,10 @@
- #include <asm/div64.h>
- #include "internal.h"
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index 7b32322..401f7ee 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -85,7 +85,7 @@ static int try_to_freeze_tasks(bool user_only)
  
-+#ifdef CONFIG_CMA_AGGRESSIVE
-+#include <linux/cma.h>
-+#endif
-+
- /* prevent >1 _updater_ of zone percpu pageset ->high and ->batch fields */
- static DEFINE_MUTEX(pcp_batch_high_lock);
- #define MIN_PERCPU_PAGELIST_FRACTION	(8)
-@@ -1189,20 +1193,36 @@ static struct page *__rmqueue(struct zone *zone, unsigned int order,
- {
- 	struct page *page;
- 
--retry_reserve:
-+#ifdef CONFIG_CMA_AGGRESSIVE
-+	if (cma_aggressive_switch
-+	    && migratetype == MIGRATE_MOVABLE
-+	    && atomic_read(&cma_alloc_counter) == 0
-+	    && global_page_state(NR_FREE_CMA_PAGES) > cma_aggressive_free_min
-+							+ (1 << order))
-+		migratetype = MIGRATE_CMA;
-+#endif
-+retry:
- 	page = __rmqueue_smallest(zone, order, migratetype);
- 
--	if (unlikely(!page) && migratetype != MIGRATE_RESERVE) {
--		page = __rmqueue_fallback(zone, order, migratetype);
-+	if (unlikely(!page)) {
-+#ifdef CONFIG_CMA_AGGRESSIVE
-+		if (migratetype == MIGRATE_CMA) {
-+			migratetype = MIGRATE_MOVABLE;
-+			goto retry;
-+		}
-+#endif
-+		if (migratetype != MIGRATE_RESERVE) {
-+			page = __rmqueue_fallback(zone, order, migratetype);
- 
--		/*
--		 * Use MIGRATE_RESERVE rather than fail an allocation. goto
--		 * is used because __rmqueue_smallest is an inline function
--		 * and we want just one call site
--		 */
--		if (!page) {
--			migratetype = MIGRATE_RESERVE;
--			goto retry_reserve;
-+			/*
-+			* Use MIGRATE_RESERVE rather than fail an allocation.
-+			* goto is used because __rmqueue_smallest is an inline
-+			* function and we want just one call site
-+			*/
-+			if (!page) {
-+				migratetype = MIGRATE_RESERVE;
-+				goto retry;
-+			}
- 		}
- 	}
- 
+ 	if (todo) {
+ 		printk("\n");
+-		printk(KERN_ERR "Freezing of tasks %s after %d.%03d seconds "
++		pr_err("Freezing of tasks %s after %d.%03d seconds "
+ 		       "(%d tasks refusing to freeze, wq_busy=%d):\n",
+ 		       wakeup ? "aborted" : "failed",
+ 		       elapsed_msecs / 1000, elapsed_msecs % 1000,
 -- 
-1.9.1
+1.8.3.2
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
