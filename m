@@ -1,64 +1,73 @@
-From: Laura Abbott <lauraa@codeaurora.org>
-Subject: Re: [PATCH 0/4] (CMA_AGGRESSIVE) Make CMA memory be more aggressive
- about allocation
-Date: Thu, 16 Oct 2014 01:55:46 -0700
-Message-ID: <543F8812.2020002@codeaurora.org>
-References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH] Thermal: int3406_thermal: solve the dependency build error
+Date: Thu, 16 Oct 2014 16:58:38 +0800
+Message-ID: <543F88BE.4090307@intel.com>
+References: <CA+r1ZhhoskOXaRSmcrnbdgapi-FsaKf+dnPHTXGkDvkYbvwQ8Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
-Sender: owner-linux-mm@kvack.org
-To: Hui Zhu <zhuhui@xiaomi.com>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, m.szyprowski@samsung.com, akpm@linux-foundation.org, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, hannes@cmpxchg.org, riel@redhat.com, mgorman@suse.de, minchan@kernel.org, nasa4836@gmail.com, ddstreet@ieee.org, hughd@google.com, mingo@kernel.org, rientjes@google.com, peterz@infradead.org, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, paulmck@linux.vnet.ibm.com, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, akinobu.mita@gmail.com, vbabka@suse.cz, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CA+r1ZhhoskOXaRSmcrnbdgapi-FsaKf+dnPHTXGkDvkYbvwQ8Q@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jim Davis <jim.epost@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10/15/2014 8:35 PM, Hui Zhu wrote:
-> In fallbacks of page_alloc.c, MIGRATE_CMA is the fallback of
-> MIGRATE_MOVABLE.
-> MIGRATE_MOVABLE will use MIGRATE_CMA when it doesn't have a page in
-> order that Linux kernel want.
->
-> If a system that has a lot of user space program is running, for
-> instance, an Android board, most of memory is in MIGRATE_MOVABLE and
-> allocated.  Before function __rmqueue_fallback get memory from
-> MIGRATE_CMA, the oom_killer will kill a task to release memory when
-> kernel want get MIGRATE_UNMOVABLE memory because fallbacks of
-> MIGRATE_UNMOVABLE are MIGRATE_RECLAIMABLE and MIGRATE_MOVABLE.
-> This status is odd.  The MIGRATE_CMA has a lot free memory but Linux
-> kernel kill some tasks to release memory.
->
-> This patch series adds a new function CMA_AGGRESSIVE to make CMA memory
-> be more aggressive about allocation.
-> If function CMA_AGGRESSIVE is available, when Linux kernel call function
-> __rmqueue try to get pages from MIGRATE_MOVABLE and conditions allow,
-> MIGRATE_CMA will be allocated as MIGRATE_MOVABLE first.  If MIGRATE_CMA
-> doesn't have enough pages for allocation, go back to allocate memory from
-> MIGRATE_MOVABLE.
-> Then the memory of MIGRATE_MOVABLE can be kept for MIGRATE_UNMOVABLE and
-> MIGRATE_RECLAIMABLE which doesn't have fallback MIGRATE_CMA.
->
+On 10/13/2014 10:43 PM, Jim Davis wrote:
+> Building with the attached random configuration file,
+> 
+> drivers/built-in.o: In function `int3406_thermal_probe':
+> int3406_thermal.c:(.text+0x1d10b8): undefined reference to
+> `acpi_video_get_levels'
+> make: *** [vmlinux] Error 1
 
-It's good to see another proposal to fix CMA utilization. Do you have
-any data about the success rate of CMA contiguous allocation after
-this patch series? I played around with a similar approach of using
-CMA for MIGRATE_MOVABLE allocations and found that although utilization
-did increase, contiguous allocations failed at a higher rate and were
-much slower. I see what this series is trying to do with avoiding
-allocation from CMA pages when a contiguous allocation is progress.
-My concern is that there would still be problems with contiguous
-allocation after all the MIGRATE_MOVABLE fallback has happened.
+Thanks for the report Jim, below patch should fix this problem:
 
-Thanks,
-Laura
+From: Aaron Lu <aaron.lu@intel.com>
+Date: Thu, 16 Oct 2014 16:35:02 +0800
+Subject: [PATCH] Thermal: int3406_thermal: solve the dependency build error
 
+Jim found that the current kernel may trigger a build error with some
+config: drivers/built-in.o: In function `int3406_thermal_probe':
+int3406_thermal.c:(.text+0x1d10b8): undefined reference to
+`acpi_video_get_levels'. The problem happens when CONFIG_THERMAL=y and
+CONFIG_ACPI_VIDEO=m. Since the ACPI video driver can still work well
+without CONFIG_THERMAL(regarding its main functionality: backlight
+control), solve the problem by removing the select THERMAL line for
+ACPI_VIDEO and adding the select ACPI_VIDEO for INT340X_THERMAL. The
+result is that for kernels that do not have CONFIG_THERMAL selected now,
+the ACPI video driver will not create the cooling device as it did
+before(but works well otherwise).
+
+Reported-by: Jim Davis <jim.epost@gmail.com>
+Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+---
+ drivers/acpi/Kconfig    | 1 -
+ drivers/thermal/Kconfig | 1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index b23fe37f67c0..8a09f98dbb0c 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -131,7 +131,6 @@ config ACPI_VIDEO
+ 	tristate "Video"
+ 	depends on X86 && BACKLIGHT_CLASS_DEVICE
+ 	depends on INPUT
+-	select THERMAL
+ 	help
+ 	  This driver implements the ACPI Extensions For Display Adapters
+ 	  for integrated graphics devices on motherboard, as specified in
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 9b012ff65220..4e1053a8d774 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -235,6 +235,7 @@ config INT340X_THERMAL
+ 	select THERMAL_GOV_USER_SPACE
+ 	select ACPI_THERMAL_REL
+ 	select ACPI_FAN
++	select ACPI_VIDEO
+ 	help
+ 	  Newer laptops and tablets that use ACPI may have thermal sensors and
+ 	  other devices with thermal control capabilities outside the core
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+1.9.3
