@@ -1,36 +1,38 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Subject: Re: [PATCH 6/6] cpufreq: Loongson1: Add cpufreq driver for
- Loongson1B (UPDATED)
-Date: Thu, 16 Oct 2014 21:03:55 +0300
-Message-ID: <20141016180355.GA14194@drone.musicnaut.iki.fi>
-References: <1413357812-16895-1-git-send-email-keguang.zhang@gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH 42/44] efi: Register poweroff handler with kernel
+ poweroff handler
+Date: Thu, 16 Oct 2014 11:27:02 -0700
+Message-ID: <20141016182702.GA20628@roeck-us.net>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-43-git-send-email-linux@roeck-us.net>
+ <20141016145927.GI14343@console-pimps.org>
+ <1413473093.2985.15.camel@deneb.redhat.com>
+ <20141016172722.GB25222@roeck-us.net>
+ <20141016174619.GA12020@console-pimps.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from filtteri2.pp.htv.fi ([213.243.153.185]:46137 "EHLO
-	filtteri2.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309AbaJPSEF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 14:04:05 -0400
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:38696 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbaJPS1I (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 14:27:08 -0400
 Content-Disposition: inline
-In-Reply-To: <1413357812-16895-1-git-send-email-keguang.zhang@gmail.com>
+In-Reply-To: <20141016174619.GA12020@console-pimps.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kelvin Cheung <keguang.zhang@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-mips@linux-mips.org, ralf@linux-mips.org
+To: Matt Fleming <matt@console-pimps.org>
+Cc: Mark Salter <msalter@redhat.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Matt Fleming <matt.fleming@intel.com>
 
-Hi,
-
-On Wed, Oct 15, 2014 at 03:23:32PM +0800, Kelvin Cheung wrote:
-> This patch adds cpufreq driver for Loongson1B which
-> is capable of changing the CPU frequency dynamically.
+On Thu, Oct 16, 2014 at 06:46:19PM +0100, Matt Fleming wrote:
+> On Thu, 16 Oct, at 10:27:22AM, Guenter Roeck wrote:
+> > Great, thanks a lot for the feedback.
+> > 
+> > Matt, is it ok for me to add your Acked-by: ?
 > 
-> Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
+> Sorry, yes.
+> 
+> Acked-by: Matt Fleming <matt.fleming@intel.com>
+> 
+No worries. Thanks a lot!
 
-[...]
-
->  obj-$(CONFIG_LOONGSON2_CPUFREQ)		+= loongson2_cpufreq.o
-> +obj-$(CONFIG_LOONGSON1_CPUFREQ)		+= ls1x-cpufreq.o
-
-Why it's called "ls1x-cpufreq" instead of "loongson1_cpufreq"?
-
-A.
+Guenter
