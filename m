@@ -1,138 +1,98 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/4] (CMA_AGGRESSIVE) Add argument hibernation to function shrink_all_memory
-Date: Thu, 16 Oct 2014 10:45:21 +0200
-Message-ID: <1471435.6q4YYkTopF@vostro.rjw.lan>
-References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com> <1413430551-22392-3-git-send-email-zhuhui@xiaomi.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Fix setting max_perf_pct in performance policy
+Date: Thu, 16 Oct 2014 10:50:37 +0200
+Message-ID: <2380747.QvGFG8o86Z@vostro.rjw.lan>
+References: <1413415011-31290-1-git-send-email-pali.rohar@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1413430551-22392-3-git-send-email-zhuhui@xiaomi.com>
-Sender: owner-linux-mm@kvack.org
-To: Hui Zhu <zhuhui@xiaomi.com>
-Cc: m.szyprowski@samsung.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1413415011-31290-1-git-send-email-pali.rohar@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pali =?ISO-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, 'Dirk Brandewie' <dirk.j.brandewie@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 'Dirk Brandewie' <dirk.brandewie@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-[CC list trimmed]
+On Thursday, October 16, 2014 01:16:51 AM Pali Roh=C3=A1r wrote:
+> Code which changes policy to powersave changes also max_policy_pct ba=
+sed on
+> max_freq. Code which change max_perf_pct has upper limit base on valu=
+e
+> max_policy_pct. When policy is changing from powersave back to perfor=
+mance
+> then max_policy_pct is not changed. Which means that changing max_per=
+f_pct is
+> not possible to high values if max_freq was too low in powersave poli=
+cy.
 
-On Thursday, October 16, 2014 11:35:49 AM Hui Zhu wrote:
-> Function shrink_all_memory try to free `nr_to_reclaim' of memory.
-> CMA_AGGRESSIVE_SHRINK function will call this functon to free `nr_to_reclaim' of
-> memory.  It need different scan_control with current caller function
-> hibernate_preallocate_memory.
-> 
-> If hibernation is true, the caller is hibernate_preallocate_memory.
-> if not, the caller is CMA alloc function.
-> 
-> Signed-off-by: Hui Zhu <zhuhui@xiaomi.com>
+Dirk, what do you think?
+
+> Test case:
+>=20
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+> 800000
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+> 3300000
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> performance
+> $ cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+> 100
+>=20
+> $ echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_gover=
+nor
+> $ echo 800000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+> $ echo 20 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
+>=20
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> powersave
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+> 800000
+> $ cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+> 20
+>=20
+> $ echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_gov=
+ernor
+> $ echo 3300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_fre=
+q
+> $ echo 100 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
+>=20
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> performance
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+> 3300000
+> $ cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+> 24
+>=20
+> And now intel_pstate driver allows to set maximal value for max_perf_=
+pct based
+> on max_policy_pct which is 24 for previous powersave max_freq 800000.
+>=20
+> This patch will set default value for max_policy_pct when setting pol=
+icy to
+> performance so it will allow to set also max value for max_perf_pct.
+>=20
+> Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+> Cc: stable@vger.kernel.org
 > ---
->  include/linux/swap.h    |  3 ++-
->  kernel/power/snapshot.c |  2 +-
->  mm/vmscan.c             | 19 +++++++++++++------
->  3 files changed, 16 insertions(+), 8 deletions(-)
-> 
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index 37a585b..9f2cb43 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -335,7 +335,8 @@ extern unsigned long mem_cgroup_shrink_node_zone(struct mem_cgroup *mem,
->  						gfp_t gfp_mask, bool noswap,
->  						struct zone *zone,
->  						unsigned long *nr_scanned);
-> -extern unsigned long shrink_all_memory(unsigned long nr_pages);
-> +extern unsigned long shrink_all_memory(unsigned long nr_pages,
-> +				       bool hibernation);
->  extern int vm_swappiness;
->  extern int remove_mapping(struct address_space *mapping, struct page *page);
->  extern unsigned long vm_total_pages;
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index 791a618..a00fc35 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -1657,7 +1657,7 @@ int hibernate_preallocate_memory(void)
->  	 * NOTE: If this is not done, performance will be hurt badly in some
->  	 * test cases.
->  	 */
-> -	shrink_all_memory(saveable - size);
-> +	shrink_all_memory(saveable - size, true);
+>  drivers/cpufreq/intel_pstate.c |    1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_p=
+state.c
+> index 0668b38..7547ab5 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -714,6 +714,7 @@ static int intel_pstate_set_policy(struct cpufreq=
+_policy *policy)
+>  	if (policy->policy =3D=3D CPUFREQ_POLICY_PERFORMANCE) {
+>  		limits.min_perf_pct =3D 100;
+>  		limits.min_perf =3D int_tofp(1);
+> +		limits.max_policy_pct =3D 100;
+>  		limits.max_perf_pct =3D 100;
+>  		limits.max_perf =3D int_tofp(1);
+>  		limits.no_turbo =3D limits.turbo_disabled;
+>=20
 
-Instead of doing this, can you please define
-
-__shrink_all_memory()
-
-that will take the appropriate struct scan_control as an argument and
-then define two wrappers around that, one for hibernation and one for CMA?
-
-The way you did it opens a field for bugs caused by passing a wrong value
-as the second argument.
-
->  
->  	/*
->  	 * The number of saveable pages in memory was too high, so apply some
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index dcb4707..fdcfa30 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -3404,7 +3404,7 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
->  	wake_up_interruptible(&pgdat->kswapd_wait);
->  }
->  
-> -#ifdef CONFIG_HIBERNATION
-> +#if defined CONFIG_HIBERNATION || defined CONFIG_CMA_AGGRESSIVE
->  /*
->   * Try to free `nr_to_reclaim' of memory, system-wide, and return the number of
->   * freed pages.
-> @@ -3413,22 +3413,29 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
->   * LRU order by reclaiming preferentially
->   * inactive > active > active referenced > active mapped
->   */
-> -unsigned long shrink_all_memory(unsigned long nr_to_reclaim)
-> +unsigned long shrink_all_memory(unsigned long nr_to_reclaim, bool hibernation)
->  {
->  	struct reclaim_state reclaim_state;
->  	struct scan_control sc = {
->  		.nr_to_reclaim = nr_to_reclaim,
-> -		.gfp_mask = GFP_HIGHUSER_MOVABLE,
->  		.priority = DEF_PRIORITY,
-> -		.may_writepage = 1,
->  		.may_unmap = 1,
->  		.may_swap = 1,
-> -		.hibernation_mode = 1,
->  	};
->  	struct zonelist *zonelist = node_zonelist(numa_node_id(), sc.gfp_mask);
->  	struct task_struct *p = current;
->  	unsigned long nr_reclaimed;
->  
-> +	if (hibernation) {
-> +		sc.hibernation_mode = 1;
-> +		sc.may_writepage = 1;
-> +		sc.gfp_mask = GFP_HIGHUSER_MOVABLE;
-> +	} else {
-> +		sc.hibernation_mode = 0;
-> +		sc.may_writepage = !laptop_mode;
-> +		sc.gfp_mask = GFP_USER | __GFP_MOVABLE | __GFP_HIGHMEM;
-> +	}
-> +
->  	p->flags |= PF_MEMALLOC;
->  	lockdep_set_current_reclaim_state(sc.gfp_mask);
->  	reclaim_state.reclaimed_slab = 0;
-> @@ -3442,7 +3449,7 @@ unsigned long shrink_all_memory(unsigned long nr_to_reclaim)
->  
->  	return nr_reclaimed;
->  }
-> -#endif /* CONFIG_HIBERNATION */
-> +#endif /* CONFIG_HIBERNATION || CONFIG_CMA_AGGRESSIVE */
->  
->  /* It's optimal to keep kswapds on the same CPUs as their memory, but
->     not required for correctness.  So if the last cpu in a node goes
-> 
-
--- 
+--=20
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
