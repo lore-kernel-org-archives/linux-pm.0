@@ -1,55 +1,101 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v2 3/7] x86/olpc/xo1/sci: Use newly added power_supply_put API
-Date: Thu, 16 Oct 2014 09:42:03 +0200
-Message-ID: <1413445327-24862-4-git-send-email-k.kozlowski@samsung.com>
-References: <1413445327-24862-1-git-send-email-k.kozlowski@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: allow powersave governor as the default without
+ expert mode
+Date: Thu, 16 Oct 2014 13:45:44 +0530
+Message-ID: <CAKohpom5fLHc3aFWuxbj4teGiE08cXLMndthaAKBugWUp-_9kA@mail.gmail.com>
+References: <1413322689-6195-1-git-send-email-jgeboski@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1413445327-24862-1-git-send-email-k.kozlowski@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Lv Zheng <lv.zheng@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Anton Vorontsov <anton@enomsg.org>, Pavel Machek <pavel@ucw.cz>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f179.google.com ([209.85.214.179]:62502 "EHLO
+	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751316AbaJPIPp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 04:15:45 -0400
+Received: by mail-ob0-f179.google.com with SMTP id wp4so2452081obc.24
+        for <linux-pm@vger.kernel.org>; Thu, 16 Oct 2014 01:15:44 -0700 (PDT)
+In-Reply-To: <1413322689-6195-1-git-send-email-jgeboski@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: James Geboski <jgeboski@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Replace direct usage of put_device() with new API: power_supply_put().
+On 15 October 2014 03:08, James Geboski <jgeboski@gmail.com> wrote:
+> The intel_pstate driver only supports the performance and the powersave
+> governors. With the performance governor ensuring the highest possible
+> performance settings, userspace tools fail to make any lasting changes.
+> In order to allow userspace tools to make modifications to the settings,
+> the powersave governor must be in use. This makes having the powersave
+> governor as the default convenient for systems where the intel_pstate
+> driver is being employed. Having to enable expert mode in the kernel
+> configuration is just a headache for such a trivial task.
+>
+> This patch applies to all kernel versions 2.6.38 or greater after the
+> migration from CONFIG_EMBEDDED to CONFIG_EXPERT (6a108a14fa35). Most
+> importantly, this applies to kernel versions 3.9 or greater when the
+> intel_pstate driver was introduced.
+>
+> Signed-off-by: James Geboski <jgeboski@gmail.com>
+> ---
+>  drivers/cpufreq/Kconfig | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index 3489f8f..73df7db 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -63,7 +63,6 @@ config CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+>
+>  config CPU_FREQ_DEFAULT_GOV_POWERSAVE
+>         bool "powersave"
+> -       depends on EXPERT
+>         select CPU_FREQ_GOV_POWERSAVE
+>         help
+>           Use the CPUFreq governor 'powersave' as default. This sets
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
+This was the commit which introduced it:
+
+commit 30d221db4439973076953e2ed44344fa92d1d09f
+Author: Alessandro Guido <alessandro.guido@gmail.com>
+Date:   Fri Apr 18 13:31:13 2008 -0700
+
+    [CPUFREQ] allow use of the powersave governor as the default one
+
+    Allow use of the powersave cpufreq governor as the default one for EMBEDDED
+    configs.
+
+    Signed-off-by: Alessandro Guido <alessandro.guido@gmail.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Dave Jones <davej@redhat.com>
 ---
- arch/x86/platform/olpc/olpc-xo1-sci.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpufreq/Kconfig             | 9 +++++++++
+ drivers/cpufreq/cpufreq_powersave.c | 8 ++++++--
+ include/linux/cpufreq.h             | 3 +++
+ 3 files changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/platform/olpc/olpc-xo1-sci.c b/arch/x86/platform/olpc/olpc-xo1-sci.c
-index 9a2e590dd202..7fa8b3b53bc0 100644
---- a/arch/x86/platform/olpc/olpc-xo1-sci.c
-+++ b/arch/x86/platform/olpc/olpc-xo1-sci.c
-@@ -61,7 +61,7 @@ static void battery_status_changed(void)
- 
- 	if (psy) {
- 		power_supply_changed(psy);
--		put_device(psy->dev);
-+		power_supply_put(psy);
- 	}
- }
- 
-@@ -71,7 +71,7 @@ static void ac_status_changed(void)
- 
- 	if (psy) {
- 		power_supply_changed(psy);
--		put_device(psy->dev);
-+		power_supply_put(psy);
- 	}
- }
- 
--- 
-1.9.1
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index c159ae6..5f076ae 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -69,6 +69,15 @@ config CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+          the frequency statically to the highest frequency supported by
+          the CPU.
+
++config CPU_FREQ_DEFAULT_GOV_POWERSAVE
++       bool "powersave"
++       depends on EMBEDDED
++       select CPU_FREQ_GOV_POWERSAVE
++       help
++         Use the CPUFreq governor 'powersave' as default. This sets
++         the frequency statically to the lowest frequency supported by
++         the CPU.
++
+
+
+
+And I think it was wrong since ever, it should have been selected by
+EMBEDDED instead
+of a depends here.
+
+For your patch:
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
