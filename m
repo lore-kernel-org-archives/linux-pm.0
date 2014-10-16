@@ -1,71 +1,74 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH v11 4/5] ARM: dts: add main Thermal info to rk3288
-Date: Thu, 16 Oct 2014 21:31:40 +0800
-Message-ID: <1413466301-25952-5-git-send-email-caesar.wang@rock-chips.com>
-References: <1413466301-25952-1-git-send-email-caesar.wang@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1413466301-25952-1-git-send-email-caesar.wang@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com
-Cc: zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, vladimir_zapolskiy@mentor.com, Caesar Wang <caesar.wang@rock-chips.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH 1/3] drivers: cpuidle: add status property to ARM idle states
+Date: Thu, 16 Oct 2014 14:59:55 +0100
+Message-ID: <1413467997-32131-1-git-send-email-lorenzo.pieralisi@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:40046 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752035AbaJPN7Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 09:59:25 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kevin Hilman <khilman@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>
 
-This patch is depend on rk3288-thermal.dtsi,or
-it will compile error.
+On some platforms the device tree bindings must provide the kernel
+with a status flag for idle states, that defines whether the idle
+state is operational or not in the current configuration.
 
-If the temperature over a period of time High,over 120C
-the resulting TSHUT gave CRU module,let it reset
-the entire chip,or via GPIO give PMIC.
+This patch adds a status property to the ARM idle states compliant
+with ePAPR v1.1 and updates the DT parsing code accordingly.
 
-Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 ---
- arch/arm/boot/dts/rk3288.dtsi | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ Documentation/devicetree/bindings/arm/idle-states.txt | 14 ++++++++++++++
+ drivers/cpuidle/dt_idle_states.c                      |  3 +++
+ 2 files changed, 17 insertions(+)
 
-diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
-index cb18bb4..bf34111 100644
---- a/arch/arm/boot/dts/rk3288.dtsi
-+++ b/arch/arm/boot/dts/rk3288.dtsi
-@@ -15,6 +15,7 @@
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/pinctrl/rockchip.h>
- #include <dt-bindings/clock/rk3288-cru.h>
-+#include <dt-bindings/thermal/thermal.h>
- #include "skeleton.dtsi"
- 
- / {
-@@ -346,6 +347,19 @@
- 		status = "disabled";
- 	};
- 
-+	tsadc: tsadc@ff280000 {
-+		compatible = "rockchip,rk3288-tsadc";
-+		reg = <0xff280000 0x100>;
-+		interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-+		clock-names = "tsadc", "apb_pclk";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&otp_out>;
-+		#thermal-sensor-cells = <1>;
-+		hw-shut-temp = <120000>;
-+		status = "disabled"
-+	};
+diff --git a/Documentation/devicetree/bindings/arm/idle-states.txt b/Docume=
+ntation/devicetree/bindings/arm/idle-states.txt
+index 37375c7..d8ab4b9 100644
+--- a/Documentation/devicetree/bindings/arm/idle-states.txt
++++ b/Documentation/devicetree/bindings/arm/idle-states.txt
+@@ -317,6 +317,20 @@ follows:
+ =09=09=09    In such systems entry-latency-us + exit-latency-us
+ =09=09=09    will exceed wakeup-latency-us by this duration.
+=20
++=09- status:
++=09=09Usage: Optional
++=09=09Value type: <string>
++=09=09Definition: A standard device tree property [5] that indicates
++=09=09=09    the operational status of an idle-state.
++=09=09=09    If present, it shall be:
++=09=09=09    "okay": to indicate that the idle state is
++=09=09=09=09    operational.
++=09=09=09    "disabled": to indicate that the idle state has
++=09=09=09=09=09been disabled in firmware so it is not
++=09=09=09=09=09operational.
++=09=09=09    If property is not present the idle-state must be
++=09=09=09    considered operational.
 +
- 	usb_host0_ehci: usb@ff500000 {
- 		compatible = "generic-ehci";
- 		reg = <0xff500000 0x100>;
-@@ -965,6 +979,12 @@
- 			};
- 		};
- 
-+		tsadc {
-+			otp_out: otp-out {
-+				rockchip,pins = <0 10 RK_FUNC_1 &pcfg_pull_none>;
-+			};
-+		};
+ =09In addition to the properties listed above, a state node may require
+ =09additional properties specifics to the entry-method defined in the
+ =09idle-states node, please refer to the entry-method bindings
+diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_sta=
+tes.c
+index 52f4d11..22840f4 100644
+--- a/drivers/cpuidle/dt_idle_states.c
++++ b/drivers/cpuidle/dt_idle_states.c
+@@ -169,6 +169,9 @@ int dt_init_idle_driver(struct cpuidle_driver *drv,
+ =09=09if (!state_node)
+ =09=09=09break;
+=20
++=09=09if (!of_device_is_available(state_node))
++=09=09=09continue;
 +
- 		pwm0 {
- 			pwm0_pin: pwm0-pin {
- 				rockchip,pins = <7 0 RK_FUNC_1 &pcfg_pull_none>;
--- 
-1.9.1
+ =09=09if (!idle_state_valid(state_node, i, cpumask)) {
+ =09=09=09pr_warn("%s idle state not valid, bailing out\n",
+ =09=09=09=09state_node->full_name);
+--=20
+2.1.2
+
+
