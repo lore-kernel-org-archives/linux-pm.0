@@ -1,39 +1,63 @@
-From: Vishnu Pratap Singh <vishnu.ps@samsung.com>
-Subject: [PATCH] [kernel]: process: replace printk with pr_err
-Date: Thu, 16 Oct 2014 10:36:35 +0530
-Message-ID: <1413435995-32317-1-git-send-email-vishnu.ps@samsung.com>
-References: <[kernel]: process: replace printk with pr_err>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:63624 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750854AbaJPFJD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Oct 2014 01:09:03 -0400
-In-reply-to: <[kernel]: process: replace printk with pr_err>
-Sender: linux-pm-owner@vger.kernel.org
+From: Weijie Yang <weijie.yang.kh@gmail.com>
+Subject: Re: [PATCH 0/4] (CMA_AGGRESSIVE) Make CMA memory be more aggressive
+ about allocation
+Date: Thu, 16 Oct 2014 13:13:57 +0800
+Message-ID: <CAL1ERfPJbbMUMe=5TvN2fbnJga4oP2oNUZ7zG-NRy0NbUMh=Ag@mail.gmail.com>
+References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
+Sender: owner-linux-mm@kvack.org
+To: Hui Zhu <zhuhui@xiaomi.com>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, m.szyprowski@samsung.com, akpm@linux-foundation.org, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, hannes@cmpxchg.org, riel@redhat.com, mgorman@suse.de, minchan@kernel.org, nasa4836@gmail.com, ddstreet@ieee.org, hughd@google.com, mingo@kernel.org, rientjes@google.com, peterz@infradead.org, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, paulmck@linux.vnet.ibm.com, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, akinobu.mita@gmail.com, lauraa@codeaurora.org, vbabka@suse.cz, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 List-Id: linux-pm@vger.kernel.org
-To: akpm@linux-foundation.org, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: cpgs@samsung.com, pintu.k@samsung.com, vishu13285@gmail.com, Vishnu Pratap Singh <vishnu.ps@samsung.com>
 
-This patch replaces printk(KERN_ERR...) with pr_err found.
+On Thu, Oct 16, 2014 at 11:35 AM, Hui Zhu <zhuhui@xiaomi.com> wrote:
+> In fallbacks of page_alloc.c, MIGRATE_CMA is the fallback of
+> MIGRATE_MOVABLE.
+> MIGRATE_MOVABLE will use MIGRATE_CMA when it doesn't have a page in
+> order that Linux kernel want.
+>
+> If a system that has a lot of user space program is running, for
+> instance, an Android board, most of memory is in MIGRATE_MOVABLE and
+> allocated.  Before function __rmqueue_fallback get memory from
+> MIGRATE_CMA, the oom_killer will kill a task to release memory when
+> kernel want get MIGRATE_UNMOVABLE memory because fallbacks of
+> MIGRATE_UNMOVABLE are MIGRATE_RECLAIMABLE and MIGRATE_MOVABLE.
+> This status is odd.  The MIGRATE_CMA has a lot free memory but Linux
+> kernel kill some tasks to release memory.
 
-Signed-off-by: Vishnu Pratap Singh <vishnu.ps@samsung.com>
----
- kernel/power/process.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I'm not very clear to this description, what issue do you try to solve?
+Make MIGRATE_CMA be the fallback of desired MIGRATE_UNMOVABLE?
 
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index 7b32322..401f7ee 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -85,7 +85,7 @@ static int try_to_freeze_tasks(bool user_only)
- 
- 	if (todo) {
- 		printk("\n");
--		printk(KERN_ERR "Freezing of tasks %s after %d.%03d seconds "
-+		pr_err("Freezing of tasks %s after %d.%03d seconds "
- 		       "(%d tasks refusing to freeze, wq_busy=%d):\n",
- 		       wakeup ? "aborted" : "failed",
- 		       elapsed_msecs / 1000, elapsed_msecs % 1000,
--- 
-1.8.3.2
+> This patch series adds a new function CMA_AGGRESSIVE to make CMA memory
+> be more aggressive about allocation.
+> If function CMA_AGGRESSIVE is available, when Linux kernel call function
+> __rmqueue try to get pages from MIGRATE_MOVABLE and conditions allow,
+> MIGRATE_CMA will be allocated as MIGRATE_MOVABLE first.  If MIGRATE_CMA
+> doesn't have enough pages for allocation, go back to allocate memory from
+> MIGRATE_MOVABLE.
 
+I don't think so. That will cause MIGRATE_CMA depleted prematurely, and when a
+user(such as camera) wants CMA memory, he will not get the wanted memory.
+
+> Then the memory of MIGRATE_MOVABLE can be kept for MIGRATE_UNMOVABLE and
+> MIGRATE_RECLAIMABLE which doesn't have fallback MIGRATE_CMA.
+
+I don't think this is the root cause of oom.
+But I am interested in the CMA shrinker idea, I will follow this mail.
+
+Thanks for your work, add some test data will be better.
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
