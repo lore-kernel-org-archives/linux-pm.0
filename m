@@ -1,214 +1,146 @@
-From: Hui Zhu <zhuhui@xiaomi.com>
-Subject: [PATCH v2 3/4] (CMA_AGGRESSIVE) Update reserve custom contiguous area code
-Date: Fri, 17 Oct 2014 17:30:05 +0800
-Message-ID: <1413538205-15915-1-git-send-email-zhuhui@xiaomi.com>
-References: <1413430551-22392-4-git-send-email-zhuhui@xiaomi.com>
+From: Chander Kashyap <k.chander@samsung.com>
+Subject: Re: [PATCH] arm64: dts: exynos7: add support for cpuidle core power down
+Date: Fri, 17 Oct 2014 15:13:59 +0530
+Message-ID: <CADWw7Ojgttk3cjaac=GGL1D9pejCJw8sJB2JvPFWtyBh3JHYKA@mail.gmail.com>
+References: <1413354920-20165-1-git-send-email-k.chander@samsung.com>
+	<20141015090047.GA26484@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from [42.62.48.242] ([42.62.48.242]:51003 "EHLO manager.mioffice.cn"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750828AbaJQJaN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 17 Oct 2014 05:30:13 -0400
-In-Reply-To: <1413430551-22392-4-git-send-email-zhuhui@xiaomi.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20141015090047.GA26484@red-moon>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Chander Kashyap <k.chander@samsung.com>, Mark Rutland <Mark.Rutland@arm.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, m.szyprowski@samsung.com, akpm@linux-foundation.org, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, hannes@cmpxchg.org, riel@redhat.com, mgorman@suse.de, minchan@kernel.org, nasa4836@gmail.com, ddstreet@ieee.org, hughd@google.com, mingo@kernel.org, rientjes@google.com, peterz@infradead.org, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, paulmck@linux.vnet.ibm.com, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, akinobu.mita@gmail.com, lauraa@codeaurora.org, vbabka@suse.cz, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org, Hui Zhu <zhuhui@xiaomi.com>
 
-Update this patch according to the comments from Rafael.
+Hi Lorenzo,
 
-Add cma_alloc_counter, cma_aggressive_switch, cma_aggressive_free_min and
-cma_aggressive_shrink_switch.
+On Wed, Oct 15, 2014 at 2:30 PM, Lorenzo Pieralisi
+<lorenzo.pieralisi@arm.com> wrote:
+> On Wed, Oct 15, 2014 at 07:35:20AM +0100, Chander Kashyap wrote:
+>> Exynos7 has core power down state where cores can be powered off independently.
+>> This patch adds support for this state.
+>
+> Please tell us more about the idle-state values you are adding, in particular
+> entry, exit latencies and min-residency values.
 
-cma_aggressive_switch is the swith for all CMA_AGGRESSIVE function.  It can be
-controlled by sysctl vm.cma-aggressive-switch.
+Entry latency: This value is calculated as follows:
 
-cma_aggressive_free_min can be controlled by sysctl
-"vm.cma-aggressive-free-min".  If the number of CMA free pages is small than
-this sysctl value, CMA_AGGRESSIVE will not work in page alloc code.
+On entry to arm64_enter_idle_state:
+timestamp1 = ktimeget();
 
-cma_aggressive_shrink_switch can be controlled by sysctl
-"vm.cma-aggressive-shrink-switch".  If sysctl "vm.cma-aggressive-shrink-switch"
-is true and free normal memory's size is smaller than the size that it want to
-allocate, do memory shrink with function git commit -a --amend before driver
-allocate pages from CMA.
+after returning from cpu_suspend()
 
-When Linux kernel try to reserve custom contiguous area, increase the value of
-cma_alloc_counter.  CMA_AGGRESSIVE will not work in page alloc code.
-After reserve custom contiguous area function return, decreases the value of
-cma_alloc_counter.
+timestamp2 = ktimeget();
 
-Signed-off-by: Hui Zhu <zhuhui@xiaomi.com>
----
- include/linux/cma.h |  7 +++++++
- kernel/sysctl.c     | 27 +++++++++++++++++++++++++++
- mm/cma.c            | 54 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 88 insertions(+)
+latency = timestamp2-timestamp1;
 
-diff --git a/include/linux/cma.h b/include/linux/cma.h
-index 0430ed0..df96abf 100644
---- a/include/linux/cma.h
-+++ b/include/linux/cma.h
-@@ -15,6 +15,13 @@
- 
- struct cma;
- 
-+#ifdef CONFIG_CMA_AGGRESSIVE
-+extern atomic_t cma_alloc_counter;
-+extern int cma_aggressive_switch;
-+extern unsigned long cma_aggressive_free_min;
-+extern int cma_aggressive_shrink_switch;
-+#endif
-+
- extern phys_addr_t cma_get_base(struct cma *cma);
- extern unsigned long cma_get_size(struct cma *cma);
- 
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 4aada6d..646929e2 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -92,6 +92,10 @@
- #include <linux/nmi.h>
- #endif
- 
-+#ifdef CONFIG_CMA_AGGRESSIVE
-+#include <linux/cma.h>
-+#endif
-+
- 
- #if defined(CONFIG_SYSCTL)
- 
-@@ -1485,6 +1489,29 @@ static struct ctl_table vm_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= proc_doulongvec_minmax,
- 	},
-+#ifdef CONFIG_CMA_AGGRESSIVE
-+	{
-+		.procname	= "cma-aggressive-switch",
-+		.data		= &cma_aggressive_switch,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0600,
-+		.proc_handler	= proc_dointvec,
-+	},
-+	{
-+		.procname	= "cma-aggressive-free-min",
-+		.data		= &cma_aggressive_free_min,
-+		.maxlen		= sizeof(unsigned long),
-+		.mode		= 0600,
-+		.proc_handler	= proc_doulongvec_minmax,
-+	},
-+	{
-+		.procname	= "cma-aggressive-shrink-switch",
-+		.data		= &cma_aggressive_shrink_switch,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0600,
-+		.proc_handler	= proc_dointvec,
-+	},
-+#endif
- 	{ }
- };
- 
-diff --git a/mm/cma.c b/mm/cma.c
-index 963bc4a..1cf341c 100644
---- a/mm/cma.c
-+++ b/mm/cma.c
-@@ -33,6 +33,7 @@
- #include <linux/log2.h>
- #include <linux/cma.h>
- #include <linux/highmem.h>
-+#include <linux/swap.h>
- 
- struct cma {
- 	unsigned long	base_pfn;
-@@ -127,6 +128,27 @@ err:
- 	return -EINVAL;
- }
- 
-+#ifdef CONFIG_CMA_AGGRESSIVE
-+/* The counter for the dma_alloc_from_contiguous and
-+   dma_release_from_contiguous.  */
-+atomic_t cma_alloc_counter = ATOMIC_INIT(0);
-+
-+/* Swich of CMA_AGGRESSIVE.  */
-+int cma_aggressive_switch __read_mostly;
-+
-+/* If the number of CMA free pages is small than this value, CMA_AGGRESSIVE will
-+   not work. */
-+#ifdef CONFIG_CMA_AGGRESSIVE_FREE_MIN
-+unsigned long cma_aggressive_free_min __read_mostly =
-+					CONFIG_CMA_AGGRESSIVE_FREE_MIN;
-+#else
-+unsigned long cma_aggressive_free_min __read_mostly = 500;
-+#endif
-+
-+/* Swich of CMA_AGGRESSIVE shink.  */
-+int cma_aggressive_shrink_switch __read_mostly;
-+#endif
-+
- static int __init cma_init_reserved_areas(void)
- {
- 	int i;
-@@ -138,6 +160,22 @@ static int __init cma_init_reserved_areas(void)
- 			return ret;
- 	}
- 
-+#ifdef CONFIG_CMA_AGGRESSIVE
-+	cma_aggressive_switch = 0;
-+#ifdef CONFIG_CMA_AGGRESSIVE_PHY_MAX
-+	if (memblock_phys_mem_size() <= CONFIG_CMA_AGGRESSIVE_PHY_MAX)
-+#else
-+	if (memblock_phys_mem_size() <= 0x40000000)
-+#endif
-+		cma_aggressive_switch = 1;
-+
-+	cma_aggressive_shrink_switch = 0;
-+#ifdef CONFIG_CMA_AGGRESSIVE_SHRINK
-+	if (cma_aggressive_switch)
-+		cma_aggressive_shrink_switch = 1;
-+#endif
-+#endif
-+
- 	return 0;
- }
- core_initcall(cma_init_reserved_areas);
-@@ -312,6 +350,11 @@ struct page *cma_alloc(struct cma *cma, int count, unsigned int align)
- 	unsigned long bitmap_maxno, bitmap_no, bitmap_count;
- 	struct page *page = NULL;
- 	int ret;
-+#ifdef CONFIG_CMA_AGGRESSIVE
-+	int free = global_page_state(NR_FREE_PAGES)
-+			- global_page_state(NR_FREE_CMA_PAGES)
-+			- totalreserve_pages;
-+#endif
- 
- 	if (!cma || !cma->count)
- 		return NULL;
-@@ -326,6 +369,13 @@ struct page *cma_alloc(struct cma *cma, int count, unsigned int align)
- 	bitmap_maxno = cma_bitmap_maxno(cma);
- 	bitmap_count = cma_bitmap_pages_to_bits(cma, count);
- 
-+#ifdef CONFIG_CMA_AGGRESSIVE
-+	atomic_inc(&cma_alloc_counter);
-+	if (cma_aggressive_switch && cma_aggressive_shrink_switch
-+	    && free < count)
-+		shrink_all_memory_for_cma(count - free);
-+#endif
-+
- 	for (;;) {
- 		mutex_lock(&cma->lock);
- 		bitmap_no = bitmap_find_next_zero_area(cma->bitmap,
-@@ -361,6 +411,10 @@ struct page *cma_alloc(struct cma *cma, int count, unsigned int align)
- 		start = bitmap_no + mask + 1;
- 	}
- 
-+#ifdef CONFIG_CMA_AGGRESSIVE
-+	atomic_dec(&cma_alloc_counter);
-+#endif
-+
- 	pr_debug("%s(): returned %p\n", __func__, page);
- 	return page;
- }
--- 
-1.9.1
+Cpu is not allowed to enter core powerdown by skipping wfi instruction at end.
+Hence calculated time contains entry time + failure exit time.
 
+
+Regarding
+exit-latency and target-residency time, got these values from HW team.
+
+I am using these as initial values and I will be working on optimizing
+these values with further experiments.
+If you could suggest any formal method of deriving these values, i can
+try those methods as well.
+
+>
+>> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+>> ---
+>> This patch has following dependencies:
+>>       - [PATCH v5 0/8] arch: arm64: Enable support for Samsung Exynos7 SoC
+>>               http://www.spinics.net/lists/linux-samsung-soc/msg37047.html
+>>       - [PATCH v9 0/8] ARM generic idle states
+>>               http://permalink.gmane.org/gmane.linux.power-management.general/49224
+>
+> Series above was merged, so dependency is stale.
+
+i will remove this
+
+>
+>>  arch/arm64/boot/dts/exynos/exynos7.dtsi |   18 ++++++++++++++++++
+>>  1 file changed, 18 insertions(+)dont
+>>
+>> diff --git a/arch/arm64/boot/dts/exynos/exynos7.dtsi b/arch/arm64/boot/dts/exynos/exynos7.dtsi
+>> index ce221ac..8e0a034 100644
+>> --- a/arch/arm64/boot/dts/exynos/exynos7.dtsi
+>> +++ b/arch/arm64/boot/dts/exynos/exynos7.dtsi
+>> @@ -36,6 +36,7 @@
+>>                       device_type = "cpu";
+>>                       compatible = "arm,cortex-a57", "arm,armv8";
+>>                       enable-method = "psci";
+>> +                     cpu-idle-states = <&CPU_SLEEP>;
+>
+> I would add cpu-idle-states phandle after the reg property, as defined
+> in the idle states bindings.
+
+i will move this after reg property.
+
+>
+>>                       reg = <0x0>;
+>>               };
+>>
+>> @@ -43,6 +44,7 @@
+>>                       device_type = "cpu";
+>>                       compatible = "arm,cortex-a57", "arm,armv8";
+>>                       enable-method = "psci";
+>> +                     cpu-idle-states = <&CPU_SLEEP>;
+>>                       reg = <0x1>;
+>>               };
+>>
+>> @@ -50,6 +52,7 @@
+>>                       device_type = "cpu";
+>>                       compatible = "arm,cortex-a57", "arm,armv8";
+>>                       enable-method = "psci";
+>> +                     cpu-idle-states = <&CPU_SLEEP>;
+>>                       reg = <0x2>;
+>>               };
+>>
+>> @@ -57,8 +60,23 @@
+>>                       device_type = "cpu";
+>>                       compatible = "arm,cortex-a57", "arm,armv8";
+>>                       enable-method = "psci";
+>> +                     cpu-idle-states = <&CPU_SLEEP>;
+>>                       reg = <0x3>;
+>>               };
+>> +
+>> +             idle-states {
+>> +                     entry-method = "arm,psci";
+>> +
+>> +                     CPU_SLEEP: cpu-sleep {
+>> +                             compatible = "arm,idle-state";
+>> +                             local-timer-stop;
+>> +                             arm,psci-suspend-param = <0x0010000>;
+>> +                             entry-latency-us = <20>;
+>> +                             exit-latency-us = <150>;
+>> +                             min-residency-us = <2100>;
+>> +                             status = "enabled";
+>
+> status ? This is not a documented property. If you need it please explain
+> why, define its bindings and we can see how to accommodate it.
+
+I will add okay for status property. As per the bindings posted by you.
+
+regards,
+>
+> Thank you,
+> Lorenzo
+>
+>> +                     };
+>> +             };
+>>       };
+>>
+>>       psci {
+>> --
+>> 1.7.9.5
+>>
+>>
+>
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
