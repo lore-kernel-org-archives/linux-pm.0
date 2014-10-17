@@ -1,68 +1,86 @@
-From: =?gb2312?B?1uy71A==?= <zhuhui@xiaomi.com>
-Subject: Re: [PATCH 0/4] (CMA_AGGRESSIVE) Make CMA memory be more aggressive
- about allocation
-Date: Fri, 17 Oct 2014 07:44:26 +0000
-Message-ID: <cf4a9f99f7b24b4fb688cb3bcccefb0e@cnbox4.mioffice.cn>
-References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
- <543F8812.2020002@codeaurora.org>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v2 7/7] mfd: ab8500: Decrement the power supply's device
+ reference counter
+Date: Fri, 17 Oct 2014 09:50:08 +0200
+Message-ID: <20141017075008.GC22725@lee--X1>
+References: <1413445327-24862-1-git-send-email-k.kozlowski@samsung.com>
+ <1413445327-24862-8-git-send-email-k.kozlowski@samsung.com>
+ <20141016122901.GA22725@lee--X1>
+ <1413463274.18828.1.camel@AMDC1943>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from [42.62.48.242] ([42.62.48.242]:63453 "EHLO manager.mioffice.cn"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751403AbaJQHpU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 17 Oct 2014 03:45:20 -0400
-Content-Language: zh-CN
+Received: from mail-wi0-f176.google.com ([209.85.212.176]:44619 "EHLO
+	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753385AbaJQHuO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Oct 2014 03:50:14 -0400
+Received: by mail-wi0-f176.google.com with SMTP id hi2so1318598wib.9
+        for <linux-pm@vger.kernel.org>; Fri, 17 Oct 2014 00:50:13 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1413463274.18828.1.camel@AMDC1943>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laura Abbott <lauraa@codeaurora.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "mina86@mina86.com" <mina86@mina86.com>, "aneesh.kumar@linux.vnet.ibm.com" <aneesh.kumar@linux.vnet.ibm.com>, "iamjoonsoo.kim@lge.com" <iamjoonsoo.kim@lge.com>, "hannes@cmpxchg.org" <hannes@cmpxchg.org>, "riel@redhat.com" <riel@redhat.com>, "mgorman@suse.de" <mgorman@suse.de>, "minchan@kernel.org" <minchan@kernel.org>, "nasa4836@gmail.com" <nasa4836@gmail.com>, "ddstreet@ieee.org" <ddstreet@ieee.org>, "hughd@google.com" <hughd@google.com>, "mingo@kernel.org" <mingo@kernel.org>, "rientjes@google.com" <rientjes@google.com>, "peterz@infradead.org" <peterz@infradead.org>, "keescook@chromium.org" <keescook@c>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Lv Zheng <lv.zheng@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Anton Vorontsov <anton@enomsg.org>, Pavel Machek <pavel@ucw.cz>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-CgpPbiAxMC8xNi8xNCAxNjo1NiwgTGF1cmEgQWJib3R0IHdyb3RlOgo+IE9uIDEwLzE1LzIwMTQg
-ODozNSBQTSwgSHVpIFpodSB3cm90ZToKPj4gSW4gZmFsbGJhY2tzIG9mIHBhZ2VfYWxsb2MuYywg
-TUlHUkFURV9DTUEgaXMgdGhlIGZhbGxiYWNrIG9mCj4+IE1JR1JBVEVfTU9WQUJMRS4KPj4gTUlH
-UkFURV9NT1ZBQkxFIHdpbGwgdXNlIE1JR1JBVEVfQ01BIHdoZW4gaXQgZG9lc24ndCBoYXZlIGEg
-cGFnZSBpbgo+PiBvcmRlciB0aGF0IExpbnV4IGtlcm5lbCB3YW50Lgo+Pgo+PiBJZiBhIHN5c3Rl
-bSB0aGF0IGhhcyBhIGxvdCBvZiB1c2VyIHNwYWNlIHByb2dyYW0gaXMgcnVubmluZywgZm9yCj4+
-IGluc3RhbmNlLCBhbiBBbmRyb2lkIGJvYXJkLCBtb3N0IG9mIG1lbW9yeSBpcyBpbiBNSUdSQVRF
-X01PVkFCTEUgYW5kCj4+IGFsbG9jYXRlZC4gIEJlZm9yZSBmdW5jdGlvbiBfX3JtcXVldWVfZmFs
-bGJhY2sgZ2V0IG1lbW9yeSBmcm9tCj4+IE1JR1JBVEVfQ01BLCB0aGUgb29tX2tpbGxlciB3aWxs
-IGtpbGwgYSB0YXNrIHRvIHJlbGVhc2UgbWVtb3J5IHdoZW4KPj4ga2VybmVsIHdhbnQgZ2V0IE1J
-R1JBVEVfVU5NT1ZBQkxFIG1lbW9yeSBiZWNhdXNlIGZhbGxiYWNrcyBvZgo+PiBNSUdSQVRFX1VO
-TU9WQUJMRSBhcmUgTUlHUkFURV9SRUNMQUlNQUJMRSBhbmQgTUlHUkFURV9NT1ZBQkxFLgo+PiBU
-aGlzIHN0YXR1cyBpcyBvZGQuICBUaGUgTUlHUkFURV9DTUEgaGFzIGEgbG90IGZyZWUgbWVtb3J5
-IGJ1dCBMaW51eAo+PiBrZXJuZWwga2lsbCBzb21lIHRhc2tzIHRvIHJlbGVhc2UgbWVtb3J5Lgo+
-Pgo+PiBUaGlzIHBhdGNoIHNlcmllcyBhZGRzIGEgbmV3IGZ1bmN0aW9uIENNQV9BR0dSRVNTSVZF
-IHRvIG1ha2UgQ01BIG1lbW9yeQo+PiBiZSBtb3JlIGFnZ3Jlc3NpdmUgYWJvdXQgYWxsb2NhdGlv
-bi4KPj4gSWYgZnVuY3Rpb24gQ01BX0FHR1JFU1NJVkUgaXMgYXZhaWxhYmxlLCB3aGVuIExpbnV4
-IGtlcm5lbCBjYWxsIGZ1bmN0aW9uCj4+IF9fcm1xdWV1ZSB0cnkgdG8gZ2V0IHBhZ2VzIGZyb20g
-TUlHUkFURV9NT1ZBQkxFIGFuZCBjb25kaXRpb25zIGFsbG93LAo+PiBNSUdSQVRFX0NNQSB3aWxs
-IGJlIGFsbG9jYXRlZCBhcyBNSUdSQVRFX01PVkFCTEUgZmlyc3QuICBJZiBNSUdSQVRFX0NNQQo+
-PiBkb2Vzbid0IGhhdmUgZW5vdWdoIHBhZ2VzIGZvciBhbGxvY2F0aW9uLCBnbyBiYWNrIHRvIGFs
-bG9jYXRlIG1lbW9yeSBmcm9tCj4+IE1JR1JBVEVfTU9WQUJMRS4KPj4gVGhlbiB0aGUgbWVtb3J5
-IG9mIE1JR1JBVEVfTU9WQUJMRSBjYW4gYmUga2VwdCBmb3IgTUlHUkFURV9VTk1PVkFCTEUgYW5k
-Cj4+IE1JR1JBVEVfUkVDTEFJTUFCTEUgd2hpY2ggZG9lc24ndCBoYXZlIGZhbGxiYWNrIE1JR1JB
-VEVfQ01BLgo+Pgo+Cj4gSXQncyBnb29kIHRvIHNlZSBhbm90aGVyIHByb3Bvc2FsIHRvIGZpeCBD
-TUEgdXRpbGl6YXRpb24uCgpUaGFua3MgTGF1cmEuCgpEbyB5b3UgaGF2ZQo+IGFueSBkYXRhIGFi
-b3V0IHRoZSBzdWNjZXNzIHJhdGUgb2YgQ01BIGNvbnRpZ3VvdXMgYWxsb2NhdGlvbiBhZnRlcgo+
-IHRoaXMgcGF0Y2ggc2VyaWVzPyAgIEkgcGxheWVkIGFyb3VuZCB3aXRoIGEgc2ltaWxhciBhcHBy
-b2FjaCBvZiB1c2luZwo+IENNQSBmb3IgTUlHUkFURV9NT1ZBQkxFIGFsbG9jYXRpb25zIGFuZCBm
-b3VuZCB0aGF0IGFsdGhvdWdoIHV0aWxpemF0aW9uCj4gZGlkIGluY3JlYXNlLCBjb250aWd1b3Vz
-IGFsbG9jYXRpb25zIGZhaWxlZCBhdCBhIGhpZ2hlciByYXRlIGFuZCB3ZXJlCj4gbXVjaCBzbG93
-ZXIuIEkgc2VlIHdoYXQgdGhpcyBzZXJpZXMgaXMgdHJ5aW5nIHRvIGRvIHdpdGggYXZvaWRpbmcK
-PiBhbGxvY2F0aW9uIGZyb20gQ01BIHBhZ2VzIHdoZW4gYSBjb250aWd1b3VzIGFsbG9jYXRpb24g
-aXMgcHJvZ3Jlc3MuCj4gTXkgY29uY2VybiBpcyB0aGF0IHRoZXJlIHdvdWxkIHN0aWxsIGJlIHBy
-b2JsZW1zIHdpdGggY29udGlndW91cwo+IGFsbG9jYXRpb24gYWZ0ZXIgYWxsIHRoZSBNSUdSQVRF
-X01PVkFCTEUgZmFsbGJhY2sgaGFzIGhhcHBlbmVkLgoKSSBkaWQgc29tZSB0ZXN0IHdpdGggdGhl
-IGNtYV9hbGxvY19jb3VudGVyIGFuZCBjbWEtYWdncmVzc2l2ZS1zaHJpbmsgaW4gCmEgYW5kcm9p
-ZCBib2FyZCB0aGF0IGhhcyAxZyBtZW1vcnkuICBSdW4gc29tZSBhcHBzIHRvIG1ha2UgZnJlZSBD
-TUEgCmNsb3NlIHRvIHRoZSB2YWx1ZSBvZiBjbWFfYWdncmVzc2l2ZV9mcmVlX21pbig1MDAgcGFn
-ZXMpLiAgQSBkcml2ZXIgCkJlZ2luIHRvIHJlcXVlc3QgQ01BIG1vcmUgdGhhbiAxMCB0aW1lcy4g
-RWFjaCB0aW1lLCBpdCB3aWxsIHJlcXVlc3QgbW9yZSAKdGhhbiAzMDAwIHBhZ2VzLgoKSSBkb24n
-dCBoYXZlIGVzdGFibGlzaGVkIG51bWJlciBmb3IgdGhhdCBiZWNhdXNlIGl0IGlzIHJlYWxseSBo
-YXJkIHRvIApnZXQgYSBmYWlsLiAgSSB0aGluayB0aGUgc3VjY2VzcyByYXRlIGlzIG92ZXIgOTUl
-IGF0IGxlYXN0LgoKQW5kIEkgdGhpbmsgbWF5YmUgdGhlIGlzb2xhdGUgZmFpbCBoYXMgcmVsYXRp
-b24gd2l0aCBwYWdlIGFsbG9jIGFuZCBmcmVlIApjb2RlLiAgTWF5YmUgbGV0IHpvbmUtPmxvY2sg
-cHJvdGVjdCBtb3JlIGNvZGUgY2FuIGhhbmRsZSB0aGlzIGlzc3VlLgoKVGhhbmtzLApIdWkKCj4K
-PiBUaGFua3MsCj4gTGF1cmEKPgo=
+On Thu, 16 Oct 2014, Krzysztof Kozlowski wrote:
+
+> On czw, 2014-10-16 at 14:29 +0200, Lee Jones wrote:
+> > On Thu, 16 Oct 2014, Krzysztof Kozlowski wrote:
+> >=20
+> > > Use power_supply_put() to decrement the power supply's device ref=
+erence
+> > > counter.
+> > >=20
+> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > > Acked-by: Pavel Machek <pavel@ucw.cz>
+> >=20
+> > I already Acked this.
+>=20
+> I think you acked mfd change in my first patchset
+> (power_supply_get_property()):
+> 	[PATCH 5/8] mfd: ab8500: Use power_supply_*() API for accessing
+> function attrs
+>=20
+> ... and this is my second patchset with other API (power_supply_put).
+
+Maybe my reply wasn't sent properly (the WiFi at this conference has
+been pretty shakey at points).
+
+Anyway ... Acked-by: Lee Jones <lee.jones@linaro.org>
+
+> > > ---
+> > >  drivers/mfd/ab8500-sysctrl.c | 2 ++
+> > >  1 file changed, 2 insertions(+)
+> > >=20
+> > > diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sy=
+sctrl.c
+> > > index 93b2d2c32ca3..d05a5719cfc4 100644
+> > > --- a/drivers/mfd/ab8500-sysctrl.c
+> > > +++ b/drivers/mfd/ab8500-sysctrl.c
+> > > @@ -51,6 +51,7 @@ static void ab8500_power_off(void)
+> > > =20
+> > >  		ret =3D power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLIN=
+E,
+> > >  				&val);
+> > > +		power_supply_put(psy);
+> > > =20
+> > >  		if (!ret && val.intval) {
+> > >  			charger_present =3D true;
+> > > @@ -73,6 +74,7 @@ static void ab8500_power_off(void)
+> > >  			       pss[i]);
+> > >  			machine_restart("charging");
+> > >  		}
+> > > +		power_supply_put(psy);
+> > >  	}
+> > > =20
+> > >  shutdown:
+> >=20
+>=20
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
