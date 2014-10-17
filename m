@@ -1,35 +1,417 @@
-From: "Kasagar, Srinidhi" <srinidhi.kasagar@intel.com>
-Subject: Re: [PATCH v2] cpufreq: Add sfi based cpufreq driver support
-Date: Fri, 17 Oct 2014 10:48:21 +0530
-Message-ID: <20141017051821.GA27331@intel-desktop>
-References: <20141015065309.GA10590@intel-desktop>
- <CAKohpom-8+H-u_PkVNrwfE+ugo_g3RmrnD-koQfXkcBaXTBh2A@mail.gmail.com>
+From: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
+Subject: [PATCH v3] cpufreq: Add sfi based cpufreq driver support
+Date: Fri, 17 Oct 2014 11:14:02 +0530
+Message-ID: <20141017054353.GA515@intel-desktop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:55635 "EHLO mga11.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:58319 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750970AbaJQFSZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 17 Oct 2014 01:18:25 -0400
+	id S1750835AbaJQFoB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 17 Oct 2014 01:44:01 -0400
 Content-Disposition: inline
-In-Reply-To: <CAKohpom-8+H-u_PkVNrwfE+ugo_g3RmrnD-koQfXkcBaXTBh2A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rudramuni, Vishwesh M" <vishwesh.m.rudramuni@intel.com>
+To: viresh.kumar@linaro.org
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, Rudramuni@intel-desktop, vishwesh.m.rudramuni@intel.com, srinidhi.kasagar@intel.com
 
-On Thu, Oct 16, 2014 at 02:18:27PM +0530, Viresh Kumar wrote:
-> On 15 October 2014 12:23, Srinidhi Kasagar <srinidhi.kasagar@intel.com> wrote:
-> > This adds the sfi based cpu freq driver for some of the
-> > Intel's Silver Mont based atom architectures like
-> > Merrifield and Moorfield (intel-mid)
-> >
-> > Signed-off-by: Rudramuni, Vishwesh M <vishwesh.m.rudramuni@intel.com>
-> > Signed-off-by: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
-> > ---
-> 
-> Always good to let people know what changed from previous version.
+This adds the sfi based cpu freq driver for some of the
+Intel's Silver Mont based atom architectures like
+Merrifield and Moorfield (intel-mid)
 
-Thanks much Viresh. I will respin the patch with the rest of your comments.
+Signed-off-by: Rudramuni, Vishwesh M <vishwesh.m.rudramuni@intel.com>
+Signed-off-by: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
+---
+v2:
+* rephrase the Kconfig text
+* merge the header file as its not being shared with anyone
+* remove the unnecessary checks in sfi_cpufreq_target
+* style changes in kzalloc
+* fix the potential memory leak sfi_cpufreq_cpu_init
+* move the cpufreq driver flag to the structure definition
+* remove the redundant init of policy->cpu and policy->cur
+* remove the unnecessary check while init the freq table
+* merge the for loops in cpu_init
+* use cpufreq_generic_attr rather than the custom one
 
-Srinidhi
+v3:
+* Add this change log
+* remove the left over not used cached_freq var
+* merge yet another for loop in cpu_init
+
+ drivers/cpufreq/Kconfig.x86   |   10 ++
+ drivers/cpufreq/Makefile      |    1 +
+ drivers/cpufreq/sfi-cpufreq.c |  326 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 337 insertions(+)
+ create mode 100644 drivers/cpufreq/sfi-cpufreq.c
+
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index 89ae88f91895..2bca6a5dcffd 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -57,6 +57,16 @@ config X86_ACPI_CPUFREQ_CPB
+ 	  By enabling this option the acpi_cpufreq driver provides the old
+ 	  entry in addition to the new boost ones, for compatibility reasons.
+ 
++config X86_SFI_CPUFREQ
++	tristate "SFI Processor P-States driver"
++	depends on X86_INTEL_MID && SFI
++	help
++	  This adds a CPUFreq driver for some Silver Mont based Intel
++	  Atom platforms (like INTEL_MID) which utilizes the SFI based
++	  processor performance states.
++
++	  If in doubt, say N.
++
+ config ELAN_CPUFREQ
+ 	tristate "AMD Elan SC400 and SC410"
+ 	depends on MELAN
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index db6d9a2fea4d..c3b51efd4a85 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -41,6 +41,7 @@ obj-$(CONFIG_X86_P4_CLOCKMOD)		+= p4-clockmod.o
+ obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
+ obj-$(CONFIG_X86_INTEL_PSTATE)		+= intel_pstate.o
+ obj-$(CONFIG_X86_AMD_FREQ_SENSITIVITY)	+= amd_freq_sensitivity.o
++obj-$(CONFIG_X86_SFI_CPUFREQ)		+= sfi-cpufreq.o
+ 
+ ##################################################################################
+ # ARM SoC drivers
+diff --git a/drivers/cpufreq/sfi-cpufreq.c b/drivers/cpufreq/sfi-cpufreq.c
+new file mode 100644
+index 000000000000..a4e4ee1de114
+--- /dev/null
++++ b/drivers/cpufreq/sfi-cpufreq.c
+@@ -0,0 +1,326 @@
++/*
++ *  SFI Processor P-States Driver
++ *  Based on ACPI Processor P-States Driver
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  Author: Vishwesh M Rudramuni <vishwesh.m.rudramuni@intel.com>
++ *  Author: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
++ */
++
++#include <linux/cpufreq.h>
++#include <linux/cpuidle.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/sfi.h>
++#include <linux/slab.h>
++#include <linux/smp.h>
++
++#include <asm/msr.h>
++#include <asm/processor.h>
++
++#define SFI_FREQ_MAX		32
++#define INTEL_MSR_RANGE		0xffff
++#define INTEL_MSR_BUSRATIO_MASK	0xff00
++#define SFI_CPU_MAX		8
++
++static DEFINE_PER_CPU(struct sfi_cpufreq_data *, drv_data);
++static DEFINE_MUTEX(performance_mutex);
++static struct sfi_freq_table_entry sfi_cpufreq_array[SFI_FREQ_MAX];
++
++/* sfi_perf_data is a pointer to percpu data. */
++static struct sfi_processor_performance *sfi_perf_data;
++static struct cpufreq_driver sfi_cpufreq_driver;
++static int sfi_cpufreq_num;
++
++/* Performance management */
++struct sfi_processor_px {
++	u32 core_frequency;	/* megahertz */
++	u32 transition_latency;	/* microseconds */
++	u32 control;	/* control value */
++};
++
++struct sfi_processor_performance {
++	unsigned int state;
++	unsigned int state_count;
++	struct sfi_processor_px *states;
++};
++
++struct sfi_cpufreq_data {
++	struct sfi_processor_performance *sfi_data;
++	struct cpufreq_frequency_table *freq_table;
++};
++
++static int parse_freq(struct sfi_table_header *table)
++{
++	struct sfi_table_simple *sb;
++	struct sfi_freq_table_entry *pentry;
++	int total_len;
++
++	sb = (struct sfi_table_simple *)table;
++	if (!sb) {
++		pr_warn("SFI: Unable to map frequency table\n");
++		return -ENODEV;
++	}
++
++	if (!sfi_cpufreq_num) {
++		sfi_cpufreq_num = SFI_GET_NUM_ENTRIES(sb,
++			 struct sfi_freq_table_entry);
++		pentry = (struct sfi_freq_table_entry *)sb->pentry;
++		total_len = sfi_cpufreq_num * sizeof(*pentry);
++		memcpy(sfi_cpufreq_array, pentry, total_len);
++	}
++
++	return 0;
++}
++
++static int sfi_processor_get_performance_states(
++			struct sfi_processor_performance *performance)
++{
++	int result = 0;
++	int i;
++
++	performance->state_count = sfi_cpufreq_num;
++	performance->states =
++	    kmalloc(sizeof(struct sfi_processor_px) * sfi_cpufreq_num,
++		    GFP_KERNEL);
++	if (!performance->states)
++		result = -ENOMEM;
++
++	pr_info("Num p-states %d\n", sfi_cpufreq_num);
++
++	/* Populate the P-states info from the SFI table */
++	for (i = 0; i < sfi_cpufreq_num; i++) {
++		performance->states[i].core_frequency =
++			sfi_cpufreq_array[i].freq_mhz;
++		performance->states[i].transition_latency =
++			sfi_cpufreq_array[i].latency;
++		performance->states[i].control =
++			sfi_cpufreq_array[i].ctrl_val;
++		pr_info("State [%d]: core_frequency[%d] transition_latency[%d] control[0x%x]\n",
++			i,
++			(u32) performance->states[i].core_frequency,
++			(u32) performance->states[i].transition_latency,
++			(u32) performance->states[i].control);
++	}
++
++	return result;
++}
++
++static int sfi_processor_register_performance(
++			struct sfi_processor_performance *performance)
++{
++	mutex_lock(&performance_mutex);
++
++	/* parse the freq table from sfi */
++	sfi_cpufreq_num = 0;
++	sfi_table_parse(SFI_SIG_FREQ, NULL, NULL, parse_freq);
++
++	sfi_processor_get_performance_states(performance);
++
++	mutex_unlock(&performance_mutex);
++
++	return 0;
++}
++
++void sfi_processor_unregister_performance(
++			struct sfi_processor_performance *performance)
++{
++	mutex_lock(&performance_mutex);
++	kfree(performance->states);
++	mutex_unlock(&performance_mutex);
++}
++
++static unsigned extract_freq(u32 msr, unsigned int cpu)
++{
++	struct cpufreq_frequency_table *pos;
++	struct sfi_processor_performance *perf;
++	struct sfi_cpufreq_data *data = per_cpu(drv_data, cpu);
++	u32 sfi_ctrl;
++
++	msr &= INTEL_MSR_BUSRATIO_MASK;
++	perf = data->sfi_data;
++
++	cpufreq_for_each_entry(pos, data->freq_table) {
++		sfi_ctrl = perf->states[pos->driver_data].control
++			& INTEL_MSR_BUSRATIO_MASK;
++		if (sfi_ctrl == msr)
++			return pos->frequency;
++	}
++	return data->freq_table[0].frequency;
++}
++
++static u32 get_cur_val(const struct cpumask *mask)
++{
++	u32 val, dummy;
++
++	if (unlikely(cpumask_empty(mask)))
++		return 0;
++
++	rdmsr_on_cpu(cpumask_any(mask), MSR_IA32_PERF_STATUS, &val, &dummy);
++
++	return val;
++}
++
++static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
++{
++	pr_debug("get_cur_freq_on_cpu (%d)\n", cpu);
++
++	return extract_freq(get_cur_val(cpumask_of(cpu)), cpu);
++}
++
++static int sfi_cpufreq_target(struct cpufreq_policy *policy,
++				unsigned int index)
++{
++	struct sfi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
++	struct sfi_processor_performance *perf;
++	unsigned int next_perf_state = 0; /* Index into perf table */
++	u32 lo, hi;
++
++	perf = data->sfi_data;
++	next_perf_state = data->freq_table[index].driver_data;
++
++	rdmsr_on_cpu(policy->cpu, MSR_IA32_PERF_CTL, &lo, &hi);
++	lo = (lo & ~INTEL_MSR_RANGE) |
++		((u32) perf->states[next_perf_state].control & INTEL_MSR_RANGE);
++	wrmsr_on_cpu(policy->cpu, MSR_IA32_PERF_CTL, lo, hi);
++
++	perf->state = next_perf_state;
++
++	return 0;
++}
++
++static int sfi_cpufreq_cpu_init(struct cpufreq_policy *policy)
++{
++	unsigned int i, result = 0, valid_states = 0;
++	unsigned int cpu = policy->cpu;
++	struct sfi_cpufreq_data *data;
++	struct sfi_processor_performance *perf;
++
++	pr_debug("%s: CPU:%d\n", __func__, cpu);
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->sfi_data = per_cpu_ptr(sfi_perf_data, cpu);
++	per_cpu(drv_data, cpu) = data;
++
++	result = sfi_processor_register_performance(data->sfi_data);
++	if (result)
++		goto err_free;
++
++	perf = data->sfi_data;
++	policy->shared_type = CPUFREQ_SHARED_TYPE_HW;
++
++	/* capability check */
++	if (perf->state_count <= 1) {
++		pr_debug("No P-States\n");
++		result = -ENODEV;
++		goto err_unreg;
++	}
++
++	data->freq_table = kzalloc(sizeof(*data->freq_table) *
++				(perf->state_count+1), GFP_KERNEL);
++	if (!data->freq_table) {
++		result = -ENOMEM;
++		goto err_unreg;
++	}
++
++	policy->cpuinfo.transition_latency = 0;
++	for (i = 0; i < perf->state_count; i++) {
++		/* detect transition latency */
++		if ((perf->states[i].transition_latency * 1000) >
++		    policy->cpuinfo.transition_latency)
++			policy->cpuinfo.transition_latency =
++				perf->states[i].transition_latency * 1000;
++
++		/* initialize the freq table */
++		data->freq_table[valid_states].driver_data = i;
++		data->freq_table[valid_states].frequency =
++				perf->states[i].core_frequency * 1000;
++		valid_states++;
++
++		pr_debug("     %cP%d: %d MHz, %d uS\n",
++			(i == perf->state ? '*' : ' '), i,
++			(u32) perf->states[i].core_frequency,
++			(u32) perf->states[i].transition_latency);
++	}
++
++	data->freq_table[valid_states].frequency = CPUFREQ_TABLE_END;
++	perf->state = 0;
++
++	result = cpufreq_table_validate_and_show(policy, data->freq_table);
++	if (result)
++		goto err_freqfree;
++
++	pr_debug("CPU%u - SFI performance management activated.\n", cpu);
++
++	return result;
++
++err_freqfree:
++	kfree(data->freq_table);
++err_unreg:
++	sfi_processor_unregister_performance(perf);
++err_free:
++	kfree(data);
++	per_cpu(drv_data, cpu) = NULL;
++
++	return result;
++}
++
++static int sfi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
++{
++	struct sfi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
++
++	pr_debug("sfi_cpufreq_cpu_exit\n");
++
++	per_cpu(drv_data, policy->cpu) = NULL;
++	sfi_processor_unregister_performance(data->sfi_data);
++	kfree(data->freq_table);
++	kfree(data);
++
++	return 0;
++}
++
++static struct cpufreq_driver sfi_cpufreq_driver = {
++	.flags		= CPUFREQ_CONST_LOOPS,
++	.get		= get_cur_freq_on_cpu,
++	.verify		= cpufreq_generic_frequency_table_verify,
++	.target_index	= sfi_cpufreq_target,
++	.init		= sfi_cpufreq_cpu_init,
++	.exit		= sfi_cpufreq_cpu_exit,
++	.name		= "sfi-cpufreq",
++	.attr		= cpufreq_generic_attr,
++};
++
++static int __init sfi_cpufreq_init(void)
++{
++	sfi_perf_data = alloc_percpu(struct sfi_processor_performance);
++	if (!sfi_perf_data) {
++		pr_err("Memory allocation error for sfi_perf_data.\n");
++		return -ENOMEM;
++	}
++
++	return cpufreq_register_driver(&sfi_cpufreq_driver);
++}
++late_initcall(sfi_cpufreq_init);
++
++static void __exit sfi_cpufreq_exit(void)
++{
++	cpufreq_unregister_driver(&sfi_cpufreq_driver);
++	free_percpu(sfi_perf_data);
++}
++module_exit(sfi_cpufreq_exit);
++
++MODULE_AUTHOR("Vishwesh M Rudramuni <vishwesh.m.rudramuni@intel.com>");
++MODULE_DESCRIPTION("SFI P-States Driver");
++MODULE_LICENSE("GPL");
+-- 
+1.7.9.5
+
+
+-- 
