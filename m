@@ -1,86 +1,431 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 7/7] mfd: ab8500: Decrement the power supply's device
- reference counter
-Date: Fri, 17 Oct 2014 09:50:08 +0200
-Message-ID: <20141017075008.GC22725@lee--X1>
-References: <1413445327-24862-1-git-send-email-k.kozlowski@samsung.com>
- <1413445327-24862-8-git-send-email-k.kozlowski@samsung.com>
- <20141016122901.GA22725@lee--X1>
- <1413463274.18828.1.camel@AMDC1943>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] cpufreq: qoriq: Make the driver usable on all QorIQ platforms
+Date: Fri, 17 Oct 2014 10:03:40 +0200
+Message-ID: <8F5E4DA7-8A64-4614-91E7-BFB28D91C737@kernel.crashing.org>
+References: <1413515616-15874-1-git-send-email-B29983@freescale.com>
+Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:44619 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753385AbaJQHuO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Oct 2014 03:50:14 -0400
-Received: by mail-wi0-f176.google.com with SMTP id hi2so1318598wib.9
-        for <linux-pm@vger.kernel.org>; Fri, 17 Oct 2014 00:50:13 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1413463274.18828.1.camel@AMDC1943>
+Received: from gate.crashing.org ([63.228.1.57]:50491 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753255AbaJQIEB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Oct 2014 04:04:01 -0400
+In-Reply-To: <1413515616-15874-1-git-send-email-B29983@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Lv Zheng <lv.zheng@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Anton Vorontsov <anton@enomsg.org>, Pavel Machek <pavel@ucw.cz>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: b29983@freescale.com
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@ozlabs.org, Tang Yuantian <Yuantian.Tang@freescale.com>
 
-On Thu, 16 Oct 2014, Krzysztof Kozlowski wrote:
 
-> On czw, 2014-10-16 at 14:29 +0200, Lee Jones wrote:
-> > On Thu, 16 Oct 2014, Krzysztof Kozlowski wrote:
-> >=20
-> > > Use power_supply_put() to decrement the power supply's device ref=
-erence
-> > > counter.
-> > >=20
-> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > > Acked-by: Pavel Machek <pavel@ucw.cz>
-> >=20
-> > I already Acked this.
+On Oct 17, 2014, at 5:13 AM, b29983@freescale.com wrote:
+
+> From: Tang Yuantian <Yuantian.Tang@freescale.com>
 >=20
-> I think you acked mfd change in my first patchset
-> (power_supply_get_property()):
-> 	[PATCH 5/8] mfd: ab8500: Use power_supply_*() API for accessing
-> function attrs
+> Freescale introduced new ARM core-based SoCs which support dynamic
+> frequency switch feature. DFS on new SoCs are compatible with current
+> PowerPC CoreNet platforms. In order to support those new platforms,
+> this driver needs to be slightly adjusted. The main changes include:
 >=20
-> ... and this is my second patchset with other API (power_supply_put).
+> 1. Changed the names of driver and functions in driver.
 
-Maybe my reply wasn't sent properly (the WiFi at this conference has
-been pretty shakey at points).
+split the name changes/renaming into a separate patch from the other ch=
+anges.
 
-Anyway ... Acked-by: Lee Jones <lee.jones@linaro.org>
-
-> > > ---
-> > >  drivers/mfd/ab8500-sysctrl.c | 2 ++
-> > >  1 file changed, 2 insertions(+)
-> > >=20
-> > > diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sy=
-sctrl.c
-> > > index 93b2d2c32ca3..d05a5719cfc4 100644
-> > > --- a/drivers/mfd/ab8500-sysctrl.c
-> > > +++ b/drivers/mfd/ab8500-sysctrl.c
-> > > @@ -51,6 +51,7 @@ static void ab8500_power_off(void)
-> > > =20
-> > >  		ret =3D power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLIN=
-E,
-> > >  				&val);
-> > > +		power_supply_put(psy);
-> > > =20
-> > >  		if (!ret && val.intval) {
-> > >  			charger_present =3D true;
-> > > @@ -73,6 +74,7 @@ static void ab8500_power_off(void)
-> > >  			       pss[i]);
-> > >  			machine_restart("charging");
-> > >  		}
-> > > +		power_supply_put(psy);
-> > >  	}
-> > > =20
-> > >  shutdown:
-> >=20
+> 2. Added two new functions get_cpu_physical_id() and get_bus_freq().
+> 3. Used a new way to get all the CPUs which sharing clock wire.
 >=20
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> ---
+> drivers/cpufreq/Kconfig.arm                        |   8 ++
+> drivers/cpufreq/Kconfig.powerpc                    |  11 +-
+> drivers/cpufreq/Makefile                           |   2 +-
+> .../{ppc-corenet-cpufreq.c =3D> qoriq-cpufreq.c}     | 150 ++++++++++=
+++++-------
+> 4 files changed, 114 insertions(+), 57 deletions(-)
+> rename drivers/cpufreq/{ppc-corenet-cpufreq.c =3D> qoriq-cpufreq.c} (=
+72%)
+>=20
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.ar=
+m
+> index 83a75dc..1925ae94 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -247,3 +247,11 @@ config ARM_TEGRA_CPUFREQ
+> 	default y
+> 	help
+> 	  This adds the CPUFreq driver support for TEGRA SOCs.
+> +
+> +config QORIQ_CPUFREQ
+> +	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
+> +	depends on OF && COMMON_CLK
+> +	select CLK_PPC_CORENET
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Why are you not also renaming =91CLK_PPC_CORENET=92 to =91CLK_QORIQ=92 =
+or something like that?  Seems rather odd to select a PPC CLK support o=
+n ARM ;)
+
+> +	help
+> +	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
+> +	  which are capable of changing the CPU's frequency dynamically.
+> diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfi=
+g.powerpc
+> index 72564b7..3a34248 100644
+> --- a/drivers/cpufreq/Kconfig.powerpc
+> +++ b/drivers/cpufreq/Kconfig.powerpc
+> @@ -23,14 +23,13 @@ config CPU_FREQ_MAPLE
+> 	  This adds support for frequency switching on Maple 970FX
+> 	  Evaluation Board and compatible boards (IBM JS2x blades).
+>=20
+> -config PPC_CORENET_CPUFREQ
+> -	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
+> -	depends on PPC_E500MC && OF && COMMON_CLK
+> +config QORIQ_CPUFREQ
+> +	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
+> +	depends on OF && COMMON_CLK
+> 	select CLK_PPC_CORENET
+> 	help
+> -	  This adds the CPUFreq driver support for Freescale e500mc,
+> -	  e5500 and e6500 series SoCs which are capable of changing
+> -	  the CPU's frequency dynamically.
+> +	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
+> +	  which are capable of changing the CPU's frequency dynamically.
+>=20
+> config CPU_FREQ_PMAC
+> 	bool "Support for Apple PowerBooks"
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index 40c53dc..0020049 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -84,7 +84,7 @@ obj-$(CONFIG_CPU_FREQ_CBE)		+=3D ppc-cbe-cpufreq.o
+> ppc-cbe-cpufreq-y			+=3D ppc_cbe_cpufreq_pervasive.o ppc_cbe_cpufreq.=
+o
+> obj-$(CONFIG_CPU_FREQ_CBE_PMI)		+=3D ppc_cbe_cpufreq_pmi.o
+> obj-$(CONFIG_CPU_FREQ_MAPLE)		+=3D maple-cpufreq.o
+> -obj-$(CONFIG_PPC_CORENET_CPUFREQ)   +=3D ppc-corenet-cpufreq.o
+> +obj-$(CONFIG_QORIQ_CPUFREQ)   		+=3D qoriq-cpufreq.o
+> obj-$(CONFIG_CPU_FREQ_PMAC)		+=3D pmac32-cpufreq.o
+> obj-$(CONFIG_CPU_FREQ_PMAC64)		+=3D pmac64-cpufreq.o
+> obj-$(CONFIG_PPC_PASEMI_CPUFREQ)	+=3D pasemi-cpufreq.o
+> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/=
+qoriq-cpufreq.c
+> similarity index 72%
+> rename from drivers/cpufreq/ppc-corenet-cpufreq.c
+> rename to drivers/cpufreq/qoriq-cpufreq.c
+> index bee5df7..80def0c 100644
+> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
+> +++ b/drivers/cpufreq/qoriq-cpufreq.c
+> @@ -1,7 +1,7 @@
+> /*
+>  * Copyright 2013 Freescale Semiconductor, Inc.
+>  *
+> - * CPU Frequency Scaling driver for Freescale PowerPC corenet SoCs.
+> + * CPU Frequency Scaling driver for Freescale QorIQ SoCs.
+>  *
+>  * This program is free software; you can redistribute it and/or modi=
+fy
+>  * it under the terms of the GNU General Public License version 2 as
+> @@ -20,7 +20,6 @@
+> #include <linux/of.h>
+> #include <linux/slab.h>
+> #include <linux/smp.h>
+> -#include <sysdev/fsl_soc.h>
+>=20
+> /**
+>  * struct cpu_data - per CPU data struct
+> @@ -69,9 +68,6 @@ static const u32 *fmask;
+>=20
+> static DEFINE_PER_CPU(struct cpu_data *, cpu_data);
+>=20
+> -/* cpumask in a cluster */
+> -static DEFINE_PER_CPU(cpumask_var_t, cpu_mask);
+> -
+> #ifndef CONFIG_SMP
+> static inline const struct cpumask *cpu_core_mask(int cpu)
+> {
+> @@ -79,6 +75,79 @@ static inline const struct cpumask *cpu_core_mask(=
+int cpu)
+> }
+> #endif
+>=20
+> +#if defined(CONFIG_PPC_E500MC)
+
+Probably should just be CONFIG_PPC, but do we need this at all.  Can=92=
+t we just use topology_core_id() on both ARM & PPC?
+
+> +static int get_cpu_physical_id(int cpu)
+> +{
+> +	return get_hard_smp_processor_id(cpu);
+> +}
+> +#elif defined(CONFIG_ARM)
+> +static int get_cpu_physical_id(int cpu)
+> +{
+> +	return topology_core_id(cpu);
+> +}
+> +#endif
+> +
+> +static u32 get_bus_freq(void)
+> +{
+> +	struct device_node *soc;
+> +	u32 sysfreq;
+> +
+> +	soc =3D of_find_node_by_type(NULL, "soc");
+> +	if (!soc)
+> +		return 0;
+> +
+> +	if (of_property_read_u32(soc, "bus-frequency", &sysfreq))
+> +		sysfreq =3D 0;
+> +
+> +	of_node_put(soc);
+> +
+> +	return sysfreq;
+> +}
+> +
+> +static struct device_node *cpu_to_clk_node(int cpu)
+> +{
+> +	struct device_node *np, *clk_np;
+> +
+> +	if (!cpu_present(cpu))
+> +		return NULL;
+> +
+> +	np =3D of_get_cpu_node(cpu, NULL);
+> +	if (!np)
+> +		return NULL;
+> +
+> +	clk_np =3D of_parse_phandle(np, "clocks", 0);
+> +	if (!clk_np)
+> +		return NULL;
+> +
+> +	of_node_put(np);
+> +
+> +	return clk_np;
+> +}
+> +
+> +/* traverse cpu nodes to get cpu mask of sharing clock wire */
+> +static void set_affected_cpus(struct cpufreq_policy *policy)
+> +{
+> +	struct device_node *np, *clk_np;
+> +	struct cpumask *dstp =3D policy->cpus;
+> +	int i;
+> +
+> +	np =3D cpu_to_clk_node(policy->cpu);
+> +	if (!np)
+> +		return;
+> +
+> +	for_each_present_cpu(i) {
+> +		clk_np =3D cpu_to_clk_node(i);
+> +		if (!clk_np)
+> +			continue;
+> +
+> +		if (clk_np =3D=3D np)
+> +			cpumask_set_cpu(i, dstp);
+> +
+> +		of_node_put(clk_np);
+> +	}
+> +	of_node_put(np);
+> +}
+> +
+> /* reduce the duplicated frequencies in frequency table */
+> static void freq_table_redup(struct cpufreq_frequency_table *freq_tab=
+le,
+> 		int count)
+> @@ -105,6 +174,7 @@ static void freq_table_sort(struct cpufreq_freque=
+ncy_table *freq_table,
+> 	int i, j, ind;
+> 	unsigned int freq, max_freq;
+> 	struct cpufreq_frequency_table table;
+> +
+> 	for (i =3D 0; i < count - 1; i++) {
+> 		max_freq =3D freq_table[i].frequency;
+> 		ind =3D i;
+> @@ -129,7 +199,7 @@ static void freq_table_sort(struct cpufreq_freque=
+ncy_table *freq_table,
+> 	}
+> }
+>=20
+> -static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> +static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> {
+> 	struct device_node *np;
+> 	int i, count, ret;
+> @@ -145,10 +215,8 @@ static int corenet_cpufreq_cpu_init(struct cpufr=
+eq_policy *policy)
+> 		return -ENODEV;
+>=20
+> 	data =3D kzalloc(sizeof(*data), GFP_KERNEL);
+> -	if (!data) {
+> -		pr_err("%s: no memory\n", __func__);
+> +	if (!data)
+> 		goto err_np;
+> -	}
+>=20
+> 	policy->clk =3D of_clk_get(np, 0);
+> 	if (IS_ERR(policy->clk)) {
+> @@ -170,7 +238,7 @@ static int corenet_cpufreq_cpu_init(struct cpufre=
+q_policy *policy)
+> 	}
+>=20
+> 	if (fmask)
+> -		mask =3D fmask[get_hard_smp_processor_id(cpu)];
+> +		mask =3D fmask[get_cpu_physical_id(cpu)];
+> 	else
+> 		mask =3D 0x0;
+>=20
+> @@ -201,13 +269,13 @@ static int corenet_cpufreq_cpu_init(struct cpuf=
+req_policy *policy)
+> 	data->table =3D table;
+>=20
+> 	/* update ->cpus if we have cluster, no harm if not */
+> -	cpumask_copy(policy->cpus, per_cpu(cpu_mask, cpu));
+> -	for_each_cpu(i, per_cpu(cpu_mask, cpu))
+> +	set_affected_cpus(policy);
+> +	for_each_cpu(i, policy->cpus)
+> 		per_cpu(cpu_data, i) =3D data;
+>=20
+> 	/* Minimum transition latency is 12 platform clocks */
+> 	u64temp =3D 12ULL * NSEC_PER_SEC;
+> -	do_div(u64temp, fsl_get_sys_freq());
+> +	do_div(u64temp, get_bus_freq());
+> 	policy->cpuinfo.transition_latency =3D u64temp + 1;
+>=20
+> 	of_node_put(np);
+> @@ -227,7 +295,7 @@ err_np:
+> 	return -ENODEV;
+> }
+>=20
+> -static int __exit corenet_cpufreq_cpu_exit(struct cpufreq_policy *po=
+licy)
+> +static int __exit qoriq_cpufreq_cpu_exit(struct cpufreq_policy *poli=
+cy)
+> {
+> 	struct cpu_data *data =3D per_cpu(cpu_data, policy->cpu);
+> 	unsigned int cpu;
+> @@ -236,13 +304,13 @@ static int __exit corenet_cpufreq_cpu_exit(stru=
+ct cpufreq_policy *policy)
+> 	kfree(data->table);
+> 	kfree(data);
+>=20
+> -	for_each_cpu(cpu, per_cpu(cpu_mask, policy->cpu))
+> +	for_each_cpu(cpu, policy->cpus)
+> 		per_cpu(cpu_data, cpu) =3D NULL;
+>=20
+> 	return 0;
+> }
+>=20
+> -static int corenet_cpufreq_target(struct cpufreq_policy *policy,
+> +static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
+> 		unsigned int index)
+> {
+> 	struct clk *parent;
+> @@ -252,18 +320,18 @@ static int corenet_cpufreq_target(struct cpufre=
+q_policy *policy,
+> 	return clk_set_parent(policy->clk, parent);
+> }
+>=20
+> -static struct cpufreq_driver ppc_corenet_cpufreq_driver =3D {
+> -	.name		=3D "ppc_cpufreq",
+> +static struct cpufreq_driver qoriq_cpufreq_driver =3D {
+> +	.name		=3D "qoriq_cpufreq",
+> 	.flags		=3D CPUFREQ_CONST_LOOPS,
+> -	.init		=3D corenet_cpufreq_cpu_init,
+> -	.exit		=3D __exit_p(corenet_cpufreq_cpu_exit),
+> +	.init		=3D qoriq_cpufreq_cpu_init,
+> +	.exit		=3D __exit_p(qoriq_cpufreq_cpu_exit),
+> 	.verify		=3D cpufreq_generic_frequency_table_verify,
+> -	.target_index	=3D corenet_cpufreq_target,
+> +	.target_index	=3D qoriq_cpufreq_target,
+> 	.get		=3D cpufreq_generic_get,
+> 	.attr		=3D cpufreq_generic_attr,
+> };
+>=20
+> -static const struct of_device_id node_matches[] __initdata =3D {
+> +static const struct of_device_id node_matches[] __initconst =3D {
+> 	{ .compatible =3D "fsl,p2041-clockgen", .data =3D &sdata[0], },
+> 	{ .compatible =3D "fsl,p3041-clockgen", .data =3D &sdata[0], },
+> 	{ .compatible =3D "fsl,p5020-clockgen", .data =3D &sdata[1], },
+> @@ -273,61 +341,43 @@ static const struct of_device_id node_matches[]=
+ __initdata =3D {
+> 	{}
+> };
+>=20
+> -static int __init ppc_corenet_cpufreq_init(void)
+> +static int __init qoriq_cpufreq_init(void)
+> {
+> 	int ret;
+> 	struct device_node  *np;
+> 	const struct of_device_id *match;
+> 	const struct soc_data *data;
+> -	unsigned int cpu;
+>=20
+> 	np =3D of_find_matching_node(NULL, node_matches);
+> 	if (!np)
+> 		return -ENODEV;
+>=20
+> -	for_each_possible_cpu(cpu) {
+> -		if (!alloc_cpumask_var(&per_cpu(cpu_mask, cpu), GFP_KERNEL))
+> -			goto err_mask;
+> -		cpumask_copy(per_cpu(cpu_mask, cpu), cpu_core_mask(cpu));
+> -	}
+> -
+> 	match =3D of_match_node(node_matches, np);
+> 	data =3D match->data;
+> 	if (data) {
+> 		if (data->flag)
+> 			fmask =3D data->freq_mask;
+> -		min_cpufreq =3D fsl_get_sys_freq();
+> +		min_cpufreq =3D get_bus_freq();
+> 	} else {
+> -		min_cpufreq =3D fsl_get_sys_freq() / 2;
+> +		min_cpufreq =3D get_bus_freq() / 2;
+> 	}
+>=20
+> 	of_node_put(np);
+>=20
+> -	ret =3D cpufreq_register_driver(&ppc_corenet_cpufreq_driver);
+> +	ret =3D cpufreq_register_driver(&qoriq_cpufreq_driver);
+> 	if (!ret)
+> -		pr_info("Freescale PowerPC corenet CPU frequency scaling driver\n"=
+);
+> +		pr_info("Freescale QorIQ CPU frequency scaling driver\n");
+>=20
+> 	return ret;
+> -
+> -err_mask:
+> -	for_each_possible_cpu(cpu)
+> -		free_cpumask_var(per_cpu(cpu_mask, cpu));
+> -
+> -	return -ENOMEM;
+> }
+> -module_init(ppc_corenet_cpufreq_init);
+> +module_init(qoriq_cpufreq_init);
+>=20
+> -static void __exit ppc_corenet_cpufreq_exit(void)
+> +static void __exit qoriq_cpufreq_exit(void)
+> {
+> -	unsigned int cpu;
+> -
+> -	for_each_possible_cpu(cpu)
+> -		free_cpumask_var(per_cpu(cpu_mask, cpu));
+> -
+> -	cpufreq_unregister_driver(&ppc_corenet_cpufreq_driver);
+> +	cpufreq_unregister_driver(&qoriq_cpufreq_driver);
+> }
+> -module_exit(ppc_corenet_cpufreq_exit);
+> +module_exit(qoriq_cpufreq_exit);
+>=20
+> MODULE_LICENSE("GPL");
+> MODULE_AUTHOR("Tang Yuantian <Yuantian.Tang@freescale.com>");
+> -MODULE_DESCRIPTION("cpufreq driver for Freescale e500mc series SoCs"=
+);
+> +MODULE_DESCRIPTION("cpufreq driver for Freescale QorIQ series SoCs")=
+;
+> --=20
+> 2.1.0.27.g96db324
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
+l" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
