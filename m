@@ -1,101 +1,296 @@
-From: =?gb2312?B?1uy71A==?= <zhuhui@xiaomi.com>
-Subject: Re: [PATCH 2/4] (CMA_AGGRESSIVE) Add argument hibernation to
- function shrink_all_memory
-Date: Fri, 17 Oct 2014 06:18:39 +0000
-Message-ID: <70d41b6fdea74d5fb88f314708879acc@cnbox4.mioffice.cn>
-References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
- <1413430551-22392-3-git-send-email-zhuhui@xiaomi.com>
- <1471435.6q4YYkTopF@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+From: Kelvin Cheung <keguang.zhang@gmail.com>
+Subject: [PATCH V2 6/6] cpufreq: Loongson1: Add cpufreq driver for Loongson1B
+Date: Fri, 17 Oct 2014 14:27:33 +0800
+Message-ID: <1413527253-22632-1-git-send-email-keguang.zhang@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from [42.62.48.242] ([42.62.48.242]:7204 "EHLO manager.mioffice.cn"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750729AbaJQGSz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 17 Oct 2014 02:18:55 -0400
-Content-Language: zh-CN
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:53492 "EHLO
+	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750835AbaJQG1z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Oct 2014 02:27:55 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-mips@linux-mips.org, ralf@linux-mips.org, Kelvin Cheung <keguang.zhang@gmail.com>
 
-CgpPbiAxMC8xNi8xNCAxNjoyOSwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gW0NDIGxpc3Qg
-dHJpbW1lZF0KPgo+IE9uIFRodXJzZGF5LCBPY3RvYmVyIDE2LCAyMDE0IDExOjM1OjQ5IEFNIEh1
-aSBaaHUgd3JvdGU6Cj4+IEZ1bmN0aW9uIHNocmlua19hbGxfbWVtb3J5IHRyeSB0byBmcmVlIGBu
-cl90b19yZWNsYWltJyBvZiBtZW1vcnkuCj4+IENNQV9BR0dSRVNTSVZFX1NIUklOSyBmdW5jdGlv
-biB3aWxsIGNhbGwgdGhpcyBmdW5jdG9uIHRvIGZyZWUgYG5yX3RvX3JlY2xhaW0nIG9mCj4+IG1l
-bW9yeS4gIEl0IG5lZWQgZGlmZmVyZW50IHNjYW5fY29udHJvbCB3aXRoIGN1cnJlbnQgY2FsbGVy
-IGZ1bmN0aW9uCj4+IGhpYmVybmF0ZV9wcmVhbGxvY2F0ZV9tZW1vcnkuCj4+Cj4+IElmIGhpYmVy
-bmF0aW9uIGlzIHRydWUsIHRoZSBjYWxsZXIgaXMgaGliZXJuYXRlX3ByZWFsbG9jYXRlX21lbW9y
-eS4KPj4gaWYgbm90LCB0aGUgY2FsbGVyIGlzIENNQSBhbGxvYyBmdW5jdGlvbi4KPj4KPj4gU2ln
-bmVkLW9mZi1ieTogSHVpIFpodSA8emh1aHVpQHhpYW9taS5jb20+Cj4+IC0tLQo+PiAgIGluY2x1
-ZGUvbGludXgvc3dhcC5oICAgIHwgIDMgKystCj4+ICAga2VybmVsL3Bvd2VyL3NuYXBzaG90LmMg
-fCAgMiArLQo+PiAgIG1tL3Ztc2Nhbi5jICAgICAgICAgICAgIHwgMTkgKysrKysrKysrKysrKy0t
-LS0tLQo+PiAgIDMgZmlsZXMgY2hhbmdlZCwgMTYgaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMo
-LSkKPj4KPj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvc3dhcC5oIGIvaW5jbHVkZS9saW51
-eC9zd2FwLmgKPj4gaW5kZXggMzdhNTg1Yi4uOWYyY2I0MyAxMDA2NDQKPj4gLS0tIGEvaW5jbHVk
-ZS9saW51eC9zd2FwLmgKPj4gKysrIGIvaW5jbHVkZS9saW51eC9zd2FwLmgKPj4gQEAgLTMzNSw3
-ICszMzUsOCBAQCBleHRlcm4gdW5zaWduZWQgbG9uZyBtZW1fY2dyb3VwX3Nocmlua19ub2RlX3pv
-bmUoc3RydWN0IG1lbV9jZ3JvdXAgKm1lbSwKPj4gICAJCQkJCQlnZnBfdCBnZnBfbWFzaywgYm9v
-bCBub3N3YXAsCj4+ICAgCQkJCQkJc3RydWN0IHpvbmUgKnpvbmUsCj4+ICAgCQkJCQkJdW5zaWdu
-ZWQgbG9uZyAqbnJfc2Nhbm5lZCk7Cj4+IC1leHRlcm4gdW5zaWduZWQgbG9uZyBzaHJpbmtfYWxs
-X21lbW9yeSh1bnNpZ25lZCBsb25nIG5yX3BhZ2VzKTsKPj4gK2V4dGVybiB1bnNpZ25lZCBsb25n
-IHNocmlua19hbGxfbWVtb3J5KHVuc2lnbmVkIGxvbmcgbnJfcGFnZXMsCj4+ICsJCQkJICAgICAg
-IGJvb2wgaGliZXJuYXRpb24pOwo+PiAgIGV4dGVybiBpbnQgdm1fc3dhcHBpbmVzczsKPj4gICBl
-eHRlcm4gaW50IHJlbW92ZV9tYXBwaW5nKHN0cnVjdCBhZGRyZXNzX3NwYWNlICptYXBwaW5nLCBz
-dHJ1Y3QgcGFnZSAqcGFnZSk7Cj4+ICAgZXh0ZXJuIHVuc2lnbmVkIGxvbmcgdm1fdG90YWxfcGFn
-ZXM7Cj4+IGRpZmYgLS1naXQgYS9rZXJuZWwvcG93ZXIvc25hcHNob3QuYyBiL2tlcm5lbC9wb3dl
-ci9zbmFwc2hvdC5jCj4+IGluZGV4IDc5MWE2MTguLmEwMGZjMzUgMTAwNjQ0Cj4+IC0tLSBhL2tl
-cm5lbC9wb3dlci9zbmFwc2hvdC5jCj4+ICsrKyBiL2tlcm5lbC9wb3dlci9zbmFwc2hvdC5jCj4+
-IEBAIC0xNjU3LDcgKzE2NTcsNyBAQCBpbnQgaGliZXJuYXRlX3ByZWFsbG9jYXRlX21lbW9yeSh2
-b2lkKQo+PiAgIAkgKiBOT1RFOiBJZiB0aGlzIGlzIG5vdCBkb25lLCBwZXJmb3JtYW5jZSB3aWxs
-IGJlIGh1cnQgYmFkbHkgaW4gc29tZQo+PiAgIAkgKiB0ZXN0IGNhc2VzLgo+PiAgIAkgKi8KPj4g
-LQlzaHJpbmtfYWxsX21lbW9yeShzYXZlYWJsZSAtIHNpemUpOwo+PiArCXNocmlua19hbGxfbWVt
-b3J5KHNhdmVhYmxlIC0gc2l6ZSwgdHJ1ZSk7Cj4KPiBJbnN0ZWFkIG9mIGRvaW5nIHRoaXMsIGNh
-biB5b3UgcGxlYXNlIGRlZmluZQo+Cj4gX19zaHJpbmtfYWxsX21lbW9yeSgpCj4KPiB0aGF0IHdp
-bGwgdGFrZSB0aGUgYXBwcm9wcmlhdGUgc3RydWN0IHNjYW5fY29udHJvbCBhcyBhbiBhcmd1bWVu
-dCBhbmQKPiB0aGVuIGRlZmluZSB0d28gd3JhcHBlcnMgYXJvdW5kIHRoYXQsIG9uZSBmb3IgaGli
-ZXJuYXRpb24gYW5kIG9uZSBmb3IgQ01BPwo+Cj4gVGhlIHdheSB5b3UgZGlkIGl0IG9wZW5zIGEg
-ZmllbGQgZm9yIGJ1Z3MgY2F1c2VkIGJ5IHBhc3NpbmcgYSB3cm9uZyB2YWx1ZQo+IGFzIHRoZSBz
-ZWNvbmQgYXJndW1lbnQuCgpUaGFua3MgUmFmYWVsLgpJIHdpbGwgdXBkYXRlIHBhdGNoIGFjY29y
-ZGluZyB0byB5b3VyIGNvbW1lbnRzLgoKQmVzdCwKSHVpCgo+Cj4+Cj4+ICAgCS8qCj4+ICAgCSAq
-IFRoZSBudW1iZXIgb2Ygc2F2ZWFibGUgcGFnZXMgaW4gbWVtb3J5IHdhcyB0b28gaGlnaCwgc28g
-YXBwbHkgc29tZQo+PiBkaWZmIC0tZ2l0IGEvbW0vdm1zY2FuLmMgYi9tbS92bXNjYW4uYwo+PiBp
-bmRleCBkY2I0NzA3Li5mZGNmYTMwIDEwMDY0NAo+PiAtLS0gYS9tbS92bXNjYW4uYwo+PiArKysg
-Yi9tbS92bXNjYW4uYwo+PiBAQCAtMzQwNCw3ICszNDA0LDcgQEAgdm9pZCB3YWtldXBfa3N3YXBk
-KHN0cnVjdCB6b25lICp6b25lLCBpbnQgb3JkZXIsIGVudW0gem9uZV90eXBlIGNsYXNzem9uZV9p
-ZHgpCj4+ICAgCXdha2VfdXBfaW50ZXJydXB0aWJsZSgmcGdkYXQtPmtzd2FwZF93YWl0KTsKPj4g
-ICB9Cj4+Cj4+IC0jaWZkZWYgQ09ORklHX0hJQkVSTkFUSU9OCj4+ICsjaWYgZGVmaW5lZCBDT05G
-SUdfSElCRVJOQVRJT04gfHwgZGVmaW5lZCBDT05GSUdfQ01BX0FHR1JFU1NJVkUKPj4gICAvKgo+
-PiAgICAqIFRyeSB0byBmcmVlIGBucl90b19yZWNsYWltJyBvZiBtZW1vcnksIHN5c3RlbS13aWRl
-LCBhbmQgcmV0dXJuIHRoZSBudW1iZXIgb2YKPj4gICAgKiBmcmVlZCBwYWdlcy4KPj4gQEAgLTM0
-MTMsMjIgKzM0MTMsMjkgQEAgdm9pZCB3YWtldXBfa3N3YXBkKHN0cnVjdCB6b25lICp6b25lLCBp
-bnQgb3JkZXIsIGVudW0gem9uZV90eXBlIGNsYXNzem9uZV9pZHgpCj4+ICAgICogTFJVIG9yZGVy
-IGJ5IHJlY2xhaW1pbmcgcHJlZmVyZW50aWFsbHkKPj4gICAgKiBpbmFjdGl2ZSA+IGFjdGl2ZSA+
-IGFjdGl2ZSByZWZlcmVuY2VkID4gYWN0aXZlIG1hcHBlZAo+PiAgICAqLwo+PiAtdW5zaWduZWQg
-bG9uZyBzaHJpbmtfYWxsX21lbW9yeSh1bnNpZ25lZCBsb25nIG5yX3RvX3JlY2xhaW0pCj4+ICt1
-bnNpZ25lZCBsb25nIHNocmlua19hbGxfbWVtb3J5KHVuc2lnbmVkIGxvbmcgbnJfdG9fcmVjbGFp
-bSwgYm9vbCBoaWJlcm5hdGlvbikKPj4gICB7Cj4+ICAgCXN0cnVjdCByZWNsYWltX3N0YXRlIHJl
-Y2xhaW1fc3RhdGU7Cj4+ICAgCXN0cnVjdCBzY2FuX2NvbnRyb2wgc2MgPSB7Cj4+ICAgCQkubnJf
-dG9fcmVjbGFpbSA9IG5yX3RvX3JlY2xhaW0sCj4+IC0JCS5nZnBfbWFzayA9IEdGUF9ISUdIVVNF
-Ul9NT1ZBQkxFLAo+PiAgIAkJLnByaW9yaXR5ID0gREVGX1BSSU9SSVRZLAo+PiAtCQkubWF5X3dy
-aXRlcGFnZSA9IDEsCj4+ICAgCQkubWF5X3VubWFwID0gMSwKPj4gICAJCS5tYXlfc3dhcCA9IDEs
-Cj4+IC0JCS5oaWJlcm5hdGlvbl9tb2RlID0gMSwKPj4gICAJfTsKPj4gICAJc3RydWN0IHpvbmVs
-aXN0ICp6b25lbGlzdCA9IG5vZGVfem9uZWxpc3QobnVtYV9ub2RlX2lkKCksIHNjLmdmcF9tYXNr
-KTsKPj4gICAJc3RydWN0IHRhc2tfc3RydWN0ICpwID0gY3VycmVudDsKPj4gICAJdW5zaWduZWQg
-bG9uZyBucl9yZWNsYWltZWQ7Cj4+Cj4+ICsJaWYgKGhpYmVybmF0aW9uKSB7Cj4+ICsJCXNjLmhp
-YmVybmF0aW9uX21vZGUgPSAxOwo+PiArCQlzYy5tYXlfd3JpdGVwYWdlID0gMTsKPj4gKwkJc2Mu
-Z2ZwX21hc2sgPSBHRlBfSElHSFVTRVJfTU9WQUJMRTsKPj4gKwl9IGVsc2Ugewo+PiArCQlzYy5o
-aWJlcm5hdGlvbl9tb2RlID0gMDsKPj4gKwkJc2MubWF5X3dyaXRlcGFnZSA9ICFsYXB0b3BfbW9k
-ZTsKPj4gKwkJc2MuZ2ZwX21hc2sgPSBHRlBfVVNFUiB8IF9fR0ZQX01PVkFCTEUgfCBfX0dGUF9I
-SUdITUVNOwo+PiArCX0KPj4gKwo+PiAgIAlwLT5mbGFncyB8PSBQRl9NRU1BTExPQzsKPj4gICAJ
-bG9ja2RlcF9zZXRfY3VycmVudF9yZWNsYWltX3N0YXRlKHNjLmdmcF9tYXNrKTsKPj4gICAJcmVj
-bGFpbV9zdGF0ZS5yZWNsYWltZWRfc2xhYiA9IDA7Cj4+IEBAIC0zNDQyLDcgKzM0NDksNyBAQCB1
-bnNpZ25lZCBsb25nIHNocmlua19hbGxfbWVtb3J5KHVuc2lnbmVkIGxvbmcgbnJfdG9fcmVjbGFp
-bSkKPj4KPj4gICAJcmV0dXJuIG5yX3JlY2xhaW1lZDsKPj4gICB9Cj4+IC0jZW5kaWYgLyogQ09O
-RklHX0hJQkVSTkFUSU9OICovCj4+ICsjZW5kaWYgLyogQ09ORklHX0hJQkVSTkFUSU9OIHx8IENP
-TkZJR19DTUFfQUdHUkVTU0lWRSAqLwo+Pgo+PiAgIC8qIEl0J3Mgb3B0aW1hbCB0byBrZWVwIGtz
-d2FwZHMgb24gdGhlIHNhbWUgQ1BVcyBhcyB0aGVpciBtZW1vcnksIGJ1dAo+PiAgICAgIG5vdCBy
-ZXF1aXJlZCBmb3IgY29ycmVjdG5lc3MuICBTbyBpZiB0aGUgbGFzdCBjcHUgaW4gYSBub2RlIGdv
-ZXMKPj4KPgo=
+This patch adds cpufreq driver for Loongson1B which
+is capable of changing the CPU frequency dynamically.
+
+Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
+---
+ drivers/cpufreq/Kconfig        |  10 ++
+ drivers/cpufreq/Makefile       |   1 +
+ drivers/cpufreq/ls1x-cpufreq.c | 229 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 240 insertions(+)
+ create mode 100644 drivers/cpufreq/ls1x-cpufreq.c
+
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index ffe350f..99464d7 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -250,6 +250,16 @@ config LOONGSON2_CPUFREQ
+ 
+ 	  If in doubt, say N.
+ 
++config LOONGSON1_CPUFREQ
++	tristate "Loongson1 CPUFreq Driver"
++	help
++	  This option adds a CPUFreq driver for loongson1 processors which
++	  support software configurable cpu frequency.
++
++	  For details, take a look at <file:Documentation/cpu-freq/>.
++
++	  If in doubt, say N.
++
+ endmenu
+ 
+ menu "PowerPC CPU frequency scaling drivers"
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index db6d9a2..aca7bd3 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -98,6 +98,7 @@ obj-$(CONFIG_CRIS_MACH_ARTPEC3)		+= cris-artpec3-cpufreq.o
+ obj-$(CONFIG_ETRAXFS)			+= cris-etraxfs-cpufreq.o
+ obj-$(CONFIG_IA64_ACPI_CPUFREQ)		+= ia64-acpi-cpufreq.o
+ obj-$(CONFIG_LOONGSON2_CPUFREQ)		+= loongson2_cpufreq.o
++obj-$(CONFIG_LOONGSON1_CPUFREQ)		+= ls1x-cpufreq.o
+ obj-$(CONFIG_SH_CPU_FREQ)		+= sh-cpufreq.o
+ obj-$(CONFIG_SPARC_US2E_CPUFREQ)	+= sparc-us2e-cpufreq.o
+ obj-$(CONFIG_SPARC_US3_CPUFREQ)		+= sparc-us3-cpufreq.o
+diff --git a/drivers/cpufreq/ls1x-cpufreq.c b/drivers/cpufreq/ls1x-cpufreq.c
+new file mode 100644
+index 0000000..1941c91
+--- /dev/null
++++ b/drivers/cpufreq/ls1x-cpufreq.c
+@@ -0,0 +1,229 @@
++/*
++ * CPU Frequency Scaling for Loongson 1 SoC
++ *
++ * Copyright (C) 2014 Zhang, Keguang <keguang.zhang@gmail.com>
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2. This program is licensed "as is" without any
++ * warranty of any kind, whether express or implied.
++ */
++
++#include <linux/clk.h>
++#include <linux/clk-provider.h>
++#include <linux/cpu.h>
++#include <linux/cpufreq.h>
++#include <linux/delay.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++
++#include <asm/mach-loongson1/cpufreq.h>
++#include <asm/mach-loongson1/loongson1.h>
++
++static struct {
++	struct device *dev;
++	struct clk *clk;	/* CPU clk */
++	struct clk *mux_clk;	/* MUX of CPU clk */
++	struct clk *pll_clk;	/* PLL clk */
++	struct clk *osc_clk;	/* OSC clk */
++	unsigned int max_freq;
++	unsigned int min_freq;
++} ls1x_cpufreq;
++
++static int ls1x_cpufreq_notifier(struct notifier_block *nb,
++				 unsigned long val, void *data)
++{
++	if (val == CPUFREQ_POSTCHANGE)
++		current_cpu_data.udelay_val = loops_per_jiffy;
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block ls1x_cpufreq_notifier_block = {
++	.notifier_call = ls1x_cpufreq_notifier
++};
++
++static int ls1x_cpufreq_target(struct cpufreq_policy *policy,
++			       unsigned int index)
++{
++	unsigned int old_freq, new_freq;
++
++	old_freq = policy->cur;
++	new_freq = policy->freq_table[index].frequency;
++
++	/*
++	 * The procedure of reconfiguring CPU clk is as below.
++	 *
++	 *  - Reparent CPU clk to OSC clk
++	 *  - Reset CPU clock (very important)
++	 *  - Reconfigure CPU DIV
++	 *  - Reparent CPU clk back to CPU DIV clk
++	 */
++
++	dev_dbg(ls1x_cpufreq.dev, "%u KHz --> %u KHz\n", old_freq, new_freq);
++	clk_set_parent(policy->clk, ls1x_cpufreq.osc_clk);
++	__raw_writel(__raw_readl(LS1X_CLK_PLL_DIV) | RST_CPU_EN | RST_CPU,
++		     LS1X_CLK_PLL_DIV);
++	__raw_writel(__raw_readl(LS1X_CLK_PLL_DIV) & ~(RST_CPU_EN | RST_CPU),
++		     LS1X_CLK_PLL_DIV);
++	clk_set_rate(ls1x_cpufreq.mux_clk, new_freq * 1000);
++	clk_set_parent(policy->clk, ls1x_cpufreq.mux_clk);
++
++	return 0;
++}
++
++static int ls1x_cpufreq_init(struct cpufreq_policy *policy)
++{
++	struct cpufreq_frequency_table *freq_tbl;
++	unsigned int pll_freq, freq;
++	int steps, i, ret;
++
++	pll_freq = clk_get_rate(ls1x_cpufreq.pll_clk) / 1000;
++
++	steps = 1 << DIV_CPU_WIDTH;
++	freq_tbl = kzalloc(sizeof(*freq_tbl) * steps, GFP_KERNEL);
++	if (!freq_tbl) {
++		dev_err(ls1x_cpufreq.dev,
++			"failed to alloc cpufreq_frequency_table\n");
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	for (i = 0; i < (steps - 1); i++) {
++		freq = pll_freq / (i + 1);
++		if ((freq < ls1x_cpufreq.min_freq) ||
++		    (freq > ls1x_cpufreq.max_freq))
++			freq_tbl[i].frequency = CPUFREQ_ENTRY_INVALID;
++		else
++			freq_tbl[i].frequency = freq;
++		dev_dbg(ls1x_cpufreq.dev,
++			"cpufreq table: index %d: frequency %d\n", i,
++			freq_tbl[i].frequency);
++	}
++	freq_tbl[i].frequency = CPUFREQ_TABLE_END;
++
++	policy->clk = ls1x_cpufreq.clk;
++	ret = cpufreq_generic_init(policy, freq_tbl, 0);
++	if (ret)
++		kfree(freq_tbl);
++out:
++	return ret;
++}
++
++static int ls1x_cpufreq_exit(struct cpufreq_policy *policy)
++{
++	kfree(policy->freq_table);
++	return 0;
++}
++
++static struct cpufreq_driver ls1x_cpufreq_driver = {
++	.name		= "cpufreq-ls1x",
++	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
++	.verify		= cpufreq_generic_frequency_table_verify,
++	.target_index	= ls1x_cpufreq_target,
++	.get		= cpufreq_generic_get,
++	.init		= ls1x_cpufreq_init,
++	.exit		= ls1x_cpufreq_exit,
++	.attr		= cpufreq_generic_attr,
++};
++
++static int ls1x_cpufreq_remove(struct platform_device *pdev)
++{
++	cpufreq_unregister_notifier(&ls1x_cpufreq_notifier_block,
++				    CPUFREQ_TRANSITION_NOTIFIER);
++	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
++	devm_clk_put(&pdev->dev, ls1x_cpufreq.osc_clk);
++	devm_clk_put(&pdev->dev, ls1x_cpufreq.clk);
++
++	return 0;
++}
++
++static int ls1x_cpufreq_probe(struct platform_device *pdev)
++{
++	struct plat_ls1x_cpufreq *pdata = pdev->dev.platform_data;
++	struct clk *clk;
++	int ret;
++
++	if (!pdata || !pdata->clk_name || !pdata->osc_clk_name)
++		return -EINVAL;
++
++	ls1x_cpufreq.dev = &pdev->dev;
++
++	clk = devm_clk_get(&pdev->dev, pdata->clk_name);
++	if (IS_ERR(clk)) {
++		dev_err(ls1x_cpufreq.dev, "unable to get %s clock\n",
++			pdata->clk_name);
++		ret = PTR_ERR(clk);
++		goto out;
++	}
++	ls1x_cpufreq.clk = clk;
++
++	clk = clk_get_parent(clk);
++	if (IS_ERR(clk)) {
++		dev_err(ls1x_cpufreq.dev, "unable to get parent of %s clock\n",
++			__clk_get_name(ls1x_cpufreq.clk));
++		ret = PTR_ERR(clk);
++		goto err_mux;
++	}
++	ls1x_cpufreq.mux_clk = clk;
++
++	clk = clk_get_parent(clk);
++	if (IS_ERR(clk)) {
++		dev_err(ls1x_cpufreq.dev, "unable to get parent of %s clock\n",
++			__clk_get_name(ls1x_cpufreq.mux_clk));
++		ret = PTR_ERR(clk);
++		goto err_mux;
++	}
++	ls1x_cpufreq.pll_clk = clk;
++
++	clk = devm_clk_get(&pdev->dev, pdata->osc_clk_name);
++	if (IS_ERR(clk)) {
++		dev_err(ls1x_cpufreq.dev, "unable to get %s clock\n",
++			pdata->osc_clk_name);
++		ret = PTR_ERR(clk);
++		goto err_mux;
++	}
++	ls1x_cpufreq.osc_clk = clk;
++
++	ls1x_cpufreq.max_freq = pdata->max_freq;
++	ls1x_cpufreq.min_freq = pdata->min_freq;
++
++	ret = cpufreq_register_driver(&ls1x_cpufreq_driver);
++	if (ret) {
++		dev_err(ls1x_cpufreq.dev,
++			"failed to register cpufreq driver: %d\n", ret);
++		goto err_driver;
++	}
++
++	ret = cpufreq_register_notifier(&ls1x_cpufreq_notifier_block,
++					CPUFREQ_TRANSITION_NOTIFIER);
++
++	if (!ret)
++		goto out;
++
++	dev_err(ls1x_cpufreq.dev, "failed to register cpufreq notifier: %d\n",
++		ret);
++
++	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
++err_driver:
++	devm_clk_put(&pdev->dev, ls1x_cpufreq.osc_clk);
++err_mux:
++	devm_clk_put(&pdev->dev, ls1x_cpufreq.clk);
++out:
++	return ret;
++}
++
++static struct platform_driver ls1x_cpufreq_platdrv = {
++	.driver = {
++		.name	= "ls1x-cpufreq",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= ls1x_cpufreq_probe,
++	.remove		= ls1x_cpufreq_remove,
++};
++
++module_platform_driver(ls1x_cpufreq_platdrv);
++
++MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
++MODULE_DESCRIPTION("Loongson 1 CPUFreq driver");
++MODULE_LICENSE("GPL");
+-- 
+1.9.1
+
