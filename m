@@ -1,12 +1,12 @@
 From: Kelvin Cheung <keguang.zhang@gmail.com>
 Subject: [PATCH V2 6/6] cpufreq: Loongson1: Add cpufreq driver for Loongson1B
-Date: Fri, 17 Oct 2014 14:27:33 +0800
-Message-ID: <1413527253-22632-1-git-send-email-keguang.zhang@gmail.com>
+Date: Fri, 17 Oct 2014 14:37:06 +0800
+Message-ID: <1413527826-22906-1-git-send-email-keguang.zhang@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:53492 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750835AbaJQG1z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Oct 2014 02:27:55 -0400
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:64302 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750835AbaJQGhU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Oct 2014 02:37:20 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -16,6 +16,13 @@ This patch adds cpufreq driver for Loongson1B which
 is capable of changing the CPU frequency dynamically.
 
 Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
+
+---
+V2:
+   Use devm_clk_get() instead of clk_get().
+   Other minor fixes.
+V1:
+   Add cpufreq driver for Loongson1B.
 ---
  drivers/cpufreq/Kconfig        |  10 ++
  drivers/cpufreq/Makefile       |   1 +
