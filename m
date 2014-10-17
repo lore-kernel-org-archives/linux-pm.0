@@ -1,52 +1,68 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v3 3/4] irq: Allow multiple clients to register for irq
- affinity notification
-Date: Fri, 17 Oct 2014 09:29:50 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1410170926220.2806@nanos>
-References: <1409170479-29955-1-git-send-email-lina.iyer@linaro.org> <1409170479-29955-4-git-send-email-lina.iyer@linaro.org> <alpine.DEB.2.10.1408272239190.3323@nanos> <20140902184305.GB91995@ilina-mac.local> <alpine.DEB.2.10.1409022109050.3333@nanos>
- <20140925155027.GG1004@ilina-mac.local> <alpine.DEB.2.11.1410081623210.4292@nanos> <20141010151106.GC2128@ilina-mac.qualcomm.com>
+From: =?gb2312?B?1uy71A==?= <zhuhui@xiaomi.com>
+Subject: Re: [PATCH 0/4] (CMA_AGGRESSIVE) Make CMA memory be more aggressive
+ about allocation
+Date: Fri, 17 Oct 2014 07:44:26 +0000
+Message-ID: <cf4a9f99f7b24b4fb688cb3bcccefb0e@cnbox4.mioffice.cn>
+References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
+ <543F8812.2020002@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:45743 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbaJQH3y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Oct 2014 03:29:54 -0400
-In-Reply-To: <20141010151106.GC2128@ilina-mac.qualcomm.com>
+Received: from [42.62.48.242] ([42.62.48.242]:63453 "EHLO manager.mioffice.cn"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751403AbaJQHpU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 17 Oct 2014 03:45:20 -0400
+Content-Language: zh-CN
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: khilman@linaro.org, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, daniel.lezcano@linaro.org
+To: Laura Abbott <lauraa@codeaurora.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "mina86@mina86.com" <mina86@mina86.com>, "aneesh.kumar@linux.vnet.ibm.com" <aneesh.kumar@linux.vnet.ibm.com>, "iamjoonsoo.kim@lge.com" <iamjoonsoo.kim@lge.com>, "hannes@cmpxchg.org" <hannes@cmpxchg.org>, "riel@redhat.com" <riel@redhat.com>, "mgorman@suse.de" <mgorman@suse.de>, "minchan@kernel.org" <minchan@kernel.org>, "nasa4836@gmail.com" <nasa4836@gmail.com>, "ddstreet@ieee.org" <ddstreet@ieee.org>, "hughd@google.com" <hughd@google.com>, "mingo@kernel.org" <mingo@kernel.org>, "rientjes@google.com" <rientjes@google.com>, "peterz@infradead.org" <peterz@infradead.org>, "keescook@chromium.org" <keescook@c>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>
 
-On Fri, 10 Oct 2014, Lina Iyer wrote:
-> On Wed, Oct 08 2014 at 09:03 -0600, Thomas Gleixner wrote:
-> > On Thu, 25 Sep 2014, Lina Iyer wrote:
-> > > > How would a general "keep track of the targets of all interrupts in
-> > > > the system" mechanism make use of this?
-> > > Sorry, I do not understand your question.
-> > > PM QoS is only interested in the IRQs specified in the QoS request. If
-> > > there are no requests that need to be associated with an IRQ, then PM
-> > > QoS will not register for an affinity change notification.
-> > 
-> > Right, and I really hate the whole per irq notifier. It's a rats nest
-> > of life time issues and other problems.
-> > 
-> > It also does not tell you whether an irq is disabled, reenabled or
-> > removed, which will change the qos constraints as well unless you
-> > plaster all drivers with updates to qos for those cases.
-> > 
-> > So what about adding a qos field to irq_data itself, have a function
-> > to update it and let the irq core keep track of the per cpu irq
-> > relevant qos constraints and provide an evaluation function or a
-> > notifier for the PM/idle code?
-> 
-> If that isnt intrusive in the IRQ core, then we can make it work for PM
-> QoS. The issue that I am concerned is that, it might result in back and
-> forth between IRQ and PM QoS frameworks. If that doesnt happen, then we
-> are good with this approach.
-
-I can't tell that upfront, but I think it's worth to explore it.
-
-Thanks,
-
-	tglx
+CgpPbiAxMC8xNi8xNCAxNjo1NiwgTGF1cmEgQWJib3R0IHdyb3RlOgo+IE9uIDEwLzE1LzIwMTQg
+ODozNSBQTSwgSHVpIFpodSB3cm90ZToKPj4gSW4gZmFsbGJhY2tzIG9mIHBhZ2VfYWxsb2MuYywg
+TUlHUkFURV9DTUEgaXMgdGhlIGZhbGxiYWNrIG9mCj4+IE1JR1JBVEVfTU9WQUJMRS4KPj4gTUlH
+UkFURV9NT1ZBQkxFIHdpbGwgdXNlIE1JR1JBVEVfQ01BIHdoZW4gaXQgZG9lc24ndCBoYXZlIGEg
+cGFnZSBpbgo+PiBvcmRlciB0aGF0IExpbnV4IGtlcm5lbCB3YW50Lgo+Pgo+PiBJZiBhIHN5c3Rl
+bSB0aGF0IGhhcyBhIGxvdCBvZiB1c2VyIHNwYWNlIHByb2dyYW0gaXMgcnVubmluZywgZm9yCj4+
+IGluc3RhbmNlLCBhbiBBbmRyb2lkIGJvYXJkLCBtb3N0IG9mIG1lbW9yeSBpcyBpbiBNSUdSQVRF
+X01PVkFCTEUgYW5kCj4+IGFsbG9jYXRlZC4gIEJlZm9yZSBmdW5jdGlvbiBfX3JtcXVldWVfZmFs
+bGJhY2sgZ2V0IG1lbW9yeSBmcm9tCj4+IE1JR1JBVEVfQ01BLCB0aGUgb29tX2tpbGxlciB3aWxs
+IGtpbGwgYSB0YXNrIHRvIHJlbGVhc2UgbWVtb3J5IHdoZW4KPj4ga2VybmVsIHdhbnQgZ2V0IE1J
+R1JBVEVfVU5NT1ZBQkxFIG1lbW9yeSBiZWNhdXNlIGZhbGxiYWNrcyBvZgo+PiBNSUdSQVRFX1VO
+TU9WQUJMRSBhcmUgTUlHUkFURV9SRUNMQUlNQUJMRSBhbmQgTUlHUkFURV9NT1ZBQkxFLgo+PiBU
+aGlzIHN0YXR1cyBpcyBvZGQuICBUaGUgTUlHUkFURV9DTUEgaGFzIGEgbG90IGZyZWUgbWVtb3J5
+IGJ1dCBMaW51eAo+PiBrZXJuZWwga2lsbCBzb21lIHRhc2tzIHRvIHJlbGVhc2UgbWVtb3J5Lgo+
+Pgo+PiBUaGlzIHBhdGNoIHNlcmllcyBhZGRzIGEgbmV3IGZ1bmN0aW9uIENNQV9BR0dSRVNTSVZF
+IHRvIG1ha2UgQ01BIG1lbW9yeQo+PiBiZSBtb3JlIGFnZ3Jlc3NpdmUgYWJvdXQgYWxsb2NhdGlv
+bi4KPj4gSWYgZnVuY3Rpb24gQ01BX0FHR1JFU1NJVkUgaXMgYXZhaWxhYmxlLCB3aGVuIExpbnV4
+IGtlcm5lbCBjYWxsIGZ1bmN0aW9uCj4+IF9fcm1xdWV1ZSB0cnkgdG8gZ2V0IHBhZ2VzIGZyb20g
+TUlHUkFURV9NT1ZBQkxFIGFuZCBjb25kaXRpb25zIGFsbG93LAo+PiBNSUdSQVRFX0NNQSB3aWxs
+IGJlIGFsbG9jYXRlZCBhcyBNSUdSQVRFX01PVkFCTEUgZmlyc3QuICBJZiBNSUdSQVRFX0NNQQo+
+PiBkb2Vzbid0IGhhdmUgZW5vdWdoIHBhZ2VzIGZvciBhbGxvY2F0aW9uLCBnbyBiYWNrIHRvIGFs
+bG9jYXRlIG1lbW9yeSBmcm9tCj4+IE1JR1JBVEVfTU9WQUJMRS4KPj4gVGhlbiB0aGUgbWVtb3J5
+IG9mIE1JR1JBVEVfTU9WQUJMRSBjYW4gYmUga2VwdCBmb3IgTUlHUkFURV9VTk1PVkFCTEUgYW5k
+Cj4+IE1JR1JBVEVfUkVDTEFJTUFCTEUgd2hpY2ggZG9lc24ndCBoYXZlIGZhbGxiYWNrIE1JR1JB
+VEVfQ01BLgo+Pgo+Cj4gSXQncyBnb29kIHRvIHNlZSBhbm90aGVyIHByb3Bvc2FsIHRvIGZpeCBD
+TUEgdXRpbGl6YXRpb24uCgpUaGFua3MgTGF1cmEuCgpEbyB5b3UgaGF2ZQo+IGFueSBkYXRhIGFi
+b3V0IHRoZSBzdWNjZXNzIHJhdGUgb2YgQ01BIGNvbnRpZ3VvdXMgYWxsb2NhdGlvbiBhZnRlcgo+
+IHRoaXMgcGF0Y2ggc2VyaWVzPyAgIEkgcGxheWVkIGFyb3VuZCB3aXRoIGEgc2ltaWxhciBhcHBy
+b2FjaCBvZiB1c2luZwo+IENNQSBmb3IgTUlHUkFURV9NT1ZBQkxFIGFsbG9jYXRpb25zIGFuZCBm
+b3VuZCB0aGF0IGFsdGhvdWdoIHV0aWxpemF0aW9uCj4gZGlkIGluY3JlYXNlLCBjb250aWd1b3Vz
+IGFsbG9jYXRpb25zIGZhaWxlZCBhdCBhIGhpZ2hlciByYXRlIGFuZCB3ZXJlCj4gbXVjaCBzbG93
+ZXIuIEkgc2VlIHdoYXQgdGhpcyBzZXJpZXMgaXMgdHJ5aW5nIHRvIGRvIHdpdGggYXZvaWRpbmcK
+PiBhbGxvY2F0aW9uIGZyb20gQ01BIHBhZ2VzIHdoZW4gYSBjb250aWd1b3VzIGFsbG9jYXRpb24g
+aXMgcHJvZ3Jlc3MuCj4gTXkgY29uY2VybiBpcyB0aGF0IHRoZXJlIHdvdWxkIHN0aWxsIGJlIHBy
+b2JsZW1zIHdpdGggY29udGlndW91cwo+IGFsbG9jYXRpb24gYWZ0ZXIgYWxsIHRoZSBNSUdSQVRF
+X01PVkFCTEUgZmFsbGJhY2sgaGFzIGhhcHBlbmVkLgoKSSBkaWQgc29tZSB0ZXN0IHdpdGggdGhl
+IGNtYV9hbGxvY19jb3VudGVyIGFuZCBjbWEtYWdncmVzc2l2ZS1zaHJpbmsgaW4gCmEgYW5kcm9p
+ZCBib2FyZCB0aGF0IGhhcyAxZyBtZW1vcnkuICBSdW4gc29tZSBhcHBzIHRvIG1ha2UgZnJlZSBD
+TUEgCmNsb3NlIHRvIHRoZSB2YWx1ZSBvZiBjbWFfYWdncmVzc2l2ZV9mcmVlX21pbig1MDAgcGFn
+ZXMpLiAgQSBkcml2ZXIgCkJlZ2luIHRvIHJlcXVlc3QgQ01BIG1vcmUgdGhhbiAxMCB0aW1lcy4g
+RWFjaCB0aW1lLCBpdCB3aWxsIHJlcXVlc3QgbW9yZSAKdGhhbiAzMDAwIHBhZ2VzLgoKSSBkb24n
+dCBoYXZlIGVzdGFibGlzaGVkIG51bWJlciBmb3IgdGhhdCBiZWNhdXNlIGl0IGlzIHJlYWxseSBo
+YXJkIHRvIApnZXQgYSBmYWlsLiAgSSB0aGluayB0aGUgc3VjY2VzcyByYXRlIGlzIG92ZXIgOTUl
+IGF0IGxlYXN0LgoKQW5kIEkgdGhpbmsgbWF5YmUgdGhlIGlzb2xhdGUgZmFpbCBoYXMgcmVsYXRp
+b24gd2l0aCBwYWdlIGFsbG9jIGFuZCBmcmVlIApjb2RlLiAgTWF5YmUgbGV0IHpvbmUtPmxvY2sg
+cHJvdGVjdCBtb3JlIGNvZGUgY2FuIGhhbmRsZSB0aGlzIGlzc3VlLgoKVGhhbmtzLApIdWkKCj4K
+PiBUaGFua3MsCj4gTGF1cmEKPgo=
