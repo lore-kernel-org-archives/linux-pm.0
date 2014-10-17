@@ -1,57 +1,101 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: Add sfi based cpufreq driver support
-Date: Fri, 17 Oct 2014 11:43:47 +0530
-Message-ID: <CAKohpom9Vp1MFsXcPbpQ_YZ69YbGUzCs3mk2W45xp=csTQQ=WA@mail.gmail.com>
-References: <20141017054353.GA515@intel-desktop>
+From: =?gb2312?B?1uy71A==?= <zhuhui@xiaomi.com>
+Subject: Re: [PATCH 2/4] (CMA_AGGRESSIVE) Add argument hibernation to
+ function shrink_all_memory
+Date: Fri, 17 Oct 2014 06:18:39 +0000
+Message-ID: <70d41b6fdea74d5fb88f314708879acc@cnbox4.mioffice.cn>
+References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
+ <1413430551-22392-3-git-send-email-zhuhui@xiaomi.com>
+ <1471435.6q4YYkTopF@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f169.google.com ([209.85.214.169]:52279 "EHLO
-	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbaJQGNs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Oct 2014 02:13:48 -0400
-Received: by mail-ob0-f169.google.com with SMTP id m8so125264obr.0
-        for <linux-pm@vger.kernel.org>; Thu, 16 Oct 2014 23:13:47 -0700 (PDT)
-In-Reply-To: <20141017054353.GA515@intel-desktop>
+Received: from [42.62.48.242] ([42.62.48.242]:7204 "EHLO manager.mioffice.cn"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750729AbaJQGSz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 17 Oct 2014 02:18:55 -0400
+Content-Language: zh-CN
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinidhi Kasagar <srinidhi.kasagar@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.j.brandewie@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rudramuni, Vishwesh M" <vishwesh.m.rudramuni@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>
 
-On 17 October 2014 11:14, Srinidhi Kasagar <srinidhi.kasagar@intel.com> wrote:
-> This adds the sfi based cpu freq driver for some of the
-> Intel's Silver Mont based atom architectures like
-> Merrifield and Moorfield (intel-mid)
->
-> Signed-off-by: Rudramuni, Vishwesh M <vishwesh.m.rudramuni@intel.com>
-> Signed-off-by: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
-> ---
-> v2:
-> * rephrase the Kconfig text
-> * merge the header file as its not being shared with anyone
-> * remove the unnecessary checks in sfi_cpufreq_target
-> * style changes in kzalloc
-> * fix the potential memory leak sfi_cpufreq_cpu_init
-> * move the cpufreq driver flag to the structure definition
-> * remove the redundant init of policy->cpu and policy->cur
-> * remove the unnecessary check while init the freq table
-> * merge the for loops in cpu_init
-> * use cpufreq_generic_attr rather than the custom one
->
-> v3:
-> * Add this change log
-> * remove the left over not used cached_freq var
-> * merge yet another for loop in cpu_init
->
->  drivers/cpufreq/Kconfig.x86   |   10 ++
->  drivers/cpufreq/Makefile      |    1 +
->  drivers/cpufreq/sfi-cpufreq.c |  326 +++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 337 insertions(+)
->  create mode 100644 drivers/cpufreq/sfi-cpufreq.c
-
->From coding perspective:
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
->From X86 working aspect would be good if Rafael or Dirk also
-review it :)
+CgpPbiAxMC8xNi8xNCAxNjoyOSwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gW0NDIGxpc3Qg
+dHJpbW1lZF0KPgo+IE9uIFRodXJzZGF5LCBPY3RvYmVyIDE2LCAyMDE0IDExOjM1OjQ5IEFNIEh1
+aSBaaHUgd3JvdGU6Cj4+IEZ1bmN0aW9uIHNocmlua19hbGxfbWVtb3J5IHRyeSB0byBmcmVlIGBu
+cl90b19yZWNsYWltJyBvZiBtZW1vcnkuCj4+IENNQV9BR0dSRVNTSVZFX1NIUklOSyBmdW5jdGlv
+biB3aWxsIGNhbGwgdGhpcyBmdW5jdG9uIHRvIGZyZWUgYG5yX3RvX3JlY2xhaW0nIG9mCj4+IG1l
+bW9yeS4gIEl0IG5lZWQgZGlmZmVyZW50IHNjYW5fY29udHJvbCB3aXRoIGN1cnJlbnQgY2FsbGVy
+IGZ1bmN0aW9uCj4+IGhpYmVybmF0ZV9wcmVhbGxvY2F0ZV9tZW1vcnkuCj4+Cj4+IElmIGhpYmVy
+bmF0aW9uIGlzIHRydWUsIHRoZSBjYWxsZXIgaXMgaGliZXJuYXRlX3ByZWFsbG9jYXRlX21lbW9y
+eS4KPj4gaWYgbm90LCB0aGUgY2FsbGVyIGlzIENNQSBhbGxvYyBmdW5jdGlvbi4KPj4KPj4gU2ln
+bmVkLW9mZi1ieTogSHVpIFpodSA8emh1aHVpQHhpYW9taS5jb20+Cj4+IC0tLQo+PiAgIGluY2x1
+ZGUvbGludXgvc3dhcC5oICAgIHwgIDMgKystCj4+ICAga2VybmVsL3Bvd2VyL3NuYXBzaG90LmMg
+fCAgMiArLQo+PiAgIG1tL3Ztc2Nhbi5jICAgICAgICAgICAgIHwgMTkgKysrKysrKysrKysrKy0t
+LS0tLQo+PiAgIDMgZmlsZXMgY2hhbmdlZCwgMTYgaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMo
+LSkKPj4KPj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvc3dhcC5oIGIvaW5jbHVkZS9saW51
+eC9zd2FwLmgKPj4gaW5kZXggMzdhNTg1Yi4uOWYyY2I0MyAxMDA2NDQKPj4gLS0tIGEvaW5jbHVk
+ZS9saW51eC9zd2FwLmgKPj4gKysrIGIvaW5jbHVkZS9saW51eC9zd2FwLmgKPj4gQEAgLTMzNSw3
+ICszMzUsOCBAQCBleHRlcm4gdW5zaWduZWQgbG9uZyBtZW1fY2dyb3VwX3Nocmlua19ub2RlX3pv
+bmUoc3RydWN0IG1lbV9jZ3JvdXAgKm1lbSwKPj4gICAJCQkJCQlnZnBfdCBnZnBfbWFzaywgYm9v
+bCBub3N3YXAsCj4+ICAgCQkJCQkJc3RydWN0IHpvbmUgKnpvbmUsCj4+ICAgCQkJCQkJdW5zaWdu
+ZWQgbG9uZyAqbnJfc2Nhbm5lZCk7Cj4+IC1leHRlcm4gdW5zaWduZWQgbG9uZyBzaHJpbmtfYWxs
+X21lbW9yeSh1bnNpZ25lZCBsb25nIG5yX3BhZ2VzKTsKPj4gK2V4dGVybiB1bnNpZ25lZCBsb25n
+IHNocmlua19hbGxfbWVtb3J5KHVuc2lnbmVkIGxvbmcgbnJfcGFnZXMsCj4+ICsJCQkJICAgICAg
+IGJvb2wgaGliZXJuYXRpb24pOwo+PiAgIGV4dGVybiBpbnQgdm1fc3dhcHBpbmVzczsKPj4gICBl
+eHRlcm4gaW50IHJlbW92ZV9tYXBwaW5nKHN0cnVjdCBhZGRyZXNzX3NwYWNlICptYXBwaW5nLCBz
+dHJ1Y3QgcGFnZSAqcGFnZSk7Cj4+ICAgZXh0ZXJuIHVuc2lnbmVkIGxvbmcgdm1fdG90YWxfcGFn
+ZXM7Cj4+IGRpZmYgLS1naXQgYS9rZXJuZWwvcG93ZXIvc25hcHNob3QuYyBiL2tlcm5lbC9wb3dl
+ci9zbmFwc2hvdC5jCj4+IGluZGV4IDc5MWE2MTguLmEwMGZjMzUgMTAwNjQ0Cj4+IC0tLSBhL2tl
+cm5lbC9wb3dlci9zbmFwc2hvdC5jCj4+ICsrKyBiL2tlcm5lbC9wb3dlci9zbmFwc2hvdC5jCj4+
+IEBAIC0xNjU3LDcgKzE2NTcsNyBAQCBpbnQgaGliZXJuYXRlX3ByZWFsbG9jYXRlX21lbW9yeSh2
+b2lkKQo+PiAgIAkgKiBOT1RFOiBJZiB0aGlzIGlzIG5vdCBkb25lLCBwZXJmb3JtYW5jZSB3aWxs
+IGJlIGh1cnQgYmFkbHkgaW4gc29tZQo+PiAgIAkgKiB0ZXN0IGNhc2VzLgo+PiAgIAkgKi8KPj4g
+LQlzaHJpbmtfYWxsX21lbW9yeShzYXZlYWJsZSAtIHNpemUpOwo+PiArCXNocmlua19hbGxfbWVt
+b3J5KHNhdmVhYmxlIC0gc2l6ZSwgdHJ1ZSk7Cj4KPiBJbnN0ZWFkIG9mIGRvaW5nIHRoaXMsIGNh
+biB5b3UgcGxlYXNlIGRlZmluZQo+Cj4gX19zaHJpbmtfYWxsX21lbW9yeSgpCj4KPiB0aGF0IHdp
+bGwgdGFrZSB0aGUgYXBwcm9wcmlhdGUgc3RydWN0IHNjYW5fY29udHJvbCBhcyBhbiBhcmd1bWVu
+dCBhbmQKPiB0aGVuIGRlZmluZSB0d28gd3JhcHBlcnMgYXJvdW5kIHRoYXQsIG9uZSBmb3IgaGli
+ZXJuYXRpb24gYW5kIG9uZSBmb3IgQ01BPwo+Cj4gVGhlIHdheSB5b3UgZGlkIGl0IG9wZW5zIGEg
+ZmllbGQgZm9yIGJ1Z3MgY2F1c2VkIGJ5IHBhc3NpbmcgYSB3cm9uZyB2YWx1ZQo+IGFzIHRoZSBz
+ZWNvbmQgYXJndW1lbnQuCgpUaGFua3MgUmFmYWVsLgpJIHdpbGwgdXBkYXRlIHBhdGNoIGFjY29y
+ZGluZyB0byB5b3VyIGNvbW1lbnRzLgoKQmVzdCwKSHVpCgo+Cj4+Cj4+ICAgCS8qCj4+ICAgCSAq
+IFRoZSBudW1iZXIgb2Ygc2F2ZWFibGUgcGFnZXMgaW4gbWVtb3J5IHdhcyB0b28gaGlnaCwgc28g
+YXBwbHkgc29tZQo+PiBkaWZmIC0tZ2l0IGEvbW0vdm1zY2FuLmMgYi9tbS92bXNjYW4uYwo+PiBp
+bmRleCBkY2I0NzA3Li5mZGNmYTMwIDEwMDY0NAo+PiAtLS0gYS9tbS92bXNjYW4uYwo+PiArKysg
+Yi9tbS92bXNjYW4uYwo+PiBAQCAtMzQwNCw3ICszNDA0LDcgQEAgdm9pZCB3YWtldXBfa3N3YXBk
+KHN0cnVjdCB6b25lICp6b25lLCBpbnQgb3JkZXIsIGVudW0gem9uZV90eXBlIGNsYXNzem9uZV9p
+ZHgpCj4+ICAgCXdha2VfdXBfaW50ZXJydXB0aWJsZSgmcGdkYXQtPmtzd2FwZF93YWl0KTsKPj4g
+ICB9Cj4+Cj4+IC0jaWZkZWYgQ09ORklHX0hJQkVSTkFUSU9OCj4+ICsjaWYgZGVmaW5lZCBDT05G
+SUdfSElCRVJOQVRJT04gfHwgZGVmaW5lZCBDT05GSUdfQ01BX0FHR1JFU1NJVkUKPj4gICAvKgo+
+PiAgICAqIFRyeSB0byBmcmVlIGBucl90b19yZWNsYWltJyBvZiBtZW1vcnksIHN5c3RlbS13aWRl
+LCBhbmQgcmV0dXJuIHRoZSBudW1iZXIgb2YKPj4gICAgKiBmcmVlZCBwYWdlcy4KPj4gQEAgLTM0
+MTMsMjIgKzM0MTMsMjkgQEAgdm9pZCB3YWtldXBfa3N3YXBkKHN0cnVjdCB6b25lICp6b25lLCBp
+bnQgb3JkZXIsIGVudW0gem9uZV90eXBlIGNsYXNzem9uZV9pZHgpCj4+ICAgICogTFJVIG9yZGVy
+IGJ5IHJlY2xhaW1pbmcgcHJlZmVyZW50aWFsbHkKPj4gICAgKiBpbmFjdGl2ZSA+IGFjdGl2ZSA+
+IGFjdGl2ZSByZWZlcmVuY2VkID4gYWN0aXZlIG1hcHBlZAo+PiAgICAqLwo+PiAtdW5zaWduZWQg
+bG9uZyBzaHJpbmtfYWxsX21lbW9yeSh1bnNpZ25lZCBsb25nIG5yX3RvX3JlY2xhaW0pCj4+ICt1
+bnNpZ25lZCBsb25nIHNocmlua19hbGxfbWVtb3J5KHVuc2lnbmVkIGxvbmcgbnJfdG9fcmVjbGFp
+bSwgYm9vbCBoaWJlcm5hdGlvbikKPj4gICB7Cj4+ICAgCXN0cnVjdCByZWNsYWltX3N0YXRlIHJl
+Y2xhaW1fc3RhdGU7Cj4+ICAgCXN0cnVjdCBzY2FuX2NvbnRyb2wgc2MgPSB7Cj4+ICAgCQkubnJf
+dG9fcmVjbGFpbSA9IG5yX3RvX3JlY2xhaW0sCj4+IC0JCS5nZnBfbWFzayA9IEdGUF9ISUdIVVNF
+Ul9NT1ZBQkxFLAo+PiAgIAkJLnByaW9yaXR5ID0gREVGX1BSSU9SSVRZLAo+PiAtCQkubWF5X3dy
+aXRlcGFnZSA9IDEsCj4+ICAgCQkubWF5X3VubWFwID0gMSwKPj4gICAJCS5tYXlfc3dhcCA9IDEs
+Cj4+IC0JCS5oaWJlcm5hdGlvbl9tb2RlID0gMSwKPj4gICAJfTsKPj4gICAJc3RydWN0IHpvbmVs
+aXN0ICp6b25lbGlzdCA9IG5vZGVfem9uZWxpc3QobnVtYV9ub2RlX2lkKCksIHNjLmdmcF9tYXNr
+KTsKPj4gICAJc3RydWN0IHRhc2tfc3RydWN0ICpwID0gY3VycmVudDsKPj4gICAJdW5zaWduZWQg
+bG9uZyBucl9yZWNsYWltZWQ7Cj4+Cj4+ICsJaWYgKGhpYmVybmF0aW9uKSB7Cj4+ICsJCXNjLmhp
+YmVybmF0aW9uX21vZGUgPSAxOwo+PiArCQlzYy5tYXlfd3JpdGVwYWdlID0gMTsKPj4gKwkJc2Mu
+Z2ZwX21hc2sgPSBHRlBfSElHSFVTRVJfTU9WQUJMRTsKPj4gKwl9IGVsc2Ugewo+PiArCQlzYy5o
+aWJlcm5hdGlvbl9tb2RlID0gMDsKPj4gKwkJc2MubWF5X3dyaXRlcGFnZSA9ICFsYXB0b3BfbW9k
+ZTsKPj4gKwkJc2MuZ2ZwX21hc2sgPSBHRlBfVVNFUiB8IF9fR0ZQX01PVkFCTEUgfCBfX0dGUF9I
+SUdITUVNOwo+PiArCX0KPj4gKwo+PiAgIAlwLT5mbGFncyB8PSBQRl9NRU1BTExPQzsKPj4gICAJ
+bG9ja2RlcF9zZXRfY3VycmVudF9yZWNsYWltX3N0YXRlKHNjLmdmcF9tYXNrKTsKPj4gICAJcmVj
+bGFpbV9zdGF0ZS5yZWNsYWltZWRfc2xhYiA9IDA7Cj4+IEBAIC0zNDQyLDcgKzM0NDksNyBAQCB1
+bnNpZ25lZCBsb25nIHNocmlua19hbGxfbWVtb3J5KHVuc2lnbmVkIGxvbmcgbnJfdG9fcmVjbGFp
+bSkKPj4KPj4gICAJcmV0dXJuIG5yX3JlY2xhaW1lZDsKPj4gICB9Cj4+IC0jZW5kaWYgLyogQ09O
+RklHX0hJQkVSTkFUSU9OICovCj4+ICsjZW5kaWYgLyogQ09ORklHX0hJQkVSTkFUSU9OIHx8IENP
+TkZJR19DTUFfQUdHUkVTU0lWRSAqLwo+Pgo+PiAgIC8qIEl0J3Mgb3B0aW1hbCB0byBrZWVwIGtz
+d2FwZHMgb24gdGhlIHNhbWUgQ1BVcyBhcyB0aGVpciBtZW1vcnksIGJ1dAo+PiAgICAgIG5vdCBy
+ZXF1aXJlZCBmb3IgY29ycmVjdG5lc3MuICBTbyBpZiB0aGUgbGFzdCBjcHUgaW4gYSBub2RlIGdv
+ZXMKPj4KPgo=
