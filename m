@@ -1,34 +1,36 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / Runtime: Rework RPM get callback routines
-Date: Sun, 19 Oct 2014 00:12:04 +0200
-Message-ID: <20141018221204.GA10843@amd>
-References: <1413543482-12748-1-git-send-email-a.hajda@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33678 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbaJRWMH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 18 Oct 2014 18:12:07 -0400
-Content-Disposition: inline
-In-Reply-To: <1413543482-12748-1-git-send-email-a.hajda@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Subject: [PATCH 4/5] power: charger-manager.c:  Cleaning up missing null-terminate by switching from strncpy to strzcpy
+Date: Sun, 19 Oct 2014 00:17:08 +0200
+Message-ID: <1413670628-6531-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Andi Kleen <ak@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Dan Carpenter <dan.carpenter@oracle.com>, David Woodhouse <dwmw2@infradead.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrzej Hajda <a.hajda@samsung.com>
-Cc: "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>
 
-On Fri 2014-10-17 12:58:02, Andrzej Hajda wrote:
-> PM uses three separate functions to fetch RPM callbacks.
-> These functions uses quite complicated macro in their body.
-> The patch replaces these routines with one small macro and
-> one helper function.
-> 
-> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
+Ensures that the string is null-terminate in connection with the
+use of strncpy, by switching from strncpy to strzcpy.
 
-Looks good to me.
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/power/charger-manager.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
+diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
+index 9e4dab4..18dad9e 100644
+--- a/drivers/power/charger-manager.c
++++ b/drivers/power/charger-manager.c
+@@ -1764,9 +1764,9 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 	memcpy(&cm->charger_psy, &psy_default, sizeof(psy_default));
+ 
+ 	if (!desc->psy_name)
+-		strncpy(cm->psy_name_buf, psy_default.name, PSY_NAME_MAX);
++		strzcpy(cm->psy_name_buf, psy_default.name, PSY_NAME_MAX);
+ 	else
+-		strncpy(cm->psy_name_buf, desc->psy_name, PSY_NAME_MAX);
++		strzcpy(cm->psy_name_buf, desc->psy_name, PSY_NAME_MAX);
+ 	cm->charger_psy.name = cm->psy_name_buf;
+ 
+ 	/* Allocate for psy properties because they may vary */
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.10.4
