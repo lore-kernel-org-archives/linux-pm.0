@@ -1,114 +1,148 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 00/33] thermal: exynos: convert the driver to use per-SoC
- type operations
-Date: Mon, 20 Oct 2014 14:47:04 +0200
-Message-ID: <1799007.8fVFUEOU02@amdc1032>
-References: <1411054070-25757-1-git-send-email-b.zolnierkie@samsung.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: [PATCH v2 1/3] PM / clock_ops: Add pm_clk_add_clk()
+Date: Mon, 20 Oct 2014 15:56:02 +0300
+Message-ID: <1413809764-21995-2-git-send-email-grygorii.strashko@ti.com>
+References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:20547 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751720AbaJTMrl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Oct 2014 08:47:41 -0400
-In-reply-to: <1411054070-25757-1-git-send-email-b.zolnierkie@samsung.com>
+Received: from bear.ext.ti.com ([192.94.94.41]:51048 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751666AbaJTM4j (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 20 Oct 2014 08:56:39 -0400
+In-Reply-To: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
 
+From: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Hi,
+The existing pm_clk_add() allows to pass a clock by con_id. However,
+when referring to a specific clock from DT, no con_id is available.
 
-Eduaro/Amit, any comments on this series?
-Could it be merged for v3.19?
+Add pm_clk_add_clk(), which allows to specify the struct clk * directly.
 
-[ Currently this series conflicts with "[PATCH] thermal: exynos: fix IRQ
-  clearing on TMU initialization" patch so I'm planning to refresh it but
-  it would be great to get some feedback first. ]
+Reviewed-by: Kevin Hilman <khilman@linaro.org>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+---
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+ Pay attantion pls, that there is another series of patches
+ which have been posted already and which depends from this patch
+   "[PATCH v4 0/3] ARM: rk3288 : Add PM Domain support"
+   https://lkml.org/lkml/2014/10/20/105
 
-On Thursday, September 18, 2014 05:27:17 PM Bartlomiej Zolnierkiewicz wrote:
-> Hi,
-> 
-> This patch series replaces the hardware registers abstractions in
-> the Exynos thermal driver by the usage of per-SoC type operations.
-> Such solution provides simpler, easier to understand code and
-> allows removal of ~250 LOCs (~11% of the whole source code) from
-> the driver.  Some other driver improvements are now also possible
-> thanks to these changes but are scheduled at later time (like
-> consolidating code for clearing IRQs using INTCLEAR register).
-> 
-> The patchset should not cause any functionality changes.  This
-> means that unless there are some bugs in the patches itself there
-> should be no behavior changes for the driver (this also includes
-> lack of changes in the way hardware is accessed by the driver).
-> 
-> All testing was done on (Exynos4412 SoC based) ODROID U3 board
-> (some additional patches are needed to make the Exynos thermal
-> driver work on this hardware).
-> 
-> Depends on:
-> - 'next' branch of linux-soc-thermal.git kernel tree from Eduardo
-> - [PATCH] thermal: exynos: use correct offset for TMU_CONTROL
->   register on Exynos5260
->   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg36529.html)
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
-> 
-> Bartlomiej Zolnierkiewicz (33):
->   thermal: exynos: remove needless triminfo_data abstraction
->   thermal: exynos: remove needless tmu_status abstraction
->   thermal: exynos: remove needless threshold_temp abstraction
->   thermal: exynos: remove needless triminfo_ctrl abstraction
->   thermal: exynos: remove needless test_mux_addr_shift abstraction
->   thermal: exynos: remove needless therm_trip_[mode,mask]_shift
->     abstractions
->   thermal: exynos: remove needless therm_trip_en_shift abstraction
->   thermal: exynos: remove needless emul_temp_shift abstraction
->   thermal: exynos: remove needless emul_time_shift abstraction
->   thermal: exynos: replace tmu_irqstatus check by Exynos5440 one
->   thermal: exynos: replace tmu_pmin check by Exynos5440 one
->   thermal: exynos: simplify HW_TRIP level setting
->   thermal: exynos: replace threshold_falling check by Exynos SoC type
->     one
->   thermal: exynos: remove TMU_SUPPORT_READY_STATUS flag
->   thermal: exynos: remove TMU_SUPPORT_TRIM_RELOAD flag
->   thermal: exynos: add sanitize_temp_error() helper
->   thermal: exynos: add get_th_reg() helper
->   thermal: exynos: add ->tmu_initialize method
->   thermal: exynos: add get_con_reg() helper
->   thermal: exynos: add ->tmu_control method
->   thermal: exynos: add ->tmu_read method
->   thermal: exynos: add get_emul_con_reg() helper
->   thermal: exynos: add ->tmu_set_emulation method
->   thermal: exynos: add ->tmu_clear_irqs method
->   thermal: exynos: remove TMU_SUPPORT_FALLING_TRIP flag
->   thermal: exynos: remove TMU_SUPPORT_EMUL_TIME flag
->   thermal: exynos: remove TMU_SUPPORT_EMULATION flag
->   thermal: exynos: remove TMU_SUPPORT_ADDRESS_MULTIPLE flag
->   thermal: exynos: remove TMU_SUPPORT_MULTI_INST flag
->   thermal: exynos: remove test_mux pdata field
->   thermal: exynos: remove SoC type ifdefs
->   thermal: exynos: remove __EXYNOS5420_TMU_DATA macro
->   thermal: exynos: remove exynos_tmu_data.h include
-> 
->  drivers/thermal/samsung/exynos_thermal_common.h |   1 -
->  drivers/thermal/samsung/exynos_tmu.c            | 706 +++++++++++++++++-------
->  drivers/thermal/samsung/exynos_tmu.h            | 131 +----
->  drivers/thermal/samsung/exynos_tmu_data.c       | 260 +--------
->  drivers/thermal/samsung/exynos_tmu_data.h       | 174 ------
->  5 files changed, 509 insertions(+), 763 deletions(-)
->  delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
+ drivers/base/power/clock_ops.c | 41 +++++++++++++++++++++++++++++++----------
+ include/linux/pm_clock.h       |  8 ++++++++
+ 2 files changed, 39 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+index 7836930..f14b767 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -53,7 +53,8 @@ static inline int __pm_clk_enable(struct device *dev, struct clk *clk)
+  */
+ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+ {
+-	ce->clk = clk_get(dev, ce->con_id);
++	if (!ce->clk)
++		ce->clk = clk_get(dev, ce->con_id);
+ 	if (IS_ERR(ce->clk)) {
+ 		ce->status = PCE_STATUS_ERROR;
+ 	} else {
+@@ -63,15 +64,8 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+ 	}
+ }
+ 
+-/**
+- * pm_clk_add - Start using a device clock for power management.
+- * @dev: Device whose clock is going to be used for power management.
+- * @con_id: Connection ID of the clock.
+- *
+- * Add the clock represented by @con_id to the list of clocks used for
+- * the power management of @dev.
+- */
+-int pm_clk_add(struct device *dev, const char *con_id)
++static int __pm_clk_add(struct device *dev, const char *con_id,
++			struct clk *clk)
+ {
+ 	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clock_entry *ce;
+@@ -93,6 +87,8 @@ int pm_clk_add(struct device *dev, const char *con_id)
+ 			kfree(ce);
+ 			return -ENOMEM;
+ 		}
++	} else {
++		ce->clk = clk;
+ 	}
+ 
+ 	pm_clk_acquire(dev, ce);
+@@ -104,6 +100,31 @@ int pm_clk_add(struct device *dev, const char *con_id)
+ }
+ 
+ /**
++ * pm_clk_add - Start using a device clock for power management.
++ * @dev: Device whose clock is going to be used for power management.
++ * @con_id: Connection ID of the clock.
++ *
++ * Add the clock represented by @con_id to the list of clocks used for
++ * the power management of @dev.
++ */
++int pm_clk_add(struct device *dev, const char *con_id)
++{
++	return __pm_clk_add(dev, con_id, NULL);
++}
++
++/**
++ * pm_clk_add_clk - Start using a device clock for power management.
++ * @dev: Device whose clock is going to be used for power management.
++ * @clk: Clock pointer
++ *
++ * Add the clock to the list of clocks used for the power management of @dev.
++ */
++int pm_clk_add_clk(struct device *dev, struct clk *clk)
++{
++	return __pm_clk_add(dev, NULL, clk);
++}
++
++/**
+  * __pm_clk_remove - Destroy PM clock entry.
+  * @ce: PM clock entry to destroy.
+  */
+diff --git a/include/linux/pm_clock.h b/include/linux/pm_clock.h
+index 8348866..0b00396 100644
+--- a/include/linux/pm_clock.h
++++ b/include/linux/pm_clock.h
+@@ -18,6 +18,8 @@ struct pm_clk_notifier_block {
+ 	char *con_ids[];
+ };
+ 
++struct clk;
++
+ #ifdef CONFIG_PM_CLK
+ static inline bool pm_clk_no_clocks(struct device *dev)
+ {
+@@ -29,6 +31,7 @@ extern void pm_clk_init(struct device *dev);
+ extern int pm_clk_create(struct device *dev);
+ extern void pm_clk_destroy(struct device *dev);
+ extern int pm_clk_add(struct device *dev, const char *con_id);
++extern int pm_clk_add_clk(struct device *dev, struct clk *clk);
+ extern void pm_clk_remove(struct device *dev, const char *con_id);
+ extern int pm_clk_suspend(struct device *dev);
+ extern int pm_clk_resume(struct device *dev);
+@@ -51,6 +54,11 @@ static inline int pm_clk_add(struct device *dev, const char *con_id)
+ {
+ 	return -EINVAL;
+ }
++
++static inline int pm_clk_add_clk(struct device *dev, struct clk *clk)
++{
++	return -EINVAL;
++}
+ static inline void pm_clk_remove(struct device *dev, const char *con_id)
+ {
+ }
+-- 
+1.9.1
 
