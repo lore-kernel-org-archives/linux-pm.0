@@ -1,232 +1,138 @@
-From: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
-Subject: [PATCH v2 2/3] ARM: keystone: pm: switch to use generic pm domains
-Date: Mon, 20 Oct 2014 15:56:03 +0300
-Message-ID: <1413809764-21995-3-git-send-email-grygorii.strashko@ti.com>
-References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1413809764-21995-1-git-send-email-grygorii.strashko-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH] power: charger-manager: Fix accessing invalidated thermal zone
+ device after its unbind
+Date: Mon, 20 Oct 2014 16:17:52 +0200
+Message-ID: <1413814672-22938-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:64766 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752151AbaJTOSH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Oct 2014 10:18:07 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Anton Vorontsov <anton@enomsg.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
 
-This patch switches Keystone 2 PM code to use Generic PM domains
-instead of PM clock domains because of the lack of DT support
-for the last.
+Lock corruption happened after unbinding a driver which provided thermal
+zone for charger manager.
 
-Reviewed-by: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Signed-off-by: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
+The charger manager obtained in probe a reference to thermal zone device.
+This device was used to report temperature in its own thermal zone and
+get_temp call.
+
+The thermal zone's reference was not updated even if device providing it was
+unregistered (e.g. by unbinding a driver providing that thermal zone).  If such
+driver was re-binded then charger manager would still use the old reference.
+
+Reproduction:
+1. 'cm-thermal-zone' present in DTS.
+2. Fuel gauge driver not exporting temperature property.
+$ echo "12-0036" > /sys/bus/i2c/drivers/max17042/unbind
+$ cat /sys/devices/virtual/power_supply/battery/temp_ambient
+
+[  153.450663] ------------[ cut here ]------------
+[  153.455274] WARNING: CPU: 3 PID: 6 at kernel/locking/mutex.c:511 mutex_lock_nested+0x3c4/0x458()
+[  153.464022] DEBUG_LOCKS_WARN_ON(l->magic != l)
+[  153.468275] Modules linked in:
+[  153.471493] CPU: 3 PID: 6 Comm: kworker/u8:0 Tainted: G        W      3.17.0-next-20141020-00047-g54f3de817616-dirty #374
+[  153.482432] Workqueue: charger_manager cm_monitor_poller
+[  153.487752] [<c0014d2c>] (unwind_backtrace) from [<c0011c98>] (show_stack+0x10/0x14)
+[  153.495457] [<c0011c98>] (show_stack) from [<c04da6dc>] (dump_stack+0x70/0xbc)
+[  153.502670] [<c04da6dc>] (dump_stack) from [<c0022e94>] (warn_slowpath_common+0x64/0x88)
+[  153.510732] [<c0022e94>] (warn_slowpath_common) from [<c0022f4c>] (warn_slowpath_fmt+0x30/0x40)
+[  153.519413] [<c0022f4c>] (warn_slowpath_fmt) from [<c04dd8a8>] (mutex_lock_nested+0x3c4/0x458)
+[  153.528006] [<c04dd8a8>] (mutex_lock_nested) from [<c03944e4>] (thermal_zone_get_temp+0x38/0x68)
+[  153.536768] [<c03944e4>] (thermal_zone_get_temp) from [<c038fe68>] (cm_get_battery_temperature+0x3c/0xb4)
+[  153.546314] [<c038fe68>] (cm_get_battery_temperature) from [<c0390640>] (cm_monitor+0x78/0x31c)
+[  153.554993] [<c0390640>] (cm_monitor) from [<c03908ec>] (cm_monitor_poller+0x8/0x28)
+[  153.562727] [<c03908ec>] (cm_monitor_poller) from [<c00396b4>] (process_one_work+0x180/0x3f4)
+[  153.571229] [<c00396b4>] (process_one_work) from [<c003998c>] (worker_thread+0x30/0x458)
+[  153.579300] [<c003998c>] (worker_thread) from [<c003f374>] (kthread+0xd8/0xf4)
+[  153.586506] [<c003f374>] (kthread) from [<c000f268>] (ret_from_fork+0x14/0x2c)
+[  153.593703] ---[ end trace b421d57d48f82c7d ]---
+[  360.487375] INFO: task kworker/u8:0:6 blocked for more than 120 seconds.
+[  360.492655]       Tainted: G        W      3.17.0-next-20141020-00047-g54f3de817616-dirty #374
+[  360.501236] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[  360.509047] kworker/u8:0    D c04dbcc8     0     6      2 0x00000000
+[  360.515357] Workqueue: charger_manager cm_monitor_poller
+[  360.520665] [<c04dbcc8>] (__schedule) from [<c04dc4d4>] (schedule_preempt_disabled+0x14/0x20)
+[  360.529203] [<c04dc4d4>] (schedule_preempt_disabled) from [<c04dd6a0>] (mutex_lock_nested+0x1bc/0x458)
+[  360.538493] [<c04dd6a0>] (mutex_lock_nested) from [<c028fbb4>] (regmap_read+0x30/0x60)
+[  360.546405] [<c028fbb4>] (regmap_read) from [<c038eae8>] (max17042_get_property+0x30c/0x350)
+[  360.554808] [<c038eae8>] (max17042_get_property) from [<c038c2cc>] (power_supply_read_temp+0x28/0x58)
+[  360.564008] [<c038c2cc>] (power_supply_read_temp) from [<c03944f8>] (thermal_zone_get_temp+0x4c/0x68)
+[  360.573203] [<c03944f8>] (thermal_zone_get_temp) from [<c038fe68>] (cm_get_battery_temperature+0x3c/0xb4)
+[  360.582749] [<c038fe68>] (cm_get_battery_temperature) from [<c0390640>] (cm_monitor+0x78/0x31c)
+[  360.591428] [<c0390640>] (cm_monitor) from [<c03908ec>] (cm_monitor_poller+0x8/0x28)
+[  360.599165] [<c03908ec>] (cm_monitor_poller) from [<c00396b4>] (process_one_work+0x180/0x3f4)
+[  360.607669] [<c00396b4>] (process_one_work) from [<c003998c>] (worker_thread+0x30/0x458)
+[  360.615733] [<c003998c>] (worker_thread) from [<c003f374>] (kthread+0xd8/0xf4)
+[  360.622946] [<c003f374>] (kthread) from [<c000f268>] (ret_from_fork+0x14/0x2c)
+
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: <stable@vger.kernel.org>
+Fixes: 5c49a6256bed ("charger-manager: Modify the way of checking battery's temperature")
 ---
- .../bindings/power/ti,keystone-powerdomain.txt     |  31 ++++++
- arch/arm/mach-keystone/Kconfig                     |   1 +
- arch/arm/mach-keystone/pm_domain.c                 | 112 ++++++++++++++-------
- 3 files changed, 107 insertions(+), 37 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
+ drivers/power/charger-manager.c       | 21 +++++++++++++++------
+ include/linux/power/charger-manager.h |  4 +---
+ 2 files changed, 16 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt b/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
-new file mode 100644
-index 0000000..4bbf2aa
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
-@@ -0,0 +1,31 @@
-+* TI Keystone 2 Generic PM Controller
-+
-+The TI Keystone 2 Generic PM Controller is responsible for Clock gating
-+for each controlled IP module.
-+
-+Required properties:
-+- compatible: Should be "ti,keystone-powerdomain"
-+- #power-domain-cells: Should be 0, see below:
-+
-+The gpc node is a power-controller as documented by the generic power domain
-+bindings in Documentation/devicetree/bindings/power/power_domain.txt.
-+
-+Example:
-+
-+	pm_controller: pm-controller {
-+		compatible = "ti,keystone-powerdomain";
-+		#power-domain-cells = <0>;
-+	};
-+
-+	netcp: netcp@2090000 {
-+		reg = <0x2620110 0x8>;
-+		reg-names = "efuse";
-+		...
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+		power-domains = <&pm_controller>;
-+
-+		clocks = <&clkpa>, <&clkcpgmac>, <&chipclk12>;
-+		dma-coherent;
-+	}
-diff --git a/arch/arm/mach-keystone/Kconfig b/arch/arm/mach-keystone/Kconfig
-index 98a156a..de43107 100644
---- a/arch/arm/mach-keystone/Kconfig
-+++ b/arch/arm/mach-keystone/Kconfig
-@@ -9,6 +9,7 @@ config ARCH_KEYSTONE
- 	select COMMON_CLK_KEYSTONE
- 	select ARCH_SUPPORTS_BIG_ENDIAN
- 	select ZONE_DMA if ARM_LPAE
-+	select PM_GENERIC_DOMAINS if PM
- 	help
- 	  Support for boards based on the Texas Instruments Keystone family of
- 	  SoCs.
-diff --git a/arch/arm/mach-keystone/pm_domain.c b/arch/arm/mach-keystone/pm_domain.c
-index ca79dda..d58759d 100644
---- a/arch/arm/mach-keystone/pm_domain.c
-+++ b/arch/arm/mach-keystone/pm_domain.c
-@@ -12,69 +12,107 @@
-  * version 2, as published by the Free Software Foundation.
-  */
+diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
+index 60688c20594d..d5bdcda8dc5f 100644
+--- a/drivers/power/charger-manager.c
++++ b/drivers/power/charger-manager.c
+@@ -627,8 +627,14 @@ static int cm_get_battery_temperature(struct charger_manager *cm,
+ 		return -ENODEV;
  
-+#include <linux/clk.h>
- #include <linux/init.h>
--#include <linux/pm_runtime.h>
- #include <linux/pm_clock.h>
-+#include <linux/pm_domain.h>
- #include <linux/platform_device.h>
--#include <linux/clk-provider.h>
- #include <linux/of.h>
- 
--#ifdef CONFIG_PM_RUNTIME
--static int keystone_pm_runtime_suspend(struct device *dev)
-+#ifdef CONFIG_PM_GENERIC_DOMAINS
+ #ifdef CONFIG_THERMAL
+-	if (cm->tzd_batt) {
+-		ret = thermal_zone_get_temp(cm->tzd_batt, (unsigned long *)temp);
++	if (cm->use_external_tzd) {
++		struct thermal_zone_device *tzd;
 +
-+struct keystone_domain {
-+	struct generic_pm_domain genpd;
-+	struct device	*dev;
-+};
++		tzd = thermal_zone_get_zone_by_name(cm->desc->thermal_zone);
++		if (IS_ERR(tzd))
++			return PTR_ERR(tzd);
 +
-+void keystone_pm_domain_attach_dev(struct device *dev)
- {
-+	struct clk *clk;
- 	int ret;
-+	int i = 0;
- 
- 	dev_dbg(dev, "%s\n", __func__);
- 
--	ret = pm_generic_runtime_suspend(dev);
--	if (ret)
--		return ret;
--
--	ret = pm_clk_suspend(dev);
-+	ret = pm_clk_create(dev);
- 	if (ret) {
--		pm_generic_runtime_resume(dev);
--		return ret;
-+		dev_err(dev, "pm_clk_create failed %d\n", ret);
-+		return;
-+	};
-+
-+	while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
-+		ret = pm_clk_add_clk(dev, clk);
-+		if (ret) {
-+			dev_err(dev, "pm_clk_add_clk failed %d\n", ret);
-+			goto clk_err;
-+		};
++		ret = thermal_zone_get_temp(tzd, (unsigned long *)temp);
+ 		if (!ret)
+ 			/* Calibrate temperature unit */
+ 			*temp /= 100;
+@@ -1590,12 +1596,15 @@ static int cm_init_thermal_data(struct charger_manager *cm,
  	}
- 
--	return 0;
-+	if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
-+		ret = pm_clk_resume(dev);
-+		if (ret) {
-+			dev_err(dev, "pm_clk_resume failed %d\n", ret);
-+			goto clk_err;
-+		};
-+	}
-+	return;
+ #ifdef CONFIG_THERMAL
+ 	if (ret && desc->thermal_zone) {
+-		cm->tzd_batt =
+-			thermal_zone_get_zone_by_name(desc->thermal_zone);
+-		if (IS_ERR(cm->tzd_batt))
+-			return PTR_ERR(cm->tzd_batt);
++		struct thermal_zone_device *tzd;
 +
-+clk_err:
-+	pm_clk_destroy(dev);
- }
++		/* Just check if we want to export TEMP_AMBIENT */
++		tzd = thermal_zone_get_zone_by_name(desc->thermal_zone);
++		if (IS_ERR(tzd))
++			return PTR_ERR(tzd);
  
--static int keystone_pm_runtime_resume(struct device *dev)
-+void keystone_pm_domain_detach_dev(struct device *dev)
- {
- 	dev_dbg(dev, "%s\n", __func__);
--
--	pm_clk_resume(dev);
--
--	return pm_generic_runtime_resume(dev);
-+	pm_clk_destroy(dev);
- }
+ 		/* Use external thermometer */
++		cm->use_external_tzd = true;
+ 		cm->charger_psy.properties[cm->charger_psy.num_properties] =
+ 				POWER_SUPPLY_PROP_TEMP_AMBIENT;
+ 		cm->charger_psy.num_properties++;
+diff --git a/include/linux/power/charger-manager.h b/include/linux/power/charger-manager.h
+index e97fc656a058..f3000d850995 100644
+--- a/include/linux/power/charger-manager.h
++++ b/include/linux/power/charger-manager.h
+@@ -253,9 +253,7 @@ struct charger_manager {
+ 	struct device *dev;
+ 	struct charger_desc *desc;
+ 
+-#ifdef CONFIG_THERMAL
+-	struct thermal_zone_device *tzd_batt;
 -#endif
++	bool use_external_tzd;
+ 	bool charger_enabled;
  
--static struct dev_pm_domain keystone_pm_domain = {
--	.ops = {
--		SET_RUNTIME_PM_OPS(keystone_pm_runtime_suspend,
--				   keystone_pm_runtime_resume, NULL)
--		USE_PLATFORM_PM_SLEEP_OPS
-+static const struct keystone_domain keystone_domain = {
-+	.genpd = {
-+		.name = "keystone",
-+		.attach_dev = keystone_pm_domain_attach_dev,
-+		.detach_dev = keystone_pm_domain_detach_dev,
-+		.dev_ops = {
-+			.stop = pm_clk_suspend,
-+			.start = pm_clk_resume,
-+		},
- 	},
- };
- 
--static struct pm_clk_notifier_block platform_domain_notifier = {
--	.pm_domain = &keystone_pm_domain,
-+static int keystone_pm_domain_probe(struct platform_device *pdev)
-+{
-+	struct keystone_domain *domain;
-+
-+	domain = devm_kzalloc(&pdev->dev,
-+			      sizeof(struct keystone_domain), GFP_KERNEL);
-+	if (!domain)
-+		return -ENOMEM;
-+
-+	domain->genpd = keystone_domain.genpd;
-+	domain->dev = &pdev->dev;
-+
-+	pm_genpd_init(&domain->genpd, NULL, false);
-+	return of_genpd_add_provider_simple(pdev->dev.of_node, &domain->genpd);
-+}
-+
-+static struct of_device_id keystone_pm_domain_dt_ids[] = {
-+	{ .compatible = "ti,keystone-powerdomain" },
-+	{ }
- };
- 
--static struct of_device_id of_keystone_table[] = {
--	{.compatible = "ti,keystone"},
--	{ /* end of list */ },
-+static struct platform_driver keystone_pm_domain_driver = {
-+	.driver = {
-+		.name = "ti,keystone-powerdomain",
-+		.owner = THIS_MODULE,
-+		.of_match_table = keystone_pm_domain_dt_ids,
-+	},
-+	.probe = keystone_pm_domain_probe,
- };
- 
- int __init keystone_pm_runtime_init(void)
- {
--	struct device_node *np;
--
--	np = of_find_matching_node(NULL, of_keystone_table);
--	if (!np)
--		return 0;
--
--	pm_clk_add_notifier(&platform_bus_type, &platform_domain_notifier);
--
--	return 0;
-+	return platform_driver_register(&keystone_pm_domain_driver);
- }
-+#else
-+int __init keystone_pm_runtime_init(void) { return 0; }
-+#endif /* CONFIG_PM_GENERIC_DOMAINS */
+ 	unsigned long fullbatt_vchk_jiffies_at;
 -- 
 1.9.1
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
