@@ -1,138 +1,60 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH] power: charger-manager: Fix accessing invalidated thermal zone
- device after its unbind
-Date: Mon, 20 Oct 2014 16:17:52 +0200
-Message-ID: <1413814672-22938-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:64766 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752151AbaJTOSH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Oct 2014 10:18:07 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [PATCH v11 0/6] cpufreq: use generic cpufreq drivers for exynos
+ platforms
+Date: Mon, 20 Oct 2014 16:18:10 +0200
+Message-ID: <544519A2.8010604@gmail.com>
+References: <1413805281-6269-1-git-send-email-thomas.ab@samsung.com>	<5444F38A.1000101@gmail.com>
+ <CAJuA9ajv_e0FriiPL0aHWLv7+AoZAF2E+G-0r6UGC6RzxM_wmA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAJuA9ajv_e0FriiPL0aHWLv7+AoZAF2E+G-0r6UGC6RzxM_wmA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Thomas Abraham <ta.omasab@gmail.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Anton Vorontsov <anton@enomsg.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
 
-Lock corruption happened after unbinding a driver which provided thermal
-zone for charger manager.
 
-The charger manager obtained in probe a reference to thermal zone device.
-This device was used to report temperature in its own thermal zone and
-get_temp call.
 
-The thermal zone's reference was not updated even if device providing it was
-unregistered (e.g. by unbinding a driver providing that thermal zone).  If such
-driver was re-binded then charger manager would still use the old reference.
+On 20.10.2014 13:48, Thomas Abraham wrote:
+> Hi Tomasz,
+> 
+> On Mon, Oct 20, 2014 at 5:05 PM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+>> On 20.10.2014 13:41, Thomas Abraham wrote:
+>>> Changes since v10:
+>>> - Rebased on top of v3.18-rc1
+>>>
+>>> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+>>> drivers and enables the use of cpufreq-dt driver for these platforms. This
+>>> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
+>>> driver.
+>>>
+>>> This patch series is based and tested on v3.18-rc1 and depends on the patch
+>>> - "clk: exynos4: remove duplicate div_core2 divider clock instantiation"
+>>>   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34859.html)
+>>>   This patch has been merged in "arm-soc/samsung/dt3" branch of arm-soc tree.
+>>>
+>>
+>> That patch actually went through clock tree, but it doesn't matter,
+>> because AFAIK all the dependencies for this series are already in
+>> 3.18-rc1. I'll try to apply it in next days
+> 
+> Thanks. The patch "clk: exynos4: remove duplicate div_core2 divider
+> clock instantiation" is not available in 3.18-rc1. So for testing, I
+> picked this patch from samsung/dt3 branch from arm-soc tree.
 
-Reproduction:
-1. 'cm-thermal-zone' present in DTS.
-2. Fuel gauge driver not exporting temperature property.
-$ echo "12-0036" > /sys/bus/i2c/drivers/max17042/unbind
-$ cat /sys/devices/virtual/power_supply/battery/temp_ambient
+Hmm? I can see it there:
 
-[  153.450663] ------------[ cut here ]------------
-[  153.455274] WARNING: CPU: 3 PID: 6 at kernel/locking/mutex.c:511 mutex_lock_nested+0x3c4/0x458()
-[  153.464022] DEBUG_LOCKS_WARN_ON(l->magic != l)
-[  153.468275] Modules linked in:
-[  153.471493] CPU: 3 PID: 6 Comm: kworker/u8:0 Tainted: G        W      3.17.0-next-20141020-00047-g54f3de817616-dirty #374
-[  153.482432] Workqueue: charger_manager cm_monitor_poller
-[  153.487752] [<c0014d2c>] (unwind_backtrace) from [<c0011c98>] (show_stack+0x10/0x14)
-[  153.495457] [<c0011c98>] (show_stack) from [<c04da6dc>] (dump_stack+0x70/0xbc)
-[  153.502670] [<c04da6dc>] (dump_stack) from [<c0022e94>] (warn_slowpath_common+0x64/0x88)
-[  153.510732] [<c0022e94>] (warn_slowpath_common) from [<c0022f4c>] (warn_slowpath_fmt+0x30/0x40)
-[  153.519413] [<c0022f4c>] (warn_slowpath_fmt) from [<c04dd8a8>] (mutex_lock_nested+0x3c4/0x458)
-[  153.528006] [<c04dd8a8>] (mutex_lock_nested) from [<c03944e4>] (thermal_zone_get_temp+0x38/0x68)
-[  153.536768] [<c03944e4>] (thermal_zone_get_temp) from [<c038fe68>] (cm_get_battery_temperature+0x3c/0xb4)
-[  153.546314] [<c038fe68>] (cm_get_battery_temperature) from [<c0390640>] (cm_monitor+0x78/0x31c)
-[  153.554993] [<c0390640>] (cm_monitor) from [<c03908ec>] (cm_monitor_poller+0x8/0x28)
-[  153.562727] [<c03908ec>] (cm_monitor_poller) from [<c00396b4>] (process_one_work+0x180/0x3f4)
-[  153.571229] [<c00396b4>] (process_one_work) from [<c003998c>] (worker_thread+0x30/0x458)
-[  153.579300] [<c003998c>] (worker_thread) from [<c003f374>] (kthread+0xd8/0xf4)
-[  153.586506] [<c003f374>] (kthread) from [<c000f268>] (ret_from_fork+0x14/0x2c)
-[  153.593703] ---[ end trace b421d57d48f82c7d ]---
-[  360.487375] INFO: task kworker/u8:0:6 blocked for more than 120 seconds.
-[  360.492655]       Tainted: G        W      3.17.0-next-20141020-00047-g54f3de817616-dirty #374
-[  360.501236] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-[  360.509047] kworker/u8:0    D c04dbcc8     0     6      2 0x00000000
-[  360.515357] Workqueue: charger_manager cm_monitor_poller
-[  360.520665] [<c04dbcc8>] (__schedule) from [<c04dc4d4>] (schedule_preempt_disabled+0x14/0x20)
-[  360.529203] [<c04dc4d4>] (schedule_preempt_disabled) from [<c04dd6a0>] (mutex_lock_nested+0x1bc/0x458)
-[  360.538493] [<c04dd6a0>] (mutex_lock_nested) from [<c028fbb4>] (regmap_read+0x30/0x60)
-[  360.546405] [<c028fbb4>] (regmap_read) from [<c038eae8>] (max17042_get_property+0x30c/0x350)
-[  360.554808] [<c038eae8>] (max17042_get_property) from [<c038c2cc>] (power_supply_read_temp+0x28/0x58)
-[  360.564008] [<c038c2cc>] (power_supply_read_temp) from [<c03944f8>] (thermal_zone_get_temp+0x4c/0x68)
-[  360.573203] [<c03944f8>] (thermal_zone_get_temp) from [<c038fe68>] (cm_get_battery_temperature+0x3c/0xb4)
-[  360.582749] [<c038fe68>] (cm_get_battery_temperature) from [<c0390640>] (cm_monitor+0x78/0x31c)
-[  360.591428] [<c0390640>] (cm_monitor) from [<c03908ec>] (cm_monitor_poller+0x8/0x28)
-[  360.599165] [<c03908ec>] (cm_monitor_poller) from [<c00396b4>] (process_one_work+0x180/0x3f4)
-[  360.607669] [<c00396b4>] (process_one_work) from [<c003998c>] (worker_thread+0x30/0x458)
-[  360.615733] [<c003998c>] (worker_thread) from [<c003f374>] (kthread+0xd8/0xf4)
-[  360.622946] [<c003f374>] (kthread) from [<c000f268>] (ret_from_fork+0x14/0x2c)
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/log/drivers/clk/samsung?id=v3.18-rc1
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: <stable@vger.kernel.org>
-Fixes: 5c49a6256bed ("charger-manager: Modify the way of checking battery's temperature")
----
- drivers/power/charger-manager.c       | 21 +++++++++++++++------
- include/linux/power/charger-manager.h |  4 +---
- 2 files changed, 16 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index 60688c20594d..d5bdcda8dc5f 100644
---- a/drivers/power/charger-manager.c
-+++ b/drivers/power/charger-manager.c
-@@ -627,8 +627,14 @@ static int cm_get_battery_temperature(struct charger_manager *cm,
- 		return -ENODEV;
- 
- #ifdef CONFIG_THERMAL
--	if (cm->tzd_batt) {
--		ret = thermal_zone_get_temp(cm->tzd_batt, (unsigned long *)temp);
-+	if (cm->use_external_tzd) {
-+		struct thermal_zone_device *tzd;
-+
-+		tzd = thermal_zone_get_zone_by_name(cm->desc->thermal_zone);
-+		if (IS_ERR(tzd))
-+			return PTR_ERR(tzd);
-+
-+		ret = thermal_zone_get_temp(tzd, (unsigned long *)temp);
- 		if (!ret)
- 			/* Calibrate temperature unit */
- 			*temp /= 100;
-@@ -1590,12 +1596,15 @@ static int cm_init_thermal_data(struct charger_manager *cm,
- 	}
- #ifdef CONFIG_THERMAL
- 	if (ret && desc->thermal_zone) {
--		cm->tzd_batt =
--			thermal_zone_get_zone_by_name(desc->thermal_zone);
--		if (IS_ERR(cm->tzd_batt))
--			return PTR_ERR(cm->tzd_batt);
-+		struct thermal_zone_device *tzd;
-+
-+		/* Just check if we want to export TEMP_AMBIENT */
-+		tzd = thermal_zone_get_zone_by_name(desc->thermal_zone);
-+		if (IS_ERR(tzd))
-+			return PTR_ERR(tzd);
- 
- 		/* Use external thermometer */
-+		cm->use_external_tzd = true;
- 		cm->charger_psy.properties[cm->charger_psy.num_properties] =
- 				POWER_SUPPLY_PROP_TEMP_AMBIENT;
- 		cm->charger_psy.num_properties++;
-diff --git a/include/linux/power/charger-manager.h b/include/linux/power/charger-manager.h
-index e97fc656a058..f3000d850995 100644
---- a/include/linux/power/charger-manager.h
-+++ b/include/linux/power/charger-manager.h
-@@ -253,9 +253,7 @@ struct charger_manager {
- 	struct device *dev;
- 	struct charger_desc *desc;
- 
--#ifdef CONFIG_THERMAL
--	struct thermal_zone_device *tzd_batt;
--#endif
-+	bool use_external_tzd;
- 	bool charger_enabled;
- 
- 	unsigned long fullbatt_vchk_jiffies_at;
--- 
-1.9.1
-
+Best regards,
+Tomasz
