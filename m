@@ -1,76 +1,58 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 1/2] Thermal:Fix memory leak if occur goto unregister
-Date: Mon, 20 Oct 2014 08:33:40 -0400
-Message-ID: <20141020123338.GA3744@developer>
-References: <5444C778.8050008@huawei.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="SUOF0GtieIMvvwua"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f42.google.com ([209.85.192.42]:44201 "EHLO
-	mail-qg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751273AbaJTMbr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Oct 2014 08:31:47 -0400
-Content-Disposition: inline
-In-Reply-To: <5444C778.8050008@huawei.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v2 0/5] power/mfd: Add max77693 charger driver
+Date: Mon, 20 Oct 2014 14:34:44 +0200
+Message-ID: <1413808489-3524-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Yao Dongdong <yaodongdong@huawei.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
 
---SUOF0GtieIMvvwua
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hello,
 
-On Mon, Oct 20, 2014 at 04:27:36PM +0800, Yao Dongdong wrote:
-> Signed-off-by:yaodongdong@huawei.com
+Changes since v1
+================
+1. Add patch 2/5: mfd: max77693: Map charger device to its own of_node
+   (forgot to send it in v1)
+2. Remove patches for DTS and configs. I'll send them later.
+3. Add ack from Lee Jones (patch 3/5).
 
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
 
-Rui, would you take care of this?
+Description
+===========
+The patchset adds max77693 charger driver present on Trats2 board
+(and Galaxy S III). The driver configures battery charger and exposes
+power supply interface.
 
->=20
-> ---
->  drivers/thermal/thermal_core.c | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
-e.c
-> index 71b0ec0..5b7d466 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1574,6 +1574,7 @@ struct thermal_zone_device *thermal_zone_device_reg=
-ister(const char *type,
->  unregister:
->     release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
->     device_unregister(&tz->device);
-> +   kfree(tz);
->     return ERR_PTR(result);
->  }
->  EXPORT_SYMBOL_GPL(thermal_zone_device_register);
-> --
-> 1.8.0.1
->=20
->=20
+Driver is necessary to provide full charging stack on Trats2 device
+(extcon, charger-manager etc.).
 
---SUOF0GtieIMvvwua
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Everything rebased on next-20141020.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iQEcBAEBAgAGBQJURQEZAAoJEMLUO4d9pOJWfwUH/3Jqlq/1LbkxaNWIEeemChAP
-gDY3W78tFCsBHOzcNYsmlfxGhM/DZTxg86OuKW4Xs0ySvnyKJRmA++4Ztl6CRhSK
-FsGlw6b7msH9ZKCIQ5ejuePMoOIz5G3lqBbNHANbwb/EOnx3gIKbGX/8GZLrmJ3B
-UMMUb0Xj8/f5mqZfwBv/BKbwWccHnt0gkyYSLMgVxdT70+0gfFzzdHb+m3S+m8pB
-UbiU10Ni0lnbGoRFXNM9+Iey6lpTn/HTt9MzG7KoSM2zR5lALuTjxdqW8mdEw6lg
-Dnpko7Y0mXqaAsMtCKAskkdlRFBJgqBUHv3x1cESuNpZXYjBDCSimuNtDqHZ9DE=
-=CUr9
------END PGP SIGNATURE-----
+Best regards,
+Krzysztof
 
---SUOF0GtieIMvvwua--
+
+Krzysztof Kozlowski (5):
+  devicetree: mfd: max77693: Document new bindings for charger
+  mfd: max77693: Map charger device to its own of_node
+  mfd: max77693: Add defines for MAX77693 charger driver
+  power: max77693: Add charger driver for Maxim 77693
+  Documentation: charger: max77693: Document exported sysfs entry
+
+ Documentation/ABI/testing/sysfs-class-power        |  42 ++
+ Documentation/devicetree/bindings/mfd/max77693.txt |  46 ++
+ drivers/mfd/max77693.c                             |   5 +-
+ drivers/power/Kconfig                              |   6 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/max77693_charger.c                   | 763 +++++++++++++++++++++
+ include/linux/mfd/max77693-private.h               | 108 +++
+ include/linux/mfd/max77693.h                       |   8 +
+ 8 files changed, 978 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/power/max77693_charger.c
+
+-- 
+1.9.1
