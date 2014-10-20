@@ -1,52 +1,52 @@
 From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v11 5/6] cpufreq: exynos: remove exynos4210/5250 specific
- cpufreq driver support
-Date: Mon, 20 Oct 2014 17:08:35 +0530
-Message-ID: <CAJuA9ai+5UBHs60CVtf=QOgqGk-EnPZhP237TJwmt76MiJMsyg@mail.gmail.com>
+Subject: Re: [PATCH v11 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
+Date: Mon, 20 Oct 2014 17:18:45 +0530
+Message-ID: <CAJuA9ajv_e0FriiPL0aHWLv7+AoZAF2E+G-0r6UGC6RzxM_wmA@mail.gmail.com>
 References: <1413805281-6269-1-git-send-email-thomas.ab@samsung.com>
-	<1413805281-6269-2-git-send-email-thomas.ab@samsung.com>
-	<1413805281-6269-3-git-send-email-thomas.ab@samsung.com>
-	<1413805281-6269-4-git-send-email-thomas.ab@samsung.com>
-	<1413805281-6269-5-git-send-email-thomas.ab@samsung.com>
-	<1413805281-6269-6-git-send-email-thomas.ab@samsung.com>
-	<CAKohpo=0wQD4mWq+GbpMnLR6W5u9U7n16KUyecffL6BAxeYVOQ@mail.gmail.com>
+	<5444F38A.1000101@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f45.google.com ([209.85.218.45]:42401 "EHLO
-	mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbaJTLig (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Oct 2014 07:38:36 -0400
-In-Reply-To: <CAKohpo=0wQD4mWq+GbpMnLR6W5u9U7n16KUyecffL6BAxeYVOQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <5444F38A.1000101@gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Mon, Oct 20, 2014 at 5:02 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 20 October 2014 17:11, Thomas Abraham <thomas.ab@samsung.com> wrote:
->> Exynos4210 and Exynos5250 based platforms have switched over to use generic
->> cpufreq drivers for cpufreq functionality. So the Exynos specific cpufreq
->> drivers for these platforms can be removed.
+Hi Tomasz,
+
+On Mon, Oct 20, 2014 at 5:05 PM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+> On 20.10.2014 13:41, Thomas Abraham wrote:
+>> Changes since v10:
+>> - Rebased on top of v3.18-rc1
 >>
->> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> Tested-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
->> Tested-by: Chander Kashyap <k.chander@samsung.com>
->> ---
->>  drivers/cpufreq/Kconfig.arm |   22 ----------------------
->>  drivers/cpufreq/Makefile    |    2 --
->>  2 files changed, 0 insertions(+), 24 deletions(-)
+>> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+>> drivers and enables the use of cpufreq-dt driver for these platforms. This
+>> series also enables cpufreq support for Exynos5420 using arm_big_little cpufreq
+>> driver.
+>>
+>> This patch series is based and tested on v3.18-rc1 and depends on the patch
+>> - "clk: exynos4: remove duplicate div_core2 divider clock instantiation"
+>>   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg34859.html)
+>>   This patch has been merged in "arm-soc/samsung/dt3" branch of arm-soc tree.
+>>
 >
-> Looks like you forgot removing drivers ;)
+> That patch actually went through clock tree, but it doesn't matter,
+> because AFAIK all the dependencies for this series are already in
+> 3.18-rc1. I'll try to apply it in next days
 
-Sorry, missed it while doing the rebase. I will fix and send an updated patch.
+Thanks. The patch "clk: exynos4: remove duplicate div_core2 divider
+clock instantiation" is not available in 3.18-rc1. So for testing, I
+picked this patch from samsung/dt3 branch from arm-soc tree.
 
-Thanks,
+Regards,
 Thomas.
 
+
+>
+> Best regards,
+> Tomasz
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
