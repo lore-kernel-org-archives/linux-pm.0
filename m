@@ -1,53 +1,43 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-Subject: [RFC Patch 3/4] mfd: AXP20x: Add power supply defconfig entries
-Date: Mon, 20 Oct 2014 22:33:26 +0200
-Message-ID: <20141020223326.59fcc235@neptune.home>
-References: <20141020215954.7f1d5502@neptune.home>
-Reply-To: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Subject: [RFC Patch 0/4] mfd: AXP20x: Add power supply sub-driver
+Date: Mon, 20 Oct 2014 22:19:59 +0200
+Message-ID: <20141020221959.2f312906@neptune.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-sunxi+bncBDCZ5GUK4UNRBAPESWRAKGQEH3MZAPY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-In-Reply-To: <20141020215954.7f1d5502-hY15tx4IgV39zxVx7UNMDg@public.gmane.org>
-References: <20141020221959.2f312906-hY15tx4IgV39zxVx7UNMDg@public.gmane.org>
-In-Reply-To: <20141020221959.2f312906-hY15tx4IgV39zxVx7UNMDg@public.gmane.org>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Olliver Schinagl <oliver+list-dxLnbx3+1qmEVqv0pETR8A@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-sunxi@googlegroups.com, maxime.ripard@free-electrons.com, linux-arm-kernel@lists.infradead.org, lee.jones@linaro.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
+Cc: Olliver Schinagl <oliver+list@schinagl.nl>
 List-Id: linux-pm@vger.kernel.org
 
+This series adds a power-supply driver to cover backup/RTC battery
+charger, VBUS/OTG power in, AC power in and battery charger features
+supported by AXP20x PMIC.
 
----
- arch/arm/configs/multi_v7_defconfig              |    1 +
- arch/arm/configs/sunxi_defconfig                 |    1 +
- 2 files changed, 2 insertions(+), 0 deletion(-)
+The DT bindings documentation patch depends on the following patch
+from Carlo Caione:
+  http://lists.infradead.org/pipermail/linux-arm-kernel/2014-June/267604.html
 
-diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
-index 6e57d12..9737c26 100644
---- a/arch/arm/configs/multi_v7_defconfig
-+++ b/arch/arm/configs/multi_v7_defconfig
-@@ -228,6 +228,7 @@ CONFIG_GPIO_TPS6586X=y
- CONFIG_GPIO_TPS65910=y
- CONFIG_BATTERY_SBS=y
- CONFIG_CHARGER_TPS65090=y
-+CONFIG_AXP20X_POWER=y
- CONFIG_POWER_RESET_AS3722=y
- CONFIG_POWER_RESET_GPIO=y
- CONFIG_POWER_RESET_SUN6I=y
-diff --git a/arch/arm/configs/sunxi_defconfig b/arch/arm/configs/sunxi_defconfig
-index acf465f..37277af 100644
---- a/arch/arm/configs/sunxi_defconfig
-+++ b/arch/arm/configs/sunxi_defconfig
-@@ -71,6 +71,7 @@ CONFIG_SPI_SUN4I=y
- CONFIG_SPI_SUN6I=y
- CONFIG_GPIO_SYSFS=y
- CONFIG_POWER_SUPPLY=y
-+CONFIG_AXP20X_POWER=y
- CONFIG_POWER_RESET=y
- CONFIG_POWER_RESET_SUN6I=y
- # CONFIG_HWMON is not set
+Note, the reporting of some of the power supply interrupts might need
+to be changed to dev_debug instead of dev_info.
+
+For the DT bindings names they might need prefixing in which case
+the corresponding prefix declaration patch from Carlo would be needed
+as well:
+  http://lists.infradead.org/pipermail/linux-arm-kernel/2014-June/267606.html
+
+
+Changes since initial posting on linux-sunxi:
+ - A few typo fixes in strings/comments
+ - Patch splitting
+
+Bruno
