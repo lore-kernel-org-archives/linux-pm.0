@@ -1,11 +1,16 @@
 From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Subject: [RFC Patch 0/4] mfd: AXP20x: Add power supply sub-driver
-Date: Mon, 20 Oct 2014 22:19:59 +0200
-Message-ID: <20141020221959.2f312906@neptune.home>
+Subject: [RFC Patch 4/4] mfd: AXP20x: Add backup battery DTS entry for
+ Cubietruck
+Date: Mon, 20 Oct 2014 22:33:31 +0200
+Message-ID: <20141020223331.4e2a5b78@neptune.home>
+References: <20141020215954.7f1d5502@neptune.home>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20141020215954.7f1d5502@neptune.home>
+References: <20141020221959.2f312906@neptune.home>
+In-Reply-To: <20141020221959.2f312906@neptune.home>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,25 +24,23 @@ To: linux-sunxi@googlegroups.com, maxime.ripard@free-electrons.com, linux-arm-ke
 Cc: Olliver Schinagl <oliver+list@schinagl.nl>
 List-Id: linux-pm@vger.kernel.org
 
-This series adds a power-supply driver to cover backup/RTC battery
-charger, VBUS/OTG power in, AC power in and battery charger features
-supported by AXP20x PMIC.
 
-The DT bindings documentation patch depends on the following patch
-from Carlo Caione:
-  http://lists.infradead.org/pipermail/linux-arm-kernel/2014-June/267604.html
+---
+ arch/arm/boot/dts/sun7i-a20-cubietruck.dts       |    4 +
+ 1 files changed, 2 insertions(+), 0 deletion(-)
 
-Note, the reporting of some of the power supply interrupts might need
-to be changed to dev_debug instead of dev_info.
-
-For the DT bindings names they might need prefixing in which case
-the corresponding prefix declaration patch from Carlo would be needed
-as well:
-  http://lists.infradead.org/pipermail/linux-arm-kernel/2014-June/267606.html
-
-
-Changes since initial posting on linux-sunxi:
- - A few typo fixes in strings/comments
- - Patch splitting
-
-Bruno
+diff --git a/arch/arm/boot/dts/sun7i-a20-cubietruck.dts b/arch/arm/boot/dts/sun7i-a20-cubietruck.dts
+index a6c1a3c..efb65fb 100644
+--- a/arch/arm/boot/dts/sun7i-a20-cubietruck.dts
++++ b/arch/arm/boot/dts/sun7i-a20-cubietruck.dts
+@@ -125,6 +125,8 @@
+ 
+ 				interrupt-controller;
+ 				#interrupt-cells = <1>;
++
++				backup = <3000000 200>;
+ 			};
+ 		};
+ 
+-- 
+2.0.4
