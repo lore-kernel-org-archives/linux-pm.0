@@ -1,148 +1,58 @@
 From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: [PATCH v2 1/3] PM / clock_ops: Add pm_clk_add_clk()
-Date: Mon, 20 Oct 2014 15:56:02 +0300
-Message-ID: <1413809764-21995-2-git-send-email-grygorii.strashko@ti.com>
-References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>
+Subject: [PATCH v2 0/3] ARM: keystone: pm: switch to use generic pm domains
+Date: Mon, 20 Oct 2014 15:56:01 +0300
+Message-ID: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:51048 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751666AbaJTM4j (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 20 Oct 2014 08:56:39 -0400
-In-Reply-To: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>
+Received: from devils.ext.ti.com ([198.47.26.153]:42958 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751918AbaJTM4l (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Oct 2014 08:56:41 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org
 Cc: Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
 
-From: Geert Uytterhoeven <geert+renesas@glider.be>
+Hi Santosh, Kevin,
 
-The existing pm_clk_add() allows to pass a clock by con_id. However,
-when referring to a specific clock from DT, no con_id is available.
+This series switches Keystone 2 PM code to use Generic PM domains
+instead of PM clock domains because of the lack of DT support
+for the last.
+It will finally allow to enable Runtime PM for Keystone 2.
 
-Add pm_clk_add_clk(), which allows to specify the struct clk * directly.
+Patch 1 was reused from [1].
 
-Reviewed-by: Kevin Hilman <khilman@linaro.org>
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
----
+RFC version of patches can be found at [2].
 
- Pay attantion pls, that there is another series of patches
- which have been posted already and which depends from this patch
-   "[PATCH v4 0/3] ARM: rk3288 : Add PM Domain support"
-   https://lkml.org/lkml/2014/10/20/105
+Changes in v2:
+- minor comments applied and rebased on top of Linux 3.18-rc1.
 
- drivers/base/power/clock_ops.c | 41 +++++++++++++++++++++++++++++++----------
- include/linux/pm_clock.h       |  8 ++++++++
- 2 files changed, 39 insertions(+), 10 deletions(-)
+Link on v1:
+  https://lkml.org/lkml/2014/9/29/382
 
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index 7836930..f14b767 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -53,7 +53,8 @@ static inline int __pm_clk_enable(struct device *dev, struct clk *clk)
-  */
- static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
- {
--	ce->clk = clk_get(dev, ce->con_id);
-+	if (!ce->clk)
-+		ce->clk = clk_get(dev, ce->con_id);
- 	if (IS_ERR(ce->clk)) {
- 		ce->status = PCE_STATUS_ERROR;
- 	} else {
-@@ -63,15 +64,8 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
- 	}
- }
- 
--/**
-- * pm_clk_add - Start using a device clock for power management.
-- * @dev: Device whose clock is going to be used for power management.
-- * @con_id: Connection ID of the clock.
-- *
-- * Add the clock represented by @con_id to the list of clocks used for
-- * the power management of @dev.
-- */
--int pm_clk_add(struct device *dev, const char *con_id)
-+static int __pm_clk_add(struct device *dev, const char *con_id,
-+			struct clk *clk)
- {
- 	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce;
-@@ -93,6 +87,8 @@ int pm_clk_add(struct device *dev, const char *con_id)
- 			kfree(ce);
- 			return -ENOMEM;
- 		}
-+	} else {
-+		ce->clk = clk;
- 	}
- 
- 	pm_clk_acquire(dev, ce);
-@@ -104,6 +100,31 @@ int pm_clk_add(struct device *dev, const char *con_id)
- }
- 
- /**
-+ * pm_clk_add - Start using a device clock for power management.
-+ * @dev: Device whose clock is going to be used for power management.
-+ * @con_id: Connection ID of the clock.
-+ *
-+ * Add the clock represented by @con_id to the list of clocks used for
-+ * the power management of @dev.
-+ */
-+int pm_clk_add(struct device *dev, const char *con_id)
-+{
-+	return __pm_clk_add(dev, con_id, NULL);
-+}
-+
-+/**
-+ * pm_clk_add_clk - Start using a device clock for power management.
-+ * @dev: Device whose clock is going to be used for power management.
-+ * @clk: Clock pointer
-+ *
-+ * Add the clock to the list of clocks used for the power management of @dev.
-+ */
-+int pm_clk_add_clk(struct device *dev, struct clk *clk)
-+{
-+	return __pm_clk_add(dev, NULL, clk);
-+}
-+
-+/**
-  * __pm_clk_remove - Destroy PM clock entry.
-  * @ce: PM clock entry to destroy.
-  */
-diff --git a/include/linux/pm_clock.h b/include/linux/pm_clock.h
-index 8348866..0b00396 100644
---- a/include/linux/pm_clock.h
-+++ b/include/linux/pm_clock.h
-@@ -18,6 +18,8 @@ struct pm_clk_notifier_block {
- 	char *con_ids[];
- };
- 
-+struct clk;
-+
- #ifdef CONFIG_PM_CLK
- static inline bool pm_clk_no_clocks(struct device *dev)
- {
-@@ -29,6 +31,7 @@ extern void pm_clk_init(struct device *dev);
- extern int pm_clk_create(struct device *dev);
- extern void pm_clk_destroy(struct device *dev);
- extern int pm_clk_add(struct device *dev, const char *con_id);
-+extern int pm_clk_add_clk(struct device *dev, struct clk *clk);
- extern void pm_clk_remove(struct device *dev, const char *con_id);
- extern int pm_clk_suspend(struct device *dev);
- extern int pm_clk_resume(struct device *dev);
-@@ -51,6 +54,11 @@ static inline int pm_clk_add(struct device *dev, const char *con_id)
- {
- 	return -EINVAL;
- }
-+
-+static inline int pm_clk_add_clk(struct device *dev, struct clk *clk)
-+{
-+	return -EINVAL;
-+}
- static inline void pm_clk_remove(struct device *dev, const char *con_id)
- {
- }
+[1] "[PATCH/RFC 0/4] of: Register clocks for Runtime PM with PM core"
+  https://lkml.org/lkml/2014/4/24/1118
+
+[2] "[RFC PATCH 0/4] ARM: keystone: pm: switch to use generic pm domains"
+  https://lkml.org/lkml/2014/9/25/364
+
+Geert Uytterhoeven (1):
+  PM / clock_ops: Add pm_clk_add_clk()
+
+Grygorii Strashko (2):
+  ARM: keystone: pm: switch to use generic pm domains
+  ARM: dts: keystone: add generic pm controller node
+
+ .../bindings/power/ti,keystone-powerdomain.txt     |  31 ++++++
+ arch/arm/boot/dts/keystone.dtsi                    |   6 ++
+ arch/arm/mach-keystone/Kconfig                     |   1 +
+ arch/arm/mach-keystone/pm_domain.c                 | 112 ++++++++++++++-------
+ drivers/base/power/clock_ops.c                     |  41 ++++++--
+ include/linux/pm_clock.h                           |   8 ++
+ 6 files changed, 152 insertions(+), 47 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
+
 -- 
 1.9.1
 
