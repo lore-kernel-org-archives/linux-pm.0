@@ -1,37 +1,69 @@
-From: Yao Dongdong <yaodongdong@huawei.com>
-Subject: [PATCH 2/2] Thermal:Remove usless if(!result) before return tz
-Date: Mon, 20 Oct 2014 16:27:59 +0800
-Message-ID: <5444C78F.10404@huawei.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, yaodongdong@huawei.com
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH v8 1/5] PM / Runtime: Add getter for querying the IRQ safe
+ option
+Date: Mon, 20 Oct 2014 11:04:44 +0200
+Message-ID: <1413795888-18559-2-git-send-email-k.kozlowski@samsung.com>
+References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-reply-to: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-result is always zero when comes here.
+Add a simple getter pm_runtime_is_irq_safe() for querying whether runtime
+PM IRQ safe was set or not.
 
-Signed-off-by:yaodongdong@huawei.com
+Various bus drivers implementing runtime PM may use choose to suspend
+differently based on IRQ safeness status of child driver (e.g. do not
+unprepare the clock if IRQ safe is not set).
 
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/thermal/thermal_core.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ Documentation/power/runtime_pm.txt | 4 ++++
+ include/linux/pm_runtime.h         | 6 ++++++
+ 2 files changed, 10 insertions(+)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 5b7d466..19cac8e 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1568,8 +1568,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+index f32ce5419573..397b81593142 100644
+--- a/Documentation/power/runtime_pm.txt
++++ b/Documentation/power/runtime_pm.txt
+@@ -468,6 +468,10 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
+     - set the power.irq_safe flag for the device, causing the runtime-PM
+       callbacks to be invoked with interrupts off
+ 
++  bool pm_runtime_is_irq_safe(struct device *dev);
++    - return true if power.irq_safe flag was set for the device, causing
++      the runtime-PM callbacks to be invoked with interrupts off
++
+   void pm_runtime_mark_last_busy(struct device *dev);
+     - set the power.last_busy field to the current time
+ 
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index 367f49b9a1c9..44d74f0f182e 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -128,6 +128,11 @@ static inline void pm_runtime_mark_last_busy(struct device *dev)
+ 	ACCESS_ONCE(dev->power.last_busy) = jiffies;
+ }
+ 
++static inline bool pm_runtime_is_irq_safe(struct device *dev)
++{
++	return dev->power.irq_safe;
++}
++
+ #else /* !CONFIG_PM_RUNTIME */
+ 
+ static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
+@@ -167,6 +172,7 @@ static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+ 
+ static inline void pm_runtime_no_callbacks(struct device *dev) {}
+ static inline void pm_runtime_irq_safe(struct device *dev) {}
++static inline bool pm_runtime_is_irq_safe(struct device *dev) { return false; }
+ 
+ static inline bool pm_runtime_callbacks_present(struct device *dev) { return false; }
+ static inline void pm_runtime_mark_last_busy(struct device *dev) {}
+-- 
+1.9.1
 
-    thermal_zone_device_update(tz);
-
--   if (!result)
--       return tz;
-+   return tz;
-
- unregister:
-    release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
---
-1.8.0.1
