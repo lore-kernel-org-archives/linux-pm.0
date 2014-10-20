@@ -1,41 +1,89 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v8 5/5] amba: Remove unused amba_pclk_enable/disable macros
-Date: Mon, 20 Oct 2014 11:04:48 +0200
-Message-ID: <1413795888-18559-6-git-send-email-k.kozlowski@samsung.com>
-References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com>
+From: Caesar Wang <caesar.wang@rock-chips.com>
+Subject: [PATCH v12 3/5] ARM: dts: add RK3288 Thermal data
+Date: Mon, 20 Oct 2014 17:53:48 +0800
+Message-ID: <1413798830-23435-4-git-send-email-caesar.wang@rock-chips.com>
+References: <1413798830-23435-1-git-send-email-caesar.wang@rock-chips.com>
 Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <1413798830-23435-1-git-send-email-caesar.wang@rock-chips.com>
 Sender: linux-doc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com
+Cc: zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, vladimir_zapolskiy@mentor.com, Caesar Wang <caesar.wang@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-Remove the amba_pclk_enable and amba_pclk_disable macros because they
-are not used by the drivers.
+This patch changes a dtsi file to contain the thermal data
+on RK3288 and later SoCs. This data will
+enable a thermal shutdown over 125C.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
 ---
- include/linux/amba/bus.h | 6 ------
- 1 file changed, 6 deletions(-)
+ arch/arm/boot/dts/rk3288-thermal.dtsi | 57 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+ create mode 100644 arch/arm/boot/dts/rk3288-thermal.dtsi
 
-diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
-index c4bae79851fb..566adf0e0412 100644
---- a/include/linux/amba/bus.h
-+++ b/include/linux/amba/bus.h
-@@ -92,12 +92,6 @@ struct amba_device *amba_find_device(const char *, struct device *, unsigned int
- int amba_request_regions(struct amba_device *, const char *);
- void amba_release_regions(struct amba_device *);
- 
--#define amba_pclk_enable(d)	\
--	(IS_ERR((d)->pclk) ? 0 : clk_enable((d)->pclk))
--
--#define amba_pclk_disable(d)	\
--	do { if (!IS_ERR((d)->pclk)) clk_disable((d)->pclk); } while (0)
--
- static inline int amba_pclk_prepare(struct amba_device *dev)
- {
- 	return clk_prepare(dev->pclk);
+diff --git a/arch/arm/boot/dts/rk3288-thermal.dtsi b/arch/arm/boot/dts/rk3288-thermal.dtsi
+new file mode 100644
+index 0000000..c68c090
+--- /dev/null
++++ b/arch/arm/boot/dts/rk3288-thermal.dtsi
+@@ -0,0 +1,57 @@
++/*
++ * Device Tree Source for RK3288 SoC thermal
++ *
++ * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2.  This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#include <dt-bindings/thermal/thermal.h>
++
++reserve_thermal: reserve_thermal {
++	polling-delay-passive = <500>; /* milliseconds */
++	polling-delay = <1000>; /* milliseconds */
++
++			/* sensor	ID */
++	thermal-sensors = <&tsadc	0>;
++
++};
++
++cpu_thermal: cpu_thermal {
++	polling-delay-passive = <500>; /* milliseconds */
++	polling-delay = <1000>; /* milliseconds */
++
++			/* sensor	ID */
++	thermal-sensors = <&tsadc	1>;
++
++	trips {
++		cpu_alert0: cpu_alert0 {
++			temperature = <80000>; /* millicelsius */
++			hysteresis = <2000>; /* millicelsius */
++			type = "passive";
++		};
++		cpu_crit: cpu_crit {
++			temperature = <125000>; /* millicelsius */
++			hysteresis = <2000>; /* millicelsius */
++			type = "critical";
++		};
++	};
++};
++
++gpu_thermal: gpu_thermal {
++	polling-delay-passive = <500>; /* milliseconds */
++	polling-delay = <1000>; /* milliseconds */
++
++			/* sensor	ID */
++	thermal-sensors = <&tsadc	2>;
++
++	trips {
++		gpu_crit: gpu_crit {
++			temperature = <125000>; /* millicelsius */
++			hysteresis = <2000>; /* millicelsius */
++			type = "critical";
++		};
++	};
++};
 -- 
 1.9.1
+
 
