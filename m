@@ -1,143 +1,72 @@
-From: Santosh Shilimkar <santosh.shilimkar@gmail.com>
-Subject: Re: [PATCH v2 2/3] ARM: keystone: pm: switch to use generic pm domains
-Date: Tue, 21 Oct 2014 11:05:25 -0700
-Message-ID: <5446A065.9050308@gmail.com>
-References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com> <1413809764-21995-3-git-send-email-grygorii.strashko@ti.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call
+ chain
+Date: Tue, 21 Oct 2014 06:32:25 -0700
+Message-ID: <54466069.5070702@roeck-us.net>
+References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-2-git-send-email-linux@roeck-us.net> <20141021093405.GA2113@localhost> <20141021103007.GI26842@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1413809764-21995-3-git-send-email-grygorii.strashko@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:37519 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbaJUSS0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 14:18:26 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1Xge0o-0030bk-65
+	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 18:18:26 +0000
+In-Reply-To: <20141021103007.GI26842@x1>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Johan Hovold <johan@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, =?UTF-8?B?UGhpbGlwcGUgUsOpdG9ybmF6?= <philippe.retornaz@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 
-On 10/20/2014 05:56 AM, Grygorii Strashko wrote:
-> This patch switches Keystone 2 PM code to use Generic PM domains
-> instead of PM clock domains because of the lack of DT support
-> for the last.
+On 10/21/2014 03:30 AM, Lee Jones wrote:
+> On Tue, 21 Oct 2014, Johan Hovold wrote:
 >
-> Reviewed-by: Kevin Hilman <khilman@linaro.org>
-> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
-> ---
->   .../bindings/power/ti,keystone-powerdomain.txt     |  31 ++++++
->   arch/arm/mach-keystone/Kconfig                     |   1 +
->   arch/arm/mach-keystone/pm_domain.c                 | 112 ++++++++++++++-------
->   3 files changed, 107 insertions(+), 37 deletions(-)
->   create mode 100644 Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
+>> On Mon, Oct 20, 2014 at 09:12:17PM -0700, Guenter Roeck wrote:
+>>
+>>> v2:
+>>> - poweroff -> power_off
+>>
+>> Do you want to stick to power[-_ ]off consistently throughout?
 >
-> diff --git a/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt b/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
-> new file mode 100644
-> index 0000000..4bbf2aa
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
-> @@ -0,0 +1,31 @@
-> +* TI Keystone 2 Generic PM Controller
-> +
-> +The TI Keystone 2 Generic PM Controller is responsible for Clock gating
-> +for each controlled IP module.
-> +
-> +Required properties:
-> +- compatible: Should be "ti,keystone-powerdomain"
-> +- #power-domain-cells: Should be 0, see below:
-> +
-> +The gpc node is a power-controller as documented by the generic power domain
-You renamed gpc but missed to fix the comment ? Pls update it.
+> I guess you'll want to fix all of these before I review the MFD
+> patches?
+>
+>>> - Add defines for default priorities
+>>> - Use raw notifiers protected by spinlocks instead of atomic notifiers
+>>> - Add register_poweroff_handler_simple
+>>> - Add devm_register_power_off_handler
+>>>
+>>>   include/linux/pm.h              |  22 ++++
+>>>   kernel/power/Makefile           |   1 +
+>>>   kernel/power/poweroff_handler.c | 252 ++++++++++++++++++++++++++++++++++++++++
+>>>   3 files changed, 275 insertions(+)
+>>>   create mode 100644 kernel/power/poweroff_handler.c
+>>>
+>>> diff --git a/include/linux/pm.h b/include/linux/pm.h
+>>> index 383fd68..7e0cb36 100644
+>>> --- a/include/linux/pm.h
+>>> +++ b/include/linux/pm.h
+>>> @@ -34,7 +34,29 @@
+>>>   extern void (*pm_power_off)(void);
+>>>   extern void (*pm_power_off_prepare)(void);
+>>>
+>>> +/*
+>>> + * Callbacks to manage poweroff handlers
+>>
+>> power-off
+>
+> power_off, no?
+>
+That is describing text, so hopefully I can use real words here and
+don't have to use a term derived from variable and function names.
 
-> +bindings in Documentation/devicetree/bindings/power/power_domain.txt.
-> +
-> +Example:
-> +
-> +	pm_controller: pm-controller {
-> +		compatible = "ti,keystone-powerdomain";
-> +		#power-domain-cells = <0>;
-> +	};
-> +
-> +	netcp: netcp@2090000 {
-> +		reg = <0x2620110 0x8>;
-> +		reg-names = "efuse";
-> +		...
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		ranges;
-> +		power-domains = <&pm_controller>;
-> +
-> +		clocks = <&clkpa>, <&clkcpgmac>, <&chipclk12>;
-> +		dma-coherent;
-> +	}
-> diff --git a/arch/arm/mach-keystone/Kconfig b/arch/arm/mach-keystone/Kconfig
-> index 98a156a..de43107 100644
-> --- a/arch/arm/mach-keystone/Kconfig
-> +++ b/arch/arm/mach-keystone/Kconfig
-> @@ -9,6 +9,7 @@ config ARCH_KEYSTONE
->   	select COMMON_CLK_KEYSTONE
->   	select ARCH_SUPPORTS_BIG_ENDIAN
->   	select ZONE_DMA if ARM_LPAE
-> +	select PM_GENERIC_DOMAINS if PM
->   	help
->   	  Support for boards based on the Texas Instruments Keystone family of
->   	  SoCs.
-> diff --git a/arch/arm/mach-keystone/pm_domain.c b/arch/arm/mach-keystone/pm_domain.c
-> index ca79dda..d58759d 100644
-> --- a/arch/arm/mach-keystone/pm_domain.c
-> +++ b/arch/arm/mach-keystone/pm_domain.c
-> @@ -12,69 +12,107 @@
->    * version 2, as published by the Free Software Foundation.
->    */
->
-> +#include <linux/clk.h>
->   #include <linux/init.h>
-> -#include <linux/pm_runtime.h>
->   #include <linux/pm_clock.h>
-> +#include <linux/pm_domain.h>
->   #include <linux/platform_device.h>
-> -#include <linux/clk-provider.h>
->   #include <linux/of.h>
->
-> -#ifdef CONFIG_PM_RUNTIME
-> -static int keystone_pm_runtime_suspend(struct device *dev)
-> +#ifdef CONFIG_PM_GENERIC_DOMAINS
-> +
-> +struct keystone_domain {
-> +	struct generic_pm_domain genpd;
-> +	struct device	*dev;
-> +};
-> +
-> +void keystone_pm_domain_attach_dev(struct device *dev)
->   {
-> +	struct clk *clk;
->   	int ret;
-> +	int i = 0;
->
->   	dev_dbg(dev, "%s\n", __func__);
->
-> -	ret = pm_generic_runtime_suspend(dev);
-> -	if (ret)
-> -		return ret;
-> -
-> -	ret = pm_clk_suspend(dev);
-> +	ret = pm_clk_create(dev);
->   	if (ret) {
-> -		pm_generic_runtime_resume(dev);
-> -		return ret;
-> +		dev_err(dev, "pm_clk_create failed %d\n", ret);
-> +		return;
-> +	};
-> +
-> +	while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
-> +		ret = pm_clk_add_clk(dev, clk);
-> +		if (ret) {
-> +			dev_err(dev, "pm_clk_add_clk failed %d\n", ret);
-> +			goto clk_err;
-> +		};
->   	}
->
-> -	return 0;
-> +	if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
-Can we not okkup two seperate callbacks instead of above check ?
-I don't like this CONFIG check here. Its slightly better version of
-ifdef in middle of the code.
+Sure, I can change poweroff in all describing text to power-off
+if that is preferred, no big deal.
 
-Regards,
-Santosh
+Thanks,
+Guenter
+
