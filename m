@@ -1,76 +1,177 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: lockdep splat in CPU hotplug
-Date: Tue, 21 Oct 2014 09:23:30 -0700
-Message-ID: <20141021162330.GJ4977@linux.vnet.ibm.com>
-References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz>
- <20141021151043.GA11800@redhat.com>
- <alpine.LNX.2.00.1410211717210.24255@pobox.suse.cz>
- <20141021160029.GH4977@linux.vnet.ibm.com>
- <alpine.LNX.2.00.1410211802500.24255@pobox.suse.cz>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH] arm64: dts: exynos7: add support for cpuidle core power
+ down
+Date: Tue, 21 Oct 2014 17:33:41 +0100
+Message-ID: <20141021163341.GB17610@e102568-lin.cambridge.arm.com>
+References: <1413354920-20165-1-git-send-email-k.chander@samsung.com>
+ <20141015090047.GA26484@red-moon>
+ <CADWw7Ojgttk3cjaac=GGL1D9pejCJw8sJB2JvPFWtyBh3JHYKA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:38039 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932569AbaJUQdp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 12:33:45 -0400
+In-Reply-To: <CADWw7Ojgttk3cjaac=GGL1D9pejCJw8sJB2JvPFWtyBh3JHYKA@mail.gmail.com>
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.1410211802500.24255@pobox.suse.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Dave Jones <davej@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chander Kashyap <k.chander@samsung.com>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tue, Oct 21, 2014 at 06:04:52PM +0200, Jiri Kosina wrote:
-> On Tue, 21 Oct 2014, Paul E. McKenney wrote:
+On Fri, Oct 17, 2014 at 10:43:59AM +0100, Chander Kashyap wrote:
+> Hi Lorenzo,
 > 
-> > > Looks like this indeed is something that lockdep *should* report (*), 
-> > > although I would be suprised that stack unwinder would be so confused 
-> > > by this -- there is no way for synchronize_sched_expedited() to be 
-> > > inlined all the way to cpuidle_pause().
-> > 
-> > I think that if synchronize_sched_expedited() was in fact called, it
-> > had already returned by the time we hit this problem.  But I must confess
-> > that I am not seeing how cpuidle_uninstall_idle_handler() gets to
-> > synchronize_rcu().
+> On Wed, Oct 15, 2014 at 2:30 PM, Lorenzo Pieralisi
+> <lorenzo.pieralisi@arm.com> wrote:
+> > On Wed, Oct 15, 2014 at 07:35:20AM +0100, Chander Kashyap wrote:
+> >> Exynos7 has core power down state where cores can be powered off independently.
+> >> This patch adds support for this state.
+> >
+> > Please tell us more about the idle-state values you are adding, in particular
+> > entry, exit latencies and min-residency values.
 > 
-> Umm, it directly calls it? :-)
+> Entry latency: This value is calculated as follows:
 > 
-> 	void cpuidle_uninstall_idle_handler(void)
-> 	{
-> 		if (enabled_devices) {
-> 			initialized = 0;
-> 			wake_up_all_idle_cpus();
-> 		}
+> On entry to arm64_enter_idle_state:
+> timestamp1 = ktimeget();
 > 
-> 		/*
-> 		 * Make sure external observers (such as the scheduler)
-> 		 * are done looking at pointed idle states.
-> 		 */
-> 		synchronize_rcu();
-> 	}
-
-Ah, it would help if I did "git checkout linus/master" after updating,
-wouldn't it now?
-
-> > > (*) there are multiple places where cpu_hotplug.lock -> cpuidle_lock lock 
-> > >     dependency is assumed. The patch that Dave pointed out adds 
-> > >     cpuidle_lock -> cpu_hotplug.lock dependency.
-> > > 
-> > > Still not clear whether this is what's happening here ... anyway, adding 
-> > > Paul to CC.
-> > 
-> > Hmmm...
-> > 
-> > Both cpuidle_pause() and cpuidle_pause_and_lock() acquire cpuidle_lock,
-> > and are at the top of both stacks.  Which was the original confusion.  ;-)
+> after returning from cpu_suspend()
 > 
-> Yup, they are, but lockdep is complaining about cpuidle_pause() acquiring 
-> cpu_hotplug.lock ...
+> timestamp2 = ktimeget();
+> 
+> latency = timestamp2-timestamp1;
+> 
+> Cpu is not allowed to enter core powerdown by skipping wfi instruction at end.
+This may not be the worst case (because the worst case depends on the state
+of the cache in the core unless the latency is power down command dominated,
+so at the cost of being pedantic, please make sure that's what you are
+measuring and document it in the commit log).
 
-If it was attempting to acquire it via synchronize_sched_expedited(),
-the attempt would fail and synchronize_sched_expedited() would fall
-back to synchronize_sched()'s normal grace-period mechanism.  (Not to
-synchronize_sched() itself, of course, as that would be infinite
-recursion.)
+> Hence calculated time contains entry time + failure exit time.
+> 
+> 
+> Regarding
+> exit-latency and target-residency time, got these values from HW team.
+> 
+> I am using these as initial values and I will be working on optimizing
+> these values with further experiments.
+> If you could suggest any formal method of deriving these values, i can
+> try those methods as well.
 
-So I believe that something else is going on here.
+Well, you have to set the core/cluster in worst case scenario and
+compute the break-even residency against wfi (since you have two
+states); it certainly has a dependency on PSCI implementation too among
+other things.
 
-							Thanx, Paul
+exit-latency should come from HW design even though there is a cache
+refill factor to be considered too and should be factored in.
+
+Lorenzo
+
+> 
+> >
+> >> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+> >> ---
+> >> This patch has following dependencies:
+> >>       - [PATCH v5 0/8] arch: arm64: Enable support for Samsung Exynos7 SoC
+> >>               http://www.spinics.net/lists/linux-samsung-soc/msg37047.html
+> >>       - [PATCH v9 0/8] ARM generic idle states
+> >>               http://permalink.gmane.org/gmane.linux.power-management.general/49224
+> >
+> > Series above was merged, so dependency is stale.
+> 
+> i will remove this
+> 
+> >
+> >>  arch/arm64/boot/dts/exynos/exynos7.dtsi |   18 ++++++++++++++++++
+> >>  1 file changed, 18 insertions(+)dont
+> >>
+> >> diff --git a/arch/arm64/boot/dts/exynos/exynos7.dtsi b/arch/arm64/boot/dts/exynos/exynos7.dtsi
+> >> index ce221ac..8e0a034 100644
+> >> --- a/arch/arm64/boot/dts/exynos/exynos7.dtsi
+> >> +++ b/arch/arm64/boot/dts/exynos/exynos7.dtsi
+> >> @@ -36,6 +36,7 @@
+> >>                       device_type = "cpu";
+> >>                       compatible = "arm,cortex-a57", "arm,armv8";
+> >>                       enable-method = "psci";
+> >> +                     cpu-idle-states = <&CPU_SLEEP>;
+> >
+> > I would add cpu-idle-states phandle after the reg property, as defined
+> > in the idle states bindings.
+> 
+> i will move this after reg property.
+> 
+> >
+> >>                       reg = <0x0>;
+> >>               };
+> >>
+> >> @@ -43,6 +44,7 @@
+> >>                       device_type = "cpu";
+> >>                       compatible = "arm,cortex-a57", "arm,armv8";
+> >>                       enable-method = "psci";
+> >> +                     cpu-idle-states = <&CPU_SLEEP>;
+> >>                       reg = <0x1>;
+> >>               };
+> >>
+> >> @@ -50,6 +52,7 @@
+> >>                       device_type = "cpu";
+> >>                       compatible = "arm,cortex-a57", "arm,armv8";
+> >>                       enable-method = "psci";
+> >> +                     cpu-idle-states = <&CPU_SLEEP>;
+> >>                       reg = <0x2>;
+> >>               };
+> >>
+> >> @@ -57,8 +60,23 @@
+> >>                       device_type = "cpu";
+> >>                       compatible = "arm,cortex-a57", "arm,armv8";
+> >>                       enable-method = "psci";
+> >> +                     cpu-idle-states = <&CPU_SLEEP>;
+> >>                       reg = <0x3>;
+> >>               };
+> >> +
+> >> +             idle-states {
+> >> +                     entry-method = "arm,psci";
+> >> +
+> >> +                     CPU_SLEEP: cpu-sleep {
+> >> +                             compatible = "arm,idle-state";
+> >> +                             local-timer-stop;
+> >> +                             arm,psci-suspend-param = <0x0010000>;
+> >> +                             entry-latency-us = <20>;
+> >> +                             exit-latency-us = <150>;
+> >> +                             min-residency-us = <2100>;
+> >> +                             status = "enabled";
+> >
+> > status ? This is not a documented property. If you need it please explain
+> > why, define its bindings and we can see how to accommodate it.
+> 
+> I will add okay for status property. As per the bindings posted by you.
+> 
+> regards,
+> >
+> > Thank you,
+> > Lorenzo
+> >
+> >> +                     };
+> >> +             };
+> >>       };
+> >>
+> >>       psci {
+> >> --
+> >> 1.7.9.5
+> >>
+> >>
+> >
+> >
+> > _______________________________________________
+> > linux-arm-kernel mailing list
+> > linux-arm-kernel@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
