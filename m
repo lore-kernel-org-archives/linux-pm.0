@@ -1,172 +1,104 @@
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH 1/8] memory: atmel-sdramc: export a shutdown function
-Date: Tue, 21 Oct 2014 23:55:33 +0200
-Message-ID: <1413928540-27099-2-git-send-email-alexandre.belloni@free-electrons.com>
+Subject: [PATCH 4/8] ARM: at91: sam9g45/sam9rl: probe the ramc driver
+Date: Tue, 21 Oct 2014 23:55:36 +0200
+Message-ID: <1413928540-27099-5-git-send-email-alexandre.belloni@free-electrons.com>
 References: <1413928540-27099-1-git-send-email-alexandre.belloni@free-electrons.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1413928540-27099-1-git-send-email-alexandre.belloni@free-electrons.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-It is necessary to shutdown the SDRAM before resetting the SoC to avoid having
-issue with NAND boot.
-
-Export a function that does exactly that.
+Probe the atmel-sdramc driver from the board files, using platform_data.
 
 Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- drivers/memory/atmel-sdramc.c | 90 +++++++++++++++++++++++++++++++++++++++++++
- include/soc/atmel/memory.h    |  6 +++
- 2 files changed, 96 insertions(+)
- create mode 100644 include/soc/atmel/memory.h
+ arch/arm/mach-at91/at91sam9g45.c | 20 ++++++++++++++++++++
+ arch/arm/mach-at91/at91sam9rl.c  | 15 +++++++++++++++
+ 2 files changed, 35 insertions(+)
 
-diff --git a/drivers/memory/atmel-sdramc.c b/drivers/memory/atmel-sdramc.c
-index fed04e8efe75..148906dabe55 100644
---- a/drivers/memory/atmel-sdramc.c
-+++ b/drivers/memory/atmel-sdramc.c
-@@ -21,24 +21,101 @@
- #include <linux/err.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/of_address.h>
- #include <linux/of_platform.h>
- #include <linux/platform_device.h>
- 
-+#include <soc/atmel/memory.h>
-+
-+#define AT91_SDRAMC_TR		0x04	/* SDRAM Controller Refresh Timer Register */
-+#define AT91_SDRAMC_LPR		0x10	/* SDRAM Controller Low Power Register */
-+#define			AT91_SDRAMC_LPCB_POWER_DOWN		2
-+
-+#define AT91_DDRSDRC_RTR	0x04	/* Refresh Timer Register */
-+#define AT91_DDRSDRC_LPR	0x1C	/* Low Power Register */
-+#define			AT91_DDRSDRC_LPCB_POWER_DOWN		2
-+
-+static void __iomem *at91_ramc_base[2];
-+
-+void (*at91_ramc_shutdown)(void);
-+
- struct at91_ramc_caps {
- 	bool has_ddrck;
- 	bool has_mpddr_clk;
-+	void (*shutdown)(void);
+diff --git a/arch/arm/mach-at91/at91sam9g45.c b/arch/arm/mach-at91/at91sam9g45.c
+index 405427ec05f8..202d9438e1d9 100644
+--- a/arch/arm/mach-at91/at91sam9g45.c
++++ b/arch/arm/mach-at91/at91sam9g45.c
+@@ -415,6 +415,25 @@ static struct platform_device rstc_device = {
+ 	.num_resources  = ARRAY_SIZE(rstc_resources),
  };
  
-+void at91sam9260_shutdown(void)
-+{
-+	pr_err("%s +%d %s\n", __FILE__, __LINE__, __func__);
-+	asm volatile(
-+		/* Align to cache lines */
-+		".balign 32\n\t"
-+
-+		/* Disable SDRAM accesses */
-+		"str	%1, [%0, #" __stringify(AT91_SDRAMC_TR) "]\n\t"
-+
-+		/* Power down SDRAM */
-+		"str	%2, [%0, #" __stringify(AT91_SDRAMC_LPR) "]\n\t"
-+
-+		:
-+		: "r" (at91_ramc_base[0]),
-+		  "r" (1),
-+		  "r" (AT91_SDRAMC_LPCB_POWER_DOWN));
-+}
-+
-+void at91sam9g45_shutdown(void)
-+{
-+	asm volatile(
-+		/*
-+		 * Test wether we have a second RAM controller to care
-+		 * about.
-+		 *
-+		 * First, test that we can dereference the virtual address.
-+		 */
-+		"cmp	%1, #0\n\t"
-+		"beq	1f\n\t"
-+
-+		/* Then, test that the RAM controller is enabled */
-+		"ldr	r0, [%1]\n\t"
-+		"cmp	r0, #0\n\t"
-+
-+		/* Align to cache lines */
-+		".balign 32\n\t"
-+
-+		/* Disable SDRAM0 accesses */
-+		"1:	str	%2, [%0, #" __stringify(AT91_DDRSDRC_RTR) "]\n\t"
-+		/* Power down SDRAM0 */
-+		"	str	%3, [%0, #" __stringify(AT91_DDRSDRC_LPR) "]\n\t"
-+		/* Disable SDRAM1 accesses */
-+		"	strne	%2, [%1, #" __stringify(AT91_DDRSDRC_RTR) "]\n\t"
-+		/* Power down SDRAM1 */
-+		"	strne	%3, [%1, #" __stringify(AT91_DDRSDRC_LPR) "]\n\t"
-+
-+		:
-+		: "r" (at91_ramc_base[0]),
-+		  "r" (at91_ramc_base[1]),
-+		  "r" (1),
-+		  "r" (AT91_DDRSDRC_LPCB_POWER_DOWN)
-+		: "r0");
-+}
-+
- static const struct at91_ramc_caps at91rm9200_caps = { };
- 
-+static const struct at91_ramc_caps at91sam9260_caps = {
-+	.shutdown = at91sam9260_shutdown,
++static struct resource ramc_resources[] = {
++	[0] = {
++		.start  = AT91SAM9G45_BASE_DDRSDRC1,
++		.end    = AT91SAM9G45_BASE_DDRSDRC1 + SZ_512 - 1,
++		.flags  = IORESOURCE_MEM,
++	},
++	[1] = {
++		.start  = AT91SAM9G45_BASE_DDRSDRC0,
++		.end    = AT91SAM9G45_BASE_DDRSDRC0 + SZ_512 - 1,
++		.flags  = IORESOURCE_MEM,
++	},
 +};
 +
- static const struct at91_ramc_caps at91sam9g45_caps = {
- 	.has_ddrck = 1,
- 	.has_mpddr_clk = 0,
-+	.shutdown = at91sam9g45_shutdown,
- };
++static struct platform_device rstc_device = {
++	.name           = "at91-sam9g45-ramc",
++	.resource       = ramc_resources,
++	.num_resources  = ARRAY_SIZE(ramc_resources),
++};
++
+ static struct resource shdwc_resources[] = {
+ 	[0] = {
+ 		.start  = AT91SAM9G45_BASE_SHDWC,
+@@ -431,6 +450,7 @@ static struct platform_device shdwc_device = {
  
- static const struct at91_ramc_caps sama5d3_caps = {
- 	.has_ddrck = 1,
- 	.has_mpddr_clk = 1,
-+	.shutdown = at91sam9g45_shutdown,
- };
- 
- static const struct of_device_id atmel_ramc_of_match[] = {
-@@ -54,7 +131,9 @@ static int atmel_ramc_probe(struct platform_device *pdev)
+ static void __init at91sam9g45_register_devices(void)
  {
- 	const struct of_device_id *match;
- 	const struct at91_ramc_caps *caps;
-+	struct device_node *np;
- 	struct clk *clk;
-+	int idx = 0;
- 
- 	match = of_match_device(atmel_ramc_of_match, &pdev->dev);
- 	caps = match->data;
-@@ -75,6 +154,17 @@ static int atmel_ramc_probe(struct platform_device *pdev)
- 		clk_prepare_enable(clk);
- 	}
- 
-+	for_each_matching_node(np, atmel_ramc_of_match) {
-+		at91_ramc_base[idx] = of_iomap(np, 0);
-+		if (!at91_ramc_base[idx]) {
-+			dev_err(&pdev->dev, "Could not map ram controller address\n");
-+			return -ENODEV;
-+		}
-+		idx++;
-+	}
-+
-+	at91_ramc_shutdown = caps->shutdown;
-+
- 	return 0;
++	platform_device_register(&ramc_device);
+ 	platform_device_register(&rstc_device);
+ 	platform_device_register(&shdwc_device);
  }
+diff --git a/arch/arm/mach-at91/at91sam9rl.c b/arch/arm/mach-at91/at91sam9rl.c
+index f553e4ea034b..0e2cb3361b15 100644
+--- a/arch/arm/mach-at91/at91sam9rl.c
++++ b/arch/arm/mach-at91/at91sam9rl.c
+@@ -348,6 +348,20 @@ static struct platform_device rstc_device = {
+ 	.num_resources  = ARRAY_SIZE(rstc_resources),
+ };
  
-diff --git a/include/soc/atmel/memory.h b/include/soc/atmel/memory.h
-new file mode 100644
-index 000000000000..04cc1261e636
---- /dev/null
-+++ b/include/soc/atmel/memory.h
-@@ -0,0 +1,6 @@
-+#ifndef __INCLUDE_ATMEL_MEMORY_H
-+#define __INCLUDE_ATMEL_MEMORY_H
++static struct resource ramc_resources[] = {
++	[0] = {
++		.start  = AT91SAM9RL_BASE_SDRAMC,
++		.end    = AT91SAM9RL_BASE_SDRAMC + SZ_512 - 1,
++		.flags  = IORESOURCE_MEM,
++	},
++};
 +
-+extern void (*at91_ramc_shutdown)(void);
++static struct platform_device ramc_device = {
++	.name           = "at91-sam9260-ramc",
++	.resource       = ramc_resources,
++	.num_resources  = ARRAY_SIZE(ramc_resources),
++};
 +
-+#endif /* __INCLUDE_ATMEL_MEMORY_H */
+ static struct resource shdwc_resources[] = {
+ 	[0] = {
+ 		.start  = AT91SAM9RL_BASE_SHDWC,
+@@ -364,6 +378,7 @@ static struct platform_device shdwc_device = {
+ 
+ static void __init at91sam9rl_register_devices(void)
+ {
++	platform_device_register(&ramc_device);
+ 	platform_device_register(&rstc_device);
+ 	platform_device_register(&shdwc_device);
+ }
 -- 
 1.9.1
