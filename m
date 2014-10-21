@@ -1,61 +1,44 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 05/47] mfd: as3722: Drop reference to pm_power_off
- from devicetree bindings
-Date: Tue, 21 Oct 2014 09:15:15 +0100
-Message-ID: <20141021081515.GD26842@x1>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
- <1413864783-3271-6-git-send-email-linux@roeck-us.net>
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+Subject: RE: [PATCH] cpufreq: qoriq: Make the driver usable on all QorIQ
+ platforms
+Date: Tue, 21 Oct 2014 08:25:42 +0000
+Message-ID: <8cf6bdb05e9b4d04994366db335f3a52@DM2PR03MB574.namprd03.prod.outlook.com>
+References: <1413515616-15874-1-git-send-email-B29983@freescale.com>
+ <8F5E4DA7-8A64-4614-91E7-BFB28D91C737@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1413864783-3271-6-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <8F5E4DA7-8A64-4614-91E7-BFB28D91C737@kernel.crashing.org>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 20 Oct 2014, Guenter Roeck wrote:
-
-> Devicetree bindings are supposed to be operating system independent
-> and should thus not describe how a specific functionality is implemen=
-ted
-> in Linux.
->=20
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Acked-by: Mark Rutland <mark.rutland@arm.com>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
-> v2: No change
->=20
->  Documentation/devicetree/bindings/mfd/as3722.txt | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-
-Acked-by: Lee Jones <lee.jones@linaro.org>
-
-> diff --git a/Documentation/devicetree/bindings/mfd/as3722.txt b/Docum=
-entation/devicetree/bindings/mfd/as3722.txt
-> index 4f64b2a..0b2a609 100644
-> --- a/Documentation/devicetree/bindings/mfd/as3722.txt
-> +++ b/Documentation/devicetree/bindings/mfd/as3722.txt
-> @@ -122,8 +122,7 @@ Following are properties of regulator subnode.
-> =20
->  Power-off:
->  =3D=3D=3D=3D=3D=3D=3D=3D=3D
-> -AS3722 supports the system power off by turning off all its rail. Th=
-is
-> -is provided through pm_power_off.
-> +AS3722 supports the system power off by turning off all its rails.
->  The device node should have the following properties to enable this
->  functionality
->  ams,system-power-controller: Boolean, to enable the power off functi=
-onality
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+PiA+ICNpZm5kZWYgQ09ORklHX1NNUAo+ID4gc3RhdGljIGlubGluZSBjb25zdCBzdHJ1Y3QgY3B1
+bWFzayAqY3B1X2NvcmVfbWFzayhpbnQgY3B1KSB7IEBAIC03OSw2Cj4gPiArNzUsNzkgQEAgc3Rh
+dGljIGlubGluZSBjb25zdCBzdHJ1Y3QgY3B1bWFzayAqY3B1X2NvcmVfbWFzayhpbnQgY3B1KSB9
+Cj4gPiAjZW5kaWYKPiA+Cj4gPiArI2lmIGRlZmluZWQoQ09ORklHX1BQQ19FNTAwTUMpCj4gCj4g
+UHJvYmFibHkgc2hvdWxkIGp1c3QgYmUgQ09ORklHX1BQQywgYnV0IGRvIHdlIG5lZWQgdGhpcyBh
+dCBhbGwuICBDYW4ndCB3ZSBqdXN0Cj4gdXNlIHRvcG9sb2d5X2NvcmVfaWQoKSBvbiBib3RoIEFS
+TSAmIFBQQz8KPiAKdG9wb2xvZ3lfY29yZV9pZCgpIGRvZXNuJ3Qgd29yayBvbiBQUEMuClRoaXMg
+ZnVuY3Rpb24gb25seSBzdXBwb3J0cyBQUEM2NCBhbmQgbm9uLXRocmVhZCBTT0NzLgoKSSBjYW4g
+bWFrZSBpdCB3b3JrIG9uIFBQQywgYnV0IHdlIGFyZSB1c2VkIHRvIHVzZSBnZXRfaGFyZF9zbXBf
+cHJvY2Vzc29yX2lkKCkgb24gcHBjLgoKUmVnYXJkcywKWXVhbnRpYW4KCj4gPiArc3RhdGljIGlu
+dCBnZXRfY3B1X3BoeXNpY2FsX2lkKGludCBjcHUpIHsKPiA+ICsJcmV0dXJuIGdldF9oYXJkX3Nt
+cF9wcm9jZXNzb3JfaWQoY3B1KTsgfSAjZWxpZiBkZWZpbmVkKENPTkZJR19BUk0pCj4gPiArc3Rh
+dGljIGludCBnZXRfY3B1X3BoeXNpY2FsX2lkKGludCBjcHUpIHsKPiA+ICsJcmV0dXJuIHRvcG9s
+b2d5X2NvcmVfaWQoY3B1KTsKPiA+ICt9Cj4gPiArI2VuZGlmCj4gPiArCgpfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYgbWFpbGluZyBs
+aXN0CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMub3psYWJzLm9y
+Zy9saXN0aW5mby9saW51eHBwYy1kZXY=
