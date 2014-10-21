@@ -1,123 +1,100 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call
- chain
-Date: Tue, 21 Oct 2014 11:34:05 +0200
-Message-ID: <20141021093405.GA2113@localhost>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
- <1413864783-3271-2-git-send-email-linux@roeck-us.net>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC Patch 1/4] mfd: AXP20x: Add power supply
+ bindings documentation
+Date: Tue, 21 Oct 2014 11:15:03 +0100
+Message-ID: <20141021101503.GE26842@x1>
+References: <20141020221959.2f312906@neptune.home>
+ <20141020223314.0484f795@neptune.home>
+Reply-To: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f175.google.com ([209.85.217.175]:33825 "EHLO
-	mail-lb0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751031AbaJUJhL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 05:37:11 -0400
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-sunxi+bncBDA7X7F2WUEBBLPETCRAKGQEWGFOYOA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+In-Reply-To: <20141020223314.0484f795-hY15tx4IgV39zxVx7UNMDg@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
 Content-Disposition: inline
-In-Reply-To: <1413864783-3271-2-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+To: Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+Cc: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Olliver Schinagl <oliver+list-dxLnbx3+1qmEVqv0pETR8A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Philippe =?iso-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 
-On Mon, Oct 20, 2014 at 09:12:17PM -0700, Guenter Roeck wrote:
+On Mon, 20 Oct 2014, Bruno Pr=C3=A9mont wrote:
 
-> v2:
-> - poweroff -> power_off
+>=20
+> ---
+> Note: the OCV values seem to have some defaults build into the
+> PMIC though may need adjustment if the used battery has a different
+> open circuit voltage curve.
+> As far as understood (these values are set in vendor driver but not
+> mentioned in chip documentation) they represent charge percentage
+> for some predefined voltages.
+>=20
+> If prefixing these values with "x-power," is preferred the following
+> patch should becomes a dependency:
+>   http://lists.infradead.org/pipermail/linux-arm-kernel/2014-June/267606.=
+html
+> and users in patch 2/4, 4/4 need adjusting.
+>=20
+>=20
+>  Documentation/devicetree/bindings/mfd/axp20x.txt |   20 +
+>  1 files changed, 20 insertions(+), 0 deletion(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/mfd/axp20x.txt b/Documenta=
+tion/devicetree/bindings/mfd/axp20x.txt
+> index cc9e01b..8ea681c 100644
+> --- a/Documentation/devicetree/bindings/mfd/axp20x.txt
+> +++ b/Documentation/devicetree/bindings/mfd/axp20x.txt
+> @@ -28,6 +28,20 @@ Required properties:
+>  		      (range: 750-1875). Default: 1.5MHz
+> =20
+>  Optional properties for DCDCs:
+> +- backup: Settings for backup/RTC battery charger
+> +	  (Voltage in =C2=B5V, current in =C2=B5A)
+> +	  If not present, charger will be left untouched
+> +- battery.ocv: OCV capacity curve points (16 data values)
+> +- battery.resistance: internal battery resistance in m=CE=A9
+> +                      (defaults to 100m=CE=A9)
+> +- battery.capacity: Battery capacity in mAh
+> +		    If this attribute is missing, charger will be disabled
+> +		    unless there is a battery connected.
+> +- battery.temp_sensor: Description of temperautre sensor, 3 values
+> +		       - driver current (20=C2=B5A, 40=C2=B5A, 60=C2=B5A or 80=C2=B5A)
+> +		       - low temperature warning level (in =C2=B5V)
+> +		       - high temperature warning level (in =C2=B5V)
+> +		       If missing, temperature sensor gets disabled
+>  - x-powers,dcdc-workmode: 1 for PWM mode, 0 for AUTO mode
+>  			  Default: AUTO mode
+> =20
+> @@ -49,6 +63,12 @@ axp209: pmic@34 {
+>  	ldo3in-supply =3D <&axp_ipsout_reg>;
+>  	ldo5in-supply =3D <&axp_ipsout_reg>;
+> =20
+> +	backup =3D <3000000 200>;
+> +	battery.ocv =3D <0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0>;
+> +	battery.resistance =3D <0>;
+> +	battery.capacity =3D <2000>;
+> +	battery.temp_sensor =3D <20 1000000 4000000>;
 
-Do you want to stick to power[-_ ]off consistently throughout?
+Since when do we use '.'s in property names?
 
-> - Add defines for default priorities
-> - Use raw notifiers protected by spinlocks instead of atomic notifiers
-> - Add register_poweroff_handler_simple
-> - Add devm_register_power_off_handler
-> 
->  include/linux/pm.h              |  22 ++++
->  kernel/power/Makefile           |   1 +
->  kernel/power/poweroff_handler.c | 252 ++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 275 insertions(+)
->  create mode 100644 kernel/power/poweroff_handler.c
-> 
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 383fd68..7e0cb36 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -34,7 +34,29 @@
->  extern void (*pm_power_off)(void);
->  extern void (*pm_power_off_prepare)(void);
->  
-> +/*
-> + * Callbacks to manage poweroff handlers
+>  	regulators {
+>  		x-powers,dcdc-freq =3D <1500>;
+> =20
 
-power-off
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
 
-> + */
-> +
-> +struct notifier_block;
->  struct device; /* we have a circular dep with device.h */
-> +
-> +int register_power_off_handler(struct notifier_block *);
-> +int devm_register_power_off_handler(struct device *, struct notifier_block *);
-> +int register_power_off_handler_simple(void (*function)(void), int priority);
-> +int unregister_power_off_handler(struct notifier_block *);
-> +void do_kernel_power_off(void);
-> +bool have_kernel_power_off(void);
-> +
-> +/*
-> + * Pre-defined poweroff handler priorities
-
-power-off
-
-> + */
-> +#define POWEROFF_PRIORITY_FALLBACK	0
-> +#define POWEROFF_PRIORITY_LOW		64
-> +#define POWEROFF_PRIORITY_DEFAULT	128
-> +#define POWEROFF_PRIORITY_HIGH		192
-> +#define POWEROFF_PRIORITY_HIGHEST	255
-
-I think at least these ones should match the interface function and have
-a POWER_OFF_PRIORITY_ prefix.
-
-> +
->  #ifdef CONFIG_VT_CONSOLE_SLEEP
->  extern void pm_vt_switch_required(struct device *dev, bool required);
->  extern void pm_vt_switch_unregister(struct device *dev);
-> diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-> index 29472bf..4d9f0c7 100644
-> --- a/kernel/power/Makefile
-> +++ b/kernel/power/Makefile
-> @@ -2,6 +2,7 @@
->  ccflags-$(CONFIG_PM_DEBUG)	:= -DDEBUG
->  
->  obj-y				+= qos.o
-> +obj-y				+= poweroff_handler.o
->  obj-$(CONFIG_PM)		+= main.o
->  obj-$(CONFIG_VT_CONSOLE_SLEEP)	+= console.o
->  obj-$(CONFIG_FREEZER)		+= process.o
-> diff --git a/kernel/power/poweroff_handler.c b/kernel/power/poweroff_handler.c
-> new file mode 100644
-> index 0000000..aeb4736
-> --- /dev/null
-> +++ b/kernel/power/poweroff_handler.c
-
-power_off_handler.c?
-
-> @@ -0,0 +1,252 @@
-> +/*
-> + * linux/kernel/power/poweroff_handler.c - Poweroff handling functions
-> + *
-> + * Copyright (c) 2014 Guenter Roeck
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public Licence
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the Licence, or (at your option) any later version.
-> + */
-> +
-> +#define pr_fmt(fmt)	"poweroff: " fmt
-
-power-off:?
-
-There's a bunch of these introduced by the driver patches as well (e.g.
-poweroff_nb).
-
-Johan
+--=20
+You received this message because you are subscribed to the Google Groups "=
+linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
