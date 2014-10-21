@@ -1,61 +1,63 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: Jiri Kosina <jkosina@suse.cz>
 Subject: Re: lockdep splat in CPU hotplug
-Date: Tue, 21 Oct 2014 09:00:29 -0700
-Message-ID: <20141021160029.GH4977@linux.vnet.ibm.com>
-References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz>
- <20141021151043.GA11800@redhat.com>
- <alpine.LNX.2.00.1410211717210.24255@pobox.suse.cz>
-Reply-To: paulmck@linux.vnet.ibm.com
+Date: Tue, 21 Oct 2014 18:04:52 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1410211802500.24255@pobox.suse.cz>
+References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz> <20141021151043.GA11800@redhat.com> <alpine.LNX.2.00.1410211717210.24255@pobox.suse.cz> <20141021160029.GH4977@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.1410211717210.24255@pobox.suse.cz>
+In-Reply-To: <20141021160029.GH4977@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jiri Kosina <jkosina@suse.cz>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Cc: Dave Jones <davej@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 21, 2014 at 05:21:21PM +0200, Jiri Kosina wrote:
-> On Tue, 21 Oct 2014, Dave Jones wrote:
+On Tue, 21 Oct 2014, Paul E. McKenney wrote:
+
+> > Looks like this indeed is something that lockdep *should* report (*), 
+> > although I would be suprised that stack unwinder would be so confused 
+> > by this -- there is no way for synchronize_sched_expedited() to be 
+> > inlined all the way to cpuidle_pause().
 > 
-> >  > I am seeing the lockdep report below when resuming from suspend-to-disk 
-> >  > with current Linus' tree (c2661b80609).
-> >  > 
-> >  > The reason for CCing Ingo and Peter is that I can't make any sense of one 
-> >  > of the stacktraces lockdep is providing.
-> >  > 
-> >  > Please have a look at the very first stacktrace in the dump, where lockdep 
-> >  > is trying to explain where cpu_hotplug.lock#2 has been acquired. It seems 
-> >  > to imply that cpuidle_pause() is taking cpu_hotplug.lock, but that's not 
-> >  > the case at all.
+> I think that if synchronize_sched_expedited() was in fact called, it
+> had already returned by the time we hit this problem.  But I must confess
+> that I am not seeing how cpuidle_uninstall_idle_handler() gets to
+> synchronize_rcu().
+
+Umm, it directly calls it? :-)
+
+	void cpuidle_uninstall_idle_handler(void)
+	{
+		if (enabled_devices) {
+			initialized = 0;
+			wake_up_all_idle_cpus();
+		}
+
+		/*
+		 * Make sure external observers (such as the scheduler)
+		 * are done looking at pointed idle states.
+		 */
+		synchronize_rcu();
+	}
+
+
+> > (*) there are multiple places where cpu_hotplug.lock -> cpuidle_lock lock 
+> >     dependency is assumed. The patch that Dave pointed out adds 
+> >     cpuidle_lock -> cpu_hotplug.lock dependency.
 > > 
-> > Could inlining be confusing the trace here ?
-> > 
-> > You can get from cpuidle_pause to cpuidle_uninstall_idle_handler -> synchronize_rcu
-> >  -> synchronize_sched -> synchronize_sched_expedited which
-> > does a try_get_online_cpus which will take the cpu_hotplug.lock
+> > Still not clear whether this is what's happening here ... anyway, adding 
+> > Paul to CC.
 > 
-> Looks like this indeed is something that lockdep *should* report (*), 
-> although I would be suprised that stack unwinder would be so confused by 
-> this -- there is no way for synchronize_sched_expedited() to be inlined 
-> all the way to cpuidle_pause().
-
-I think that if synchronize_sched_expedited() was in fact called, it
-had already returned by the time we hit this problem.  But I must confess
-that I am not seeing how cpuidle_uninstall_idle_handler() gets to
-synchronize_rcu().
-
-> (*) there are multiple places where cpu_hotplug.lock -> cpuidle_lock lock 
->     dependency is assumed. The patch that Dave pointed out adds 
->     cpuidle_lock -> cpu_hotplug.lock dependency.
+> Hmmm...
 > 
-> Still not clear whether this is what's happening here ... anyway, adding 
-> Paul to CC.
+> Both cpuidle_pause() and cpuidle_pause_and_lock() acquire cpuidle_lock,
+> and are at the top of both stacks.  Which was the original confusion.  ;-)
 
-Hmmm...
+Yup, they are, but lockdep is complaining about cpuidle_pause() acquiring 
+cpu_hotplug.lock ...
 
-Both cpuidle_pause() and cpuidle_pause_and_lock() acquire cpuidle_lock,
-and are at the top of both stacks.  Which was the original confusion.  ;-)
+Thanks,
 
-							Thanx, Paul
+-- 
+Jiri Kosina
+SUSE Labs
