@@ -1,73 +1,87 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 44/47] x86: intel-mid: Drop registration of dummy poweroff handlers
-Date: Mon, 20 Oct 2014 21:13:00 -0700
-Message-ID: <1413864783-3271-45-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 46/47] efi: Register poweroff handler with kernel poweroff handler
+Date: Mon, 20 Oct 2014 21:13:02 -0700
+Message-ID: <1413864783-3271-47-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:34034 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754631AbaJUEPG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 00:15:06 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XgQqf-002fmA-N4
+	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 04:15:05 +0000
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Matt Fleming <matt.fleming@intel.com>, linux-efi@vger.kernel.org
 
-A dummy poweroff handler does not serve any purpose. Drop it.
+Register with kernel poweroff handler instead of setting pm_power_off
+directly. Register with low priority since the efi code states that
+this is a poweroff handler of last resort.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Matt Fleming <matt.fleming@intel.com>
+Acked-by: Matt Fleming <matt.fleming@intel.com>
+Acked-by: Mark Salter <msalter@redhat.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 - Use define to specify poweroff handler priority
 
- arch/x86/platform/intel-mid/intel-mid.c | 5 -----
- arch/x86/platform/intel-mid/mfld.c      | 5 -----
- 2 files changed, 10 deletions(-)
+ drivers/firmware/efi/reboot.c | 23 +++++++++++++++++++----
+ 1 file changed, 19 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/platform/intel-mid/intel-mid.c b/arch/x86/platform/intel-mid/intel-mid.c
-index 1bbedc4..4b70666 100644
---- a/arch/x86/platform/intel-mid/intel-mid.c
-+++ b/arch/x86/platform/intel-mid/intel-mid.c
-@@ -67,10 +67,6 @@ static void *(*get_intel_mid_ops[])(void) = INTEL_MID_OPS_INIT;
- enum intel_mid_cpu_type __intel_mid_cpu_chip;
- EXPORT_SYMBOL_GPL(__intel_mid_cpu_chip);
+diff --git a/drivers/firmware/efi/reboot.c b/drivers/firmware/efi/reboot.c
+index 9c59d1c..e1c4f7a 100644
+--- a/drivers/firmware/efi/reboot.c
++++ b/drivers/firmware/efi/reboot.c
+@@ -3,6 +3,8 @@
+  * Copyright (c) 2014 Red Hat, Inc., Mark Salter <msalter@redhat.com>
+  */
+ #include <linux/efi.h>
++#include <linux/notifier.h>
++#include <linux/pm.h>
+ #include <linux/reboot.h>
  
--static void intel_mid_power_off(void)
--{
--};
--
- static void intel_mid_reboot(void)
- {
- 	intel_scu_ipc_simple_command(IPCMSG_COLD_BOOT, 0);
-@@ -183,7 +179,6 @@ void __init x86_intel_mid_early_setup(void)
- 
- 	legacy_pic = &null_legacy_pic;
- 
--	pm_power_off = intel_mid_power_off;
- 	machine_ops.emergency_restart  = intel_mid_reboot;
- 
- 	/* Avoid searching for BIOS MP tables */
-diff --git a/arch/x86/platform/intel-mid/mfld.c b/arch/x86/platform/intel-mid/mfld.c
-index 23381d2..cf6842f 100644
---- a/arch/x86/platform/intel-mid/mfld.c
-+++ b/arch/x86/platform/intel-mid/mfld.c
-@@ -23,10 +23,6 @@ static struct intel_mid_ops penwell_ops = {
- 	.arch_setup = penwell_arch_setup,
- };
- 
--static void mfld_power_off(void)
--{
--}
--
- static unsigned long __init mfld_calibrate_tsc(void)
- {
- 	unsigned long fast_calibrate;
-@@ -61,7 +57,6 @@ static unsigned long __init mfld_calibrate_tsc(void)
- static void __init penwell_arch_setup(void)
- {
- 	x86_platform.calibrate_tsc = mfld_calibrate_tsc;
--	pm_power_off = mfld_power_off;
+ int efi_reboot_quirk_mode = -1;
+@@ -38,19 +40,32 @@ bool __weak efi_poweroff_required(void)
+ 	return false;
  }
  
- void *get_penwell_ops(void)
+-static void efi_power_off(void)
++static int efi_power_off(struct notifier_block *this,
++			 unsigned long unused1, void *unused2)
+ {
+ 	efi.reset_system(EFI_RESET_SHUTDOWN, EFI_SUCCESS, 0, NULL);
++
++	return NOTIFY_DONE;
+ }
+ 
++static struct notifier_block efi_poweroff_nb = {
++	.notifier_call = efi_power_off,
++	.priority = POWEROFF_PRIORITY_LOW,
++};
++
+ static int __init efi_shutdown_init(void)
+ {
++	int ret = 0;
++
+ 	if (!efi_enabled(EFI_RUNTIME_SERVICES))
+ 		return -ENODEV;
+ 
+-	if (efi_poweroff_required())
+-		pm_power_off = efi_power_off;
++	if (efi_poweroff_required()) {
++		ret = register_power_off_handler(&efi_poweroff_nb);
++		if (ret)
++			pr_err("efi: Failed to register poweroff handler\n");
++	}
+ 
+-	return 0;
++	return ret;
+ }
+ late_initcall(efi_shutdown_init);
 -- 
 1.9.1
+
