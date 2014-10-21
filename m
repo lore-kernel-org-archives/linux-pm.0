@@ -1,7 +1,7 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 17/47] mfd: tps65910: Register with kernel poweroff handler
-Date: Mon, 20 Oct 2014 21:12:33 -0700
-Message-ID: <1413864783-3271-18-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 15/47] mfd: dm355evm_msp: Register with kernel poweroff handler
+Date: Mon, 20 Oct 2014 21:12:31 -0700
+Message-ID: <1413864783-3271-16-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
@@ -22,89 +22,57 @@ v2:
 - Use define to specify poweroff handler priority
 - Use dev_warn instead of dev_err
 
- drivers/mfd/tps65910.c       | 27 ++++++++++++++++++---------
- include/linux/mfd/tps65910.h |  3 +++
- 2 files changed, 21 insertions(+), 9 deletions(-)
+ drivers/mfd/dm355evm_msp.c | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mfd/tps65910.c b/drivers/mfd/tps65910.c
-index 7612d89..88ea108 100644
---- a/drivers/mfd/tps65910.c
-+++ b/drivers/mfd/tps65910.c
-@@ -23,6 +23,8 @@
- #include <linux/irq.h>
- #include <linux/irqdomain.h>
- #include <linux/mfd/core.h>
+diff --git a/drivers/mfd/dm355evm_msp.c b/drivers/mfd/dm355evm_msp.c
+index 4c826f7..3ec49a7 100644
+--- a/drivers/mfd/dm355evm_msp.c
++++ b/drivers/mfd/dm355evm_msp.c
+@@ -14,6 +14,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/module.h>
 +#include <linux/notifier.h>
 +#include <linux/pm.h>
- #include <linux/regmap.h>
- #include <linux/mfd/tps65910.h>
- #include <linux/of.h>
-@@ -437,19 +439,20 @@ struct tps65910_board *tps65910_parse_dt(struct i2c_client *client,
+ #include <linux/err.h>
+ #include <linux/gpio.h>
+ #include <linux/leds.h>
+@@ -352,14 +354,22 @@ static void dm355evm_command(unsigned command)
+ 				command, status);
  }
- #endif
  
--static struct i2c_client *tps65910_i2c_client;
--static void tps65910_power_off(void)
-+static int tps65910_power_off(struct notifier_block *this,
+-static void dm355evm_power_off(void)
++static int dm355evm_power_off(struct notifier_block *this,
 +			      unsigned long unused1, void *unused2)
  {
--	struct tps65910 *tps65910;
--
--	tps65910 = dev_get_drvdata(&tps65910_i2c_client->dev);
-+	struct tps65910 *tps65910 = container_of(this, struct tps65910,
-+						 poweroff_nb);
- 
- 	if (tps65910_reg_set_bits(tps65910, TPS65910_DEVCTRL,
- 			DEVCTRL_PWR_OFF_MASK) < 0)
--		return;
-+		return NOTIFY_DONE;
- 
- 	tps65910_reg_clear_bits(tps65910, TPS65910_DEVCTRL,
- 			DEVCTRL_DEV_ON_MASK);
+ 	dm355evm_command(MSP_COMMAND_POWEROFF);
 +
 +	return NOTIFY_DONE;
  }
  
- static int tps65910_i2c_probe(struct i2c_client *i2c,
-@@ -505,9 +508,13 @@ static int tps65910_i2c_probe(struct i2c_client *i2c,
- 	tps65910_ck32k_init(tps65910, pmic_plat_data);
- 	tps65910_sleepinit(tps65910, pmic_plat_data);
- 
--	if (pmic_plat_data->pm_off && !pm_power_off) {
--		tps65910_i2c_client = i2c;
--		pm_power_off = tps65910_power_off;
-+	if (pmic_plat_data->pm_off) {
-+		tps65910->poweroff_nb.notifier_call = tps65910_power_off;
-+		tps65910->poweroff_nb.priority = POWEROFF_PRIORITY_LOW;
-+		ret = register_power_off_handler(&tps65910->poweroff_nb);
-+		if (ret)
-+			dev_warn(&i2c->dev,
-+				 "failed to register poweroff handler\n");
- 	}
- 
- 	ret = mfd_add_devices(tps65910->dev, -1,
-@@ -527,6 +534,8 @@ static int tps65910_i2c_remove(struct i2c_client *i2c)
++static struct notifier_block dm355evm_msp_poweroff_nb = {
++	.notifier_call = dm355evm_power_off,
++	.priority = POWEROFF_PRIORITY_LOW,
++};
++
+ static int dm355evm_msp_remove(struct i2c_client *client)
  {
- 	struct tps65910 *tps65910 = i2c_get_clientdata(i2c);
+-	pm_power_off = NULL;
++	unregister_power_off_handler(&dm355evm_msp_poweroff_nb);
+ 	msp430 = NULL;
+ 	return 0;
+ }
+@@ -398,7 +408,9 @@ dm355evm_msp_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 		goto fail;
  
-+	unregister_power_off_handler(&tps65910->poweroff_nb);
-+
- 	tps65910_irq_exit(tps65910);
- 	mfd_remove_devices(tps65910->dev);
+ 	/* PM hookup */
+-	pm_power_off = dm355evm_power_off;
++	status = register_power_off_handler(&dm355evm_msp_poweroff_nb);
++	if (status)
++		dev_warn(&client->dev, "Failed to register poweroff handler\n");
  
-diff --git a/include/linux/mfd/tps65910.h b/include/linux/mfd/tps65910.h
-index 6483a6f..65cae2c 100644
---- a/include/linux/mfd/tps65910.h
-+++ b/include/linux/mfd/tps65910.h
-@@ -905,6 +905,9 @@ struct tps65910 {
- 	/* IRQ Handling */
- 	int chip_irq;
- 	struct regmap_irq_chip_data *irq_data;
-+
-+	/* Poweroff handling */
-+	struct notifier_block poweroff_nb;
- };
+ 	return 0;
  
- struct tps65910_platform_data {
 -- 
 1.9.1
