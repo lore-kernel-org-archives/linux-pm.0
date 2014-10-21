@@ -1,91 +1,101 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Subject: Re: [RFC Patch 1/4] mfd: AXP20x: Add power supply bindings
- documentation
-Date: Tue, 21 Oct 2014 18:09:16 +0200
-Message-ID: <20141021180916.432f02e1@neptune.home>
-References: <20141020221959.2f312906@neptune.home>
-	<20141020223314.0484f795@neptune.home>
-	<20141021101503.GE26842@x1>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call
+ chain
+Date: Tue, 21 Oct 2014 09:11:04 -0700
+Message-ID: <20141021161104.GB3453@roeck-us.net>
+References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
+ <41603148.RJg26vx0Wv@vostro.rjw.lan>
+ <54465CD5.5070002@roeck-us.net>
+ <2369971.tIcht5GPeB@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hygieia.santi-shop.eu ([78.46.175.2]:43239 "EHLO
-	hygieia.santi-shop.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755659AbaJUQJW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 12:09:22 -0400
-In-Reply-To: <20141021101503.GE26842@x1>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2369971.tIcht5GPeB@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Philippe =?iso-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>, Romain Perier <romain.perier@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-sunxi@googlegroups.com, maxime.ripard@free-electrons.com, linux-arm-kernel@lists.infradead.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Olliver Schinagl <oliver+list@schinagl.nl>
 
-On Tue, 21 October 2014 Lee Jones <lee.jones@linaro.org> wrote:
-> On Mon, 20 Oct 2014, Bruno Pr=C3=A9mont wrote:
-> > ---
-> > Note: the OCV values seem to have some defaults build into the
-> > PMIC though may need adjustment if the used battery has a different
-> > open circuit voltage curve.
-> > As far as understood (these values are set in vendor driver but not
-> > mentioned in chip documentation) they represent charge percentage
-> > for some predefined voltages.
-> >=20
-> > If prefixing these values with "x-power," is preferred the followin=
-g
-> > patch should becomes a dependency:
-> >   http://lists.infradead.org/pipermail/linux-arm-kernel/2014-June/2=
-67606.html
-> > and users in patch 2/4, 4/4 need adjusting.
-> >=20
-> >=20
-> >  Documentation/devicetree/bindings/mfd/axp20x.txt |   20 +
-> >  1 files changed, 20 insertions(+), 0 deletion(-)
-> >=20
-> > diff --git a/Documentation/devicetree/bindings/mfd/axp20x.txt b/Doc=
-umentation/devicetree/bindings/mfd/axp20x.txt
-> > index cc9e01b..8ea681c 100644
-> > --- a/Documentation/devicetree/bindings/mfd/axp20x.txt
-> > +++ b/Documentation/devicetree/bindings/mfd/axp20x.txt
-> > @@ -28,6 +28,20 @@ Required properties:
-> >  		      (range: 750-1875). Default: 1.5MHz
-> > =20
-> >  Optional properties for DCDCs:
-> > +- backup: Settings for backup/RTC battery charger
-> > +	  (Voltage in =C2=B5V, current in =C2=B5A)
-> > +	  If not present, charger will be left untouched
-> > +- battery.ocv: OCV capacity curve points (16 data values)
-> > +- battery.resistance: internal battery resistance in m=CE=A9
-> > +                      (defaults to 100m=CE=A9)
-> > +- battery.capacity: Battery capacity in mAh
-> > +		    If this attribute is missing, charger will be disabled
-> > +		    unless there is a battery connected.
-> > +- battery.temp_sensor: Description of temperautre sensor, 3 values
-> > +		       - driver current (20=C2=B5A, 40=C2=B5A, 60=C2=B5A or 80=C2=
-=B5A)
-> > +		       - low temperature warning level (in =C2=B5V)
-> > +		       - high temperature warning level (in =C2=B5V)
-> > +		       If missing, temperature sensor gets disabled
-> >  - x-powers,dcdc-workmode: 1 for PWM mode, 0 for AUTO mode
-> >  			  Default: AUTO mode
-> > =20
-> > @@ -49,6 +63,12 @@ axp209: pmic@34 {
-> >  	ldo3in-supply =3D <&axp_ipsout_reg>;
-> >  	ldo5in-supply =3D <&axp_ipsout_reg>;
-> > =20
-> > +	backup =3D <3000000 200>;
-> > +	battery.ocv =3D <0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0>;
-> > +	battery.resistance =3D <0>;
-> > +	battery.capacity =3D <2000>;
-> > +	battery.temp_sensor =3D <20 1000000 4000000>;
->=20
-> Since when do we use '.'s in property names?
+On Tue, Oct 21, 2014 at 04:15:11PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, October 21, 2014 06:17:09 AM Guenter Roeck wrote:
+> > On 10/21/2014 05:26 AM, Rafael J. Wysocki wrote:
+> > > On Monday, October 20, 2014 09:12:17 PM Guenter Roeck wrote:
+> > >> Various drivers implement architecture and/or device specific means to
+> > >> remove power from the system.  For the most part, those drivers set the
+> > >> global variable pm_power_off to point to a function within the driver.
+> > >>
+> > >> This mechanism has a number of drawbacks.  Typically only one scheme
+> > >> to remove power is supported (at least if pm_power_off is used).
+> > >> At least in theory there can be multiple means remove power, some of
+> > >> which may be less desirable. For example, some mechanisms may only
+> > >> power off the CPU or the CPU card, while another may power off the
+> > >> entire system.  Others may really just execute a restart sequence
+> > >> or drop into the ROM monitor. Using pm_power_off can also be racy
+> > >> if the function pointer is set from a driver built as module, as the
+> > >> driver may be in the process of being unloaded when pm_power_off is
+> > >> called. If there are multiple poweroff handlers in the system, removing
+> > >> a module with such a handler may inadvertently reset the pointer to
+> > >> pm_power_off to NULL, leaving the system with no means to remove power.
+> > >>
+> > >> Introduce a system poweroff handler call chain to solve the described
+> > >> problems.  This call chain is expected to be executed from the
+> > >> architecture specific machine_power_off() function.  Drivers providing
+> > >> system poweroff functionality are expected to register with this call chain.
+> > >> By using the priority field in the notifier block, callers can control
+> > >> poweroff handler execution sequence and thus ensure that the poweroff
+> > >> handler with the optimal capabilities to remove power for a given system
+> > >> is called first.
+> > >
+> > > Well, I must admit to having second thoughts regarding this particular
+> > > mechanism.  Namely, notifiers don't seem to be the best way of expressing
+> > > what's needed from the design standpoint.
+> > >
+> > > It looks like we need a list of power off methods and a way to select one
+> > > of them, so it seems that using a plist would be a natural choice here?
+> > >
+> > Isn't a notifier call chain nothing but a list of methods, with its priority
+> > the means to select which one to use (first) ?
+> 
+> Traditionally, the idea behind notifier call chains has been to call all of the
+> supplied methods (meaning whoever supplied them wants to be notified of events)
+> where the higher-priority ones are called first.
+> 
+> In this particular case, though, we call them until one succeeds to power
+> off the system it seems.
+> 
+> > The only difference I can see is that you would only select one of them,
+> > meaning the one with the highest priority, and not try the others.
+> 
+> Yes, this was my thought.
+> 
+> But if you want a fallback mechanism, then I agree that using notifiers makes
+> sense, although it is not exactly about notifications this time.
+> 
+It is the same machanism we are using for the newly introduced restart handler,
+with the same logic. Notifiers come handy, because the infrastructure is already
+there, but I consider that to be more of an implementation detail. It is useful
+in many cases, though, since the notifier_block can be part of a local data
+structure which can be referenced from the callback using container_of.
 
-I've not found guidelines on this, but whatever is the right way to
-name them, I'm open for suggestions.
+If I don't use notifiers, and the callback function doesn't get a reference to
+its control block, I don't get that reference, and another means to pass context
+data into the notifier function would be necessary - either a static variable,
+as widely used so far, or another parameter. While the current code of course
+permits the use of a static variable, I very much like that it is possible to
+avoid that by using notifiers.
 
-Bruno
+> I would probably use something along the lines of syscore_ops, but with added
+> execution priority.
 
-> >  	regulators {
-> >  		x-powers,dcdc-freq =3D <1500>;
-> > =20
->=20
+But wouldn't that mean to, for all practical purposes, re-implement a notifier
+call chain in syscore just for the purpose of naming it differently ?
+
+>From a practical side, it would also be a bit awkward since syscore_ops are
+typically not installed from the same file as the poweroff handler. So I would
+either have to rearrange code significantly, or install two sysore_ops handlers
+for the same architecture / platform. Hope it would be ok to do the latter; if
+the first approach is asked for, I'd rather only implement the core code and not
+do the full conversion, as it would add more risk than I think it adds value.
+
+Guenter
