@@ -1,142 +1,58 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: lockdep splat in CPU hotplug
-Date: Tue, 21 Oct 2014 13:09:04 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz>
+From: Arun KS <getarunks@gmail.com>
+Subject: Re: understanding cpuidle
+Date: Tue, 21 Oct 2014 17:03:33 +0530
+Message-ID: <CABOM9Zpzx11gQ+ontBxY6MhrYW=AxtRdGhdybsEpp=gxwHxWLQ@mail.gmail.com>
+References: <CAJ2oMhK_BccGQe9m1bHAc4St_jaBfaSFvyPnTRKxJwzGkfk-6Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f47.google.com ([209.85.192.47]:58373 "EHLO
+	mail-qg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755039AbaJULd4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 07:33:56 -0400
+In-Reply-To: <CAJ2oMhK_BccGQe9m1bHAc4St_jaBfaSFvyPnTRKxJwzGkfk-6Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ran Shalit <ranshalit@gmail.com>
+Cc: kernelnewbies <kernelnewbies@kernelnewbies.org>, linux-pm@vger.kernel.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-Hi,
+Hi Ran,
 
-I am seeing the lockdep report below when resuming from suspend-to-disk 
-with current Linus' tree (c2661b80609).
+On Thu, Oct 16, 2014 at 1:12 PM, Ran Shalit <ranshalit@gmail.com> wrote:
+> Hello,
+>
+> I try to understand the cpuidle main concept but have some
+> difficulties. I could not find any documentation to explain the
+> cpuidle.
+>
+> what does it mean that it enters idle when "no thread to run" ?if I
+> have only one process which does only
+> while(1)
+> {
+>  printf("C");
+> mdelay(1000);
+> }
+> Can I expect it to enter idle for 1 second and then print "C" and get
+> again to idle ?
 
-The reason for CCing Ingo and Peter is that I can't make any sense of one 
-of the stacktraces lockdep is providing.
 
-Please have a look at the very first stacktrace in the dump, where lockdep 
-is trying to explain where cpu_hotplug.lock#2 has been acquired. It seems 
-to imply that cpuidle_pause() is taking cpu_hotplug.lock, but that's not 
-the case at all.
+Your code will not go to cpu idle, because it is mdelay(), which is a
+busy looping.
 
-What am I missing?
+If you have used msleep(), you are relinquishing the cpu.
+Considering the fact that you have only one process running in your
+system, no other process in runnable state, kernel schedules the
+swapper(or idle) process.
+And you will enter into cpu idle.
 
-Thanks.
+Thanks,
+Arun
 
-
- ======================================================
- [ INFO: possible circular locking dependency detected ]
- 3.18.0-rc1-00069-gc2661b8 #1 Not tainted
- -------------------------------------------------------
- do_s2disk/2367 is trying to acquire lock:
-  (cpuidle_lock){+.+.+.}, at: [<ffffffff814916c2>] cpuidle_pause_and_lock+0x12/0x20
- 
-but task is already holding lock:
-  (cpu_hotplug.lock#2){+.+.+.}, at: [<ffffffff810522ea>] cpu_hotplug_begin+0x4a/0x80
- 
-which lock already depends on the new lock.
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (cpu_hotplug.lock#2){+.+.+.}:
-        [<ffffffff81099fac>] lock_acquire+0xac/0x130
-        [<ffffffff815b9f2c>] mutex_lock_nested+0x5c/0x3b0
-        [<ffffffff81491892>] cpuidle_pause+0x12/0x30
-        [<ffffffff81402314>] dpm_suspend_noirq+0x44/0x340
-        [<ffffffff81402958>] dpm_suspend_end+0x38/0x80
-        [<ffffffff810a07bd>] hibernation_snapshot+0xcd/0x370
-        [<ffffffff810a1248>] hibernate+0x168/0x210
-        [<ffffffff8109e9b4>] state_store+0xe4/0xf0
-        [<ffffffff813003ef>] kobj_attr_store+0xf/0x20
-        [<ffffffff8121e9a3>] sysfs_kf_write+0x43/0x60
-        [<ffffffff8121e287>] kernfs_fop_write+0xe7/0x170
-        [<ffffffff811a7342>] vfs_write+0xb2/0x1f0
-        [<ffffffff811a7da4>] SyS_write+0x44/0xb0
-        [<ffffffff815be856>] system_call_fastpath+0x16/0x1b
- 
--> #0 (cpuidle_lock){+.+.+.}:
-        [<ffffffff81099433>] __lock_acquire+0x1a03/0x1e30
-        [<ffffffff81099fac>] lock_acquire+0xac/0x130
-        [<ffffffff815b9f2c>] mutex_lock_nested+0x5c/0x3b0
-        [<ffffffff814916c2>] cpuidle_pause_and_lock+0x12/0x20
-        [<ffffffffc02e184c>] acpi_processor_hotplug+0x45/0x8a [processor]
-        [<ffffffffc02df25a>] acpi_cpu_soft_notify+0xad/0xe3 [processor]
-        [<ffffffff81071393>] notifier_call_chain+0x53/0xa0
-        [<ffffffff810713e9>] __raw_notifier_call_chain+0x9/0x10
-        [<ffffffff810521ce>] cpu_notify+0x1e/0x40
-        [<ffffffff810524a8>] _cpu_up+0x148/0x160
-        [<ffffffff815a7b99>] enable_nonboot_cpus+0xc9/0x1d0
-        [<ffffffff810a0955>] hibernation_snapshot+0x265/0x370
-        [<ffffffff810a1248>] hibernate+0x168/0x210
-        [<ffffffff8109e9b4>] state_store+0xe4/0xf0
-        [<ffffffff813003ef>] kobj_attr_store+0xf/0x20
-        [<ffffffff8121e9a3>] sysfs_kf_write+0x43/0x60
-        [<ffffffff8121e287>] kernfs_fop_write+0xe7/0x170
-        [<ffffffff811a7342>] vfs_write+0xb2/0x1f0
-        [<ffffffff811a7da4>] SyS_write+0x44/0xb0
-        [<ffffffff815be856>] system_call_fastpath+0x16/0x1b
- 
-other info that might help us debug this:
-
-  Possible unsafe locking scenario:
-
-        CPU0                    CPU1
-        ----                    ----
-   lock(cpu_hotplug.lock#2);
-                                lock(cpuidle_lock);
-                                lock(cpu_hotplug.lock#2);
-   lock(cpuidle_lock);
- 
- *** DEADLOCK ***
-
- 8 locks held by do_s2disk/2367:
-  #0:  (sb_writers#6){.+.+.+}, at: [<ffffffff811a7443>] vfs_write+0x1b3/0x1f0
-  #1:  (&of->mutex){+.+.+.}, at: [<ffffffff8121e25b>] kernfs_fop_write+0xbb/0x170
-  #2:  (s_active#188){.+.+.+}, at: [<ffffffff8121e263>] kernfs_fop_write+0xc3/0x170
-  #3:  (pm_mutex){+.+.+.}, at: [<ffffffff810a112e>] hibernate+0x4e/0x210
-  #4:  (device_hotplug_lock){+.+.+.}, at: [<ffffffff813f1b52>] lock_device_hotplug+0x12/0x20
-  #5:  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff815a7aef>] enable_nonboot_cpus+0x1f/0x1d0
-  #6:  (cpu_hotplug.lock){++++++}, at: [<ffffffff810522a0>] cpu_hotplug_begin+0x0/0x80
-  #7:  (cpu_hotplug.lock#2){+.+.+.}, at: [<ffffffff810522ea>] cpu_hotplug_begin+0x4a/0x80
- 
-stack backtrace:
- CPU: 1 PID: 2367 Comm: do_s2disk Not tainted 3.18.0-rc1-00069-g4da0564 #1
- Hardware name: LENOVO 7470BN2/7470BN2, BIOS 6DET38WW (2.02 ) 12/19/2008
-  ffffffff823e4330 ffff8800789e7a48 ffffffff815b6754 0000000000001a69
-  ffffffff823e4330 ffff8800789e7a98 ffffffff815b078b ffff8800741a5510
-  ffff8800789e7af8 ffff8800741a5ea8 5a024e919538010b ffff8800741a5ea8
- Call Trace:
-  [<ffffffff815b6754>] dump_stack+0x4e/0x68
-  [<ffffffff815b078b>] print_circular_bug+0x203/0x214
-  [<ffffffff81099433>] __lock_acquire+0x1a03/0x1e30
-  [<ffffffff8109766d>] ? trace_hardirqs_on_caller+0xfd/0x1c0
-  [<ffffffff81099fac>] lock_acquire+0xac/0x130
-  [<ffffffff814916c2>] ? cpuidle_pause_and_lock+0x12/0x20
-  [<ffffffff815b9f2c>] mutex_lock_nested+0x5c/0x3b0
-  [<ffffffff814916c2>] ? cpuidle_pause_and_lock+0x12/0x20
-  [<ffffffff814916c2>] cpuidle_pause_and_lock+0x12/0x20
-  [<ffffffffc02e184c>] acpi_processor_hotplug+0x45/0x8a [processor]
-  [<ffffffffc02df25a>] acpi_cpu_soft_notify+0xad/0xe3 [processor]
-  [<ffffffff81071393>] notifier_call_chain+0x53/0xa0
-  [<ffffffff810713e9>] __raw_notifier_call_chain+0x9/0x10
-  [<ffffffff810521ce>] cpu_notify+0x1e/0x40
-  [<ffffffff810524a8>] _cpu_up+0x148/0x160
-  [<ffffffff815a7b99>] enable_nonboot_cpus+0xc9/0x1d0
-  [<ffffffff810a0955>] hibernation_snapshot+0x265/0x370
-  [<ffffffff810a1248>] hibernate+0x168/0x210
-  [<ffffffff8109e9b4>] state_store+0xe4/0xf0
-  [<ffffffff813003ef>] kobj_attr_store+0xf/0x20
-  [<ffffffff8121e9a3>] sysfs_kf_write+0x43/0x60
-  [<ffffffff8121e287>] kernfs_fop_write+0xe7/0x170
-  [<ffffffff811a7342>] vfs_write+0xb2/0x1f0
-  [<ffffffff815be87b>] ? sysret_check+0x1b/0x56
-  [<ffffffff811a7da4>] SyS_write+0x44/0xb0
-  [<ffffffff815be856>] system_call_fastpath+0x16/0x1b
-
--- 
-Jiri Kosina
-SUSE Labs
+>
+> Thanks
+> Ran
+>
+> _______________________________________________
+> Kernelnewbies mailing list
+> Kernelnewbies@kernelnewbies.org
+> http://lists.kernelnewbies.org/mailman/listinfo/kernelnewbies
