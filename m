@@ -1,49 +1,132 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 37/47] avr32: atngw100: Register with kernel poweroff handler
-Date: Mon, 20 Oct 2014 21:12:53 -0700
-Message-ID: <1413864783-3271-38-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 12/47] mfd: ab8500-sysctrl: Register with kernel poweroff
+ handler
+Date: Mon, 20 Oct 2014 21:12:28 -0700
+Message-ID: <1413864783-3271-13-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:33940 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754595AbaJUEOp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 00:14:45 -0400
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XgQqK-002emB-JS
-	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 04:14:44 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Haavard Skinnemoen <hskinnemoen@gmail.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
 Register with kernel poweroff handler instead of setting pm_power_off
-directly.
+directly. Register with low priority to reflect that the original code
+only sets pm_power_off if it was not already set.
 
-Cc: Haavard Skinnemoen <hskinnemoen@gmail.com>
-Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+sysctrl_dev is set prior to poweroff handler registration, and the
+poweroff handler is unregistered prior to clearing sysrctrl_dev.
+It is therefore not necessary to check if sysctrl_dev is NULL in the
+poweroff handler, and the check was removed. Setting sysctrl_dev to NULL
+in the remove function was also removed as unnecessary. With those changes,
+devm_register_power_off_handler can be used to register the poeroff handler.
+The now empty remove function was retained since the ab8500_restart function,
+which is currently unused, would likely need some cleanup if it was ever used.
+
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
+v2:
 - Use define to specify poweroff handler priority
+- Use devm_register_power_off_handler
+- Use dev_warn instead of dev_err
+- Since we use devm_register_power_off_handler,
+  we need to check if sysctrl_dev in the poweroff handler to avoid
+  a race condition on unload, so this check is no longer removed
 
- arch/avr32/boards/atngw100/mrmt.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/mfd/ab8500-sysctrl.c | 22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
 
-diff --git a/arch/avr32/boards/atngw100/mrmt.c b/arch/avr32/boards/atngw100/mrmt.c
-index 91146b4..833212e 100644
---- a/arch/avr32/boards/atngw100/mrmt.c
-+++ b/arch/avr32/boards/atngw100/mrmt.c
-@@ -274,7 +274,8 @@ static int __init mrmt1_init(void)
+diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctrl.c
+index 8e0dae5..dc634d5 100644
+--- a/drivers/mfd/ab8500-sysctrl.c
++++ b/drivers/mfd/ab8500-sysctrl.c
+@@ -6,6 +6,7 @@
+ 
+ #include <linux/err.h>
+ #include <linux/module.h>
++#include <linux/notifier.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm.h>
+ #include <linux/reboot.h>
+@@ -23,7 +24,8 @@
+ 
+ static struct device *sysctrl_dev;
+ 
+-static void ab8500_power_off(void)
++static int ab8500_power_off(struct notifier_block *this, unsigned long unused1,
++			    void *unused2)
  {
- 	gpio_set_value( PIN_PWR_ON, 1 );	/* Ensure PWR_ON is enabled */
+ 	sigset_t old;
+ 	sigset_t all;
+@@ -36,7 +38,7 @@ static void ab8500_power_off(void)
  
--	pm_power_off = mrmt_power_off;
-+	register_power_off_handler_simple(mrmt_power_off,
-+					  POWEROFF_PRIORITY_DEFAULT);
+ 	if (sysctrl_dev == NULL) {
+ 		pr_err("%s: sysctrl not initialized\n", __func__);
+-		return;
++		return NOTIFY_DONE;
+ 	}
  
- 	/* Setup USARTS (other than console) */
- 	at32_map_usart(2, 1, 0);	/* USART 2: /dev/ttyS1, RMT1:DB9M */
+ 	/*
+@@ -83,8 +85,15 @@ shutdown:
+ 					 AB8500_STW4500CTRL1_SWRESET4500N);
+ 		(void)sigprocmask(SIG_SETMASK, &old, NULL);
+ 	}
++
++	return NOTIFY_DONE;
+ }
+ 
++static struct notifier_block ab8500_poweroff_nb = {
++	.notifier_call = ab8500_power_off,
++	.priority = POWEROFF_PRIORITY_LOW,
++};
++
+ /*
+  * Use the AB WD to reset the platform. It will perform a hard
+  * reset instead of a soft reset. Write the reset reason to
+@@ -185,6 +194,7 @@ static int ab8500_sysctrl_probe(struct platform_device *pdev)
+ 	struct ab8500 *ab8500 = dev_get_drvdata(pdev->dev.parent);
+ 	struct ab8500_platform_data *plat;
+ 	struct ab8500_sysctrl_platform_data *pdata;
++	int err;
+ 
+ 	plat = dev_get_platdata(pdev->dev.parent);
+ 
+@@ -193,8 +203,9 @@ static int ab8500_sysctrl_probe(struct platform_device *pdev)
+ 
+ 	sysctrl_dev = &pdev->dev;
+ 
+-	if (!pm_power_off)
+-		pm_power_off = ab8500_power_off;
++	err = devm_register_power_off_handler(sysctrl_dev, &ab8500_poweroff_nb);
++	if (err)
++		dev_warn(&pdev->dev, "Failed to register poweroff handler\n");
+ 
+ 	pdata = plat->sysctrl;
+ 	if (pdata) {
+@@ -228,9 +239,6 @@ static int ab8500_sysctrl_remove(struct platform_device *pdev)
+ {
+ 	sysctrl_dev = NULL;
+ 
+-	if (pm_power_off == ab8500_power_off)
+-		pm_power_off = NULL;
+-
+ 	return 0;
+ }
+ 
 -- 
 1.9.1
-
