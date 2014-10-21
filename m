@@ -1,120 +1,117 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 21/47] ipmi: Register with kernel poweroff handler
-Date: Mon, 20 Oct 2014 21:12:37 -0700
-Message-ID: <1413864783-3271-22-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 19/47] mfd: rk808: Register poweroff handler with kernel poweroff handler
+Date: Mon, 20 Oct 2014 21:12:35 -0700
+Message-ID: <1413864783-3271-20-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Corey Minyard <minyard@acm.org>, openipmi-developer@lists.sourceforge.net
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Chris Zhong <zyw@rock-chips.com>, Zhang Qing <zhangqing@rock-chips.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 Register with kernel poweroff handler instead of setting pm_power_off
-directly. Register with high priority to reflect that the original code
-overwrites pm_power_off unconditionally.
+directly. Register with low priority to reflect that the original code
+only sets pm_power_off if it was not already set.
 
-Register poweroff handler after the ipmi system is ready, and unregister
-it prior to cleanup. This avoids having to check for the ready variable
-in the poweroff callback.
-
-Reviewed-by: Corey Minyard <minyard@acm.org>
+Cc: Chris Zhong <zyw@rock-chips.com>
+Cc: Zhang Qing <zhangqing@rock-chips.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v2:
-- Use define to specify poweroff handler priority
-- Use pr_warn instead of pr_err
-- Call unregister_power_off_handler on exit only if not already unregistered
+- New patch
 
- drivers/char/ipmi/ipmi_poweroff.c | 29 ++++++++++++++++++-----------
- 1 file changed, 18 insertions(+), 11 deletions(-)
+ drivers/mfd/rk808.c       | 30 ++++++++++++++++--------------
+ include/linux/mfd/rk808.h |  2 ++
+ 2 files changed, 18 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/char/ipmi/ipmi_poweroff.c b/drivers/char/ipmi/ipmi_poweroff.c
-index 9f2e3be..41067da 100644
---- a/drivers/char/ipmi/ipmi_poweroff.c
-+++ b/drivers/char/ipmi/ipmi_poweroff.c
-@@ -36,6 +36,7 @@
- #include <linux/proc_fs.h>
- #include <linux/string.h>
- #include <linux/completion.h>
+diff --git a/drivers/mfd/rk808.c b/drivers/mfd/rk808.c
+index bd02150..7f07279 100644
+--- a/drivers/mfd/rk808.c
++++ b/drivers/mfd/rk808.c
+@@ -21,6 +21,8 @@
+ #include <linux/mfd/rk808.h>
+ #include <linux/mfd/core.h>
+ #include <linux/module.h>
 +#include <linux/notifier.h>
- #include <linux/pm.h>
- #include <linux/kdev_t.h>
- #include <linux/ipmi.h>
-@@ -63,9 +64,6 @@ static ipmi_user_t ipmi_user;
- static int ipmi_ifnum;
- static void (*specific_poweroff_func)(ipmi_user_t user);
++#include <linux/pm.h>
+ #include <linux/regmap.h>
  
--/* Holds the old poweroff function so we can restore it on removal. */
--static void (*old_poweroff_func)(void);
+ struct rk808_reg_data {
+@@ -147,23 +149,19 @@ static struct regmap_irq_chip rk808_irq_chip = {
+ 	.init_ack_masked = true,
+ };
+ 
+-static struct i2c_client *rk808_i2c_client;
+-static void rk808_device_shutdown(void)
++static int rk808_device_shutdown(struct notifier_block *this,
++				 unsigned long unused1, void *unused2)
+ {
++	struct rk808 *rk808 = container_of(this, struct rk808, poweroff_nb);
+ 	int ret;
+-	struct rk808 *rk808 = i2c_get_clientdata(rk808_i2c_client);
 -
- static int set_param_ifnum(const char *val, struct kernel_param *kp)
- {
- 	int rv = param_set_int(val, kp);
-@@ -544,15 +542,20 @@ static struct poweroff_function poweroff_functions[] = {
- 
- 
- /* Called on a powerdown request. */
--static void ipmi_poweroff_function(void)
-+static int ipmi_poweroff_function(struct notifier_block *this,
-+				  unsigned long unused1, void *unused2)
- {
--	if (!ready)
+-	if (!rk808) {
+-		dev_warn(&rk808_i2c_client->dev,
+-			 "have no rk808, so do nothing here\n");
 -		return;
--
- 	/* Use run-to-completion mode, since interrupts may be off. */
- 	specific_poweroff_func(ipmi_user);
+-	}
+ 
+ 	ret = regmap_update_bits(rk808->regmap,
+ 				 RK808_DEVCTRL_REG,
+ 				 DEV_OFF_RST, DEV_OFF_RST);
+ 	if (ret)
+-		dev_err(&rk808_i2c_client->dev, "power off error!\n");
++		dev_err(&rk808->i2c->dev, "power off error!\n");
 +
 +	return NOTIFY_DONE;
  }
  
-+static struct notifier_block ipmi_poweroff_nb = {
-+	.notifier_call = ipmi_poweroff_function,
-+	.priority = POWEROFF_PRIORITY_HIGH,
-+};
-+
- /* Wait for an IPMI interface to be installed, the first one installed
-    will be grabbed by this code and used to perform the powerdown. */
- static void ipmi_po_new_smi(int if_num, struct device *device)
-@@ -631,9 +634,12 @@ static void ipmi_po_new_smi(int if_num, struct device *device)
- 	printk(KERN_INFO PFX "Found a %s style poweroff function\n",
- 	       poweroff_functions[i].platform_type);
- 	specific_poweroff_func = poweroff_functions[i].poweroff_func;
--	old_poweroff_func = pm_power_off;
--	pm_power_off = ipmi_poweroff_function;
-+
- 	ready = 1;
-+
-+	rv = register_power_off_handler(&ipmi_poweroff_nb);
-+	if (rv)
-+		pr_warn(PFX "failed to register poweroff handler\n");
- }
+ static int rk808_probe(struct i2c_client *client,
+@@ -222,9 +220,14 @@ static int rk808_probe(struct i2c_client *client,
  
- static void ipmi_po_smi_gone(int if_num)
-@@ -644,9 +650,10 @@ static void ipmi_po_smi_gone(int if_num)
- 	if (ipmi_ifnum != if_num)
- 		return;
- 
-+	unregister_power_off_handler(&ipmi_poweroff_nb);
-+
- 	ready = 0;
- 	ipmi_destroy_user(ipmi_user);
--	pm_power_off = old_poweroff_func;
- }
- 
- static struct ipmi_smi_watcher smi_watcher = {
-@@ -733,11 +740,11 @@ static void __exit ipmi_poweroff_cleanup(void)
- 	ipmi_smi_watcher_unregister(&smi_watcher);
- 
- 	if (ready) {
-+		unregister_power_off_handler(&ipmi_poweroff_nb);
- 		rv = ipmi_destroy_user(ipmi_user);
- 		if (rv)
- 			printk(KERN_ERR PFX "could not cleanup the IPMI"
- 			       " user: 0x%x\n", rv);
--		pm_power_off = old_poweroff_func;
+ 	pm_off = of_property_read_bool(np,
+ 				"rockchip,system-power-controller");
+-	if (pm_off && !pm_power_off) {
+-		rk808_i2c_client = client;
+-		pm_power_off = rk808_device_shutdown;
++	if (pm_off) {
++		rk808->poweroff_nb.notifier_call = rk808_device_shutdown;
++		rk808->poweroff_nb.priority = POWEROFF_PRIORITY_LOW;
++		ret = devm_register_power_off_handler(&client->dev,
++						      &rk808->poweroff_nb);
++		if (ret)
++			dev_warn(&client->dev,
++				 "Failed to register poweroff handler\n");
  	}
+ 
+ 	return 0;
+@@ -240,7 +243,6 @@ static int rk808_remove(struct i2c_client *client)
+ 
+ 	regmap_del_irq_chip(client->irq, rk808->irq_data);
+ 	mfd_remove_devices(&client->dev);
+-	pm_power_off = NULL;
+ 
+ 	return 0;
  }
- module_exit(ipmi_poweroff_cleanup);
+diff --git a/include/linux/mfd/rk808.h b/include/linux/mfd/rk808.h
+index fb09312..abc80cc 100644
+--- a/include/linux/mfd/rk808.h
++++ b/include/linux/mfd/rk808.h
+@@ -19,6 +19,7 @@
+ #ifndef __LINUX_REGULATOR_rk808_H
+ #define __LINUX_REGULATOR_rk808_H
+ 
++#include <linux/notifier.h>
+ #include <linux/regulator/machine.h>
+ #include <linux/regmap.h>
+ 
+@@ -192,5 +193,6 @@ struct rk808 {
+ 	struct i2c_client *i2c;
+ 	struct regmap_irq_chip_data *irq_data;
+ 	struct regmap *regmap;
++	struct notifier_block poweroff_nb;
+ };
+ #endif /* __LINUX_REGULATOR_rk808_H */
 -- 
 1.9.1
