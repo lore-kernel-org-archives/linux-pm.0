@@ -1,97 +1,142 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 22/47] power/reset: restart-poweroff: Register with kernel poweroff handler
-Date: Mon, 20 Oct 2014 21:12:38 -0700
-Message-ID: <1413864783-3271-23-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 18/47] mfd: twl4030-power: Register with kernel poweroff handler
+Date: Mon, 20 Oct 2014 21:12:34 -0700
+Message-ID: <1413864783-3271-19-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:33688 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754405AbaJUEN4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 00:13:56 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XgQpX-002dZE-QO
+	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 04:13:55 +0000
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>
 
 Register with kernel poweroff handler instead of setting pm_power_off
-directly.  Register as poweroff handler of last resort since the driver
-does not really power off the system but executes a restart.
+directly. Register with low priority to reflect that the original code
+only sets pm_power_off if it was not already set.
 
-Drop remove function since it is no longer needed.
+Make twl4030_power_off static as it is only called from the twl4030-power
+driver. Drop remove function as it is no longer needed.
 
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Acked-by: Andrew Lunn <andrew@lunn.ch>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Lee Jones <lee.jones@linaro.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v2:
-- Use define to sepcify poweroff handler priority
+- Use define to specify poweroff handler priority
+- Use dev_warn instead of dev_err
 - Use devm_register_power_off_handler
-- Drop remove function since it is no longer needed
+- Drop remove function as it is no longer needed.
 
- drivers/power/reset/restart-poweroff.c | 33 +++++++++++++--------------------
- 1 file changed, 13 insertions(+), 20 deletions(-)
+ drivers/mfd/twl4030-power.c | 29 +++++++++++++++++++----------
+ include/linux/i2c/twl.h     |  1 -
+ 2 files changed, 19 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/power/reset/restart-poweroff.c b/drivers/power/reset/restart-poweroff.c
-index edd707e..e8f8e59 100644
---- a/drivers/power/reset/restart-poweroff.c
-+++ b/drivers/power/reset/restart-poweroff.c
-@@ -12,37 +12,31 @@
+diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
+index cf92a6d..85e4aa4 100644
+--- a/drivers/mfd/twl4030-power.c
++++ b/drivers/mfd/twl4030-power.c
+@@ -25,9 +25,10 @@
   */
- #include <linux/kernel.h>
- #include <linux/init.h>
-+#include <linux/notifier.h>
- #include <linux/platform_device.h>
- #include <linux/of_platform.h>
+ 
  #include <linux/module.h>
+-#include <linux/pm.h>
++#include <linux/notifier.h>
+ #include <linux/i2c/twl.h>
+ #include <linux/platform_device.h>
 +#include <linux/pm.h>
- #include <linux/reboot.h>
--#include <asm/system_misc.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
  
--static void restart_poweroff_do_poweroff(void)
-+static int restart_poweroff_do_poweroff(struct notifier_block *this,
-+					unsigned long unused1, void *unused2)
+@@ -611,7 +612,8 @@ twl4030_power_configure_resources(const struct twl4030_power_data *pdata)
+  * After a successful execution, TWL shuts down the power to the SoC
+  * and all peripherals connected to it.
+  */
+-void twl4030_power_off(void)
++static int twl4030_power_off(struct notifier_block *this, unsigned long unused1,
++			     void *unused2)
  {
- 	reboot_mode = REBOOT_HARD;
- 	machine_restart(NULL);
--}
--
--static int restart_poweroff_probe(struct platform_device *pdev)
--{
--	/* If a pm_power_off function has already been added, leave it alone */
--	if (pm_power_off != NULL) {
--		dev_err(&pdev->dev,
--			"pm_power_off function already registered");
--		return -EBUSY;
--	}
+ 	int err;
  
--	pm_power_off = &restart_poweroff_do_poweroff;
--	return 0;
+@@ -619,8 +621,15 @@ void twl4030_power_off(void)
+ 			       TWL4030_PM_MASTER_P1_SW_EVENTS);
+ 	if (err)
+ 		pr_err("TWL4030 Unable to power off\n");
++
 +	return NOTIFY_DONE;
  }
  
--static int restart_poweroff_remove(struct platform_device *pdev)
--{
--	if (pm_power_off == &restart_poweroff_do_poweroff)
--		pm_power_off = NULL;
-+static struct notifier_block restart_power_off_handler = {
-+	.notifier_call = restart_poweroff_do_poweroff,
-+	.priority = POWEROFF_PRIORITY_FALLBACK,
++static struct notifier_block twl4030_poweroff_nb = {
++	.notifier_call = twl4030_power_off,
++	.priority = POWEROFF_PRIORITY_LOW,
 +};
++
+ static bool twl4030_power_use_poweroff(const struct twl4030_power_data *pdata,
+ 					struct device_node *node)
+ {
+@@ -839,7 +848,9 @@ static int twl4030_power_probe(struct platform_device *pdev)
+ 	}
  
--	return 0;
-+static int restart_poweroff_probe(struct platform_device *pdev)
-+{
-+	return devm_register_power_off_handler(&pdev->dev,
-+					      &restart_power_off_handler);
+ 	/* Board has to be wired properly to use this feature */
+-	if (twl4030_power_use_poweroff(pdata, node) && !pm_power_off) {
++	if (twl4030_power_use_poweroff(pdata, node)) {
++		int ret;
++
+ 		/* Default for SEQ_OFFSYNC is set, lets ensure this */
+ 		err = twl_i2c_read_u8(TWL_MODULE_PM_MASTER, &val,
+ 				      TWL4030_PM_MASTER_CFG_P123_TRANSITION);
+@@ -856,7 +867,11 @@ static int twl4030_power_probe(struct platform_device *pdev)
+ 			}
+ 		}
+ 
+-		pm_power_off = twl4030_power_off;
++		ret = devm_register_power_off_handler(&pdev->dev,
++						      &twl4030_poweroff_nb);
++		if (ret)
++			dev_warn(&pdev->dev,
++				 "Failed to register poweroff handler\n");
+ 	}
+ 
+ relock:
+@@ -870,11 +885,6 @@ relock:
+ 	return err;
  }
  
- static const struct of_device_id of_restart_poweroff_match[] = {
-@@ -52,7 +46,6 @@ static const struct of_device_id of_restart_poweroff_match[] = {
- 
- static struct platform_driver restart_poweroff_driver = {
- 	.probe = restart_poweroff_probe,
--	.remove = restart_poweroff_remove,
+-static int twl4030_power_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+ static struct platform_driver twl4030_power_driver = {
  	.driver = {
- 		.name = "poweroff-restart",
- 		.owner = THIS_MODULE,
+ 		.name	= "twl4030_power",
+@@ -882,7 +892,6 @@ static struct platform_driver twl4030_power_driver = {
+ 		.of_match_table = of_match_ptr(twl4030_power_of_match),
+ 	},
+ 	.probe		= twl4030_power_probe,
+-	.remove		= twl4030_power_remove,
+ };
+ 
+ module_platform_driver(twl4030_power_driver);
+diff --git a/include/linux/i2c/twl.h b/include/linux/i2c/twl.h
+index 8cfb50f..f8544f1 100644
+--- a/include/linux/i2c/twl.h
++++ b/include/linux/i2c/twl.h
+@@ -680,7 +680,6 @@ struct twl4030_power_data {
+ };
+ 
+ extern int twl4030_remove_script(u8 flags);
+-extern void twl4030_power_off(void);
+ 
+ struct twl4030_codec_data {
+ 	unsigned int digimic_delay; /* in ms */
 -- 
 1.9.1
+
