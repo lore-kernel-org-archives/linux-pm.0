@@ -1,64 +1,68 @@
-From: =?UTF-8?B?UGhpbGlwcGUgUsOpdG9ybmF6?= <philippe.retornaz@gmail.com>
-Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call
- chain
-Date: Tue, 21 Oct 2014 08:46:24 +0200
-Message-ID: <54460140.50805@gmail.com>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-2-git-send-email-linux@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Michal Hocko <mhocko@suse.cz>
+Subject: [PATCH 0/4 -v2] OOM vs. freezer interaction fixes
+Date: Tue, 21 Oct 2014 09:27:11 +0200
+Message-ID: <1413876435-11720-1-git-send-email-mhocko@suse.cz>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f180.google.com ([209.85.212.180]:60020 "EHLO
-	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbaJUGq1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 02:46:27 -0400
-In-Reply-To: <1413864783-3271-2-git-send-email-linux@roeck-us.net>
+Received: from cantor2.suse.de ([195.135.220.15]:43402 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753121AbaJUH1X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 21 Oct 2014 03:27:23 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>
+Cc: Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
 
-Hello
+Hi Andrew, Rafael,
 
-[...]
-> - Use raw notifiers protected by spinlocks instead of atomic notifiers
-[...]
+this has been originally discussed here [1] and previously posted here [2].
+I have updated patches according to feedback from Oleg.
 
-> +/**
-> + *	do_kernel_power_off - Execute kernel poweroff handler call chain
-> + *
-> + *	Calls functions registered with register_power_off_handler.
-> + *
-> + *	Expected to be called from machine_power_off as last step of
-> + *	the poweroff sequence.
-> + *
-> + *	Powers off the system immediately if a poweroff handler function
-> + *	has been registered. Otherwise does nothing.
-> + */
-> +void do_kernel_power_off(void)
-> +{
-> +	spin_lock(&power_off_handler_lock);
-> +	raw_notifier_call_chain(&power_off_handler_list, 0, NULL);
-> +	spin_unlock(&power_off_handler_lock);
-> +}
+The first and third patch are regression fixes and they are a stable
+material IMO. The second and fourth patch are simple cleanups.
 
-I don't get it. You are still in atomic context inside the poweroff callback
-since you lock it with a spinlock.
+The 1st patch is fixing a regression introduced in 3.3 since when OOM
+killer is not able to kill any frozen task and live lock as a result.
+The fix gets us back to the 3.2. As it turned out during the discussion [3]
+this was still not 100% sufficient and that's why we need the 3rd patch.
 
-It does not change much from the atomic notifier which was doing exactly the
-same thing but with RCU:
+I was thinking about the proper 1st vs. 3rd patch ordering because
+the 1st patch basically opens a race window considerably reduced by the
+later patch. This path is hard to do completely race free without a complete
+synchronization of OOM path (including the allocator) and freezer which is not
+worth the trouble.
 
-    rcu_read_lock();
-    ret = notifier_call_chain(&nh->head, val, v, nr_to_call, nr_calls);
-    rcu_read_unlock();
+Original patch from Cong Wang has covered this by checking
+cgroup_freezing(current) in __refrigarator path [4]. But this approach
+still suffers from OOM vs. PM freezer interaction (OOM killer would
+still live lock waiting for a PM frozen task this time).
 
-Why not using the blocking_notifier_* family ?
-It will lock with a read-write semaphore under which you can sleep.
+So I think the most straight forward way is to address only OOM vs.
+frozen task interaction in the first patch, mark it for stable 3.3+ and
+leave the race to a separate follow up patch which is applicable to
+stable 3.2+ (before a3201227f803 made it inefficient).
 
-For instance, twl4030_power_off will sleep, since it is doing I2C access.
-So you cannot call it in atomic context.
+Switching 1st and 3rd patches would make some sense as well but then
+it might end up even more confusing because we would be fixing a
+non-existent issue in upstream first...
 
-Thanks,
+Cong Wang (2):
+      freezer: Do not freeze tasks killed by OOM killer
+      freezer: remove obsolete comments in __thaw_task()
 
-Philippe
+Michal Hocko (2):
+      OOM, PM: OOM killed task shouldn't escape PM suspend
+      PM: convert do_each_thread to for_each_process_thread
 
+And diffstat says:
+ include/linux/oom.h    |  3 +++
+ kernel/freezer.c       |  9 +++------
+ kernel/power/process.c | 47 ++++++++++++++++++++++++++++++++++++++---------
+ mm/oom_kill.c          | 17 +++++++++++++++++
+ mm/page_alloc.c        |  8 ++++++++
+ 5 files changed, 69 insertions(+), 15 deletions(-)
+
+---
+[1] http://marc.info/?l=linux-kernel&m=140986986423092
+[2] http://marc.info/?l=linux-mm&m=141277728508500&w=2
+[3] http://marc.info/?l=linux-kernel&m=141074263721166
+[4] http://marc.info/?l=linux-kernel&m=140986986423092
