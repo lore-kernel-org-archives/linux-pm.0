@@ -1,48 +1,101 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 43/47] x86: ce4100: Register with kernel poweroff handler
-Date: Mon, 20 Oct 2014 21:12:59 -0700
-Message-ID: <1413864783-3271-44-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 31/47] x86: apm: Register with kernel poweroff handler
+Date: Mon, 20 Oct 2014 21:12:47 -0700
+Message-ID: <1413864783-3271-32-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:33995 "EHLO
+Received: from bh-25.webhostbox.net ([208.91.199.152]:33812 "EHLO
 	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754622AbaJUEO5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 00:14:57 -0400
+	with ESMTP id S1754541AbaJUEOZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 00:14:25 -0400
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
 	(envelope-from <linux@roeck-us.net>)
-	id 1XgQqX-002fBG-4F
-	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 04:14:57 +0000
+	id 1XgQq1-002eFg-69
+	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 04:14:25 +0000
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Jiri Kosina <jkosina@suse.cz>, x86@kernel.org
 
 Register with kernel poweroff handler instead of setting pm_power_off
-directly.
+directly. Register with high priority to reflect that the original code
+overwrites existing poweroff handlers.
 
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
+v2:
 - Use define to specify poweroff handler priority
 
- arch/x86/platform/ce4100/ce4100.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/kernel/apm_32.c | 20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/platform/ce4100/ce4100.c b/arch/x86/platform/ce4100/ce4100.c
-index 701fd58..379260e 100644
---- a/arch/x86/platform/ce4100/ce4100.c
-+++ b/arch/x86/platform/ce4100/ce4100.c
-@@ -164,5 +164,6 @@ void __init x86_ce4100_early_setup(void)
- 	 */
- 	reboot_type = BOOT_KBD;
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index 5848744..b03a65e 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -219,6 +219,7 @@
+ #include <linux/init.h>
+ #include <linux/time.h>
+ #include <linux/sched.h>
++#include <linux/notifier.h>
+ #include <linux/pm.h>
+ #include <linux/capability.h>
+ #include <linux/device.h>
+@@ -981,7 +982,8 @@ recalc:
+  *	on their first cpu.
+  */
  
--	pm_power_off = ce4100_power_off;
-+	register_power_off_handler_simple(ce4100_power_off,
-+					  POWEROFF_PRIORITY_DEFAULT);
+-static void apm_power_off(void)
++static int apm_power_off(struct notifier_block *this, unsigned long unused1,
++			 void *unused2)
+ {
+ 	/* Some bioses don't like being called from CPU != 0 */
+ 	if (apm_info.realmode_power_off) {
+@@ -990,8 +992,14 @@ static void apm_power_off(void)
+ 	} else {
+ 		(void)set_system_power_state(APM_STATE_OFF);
+ 	}
++	return NOTIFY_DONE;
  }
+ 
++static struct notifier_block apm_poweroff_nb = {
++	.notifier_call = apm_power_off,
++	.priority = POWEROFF_PRIORITY_HIGH,
++};
++
+ #ifdef CONFIG_APM_DO_ENABLE
+ 
+ /**
+@@ -1847,8 +1855,11 @@ static int apm(void *unused)
+ 	}
+ 
+ 	/* Install our power off handler.. */
+-	if (power_off)
+-		pm_power_off = apm_power_off;
++	if (power_off) {
++		error = register_power_off_handler(&apm_poweroff_nb);
++		if (error)
++			pr_err("apm: Failed to register poweroff handler\n");
++	}
+ 
+ 	if (num_online_cpus() == 1 || smp) {
+ #if defined(CONFIG_APM_DISPLAY_BLANK) && defined(CONFIG_VT)
+@@ -2408,9 +2419,8 @@ static void __exit apm_exit(void)
+ 			apm_error("disengage power management", error);
+ 	}
+ 	misc_deregister(&apm_device);
++	unregister_power_off_handler(&apm_poweroff_nb);
+ 	remove_proc_entry("apm", NULL);
+-	if (power_off)
+-		pm_power_off = NULL;
+ 	if (kapmd_task) {
+ 		kthread_stop(kapmd_task);
+ 		kapmd_task = NULL;
 -- 
 1.9.1
 
