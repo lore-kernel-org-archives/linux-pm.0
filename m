@@ -1,71 +1,147 @@
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH 6/8] ARM: at91: sam9: remove useless resource for rstc
-Date: Tue, 21 Oct 2014 23:55:38 +0200
-Message-ID: <1413928540-27099-7-git-send-email-alexandre.belloni@free-electrons.com>
+Subject: [PATCH 3/8] ARM: at91: sam9: probe the RAMC driver from pdata
+Date: Tue, 21 Oct 2014 23:55:35 +0200
+Message-ID: <1413928540-27099-4-git-send-email-alexandre.belloni@free-electrons.com>
 References: <1413928540-27099-1-git-send-email-alexandre.belloni@free-electrons.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1413928540-27099-1-git-send-email-alexandre.belloni@free-electrons.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The RAMC resources are now unnecessary in the reset driver, remove them.
+Probe the atmel-sdramc driver from the board files, using platform_data.
 
 Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- arch/arm/mach-at91/at91sam9260.c | 5 -----
- arch/arm/mach-at91/at91sam9261.c | 5 -----
- arch/arm/mach-at91/at91sam9263.c | 5 -----
- 3 files changed, 15 deletions(-)
+ arch/arm/mach-at91/Kconfig       |  2 +-
+ arch/arm/mach-at91/at91sam9260.c | 15 +++++++++++++++
+ arch/arm/mach-at91/at91sam9261.c | 15 +++++++++++++++
+ arch/arm/mach-at91/at91sam9263.c | 15 +++++++++++++++
+ 4 files changed, 46 insertions(+), 1 deletion(-)
 
+diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
+index 0e6d548b70d9..db38e1d4b4fa 100644
+--- a/arch/arm/mach-at91/Kconfig
++++ b/arch/arm/mach-at91/Kconfig
+@@ -48,7 +48,7 @@ config SOC_AT91SAM9
+ 	select CPU_ARM926T
+ 	select GENERIC_CLOCKEVENTS
+ 	select MEMORY if USE_OF
+-	select ATMEL_SDRAMC if USE_OF
++	select ATMEL_SDRAMC
+ 
+ config SOC_SAMA5
+ 	bool
 diff --git a/arch/arm/mach-at91/at91sam9260.c b/arch/arm/mach-at91/at91sam9260.c
-index d5a6df9ce570..d1c97e025483 100644
+index aab1f969a7c3..d5a6df9ce570 100644
 --- a/arch/arm/mach-at91/at91sam9260.c
 +++ b/arch/arm/mach-at91/at91sam9260.c
-@@ -365,11 +365,6 @@ static struct resource rstc_resources[] = {
- 		.end    = AT91SAM9260_BASE_RSTC + SZ_16 - 1,
- 		.flags  = IORESOURCE_MEM,
- 	},
--	[1] = {
--		.start  = AT91SAM9260_BASE_SDRAMC,
--		.end    = AT91SAM9260_BASE_SDRAMC + SZ_512 - 1,
--		.flags  = IORESOURCE_MEM,
--	},
+@@ -378,6 +378,20 @@ static struct platform_device rstc_device = {
+ 	.num_resources  = ARRAY_SIZE(rstc_resources),
  };
  
- static struct platform_device rstc_device = {
++static struct resource ramc_resources[] = {
++	[0] = {
++		.start  = AT91SAM9260_BASE_SDRAMC,
++		.end    = AT91SAM9260_BASE_SDRAMC + SZ_512 - 1,
++		.flags  = IORESOURCE_MEM,
++	},
++};
++
++static struct platform_device ramc_device = {
++	.name           = "at91-sam9260-ramc",
++	.resource       = ramc_resources,
++	.num_resources  = ARRAY_SIZE(ramc_resources),
++};
++
+ static struct resource shdwc_resources[] = {
+ 	[0] = {
+ 		.start  = AT91SAM9260_BASE_SHDWC,
+@@ -394,6 +408,7 @@ static struct platform_device shdwc_device = {
+ 
+ static void __init at91sam9260_register_devices(void)
+ {
++	platform_device_register(&ramc_device);
+ 	platform_device_register(&rstc_device);
+ 	platform_device_register(&shdwc_device);
+ }
 diff --git a/arch/arm/mach-at91/at91sam9261.c b/arch/arm/mach-at91/at91sam9261.c
-index 1b23a023cca6..7a354d5a3d4c 100644
+index a8bd35963332..1b23a023cca6 100644
 --- a/arch/arm/mach-at91/at91sam9261.c
 +++ b/arch/arm/mach-at91/at91sam9261.c
-@@ -324,11 +324,6 @@ static struct resource rstc_resources[] = {
- 		.end    = AT91SAM9261_BASE_RSTC + SZ_16 - 1,
- 		.flags  = IORESOURCE_MEM,
- 	},
--	[1] = {
--		.start  = AT91SAM9261_BASE_SDRAMC,
--		.end    = AT91SAM9261_BASE_SDRAMC + SZ_512 - 1,
--		.flags  = IORESOURCE_MEM,
--	},
+@@ -337,6 +337,20 @@ static struct platform_device rstc_device = {
+ 	.num_resources  = ARRAY_SIZE(rstc_resources),
  };
  
- static struct platform_device rstc_device = {
++static struct resource ramc_resources[] = {
++	[0] = {
++		.start  = AT91SAM9261_BASE_SDRAMC,
++		.end    = AT91SAM9261_BASE_SDRAMC + SZ_512 - 1,
++		.flags  = IORESOURCE_MEM,
++	},
++};
++
++static struct platform_device ramc_device = {
++	.name           = "at91-sam9260-ramc",
++	.resource       = ramc_resources,
++	.num_resources  = ARRAY_SIZE(ramc_resources),
++};
++
+ static struct resource shdwc_resources[] = {
+ 	[0] = {
+ 		.start  = AT91SAM9261_BASE_SHDWC,
+@@ -353,6 +367,7 @@ static struct platform_device shdwc_device = {
+ 
+ static void __init at91sam9261_register_devices(void)
+ {
++	platform_device_register(&ramc_device);
+ 	platform_device_register(&rstc_device);
+ 	platform_device_register(&shdwc_device);
+ }
 diff --git a/arch/arm/mach-at91/at91sam9263.c b/arch/arm/mach-at91/at91sam9263.c
-index 55c0c212fde1..1f7e7021ae83 100644
+index fbff228cc63e..55c0c212fde1 100644
 --- a/arch/arm/mach-at91/at91sam9263.c
 +++ b/arch/arm/mach-at91/at91sam9263.c
-@@ -347,11 +347,6 @@ static struct resource rstc_resources[] = {
- 		.end    = AT91SAM9263_BASE_RSTC + SZ_16 - 1,
- 		.flags  = IORESOURCE_MEM,
- 	},
--	[1] = {
--		.start  = AT91SAM9263_BASE_SDRAMC0,
--		.end    = AT91SAM9263_BASE_SDRAMC0 + SZ_512 - 1,
--		.flags  = IORESOURCE_MEM,
--	},
+@@ -360,6 +360,20 @@ static struct platform_device rstc_device = {
+ 	.num_resources  = ARRAY_SIZE(rstc_resources),
  };
  
- static struct platform_device rstc_device = {
++static struct resource ramc_resources[] = {
++	[0] = {
++		.start  = AT91SAM9263_BASE_SDRAMC0,
++		.end    = AT91SAM9263_BASE_SDRAMC0 + SZ_512 - 1,
++		.flags  = IORESOURCE_MEM,
++	},
++};
++
++static struct platform_device ramc_device = {
++	.name           = "at91-sam9260-ramc",
++	.resource       = ramc_resources,
++	.num_resources  = ARRAY_SIZE(ramc_resources),
++};
++
+ static struct resource shdwc_resources[] = {
+ 	[0] = {
+ 		.start  = AT91SAM9263_BASE_SHDWC,
+@@ -376,6 +390,7 @@ static struct platform_device shdwc_device = {
+ 
+ static void __init at91sam9263_register_devices(void)
+ {
++	platform_device_register(&ramc_device);
+ 	platform_device_register(&rstc_device);
+ 	platform_device_register(&shdwc_device);
+ }
 -- 
 1.9.1
