@@ -1,88 +1,33 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix setting max_perf_pct in performance policy
-Date: Tue, 21 Oct 2014 15:30:52 +0200
-Message-ID: <25726997.FVACNx9Uy9@vostro.rjw.lan>
-References: <1413415011-31290-1-git-send-email-pali.rohar@gmail.com> <543FDEC8.1080102@gmail.com>
+Subject: Re: [PATCH 1/5] cpufreq: expose scaling_cur_freq sysfs file for set_policy() drivers
+Date: Tue, 21 Oct 2014 15:31:23 +0200
+Message-ID: <2045399.WTWsQZusZR@vostro.rjw.lan>
+References: <1413214664-17687-1-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52530 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932402AbaJUNK1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 09:10:27 -0400
-In-Reply-To: <543FDEC8.1080102@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1413214664-17687-1-git-send-email-dirk.j.brandewie@intel.com>
+Sender: stable-owner@vger.kernel.org
+To: dirk.brandewie@gmail.com
+Cc: linux-pm@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Pali =?ISO-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thursday, October 16, 2014 08:05:44 AM Dirk Brandewie wrote:
-> On 10/15/2014 04:16 PM, Pali Roh=C3=A1r wrote:
-> > Code which changes policy to powersave changes also max_policy_pct =
-based on
-> > max_freq. Code which change max_perf_pct has upper limit base on va=
-lue
-> > max_policy_pct. When policy is changing from powersave back to perf=
-ormance
-> > then max_policy_pct is not changed. Which means that changing max_p=
-erf_pct is
-> > not possible to high values if max_freq was too low in powersave po=
-licy.
-> >
-> > Test case:
-> >
-> > $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-> > 800000
-> > $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-> > 3300000
-> > $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-> > performance
-> > $ cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> > 100
-> >
-> > $ echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_gov=
-ernor
-> > $ echo 800000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_fr=
-eq
-> > $ echo 20 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> >
-> > $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-> > powersave
-> > $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-> > 800000
-> > $ cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> > 20
-> >
-> > $ echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_g=
-overnor
-> > $ echo 3300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_f=
-req
-> > $ echo 100 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> >
-> > $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-> > performance
-> > $ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-> > 3300000
-> > $ cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> > 24
-> >
-> > And now intel_pstate driver allows to set maximal value for max_per=
-f_pct based
-> > on max_policy_pct which is 24 for previous powersave max_freq 80000=
-0.
-> >
-> > This patch will set default value for max_policy_pct when setting p=
-olicy to
-> > performance so it will allow to set also max value for max_perf_pct=
-=2E
-> >
-> > Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
->=20
-> Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On Monday, October 13, 2014 08:37:40 AM dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> 
+> Currently the core does not expose scaling_cur_freq for set_policy()
+> drivers this breaks some userspace monitoring tools.
+> Change the core to expose this file for all drivers and if the
+> set_policy() driver supports the get() callback use it to retrieve the
+> current frequency.
+> 
+> References: https://bugzilla.kernel.org/show_bug.cgi?id=73741
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Applied, thanks!
+Whole series applied, thanks!
 
---=20
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
