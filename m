@@ -1,103 +1,55 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 4/4] PM: convert do_each_thread to for_each_process_thread
-Date: Tue, 21 Oct 2014 14:10:18 +0200
-Message-ID: <2670728.8H9BNSArM8@vostro.rjw.lan>
-References: <1413876435-11720-1-git-send-email-mhocko@suse.cz> <1413876435-11720-5-git-send-email-mhocko@suse.cz>
+Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call chain
+Date: Tue, 21 Oct 2014 14:26:10 +0200
+Message-ID: <41603148.RJg26vx0Wv@vostro.rjw.lan>
+References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-2-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51447 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:56331 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932170AbaJULtw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 07:49:52 -0400
-In-Reply-To: <1413876435-11720-5-git-send-email-mhocko@suse.cz>
+	with SMTP id S1755281AbaJUMFq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 08:05:46 -0400
+In-Reply-To: <1413864783-3271-2-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michal Hocko <mhocko@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Philippe =?ISO-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>, Romain Perier <romain.perier@gmail.com>
 
-On Tuesday, October 21, 2014 09:27:15 AM Michal Hocko wrote:
-> as per 0c740d0afc3b (introduce for_each_thread() to replace the buggy
-> while_each_thread()) get rid of do_each_thread { } while_each_thread()
-> construct and replace it by a more error prone for_each_thread.
+On Monday, October 20, 2014 09:12:17 PM Guenter Roeck wrote:
+> Various drivers implement architecture and/or device specific means to
+> remove power from the system.  For the most part, those drivers set the
+> global variable pm_power_off to point to a function within the driver.
 > 
-> This patch doesn't introduce any user visible change.
+> This mechanism has a number of drawbacks.  Typically only one scheme
+> to remove power is supported (at least if pm_power_off is used).
+> At least in theory there can be multiple means remove power, some of
+> which may be less desirable. For example, some mechanisms may only
+> power off the CPU or the CPU card, while another may power off the
+> entire system.  Others may really just execute a restart sequence
+> or drop into the ROM monitor. Using pm_power_off can also be racy
+> if the function pointer is set from a driver built as module, as the
+> driver may be in the process of being unloaded when pm_power_off is
+> called. If there are multiple poweroff handlers in the system, removing
+> a module with such a handler may inadvertently reset the pointer to
+> pm_power_off to NULL, leaving the system with no means to remove power.
 > 
-> Suggested-by: Oleg Nesterov <oleg@redhat.com>
-> Signed-off-by: Michal Hocko <mhocko@suse.cz>
+> Introduce a system poweroff handler call chain to solve the described
+> problems.  This call chain is expected to be executed from the
+> architecture specific machine_power_off() function.  Drivers providing
+> system poweroff functionality are expected to register with this call chain.
+> By using the priority field in the notifier block, callers can control
+> poweroff handler execution sequence and thus ensure that the poweroff
+> handler with the optimal capabilities to remove power for a given system
+> is called first.
 
-ACK
+Well, I must admit to having second thoughts regarding this particular
+mechanism.  Namely, notifiers don't seem to be the best way of expressing
+what's needed from the design standpoint.
 
-Or do you want me to handle this series?
+It looks like we need a list of power off methods and a way to select one
+of them, so it seems that using a plist would be a natural choice here?
 
-> ---
->  kernel/power/process.c | 16 ++++++++--------
->  1 file changed, 8 insertions(+), 8 deletions(-)
-> 
-> diff --git a/kernel/power/process.c b/kernel/power/process.c
-> index a397fa161d11..7fd7b72554fe 100644
-> --- a/kernel/power/process.c
-> +++ b/kernel/power/process.c
-> @@ -46,13 +46,13 @@ static int try_to_freeze_tasks(bool user_only)
->  	while (true) {
->  		todo = 0;
->  		read_lock(&tasklist_lock);
-> -		do_each_thread(g, p) {
-> +		for_each_process_thread(g, p) {
->  			if (p == current || !freeze_task(p))
->  				continue;
->  
->  			if (!freezer_should_skip(p))
->  				todo++;
-> -		} while_each_thread(g, p);
-> +		}
->  		read_unlock(&tasklist_lock);
->  
->  		if (!user_only) {
-> @@ -93,11 +93,11 @@ static int try_to_freeze_tasks(bool user_only)
->  
->  		if (!wakeup) {
->  			read_lock(&tasklist_lock);
-> -			do_each_thread(g, p) {
-> +			for_each_process_thread(g, p) {
->  				if (p != current && !freezer_should_skip(p)
->  				    && freezing(p) && !frozen(p))
->  					sched_show_task(p);
-> -			} while_each_thread(g, p);
-> +			}
->  			read_unlock(&tasklist_lock);
->  		}
->  	} else {
-> @@ -219,11 +219,11 @@ void thaw_processes(void)
->  	thaw_workqueues();
->  
->  	read_lock(&tasklist_lock);
-> -	do_each_thread(g, p) {
-> +	for_each_process_thread(g, p) {
->  		/* No other threads should have PF_SUSPEND_TASK set */
->  		WARN_ON((p != curr) && (p->flags & PF_SUSPEND_TASK));
->  		__thaw_task(p);
-> -	} while_each_thread(g, p);
-> +	}
->  	read_unlock(&tasklist_lock);
->  
->  	WARN_ON(!(curr->flags & PF_SUSPEND_TASK));
-> @@ -246,10 +246,10 @@ void thaw_kernel_threads(void)
->  	thaw_workqueues();
->  
->  	read_lock(&tasklist_lock);
-> -	do_each_thread(g, p) {
-> +	for_each_process_thread(g, p) {
->  		if (p->flags & (PF_KTHREAD | PF_WQ_WORKER))
->  			__thaw_task(p);
-> -	} while_each_thread(g, p);
-> +	}
->  	read_unlock(&tasklist_lock);
->  
->  	schedule();
-> 
+Rafael
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
