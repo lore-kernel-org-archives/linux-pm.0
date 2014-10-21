@@ -1,94 +1,133 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] thermal-soc changes
-Date: Tue, 21 Oct 2014 09:49:43 -0400
-Message-ID: <20141021134941.GA4937@developer>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call
+ chain
+Date: Tue, 21 Oct 2014 06:34:45 -0700
+Message-ID: <544660F5.1070306@roeck-us.net>
+References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-2-git-send-email-linux@roeck-us.net> <20141021093405.GA2113@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="8t9RHnE3ZwKMSgU+"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:60197 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932524AbaJUNuQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 09:50:16 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XgZpI-001P5l-02
+	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 13:50:16 +0000
+In-Reply-To: <20141021093405.GA2113@localhost>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Johan Hovold <johan@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, =?windows-1252?Q?Philippe_R=E9tornaz?= <philippe.retornaz@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 
+On 10/21/2014 02:34 AM, Johan Hovold wrote:
+> On Mon, Oct 20, 2014 at 09:12:17PM -0700, Guenter Roeck wrote:
+>
+>> v2:
+>> - poweroff -> power_off
+>
+> Do you want to stick to power[-_ ]off consistently throughout?
+>
+>> - Add defines for default priorities
+>> - Use raw notifiers protected by spinlocks instead of atomic notifiers
+>> - Add register_poweroff_handler_simple
+>> - Add devm_register_power_off_handler
+>>
+>>   include/linux/pm.h              |  22 ++++
+>>   kernel/power/Makefile           |   1 +
+>>   kernel/power/poweroff_handler.c | 252 ++++++++++++++++++++++++++++++++++++++++
+>>   3 files changed, 275 insertions(+)
+>>   create mode 100644 kernel/power/poweroff_handler.c
+>>
+>> diff --git a/include/linux/pm.h b/include/linux/pm.h
+>> index 383fd68..7e0cb36 100644
+>> --- a/include/linux/pm.h
+>> +++ b/include/linux/pm.h
+>> @@ -34,7 +34,29 @@
+>>   extern void (*pm_power_off)(void);
+>>   extern void (*pm_power_off_prepare)(void);
+>>
+>> +/*
+>> + * Callbacks to manage poweroff handlers
+>
+> power-off
+>
+>> + */
+>> +
+>> +struct notifier_block;
+>>   struct device; /* we have a circular dep with device.h */
+>> +
+>> +int register_power_off_handler(struct notifier_block *);
+>> +int devm_register_power_off_handler(struct device *, struct notifier_block *);
+>> +int register_power_off_handler_simple(void (*function)(void), int priority);
+>> +int unregister_power_off_handler(struct notifier_block *);
+>> +void do_kernel_power_off(void);
+>> +bool have_kernel_power_off(void);
+>> +
+>> +/*
+>> + * Pre-defined poweroff handler priorities
+>
+> power-off
+>
+>> + */
+>> +#define POWEROFF_PRIORITY_FALLBACK	0
+>> +#define POWEROFF_PRIORITY_LOW		64
+>> +#define POWEROFF_PRIORITY_DEFAULT	128
+>> +#define POWEROFF_PRIORITY_HIGH		192
+>> +#define POWEROFF_PRIORITY_HIGHEST	255
+>
+> I think at least these ones should match the interface function and have
+> a POWER_OFF_PRIORITY_ prefix.
+>
+>> +
+>>   #ifdef CONFIG_VT_CONSOLE_SLEEP
+>>   extern void pm_vt_switch_required(struct device *dev, bool required);
+>>   extern void pm_vt_switch_unregister(struct device *dev);
+>> diff --git a/kernel/power/Makefile b/kernel/power/Makefile
+>> index 29472bf..4d9f0c7 100644
+>> --- a/kernel/power/Makefile
+>> +++ b/kernel/power/Makefile
+>> @@ -2,6 +2,7 @@
+>>   ccflags-$(CONFIG_PM_DEBUG)	:= -DDEBUG
+>>
+>>   obj-y				+= qos.o
+>> +obj-y				+= poweroff_handler.o
+>>   obj-$(CONFIG_PM)		+= main.o
+>>   obj-$(CONFIG_VT_CONSOLE_SLEEP)	+= console.o
+>>   obj-$(CONFIG_FREEZER)		+= process.o
+>> diff --git a/kernel/power/poweroff_handler.c b/kernel/power/poweroff_handler.c
+>> new file mode 100644
+>> index 0000000..aeb4736
+>> --- /dev/null
+>> +++ b/kernel/power/poweroff_handler.c
+>
+> power_off_handler.c?
+>
+>> @@ -0,0 +1,252 @@
+>> +/*
+>> + * linux/kernel/power/poweroff_handler.c - Poweroff handling functions
+>> + *
+>> + * Copyright (c) 2014 Guenter Roeck
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public Licence
+>> + * as published by the Free Software Foundation; either version
+>> + * 2 of the Licence, or (at your option) any later version.
+>> + */
+>> +
+>> +#define pr_fmt(fmt)	"poweroff: " fmt
+>
+> power-off:?
+>
+> There's a bunch of these introduced by the driver patches as well (e.g.
+> poweroff_nb).
+>
 
---8t9RHnE3ZwKMSgU+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I personally don't see a value in those changes, but sure, I can change
+all of it. Just hope that this won't cause someone else to request it
+to be changed back ;-).
 
-Hello Rui,
+Guenter
 
-Here are a couple of changes that are in my tree. They include:
-- a few code refactoring improving the Exynos code base;
-- new feature on the Exynos code base (TRIMINFO and TRIMRELOAD);
-- a documentation of RCAR thermal; and
-- a fix in the of-thermal, regarding the proper usage of of APIs.
-
-They are based on your next branch.
-
-BR,
-
-Eduardo Valentin
-
-The following changes since commit 6ceaf58abe25e86292152005c51169796bad3407:
-
-  Merge branch 'int340x-thermal' of .git into next (2014-10-17 14:30:58 +0800)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git next
-
-for you to fetch changes up to df67e40f51398fef8dd705dfe4e287ad9b10ba4b:
-
-  thermal: fix multiple disbalanced device node counters (2014-10-21 08:05:50 -0400)
-
-----------------------------------------------------------------
-Bartlomiej Zolnierkiewicz (9):
-      thermal: exynos: remove unused struct exynos_tmu_registers entries
-      thermal: exynos: remove dead code for HW_MODE calibration
-      thermal: exynos: remove redundant pdata checks from exynos_tmu_initialize()
-      thermal: exynos: remove redundant threshold_code checks from exynos_tmu_initialize()
-      thermal: exynos: simplify temp_to_code() and code_to_temp()
-      thermal: exynos: cache non_hw_trigger_levels in pdata
-      thermal: exynos: remove redundant pdata checks from exynos_tmu_control()
-      thermal: exynos: remove identical values from exynos*_tmu_registers structures
-      thermal: samsung: Exynos5260 and Exynos5420 should not use TRIM_RELOAD flag
-
-Chanwoo Choi (2):
-      thermal: exynos: Add support for many TRIMINFO_CTRL registers
-      thermal: exynos: Add support for TRIM_RELOAD feature at Exynos3250
-
-Geert Uytterhoeven (1):
-      thermal: rcar: Add binding docs for new R-Car Gen2 SoCs
-
-Vladimir Zapolskiy (1):
-      thermal: fix multiple disbalanced device node counters
-
- .../devicetree/bindings/thermal/rcar-thermal.txt   |   5 +-
- drivers/thermal/of-thermal.c                       |  40 ++++--
- drivers/thermal/samsung/exynos_thermal_common.h    |   2 +-
- drivers/thermal/samsung/exynos_tmu.c               | 141 ++++++---------------
- drivers/thermal/samsung/exynos_tmu.h               |  81 ++----------
- drivers/thermal/samsung/exynos_tmu_data.c          |  83 ++++--------
- drivers/thermal/samsung/exynos_tmu_data.h          |  39 +-----
- 7 files changed, 111 insertions(+), 280 deletions(-)
-
---8t9RHnE3ZwKMSgU+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJURmRpAAoJEMLUO4d9pOJWVHIH/3ddEE553jwrxsjSmjvmlNjX
-Up7jZBchAnzUS1Zv/Zy2Rii+kUBK/I8deDkN9+fJuAMnBtXT9mQRdbwDyKAhtwkq
-zpUwxgDZ1gpZhwcpeH8PxmhXHKDM/LJUi7jp/avScFpw3xpmFX1DwK/L8hzAvouH
-PPIowj/ajCSn1klLgmpq6C/bmb97MOx6krW71z++X/RuhRDMv8Iob2sD9TtuIU0w
-qZnUfbVLGmaamCAj92zFAcXMKVnNRFvc28payOsw3DbfIiVhUlXFZKgvGJtpiz8i
-Zc9otKtSq5iV/0EGBw7w7yyJSd7C5fGrgOlQkcgLYLm/c/dxKzIBi3D1ATqTVa4=
-=0/1W
------END PGP SIGNATURE-----
-
---8t9RHnE3ZwKMSgU+--
