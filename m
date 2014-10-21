@@ -1,115 +1,85 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 33/47] staging: nvec: Register with kernel poweroff handler
-Date: Mon, 20 Oct 2014 21:12:49 -0700
-Message-ID: <1413864783-3271-34-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 34/47] acpi: Register poweroff handler with kernel poweroff handler
+Date: Mon, 20 Oct 2014 21:12:50 -0700
+Message-ID: <1413864783-3271-35-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:33890 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754572AbaJUEOd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 00:14:33 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XgQq8-002eLu-NN
+	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 04:14:32 +0000
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Julian Andres Klode <jak@jak-linux.org>, Marc Dietrich <marvin24@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, ac100@lists.launchpad.net, devel@driverdev.osuosl.org, linux-tegra@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org
 
 Register with kernel poweroff handler instead of setting pm_power_off
-directly. Register with default priority since we don't know any better.
+directly. Register with high priority to reflect that the driver explicitly
+overrides existing poweroff handlers.
 
-Cc: Julian Andres Klode <jak@jak-linux.org>
-Cc: Marc Dietrich <marvin24@gmx.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Len Brown <lenb@kernel.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v2:
 - Use define to specify poweroff handler priority
-- Use dev_warn instead of dev_err
+- Use pr_warn instead of pr_err
 
- drivers/staging/nvec/nvec.c | 24 +++++++++++++++---------
- drivers/staging/nvec/nvec.h |  2 ++
- 2 files changed, 17 insertions(+), 9 deletions(-)
+ drivers/acpi/sleep.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/nvec/nvec.c b/drivers/staging/nvec/nvec.c
-index a93208a..78b68a3 100644
---- a/drivers/staging/nvec/nvec.c
-+++ b/drivers/staging/nvec/nvec.c
-@@ -33,6 +33,7 @@
- #include <linux/mfd/core.h>
- #include <linux/mutex.h>
- #include <linux/notifier.h>
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index 05a31b5..1eba563 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -16,6 +16,8 @@
+ #include <linux/device.h>
+ #include <linux/interrupt.h>
+ #include <linux/suspend.h>
++#include <linux/notifier.h>
 +#include <linux/pm.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/workqueue.h>
-@@ -80,8 +81,6 @@ enum nvec_sleep_subcmds {
- #define LID_SWITCH BIT(1)
- #define PWR_BUTTON BIT(15)
- 
--static struct nvec_chip *nvec_power_handle;
--
- static const struct mfd_cell nvec_devices[] = {
- 	{
- 		.name = "nvec-kbd",
-@@ -759,12 +758,17 @@ static void nvec_disable_i2c_slave(struct nvec_chip *nvec)
+ #include <linux/reboot.h>
+ #include <linux/acpi.h>
+ #include <linux/module.h>
+@@ -827,14 +829,22 @@ static void acpi_power_off_prepare(void)
+ 	acpi_disable_all_gpes();
  }
- #endif
  
--static void nvec_power_off(void)
-+static int nvec_power_off(struct notifier_block *this, unsigned long unused1,
-+			  void *unused2)
+-static void acpi_power_off(void)
++static int acpi_power_off(struct notifier_block *this,
++			  unsigned long unused1, void *unused2)
  {
-+	struct nvec_chip *nvec = container_of(this, struct nvec_chip,
-+					      poweroff_nb);
- 	char ap_pwr_down[] = { NVEC_SLEEP, AP_PWR_DOWN };
- 
--	nvec_toggle_global_events(nvec_power_handle, false);
--	nvec_write_async(nvec_power_handle, ap_pwr_down, 2);
-+	nvec_toggle_global_events(nvec, false);
-+	nvec_write_async(nvec, ap_pwr_down, 2);
+ 	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
+ 	printk(KERN_DEBUG "%s called\n", __func__);
+ 	local_irq_disable();
+ 	acpi_enter_sleep_state(ACPI_STATE_S5);
 +
 +	return NOTIFY_DONE;
  }
  
- /*
-@@ -878,8 +882,11 @@ static int tegra_nvec_probe(struct platform_device *pdev)
- 	nvec->nvec_status_notifier.notifier_call = nvec_status_notifier;
- 	nvec_register_notifier(nvec, &nvec->nvec_status_notifier, 0);
- 
--	nvec_power_handle = nvec;
--	pm_power_off = nvec_power_off;
-+	nvec->poweroff_nb.notifier_call = nvec_power_off;
-+	nvec->poweroff_nb.priority = POWEROFF_PRIORITY_DEFAULT;
-+	ret = register_power_off_handler(&nvec->poweroff_nb);
-+	if (ret)
-+		dev_warn(nvec->dev, "Failed to register poweroff handler\n");
- 
- 	/* Get Firmware Version */
- 	msg = nvec_write_sync(nvec, get_firmware_version, 2);
-@@ -914,13 +921,12 @@ static int tegra_nvec_remove(struct platform_device *pdev)
- {
- 	struct nvec_chip *nvec = platform_get_drvdata(pdev);
- 
-+	unregister_power_off_handler(&nvec->poweroff_nb);
- 	nvec_toggle_global_events(nvec, false);
- 	mfd_remove_devices(nvec->dev);
- 	nvec_unregister_notifier(nvec, &nvec->nvec_status_notifier);
- 	cancel_work_sync(&nvec->rx_work);
- 	cancel_work_sync(&nvec->tx_work);
--	/* FIXME: needs check wether nvec is responsible for power off */
--	pm_power_off = NULL;
- 
- 	return 0;
- }
-diff --git a/drivers/staging/nvec/nvec.h b/drivers/staging/nvec/nvec.h
-index e271375..e5ee2af 100644
---- a/drivers/staging/nvec/nvec.h
-+++ b/drivers/staging/nvec/nvec.h
-@@ -163,6 +163,8 @@ struct nvec_chip {
- 	struct nvec_msg *last_sync_msg;
- 
- 	int state;
++static struct notifier_block acpi_poweroff_nb = {
++	.notifier_call = acpi_power_off,
++	.priority = POWEROFF_PRIORITY_HIGH,
++};
 +
-+	struct notifier_block poweroff_nb;
- };
+ int __init acpi_sleep_init(void)
+ {
+ 	char supported[ACPI_S_STATE_COUNT * 3 + 1];
+@@ -851,7 +861,8 @@ int __init acpi_sleep_init(void)
+ 	if (acpi_sleep_state_supported(ACPI_STATE_S5)) {
+ 		sleep_states[ACPI_STATE_S5] = 1;
+ 		pm_power_off_prepare = acpi_power_off_prepare;
+-		pm_power_off = acpi_power_off;
++		if (register_power_off_handler(&acpi_poweroff_nb))
++			pr_warn("acpi: Failed to register poweroff handler\n");
+ 	}
  
- extern int nvec_write_async(struct nvec_chip *nvec, const unsigned char *data,
+ 	supported[0] = 0;
 -- 
 1.9.1
+
