@@ -1,40 +1,110 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 0/3] cpufreq: cpufreq-dt: platform_data based proposal
-Date: Tue, 21 Oct 2014 15:33:09 +0200
-Message-ID: <2513404.oZkEVY1Jti@vostro.rjw.lan>
-References: <1413711029-17419-1-git-send-email-thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCH] cpuidle/powernv: Populate cpuidle state details by querying the device-tree
+Date: Tue, 21 Oct 2014 15:33:50 +0200
+Message-ID: <8968481.QJxQ6T207t@vostro.rjw.lan>
+References: <20141014075259.11810.50996.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1413711029-17419-1-git-send-email-thomas.petazzoni@free-electrons.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:59613 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932300AbaJUNNZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 09:13:25 -0400
+In-Reply-To: <20141014075259.11810.50996.stgit@preeti.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, shreyas@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
 
-On Sunday, October 19, 2014 11:30:26 AM Thomas Petazzoni wrote:
-> Hello Rafael,
+On Tuesday, October 14, 2014 01:23:00 PM Preeti U Murthy wrote:
+> We hard code the metrics relevant for cpuidle states in the kernel today.
+> Instead pick them up from the device tree so that they remain relevant
+> and updated for the system that the kernel is running on.
 > 
-> As you requested, here is a new version of the cpufreq-dt patches,
-> rebased on top of the latest Linus tree
-> (52d589a01d4545ce1dc5c3892bb8c7b55edfe714 as I write this).
-> 
-> Compared to version 2:
-> 
->  - Rebased on top of latest Linus tree.
-> 
->  - Removed PATCH 3/4, which is meant to go through the mvebu
->    maintainer tree. I'll push it post-rc1.
-> 
->  - Added Acked-by tags from Viresh, since he ACKed all the patches.
-> 
-> Could you take those patches and push them to 3.18 ?
+> Cc: linux-pm@vger.kernel.org
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: devicetree@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 
-I've applied the series and it is in my linux-next branch now (which means that
-it should appear in linux-next proper tomorrow).
+Applied, thanks!
 
-I'm going to push it for 3.18-rc2.
+> ---
+> 
+>  drivers/cpuidle/cpuidle-powernv.c |   27 ++++++++++++++++++++++-----
+>  1 file changed, 22 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index fa79392..b57681d 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -165,7 +165,8 @@ static int powernv_add_idle_states(void)
+>  	int nr_idle_states = 1; /* Snooze */
+>  	int dt_idle_states;
+>  	const __be32 *idle_state_flags;
+> -	u32 len_flags, flags;
+> +	const __be32 *idle_state_latency;
+> +	u32 len_flags, flags, latency_ns;
+>  	int i;
+>  
+>  	/* Currently we have snooze statically defined */
+> @@ -182,18 +183,32 @@ static int powernv_add_idle_states(void)
+>  		return nr_idle_states;
+>  	}
+>  
+> +	idle_state_latency = of_get_property(power_mgt,
+> +			"ibm,cpu-idle-state-latencies-ns", NULL);
+> +	if (!idle_state_latency) {
+> +		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
+> +		return nr_idle_states;
+> +	}
+> +
+>  	dt_idle_states = len_flags / sizeof(u32);
+>  
+>  	for (i = 0; i < dt_idle_states; i++) {
+>  
+>  		flags = be32_to_cpu(idle_state_flags[i]);
+> +
+> +		/* Cpuidle accepts exit_latency in us and we estimate
+> +		 * target residency to be 10x exit_latency
+> +		 */
+> +		latency_ns = be32_to_cpu(idle_state_latency[i]);
+>  		if (flags & IDLE_USE_INST_NAP) {
+>  			/* Add NAP state */
+>  			strcpy(powernv_states[nr_idle_states].name, "Nap");
+>  			strcpy(powernv_states[nr_idle_states].desc, "Nap");
+>  			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
+> -			powernv_states[nr_idle_states].exit_latency = 10;
+> -			powernv_states[nr_idle_states].target_residency = 100;
+> +			powernv_states[nr_idle_states].exit_latency =
+> +					((unsigned int)latency_ns) / 1000;
+> +			powernv_states[nr_idle_states].target_residency =
+> +					((unsigned int)latency_ns / 100);
+>  			powernv_states[nr_idle_states].enter = &nap_loop;
+>  			nr_idle_states++;
+>  		}
+> @@ -204,8 +219,10 @@ static int powernv_add_idle_states(void)
+>  			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
+>  			powernv_states[nr_idle_states].flags =
+>  				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
+> -			powernv_states[nr_idle_states].exit_latency = 300;
+> -			powernv_states[nr_idle_states].target_residency = 1000000;
+> +			powernv_states[nr_idle_states].exit_latency =
+> +					((unsigned int)latency_ns) / 1000;
+> +			powernv_states[nr_idle_states].target_residency =
+> +					((unsigned int)latency_ns / 100);
+>  			powernv_states[nr_idle_states].enter = &fastsleep_loop;
+>  			nr_idle_states++;
+>  		}
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
 I speak only for myself.
