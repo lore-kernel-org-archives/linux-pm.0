@@ -1,101 +1,111 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 31/47] x86: apm: Register with kernel poweroff handler
-Date: Mon, 20 Oct 2014 21:12:47 -0700
-Message-ID: <1413864783-3271-32-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 25/47] power/reset: qnap-poweroff: Register with kernel poweroff handler
+Date: Mon, 20 Oct 2014 21:12:41 -0700
+Message-ID: <1413864783-3271-26-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:33812 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754541AbaJUEOZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 00:14:25 -0400
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XgQq1-002eFg-69
-	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 04:14:25 +0000
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Jiri Kosina <jkosina@suse.cz>, x86@kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+List-Id: linux-pm@vger.kernel.org
 
 Register with kernel poweroff handler instead of setting pm_power_off
-directly. Register with high priority to reflect that the original code
-overwrites existing poweroff handlers.
+directly. Register with default priority to reflect that the original
+code generates an error if another poweroff handler has already been
+registered when the driver is loaded.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Jiri Kosina <jkosina@suse.cz>
+Drop remove function since it is no longer needed.
+
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Acked-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v2:
 - Use define to specify poweroff handler priority
+- Use devm_register_power_off_handler
+- Drop remove function since it is no longer needed
 
- arch/x86/kernel/apm_32.c | 20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+ drivers/power/reset/qnap-poweroff.c | 32 ++++++++++++--------------------
+ 1 file changed, 12 insertions(+), 20 deletions(-)
 
-diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-index 5848744..b03a65e 100644
---- a/arch/x86/kernel/apm_32.c
-+++ b/arch/x86/kernel/apm_32.c
-@@ -219,6 +219,7 @@
- #include <linux/init.h>
- #include <linux/time.h>
- #include <linux/sched.h>
-+#include <linux/notifier.h>
- #include <linux/pm.h>
- #include <linux/capability.h>
- #include <linux/device.h>
-@@ -981,7 +982,8 @@ recalc:
-  *	on their first cpu.
-  */
+diff --git a/drivers/power/reset/qnap-poweroff.c b/drivers/power/reset/qnap-poweroff.c
+index a75db7f..da3d58a 100644
+--- a/drivers/power/reset/qnap-poweroff.c
++++ b/drivers/power/reset/qnap-poweroff.c
+@@ -16,7 +16,9 @@
  
--static void apm_power_off(void)
-+static int apm_power_off(struct notifier_block *this, unsigned long unused1,
-+			 void *unused2)
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/notifier.h>
+ #include <linux/platform_device.h>
++#include <linux/pm.h>
+ #include <linux/serial_reg.h>
+ #include <linux/kallsyms.h>
+ #include <linux/of.h>
+@@ -55,7 +57,8 @@ static void __iomem *base;
+ static unsigned long tclk;
+ static const struct power_off_cfg *cfg;
+ 
+-static void qnap_power_off(void)
++static int qnap_power_off(struct notifier_block *this, unsigned long unused1,
++			  void *unused2)
  {
- 	/* Some bioses don't like being called from CPU != 0 */
- 	if (apm_info.realmode_power_off) {
-@@ -990,8 +992,14 @@ static void apm_power_off(void)
- 	} else {
- 		(void)set_system_power_state(APM_STATE_OFF);
- 	}
+ 	const unsigned divisor = ((tclk + (8 * cfg->baud)) / (16 * cfg->baud));
+ 
+@@ -72,14 +75,20 @@ static void qnap_power_off(void)
+ 
+ 	/* send the power-off command to PIC */
+ 	writel(cfg->cmd, UART1_REG(TX));
++
 +	return NOTIFY_DONE;
  }
  
-+static struct notifier_block apm_poweroff_nb = {
-+	.notifier_call = apm_power_off,
-+	.priority = POWEROFF_PRIORITY_HIGH,
++static struct notifier_block qnap_poweroff_nb = {
++	.notifier_call = qnap_power_off,
++	.priority = POWEROFF_PRIORITY_DEFAULT,
 +};
 +
- #ifdef CONFIG_APM_DO_ENABLE
+ static int qnap_power_off_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct resource *res;
+ 	struct clk *clk;
+-	char symname[KSYM_NAME_LEN];
  
- /**
-@@ -1847,8 +1855,11 @@ static int apm(void *unused)
- 	}
+ 	const struct of_device_id *match =
+ 		of_match_node(qnap_power_off_of_match_table, np);
+@@ -106,28 +115,11 @@ static int qnap_power_off_probe(struct platform_device *pdev)
  
- 	/* Install our power off handler.. */
--	if (power_off)
--		pm_power_off = apm_power_off;
-+	if (power_off) {
-+		error = register_power_off_handler(&apm_poweroff_nb);
-+		if (error)
-+			pr_err("apm: Failed to register poweroff handler\n");
-+	}
+ 	tclk = clk_get_rate(clk);
  
- 	if (num_online_cpus() == 1 || smp) {
- #if defined(CONFIG_APM_DISPLAY_BLANK) && defined(CONFIG_VT)
-@@ -2408,9 +2419,8 @@ static void __exit apm_exit(void)
- 			apm_error("disengage power management", error);
- 	}
- 	misc_deregister(&apm_device);
-+	unregister_power_off_handler(&apm_poweroff_nb);
- 	remove_proc_entry("apm", NULL);
--	if (power_off)
--		pm_power_off = NULL;
- 	if (kapmd_task) {
- 		kthread_stop(kapmd_task);
- 		kapmd_task = NULL;
+-	/* Check that nothing else has already setup a handler */
+-	if (pm_power_off) {
+-		lookup_symbol_name((ulong)pm_power_off, symname);
+-		dev_err(&pdev->dev,
+-			"pm_power_off already claimed %p %s",
+-			pm_power_off, symname);
+-		return -EBUSY;
+-	}
+-	pm_power_off = qnap_power_off;
+-
+-	return 0;
+-}
+-
+-static int qnap_power_off_remove(struct platform_device *pdev)
+-{
+-	pm_power_off = NULL;
+-	return 0;
++	return devm_register_power_off_handler(&pdev->dev, &qnap_poweroff_nb);
+ }
+ 
+ static struct platform_driver qnap_power_off_driver = {
+ 	.probe	= qnap_power_off_probe,
+-	.remove	= qnap_power_off_remove,
+ 	.driver	= {
+ 		.owner	= THIS_MODULE,
+ 		.name	= "qnap_power_off",
 -- 
 1.9.1
-
