@@ -1,132 +1,54 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 12/47] mfd: ab8500-sysctrl: Register with kernel poweroff
- handler
-Date: Mon, 20 Oct 2014 21:12:28 -0700
-Message-ID: <1413864783-3271-13-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 39/47] m68k: Register with kernel poweroff handler
+Date: Mon, 20 Oct 2014 21:12:55 -0700
+Message-ID: <1413864783-3271-40-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-m68k-owner@vger.kernel.org>
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-m68k-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Joshua Thompson <funaho@jurai.org>, linux-m68k@lists.linux-m68k.org
 List-Id: linux-pm@vger.kernel.org
 
 Register with kernel poweroff handler instead of setting pm_power_off
-directly. Register with low priority to reflect that the original code
-only sets pm_power_off if it was not already set.
+directly.
 
-sysctrl_dev is set prior to poweroff handler registration, and the
-poweroff handler is unregistered prior to clearing sysrctrl_dev.
-It is therefore not necessary to check if sysctrl_dev is NULL in the
-poweroff handler, and the check was removed. Setting sysctrl_dev to NULL
-in the remove function was also removed as unnecessary. With those changes,
-devm_register_power_off_handler can be used to register the poeroff handler.
-The now empty remove function was retained since the ab8500_restart function,
-which is currently unused, would likely need some cleanup if it was ever used.
-
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: Lee Jones <lee.jones@linaro.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Joshua Thompson <funaho@jurai.org>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
-v2:
-- Use define to specify poweroff handler priority
-- Use devm_register_power_off_handler
-- Use dev_warn instead of dev_err
-- Since we use devm_register_power_off_handler,
-  we need to check if sysctrl_dev in the poweroff handler to avoid
-  a race condition on unload, so this check is no longer removed
+- Use defines to specify poweroff handler priorities
 
- drivers/mfd/ab8500-sysctrl.c | 22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
+ arch/m68k/emu/natfeat.c | 3 ++-
+ arch/m68k/mac/config.c  | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctrl.c
-index 8e0dae5..dc634d5 100644
---- a/drivers/mfd/ab8500-sysctrl.c
-+++ b/drivers/mfd/ab8500-sysctrl.c
-@@ -6,6 +6,7 @@
+diff --git a/arch/m68k/emu/natfeat.c b/arch/m68k/emu/natfeat.c
+index 91e2ae7..b105681 100644
+--- a/arch/m68k/emu/natfeat.c
++++ b/arch/m68k/emu/natfeat.c
+@@ -91,5 +91,6 @@ void __init nf_init(void)
+ 	pr_info("NatFeats found (%s, %lu.%lu)\n", buf, version >> 16,
+ 		version & 0xffff);
  
- #include <linux/err.h>
- #include <linux/module.h>
-+#include <linux/notifier.h>
- #include <linux/platform_device.h>
- #include <linux/pm.h>
- #include <linux/reboot.h>
-@@ -23,7 +24,8 @@
- 
- static struct device *sysctrl_dev;
- 
--static void ab8500_power_off(void)
-+static int ab8500_power_off(struct notifier_block *this, unsigned long unused1,
-+			    void *unused2)
- {
- 	sigset_t old;
- 	sigset_t all;
-@@ -36,7 +38,7 @@ static void ab8500_power_off(void)
- 
- 	if (sysctrl_dev == NULL) {
- 		pr_err("%s: sysctrl not initialized\n", __func__);
--		return;
-+		return NOTIFY_DONE;
- 	}
- 
- 	/*
-@@ -83,8 +85,15 @@ shutdown:
- 					 AB8500_STW4500CTRL1_SWRESET4500N);
- 		(void)sigprocmask(SIG_SETMASK, &old, NULL);
- 	}
-+
-+	return NOTIFY_DONE;
+-	pm_power_off = nf_poweroff;
++	register_power_off_handler_simple(nf_poweroff,
++					  POWEROFF_PRIORITY_DEFAULT);
  }
- 
-+static struct notifier_block ab8500_poweroff_nb = {
-+	.notifier_call = ab8500_power_off,
-+	.priority = POWEROFF_PRIORITY_LOW,
-+};
-+
- /*
-  * Use the AB WD to reset the platform. It will perform a hard
-  * reset instead of a soft reset. Write the reset reason to
-@@ -185,6 +194,7 @@ static int ab8500_sysctrl_probe(struct platform_device *pdev)
- 	struct ab8500 *ab8500 = dev_get_drvdata(pdev->dev.parent);
- 	struct ab8500_platform_data *plat;
- 	struct ab8500_sysctrl_platform_data *pdata;
-+	int err;
- 
- 	plat = dev_get_platdata(pdev->dev.parent);
- 
-@@ -193,8 +203,9 @@ static int ab8500_sysctrl_probe(struct platform_device *pdev)
- 
- 	sysctrl_dev = &pdev->dev;
- 
--	if (!pm_power_off)
--		pm_power_off = ab8500_power_off;
-+	err = devm_register_power_off_handler(sysctrl_dev, &ab8500_poweroff_nb);
-+	if (err)
-+		dev_warn(&pdev->dev, "Failed to register poweroff handler\n");
- 
- 	pdata = plat->sysctrl;
- 	if (pdata) {
-@@ -228,9 +239,6 @@ static int ab8500_sysctrl_remove(struct platform_device *pdev)
- {
- 	sysctrl_dev = NULL;
- 
--	if (pm_power_off == ab8500_power_off)
--		pm_power_off = NULL;
--
- 	return 0;
- }
- 
+diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c
+index 677913ff..07e853e 100644
+--- a/arch/m68k/mac/config.c
++++ b/arch/m68k/mac/config.c
+@@ -160,7 +160,8 @@ void __init config_mac(void)
+ 	mach_set_clock_mmss = mac_set_clock_mmss;
+ 	mach_reset = mac_reset;
+ 	mach_halt = mac_poweroff;
+-	pm_power_off = mac_poweroff;
++	register_power_off_handler_simple(mac_poweroff,
++					  POWEROFF_PRIORITY_DEFAULT);
+ 	mach_max_dma_address = 0xffffffff;
+ #if defined(CONFIG_INPUT_M68K_BEEP) || defined(CONFIG_INPUT_M68K_BEEP_MODULE)
+ 	mach_beep = mac_mksound;
 -- 
 1.9.1
