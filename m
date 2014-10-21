@@ -1,89 +1,60 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call
- chain
-Date: Tue, 21 Oct 2014 06:29:30 -0700
-Message-ID: <54465FBA.8070007@roeck-us.net>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-2-git-send-email-linux@roeck-us.net> <54460140.50805@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: [PATCH 0/8] ARM: at91: Remove mach/ includes from the reset driver
+Date: Tue, 21 Oct 2014 23:55:32 +0200
+Message-ID: <1413928540-27099-1-git-send-email-alexandre.belloni@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:34417 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933656AbaJUVwR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 17:52:17 -0400
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XghLk-002Fhv-A8
-	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 21:52:16 +0000
-In-Reply-To: <54460140.50805@gmail.com>
+Received: from down.free-electrons.com ([37.187.137.238]:52041 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933458AbaJUV4I (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 17:56:08 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?UGhpbGlwcGUgUsOpdG9ybmF6?= <philippe.retornaz@gmail.com>, linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>
 
-On 10/20/2014 11:46 PM, Philippe R=C3=A9tornaz wrote:
-> Hello
->
-> [...]
->> - Use raw notifiers protected by spinlocks instead of atomic notifie=
-rs
-> [...]
->
->> +/**
->> + *    do_kernel_power_off - Execute kernel poweroff handler call ch=
-ain
->> + *
->> + *    Calls functions registered with register_power_off_handler.
->> + *
->> + *    Expected to be called from machine_power_off as last step of
->> + *    the poweroff sequence.
->> + *
->> + *    Powers off the system immediately if a poweroff handler funct=
-ion
->> + *    has been registered. Otherwise does nothing.
->> + */
->> +void do_kernel_power_off(void)
->> +{
->> +    spin_lock(&power_off_handler_lock);
->> +    raw_notifier_call_chain(&power_off_handler_list, 0, NULL);
->> +    spin_unlock(&power_off_handler_lock);
->> +}
->
-> I don't get it. You are still in atomic context inside the poweroff c=
-allback
-> since you lock it with a spinlock.
->
-> It does not change much from the atomic notifier which was doing exac=
-tly the
-> same thing but with RCU:
->
->     rcu_read_lock();
->     ret =3D notifier_call_chain(&nh->head, val, v, nr_to_call, nr_cal=
-ls);
->     rcu_read_unlock();
->
-> Why not using the blocking_notifier_* family ?
-> It will lock with a read-write semaphore under which you can sleep.
->
-> For instance, twl4030_power_off will sleep, since it is doing I2C acc=
-ess.
-> So you cannot call it in atomic context.
->
+This series removes the mach/ headers dependency from the reset driver. It is
+also laying some groundwork for the necessary power management support rework.
 
-Learning something new all the time. I assumed that spin_lock (unlike
-spin_lock_irqsafe) would not run in atomic context.
+The first patch adds and export a function to shutdown the sdram from the sdramc
+driver.
 
-I did not want to use a sleeping lock because I am not sure if that
-works for all architectures; some disable (local) interrupts before
-calling the function (eg arm and arm64), and I don't want to change
-that semantics.
+The second patch makes the sdramc driver usable from the board files.
 
-I have another idea how to get there without changing the lock situatio=
-n
-while executing the call chain - just set a flag indicating that it is
-running and execute it without lock. Would that work ?
+The third patch actually registers the sdramc driver from the boards files.
+The fourth patch does the same, only for sam9g45 and sam9rl to simplify future
+merging as the board files have been removed. Simply drop that patch.
 
-Guenter
+The fifth patch makes the at91-reset driver use the newly created
+at91_ramc_shutdown() function and removes the mach/ headers inclusion.
+
+Then the sixth and seven patch do some cleanup. Again, you can simply drop patch
+7 when merging.
+
+The last patch adds myself a the maintainer for those drivers.
+
+Alexandre Belloni (8):
+  memory: atmel-sdramc: export a shutdown function
+  memory: atmel-sdramc: allow probing from pdata
+  ARM: at91: sam9: probe the RAMC driver from pdata
+  ARM: at91: sam9g45/sam9rl: probe the ramc driver
+  power: reset: at91-reset: use at91_ramc_shutdown
+  ARM: at91: sam9: remove useless resource for rstc
+  ARM: at91: sam9g45/sam9rl: remove useless resources for rstc
+  MAINTAINERS: add at91 power and memory entries
+
+ MAINTAINERS                      |  19 ++++++
+ arch/arm/mach-at91/Kconfig       |   2 +-
+ arch/arm/mach-at91/at91sam9260.c |  20 ++++--
+ arch/arm/mach-at91/at91sam9261.c |  20 ++++--
+ arch/arm/mach-at91/at91sam9263.c |  20 ++++--
+ arch/arm/mach-at91/at91sam9g45.c |  20 ++++--
+ arch/arm/mach-at91/at91sam9rl.c  |  20 ++++--
+ drivers/memory/atmel-sdramc.c    | 134 ++++++++++++++++++++++++++++++++++++++-
+ drivers/power/reset/at91-reset.c | 116 ++++-----------------------------
+ include/soc/atmel/memory.h       |   6 ++
+ 10 files changed, 248 insertions(+), 129 deletions(-)
+ create mode 100644 include/soc/atmel/memory.h
+
+-- 
+1.9.1
 
