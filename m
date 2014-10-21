@@ -1,37 +1,59 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 1/3] drivers: cpuidle: add status property to ARM idle states
-Date: Mon, 20 Oct 2014 14:38:02 -0700
-Message-ID: <7hbnp6e81x.fsf@deeprootsystems.com>
-References: <1413467997-32131-1-git-send-email-lorenzo.pieralisi@arm.com>
+From: Yao Dongdong <yaodongdong@huawei.com>
+Subject: Re: [PATCH 2/2] Thermal:Remove usless if(!result) before return tz
+Date: Tue, 21 Oct 2014 11:34:37 +0800
+Message-ID: <5445D44D.60808@huawei.com>
+References: <5444C78F.10404@huawei.com> <20141020121039.GA3688@developer>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f177.google.com ([209.85.192.177]:45136 "EHLO
-	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753633AbaJTViH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Oct 2014 17:38:07 -0400
-Received: by mail-pd0-f177.google.com with SMTP id v10so5674463pde.8
-        for <linux-pm@vger.kernel.org>; Mon, 20 Oct 2014 14:38:06 -0700 (PDT)
-In-Reply-To: <1413467997-32131-1-git-send-email-lorenzo.pieralisi@arm.com>
-	(Lorenzo Pieralisi's message of "Thu, 16 Oct 2014 14:59:55 +0100")
+Received: from szxga02-in.huawei.com ([119.145.14.65]:25470 "EHLO
+	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751023AbaJUDer (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Oct 2014 23:34:47 -0400
+In-Reply-To: <20141020121039.GA3688@developer>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
 
-> On some platforms the device tree bindings must provide the kernel
-> with a status flag for idle states, that defines whether the idle
-> state is operational or not in the current configuration.
+On 2014/10/20 20:10, Eduardo Valentin wrote:
+> Hello Yao
 >
-> This patch adds a status property to the ARM idle states compliant
-> with ePAPR v1.1 and updates the DT parsing code accordingly.
->
-> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> On Mon, Oct 20, 2014 at 04:27:59PM +0800, Yao Dongdong wrote:
+>> result is always zero when comes here.
+>>
+>> Signed-off-by:yaodongdong@huawei.com
+>>
+>> ---
+>>  drivers/thermal/thermal_core.c | 3 +--
+>>  1 file changed, 1 insertion(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+>> index 5b7d466..19cac8e 100644
+>> --- a/drivers/thermal/thermal_core.c
+>> +++ b/drivers/thermal/thermal_core.c
+>> @@ -1568,8 +1568,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>>
+>>     thermal_zone_device_update(tz);
+>>
+>> -   if (!result)
+>> -       return tz;
+>> +   return tz;
+>>
+> Adding a return here will make the resource release below not reachable
+> in the fail path.
 
-For the series:
+But all fails above followed a "goto unregister", so i think it must be successful when come here.
 
-Acked-by: Kevin Hilman <khilman@linaro.org>
+Thanks.
 
-Kevin
+>>  unregister:
+>>     release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+>> --
+>> 1.8.0.1
+>>
+>>
+
+
