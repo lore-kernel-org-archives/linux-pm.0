@@ -1,90 +1,74 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 34/47] acpi: Register poweroff handler with kernel poweroff handler
-Date: Tue, 21 Oct 2014 14:27 +0200
-Message-ID: <1453445.HGtlG6JTvO@vostro.rjw.lan>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-35-git-send-email-linux@roeck-us.net>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call chain
+Date: Tue, 21 Oct 2014 14:44 +0200
+Message-ID: <1752920.2kdbbr5GW9@diego>
+References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-2-git-send-email-linux@roeck-us.net> <41603148.RJg26vx0Wv@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58948 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755191AbaJUMGf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 08:06:35 -0400
-In-Reply-To: <1413864783-3271-35-git-send-email-linux@roeck-us.net>
+Received: from gloria.sntech.de ([95.129.55.99]:54499 "EHLO gloria.sntech.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932423AbaJUMlB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 21 Oct 2014 08:41:01 -0400
+In-Reply-To: <41603148.RJg26vx0Wv@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Philippe =?ISO-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>, Romain Perier <romain.perier@gmail.com>
 
-On Monday, October 20, 2014 09:12:50 PM Guenter Roeck wrote:
-> Register with kernel poweroff handler instead of setting pm_power_off
-> directly. Register with high priority to reflect that the driver explicitly
-> overrides existing poweroff handlers.
+Am Dienstag, 21. Oktober 2014, 14:26:10 schrieb Rafael J. Wysocki:
+> On Monday, October 20, 2014 09:12:17 PM Guenter Roeck wrote:
+> > Various drivers implement architecture and/or device specific means to
+> > remove power from the system.  For the most part, those drivers set the
+> > global variable pm_power_off to point to a function within the driver.
+> > 
+> > This mechanism has a number of drawbacks.  Typically only one scheme
+> > to remove power is supported (at least if pm_power_off is used).
+> > At least in theory there can be multiple means remove power, some of
+> > which may be less desirable. For example, some mechanisms may only
+> > power off the CPU or the CPU card, while another may power off the
+> > entire system.  Others may really just execute a restart sequence
+> > or drop into the ROM monitor. Using pm_power_off can also be racy
+> > if the function pointer is set from a driver built as module, as the
+> > driver may be in the process of being unloaded when pm_power_off is
+> > called. If there are multiple poweroff handlers in the system, removing
+> > a module with such a handler may inadvertently reset the pointer to
+> > pm_power_off to NULL, leaving the system with no means to remove power.
+> > 
+> > Introduce a system poweroff handler call chain to solve the described
+> > problems.  This call chain is expected to be executed from the
+> > architecture specific machine_power_off() function.  Drivers providing
+> > system poweroff functionality are expected to register with this call
+> > chain. By using the priority field in the notifier block, callers can
+> > control poweroff handler execution sequence and thus ensure that the
+> > poweroff handler with the optimal capabilities to remove power for a
+> > given system is called first.
 > 
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Len Brown <lenb@kernel.org>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
-> v2:
-> - Use define to specify poweroff handler priority
-> - Use pr_warn instead of pr_err
+> Well, I must admit to having second thoughts regarding this particular
+> mechanism.  Namely, notifiers don't seem to be the best way of expressing
+> what's needed from the design standpoint.
 > 
->  drivers/acpi/sleep.c | 15 +++++++++++++--
->  1 file changed, 13 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-> index 05a31b5..1eba563 100644
-> --- a/drivers/acpi/sleep.c
-> +++ b/drivers/acpi/sleep.c
-> @@ -16,6 +16,8 @@
->  #include <linux/device.h>
->  #include <linux/interrupt.h>
->  #include <linux/suspend.h>
-> +#include <linux/notifier.h>
-> +#include <linux/pm.h>
->  #include <linux/reboot.h>
->  #include <linux/acpi.h>
->  #include <linux/module.h>
-> @@ -827,14 +829,22 @@ static void acpi_power_off_prepare(void)
->  	acpi_disable_all_gpes();
->  }
->  
-> -static void acpi_power_off(void)
-> +static int acpi_power_off(struct notifier_block *this,
-> +			  unsigned long unused1, void *unused2)
->  {
->  	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
->  	printk(KERN_DEBUG "%s called\n", __func__);
->  	local_irq_disable();
->  	acpi_enter_sleep_state(ACPI_STATE_S5);
-> +
-> +	return NOTIFY_DONE;
->  }
->  
-> +static struct notifier_block acpi_poweroff_nb = {
-> +	.notifier_call = acpi_power_off,
-> +	.priority = POWEROFF_PRIORITY_HIGH,
-> +};
-> +
->  int __init acpi_sleep_init(void)
->  {
->  	char supported[ACPI_S_STATE_COUNT * 3 + 1];
-> @@ -851,7 +861,8 @@ int __init acpi_sleep_init(void)
->  	if (acpi_sleep_state_supported(ACPI_STATE_S5)) {
->  		sleep_states[ACPI_STATE_S5] = 1;
->  		pm_power_off_prepare = acpi_power_off_prepare;
-> -		pm_power_off = acpi_power_off;
-> +		if (register_power_off_handler(&acpi_poweroff_nb))
-> +			pr_warn("acpi: Failed to register poweroff handler\n");
+> It looks like we need a list of power off methods and a way to select one
+> of them, so it seems that using a plist would be a natural choice here?
 
-Please always spell "ACPI" in capitals in kernel messages.
+I actually like Guenter's approach of traversing a sorted list of poweroff 
+methods until one of them really turns off the device.
 
->  	}
->  
->  	supported[0] = 0;
-> 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+For example, one device I work on has this strange mechanism where the device 
+stays powered on while either a gpio is high or the device is connected to a 
+host via usb - it cannot be turned off at all while it is connected via usb.
+
+So the established way of handling poweroff there is to check the usb 
+connection and either shutdown or restart [where the bootloader will enter a 
+charging cycle and really poweroff the device once it gets disconnected].
+
+If there is only one method to shutdown possible this device-specific behaviour 
+would need to be encoded in some sort of poweroff driver, while with Guenter's 
+current approach I could just register the gpio-poweroff at a higher priority 
+which would then fall down to the lower priority restart if the device stays 
+powered due to the usb connection.
+
+
+Heiko
