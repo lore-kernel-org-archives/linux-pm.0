@@ -1,72 +1,81 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 28/47] power/reset: at91-poweroff: Register with kernel poweroff handler
-Date: Mon, 20 Oct 2014 21:12:44 -0700
-Message-ID: <1413864783-3271-29-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 26/47] power/reset: msm-poweroff: Register with kernel poweroff handler
+Date: Mon, 20 Oct 2014 21:12:42 -0700
+Message-ID: <1413864783-3271-27-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:33762 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754484AbaJUEOO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 00:14:14 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XgQpq-002e8U-3I
+	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 04:14:14 +0000
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>
-List-Id: linux-pm@vger.kernel.org
 
 Register with kernel poweroff handler instead of setting pm_power_off
-directly. Select default priority to reflect that the original code sets
-pm_power_off unconditionally.
+directly. Select fallback priority since the code does not really poweroff
+the system but resets it instead.
 
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
-v2: Added patch
+v2:
+- Use define to specify poweroff handler priority
+- Fix headline and description
+- Merge with restart handler code now used in same driver
+- Use dev_warn instead of dev_err
 
- drivers/power/reset/at91-poweroff.c | 16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+ drivers/power/reset/msm-poweroff.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at91-poweroff.c
-index c610003..ac49a83 100644
---- a/drivers/power/reset/at91-poweroff.c
-+++ b/drivers/power/reset/at91-poweroff.c
-@@ -12,8 +12,10 @@
- 
- #include <linux/io.h>
- #include <linux/module.h>
-+#include <linux/notifier.h>
+diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
+index 4702efd..d44f332 100644
+--- a/drivers/power/reset/msm-poweroff.c
++++ b/drivers/power/reset/msm-poweroff.c
+@@ -19,10 +19,12 @@
  #include <linux/of.h>
  #include <linux/platform_device.h>
-+#include <linux/pm.h>
- #include <linux/printk.h>
+ #include <linux/module.h>
++#include <linux/notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/pm.h>
  
- #define AT91_SHDW_CR	0x00		/* Shut Down Control Register */
-@@ -66,11 +68,19 @@ static void __init at91_wakeup_status(void)
- 	pr_info("AT91: Wake-Up source: %s\n", reason);
- }
- 
--static void at91_poweroff(void)
-+static int at91_poweroff(struct notifier_block *this, unsigned long unused1,
-+			 void *unused2)
- {
- 	writel(AT91_SHDW_KEY | AT91_SHDW_SHDW, at91_shdwc_base + AT91_SHDW_CR);
+ static void __iomem *msm_ps_hold;
 +
-+	return NOTIFY_DONE;
- }
+ static int do_msm_restart(struct notifier_block *nb, unsigned long action,
+ 			   void *data)
+ {
+@@ -37,11 +39,11 @@ static struct notifier_block restart_nb = {
+ 	.priority = 128,
+ };
  
-+static struct notifier_block at91_poweroff_nb = {
-+	.notifier_call = at91_poweroff,
-+	.priority = POWEROFF_PRIORITY_DEFAULT,
+-static void do_msm_poweroff(void)
+-{
++static struct notifier_block msm_poweroff_nb = {
+ 	/* TODO: Add poweroff capability */
+-	do_msm_restart(&restart_nb, 0, NULL);
+-}
++	.notifier_call = do_msm_restart,
++	.priority = POWEROFF_PRIORITY_FALLBACK,
 +};
-+
- const enum wakeup_type at91_poweroff_get_wakeup_mode(struct device_node *np)
+ 
+ static int msm_restart_probe(struct platform_device *pdev)
  {
- 	const char *pm;
-@@ -134,9 +144,7 @@ static int at91_poweroff_probe(struct platform_device *pdev)
- 	if (pdev->dev.of_node)
- 		at91_poweroff_dt_set_wakeup_mode(pdev);
+@@ -55,7 +57,8 @@ static int msm_restart_probe(struct platform_device *pdev)
  
--	pm_power_off = at91_poweroff;
--
--	return 0;
-+	return devm_register_power_off_handler(&pdev->dev, &at91_poweroff_nb);
+ 	register_restart_handler(&restart_nb);
+ 
+-	pm_power_off = do_msm_poweroff;
++	if (register_power_off_handler(&msm_poweroff_nb))
++		dev_warn(&pdev->dev, "Failed to register poweroff handler\n");
+ 
+ 	return 0;
  }
- 
- static struct of_device_id at91_poweroff_of_match[] = {
 -- 
 1.9.1
+
