@@ -1,69 +1,94 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call
- chain
-Date: Tue, 21 Oct 2014 06:17:09 -0700
-Message-ID: <54465CD5.5070002@roeck-us.net>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-2-git-send-email-linux@roeck-us.net> <41603148.RJg26vx0Wv@vostro.rjw.lan>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] thermal-soc changes
+Date: Tue, 21 Oct 2014 09:49:43 -0400
+Message-ID: <20141021134941.GA4937@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:59287 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932510AbaJUNne (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 09:43:34 -0400
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XgZin-001Hvh-1w
-	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 13:43:33 +0000
-In-Reply-To: <41603148.RJg26vx0Wv@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="8t9RHnE3ZwKMSgU+"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, =?UTF-8?B?UGhpbGlwcGUgUsOpdG9ybmF6?= <philippe.retornaz@gmail.com>, Romain Perier <romain.perier@gmail.com>
 
-On 10/21/2014 05:26 AM, Rafael J. Wysocki wrote:
-> On Monday, October 20, 2014 09:12:17 PM Guenter Roeck wrote:
->> Various drivers implement architecture and/or device specific means to
->> remove power from the system.  For the most part, those drivers set the
->> global variable pm_power_off to point to a function within the driver.
->>
->> This mechanism has a number of drawbacks.  Typically only one scheme
->> to remove power is supported (at least if pm_power_off is used).
->> At least in theory there can be multiple means remove power, some of
->> which may be less desirable. For example, some mechanisms may only
->> power off the CPU or the CPU card, while another may power off the
->> entire system.  Others may really just execute a restart sequence
->> or drop into the ROM monitor. Using pm_power_off can also be racy
->> if the function pointer is set from a driver built as module, as the
->> driver may be in the process of being unloaded when pm_power_off is
->> called. If there are multiple poweroff handlers in the system, removing
->> a module with such a handler may inadvertently reset the pointer to
->> pm_power_off to NULL, leaving the system with no means to remove power.
->>
->> Introduce a system poweroff handler call chain to solve the described
->> problems.  This call chain is expected to be executed from the
->> architecture specific machine_power_off() function.  Drivers providing
->> system poweroff functionality are expected to register with this call chain.
->> By using the priority field in the notifier block, callers can control
->> poweroff handler execution sequence and thus ensure that the poweroff
->> handler with the optimal capabilities to remove power for a given system
->> is called first.
->
-> Well, I must admit to having second thoughts regarding this particular
-> mechanism.  Namely, notifiers don't seem to be the best way of expressing
-> what's needed from the design standpoint.
->
-> It looks like we need a list of power off methods and a way to select one
-> of them, so it seems that using a plist would be a natural choice here?
->
-Isn't a notifier call chain nothing but a list of methods, with its priority
-the means to select which one to use (first) ?
 
-The only difference I can see is that you would only select one of them,
-meaning the one with the highest priority, and not try the others.
-Am I missing something ?
+--8t9RHnE3ZwKMSgU+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks,
-Guenter
+Hello Rui,
 
+Here are a couple of changes that are in my tree. They include:
+- a few code refactoring improving the Exynos code base;
+- new feature on the Exynos code base (TRIMINFO and TRIMRELOAD);
+- a documentation of RCAR thermal; and
+- a fix in the of-thermal, regarding the proper usage of of APIs.
+
+They are based on your next branch.
+
+BR,
+
+Eduardo Valentin
+
+The following changes since commit 6ceaf58abe25e86292152005c51169796bad3407:
+
+  Merge branch 'int340x-thermal' of .git into next (2014-10-17 14:30:58 +0800)
+
+are available in the git repository at:
+
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git next
+
+for you to fetch changes up to df67e40f51398fef8dd705dfe4e287ad9b10ba4b:
+
+  thermal: fix multiple disbalanced device node counters (2014-10-21 08:05:50 -0400)
+
+----------------------------------------------------------------
+Bartlomiej Zolnierkiewicz (9):
+      thermal: exynos: remove unused struct exynos_tmu_registers entries
+      thermal: exynos: remove dead code for HW_MODE calibration
+      thermal: exynos: remove redundant pdata checks from exynos_tmu_initialize()
+      thermal: exynos: remove redundant threshold_code checks from exynos_tmu_initialize()
+      thermal: exynos: simplify temp_to_code() and code_to_temp()
+      thermal: exynos: cache non_hw_trigger_levels in pdata
+      thermal: exynos: remove redundant pdata checks from exynos_tmu_control()
+      thermal: exynos: remove identical values from exynos*_tmu_registers structures
+      thermal: samsung: Exynos5260 and Exynos5420 should not use TRIM_RELOAD flag
+
+Chanwoo Choi (2):
+      thermal: exynos: Add support for many TRIMINFO_CTRL registers
+      thermal: exynos: Add support for TRIM_RELOAD feature at Exynos3250
+
+Geert Uytterhoeven (1):
+      thermal: rcar: Add binding docs for new R-Car Gen2 SoCs
+
+Vladimir Zapolskiy (1):
+      thermal: fix multiple disbalanced device node counters
+
+ .../devicetree/bindings/thermal/rcar-thermal.txt   |   5 +-
+ drivers/thermal/of-thermal.c                       |  40 ++++--
+ drivers/thermal/samsung/exynos_thermal_common.h    |   2 +-
+ drivers/thermal/samsung/exynos_tmu.c               | 141 ++++++---------------
+ drivers/thermal/samsung/exynos_tmu.h               |  81 ++----------
+ drivers/thermal/samsung/exynos_tmu_data.c          |  83 ++++--------
+ drivers/thermal/samsung/exynos_tmu_data.h          |  39 +-----
+ 7 files changed, 111 insertions(+), 280 deletions(-)
+
+--8t9RHnE3ZwKMSgU+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJURmRpAAoJEMLUO4d9pOJWVHIH/3ddEE553jwrxsjSmjvmlNjX
+Up7jZBchAnzUS1Zv/Zy2Rii+kUBK/I8deDkN9+fJuAMnBtXT9mQRdbwDyKAhtwkq
+zpUwxgDZ1gpZhwcpeH8PxmhXHKDM/LJUi7jp/avScFpw3xpmFX1DwK/L8hzAvouH
+PPIowj/ajCSn1klLgmpq6C/bmb97MOx6krW71z++X/RuhRDMv8Iob2sD9TtuIU0w
+qZnUfbVLGmaamCAj92zFAcXMKVnNRFvc28payOsw3DbfIiVhUlXFZKgvGJtpiz8i
+Zc9otKtSq5iV/0EGBw7w7yyJSd7C5fGrgOlQkcgLYLm/c/dxKzIBi3D1ATqTVa4=
+=0/1W
+-----END PGP SIGNATURE-----
+
+--8t9RHnE3ZwKMSgU+--
