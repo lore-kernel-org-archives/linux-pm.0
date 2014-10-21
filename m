@@ -1,133 +1,79 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call
- chain
-Date: Tue, 21 Oct 2014 06:34:45 -0700
-Message-ID: <544660F5.1070306@roeck-us.net>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-2-git-send-email-linux@roeck-us.net> <20141021093405.GA2113@localhost>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call chain
+Date: Tue, 21 Oct 2014 16:15:11 +0200
+Message-ID: <2369971.tIcht5GPeB@vostro.rjw.lan>
+References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <41603148.RJg26vx0Wv@vostro.rjw.lan> <54465CD5.5070002@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:60197 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932524AbaJUNuQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 09:50:16 -0400
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XgZpI-001P5l-02
-	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 13:50:16 +0000
-In-Reply-To: <20141021093405.GA2113@localhost>
+Received: from v094114.home.net.pl ([79.96.170.134]:54187 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932556AbaJUNyq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 09:54:46 -0400
+In-Reply-To: <54465CD5.5070002@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Johan Hovold <johan@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, =?windows-1252?Q?Philippe_R=E9tornaz?= <philippe.retornaz@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Philippe =?ISO-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>, Romain Perier <romain.perier@gmail.com>
 
-On 10/21/2014 02:34 AM, Johan Hovold wrote:
-> On Mon, Oct 20, 2014 at 09:12:17PM -0700, Guenter Roeck wrote:
->
->> v2:
->> - poweroff -> power_off
->
-> Do you want to stick to power[-_ ]off consistently throughout?
->
->> - Add defines for default priorities
->> - Use raw notifiers protected by spinlocks instead of atomic notifiers
->> - Add register_poweroff_handler_simple
->> - Add devm_register_power_off_handler
->>
->>   include/linux/pm.h              |  22 ++++
->>   kernel/power/Makefile           |   1 +
->>   kernel/power/poweroff_handler.c | 252 ++++++++++++++++++++++++++++++++++++++++
->>   3 files changed, 275 insertions(+)
->>   create mode 100644 kernel/power/poweroff_handler.c
->>
->> diff --git a/include/linux/pm.h b/include/linux/pm.h
->> index 383fd68..7e0cb36 100644
->> --- a/include/linux/pm.h
->> +++ b/include/linux/pm.h
->> @@ -34,7 +34,29 @@
->>   extern void (*pm_power_off)(void);
->>   extern void (*pm_power_off_prepare)(void);
->>
->> +/*
->> + * Callbacks to manage poweroff handlers
->
-> power-off
->
->> + */
->> +
->> +struct notifier_block;
->>   struct device; /* we have a circular dep with device.h */
->> +
->> +int register_power_off_handler(struct notifier_block *);
->> +int devm_register_power_off_handler(struct device *, struct notifier_block *);
->> +int register_power_off_handler_simple(void (*function)(void), int priority);
->> +int unregister_power_off_handler(struct notifier_block *);
->> +void do_kernel_power_off(void);
->> +bool have_kernel_power_off(void);
->> +
->> +/*
->> + * Pre-defined poweroff handler priorities
->
-> power-off
->
->> + */
->> +#define POWEROFF_PRIORITY_FALLBACK	0
->> +#define POWEROFF_PRIORITY_LOW		64
->> +#define POWEROFF_PRIORITY_DEFAULT	128
->> +#define POWEROFF_PRIORITY_HIGH		192
->> +#define POWEROFF_PRIORITY_HIGHEST	255
->
-> I think at least these ones should match the interface function and have
-> a POWER_OFF_PRIORITY_ prefix.
->
->> +
->>   #ifdef CONFIG_VT_CONSOLE_SLEEP
->>   extern void pm_vt_switch_required(struct device *dev, bool required);
->>   extern void pm_vt_switch_unregister(struct device *dev);
->> diff --git a/kernel/power/Makefile b/kernel/power/Makefile
->> index 29472bf..4d9f0c7 100644
->> --- a/kernel/power/Makefile
->> +++ b/kernel/power/Makefile
->> @@ -2,6 +2,7 @@
->>   ccflags-$(CONFIG_PM_DEBUG)	:= -DDEBUG
->>
->>   obj-y				+= qos.o
->> +obj-y				+= poweroff_handler.o
->>   obj-$(CONFIG_PM)		+= main.o
->>   obj-$(CONFIG_VT_CONSOLE_SLEEP)	+= console.o
->>   obj-$(CONFIG_FREEZER)		+= process.o
->> diff --git a/kernel/power/poweroff_handler.c b/kernel/power/poweroff_handler.c
->> new file mode 100644
->> index 0000000..aeb4736
->> --- /dev/null
->> +++ b/kernel/power/poweroff_handler.c
->
-> power_off_handler.c?
->
->> @@ -0,0 +1,252 @@
->> +/*
->> + * linux/kernel/power/poweroff_handler.c - Poweroff handling functions
->> + *
->> + * Copyright (c) 2014 Guenter Roeck
->> + *
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public Licence
->> + * as published by the Free Software Foundation; either version
->> + * 2 of the Licence, or (at your option) any later version.
->> + */
->> +
->> +#define pr_fmt(fmt)	"poweroff: " fmt
->
-> power-off:?
->
-> There's a bunch of these introduced by the driver patches as well (e.g.
-> poweroff_nb).
->
+On Tuesday, October 21, 2014 06:17:09 AM Guenter Roeck wrote:
+> On 10/21/2014 05:26 AM, Rafael J. Wysocki wrote:
+> > On Monday, October 20, 2014 09:12:17 PM Guenter Roeck wrote:
+> >> Various drivers implement architecture and/or device specific means to
+> >> remove power from the system.  For the most part, those drivers set the
+> >> global variable pm_power_off to point to a function within the driver.
+> >>
+> >> This mechanism has a number of drawbacks.  Typically only one scheme
+> >> to remove power is supported (at least if pm_power_off is used).
+> >> At least in theory there can be multiple means remove power, some of
+> >> which may be less desirable. For example, some mechanisms may only
+> >> power off the CPU or the CPU card, while another may power off the
+> >> entire system.  Others may really just execute a restart sequence
+> >> or drop into the ROM monitor. Using pm_power_off can also be racy
+> >> if the function pointer is set from a driver built as module, as the
+> >> driver may be in the process of being unloaded when pm_power_off is
+> >> called. If there are multiple poweroff handlers in the system, removing
+> >> a module with such a handler may inadvertently reset the pointer to
+> >> pm_power_off to NULL, leaving the system with no means to remove power.
+> >>
+> >> Introduce a system poweroff handler call chain to solve the described
+> >> problems.  This call chain is expected to be executed from the
+> >> architecture specific machine_power_off() function.  Drivers providing
+> >> system poweroff functionality are expected to register with this call chain.
+> >> By using the priority field in the notifier block, callers can control
+> >> poweroff handler execution sequence and thus ensure that the poweroff
+> >> handler with the optimal capabilities to remove power for a given system
+> >> is called first.
+> >
+> > Well, I must admit to having second thoughts regarding this particular
+> > mechanism.  Namely, notifiers don't seem to be the best way of expressing
+> > what's needed from the design standpoint.
+> >
+> > It looks like we need a list of power off methods and a way to select one
+> > of them, so it seems that using a plist would be a natural choice here?
+> >
+> Isn't a notifier call chain nothing but a list of methods, with its priority
+> the means to select which one to use (first) ?
 
-I personally don't see a value in those changes, but sure, I can change
-all of it. Just hope that this won't cause someone else to request it
-to be changed back ;-).
+Traditionally, the idea behind notifier call chains has been to call all of the
+supplied methods (meaning whoever supplied them wants to be notified of events)
+where the higher-priority ones are called first.
 
-Guenter
+In this particular case, though, we call them until one succeeds to power
+off the system it seems.
 
+> The only difference I can see is that you would only select one of them,
+> meaning the one with the highest priority, and not try the others.
+
+Yes, this was my thought.
+
+But if you want a fallback mechanism, then I agree that using notifiers makes
+sense, although it is not exactly about notifications this time.
+
+I would probably use something along the lines of syscore_ops, but with added
+execution priority.
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
