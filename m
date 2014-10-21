@@ -1,17 +1,17 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 18/47] mfd: twl4030-power: Register with kernel poweroff handler
-Date: Mon, 20 Oct 2014 21:12:34 -0700
-Message-ID: <1413864783-3271-19-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 14/47] mfd: tps80031: Register with kernel poweroff handler
+Date: Mon, 20 Oct 2014 21:12:30 -0700
+Message-ID: <1413864783-3271-15-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:33688 "EHLO
+Received: from bh-25.webhostbox.net ([208.91.199.152]:33642 "EHLO
 	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754405AbaJUEN4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 00:13:56 -0400
+	with ESMTP id S1754368AbaJUENr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 00:13:47 -0400
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
 	(envelope-from <linux@roeck-us.net>)
-	id 1XgQpX-002dZE-QO
-	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 04:13:55 +0000
+	id 1XgQpP-002dBD-FF
+	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 04:13:47 +0000
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -22,9 +22,6 @@ Register with kernel poweroff handler instead of setting pm_power_off
 directly. Register with low priority to reflect that the original code
 only sets pm_power_off if it was not already set.
 
-Make twl4030_power_off static as it is only called from the twl4030-power
-driver. Drop remove function as it is no longer needed.
-
 Cc: Samuel Ortiz <sameo@linux.intel.com>
 Cc: Lee Jones <lee.jones@linaro.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
@@ -32,111 +29,94 @@ Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 v2:
 - Use define to specify poweroff handler priority
 - Use dev_warn instead of dev_err
-- Use devm_register_power_off_handler
-- Drop remove function as it is no longer needed.
 
- drivers/mfd/twl4030-power.c | 29 +++++++++++++++++++----------
- include/linux/i2c/twl.h     |  1 -
- 2 files changed, 19 insertions(+), 11 deletions(-)
+ drivers/mfd/tps80031.c       | 30 ++++++++++++++++++------------
+ include/linux/mfd/tps80031.h |  2 ++
+ 2 files changed, 20 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
-index cf92a6d..85e4aa4 100644
---- a/drivers/mfd/twl4030-power.c
-+++ b/drivers/mfd/twl4030-power.c
-@@ -25,9 +25,10 @@
-  */
+diff --git a/drivers/mfd/tps80031.c b/drivers/mfd/tps80031.c
+index ed6c5b0..926c62a 100644
+--- a/drivers/mfd/tps80031.c
++++ b/drivers/mfd/tps80031.c
+@@ -147,7 +147,6 @@ static const struct tps80031_pupd_data tps80031_pupds[] = {
+ 	[TPS80031_CTLI2C_SCL]		= PUPD_DATA(4, 0,	BIT(2)),
+ 	[TPS80031_CTLI2C_SDA]		= PUPD_DATA(4, 0,	BIT(3)),
+ };
+-static struct tps80031 *tps80031_power_off_dev;
  
- #include <linux/module.h>
--#include <linux/pm.h>
-+#include <linux/notifier.h>
- #include <linux/i2c/twl.h>
- #include <linux/platform_device.h>
-+#include <linux/pm.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
+ int tps80031_ext_power_req_config(struct device *dev,
+ 		unsigned long ext_ctrl_flag, int preq_bit,
+@@ -209,11 +208,17 @@ int tps80031_ext_power_req_config(struct device *dev,
+ }
+ EXPORT_SYMBOL_GPL(tps80031_ext_power_req_config);
  
-@@ -611,7 +612,8 @@ twl4030_power_configure_resources(const struct twl4030_power_data *pdata)
-  * After a successful execution, TWL shuts down the power to the SoC
-  * and all peripherals connected to it.
-  */
--void twl4030_power_off(void)
-+static int twl4030_power_off(struct notifier_block *this, unsigned long unused1,
-+			     void *unused2)
+-static void tps80031_power_off(void)
++static int tps80031_power_off(struct notifier_block *this,
++			      unsigned long unused1, void *unused2)
  {
- 	int err;
- 
-@@ -619,8 +621,15 @@ void twl4030_power_off(void)
- 			       TWL4030_PM_MASTER_P1_SW_EVENTS);
- 	if (err)
- 		pr_err("TWL4030 Unable to power off\n");
+-	dev_info(tps80031_power_off_dev->dev, "switching off PMU\n");
+-	tps80031_write(tps80031_power_off_dev->dev, TPS80031_SLAVE_ID1,
+-				TPS80031_PHOENIX_DEV_ON, TPS80031_DEVOFF);
++	struct tps80031 *tps80031 = container_of(this, struct tps80031,
++						 poweroff_nb);
++
++	dev_info(tps80031->dev, "switching off PMU\n");
++	tps80031_write(tps80031->dev, TPS80031_SLAVE_ID1,
++		       TPS80031_PHOENIX_DEV_ON, TPS80031_DEVOFF);
 +
 +	return NOTIFY_DONE;
  }
  
-+static struct notifier_block twl4030_poweroff_nb = {
-+	.notifier_call = twl4030_power_off,
-+	.priority = POWEROFF_PRIORITY_LOW,
-+};
-+
- static bool twl4030_power_use_poweroff(const struct twl4030_power_data *pdata,
- 					struct device_node *node)
- {
-@@ -839,7 +848,9 @@ static int twl4030_power_probe(struct platform_device *pdev)
+ static void tps80031_pupd_init(struct tps80031 *tps80031,
+@@ -501,9 +506,13 @@ static int tps80031_probe(struct i2c_client *client,
+ 		goto fail_mfd_add;
  	}
  
- 	/* Board has to be wired properly to use this feature */
--	if (twl4030_power_use_poweroff(pdata, node) && !pm_power_off) {
-+	if (twl4030_power_use_poweroff(pdata, node)) {
-+		int ret;
-+
- 		/* Default for SEQ_OFFSYNC is set, lets ensure this */
- 		err = twl_i2c_read_u8(TWL_MODULE_PM_MASTER, &val,
- 				      TWL4030_PM_MASTER_CFG_P123_TRANSITION);
-@@ -856,7 +867,11 @@ static int twl4030_power_probe(struct platform_device *pdev)
- 			}
- 		}
- 
--		pm_power_off = twl4030_power_off;
-+		ret = devm_register_power_off_handler(&pdev->dev,
-+						      &twl4030_poweroff_nb);
+-	if (pdata->use_power_off && !pm_power_off) {
+-		tps80031_power_off_dev = tps80031;
+-		pm_power_off = tps80031_power_off;
++	if (pdata->use_power_off) {
++		tps80031->poweroff_nb.notifier_call = tps80031_power_off;
++		tps80031->poweroff_nb.priority = POWEROFF_PRIORITY_LOW;
++		ret = register_power_off_handler(&tps80031->poweroff_nb);
 +		if (ret)
-+			dev_warn(&pdev->dev,
++			dev_warn(&client->dev,
 +				 "Failed to register poweroff handler\n");
  	}
+ 	return 0;
  
- relock:
-@@ -870,11 +885,6 @@ relock:
- 	return err;
- }
+@@ -523,10 +532,7 @@ static int tps80031_remove(struct i2c_client *client)
+ 	struct tps80031 *tps80031 = i2c_get_clientdata(client);
+ 	int i;
  
--static int twl4030_power_remove(struct platform_device *pdev)
--{
--	return 0;
--}
--
- static struct platform_driver twl4030_power_driver = {
- 	.driver = {
- 		.name	= "twl4030_power",
-@@ -882,7 +892,6 @@ static struct platform_driver twl4030_power_driver = {
- 		.of_match_table = of_match_ptr(twl4030_power_of_match),
- 	},
- 	.probe		= twl4030_power_probe,
--	.remove		= twl4030_power_remove,
+-	if (tps80031_power_off_dev == tps80031) {
+-		tps80031_power_off_dev = NULL;
+-		pm_power_off = NULL;
+-	}
++	unregister_power_off_handler(&tps80031->poweroff_nb);
+ 
+ 	mfd_remove_devices(tps80031->dev);
+ 
+diff --git a/include/linux/mfd/tps80031.h b/include/linux/mfd/tps80031.h
+index 2c75c9c..49bc006 100644
+--- a/include/linux/mfd/tps80031.h
++++ b/include/linux/mfd/tps80031.h
+@@ -24,6 +24,7 @@
+ #define __LINUX_MFD_TPS80031_H
+ 
+ #include <linux/device.h>
++#include <linux/notifier.h>
+ #include <linux/regmap.h>
+ 
+ /* Pull-ups/Pull-downs */
+@@ -513,6 +514,7 @@ struct tps80031 {
+ 	struct i2c_client	*clients[TPS80031_NUM_SLAVES];
+ 	struct regmap		*regmap[TPS80031_NUM_SLAVES];
+ 	struct regmap_irq_chip_data *irq_data;
++	struct notifier_block	poweroff_nb;
  };
  
- module_platform_driver(twl4030_power_driver);
-diff --git a/include/linux/i2c/twl.h b/include/linux/i2c/twl.h
-index 8cfb50f..f8544f1 100644
---- a/include/linux/i2c/twl.h
-+++ b/include/linux/i2c/twl.h
-@@ -680,7 +680,6 @@ struct twl4030_power_data {
- };
- 
- extern int twl4030_remove_script(u8 flags);
--extern void twl4030_power_off(void);
- 
- struct twl4030_codec_data {
- 	unsigned int digimic_delay; /* in ms */
+ struct tps80031_pupd_init_data {
 -- 
 1.9.1
 
