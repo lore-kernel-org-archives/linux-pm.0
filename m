@@ -1,210 +1,61 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
-Date: Tue, 21 Oct 2014 16:29:39 +0200
-Message-ID: <20141021142939.GG9415@dhcp22.suse.cz>
-References: <1413876435-11720-1-git-send-email-mhocko@suse.cz>
- <2156351.pWp6MNRoWm@vostro.rjw.lan>
- <20141021141159.GE9415@dhcp22.suse.cz>
- <4766859.KSKPTm3b0x@vostro.rjw.lan>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: lockdep splat in CPU hotplug
+Date: Tue, 21 Oct 2014 10:58:10 -0400
+Message-ID: <20141021145809.GA799@home.goodmis.org>
+References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cdptpa-outbound-snat.email.rr.com ([107.14.166.225]:40090 "EHLO
+	cdptpa-oedge-vip.email.rr.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751191AbaJUO73 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 10:59:29 -0400
 Content-Disposition: inline
-In-Reply-To: <4766859.KSKPTm3b0x@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
+In-Reply-To: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue 21-10-14 16:41:07, Rafael J. Wysocki wrote:
-> On Tuesday, October 21, 2014 04:11:59 PM Michal Hocko wrote:
-[...]
-> > OK, incremental diff on top. I will post the complete patch if you are
-> > happier with this change
+On Tue, Oct 21, 2014 at 01:09:04PM +0200, Jiri Kosina wrote:
+> Hi,
 > 
-> Yes, I am.
----
->From 9ab46fe539cded8e7b6425b2cd23ba9184002fde Mon Sep 17 00:00:00 2001
-From: Michal Hocko <mhocko@suse.cz>
-Date: Mon, 20 Oct 2014 18:12:32 +0200
-Subject: [PATCH -v2] OOM, PM: OOM killed task shouldn't escape PM suspend
+> I am seeing the lockdep report below when resuming from suspend-to-disk 
+> with current Linus' tree (c2661b80609).
+> 
+> The reason for CCing Ingo and Peter is that I can't make any sense of one 
+> of the stacktraces lockdep is providing.
+> 
+> Please have a look at the very first stacktrace in the dump, where lockdep 
+> is trying to explain where cpu_hotplug.lock#2 has been acquired. It seems 
+> to imply that cpuidle_pause() is taking cpu_hotplug.lock, but that's not 
+> the case at all.
+> 
+> What am I missing?
+> 
 
-PM freezer relies on having all tasks frozen by the time devices are
-getting frozen so that no task will touch them while they are getting
-frozen. But OOM killer is allowed to kill an already frozen task in
-order to handle OOM situtation. In order to protect from late wake ups
-OOM killer is disabled after all tasks are frozen. This, however, still
-keeps a window open when a killed task didn't manage to die by the time
-freeze_processes finishes.
 
-Reduce the race window by checking all tasks after OOM killer has been
-disabled. This is still not race free completely unfortunately because
-oom_killer_disable cannot stop an already ongoing OOM killer so a task
-might still wake up from the fridge and get killed without
-freeze_processes noticing. Full synchronization of OOM and freezer is,
-however, too heavy weight for this highly unlikely case.
+> 
+> -> #1 (cpu_hotplug.lock#2){+.+.+.}:
+>         [<ffffffff81099fac>] lock_acquire+0xac/0x130
+>         [<ffffffff815b9f2c>] mutex_lock_nested+0x5c/0x3b0
+>         [<ffffffff81491892>] cpuidle_pause+0x12/0x30
+>         [<ffffffff81402314>] dpm_suspend_noirq+0x44/0x340
+>         [<ffffffff81402958>] dpm_suspend_end+0x38/0x80
+>         [<ffffffff810a07bd>] hibernation_snapshot+0xcd/0x370
+>         [<ffffffff810a1248>] hibernate+0x168/0x210
+>         [<ffffffff8109e9b4>] state_store+0xe4/0xf0
+>         [<ffffffff813003ef>] kobj_attr_store+0xf/0x20
+>         [<ffffffff8121e9a3>] sysfs_kf_write+0x43/0x60
+>         [<ffffffff8121e287>] kernfs_fop_write+0xe7/0x170
+>         [<ffffffff811a7342>] vfs_write+0xb2/0x1f0
+>         [<ffffffff811a7da4>] SyS_write+0x44/0xb0
+>         [<ffffffff815be856>] system_call_fastpath+0x16/0x1b
 
-Introduce and check oom_kills counter which gets incremented early when
-the allocator enters __alloc_pages_may_oom path and only check all the
-tasks if the counter changes during the freezing attempt. The counter
-is updated so early to reduce the race window since allocator checked
-oom_killer_disabled which is set by PM-freezing code. A false positive
-will push the PM-freezer into a slow path but that is not a big deal.
+Yeah, this backtrace looks totally bogus. Unless there's some magic going on
+with grabbing the get_online_cpus here?
 
-Changes since v1
-- push the re-check loop out of freeze_processes into
-  check_frozen_processes and invert the condition to make the code more
-  readable as per Rafael
+Could you send your config. Maybe it has to do with some debug magic?
 
-Fixes: f660daac474c6f (oom: thaw threads if oom killed thread is frozen before deferring)
-Cc: Cong Wang <xiyou.wangcong@gmail.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: stable@vger.kernel.org # 3.2+
-Signed-off-by: Michal Hocko <mhocko@suse.cz>
----
- include/linux/oom.h    |  3 +++
- kernel/power/process.c | 40 +++++++++++++++++++++++++++++++++++++++-
- mm/oom_kill.c          | 17 +++++++++++++++++
- mm/page_alloc.c        |  8 ++++++++
- 4 files changed, 67 insertions(+), 1 deletion(-)
+-- Steve
 
-diff --git a/include/linux/oom.h b/include/linux/oom.h
-index 647395a1a550..e8d6e1058723 100644
---- a/include/linux/oom.h
-+++ b/include/linux/oom.h
-@@ -50,6 +50,9 @@ static inline bool oom_task_origin(const struct task_struct *p)
- extern unsigned long oom_badness(struct task_struct *p,
- 		struct mem_cgroup *memcg, const nodemask_t *nodemask,
- 		unsigned long totalpages);
-+
-+extern int oom_kills_count(void);
-+extern void note_oom_kill(void);
- extern void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 			     unsigned int points, unsigned long totalpages,
- 			     struct mem_cgroup *memcg, nodemask_t *nodemask,
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index 4ee194eb524b..7a37cf3eb1a2 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -108,6 +108,28 @@ static int try_to_freeze_tasks(bool user_only)
- 	return todo ? -EBUSY : 0;
- }
- 
-+/*
-+ * Returns true if all freezable tasks (except for current) are frozen already
-+ */
-+static bool check_frozen_processes(void)
-+{
-+	struct task_struct *g, *p;
-+	bool ret = true;
-+
-+	read_lock(&tasklist_lock);
-+	for_each_process_thread(g, p) {
-+		if (p != current && !freezer_should_skip(p) &&
-+		    !frozen(p)) {
-+			ret = false;
-+			goto done;
-+		}
-+	}
-+done:
-+	read_unlock(&tasklist_lock);
-+
-+	return ret;
-+}
-+
- /**
-  * freeze_processes - Signal user space processes to enter the refrigerator.
-  * The current thread will not be frozen.  The same process that calls
-@@ -118,6 +140,7 @@ static int try_to_freeze_tasks(bool user_only)
- int freeze_processes(void)
- {
- 	int error;
-+	int oom_kills_saved;
- 
- 	error = __usermodehelper_disable(UMH_FREEZING);
- 	if (error)
-@@ -131,12 +154,27 @@ int freeze_processes(void)
- 
- 	printk("Freezing user space processes ... ");
- 	pm_freezing = true;
-+	oom_kills_saved = oom_kills_count();
- 	error = try_to_freeze_tasks(true);
- 	if (!error) {
--		printk("done.");
- 		__usermodehelper_set_disable_depth(UMH_DISABLED);
- 		oom_killer_disable();
-+
-+		/*
-+		 * There might have been an OOM kill while we were
-+		 * freezing tasks and the killed task might be still
-+		 * on the way out so we have to double check for race.
-+		 */
-+		if (oom_kills_count() != oom_kills_saved &&
-+				!check_frozen_processes()) {
-+			__usermodehelper_set_disable_depth(UMH_ENABLED);
-+			printk("OOM in progress.");
-+			error = -EBUSY;
-+			goto done;
-+		}
-+		printk("done.");
- 	}
-+done:
- 	printk("\n");
- 	BUG_ON(in_atomic());
- 
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index bbf405a3a18f..5340f6b91312 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -404,6 +404,23 @@ static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
- 		dump_tasks(memcg, nodemask);
- }
- 
-+/*
-+ * Number of OOM killer invocations (including memcg OOM killer).
-+ * Primarily used by PM freezer to check for potential races with
-+ * OOM killed frozen task.
-+ */
-+static atomic_t oom_kills = ATOMIC_INIT(0);
-+
-+int oom_kills_count(void)
-+{
-+	return atomic_read(&oom_kills);
-+}
-+
-+void note_oom_kill(void)
-+{
-+	atomic_inc(&oom_kills);
-+}
-+
- #define K(x) ((x) << (PAGE_SHIFT-10))
- /*
-  * Must be called while holding a reference to p, which will be released upon
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index cb573b10af12..22f1929469ec 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2286,6 +2286,14 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
- 	}
- 
- 	/*
-+	 * PM-freezer should be notified that there might be an OOM killer on
-+	 * its way to kill and wake somebody up. This is too early and we might
-+	 * end up not killing anything but false positives are acceptable.
-+	 * See freeze_processes.
-+	 */
-+	note_oom_kill();
-+
-+	/*
- 	 * Go through the zonelist yet one more time, keep very high watermark
- 	 * here, this is only to catch a parallel oom killing, we must fail if
- 	 * we're still under heavy pressure.
--- 
-2.1.1
-
--- 
-Michal Hocko
-SUSE Labs
