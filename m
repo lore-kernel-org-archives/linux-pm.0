@@ -1,51 +1,61 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v8 2/5] amba: Add helpers for (un)preparing AMBA clock
-Date: Tue, 21 Oct 2014 10:05:27 +0200
-Message-ID: <CAPDyKFqZ9mwgCFaHctdhWPW018ir6Y8rEhAN_Euz3EFUPkuwWA@mail.gmail.com>
-References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com>
-	<1413795888-18559-3-git-send-email-k.kozlowski@samsung.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v2 05/47] mfd: as3722: Drop reference to pm_power_off
+ from devicetree bindings
+Date: Tue, 21 Oct 2014 09:15:15 +0100
+Message-ID: <20141021081515.GD26842@x1>
+References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
+ <1413864783-3271-6-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1413795888-18559-3-git-send-email-k.kozlowski@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <1413864783-3271-6-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 20 October 2014 11:04, Krzysztof Kozlowski <k.kozlowski@samsung.com> wrote:
-> Add amba_pclk_prepare() and amba_pclk_unprepare() inline functions for
-> handling the AMBA bus clock by device drivers.
->
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+On Mon, 20 Oct 2014, Guenter Roeck wrote:
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
+> Devicetree bindings are supposed to be operating system independent
+> and should thus not describe how a specific functionality is implemen=
+ted
+> in Linux.
+>=20
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Pawel Moll <pawel.moll@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Acked-by: Mark Rutland <mark.rutland@arm.com>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 > ---
->  include/linux/amba/bus.h | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->
-> diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
-> index c324f5700d1a..ac02f9bd63dc 100644
-> --- a/include/linux/amba/bus.h
-> +++ b/include/linux/amba/bus.h
-> @@ -97,6 +97,16 @@ void amba_release_regions(struct amba_device *);
->  #define amba_pclk_disable(d)   \
->         do { if (!IS_ERR((d)->pclk)) clk_disable((d)->pclk); } while (0)
->
-> +static inline int amba_pclk_prepare(struct amba_device *dev)
-> +{
-> +       return clk_prepare(dev->pclk);
-> +}
-> +
-> +static inline void amba_pclk_unprepare(struct amba_device *dev)
-> +{
-> +       clk_unprepare(dev->pclk);
-> +}
-> +
->  /* Some drivers don't use the struct amba_device */
->  #define AMBA_CONFIG_BITS(a) (((a) >> 24) & 0xff)
->  #define AMBA_REV_BITS(a) (((a) >> 20) & 0x0f)
-> --
-> 1.9.1
->
+> v2: No change
+>=20
+>  Documentation/devicetree/bindings/mfd/as3722.txt | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+
+Acked-by: Lee Jones <lee.jones@linaro.org>
+
+> diff --git a/Documentation/devicetree/bindings/mfd/as3722.txt b/Docum=
+entation/devicetree/bindings/mfd/as3722.txt
+> index 4f64b2a..0b2a609 100644
+> --- a/Documentation/devicetree/bindings/mfd/as3722.txt
+> +++ b/Documentation/devicetree/bindings/mfd/as3722.txt
+> @@ -122,8 +122,7 @@ Following are properties of regulator subnode.
+> =20
+>  Power-off:
+>  =3D=3D=3D=3D=3D=3D=3D=3D=3D
+> -AS3722 supports the system power off by turning off all its rail. Th=
+is
+> -is provided through pm_power_off.
+> +AS3722 supports the system power off by turning off all its rails.
+>  The device node should have the following properties to enable this
+>  functionality
+>  ams,system-power-controller: Boolean, to enable the power off functi=
+onality
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
