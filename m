@@ -1,114 +1,92 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 41/47] sh: Register with kernel poweroff handler
-Date: Mon, 20 Oct 2014 21:12:57 -0700
-Message-ID: <1413864783-3271-42-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 45/47] x86: pmc_atom: Register poweroff handler with kernel poweroff handler
+Date: Mon, 20 Oct 2014 21:13:01 -0700
+Message-ID: <1413864783-3271-46-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-sh-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:34014 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754638AbaJUEPB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 00:15:01 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XgQqa-002fFf-SP
+	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 04:15:01 +0000
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Sender: linux-sh-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, linux-sh@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
 
 Register with kernel poweroff handler instead of setting pm_power_off
-directly.
+directly. Register with low priority to reflect that the original code
+only sets pm_power_off if it was not already set.
 
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
-- Use defines to specify poweroff handler priorities
+- Use define to specify poweroff handler priority
+- Use dev_warn instead of dev_err
 
- arch/sh/boards/board-sh7785lcr.c       | 3 ++-
- arch/sh/boards/board-urquell.c         | 3 ++-
- arch/sh/boards/mach-highlander/setup.c | 3 ++-
- arch/sh/boards/mach-landisk/setup.c    | 3 ++-
- arch/sh/boards/mach-r2d/setup.c        | 3 ++-
- arch/sh/boards/mach-sdk7786/setup.c    | 3 ++-
- 6 files changed, 12 insertions(+), 6 deletions(-)
+ arch/x86/kernel/pmc_atom.c | 20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
 
-diff --git a/arch/sh/boards/board-sh7785lcr.c b/arch/sh/boards/board-sh7785lcr.c
-index 2c4771e..ada9f6a 100644
---- a/arch/sh/boards/board-sh7785lcr.c
-+++ b/arch/sh/boards/board-sh7785lcr.c
-@@ -332,7 +332,8 @@ static void __init sh7785lcr_setup(char **cmdline_p)
+diff --git a/arch/x86/kernel/pmc_atom.c b/arch/x86/kernel/pmc_atom.c
+index 0ee5025e..7799cdf 100644
+--- a/arch/x86/kernel/pmc_atom.c
++++ b/arch/x86/kernel/pmc_atom.c
+@@ -20,6 +20,8 @@
+ #include <linux/pci.h>
+ #include <linux/device.h>
+ #include <linux/debugfs.h>
++#include <linux/notifier.h>
++#include <linux/pm.h>
+ #include <linux/seq_file.h>
+ #include <linux/io.h>
  
- 	printk(KERN_INFO "Renesas Technology Corp. R0P7785LC0011RL support.\n");
+@@ -92,7 +94,8 @@ static inline void pmc_reg_write(struct pmc_dev *pmc, int reg_offset, u32 val)
+ 	writel(val, pmc->regmap + reg_offset);
+ }
  
--	pm_power_off = sh7785lcr_power_off;
-+	register_power_off_handler_simple(sh7785lcr_power_off,
-+					  POWEROFF_PRIORITY_DEFAULT);
- 
- 	/* sm501 DRAM configuration */
- 	sm501_reg = ioremap_nocache(SM107_REG_ADDR, SM501_DRAM_CONTROL);
-diff --git a/arch/sh/boards/board-urquell.c b/arch/sh/boards/board-urquell.c
-index b52abcc..2188fee 100644
---- a/arch/sh/boards/board-urquell.c
-+++ b/arch/sh/boards/board-urquell.c
-@@ -204,7 +204,8 @@ static void __init urquell_setup(char **cmdline_p)
+-static void pmc_power_off(void)
++static int pmc_power_off(struct notifier_block *this, unsigned long unused1,
++			 void *unused2)
  {
- 	printk(KERN_INFO "Renesas Technology Corp. Urquell support.\n");
+ 	u16	pm1_cnt_port;
+ 	u32	pm1_cnt_value;
+@@ -107,8 +110,15 @@ static void pmc_power_off(void)
+ 	pm1_cnt_value |= SLEEP_ENABLE;
  
--	pm_power_off = urquell_power_off;
-+	register_power_off_handler_simple(urquell_power_off,
-+					  POWEROFF_PRIORITY_DEFAULT);
- 
- 	register_smp_ops(&shx3_smp_ops);
- }
-diff --git a/arch/sh/boards/mach-highlander/setup.c b/arch/sh/boards/mach-highlander/setup.c
-index 4a52590..efb848a 100644
---- a/arch/sh/boards/mach-highlander/setup.c
-+++ b/arch/sh/boards/mach-highlander/setup.c
-@@ -385,7 +385,8 @@ static void __init highlander_setup(char **cmdline_p)
- 
- 	__raw_writew(__raw_readw(PA_IVDRCTL) | 0x01, PA_IVDRCTL);	/* Si13112 */
- 
--	pm_power_off = r7780rp_power_off;
-+	register_power_off_handler_simple(r7780rp_power_off,
-+					  POWEROFF_PRIORITY_DEFAULT);
+ 	outl(pm1_cnt_value, pm1_cnt_port);
++
++	return NOTIFY_DONE;
  }
  
- static unsigned char irl2irq[HL_NR_IRL];
-diff --git a/arch/sh/boards/mach-landisk/setup.c b/arch/sh/boards/mach-landisk/setup.c
-index f1147ca..50d9388 100644
---- a/arch/sh/boards/mach-landisk/setup.c
-+++ b/arch/sh/boards/mach-landisk/setup.c
-@@ -89,7 +89,8 @@ static void __init landisk_setup(char **cmdline_p)
- 	__raw_writeb(__raw_readb(PA_LED) | 0x03, PA_LED);
++static struct notifier_block pmc_poweroff_nb = {
++	.notifier_call = pmc_power_off,
++	.priority = POWEROFF_PRIORITY_LOW,
++};
++
+ static void pmc_hw_reg_setup(struct pmc_dev *pmc)
+ {
+ 	/*
+@@ -252,8 +262,12 @@ static int pmc_setup_dev(struct pci_dev *pdev)
+ 	acpi_base_addr &= ACPI_BASE_ADDR_MASK;
  
- 	printk(KERN_INFO "I-O DATA DEVICE, INC. \"LANDISK Series\" support.\n");
--	pm_power_off = landisk_power_off;
-+	register_power_off_handler_simple(landisk_power_off,
-+					  POWEROFF_PRIORITY_DEFAULT);
- }
+ 	/* Install power off function */
+-	if (acpi_base_addr != 0 && pm_power_off == NULL)
+-		pm_power_off = pmc_power_off;
++	if (acpi_base_addr != 0) {
++		ret = register_power_off_handler(&pmc_poweroff_nb);
++		if (ret)
++			dev_warn(&pdev->dev,
++				 "Failed to install poweroff handler\n");
++	}
  
- /*
-diff --git a/arch/sh/boards/mach-r2d/setup.c b/arch/sh/boards/mach-r2d/setup.c
-index 4b98a52..28add25 100644
---- a/arch/sh/boards/mach-r2d/setup.c
-+++ b/arch/sh/boards/mach-r2d/setup.c
-@@ -279,7 +279,8 @@ static void __init rts7751r2d_setup(char **cmdline_p)
- 					(ver >> 4) & 0xf, ver & 0xf);
- 
- 	__raw_writew(0x0000, PA_OUTPORT);
--	pm_power_off = rts7751r2d_power_off;
-+	register_power_off_handler_simple(rts7751r2d_power_off,
-+					  POWEROFF_PRIORITY_DEFAULT);
- 
- 	/* sm501 dram configuration:
- 	 * ColSizeX = 11 - External Memory Column Size: 256 words.
-diff --git a/arch/sh/boards/mach-sdk7786/setup.c b/arch/sh/boards/mach-sdk7786/setup.c
-index c29268b..eee7b9c 100644
---- a/arch/sh/boards/mach-sdk7786/setup.c
-+++ b/arch/sh/boards/mach-sdk7786/setup.c
-@@ -252,7 +252,8 @@ static void __init sdk7786_setup(char **cmdline_p)
- 	pr_info("\tPCB revision:\t%d\n", fpga_read_reg(PCBRR) & 0xf);
- 
- 	machine_ops.restart = sdk7786_restart;
--	pm_power_off = sdk7786_power_off;
-+	register_power_off_handler_simple(sdk7786_power_off,
-+					  POWEROFF_PRIORITY_DEFAULT);
- 
- 	register_smp_ops(&shx3_smp_ops);
- }
+ 	pci_read_config_dword(pdev, PMC_BASE_ADDR_OFFSET, &pmc->base_addr);
+ 	pmc->base_addr &= PMC_BASE_ADDR_MASK;
 -- 
 1.9.1
 
