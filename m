@@ -1,107 +1,80 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 29/47] power/reset: ltc2952-poweroff: Register with kernel poweroff handler
-Date: Mon, 20 Oct 2014 21:12:45 -0700
-Message-ID: <1413864783-3271-30-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v2 27/47] power/reset: vexpress-poweroff: Register with kernel poweroff handler
+Date: Mon, 20 Oct 2014 21:12:43 -0700
+Message-ID: <1413864783-3271-28-git-send-email-linux@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:33793 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754534AbaJUEOU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 00:14:20 -0400
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XgQpw-002eDK-D0
-	for linux-pm@vger.kernel.org; Tue, 21 Oct 2014 04:14:20 +0000
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
 Register with kernel poweroff handler instead of setting pm_power_off
-directly. Register with low priority to reflect that the original code
-sets pm_power_off only if it was not already set.
+directly. Select default priority to reflect that the original code sets
+pm_power_off unconditionally.
 
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
-v2: Added patch
+v2: Use define to specify poweroff handler priority
 
- drivers/power/reset/ltc2952-poweroff.c | 27 ++++++++++++++++++---------
- 1 file changed, 18 insertions(+), 9 deletions(-)
+ drivers/power/reset/vexpress-poweroff.c | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
-index 116a1ce..da9abd2 100644
---- a/drivers/power/reset/ltc2952-poweroff.c
-+++ b/drivers/power/reset/ltc2952-poweroff.c
-@@ -80,6 +80,8 @@ struct ltc2952_poweroff_data {
- 	 * 2: kill
- 	 */
- 	struct gpio_desc *gpio[3];
-+
-+	struct notifier_block poweroff_nb;
- };
+diff --git a/drivers/power/reset/vexpress-poweroff.c b/drivers/power/reset/vexpress-poweroff.c
+index 4dc102e2..1ea2f2e 100644
+--- a/drivers/power/reset/vexpress-poweroff.c
++++ b/drivers/power/reset/vexpress-poweroff.c
+@@ -12,6 +12,7 @@
+  */
  
- static int ltc2952_poweroff_panic;
-@@ -180,9 +182,13 @@ irq_ok:
- 	return IRQ_HANDLED;
- }
+ #include <linux/delay.h>
++#include <linux/notifier.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+@@ -36,11 +37,19 @@ static void vexpress_reset_do(struct device *dev, const char *what)
  
--static void ltc2952_poweroff_kill(void)
-+static int ltc2952_poweroff_kill(struct notifier_block *this,
-+				 unsigned long unused1, void *unused2)
-+
+ static struct device *vexpress_power_off_device;
+ 
+-static void vexpress_power_off(void)
++static int vexpress_power_off(struct notifier_block *this,
++			      unsigned long unused1, void *unused2)
  {
- 	gpiod_set_value(ltc2952_data->gpio[POWERPATH_IO_KILL], 1);
+ 	vexpress_reset_do(vexpress_power_off_device, "power off");
 +
 +	return NOTIFY_DONE;
  }
  
- static int ltc2952_poweroff_suspend(struct platform_device *pdev,
-@@ -285,12 +291,7 @@ err_io:
++static struct notifier_block vexpress_poweroff_nb = {
++	.notifier_call = vexpress_power_off,
++	.priority = POWEROFF_PRIORITY_DEFAULT,
++};
++
+ static struct device *vexpress_restart_device;
  
- static int ltc2952_poweroff_probe(struct platform_device *pdev)
- {
--	int ret;
--
--	if (pm_power_off) {
--		dev_err(&pdev->dev, "pm_power_off already registered");
--		return -EBUSY;
--	}
-+	int i, ret;
+ static void vexpress_restart(enum reboot_mode reboot_mode, const char *cmd)
+@@ -92,6 +101,7 @@ static int vexpress_reset_probe(struct platform_device *pdev)
+ 	const struct of_device_id *match =
+ 			of_match_device(vexpress_reset_of_match, &pdev->dev);
+ 	struct regmap *regmap;
++	int ret;
  
- 	ltc2952_data = kzalloc(sizeof(*ltc2952_data), GFP_KERNEL);
- 	if (!ltc2952_data)
-@@ -302,12 +303,20 @@ static int ltc2952_poweroff_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto err;
- 
--	pm_power_off = &ltc2952_poweroff_kill;
-+	ltc2952_data->poweroff_nb.notifier_call = ltc2952_poweroff_kill;
-+	ltc2952_data->poweroff_nb.priority = POWEROFF_PRIORITY_LOW;
-+	ret = register_power_off_handler(&ltc2952_data->poweroff_nb);
-+	if (ret)
-+		goto err_power;
- 
- 	dev_info(&pdev->dev, "probe successful\n");
- 
- 	return 0;
- 
-+err_power:
-+	free_irq(ltc2952_data->virq, ltc2952_data);
-+	for (i = 0; i < ARRAY_SIZE(ltc2952_data->gpio); i++)
-+		gpiod_put(ltc2952_data->gpio[i]);
- err:
- 	kfree(ltc2952_data);
- 	return ret;
-@@ -317,7 +326,7 @@ static int ltc2952_poweroff_remove(struct platform_device *pdev)
- {
- 	unsigned int i;
- 
--	pm_power_off = NULL;
-+	unregister_power_off_handler(&ltc2952_data->poweroff_nb);
- 
- 	if (ltc2952_data) {
- 		free_irq(ltc2952_data->virq, ltc2952_data);
+ 	if (match)
+ 		func = (enum vexpress_reset_func)match->data;
+@@ -106,7 +116,12 @@ static int vexpress_reset_probe(struct platform_device *pdev)
+ 	switch (func) {
+ 	case FUNC_SHUTDOWN:
+ 		vexpress_power_off_device = &pdev->dev;
+-		pm_power_off = vexpress_power_off;
++		ret = register_power_off_handler(&vexpress_poweroff_nb);
++		if (ret) {
++			dev_err(&pdev->dev,
++				"Failed to register poweroff handler\n");
++			return ret;
++		}
+ 		break;
+ 	case FUNC_RESET:
+ 		if (!vexpress_restart_device)
 -- 
 1.9.1
-
