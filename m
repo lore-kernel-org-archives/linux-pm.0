@@ -1,62 +1,64 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: lockdep splat in CPU hotplug
-Date: Wed, 22 Oct 2014 13:39:56 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.1410221336070.22681@pobox.suse.cz>
-References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz> <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
+From: Peter Hurley <peter@hurleysoftware.com>
+Subject: Re: [PATCH 0/4] (CMA_AGGRESSIVE) Make CMA memory be more aggressive
+ about allocation
+Date: Wed, 22 Oct 2014 08:01:54 -0400
+Message-ID: <54479CB2.5040408@hurleysoftware.com>
+References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com> <543F8812.2020002@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Steven Rostedt <rostedt@goodmis.org>, Dave Jones <davej@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre <nico@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <543F8812.2020002@codeaurora.org>
+Sender: owner-linux-mm@kvack.org
+To: Laura Abbott <lauraa@codeaurora.org>, Hui Zhu <zhuhui@xiaomi.com>, m.szyprowski@samsung.com, akpm@linux-foundation.org, riel@redhat.com, mgorman@suse.de, hughd@google.com, akinobu.mita@gmail.com
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, hannes@cmpxchg.org, minchan@kernel.org, nasa4836@gmail.com, ddstreet@ieee.org, mingo@kernel.org, rientjes@google.com, peterz@infradead.org, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, paulmck@linux.vnet.ibm.com, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, vbabka@suse.cz, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 22 Oct 2014, Jiri Kosina wrote:
-
-> Still, the lockdep stacktrace is bogus and didn't really help 
-> understanding this. Any idea why it's wrong?
+On 10/16/2014 04:55 AM, Laura Abbott wrote:
+> On 10/15/2014 8:35 PM, Hui Zhu wrote:
+>> In fallbacks of page_alloc.c, MIGRATE_CMA is the fallback of
+>> MIGRATE_MOVABLE.
+>> MIGRATE_MOVABLE will use MIGRATE_CMA when it doesn't have a page in
+>> order that Linux kernel want.
+>>
+>> If a system that has a lot of user space program is running, for
+>> instance, an Android board, most of memory is in MIGRATE_MOVABLE and
+>> allocated.  Before function __rmqueue_fallback get memory from
+>> MIGRATE_CMA, the oom_killer will kill a task to release memory when
+>> kernel want get MIGRATE_UNMOVABLE memory because fallbacks of
+>> MIGRATE_UNMOVABLE are MIGRATE_RECLAIMABLE and MIGRATE_MOVABLE.
+>> This status is odd.  The MIGRATE_CMA has a lot free memory but Linux
+>> kernel kill some tasks to release memory.
+>>
+>> This patch series adds a new function CMA_AGGRESSIVE to make CMA memory
+>> be more aggressive about allocation.
+>> If function CMA_AGGRESSIVE is available, when Linux kernel call function
+>> __rmqueue try to get pages from MIGRATE_MOVABLE and conditions allow,
+>> MIGRATE_CMA will be allocated as MIGRATE_MOVABLE first.  If MIGRATE_CMA
+>> doesn't have enough pages for allocation, go back to allocate memory from
+>> MIGRATE_MOVABLE.
+>> Then the memory of MIGRATE_MOVABLE can be kept for MIGRATE_UNMOVABLE and
+>> MIGRATE_RECLAIMABLE which doesn't have fallback MIGRATE_CMA.
+>>
 > 
-> >  ======================================================
-> >  [ INFO: possible circular locking dependency detected ]
-> >  3.18.0-rc1-00069-gc2661b8 #1 Not tainted
-> >  -------------------------------------------------------
-> >  do_s2disk/2367 is trying to acquire lock:
-> >   (cpuidle_lock){+.+.+.}, at: [<ffffffff814916c2>] cpuidle_pause_and_lock+0x12/0x20
-> >  
-> > but task is already holding lock:
-> >   (cpu_hotplug.lock#2){+.+.+.}, at: [<ffffffff810522ea>] cpu_hotplug_begin+0x4a/0x80
-> >  
-> > which lock already depends on the new lock.
-> > 
-> > the existing dependency chain (in reverse order) is:
-> > 
-> > -> #1 (cpu_hotplug.lock#2){+.+.+.}:
-> >         [<ffffffff81099fac>] lock_acquire+0xac/0x130
-> >         [<ffffffff815b9f2c>] mutex_lock_nested+0x5c/0x3b0
-> >         [<ffffffff81491892>] cpuidle_pause+0x12/0x30
+> It's good to see another proposal to fix CMA utilization. Do you have
+> any data about the success rate of CMA contiguous allocation after
+> this patch series? I played around with a similar approach of using
+> CMA for MIGRATE_MOVABLE allocations and found that although utilization
+> did increase, contiguous allocations failed at a higher rate and were
+> much slower. I see what this series is trying to do with avoiding
+> allocation from CMA pages when a contiguous allocation is progress.
+> My concern is that there would still be problems with contiguous
+> allocation after all the MIGRATE_MOVABLE fallback has happened.
 
-And the report is clearly bogus here. See:
+What impact does this series have on x86 platforms now that CMA is the
+backup allocator for all iommu dma allocations?
 
-$ addr2line -a ffffffff81491892 -e vmlinux-3.18.0-rc1-00068-gc2661b8
-0xffffffff81491892
-/dev/shm/jikos/BUILD/kernel-3.18.0_rc1_00068_gc2661b8/drivers/cpuidle/cpuidle.c:262
+Regards,
+Peter Hurley
 
-where the corresponding lines are
-
-	259	void cpuidle_pause(void)
-	260	{
-	261		mutex_lock(&cpuidle_lock);
-	262		cpuidle_uninstall_idle_handler();
-	263		mutex_unlock(&cpuidle_lock);
-	264	}
-
-i.e. the RIP saved on stack clearly indicates that we are currently inside 
-cpuidle_uninstall_idle_handler().
-
-So it's clearly the case that part of the stack (which would probably 
-point to synchronize_rcu_expedited()) is missing for some reason.
-
--- 
-Jiri Kosina
-SUSE Labs
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
