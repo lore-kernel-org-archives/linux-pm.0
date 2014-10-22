@@ -1,74 +1,69 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
-Date: Wed, 22 Oct 2014 23:18:20 +0200
-Message-ID: <2145559.zOULAq9xLg@vostro.rjw.lan>
-References: <1413876435-11720-1-git-send-email-mhocko@suse.cz> <3987583.vdsuvlAsHc@vostro.rjw.lan> <20141022142226.GC30802@dhcp22.suse.cz>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: lockdep splat in CPU hotplug
+Date: Wed, 22 Oct 2014 14:09:43 -0700
+Message-ID: <20141022210943.GL4977@linux.vnet.ibm.com>
+References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz>
+ <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
+ <20141022143837.GW4977@linux.vnet.ibm.com>
+ <20141022165433.GA22874@linux.vnet.ibm.com>
+ <20141022185712.GA9570@linux.vnet.ibm.com>
+ <alpine.LNX.2.00.1410222255540.17725@pobox.suse.cz>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20141022142226.GC30802@dhcp22.suse.cz>
-Sender: owner-linux-mm@kvack.org
-To: Michal Hocko <mhocko@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e37.co.us.ibm.com ([32.97.110.158]:59985 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932352AbaJVVJt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Oct 2014 17:09:49 -0400
+Received: from /spool/local
+	by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
+	Wed, 22 Oct 2014 15:09:48 -0600
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.1410222255540.17725@pobox.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Steven Rostedt <rostedt@goodmis.org>, Dave Jones <davej@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre <nico@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wednesday, October 22, 2014 04:22:26 PM Michal Hocko wrote:
-> On Wed 22-10-14 16:39:12, Rafael J. Wysocki wrote:
-> > On Tuesday, October 21, 2014 04:29:39 PM Michal Hocko wrote:
-> > > On Tue 21-10-14 16:41:07, Rafael J. Wysocki wrote:
-> > > > On Tuesday, October 21, 2014 04:11:59 PM Michal Hocko wrote:
-> > > [...]
-> > > > > OK, incremental diff on top. I will post the complete patch if you are
-> > > > > happier with this change
-> > > > 
-> > > > Yes, I am.
-> > > ---
-> > > From 9ab46fe539cded8e7b6425b2cd23ba9184002fde Mon Sep 17 00:00:00 2001
-> > > From: Michal Hocko <mhocko@suse.cz>
-> > > Date: Mon, 20 Oct 2014 18:12:32 +0200
-> > > Subject: [PATCH -v2] OOM, PM: OOM killed task shouldn't escape PM suspend
-> > > 
-> > > PM freezer relies on having all tasks frozen by the time devices are
-> > > getting frozen so that no task will touch them while they are getting
-> > > frozen. But OOM killer is allowed to kill an already frozen task in
-> > > order to handle OOM situtation. In order to protect from late wake ups
-> > > OOM killer is disabled after all tasks are frozen. This, however, still
-> > > keeps a window open when a killed task didn't manage to die by the time
-> > > freeze_processes finishes.
-> > > 
-> > > Reduce the race window by checking all tasks after OOM killer has been
-> > > disabled. This is still not race free completely unfortunately because
-> > > oom_killer_disable cannot stop an already ongoing OOM killer so a task
-> > > might still wake up from the fridge and get killed without
-> > > freeze_processes noticing. Full synchronization of OOM and freezer is,
-> > > however, too heavy weight for this highly unlikely case.
-> > > 
-> > > Introduce and check oom_kills counter which gets incremented early when
-> > > the allocator enters __alloc_pages_may_oom path and only check all the
-> > > tasks if the counter changes during the freezing attempt. The counter
-> > > is updated so early to reduce the race window since allocator checked
-> > > oom_killer_disabled which is set by PM-freezing code. A false positive
-> > > will push the PM-freezer into a slow path but that is not a big deal.
-> > > 
-> > > Changes since v1
-> > > - push the re-check loop out of freeze_processes into
-> > >   check_frozen_processes and invert the condition to make the code more
-> > >   readable as per Rafael
-> > 
-> > I've applied that along with the rest of the series, but what about the
-> > following cleanup patch on top of it?
+On Wed, Oct 22, 2014 at 10:57:25PM +0200, Jiri Kosina wrote:
+> On Wed, 22 Oct 2014, Paul E. McKenney wrote:
 > 
-> Sure, looks good to me.
+> > rcu: More on deadlock between CPU hotplug and expedited grace periods
+> > 
+> > Commit dd56af42bd82 (rcu: Eliminate deadlock between CPU hotplug and
+> > expedited grace periods) was incomplete.  Although it did eliminate
+> > deadlocks involving synchronize_sched_expedited()'s acquisition of
+> > cpu_hotplug.lock via get_online_cpus(), it did nothing about the similar
+> > deadlock involving acquisition of this same lock via put_online_cpus().
+> > This deadlock became apparent with testing involving hibernation.
+> > 
+> > This commit therefore changes put_online_cpus() acquisition of this lock
+> > to be conditional, and increments a new cpu_hotplug.puts_pending field
+> > in case of acquisition failure.  Then cpu_hotplug_begin() checks for this
+> > new field being non-zero, and applies any changes to cpu_hotplug.refcount.
+> > 
+> 
+> Yes, this works. FWIW, please feel free to add 
+> 
+> 	Reported-and-tested-by: Jiri Kosina <jkosina@suse.cz>
+> 
+> once merging it.
 
-I'll apply it then, thanks!
+Done, and thank you for both the bug report and the testing!
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> Why lockdep produced such an incomplete stacktrace still remains 
+> unexplained.
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+On that, I must defer to people more familiar with stack frames.
+
+							Thanx, Paul
+
+> Thanks,
+> 
+> -- 
+> Jiri Kosina
+> SUSE Labs
+> 
+
