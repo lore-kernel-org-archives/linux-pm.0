@@ -1,149 +1,56 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
-Date: Wed, 22 Oct 2014 16:22:26 +0200
-Message-ID: <20141022142226.GC30802@dhcp22.suse.cz>
-References: <1413876435-11720-1-git-send-email-mhocko@suse.cz>
- <4766859.KSKPTm3b0x@vostro.rjw.lan>
- <20141021142939.GG9415@dhcp22.suse.cz>
- <3987583.vdsuvlAsHc@vostro.rjw.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: lockdep splat in CPU hotplug
+Date: Wed, 22 Oct 2014 16:28:14 +0200
+Message-ID: <5447BEFE.2040806@linaro.org>
+References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz> <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:41137 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752608AbaJVOW1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 Oct 2014 10:22:27 -0400
-Content-Disposition: inline
-In-Reply-To: <3987583.vdsuvlAsHc@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jiri Kosina <jkosina@suse.cz>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Steven Rostedt <rostedt@goodmis.org>, Dave Jones <davej@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Nicolas Pitre <nico@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Wed 22-10-14 16:39:12, Rafael J. Wysocki wrote:
-> On Tuesday, October 21, 2014 04:29:39 PM Michal Hocko wrote:
-> > On Tue 21-10-14 16:41:07, Rafael J. Wysocki wrote:
-> > > On Tuesday, October 21, 2014 04:11:59 PM Michal Hocko wrote:
-> > [...]
-> > > > OK, incremental diff on top. I will post the complete patch if you are
-> > > > happier with this change
-> > > 
-> > > Yes, I am.
-> > ---
-> > From 9ab46fe539cded8e7b6425b2cd23ba9184002fde Mon Sep 17 00:00:00 2001
-> > From: Michal Hocko <mhocko@suse.cz>
-> > Date: Mon, 20 Oct 2014 18:12:32 +0200
-> > Subject: [PATCH -v2] OOM, PM: OOM killed task shouldn't escape PM suspend
-> > 
-> > PM freezer relies on having all tasks frozen by the time devices are
-> > getting frozen so that no task will touch them while they are getting
-> > frozen. But OOM killer is allowed to kill an already frozen task in
-> > order to handle OOM situtation. In order to protect from late wake ups
-> > OOM killer is disabled after all tasks are frozen. This, however, still
-> > keeps a window open when a killed task didn't manage to die by the time
-> > freeze_processes finishes.
-> > 
-> > Reduce the race window by checking all tasks after OOM killer has been
-> > disabled. This is still not race free completely unfortunately because
-> > oom_killer_disable cannot stop an already ongoing OOM killer so a task
-> > might still wake up from the fridge and get killed without
-> > freeze_processes noticing. Full synchronization of OOM and freezer is,
-> > however, too heavy weight for this highly unlikely case.
-> > 
-> > Introduce and check oom_kills counter which gets incremented early when
-> > the allocator enters __alloc_pages_may_oom path and only check all the
-> > tasks if the counter changes during the freezing attempt. The counter
-> > is updated so early to reduce the race window since allocator checked
-> > oom_killer_disabled which is set by PM-freezing code. A false positive
-> > will push the PM-freezer into a slow path but that is not a big deal.
-> > 
-> > Changes since v1
-> > - push the re-check loop out of freeze_processes into
-> >   check_frozen_processes and invert the condition to make the code more
-> >   readable as per Rafael
-> 
-> I've applied that along with the rest of the series, but what about the
-> following cleanup patch on top of it?
+On 10/22/2014 11:53 AM, Jiri Kosina wrote:
+> On Tue, 21 Oct 2014, Jiri Kosina wrote:
+>
+>> Hi,
+>>
+>> I am seeing the lockdep report below when resuming from suspend-to-d=
+isk
+>> with current Linus' tree (c2661b80609).
+>>
+>> The reason for CCing Ingo and Peter is that I can't make any sense o=
+f one
+>> of the stacktraces lockdep is providing.
+>>
+>> Please have a look at the very first stacktrace in the dump, where l=
+ockdep
+>> is trying to explain where cpu_hotplug.lock#2 has been acquired. It =
+seems
+>> to imply that cpuidle_pause() is taking cpu_hotplug.lock, but that's=
+ not
+>> the case at all.
+>>
+>> What am I missing?
+>
+> Okay, reverting 442bf3aaf55a ("sched: Let the scheduler see CPU idle
+> states") and followup 83a0a96a5f26 ("sched/fair: Leverage the idle st=
+ate
+> info when choosing the "idlest" cpu") which depends on it makes the s=
+plat
+> go away.
 
-Sure, looks good to me.
+Are you able to reproduce it by offlining the cpu and onlining it again=
+ ?
 
-> 
-> Rafael
-> 
-> 
-> ---
->  kernel/power/process.c |   31 ++++++++++++++++---------------
->  1 file changed, 16 insertions(+), 15 deletions(-)
-> 
-> Index: linux-pm/kernel/power/process.c
-> ===================================================================
-> --- linux-pm.orig/kernel/power/process.c
-> +++ linux-pm/kernel/power/process.c
-> @@ -108,25 +108,27 @@ static int try_to_freeze_tasks(bool user
->  	return todo ? -EBUSY : 0;
->  }
->  
-> +static bool __check_frozen_processes(void)
-> +{
-> +	struct task_struct *g, *p;
-> +
-> +	for_each_process_thread(g, p)
-> +		if (p != current && !freezer_should_skip(p) && !frozen(p))
-> +			return false;
-> +
-> +	return true;
-> +}
-> +
->  /*
->   * Returns true if all freezable tasks (except for current) are frozen already
->   */
->  static bool check_frozen_processes(void)
->  {
-> -	struct task_struct *g, *p;
-> -	bool ret = true;
-> +	bool ret;
->  
->  	read_lock(&tasklist_lock);
-> -	for_each_process_thread(g, p) {
-> -		if (p != current && !freezer_should_skip(p) &&
-> -		    !frozen(p)) {
-> -			ret = false;
-> -			goto done;
-> -		}
-> -	}
-> -done:
-> +	ret = __check_frozen_processes();
->  	read_unlock(&tasklist_lock);
-> -
->  	return ret;
->  }
->  
-> @@ -167,15 +169,14 @@ int freeze_processes(void)
->  		 * on the way out so we have to double check for race.
->  		 */
->  		if (oom_kills_count() != oom_kills_saved &&
-> -				!check_frozen_processes()) {
-> +		    !check_frozen_processes()) {
->  			__usermodehelper_set_disable_depth(UMH_ENABLED);
->  			printk("OOM in progress.");
->  			error = -EBUSY;
-> -			goto done;
-> +		} else {
-> +			printk("done.");
->  		}
-> -		printk("done.");
->  	}
-> -done:
->  	printk("\n");
->  	BUG_ON(in_atomic());
->  
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
--- 
-Michal Hocko
-SUSE Labs
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
