@@ -1,69 +1,141 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: lockdep splat in CPU hotplug
-Date: Wed, 22 Oct 2014 14:09:43 -0700
-Message-ID: <20141022210943.GL4977@linux.vnet.ibm.com>
-References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz>
- <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
- <20141022143837.GW4977@linux.vnet.ibm.com>
- <20141022165433.GA22874@linux.vnet.ibm.com>
- <20141022185712.GA9570@linux.vnet.ibm.com>
- <alpine.LNX.2.00.1410222255540.17725@pobox.suse.cz>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v2 1/3] PM / clock_ops: Add pm_clk_add_clk()
+Date: Wed, 22 Oct 2014 14:16:31 -0700
+Message-ID: <20141022211631.GC4250@dtor-ws>
+References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>
+ <1413809764-21995-2-git-send-email-grygorii.strashko@ti.com>
+ <20141022173856.GB28104@dtor-ws>
+ <5447FF51.5000401@ti.com>
+ <20141022201409.GB4250@dtor-ws>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e37.co.us.ibm.com ([32.97.110.158]:59985 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932352AbaJVVJt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Oct 2014 17:09:49 -0400
-Received: from /spool/local
-	by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-	Wed, 22 Oct 2014 15:09:48 -0600
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.1410222255540.17725@pobox.suse.cz>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20141022201409.GB4250@dtor-ws>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Steven Rostedt <rostedt@goodmis.org>, Dave Jones <davej@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre <nico@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, Oct 22, 2014 at 10:57:25PM +0200, Jiri Kosina wrote:
-> On Wed, 22 Oct 2014, Paul E. McKenney wrote:
-> 
-> > rcu: More on deadlock between CPU hotplug and expedited grace periods
+On Wed, Oct 22, 2014 at 01:14:09PM -0700, Dmitry Torokhov wrote:
+> On Wed, Oct 22, 2014 at 10:02:41PM +0300, Grygorii Strashko wrote:
+> > On 10/22/2014 08:38 PM, Dmitry Torokhov wrote:
+> > >On Mon, Oct 20, 2014 at 03:56:02PM +0300, Grygorii Strashko wrote:
+> > >>From: Geert Uytterhoeven <geert+renesas@glider.be>
+> > >>
+> > >>The existing pm_clk_add() allows to pass a clock by con_id. However,
+> > >>when referring to a specific clock from DT, no con_id is available.
+> > >>
+> > >>Add pm_clk_add_clk(), which allows to specify the struct clk * directly.
+> > >>
+> > >>Reviewed-by: Kevin Hilman <khilman@linaro.org>
+> > >>Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > >>Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> > >>---
+> > >>
+> > >>  Pay attantion pls, that there is another series of patches
+> > >>  which have been posted already and which depends from this patch
+> > >>    "[PATCH v4 0/3] ARM: rk3288 : Add PM Domain support"
+> > >>    https://lkml.org/lkml/2014/10/20/105
+> > >>
+> > >>  drivers/base/power/clock_ops.c | 41 +++++++++++++++++++++++++++++++----------
+> > >>  include/linux/pm_clock.h       |  8 ++++++++
+> > >>  2 files changed, 39 insertions(+), 10 deletions(-)
+> > >>
+> > >>diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+> > >>index 7836930..f14b767 100644
+> > >>--- a/drivers/base/power/clock_ops.c
+> > >>+++ b/drivers/base/power/clock_ops.c
+> > >>@@ -53,7 +53,8 @@ static inline int __pm_clk_enable(struct device *dev, struct clk *clk)
+> > >>   */
+> > >>  static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+> > >>  {
+> > >>-	ce->clk = clk_get(dev, ce->con_id);
+> > >>+	if (!ce->clk)
+> > >>+		ce->clk = clk_get(dev, ce->con_id);
+> > >>  	if (IS_ERR(ce->clk)) {
+> > >>  		ce->status = PCE_STATUS_ERROR;
+> > >>  	} else {
+> > >>@@ -63,15 +64,8 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+> > >>  	}
+> > >>  }
+> > >>
+> > >>-/**
+> > >>- * pm_clk_add - Start using a device clock for power management.
+> > >>- * @dev: Device whose clock is going to be used for power management.
+> > >>- * @con_id: Connection ID of the clock.
+> > >>- *
+> > >>- * Add the clock represented by @con_id to the list of clocks used for
+> > >>- * the power management of @dev.
+> > >>- */
+> > >>-int pm_clk_add(struct device *dev, const char *con_id)
+> > >>+static int __pm_clk_add(struct device *dev, const char *con_id,
+> > >>+			struct clk *clk)
+> > >>  {
+> > >>  	struct pm_subsys_data *psd = dev_to_psd(dev);
+> > >>  	struct pm_clock_entry *ce;
+> > >>@@ -93,6 +87,8 @@ int pm_clk_add(struct device *dev, const char *con_id)
+> > >>  			kfree(ce);
+> > >>  			return -ENOMEM;
+> > >>  		}
+> > >>+	} else {
+> > >>+		ce->clk = clk;
+
+Shouldn't this be
+
+		ce->clk = __clk_get(clk);
+
+to account for clk_put() in __pm_clk_remove()?
+
+> > >>  	}
+> > >>
+> > >>  	pm_clk_acquire(dev, ce);
+> > >>@@ -104,6 +100,31 @@ int pm_clk_add(struct device *dev, const char *con_id)
+> > >>  }
+> > >>
+> > >>  /**
+> > >>+ * pm_clk_add - Start using a device clock for power management.
+> > >>+ * @dev: Device whose clock is going to be used for power management.
+> > >>+ * @con_id: Connection ID of the clock.
+> > >>+ *
+> > >>+ * Add the clock represented by @con_id to the list of clocks used for
+> > >>+ * the power management of @dev.
+> > >>+ */
+> > >>+int pm_clk_add(struct device *dev, const char *con_id)
+> > >>+{
+> > >>+	return __pm_clk_add(dev, con_id, NULL);
+> > >
+> > >Bikeshedding: why do we need __pm_clk_add() and not simply have
+> > >"canonical" pm_clk_add_clk() and then do:
+> > >
+> > >int pm_clk_add(struct device *dev, const char *con_id)
+> > >{
+> > >	struct clk *clk;
+> > >
+> > >	clk = clk_get(dev, con_id);
+> > >	...
+> > >	return pm_clk_add_clk(dev, clk);
+> > >}
 > > 
-> > Commit dd56af42bd82 (rcu: Eliminate deadlock between CPU hotplug and
-> > expedited grace periods) was incomplete.  Although it did eliminate
-> > deadlocks involving synchronize_sched_expedited()'s acquisition of
-> > cpu_hotplug.lock via get_online_cpus(), it did nothing about the similar
-> > deadlock involving acquisition of this same lock via put_online_cpus().
-> > This deadlock became apparent with testing involving hibernation.
-> > 
-> > This commit therefore changes put_online_cpus() acquisition of this lock
-> > to be conditional, and increments a new cpu_hotplug.puts_pending field
-> > in case of acquisition failure.  Then cpu_hotplug_begin() checks for this
-> > new field being non-zero, and applies any changes to cpu_hotplug.refcount.
-> > 
+> > Hm. I did fast look at code and:
+> > 1) agree - there is a lot of thing which can be optimized ;)
+> > 2) in my strong opinion, this patch is the fastest and simplest
+> > way to introduce new API (take a look on pm_clock_entry->con_id
+> > management code) and It is exactly what we need as of now.
 > 
-> Yes, this works. FWIW, please feel free to add 
+> Yeah, I guess. We are lucky we do not crash when we are tryign to print
+> NULL strings (see pm_clk_acquire).
 > 
-> 	Reported-and-tested-by: Jiri Kosina <jkosina@suse.cz>
-> 
-> once merging it.
+> BTW, what is the point of doing pm_clk_add(dev, NULL)? We add clock
+> entry with status PCE_STATUS_ERROR and then have to handle it
+> everywhere? Can we just return -EINVAL if someone triies to pass NULL
+> ass con_id?
 
-Done, and thank you for both the bug report and the testing!
+Umm, no, ignore me here, I misread clk_get(dev, NULL) - it won't return
+error. Still, do why do we need to keep clock entry if clk_get() fails
+for some reason?
 
-> Why lockdep produced such an incomplete stacktrace still remains 
-> unexplained.
+Thanks.
 
-On that, I must defer to people more familiar with stack frames.
-
-							Thanx, Paul
-
-> Thanks,
-> 
-> -- 
-> Jiri Kosina
-> SUSE Labs
-> 
-
+-- 
+Dmitry
