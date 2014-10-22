@@ -1,75 +1,99 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: Re: [PATCH 5/8] power: reset: at91-reset: use at91_ramc_shutdown
-Date: Wed, 22 Oct 2014 09:18:45 +0200
-Message-ID: <20141022071845.GM10616@piout.net>
-References: <1413928540-27099-1-git-send-email-alexandre.belloni@free-electrons.com>
- <1413928540-27099-6-git-send-email-alexandre.belloni@free-electrons.com>
- <20141022090810.167c470f@free-electrons.com>
+From: =?UTF-8?B?UGhpbGlwcGUgUsOpdG9ybmF6?= <philippe.retornaz@gmail.com>
+Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call
+ chain
+Date: Wed, 22 Oct 2014 10:02:57 +0200
+Message-ID: <544764B1.9020303@gmail.com>
+References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-2-git-send-email-linux@roeck-us.net> <54460140.50805@gmail.com> <54465FBA.8070007@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:49871 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751022AbaJVHSs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Oct 2014 03:18:48 -0400
-Content-Disposition: inline
-In-Reply-To: <20141022090810.167c470f@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <54465FBA.8070007@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>
 
-On 22/10/2014 at 09:08:10 +0200, Thomas Petazzoni wrote :
-> Dear Alexandre Belloni,
-> 
-> On Tue, 21 Oct 2014 23:55:37 +0200, Alexandre Belloni wrote:
-> 
-> >  /*
-> >  * unless the SDRAM is cleanly shutdown before we hit the
-> >  * reset register it can be left driving the data bus and
-> >  * killing the chance of a subsequent boot from NAND
-> >  */
-> > -static void at91sam9260_restart(enum reboot_mode mode, const char *cmd)
-> > +static void at91_restart(enum reboot_mode mode, const char *cmd)
-> >  {
-> > -	asm volatile(
-> > -		/* Align to cache lines */
-> > -		".balign 32\n\t"
-> > -
-> > -		/* Disable SDRAM accesses */
-> > -		"str	%2, [%0, #" __stringify(AT91_SDRAMC_TR) "]\n\t"
-> > -
-> > -		/* Power down SDRAM */
-> > -		"str	%3, [%0, #" __stringify(AT91_SDRAMC_LPR) "]\n\t"
-> > +	if (at91_ramc_shutdown)
-> > +		at91_ramc_shutdown();
-> >  
-> > +	asm volatile(
-> >  		/* Reset CPU */
-> > -		"str	%4, [%1, #" __stringify(AT91_RSTC_CR) "]\n\t"
-> > +		"str	%1, [%0, #" __stringify(AT91_RSTC_CR) "]\n\t"
-> >  
-> >  		"b	.\n\t"
-> 
-> Are you sure this is working properly? There was a reason to have the
-> SDRAM controller shutdown right before resetting the CPU: the code was
-> ensuring that all those assembly instructions fitted in one cache line,
-> so that even if the SDRAM controller gets shutdown, the rest of the
-> code can properly execute until resetting the CPU. Now, the SDRAM
-> controller shutdown code and the code resetting the CPU are in
-> completely separate places, which break this assumption.
-> 
+Le 21/10/2014 15:29, Guenter Roeck a =C3=A9crit :
+> On 10/20/2014 11:46 PM, Philippe R=C3=A9tornaz wrote:
+>> Hello
+>>
+>> [...]
+>>> - Use raw notifiers protected by spinlocks instead of atomic notifi=
+ers
+>> [...]
+>>
+>>> +/**
+>>> + *    do_kernel_power_off - Execute kernel poweroff handler call c=
+hain
+>>> + *
+>>> + *    Calls functions registered with register_power_off_handler.
+>>> + *
+>>> + *    Expected to be called from machine_power_off as last step of
+>>> + *    the poweroff sequence.
+>>> + *
+>>> + *    Powers off the system immediately if a poweroff handler func=
+tion
+>>> + *    has been registered. Otherwise does nothing.
+>>> + */
+>>> +void do_kernel_power_off(void)
+>>> +{
+>>> +    spin_lock(&power_off_handler_lock);
+>>> +    raw_notifier_call_chain(&power_off_handler_list, 0, NULL);
+>>> +    spin_unlock(&power_off_handler_lock);
+>>> +}
+>>
+>> I don't get it. You are still in atomic context inside the poweroff
+>> callback
+>> since you lock it with a spinlock.
+[...]
+>>
+>> Why not using the blocking_notifier_* family ?
+>> It will lock with a read-write semaphore under which you can sleep.
+>>
+>> For instance, twl4030_power_off will sleep, since it is doing I2C ac=
+cess.
+>> So you cannot call it in atomic context.
+>>
+>
+> Learning something new all the time. I assumed that spin_lock (unlike
+> spin_lock_irqsafe) would not run in atomic context.
+>
+> I did not want to use a sleeping lock because I am not sure if that
+> works for all architectures; some disable (local) interrupts before
+> calling the function (eg arm and arm64), and I don't want to change
+> that semantics.
 
-It it still working properly, I believe it is still fitting the cache
-line.
+You're right and it even disable all others CPUs (if any).
+I don't understand why it needs to disable local interrupts since the
+code path to pm_power_off is simply doing:
 
-> And also, you forgot to Cc: Maxime Ripard who did the initial work on
-> this at91-reset controller.
-> 
+syscall -> migrate to reboot cpu -> disable local interrupt -> disable=20
+others cpu -> pm_power_off().
 
-Yeah, I realized after sending the patches.
+I don't understand why we cannot re-enable interrupts right before=20
+pm_power_off().
+And it looks like that all pm_power_off callbacks which can sleep are=20
+broken.
+I still wonder how i2c communication can works without local interrupts=
+=20
+=2E.. it looks
+like somebody is re-enabling them (or the code was never run)
 
--- 
-Alexandre Belloni, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+> I have another idea how to get there without changing the lock situat=
+ion
+> while executing the call chain - just set a flag indicating that it i=
+s
+> running and execute it without lock. Would that work ?
+
+I don't think inventing a new locking mechanism is a good solution.
+We need first to know for sure if we can sleep or not in pm_power_off.
+If yes then we need to re-enable local interrupts and we can use a mute=
+x.
+If not then the atomic notifier is fine and a lots of drivers are wrong=
+=2E
+
+Thanks,
+
+Philippe
