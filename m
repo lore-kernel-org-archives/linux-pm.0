@@ -1,99 +1,187 @@
-From: =?UTF-8?B?UGhpbGlwcGUgUsOpdG9ybmF6?= <philippe.retornaz@gmail.com>
-Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call
- chain
-Date: Wed, 22 Oct 2014 10:02:57 +0200
-Message-ID: <544764B1.9020303@gmail.com>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-2-git-send-email-linux@roeck-us.net> <54460140.50805@gmail.com> <54465FBA.8070007@roeck-us.net>
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: lockdep splat in CPU hotplug
+Date: Wed, 22 Oct 2014 11:53:49 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
+References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <54465FBA.8070007@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:35898 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752154AbaJVJxw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 22 Oct 2014 05:53:52 -0400
+In-Reply-To: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Steven Rostedt <rostedt@goodmis.org>, Dave Jones <davej@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre <nico@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Le 21/10/2014 15:29, Guenter Roeck a =C3=A9crit :
-> On 10/20/2014 11:46 PM, Philippe R=C3=A9tornaz wrote:
->> Hello
->>
->> [...]
->>> - Use raw notifiers protected by spinlocks instead of atomic notifi=
-ers
->> [...]
->>
->>> +/**
->>> + *    do_kernel_power_off - Execute kernel poweroff handler call c=
-hain
->>> + *
->>> + *    Calls functions registered with register_power_off_handler.
->>> + *
->>> + *    Expected to be called from machine_power_off as last step of
->>> + *    the poweroff sequence.
->>> + *
->>> + *    Powers off the system immediately if a poweroff handler func=
-tion
->>> + *    has been registered. Otherwise does nothing.
->>> + */
->>> +void do_kernel_power_off(void)
->>> +{
->>> +    spin_lock(&power_off_handler_lock);
->>> +    raw_notifier_call_chain(&power_off_handler_list, 0, NULL);
->>> +    spin_unlock(&power_off_handler_lock);
->>> +}
->>
->> I don't get it. You are still in atomic context inside the poweroff
->> callback
->> since you lock it with a spinlock.
-[...]
->>
->> Why not using the blocking_notifier_* family ?
->> It will lock with a read-write semaphore under which you can sleep.
->>
->> For instance, twl4030_power_off will sleep, since it is doing I2C ac=
-cess.
->> So you cannot call it in atomic context.
->>
->
-> Learning something new all the time. I assumed that spin_lock (unlike
-> spin_lock_irqsafe) would not run in atomic context.
->
-> I did not want to use a sleeping lock because I am not sure if that
-> works for all architectures; some disable (local) interrupts before
-> calling the function (eg arm and arm64), and I don't want to change
-> that semantics.
+On Tue, 21 Oct 2014, Jiri Kosina wrote:
 
-You're right and it even disable all others CPUs (if any).
-I don't understand why it needs to disable local interrupts since the
-code path to pm_power_off is simply doing:
+> Hi,
+> 
+> I am seeing the lockdep report below when resuming from suspend-to-disk 
+> with current Linus' tree (c2661b80609).
+> 
+> The reason for CCing Ingo and Peter is that I can't make any sense of one 
+> of the stacktraces lockdep is providing.
+> 
+> Please have a look at the very first stacktrace in the dump, where lockdep 
+> is trying to explain where cpu_hotplug.lock#2 has been acquired. It seems 
+> to imply that cpuidle_pause() is taking cpu_hotplug.lock, but that's not 
+> the case at all.
+> 
+> What am I missing?
 
-syscall -> migrate to reboot cpu -> disable local interrupt -> disable=20
-others cpu -> pm_power_off().
+Okay, reverting 442bf3aaf55a ("sched: Let the scheduler see CPU idle 
+states") and followup 83a0a96a5f26 ("sched/fair: Leverage the idle state 
+info when choosing the "idlest" cpu") which depends on it makes the splat 
+go away.
 
-I don't understand why we cannot re-enable interrupts right before=20
-pm_power_off().
-And it looks like that all pm_power_off callbacks which can sleep are=20
-broken.
-I still wonder how i2c communication can works without local interrupts=
-=20
-=2E.. it looks
-like somebody is re-enabling them (or the code was never run)
+Just for the sake of testing the hypothesis, I did just the minimal change 
+below on top of current Linus' tree, and it also makes the splat go away 
+(of course it's totally incorrect thing to do by itself alone):
 
-> I have another idea how to get there without changing the lock situat=
-ion
-> while executing the call chain - just set a flag indicating that it i=
-s
-> running and execute it without lock. Would that work ?
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 125150d..d31e04c 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -225,12 +225,6 @@ void cpuidle_uninstall_idle_handler(void)
+ 		initialized = 0;
+ 		wake_up_all_idle_cpus();
+ 	}
+-
+-	/*
+-	 * Make sure external observers (such as the scheduler)
+-	 * are done looking at pointed idle states.
+-	 */
+-	synchronize_rcu();
+ }
+ 
+ /**
 
-I don't think inventing a new locking mechanism is a good solution.
-We need first to know for sure if we can sleep or not in pm_power_off.
-If yes then we need to re-enable local interrupts and we can use a mute=
-x.
-If not then the atomic notifier is fine and a lots of drivers are wrong=
-=2E
+So indeed 442bf3aaf55a is guilty.
 
-Thanks,
+Paul was stating yesterday that it can't be the try_get_online_cpus() in 
+synchronize_sched_expedited(), as it's doing only trylock. There are 
+however more places where synchronize_sched_expedited() is acquiring 
+cpu_hotplug.lock unconditionally by calling put_online_cpus(), so the race 
+seems real.
 
-Philippe
+Adding people involved in 442bf3aaf55a to CC.
+
+Still, the lockdep stacktrace is bogus and didn't really help 
+understanding this. Any idea why it's wrong?
+
+>  ======================================================
+>  [ INFO: possible circular locking dependency detected ]
+>  3.18.0-rc1-00069-gc2661b8 #1 Not tainted
+>  -------------------------------------------------------
+>  do_s2disk/2367 is trying to acquire lock:
+>   (cpuidle_lock){+.+.+.}, at: [<ffffffff814916c2>] cpuidle_pause_and_lock+0x12/0x20
+>  
+> but task is already holding lock:
+>   (cpu_hotplug.lock#2){+.+.+.}, at: [<ffffffff810522ea>] cpu_hotplug_begin+0x4a/0x80
+>  
+> which lock already depends on the new lock.
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #1 (cpu_hotplug.lock#2){+.+.+.}:
+>         [<ffffffff81099fac>] lock_acquire+0xac/0x130
+>         [<ffffffff815b9f2c>] mutex_lock_nested+0x5c/0x3b0
+>         [<ffffffff81491892>] cpuidle_pause+0x12/0x30
+>         [<ffffffff81402314>] dpm_suspend_noirq+0x44/0x340
+>         [<ffffffff81402958>] dpm_suspend_end+0x38/0x80
+>         [<ffffffff810a07bd>] hibernation_snapshot+0xcd/0x370
+>         [<ffffffff810a1248>] hibernate+0x168/0x210
+>         [<ffffffff8109e9b4>] state_store+0xe4/0xf0
+>         [<ffffffff813003ef>] kobj_attr_store+0xf/0x20
+>         [<ffffffff8121e9a3>] sysfs_kf_write+0x43/0x60
+>         [<ffffffff8121e287>] kernfs_fop_write+0xe7/0x170
+>         [<ffffffff811a7342>] vfs_write+0xb2/0x1f0
+>         [<ffffffff811a7da4>] SyS_write+0x44/0xb0
+>         [<ffffffff815be856>] system_call_fastpath+0x16/0x1b
+>  
+> -> #0 (cpuidle_lock){+.+.+.}:
+>         [<ffffffff81099433>] __lock_acquire+0x1a03/0x1e30
+>         [<ffffffff81099fac>] lock_acquire+0xac/0x130
+>         [<ffffffff815b9f2c>] mutex_lock_nested+0x5c/0x3b0
+>         [<ffffffff814916c2>] cpuidle_pause_and_lock+0x12/0x20
+>         [<ffffffffc02e184c>] acpi_processor_hotplug+0x45/0x8a [processor]
+>         [<ffffffffc02df25a>] acpi_cpu_soft_notify+0xad/0xe3 [processor]
+>         [<ffffffff81071393>] notifier_call_chain+0x53/0xa0
+>         [<ffffffff810713e9>] __raw_notifier_call_chain+0x9/0x10
+>         [<ffffffff810521ce>] cpu_notify+0x1e/0x40
+>         [<ffffffff810524a8>] _cpu_up+0x148/0x160
+>         [<ffffffff815a7b99>] enable_nonboot_cpus+0xc9/0x1d0
+>         [<ffffffff810a0955>] hibernation_snapshot+0x265/0x370
+>         [<ffffffff810a1248>] hibernate+0x168/0x210
+>         [<ffffffff8109e9b4>] state_store+0xe4/0xf0
+>         [<ffffffff813003ef>] kobj_attr_store+0xf/0x20
+>         [<ffffffff8121e9a3>] sysfs_kf_write+0x43/0x60
+>         [<ffffffff8121e287>] kernfs_fop_write+0xe7/0x170
+>         [<ffffffff811a7342>] vfs_write+0xb2/0x1f0
+>         [<ffffffff811a7da4>] SyS_write+0x44/0xb0
+>         [<ffffffff815be856>] system_call_fastpath+0x16/0x1b
+>  
+> other info that might help us debug this:
+> 
+>   Possible unsafe locking scenario:
+> 
+>         CPU0                    CPU1
+>         ----                    ----
+>    lock(cpu_hotplug.lock#2);
+>                                 lock(cpuidle_lock);
+>                                 lock(cpu_hotplug.lock#2);
+>    lock(cpuidle_lock);
+>  
+>  *** DEADLOCK ***
+> 
+>  8 locks held by do_s2disk/2367:
+>   #0:  (sb_writers#6){.+.+.+}, at: [<ffffffff811a7443>] vfs_write+0x1b3/0x1f0
+>   #1:  (&of->mutex){+.+.+.}, at: [<ffffffff8121e25b>] kernfs_fop_write+0xbb/0x170
+>   #2:  (s_active#188){.+.+.+}, at: [<ffffffff8121e263>] kernfs_fop_write+0xc3/0x170
+>   #3:  (pm_mutex){+.+.+.}, at: [<ffffffff810a112e>] hibernate+0x4e/0x210
+>   #4:  (device_hotplug_lock){+.+.+.}, at: [<ffffffff813f1b52>] lock_device_hotplug+0x12/0x20
+>   #5:  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff815a7aef>] enable_nonboot_cpus+0x1f/0x1d0
+>   #6:  (cpu_hotplug.lock){++++++}, at: [<ffffffff810522a0>] cpu_hotplug_begin+0x0/0x80
+>   #7:  (cpu_hotplug.lock#2){+.+.+.}, at: [<ffffffff810522ea>] cpu_hotplug_begin+0x4a/0x80
+>  
+> stack backtrace:
+>  CPU: 1 PID: 2367 Comm: do_s2disk Not tainted 3.18.0-rc1-00069-g4da0564 #1
+>  Hardware name: LENOVO 7470BN2/7470BN2, BIOS 6DET38WW (2.02 ) 12/19/2008
+>   ffffffff823e4330 ffff8800789e7a48 ffffffff815b6754 0000000000001a69
+>   ffffffff823e4330 ffff8800789e7a98 ffffffff815b078b ffff8800741a5510
+>   ffff8800789e7af8 ffff8800741a5ea8 5a024e919538010b ffff8800741a5ea8
+>  Call Trace:
+>   [<ffffffff815b6754>] dump_stack+0x4e/0x68
+>   [<ffffffff815b078b>] print_circular_bug+0x203/0x214
+>   [<ffffffff81099433>] __lock_acquire+0x1a03/0x1e30
+>   [<ffffffff8109766d>] ? trace_hardirqs_on_caller+0xfd/0x1c0
+>   [<ffffffff81099fac>] lock_acquire+0xac/0x130
+>   [<ffffffff814916c2>] ? cpuidle_pause_and_lock+0x12/0x20
+>   [<ffffffff815b9f2c>] mutex_lock_nested+0x5c/0x3b0
+>   [<ffffffff814916c2>] ? cpuidle_pause_and_lock+0x12/0x20
+>   [<ffffffff814916c2>] cpuidle_pause_and_lock+0x12/0x20
+>   [<ffffffffc02e184c>] acpi_processor_hotplug+0x45/0x8a [processor]
+>   [<ffffffffc02df25a>] acpi_cpu_soft_notify+0xad/0xe3 [processor]
+>   [<ffffffff81071393>] notifier_call_chain+0x53/0xa0
+>   [<ffffffff810713e9>] __raw_notifier_call_chain+0x9/0x10
+>   [<ffffffff810521ce>] cpu_notify+0x1e/0x40
+>   [<ffffffff810524a8>] _cpu_up+0x148/0x160
+>   [<ffffffff815a7b99>] enable_nonboot_cpus+0xc9/0x1d0
+>   [<ffffffff810a0955>] hibernation_snapshot+0x265/0x370
+>   [<ffffffff810a1248>] hibernate+0x168/0x210
+>   [<ffffffff8109e9b4>] state_store+0xe4/0xf0
+>   [<ffffffff813003ef>] kobj_attr_store+0xf/0x20
+>   [<ffffffff8121e9a3>] sysfs_kf_write+0x43/0x60
+>   [<ffffffff8121e287>] kernfs_fop_write+0xe7/0x170
+>   [<ffffffff811a7342>] vfs_write+0xb2/0x1f0
+>   [<ffffffff815be87b>] ? sysret_check+0x1b/0x56
+>   [<ffffffff811a7da4>] SyS_write+0x44/0xb0
+>   [<ffffffff815be856>] system_call_fastpath+0x16/0x1b
+
+-- 
+Jiri Kosina
+SUSE Labs
