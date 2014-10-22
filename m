@@ -1,85 +1,134 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [RFD PATCH 02/10] cpuidle: Checking the zero latency inside the governors does not make sense.
-Date: Wed, 22 Oct 2014 15:57:45 +0200
-Message-ID: <1413986273-28522-3-git-send-email-daniel.lezcano@linaro.org>
-References: <1413986273-28522-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1413986273-28522-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: axboe@kernel.dk, rafael.j.wysocki@intel.com, mingo@kernel.org, peterz@infradead.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, mturquette@linaro.org, tuukka.tikkanen@linaro.org, nicolas.pitre@linaro.org, patches@linaro.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
+Date: Wed, 22 Oct 2014 16:39:12 +0200
+Message-ID: <3987583.vdsuvlAsHc@vostro.rjw.lan>
+References: <1413876435-11720-1-git-send-email-mhocko@suse.cz> <4766859.KSKPTm3b0x@vostro.rjw.lan> <20141021142939.GG9415@dhcp22.suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20141021142939.GG9415@dhcp22.suse.cz>
+Sender: owner-linux-mm@kvack.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-If the zero latency is required, we don't want to invoke any cpuidle code at
-all.
+On Tuesday, October 21, 2014 04:29:39 PM Michal Hocko wrote:
+> On Tue 21-10-14 16:41:07, Rafael J. Wysocki wrote:
+> > On Tuesday, October 21, 2014 04:11:59 PM Michal Hocko wrote:
+> [...]
+> > > OK, incremental diff on top. I will post the complete patch if you are
+> > > happier with this change
+> > 
+> > Yes, I am.
+> ---
+> From 9ab46fe539cded8e7b6425b2cd23ba9184002fde Mon Sep 17 00:00:00 2001
+> From: Michal Hocko <mhocko@suse.cz>
+> Date: Mon, 20 Oct 2014 18:12:32 +0200
+> Subject: [PATCH -v2] OOM, PM: OOM killed task shouldn't escape PM suspend
+> 
+> PM freezer relies on having all tasks frozen by the time devices are
+> getting frozen so that no task will touch them while they are getting
+> frozen. But OOM killer is allowed to kill an already frozen task in
+> order to handle OOM situtation. In order to protect from late wake ups
+> OOM killer is disabled after all tasks are frozen. This, however, still
+> keeps a window open when a killed task didn't manage to die by the time
+> freeze_processes finishes.
+> 
+> Reduce the race window by checking all tasks after OOM killer has been
+> disabled. This is still not race free completely unfortunately because
+> oom_killer_disable cannot stop an already ongoing OOM killer so a task
+> might still wake up from the fridge and get killed without
+> freeze_processes noticing. Full synchronization of OOM and freezer is,
+> however, too heavy weight for this highly unlikely case.
+> 
+> Introduce and check oom_kills counter which gets incremented early when
+> the allocator enters __alloc_pages_may_oom path and only check all the
+> tasks if the counter changes during the freezing attempt. The counter
+> is updated so early to reduce the race window since allocator checked
+> oom_killer_disabled which is set by PM-freezing code. A false positive
+> will push the PM-freezer into a slow path but that is not a big deal.
+> 
+> Changes since v1
+> - push the re-check loop out of freeze_processes into
+>   check_frozen_processes and invert the condition to make the code more
+>   readable as per Rafael
 
-Move the check within the governors and do the check before selecting the
-state in order to fallback to the default idle function.
+I've applied that along with the rest of the series, but what about the
+following cleanup patch on top of it?
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Rafael
+
+
 ---
- drivers/cpuidle/governors/ladder.c | 6 ------
- drivers/cpuidle/governors/menu.c   | 4 ----
- kernel/sched/idle.c                | 8 ++++++++
- 3 files changed, 8 insertions(+), 10 deletions(-)
+ kernel/power/process.c |   31 ++++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-index 044ee0d..a7f18e7 100644
---- a/drivers/cpuidle/governors/ladder.c
-+++ b/drivers/cpuidle/governors/ladder.c
-@@ -71,12 +71,6 @@ static int ladder_select_state(struct cpuidle_driver *drv,
- 	int last_residency, last_idx = ldev->last_state_idx;
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+Index: linux-pm/kernel/power/process.c
+===================================================================
+--- linux-pm.orig/kernel/power/process.c
++++ linux-pm/kernel/power/process.c
+@@ -108,25 +108,27 @@ static int try_to_freeze_tasks(bool user
+ 	return todo ? -EBUSY : 0;
+ }
  
--	/* Special case when user has set very strict latency requirement */
--	if (unlikely(latency_req == 0)) {
--		ladder_do_selection(ldev, last_idx, 0);
--		return 0;
--	}
--
- 	last_state = &ldev->states[last_idx];
- 
- 	if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 34db2fb..4ed3915 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -302,10 +302,6 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 
- 	data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
- 
--	/* Special case when user has set very strict latency requirement */
--	if (unlikely(latency_req == 0))
--		return 0;
--
- 	/* determine the expected residency time, round up */
- 	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length());
- 
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index 11e7bc4..3042b924 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -78,6 +78,7 @@ static void cpuidle_idle_call(void)
- {
- 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
- 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-+	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
- 	int next_state, entered_state;
- 	unsigned int broadcast;
- 
-@@ -104,6 +105,13 @@ static void cpuidle_idle_call(void)
- 	rcu_idle_enter();
- 
- 	/*
-+	 * The latency requirement does not allow any latency, jump to
-+	 * the default idle function
-+	 */
-+	if (latency_req == 0)
-+		goto use_default;
++static bool __check_frozen_processes(void)
++{
++	struct task_struct *g, *p;
 +
-+	/*
- 	 * Ask the cpuidle framework to choose a convenient idle state.
- 	 * Fall back to the default arch idle method on errors.
- 	 */
--- 
-1.9.1
++	for_each_process_thread(g, p)
++		if (p != current && !freezer_should_skip(p) && !frozen(p))
++			return false;
++
++	return true;
++}
++
+ /*
+  * Returns true if all freezable tasks (except for current) are frozen already
+  */
+ static bool check_frozen_processes(void)
+ {
+-	struct task_struct *g, *p;
+-	bool ret = true;
++	bool ret;
+ 
+ 	read_lock(&tasklist_lock);
+-	for_each_process_thread(g, p) {
+-		if (p != current && !freezer_should_skip(p) &&
+-		    !frozen(p)) {
+-			ret = false;
+-			goto done;
+-		}
+-	}
+-done:
++	ret = __check_frozen_processes();
+ 	read_unlock(&tasklist_lock);
+-
+ 	return ret;
+ }
+ 
+@@ -167,15 +169,14 @@ int freeze_processes(void)
+ 		 * on the way out so we have to double check for race.
+ 		 */
+ 		if (oom_kills_count() != oom_kills_saved &&
+-				!check_frozen_processes()) {
++		    !check_frozen_processes()) {
+ 			__usermodehelper_set_disable_depth(UMH_ENABLED);
+ 			printk("OOM in progress.");
+ 			error = -EBUSY;
+-			goto done;
++		} else {
++			printk("done.");
+ 		}
+-		printk("done.");
+ 	}
+-done:
+ 	printk("\n");
+ 	BUG_ON(in_atomic());
+ 
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
