@@ -1,69 +1,127 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [GIT PULL] thermal soc changes
-Date: Wed, 22 Oct 2014 14:07:03 +0100
-Message-ID: <9hhiojc1ceg.fsf@arm.com>
-References: <1408711592-8917-1-git-send-email-edubezval@gmail.com>
-	<1409125313.8085.22.camel@rzhang1-toshiba>
-	<20140827132717.GA15875@developer>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call
+ chain
+Date: Wed, 22 Oct 2014 06:22:58 -0700
+Message-ID: <5447AFB2.4010701@roeck-us.net>
+References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-2-git-send-email-linux@roeck-us.net> <54460140.50805@gmail.com> <54465FBA.8070007@roeck-us.net> <544764B1.9020303@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140827132717.GA15875@developer> (Eduardo Valentin's message of
-	"Wed, 27 Aug 2014 09:27:19 -0400")
+In-Reply-To: <544764B1.9020303@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: =?UTF-8?B?UGhpbGlwcGUgUsOpdG9ybmF6?= <philippe.retornaz@gmail.com>, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rui
-
-Eduardo Valentin <edubezval@gmail.com> writes:
-
-> Hello Rui,
+On 10/22/2014 01:02 AM, Philippe R=C3=A9tornaz wrote:
+> Le 21/10/2014 15:29, Guenter Roeck a =C3=A9crit :
+>> On 10/20/2014 11:46 PM, Philippe R=C3=A9tornaz wrote:
+>>> Hello
+>>>
+>>> [...]
+>>>> - Use raw notifiers protected by spinlocks instead of atomic notif=
+iers
+>>> [...]
+>>>
+>>>> +/**
+>>>> + *    do_kernel_power_off - Execute kernel poweroff handler call =
+chain
+>>>> + *
+>>>> + *    Calls functions registered with register_power_off_handler.
+>>>> + *
+>>>> + *    Expected to be called from machine_power_off as last step o=
+f
+>>>> + *    the poweroff sequence.
+>>>> + *
+>>>> + *    Powers off the system immediately if a poweroff handler fun=
+ction
+>>>> + *    has been registered. Otherwise does nothing.
+>>>> + */
+>>>> +void do_kernel_power_off(void)
+>>>> +{
+>>>> +    spin_lock(&power_off_handler_lock);
+>>>> +    raw_notifier_call_chain(&power_off_handler_list, 0, NULL);
+>>>> +    spin_unlock(&power_off_handler_lock);
+>>>> +}
+>>>
+>>> I don't get it. You are still in atomic context inside the poweroff
+>>> callback
+>>> since you lock it with a spinlock.
+> [...]
+>>>
+>>> Why not using the blocking_notifier_* family ?
+>>> It will lock with a read-write semaphore under which you can sleep.
+>>>
+>>> For instance, twl4030_power_off will sleep, since it is doing I2C a=
+ccess.
+>>> So you cannot call it in atomic context.
+>>>
+>>
+>> Learning something new all the time. I assumed that spin_lock (unlik=
+e
+>> spin_lock_irqsafe) would not run in atomic context.
+>>
+>> I did not want to use a sleeping lock because I am not sure if that
+>> works for all architectures; some disable (local) interrupts before
+>> calling the function (eg arm and arm64), and I don't want to change
+>> that semantics.
 >
-> On Wed, Aug 27, 2014 at 03:41:53PM +0800, Zhang Rui wrote:
->> On Fri, 2014-08-22 at 08:46 -0400, Eduardo Valentin wrote:
->> > Hello Rui,
->> > 
->> > Please pull these changes. Here we have three new features: IMX driver has
->> > now support to i.mx6sx, the of-thermal now if aware of disabled thermal zones
->> > in DT, and we shall have tracing support on thermal framework.
->> > 
->> > The following changes since commit 47d104ba5879790c7c91c3390b0b08399e168efe:
->> > 
->> >   Merge branches 'exynos-fix', 'for-rc', 'int3403-fix', 'misc', 'rcar-thermal' and 'sti-thermal' of .git into next (2014-07-22 10:13:00 +0800)
->> > 
->> > are available in the git repository at:
->> > 
->> > 
->> >   https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git 
->> > 
->> 
->> I suppose you mean
->> http://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git next branch. And I've pulled those changes in your next branch.
+> You're right and it even disable all others CPUs (if any).
+> I don't understand why it needs to disable local interrupts since the
+> code path to pm_power_off is simply doing:
 >
-> Yes Rui. I made a mistake. 
+> syscall -> migrate to reboot cpu -> disable local interrupt -> disabl=
+e others cpu -> pm_power_off().
 >
-> Thanks for pulling.
+> I don't understand why we cannot re-enable interrupts right before pm=
+_power_off().
+> And it looks like that all pm_power_off callbacks which can sleep are=
+ broken.
+> I still wonder how i2c communication can works without local interrup=
+ts ... it looks
+> like somebody is re-enabling them (or the code was never run)
 >
+Good question. Or the code was never run under arm, or the drivers have=
+ a polling
+fallback if interrupts are disabled.
+
+>> I have another idea how to get there without changing the lock situa=
+tion
+>> while executing the call chain - just set a flag indicating that it =
+is
+>> running and execute it without lock. Would that work ?
 >
->> 
->> thanks,
->
-> Cheers,
+> I don't think inventing a new locking mechanism is a good solution.
+> We need first to know for sure if we can sleep or not in pm_power_off=
+=2E
+> If yes then we need to re-enable local interrupts and we can use a mu=
+tex.
+> If not then the atomic notifier is fine and a lots of drivers are wro=
+ng.
 >
 
-[...]
+I had another look into the kernel, checking all the callers of machine=
+_power_off().
+In some cases, the function is called directly from interrupt handlers,=
+ meaning
+there is no guarantee that interrupts are enabled to start with when it=
+ is called.
+So there is more to fix if the semantics of pm_power_off requires inter=
+rupts
+to be enabled.
 
->> > Punit Agrawal (3):
->> >       thermal: trace: Trace temperature changes
->> >       thermal: trace: Trace when a cooling device's state is updated
->> >       thermal: trace: Trace when temperature is above a trip point
+My current solution is to use a spinlock with disabled interrupts durin=
+g
+poweroff handler registration and unregistration, and no lock at all wh=
+ile
+executing the call chain. That is not perfect, but it retains the curre=
+nt
+situation and thus guarantees that existing code works as before. This
+disconnects the sleep vs. no sleep problem from the current patch serie=
+s,
+and we can solve that problem separately.
 
-I can't find the thermal trace patches in 3.18-rc1. When should I expect
-to see them in Linus' tree?
-
-Cheers,
-Punit
-
-[...]
+Thanks,
+Guenter
