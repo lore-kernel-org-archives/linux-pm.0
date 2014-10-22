@@ -1,56 +1,66 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: lockdep splat in CPU hotplug
-Date: Wed, 22 Oct 2014 16:28:14 +0200
-Message-ID: <5447BEFE.2040806@linaro.org>
-References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz> <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
+From: Frans Klaver <frans.klaver@xsens.com>
+Subject: [PATCH 01/13] power: reset: ltc2952: prefer devm_kzalloc over kzalloc
+Date: Wed, 22 Oct 2014 16:30:58 +0200
+Message-ID: <1413988270-28092-2-git-send-email-frans.klaver@xsens.com>
+References: <1413988270-28092-1-git-send-email-frans.klaver@xsens.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
+In-Reply-To: <1413988270-28092-1-git-send-email-frans.klaver@xsens.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jiri Kosina <jkosina@suse.cz>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Steven Rostedt <rostedt@goodmis.org>, Dave Jones <davej@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Nicolas Pitre <nico@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Frans Klaver <frans.klaver@xsens.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Ren=C3=A9=20Moll?= <linux@r-moll.nl>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10/22/2014 11:53 AM, Jiri Kosina wrote:
-> On Tue, 21 Oct 2014, Jiri Kosina wrote:
->
->> Hi,
->>
->> I am seeing the lockdep report below when resuming from suspend-to-d=
-isk
->> with current Linus' tree (c2661b80609).
->>
->> The reason for CCing Ingo and Peter is that I can't make any sense o=
-f one
->> of the stacktraces lockdep is providing.
->>
->> Please have a look at the very first stacktrace in the dump, where l=
-ockdep
->> is trying to explain where cpu_hotplug.lock#2 has been acquired. It =
-seems
->> to imply that cpuidle_pause() is taking cpu_hotplug.lock, but that's=
- not
->> the case at all.
->>
->> What am I missing?
->
-> Okay, reverting 442bf3aaf55a ("sched: Let the scheduler see CPU idle
-> states") and followup 83a0a96a5f26 ("sched/fair: Leverage the idle st=
-ate
-> info when choosing the "idlest" cpu") which depends on it makes the s=
-plat
-> go away.
+Make use of the fact that the allocated resources can be automatically
+deallocated. This reduces cleanup code and chance of leaks.
 
-Are you able to reproduce it by offlining the cpu and onlining it again=
- ?
+Signed-off-by: Frans Klaver <frans.klaver@xsens.com>
+---
+ drivers/power/reset/ltc2952-poweroff.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
+index 116a1ce..951a90d 100644
+--- a/drivers/power/reset/ltc2952-poweroff.c
++++ b/drivers/power/reset/ltc2952-poweroff.c
+@@ -292,7 +292,8 @@ static int ltc2952_poweroff_probe(struct platform_device *pdev)
+ 		return -EBUSY;
+ 	}
+ 
+-	ltc2952_data = kzalloc(sizeof(*ltc2952_data), GFP_KERNEL);
++	ltc2952_data = devm_kzalloc(&pdev->dev, sizeof(*ltc2952_data),
++				    GFP_KERNEL);
+ 	if (!ltc2952_data)
+ 		return -ENOMEM;
+ 
+@@ -300,17 +301,13 @@ static int ltc2952_poweroff_probe(struct platform_device *pdev)
+ 
+ 	ret = ltc2952_poweroff_init(pdev);
+ 	if (ret)
+-		goto err;
++		return ret;
+ 
+ 	pm_power_off = &ltc2952_poweroff_kill;
+ 
+ 	dev_info(&pdev->dev, "probe successful\n");
+ 
+ 	return 0;
+-
+-err:
+-	kfree(ltc2952_data);
+-	return ret;
+ }
+ 
+ static int ltc2952_poweroff_remove(struct platform_device *pdev)
+@@ -324,8 +321,6 @@ static int ltc2952_poweroff_remove(struct platform_device *pdev)
+ 
+ 		for (i = 0; i < ARRAY_SIZE(ltc2952_data->gpio); i++)
+ 			gpiod_put(ltc2952_data->gpio[i]);
+-
+-		kfree(ltc2952_data);
+ 	}
+ 
+ 	return 0;
+-- 
+2.1.0
