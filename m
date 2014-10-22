@@ -1,21 +1,34 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH v2 40/47] mips: Register with kernel poweroff handler
-Date: Wed, 22 Oct 2014 17:32:07 +0200
-Message-ID: <20141022153207.GB11045@linux-mips.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v2 36/47] arm64: psci: Register with kernel poweroff
+ handler
+Date: Wed, 22 Oct 2014 08:37:52 -0700
+Message-ID: <20141022153752.GA26229@roeck-us.net>
 References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
- <1413864783-3271-41-git-send-email-linux@roeck-us.net>
+ <1413864783-3271-37-git-send-email-linux@roeck-us.net>
+ <20141022125230.GI22642@leverpostej>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Received: from localhost.localdomain ([127.0.0.1]:38941 "EHLO linux-mips.org"
-        rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
-        id S27012158AbaJVPcJCO6Wj (ORCPT <rfc822;linux-pm@vger.kernel.org>
-        + 1 other); Wed, 22 Oct 2014 17:32:09 +0200
 Content-Disposition: inline
-In-Reply-To: <1413864783-3271-41-git-send-email-linux@roeck-us.net>
+In-Reply-To: <20141022125230.GI22642@leverpostej>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Maciej W. Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
+On Wed, Oct 22, 2014 at 01:52:31PM +0100, Mark Rutland wrote:
+> On Tue, Oct 21, 2014 at 05:12:52AM +0100, Guenter Roeck wrote:
+> > Register with kernel poweroff handler instead of setting pm_power_off
+> > directly.
+> > 
+> > Cc: Catalin Marinas <catalin.marinas@arm.com>
+> > Cc: Will Deacon <will.deacon@arm.com>
+> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> 
+> My Juno board powers down correctly with this applied, so:
+> 
+> Tested-by: Mark Rutland <mark.rutland@arm.com>
+> 
+Thanks a lot!
+
+Guenter
