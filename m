@@ -1,67 +1,69 @@
-From: Ludovic Desroches <ludovic.desroches@atmel.com>
-Subject: Re: [PATCH 8/8] MAINTAINERS: add at91 power and memory entries
-Date: Wed, 22 Oct 2014 08:56:25 +0200
-Message-ID: <20141022065625.GK7443@ldesroches-Latitude-E6320>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCH 5/8] power: reset: at91-reset: use at91_ramc_shutdown
+Date: Wed, 22 Oct 2014 09:08:10 +0200
+Message-ID: <20141022090810.167c470f@free-electrons.com>
 References: <1413928540-27099-1-git-send-email-alexandre.belloni@free-electrons.com>
- <1413928540-27099-9-git-send-email-alexandre.belloni@free-electrons.com>
+	<1413928540-27099-6-git-send-email-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eusmtp01.atmel.com ([212.144.249.243]:25601 "EHLO
-	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751105AbaJVG41 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Oct 2014 02:56:27 -0400
-Content-Disposition: inline
-In-Reply-To: <1413928540-27099-9-git-send-email-alexandre.belloni@free-electrons.com>
+Received: from down.free-electrons.com ([37.187.137.238]:49787 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751138AbaJVHIO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Oct 2014 03:08:14 -0400
+In-Reply-To: <1413928540-27099-6-git-send-email-alexandre.belloni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>
 
-On Tue, Oct 21, 2014 at 11:55:40PM +0200, Alexandre Belloni wrote:
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> ---
->  MAINTAINERS | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index a20df9bf8ab0..e325c81ee2fa 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -871,6 +871,25 @@ M:	Boris Brezillon <boris.brezillon@free-electrons.com>
->  S:	Maintained
->  F:	drivers/clk/at91
+Dear Alexandre Belloni,
+
+On Tue, 21 Oct 2014 23:55:37 +0200, Alexandre Belloni wrote:
+
+>  /*
+>  * unless the SDRAM is cleanly shutdown before we hit the
+>  * reset register it can be left driving the data bus and
+>  * killing the chance of a subsequent boot from NAND
+>  */
+> -static void at91sam9260_restart(enum reboot_mode mode, const char *cmd)
+> +static void at91_restart(enum reboot_mode mode, const char *cmd)
+>  {
+> -	asm volatile(
+> -		/* Align to cache lines */
+> -		".balign 32\n\t"
+> -
+> -		/* Disable SDRAM accesses */
+> -		"str	%2, [%0, #" __stringify(AT91_SDRAMC_TR) "]\n\t"
+> -
+> -		/* Power down SDRAM */
+> -		"str	%3, [%0, #" __stringify(AT91_SDRAMC_LPR) "]\n\t"
+> +	if (at91_ramc_shutdown)
+> +		at91_ramc_shutdown();
 >  
-> +ARM/ATMEL AT91 Poweroff driver
-> +M:	Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> +L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
-> +S:	Maintained
-> +F:	drivers/power/reset/at91-poweroff.c
-> +
-> +ARM/ATMEL AT91 Reset driver
-> +M:	Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> +L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
-> +S:	Maintained
-> +F:	drivers/power/reset/at91-reset.c
-> +
-> +ARM/ATMEL AT91 SDRAM Controlller driver
+> +	asm volatile(
+>  		/* Reset CPU */
+> -		"str	%4, [%1, #" __stringify(AT91_RSTC_CR) "]\n\t"
+> +		"str	%1, [%0, #" __stringify(AT91_RSTC_CR) "]\n\t"
+>  
+>  		"b	.\n\t"
 
-Controller
+Are you sure this is working properly? There was a reason to have the
+SDRAM controller shutdown right before resetting the CPU: the code was
+ensuring that all those assembly instructions fitted in one cache line,
+so that even if the SDRAM controller gets shutdown, the rest of the
+code can properly execute until resetting the CPU. Now, the SDRAM
+controller shutdown code and the code resetting the CPU are in
+completely separate places, which break this assumption.
 
-> +M:	Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> +L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
-> +S:	Maintained
-> +F:	drivers/memory/atmel-sdramc.c
-> +F:	include/soc/atmel/memory.h
-> +
->  ARM/CALXEDA HIGHBANK ARCHITECTURE
->  M:	Rob Herring <robh@kernel.org>
->  L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
-> -- 
-> 1.9.1
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+And also, you forgot to Cc: Maxime Ripard who did the initial work on
+this at91-reset controller.
+
+Thanks,
+
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
