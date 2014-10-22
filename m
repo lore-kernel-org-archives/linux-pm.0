@@ -1,99 +1,172 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Kevin Hilman <khilman@kernel.org>
 Subject: Re: [PATCH v2 2/3] ARM: keystone: pm: switch to use generic pm domains
-Date: Wed, 22 Oct 2014 17:44:30 +0200
-Message-ID: <CAMuHMdVO4nMoeYdzLf6wdKW876gYVyML3C2+QKoteGPtisD4sA@mail.gmail.com>
+Date: Wed, 22 Oct 2014 08:58:08 -0700
+Message-ID: <7h61fccd0v.fsf@deeprootsystems.com>
 References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>
 	<1413809764-21995-3-git-send-email-grygorii.strashko@ti.com>
-	<5446A065.9050308@gmail.com>
-	<544793B5.6080601@ti.com>
-	<CAPDyKFo97D3XbwDQrDzHw+qr4b24Fsq9EwDbdOMhy_L-RoYsLw@mail.gmail.com>
-	<CAMuHMdVsqsSHxirzoWspGz7y+2qBk42p-VUBNkys3_rr6Th_9Q@mail.gmail.com>
-	<CAPDyKFp6T1a1XXHdxiubP2RaS26uSqkUS3rbBgsNV_y+dSFfvw@mail.gmail.com>
+	<5446A065.9050308@gmail.com> <544793B5.6080601@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFp6T1a1XXHdxiubP2RaS26uSqkUS3rbBgsNV_y+dSFfvw@mail.gmail.com>
+In-Reply-To: <544793B5.6080601@ti.com> (Grygorii Strashko's message of "Wed,
+	22 Oct 2014 14:23:33 +0300")
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Santosh Shilimkar <santosh.shilimkar@gmail.com>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Santosh Shilimkar <santosh.shilimkar@gmail.com>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 22, 2014 at 5:28 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 22 October 2014 17:09, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> On Wed, Oct 22, 2014 at 5:01 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>>>> +void keystone_pm_domain_attach_dev(struct device *dev)
->>>>>>   {
->>>>>> +    struct clk *clk;
->>>>>>       int ret;
->>>>>> +    int i = 0;
->>>>>>
->>>>>>       dev_dbg(dev, "%s\n", __func__);
->>>>>>
->>>>>> -    ret = pm_generic_runtime_suspend(dev);
->>>>>> -    if (ret)
->>>>>> -        return ret;
->>>>>> -
->>>>>> -    ret = pm_clk_suspend(dev);
->>>>>> +    ret = pm_clk_create(dev);
->>>>>>       if (ret) {
->>>>>> -        pm_generic_runtime_resume(dev);
->>>>>> -        return ret;
->>>>>> +        dev_err(dev, "pm_clk_create failed %d\n", ret);
->>>>>> +        return;
->>>>>> +    };
->>>>>> +
->>>>>> +    while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
->>>>>> +        ret = pm_clk_add_clk(dev, clk);
->>>>>> +        if (ret) {
->>>>>> +            dev_err(dev, "pm_clk_add_clk failed %d\n", ret);
->>>>>> +            goto clk_err;
->>>>>> +        };
->>>>>>       }
->>>>>>
->>>>>> -    return 0;
->>>>>> +    if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
->>>>> Can we not okkup two seperate callbacks instead of above check ?
->>>>> I don't like this CONFIG check here. Its slightly better version of
->>>>> ifdef in middle of the code.
->>>>
->>>> I've found more-less similar comment on patch
->>>> "Re: [PATCH v3 1/3] power-domain: add power domain drivers for Rockchip platform"
->>>> https://lkml.org/lkml/2014/10/17/257
->>>>
->>>> So, Would you like me to create patch which will enable clocks in pm_clk_add/_clk()
->>>> in case !IS_ENABLED(CONFIG_PM_RUNTIME)
->>>
->>> I am wondering whether we actually should/could do this, no matter of
->>> CONFIG_PM_RUNTIME.
->>>
->>> Typically, for configurations that uses CONFIG_PM_RUNTIME, the PM
->>> clocks through pm_clk_suspend(), will be gated once the device becomes
->>> runtime PM suspended. Right?
->>
->> Doing it unconditionally means we'll have lots of unneeded clocks running
->> for a short while.
+Grygorii Strashko <grygorii.strashko@ti.com> writes:
 
-> As long as the pm_clk_add() is being invoked from the ->attach_dev()
-> callback, we are in the probe path. Certainly we would like to have
-> clocks enabled while probing, don't you think?
+> Hi Santosh,
 >
-> If we wouldn't enable the clocks for CONFIG_PM_RUNTIME, when will
-> those be enabled?
+> On 10/21/2014 09:05 PM, Santosh Shilimkar wrote:
+>> On 10/20/2014 05:56 AM, Grygorii Strashko wrote:
+>>> This patch switches Keystone 2 PM code to use Generic PM domains
+>>> instead of PM clock domains because of the lack of DT support
+>>> for the last.
+>>>
+>>> Reviewed-by: Kevin Hilman <khilman@linaro.org>
+>>> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+>>> ---
+>>>   .../bindings/power/ti,keystone-powerdomain.txt     |  31 ++++++
+>>>   arch/arm/mach-keystone/Kconfig                     |   1 +
+>>>   arch/arm/mach-keystone/pm_domain.c                 | 112 
+>>> ++++++++++++++-------
+>>>   3 files changed, 107 insertions(+), 37 deletions(-)
+>>>   create mode 100644 
+>>> Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
+>>>
+>>> diff --git 
+>>> a/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt 
+>>> b/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
+>>> new file mode 100644
+>>> index 0000000..4bbf2aa
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
+>>> @@ -0,0 +1,31 @@
+>>> +* TI Keystone 2 Generic PM Controller
+>>> +
+>>> +The TI Keystone 2 Generic PM Controller is responsible for Clock gating
+>>> +for each controlled IP module.
+>>> +
+>>> +Required properties:
+>>> +- compatible: Should be "ti,keystone-powerdomain"
+>>> +- #power-domain-cells: Should be 0, see below:
+>>> +
+>>> +The gpc node is a power-controller as documented by the generic power 
+>>> domain
+>> You renamed gpc but missed to fix the comment ? Pls update it.
+>
+> ok.
+>
+>> 
+>>> +bindings in Documentation/devicetree/bindings/power/power_domain.txt.
+>>> +
+>>> +Example:
+>>> +
+>>> +    pm_controller: pm-controller {
+>>> +        compatible = "ti,keystone-powerdomain";
+>>> +        #power-domain-cells = <0>;
+>>> +    };
+>>> +
+>>> +    netcp: netcp@2090000 {
+>>> +        reg = <0x2620110 0x8>;
+>>> +        reg-names = "efuse";
+>>> +        ...
+>>> +        #address-cells = <1>;
+>>> +        #size-cells = <1>;
+>>> +        ranges;
+>>> +        power-domains = <&pm_controller>;
+>>> +
+>>> +        clocks = <&clkpa>, <&clkcpgmac>, <&chipclk12>;
+>>> +        dma-coherent;
+>>> +    }
+>>> diff --git a/arch/arm/mach-keystone/Kconfig 
+>>> b/arch/arm/mach-keystone/Kconfig
+>>> index 98a156a..de43107 100644
+>>> --- a/arch/arm/mach-keystone/Kconfig
+>>> +++ b/arch/arm/mach-keystone/Kconfig
+>>> @@ -9,6 +9,7 @@ config ARCH_KEYSTONE
+>>>       select COMMON_CLK_KEYSTONE
+>>>       select ARCH_SUPPORTS_BIG_ENDIAN
+>>>       select ZONE_DMA if ARM_LPAE
+>>> +    select PM_GENERIC_DOMAINS if PM
+>>>       help
+>>>         Support for boards based on the Texas Instruments Keystone 
+>>> family of
+>>>         SoCs.
+>>> diff --git a/arch/arm/mach-keystone/pm_domain.c 
+>>> b/arch/arm/mach-keystone/pm_domain.c
+>>> index ca79dda..d58759d 100644
+>>> --- a/arch/arm/mach-keystone/pm_domain.c
+>>> +++ b/arch/arm/mach-keystone/pm_domain.c
+>>> @@ -12,69 +12,107 @@
+>>>    * version 2, as published by the Free Software Foundation.
+>>>    */
+>>>
+>>> +#include <linux/clk.h>
+>>>   #include <linux/init.h>
+>>> -#include <linux/pm_runtime.h>
+>>>   #include <linux/pm_clock.h>
+>>> +#include <linux/pm_domain.h>
+>>>   #include <linux/platform_device.h>
+>>> -#include <linux/clk-provider.h>
+>>>   #include <linux/of.h>
+>>>
+>>> -#ifdef CONFIG_PM_RUNTIME
+>>> -static int keystone_pm_runtime_suspend(struct device *dev)
+>>> +#ifdef CONFIG_PM_GENERIC_DOMAINS
+>>> +
+>>> +struct keystone_domain {
+>>> +    struct generic_pm_domain genpd;
+>>> +    struct device    *dev;
+>>> +};
+>>> +
+>>> +void keystone_pm_domain_attach_dev(struct device *dev)
+>>>   {
+>>> +    struct clk *clk;
+>>>       int ret;
+>>> +    int i = 0;
+>>>
+>>>       dev_dbg(dev, "%s\n", __func__);
+>>>
+>>> -    ret = pm_generic_runtime_suspend(dev);
+>>> -    if (ret)
+>>> -        return ret;
+>>> -
+>>> -    ret = pm_clk_suspend(dev);
+>>> +    ret = pm_clk_create(dev);
+>>>       if (ret) {
+>>> -        pm_generic_runtime_resume(dev);
+>>> -        return ret;
+>>> +        dev_err(dev, "pm_clk_create failed %d\n", ret);
+>>> +        return;
+>>> +    };
+>>> +
+>>> +    while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
+>>> +        ret = pm_clk_add_clk(dev, clk);
+>>> +        if (ret) {
+>>> +            dev_err(dev, "pm_clk_add_clk failed %d\n", ret);
+>>> +            goto clk_err;
+>>> +        };
+>>>       }
+>>>
+>>> -    return 0;
+>>> +    if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
+>> Can we not okkup two seperate callbacks instead of above check ?
+>> I don't like this CONFIG check here. Its slightly better version of
+>> ifdef in middle of the code.
+>
+> I've found more-less similar comment on patch
+> "Re: [PATCH v3 1/3] power-domain: add power domain drivers for Rockchip platform"
+> https://lkml.org/lkml/2014/10/17/257
+>
+> So, Would you like me to create patch which will enable clocks in pm_clk_add/_clk()
+> in case !IS_ENABLED(CONFIG_PM_RUNTIME)
 
-They will be enabled when the driver does
+Yes, I think it's a good idea to propose that change and propose to
+Rafael on linux-pm.  Be sure that myself, Ulf and Geert are Cc'd.
 
-        pm_runtime_enable(dev);
-        pm_runtime_get_sync(dev);
+Thanks,
 
-in its .probe() method.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Kevin
