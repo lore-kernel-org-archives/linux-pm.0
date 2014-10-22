@@ -1,148 +1,49 @@
-From: Greg Ungerer <gerg@uclinux.org>
-Subject: Re: [PATCH v2 04/47] m68k: Replace mach_power_off with pm_power_off
-Date: Wed, 22 Oct 2014 13:50:04 +1000
-Message-ID: <5447296C.5090806@uclinux.org>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-5-git-send-email-linux@roeck-us.net>
+From: =?gb2312?B?1uy71A==?= <zhuhui@xiaomi.com>
+Subject: Re: [PATCH 1/4] (CMA_AGGRESSIVE) Add CMA_AGGRESSIVE to Kconfig
+Date: Wed, 22 Oct 2014 05:44:24 +0000
+Message-ID: <2c27ad87839b42ca85c03c9541550d30@cnbox4.mioffice.cn>
+References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
+ <1413430551-22392-2-git-send-email-zhuhui@xiaomi.com>
+ <201410220126.s9M1Qita026502@spam.xiaomi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1413864783-3271-5-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Joshua Thompson <funaho@jurai.org>, linux-m68k@lists.linux-m68k.org
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <owner-linux-mm@kvack.org>
+Content-Language: zh-CN
+Sender: owner-linux-mm@kvack.org
+To: Pavel Machek <pavel@denx.de>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "mina86@mina86.com" <mina86@mina86.com>, "aneesh.kumar@linux.vnet.ibm.com" <aneesh.kumar@linux.vnet.ibm.com>, "iamjoonsoo.kim@lge.com" <iamjoonsoo.kim@lge.com>, "hannes@cmpxchg.org" <hannes@cmpxchg.org>, "riel@redhat.com" <riel@redhat.com>, "mgorman@suse.de" <mgorman@suse.de>, "minchan@kernel.org" <minchan@kernel.org>, "nasa4836@gmail.com" <nasa4836@gmail.com>, "ddstreet@ieee.org" <ddstreet@ieee.org>, "hughd@google.com" <hughd@google.com>, "mingo@kernel.org" <mingo@kernel.org>, "rientjes@google.com" <rientjes@google.com>, "peterz@infradead.org" <peterz@infradead.org>, "keescook@chromium.org" <keescook@chromium.org>, "atomlin@redhat.com" <atomlin@redhat.com>, raistlin@linux.it
 List-Id: linux-pm@vger.kernel.org
 
-Hi Guenter,
+CgpPbiAxMC8yMi8xNCAwOToyNywgUGF2ZWwgTWFjaGVrIHdyb3RlOgo+IEhpIQo+Cj4+IEFkZCBD
+TUFfQUdHUkVTU0lWRSBjb25maWcgdGhhdCBkZXBlbmQgb24gQ01BIHRvIExpbnV4IGtlcm5lbCBj
+b25maWcuCj4+IEFkZCBDTUFfQUdHUkVTU0lWRV9QSFlfTUFYLCBDTUFfQUdHUkVTU0lWRV9GUkVF
+X01JTiBhbmQgQ01BX0FHR1JFU1NJVkVfU0hSSU5LCj4+IHRoYXQgZGVwZW5kIG9uIENNQV9BR0dS
+RVNTSVZFLgo+Pgo+PiBJZiBwaHlzaWNhbCBtZW1vcnkgc2l6ZSAobm90IGluY2x1ZGUgQ01BIG1l
+bW9yeSkgaW4gYnl0ZSBsZXNzIHRoYW4gb3IgZXF1YWwgdG8KPj4gQ01BX0FHR1JFU1NJVkVfUEhZ
+X01BWCwgQ01BIGFnZ3Jlc3NpdmUgc3dpdGNoIChzeXNjdGwgdm0uY21hLWFnZ3Jlc3NpdmUtc3dp
+dGNoKQo+PiB3aWxsIGJlIG9wZW5lZC4KPgo+IE9rLi4uCj4KPiBEbyBJIHVuZGVyc3RhbmQgaXQg
+Y29ycmVjdGx5IHRoYXQgdGhlcmUgaXMgc29tZSBwcm9ibGVtIHdpdGgKPiBoaWJlcm5hdGlvbiBu
+b3Qgd29ya2luZyBvbiBtYWNoaW5lcyBub3Qgd29ya2luZyBvbiBtYWNoaW5lcyB3aXRoIGJpZwo+
+IENNQSBhcmVhcy4uLj8KCk5vLCB0aGVzZSBwYXRjaGVzIHdhbnQgdG8gaGFuZGxlIHRoaXMgaXNz
+dWUgdGhhdCBtb3N0IG9mIENNQSBtZW1vcnkgaXMgCm5vdCBhbGxvY2F0ZWQgYmVmb3JlIGxvd21l
+bW9yeWtpbGxlciBvciBvb21fa2lsbGVyIGJlZ2luIHRvIGtpbGwgdGFza3MuCgo+Cj4gQnV0IGFk
+ZGluZyA0IGNvbmZpZyBvcHRpb25zIGVuZC11c2VyIGhhcyBubyBjaGFuY2UgdG8gc2V0IHJpZ2h0
+IGNhbgo+IG5vdCBiZSB0aGUgYmVzdCBzb2x1dGlvbiwgY2FuIGl0Pwo+Cj4+ICtjb25maWcgQ01B
+X0FHR1JFU1NJVkVfUEhZX01BWAo+PiArCWhleCAiUGh5c2ljYWwgbWVtb3J5IHNpemUgaW4gQnl0
+ZXMgdGhhdCBhdXRvIHR1cm4gb24gdGhlIENNQSBhZ2dyZXNzaXZlIHN3aXRjaCIKPj4gKwlkZXBl
+bmRzIG9uIENNQV9BR0dSRVNTSVZFCj4+ICsJZGVmYXVsdCAweDQwMDAwMDAwCj4+ICsJaGVscAo+
+PiArCSAgSWYgcGh5c2ljYWwgbWVtb3J5IHNpemUgKG5vdCBpbmNsdWRlIENNQSBtZW1vcnkpIGlu
+IGJ5dGUgbGVzcyB0aGFuIG9yCj4+ICsJICBlcXVhbCB0byB0aGlzIHZhbHVlLCBDTUEgYWdncmVz
+c2l2ZSBzd2l0Y2ggd2lsbCBiZSBvcGVuZWQuCj4+ICsJICBBZnRlciB0aGUgTGludXggYm9vdCwg
+c3lzY3RsICJ2bS5jbWEtYWdncmVzc2l2ZS1zd2l0Y2giIGNhbiBjb250cm9sCj4+ICsJICB0aGUg
+Q01BIEFHR1JFU1NJVkUgc3dpdGNoLgo+Cj4gRm9yIGV4YW1wbGUuLi4gaG93IGFtIEkgZXhwZWN0
+ZWQgdG8gZmlndXJlIHJpZ2h0IHZhbHVlIHRvIHBsYWNlIGhlcmU/CgpJIGFncmVlIHdpdGggdGhh
+dC4gIEkgd2lsbCB1cGRhdGUgdGhpcyBjb25maWcgdG8gYXV0byBzZXQgaW4gbmV4dCB2ZXJzaW9u
+LgoKVGhhbmtzLApIdWkKCj4KPiAJCQkJCQkJCQlQYXZlbAo+Cg==
 
-On 21/10/14 14:12, Guenter Roeck wrote:
-> Replace mach_power_off with pm_power_off to simplify the subsequent
-> move of pm_power_off to generic code.
-> 
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Greg Ungerer <gerg@uclinux.org>
-> Cc: Joshua Thompson <funaho@jurai.org>
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-
-I have no problem with the non-MMU affected parts.
-
-Acked-by: Greg Ungerer <gerg@uclinux.org>
-
-Regards
-Greg
-
-
-
-> ---
-> v2:
-> - have_kernel_poweroff -> have_kernel_power_off
-> 
->  arch/m68k/emu/natfeat.c         | 3 ++-
->  arch/m68k/include/asm/machdep.h | 1 -
->  arch/m68k/kernel/process.c      | 5 +++--
->  arch/m68k/kernel/setup_mm.c     | 1 -
->  arch/m68k/kernel/setup_no.c     | 1 -
->  arch/m68k/mac/config.c          | 3 ++-
->  6 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/m68k/emu/natfeat.c b/arch/m68k/emu/natfeat.c
-> index 71b78ec..91e2ae7 100644
-> --- a/arch/m68k/emu/natfeat.c
-> +++ b/arch/m68k/emu/natfeat.c
-> @@ -15,6 +15,7 @@
->  #include <linux/string.h>
->  #include <linux/kernel.h>
->  #include <linux/module.h>
-> +#include <linux/pm.h>
->  #include <linux/io.h>
->  #include <asm/machdep.h>
->  #include <asm/natfeat.h>
-> @@ -90,5 +91,5 @@ void __init nf_init(void)
->  	pr_info("NatFeats found (%s, %lu.%lu)\n", buf, version >> 16,
->  		version & 0xffff);
->  
-> -	mach_power_off = nf_poweroff;
-> +	pm_power_off = nf_poweroff;
->  }
-> diff --git a/arch/m68k/include/asm/machdep.h b/arch/m68k/include/asm/machdep.h
-> index 953ca21..f9fac51 100644
-> --- a/arch/m68k/include/asm/machdep.h
-> +++ b/arch/m68k/include/asm/machdep.h
-> @@ -24,7 +24,6 @@ extern int (*mach_set_rtc_pll)(struct rtc_pll_info *);
->  extern int (*mach_set_clock_mmss)(unsigned long);
->  extern void (*mach_reset)( void );
->  extern void (*mach_halt)( void );
-> -extern void (*mach_power_off)( void );
->  extern unsigned long (*mach_hd_init) (unsigned long, unsigned long);
->  extern void (*mach_hd_setup)(char *, int *);
->  extern long mach_max_dma_address;
-> diff --git a/arch/m68k/kernel/process.c b/arch/m68k/kernel/process.c
-> index c55ff71..afe3d6e 100644
-> --- a/arch/m68k/kernel/process.c
-> +++ b/arch/m68k/kernel/process.c
-> @@ -22,6 +22,7 @@
->  #include <linux/unistd.h>
->  #include <linux/ptrace.h>
->  #include <linux/user.h>
-> +#include <linux/pm.h>
->  #include <linux/reboot.h>
->  #include <linux/init_task.h>
->  #include <linux/mqueue.h>
-> @@ -77,8 +78,8 @@ void machine_halt(void)
->  
->  void machine_power_off(void)
->  {
-> -	if (mach_power_off)
-> -		mach_power_off();
-> +	if (pm_power_off)
-> +		pm_power_off();
->  	for (;;);
->  }
->  
-> diff --git a/arch/m68k/kernel/setup_mm.c b/arch/m68k/kernel/setup_mm.c
-> index 5b8ec4d..002fea6 100644
-> --- a/arch/m68k/kernel/setup_mm.c
-> +++ b/arch/m68k/kernel/setup_mm.c
-> @@ -96,7 +96,6 @@ EXPORT_SYMBOL(mach_get_rtc_pll);
->  EXPORT_SYMBOL(mach_set_rtc_pll);
->  void (*mach_reset)( void );
->  void (*mach_halt)( void );
-> -void (*mach_power_off)( void );
->  long mach_max_dma_address = 0x00ffffff; /* default set to the lower 16MB */
->  #ifdef CONFIG_HEARTBEAT
->  void (*mach_heartbeat) (int);
-> diff --git a/arch/m68k/kernel/setup_no.c b/arch/m68k/kernel/setup_no.c
-> index 88c27d9..1520156 100644
-> --- a/arch/m68k/kernel/setup_no.c
-> +++ b/arch/m68k/kernel/setup_no.c
-> @@ -55,7 +55,6 @@ int (*mach_hwclk) (int, struct rtc_time*);
->  /* machine dependent reboot functions */
->  void (*mach_reset)(void);
->  void (*mach_halt)(void);
-> -void (*mach_power_off)(void);
->  
->  #ifdef CONFIG_M68000
->  #if defined(CONFIG_M68328)
-> diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c
-> index a471eab..677913ff 100644
-> --- a/arch/m68k/mac/config.c
-> +++ b/arch/m68k/mac/config.c
-> @@ -16,6 +16,7 @@
->  #include <linux/tty.h>
->  #include <linux/console.h>
->  #include <linux/interrupt.h>
-> +#include <linux/pm.h>
->  /* keyb */
->  #include <linux/random.h>
->  #include <linux/delay.h>
-> @@ -159,7 +160,7 @@ void __init config_mac(void)
->  	mach_set_clock_mmss = mac_set_clock_mmss;
->  	mach_reset = mac_reset;
->  	mach_halt = mac_poweroff;
-> -	mach_power_off = mac_poweroff;
-> +	pm_power_off = mac_poweroff;
->  	mach_max_dma_address = 0xffffffff;
->  #if defined(CONFIG_INPUT_M68K_BEEP) || defined(CONFIG_INPUT_M68K_BEEP_MODULE)
->  	mach_beep = mac_mksound;
-> 
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
