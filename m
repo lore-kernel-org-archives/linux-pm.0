@@ -1,170 +1,62 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH v2 2/3] ARM: keystone: pm: switch to use generic pm domains
-Date: Wed, 22 Oct 2014 14:23:33 +0300
-Message-ID: <544793B5.6080601@ti.com>
-References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com> <1413809764-21995-3-git-send-email-grygorii.strashko@ti.com> <5446A065.9050308@gmail.com>
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: lockdep splat in CPU hotplug
+Date: Wed, 22 Oct 2014 13:39:56 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1410221336070.22681@pobox.suse.cz>
+References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz> <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:46779 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932824AbaJVLYN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Oct 2014 07:24:13 -0400
-In-Reply-To: <5446A065.9050308@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Steven Rostedt <rostedt@goodmis.org>, Dave Jones <davej@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre <nico@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Santosh Shilimkar <santosh.shilimkar@gmail.com>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org, ulf.hansson@linaro.org
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi Santosh,
+On Wed, 22 Oct 2014, Jiri Kosina wrote:
 
-On 10/21/2014 09:05 PM, Santosh Shilimkar wrote:
-> On 10/20/2014 05:56 AM, Grygorii Strashko wrote:
->> This patch switches Keystone 2 PM code to use Generic PM domains
->> instead of PM clock domains because of the lack of DT support
->> for the last.
->>
->> Reviewed-by: Kevin Hilman <khilman@linaro.org>
->> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
->> ---
->>   .../bindings/power/ti,keystone-powerdomain.txt     |  31 ++++++
->>   arch/arm/mach-keystone/Kconfig                     |   1 +
->>   arch/arm/mach-keystone/pm_domain.c                 | 112 
->> ++++++++++++++-------
->>   3 files changed, 107 insertions(+), 37 deletions(-)
->>   create mode 100644 
->> Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
->>
->> diff --git 
->> a/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt 
->> b/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
->> new file mode 100644
->> index 0000000..4bbf2aa
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
->> @@ -0,0 +1,31 @@
->> +* TI Keystone 2 Generic PM Controller
->> +
->> +The TI Keystone 2 Generic PM Controller is responsible for Clock gating
->> +for each controlled IP module.
->> +
->> +Required properties:
->> +- compatible: Should be "ti,keystone-powerdomain"
->> +- #power-domain-cells: Should be 0, see below:
->> +
->> +The gpc node is a power-controller as documented by the generic power 
->> domain
-> You renamed gpc but missed to fix the comment ? Pls update it.
-
-ok.
-
+> Still, the lockdep stacktrace is bogus and didn't really help 
+> understanding this. Any idea why it's wrong?
 > 
->> +bindings in Documentation/devicetree/bindings/power/power_domain.txt.
->> +
->> +Example:
->> +
->> +    pm_controller: pm-controller {
->> +        compatible = "ti,keystone-powerdomain";
->> +        #power-domain-cells = <0>;
->> +    };
->> +
->> +    netcp: netcp@2090000 {
->> +        reg = <0x2620110 0x8>;
->> +        reg-names = "efuse";
->> +        ...
->> +        #address-cells = <1>;
->> +        #size-cells = <1>;
->> +        ranges;
->> +        power-domains = <&pm_controller>;
->> +
->> +        clocks = <&clkpa>, <&clkcpgmac>, <&chipclk12>;
->> +        dma-coherent;
->> +    }
->> diff --git a/arch/arm/mach-keystone/Kconfig 
->> b/arch/arm/mach-keystone/Kconfig
->> index 98a156a..de43107 100644
->> --- a/arch/arm/mach-keystone/Kconfig
->> +++ b/arch/arm/mach-keystone/Kconfig
->> @@ -9,6 +9,7 @@ config ARCH_KEYSTONE
->>       select COMMON_CLK_KEYSTONE
->>       select ARCH_SUPPORTS_BIG_ENDIAN
->>       select ZONE_DMA if ARM_LPAE
->> +    select PM_GENERIC_DOMAINS if PM
->>       help
->>         Support for boards based on the Texas Instruments Keystone 
->> family of
->>         SoCs.
->> diff --git a/arch/arm/mach-keystone/pm_domain.c 
->> b/arch/arm/mach-keystone/pm_domain.c
->> index ca79dda..d58759d 100644
->> --- a/arch/arm/mach-keystone/pm_domain.c
->> +++ b/arch/arm/mach-keystone/pm_domain.c
->> @@ -12,69 +12,107 @@
->>    * version 2, as published by the Free Software Foundation.
->>    */
->>
->> +#include <linux/clk.h>
->>   #include <linux/init.h>
->> -#include <linux/pm_runtime.h>
->>   #include <linux/pm_clock.h>
->> +#include <linux/pm_domain.h>
->>   #include <linux/platform_device.h>
->> -#include <linux/clk-provider.h>
->>   #include <linux/of.h>
->>
->> -#ifdef CONFIG_PM_RUNTIME
->> -static int keystone_pm_runtime_suspend(struct device *dev)
->> +#ifdef CONFIG_PM_GENERIC_DOMAINS
->> +
->> +struct keystone_domain {
->> +    struct generic_pm_domain genpd;
->> +    struct device    *dev;
->> +};
->> +
->> +void keystone_pm_domain_attach_dev(struct device *dev)
->>   {
->> +    struct clk *clk;
->>       int ret;
->> +    int i = 0;
->>
->>       dev_dbg(dev, "%s\n", __func__);
->>
->> -    ret = pm_generic_runtime_suspend(dev);
->> -    if (ret)
->> -        return ret;
->> -
->> -    ret = pm_clk_suspend(dev);
->> +    ret = pm_clk_create(dev);
->>       if (ret) {
->> -        pm_generic_runtime_resume(dev);
->> -        return ret;
->> +        dev_err(dev, "pm_clk_create failed %d\n", ret);
->> +        return;
->> +    };
->> +
->> +    while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
->> +        ret = pm_clk_add_clk(dev, clk);
->> +        if (ret) {
->> +            dev_err(dev, "pm_clk_add_clk failed %d\n", ret);
->> +            goto clk_err;
->> +        };
->>       }
->>
->> -    return 0;
->> +    if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
-> Can we not okkup two seperate callbacks instead of above check ?
-> I don't like this CONFIG check here. Its slightly better version of
-> ifdef in middle of the code.
+> >  ======================================================
+> >  [ INFO: possible circular locking dependency detected ]
+> >  3.18.0-rc1-00069-gc2661b8 #1 Not tainted
+> >  -------------------------------------------------------
+> >  do_s2disk/2367 is trying to acquire lock:
+> >   (cpuidle_lock){+.+.+.}, at: [<ffffffff814916c2>] cpuidle_pause_and_lock+0x12/0x20
+> >  
+> > but task is already holding lock:
+> >   (cpu_hotplug.lock#2){+.+.+.}, at: [<ffffffff810522ea>] cpu_hotplug_begin+0x4a/0x80
+> >  
+> > which lock already depends on the new lock.
+> > 
+> > the existing dependency chain (in reverse order) is:
+> > 
+> > -> #1 (cpu_hotplug.lock#2){+.+.+.}:
+> >         [<ffffffff81099fac>] lock_acquire+0xac/0x130
+> >         [<ffffffff815b9f2c>] mutex_lock_nested+0x5c/0x3b0
+> >         [<ffffffff81491892>] cpuidle_pause+0x12/0x30
 
-I've found more-less similar comment on patch
-"Re: [PATCH v3 1/3] power-domain: add power domain drivers for Rockchip platform"
-https://lkml.org/lkml/2014/10/17/257
+And the report is clearly bogus here. See:
 
-So, Would you like me to create patch which will enable clocks in pm_clk_add/_clk()
-in case !IS_ENABLED(CONFIG_PM_RUNTIME)
+$ addr2line -a ffffffff81491892 -e vmlinux-3.18.0-rc1-00068-gc2661b8
+0xffffffff81491892
+/dev/shm/jikos/BUILD/kernel-3.18.0_rc1_00068_gc2661b8/drivers/cpuidle/cpuidle.c:262
 
-regards,
--grygorii
- 
+where the corresponding lines are
 
+	259	void cpuidle_pause(void)
+	260	{
+	261		mutex_lock(&cpuidle_lock);
+	262		cpuidle_uninstall_idle_handler();
+	263		mutex_unlock(&cpuidle_lock);
+	264	}
+
+i.e. the RIP saved on stack clearly indicates that we are currently inside 
+cpuidle_uninstall_idle_handler().
+
+So it's clearly the case that part of the stack (which would probably 
+point to synchronize_rcu_expedited()) is missing for some reason.
+
+-- 
+Jiri Kosina
+SUSE Labs
