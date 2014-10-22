@@ -1,65 +1,69 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v2 36/47] arm64: psci: Register with kernel poweroff
- handler
-Date: Wed, 22 Oct 2014 13:52:31 +0100
-Message-ID: <20141022125230.GI22642@leverpostej>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
- <1413864783-3271-37-git-send-email-linux@roeck-us.net>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [GIT PULL] thermal soc changes
+Date: Wed, 22 Oct 2014 14:07:03 +0100
+Message-ID: <9hhiojc1ceg.fsf@arm.com>
+References: <1408711592-8917-1-git-send-email-edubezval@gmail.com>
+	<1409125313.8085.22.camel@rzhang1-toshiba>
+	<20140827132717.GA15875@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:39603 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933049AbaJVMxJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Oct 2014 08:53:09 -0400
-Content-Disposition: inline
-In-Reply-To: <1413864783-3271-37-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140827132717.GA15875@developer> (Eduardo Valentin's message of
+	"Wed, 27 Aug 2014 09:27:19 -0400")
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, Oct 21, 2014 at 05:12:52AM +0100, Guenter Roeck wrote:
-> Register with kernel poweroff handler instead of setting pm_power_off
-> directly.
-> 
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will.deacon@arm.com>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Hi Rui
 
-My Juno board powers down correctly with this applied, so:
+Eduardo Valentin <edubezval@gmail.com> writes:
 
-Tested-by: Mark Rutland <mark.rutland@arm.com>
+> Hello Rui,
+>
+> On Wed, Aug 27, 2014 at 03:41:53PM +0800, Zhang Rui wrote:
+>> On Fri, 2014-08-22 at 08:46 -0400, Eduardo Valentin wrote:
+>> > Hello Rui,
+>> > 
+>> > Please pull these changes. Here we have three new features: IMX driver has
+>> > now support to i.mx6sx, the of-thermal now if aware of disabled thermal zones
+>> > in DT, and we shall have tracing support on thermal framework.
+>> > 
+>> > The following changes since commit 47d104ba5879790c7c91c3390b0b08399e168efe:
+>> > 
+>> >   Merge branches 'exynos-fix', 'for-rc', 'int3403-fix', 'misc', 'rcar-thermal' and 'sti-thermal' of .git into next (2014-07-22 10:13:00 +0800)
+>> > 
+>> > are available in the git repository at:
+>> > 
+>> > 
+>> >   https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git 
+>> > 
+>> 
+>> I suppose you mean
+>> http://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git next branch. And I've pulled those changes in your next branch.
+>
+> Yes Rui. I made a mistake. 
+>
+> Thanks for pulling.
+>
+>
+>> 
+>> thanks,
+>
+> Cheers,
+>
 
-Thanks,
-Mark.
+[...]
 
-> ---
-> - Use define to specify poweroff handler priority
-> 
->  arch/arm64/kernel/psci.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
-> index 866c1c8..150ac1c 100644
-> --- a/arch/arm64/kernel/psci.c
-> +++ b/arch/arm64/kernel/psci.c
-> @@ -359,7 +359,8 @@ static int __init psci_0_2_init(struct device_node *np)
->  
->  	arm_pm_restart = psci_sys_reset;
->  
-> -	pm_power_off = psci_sys_poweroff;
-> +	register_power_off_handler_simple(psci_sys_poweroff,
-> +					  POWEROFF_PRIORITY_DEFAULT);
->  
->  out_put_node:
->  	of_node_put(np);
-> -- 
-> 1.9.1
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
+>> > Punit Agrawal (3):
+>> >       thermal: trace: Trace temperature changes
+>> >       thermal: trace: Trace when a cooling device's state is updated
+>> >       thermal: trace: Trace when temperature is above a trip point
+
+I can't find the thermal trace patches in 3.18-rc1. When should I expect
+to see them in Linus' tree?
+
+Cheers,
+Punit
+
+[...]
