@@ -1,88 +1,49 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH 3/5] cpuidle: idle: menu: Don't reflect when a state
- selection failed
-Date: Wed, 22 Oct 2014 16:41:37 -0400 (EDT)
-Message-ID: <alpine.LFD.2.11.1410221638430.6969@knanqh.ubzr>
-References: <1413822343-1972-1-git-send-email-daniel.lezcano@linaro.org> <1413822343-1972-3-git-send-email-daniel.lezcano@linaro.org>
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: lockdep splat in CPU hotplug
+Date: Wed, 22 Oct 2014 22:57:25 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1410222255540.17725@pobox.suse.cz>
+References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz> <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz> <20141022143837.GW4977@linux.vnet.ibm.com> <20141022165433.GA22874@linux.vnet.ibm.com> <20141022185712.GA9570@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f46.google.com ([209.85.216.46]:64508 "EHLO
-	mail-qa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754224AbaJVUlk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Oct 2014 16:41:40 -0400
-Received: by mail-qa0-f46.google.com with SMTP id s7so2642580qap.33
-        for <linux-pm@vger.kernel.org>; Wed, 22 Oct 2014 13:41:39 -0700 (PDT)
-In-Reply-To: <1413822343-1972-3-git-send-email-daniel.lezcano@linaro.org>
+Received: from cantor2.suse.de ([195.135.220.15]:47530 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932111AbaJVU52 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 22 Oct 2014 16:57:28 -0400
+In-Reply-To: <20141022185712.GA9570@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@rjwysocki.net, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Steven Rostedt <rostedt@goodmis.org>, Dave Jones <davej@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre <nico@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Mon, 20 Oct 2014, Daniel Lezcano wrote:
+On Wed, 22 Oct 2014, Paul E. McKenney wrote:
 
-> In the current code, the check to reflect or not the outcoming state is done
-> against the idle state which has been choose and its value.
-
-s/choose/chosen/
-
-> Instead of doing a check in each of the reflect functions, just don't call reflect
-> if something went wrong in the idle path.
+> rcu: More on deadlock between CPU hotplug and expedited grace periods
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Commit dd56af42bd82 (rcu: Eliminate deadlock between CPU hotplug and
+> expedited grace periods) was incomplete.  Although it did eliminate
+> deadlocks involving synchronize_sched_expedited()'s acquisition of
+> cpu_hotplug.lock via get_online_cpus(), it did nothing about the similar
+> deadlock involving acquisition of this same lock via put_online_cpus().
+> This deadlock became apparent with testing involving hibernation.
+> 
+> This commit therefore changes put_online_cpus() acquisition of this lock
+> to be conditional, and increments a new cpu_hotplug.puts_pending field
+> in case of acquisition failure.  Then cpu_hotplug_begin() checks for this
+> new field being non-zero, and applies any changes to cpu_hotplug.refcount.
+> 
 
-Acked-by: Nicolas Pitre <nico@linaro.org>
+Yes, this works. FWIW, please feel free to add 
 
-> ---
->  drivers/cpuidle/governors/ladder.c | 3 +--
->  drivers/cpuidle/governors/menu.c   | 4 +---
->  kernel/sched/idle.c                | 3 ++-
->  3 files changed, 4 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-> index fb396d6..c0b36a8 100644
-> --- a/drivers/cpuidle/governors/ladder.c
-> +++ b/drivers/cpuidle/governors/ladder.c
-> @@ -165,8 +165,7 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
->  static void ladder_reflect(struct cpuidle_device *dev, int index)
->  {
->  	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
-> -	if (index > 0)
-> -		ldev->last_state_idx = index;
-> +	ldev->last_state_idx = index;
->  }
->  
->  static struct cpuidle_governor ladder_governor = {
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index a17515f..3907301 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -365,9 +365,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
->  static void menu_reflect(struct cpuidle_device *dev, int index)
->  {
->  	struct menu_device *data = &__get_cpu_var(menu_devices);
-> -	data->last_state_idx = index;
-> -	if (index >= 0)
-> -		data->needs_update = 1;
-> +	data->needs_update = 1;
->  }
->  
->  /**
-> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> index f439161..9ac7322 100644
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -162,7 +162,8 @@ use_default:
->  	/*
->  	 * Give the governor an opportunity to reflect on the outcome
->  	 */
-> -	cpuidle_reflect(dev, entered_state);
-> +	if (entered_state >= 0)
-> +		cpuidle_reflect(dev, entered_state);
->  
->  exit_idle:
->  	__current_set_polling();
-> -- 
-> 1.9.1
-> 
-> 
+	Reported-and-tested-by: Jiri Kosina <jkosina@suse.cz>
+
+once merging it.
+
+Why lockdep produced such an incomplete stacktrace still remains 
+unexplained.
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
