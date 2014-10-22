@@ -1,128 +1,240 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v2 1/3] PM / clock_ops: Add pm_clk_add_clk()
-Date: Wed, 22 Oct 2014 13:14:09 -0700
-Message-ID: <20141022201409.GB4250@dtor-ws>
-References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>
- <1413809764-21995-2-git-send-email-grygorii.strashko@ti.com>
- <20141022173856.GB28104@dtor-ws>
- <5447FF51.5000401@ti.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH 1/5] sched: idle: cpuidle: Check the latency req before
+ idle
+Date: Wed, 22 Oct 2014 16:30:03 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1410221629240.6969@knanqh.ubzr>
+References: <1413822343-1972-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5447FF51.5000401@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f53.google.com ([209.85.192.53]:42852 "EHLO
+	mail-qg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932328AbaJVUaJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Oct 2014 16:30:09 -0400
+Received: by mail-qg0-f53.google.com with SMTP id q107so3180666qgd.40
+        for <linux-pm@vger.kernel.org>; Wed, 22 Oct 2014 13:30:07 -0700 (PDT)
+In-Reply-To: <1413822343-1972-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-On Wed, Oct 22, 2014 at 10:02:41PM +0300, Grygorii Strashko wrote:
-> On 10/22/2014 08:38 PM, Dmitry Torokhov wrote:
-> >On Mon, Oct 20, 2014 at 03:56:02PM +0300, Grygorii Strashko wrote:
-> >>From: Geert Uytterhoeven <geert+renesas@glider.be>
-> >>
-> >>The existing pm_clk_add() allows to pass a clock by con_id. However,
-> >>when referring to a specific clock from DT, no con_id is available.
-> >>
-> >>Add pm_clk_add_clk(), which allows to specify the struct clk * directly.
-> >>
-> >>Reviewed-by: Kevin Hilman <khilman@linaro.org>
-> >>Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> >>Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
-> >>---
-> >>
-> >>  Pay attantion pls, that there is another series of patches
-> >>  which have been posted already and which depends from this patch
-> >>    "[PATCH v4 0/3] ARM: rk3288 : Add PM Domain support"
-> >>    https://lkml.org/lkml/2014/10/20/105
-> >>
-> >>  drivers/base/power/clock_ops.c | 41 +++++++++++++++++++++++++++++++----------
-> >>  include/linux/pm_clock.h       |  8 ++++++++
-> >>  2 files changed, 39 insertions(+), 10 deletions(-)
-> >>
-> >>diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-> >>index 7836930..f14b767 100644
-> >>--- a/drivers/base/power/clock_ops.c
-> >>+++ b/drivers/base/power/clock_ops.c
-> >>@@ -53,7 +53,8 @@ static inline int __pm_clk_enable(struct device *dev, struct clk *clk)
-> >>   */
-> >>  static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
-> >>  {
-> >>-	ce->clk = clk_get(dev, ce->con_id);
-> >>+	if (!ce->clk)
-> >>+		ce->clk = clk_get(dev, ce->con_id);
-> >>  	if (IS_ERR(ce->clk)) {
-> >>  		ce->status = PCE_STATUS_ERROR;
-> >>  	} else {
-> >>@@ -63,15 +64,8 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
-> >>  	}
-> >>  }
-> >>
-> >>-/**
-> >>- * pm_clk_add - Start using a device clock for power management.
-> >>- * @dev: Device whose clock is going to be used for power management.
-> >>- * @con_id: Connection ID of the clock.
-> >>- *
-> >>- * Add the clock represented by @con_id to the list of clocks used for
-> >>- * the power management of @dev.
-> >>- */
-> >>-int pm_clk_add(struct device *dev, const char *con_id)
-> >>+static int __pm_clk_add(struct device *dev, const char *con_id,
-> >>+			struct clk *clk)
-> >>  {
-> >>  	struct pm_subsys_data *psd = dev_to_psd(dev);
-> >>  	struct pm_clock_entry *ce;
-> >>@@ -93,6 +87,8 @@ int pm_clk_add(struct device *dev, const char *con_id)
-> >>  			kfree(ce);
-> >>  			return -ENOMEM;
-> >>  		}
-> >>+	} else {
-> >>+		ce->clk = clk;
-> >>  	}
-> >>
-> >>  	pm_clk_acquire(dev, ce);
-> >>@@ -104,6 +100,31 @@ int pm_clk_add(struct device *dev, const char *con_id)
-> >>  }
-> >>
-> >>  /**
-> >>+ * pm_clk_add - Start using a device clock for power management.
-> >>+ * @dev: Device whose clock is going to be used for power management.
-> >>+ * @con_id: Connection ID of the clock.
-> >>+ *
-> >>+ * Add the clock represented by @con_id to the list of clocks used for
-> >>+ * the power management of @dev.
-> >>+ */
-> >>+int pm_clk_add(struct device *dev, const char *con_id)
-> >>+{
-> >>+	return __pm_clk_add(dev, con_id, NULL);
-> >
-> >Bikeshedding: why do we need __pm_clk_add() and not simply have
-> >"canonical" pm_clk_add_clk() and then do:
-> >
-> >int pm_clk_add(struct device *dev, const char *con_id)
-> >{
-> >	struct clk *clk;
-> >
-> >	clk = clk_get(dev, con_id);
-> >	...
-> >	return pm_clk_add_clk(dev, clk);
-> >}
+On Mon, 20 Oct 2014, Daniel Lezcano wrote:
+
+> When the pmqos latency requirement is set to zero that means "poll in all the
+> cases".
 > 
-> Hm. I did fast look at code and:
-> 1) agree - there is a lot of thing which can be optimized ;)
-> 2) in my strong opinion, this patch is the fastest and simplest
-> way to introduce new API (take a look on pm_clock_entry->con_id
-> management code) and It is exactly what we need as of now.
+> That is correctly implemented on x86 but not on the other archs.
+> 
+> As how is written the code, if the latency request is zero, the governor will
+> return zero, so corresponding, for x86, to the poll function, but for the
+> others arch the default idle function. For example, on ARM this is wait-for-
+> interrupt with a latency of '1', so violating the constraint.
+> 
+> In order to fix that, do the latency requirement check *before* calling the
+> cpuidle framework in order to jump to the poll function without entering
+> cpuidle. That has several benefits:
+> 
+>  1. It clarifies and unifies the code
+>  2. It fixes x86 vs other archs behavior
+>  3. Factors out the call to the same function
+>  4. Prevent to enter the cpuidle framework with its expensive cost in
+>     calculation
+> 
+> As the latency_req is needed in all the cases, change the select API to take
+> the latency_req as parameter in case it is not equal to zero.
+> 
+> As a positive side effect, it introduces the latency constraint specified
+> externally, so one more step to the cpuidle/scheduler integration.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Yeah, I guess. We are lucky we do not crash when we are tryign to print
-NULL strings (see pm_clk_acquire).
+Acked-by: Nicolas Pitre <nico@linaro.org>
 
-BTW, what is the point of doing pm_clk_add(dev, NULL)? We add clock
-entry with status PCE_STATUS_ERROR and then have to handle it
-everywhere? Can we just return -EINVAL if someone triies to pass NULL
-ass con_id?
-
-Thanks.
-
--- 
-Dmitry
+> ---
+>  drivers/cpuidle/cpuidle.c          |  5 +++--
+>  drivers/cpuidle/governors/ladder.c |  9 +--------
+>  drivers/cpuidle/governors/menu.c   |  8 ++------
+>  include/linux/cpuidle.h            |  7 ++++---
+>  kernel/sched/idle.c                | 18 ++++++++++++++----
+>  5 files changed, 24 insertions(+), 23 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index ee9df5e..372c36f 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -158,7 +158,8 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>   *
+>   * Returns the index of the idle state.
+>   */
+> -int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+> +int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+> +		   int latency_req)
+>  {
+>  	if (off || !initialized)
+>  		return -ENODEV;
+> @@ -169,7 +170,7 @@ int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>  	if (unlikely(use_deepest_state))
+>  		return cpuidle_find_deepest_state(drv, dev);
+>  
+> -	return cpuidle_curr_governor->select(drv, dev);
+> +	return cpuidle_curr_governor->select(drv, dev, latency_req);
+>  }
+>  
+>  /**
+> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+> index 044ee0d..18f0da9 100644
+> --- a/drivers/cpuidle/governors/ladder.c
+> +++ b/drivers/cpuidle/governors/ladder.c
+> @@ -64,18 +64,11 @@ static inline void ladder_do_selection(struct ladder_device *ldev,
+>   * @dev: the CPU
+>   */
+>  static int ladder_select_state(struct cpuidle_driver *drv,
+> -				struct cpuidle_device *dev)
+> +			       struct cpuidle_device *dev, int latency_req)
+>  {
+>  	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
+>  	struct ladder_device_state *last_state;
+>  	int last_residency, last_idx = ldev->last_state_idx;
+> -	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+> -
+> -	/* Special case when user has set very strict latency requirement */
+> -	if (unlikely(latency_req == 0)) {
+> -		ladder_do_selection(ldev, last_idx, 0);
+> -		return 0;
+> -	}
+>  
+>  	last_state = &ldev->states[last_idx];
+>  
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index 34db2fb..96f8fb0 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -287,10 +287,10 @@ again:
+>   * @drv: cpuidle driver containing state data
+>   * @dev: the CPU
+>   */
+> -static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+> +static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+> +		       int latency_req)
+>  {
+>  	struct menu_device *data = &__get_cpu_var(menu_devices);
+> -	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+>  	int i;
+>  	unsigned int interactivity_req;
+>  	unsigned long nr_iowaiters, cpu_load;
+> @@ -302,10 +302,6 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>  
+>  	data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
+>  
+> -	/* Special case when user has set very strict latency requirement */
+> -	if (unlikely(latency_req == 0))
+> -		return 0;
+> -
+>  	/* determine the expected residency time, round up */
+>  	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length());
+>  
+> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> index 25e0df6..fb465c1 100644
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -122,7 +122,7 @@ struct cpuidle_driver {
+>  extern void disable_cpuidle(void);
+>  
+>  extern int cpuidle_select(struct cpuidle_driver *drv,
+> -			  struct cpuidle_device *dev);
+> +			  struct cpuidle_device *dev, int latency_req);
+>  extern int cpuidle_enter(struct cpuidle_driver *drv,
+>  			 struct cpuidle_device *dev, int index);
+>  extern void cpuidle_reflect(struct cpuidle_device *dev, int index);
+> @@ -150,7 +150,7 @@ extern struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev)
+>  #else
+>  static inline void disable_cpuidle(void) { }
+>  static inline int cpuidle_select(struct cpuidle_driver *drv,
+> -				 struct cpuidle_device *dev)
+> +				 struct cpuidle_device *dev, int latency_req)
+>  {return -ENODEV; }
+>  static inline int cpuidle_enter(struct cpuidle_driver *drv,
+>  				struct cpuidle_device *dev, int index)
+> @@ -205,7 +205,8 @@ struct cpuidle_governor {
+>  					struct cpuidle_device *dev);
+>  
+>  	int  (*select)		(struct cpuidle_driver *drv,
+> -					struct cpuidle_device *dev);
+> +				 struct cpuidle_device *dev,
+> +				 int latency_req);
+>  	void (*reflect)		(struct cpuidle_device *dev, int index);
+>  
+>  	struct module 		*owner;
+> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> index 11e7bc4..25ba94d 100644
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -5,6 +5,7 @@
+>  #include <linux/cpu.h>
+>  #include <linux/cpuidle.h>
+>  #include <linux/tick.h>
+> +#include <linux/pm_qos.h>
+>  #include <linux/mm.h>
+>  #include <linux/stackprotector.h>
+>  
+> @@ -74,7 +75,7 @@ void __weak arch_cpu_idle(void)
+>   * set, and it returns with polling set.  If it ever stops polling, it
+>   * must clear the polling bit.
+>   */
+> -static void cpuidle_idle_call(void)
+> +static void cpuidle_idle_call(unsigned int latency_req)
+>  {
+>  	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+>  	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+> @@ -107,7 +108,7 @@ static void cpuidle_idle_call(void)
+>  	 * Ask the cpuidle framework to choose a convenient idle state.
+>  	 * Fall back to the default arch idle method on errors.
+>  	 */
+> -	next_state = cpuidle_select(drv, dev);
+> +	next_state = cpuidle_select(drv, dev, latency_req);
+>  	if (next_state < 0) {
+>  use_default:
+>  		/*
+> @@ -182,6 +183,8 @@ exit_idle:
+>   */
+>  static void cpu_idle_loop(void)
+>  {
+> +	unsigned int latency_req;
+> +
+>  	while (1) {
+>  		/*
+>  		 * If the arch has a polling bit, we maintain an invariant:
+> @@ -205,19 +208,26 @@ static void cpu_idle_loop(void)
+>  			local_irq_disable();
+>  			arch_cpu_idle_enter();
+>  
+> +			latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+> +
+>  			/*
+>  			 * In poll mode we reenable interrupts and spin.
+>  			 *
+> +			 * If the latency req is zero, we don't want to
+> +			 * enter any idle state and we jump to the poll
+> +			 * function directly
+> +			 *
+>  			 * Also if we detected in the wakeup from idle
+>  			 * path that the tick broadcast device expired
+>  			 * for us, we don't want to go deep idle as we
+>  			 * know that the IPI is going to arrive right
+>  			 * away
+>  			 */
+> -			if (cpu_idle_force_poll || tick_check_broadcast_expired())
+> +			if (!latency_req || cpu_idle_force_poll ||
+> +			    tick_check_broadcast_expired())
+>  				cpu_idle_poll();
+>  			else
+> -				cpuidle_idle_call();
+> +				cpuidle_idle_call(latency_req);
+>  
+>  			arch_cpu_idle_exit();
+>  		}
+> -- 
+> 1.9.1
+> 
+> 
