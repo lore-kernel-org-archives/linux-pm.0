@@ -1,127 +1,104 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2 01/47] kernel: Add support for poweroff handler call
- chain
-Date: Wed, 22 Oct 2014 06:22:58 -0700
-Message-ID: <5447AFB2.4010701@roeck-us.net>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net> <1413864783-3271-2-git-send-email-linux@roeck-us.net> <54460140.50805@gmail.com> <54465FBA.8070007@roeck-us.net> <544764B1.9020303@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <544764B1.9020303@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?B?UGhpbGlwcGUgUsOpdG9ybmF6?= <philippe.retornaz@gmail.com>, linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [RFD PATCH 00/10] cpuidle: Predict the next events with the IO latencies
+Date: Wed, 22 Oct 2014 15:57:43 +0200
+Message-ID: <1413986273-28522-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:62393 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751296AbaJVN55 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Oct 2014 09:57:57 -0400
+Received: by mail-wi0-f182.google.com with SMTP id bs8so1445949wib.9
+        for <linux-pm@vger.kernel.org>; Wed, 22 Oct 2014 06:57:56 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: axboe@kernel.dk, rafael.j.wysocki@intel.com, mingo@kernel.org, peterz@infradead.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, mturquette@linaro.org, tuukka.tikkanen@linaro.org, nicolas.pitre@linaro.org, patches@linaro.org
 
-On 10/22/2014 01:02 AM, Philippe R=C3=A9tornaz wrote:
-> Le 21/10/2014 15:29, Guenter Roeck a =C3=A9crit :
->> On 10/20/2014 11:46 PM, Philippe R=C3=A9tornaz wrote:
->>> Hello
->>>
->>> [...]
->>>> - Use raw notifiers protected by spinlocks instead of atomic notif=
-iers
->>> [...]
->>>
->>>> +/**
->>>> + *    do_kernel_power_off - Execute kernel poweroff handler call =
-chain
->>>> + *
->>>> + *    Calls functions registered with register_power_off_handler.
->>>> + *
->>>> + *    Expected to be called from machine_power_off as last step o=
-f
->>>> + *    the poweroff sequence.
->>>> + *
->>>> + *    Powers off the system immediately if a poweroff handler fun=
-ction
->>>> + *    has been registered. Otherwise does nothing.
->>>> + */
->>>> +void do_kernel_power_off(void)
->>>> +{
->>>> +    spin_lock(&power_off_handler_lock);
->>>> +    raw_notifier_call_chain(&power_off_handler_list, 0, NULL);
->>>> +    spin_unlock(&power_off_handler_lock);
->>>> +}
->>>
->>> I don't get it. You are still in atomic context inside the poweroff
->>> callback
->>> since you lock it with a spinlock.
-> [...]
->>>
->>> Why not using the blocking_notifier_* family ?
->>> It will lock with a read-write semaphore under which you can sleep.
->>>
->>> For instance, twl4030_power_off will sleep, since it is doing I2C a=
-ccess.
->>> So you cannot call it in atomic context.
->>>
->>
->> Learning something new all the time. I assumed that spin_lock (unlik=
-e
->> spin_lock_irqsafe) would not run in atomic context.
->>
->> I did not want to use a sleeping lock because I am not sure if that
->> works for all architectures; some disable (local) interrupts before
->> calling the function (eg arm and arm64), and I don't want to change
->> that semantics.
->
-> You're right and it even disable all others CPUs (if any).
-> I don't understand why it needs to disable local interrupts since the
-> code path to pm_power_off is simply doing:
->
-> syscall -> migrate to reboot cpu -> disable local interrupt -> disabl=
-e others cpu -> pm_power_off().
->
-> I don't understand why we cannot re-enable interrupts right before pm=
-_power_off().
-> And it looks like that all pm_power_off callbacks which can sleep are=
- broken.
-> I still wonder how i2c communication can works without local interrup=
-ts ... it looks
-> like somebody is re-enabling them (or the code was never run)
->
-Good question. Or the code was never run under arm, or the drivers have=
- a polling
-fallback if interrupts are disabled.
+This patchset is not intended to be merged upstream as it is. It is a
+proof of concept giving the rough idea of the concept.
 
->> I have another idea how to get there without changing the lock situa=
-tion
->> while executing the call chain - just set a flag indicating that it =
-is
->> running and execute it without lock. Would that work ?
->
-> I don't think inventing a new locking mechanism is a good solution.
-> We need first to know for sure if we can sleep or not in pm_power_off=
-=2E
-> If yes then we need to re-enable local interrupts and we can use a mu=
-tex.
-> If not then the atomic notifier is fine and a lots of drivers are wro=
-ng.
->
+In the discussions on how to make the scheduler energy aware, we tried
+to make the different PM subsystems to communicate with the scheduler.
 
-I had another look into the kernel, checking all the callers of machine=
-_power_off().
-In some cases, the function is called directly from interrupt handlers,=
- meaning
-there is no guarantee that interrupts are enabled to start with when it=
- is called.
-So there is more to fix if the semantics of pm_power_off requires inter=
-rupts
-to be enabled.
+We realized that some code is duplicated across the PM subsystems and
+the scheduler leading to an inconsistent way to integrate the PM
+informations.
 
-My current solution is to use a spinlock with disabled interrupts durin=
-g
-poweroff handler registration and unregistration, and no lock at all wh=
-ile
-executing the call chain. That is not perfect, but it retains the curre=
-nt
-situation and thus guarantees that existing code works as before. This
-disconnects the sleep vs. no sleep problem from the current patch serie=
-s,
-and we can solve that problem separately.
+Ingo Molnar put a line in the sand [1] and clearly worded that no more
+PM stuff will be integrated into the scheduler until the different PM
+blocks are not redesigned to be part of the scheduler.
 
-Thanks,
-Guenter
+This patchset is a sub part of this integration work. How to integrate
+Cpuidle with the scheduler ?
+
+The idea is to get rid of the governors and let the scheduler to tell
+the Cpuidle framework : "I expect to sleep <x> nsec and I have a <y>
+nsec latency requirement" as stated by Peter Zijlstra [2].
+
+How to achieve this ?
+
+We want to prevent to just move code around and put the prediction of
+the next event inside the scheduler directly with a legacy menu
+governor. After investigating, it appears the menu governor is not
+behaving in a stable way, it is erratic. Using the IO latencies +
+the timers give much better results than the menu governor which takes
+into account all the source of wakeups [3].
+
+After discussing at the LPC2014 Dusseldorf, it appears the idea is
+good but the approach is wrong. The latency tracking must be done at
+the device level, per device and not in the task as what is doing this
+patchset.
+
+Any comment, suggestion or help is welcome !
+
+If I missed anyone who may be interested in this feature, please let
+me know.
+
+Thanks.
+
+  -- Daniel
+
+[1] http://lwn.net/Articles/552885/
+[2] https://lkml.org/lkml/2013/11/11/353
+[3] http://events.linuxfoundation.org/sites/events/files/slides/IOlatencyPrediction.pdf
+
+Daniel Lezcano (10):
+  sched: add io latency framework
+  cpuidle: Checking the zero latency inside the governors does not make
+    sense.
+  sched: idle: cpudidle: Pass the latency req from idle.c
+  sched: idle: Compute next timer event and pass it the cpuidle
+    framework
+  cpuidle: Remove unused headers for tick
+  sched: idle: Add io latency information for the next event
+  cpuidle: Add a simple select governor
+  cpuidle: select: hack - increase rating to have this governor as
+    default
+  cpuidle: sysfs: Add per cpu idle state prediction statistics
+  sched: io_latency: Tracking via buckets
+
+ drivers/cpuidle/Kconfig            |   4 +
+ drivers/cpuidle/cpuidle.c          |  17 +-
+ drivers/cpuidle/governors/Makefile |   1 +
+ drivers/cpuidle/governors/ladder.c |  11 +-
+ drivers/cpuidle/governors/menu.c   |  15 +-
+ drivers/cpuidle/governors/select.c |  55 +++++
+ drivers/cpuidle/sysfs.c            | 156 +++++++++++++
+ include/linux/cpuidle.h            |  22 +-
+ include/linux/sched.h              |  21 ++
+ init/Kconfig                       |  11 +
+ kernel/exit.c                      |   1 +
+ kernel/fork.c                      |   5 +-
+ kernel/sched/Makefile              |   1 +
+ kernel/sched/core.c                |   7 +
+ kernel/sched/idle.c                |  27 ++-
+ kernel/sched/io_latency.c          | 441 +++++++++++++++++++++++++++++++++++++
+ kernel/sched/io_latency.h          |  38 ++++
+ 17 files changed, 800 insertions(+), 33 deletions(-)
+ create mode 100644 drivers/cpuidle/governors/select.c
+ create mode 100644 kernel/sched/io_latency.c
+ create mode 100644 kernel/sched/io_latency.h
+
+-- 
+1.9.1
+
