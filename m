@@ -1,152 +1,119 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: lockdep splat in CPU hotplug
-Date: Wed, 22 Oct 2014 11:57:12 -0700
-Message-ID: <20141022185712.GA9570@linux.vnet.ibm.com>
-References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz>
- <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
- <20141022143837.GW4977@linux.vnet.ibm.com>
- <20141022165433.GA22874@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH v2 1/3] PM / clock_ops: Add pm_clk_add_clk()
+Date: Wed, 22 Oct 2014 22:02:41 +0300
+Message-ID: <5447FF51.5000401@ti.com>
+References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com> <1413809764-21995-2-git-send-email-grygorii.strashko@ti.com> <20141022173856.GB28104@dtor-ws>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e35.co.us.ibm.com ([32.97.110.153]:60194 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752591AbaJVS5S (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Oct 2014 14:57:18 -0400
-Received: from /spool/local
-	by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-	Wed, 22 Oct 2014 12:57:17 -0600
-Content-Disposition: inline
-In-Reply-To: <20141022165433.GA22874@linux.vnet.ibm.com>
+Received: from comal.ext.ti.com ([198.47.26.152]:41569 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753462AbaJVTDV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 22 Oct 2014 15:03:21 -0400
+In-Reply-To: <20141022173856.GB28104@dtor-ws>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Steven Rostedt <rostedt@goodmis.org>, Dave Jones <davej@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre <nico@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-On Wed, Oct 22, 2014 at 09:54:33AM -0700, Paul E. McKenney wrote:
-> On Wed, Oct 22, 2014 at 07:38:37AM -0700, Paul E. McKenney wrote:
-> > On Wed, Oct 22, 2014 at 11:53:49AM +0200, Jiri Kosina wrote:
-> > > On Tue, 21 Oct 2014, Jiri Kosina wrote:
-> > > 
-> > > > Hi,
-> > > > 
-> > > > I am seeing the lockdep report below when resuming from suspend-to-disk 
-> > > > with current Linus' tree (c2661b80609).
-> > > > 
-> > > > The reason for CCing Ingo and Peter is that I can't make any sense of one 
-> > > > of the stacktraces lockdep is providing.
-> > > > 
-> > > > Please have a look at the very first stacktrace in the dump, where lockdep 
-> > > > is trying to explain where cpu_hotplug.lock#2 has been acquired. It seems 
-> > > > to imply that cpuidle_pause() is taking cpu_hotplug.lock, but that's not 
-> > > > the case at all.
-> > > > 
-> > > > What am I missing?
-> > > 
-> > > Okay, reverting 442bf3aaf55a ("sched: Let the scheduler see CPU idle 
-> > > states") and followup 83a0a96a5f26 ("sched/fair: Leverage the idle state 
-> > > info when choosing the "idlest" cpu") which depends on it makes the splat 
-> > > go away.
-> > > 
-> > > Just for the sake of testing the hypothesis, I did just the minimal change 
-> > > below on top of current Linus' tree, and it also makes the splat go away 
-> > > (of course it's totally incorrect thing to do by itself alone):
-> > > 
-> > > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> > > index 125150d..d31e04c 100644
-> > > --- a/drivers/cpuidle/cpuidle.c
-> > > +++ b/drivers/cpuidle/cpuidle.c
-> > > @@ -225,12 +225,6 @@ void cpuidle_uninstall_idle_handler(void)
-> > >  		initialized = 0;
-> > >  		wake_up_all_idle_cpus();
-> > >  	}
-> > > -
-> > > -	/*
-> > > -	 * Make sure external observers (such as the scheduler)
-> > > -	 * are done looking at pointed idle states.
-> > > -	 */
-> > > -	synchronize_rcu();
-> > >  }
-> > > 
-> > >  /**
-> > > 
-> > > So indeed 442bf3aaf55a is guilty.
-> > > 
-> > > Paul was stating yesterday that it can't be the try_get_online_cpus() in 
-> > > synchronize_sched_expedited(), as it's doing only trylock. There are 
-> > > however more places where synchronize_sched_expedited() is acquiring 
-> > > cpu_hotplug.lock unconditionally by calling put_online_cpus(), so the race 
-> > > seems real.
-> > 
-> > Gah!  So I only half-eliminated the deadlock between
-> > synchronize_sched_expedited() and CPU hotplug.  Back to the drawing
-> > board...
-> 
-> Please see below for an untested alleged fix.
+On 10/22/2014 08:38 PM, Dmitry Torokhov wrote:
+> On Mon, Oct 20, 2014 at 03:56:02PM +0300, Grygorii Strashko wrote:
+>> From: Geert Uytterhoeven <geert+renesas@glider.be>
+>>
+>> The existing pm_clk_add() allows to pass a clock by con_id. However,
+>> when referring to a specific clock from DT, no con_id is available.
+>>
+>> Add pm_clk_add_clk(), which allows to specify the struct clk * directly.
+>>
+>> Reviewed-by: Kevin Hilman <khilman@linaro.org>
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+>> ---
+>>
+>>   Pay attantion pls, that there is another series of patches
+>>   which have been posted already and which depends from this patch
+>>     "[PATCH v4 0/3] ARM: rk3288 : Add PM Domain support"
+>>     https://lkml.org/lkml/2014/10/20/105
+>>
+>>   drivers/base/power/clock_ops.c | 41 +++++++++++++++++++++++++++++++----------
+>>   include/linux/pm_clock.h       |  8 ++++++++
+>>   2 files changed, 39 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+>> index 7836930..f14b767 100644
+>> --- a/drivers/base/power/clock_ops.c
+>> +++ b/drivers/base/power/clock_ops.c
+>> @@ -53,7 +53,8 @@ static inline int __pm_clk_enable(struct device *dev, struct clk *clk)
+>>    */
+>>   static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+>>   {
+>> -	ce->clk = clk_get(dev, ce->con_id);
+>> +	if (!ce->clk)
+>> +		ce->clk = clk_get(dev, ce->con_id);
+>>   	if (IS_ERR(ce->clk)) {
+>>   		ce->status = PCE_STATUS_ERROR;
+>>   	} else {
+>> @@ -63,15 +64,8 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+>>   	}
+>>   }
+>>
+>> -/**
+>> - * pm_clk_add - Start using a device clock for power management.
+>> - * @dev: Device whose clock is going to be used for power management.
+>> - * @con_id: Connection ID of the clock.
+>> - *
+>> - * Add the clock represented by @con_id to the list of clocks used for
+>> - * the power management of @dev.
+>> - */
+>> -int pm_clk_add(struct device *dev, const char *con_id)
+>> +static int __pm_clk_add(struct device *dev, const char *con_id,
+>> +			struct clk *clk)
+>>   {
+>>   	struct pm_subsys_data *psd = dev_to_psd(dev);
+>>   	struct pm_clock_entry *ce;
+>> @@ -93,6 +87,8 @@ int pm_clk_add(struct device *dev, const char *con_id)
+>>   			kfree(ce);
+>>   			return -ENOMEM;
+>>   		}
+>> +	} else {
+>> +		ce->clk = clk;
+>>   	}
+>>
+>>   	pm_clk_acquire(dev, ce);
+>> @@ -104,6 +100,31 @@ int pm_clk_add(struct device *dev, const char *con_id)
+>>   }
+>>
+>>   /**
+>> + * pm_clk_add - Start using a device clock for power management.
+>> + * @dev: Device whose clock is going to be used for power management.
+>> + * @con_id: Connection ID of the clock.
+>> + *
+>> + * Add the clock represented by @con_id to the list of clocks used for
+>> + * the power management of @dev.
+>> + */
+>> +int pm_clk_add(struct device *dev, const char *con_id)
+>> +{
+>> +	return __pm_clk_add(dev, con_id, NULL);
+>
+> Bikeshedding: why do we need __pm_clk_add() and not simply have
+> "canonical" pm_clk_add_clk() and then do:
+>
+> int pm_clk_add(struct device *dev, const char *con_id)
+> {
+> 	struct clk *clk;
+>
+> 	clk = clk_get(dev, con_id);
+> 	...
+> 	return pm_clk_add_clk(dev, clk);
+> }
 
-And that patch had a lockdep issue.  The following replacement patch
-passes light rcutorture testing, but your mileage may vary.
+Hm. I did fast look at code and:
+1) agree - there is a lot of thing which can be optimized ;)
+2) in my strong opinion, this patch is the fastest and simplest
+way to introduce new API (take a look on pm_clock_entry->con_id
+management code) and It is exactly what we need as of now.
 
-							Thanx, Paul
-
-------------------------------------------------------------------------
-
-rcu: More on deadlock between CPU hotplug and expedited grace periods
-
-Commit dd56af42bd82 (rcu: Eliminate deadlock between CPU hotplug and
-expedited grace periods) was incomplete.  Although it did eliminate
-deadlocks involving synchronize_sched_expedited()'s acquisition of
-cpu_hotplug.lock via get_online_cpus(), it did nothing about the similar
-deadlock involving acquisition of this same lock via put_online_cpus().
-This deadlock became apparent with testing involving hibernation.
-
-This commit therefore changes put_online_cpus() acquisition of this lock
-to be conditional, and increments a new cpu_hotplug.puts_pending field
-in case of acquisition failure.  Then cpu_hotplug_begin() checks for this
-new field being non-zero, and applies any changes to cpu_hotplug.refcount.
-
-Reported by: Jiri Kosina <jkosina@suse.cz>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 356450f09c1f..90a3d017b90c 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -64,6 +64,8 @@ static struct {
- 	 * an ongoing cpu hotplug operation.
- 	 */
- 	int refcount;
-+	/* And allows lockless put_online_cpus(). */
-+	atomic_t puts_pending;
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- 	struct lockdep_map dep_map;
-@@ -113,7 +115,11 @@ void put_online_cpus(void)
- {
- 	if (cpu_hotplug.active_writer == current)
- 		return;
--	mutex_lock(&cpu_hotplug.lock);
-+	if (!mutex_trylock(&cpu_hotplug.lock)) {
-+		atomic_inc(&cpu_hotplug.puts_pending);
-+		cpuhp_lock_release();
-+		return;
-+	}
- 
- 	if (WARN_ON(!cpu_hotplug.refcount))
- 		cpu_hotplug.refcount++; /* try to fix things up */
-@@ -155,6 +161,12 @@ void cpu_hotplug_begin(void)
- 	cpuhp_lock_acquire();
- 	for (;;) {
- 		mutex_lock(&cpu_hotplug.lock);
-+		if (atomic_read(&cpu_hotplug.puts_pending)) {
-+			int delta;
-+
-+			delta = atomic_xchg(&cpu_hotplug.puts_pending, 0);
-+			cpu_hotplug.refcount -= delta;
-+		}
- 		if (likely(!cpu_hotplug.refcount))
- 			break;
- 		__set_current_state(TASK_UNINTERRUPTIBLE);
+regards,
+-grygorii
 
