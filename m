@@ -1,147 +1,52 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH 3/8] ARM: at91: sam9: probe the RAMC driver from pdata
-Date: Tue, 21 Oct 2014 23:55:35 +0200
-Message-ID: <1413928540-27099-4-git-send-email-alexandre.belloni@free-electrons.com>
-References: <1413928540-27099-1-git-send-email-alexandre.belloni@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1413928540-27099-1-git-send-email-alexandre.belloni@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
+From: Puthikorn Voravootivat <puthik@chromium.org>
+Subject: [PATCH] bq27x00_battery: Call power_supply_changed only when capacity changed
+Date: Tue, 21 Oct 2014 18:15:37 -0700
+Message-ID: <1413940537-29766-1-git-send-email-puthik@chromium.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f202.google.com ([209.85.216.202]:53559 "EHLO
+	mail-qc0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbaJVBQN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Oct 2014 21:16:13 -0400
+Received: by mail-qc0-f202.google.com with SMTP id i17so243059qcy.5
+        for <linux-pm@vger.kernel.org>; Tue, 21 Oct 2014 18:16:12 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, David Riley <davidriley@chromium.org>, Benson Leung <bleung@chromium.org>, Puthikorn Voravootivat <puthik@chromium.org>
 
-Probe the atmel-sdramc driver from the board files, using platform_data.
+In current driver, power_supply_changed() is called whenever any of
+the battery attribute changed. This causes kernel to increases the
+'/sys/power/wakeup_count' and make suspend not working correctly.
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+This patch change this behavior to call power_supply_changed()
+only when the battery capacity changed.
+
+Signed-off-by: Puthikorn Voravootivat <puthik@chromium.org>
+Reviewed-by: David Riley <davidriley@chromium.org>
+Reviewed-by: Benson Leung <bleung@chromium.org>
 ---
- arch/arm/mach-at91/Kconfig       |  2 +-
- arch/arm/mach-at91/at91sam9260.c | 15 +++++++++++++++
- arch/arm/mach-at91/at91sam9261.c | 15 +++++++++++++++
- arch/arm/mach-at91/at91sam9263.c | 15 +++++++++++++++
- 4 files changed, 46 insertions(+), 1 deletion(-)
+ drivers/power/bq27x00_battery.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
-index 0e6d548b70d9..db38e1d4b4fa 100644
---- a/arch/arm/mach-at91/Kconfig
-+++ b/arch/arm/mach-at91/Kconfig
-@@ -48,7 +48,7 @@ config SOC_AT91SAM9
- 	select CPU_ARM926T
- 	select GENERIC_CLOCKEVENTS
- 	select MEMORY if USE_OF
--	select ATMEL_SDRAMC if USE_OF
-+	select ATMEL_SDRAMC
+diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_battery.c
+index e3bacfe..7ab3de0 100644
+--- a/drivers/power/bq27x00_battery.c
++++ b/drivers/power/bq27x00_battery.c
+@@ -493,10 +493,11 @@ static void bq27x00_update(struct bq27x00_device_info *di)
+ 			di->charge_design_full = bq27x00_battery_read_ilmd(di);
+ 	}
  
- config SOC_SAMA5
- 	bool
-diff --git a/arch/arm/mach-at91/at91sam9260.c b/arch/arm/mach-at91/at91sam9260.c
-index aab1f969a7c3..d5a6df9ce570 100644
---- a/arch/arm/mach-at91/at91sam9260.c
-+++ b/arch/arm/mach-at91/at91sam9260.c
-@@ -378,6 +378,20 @@ static struct platform_device rstc_device = {
- 	.num_resources  = ARRAY_SIZE(rstc_resources),
- };
- 
-+static struct resource ramc_resources[] = {
-+	[0] = {
-+		.start  = AT91SAM9260_BASE_SDRAMC,
-+		.end    = AT91SAM9260_BASE_SDRAMC + SZ_512 - 1,
-+		.flags  = IORESOURCE_MEM,
-+	},
-+};
+-	if (memcmp(&di->cache, &cache, sizeof(cache)) != 0) {
+-		di->cache = cache;
++	if (di->cache.capacity != cache.capacity)
+ 		power_supply_changed(&di->bat);
+-	}
 +
-+static struct platform_device ramc_device = {
-+	.name           = "at91-sam9260-ramc",
-+	.resource       = ramc_resources,
-+	.num_resources  = ARRAY_SIZE(ramc_resources),
-+};
-+
- static struct resource shdwc_resources[] = {
- 	[0] = {
- 		.start  = AT91SAM9260_BASE_SHDWC,
-@@ -394,6 +408,7 @@ static struct platform_device shdwc_device = {
++	if (memcmp(&di->cache, &cache, sizeof(cache)) != 0)
++		di->cache = cache;
  
- static void __init at91sam9260_register_devices(void)
- {
-+	platform_device_register(&ramc_device);
- 	platform_device_register(&rstc_device);
- 	platform_device_register(&shdwc_device);
- }
-diff --git a/arch/arm/mach-at91/at91sam9261.c b/arch/arm/mach-at91/at91sam9261.c
-index a8bd35963332..1b23a023cca6 100644
---- a/arch/arm/mach-at91/at91sam9261.c
-+++ b/arch/arm/mach-at91/at91sam9261.c
-@@ -337,6 +337,20 @@ static struct platform_device rstc_device = {
- 	.num_resources  = ARRAY_SIZE(rstc_resources),
- };
- 
-+static struct resource ramc_resources[] = {
-+	[0] = {
-+		.start  = AT91SAM9261_BASE_SDRAMC,
-+		.end    = AT91SAM9261_BASE_SDRAMC + SZ_512 - 1,
-+		.flags  = IORESOURCE_MEM,
-+	},
-+};
-+
-+static struct platform_device ramc_device = {
-+	.name           = "at91-sam9260-ramc",
-+	.resource       = ramc_resources,
-+	.num_resources  = ARRAY_SIZE(ramc_resources),
-+};
-+
- static struct resource shdwc_resources[] = {
- 	[0] = {
- 		.start  = AT91SAM9261_BASE_SHDWC,
-@@ -353,6 +367,7 @@ static struct platform_device shdwc_device = {
- 
- static void __init at91sam9261_register_devices(void)
- {
-+	platform_device_register(&ramc_device);
- 	platform_device_register(&rstc_device);
- 	platform_device_register(&shdwc_device);
- }
-diff --git a/arch/arm/mach-at91/at91sam9263.c b/arch/arm/mach-at91/at91sam9263.c
-index fbff228cc63e..55c0c212fde1 100644
---- a/arch/arm/mach-at91/at91sam9263.c
-+++ b/arch/arm/mach-at91/at91sam9263.c
-@@ -360,6 +360,20 @@ static struct platform_device rstc_device = {
- 	.num_resources  = ARRAY_SIZE(rstc_resources),
- };
- 
-+static struct resource ramc_resources[] = {
-+	[0] = {
-+		.start  = AT91SAM9263_BASE_SDRAMC0,
-+		.end    = AT91SAM9263_BASE_SDRAMC0 + SZ_512 - 1,
-+		.flags  = IORESOURCE_MEM,
-+	},
-+};
-+
-+static struct platform_device ramc_device = {
-+	.name           = "at91-sam9260-ramc",
-+	.resource       = ramc_resources,
-+	.num_resources  = ARRAY_SIZE(ramc_resources),
-+};
-+
- static struct resource shdwc_resources[] = {
- 	[0] = {
- 		.start  = AT91SAM9263_BASE_SHDWC,
-@@ -376,6 +390,7 @@ static struct platform_device shdwc_device = {
- 
- static void __init at91sam9263_register_devices(void)
- {
-+	platform_device_register(&ramc_device);
- 	platform_device_register(&rstc_device);
- 	platform_device_register(&shdwc_device);
+ 	di->last_update = jiffies;
  }
 -- 
-1.9.1
+2.1.0.rc2.206.gedb03e5
+
