@@ -1,105 +1,62 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RESEND 2] cpufreq: dt: disable unsupported OPPs
-Date: Thu, 23 Oct 2014 23:26:15 +0200
-Message-ID: <2562343.TMegsSyT6q@vostro.rjw.lan>
-References: <48734362.lRa73hezrZ@vostro.rjw.lan> <CAMuHMdXAYhAEFNLCcq91xctYwaCZnJt-V+U+vYy1iC5Kb=qqjw@mail.gmail.com> <1414077182.2764.3.camel@pengutronix.de>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v4 0/5] Simplify hotplug/suspend handling
+Date: Thu, 23 Oct 2014 14:41:20 -0700
+Message-ID: <54497600.4000904@codeaurora.org>
+References: <1405464473-3916-1-git-send-email-skannan@codeaurora.org> <1406250448-470-1-git-send-email-skannan@codeaurora.org> <CAKohpokebj4jkyYipVKUF24Xu4KiVCX2n2D+yj29qxBdzJ-Jdw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1414077182.2764.3.camel@pengutronix.de>
-Sender: linux-sh-owner@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.11.231]:47096 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbaJWVlX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 17:41:23 -0400
+In-Reply-To: <CAKohpokebj4jkyYipVKUF24Xu4KiVCX2n2D+yj29qxBdzJ-Jdw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Todd Poynor <toddpoynor@google.com>, "Srivatsa S . Bhat" <srivatsa@mit.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>
 
-On Thursday, October 23, 2014 05:13:02 PM Lucas Stach wrote:
-> Am Donnerstag, den 23.10.2014, 16:43 +0200 schrieb Geert Uytterhoeven:
-> > Hi Lucas,
-> > 
-> > On Thu, Oct 23, 2014 at 4:10 PM, Lucas Stach <l.stach@pengutronix.de> wrote:
-> > > Am Donnerstag, den 23.10.2014, 11:19 +0200 schrieb Geert Uytterhoeven:
-> > >> On Tue, Oct 21, 2014 at 4:19 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > >> > On Thursday, October 16, 2014 12:08:20 PM Lucas Stach wrote:
-> > >> >> If the regulator connected to the CPU voltage plane doesn't
-> > >> >> support an OPP specified voltage with the acceptable tolerance
-> > >> >> it's better to just disable the OPP instead of constantly
-> > >> >> failing the voltage scaling later on.
-> > >> >>
-> > >> >> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-> > >> >> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > >> >
-> > >> > Applied, thanks!
-> > >>
-> > >> This commit
-> > >> (http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=d7bbd4cd0359d781b67c9e621d4bbfd1bb2f3783)
-> > >> causes a boot regression on r8a7791/koelsch. It hangs after:
-> > >>
-> > >>     TCP: cubic registered
-> > >>     Initializing XFRM netlink socket
-> > >>     NET: Registered protocol family 17
-> > >>     NET: Registered protocol family 15
-> > >>     ata1: link resume succeeded after 1 retries
-> > >>     ata1: SATA link down (SStatus 0 SControl 300)
-> > >>     random: nonblocking pool is initialized
-> > 
-> > >> Reverting this commit fixes the issue, and makes the boot continue with:
-> > >>
-> > >>     cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted freq: 1300000 KHz
-> > >>     cpufreq: __cpufreq_add_dev: CPU0: Unlisted initial frequency
-> > >> changed to: 1312500 KHz
-> > >>     cpu cpu1: failed to get cpu-2 clock: 1
-> > >>     cpufreq_dt: cpufreq_init: Failed to allocate resources: -2
-> > >>
-> > >
-> > > Urgh, thanks for the report. Am I right that for koelsch you do
-> > > reference a regulator supply for the cpu, but don't actually have a
-> > > driver for it, so a dummy regulator gets plugged in there?
-> > 
-> > arch/arm/boot/dts/r8a7791-koelsch.dts has:
-> > 
-> > &cpu0 {
-> >         cpu0-supply = <&vdd_dvfs>;
-> > };
-> > 
-> > &i2c6 {
-> >         status = "okay";
-> >         clock-frequency = <100000>;
-> > 
-> >         vdd_dvfs: regulator@68 {
-> >                 compatible = "dlg,da9210";
-> >                 reg = <0x68>;
-> > 
-> >                 regulator-min-microvolt = <1000000>;
-> >                 regulator-max-microvolt = <1000000>;
-> >                 regulator-boot-on;
-> >                 regulator-always-on;
-> >         };
-> > };
-> > 
-> > CONFIG_REGULATOR_DA9210=y
-> > 
-> > and the driver does seem to run:
-> > 
-> >     DA9210: 1000 mV at 4600 mA
-> > 
-> Ah right, I misread your initial report. So the issue doesn't seem to be
-> directly related to the cpufreq-dt driver but seems to be located
-> somewhere deeper down the chain. The fact that this change triggers the
-> bug may be a hint here. The only thing which is new in the change is
-> that it tries to get the supported voltage from the regulator. As the
-> regulator can not change its voltage (min_uV == max_uV) this translates
-> directly to a get_voltage() which in turn only tries to read a register
-> of the i2c chip via regmap.
-> 
-> So it seems that somehow the i2c transaction fails and things spin
-> indefinitely there. Maybe this gives a clue on how to debug this
-> further.
+On 10/16/2014 01:53 AM, Viresh Kumar wrote:
+> On 25 July 2014 06:37, Saravana Kannan <skannan@codeaurora.org> wrote:
+>> Series of patchs to simplify policy/sysfs/kobj/locking handling across
+>> suspend/resume
+>>
+>> The following have been tested so far on a 2x2 cluster environment:
+>> - Boot with 2 cpus and no cpufreq driver.
+>> - mod probe driver and see cpufreq sysfs files show up only for the 1st cluster.
+>> - Online the rest of the 2 CPUs and have files show up correctly.
+>> - rmmod the driver and see the files go away.
+>> - modprobe again (or back and forth multiples times) and see it work.
+>> - suspend/resume works as expected.
+>> - When a cluster is offline, all read/writes to its sysfs files return an error
+>>
+>> v4
+>> - Split it up into smaller patches
+>> - Will handle physical CPU removal correctly
+>> - Fixed earlier mistake of deleting code under !recover_policy
+>> - Dropped some code refactor that reuses a lot of code between add/remove
+>> - Dropped fix for exiting hotplug race with cpufreq driver probe/rmmod
+>> - Dropped changes will come later once this series is acked.
+>
+> Hi Saravana,
+>
+> Any  updates on this? We might need some of this soon or should somebody
+> else start working on this ?
+>
 
-Well, I've dropped the patch for now.  The underlying issue needs to be fixed
-before we can apply it again.
+Hey,
 
+Sorry for the delay. Got side tracked with some commercial stuff. I'm 
+still invested in finishing this up. I'll try to send out something 
+within a week.
+
+I did notice (didn't read mych) the "Locking issues with cpufreq and 
+sysfs" thread. I think my patches should side step most of it.
+
+Thanks,
+Saravana
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
