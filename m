@@ -1,189 +1,177 @@
-From: Frans Klaver <frans.klaver@xsens.com>
-Subject: Re: [PATCH 12/13] power: reset: ltc2952: make trigger input optional
-Date: Thu, 23 Oct 2014 10:44:05 +0200
-Message-ID: <20141023084404.GD2383@ci00147.xsens-tech.local>
-References: <1413988270-28092-1-git-send-email-frans.klaver@xsens.com>
- <1413988270-28092-13-git-send-email-frans.klaver@xsens.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 00/21] thermal: exynos: Thermal code rework to use device
+ tree
+Date: Thu, 23 Oct 2014 10:50:04 +0200
+Message-ID: <20141023105004.264f596a@amdc2363>
+References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from filter1.ibarracuda.nl ([83.247.7.10]:58206 "EHLO
-	filter1.ibarracuda.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbaJWIoW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 04:44:22 -0400
-Content-Disposition: inline
-In-Reply-To: <1413988270-28092-13-git-send-email-frans.klaver@xsens.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:27110 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753385AbaJWIun (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 04:50:43 -0400
+In-reply-to: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?utf-8?B?UmVuw6k=?= Moll <linux@r-moll.nl>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Linux PM list <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 
-On Wed, Oct 22, 2014 at 04:31:09PM +0200, Frans Klaver wrote:
-> Currently the ltc2952 supports only one button sequence to initiate
-> powerdown. This is not always desirable, as even prolonged button
-> presses can happen in use.
-> 
-> Allow ltc2952 users to pick their own power down sequence, by making the
-> trigger input optional. Since this still means that the ltc2952 may
-> power down the platform if the power button is pressed for about 5
-> seconds, we still need to make sure to start the watchdog toggle to
-> prolong the system power for as long as we need it.
-> 
-> This will still allow the system to control power using the kill signal.
-> 
-> Signed-off-by: Frans Klaver <frans.klaver@xsens.com>
-> ---
->  drivers/power/reset/ltc2952-poweroff.c | 87 +++++++++++++++++++++-------------
->  1 file changed, 55 insertions(+), 32 deletions(-)
-> 
-> diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
-> index fda2735..72e3d7f 100644
-> --- a/drivers/power/reset/ltc2952-poweroff.c
-> +++ b/drivers/power/reset/ltc2952-poweroff.c
-> @@ -32,7 +32,9 @@
->   * - trigger (input)
->   *     A level change indicates the shut-down trigger. If it's state reverts
->   *     within the time-out defined by trigger_delay, the shut down is not
-> - *     executed.
-> + *     executed. If no pin is assigned to this input, the driver will start the
-> + *     watchdog toggle immediately. The chip will only power off the system if
-> + *     it is requested to do so through the kill line.
->   *
->   * - watchdog (output)
->   *     Once a shut down is triggered, the driver will toggle this signal,
-> @@ -116,15 +118,10 @@ static enum hrtimer_restart ltc2952_poweroff_timer_wde(struct hrtimer *timer)
->  	return HRTIMER_RESTART;
->  }
->  
-> -static enum hrtimer_restart
-> -ltc2952_poweroff_timer_trigger(struct hrtimer *timer)
-> +static void ltc2952_poweroff_start_wde(struct ltc2952_poweroff *data)
->  {
-> -	struct ltc2952_poweroff *data = to_ltc2952(timer, timer_trigger);
-> -	int ret = hrtimer_start(&data->timer_wde,
-> -				data->wde_interval, HRTIMER_MODE_REL);
-> -
-> -	if (ret) {
-> -		dev_err(data->dev, "unable to start the timer\n");
-> +	if (hrtimer_start(&data->timer_wde, data->wde_interval,
-> +			  HRTIMER_MODE_REL)) {
->  		/*
->  		 * The device will not toggle the watchdog reset,
->  		 * thus shut down is only safe if the PowerPath controller
-> @@ -133,10 +130,17 @@ ltc2952_poweroff_timer_trigger(struct hrtimer *timer)
->  		 *
->  		 * Only sending a warning as the system will power-off anyway
->  		 */
-> +		dev_err(data->dev, "unable to start the timer\n");
->  	}
-> +}
->  
-> -	dev_info(data->dev, "executing shutdown\n");
-> +static enum hrtimer_restart
-> +ltc2952_poweroff_timer_trigger(struct hrtimer *timer)
-> +{
-> +	struct ltc2952_poweroff *data = to_ltc2952(timer, timer_trigger);
->  
-> +	ltc2952_poweroff_start_wde(data);
-> +	dev_info(data->dev, "executing shutdown\n");
->  	orderly_poweroff(true);
->  
->  	return HRTIMER_NORESTART;
-> @@ -190,7 +194,7 @@ static void ltc2952_poweroff_default(struct ltc2952_poweroff *data)
->  
->  static int ltc2952_poweroff_init(struct platform_device *pdev)
->  {
-> -	int ret, virq;
-> +	int ret;
->  	struct ltc2952_poweroff *data = platform_get_drvdata(pdev);
->  
->  	ltc2952_poweroff_default(data);
-> @@ -210,29 +214,48 @@ static int ltc2952_poweroff_init(struct platform_device *pdev)
->  		return ret;
->  	}
->  
-> -	data->gpio_trigger = devm_gpiod_get(&pdev->dev, "trigger",
-> -					    GPIOD_IN);
-> -	if (IS_ERR(ltc2952_data->gpio_trigger)) {
-> -		ret = PTR_ERR(ltc2952_data->gpio_trigger);
-> -		dev_err(&pdev->dev, "unable to claim gpio \"trigger\"\n");
-> -		return ret;
-> -	}
-> -
-> -	virq = gpiod_to_irq(data->gpio_trigger);
-> -	if (virq < 0) {
-> -		dev_err(&pdev->dev, "cannot map GPIO as interrupt");
-> -		return ret;
-> +	data->gpio_trigger = devm_gpiod_get(&pdev->dev, "trigger", GPIOD_IN);
-> +	if (IS_ERR(data->gpio_trigger)) {
-> +		/*
-> +		 * It's not a problem if the trigger gpio isn't available, but
-> +		 * it is worth a warning if its use was defined in the device
-> +		 * tree.
-> +		 */
-> +		if (PTR_ERR(data->gpio_trigger) != -ENOENT)
-> +			dev_err(&pdev->dev,
-> +				"unable to claim gpio \"trigger\"\n");
-> +		data->gpio_trigger = NULL;
->  	}
+Hi Lukasz,
 
-I just realized devm_gpiod_get_optional() may be slightly cleaner here,
-but the difference isn't that big in the end:
-
-+	data->gpio_trigger = devm_gpiod_get_optional(&pdev->dev, "trigger",
-+						     GPIOD_IN);
-+	if (IS_ERR(data->gpio_trigger)) {
-+		/*
-+		 * It's not a problem if the trigger gpio isn't available, but
-+		 * it is worth a warning if its use was defined in the device
-+		 * tree.
-+		 */
-+		dev_err(&pdev->dev, "unable to claim gpio \"trigger\"\n");
-+		data->gpio_trigger = NULL;
- 	}
-
->  
-> -	ret = devm_request_irq(&pdev->dev, virq,
-> -			       ltc2952_poweroff_handler,
-> -			       (IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING),
-> -			       "ltc2952-poweroff",
-> -			       data);
-> -
-> -	if (ret) {
-> -		dev_err(&pdev->dev, "cannot configure an interrupt handler\n");
-> -		return ret;
-> +	if (devm_request_irq(&pdev->dev, gpiod_to_irq(data->gpio_trigger),
-> +			     ltc2952_poweroff_handler,
-> +			     (IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING),
-> +			     "ltc2952-poweroff",
-> +			     data)) {
-> +		/*
-> +		 * Some things may have happened:
-> +		 * - No trigger input was defined
-> +		 * - Claiming the GPIO failed
-> +		 * - We could not map to an IRQ
-> +		 * - We couldn't register an interrupt handler
-> +		 *
-> +		 * None of these really are problems, but all of them
-> +		 * disqualify the push button from controlling the power.
-> +		 *
-> +		 * It is therefore important to note that if the ltc2952
-> +		 * detects a button press for long enough, it will still start
-> +		 * its own powerdown window and cut the power on us if we don't
-> +		 * start the watchdog trigger.
-> +		 */
-> +		if (data->gpio_trigger) {
-> +			dev_warn(&pdev->dev,
-> +				 "unable to configure the trigger interrupt\n");
-> +			devm_gpiod_put(&pdev->dev, data->gpio_trigger);
-> +			data->gpio_trigger = NULL;
-> +		}
-> +		dev_info(&pdev->dev,
-> +			 "power down trigger input will not be used\n");
-> +		ltc2952_poweroff_start_wde(data);
->  	}
->  
->  	return 0;
-> -- 
-> 2.1.0
+> 1. Introduction
 > 
+> Following patches aim to clean up the current implementation of the
+> thermal framework on Exynos devices.
+> 
+> The main goal was to use a generic code for reading thermal
+> configuration (of-thermal.c). Due to that redundant
+> exynos_thermal_common.[h|c] files were removed.
+> 
+> Around 400 lines of code (LOC) were removed directly by this patch,
+> which is around 20% of the Exynos thermal code base.
+> 
+> This work should NOT bring any functional changes to Exynos thermal 
+> subsystem.
+> 
+> 2. Patch-set structure
+> 
+> This series starts with extending current of-thermal.c implementation
+> with exporting information about trip points and support for setting
+> emulated temperature. Those changes were necessary to reuse this code
+> in Exynos.
+> 
+> Then the cpu_cooling functionality has been preserved to allow cooling
+> devices by reducing operating frequency. Definition of trip points and
+> cpufreq's cooling properties were moved to device tree.
+> 
+> Then the rework of the way in which configuration data is provided to
+> the Exynos thermal subsystem was performed. Now device tree is used
+> for configuration.
+> 
+> Patch series end with removing exynos5250/exynos3250 TMU compatibles.
+> Both SoCs have thermal management unit (TMU) compatible with the one
+> first introduced at Exynos4412.
+> 
+> 3. Dead code removal
+> 
+> Thermal support for some SoCs, previously available in the
+> exynos_tmu_data.c file, was removed since, as of 3.17-rc6, they
+> didn't have TMU bindings.
+> 
+> Moreover, support for cpu_cooling devices was preserved only on those
+> SoCs which had available and working cpufreq driver.
+> 
+> 4. Testing
+> 
+> Test devices:
+> - Exynos4210 - Trats (TMU zone + cpu_cooling)
+> - Exynos4412 - Trats2/Odroid U3 (TMU zone + cpu_cooling)
+> - Exynos5250 - Arndale (TMU zone + cpu_cooling)
+> - Exynos5420 - Arndale-octa (only TMU zones)
+> 
+> Unfortunately, I don't posses Exynos5440 for testing. Its
+> functionality has been preserved in the code, but not tested on the
+> hardware. I would be grateful for help in testing.
+> 
+> 5. Prerequisites:
+> 
+> This work requires following patches developed by Bartlomiej
+> Zolnierkiewicz:
+> 
+> 5.1. [PATCH v3] ARM: dts: add CPU nodes for Exynos4 SoCs
+> http://article.gmane.org/gmane.linux.kernel.samsung-soc/37946/match=patch+v3+arm+dts+add+cpu+nodes+exynos4+socs
+> 
+> 5.2. First thermal clean up patch set (from patch 1 to 33):
+> 
+> [PATCH 00/33] thermal: exynos: convert the driver to use per-SoC type
+> operations
+> http://article.gmane.org/gmane.linux.kernel.samsung-soc/37642/match=patch+00+33+thermal+exynos+convert+driver+use+per+soc+type+operations
+> 
+
+Any comments on this patch set (despite the ones from Chanwoo)?
+
+I'm especially wondering if changes introduced to of-thermal.c file are
+appropriate for mainline.
+
+> 
+> Lukasz Majewski (21):
+>   thermal: of: Extend of-thermal.c to provide number of trip points
+>   thermal: of: Extend of-thermal.c to provide check if trip point is
+>     enabled
+>   thermal: of: Extend of-thermal.c to provide number of non critical
+>     trip points
+>   thermal: of: Extend current of-thermal.c code to allow setting
+>     emulated temp
+>   thermal: exynos: cosmetic: Correct comment format
+>   thermal: exynos: Provide thermal_exynos.h file to be included in
+>     device tree files
+>   thermal: dts: trats: Enable TMU on the Exynos4210 trats device
+>   thermal: dts: exynos: Adding LD010 regulator node necessary for TMU
+> on Odroid U3 board
+>   thermal: dts: Provide bindings and enable TMU at Exynos4x12 devices
+>   thermal: cpu_cooling: dts: Define device tree bindings for Exynos
+> cpu cooling functionality
+>   thermal: cpu_cooling: Modify exynos thermal code to use device tree
+>     for cpu cooling configuration
+>   thermal: exynos: dts: Add default definition for the TMU sensor
+>   thermal: dts: Default trip points definition for Exynos5420 SoCs
+>   thermal: exynos: dts: Define default thermal-zones for Exynos4
+>   thermal: dts: exynos: Trip points and sensor configuration data for
+>     Exynos5440
+>   thermal: exynos: dts: Provide device tree bindings identical to one
+> in exynos_tmu_data.c
+>   thermal: samsung: core: Exynos TMU rework to use device tree for
+>     configuration
+>   thermal: exynos: Remove exynos_thermal_common.[c|h] files
+>   thermal: exynos: Remove exynos_tmu_data.c file
+>   thermal: exynos: Make Exynos5250 TMU compatible with Exynos4412
+>   thermal: exynos: Make Exynos3250 TMU compatible with Exynos4412
+> 
+>  arch/arm/boot/dts/exynos4-cpu-thermal.dtsi        |  52 +++
+>  arch/arm/boot/dts/exynos4.dtsi                    |   5 +
+>  arch/arm/boot/dts/exynos4210-trats.dts            |  19 +
+>  arch/arm/boot/dts/exynos4210.dtsi                 |  28 +-
+>  arch/arm/boot/dts/exynos4212.dtsi                 |   5 +-
+>  arch/arm/boot/dts/exynos4412-odroid-common.dtsi   |  27 ++
+>  arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi |  24 ++
+>  arch/arm/boot/dts/exynos4412.dtsi                 |   5 +-
+>  arch/arm/boot/dts/exynos4x12.dtsi                 |  13 +
+>  arch/arm/boot/dts/exynos5250.dtsi                 |  29 +-
+>  arch/arm/boot/dts/exynos5420-trip-points.dtsi     |  35 ++
+>  arch/arm/boot/dts/exynos5420.dtsi                 |  33 ++
+>  arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi |  25 ++
+>  arch/arm/boot/dts/exynos5440-trip-points.dtsi     |  25 ++
+>  arch/arm/boot/dts/exynos5440.dtsi                 |  18 +
+>  drivers/cpufreq/exynos-cpufreq.c                  |  23 +-
+>  drivers/thermal/of-thermal.c                      |  52 ++-
+>  drivers/thermal/samsung/Makefile                  |   2 -
+>  drivers/thermal/samsung/exynos_thermal_common.c   | 430
+> ----------------------
+> drivers/thermal/samsung/exynos_thermal_common.h   | 106 ------
+> drivers/thermal/samsung/exynos_tmu.c              | 283
+> +++++++------- drivers/thermal/samsung/exynos_tmu.h              |
+> 79 +--- drivers/thermal/samsung/exynos_tmu_data.c         | 264
+> ------------- drivers/thermal/thermal_core.h                    |  15
+> + include/dt-bindings/thermal/thermal_exynos.h      |  40 ++
+> include/linux/thermal.h                           |   6 +- 26 files
+> changed, 623 insertions(+), 1020 deletions(-) create mode 100644
+> arch/arm/boot/dts/exynos4-cpu-thermal.dtsi create mode 100644
+> arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi create mode 100644
+> arch/arm/boot/dts/exynos5420-trip-points.dtsi create mode 100644
+> arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi create mode 100644
+> arch/arm/boot/dts/exynos5440-trip-points.dtsi delete mode 100644
+> drivers/thermal/samsung/exynos_thermal_common.c delete mode 100644
+> drivers/thermal/samsung/exynos_thermal_common.h delete mode 100644
+> drivers/thermal/samsung/exynos_tmu_data.c create mode 100644
+> include/dt-bindings/thermal/thermal_exynos.h
+> 
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
