@@ -1,7 +1,7 @@
 From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH v13 2/5] dt-bindings: document Rockchip thermal
-Date: Thu, 23 Oct 2014 17:40:04 +0800
-Message-ID: <1414057207-1576-3-git-send-email-caesar.wang@rock-chips.com>
+Subject: [PATCH v13 4/5] ARM: dts: add main Thermal info to rk3288
+Date: Thu, 23 Oct 2014 17:40:06 +0800
+Message-ID: <1414057207-1576-5-git-send-email-caesar.wang@rock-chips.com>
 References: <1414057207-1576-1-git-send-email-caesar.wang@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1414057207-1576-1-git-send-email-caesar.wang@rock-chips.com>
@@ -10,74 +10,70 @@ To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com
 Cc: zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, Caesar Wang <caesar.wang@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-This add the necessary binding documentation for the thermal
-found on Rockchip SoCs
+This patch is depend on rk3288-thermal.dtsi,or
+it will compile error.
 
-Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
+If the temperature over a period of time High,over 120C
+the resulting TSHUT gave CRU module,let it reset
+the entire chip,or via GPIO give PMIC.
+
 Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
 ---
- .../bindings/thermal/rockchip-thermal.txt          | 53 ++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+ arch/arm/boot/dts/rk3288.dtsi | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-new file mode 100644
-index 0000000..2860a93
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-@@ -0,0 +1,53 @@
-+* Temperature Sensor ADC (TSADC) on rockchip SoCs
-+
-+Required properties:
-+- compatible: "rockchip,rk3288-tsadc"
-+- reg: physical base address of the controller and length of memory mapped
-+       region.
-+- interrupts: The interrupt number to the cpu. The interrupt specifier format
-+	      depends on the interrupt controller.
-+- clocks: Must contain an entry for each entry in clock-names.
-+- clock-names: Shall be "tsadc" for the converter-clock, and "apb_pclk" for
-+	       the peripheral clock.
-+- #thermal-sensor-cells: Should be 1. See ./thermal.txt for a description.
-+
-+Exiample:
-+tsadc: tsadc@ff280000 {
-+	compatible = "rockchip,rk3288-tsadc";
-+	reg = <0xff280000 0x100>;
-+	interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-+	clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-+	clock-names = "tsadc", "apb_pclk";
-+};
-+
-+Example: referring to thermal sensors:
-+thermal-zones {
-+	cpu_thermal: cpu_thermal {
-+		polling-delay-passive = <500>; /* milliseconds */
-+		polling-delay = <1000>; /* milliseconds */
-+
-+		/* sensor	ID */
-+		thermal-sensors = <&tsadc	1>;
-+
-+		trips {
-+			cpu_alert0: cpu_alert {
-+				temperature = <80000>; /* millicelsius */
-+				hysteresis = <2000>; /* millicelsius */
-+				type = "passive";
-+			};
-+			cpu_crit: cpu_crit {
-+				temperature = <125000>; /* millicelsius */
-+				hysteresis = <2000>; /* millicelsius */
-+				type = "critical";
-+			};
-+		};
-+
-+		cooling-maps {
-+			map0 {
-+				trip = <&cpu_alert0>;
-+				cooling-device =
-+					<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+			};
-+		};
+diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
+index cb18bb4..85fc17a 100644
+--- a/arch/arm/boot/dts/rk3288.dtsi
++++ b/arch/arm/boot/dts/rk3288.dtsi
+@@ -15,6 +15,7 @@
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/pinctrl/rockchip.h>
+ #include <dt-bindings/clock/rk3288-cru.h>
++#include <dt-bindings/thermal/thermal.h>
+ #include "skeleton.dtsi"
+ 
+ / {
+@@ -66,6 +67,7 @@
+ 				 216000  900000
+ 				 126000  900000
+ 			>;
++			#cooling-cells = <2>; /* min followed by max */
+ 			clock-latency = <40000>;
+ 			clocks = <&cru ARMCLK>;
+ 		};
+@@ -346,6 +348,19 @@
+ 		status = "disabled";
+ 	};
+ 
++	tsadc: tsadc@ff280000 {
++		compatible = "rockchip,rk3288-tsadc";
++		reg = <0xff280000 0x100>;
++		interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
++		clock-names = "tsadc", "apb_pclk";
++		pinctrl-names = "default";
++		pinctrl-0 = <&otp_out>;
++		#thermal-sensor-cells = <1>;
++		hw-shut-temp = <120000>;
++		status = "disabled";
 +	};
-+};
++
+ 	usb_host0_ehci: usb@ff500000 {
+ 		compatible = "generic-ehci";
+ 		reg = <0xff500000 0x100>;
+@@ -965,6 +980,12 @@
+ 			};
+ 		};
+ 
++		tsadc {
++			otp_out: otp-out {
++				rockchip,pins = <0 10 RK_FUNC_1 &pcfg_pull_none>;
++			};
++		};
++
+ 		pwm0 {
+ 			pwm0_pin: pwm0-pin {
+ 				rockchip,pins = <7 0 RK_FUNC_1 &pcfg_pull_none>;
 -- 
 1.9.1
