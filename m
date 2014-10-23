@@ -1,8 +1,7 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC 2/2] drm/exynos/dsi: Add runtime PM so LCD power domain could be
- turned off
-Date: Thu, 23 Oct 2014 15:48:10 +0200
-Message-ID: <1414072090-11293-3-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC 1/2] PM / Domains: Power on domain early during system resume
+Date: Thu, 23 Oct 2014 15:48:09 +0200
+Message-ID: <1414072090-11293-2-git-send-email-k.kozlowski@samsung.com>
 References: <1414072090-11293-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,75 +21,71 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Br
 Cc: Andrzej Hajda <a.hajda@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add runtime Power Management to the Exynos DSI driver so the LCD power
-domain could be turned off.
+When resuming the system the power domain has to be powered on early so
+any runtime PM aware devices could resume.
 
-This slightly reduces the energy consumption when screen is completely
-turned off. On Trats2 board when the system was idle the energy
-consumption dropped by 1% (from 92.2 mA to 91.1 mA).
+This fixes following scenario reproduced on Exynos DRM:
+1. Power domain is off before suspending the system.
+2. System is suspended to RAM.
+3. Resuming starts. The Exynos DRM driver resume callback is called.
+4. The Exynos DRM driver calls drm_helper_resume_force_mode which turns
+   the screen on by calling exynos_dsi_dpms with DRM_MODE_DPMS_ON.
+5. The Exynos DSI driver calls pm_runtime_get. The driver runtime
+   resumes and this should turn LCD power domain on.
+6. Unfortunately the domain cannot be turned on because system resume is
+   in progress and genpd->prepared_count is positive.
 
-Before the patch:
-$ cat cat /sys/kernel/debug/pm_genpd/pm_genpd_summary
-lcd0-power-domain               on
-    /devices/11c00000.fimd                              suspended
-    /devices/11c80000.dsi                               unsupported
-After applying the patch:
-lcd0-power-domain               off
-    /devices/11c00000.fimd                              suspended
-    /devices/11c80000.dsi                               suspended
+Steps to reproduce:
+1. Add runtime PM to Exynos DSI driver.
+2. Build Exynos DRM/FB without FRAMEBUFFER_CONSOLE.
+3. Enable the connector and screen (e.g. with modeset-vsync application).
+4. echo 3 > /sys/devices/platform/exynos-drm/graphics/fb0/blank
+5. echo mem > /sys/power/state
+6. Resume.
+[   77.712469] PM: early resume of devices complete after 3.854 msecs
+[   77.712739] exynos-dsi 11c80000.dsi: pm_genpd_resume()
+[   77.712758] exynos4-fimc 11800000.fimc: pm_genpd_resume()
+[   77.712774] exynos4-fimc 11810000.fimc: pm_genpd_resume()
+[   77.712787] exynos-drm-fimc 11820000.fimc: pm_genpd_resume()
+[   77.712802] exynos-drm-fimc 11830000.fimc: pm_genpd_resume()
+[   77.712815] s5p-mipi-csis 11880000.csis: pm_genpd_resume()
+[   77.712829] s5p-mipi-csis 11890000.csis: pm_genpd_resume()
+[   77.712843] exynos-fimc-lite 12390000.fimc-lite: pm_genpd_resume()
+[   77.712856] exynos-fimc-lite 123a0000.fimc-lite: pm_genpd_resume()
+[   77.713788] exynos4-fb 11c00000.fimd: pm_genpd_resume()
+[   77.713912] wake disabled for irq 184
+[   77.713923] wake disabled for irq 185
+[   77.714082] wake disabled for irq 173
+[   77.715676] wake disabled for irq 176
+[   77.718540] exynos4-fb 11c00000.fimd: pm_genpd_runtime_resume()
+[   77.718567] exynos4-fb 11c00000.fimd: state restore latency exceeded, new value 1708 ns
+[   77.718636] exynos-dsi 11c80000.dsi: pm_genpd_runtime_resume()
+[   77.892366] exynos-dsi 11c80000.dsi: PLL failed to stabilize
+[   77.892377] exynos-dsi 11c80000.dsi: failed to configure DSI PLL
+[   78.192168] exynos-dsi 11c80000.dsi: timeout waiting for reset
+[   78.211578] exynos-dsi 11c80000.dsi: waiting for bus lanes timed out
+[   78.307173] exynos-dsi 11c80000.dsi: xfer timed out: d1 00 (null)
+[   78.307190] panel_s6e8aa0 11c80000.dsi.0: error -110 reading dcs seq(0xd1)
+[   78.307199] panel_s6e8aa0 11c80000.dsi.0: read id failed
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/gpu/drm/exynos/exynos_drm_dsi.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/base/power/domain.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/exynos/exynos_drm_dsi.c b/drivers/gpu/drm/exynos/exynos_drm_dsi.c
-index 24741d8758e8..19ed36d2d557 100644
---- a/drivers/gpu/drm/exynos/exynos_drm_dsi.c
-+++ b/drivers/gpu/drm/exynos/exynos_drm_dsi.c
-@@ -21,6 +21,7 @@
- #include <linux/of_device.h>
- #include <linux/of_gpio.h>
- #include <linux/phy/phy.h>
-+#include <linux/pm_runtime.h>
- #include <linux/regulator/consumer.h>
- #include <linux/component.h>
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 40bc2f4072cc..4fdfe404a04c 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -179,8 +179,7 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
+ 	}
+ 	finish_wait(&genpd->status_wait_queue, &wait);
  
-@@ -1356,6 +1357,8 @@ static int exynos_dsi_enable(struct exynos_dsi *dsi)
- 	if (dsi->state & DSIM_STATE_ENABLED)
+-	if (genpd->status == GPD_STATE_ACTIVE
+-	    || (genpd->prepared_count > 0 && genpd->suspend_power_off))
++	if (genpd->status == GPD_STATE_ACTIVE)
  		return 0;
  
-+	pm_runtime_get_sync(dsi->dev);
-+
- 	ret = exynos_dsi_poweron(dsi);
- 	if (ret < 0)
- 		return ret;
-@@ -1392,6 +1395,8 @@ static void exynos_dsi_disable(struct exynos_dsi *dsi)
- 	drm_panel_unprepare(dsi->panel);
- 	exynos_dsi_poweroff(dsi);
- 
-+	pm_runtime_put_sync(dsi->dev);
-+
- 	dsi->state &= ~DSIM_STATE_ENABLED;
- }
- 
-@@ -1772,6 +1777,8 @@ static int exynos_dsi_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto err_del_component;
- 
-+	pm_runtime_enable(&pdev->dev);
-+
- 	return ret;
- 
- err_del_component:
-@@ -1781,6 +1788,8 @@ err_del_component:
- 
- static int exynos_dsi_remove(struct platform_device *pdev)
- {
-+	pm_runtime_disable(&pdev->dev);
-+
- 	component_del(&pdev->dev, &exynos_dsi_component_ops);
- 	exynos_drm_component_del(&pdev->dev, EXYNOS_DEVICE_TYPE_CONNECTOR);
- 
+ 	if (genpd->status != GPD_STATE_POWER_OFF) {
 -- 
 1.9.1
