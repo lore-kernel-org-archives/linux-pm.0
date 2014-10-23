@@ -1,134 +1,101 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v8 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
-Date: Thu, 23 Oct 2014 10:18:15 -0600
-Message-ID: <20141023161815.GB30210@ilina-mac.qualcomm.com>
-References: <1412718106-17049-1-git-send-email-lina.iyer@linaro.org>
- <1412718106-17049-6-git-send-email-lina.iyer@linaro.org>
- <5448E103.9070505@linaro.org>
- <20141023124303.GA16417@red-moon>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH v3 1/5] PM / clock_ops: Add pm_clk_add_clk()
+Date: Thu, 23 Oct 2014 19:18:49 +0300
+Message-ID: <54492A69.5070505@ti.com>
+References: <1414074182-25980-1-git-send-email-grygorii.strashko@ti.com> <1414074182-25980-2-git-send-email-grygorii.strashko@ti.com> <20141023154928.GC18714@dtor-ws>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20141023124303.GA16417@red-moon>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:58408 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750813AbaJWQT2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 23 Oct 2014 12:19:28 -0400
+In-Reply-To: <20141023154928.GC18714@dtor-ws>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Thu, Oct 23 2014 at 06:43 -0600, Lorenzo Pieralisi wrote:
->On Thu, Oct 23, 2014 at 12:05:39PM +0100, Daniel Lezcano wrote:
+On 10/23/2014 06:49 PM, Dmitry Torokhov wrote:
+> On Thu, Oct 23, 2014 at 05:22:58PM +0300, Grygorii Strashko wrote:
+>> From: Geert Uytterhoeven <geert+renesas@glider.be>
+>>
+>> The existing pm_clk_add() allows to pass a clock by con_id. However,
+>> when referring to a specific clock from DT, no con_id is available.
+>>
+>> Add pm_clk_add_clk(), which allows to specify the struct clk * directly.
+>>
+>> CC: Ulf Hansson <ulf.hansson@linaro.org>
+>> CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+>> Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+>> Reviewed-by: Kevin Hilman <khilman@linaro.org>
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+>> ---
+>>   drivers/base/power/clock_ops.c | 41 +++++++++++++++++++++++++++++++----------
+>>   include/linux/pm_clock.h       |  8 ++++++++
+>>   2 files changed, 39 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+>> index 7836930..f14b767 100644
+>> --- a/drivers/base/power/clock_ops.c
+>> +++ b/drivers/base/power/clock_ops.c
+>> @@ -53,7 +53,8 @@ static inline int __pm_clk_enable(struct device *dev, struct clk *clk)
+>>    */
+>>   static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+>>   {
+>> -	ce->clk = clk_get(dev, ce->con_id);
+>> +	if (!ce->clk)
+>> +		ce->clk = clk_get(dev, ce->con_id);
+>>   	if (IS_ERR(ce->clk)) {
+>>   		ce->status = PCE_STATUS_ERROR;
+>>   	} else {
+>> @@ -63,15 +64,8 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+>>   	}
+>>   }
+>>
+>> -/**
+>> - * pm_clk_add - Start using a device clock for power management.
+>> - * @dev: Device whose clock is going to be used for power management.
+>> - * @con_id: Connection ID of the clock.
+>> - *
+>> - * Add the clock represented by @con_id to the list of clocks used for
+>> - * the power management of @dev.
+>> - */
+>> -int pm_clk_add(struct device *dev, const char *con_id)
+>> +static int __pm_clk_add(struct device *dev, const char *con_id,
+>> +			struct clk *clk)
+>>   {
+>>   	struct pm_subsys_data *psd = dev_to_psd(dev);
+>>   	struct pm_clock_entry *ce;
+>> @@ -93,6 +87,8 @@ int pm_clk_add(struct device *dev, const char *con_id)
+>>   			kfree(ce);
+>>   			return -ENOMEM;
+>>   		}
+>> +	} else {
 >
->[...]
->
->> > diff --git a/drivers/cpuidle/cpuidle-qcom.c b/drivers/cpuidle/cpuidle-qcom.c
->> > new file mode 100644
->> > index 0000000..0a65065
->> > --- /dev/null
->> > +++ b/drivers/cpuidle/cpuidle-qcom.c
->> > @@ -0,0 +1,79 @@
->> > +/*
->> > + * Copyright (c) 2014, Linaro Limited.
->> > + *
->> > + * This program is free software; you can redistribute it and/or modify
->> > + * it under the terms of the GNU General Public License version 2 and
->> > + * only version 2 as published by the Free Software Foundation.
->> > + *
->> > + * This program is distributed in the hope that it will be useful,
->> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->> > + * GNU General Public License for more details.
->> > + *
->> > + */
->> > +
->> > +#include <linux/cpu_pm.h>
->> > +#include <linux/cpuidle.h>
->> > +#include <linux/module.h>
->> > +#include <linux/platform_device.h>
->> > +
->> > +#include <soc/qcom/pm.h>
->> > +#include "dt_idle_states.h"
->> > +
->> > +static void (*qcom_idle_enter)(enum pm_sleep_mode);
->> > +
->> > +static int qcom_lpm_enter_stby(struct cpuidle_device *dev,
->> > +                             struct cpuidle_driver *drv, int index)
->> > +{
->> > +     qcom_idle_enter(PM_SLEEP_MODE_STBY);
->>
->> Could you replace this function by a generic one ?
->>
->> It would be nice to have qcom_cpu_standby(void) and
->> qcom_cpu_powerdown(void) and let behind the mysterious words 'Single
->> Power Collapse' in the low level code which is qcom specific :)
->>
->> I guess you had to create a single "qcom_idle_enter" because of a single
->> pointer in the platform data. I am working on a common structure to be
->> shared across the drivers as a common way to pass the different
->> callbacks without including a soc specific header.
->>
->> struct cpuidle_ops {
->>         int (*standby)(void *data);
->>         int (*retention)(void *data);
->>         int (*poweroff)(void *data);
->> };
->>
->> So maybe you can either:
->>
->> 1. wait I post this structure and provide the driver with this one
->> 2. create a similar structure and I will take care to upgrade when I
->> post the patchset with the common structure.
->>
->> The issue I see with this common structure is the initialization of the
->> qcom_idle_state_match array.
->
->Because you do not know which function to call when right ? That's why
->I think it is up to the CPUidle back-end to make that decision and why
->I think that the contract between the CPUidle driver and the back-end
->should be the idle index. Even if you have pointers to functions,
->the CPUidle driver do not know what parameter it has to chuck into
->the void data, which is likely to be platform specific too. Granted,
->you can make those cpuidle_ops a set of pairs, {function, parameter}
->associated with an idle index, but then you will end up implementing
->what I suggest below.
->
->If you have a look at how the MCPM wrapper works on bL driver, that's
->exactly the same problem. At the moment we are supporting only cluster
->shutdown. If we were to add a core gating idle state, how could the
->MCPM back-end differentiate between core and cluster states ? At the
->moment the only way would consist in passing the residency through
->mcpm_suspend() parameter. We could pass the idle state index, it is the
->same story.
->
->That's the reasoning behind cpu_suspend on ARM64, the index determines
->what should be done, it is up to the platform back end to execute the
->required actions (and it is not because we have PSCI on ARM64, that
->concept is generic and should be made similar on ARM32 IMHO).
->
->DT idle states are sorted by definition, and they can be parsed by
->the arch back-end too to determine the actions required by an idle
->state index (eg most likely information coming from power domains).
+> You need __clk_get(clk) here, otherwise when you will be removing clocks
+> you'll be dropping a reference that does not belong to you (as yiou have
+> not taken it).
 
-This is where it makes it difficult for me. QCOM SoC's can differ from
-each other in the states supported. For example here, I dont have
-retention state, while other SoC's would have it. And to have cpuidle
-states with increasing order of power saving (or latency), retention
-would creep in between standby and power collpase. This makes the
-mapping, a real issue to figure out what the SoC cpuidle driver chose to
-define and to what functions they map to. I was thinking in lines of the 
-ops structure, which could work for PSCI as well.
+No, I don't ;)
+
+pm_clk_add_clk is intended to be used with valid pointer on clk,
+which means clk_get() has been called already. In our case:
+	clk = of_clk_get(dev->of_node, i));
+	ret = pm_clk_add_clk(dev, clk);
+
+It's just a different way to fill list of clocks for device,
+once pm_clk_add_clk() is called - PM clock framework will be the owner
+of clock.
 
 >
->The glue code on arm64 is cpu_init_idle(), which takes charge of
->initializing the idle state platform specific actions/parameters/etc.
+>> +		ce->clk = clk;
+>>   	}
+>>
 >
->Everything is open to debate, as long as we nail down an interface on
->arm32 and we stick to that from now onwards, I do not think you are far
->from achieving that at all.
->
-Thanks, I will try and get the QCOM idle drivers conform to the common
-ideas.
 
->Cheers,
->Lorenzo
->
+regards,
+-grygorii
+
