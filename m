@@ -1,177 +1,230 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 00/21] thermal: exynos: Thermal code rework to use device
- tree
-Date: Thu, 23 Oct 2014 10:50:04 +0200
-Message-ID: <20141023105004.264f596a@amdc2363>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH V2 1/5] sched: idle: cpuidle: Check the latency req before idle
+Date: Thu, 23 Oct 2014 11:01:17 +0200
+Message-ID: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:27110 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753385AbaJWIun (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 04:50:43 -0400
-In-reply-to: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
+Received: from mail-wi0-f169.google.com ([209.85.212.169]:57684 "EHLO
+	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619AbaJWJBY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 05:01:24 -0400
+Received: by mail-wi0-f169.google.com with SMTP id q5so113520wiv.0
+        for <linux-pm@vger.kernel.org>; Thu, 23 Oct 2014 02:01:23 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Linux PM list <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+To: rjw@rjwysocki.net
+Cc: nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, peterz@infradead.org, linaro-kernel@lists.linaro.org, patches@linaro.org
 
-Hi Lukasz,
+When the pmqos latency requirement is set to zero that means "poll in all the
+cases".
 
-> 1. Introduction
-> 
-> Following patches aim to clean up the current implementation of the
-> thermal framework on Exynos devices.
-> 
-> The main goal was to use a generic code for reading thermal
-> configuration (of-thermal.c). Due to that redundant
-> exynos_thermal_common.[h|c] files were removed.
-> 
-> Around 400 lines of code (LOC) were removed directly by this patch,
-> which is around 20% of the Exynos thermal code base.
-> 
-> This work should NOT bring any functional changes to Exynos thermal 
-> subsystem.
-> 
-> 2. Patch-set structure
-> 
-> This series starts with extending current of-thermal.c implementation
-> with exporting information about trip points and support for setting
-> emulated temperature. Those changes were necessary to reuse this code
-> in Exynos.
-> 
-> Then the cpu_cooling functionality has been preserved to allow cooling
-> devices by reducing operating frequency. Definition of trip points and
-> cpufreq's cooling properties were moved to device tree.
-> 
-> Then the rework of the way in which configuration data is provided to
-> the Exynos thermal subsystem was performed. Now device tree is used
-> for configuration.
-> 
-> Patch series end with removing exynos5250/exynos3250 TMU compatibles.
-> Both SoCs have thermal management unit (TMU) compatible with the one
-> first introduced at Exynos4412.
-> 
-> 3. Dead code removal
-> 
-> Thermal support for some SoCs, previously available in the
-> exynos_tmu_data.c file, was removed since, as of 3.17-rc6, they
-> didn't have TMU bindings.
-> 
-> Moreover, support for cpu_cooling devices was preserved only on those
-> SoCs which had available and working cpufreq driver.
-> 
-> 4. Testing
-> 
-> Test devices:
-> - Exynos4210 - Trats (TMU zone + cpu_cooling)
-> - Exynos4412 - Trats2/Odroid U3 (TMU zone + cpu_cooling)
-> - Exynos5250 - Arndale (TMU zone + cpu_cooling)
-> - Exynos5420 - Arndale-octa (only TMU zones)
-> 
-> Unfortunately, I don't posses Exynos5440 for testing. Its
-> functionality has been preserved in the code, but not tested on the
-> hardware. I would be grateful for help in testing.
-> 
-> 5. Prerequisites:
-> 
-> This work requires following patches developed by Bartlomiej
-> Zolnierkiewicz:
-> 
-> 5.1. [PATCH v3] ARM: dts: add CPU nodes for Exynos4 SoCs
-> http://article.gmane.org/gmane.linux.kernel.samsung-soc/37946/match=patch+v3+arm+dts+add+cpu+nodes+exynos4+socs
-> 
-> 5.2. First thermal clean up patch set (from patch 1 to 33):
-> 
-> [PATCH 00/33] thermal: exynos: convert the driver to use per-SoC type
-> operations
-> http://article.gmane.org/gmane.linux.kernel.samsung-soc/37642/match=patch+00+33+thermal+exynos+convert+driver+use+per+soc+type+operations
-> 
+That is correctly implemented on x86 but not on the other archs.
 
-Any comments on this patch set (despite the ones from Chanwoo)?
+As how is written the code, if the latency request is zero, the governor will
+return zero, so corresponding, for x86, to the poll function, but for the
+others arch the default idle function. For example, on ARM this is wait-for-
+interrupt with a latency of '1', so violating the constraint.
 
-I'm especially wondering if changes introduced to of-thermal.c file are
-appropriate for mainline.
+In order to fix that, do the latency requirement check *before* calling the
+cpuidle framework in order to jump to the poll function without entering
+cpuidle. That has several benefits:
 
-> 
-> Lukasz Majewski (21):
->   thermal: of: Extend of-thermal.c to provide number of trip points
->   thermal: of: Extend of-thermal.c to provide check if trip point is
->     enabled
->   thermal: of: Extend of-thermal.c to provide number of non critical
->     trip points
->   thermal: of: Extend current of-thermal.c code to allow setting
->     emulated temp
->   thermal: exynos: cosmetic: Correct comment format
->   thermal: exynos: Provide thermal_exynos.h file to be included in
->     device tree files
->   thermal: dts: trats: Enable TMU on the Exynos4210 trats device
->   thermal: dts: exynos: Adding LD010 regulator node necessary for TMU
-> on Odroid U3 board
->   thermal: dts: Provide bindings and enable TMU at Exynos4x12 devices
->   thermal: cpu_cooling: dts: Define device tree bindings for Exynos
-> cpu cooling functionality
->   thermal: cpu_cooling: Modify exynos thermal code to use device tree
->     for cpu cooling configuration
->   thermal: exynos: dts: Add default definition for the TMU sensor
->   thermal: dts: Default trip points definition for Exynos5420 SoCs
->   thermal: exynos: dts: Define default thermal-zones for Exynos4
->   thermal: dts: exynos: Trip points and sensor configuration data for
->     Exynos5440
->   thermal: exynos: dts: Provide device tree bindings identical to one
-> in exynos_tmu_data.c
->   thermal: samsung: core: Exynos TMU rework to use device tree for
->     configuration
->   thermal: exynos: Remove exynos_thermal_common.[c|h] files
->   thermal: exynos: Remove exynos_tmu_data.c file
->   thermal: exynos: Make Exynos5250 TMU compatible with Exynos4412
->   thermal: exynos: Make Exynos3250 TMU compatible with Exynos4412
-> 
->  arch/arm/boot/dts/exynos4-cpu-thermal.dtsi        |  52 +++
->  arch/arm/boot/dts/exynos4.dtsi                    |   5 +
->  arch/arm/boot/dts/exynos4210-trats.dts            |  19 +
->  arch/arm/boot/dts/exynos4210.dtsi                 |  28 +-
->  arch/arm/boot/dts/exynos4212.dtsi                 |   5 +-
->  arch/arm/boot/dts/exynos4412-odroid-common.dtsi   |  27 ++
->  arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi |  24 ++
->  arch/arm/boot/dts/exynos4412.dtsi                 |   5 +-
->  arch/arm/boot/dts/exynos4x12.dtsi                 |  13 +
->  arch/arm/boot/dts/exynos5250.dtsi                 |  29 +-
->  arch/arm/boot/dts/exynos5420-trip-points.dtsi     |  35 ++
->  arch/arm/boot/dts/exynos5420.dtsi                 |  33 ++
->  arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi |  25 ++
->  arch/arm/boot/dts/exynos5440-trip-points.dtsi     |  25 ++
->  arch/arm/boot/dts/exynos5440.dtsi                 |  18 +
->  drivers/cpufreq/exynos-cpufreq.c                  |  23 +-
->  drivers/thermal/of-thermal.c                      |  52 ++-
->  drivers/thermal/samsung/Makefile                  |   2 -
->  drivers/thermal/samsung/exynos_thermal_common.c   | 430
-> ----------------------
-> drivers/thermal/samsung/exynos_thermal_common.h   | 106 ------
-> drivers/thermal/samsung/exynos_tmu.c              | 283
-> +++++++------- drivers/thermal/samsung/exynos_tmu.h              |
-> 79 +--- drivers/thermal/samsung/exynos_tmu_data.c         | 264
-> ------------- drivers/thermal/thermal_core.h                    |  15
-> + include/dt-bindings/thermal/thermal_exynos.h      |  40 ++
-> include/linux/thermal.h                           |   6 +- 26 files
-> changed, 623 insertions(+), 1020 deletions(-) create mode 100644
-> arch/arm/boot/dts/exynos4-cpu-thermal.dtsi create mode 100644
-> arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi create mode 100644
-> arch/arm/boot/dts/exynos5420-trip-points.dtsi create mode 100644
-> arch/arm/boot/dts/exynos5440-tmu-sensor-conf.dtsi create mode 100644
-> arch/arm/boot/dts/exynos5440-trip-points.dtsi delete mode 100644
-> drivers/thermal/samsung/exynos_thermal_common.c delete mode 100644
-> drivers/thermal/samsung/exynos_thermal_common.h delete mode 100644
-> drivers/thermal/samsung/exynos_tmu_data.c create mode 100644
-> include/dt-bindings/thermal/thermal_exynos.h
-> 
+ 1. It clarifies and unifies the code
+ 2. It fixes x86 vs other archs behavior
+ 3. Factors out the call to the same function
+ 4. Prevent to enter the cpuidle framework with its expensive cost in
+    calculation
 
+As the latency_req is needed in all the cases, change the select API to take
+the latency_req as parameter in case it is not equal to zero.
 
+As a positive side effect, it introduces the latency constraint specified
+externally, so one more step to the cpuidle/scheduler integration.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Nicolas Pitre <nico@linaro.org>
+---
+ drivers/cpuidle/cpuidle.c          |  5 +++--
+ drivers/cpuidle/governors/ladder.c |  9 +--------
+ drivers/cpuidle/governors/menu.c   |  8 ++------
+ include/linux/cpuidle.h            |  7 ++++---
+ kernel/sched/idle.c                | 18 ++++++++++++++----
+ 5 files changed, 24 insertions(+), 23 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index ee9df5e..372c36f 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -158,7 +158,8 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+  *
+  * Returns the index of the idle state.
+  */
+-int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
++int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
++		   int latency_req)
+ {
+ 	if (off || !initialized)
+ 		return -ENODEV;
+@@ -169,7 +170,7 @@ int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 	if (unlikely(use_deepest_state))
+ 		return cpuidle_find_deepest_state(drv, dev);
+ 
+-	return cpuidle_curr_governor->select(drv, dev);
++	return cpuidle_curr_governor->select(drv, dev, latency_req);
+ }
+ 
+ /**
+diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+index 044ee0d..18f0da9 100644
+--- a/drivers/cpuidle/governors/ladder.c
++++ b/drivers/cpuidle/governors/ladder.c
+@@ -64,18 +64,11 @@ static inline void ladder_do_selection(struct ladder_device *ldev,
+  * @dev: the CPU
+  */
+ static int ladder_select_state(struct cpuidle_driver *drv,
+-				struct cpuidle_device *dev)
++			       struct cpuidle_device *dev, int latency_req)
+ {
+ 	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
+ 	struct ladder_device_state *last_state;
+ 	int last_residency, last_idx = ldev->last_state_idx;
+-	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+-
+-	/* Special case when user has set very strict latency requirement */
+-	if (unlikely(latency_req == 0)) {
+-		ladder_do_selection(ldev, last_idx, 0);
+-		return 0;
+-	}
+ 
+ 	last_state = &ldev->states[last_idx];
+ 
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 34db2fb..96f8fb0 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -287,10 +287,10 @@ again:
+  * @drv: cpuidle driver containing state data
+  * @dev: the CPU
+  */
+-static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
++static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
++		       int latency_req)
+ {
+ 	struct menu_device *data = &__get_cpu_var(menu_devices);
+-	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+ 	int i;
+ 	unsigned int interactivity_req;
+ 	unsigned long nr_iowaiters, cpu_load;
+@@ -302,10 +302,6 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 
+ 	data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
+ 
+-	/* Special case when user has set very strict latency requirement */
+-	if (unlikely(latency_req == 0))
+-		return 0;
+-
+ 	/* determine the expected residency time, round up */
+ 	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length());
+ 
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 25e0df6..fb465c1 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -122,7 +122,7 @@ struct cpuidle_driver {
+ extern void disable_cpuidle(void);
+ 
+ extern int cpuidle_select(struct cpuidle_driver *drv,
+-			  struct cpuidle_device *dev);
++			  struct cpuidle_device *dev, int latency_req);
+ extern int cpuidle_enter(struct cpuidle_driver *drv,
+ 			 struct cpuidle_device *dev, int index);
+ extern void cpuidle_reflect(struct cpuidle_device *dev, int index);
+@@ -150,7 +150,7 @@ extern struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev)
+ #else
+ static inline void disable_cpuidle(void) { }
+ static inline int cpuidle_select(struct cpuidle_driver *drv,
+-				 struct cpuidle_device *dev)
++				 struct cpuidle_device *dev, int latency_req)
+ {return -ENODEV; }
+ static inline int cpuidle_enter(struct cpuidle_driver *drv,
+ 				struct cpuidle_device *dev, int index)
+@@ -205,7 +205,8 @@ struct cpuidle_governor {
+ 					struct cpuidle_device *dev);
+ 
+ 	int  (*select)		(struct cpuidle_driver *drv,
+-					struct cpuidle_device *dev);
++				 struct cpuidle_device *dev,
++				 int latency_req);
+ 	void (*reflect)		(struct cpuidle_device *dev, int index);
+ 
+ 	struct module 		*owner;
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index 11e7bc4..25ba94d 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -5,6 +5,7 @@
+ #include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+ #include <linux/tick.h>
++#include <linux/pm_qos.h>
+ #include <linux/mm.h>
+ #include <linux/stackprotector.h>
+ 
+@@ -74,7 +75,7 @@ void __weak arch_cpu_idle(void)
+  * set, and it returns with polling set.  If it ever stops polling, it
+  * must clear the polling bit.
+  */
+-static void cpuidle_idle_call(void)
++static void cpuidle_idle_call(unsigned int latency_req)
+ {
+ 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+ 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+@@ -107,7 +108,7 @@ static void cpuidle_idle_call(void)
+ 	 * Ask the cpuidle framework to choose a convenient idle state.
+ 	 * Fall back to the default arch idle method on errors.
+ 	 */
+-	next_state = cpuidle_select(drv, dev);
++	next_state = cpuidle_select(drv, dev, latency_req);
+ 	if (next_state < 0) {
+ use_default:
+ 		/*
+@@ -182,6 +183,8 @@ exit_idle:
+  */
+ static void cpu_idle_loop(void)
+ {
++	unsigned int latency_req;
++
+ 	while (1) {
+ 		/*
+ 		 * If the arch has a polling bit, we maintain an invariant:
+@@ -205,19 +208,26 @@ static void cpu_idle_loop(void)
+ 			local_irq_disable();
+ 			arch_cpu_idle_enter();
+ 
++			latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
++
+ 			/*
+ 			 * In poll mode we reenable interrupts and spin.
+ 			 *
++			 * If the latency req is zero, we don't want to
++			 * enter any idle state and we jump to the poll
++			 * function directly
++			 *
+ 			 * Also if we detected in the wakeup from idle
+ 			 * path that the tick broadcast device expired
+ 			 * for us, we don't want to go deep idle as we
+ 			 * know that the IPI is going to arrive right
+ 			 * away
+ 			 */
+-			if (cpu_idle_force_poll || tick_check_broadcast_expired())
++			if (!latency_req || cpu_idle_force_poll ||
++			    tick_check_broadcast_expired())
+ 				cpu_idle_poll();
+ 			else
+-				cpuidle_idle_call();
++				cpuidle_idle_call(latency_req);
+ 
+ 			arch_cpu_idle_exit();
+ 		}
 -- 
-Best regards,
+1.9.1
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
