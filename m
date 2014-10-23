@@ -1,72 +1,41 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 00/11] ARM: shmobile: r8a7740/armadillo800eva legacy PM domain support
-Date: Thu, 23 Oct 2014 13:18:50 +0200
-Message-ID: <1414063141-8856-1-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH v3 04/11] ARM: shmobile: armadillo800eva legacy: Add missing A4S pm domain devices
+Date: Thu, 23 Oct 2014 13:18:54 +0200
+Message-ID: <1414063141-8856-5-git-send-email-geert+renesas@glider.be>
+References: <1414063141-8856-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1414063141-8856-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-sh-owner@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-	Hi Simon, Magnus,
+Commit 8459293c27bcd13a ("ARM: shmobile: r8a7740: add A4S pm domain
+support") added the A4S power domain, but forgot to hook up the GbEther
+hardware block.
 
-This series improves PM domain support for r8a7740/armadillo800eva legacy,
-mimicking (parts of) the existing PM domain support for sh7372/mackerel.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v3:
+  - No changes,
+v2:
+  - No changes.
+---
+ arch/arm/mach-shmobile/board-armadillo800eva.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-More specifically, it
-  - Adds missing devices to existing PM domains,
-  - Adds missing PM domains, hooking up devices and subdomains.
-
-This series is based on renesas-devel-20141016-v3.17, but working resume from
-s2ram depends on a fix for sh_mobile_hdmi which is only in v3.18-rc1.
-
-Changes in v3:
-  - Keep D4 PM domain powered, until the ARM debug/perf code uses resource
-    management with runtime PM support.
-
-Changes in v2:
-  - Dropped FIXMes on behavior that turned out to be expected,
-  - Hook up the HDMI-Link hardware block,
-  - Really add the A4MP and D4 PM domains, as fixes are available,
-  - Move special CPU domain handling from A4S to A3SM.
-
-Please apply, after merging in v3.18-rc1.
-
-Thanks!
-
-Geert Uytterhoeven (11):
-  ARM: shmobile: r8a7740: Add missing A3SP pm domain devices
-  ARM: shmobile: r8a7740: Add missing A4S pm domain devices
-  ARM: shmobile: armadillo800eva legacy: Add missing A3SP pm domain
-    devices
-  ARM: shmobile: armadillo800eva legacy: Add missing A4S pm domain
-    devices
-  ARM: shmobile: r8a7740: Add A3RV pm domain support
-  ARM: shmobile: r8a7740: Add A3SG pm domain support
-  ARM: shmobile: r8a7740/armadillo legacy: Add A4MP pm domain support
-  ARM: shmobile: r8a7740: Add D4 pm domain support
-  ARM: shmobile: r8a7740/armadillo legacy: Add A4R pm domain support
-  ARM: shmobile: r8a7740: Add A4SU pm domain support
-  ARM: shmobile: r8a7740: Add A3SM pm domain support
-
- arch/arm/mach-shmobile/board-armadillo800eva.c | 12 ++++++-
- arch/arm/mach-shmobile/pm-r8a7740.c            | 44 +++++++++++++++++++++++---
- arch/arm/mach-shmobile/setup-r8a7740.c         | 11 +++++++
- 3 files changed, 62 insertions(+), 5 deletions(-)
-
+diff --git a/arch/arm/mach-shmobile/board-armadillo800eva.c b/arch/arm/mach-shmobile/board-armadillo800eva.c
+index 64a68450c28a072c..735036038951868d 100644
+--- a/arch/arm/mach-shmobile/board-armadillo800eva.c
++++ b/arch/arm/mach-shmobile/board-armadillo800eva.c
+@@ -1234,6 +1234,7 @@ static void __init eva_init(void)
+ 	static struct pm_domain_device domain_devices[] __initdata = {
+ 		{ "A4LC", &lcdc0_device },
+ 		{ "A4LC", &hdmi_lcdc_device },
++		{ "A4S",  &sh_eth_device },
+ 		{ "A3SP", &pwm_device },
+ 		{ "A3SP", &sdhi0_device },
+ 		{ "A3SP", &sh_mmcif_device },
 -- 
 1.9.1
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
