@@ -1,224 +1,180 @@
 From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: [PATCH v3 4/5] ARM: keystone: pm: switch to use generic pm domains
-Date: Thu, 23 Oct 2014 17:23:01 +0300
-Message-ID: <1414074182-25980-5-git-send-email-grygorii.strashko@ti.com>
-References: <1414074182-25980-1-git-send-email-grygorii.strashko@ti.com>
+Subject: Re: [PATCH v2 2/3] ARM: keystone: pm: switch to use generic pm domains
+Date: Thu, 23 Oct 2014 17:37:31 +0300
+Message-ID: <544912AB.3050801@ti.com>
+References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>	<1413809764-21995-3-git-send-email-grygorii.strashko@ti.com>	<5446A065.9050308@gmail.com>	<544793B5.6080601@ti.com>	<CAPDyKFo97D3XbwDQrDzHw+qr4b24Fsq9EwDbdOMhy_L-RoYsLw@mail.gmail.com>	<CAMuHMdVsqsSHxirzoWspGz7y+2qBk42p-VUBNkys3_rr6Th_9Q@mail.gmail.com>	<CAPDyKFp6T1a1XXHdxiubP2RaS26uSqkUS3rbBgsNV_y+dSFfvw@mail.gmail.com>	<CAMuHMdVO4nMoeYdzLf6wdKW876gYVyML3C2+QKoteGPtisD4sA@mail.gmail.com> <CAPDyKFrVCczc+fSy1ax4XinhB4SMfZZWP=d4QdY5Lv4zjOrHPA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1414074182-25980-1-git-send-email-grygorii.strashko@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org
-Cc: linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:54259 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755764AbaJWOiU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 10:38:20 -0400
+In-Reply-To: <CAPDyKFrVCczc+fSy1ax4XinhB4SMfZZWP=d4QdY5Lv4zjOrHPA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Santosh Shilimkar <santosh.shilimkar@gmail.com>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-This patch switches Keystone 2 PM code to use Generic PM domains
-instead of PM clock domains because of the lack of DT support
-for the last.
+Hi Ulf,
 
-CC: Ulf Hansson <ulf.hansson@linaro.org>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Reviewed-by: Kevin Hilman <khilman@linaro.org>
-Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
----
- .../bindings/power/ti,keystone-powerdomain.txt     |  31 ++++++
- arch/arm/mach-keystone/Kconfig                     |   1 +
- arch/arm/mach-keystone/pm_domain.c                 | 105 +++++++++++++--------
- 3 files changed, 100 insertions(+), 37 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
+On 10/23/2014 11:11 AM, Ulf Hansson wrote:
+> On 22 October 2014 17:44, Geert Uytterhoeven <geert@linux-m68k.org> w=
+rote:
+>> On Wed, Oct 22, 2014 at 5:28 PM, Ulf Hansson <ulf.hansson@linaro.org=
+> wrote:
+>>> On 22 October 2014 17:09, Geert Uytterhoeven <geert@linux-m68k.org>=
+ wrote:
+>>>> On Wed, Oct 22, 2014 at 5:01 PM, Ulf Hansson <ulf.hansson@linaro.o=
+rg> wrote:
+>>>>>>>> +void keystone_pm_domain_attach_dev(struct device *dev)
+>>>>>>>>    {
+>>>>>>>> +    struct clk *clk;
+>>>>>>>>        int ret;
+>>>>>>>> +    int i =3D 0;
+>>>>>>>>
+>>>>>>>>        dev_dbg(dev, "%s\n", __func__);
+>>>>>>>>
+>>>>>>>> -    ret =3D pm_generic_runtime_suspend(dev);
+>>>>>>>> -    if (ret)
+>>>>>>>> -        return ret;
+>>>>>>>> -
+>>>>>>>> -    ret =3D pm_clk_suspend(dev);
+>>>>>>>> +    ret =3D pm_clk_create(dev);
+>>>>>>>>        if (ret) {
+>>>>>>>> -        pm_generic_runtime_resume(dev);
+>>>>>>>> -        return ret;
+>>>>>>>> +        dev_err(dev, "pm_clk_create failed %d\n", ret);
+>>>>>>>> +        return;
+>>>>>>>> +    };
+>>>>>>>> +
+>>>>>>>> +    while ((clk =3D of_clk_get(dev->of_node, i++)) && !IS_ERR=
+(clk)) {
+>>>>>>>> +        ret =3D pm_clk_add_clk(dev, clk);
+>>>>>>>> +        if (ret) {
+>>>>>>>> +            dev_err(dev, "pm_clk_add_clk failed %d\n", ret);
+>>>>>>>> +            goto clk_err;
+>>>>>>>> +        };
+>>>>>>>>        }
+>>>>>>>>
+>>>>>>>> -    return 0;
+>>>>>>>> +    if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
+>>>>>>> Can we not okkup two seperate callbacks instead of above check =
+?
+>>>>>>> I don't like this CONFIG check here. Its slightly better versio=
+n of
+>>>>>>> ifdef in middle of the code.
+>>>>>>
+>>>>>> I've found more-less similar comment on patch
+>>>>>> "Re: [PATCH v3 1/3] power-domain: add power domain drivers for R=
+ockchip platform"
+>>>>>> https://lkml.org/lkml/2014/10/17/257
+>>>>>>
+>>>>>> So, Would you like me to create patch which will enable clocks i=
+n pm_clk_add/_clk()
+>>>>>> in case !IS_ENABLED(CONFIG_PM_RUNTIME)
+>>>>>
+>>>>> I am wondering whether we actually should/could do this, no matte=
+r of
+>>>>> CONFIG_PM_RUNTIME.
+>>>>>
+>>>>> Typically, for configurations that uses CONFIG_PM_RUNTIME, the PM
+>>>>> clocks through pm_clk_suspend(), will be gated once the device be=
+comes
+>>>>> runtime PM suspended. Right?
+>>>>
+>>>> Doing it unconditionally means we'll have lots of unneeded clocks =
+running
+>>>> for a short while.
+>>
+>>> As long as the pm_clk_add() is being invoked from the ->attach_dev(=
+)
+>>> callback, we are in the probe path. Certainly we would like to have
+>>> clocks enabled while probing, don't you think?
+>>>
+>>> If we wouldn't enable the clocks for CONFIG_PM_RUNTIME, when will
+>>> those be enabled?
+>>
+>> They will be enabled when the driver does
+>>
+>>          pm_runtime_enable(dev);
+>>          pm_runtime_get_sync(dev);
+>>
+>> in its .probe() method.
+>=20
+> No! This doesn't work for drivers which have used
+> pm_runtime_set_active() prior pm_runtime_enable().
 
-diff --git a/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt b/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
-new file mode 100644
-index 0000000..d4e24d5
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
-@@ -0,0 +1,31 @@
-+* TI Keystone 2 Generic PM Controller
-+
-+The TI Keystone 2 Generic PM Controller is responsible for Clock gating
-+for each controlled IP module.
-+
-+Required properties:
-+- compatible: Should be "ti,keystone-powerdomain"
-+- #power-domain-cells: Should be 0, see below:
-+
-+The PM Controller node is a PM domain as documented in
-+Documentation/devicetree/bindings/power/power_domain.txt.
-+
-+Example:
-+
-+	pm_controller: pm-controller {
-+		compatible = "ti,keystone-powerdomain";
-+		#power-domain-cells = <0>;
-+	};
-+
-+	netcp: netcp@2090000 {
-+		reg = <0x2620110 0x8>;
-+		reg-names = "efuse";
-+		...
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+		power-domains = <&pm_controller>;
-+
-+		clocks = <&clkpa>, <&clkcpgmac>, <&chipclk12>;
-+		dma-coherent;
-+	}
-diff --git a/arch/arm/mach-keystone/Kconfig b/arch/arm/mach-keystone/Kconfig
-index 98a156a..de43107 100644
---- a/arch/arm/mach-keystone/Kconfig
-+++ b/arch/arm/mach-keystone/Kconfig
-@@ -9,6 +9,7 @@ config ARCH_KEYSTONE
- 	select COMMON_CLK_KEYSTONE
- 	select ARCH_SUPPORTS_BIG_ENDIAN
- 	select ZONE_DMA if ARM_LPAE
-+	select PM_GENERIC_DOMAINS if PM
- 	help
- 	  Support for boards based on the Texas Instruments Keystone family of
- 	  SoCs.
-diff --git a/arch/arm/mach-keystone/pm_domain.c b/arch/arm/mach-keystone/pm_domain.c
-index ca79dda..3341da1 100644
---- a/arch/arm/mach-keystone/pm_domain.c
-+++ b/arch/arm/mach-keystone/pm_domain.c
-@@ -12,69 +12,100 @@
-  * version 2, as published by the Free Software Foundation.
-  */
- 
-+#include <linux/clk.h>
- #include <linux/init.h>
--#include <linux/pm_runtime.h>
- #include <linux/pm_clock.h>
-+#include <linux/pm_domain.h>
- #include <linux/platform_device.h>
--#include <linux/clk-provider.h>
- #include <linux/of.h>
- 
--#ifdef CONFIG_PM_RUNTIME
--static int keystone_pm_runtime_suspend(struct device *dev)
-+#ifdef CONFIG_PM_GENERIC_DOMAINS
-+
-+struct keystone_domain {
-+	struct generic_pm_domain genpd;
-+	struct device	*dev;
-+};
-+
-+void keystone_pm_domain_attach_dev(struct device *dev)
- {
-+	struct clk *clk;
- 	int ret;
-+	int i = 0;
- 
- 	dev_dbg(dev, "%s\n", __func__);
- 
--	ret = pm_generic_runtime_suspend(dev);
--	if (ret)
--		return ret;
--
--	ret = pm_clk_suspend(dev);
-+	ret = pm_clk_create(dev);
- 	if (ret) {
--		pm_generic_runtime_resume(dev);
--		return ret;
-+		dev_err(dev, "pm_clk_create failed %d\n", ret);
-+		return;
-+	};
-+
-+	while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
-+		ret = pm_clk_add_clk(dev, clk);
-+		if (ret) {
-+			dev_err(dev, "pm_clk_add_clk failed %d\n", ret);
-+			goto clk_err;
-+		};
- 	}
- 
--	return 0;
-+	return;
-+
-+clk_err:
-+	pm_clk_destroy(dev);
- }
- 
--static int keystone_pm_runtime_resume(struct device *dev)
-+void keystone_pm_domain_detach_dev(struct device *dev)
- {
- 	dev_dbg(dev, "%s\n", __func__);
--
--	pm_clk_resume(dev);
--
--	return pm_generic_runtime_resume(dev);
-+	pm_clk_destroy(dev);
- }
--#endif
- 
--static struct dev_pm_domain keystone_pm_domain = {
--	.ops = {
--		SET_RUNTIME_PM_OPS(keystone_pm_runtime_suspend,
--				   keystone_pm_runtime_resume, NULL)
--		USE_PLATFORM_PM_SLEEP_OPS
-+static const struct keystone_domain keystone_domain = {
-+	.genpd = {
-+		.name = "keystone",
-+		.attach_dev = keystone_pm_domain_attach_dev,
-+		.detach_dev = keystone_pm_domain_detach_dev,
-+		.dev_ops = {
-+			.stop = pm_clk_suspend,
-+			.start = pm_clk_resume,
-+		},
- 	},
- };
- 
--static struct pm_clk_notifier_block platform_domain_notifier = {
--	.pm_domain = &keystone_pm_domain,
-+static int keystone_pm_domain_probe(struct platform_device *pdev)
-+{
-+	struct keystone_domain *domain;
-+
-+	domain = devm_kzalloc(&pdev->dev,
-+			      sizeof(struct keystone_domain), GFP_KERNEL);
-+	if (!domain)
-+		return -ENOMEM;
-+
-+	domain->genpd = keystone_domain.genpd;
-+	domain->dev = &pdev->dev;
-+
-+	pm_genpd_init(&domain->genpd, NULL, false);
-+	return of_genpd_add_provider_simple(pdev->dev.of_node, &domain->genpd);
-+}
-+
-+static struct of_device_id keystone_pm_domain_dt_ids[] = {
-+	{ .compatible = "ti,keystone-powerdomain" },
-+	{ }
- };
- 
--static struct of_device_id of_keystone_table[] = {
--	{.compatible = "ti,keystone"},
--	{ /* end of list */ },
-+static struct platform_driver keystone_pm_domain_driver = {
-+	.driver = {
-+		.name = "ti,keystone-powerdomain",
-+		.owner = THIS_MODULE,
-+		.of_match_table = keystone_pm_domain_dt_ids,
-+	},
-+	.probe = keystone_pm_domain_probe,
- };
- 
- int __init keystone_pm_runtime_init(void)
- {
--	struct device_node *np;
--
--	np = of_find_matching_node(NULL, of_keystone_table);
--	if (!np)
--		return 0;
--
--	pm_clk_add_notifier(&platform_bus_type, &platform_domain_notifier);
--
--	return 0;
-+	return platform_driver_register(&keystone_pm_domain_driver);
- }
-+#else
-+int __init keystone_pm_runtime_init(void) { return 0; }
-+#endif /* CONFIG_PM_GENERIC_DOMAINS */
--- 
-1.9.1
+Sorry, but some misunderstanding is here:
+1) If some code call pm_runtime_set_active() it has to ensure
+that all PM resources switched to ON state. All! So, it will=20
+be ok to call enable & get after that - these functions will only=20
+adjust counters.
+
+2) if CONFIG_PM_RUNTIME=3Dn the pm_runtime_set_active() will
+be empty (see pm_runtime.h) and you can't relay on it.
+
+3) if CONFIG_PM_RUNTIME=3Dn the pm_runtime_enable/disable() will
+be empty - and disable_depth =3D=3D 1 all the time.
+
+In my case, the combination of generic PD and PM clock framework
+will do everything I need for both cases CONFIG_PM_RUNTIME=3Dy/n.
+
+PM domain attach_dev/detach_dev callbacks - will fill PM resources
+and enable them if CONFIG_PM_RUNTIME=3Dn.
+
+if CONFIG_PM_RUNTIME - PM resources will be enabled/disabled
+by Runtime PM through .start()/.stop() callbacks.
+
+And seems suspend/resume will work too - can't try it now, but it
+should work, because .start()/.stop() callbacks have to be called
+from pm_genpd_suspend_noirq.
+
+
+>=20
+> That should also be a common good practice for most drivers, otherwis=
+e
+> they wouldn=E2=80=99t work unless CONFIG_PM_RUNTIME is enabled.
+>=20
+> Please have a look at the following patchset, which is fixing up one
+> driver to behave better.
+> http://marc.info/?l=3Dlinux-pm&m=3D141327095713390&w=3D2
+
+It always was (and seems will) a big challenge to support both
+CONFIG_PM_RUNTIME=3Dy and system suspend in drivers ;), especially if d=
+river was
+initially created using Runtime PM centric approach.
+
+But, for the case CONFIG_PM_RUNTIME + !CONFIG_PM_RUNTIME + suspend...
+It will be painful :..((
+
+
+=46or example your patches (may be I'm not fully understand your proble=
+m,=20
+so here are just comments to code):
+patch 3:
+  - I think you can do smth like this in probe=20
+        ret =3D pm_runtime_get_sync(&pdev->dev);
+        if (ret < 0)
+                goto err_m2m;
++      =20
++       if (!pm_runtime_enabled(dev)) {
++               gsc_runtime_resume(dev);
++       }=20
+
+ - and similar thing in remove, before pm_runtime_disable
+=20
+patch 5 - pm_runtime_force_suspend/resume() will not take into
+account or change Runtime PM state of the device if !CONFIG_PM_RUNTIME.
+runtime_status =3D=3D RPM_SUSPENDED always in this case!
+So, there may be some side-effects.
+
+patch 7 - you can't call clk_prepare/unprepare from Runtime PM
+callbacks, because they aren't atomic
+
+Oh, You definitely will be enjoyed ;)
+
+regards,
+-grygorii
+
