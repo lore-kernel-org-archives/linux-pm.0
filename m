@@ -1,69 +1,84 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 08/11] ARM: shmobile: r8a7740: Add D4 pm domain support
-Date: Thu, 23 Oct 2014 13:18:58 +0200
-Message-ID: <1414063141-8856-9-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v3 03/11] ARM: shmobile: armadillo800eva legacy: Add missing A3SP pm domain devices
+Date: Thu, 23 Oct 2014 13:18:53 +0200
+Message-ID: <1414063141-8856-4-git-send-email-geert+renesas@glider.be>
 References: <1414063141-8856-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from xavier.telenet-ops.be ([195.130.132.52]:38464 "EHLO
+	xavier.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754909AbaJWLTC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 07:19:02 -0400
 In-Reply-To: <1414063141-8856-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert+renesas@glider.be>
-List-Id: linux-pm@vger.kernel.org
 
-Add support for the D4 power domain.
-This domain contains the Coresight-ETM hardware block.
+Commit 802a5639aa7041b2 ("ARM: shmobile: r8a7740: add A3SP pm domain
+support") added the A3SP power domain, but forgot to hook up the TPU,
+SDHI0/1, and MMCIF hardware blocks.
 
-As long as the ARM debug/perf code doesn't use resource management with
-runtime PM support, the D4 power domain must be kept powered to avoid a
-crash during resume from s2ram (dbg_cpu_pm_notify() calls
-reset_ctrl_regs() unconditionally, causing an undefined instruction
-oops).
+Note: As the default PM QoS latency constraint for SDHI is only 100 =C2=
+=B5s
+(cfr. commit c419e611c3c59c0e ("tmio_mmc / PM: Use PM QoS latency
+constraint"), while DEFAULT_DEV_LATENCY_NS is 250000, suspend fails wit=
+h
+-EBUSY, unless the constraint is increased first to more than 500 =C2=B5=
+s
+using e.g.
+
+    echo 501 > /sys/devices/platform/sh_mobile_sdhi.0/power/pm_qos_resu=
+me_latency_us
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 v3:
-  - Always keep D4 powered, until the new Coresight code handles runtime
-    PM,
+  - No changes,
 v2:
-  - Really add D4 and drop the FIXME, as a fix for the crash is
-    available.
+  - Converted FIXME to Note, as this is expected behavior.
 ---
- arch/arm/mach-shmobile/pm-r8a7740.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ arch/arm/mach-shmobile/board-armadillo800eva.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-shmobile/pm-r8a7740.c b/arch/arm/mach-shmobile/pm-r8a7740.c
-index 081a4f9726a0c909..8b1af2a585ab99d4 100644
---- a/arch/arm/mach-shmobile/pm-r8a7740.c
-+++ b/arch/arm/mach-shmobile/pm-r8a7740.c
-@@ -32,6 +32,16 @@ static int r8a7740_pd_a3sp_suspend(void)
- 	return console_suspend_enabled ? 0 : -EBUSY;
+diff --git a/arch/arm/mach-shmobile/board-armadillo800eva.c b/arch/arm/=
+mach-shmobile/board-armadillo800eva.c
+index f19459a8c3edbb77..64a68450c28a072c 100644
+--- a/arch/arm/mach-shmobile/board-armadillo800eva.c
++++ b/arch/arm/mach-shmobile/board-armadillo800eva.c
+@@ -1234,8 +1234,11 @@ static void __init eva_init(void)
+ 	static struct pm_domain_device domain_devices[] __initdata =3D {
+ 		{ "A4LC", &lcdc0_device },
+ 		{ "A4LC", &hdmi_lcdc_device },
++		{ "A3SP", &pwm_device },
++		{ "A3SP", &sdhi0_device },
++		{ "A3SP", &sh_mmcif_device },
+ 	};
+-	struct platform_device *usb =3D NULL;
++	struct platform_device *usb =3D NULL, *sdhi1 =3D NULL;
+=20
+ 	regulator_register_always_on(0, "fixed-3.3V", fixed3v3_power_consumer=
+s,
+ 				     ARRAY_SIZE(fixed3v3_power_consumers), 3300000);
+@@ -1304,6 +1307,7 @@ static void __init eva_init(void)
+=20
+ 		platform_device_register(&vcc_sdhi1);
+ 		platform_device_register(&sdhi1_device);
++		sdhi1 =3D &sdhi1_device;
+ 	}
+=20
+=20
+@@ -1324,6 +1328,8 @@ static void __init eva_init(void)
+ 				       ARRAY_SIZE(domain_devices));
+ 	if (usb)
+ 		rmobile_add_device_to_domain("A3SP", usb);
++	if (sdhi1)
++		rmobile_add_device_to_domain("A3SP", sdhi1);
+=20
+ 	r8a7740_pm_init();
  }
- 
-+static int r8a7740_pd_d4_suspend(void)
-+{
-+	/*
-+	 * The D4 domain contains the Coresight-ETM hardware block and
-+	 * therefore it should only be turned off if the debug module is
-+	 * not in use.
-+	 */
-+	return -EBUSY;
-+}
-+
- static struct rmobile_pm_domain r8a7740_pm_domains[] = {
- 	{
- 		.genpd.name	= "A4LC",
-@@ -40,6 +50,11 @@ static struct rmobile_pm_domain r8a7740_pm_domains[] = {
- 		.genpd.name	= "A4MP",
- 		.bit_shift	= 2,
- 	}, {
-+		.genpd.name	= "D4",
-+		.bit_shift	= 3,
-+		.gov		= &pm_domain_always_on_gov,
-+		.suspend	= r8a7740_pd_d4_suspend,
-+	}, {
- 		.genpd.name	= "A3RV",
- 		.bit_shift	= 6,
- 	}, {
--- 
+--=20
 1.9.1
 
