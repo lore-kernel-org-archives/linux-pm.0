@@ -1,114 +1,88 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [RFC 1/2] PM / Domains: Power on domain early during system resume
-Date: Thu, 23 Oct 2014 19:20:42 +0300
-Message-ID: <54492ADA.4000309@ti.com>
-References: <1414072090-11293-1-git-send-email-k.kozlowski@samsung.com>
- <1414072090-11293-2-git-send-email-k.kozlowski@samsung.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH V2 4/5] cpuidle: menu: Fix the get_typical_interval
+Date: Thu, 23 Oct 2014 12:43:58 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1410231241160.6969@knanqh.ubzr>
+References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org> <1414054881-17713-4-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1414072090-11293-2-git-send-email-k.kozlowski@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Inki Dae <inki.dae@samsung.com>, Joonyoung Shim <jy0922.shim@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, David Airlie <airlied@linux.ie>, Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
-Cc: Andrzej Hajda <a.hajda@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yh0-f41.google.com ([209.85.213.41]:62368 "EHLO
+	mail-yh0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753297AbaJWQoC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 12:44:02 -0400
+Received: by mail-yh0-f41.google.com with SMTP id i57so1712598yha.0
+        for <linux-pm@vger.kernel.org>; Thu, 23 Oct 2014 09:44:01 -0700 (PDT)
+In-Reply-To: <1414054881-17713-4-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, peterz@infradead.org, linaro-kernel@lists.linaro.org, patches@linaro.org
 
-Hi Krzysztof,
+On Thu, 23 Oct 2014, Daniel Lezcano wrote:
 
-On 10/23/2014 04:48 PM, Krzysztof Kozlowski wrote:
-> When resuming the system the power domain has to be powered on early so
-> any runtime PM aware devices could resume.
+> The first time the 'get_typical_function' is called, it computes an average
+> of zero as no data is filled yet. That leads the 'data->predicted_us' variable
+> to be set to zero too.
 > 
-> This fixes following scenario reproduced on Exynos DRM:
-> 1. Power domain is off before suspending the system.
-> 2. System is suspended to RAM.
-> 3. Resuming starts. The Exynos DRM driver resume callback is called.
-> 4. The Exynos DRM driver calls drm_helper_resume_force_mode which turns
->     the screen on by calling exynos_dsi_dpms with DRM_MODE_DPMS_ON.
-> 5. The Exynos DSI driver calls pm_runtime_get. The driver runtime
->     resumes and this should turn LCD power domain on.
-> 6. Unfortunately the domain cannot be turned on because system resume is
->     in progress and genpd->prepared_count is positive.
+> The caller, 'menu_select' will then do:
+> 
+> 	interactivity_req = data->predicted_us /
+> 			performance_multiplier(nr_iowaiters, cpu_load);
+> 
+> That sets the interactivity_req to zero (0/performance...).
+> 
+> and then
+> 
+> 	if (latency_req > interactivity_req)
+> 		latency_req = interactivity_req;
+> 
+> ... setting 'latency_req' to zero too.
+> 
+> No idle state will fulfill this constraint and we will go the C1 state as
+> default and leading to an update. So the next calls will compute an average
+> different from zero.
+> 
+> Even if that works with the current code but with a broken semantic, it will
+> just break with the next patches where we are stricter with the latencies
+> check: the first check will fail (latency_req is zero), then no update will
+> occur leading to always falling to choose an idle state.
 
-Just interesting, what value will be returned by pm_runtime_enabled()
-from any of your .resume() callback (for any device which belongs to
-some Generic PM domain)?
-
-I'm asking, because as I can see Runtime PM can be disabled from pm_genpd_prepare().
-
-Thank you.
-
-Oh. I've just found that you might get this issue if you will try to do
-suspend when PM domain is ON ;)
-
-Any way, In my opinion, It might be better to fix pm_genpd_prepare() so
-it will not increment prepared_count when initial state of the GPD is
-GPD_STATE_POWER_OFF. Seems it's needed only in opposite case -
-when state of GPD has to be restored from pm_genpd_resume_noirq().
+s/falling/failing/
 
 > 
-> Steps to reproduce:
-> 1. Add runtime PM to Exynos DSI driver.
-> 2. Build Exynos DRM/FB without FRAMEBUFFER_CONSOLE.
-> 3. Enable the connector and screen (e.g. with modeset-vsync application).
-> 4. echo 3 > /sys/devices/platform/exynos-drm/graphics/fb0/blank
-> 5. echo mem > /sys/power/state
-> 6. Resume.
-> [   77.712469] PM: early resume of devices complete after 3.854 msecs
-> [   77.712739] exynos-dsi 11c80000.dsi: pm_genpd_resume()
-> [   77.712758] exynos4-fimc 11800000.fimc: pm_genpd_resume()
-> [   77.712774] exynos4-fimc 11810000.fimc: pm_genpd_resume()
-> [   77.712787] exynos-drm-fimc 11820000.fimc: pm_genpd_resume()
-> [   77.712802] exynos-drm-fimc 11830000.fimc: pm_genpd_resume()
-> [   77.712815] s5p-mipi-csis 11880000.csis: pm_genpd_resume()
-> [   77.712829] s5p-mipi-csis 11890000.csis: pm_genpd_resume()
-> [   77.712843] exynos-fimc-lite 12390000.fimc-lite: pm_genpd_resume()
-> [   77.712856] exynos-fimc-lite 123a0000.fimc-lite: pm_genpd_resume()
-> [   77.713788] exynos4-fb 11c00000.fimd: pm_genpd_resume()
-> [   77.713912] wake disabled for irq 184
-> [   77.713923] wake disabled for irq 185
-> [   77.714082] wake disabled for irq 173
-> [   77.715676] wake disabled for irq 176
-> [   77.718540] exynos4-fb 11c00000.fimd: pm_genpd_runtime_resume()
-> [   77.718567] exynos4-fb 11c00000.fimd: state restore latency exceeded, new value 1708 ns
-> [   77.718636] exynos-dsi 11c80000.dsi: pm_genpd_runtime_resume()
-> [   77.892366] exynos-dsi 11c80000.dsi: PLL failed to stabilize
-> [   77.892377] exynos-dsi 11c80000.dsi: failed to configure DSI PLL
-> [   78.192168] exynos-dsi 11c80000.dsi: timeout waiting for reset
-> [   78.211578] exynos-dsi 11c80000.dsi: waiting for bus lanes timed out
-> [   78.307173] exynos-dsi 11c80000.dsi: xfer timed out: d1 00 (null)
-> [   78.307190] panel_s6e8aa0 11c80000.dsi.0: error -110 reading dcs seq(0xd1)
-> [   78.307199] panel_s6e8aa0 11c80000.dsi.0: read id failed
+> As there are no previous values and it is pointless to compute a standard
+> deviation for these unexisting values. Just return without setting the
+> 'data->predicted_us' to zero.
 > 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+Acked-by: Nicolas Pitre <nico@linaro.org>
+
 > ---
->   drivers/base/power/domain.c | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
+>  drivers/cpuidle/governors/menu.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 > 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 40bc2f4072cc..4fdfe404a04c 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -179,8 +179,7 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
->   	}
->   	finish_wait(&genpd->status_wait_queue, &wait);
->   
-> -	if (genpd->status == GPD_STATE_ACTIVE
-> -	    || (genpd->prepared_count > 0 && genpd->suspend_power_off))
-> +	if (genpd->status == GPD_STATE_ACTIVE)
->   		return 0;
->   
->   	if (genpd->status != GPD_STATE_POWER_OFF) {
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index 3907301..6ae8390 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -226,6 +226,15 @@ again:
+>  	else
+>  		do_div(avg, divisor);
+>  
+> +	/*
+> +	 * We are at the very beginning and no data have been filled
+> +	 * yet. Let's skip the standard deviation computation
+> +	 * otherwise the data->predicted_us will be zero and that will
+> +	 * lead to a zero latency req in the select function
+> +	 */
+> +	if (!avg)
+> +		return;
+> +
+>  	/* Then try to determine standard deviation */
+>  	stddev = 0;
+>  	for (i = 0; i < INTERVALS; i++) {
+> -- 
+> 1.9.1
 > 
-
-regards,
--grygorii
+> 
