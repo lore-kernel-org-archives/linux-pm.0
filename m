@@ -1,83 +1,130 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 11/11] ARM: shmobile: r8a7740: Add A3SM pm domain support
-Date: Thu, 23 Oct 2014 13:19:01 +0200
-Message-ID: <1414063141-8856-12-git-send-email-geert+renesas@glider.be>
-References: <1414063141-8856-1-git-send-email-geert+renesas@glider.be>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [GIT PULL] thermal-soc changes
+Date: Thu, 23 Oct 2014 07:27:24 -0400
+Message-ID: <20141023112721.GA5683@developer>
+References: <20141021134941.GA4937@developer>
+ <1414041345.2380.3.camel@rzhang1-toshiba>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="EVF5PPMfhYS0aIcm"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from albert.telenet-ops.be ([195.130.137.90]:60286 "EHLO
-	albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754921AbaJWLTC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 07:19:02 -0400
-In-Reply-To: <1414063141-8856-1-git-send-email-geert+renesas@glider.be>
+Received: from mail-qc0-f172.google.com ([209.85.216.172]:59781 "EHLO
+	mail-qc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754110AbaJWL13 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 07:27:29 -0400
+Content-Disposition: inline
+In-Reply-To: <1414041345.2380.3.camel@rzhang1-toshiba>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Add support for the A3SM power domain, and hook it up as a subdomain of
-A4S.
 
-This domain contains the System CPU (Cortex-A9) hardware block. Hence
-move the special CPU handling from A4S to A3SM.
+--EVF5PPMfhYS0aIcm
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-v3:
-  - No changes,
-v2:
-  - Move special CPU domain handling from A4S to A3SM,
-  - Drop FIXME about not powering down A4S, as this is expected behavior.
----
- arch/arm/mach-shmobile/pm-r8a7740.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+Hello Rui,
 
-diff --git a/arch/arm/mach-shmobile/pm-r8a7740.c b/arch/arm/mach-shmobile/pm-r8a7740.c
-index 27117a8a49ad8556..ac2eecd6f5ea5d9f 100644
---- a/arch/arm/mach-shmobile/pm-r8a7740.c
-+++ b/arch/arm/mach-shmobile/pm-r8a7740.c
-@@ -14,10 +14,10 @@
- #include "pm-rmobile.h"
- 
- #if defined(CONFIG_PM) && !defined(CONFIG_ARCH_MULTIPLATFORM)
--static int r8a7740_pd_a4s_suspend(void)
-+static int r8a7740_pd_a3sm_suspend(void)
- {
- 	/*
--	 * The A4S domain contains the CPU core and therefore it should
-+	 * The A3SM domain contains the CPU core and therefore it should
- 	 * only be turned off if the CPU is not in use.
- 	 */
- 	return -EBUSY;
-@@ -63,9 +63,7 @@ static struct rmobile_pm_domain r8a7740_pm_domains[] = {
- 	}, {
- 		.genpd.name	= "A4S",
- 		.bit_shift	= 10,
--		.gov		= &pm_domain_always_on_gov,
- 		.no_debug	= true,
--		.suspend	= r8a7740_pd_a4s_suspend,
- 	}, {
- 		.genpd.name	= "A3SP",
- 		.bit_shift	= 11,
-@@ -73,6 +71,11 @@ static struct rmobile_pm_domain r8a7740_pm_domains[] = {
- 		.no_debug	= true,
- 		.suspend	= r8a7740_pd_a3sp_suspend,
- 	}, {
-+		.genpd.name	= "A3SM",
-+		.bit_shift	= 12,
-+		.gov		= &pm_domain_always_on_gov,
-+		.suspend	= r8a7740_pd_a3sm_suspend,
-+	}, {
- 		.genpd.name	= "A3SG",
- 		.bit_shift	= 13,
- 	}, {
-@@ -86,6 +89,7 @@ void __init r8a7740_init_pm_domains(void)
- 	rmobile_init_domains(r8a7740_pm_domains, ARRAY_SIZE(r8a7740_pm_domains));
- 	pm_genpd_add_subdomain_names("A4R", "A3RV");
- 	pm_genpd_add_subdomain_names("A4S", "A3SP");
-+	pm_genpd_add_subdomain_names("A4S", "A3SM");
- 	pm_genpd_add_subdomain_names("A4S", "A3SG");
- }
- #endif /* CONFIG_PM && !CONFIG_ARCH_MULTIPLATFORM */
--- 
-1.9.1
+On Thu, Oct 23, 2014 at 01:15:45PM +0800, Zhang Rui wrote:
+> On =E4=BA=8C, 2014-10-21 at 09:49 -0400, Eduardo Valentin wrote:
+> > Hello Rui,
+> >=20
+> > Here are a couple of changes that are in my tree. They include:
+> > - a few code refactoring improving the Exynos code base;
+> > - new feature on the Exynos code base (TRIMINFO and TRIMRELOAD);
+> > - a documentation of RCAR thermal; and
+> > - a fix in the of-thermal, regarding the proper usage of of APIs.
+> >=20
+> what's their target?
+> please send me separate pull requests for different targets.
+>=20
 
+All are for 3.18, I forgot to mention.=20
+
+BR,
+
+Eduardo Valentin
+
+> thanks,
+> rui
+> > They are based on your next branch.
+> >=20
+> > BR,
+> >=20
+> > Eduardo Valentin
+> >=20
+> > The following changes since commit 6ceaf58abe25e86292152005c51169796bad=
+3407:
+> >=20
+> >   Merge branch 'int340x-thermal' of .git into next (2014-10-17 14:30:58=
+ +0800)
+> >=20
+> > are available in the git repository at:
+> >=20
+> >=20
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-ther=
+mal.git next
+> >=20
+> > for you to fetch changes up to df67e40f51398fef8dd705dfe4e287ad9b10ba4b:
+> >=20
+> >   thermal: fix multiple disbalanced device node counters (2014-10-21 08=
+:05:50 -0400)
+> >=20
+> > ----------------------------------------------------------------
+> > Bartlomiej Zolnierkiewicz (9):
+> >       thermal: exynos: remove unused struct exynos_tmu_registers entries
+> >       thermal: exynos: remove dead code for HW_MODE calibration
+> >       thermal: exynos: remove redundant pdata checks from exynos_tmu_in=
+itialize()
+> >       thermal: exynos: remove redundant threshold_code checks from exyn=
+os_tmu_initialize()
+> >       thermal: exynos: simplify temp_to_code() and code_to_temp()
+> >       thermal: exynos: cache non_hw_trigger_levels in pdata
+> >       thermal: exynos: remove redundant pdata checks from exynos_tmu_co=
+ntrol()
+> >       thermal: exynos: remove identical values from exynos*_tmu_registe=
+rs structures
+> >       thermal: samsung: Exynos5260 and Exynos5420 should not use TRIM_R=
+ELOAD flag
+> >=20
+> > Chanwoo Choi (2):
+> >       thermal: exynos: Add support for many TRIMINFO_CTRL registers
+> >       thermal: exynos: Add support for TRIM_RELOAD feature at Exynos3250
+> >=20
+> > Geert Uytterhoeven (1):
+> >       thermal: rcar: Add binding docs for new R-Car Gen2 SoCs
+> >=20
+> > Vladimir Zapolskiy (1):
+> >       thermal: fix multiple disbalanced device node counters
+> >=20
+> >  .../devicetree/bindings/thermal/rcar-thermal.txt   |   5 +-
+> >  drivers/thermal/of-thermal.c                       |  40 ++++--
+> >  drivers/thermal/samsung/exynos_thermal_common.h    |   2 +-
+> >  drivers/thermal/samsung/exynos_tmu.c               | 141 ++++++-------=
+--------
+> >  drivers/thermal/samsung/exynos_tmu.h               |  81 ++----------
+> >  drivers/thermal/samsung/exynos_tmu_data.c          |  83 ++++--------
+> >  drivers/thermal/samsung/exynos_tmu_data.h          |  39 +-----
+> >  7 files changed, 111 insertions(+), 280 deletions(-)
+>=20
+>=20
+
+--EVF5PPMfhYS0aIcm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUSOYOAAoJEMLUO4d9pOJWaKAIAIfJ7A6l+GfSJRRJLIXkidcX
+dNVBb+DN7S2INDmWYRoKEcZ6Ins3vCDxVVxa6OxhPPEzsdH4wo57LqnCAatT3e3L
+n+aZBQoGQsVtTaU1e2MSL1acLI7x5PTJ4arp64uGfoi6z0SkBICUr00hbnP5WQQD
+FY0U3k/WHrR/4z3yWZAxkX5cPT4DbqsYK4EUzOcRmFPv4fM7kTwpGyLf+mTuambx
+7vOWXpqeLwMLk6zp6nIiKpy9Oz8mDspv4H4203KHBB2+JG53QNkE+d32R+wJuK3H
+UvyLyJpWk5uoWiVj9f85rfJQ/VfA2K1F4jep76D/3TW/ZwDT6eESPYeZDkSZKzM=
+=s+zG
+-----END PGP SIGNATURE-----
+
+--EVF5PPMfhYS0aIcm--
