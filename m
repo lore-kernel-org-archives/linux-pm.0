@@ -1,180 +1,100 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH v2 2/3] ARM: keystone: pm: switch to use generic pm domains
-Date: Thu, 23 Oct 2014 17:37:31 +0300
-Message-ID: <544912AB.3050801@ti.com>
-References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>	<1413809764-21995-3-git-send-email-grygorii.strashko@ti.com>	<5446A065.9050308@gmail.com>	<544793B5.6080601@ti.com>	<CAPDyKFo97D3XbwDQrDzHw+qr4b24Fsq9EwDbdOMhy_L-RoYsLw@mail.gmail.com>	<CAMuHMdVsqsSHxirzoWspGz7y+2qBk42p-VUBNkys3_rr6Th_9Q@mail.gmail.com>	<CAPDyKFp6T1a1XXHdxiubP2RaS26uSqkUS3rbBgsNV_y+dSFfvw@mail.gmail.com>	<CAMuHMdVO4nMoeYdzLf6wdKW876gYVyML3C2+QKoteGPtisD4sA@mail.gmail.com> <CAPDyKFrVCczc+fSy1ax4XinhB4SMfZZWP=d4QdY5Lv4zjOrHPA@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RESEND 2] cpufreq: dt: disable unsupported OPPs
+Date: Thu, 23 Oct 2014 16:43:54 +0200
+Message-ID: <CAMuHMdXAYhAEFNLCcq91xctYwaCZnJt-V+U+vYy1iC5Kb=qqjw@mail.gmail.com>
+References: <48734362.lRa73hezrZ@vostro.rjw.lan>
+	<1413454100-23009-1-git-send-email-l.stach@pengutronix.de>
+	<8590662.lsNXszcTd0@vostro.rjw.lan>
+	<CAMuHMdV2gPOZoV62rSNjpD=dJ43EE+s0wtRW4ncLWU-J-eHLDg@mail.gmail.com>
+	<1414073448.2764.1.camel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:54259 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755764AbaJWOiU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 10:38:20 -0400
-In-Reply-To: <CAPDyKFrVCczc+fSy1ax4XinhB4SMfZZWP=d4QdY5Lv4zjOrHPA@mail.gmail.com>
+Received: from mail-lb0-f182.google.com ([209.85.217.182]:63979 "EHLO
+	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752107AbaJWOn4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 10:43:56 -0400
+In-Reply-To: <1414073448.2764.1.camel@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Santosh Shilimkar <santosh.shilimkar@gmail.com>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 
-Hi Ulf,
+Hi Lucas,
 
-On 10/23/2014 11:11 AM, Ulf Hansson wrote:
-> On 22 October 2014 17:44, Geert Uytterhoeven <geert@linux-m68k.org> w=
-rote:
->> On Wed, Oct 22, 2014 at 5:28 PM, Ulf Hansson <ulf.hansson@linaro.org=
-> wrote:
->>> On 22 October 2014 17:09, Geert Uytterhoeven <geert@linux-m68k.org>=
- wrote:
->>>> On Wed, Oct 22, 2014 at 5:01 PM, Ulf Hansson <ulf.hansson@linaro.o=
-rg> wrote:
->>>>>>>> +void keystone_pm_domain_attach_dev(struct device *dev)
->>>>>>>>    {
->>>>>>>> +    struct clk *clk;
->>>>>>>>        int ret;
->>>>>>>> +    int i =3D 0;
->>>>>>>>
->>>>>>>>        dev_dbg(dev, "%s\n", __func__);
->>>>>>>>
->>>>>>>> -    ret =3D pm_generic_runtime_suspend(dev);
->>>>>>>> -    if (ret)
->>>>>>>> -        return ret;
->>>>>>>> -
->>>>>>>> -    ret =3D pm_clk_suspend(dev);
->>>>>>>> +    ret =3D pm_clk_create(dev);
->>>>>>>>        if (ret) {
->>>>>>>> -        pm_generic_runtime_resume(dev);
->>>>>>>> -        return ret;
->>>>>>>> +        dev_err(dev, "pm_clk_create failed %d\n", ret);
->>>>>>>> +        return;
->>>>>>>> +    };
->>>>>>>> +
->>>>>>>> +    while ((clk =3D of_clk_get(dev->of_node, i++)) && !IS_ERR=
-(clk)) {
->>>>>>>> +        ret =3D pm_clk_add_clk(dev, clk);
->>>>>>>> +        if (ret) {
->>>>>>>> +            dev_err(dev, "pm_clk_add_clk failed %d\n", ret);
->>>>>>>> +            goto clk_err;
->>>>>>>> +        };
->>>>>>>>        }
->>>>>>>>
->>>>>>>> -    return 0;
->>>>>>>> +    if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
->>>>>>> Can we not okkup two seperate callbacks instead of above check =
-?
->>>>>>> I don't like this CONFIG check here. Its slightly better versio=
-n of
->>>>>>> ifdef in middle of the code.
->>>>>>
->>>>>> I've found more-less similar comment on patch
->>>>>> "Re: [PATCH v3 1/3] power-domain: add power domain drivers for R=
-ockchip platform"
->>>>>> https://lkml.org/lkml/2014/10/17/257
->>>>>>
->>>>>> So, Would you like me to create patch which will enable clocks i=
-n pm_clk_add/_clk()
->>>>>> in case !IS_ENABLED(CONFIG_PM_RUNTIME)
->>>>>
->>>>> I am wondering whether we actually should/could do this, no matte=
-r of
->>>>> CONFIG_PM_RUNTIME.
->>>>>
->>>>> Typically, for configurations that uses CONFIG_PM_RUNTIME, the PM
->>>>> clocks through pm_clk_suspend(), will be gated once the device be=
-comes
->>>>> runtime PM suspended. Right?
->>>>
->>>> Doing it unconditionally means we'll have lots of unneeded clocks =
-running
->>>> for a short while.
+On Thu, Oct 23, 2014 at 4:10 PM, Lucas Stach <l.stach@pengutronix.de> wrote:
+> Am Donnerstag, den 23.10.2014, 11:19 +0200 schrieb Geert Uytterhoeven:
+>> On Tue, Oct 21, 2014 at 4:19 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > On Thursday, October 16, 2014 12:08:20 PM Lucas Stach wrote:
+>> >> If the regulator connected to the CPU voltage plane doesn't
+>> >> support an OPP specified voltage with the acceptable tolerance
+>> >> it's better to just disable the OPP instead of constantly
+>> >> failing the voltage scaling later on.
+>> >>
+>> >> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+>> >> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> >
+>> > Applied, thanks!
 >>
->>> As long as the pm_clk_add() is being invoked from the ->attach_dev(=
-)
->>> callback, we are in the probe path. Certainly we would like to have
->>> clocks enabled while probing, don't you think?
->>>
->>> If we wouldn't enable the clocks for CONFIG_PM_RUNTIME, when will
->>> those be enabled?
+>> This commit
+>> (http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=d7bbd4cd0359d781b67c9e621d4bbfd1bb2f3783)
+>> causes a boot regression on r8a7791/koelsch. It hangs after:
 >>
->> They will be enabled when the driver does
+>>     TCP: cubic registered
+>>     Initializing XFRM netlink socket
+>>     NET: Registered protocol family 17
+>>     NET: Registered protocol family 15
+>>     ata1: link resume succeeded after 1 retries
+>>     ata1: SATA link down (SStatus 0 SControl 300)
+>>     random: nonblocking pool is initialized
+
+>> Reverting this commit fixes the issue, and makes the boot continue with:
 >>
->>          pm_runtime_enable(dev);
->>          pm_runtime_get_sync(dev);
+>>     cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted freq: 1300000 KHz
+>>     cpufreq: __cpufreq_add_dev: CPU0: Unlisted initial frequency
+>> changed to: 1312500 KHz
+>>     cpu cpu1: failed to get cpu-2 clock: 1
+>>     cpufreq_dt: cpufreq_init: Failed to allocate resources: -2
 >>
->> in its .probe() method.
->=20
-> No! This doesn't work for drivers which have used
-> pm_runtime_set_active() prior pm_runtime_enable().
+>
+> Urgh, thanks for the report. Am I right that for koelsch you do
+> reference a regulator supply for the cpu, but don't actually have a
+> driver for it, so a dummy regulator gets plugged in there?
 
-Sorry, but some misunderstanding is here:
-1) If some code call pm_runtime_set_active() it has to ensure
-that all PM resources switched to ON state. All! So, it will=20
-be ok to call enable & get after that - these functions will only=20
-adjust counters.
+arch/arm/boot/dts/r8a7791-koelsch.dts has:
 
-2) if CONFIG_PM_RUNTIME=3Dn the pm_runtime_set_active() will
-be empty (see pm_runtime.h) and you can't relay on it.
+&cpu0 {
+        cpu0-supply = <&vdd_dvfs>;
+};
 
-3) if CONFIG_PM_RUNTIME=3Dn the pm_runtime_enable/disable() will
-be empty - and disable_depth =3D=3D 1 all the time.
+&i2c6 {
+        status = "okay";
+        clock-frequency = <100000>;
 
-In my case, the combination of generic PD and PM clock framework
-will do everything I need for both cases CONFIG_PM_RUNTIME=3Dy/n.
+        vdd_dvfs: regulator@68 {
+                compatible = "dlg,da9210";
+                reg = <0x68>;
 
-PM domain attach_dev/detach_dev callbacks - will fill PM resources
-and enable them if CONFIG_PM_RUNTIME=3Dn.
+                regulator-min-microvolt = <1000000>;
+                regulator-max-microvolt = <1000000>;
+                regulator-boot-on;
+                regulator-always-on;
+        };
+};
 
-if CONFIG_PM_RUNTIME - PM resources will be enabled/disabled
-by Runtime PM through .start()/.stop() callbacks.
+CONFIG_REGULATOR_DA9210=y
 
-And seems suspend/resume will work too - can't try it now, but it
-should work, because .start()/.stop() callbacks have to be called
-from pm_genpd_suspend_noirq.
+and the driver does seem to run:
 
+    DA9210: 1000 mV at 4600 mA
 
->=20
-> That should also be a common good practice for most drivers, otherwis=
-e
-> they wouldn=E2=80=99t work unless CONFIG_PM_RUNTIME is enabled.
->=20
-> Please have a look at the following patchset, which is fixing up one
-> driver to behave better.
-> http://marc.info/?l=3Dlinux-pm&m=3D141327095713390&w=3D2
+Gr{oetje,eeting}s,
 
-It always was (and seems will) a big challenge to support both
-CONFIG_PM_RUNTIME=3Dy and system suspend in drivers ;), especially if d=
-river was
-initially created using Runtime PM centric approach.
+                        Geert
 
-But, for the case CONFIG_PM_RUNTIME + !CONFIG_PM_RUNTIME + suspend...
-It will be painful :..((
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
-=46or example your patches (may be I'm not fully understand your proble=
-m,=20
-so here are just comments to code):
-patch 3:
-  - I think you can do smth like this in probe=20
-        ret =3D pm_runtime_get_sync(&pdev->dev);
-        if (ret < 0)
-                goto err_m2m;
-+      =20
-+       if (!pm_runtime_enabled(dev)) {
-+               gsc_runtime_resume(dev);
-+       }=20
-
- - and similar thing in remove, before pm_runtime_disable
-=20
-patch 5 - pm_runtime_force_suspend/resume() will not take into
-account or change Runtime PM state of the device if !CONFIG_PM_RUNTIME.
-runtime_status =3D=3D RPM_SUSPENDED always in this case!
-So, there may be some side-effects.
-
-patch 7 - you can't call clk_prepare/unprepare from Runtime PM
-callbacks, because they aren't atomic
-
-Oh, You definitely will be enjoyed ;)
-
-regards,
--grygorii
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
