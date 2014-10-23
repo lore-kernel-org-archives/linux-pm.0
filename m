@@ -1,75 +1,373 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [RFC v3 PATCH 1/5] of: Add standard property for poweroff
- capability
-Date: Thu, 23 Oct 2014 11:53:39 +0200
-Message-ID: <20141023095339.GC6641@localhost>
-References: <1413268273-15151-1-git-send-email-romain.perier@gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v8 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
+Date: Thu, 23 Oct 2014 13:05:39 +0200
+Message-ID: <5448E103.9070505@linaro.org>
+References: <1412718106-17049-1-git-send-email-lina.iyer@linaro.org> <1412718106-17049-6-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f175.google.com ([209.85.217.175]:42679 "EHLO
-	mail-lb0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752591AbaJWJ4n (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 05:56:43 -0400
-Content-Disposition: inline
-In-Reply-To: <1413268273-15151-1-git-send-email-romain.perier@gmail.com>
+Received: from mail-wg0-f47.google.com ([74.125.82.47]:43291 "EHLO
+	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753670AbaJWLFn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 07:05:43 -0400
+Received: by mail-wg0-f47.google.com with SMTP id x13so823507wgg.6
+        for <linux-pm@vger.kernel.org>; Thu, 23 Oct 2014 04:05:42 -0700 (PDT)
+In-Reply-To: <1412718106-17049-6-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Romain Perier <romain.perier@gmail.com>
-Cc: devicetree@vger.kernel.org, broonie@kernel.org, lgirdwood@gmail.com, linux-kernel@vger.kernel.org, heiko@sntech.de, grant.likely@linaro.org, robh@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>
+To: Lina Iyer <lina.iyer@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 
-[ +CC: Guenter, Lee, linux-pm ]
+On 10/07/2014 11:41 PM, Lina Iyer wrote:
+> Add cpuidle driver interface to allow cpus to go into C-States. Use t=
+he
+> cpuidle DT interface, common across ARM architectures, to provide the
+> C-State information to the cpuidle framework.
+>
+> Supported modes at this time are Standby and Standalone Power Collaps=
+e.
 
-On Tue, Oct 14, 2014 at 06:31:09AM +0000, Romain Perier wrote:
-> Several drivers create their own devicetree property when they register
-> poweroff capabilities. This is for example the case for mfd, regulator
-> or power drivers which define "vendor,system-power-controller" property.
-> This patch adds support for a standard property "poweroff-source"
+Why not the retention mode which is in between the standby and the=20
+retention ?
 
-Shouldn't this property really be called "power-off-source" or even
-"power-off-controller"?
-
-The power-off handler call-chain infrastructure is about to be merged
-and will be using power[-_ ]off (i.e. not "poweroff") consistently (at
-least in its interface).
-
-Furthermore, isn't "controller" as in "power-off-controller" more
-appropriate than "source" in this case? We have wake-up sources, which
-might appear analogous, but that really isn't the same thing.
-
-I now this has already been merged to the regulator tree, but there's
-still still time to fix this.
-
-> which marks the device as able to shutdown the system.
-> 
-> Signed-off-by: Romain Perier <romain.perier@gmail.com>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 > ---
->  include/linux/of.h | 11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
-> diff --git a/include/linux/of.h b/include/linux/of.h
-> index 6545e7a..27b3ba1 100644
-> --- a/include/linux/of.h
-> +++ b/include/linux/of.h
-> @@ -866,4 +866,15 @@ static inline int of_changeset_update_property(struct of_changeset *ocs,
->  /* CONFIG_OF_RESOLVE api */
->  extern int of_resolve_phandles(struct device_node *tree);
->  
-> +/**
-> + * of_system_has_poweroff_source - Tells if poweroff-source is found for device_node
-> + * @np: Pointer to the given device_node
+>   .../bindings/arm/msm/qcom,idle-state.txt           | 81 +++++++++++=
++++++++++++
+>   drivers/cpuidle/Kconfig.arm                        |  7 ++
+>   drivers/cpuidle/Makefile                           |  1 +
+>   drivers/cpuidle/cpuidle-qcom.c                     | 79 +++++++++++=
+++++++++++
+>   4 files changed, 168 insertions(+)
+>   create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,i=
+dle-state.txt
+>   create mode 100644 drivers/cpuidle/cpuidle-qcom.c
+>
+> diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,idle-stat=
+e.txt b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+> new file mode 100644
+> index 0000000..87f1742
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+> @@ -0,0 +1,81 @@
+> +QCOM Idle States for cpuidle driver
+> +
+> +ARM provides idle-state node to define the cpuidle states, as define=
+d in [1].
+> +cpuidle-qcom is the cpuidle driver for Qualcomm SoCs and uses these =
+idle
+> +states. Idle states have different enter/exit latency and residency =
+values.
+> +The idle states supported by the QCOM SoC are defined as -
+> +
+> +    * Standby
+> +    * Retention
+> +    * Standalone Power Collapse (Standalone PC or SPC)
+> +    * Power Collapse (PC)
+> +
+> +Standby: Standby does a little more in addition to architectural clo=
+ck gating.
+> +When the WFI instruction is executed the ARM core would gate its int=
+ernal
+> +clocks. In addition to gating the clocks, QCOM cpus use this instruc=
+tion as a
+> +trigger to execute the SPM state machine.  The SPM state machine wai=
+ts for the
+> +interrupt to trigger the core back in to active. This triggers the c=
+ache
+> +heirarchy to enter standby states, when all cpus are idle. An interr=
+upt brings
+
+s/heirarchy/hierarchy/
+
+> +the SPM state machine out of its wait, the next step is to ensure th=
+at the
+> +cache heirarchy is also out of standby, and then the cpu is allowed =
+to resume
+
+s/heirarchy/hierarchy/
+
+> +execution.
+> +
+> +Retention: Retention is a low power state where the core is clock ga=
+ted and
+> +the memory and the registers associated with the core are retained. =
+The
+> +voltage may be reduced to the minimum value needed to keep the proce=
+ssor
+> +registers active. The SPM should be configured to execute the retent=
+ion
+> +sequence and would wait for interrupt, before restoring the cpu to e=
+xecution
+> +state. Retention may have a slightly higher latency than Standby.
+> +
+> +Standalone PC: A cpu can power down and warmboot if there is a suffi=
+cient time
+> +between the time it enters idle and the next known wake up. SPC mode=
+ is used
+> +to indicate a core entering a power down state without consulting an=
+y other
+> +cpu or the system resources. This helps save power only on that core=
+=2E  The SPM
+> +sequence for this idle state is programmed to power down the supply =
+to the
+> +core, wait for the interrupt,  restore power to the core, and ensure=
+ the
+
+                                 ^^ extra space
+
+> +system state including cache hierarchy is ready before allowing core=
+ to
+> +resume.  Applying power and resetting the core causes the core to wa=
+rmboot
+
+           ^^ extra space
+
+> +back into Elevation Level (EL) which trampolines the control back to=
+ the
+> +kernel.  Entering a power down state for the cpu, needs to be done b=
+y trapping
+
+           ^^ extra space
+
+> +into a EL. Failing to do so, would result in a crash enforced by the=
+ warm boot
+> +code in the EL for the SoC. On SoCs with write-back L1 cache, the ca=
+che has to
+> +be flushed in s/w, before powering down the core.
+> +
+> +Power Collapse: This state is similar to the SPC mode, but distingui=
+shes
+> +itself in that the cpu acknowledges and permits the SoC to enter dee=
+per sleep
+> +modes. In a hierarchical power domain SoC, this means L2 and other c=
+aches can
+> +be flushed, system bus, clocks - lowered, and SoC main XO clock gate=
+d and
+> +voltages reduced, provided all cpus enter this state.  Since the spa=
+n of low
+
+                                                         ^^ extra space
+
+> +power modes possible at this state is vast, the exit latency and the=
+ residency
+> +of this low power mode would be considered high even though at a cpu=
+ level,
+> +this essentially is cpu power down.  The SPM in this state also may =
+handshake
+
+                                       ^^ extra space
+
+> +with the Resource power manager processor in the SoC to indicate a c=
+omplete
+> +application processor subsystem shut down.
+> +
+> +The idle-state for QCOM SoCs are distinguished by the compatible pro=
+perty of
+> +the idle-states device node.
+> +The devicetree representation of the idle state should be -
+> +
+> +Required properties:
+> +
+> +- compatible: Must be one of -
+> +			"qcom,idle-state-stby",
+> +			"qcom,idle-state-ret",
+> +			"qcom,idle-state-spc",
+> +			"qcom,idle-state-pc",
+> +		and "arm,idle-state".
+> +
+> +Other required and optional properties are specified in [1].
+> +
+> +Example:
+> +
+> +	idle-states {
+> +		CPU_SPC: spc {
+> +			compatible =3D "qcom,idle-state-spc", "arm,idle-state";
+> +			entry-latency-us =3D <150>;
+> +			exit-latency-us =3D <200>;
+> +			min-residency-us =3D <2000>;
+> +		};
+> +	};
+> +
+> +[1]. Documentation/devicetree/bindings/arm/idle-states.txt
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
+m
+> index 38cff69..6a9ee12 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -62,3 +62,10 @@ config ARM_MVEBU_V7_CPUIDLE
+>   	depends on ARCH_MVEBU
+>   	help
+>   	  Select this to enable cpuidle on Armada 370, 38x and XP processo=
+rs.
+> +
+> +config ARM_QCOM_CPUIDLE
+> +	bool "CPU Idle drivers for Qualcomm processors"
+> +	depends on QCOM_PM
+
++ depends on ARCH_QCOM
+
+> +	select DT_IDLE_STATES
+> +	help
+> +	  Select this to enable cpuidle for QCOM processors
+> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+> index 4d177b9..6c222d5 100644
+> --- a/drivers/cpuidle/Makefile
+> +++ b/drivers/cpuidle/Makefile
+> @@ -17,6 +17,7 @@ obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+=3D cpuidle-zynq.o
+>   obj-$(CONFIG_ARM_U8500_CPUIDLE)         +=3D cpuidle-ux500.o
+>   obj-$(CONFIG_ARM_AT91_CPUIDLE)          +=3D cpuidle-at91.o
+>   obj-$(CONFIG_ARM_EXYNOS_CPUIDLE)        +=3D cpuidle-exynos.o
+> +obj-$(CONFIG_ARM_QCOM_CPUIDLE)		+=3D cpuidle-qcom.o
+>
+>   ###################################################################=
+############
+>   # MIPS drivers
+> diff --git a/drivers/cpuidle/cpuidle-qcom.c b/drivers/cpuidle/cpuidle=
+-qcom.c
+> new file mode 100644
+> index 0000000..0a65065
+> --- /dev/null
+> +++ b/drivers/cpuidle/cpuidle-qcom.c
+> @@ -0,0 +1,79 @@
+> +/*
+> + * Copyright (c) 2014, Linaro Limited.
 > + *
-> + * return true if present false otherwise
+> + * This program is free software; you can redistribute it and/or mod=
+ify
+> + * it under the terms of the GNU General Public License version 2 an=
+d
+> + * only version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
 > + */
-> +static inline bool of_system_has_poweroff_source(const struct device_node *np)
-
-Why "system_has"? Shouldn't this be of_is_power_off_source (controller)?
-
+> +
+> +#include <linux/cpu_pm.h>
+> +#include <linux/cpuidle.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +
+> +#include <soc/qcom/pm.h>
+> +#include "dt_idle_states.h"
+> +
+> +static void (*qcom_idle_enter)(enum pm_sleep_mode);
+> +
+> +static int qcom_lpm_enter_stby(struct cpuidle_device *dev,
+> +				struct cpuidle_driver *drv, int index)
 > +{
-> +	return of_property_read_bool(np, "poweroff-source");
+> +	qcom_idle_enter(PM_SLEEP_MODE_STBY);
+
+Could you replace this function by a generic one ?
+
+It would be nice to have qcom_cpu_standby(void) and=20
+qcom_cpu_powerdown(void) and let behind the mysterious words 'Single=20
+Power Collapse' in the low level code which is qcom specific :)
+
+I guess you had to create a single "qcom_idle_enter" because of a singl=
+e=20
+pointer in the platform data. I am working on a common structure to be=20
+shared across the drivers as a common way to pass the different=20
+callbacks without including a soc specific header.
+
+struct cpuidle_ops {
+	int (*standby)(void *data);
+	int (*retention)(void *data);
+	int (*poweroff)(void *data);
+};
+
+So maybe you can either:
+
+1. wait I post this structure and provide the driver with this one
+2. create a similar structure and I will take care to upgrade when I=20
+post the patchset with the common structure.
+
+The issue I see with this common structure is the initialization of the=
+=20
+qcom_idle_state_match array.
+
+> +	local_irq_enable();
+
+local_irq_enable() is handled by the cpuidle framework.
+Please remove all occurrences of this function in the driver otherwise=20
+time measurement will include irq time processing and will no longer be=
+=20
+valid.
+
+> +	return index;
 > +}
 > +
->  #endif /* _LINUX_OF_H */
+> +static int qcom_lpm_enter_spc(struct cpuidle_device *dev,
+> +				struct cpuidle_driver *drv, int index)
+> +{
+> +	cpu_pm_enter();
+> +	qcom_idle_enter(PM_SLEEP_MODE_SPC);
 
-Thanks,
-Johan
+Where is cpu_suspend ?
+
+> +	cpu_pm_exit();
+> +	local_irq_enable();
+> +
+> +	return index;
+> +}
+> +
+> +static struct cpuidle_driver qcom_cpuidle_driver =3D {
+> +	.name	=3D "qcom_cpuidle",
+> +};
+> +
+> +static const struct of_device_id qcom_idle_state_match[] =3D {
+> +	{ .compatible =3D "qcom,idle-state-stby", .data =3D qcom_lpm_enter_=
+stby},
+> +	{ .compatible =3D "qcom,idle-state-spc", .data =3D qcom_lpm_enter_s=
+pc },
+> +	{ },
+> +};
+> +
+> +static int qcom_cpuidle_probe(struct platform_device *pdev)
+> +{
+> +	struct cpuidle_driver *drv =3D &qcom_cpuidle_driver;
+> +	int ret;
+> +
+> +	qcom_idle_enter =3D pdev->dev.platform_data;
+> +	if (!qcom_idle_enter)
+> +		return -EFAULT;
+
+It shouldn't fail because if the probe is called then the cpuidle devic=
+e=20
+was registered with its callback which is hardcoded.
+
+> +	 /* Probe for other states, including standby */
+> +	ret =3D dt_init_idle_driver(drv, qcom_idle_state_match, 0);
+
+Are you sure it is not worth to add the simple WFI state ? It may have=20
+less latency than the standby mode, no ?
+
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	return cpuidle_register(drv, NULL);
+> +}
+> +
+> +static struct platform_driver qcom_cpuidle_plat_driver =3D {
+> +	.probe	=3D qcom_cpuidle_probe,
+> +	.driver =3D {
+> +		.name =3D "qcom_cpuidle",
+> +	},
+> +};
+> +
+> +module_platform_driver(qcom_cpuidle_plat_driver);
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
