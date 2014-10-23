@@ -1,199 +1,87 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V2 5/5] cpuidle: menu: Move the update function before its declaration
-Date: Thu, 23 Oct 2014 11:01:21 +0200
-Message-ID: <1414054881-17713-5-git-send-email-daniel.lezcano@linaro.org>
-References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, peterz@infradead.org, linaro-kernel@lists.linaro.org, patches@linaro.org
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RESEND 2] cpufreq: dt: disable unsupported OPPs
+Date: Thu, 23 Oct 2014 11:19:48 +0200
+Message-ID: <CAMuHMdV2gPOZoV62rSNjpD=dJ43EE+s0wtRW4ncLWU-J-eHLDg@mail.gmail.com>
+References: <48734362.lRa73hezrZ@vostro.rjw.lan>
+	<1413454100-23009-1-git-send-email-l.stach@pengutronix.de>
+	<8590662.lsNXszcTd0@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f176.google.com ([209.85.217.176]:53033 "EHLO
+	mail-lb0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751469AbaJWJTu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 05:19:50 -0400
+In-Reply-To: <8590662.lsNXszcTd0@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lucas Stach <l.stach@pengutronix.de>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 
-In order to prevent a pointless forward declaration, just move the function
-at the beginning of the file.
+Hi Rafael, Lucas,
 
-This patch does not change the behavior of the governor, it is just code
-reordering.
+On Tue, Oct 21, 2014 at 4:19 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, October 16, 2014 12:08:20 PM Lucas Stach wrote:
+>> If the regulator connected to the CPU voltage plane doesn't
+>> support an OPP specified voltage with the acceptable tolerance
+>> it's better to just disable the OPP instead of constantly
+>> failing the voltage scaling later on.
+>>
+>> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> Applied, thanks!
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/governors/menu.c | 149 +++++++++++++++++++--------------------
- 1 file changed, 74 insertions(+), 75 deletions(-)
+This commit
+(http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=d7bbd4cd0359d781b67c9e621d4bbfd1bb2f3783)
+causes a boot regression on r8a7791/koelsch. It hangs after:
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 6ae8390..0ac76b1 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -184,7 +184,6 @@ static inline int performance_multiplier(unsigned long nr_iowaiters, unsigned lo
- 
- static DEFINE_PER_CPU(struct menu_device, menu_devices);
- 
--static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev);
- 
- /* This implements DIV_ROUND_CLOSEST but avoids 64 bit division */
- static u64 div_round64(u64 dividend, u32 divisor)
-@@ -192,6 +191,80 @@ static u64 div_round64(u64 dividend, u32 divisor)
- 	return div_u64(dividend + (divisor / 2), divisor);
- }
- 
-+/**
-+ * menu_update - attempts to guess what happened after entry
-+ * @drv: cpuidle driver containing state data
-+ * @dev: the CPU
-+ */
-+static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
-+{
-+	struct menu_device *data = &__get_cpu_var(menu_devices);
-+	int last_idx = data->last_state_idx;
-+	struct cpuidle_state *target = &drv->states[last_idx];
-+	unsigned int measured_us;
-+	unsigned int new_factor;
-+
-+	/*
-+	 * Try to figure out how much time passed between entry to low
-+	 * power state and occurrence of the wakeup event.
-+	 *
-+	 * If the entered idle state didn't support residency measurements,
-+	 * we are basically lost in the dark how much time passed.
-+	 * As a compromise, assume we slept for the whole expected time.
-+	 *
-+	 * Any measured amount of time will include the exit latency.
-+	 * Since we are interested in when the wakeup begun, not when it
-+	 * was completed, we must subtract the exit latency. However, if
-+	 * the measured amount of time is less than the exit latency,
-+	 * assume the state was never reached and the exit latency is 0.
-+	 */
-+	if (unlikely(!(target->flags & CPUIDLE_FLAG_TIME_VALID))) {
-+		/* Use timer value as is */
-+		measured_us = data->next_timer_us;
-+
-+	} else {
-+		/* Use measured value */
-+		measured_us = cpuidle_get_last_residency(dev);
-+
-+		/* Deduct exit latency */
-+		if (measured_us > target->exit_latency)
-+			measured_us -= target->exit_latency;
-+
-+		/* Make sure our coefficients do not exceed unity */
-+		if (measured_us > data->next_timer_us)
-+			measured_us = data->next_timer_us;
-+	}
-+
-+	/* Update our correction ratio */
-+	new_factor = data->correction_factor[data->bucket];
-+	new_factor -= new_factor / DECAY;
-+
-+	if (data->next_timer_us > 0 && measured_us < MAX_INTERESTING)
-+		new_factor += RESOLUTION * measured_us / data->next_timer_us;
-+	else
-+		/*
-+		 * we were idle so long that we count it as a perfect
-+		 * prediction
-+		 */
-+		new_factor += RESOLUTION;
-+
-+	/*
-+	 * We don't want 0 as factor; we always want at least
-+	 * a tiny bit of estimated time. Fortunately, due to rounding,
-+	 * new_factor will stay nonzero regardless of measured_us values
-+	 * and the compiler can eliminate this test as long as DECAY > 1.
-+	 */
-+	if (DECAY == 1 && unlikely(new_factor == 0))
-+		new_factor = 1;
-+
-+	data->correction_factor[data->bucket] = new_factor;
-+
-+	/* update the repeating-pattern data */
-+	data->intervals[data->interval_ptr++] = measured_us;
-+	if (data->interval_ptr >= INTERVALS)
-+		data->interval_ptr = 0;
-+}
-+
- /*
-  * Try detecting repeating patterns by keeping track of the last 8
-  * intervals, and checking if the standard deviation of that set
-@@ -378,80 +451,6 @@ static void menu_reflect(struct cpuidle_device *dev, int index)
- }
- 
- /**
-- * menu_update - attempts to guess what happened after entry
-- * @drv: cpuidle driver containing state data
-- * @dev: the CPU
-- */
--static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
--{
--	struct menu_device *data = &__get_cpu_var(menu_devices);
--	int last_idx = data->last_state_idx;
--	struct cpuidle_state *target = &drv->states[last_idx];
--	unsigned int measured_us;
--	unsigned int new_factor;
--
--	/*
--	 * Try to figure out how much time passed between entry to low
--	 * power state and occurrence of the wakeup event.
--	 *
--	 * If the entered idle state didn't support residency measurements,
--	 * we are basically lost in the dark how much time passed.
--	 * As a compromise, assume we slept for the whole expected time.
--	 *
--	 * Any measured amount of time will include the exit latency.
--	 * Since we are interested in when the wakeup begun, not when it
--	 * was completed, we must subtract the exit latency. However, if
--	 * the measured amount of time is less than the exit latency,
--	 * assume the state was never reached and the exit latency is 0.
--	 */
--	if (unlikely(!(target->flags & CPUIDLE_FLAG_TIME_VALID))) {
--		/* Use timer value as is */
--		measured_us = data->next_timer_us;
--
--	} else {
--		/* Use measured value */
--		measured_us = cpuidle_get_last_residency(dev);
--
--		/* Deduct exit latency */
--		if (measured_us > target->exit_latency)
--			measured_us -= target->exit_latency;
--
--		/* Make sure our coefficients do not exceed unity */
--		if (measured_us > data->next_timer_us)
--			measured_us = data->next_timer_us;
--	}
--
--	/* Update our correction ratio */
--	new_factor = data->correction_factor[data->bucket];
--	new_factor -= new_factor / DECAY;
--
--	if (data->next_timer_us > 0 && measured_us < MAX_INTERESTING)
--		new_factor += RESOLUTION * measured_us / data->next_timer_us;
--	else
--		/*
--		 * we were idle so long that we count it as a perfect
--		 * prediction
--		 */
--		new_factor += RESOLUTION;
--
--	/*
--	 * We don't want 0 as factor; we always want at least
--	 * a tiny bit of estimated time. Fortunately, due to rounding,
--	 * new_factor will stay nonzero regardless of measured_us values
--	 * and the compiler can eliminate this test as long as DECAY > 1.
--	 */
--	if (DECAY == 1 && unlikely(new_factor == 0))
--		new_factor = 1;
--
--	data->correction_factor[data->bucket] = new_factor;
--
--	/* update the repeating-pattern data */
--	data->intervals[data->interval_ptr++] = measured_us;
--	if (data->interval_ptr >= INTERVALS)
--		data->interval_ptr = 0;
--}
--
--/**
-  * menu_enable_device - scans a CPU's states and does setup
-  * @drv: cpuidle driver
-  * @dev: the CPU
--- 
-1.9.1
+    TCP: cubic registered
+    Initializing XFRM netlink socket
+    NET: Registered protocol family 17
+    NET: Registered protocol family 15
+    ata1: link resume succeeded after 1 retries
+    ata1: SATA link down (SStatus 0 SControl 300)
+    random: nonblocking pool is initialized
+
+With more debugging, it seems to end up in an infinite loop
+calling runtime_{suspend,resume}():
+
+    cpufreq-dt cpufreq-dt: pm_clk_notify() 4
+    i2c-sh_mobile e60b0000.i2c: pm_clk_resume()
+    MSTP i2c6 ON
+    i2c-sh_mobile e60b0000.i2c: pm_clk_suspend()
+    MSTP i2c6 OFF
+    i2c-sh_mobile e60b0000.i2c: pm_clk_resume()
+    MSTP i2c6 ON
+    i2c-sh_mobile e60b0000.i2c: pm_clk_suspend()
+    MSTP i2c6 OFF
+    i2c-sh_mobile e60b0000.i2c: pm_clk_resume()
+    MSTP i2c6 ON
+    i2c-sh_mobile e60b0000.i2c: pm_clk_suspend()
+    MSTP i2c6 OFF
+    i2c-sh_mobile e60b0000.i2c: pm_clk_resume()
+    MSTP i2c6 ON
+    i2c-sh_mobile e60b0000.i2c: pm_clk_suspend()
+    MSTP i2c6 OFF
+    i2c-sh_mobile e60b0000.i2c: pm_clk_resume()
+    ...
+
+Reverting this commit fixes the issue, and makes the boot continue with:
+
+    cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted freq: 1300000 KHz
+    cpufreq: __cpufreq_add_dev: CPU0: Unlisted initial frequency
+changed to: 1312500 KHz
+    cpu cpu1: failed to get cpu-2 clock: 1
+    cpufreq_dt: cpufreq_init: Failed to allocate resources: -2
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
