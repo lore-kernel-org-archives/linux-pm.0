@@ -1,91 +1,89 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC 1/2] PM / Domains: Power on domain early during system resume
-Date: Thu, 23 Oct 2014 15:48:09 +0200
-Message-ID: <1414072090-11293-2-git-send-email-k.kozlowski@samsung.com>
-References: <1414072090-11293-1-git-send-email-k.kozlowski@samsung.com>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [RESEND 2] cpufreq: dt: disable unsupported OPPs
+Date: Thu, 23 Oct 2014 16:10:48 +0200
+Message-ID: <1414073448.2764.1.camel@pengutronix.de>
+References: <48734362.lRa73hezrZ@vostro.rjw.lan>
+	 <1413454100-23009-1-git-send-email-l.stach@pengutronix.de>
+	 <8590662.lsNXszcTd0@vostro.rjw.lan>
+	 <CAMuHMdV2gPOZoV62rSNjpD=dJ43EE+s0wtRW4ncLWU-J-eHLDg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-reply-to: <1414072090-11293-1-git-send-email-k.kozlowski@samsung.com>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Inki Dae <inki.dae@samsung.com>, Joonyoung Shim <jy0922.shim@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, David Airlie <airlied@linux.ie>, Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
-Cc: Andrzej Hajda <a.hajda@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdV2gPOZoV62rSNjpD=dJ43EE+s0wtRW4ncLWU-J-eHLDg@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-When resuming the system the power domain has to be powered on early so
-any runtime PM aware devices could resume.
+Hi Geert,
 
-This fixes following scenario reproduced on Exynos DRM:
-1. Power domain is off before suspending the system.
-2. System is suspended to RAM.
-3. Resuming starts. The Exynos DRM driver resume callback is called.
-4. The Exynos DRM driver calls drm_helper_resume_force_mode which turns
-   the screen on by calling exynos_dsi_dpms with DRM_MODE_DPMS_ON.
-5. The Exynos DSI driver calls pm_runtime_get. The driver runtime
-   resumes and this should turn LCD power domain on.
-6. Unfortunately the domain cannot be turned on because system resume is
-   in progress and genpd->prepared_count is positive.
+Am Donnerstag, den 23.10.2014, 11:19 +0200 schrieb Geert Uytterhoeven:
+> Hi Rafael, Lucas,
+> 
+> On Tue, Oct 21, 2014 at 4:19 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Thursday, October 16, 2014 12:08:20 PM Lucas Stach wrote:
+> >> If the regulator connected to the CPU voltage plane doesn't
+> >> support an OPP specified voltage with the acceptable tolerance
+> >> it's better to just disable the OPP instead of constantly
+> >> failing the voltage scaling later on.
+> >>
+> >> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> >> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >
+> > Applied, thanks!
+> 
+> This commit
+> (http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=d7bbd4cd0359d781b67c9e621d4bbfd1bb2f3783)
+> causes a boot regression on r8a7791/koelsch. It hangs after:
+> 
+>     TCP: cubic registered
+>     Initializing XFRM netlink socket
+>     NET: Registered protocol family 17
+>     NET: Registered protocol family 15
+>     ata1: link resume succeeded after 1 retries
+>     ata1: SATA link down (SStatus 0 SControl 300)
+>     random: nonblocking pool is initialized
+> 
+> With more debugging, it seems to end up in an infinite loop
+> calling runtime_{suspend,resume}():
+> 
+>     cpufreq-dt cpufreq-dt: pm_clk_notify() 4
+>     i2c-sh_mobile e60b0000.i2c: pm_clk_resume()
+>     MSTP i2c6 ON
+>     i2c-sh_mobile e60b0000.i2c: pm_clk_suspend()
+>     MSTP i2c6 OFF
+>     i2c-sh_mobile e60b0000.i2c: pm_clk_resume()
+>     MSTP i2c6 ON
+>     i2c-sh_mobile e60b0000.i2c: pm_clk_suspend()
+>     MSTP i2c6 OFF
+>     i2c-sh_mobile e60b0000.i2c: pm_clk_resume()
+>     MSTP i2c6 ON
+>     i2c-sh_mobile e60b0000.i2c: pm_clk_suspend()
+>     MSTP i2c6 OFF
+>     i2c-sh_mobile e60b0000.i2c: pm_clk_resume()
+>     MSTP i2c6 ON
+>     i2c-sh_mobile e60b0000.i2c: pm_clk_suspend()
+>     MSTP i2c6 OFF
+>     i2c-sh_mobile e60b0000.i2c: pm_clk_resume()
+>     ...
+> 
+> Reverting this commit fixes the issue, and makes the boot continue with:
+> 
+>     cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted freq: 1300000 KHz
+>     cpufreq: __cpufreq_add_dev: CPU0: Unlisted initial frequency
+> changed to: 1312500 KHz
+>     cpu cpu1: failed to get cpu-2 clock: 1
+>     cpufreq_dt: cpufreq_init: Failed to allocate resources: -2
+> 
 
-Steps to reproduce:
-1. Add runtime PM to Exynos DSI driver.
-2. Build Exynos DRM/FB without FRAMEBUFFER_CONSOLE.
-3. Enable the connector and screen (e.g. with modeset-vsync application).
-4. echo 3 > /sys/devices/platform/exynos-drm/graphics/fb0/blank
-5. echo mem > /sys/power/state
-6. Resume.
-[   77.712469] PM: early resume of devices complete after 3.854 msecs
-[   77.712739] exynos-dsi 11c80000.dsi: pm_genpd_resume()
-[   77.712758] exynos4-fimc 11800000.fimc: pm_genpd_resume()
-[   77.712774] exynos4-fimc 11810000.fimc: pm_genpd_resume()
-[   77.712787] exynos-drm-fimc 11820000.fimc: pm_genpd_resume()
-[   77.712802] exynos-drm-fimc 11830000.fimc: pm_genpd_resume()
-[   77.712815] s5p-mipi-csis 11880000.csis: pm_genpd_resume()
-[   77.712829] s5p-mipi-csis 11890000.csis: pm_genpd_resume()
-[   77.712843] exynos-fimc-lite 12390000.fimc-lite: pm_genpd_resume()
-[   77.712856] exynos-fimc-lite 123a0000.fimc-lite: pm_genpd_resume()
-[   77.713788] exynos4-fb 11c00000.fimd: pm_genpd_resume()
-[   77.713912] wake disabled for irq 184
-[   77.713923] wake disabled for irq 185
-[   77.714082] wake disabled for irq 173
-[   77.715676] wake disabled for irq 176
-[   77.718540] exynos4-fb 11c00000.fimd: pm_genpd_runtime_resume()
-[   77.718567] exynos4-fb 11c00000.fimd: state restore latency exceeded, new value 1708 ns
-[   77.718636] exynos-dsi 11c80000.dsi: pm_genpd_runtime_resume()
-[   77.892366] exynos-dsi 11c80000.dsi: PLL failed to stabilize
-[   77.892377] exynos-dsi 11c80000.dsi: failed to configure DSI PLL
-[   78.192168] exynos-dsi 11c80000.dsi: timeout waiting for reset
-[   78.211578] exynos-dsi 11c80000.dsi: waiting for bus lanes timed out
-[   78.307173] exynos-dsi 11c80000.dsi: xfer timed out: d1 00 (null)
-[   78.307190] panel_s6e8aa0 11c80000.dsi.0: error -110 reading dcs seq(0xd1)
-[   78.307199] panel_s6e8aa0 11c80000.dsi.0: read id failed
+Urgh, thanks for the report. Am I right that for koelsch you do
+reference a regulator supply for the cpu, but don't actually have a
+driver for it, so a dummy regulator gets plugged in there?
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
----
- drivers/base/power/domain.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 40bc2f4072cc..4fdfe404a04c 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -179,8 +179,7 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
- 	}
- 	finish_wait(&genpd->status_wait_queue, &wait);
- 
--	if (genpd->status == GPD_STATE_ACTIVE
--	    || (genpd->prepared_count > 0 && genpd->suspend_power_off))
-+	if (genpd->status == GPD_STATE_ACTIVE)
- 		return 0;
- 
- 	if (genpd->status != GPD_STATE_POWER_OFF) {
+Regards,
+Lucas
 -- 
-1.9.1
+Pengutronix e.K.             | Lucas Stach                 |
+Industrial Linux Solutions   | http://www.pengutronix.de/  |
+
