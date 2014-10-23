@@ -1,215 +1,186 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH V2 5/5] cpuidle: menu: Move the update function before
- its declaration
-Date: Thu, 23 Oct 2014 12:47:23 -0400 (EDT)
-Message-ID: <alpine.LFD.2.11.1410231246500.6969@knanqh.ubzr>
-References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org> <1414054881-17713-5-git-send-email-daniel.lezcano@linaro.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v8 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
+Date: Thu, 23 Oct 2014 10:58:08 -0600
+Message-ID: <20141023165808.GC30210@ilina-mac.qualcomm.com>
+References: <1412718106-17049-1-git-send-email-lina.iyer@linaro.org>
+ <1412718106-17049-6-git-send-email-lina.iyer@linaro.org>
+ <5448E103.9070505@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f47.google.com ([209.85.213.47]:38273 "EHLO
-	mail-yh0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753913AbaJWQr0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Oct 2014 12:47:26 -0400
-Received: by mail-yh0-f47.google.com with SMTP id c41so1423998yho.34
-        for <linux-pm@vger.kernel.org>; Thu, 23 Oct 2014 09:47:26 -0700 (PDT)
-In-Reply-To: <1414054881-17713-5-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5448E103.9070505@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, peterz@infradead.org, linaro-kernel@lists.linaro.org, patches@linaro.org
+Cc: khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Thu, 23 Oct 2014, Daniel Lezcano wrote:
+On Thu, Oct 23 2014 at 05:05 -0600, Daniel Lezcano wrote:
+>On 10/07/2014 11:41 PM, Lina Iyer wrote:
+>>Add cpuidle driver interface to allow cpus to go into C-States. Use t=
+he
+>>cpuidle DT interface, common across ARM architectures, to provide the
+>>C-State information to the cpuidle framework.
+>>
+>>Supported modes at this time are Standby and Standalone Power Collaps=
+e.
+>
+>Why not the retention mode which is in between the standby and the=20
+>retention ?
+>
+Retention would appear 'hacky' in comparision to these code, and has
+dependencies on clocks. So at some point, yes, I will submit a patch to
+address this deficiency.=20
 
-> In order to prevent a pointless forward declaration, just move the function
-> at the beginning of the file.
-> 
-> This patch does not change the behavior of the governor, it is just code
-> reordering.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+>>index 38cff69..6a9ee12 100644
+>>--- a/drivers/cpuidle/Kconfig.arm
+>>+++ b/drivers/cpuidle/Kconfig.arm
+>>@@ -62,3 +62,10 @@ config ARM_MVEBU_V7_CPUIDLE
+>>  	depends on ARCH_MVEBU
+>>  	help
+>>  	  Select this to enable cpuidle on Armada 370, 38x and XP processo=
+rs.
+>>+
+>>+config ARM_QCOM_CPUIDLE
+>>+	bool "CPU Idle drivers for Qualcomm processors"
+>>+	depends on QCOM_PM
+>
+>+ depends on ARCH_QCOM
+>
+I may have removed it, which I will check, QCOM_PM used to depend on
+ARCH_QCOM
 
-Acked-by: Nicolas Pitre <nico@linaro.org>
+>+
+>>+static void (*qcom_idle_enter)(enum pm_sleep_mode);
+>>+
+>>+static int qcom_lpm_enter_stby(struct cpuidle_device *dev,
+>>+				struct cpuidle_driver *drv, int index)
+>>+{
+>>+	qcom_idle_enter(PM_SLEEP_MODE_STBY);
+>
+>Could you replace this function by a generic one ?
+>
+>It would be nice to have qcom_cpu_standby(void) and=20
+>qcom_cpu_powerdown(void) and let behind the mysterious words 'Single=20
+>Power Collapse' in the low level code which is qcom specific :)
+>
+>I guess you had to create a single "qcom_idle_enter" because of a=20
+>single pointer in the platform data. I am working on a common=20
+>structure to be shared across the drivers as a common way to pass the=20
+>different callbacks without including a soc specific header.
+>
+>struct cpuidle_ops {
+>	int (*standby)(void *data);
+>	int (*retention)(void *data);
+>	int (*poweroff)(void *data);
+>};
+>
+>So maybe you can either:
+>
+>1. wait I post this structure and provide the driver with this one
+>2. create a similar structure and I will take care to upgrade when I=20
+>post the patchset with the common structure.
+>
+>The issue I see with this common structure is the initialization of=20
+>the qcom_idle_state_match array.
+>
+>>+	local_irq_enable();
+>
+>local_irq_enable() is handled by the cpuidle framework.
+>Please remove all occurrences of this function in the driver otherwise=
+=20
+>time measurement will include irq time processing and will no longer=20
+>be valid.
+OK. Thanks for pointing that out.
 
-> ---
->  drivers/cpuidle/governors/menu.c | 149 +++++++++++++++++++--------------------
->  1 file changed, 74 insertions(+), 75 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index 6ae8390..0ac76b1 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -184,7 +184,6 @@ static inline int performance_multiplier(unsigned long nr_iowaiters, unsigned lo
->  
->  static DEFINE_PER_CPU(struct menu_device, menu_devices);
->  
-> -static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev);
->  
->  /* This implements DIV_ROUND_CLOSEST but avoids 64 bit division */
->  static u64 div_round64(u64 dividend, u32 divisor)
-> @@ -192,6 +191,80 @@ static u64 div_round64(u64 dividend, u32 divisor)
->  	return div_u64(dividend + (divisor / 2), divisor);
->  }
->  
-> +/**
-> + * menu_update - attempts to guess what happened after entry
-> + * @drv: cpuidle driver containing state data
-> + * @dev: the CPU
-> + */
-> +static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
-> +{
-> +	struct menu_device *data = &__get_cpu_var(menu_devices);
-> +	int last_idx = data->last_state_idx;
-> +	struct cpuidle_state *target = &drv->states[last_idx];
-> +	unsigned int measured_us;
-> +	unsigned int new_factor;
-> +
-> +	/*
-> +	 * Try to figure out how much time passed between entry to low
-> +	 * power state and occurrence of the wakeup event.
-> +	 *
-> +	 * If the entered idle state didn't support residency measurements,
-> +	 * we are basically lost in the dark how much time passed.
-> +	 * As a compromise, assume we slept for the whole expected time.
-> +	 *
-> +	 * Any measured amount of time will include the exit latency.
-> +	 * Since we are interested in when the wakeup begun, not when it
-> +	 * was completed, we must subtract the exit latency. However, if
-> +	 * the measured amount of time is less than the exit latency,
-> +	 * assume the state was never reached and the exit latency is 0.
-> +	 */
-> +	if (unlikely(!(target->flags & CPUIDLE_FLAG_TIME_VALID))) {
-> +		/* Use timer value as is */
-> +		measured_us = data->next_timer_us;
-> +
-> +	} else {
-> +		/* Use measured value */
-> +		measured_us = cpuidle_get_last_residency(dev);
-> +
-> +		/* Deduct exit latency */
-> +		if (measured_us > target->exit_latency)
-> +			measured_us -= target->exit_latency;
-> +
-> +		/* Make sure our coefficients do not exceed unity */
-> +		if (measured_us > data->next_timer_us)
-> +			measured_us = data->next_timer_us;
-> +	}
-> +
-> +	/* Update our correction ratio */
-> +	new_factor = data->correction_factor[data->bucket];
-> +	new_factor -= new_factor / DECAY;
-> +
-> +	if (data->next_timer_us > 0 && measured_us < MAX_INTERESTING)
-> +		new_factor += RESOLUTION * measured_us / data->next_timer_us;
-> +	else
-> +		/*
-> +		 * we were idle so long that we count it as a perfect
-> +		 * prediction
-> +		 */
-> +		new_factor += RESOLUTION;
-> +
-> +	/*
-> +	 * We don't want 0 as factor; we always want at least
-> +	 * a tiny bit of estimated time. Fortunately, due to rounding,
-> +	 * new_factor will stay nonzero regardless of measured_us values
-> +	 * and the compiler can eliminate this test as long as DECAY > 1.
-> +	 */
-> +	if (DECAY == 1 && unlikely(new_factor == 0))
-> +		new_factor = 1;
-> +
-> +	data->correction_factor[data->bucket] = new_factor;
-> +
-> +	/* update the repeating-pattern data */
-> +	data->intervals[data->interval_ptr++] = measured_us;
-> +	if (data->interval_ptr >= INTERVALS)
-> +		data->interval_ptr = 0;
-> +}
-> +
->  /*
->   * Try detecting repeating patterns by keeping track of the last 8
->   * intervals, and checking if the standard deviation of that set
-> @@ -378,80 +451,6 @@ static void menu_reflect(struct cpuidle_device *dev, int index)
->  }
->  
->  /**
-> - * menu_update - attempts to guess what happened after entry
-> - * @drv: cpuidle driver containing state data
-> - * @dev: the CPU
-> - */
-> -static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
-> -{
-> -	struct menu_device *data = &__get_cpu_var(menu_devices);
-> -	int last_idx = data->last_state_idx;
-> -	struct cpuidle_state *target = &drv->states[last_idx];
-> -	unsigned int measured_us;
-> -	unsigned int new_factor;
-> -
-> -	/*
-> -	 * Try to figure out how much time passed between entry to low
-> -	 * power state and occurrence of the wakeup event.
-> -	 *
-> -	 * If the entered idle state didn't support residency measurements,
-> -	 * we are basically lost in the dark how much time passed.
-> -	 * As a compromise, assume we slept for the whole expected time.
-> -	 *
-> -	 * Any measured amount of time will include the exit latency.
-> -	 * Since we are interested in when the wakeup begun, not when it
-> -	 * was completed, we must subtract the exit latency. However, if
-> -	 * the measured amount of time is less than the exit latency,
-> -	 * assume the state was never reached and the exit latency is 0.
-> -	 */
-> -	if (unlikely(!(target->flags & CPUIDLE_FLAG_TIME_VALID))) {
-> -		/* Use timer value as is */
-> -		measured_us = data->next_timer_us;
-> -
-> -	} else {
-> -		/* Use measured value */
-> -		measured_us = cpuidle_get_last_residency(dev);
-> -
-> -		/* Deduct exit latency */
-> -		if (measured_us > target->exit_latency)
-> -			measured_us -= target->exit_latency;
-> -
-> -		/* Make sure our coefficients do not exceed unity */
-> -		if (measured_us > data->next_timer_us)
-> -			measured_us = data->next_timer_us;
-> -	}
-> -
-> -	/* Update our correction ratio */
-> -	new_factor = data->correction_factor[data->bucket];
-> -	new_factor -= new_factor / DECAY;
-> -
-> -	if (data->next_timer_us > 0 && measured_us < MAX_INTERESTING)
-> -		new_factor += RESOLUTION * measured_us / data->next_timer_us;
-> -	else
-> -		/*
-> -		 * we were idle so long that we count it as a perfect
-> -		 * prediction
-> -		 */
-> -		new_factor += RESOLUTION;
-> -
-> -	/*
-> -	 * We don't want 0 as factor; we always want at least
-> -	 * a tiny bit of estimated time. Fortunately, due to rounding,
-> -	 * new_factor will stay nonzero regardless of measured_us values
-> -	 * and the compiler can eliminate this test as long as DECAY > 1.
-> -	 */
-> -	if (DECAY == 1 && unlikely(new_factor == 0))
-> -		new_factor = 1;
-> -
-> -	data->correction_factor[data->bucket] = new_factor;
-> -
-> -	/* update the repeating-pattern data */
-> -	data->intervals[data->interval_ptr++] = measured_us;
-> -	if (data->interval_ptr >= INTERVALS)
-> -		data->interval_ptr = 0;
-> -}
-> -
-> -/**
->   * menu_enable_device - scans a CPU's states and does setup
->   * @drv: cpuidle driver
->   * @dev: the CPU
-> -- 
-> 1.9.1
-> 
-> 
+>
+>>+	return index;
+>>+}
+>>+
+>>+static int qcom_lpm_enter_spc(struct cpuidle_device *dev,
+>>+				struct cpuidle_driver *drv, int index)
+>>+{
+>>+	cpu_pm_enter();
+>>+	qcom_idle_enter(PM_SLEEP_MODE_SPC);
+>
+>Where is cpu_suspend ?
+>
+Inside that function qcom_idle_enter() in the SoC layer (pm.c)
+
+>>+	cpu_pm_exit();
+>>+	local_irq_enable();
+>>+
+>>+	return index;
+>>+}
+>>+
+>>+static struct cpuidle_driver qcom_cpuidle_driver =3D {
+>>+	.name	=3D "qcom_cpuidle",
+>>+};
+>>+
+>>+static const struct of_device_id qcom_idle_state_match[] =3D {
+>>+	{ .compatible =3D "qcom,idle-state-stby", .data =3D qcom_lpm_enter_=
+stby},
+>>+	{ .compatible =3D "qcom,idle-state-spc", .data =3D qcom_lpm_enter_s=
+pc },
+>>+	{ },
+>>+};
+>>+
+>>+static int qcom_cpuidle_probe(struct platform_device *pdev)
+>>+{
+>>+	struct cpuidle_driver *drv =3D &qcom_cpuidle_driver;
+>>+	int ret;
+>>+
+>>+	qcom_idle_enter =3D pdev->dev.platform_data;
+>>+	if (!qcom_idle_enter)
+>>+		return -EFAULT;
+>
+>It shouldn't fail because if the probe is called then the cpuidle=20
+>device was registered with its callback which is hardcoded.
+>
+Yeah, I see the paradigm shift. Even though I know how the caller is, I
+am always backing up the expectation with an error check. Will remove
+that.
+
+>>+	 /* Probe for other states, including standby */
+>>+	ret =3D dt_init_idle_driver(drv, qcom_idle_state_match, 0);
+>
+>Are you sure it is not worth to add the simple WFI state ? It may have=
+=20
+>less latency than the standby mode, no ?
+>
+May be. But it would split the bucket between wfi and the cpu plus
+allowing the L2 and the power hierarachy to enter their standby states.
+This could very well be useful and possible, when there is a QoS reques=
+t
+that disallows power down and high latency states.
+IMO, the benefit of the possible heirarchical standby seems to outweigh=
+ the
+latency gain we may get by just doing a core's clock gating.
+
+>>+	if (ret < 0)
+>>+		return ret;
+>>+
+>>+	return cpuidle_register(drv, NULL);
+>>+}
+>>+
+>>+static struct platform_driver qcom_cpuidle_plat_driver =3D {
+>>+	.probe	=3D qcom_cpuidle_probe,
+>>+	.driver =3D {
+>>+		.name =3D "qcom_cpuidle",
+>>+	},
+>>+};
+>>+
+>>+module_platform_driver(qcom_cpuidle_plat_driver);
+>
+>
+>--=20
+> <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+>
+>Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+><http://twitter.com/#!/linaroorg> Twitter |
+><http://www.linaro.org/linaro-blog/> Blog
+>
