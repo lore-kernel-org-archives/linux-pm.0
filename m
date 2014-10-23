@@ -1,40 +1,38 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: Re: [PATCH v2] [media] coda: Improve runtime PM support
-Date: Thu, 23 Oct 2014 15:13:39 +0200
-Message-ID: <1414070019.3854.5.camel@pengutronix.de>
-References: <1411401956-29330-1-git-send-email-p.zabel@pengutronix.de>
-	 <CAPDyKFqSgpOCvXp0aVVTFDj5X6fYkigThXM1VKK_vTWrjhpx6A@mail.gmail.com>
-	 <1414065430.3854.3.camel@pengutronix.de>
-	 <CAPDyKFropocTuz-3rsQU_Ft-eTQAavn+P4ef4d2Qd0kuhSK3WQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-media-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFropocTuz-3rsQU_Ft-eTQAavn+P4ef4d2Qd0kuhSK3WQ@mail.gmail.com>
-Sender: linux-media-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kamil Debski <k.debski@samsung.com>, linux-media@vger.kernel.org, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [RFC 0/2] PM and DRM: Add runtime PM to Exynos DSI
+Date: Thu, 23 Oct 2014 15:48:08 +0200
+Message-ID: <1414072090-11293-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Inki Dae <inki.dae@samsung.com>, Joonyoung Shim <jy0922.shim@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, David Airlie <airlied@linux.ie>, Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: Andrzej Hajda <a.hajda@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ulf,
+Hi,
 
-Am Donnerstag, den 23.10.2014, 14:15 +0200 schrieb Ulf Hansson:
-> > At what point is the pm domain supposed to be enabled when I load the
-> > module?
-> 
-> Hi Philipp,
-> 
-> The PM domain shall be powered on prior your driver starts probing.
-> This is a common problem when using the generic PM domain. The
-> workaround, which is causing other issues, is a pm_runtime_get_sync().
-> 
-> Now, could you please try to apply the below patchset, that should
-> hopefully fix your issue:
-> 
-> [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
-> http://marc.info/?l=linux-pm&m=141320895122707&w=2
+The goal of the patch 2 is to add runtime PM to the Exynos DSI driver.
+This allows LCD power domain to be turned off.
 
-thank you, that series does fix the issue.
+However after adding this patch an interesing issue came in. The DSI
+driver could not runtime resume during sustem resume because power
+domain was not allowed to power on.
 
-regards
-Philipp
+The issue is solved by patch 1.
+
+Tested on Trats2 board.
+
+Comments are welcomed.
+
+Best regards,
+Krzysztof
+
+Krzysztof Kozlowski (2):
+  PM / Domains: Power on domain early during system resume
+  drm/exynos/dsi: Add runtime PM so LCD power domain could be turned off
+
+ drivers/base/power/domain.c             | 3 +--
+ drivers/gpu/drm/exynos/exynos_drm_dsi.c | 9 +++++++++
+ 2 files changed, 10 insertions(+), 2 deletions(-)
+
+-- 
+1.9.1
