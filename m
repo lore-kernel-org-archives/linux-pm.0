@@ -1,115 +1,56 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH] cpuidle/powernv: Populate cpuidle state details by
- querying the device-tree
-Date: Fri, 24 Oct 2014 15:30:30 +0100
-Message-ID: <20141024143030.GA25966@red-moon>
-References: <20141014075259.11810.50996.stgit@preeti.in.ibm.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v8 0/7] QCOM 8974 and 8084 cpuidle driver
+Date: Fri, 24 Oct 2014 08:30:39 -0600
+Message-ID: <20141024143039.GD30210@ilina-mac.qualcomm.com>
+References: <1412718106-17049-1-git-send-email-lina.iyer@linaro.org>
+ <1414078317.4214.4.camel@mm-sol.com>
+ <20141023155435.GA30210@ilina-mac.qualcomm.com>
+ <1414144885.2025.4.camel@mm-sol.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:48254 "EHLO
-	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbaJXOap (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Oct 2014 10:30:45 -0400
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20141014075259.11810.50996.stgit@preeti.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1414144885.2025.4.camel@mm-sol.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "shreyas@linux.vnet.ibm.com" <shreyas@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, Oct 14, 2014 at 08:53:00AM +0100, Preeti U Murthy wrote:
-> We hard code the metrics relevant for cpuidle states in the kernel today.
-> Instead pick them up from the device tree so that they remain relevant
-> and updated for the system that the kernel is running on.
-> 
-> Cc: linux-pm@vger.kernel.org
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: devicetree@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> ---
-> 
->  drivers/cpuidle/cpuidle-powernv.c |   27 ++++++++++++++++++++++-----
->  1 file changed, 22 insertions(+), 5 deletions(-)
+On Fri, Oct 24 2014 at 04:01 -0600, Ivan T. Ivanov wrote:
+>
+>On Thu, 2014-10-23 at 09:54 -0600, Lina Iyer wrote:
+>> On Thu, Oct 23 2014 at 09:31 -0600, Ivan T. Ivanov wrote:
+>> > >
+>> > >Hi,
+>> > >
+>> > >On Tue, 2014-10-07 at 15:41 -0600, Lina Iyer wrote:
+>> > >  Hi,
+>> > > >
+>> > >  This v8 revision of the cpuidle driver is available at
+>> > >  git.linaro.org:/people/lina.iyer/linux-next cpuidle-v8
+>> > > >
+>> > >
+>> > >Probably I missing something, but should I expect that
+>> > >once these patches are applied driver could be successfully
+>> >  compiled?
+>> Yes they should.
+>
+>Do these patches depends on other patches, which I am missing.
+>I am applying them on current linus/master. At least <soc/qcom/scm.h>
+>and <soc/qcom/scm-boot.h> are missing from this patch-set v8 :-|
+>
 
-Device tree properties should be documented, and these bindings are
-getting very similar to the ones I have just completed for ARM,
-I wonder whether we should take the generic bits out of ARM bindings (ie
-exit_latency) and make those available to other architectures.
+Oh sorry, if you look at the cover letter, in the past, these patches
+have been pulled in or being staged.
 
-Thanks,
-Lorenzo
+You can get the tree and the the patches from 
+https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/cpuidle-v8
 
-> 
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index fa79392..b57681d 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -165,7 +165,8 @@ static int powernv_add_idle_states(void)
->  	int nr_idle_states = 1; /* Snooze */
->  	int dt_idle_states;
->  	const __be32 *idle_state_flags;
-> -	u32 len_flags, flags;
-> +	const __be32 *idle_state_latency;
-> +	u32 len_flags, flags, latency_ns;
->  	int i;
->  
->  	/* Currently we have snooze statically defined */
-> @@ -182,18 +183,32 @@ static int powernv_add_idle_states(void)
->  		return nr_idle_states;
->  	}
->  
-> +	idle_state_latency = of_get_property(power_mgt,
-> +			"ibm,cpu-idle-state-latencies-ns", NULL);
-> +	if (!idle_state_latency) {
-> +		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
-> +		return nr_idle_states;
-> +	}
-> +
->  	dt_idle_states = len_flags / sizeof(u32);
->  
->  	for (i = 0; i < dt_idle_states; i++) {
->  
->  		flags = be32_to_cpu(idle_state_flags[i]);
-> +
-> +		/* Cpuidle accepts exit_latency in us and we estimate
-> +		 * target residency to be 10x exit_latency
-> +		 */
-> +		latency_ns = be32_to_cpu(idle_state_latency[i]);
->  		if (flags & IDLE_USE_INST_NAP) {
->  			/* Add NAP state */
->  			strcpy(powernv_states[nr_idle_states].name, "Nap");
->  			strcpy(powernv_states[nr_idle_states].desc, "Nap");
->  			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
-> -			powernv_states[nr_idle_states].exit_latency = 10;
-> -			powernv_states[nr_idle_states].target_residency = 100;
-> +			powernv_states[nr_idle_states].exit_latency =
-> +					((unsigned int)latency_ns) / 1000;
-> +			powernv_states[nr_idle_states].target_residency =
-> +					((unsigned int)latency_ns / 100);
->  			powernv_states[nr_idle_states].enter = &nap_loop;
->  			nr_idle_states++;
->  		}
-> @@ -204,8 +219,10 @@ static int powernv_add_idle_states(void)
->  			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
->  			powernv_states[nr_idle_states].flags =
->  				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
-> -			powernv_states[nr_idle_states].exit_latency = 300;
-> -			powernv_states[nr_idle_states].target_residency = 1000000;
-> +			powernv_states[nr_idle_states].exit_latency =
-> +					((unsigned int)latency_ns) / 1000;
-> +			powernv_states[nr_idle_states].target_residency =
-> +					((unsigned int)latency_ns / 100);
->  			powernv_states[nr_idle_states].enter = &fastsleep_loop;
->  			nr_idle_states++;
->  		}
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+which are on top of 3.17-rc1, but you should be able to pull it on top
+of yours, without any issue. Do note that some of these patches that I
+have on top of 3.17-rc1 (like the ARM idle states) may already be
+available in linus/master.
+
+Hope that helps.
+
+Lina
