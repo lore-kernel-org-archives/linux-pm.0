@@ -1,168 +1,67 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal management updates for 3.18-rc2
-Date: Fri, 24 Oct 2014 15:30:11 +0800
-Message-ID: <1414135811.16559.4.camel@rzhang1-toshiba>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+From: Imre Deak <imre.deak@intel.com>
+Subject: [PATCH] PM / Sleep: fix recovery during s2ram/hibernation
+Date: Fri, 24 Oct 2014 10:43:13 +0300
+Message-ID: <1414136593-25329-1-git-send-email-imre.deak@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:42642 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750964AbaJXHna (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 24 Oct 2014 03:43:30 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi, Linus,
+Atm, if one of the dev_pm_ops::freeze callbacks fails during the QUIESCE
+phase we don't rollback things correctly calling the thaw and complete
+callbacks. This could leave some devices in a suspended state in case of
+an error during resuming from hibernation.
 
-Sorry that I missed the merge window as there is a bug found in the last
-minute, and I have to fix it and wait for the code to be tested in
-linux-next tree for a few days. Now the buggy patch has been dropped
-entirely from my next branch. Thus I hope those changes can still be
-merged in 3.18-rc2 as most of them are platform thermal driver changes.
+Also if an asynchronous suspend_late or freeze_late callback fails
+during the SUSPEND, FREEZE or QUIESCE phases we don't propagate the
+corresponding error correctly, in effect ignoring the error and
+continuing the suspend-to-ram/hibernation. During suspend-to-ram this
+could leave some devices without a valid saved context, leading to a
+failure to reinitialize them during resume. During hibernation this
+could leave some devices active interfeering with the creation /
+restoration of the hibernation image. Also this could leave the
+corresponding devices without a valid saved context and failure to
+reinitialize them during resume.
 
-Please pull from
-git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
-to receive Thermal Management updates for 3.18-rc2 with top-most commit
+Signed-off-by: Imre Deak <imre.deak@intel.com>
+---
+ drivers/base/power/main.c | 2 ++
+ kernel/power/hibernate.c  | 4 +++-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-6ceaf58abe25e86292152005c51169796bad3407:
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 4497319..9717d5f 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1266,6 +1266,8 @@ int dpm_suspend_late(pm_message_t state)
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+ 	async_synchronize_full();
++	if (!error)
++		error = async_error;
+ 	if (error) {
+ 		suspend_stats.failed_suspend_late++;
+ 		dpm_save_failed_step(SUSPEND_SUSPEND_LATE);
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index a9dfa79..05768d5 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -502,8 +502,10 @@ int hibernation_restore(int platform_mode)
+ 	error = dpm_suspend_start(PMSG_QUIESCE);
+ 	if (!error) {
+ 		error = resume_target_kernel(platform_mode);
+-		dpm_resume_end(PMSG_RECOVER);
++		BUG_ON(!error);
+ 	}
++	if (error)
++		dpm_resume_end(PMSG_RECOVER);
+ 	pm_restore_gfp_mask();
+ 	resume_console();
+ 	pm_restore_console();
+-- 
+1.9.1
 
-  Merge branch 'int340x-thermal' of .git into next (2014-10-17 14:30:58
-+0800)
-
-on top of commit 52addcf9d6669fa439387610bc65c92fa0980cef:
-
-  Linux 3.17-rc2 (2014-08-25 15:36:20 -0700)
-
-
-Specifics:
-
-- introduce ACPI INT340X thermal drivers. Newer laptops and tablets may
-have thermal sensors and other devices with thermal control capabilities
-that are exposed for the OS to use via the ACPI INT340x device objects.
-Several drivers are introduced to expose the temperature information and
-cooling ability from these objects to user-space via the normal thermal
-framework. From: Lu Aaron, Lan Tianyu, Jacob Pan and Zhang Rui.
-
-- introduce a new thermal governor, which just uses a hysteresis to
-switch abruptly on/off a cooling device. This governor can be used to
-control certain fan devices that can not be throttled but just switched on or
-off. From: Peter Feuerer.
-
-- introduce support for some new thermal interrupt functions on i.MX6SX,
-in IMX thermal driver. From: Anson, Huang.
-
-- introduce tracing support on thermal framework. From: Punit Agrawal.
-
-- small fixes in OF thermal and thermal step_wise governor.
-
-thanks,
-rui
-
-----------------------------------------------------------------
-
-Aaron Lu (8):
-      ACPI / fan: remove unused macro
-      ACPI / fan: remove no need check for device pointer
-      ACPI / fan: use acpi_device_xxx_power instead of acpi_bus
-equivelant
-      ACPI / fan: convert to platform driver
-      ACPI / Fan: add ACPI 4.0 style fan support
-      ACPI / Fan: support INT3404 thermal device
-      Thermal: move the KELVIN_TO_MILLICELSIUS macro to thermal.h
-      Thermal: introduce INT3402 thermal driver
-
-Anson Huang (1):
-      Thermal: imx: add i.mx6sx thermal support
-
-Jacob Pan (2):
-      Thermal: int340x_thermal: expose acpi thermal relationship tables
-      Thermal: int3400_thermal: use acpi_thermal_rel parsing APIs
-
-Lan Tianyu (1):
-      Thermal: introduce int3403 thermal driver
-
-Laxman Dewangan (1):
-      thermal: add support to disable thermal zone from DTS
-
-Lukasz Majewski (1):
-      thermal: step_wise: fix: Prevent from binary overflow when trend
-is dropping
-
-Peter Feuerer (1):
-      thermal: Added Bang-bang thermal governor
-
-Punit Agrawal (3):
-      thermal: trace: Trace temperature changes
-      thermal: trace: Trace when a cooling device's state is updated
-      thermal: trace: Trace when temperature is above a trip point
-
-Zhang Rui (11):
-      Merge branch 'next' of
-git://git.kernel.org/.../evalenti/linux-soc-thermal into eduardo-soc
-      ACPI: introduce ACPI int340x thermal scan handler
-      Merge branches 'eduardo-soc' and 'bang-bang-governor' of .git into
-next
-      ACPI: make acpi_create_platform_device() an external API
-      ACPI: add ACPI_TYPE_LOCAL_REFERENCE support to
-acpi_extract_package()
-      Thermal: introduce int3400 thermal driver
-      Thermal: int3400 thermal: add capability to detect supporting
-UUIDs
-      Thermal: int3400 thermal: register to thermal framework
-      Merge branch 'thermal-core-fix' of .git into next
-      Thermal: int340x thermal: select ACPI fan driver
-      Merge branch 'int340x-thermal' of .git into next
-
- Documentation/devicetree/bindings/thermal/imx-thermal.txt |   5 +-
- drivers/acpi/Kconfig                                      |   2 +-
- drivers/acpi/Makefile                                     |   1 +
- drivers/acpi/acpi_platform.c                              |   1 +
- drivers/acpi/device_pm.c                                  |   1 +
- drivers/acpi/fan.c                                        | 341
-++++++++++++++++++++++++++++++++++++++++++-------------
- drivers/acpi/int340x_thermal.c                            |  51
-+++++++++
- drivers/acpi/internal.h                                   |  10 +-
- drivers/acpi/scan.c                                       |   1 +
- drivers/acpi/thermal.c                                    |  18 +--
- drivers/acpi/utils.c                                      |  28 ++++-
- drivers/thermal/Kconfig                                   |  49
-+++++---
- drivers/thermal/Makefile                                  |   3 +-
- drivers/thermal/fair_share.c                              |  12 ++
- drivers/thermal/gov_bang_bang.c                           | 131
-+++++++++++++++++++++
- drivers/thermal/imx_thermal.c                             |  91
-++++++++++++---
- drivers/thermal/int3403_thermal.c                         | 296
-------------------------------------------------
- drivers/thermal/int340x_thermal/Makefile                  |   4 +
- drivers/thermal/int340x_thermal/acpi_thermal_rel.c        | 400
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/thermal/int340x_thermal/acpi_thermal_rel.h        |  84
-++++++++++++++
- drivers/thermal/int340x_thermal/int3400_thermal.c         | 271
-++++++++++++++++++++++++++++++++++++++++++++
- drivers/thermal/int340x_thermal/int3402_thermal.c         | 242
-+++++++++++++++++++++++++++++++++++++++
- drivers/thermal/int340x_thermal/int3403_thermal.c         | 477
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/thermal/of-thermal.c                              |  12 ++
- drivers/thermal/step_wise.c                               |   7 +-
- drivers/thermal/thermal_core.c                            |  12 ++
- drivers/thermal/thermal_core.h                            |   8 ++
- include/acpi/acpi_bus.h                                   |   1 +
- include/linux/acpi.h                                      |   1 +
- include/linux/thermal.h                                   |   4 +
- include/trace/events/thermal.h                            |  83
-++++++++++++++
- 31 files changed, 2223 insertions(+), 424 deletions(-)
- create mode 100644 drivers/acpi/int340x_thermal.c
- create mode 100644 drivers/thermal/gov_bang_bang.c
- delete mode 100644 drivers/thermal/int3403_thermal.c
- create mode 100644 drivers/thermal/int340x_thermal/Makefile
- create mode 100644 drivers/thermal/int340x_thermal/acpi_thermal_rel.c
- create mode 100644 drivers/thermal/int340x_thermal/acpi_thermal_rel.h
- create mode 100644 drivers/thermal/int340x_thermal/int3400_thermal.c
- create mode 100644 drivers/thermal/int340x_thermal/int3402_thermal.c
- create mode 100644 drivers/thermal/int340x_thermal/int3403_thermal.c
- create mode 100644 include/trace/events/thermal.h
