@@ -1,88 +1,103 @@
 From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: [PATCH v5 11/16] cpufreq: tegra124: Add device tree bindings
-Date: Fri, 24 Oct 2014 17:39:18 +0300
-Message-ID: <1414161563-16812-12-git-send-email-mikko.perttunen@kapsi.fi>
-References: <1414161563-16812-1-git-send-email-mikko.perttunen@kapsi.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1414161563-16812-1-git-send-email-mikko.perttunen@kapsi.fi>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Subject: [PATCH v5 00/16] Tegra124 CL-DVFS / DFLL clocksource + cpufreq
+Date: Fri, 24 Oct 2014 17:39:07 +0300
+Message-ID: <1414161563-16812-1-git-send-email-mikko.perttunen@kapsi.fi>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: pgaikwad@nvidia.com, mturquette@linaro.org, vinceh@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tuomas.tynkkynen@iki.fi, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Tuomas Tynkkynen <ttynkkynen@nvidia.com>, pwalmsley@nvidia.com, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Mikko Perttunen <mikko.perttunen@kapsi.fi>
 List-Id: linux-pm@vger.kernel.org
 
-From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Hi, Tuomas has been busy so I decided to pick up this series and clean it
+up. To the best of my knowledge I've fixed all issues commented on
+v4. I've also updated this to cpufreq-dt (from cpufreq-cpu0) and done some
+other cosmetic changes. I've also removed usage of the proposed of_match_machine
+and reverted to of_is_machine_compatible since at this time there is no
+benefit to having match data and wanting to get this merged :)
 
-The cpufreq driver for Tegra124 will be a different one than the old
-Tegra20 cpufreq driver (tegra-cpufreq), which does not use the device
-tree.
+The series is available in a git repository at
+  git://github.com/cyndis/linux.git cldvfs-v5-out
 
-Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
----
- .../bindings/cpufreq/tegra124-cpufreq.txt          | 44 ++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+Tested on Jetson-TK1 (rev. D)
+
+Original cover letter:
+
+This series implements the DFLL/CL-DVFS clock source for the fast CPU
+cluster on Tegra124, and a cpufreq driver that uses the DFLL for
+clocking the CPU. Most of this is based on Paul Walmsley's public patch
+set from December 2013, which is available at
+http://comments.gmane.org/gmane.linux.ports.tegra/15273
+
+The DFLL clock hardware is a voltage-controlled oscillator plus
+control logic that compares the generated output clock with a
+51 MHz reference clock, and can make decisions to either lower
+or raise the DFLL voltage to keep the output rate close to the
+software-requested rate. The voltage changes are done by
+communicating with an off-chip PMIC via either I2C or PWM.
+As the DFLL oscillator is powered via the CPU rail, using
+the DFLL as the CPU clocksource also gives us dynamic CPU
+voltage scaling.
+
+This series has been tested on the Jetson TK1 (Rev C). Porting this to
+the Venice2 should be simple, though do note that it does not have
+active cooling.
+
+Thanks,
+Tuomas
+
+Mikko Perttunen (1):
+  ARM: tegra: Add CPU regulator to the Jetson TK1 device tree
+
+Paul Walmsley (1):
+  clk: tegra: Add DFLL DVCO reset control for Tegra124
+
+Tuomas Tynkkynen (14):
+  clk: tegra: Add binding for the Tegra124 DFLL clocksource
+  clk: tegra: Add library for the DFLL clock source (open-loop mode)
+  clk: tegra: Add closed loop support for the DFLL
+  clk: tegra: Add functions for parsing CVB tables
+  clk: tegra: Add Tegra124 DFLL clocksource platform driver
+  clk: tegra: Save/restore CCLKG_BURST_POLICY on suspend
+  clk: tegra: Add the DFLL as a possible parent of the cclk_g clock
+  ARM: tegra: Add the DFLL to Tegra124 device tree
+  ARM: tegra: Enable the DFLL on the Jetson TK1
+  cpufreq: tegra124: Add device tree bindings
+  cpufreq: tegra: Rename tegra-cpufreq to tegra20-cpufreq
+  cpufreq: Add cpufreq driver for Tegra124
+  ARM: tegra: Add entries for cpufreq on Tegra124
+  ARM: tegra: enable Tegra124 cpufreq driver by default
+
+ .../bindings/clock/nvidia,tegra124-dfll.txt        |   69 +
+ .../bindings/cpufreq/tegra124-cpufreq.txt          |   44 +
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts          |   14 +-
+ arch/arm/boot/dts/tegra124.dtsi                    |   31 +
+ arch/arm/configs/tegra_defconfig                   |    1 +
+ arch/arm/mach-tegra/Kconfig                        |    1 +
+ drivers/clk/tegra/Makefile                         |    3 +
+ drivers/clk/tegra/clk-dfll.c                       | 1741 ++++++++++++++++++++
+ drivers/clk/tegra/clk-dfll.h                       |   55 +
+ drivers/clk/tegra/clk-tegra-super-gen4.c           |    4 +-
+ drivers/clk/tegra/clk-tegra124-dfll-fcpu.c         |  165 ++
+ drivers/clk/tegra/clk-tegra124.c                   |   61 +
+ drivers/clk/tegra/clk.h                            |    3 +
+ drivers/clk/tegra/cvb.c                            |  133 ++
+ drivers/clk/tegra/cvb.h                            |   67 +
+ drivers/cpufreq/Kconfig.arm                        |   13 +-
+ drivers/cpufreq/Makefile                           |    3 +-
+ drivers/cpufreq/tegra-cpufreq.c                    |  218 ---
+ drivers/cpufreq/tegra124-cpufreq.c                 |  217 +++
+ drivers/cpufreq/tegra20-cpufreq.c                  |  218 +++
+ 20 files changed, 2837 insertions(+), 224 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
  create mode 100644 Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
+ create mode 100644 drivers/clk/tegra/clk-dfll.c
+ create mode 100644 drivers/clk/tegra/clk-dfll.h
+ create mode 100644 drivers/clk/tegra/clk-tegra124-dfll-fcpu.c
+ create mode 100644 drivers/clk/tegra/cvb.c
+ create mode 100644 drivers/clk/tegra/cvb.h
+ delete mode 100644 drivers/cpufreq/tegra-cpufreq.c
+ create mode 100644 drivers/cpufreq/tegra124-cpufreq.c
+ create mode 100644 drivers/cpufreq/tegra20-cpufreq.c
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
-new file mode 100644
-index 0000000..b1669fb
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
-@@ -0,0 +1,44 @@
-+Tegra124 CPU frequency scaling driver bindings
-+----------------------------------------------
-+
-+Both required and optional properties listed below must be defined
-+under node /cpus/cpu@0.
-+
-+Required properties:
-+- clocks: Must contain an entry for each entry in clock-names.
-+  See ../clocks/clock-bindings.txt for details.
-+- clock-names: Must include the following entries:
-+  - cpu_g: Clock mux for the fast CPU cluster.
-+  - cpu_lp: Clock mux for the low-power CPU cluster.
-+  - pll_x: Fast PLL clocksource.
-+  - pll_p: Auxiliary PLL used during fast PLL rate changes.
-+  - dfll: Fast DFLL clocksource that also automatically scales CPU voltage.
-+- vdd-cpu-supply: Regulator for CPU voltage
-+
-+Optional properties:
-+- clock-latency: Specify the possible maximum transition latency for clock,
-+  in unit of nanoseconds.
-+
-+Example:
-+--------
-+cpus {
-+	#address-cells = <1>;
-+	#size-cells = <0>;
-+
-+	cpu@0 {
-+		device_type = "cpu";
-+		compatible = "arm,cortex-a15";
-+		reg = <0>;
-+
-+		clocks = <&tegra_car TEGRA124_CLK_CCLK_G>,
-+			 <&tegra_car TEGRA124_CLK_CCLK_LP>,
-+			 <&tegra_car TEGRA124_CLK_PLL_X>,
-+			 <&tegra_car TEGRA124_CLK_PLL_P>,
-+			 <&dfll>;
-+		clock-names = "cpu_g", "cpu_lp", "pll_x", "pll_p", "dfll";
-+		clock-latency = <300000>;
-+		vdd-cpu-supply: <&vdd_cpu>;
-+	};
-+
-+	<...>
-+};
 -- 
 2.1.0
