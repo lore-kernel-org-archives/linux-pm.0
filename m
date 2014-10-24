@@ -1,47 +1,60 @@
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-Subject: Re: [PATCH v8 0/7] QCOM 8974 and 8084 cpuidle driver
-Date: Fri, 24 Oct 2014 09:51:15 +0530
-Message-ID: <CAHLCerMY3SCNixQjh7k2F=3DK1qa7JMeWsvwv426wNt8A_Vm-A@mail.gmail.com>
-References: <1412718106-17049-1-git-send-email-lina.iyer@linaro.org>
-	<1414078317.4214.4.camel@mm-sol.com>
-	<20141023155435.GA30210@ilina-mac.qualcomm.com>
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: Re: [PATCH 0/4] (CMA_AGGRESSIVE) Make CMA memory be more aggressive
+ about allocation
+Date: Fri, 24 Oct 2014 14:25:53 +0900
+Message-ID: <20141024052553.GE15243@js1304-P5Q-DELUXE>
+References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20141023155435.GA30210@ilina-mac.qualcomm.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "Ivan T. Ivanov" <iivanov@mm-sol.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kevin Hilman <khilman@linaro.org>, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, lakml <linux-arm-kernel@lists.infradead.org>, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from LGEMRELSE7Q.lge.com ([156.147.1.151]:46155 "EHLO
+	lgemrelse7q.lge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752524AbaJXFYu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Oct 2014 01:24:50 -0400
+Content-Disposition: inline
+In-Reply-To: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hui Zhu <zhuhui@xiaomi.com>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, m.szyprowski@samsung.com, akpm@linux-foundation.org, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, hannes@cmpxchg.org, riel@redhat.com, mgorman@suse.de, minchan@kernel.org, nasa4836@gmail.com, ddstreet@ieee.org, hughd@google.com, mingo@kernel.org, rientjes@google.com, peterz@infradead.org, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, paulmck@linux.vnet.ibm.com, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, akinobu.mita@gmail.com, lauraa@codeaurora.org, vbabka@suse.cz, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 
-On Thu, Oct 23, 2014 at 9:24 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
-> On Thu, Oct 23 2014 at 09:31 -0600, Ivan T. Ivanov wrote:
->>
->>
->> Hi,
->>
->> On Tue, 2014-10-07 at 15:41 -0600, Lina Iyer wrote:
->>>
->>> Hi,
->>>
->>> This v8 revision of the cpuidle driver is available at
->>> git.linaro.org:/people/lina.iyer/linux-next cpuidle-v8
->>>
->>
->> Probably I missing something, but should I expect that
->> once these patches are applied driver could be successfully
->> compiled?
->
-> Yes they should.
->>
->>
->> Patches definitely break bisectability. For example [PATCH v8 1/7]
->> is using <soc/qcom/pm.h> which is introduced [PATCH v8 4/7].
->>
-> You are right. I missed checking compilation against each patch.
-> Based on some discussion, I need to see if pm.h is even needed.
->
+On Thu, Oct 16, 2014 at 11:35:47AM +0800, Hui Zhu wrote:
+> In fallbacks of page_alloc.c, MIGRATE_CMA is the fallback of
+> MIGRATE_MOVABLE.
+> MIGRATE_MOVABLE will use MIGRATE_CMA when it doesn't have a page in
+> order that Linux kernel want.
+> 
+> If a system that has a lot of user space program is running, for
+> instance, an Android board, most of memory is in MIGRATE_MOVABLE and
+> allocated.  Before function __rmqueue_fallback get memory from
+> MIGRATE_CMA, the oom_killer will kill a task to release memory when
+> kernel want get MIGRATE_UNMOVABLE memory because fallbacks of
+> MIGRATE_UNMOVABLE are MIGRATE_RECLAIMABLE and MIGRATE_MOVABLE.
+> This status is odd.  The MIGRATE_CMA has a lot free memory but Linux
+> kernel kill some tasks to release memory.
+> 
+> This patch series adds a new function CMA_AGGRESSIVE to make CMA memory
+> be more aggressive about allocation.
+> If function CMA_AGGRESSIVE is available, when Linux kernel call function
+> __rmqueue try to get pages from MIGRATE_MOVABLE and conditions allow,
+> MIGRATE_CMA will be allocated as MIGRATE_MOVABLE first.  If MIGRATE_CMA
+> doesn't have enough pages for allocation, go back to allocate memory from
+> MIGRATE_MOVABLE.
+> Then the memory of MIGRATE_MOVABLE can be kept for MIGRATE_UNMOVABLE and
+> MIGRATE_RECLAIMABLE which doesn't have fallback MIGRATE_CMA.
 
-git test-sequence[1] is your friend.
+Hello,
 
-[1] http://dustin.sallings.org/2010/03/28/git-test-sequence.html
+I did some work similar to this.
+Please reference following links.
+
+https://lkml.org/lkml/2014/5/28/64
+https://lkml.org/lkml/2014/5/28/57
+
+And, aggressive allocation should be postponed until freepage counting
+bug is fixed, because aggressive allocation enlarge the possiblity
+of problem occurence. I tried to fix that bug, too. See following link.
+
+https://lkml.org/lkml/2014/10/23/90
+
+Thanks.
