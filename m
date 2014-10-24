@@ -1,56 +1,61 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v8 0/7] QCOM 8974 and 8084 cpuidle driver
-Date: Fri, 24 Oct 2014 08:30:39 -0600
-Message-ID: <20141024143039.GD30210@ilina-mac.qualcomm.com>
-References: <1412718106-17049-1-git-send-email-lina.iyer@linaro.org>
- <1414078317.4214.4.camel@mm-sol.com>
- <20141023155435.GA30210@ilina-mac.qualcomm.com>
- <1414144885.2025.4.camel@mm-sol.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: lockdep splat in CPU hotplug
+Date: Fri, 24 Oct 2014 16:33:45 +0200
+Message-ID: <20141024143345.GL12706@worktop.programming.kicks-ass.net>
+References: <alpine.LNX.2.00.1410211255531.24255@pobox.suse.cz>
+ <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:50273 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755262AbaJXOeC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Oct 2014 10:34:02 -0400
 Content-Disposition: inline
-In-Reply-To: <1414144885.2025.4.camel@mm-sol.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
-Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
+In-Reply-To: <alpine.LNX.2.00.1410221125280.22681@pobox.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Steven Rostedt <rostedt@goodmis.org>, Dave Jones <davej@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre <nico@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, Oct 24 2014 at 04:01 -0600, Ivan T. Ivanov wrote:
->
->On Thu, 2014-10-23 at 09:54 -0600, Lina Iyer wrote:
->> On Thu, Oct 23 2014 at 09:31 -0600, Ivan T. Ivanov wrote:
->> > >
->> > >Hi,
->> > >
->> > >On Tue, 2014-10-07 at 15:41 -0600, Lina Iyer wrote:
->> > >  Hi,
->> > > >
->> > >  This v8 revision of the cpuidle driver is available at
->> > >  git.linaro.org:/people/lina.iyer/linux-next cpuidle-v8
->> > > >
->> > >
->> > >Probably I missing something, but should I expect that
->> > >once these patches are applied driver could be successfully
->> >  compiled?
->> Yes they should.
->
->Do these patches depends on other patches, which I am missing.
->I am applying them on current linus/master. At least <soc/qcom/scm.h>
->and <soc/qcom/scm-boot.h> are missing from this patch-set v8 :-|
->
+On Wed, Oct 22, 2014 at 11:53:49AM +0200, Jiri Kosina wrote:
+> > The reason for CCing Ingo and Peter is that I can't make any sense of one 
+> > of the stacktraces lockdep is providing.
+> > 
+> > Please have a look at the very first stacktrace in the dump, where lockdep 
+> > is trying to explain where cpu_hotplug.lock#2 has been acquired. It seems 
+> > to imply that cpuidle_pause() is taking cpu_hotplug.lock, but that's not 
+> > the case at all.
+> > 
+> > What am I missing?
 
-Oh sorry, if you look at the cover letter, in the past, these patches
-have been pulled in or being staged.
+> Still, the lockdep stacktrace is bogus and didn't really help 
+> understanding this. Any idea why it's wrong?
 
-You can get the tree and the the patches from 
-https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/cpuidle-v8
+> > -> #1 (cpu_hotplug.lock#2){+.+.+.}:
+> >         [<ffffffff81099fac>] lock_acquire+0xac/0x130
+> >         [<ffffffff815b9f2c>] mutex_lock_nested+0x5c/0x3b0
+> >         [<ffffffff81491892>] cpuidle_pause+0x12/0x30
+> >         [<ffffffff81402314>] dpm_suspend_noirq+0x44/0x340
+> >         [<ffffffff81402958>] dpm_suspend_end+0x38/0x80
+> >         [<ffffffff810a07bd>] hibernation_snapshot+0xcd/0x370
+> >         [<ffffffff810a1248>] hibernate+0x168/0x210
+> >         [<ffffffff8109e9b4>] state_store+0xe4/0xf0
+> >         [<ffffffff813003ef>] kobj_attr_store+0xf/0x20
+> >         [<ffffffff8121e9a3>] sysfs_kf_write+0x43/0x60
+> >         [<ffffffff8121e287>] kernfs_fop_write+0xe7/0x170
+> >         [<ffffffff811a7342>] vfs_write+0xb2/0x1f0
+> >         [<ffffffff811a7da4>] SyS_write+0x44/0xb0
+> >         [<ffffffff815be856>] system_call_fastpath+0x16/0x1b
 
-which are on top of 3.17-rc1, but you should be able to pull it on top
-of yours, without any issue. Do note that some of these patches that I
-have on top of 3.17-rc1 (like the ARM idle states) may already be
-available in linus/master.
+Right, so I've seen it more often, and I'm not sure I can explain
+either.
 
-Hope that helps.
+Lockdep uses save_stack_trace() with trace->skip=3, typically if you
+get ->skip wrong you'd not even see the lock_acquire, so that can't be
+it.
 
-Lina
+The only thing I can come up with is that for some reason the
+intermediate entries are !reliable, save_stack_trace() skips those for
+CONFIG_FRAME_POINTER=y, see
+arch/x86/kernel/stacktrace.c:__save_stack_address().
