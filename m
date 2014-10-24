@@ -1,72 +1,135 @@
-From: Imre Deak <imre.deak@intel.com>
-Subject: [PATCH v2] PM / Sleep: fix recovery during s2ram/hibernation
-Date: Fri, 24 Oct 2014 10:59:09 +0300
-Message-ID: <1414137549-30005-1-git-send-email-imre.deak@intel.com>
-References: <1414136593-25329-1-git-send-email-imre.deak@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:33356 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751729AbaJXH7N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 24 Oct 2014 03:59:13 -0400
-In-Reply-To: <1414136593-25329-1-git-send-email-imre.deak@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v13 4/5] ARM: dts: add main Thermal info to rk3288
+Date: Fri, 24 Oct 2014 01:17:44 -0700
+Message-ID: <20141024081744.GA39338@dtor-ws>
+References: <1414057207-1576-1-git-send-email-caesar.wang@rock-chips.com>
+ <1414057207-1576-5-git-send-email-caesar.wang@rock-chips.com>
+ <20141024004625.GD9463@dtor-ws>
+ <5449A6A4.3070608@rock-chips.com>
+ <E4EEE800-5701-45E5-9E97-D3B036DC2F17@gmail.com>
+ <5449B433.5040003@rock-chips.com>
+ <20141024023236.GA19910@dtor-ws>
+ <5449C5CA.9000009@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5449C5CA.9000009@rock-chips.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Caesar Wang <caesar.wang@rock-chips.com>
+Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Atm, if one of the dev_pm_ops::freeze callbacks fails during the QUIESCE
-phase we don't rollback things correctly calling the thaw and complete
-callbacks. This could leave some devices in a suspended state in case of
-an error during resuming from hibernation.
+Caesar,
 
-Also if an asynchronous suspend_late or freeze_late callback fails
-during the SUSPEND, FREEZE or QUIESCE phases we don't propagate the
-corresponding error correctly, in effect ignoring the error and
-continuing the suspend-to-ram/hibernation. During suspend-to-ram this
-could leave some devices without a valid saved context, leading to a
-failure to reinitialize them during resume. During hibernation this
-could leave some devices active interfeering with the creation /
-restoration of the hibernation image. Also this could leave the
-corresponding devices without a valid saved context and failure to
-reinitialize them during resume.
+On Fri, Oct 24, 2014 at 11:21:46AM +0800, Caesar Wang wrote:
+> Dmitry,
+>=20
+> =E5=9C=A8 2014/10/24 10:32, Dmitry Torokhov =E5=86=99=E9=81=93:
+> >On Fri, Oct 24, 2014 at 10:06:43AM +0800, Caesar Wang wrote:
+> >>=E5=9C=A8 2014/10/24 9:37, Dmitry Torokhov =E5=86=99=E9=81=93:
+> >>>On October 23, 2014 6:08:52 PM PDT, Caesar Wang <caesar.wang@rock-=
+chips.com> wrote:
+> >>>>Dmitry,
+> >>>>
+> >>>>=E5=9C=A8 2014/10/24 8:46, Dmitry Torokhov =E5=86=99=E9=81=93:
+> >>>>>Hi Caesar,
+> >>>>>
+> >>>>>On Thu, Oct 23, 2014 at 05:40:06PM +0800, Caesar Wang wrote:
+> >>>>>>This patch is depend on rk3288-thermal.dtsi,or
+> >>>>>>it will compile error.
+> >>>>>>
+> >>>>>>If the temperature over a period of time High,over 120C
+> >>>>>>the resulting TSHUT gave CRU module,let it reset
+> >>>>>>the entire chip,or via GPIO give PMIC.
+> >>>>>>
+> >>>>>>Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+> >>>>>>---
+> >>>>>>   arch/arm/boot/dts/rk3288.dtsi | 21 +++++++++++++++++++++
+> >>>>>>   1 file changed, 21 insertions(+)
+> >>>>>>
+> >>>>>>diff --git a/arch/arm/boot/dts/rk3288.dtsi
+> >>>>b/arch/arm/boot/dts/rk3288.dtsi
+> >>>>>>index cb18bb4..85fc17a 100644
+> >>>>>>--- a/arch/arm/boot/dts/rk3288.dtsi
+> >>>>>>+++ b/arch/arm/boot/dts/rk3288.dtsi
+> >>>>>>@@ -15,6 +15,7 @@
+> >>>>>>   #include <dt-bindings/interrupt-controller/arm-gic.h>
+> >>>>>>   #include <dt-bindings/pinctrl/rockchip.h>
+> >>>>>>   #include <dt-bindings/clock/rk3288-cru.h>
+> >>>>>>+#include <dt-bindings/thermal/thermal.h>
+> >>>>>>   #include "skeleton.dtsi"
+> >>>>>>   / {
+> >>>>>>@@ -66,6 +67,7 @@
+> >>>>>>   				 216000  900000
+> >>>>>>   				 126000  900000
+> >>>>>>   			>;
+> >>>>>>+			#cooling-cells =3D <2>; /* min followed by max */
+> >>>>>>   			clock-latency =3D <40000>;
+> >>>>>>   			clocks =3D <&cru ARMCLK>;
+> >>>>>>   		};
+> >>>>>>@@ -346,6 +348,19 @@
+> >>>>>>   		status =3D "disabled";
+> >>>>>>   	};
+> >>>>>>+	tsadc: tsadc@ff280000 {
+> >>>>>>+		compatible =3D "rockchip,rk3288-tsadc";
+> >>>>>>+		reg =3D <0xff280000 0x100>;
+> >>>>>>+		interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
+> >>>>>>+		clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
+> >>>>>>+		clock-names =3D "tsadc", "apb_pclk";
+> >>>>>>+		pinctrl-names =3D "default";
+> >>>>>>+		pinctrl-0 =3D <&otp_out>;
+> >>>>>>+		#thermal-sensor-cells =3D <1>;
+> >>>>>>+		hw-shut-temp =3D <120000>;
+> >>>>>I do not think this is a good value. You have (in the other DTS =
+file)
+> >>>>>passive trip point at 80 and critical (which should result in or=
+derly
+> >>>>>shutdown) at 125. But here you define hardware-controlled shutdo=
+wn at
+> >>>>>120C, which is backwards. You should have:
+> >>>>>
+> >>>>>passive <=3D critical <=3D hardware
+> >>>>Hmmm....
+> >>>>but, the system will shutdown when temperature over critial value=
+,
+> >>>>there is no chance of triggering the TSHUT.
+> >>>>
+> >>>>If the temperature over a period of time High,as we know,
+> >>>>the resulting TSHUT gave CRU module,let it hot-reset the entire c=
+hip,
+> >>>>or via GPIO give PMIC cold-reset the entire chip.
+> >>>Having tshut trigger is not the goal, tshut is the measure of last=
+ resort. If we can handle thermal conditions without triggering tshut, =
+we achieved our goal.
+> >>>
+> >>>Tshut triggering is " oh, crap, nothing we tried works" scenario.
+> >>I don't think so.
+> >>
+> >>In general,We should have:
+> >>passive <=3D hardware(reset entire chip) <=3D critical(shutdown)
+> >>
+> >>The temperature be rising qulckly if have some other conditions,
+> >>the "critical" will play a role.
+> >No, I think it should be the other way around: if we are unable to c=
+ool
+> >down the laptop under load we need to shut it down and let it cool. =
+If
+> >for some reason we are unable to shut it down in orderly fashion (ke=
+rnel
+> >is stuck holding a lock or similar) then hardware will reset it.
+> >
+> >At least that's how I understand it.
+> hmmm....
+>=20
+> OK,agree,this is a option.
+>=20
+> I think I should set hw-shut-temp =3D <125000>;
+> and critical =3D <120000>;
+>=20
 
-v2:
-- call dpm_resume_end() unconditionally, it's guaranteed that error
-  is non-zero
+Yes, this should work, thanks!
 
-Signed-off-by: Imre Deak <imre.deak@intel.com>
----
- drivers/base/power/main.c | 2 ++
- kernel/power/hibernate.c  | 3 ++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 4497319..9717d5f 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1266,6 +1266,8 @@ int dpm_suspend_late(pm_message_t state)
- 	}
- 	mutex_unlock(&dpm_list_mtx);
- 	async_synchronize_full();
-+	if (!error)
-+		error = async_error;
- 	if (error) {
- 		suspend_stats.failed_suspend_late++;
- 		dpm_save_failed_step(SUSPEND_SUSPEND_LATE);
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index a9dfa79..594ee7f 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -502,8 +502,9 @@ int hibernation_restore(int platform_mode)
- 	error = dpm_suspend_start(PMSG_QUIESCE);
- 	if (!error) {
- 		error = resume_target_kernel(platform_mode);
--		dpm_resume_end(PMSG_RECOVER);
-+		BUG_ON(!error);
- 	}
-+	dpm_resume_end(PMSG_RECOVER);
- 	pm_restore_gfp_mask();
- 	resume_console();
- 	pm_restore_console();
--- 
-1.8.4
-
+--=20
+Dmitry
