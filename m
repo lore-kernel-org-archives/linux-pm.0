@@ -1,178 +1,198 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [RESEND 2] cpufreq: dt: disable unsupported OPPs
-Date: Fri, 24 Oct 2014 14:30:16 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1410241428050.30449@ayla.of.borg>
-References: <48734362.lRa73hezrZ@vostro.rjw.lan>  <1413454100-23009-1-git-send-email-l.stach@pengutronix.de>  <8590662.lsNXszcTd0@vostro.rjw.lan>  <CAMuHMdV2gPOZoV62rSNjpD=dJ43EE+s0wtRW4ncLWU-J-eHLDg@mail.gmail.com>  <1414073448.2764.1.camel@pengutronix.de>
-  <CAMuHMdXAYhAEFNLCcq91xctYwaCZnJt-V+U+vYy1iC5Kb=qqjw@mail.gmail.com> <1414145989.6267.3.camel@pengutronix.de>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI and power management updates for 3.18-rc1
+Date: Fri, 24 Oct 2014 14:38:17 +0200
+Message-ID: <CAJZ5v0jo9hABMsOC0JUi=A+Sxj9g_JP3fMX5_Gj+pEkeAeQ3yQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from laurent.telenet-ops.be ([195.130.137.89]:44561 "EHLO
-	laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756144AbaJXMaS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Oct 2014 08:30:18 -0400
-In-Reply-To: <1414145989.6267.3.camel@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 
-	Hi Lucas,
+Hi Linus,
 
-On Fri, 24 Oct 2014, Lucas Stach wrote:
-> Am Donnerstag, den 23.10.2014, 16:43 +0200 schrieb Geert Uytterhoeven=
-:
-> > On Thu, Oct 23, 2014 at 4:10 PM, Lucas Stach <l.stach@pengutronix.d=
-e> wrote:
-> > > Am Donnerstag, den 23.10.2014, 11:19 +0200 schrieb Geert Uytterho=
-even:
-> > >> On Tue, Oct 21, 2014 at 4:19 PM, Rafael J. Wysocki <rjw@rjwysock=
-i.net> wrote:
-> > >> > On Thursday, October 16, 2014 12:08:20 PM Lucas Stach wrote:
-> > >> >> If the regulator connected to the CPU voltage plane doesn't
-> > >> >> support an OPP specified voltage with the acceptable toleranc=
-e
-> > >> >> it's better to just disable the OPP instead of constantly
-> > >> >> failing the voltage scaling later on.
-> > >> >>
-> > >> >> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-> > >> >> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > >> >
-> > >> > Applied, thanks!
-> > >>
-> > >> This commit
-> > >> (http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git=
-/commit/?h=3Dlinux-next&id=3Dd7bbd4cd0359d781b67c9e621d4bbfd1bb2f3783)
-> > >> causes a boot regression on r8a7791/koelsch. It hangs after:
-> > >>
-> > >>     TCP: cubic registered
-> > >>     Initializing XFRM netlink socket
-> > >>     NET: Registered protocol family 17
-> > >>     NET: Registered protocol family 15
-> > >>     ata1: link resume succeeded after 1 retries
-> > >>     ata1: SATA link down (SStatus 0 SControl 300)
-> > >>     random: nonblocking pool is initialized
-> >=20
-> > >> Reverting this commit fixes the issue, and makes the boot contin=
-ue with:
-> > >>
-> > >>     cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted freq: =
-1300000 KHz
-> > >>     cpufreq: __cpufreq_add_dev: CPU0: Unlisted initial frequency
-> > >> changed to: 1312500 KHz
-> > >>     cpu cpu1: failed to get cpu-2 clock: 1
-> > >>     cpufreq_dt: cpufreq_init: Failed to allocate resources: -2
->=20
-> I thought a bit more about about this to make sure this isn't a fault=
- on
-> my side, but can't seem to make any sense out of this. Can you please
-> print out the value of opp_freq in each iteration of the while loop a=
-nd
-> also the return value of regulator_is_supported_voltage()? This would
-> help me a lot to understand what's happening here.
+Please pull from
 
-It gets into an infinite loop doing:
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.18-rc2
 
-=C2=A0 =C2=A0 cpufreq_dt: cpufreq_init:232: opp_freq =3D 0
-=C2=A0 =C2=A0 cpufreq_dt: cpufreq_init:240: opp_freq =3D 375000000
-=C2=A0 =C2=A0 cpufreq_dt: cpufreq_init:247: [ 1000000, 1010000 ] is sup=
-ported
-=C2=A0 =C2=A0 cpufreq_dt: cpufreq_init:258: opp_freq =3D 375000001
-    ...
+to receive ACPI and power management updates for v3.18-rc2 with
+top-most commit a91e99e27a683608d221fb18b70d7de9d801de4a
 
-The loop is only aborted if dev_pm_opp_find_freq_ceil() returns an erro=
-r,
-but that never happens.
+ Merge branches 'pm-cpuidle' and 'pm-cpufreq'
 
-I think it should try the next frequency on each subsequent iteration, =
-right?
-So I came up with the fix below. After that it behaves better:
+on top of commit f114040e3ea6e07372334ade75d1ee0775c355e1
 
-    cpufreq_dt: cpufreq_init:233: opp_freq =3D 0
-    cpufreq_dt: cpufreq_init:241: opp_freq =3D 375000000
-    cpufreq_dt: cpufreq_init:248: [ 1000000, 1010000 ] is supported
-    cpufreq_dt: cpufreq_init:259: opp_freq =3D 375000001
-    cpufreq_dt: cpufreq_init:233: opp_freq =3D 375000001
-    cpufreq_dt: cpufreq_init:241: opp_freq =3D 750000000
-    cpufreq_dt: cpufreq_init:248: [ 1000000, 1010000 ] is supported
-    cpufreq_dt: cpufreq_init:259: opp_freq =3D 750000001
-    cpufreq_dt: cpufreq_init:233: opp_freq =3D 750000001
-    cpufreq_dt: cpufreq_init:241: opp_freq =3D 937500000
-    cpufreq_dt: cpufreq_init:248: [ 1000000, 1010000 ] is supported
-    cpufreq_dt: cpufreq_init:259: opp_freq =3D 937500001
-    cpufreq_dt: cpufreq_init:233: opp_freq =3D 937500001
-    cpufreq_dt: cpufreq_init:241: opp_freq =3D 1125000000
-    cpufreq_dt: cpufreq_init:248: [ 1000000, 1010000 ] is supported
-    cpufreq_dt: cpufreq_init:259: opp_freq =3D 1125000001
-    cpufreq_dt: cpufreq_init:233: opp_freq =3D 1125000001
-    cpufreq_dt: cpufreq_init:241: opp_freq =3D 1312500000
-    cpufreq_dt: cpufreq_init:248: [ 1000000, 1010000 ] is supported
-    cpufreq_dt: cpufreq_init:259: opp_freq =3D 1312500001
-    cpufreq_dt: cpufreq_init:233: opp_freq =3D 1312500001
-    cpufreq_dt: cpufreq_init:241: opp_freq =3D 1500000000
-    cpufreq_dt: cpufreq_init:248: [ 1000000, 1010000 ] is supported
-    cpufreq_dt: cpufreq_init:259: opp_freq =3D 1500000001
-    cpufreq_dt: cpufreq_init:233: opp_freq =3D 1500000001
-    cpufreq_dt: cpufreq_init:237: Error -34 =3D> break
+ Linux 3.18-rc1
 
-=46rom e5f401eee8b316587fc385cac7acdd92b33adec7 Mon Sep 17 00:00:00 200=
-1
-=46rom: Geert Uytterhoeven <geert+renesas@glider.be>
-Date: Fri, 24 Oct 2014 14:23:14 +0200
-Subject: [PATCH] cpufreq: dt: Don't reset opp_freq in subsequent loop
- iterations
+This is material that didn't make it to my 3.18-rc1 pull request
+for various reasons, mostly related to timing and travel
+(LinuxCon EU / LPC) plus a couple of fixes for recent bugs.
+The only really new thing here is the PM QoS class for memory
+bandwidth, but it is simple enough and users of it will be added
+in the next cycle.  One major change in behavior is that platform
+devices enumerated by ACPI will use 32-bit DMA mask by default.
+Also included is an ACPICA update to a new upstream release,
+but that's mostly cleanups, changes in tools and similar.  The
+rest is fixes and cleanups mostly.
 
-opp_freq is incremented at the end of the loop, to find the next
-supported frequency, but this is overturned by its re-initialization
-in next iteration, causing an infinite loop.
+Specifics:
 
-Move the initialization of opp_freq outside the loop to fix this.
+ - Fix for a recent PCI power management change that overlooked
+   the fact that some IRQ chips might not be able to configure
+   PCIe PME for system wakeup from Lucas Stach.
 
-=46ixes: d7bbd4cd0359d781 ("cpufreq: dt: disable unsupported OPPs")
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- drivers/cpufreq/cpufreq-dt.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ - Fix for a bug introduced in 3.17 where acpi_device_wakeup()
+   is called with a wrong ordering of arguments from Zhang Rui.
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.=
-c
-index f6e39a2e324ffc87..2f25958053778ad1 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -219,6 +219,8 @@ static int cpufreq_init(struct cpufreq_policy *poli=
-cy)
- 		transition_latency =3D CPUFREQ_ETERNAL;
-=20
- 	if (!IS_ERR(cpu_reg)) {
-+		unsigned long opp_freq =3D 0;
-+
- 		/*
- 		 * Disable any OPPs where the connected regulator isn't able to
- 		 * provide the specified voltage and record minimum and maximum
-@@ -226,7 +228,7 @@ static int cpufreq_init(struct cpufreq_policy *poli=
-cy)
- 		 */
- 		while (1) {
- 			struct dev_pm_opp *opp;
--			unsigned long opp_freq =3D 0, opp_uV, tol_uV;
-+			unsigned long opp_uV, tol_uV;
-=20
- 			rcu_read_lock();
- 			opp =3D dev_pm_opp_find_freq_ceil(cpu_dev, &opp_freq);
---=20
-1.9.1
+ - A bunch of intel_pstate driver fixes (all -stable candidates)
+   from Dirk Brandewie, Gabriele Mazzotta and Pali Roh=C3=A1r.
 
-Gr{oetje,eeting}s,
+ - Fixes for a rather long-standing problem with the OOM killer
+   and the freezer that frozen processes killed by the OOM do
+   not actually release any memory until they are thawed, so
+   OOM-killing them is rather pointless, with a couple of
+   cleanups on top (Michal Hocko, Cong Wang, Rafael J Wysocki).
 
-						Geert
+ - ACPICA update to upstream release 20140926, inlcuding mostly
+   cleanups reducing differences between the upstream ACPICA and
+   the kernel code, tools changes (acpidump, acpiexec) and
+   support for the _DDN object (Bob Moore, Lv Zheng).
 
+ - New PM QoS class for memory bandwidth from Tomeu Vizoso.
+
+ - Default 32-bit DMA mask for platform devices enumerated by ACPI
+   (this change is mostly needed for some drivers development in
+   progress targeted at 3.19) from Heikki Krogerus.
+
+ - ACPI EC driver cleanups, mostly related to debugging, from
+   Lv Zheng.
+
+ - cpufreq-dt driver updates from Thomas Petazzoni.
+
+ - powernv cpuidle driver update from Preeti U Murthy.
+
+Thanks!
+
+
+---------------
+
+Bob Moore (4):
+      ACPICA: Add string for _DDN method name.
+      ACPICA: iASL/Disassembler: Add support for hardware summary mapfi=
+les.
+      ACPICA: acpiexec: Do not put STDIN into raw mode unless it is a t=
+erminal.
+      ACPICA: Update version to 20140926.
+
+Cong Wang (2):
+      freezer: Do not freeze tasks killed by OOM killer
+      freezer: remove obsolete comments in __thaw_task()
+
+Dirk Brandewie (4):
+      cpufreq: expose scaling_cur_freq sysfs file for set_policy() driv=
+ers
+      intel_pstate: Don't lose sysfs settings during cpu offline
+      intel_pstate: Fix BYT frequency reporting
+      intel_pstate: Correct BYT VID values.
+
+Gabriele Mazzotta (1):
+      cpufreq: intel_pstate: Reflect current no_turbo state correctly
+
+Heikki Krogerus (1):
+      ACPI / platform: provide default DMA mask
+
+Lucas Stach (1):
+      PCI / PM: handle failure to enable wakeup on PCIe PME
+
+Lv Zheng (11):
+      ACPICA: acpidump: Add ACPI 1.0 RSDP support.
+      ACPICA: Events: Reduce indent divergences of events files.
+      ACPICA: Events: Reduce source code difference in
+acpi_install_gpe_handler().
+      ACPICA: Events: Update GPE handler removal, match behavior of
+handler install.
+      ACPICA: Events: Reduce source code difference for the
+ACPI_EVENT_FLAG_HANDLE support.
+      ACPICA: Events: Reduce source code difference for the
+ACPI_EVENT_FLAG_HANDLE renaming.
+      ACPI / EC: Add CPU ID to debugging messages.
+      ACPI / EC: Enhance the logs to apply to QR_EC transactions.
+      ACPI / EC: Add detailed command/query debugging information.
+      ACPI / EC: Refine event/query debugging messages.
+      ACPI / EC: Cleanup coding style.
+
+Michal Hocko (2):
+      OOM, PM: OOM killed task shouldn't escape PM suspend
+      PM: convert do_each_thread to for_each_process_thread
+
+Pali Roh=C3=A1r (1):
+      cpufreq: intel_pstate: Fix setting max_perf_pct in performance po=
+licy
+
+Preeti U. Murthy (1):
+      cpuidle: powernv: Populate cpuidle state details by querying the
+device-tree
+
+Rafael J. Wysocki (1):
+      PM / freezer: Clean up code after recent fixes
+
+Thomas Petazzoni (3):
+      cpufreq: allow driver-specific data
+      cpufreq: cpufreq-dt: extend with platform_data
+      cpufreq: cpufreq-dt: adjust message related to regulators
+
+Tomeu Vizoso (1):
+      PM / QoS: Add PM_QOS_MEMORY_BANDWIDTH class
+
+Zhang Rui (1):
+      ACPI: invoke acpi_device_wakeup() with correct parameters
+
+---------------
+
+ Documentation/power/pm_qos_interface.txt           |   4 +-
+ drivers/acpi/acpi_platform.c                       |   2 +
+ drivers/acpi/acpica/achware.h                      |   2 +-
+ drivers/acpi/acpica/aclocal.h                      |   4 +-
+ drivers/acpi/acpica/actables.h                     |   2 +
+ drivers/acpi/acpica/amlresrc.h                     |  34 +++++++
+ drivers/acpi/acpica/evgpe.c                        |  23 ++---
+ drivers/acpi/acpica/evgpeinit.c                    |   1 +
+ drivers/acpi/acpica/evxface.c                      |  27 +++--
+ drivers/acpi/acpica/evxfevnt.c                     |  40 +++++---
+ drivers/acpi/acpica/evxfgpe.c                      |  12 +--
+ drivers/acpi/acpica/hwgpe.c                        |   9 +-
+ drivers/acpi/acpica/tbxfroot.c                     |  33 ++++++-
+ drivers/acpi/device_pm.c                           |   2 +-
+ drivers/acpi/ec.c                                  | 107 +++++++++++++=
+-------
+ drivers/acpi/scan.c                                |   2 +-
+ drivers/acpi/sysfs.c                               |   4 +-
+ drivers/cpufreq/cpufreq-dt.c                       |  21 +++-
+ drivers/cpufreq/cpufreq.c                          |  38 +++++--
+ drivers/cpufreq/intel_pstate.c                     | 110 +++++++++++++=
++++-----
+ drivers/cpuidle/cpuidle-powernv.c                  |  27 ++++-
+ drivers/pci/pcie/pme.c                             |   6 +-
+ include/acpi/acnames.h                             |   1 +
+ include/acpi/acpixf.h                              |   2 +-
+ include/acpi/actypes.h                             |   4 +-
+ include/linux/cpufreq-dt.h                         |  22 +++++
+ include/linux/cpufreq.h                            |   2 +
+ include/linux/oom.h                                |   3 +
+ include/linux/pm_qos.h                             |   5 +-
+ kernel/freezer.c                                   |   9 +-
+ kernel/power/process.c                             |  57 +++++++++--
+ kernel/power/qos.c                                 |  27 ++++-
+ mm/oom_kill.c                                      |  17 ++++
+ mm/page_alloc.c                                    |   8 ++
+ .../acpi/os_specific/service_layers/osunixxf.c     |   8 ++
+ tools/power/acpi/tools/acpidump/apdump.c           |   2 +-
+ 36 files changed, 527 insertions(+), 150 deletions(-)
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-=
-m68k.org
-
-In personal conversations with technical people, I call myself a hacker=
-=2E But
-when I'm talking to journalists I just say "programmer" or something li=
-ke that.
-							    -- Linus Torvalds
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
