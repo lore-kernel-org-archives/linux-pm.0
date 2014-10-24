@@ -1,48 +1,40 @@
-From: =?UTF-8?B?SsO2cmctVm9sa2VyIFBlZXR6?= <jvpeetz@web.de>
-Subject: Re: Regression: USB mouse only recognized w/o commit "ACPI / PM:
- Always enable wakeup GPEs ..."
-Date: Fri, 24 Oct 2014 09:03:04 +0200
-Message-ID: <5449F9A8.2070602@web.de>
-References: <54497F14.8080004@web.de>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH V2 0/2] cpufreq: cpufreq-dt: Improvements for set_target()
+Date: Fri, 24 Oct 2014 09:21:04 +0200
+Message-ID: <5449FDE0.9020101@i2se.com>
+References: <1413583789-24294-1-git-send-email-stefan.wahren@i2se.com> <CAKohpokjczrGvZ6e7JOwkPtq1-MC0Cr_s+bp=wwKt4x+FdumWQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <54497F14.8080004@web.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.17.13]:62578 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750964AbaJXHUw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Oct 2014 03:20:52 -0400
+In-Reply-To: <CAKohpokjczrGvZ6e7JOwkPtq1-MC0Cr_s+bp=wwKt4x+FdumWQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi,
+Am 20.10.2014 um 06:43 schrieb Viresh Kumar:
+> On 18 October 2014 03:39, Stefan Wahren <stefan.wahren@i2se.com> wrote:
+>> This patch series contains 2 improvements for set_target().
+>>
+>> changes in V2:
+>>   - rebase because of name change cpufreq-cpu0 to cpufreq-dt
+>>
+>> Stefan Wahren (2):
+>>   cpufreq: cpufreq-dt: Improve debug about matching OPP
+>>   cpufreq: cpufreq-dt: Handle regulator_get_voltage() failure
+>>
+>>  drivers/cpufreq/cpufreq-dt.c |    9 +++++++--
+>>  1 file changed, 7 insertions(+), 2 deletions(-)
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Rafael J. Wysocki wrote on 10/24/2014 00:39:> On 10/24/2014 12:20 AM,
-J=C3=B6rg-Volker Peetz wrote:
->> Hi,
->
-> Hi,
->
->> on an HP Pavilion dv7 notebook with stable kernel 3.17.1 a USB mouse=
- is only
->> recognized w/o commit f35cec255557d1037ff0d772edfd6e7b1e92cdc0 "ACPI=
- / PM:
->> Always enable wakeup GPES ...", config file attached.
->> Any idea?
->
-> There is one known bug in this commit, which should be fixed by:
->
->
-https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit=
-/?h=3Dlinux-next&id=3D67598a1d3140a66f57aa6bcb8d22c4c2b7e910f5
->
->
-> If applying that doesn't help, please send a report to
-> linux-acpi@vger.kernel.org (and you may CC linux-pm@vger.kernel.org t=
-oo).
->
-> Rafael
+Thanks. But maybe the patch series won't apply anymore.
 
-thank you very much, Rafael, the suggested fix helps indeed.
+Should i rebase again?
 
-Regards,
-jvp.
+Stefan
+
