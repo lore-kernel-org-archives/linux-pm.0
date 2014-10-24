@@ -1,14 +1,14 @@
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v13 4/5] ARM: dts: add main Thermal info to rk3288
-Date: Thu, 23 Oct 2014 17:46:25 -0700
-Message-ID: <20141024004625.GD9463@dtor-ws>
+Subject: Re: [PATCH v13 3/5] ARM: dts: add RK3288 Thermal data
+Date: Thu, 23 Oct 2014 17:48:11 -0700
+Message-ID: <20141024004811.GE9463@dtor-ws>
 References: <1414057207-1576-1-git-send-email-caesar.wang@rock-chips.com>
- <1414057207-1576-5-git-send-email-caesar.wang@rock-chips.com>
+ <1414057207-1576-4-git-send-email-caesar.wang@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-doc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1414057207-1576-5-git-send-email-caesar.wang@rock-chips.com>
+In-Reply-To: <1414057207-1576-4-git-send-email-caesar.wang@rock-chips.com>
 Sender: linux-doc-owner@vger.kernel.org
 To: Caesar Wang <caesar.wang@rock-chips.com>
 Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com
@@ -16,60 +16,51 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi Caesar,
 
-On Thu, Oct 23, 2014 at 05:40:06PM +0800, Caesar Wang wrote:
-> This patch is depend on rk3288-thermal.dtsi,or
-> it will compile error.
-> 
-> If the temperature over a period of time High,over 120C
-> the resulting TSHUT gave CRU module,let it reset
-> the entire chip,or via GPIO give PMIC.
+On Thu, Oct 23, 2014 at 05:40:05PM +0800, Caesar Wang wrote:
+> This patch changes a dtsi file to contain the thermal data
+> on RK3288 and later SoCs. This data will
+> enable a thermal shutdown over 125C.
 > 
 > Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
 > ---
->  arch/arm/boot/dts/rk3288.dtsi | 21 +++++++++++++++++++++
->  1 file changed, 21 insertions(+)
+>  arch/arm/boot/dts/rk3288-thermal.dtsi | 65 +++++++++++++++++++++++++++++++++++
+>  1 file changed, 65 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/rk3288-thermal.dtsi
 > 
-> diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
-> index cb18bb4..85fc17a 100644
-> --- a/arch/arm/boot/dts/rk3288.dtsi
-> +++ b/arch/arm/boot/dts/rk3288.dtsi
-> @@ -15,6 +15,7 @@
->  #include <dt-bindings/interrupt-controller/arm-gic.h>
->  #include <dt-bindings/pinctrl/rockchip.h>
->  #include <dt-bindings/clock/rk3288-cru.h>
+> diff --git a/arch/arm/boot/dts/rk3288-thermal.dtsi b/arch/arm/boot/dts/rk3288-thermal.dtsi
+> new file mode 100644
+> index 0000000..c361262
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/rk3288-thermal.dtsi
+> @@ -0,0 +1,65 @@
+> +/*
+> + * Device Tree Source for RK3288 SoC thermal
+> + *
+> + * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2.  This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + */
+> +
 > +#include <dt-bindings/thermal/thermal.h>
->  #include "skeleton.dtsi"
->  
->  / {
-> @@ -66,6 +67,7 @@
->  				 216000  900000
->  				 126000  900000
->  			>;
-> +			#cooling-cells = <2>; /* min followed by max */
->  			clock-latency = <40000>;
->  			clocks = <&cru ARMCLK>;
->  		};
-> @@ -346,6 +348,19 @@
->  		status = "disabled";
->  	};
->  
-> +	tsadc: tsadc@ff280000 {
-> +		compatible = "rockchip,rk3288-tsadc";
-> +		reg = <0xff280000 0x100>;
-> +		interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-> +		clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-> +		clock-names = "tsadc", "apb_pclk";
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&otp_out>;
-> +		#thermal-sensor-cells = <1>;
-> +		hw-shut-temp = <120000>;
+> +
+> +reserve_thermal: reserve_thermal {
+> +	polling-delay-passive = <500>; /* milliseconds */
+> +	polling-delay = <1000>; /* milliseconds */
+> +
+> +			/* sensor	ID */
+> +	thermal-sensors = <&tsadc	0>;
+> +
+> +};
+> +
+> +cpu_thermal: cpu_thermal {
+> +	polling-delay-passive = <500>; /* milliseconds */
+> +	polling-delay = <1000>; /* milliseconds */
 
-I do not think this is a good value. You have (in the other DTS file)
-passive trip point at 80 and critical (which should result in orderly
-shutdown) at 125. But here you define hardware-controlled shutdown at
-120C, which is backwards. You should have:
-
-passive <= critical <= hardware
+Given that the hardware supports alarm interrupts I think we should be
+able to lower polling frequency. I'd say 5 seconds for polling-delay and
+1 second for when we trip over passive point?
 
 Thanks.
 
