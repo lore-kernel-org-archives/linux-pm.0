@@ -1,70 +1,78 @@
-From: "Ivan T. Ivanov" <iivanov@mm-sol.com>
-Subject: Re: [PATCH v8 0/7] QCOM 8974 and 8084 cpuidle driver
-Date: Fri, 24 Oct 2014 18:10:01 +0300
-Message-ID: <1414163401.15302.10.camel@mm-sol.com>
-References: <1412718106-17049-1-git-send-email-lina.iyer@linaro.org>
-	 <1414078317.4214.4.camel@mm-sol.com>
-	 <20141023155435.GA30210@ilina-mac.qualcomm.com>
-	 <1414144885.2025.4.camel@mm-sol.com>
-	 <20141024143039.GD30210@ilina-mac.qualcomm.com>
+From: Vladimir Zapolskiy <vladimir_zapolskiy-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH v5 03/16] clk: tegra: Add closed loop support for the
+ DFLL
+Date: Fri, 24 Oct 2014 18:13:30 +0300
+Message-ID: <544A6C9A.9050404@mentor.com>
+References: <1414161563-16812-1-git-send-email-mikko.perttunen@kapsi.fi> <1414161563-16812-4-git-send-email-mikko.perttunen@kapsi.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ns.mm-sol.com ([37.157.136.199]:47504 "EHLO extserv.mm-sol.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751907AbaJXPJs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 24 Oct 2014 11:09:48 -0400
-In-Reply-To: <20141024143039.GD30210@ilina-mac.qualcomm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1414161563-16812-4-git-send-email-mikko.perttunen-/1wQRMveznE@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+Cc: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 
-
-On Fri, 2014-10-24 at 08:30 -0600, Lina Iyer wrote:
-> On Fri, Oct 24 2014 at 04:01 -0600, Ivan T. Ivanov wrote:
-> > >
-> > >On Thu, 2014-10-23 at 09:54 -0600, Lina Iyer wrote:
-> > >  On Thu, Oct 23 2014 at 09:31 -0600, Ivan T. Ivanov wrote:
-> > > > > >
-> > > > > >Hi,
-> > > > > >
-> > > > > >On Tue, 2014-10-07 at 15:41 -0600, Lina Iyer wrote:
-> > > > >   Hi,
-> > > > > > >
-> > > > >   This v8 revision of the cpuidle driver is available at
-> > > > >   git.linaro.org:/people/lina.iyer/linux-next cpuidle-v8
-> > > > > > >
-> > > > > >
-> > > > > >Probably I missing something, but should I expect that
-> > > > > >once these patches are applied driver could be successfully
-> > > >   compiled?
-> > >  Yes they should.
-> > >
-> > >Do these patches depends on other patches, which I am missing.
-> > >I am applying them on current linus/master. At least 
-> > 
-> > >and <soc/qcom/scm-boot.h> are missing from this patch-set v8 :-|
-> > >
+On 24.10.2014 17:39, Mikko Perttunen wrote:
+> From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 > 
-> Oh sorry, if you look at the cover letter, in the past, these patches
-> have been pulled in or being staged.
+> With closed loop support, the clock rate of the DFLL can be adjusted.
 > 
-> You can get the tree and the the patches from
-
-> https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/cpuidle-v8
+> The oscillator itself in the DFLL is a free-running oscillator whose
+> rate is directly determined the supply voltage. However, the DFLL
+> module contains logic to compare the DFLL output rate to a fixed
+> reference clock (51 MHz) and make a decision to either lower or raise
+> the DFLL supply voltage. The DFLL module can then autonomously change
+> the supply voltage by communicating with an off-chip PMIC via either I2C
+> or PWM signals. This driver currently supports only I2C.
 > 
-> which are on top of 3.17-rc1, but you should be able to pull it on 
-> top
-> of yours, without any issue. Do note that some of these patches that 
-> I
-> have on top of 3.17-rc1 (like the ARM idle states) may already be
-> available in linus/master.
+> Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> Signed-off-by: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+> ---
+>  drivers/clk/tegra/clk-dfll.c | 657 ++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 654 insertions(+), 3 deletions(-)
 > 
-> Hope that helps.
+> diff --git a/drivers/clk/tegra/clk-dfll.c b/drivers/clk/tegra/clk-dfll.c
+> index 358c5d4..e71f4fb 100644
+> --- a/drivers/clk/tegra/clk-dfll.c
+> +++ b/drivers/clk/tegra/clk-dfll.c
 
-Yep, this is better.
+[snip]
 
-Thank you,
-Ivan
+> +/**
+>   * dfll_fetch_common_params - read DFLL parameters from the device tree
+>   * @td: DFLL instance
+>   *
+> @@ -923,6 +1563,13 @@ static int dfll_fetch_common_params(struct tegra_dfll *td)
+>  	bool ok = true;
+>  
+>  	ok &= read_dt_param(td, "nvidia,droop-ctrl", &td->droop_ctrl);
+> +	ok &= read_dt_param(td, "nvidia,sample-rate", &td->sample_rate);
+> +	ok &= read_dt_param(td, "nvidia,force-mode", &td->force_mode);
+> +	ok &= read_dt_param(td, "nvidia,cf", &td->cf);
+> +	ok &= read_dt_param(td, "nvidia,ci", &td->ci);
+> +	ok &= read_dt_param(td, "nvidia,cg", &td->cg);
+> +	td->cg_scale = of_property_read_bool(td->dev->of_node,
+> +					     "nvidia,cg-scale");
+
+Oh, I see here you exploit read_dt_param() intensively.
+
+>  	if (of_property_read_string(td->dev->of_node, "clock-output-names",
+>  				    &td->output_clock_name)) {
+> @@ -978,6 +1625,10 @@ int tegra_dfll_register(struct platform_device *pdev,
+>  		return ret;
+>  	}
+>  
+> +	ret = dfll_fetch_i2c_params(td);
+> +	if (ret)
+> +		return ret;
+> +
+>  	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>  	if (!mem) {
+>  		dev_err(td->dev, "no control register resource\n");
+> 
+
+--
+With best wishes,
+Vladimir
