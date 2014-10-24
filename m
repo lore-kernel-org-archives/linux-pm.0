@@ -1,350 +1,178 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH v2 2/3] ARM: keystone: pm: switch to use generic pm domains
-Date: Fri, 24 Oct 2014 15:07:39 +0300
-Message-ID: <544A410B.3050903@ti.com>
-References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>	<1413809764-21995-3-git-send-email-grygorii.strashko@ti.com>	<5446A065.9050308@gmail.com>	<544793B5.6080601@ti.com>	<CAPDyKFo97D3XbwDQrDzHw+qr4b24Fsq9EwDbdOMhy_L-RoYsLw@mail.gmail.com>	<CAMuHMdVsqsSHxirzoWspGz7y+2qBk42p-VUBNkys3_rr6Th_9Q@mail.gmail.com>	<CAPDyKFp6T1a1XXHdxiubP2RaS26uSqkUS3rbBgsNV_y+dSFfvw@mail.gmail.com>	<CAMuHMdVO4nMoeYdzLf6wdKW876gYVyML3C2+QKoteGPtisD4sA@mail.gmail.com>	<CAPDyKFrVCczc+fSy1ax4XinhB4SMfZZWP=d4QdY5Lv4zjOrHPA@mail.gmail.com>	<544912AB.3050801@ti.com> <CAPDyKFpwguzd_iy46mpPcwDs98bh1k_3fVNfe4UAjYYwNoBJPQ@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RESEND 2] cpufreq: dt: disable unsupported OPPs
+Date: Fri, 24 Oct 2014 14:30:16 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1410241428050.30449@ayla.of.borg>
+References: <48734362.lRa73hezrZ@vostro.rjw.lan>  <1413454100-23009-1-git-send-email-l.stach@pengutronix.de>  <8590662.lsNXszcTd0@vostro.rjw.lan>  <CAMuHMdV2gPOZoV62rSNjpD=dJ43EE+s0wtRW4ncLWU-J-eHLDg@mail.gmail.com>  <1414073448.2764.1.camel@pengutronix.de>
+  <CAMuHMdXAYhAEFNLCcq91xctYwaCZnJt-V+U+vYy1iC5Kb=qqjw@mail.gmail.com> <1414145989.6267.3.camel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpwguzd_iy46mpPcwDs98bh1k_3fVNfe4UAjYYwNoBJPQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Santosh Shilimkar <santosh.shilimkar@gmail.com>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from laurent.telenet-ops.be ([195.130.137.89]:44561 "EHLO
+	laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756144AbaJXMaS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Oct 2014 08:30:18 -0400
+In-Reply-To: <1414145989.6267.3.camel@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 
-Hi Ulf,
+	Hi Lucas,
 
-On 10/24/2014 12:53 PM, Ulf Hansson wrote:
-> On 23 October 2014 16:37, Grygorii Strashko <grygorii.strashko@ti.com=
-> wrote:
->> On 10/23/2014 11:11 AM, Ulf Hansson wrote:
->>> On 22 October 2014 17:44, Geert Uytterhoeven <geert@linux-m68k.org>=
- wrote:
->>>> On Wed, Oct 22, 2014 at 5:28 PM, Ulf Hansson <ulf.hansson@linaro.o=
-rg> wrote:
->>>>> On 22 October 2014 17:09, Geert Uytterhoeven <geert@linux-m68k.or=
-g> wrote:
->>>>>> On Wed, Oct 22, 2014 at 5:01 PM, Ulf Hansson <ulf.hansson@linaro=
-=2Eorg> wrote:
->>>>>>>>>> +void keystone_pm_domain_attach_dev(struct device *dev)
->>>>>>>>>>     {
->>>>>>>>>> +    struct clk *clk;
->>>>>>>>>>         int ret;
->>>>>>>>>> +    int i =3D 0;
->>>>>>>>>>
->>>>>>>>>>         dev_dbg(dev, "%s\n", __func__);
->>>>>>>>>>
->>>>>>>>>> -    ret =3D pm_generic_runtime_suspend(dev);
->>>>>>>>>> -    if (ret)
->>>>>>>>>> -        return ret;
->>>>>>>>>> -
->>>>>>>>>> -    ret =3D pm_clk_suspend(dev);
->>>>>>>>>> +    ret =3D pm_clk_create(dev);
->>>>>>>>>>         if (ret) {
->>>>>>>>>> -        pm_generic_runtime_resume(dev);
->>>>>>>>>> -        return ret;
->>>>>>>>>> +        dev_err(dev, "pm_clk_create failed %d\n", ret);
->>>>>>>>>> +        return;
->>>>>>>>>> +    };
->>>>>>>>>> +
->>>>>>>>>> +    while ((clk =3D of_clk_get(dev->of_node, i++)) && !IS_E=
-RR(clk)) {
->>>>>>>>>> +        ret =3D pm_clk_add_clk(dev, clk);
->>>>>>>>>> +        if (ret) {
->>>>>>>>>> +            dev_err(dev, "pm_clk_add_clk failed %d\n", ret)=
-;
->>>>>>>>>> +            goto clk_err;
->>>>>>>>>> +        };
->>>>>>>>>>         }
->>>>>>>>>>
->>>>>>>>>> -    return 0;
->>>>>>>>>> +    if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
->>>>>>>>> Can we not okkup two seperate callbacks instead of above chec=
-k ?
->>>>>>>>> I don't like this CONFIG check here. Its slightly better vers=
-ion of
->>>>>>>>> ifdef in middle of the code.
->>>>>>>>
->>>>>>>> I've found more-less similar comment on patch
->>>>>>>> "Re: [PATCH v3 1/3] power-domain: add power domain drivers for=
- Rockchip platform"
->>>>>>>> https://lkml.org/lkml/2014/10/17/257
->>>>>>>>
->>>>>>>> So, Would you like me to create patch which will enable clocks=
- in pm_clk_add/_clk()
->>>>>>>> in case !IS_ENABLED(CONFIG_PM_RUNTIME)
->>>>>>>
->>>>>>> I am wondering whether we actually should/could do this, no mat=
-ter of
->>>>>>> CONFIG_PM_RUNTIME.
->>>>>>>
->>>>>>> Typically, for configurations that uses CONFIG_PM_RUNTIME, the =
-PM
->>>>>>> clocks through pm_clk_suspend(), will be gated once the device =
-becomes
->>>>>>> runtime PM suspended. Right?
->>>>>>
->>>>>> Doing it unconditionally means we'll have lots of unneeded clock=
-s running
->>>>>> for a short while.
->>>>
->>>>> As long as the pm_clk_add() is being invoked from the ->attach_de=
-v()
->>>>> callback, we are in the probe path. Certainly we would like to ha=
-ve
->>>>> clocks enabled while probing, don't you think?
->>>>>
->>>>> If we wouldn't enable the clocks for CONFIG_PM_RUNTIME, when will
->>>>> those be enabled?
->>>>
->>>> They will be enabled when the driver does
->>>>
->>>>           pm_runtime_enable(dev);
->>>>           pm_runtime_get_sync(dev);
->>>>
->>>> in its .probe() method.
->>>
->>> No! This doesn't work for drivers which have used
->>> pm_runtime_set_active() prior pm_runtime_enable().
->>
->> Sorry, but some misunderstanding is here:
->> 1) If some code call pm_runtime_set_active() it has to ensure
->> that all PM resources switched to ON state. All! So, it will
->> be ok to call enable & get after that - these functions will only
->> adjust counters.
->=20
-> Correct.
->=20
-> This is also the key problem with your approach. You requires a
-> pm_runtime_get_sync() to trigger the runtime PM resume callbacks to b=
+On Fri, 24 Oct 2014, Lucas Stach wrote:
+> Am Donnerstag, den 23.10.2014, 16:43 +0200 schrieb Geert Uytterhoeven=
+:
+> > On Thu, Oct 23, 2014 at 4:10 PM, Lucas Stach <l.stach@pengutronix.d=
+e> wrote:
+> > > Am Donnerstag, den 23.10.2014, 11:19 +0200 schrieb Geert Uytterho=
+even:
+> > >> On Tue, Oct 21, 2014 at 4:19 PM, Rafael J. Wysocki <rjw@rjwysock=
+i.net> wrote:
+> > >> > On Thursday, October 16, 2014 12:08:20 PM Lucas Stach wrote:
+> > >> >> If the regulator connected to the CPU voltage plane doesn't
+> > >> >> support an OPP specified voltage with the acceptable toleranc=
 e
-> invoked. That's a fragile design.
-
-Sorry, but what I'm expecting is that these APIs will work according to
-documentation - nothing specific actually :) And for Paltform bus devic=
-es
-it's usual way to enable device.
-
+> > >> >> it's better to just disable the OPP instead of constantly
+> > >> >> failing the voltage scaling later on.
+> > >> >>
+> > >> >> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> > >> >> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > >> >
+> > >> > Applied, thanks!
+> > >>
+> > >> This commit
+> > >> (http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git=
+/commit/?h=3Dlinux-next&id=3Dd7bbd4cd0359d781b67c9e621d4bbfd1bb2f3783)
+> > >> causes a boot regression on r8a7791/koelsch. It hangs after:
+> > >>
+> > >>     TCP: cubic registered
+> > >>     Initializing XFRM netlink socket
+> > >>     NET: Registered protocol family 17
+> > >>     NET: Registered protocol family 15
+> > >>     ata1: link resume succeeded after 1 retries
+> > >>     ata1: SATA link down (SStatus 0 SControl 300)
+> > >>     random: nonblocking pool is initialized
+> >=20
+> > >> Reverting this commit fixes the issue, and makes the boot contin=
+ue with:
+> > >>
+> > >>     cpufreq: __cpufreq_add_dev: CPU0: Running at unlisted freq: =
+1300000 KHz
+> > >>     cpufreq: __cpufreq_add_dev: CPU0: Unlisted initial frequency
+> > >> changed to: 1312500 KHz
+> > >>     cpu cpu1: failed to get cpu-2 clock: 1
+> > >>     cpufreq_dt: cpufreq_init: Failed to allocate resources: -2
 >=20
-> The solution that I propose is to "manually" enable your PM clks
-> during the probe sequence. We can do that as a part of pm_clk_add() o=
-r
+> I thought a bit more about about this to make sure this isn't a fault=
+ on
+> my side, but can't seem to make any sense out of this. Can you please
+> print out the value of opp_freq in each iteration of the while loop a=
+nd
+> also the return value of regulator_is_supported_voltage()? This would
+> help me a lot to understand what's happening here.
 
-Done in patch set 3 - but only if !CONFIG_PM_RUNTIME
+It gets into an infinite loop doing:
 
-> we invoke pm_clk_resume() separately, but more important no matter of
-> CONFIG_PM_RUNTIME.
->=20
+=C2=A0 =C2=A0 cpufreq_dt: cpufreq_init:232: opp_freq =3D 0
+=C2=A0 =C2=A0 cpufreq_dt: cpufreq_init:240: opp_freq =3D 375000000
+=C2=A0 =C2=A0 cpufreq_dt: cpufreq_init:247: [ 1000000, 1010000 ] is sup=
+ported
+=C2=A0 =C2=A0 cpufreq_dt: cpufreq_init:258: opp_freq =3D 375000001
+    ...
 
-Why? What benefits will be doing this if CONFIG_PM_RUNTIME=3Dy?
-=46or Keystone 2 CONFIG_PM_RUNTIME=3Dy is intended to be normal operati=
-onal mode and=20
-all devices belongs to Platform bus.
+The loop is only aborted if dev_pm_opp_find_freq_ceil() returns an erro=
+r,
+but that never happens.
 
-Also, device's resuming operation is usually heavy operation and, takin=
-g into
-account deferred probing mechanism and usual implementation of .probe()=
- function,
-your proposition will lead to runtime overhead at least for Platform de=
-vices.
+I think it should try the next frequency on each subsequent iteration, =
+right?
+So I came up with the fix below. After that it behaves better:
 
-What is usually done in probe:
-<- here you propose to resume device
+    cpufreq_dt: cpufreq_init:233: opp_freq =3D 0
+    cpufreq_dt: cpufreq_init:241: opp_freq =3D 375000000
+    cpufreq_dt: cpufreq_init:248: [ 1000000, 1010000 ] is supported
+    cpufreq_dt: cpufreq_init:259: opp_freq =3D 375000001
+    cpufreq_dt: cpufreq_init:233: opp_freq =3D 375000001
+    cpufreq_dt: cpufreq_init:241: opp_freq =3D 750000000
+    cpufreq_dt: cpufreq_init:248: [ 1000000, 1010000 ] is supported
+    cpufreq_dt: cpufreq_init:259: opp_freq =3D 750000001
+    cpufreq_dt: cpufreq_init:233: opp_freq =3D 750000001
+    cpufreq_dt: cpufreq_init:241: opp_freq =3D 937500000
+    cpufreq_dt: cpufreq_init:248: [ 1000000, 1010000 ] is supported
+    cpufreq_dt: cpufreq_init:259: opp_freq =3D 937500001
+    cpufreq_dt: cpufreq_init:233: opp_freq =3D 937500001
+    cpufreq_dt: cpufreq_init:241: opp_freq =3D 1125000000
+    cpufreq_dt: cpufreq_init:248: [ 1000000, 1010000 ] is supported
+    cpufreq_dt: cpufreq_init:259: opp_freq =3D 1125000001
+    cpufreq_dt: cpufreq_init:233: opp_freq =3D 1125000001
+    cpufreq_dt: cpufreq_init:241: opp_freq =3D 1312500000
+    cpufreq_dt: cpufreq_init:248: [ 1000000, 1010000 ] is supported
+    cpufreq_dt: cpufreq_init:259: opp_freq =3D 1312500001
+    cpufreq_dt: cpufreq_init:233: opp_freq =3D 1312500001
+    cpufreq_dt: cpufreq_init:241: opp_freq =3D 1500000000
+    cpufreq_dt: cpufreq_init:248: [ 1000000, 1010000 ] is supported
+    cpufreq_dt: cpufreq_init:259: opp_freq =3D 1500000001
+    cpufreq_dt: cpufreq_init:233: opp_freq =3D 1500000001
+    cpufreq_dt: cpufreq_init:237: Error -34 =3D> break
 
-1) get resources (IO, IRQ, regulators, GPIO, phys, ..) - for each
-resource -EPROBE_DEFER can be returned.
+=46rom e5f401eee8b316587fc385cac7acdd92b33adec7 Mon Sep 17 00:00:00 200=
+1
+=46rom: Geert Uytterhoeven <geert+renesas@glider.be>
+Date: Fri, 24 Oct 2014 14:23:14 +0200
+Subject: [PATCH] cpufreq: dt: Don't reset opp_freq in subsequent loop
+ iterations
 
-2) allocate and fill device context - can fail.
+opp_freq is incremented at the end of the loop, to find the next
+supported frequency, but this is overturned by its re-initialization
+in next iteration, causing an infinite loop.
 
-3) configure resources (set gpio, enable regulators or phys,..) - can f=
-ail
+Move the initialization of opp_freq outside the loop to fix this.
 
-4) [now] resume device=20
+=46ixes: d7bbd4cd0359d781 ("cpufreq: dt: disable unsupported OPPs")
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/cpufreq/cpufreq-dt.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-5) configure device
-
-6) setup irq
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.=
+c
+index f6e39a2e324ffc87..2f25958053778ad1 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -219,6 +219,8 @@ static int cpufreq_init(struct cpufreq_policy *poli=
+cy)
+ 		transition_latency =3D CPUFREQ_ETERNAL;
 =20
-7) [optional] suspend device
-
-As you can see from above, the Platform devices aren't need to be enabl=
-ed before step 5 and,=20
-if your proposition will be accepted, it will lead to few additional re=
-sume/suspend
-cycles per-device. It's not good as for me. Is it?
-
-
-> The driver could then be responsible to invoke pm_runtime_set_active(=
-)
-> to reflect that all runtime PM resources are enabled.
-
-[runtime_pm.txt] - this is recovery function and caller should be very =
-careful.
+ 	if (!IS_ERR(cpu_reg)) {
++		unsigned long opp_freq =3D 0;
++
+ 		/*
+ 		 * Disable any OPPs where the connected regulator isn't able to
+ 		 * provide the specified voltage and record minimum and maximum
+@@ -226,7 +228,7 @@ static int cpufreq_init(struct cpufreq_policy *poli=
+cy)
+ 		 */
+ 		while (1) {
+ 			struct dev_pm_opp *opp;
+-			unsigned long opp_freq =3D 0, opp_uV, tol_uV;
++			unsigned long opp_uV, tol_uV;
 =20
-Again, from implementation point of view:
--- how it's done now:
-    .probe()
-	pm_runtime_enable(&pdev->dev);
-	pm_runtime_get_sync(&pdev->dev);
+ 			rcu_read_lock();
+ 			opp =3D dev_pm_opp_find_freq_ceil(cpu_dev, &opp_freq);
+--=20
+1.9.1
 
-    .remove()
-	pm_runtime_put_sync(&pdev->dev);
-	pm_runtime_disable(&pdev->dev);
+Gr{oetje,eeting}s,
 
--- how it will be:
-     .probe()
-	//pm_runtime_enable(&pdev->dev);
-	//pm_runtime_get_sync(&pdev->dev);
+						Geert
 
-	[optional] call .runtime_resume();
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-=
+m68k.org
 
-	pm_runtime_set_active(dev);
-	pm_runtime_enable(dev);
-	[optional, to keep device active] pm_runtime_get_sync()
-
-     .remove()
-	[optional] pm_runtime_put_sync(&pdev->dev);
-	pm_runtime_disable(&pdev->dev);
-=09
-	call .runtime_suspend();
-	pm_runtime_set_suspended(dev);
-
-And that would need to be done for all drivers.
-
->=20
->>
->> 2) if CONFIG_PM_RUNTIME=3Dn the pm_runtime_set_active() will
->> be empty (see pm_runtime.h) and you can't relay on it.
->>
->> 3) if CONFIG_PM_RUNTIME=3Dn the pm_runtime_enable/disable() will
->> be empty - and disable_depth =3D=3D 1 all the time.
->>
->> In my case, the combination of generic PD and PM clock framework
->> will do everything I need for both cases CONFIG_PM_RUNTIME=3Dy/n.
->>
->> PM domain attach_dev/detach_dev callbacks - will fill PM resources
->> and enable them if CONFIG_PM_RUNTIME=3Dn.
->>
->> if CONFIG_PM_RUNTIME - PM resources will be enabled/disabled
->> by Runtime PM through .start()/.stop() callbacks.
->>
->> And seems suspend/resume will work too - can't try it now, but it
->> should work, because .start()/.stop() callbacks have to be called
->> from pm_genpd_suspend_noirq.
->>
->>
->>>
->>> That should also be a common good practice for most drivers, otherw=
-ise
->>> they wouldn=E2=80=99t work unless CONFIG_PM_RUNTIME is enabled.
->>>
->>> Please have a look at the following patchset, which is fixing up on=
-e
->>> driver to behave better.
->>> http://marc.info/?l=3Dlinux-pm&m=3D141327095713390&w=3D2
->>
->> It always was (and seems will) a big challenge to support both
->> CONFIG_PM_RUNTIME=3Dy and system suspend in drivers ;), especially i=
-f driver was
->> initially created using Runtime PM centric approach.
->>
->> But, for the case CONFIG_PM_RUNTIME + !CONFIG_PM_RUNTIME + suspend..=
-=2E
->> It will be painful :..((
->=20
-> I agree to that this _has_ been an issue. It also remarkable that
-> people have been just accepting that for so long.
->=20
-> Now, we have added the pm_runtime_force_suspend|resume() helpers.
-> Those will help to solve these cases.
->=20
->>
->>
->> For example your patches (may be I'm not fully understand your probl=
-em,
->> so here are just comments to code):
->> patch 3:
->>    - I think you can do smth like this in probe
->>          ret =3D pm_runtime_get_sync(&pdev->dev);
->>          if (ret < 0)
->>                  goto err_m2m;
->=20
-> This is wrong!
->=20
-> 1) It will break the driver for !CONFIG_PM_RUNTIME.
-
-Hm. It should work. In your driver you have (for the case !CONFIG_PM_RU=
-NTIME):
-	pm_runtime_enable(dev); ------------------------ NOP
-	ret =3D pm_runtime_get_sync(&pdev->dev); --------- NOP
-	if (ret < 0)
-		goto err_m2m;
-so, if you add:
-	if (!pm_runtime_enabled(dev)) { ---------------- always FALSE
-               gsc_runtime_resume(dev);=20
-	       /* ^ is the same as
-		gsc_hw_set_sw_reset(gsc);
-		gsc_wait_reset(gsc);
-		gsc_m2m_resume(gsc);
-	       */
-       }
-it will work in both cases, because pm_runtime_enabled() =3D=3D true
-when  CONFIG_PM_RUNTIME=3Dy.
-
->=20
-> 2) It would also be broken for CONFIG_PM_RUNTIME for the scenario
-> where a bus also handles runtime PM resources.
-> Typically from the bus' ->probe() this is done:
-> pm_runtime_get_noresume()
-> pm_runtime_set_active()
-
-So, Has your device been enabled by bus?
-
->=20
-> As stated earlier, we shouldn't require the runtime PM resume callbac=
-k
-> to be invoked just because a pm_runtime_get_sync(). It's fragile.
->=20
->> +
->> +       if (!pm_runtime_enabled(dev)) {
->> +               gsc_runtime_resume(dev);
->> +       }
->>
->>   - and similar thing in remove, before pm_runtime_disable
->>
->> patch 5 - pm_runtime_force_suspend/resume() will not take into
->> account or change Runtime PM state of the device if !CONFIG_PM_RUNTI=
-ME.
->> runtime_status =3D=3D RPM_SUSPENDED always in this case!
->> So, there may be some side-effects.
->=20
-> pm_runtime_status_suspended() will always return false for !CONFIG_PM=
-_RUNTIME.
-
-Nice workaround.
-
->=20
-> There are no side effects as long as you have defined your runtime PM
-> callbacks within CONFIG_PM. SET_PM_RUNTIME_PM_OPS() also helps out
-> here.
->=20
->>
->> patch 7 - you can't call clk_prepare/unprepare from Runtime PM
->> callbacks, because they aren't atomic
->=20
-> If the runtime PM callbacks are invoked in atomic context, the driver
-> needs to tell the runtime PM core about it. That's done through,
-> pm_runtime_irq_safe(), which it doesn't.
->=20
->>
->> Oh, You definitely will be enjoyed ;)
->=20
-> Likely you to. :-)
-
-Oh. Yes definitely :) I'm trying to reuse what is already in kernel
-(even not to implement smth. new) more then 3 months already :( - It's =
-sad.
-
-regards,
--grygorii
+In personal conversations with technical people, I call myself a hacker=
+=2E But
+when I'm talking to journalists I just say "programmer" or something li=
+ke that.
+							    -- Linus Torvalds
