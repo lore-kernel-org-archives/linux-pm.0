@@ -1,135 +1,497 @@
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v13 4/5] ARM: dts: add main Thermal info to rk3288
-Date: Fri, 24 Oct 2014 01:17:44 -0700
-Message-ID: <20141024081744.GA39338@dtor-ws>
+Subject: Re: [PATCH v13 1/5] thermal: rockchip: add driver for thermal
+Date: Fri, 24 Oct 2014 01:21:08 -0700
+Message-ID: <20141024082108.GB39338@dtor-ws>
 References: <1414057207-1576-1-git-send-email-caesar.wang@rock-chips.com>
- <1414057207-1576-5-git-send-email-caesar.wang@rock-chips.com>
- <20141024004625.GD9463@dtor-ws>
- <5449A6A4.3070608@rock-chips.com>
- <E4EEE800-5701-45E5-9E97-D3B036DC2F17@gmail.com>
- <5449B433.5040003@rock-chips.com>
- <20141024023236.GA19910@dtor-ws>
- <5449C5CA.9000009@rock-chips.com>
+ <1414057207-1576-2-git-send-email-caesar.wang@rock-chips.com>
+ <20141024005546.GF9463@dtor-ws>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-doc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <5449C5CA.9000009@rock-chips.com>
+In-Reply-To: <20141024005546.GF9463@dtor-ws>
 Sender: linux-doc-owner@vger.kernel.org
 To: Caesar Wang <caesar.wang@rock-chips.com>
 Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-Caesar,
+On Thu, Oct 23, 2014 at 05:55:46PM -0700, Dmitry Torokhov wrote:
+> Hi Caesar,
+> 
+> On Thu, Oct 23, 2014 at 05:40:03PM +0800, Caesar Wang wrote:
+> > Thermal is TS-ADC Controller module supports
+> > user-defined mode and automatic mode.
+> > 
+> > User-defined mode refers,TSADC all the control signals entirely by
+> > software writing to register for direct control.
+> > 
+> > Automaic mode refers to the module automatically poll TSADC output,
+> > and the results were checked.If you find that the temperature High
+> > in a period of time,an interrupt is generated to the processor
+> > down-measures taken;If the temperature over a period of time High,
+> > the resulting TSHUT gave CRU module,let it reset the entire chip,
+> > or via GPIO give PMIC.
+> > 
+> > Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
+> > Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+> > ---
+> >  drivers/thermal/Kconfig            |   9 +
+> >  drivers/thermal/Makefile           |   1 +
+> >  drivers/thermal/rockchip_thermal.c | 693 +++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 703 insertions(+)
+> >  create mode 100644 drivers/thermal/rockchip_thermal.c
+> > 
+> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > index ef5587f..5efcf73 100644
+> > --- a/drivers/thermal/Kconfig
+> > +++ b/drivers/thermal/Kconfig
+> > @@ -133,6 +133,15 @@ config SPEAR_THERMAL
+> >  	  Enable this to plug the SPEAr thermal sensor driver into the Linux
+> >  	  thermal framework.
+> >  
+> > +config ROCKCHIP_THERMAL
+> > +	tristate "Rockchip thermal driver"
+> > +	depends on ARCH_ROCKCHIP
+> > +	help
+> > +	  Rockchip thermal driver provides support for Temperature sensor
+> > +	  ADC (TS-ADC) found on Rockchip SoCs. It supports one critical
+> > +	  trip point. Cpufreq is used as the cooling device and will throttle
+> > +	  CPUs when the Temperature crosses the passive trip point.
+> > +
+> >  config RCAR_THERMAL
+> >  	tristate "Renesas R-Car thermal driver"
+> >  	depends on ARCH_SHMOBILE || COMPILE_TEST
+> > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> > index 31e232f..21da0a8 100644
+> > --- a/drivers/thermal/Makefile
+> > +++ b/drivers/thermal/Makefile
+> > @@ -19,6 +19,7 @@ thermal_sys-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
+> >  
+> >  # platform thermal drivers
+> >  obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
+> > +obj-$(CONFIG_ROCKCHIP_THERMAL)	+= rockchip_thermal.o
+> >  obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
+> >  obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
+> >  obj-y				+= samsung/
+> > diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> > new file mode 100644
+> > index 0000000..6705981
+> > --- /dev/null
+> > +++ b/drivers/thermal/rockchip_thermal.c
+> > @@ -0,0 +1,693 @@
+> > +/*
+> > + * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify it
+> > + * under the terms and conditions of the GNU General Public License,
+> > + * version 2, as published by the Free Software Foundation.
+> > + *
+> > + * This program is distributed in the hope it will be useful, but WITHOUT
+> > + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> > + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+> > + * more details.
+> > + */
+> > +
+> > +#include <linux/clk.h>
+> > +#include <linux/cpu_cooling.h>
+> > +#include <linux/interrupt.h>
+> > +#include <linux/io.h>
+> > +#include <linux/module.h>
+> > +#include <linux/of.h>
+> > +#include <linux/of_address.h>
+> > +#include <linux/of_irq.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/thermal.h>
+> > +
+> > +/**
+> > + * If the temperature over a period of time High,
+> > + * the resulting TSHUT gave CRU module,let it reset the entire chip,
+> > + * or via GPIO give PMIC.
+> > + */
+> > +enum tshut_mode {
+> > +	TSHUT_MODE_CRU = 0,
+> > +	TSHUT_MODE_GPIO,
+> > +};
+> > +
+> > +/**
+> > + * the system Temperature Sensors tshut(tshut) polarity
+> > + * the bit 8 is tshut polarity.
+> > + * 0: low active, 1: high active
+> > + */
+> > +enum tshut_polarity {
+> > +	TSHUT_LOW_ACTIVE = 0,
+> > +	TSHUT_HIGH_ACTIVE,
+> > +};
+> > +
+> > +/**
+> > + * The system has three Temperature Sensors.  channel 0 is reserved,
+> > + * channel 1 is for CPU, and channel 2 is for GPU.
+> > + */
+> > +enum sensor_id {
+> > +	SENSOR_CPU = 1,
+> > +	SENSOR_GPU,
+> > +};
+> > +
+> > +
+> > +struct rockchip_tsadc_chip {
+> > +	long hw_shut_temp;
+> > +	enum tshut_mode tshut_mode;
+> > +	enum tshut_polarity tshut_polarity;
+> > +
+> > +	/* Chip-wide methods */
+> > +	void (*initialize)(void __iomem *reg, enum tshut_polarity p);
+> > +	void (*irq_ack)(void __iomem *reg);
+> > +
+> > +	/* Per-sensor methods */
+> > +	int (*get_temp)(int chn, void __iomem *reg, long *temp);
+> > +	void (*set_alarm_temp)(int chn, void __iomem *reg, long temp);
+> > +	void (*set_tshut_temp)(int chn, void __iomem *reg, long temp);
+> > +	void (*set_tshut_mode)(int chn, void __iomem *reg, enum tshut_mode m);
+> > +	void (*control)(int chn, void __iomem *reg, bool on);
+> > +};
+> > +
+> > +struct rockchip_thermal_sensor {
+> > +	struct rockchip_thermal_data *thermal;
+> > +	struct thermal_zone_device *tzd;
+> > +	enum sensor_id id;
+> > +};
+> > +
+> > +#define NUM_SENSORS	2 /* Ignore unused sensor 0 */
+> > +
+> > +struct rockchip_thermal_data {
+> > +	const struct rockchip_tsadc_chip *chip;
+> > +	struct platform_device *pdev;
+> > +
+> > +	struct rockchip_thermal_sensor sensors[NUM_SENSORS];
+> > +
+> > +	struct thermal_cooling_device *cdev;
+> > +
+> > +	struct clk *clk;
+> > +	struct clk *pclk;
+> > +
+> > +	void __iomem *regs;
+> > +
+> > +	long hw_shut_temp;
+> > +	enum tshut_mode tshut_mode;
+> > +	enum tshut_polarity tshut_polarity;
+> > +};
+> > +
+> > +/* TSADC V2 Sensor info define: */
+> > +#define TSADCV2_AUTO_CON			0x04
+> > +#define TSADCV2_INT_EN				0x08
+> > +#define TSADCV2_INT_PD				0x0c
+> > +#define TSADCV2_DATA(chn)			(0x20 + (chn) * 0x04)
+> > +#define TSADCV2_COMP_INT(chn)		        (0x30 + (chn) * 0x04)
+> > +#define TSADCV2_COMP_SHUT(chn)		        (0x40 + (chn) * 0x04)
+> > +#define TSADCV2_HIGHT_INT_DEBOUNCE		0x60
+> > +#define TSADCV2_HIGHT_TSHUT_DEBOUNCE		0x64
+> > +#define TSADCV2_AUTO_PERIOD			0x68
+> > +#define TSADCV2_AUTO_PERIOD_HT			0x6c
+> > +
+> > +#define TSADCV2_AUTO_EN				BIT(0)
+> > +#define TSADCV2_AUTO_DISABLE			~BIT(0)
+> > +#define TSADCV2_AUTO_SRC_EN(chn)		BIT(4 + (chn))
+> > +#define TSADCV2_AUTO_TSHUT_POLARITY_HIGH	BIT(8)
+> > +#define TSADCV2_AUTO_TSHUT_POLARITY_LOW		~BIT(8)
+> > +
+> > +#define TSADCV2_INT_SRC_EN(chn)			BIT(chn)
+> > +#define TSADCV2_SHUT_2GPIO_SRC_EN(chn)		BIT(4 + (chn))
+> > +#define TSADCV2_SHUT_2CRU_SRC_EN(chn)		BIT(8 + (chn))
+> > +
+> > +#define TSADCV2_INT_PD_CLEAR			~BIT(8)
+> > +
+> > +#define TSADCV2_DATA_MASK			0xfff
+> > +#define TSADCV2_HIGHT_INT_DEBOUNCE_TIME		0x0a
+> > +#define TSADCV2_HIGHT_TSHUT_DEBOUNCE_TIME	0x0a
+> > +#define TSADCV2_AUTO_PERIOD_TIME		0x03e8
+> > +#define TSADCV2_AUTO_PERIOD_HT_TIME		0x64
+> > +
+> > +struct tsadc_table {
+> > +	unsigned long code;
+> > +	long temp;
+> > +};
+> > +
+> > +static const struct tsadc_table v2_code_table[] = {
+> > +	{TSADCV2_DATA_MASK, -40000},
+> > +	{3800, -40000},
+> > +	{3792, -35000},
+> > +	{3783, -30000},
+> > +	{3774, -25000},
+> > +	{3765, -20000},
+> > +	{3756, -15000},
+> > +	{3747, -10000},
+> > +	{3737, -5000},
+> > +	{3728, 0},
+> > +	{3718, 5000},
+> > +	{3708, 10000},
+> > +	{3698, 15000},
+> > +	{3688, 20000},
+> > +	{3678, 25000},
+> > +	{3667, 30000},
+> > +	{3656, 35000},
+> > +	{3645, 40000},
+> > +	{3634, 45000},
+> > +	{3623, 50000},
+> > +	{3611, 55000},
+> > +	{3600, 60000},
+> > +	{3588, 65000},
+> > +	{3575, 70000},
+> > +	{3563, 75000},
+> > +	{3550, 80000},
+> > +	{3537, 85000},
+> > +	{3524, 90000},
+> > +	{3510, 95000},
+> > +	{3496, 100000},
+> > +	{3482, 105000},
+> > +	{3467, 110000},
+> > +	{3452, 115000},
+> > +	{3437, 120000},
+> > +	{3421, 125000},
+> > +	{0, 125000},
+> > +};
+> > +
+> > +static u32 rk_tsadcv2_temp_to_code(long temp)
+> > +{
+> > +	int high, low, mid;
+> > +
+> > +	low = 0;
+> > +	high = ARRAY_SIZE(v2_code_table) - 1;
+> > +	mid = (high + low) / 2;
+> > +
+> > +	if (temp < v2_code_table[low].temp || temp > v2_code_table[high].temp)
+> > +		return 0;
+> > +
+> > +	while (low <= high) {
+> > +		if (temp == v2_code_table[mid].temp)
+> > +			return v2_code_table[mid].code;
+> > +		else if (temp < v2_code_table[mid].temp)
+> > +			high = mid - 1;
+> > +		else
+> > +			low = mid + 1;
+> > +		mid = (low + high) / 2;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static long rk_tsadcv2_code_to_temp(u32 code)
+> > +{
+> > +	int high, low, mid;
+> > +
+> > +	low = 0;
+> > +	high = ARRAY_SIZE(v2_code_table) - 1;
+> > +	mid = (high + low) / 2;
+> > +
+> > +	if (code > v2_code_table[low].code || code < v2_code_table[high].code)
+> > +		return 125000; /* No code available, return max temperature */
+> > +
+> > +	while (low <= high) {
+> > +		if (code >= v2_code_table[mid].code && code <
+> > +		    v2_code_table[mid - 1].code)
+> > +			return v2_code_table[mid].temp;
+> > +		else if (code < v2_code_table[mid].code)
+> > +			low = mid + 1;
+> > +		else
+> > +			high = mid - 1;
+> > +		mid = (low + high) / 2;
+> > +	}
+> > +
+> > +	return 125000;
+> > +}
+> > +
+> > +/**
+> > + * rk_tsadcv2_initialize - initialize TASDC Controller
+> > + * (1) Set TSADCV2_AUTO_PERIOD, configure the interleave between
+> > + * every two accessing of TSADC in normal operation.
+> > + * (2) Set TSADCV2_AUTO_PERIOD_HT, configure the interleave between
+> > + * every two accessing of TSADC after the temperature is higher
+> > + * than COM_SHUT or COM_INT.
+> > + * (3) Set TSADCV2_HIGH_INT_DEBOUNCE and TSADC_HIGHT_TSHUT_DEBOUNCE,
+> > + * if the temperature is higher than COMP_INT or COMP_SHUT for
+> > + * "debounce" times, TSADC controller will generate interrupt or TSHUT.
+> > + */
+> > +static void rk_tsadcv2_initialize(void __iomem *regs,
+> > +				  enum tshut_polarity tshut_polarity)
+> > +{
+> > +	if (tshut_polarity == TSHUT_HIGH_ACTIVE)
+> > +		writel_relaxed(0 | (TSADCV2_AUTO_TSHUT_POLARITY_HIGH),
+> > +			       regs + TSADCV2_AUTO_CON);
+> > +	else
+> > +		writel_relaxed(0 | (TSADCV2_AUTO_TSHUT_POLARITY_LOW),
+> > +			       regs + TSADCV2_AUTO_CON);
+> > +
+> > +	writel_relaxed(TSADCV2_AUTO_PERIOD_TIME,
+> > +		       regs + TSADCV2_AUTO_PERIOD);
+> > +	writel_relaxed(TSADCV2_AUTO_PERIOD_HT_TIME,
+> > +		       regs + TSADCV2_AUTO_PERIOD_HT);
+> > +
+> > +	writel_relaxed(TSADCV2_HIGHT_INT_DEBOUNCE_TIME,
+> > +		       regs + TSADCV2_HIGHT_INT_DEBOUNCE);
+> > +	writel_relaxed(TSADCV2_HIGHT_TSHUT_DEBOUNCE_TIME,
+> > +		       regs + TSADCV2_HIGHT_TSHUT_DEBOUNCE);
+> 
+> SO I do not think we can keep these static, since polling frequency
+> depends on base clock. On my system given values result in thermal alarm
+> triggering after as long as 10 seconds after temperature crosses the
+> alarm setting. We need to adjust values like:
+> 
+> 
+> #define TSADCV2_AUTO_PERIOD_TIME 250  /* msec */
+> #define TSADCV2_AUTO_PERIOD_HT_TIME 50  /* msec */
+> #define TSADCV2_HIGHT_INT_DEBOUNCE_COUNT 4
+> #define TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT 4
+> 
+> whih will give us 1 sec and 200 msec reaction times and we shoudl set
+> them as this:
+> 
+> 	val = TSADCV2_AUTO_PERIOD_TIME * clk_rate / 1000;
+> 	writel_relaxed(val, regs + TSADCV2_AUTO_PERIOD);
+> 
+> etc.
+> 
+> > +}
+> > +
+> > +static void rk_tsadcv2_irq_ack(void __iomem *regs)
+> > +{
+> > +	u32 val;
+> > +
+> > +	val = readl_relaxed(regs + TSADCV2_INT_PD);
+> > +	writel_relaxed(val & TSADCV2_INT_PD_CLEAR, regs + TSADCV2_INT_PD);
+> > +}
+> > +
+> > +static int rk_tsadcv2_get_temp(int chn, void __iomem *regs, long *temp)
+> > +{
+> > +	u32 val;
+> > +
+> > +	/* the A/D value of the channel last conversion need some time */
+> > +	val = readl_relaxed(regs + TSADCV2_DATA(chn));
+> > +	if (val == 0)
+> > +		return -EAGAIN;
+> > +
+> > +	*temp = rk_tsadcv2_code_to_temp(val);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static void rk_tsadcv2_alarm_temp(int chn, void __iomem *regs, long temp)
+> > +{
+> > +	u32 alarm_value, int_en;
+> > +
+> > +	alarm_value = rk_tsadcv2_temp_to_code(temp);
+> > +	writel_relaxed(alarm_value & TSADCV2_DATA_MASK,
+> > +		       regs + TSADCV2_COMP_INT(chn));
+> > +
+> > +	int_en = readl_relaxed(regs + TSADCV2_INT_EN);
+> > +	int_en |= TSADCV2_INT_SRC_EN(chn);
+> > +	writel_relaxed(int_en, regs + TSADCV2_INT_EN);
+> > +}
+> > +
+> > +static void rk_tsadcv2_tshut_temp(int chn, void __iomem *regs, long temp)
+> > +{
+> > +	u32 tshut_value;
+> > +
+> > +	tshut_value = rk_tsadcv2_temp_to_code(temp);
+> > +	writel_relaxed(tshut_value, regs + TSADCV2_COMP_SHUT(chn));
+> > +}
+> > +
+> > +static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+> > +				  enum tshut_mode mode)
+> > +{
+> > +	u32 val;
+> > +
+> > +	val = readl_relaxed(regs + TSADCV2_INT_EN);
+> > +	if (mode == TSHUT_MODE_GPIO) {
+> > +		val &= ~TSADCV2_SHUT_2CRU_SRC_EN(chn);
+> > +		val |= TSADCV2_SHUT_2GPIO_SRC_EN(chn);
+> > +	} else {
+> > +		val &= ~TSADCV2_SHUT_2GPIO_SRC_EN(chn);
+> > +		val |= TSADCV2_SHUT_2CRU_SRC_EN(chn);
+> > +	}
+> > +
+> > +	writel_relaxed(val, regs + TSADCV2_INT_EN);
+> > +}
+> > +
+> > +static void rk_tsadcv2_control(int chn, void __iomem *regs, bool enable)
+> > +{
+> > +	u32 val;
+> > +
+> > +	val = readl_relaxed(regs + TSADCV2_AUTO_CON);
+> > +	if (enable)
+> > +		val |= TSADCV2_AUTO_EN | TSADCV2_AUTO_SRC_EN(chn);
+> 
+> If I read the spec correctly this TSADCV2_AUTO_SRC_EN controls TSHUT
+> functionality, not measurements, right? If so you need to toggle these
+> bits in rk_tsadcv2_tshut_temp, and set TSADCV2_AUTO_EN separately.
+> 
+> > +	else
+> > +		val &= ~TSADCV2_AUTO_EN;
+> > +
+> > +	writel_relaxed(val, regs + TSADCV2_AUTO_CON);
+> > +}
+> > +
+> > +static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
+> > +	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+> > +	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+> > +	.hw_shut_temp = 120000,
+> > +
+> > +	.initialize = rk_tsadcv2_initialize,
+> > +	.irq_ack = rk_tsadcv2_irq_ack,
+> > +	.get_temp = rk_tsadcv2_get_temp,
+> > +	.set_alarm_temp = rk_tsadcv2_alarm_temp,
+> > +	.set_tshut_temp = rk_tsadcv2_tshut_temp,
+> > +	.set_tshut_mode = rk_tsadcv2_tshut_mode,
+> > +	.control = rk_tsadcv2_control,
+> > +};
+> > +
+> > +static const struct of_device_id of_rockchip_thermal_match[] = {
+> > +	{
+> > +		.compatible = "rockchip,rk3288-tsadc",
+> > +		.data = (void *)&rk3288_tsadc_data,
+> > +	},
+> > +	{ /* end */ },
+> > +};
+> > +MODULE_DEVICE_TABLE(of, of_rockchip_thermal_match);
+> > +
+> > +static void
+> > +rockchip_thermal_toggle_sensor(struct rockchip_thermal_sensor *sensor, bool on)
+> > +{
+> > +	struct thermal_zone_device *tzd = sensor->tzd;
+> > +
+> > +	tzd->ops->set_mode(tzd,
+> > +		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
+> > +}
+> > +
+> > +static irqreturn_t rockchip_thermal_alarm_irq_thread(int irq, void *dev)
+> > +{
+> > +	struct rockchip_thermal_data *thermal = dev;
+> > +	int i;
+> > +
+> > +	dev_dbg(&thermal->pdev->dev, "thermal alarm\n");
+> > +
+> > +	thermal->chip->irq_ack(thermal->regs);
+> > +
+> > +	for (i = 0; i < ARRAY_SIZE(thermal->sensors); i++)
+> > +		thermal_zone_device_update(thermal->sensors[i].tzd);
+> > +
+> > +	return IRQ_HANDLED;
+> > +}
+> > +
+> > +static int rockchip_thermal_set_trips(void *_sensor, long low, long high)
+> > +{
+> > +	struct rockchip_thermal_sensor *sensor = _sensor;
+> > +	struct rockchip_thermal_data *thermal = sensor->thermal;
+> > +	const struct rockchip_tsadc_chip *tsadc = thermal->chip;
+> > +
+> > +	dev_dbg(&thermal->pdev->dev, "%s: sensor %d: low: %ld, high %ld\n",
+> > +		__func__, sensor->id, low, high);
+> > +
+> > +	tsadc->set_alarm_temp(sensor->id, thermal->regs, high-5000);
 
-On Fri, Oct 24, 2014 at 11:21:46AM +0800, Caesar Wang wrote:
-> Dmitry,
->=20
-> =E5=9C=A8 2014/10/24 10:32, Dmitry Torokhov =E5=86=99=E9=81=93:
-> >On Fri, Oct 24, 2014 at 10:06:43AM +0800, Caesar Wang wrote:
-> >>=E5=9C=A8 2014/10/24 9:37, Dmitry Torokhov =E5=86=99=E9=81=93:
-> >>>On October 23, 2014 6:08:52 PM PDT, Caesar Wang <caesar.wang@rock-=
-chips.com> wrote:
-> >>>>Dmitry,
-> >>>>
-> >>>>=E5=9C=A8 2014/10/24 8:46, Dmitry Torokhov =E5=86=99=E9=81=93:
-> >>>>>Hi Caesar,
-> >>>>>
-> >>>>>On Thu, Oct 23, 2014 at 05:40:06PM +0800, Caesar Wang wrote:
-> >>>>>>This patch is depend on rk3288-thermal.dtsi,or
-> >>>>>>it will compile error.
-> >>>>>>
-> >>>>>>If the temperature over a period of time High,over 120C
-> >>>>>>the resulting TSHUT gave CRU module,let it reset
-> >>>>>>the entire chip,or via GPIO give PMIC.
-> >>>>>>
-> >>>>>>Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
-> >>>>>>---
-> >>>>>>   arch/arm/boot/dts/rk3288.dtsi | 21 +++++++++++++++++++++
-> >>>>>>   1 file changed, 21 insertions(+)
-> >>>>>>
-> >>>>>>diff --git a/arch/arm/boot/dts/rk3288.dtsi
-> >>>>b/arch/arm/boot/dts/rk3288.dtsi
-> >>>>>>index cb18bb4..85fc17a 100644
-> >>>>>>--- a/arch/arm/boot/dts/rk3288.dtsi
-> >>>>>>+++ b/arch/arm/boot/dts/rk3288.dtsi
-> >>>>>>@@ -15,6 +15,7 @@
-> >>>>>>   #include <dt-bindings/interrupt-controller/arm-gic.h>
-> >>>>>>   #include <dt-bindings/pinctrl/rockchip.h>
-> >>>>>>   #include <dt-bindings/clock/rk3288-cru.h>
-> >>>>>>+#include <dt-bindings/thermal/thermal.h>
-> >>>>>>   #include "skeleton.dtsi"
-> >>>>>>   / {
-> >>>>>>@@ -66,6 +67,7 @@
-> >>>>>>   				 216000  900000
-> >>>>>>   				 126000  900000
-> >>>>>>   			>;
-> >>>>>>+			#cooling-cells =3D <2>; /* min followed by max */
-> >>>>>>   			clock-latency =3D <40000>;
-> >>>>>>   			clocks =3D <&cru ARMCLK>;
-> >>>>>>   		};
-> >>>>>>@@ -346,6 +348,19 @@
-> >>>>>>   		status =3D "disabled";
-> >>>>>>   	};
-> >>>>>>+	tsadc: tsadc@ff280000 {
-> >>>>>>+		compatible =3D "rockchip,rk3288-tsadc";
-> >>>>>>+		reg =3D <0xff280000 0x100>;
-> >>>>>>+		interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-> >>>>>>+		clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-> >>>>>>+		clock-names =3D "tsadc", "apb_pclk";
-> >>>>>>+		pinctrl-names =3D "default";
-> >>>>>>+		pinctrl-0 =3D <&otp_out>;
-> >>>>>>+		#thermal-sensor-cells =3D <1>;
-> >>>>>>+		hw-shut-temp =3D <120000>;
-> >>>>>I do not think this is a good value. You have (in the other DTS =
-file)
-> >>>>>passive trip point at 80 and critical (which should result in or=
-derly
-> >>>>>shutdown) at 125. But here you define hardware-controlled shutdo=
-wn at
-> >>>>>120C, which is backwards. You should have:
-> >>>>>
-> >>>>>passive <=3D critical <=3D hardware
-> >>>>Hmmm....
-> >>>>but, the system will shutdown when temperature over critial value=
-,
-> >>>>there is no chance of triggering the TSHUT.
-> >>>>
-> >>>>If the temperature over a period of time High,as we know,
-> >>>>the resulting TSHUT gave CRU module,let it hot-reset the entire c=
-hip,
-> >>>>or via GPIO give PMIC cold-reset the entire chip.
-> >>>Having tshut trigger is not the goal, tshut is the measure of last=
- resort. If we can handle thermal conditions without triggering tshut, =
-we achieved our goal.
-> >>>
-> >>>Tshut triggering is " oh, crap, nothing we tried works" scenario.
-> >>I don't think so.
-> >>
-> >>In general,We should have:
-> >>passive <=3D hardware(reset entire chip) <=3D critical(shutdown)
-> >>
-> >>The temperature be rising qulckly if have some other conditions,
-> >>the "critical" will play a role.
-> >No, I think it should be the other way around: if we are unable to c=
-ool
-> >down the laptop under load we need to shut it down and let it cool. =
-If
-> >for some reason we are unable to shut it down in orderly fashion (ke=
-rnel
-> >is stuck holding a lock or similar) then hardware will reset it.
-> >
-> >At least that's how I understand it.
-> hmmm....
->=20
-> OK,agree,this is a option.
->=20
-> I think I should set hw-shut-temp =3D <125000>;
-> and critical =3D <120000>;
->=20
+Forgot to mention - why do we reduce alarm temperature down 5 C from the
+trip point? I think we sample often enough to set the trigger exactly at
+trip point.
 
-Yes, this should work, thanks!
+Thanks.
 
---=20
+-- 
 Dmitry
