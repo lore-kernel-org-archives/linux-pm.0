@@ -1,539 +1,216 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: Re: [PATCH v13 1/5] thermal: rockchip: add driver for thermal
-Date: Fri, 24 Oct 2014 16:35:08 +0800
-Message-ID: <544A0F3C.8020609@rock-chips.com>
-References: <1414057207-1576-1-git-send-email-caesar.wang@rock-chips.com> <1414057207-1576-2-git-send-email-caesar.wang@rock-chips.com> <20141024005546.GF9463@dtor-ws> <20141024082108.GB39338@dtor-ws>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v8 5/7] qcom: cpuidle: Add cpuidle driver for QCOM cpus
+Date: Fri, 24 Oct 2014 10:42:23 +0200
+Message-ID: <544A10EF.9010505@linaro.org>
+References: <1412718106-17049-1-git-send-email-lina.iyer@linaro.org> <1412718106-17049-6-git-send-email-lina.iyer@linaro.org> <5448E103.9070505@linaro.org> <20141023165808.GC30210@ilina-mac.qualcomm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
+Content-Type: text/plain; charset=utf-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.133]:53106 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755934AbaJXIfD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Oct 2014 04:35:03 -0400
-In-Reply-To: <20141024082108.GB39338@dtor-ws>
+Received: from mail-wg0-f47.google.com ([74.125.82.47]:44226 "EHLO
+	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752608AbaJXIm1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Oct 2014 04:42:27 -0400
+Received: by mail-wg0-f47.google.com with SMTP id x13so584557wgg.6
+        for <linux-pm@vger.kernel.org>; Fri, 24 Oct 2014 01:42:26 -0700 (PDT)
+In-Reply-To: <20141023165808.GC30210@ilina-mac.qualcomm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 
+On 10/23/2014 06:58 PM, Lina Iyer wrote:
+> On Thu, Oct 23 2014 at 05:05 -0600, Daniel Lezcano wrote:
+>> On 10/07/2014 11:41 PM, Lina Iyer wrote:
+>>> Add cpuidle driver interface to allow cpus to go into C-States. Use=
+ the
+>>> cpuidle DT interface, common across ARM architectures, to provide t=
+he
+>>> C-State information to the cpuidle framework.
+>>>
+>>> Supported modes at this time are Standby and Standalone Power Colla=
+pse.
+>>
+>> Why not the retention mode which is in between the standby and the
+>> retention ?
+>>
+> Retention would appear 'hacky' in comparision to these code, and has
+> dependencies on clocks. So at some point, yes, I will submit a patch =
+to
+> address this deficiency.
+>> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.a=
+rm
+>>> index 38cff69..6a9ee12 100644
+>>> --- a/drivers/cpuidle/Kconfig.arm
+>>> +++ b/drivers/cpuidle/Kconfig.arm
+>>> @@ -62,3 +62,10 @@ config ARM_MVEBU_V7_CPUIDLE
+>>>      depends on ARCH_MVEBU
+>>>      help
+>>>        Select this to enable cpuidle on Armada 370, 38x and XP
+>>> processors.
+>>> +
+>>> +config ARM_QCOM_CPUIDLE
+>>> +    bool "CPU Idle drivers for Qualcomm processors"
+>>> +    depends on QCOM_PM
+>>
+>> + depends on ARCH_QCOM
+>>
+> I may have removed it, which I will check, QCOM_PM used to depend on
+> ARCH_QCOM
 
-=E5=9C=A8 2014/10/24 16:21, Dmitry Torokhov =E5=86=99=E9=81=93:
-> On Thu, Oct 23, 2014 at 05:55:46PM -0700, Dmitry Torokhov wrote:
->> Hi Caesar,
+If QCOM_PM depends on ARCH_QCOM, then yes you can remove the QCOM_PM de=
+p.
+
+>>> +static void (*qcom_idle_enter)(enum pm_sleep_mode);
+>>> +
+>>> +static int qcom_lpm_enter_stby(struct cpuidle_device *dev,
+>>> +                struct cpuidle_driver *drv, int index)
+>>> +{
+>>> +    qcom_idle_enter(PM_SLEEP_MODE_STBY);
 >>
->> On Thu, Oct 23, 2014 at 05:40:03PM +0800, Caesar Wang wrote:
->>> Thermal is TS-ADC Controller module supports
->>> user-defined mode and automatic mode.
->>>
->>> User-defined mode refers,TSADC all the control signals entirely by
->>> software writing to register for direct control.
->>>
->>> Automaic mode refers to the module automatically poll TSADC output,
->>> and the results were checked.If you find that the temperature High
->>> in a period of time,an interrupt is generated to the processor
->>> down-measures taken;If the temperature over a period of time High,
->>> the resulting TSHUT gave CRU module,let it reset the entire chip,
->>> or via GPIO give PMIC.
->>>
->>> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
->>> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
->>> ---
->>>   drivers/thermal/Kconfig            |   9 +
->>>   drivers/thermal/Makefile           |   1 +
->>>   drivers/thermal/rockchip_thermal.c | 693 ++++++++++++++++++++++++=
-+++++++++++++
->>>   3 files changed, 703 insertions(+)
->>>   create mode 100644 drivers/thermal/rockchip_thermal.c
->>>
->>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->>> index ef5587f..5efcf73 100644
->>> --- a/drivers/thermal/Kconfig
->>> +++ b/drivers/thermal/Kconfig
->>> @@ -133,6 +133,15 @@ config SPEAR_THERMAL
->>>   	  Enable this to plug the SPEAr thermal sensor driver into the L=
-inux
->>>   	  thermal framework.
->>>  =20
->>> +config ROCKCHIP_THERMAL
->>> +	tristate "Rockchip thermal driver"
->>> +	depends on ARCH_ROCKCHIP
->>> +	help
->>> +	  Rockchip thermal driver provides support for Temperature sensor
->>> +	  ADC (TS-ADC) found on Rockchip SoCs. It supports one critical
->>> +	  trip point. Cpufreq is used as the cooling device and will thro=
-ttle
->>> +	  CPUs when the Temperature crosses the passive trip point.
->>> +
->>>   config RCAR_THERMAL
->>>   	tristate "Renesas R-Car thermal driver"
->>>   	depends on ARCH_SHMOBILE || COMPILE_TEST
->>> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
->>> index 31e232f..21da0a8 100644
->>> --- a/drivers/thermal/Makefile
->>> +++ b/drivers/thermal/Makefile
->>> @@ -19,6 +19,7 @@ thermal_sys-$(CONFIG_CPU_THERMAL)	+=3D cpu_coolin=
-g.o
->>>  =20
->>>   # platform thermal drivers
->>>   obj-$(CONFIG_SPEAR_THERMAL)	+=3D spear_thermal.o
->>> +obj-$(CONFIG_ROCKCHIP_THERMAL)	+=3D rockchip_thermal.o
->>>   obj-$(CONFIG_RCAR_THERMAL)	+=3D rcar_thermal.o
->>>   obj-$(CONFIG_KIRKWOOD_THERMAL)  +=3D kirkwood_thermal.o
->>>   obj-y				+=3D samsung/
->>> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/r=
-ockchip_thermal.c
->>> new file mode 100644
->>> index 0000000..6705981
->>> --- /dev/null
->>> +++ b/drivers/thermal/rockchip_thermal.c
->>> @@ -0,0 +1,693 @@
->>> +/*
->>> + * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
->>> + *
->>> + * This program is free software; you can redistribute it and/or m=
-odify it
->>> + * under the terms and conditions of the GNU General Public Licens=
-e,
->>> + * version 2, as published by the Free Software Foundation.
->>> + *
->>> + * This program is distributed in the hope it will be useful, but =
-WITHOUT
->>> + * ANY WARRANTY; without even the implied warranty of MERCHANTABIL=
-ITY or
->>> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public L=
-icense for
->>> + * more details.
->>> + */
->>> +
->>> +#include <linux/clk.h>
->>> +#include <linux/cpu_cooling.h>
->>> +#include <linux/interrupt.h>
->>> +#include <linux/io.h>
->>> +#include <linux/module.h>
->>> +#include <linux/of.h>
->>> +#include <linux/of_address.h>
->>> +#include <linux/of_irq.h>
->>> +#include <linux/platform_device.h>
->>> +#include <linux/thermal.h>
->>> +
->>> +/**
->>> + * If the temperature over a period of time High,
->>> + * the resulting TSHUT gave CRU module,let it reset the entire chi=
-p,
->>> + * or via GPIO give PMIC.
->>> + */
->>> +enum tshut_mode {
->>> +	TSHUT_MODE_CRU =3D 0,
->>> +	TSHUT_MODE_GPIO,
->>> +};
->>> +
->>> +/**
->>> + * the system Temperature Sensors tshut(tshut) polarity
->>> + * the bit 8 is tshut polarity.
->>> + * 0: low active, 1: high active
->>> + */
->>> +enum tshut_polarity {
->>> +	TSHUT_LOW_ACTIVE =3D 0,
->>> +	TSHUT_HIGH_ACTIVE,
->>> +};
->>> +
->>> +/**
->>> + * The system has three Temperature Sensors.  channel 0 is reserve=
-d,
->>> + * channel 1 is for CPU, and channel 2 is for GPU.
->>> + */
->>> +enum sensor_id {
->>> +	SENSOR_CPU =3D 1,
->>> +	SENSOR_GPU,
->>> +};
->>> +
->>> +
->>> +struct rockchip_tsadc_chip {
->>> +	long hw_shut_temp;
->>> +	enum tshut_mode tshut_mode;
->>> +	enum tshut_polarity tshut_polarity;
->>> +
->>> +	/* Chip-wide methods */
->>> +	void (*initialize)(void __iomem *reg, enum tshut_polarity p);
->>> +	void (*irq_ack)(void __iomem *reg);
->>> +
->>> +	/* Per-sensor methods */
->>> +	int (*get_temp)(int chn, void __iomem *reg, long *temp);
->>> +	void (*set_alarm_temp)(int chn, void __iomem *reg, long temp);
->>> +	void (*set_tshut_temp)(int chn, void __iomem *reg, long temp);
->>> +	void (*set_tshut_mode)(int chn, void __iomem *reg, enum tshut_mod=
-e m);
->>> +	void (*control)(int chn, void __iomem *reg, bool on);
->>> +};
->>> +
->>> +struct rockchip_thermal_sensor {
->>> +	struct rockchip_thermal_data *thermal;
->>> +	struct thermal_zone_device *tzd;
->>> +	enum sensor_id id;
->>> +};
->>> +
->>> +#define NUM_SENSORS	2 /* Ignore unused sensor 0 */
->>> +
->>> +struct rockchip_thermal_data {
->>> +	const struct rockchip_tsadc_chip *chip;
->>> +	struct platform_device *pdev;
->>> +
->>> +	struct rockchip_thermal_sensor sensors[NUM_SENSORS];
->>> +
->>> +	struct thermal_cooling_device *cdev;
->>> +
->>> +	struct clk *clk;
->>> +	struct clk *pclk;
->>> +
->>> +	void __iomem *regs;
->>> +
->>> +	long hw_shut_temp;
->>> +	enum tshut_mode tshut_mode;
->>> +	enum tshut_polarity tshut_polarity;
->>> +};
->>> +
->>> +/* TSADC V2 Sensor info define: */
->>> +#define TSADCV2_AUTO_CON			0x04
->>> +#define TSADCV2_INT_EN				0x08
->>> +#define TSADCV2_INT_PD				0x0c
->>> +#define TSADCV2_DATA(chn)			(0x20 + (chn) * 0x04)
->>> +#define TSADCV2_COMP_INT(chn)		        (0x30 + (chn) * 0x04)
->>> +#define TSADCV2_COMP_SHUT(chn)		        (0x40 + (chn) * 0x04)
->>> +#define TSADCV2_HIGHT_INT_DEBOUNCE		0x60
->>> +#define TSADCV2_HIGHT_TSHUT_DEBOUNCE		0x64
->>> +#define TSADCV2_AUTO_PERIOD			0x68
->>> +#define TSADCV2_AUTO_PERIOD_HT			0x6c
->>> +
->>> +#define TSADCV2_AUTO_EN				BIT(0)
->>> +#define TSADCV2_AUTO_DISABLE			~BIT(0)
->>> +#define TSADCV2_AUTO_SRC_EN(chn)		BIT(4 + (chn))
->>> +#define TSADCV2_AUTO_TSHUT_POLARITY_HIGH	BIT(8)
->>> +#define TSADCV2_AUTO_TSHUT_POLARITY_LOW		~BIT(8)
->>> +
->>> +#define TSADCV2_INT_SRC_EN(chn)			BIT(chn)
->>> +#define TSADCV2_SHUT_2GPIO_SRC_EN(chn)		BIT(4 + (chn))
->>> +#define TSADCV2_SHUT_2CRU_SRC_EN(chn)		BIT(8 + (chn))
->>> +
->>> +#define TSADCV2_INT_PD_CLEAR			~BIT(8)
->>> +
->>> +#define TSADCV2_DATA_MASK			0xfff
->>> +#define TSADCV2_HIGHT_INT_DEBOUNCE_TIME		0x0a
->>> +#define TSADCV2_HIGHT_TSHUT_DEBOUNCE_TIME	0x0a
->>> +#define TSADCV2_AUTO_PERIOD_TIME		0x03e8
->>> +#define TSADCV2_AUTO_PERIOD_HT_TIME		0x64
->>> +
->>> +struct tsadc_table {
->>> +	unsigned long code;
->>> +	long temp;
->>> +};
->>> +
->>> +static const struct tsadc_table v2_code_table[] =3D {
->>> +	{TSADCV2_DATA_MASK, -40000},
->>> +	{3800, -40000},
->>> +	{3792, -35000},
->>> +	{3783, -30000},
->>> +	{3774, -25000},
->>> +	{3765, -20000},
->>> +	{3756, -15000},
->>> +	{3747, -10000},
->>> +	{3737, -5000},
->>> +	{3728, 0},
->>> +	{3718, 5000},
->>> +	{3708, 10000},
->>> +	{3698, 15000},
->>> +	{3688, 20000},
->>> +	{3678, 25000},
->>> +	{3667, 30000},
->>> +	{3656, 35000},
->>> +	{3645, 40000},
->>> +	{3634, 45000},
->>> +	{3623, 50000},
->>> +	{3611, 55000},
->>> +	{3600, 60000},
->>> +	{3588, 65000},
->>> +	{3575, 70000},
->>> +	{3563, 75000},
->>> +	{3550, 80000},
->>> +	{3537, 85000},
->>> +	{3524, 90000},
->>> +	{3510, 95000},
->>> +	{3496, 100000},
->>> +	{3482, 105000},
->>> +	{3467, 110000},
->>> +	{3452, 115000},
->>> +	{3437, 120000},
->>> +	{3421, 125000},
->>> +	{0, 125000},
->>> +};
->>> +
->>> +static u32 rk_tsadcv2_temp_to_code(long temp)
->>> +{
->>> +	int high, low, mid;
->>> +
->>> +	low =3D 0;
->>> +	high =3D ARRAY_SIZE(v2_code_table) - 1;
->>> +	mid =3D (high + low) / 2;
->>> +
->>> +	if (temp < v2_code_table[low].temp || temp > v2_code_table[high].=
-temp)
->>> +		return 0;
->>> +
->>> +	while (low <=3D high) {
->>> +		if (temp =3D=3D v2_code_table[mid].temp)
->>> +			return v2_code_table[mid].code;
->>> +		else if (temp < v2_code_table[mid].temp)
->>> +			high =3D mid - 1;
->>> +		else
->>> +			low =3D mid + 1;
->>> +		mid =3D (low + high) / 2;
->>> +	}
->>> +
->>> +	return 0;
->>> +}
->>> +
->>> +static long rk_tsadcv2_code_to_temp(u32 code)
->>> +{
->>> +	int high, low, mid;
->>> +
->>> +	low =3D 0;
->>> +	high =3D ARRAY_SIZE(v2_code_table) - 1;
->>> +	mid =3D (high + low) / 2;
->>> +
->>> +	if (code > v2_code_table[low].code || code < v2_code_table[high].=
-code)
->>> +		return 125000; /* No code available, return max temperature */
->>> +
->>> +	while (low <=3D high) {
->>> +		if (code >=3D v2_code_table[mid].code && code <
->>> +		    v2_code_table[mid - 1].code)
->>> +			return v2_code_table[mid].temp;
->>> +		else if (code < v2_code_table[mid].code)
->>> +			low =3D mid + 1;
->>> +		else
->>> +			high =3D mid - 1;
->>> +		mid =3D (low + high) / 2;
->>> +	}
->>> +
->>> +	return 125000;
->>> +}
->>> +
->>> +/**
->>> + * rk_tsadcv2_initialize - initialize TASDC Controller
->>> + * (1) Set TSADCV2_AUTO_PERIOD, configure the interleave between
->>> + * every two accessing of TSADC in normal operation.
->>> + * (2) Set TSADCV2_AUTO_PERIOD_HT, configure the interleave betwee=
-n
->>> + * every two accessing of TSADC after the temperature is higher
->>> + * than COM_SHUT or COM_INT.
->>> + * (3) Set TSADCV2_HIGH_INT_DEBOUNCE and TSADC_HIGHT_TSHUT_DEBOUNC=
-E,
->>> + * if the temperature is higher than COMP_INT or COMP_SHUT for
->>> + * "debounce" times, TSADC controller will generate interrupt or T=
-SHUT.
->>> + */
->>> +static void rk_tsadcv2_initialize(void __iomem *regs,
->>> +				  enum tshut_polarity tshut_polarity)
->>> +{
->>> +	if (tshut_polarity =3D=3D TSHUT_HIGH_ACTIVE)
->>> +		writel_relaxed(0 | (TSADCV2_AUTO_TSHUT_POLARITY_HIGH),
->>> +			       regs + TSADCV2_AUTO_CON);
->>> +	else
->>> +		writel_relaxed(0 | (TSADCV2_AUTO_TSHUT_POLARITY_LOW),
->>> +			       regs + TSADCV2_AUTO_CON);
->>> +
->>> +	writel_relaxed(TSADCV2_AUTO_PERIOD_TIME,
->>> +		       regs + TSADCV2_AUTO_PERIOD);
->>> +	writel_relaxed(TSADCV2_AUTO_PERIOD_HT_TIME,
->>> +		       regs + TSADCV2_AUTO_PERIOD_HT);
->>> +
->>> +	writel_relaxed(TSADCV2_HIGHT_INT_DEBOUNCE_TIME,
->>> +		       regs + TSADCV2_HIGHT_INT_DEBOUNCE);
->>> +	writel_relaxed(TSADCV2_HIGHT_TSHUT_DEBOUNCE_TIME,
->>> +		       regs + TSADCV2_HIGHT_TSHUT_DEBOUNCE);
->> SO I do not think we can keep these static, since polling frequency
->> depends on base clock. On my system given values result in thermal a=
-larm
->> triggering after as long as 10 seconds after temperature crosses the
->> alarm setting. We need to adjust values like:
+>> Could you replace this function by a generic one ?
 >>
+>> It would be nice to have qcom_cpu_standby(void) and
+>> qcom_cpu_powerdown(void) and let behind the mysterious words 'Single
+>> Power Collapse' in the low level code which is qcom specific :)
 >>
->> #define TSADCV2_AUTO_PERIOD_TIME 250  /* msec */
->> #define TSADCV2_AUTO_PERIOD_HT_TIME 50  /* msec */
->> #define TSADCV2_HIGHT_INT_DEBOUNCE_COUNT 4
->> #define TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT 4
+>> I guess you had to create a single "qcom_idle_enter" because of a
+>> single pointer in the platform data. I am working on a common
+>> structure to be shared across the drivers as a common way to pass th=
+e
+>> different callbacks without including a soc specific header.
 >>
->> whih will give us 1 sec and 200 msec reaction times and we shoudl se=
-t
->> them as this:
+>> struct cpuidle_ops {
+>>     int (*standby)(void *data);
+>>     int (*retention)(void *data);
+>>     int (*poweroff)(void *data);
+>> };
 >>
->> 	val =3D TSADCV2_AUTO_PERIOD_TIME * clk_rate / 1000;
->> 	writel_relaxed(val, regs + TSADCV2_AUTO_PERIOD);
+>> So maybe you can either:
 >>
->> etc.
+>> 1. wait I post this structure and provide the driver with this one
+>> 2. create a similar structure and I will take care to upgrade when I
+>> post the patchset with the common structure.
 >>
->>> +}
->>> +
->>> +static void rk_tsadcv2_irq_ack(void __iomem *regs)
->>> +{
->>> +	u32 val;
->>> +
->>> +	val =3D readl_relaxed(regs + TSADCV2_INT_PD);
->>> +	writel_relaxed(val & TSADCV2_INT_PD_CLEAR, regs + TSADCV2_INT_PD)=
-;
->>> +}
->>> +
->>> +static int rk_tsadcv2_get_temp(int chn, void __iomem *regs, long *=
-temp)
->>> +{
->>> +	u32 val;
->>> +
->>> +	/* the A/D value of the channel last conversion need some time */
->>> +	val =3D readl_relaxed(regs + TSADCV2_DATA(chn));
->>> +	if (val =3D=3D 0)
->>> +		return -EAGAIN;
->>> +
->>> +	*temp =3D rk_tsadcv2_code_to_temp(val);
->>> +
->>> +	return 0;
->>> +}
->>> +
->>> +static void rk_tsadcv2_alarm_temp(int chn, void __iomem *regs, lon=
-g temp)
->>> +{
->>> +	u32 alarm_value, int_en;
->>> +
->>> +	alarm_value =3D rk_tsadcv2_temp_to_code(temp);
->>> +	writel_relaxed(alarm_value & TSADCV2_DATA_MASK,
->>> +		       regs + TSADCV2_COMP_INT(chn));
->>> +
->>> +	int_en =3D readl_relaxed(regs + TSADCV2_INT_EN);
->>> +	int_en |=3D TSADCV2_INT_SRC_EN(chn);
->>> +	writel_relaxed(int_en, regs + TSADCV2_INT_EN);
->>> +}
->>> +
->>> +static void rk_tsadcv2_tshut_temp(int chn, void __iomem *regs, lon=
-g temp)
->>> +{
->>> +	u32 tshut_value;
->>> +
->>> +	tshut_value =3D rk_tsadcv2_temp_to_code(temp);
->>> +	writel_relaxed(tshut_value, regs + TSADCV2_COMP_SHUT(chn));
->>> +}
->>> +
->>> +static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
->>> +				  enum tshut_mode mode)
->>> +{
->>> +	u32 val;
->>> +
->>> +	val =3D readl_relaxed(regs + TSADCV2_INT_EN);
->>> +	if (mode =3D=3D TSHUT_MODE_GPIO) {
->>> +		val &=3D ~TSADCV2_SHUT_2CRU_SRC_EN(chn);
->>> +		val |=3D TSADCV2_SHUT_2GPIO_SRC_EN(chn);
->>> +	} else {
->>> +		val &=3D ~TSADCV2_SHUT_2GPIO_SRC_EN(chn);
->>> +		val |=3D TSADCV2_SHUT_2CRU_SRC_EN(chn);
->>> +	}
->>> +
->>> +	writel_relaxed(val, regs + TSADCV2_INT_EN);
->>> +}
->>> +
->>> +static void rk_tsadcv2_control(int chn, void __iomem *regs, bool e=
-nable)
->>> +{
->>> +	u32 val;
->>> +
->>> +	val =3D readl_relaxed(regs + TSADCV2_AUTO_CON);
->>> +	if (enable)
->>> +		val |=3D TSADCV2_AUTO_EN | TSADCV2_AUTO_SRC_EN(chn);
->> If I read the spec correctly this TSADCV2_AUTO_SRC_EN controls TSHUT
->> functionality, not measurements, right? If so you need to toggle the=
+>> The issue I see with this common structure is the initialization of
+>> the qcom_idle_state_match array.
+>>
+>>> +    local_irq_enable();
+>>
+>> local_irq_enable() is handled by the cpuidle framework.
+>> Please remove all occurrences of this function in the driver otherwi=
 se
->> bits in rk_tsadcv2_tshut_temp, and set TSADCV2_AUTO_EN separately.
->>
->>> +	else
->>> +		val &=3D ~TSADCV2_AUTO_EN;
->>> +
->>> +	writel_relaxed(val, regs + TSADCV2_AUTO_CON);
->>> +}
->>> +
->>> +static const struct rockchip_tsadc_chip rk3288_tsadc_data =3D {
->>> +	.tshut_mode =3D TSHUT_MODE_GPIO, /* default TSHUT via GPIO give P=
-MIC */
->>> +	.tshut_polarity =3D TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE=
- */
->>> +	.hw_shut_temp =3D 120000,
->>> +
->>> +	.initialize =3D rk_tsadcv2_initialize,
->>> +	.irq_ack =3D rk_tsadcv2_irq_ack,
->>> +	.get_temp =3D rk_tsadcv2_get_temp,
->>> +	.set_alarm_temp =3D rk_tsadcv2_alarm_temp,
->>> +	.set_tshut_temp =3D rk_tsadcv2_tshut_temp,
->>> +	.set_tshut_mode =3D rk_tsadcv2_tshut_mode,
->>> +	.control =3D rk_tsadcv2_control,
->>> +};
->>> +
->>> +static const struct of_device_id of_rockchip_thermal_match[] =3D {
->>> +	{
->>> +		.compatible =3D "rockchip,rk3288-tsadc",
->>> +		.data =3D (void *)&rk3288_tsadc_data,
->>> +	},
->>> +	{ /* end */ },
->>> +};
->>> +MODULE_DEVICE_TABLE(of, of_rockchip_thermal_match);
->>> +
->>> +static void
->>> +rockchip_thermal_toggle_sensor(struct rockchip_thermal_sensor *sen=
-sor, bool on)
->>> +{
->>> +	struct thermal_zone_device *tzd =3D sensor->tzd;
->>> +
->>> +	tzd->ops->set_mode(tzd,
->>> +		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
->>> +}
->>> +
->>> +static irqreturn_t rockchip_thermal_alarm_irq_thread(int irq, void=
- *dev)
->>> +{
->>> +	struct rockchip_thermal_data *thermal =3D dev;
->>> +	int i;
->>> +
->>> +	dev_dbg(&thermal->pdev->dev, "thermal alarm\n");
->>> +
->>> +	thermal->chip->irq_ack(thermal->regs);
->>> +
->>> +	for (i =3D 0; i < ARRAY_SIZE(thermal->sensors); i++)
->>> +		thermal_zone_device_update(thermal->sensors[i].tzd);
->>> +
->>> +	return IRQ_HANDLED;
->>> +}
->>> +
->>> +static int rockchip_thermal_set_trips(void *_sensor, long low, lon=
-g high)
->>> +{
->>> +	struct rockchip_thermal_sensor *sensor =3D _sensor;
->>> +	struct rockchip_thermal_data *thermal =3D sensor->thermal;
->>> +	const struct rockchip_tsadc_chip *tsadc =3D thermal->chip;
->>> +
->>> +	dev_dbg(&thermal->pdev->dev, "%s: sensor %d: low: %ld, high %ld\n=
-",
->>> +		__func__, sensor->id, low, high);
->>> +
->>> +	tsadc->set_alarm_temp(sensor->id, thermal->regs, high-5000);
-> Forgot to mention - why do we reduce alarm temperature down 5 C from =
-the
-> trip point? I think we sample often enough to set the trigger exactly=
- at
-> trip point.
-
-=46ixed.
-
-> Thanks.
+>> time measurement will include irq time processing and will no longer
+>> be valid.
+> OK. Thanks for pointing that out.
 >
+>>
+>>> +    return index;
+>>> +}
+>>> +
+>>> +static int qcom_lpm_enter_spc(struct cpuidle_device *dev,
+>>> +                struct cpuidle_driver *drv, int index)
+>>> +{
+>>> +    cpu_pm_enter();
+>>> +    qcom_idle_enter(PM_SLEEP_MODE_SPC);
+>>
+>> Where is cpu_suspend ?
+>>
+> Inside that function qcom_idle_enter() in the SoC layer (pm.c)
+
+It would be preferable to group cpu_suspend with cpu_pm_enter/exit in=20
+this function.
+
+>>> +    cpu_pm_exit();
+>>> +    local_irq_enable();
+>>> +
+>>> +    return index;
+>>> +}
+>>> +
+>>> +static struct cpuidle_driver qcom_cpuidle_driver =3D {
+>>> +    .name    =3D "qcom_cpuidle",
+>>> +};
+>>> +
+>>> +static const struct of_device_id qcom_idle_state_match[] =3D {
+>>> +    { .compatible =3D "qcom,idle-state-stby", .data =3D
+>>> qcom_lpm_enter_stby},
+>>> +    { .compatible =3D "qcom,idle-state-spc", .data =3D
+>>> qcom_lpm_enter_spc },
+>>> +    { },
+>>> +};
+>>> +
+>>> +static int qcom_cpuidle_probe(struct platform_device *pdev)
+>>> +{
+>>> +    struct cpuidle_driver *drv =3D &qcom_cpuidle_driver;
+>>> +    int ret;
+>>> +
+>>> +    qcom_idle_enter =3D pdev->dev.platform_data;
+>>> +    if (!qcom_idle_enter)
+>>> +        return -EFAULT;
+>>
+>> It shouldn't fail because if the probe is called then the cpuidle
+>> device was registered with its callback which is hardcoded.
+>>
+> Yeah, I see the paradigm shift. Even though I know how the caller is,=
+ I
+> am always backing up the expectation with an error check. Will remove
+> that.
+>
+>>> +     /* Probe for other states, including standby */
+>>> +    ret =3D dt_init_idle_driver(drv, qcom_idle_state_match, 0);
+>>
+>> Are you sure it is not worth to add the simple WFI state ? It may ha=
+ve
+>> less latency than the standby mode, no ?
+>>
+> May be. But it would split the bucket between wfi and the cpu plus
+> allowing the L2 and the power hierarachy to enter their standby state=
+s.
+> This could very well be useful and possible, when there is a QoS requ=
+est
+> that disallows power down and high latency states.
+
+Not necessarly a QoS, it could be a state selection from the governor=20
+with very short latencies.
+
+> IMO, the benefit of the possible heirarchical standby seems to outwei=
+gh the
+> latency gain we may get by just doing a core's clock gating.
+
+It is up to the governor/scheduler to figure out this :)
+
+>>> +    if (ret < 0)
+>>> +        return ret;
+>>> +
+>>> +    return cpuidle_register(drv, NULL);
+>>> +}
+>>> +
+>>> +static struct platform_driver qcom_cpuidle_plat_driver =3D {
+>>> +    .probe    =3D qcom_cpuidle_probe,
+>>> +    .driver =3D {
+>>> +        .name =3D "qcom_cpuidle",
+>>> +    },
+>>> +};
+>>> +
+>>> +module_platform_driver(qcom_cpuidle_plat_driver);
+>>
+>>
+>> --
+>> <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
+or ARM SoCs
+>>
+>> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+>> <http://twitter.com/#!/linaroorg> Twitter |
+>> <http://www.linaro.org/linaro-blog/> Blog
+>>
+
 
 --=20
-Best regards,
-Caesar
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
