@@ -1,89 +1,120 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: Re: [PATCH v13 3/5] ARM: dts: add RK3288 Thermal data
-Date: Fri, 24 Oct 2014 10:19:23 +0800
-Message-ID: <5449B72B.5090005@rock-chips.com>
-References: <1414057207-1576-1-git-send-email-caesar.wang@rock-chips.com> <1414057207-1576-4-git-send-email-caesar.wang@rock-chips.com> <20141024004811.GE9463@dtor-ws>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v13 4/5] ARM: dts: add main Thermal info to rk3288
+Date: Thu, 23 Oct 2014 19:32:36 -0700
+Message-ID: <20141024023236.GA19910@dtor-ws>
+References: <1414057207-1576-1-git-send-email-caesar.wang@rock-chips.com>
+ <1414057207-1576-5-git-send-email-caesar.wang@rock-chips.com>
+ <20141024004625.GD9463@dtor-ws>
+ <5449A6A4.3070608@rock-chips.com>
+ <E4EEE800-5701-45E5-9E97-D3B036DC2F17@gmail.com>
+ <5449B433.5040003@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <20141024004811.GE9463@dtor-ws>
+Content-Disposition: inline
+In-Reply-To: <5449B433.5040003@rock-chips.com>
 Sender: linux-doc-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Caesar Wang <caesar.wang@rock-chips.com>
 Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-Dmitry,
+On Fri, Oct 24, 2014 at 10:06:43AM +0800, Caesar Wang wrote:
+>=20
+> =E5=9C=A8 2014/10/24 9:37, Dmitry Torokhov =E5=86=99=E9=81=93:
+> >On October 23, 2014 6:08:52 PM PDT, Caesar Wang <caesar.wang@rock-ch=
+ips.com> wrote:
+> >>Dmitry,
+> >>
+> >>=E5=9C=A8 2014/10/24 8:46, Dmitry Torokhov =E5=86=99=E9=81=93:
+> >>>Hi Caesar,
+> >>>
+> >>>On Thu, Oct 23, 2014 at 05:40:06PM +0800, Caesar Wang wrote:
+> >>>>This patch is depend on rk3288-thermal.dtsi,or
+> >>>>it will compile error.
+> >>>>
+> >>>>If the temperature over a period of time High,over 120C
+> >>>>the resulting TSHUT gave CRU module,let it reset
+> >>>>the entire chip,or via GPIO give PMIC.
+> >>>>
+> >>>>Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+> >>>>---
+> >>>>   arch/arm/boot/dts/rk3288.dtsi | 21 +++++++++++++++++++++
+> >>>>   1 file changed, 21 insertions(+)
+> >>>>
+> >>>>diff --git a/arch/arm/boot/dts/rk3288.dtsi
+> >>b/arch/arm/boot/dts/rk3288.dtsi
+> >>>>index cb18bb4..85fc17a 100644
+> >>>>--- a/arch/arm/boot/dts/rk3288.dtsi
+> >>>>+++ b/arch/arm/boot/dts/rk3288.dtsi
+> >>>>@@ -15,6 +15,7 @@
+> >>>>   #include <dt-bindings/interrupt-controller/arm-gic.h>
+> >>>>   #include <dt-bindings/pinctrl/rockchip.h>
+> >>>>   #include <dt-bindings/clock/rk3288-cru.h>
+> >>>>+#include <dt-bindings/thermal/thermal.h>
+> >>>>   #include "skeleton.dtsi"
+> >>>>   / {
+> >>>>@@ -66,6 +67,7 @@
+> >>>>   				 216000  900000
+> >>>>   				 126000  900000
+> >>>>   			>;
+> >>>>+			#cooling-cells =3D <2>; /* min followed by max */
+> >>>>   			clock-latency =3D <40000>;
+> >>>>   			clocks =3D <&cru ARMCLK>;
+> >>>>   		};
+> >>>>@@ -346,6 +348,19 @@
+> >>>>   		status =3D "disabled";
+> >>>>   	};
+> >>>>+	tsadc: tsadc@ff280000 {
+> >>>>+		compatible =3D "rockchip,rk3288-tsadc";
+> >>>>+		reg =3D <0xff280000 0x100>;
+> >>>>+		interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
+> >>>>+		clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
+> >>>>+		clock-names =3D "tsadc", "apb_pclk";
+> >>>>+		pinctrl-names =3D "default";
+> >>>>+		pinctrl-0 =3D <&otp_out>;
+> >>>>+		#thermal-sensor-cells =3D <1>;
+> >>>>+		hw-shut-temp =3D <120000>;
+> >>>I do not think this is a good value. You have (in the other DTS fi=
+le)
+> >>>passive trip point at 80 and critical (which should result in orde=
+rly
+> >>>shutdown) at 125. But here you define hardware-controlled shutdown=
+ at
+> >>>120C, which is backwards. You should have:
+> >>>
+> >>>passive <=3D critical <=3D hardware
+> >>Hmmm....
+> >>but, the system will shutdown when temperature over critial value,
+> >>there is no chance of triggering the TSHUT.
+> >>
+> >>If the temperature over a period of time High,as we know,
+> >>the resulting TSHUT gave CRU module,let it hot-reset the entire chi=
+p,
+> >>or via GPIO give PMIC cold-reset the entire chip.
+> >Having tshut trigger is not the goal, tshut is the measure of last r=
+esort. If we can handle thermal conditions without triggering tshut, we=
+ achieved our goal.
+> >
+> >Tshut triggering is " oh, crap, nothing we tried works" scenario.
+>=20
+> I don't think so.
+>=20
+> In general,We should have:
+> passive <=3D hardware(reset entire chip) <=3D critical(shutdown)
+>=20
+> The temperature be rising qulckly if have some other conditions,
+> the "critical" will play a role.
 
-=E5=9C=A8 2014/10/24 8:48, Dmitry Torokhov =E5=86=99=E9=81=93:
-> Hi Caesar,
->
-> On Thu, Oct 23, 2014 at 05:40:05PM +0800, Caesar Wang wrote:
->> This patch changes a dtsi file to contain the thermal data
->> on RK3288 and later SoCs. This data will
->> enable a thermal shutdown over 125C.
->>
->> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
->> ---
->>   arch/arm/boot/dts/rk3288-thermal.dtsi | 65 +++++++++++++++++++++++=
-++++++++++++
->>   1 file changed, 65 insertions(+)
->>   create mode 100644 arch/arm/boot/dts/rk3288-thermal.dtsi
->>
->> diff --git a/arch/arm/boot/dts/rk3288-thermal.dtsi b/arch/arm/boot/d=
-ts/rk3288-thermal.dtsi
->> new file mode 100644
->> index 0000000..c361262
->> --- /dev/null
->> +++ b/arch/arm/boot/dts/rk3288-thermal.dtsi
->> @@ -0,0 +1,65 @@
->> +/*
->> + * Device Tree Source for RK3288 SoC thermal
->> + *
->> + * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
->> + *
->> + * This file is licensed under the terms of the GNU General Public =
-License
->> + * version 2.  This program is licensed "as is" without any warrant=
-y of any
->> + * kind, whether express or implied.
->> + */
->> +
->> +#include <dt-bindings/thermal/thermal.h>
->> +
->> +reserve_thermal: reserve_thermal {
->> +	polling-delay-passive =3D <500>; /* milliseconds */
->> +	polling-delay =3D <1000>; /* milliseconds */
->> +
->> +			/* sensor	ID */
->> +	thermal-sensors =3D <&tsadc	0>;
->> +
->> +};
->> +
->> +cpu_thermal: cpu_thermal {
->> +	polling-delay-passive =3D <500>; /* milliseconds */
->> +	polling-delay =3D <1000>; /* milliseconds */
-> Given that the hardware supports alarm interrupts I think we should b=
-e
-> able to lower polling frequency. I'd say 5 seconds for polling-delay =
-and
-> 1 second for when we trip over passive point?
-As you say:
+No, I think it should be the other way around: if we are unable to cool
+down the laptop under load we need to shut it down and let it cool. If
+for some reason we are unable to shut it down in orderly fashion (kerne=
+l
+is stuck holding a lock or similar) then hardware will reset it.
 
-+cpu_thermal: cpu_thermal {
-+	polling-delay-passive =3D <1000>; /* milliseconds */
-+	polling-delay =3D <5000>; /* milliseconds */
+At least that's how I understand it.
 
-I think it's ok for me if the driver follow your change.
-
-
->
-> Thanks.
->
+Thanks.
 
 --=20
-Best regards,
-Caesar
-
-
+Dmitry
