@@ -1,127 +1,47 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: Re: [PATCH v13 4/5] ARM: dts: add main Thermal info to rk3288
-Date: Fri, 24 Oct 2014 11:21:46 +0800
-Message-ID: <5449C5CA.9000009@rock-chips.com>
-References: <1414057207-1576-1-git-send-email-caesar.wang@rock-chips.com> <1414057207-1576-5-git-send-email-caesar.wang@rock-chips.com> <20141024004625.GD9463@dtor-ws> <5449A6A4.3070608@rock-chips.com> <E4EEE800-5701-45E5-9E97-D3B036DC2F17@gmail.com> <5449B433.5040003@rock-chips.com> <20141024023236.GA19910@dtor-ws>
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+Subject: Re: [PATCH v8 0/7] QCOM 8974 and 8084 cpuidle driver
+Date: Fri, 24 Oct 2014 09:51:15 +0530
+Message-ID: <CAHLCerMY3SCNixQjh7k2F=3DK1qa7JMeWsvwv426wNt8A_Vm-A@mail.gmail.com>
+References: <1412718106-17049-1-git-send-email-lina.iyer@linaro.org>
+	<1414078317.4214.4.camel@mm-sol.com>
+	<20141023155435.GA30210@ilina-mac.qualcomm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <20141024023236.GA19910@dtor-ws>
-Sender: linux-doc-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <20141023155435.GA30210@ilina-mac.qualcomm.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: "Ivan T. Ivanov" <iivanov@mm-sol.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kevin Hilman <khilman@linaro.org>, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, lakml <linux-arm-kernel@lists.infradead.org>, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Dmitry,
-
-=E5=9C=A8 2014/10/24 10:32, Dmitry Torokhov =E5=86=99=E9=81=93:
-> On Fri, Oct 24, 2014 at 10:06:43AM +0800, Caesar Wang wrote:
->> =E5=9C=A8 2014/10/24 9:37, Dmitry Torokhov =E5=86=99=E9=81=93:
->>> On October 23, 2014 6:08:52 PM PDT, Caesar Wang <caesar.wang@rock-c=
-hips.com> wrote:
->>>> Dmitry,
->>>>
->>>> =E5=9C=A8 2014/10/24 8:46, Dmitry Torokhov =E5=86=99=E9=81=93:
->>>>> Hi Caesar,
->>>>>
->>>>> On Thu, Oct 23, 2014 at 05:40:06PM +0800, Caesar Wang wrote:
->>>>>> This patch is depend on rk3288-thermal.dtsi,or
->>>>>> it will compile error.
->>>>>>
->>>>>> If the temperature over a period of time High,over 120C
->>>>>> the resulting TSHUT gave CRU module,let it reset
->>>>>> the entire chip,or via GPIO give PMIC.
->>>>>>
->>>>>> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
->>>>>> ---
->>>>>>    arch/arm/boot/dts/rk3288.dtsi | 21 +++++++++++++++++++++
->>>>>>    1 file changed, 21 insertions(+)
->>>>>>
->>>>>> diff --git a/arch/arm/boot/dts/rk3288.dtsi
->>>> b/arch/arm/boot/dts/rk3288.dtsi
->>>>>> index cb18bb4..85fc17a 100644
->>>>>> --- a/arch/arm/boot/dts/rk3288.dtsi
->>>>>> +++ b/arch/arm/boot/dts/rk3288.dtsi
->>>>>> @@ -15,6 +15,7 @@
->>>>>>    #include <dt-bindings/interrupt-controller/arm-gic.h>
->>>>>>    #include <dt-bindings/pinctrl/rockchip.h>
->>>>>>    #include <dt-bindings/clock/rk3288-cru.h>
->>>>>> +#include <dt-bindings/thermal/thermal.h>
->>>>>>    #include "skeleton.dtsi"
->>>>>>    / {
->>>>>> @@ -66,6 +67,7 @@
->>>>>>    				 216000  900000
->>>>>>    				 126000  900000
->>>>>>    			>;
->>>>>> +			#cooling-cells =3D <2>; /* min followed by max */
->>>>>>    			clock-latency =3D <40000>;
->>>>>>    			clocks =3D <&cru ARMCLK>;
->>>>>>    		};
->>>>>> @@ -346,6 +348,19 @@
->>>>>>    		status =3D "disabled";
->>>>>>    	};
->>>>>> +	tsadc: tsadc@ff280000 {
->>>>>> +		compatible =3D "rockchip,rk3288-tsadc";
->>>>>> +		reg =3D <0xff280000 0x100>;
->>>>>> +		interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
->>>>>> +		clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
->>>>>> +		clock-names =3D "tsadc", "apb_pclk";
->>>>>> +		pinctrl-names =3D "default";
->>>>>> +		pinctrl-0 =3D <&otp_out>;
->>>>>> +		#thermal-sensor-cells =3D <1>;
->>>>>> +		hw-shut-temp =3D <120000>;
->>>>> I do not think this is a good value. You have (in the other DTS f=
-ile)
->>>>> passive trip point at 80 and critical (which should result in ord=
-erly
->>>>> shutdown) at 125. But here you define hardware-controlled shutdow=
-n at
->>>>> 120C, which is backwards. You should have:
->>>>>
->>>>> passive <=3D critical <=3D hardware
->>>> Hmmm....
->>>> but, the system will shutdown when temperature over critial value,
->>>> there is no chance of triggering the TSHUT.
->>>>
->>>> If the temperature over a period of time High,as we know,
->>>> the resulting TSHUT gave CRU module,let it hot-reset the entire ch=
-ip,
->>>> or via GPIO give PMIC cold-reset the entire chip.
->>> Having tshut trigger is not the goal, tshut is the measure of last =
-resort. If we can handle thermal conditions without triggering tshut, w=
-e achieved our goal.
+On Thu, Oct 23, 2014 at 9:24 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+> On Thu, Oct 23 2014 at 09:31 -0600, Ivan T. Ivanov wrote:
+>>
+>>
+>> Hi,
+>>
+>> On Tue, 2014-10-07 at 15:41 -0600, Lina Iyer wrote:
 >>>
->>> Tshut triggering is " oh, crap, nothing we tried works" scenario.
->> I don't think so.
+>>> Hi,
+>>>
+>>> This v8 revision of the cpuidle driver is available at
+>>> git.linaro.org:/people/lina.iyer/linux-next cpuidle-v8
+>>>
 >>
->> In general,We should have:
->> passive <=3D hardware(reset entire chip) <=3D critical(shutdown)
->>
->> The temperature be rising qulckly if have some other conditions,
->> the "critical" will play a role.
-> No, I think it should be the other way around: if we are unable to co=
-ol
-> down the laptop under load we need to shut it down and let it cool. I=
-f
-> for some reason we are unable to shut it down in orderly fashion (ker=
-nel
-> is stuck holding a lock or similar) then hardware will reset it.
+>> Probably I missing something, but should I expect that
+>> once these patches are applied driver could be successfully
+>> compiled?
 >
-> At least that's how I understand it.
-hmmm....
-
-OK,agree,this is a option.
-
-I think I should set hw-shut-temp =3D <125000>;
-and critical =3D <120000>;
-
-> Thanks.
+> Yes they should.
+>>
+>>
+>> Patches definitely break bisectability. For example [PATCH v8 1/7]
+>> is using <soc/qcom/pm.h> which is introduced [PATCH v8 4/7].
+>>
+> You are right. I missed checking compilation against each patch.
+> Based on some discussion, I need to see if pm.h is even needed.
 >
 
---=20
-Best regards,
-Caesar
+git test-sequence[1] is your friend.
 
-
+[1] http://dustin.sallings.org/2010/03/28/git-test-sequence.html
