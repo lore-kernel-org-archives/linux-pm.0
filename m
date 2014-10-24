@@ -1,72 +1,164 @@
-From: Santosh Shilimkar <santosh.shilimkar@gmail.com>
-Subject: Re: [PATCH v3 0/5] ARM: keystone: pm: switch to use generic pm domains
-Date: Fri, 24 Oct 2014 11:25:54 -0700
-Message-ID: <544A99B2.8080507@gmail.com>
-References: <1414074182-25980-1-git-send-email-grygorii.strashko@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v9 0/9] cpuidle driver for QCOM SoCs: 8064, 8074, 8084
+Date: Fri, 24 Oct 2014 17:40:15 -0600
+Message-ID: <1414194024-55547-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f52.google.com ([209.85.218.52]:63935 "EHLO
-	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756140AbaJXSZk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Oct 2014 14:25:40 -0400
-In-Reply-To: <1414074182-25980-1-git-send-email-grygorii.strashko@ti.com>
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:47271 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754825AbaJXXkp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Oct 2014 19:40:45 -0400
+Received: by mail-pd0-f177.google.com with SMTP id v10so2257618pde.36
+        for <linux-pm@vger.kernel.org>; Fri, 24 Oct 2014 16:40:45 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org
-Cc: linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 
-Grygorii,
+Changes since v8:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg11473.html ]
+- Flatten out the file structure - merge pm.c into spm.c after discussions
+- Add a new function to set warm boot address, in scm-boot.c
+- Support for 8064 (New)
+- Tested on 8074, 8084. 8064 was tested with a WIP tree
+- Address review comments from v8
+- Looking into possiblility of  initializing the cpuidle device for a cpu,
+only when the corresponding spm device is probed successfully.
 
-On 10/23/2014 07:22 AM, Grygorii Strashko wrote:
-> Hi Santosh, Kevin,
->
-> This series switches Keystone 2 PM code to use Generic PM domains
-> instead of PM clock domains because of the lack of DT support
-> for the last.
-> It will finally allow to enable Runtime PM for Keystone 2.
->
-> Patch 1 was reused from [1].
->
-> RFC version of patches can be found at [2].
->
-> Changes in v3:
->   - handling of the case when !CONFIG_PM_RUNTIME has been
->     moved in PM clock framework.
->
-> Changes in v2:
-> - minor comments applied and rebased on top of Linux 3.18-rc1.
->
-> Links on previous versions:
-> v2:  https://lkml.org/lkml/2014/10/20/248
-> v1:  https://lkml.org/lkml/2014/9/29/382
->
-> [1] "[PATCH/RFC 0/4] of: Register clocks for Runtime PM with PM core"
->    https://lkml.org/lkml/2014/4/24/1118
->
-> [2] "[RFC PATCH 0/4] ARM: keystone: pm: switch to use generic pm domains"
->    https://lkml.org/lkml/2014/9/25/364
->
-> CC: Santosh Shilimkar <ssantosh@kernel.org>
-> CC: Kevin Hilman <khilman@linaro.org>
-> CC: Ulf Hansson <ulf.hansson@linaro.org>
-> CC: Geert Uytterhoeven <geert@linux-m68k.org>
-> CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->
-> Geert Uytterhoeven (1):
->    PM / clock_ops: Add pm_clk_add_clk()
->
-> Grygorii Strashko (4):
->    PM / clock_ops: make __pm_clk_enable more generic
->    PM / clock_ops: add and enable clocks always if !CONFIG_PM_RUNTIME
->    ARM: keystone: pm: switch to use generic pm domains
->    ARM: dts: keystone: add generic pm controller node
->
-You can split this series. Lets get first 3 patches sorted out as
-there have been active discussion on those. Once they get direction
-and merged then you can post the keystone ones which I will be
-happy to merge.
+Changes since v7:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg11199.html ]
+- Address review comments
+- Tested on 8974 but not 8084
+- WFI renamed to Standby
+- Update commit text with original author and link to the downstream tree
 
-Regards,
-Santosh
+Changes since v6:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg11012.html ]
+- SPM device nodes merged with existing SAW DT nodes
+- SPM register information is handled within the driver
+- Clean up from using 'msm' to 'qcom'
+        - Shorten some enumerations as well
+- Review comments from v6 addressed
+- New: Support for 8084 SoC
+        - Not tested. I do not have a board with this SoC, but the SPM
+        configuration should be identical for WFI and SPC
+
+Changes since v5:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10559.html ]
+- Merge spm-devices.c and spm.c into one file and one patch
+        - Simplify implementation of the driver.
+        - Update documentation mapping the DT properties with corresponding
+          SPM register information.
+- Removed scm-boot changes for quad core warmboot, its has been pulled in.
+
+Changes since v4:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10327.html ]
+- Update to the v8 of ARM generic idle states patches
+- Use platform device model for cpuidle-qcom
+- Clean up msm-pm.c to remove unnecessary include files and functions
+- Update commit text and documentation for all idle states
+- Remove scm-boot relocate patch from this series, submitted earlier
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10518.html ]
+
+Changes since v3:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10288.html ]
+- Fix CONFIG_QCOM_PM Kconfig as bool
+- More clean ups in spm.c and spm-devices.c
+        - Removed and re-organized data structures to make initialization simple
+        - Remove export of sequence flush functions
+        - Updated commit text
+        - Comments for use of barriers.
+- Rebase on top of 3.17-rc1
+
+Changes since v2:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10148.html ]
+- Prune all the drivers to support basic WFI and power down cpuidle
+  functionality. Remove debug code.
+- Integrate KConfig changes into the drivers' patches.
+- Use Lorenzo's ARM idle-states patches as the basis for reading cpuidle
+  c-states from DT.
+  [ http://marc.info/?l=linux-pm&m=140794514812383&w=2 ]
+- Incorporate review comments
+- Rebase on top of 3.16
+
+Changes since v1/RFC:
+[ https://www.mail-archive.com/linux-arm-msm@vger.kernel.org/msg10065.html ]
+- Remove hotplug from the patch series. Will submit it separately.
+- Fix SPM drivers per the review comments
+- Modify patch sequence to compile SPM drivers independent of msm-pm, so as to
+  allow wfi() calls to use SPM even without SoC interface driver.
+
+8074/8084/8064 like any ARM SoC can do architectural clock gating, that helps save
+on power, but not enough of leakage power.  Leakage power of the SoC can be
+further reduced by turning off power to the core. To aid this, every core (cpu
+and L2) is accompanied by a Sub-system Power Manager (SPM), that can be
+configured to indicate the low power mode, the core would be put into and the
+SPM programs the peripheral h/w accordingly to enter low power and turn off the
+power rail to the core.
+
+The idle invocation hierarchy -
+
+CPUIDLE
+        |
+        cpuidle-qcom.c [CPUIdle driver]
+        |
+        ------> spm.c [SPM driver]
+                |
+                ------> scm-boot.c [SCM interface layer]
+                        |
+------------------------|--------------------------
+(EL)                    Secure Monitor Code
+                        |
+                        |
+                        wfi();
+------------------------|--------------------------
+(HW)                    [CPU] {clock gate}
+                        |
+                        -----> [SPM] {statemachine}
+
+
+The patchset does the following -
+
+- Introduce the SPM driver to control power to the core
+- Add device bindings for 8974, 8084, 8064 CPU SPM devices
+- Add cpuidle driver for QCOM cpus, using ARM generic idle state definitions.
+- Add device bindings for 8974, 8084, 8064 idle-states - WFI and SPC
+
+Thanks,
+Lina
+
+
+Lina Iyer (9):
+  qcom: scm: scm_set_warm_boot_addr() to set the warmboot address
+  qcom: spm: Add Subsystem Power Manager driver
+  arm: dts: qcom: Add power-controller device node for 8974 Krait CPUs
+  arm: dts: qcom: Add power-controller device node for 8084 Krait CPUs
+  arm: dts: qcom: Update power-controller device node for 8064 Krait
+    CPUs
+  qcom: cpuidle: Add cpuidle driver for QCOM cpus
+  arm: dts: qcom: Add idle states device nodes for 8974
+  arm: dts: qcom: Add idle states device nodes for 8084
+  arm: dts: qcom: Add idle state device nodes for 8064
+
+ .../bindings/arm/msm/qcom,idle-state.txt           |  81 +++++
+ .../devicetree/bindings/arm/msm/qcom,saw2.txt      |  31 +-
+ arch/arm/boot/dts/qcom-apq8064.dtsi                |  37 ++-
+ arch/arm/boot/dts/qcom-apq8084.dtsi                |  46 ++-
+ arch/arm/boot/dts/qcom-msm8974.dtsi                |  46 ++-
+ drivers/cpuidle/Kconfig.arm                        |   7 +
+ drivers/cpuidle/Makefile                           |   1 +
+ drivers/cpuidle/cpuidle-qcom.c                     |  72 +++++
+ drivers/soc/qcom/Kconfig                           |   8 +
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/scm-boot.c                        |  22 ++
+ drivers/soc/qcom/spm.c                             | 334 +++++++++++++++++++++
+ include/soc/qcom/pm.h                              |  31 ++
+ include/soc/qcom/scm-boot.h                        |   1 +
+ 14 files changed, 702 insertions(+), 16 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+ create mode 100644 drivers/cpuidle/cpuidle-qcom.c
+ create mode 100644 drivers/soc/qcom/spm.c
+ create mode 100644 include/soc/qcom/pm.h
+
+-- 
+2.1.0
+
