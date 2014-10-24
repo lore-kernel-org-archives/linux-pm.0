@@ -1,105 +1,71 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM / Sleep: fix recovery during s2ram/hibernation
-Date: Fri, 24 Oct 2014 16:54:43 +0200
-Message-ID: <1954133.lzuXy3CQTN@vostro.rjw.lan>
-References: <1414136593-25329-1-git-send-email-imre.deak@intel.com> <6868563.CWP0SXTtWm@vostro.rjw.lan> <1414160232.30585.36.camel@intelbox>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1414160232.30585.36.camel@intelbox>
-Sender: linux-kernel-owner@vger.kernel.org
-To: imre.deak@intel.com
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+Subject: [PATCH v5 07/16] clk: tegra: Save/restore CCLKG_BURST_POLICY on suspend
+Date: Fri, 24 Oct 2014 17:39:14 +0300
+Message-ID: <1414161563-16812-8-git-send-email-mikko.perttunen@kapsi.fi>
+References: <1414161563-16812-1-git-send-email-mikko.perttunen@kapsi.fi>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1414161563-16812-1-git-send-email-mikko.perttunen-/1wQRMveznE@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, October 24, 2014 05:17:12 PM Imre Deak wrote:
-> On Fri, 2014-10-24 at 16:04 +0200, Rafael J. Wysocki wrote:
-> > On Friday, October 24, 2014 10:59:09 AM Imre Deak wrote:
-> > > Atm, if one of the dev_pm_ops::freeze callbacks fails during the QUIESCE
-> > > phase we don't rollback things correctly calling the thaw and complete
-> > > callbacks. This could leave some devices in a suspended state in case of
-> > > an error during resuming from hibernation.
-> > > 
-> > > Also if an asynchronous suspend_late or freeze_late callback fails
-> > > during the SUSPEND, FREEZE or QUIESCE phases we don't propagate the
-> > > corresponding error correctly, in effect ignoring the error and
-> > > continuing the suspend-to-ram/hibernation. During suspend-to-ram this
-> > > could leave some devices without a valid saved context, leading to a
-> > > failure to reinitialize them during resume. During hibernation this
-> > > could leave some devices active interfeering with the creation /
-> > > restoration of the hibernation image. Also this could leave the
-> > > corresponding devices without a valid saved context and failure to
-> > > reinitialize them during resume.
-> > > 
-> > > v2:
-> > > - call dpm_resume_end() unconditionally, it's guaranteed that error
-> > >   is non-zero
-> > > 
-> > > Signed-off-by: Imre Deak <imre.deak@intel.com>
-> > 
-> > These are two unrelated fixes, so please send them as two patches.
-> > 
-> > > ---
-> > >  drivers/base/power/main.c | 2 ++
-> > >  kernel/power/hibernate.c  | 3 ++-
-> > >  2 files changed, 4 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> > > index 4497319..9717d5f 100644
-> > > --- a/drivers/base/power/main.c
-> > > +++ b/drivers/base/power/main.c
-> > > @@ -1266,6 +1266,8 @@ int dpm_suspend_late(pm_message_t state)
-> > >  	}
-> > >  	mutex_unlock(&dpm_list_mtx);
-> > >  	async_synchronize_full();
-> > > +	if (!error)
-> > > +		error = async_error;
-> > >  	if (error) {
-> > >  		suspend_stats.failed_suspend_late++;
-> > >  		dpm_save_failed_step(SUSPEND_SUSPEND_LATE);
-> > 
-> > So the above will be the first fix and the below will be the second one.
-> 
-> Ok.
-> 
-> > 
-> > > diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> > > index a9dfa79..594ee7f 100644
-> > > --- a/kernel/power/hibernate.c
-> > > +++ b/kernel/power/hibernate.c
-> > > @@ -502,8 +502,9 @@ int hibernation_restore(int platform_mode)
-> > >  	error = dpm_suspend_start(PMSG_QUIESCE);
-> > >  	if (!error) {
-> > >  		error = resume_target_kernel(platform_mode);
-> > > -		dpm_resume_end(PMSG_RECOVER);
-> > > +		BUG_ON(!error);
-> > 
-> > Why BUG_ON()?  Is crashing the kernel necessary here?
-> 
-> I figured that this being an undefined state after restoration of a
-> memory image, it's better to crash than to continue and risk corrupting
-> some user data.
+From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-So can you please add a comment explaining that new BUG_ON() along with it?
+Save and restore this register since the LP1 restore assembly routines
+fiddle with it. Otherwise the CPU would keep running on PLLX after
+resume from suspend even when DFLL was the original clocksource.
 
-> 
-> > 
-> > >  	}
-> > > +	dpm_resume_end(PMSG_RECOVER);
-> > >  	pm_restore_gfp_mask();
-> > >  	resume_console();
-> > >  	pm_restore_console();
-> > > 
-> > 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+---
+ drivers/clk/tegra/clk-tegra124.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
+diff --git a/drivers/clk/tegra/clk-tegra124.c b/drivers/clk/tegra/clk-tegra124.c
+index 7c3cef7..daedbcf 100644
+--- a/drivers/clk/tegra/clk-tegra124.c
++++ b/drivers/clk/tegra/clk-tegra124.c
+@@ -89,6 +89,8 @@
+ #define PMC_PLLM_WB0_OVERRIDE 0x1dc
+ #define PMC_PLLM_WB0_OVERRIDE_2 0x2b0
+ 
++#define CCLKG_BURST_POLICY 0x368
++
+ #define UTMIP_PLL_CFG2 0x488
+ #define UTMIP_PLL_CFG2_STABLE_COUNT(x) (((x) & 0xffff) << 6)
+ #define UTMIP_PLL_CFG2_ACTIVE_DLY_COUNT(x) (((x) & 0x3f) << 18)
+@@ -121,6 +123,8 @@
+ #ifdef CONFIG_PM_SLEEP
+ static struct cpu_clk_suspend_context {
+ 	u32 clk_csite_src;
++	u32 cclkg_burst;
++	u32 cclkg_divider;
+ } tegra124_cpu_clk_sctx;
+ #endif
+ 
+@@ -1326,12 +1330,22 @@ static void tegra124_cpu_clock_suspend(void)
+ 	tegra124_cpu_clk_sctx.clk_csite_src =
+ 				readl(clk_base + CLK_SOURCE_CSITE);
+ 	writel(3 << 30, clk_base + CLK_SOURCE_CSITE);
++
++	tegra124_cpu_clk_sctx.cclkg_burst =
++				readl(clk_base + CCLKG_BURST_POLICY);
++	tegra124_cpu_clk_sctx.cclkg_divider =
++				readl(clk_base + CCLKG_BURST_POLICY + 4);
+ }
+ 
+ static void tegra124_cpu_clock_resume(void)
+ {
+ 	writel(tegra124_cpu_clk_sctx.clk_csite_src,
+ 				clk_base + CLK_SOURCE_CSITE);
++
++	writel(tegra124_cpu_clk_sctx.cclkg_burst,
++					clk_base + CCLKG_BURST_POLICY);
++	writel(tegra124_cpu_clk_sctx.cclkg_divider,
++					clk_base + CCLKG_BURST_POLICY + 4);
+ }
+ #endif
+ 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+2.1.0
