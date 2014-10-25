@@ -1,134 +1,101 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 2/3] ARM: keystone: pm: switch to use generic pm domains
-Date: Sat, 25 Oct 2014 12:45:23 +0200
-Message-ID: <CAPDyKFoFcyMc6j45aoPj_mejXMqZQn3CDpUvVj4hiJzLsDEy7g@mail.gmail.com>
-References: <1413809764-21995-3-git-send-email-grygorii.strashko@ti.com>
- <5446A065.9050308@gmail.com> <544793B5.6080601@ti.com>
- <CAPDyKFo97D3XbwDQrDzHw+qr4b24Fsq9EwDbdOMhy_L-RoYsLw@mail.gmail.com>
- <CAMuHMdVsqsSHxirzoWspGz7y+2qBk42p-VUBNkys3_rr6Th_9Q@mail.gmail.com>
- <CAPDyKFp6T1a1XXHdxiubP2RaS26uSqkUS3rbBgsNV_y+dSFfvw@mail.gmail.com>
- <CAMuHMdVO4nMoeYdzLf6wdKW876gYVyML3C2+QKoteGPtisD4sA@mail.gmail.com>
- <CAPDyKFrVCczc+fSy1ax4XinhB4SMfZZWP=d4QdY5Lv4zjOrHPA@mail.gmail.com>
- <544912AB.3050801@ti.com>
- <CAPDyKFpwguzd_iy46mpPcwDs98bh1k_3fVNfe4UAjYYwNoBJPQ@mail.gmail.com>
- <20141024163901.GD19933@dtor-ws>
+From: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RFC v3 PATCH 1/5] of: Add standard property for poweroff capability
+Date: Sat, 25 Oct 2014 09:28:36 +0200
+Message-ID: <CABgxDoLcnzaAYuDMB3x=EdNrY=8mwjceVVCpfXUYBURVm44ZVQ@mail.gmail.com>
+References: <1413268273-15151-1-git-send-email-romain.perier@gmail.com>
+	<20141023095339.GC6641@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20141024163901.GD19933@dtor-ws>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Santosh Shilimkar <santosh.shilimkar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, ssantosh@kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20141023095339.GC6641@localhost>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 24 October 2014 18:39, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> On Fri, Oct 24, 2014 at 11:53:05AM +0200, Ulf Hansson wrote:
->> On 23 October 2014 16:37, Grygorii Strashko <grygorii.strashko@ti.com> wrote:
->> > Hi Ulf,
->> >
->> > On 10/23/2014 11:11 AM, Ulf Hansson wrote:
->> >> On 22 October 2014 17:44, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> >>> On Wed, Oct 22, 2014 at 5:28 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> >>>> On 22 October 2014 17:09, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> >>>>> On Wed, Oct 22, 2014 at 5:01 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> >>>>>>>>> +void keystone_pm_domain_attach_dev(struct device *dev)
->> >>>>>>>>>    {
->> >>>>>>>>> +    struct clk *clk;
->> >>>>>>>>>        int ret;
->> >>>>>>>>> +    int i = 0;
->> >>>>>>>>>
->> >>>>>>>>>        dev_dbg(dev, "%s\n", __func__);
->> >>>>>>>>>
->> >>>>>>>>> -    ret = pm_generic_runtime_suspend(dev);
->> >>>>>>>>> -    if (ret)
->> >>>>>>>>> -        return ret;
->> >>>>>>>>> -
->> >>>>>>>>> -    ret = pm_clk_suspend(dev);
->> >>>>>>>>> +    ret = pm_clk_create(dev);
->> >>>>>>>>>        if (ret) {
->> >>>>>>>>> -        pm_generic_runtime_resume(dev);
->> >>>>>>>>> -        return ret;
->> >>>>>>>>> +        dev_err(dev, "pm_clk_create failed %d\n", ret);
->> >>>>>>>>> +        return;
->> >>>>>>>>> +    };
->> >>>>>>>>> +
->> >>>>>>>>> +    while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
->> >>>>>>>>> +        ret = pm_clk_add_clk(dev, clk);
->> >>>>>>>>> +        if (ret) {
->> >>>>>>>>> +            dev_err(dev, "pm_clk_add_clk failed %d\n", ret);
->> >>>>>>>>> +            goto clk_err;
->> >>>>>>>>> +        };
->> >>>>>>>>>        }
->> >>>>>>>>>
->> >>>>>>>>> -    return 0;
->> >>>>>>>>> +    if (!IS_ENABLED(CONFIG_PM_RUNTIME)) {
->> >>>>>>>> Can we not okkup two seperate callbacks instead of above check ?
->> >>>>>>>> I don't like this CONFIG check here. Its slightly better version of
->> >>>>>>>> ifdef in middle of the code.
->> >>>>>>>
->> >>>>>>> I've found more-less similar comment on patch
->> >>>>>>> "Re: [PATCH v3 1/3] power-domain: add power domain drivers for Rockchip platform"
->> >>>>>>> https://lkml.org/lkml/2014/10/17/257
->> >>>>>>>
->> >>>>>>> So, Would you like me to create patch which will enable clocks in pm_clk_add/_clk()
->> >>>>>>> in case !IS_ENABLED(CONFIG_PM_RUNTIME)
->> >>>>>>
->> >>>>>> I am wondering whether we actually should/could do this, no matter of
->> >>>>>> CONFIG_PM_RUNTIME.
->> >>>>>>
->> >>>>>> Typically, for configurations that uses CONFIG_PM_RUNTIME, the PM
->> >>>>>> clocks through pm_clk_suspend(), will be gated once the device becomes
->> >>>>>> runtime PM suspended. Right?
->> >>>>>
->> >>>>> Doing it unconditionally means we'll have lots of unneeded clocks running
->> >>>>> for a short while.
->> >>>
->> >>>> As long as the pm_clk_add() is being invoked from the ->attach_dev()
->> >>>> callback, we are in the probe path. Certainly we would like to have
->> >>>> clocks enabled while probing, don't you think?
->> >>>>
->> >>>> If we wouldn't enable the clocks for CONFIG_PM_RUNTIME, when will
->> >>>> those be enabled?
->> >>>
->> >>> They will be enabled when the driver does
->> >>>
->> >>>          pm_runtime_enable(dev);
->> >>>          pm_runtime_get_sync(dev);
->> >>>
->> >>> in its .probe() method.
->> >>
->> >> No! This doesn't work for drivers which have used
->> >> pm_runtime_set_active() prior pm_runtime_enable().
->> >
->> > Sorry, but some misunderstanding is here:
->> > 1) If some code call pm_runtime_set_active() it has to ensure
->> > that all PM resources switched to ON state. All! So, it will
->> > be ok to call enable & get after that - these functions will only
->> > adjust counters.
->>
->> Correct.
->>
->> This is also the key problem with your approach. You requires a
->> pm_runtime_get_sync() to trigger the runtime PM resume callbacks to be
->> invoked. That's a fragile design.
+Hi Johan,
+
+If that's still possible to do these changes, I am opened to suggestions.
+
+2014-10-23 11:53 GMT+02:00 Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>:
+> [ +CC: Guenter, Lee, linux-pm ]
 >
-> Why is this fragile design? Having pm_runtime_get_sync() result in
-> resuming the device (and in turn the PM domain it is in) if device is
-> suspended is the proper behavior, no?
+> On Tue, Oct 14, 2014 at 06:31:09AM +0000, Romain Perier wrote:
+>> Several drivers create their own devicetree property when they register
+>> poweroff capabilities. This is for example the case for mfd, regulator
+>> or power drivers which define "vendor,system-power-controller" property.
+>> This patch adds support for a standard property "poweroff-source"
+>
+> Shouldn't this property really be called "power-off-source" or even
+> "power-off-controller"?
+>
+> The power-off handler call-chain infrastructure is about to be merged
+> and will be using power[-_ ]off (i.e. not "poweroff") consistently (at
+> least in its interface).
 
-It's fragile, because the device may very well be "runtime PM active"
-at the point when we invoke pm_runtime_get_sync(). Thus the runtime PM
-resume callback isn't invoked, which is a requirement for these cases
-to work.
+"poweroff" or "power-off", I don't care. If people prefer "power-off",
+choose this name :)
 
-Kind regards
-Uffe
+>
+> Furthermore, isn't "controller" as in "power-off-controller" more
+> appropriate than "source" in this case? We have wake-up sources, which
+> might appear analogous, but that really isn't the same thing.
+
+As I said, the idea with "power-off-source" (or "poweroff-source",
+that's not the point here) is to mark the device as able to poweroff
+the system, like "wakeup-source" which marks the device as able to
+wakeup the system.
+This is why I chose this name, because it is quite similar to wakeup
+property except that it is for handling power, so it did make sense to
+me.
+
+The question is: what is the advantage of the suffix "controller"
+compared to "source" ?
+
+>
+> I now this has already been merged to the regulator tree, but there's
+> still still time to fix this.
+>
+>> which marks the device as able to shutdown the system.
+>>
+>> Signed-off-by: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>> ---
+>>  include/linux/of.h | 11 +++++++++++
+>>  1 file changed, 11 insertions(+)
+>>
+>> diff --git a/include/linux/of.h b/include/linux/of.h
+>> index 6545e7a..27b3ba1 100644
+>> --- a/include/linux/of.h
+>> +++ b/include/linux/of.h
+>> @@ -866,4 +866,15 @@ static inline int of_changeset_update_property(struct of_changeset *ocs,
+>>  /* CONFIG_OF_RESOLVE api */
+>>  extern int of_resolve_phandles(struct device_node *tree);
+>>
+>> +/**
+>> + * of_system_has_poweroff_source - Tells if poweroff-source is found for device_node
+>> + * @np: Pointer to the given device_node
+>> + *
+>> + * return true if present false otherwise
+>> + */
+>> +static inline bool of_system_has_poweroff_source(const struct device_node *np)
+>
+> Why "system_has"? Shouldn't this be of_is_power_off_source (controller)?
+
+Note that the current custom vendor properties contain "system-" as prefix ;)
+
+we have several possibilities:
+- of_system_has_power_off_source()
+- of_has_power_off_source()
+
+We should either to use "has" or "is" as prefix because that's a
+predicate function.
+I would prefer "has" since it refers to a property inside a node :
+this node "has" the corresponding property, so "is" is not a good
+candidate.
+
+Have a nice day,
+Romain
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
