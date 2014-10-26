@@ -1,206 +1,48 @@
-From: Romain Perier <romain.perier@gmail.com>
-Subject: Re: [RFC v3 PATCH 1/5] of: Add standard property for poweroff capability
-Date: Sun, 26 Oct 2014 15:58:16 +0100
-Message-ID: <CABgxDoLsH_eaSeEHdktCkJYzjEgS+w+kkM6AXuzMW12TSom4LQ@mail.gmail.com>
-References: <1413268273-15151-1-git-send-email-romain.perier@gmail.com>
-	<CABgxDoLcnzaAYuDMB3x=EdNrY=8mwjceVVCpfXUYBURVm44ZVQ@mail.gmail.com>
-	<20141025083733.GG19377@localhost>
-	<1788971.BnbvZ8bisu@diego>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
+Date: Sun, 26 Oct 2014 19:40:18 +0100
+Message-ID: <20141026184018.GA16309@amd>
+References: <1413876435-11720-1-git-send-email-mhocko@suse.cz>
+ <1413876435-11720-4-git-send-email-mhocko@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f176.google.com ([209.85.216.176]:54709 "EHLO
-	mail-qc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751363AbaJZO6R convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 26 Oct 2014 10:58:17 -0400
-In-Reply-To: <1788971.BnbvZ8bisu@diego>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <1413876435-11720-4-git-send-email-mhocko@suse.cz>
+Sender: owner-linux-mm@kvack.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "\\\"Rafael J. Wysocki\\\"" <rjw@rjwysocki.net>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>
-Cc: Johan Hovold <johan@kernel.org>, devicetree <devicetree@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, robh <robh@kernel.org>, mark.rutland@arm.com, linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Felipe Balbi <balbi@ti.com>
 
-Johan,
+Hi!
 
-You convinced me. I will add an helper function
-"of_is_system_power_controller(node)" which is compatible with both
-properties: with or without the vendor prefix (until everything switch
-to the new one).
-In this case , we can adapt all drivers without break compatibility
-and in few months if we plan to remove this compability we will just
-need to modify this helper function.
+> +
+> +		/*
+> +		 * There might have been an OOM kill while we were
+> +		 * freezing tasks and the killed task might be still
+> +		 * on the way out so we have to double check for race.
+> +		 */
 
-Heiko: will do, thanks your help. I will use the regulator tree as
-based repository and then send fixes to Mark.
+", so"
 
-Romain
+>  	/*
+> +	 * PM-freezer should be notified that there might be an OOM killer on its
+> +	 * way to kill and wake somebody up. This is too early and we might end
+> +	 * up not killing anything but false positives are acceptable.
 
+", but".
 
+1,2 look good to me, 
 
-2014-10-26 12:53 GMT+01:00 Heiko St=C3=BCbner <heiko@sntech.de>:
-> Am Samstag, 25. Oktober 2014, 10:37:33 schrieb Johan Hovold:
->> [+CC: Felipe ]
->>
->> On Sat, Oct 25, 2014 at 09:28:36AM +0200, Romain Perier wrote:
->> > Hi Johan,
->> >
->> > If that's still possible to do these changes, I am opened to sugge=
-stions.
->>
->> Before v3.18 comes out, we can always change it with a follow-up pat=
-ch.
->>
->> > 2014-10-23 11:53 GMT+02:00 Johan Hovold <johan@kernel.org>:
->> > > [ +CC: Guenter, Lee, linux-pm ]
->> > >
->> > > On Tue, Oct 14, 2014 at 06:31:09AM +0000, Romain Perier wrote:
->> > >> Several drivers create their own devicetree property when they =
-register
->> > >> poweroff capabilities. This is for example the case for mfd, re=
-gulator
->> > >> or power drivers which define "vendor,system-power-controller"
->> > >> property.
->> > >> This patch adds support for a standard property "poweroff-sourc=
-e"
->> > >
->> > > Shouldn't this property really be called "power-off-source" or e=
-ven
->> > > "power-off-controller"?
->> > >
->> > > The power-off handler call-chain infrastructure is about to be m=
-erged
->> > > and will be using power[-_ ]off (i.e. not "poweroff") consistent=
-ly (at
->> > > least in its interface).
->> >
->> > "poweroff" or "power-off", I don't care. If people prefer "power-o=
-ff",
->> > choose this name :)
->>
->> Let's try to stick to power off (and power_off) then.
->>
->> > > Furthermore, isn't "controller" as in "power-off-controller" mor=
-e
->> > > appropriate than "source" in this case? We have wake-up sources,=
- which
->> > > might appear analogous, but that really isn't the same thing.
->> >
->> > As I said, the idea with "power-off-source" (or "poweroff-source",
->> > that's not the point here) is to mark the device as able to powero=
-ff
->> > the system, like "wakeup-source" which marks the device as able to
->> > wakeup the system.
->> > This is why I chose this name, because it is quite similar to wake=
-up
->> > property except that it is for handling power, so it did make sens=
-e to
->> > me.
->> >
->> > The question is: what is the advantage of the suffix "controller"
->> > compared to "source" ?
->>
->> Yeah, I figured you had been inspired by the "wakeup-source" propert=
-y.
->>
->> The problem is that "source" tends to be used for inputs, for exampl=
-e,
->> wake-up source, interrupt source, entropy source, etc. Something tha=
-t is
->> outside of the control of the OS. Contrary to for instance an output
->> which turns the system-power off.
->>
->> > > I now this has already been merged to the regulator tree, but th=
-ere's
->> > > still still time to fix this.
->> > >
->> > >> which marks the device as able to shutdown the system.
->> > >>
->> > >> Signed-off-by: Romain Perier <romain.perier@gmail.com>
->> > >> ---
->> > >>
->> > >>  include/linux/of.h | 11 +++++++++++
->> > >>  1 file changed, 11 insertions(+)
->> > >>
->> > >> diff --git a/include/linux/of.h b/include/linux/of.h
->> > >> index 6545e7a..27b3ba1 100644
->> > >> --- a/include/linux/of.h
->> > >> +++ b/include/linux/of.h
->> > >> @@ -866,4 +866,15 @@ static inline int
->> > >> of_changeset_update_property(struct of_changeset *ocs,> >>
->> > >>  /* CONFIG_OF_RESOLVE api */
->> > >>  extern int of_resolve_phandles(struct device_node *tree);
->> > >>
->> > >> +/**
->> > >> + * of_system_has_poweroff_source - Tells if poweroff-source is=
- found
->> > >> for device_node + * @np: Pointer to the given device_node
->> > >> + *
->> > >> + * return true if present false otherwise
->> > >> + */
->> > >> +static inline bool of_system_has_poweroff_source(const struct
->> > >> device_node *np)> >
->> > > Why "system_has"? Shouldn't this be of_is_power_off_source (cont=
-roller)?
->> >
->> > Note that the current custom vendor properties contain "system-" a=
-s prefix
->> > ;)
->> Yes, but you dropped it. ;)
->>
->> And it's not the system that has the property (e.g. "poweroff-source=
-"),
->> it's the node (or the device it describes).
->>
->> > we have several possibilities:
->> > - of_system_has_power_off_source()
->> > - of_has_power_off_source()
->> >
->> > We should either to use "has" or "is" as prefix because that's a
->> > predicate function.
->> > I would prefer "has" since it refers to a property inside a node :
->> > this node "has" the corresponding property, so "is" is not a good
->> > candidate.
->>
->> The boolean property in question describes a feature of the node
->> (device). Say the feature would be redness and call the property "re=
-d".
->> You would then generally ask whether the node *is red*, rather than
->> whether it has (the property) red (or has redness).
->>
->> I'm actually inclined to just sticking to the current name
->> "system-power-controller" and just drop the vendor prefixes. Perhaps
->> your helper function can be used to parse both versions (i.e. with o=
-r
->> without a vendor prefix) as we will still need to support both.
->>
->> I suggest you call that helper function
->>
->>       of_is_system_power_controller(node)
->>
->> or alternatively
->>
->>       of_is_power_off_controller(node)
->>
->> if that property name is preferred.
->>
->> Note also that in at least one case (rtc-omap, patches in mm, see [1=
-])
->> the property describes that the RTC is used to control an external P=
-MIC,
->> which both allows us to power off the system *and* power back on aga=
-in
->> on subsequent RTC alarms. This seems to suggest that the more generi=
-c
->> "system-power-controller" property name should be preferred.
->
-> just as sidenote, I'll hold off on applying patch3 (the dts change) t=
-hen.
->
-> Romain, after you two (and maybe Mark) agree on the final naming of t=
-he
-> property and function you'd need to
-> - send a followup patch against Marks tree, implementing the changes
-> - a new patch adding the property to the Radxa board
->
->
-> Heiko
+Acked-by: Pavel Machek <pavel@ucw.cz>
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
