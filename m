@@ -1,143 +1,52 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v3 09/47] mfd: palmas: Register with kernel power-off handler
-Date: Mon, 27 Oct 2014 08:55:16 -0700
-Message-ID: <1414425354-10359-10-git-send-email-linux@roeck-us.net>
+From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Subject: [PATCH v3 05/47] mfd: as3722: Drop reference to pm_power_off from devicetree bindings
+Date: Mon, 27 Oct 2014 08:55:12 -0700
+Message-ID: <1414425354-10359-6-git-send-email-linux@roeck-us.net>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:49976 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751326AbaJ0P40 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 11:56:26 -0400
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1Ximeg-000bU4-Il
-	for linux-pm@vger.kernel.org; Mon, 27 Oct 2014 15:56:26 +0000
-In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1414425354-10359-1-git-send-email-linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>
 
-Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with low priority to reflect that the original code
-only sets pm_power_off if it was not already set.
+Devicetree bindings are supposed to be operating system independent
+and should thus not describe how a specific functionality is implemented
+in Linux.
 
-Cc: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Lee Jones <lee.jones@linaro.org>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Acked-by: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
 ---
 v3:
-- Replace poweroff in all newly introduced variables and in text
-  with power_off or power-off as appropriate
-- Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+- No change
 v2:
-- Use define to specify poweroff handler priority
-- Use devm_register_power_off_handler
-- Use dev_warn instead of dev_err
+- No change
 
- drivers/mfd/palmas.c       | 31 +++++++++++++++++--------------
- include/linux/mfd/palmas.h |  3 +++
- 2 files changed, 20 insertions(+), 14 deletions(-)
+ Documentation/devicetree/bindings/mfd/as3722.txt | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/mfd/palmas.c b/drivers/mfd/palmas.c
-index 28cb048..99c488e 100644
---- a/drivers/mfd/palmas.c
-+++ b/drivers/mfd/palmas.c
-@@ -19,6 +19,7 @@
- #include <linux/i2c.h>
- #include <linux/interrupt.h>
- #include <linux/irq.h>
-+#include <linux/pm.h>
- #include <linux/regmap.h>
- #include <linux/err.h>
- #include <linux/mfd/core.h>
-@@ -425,20 +426,18 @@ static void palmas_dt_to_pdata(struct i2c_client *i2c,
- 			"ti,system-power-controller");
- }
+diff --git a/Documentation/devicetree/bindings/mfd/as3722.txt b/Documentation/devicetree/bindings/mfd/as3722.txt
+index 4f64b2a..0b2a609 100644
+--- a/Documentation/devicetree/bindings/mfd/as3722.txt
++++ b/Documentation/devicetree/bindings/mfd/as3722.txt
+@@ -122,8 +122,7 @@ Following are properties of regulator subnode.
  
--static struct palmas *palmas_dev;
--static void palmas_power_off(void)
-+static int palmas_power_off(struct notifier_block *this, unsigned long unused1,
-+			    void *unused2)
- {
-+	struct palmas *palmas = container_of(this, struct palmas, power_off_nb);
- 	unsigned int addr;
- 	int ret, slave;
- 
--	if (!palmas_dev)
--		return;
--
- 	slave = PALMAS_BASE_TO_SLAVE(PALMAS_PMU_CONTROL_BASE);
- 	addr = PALMAS_BASE_TO_REG(PALMAS_PMU_CONTROL_BASE, PALMAS_DEV_CTRL);
- 
- 	ret = regmap_update_bits(
--			palmas_dev->regmap[slave],
-+			palmas->regmap[slave],
- 			addr,
- 			PALMAS_DEV_CTRL_DEV_ON,
- 			0);
-@@ -446,6 +445,8 @@ static void palmas_power_off(void)
- 	if (ret)
- 		pr_err("%s: Unable to write to DEV_CTRL_DEV_ON: %d\n",
- 				__func__, ret);
-+
-+	return NOTIFY_DONE;
- }
- 
- static unsigned int palmas_features = PALMAS_PMIC_FEATURE_SMPS10_BOOST;
-@@ -668,9 +669,16 @@ no_irq:
- 		ret = of_platform_populate(node, NULL, NULL, &i2c->dev);
- 		if (ret < 0) {
- 			goto err_irq;
--		} else if (pdata->pm_off && !pm_power_off) {
--			palmas_dev = palmas;
--			pm_power_off = palmas_power_off;
-+		} else if (pdata->pm_off) {
-+			int ret2;
-+
-+			palmas->power_off_nb.notifier_call = palmas_power_off;
-+			palmas->power_off_nb.priority = POWER_OFF_PRIORITY_LOW;
-+			ret2 = devm_register_power_off_handler(palmas->dev,
-+							&palmas->power_off_nb);
-+			if (ret2)
-+				dev_warn(palmas->dev,
-+					 "Failed to register power-off handler");
- 		}
- 	}
- 
-@@ -698,11 +706,6 @@ static int palmas_i2c_remove(struct i2c_client *i2c)
- 			i2c_unregister_device(palmas->i2c_clients[i]);
- 	}
- 
--	if (palmas == palmas_dev) {
--		pm_power_off = NULL;
--		palmas_dev = NULL;
--	}
--
- 	return 0;
- }
- 
-diff --git a/include/linux/mfd/palmas.h b/include/linux/mfd/palmas.h
-index fb0390a..7dbfe24 100644
---- a/include/linux/mfd/palmas.h
-+++ b/include/linux/mfd/palmas.h
-@@ -18,6 +18,7 @@
- 
- #include <linux/usb/otg.h>
- #include <linux/leds.h>
-+#include <linux/notifier.h>
- #include <linux/regmap.h>
- #include <linux/regulator/driver.h>
- #include <linux/extcon.h>
-@@ -68,6 +69,8 @@ struct palmas {
- 	struct i2c_client *i2c_clients[PALMAS_NUM_CLIENTS];
- 	struct regmap *regmap[PALMAS_NUM_CLIENTS];
- 
-+	struct notifier_block power_off_nb;
-+
- 	/* Stored chip id */
- 	int id;
- 
+ Power-off:
+ =========
+-AS3722 supports the system power off by turning off all its rail. This
+-is provided through pm_power_off.
++AS3722 supports the system power off by turning off all its rails.
+ The device node should have the following properties to enable this
+ functionality
+ ams,system-power-controller: Boolean, to enable the power off functionality
 -- 
 1.9.1
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
