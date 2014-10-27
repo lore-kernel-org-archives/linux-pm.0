@@ -1,65 +1,65 @@
 From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v3 04/11] ARM: shmobile: armadillo800eva legacy: Add
- missing A4S pm domain devices
-Date: Mon, 27 Oct 2014 12:59:15 +0900
-Message-ID: <20141027035915.GE31487@verge.net.au>
+Subject: Re: [PATCH v3 06/11] ARM: shmobile: r8a7740: Add A3SG pm domain
+ support
+Date: Mon, 27 Oct 2014 13:00:35 +0900
+Message-ID: <20141027040034.GF31487@verge.net.au>
 References: <1414063141-8856-1-git-send-email-geert+renesas@glider.be>
- <1414063141-8856-5-git-send-email-geert+renesas@glider.be>
- <20141027035657.GC31487@verge.net.au>
+ <1414063141-8856-7-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:55927 "EHLO
+Received: from kirsty.vergenet.net ([202.4.237.240]:55933 "EHLO
 	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbaJ0D7T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 26 Oct 2014 23:59:19 -0400
+	with ESMTP id S1750701AbaJ0EAj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 00:00:39 -0400
 Content-Disposition: inline
-In-Reply-To: <20141027035657.GC31487@verge.net.au>
+In-Reply-To: <1414063141-8856-7-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Mon, Oct 27, 2014 at 12:56:57PM +0900, Simon Horman wrote:
-> On Thu, Oct 23, 2014 at 01:18:54PM +0200, Geert Uytterhoeven wrote:
-> > Commit 8459293c27bcd13a ("ARM: shmobile: r8a7740: add A4S pm domain
-> > support") added the A4S power domain, but forgot to hook up the GbEther
-> > hardware block.
-> > 
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+On Thu, Oct 23, 2014 at 01:18:56PM +0200, Geert Uytterhoeven wrote:
+> Add support for the A3SG power domain, and hook it up as a subdomain of
+> A4S.
+> This domain contains the SGX540 hardware block, which is currently not
+> used by any driver.
 > 
-> Thanks, I have queued this up.
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Sorry, my mistake, I have not queued this up as
-I would like to get all the soc changes in place before
-adding the board changes.
+Thanks, I have queued this up.
 
-> > ---
-> > v3:
-> >   - No changes,
-> > v2:
-> >   - No changes.
-> > ---
-> >  arch/arm/mach-shmobile/board-armadillo800eva.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/arch/arm/mach-shmobile/board-armadillo800eva.c b/arch/arm/mach-shmobile/board-armadillo800eva.c
-> > index 64a68450c28a072c..735036038951868d 100644
-> > --- a/arch/arm/mach-shmobile/board-armadillo800eva.c
-> > +++ b/arch/arm/mach-shmobile/board-armadillo800eva.c
-> > @@ -1234,6 +1234,7 @@ static void __init eva_init(void)
-> >  	static struct pm_domain_device domain_devices[] __initdata = {
-> >  		{ "A4LC", &lcdc0_device },
-> >  		{ "A4LC", &hdmi_lcdc_device },
-> > +		{ "A4S",  &sh_eth_device },
-> >  		{ "A3SP", &pwm_device },
-> >  		{ "A3SP", &sdhi0_device },
-> >  		{ "A3SP", &sh_mmcif_device },
-> > -- 
-> > 1.9.1
-> > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> ---
+> v3:
+>   - No changes,
+> v2:
+>   - No changes.
+> ---
+>  arch/arm/mach-shmobile/pm-r8a7740.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/arch/arm/mach-shmobile/pm-r8a7740.c b/arch/arm/mach-shmobile/pm-r8a7740.c
+> index 1d916038660d4b8a..932c2a621e81ac26 100644
+> --- a/arch/arm/mach-shmobile/pm-r8a7740.c
+> +++ b/arch/arm/mach-shmobile/pm-r8a7740.c
+> @@ -51,6 +51,9 @@ static struct rmobile_pm_domain r8a7740_pm_domains[] = {
+>  		.gov		= &pm_domain_always_on_gov,
+>  		.no_debug	= true,
+>  		.suspend	= r8a7740_pd_a3sp_suspend,
+> +	}, {
+> +		.genpd.name	= "A3SG",
+> +		.bit_shift	= 13,
+>  	},
+>  };
+>  
+> @@ -58,6 +61,7 @@ void __init r8a7740_init_pm_domains(void)
+>  {
+>  	rmobile_init_domains(r8a7740_pm_domains, ARRAY_SIZE(r8a7740_pm_domains));
+>  	pm_genpd_add_subdomain_names("A4S", "A3SP");
+> +	pm_genpd_add_subdomain_names("A4S", "A3SG");
+>  }
+>  #endif /* CONFIG_PM && !CONFIG_ARCH_MULTIPLATFORM */
+>  
+> -- 
+> 1.9.1
 > 
