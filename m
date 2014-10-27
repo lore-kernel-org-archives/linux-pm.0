@@ -1,191 +1,83 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 2/3] ARM: keystone: pm: switch to use generic pm domains
-Date: Mon, 27 Oct 2014 10:39:43 +0100
-Message-ID: <CAPDyKFpdoA=cZYKuUCigyzfBARtkt5tfwhvJp2MaChTA9E+eRw@mail.gmail.com>
-References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>
-	<1413809764-21995-3-git-send-email-grygorii.strashko@ti.com>
-	<5446A065.9050308@gmail.com>
-	<544793B5.6080601@ti.com>
-	<CAPDyKFo97D3XbwDQrDzHw+qr4b24Fsq9EwDbdOMhy_L-RoYsLw@mail.gmail.com>
-	<CAMuHMdVsqsSHxirzoWspGz7y+2qBk42p-VUBNkys3_rr6Th_9Q@mail.gmail.com>
-	<CAPDyKFp6T1a1XXHdxiubP2RaS26uSqkUS3rbBgsNV_y+dSFfvw@mail.gmail.com>
-	<CAMuHMdVO4nMoeYdzLf6wdKW876gYVyML3C2+QKoteGPtisD4sA@mail.gmail.com>
-	<CAPDyKFrVCczc+fSy1ax4XinhB4SMfZZWP=d4QdY5Lv4zjOrHPA@mail.gmail.com>
-	<544912AB.3050801@ti.com>
-	<CAPDyKFpwguzd_iy46mpPcwDs98bh1k_3fVNfe4UAjYYwNoBJPQ@mail.gmail.com>
-	<544A410B.3050903@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f48.google.com ([209.85.192.48]:47141 "EHLO
-	mail-qg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbaJ0Jjo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 05:39:44 -0400
-Received: by mail-qg0-f48.google.com with SMTP id i50so3643294qgf.35
-        for <linux-pm@vger.kernel.org>; Mon, 27 Oct 2014 02:39:43 -0700 (PDT)
-In-Reply-To: <544A410B.3050903@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] cpufreq: cpufreq-dt: Restore default cpumask_setall(policy->cpus)
+Date: Mon, 27 Oct 2014 14:44:40 +0100
+Message-ID: <1414417480-10274-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Santosh Shilimkar <santosh.shilimkar@gmail.com>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-Hi Grygorii,
+Commit 34e5a5273d6aa0ee ("cpufreq: cpufreq-dt: extend with
+platform_data") changed cpufreq_init() to only call
+cpumask_setall(policy->cpus) if the platform data indicates that all
+CPUs share the same clock. Before, cpufreq_generic_init() did this
+unconditionally.
 
-[...]
+This causes a crash on r8a7791/koelsch when resuming from s2ram:
 
->>
->> The solution that I propose is to "manually" enable your PM clks
->> during the probe sequence. We can do that as a part of pm_clk_add() or
->
-> Done in patch set 3 - but only if !CONFIG_PM_RUNTIME
->
->> we invoke pm_clk_resume() separately, but more important no matter of
->> CONFIG_PM_RUNTIME.
->>
-> Why? What benefits will be doing this if CONFIG_PM_RUNTIME=y?
-> For Keystone 2 CONFIG_PM_RUNTIME=y is intended to be normal operational mode and
-> all devices belongs to Platform bus.
->
-> Also, device's resuming operation is usually heavy operation and, taking into
-> account deferred probing mechanism and usual implementation of .probe() function,
-> your proposition will lead to runtime overhead at least for Platform devices.
+    Enabling non-boot CPUs ...
+    CPU1: Booted secondary processor
+    Unable to handle kernel NULL pointer dereference at virtual address 0000003c
+    pgd = ee71f980
+    [0000003c] *pgd=6eeb6003, *pmd=6e0e9003, *pte=00000000
+    Internal error: Oops: a07 [#1] SMP ARM
+    Modules linked in:
+    CPU: 0 PID: 1397 Comm: s2ram Tainted: G        W      3.18.0-rc2-koelsch-00762-g7eed2a4e61d2d978 #581
+    task: ee6b76c0 ti: ee7f0000 task.ti: ee7f0000
+    PC is at __cpufreq_add_dev.isra.24+0x24c/0x77c
+    LR is at __cpufreq_add_dev.isra.24+0x244/0x77c
+    pc : [<c029e084>]    lr : [<c029e07c>]    psr: 60000153
+    sp : ee7f1d48  ip : ee7f1d48  fp : ee7f1d84
+    r10: c04e8448  r9 : 00000000  r8 : 00000001
+    r7 : c054a8c4  r6 : 00000001  r5 : 00000001  r4 : 00000000
+    r3 : 00000000  r2 : 00000000  r1 : 20000153  r0 : c054a950
+    Flags: nZCv  IRQs on  FIQs off  Mode SVC_32  ISA ARM  Segment user
+    Control: 30c5307d  Table: 6e71f980  DAC: fffffffd
+    Process s2ram (pid: 1397, stack limit = 0xee7f0240)
 
-I don't quite follow. Why should there be an overhead?
+    ...
 
->
-> What is usually done in probe:
-> <- here you propose to resume device
+    Backtrace:
+    [<c029de38>] (__cpufreq_add_dev.isra.24) from [<c029e620>] (cpufreq_cpu_callback+0x6c/0x74)
+     r10:eec75240 r9:c04e8448 r8:c04ef3a0 r7:00000001 r6:00000012 r5:00000000
+     r4:00000012
+    [<c029e5b4>] (cpufreq_cpu_callback) from [<c003f20c>] (notifier_call_chain+0x48/0x70)
+     r4:ffffffdd r3:c029e5b4
+    [<c003f1c4>] (notifier_call_chain) from [<c003f2cc>] (__raw_notifier_call_chain+0x1c/0x24)
+     r8:00000001 r7:00000010 r6:00000000 r5:00000000 r4:00000012 r3:ffffffff
+    [<c003f2b0>] (__raw_notifier_call_chain) from [<c0026a00>] (__cpu_notify+0x34/0x50)
+    [<c00269cc>] (__cpu_notify) from [<c0026a34>] (cpu_notify+0x18/0x1c)
+     r4:00000001
+    [<c0026a1c>] (cpu_notify) from [<c0026c44>] (_cpu_up+0x108/0x144)
+    [<c0026b3c>] (_cpu_up) from [<c0381c68>] (enable_nonboot_cpus+0x68/0xb8)
+     r10:00000000 r9:c04e8ee6 r8:00000000 r7:00000003 r6:c04e8528 r5:c0506248
+     r4:00000001
+    [<c0381c00>] (enable_nonboot_cpus) from [<c0059038>] (suspend_devices_and_enter+0x29c/0x3e8)
+     r6:c0506e70 r5:00000000 r4:00000000 r3:60000153
 
-I didn't suggest we should resume the device here.
+Restore the old default of calling cpumask_setall(policy->cpus) if no
+platform data is available to fix this.
 
-I said we should enable the device's PM clocks during ->probe().
-That's a different thing.
+Fixes: 34e5a5273d6aa0ee ("cpufreq: cpufreq-dt: extend with
+platform_data")
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/cpufreq/cpufreq-dt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->
-> 1) get resources (IO, IRQ, regulators, GPIO, phys, ..) - for each
-> resource -EPROBE_DEFER can be returned.
->
-> 2) allocate and fill device context - can fail.
-
-For your information, writing/reading to the device's registers might
-not be safe, unless its PM domain is powered.
-
->
-> 3) configure resources (set gpio, enable regulators or phys,..) - can fail
->
-> 4) [now] resume device
->
-> 5) configure device
->
-> 6) setup irq
->
-> 7) [optional] suspend device
->
-> As you can see from above, the Platform devices aren't need to be enabled before step 5 and,
-> if your proposition will be accepted, it will lead to few additional resume/suspend
-> cycles per-device. It's not good as for me. Is it?
-
-Why will it lead to a few additional resume/suspend cycles per device?
-I don't follow.
-
->
->
->> The driver could then be responsible to invoke pm_runtime_set_active()
->> to reflect that all runtime PM resources are enabled.
->
-> [runtime_pm.txt] - this is recovery function and caller should be very careful.
-
-What? I couldn't find this stated anywhere in the documentation.
-
-This is what's stated though:
-
-5. Runtime PM Initialization, Device Probing and Removal
-[...]
-In addition to that, the initial runtime PM status of all devices is
-'suspended', but it need not reflect the actual physical state of the device.
-Thus, if the device is initially active (i.e. it is able to process I/O), its
-runtime PM status must be changed to 'active', with the help of
-pm_runtime_set_active(), before pm_runtime_enable() is called for the device.
-[...]
-
->
-> Again, from implementation point of view:
-> -- how it's done now:
->     .probe()
->         pm_runtime_enable(&pdev->dev);
->         pm_runtime_get_sync(&pdev->dev);
->
->     .remove()
->         pm_runtime_put_sync(&pdev->dev);
->         pm_runtime_disable(&pdev->dev);
->
-> -- how it will be:
->      .probe()
->         //pm_runtime_enable(&pdev->dev);
->         //pm_runtime_get_sync(&pdev->dev);
->
->         [optional] call .runtime_resume();
->
->         pm_runtime_set_active(dev);
->         pm_runtime_enable(dev);
->         [optional, to keep device active] pm_runtime_get_sync()
->
->      .remove()
->         [optional] pm_runtime_put_sync(&pdev->dev);
->         pm_runtime_disable(&pdev->dev);
->
->         call .runtime_suspend();
->         pm_runtime_set_suspended(dev);
->
-> And that would need to be done for all drivers.
-
-I can't tell the number of drivers you are referring to and how big
-impact it would have. Could you maybe summarize which drivers you are
-concerned about?
-
-I guess, if we have screwed things up regarding the runtime PM support
-for some drivers, we need to fix them. I am also happy to help.
-
-[...]
-
->> This is wrong!
->>
->> 1) It will break the driver for !CONFIG_PM_RUNTIME.
->
-> Hm. It should work. In your driver you have (for the case !CONFIG_PM_RUNTIME):
->         pm_runtime_enable(dev); ------------------------ NOP
->         ret = pm_runtime_get_sync(&pdev->dev); --------- NOP
->         if (ret < 0)
->                 goto err_m2m;
-> so, if you add:
->         if (!pm_runtime_enabled(dev)) { ---------------- always FALSE
->                gsc_runtime_resume(dev);
->                /* ^ is the same as
->                 gsc_hw_set_sw_reset(gsc);
->                 gsc_wait_reset(gsc);
->                 gsc_m2m_resume(gsc);
->                */
->        }
-> it will work in both cases, because pm_runtime_enabled() == true
-> when  CONFIG_PM_RUNTIME=y.
-
-So this might work for some cases and for some not. As stated earlier,
-it won't work if the device is runtime PM active.
-
-The better solution is the follow my proposal and thus also conform to
-the runtime PM documentation for how ->probe() should be done.
-
->
->>
->> 2) It would also be broken for CONFIG_PM_RUNTIME for the scenario
->> where a bus also handles runtime PM resources.
->> Typically from the bus' ->probe() this is done:
->> pm_runtime_get_noresume()
->> pm_runtime_set_active()
->
-> So, Has your device been enabled by bus?
-
-Yes we have examples of that. drivers/amba/bus.c.
-
-Kind regards
-Uffe
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index 2f25958053778ad1..3bfc1175a548c49c 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -293,7 +293,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency = transition_latency;
+ 
+ 	pd = cpufreq_get_driver_data();
+-	if (pd && !pd->independent_clocks)
++	if (!pd || !pd->independent_clocks)
+ 		cpumask_setall(policy->cpus);
+ 
+ 	of_node_put(np);
+-- 
+1.9.1
