@@ -1,21 +1,22 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v3 39/47] m68k: Register with kernel power-off handler
-Date: Mon, 27 Oct 2014 08:55:46 -0700
-Message-ID: <1414425354-10359-40-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v3 36/47] arm64: psci: Register with kernel power-off handler
+Date: Mon, 27 Oct 2014 08:55:43 -0700
+Message-ID: <1414425354-10359-37-git-send-email-linux@roeck-us.net>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Joshua Thompson <funaho@jurai.org>, linux-m68k@lists.linux-m68k.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
 directly.
 
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Joshua Thompson <funaho@jurai.org>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+Tested-by: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v3:
@@ -23,37 +24,24 @@ v3:
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- Use defines to specify poweroff handler priorities
+- Use define to specify poweroff handler priority
 
- arch/m68k/emu/natfeat.c | 3 ++-
- arch/m68k/mac/config.c  | 3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ arch/arm64/kernel/psci.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/m68k/emu/natfeat.c b/arch/m68k/emu/natfeat.c
-index 91e2ae7..38fec50 100644
---- a/arch/m68k/emu/natfeat.c
-+++ b/arch/m68k/emu/natfeat.c
-@@ -91,5 +91,6 @@ void __init nf_init(void)
- 	pr_info("NatFeats found (%s, %lu.%lu)\n", buf, version >> 16,
- 		version & 0xffff);
+diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
+index 866c1c8..5cab066 100644
+--- a/arch/arm64/kernel/psci.c
++++ b/arch/arm64/kernel/psci.c
+@@ -359,7 +359,8 @@ static int __init psci_0_2_init(struct device_node *np)
  
--	pm_power_off = nf_poweroff;
-+	register_power_off_handler_simple(nf_poweroff,
+ 	arm_pm_restart = psci_sys_reset;
+ 
+-	pm_power_off = psci_sys_poweroff;
++	register_power_off_handler_simple(psci_sys_poweroff,
 +					  POWER_OFF_PRIORITY_DEFAULT);
- }
-diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c
-index 677913ff..14fd981 100644
---- a/arch/m68k/mac/config.c
-+++ b/arch/m68k/mac/config.c
-@@ -160,7 +160,8 @@ void __init config_mac(void)
- 	mach_set_clock_mmss = mac_set_clock_mmss;
- 	mach_reset = mac_reset;
- 	mach_halt = mac_poweroff;
--	pm_power_off = mac_poweroff;
-+	register_power_off_handler_simple(mac_poweroff,
-+					  POWER_OFF_PRIORITY_DEFAULT);
- 	mach_max_dma_address = 0xffffffff;
- #if defined(CONFIG_INPUT_M68K_BEEP) || defined(CONFIG_INPUT_M68K_BEEP_MODULE)
- 	mach_beep = mac_mksound;
+ 
+ out_put_node:
+ 	of_node_put(np);
 -- 
 1.9.1
