@@ -1,144 +1,121 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v3 23/47] power/reset: gpio-poweroff: Register with kernel power-off handler
-Date: Mon, 27 Oct 2014 08:55:30 -0700
-Message-ID: <1414425354-10359-24-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v3 19/47] mfd: rk808: Register power-off handler with kernel power-off handler
+Date: Mon, 27 Oct 2014 08:55:26 -0700
+Message-ID: <1414425354-10359-20-git-send-email-linux@roeck-us.net>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:50127 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752946AbaJ0P5A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 11:57:00 -0400
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XimfD-000cRO-O1
-	for linux-pm@vger.kernel.org; Mon, 27 Oct 2014 15:56:59 +0000
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Chris Zhong <zyw@rock-chips.com>, Zhang Qing <zhangqing@rock-chips.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
 directly. Register with low priority to reflect that the original code
 only sets pm_power_off if it was not already set.
 
-Other changes:
-
-Drop note that there can not be an additional instance of this driver.
-The original reason no longer applies, it should be obvious that there
-can only be one instance of the driver if static variables are used to
-reflect its state, and support for multiple instances can now be added
-easily if needed by avoiding static variables.
-
-Do not create an error message if another power-off handler has already
-been registered. This is perfectly normal and acceptable.
-
-Drop remove function since it is no longer needed.
-
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Acked-by: Andrew Lunn <andrew@lunn.ch>
-Acked-by: Sebastian Reichel <sre@kernel.org>
+Cc: Chris Zhong <zyw@rock-chips.com>
+Cc: Zhang Qing <zhangqing@rock-chips.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v3:
 - Replace poweroff in all newly introduced variables and in text
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
-v2;
-- Use define to specify poweroff handler priority
-- Use devm_register_power_off_handler
-- Drop remove function as it is no longer needed
+v2:
+- New patch
 
- drivers/power/reset/gpio-poweroff.c | 40 ++++++++++++++++---------------------
- 1 file changed, 17 insertions(+), 23 deletions(-)
+ drivers/mfd/rk808.c       | 30 ++++++++++++++++--------------
+ include/linux/mfd/rk808.h |  2 ++
+ 2 files changed, 18 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/power/reset/gpio-poweroff.c b/drivers/power/reset/gpio-poweroff.c
-index ce849bc..814c37b 100644
---- a/drivers/power/reset/gpio-poweroff.c
-+++ b/drivers/power/reset/gpio-poweroff.c
-@@ -14,18 +14,18 @@
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/delay.h>
+diff --git a/drivers/mfd/rk808.c b/drivers/mfd/rk808.c
+index bd02150..5d5257d 100644
+--- a/drivers/mfd/rk808.c
++++ b/drivers/mfd/rk808.c
+@@ -21,6 +21,8 @@
+ #include <linux/mfd/rk808.h>
+ #include <linux/mfd/core.h>
+ #include <linux/module.h>
 +#include <linux/notifier.h>
 +#include <linux/pm.h>
- #include <linux/platform_device.h>
- #include <linux/gpio/consumer.h>
- #include <linux/of_platform.h>
- #include <linux/module.h>
+ #include <linux/regmap.h>
  
--/*
-- * Hold configuration here, cannot be more than one instance of the driver
-- * since pm_power_off itself is global.
-- */
- static struct gpio_desc *reset_gpio;
+ struct rk808_reg_data {
+@@ -147,23 +149,19 @@ static struct regmap_irq_chip rk808_irq_chip = {
+ 	.init_ack_masked = true,
+ };
  
--static void gpio_poweroff_do_poweroff(void)
-+static int gpio_poweroff_do_poweroff(struct notifier_block *this,
-+				     unsigned long unused1, void *unused2)
-+
+-static struct i2c_client *rk808_i2c_client;
+-static void rk808_device_shutdown(void)
++static int rk808_device_shutdown(struct notifier_block *this,
++				 unsigned long unused1, void *unused2)
  {
- 	BUG_ON(!reset_gpio);
++	struct rk808 *rk808 = container_of(this, struct rk808, power_off_nb);
+ 	int ret;
+-	struct rk808 *rk808 = i2c_get_clientdata(rk808_i2c_client);
+-
+-	if (!rk808) {
+-		dev_warn(&rk808_i2c_client->dev,
+-			 "have no rk808, so do nothing here\n");
+-		return;
+-	}
  
-@@ -43,19 +43,19 @@ static void gpio_poweroff_do_poweroff(void)
- 	mdelay(3000);
- 
- 	WARN_ON(1);
+ 	ret = regmap_update_bits(rk808->regmap,
+ 				 RK808_DEVCTRL_REG,
+ 				 DEV_OFF_RST, DEV_OFF_RST);
+ 	if (ret)
+-		dev_err(&rk808_i2c_client->dev, "power off error!\n");
++		dev_err(&rk808->i2c->dev, "power off error!\n");
 +
 +	return NOTIFY_DONE;
  }
  
-+static struct notifier_block gpio_power_off_nb = {
-+	.notifier_call = gpio_poweroff_do_poweroff,
-+	.priority = POWER_OFF_PRIORITY_LOW,
-+};
-+
- static int gpio_poweroff_probe(struct platform_device *pdev)
- {
- 	bool input = false;
--
--	/* If a pm_power_off function has already been added, leave it alone */
--	if (pm_power_off != NULL) {
--		dev_err(&pdev->dev,
--			"%s: pm_power_off function already registered",
--		       __func__);
--		return -EBUSY;
--	}
-+	int err;
+ static int rk808_probe(struct i2c_client *client,
+@@ -222,9 +220,14 @@ static int rk808_probe(struct i2c_client *client,
  
- 	reset_gpio = devm_gpiod_get(&pdev->dev, NULL);
- 	if (IS_ERR(reset_gpio))
-@@ -77,16 +77,11 @@ static int gpio_poweroff_probe(struct platform_device *pdev)
- 		}
+ 	pm_off = of_property_read_bool(np,
+ 				"rockchip,system-power-controller");
+-	if (pm_off && !pm_power_off) {
+-		rk808_i2c_client = client;
+-		pm_power_off = rk808_device_shutdown;
++	if (pm_off) {
++		rk808->power_off_nb.notifier_call = rk808_device_shutdown;
++		rk808->power_off_nb.priority = POWER_OFF_PRIORITY_LOW;
++		ret = devm_register_power_off_handler(&client->dev,
++						      &rk808->power_off_nb);
++		if (ret)
++			dev_warn(&client->dev,
++				 "Failed to register power-off handler\n");
  	}
  
--	pm_power_off = &gpio_poweroff_do_poweroff;
--	return 0;
--}
--
--static int gpio_poweroff_remove(struct platform_device *pdev)
--{
--	if (pm_power_off == &gpio_poweroff_do_poweroff)
--		pm_power_off = NULL;
-+	err = devm_register_power_off_handler(&pdev->dev, &gpio_power_off_nb);
-+	if (err)
-+		dev_err(&pdev->dev, "Failed to register power-off handler\n");
+ 	return 0;
+@@ -240,7 +243,6 @@ static int rk808_remove(struct i2c_client *client)
  
--	return 0;
-+	return err;
+ 	regmap_del_irq_chip(client->irq, rk808->irq_data);
+ 	mfd_remove_devices(&client->dev);
+-	pm_power_off = NULL;
+ 
+ 	return 0;
  }
+diff --git a/include/linux/mfd/rk808.h b/include/linux/mfd/rk808.h
+index fb09312..6308fd4 100644
+--- a/include/linux/mfd/rk808.h
++++ b/include/linux/mfd/rk808.h
+@@ -19,6 +19,7 @@
+ #ifndef __LINUX_REGULATOR_rk808_H
+ #define __LINUX_REGULATOR_rk808_H
  
- static const struct of_device_id of_gpio_poweroff_match[] = {
-@@ -96,7 +91,6 @@ static const struct of_device_id of_gpio_poweroff_match[] = {
++#include <linux/notifier.h>
+ #include <linux/regulator/machine.h>
+ #include <linux/regmap.h>
  
- static struct platform_driver gpio_poweroff_driver = {
- 	.probe = gpio_poweroff_probe,
--	.remove = gpio_poweroff_remove,
- 	.driver = {
- 		.name = "poweroff-gpio",
- 		.owner = THIS_MODULE,
+@@ -192,5 +193,6 @@ struct rk808 {
+ 	struct i2c_client *i2c;
+ 	struct regmap_irq_chip_data *irq_data;
+ 	struct regmap *regmap;
++	struct notifier_block power_off_nb;
+ };
+ #endif /* __LINUX_REGULATOR_rk808_H */
 -- 
 1.9.1
-
