@@ -1,35 +1,20 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v3 21/47] ipmi: Register with kernel
-	power-off handler
-Date: Mon, 27 Oct 2014 08:55:28 -0700
-Message-ID: <1414425354-10359-22-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v3 26/47] power/reset: msm-poweroff: Register with kernel power-off handler
+Date: Mon, 27 Oct 2014 08:55:33 -0700
+Message-ID: <1414425354-10359-27-git-send-email-linux@roeck-us.net>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <openipmi-developer-bounces@lists.sourceforge.net>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/openipmi-developer>,
-	<mailto:openipmi-developer-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=openipmi-developer>
-List-Post: <mailto:openipmi-developer@lists.sourceforge.net>
-List-Help: <mailto:openipmi-developer-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/openipmi-developer>,
-	<mailto:openipmi-developer-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: openipmi-developer-bounces@lists.sourceforge.net
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: openipmi-developer@lists.sourceforge.net, Corey Minyard <minyard@acm.org>, Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with high priority to reflect that the original code
-overwrites pm_power_off unconditionally.
+directly. Select fallback priority since the code does not really poweroff
+the system but resets it instead.
 
-Register power-off handler after the ipmi system is ready, and unregister
-it prior to cleanup. This avoids having to check for the ready variable
-in the poweroff callback.
-
-Reviewed-by: Corey Minyard <minyard@acm.org>
+Acked-by: Sebastian Reichel <sre@kernel.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v3:
@@ -38,101 +23,55 @@ v3:
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
 - Use define to specify poweroff handler priority
-- Use pr_warn instead of pr_err
-- Call unregister_power_off_handler on exit only if not already unregistered
+- Fix headline and description
+- Merge with restart handler code now used in same driver
+- Use dev_warn instead of dev_err
 
- drivers/char/ipmi/ipmi_poweroff.c | 29 ++++++++++++++++++-----------
- 1 file changed, 18 insertions(+), 11 deletions(-)
+ drivers/power/reset/msm-poweroff.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/char/ipmi/ipmi_poweroff.c b/drivers/char/ipmi/ipmi_poweroff.c
-index 9f2e3be..0698e1c 100644
---- a/drivers/char/ipmi/ipmi_poweroff.c
-+++ b/drivers/char/ipmi/ipmi_poweroff.c
-@@ -36,6 +36,7 @@
- #include <linux/proc_fs.h>
- #include <linux/string.h>
- #include <linux/completion.h>
+diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
+index 4702efd..c63c070 100644
+--- a/drivers/power/reset/msm-poweroff.c
++++ b/drivers/power/reset/msm-poweroff.c
+@@ -19,10 +19,12 @@
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/module.h>
 +#include <linux/notifier.h>
+ #include <linux/reboot.h>
  #include <linux/pm.h>
- #include <linux/kdev_t.h>
- #include <linux/ipmi.h>
-@@ -63,9 +64,6 @@ static ipmi_user_t ipmi_user;
- static int ipmi_ifnum;
- static void (*specific_poweroff_func)(ipmi_user_t user);
  
--/* Holds the old poweroff function so we can restore it on removal. */
--static void (*old_poweroff_func)(void);
--
- static int set_param_ifnum(const char *val, struct kernel_param *kp)
- {
- 	int rv = param_set_int(val, kp);
-@@ -544,15 +542,20 @@ static struct poweroff_function poweroff_functions[] = {
- 
- 
- /* Called on a powerdown request. */
--static void ipmi_poweroff_function(void)
-+static int ipmi_poweroff_function(struct notifier_block *this,
-+				  unsigned long unused1, void *unused2)
- {
--	if (!ready)
--		return;
--
- 	/* Use run-to-completion mode, since interrupts may be off. */
- 	specific_poweroff_func(ipmi_user);
+ static void __iomem *msm_ps_hold;
 +
-+	return NOTIFY_DONE;
- }
+ static int do_msm_restart(struct notifier_block *nb, unsigned long action,
+ 			   void *data)
+ {
+@@ -37,11 +39,11 @@ static struct notifier_block restart_nb = {
+ 	.priority = 128,
+ };
  
-+static struct notifier_block ipmi_power_off_nb = {
-+	.notifier_call = ipmi_poweroff_function,
-+	.priority = POWER_OFF_PRIORITY_HIGH,
+-static void do_msm_poweroff(void)
+-{
++static struct notifier_block msm_power_off_nb = {
+ 	/* TODO: Add poweroff capability */
+-	do_msm_restart(&restart_nb, 0, NULL);
+-}
++	.notifier_call = do_msm_restart,
++	.priority = POWER_OFF_PRIORITY_FALLBACK,
 +};
-+
- /* Wait for an IPMI interface to be installed, the first one installed
-    will be grabbed by this code and used to perform the powerdown. */
- static void ipmi_po_new_smi(int if_num, struct device *device)
-@@ -631,9 +634,12 @@ static void ipmi_po_new_smi(int if_num, struct device *device)
- 	printk(KERN_INFO PFX "Found a %s style poweroff function\n",
- 	       poweroff_functions[i].platform_type);
- 	specific_poweroff_func = poweroff_functions[i].poweroff_func;
--	old_poweroff_func = pm_power_off;
--	pm_power_off = ipmi_poweroff_function;
-+
- 	ready = 1;
-+
-+	rv = register_power_off_handler(&ipmi_power_off_nb);
-+	if (rv)
-+		pr_warn(PFX "failed to register power-off handler\n");
+ 
+ static int msm_restart_probe(struct platform_device *pdev)
+ {
+@@ -55,7 +57,8 @@ static int msm_restart_probe(struct platform_device *pdev)
+ 
+ 	register_restart_handler(&restart_nb);
+ 
+-	pm_power_off = do_msm_poweroff;
++	if (register_power_off_handler(&msm_power_off_nb))
++		dev_warn(&pdev->dev, "Failed to register power-off handler\n");
+ 
+ 	return 0;
  }
- 
- static void ipmi_po_smi_gone(int if_num)
-@@ -644,9 +650,10 @@ static void ipmi_po_smi_gone(int if_num)
- 	if (ipmi_ifnum != if_num)
- 		return;
- 
-+	unregister_power_off_handler(&ipmi_power_off_nb);
-+
- 	ready = 0;
- 	ipmi_destroy_user(ipmi_user);
--	pm_power_off = old_poweroff_func;
- }
- 
- static struct ipmi_smi_watcher smi_watcher = {
-@@ -733,11 +740,11 @@ static void __exit ipmi_poweroff_cleanup(void)
- 	ipmi_smi_watcher_unregister(&smi_watcher);
- 
- 	if (ready) {
-+		unregister_power_off_handler(&ipmi_power_off_nb);
- 		rv = ipmi_destroy_user(ipmi_user);
- 		if (rv)
- 			printk(KERN_ERR PFX "could not cleanup the IPMI"
- 			       " user: 0x%x\n", rv);
--		pm_power_off = old_poweroff_func;
- 	}
- }
- module_exit(ipmi_poweroff_cleanup);
 -- 
 1.9.1
-
-
-------------------------------------------------------------------------------
