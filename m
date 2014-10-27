@@ -1,131 +1,106 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH v1 01/10] of: Rename "poweroff-source" property to
+From: Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v1 02/10] dt-bindings: Document the standard property
  "system-power-controller"
-Date: Mon, 27 Oct 2014 11:38:40 -0500
-Message-ID: <20141027163840.GA14253@saruman>
+Date: Mon, 27 Oct 2014 11:39:18 -0500
+Message-ID: <20141027163918.GB14253@saruman>
 References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
-Reply-To: <balbi@ti.com>
+ <1414427215-14380-2-git-send-email-romain.perier@gmail.com>
+Reply-To: <balbi-l0cyMroinI0@public.gmane.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:44451 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751511AbaJ0Qj7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Oct 2014 12:39:59 -0400
+	protocol="application/pgp-signature"; boundary="xXmbgvnjoT4axfJE"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1414427215-14380-2-git-send-email-romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, balbi-l0cyMroinI0@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Romain Perier <romain.perier@gmail.com>
-Cc: heiko@sntech.de, devicetree@vger.kernel.org, broonie@kernel.org, lgirdwood@gmail.com, linux-kernel@vger.kernel.org, grant.likely@linaro.org, robh@kernel.org, mark.rutland@arm.com, johan@kernel.org, linux-pm@vger.kernel.org, linux@roeck-us.net, lee.jones@linaro.org, balbi@ti.com, robh+dt@kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
 
---cWoXeonUoKmBZSoM
+--xXmbgvnjoT4axfJE
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Oct 27, 2014 at 04:26:46PM +0000, Romain Perier wrote:
-> As discussed on the mailing list, it makes more sense to rename this prop=
-erty
-> to "system-power-controller". Problem being that the word "source" usuall=
-y tends
-> to be used for inputs and that is out of control of the OS. The poweroff
-> capability is an output which simply turns the system-power off. Also, th=
-is
-> property might be used by drivers which power-off the system and power ba=
-ck on
-> subsequent RTC alarms. This seems to suggest to remove "poweroff" from the
-> property name and to choose "system-power-controller" as the more generic=
- name.
-> This patchs adds the required renaming changes and defines an helper func=
-tion
-> which is compatible with both properties, the old one prefixed by a vendo=
-r name
-> and the new one without any prefix.
+On Mon, Oct 27, 2014 at 04:26:47PM +0000, Romain Perier wrote:
+> This simply renames the previous documentation to something more generic =
+and adds
+> updates according to last changes.
 >=20
-> Signed-off-by: Romain Perier <romain.perier@gmail.com>
+> Signed-off-by: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 > ---
->  include/linux/of.h | 27 +++++++++++++++++++++++----
->  1 file changed, 23 insertions(+), 4 deletions(-)
+>  .../devicetree/bindings/power/power-controller.txt     | 18 ++++++++++++=
+++++++
+>  Documentation/devicetree/bindings/power/poweroff.txt   | 18 ------------=
+------
+>  2 files changed, 18 insertions(+), 18 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/power/power-control=
+ler.txt
+>  delete mode 100644 Documentation/devicetree/bindings/power/poweroff.txt
 >=20
-> diff --git a/include/linux/of.h b/include/linux/of.h
-> index 27b3ba1..c1ed2a5 100644
-> --- a/include/linux/of.h
-> +++ b/include/linux/of.h
-> @@ -867,14 +867,33 @@ static inline int of_changeset_update_property(stru=
-ct of_changeset *ocs,
->  extern int of_resolve_phandles(struct device_node *tree);
-> =20
->  /**
-> - * of_system_has_poweroff_source - Tells if poweroff-source is found for=
- device_node
-> + * of_is_system_power_controller - Tells if the property for controlling=
- system
-> + * power is found in device_node.
->   * @np: Pointer to the given device_node
->   *
->   * return true if present false otherwise
->   */
-> -static inline bool of_system_has_poweroff_source(const struct device_nod=
-e *np)
-> -{
-> -	return of_property_read_bool(np, "poweroff-source");
-> +static inline bool of_is_system_power_controller(const struct device_nod=
-e *np)
-> +{
-> +	struct property *pp;
-> +	unsigned long flags;
-> +	char *sep;
-> +	bool found =3D false;
+> diff --git a/Documentation/devicetree/bindings/power/power-controller.txt=
+ b/Documentation/devicetree/bindings/power/power-controller.txt
+> new file mode 100644
+> index 0000000..e0a1abe
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/power-controller.txt
+> @@ -0,0 +1,18 @@
+> +* Generic system power control capability
 > +
-> +	raw_spin_lock_irqsave(&devtree_lock, flags);
-> +	for_each_property_of_node(np, pp) {
-> +		if (of_prop_cmp(pp->name, "system-power-controller") =3D=3D 0) {
-> +			found =3D true;
-> +			break;
-> +		}
-> +		sep =3D strchr(pp->name, ',');
-> +		if (sep && sep - pp->name && of_prop_cmp(sep + 1, "system-power-contro=
-ller") =3D=3D 0) {
-> +			found =3D true;
-> +			break;
-> +		}
-> +	}
-> +	raw_spin_unlock_irqrestore(&devtree_lock, flags);
-> +	return found;
->  }
-> =20
->  #endif /* _LINUX_OF_H */
+> +Power-management integrated circuits or miscellaneous harware components=
+ are
+> +sometimes able to control the system power. The device driver associated=
+ to these
+> +components might needs to define this capability, which tells to the ker=
+nel
+> +how to switch off the system. The corresponding driver must have the sta=
+ndard
+> +property "system-power-controller" in its device node. This property mar=
+ks the device as
+> +able to controller the system-power. In order to test if this property i=
+s found
+> +programmatically, use the helper function "of_is_system_power_controller=
+" from
+> +of.h .
+> +
+> +Example:
+> +
+> +act8846: act8846@5 {
+> +	 compatible =3D "active-semi,act8846";
+> +	 status =3D "okay";
+> +	 system-power-controller;
+> +}
 
-I think you still need to support poweroff-source since it has been
-released on a stable kernel. Perhaps add a warning message telling users
-it's deprecated and asking them to switch over to
-system-power-controller ? Still, simply removing it isn't very nice.
+there is no mention here that system-power-controller superseeds
+poweroff-source and deprecates that.
 
 --=20
 balbi
 
---cWoXeonUoKmBZSoM
+--xXmbgvnjoT4axfJE
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUTnUQAAoJEIaOsuA1yqREykcP/17WeGaNRLnzPysmdrRd0aG2
-Uuj4lMvYp8V4vxXQKDBuywISe/JgiqiS3KTSb6qbqmfObpqdRbTmPxaPoC0VpaKT
-Cd2x/fDqfiDF+Q9Ask5TD4FajTUzEU4V7S/Xhprjyv4+8Hc+uIoLJFwMs3TTlhhB
-P55JZXo0BjtTg/WU1l2kVo3CZ592GYyqBlwlG5i1klyAn+5qX/hGTu8PZc+8yhOW
-lXevpzblHj6bcgosK0zFQ73RUTGc767kxEV6tS9CucHWjU/Ib2M5d0zo9RIEQDMf
-wvNHVCy51JHzEcYDOKMdShv/q/kG5tgrnmPhEomOIDvY1edIos8204xMq0AI75yw
-6KM+FZp1TixmIFPruBeipF/kTdowknRzDd8ZpAT9uwPNwOUkAzFf6v6XtuB97I3k
-zTsVWaa1F+ao2Mhd2ZCBJJgIJ8RvBB2m4wcQ3q8oq9K77XWrnXSnjPcNVLNbuYZB
-tEQRBcO3eSkAgMsRZrRjdk9nkDx8GVNn2nnxDGDKZbIYTEyLqDT6I1Bn9PsdGxR2
-b889nBP4gKuqfNTd2zXJexSZqt2uB7q9iVmzL/nz5r7hEk2rc7Y2Tygye/VusVtr
-fHoqjqblMYiBIV0R5iawJonC1seTpyKweOYKEFiyNy92keStoTxSCIb6cnu9yl9h
-UlEC6LfKctEgnvCZZXif
-=PLaD
+iQIcBAEBAgAGBQJUTnU2AAoJEIaOsuA1yqRE1bEP/3w1qaKnt/soJsWLxUog+aCM
+uMgzJRmOz2ZIAD+6B2chsi6JbdovBszPaErdf2leX5+0VpX+XjnTntcgjN6Rufyj
+WGvhHrzvSGFL3xQn+cyxMgngO+jFuq5j8pS868tymYeyj/2MGOWe6qhK/+hyX/kc
+tKEazbyPyw4QGauQ1LK+709OXWG7507QGpqgUIkHQ1u9A1ELMwHm+k1EoNiLem7O
+RXkb0N7I9XoEUibnMhqOnSrcp0+3qV25LitW8kGTanb67EtHH8W9ja0O36pa+cP4
+tmrj8/U0qAIrdFKSKHyB1uCwbi0RQ9EBfbHX6KBSxgIcq79jgcGS7n1ZD02qoDP8
+HdB/mtDJIbOf8UxJL5FUP9izcEY5+DHc+1mj1eC7S8o/t4Fr/DRTmAlERDZKKQeJ
++yVEk8bXtl3snkfjKXR67RUZyZiJm3N1O+IcFNyS+HircXoT8eB9erjUtfiDcPcj
+OuK0VIDvrDoMcYJtqokTKnrkHNO9Kaqkb1RhqSi2zZXijzmbEwt9I3g57+Ac5ugj
+HgqpZiFEtR0HZJmWgZEg2E551sXPt3rGn1dDdTGoIBJJQbkChvCDb6lFOLrXrclQ
+FkKD3YySoyUG8Tx1CaklsV/+K5IzDJSW71l/QNMCOLW3nun3QuGIE5/MGIqbfQ8+
+/B4T5X+D0spTMHoBCZXf
+=K/db
 -----END PGP SIGNATURE-----
 
---cWoXeonUoKmBZSoM--
+--xXmbgvnjoT4axfJE--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
