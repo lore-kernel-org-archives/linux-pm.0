@@ -1,51 +1,75 @@
-From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
-Subject: v3.18-rc2 compilation under a x86 KVM failed in drivers/thermal/thermal_core.c:
-Date: Mon, 27 Oct 2014 17:14:20 +0100
-Message-ID: <544E6F5C.7040900@gmx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Romain Perier <romain.perier@gmail.com>
+Subject: [PATCH v1 01/10] of: Rename "poweroff-source" property to "system-power-controller"
+Date: Mon, 27 Oct 2014 16:26:46 +0000
+Message-ID: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.gmx.net ([212.227.15.15]:55080 "EHLO mout.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751628AbaJ0QOX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Oct 2014 12:14:23 -0400
-Received: from [192.168.178.21] ([78.54.158.72]) by mail.gmx.com (mrgmx001)
- with ESMTPSA (Nemesis) id 0LtZcC-1Y87K51HyW-010swC for
- <linux-pm@vger.kernel.org>; Mon, 27 Oct 2014 17:14:21 +0100
+Received: from mail-wg0-f45.google.com ([74.125.82.45]:39723 "EHLO
+	mail-wg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751858AbaJ0QXq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 12:23:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
+To: heiko@sntech.de
+Cc: devicetree@vger.kernel.org, broonie@kernel.org, lgirdwood@gmail.com, linux-kernel@vger.kernel.org, grant.likely@linaro.org, robh@kernel.org, mark.rutland@arm.com, johan@kernel.org, linux-pm@vger.kernel.org, linux@roeck-us.net, lee.jones@linaro.org, balbi@ti.com, robh+dt@kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
 
-Is this an already known issue ? :
+As discussed on the mailing list, it makes more sense to rename this property
+to "system-power-controller". Problem being that the word "source" usually tends
+to be used for inputs and that is out of control of the OS. The poweroff
+capability is an output which simply turns the system-power off. Also, this
+property might be used by drivers which power-off the system and power back on
+subsequent RTC alarms. This seems to suggest to remove "poweroff" from the
+property name and to choose "system-power-controller" as the more generic name.
+This patchs adds the required renaming changes and defines an helper function
+which is compatible with both properties, the old one prefixed by a vendor name
+and the new one without any prefix.
 
-  CC      drivers/thermal/thermal_core.o
-drivers/thermal/thermal_core.c: In function =E2=80=98handle_critical_tr=
-ips=E2=80=99:
-drivers/thermal/thermal_core.c:374:2: error: implicit declaration of fu=
-nction =E2=80=98trace_thermal_zone_trip=E2=80=99 [-Werror=3Dimplicit-fu=
-nction-declaration]
-drivers/thermal/thermal_core.c: In function =E2=80=98update_temperature=
-=E2=80=99:
-drivers/thermal/thermal_core.c:471:2: error: implicit declaration of fu=
-nction =E2=80=98trace_thermal_temperature=E2=80=99 [-Werror=3Dimplicit-=
-function-declaration]
-drivers/thermal/thermal_core.c: In function =E2=80=98thermal_cdev_updat=
-e=E2=80=99:
-drivers/thermal/thermal_core.c:1296:2: error: implicit declaration of f=
-unction =E2=80=98trace_cdev_update=E2=80=99 [-Werror=3Dimplicit-functio=
-n-declaration]
-cc1: some warnings being treated as errors
-scripts/Makefile.build:257: recipe for target 'drivers/thermal/thermal_=
-core.o' failed
-make[2]: *** [drivers/thermal/thermal_core.o] Error 1
-scripts/Makefile.build:402: recipe for target 'drivers/thermal' failed
-make[1]: *** [drivers/thermal] Error 2
-Makefile:936: recipe for target 'drivers' failed
-make: *** [drivers] Error 2
-make: *** Waiting for unfinished jobs....
+Signed-off-by: Romain Perier <romain.perier@gmail.com>
+---
+ include/linux/of.h | 27 +++++++++++++++++++++++----
+ 1 file changed, 23 insertions(+), 4 deletions(-)
 
---=20
-Toralf
-pgp key: 0076 E94E
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 27b3ba1..c1ed2a5 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -867,14 +867,33 @@ static inline int of_changeset_update_property(struct of_changeset *ocs,
+ extern int of_resolve_phandles(struct device_node *tree);
+ 
+ /**
+- * of_system_has_poweroff_source - Tells if poweroff-source is found for device_node
++ * of_is_system_power_controller - Tells if the property for controlling system
++ * power is found in device_node.
+  * @np: Pointer to the given device_node
+  *
+  * return true if present false otherwise
+  */
+-static inline bool of_system_has_poweroff_source(const struct device_node *np)
+-{
+-	return of_property_read_bool(np, "poweroff-source");
++static inline bool of_is_system_power_controller(const struct device_node *np)
++{
++	struct property *pp;
++	unsigned long flags;
++	char *sep;
++	bool found = false;
++
++	raw_spin_lock_irqsave(&devtree_lock, flags);
++	for_each_property_of_node(np, pp) {
++		if (of_prop_cmp(pp->name, "system-power-controller") == 0) {
++			found = true;
++			break;
++		}
++		sep = strchr(pp->name, ',');
++		if (sep && sep - pp->name && of_prop_cmp(sep + 1, "system-power-controller") == 0) {
++			found = true;
++			break;
++		}
++	}
++	raw_spin_unlock_irqrestore(&devtree_lock, flags);
++	return found;
+ }
+ 
+ #endif /* _LINUX_OF_H */
+-- 
+1.9.1
 
