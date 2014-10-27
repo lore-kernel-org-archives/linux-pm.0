@@ -1,22 +1,21 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v3 36/47] arm64: psci: Register with kernel power-off handler
-Date: Mon, 27 Oct 2014 08:55:43 -0700
-Message-ID: <1414425354-10359-37-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v3 43/47] x86: ce4100: Register with kernel power-off handler
+Date: Mon, 27 Oct 2014 08:55:50 -0700
+Message-ID: <1414425354-10359-44-git-send-email-linux@roeck-us.net>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
 directly.
 
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-Tested-by: Mark Rutland <mark.rutland@arm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v3:
@@ -26,22 +25,20 @@ v3:
 v2:
 - Use define to specify poweroff handler priority
 
- arch/arm64/kernel/psci.c | 3 ++-
+ arch/x86/platform/ce4100/ce4100.c | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
-index 866c1c8..5cab066 100644
---- a/arch/arm64/kernel/psci.c
-+++ b/arch/arm64/kernel/psci.c
-@@ -359,7 +359,8 @@ static int __init psci_0_2_init(struct device_node *np)
+diff --git a/arch/x86/platform/ce4100/ce4100.c b/arch/x86/platform/ce4100/ce4100.c
+index 701fd58..1816bc1 100644
+--- a/arch/x86/platform/ce4100/ce4100.c
++++ b/arch/x86/platform/ce4100/ce4100.c
+@@ -164,5 +164,6 @@ void __init x86_ce4100_early_setup(void)
+ 	 */
+ 	reboot_type = BOOT_KBD;
  
- 	arm_pm_restart = psci_sys_reset;
- 
--	pm_power_off = psci_sys_poweroff;
-+	register_power_off_handler_simple(psci_sys_poweroff,
+-	pm_power_off = ce4100_power_off;
++	register_power_off_handler_simple(ce4100_power_off,
 +					  POWER_OFF_PRIORITY_DEFAULT);
- 
- out_put_node:
- 	of_node_put(np);
+ }
 -- 
 1.9.1
