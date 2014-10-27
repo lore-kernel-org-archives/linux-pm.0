@@ -1,46 +1,68 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch Part1 v3 02/20] x86, irq, ACPI: Fix building warning of unused code
-Date: Mon, 27 Oct 2014 16:11:53 +0800
-Message-ID: <1414397531-28254-3-git-send-email-jiang.liu@linux.intel.com>
-References: <1414397531-28254-1-git-send-email-jiang.liu@linux.intel.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v3 07/11] ARM: shmobile: r8a7740/armadillo legacy: Add
+ A4MP pm domain support
+Date: Mon, 27 Oct 2014 09:17:55 +0100
+Message-ID: <CAMuHMdWkM4jgWX7fL63e4WGwhpGt2W1R8Jx-q+dz0GmesrRsOw@mail.gmail.com>
+References: <1414063141-8856-1-git-send-email-geert+renesas@glider.be>
+	<1414063141-8856-8-git-send-email-geert+renesas@glider.be>
+	<20141027040305.GG31487@verge.net.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1414397531-28254-1-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
-Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <20141027040305.GG31487@verge.net.au>
+Sender: linux-sh-owner@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-=46ix building warning when CONFIG_X86_LOCAL_APIC is disabled.
-arch/x86/kernel/acpi/boot.c:699:20: warning: =E2=80=98acpi_set_irq_mode=
-l_ioapic=E2=80=99 defined but not used [-Wunused-function]
+Hi Simon,
 
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
----
- arch/x86/kernel/acpi/boot.c |    2 ++
- 1 file changed, 2 insertions(+)
+On Mon, Oct 27, 2014 at 5:03 AM, Simon Horman <horms@verge.net.au> wrote:
+> On Thu, Oct 23, 2014 at 01:18:57PM +0200, Geert Uytterhoeven wrote:
+>> Add support for the A4MP power domain, and hook up the HDMI-Link and FSI
+>> hardware blocks.
+>> This domain also contains the SPU2, FMSI, and BBIF2 hardware blocks,
+>> but these are currently not used by any driver.
+>>
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>
+> Is it possible to split this into two patches.
+>
+> A board patch (that touches board-armadillo800eva.c)
+> and an SoC patch (the rest). Likewise for any remaining
+> patches in this series that touch both board and SoC code.
+>
+> The reason for this is that it would make the patches fit
+> the branch scheme that arm-soc people like. In particular splitting
+> patches between soc and boards branches.
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 47334a918d16..26a0c83d2487 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -704,6 +704,7 @@ void acpi_unregister_gsi(u32 gsi)
- }
- EXPORT_SYMBOL_GPL(acpi_unregister_gsi);
-=20
-+#ifdef CONFIG_X86_LOCAL_APIC
- static void __init acpi_set_irq_model_ioapic(void)
- {
- 	acpi_irq_model =3D ACPI_IRQ_MODEL_IOAPIC;
-@@ -711,6 +712,7 @@ static void __init acpi_set_irq_model_ioapic(void)
- 	__acpi_unregister_gsi =3D acpi_unregister_gsi_ioapic;
- 	acpi_ioapic =3D 1;
- }
-+#endif
-=20
- /*
-  *  ACPI based hotplug support for CPU
---=20
-1.7.10.4
+I kept them together as adding the PM domain without the devices will
+cause regressions (the PM domain core will power down the PM domain as
+it doesn't know about the to-be-added devices, and thus thinks it's unused).
+
+As the link from a device to a PM domain is a name string, and not a
+C reference, I could split them in two parts: first the board part
+that adds some
+devices, and then the SoC part that adds the PM domain and more devices.
+But only if you can guarantee that the SoC part will be merged first, also
+by arm-soc and Linus.
+
+Still, I prefer to keep them together. Hooking up devices to PM domains is
+SoC-specific, not board specific (for DT it lives in the .dtsi). It's
+unfortunate this code is in the board-specific C files due to board-specific
+configuration (cfr. .dts overriding/extending .dtsi).
+
+What do you think? Do you agree?
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
