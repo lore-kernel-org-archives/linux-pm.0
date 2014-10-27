@@ -1,40 +1,58 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC/PATCH] PM / Sleep: Timer quiesce in freeze state
-Date: Mon, 27 Oct 2014 08:44:19 +0100
-Message-ID: <20141027074419.GE10501@worktop.programming.kicks-ass.net>
-References: <5446787E.60202@linux.intel.com>
- <20141024153656.GM12706@worktop.programming.kicks-ass.net>
- <544DE5CF.9040501@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:44246 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751254AbaJ0HoZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 03:44:25 -0400
-Content-Disposition: inline
-In-Reply-To: <544DE5CF.9040501@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [Patch Part1 v3 01/20] ACPI, irq, x86: Get rid of special handling of GSI for ACPI SCI
+Date: Mon, 27 Oct 2014 16:11:52 +0800
+Message-ID: <1414397531-28254-2-git-send-email-jiang.liu@linux.intel.com>
+References: <1414397531-28254-1-git-send-email-jiang.liu@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1414397531-28254-1-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
 
-On Mon, Oct 27, 2014 at 02:27:27PM +0800, Li, Aubrey wrote:
-> >> +static void freezer_suspend_tk(int cpu)
-> >>  {
-> >> +	if (tick_do_timer_cpu != cpu)
-> >> +		return;
-> >> +
-> > 
-> > I had a note here that this might be broken for clocksource drivers that
-> > have suspend/resume methods. You seem to have 'lost' that note, is that
-> > because you found it isn't a problem?
-> > 
-> I don't see it's a problem as long as we do not refer the clock source
-> before it resumes. But I think my testing didn't cover that case that
-> clock source drivers have suspend/resume methods. Can you please give
-> more details what do you worry about?
+The IOAPIC has logic to track IOAPIC pin status, so there's no need for
+special treatment for GSI used by ACPI SCI in function mp_register_gsi()
+and mp_unregister_gsi().
 
-I can't seem to recall :/ Maybe I conflated clocksource and clockevents
-and figured we'd need to run the clocksource suspend callback on each
-cpu.
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+---
+ arch/x86/kernel/acpi/boot.c |   10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index f27b33194e06..47334a918d16 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -408,10 +408,6 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+ 	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
+ 		return gsi;
+ 
+-	/* Don't set up the ACPI SCI because it's already set up */
+-	if (acpi_gbl_FADT.sci_interrupt == gsi)
+-		return mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC);
+-
+ 	trigger = trigger == ACPI_EDGE_SENSITIVE ? 0 : 1;
+ 	polarity = polarity == ACPI_ACTIVE_HIGH ? 0 : 1;
+ 	node = dev ? dev_to_node(dev) : NUMA_NO_NODE;
+@@ -424,7 +420,8 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+ 	if (irq < 0)
+ 		return irq;
+ 
+-	if (enable_update_mptable)
++	/* Don't set up the ACPI SCI because it's already set up */
++	if (enable_update_mptable && acpi_gbl_FADT.sci_interrupt != gsi)
+ 		mp_config_acpi_gsi(dev, gsi, trigger, polarity);
+ 
+ 	return irq;
+@@ -437,9 +434,6 @@ static void mp_unregister_gsi(u32 gsi)
+ 	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
+ 		return;
+ 
+-	if (acpi_gbl_FADT.sci_interrupt == gsi)
+-		return;
+-
+ 	irq = mp_map_gsi_to_irq(gsi, 0);
+ 	if (irq > 0)
+ 		mp_unmap_irq(irq);
+-- 
+1.7.10.4
