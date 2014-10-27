@@ -1,21 +1,29 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v3 19/47] mfd: rk808: Register power-off handler with kernel power-off handler
-Date: Mon, 27 Oct 2014 08:55:26 -0700
-Message-ID: <1414425354-10359-20-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v3 15/47] mfd: dm355evm_msp: Register with kernel power-off handler
+Date: Mon, 27 Oct 2014 08:55:22 -0700
+Message-ID: <1414425354-10359-16-git-send-email-linux@roeck-us.net>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:50055 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752733AbaJ0P4m (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 11:56:42 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1Ximev-000byy-RP
+	for linux-pm@vger.kernel.org; Mon, 27 Oct 2014 15:56:41 +0000
 In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Chris Zhong <zyw@rock-chips.com>, Zhang Qing <zhangqing@rock-chips.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>
 
 Register with kernel power-off handler instead of setting pm_power_off
 directly. Register with low priority to reflect that the original code
 only sets pm_power_off if it was not already set.
 
-Cc: Chris Zhong <zyw@rock-chips.com>
-Cc: Zhang Qing <zhangqing@rock-chips.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Lee Jones <lee.jones@linaro.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v3:
@@ -23,99 +31,61 @@ v3:
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- New patch
+- Use define to specify poweroff handler priority
+- Use dev_warn instead of dev_err
 
- drivers/mfd/rk808.c       | 30 ++++++++++++++++--------------
- include/linux/mfd/rk808.h |  2 ++
- 2 files changed, 18 insertions(+), 14 deletions(-)
+ drivers/mfd/dm355evm_msp.c | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mfd/rk808.c b/drivers/mfd/rk808.c
-index bd02150..5d5257d 100644
---- a/drivers/mfd/rk808.c
-+++ b/drivers/mfd/rk808.c
-@@ -21,6 +21,8 @@
- #include <linux/mfd/rk808.h>
- #include <linux/mfd/core.h>
+diff --git a/drivers/mfd/dm355evm_msp.c b/drivers/mfd/dm355evm_msp.c
+index 4c826f7..63a1632 100644
+--- a/drivers/mfd/dm355evm_msp.c
++++ b/drivers/mfd/dm355evm_msp.c
+@@ -14,6 +14,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
  #include <linux/module.h>
 +#include <linux/notifier.h>
 +#include <linux/pm.h>
- #include <linux/regmap.h>
+ #include <linux/err.h>
+ #include <linux/gpio.h>
+ #include <linux/leds.h>
+@@ -352,14 +354,22 @@ static void dm355evm_command(unsigned command)
+ 				command, status);
+ }
  
- struct rk808_reg_data {
-@@ -147,23 +149,19 @@ static struct regmap_irq_chip rk808_irq_chip = {
- 	.init_ack_masked = true,
- };
- 
--static struct i2c_client *rk808_i2c_client;
--static void rk808_device_shutdown(void)
-+static int rk808_device_shutdown(struct notifier_block *this,
-+				 unsigned long unused1, void *unused2)
+-static void dm355evm_power_off(void)
++static int dm355evm_power_off(struct notifier_block *this,
++			      unsigned long unused1, void *unused2)
  {
-+	struct rk808 *rk808 = container_of(this, struct rk808, power_off_nb);
- 	int ret;
--	struct rk808 *rk808 = i2c_get_clientdata(rk808_i2c_client);
--
--	if (!rk808) {
--		dev_warn(&rk808_i2c_client->dev,
--			 "have no rk808, so do nothing here\n");
--		return;
--	}
- 
- 	ret = regmap_update_bits(rk808->regmap,
- 				 RK808_DEVCTRL_REG,
- 				 DEV_OFF_RST, DEV_OFF_RST);
- 	if (ret)
--		dev_err(&rk808_i2c_client->dev, "power off error!\n");
-+		dev_err(&rk808->i2c->dev, "power off error!\n");
+ 	dm355evm_command(MSP_COMMAND_POWEROFF);
 +
 +	return NOTIFY_DONE;
  }
  
- static int rk808_probe(struct i2c_client *client,
-@@ -222,9 +220,14 @@ static int rk808_probe(struct i2c_client *client,
- 
- 	pm_off = of_property_read_bool(np,
- 				"rockchip,system-power-controller");
--	if (pm_off && !pm_power_off) {
--		rk808_i2c_client = client;
--		pm_power_off = rk808_device_shutdown;
-+	if (pm_off) {
-+		rk808->power_off_nb.notifier_call = rk808_device_shutdown;
-+		rk808->power_off_nb.priority = POWER_OFF_PRIORITY_LOW;
-+		ret = devm_register_power_off_handler(&client->dev,
-+						      &rk808->power_off_nb);
-+		if (ret)
-+			dev_warn(&client->dev,
-+				 "Failed to register power-off handler\n");
- 	}
- 
- 	return 0;
-@@ -240,7 +243,6 @@ static int rk808_remove(struct i2c_client *client)
- 
- 	regmap_del_irq_chip(client->irq, rk808->irq_data);
- 	mfd_remove_devices(&client->dev);
++static struct notifier_block dm355evm_msp_power_off_nb = {
++	.notifier_call = dm355evm_power_off,
++	.priority = POWER_OFF_PRIORITY_LOW,
++};
++
+ static int dm355evm_msp_remove(struct i2c_client *client)
+ {
 -	pm_power_off = NULL;
- 
++	unregister_power_off_handler(&dm355evm_msp_power_off_nb);
+ 	msp430 = NULL;
  	return 0;
  }
-diff --git a/include/linux/mfd/rk808.h b/include/linux/mfd/rk808.h
-index fb09312..6308fd4 100644
---- a/include/linux/mfd/rk808.h
-+++ b/include/linux/mfd/rk808.h
-@@ -19,6 +19,7 @@
- #ifndef __LINUX_REGULATOR_rk808_H
- #define __LINUX_REGULATOR_rk808_H
+@@ -398,7 +408,9 @@ dm355evm_msp_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 		goto fail;
  
-+#include <linux/notifier.h>
- #include <linux/regulator/machine.h>
- #include <linux/regmap.h>
+ 	/* PM hookup */
+-	pm_power_off = dm355evm_power_off;
++	status = register_power_off_handler(&dm355evm_msp_power_off_nb);
++	if (status)
++		dev_warn(&client->dev, "Failed to register power-off handler\n");
  
-@@ -192,5 +193,6 @@ struct rk808 {
- 	struct i2c_client *i2c;
- 	struct regmap_irq_chip_data *irq_data;
- 	struct regmap *regmap;
-+	struct notifier_block power_off_nb;
- };
- #endif /* __LINUX_REGULATOR_rk808_H */
+ 	return 0;
+ 
 -- 
 1.9.1
+
