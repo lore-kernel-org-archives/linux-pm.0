@@ -1,88 +1,70 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH v2 06/10] mfd: tps65910: Use the standard DT property
- system-power-controller
-Date: Mon, 27 Oct 2014 11:41:53 -0500
-Message-ID: <20141027164153.GE14253@saruman>
+From: Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v2 07/10] ARM: dts: tegra: Use standard power-off
+ property in tps65911 for tegra30 apalis
+Date: Mon, 27 Oct 2014 11:42:14 -0500
+Message-ID: <20141027164214.GF14253@saruman>
 References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
- <1414427215-14380-6-git-send-email-romain.perier@gmail.com>
- <1414427749.2421.5.camel@pengutronix.de>
-Reply-To: <balbi@ti.com>
+ <1414427215-14380-7-git-send-email-romain.perier@gmail.com>
+Reply-To: <balbi-l0cyMroinI0@public.gmane.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="4Epv4kl9IRBfg3rk"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="7cm2iqirTL37Ot+N"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1414427749.2421.5.camel@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Romain Perier <romain.perier@gmail.com>, heiko@sntech.de, devicetree@vger.kernel.org, broonie@kernel.org, lgirdwood@gmail.com, linux-kernel@vger.kernel.org, grant.likely@linaro.org, robh@kernel.org, mark.rutland@arm.com, johan@kernel.org, linux-pm@vger.kernel.org, linux@roeck-us.net, lee.jones@linaro.org, balbi@ti.com, robh+dt@kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
+In-Reply-To: <1414427215-14380-7-git-send-email-romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, balbi-l0cyMroinI0@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---4Epv4kl9IRBfg3rk
+--7cm2iqirTL37Ot+N
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Oct 27, 2014 at 05:35:49PM +0100, Lucas Stach wrote:
-> Am Montag, den 27.10.2014, 16:26 +0000 schrieb Romain Perier:
-> > No longer use custom property to define poweroff capability, use the st=
-andard
-> > DT property instead.
-> >=20
-> > Signed-off-by: Romain Perier <romain.perier@gmail.com>
-> > ---
-> >  drivers/mfd/tps65910.c | 3 +--
-> >  1 file changed, 1 insertion(+), 2 deletions(-)
-> >=20
-> > diff --git a/drivers/mfd/tps65910.c b/drivers/mfd/tps65910.c
-> > index 7612d89..a7faff2 100644
-> > --- a/drivers/mfd/tps65910.c
-> > +++ b/drivers/mfd/tps65910.c
-> > @@ -423,8 +423,7 @@ static struct tps65910_board *tps65910_parse_dt(str=
-uct i2c_client *client,
-> > =20
-> >  	board_info->irq =3D client->irq;
-> >  	board_info->irq_base =3D -1;
-> > -	board_info->pm_off =3D of_property_read_bool(np,
-> > -			"ti,system-power-controller");
-> > +	board_info->pm_off =3D of_is_system_power_controller();
-> > =20
-> >  	return board_info;
-> >  }
-> You are breaking compatibility with older DTs here. This is not
-> acceptable.
+On Mon, Oct 27, 2014 at 04:26:52PM +0000, Romain Perier wrote:
+> Signed-off-by: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> ---
+>  arch/arm/boot/dts/tegra30-apalis.dtsi | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> You may change all in-tree DTs to use the new property and also patch
-> the driver to understand it, but you must make sure that the driver
-> still understands the old, custom property. And especially in this case
-> it isn't really hard to do.
+> diff --git a/arch/arm/boot/dts/tegra30-apalis.dtsi b/arch/arm/boot/dts/te=
+gra30-apalis.dtsi
+> index a5446cb..ced4436 100644
+> --- a/arch/arm/boot/dts/tegra30-apalis.dtsi
+> +++ b/arch/arm/boot/dts/tegra30-apalis.dtsi
+> @@ -412,7 +412,7 @@
+>  			#interrupt-cells =3D <2>;
+>  			interrupt-controller;
+> =20
+> -			ti,system-power-controller;
+> +			system-power-controller;
 
-correct, it should be simple to hide that under
-of_is_system_power_controller() itself.
+this board is broken until this patch is applied.
 
 --=20
 balbi
 
---4Epv4kl9IRBfg3rk
+--7cm2iqirTL37Ot+N
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUTnXRAAoJEIaOsuA1yqRERxwP/2AHly2pu7cXGX/fdKPI1ZjJ
-Bre18GxheHs6Qbf8IeKoEV056oYPr6ylykY7nxIpC69UWAXqwv7Zf+e+dp406Wxg
-XAFp86eg7WYKG4sIPN7+wcL1LggOuB4TD2IV8mEcW/4/0OdnEOWtGK6CNRJ0rqFA
-wYR0Z4M+/2GuXYnqAhoTKoHuTILbTD1l4J6GivYxMNfV85MKqDyJ/h0V1jYe36cG
-RVBZ0nOQNLzAdF33uhWWqDbVAr29YRmBAZfHbfrtid4pJOMwM2p0Nz03p810PK3R
-uY7H32Bujz1GT7YtzqabPnsp9kvkwOLDe1p+PC42eeJn0xH/a5Q2OHhMfzOreHRc
-0mf4auDW1sEFIH68jGnMej/PmBWU5U02Gyy9j9qqq/PH3LyV3gH/hxiOaj142SxY
-MBCeweYwvTMGAgAmHNdL756J4ZtYMEVO2b+f414DpE4iv5H/JZgH9iZ6r4VsNZC5
-hupblGqVLmXI63912c/kPZCb6zb4S8KOFHONY4v12OHEsxjZzUt48fY2F/QWB2pY
-oHuWYCUotfdAb1/stExpFPKetRSIbzxavqNSfl/+uKkcGGF5lmL5nc9hScaCKfyR
-eFMogl8hyJN8IoMd9ZnBgZTqroXeoegnhZebOQvQuNL3mfQDDVxi+nOEeqjhcDlo
-jDG8J7j5ncALbqpkv6DF
-=20yu
+iQIcBAEBAgAGBQJUTnXmAAoJEIaOsuA1yqREfDMP/j7ucJq3vB78FGIOTHhaE8NC
+bd9AawfKX6pK1rH7K9gqQGn/KEk4IjUSRxNIjQwwyYmWN3dU9Ouox9qcp3fVVTj7
+R74o7v6eJxZIGncKIrEOqUVnmbDuWKCArzZIk+ssd8FnJnTiDDi4AxWCBofcTZVb
+HSEi8JqwjVkU+Sie8CerWa/YrUsOX0nnVeTzYGAGraXY80iFkl5yRx/g2w8hwuAy
+XAwn+AyPzqCFLl2lVX2FTXHdBQQ/asyKxDrh9KTLP2B3kY6bILluP6XOYaiqDPwk
+Xffk6hwziypeddH7Gao5iS/zlB3SophXfXPmwa0PUDae3CHPMirGQyXSG++V6rCD
+xX8Tfd+eX8v1FehBLAffb/zm8Kj/YpFz8VxMbvQqux7Se1AAcqiWO143jY1eijyz
+oExG7eQG2bWsTHidCROmJ7k4eJRFkreUEOka6CNPD/1cbF8HTQxrdZ3RhyQc7HXz
+pb9pY8EY1c3Xd3x4cjWkPWdaPnFmyu6+5LC7lgrrkl8fpnrMIDaze39E/vL1iDLd
+7PG0AAQ+ki/CNOAjwb2tysC0MFJtWDVPeOq8w8zebXfqQyo9fCGBllFlc+eaNpKP
+e8rAaBKy4/2cjj+y6Ch7RZ33Z6QwbQZsFTMr1UYBcbDZepggZfNs97Y7YvRdo4T/
+roJIHiMccfxOBcTCF8LW
+=YXmf
 -----END PGP SIGNATURE-----
 
---4Epv4kl9IRBfg3rk--
+--7cm2iqirTL37Ot+N--
