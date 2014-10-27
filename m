@@ -1,76 +1,40 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH v2 08/10] ARM: dts: tegra: Use standard power-off
- property in tps65911 for tegra30 beaver
-Date: Mon, 27 Oct 2014 11:42:42 -0500
-Message-ID: <20141027164242.GG14253@saruman>
+From: Johan Hovold <johan@kernel.org>
+Subject: Re: [PATCH v1 01/10] of: Rename "poweroff-source" property to
+ "system-power-controller"
+Date: Mon, 27 Oct 2014 17:41:03 +0100
+Message-ID: <20141027164103.GD2006@localhost>
 References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
- <1414427215-14380-8-git-send-email-romain.perier@gmail.com>
-Reply-To: <balbi@ti.com>
+ <20141027163840.GA14253@saruman>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="7lMq7vMTJT4tNk0a"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:44618 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751593AbaJ0Qnq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Oct 2014 12:43:46 -0400
-Content-Disposition: inline
-In-Reply-To: <1414427215-14380-8-git-send-email-romain.perier@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Romain Perier <romain.perier@gmail.com>
-Cc: heiko@sntech.de, devicetree@vger.kernel.org, broonie@kernel.org, lgirdwood@gmail.com, linux-kernel@vger.kernel.org, grant.likely@linaro.org, robh@kernel.org, mark.rutland@arm.com, johan@kernel.org, linux-pm@vger.kernel.org, linux@roeck-us.net, lee.jones@linaro.org, balbi@ti.com, robh+dt@kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
-
---7lMq7vMTJT4tNk0a
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20141027163840.GA14253@saruman>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Felipe Balbi <balbi@ti.com>
+Cc: Romain Perier <romain.perier@gmail.com>, heiko@sntech.de, devicetree@vger.kernel.org, broonie@kernel.org, lgirdwood@gmail.com, linux-kernel@vger.kernel.org, grant.likely@linaro.org, robh@kernel.org, mark.rutland@arm.com, johan@kernel.org, linux-pm@vger.kernel.org, linux@roeck-us.net, lee.jones@linaro.org, robh+dt@kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 27, 2014 at 04:26:53PM +0000, Romain Perier wrote:
-> Signed-off-by: Romain Perier <romain.perier@gmail.com>
-> ---
->  arch/arm/boot/dts/tegra30-beaver.dts | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/arch/arm/boot/dts/tegra30-beaver.dts b/arch/arm/boot/dts/teg=
-ra30-beaver.dts
-> index cee8f22..4abaf7f 100644
-> --- a/arch/arm/boot/dts/tegra30-beaver.dts
-> +++ b/arch/arm/boot/dts/tegra30-beaver.dts
-> @@ -188,7 +188,7 @@
->  			#interrupt-cells =3D <2>;
->  			interrupt-controller;
-> =20
-> -			ti,system-power-controller;
-> +			system-power-controller;
+On Mon, Oct 27, 2014 at 11:38:40AM -0500, Felipe Balbi wrote:
+> On Mon, Oct 27, 2014 at 04:26:46PM +0000, Romain Perier wrote:
+> > As discussed on the mailing list, it makes more sense to rename this property
+> > to "system-power-controller". Problem being that the word "source" usually tends
+> > to be used for inputs and that is out of control of the OS. The poweroff
+> > capability is an output which simply turns the system-power off. Also, this
+> > property might be used by drivers which power-off the system and power back on
+> > subsequent RTC alarms. This seems to suggest to remove "poweroff" from the
+> > property name and to choose "system-power-controller" as the more generic name.
+> > This patchs adds the required renaming changes and defines an helper function
+> > which is compatible with both properties, the old one prefixed by a vendor name
+> > and the new one without any prefix.
 
-and this... likewise to all others. You should add regressions midway
-through your series and you can't simply drop a DT binding which has
-been shipped on stable kernels.
+> I think you still need to support poweroff-source since it has been
+> released on a stable kernel. Perhaps add a warning message telling users
+> it's deprecated and asking them to switch over to
+> system-power-controller ? Still, simply removing it isn't very nice.
 
---=20
-balbi
+No, Romain sent a patch that replaced "<vendor>,system-power-controller"
+with "poweroff-source". It's now in Mark's tree (for v3.19), and this
+series "reverts" to the old name minus the vendor-prefix.
 
---7lMq7vMTJT4tNk0a
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUTnYCAAoJEIaOsuA1yqREBS8P/jPPfbvcXnY+L6I58XTJ2XuU
-h0BzLU3n7XGD1IG/FepWFjp9cGmvupntCEIBPCwmTVyxskxnlmWmzDTUiYIVi10n
-ei4gPK4vOeKUDBEMV8E9GwYo0sb0m4PoqTC1RLpsJGgULSPZ2Xjc2UIjrUx4xx4Y
-0CUyPmzyAyberR9MaM/Vol9wn6umuWaQJWk0CKfb7Ff/Kobi562v6oUAw7kr+F7d
-793RsS8nx/jhcUmjGjVcKv2fAIUucVZmzXwkAKpafRR4Ihl0pwH98tJ2dXpUqCAJ
-ViriysXqX308nLIcE4KW5oVwN2tILnNA8VblV+7kefrosYyKgV8k7zcNXR7+5f1N
-yANGyIwTUmNO2GA5PeTCN9Ag30abZI+PeMVyqgbuc9BymMl2TmmJHzD3q/eb6JrC
-XAR4MNqhpTt4fLC+VKexZ/nB24BEH+NSRstg1U6fKB0e73gaX5wJENeDxiyX2Vhm
-3PZRiXr1Dpq/E4cmfkxPp/7rOsLR+/wYngeYuJsCg4j+VcbfrJII2JfGR2t5EGyP
-2rE3pChv5S0/jXqz3ts2REN3jf/dqPbi8jYPtATUgQ2zspuDSMsMhl3A3JzPo5nb
-SFr1//cms9GyaH7BInsC9LZTY+7XU6RAQivDknpI43BVFbGtOh2r/qhxDEOYktRM
-yvVxI0tJrWj5OYgOTNyM
-=ic8H
------END PGP SIGNATURE-----
-
---7lMq7vMTJT4tNk0a--
+Johan
