@@ -1,75 +1,132 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4 0/3] gpio-charger: add devicetree support
-Date: Mon, 27 Oct 2014 16:55:15 +0100
-Message-ID: <20141027155514.GA20765@earth.universe>
-References: <1411504936-21026-1-git-send-email-heiko@sntech.de>
- <2175750.C5jxjiuVyT@diego>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v3 00/47] kernel: Add support for power-off handler call chain
+Date: Mon, 27 Oct 2014 08:55:07 -0700
+Message-ID: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2175750.C5jxjiuVyT@diego>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dianders@chromium.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+Various drivers implement architecture and/or device specific means to
+remove power from the system.  For the most part, those drivers set the
+global variable pm_power_off to point to a function within the driver.
 
---azLHFNyN32YCQGCU
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This mechanism has a number of drawbacks.  Typically only one means
+to remove power is supported (at least if pm_power_off is used).
+At least in theory there can be multiple means to remove power, some of
+which may be less desirable.  For example, one mechanism might power off the
+entire system through an I/O port or gpio pin, while another might power off
+a board by disabling its power controller. Other mechanisms may really just
+execute a restart sequence or drop into the ROM monitor, or put the CPU into
+sleep mode.  Using pm_power_off can also be racy if the function pointer is
+set from a driver built as module, as the driver may be in the process of
+being unloaded when pm_power_off is called.  If there are multiple power-off
+handlers in the system, removing a module with such a handler may
+inadvertently reset the pointer to pm_power_off to NULL, leaving the system
+with no means to remove power.
 
-Hi Heiko,
+Introduce a system power-off handler call chain to solve the described
+problems.  This call chain is expected to be executed from the architecture
+specific machine_power_off() function.  Drivers providing system power-off
+functionality are expected to register with this call chain.  By using the
+priority field in the notifier block, callers can control power-off handler
+execution sequence and thus ensure that the power-off handler with the
+optimal capabilities to remove power for a given system is called first.
+A call chain instead of a single call to the highest priority handler is
+used to provide fallback: If multiple power-off handlers are installed,
+all handlers will be called until one actually succeeds to power off the
+system.
 
-On Sun, Oct 26, 2014 at 01:06:28PM +0100, Heiko St=FCbner wrote:
-> Am Dienstag, 23. September 2014, 22:42:13 schrieb Heiko Stuebner:
-> > This series adds devicetree support to the gpio-charger and fixes a sma=
-ll
-> > issue with the return value of gpio_get_value.
-> >=20
-> > [...]
-> >
-> > Heiko Stuebner (3):
-> >   dt-bindings: document gpio-charger bindings
-> >   power: gpio-charger: add device tree support
-> >   power: gpio-charger: do not use gpio value directly
->=20
-> I can see patch3 in your tree (and 3.18-rc). Will you take patches 1 and =
-2 for=20
-> 3.19?
+Patch 01/47 implements the power-off handler API.
 
-Yes.
+Patches 02/47 to 04/47 are cleanup patches to prepare for the move of
+pm_power_off to a common location.
 
-> The generally used 3 week period for devicetree-binding related complaint=
-s=20
-> also should be over by now.
+Patches 05/47 to 07/47 remove references to pm_power_off from devicetree
+bindings descriptions.
 
-Right.
+Patch 08/47 moves the pm_power_off variable from architecture code to
+kernel/reboot.c. 
 
--- Sebastian
+Patches 09/47 to 34/47 convert various drivers to register with the kernel
+power-off handler instead of setting pm_power_off directly.
 
---azLHFNyN32YCQGCU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Patches 35/47 to 46/47 do the same for architecture code.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Patch 47/47 finally removes pm_power_off.
 
-iQIcBAEBCgAGBQJUTmriAAoJENju1/PIO/qalcsP/A7hQoH9M68yinExk6meFThE
-cYWypG2aFlwYGK0K0gwOWu2PJZLQ6W8oMjxDcAp0fj3CzpR9ZRzipbEkcUPEH/1m
-/Ap4o3MapJA/CiIicxoF1BKbmPuGCaoNWctbbfZwz7wBYpW3XsHil+9Z3LpU97oh
-iOyH1FDYy1AxS/8k1kjXskXVznjiSFLBsyPTYnTTjywMIApUCb48W5bz/QH/JF/W
-eyhaA1QQQLQrocOnFuN7xfd0QBJcVPNT0ehzgOnlh8wv+Ulr/ISMNcT0HIlm23mD
-uHVuHHomkIzt5exHDfCaKPOd2X4mJdKOxomohRLP8dSPltOjaKlwf3i31EHZ0xoz
-c+s2Jm475179UWMLAJhVNTbZjZtpjgy4FSN5glxly/9ZHWqu53ED+bd8W6lMQlxl
-flowrQT74CDrW8Kc+Uv7Ptb7Pey2fb6g+oRiQ2XBz4OT/aiYM8wSQ9jTj/UBDPRF
-+K9MXKV2BCxHbMen1w5650l+y9n/23zH4tq9OV6o4MQNRjflYBsxfnL/xX9UNdt5
-/rvdvQZFaK2R8//O41UpX9++/CuwTbKXp0CTOHqGOGiHjNiOBpeqXbjnypvZZuG2
-vDRaEDB1PKvqOAHS4rQXv3eWPb2yN/esa/JS+FfRDPp8svs2IPcKArzTHyCxnqDi
-5DTVI9jZzLk8vlqVDxEt
-=uBSt
------END PGP SIGNATURE-----
+For the most part, the individual patches include explanations why specific
+priorities were chosen, at least if the selected priority is not the default
+priority. Subsystem and architecture maintainers are encouraged to have a look
+at the selected priorities and suggest improvements.
 
---azLHFNyN32YCQGCU--
+I ran the final code through my normal build and qemu tests. Results are
+available at http://server.roeck-us.net:8010/builders in the 'poweroff-handler'
+column. I also built all available configurations for arm, mips, powerpc,
+m68k, and sh architectures.
+
+The series is available in branch poweroff-handler of my repository at
+git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git.
+It is based on 3.18-rc2.
+
+A note on Cc: In the initial submission I had way too many Cc:, causing the
+patchset to be treated as spam by many mailers and mailing list handlers,
+which of course defeated the purpose. This time around I am cutting down
+the distribution list down significantly. My apologies to anyone I may have
+failed to copy this time around.
+
+Important changes since v2:
+- Rebased series to v3.18-rc2.
+- Do not hold any locks while executing the power-off call chain.
+  This ensures that power-off handlers are executed in the state
+  selected by the machine_power_off function for a given architecture,
+  ie without changing the current semantics of power-off callbacks and
+  machine_power_off functions.
+  Power-off handler registration and de-registration is handled in atomic
+  context with interrupts disabled to ensure that those functions are not
+  interrupted by code which powers off the system.
+- Use [xxx_]power_off[_xxx] instead of [xxx_]poweroff[_xxx] for newly
+  introduced function and variable names.
+- Use power-off instead of poweroff in descriptive text and comments.
+- Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+- Use ACPI: instead of acpi: for messages in acpi code.
+
+Important changes since v1:
+- Rebased series to v3.18-rc1.
+- Use raw notifier with spinlock protection instead of atomic notifiers,
+  since some power-off handlers need to have interrupts enabled.
+- Renamed API functions from _poweroff to _power_off.
+- Added various Acks.
+- Build tested all configurations for arm, powerpc, and mips architectures.
+- Fixed two compile errors in mips patch.
+- Replaced dev_err and pr_err with dev_warn and pr_warn if an error is not
+  fatal.
+- Provide managed resources API and use where appropriate.
+- Provide and use definitions for standard priorities.
+- Added patches to convert newly introduced power-off handlers.
+- Various minor changes.
+
+Important changes since RFC:
+- Move API to new file kernel/power/power_off_handler.c.
+- Move pm_power_off pointer to kernel/power/power_off_handler.c. Call
+  pm_power_off from do_kernel_power_off, and only call do_kernel_power_off
+  from architecture code instead of calling both pm_power_off and
+  do_kernel_power_off.
+- Provide additional API function register_power_off_handler_simple
+  to simplify conversion of architecture code.
+- Provide additional API function have_kernel_power_off to check if
+  a power-off handler was installed.
+- Convert all drivers and architecture code to use the new API.
+- Remove pm_power_off as last patch of the series.
+
+Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+Cc: Alexander Graf <agraf@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Heiko Stuebner <heiko@sntech.de>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Romain Perier <romain.perier@gmail.com>
