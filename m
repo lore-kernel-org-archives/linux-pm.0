@@ -1,67 +1,51 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 2/2] power: bq2415x_charger: Fix memory leak on DTS
- parsing error
-Date: Mon, 27 Oct 2014 18:44:07 +0100
-Message-ID: <20141027174406.GB10897@earth.universe>
-References: <1413383110-20310-1-git-send-email-k.kozlowski@samsung.com>
- <1413383110-20310-2-git-send-email-k.kozlowski@samsung.com>
+From: Johan Hovold <johan@kernel.org>
+Subject: Re: [PATCH v3 00/47] kernel: Add support for power-off handler call
+ chain
+Date: Mon, 27 Oct 2014 18:43:20 +0100
+Message-ID: <20141027174320.GI2006@localhost>
+References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
+ <20141027160324.GD10814@saruman>
+ <20141027171617.GA19379@roeck-us.net>
+ <20141027173310.GB16005@saruman>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="KFztAG8eRSV9hGtP"
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1413383110-20310-2-git-send-email-k.kozlowski@samsung.com>
-Sender: stable-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-
-
---KFztAG8eRSV9hGtP
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f173.google.com ([209.85.217.173]:47584 "EHLO
+	mail-lb0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752213AbaJ0Rqb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 13:46:31 -0400
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20141027173310.GB16005@saruman>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Felipe Balbi <balbi@ti.com>
+Cc: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>, Johan Hovold <johan@kernel.org>
 
-Hi,
+On Mon, Oct 27, 2014 at 12:33:10PM -0500, Felipe Balbi wrote:
+> On Mon, Oct 27, 2014 at 10:16:17AM -0700, Guenter Roeck wrote:
+> > On Mon, Oct 27, 2014 at 11:03:24AM -0500, Felipe Balbi wrote:
+> > > Adding Johan, who's working on RTC power off for AM335x devices
+> > > 
+> > Hi Felipe,
+> > 
+> > is that the rtc-omap driver ?
+> 
+> yes it is.
+> 
+> > I am tracking linux-next for related changes. As new power-off handlers are
+> > introduced, I prepare patches for those as well. I currently have patches for
+> > the following two drivers in the queue:
+> > 	drivers/regulator/act8865-regulator.c
+> > 	drivers/rtc/rtc-omap.c
+> > 
+> > I plan to send review requests for those patches in a week or so (I think
+> > there is still some change pending to the power-off function in the rtc-omap
+> > driver, and I want to wait for it).
+> 
+> yeah, Johan's working on that.
 
-On Wed, Oct 15, 2014 at 04:25:10PM +0200, Krzysztof Kozlowski wrote:
-> Memory allocated for 'name' was leaking if required binding properties
-> were not present.
->=20
-> The memory for 'name' was allocated early at probe with kasprintf(). It
-> was freed in error paths executed before and after parsing DTS but not
-> in that error path.
->=20
-> Fix the error path for parsing device tree properties.
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Fixes: faffd234cf85 ("bq2415x_charger: Add DT support")
-> Cc: <stable@vger.kernel.org>
+It's finished. I just sent the final version to akpm this morning
+(adding a single mdelay), so you should be fine basing any conversion on
+either v2 (in mmotm) or v3.
 
-Applied to next.
-
--- Sebastian
-
---KFztAG8eRSV9hGtP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUToRmAAoJENju1/PIO/qaa10P/RHzYulySf1d3tH5nWjA8fIq
-JgaA5copIntFb9cc1gyW9fRoavJbHrbEgH7nb1IUuO3yhoTh5gvIWj3Va88Zz3Fe
-xn7YaRlOPMOvjuSLpBv1eXSHrH10LN1axLD+o0vm4yhYnTs7vJLY3t4MEyUPRjJn
-kgoBl4H2oiFd50G1PU5OOqwOBrBeQiB0u8q3IPmwFwbUK6vRCRe+0Zk+OQVxau3Y
-tWyj26ECeO102pM6xlwPtSx35Gk+0nQOAypabTNAFNQLfZJq8IrgkrYlTy7c8LE1
-nGYuL6zU5GMbyJC8DAMvF7u7olorgsfoPpfK/YnD233VWYVfw1KsVOM2QpsxdEgs
-bo/XaeUDR+yxNpeyR5DzFjotcoy+LhAQnyOPSVwdUdfnnS9fw7Ezb39FKAn7k51A
-DtbiYuff1TcC86pkOlBRftGYkbJDR8FMbc9HidQ6sTgs5OFbs7mVADzcZsEmdR4L
-UwBlmFxDfxkR5HP0QULetRMKKD4svpF3wsqKqn1iHCsW731L0Iu3N273J6eUKRl1
-9Y8W0OfnLu6G6zNpS4w3+5TcVprSOgeZ+v0Wl4IDLYGP3npzoi4OIbyUkxdP5o4I
-1fnkbxKTdG5T5T/oDn6qN4qeYy+ESGmxyIBquWHDqQyAy91SUvl62MBWE/5EFIxD
-LNpwNq7WS5F+hJeXzv/u
-=oBPr
------END PGP SIGNATURE-----
-
---KFztAG8eRSV9hGtP--
+Johan
