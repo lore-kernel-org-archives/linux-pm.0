@@ -1,104 +1,283 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch v7 17/18] x86, irq: Introduce helper to check whether an IOAPIC has been registered
-Date: Mon, 27 Oct 2014 13:21:47 +0800
-Message-ID: <1414387308-27148-18-git-send-email-jiang.liu@linux.intel.com>
-References: <1414387308-27148-1-git-send-email-jiang.liu@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1414387308-27148-1-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiang Liu <jiang.liu@linux.intel.com>, Grant Likely <grant.likely@linaro.org>, Prarit Bhargava <prarit@redhat.com>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
+From: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Subject: Re: [RFC/PATCH] PM / Sleep: Timer quiesce in freeze state
+Date: Mon, 27 Oct 2014 14:27:27 +0800
+Message-ID: <544DE5CF.9040501@linux.intel.com>
+References: <5446787E.60202@linux.intel.com> <20141024153656.GM12706@worktop.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:60787 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751254AbaJ0G1b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Oct 2014 02:27:31 -0400
+In-Reply-To: <20141024153656.GM12706@worktop.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
 
-Introduce acpi_ioapic_registered() to check whether an IOAPIC has already
-been registered, it will be used when enabling IOAPIC hotplug.
+On 2014/10/24 23:36, Peter Zijlstra wrote:
+> On Tue, Oct 21, 2014 at 11:15:10PM +0800, Li, Aubrey wrote:
+>> +++ b/arch/x86/kernel/apic/apic.c
+>> @@ -917,6 +917,14 @@ static void local_apic_timer_interrupt(void)
+>>  	 */
+>>  	inc_irq_stat(apic_timer_irqs);
+>>  
+>> +	/*
+>> +	 * if timekeeping is suspended, the clock event device will be
+>> +	 * suspended as well, so we are not supposed to invoke the event
+>> +	 * handler of clock event device.
+>> +	 */
+>> +	if (unlikely(timekeeping_suspended))
+>> +		return;
+>> +
+>>  	evt->event_handler(evt);
+>>  }
+>>  
+> 
+> How would this even happen? Didn't we just suspend the lapic?
 
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
----
- arch/x86/include/asm/io_apic.h |    1 +
- arch/x86/kernel/acpi/boot.c    |   22 ++++++++++++++++++++++
- arch/x86/kernel/apic/io_apic.c |   11 +++++++++++
- include/linux/acpi.h           |    1 +
- 4 files changed, 35 insertions(+)
+There are two race conditions in my mind.
 
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 7c04b8ec22a4..ca742d5249db 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -191,6 +191,7 @@ extern void mp_unmap_irq(int irq);
- extern int mp_register_ioapic(int id, u32 address, u32 gsi_base,
- 			      struct ioapic_domain_cfg *cfg);
- extern int mp_unregister_ioapic(u32 gsi_base);
-+extern int mp_ioapic_registered(u32 gsi_base);
- extern int mp_irqdomain_map(struct irq_domain *domain, unsigned int virq,
- 			    irq_hw_number_t hwirq);
- extern void mp_irqdomain_unmap(struct irq_domain *domain, unsigned int virq);
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index bc61a5c0e7b6..f27b33194e06 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -825,6 +825,28 @@ int acpi_unregister_ioapic(acpi_handle handle, u32 gsi_base)
- }
- EXPORT_SYMBOL(acpi_unregister_ioapic);
- 
-+/**
-+ * acpi_ioapic_registered - Check whether IOAPIC assoicatied with @gsi_base
-+ *			    has been registered
-+ * @handle:	ACPI handle of the IOAPIC deivce
-+ * @gsi_base:	GSI base associated with the IOAPIC
-+ *
-+ * Assume caller holds some type of lock to serialize acpi_ioapic_registered()
-+ * with acpi_register_ioapic()/acpi_unregister_ioapic().
-+ */
-+int acpi_ioapic_registered(acpi_handle handle, u32 gsi_base)
-+{
-+	int ret = 0;
-+
-+#ifdef CONFIG_ACPI_HOTPLUG_IOAPIC
-+	down_read(&acpi_ioapic_rwsem);
-+	ret  = mp_ioapic_registered(gsi_base);
-+	up_read(&acpi_ioapic_rwsem);
-+#endif
-+
-+	return ret;
-+}
-+
- static int __init acpi_parse_sbf(struct acpi_table_header *table)
- {
- 	struct acpi_table_boot *sb;
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 9e5432ee2070..df3858de3031 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -4018,6 +4018,17 @@ int mp_unregister_ioapic(u32 gsi_base)
- 	return 0;
- }
- 
-+int mp_ioapic_registered(u32 gsi_base)
-+{
-+	int ioapic;
-+
-+	for_each_ioapic(ioapic)
-+		if (ioapics[ioapic].gsi_config.gsi_base == gsi_base)
-+			return 1;
-+
-+	return 0;
-+}
-+
- int mp_irqdomain_map(struct irq_domain *domain, unsigned int virq,
- 		     irq_hw_number_t hwirq)
- {
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 77cecd0350e7..be6be0f91337 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -152,6 +152,7 @@ int acpi_get_ioapic_id(acpi_handle handle, u32 gsi_base, u64 *phys_addr);
- 
- int acpi_register_ioapic(acpi_handle handle, u64 phys_addr, u32 gsi_base);
- int acpi_unregister_ioapic(acpi_handle handle, u32 gsi_base);
-+int acpi_ioapic_registered(acpi_handle handle, u32 gsi_base);
- void acpi_irq_stats_init(void);
- extern u32 acpi_irq_handled;
- extern u32 acpi_irq_not_handled;
--- 
-1.7.10.4
+The first one occurs after the interrupt is disabled and before we
+suspend lapic. In this time slot, if apic timer interrupt occurs, the
+interrupt is pending there because the interrupt is disabled. Then we
+suspend timekeeping, and then we enter idle and exit idle with interrupt
+re-enabled, the timer interrupt is handled with timekeeping is
+suspended. So we at least will hit WARN_ON(timekeeping_suspended) in
+ktime_get().
+
+The other occurs after timekeeping_suspended = 1 and before we suspend
+lapic. In this time slot, if apic timer interrupt occurs, we will hit
+the WARN in ktime_get() as above.
+
+> 
+>> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+>> index 4ca9a33..e58d880 100644
+>> --- a/kernel/power/suspend.c
+>> +++ b/kernel/power/suspend.c
+>> @@ -28,16 +28,20 @@
+>>  #include <linux/ftrace.h>
+>>  #include <trace/events/power.h>
+>>  #include <linux/compiler.h>
+>> +#include <linux/stop_machine.h>
+>> +#include <linux/clockchips.h>
+>> +#include <linux/hrtimer.h>
+>>  
+>>  #include "power.h"
+>> +#include "../time/tick-internal.h"
+>> +#include "../time/timekeeping_internal.h"
+>>  
+>>  const char *pm_labels[] = { "mem", "standby", "freeze", NULL };
+>>  const char *pm_states[PM_SUSPEND_MAX];
+>>  
+>>  static const struct platform_suspend_ops *suspend_ops;
+>>  static const struct platform_freeze_ops *freeze_ops;
+>> -static DECLARE_WAIT_QUEUE_HEAD(suspend_freeze_wait_head);
+>> -static bool suspend_freeze_wake;
+>> +static int suspend_freeze_wake;
+>>  
+>>  void freeze_set_ops(const struct platform_freeze_ops *ops)
+>>  {
+>> @@ -48,22 +52,179 @@ void freeze_set_ops(const struct platform_freeze_ops *ops)
+>>  
+>>  static void freeze_begin(void)
+>>  {
+>> -	suspend_freeze_wake = false;
+>> +	suspend_freeze_wake = -1;
+>>  }
+>>  
+>> -static void freeze_enter(void)
+>> +enum freezer_state {
+>> +	FREEZER_NONE,
+>> +	FREEZER_PICK_TK,
+>> +	FREEZER_SUSPEND_CLKEVT,
+>> +	FREEZER_SUSPEND_TK,
+>> +	FREEZER_IDLE,
+>> +	FREEZER_RESUME_TK,
+>> +	FREEZER_RESUME_CLKEVT,
+>> +	FREEZER_EXIT,
+>> +};
+>> +
+>> +struct freezer_data {
+>> +	int			thread_num;
+>> +	atomic_t		thread_ack;
+>> +	enum freezer_state	state;
+>> +};
+>> +
+>> +static void set_state(struct freezer_data *fd, enum freezer_state state)
+>> +{
+>> +	/* set ack counter */
+>> +	atomic_set(&fd->thread_ack, fd->thread_num);
+>> +	/* guarantee the write ordering between ack counter and state */
+>> +	smp_wmb();
+>> +	fd->state = state;
+>> +}
+>> +
+>> +static void ack_state(struct freezer_data *fd)
+>> +{
+>> +	if (atomic_dec_and_test(&fd->thread_ack))
+>> +		set_state(fd, fd->state + 1);
+>> +}
+>> +
+>> +static void freezer_pick_tk(int cpu)
+>> +{
+>> +	if (tick_do_timer_cpu == TICK_DO_TIMER_NONE) {
+>> +		static DEFINE_SPINLOCK(lock);
+>> +
+>> +		spin_lock(&lock);
+>> +		if (tick_do_timer_cpu == TICK_DO_TIMER_NONE)
+>> +			tick_do_timer_cpu = cpu;
+>> +		spin_unlock(&lock);
+>> +	}
+>> +}
+>> +
+>> +static void freezer_suspend_clkevt(int cpu)
+>> +{
+>> +	if (tick_do_timer_cpu == cpu)
+>> +		return;
+>> +
+>> +	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
+>> +}
+>> +
+>> +static void freezer_suspend_tk(int cpu)
+>>  {
+>> +	if (tick_do_timer_cpu != cpu)
+>> +		return;
+>> +
+> 
+> I had a note here that this might be broken for clocksource drivers that
+> have suspend/resume methods. You seem to have 'lost' that note, is that
+> because you found it isn't a problem?
+> 
+I don't see it's a problem as long as we do not refer the clock source
+before it resumes. But I think my testing didn't cover that case that
+clock source drivers have suspend/resume methods. Can you please give
+more details what do you worry about?
+
+>> +	timekeeping_suspend();
+>> +
+>>  	cpuidle_use_deepest_state(true);
+>>  	cpuidle_resume();
+>> -	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
+>> +}
+>> +
+>> +static void freezer_idle(int cpu)
+>> +{
+>> +	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+>> +	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+>> +
+>> +	stop_critical_timings();
+>> +
+>> +	while (suspend_freeze_wake == -1) {
+>> +		int next_state;
+>> +
+>> +		/*
+>> +		 * interrupt must be disabled before cpu enters idle
+>> +		 */
+>> +		local_irq_disable();
+>> +
+>> +		next_state = cpuidle_select(drv, dev);
+>> +		if (next_state < 0) {
+>> +			arch_cpu_idle();
+>> +			continue;
+>> +		}
+>> +		/*
+>> +		 * cpuidle_enter will return with interrupt enabled
+>> +		 */
+>> +		cpuidle_enter(drv, dev, next_state);
+>> +	}
+>> +
+>> +	if (suspend_freeze_wake == cpu)
+>> +		kick_all_cpus_sync();
+>> +
+> 
+> So I disabled IRQs here
+> 
+>> +	start_critical_timings();
+>> +}
+>> +
+>> +static void freezer_resume_tk(int cpu)
+>> +{
+>> +	if (tick_do_timer_cpu != cpu)
+>> +		return;
+>> +
+>>  	cpuidle_pause();
+>>  	cpuidle_use_deepest_state(false);
+>> +
+> 
+> Such that they would still be disabled here
+> 
+>> +	local_irq_disable();
+>> +	timekeeping_resume();
+>> +	local_irq_enable();
+>> +}
+>> +
+>> +static void freezer_resume_clkevt(int cpu)
+>> +{
+>> +	if (tick_do_timer_cpu == cpu)
+>> +		return;
+>> +
+>> +	touch_softlockup_watchdog();
+>> +	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
+> 
+> And here.
+> 
+>> +	local_irq_disable();
+>> +	hrtimers_resume();
+>> +	local_irq_enable();
+>> +}
+>> +
+>> +typedef void (*freezer_fn)(int);
+>> +
+>> +static freezer_fn freezer_func[FREEZER_EXIT] = {
+>> +	NULL,
+>> +	freezer_pick_tk,
+>> +	freezer_suspend_clkevt,
+>> +	freezer_suspend_tk,
+>> +	freezer_idle,
+>> +	freezer_resume_tk,
+>> +	freezer_resume_clkevt,
+>> +};
+> 
+> Because this is a stop_machine callback, which are nominally run with
+> IRQs disabled.
+
+Let me double confirm and address this concern in a later mail.
+> 
+>> +static int freezer_stopper_fn(void *arg)
+>> +{
+>> +	struct freezer_data *fd = arg;
+>> +	enum freezer_state state = FREEZER_NONE;
+>> +	int cpu = smp_processor_id();
+>> +
+>> +	do {
+>> +		cpu_relax();
+>> +		if (fd->state != state) {
+>> +			state = fd->state;
+>> +			if (freezer_func[state])
+>> +				(*freezer_func[state])(cpu);
+>> +			ack_state(fd);
+>> +		}
+>> +	} while (fd->state != FREEZER_EXIT);
+>> +	return 0;
+>> +}
+> 
+> Now I suppose the problem is with cpu_pause() which needs IPIs to
+> complete? Do we really need cpuidle_pause() there?
+> cpuidle_uninstall_handlers() seems like a daft thing to call just about
+> there.
+
+Please check the log of 8651f97bd951d0bb1c10fa24e3fa3455193f3548.
+Rafael should know more this question than me.
+
+Thanks,
+-Aubrey
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
