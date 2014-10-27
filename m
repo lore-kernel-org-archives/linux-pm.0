@@ -1,8 +1,11 @@
 From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch Part1 v3 01/20] ACPI, irq, x86: Get rid of special handling of GSI for ACPI SCI
-Date: Mon, 27 Oct 2014 16:11:52 +0800
-Message-ID: <1414397531-28254-2-git-send-email-jiang.liu@linux.intel.com>
+Subject: [Patch Part1 v3 02/20] x86, irq, ACPI: Fix building warning of unused code
+Date: Mon, 27 Oct 2014 16:11:53 +0800
+Message-ID: <1414397531-28254-3-git-send-email-jiang.liu@linux.intel.com>
 References: <1414397531-28254-1-git-send-email-jiang.liu@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1414397531-28254-1-git-send-email-jiang.liu@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -10,49 +13,34 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@lin
 Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The IOAPIC has logic to track IOAPIC pin status, so there's no need for
-special treatment for GSI used by ACPI SCI in function mp_register_gsi()
-and mp_unregister_gsi().
+=46ix building warning when CONFIG_X86_LOCAL_APIC is disabled.
+arch/x86/kernel/acpi/boot.c:699:20: warning: =E2=80=98acpi_set_irq_mode=
+l_ioapic=E2=80=99 defined but not used [-Wunused-function]
 
 Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 ---
- arch/x86/kernel/acpi/boot.c |   10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ arch/x86/kernel/acpi/boot.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index f27b33194e06..47334a918d16 100644
+index 47334a918d16..26a0c83d2487 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
-@@ -408,10 +408,6 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
- 	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
- 		return gsi;
- 
--	/* Don't set up the ACPI SCI because it's already set up */
--	if (acpi_gbl_FADT.sci_interrupt == gsi)
--		return mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC);
--
- 	trigger = trigger == ACPI_EDGE_SENSITIVE ? 0 : 1;
- 	polarity = polarity == ACPI_ACTIVE_HIGH ? 0 : 1;
- 	node = dev ? dev_to_node(dev) : NUMA_NO_NODE;
-@@ -424,7 +420,8 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
- 	if (irq < 0)
- 		return irq;
- 
--	if (enable_update_mptable)
-+	/* Don't set up the ACPI SCI because it's already set up */
-+	if (enable_update_mptable && acpi_gbl_FADT.sci_interrupt != gsi)
- 		mp_config_acpi_gsi(dev, gsi, trigger, polarity);
- 
- 	return irq;
-@@ -437,9 +434,6 @@ static void mp_unregister_gsi(u32 gsi)
- 	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
- 		return;
- 
--	if (acpi_gbl_FADT.sci_interrupt == gsi)
--		return;
--
- 	irq = mp_map_gsi_to_irq(gsi, 0);
- 	if (irq > 0)
- 		mp_unmap_irq(irq);
--- 
+@@ -704,6 +704,7 @@ void acpi_unregister_gsi(u32 gsi)
+ }
+ EXPORT_SYMBOL_GPL(acpi_unregister_gsi);
+=20
++#ifdef CONFIG_X86_LOCAL_APIC
+ static void __init acpi_set_irq_model_ioapic(void)
+ {
+ 	acpi_irq_model =3D ACPI_IRQ_MODEL_IOAPIC;
+@@ -711,6 +712,7 @@ static void __init acpi_set_irq_model_ioapic(void)
+ 	__acpi_unregister_gsi =3D acpi_unregister_gsi_ioapic;
+ 	acpi_ioapic =3D 1;
+ }
++#endif
+=20
+ /*
+  *  ACPI based hotplug support for CPU
+--=20
 1.7.10.4
