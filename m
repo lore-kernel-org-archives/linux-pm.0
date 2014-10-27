@@ -1,46 +1,32 @@
 From: Romain Perier <romain.perier@gmail.com>
-Subject: [PATCH v1 05/10] dt-bindings: act8865: Update documentation about
- property system-power-controller
-Date: Mon, 27 Oct 2014 16:26:50 +0000
-Message-ID: <1414427215-14380-5-git-send-email-romain.perier@gmail.com>
+Subject: [PATCH v2 07/10] ARM: dts: tegra: Use standard power-off property in tps65911 for tegra30 apalis
+Date: Mon, 27 Oct 2014 16:26:52 +0000
+Message-ID: <1414427215-14380-7-git-send-email-romain.perier@gmail.com>
 References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: heiko@sntech.de
-Cc: mark.rutland@arm.com, linux-kernel@vger.kernel.org, thierry.reding@gmail.com, lee.jones@linaro.org, robh@kernel.org, linux@arm.linux.org.uk, swarren@wwwdotorg.org, grant.likely@linaro.org, linux@roeck-us.net, devicetree@vger.kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, johan@kernel.org, robh+dt@kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, lgirdwood@gmail.com, balbi@ti.com, broonie@kernel.org, galak@codeaurora.org, gnurou@gmail.com
+Cc: devicetree@vger.kernel.org, broonie@kernel.org, lgirdwood@gmail.com, linux-kernel@vger.kernel.org, grant.likely@linaro.org, robh@kernel.org, mark.rutland@arm.com, johan@kernel.org, linux-pm@vger.kernel.org, linux@roeck-us.net, lee.jones@linaro.org, balbi@ti.com, robh+dt@kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: Romain Perier <romain.perier@gmail.com>
 ---
- Documentation/devicetree/bindings/regulator/act8865-regulator.txt | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/tegra30-apalis.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/regulator/act8865-regulator.txt b/Documentation/devicetree/bindings/regulator/act8865-regulator.txt
-index 01a5b07..45369d8 100644
---- a/Documentation/devicetree/bindings/regulator/act8865-regulator.txt
-+++ b/Documentation/devicetree/bindings/regulator/act8865-regulator.txt
-@@ -6,8 +6,8 @@ Required properties:
- - reg: I2C slave address
+diff --git a/arch/arm/boot/dts/tegra30-apalis.dtsi b/arch/arm/boot/dts/tegra30-apalis.dtsi
+index a5446cb..ced4436 100644
+--- a/arch/arm/boot/dts/tegra30-apalis.dtsi
++++ b/arch/arm/boot/dts/tegra30-apalis.dtsi
+@@ -412,7 +412,7 @@
+ 			#interrupt-cells = <2>;
+ 			interrupt-controller;
  
- Optional properties:
--- poweroff-source: Telling whether or not this pmic is controlling
--  the system power. See Documentation/devicetree/bindings/power/poweroff.txt .
-+- system-power-controller: Telling whether or not this pmic is controlling the
-+  system power. See Documentation/devicetree/bindings/power/power-controller.txt.
+-			ti,system-power-controller;
++			system-power-controller;
  
- Any standard regulator properties can be used to configure the single regulator.
- 
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
 -- 
 1.9.1
