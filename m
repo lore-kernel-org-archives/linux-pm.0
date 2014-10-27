@@ -1,33 +1,22 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v3 33/47] staging: nvec: Register with kernel power-off handler
-Date: Mon, 27 Oct 2014 08:55:40 -0700
-Message-ID: <1414425354-10359-34-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v3 30/47] x86: iris: Register with kernel power-off handler
+Date: Mon, 27 Oct 2014 08:55:37 -0700
+Message-ID: <1414425354-10359-31-git-send-email-linux@roeck-us.net>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Julian Andres Klode <jak@jak-linux.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Guenter Roeck <linux@roeck-us.net>, linux-tegra@vger.kernel.org, ac100@lists.launchpad.net
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with default priority since we don't know any better.
+directly. Register with high priority to reflect that the original code
+overwrites existing power-off handlers.
 
-Cc: Julian Andres Klode <jak@jak-linux.org>
-Cc: Marc Dietrich <marvin24@gmx.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v3:
@@ -36,95 +25,76 @@ v3:
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
 - Use define to specify poweroff handler priority
-- Use dev_warn instead of dev_err
+- Use devm_register_power_off_handler
 
- drivers/staging/nvec/nvec.c | 24 +++++++++++++++---------
- drivers/staging/nvec/nvec.h |  2 ++
- 2 files changed, 17 insertions(+), 9 deletions(-)
+ arch/x86/platform/iris/iris.c | 24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/nvec/nvec.c b/drivers/staging/nvec/nvec.c
-index a93208a..3c94e29 100644
---- a/drivers/staging/nvec/nvec.c
-+++ b/drivers/staging/nvec/nvec.c
-@@ -33,6 +33,7 @@
- #include <linux/mfd/core.h>
- #include <linux/mutex.h>
- #include <linux/notifier.h>
-+#include <linux/pm.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/workqueue.h>
-@@ -80,8 +81,6 @@ enum nvec_sleep_subcmds {
- #define LID_SWITCH BIT(1)
- #define PWR_BUTTON BIT(15)
+diff --git a/arch/x86/platform/iris/iris.c b/arch/x86/platform/iris/iris.c
+index 4d171e8..aac23db 100644
+--- a/arch/x86/platform/iris/iris.c
++++ b/arch/x86/platform/iris/iris.c
+@@ -23,6 +23,7 @@
  
--static struct nvec_chip *nvec_power_handle;
+ #include <linux/moduleparam.h>
+ #include <linux/module.h>
++#include <linux/notifier.h>
+ #include <linux/platform_device.h>
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+@@ -47,15 +48,21 @@ static bool force;
+ module_param(force, bool, 0);
+ MODULE_PARM_DESC(force, "Set to one to force poweroff handler installation.");
+ 
+-static void (*old_pm_power_off)(void);
 -
- static const struct mfd_cell nvec_devices[] = {
- 	{
- 		.name = "nvec-kbd",
-@@ -759,12 +758,17 @@ static void nvec_disable_i2c_slave(struct nvec_chip *nvec)
- }
- #endif
- 
--static void nvec_power_off(void)
-+static int nvec_power_off(struct notifier_block *this, unsigned long unused1,
+-static void iris_power_off(void)
++static int iris_power_off(struct notifier_block *this, unsigned long unused1,
 +			  void *unused2)
  {
-+	struct nvec_chip *nvec = container_of(this, struct nvec_chip,
-+					      power_off_nb);
- 	char ap_pwr_down[] = { NVEC_SLEEP, AP_PWR_DOWN };
- 
--	nvec_toggle_global_events(nvec_power_handle, false);
--	nvec_write_async(nvec_power_handle, ap_pwr_down, 2);
-+	nvec_toggle_global_events(nvec, false);
-+	nvec_write_async(nvec, ap_pwr_down, 2);
+ 	outb(IRIS_GIO_PULSE, IRIS_GIO_OUTPUT);
+ 	msleep(850);
+ 	outb(IRIS_GIO_REST, IRIS_GIO_OUTPUT);
 +
 +	return NOTIFY_DONE;
  }
  
++static struct notifier_block iris_power_off_nb = {
++	.notifier_call = iris_power_off,
++	.priority = POWER_OFF_PRIORITY_HIGH,
++};
++
  /*
-@@ -878,8 +882,11 @@ static int tegra_nvec_probe(struct platform_device *pdev)
- 	nvec->nvec_status_notifier.notifier_call = nvec_status_notifier;
- 	nvec_register_notifier(nvec, &nvec->nvec_status_notifier, 0);
- 
--	nvec_power_handle = nvec;
--	pm_power_off = nvec_power_off;
-+	nvec->power_off_nb.notifier_call = nvec_power_off;
-+	nvec->power_off_nb.priority = POWER_OFF_PRIORITY_DEFAULT;
-+	ret = register_power_off_handler(&nvec->power_off_nb);
-+	if (ret)
-+		dev_warn(nvec->dev, "Failed to register power-off handler\n");
- 
- 	/* Get Firmware Version */
- 	msg = nvec_write_sync(nvec, get_firmware_version, 2);
-@@ -914,13 +921,12 @@ static int tegra_nvec_remove(struct platform_device *pdev)
+  * Before installing the power_off handler, try to make sure the OS is
+  * running on an Iris.  Since Iris does not support DMI, this is done
+@@ -65,20 +72,25 @@ static void iris_power_off(void)
+ static int iris_probe(struct platform_device *pdev)
  {
- 	struct nvec_chip *nvec = platform_get_drvdata(pdev);
- 
-+	unregister_power_off_handler(&nvec->power_off_nb);
- 	nvec_toggle_global_events(nvec, false);
- 	mfd_remove_devices(nvec->dev);
- 	nvec_unregister_notifier(nvec, &nvec->nvec_status_notifier);
- 	cancel_work_sync(&nvec->rx_work);
- 	cancel_work_sync(&nvec->tx_work);
--	/* FIXME: needs check wether nvec is responsible for power off */
--	pm_power_off = NULL;
- 
+ 	unsigned char status = inb(IRIS_GIO_INPUT);
++	int ret;
++
+ 	if (status == IRIS_GIO_NODEV) {
+ 		printk(KERN_ERR "This machine does not seem to be an Iris. "
+ 			"Power off handler not installed.\n");
+ 		return -ENODEV;
+ 	}
+-	old_pm_power_off = pm_power_off;
+-	pm_power_off = &iris_power_off;
++
++	ret = devm_register_power_off_handler(&pdev->dev, &iris_power_off_nb);
++	if (ret) {
++		dev_err(&pdev->dev, "Failed to register power-off handler\n");
++		return ret;
++	}
+ 	printk(KERN_INFO "Iris power_off handler installed.\n");
  	return 0;
  }
-diff --git a/drivers/staging/nvec/nvec.h b/drivers/staging/nvec/nvec.h
-index e271375..59e7375 100644
---- a/drivers/staging/nvec/nvec.h
-+++ b/drivers/staging/nvec/nvec.h
-@@ -163,6 +163,8 @@ struct nvec_chip {
- 	struct nvec_msg *last_sync_msg;
  
- 	int state;
-+
-+	struct notifier_block power_off_nb;
- };
- 
- extern int nvec_write_async(struct nvec_chip *nvec, const unsigned char *data,
+ static int iris_remove(struct platform_device *pdev)
+ {
+-	pm_power_off = old_pm_power_off;
+ 	printk(KERN_INFO "Iris power_off handler uninstalled.\n");
+ 	return 0;
+ }
 -- 
 1.9.1
