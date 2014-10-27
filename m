@@ -1,21 +1,72 @@
-From: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v1 01/10] of: Rename "poweroff-source" property to "system-power-controller"
-Date: Mon, 27 Oct 2014 19:16:27 +0100
-Message-ID: <CABgxDoKMPm1+Ue2pE2zwzz8t-xpQ4pBK2pVYm5rJMEFkErHEjQ@mail.gmail.com>
-References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
-	<20141027171655.GH2006@localhost>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 1/2] power_supply: Add no_thermal property to prevent
+ recursive get_temp calls
+Date: Mon, 27 Oct 2014 19:29:58 +0100
+Message-ID: <20141027182957.GD10897@earth.universe>
+References: <1412696857-14803-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20141027171655.GH2006@localhost>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "pawel.moll" <pawel.moll-5wv7dgnIgG8@public.gmane.org>, ijc+devicetree <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="hoZxPH4CaxYzWscb"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1412696857-14803-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Anton Vorontsov <anton@enomsg.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-2014-10-27 18:16 GMT+01:00 Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>:
-> You probably don't want this to be inline.
->
-Yeah this is what I thought, I agree, it's a bit big to be inline... I
-will fix it, I just wait a bit to see what is decided for this
-serie...
+
+--hoZxPH4CaxYzWscb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Tue, Oct 07, 2014 at 05:47:36PM +0200, Krzysztof Kozlowski wrote:
+> Add a 'no_thermal' property to the power supply class. If true then
+> thermal zone won't be created for this power supply in
+> power_supply_register().
+>=20
+> Power supply drivers may want to set it if they support
+> POWER_SUPPLY_PROP_TEMP and they are forwarding this get property call to
+> other thermal zone.
+>=20
+> If they won't set it lockdep may report false positive deadlock for
+> thermal zone's mutex because of nested calls to thermal_zone_get_temp().
+> First is the call to thermal_zone_get_temp() of the driver's thermal
+> zone. Thermal core gets POWER_SUPPLY_PROP_TEMP property from this
+> driver. The driver then calls other thermal zone thermal_zone_get_temp()
+> and returns result.
+>=20
+> Example of such driver is charger manager.
+>=20
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+
+pulled into next, I will include it in 3.18-rc pull request.
+
+-- Sebastian
+
+--hoZxPH4CaxYzWscb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJUTo8lAAoJENju1/PIO/qaSKgP/0W568cgElfXRQQPBY1ftAlY
+r/R0nI4tewbf4U/XeigGbo/4rST43FxlBG1YUkRmemdUTe0U/Ze+IKzMLoTwjQiw
+9NRXB/4UdromCkJWDLzWE2RTuHGj3duxpjtXAMo0g+Di9U9FXibAXYaqUho6h+H+
+sx4iIfB/gtSUXzyEXakEXyr4ktEiYsherxWl0rPo5EQkW7+IANY+l5bpCfOYlJJF
+EgcfRjh13tGAn1BTPGxs5Ic+XAmQPvpFCzZNCD5Aut/c6ZSXETSlzYtFjw9+6d+0
+5caP9rtuPsnv5/+YBmEY2ykI3+H0sAIW8bK7YCGljKqbsu2pR9pQAC7ABxnAocSn
+BPBXNuXkHDBSYBkgGTL1azt8n/uL/5FmcSq9RI2zfdO1OUyG7aXJgyFtDrU7XM63
+hR5Du1U77JqFZMwrBE7kjLjuO437aI27qfPRGHWGQngdT7QDw8DFZY02/3Iyh6Rx
+IcQXgj3yvzj0vZtc6AIzn3tmLgOa8sGTQufp4UDzWxMElhnz9fu9S4fKJWIfDg+Y
+X06q2mPn+VaGlkeHJwmxsiR7E2z6lO+NqmTwun4k5y1U7yjb7aHVElROXMXT+oYo
+reyjiajhdsMsDA8pU9BW0XCDHl/EHGNCt5Hs41ukiQxQrmZTbRbfcQOvpzzj2mPy
+MeKxFpdyAgf7J65hb0WR
+=Kt52
+-----END PGP SIGNATURE-----
+
+--hoZxPH4CaxYzWscb--
