@@ -1,103 +1,66 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH v3 00/47] kernel: Add support for power-off handler call
- chain
-Date: Mon, 27 Oct 2014 12:33:10 -0500
-Message-ID: <20141027173310.GB16005@saruman>
-References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
- <20141027160324.GD10814@saruman>
- <20141027171617.GA19379@roeck-us.net>
-Reply-To: <balbi@ti.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 1/2] power: bq2415x_charger: Properly handle ENODEV
+ from power_supply_get_by_phandle
+Date: Mon, 27 Oct 2014 18:43:38 +0100
+Message-ID: <20141027174338.GA10897@earth.universe>
+References: <1413383110-20310-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="MW5yreqqjyrRcusr"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:54899 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750855AbaJ0ReH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Oct 2014 13:34:07 -0400
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20141027171617.GA19379@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1413383110-20310-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Felipe Balbi <balbi@ti.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>, Johan Hovold <johan@kernel.org>
 
---MW5yreqqjyrRcusr
+
+--UlVJffcvxoiEqYs2
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Oct 27, 2014 at 10:16:17AM -0700, Guenter Roeck wrote:
-> On Mon, Oct 27, 2014 at 11:03:24AM -0500, Felipe Balbi wrote:
-> > Adding Johan, who's working on RTC power off for AM335x devices
-> >=20
-> Hi Felipe,
+Hi,
+
+On Wed, Oct 15, 2014 at 04:25:09PM +0200, Krzysztof Kozlowski wrote:
+> The power_supply_get_by_phandle() on error returns ENODEV or NULL.
+> The driver later expects obtained pointer to power supply to be
+> valid or NULL. If it is not NULL then it dereferences it in
+> bq2415x_notifier_call() which would lead to dereferencing ENODEV-value
+> pointer.
 >=20
-> is that the rtc-omap driver ?
-
-yes it is.
-
-> I am tracking linux-next for related changes. As new power-off handlers a=
-re
-> introduced, I prepare patches for those as well. I currently have patches=
- for
-> the following two drivers in the queue:
-> 	drivers/regulator/act8865-regulator.c
-> 	drivers/rtc/rtc-omap.c
+> Properly handle the power_supply_get_by_phandle() error case by
+> replacing error value with NULL. This indicates that usb charger
+> detection won't be used.
 >=20
-> I plan to send review requests for those patches in a week or so (I think
-> there is still some change pending to the power-off function in the rtc-o=
-map
-> driver, and I want to wait for it).
+> Fix also memory leak of 'name' if power_supply_get_by_phandle() fails
+> with NULL and probe should defer.
 
-yeah, Johan's working on that.
+Applied to next.
 
-> My current plan is to send a pull request for the series directly to Linus
-> when the next commit window opens; this is what a number of maintainers
-> suggested I should do. This pull request would exclude the last patch,
-> so pm_power_off would still be there. Next steps would then be to submit
-> another set of patches to update the newly introduced power-off handlers
-> and then to finally remove pm_power_off; this would probably happen after
-> the commit window closes.
->=20
-> At least that is the plan unless someone has a better idea ....
+-- Sebastian
 
-sounds like a good idea to me :-)
-
-> There may be some variants; for example, it might make sense to create an
-> immutable branch with the key patches (1-3 and 8) to enable others to use
-> the new functions immediately. That would require Acks from affected
-> maintainers for patch 1, though, so I can not do that yet.
-
-alright, I think an immutable branch people can merge would be
-appreciated nevertheless, but I'd certainly defer that to arch and soc
-maintainers.
-
-cheers
-
---=20
-balbi
-
---MW5yreqqjyrRcusr
+--UlVJffcvxoiEqYs2
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUToHWAAoJEIaOsuA1yqREuxAP/0qWwU4sAxICAhF1ymX8ip2N
-Z/loXagIwC9RqzS7oKAGZIeBYT5nUOsNjbcA45D3GD9/gmIjdirixP7OvkhjFG6H
-jC0Vr1uiE9dRwEJvTzpASuCZcxKS9kNO/DDWZJk+Ktjr4izCXZ68hQARCv6epbX0
-KEPBbQAvmYIuC4Yc5caHmh7/TWsOnp5Py/Hg6UGY1szmtWXU9PKFwoDZB0b7WCdv
-uKIGLPPr7ilFR7+lDeIC65ziNtT26r00LTA81l58iQqIvJD1mfYt95P+IR6C1h/A
-LZLx2ZkULY8tAT7XzYLhOs1BeydCWDpe2I44UrxkKlhholigCFKuG9lRkDAJ57mD
-u3rQKBS98FvJUeraNWj4YRR/Ugy/dU4+vY2BNqnj7yX8z6jvqcEWxosn75JDDCrG
-iTaU47Y57F80NELox9yjmY0GzZGody3rlliOIFrtyR3/aZmT/BguqRuqTeJC3j/H
-bXpl1rskY5O8QTvxisS6MXOJI4BCi2olnjzU+LOUIvZ4+719SzyNmmr8NC7uzWya
-dkw1W8UzJIV52wdlz5d0dNm5uFePncIpZfUI95aqcxmDfgc9G0X9UUgwlM/kvI2H
-o/1DlJ9FmTKyxUUPWbkxH1sGZ/J8Irm2HSYmx+iZsnj+fSOa59ZkcVmbnGUs4LZn
-o0LF8kq7aTK9pTXj8S12
-=1DHn
+iQIcBAEBCgAGBQJUToRKAAoJENju1/PIO/qaGRQQAKUdqO8qigV7WeaJy3rBvwfs
+2wTZdoMCFlteBYybwvUdPzMiyzmB1ZFCgADgfCujnvV1JwBqUawPY1F+FxpWte8Y
+JdLEGkt6LS36iklNIT8NTOkiKJYeFDfia9J8fgx6eT1cS9AdH61cy0OpSX+EstD5
+sKh+MZsZJFT9glc0nIFY6/VJYhzyQUKTAOnWkUVF/Q/r7uYLrUAvQXfoadNvvovP
+QHRL73uWsPvVRgTF7yETMjE4tudHa9vstHFoenfxQttw3ypMheJ5GiDVBkiLesNM
+Wfh/m8VEcd/TQXz4mYXAwpFKyQlN3jsMmkryTp8VPqPF/Glb+K9C/thBvWxHtWo/
+xsuDHpYH8rIS4jB+kfjzLxJKi1ZzZD/wM/0wAVcRqI8SSKkz6/Xtj71Xoh+2vyN6
+AH1D2FaR5fL2DGy7b5d2fI76ODhiOJ49/KH1PVh+AkYjxevUPDAF6N2FHxbCduQM
+U/5FqY6s9pqMWOezYwvx1ieQVRW0YdpHWNMQgFycRUEOprytC+FiuNnkSlGz0qqm
+bAJvJ4Mk6RTUY85ETIjbEtsVzI9ODmfhKiM2Fl2G3HzTd5ZtpygLizpNSv9gaRAr
+mdnSwCPBodOGTPgJvUCKDhnqYor/gJBZragCRtbkYeDATB/IhUs+eGfHWd91p2M5
+K+3ZsjsMjjKV6xE1MXRh
+=5TBn
 -----END PGP SIGNATURE-----
 
---MW5yreqqjyrRcusr--
+--UlVJffcvxoiEqYs2--
