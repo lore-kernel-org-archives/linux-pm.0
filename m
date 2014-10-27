@@ -1,81 +1,59 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v3 07/11] ARM: shmobile: r8a7740/armadillo legacy: Add
- A4MP pm domain support
-Date: Mon, 27 Oct 2014 13:03:06 +0900
-Message-ID: <20141027040305.GG31487@verge.net.au>
-References: <1414063141-8856-1-git-send-email-geert+renesas@glider.be>
- <1414063141-8856-8-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1414063141-8856-8-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [Patch v7 01/18] ACPI, irq: fix regression casued by 6b9fb7082409
+Date: Mon, 27 Oct 2014 13:21:31 +0800
+Message-ID: <1414387308-27148-2-git-send-email-jiang.liu@linux.intel.com>
+References: <1414387308-27148-1-git-send-email-jiang.liu@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:46412 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750873AbaJ0FT2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Oct 2014 01:19:28 -0400
+In-Reply-To: <1414387308-27148-1-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org
 
-On Thu, Oct 23, 2014 at 01:18:57PM +0200, Geert Uytterhoeven wrote:
-> Add support for the A4MP power domain, and hook up the HDMI-Link and FSI
-> hardware blocks.
-> This domain also contains the SPU2, FMSI, and BBIF2 hardware blocks,
-> but these are currently not used by any driver.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+When IOAPIC is disabled, acpi_gsi_to_irq() should return gsi directly
+instead of calling mp_map_gsi_to_irq() to translate gsi to IRQ by IOAPIC.
+It fixes https://bugzilla.kernel.org/show_bug.cgi?id=84381.
 
-Is it possible to split this into two patches.
+Reported-by: Thomas Richter <thor@math.tu-berlin.de>
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: rui.zhang@intel.com
+Cc: <stable@vger.kernel.org> # 3.17
+---
+ arch/x86/kernel/acpi/boot.c |   13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
-A board patch (that touches board-armadillo800eva.c)
-and an SoC patch (the rest). Likewise for any remaining
-patches in this series that touch both board and SoC code.
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index b436fc735aa4..eceba9d9e116 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -604,14 +604,19 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
+ 
+ int acpi_gsi_to_irq(u32 gsi, unsigned int *irqp)
+ {
+-	int irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
++	int irq;
+ 
+-	if (irq >= 0) {
++	if (acpi_irq_model == ACPI_IRQ_MODEL_PIC) {
++		*irqp = gsi;
++	} else {
++		irq = mp_map_gsi_to_irq(gsi,
++					IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
++		if (irq < 0)
++			return -1;
+ 		*irqp = irq;
+-		return 0;
+ 	}
+ 
+-	return -1;
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(acpi_gsi_to_irq);
+ 
+-- 
+1.7.10.4
 
-The reason for this is that it would make the patches fit
-the branch scheme that arm-soc people like. In particular splitting
-patches between soc and boards branches.
-
-Please note that I have queued up four of the SoC earlier patches in the 
-series. You don't need to repost them.
-
-> ---
-> v3:
->   - No changes,
-> v2:
->   - Also hook up HDMI-Link, which was not documented in the datasheet as
->     belonging to A4MP,
->   - Really add A4MP and drop the FIXME, as a fix for the interrupt storm
->     is available.
-> ---
->  arch/arm/mach-shmobile/board-armadillo800eva.c | 2 ++
->  arch/arm/mach-shmobile/pm-r8a7740.c            | 3 +++
->  2 files changed, 5 insertions(+)
-> 
-> diff --git a/arch/arm/mach-shmobile/board-armadillo800eva.c b/arch/arm/mach-shmobile/board-armadillo800eva.c
-> index 735036038951868d..c37d7b697a35322d 100644
-> --- a/arch/arm/mach-shmobile/board-armadillo800eva.c
-> +++ b/arch/arm/mach-shmobile/board-armadillo800eva.c
-> @@ -1234,6 +1234,8 @@ static void __init eva_init(void)
->  	static struct pm_domain_device domain_devices[] __initdata = {
->  		{ "A4LC", &lcdc0_device },
->  		{ "A4LC", &hdmi_lcdc_device },
-> +		{ "A4MP", &hdmi_device },
-> +		{ "A4MP", &fsi_device },
->  		{ "A4S",  &sh_eth_device },
->  		{ "A3SP", &pwm_device },
->  		{ "A3SP", &sdhi0_device },
-> diff --git a/arch/arm/mach-shmobile/pm-r8a7740.c b/arch/arm/mach-shmobile/pm-r8a7740.c
-> index 932c2a621e81ac26..081a4f9726a0c909 100644
-> --- a/arch/arm/mach-shmobile/pm-r8a7740.c
-> +++ b/arch/arm/mach-shmobile/pm-r8a7740.c
-> @@ -37,6 +37,9 @@ static struct rmobile_pm_domain r8a7740_pm_domains[] = {
->  		.genpd.name	= "A4LC",
->  		.bit_shift	= 1,
->  	}, {
-> +		.genpd.name	= "A4MP",
-> +		.bit_shift	= 2,
-> +	}, {
->  		.genpd.name	= "A3RV",
->  		.bit_shift	= 6,
->  	}, {
-> -- 
-> 1.9.1
-> 
