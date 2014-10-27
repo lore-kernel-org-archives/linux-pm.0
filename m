@@ -1,52 +1,54 @@
-From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Subject: [PATCH v3 05/47] mfd: as3722: Drop reference to pm_power_off from devicetree bindings
-Date: Mon, 27 Oct 2014 08:55:12 -0700
-Message-ID: <1414425354-10359-6-git-send-email-linux@roeck-us.net>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v3 03/47] hibernate: Call have_kernel_power_off instead of checking pm_power_off
+Date: Mon, 27 Oct 2014 08:55:10 -0700
+Message-ID: <1414425354-10359-4-git-send-email-linux@roeck-us.net>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1414425354-10359-1-git-send-email-linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:49902 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752255AbaJ0P4J (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 11:56:09 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XimeO-000b1H-UD
+	for linux-pm@vger.kernel.org; Mon, 27 Oct 2014 15:56:09 +0000
+In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
 
-Devicetree bindings are supposed to be operating system independent
-and should thus not describe how a specific functionality is implemented
-in Linux.
+Power-off handlers may now be installed with register_power_off_handler.
+Use the new API function have_kernel_power_off to determine if a power-off
+handler has been installed.
 
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Acked-by: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>
+Acked-by: Rafael J. Wysocki <rjw@rjwysocki.net>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v3:
 - No change
 v2:
-- No change
+- have_kernel_poweroff -> have_kernel_power_off
 
- Documentation/devicetree/bindings/mfd/as3722.txt | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ kernel/power/hibernate.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/mfd/as3722.txt b/Documentation/devicetree/bindings/mfd/as3722.txt
-index 4f64b2a..0b2a609 100644
---- a/Documentation/devicetree/bindings/mfd/as3722.txt
-+++ b/Documentation/devicetree/bindings/mfd/as3722.txt
-@@ -122,8 +122,7 @@ Following are properties of regulator subnode.
- 
- Power-off:
- =========
--AS3722 supports the system power off by turning off all its rail. This
--is provided through pm_power_off.
-+AS3722 supports the system power off by turning off all its rails.
- The device node should have the following properties to enable this
- functionality
- ams,system-power-controller: Boolean, to enable the power off functionality
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index a9dfa79..69225b7 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -602,7 +602,7 @@ static void power_down(void)
+ 	case HIBERNATION_PLATFORM:
+ 		hibernation_platform_enter();
+ 	case HIBERNATION_SHUTDOWN:
+-		if (pm_power_off)
++		if (have_kernel_power_off())
+ 			kernel_power_off();
+ 		break;
+ #ifdef CONFIG_SUSPEND
 -- 
 1.9.1
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
