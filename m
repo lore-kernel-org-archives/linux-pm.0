@@ -1,265 +1,191 @@
-From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: Re: [PATCH v5 02/16] clk: tegra: Add library for the DFLL clock source
- (open-loop mode)
-Date: Mon, 27 Oct 2014 11:36:06 +0200
-Message-ID: <544E1206.3050802@kapsi.fi>
-References: <1414161563-16812-1-git-send-email-mikko.perttunen@kapsi.fi> <1414161563-16812-3-git-send-email-mikko.perttunen@kapsi.fi> <544A6B84.2000508@mentor.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 2/3] ARM: keystone: pm: switch to use generic pm domains
+Date: Mon, 27 Oct 2014 10:39:43 +0100
+Message-ID: <CAPDyKFpdoA=cZYKuUCigyzfBARtkt5tfwhvJp2MaChTA9E+eRw@mail.gmail.com>
+References: <1413809764-21995-1-git-send-email-grygorii.strashko@ti.com>
+	<1413809764-21995-3-git-send-email-grygorii.strashko@ti.com>
+	<5446A065.9050308@gmail.com>
+	<544793B5.6080601@ti.com>
+	<CAPDyKFo97D3XbwDQrDzHw+qr4b24Fsq9EwDbdOMhy_L-RoYsLw@mail.gmail.com>
+	<CAMuHMdVsqsSHxirzoWspGz7y+2qBk42p-VUBNkys3_rr6Th_9Q@mail.gmail.com>
+	<CAPDyKFp6T1a1XXHdxiubP2RaS26uSqkUS3rbBgsNV_y+dSFfvw@mail.gmail.com>
+	<CAMuHMdVO4nMoeYdzLf6wdKW876gYVyML3C2+QKoteGPtisD4sA@mail.gmail.com>
+	<CAPDyKFrVCczc+fSy1ax4XinhB4SMfZZWP=d4QdY5Lv4zjOrHPA@mail.gmail.com>
+	<544912AB.3050801@ti.com>
+	<CAPDyKFpwguzd_iy46mpPcwDs98bh1k_3fVNfe4UAjYYwNoBJPQ@mail.gmail.com>
+	<544A410B.3050903@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <544A6B84.2000508@mentor.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>, viresh.kumar@linaro.org
-Cc: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f48.google.com ([209.85.192.48]:47141 "EHLO
+	mail-qg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751988AbaJ0Jjo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 05:39:44 -0400
+Received: by mail-qg0-f48.google.com with SMTP id i50so3643294qgf.35
+        for <linux-pm@vger.kernel.org>; Mon, 27 Oct 2014 02:39:43 -0700 (PDT)
+In-Reply-To: <544A410B.3050903@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Santosh Shilimkar <santosh.shilimkar@gmail.com>, ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On 10/24/2014 06:08 PM, Vladimir Zapolskiy wrote:
-> Hello Mikko,
+Hi Grygorii,
 
-Hello Vladimir!
+[...]
 
->
-> On 24.10.2014 17:39, Mikko Perttunen wrote:
->> From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 >>
->> Add shared code to support the Tegra DFLL clocksource in open-loop
->> mode. This root clocksource is present on the Tegra124 SoCs. The
->> DFLL is the intended primary clock source for the fast CPU cluster.
+>> The solution that I propose is to "manually" enable your PM clks
+>> during the probe sequence. We can do that as a part of pm_clk_add() or
+>
+> Done in patch set 3 - but only if !CONFIG_PM_RUNTIME
+>
+>> we invoke pm_clk_resume() separately, but more important no matter of
+>> CONFIG_PM_RUNTIME.
 >>
->> This code is very closely based on a patch by Paul Walmsley from
->> December (http://comments.gmane.org/gmane.linux.ports.tegra/15273),
->> which in turn comes from the internal driver by originally created
->> by Aleksandr Frid <afrid@nvidia.com>.
+> Why? What benefits will be doing this if CONFIG_PM_RUNTIME=y?
+> For Keystone 2 CONFIG_PM_RUNTIME=y is intended to be normal operational mode and
+> all devices belongs to Platform bus.
+>
+> Also, device's resuming operation is usually heavy operation and, taking into
+> account deferred probing mechanism and usual implementation of .probe() function,
+> your proposition will lead to runtime overhead at least for Platform devices.
+
+I don't quite follow. Why should there be an overhead?
+
+>
+> What is usually done in probe:
+> <- here you propose to resume device
+
+I didn't suggest we should resume the device here.
+
+I said we should enable the device's PM clocks during ->probe().
+That's a different thing.
+
+>
+> 1) get resources (IO, IRQ, regulators, GPIO, phys, ..) - for each
+> resource -EPROBE_DEFER can be returned.
+>
+> 2) allocate and fill device context - can fail.
+
+For your information, writing/reading to the device's registers might
+not be safe, unless its PM domain is powered.
+
+>
+> 3) configure resources (set gpio, enable regulators or phys,..) - can fail
+>
+> 4) [now] resume device
+>
+> 5) configure device
+>
+> 6) setup irq
+>
+> 7) [optional] suspend device
+>
+> As you can see from above, the Platform devices aren't need to be enabled before step 5 and,
+> if your proposition will be accepted, it will lead to few additional resume/suspend
+> cycles per-device. It's not good as for me. Is it?
+
+Why will it lead to a few additional resume/suspend cycles per device?
+I don't follow.
+
+>
+>
+>> The driver could then be responsible to invoke pm_runtime_set_active()
+>> to reflect that all runtime PM resources are enabled.
+>
+> [runtime_pm.txt] - this is recovery function and caller should be very careful.
+
+What? I couldn't find this stated anywhere in the documentation.
+
+This is what's stated though:
+
+5. Runtime PM Initialization, Device Probing and Removal
+[...]
+In addition to that, the initial runtime PM status of all devices is
+'suspended', but it need not reflect the actual physical state of the device.
+Thus, if the device is initially active (i.e. it is able to process I/O), its
+runtime PM status must be changed to 'active', with the help of
+pm_runtime_set_active(), before pm_runtime_enable() is called for the device.
+[...]
+
+>
+> Again, from implementation point of view:
+> -- how it's done now:
+>     .probe()
+>         pm_runtime_enable(&pdev->dev);
+>         pm_runtime_get_sync(&pdev->dev);
+>
+>     .remove()
+>         pm_runtime_put_sync(&pdev->dev);
+>         pm_runtime_disable(&pdev->dev);
+>
+> -- how it will be:
+>      .probe()
+>         //pm_runtime_enable(&pdev->dev);
+>         //pm_runtime_get_sync(&pdev->dev);
+>
+>         [optional] call .runtime_resume();
+>
+>         pm_runtime_set_active(dev);
+>         pm_runtime_enable(dev);
+>         [optional, to keep device active] pm_runtime_get_sync()
+>
+>      .remove()
+>         [optional] pm_runtime_put_sync(&pdev->dev);
+>         pm_runtime_disable(&pdev->dev);
+>
+>         call .runtime_suspend();
+>         pm_runtime_set_suspended(dev);
+>
+> And that would need to be done for all drivers.
+
+I can't tell the number of drivers you are referring to and how big
+impact it would have. Could you maybe summarize which drivers you are
+concerned about?
+
+I guess, if we have screwed things up regarding the runtime PM support
+for some drivers, we need to fix them. I am also happy to help.
+
+[...]
+
+>> This is wrong!
 >>
->> Subsequent patches will add support for closed loop mode and drivers
->> for the Tegra124 fast CPU cluster DFLL devices, which rely on this
->> code.
+>> 1) It will break the driver for !CONFIG_PM_RUNTIME.
+>
+> Hm. It should work. In your driver you have (for the case !CONFIG_PM_RUNTIME):
+>         pm_runtime_enable(dev); ------------------------ NOP
+>         ret = pm_runtime_get_sync(&pdev->dev); --------- NOP
+>         if (ret < 0)
+>                 goto err_m2m;
+> so, if you add:
+>         if (!pm_runtime_enabled(dev)) { ---------------- always FALSE
+>                gsc_runtime_resume(dev);
+>                /* ^ is the same as
+>                 gsc_hw_set_sw_reset(gsc);
+>                 gsc_wait_reset(gsc);
+>                 gsc_m2m_resume(gsc);
+>                */
+>        }
+> it will work in both cases, because pm_runtime_enabled() == true
+> when  CONFIG_PM_RUNTIME=y.
+
+So this might work for some cases and for some not. As stated earlier,
+it won't work if the device is runtime PM active.
+
+The better solution is the follow my proposal and thus also conform to
+the runtime PM documentation for how ->probe() should be done.
+
+>
 >>
->> Signed-off-by: Paul Walmsley <pwalmsley@nvidia.com>
->> Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
->> Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
->> ---
->> - Style fixes
->> - Removed incorrect and unused DFLL_I2C_CFG_SLAVE_ADDR_MASK define
->> - Documented that dfll_register_clk can return -ENOMEM
->> - Harmonized clock operation order
->> - Check !soc before allocating
->> - Comment fixes
->>
->>   drivers/clk/tegra/Makefile   |    1 +
->>   drivers/clk/tegra/clk-dfll.c | 1090 ++++++++++++++++++++++++++++++++++++++++++
->>   drivers/clk/tegra/clk-dfll.h |   55 +++
->>   3 files changed, 1146 insertions(+)
->>   create mode 100644 drivers/clk/tegra/clk-dfll.c
->>   create mode 100644 drivers/clk/tegra/clk-dfll.h
->>
->> diff --git a/drivers/clk/tegra/Makefile b/drivers/clk/tegra/Makefile
->> index f7dfb72..47320ca 100644
->> --- a/drivers/clk/tegra/Makefile
->> +++ b/drivers/clk/tegra/Makefile
->> @@ -1,5 +1,6 @@
->>   obj-y					+= clk.o
->>   obj-y					+= clk-audio-sync.o
->> +obj-y					+= clk-dfll.o
->>   obj-y					+= clk-divider.o
->>   obj-y					+= clk-periph.o
->>   obj-y					+= clk-periph-gate.o
->> diff --git a/drivers/clk/tegra/clk-dfll.c b/drivers/clk/tegra/clk-dfll.c
->> new file mode 100644
->> index 0000000..405fa9d
->> --- /dev/null
->> +++ b/drivers/clk/tegra/clk-dfll.c
+>> 2) It would also be broken for CONFIG_PM_RUNTIME for the scenario
+>> where a bus also handles runtime PM resources.
+>> Typically from the bus' ->probe() this is done:
+>> pm_runtime_get_noresume()
+>> pm_runtime_set_active()
 >
-> [snip]
->
->> +/*
->> + * Runtime PM suspend/resume callbacks
->> + */
->> +
->> +/**
->> + * tegra_dfll_runtime_resume - enable all clocks needed by the DFLL
->> + * @dev: DFLL device *
->> + *
->> + * Enable all clocks needed by the DFLL. Assumes that clk_prepare()
->> + * has already been called on all the clocks.
->> + *
->> + * XXX Should also handle context restore when returning from off.
->> + */
->> +int tegra_dfll_runtime_resume(struct device *dev)
->> +{
->> +	struct tegra_dfll *td = dev_get_drvdata(dev);
->> +	int ret;
->> +
->> +	ret = clk_enable(td->ref_clk);
->> +	if (ret) {
->> +		dev_err(dev, "could not enable ref clock: %d\n", ret);
->> +		return ret;
->> +	}
->> +
->> +	ret = clk_enable(td->soc_clk);
->> +	if (ret) {
->
-> What is the correct behaviour on error? Should you fallback and try to
-> enable td->i2c_clk clock or may be disable right enabled above td->ref_clk?
+> So, Has your device been enabled by bus?
 
-This should probably error out and disable the previously enabled 
-clock/clocks. Will fix.
+Yes we have examples of that. drivers/amba/bus.c.
 
->
->> +		dev_err(dev, "could not enable register clock: %d\n", ret);
->> +		return ret;
->> +	}
->> +
->> +	ret = clk_enable(td->i2c_clk);
->> +	if (ret) {
->
-> See the comment above.
->
->> +		dev_err(dev, "could not enable i2c clock: %d\n", ret);
->> +		return ret;
->> +	}
->> +
->> +	return 0;
->> +}
->> +EXPORT_SYMBOL(tegra_dfll_runtime_resume);
->> +
->> +/**
->> + * tegra_dfll_runtime_suspend - disable all clocks needed by the DFLL
->> + * @dev: DFLL device *
->> + *
->> + * Disable all clocks needed by the DFLL. Assumes that other code
->> + * will later call clk_unprepare().
->> + */
->> +int tegra_dfll_runtime_suspend(struct device *dev)
->> +{
->> +	struct tegra_dfll *td = dev_get_drvdata(dev);
->> +
->> +	clk_disable(td->ref_clk);
->> +	clk_disable(td->soc_clk);
->> +	clk_disable(td->i2c_clk);
->
-> Relevant to the comment above.
->
->> +	return 0;
->> +}
->> +EXPORT_SYMBOL(tegra_dfll_runtime_suspend);
->> +
->
-> [snip]
->
->> +/**
->> + * dfll_register_clk - register the DFLL output clock with the clock framework
->> + * @td: DFLL instance
->> + *
->> + * Register the DFLL's output clock with the Linux clock framework and register
->> + * the DFLL driver as an OF clock provider. Returns 0 upon success or -EINVAL
->> + * or -ENOMEM upon failure.
->> + */
->> +static int dfll_register_clk(struct tegra_dfll *td)
->> +{
->> +	int ret;
->> +
->> +	dfll_clk_init_data.name = td->output_clock_name;
->> +	td->dfll_clk_hw.init = &dfll_clk_init_data;
->> +
->> +	td->dfll_clk = clk_register(td->dev, &td->dfll_clk_hw);
->> +	if (IS_ERR(td->dfll_clk)) {
->> +		dev_err(td->dev, "DFLL clock registration error\n");
->> +		return -EINVAL;
->> +	}
->> +
->> +	ret = of_clk_add_provider(td->dev->of_node, of_clk_src_simple_get,
->> +				  td->dfll_clk);
->> +	if (ret) {
->> +		dev_err(td->dev, "of_clk_add_provider() failed\n");
->> +		goto out_unregister_clk;
->> +	}
->> +
->> +	return 0;
->> +
->> +out_unregister_clk:
->> +	clk_unregister(td->dfll_clk);
->
-> ---8<---
-> 	if (ret) {
-> 		dev_err(td->dev, "of_clk_add_provider() failed\n");
-> 		clk_unregister(td->dfll_clk);
-> 	}
-> ---8<---
->
-> version is 5 lines and one label less.
-
-Will fix.
-
->
->> +	return ret;
->> +}
->> +
->
-> [snip]
->
->> +/**
->> + * read_dt_param - helper function for reading required parameters from the DT
->> + * @td: DFLL instance
->> + * @param: DT property name
->> + * @dest: output pointer for the value read
->> + *
->> + * Read a required numeric parameter from the DFLL device node, or complain
->> + * if the property doesn't exist. Returns a boolean indicating success for
->> + * easy chaining of multiple calls to this function.
->> + */
->> +static bool read_dt_param(struct tegra_dfll *td, const char *param, u32 *dest)
->> +{
->> +	int err = of_property_read_u32(td->dev->of_node, param, dest);
->> +
->> +	if (err < 0) {
->> +		dev_err(td->dev, "failed to read DT parameter %s: %d\n",
->> +			param, err);
->> +		return false;
->> +	}
->> +
->> +	return true;
->> +}
->
-> ^^^^ Relatively useless wrapper function used only once. You are anyway
-> going to check the return value again...
-
-As you noted, this will be used more later.
-
->
->> +
->> +/**
->> + * dfll_fetch_common_params - read DFLL parameters from the device tree
->> + * @td: DFLL instance
->> + *
->> + * Read all the DT parameters that are common to both I2C and PWM operation.
->> + * Returns 0 on success or -EINVAL on any failure.
->> + */
->> +static int dfll_fetch_common_params(struct tegra_dfll *td)
->> +{
->> +	bool ok = true;
->> +
->> +	ok &= read_dt_param(td, "nvidia,droop-ctrl", &td->droop_ctrl);
->
-> See the comment above.
->
->> +	if (of_property_read_string(td->dev->of_node, "clock-output-names",
->> +				    &td->output_clock_name)) {
->> +		dev_err(td->dev, "missing clock-output-names property\n");
->> +		ok = false;
->> +	}
->> +
->> +	return ok ? 0 : -EINVAL;
->> +}
->
->
-> --
-> With best wishes,
-> Vladimir
->
-
-Thanks for reviewing!
-
-Cheers,
-Mikko
+Kind regards
+Uffe
