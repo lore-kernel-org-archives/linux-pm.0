@@ -1,64 +1,72 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 0/2] power: charger-manager: Fixes for unbinding other psy
-Date: Mon, 27 Oct 2014 19:43:55 +0100
-Message-ID: <20141027184354.GA18965@earth.universe>
-References: <1413207271-23836-1-git-send-email-k.kozlowski@samsung.com>
+Subject: Re: [PATCH v2 4/5] power: max77693: Add charger driver for Maxim
+ 77693
+Date: Mon, 27 Oct 2014 19:56:57 +0100
+Message-ID: <20141027185656.GB18965@earth.universe>
+References: <1413808489-3524-1-git-send-email-k.kozlowski@samsung.com>
+ <1413808489-3524-5-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="r5Pyd7+fXNt84Ff3"
+	protocol="application/pgp-signature"; boundary="A6N2fC+uXW/VQSAv"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:57250 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.19.201]:57766 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751602AbaJ0SoB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Oct 2014 14:44:01 -0400
+	id S1752036AbaJ0S5D (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Oct 2014 14:57:03 -0400
 Content-Disposition: inline
-In-Reply-To: <1413207271-23836-1-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <1413808489-3524-5-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Anton Vorontsov <anton@enomsg.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-api@vger.kernel.org, devicetree@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
 
---r5Pyd7+fXNt84Ff3
+--A6N2fC+uXW/VQSAv
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Oct 13, 2014 at 03:34:29PM +0200, Krzysztof Kozlowski wrote:
-> These are two fixes for accessing old power supply by charger manager
-> after unbinding the driver implementing given power supply.
+On Mon, Oct 20, 2014 at 02:34:48PM +0200, Krzysztof Kozlowski wrote:
+> Add new driver for Maxim 77693 switch-mode charger (part of max77693
+> MFD driver) providing power supply class information to userspace.
 >=20
-> Actually the source of these two bugs and the solution for them is the
-> same in both patches. However I decided to split this because fixing
-> this was quite intrusive and squashed patch would be rather big.
+> The charger has +20V tolerant input. Current input can be set from 0 to
+> 2.58 A. The charger can deliver up to 2.1 A to the battery or 3.5 A to
+> the system (when supplying additional current from battery to system).
+>=20
+> The driver is configured through DTS (battery and system related
+> settings) and sysfs entries (timers and top-off charging threshold).
+>=20
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-pulled into next branch of battery-2.6.git. I will include this in
-the 3.18-rc pull request.
+I guess it makes sense to queue this together with the mfd parts.
+
+Acked-By: Sebastian Reichel <sre@kernel.org>
 
 -- Sebastian
 
---r5Pyd7+fXNt84Ff3
+--A6N2fC+uXW/VQSAv
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJUTpJqAAoJENju1/PIO/qa6TEP/1Ag0oG2xXugNceva/iTnROi
-gjXecTXCQI29Mo0+eDYjGkcZGAemnjYpNyXHJIdro/7M97esXOzhOFjWGsYAWttE
-YU2Gf0zeGu22uDpFUKSWODdR99UIOzHuXc6Pxq+z56iUiK+Ij3egPh2pxTRYg1mD
-pxJBv4ynHUH8ufH6cGqZdGpyrHgF9vPmtB+b107P2ndMuqCA3rmqVP6jA8eVnniX
-V3e5zBWiJ+DipaMFkjbYsjCZnyvTF0xrXnZCqFi2UD2KiPrbpBRuValsoj7nsXmd
-nS1pboLshj187TY3SAP1NfGdpd46U2yAIyBMe1V2Rt6iQD7HV3Jp0GzW4fmRFmH9
-KYYZnu+XnmHYAFDWAR2N4+2DhyfgATt+xEqBLz+6xscSpAdxj/KKWcdSDpSWjCUI
-/9zAYV7cjKD6GMH5UlC2UHiOi+Xf2ZZlin3DKOgbOqm6NlMit3KZI29klKEsdozQ
-uOoI9aSAgkZQ98MLe8uIq47OX+c9lSb+aI6nKiqN9OSOZZaw62UN0ansjmDQEwoe
-9UIrCAj39xzSLxsndjvfoWis5MNqt5Ukl03ZeSBFJlIawxa0igWRJX5QxTvOL2+A
-G0fMcpLB9F/o9QMS2PQfh7YeoiVDMfA88WtbTnnS7VCxfPpdvDv/VkenaT2JJXX1
-ymLEVYiHfhJn7/kvHztr
-=+NNJ
+iQIcBAEBCgAGBQJUTpV4AAoJENju1/PIO/qary4P/iWSe9y80CmfQzeVxEYgipwf
+GFdNMLnSaWeL7lLeDFS823GL+3HWVzoweXmXmmXwgTKS/yTlOYnOllj3gmloyVoL
+pMs7x9tT9lfUg58VyEjBbtuSmvoJevzpCMp7opdEaFdt8WicItcFJU3kvqEOliAs
+ZjLBqzhpnDkWeUfDlVG8pSNFqJY39VSH6ctBoGoGFaaYXP/m6c/DvrlHPv8+bgXP
+Jv5sChSjfOfEtMyA1lOVFLl6ihUgApLicwWyXWx/bRwnFPRK/rO7pVObOLZRFHj0
+y8KrcB8QWWVmkI/a/IayRWN1jaRAXrkcbFcqKQhNWnB36cMeq7DEyGpOqeUnO5z/
+rU8oPVKXfhHKlN3/HfTRx1+xPCq8eNGPzbMG/v5jOOeUYp3DF27Cxpl64Nx85MHz
+sNpTWDpyp3kNk3Mymkm0Rnu5i1eQFnBaeD0ZLlgNBA7/LAlrzgUmMwf3XCilHRv1
+KtVVUR9llOHjjN8MHgKdHApG+DSzEWpYjyPL2K1hBHSLAjjD+XDDeV7XDGAM90m0
+Yqx2DGba505jw0aqv6ueOz/HktPTgn3rH+HRrKpeg5G7gJGq4o7YlQ5ON0+yX+Jq
+3pL3qh+BGbVb7cAgexEM+iDfNv6vgAwv6E1fJWFULNohOMYXHXS+jRfZKMcRdAq/
+mqJSGoYw4q8w4ibO/2wp
+=t70r
 -----END PGP SIGNATURE-----
 
---r5Pyd7+fXNt84Ff3--
+--A6N2fC+uXW/VQSAv--
