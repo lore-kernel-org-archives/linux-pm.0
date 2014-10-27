@@ -1,77 +1,56 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [PATCH v1 01/10] of: Rename "poweroff-source" property to
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v1 02/10] dt-bindings: Document the standard property
  "system-power-controller"
-Date: Mon, 27 Oct 2014 18:16:55 +0100
-Message-ID: <20141027171655.GH2006@localhost>
+Date: Mon, 27 Oct 2014 17:26:36 +0000
+Message-ID: <20141027172636.GZ18557@sirena.org.uk>
 References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
+ <1414427215-14380-2-git-send-email-romain.perier@gmail.com>
+ <20141027163918.GB14253@saruman>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="YPOU9eFKIy6Wf5kE"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Romain Perier <romain.perier@gmail.com>
-Cc: heiko@sntech.de, devicetree@vger.kernel.org, broonie@kernel.org, lgirdwood@gmail.com, linux-kernel@vger.kernel.org, grant.likely@linaro.org, robh@kernel.org, mark.rutland@arm.com, johan@kernel.org, linux-pm@vger.kernel.org, linux@roeck-us.net, lee.jones@linaro.org, balbi@ti.com, robh+dt@kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
+In-Reply-To: <20141027163918.GB14253@saruman>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>
+Cc: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 27, 2014 at 04:26:46PM +0000, Romain Perier wrote:
-> As discussed on the mailing list, it makes more sense to rename this property
-> to "system-power-controller". Problem being that the word "source" usually tends
-> to be used for inputs and that is out of control of the OS. The poweroff
-> capability is an output which simply turns the system-power off. Also, this
-> property might be used by drivers which power-off the system and power back on
-> subsequent RTC alarms. This seems to suggest to remove "poweroff" from the
-> property name and to choose "system-power-controller" as the more generic name.
-> This patchs adds the required renaming changes and defines an helper function
-> which is compatible with both properties, the old one prefixed by a vendor name
-> and the new one without any prefix.
-> 
-> Signed-off-by: Romain Perier <romain.perier@gmail.com>
-> ---
->  include/linux/of.h | 27 +++++++++++++++++++++++----
->  1 file changed, 23 insertions(+), 4 deletions(-)
-> 
-> diff --git a/include/linux/of.h b/include/linux/of.h
-> index 27b3ba1..c1ed2a5 100644
-> --- a/include/linux/of.h
-> +++ b/include/linux/of.h
-> @@ -867,14 +867,33 @@ static inline int of_changeset_update_property(struct of_changeset *ocs,
->  extern int of_resolve_phandles(struct device_node *tree);
->  
->  /**
-> - * of_system_has_poweroff_source - Tells if poweroff-source is found for device_node
-> + * of_is_system_power_controller - Tells if the property for controlling system
-> + * power is found in device_node.
->   * @np: Pointer to the given device_node
->   *
->   * return true if present false otherwise
->   */
-> -static inline bool of_system_has_poweroff_source(const struct device_node *np)
-> -{
-> -	return of_property_read_bool(np, "poweroff-source");
-> +static inline bool of_is_system_power_controller(const struct device_node *np)
-> +{
-> +	struct property *pp;
-> +	unsigned long flags;
-> +	char *sep;
-> +	bool found = false;
-> +
-> +	raw_spin_lock_irqsave(&devtree_lock, flags);
-> +	for_each_property_of_node(np, pp) {
-> +		if (of_prop_cmp(pp->name, "system-power-controller") == 0) {
-> +			found = true;
-> +			break;
-> +		}
-> +		sep = strchr(pp->name, ',');
-> +		if (sep && sep - pp->name && of_prop_cmp(sep + 1, "system-power-controller") == 0) {
-> +			found = true;
-> +			break;
-> +		}
-> +	}
-> +	raw_spin_unlock_irqrestore(&devtree_lock, flags);
-> +	return found;
->  }
 
-You probably don't want this to be inline.
+--YPOU9eFKIy6Wf5kE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Johan
+On Mon, Oct 27, 2014 at 11:39:18AM -0500, Felipe Balbi wrote:
+> On Mon, Oct 27, 2014 at 04:26:47PM +0000, Romain Perier wrote:
+
+> > +act8846: act8846@5 {
+> > +	 compatible = "active-semi,act8846";
+> > +	 status = "okay";
+> > +	 system-power-controller;
+> > +}
+
+> there is no mention here that system-power-controller superseeds
+> poweroff-source and deprecates that.
+
+Given that poweroff-source hasn't made it into a released kernel yet we
+can probably just kill it off completely can't we?
+
+--YPOU9eFKIy6Wf5kE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUToBLAAoJECTWi3JdVIfQ5DYH/RI8OXmYY0W2YOW2mndiN6ux
+eH0/FrQVFLEGTn4UP9EWVSBYIPVpoKFAzWmUfWqW31J0LgzsSyy2k9CRq6sD6MXS
+PlqwsgVN8rNn1GBvp18w9PFJM2lDtpIPYWQLttWAJlCDmc5KXdGSuBn1p4Rutnzy
+i71n4qKADI3IkDy/k6fnkyJXyTvwct61NBsfQiKImUpstqy0j4oP4qKT+c/8Mh5z
+RpsWbuN+3YC/uOm11rTjGcmBGcG564BfOOueiJN+HnkE9PKB9opi/t40rQXy0s0O
+FBf3dVZEkH3bqmuy0rj+b4ETBLX2SgOp/KIEZAKgh5gVploewmAGBE3yMZt9FSs=
+=Gk4X
+-----END PGP SIGNATURE-----
+
+--YPOU9eFKIy6Wf5kE--
