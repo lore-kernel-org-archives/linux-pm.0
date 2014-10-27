@@ -1,51 +1,63 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [PATCH v3 00/47] kernel: Add support for power-off handler call
- chain
-Date: Mon, 27 Oct 2014 18:43:20 +0100
-Message-ID: <20141027174320.GI2006@localhost>
-References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
- <20141027160324.GD10814@saruman>
- <20141027171617.GA19379@roeck-us.net>
- <20141027173310.GB16005@saruman>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v1 02/10] dt-bindings: Document the standard property
+ "system-power-controller"
+Date: Mon, 27 Oct 2014 17:57:25 +0000
+Message-ID: <20141027175725.GB18557@sirena.org.uk>
+References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
+ <1414427215-14380-2-git-send-email-romain.perier@gmail.com>
+ <20141027163918.GB14253@saruman>
+ <20141027172636.GZ18557@sirena.org.uk>
+ <20141027173025.GA16005@saruman>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="N+dhEFW7Y2Uiel/w"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f173.google.com ([209.85.217.173]:47584 "EHLO
-	mail-lb0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752213AbaJ0Rqb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 13:46:31 -0400
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:51530 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbaJ0R6e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 13:58:34 -0400
 Content-Disposition: inline
-In-Reply-To: <20141027173310.GB16005@saruman>
+In-Reply-To: <20141027173025.GA16005@saruman>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Felipe Balbi <balbi@ti.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>, Johan Hovold <johan@kernel.org>
+Cc: Romain Perier <romain.perier@gmail.com>, heiko@sntech.de, devicetree@vger.kernel.org, lgirdwood@gmail.com, linux-kernel@vger.kernel.org, grant.likely@linaro.org, robh@kernel.org, mark.rutland@arm.com, johan@kernel.org, linux-pm@vger.kernel.org, linux@roeck-us.net, lee.jones@linaro.org, robh+dt@kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
 
-On Mon, Oct 27, 2014 at 12:33:10PM -0500, Felipe Balbi wrote:
-> On Mon, Oct 27, 2014 at 10:16:17AM -0700, Guenter Roeck wrote:
-> > On Mon, Oct 27, 2014 at 11:03:24AM -0500, Felipe Balbi wrote:
-> > > Adding Johan, who's working on RTC power off for AM335x devices
-> > > 
-> > Hi Felipe,
-> > 
-> > is that the rtc-omap driver ?
-> 
-> yes it is.
-> 
-> > I am tracking linux-next for related changes. As new power-off handlers are
-> > introduced, I prepare patches for those as well. I currently have patches for
-> > the following two drivers in the queue:
-> > 	drivers/regulator/act8865-regulator.c
-> > 	drivers/rtc/rtc-omap.c
-> > 
-> > I plan to send review requests for those patches in a week or so (I think
-> > there is still some change pending to the power-off function in the rtc-omap
-> > driver, and I want to wait for it).
-> 
-> yeah, Johan's working on that.
 
-It's finished. I just sent the final version to akpm this morning
-(adding a single mdelay), so you should be fine basing any conversion on
-either v2 (in mmotm) or v3.
+--N+dhEFW7Y2Uiel/w
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Johan
+On Mon, Oct 27, 2014 at 12:30:25PM -0500, Felipe Balbi wrote:
+> On Mon, Oct 27, 2014 at 05:26:36PM +0000, Mark Brown wrote:
+
+> > Given that poweroff-source hasn't made it into a released kernel yet we
+> > can probably just kill it off completely can't we?
+
+> please do, then we will never have that commit in Linus' tree to give us
+> nightmares.
+
+Well, the commit isn't a particularly big deal (and got cross-merged
+into another tree already) - if it's convenient to rebase it out we
+probably should but it's also not the end of the world either so long as
+it doesn't appear in a release.  Worst case people adopt it based on the
+list discussions and we check for two properties which also isn't that
+bad.
+
+--N+dhEFW7Y2Uiel/w
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUToeEAAoJECTWi3JdVIfQK2AIAIN2zFphnGcpGDJz2FXka0Xt
+qAnh3Xe3qYnBmY7DjvviSDrkj8epCj+POBhBocHp4VeCxTULLx/V9OptA1dULRjG
+NO5gc6UZKszhCsRnbqsr53h5gHP2TqyYNVjfdi3qVTAHAs9ks7eyfKYugnL2SY0T
+OIPfmpk+mL1S5DuThmGeYRcNeBQjMF0daKLR+nOGQ/8QjiUNmTvND01wiZxMAC5c
+g+WF9fEi0J+Rh0TzxK+W1acaJgNndVtwEr3WwQ3aHOXvyfZeOJe7NL6y3ydd05eX
+OTHZViA9JhgTRU7CeFHqI9uDKHl3MoV0GocDRIXhQVEYbzKmZO7UmYdO/rK/mkA=
+=6y00
+-----END PGP SIGNATURE-----
+
+--N+dhEFW7Y2Uiel/w--
