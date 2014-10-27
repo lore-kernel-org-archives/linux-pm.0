@@ -1,72 +1,138 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 4/5] power: max77693: Add charger driver for Maxim
- 77693
-Date: Mon, 27 Oct 2014 19:56:57 +0100
-Message-ID: <20141027185656.GB18965@earth.universe>
-References: <1413808489-3524-1-git-send-email-k.kozlowski@samsung.com>
- <1413808489-3524-5-git-send-email-k.kozlowski@samsung.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [GIT PULL] thermal-soc changes
+Date: Mon, 27 Oct 2014 15:53:48 -0400
+Message-ID: <20141027195346.GB6088@developer>
+References: <20141021134941.GA4937@developer>
+ <1414041345.2380.3.camel@rzhang1-toshiba>
+ <20141023112721.GA5683@developer>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="A6N2fC+uXW/VQSAv"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:57766 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752036AbaJ0S5D (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Oct 2014 14:57:03 -0400
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="cmJC7u66zC7hs+87"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1413808489-3524-5-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20141023112721.GA5683@developer>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-api@vger.kernel.org, devicetree@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
 
---A6N2fC+uXW/VQSAv
-Content-Type: text/plain; charset=us-ascii
+--cmJC7u66zC7hs+87
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hello Rui,
 
-On Mon, Oct 20, 2014 at 02:34:48PM +0200, Krzysztof Kozlowski wrote:
-> Add new driver for Maxim 77693 switch-mode charger (part of max77693
-> MFD driver) providing power supply class information to userspace.
+On Thu, Oct 23, 2014 at 07:27:24AM -0400, Eduardo Valentin wrote:
+> Hello Rui,
 >=20
-> The charger has +20V tolerant input. Current input can be set from 0 to
-> 2.58 A. The charger can deliver up to 2.1 A to the battery or 3.5 A to
-> the system (when supplying additional current from battery to system).
+> On Thu, Oct 23, 2014 at 01:15:45PM +0800, Zhang Rui wrote:
+> > On =E4=BA=8C, 2014-10-21 at 09:49 -0400, Eduardo Valentin wrote:
+> > > Hello Rui,
+> > >=20
+> > > Here are a couple of changes that are in my tree. They include:
+> > > - a few code refactoring improving the Exynos code base;
+> > > - new feature on the Exynos code base (TRIMINFO and TRIMRELOAD);
+> > > - a documentation of RCAR thermal; and
+> > > - a fix in the of-thermal, regarding the proper usage of of APIs.
+> > >=20
+> > what's their target?
+> > please send me separate pull requests for different targets.
+> >=20
 >=20
-> The driver is configured through DTS (battery and system related
-> settings) and sysfs entries (timers and top-off charging threshold).
+> All are for 3.18, I forgot to mention.=20
+
+Any updates?
+
 >=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> BR,
+>=20
+> Eduardo Valentin
+>=20
+> > thanks,
+> > rui
+> > > They are based on your next branch.
+> > >=20
+> > > BR,
+> > >=20
+> > > Eduardo Valentin
+> > >=20
+> > > The following changes since commit 6ceaf58abe25e86292152005c51169796b=
+ad3407:
+> > >=20
+> > >   Merge branch 'int340x-thermal' of .git into next (2014-10-17 14:30:=
+58 +0800)
+> > >=20
+> > > are available in the git repository at:
+> > >=20
+> > >=20
+> > >   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-th=
+ermal.git next
+> > >=20
+> > > for you to fetch changes up to df67e40f51398fef8dd705dfe4e287ad9b10ba=
+4b:
+> > >=20
+> > >   thermal: fix multiple disbalanced device node counters (2014-10-21 =
+08:05:50 -0400)
+> > >=20
+> > > ----------------------------------------------------------------
+> > > Bartlomiej Zolnierkiewicz (9):
+> > >       thermal: exynos: remove unused struct exynos_tmu_registers entr=
+ies
+> > >       thermal: exynos: remove dead code for HW_MODE calibration
+> > >       thermal: exynos: remove redundant pdata checks from exynos_tmu_=
+initialize()
+> > >       thermal: exynos: remove redundant threshold_code checks from ex=
+ynos_tmu_initialize()
+> > >       thermal: exynos: simplify temp_to_code() and code_to_temp()
+> > >       thermal: exynos: cache non_hw_trigger_levels in pdata
+> > >       thermal: exynos: remove redundant pdata checks from exynos_tmu_=
+control()
+> > >       thermal: exynos: remove identical values from exynos*_tmu_regis=
+ters structures
+> > >       thermal: samsung: Exynos5260 and Exynos5420 should not use TRIM=
+_RELOAD flag
+> > >=20
+> > > Chanwoo Choi (2):
+> > >       thermal: exynos: Add support for many TRIMINFO_CTRL registers
+> > >       thermal: exynos: Add support for TRIM_RELOAD feature at Exynos3=
+250
+> > >=20
+> > > Geert Uytterhoeven (1):
+> > >       thermal: rcar: Add binding docs for new R-Car Gen2 SoCs
+> > >=20
+> > > Vladimir Zapolskiy (1):
+> > >       thermal: fix multiple disbalanced device node counters
+> > >=20
+> > >  .../devicetree/bindings/thermal/rcar-thermal.txt   |   5 +-
+> > >  drivers/thermal/of-thermal.c                       |  40 ++++--
+> > >  drivers/thermal/samsung/exynos_thermal_common.h    |   2 +-
+> > >  drivers/thermal/samsung/exynos_tmu.c               | 141 ++++++-----=
+----------
+> > >  drivers/thermal/samsung/exynos_tmu.h               |  81 ++----------
+> > >  drivers/thermal/samsung/exynos_tmu_data.c          |  83 ++++--------
+> > >  drivers/thermal/samsung/exynos_tmu_data.h          |  39 +-----
+> > >  7 files changed, 111 insertions(+), 280 deletions(-)
+> >=20
+> >=20
 
-I guess it makes sense to queue this together with the mfd parts.
 
-Acked-By: Sebastian Reichel <sre@kernel.org>
 
--- Sebastian
-
---A6N2fC+uXW/VQSAv
+--cmJC7u66zC7hs+87
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBCgAGBQJUTpV4AAoJENju1/PIO/qary4P/iWSe9y80CmfQzeVxEYgipwf
-GFdNMLnSaWeL7lLeDFS823GL+3HWVzoweXmXmmXwgTKS/yTlOYnOllj3gmloyVoL
-pMs7x9tT9lfUg58VyEjBbtuSmvoJevzpCMp7opdEaFdt8WicItcFJU3kvqEOliAs
-ZjLBqzhpnDkWeUfDlVG8pSNFqJY39VSH6ctBoGoGFaaYXP/m6c/DvrlHPv8+bgXP
-Jv5sChSjfOfEtMyA1lOVFLl6ihUgApLicwWyXWx/bRwnFPRK/rO7pVObOLZRFHj0
-y8KrcB8QWWVmkI/a/IayRWN1jaRAXrkcbFcqKQhNWnB36cMeq7DEyGpOqeUnO5z/
-rU8oPVKXfhHKlN3/HfTRx1+xPCq8eNGPzbMG/v5jOOeUYp3DF27Cxpl64Nx85MHz
-sNpTWDpyp3kNk3Mymkm0Rnu5i1eQFnBaeD0ZLlgNBA7/LAlrzgUmMwf3XCilHRv1
-KtVVUR9llOHjjN8MHgKdHApG+DSzEWpYjyPL2K1hBHSLAjjD+XDDeV7XDGAM90m0
-Yqx2DGba505jw0aqv6ueOz/HktPTgn3rH+HRrKpeg5G7gJGq4o7YlQ5ON0+yX+Jq
-3pL3qh+BGbVb7cAgexEM+iDfNv6vgAwv6E1fJWFULNohOMYXHXS+jRfZKMcRdAq/
-mqJSGoYw4q8w4ibO/2wp
-=t70r
+iQEcBAEBAgAGBQJUTqK6AAoJEMLUO4d9pOJWJFkIAJ/Mxg7eVbOfAEJsBX8MsEzc
+DMIQgsge0vRMXvUFp3dM9gMiy/QkFfWaQ3Z4yBEtZaTGFwZvXIqgKCrSdghg8X+k
+Z9MyukzZ4KNQxreHeo0PwkJ3EckfE7VwWDkMyrz6mNfv0ECCDUlpJzoO8uGeFtR1
+qmWi8j7cw++h76xttz1J+oYrZ49qSr24+7gTtuEUr5ZNA9kO8sYT468OmUyhEVEI
+dhkW+LHNouEtDH5DC7bzxA34bmKVoHvmH5rCDoslatJkq5AQhUTM+vG/XaKCTflc
+xFRjzrMDJ2CcRHBqSY/pW+cYAqCXWiB8xyyJcDnI5GqBd+2rxeChm3XS8uHQKgo=
+=iaTF
 -----END PGP SIGNATURE-----
 
---A6N2fC+uXW/VQSAv--
+--cmJC7u66zC7hs+87--
