@@ -1,8 +1,8 @@
 From: Romain Perier <romain.perier@gmail.com>
-Subject: [PATCH v1 03/10] regulator: act8865: Use
- of_is_system_power_controller helper function
-Date: Mon, 27 Oct 2014 16:26:48 +0000
-Message-ID: <1414427215-14380-3-git-send-email-romain.perier@gmail.com>
+Subject: [PATCH v1 05/10] dt-bindings: act8865: Update documentation about
+ property system-power-controller
+Date: Mon, 27 Oct 2014 16:26:50 +0000
+Message-ID: <1414427215-14380-5-git-send-email-romain.perier@gmail.com>
 References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,21 +24,23 @@ List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: Romain Perier <romain.perier@gmail.com>
 ---
- drivers/regulator/act8865-regulator.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/devicetree/bindings/regulator/act8865-regulator.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/regulator/act8865-regulator.c b/drivers/regulator/act8865-regulator.c
-index 76301ed..435aba1 100644
---- a/drivers/regulator/act8865-regulator.c
-+++ b/drivers/regulator/act8865-regulator.c
-@@ -365,7 +365,7 @@ static int act8865_pmic_probe(struct i2c_client *client,
- 		return ret;
- 	}
+diff --git a/Documentation/devicetree/bindings/regulator/act8865-regulator.txt b/Documentation/devicetree/bindings/regulator/act8865-regulator.txt
+index 01a5b07..45369d8 100644
+--- a/Documentation/devicetree/bindings/regulator/act8865-regulator.txt
++++ b/Documentation/devicetree/bindings/regulator/act8865-regulator.txt
+@@ -6,8 +6,8 @@ Required properties:
+ - reg: I2C slave address
  
--	if (of_system_has_poweroff_source(dev->of_node)) {
-+	if (of_is_system_power_controller(dev->of_node)) {
- 		if (!pm_power_off) {
- 			act8865_i2c_client = client;
- 			act8865->off_reg = off_reg;
+ Optional properties:
+-- poweroff-source: Telling whether or not this pmic is controlling
+-  the system power. See Documentation/devicetree/bindings/power/poweroff.txt .
++- system-power-controller: Telling whether or not this pmic is controlling the
++  system power. See Documentation/devicetree/bindings/power/power-controller.txt.
+ 
+ Any standard regulator properties can be used to configure the single regulator.
+ 
 -- 
 1.9.1
