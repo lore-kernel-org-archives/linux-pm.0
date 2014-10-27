@@ -1,78 +1,127 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v3 47/47] kernel: Remove pm_power_off
-Date: Mon, 27 Oct 2014 08:55:54 -0700
-Message-ID: <1414425354-10359-48-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v3 41/47] sh: Register with kernel power-off handler
+Date: Mon, 27 Oct 2014 08:55:48 -0700
+Message-ID: <1414425354-10359-42-git-send-email-linux@roeck-us.net>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:50313 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752129AbaJ0P5q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 11:57:46 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1Ximfx-000daO-VM
+	for linux-pm@vger.kernel.org; Mon, 27 Oct 2014 15:57:46 +0000
 In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, linux-sh@vger.kernel.org
 
-No users of pm_power_off are left, so it is safe to remove the function.
+Register with kernel power-off handler instead of setting pm_power_off
+directly.
 
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>
-Acked-by: Rafael J. Wysocki <rjw@rjwysocki.net>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v3:
 - Replace poweroff in all newly introduced variables and in text
   with power_off or power-off as appropriate
+- Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- poweroff -> power_off for API functions
+- Use defines to specify poweroff handler priorities
 
- include/linux/pm.h               |  1 -
- kernel/power/power_off_handler.c | 10 +---------
- 2 files changed, 1 insertion(+), 10 deletions(-)
+ arch/sh/boards/board-sh7785lcr.c       | 3 ++-
+ arch/sh/boards/board-urquell.c         | 3 ++-
+ arch/sh/boards/mach-highlander/setup.c | 3 ++-
+ arch/sh/boards/mach-landisk/setup.c    | 3 ++-
+ arch/sh/boards/mach-r2d/setup.c        | 3 ++-
+ arch/sh/boards/mach-sdk7786/setup.c    | 3 ++-
+ 6 files changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 49b3420..4d92122 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -31,7 +31,6 @@
- /*
-  * Callbacks for platform drivers to implement.
-  */
--extern void (*pm_power_off)(void);
- extern void (*pm_power_off_prepare)(void);
+diff --git a/arch/sh/boards/board-sh7785lcr.c b/arch/sh/boards/board-sh7785lcr.c
+index 2c4771e..f7d2ffb 100644
+--- a/arch/sh/boards/board-sh7785lcr.c
++++ b/arch/sh/boards/board-sh7785lcr.c
+@@ -332,7 +332,8 @@ static void __init sh7785lcr_setup(char **cmdline_p)
  
- /*
-diff --git a/kernel/power/power_off_handler.c b/kernel/power/power_off_handler.c
-index 97b7163..8d01e77 100644
---- a/kernel/power/power_off_handler.c
-+++ b/kernel/power/power_off_handler.c
-@@ -22,12 +22,6 @@
- #include <linux/types.h>
+ 	printk(KERN_INFO "Renesas Technology Corp. R0P7785LC0011RL support.\n");
  
- /*
-- * If set, calling this function will power off the system immediately.
-- */
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
--/*
-  *	Notifier list for kernel code which wants to be called
-  *	to power off the system.
-  */
-@@ -259,8 +253,6 @@ void do_kernel_power_off(void)
- 	 * removed while the call chain is traversed, but we'll have to carry
- 	 * that risk.
- 	 */
--	if (pm_power_off)
--		pm_power_off();
- 	raw_notifier_call_chain(&power_off_handler_list, 0, NULL);
- }
+-	pm_power_off = sh7785lcr_power_off;
++	register_power_off_handler_simple(sh7785lcr_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
  
-@@ -271,6 +263,6 @@ void do_kernel_power_off(void)
-  */
- bool have_kernel_power_off(void)
+ 	/* sm501 DRAM configuration */
+ 	sm501_reg = ioremap_nocache(SM107_REG_ADDR, SM501_DRAM_CONTROL);
+diff --git a/arch/sh/boards/board-urquell.c b/arch/sh/boards/board-urquell.c
+index b52abcc..8f44256 100644
+--- a/arch/sh/boards/board-urquell.c
++++ b/arch/sh/boards/board-urquell.c
+@@ -204,7 +204,8 @@ static void __init urquell_setup(char **cmdline_p)
  {
--	return pm_power_off != NULL || power_off_handler_list.head != NULL;
-+	return power_off_handler_list.head != NULL;
+ 	printk(KERN_INFO "Renesas Technology Corp. Urquell support.\n");
+ 
+-	pm_power_off = urquell_power_off;
++	register_power_off_handler_simple(urquell_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	register_smp_ops(&shx3_smp_ops);
  }
- EXPORT_SYMBOL(have_kernel_power_off);
+diff --git a/arch/sh/boards/mach-highlander/setup.c b/arch/sh/boards/mach-highlander/setup.c
+index 4a52590..fc9110a 100644
+--- a/arch/sh/boards/mach-highlander/setup.c
++++ b/arch/sh/boards/mach-highlander/setup.c
+@@ -385,7 +385,8 @@ static void __init highlander_setup(char **cmdline_p)
+ 
+ 	__raw_writew(__raw_readw(PA_IVDRCTL) | 0x01, PA_IVDRCTL);	/* Si13112 */
+ 
+-	pm_power_off = r7780rp_power_off;
++	register_power_off_handler_simple(r7780rp_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ }
+ 
+ static unsigned char irl2irq[HL_NR_IRL];
+diff --git a/arch/sh/boards/mach-landisk/setup.c b/arch/sh/boards/mach-landisk/setup.c
+index f1147ca..56adabc 100644
+--- a/arch/sh/boards/mach-landisk/setup.c
++++ b/arch/sh/boards/mach-landisk/setup.c
+@@ -89,7 +89,8 @@ static void __init landisk_setup(char **cmdline_p)
+ 	__raw_writeb(__raw_readb(PA_LED) | 0x03, PA_LED);
+ 
+ 	printk(KERN_INFO "I-O DATA DEVICE, INC. \"LANDISK Series\" support.\n");
+-	pm_power_off = landisk_power_off;
++	register_power_off_handler_simple(landisk_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ }
+ 
+ /*
+diff --git a/arch/sh/boards/mach-r2d/setup.c b/arch/sh/boards/mach-r2d/setup.c
+index 4b98a52..4a23bce 100644
+--- a/arch/sh/boards/mach-r2d/setup.c
++++ b/arch/sh/boards/mach-r2d/setup.c
+@@ -279,7 +279,8 @@ static void __init rts7751r2d_setup(char **cmdline_p)
+ 					(ver >> 4) & 0xf, ver & 0xf);
+ 
+ 	__raw_writew(0x0000, PA_OUTPORT);
+-	pm_power_off = rts7751r2d_power_off;
++	register_power_off_handler_simple(rts7751r2d_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	/* sm501 dram configuration:
+ 	 * ColSizeX = 11 - External Memory Column Size: 256 words.
+diff --git a/arch/sh/boards/mach-sdk7786/setup.c b/arch/sh/boards/mach-sdk7786/setup.c
+index c29268b..2d77760 100644
+--- a/arch/sh/boards/mach-sdk7786/setup.c
++++ b/arch/sh/boards/mach-sdk7786/setup.c
+@@ -252,7 +252,8 @@ static void __init sdk7786_setup(char **cmdline_p)
+ 	pr_info("\tPCB revision:\t%d\n", fpga_read_reg(PCBRR) & 0xf);
+ 
+ 	machine_ops.restart = sdk7786_restart;
+-	pm_power_off = sdk7786_power_off;
++	register_power_off_handler_simple(sdk7786_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	register_smp_ops(&shx3_smp_ops);
+ }
 -- 
 1.9.1
+
