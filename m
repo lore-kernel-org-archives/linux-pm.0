@@ -1,52 +1,102 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v3 0/3] cpufreq: cpufreq-dt: platform_data based proposal
-Date: Mon, 27 Oct 2014 14:54:30 +0100
-Message-ID: <CAMuHMdW3v+-M550A1aNRDO_JZCgOKD1xjJOSAA-e7uFUzLU-1Q@mail.gmail.com>
-References: <1413711029-17419-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<2513404.oZkEVY1Jti@vostro.rjw.lan>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCH] cpufreq: cpufreq-dt: Restore default
+ cpumask_setall(policy->cpus)
+Date: Mon, 27 Oct 2014 15:22:51 +0100
+Message-ID: <20141027152251.0249368b@free-electrons.com>
+References: <1414417480-10274-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <2513404.oZkEVY1Jti@vostro.rjw.lan>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "pramod.gurav@smartplayin.com" <pramod.gurav@smartplayin.com>, Rob Herring <rob.herring@linaro.org>, Mike Turquette <mike.turquette@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1414417480-10274-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 21, 2014 at 3:33 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Sunday, October 19, 2014 11:30:26 AM Thomas Petazzoni wrote:
->> Hello Rafael,
->>
->> As you requested, here is a new version of the cpufreq-dt patches,
->> rebased on top of the latest Linus tree
->> (52d589a01d4545ce1dc5c3892bb8c7b55edfe714 as I write this).
->>
->> Compared to version 2:
->>
->>  - Rebased on top of latest Linus tree.
->>
->>  - Removed PATCH 3/4, which is meant to go through the mvebu
->>    maintainer tree. I'll push it post-rc1.
->>
->>  - Added Acked-by tags from Viresh, since he ACKed all the patches.
->>
->> Could you take those patches and push them to 3.18 ?
->
-> I've applied the series and it is in my linux-next branch now (which means that
-> it should appear in linux-next proper tomorrow).
->
-> I'm going to push it for 3.18-rc2.
+Dear Geert Uytterhoeven,
 
-Unfortunately this caused a regression (crash). Fix available in
-https://lkml.org/lkml/2014/10/27/361
+On Mon, 27 Oct 2014 14:44:40 +0100, Geert Uytterhoeven wrote:
+> Commit 34e5a5273d6aa0ee ("cpufreq: cpufreq-dt: extend with
+> platform_data") changed cpufreq_init() to only call
+> cpumask_setall(policy->cpus) if the platform data indicates that all
+> CPUs share the same clock. Before, cpufreq_generic_init() did this
+> unconditionally.
+> 
+> This causes a crash on r8a7791/koelsch when resuming from s2ram:
+> 
+>     Enabling non-boot CPUs ...
+>     CPU1: Booted secondary processor
+>     Unable to handle kernel NULL pointer dereference at virtual address 0000003c
+>     pgd = ee71f980
+>     [0000003c] *pgd=6eeb6003, *pmd=6e0e9003, *pte=00000000
+>     Internal error: Oops: a07 [#1] SMP ARM
+>     Modules linked in:
+>     CPU: 0 PID: 1397 Comm: s2ram Tainted: G        W      3.18.0-rc2-koelsch-00762-g7eed2a4e61d2d978 #581
+>     task: ee6b76c0 ti: ee7f0000 task.ti: ee7f0000
+>     PC is at __cpufreq_add_dev.isra.24+0x24c/0x77c
+>     LR is at __cpufreq_add_dev.isra.24+0x244/0x77c
+>     pc : [<c029e084>]    lr : [<c029e07c>]    psr: 60000153
+>     sp : ee7f1d48  ip : ee7f1d48  fp : ee7f1d84
+>     r10: c04e8448  r9 : 00000000  r8 : 00000001
+>     r7 : c054a8c4  r6 : 00000001  r5 : 00000001  r4 : 00000000
+>     r3 : 00000000  r2 : 00000000  r1 : 20000153  r0 : c054a950
+>     Flags: nZCv  IRQs on  FIQs off  Mode SVC_32  ISA ARM  Segment user
+>     Control: 30c5307d  Table: 6e71f980  DAC: fffffffd
+>     Process s2ram (pid: 1397, stack limit = 0xee7f0240)
+> 
+>     ...
+> 
+>     Backtrace:
+>     [<c029de38>] (__cpufreq_add_dev.isra.24) from [<c029e620>] (cpufreq_cpu_callback+0x6c/0x74)
+>      r10:eec75240 r9:c04e8448 r8:c04ef3a0 r7:00000001 r6:00000012 r5:00000000
+>      r4:00000012
+>     [<c029e5b4>] (cpufreq_cpu_callback) from [<c003f20c>] (notifier_call_chain+0x48/0x70)
+>      r4:ffffffdd r3:c029e5b4
+>     [<c003f1c4>] (notifier_call_chain) from [<c003f2cc>] (__raw_notifier_call_chain+0x1c/0x24)
+>      r8:00000001 r7:00000010 r6:00000000 r5:00000000 r4:00000012 r3:ffffffff
+>     [<c003f2b0>] (__raw_notifier_call_chain) from [<c0026a00>] (__cpu_notify+0x34/0x50)
+>     [<c00269cc>] (__cpu_notify) from [<c0026a34>] (cpu_notify+0x18/0x1c)
+>      r4:00000001
+>     [<c0026a1c>] (cpu_notify) from [<c0026c44>] (_cpu_up+0x108/0x144)
+>     [<c0026b3c>] (_cpu_up) from [<c0381c68>] (enable_nonboot_cpus+0x68/0xb8)
+>      r10:00000000 r9:c04e8ee6 r8:00000000 r7:00000003 r6:c04e8528 r5:c0506248
+>      r4:00000001
+>     [<c0381c00>] (enable_nonboot_cpus) from [<c0059038>] (suspend_devices_and_enter+0x29c/0x3e8)
+>      r6:c0506e70 r5:00000000 r4:00000000 r3:60000153
+> 
+> Restore the old default of calling cpumask_setall(policy->cpus) if no
+> platform data is available to fix this.
+> 
+> Fixes: 34e5a5273d6aa0ee ("cpufreq: cpufreq-dt: extend with
+> platform_data")
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  drivers/cpufreq/cpufreq-dt.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index 2f25958053778ad1..3bfc1175a548c49c 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -293,7 +293,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  	policy->cpuinfo.transition_latency = transition_latency;
+>  
+>  	pd = cpufreq_get_driver_data();
+> -	if (pd && !pd->independent_clocks)
+> +	if (!pd || !pd->independent_clocks)
+>  		cpumask_setall(policy->cpus);
+>  
+>  	of_node_put(np);
 
-Gr{oetje,eeting}s,
+Aah, yes, indeed.
 
-                        Geert
+Reviewed-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Thanks for spotting the issue and fixing it!
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
