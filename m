@@ -1,66 +1,67 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 1/2] power: bq2415x_charger: Properly handle ENODEV
- from power_supply_get_by_phandle
-Date: Mon, 27 Oct 2014 18:43:38 +0100
-Message-ID: <20141027174338.GA10897@earth.universe>
+Subject: Re: [PATCH v2 2/2] power: bq2415x_charger: Fix memory leak on DTS
+ parsing error
+Date: Mon, 27 Oct 2014 18:44:07 +0100
+Message-ID: <20141027174406.GB10897@earth.universe>
 References: <1413383110-20310-1-git-send-email-k.kozlowski@samsung.com>
+ <1413383110-20310-2-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="KFztAG8eRSV9hGtP"
+Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1413383110-20310-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <1413383110-20310-2-git-send-email-k.kozlowski@samsung.com>
+Sender: stable-owner@vger.kernel.org
 To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---UlVJffcvxoiEqYs2
+--KFztAG8eRSV9hGtP
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Oct 15, 2014 at 04:25:09PM +0200, Krzysztof Kozlowski wrote:
-> The power_supply_get_by_phandle() on error returns ENODEV or NULL.
-> The driver later expects obtained pointer to power supply to be
-> valid or NULL. If it is not NULL then it dereferences it in
-> bq2415x_notifier_call() which would lead to dereferencing ENODEV-value
-> pointer.
+On Wed, Oct 15, 2014 at 04:25:10PM +0200, Krzysztof Kozlowski wrote:
+> Memory allocated for 'name' was leaking if required binding properties
+> were not present.
 >=20
-> Properly handle the power_supply_get_by_phandle() error case by
-> replacing error value with NULL. This indicates that usb charger
-> detection won't be used.
+> The memory for 'name' was allocated early at probe with kasprintf(). It
+> was freed in error paths executed before and after parsing DTS but not
+> in that error path.
 >=20
-> Fix also memory leak of 'name' if power_supply_get_by_phandle() fails
-> with NULL and probe should defer.
+> Fix the error path for parsing device tree properties.
+>=20
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Fixes: faffd234cf85 ("bq2415x_charger: Add DT support")
+> Cc: <stable@vger.kernel.org>
 
 Applied to next.
 
 -- Sebastian
 
---UlVJffcvxoiEqYs2
+--KFztAG8eRSV9hGtP
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJUToRKAAoJENju1/PIO/qaGRQQAKUdqO8qigV7WeaJy3rBvwfs
-2wTZdoMCFlteBYybwvUdPzMiyzmB1ZFCgADgfCujnvV1JwBqUawPY1F+FxpWte8Y
-JdLEGkt6LS36iklNIT8NTOkiKJYeFDfia9J8fgx6eT1cS9AdH61cy0OpSX+EstD5
-sKh+MZsZJFT9glc0nIFY6/VJYhzyQUKTAOnWkUVF/Q/r7uYLrUAvQXfoadNvvovP
-QHRL73uWsPvVRgTF7yETMjE4tudHa9vstHFoenfxQttw3ypMheJ5GiDVBkiLesNM
-Wfh/m8VEcd/TQXz4mYXAwpFKyQlN3jsMmkryTp8VPqPF/Glb+K9C/thBvWxHtWo/
-xsuDHpYH8rIS4jB+kfjzLxJKi1ZzZD/wM/0wAVcRqI8SSKkz6/Xtj71Xoh+2vyN6
-AH1D2FaR5fL2DGy7b5d2fI76ODhiOJ49/KH1PVh+AkYjxevUPDAF6N2FHxbCduQM
-U/5FqY6s9pqMWOezYwvx1ieQVRW0YdpHWNMQgFycRUEOprytC+FiuNnkSlGz0qqm
-bAJvJ4Mk6RTUY85ETIjbEtsVzI9ODmfhKiM2Fl2G3HzTd5ZtpygLizpNSv9gaRAr
-mdnSwCPBodOGTPgJvUCKDhnqYor/gJBZragCRtbkYeDATB/IhUs+eGfHWd91p2M5
-K+3ZsjsMjjKV6xE1MXRh
-=5TBn
+iQIcBAEBCgAGBQJUToRmAAoJENju1/PIO/qaa10P/RHzYulySf1d3tH5nWjA8fIq
+JgaA5copIntFb9cc1gyW9fRoavJbHrbEgH7nb1IUuO3yhoTh5gvIWj3Va88Zz3Fe
+xn7YaRlOPMOvjuSLpBv1eXSHrH10LN1axLD+o0vm4yhYnTs7vJLY3t4MEyUPRjJn
+kgoBl4H2oiFd50G1PU5OOqwOBrBeQiB0u8q3IPmwFwbUK6vRCRe+0Zk+OQVxau3Y
+tWyj26ECeO102pM6xlwPtSx35Gk+0nQOAypabTNAFNQLfZJq8IrgkrYlTy7c8LE1
+nGYuL6zU5GMbyJC8DAMvF7u7olorgsfoPpfK/YnD233VWYVfw1KsVOM2QpsxdEgs
+bo/XaeUDR+yxNpeyR5DzFjotcoy+LhAQnyOPSVwdUdfnnS9fw7Ezb39FKAn7k51A
+DtbiYuff1TcC86pkOlBRftGYkbJDR8FMbc9HidQ6sTgs5OFbs7mVADzcZsEmdR4L
+UwBlmFxDfxkR5HP0QULetRMKKD4svpF3wsqKqn1iHCsW731L0Iu3N273J6eUKRl1
+9Y8W0OfnLu6G6zNpS4w3+5TcVprSOgeZ+v0Wl4IDLYGP3npzoi4OIbyUkxdP5o4I
+1fnkbxKTdG5T5T/oDn6qN4qeYy+ESGmxyIBquWHDqQyAy91SUvl62MBWE/5EFIxD
+LNpwNq7WS5F+hJeXzv/u
+=oBPr
 -----END PGP SIGNATURE-----
 
---UlVJffcvxoiEqYs2--
+--KFztAG8eRSV9hGtP--
