@@ -1,152 +1,183 @@
-From: Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v1 01/10] of: Rename "poweroff-source" property to
- "system-power-controller"
-Date: Mon, 27 Oct 2014 12:08:06 -0500
-Message-ID: <20141027170806.GL14253@saruman>
-References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
- <20141027164103.GD2006@localhost>
- <20141027164741.GJ14253@saruman>
- <108805117.sS9iL5zouT@diego>
-Reply-To: <balbi-l0cyMroinI0@public.gmane.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v3 00/47] kernel: Add support for power-off handler call
+ chain
+Date: Mon, 27 Oct 2014 10:16:17 -0700
+Message-ID: <20141027171617.GA19379@roeck-us.net>
+References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
+ <20141027160324.GD10814@saruman>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+svXpSx+RSEd8UhP"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <108805117.sS9iL5zouT@diego>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: balbi-l0cyMroinI0@public.gmane.org, Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <20141027160324.GD10814@saruman>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Felipe Balbi <balbi@ti.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>, Johan Hovold <johan@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---+svXpSx+RSEd8UhP
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Oct 27, 2014 at 11:03:24AM -0500, Felipe Balbi wrote:
+> Adding Johan, who's working on RTC power off for AM335x devices
+> 
+Hi Felipe,
 
-On Mon, Oct 27, 2014 at 06:05:35PM +0100, Heiko St=FCbner wrote:
-> Am Montag, 27. Oktober 2014, 11:47:41 schrieb Felipe Balbi:
-> > On Mon, Oct 27, 2014 at 05:41:03PM +0100, Johan Hovold wrote:
-> > > On Mon, Oct 27, 2014 at 11:38:40AM -0500, Felipe Balbi wrote:
-> > > > On Mon, Oct 27, 2014 at 04:26:46PM +0000, Romain Perier wrote:
-> > > > > As discussed on the mailing list, it makes more sense to rename t=
-his
-> > > > > property to "system-power-controller". Problem being that the word
-> > > > > "source" usually tends to be used for inputs and that is out of
-> > > > > control of the OS. The poweroff capability is an output which sim=
-ply
-> > > > > turns the system-power off. Also, this property might be used by
-> > > > > drivers which power-off the system and power back on subsequent R=
-TC
-> > > > > alarms. This seems to suggest to remove "poweroff" from the prope=
-rty
-> > > > > name and to choose "system-power-controller" as the more generic
-> > > > > name. This patchs adds the required renaming changes and defines =
-an
-> > > > > helper function which is compatible with both properties, the old=
- one
-> > > > > prefixed by a vendor name and the new one without any prefix.
-> > > >=20
-> > > > I think you still need to support poweroff-source since it has been
-> > > > released on a stable kernel. Perhaps add a warning message telling =
-users
-> > > > it's deprecated and asking them to switch over to
-> > > > system-power-controller ? Still, simply removing it isn't very nice.
-> > >=20
-> > > No, Romain sent a patch that replaced "<vendor>,system-power-controll=
-er"
-> > > with "poweroff-source". It's now in Mark's tree (for v3.19), and this
-> > > series "reverts" to the old name minus the vendor-prefix.
-> >=20
-> > oh, so poweroff-source isn't in Linus' tree yet ? (/me goes grep)
-> >=20
-> > Then it should be fine. My bad.
-> >=20
-> > Many of the other comments are still valid because even though
-> > poweroff-source isn't in mainline yet, this series still creates
-> > bisection points which are broken. The best solution would be to drop
-> > all those patches from Mark's tree. Read, not revert, drop.
->=20
-> There have never been any users of the poweroff-source. The act8846 in th=
-e=20
-> radxarock would have been the first, but I held off with the dts patch as=
- the=20
-> naming issue came up at the same time.
->=20
-> So I guess if Romain keeps the renaming together there shouldn't be any o=
-ther=20
-> bad bisection points?
+is that the rtc-omap driver ?
 
-Not build breaks, but there will always be the commit below:
+I am tracking linux-next for related changes. As new power-off handlers are
+introduced, I prepare patches for those as well. I currently have patches for
+the following two drivers in the queue:
+	drivers/regulator/act8865-regulator.c
+	drivers/rtc/rtc-omap.c
 
-commit a88f5c6deb2a44f694b01aac48231ec97059b26a
-Author: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Date:   Tue Oct 14 06:31:12 2014 +0000
+I plan to send review requests for those patches in a week or so (I think
+there is still some change pending to the power-off function in the rtc-omap
+driver, and I want to wait for it).
 
-    dt-bindings: Document the standard property "poweroff-source"
-   =20
-    Signed-off-by: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-    Signed-off-by: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+My current plan is to send a pull request for the series directly to Linus
+when the next commit window opens; this is what a number of maintainers
+suggested I should do. This pull request would exclude the last patch,
+so pm_power_off would still be there. Next steps would then be to submit
+another set of patches to update the newly introduced power-off handlers
+and then to finally remove pm_power_off; this would probably happen after
+the commit window closes.
 
-diff --git a/Documentation/devicetree/bindings/power/poweroff.txt b/Documen=
-tation/devicetree/bindings/power/poweroff.txt
-new file mode 100644
-index 0000000..845868b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/poweroff.txt
-@@ -0,0 +1,18 @@
-+* Generic Poweroff capability
-+
-+Power-management integrated circuits or miscellaneous harware components a=
-re
-+sometimes able to control the system power. The device driver associated t=
-o these
-+components might needs to define poweroff capability, which tells to the k=
-ernel
-+how to switch off the system. The corresponding driver must have the stand=
-ard
-+property "poweroff-source" in its device node. This property marks the dev=
-ice as
-+able to shutdown the system. In order to test if this property is found
-+programmatically, use the helper function "of_system_has_poweroff_source" =
-=66rom
-+of.h .
-+
-+Example:
-+
-+act8846: act8846@5 {
-+	 compatible =3D "active-semi,act8846";
-+	 status =3D "okay";
-+	 poweroff-source;
-+}
+At least that is the plan unless someone has a better idea ....
 
-Even if for a small time frame, there will always be a commit where we
-called "poweroff-source" a standard binding and, as such, as should
-support it.
+There may be some variants; for example, it might make sense to create an
+immutable branch with the key patches (1-3 and 8) to enable others to use
+the new functions immediately. That would require Acks from affected
+maintainers for patch 1, though, so I can not do that yet.
 
---=20
-balbi
+Thanks,
+Guenter
 
---+svXpSx+RSEd8UhP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUTnv2AAoJEIaOsuA1yqRETiEQAJO/+1AlHqC2EgvZGFWKosMh
-jKdDiSbRvT65lcaxZ20qzDc4j3lgCEvMaScDHaIfr4e/JW2bpKKl9D36pD9vGhvs
-ksN94eB6gjmIFO/SQkSGR9yI0NxtoE2V4Fuq3pbW7YmYRov3H4Cclx25DSC8ZmWF
-mkowIAfa8MrCAh4bCsJibxArj7B/IX+ymZwRPLuSg59Avblt0P8bhH5BYZznYJJT
-ihZ0jTKmiUnGWfn/f1s29McfZYTLQSPNNp6GcEZCtwEoEMX+2lywyw0etPJFYQYA
-IfAdHoGeLwlHpXnHBoe3QV4dQ9Sv3WPBvrVyMuvMExxOIH3TaUr/UZP6x1prT4HY
-HWcc/0+z+4RtrXfvo48lbrczG3flBwzdURF2wEmsZYaAD+jiYbbOH9E4HWFod2W7
-A0BEE1+GPkIwf6MqlWC7yGoAhNSx2Z7bW0p3hVQkroGspowyKmLLPgba1tPiimaB
-ahDEgH+O2S6YO8Bae22+ng3KYD80OlUQNuXfQ+VGY3GUp6TN0vmwTXLLdEuBgzyN
-oVuT6ss792je4MbM3NAb1ACno3+wBndJolNcS2lwuTQb4Rn9rkJtTbsnvEK6tFra
-GgYHA5ZHpyuf/EQFlXVKp1oRbbvathhlIOgCPA59NSVVYm31k/UkvjvV1Sf5qkvm
-gi8ZP2P0/CgRkGutv4TH
-=oNtZ
------END PGP SIGNATURE-----
-
---+svXpSx+RSEd8UhP--
+> On Mon, Oct 27, 2014 at 08:55:07AM -0700, Guenter Roeck wrote:
+> > Various drivers implement architecture and/or device specific means to
+> > remove power from the system.  For the most part, those drivers set the
+> > global variable pm_power_off to point to a function within the driver.
+> > 
+> > This mechanism has a number of drawbacks.  Typically only one means
+> > to remove power is supported (at least if pm_power_off is used).
+> > At least in theory there can be multiple means to remove power, some of
+> > which may be less desirable.  For example, one mechanism might power off the
+> > entire system through an I/O port or gpio pin, while another might power off
+> > a board by disabling its power controller. Other mechanisms may really just
+> > execute a restart sequence or drop into the ROM monitor, or put the CPU into
+> > sleep mode.  Using pm_power_off can also be racy if the function pointer is
+> > set from a driver built as module, as the driver may be in the process of
+> > being unloaded when pm_power_off is called.  If there are multiple power-off
+> > handlers in the system, removing a module with such a handler may
+> > inadvertently reset the pointer to pm_power_off to NULL, leaving the system
+> > with no means to remove power.
+> > 
+> > Introduce a system power-off handler call chain to solve the described
+> > problems.  This call chain is expected to be executed from the architecture
+> > specific machine_power_off() function.  Drivers providing system power-off
+> > functionality are expected to register with this call chain.  By using the
+> > priority field in the notifier block, callers can control power-off handler
+> > execution sequence and thus ensure that the power-off handler with the
+> > optimal capabilities to remove power for a given system is called first.
+> > A call chain instead of a single call to the highest priority handler is
+> > used to provide fallback: If multiple power-off handlers are installed,
+> > all handlers will be called until one actually succeeds to power off the
+> > system.
+> > 
+> > Patch 01/47 implements the power-off handler API.
+> > 
+> > Patches 02/47 to 04/47 are cleanup patches to prepare for the move of
+> > pm_power_off to a common location.
+> > 
+> > Patches 05/47 to 07/47 remove references to pm_power_off from devicetree
+> > bindings descriptions.
+> > 
+> > Patch 08/47 moves the pm_power_off variable from architecture code to
+> > kernel/reboot.c. 
+> > 
+> > Patches 09/47 to 34/47 convert various drivers to register with the kernel
+> > power-off handler instead of setting pm_power_off directly.
+> > 
+> > Patches 35/47 to 46/47 do the same for architecture code.
+> > 
+> > Patch 47/47 finally removes pm_power_off.
+> > 
+> > For the most part, the individual patches include explanations why specific
+> > priorities were chosen, at least if the selected priority is not the default
+> > priority. Subsystem and architecture maintainers are encouraged to have a look
+> > at the selected priorities and suggest improvements.
+> > 
+> > I ran the final code through my normal build and qemu tests. Results are
+> > available at http://server.roeck-us.net:8010/builders in the 'poweroff-handler'
+> > column. I also built all available configurations for arm, mips, powerpc,
+> > m68k, and sh architectures.
+> > 
+> > The series is available in branch poweroff-handler of my repository at
+> > git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git.
+> > It is based on 3.18-rc2.
+> > 
+> > A note on Cc: In the initial submission I had way too many Cc:, causing the
+> > patchset to be treated as spam by many mailers and mailing list handlers,
+> > which of course defeated the purpose. This time around I am cutting down
+> > the distribution list down significantly. My apologies to anyone I may have
+> > failed to copy this time around.
+> > 
+> > Important changes since v2:
+> > - Rebased series to v3.18-rc2.
+> > - Do not hold any locks while executing the power-off call chain.
+> >   This ensures that power-off handlers are executed in the state
+> >   selected by the machine_power_off function for a given architecture,
+> >   ie without changing the current semantics of power-off callbacks and
+> >   machine_power_off functions.
+> >   Power-off handler registration and de-registration is handled in atomic
+> >   context with interrupts disabled to ensure that those functions are not
+> >   interrupted by code which powers off the system.
+> > - Use [xxx_]power_off[_xxx] instead of [xxx_]poweroff[_xxx] for newly
+> >   introduced function and variable names.
+> > - Use power-off instead of poweroff in descriptive text and comments.
+> > - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+> > - Use ACPI: instead of acpi: for messages in acpi code.
+> > 
+> > Important changes since v1:
+> > - Rebased series to v3.18-rc1.
+> > - Use raw notifier with spinlock protection instead of atomic notifiers,
+> >   since some power-off handlers need to have interrupts enabled.
+> > - Renamed API functions from _poweroff to _power_off.
+> > - Added various Acks.
+> > - Build tested all configurations for arm, powerpc, and mips architectures.
+> > - Fixed two compile errors in mips patch.
+> > - Replaced dev_err and pr_err with dev_warn and pr_warn if an error is not
+> >   fatal.
+> > - Provide managed resources API and use where appropriate.
+> > - Provide and use definitions for standard priorities.
+> > - Added patches to convert newly introduced power-off handlers.
+> > - Various minor changes.
+> > 
+> > Important changes since RFC:
+> > - Move API to new file kernel/power/power_off_handler.c.
+> > - Move pm_power_off pointer to kernel/power/power_off_handler.c. Call
+> >   pm_power_off from do_kernel_power_off, and only call do_kernel_power_off
+> >   from architecture code instead of calling both pm_power_off and
+> >   do_kernel_power_off.
+> > - Provide additional API function register_power_off_handler_simple
+> >   to simplify conversion of architecture code.
+> > - Provide additional API function have_kernel_power_off to check if
+> >   a power-off handler was installed.
+> > - Convert all drivers and architecture code to use the new API.
+> > - Remove pm_power_off as last patch of the series.
+> > 
+> > Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+> > Cc: Alexander Graf <agraf@suse.de>
+> > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> > cc: Heiko Stuebner <heiko@sntech.de>
+> > Cc: Lee Jones <lee.jones@linaro.org>
+> > Cc: Len Brown <len.brown@intel.com>
+> > Cc: Pavel Machek <pavel@ucw.cz>
+> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > Cc: Romain Perier <romain.perier@gmail.com>
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> -- 
+> balbi
