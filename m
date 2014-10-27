@@ -1,28 +1,33 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v3 20/47] mfd: rn5t618: Register power-off handler with kernel power-off handler
-Date: Mon, 27 Oct 2014 08:55:27 -0700
-Message-ID: <1414425354-10359-21-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v3 24/47] power/reset: as3722-poweroff: Register with kernel power-off handler
+Date: Mon, 27 Oct 2014 08:55:31 -0700
+Message-ID: <1414425354-10359-25-git-send-email-linux@roeck-us.net>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:50095 "EHLO
+Received: from bh-25.webhostbox.net ([208.91.199.152]:50128 "EHLO
 	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbaJ0P4w (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 11:56:52 -0400
+	with ESMTP id S1752835AbaJ0P5A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 11:57:00 -0400
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
 	(envelope-from <linux@roeck-us.net>)
-	id 1Ximf5-000cMR-Ot
-	for linux-pm@vger.kernel.org; Mon, 27 Oct 2014 15:56:51 +0000
+	id 1XimfD-000cRb-Uo
+	for linux-pm@vger.kernel.org; Mon, 27 Oct 2014 15:57:00 +0000
 In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Beniamino Galvani <b.galvani@gmail.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 
 Register with kernel power-off handler instead of setting pm_power_off
 directly. Register with low priority to reflect that the original code
 only sets pm_power_off if it was not already set.
 
-Cc: Beniamino Galvani <b.galvani@gmail.com>
+Drop remove function since it is no longer needed.
+
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Acked-by: Sebastian Reichel <sre@kernel.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v3:
@@ -30,100 +35,94 @@ v3:
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- New patch
+- Use define to specify poweroff handler priority
+- Use devm_register_power_off_handler
+- Drop remove function since it is no longer needed
 
- drivers/mfd/rn5t618.c       | 32 ++++++++++++++++----------------
- include/linux/mfd/rn5t618.h |  2 ++
- 2 files changed, 18 insertions(+), 16 deletions(-)
+ drivers/power/reset/as3722-poweroff.c | 39 ++++++++++++++---------------------
+ 1 file changed, 15 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/mfd/rn5t618.c b/drivers/mfd/rn5t618.c
-index 6668571..ed564d1 100644
---- a/drivers/mfd/rn5t618.c
-+++ b/drivers/mfd/rn5t618.c
-@@ -15,6 +15,8 @@
- #include <linux/mfd/core.h>
- #include <linux/mfd/rn5t618.h>
+diff --git a/drivers/power/reset/as3722-poweroff.c b/drivers/power/reset/as3722-poweroff.c
+index 6849711..ebc177f 100644
+--- a/drivers/power/reset/as3722-poweroff.c
++++ b/drivers/power/reset/as3722-poweroff.c
+@@ -17,32 +17,33 @@
+ 
+ #include <linux/mfd/as3722.h>
  #include <linux/module.h>
 +#include <linux/notifier.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
 +#include <linux/pm.h>
- #include <linux/regmap.h>
+ #include <linux/slab.h>
  
- static const struct mfd_cell rn5t618_cells[] = {
-@@ -47,16 +49,20 @@ static const struct regmap_config rn5t618_regmap_config = {
- 	.cache_type	= REGCACHE_RBTREE,
+ struct as3722_poweroff {
+ 	struct device *dev;
+ 	struct as3722 *as3722;
++	struct notifier_block power_off_nb;
  };
  
--static struct rn5t618 *rn5t618_pm_power_off;
+-static struct as3722_poweroff *as3722_pm_poweroff;
 -
--static void rn5t618_power_off(void)
-+static int rn5t618_power_off(struct notifier_block *this,
-+			     unsigned long unused1, void *unused2)
+-static void as3722_pm_power_off(void)
++static int as3722_power_off(struct notifier_block *this, unsigned long unused1,
++			    void *unused2)
  {
-+	struct rn5t618 *rn5t618 = container_of(this, struct rn5t618,
-+					       power_off_nb);
-+
- 	/* disable automatic repower-on */
--	regmap_update_bits(rn5t618_pm_power_off->regmap, RN5T618_REPCNT,
-+	regmap_update_bits(rn5t618->regmap, RN5T618_REPCNT,
- 			   RN5T618_REPCNT_REPWRON, 0);
- 	/* start power-off sequence */
--	regmap_update_bits(rn5t618_pm_power_off->regmap, RN5T618_SLPCNT,
-+	regmap_update_bits(rn5t618->regmap, RN5T618_SLPCNT,
- 			   RN5T618_SLPCNT_SWPWROFF, RN5T618_SLPCNT_SWPWROFF);
++	struct as3722_poweroff *as3722_poweroff =
++		container_of(this, struct as3722_poweroff, power_off_nb);
+ 	int ret;
+ 
+-	if (!as3722_pm_poweroff) {
+-		pr_err("AS3722 poweroff is not initialised\n");
+-		return;
+-	}
+-
+-	ret = as3722_update_bits(as3722_pm_poweroff->as3722,
++	ret = as3722_update_bits(as3722_poweroff->as3722,
+ 		AS3722_RESET_CONTROL_REG, AS3722_POWER_OFF, AS3722_POWER_OFF);
+ 	if (ret < 0)
+-		dev_err(as3722_pm_poweroff->dev,
++		dev_err(as3722_poweroff->dev,
+ 			"RESET_CONTROL_REG update failed, %d\n", ret);
 +
 +	return NOTIFY_DONE;
  }
  
- static int rn5t618_i2c_probe(struct i2c_client *i2c,
-@@ -85,23 +91,17 @@ static int rn5t618_i2c_probe(struct i2c_client *i2c,
- 		return ret;
- 	}
+ static int as3722_poweroff_probe(struct platform_device *pdev)
+@@ -63,20 +64,11 @@ static int as3722_poweroff_probe(struct platform_device *pdev)
  
--	if (!pm_power_off) {
--		rn5t618_pm_power_off = priv;
--		pm_power_off = rn5t618_power_off;
--	}
-+	priv->power_off_nb.notifier_call = rn5t618_power_off;
-+	priv->power_off_nb.priority = POWER_OFF_PRIORITY_LOW;
-+	ret = devm_register_power_off_handler(&i2c->dev, &priv->power_off_nb);
-+	if (ret)
-+		dev_warn(&i2c->dev, "Failed to register power-off handler\n");
- 
- 	return 0;
- }
- 
- static int rn5t618_i2c_remove(struct i2c_client *i2c)
- {
--	struct rn5t618 *priv = i2c_get_clientdata(i2c);
+ 	as3722_poweroff->as3722 = dev_get_drvdata(pdev->dev.parent);
+ 	as3722_poweroff->dev = &pdev->dev;
+-	as3722_pm_poweroff = as3722_poweroff;
+-	if (!pm_power_off)
+-		pm_power_off = as3722_pm_power_off;
 -
--	if (priv == rn5t618_pm_power_off) {
--		rn5t618_pm_power_off = NULL;
+-	return 0;
+-}
+-
+-static int as3722_poweroff_remove(struct platform_device *pdev)
+-{
+-	if (pm_power_off == as3722_pm_power_off)
 -		pm_power_off = NULL;
--	}
--
- 	mfd_remove_devices(&i2c->dev);
- 	return 0;
+-	as3722_pm_poweroff = NULL;
++	as3722_poweroff->power_off_nb.notifier_call = as3722_power_off;
++	as3722_poweroff->power_off_nb.priority = POWER_OFF_PRIORITY_LOW;
+ 
+-	return 0;
++	return devm_register_power_off_handler(&pdev->dev,
++					      &as3722_poweroff->power_off_nb);
  }
-diff --git a/include/linux/mfd/rn5t618.h b/include/linux/mfd/rn5t618.h
-index c72d534..21c9c39 100644
---- a/include/linux/mfd/rn5t618.h
-+++ b/include/linux/mfd/rn5t618.h
-@@ -14,6 +14,7 @@
- #ifndef __LINUX_MFD_RN5T618_H
- #define __LINUX_MFD_RN5T618_H
  
-+#include <linux/notifier.h>
- #include <linux/regmap.h>
- 
- #define RN5T618_LSIVER			0x00
-@@ -223,6 +224,7 @@ enum {
- 
- struct rn5t618 {
- 	struct regmap *regmap;
-+	struct notifier_block power_off_nb;
+ static struct platform_driver as3722_poweroff_driver = {
+@@ -85,7 +77,6 @@ static struct platform_driver as3722_poweroff_driver = {
+ 		.owner = THIS_MODULE,
+ 	},
+ 	.probe = as3722_poweroff_probe,
+-	.remove = as3722_poweroff_remove,
  };
  
- #endif /* __LINUX_MFD_RN5T618_H */
+ module_platform_driver(as3722_poweroff_driver);
 -- 
 1.9.1
 
