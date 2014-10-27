@@ -1,97 +1,74 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v3 45/47] x86: pmc_atom: Register power-off handler with kernel power-off handler
-Date: Mon, 27 Oct 2014 08:55:52 -0700
-Message-ID: <1414425354-10359-46-git-send-email-linux@roeck-us.net>
-References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:50338 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753379AbaJ0P5w (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 11:57:52 -0400
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1Ximg3-000deT-Px
-	for linux-pm@vger.kernel.org; Mon, 27 Oct 2014 15:57:51 +0000
-In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v2 12/47] mfd: ab8500-sysctrl: Register with kernel
+ poweroff handler
+Date: Mon, 27 Oct 2014 16:59:00 +0100
+Message-ID: <CACRpkdY8C3rCZsUGgoM+47bwepvPZwdwCv1NPsb0zk9WbHAKOA@mail.gmail.com>
+References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
+	<1413864783-3271-13-git-send-email-linux@roeck-us.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1413864783-3271-13-git-send-email-linux@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
 
-Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with low priority to reflect that the original code
-only sets pm_power_off if it was not already set.
+On Tue, Oct 21, 2014 at 6:12 AM, Guenter Roeck <linux@roeck-us.net> wro=
+te:
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
-v3:
-- Replace poweroff in all newly introduced variables and in text
-  with power_off or power-off as appropriate
-- Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
-v2:
-- Use define to specify poweroff handler priority
-- Use dev_warn instead of dev_err
+> Register with kernel poweroff handler instead of setting pm_power_off
+> directly. Register with low priority to reflect that the original cod=
+e
+> only sets pm_power_off if it was not already set.
+>
+> sysctrl_dev is set prior to poweroff handler registration, and the
+> poweroff handler is unregistered prior to clearing sysrctrl_dev.
+> It is therefore not necessary to check if sysctrl_dev is NULL in the
+> poweroff handler, and the check was removed. Setting sysctrl_dev to N=
+ULL
+> in the remove function was also removed as unnecessary. With those ch=
+anges,
+> devm_register_power_off_handler can be used to register the poeroff h=
+andler.
+> The now empty remove function was retained since the ab8500_restart f=
+unction,
+> which is currently unused, would likely need some cleanup if it was e=
+ver used.
+>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Cc: Samuel Ortiz <sameo@linux.intel.com>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> ---
+> v2:
+> - Use define to specify poweroff handler priority
+> - Use devm_register_power_off_handler
+> - Use dev_warn instead of dev_err
+> - Since we use devm_register_power_off_handler,
+>   we need to check if sysctrl_dev in the poweroff handler to avoid
+>   a race condition on unload, so this check is no longer removed
 
- arch/x86/kernel/pmc_atom.c | 20 +++++++++++++++++---
- 1 file changed, 17 insertions(+), 3 deletions(-)
+I can't compile this, I guess because of a dependency on some
+other patch?
 
-diff --git a/arch/x86/kernel/pmc_atom.c b/arch/x86/kernel/pmc_atom.c
-index 0ee5025e..973cd5b 100644
---- a/arch/x86/kernel/pmc_atom.c
-+++ b/arch/x86/kernel/pmc_atom.c
-@@ -20,6 +20,8 @@
- #include <linux/pci.h>
- #include <linux/device.h>
- #include <linux/debugfs.h>
-+#include <linux/notifier.h>
-+#include <linux/pm.h>
- #include <linux/seq_file.h>
- #include <linux/io.h>
- 
-@@ -92,7 +94,8 @@ static inline void pmc_reg_write(struct pmc_dev *pmc, int reg_offset, u32 val)
- 	writel(val, pmc->regmap + reg_offset);
- }
- 
--static void pmc_power_off(void)
-+static int pmc_power_off(struct notifier_block *this, unsigned long unused1,
-+			 void *unused2)
- {
- 	u16	pm1_cnt_port;
- 	u32	pm1_cnt_value;
-@@ -107,8 +110,15 @@ static void pmc_power_off(void)
- 	pm1_cnt_value |= SLEEP_ENABLE;
- 
- 	outl(pm1_cnt_value, pm1_cnt_port);
-+
-+	return NOTIFY_DONE;
- }
- 
-+static struct notifier_block pmc_power_off_nb = {
-+	.notifier_call = pmc_power_off,
-+	.priority = POWER_OFF_PRIORITY_LOW,
-+};
-+
- static void pmc_hw_reg_setup(struct pmc_dev *pmc)
- {
- 	/*
-@@ -252,8 +262,12 @@ static int pmc_setup_dev(struct pci_dev *pdev)
- 	acpi_base_addr &= ACPI_BASE_ADDR_MASK;
- 
- 	/* Install power off function */
--	if (acpi_base_addr != 0 && pm_power_off == NULL)
--		pm_power_off = pmc_power_off;
-+	if (acpi_base_addr != 0) {
-+		ret = register_power_off_handler(&pmc_power_off_nb);
-+		if (ret)
-+			dev_warn(&pdev->dev,
-+				 "Failed to install power-off handler\n");
-+	}
- 
- 	pci_read_config_dword(pdev, PMC_BASE_ADDR_OFFSET, &pmc->base_addr);
- 	pmc->base_addr &= PMC_BASE_ADDR_MASK;
--- 
-1.9.1
+  CC      drivers/mfd/ab8500-sysctrl.o
+=2E./drivers/mfd/ab8500-sysctrl.c:94:14: error: =E2=80=98POWEROFF_PRIOR=
+ITY_LOW=E2=80=99
+undeclared here (not in a function)
+  .priority =3D POWEROFF_PRIORITY_LOW,
+              ^
+=2E./drivers/mfd/ab8500-sysctrl.c: In function =E2=80=98ab8500_sysctrl_=
+probe=E2=80=99:
+=2E./drivers/mfd/ab8500-sysctrl.c:206:2: error: implicit declaration of
+function =E2=80=98devm_register_power_off_handler=E2=80=99
+[-Werror=3Dimplicit-function-declaration]
+  err =3D devm_register_power_off_handler(sysctrl_dev, &ab8500_poweroff=
+_nb);
 
+I wanted to provide a Tested-by but I guess I can only give this:
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
+
+Yours,
+Linus Walleij
