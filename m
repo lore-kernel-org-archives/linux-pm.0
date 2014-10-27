@@ -1,72 +1,77 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 1/2] power_supply: Add no_thermal property to prevent
- recursive get_temp calls
-Date: Mon, 27 Oct 2014 19:29:58 +0100
-Message-ID: <20141027182957.GD10897@earth.universe>
+Subject: Re: [PATCH v2 2/2] power: charger-manager: Avoid recursive thermal
+ get_temp call
+Date: Mon, 27 Oct 2014 19:32:33 +0100
+Message-ID: <20141027183232.GE10897@earth.universe>
 References: <1412696857-14803-1-git-send-email-k.kozlowski@samsung.com>
+ <1412696857-14803-2-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="hoZxPH4CaxYzWscb"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="wTWi5aaYRw9ix9vO"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.19.201]:56584 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750958AbaJ0Sck (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Oct 2014 14:32:40 -0400
 Content-Disposition: inline
-In-Reply-To: <1412696857-14803-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <1412696857-14803-2-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Anton Vorontsov <anton@enomsg.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
 
---hoZxPH4CaxYzWscb
+--wTWi5aaYRw9ix9vO
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Oct 07, 2014 at 05:47:36PM +0200, Krzysztof Kozlowski wrote:
-> Add a 'no_thermal' property to the power supply class. If true then
-> thermal zone won't be created for this power supply in
-> power_supply_register().
+On Tue, Oct 07, 2014 at 05:47:37PM +0200, Krzysztof Kozlowski wrote:
+> The charger manager supports POWER_SUPPLY_PROP_TEMP property and acts
+> as a thermal zone if any of these conditions match:
+> 1. Fuel gauge used by charger manager supports POWER_SUPPLY_PROP_TEMP.
+> 2. 'cm-thermal-zone' property is present in DTS (then it will supersede
+>    the fuel gauge temperature property).
 >=20
-> Power supply drivers may want to set it if they support
-> POWER_SUPPLY_PROP_TEMP and they are forwarding this get property call to
-> other thermal zone.
+> However in case 1 (fuel gauge reports temperature and 'cm-thermal-zone'
+> is not set) the charger manager forwards its get_temp calls to fuel
+> gauge thermal zone.
 >=20
-> If they won't set it lockdep may report false positive deadlock for
-> thermal zone's mutex because of nested calls to thermal_zone_get_temp().
-> First is the call to thermal_zone_get_temp() of the driver's thermal
-> zone. Thermal core gets POWER_SUPPLY_PROP_TEMP property from this
-> driver. The driver then calls other thermal zone thermal_zone_get_temp()
-> and returns result.
+> This leads to reporting by lockdep a false positive deadlock for thermal
+> zone's mutex because of nested calls to thermal_zone_get_temp(). This is
+> false positive because these are different mutexes: one for charger
+> manager thermal zone and second for fuel gauge thermal zone.
 >=20
-> Example of such driver is charger manager.
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Get rid of false lockdep alert and recursive call by setting
+> 'no_thermal' property for this power supply class. The thermal zone for
+> charger manager won't be created (user space does not use it anyway).
 
-pulled into next, I will include it in 3.18-rc pull request.
+also pulled into next, will also be included in 3.18-rc pull request.
 
 -- Sebastian
 
---hoZxPH4CaxYzWscb
+--wTWi5aaYRw9ix9vO
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJUTo8lAAoJENju1/PIO/qaSKgP/0W568cgElfXRQQPBY1ftAlY
-r/R0nI4tewbf4U/XeigGbo/4rST43FxlBG1YUkRmemdUTe0U/Ze+IKzMLoTwjQiw
-9NRXB/4UdromCkJWDLzWE2RTuHGj3duxpjtXAMo0g+Di9U9FXibAXYaqUho6h+H+
-sx4iIfB/gtSUXzyEXakEXyr4ktEiYsherxWl0rPo5EQkW7+IANY+l5bpCfOYlJJF
-EgcfRjh13tGAn1BTPGxs5Ic+XAmQPvpFCzZNCD5Aut/c6ZSXETSlzYtFjw9+6d+0
-5caP9rtuPsnv5/+YBmEY2ykI3+H0sAIW8bK7YCGljKqbsu2pR9pQAC7ABxnAocSn
-BPBXNuXkHDBSYBkgGTL1azt8n/uL/5FmcSq9RI2zfdO1OUyG7aXJgyFtDrU7XM63
-hR5Du1U77JqFZMwrBE7kjLjuO437aI27qfPRGHWGQngdT7QDw8DFZY02/3Iyh6Rx
-IcQXgj3yvzj0vZtc6AIzn3tmLgOa8sGTQufp4UDzWxMElhnz9fu9S4fKJWIfDg+Y
-X06q2mPn+VaGlkeHJwmxsiR7E2z6lO+NqmTwun4k5y1U7yjb7aHVElROXMXT+oYo
-reyjiajhdsMsDA8pU9BW0XCDHl/EHGNCt5Hs41ukiQxQrmZTbRbfcQOvpzzj2mPy
-MeKxFpdyAgf7J65hb0WR
-=Kt52
+iQIcBAEBCgAGBQJUTo/AAAoJENju1/PIO/qaZr8P/3HwAnw5yV1GVUOxJUtFwAvX
+qRriDhVSrg6NqenMIXNYbt8lpASHoxYyp+/kidO5NYTIIXehsbBYK0kZgC3QAYT4
+HwDNUMJJTmCyFqKJsSRtWtv+a4xluB424b8Fdp67YEraQwy6vUttIMuHahnWJIvR
+FhnSqSkKKSCf9Pm+cJJ/mktlX+FVoNWWgxdtcFBehLO81KuNA/t8d231DJ6e+JDF
+O+E8MDSsRuGqefgkbGe2QOpzEzMbD0bFbT5d/Ibnr+4yaew3JSCLh2GoJ4mUt7+h
+asfPICgDFcFFrr54Jtkx9G3R7RA1YgrI3BuDMo8crdwdT2+MI8thAzFVsXiSLu5I
+8TTXVMcCLuGifQE3b33EC8CyhECk/90NNxgobtdyA2L007eHyKe/3uLAtWXqwJBj
+QVd/7qiI1xTA5F4Bdo8oVtVQrub8Bl0kEoPTS+TLFdYIlDmdsZKsQE3aYeLKRDAY
+1/koaMVrGoDTbMTOH0xiMRa3/a3nY0IX/i5CJsOvtvv3ITj67C3K+7XT5gF7oqSH
+Janq2bYf6wqMDg7bNiopUhAIgw7wPs0hgY643kmAvQMdDHfZGfk26GwEJTweYI9X
+Md4YWcBK99IuO7jqbTxSVDo9Bc6JXQlX+I9btYOUyeCxX6aWg2ytXv0fKuE9AXG9
+Cf4nYEX+RZbhSsNI0BJj
+=GGo5
 -----END PGP SIGNATURE-----
 
---hoZxPH4CaxYzWscb--
+--wTWi5aaYRw9ix9vO--
