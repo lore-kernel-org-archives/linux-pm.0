@@ -1,196 +1,95 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH v3 00/47] kernel: Add support for power-off handler call
- chain
-Date: Mon, 27 Oct 2014 11:03:24 -0500
-Message-ID: <20141027160324.GD10814@saruman>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v3 27/47] power/reset: vexpress-poweroff: Register with kernel power-off handler
+Date: Mon, 27 Oct 2014 08:55:34 -0700
+Message-ID: <1414425354-10359-28-git-send-email-linux@roeck-us.net>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Reply-To: <balbi@ti.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="3Pql8miugIZX0722"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:50162 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752997AbaJ0P5G (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 11:57:06 -0400
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XimfK-000cal-2R
+	for linux-pm@vger.kernel.org; Mon, 27 Oct 2014 15:57:06 +0000
 In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>, Johan Hovold <johan@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>
 
---3Pql8miugIZX0722
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Register with kernel power-off handler instead of setting pm_power_off
+directly. Select default priority to reflect that the original code sets
+pm_power_off unconditionally.
 
-Adding Johan, who's working on RTC power off for AM335x devices
+Acked-by: Sebastian Reichel <sre@kernel.org>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+v3:
+- Replace poweroff in all newly introduced variables and in text
+  with power_off or power-off as appropriate
+- Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+v2:
+- Use define to specify poweroff handler priority
 
-On Mon, Oct 27, 2014 at 08:55:07AM -0700, Guenter Roeck wrote:
-> Various drivers implement architecture and/or device specific means to
-> remove power from the system.  For the most part, those drivers set the
-> global variable pm_power_off to point to a function within the driver.
->=20
-> This mechanism has a number of drawbacks.  Typically only one means
-> to remove power is supported (at least if pm_power_off is used).
-> At least in theory there can be multiple means to remove power, some of
-> which may be less desirable.  For example, one mechanism might power off =
-the
-> entire system through an I/O port or gpio pin, while another might power =
-off
-> a board by disabling its power controller. Other mechanisms may really ju=
-st
-> execute a restart sequence or drop into the ROM monitor, or put the CPU i=
-nto
-> sleep mode.  Using pm_power_off can also be racy if the function pointer =
-is
-> set from a driver built as module, as the driver may be in the process of
-> being unloaded when pm_power_off is called.  If there are multiple power-=
-off
-> handlers in the system, removing a module with such a handler may
-> inadvertently reset the pointer to pm_power_off to NULL, leaving the syst=
-em
-> with no means to remove power.
->=20
-> Introduce a system power-off handler call chain to solve the described
-> problems.  This call chain is expected to be executed from the architectu=
-re
-> specific machine_power_off() function.  Drivers providing system power-off
-> functionality are expected to register with this call chain.  By using the
-> priority field in the notifier block, callers can control power-off handl=
-er
-> execution sequence and thus ensure that the power-off handler with the
-> optimal capabilities to remove power for a given system is called first.
-> A call chain instead of a single call to the highest priority handler is
-> used to provide fallback: If multiple power-off handlers are installed,
-> all handlers will be called until one actually succeeds to power off the
-> system.
->=20
-> Patch 01/47 implements the power-off handler API.
->=20
-> Patches 02/47 to 04/47 are cleanup patches to prepare for the move of
-> pm_power_off to a common location.
->=20
-> Patches 05/47 to 07/47 remove references to pm_power_off from devicetree
-> bindings descriptions.
->=20
-> Patch 08/47 moves the pm_power_off variable from architecture code to
-> kernel/reboot.c.=20
->=20
-> Patches 09/47 to 34/47 convert various drivers to register with the kernel
-> power-off handler instead of setting pm_power_off directly.
->=20
-> Patches 35/47 to 46/47 do the same for architecture code.
->=20
-> Patch 47/47 finally removes pm_power_off.
->=20
-> For the most part, the individual patches include explanations why specif=
-ic
-> priorities were chosen, at least if the selected priority is not the defa=
-ult
-> priority. Subsystem and architecture maintainers are encouraged to have a=
- look
-> at the selected priorities and suggest improvements.
->=20
-> I ran the final code through my normal build and qemu tests. Results are
-> available at http://server.roeck-us.net:8010/builders in the 'poweroff-ha=
-ndler'
-> column. I also built all available configurations for arm, mips, powerpc,
-> m68k, and sh architectures.
->=20
-> The series is available in branch poweroff-handler of my repository at
-> git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git.
-> It is based on 3.18-rc2.
->=20
-> A note on Cc: In the initial submission I had way too many Cc:, causing t=
-he
-> patchset to be treated as spam by many mailers and mailing list handlers,
-> which of course defeated the purpose. This time around I am cutting down
-> the distribution list down significantly. My apologies to anyone I may ha=
-ve
-> failed to copy this time around.
->=20
-> Important changes since v2:
-> - Rebased series to v3.18-rc2.
-> - Do not hold any locks while executing the power-off call chain.
->   This ensures that power-off handlers are executed in the state
->   selected by the machine_power_off function for a given architecture,
->   ie without changing the current semantics of power-off callbacks and
->   machine_power_off functions.
->   Power-off handler registration and de-registration is handled in atomic
->   context with interrupts disabled to ensure that those functions are not
->   interrupted by code which powers off the system.
-> - Use [xxx_]power_off[_xxx] instead of [xxx_]poweroff[_xxx] for newly
->   introduced function and variable names.
-> - Use power-off instead of poweroff in descriptive text and comments.
-> - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
-> - Use ACPI: instead of acpi: for messages in acpi code.
->=20
-> Important changes since v1:
-> - Rebased series to v3.18-rc1.
-> - Use raw notifier with spinlock protection instead of atomic notifiers,
->   since some power-off handlers need to have interrupts enabled.
-> - Renamed API functions from _poweroff to _power_off.
-> - Added various Acks.
-> - Build tested all configurations for arm, powerpc, and mips architecture=
-s.
-> - Fixed two compile errors in mips patch.
-> - Replaced dev_err and pr_err with dev_warn and pr_warn if an error is not
->   fatal.
-> - Provide managed resources API and use where appropriate.
-> - Provide and use definitions for standard priorities.
-> - Added patches to convert newly introduced power-off handlers.
-> - Various minor changes.
->=20
-> Important changes since RFC:
-> - Move API to new file kernel/power/power_off_handler.c.
-> - Move pm_power_off pointer to kernel/power/power_off_handler.c. Call
->   pm_power_off from do_kernel_power_off, and only call do_kernel_power_off
->   from architecture code instead of calling both pm_power_off and
->   do_kernel_power_off.
-> - Provide additional API function register_power_off_handler_simple
->   to simplify conversion of architecture code.
-> - Provide additional API function have_kernel_power_off to check if
->   a power-off handler was installed.
-> - Convert all drivers and architecture code to use the new API.
-> - Remove pm_power_off as last patch of the series.
->=20
-> Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-> Cc: Alexander Graf <agraf@suse.de>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> cc: Heiko Stuebner <heiko@sntech.de>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Romain Perier <romain.perier@gmail.com>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+ drivers/power/reset/vexpress-poweroff.c | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
 
---=20
-balbi
+diff --git a/drivers/power/reset/vexpress-poweroff.c b/drivers/power/reset/vexpress-poweroff.c
+index 4dc102e2..b0a39cc 100644
+--- a/drivers/power/reset/vexpress-poweroff.c
++++ b/drivers/power/reset/vexpress-poweroff.c
+@@ -12,6 +12,7 @@
+  */
+ 
+ #include <linux/delay.h>
++#include <linux/notifier.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+@@ -36,11 +37,19 @@ static void vexpress_reset_do(struct device *dev, const char *what)
+ 
+ static struct device *vexpress_power_off_device;
+ 
+-static void vexpress_power_off(void)
++static int vexpress_power_off(struct notifier_block *this,
++			      unsigned long unused1, void *unused2)
+ {
+ 	vexpress_reset_do(vexpress_power_off_device, "power off");
++
++	return NOTIFY_DONE;
+ }
+ 
++static struct notifier_block vexpress_power_off_nb = {
++	.notifier_call = vexpress_power_off,
++	.priority = POWER_OFF_PRIORITY_DEFAULT,
++};
++
+ static struct device *vexpress_restart_device;
+ 
+ static void vexpress_restart(enum reboot_mode reboot_mode, const char *cmd)
+@@ -92,6 +101,7 @@ static int vexpress_reset_probe(struct platform_device *pdev)
+ 	const struct of_device_id *match =
+ 			of_match_device(vexpress_reset_of_match, &pdev->dev);
+ 	struct regmap *regmap;
++	int ret;
+ 
+ 	if (match)
+ 		func = (enum vexpress_reset_func)match->data;
+@@ -106,7 +116,12 @@ static int vexpress_reset_probe(struct platform_device *pdev)
+ 	switch (func) {
+ 	case FUNC_SHUTDOWN:
+ 		vexpress_power_off_device = &pdev->dev;
+-		pm_power_off = vexpress_power_off;
++		ret = register_power_off_handler(&vexpress_power_off_nb);
++		if (ret) {
++			dev_err(&pdev->dev,
++				"Failed to register power-off handler\n");
++			return ret;
++		}
+ 		break;
+ 	case FUNC_RESET:
+ 		if (!vexpress_restart_device)
+-- 
+1.9.1
 
---3Pql8miugIZX0722
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUTmzMAAoJEIaOsuA1yqRExOcP/23YMnGVJWKRZhcYX22hGVJz
-EAf56161IaAZbulj/SPxRAj0rBLo4fskag9e+XxxI744g6F8FkIduIu6I+PeSm1+
-9eHgnt3HE5DUL/u77QrgHxix2DhxGN9cu5QiMGz8VQ/PXcheVhFkQftZQgDQ9625
-FUTJiI0BoFIBnJFGM9mjM3Ff19dhbJ9+wcoy26MvInXBH9HBNaFDvLFJM+wzXFoV
-wkSmNQ/feMvcbpVlf6VmzzG1IfQP/0tEoYRZRcr+Ml412X80X1Pm951Xl4HoOI1T
-Mjk1DBdqOF67loFeoT/oOOlqY1yozyp/0yCT7LdZIqWUkHAoxqU1k2SNQ2Rd4QQC
-LT6TsgLwbCb/2UlpqhhIBHQharAI0CFwElxhdy2VCV3+4KQYHnZmOeVc70JWIHM4
-8WxA7NuXMNaPytR3SzoxZSg2d+FGLtsy8slQXGDX6A3Y6ehLLCPY2xYZ+sU5c8cb
-se7SS8fYkp2wcx77TgMAu1n96aqFqiCviXxtEEDdLG1d0hZgtb1gzXV+3fejn+qC
-tf1UKTXNLI9u/ribMKoNeEG5PGpuKh6FEte85DH7CaA+tUSy+sg7grLYMVBmQTtW
-QkJzp09wczObD9fW4DvSxLnlztsTUGZRjyz/s/E/Sf5swWedj/gaO73pBy+1dYxu
-8pvXU4UHPh/u+mJYKw6J
-=Y8HG
------END PGP SIGNATURE-----
-
---3Pql8miugIZX0722--
