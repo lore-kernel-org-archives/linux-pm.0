@@ -1,63 +1,31 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Patch v7 01/18] ACPI, irq: fix regression casued by 6b9fb7082409
-Date: Tue, 28 Oct 2014 18:44:56 +0100
-Message-ID: <20141028174456.GA9134@amd>
+Subject: Re: [Patch v7 17/18] x86, irq: Introduce helper to check whether an
+ IOAPIC has been registered
+Date: Tue, 28 Oct 2014 18:47:22 +0100
+Message-ID: <20141028174722.GB9134@amd>
 References: <1414387308-27148-1-git-send-email-jiang.liu@linux.intel.com>
- <1414387308-27148-2-git-send-email-jiang.liu@linux.intel.com>
+ <1414387308-27148-18-git-send-email-jiang.liu@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42208 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbaJ1RrZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 13:47:25 -0400
 Content-Disposition: inline
-In-Reply-To: <1414387308-27148-2-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jiang Liu <jiang.liu@linux.intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, x86@kernel.org, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org
+In-Reply-To: <1414387308-27148-18-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, x86@kernel.org, Len Brown <len.brown@intel.com>, Grant Likely <grant.likely@linaro.org>, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 
-Hi!
-
-> When IOAPIC is disabled, acpi_gsi_to_irq() should return gsi directly
-> instead of calling mp_map_gsi_to_irq() to translate gsi to IRQ by IOAPIC.
-> It fixes https://bugzilla.kernel.org/show_bug.cgi?id=84381.
+On Mon 2014-10-27 13:21:47, Jiang Liu wrote:
+> Introduce acpi_ioapic_registered() to check whether an IOAPIC has already
+> been registered, it will be used when enabling IOAPIC hotplug.
 > 
-> Reported-by: Thomas Richter <thor@math.tu-berlin.de>
 > Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
-> Cc: rui.zhang@intel.com
-> Cc: <stable@vger.kernel.org> # 3.17
-> ---
->  arch/x86/kernel/acpi/boot.c |   13 +++++++++----
->  1 file changed, 9 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> index b436fc735aa4..eceba9d9e116 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -604,14 +604,19 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
->  
->  int acpi_gsi_to_irq(u32 gsi, unsigned int *irqp)
->  {
-> -	int irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
-> +	int irq;
->  
-> -	if (irq >= 0) {
-> +	if (acpi_irq_model == ACPI_IRQ_MODEL_PIC) {
-> +		*irqp = gsi;
 
-As you have multiple return points, anyway, I'd do return 0; here
-
-> +	} else {
-> +		irq = mp_map_gsi_to_irq(gsi,
-> +					IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
-> +		if (irq < 0)
-> +			return -1;
->  		*irqp = irq;
-> -		return 0;
->  	}
-
-...so that one level of nesting is avoided, and there are no problems
-with fiting to 80 colums.
-
-With that,
+Nothing obviously wrong.
 
 Acked-by: Pavel Machek <pavel@ucw.cz>
 
