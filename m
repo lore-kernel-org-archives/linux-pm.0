@@ -1,41 +1,41 @@
-From: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Subject: Re: [RFC/PATCH] PM / Sleep: Timer quiesce in freeze state
-Date: Tue, 28 Oct 2014 12:32:16 +0800
-Message-ID: <544F1C50.8010505@linux.intel.com>
-References: <5446787E.60202@linux.intel.com> <20141024153656.GM12706@worktop.programming.kicks-ass.net> <544DE5CF.9040501@linux.intel.com> <20141027072816.GD10501@worktop.programming.kicks-ass.net>
+From: Alexandre Courbot <gnurou@gmail.com>
+Subject: Re: [PATCH v2 07/10] ARM: dts: tegra: Use standard power-off property
+ in tps65911 for tegra30 apalis
+Date: Tue, 28 Oct 2014 13:34:03 +0900
+Message-ID: <CAAVeFuL2MvbC9U-8fM=QPhkvnaMRZ8kep9WpD8hhU4m4cGWjLw@mail.gmail.com>
+References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
+ <1414427215-14380-7-git-send-email-romain.perier@gmail.com> <20141027164214.GF14253@saruman>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20141027072816.GD10501@worktop.programming.kicks-ass.net>
+In-Reply-To: <20141027164214.GF14253@saruman>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
+To: balbi@ti.com
+Cc: Romain Perier <romain.perier@gmail.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, robh@kernel.org, Mark Rutland <mark.rutland@arm.com>, Johan Hovold <johan@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.or>
 List-Id: linux-pm@vger.kernel.org
 
-On 2014/10/27 15:28, Peter Zijlstra wrote:
-> On Mon, Oct 27, 2014 at 02:27:27PM +0800, Li, Aubrey wrote:
->>> Now I suppose the problem is with cpu_pause() which needs IPIs to
->>> complete? Do we really need cpuidle_pause() there?
->>> cpuidle_uninstall_handlers() seems like a daft thing to call just about
->>> there.
+On Tue, Oct 28, 2014 at 1:42 AM, Felipe Balbi <balbi@ti.com> wrote:
+> On Mon, Oct 27, 2014 at 04:26:52PM +0000, Romain Perier wrote:
+>> Signed-off-by: Romain Perier <romain.perier@gmail.com>
+>> ---
+>>  arch/arm/boot/dts/tegra30-apalis.dtsi | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
 >>
->> Please check the log of 8651f97bd951d0bb1c10fa24e3fa3455193f3548.
->> Rafael should know more this question than me.
-> 
-> That changelog explains its complete bollocks to do it here. We _want_
-> to enter and/or remain in deep idle states.
+>> diff --git a/arch/arm/boot/dts/tegra30-apalis.dtsi b/arch/arm/boot/dts/tegra30-apalis.dtsi
+>> index a5446cb..ced4436 100644
+>> --- a/arch/arm/boot/dts/tegra30-apalis.dtsi
+>> +++ b/arch/arm/boot/dts/tegra30-apalis.dtsi
+>> @@ -412,7 +412,7 @@
+>>                       #interrupt-cells = <2>;
+>>                       interrupt-controller;
+>>
+>> -                     ti,system-power-controller;
+>> +                     system-power-controller;
+>
+> this board is broken until this patch is applied.
 
-cpuidle_resume() will be called at the end of dpm_resume_noirq(). So we
-still are able to enter deep idle states after resume.
-
-Thanks,
--Aubrey
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+It should not. Supporting a new property in the tps65911 is fine, but
+the old property must keep being supported to preserve DT
+compatibility. If a change removing support for
+"ti,system-power-controller" has landed in -next, then it should be
+removed.
