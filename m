@@ -1,128 +1,55 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: [PATCH v4] Thermal: int3406_thermal: solve the dependency build error
-Date: Tue, 28 Oct 2014 14:11:59 +0800
-Message-ID: <544F33AF.1000704@intel.com>
-References: <CA+r1ZhhoskOXaRSmcrnbdgapi-FsaKf+dnPHTXGkDvkYbvwQ8Q@mail.gmail.com> <543F88BE.4090307@intel.com> <20141017070620.GA1538@aaronlu.sh.intel.com> <20141017072236.GA12504@aaronlu.sh.intel.com>
+From: Preeti Murthy <preeti.lkml@gmail.com>
+Subject: Re: [PATCH V2 1/5] sched: idle: cpuidle: Check the latency req before idle
+Date: Tue, 28 Oct 2014 09:21:25 +0530
+Message-ID: <CAM4v1pOg1GFW82WD8b6Vas5xhYQrQtdP1STGxyzYtrBNSa+-Pw@mail.gmail.com>
+References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20141017072236.GA12504@aaronlu.sh.intel.com>
+In-Reply-To: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jim Davis <jim.epost@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, patches@linaro.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Jim found that the current kernel may trigger a build error with some
-config: drivers/built-in.o: In function `int3406_thermal_probe':
-int3406_thermal.c:(.text+0x1d10b8): undefined reference to
-`acpi_video_get_levels'. The problem happens when CONFIG_THERMAL=y and
-CONFIG_ACPI_VIDEO=m. Solve the problem by separating a kernel config for
-int3406 thermal driver and add dependency on ACPI video for it.
+Hi Daniel,
 
-Reported-by: Jim Davis <jim.epost@gmail.com>
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
----
-v4: rebased on v3.18-rc2.
+On Thu, Oct 23, 2014 at 2:31 PM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> When the pmqos latency requirement is set to zero that means "poll in all the
+> cases".
+>
+> That is correctly implemented on x86 but not on the other archs.
+>
+> As how is written the code, if the latency request is zero, the governor will
+> return zero, so corresponding, for x86, to the poll function, but for the
+> others arch the default idle function. For example, on ARM this is wait-for-
+> interrupt with a latency of '1', so violating the constraint.
 
- drivers/thermal/Kconfig                  | 26 +++-----------------
- drivers/thermal/int340x_thermal/Kconfig  | 41 ++++++++++++++++++++++++++++++++
- drivers/thermal/int340x_thermal/Makefile |  1 +
- 3 files changed, 45 insertions(+), 23 deletions(-)
- create mode 100644 drivers/thermal/int340x_thermal/Kconfig
+This is not true actually. On PowerPC the idle state 0 has an exit_latency of 0.
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index f554d25b4399..ac391d8d76b4 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -229,29 +229,9 @@ config INTEL_SOC_DTS_THERMAL
- 	  notification methods.The other trip is a critical trip point, which
- 	  was set by the driver based on the TJ MAX temperature.
- 
--config INT340X_THERMAL
--	tristate "ACPI INT340X thermal drivers"
--	depends on X86 && ACPI
--	select THERMAL_GOV_USER_SPACE
--	select ACPI_THERMAL_REL
--	select ACPI_FAN
--	help
--	  Newer laptops and tablets that use ACPI may have thermal sensors and
--	  other devices with thermal control capabilities outside the core
--	  CPU/SOC, for thermal safety reasons.
--	  They are exposed for the OS to use via the INT3400 ACPI device object
--	  as the master, and INT3401~INT340B ACPI device objects as the slaves.
--	  Enable this to expose the temperature information and cooling ability
--	  from these objects to userspace via the normal thermal framework.
--	  This means that a wide range of applications and GUI widgets can show
--	  the information to the user or use this information for making
--	  decisions. For example, the Intel Thermal Daemon can use this
--	  information to allow the user to select his laptop to run without
--	  turning on the fans.
--
--config ACPI_THERMAL_REL
--	tristate
--	depends on ACPI
-+menu "ACPI INT340X thermal drivers"
-+source drivers/thermal/int340x_thermal/Kconfig
-+endmenu
- 
- menu "Texas Instruments thermal drivers"
- source "drivers/thermal/ti-soc-thermal/Kconfig"
-diff --git a/drivers/thermal/int340x_thermal/Kconfig b/drivers/thermal/int340x_thermal/Kconfig
-new file mode 100644
-index 000000000000..b92892a6afe0
---- /dev/null
-+++ b/drivers/thermal/int340x_thermal/Kconfig
-@@ -0,0 +1,41 @@
-+#
-+# ACPI INT340x thermal drivers configuration
-+#
-+
-+config INT340X_THERMAL
-+	tristate "ACPI INT340X thermal drivers"
-+	depends on X86 && ACPI
-+	select THERMAL_GOV_USER_SPACE
-+	select ACPI_THERMAL_REL
-+	select ACPI_FAN
-+	help
-+	  Newer laptops and tablets that use ACPI may have thermal sensors and
-+	  other devices with thermal control capabilities outside the core
-+	  CPU/SOC, for thermal safety reasons.
-+	  They are exposed for the OS to use via the INT3400 ACPI device object
-+	  as the master, and INT3401~INT340B ACPI device objects as the slaves.
-+	  Enable this to expose the temperature information and cooling ability
-+	  from these objects to userspace via the normal thermal framework.
-+	  This means that a wide range of applications and GUI widgets can show
-+	  the information to the user or use this information for making
-+	  decisions. For example, the Intel Thermal Daemon can use this
-+	  information to allow the user to select his laptop to run without
-+	  turning on the fans.
-+
-+if INT340X_THERMAL
-+
-+config ACPI_THERMAL_REL
-+	tristate
-+	depends on ACPI
-+
-+config INT3406_THERMAL
-+	tristate "ACPI INT3406 display thermal driver"
-+	depends on ACPI_VIDEO
-+	help
-+	  The display thermal device represents the LED/LCD display panel
-+	  that may or may not include touch support. The main function of
-+	  the display thermal device is to allow control of the display
-+	  brightness in order to address a thermal condition or to reduce
-+	  power consumed by display device.
-+
-+endif
-diff --git a/drivers/thermal/int340x_thermal/Makefile b/drivers/thermal/int340x_thermal/Makefile
-index ffe40bffaf1a..a9d0429be412 100644
---- a/drivers/thermal/int340x_thermal/Makefile
-+++ b/drivers/thermal/int340x_thermal/Makefile
-@@ -1,4 +1,5 @@
- obj-$(CONFIG_INT340X_THERMAL)	+= int3400_thermal.o
- obj-$(CONFIG_INT340X_THERMAL)	+= int3402_thermal.o
- obj-$(CONFIG_INT340X_THERMAL)	+= int3403_thermal.o
-+obj-$(CONFIG_INT3406_THERMAL)	+= int3406_thermal.o
- obj-$(CONFIG_ACPI_THERMAL_REL)	+= acpi_thermal_rel.o
--- 
-1.9.3
+>
+> In order to fix that, do the latency requirement check *before* calling the
+> cpuidle framework in order to jump to the poll function without entering
+> cpuidle. That has several benefits:
+
+Doing so actually hurts on PowerPC. Because the idle loop defined for
+idle state 0 is different from what cpu_relax() does in cpu_idle_loop().
+The spinning is more power efficient in the former case. Moreover we also set
+certain register values which indicate an idle cpu. The ppc_runlatch bits
+do precisely this. These register values are being read by some user space
+tools.  So we will end up breaking them with this patch
+
+My suggestion is very well keep the latency requirement check in
+kernel/sched/idle.c
+like your doing in this patch. But before jumping to cpu_idle_loop verify if the
+idle state 0 has an exit_latency > 0 in addition to your check on the
+latency_req == 0.
+If not, you can fall through to the regular path of calling into the
+cpuidle driver.
+The scheduler can query the cpuidle_driver structure anyway.
+
+What do you think?
+
+Regards
+Preeti U Murthy
