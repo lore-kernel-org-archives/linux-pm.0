@@ -1,76 +1,59 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [Patch v7 01/18] ACPI, irq: fix regression casued by 6b9fb7082409
-Date: Tue, 28 Oct 2014 12:13:01 -0600
-Message-ID: <CAErSpo5Dh8rx42HkS3cPoJ1=oQq2qsFAut5LK83obbghy+OsFA@mail.gmail.com>
-References: <1414387308-27148-1-git-send-email-jiang.liu@linux.intel.com> <1414387308-27148-2-git-send-email-jiang.liu@linux.intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v4] kernel: Add support for power-off handler call chain
+Date: Tue, 28 Oct 2014 19:23:12 +0100
+Message-ID: <20141028182312.GA13636@amd>
+References: <1414516266-4965-1-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f182.google.com ([209.85.216.182]:55611 "EHLO
-	mail-qc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753438AbaJ1SNY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 14:13:24 -0400
-Received: by mail-qc0-f182.google.com with SMTP id m20so1000789qcx.41
-        for <linux-pm@vger.kernel.org>; Tue, 28 Oct 2014 11:13:23 -0700 (PDT)
-In-Reply-To: <1414387308-27148-2-git-send-email-jiang.liu@linux.intel.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43397 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbaJ1SXO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 14:23:14 -0400
+Content-Disposition: inline
+In-Reply-To: <1414516266-4965-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jiang Liu <jiang.liu@linux.intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "x86@kernel.org" <x86@kernel.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Philippe =?iso-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 
-The subject should describe the change you're making.  "Fix regression
-caused by xxx" doesn't say anything about what the patch does.
+On Tue 2014-10-28 10:11:06, Guenter Roeck wrote:
+> Various drivers implement architecture and/or device specific means to
+> power off the system.  For the most part, those drivers set the global
+> variable pm_power_off to point to a function within the driver.
+> 
+> This mechanism has a number of drawbacks.  Typically only one scheme
+> to remove power is supported (at least if pm_power_off is used).
+> At least in theory there can be multiple means remove power, some of
+> which may be less desirable. For example, some mechanisms may only
+> power off the CPU or the CPU card, while another may power off the
+> entire system.  Others may really just execute a restart sequence
+> or drop into the ROM monitor. Using pm_power_off can also be racy
+> if the function pointer is set from a driver built as module, as the
+> driver may be in the process of being unloaded when pm_power_off is
+> called. If there are multiple power-off handlers in the system, removing
+> a module with such a handler may inadvertently reset the pointer to
+> pm_power_off to NULL, leaving the system with no means to remove power.
+> 
+> Introduce a system power-off handler call chain to solve the described
+> problems.  This call chain is expected to be executed from the architecture
+> specific machine_power_off() function.  Drivers and architeceture code
+> providing system power-off functionality are expected to register with
+> this call chain.  When registering a power-off handler, callers can
+> provide a priority to control power-off handler execution sequence
+> and thus ensure that the power-off handler with the optimal capabilities
+> to remove power for a given system is called first.
+> 
+> Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+> Cc: Alexander Graf <agraf@suse.de>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> cc: Heiko Stuebner <heiko@sntech.de>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Cc: Len Brown <len.brown@intel.com>
 
-On Sun, Oct 26, 2014 at 11:21 PM, Jiang Liu <jiang.liu@linux.intel.com> wrote:
-> When IOAPIC is disabled, acpi_gsi_to_irq() should return gsi directly
-> instead of calling mp_map_gsi_to_irq() to translate gsi to IRQ by IOAPIC.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-I don't know what the convention is or if there even is one, but "GSI"
-is even more of an acronym than "IRQ", so I'd capitalize it.
-
-> It fixes https://bugzilla.kernel.org/show_bug.cgi?id=84381.
-
-A line like the following may be useful to those who have to backport this.
-
-Fixes: 6b9fb7082409 ("x86, ACPI, irq: Consolidate algorithm of mapping
-(ioapic, pin) to IRQ number")
-
-> Reported-by: Thomas Richter <thor@math.tu-berlin.de>
-> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
-> Cc: rui.zhang@intel.com
-> Cc: <stable@vger.kernel.org> # 3.17
-> ---
->  arch/x86/kernel/acpi/boot.c |   13 +++++++++----
->  1 file changed, 9 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> index b436fc735aa4..eceba9d9e116 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -604,14 +604,19 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
->
->  int acpi_gsi_to_irq(u32 gsi, unsigned int *irqp)
->  {
-> -       int irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
-> +       int irq;
->
-> -       if (irq >= 0) {
-> +       if (acpi_irq_model == ACPI_IRQ_MODEL_PIC) {
-> +               *irqp = gsi;
-> +       } else {
-> +               irq = mp_map_gsi_to_irq(gsi,
-> +                                       IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
-> +               if (irq < 0)
-> +                       return -1;
->                 *irqp = irq;
-> -               return 0;
->         }
->
-> -       return -1;
-> +       return 0;
->  }
->  EXPORT_SYMBOL_GPL(acpi_gsi_to_irq);
->
-> --
-> 1.7.10.4
->
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
