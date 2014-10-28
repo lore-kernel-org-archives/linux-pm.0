@@ -1,72 +1,47 @@
-From: Preeti Murthy <preeti.lkml@gmail.com>
-Subject: Re: [PATCH 2/5] sched: idle: Get the next timer event and pass it the
- cpuidle framework
-Date: Tue, 28 Oct 2014 12:10:06 +0530
-Message-ID: <CAM4v1pOzC2riePt4sfsdG=SLYvZmhMc4KgT-hfq6XkjF2Mce7g@mail.gmail.com>
-References: <1413822343-1972-1-git-send-email-daniel.lezcano@linaro.org>
-	<1413822343-1972-2-git-send-email-daniel.lezcano@linaro.org>
+From: Romain Perier <romain.perier@gmail.com>
+Subject: Re: [PATCH v2 07/10] ARM: dts: tegra: Use standard power-off property
+ in tps65911 for tegra30 apalis
+Date: Tue, 28 Oct 2014 07:47:21 +0100
+Message-ID: <CABgxDo+k8sRBjHdh_6dkizuXR0oxydvjBh3JHsi-x5sP96BMfA@mail.gmail.com>
+References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
+	<1414427215-14380-7-git-send-email-romain.perier@gmail.com>
+	<20141027164214.GF14253@saruman>
+	<CAAVeFuL2MvbC9U-8fM=QPhkvnaMRZ8kep9WpD8hhU4m4cGWjLw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1413822343-1972-2-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <CAAVeFuL2MvbC9U-8fM=QPhkvnaMRZ8kep9WpD8hhU4m4cGWjLw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+To: Alexandre Courbot <gnurou@gmail.com>
+Cc: Felipe Balbi <balbi@ti.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, robh <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Johan Hovold <johan@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
+The old property is supported. See "[PATCH v1 1/10]" ^^
+(of_is_system_power_controller supports both properties...)
 
-On Mon, Oct 20, 2014 at 9:55 PM, Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
-> Following the logic of the previous patch, retrieve from the idle task the
-> expected timer sleep duration and pass it to the cpuidle framework.
+2014-10-28 5:34 GMT+01:00 Alexandre Courbot <gnurou@gmail.com>:
+> On Tue, Oct 28, 2014 at 1:42 AM, Felipe Balbi <balbi@ti.com> wrote:
+>> On Mon, Oct 27, 2014 at 04:26:52PM +0000, Romain Perier wrote:
+>>> Signed-off-by: Romain Perier <romain.perier@gmail.com>
+>>> ---
+>>>  arch/arm/boot/dts/tegra30-apalis.dtsi | 2 +-
+>>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/arm/boot/dts/tegra30-apalis.dtsi b/arch/arm/boot/dts/tegra30-apalis.dtsi
+>>> index a5446cb..ced4436 100644
+>>> --- a/arch/arm/boot/dts/tegra30-apalis.dtsi
+>>> +++ b/arch/arm/boot/dts/tegra30-apalis.dtsi
+>>> @@ -412,7 +412,7 @@
+>>>                       #interrupt-cells = <2>;
+>>>                       interrupt-controller;
+>>>
+>>> -                     ti,system-power-controller;
+>>> +                     system-power-controller;
+>>
+>> this board is broken until this patch is applied.
 >
-> Take the opportunity to remove the unused headers in the menu.c file.
->
-> This patch does not change the current behavior.
->
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/cpuidle/cpuidle.c          | 11 +++++------
->  drivers/cpuidle/governors/ladder.c |  3 ++-
->  drivers/cpuidle/governors/menu.c   |  8 ++------
->  include/linux/cpuidle.h            |  8 +++++---
->  kernel/sched/idle.c                | 16 ++++++++++++----
->  5 files changed, 26 insertions(+), 20 deletions(-)
->
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 372c36f..64f5800 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -8,16 +8,12 @@
->   * This code is licenced under the GPL.
->   */
->
-> -#include <linux/clockchips.h>
->  #include <linux/kernel.h>
->  #include <linux/mutex.h>
-> -#include <linux/sched.h>
->  #include <linux/notifier.h>
->  #include <linux/pm_qos.h>
->  #include <linux/cpu.h>
->  #include <linux/cpuidle.h>
-> -#include <linux/ktime.h>
-> -#include <linux/hrtimer.h>
->  #include <linux/module.h>
->  #include <trace/events/power.h>
->
-> @@ -155,11 +151,13 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
->   *
->   * @drv: the cpuidle driver
->   * @dev: the cpuidle device
-> + * @latency_req: the latency constraint when choosing an idle state
-
-You might want to include this change in the previous patch itself.
-
-> + * @next_timer_event: the duration until the timer expires
->   *
->   * Returns the index of the idle state.
->   */
-
-Regards
-Preeti U Murthy
+> It should not. Supporting a new property in the tps65911 is fine, but
+> the old property must keep being supported to preserve DT
+> compatibility. If a change removing support for
+> "ti,system-power-controller" has landed in -next, then it should be
+> removed.
