@@ -1,87 +1,74 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v4] kernel: Add support for power-off handler call chain
-Date: Tue, 28 Oct 2014 14:10:34 -0700
-Message-ID: <20141028211034.GA15820@roeck-us.net>
-References: <1414516266-4965-1-git-send-email-linux@roeck-us.net>
- <5361222.IVraj5jbi5@diego>
+From: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Subject: Re: [RFC/PATCH] PM / Sleep: Timer quiesce in freeze state
+Date: Wed, 29 Oct 2014 06:46:03 +0800
+Message-ID: <54501CAB.8040503@linux.intel.com>
+References: <5446787E.60202@linux.intel.com> <20141024153656.GM12706@worktop.programming.kicks-ass.net> <544DE5CF.9040501@linux.intel.com> <20141027072816.GD10501@worktop.programming.kicks-ass.net> <544F1C50.8010505@linux.intel.com> <20141028082900.GP3337@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:39972 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752905AbaJ1VLT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 17:11:19 -0400
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XjE2w-000gqH-SY
-	for linux-pm@vger.kernel.org; Tue, 28 Oct 2014 21:11:19 +0000
-Content-Disposition: inline
-In-Reply-To: <5361222.IVraj5jbi5@diego>
+Received: from mga02.intel.com ([134.134.136.20]:35477 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750858AbaJ1WqI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 28 Oct 2014 18:46:08 -0400
+In-Reply-To: <20141028082900.GP3337@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Philippe =?iso-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
 
-On Tue, Oct 28, 2014 at 09:58:53PM +0100, Heiko St=FCbner wrote:
-> Am Dienstag, 28. Oktober 2014, 10:11:06 schrieb Guenter Roeck:
-> > Various drivers implement architecture and/or device specific means=
- to
-> > power off the system.  For the most part, those drivers set the glo=
-bal
-> > variable pm_power_off to point to a function within the driver.
-> >=20
-> > This mechanism has a number of drawbacks.  Typically only one schem=
-e
-> > to remove power is supported (at least if pm_power_off is used).
-> > At least in theory there can be multiple means remove power, some o=
-f
-> > which may be less desirable. For example, some mechanisms may only
-> > power off the CPU or the CPU card, while another may power off the
-> > entire system.  Others may really just execute a restart sequence
-> > or drop into the ROM monitor. Using pm_power_off can also be racy
-> > if the function pointer is set from a driver built as module, as th=
-e
-> > driver may be in the process of being unloaded when pm_power_off is
-> > called. If there are multiple power-off handlers in the system, rem=
-oving
-> > a module with such a handler may inadvertently reset the pointer to
-> > pm_power_off to NULL, leaving the system with no means to remove po=
-wer.
-> >=20
-> > Introduce a system power-off handler call chain to solve the descri=
-bed
-> > problems.  This call chain is expected to be executed from the arch=
-itecture
-> > specific machine_power_off() function.  Drivers and architeceture c=
-ode
-> > providing system power-off functionality are expected to register w=
-ith
-> > this call chain.  When registering a power-off handler, callers can
-> > provide a priority to control power-off handler execution sequence
-> > and thus ensure that the power-off handler with the optimal capabil=
-ities
-> > to remove power for a given system is called first.
-> >=20
-> > Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-> > Cc: Alexander Graf <agraf@suse.de>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> > cc: Heiko Stuebner <heiko@sntech.de>
-> > Cc: Lee Jones <lee.jones@linaro.org>
-> > Cc: Len Brown <len.brown@intel.com>
-> > Cc: Pavel Machek <pavel@ucw.cz>
-> > Cc: Philippe R=E9tornaz <philippe.retornaz@gmail.com>
-> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > Cc: Romain Perier <romain.perier@gmail.com>
-> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> > ---
->=20
-> Similarly to the restart handlers, I really like the concept.
->=20
-> Acked-by: Heiko Stuebner <heiko@sntech.de>
->=20
+On 2014/10/28 16:29, Peter Zijlstra wrote:
+> On Tue, Oct 28, 2014 at 12:32:16PM +0800, Li, Aubrey wrote:
+>> On 2014/10/27 15:28, Peter Zijlstra wrote:
+>>> On Mon, Oct 27, 2014 at 02:27:27PM +0800, Li, Aubrey wrote:
+>>>>> Now I suppose the problem is with cpu_pause() which needs IPIs to
+>>>>> complete? Do we really need cpuidle_pause() there?
+>>>>> cpuidle_uninstall_handlers() seems like a daft thing to call just about
+>>>>> there.
+>>>>
+>>>> Please check the log of 8651f97bd951d0bb1c10fa24e3fa3455193f3548.
+>>>> Rafael should know more this question than me.
+>>>
+>>> That changelog explains its complete bollocks to do it here. We _want_
+>>> to enter and/or remain in deep idle states.
+>>
+>> cpuidle_resume() will be called at the end of dpm_resume_noirq(). So we
+>> still are able to enter deep idle states after resume.
+> 
+> cpuidle_resume is absolute crap, as is cpuidle_suspend for that matter
+> -- in this case.
+> 
+> The only reason we needed cpuidle_suspend is because some BIOS shat its
+> pants when some CPUs were in higher C states while trying to do the S3
+> thing. We're not going to use S states or BIOS calls _at_all_, so no
+> point in kicking CPUs out of their deep C states.
 
-Thanks!
+We already kicked CPUs out of their deep C states in dpm_suspend_noirq().
 
-Guenter
+We pause cpuidle in dpm_suspend_noirq() and resume cpuidle in
+dpm_resume_noirq(), so currently we can't enter deep c-state during S
+states. That's an intention for some buggy BIOS.
+
+However, for freeze state, there is another intention that we want
+always to enter the *deepest* c-state every time we enter freeze.
+So we need cpuidle_resume() to make sure we have deep cstate  in freeze.
+
+So back to your question in another email,
+
+> I think you can simply remove them altogether, they're nonsense.
+
+We need them to resume cpuidle in freeze.
+
+Thanks,
+-Aubrey
+
+> 
+> Read that changelog you referred me to again.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+
