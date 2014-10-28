@@ -1,99 +1,112 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH V2 3/5] cpuidle: idle: menu: Don't reflect when a state
- selection failed
-Date: Mon, 27 Oct 2014 22:01:38 -0400
-Message-ID: <CAJvTdKm+jwv=2nbi8OZKHHbsieuggp53go=C-ztCr1w4SNpfpw@mail.gmail.com>
-References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>
-	<1414054881-17713-3-git-send-email-daniel.lezcano@linaro.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v3 34/47] acpi: Register power-off handler with kernel
+ power-off handler
+Date: Mon, 27 Oct 2014 19:10:26 -0700
+Message-ID: <544EFB12.1090901@roeck-us.net>
+References: <1414425354-10359-1-git-send-email-linux@roeck-us.net> <1414425354-10359-35-git-send-email-linux@roeck-us.net> <5416859.0WlfjKo7zJ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f46.google.com ([209.85.213.46]:54066 "EHLO
-	mail-yh0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752454AbaJ1CBj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 22:01:39 -0400
-In-Reply-To: <1414054881-17713-3-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <5416859.0WlfjKo7zJ@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, Patch Tracking <patches@linaro.org>
 
-On Thu, Oct 23, 2014 at 5:01 AM, Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
-> In the current code, the check to reflect or not the outcoming state is done
-> against the idle state which has been chosen and its value.
+On 10/27/2014 05:26 PM, Rafael J. Wysocki wrote:
+> On Monday, October 27, 2014 08:55:41 AM Guenter Roeck wrote:
+>> Register with kernel power-off handler instead of setting pm_power_off
+>> directly. Register with high priority to reflect that the driver explicitly
+>> overrides existing power-off handlers.
 >
-> Instead of doing a check in each of the reflect functions, just don't call reflect
-> if something went wrong in the idle path.
+> Well, I'm still rather unconvinced that notifiers are particularly suitable for
+> this purpose.
 >
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Acked-by: Nicolas Pitre <nico@linaro.org>
-> ---
->  drivers/cpuidle/governors/ladder.c | 3 +--
->  drivers/cpuidle/governors/menu.c   | 4 +---
->  kernel/sched/idle.c                | 3 ++-
->  3 files changed, 4 insertions(+), 6 deletions(-)
+> Specifically ->
 >
-> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-> index fb396d6..c0b36a8 100644
-> --- a/drivers/cpuidle/governors/ladder.c
-> +++ b/drivers/cpuidle/governors/ladder.c
-> @@ -165,8 +165,7 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
->  static void ladder_reflect(struct cpuidle_device *dev, int index)
->  {
->         struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
-> -       if (index > 0)
-> -               ldev->last_state_idx = index;
 
-Before this patch, last_state_idx was never set to 0 here.
-After this patch, last_state_idx will be set to 0 when entered_state is 0.
-Is that okay?
+Fine.
 
-thanks,
--Len
-
-> +       ldev->last_state_idx = index;
->  }
+>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>> Cc: Len Brown <lenb@kernel.org>
+>> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+>> ---
+>> v3:
+>> - Replace poweroff in all newly introduced variables and in text
+>>    with power_off or power-off as appropriate
+>> - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+>> - Replace acpi: with ACPI: in log message
+>> v2:
+>> - Use define to specify poweroff handler priority
+>> - Use pr_warn instead of pr_err
+>>
+>>   drivers/acpi/sleep.c | 15 +++++++++++++--
+>>   1 file changed, 13 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+>> index 05a31b5..7875b92 100644
+>> --- a/drivers/acpi/sleep.c
+>> +++ b/drivers/acpi/sleep.c
+>> @@ -16,6 +16,8 @@
+>>   #include <linux/device.h>
+>>   #include <linux/interrupt.h>
+>>   #include <linux/suspend.h>
+>> +#include <linux/notifier.h>
+>> +#include <linux/pm.h>
+>>   #include <linux/reboot.h>
+>>   #include <linux/acpi.h>
+>>   #include <linux/module.h>
+>> @@ -827,14 +829,22 @@ static void acpi_power_off_prepare(void)
+>>   	acpi_disable_all_gpes();
+>>   }
+>>
+>> -static void acpi_power_off(void)
+>> +static int acpi_power_off(struct notifier_block *this,
+>> +			  unsigned long unused1, void *unused2)
+>>   {
 >
->  static struct cpuidle_governor ladder_governor = {
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index a17515f..3907301 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -365,9 +365,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
->  static void menu_reflect(struct cpuidle_device *dev, int index)
->  {
->         struct menu_device *data = &__get_cpu_var(menu_devices);
-> -       data->last_state_idx = index;
-> -       if (index >= 0)
-> -               data->needs_update = 1;
-> +       data->needs_update = 1;
->  }
+> -> Is there any reason why any notifier in the new chain would use the
+> second argument for anything meaningful?  And the third argument for
+> that matter?
 >
->  /**
-> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> index 58c7522..49dcc7d 100644
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -162,7 +162,8 @@ use_default:
->         /*
->          * Give the governor an opportunity to reflect on the outcome
->          */
-> -       cpuidle_reflect(dev, entered_state);
-> +       if (entered_state >= 0)
-> +               cpuidle_reflect(dev, entered_state);
+>>   	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
+>>   	printk(KERN_DEBUG "%s called\n", __func__);
+>>   	local_irq_disable();
+>>   	acpi_enter_sleep_state(ACPI_STATE_S5);
+>> +
+>> +	return NOTIFY_DONE;
 >
->  exit_idle:
->         __current_set_polling();
-> --
-> 1.9.1
+> Also is there any reason for any notifier in the new chain to return anything
+> different from NOTIFY_DONE and if so, then what happens when anything else
+> is returned?
 >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
+As mentioned earlier, notifiers just come handy. That is all.
 
+Having said that, I don't have a strong opinion either way. If you want me
+to implement a priority based callback handler with a single argument,
+just let me know and I'll be happy to implement it. It is not worth arguing
+about.
 
--- 
-Len Brown, Intel Open Source Technology Center
+Would something like
+
+struct power_off_block {
+	void (*power_off_call)(struct power_off_block *);
+	struct power_off_block __rcu *next;
+	int priority;
+};
+
+for the data structure be acceptable ? The power-off handler code would then
+be something like
+
+static void acpi_power_off(struct power_off_block *this)
+{
+}
+
+ie quite similar to the current power-off handler code, with an added argument.
+The API would, except for the structure argument, pretty much stay the same.
+
+Thanks,
+Guenter
+
