@@ -1,128 +1,81 @@
-From: Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH v15 0/5] Rockchip soc thermal driver
-Date: Tue, 28 Oct 2014 16:51:22 +0800
-Message-ID: <1414486287-25498-1-git-send-email-caesar.wang@rock-chips.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: zyf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, cjf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, zhengsq-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: Re: [PATCH v2 0/8] ARM: at91: Remove mach/ includes from the reset
+ driver
+Date: Tue, 28 Oct 2014 09:52:03 +0100
+Message-ID: <20141028085202.GC722@piout.net>
+References: <1414451377-11053-1-git-send-email-alexandre.belloni@free-electrons.com>
+ <20141028085053.41c6ce46@bbrezillon>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from down.free-electrons.com ([37.187.137.238]:58930 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753015AbaJ1IwH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 04:52:07 -0400
+Content-Disposition: inline
+In-Reply-To: <20141028085053.41c6ce46@bbrezillon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Boris Brezillon <boris.brezillon@free-electrons.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-This series patchs tested on rk3288 SDK board and pinky-v1,v2 board.
-I believe the driver can be used on the rk3288-evb board.
+Hi,
 
-Add this driver, The system will shutdown when
-the thermal temperture over 120C.If for some reason we are unable to
-shut it down in orderly fashion (kernel is stuck holding a lock or similar)
-then hardware will reset it.
+On 28/10/2014 at 08:50:53 +0100, Boris Brezillon wrote :
+> Hi,
+> 
+> On Tue, 28 Oct 2014 00:09:29 +0100
+> Alexandre Belloni <alexandre.belloni@free-electrons.com> wrote:
+> 
+> > This series removes the mach/ headers dependency from the reset driver. It is
+> > also laying some groundwork for the necessary power management support rework.
+> > 
+> > The first patch adds and export a function to shutdown the sdram from the sdramc
+> > driver. That function also take the RSTC CR register and a value as parameters
+> > to be able to reset the chip. This is a hackish way of doing it but it ensures
+> > that all the code fits in one cache line. We already have plan to start using
+> > the sram to have a cleaner way to execute that code safely as soon as that
+> > series goes in:
+> > http://lists.infradead.org/pipermail/linux-arm-kernel/2013-September/198778.html
+> > 
+> > The second patch makes the sdramc driver usable from the board files.
+> > 
+> > The third patch actually registers the sdramc driver from the boards files.
+> > The fourth patch does the same, only for sam9g45 and sam9rl to simplify future
+> > merging as the board files have been removed. Simply drop that patch.
+> > 
+> > The fifth patch makes the at91-reset driver use the newly created
+> > at91_ramc_shutdown() function and removes the mach/ headers inclusion.
+> 
+> I'm not a big fan of this approach.
+> 
+> I definitely think each step of the reset process should be handled in
+> the appropriate block (and the patch series you pointed out would
+> definitely help in achieving this goal), but you're just moving all the
+> stuff done in the reset driver into the SDRAM one, which means you're
+> solving one design issue by introducing a new one.
+> 
+> Moreover, the errata at the origin of this hack is attached to the RSTC
+> (Rest Controller) block in the datasheets.
+> 
 
-Changes in v15:
-	* address comments from Dmitry Torokhov.
-	- enable TSHUT move into rk_tsadcv2_tshut_temp().
-	- drop the id argument in rk_tsadcv2_control().
+I agree it is still not clean but it is a step in the good direction.
+The sdram shutdown will have to be down in the sdram driver at some
+point, even if the errata is attached to the reset controller. At least,
+the series introduces a function to do the sdram shutdown.
 
-Changes in v14:
-	* address comments from Dmitry Torokhov.
-	- adjust-alarm-rate-depending-on-clock.
-	- 0001-rockchip-thermal-do-not-register-cpufreq-cooling-dev.
+> I'd rather keep the reset driver as is and move SDRAM related macros
+> into a specific header (include/linux/memory/atmel-sdram.h or
+> include/soc/atmel/memory.h as you proposed) so that the reset driver
+> can reference them without including mach headers.
+> 
 
-Changes in v13:
-	- add cooling-maps for cpu-thermal.
-	- put tshut polarity in device tree.
+My personal opinion is that it is better to hide the registers/bits from
+the reset driver right now as we have two different IPs and the sdram
+driver already knows how to make the difference between them.
 
-Changes in v12:
-	* address comments from Dmitry Torokhov and Vladimir Zapolskiy.
-	- split-sensor-handling.
-	- rename-rockchip_tsadc_platform_data.
-
-Changes in v11:
-	* address comments from Vladimir Zapolskiy.
-	- fix cpufreq_cooling_unregister() to put in correct position.
-	- fix "data->chn",at least can get valid Tsensor temp.
-
-Changes in v10:
-	* address comments from Doug Anderson.
-	- fix TSHUT polarity,ensure support TSHUT.
-	- add the decription for rk_tsadcv2_initialize().
-
-Changes in v9:
-	* address comments from Dmitry Torokhov.
-	- fix some style be defined
-	- remove some unused code.
-	- clk_disable_unprepare->clk_disable in suspend()
-
-Changes in v8:
-	* address comments from Dmitry Torokhov and Doug Anderson.
-	- add three Teperture Sensors.
-	- support CRU and GPIO reset chip.
-	- rename rk3xxx-cpu-thermal.dtsi as rk3288-thermal.dtsi
-	- alarm-temp via set_trips() callback
-	- remove "reset-gpios"
-
-Changes in v7:
-	- fix get data->clk=0 when in probe() function.
-	- fix some style code.
-	- modify dts,main add rk3xxx-cpu-thermal.dtsi
-
-Changes in v6:
-	* address comments from Tomeu Vizoso.
-	- use thermal's generic framework.
-
-Changes in v5:
-	* address comments from Eduardo Valentin,rui.zhang and Heiko Stubner:
-	- with BIT() macro
-	- manage clocks in suspend/resume.
-	- license is fixed as GPLv2.
-	- #include "thermal_core.h"->#include <linux/thermal.h>
-	- use the generic trip-points.the hw-shut-temp isn't generic trip-points.
-	- The method of binding and unbinding be fixed.
-	- The pin-name tsadc->otp_out
-
-Changes in v4:
-	* address comments from Jonathan Cameron,huangtao and zhaoyifeng:
-	- this series thermal driver still be put in driver/thermal/
-	- modify the thermal driver description.
-
-Changes in v3:(add dts configure)
-	* address comments from Dmitry Torokhov and Arnd Bergmann:
-	- fix clock-names in rockchip-thermal.txt
-	- remove rockchip_thermal_control() in rockchip_set_mode()
-	- fix some code style.
-	- add dts configure.
-
-Changes in v2:
-	* address comments from Heiko Stubner:
-	- fix dt-bindings in rockchip-thermal.txt
-	- remove Author mark
-	- rename TSADC_XXX->TSADCV2_XXX,it eill ready to merge compatible other SoCs.
-	- fix a identation
-	- remove clk_set_rate(),it's no necessary.
-	- fix the SIMPLE_DEV_PM_OPS() function  style.
-
-Caesar Wang (5):
-  thermal: rockchip: add driver for thermal
-  dt-bindings: document Rockchip thermal
-  ARM: dts: add RK3288 Thermal data
-  ARM: dts: add main Thermal info to rk3288
-  ARM: dts: enable Thermal on rk3288-evb board
-
- .../bindings/thermal/rockchip-thermal.txt          |  45 ++
- arch/arm/boot/dts/rk3288-evb.dtsi                  |   5 +
- arch/arm/boot/dts/rk3288-thermal.dtsi              |  58 ++
- arch/arm/boot/dts/rk3288.dtsi                      |  23 +
- drivers/thermal/Kconfig                            |   9 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/rockchip_thermal.c                 | 628 +++++++++++++++++++++
- 7 files changed, 769 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
- create mode 100644 arch/arm/boot/dts/rk3288-thermal.dtsi
- create mode 100644 drivers/thermal/rockchip_thermal.c
 
 -- 
-1.9.1
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Alexandre Belloni, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
