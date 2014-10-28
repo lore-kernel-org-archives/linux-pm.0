@@ -1,80 +1,93 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 2/5] sched: idle: Get the next timer event and pass it the
- cpuidle framework
-Date: Mon, 27 Oct 2014 21:53:56 -0400
-Message-ID: <CAJvTdKmww7mONuRSxF6v9gWLXXbHYqrA2QZVTjSP0iwH3n+KnA@mail.gmail.com>
-References: <1413822343-1972-1-git-send-email-daniel.lezcano@linaro.org>
-	<1413822343-1972-2-git-send-email-daniel.lezcano@linaro.org>
-	<alpine.LFD.2.11.1410221630120.6969@knanqh.ubzr>
+Subject: Re: [PATCH V2 3/5] cpuidle: idle: menu: Don't reflect when a state
+ selection failed
+Date: Mon, 27 Oct 2014 22:01:38 -0400
+Message-ID: <CAJvTdKm+jwv=2nbi8OZKHHbsieuggp53go=C-ztCr1w4SNpfpw@mail.gmail.com>
+References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>
+	<1414054881-17713-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f44.google.com ([209.85.213.44]:42645 "EHLO
-	mail-yh0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbaJ1Bx4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 21:53:56 -0400
-In-Reply-To: <alpine.LFD.2.11.1410221630120.6969@knanqh.ubzr>
+Received: from mail-yh0-f46.google.com ([209.85.213.46]:54066 "EHLO
+	mail-yh0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752454AbaJ1CBj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 22:01:39 -0400
+In-Reply-To: <1414054881-17713-3-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linaro-kernel@lists.linaro.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, Patch Tracking <patches@linaro.org>
 
-Reviewed-by: Len Brown <len.brown@intel.com>
-
-On Wed, Oct 22, 2014 at 4:38 PM, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
-> On Mon, 20 Oct 2014, Daniel Lezcano wrote:
+On Thu, Oct 23, 2014 at 5:01 AM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> In the current code, the check to reflect or not the outcoming state is done
+> against the idle state which has been chosen and its value.
 >
->> Following the logic of the previous patch, retrieve from the idle task the
->> expected timer sleep duration and pass it to the cpuidle framework.
->>
->> Take the opportunity to remove the unused headers in the menu.c file.
->>
->> This patch does not change the current behavior.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Instead of doing a check in each of the reflect functions, just don't call reflect
+> if something went wrong in the idle path.
 >
-> One minor nit below.
->
->> @@ -211,6 +212,12 @@ static void cpu_idle_loop(void)
->>                       latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
->>
->>                       /*
->> +                      * The next timer event in us
->> +                      */
->
-> This 3-line comment is redundant. The code is obvious enough on its own.
->
->> +                     next_timer_event = ktime_to_us(
->> +                             tick_nohz_get_sleep_length());
->
-> I'd suggest this form for better readability:
->
->                         next_timer_event =
->                                 ktime_to_us(tick_nohz_get_sleep_length());
->
-> Other than that...
->
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > Acked-by: Nicolas Pitre <nico@linaro.org>
+> ---
+>  drivers/cpuidle/governors/ladder.c | 3 +--
+>  drivers/cpuidle/governors/menu.c   | 4 +---
+>  kernel/sched/idle.c                | 3 ++-
+>  3 files changed, 4 insertions(+), 6 deletions(-)
 >
->> +
->> +                     /*
->>                        * In poll mode we reenable interrupts and spin.
->>                        *
->>                        * If the latency req is zero, we don't want to
->> @@ -227,7 +234,8 @@ static void cpu_idle_loop(void)
->>                           tick_check_broadcast_expired())
->>                               cpu_idle_poll();
->>                       else
->> -                             cpuidle_idle_call(latency_req);
->> +                             cpuidle_idle_call(latency_req,
->> +                                               next_timer_event);
->>
->>                       arch_cpu_idle_exit();
->>               }
->> --
->> 1.9.1
->>
->>
+> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+> index fb396d6..c0b36a8 100644
+> --- a/drivers/cpuidle/governors/ladder.c
+> +++ b/drivers/cpuidle/governors/ladder.c
+> @@ -165,8 +165,7 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
+>  static void ladder_reflect(struct cpuidle_device *dev, int index)
+>  {
+>         struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
+> -       if (index > 0)
+> -               ldev->last_state_idx = index;
+
+Before this patch, last_state_idx was never set to 0 here.
+After this patch, last_state_idx will be set to 0 when entered_state is 0.
+Is that okay?
+
+thanks,
+-Len
+
+> +       ldev->last_state_idx = index;
+>  }
+>
+>  static struct cpuidle_governor ladder_governor = {
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index a17515f..3907301 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -365,9 +365,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+>  static void menu_reflect(struct cpuidle_device *dev, int index)
+>  {
+>         struct menu_device *data = &__get_cpu_var(menu_devices);
+> -       data->last_state_idx = index;
+> -       if (index >= 0)
+> -               data->needs_update = 1;
+> +       data->needs_update = 1;
+>  }
+>
+>  /**
+> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> index 58c7522..49dcc7d 100644
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -162,7 +162,8 @@ use_default:
+>         /*
+>          * Give the governor an opportunity to reflect on the outcome
+>          */
+> -       cpuidle_reflect(dev, entered_state);
+> +       if (entered_state >= 0)
+> +               cpuidle_reflect(dev, entered_state);
+>
+>  exit_idle:
+>         __current_set_polling();
+> --
+> 1.9.1
+>
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
 > the body of a message to majordomo@vger.kernel.org
