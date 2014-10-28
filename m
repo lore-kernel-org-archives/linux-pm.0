@@ -1,56 +1,89 @@
 From: Mike Looijmans <mike.looijmans@topic.nl>
-Subject: [PATCH] Add devicetree binding documentation for the LTC2941/LTC2943 driver
-Date: Tue, 28 Oct 2014 08:08:04 +0100
-Message-ID: <1414480084-3604-1-git-send-email-mike.looijmans@topic.nl>
-References: <20141027163842.GB20765@earth.universe>
+Subject: Re: [PATCH v4] Add LTC2941/LTC2943 Battery Gauge Driver
+Date: Tue, 28 Oct 2014 08:03:31 +0100
+Message-ID: <544F3FC3.3040106@topic.nl>
+References: <1412748300-3915-1-git-send-email-mike.looijmans@topic.nl> <1414067918-6688-1-git-send-email-mike.looijmans@topic.nl> <20141027163842.GB20765@earth.universe>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20141027163842.GB20765@earth.universe>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, devicetree@vger.kernel.org, Mike Looijmans <mike.looijmans@topic.nl>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This adds the devicetree binding documentation for the LTC2941 and LTC2943
-driver. These are I2C connected battery gas gauge ICs.
+=EF=BB=BFOn 10/27/2014 05:38 PM, Sebastian Reichel wrote:
+> Hi,
+>
+> On Thu, Oct 23, 2014 at 02:38:38PM +0200, Mike Looijmans wrote:
+>> Both the LTC2941 and LTC2943 measure battery capacity.
+>> The LTC2943 is compatible with the LTC2941, it adds voltage and
+>> temperature monitoring, and uses a slightly different conversion
+>> formula for the charge counter.
+>>
+>> To avoid confusion with e.g. the LTC2945, the driver is called
+>> LTC2941 instead of LTC294X.
+>>
+>> v2: Fix units of measurement: uV, uA and centidegrees.
+>> v3: Correctly set configuration register. Allow negative values
+>>      for the sense resistor.
+>> v4: Run checkpatch.pl and fix all errors and warnings.
+>>
+>> Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
+>> ---
+>> [...]
+>>
+>> +	np =3D of_node_get(client->dev.of_node);
+>> +
+>> +	/* r_sense can be negative, when sense+ is connected to the batter=
+y
+>> +	 * instead of the sense-. This results in reversed measurements. *=
+/
+>> +	ret =3D of_property_read_u32(np, "resistor-sense", &r_sense);
+>> +	if (ret < 0) {
+>> +		dev_err(&client->dev,
+>> +			"Could not find resistor-sense in devicetree\n");
+>> +		goto fail_name;
+>> +	}
+>> +	info->r_sense =3D r_sense;
+>> +
+>> +	ret =3D of_property_read_u32(np, "prescaler-exponent", &prescaler_=
+exp);
+>> +	if (ret < 0) {
+>> +		dev_err(&client->dev,
+>> +			"PrescalerExponent not in devicetree, assume max\n");
+>> +		prescaler_exp =3D LTC2941_MAX_PRESCALER_EXP;
+>> +	}
+>
+> The device tree properties are not documented. Please document them
+> in a separate patch and Cc devicetree binding maintainers.
+>
+> Apart from that the properties should be vendor prefixed (e.g.
+> "lltc,resistor-sense").
 
-Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
----
- .../devicetree/bindings/power/ltc2941.txt          |   27 ++++++++++++++++++++
- 1 file changed, 27 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/ltc2941.txt
+Thanks for your feedback. I will post the requested changes asap.
 
-diff --git a/Documentation/devicetree/bindings/power/ltc2941.txt b/Documentation/devicetree/bindings/power/ltc2941.txt
-new file mode 100644
-index 0000000..ea42ae1
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/ltc2941.txt
-@@ -0,0 +1,27 @@
-+binding for LTC2941 and LTC2943 battery gauges
-+
-+Both the LTC2941 and LTC2943 measure battery capacity.
-+The LTC2943 is compatible with the LTC2941, it adds voltage and
-+temperature monitoring, and uses a slightly different conversion
-+formula for the charge counter.
-+
-+Required properties:
-+- compatible: Should contain "ltc2941" or "ltc2943" which also indicates the
-+    type of I2C chip attached.
-+- reg: The 7-bit I2C address.
-+- lltc,resistor-sense: The sense resistor value in milli-ohms. Can be a 32-bit
-+    negative value when the battery has been connected to the wrong end of the
-+    resistor.
-+- lltc,prescaler-exponent: The prescaler exponent as explained in the datasheet.
-+    This determines the range and accuracy of the gauge. The value is programmed
-+    into the chip only if it differs from the current setting. The setting is
-+    lost when the battery is disconnected.
-+
-+Example from the Topic Miami Florida board:
-+
-+	fuelgauge: ltc2943@64 {
-+		compatible = "ltc2943";
-+		reg = <0x64>;
-+		lltc,resistor-sense = <15>;
-+		lltc,prescaler-exponent = <5>; /* 2^(2*5) = 1024 */
-+	};
--- 
-1.7.9.5
+
+
+
+
+Met vriendelijke groet / kind regards,
+
+Mike Looijmans
+System Expert
+
+
+TOPIC Embedded Systems
+Eindhovenseweg 32-C, NL-5683 KH Best
+Postbus 440, NL-5680 AK Best
+Telefoon: (+31) (0) 499 33 69 79
+Telefax:  (+31) (0) 499 33 69 70
+E-mail: mike.looijmans@topic.nl
+Website: www.topic.nl
+
+Please consider the environment before printing this e-mail
+
+Topic zoekt gedreven (embedded) software specialisten!
+http://topic.nl/vacatures/topic-zoekt-software-engineers/
