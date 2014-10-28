@@ -1,55 +1,72 @@
 From: Preeti Murthy <preeti.lkml@gmail.com>
-Subject: Re: [PATCH V2 1/5] sched: idle: cpuidle: Check the latency req before idle
-Date: Tue, 28 Oct 2014 09:21:25 +0530
-Message-ID: <CAM4v1pOg1GFW82WD8b6Vas5xhYQrQtdP1STGxyzYtrBNSa+-Pw@mail.gmail.com>
-References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/5] sched: idle: Get the next timer event and pass it the
+ cpuidle framework
+Date: Tue, 28 Oct 2014 12:10:06 +0530
+Message-ID: <CAM4v1pOzC2riePt4sfsdG=SLYvZmhMc4KgT-hfq6XkjF2Mce7g@mail.gmail.com>
+References: <1413822343-1972-1-git-send-email-daniel.lezcano@linaro.org>
+	<1413822343-1972-2-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <1413822343-1972-2-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, patches@linaro.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
 Hi Daniel,
 
-On Thu, Oct 23, 2014 at 2:31 PM, Daniel Lezcano
+On Mon, Oct 20, 2014 at 9:55 PM, Daniel Lezcano
 <daniel.lezcano@linaro.org> wrote:
-> When the pmqos latency requirement is set to zero that means "poll in all the
-> cases".
+> Following the logic of the previous patch, retrieve from the idle task the
+> expected timer sleep duration and pass it to the cpuidle framework.
 >
-> That is correctly implemented on x86 but not on the other archs.
+> Take the opportunity to remove the unused headers in the menu.c file.
 >
-> As how is written the code, if the latency request is zero, the governor will
-> return zero, so corresponding, for x86, to the poll function, but for the
-> others arch the default idle function. For example, on ARM this is wait-for-
-> interrupt with a latency of '1', so violating the constraint.
-
-This is not true actually. On PowerPC the idle state 0 has an exit_latency of 0.
-
+> This patch does not change the current behavior.
 >
-> In order to fix that, do the latency requirement check *before* calling the
-> cpuidle framework in order to jump to the poll function without entering
-> cpuidle. That has several benefits:
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/cpuidle/cpuidle.c          | 11 +++++------
+>  drivers/cpuidle/governors/ladder.c |  3 ++-
+>  drivers/cpuidle/governors/menu.c   |  8 ++------
+>  include/linux/cpuidle.h            |  8 +++++---
+>  kernel/sched/idle.c                | 16 ++++++++++++----
+>  5 files changed, 26 insertions(+), 20 deletions(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 372c36f..64f5800 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -8,16 +8,12 @@
+>   * This code is licenced under the GPL.
+>   */
+>
+> -#include <linux/clockchips.h>
+>  #include <linux/kernel.h>
+>  #include <linux/mutex.h>
+> -#include <linux/sched.h>
+>  #include <linux/notifier.h>
+>  #include <linux/pm_qos.h>
+>  #include <linux/cpu.h>
+>  #include <linux/cpuidle.h>
+> -#include <linux/ktime.h>
+> -#include <linux/hrtimer.h>
+>  #include <linux/module.h>
+>  #include <trace/events/power.h>
+>
+> @@ -155,11 +151,13 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>   *
+>   * @drv: the cpuidle driver
+>   * @dev: the cpuidle device
+> + * @latency_req: the latency constraint when choosing an idle state
 
-Doing so actually hurts on PowerPC. Because the idle loop defined for
-idle state 0 is different from what cpu_relax() does in cpu_idle_loop().
-The spinning is more power efficient in the former case. Moreover we also set
-certain register values which indicate an idle cpu. The ppc_runlatch bits
-do precisely this. These register values are being read by some user space
-tools.  So we will end up breaking them with this patch
+You might want to include this change in the previous patch itself.
 
-My suggestion is very well keep the latency requirement check in
-kernel/sched/idle.c
-like your doing in this patch. But before jumping to cpu_idle_loop verify if the
-idle state 0 has an exit_latency > 0 in addition to your check on the
-latency_req == 0.
-If not, you can fall through to the regular path of calling into the
-cpuidle driver.
-The scheduler can query the cpuidle_driver structure anyway.
-
-What do you think?
+> + * @next_timer_event: the duration until the timer expires
+>   *
+>   * Returns the index of the idle state.
+>   */
 
 Regards
 Preeti U Murthy
