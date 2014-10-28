@@ -1,107 +1,132 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 34/47] acpi: Register power-off handler with kernel power-off handler
-Date: Tue, 28 Oct 2014 01:26:06 +0100
-Message-ID: <5416859.0WlfjKo7zJ@vostro.rjw.lan>
-References: <1414425354-10359-1-git-send-email-linux@roeck-us.net> <1414425354-10359-35-git-send-email-linux@roeck-us.net>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH/RFC] ARM: shmobile: sh7372: Keep D4 pm domain powered
+Date: Tue, 28 Oct 2014 09:16:43 +0900
+Message-ID: <20141028001642.GA20702@verge.net.au>
+References: <1414063874-9533-1-git-send-email-geert+renesas@glider.be>
+ <20141027010846.GC30485@verge.net.au>
+ <CAMuHMdVFTjy5UZEU6azEuXQSKF1msQrQ-cOe2jZzevcpAPfAjw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51703 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752650AbaJ1AFb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 20:05:31 -0400
-In-Reply-To: <1414425354-10359-35-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdVFTjy5UZEU6azEuXQSKF1msQrQ-cOe2jZzevcpAPfAjw@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org
 
-On Monday, October 27, 2014 08:55:41 AM Guenter Roeck wrote:
-> Register with kernel power-off handler instead of setting pm_power_off
-> directly. Register with high priority to reflect that the driver explicitly
-> overrides existing power-off handlers.
-
-Well, I'm still rather unconvinced that notifiers are particularly suitable for
-this purpose.
-
-Specifically ->
-
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Len Brown <lenb@kernel.org>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
-> v3:
-> - Replace poweroff in all newly introduced variables and in text
->   with power_off or power-off as appropriate
-> - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
-> - Replace acpi: with ACPI: in log message
-> v2:
-> - Use define to specify poweroff handler priority
-> - Use pr_warn instead of pr_err
+On Mon, Oct 27, 2014 at 09:23:14AM +0100, Geert Uytterhoeven wrote:
+> Hi Simon,
 > 
->  drivers/acpi/sleep.c | 15 +++++++++++++--
->  1 file changed, 13 insertions(+), 2 deletions(-)
+> On Mon, Oct 27, 2014 at 2:08 AM, Simon Horman <horms@verge.net.au> wrote:
+> > On Thu, Oct 23, 2014 at 01:31:14PM +0200, Geert Uytterhoeven wrote:
+> >> The D4 power domain contains the Coresight-ETM hardware block.
+> >> As long as the ARM debug/perf code doesn't use resource management with
+> >> runtime PM support, the D4 power domain must be kept powered to avoid a
+> >> crash during resume from s2ram (dbg_cpu_pm_notify() calls
+> >> reset_ctrl_regs() unconditionally, causing an undefined instruction
+> >> oops).
+> >>
+> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> >> ---
+> >> Untested on real hardware, but a similar workaround is needed on r8a7740.
+> >
+> > I have hardware in the form of a Mackerel board and I'm happy
+> > to test this if it would help and you give me some guidance on how to do so.
 > 
-> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-> index 05a31b5..7875b92 100644
-> --- a/drivers/acpi/sleep.c
-> +++ b/drivers/acpi/sleep.c
-> @@ -16,6 +16,8 @@
->  #include <linux/device.h>
->  #include <linux/interrupt.h>
->  #include <linux/suspend.h>
-> +#include <linux/notifier.h>
-> +#include <linux/pm.h>
->  #include <linux/reboot.h>
->  #include <linux/acpi.h>
->  #include <linux/module.h>
-> @@ -827,14 +829,22 @@ static void acpi_power_off_prepare(void)
->  	acpi_disable_all_gpes();
->  }
->  
-> -static void acpi_power_off(void)
-> +static int acpi_power_off(struct notifier_block *this,
-> +			  unsigned long unused1, void *unused2)
->  {
-
--> Is there any reason why any notifier in the new chain would use the
-second argument for anything meaningful?  And the third argument for
-that matter?
-
->  	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
->  	printk(KERN_DEBUG "%s called\n", __func__);
->  	local_irq_disable();
->  	acpi_enter_sleep_state(ACPI_STATE_S5);
-> +
-> +	return NOTIFY_DONE;
-
-Also is there any reason for any notifier in the new chain to return anything
-different from NOTIFY_DONE and if so, then what happens when anything else
-is returned?
-
->  }
->  
-> +static struct notifier_block acpi_power_off_nb = {
-> +	.notifier_call = acpi_power_off,
-> +	.priority = POWER_OFF_PRIORITY_HIGH,
-> +};
-> +
->  int __init acpi_sleep_init(void)
->  {
->  	char supported[ACPI_S_STATE_COUNT * 3 + 1];
-> @@ -851,7 +861,8 @@ int __init acpi_sleep_init(void)
->  	if (acpi_sleep_state_supported(ACPI_STATE_S5)) {
->  		sleep_states[ACPI_STATE_S5] = 1;
->  		pm_power_off_prepare = acpi_power_off_prepare;
-> -		pm_power_off = acpi_power_off;
-> +		if (register_power_off_handler(&acpi_power_off_nb))
-> +			pr_warn("ACPI: Failed to register power-off handler\n");
->  	}
->  
->  	supported[0] = 0;
+> That would be great!
 > 
+> Test procedure:
+>   1. echo 0 > /sys/module/printk/parameters/console_suspend
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+I seemed to also need:
+
+echo enabled > /sys/devices/platform/sh-sci.0/tty/ttySC0/power/wakeup
+
+>   2. echo mem > /sys/power/state
+>   3. [ Wake up by pressing a key on the serial console.
+>         There's no other wake-up source on mackerel? ]
+
+usbhs seems like a candidate, it has a wakeup node in sysfs.
+
+> Without my patch, I expect it to crash during resume in reset_ctrl_regs().
+
+With the patch and the mackerel defconfig I see this:
+
+# echo mem > /sys/power/state
+PM: Syncing filesystems ... done.
+Freezing user space processes ... (elapsed 0.005 seconds) done.
+Freezing remaining freezable tasks ... (elapsed 0.009 seconds) done.
+Suspending console(s) (use no_console_suspend to debug)
+dpm_run_callback(): pm_genpd_suspend+0x0/0x44 returns -16
+PM: Device sh_mobile_sdhi.2 failed to suspend: error -16
+PM: Some devices failed to suspend, or early wake event detected
+PM: resume of devices complete after 0.323 msecs
+Restarting tasks ... done.
+-bash: echo: write error: Device or resource busy
+#
+
+So I turned of SDHI support in the kernel config and tried again:
+
+# echo mem > /sys/power/state
+PM: Syncing filesystems ... done.
+Freezing user space processes ... (elapsed 0.008 seconds) done.
+Freezing remaining freezable tasks ... (elapsed 0.009 seconds) done.
+renesas_usbhs renesas_usbhs.1: remove, state 4
+usb usb1: USB disconnect, device number 1
+renesas_usbhs renesas_usbhs.1: USB bus 1 deregistered
+PM: suspend of devices complete after 28.959 msecs
+PM: late suspend of devices complete after 0.357 msecs
+PM: noirq suspend of devices complete after 0.512 msecs
+
+[keypress]
+
+sh_tmu sh-tmu.0: ch0: used for periodic clock events
+PM: noirq resume of devices complete after 0.420 msecs
+PM: early resume of devices complete after 0.209 msecs
+PM: resume of devices complete after 0.327 msecs
+Restarting tasks ... 
+
+renesas_usbhs renesas_usbhs.1: USB Host Controller
+renesas_usbhs renesas_usbhs.1: new USB bus registered, assigned bus number 1
+done.
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 1 port detected
+asoc-simple-card asoc-simple-card.0: ASoC: CODEC DAI ak4642-hifi not registered
+platform asoc-simple-card.0: Driver asoc-simple-card requests probe deferral
+
+
+Without the patch I see the same as above, module slightly different msec
+values:
+
+# echo mem > /sys/power/state
+PM: Syncing filesystems ... done.
+Freezing user space processes ... (elapsed 0.004 seconds) done.
+Freezing remaining freezable tasks ... (elapsed 0.009 seconds) done.
+renesas_usbhs renesas_usbhs.1: remove, state 4
+usb usb1: USB disconnect, device number 1
+renesas_usbhs renesas_usbhs.1: USB bus 1 deregistered
+PM: suspend of devices complete after 27.306 msecs
+PM: late suspend of devices complete after 0.343 msecs
+PM: noirq suspend of devices complete after 0.503 msecs
+
+[keypress]
+
+sh_tmu sh-tmu.0: ch0: used for periodic clock events
+PM: noirq resume of devices complete after 0.420 msecs
+PM: early resume of devices complete after 0.204 msecs
+PM: resume of devices complete after 0.308 msecs
+Restarting tasks ... 
+
+renesas_usbhs renesas_usbhs.1: USB Host Controller
+renesas_usbhs renesas_usbhs.1: new USB bus registered, assigned bus number 1
+done.
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 1 port detected
+asoc-simple-card asoc-simple-card.0: ASoC: CODEC DAI ak4642-hifi not registered
+platform asoc-simple-card.0: Driver asoc-simple-card requests probe deferral
+
+
+> Thanks!
+
+Any time.
