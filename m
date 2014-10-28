@@ -1,50 +1,70 @@
-From: Romain Perier <romain.perier@gmail.com>
-Subject: Re: [PATCH v1 02/10] dt-bindings: Document the standard property "system-power-controller"
-Date: Tue, 28 Oct 2014 08:25:55 +0100
-Message-ID: <CABgxDo+goYskzGB5uCTkteOs5=6+vRbYCABMh8D_3qZxQC0thA@mail.gmail.com>
-References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
-	<1414427215-14380-2-git-send-email-romain.perier@gmail.com>
-	<20141027163918.GB14253@saruman>
-	<20141027172636.GZ18557@sirena.org.uk>
-	<20141027173025.GA16005@saruman>
-	<20141027175725.GB18557@sirena.org.uk>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Subject: Re: [PATCH v2 0/8] ARM: at91: Remove mach/ includes from the reset
+ driver
+Date: Tue, 28 Oct 2014 08:50:53 +0100
+Message-ID: <20141028085053.41c6ce46@bbrezillon>
+References: <1414451377-11053-1-git-send-email-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20141027175725.GB18557@sirena.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Felipe Balbi <balbi@ti.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, devicetree <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, robh <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Johan Hovold <johan@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, "pawel.moll" <pawel.moll@arm.com>, ijc+devicetree <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.or>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from down.free-electrons.com ([37.187.137.238]:58254 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759774AbaJ1Hu5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 03:50:57 -0400
+In-Reply-To: <1414451377-11053-1-git-send-email-alexandre.belloni@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-If this is possible, that's probably better to drop all these patches
-(including poweroff-source) from "next", in this way it will be
-possible to re-do things properly from scratch (with the new name).
+Hi,
 
-If you have a look at linux-next the property "poweroff-source" is
-already used by tps910 AND act8865, I don't like that (it is not used
-yet by dts files). I mean, I don't really want to support
-"vendor,system-power-controller", "system-power-controller" and
-"poweroff-source" from "of_has_system_power_source" and do a lot of
-unclean commits in order to don't break compatibility. Just keep
-things simple.
+On Tue, 28 Oct 2014 00:09:29 +0100
+Alexandre Belloni <alexandre.belloni@free-electrons.com> wrote:
 
-What do you think ?
+> This series removes the mach/ headers dependency from the reset driver. It is
+> also laying some groundwork for the necessary power management support rework.
+> 
+> The first patch adds and export a function to shutdown the sdram from the sdramc
+> driver. That function also take the RSTC CR register and a value as parameters
+> to be able to reset the chip. This is a hackish way of doing it but it ensures
+> that all the code fits in one cache line. We already have plan to start using
+> the sram to have a cleaner way to execute that code safely as soon as that
+> series goes in:
+> http://lists.infradead.org/pipermail/linux-arm-kernel/2013-September/198778.html
+> 
+> The second patch makes the sdramc driver usable from the board files.
+> 
+> The third patch actually registers the sdramc driver from the boards files.
+> The fourth patch does the same, only for sam9g45 and sam9rl to simplify future
+> merging as the board files have been removed. Simply drop that patch.
+> 
+> The fifth patch makes the at91-reset driver use the newly created
+> at91_ramc_shutdown() function and removes the mach/ headers inclusion.
+
+I'm not a big fan of this approach.
+
+I definitely think each step of the reset process should be handled in
+the appropriate block (and the patch series you pointed out would
+definitely help in achieving this goal), but you're just moving all the
+stuff done in the reset driver into the SDRAM one, which means you're
+solving one design issue by introducing a new one.
+
+Moreover, the errata at the origin of this hack is attached to the RSTC
+(Rest Controller) block in the datasheets.
+
+I'd rather keep the reset driver as is and move SDRAM related macros
+into a specific header (include/linux/memory/atmel-sdram.h or
+include/soc/atmel/memory.h as you proposed) so that the reset driver
+can reference them without including mach headers.
 
 
-2014-10-27 18:57 GMT+01:00 Mark Brown <broonie@kernel.org>:
-> On Mon, Oct 27, 2014 at 12:30:25PM -0500, Felipe Balbi wrote:
->> On Mon, Oct 27, 2014 at 05:26:36PM +0000, Mark Brown wrote:
->
->> > Given that poweroff-source hasn't made it into a released kernel yet we
->> > can probably just kill it off completely can't we?
->
->> please do, then we will never have that commit in Linus' tree to give us
->> nightmares.
->
-> Well, the commit isn't a particularly big deal (and got cross-merged
-> into another tree already) - if it's convenient to rebase it out we
-> probably should but it's also not the end of the world either so long as
-> it doesn't appear in a release.  Worst case people adopt it based on the
-> list discussions and we check for two properties which also isn't that
-> bad.
+Best Regards,
+
+Boris
+
+-- 
+Boris Brezillon, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
