@@ -1,70 +1,49 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Subject: Re: [PATCH v2 0/8] ARM: at91: Remove mach/ includes from the reset
- driver
-Date: Tue, 28 Oct 2014 08:50:53 +0100
-Message-ID: <20141028085053.41c6ce46@bbrezillon>
-References: <1414451377-11053-1-git-send-email-alexandre.belloni@free-electrons.com>
+From: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Subject: Re: [RFC/PATCH] PM / Sleep: Timer quiesce in freeze state
+Date: Tue, 28 Oct 2014 15:52:17 +0800
+Message-ID: <544F4B31.7050308@linux.intel.com>
+References: <5446787E.60202@linux.intel.com> <20141024153656.GM12706@worktop.programming.kicks-ass.net> <544DE5CF.9040501@linux.intel.com> <20141027074419.GE10501@worktop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:58254 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759774AbaJ1Hu5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 03:50:57 -0400
-In-Reply-To: <1414451377-11053-1-git-send-email-alexandre.belloni@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20141027074419.GE10501@worktop.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi,
-
-On Tue, 28 Oct 2014 00:09:29 +0100
-Alexandre Belloni <alexandre.belloni@free-electrons.com> wrote:
-
-> This series removes the mach/ headers dependency from the reset driver. It is
-> also laying some groundwork for the necessary power management support rework.
+On 2014/10/27 15:44, Peter Zijlstra wrote:
+> On Mon, Oct 27, 2014 at 02:27:27PM +0800, Li, Aubrey wrote:
+>>>> +static void freezer_suspend_tk(int cpu)
+>>>>  {
+>>>> +	if (tick_do_timer_cpu != cpu)
+>>>> +		return;
+>>>> +
+>>>
+>>> I had a note here that this might be broken for clocksource drivers that
+>>> have suspend/resume methods. You seem to have 'lost' that note, is that
+>>> because you found it isn't a problem?
+>>>
+>> I don't see it's a problem as long as we do not refer the clock source
+>> before it resumes. But I think my testing didn't cover that case that
+>> clock source drivers have suspend/resume methods. Can you please give
+>> more details what do you worry about?
 > 
-> The first patch adds and export a function to shutdown the sdram from the sdramc
-> driver. That function also take the RSTC CR register and a value as parameters
-> to be able to reset the chip. This is a hackish way of doing it but it ensures
-> that all the code fits in one cache line. We already have plan to start using
-> the sram to have a cleaner way to execute that code safely as soon as that
-> series goes in:
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2013-September/198778.html
+> I can't seem to recall :/ Maybe I conflated clocksource and clockevents
+> and figured we'd need to run the clocksource suspend callback on each
+> cpu.
+
+Both clocksource and clockevents are not per-cpu device, why do we need
+to run their suspend callback on *each* cpu?
+
+Thanks,
+-Aubrey
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> The second patch makes the sdramc driver usable from the board files.
 > 
-> The third patch actually registers the sdramc driver from the boards files.
-> The fourth patch does the same, only for sam9g45 and sam9rl to simplify future
-> merging as the board files have been removed. Simply drop that patch.
-> 
-> The fifth patch makes the at91-reset driver use the newly created
-> at91_ramc_shutdown() function and removes the mach/ headers inclusion.
-
-I'm not a big fan of this approach.
-
-I definitely think each step of the reset process should be handled in
-the appropriate block (and the patch series you pointed out would
-definitely help in achieving this goal), but you're just moving all the
-stuff done in the reset driver into the SDRAM one, which means you're
-solving one design issue by introducing a new one.
-
-Moreover, the errata at the origin of this hack is attached to the RSTC
-(Rest Controller) block in the datasheets.
-
-I'd rather keep the reset driver as is and move SDRAM related macros
-into a specific header (include/linux/memory/atmel-sdram.h or
-include/soc/atmel/memory.h as you proposed) so that the reset driver
-can reference them without including mach headers.
-
-
-Best Regards,
-
-Boris
-
--- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
