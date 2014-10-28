@@ -1,27 +1,38 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH V2 5/5] cpuidle: menu: Move the update function before its declaration
-Date: Mon, 27 Oct 2014 22:53:40 -0400
-Message-ID: <CAJvTdKnR1jmD2r0w0A1M=xfWov4uPOxuX+QMGG4oTU8GaG15-A@mail.gmail.com>
-References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>
-	<1414054881-17713-5-git-send-email-daniel.lezcano@linaro.org>
-	<alpine.LFD.2.11.1410231246500.6969@knanqh.ubzr>
+Subject: Re: [RFD PATCH 02/10] cpuidle: Checking the zero latency inside the
+ governors does not make sense.
+Date: Mon, 27 Oct 2014 23:11:15 -0400
+Message-ID: <CAJvTdKmiRR9OTsxRV0OWGrYndRtcFivqnwRM+iJuD4FK3HQjZA@mail.gmail.com>
+References: <1413986273-28522-1-git-send-email-daniel.lezcano@linaro.org>
+	<1413986273-28522-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f173.google.com ([209.85.160.173]:43391 "EHLO
-	mail-yk0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752585AbaJ1Cxl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 22:53:41 -0400
-In-Reply-To: <alpine.LFD.2.11.1410231246500.6969@knanqh.ubzr>
+Received: from mail-yh0-f45.google.com ([209.85.213.45]:40014 "EHLO
+	mail-yh0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752332AbaJ1DLQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 23:11:16 -0400
+In-Reply-To: <1413986273-28522-3-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, Patch Tracking <patches@linaro.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, axboe@kernel.dk, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, preeti@linux.vnet.ibm.com, Morten Rasmussen <Morten.Rasmussen@arm.com>, mturquette@linaro.org, Tuukka Tikkanen <tuukka.tikkanen@linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Patch Tracking <patches@linaro.org>
 
->> This patch does not change the behavior of the governor, it is just code
->> reordering.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+after the patch '[V2,1/5] sched: idle: cpuidle: Check the latency req
+before idle' is applied,
+this one becomes a no-op.
 
+indeed, they'd conflict both logically and physically.
+physically the check for latency_req == 0 was already removed from the
+governors.
+logically, the upper level, cpu_idle_loop() already invokes
+cpu_idle_poll() directly
+when latency_req is 0.  Indeed, that would prevent the code in this
+patch from running
+at all, since cpu_idle_call() is no longer invoked in that case.
+Further, why would
+you propose invoking "use_default" instead of cpu_idle_poll() in the
+latency_req == 0 case?
 
-Acked-by: Len Brown <len.brown@intel.com>
+thanks,
+Len Brown, Intel Open Source Technology Center
