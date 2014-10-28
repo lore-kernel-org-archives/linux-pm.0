@@ -1,187 +1,73 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [PATCH RESEND] PM / sleep: Fix racing timers
-Date: Tue, 28 Oct 2014 13:40:11 -0700
-Message-ID: <83c78fd2985d4530a48a5947caef21be@BL2FFO11FD052.protection.gbl>
-References: <1411405623-7869-1-git-send-email-soren.brinkmann@xilinx.com>
- <1860362.OyoLA3GxVJ@vostro.rjw.lan>
- <fadb1f7b-82bf-4dbd-bfd4-ca24daca0a8f@BN1AFFO11FD060.protection.gbl>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH v4] kernel: Add support for power-off handler call chain
+Date: Tue, 28 Oct 2014 21:58:53 +0100
+Message-ID: <5361222.IVraj5jbi5@diego>
+References: <1414516266-4965-1-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bl2on0076.outbound.protection.outlook.com ([65.55.169.76]:29654
-	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751190AbaJ1UkQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 28 Oct 2014 16:40:16 -0400
-Content-Disposition: inline
-In-Reply-To: <fadb1f7b-82bf-4dbd-bfd4-ca24daca0a8f@BN1AFFO11FD060.protection.gbl>
+Received: from gloria.sntech.de ([95.129.55.99]:39575 "EHLO gloria.sntech.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750857AbaJ1Uzn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 16:55:43 -0400
+In-Reply-To: <1414516266-4965-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Philippe =?ISO-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 
-Hi Rafael,
+Am Dienstag, 28. Oktober 2014, 10:11:06 schrieb Guenter Roeck:
+> Various drivers implement architecture and/or device specific means t=
+o
+> power off the system.  For the most part, those drivers set the globa=
+l
+> variable pm_power_off to point to a function within the driver.
+>=20
+> This mechanism has a number of drawbacks.  Typically only one scheme
+> to remove power is supported (at least if pm_power_off is used).
+> At least in theory there can be multiple means remove power, some of
+> which may be less desirable. For example, some mechanisms may only
+> power off the CPU or the CPU card, while another may power off the
+> entire system.  Others may really just execute a restart sequence
+> or drop into the ROM monitor. Using pm_power_off can also be racy
+> if the function pointer is set from a driver built as module, as the
+> driver may be in the process of being unloaded when pm_power_off is
+> called. If there are multiple power-off handlers in the system, remov=
+ing
+> a module with such a handler may inadvertently reset the pointer to
+> pm_power_off to NULL, leaving the system with no means to remove powe=
+r.
+>=20
+> Introduce a system power-off handler call chain to solve the describe=
+d
+> problems.  This call chain is expected to be executed from the archit=
+ecture
+> specific machine_power_off() function.  Drivers and architeceture cod=
+e
+> providing system power-off functionality are expected to register wit=
+h
+> this call chain.  When registering a power-off handler, callers can
+> provide a priority to control power-off handler execution sequence
+> and thus ensure that the power-off handler with the optimal capabilit=
+ies
+> to remove power for a given system is called first.
+>=20
+> Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+> Cc: Alexander Graf <agraf@suse.de>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> cc: Heiko Stuebner <heiko@sntech.de>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Philippe R=E9tornaz <philippe.retornaz@gmail.com>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Romain Perier <romain.perier@gmail.com>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> ---
 
-any opinion on this?
+Similarly to the restart handlers, I really like the concept.
 
-	Thanks,
-	S=C3=B6ren
+Acked-by: Heiko Stuebner <heiko@sntech.de>
 
-On Thu, 2014-10-02 at 09:01AM -0700, S=C3=B6ren Brinkmann wrote:
-> Hi Rafael,
->=20
-> On Tue, 2014-09-23 at 01:01AM +0200, Rafael J. Wysocki wrote:
-> > On Monday, September 22, 2014 10:07:03 AM Soren Brinkmann wrote:
-> > > On platforms that do not power off during suspend, successfully e=
-ntering
-> > > suspend races with timers.
-> > >=20
-> > > The race happening in a couple of location is:
-> > >=20
-> > >   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
-> > >      ...
-> > >   2. syscore_suspend()
-> > >       -> timekeeping_suspend()
-> > >        -> clockevents_notify(SUSPEND)
-> > >         -> tick_suspend()   	(timers are turned off here)
-> > >      ...
-> > >   3. wfi            		(wait for wake-IRQ here)
-> > >=20
-> > > Between steps 1 and 2 the timers can still generate interrupts th=
-at are
-> > > not handled and stay pending until step 3. That pending IRQ cause=
-s an
-> > > immediate - spurious - wake.
-> > >=20
-> > > The solution is to move the clockevents suspend/resume notificati=
-on
-> > > out of the syscore_suspend step and explictly call them at the ap=
-propriate
-> > > time in the suspend/hibernation paths. I.e. timers are suspend _b=
-efore_
-> > > IRQs get disabled. And accordingly in the resume path.
-> > >=20
-> > > Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> > > ---
-> > > Hi,
-> > >=20
-> > > there was not a lot of discussion on the last submission. Just on=
-e comment from
-> > > Rafael (https://lkml.org/lkml/2014/8/26/780), which - as I outlin=
-ed in my
-> > > response, does not apply, IMHO, since the platform does not re-en=
-able
-> > > interrupts.
-> >=20
-> > Well, you just don't agree with it.
-> >=20
-> > The problem with your approach is that timer interrupts aren't actu=
-ally as
-> > special as you think and any other IRQF_NO_SUSPEND interrupts would=
- have caused
-> > similar issues to appear under specific conditions.
-> >=20
-> > The solution I would suggest and that actually covers all IRQF_NO_S=
-USPEND
-> > interrupts would be to use a wait_event() loop like the one in free=
-ze_enter()
-> > (on top of the current linux-next or the pm-genirq branch of linux-=
-pm.git),
-> > but wait for pm_abort_suspend to become true, to implement system s=
-uspend.
->=20
-> sorry, it took me a while since I needed to get some dependencies por=
-ted
-> to the pm-genirq base. Once I had that, it reproduced my original iss=
-ue.
-> So far so good. I then looked into finding a solution following your
-> guidance. I'm not sure I really found what you had in mind, but below=
- is
-> what I came up with, which seems to do it.
-> Please let me know how far off I am.
->=20
-> 	Thanks,
-> 	S=C3=B6ren
->=20
-> -------8<------------------8<----------------8<----------------8<----=
------------
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.=
-c
-> index c2744b30d5d9..a4f9914571f1 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -25,7 +25,7 @@
->  bool events_check_enabled __read_mostly;
-> =20
->  /* If set and the system is suspending, terminate the suspend. */
-> -static bool pm_abort_suspend __read_mostly;
-> +bool pm_abort_suspend __read_mostly;
-> =20
->  /*
->   * Combined counters of registered wakeup events and wakeup events i=
-n progress.
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index 6dadb25cb0d8..e6a6de8f76d0 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -33,6 +33,7 @@
-> =20
->  static const char *pm_labels[] =3D { "mem", "standby", "freeze", };
->  const char *pm_states[PM_SUSPEND_MAX];
-> +extern bool pm_abort_suspend;
-> =20
->  static const struct platform_suspend_ops *suspend_ops;
->  static const struct platform_freeze_ops *freeze_ops;
-> @@ -294,25 +295,27 @@ static int suspend_enter(suspend_state_t state,=
- bool *wakeup)
->  	if (error || suspend_test(TEST_CPUS))
->  		goto Enable_cpus;
-> =20
-> -	arch_suspend_disable_irqs();
-> -	BUG_ON(!irqs_disabled());
-> -
-> -	error =3D syscore_suspend();
-> -	if (!error) {
-> -		*wakeup =3D pm_wakeup_pending();
-> -		if (!(suspend_test(TEST_CORE) || *wakeup)) {
-> -			trace_suspend_resume(TPS("machine_suspend"),
-> -				state, true);
-> -			error =3D suspend_ops->enter(state);
-> -			trace_suspend_resume(TPS("machine_suspend"),
-> -				state, false);
-> -			events_check_enabled =3D false;
-> +	while (!pm_abort_suspend) {
-> +		arch_suspend_disable_irqs();
-> +		BUG_ON(!irqs_disabled());
-> +
-> +		error =3D syscore_suspend();
-> +		if (!error) {
-> +			*wakeup =3D pm_wakeup_pending();
-> +			if (!(suspend_test(TEST_CORE) || *wakeup)) {
-> +				trace_suspend_resume(TPS("machine_suspend"),
-> +					state, true);
-> +				error =3D suspend_ops->enter(state);
-> +				trace_suspend_resume(TPS("machine_suspend"),
-> +					state, false);
-> +				events_check_enabled =3D false;
-> +			}
-> +			syscore_resume();
->  		}
-> -		syscore_resume();
-> -	}
-> =20
-> -	arch_suspend_enable_irqs();
-> -	BUG_ON(irqs_disabled());
-> +		arch_suspend_enable_irqs();
-> +		BUG_ON(irqs_disabled());
-> +	}
-> =20
->   Enable_cpus:
->  	enable_nonboot_cpus();
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
-l" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
