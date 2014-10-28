@@ -1,57 +1,44 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v4] kernel: Add support for power-off handler call chain
-Date: Tue, 28 Oct 2014 13:04:24 -0700
-Message-ID: <20141028200424.GA20617@roeck-us.net>
-References: <1414516266-4965-1-git-send-email-linux@roeck-us.net>
- <20141028182312.GA13636@amd>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 4/4] PM / Domains: Let the ->attach_dev() callback return
+ an error code
+Date: Tue, 28 Oct 2014 21:31:35 +0100
+Message-ID: <CAMuHMdVn2mfk5v8MQshU0gko+dL9xtCT_zBuqyntHHrmxjwfSA@mail.gmail.com>
+References: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
+	<1414507090-516-5-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20141028182312.GA13636@amd>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Philippe =?iso-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1414507090-516-5-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 28, 2014 at 07:23:12PM +0100, Pavel Machek wrote:
-> On Tue 2014-10-28 10:11:06, Guenter Roeck wrote:
-> > Various drivers implement architecture and/or device specific means to
-> > power off the system.  For the most part, those drivers set the global
-> > variable pm_power_off to point to a function within the driver.
-> > 
-> > This mechanism has a number of drawbacks.  Typically only one scheme
-> > to remove power is supported (at least if pm_power_off is used).
-> > At least in theory there can be multiple means remove power, some of
-> > which may be less desirable. For example, some mechanisms may only
-> > power off the CPU or the CPU card, while another may power off the
-> > entire system.  Others may really just execute a restart sequence
-> > or drop into the ROM monitor. Using pm_power_off can also be racy
-> > if the function pointer is set from a driver built as module, as the
-> > driver may be in the process of being unloaded when pm_power_off is
-> > called. If there are multiple power-off handlers in the system, removing
-> > a module with such a handler may inadvertently reset the pointer to
-> > pm_power_off to NULL, leaving the system with no means to remove power.
-> > 
-> > Introduce a system power-off handler call chain to solve the described
-> > problems.  This call chain is expected to be executed from the architecture
-> > specific machine_power_off() function.  Drivers and architeceture code
-> > providing system power-off functionality are expected to register with
-> > this call chain.  When registering a power-off handler, callers can
-> > provide a priority to control power-off handler execution sequence
-> > and thus ensure that the power-off handler with the optimal capabilities
-> > to remove power for a given system is called first.
-> > 
-> > Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-> > Cc: Alexander Graf <agraf@suse.de>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> > cc: Heiko Stuebner <heiko@sntech.de>
-> > Cc: Lee Jones <lee.jones@linaro.org>
-> > Cc: Len Brown <len.brown@intel.com>
-> 
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> 
-Thanks!
+Hi Ulf, Rafael,
 
-Guenter
+On Tue, Oct 28, 2014 at 3:38 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> Typically an ->attach_dev() callback would fetch some PM resourses.
+>
+> Those operations, like for example clk_get() may fail with different
+> errors, including -EPROBE_DEFER. Instead of ignoring these errors and
+> potentially only print an error message, let's propagate them to give
+> callers the option to handle them.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Given that several patch series using ->attach_dev() are already floating
+around and will be in -next soon, what is the plan of getting this in?
+Doing it ASAP (in v3.18-rc3)?
+Delaying this to v3.19-rc2, which will require an atomic fixing of its users?
+Any other option?
+
+Gr{oetje,eeting}s,
+
+                        Geert, who's about to resubmit his pm-rmobile patches
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
