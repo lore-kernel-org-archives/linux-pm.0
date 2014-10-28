@@ -1,132 +1,115 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH/RFC] ARM: shmobile: sh7372: Keep D4 pm domain powered
-Date: Tue, 28 Oct 2014 09:16:43 +0900
-Message-ID: <20141028001642.GA20702@verge.net.au>
-References: <1414063874-9533-1-git-send-email-geert+renesas@glider.be>
- <20141027010846.GC30485@verge.net.au>
- <CAMuHMdVFTjy5UZEU6azEuXQSKF1msQrQ-cOe2jZzevcpAPfAjw@mail.gmail.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v14 3/5] ARM: dts: add RK3288 Thermal data
+Date: Mon, 27 Oct 2014 17:25:14 -0700
+Message-ID: <20141028002514.GG7594@dtor-ws>
+References: <1414377588-2237-1-git-send-email-caesar.wang@rock-chips.com>
+ <1414377588-2237-4-git-send-email-caesar.wang@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
+Return-path: <linux-doc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdVFTjy5UZEU6azEuXQSKF1msQrQ-cOe2jZzevcpAPfAjw@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <1414377588-2237-4-git-send-email-caesar.wang@rock-chips.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Caesar Wang <caesar.wang@rock-chips.com>
+Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 27, 2014 at 09:23:14AM +0100, Geert Uytterhoeven wrote:
-> Hi Simon,
+Hi Caesar,
+
+On Mon, Oct 27, 2014 at 10:39:46AM +0800, Caesar Wang wrote:
+> This patch changes a dtsi file to contain the thermal data
+> on RK3288 and later SoCs. This data will
+> enable a thermal shutdown over 120C.
 > 
-> On Mon, Oct 27, 2014 at 2:08 AM, Simon Horman <horms@verge.net.au> wrote:
-> > On Thu, Oct 23, 2014 at 01:31:14PM +0200, Geert Uytterhoeven wrote:
-> >> The D4 power domain contains the Coresight-ETM hardware block.
-> >> As long as the ARM debug/perf code doesn't use resource management with
-> >> runtime PM support, the D4 power domain must be kept powered to avoid a
-> >> crash during resume from s2ram (dbg_cpu_pm_notify() calls
-> >> reset_ctrl_regs() unconditionally, causing an undefined instruction
-> >> oops).
-> >>
-> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> >> ---
-> >> Untested on real hardware, but a similar workaround is needed on r8a7740.
-> >
-> > I have hardware in the form of a Mackerel board and I'm happy
-> > to test this if it would help and you give me some guidance on how to do so.
+> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+
+Looks good not with a small nit below. Otherwise
+
+Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+
+> ---
+>  arch/arm/boot/dts/rk3288-thermal.dtsi | 65 +++++++++++++++++++++++++++++++++++
+>  1 file changed, 65 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/rk3288-thermal.dtsi
 > 
-> That would be great!
+> diff --git a/arch/arm/boot/dts/rk3288-thermal.dtsi b/arch/arm/boot/dts/rk3288-thermal.dtsi
+> new file mode 100644
+> index 0000000..0555224
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/rk3288-thermal.dtsi
+> @@ -0,0 +1,65 @@
+> +/*
+> + * Device Tree Source for RK3288 SoC thermal
+> + *
+> + * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2.  This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + */
+> +
+> +#include <dt-bindings/thermal/thermal.h>
+> +
+> +reserve_thermal: reserve_thermal {
+> +	polling-delay-passive = <1000>; /* milliseconds */
+> +	polling-delay = <5000>; /* milliseconds */
+> +
+> +			/* sensor	ID */
+> +	thermal-sensors = <&tsadc	0>;
+> +
+> +};
+> +
+> +cpu_thermal: cpu_thermal {
+> +	polling-delay-passive = <1000>; /* milliseconds */
+> +	polling-delay = <5000>; /* milliseconds */
+> +
+> +			/* sensor	ID */
+> +	thermal-sensors = <&tsadc	1>;
+> +
+> +	trips {
+> +		cpu_alert0: cpu_alert0 {
+> +			temperature = <80000>; /* millicelsius */
+> +			hysteresis = <2000>; /* millicelsius */
+> +			type = "passive";
+> +		};
+> +		cpu_crit: cpu_crit {
+> +			temperature = <120000>; /* millicelsius */
+> +			hysteresis = <2000>; /* millicelsius */
+> +			type = "critical";
+> +		};
+> +	};
+> +
+> +	cooling-maps {
+> +		map0 {
+> +		trip = <&cpu_alert0>;
+
+This seems mis-indented.
+
+> +			cooling-device =
+> +				<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+> +		};
+> +	};
+> +};
+> +
+> +gpu_thermal: gpu_thermal {
+> +	polling-delay-passive = <1000>; /* milliseconds */
+> +	polling-delay = <5000>; /* milliseconds */
+> +
+> +			/* sensor	ID */
+> +	thermal-sensors = <&tsadc	2>;
+> +
+> +	trips {
+> +		gpu_crit: gpu_crit {
+> +			temperature = <120000>; /* millicelsius */
+> +			hysteresis = <2000>; /* millicelsius */
+> +			type = "critical";
+> +		};
+> +	};
+> +};
+> -- 
+> 1.9.1
 > 
-> Test procedure:
->   1. echo 0 > /sys/module/printk/parameters/console_suspend
+> 
 
-I seemed to also need:
-
-echo enabled > /sys/devices/platform/sh-sci.0/tty/ttySC0/power/wakeup
-
->   2. echo mem > /sys/power/state
->   3. [ Wake up by pressing a key on the serial console.
->         There's no other wake-up source on mackerel? ]
-
-usbhs seems like a candidate, it has a wakeup node in sysfs.
-
-> Without my patch, I expect it to crash during resume in reset_ctrl_regs().
-
-With the patch and the mackerel defconfig I see this:
-
-# echo mem > /sys/power/state
-PM: Syncing filesystems ... done.
-Freezing user space processes ... (elapsed 0.005 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.009 seconds) done.
-Suspending console(s) (use no_console_suspend to debug)
-dpm_run_callback(): pm_genpd_suspend+0x0/0x44 returns -16
-PM: Device sh_mobile_sdhi.2 failed to suspend: error -16
-PM: Some devices failed to suspend, or early wake event detected
-PM: resume of devices complete after 0.323 msecs
-Restarting tasks ... done.
--bash: echo: write error: Device or resource busy
-#
-
-So I turned of SDHI support in the kernel config and tried again:
-
-# echo mem > /sys/power/state
-PM: Syncing filesystems ... done.
-Freezing user space processes ... (elapsed 0.008 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.009 seconds) done.
-renesas_usbhs renesas_usbhs.1: remove, state 4
-usb usb1: USB disconnect, device number 1
-renesas_usbhs renesas_usbhs.1: USB bus 1 deregistered
-PM: suspend of devices complete after 28.959 msecs
-PM: late suspend of devices complete after 0.357 msecs
-PM: noirq suspend of devices complete after 0.512 msecs
-
-[keypress]
-
-sh_tmu sh-tmu.0: ch0: used for periodic clock events
-PM: noirq resume of devices complete after 0.420 msecs
-PM: early resume of devices complete after 0.209 msecs
-PM: resume of devices complete after 0.327 msecs
-Restarting tasks ... 
-
-renesas_usbhs renesas_usbhs.1: USB Host Controller
-renesas_usbhs renesas_usbhs.1: new USB bus registered, assigned bus number 1
-done.
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 1 port detected
-asoc-simple-card asoc-simple-card.0: ASoC: CODEC DAI ak4642-hifi not registered
-platform asoc-simple-card.0: Driver asoc-simple-card requests probe deferral
-
-
-Without the patch I see the same as above, module slightly different msec
-values:
-
-# echo mem > /sys/power/state
-PM: Syncing filesystems ... done.
-Freezing user space processes ... (elapsed 0.004 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.009 seconds) done.
-renesas_usbhs renesas_usbhs.1: remove, state 4
-usb usb1: USB disconnect, device number 1
-renesas_usbhs renesas_usbhs.1: USB bus 1 deregistered
-PM: suspend of devices complete after 27.306 msecs
-PM: late suspend of devices complete after 0.343 msecs
-PM: noirq suspend of devices complete after 0.503 msecs
-
-[keypress]
-
-sh_tmu sh-tmu.0: ch0: used for periodic clock events
-PM: noirq resume of devices complete after 0.420 msecs
-PM: early resume of devices complete after 0.204 msecs
-PM: resume of devices complete after 0.308 msecs
-Restarting tasks ... 
-
-renesas_usbhs renesas_usbhs.1: USB Host Controller
-renesas_usbhs renesas_usbhs.1: new USB bus registered, assigned bus number 1
-done.
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 1 port detected
-asoc-simple-card asoc-simple-card.0: ASoC: CODEC DAI ak4642-hifi not registered
-platform asoc-simple-card.0: Driver asoc-simple-card requests probe deferral
-
-
-> Thanks!
-
-Any time.
+-- 
+Dmitry
