@@ -1,47 +1,63 @@
-From: Romain Perier <romain.perier@gmail.com>
-Subject: Re: [PATCH v2 07/10] ARM: dts: tegra: Use standard power-off property
- in tps65911 for tegra30 apalis
-Date: Tue, 28 Oct 2014 07:47:21 +0100
-Message-ID: <CABgxDo+k8sRBjHdh_6dkizuXR0oxydvjBh3JHsi-x5sP96BMfA@mail.gmail.com>
-References: <1414427215-14380-1-git-send-email-romain.perier@gmail.com>
-	<1414427215-14380-7-git-send-email-romain.perier@gmail.com>
-	<20141027164214.GF14253@saruman>
-	<CAAVeFuL2MvbC9U-8fM=QPhkvnaMRZ8kep9WpD8hhU4m4cGWjLw@mail.gmail.com>
+From: Preeti Murthy <preeti.lkml@gmail.com>
+Subject: Re: [PATCH V2 3/5] cpuidle: idle: menu: Don't reflect when a state
+ selection failed
+Date: Tue, 28 Oct 2014 12:31:33 +0530
+Message-ID: <CAM4v1pO9e7r10KX=D=9aVTV_ecvPa-aJOoB6PAwR5jxMS3eg4w@mail.gmail.com>
+References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>
+	<1414054881-17713-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAAVeFuL2MvbC9U-8fM=QPhkvnaMRZ8kep9WpD8hhU4m4cGWjLw@mail.gmail.com>
+In-Reply-To: <1414054881-17713-3-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Courbot <gnurou@gmail.com>
-Cc: Felipe Balbi <balbi@ti.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, robh <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Johan Hovold <johan@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, patches@linaro.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-The old property is supported. See "[PATCH v1 1/10]" ^^
-(of_is_system_power_controller supports both properties...)
-
-2014-10-28 5:34 GMT+01:00 Alexandre Courbot <gnurou@gmail.com>:
-> On Tue, Oct 28, 2014 at 1:42 AM, Felipe Balbi <balbi@ti.com> wrote:
->> On Mon, Oct 27, 2014 at 04:26:52PM +0000, Romain Perier wrote:
->>> Signed-off-by: Romain Perier <romain.perier@gmail.com>
->>> ---
->>>  arch/arm/boot/dts/tegra30-apalis.dtsi | 2 +-
->>>  1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/arch/arm/boot/dts/tegra30-apalis.dtsi b/arch/arm/boot/dts/tegra30-apalis.dtsi
->>> index a5446cb..ced4436 100644
->>> --- a/arch/arm/boot/dts/tegra30-apalis.dtsi
->>> +++ b/arch/arm/boot/dts/tegra30-apalis.dtsi
->>> @@ -412,7 +412,7 @@
->>>                       #interrupt-cells = <2>;
->>>                       interrupt-controller;
->>>
->>> -                     ti,system-power-controller;
->>> +                     system-power-controller;
->>
->> this board is broken until this patch is applied.
+On Thu, Oct 23, 2014 at 2:31 PM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> In the current code, the check to reflect or not the outcoming state is done
+> against the idle state which has been chosen and its value.
 >
-> It should not. Supporting a new property in the tps65911 is fine, but
-> the old property must keep being supported to preserve DT
-> compatibility. If a change removing support for
-> "ti,system-power-controller" has landed in -next, then it should be
-> removed.
+> Instead of doing a check in each of the reflect functions, just don't call reflect
+> if something went wrong in the idle path.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Acked-by: Nicolas Pitre <nico@linaro.org>
+> ---
+>  drivers/cpuidle/governors/ladder.c | 3 +--
+>  drivers/cpuidle/governors/menu.c   | 4 +---
+>  kernel/sched/idle.c                | 3 ++-
+>  3 files changed, 4 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+> index fb396d6..c0b36a8 100644
+> --- a/drivers/cpuidle/governors/ladder.c
+> +++ b/drivers/cpuidle/governors/ladder.c
+> @@ -165,8 +165,7 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
+>  static void ladder_reflect(struct cpuidle_device *dev, int index)
+>  {
+>         struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
+> -       if (index > 0)
+> -               ldev->last_state_idx = index;
+> +       ldev->last_state_idx = index;
+>  }
+>
+>  static struct cpuidle_governor ladder_governor = {
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index a17515f..3907301 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -365,9 +365,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+>  static void menu_reflect(struct cpuidle_device *dev, int index)
+>  {
+>         struct menu_device *data = &__get_cpu_var(menu_devices);
+> -       data->last_state_idx = index;
+> -       if (index >= 0)
+> -               data->needs_update = 1;
+> +       data->needs_update = 1;
+
+Why is the last_state_idx not getting updated ?
+
+Regards
+Preeti U Murthy
