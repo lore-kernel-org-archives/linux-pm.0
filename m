@@ -1,99 +1,107 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: cpufreq-dt: Restore default cpumask_setall(policy->cpus)
-Date: Tue, 28 Oct 2014 01:17:28 +0100
-Message-ID: <2325604.jmRuUtsf3n@vostro.rjw.lan>
-References: <1414417480-10274-1-git-send-email-geert+renesas@glider.be> <20141027152251.0249368b@free-electrons.com>
+Subject: Re: [PATCH v3 34/47] acpi: Register power-off handler with kernel power-off handler
+Date: Tue, 28 Oct 2014 01:26:06 +0100
+Message-ID: <5416859.0WlfjKo7zJ@vostro.rjw.lan>
+References: <1414425354-10359-1-git-send-email-linux@roeck-us.net> <1414425354-10359-35-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20141027152251.0249368b@free-electrons.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:51703 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752650AbaJ1AFb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 20:05:31 -0400
+In-Reply-To: <1414425354-10359-35-git-send-email-linux@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org
 
-On Monday, October 27, 2014 03:22:51 PM Thomas Petazzoni wrote:
-> Dear Geert Uytterhoeven,
-> 
-> On Mon, 27 Oct 2014 14:44:40 +0100, Geert Uytterhoeven wrote:
-> > Commit 34e5a5273d6aa0ee ("cpufreq: cpufreq-dt: extend with
-> > platform_data") changed cpufreq_init() to only call
-> > cpumask_setall(policy->cpus) if the platform data indicates that all
-> > CPUs share the same clock. Before, cpufreq_generic_init() did this
-> > unconditionally.
-> > 
-> > This causes a crash on r8a7791/koelsch when resuming from s2ram:
-> > 
-> >     Enabling non-boot CPUs ...
-> >     CPU1: Booted secondary processor
-> >     Unable to handle kernel NULL pointer dereference at virtual address 0000003c
-> >     pgd = ee71f980
-> >     [0000003c] *pgd=6eeb6003, *pmd=6e0e9003, *pte=00000000
-> >     Internal error: Oops: a07 [#1] SMP ARM
-> >     Modules linked in:
-> >     CPU: 0 PID: 1397 Comm: s2ram Tainted: G        W      3.18.0-rc2-koelsch-00762-g7eed2a4e61d2d978 #581
-> >     task: ee6b76c0 ti: ee7f0000 task.ti: ee7f0000
-> >     PC is at __cpufreq_add_dev.isra.24+0x24c/0x77c
-> >     LR is at __cpufreq_add_dev.isra.24+0x244/0x77c
-> >     pc : [<c029e084>]    lr : [<c029e07c>]    psr: 60000153
-> >     sp : ee7f1d48  ip : ee7f1d48  fp : ee7f1d84
-> >     r10: c04e8448  r9 : 00000000  r8 : 00000001
-> >     r7 : c054a8c4  r6 : 00000001  r5 : 00000001  r4 : 00000000
-> >     r3 : 00000000  r2 : 00000000  r1 : 20000153  r0 : c054a950
-> >     Flags: nZCv  IRQs on  FIQs off  Mode SVC_32  ISA ARM  Segment user
-> >     Control: 30c5307d  Table: 6e71f980  DAC: fffffffd
-> >     Process s2ram (pid: 1397, stack limit = 0xee7f0240)
-> > 
-> >     ...
-> > 
-> >     Backtrace:
-> >     [<c029de38>] (__cpufreq_add_dev.isra.24) from [<c029e620>] (cpufreq_cpu_callback+0x6c/0x74)
-> >      r10:eec75240 r9:c04e8448 r8:c04ef3a0 r7:00000001 r6:00000012 r5:00000000
-> >      r4:00000012
-> >     [<c029e5b4>] (cpufreq_cpu_callback) from [<c003f20c>] (notifier_call_chain+0x48/0x70)
-> >      r4:ffffffdd r3:c029e5b4
-> >     [<c003f1c4>] (notifier_call_chain) from [<c003f2cc>] (__raw_notifier_call_chain+0x1c/0x24)
-> >      r8:00000001 r7:00000010 r6:00000000 r5:00000000 r4:00000012 r3:ffffffff
-> >     [<c003f2b0>] (__raw_notifier_call_chain) from [<c0026a00>] (__cpu_notify+0x34/0x50)
-> >     [<c00269cc>] (__cpu_notify) from [<c0026a34>] (cpu_notify+0x18/0x1c)
-> >      r4:00000001
-> >     [<c0026a1c>] (cpu_notify) from [<c0026c44>] (_cpu_up+0x108/0x144)
-> >     [<c0026b3c>] (_cpu_up) from [<c0381c68>] (enable_nonboot_cpus+0x68/0xb8)
-> >      r10:00000000 r9:c04e8ee6 r8:00000000 r7:00000003 r6:c04e8528 r5:c0506248
-> >      r4:00000001
-> >     [<c0381c00>] (enable_nonboot_cpus) from [<c0059038>] (suspend_devices_and_enter+0x29c/0x3e8)
-> >      r6:c0506e70 r5:00000000 r4:00000000 r3:60000153
-> > 
-> > Restore the old default of calling cpumask_setall(policy->cpus) if no
-> > platform data is available to fix this.
-> > 
-> > Fixes: 34e5a5273d6aa0ee ("cpufreq: cpufreq-dt: extend with
-> > platform_data")
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > ---
-> >  drivers/cpufreq/cpufreq-dt.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> > index 2f25958053778ad1..3bfc1175a548c49c 100644
-> > --- a/drivers/cpufreq/cpufreq-dt.c
-> > +++ b/drivers/cpufreq/cpufreq-dt.c
-> > @@ -293,7 +293,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
-> >  	policy->cpuinfo.transition_latency = transition_latency;
-> >  
-> >  	pd = cpufreq_get_driver_data();
-> > -	if (pd && !pd->independent_clocks)
-> > +	if (!pd || !pd->independent_clocks)
-> >  		cpumask_setall(policy->cpus);
-> >  
-> >  	of_node_put(np);
-> 
-> Aah, yes, indeed.
-> 
-> Reviewed-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-> 
-> Thanks for spotting the issue and fixing it!
+On Monday, October 27, 2014 08:55:41 AM Guenter Roeck wrote:
+> Register with kernel power-off handler instead of setting pm_power_off
+> directly. Register with high priority to reflect that the driver explicitly
+> overrides existing power-off handlers.
 
-Applied, thanks!
+Well, I'm still rather unconvinced that notifiers are particularly suitable for
+this purpose.
 
+Specifically ->
+
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Len Brown <lenb@kernel.org>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> ---
+> v3:
+> - Replace poweroff in all newly introduced variables and in text
+>   with power_off or power-off as appropriate
+> - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+> - Replace acpi: with ACPI: in log message
+> v2:
+> - Use define to specify poweroff handler priority
+> - Use pr_warn instead of pr_err
+> 
+>  drivers/acpi/sleep.c | 15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+> index 05a31b5..7875b92 100644
+> --- a/drivers/acpi/sleep.c
+> +++ b/drivers/acpi/sleep.c
+> @@ -16,6 +16,8 @@
+>  #include <linux/device.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/suspend.h>
+> +#include <linux/notifier.h>
+> +#include <linux/pm.h>
+>  #include <linux/reboot.h>
+>  #include <linux/acpi.h>
+>  #include <linux/module.h>
+> @@ -827,14 +829,22 @@ static void acpi_power_off_prepare(void)
+>  	acpi_disable_all_gpes();
+>  }
+>  
+> -static void acpi_power_off(void)
+> +static int acpi_power_off(struct notifier_block *this,
+> +			  unsigned long unused1, void *unused2)
+>  {
+
+-> Is there any reason why any notifier in the new chain would use the
+second argument for anything meaningful?  And the third argument for
+that matter?
+
+>  	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
+>  	printk(KERN_DEBUG "%s called\n", __func__);
+>  	local_irq_disable();
+>  	acpi_enter_sleep_state(ACPI_STATE_S5);
+> +
+> +	return NOTIFY_DONE;
+
+Also is there any reason for any notifier in the new chain to return anything
+different from NOTIFY_DONE and if so, then what happens when anything else
+is returned?
+
+>  }
+>  
+> +static struct notifier_block acpi_power_off_nb = {
+> +	.notifier_call = acpi_power_off,
+> +	.priority = POWER_OFF_PRIORITY_HIGH,
+> +};
+> +
+>  int __init acpi_sleep_init(void)
+>  {
+>  	char supported[ACPI_S_STATE_COUNT * 3 + 1];
+> @@ -851,7 +861,8 @@ int __init acpi_sleep_init(void)
+>  	if (acpi_sleep_state_supported(ACPI_STATE_S5)) {
+>  		sleep_states[ACPI_STATE_S5] = 1;
+>  		pm_power_off_prepare = acpi_power_off_prepare;
+> -		pm_power_off = acpi_power_off;
+> +		if (register_power_off_handler(&acpi_power_off_nb))
+> +			pr_warn("ACPI: Failed to register power-off handler\n");
+>  	}
+>  
+>  	supported[0] = 0;
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
