@@ -1,119 +1,59 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2 3/5] cpuidle: idle: menu: Don't reflect when a state
- selection failed
-Date: Tue, 28 Oct 2014 20:15:52 +0100
-Message-ID: <544FEB68.50701@linaro.org>
-References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>	<1414054881-17713-3-git-send-email-daniel.lezcano@linaro.org> <CAJvTdKm+jwv=2nbi8OZKHHbsieuggp53go=C-ztCr1w4SNpfpw@mail.gmail.com>
+From: Peter Feuerer <peter@piie.net>
+Subject: Re: [PATCH v5 3/6] thermal: Added Bang-bang thermal governor
+Date: Tue, 28 Oct 2014 20:33:39 +0100
+Message-ID: <cone.1414524819.964570.994.1000@galar>
+References: <1398561815-22033-1-git-send-email-peter@piie.net> <1406043436-17068-1-git-send-email-peter@piie.net> <1406043436-17068-4-git-send-email-peter@piie.net> <cone.1406384086.541895.7413.1000@galar> <1406514389.14109.7.camel@rzhang1-toshiba> <cone.1413887350.971616.2744.1000@mups>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJvTdKm+jwv=2nbi8OZKHHbsieuggp53go=C-ztCr1w4SNpfpw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, Patch Tracking <patches@linaro.org>
+Content-Type: text/plain; format=flowed; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtprelay06.ispgateway.de ([80.67.18.29]:35973 "EHLO
+	smtprelay06.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbaJ1Tdp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 15:33:45 -0400
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Feuerer <peter@piie.net>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Andreas Mohr <andi@lisas.de>, Borislav Petkov <bp@suse.de>, Javi Merino <javi.merino@arm.com>
 
-On 10/28/2014 03:01 AM, Len Brown wrote:
-> On Thu, Oct 23, 2014 at 5:01 AM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->> In the current code, the check to reflect or not the outcoming state=
- is done
->> against the idle state which has been chosen and its value.
->>
->> Instead of doing a check in each of the reflect functions, just don'=
-t call reflect
->> if something went wrong in the idle path.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> Acked-by: Nicolas Pitre <nico@linaro.org>
->> ---
->>   drivers/cpuidle/governors/ladder.c | 3 +--
->>   drivers/cpuidle/governors/menu.c   | 4 +---
->>   kernel/sched/idle.c                | 3 ++-
->>   3 files changed, 4 insertions(+), 6 deletions(-)
->>
->> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/go=
-vernors/ladder.c
->> index fb396d6..c0b36a8 100644
->> --- a/drivers/cpuidle/governors/ladder.c
->> +++ b/drivers/cpuidle/governors/ladder.c
->> @@ -165,8 +165,7 @@ static int ladder_enable_device(struct cpuidle_d=
-river *drv,
->>   static void ladder_reflect(struct cpuidle_device *dev, int index)
->>   {
->>          struct ladder_device *ldev =3D &__get_cpu_var(ladder_device=
-s);
->> -       if (index > 0)
->> -               ldev->last_state_idx =3D index;
->
-> Before this patch, last_state_idx was never set to 0 here.
-> After this patch, last_state_idx will be set to 0 when entered_state =
-is 0.
-> Is that okay?
+Hi Rui,
 
-Yes, I think so because the state zero won't be never selected on x86=20
-but on the other arch it will. So before this patch, on the other archs=
-,=20
-the state 0 was never reflected as it should do.
+I wonder whether you've had time to apply my set of patches already?  Would 
+you please be so kind to just send me a short reply?
 
-This is resulting from the CPUIDLE_DRIVER_STATE_START macro (I hope I=20
-can kill this macro in a couple of patchset after this one).
-
->> +       ldev->last_state_idx =3D index;
->>   }
->>
->>   static struct cpuidle_governor ladder_governor =3D {
->> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/gove=
-rnors/menu.c
->> index a17515f..3907301 100644
->> --- a/drivers/cpuidle/governors/menu.c
->> +++ b/drivers/cpuidle/governors/menu.c
->> @@ -365,9 +365,7 @@ static int menu_select(struct cpuidle_driver *dr=
-v, struct cpuidle_device *dev,
->>   static void menu_reflect(struct cpuidle_device *dev, int index)
->>   {
->>          struct menu_device *data =3D &__get_cpu_var(menu_devices);
->> -       data->last_state_idx =3D index;
->> -       if (index >=3D 0)
->> -               data->needs_update =3D 1;
->> +       data->needs_update =3D 1;
->>   }
->>
->>   /**
->> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
->> index 58c7522..49dcc7d 100644
->> --- a/kernel/sched/idle.c
->> +++ b/kernel/sched/idle.c
->> @@ -162,7 +162,8 @@ use_default:
->>          /*
->>           * Give the governor an opportunity to reflect on the outco=
-me
->>           */
->> -       cpuidle_reflect(dev, entered_state);
->> +       if (entered_state >=3D 0)
->> +               cpuidle_reflect(dev, entered_state);
->>
->>   exit_idle:
->>          __current_set_polling();
->> --
->> 1.9.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" =
-in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->
->
+thanks and kind regards,
+--peter;
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+Peter Feuerer writes:
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> Hi Rui,
+> 
+> Zhang Rui writes:
+> 
+>> On Sat, 2014-07-26 at 16:14 +0200, Peter Feuerer wrote:
+>>> Hi Rui,
+>>> 
+>>> Peter Feuerer writes:
+>>> 
+>>> > The bang-bang thermal governor uses a hysteresis to switch abruptly on
+>>> > or off a cooling device.  It is intended to control fans, which can
+>>> > not be throttled but just switched on or off.
+>>> > Bang-bang cannot be set as default governor as it is intended for
+>>> > special devices only.  For those special devices the driver needs to
+>>> > explicitely request it.
+>>> > 
+>>> > Cc: Andrew Morton <akpm@linux-foundation.org>
+>>> > Cc: Zhang Rui <rui.zhang@intel.com>
+>>> 
+>>> Anything that prevents you from giving your acked-by?
+>>> 
+>> NO.
+>> 
+>> I'll queue them for 3.18.
+> 
+> Are all 6 patches in for 3.18 as you promissed?
+> 
+> kind regards,
+> --peter;
