@@ -1,96 +1,44 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2 3/5] cpuidle: idle: menu: Don't reflect when a state
- selection failed
-Date: Tue, 28 Oct 2014 19:28:02 +0100
-Message-ID: <544FE032.5050900@linaro.org>
-References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>	<1414054881-17713-3-git-send-email-daniel.lezcano@linaro.org> <CAM4v1pO9e7r10KX=D=9aVTV_ecvPa-aJOoB6PAwR5jxMS3eg4w@mail.gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Patch v7 01/18] ACPI, irq: fix regression casued by
+ 6b9fb7082409
+Date: Tue, 28 Oct 2014 19:45:32 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1410281943100.5308@nanos>
+References: <1414387308-27148-1-git-send-email-jiang.liu@linux.intel.com> <1414387308-27148-2-git-send-email-jiang.liu@linux.intel.com> <CAErSpo5Dh8rx42HkS3cPoJ1=oQq2qsFAut5LK83obbghy+OsFA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f170.google.com ([209.85.212.170]:46693 "EHLO
-	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbaJ1S2I (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 14:28:08 -0400
-Received: by mail-wi0-f170.google.com with SMTP id n3so9652486wiv.1
-        for <linux-pm@vger.kernel.org>; Tue, 28 Oct 2014 11:28:06 -0700 (PDT)
-In-Reply-To: <CAM4v1pO9e7r10KX=D=9aVTV_ecvPa-aJOoB6PAwR5jxMS3eg4w@mail.gmail.com>
+Received: from www.linutronix.de ([62.245.132.108]:51698 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbaJ1SqQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 14:46:16 -0400
+In-Reply-To: <CAErSpo5Dh8rx42HkS3cPoJ1=oQq2qsFAut5LK83obbghy+OsFA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti Murthy <preeti.lkml@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, patches@linaro.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "x86@kernel.org" <x86@kernel.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 10/28/2014 08:01 AM, Preeti Murthy wrote:
-> On Thu, Oct 23, 2014 at 2:31 PM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->> In the current code, the check to reflect or not the outcoming state=
- is done
->> against the idle state which has been chosen and its value.
->>
->> Instead of doing a check in each of the reflect functions, just don'=
-t call reflect
->> if something went wrong in the idle path.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> Acked-by: Nicolas Pitre <nico@linaro.org>
->> ---
->>   drivers/cpuidle/governors/ladder.c | 3 +--
->>   drivers/cpuidle/governors/menu.c   | 4 +---
->>   kernel/sched/idle.c                | 3 ++-
->>   3 files changed, 4 insertions(+), 6 deletions(-)
->>
->> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/go=
-vernors/ladder.c
->> index fb396d6..c0b36a8 100644
->> --- a/drivers/cpuidle/governors/ladder.c
->> +++ b/drivers/cpuidle/governors/ladder.c
->> @@ -165,8 +165,7 @@ static int ladder_enable_device(struct cpuidle_d=
-river *drv,
->>   static void ladder_reflect(struct cpuidle_device *dev, int index)
->>   {
->>          struct ladder_device *ldev =3D &__get_cpu_var(ladder_device=
-s);
->> -       if (index > 0)
->> -               ldev->last_state_idx =3D index;
->> +       ldev->last_state_idx =3D index;
->>   }
->>
->>   static struct cpuidle_governor ladder_governor =3D {
->> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/gove=
-rnors/menu.c
->> index a17515f..3907301 100644
->> --- a/drivers/cpuidle/governors/menu.c
->> +++ b/drivers/cpuidle/governors/menu.c
->> @@ -365,9 +365,7 @@ static int menu_select(struct cpuidle_driver *dr=
-v, struct cpuidle_device *dev,
->>   static void menu_reflect(struct cpuidle_device *dev, int index)
->>   {
->>          struct menu_device *data =3D &__get_cpu_var(menu_devices);
->> -       data->last_state_idx =3D index;
->> -       if (index >=3D 0)
->> -               data->needs_update =3D 1;
->> +       data->needs_update =3D 1;
->
-> Why is the last_state_idx not getting updated ?
+On Tue, 28 Oct 2014, Bjorn Helgaas wrote:
+> The subject should describe the change you're making.  "Fix regression
+> caused by xxx" doesn't say anything about what the patch does.
+> 
+> On Sun, Oct 26, 2014 at 11:21 PM, Jiang Liu <jiang.liu@linux.intel.com> wrote:
+> > When IOAPIC is disabled, acpi_gsi_to_irq() should return gsi directly
+> > instead of calling mp_map_gsi_to_irq() to translate gsi to IRQ by IOAPIC.
+> 
+> I don't know what the convention is or if there even is one, but "GSI"
+> is even more of an acronym than "IRQ", so I'd capitalize it.
+> 
+> > It fixes https://bugzilla.kernel.org/show_bug.cgi?id=84381.
+> 
+> A line like the following may be useful to those who have to backport this.
+> 
+> Fixes: 6b9fb7082409 ("x86, ACPI, irq: Consolidate algorithm of mapping
+> (ioapic, pin) to IRQ number")
 
-Oups, right. This is missing.
+The patch is already queued in tip x86/urgent with a proper changelog.
 
-Thanks for pointing this out.
+http://git.kernel.org/cgit/linux/kernel/git/tip/tip.git/commit/?id=961b6a7003acec4f9d70dabc1a253b783cb74272
 
-By the way, I don't think a back end driver is changing the selected=20
-state currently and I am not sure this is desirable since we want to=20
-trust the state we are going (as a best effort). So if the 'enter'=20
-function does not change the index, that means the last_state_idx has=20
-not to be changed since it has been assigned in the 'select' function.
+Thanks,
 
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+	tglx
