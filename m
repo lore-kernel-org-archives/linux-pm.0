@@ -1,61 +1,99 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v3 07/11] ARM: shmobile: r8a7740/armadillo legacy: Add
- A4MP pm domain support
-Date: Tue, 28 Oct 2014 08:30:38 +0900
-Message-ID: <20141027233034.GA31257@verge.net.au>
-References: <1414063141-8856-1-git-send-email-geert+renesas@glider.be>
- <1414063141-8856-8-git-send-email-geert+renesas@glider.be>
- <20141027040305.GG31487@verge.net.au>
- <CAMuHMdWkM4jgWX7fL63e4WGwhpGt2W1R8Jx-q+dz0GmesrRsOw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: cpufreq-dt: Restore default cpumask_setall(policy->cpus)
+Date: Tue, 28 Oct 2014 01:17:28 +0100
+Message-ID: <2325604.jmRuUtsf3n@vostro.rjw.lan>
+References: <1414417480-10274-1-git-send-email-geert+renesas@glider.be> <20141027152251.0249368b@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdWkM4jgWX7fL63e4WGwhpGt2W1R8Jx-q+dz0GmesrRsOw@mail.gmail.com>
+In-Reply-To: <20141027152251.0249368b@free-electrons.com>
 Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 27, 2014 at 09:17:55AM +0100, Geert Uytterhoeven wrote:
-> Hi Simon,
+On Monday, October 27, 2014 03:22:51 PM Thomas Petazzoni wrote:
+> Dear Geert Uytterhoeven,
 > 
-> On Mon, Oct 27, 2014 at 5:03 AM, Simon Horman <horms@verge.net.au> wrote:
-> > On Thu, Oct 23, 2014 at 01:18:57PM +0200, Geert Uytterhoeven wrote:
-> >> Add support for the A4MP power domain, and hook up the HDMI-Link and FSI
-> >> hardware blocks.
-> >> This domain also contains the SPU2, FMSI, and BBIF2 hardware blocks,
-> >> but these are currently not used by any driver.
-> >>
-> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> >
-> > Is it possible to split this into two patches.
-> >
-> > A board patch (that touches board-armadillo800eva.c)
-> > and an SoC patch (the rest). Likewise for any remaining
-> > patches in this series that touch both board and SoC code.
-> >
-> > The reason for this is that it would make the patches fit
-> > the branch scheme that arm-soc people like. In particular splitting
-> > patches between soc and boards branches.
+> On Mon, 27 Oct 2014 14:44:40 +0100, Geert Uytterhoeven wrote:
+> > Commit 34e5a5273d6aa0ee ("cpufreq: cpufreq-dt: extend with
+> > platform_data") changed cpufreq_init() to only call
+> > cpumask_setall(policy->cpus) if the platform data indicates that all
+> > CPUs share the same clock. Before, cpufreq_generic_init() did this
+> > unconditionally.
+> > 
+> > This causes a crash on r8a7791/koelsch when resuming from s2ram:
+> > 
+> >     Enabling non-boot CPUs ...
+> >     CPU1: Booted secondary processor
+> >     Unable to handle kernel NULL pointer dereference at virtual address 0000003c
+> >     pgd = ee71f980
+> >     [0000003c] *pgd=6eeb6003, *pmd=6e0e9003, *pte=00000000
+> >     Internal error: Oops: a07 [#1] SMP ARM
+> >     Modules linked in:
+> >     CPU: 0 PID: 1397 Comm: s2ram Tainted: G        W      3.18.0-rc2-koelsch-00762-g7eed2a4e61d2d978 #581
+> >     task: ee6b76c0 ti: ee7f0000 task.ti: ee7f0000
+> >     PC is at __cpufreq_add_dev.isra.24+0x24c/0x77c
+> >     LR is at __cpufreq_add_dev.isra.24+0x244/0x77c
+> >     pc : [<c029e084>]    lr : [<c029e07c>]    psr: 60000153
+> >     sp : ee7f1d48  ip : ee7f1d48  fp : ee7f1d84
+> >     r10: c04e8448  r9 : 00000000  r8 : 00000001
+> >     r7 : c054a8c4  r6 : 00000001  r5 : 00000001  r4 : 00000000
+> >     r3 : 00000000  r2 : 00000000  r1 : 20000153  r0 : c054a950
+> >     Flags: nZCv  IRQs on  FIQs off  Mode SVC_32  ISA ARM  Segment user
+> >     Control: 30c5307d  Table: 6e71f980  DAC: fffffffd
+> >     Process s2ram (pid: 1397, stack limit = 0xee7f0240)
+> > 
+> >     ...
+> > 
+> >     Backtrace:
+> >     [<c029de38>] (__cpufreq_add_dev.isra.24) from [<c029e620>] (cpufreq_cpu_callback+0x6c/0x74)
+> >      r10:eec75240 r9:c04e8448 r8:c04ef3a0 r7:00000001 r6:00000012 r5:00000000
+> >      r4:00000012
+> >     [<c029e5b4>] (cpufreq_cpu_callback) from [<c003f20c>] (notifier_call_chain+0x48/0x70)
+> >      r4:ffffffdd r3:c029e5b4
+> >     [<c003f1c4>] (notifier_call_chain) from [<c003f2cc>] (__raw_notifier_call_chain+0x1c/0x24)
+> >      r8:00000001 r7:00000010 r6:00000000 r5:00000000 r4:00000012 r3:ffffffff
+> >     [<c003f2b0>] (__raw_notifier_call_chain) from [<c0026a00>] (__cpu_notify+0x34/0x50)
+> >     [<c00269cc>] (__cpu_notify) from [<c0026a34>] (cpu_notify+0x18/0x1c)
+> >      r4:00000001
+> >     [<c0026a1c>] (cpu_notify) from [<c0026c44>] (_cpu_up+0x108/0x144)
+> >     [<c0026b3c>] (_cpu_up) from [<c0381c68>] (enable_nonboot_cpus+0x68/0xb8)
+> >      r10:00000000 r9:c04e8ee6 r8:00000000 r7:00000003 r6:c04e8528 r5:c0506248
+> >      r4:00000001
+> >     [<c0381c00>] (enable_nonboot_cpus) from [<c0059038>] (suspend_devices_and_enter+0x29c/0x3e8)
+> >      r6:c0506e70 r5:00000000 r4:00000000 r3:60000153
+> > 
+> > Restore the old default of calling cpumask_setall(policy->cpus) if no
+> > platform data is available to fix this.
+> > 
+> > Fixes: 34e5a5273d6aa0ee ("cpufreq: cpufreq-dt: extend with
+> > platform_data")
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > ---
+> >  drivers/cpufreq/cpufreq-dt.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> > index 2f25958053778ad1..3bfc1175a548c49c 100644
+> > --- a/drivers/cpufreq/cpufreq-dt.c
+> > +++ b/drivers/cpufreq/cpufreq-dt.c
+> > @@ -293,7 +293,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> >  	policy->cpuinfo.transition_latency = transition_latency;
+> >  
+> >  	pd = cpufreq_get_driver_data();
+> > -	if (pd && !pd->independent_clocks)
+> > +	if (!pd || !pd->independent_clocks)
+> >  		cpumask_setall(policy->cpus);
+> >  
+> >  	of_node_put(np);
 > 
-> I kept them together as adding the PM domain without the devices will
-> cause regressions (the PM domain core will power down the PM domain as
-> it doesn't know about the to-be-added devices, and thus thinks it's unused).
+> Aah, yes, indeed.
 > 
-> As the link from a device to a PM domain is a name string, and not a
-> C reference, I could split them in two parts: first the board part
-> that adds some
-> devices, and then the SoC part that adds the PM domain and more devices.
-> But only if you can guarantee that the SoC part will be merged first, also
-> by arm-soc and Linus.
+> Reviewed-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 > 
-> Still, I prefer to keep them together. Hooking up devices to PM domains is
-> SoC-specific, not board specific (for DT it lives in the .dtsi). It's
-> unfortunate this code is in the board-specific C files due to board-specific
-> configuration (cfr. .dts overriding/extending .dtsi).
-> 
-> What do you think? Do you agree?
+> Thanks for spotting the issue and fixing it!
 
-Hi Geert, thanks for the explanation. I agree that it makes sense
-to keep things together. I'll see about queuing-up your series as-is.
+Applied, thanks!
+
