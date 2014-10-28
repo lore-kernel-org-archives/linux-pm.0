@@ -1,62 +1,105 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 5/8] power: reset: at91-reset: use at91_ramc_shutdown
-Date: Tue, 28 Oct 2014 03:18:35 +0100
-Message-ID: <20141028021834.GA5739@earth.universe>
-References: <1414451377-11053-1-git-send-email-alexandre.belloni@free-electrons.com>
- <1414451377-11053-6-git-send-email-alexandre.belloni@free-electrons.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH V2 4/5] cpuidle: menu: Fix the get_typical_interval
+Date: Mon, 27 Oct 2014 22:48:57 -0400
+Message-ID: <CAJvTdKk=uQmon81Y8+jVmYggxg-K2sWC4vEFM+bycKCEAt0fFg@mail.gmail.com>
+References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org>
+	<1414054881-17713-4-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="lrZ03NoBR/3+SXJZ"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:52863 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751829AbaJ1CSm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Oct 2014 22:18:42 -0400
-Content-Disposition: inline
-In-Reply-To: <1414451377-11053-6-git-send-email-alexandre.belloni@free-electrons.com>
+Received: from mail-yh0-f41.google.com ([209.85.213.41]:38971 "EHLO
+	mail-yh0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752617AbaJ1Cs6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Oct 2014 22:48:58 -0400
+In-Reply-To: <1414054881-17713-4-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, Patch Tracking <patches@linaro.org>
 
+On Thu, Oct 23, 2014 at 5:01 AM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> The first time the 'get_typical_function' is called, it computes an average
+> of zero as no data is filled yet. That leads the 'data->predicted_us' variable
+> to be set to zero too.
+>
+> The caller, 'menu_select' will then do:
+>
+>         interactivity_req = data->predicted_us /
+>                         performance_multiplier(nr_iowaiters, cpu_load);
+>
+> That sets the interactivity_req to zero (0/performance...).
+>
+> and then
+>
+>         if (latency_req > interactivity_req)
+>                 latency_req = interactivity_req;
+>
+> ... setting 'latency_req' to zero too.
+>
+> No idle state will fulfill this constraint and we will go the C1 state as
+> default and leading to an update. So the next calls will compute an average
+> different from zero.
+>
+> Even if that works with the current code but with a broken semantic, it will
+> just break with the next patches where we are stricter with the latencies
+> check: the first check will fail (latency_req is zero), then no update will
+> occur leading to always falling to choose an idle state.
+>
+> As there are no previous values and it is pointless to compute a standard
+> deviation for these unexisting values. Just return without setting the
+> 'data->predicted_us' to zero.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/cpuidle/governors/menu.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+>
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index 3907301..6ae8390 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -226,6 +226,15 @@ again:
+>         else
+>                 do_div(avg, divisor);
+>
+> +       /*
+> +        * We are at the very beginning and no data have been filled
+> +        * yet. Let's skip the standard deviation computation
+> +        * otherwise the data->predicted_us will be zero and that will
+> +        * lead to a zero latency req in the select function
+> +        */
+> +       if (!avg)
+> +               return;
+> +
 
---lrZ03NoBR/3+SXJZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Unfortunately, you've touched ugly code,
+and your (correct) patch makes it ever-so slightly more ugly,
+instead of more clear.
 
-Hi,
+I think the code would read more clearly, and your patch would
+less obscure, if the code read something like this sow that it is
+clear at the menu_select level when and where we monkey
+with predicted_us:
 
-On Tue, Oct 28, 2014 at 12:09:34AM +0100, Alexandre Belloni wrote:
-> Now that all SoCs are registering the atmel-sdramc driver, use the
-> at91_ramc_shutdown() function to shutdown the sdram.
->=20
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+menu_select()...
+...
+data->predicted_us = div_round64(bla bla bla
 
-Acked-By: Sebastian Reichel <sre@kernel.org>
+interactivity_overrride_us = get_typical_interval(data);
 
--- Sebastian
+if (interactivity_override_us)
+  if (interactivity_predicted_us < data->predicted_us)
+        data->predicted_us = interactivity_override_us;
 
---lrZ03NoBR/3+SXJZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+And, of course, down inside get_typical_interval()
+...
+if (!avg)
+        return 0;
+...
+if (likely(stddev <= ULONG_MAX)) {
+...
+        return avg;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJUTvz6AAoJENju1/PIO/qaWdsP/AtuUzTI4Chfv/0N9kqOJt1O
-gmTUimN+iImXKO03k4vF9lR49/anhgvIY8HfZlA76JQCGpDP30jaEiE4T4q+/DRS
-1JA/oTmvZVUooy32zU7EO/ZOVaKEvCercGRlQHays5EDLGFkRIacsvL07St0zTZR
-dpapnOX5Zr7Jmu94iQh09mYGoFUNSLfqThaVA0rV1I8W8+gPi1N57nZiR2MQp7HS
-4F1ySzEu/5SD7hsJ/XhqIyeXZ0HBnj5UMJarVvCAc1JL2/bGaKAU8cYN7BJxm5pM
-LLHkushn9zSJzFf3aJ+6UQ8O3HA8zEIiAra1AhucnzxmpYNW0l9VLHJVzFJS7LIT
-HOKxhrCL3sHqtGsKKeVSjaK3MWFYHswwnpCTpccJ6ZVundBG2ywp5KxTOn/u9r7s
-Z/cN1398KCE0efz2A4XrdtQg+g4gxb5cAZcUjoTrLA+MaGUXfyLohqpEnuT3eyAn
-/8+gfVvBv8TYqIbq1AipfhGXhiFh0krGehMmb+AonY1HgW3wMWIwiJ+vdEIdnk4l
-p1bHa/JGgyVB6hoFMtq3NOqIlxngUmSCGTa6Xl4NxeB9vbXjJILJ4IIonvaEwsUM
-yrKaQkKTYmwbqAC84AqlawoRTWzHYN9NzQu7sFf/cjP+ZBF7gcfQv3q9I+R2kzEe
-zacNqsCzdS8aKUANE1yB
-=sckH
------END PGP SIGNATURE-----
-
---lrZ03NoBR/3+SXJZ--
+thanks,
+Len Brown, Intel Open Source Technology Center
