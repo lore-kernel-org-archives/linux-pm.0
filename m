@@ -1,31 +1,28 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Patch v7 17/18] x86, irq: Introduce helper to check whether an
- IOAPIC has been registered
-Date: Tue, 28 Oct 2014 18:47:22 +0100
-Message-ID: <20141028174722.GB9134@amd>
-References: <1414387308-27148-1-git-send-email-jiang.liu@linux.intel.com>
- <1414387308-27148-18-git-send-email-jiang.liu@linux.intel.com>
+Subject: Re: [PATCH v3 01/47] kernel: Add support for power-off handler call
+ chain
+Date: Tue, 28 Oct 2014 18:49:45 +0100
+Message-ID: <20141028174945.GA11668@amd>
+References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
+ <1414425354-10359-2-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42208 "EHLO
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42264 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750892AbaJ1RrZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 13:47:25 -0400
+	with ESMTP id S1750898AbaJ1Rtr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 13:49:47 -0400
 Content-Disposition: inline
-In-Reply-To: <1414387308-27148-18-git-send-email-jiang.liu@linux.intel.com>
+In-Reply-To: <1414425354-10359-2-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jiang Liu <jiang.liu@linux.intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, x86@kernel.org, Len Brown <len.brown@intel.com>, Grant Likely <grant.likely@linaro.org>, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Philippe =?iso-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 
-On Mon 2014-10-27 13:21:47, Jiang Liu wrote:
-> Introduce acpi_ioapic_registered() to check whether an IOAPIC has already
-> been registered, it will be used when enabling IOAPIC hotplug.
-> 
-> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
-
-Nothing obviously wrong.
+On Mon 2014-10-27 08:55:08, Guenter Roeck wrote:
+> Various drivers implement architecture and/or device specific means to
+> power off the system.  For the most part, those drivers set the global
+> variable pm_power_off to point to a function within the driver.
 
 Acked-by: Pavel Machek <pavel@ucw.cz>
 
