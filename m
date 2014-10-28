@@ -1,89 +1,76 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/5] sched: idle: Get the next timer event and pass it
- the cpuidle framework
-Date: Tue, 28 Oct 2014 19:02:01 +0100
-Message-ID: <544FDA19.4070705@linaro.org>
-References: <1413822343-1972-1-git-send-email-daniel.lezcano@linaro.org>	<1413822343-1972-2-git-send-email-daniel.lezcano@linaro.org> <CAM4v1pOzC2riePt4sfsdG=SLYvZmhMc4KgT-hfq6XkjF2Mce7g@mail.gmail.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [Patch v7 01/18] ACPI, irq: fix regression casued by 6b9fb7082409
+Date: Tue, 28 Oct 2014 12:13:01 -0600
+Message-ID: <CAErSpo5Dh8rx42HkS3cPoJ1=oQq2qsFAut5LK83obbghy+OsFA@mail.gmail.com>
+References: <1414387308-27148-1-git-send-email-jiang.liu@linux.intel.com> <1414387308-27148-2-git-send-email-jiang.liu@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAM4v1pOzC2riePt4sfsdG=SLYvZmhMc4KgT-hfq6XkjF2Mce7g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Preeti Murthy <preeti.lkml@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f182.google.com ([209.85.216.182]:55611 "EHLO
+	mail-qc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753438AbaJ1SNY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 14:13:24 -0400
+Received: by mail-qc0-f182.google.com with SMTP id m20so1000789qcx.41
+        for <linux-pm@vger.kernel.org>; Tue, 28 Oct 2014 11:13:23 -0700 (PDT)
+In-Reply-To: <1414387308-27148-2-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "x86@kernel.org" <x86@kernel.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 10/28/2014 07:40 AM, Preeti Murthy wrote:
-> Hi Daniel,
+The subject should describe the change you're making.  "Fix regression
+caused by xxx" doesn't say anything about what the patch does.
+
+On Sun, Oct 26, 2014 at 11:21 PM, Jiang Liu <jiang.liu@linux.intel.com> wrote:
+> When IOAPIC is disabled, acpi_gsi_to_irq() should return gsi directly
+> instead of calling mp_map_gsi_to_irq() to translate gsi to IRQ by IOAPIC.
+
+I don't know what the convention is or if there even is one, but "GSI"
+is even more of an acronym than "IRQ", so I'd capitalize it.
+
+> It fixes https://bugzilla.kernel.org/show_bug.cgi?id=84381.
+
+A line like the following may be useful to those who have to backport this.
+
+Fixes: 6b9fb7082409 ("x86, ACPI, irq: Consolidate algorithm of mapping
+(ioapic, pin) to IRQ number")
+
+> Reported-by: Thomas Richter <thor@math.tu-berlin.de>
+> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+> Cc: rui.zhang@intel.com
+> Cc: <stable@vger.kernel.org> # 3.17
+> ---
+>  arch/x86/kernel/acpi/boot.c |   13 +++++++++----
+>  1 file changed, 9 insertions(+), 4 deletions(-)
 >
-> On Mon, Oct 20, 2014 at 9:55 PM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->> Following the logic of the previous patch, retrieve from the idle ta=
-sk the
->> expected timer sleep duration and pass it to the cpuidle framework.
->>
->> Take the opportunity to remove the unused headers in the menu.c file=
-=2E
->>
->> This patch does not change the current behavior.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> ---
->>   drivers/cpuidle/cpuidle.c          | 11 +++++------
->>   drivers/cpuidle/governors/ladder.c |  3 ++-
->>   drivers/cpuidle/governors/menu.c   |  8 ++------
->>   include/linux/cpuidle.h            |  8 +++++---
->>   kernel/sched/idle.c                | 16 ++++++++++++----
->>   5 files changed, 26 insertions(+), 20 deletions(-)
->>
->> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->> index 372c36f..64f5800 100644
->> --- a/drivers/cpuidle/cpuidle.c
->> +++ b/drivers/cpuidle/cpuidle.c
->> @@ -8,16 +8,12 @@
->>    * This code is licenced under the GPL.
->>    */
->>
->> -#include <linux/clockchips.h>
->>   #include <linux/kernel.h>
->>   #include <linux/mutex.h>
->> -#include <linux/sched.h>
->>   #include <linux/notifier.h>
->>   #include <linux/pm_qos.h>
->>   #include <linux/cpu.h>
->>   #include <linux/cpuidle.h>
->> -#include <linux/ktime.h>
->> -#include <linux/hrtimer.h>
->>   #include <linux/module.h>
->>   #include <trace/events/power.h>
->>
->> @@ -155,11 +151,13 @@ int cpuidle_enter_state(struct cpuidle_device =
-*dev, struct cpuidle_driver *drv,
->>    *
->>    * @drv: the cpuidle driver
->>    * @dev: the cpuidle device
->> + * @latency_req: the latency constraint when choosing an idle state
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> index b436fc735aa4..eceba9d9e116 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -604,14 +604,19 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
 >
-> You might want to include this change in the previous patch itself.
-
-Ah, yes. Thanks.
-
->> + * @next_timer_event: the duration until the timer expires
->>    *
->>    * Returns the index of the idle state.
->>    */
+>  int acpi_gsi_to_irq(u32 gsi, unsigned int *irqp)
+>  {
+> -       int irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
+> +       int irq;
 >
-> Regards
-> Preeti U Murthy
+> -       if (irq >= 0) {
+> +       if (acpi_irq_model == ACPI_IRQ_MODEL_PIC) {
+> +               *irqp = gsi;
+> +       } else {
+> +               irq = mp_map_gsi_to_irq(gsi,
+> +                                       IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
+> +               if (irq < 0)
+> +                       return -1;
+>                 *irqp = irq;
+> -               return 0;
+>         }
 >
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> -       return -1;
+> +       return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(acpi_gsi_to_irq);
+>
+> --
+> 1.7.10.4
+>
