@@ -1,81 +1,58 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL] thermal-soc changes
-Date: Tue, 28 Oct 2014 10:36:08 -0400
-Message-ID: <20141028143606.GA3936@developer>
-References: <20141021134941.GA4937@developer>
- <1414041345.2380.3.camel@rzhang1-toshiba>
- <20141023112721.GA5683@developer>
- <20141027195346.GB6088@developer>
- <1414474824.4246.6.camel@rzhang1-toshiba>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="YiEDa0DAkWCtVeE4"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1414474824.4246.6.camel@rzhang1-toshiba>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 2/4] PM / Domains: Don't allow an existing generic PM domain data
+Date: Tue, 28 Oct 2014 15:38:08 +0100
+Message-ID: <1414507090-516-3-git-send-email-ulf.hansson@linaro.org>
+References: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f54.google.com ([209.85.215.54]:63508 "EHLO
+	mail-la0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753569AbaJ1OiY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Oct 2014 10:38:24 -0400
+Received: by mail-la0-f54.google.com with SMTP id gm9so719549lab.41
+        for <linux-pm@vger.kernel.org>; Tue, 28 Oct 2014 07:38:22 -0700 (PDT)
+In-Reply-To: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
+While adding devices to the generic PM domain we allocate data for the
+struct generic_pm_domain_data.
 
---YiEDa0DAkWCtVeE4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Don't allow existing generic_pm_domain_data in this case, since that
+indicates the device is already being added from another context. Let's
+instead return an error.
 
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/domain.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Hi Rui,
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 7546242..9d511c7 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1423,9 +1423,9 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 
+ 	spin_lock_irq(&dev->power.lock);
+ 
+-	dev->pm_domain = &genpd->domain;
+ 	if (dev->power.subsys_data->domain_data) {
+-		gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
++		ret = -EINVAL;
++		goto out;
+ 	} else {
+ 		gpd_data = gpd_data_new;
+ 		dev->power.subsys_data->domain_data = &gpd_data->base;
+@@ -1433,6 +1433,8 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	if (td)
+ 		gpd_data->td = *td;
+ 
++	dev->pm_domain = &genpd->domain;
++
+ 	spin_unlock_irq(&dev->power.lock);
+ 
+ 	if (genpd->attach_dev)
+-- 
+1.9.1
 
-On Tue, Oct 28, 2014 at 01:40:24PM +0800, Zhang Rui wrote:
-> Hi, Eduardo,
->=20
-
-<cut>
-
-> >=20
-> > Any updates?
-> >=20
-> Well, I'm on a trip, and unfortunately, my Linux laptop is broken for
-> the moment. so I think first we should keep all the patches for 3.18-rc
-
-Oh.. I hope you get things sorted out.
-
-> in your tree to get tested, and then either I can send out the pull
-
-These have been in my tree for a while. I added my tree also to
-linux-next and they have gone through linux-next builds already.=20
-
-> request at around 20th Nov, after coming back from travel, or you can
-> help me send the pull request for 3.18-rc.
->=20
-
-I would be glad to help you sending out what ever patches are pending.
-Do you have 3.18-rc outstanding patches or are all of them in tree for
-now?
-
-> thanks,
-> rui
-
-
-All the best,
-
-Eduardo Valentin
-
---YiEDa0DAkWCtVeE4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUT6nJAAoJEMLUO4d9pOJWObEH/3JZfjt3CBfLWk5rJsnhbSLy
-prljLwLPAneqiIkqdxHzNR05MVCfP+I3qRTS1Hyb74owk9MnuT3dbNZu9XxFEn5N
-l0FKkij7ccq0gppgHCRakh+Rffca7LsMnOVAvlRNtbUIkegq2HXM2UfOye3njZ8s
-I+2dlX3Onf8cr1R0tqfYjHnSQx5L9RW3HPOcl4NFEJii31+dpJXdvLAdgRzUleO3
-gNrvhWhJau9TNGsCOyHuH8H/laTe+cPYL4Zyi4jaMXCQKKSJbfml4x5CvRKIuZeq
-mxmksk+zhR1H/uVvkz66uWVC7NZVm+fRN5I+fUZfeTlLyP8jy5VCzsA0iWeq/8Y=
-=oAjd
------END PGP SIGNATURE-----
-
---YiEDa0DAkWCtVeE4--
