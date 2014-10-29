@@ -1,45 +1,80 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 1/4] PM / Domains: Remove reference counting for the generic_pm_domain_data
-Date: Wed, 29 Oct 2014 13:44:24 -0700
-Message-ID: <7hk33i7gif.fsf@deeprootsystems.com>
-References: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
-	<1414507090-516-2-git-send-email-ulf.hansson@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 3/5] cpuidle: idle: menu: Don't reflect when a state selection failed
+Date: Wed, 29 Oct 2014 22:11 +0100
+Message-ID: <1509380.Ri3TuW8Kom@vostro.rjw.lan>
+References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org> <544FE032.5050900@linaro.org> <7h8ujybyuk.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1414507090-516-2-git-send-email-ulf.hansson@linaro.org> (Ulf
-	Hansson's message of "Tue, 28 Oct 2014 15:38:07 +0100")
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <7h8ujybyuk.fsf@deeprootsystems.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Preeti Murthy <preeti.lkml@gmail.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, patches@linaro.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+On Wednesday, October 29, 2014 09:54:43 AM Kevin Hilman wrote:
+> Daniel Lezcano <daniel.lezcano@linaro.org> writes:
+> 
+> > On 10/28/2014 08:01 AM, Preeti Murthy wrote:
+> >> On Thu, Oct 23, 2014 at 2:31 PM, Daniel Lezcano
+> >> <daniel.lezcano@linaro.org> wrote:
+> >>> In the current code, the check to reflect or not the outcoming state is done
+> >>> against the idle state which has been chosen and its value.
+> >>>
+> >>> Instead of doing a check in each of the reflect functions, just don't call reflect
+> >>> if something went wrong in the idle path.
+> >>>
+> >>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >>> Acked-by: Nicolas Pitre <nico@linaro.org>
+> >>> ---
+> >>>   drivers/cpuidle/governors/ladder.c | 3 +--
+> >>>   drivers/cpuidle/governors/menu.c   | 4 +---
+> >>>   kernel/sched/idle.c                | 3 ++-
+> >>>   3 files changed, 4 insertions(+), 6 deletions(-)
+> >>>
+> >>> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+> >>> index fb396d6..c0b36a8 100644
+> >>> --- a/drivers/cpuidle/governors/ladder.c
+> >>> +++ b/drivers/cpuidle/governors/ladder.c
+> >>> @@ -165,8 +165,7 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
+> >>>   static void ladder_reflect(struct cpuidle_device *dev, int index)
+> >>>   {
+> >>>          struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
+> >>> -       if (index > 0)
+> >>> -               ldev->last_state_idx = index;
+> >>> +       ldev->last_state_idx = index;
+> >>>   }
+> >>>
+> >>>   static struct cpuidle_governor ladder_governor = {
+> >>> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> >>> index a17515f..3907301 100644
+> >>> --- a/drivers/cpuidle/governors/menu.c
+> >>> +++ b/drivers/cpuidle/governors/menu.c
+> >>> @@ -365,9 +365,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+> >>>   static void menu_reflect(struct cpuidle_device *dev, int index)
+> >>>   {
+> >>>          struct menu_device *data = &__get_cpu_var(menu_devices);
+> >>> -       data->last_state_idx = index;
+> >>> -       if (index >= 0)
+> >>> -               data->needs_update = 1;
+> >>> +       data->needs_update = 1;
+> >>
+> >> Why is the last_state_idx not getting updated ?
+> >
+> > Oups, right. This is missing.
+> >
+> > Thanks for pointing this out.
+> >
+> > By the way, I don't think a back end driver is changing the selected
+> > state currently and I am not sure this is desirable since we want to
+> > trust the state we are going (as a best effort). 
+> 
+> FYI, the OMAP3 backend driver can does not always obey the selected
+> state, and will return a different state than the one requested.
 
-> The reference counting isn't needed, let's remove it.
+The ACPI driver can do that as well.
 
-After reading the commit that added this feature[1], I think this
-changelog needs a more detail explaining why it's not needed anymore.
-
-Kevin
-
-[1]
-commit 1d5fcfec22ce5f69db0d29284d2b65ff8ab1bfaa
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Thu Jul 5 22:12:32 2012 +0200
-
-    PM / Domains: Add device domain data reference counter
-
-    Add a mechanism for counting references to the
-    struct generic_pm_domain_data object pointed to by
-    dev->power.subsys_data->domain_data if the device in question
-    belongs to a generic PM domain.
-
-    This change is necessary for a subsequent patch making it possible to
-    allocate that object from within pm_genpd_add_callbacks(), so that
-    drivers can attach their PM domain device callbacks to devices before
-    those devices are added to PM domains.
-
-    This patch has been tested on the SH7372 Mackerel board.
-
-    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
