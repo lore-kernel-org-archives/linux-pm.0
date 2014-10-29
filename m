@@ -1,79 +1,92 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 3/5] cpuidle: idle: menu: Don't reflect when a state selection failed
-Date: Wed, 29 Oct 2014 22:11 +0100
-Message-ID: <1509380.Ri3TuW8Kom@vostro.rjw.lan>
-References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org> <544FE032.5050900@linaro.org> <7h8ujybyuk.fsf@deeprootsystems.com>
+Subject: Re: [PATCH v2] cpufreq: Guard against not-yet-initialized policies in cpufreq_cpu_get()
+Date: Wed, 29 Oct 2014 22:24:43 +0100
+Message-ID: <1537896.k4L3VHfc5p@vostro.rjw.lan>
+References: <20141029024426.GA7468@kroah.com> <1414597547-16506-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7h8ujybyuk.fsf@deeprootsystems.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Preeti Murthy <preeti.lkml@gmail.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, patches@linaro.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64701 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757259AbaJ2VEH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Oct 2014 17:04:07 -0400
+In-Reply-To: <1414597547-16506-1-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-On Wednesday, October 29, 2014 09:54:43 AM Kevin Hilman wrote:
-> Daniel Lezcano <daniel.lezcano@linaro.org> writes:
+On Wednesday, October 29, 2014 04:45:47 PM Tomeu Vizoso wrote:
+> There's a substantial window of opportunity from the time the policy objects
+> are created until they are initialized, causing this:
 > 
-> > On 10/28/2014 08:01 AM, Preeti Murthy wrote:
-> >> On Thu, Oct 23, 2014 at 2:31 PM, Daniel Lezcano
-> >> <daniel.lezcano@linaro.org> wrote:
-> >>> In the current code, the check to reflect or not the outcoming state is done
-> >>> against the idle state which has been chosen and its value.
-> >>>
-> >>> Instead of doing a check in each of the reflect functions, just don't call reflect
-> >>> if something went wrong in the idle path.
-> >>>
-> >>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> >>> Acked-by: Nicolas Pitre <nico@linaro.org>
-> >>> ---
-> >>>   drivers/cpuidle/governors/ladder.c | 3 +--
-> >>>   drivers/cpuidle/governors/menu.c   | 4 +---
-> >>>   kernel/sched/idle.c                | 3 ++-
-> >>>   3 files changed, 4 insertions(+), 6 deletions(-)
-> >>>
-> >>> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-> >>> index fb396d6..c0b36a8 100644
-> >>> --- a/drivers/cpuidle/governors/ladder.c
-> >>> +++ b/drivers/cpuidle/governors/ladder.c
-> >>> @@ -165,8 +165,7 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
-> >>>   static void ladder_reflect(struct cpuidle_device *dev, int index)
-> >>>   {
-> >>>          struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
-> >>> -       if (index > 0)
-> >>> -               ldev->last_state_idx = index;
-> >>> +       ldev->last_state_idx = index;
-> >>>   }
-> >>>
-> >>>   static struct cpuidle_governor ladder_governor = {
-> >>> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> >>> index a17515f..3907301 100644
-> >>> --- a/drivers/cpuidle/governors/menu.c
-> >>> +++ b/drivers/cpuidle/governors/menu.c
-> >>> @@ -365,9 +365,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
-> >>>   static void menu_reflect(struct cpuidle_device *dev, int index)
-> >>>   {
-> >>>          struct menu_device *data = &__get_cpu_var(menu_devices);
-> >>> -       data->last_state_idx = index;
-> >>> -       if (index >= 0)
-> >>> -               data->needs_update = 1;
-> >>> +       data->needs_update = 1;
-> >>
-> >> Why is the last_state_idx not getting updated ?
-> >
-> > Oups, right. This is missing.
-> >
-> > Thanks for pointing this out.
-> >
-> > By the way, I don't think a back end driver is changing the selected
-> > state currently and I am not sure this is desirable since we want to
-> > trust the state we are going (as a best effort). 
+> WARNING: CPU: 1 PID: 64 at include/linux/kref.h:47 kobject_get+0x64/0x70()
+> Modules linked in:
+> CPU: 1 PID: 64 Comm: irq/77-tegra-ac Not tainted 3.18.0-rc1-next-20141027ccu-00049-g21a0041 #248
+> [<c0016fac>] (unwind_backtrace) from [<c001272c>] (show_stack+0x10/0x14)
+> [<c001272c>] (show_stack) from [<c0601920>] (dump_stack+0x98/0xd8)
+> [<c0601920>] (dump_stack) from [<c00288d8>] (warn_slowpath_common+0x70/0x8c)
+> [<c00288d8>] (warn_slowpath_common) from [<c0028990>] (warn_slowpath_null+0x1c/0x24)
+> [<c0028990>] (warn_slowpath_null) from [<c02227bc>] (kobject_get+0x64/0x70)
+> [<c02227bc>] (kobject_get) from [<c03e5238>] (cpufreq_cpu_get+0x88/0xc8)
+> [<c03e5238>] (cpufreq_cpu_get) from [<c03e52ec>] (cpufreq_get+0xc/0x64)
+> [<c03e52ec>] (cpufreq_get) from [<c0287818>] (actmon_thread_isr+0x140/0x1a4)
+> [<c0287818>] (actmon_thread_isr) from [<c0068a68>] (irq_thread_fn+0x1c/0x40)
+> [<c0068a68>] (irq_thread_fn) from [<c0068d84>] (irq_thread+0x134/0x174)
+> [<c0068d84>] (irq_thread) from [<c0040284>] (kthread+0xdc/0xf4)
+> [<c0040284>] (kthread) from [<c000f4b8>] (ret_from_fork+0x14/0x3c)
 > 
-> FYI, the OMAP3 backend driver can does not always obey the selected
-> state, and will return a different state than the one requested.
+> This commit checks that initialization has finished before trying to do
+> anything with the policy.
+> 
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 644b54e..7b84d1a 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -48,6 +48,9 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
+>  /* Flag to suspend/resume CPUFreq governors */
+>  static bool cpufreq_suspended;
+>  
+> +/* Flag that tells whether initialization is completed */
+> +static atomic_t cpufreq_initialized = ATOMIC_INIT(0);
+> +
+>  static inline bool has_target(void)
+>  {
+>  	return cpufreq_driver->target_index || cpufreq_driver->target;
+> @@ -211,7 +214,7 @@ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
+>  	/* get the cpufreq driver */
+>  	read_lock_irqsave(&cpufreq_driver_lock, flags);
+>  
+> -	if (cpufreq_driver) {
+> +	if (atomic_read(&cpufreq_initialized)) {
 
-The ACPI driver can do that as well.
+The atomics don't help you here, because they don't make race conditions go
+away.  Memory barriers would be needed for that, but then there should be an
+alternative way to address the problem at hand.
+
+>  		/* get the CPU */
+>  		policy = per_cpu(cpufreq_cpu_data, cpu);
+>  		if (policy)
+> @@ -1289,6 +1292,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>  	kobject_uevent(&policy->kobj, KOBJ_ADD);
+>  	up_read(&cpufreq_rwsem);
+>  
+> +	atomic_set(&cpufreq_initialized, 1);
+> +
+
+__cpufreq_add_dev() can be run for many times.  Why is the first one only
+relevant?
+
+>  	pr_debug("initialization complete\n");
+>  
+>  	return 0;
+> 
 
 -- 
 I speak only for myself.
