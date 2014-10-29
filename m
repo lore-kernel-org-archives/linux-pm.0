@@ -1,69 +1,72 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 4/4] PM / Domains: Let the ->attach_dev() callback return
- an error code
-Date: Wed, 29 Oct 2014 10:32:14 +0100
-Message-ID: <CAMuHMdUgO7cyV+egGJrcxL+Ge5K6tfPgbPwpFrLQrmq2yUQSZw@mail.gmail.com>
-References: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
-	<1414507090-516-5-git-send-email-ulf.hansson@linaro.org>
-	<CAMuHMdVn2mfk5v8MQshU0gko+dL9xtCT_zBuqyntHHrmxjwfSA@mail.gmail.com>
-	<CAPDyKFpuhXx=G2yOZJK4SiUOh3OV7GzdzwrC8UK4_5et1arCag@mail.gmail.com>
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: Re: [PATCH v5 3/6] thermal: Added Bang-bang thermal governor
+Date: Wed, 29 Oct 2014 09:44:08 +0000
+Message-ID: <20141029094407.GA2692@e104805>
+References: <1398561815-22033-1-git-send-email-peter@piie.net>
+ <1406043436-17068-1-git-send-email-peter@piie.net>
+ <1406043436-17068-4-git-send-email-peter@piie.net>
+ <cone.1406384086.541895.7413.1000@galar>
+ <1406514389.14109.7.camel@rzhang1-toshiba>
+ <cone.1413887350.971616.2744.1000@mups>
+ <cone.1414524819.964570.994.1000@galar>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpuhXx=G2yOZJK4SiUOh3OV7GzdzwrC8UK4_5et1arCag@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cone.1414524819.964570.994.1000@galar>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Feuerer <peter@piie.net>
+Cc: Zhang Rui <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ulf,
+On Tue, Oct 28, 2014 at 07:33:39PM +0000, Peter Feuerer wrote:
+> Hi Rui,
+> 
+> I wonder whether you've had time to apply my set of patches already?  Would 
+> you please be so kind to just send me a short reply?
 
-On Wed, Oct 29, 2014 at 10:26 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 28 October 2014 21:31, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> On Tue, Oct 28, 2014 at 3:38 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> Typically an ->attach_dev() callback would fetch some PM resourses.
->>>
->>> Those operations, like for example clk_get() may fail with different
->>> errors, including -EPROBE_DEFER. Instead of ignoring these errors and
->>> potentially only print an error message, let's propagate them to give
->>> callers the option to handle them.
->>>
->>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>
->> Given that several patch series using ->attach_dev() are already floating
->> around and will be in -next soon, what is the plan of getting this in?
->> Doing it ASAP (in v3.18-rc3)?
->> Delaying this to v3.19-rc2, which will require an atomic fixing of its users?
->> Any other option?
->
-> I would prefer if we consider 3.18-rc[x|. That's applies also to the
-> below patchset, which actually fixes an issue. It would simplify the
-> process of handling other SOC specific patches which adds PM domain
-> support.
->
-> [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+The bang-bang governor was merged and is part of v3.18-rc2:
 
-v3.18-rc[x] sounds fine.
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=8264fce6de03f3915e2301f52f181a982718a8cb
 
-> Obviously the patches needs to be reviewed, I guess we are still in
-> the process of doing that.
+Cheers,
+Javi
 
-Indeed.
-
-Perhaps we can get just the prototype change of ->attach_dev() in first?
-That leaves some time for reviewing the code changes to actually handle
-the return value, and unblocks platform patches using ->attach_dev() soon,
-which are planned to enter in v3.19-rc.
-
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> Peter Feuerer writes:
+> 
+> > Hi Rui,
+> > 
+> > Zhang Rui writes:
+> > 
+> >> On Sat, 2014-07-26 at 16:14 +0200, Peter Feuerer wrote:
+> >>> Hi Rui,
+> >>> 
+> >>> Peter Feuerer writes:
+> >>> 
+> >>> > The bang-bang thermal governor uses a hysteresis to switch abruptly on
+> >>> > or off a cooling device.  It is intended to control fans, which can
+> >>> > not be throttled but just switched on or off.
+> >>> > Bang-bang cannot be set as default governor as it is intended for
+> >>> > special devices only.  For those special devices the driver needs to
+> >>> > explicitely request it.
+> >>> > 
+> >>> > Cc: Andrew Morton <akpm@linux-foundation.org>
+> >>> > Cc: Zhang Rui <rui.zhang@intel.com>
+> >>> 
+> >>> Anything that prevents you from giving your acked-by?
+> >>> 
+> >> NO.
+> >> 
+> >> I'll queue them for 3.18.
+> > 
+> > Are all 6 patches in for 3.18 as you promissed?
+> > 
+> > kind regards,
+> > --peter;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
