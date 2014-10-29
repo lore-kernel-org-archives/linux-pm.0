@@ -1,65 +1,59 @@
-From: Romain Perier <romain.perier@gmail.com>
-Subject: Re: [PATCH 0/4] poweroff-source DT property renaming
-Date: Wed, 29 Oct 2014 15:21:23 +0100
-Message-ID: <CABgxDo+mxFrdFM4aM389pR26hGUfcgLkGZXcPqtWTExfTV46Tw@mail.gmail.com>
-References: <1414568135-8311-1-git-send-email-romain.perier@gmail.com>
+From: Vlastimil Babka <vbabka@suse.cz>
+Subject: Re: [PATCH 0/4] (CMA_AGGRESSIVE) Make CMA memory be more aggressive
+ about allocation
+Date: Wed, 29 Oct 2014 15:43:33 +0100
+Message-ID: <5450FD15.4000708@suse.cz>
+References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com> <543F8812.2020002@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f45.google.com ([209.85.216.45]:58701 "EHLO
-	mail-qa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932475AbaJ2OVY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Oct 2014 10:21:24 -0400
-In-Reply-To: <1414568135-8311-1-git-send-email-romain.perier@gmail.com>
+Received: from cantor2.suse.de ([195.135.220.15]:44851 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932962AbaJ2Onm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 29 Oct 2014 10:43:42 -0400
+In-Reply-To: <543F8812.2020002@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>
-Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, devicetree <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Johan Hovold <johan@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Felipe Balbi <balbi@ti.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+To: Laura Abbott <lauraa@codeaurora.org>, Hui Zhu <zhuhui@xiaomi.com>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, m.szyprowski@samsung.com, akpm@linux-foundation.org, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, hannes@cmpxchg.org, riel@redhat.com, mgorman@suse.de, minchan@kernel.org, nasa4836@gmail.com, ddstreet@ieee.org, hughd@google.com, mingo@kernel.org, rientjes@google.com, peterz@infradead.org, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, paulmck@linux.vnet.ibm.com, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, akinobu.mita@gmail.com, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 
-+CC Felipe and linux-tegra@vger.k.o , as both were interested by some
-parts of the previous serie (sorry when I tried to reduce the CC list,
-I forgot you)
+On 10/16/2014 10:55 AM, Laura Abbott wrote:
+> On 10/15/2014 8:35 PM, Hui Zhu wrote:
+>
+> It's good to see another proposal to fix CMA utilization. Do you have
+> any data about the success rate of CMA contiguous allocation after
+> this patch series? I played around with a similar approach of using
+> CMA for MIGRATE_MOVABLE allocations and found that although utilization
+> did increase, contiguous allocations failed at a higher rate and were
+> much slower. I see what this series is trying to do with avoiding
+> allocation from CMA pages when a contiguous allocation is progress.
+> My concern is that there would still be problems with contiguous
+> allocation after all the MIGRATE_MOVABLE fallback has happened.
 
-2014-10-29 8:35 GMT+01:00 Romain Perier <romain.perier@gmail.com>:
-> The goal of this serie is to rename the property "poweroff-source" to
-> "system-power-controller" and to fix things incrementally.
+Hi,
+
+did anyone try/suggest the following idea?
+
+- keep CMA as fallback to MOVABLE as is is now, i.e. non-agressive
+- when UNMOVABLE (RECLAIMABLE also?) allocation fails and CMA pageblocks 
+have space, don't OOM immediately, but first try to migrate some MOVABLE 
+pages to CMA pageblocks, to make space for the UNMOVABLE allocation in 
+non-CMA pageblocks
+- this should keep CMA pageblocks free as long as possible and useful 
+for CMA allocations, but without restricting the non-MOVABLE allocations 
+even though there is free memory (but in CMA pageblocks)
+- the fact that a MOVABLE page could be successfully migrated to CMA 
+pageblock, means it was not pinned or otherwise non-migratable, so 
+there's a good chance it can be migrated back again if CMA pageblocks 
+need to be used by CMA allocation
+- it's more complex, but I guess we have most of the necessary 
+infrastructure in compaction already :)
+
+Thoughts?
+Vlastimil
+
+> Thanks,
+> Laura
 >
-> Changes and explanations since v1:
->
->   - The first patch defines "of_is_system_power_controller" which is compatible
->     with both "vendor,system-power-controller" and "system-power-controller"
->     properties. Also, It keeps the old helper function of_system_has_poweroff_source
->     for source compatibility until everything is renamed (in this way, bisections
->     are not broken and change is made "atomically" between each commit)
->
->     Note: the property "poweroff-source" itself is not used in dts files yet.
->     Before this patch tps65910 was broken due to missing backward compatibility
->     with "vendor,system-power-controller". As the old helper uses the new one,
->     it works again.
->
->   - act8865 and tps65910 are ported to the new helper function
->
->   - The last commit removes the olf helper which was only used for source compatibility
->
-> Romain Perier (4):
->   of: Rename "poweroff-source" property to "system-power-controller"
->   regulator: act8865: Convert poweroff-source DT property to
->     system-power-controller
->   mfd: tps65910: Convert poweroff-source DT property to
->     system-power-controller
->   of: Remove of_system_has_poweroff_source helper function
->
->  .../devicetree/bindings/power/power-controller.txt | 18 ++++++++++++
->  .../devicetree/bindings/power/poweroff.txt         | 18 ------------
->  .../bindings/regulator/act8865-regulator.txt       |  4 +--
->  drivers/mfd/tps65910.c                             |  2 +-
->  drivers/of/base.c                                  | 34 ++++++++++++++++++++++
->  drivers/regulator/act8865-regulator.c              |  2 +-
->  include/linux/of.h                                 | 12 ++------
->  7 files changed, 58 insertions(+), 32 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/power/power-controller.txt
->  delete mode 100644 Documentation/devicetree/bindings/power/poweroff.txt
->
-> --
-> 1.9.1
->
+
