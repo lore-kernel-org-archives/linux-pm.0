@@ -1,105 +1,143 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v15 2/5] dt-bindings: document Rockchip thermal
-Date: Tue, 28 Oct 2014 16:46:24 -0700
-Message-ID: <20141028234624.GD19675@dtor-ws>
-References: <1414486287-25498-1-git-send-email-caesar.wang@rock-chips.com>
- <1414486287-25498-3-git-send-email-caesar.wang@rock-chips.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH/RFC] ARM: shmobile: sh7372: Keep D4 pm domain powered
+Date: Wed, 29 Oct 2014 09:14:08 +0900
+Message-ID: <20141029001407.GF20702@verge.net.au>
+References: <1414063874-9533-1-git-send-email-geert+renesas@glider.be>
+ <20141027010846.GC30485@verge.net.au>
+ <CAMuHMdVFTjy5UZEU6azEuXQSKF1msQrQ-cOe2jZzevcpAPfAjw@mail.gmail.com>
+ <20141028001642.GA20702@verge.net.au>
+ <CAMuHMdU6W_JTYB9S0vUmWckFYFMP4oZuZXcdcEkBshiErZ4YYg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-sh-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1414486287-25498-3-git-send-email-caesar.wang@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Caesar Wang <caesar.wang@rock-chips.com>
-Cc: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com
+In-Reply-To: <CAMuHMdU6W_JTYB9S0vUmWckFYFMP4oZuZXcdcEkBshiErZ4YYg@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 28, 2014 at 04:51:24PM +0800, Caesar Wang wrote:
-> This add the necessary binding documentation for the thermal
-> found on Rockchip SoCs
+On Tue, Oct 28, 2014 at 09:15:56AM +0100, Geert Uytterhoeven wrote:
+> Hi Simon,
 > 
-> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
-> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+> On Tue, Oct 28, 2014 at 1:16 AM, Simon Horman <horms@verge.net.au> wrote:
+> > On Mon, Oct 27, 2014 at 09:23:14AM +0100, Geert Uytterhoeven wrote:
+> >> On Mon, Oct 27, 2014 at 2:08 AM, Simon Horman <horms@verge.net.au> wrote:
+> >> > On Thu, Oct 23, 2014 at 01:31:14PM +0200, Geert Uytterhoeven wrote:
+> >> >> The D4 power domain contains the Coresight-ETM hardware block.
+> >> >> As long as the ARM debug/perf code doesn't use resource management with
+> >> >> runtime PM support, the D4 power domain must be kept powered to avoid a
+> >> >> crash during resume from s2ram (dbg_cpu_pm_notify() calls
+> >> >> reset_ctrl_regs() unconditionally, causing an undefined instruction
+> >> >> oops).
+> >> >>
+> >> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> >> >> ---
+> >> >> Untested on real hardware, but a similar workaround is needed on r8a7740.
+> >> >
+> >> > I have hardware in the form of a Mackerel board and I'm happy
+> >> > to test this if it would help and you give me some guidance on how to do so.
+> >>
+> >> That would be great!
+> >>
+> >> Test procedure:
+> >>   1. echo 0 > /sys/module/printk/parameters/console_suspend
+> >
+> > I seemed to also need:
+> >
+> > echo enabled > /sys/devices/platform/sh-sci.0/tty/ttySC0/power/wakeup
+> 
+> Interesting. On Koelsch and Armadillo receiving a serial interrupt
+> is sufficient to wake up:
+> 
+> root@armadillo:~# cat /sys/devices/e6c50000.serial/tty/ttySC1/power/wakeup
+> disabled
+> root@armadillo:~#
+> 
+> Probably the more advanced wake up sources code on sh7372 honours that.
+> 
+> >>   2. echo mem > /sys/power/state
+> >>   3. [ Wake up by pressing a key on the serial console.
+> >>         There's no other wake-up source on mackerel? ]
+> >
+> > usbhs seems like a candidate, it has a wakeup node in sysfs.
+> >
+> >> Without my patch, I expect it to crash during resume in reset_ctrl_regs().
+> >
+> > With the patch and the mackerel defconfig I see this:
+> >
+> > # echo mem > /sys/power/state
+> > PM: Syncing filesystems ... done.
+> > Freezing user space processes ... (elapsed 0.005 seconds) done.
+> > Freezing remaining freezable tasks ... (elapsed 0.009 seconds) done.
+> > Suspending console(s) (use no_console_suspend to debug)
+> > dpm_run_callback(): pm_genpd_suspend+0x0/0x44 returns -16
+> > PM: Device sh_mobile_sdhi.2 failed to suspend: error -16
+> > PM: Some devices failed to suspend, or early wake event detected
+> > PM: resume of devices complete after 0.323 msecs
+> > Restarting tasks ... done.
+> > -bash: echo: write error: Device or resource busy
+> > #
+> >
+> > So I turned of SDHI support in the kernel config and tried again:
+> 
+> That's the SDHI QoS value, which is lower than the PM domain
+> suspend/resume time. An alternative should be:
+> 
+> echo 501 > /sys/devices/platform/sh_mobile_sdhi.2/power/pm_qos_resume_latency_us
 
-Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Thanks, I wasn't aware of that.
 
-> ---
->  .../bindings/thermal/rockchip-thermal.txt          | 62 ++++++++++++++++++++++
->  1 file changed, 62 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+> > # echo mem > /sys/power/state
+> > PM: Syncing filesystems ... done.
+> > Freezing user space processes ... (elapsed 0.008 seconds) done.
+> > Freezing remaining freezable tasks ... (elapsed 0.009 seconds) done.
+> > renesas_usbhs renesas_usbhs.1: remove, state 4
+> > usb usb1: USB disconnect, device number 1
+> > renesas_usbhs renesas_usbhs.1: USB bus 1 deregistered
+> > PM: suspend of devices complete after 28.959 msecs
+> > PM: late suspend of devices complete after 0.357 msecs
+> > PM: noirq suspend of devices complete after 0.512 msecs
+> >
+> > [keypress]
+> >
+> > sh_tmu sh-tmu.0: ch0: used for periodic clock events
+> > PM: noirq resume of devices complete after 0.420 msecs
+> > PM: early resume of devices complete after 0.209 msecs
+> > PM: resume of devices complete after 0.327 msecs
+> > Restarting tasks ...
+> >
+> > renesas_usbhs renesas_usbhs.1: USB Host Controller
+> > renesas_usbhs renesas_usbhs.1: new USB bus registered, assigned bus number 1
+> > done.
+> > hub 1-0:1.0: USB hub found
+> > hub 1-0:1.0: 1 port detected
+> > asoc-simple-card asoc-simple-card.0: ASoC: CODEC DAI ak4642-hifi not registered
+> > platform asoc-simple-card.0: Driver asoc-simple-card requests probe deferral
+> >
+> >
+> > Without the patch I see the same as above, module slightly different msec
+> > values:
 > 
-> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-> new file mode 100644
-> index 0000000..fc30e1b
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-> @@ -0,0 +1,62 @@
-> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
-> +
-> +Required properties:
-> +- compatible : "rockchip,rk3288-tsadc"
-> +- reg : physical base address of the controller and length of memory mapped
-> +	region.
-> +- interrupts : The interrupt number to the cpu. The interrupt specifier format
-> +	       depends on the interrupt controller.
-> +- clocks : Must contain an entry for each entry in clock-names.
-> +- clock-names : Shall be "tsadc" for the converter-clock, and "apb_pclk" for
-> +		the peripheral clock.
-> +- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
-> +- hw-shut-temp : The hardware-controlled shutdown temperature value.
-> +- tsadc-tshut-mode : The hardware-controlled shutdown mode 0:CRU 1:GPIO.
-> +- tsadc-tshut-polarity : The hardware-controlled active polarity 0:LOW 1:HIGH.
-> +
-> +Exiample:
-> +tsadc: tsadc@ff280000 {
-> +	compatible = "rockchip,rk3288-tsadc";
-> +	reg = <0xff280000 0x100>;
-> +	interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-> +	clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-> +	clock-names = "tsadc", "apb_pclk";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&otp_out>;
-> +	#thermal-sensor-cells = <1>;
-> +	hw-shut-temp = <125000>;
-> +	tsadc-tshut-mode = <0>;
-> +	tsadc-tshut-polarity = <0>;
-> +};
-> +
-> +Example: referring to thermal sensors:
-> +thermal-zones {
-> +	cpu_thermal: cpu_thermal {
-> +		polling-delay-passive = <1000>; /* milliseconds */
-> +		polling-delay = <5000>; /* milliseconds */
-> +
-> +		/* sensor	ID */
-> +		thermal-sensors = <&tsadc	1>;
-> +
-> +		trips {
-> +			cpu_alert0: cpu_alert {
-> +				temperature = <80000>; /* millicelsius */
-> +				hysteresis = <2000>; /* millicelsius */
-> +				type = "passive";
-> +			};
-> +			cpu_crit: cpu_crit {
-> +				temperature = <120000>; /* millicelsius */
-> +				hysteresis = <2000>; /* millicelsius */
-> +				type = "critical";
-> +			};
-> +		};
-> +
-> +		cooling-maps {
-> +			map0 {
-> +				trip = <&cpu_alert0>;
-> +				cooling-device =
-> +					<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-> +			};
-> +		};
-> +	};
-> +};
-> -- 
-> 1.9.1
-> 
-> 
+> OK, so my patch is not needed (yet[*]), please drop it.
+> Either the Cortex A8 has a different debug module than A9, or what the kernel
+> uses right now is not in the same D4 PM domain as the Coresight-ETM.
 
--- 
-Dmitry
+Done.
+
+> Thanks for testing!
+> 
+> [*] This may change when the full Coresight-ETM patches by Mathieu Poirier
+>     are in.
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
+> 
