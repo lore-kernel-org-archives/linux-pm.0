@@ -1,28 +1,102 @@
-From: Brian Norris <computersforpeace@gmail.com>
-Subject: Re: [PATCH v2 10/10] power/reset: brcmstb: Register with kernel
- restart handler
-Date: Tue, 28 Oct 2014 18:51:58 -0700
-Message-ID: <20141029015158.GC23619@ld-irv-0074>
-References: <1412099316-23167-1-git-send-email-linux@roeck-us.net>
- <1412099316-23167-11-git-send-email-linux@roeck-us.net>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 1/5] sched: idle: cpuidle: Check the latency req before
+ idle
+Date: Wed, 29 Oct 2014 07:31:04 +0530
+Message-ID: <54504A60.2090908@linux.vnet.ibm.com>
+References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org> <CAM4v1pOg1GFW82WD8b6Vas5xhYQrQtdP1STGxyzYtrBNSa+-Pw@mail.gmail.com> <544FE787.8090108@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1412099316-23167-11-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-kernel@vger.kernel.org, Marc Carino <marc.ceeeee@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:47564 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751056AbaJ2CFE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 28 Oct 2014 22:05:04 -0400
+Received: from /spool/local
+	by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Tue, 28 Oct 2014 22:05:03 -0400
+In-Reply-To: <544FE787.8090108@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti Murthy <preeti.lkml@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, patches@linaro.org
 
-On Tue, Sep 30, 2014 at 10:48:36AM -0700, Guenter Roeck wrote:
-> Register with kernel restart handler instead of setting arm_pm_restart directly.
+On 10/29/2014 12:29 AM, Daniel Lezcano wrote:
+> On 10/28/2014 04:51 AM, Preeti Murthy wrote:
+>> Hi Daniel,
+>>
+>> On Thu, Oct 23, 2014 at 2:31 PM, Daniel Lezcano
+>> <daniel.lezcano@linaro.org> wrote:
+>>> When the pmqos latency requirement is set to zero that means "poll in
+>>> all the
+>>> cases".
+>>>
+>>> That is correctly implemented on x86 but not on the other archs.
+>>>
+>>> As how is written the code, if the latency request is zero, the
+>>> governor will
+>>> return zero, so corresponding, for x86, to the poll function, but for
+>>> the
+>>> others arch the default idle function. For example, on ARM this is
+>>> wait-for-
+>>> interrupt with a latency of '1', so violating the constraint.
+>>
+>> This is not true actually. On PowerPC the idle state 0 has an
+>> exit_latency of 0.
+>>
+>>>
+>>> In order to fix that, do the latency requirement check *before*
+>>> calling the
+>>> cpuidle framework in order to jump to the poll function without entering
+>>> cpuidle. That has several benefits:
+>>
+>> Doing so actually hurts on PowerPC. Because the idle loop defined for
+>> idle state 0 is different from what cpu_relax() does in cpu_idle_loop().
+>> The spinning is more power efficient in the former case. Moreover we
+>> also set
+>> certain register values which indicate an idle cpu. The ppc_runlatch bits
+>> do precisely this. These register values are being read by some user
+>> space
+>> tools.  So we will end up breaking them with this patch
+>>
+>> My suggestion is very well keep the latency requirement check in
+>> kernel/sched/idle.c
+>> like your doing in this patch. But before jumping to cpu_idle_loop
+>> verify if the
+>> idle state 0 has an exit_latency > 0 in addition to your check on the
+>> latency_req == 0.
+>> If not, you can fall through to the regular path of calling into the
+>> cpuidle driver.
+>> The scheduler can query the cpuidle_driver structure anyway.
+>>
+>> What do you think?
 > 
-> Cc: Marc Carino <marc.ceeeee@gmail.com>
-> Cc: Brian Norris <computersforpeace@gmail.com>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> Thanks for reviewing the patch and spotting this.
+> 
+> Wouldn't make sense to create:
+> 
+> void __weak_cpu_idle_poll(void) ?
+> 
+> and override it with your specific poll function ?
+> 
 
-Tested on top of linux-next:
+No this would become ugly as far as I can see. A weak function has to be
+defined under arch/* code. We will either need to duplicate the idle
+loop that we already have in the drivers or point the weak function to
+the first idle state defined by our driver. Both of which is not
+desirable (calling into the driver from arch code is ugly). Another
+reason why I don't like the idea of a weak function is that if you have
+missed looking at a specific driver and they have an idle loop with
+features similar to on powerpc, you will have to spot it yourself and
+include the arch specific cpu_idle_poll() for them.
 
-Tested-by: Brian Norris <computersforpeace@gmail.com>
-Acked-by: Brian Norris <computersforpeace@gmail.com>
+But by having a check on the exit_latency, you are claiming that since
+the driver's 0th idle state is no better than the generic idle loop in
+cases of 0 latency req, we are better off calling the latter, which
+looks reasonable. That way you don't have to bother about worsening the
+idle loop behavior on any other driver.
+
+Regards
+Preeti U Murthy
+
