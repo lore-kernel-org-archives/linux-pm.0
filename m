@@ -1,93 +1,61 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: Guard against not-yet-initialized policies in cpufreq_cpu_get()
-Date: Wed, 29 Oct 2014 22:24:43 +0100
-Message-ID: <1537896.k4L3VHfc5p@vostro.rjw.lan>
-References: <20141029024426.GA7468@kroah.com> <1414597547-16506-1-git-send-email-tomeu.vizoso@collabora.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 4/4] PM / Domains: Let the ->attach_dev() callback return an error code
+Date: Wed, 29 Oct 2014 14:10:17 -0700
+Message-ID: <7h1tpq7fba.fsf@deeprootsystems.com>
+References: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
+	<1414507090-516-5-git-send-email-ulf.hansson@linaro.org>
+	<CAMuHMdVn2mfk5v8MQshU0gko+dL9xtCT_zBuqyntHHrmxjwfSA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64701 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757259AbaJ2VEH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Oct 2014 17:04:07 -0400
-In-Reply-To: <1414597547-16506-1-git-send-email-tomeu.vizoso@collabora.com>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:37718 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756291AbaJ2VKW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Oct 2014 17:10:22 -0400
+Received: by mail-pa0-f53.google.com with SMTP id kx10so3903132pab.26
+        for <linux-pm@vger.kernel.org>; Wed, 29 Oct 2014 14:10:21 -0700 (PDT)
+In-Reply-To: <CAMuHMdVn2mfk5v8MQshU0gko+dL9xtCT_zBuqyntHHrmxjwfSA@mail.gmail.com>
+	(Geert Uytterhoeven's message of "Tue, 28 Oct 2014 21:31:35 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>
 
-On Wednesday, October 29, 2014 04:45:47 PM Tomeu Vizoso wrote:
-> There's a substantial window of opportunity from the time the policy objects
-> are created until they are initialized, causing this:
-> 
-> WARNING: CPU: 1 PID: 64 at include/linux/kref.h:47 kobject_get+0x64/0x70()
-> Modules linked in:
-> CPU: 1 PID: 64 Comm: irq/77-tegra-ac Not tainted 3.18.0-rc1-next-20141027ccu-00049-g21a0041 #248
-> [<c0016fac>] (unwind_backtrace) from [<c001272c>] (show_stack+0x10/0x14)
-> [<c001272c>] (show_stack) from [<c0601920>] (dump_stack+0x98/0xd8)
-> [<c0601920>] (dump_stack) from [<c00288d8>] (warn_slowpath_common+0x70/0x8c)
-> [<c00288d8>] (warn_slowpath_common) from [<c0028990>] (warn_slowpath_null+0x1c/0x24)
-> [<c0028990>] (warn_slowpath_null) from [<c02227bc>] (kobject_get+0x64/0x70)
-> [<c02227bc>] (kobject_get) from [<c03e5238>] (cpufreq_cpu_get+0x88/0xc8)
-> [<c03e5238>] (cpufreq_cpu_get) from [<c03e52ec>] (cpufreq_get+0xc/0x64)
-> [<c03e52ec>] (cpufreq_get) from [<c0287818>] (actmon_thread_isr+0x140/0x1a4)
-> [<c0287818>] (actmon_thread_isr) from [<c0068a68>] (irq_thread_fn+0x1c/0x40)
-> [<c0068a68>] (irq_thread_fn) from [<c0068d84>] (irq_thread+0x134/0x174)
-> [<c0068d84>] (irq_thread) from [<c0040284>] (kthread+0xdc/0xf4)
-> [<c0040284>] (kthread) from [<c000f4b8>] (ret_from_fork+0x14/0x3c)
-> 
-> This commit checks that initialization has finished before trying to do
-> anything with the policy.
-> 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 644b54e..7b84d1a 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -48,6 +48,9 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
->  /* Flag to suspend/resume CPUFreq governors */
->  static bool cpufreq_suspended;
->  
-> +/* Flag that tells whether initialization is completed */
-> +static atomic_t cpufreq_initialized = ATOMIC_INIT(0);
-> +
->  static inline bool has_target(void)
->  {
->  	return cpufreq_driver->target_index || cpufreq_driver->target;
-> @@ -211,7 +214,7 @@ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
->  	/* get the cpufreq driver */
->  	read_lock_irqsave(&cpufreq_driver_lock, flags);
->  
-> -	if (cpufreq_driver) {
-> +	if (atomic_read(&cpufreq_initialized)) {
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
-The atomics don't help you here, because they don't make race conditions go
-away.  Memory barriers would be needed for that, but then there should be an
-alternative way to address the problem at hand.
+> Hi Ulf, Rafael,
+>
+> On Tue, Oct 28, 2014 at 3:38 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> Typically an ->attach_dev() callback would fetch some PM resourses.
+>>
+>> Those operations, like for example clk_get() may fail with different
+>> errors, including -EPROBE_DEFER. Instead of ignoring these errors and
+>> potentially only print an error message, let's propagate them to give
+>> callers the option to handle them.
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>
+> Given that several patch series using ->attach_dev() are already floating
+> around and will be in -next soon, what is the plan of getting this in?
 
->  		/* get the CPU */
->  		policy = per_cpu(cpufreq_cpu_data, cpu);
->  		if (policy)
-> @@ -1289,6 +1292,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
->  	kobject_uevent(&policy->kobj, KOBJ_ADD);
->  	up_read(&cpufreq_rwsem);
->  
-> +	atomic_set(&cpufreq_initialized, 1);
-> +
+Shall we take this as a Reviewed-by or Acked-by for the series?  :)
 
-__cpufreq_add_dev() can be run for many times.  Why is the first one only
-relevant?
+> Doing it ASAP (in v3.18-rc3)?
 
->  	pr_debug("initialization complete\n");
->  
->  	return 0;
-> 
+IMO, this isn't at all appropriate for -rc since it's not fixing a
+regression. Also, this series includes other cleanups that are not
+really fixes either.  At this point of the -rc cycle, we need to focus
+only on regression fixes.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> Delaying this to v3.19-rc2, which will require an atomic fixing of its users?
+> Any other option?
+
+I don't see any users of this in -next yet, so I think doing a simple
+patch to the prototype and fixing up any users before they hit -next is
+the right approach.  Errors will be ignored, but that's not change from
+today. :)
+
+Then the rest of this cleanup and behavior change stuff can continue to
+be reviewed and get broader testing before merge.
+
+Kevin
