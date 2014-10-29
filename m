@@ -1,165 +1,129 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v3 34/47] acpi: Register power-off handler with kernel
- power-off handler
-Date: Tue, 28 Oct 2014 19:05:11 -0700
-Message-ID: <54504B57.3020403@roeck-us.net>
-References: <1414425354-10359-1-git-send-email-linux@roeck-us.net> <5416859.0WlfjKo7zJ@vostro.rjw.lan> <544EFB12.1090901@roeck-us.net> <4751363.lZMkCZKZet@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4751363.lZMkCZKZet@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org
+From: Caesar Wang <caesar.wang@rock-chips.com>
+Subject: [PATCH v16 0/5] Rockchip soc thermal driver
+Date: Wed, 29 Oct 2014 10:32:34 +0800
+Message-ID: <1414549959-13699-1-git-send-email-caesar.wang@rock-chips.com>
+Return-path: <linux-doc-owner@vger.kernel.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com
+Cc: zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, Caesar Wang <caesar.wang@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 10/28/2014 04:10 PM, Rafael J. Wysocki wrote:
-> On Monday, October 27, 2014 07:10:26 PM Guenter Roeck wrote:
->> On 10/27/2014 05:26 PM, Rafael J. Wysocki wrote:
->>> On Monday, October 27, 2014 08:55:41 AM Guenter Roeck wrote:
->>>> Register with kernel power-off handler instead of setting pm_power_off
->>>> directly. Register with high priority to reflect that the driver explicitly
->>>> overrides existing power-off handlers.
->>>
->>> Well, I'm still rather unconvinced that notifiers are particularly suitable for
->>> this purpose.
->>>
->>> Specifically ->
->>>
->>
->> Fine.
->>
->>>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
->>>> Cc: Len Brown <lenb@kernel.org>
->>>> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
->>>> ---
->>>> v3:
->>>> - Replace poweroff in all newly introduced variables and in text
->>>>     with power_off or power-off as appropriate
->>>> - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
->>>> - Replace acpi: with ACPI: in log message
->>>> v2:
->>>> - Use define to specify poweroff handler priority
->>>> - Use pr_warn instead of pr_err
->>>>
->>>>    drivers/acpi/sleep.c | 15 +++++++++++++--
->>>>    1 file changed, 13 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
->>>> index 05a31b5..7875b92 100644
->>>> --- a/drivers/acpi/sleep.c
->>>> +++ b/drivers/acpi/sleep.c
->>>> @@ -16,6 +16,8 @@
->>>>    #include <linux/device.h>
->>>>    #include <linux/interrupt.h>
->>>>    #include <linux/suspend.h>
->>>> +#include <linux/notifier.h>
->>>> +#include <linux/pm.h>
->>>>    #include <linux/reboot.h>
->>>>    #include <linux/acpi.h>
->>>>    #include <linux/module.h>
->>>> @@ -827,14 +829,22 @@ static void acpi_power_off_prepare(void)
->>>>    	acpi_disable_all_gpes();
->>>>    }
->>>>
->>>> -static void acpi_power_off(void)
->>>> +static int acpi_power_off(struct notifier_block *this,
->>>> +			  unsigned long unused1, void *unused2)
->>>>    {
->>>
->>> -> Is there any reason why any notifier in the new chain would use the
->>> second argument for anything meaningful?  And the third argument for
->>> that matter?
->>>
->>>>    	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
->>>>    	printk(KERN_DEBUG "%s called\n", __func__);
->>>>    	local_irq_disable();
->>>>    	acpi_enter_sleep_state(ACPI_STATE_S5);
->>>> +
->>>> +	return NOTIFY_DONE;
->>>
->>> Also is there any reason for any notifier in the new chain to return anything
->>> different from NOTIFY_DONE and if so, then what happens when anything else
->>> is returned?
->>>
->>
->> As mentioned earlier, notifiers just come handy. That is all.
->>
->> Having said that, I don't have a strong opinion either way. If you want me
->> to implement a priority based callback handler with a single argument,
->> just let me know and I'll be happy to implement it. It is not worth arguing
->> about.
->>
->> Would something like
->>
->> struct power_off_block {
->> 	void (*power_off_call)(struct power_off_block *);
->> 	struct power_off_block __rcu *next;
->> 	int priority;
->> };
->>
->> for the data structure be acceptable ? The power-off handler code would then
->> be something like
->>
->> static void acpi_power_off(struct power_off_block *this)
->> {
->> }
->>
->> ie quite similar to the current power-off handler code, with an added argument.
->> The API would, except for the structure argument, pretty much stay the same.
->
-> That's better in my view.
->
-> You could also get rid of the priority if you had something like
->
-> struct power_off_block *power_off_list[MAX_LEVEL];
->
-> and then made your power_off_block registration pass the level as the
-> second argument.
->
-> I also would use struct list_head instead of the next pointer, because the
-> list manipulation would be trivial then (and the above would become
-> struct list_head power_off_list[MAX_LEVEL];) and the callers would only
-> need to do
->
-> static struct power_off_block my_power_off_block = {
-> 	.power_off_call = my_routine,
-> };
->
-> and then something like
->
-> 	register_power_off_block(&my_power_off_block, <level>);
->
-> which would be just list_add_tail(&block->node, &power_off_list[<level>]) plus
-> some bounds checking etc.  To avoid open coding stuff.
->
-> That would allow me to avoid arbitrary gaps in the priority space too and
-> if more levels need to be added over time, that should be easy to do too if
-> an enum is used to define them.
->
-> But if you prefer to use a unidirectional list and keep the priority in
-> struct power_off_block, I'm fine with that too.
->
-I prefer a unidirectional list. It is not as if we expect dozens of registrations;
-in most cases there will be one, rarely two and even more rarely three.
+This series patchs tested on rk3288 SDK board and pinky-v1,v2 board.
+I believe the driver can be used on the rk3288-evb board.
 
-> [Dynamic allocation of memory for the struct power_off_block things is worth
-> considering too IMHO, so that users can simply pass the name of the routine
-> and the level to the registration function, like:
->
-> 	ret = register_power_off_call(my_routine, <level>);
-> 	if (ret)
-> 		complain;
->
-> The unregistration would be somewhat less straightforward then, but I'm not
-> sure if unregistration is necessary at all in this case.]
->
+Add this driver, The system will shutdown when
+the thermal temperture over 120C.If for some reason we are unable to
+shut it down in orderly fashion (kernel is stuck holding a lock or similar)
+then hardware will reset it.
 
-Problem with dynamic memory allocation is that some callers don't have
-the memory subsystem initialized when registering the poweroff function.
-That was my initial implementation, and it got me some unexpected crashes.
+Changes in v16:
+	* address comments from Dmitry Torokhov.
+	- add thermal->chip->control(thermal->regs, false) in remove()
+	- adjust TSHUT in resume().
 
-Thanks,
-Guenter
+Changes in v15:
+	* address comments from Dmitry Torokhov.
+	- enable TSHUT move into rk_tsadcv2_tshut_temp().
+	- drop the id argument in rk_tsadcv2_control().
+
+Changes in v14:
+	* address comments from Dmitry Torokhov.
+	- adjust-alarm-rate-depending-on-clock.
+	- 0001-rockchip-thermal-do-not-register-cpufreq-cooling-dev.
+
+Changes in v13:
+	- add cooling-maps for cpu-thermal.
+	- put tshut polarity in device tree.
+
+Changes in v12:
+	* address comments from Dmitry Torokhov and Vladimir Zapolskiy.
+	- split-sensor-handling.
+	- rename-rockchip_tsadc_platform_data.
+
+Changes in v11:
+	* address comments from Vladimir Zapolskiy.
+	- fix cpufreq_cooling_unregister() to put in correct position.
+	- fix "data->chn",at least can get valid Tsensor temp.
+
+Changes in v10:
+	* address comments from Doug Anderson.
+	- fix TSHUT polarity,ensure support TSHUT.
+	- add the decription for rk_tsadcv2_initialize().
+
+Changes in v9:
+	* address comments from Dmitry Torokhov.
+	- fix some style be defined
+	- remove some unused code.
+	- clk_disable_unprepare->clk_disable in suspend()
+
+Changes in v8:
+	* address comments from Dmitry Torokhov and Doug Anderson.
+	- add three Teperture Sensors.
+	- support CRU and GPIO reset chip.
+	- rename rk3xxx-cpu-thermal.dtsi as rk3288-thermal.dtsi
+	- alarm-temp via set_trips() callback
+	- remove "reset-gpios"
+
+Changes in v7:
+	- fix get data->clk=0 when in probe() function.
+	- fix some style code.
+	- modify dts,main add rk3xxx-cpu-thermal.dtsi
+
+Changes in v6:
+	* address comments from Tomeu Vizoso.
+	- use thermal's generic framework.
+
+Changes in v5:
+	* address comments from Eduardo Valentin,rui.zhang and Heiko Stubner:
+	- with BIT() macro
+	- manage clocks in suspend/resume.
+	- license is fixed as GPLv2.
+	- #include "thermal_core.h"->#include <linux/thermal.h>
+	- use the generic trip-points.the hw-shut-temp isn't generic trip-points.
+	- The method of binding and unbinding be fixed.
+	- The pin-name tsadc->otp_out
+
+Changes in v4:
+	* address comments from Jonathan Cameron,huangtao and zhaoyifeng:
+	- this series thermal driver still be put in driver/thermal/
+	- modify the thermal driver description.
+
+Changes in v3:(add dts configure)
+	* address comments from Dmitry Torokhov and Arnd Bergmann:
+	- fix clock-names in rockchip-thermal.txt
+	- remove rockchip_thermal_control() in rockchip_set_mode()
+	- fix some code style.
+	- add dts configure.
+
+Changes in v2:
+	* address comments from Heiko Stubner:
+	- fix dt-bindings in rockchip-thermal.txt
+	- remove Author mark
+	- rename TSADC_XXX->TSADCV2_XXX,it eill ready to merge compatible other SoCs.
+	- fix a identation
+	- remove clk_set_rate(),it's no necessary.
+	- fix the SIMPLE_DEV_PM_OPS() function  style.
+
+Caesar Wang (5):
+  thermal: rockchip: add driver for thermal
+  dt-bindings: document Rockchip thermal
+  ARM: dts: add RK3288 Thermal data
+  ARM: dts: add main Thermal info to rk3288
+  ARM: dts: enable Thermal on rk3288-evb board
+
+ .../bindings/thermal/rockchip-thermal.txt          |  45 ++
+ arch/arm/boot/dts/rk3288-evb.dtsi                  |   5 +
+ arch/arm/boot/dts/rk3288-thermal.dtsi              |  58 ++
+ arch/arm/boot/dts/rk3288.dtsi                      |  23 +
+ drivers/thermal/Kconfig                            |   9 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/rockchip_thermal.c                 | 628 +++++++++++++++++++++
+ 7 files changed, 769 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+ create mode 100644 arch/arm/boot/dts/rk3288-thermal.dtsi
+ create mode 100644 drivers/thermal/rockchip_thermal.c
+
+-- 
+1.9.1
+
 
