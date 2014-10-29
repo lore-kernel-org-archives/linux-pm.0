@@ -1,46 +1,75 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: v3.18-rc2 compilation under a x86 KVM failed in drivers/thermal/thermal_core.c:
-Date: Wed, 29 Oct 2014 10:27:17 +0000
-Message-ID: <9hhh9ynxjay.fsf@arm.com>
-References: <544E6F5C.7040900@gmx.de> <9hh1tpsz1x0.fsf@arm.com>
-	<544FD915.40200@gmx.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 4/4] PM / Domains: Let the ->attach_dev() callback return
+ an error code
+Date: Wed, 29 Oct 2014 11:28:50 +0100
+Message-ID: <CAMuHMdW=+wHuaMiPD1UGbKTorfftUrOm-NO9VK42FfGVkEhKGg@mail.gmail.com>
+References: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
+	<1414507090-516-5-git-send-email-ulf.hansson@linaro.org>
+	<CAMuHMdVn2mfk5v8MQshU0gko+dL9xtCT_zBuqyntHHrmxjwfSA@mail.gmail.com>
+	<CAPDyKFpuhXx=G2yOZJK4SiUOh3OV7GzdzwrC8UK4_5et1arCag@mail.gmail.com>
+	<CAMuHMdUgO7cyV+egGJrcxL+Ge5K6tfPgbPwpFrLQrmq2yUQSZw@mail.gmail.com>
+	<CAPDyKFrW2y49kKPeF1dMZO4jLKam8me0RJFNZCE2wukosznNOA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.21]:53393 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932072AbaJ2K1W convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 29 Oct 2014 06:27:22 -0400
-In-Reply-To: <544FD915.40200@gmx.de> ("Toralf =?utf-8?Q?F=C3=B6rster=22's?=
- message of "Tue, 28
-	Oct 2014 18:57:41 +0100")
+Received: from mail-la0-f46.google.com ([209.85.215.46]:55222 "EHLO
+	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932072AbaJ2K2w (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Oct 2014 06:28:52 -0400
+In-Reply-To: <CAPDyKFrW2y49kKPeF1dMZO4jLKam8me0RJFNZCE2wukosznNOA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
-Cc: "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>
 
-Toralf F=C3=B6rster <toralf.foerster@gmx.de> writes:
+Hi Ulf,
 
-> On 10/28/2014 03:47 PM, Punit Agrawal wrote:
->> Is there anything special about building the kernel in a kvm?
->>=20
+On Wed, Oct 29, 2014 at 11:14 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>>> Given that several patch series using ->attach_dev() are already floating
+>>>> around and will be in -next soon, what is the plan of getting this in?
+>>>> Doing it ASAP (in v3.18-rc3)?
+>>>> Delaying this to v3.19-rc2, which will require an atomic fixing of its users?
+>>>> Any other option?
+>>>
+>>> I would prefer if we consider 3.18-rc[x|. That's applies also to the
+>>> below patchset, which actually fixes an issue. It would simplify the
+>>> process of handling other SOC specific patches which adds PM domain
+>>> support.
+>>>
+>>> [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+>>
+>> v3.18-rc[x] sounds fine.
+>>
+>>> Obviously the patches needs to be reviewed, I guess we are still in
+>>> the process of doing that.
+>>
+>> Indeed.
+>>
+>> Perhaps we can get just the prototype change of ->attach_dev() in first?
+>> That leaves some time for reviewing the code changes to actually handle
+>> the return value, and unblocks platform patches using ->attach_dev() soon,
+>> which are planned to enter in v3.19-rc.
 >
-> Nope, I'm just using gcc-4.7.3-r1
+> That's an option.
 >
->> Could you attach the failing config please?
-> ofc done
+> On the other hand, that would mean that the errors that the
+> attach_dev() callback would return from you SOC specific code, would
+> just be ignored until v3.19-rc. That's not so good, hiding errors. :-)
 
-I started with a clean kernel source tree and tried building the
-attached config. I still don't see the build failure.
+The code to handle the return value could still get in in v3.18-rc.
+So the errors would only be unhandled for a short while in -next.
 
-Perhaps you had stale artifacts from previous builds causing failure to
-link? Can you try building from a clean source tree?=20
+> Let's see what Rafael thinks.
 
-Otherwise, I am out of ideas...
+Right.
 
-=46or reference,=20
+Gr{oetje,eeting}s,
 
-$ gcc --version
-gcc (Debian 4.9.1-16) 4.9.1
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
