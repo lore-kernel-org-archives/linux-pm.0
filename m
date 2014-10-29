@@ -1,84 +1,46 @@
-From: Peter Feuerer <peter@piie.net>
-Subject: Re: [PATCH v5 3/6] thermal: Added Bang-bang thermal governor
-Date: Wed, 29 Oct 2014 11:14:52 +0100
-Message-ID: <cone.1414577692.495190.15782.1000@mups>
-References: <1398561815-22033-1-git-send-email-peter@piie.net> <1406043436-17068-1-git-send-email-peter@piie.net> <1406043436-17068-4-git-send-email-peter@piie.net> <cone.1406384086.541895.7413.1000@galar> <1406514389.14109.7.camel@rzhang1-toshiba> <cone.1413887350.971616.2744.1000@mups> <cone.1414524819.964570.994.1000@galar> <20141029094407.GA2692@e104805>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: v3.18-rc2 compilation under a x86 KVM failed in drivers/thermal/thermal_core.c:
+Date: Wed, 29 Oct 2014 10:27:17 +0000
+Message-ID: <9hhh9ynxjay.fsf@arm.com>
+References: <544E6F5C.7040900@gmx.de> <9hh1tpsz1x0.fsf@arm.com>
+	<544FD915.40200@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay05.ispgateway.de ([80.67.31.99]:43269 "EHLO
-	smtprelay05.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932072AbaJ2KVT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Oct 2014 06:21:19 -0400
-Content-Disposition: inline
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.21]:53393 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932072AbaJ2K1W convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 29 Oct 2014 06:27:22 -0400
+In-Reply-To: <544FD915.40200@gmx.de> ("Toralf =?utf-8?Q?F=C3=B6rster=22's?=
+ message of "Tue, 28
+	Oct 2014 18:57:41 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
+Cc: "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
 
-Hi Javi,
+Toralf F=C3=B6rster <toralf.foerster@gmx.de> writes:
 
-Javi Merino writes:
+> On 10/28/2014 03:47 PM, Punit Agrawal wrote:
+>> Is there anything special about building the kernel in a kvm?
+>>=20
+>
+> Nope, I'm just using gcc-4.7.3-r1
+>
+>> Could you attach the failing config please?
+> ofc done
 
-> On Tue, Oct 28, 2014 at 07:33:39PM +0000, Peter Feuerer wrote:
->> Hi Rui,
->> 
->> I wonder whether you've had time to apply my set of patches already?  Would 
->> you please be so kind to just send me a short reply?
-> 
-> The bang-bang governor was merged and is part of v3.18-rc2:
-> 
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=8264fce6de03f3915e2301f52f181a982718a8cb
+I started with a clean kernel source tree and tried building the
+attached config. I still don't see the build failure.
 
-Thanks for your mail.
+Perhaps you had stale artifacts from previous builds causing failure to
+link? Can you try building from a clean source tree?=20
 
-Seems like the other 5 patches of the series were not applied.  So I 
-need to take care again, or?
+Otherwise, I am out of ideas...
 
-kind regards,
---peter;
+=46or reference,=20
 
-
-> 
-> Cheers,
-> Javi
-> 
->> Peter Feuerer writes:
->> 
->> > Hi Rui,
->> > 
->> > Zhang Rui writes:
->> > 
->> >> On Sat, 2014-07-26 at 16:14 +0200, Peter Feuerer wrote:
->> >>> Hi Rui,
->> >>> 
->> >>> Peter Feuerer writes:
->> >>> 
->> >>> > The bang-bang thermal governor uses a hysteresis to switch abruptly on
->> >>> > or off a cooling device.  It is intended to control fans, which can
->> >>> > not be throttled but just switched on or off.
->> >>> > Bang-bang cannot be set as default governor as it is intended for
->> >>> > special devices only.  For those special devices the driver needs to
->> >>> > explicitely request it.
->> >>> > 
->> >>> > Cc: Andrew Morton <akpm@linux-foundation.org>
->> >>> > Cc: Zhang Rui <rui.zhang@intel.com>
->> >>> 
->> >>> Anything that prevents you from giving your acked-by?
->> >>> 
->> >> NO.
->> >> 
->> >> I'll queue them for 3.18.
->> > 
->> > Are all 6 patches in for 3.18 as you promissed?
->> > 
->> > kind regards,
->> > --peter;
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->> 
-> 
+$ gcc --version
+gcc (Debian 4.9.1-16) 4.9.1
