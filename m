@@ -1,87 +1,73 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: PM/runtime issue: Device cannot runtime resume because power
- domain is off during system resume
-Date: Wed, 29 Oct 2014 16:44:11 +0100
-Message-ID: <1414597451.21948.4.camel@AMDC1943>
-References: <1413468302.5605.9.camel@AMDC1943>
- <CAPDyKFpy98h-BYnvhPSJy+p5=ynpXkhnjABYG4gMc+X1BCQSYA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [PATCH v2] cpufreq: Guard against not-yet-initialized policies in cpufreq_cpu_get()
+Date: Wed, 29 Oct 2014 16:45:47 +0100
+Message-ID: <1414597547-16506-1-git-send-email-tomeu.vizoso@collabora.com>
+References: <20141029024426.GA7468@kroah.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <CAPDyKFpy98h-BYnvhPSJy+p5=ynpXkhnjABYG4gMc+X1BCQSYA@mail.gmail.com>
+In-Reply-To: <20141029024426.GA7468@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+There's a substantial window of opportunity from the time the policy objects
+are created until they are initialized, causing this:
 
-On =C5=9Bro, 2014-10-29 at 14:01 +0100, Ulf Hansson wrote:
-> On 16 October 2014 16:05, Krzysztof Kozlowski <k.kozlowski@samsung.co=
-m> wrote:
-> > Hi,
-> >
-> > I encounter issues with DRM/panel driver for Exynos after resuming =
-from
-> > suspend to RAM. This is reproduced on 3.16 but I think it is applic=
-able
-> > also to mainline.
-> >
-> > The scenario:
-> > 0. DRM DSI is in LCD power domain. Power domain is OFF before
-> > suspending.
-> > 1. System suspends.
-> > 2. System resumes.
-> > 3. DRM driver:resume().
-> > 4. pm_runtime_get() for DRM DSI driver.
-> > 5. This should enable LCD power domain.
-> > 6. but __pm_genpd_poweron() exits early because:
-> >    genpd->prepared_count =3D 3
->=20
-> I am getting to this soonish in my genpd work. Currently I am working
-> on the boot issues. :-)
->=20
-> At a first glance, I think the genpd->prepare_count variable shouldn'=
-t
-> exist at all, but I need to dig into this in more detail to be sure.
->=20
-> In principle I think genpd should rely _more_ on the PM core during
-> system PM transitions. For example the PM core invokes a
-> pm_runtime_get_noresume() (and for some reason genpd as well) at the
-> ->prepare() phase. Shouldn't that be enough!?
->=20
-> >    genpd->suspend_power_off =3D 1
-> >   in domain.c:183
-> >
-> > 7. The domain is not powered on but it is marked as active.
-> > 8. The DRM driver thinks everything is OK and proceeds with resume.=
-=2E.
-> > but it fails because whole power domain is OFF.
-> >
-> > The question: Shouldn't the power domain be powered up EARLY?
->=20
-> Good question, I would like us to strive towards these goals:
->=20
-> For CONFIG_PM_RUNTIME, I think the PM domain should be powered up at
-> the first time a runtime PM resume callbacks gets invoked.
-> For !CONFIG_PM_RUNTIME, I think we should restore the state the PM
-> domain had prior we went to system PM sleep.
+WARNING: CPU: 1 PID: 64 at include/linux/kref.h:47 kobject_get+0x64/0x70()
+Modules linked in:
+CPU: 1 PID: 64 Comm: irq/77-tegra-ac Not tainted 3.18.0-rc1-next-20141027ccu-00049-g21a0041 #248
+[<c0016fac>] (unwind_backtrace) from [<c001272c>] (show_stack+0x10/0x14)
+[<c001272c>] (show_stack) from [<c0601920>] (dump_stack+0x98/0xd8)
+[<c0601920>] (dump_stack) from [<c00288d8>] (warn_slowpath_common+0x70/0x8c)
+[<c00288d8>] (warn_slowpath_common) from [<c0028990>] (warn_slowpath_null+0x1c/0x24)
+[<c0028990>] (warn_slowpath_null) from [<c02227bc>] (kobject_get+0x64/0x70)
+[<c02227bc>] (kobject_get) from [<c03e5238>] (cpufreq_cpu_get+0x88/0xc8)
+[<c03e5238>] (cpufreq_cpu_get) from [<c03e52ec>] (cpufreq_get+0xc/0x64)
+[<c03e52ec>] (cpufreq_get) from [<c0287818>] (actmon_thread_isr+0x140/0x1a4)
+[<c0287818>] (actmon_thread_isr) from [<c0068a68>] (irq_thread_fn+0x1c/0x40)
+[<c0068a68>] (irq_thread_fn) from [<c0068d84>] (irq_thread+0x134/0x174)
+[<c0068d84>] (irq_thread) from [<c0040284>] (kthread+0xdc/0xf4)
+[<c0040284>] (kthread) from [<c000f4b8>] (ret_from_fork+0x14/0x3c)
 
-=46or the first case (PM_RUNTIME) I sent a proposal:
-https://lkml.org/lkml/2014/10/23/308
-which seems to work for my configuration. However I did not test it
-without runtime PM...
+This commit checks that initialization has finished before trying to do
+anything with the policy.
 
-The issues I found were:
-1. Runtime resume during early system suspend (triggered by poking
-console).
-2. Runtime resume during system resume (triggered by "normal" resuming
-device).
-In both case the power domain was off so runtime resume failed.
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+---
+ drivers/cpufreq/cpufreq.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-I've got a simple testing scenario and setup for reproducing these so i=
-f
-you need tests I can help.=20
-
-Best regards,
-Krzysztof
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 644b54e..7b84d1a 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -48,6 +48,9 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
+ /* Flag to suspend/resume CPUFreq governors */
+ static bool cpufreq_suspended;
+ 
++/* Flag that tells whether initialization is completed */
++static atomic_t cpufreq_initialized = ATOMIC_INIT(0);
++
+ static inline bool has_target(void)
+ {
+ 	return cpufreq_driver->target_index || cpufreq_driver->target;
+@@ -211,7 +214,7 @@ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
+ 	/* get the cpufreq driver */
+ 	read_lock_irqsave(&cpufreq_driver_lock, flags);
+ 
+-	if (cpufreq_driver) {
++	if (atomic_read(&cpufreq_initialized)) {
+ 		/* get the CPU */
+ 		policy = per_cpu(cpufreq_cpu_data, cpu);
+ 		if (policy)
+@@ -1289,6 +1292,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	kobject_uevent(&policy->kobj, KOBJ_ADD);
+ 	up_read(&cpufreq_rwsem);
+ 
++	atomic_set(&cpufreq_initialized, 1);
++
+ 	pr_debug("initialization complete\n");
+ 
+ 	return 0;
+-- 
+1.9.3
