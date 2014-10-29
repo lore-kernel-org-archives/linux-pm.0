@@ -1,74 +1,57 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [RFC/PATCH] PM / Sleep: Timer quiesce in freeze state
-Date: Wed, 29 Oct 2014 09:21:50 +0100
-Message-ID: <20141029082150.GU3337@twins.programming.kicks-ass.net>
+Date: Wed, 29 Oct 2014 09:24:32 +0100
+Message-ID: <20141029082432.GV3337@twins.programming.kicks-ass.net>
 References: <5446787E.60202@linux.intel.com>
  <20141024153656.GM12706@worktop.programming.kicks-ass.net>
  <544DE5CF.9040501@linux.intel.com>
- <20141027072816.GD10501@worktop.programming.kicks-ass.net>
- <544F1C50.8010505@linux.intel.com>
- <20141028082900.GP3337@twins.programming.kicks-ass.net>
- <54501CAB.8040503@linux.intel.com>
+ <20141027074419.GE10501@worktop.programming.kicks-ass.net>
+ <544F4B31.7050308@linux.intel.com>
+ <20141028082503.GN3337@twins.programming.kicks-ass.net>
+ <5450253B.5020802@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <54501CAB.8040503@linux.intel.com>
+In-Reply-To: <5450253B.5020802@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Li, Aubrey" <aubrey.li@linux.intel.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 29, 2014 at 06:46:03AM +0800, Li, Aubrey wrote:
-> On 2014/10/28 16:29, Peter Zijlstra wrote:
-> > On Tue, Oct 28, 2014 at 12:32:16PM +0800, Li, Aubrey wrote:
-> >> On 2014/10/27 15:28, Peter Zijlstra wrote:
-> >>> On Mon, Oct 27, 2014 at 02:27:27PM +0800, Li, Aubrey wrote:
-> >>>>> Now I suppose the problem is with cpu_pause() which needs IPIs to
-> >>>>> complete? Do we really need cpuidle_pause() there?
-> >>>>> cpuidle_uninstall_handlers() seems like a daft thing to call just about
-> >>>>> there.
-> >>>>
-> >>>> Please check the log of 8651f97bd951d0bb1c10fa24e3fa3455193f3548.
-> >>>> Rafael should know more this question than me.
-> >>>
-> >>> That changelog explains its complete bollocks to do it here. We _want_
-> >>> to enter and/or remain in deep idle states.
-> >>
-> >> cpuidle_resume() will be called at the end of dpm_resume_noirq(). So we
-> >> still are able to enter deep idle states after resume.
+On Wed, Oct 29, 2014 at 07:22:35AM +0800, Li, Aubrey wrote:
+> On 2014/10/28 16:25, Peter Zijlstra wrote:
+> > On Tue, Oct 28, 2014 at 03:52:17PM +0800, Li, Aubrey wrote:
 > > 
-> > cpuidle_resume is absolute crap, as is cpuidle_suspend for that matter
-> > -- in this case.
+> >> Both clocksource and clockevents are not per-cpu device, why do we need
+> >> to run their suspend callback on *each* cpu?
 > > 
-> > The only reason we needed cpuidle_suspend is because some BIOS shat its
-> > pants when some CPUs were in higher C states while trying to do the S3
-> > thing. We're not going to use S states or BIOS calls _at_all_, so no
-> > point in kicking CPUs out of their deep C states.
+> > Uhm, you mean to say we don't use per-cpu timer lists and per-cpu timer
+> > hardware for clockevents then?
+> > 
 > 
-> We already kicked CPUs out of their deep C states in dpm_suspend_noirq().
+> From OS level, currently tick device is per-cpu implementation while
+> clocksource and clockevent devices are global device.
 > 
-> We pause cpuidle in dpm_suspend_noirq() and resume cpuidle in
-> dpm_resume_noirq(), so currently we can't enter deep c-state during S
-> states. That's an intention for some buggy BIOS.
+> We already stop tick by clockevents_notify(suspend) on each cpu, that
+> addresses per-cpu timer list.
 
-And work arounds for buggy crap hardware should not be in generic code.
-They should be in the platform drivers associated with said crap bugs.
+Right, I know. But I was saying I might have confused myself between
+events and sources while going through that call chain, thereby
+(mistakenly) thinking the source suspend code needed more than the 1
+cpu.
 
-But I think I see what you're saying, we're going through this dpm_ crap
-even for suspend to idle, which is wrong too.
+Its easy to confuse yourself trying to reverse engineer that opaque
+callchain :-)
 
-> However, for freeze state, there is another intention that we want
-> always to enter the *deepest* c-state every time we enter freeze.
-> So we need cpuidle_resume() to make sure we have deep cstate  in freeze.
+> And, we already call clocksource_suspend() and clockevents_suspend() in
+> timekeeping_suspend() on the tick timer CPU. Yes, we didn't suspend
+> per-cpu timer hardware on x86 because x86 does not have lapic timer
+> suspend implementation. If we need to implement this, I think we can do
+> the cross-CPU calls in clocksource/clockevents suspend(), but I didn't
+> see any necessary we need to do this now.
 > 
-> So back to your question in another email,
-> 
-> > I think you can simply remove them altogether, they're nonsense.
-> 
-> We need them to resume cpuidle in freeze.
+> so, I think we are okay now, :)
 
-So you can do cpuidle_resume() before we do the stop machine dance, but
-ideally it'd all be ripped out from generic code and stuffed into
-the platform drivers where it belongs. But at the very least it should
-be isolated to the S3 path, I bet suspend to disk doesn't care either.
+Right, I tend to agree, we'll find out quickly enough once those
+platforms will try this code anyhow ;-)
