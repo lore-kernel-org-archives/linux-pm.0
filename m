@@ -1,59 +1,173 @@
-From: Vlastimil Babka <vbabka@suse.cz>
-Subject: Re: [PATCH 0/4] (CMA_AGGRESSIVE) Make CMA memory be more aggressive
- about allocation
-Date: Wed, 29 Oct 2014 15:43:33 +0100
-Message-ID: <5450FD15.4000708@suse.cz>
-References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com> <543F8812.2020002@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3 34/47] acpi: Register power-off handler with kernel power-off handler
+Date: Wed, 29 Oct 2014 16:13:47 +0100
+Message-ID: <3246253.JgPaFbzR96@vostro.rjw.lan>
+References: <1414425354-10359-1-git-send-email-linux@roeck-us.net> <4751363.lZMkCZKZet@vostro.rjw.lan> <54504B57.3020403@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:44851 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932962AbaJ2Onm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 29 Oct 2014 10:43:42 -0400
-In-Reply-To: <543F8812.2020002@codeaurora.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:49701 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933375AbaJ2OxM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Oct 2014 10:53:12 -0400
+In-Reply-To: <54504B57.3020403@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laura Abbott <lauraa@codeaurora.org>, Hui Zhu <zhuhui@xiaomi.com>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, m.szyprowski@samsung.com, akpm@linux-foundation.org, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, hannes@cmpxchg.org, riel@redhat.com, mgorman@suse.de, minchan@kernel.org, nasa4836@gmail.com, ddstreet@ieee.org, hughd@google.com, mingo@kernel.org, rientjes@google.com, peterz@infradead.org, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, paulmck@linux.vnet.ibm.com, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, akinobu.mita@gmail.com, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org
 
-On 10/16/2014 10:55 AM, Laura Abbott wrote:
-> On 10/15/2014 8:35 PM, Hui Zhu wrote:
->
-> It's good to see another proposal to fix CMA utilization. Do you have
-> any data about the success rate of CMA contiguous allocation after
-> this patch series? I played around with a similar approach of using
-> CMA for MIGRATE_MOVABLE allocations and found that although utilization
-> did increase, contiguous allocations failed at a higher rate and were
-> much slower. I see what this series is trying to do with avoiding
-> allocation from CMA pages when a contiguous allocation is progress.
-> My concern is that there would still be problems with contiguous
-> allocation after all the MIGRATE_MOVABLE fallback has happened.
+On Tuesday, October 28, 2014 07:05:11 PM Guenter Roeck wrote:
+> On 10/28/2014 04:10 PM, Rafael J. Wysocki wrote:
+> > On Monday, October 27, 2014 07:10:26 PM Guenter Roeck wrote:
+> >> On 10/27/2014 05:26 PM, Rafael J. Wysocki wrote:
+> >>> On Monday, October 27, 2014 08:55:41 AM Guenter Roeck wrote:
+> >>>> Register with kernel power-off handler instead of setting pm_power_off
+> >>>> directly. Register with high priority to reflect that the driver explicitly
+> >>>> overrides existing power-off handlers.
+> >>>
+> >>> Well, I'm still rather unconvinced that notifiers are particularly suitable for
+> >>> this purpose.
+> >>>
+> >>> Specifically ->
+> >>>
+> >>
+> >> Fine.
+> >>
+> >>>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> >>>> Cc: Len Brown <lenb@kernel.org>
+> >>>> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> >>>> ---
+> >>>> v3:
+> >>>> - Replace poweroff in all newly introduced variables and in text
+> >>>>     with power_off or power-off as appropriate
+> >>>> - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+> >>>> - Replace acpi: with ACPI: in log message
+> >>>> v2:
+> >>>> - Use define to specify poweroff handler priority
+> >>>> - Use pr_warn instead of pr_err
+> >>>>
+> >>>>    drivers/acpi/sleep.c | 15 +++++++++++++--
+> >>>>    1 file changed, 13 insertions(+), 2 deletions(-)
+> >>>>
+> >>>> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+> >>>> index 05a31b5..7875b92 100644
+> >>>> --- a/drivers/acpi/sleep.c
+> >>>> +++ b/drivers/acpi/sleep.c
+> >>>> @@ -16,6 +16,8 @@
+> >>>>    #include <linux/device.h>
+> >>>>    #include <linux/interrupt.h>
+> >>>>    #include <linux/suspend.h>
+> >>>> +#include <linux/notifier.h>
+> >>>> +#include <linux/pm.h>
+> >>>>    #include <linux/reboot.h>
+> >>>>    #include <linux/acpi.h>
+> >>>>    #include <linux/module.h>
+> >>>> @@ -827,14 +829,22 @@ static void acpi_power_off_prepare(void)
+> >>>>    	acpi_disable_all_gpes();
+> >>>>    }
+> >>>>
+> >>>> -static void acpi_power_off(void)
+> >>>> +static int acpi_power_off(struct notifier_block *this,
+> >>>> +			  unsigned long unused1, void *unused2)
+> >>>>    {
+> >>>
+> >>> -> Is there any reason why any notifier in the new chain would use the
+> >>> second argument for anything meaningful?  And the third argument for
+> >>> that matter?
+> >>>
+> >>>>    	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
+> >>>>    	printk(KERN_DEBUG "%s called\n", __func__);
+> >>>>    	local_irq_disable();
+> >>>>    	acpi_enter_sleep_state(ACPI_STATE_S5);
+> >>>> +
+> >>>> +	return NOTIFY_DONE;
+> >>>
+> >>> Also is there any reason for any notifier in the new chain to return anything
+> >>> different from NOTIFY_DONE and if so, then what happens when anything else
+> >>> is returned?
+> >>>
+> >>
+> >> As mentioned earlier, notifiers just come handy. That is all.
+> >>
+> >> Having said that, I don't have a strong opinion either way. If you want me
+> >> to implement a priority based callback handler with a single argument,
+> >> just let me know and I'll be happy to implement it. It is not worth arguing
+> >> about.
+> >>
+> >> Would something like
+> >>
+> >> struct power_off_block {
+> >> 	void (*power_off_call)(struct power_off_block *);
+> >> 	struct power_off_block __rcu *next;
+> >> 	int priority;
+> >> };
+> >>
+> >> for the data structure be acceptable ? The power-off handler code would then
+> >> be something like
+> >>
+> >> static void acpi_power_off(struct power_off_block *this)
+> >> {
+> >> }
+> >>
+> >> ie quite similar to the current power-off handler code, with an added argument.
+> >> The API would, except for the structure argument, pretty much stay the same.
+> >
+> > That's better in my view.
+> >
+> > You could also get rid of the priority if you had something like
+> >
+> > struct power_off_block *power_off_list[MAX_LEVEL];
+> >
+> > and then made your power_off_block registration pass the level as the
+> > second argument.
+> >
+> > I also would use struct list_head instead of the next pointer, because the
+> > list manipulation would be trivial then (and the above would become
+> > struct list_head power_off_list[MAX_LEVEL];) and the callers would only
+> > need to do
+> >
+> > static struct power_off_block my_power_off_block = {
+> > 	.power_off_call = my_routine,
+> > };
+> >
+> > and then something like
+> >
+> > 	register_power_off_block(&my_power_off_block, <level>);
+> >
+> > which would be just list_add_tail(&block->node, &power_off_list[<level>]) plus
+> > some bounds checking etc.  To avoid open coding stuff.
+> >
+> > That would allow me to avoid arbitrary gaps in the priority space too and
+> > if more levels need to be added over time, that should be easy to do too if
+> > an enum is used to define them.
+> >
+> > But if you prefer to use a unidirectional list and keep the priority in
+> > struct power_off_block, I'm fine with that too.
+> >
+> I prefer a unidirectional list. It is not as if we expect dozens of registrations;
+> in most cases there will be one, rarely two and even more rarely three.
 
-Hi,
+OK
 
-did anyone try/suggest the following idea?
+> > [Dynamic allocation of memory for the struct power_off_block things is worth
+> > considering too IMHO, so that users can simply pass the name of the routine
+> > and the level to the registration function, like:
+> >
+> > 	ret = register_power_off_call(my_routine, <level>);
+> > 	if (ret)
+> > 		complain;
+> >
+> > The unregistration would be somewhat less straightforward then, but I'm not
+> > sure if unregistration is necessary at all in this case.]
+> >
+> 
+> Problem with dynamic memory allocation is that some callers don't have
+> the memory subsystem initialized when registering the poweroff function.
+> That was my initial implementation, and it got me some unexpected crashes.
 
-- keep CMA as fallback to MOVABLE as is is now, i.e. non-agressive
-- when UNMOVABLE (RECLAIMABLE also?) allocation fails and CMA pageblocks 
-have space, don't OOM immediately, but first try to migrate some MOVABLE 
-pages to CMA pageblocks, to make space for the UNMOVABLE allocation in 
-non-CMA pageblocks
-- this should keep CMA pageblocks free as long as possible and useful 
-for CMA allocations, but without restricting the non-MOVABLE allocations 
-even though there is free memory (but in CMA pageblocks)
-- the fact that a MOVABLE page could be successfully migrated to CMA 
-pageblock, means it was not pinned or otherwise non-migratable, so 
-there's a good chance it can be migrated back again if CMA pageblocks 
-need to be used by CMA allocation
-- it's more complex, but I guess we have most of the necessary 
-infrastructure in compaction already :)
+I see.
 
-Thoughts?
-Vlastimil
-
-> Thanks,
-> Laura
->
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
