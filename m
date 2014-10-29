@@ -1,43 +1,71 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 2/2] ARM: dts: exynos4412-odroid-common: add reboot handler
-Date: Wed, 29 Oct 2014 14:13:29 +0100
-Message-ID: <1414588409-8065-2-git-send-email-m.szyprowski@samsung.com>
-References: <1414588409-8065-1-git-send-email-m.szyprowski@samsung.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 2/2] PM / Domains: Extract code to power off/on a PM domain
+Date: Wed, 29 Oct 2014 14:25:51 +0100
+Message-ID: <CAPDyKFr+8A_i5GyrL+KOv7AvqoMEFaiJ0ck9AQGn=M4vJ7g7Xg@mail.gmail.com>
+References: <1414066336-11168-1-git-send-email-geert+renesas@glider.be>
+	<1414066336-11168-2-git-send-email-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:60477 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932759AbaJ2NNz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Oct 2014 09:13:55 -0400
-In-reply-to: <1414588409-8065-1-git-send-email-m.szyprowski@samsung.com>
+Received: from mail-qc0-f176.google.com ([209.85.216.176]:40166 "EHLO
+	mail-qc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932729AbaJ2NZx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Oct 2014 09:25:53 -0400
+Received: by mail-qc0-f176.google.com with SMTP id x3so2286721qcv.7
+        for <linux-pm@vger.kernel.org>; Wed, 29 Oct 2014 06:25:52 -0700 (PDT)
+In-Reply-To: <1414066336-11168-2-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Tobias Jakobi <Liquid.Acid@gmx.net>, Daniel Drake <drake@endlessm.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Sebastian Reichel <sre@kernel.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-This patch adds node which enables board-specific reboot/poweroff code.
+On 23 October 2014 14:12, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> PM domains are powered on/off from various places. Some callers do
+> latency measurements, others don't. Consolidate using two helper
+> functions, which always measure the latencies, and update the stored
+> latencies when needed.
+>
+> Other minor changes:
+>   - Use pr_warn() instead of pr_warning(),
+>   - There's no need to check genpd->name, %s handles NULL pointers fine,
+>   - Make the warning format strings identical, to save memory.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
----
- arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-index 4ebb5572d8d0..3544bb255e58 100644
---- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-+++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-@@ -32,6 +32,12 @@
- 		};
- 	};
- 
-+	odroid_reboot {
-+		compatible = "hardkernel,odroid-reboot";
-+		samsung,pmureg-phandle = <&pmu_system_controller>;
-+		reset-gpios = <&gpk1 2 0>;
-+	};
-+
- 	i2s0: i2s@03830000 {
- 		pinctrl-0 = <&i2s0_bus>;
- 		pinctrl-names = "default";
--- 
-1.9.2
+Though, some minor thoughts below.
 
+> ---
+>  drivers/base/power/domain.c | 101 ++++++++++++++++++++++++++------------------
+>  1 file changed, 60 insertions(+), 41 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 28d6e8bf746c4683..7b2007be51188ff8 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -151,6 +151,59 @@ static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
+>         genpd->cpuidle_data->idle_state->exit_latency = usecs64;
+>  }
+>
+> +static int do_genpd_power_on(struct generic_pm_domain *genpd)
+
+Should we try to agree on the prefixes of the function names in genpd?
+Currently there are a mix of them.
+
+May I suggest we try to stick to this:
+
+Exported functions:
+pm_genpd_*
+_pm_genpd_*
+__pm_genpd_*
+
+Static functions:
+genpd_*
+_genpd_*
+__genpd_*
+
+What do you think? Do you have any better suggestions?
+
+Kind regards
+Uffe
