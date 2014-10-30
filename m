@@ -1,36 +1,75 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 3/4] PM / Domains: Improve error handling while
- adding/removing devices
-Date: Thu, 30 Oct 2014 12:27:40 +0100
-Message-ID: <CAPDyKFp=Xky_Cjxkj_gGTzMOQnipPkubjVroAAU1yR9mnnNTKw@mail.gmail.com>
-References: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
-	<1414507090-516-4-git-send-email-ulf.hansson@linaro.org>
-	<7h8ujy5t69.fsf@deeprootsystems.com>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH 2/3] arm64: psci: fix cpu_suspend to check idle state type
+ for index
+Date: Thu, 30 Oct 2014 17:01:56 +0530
+Message-ID: <CADGdYn7J7eUkCZAGx+gjei4OSPBdLmrnhy1YwtkBqiEgEvyJUQ@mail.gmail.com>
+References: <1414641338-25279-1-git-send-email-amit.daniel@samsung.com>
+	<1414641338-25279-2-git-send-email-amit.daniel@samsung.com>
+	<20141030101946.GA17843@red-moon>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <7h8ujy5t69.fsf@deeprootsystems.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yh0-f51.google.com ([209.85.213.51]:36462 "EHLO
+	mail-yh0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759397AbaJ3Lb5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 07:31:57 -0400
+Received: by mail-yh0-f51.google.com with SMTP id c41so1493828yho.24
+        for <linux-pm@vger.kernel.org>; Thu, 30 Oct 2014 04:31:56 -0700 (PDT)
+In-Reply-To: <20141030101946.GA17843@red-moon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, Vladimir Murzin <Vladimir.Murzin@arm.com>, Will Deacon <will.deacon@arm.com>
 
-On 30 October 2014 00:53, Kevin Hilman <khilman@kernel.org> wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
+On Thu, Oct 30, 2014 at 3:49 PM, Lorenzo Pieralisi
+<lorenzo.pieralisi@arm.com> wrote:
+> Hi Amit,
 >
->> To improve error handling while adding/removing devices from their PM
->> domains, we need to restructure the code a bit. Let's do this by moving
->> the device specific parts into a separate function.
+> On Thu, Oct 30, 2014 at 03:55:37AM +0000, Amit Daniel Kachhap wrote:
+>> This fix rectifies the psci cpu_suspend to check the C-state type
+>> corresponding to the requested index.
+>
+> Can you reword the commit log please ?
+>
+> "This fix rectifies the psci cpu_suspend implementation to check the
+> PSCI power state parameter type field associated with the requested idle
+> state index."
+>
+>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> ---
+>>  arch/arm64/kernel/psci.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
 >>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
+>> index 2178d6e..4ebc146 100644
+>> --- a/arch/arm64/kernel/psci.c
+>> +++ b/arch/arm64/kernel/psci.c
+>> @@ -530,7 +530,7 @@ static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
+>>       if (WARN_ON_ONCE(!index || !state))
+>>               return -EINVAL;
+>>
+>> -     if (state->type == PSCI_POWER_STATE_TYPE_STANDBY)
+>> +     if (state[index - 1].type == PSCI_POWER_STATE_TYPE_STANDBY)
+>>               ret = psci_ops.cpu_suspend(state[index - 1], 0);
+>>       else
+>>               ret = __cpu_suspend(index, psci_suspend_finisher);
+>> --
+>> 1.9.1
 >
-> This looks like just restructuring, but with these kinds of patches, its
-> hard to be sure that it's just refactoring, with no functional changes,
-> so it's nice to be clear in the changelog whether there are (meant to
-> be) any functional changes.
+> Can you resend it as a single patch (ie this patch does not apply if
+> patch 1 is missing, and I am not sure we need patch 1) and send it to
+> Catalin and Will to merge it asap ?
 
-According to the commit header it's not just restructuring. I will
-update the commit message to reflect this better.
+Ok sure.
 
-Br
-Uffe
+>
+> Please add my:
+>
+> Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>
+> Thanks,
+> Lorenzo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
