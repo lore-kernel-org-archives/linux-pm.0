@@ -1,23 +1,23 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH] PM / Hibernate: Migrate to ktime_t
-Date: Thu, 30 Oct 2014 19:18:29 +0100
-Message-ID: <20141030181829.GB14412@amd>
+Date: Thu, 30 Oct 2014 20:08:17 +0100
+Message-ID: <3436721.isgG5Fql2m@wuerfel>
 References: <20141030180453.GA55907@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54523 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759304AbaJ3SSb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 14:18:31 -0400
-Content-Disposition: inline
+Received: from mout.kundenserver.de ([212.227.17.10]:51187 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbaJ3TIX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 15:08:23 -0400
 In-Reply-To: <20141030180453.GA55907@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Tina Ruchandani <ruchandani.tina@gmail.com>
-Cc: len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd@arndb.de, opw-kernel@googlegroups.com, rjw@rjwysocki.net
+Cc: pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, opw-kernel@googlegroups.com, rjw@rjwysocki.net
 
-On Thu 2014-10-30 11:04:53, Tina Ruchandani wrote:
+On Thursday 30 October 2014 11:04:53 Tina Ruchandani wrote:
 > This patch migrates swsusp_show_speed and its callers to using ktime_t instead
 > of 'struct timeval' which suffers from the y2038 problem.
 > 
@@ -39,8 +39,15 @@ On Thu 2014-10-30 11:04:53, Tina Ruchandani wrote:
 > Signed-off-by: Tina Ruchandani <ruchandani.tina@gmail.com>
 > Suggested-by: Arnd Bergmann <arnd@arndb.de>
 
-Acked-by: Pavel Machek <pavel@ucw.cz> 
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> --
+> Changes in v4:
+>  - Rebased patch off of 3.18-rc1
+> Changes in v3:
+> 
+
+Note: you need three '-' characters to separate the patch description from
+any extra information that you want in the mail but not in the changelog.
+
+	Arnd
