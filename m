@@ -1,150 +1,162 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / clock_ops: Fix crash in clocks management code if !CONFIG_PM_RUNTIME
-Date: Thu, 30 Oct 2014 10:06:25 +0100
-Message-ID: <CAMuHMdWCcOa-YLJkr+6F2FhcWYWSYeVrh=HvSN5G2hHyvWO1bw@mail.gmail.com>
-References: <1412188697-15317-1-git-send-email-geert+renesas@glider.be>
+From: Romain Perier <romain.perier@gmail.com>
+Subject: Re: [PATCH v2 1/4] of: Rename "poweroff-source" property to "system-power-controller"
+Date: Thu, 30 Oct 2014 11:08:40 +0100
+Message-ID: <CABgxDoJkQ_dRd=fkOW1xsGszup7tVETb3aWukpDbafzRUaQcFA@mail.gmail.com>
+References: <1414568135-8311-1-git-send-email-romain.perier@gmail.com>
+	<1414568135-8311-2-git-send-email-romain.perier@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f169.google.com ([209.85.217.169]:61289 "EHLO
-	mail-lb0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758053AbaJ3JG2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 05:06:28 -0400
-In-Reply-To: <1412188697-15317-1-git-send-email-geert+renesas@glider.be>
+Received: from mail-qa0-f43.google.com ([209.85.216.43]:36836 "EHLO
+	mail-qa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757283AbaJ3KIl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 06:08:41 -0400
+In-Reply-To: <1414568135-8311-2-git-send-email-romain.perier@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: stable <stable@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>
+To: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>
+Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, devicetree <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Johan Hovold <johan@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Upstream commit a968bed78b549b4c61d4a46e59161fc1f60f96a6
-Author: Geert Uytterhoeven <geert+renesas@glider.be>
-Date:   Wed Oct 1 20:38:17 2014 +0200
+Johan: as you are one of the people who requested the renaming, any
+suggestions ?
 
-    PM / clk: Fix crash in clocks management code if !CONFIG_PM_RUNTIME
+Romain
 
-
-Simon tried it on mackerel. It did not crash, but caused a warning and
-backtrace:
-
-    WARNING: CPU: 0 PID: 1420 at drivers/sh/clk/core.c:240
-__clk_disable+0x80/0x90()
-    Trying to disable clock c04bd4d8 with 0 usecount
-
-which got fixed by the patch. So I think it should be applied to
--stable (v3.14 and up).
-
-Thanks!
-
-On Wed, Oct 1, 2014 at 8:38 PM, Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
-> Unlike the clocks management code for runtime PM, the code used for
-> system suspend does not check the pm_clock_entry.status field.
-> If pm_clk_acquire() failed, ce->status will be PCE_STATUS_ERROR, and
-> ce->clk will be a negative error code (e.g. 0xfffffffe = -2 = -ENOENT).
+2014-10-29 8:35 GMT+01:00 Romain Perier <romain.perier@gmail.com>:
+> As discussed on the mailing list, it makes more sense to rename this property
+> to "system-power-controller". Problem being that the word "source" usually tends
+> to be used for inputs and that is out of control of the OS. The poweroff
+> capability is an output which simply turns the system-power off. Also, this
+> property might be used by drivers which power-off the system and power back on
+> subsequent RTC alarms. This seems to suggest to remove "poweroff" from the
+> property name and to choose "system-power-controller" as the more generic name.
+> This patchs adds the required renaming changes and defines an helper function
+> which is compatible with both properties, the old one prefixed by a vendor name
+> and the new one without any prefix.
 >
-> Depending on the clock implementation, suspend or resume may crash with:
->
->     Unable to handle kernel NULL pointer dereference at virtual address 00000026
->
-> (CCF clk_disable() has an IS_ERR_OR_NULL() check, while CCF clk_enable()
->  only has a NULL check; pre-CCF implementations may behave differently)
->
-> While just checking for PCE_STATUS_ERROR would be sufficient, it doesn't
-> hurt to use the same state machine as is done for runtime PM, as this
-> makes the two versions more similar, and eligible for a future
-> consolidation.
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Signed-off-by: Romain Perier <romain.perier@gmail.com>
 > ---
-> This crash started to happen on armadillo-legacy during s2ram if
-> CONFIG_PM_RUNTIME is not set after applying "[PATCH v2 07/11] ARM:
-> shmobile: r8a7740/armadillo legacy: Add A4MP pm domain support"
-> (http://www.spinics.net/linux/lists/arm-kernel/msg365438.html), as
-> there's no NULL clock for the HDMI device.
+>  .../devicetree/bindings/power/power-controller.txt | 18 ++++++++++++
+>  .../devicetree/bindings/power/poweroff.txt         | 18 ------------
+>  drivers/of/base.c                                  | 34 ++++++++++++++++++++++
+>  include/linux/of.h                                 | 10 ++-----
+>  4 files changed, 55 insertions(+), 25 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/power/power-controller.txt
+>  delete mode 100644 Documentation/devicetree/bindings/power/poweroff.txt
 >
-> Most existing code calling pm_clk_suspend()/pm_clk_resume() is protected
-> by a check for CONFIG_PM_RUNTIME (davinci, keystone, omap1,
-> drivers/sh/pm_runtime.c), so it was not affected by this bug.
->
-> Exceptions are:
->   - arch/arm/mach-shmobile/pm-r8a7779.c (marzen),
->   - arch/arm/mach-shmobile/pm-rmobile.c (r8a7740/armadillo and
->     sh7372/mackerel),
-> but it's difficult to assess from the code whether the bug is really
-> triggered on these platforms.
->
-> Grygorii Strashko's "[PATCH v1 2/4] ARM: keystone: pm: switch to use
-> generic pm domains" is not affected, as pm_clk_add_clk() is only called
-> for existing clocks.
->
-> If it crashes on marzen or mackerel, I think this fix needs to be
-> applied to stable, too. I don't have access to marzen or mackerel boards,
-> though.
->
-> How to test:
->   - Build a kernel with CONFIG_PM_SLEEP/CONFIG_SUSPEND enabled, but
->     CONFIG_PM_RUNTIME disabled,
->   - echo 0 > /sys/module/printk/parameters/console_suspend,
->   - echo mem > /sys/power/state,
->   - wake up using e.g. gpio-keys or serial console activity.
-> ---
->  drivers/base/power/clock_ops.c | 19 +++++++++++++++----
->  1 file changed, 15 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-> index b99e6c06ee678ecb..78369305e0698109 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -368,8 +368,13 @@ int pm_clk_suspend(struct device *dev)
->
->         spin_lock_irqsave(&psd->lock, flags);
->
-> -       list_for_each_entry_reverse(ce, &psd->clock_list, node)
-> -               clk_disable(ce->clk);
-> +       list_for_each_entry_reverse(ce, &psd->clock_list, node) {
-> +               if (ce->status < PCE_STATUS_ERROR) {
-> +                       if (ce->status == PCE_STATUS_ENABLED)
-> +                               clk_disable(ce->clk);
-> +                       ce->status = PCE_STATUS_ACQUIRED;
+> diff --git a/Documentation/devicetree/bindings/power/power-controller.txt b/Documentation/devicetree/bindings/power/power-controller.txt
+> new file mode 100644
+> index 0000000..942f955
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/power-controller.txt
+> @@ -0,0 +1,18 @@
+> +* Generic system power control capability
+> +
+> +Power-management integrated circuits or miscellaneous harware components are
+> +sometimes able to control the system power. The device driver associated to these
+> +components might needs to define this capability, which tells to the kernel how
+> +to switch off the system. The corresponding driver must have the standard
+> +property "system-power-controller" in its device node. This property marks the
+> +device as able to controller the system-power. In order to test if this property
+> +is found programmatically, use the helper function "of_is_system_power_controller"
+> +from of.h .
+> +
+> +Example:
+> +
+> +act8846: act8846@5 {
+> +        compatible = "active-semi,act8846";
+> +        status = "okay";
+> +        system-power-controller;
+> +}
+> diff --git a/Documentation/devicetree/bindings/power/poweroff.txt b/Documentation/devicetree/bindings/power/poweroff.txt
+> deleted file mode 100644
+> index 845868b..0000000
+> --- a/Documentation/devicetree/bindings/power/poweroff.txt
+> +++ /dev/null
+> @@ -1,18 +0,0 @@
+> -* Generic Poweroff capability
+> -
+> -Power-management integrated circuits or miscellaneous harware components are
+> -sometimes able to control the system power. The device driver associated to these
+> -components might needs to define poweroff capability, which tells to the kernel
+> -how to switch off the system. The corresponding driver must have the standard
+> -property "poweroff-source" in its device node. This property marks the device as
+> -able to shutdown the system. In order to test if this property is found
+> -programmatically, use the helper function "of_system_has_poweroff_source" from
+> -of.h .
+> -
+> -Example:
+> -
+> -act8846: act8846@5 {
+> -        compatible = "active-semi,act8846";
+> -        status = "okay";
+> -        poweroff-source;
+> -}
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index 74ab1b8..438e405 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -2260,3 +2260,37 @@ struct device_node *of_graph_get_remote_port(const struct device_node *node)
+>         return of_get_next_parent(np);
+>  }
+>  EXPORT_SYMBOL(of_graph_get_remote_port);
+> +
+> +/**
+> + * of_is_system_power_controller() - Tells if the property for controlling system
+> + * power is found in device_node.
+> + * @np: Pointer to the given device_node
+> + *
+> + * Return: true if present false otherwise
+> + */
+> +bool of_is_system_power_controller(const struct device_node *np)
+> +{
+> +       struct property *pp;
+> +       unsigned long flags;
+> +       char *sep;
+> +       bool found = false;
+> +
+> +       raw_spin_lock_irqsave(&devtree_lock, flags);
+> +       for_each_property_of_node(np, pp) {
+> +               if (of_prop_cmp(pp->name, "system-power-controller") == 0) {
+> +                       found = true;
+> +                       break;
+> +               }
+> +               /* Backward compatibility with previous property "vendor,system-power-controller",
+> +                * we just check that an non-empty vendor-prefix exists here
+> +                */
+> +               sep = strchr(pp->name, ',');
+> +               if (sep && sep - pp->name && of_prop_cmp(sep + 1, "system-power-controller") == 0) {
+> +                       found = true;
+> +                       break;
 > +               }
 > +       }
+> +       raw_spin_unlock_irqrestore(&devtree_lock, flags);
+> +       return found;
+> +}
+> +EXPORT_SYMBOL(of_is_system_power_controller);
+> diff --git a/include/linux/of.h b/include/linux/of.h
+> index 868fdad..e7177b3 100644
+> --- a/include/linux/of.h
+> +++ b/include/linux/of.h
+> @@ -910,15 +910,11 @@ static inline int of_changeset_update_property(struct of_changeset *ocs,
+>  /* CONFIG_OF_RESOLVE api */
+>  extern int of_resolve_phandles(struct device_node *tree);
 >
->         spin_unlock_irqrestore(&psd->lock, flags);
+> -/**
+> - * of_system_has_poweroff_source - Tells if poweroff-source is found for device_node
+> - * @np: Pointer to the given device_node
+> - *
+> - * return true if present false otherwise
+> - */
+> +bool of_is_system_power_controller(const struct device_node *np);
+> +
+>  static inline bool of_system_has_poweroff_source(const struct device_node *np)
+>  {
+> -       return of_property_read_bool(np, "poweroff-source");
+> +       return of_is_system_power_controller(np);
+>  }
 >
-> @@ -385,6 +390,7 @@ int pm_clk_resume(struct device *dev)
->         struct pm_subsys_data *psd = dev_to_psd(dev);
->         struct pm_clock_entry *ce;
->         unsigned long flags;
-> +       int ret;
->
->         dev_dbg(dev, "%s()\n", __func__);
->
-> @@ -394,8 +400,13 @@ int pm_clk_resume(struct device *dev)
->
->         spin_lock_irqsave(&psd->lock, flags);
->
-> -       list_for_each_entry(ce, &psd->clock_list, node)
-> -               __pm_clk_enable(dev, ce->clk);
-> +       list_for_each_entry(ce, &psd->clock_list, node) {
-> +               if (ce->status < PCE_STATUS_ERROR) {
-> +                       ret = __pm_clk_enable(dev, ce->clk);
-> +                       if (!ret)
-> +                               ce->status = PCE_STATUS_ENABLED;
-> +               }
-> +       }
->
->         spin_unlock_irqrestore(&psd->lock, flags);
->
+>  #endif /* _LINUX_OF_H */
 > --
 > 1.9.1
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+>
