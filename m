@@ -1,216 +1,152 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH 02/10] power: charger-manager: Use power_supply_changed() not
- private uevent.
-Date: Thu, 30 Oct 2014 21:43:08 +0900
-Message-ID: <1414672996-28355-3-git-send-email-jonghwa3.lee@samsung.com>
+Subject: [PATCH 04/10] power: charger-manager: Fix to use CHARGE_NOW/FULL
+ property correctly.
+Date: Thu, 30 Oct 2014 21:43:10 +0900
+Message-ID: <1414672996-28355-5-git-send-email-jonghwa3.lee@samsung.com>
 References: <1414672996-28355-1-git-send-email-jonghwa3.lee@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:33177 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759544AbaJ3MnX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 08:43:23 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1414672996-28355-1-git-send-email-jonghwa3.lee@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, pavel@ucw.cz, myungjoo.ham@samsung.com, cw00.choi@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-Whenever battery status is changed, charger manager tries to trigger uevent
-through private interface. This patch modifies it to use power_supply_changed()
-since it belongs to power supply subsystem.
+The POWER_SUPPLY_CHARGE_NOW/FULL property reflects battery's charges
+in uAh unit, but charger-manager has been used it wrongly. This patch
+makes it to use those propeties correctly and change to be optional.
 
 Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 ---
- drivers/power/charger-manager.c |   91 +++++----------------------------------
- 1 file changed, 11 insertions(+), 80 deletions(-)
+ drivers/power/charger-manager.c |   85 +++++++++++++--------------------------
+ 1 file changed, 28 insertions(+), 57 deletions(-)
 
 diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index b4b101c..33a1a4d 100644
+index 64fdaaf..687f109 100644
 --- a/drivers/power/charger-manager.c
 +++ b/drivers/power/charger-manager.c
-@@ -28,18 +28,6 @@
- #include <linux/of.h>
- #include <linux/thermal.h>
- 
--static const char * const default_event_names[] = {
--	[CM_EVENT_UNKNOWN] = "Unknown",
--	[CM_EVENT_BATT_FULL] = "Battery Full",
--	[CM_EVENT_BATT_IN] = "Battery Inserted",
--	[CM_EVENT_BATT_OUT] = "Battery Pulled Out",
--	[CM_EVENT_BATT_OVERHEAT] = "Battery Overheat",
--	[CM_EVENT_BATT_COLD] = "Battery Cold",
--	[CM_EVENT_EXT_PWR_IN_OUT] = "External Power Attach/Detach",
--	[CM_EVENT_CHG_START_STOP] = "Charging Start/Stop",
--	[CM_EVENT_OTHERS] = "Other battery events"
--};
--
- /*
-  * Regard CM_JIFFIES_SMALL jiffies is small enough to ignore for
-  * delayed works so that we can run delayed works with CM_JIFFIES_SMALL
-@@ -56,8 +44,6 @@ static const char * const default_event_names[] = {
-  */
- #define CM_RTC_SMALL		(2)
- 
--#define UEVENT_BUF_SIZE		32
--
- static LIST_HEAD(cm_list);
- static DEFINE_MUTEX(cm_list_mtx);
- 
-@@ -423,61 +409,6 @@ static int try_charger_restart(struct charger_manager *cm)
- }
- 
- /**
-- * uevent_notify - Let users know something has changed.
-- * @cm: the Charger Manager representing the battery.
-- * @event: the event string.
-- *
-- * If @event is null, it implies that uevent_notify is called
-- * by resume function. When called in the resume function, cm_suspended
-- * should be already reset to false in order to let uevent_notify
-- * notify the recent event during the suspend to users. While
-- * suspended, uevent_notify does not notify users, but tracks
-- * events so that uevent_notify can notify users later after resumed.
-- */
--static void uevent_notify(struct charger_manager *cm, const char *event)
--{
--	static char env_str[UEVENT_BUF_SIZE + 1] = "";
--	static char env_str_save[UEVENT_BUF_SIZE + 1] = "";
--
--	if (cm_suspended) {
--		/* Nothing in suspended-event buffer */
--		if (env_str_save[0] == 0) {
--			if (!strncmp(env_str, event, UEVENT_BUF_SIZE))
--				return; /* status not changed */
--			strncpy(env_str_save, event, UEVENT_BUF_SIZE);
--			return;
--		}
--
--		if (!strncmp(env_str_save, event, UEVENT_BUF_SIZE))
--			return; /* Duplicated. */
--		strncpy(env_str_save, event, UEVENT_BUF_SIZE);
--		return;
--	}
--
--	if (event == NULL) {
--		/* No messages pending */
--		if (!env_str_save[0])
--			return;
--
--		strncpy(env_str, env_str_save, UEVENT_BUF_SIZE);
--		kobject_uevent(&cm->dev->kobj, KOBJ_CHANGE);
--		env_str_save[0] = 0;
--
--		return;
--	}
--
--	/* status not changed */
--	if (!strncmp(env_str, event, UEVENT_BUF_SIZE))
--		return;
--
--	/* save the status and notify the update */
--	strncpy(env_str, event, UEVENT_BUF_SIZE);
--	kobject_uevent(&cm->dev->kobj, KOBJ_CHANGE);
--
--	dev_info(cm->dev, "%s\n", event);
--}
--
--/**
-  * fullbatt_vchk - Check voltage drop some times after "FULL" event.
-  * @work: the work_struct appointing the function
-  *
-@@ -514,7 +445,7 @@ static void fullbatt_vchk(struct work_struct *work)
- 
- 	if (diff > desc->fullbatt_vchkdrop_uV) {
- 		try_charger_restart(cm);
--		uevent_notify(cm, "Recharging");
-+		power_supply_changed(&cm->charger_psy);
- 	}
- }
- 
-@@ -545,7 +476,7 @@ static int check_charging_duration(struct charger_manager *cm)
- 		if (duration > desc->charging_max_duration_ms) {
- 			dev_info(cm->dev, "Charging duration exceed %ums\n",
- 				 desc->charging_max_duration_ms);
--			uevent_notify(cm, "Discharging");
-+			power_supply_changed(&cm->charger_psy);
- 			try_charger_enable(cm, false);
- 			ret = true;
- 		}
-@@ -556,7 +487,7 @@ static int check_charging_duration(struct charger_manager *cm)
- 				is_ext_pwr_online(cm)) {
- 			dev_info(cm->dev, "Discharging duration exceed %ums\n",
- 				 desc->discharging_max_duration_ms);
--			uevent_notify(cm, "Recharging");
-+			power_supply_changed(&cm->charger_psy);
- 			try_charger_enable(cm, true);
- 			ret = true;
- 		}
-@@ -638,7 +569,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 	if (temp_alrt) {
- 		cm->emergency_stop = temp_alrt;
- 		if (!try_charger_enable(cm, false))
--			uevent_notify(cm, default_event_names[temp_alrt]);
-+			power_supply_changed(&cm->charger_psy);
- 
- 	/*
- 	 * Check whole charging duration and discharing duration
-@@ -663,7 +594,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 	} else if (!cm->emergency_stop && is_full_charged(cm) &&
- 			cm->charger_enabled) {
- 		dev_info(cm->dev, "EVENT_HANDLE: Battery Fully Charged\n");
--		uevent_notify(cm, default_event_names[CM_EVENT_BATT_FULL]);
-+		power_supply_changed(&cm->charger_psy);
- 
- 		try_charger_enable(cm, false);
- 
-@@ -672,7 +603,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 		cm->emergency_stop = 0;
- 		if (is_ext_pwr_online(cm)) {
- 			if (!try_charger_enable(cm, true))
--				uevent_notify(cm, "CHARGING");
-+				power_supply_changed(&cm->charger_psy);
- 		}
- 	}
- 
-@@ -793,7 +724,7 @@ static void fullbatt_handler(struct charger_manager *cm)
- 
- out:
- 	dev_info(cm->dev, "EVENT_HANDLE: Battery Fully Charged\n");
--	uevent_notify(cm, default_event_names[CM_EVENT_BATT_FULL]);
-+	power_supply_changed(&cm->charger_psy);
- }
- 
- /**
-@@ -807,9 +738,9 @@ static void battout_handler(struct charger_manager *cm)
- 
- 	if (!is_batt_present(cm)) {
- 		dev_emerg(cm->dev, "Battery Pulled Out!\n");
--		uevent_notify(cm, default_event_names[CM_EVENT_BATT_OUT]);
-+		power_supply_changed(&cm->charger_psy);
- 	} else {
--		uevent_notify(cm, "Battery Reinserted?");
-+		power_supply_changed(&cm->charger_psy);
- 	}
- }
- 
-@@ -826,7 +757,7 @@ static void misc_event_handler(struct charger_manager *cm,
- 
- 	if (is_polling_required(cm) && cm->desc->polling_interval_ms)
- 		schedule_work(&setup_polling);
--	uevent_notify(cm, default_event_names[type]);
-+	power_supply_changed(&cm->charger_psy);
- }
- 
- static int charger_get_property(struct power_supply *psy,
-@@ -1988,7 +1919,7 @@ void cm_notify_event(struct power_supply *psy, enum cm_event_types type,
+@@ -796,35 +796,13 @@ static int charger_get_property(struct power_supply *psy,
+ 			val->intval = 0;
  		break;
- 	case CM_EVENT_UNKNOWN:
- 	case CM_EVENT_OTHERS:
--		uevent_notify(cm, msg ? msg : default_event_names[type]);
-+		power_supply_changed(&cm->charger_psy);
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL:
+-		if (is_full_charged(cm))
+-			val->intval = 1;
+-		else
+-			val->intval = 0;
+-		ret = 0;
+-		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_NOW:
+-		if (is_charging(cm)) {
+-			fuel_gauge = power_supply_get_by_name(
+-					cm->desc->psy_fuel_gauge);
+-			if (!fuel_gauge) {
+-				ret = -ENODEV;
+-				break;
+-			}
+-
+-			ret = fuel_gauge->get_property(fuel_gauge,
+-						POWER_SUPPLY_PROP_CHARGE_NOW,
+-						val);
+-			if (ret) {
+-				val->intval = 1;
+-				ret = 0;
+-			} else {
+-				/* If CHARGE_NOW is supplied, use it */
+-				val->intval = (val->intval > 0) ?
+-						val->intval : 1;
+-			}
+-		} else {
+-			val->intval = 0;
++		fuel_gauge = power_supply_get_by_name(cm->desc->psy_fuel_gauge);
++		if (!fuel_gauge) {
++			ret = -ENODEV;
++			break;
+ 		}
++		ret = fuel_gauge->get_property(fuel_gauge, psp, val);
  		break;
  	default:
- 		dev_err(cm->dev, "%s: type not specified\n", __func__);
+ 		return -EINVAL;
+@@ -832,8 +810,7 @@ static int charger_get_property(struct power_supply *psy,
+ 	return ret;
+ }
+ 
+-#define NUM_CHARGER_PSY_OPTIONAL	(4)
+-static enum power_supply_property default_charger_props[] = {
++static enum power_supply_property cm_default_props[] = {
+ 	/* Guaranteed to provide */
+ 	POWER_SUPPLY_PROP_STATUS,
+ 	POWER_SUPPLY_PROP_HEALTH,
+@@ -841,20 +818,21 @@ static enum power_supply_property default_charger_props[] = {
+ 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+ 	POWER_SUPPLY_PROP_CAPACITY,
+ 	POWER_SUPPLY_PROP_ONLINE,
+-	POWER_SUPPLY_PROP_CHARGE_FULL,
+ 	POWER_SUPPLY_PROP_TEMP,
+-	/*
+-	 * Optional properties are:
+-	 * POWER_SUPPLY_PROP_CHARGE_NOW,
+-	 * POWER_SUPPLY_PROP_CURRENT_NOW,
+-	 */
+ };
+ 
++static enum power_supply_property cm_optional_props[] = {
++	POWER_SUPPLY_PROP_CHARGE_FULL,
++	POWER_SUPPLY_PROP_CHARGE_NOW,
++	POWER_SUPPLY_PROP_CURRENT_NOW,
++};
++
++#define CM_NUM_OF_PROPS	\
++	(ARRAY_SIZE(cm_default_props) + ARRAY_SIZE(cm_optional_props))
++
+ static struct power_supply psy_default = {
+ 	.name = "battery",
+ 	.type = POWER_SUPPLY_TYPE_BATTERY,
+-	.properties = default_charger_props,
+-	.num_properties = ARRAY_SIZE(default_charger_props),
+ 	.get_property = charger_get_property,
+ 	.no_thermal = true,
+ };
+@@ -1484,29 +1462,22 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 	/* Allocate for psy properties because they may vary */
+ 	cm->charger_psy.properties = devm_kzalloc(&pdev->dev,
+ 				sizeof(enum power_supply_property)
+-				* (ARRAY_SIZE(default_charger_props) +
+-				NUM_CHARGER_PSY_OPTIONAL), GFP_KERNEL);
++				* CM_NUM_OF_PROPS, GFP_KERNEL);
+ 	if (!cm->charger_psy.properties)
+ 		return -ENOMEM;
+ 
+-	memcpy(cm->charger_psy.properties, default_charger_props,
+-		sizeof(enum power_supply_property) *
+-		ARRAY_SIZE(default_charger_props));
+-	cm->charger_psy.num_properties = psy_default.num_properties;
+-
+-	/* Find which optional psy-properties are available */
+-	if (!fuel_gauge->get_property(fuel_gauge,
+-					  POWER_SUPPLY_PROP_CHARGE_NOW, &val)) {
+-		cm->charger_psy.properties[cm->charger_psy.num_properties] =
+-				POWER_SUPPLY_PROP_CHARGE_NOW;
+-		cm->charger_psy.num_properties++;
+-	}
+-	if (!fuel_gauge->get_property(fuel_gauge,
+-					  POWER_SUPPLY_PROP_CURRENT_NOW,
+-					  &val)) {
+-		cm->charger_psy.properties[cm->charger_psy.num_properties] =
+-				POWER_SUPPLY_PROP_CURRENT_NOW;
+-		cm->charger_psy.num_properties++;
++	memcpy(cm->charger_psy.properties, cm_default_props,
++			sizeof(enum power_supply_property) *
++			ARRAY_SIZE(cm_default_props));
++	cm->charger_psy.num_properties = ARRAY_SIZE(cm_default_props);
++
++	/* Add available optional properties */
++	for (i = 0; i < ARRAY_SIZE(cm_optional_props); i++) {
++		if (fuel_gauge->get_property(fuel_gauge,
++				cm_optional_props[i], &val))
++			continue;
++		cm->charger_psy.properties[cm->charger_psy.num_properties++] =
++				cm_optional_props[i];
+ 	}
+ 
+ 	if (desc->thermal_zone) {
 -- 
 1.7.9.5
-
