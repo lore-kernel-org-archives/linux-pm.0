@@ -1,75 +1,61 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH 2/3] arm64: psci: fix cpu_suspend to check idle state type
- for index
-Date: Thu, 30 Oct 2014 17:01:56 +0530
-Message-ID: <CADGdYn7J7eUkCZAGx+gjei4OSPBdLmrnhy1YwtkBqiEgEvyJUQ@mail.gmail.com>
-References: <1414641338-25279-1-git-send-email-amit.daniel@samsung.com>
-	<1414641338-25279-2-git-send-email-amit.daniel@samsung.com>
-	<20141030101946.GA17843@red-moon>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 4/4] PM / Domains: Let the ->attach_dev() callback return
+ an error code
+Date: Thu, 30 Oct 2014 12:34:19 +0100
+Message-ID: <CAPDyKFqaZo1mNNO=HVe-6SiCFVqnfZSpJNf=B0SMw6bm9HpaZA@mail.gmail.com>
+References: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
+	<1414507090-516-5-git-send-email-ulf.hansson@linaro.org>
+	<CAMuHMdVn2mfk5v8MQshU0gko+dL9xtCT_zBuqyntHHrmxjwfSA@mail.gmail.com>
+	<7h1tpq7fba.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f51.google.com ([209.85.213.51]:36462 "EHLO
-	mail-yh0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759397AbaJ3Lb5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 07:31:57 -0400
-Received: by mail-yh0-f51.google.com with SMTP id c41so1493828yho.24
-        for <linux-pm@vger.kernel.org>; Thu, 30 Oct 2014 04:31:56 -0700 (PDT)
-In-Reply-To: <20141030101946.GA17843@red-moon>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <7h1tpq7fba.fsf@deeprootsystems.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chip>
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, Vladimir Murzin <Vladimir.Murzin@arm.com>, Will Deacon <will.deacon@arm.com>
 
-On Thu, Oct 30, 2014 at 3:49 PM, Lorenzo Pieralisi
-<lorenzo.pieralisi@arm.com> wrote:
-> Hi Amit,
+On 29 October 2014 22:10, Kevin Hilman <khilman@kernel.org> wrote:
+> Geert Uytterhoeven <geert@linux-m68k.org> writes:
 >
-> On Thu, Oct 30, 2014 at 03:55:37AM +0000, Amit Daniel Kachhap wrote:
->> This fix rectifies the psci cpu_suspend to check the C-state type
->> corresponding to the requested index.
->
-> Can you reword the commit log please ?
->
-> "This fix rectifies the psci cpu_suspend implementation to check the
-> PSCI power state parameter type field associated with the requested idle
-> state index."
->
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->> ---
->>  arch/arm64/kernel/psci.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
+>> Hi Ulf, Rafael,
 >>
->> diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
->> index 2178d6e..4ebc146 100644
->> --- a/arch/arm64/kernel/psci.c
->> +++ b/arch/arm64/kernel/psci.c
->> @@ -530,7 +530,7 @@ static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
->>       if (WARN_ON_ONCE(!index || !state))
->>               return -EINVAL;
+>> On Tue, Oct 28, 2014 at 3:38 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>> Typically an ->attach_dev() callback would fetch some PM resourses.
+>>>
+>>> Those operations, like for example clk_get() may fail with different
+>>> errors, including -EPROBE_DEFER. Instead of ignoring these errors and
+>>> potentially only print an error message, let's propagate them to give
+>>> callers the option to handle them.
+>>>
+>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 >>
->> -     if (state->type == PSCI_POWER_STATE_TYPE_STANDBY)
->> +     if (state[index - 1].type == PSCI_POWER_STATE_TYPE_STANDBY)
->>               ret = psci_ops.cpu_suspend(state[index - 1], 0);
->>       else
->>               ret = __cpu_suspend(index, psci_suspend_finisher);
->> --
->> 1.9.1
+>> Given that several patch series using ->attach_dev() are already floating
+>> around and will be in -next soon, what is the plan of getting this in?
 >
-> Can you resend it as a single patch (ie this patch does not apply if
-> patch 1 is missing, and I am not sure we need patch 1) and send it to
-> Catalin and Will to merge it asap ?
+> Shall we take this as a Reviewed-by or Acked-by for the series?  :)
+>
+>> Doing it ASAP (in v3.18-rc3)?
+>
+> IMO, this isn't at all appropriate for -rc since it's not fixing a
+> regression. Also, this series includes other cleanups that are not
+> really fixes either.  At this point of the -rc cycle, we need to focus
+> only on regression fixes.
+>
+>> Delaying this to v3.19-rc2, which will require an atomic fixing of its users?
+>> Any other option?
+>
+> I don't see any users of this in -next yet, so I think doing a simple
+> patch to the prototype and fixing up any users before they hit -next is
+> the right approach.  Errors will be ignored, but that's not change from
+> today. :)
+>
+> Then the rest of this cleanup and behavior change stuff can continue to
+> be reviewed and get broader testing before merge.
 
-Ok sure.
+Okay, I will follow your suggestions and send a patch that only change
+the prototype, intended as a fix for rc[n].
 
->
-> Please add my:
->
-> Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
->
-> Thanks,
-> Lorenzo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Kind regards
+Uffe
