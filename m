@@ -1,31 +1,42 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFD PATCH 00/10] cpuidle: Predict the next events with the IO
- latencies
-Date: Thu, 30 Oct 2014 15:38:53 +0100
-Message-ID: <20141030143853.GF23531@worktop.programming.kicks-ass.net>
+Subject: Re: [RFD PATCH 01/10] sched: add io latency framework
+Date: Thu, 30 Oct 2014 15:44:50 +0100
+Message-ID: <20141030144450.GG23531@worktop.programming.kicks-ass.net>
 References: <1413986273-28522-1-git-send-email-daniel.lezcano@linaro.org>
+ <1413986273-28522-2-git-send-email-daniel.lezcano@linaro.org>
+ <CAJvTdKkF1Z9eUwjv4-idzCUTzD_MdEeZWOxkB+VmGoEcnJfk-A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:53219 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760394AbaJ3Oi6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 10:38:58 -0400
+Received: from bombadil.infradead.org ([198.137.202.9]:40081 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760250AbaJ3Oo6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 10:44:58 -0400
 Content-Disposition: inline
-In-Reply-To: <1413986273-28522-1-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <CAJvTdKkF1Z9eUwjv4-idzCUTzD_MdEeZWOxkB+VmGoEcnJfk-A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, axboe@kernel.dk, rafael.j.wysocki@intel.com, mingo@kernel.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, mturquette@linaro.org, tuukka.tikkanen@linaro.org, nicolas.pitre@linaro.org, patches@linaro.org
+To: Len Brown <lenb@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, axboe@kernel.dk, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ingo Molnar <mingo@kernel.org>, preeti@linux.vnet.ibm.com, Morten Rasmussen <Morten.Rasmussen@arm.com>, mturquette@linaro.org, Tuukka Tikkanen <tuukka.tikkanen@linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Patch Tracking <patches@linaro.org>
 
-On Wed, Oct 22, 2014 at 03:57:43PM +0200, Daniel Lezcano wrote:
-> After discussing at the LPC2014 Dusseldorf, it appears the idea is
-> good but the approach is wrong. The latency tracking must be done at
-> the device level, per device and not in the task as what is doing this
-> patchset.
+On Mon, Oct 27, 2014 at 11:19:49PM -0400, Len Brown wrote:
+> > There is a rb tree per cpu. Each time a task is blocked on an IO, it
+> > is inserted into the tree. When the IO is complete and the task is
+> > woken up, its avg latency is updated with the time spent to wait the
+> > IO and it is removed from the tree. The next time, it will be inserted
+> > into the tree again in case of io_schedule.
+> 
+> Is there an assumption built-in here that the device interrupt is targeted
+> at the same CPU as where the task is queued?
 
-end_page_writeback()->test_clear_page_writeback()->__bdi_writeout_inc()
+Yes, I pointed out that this is unlikely to be true during his
+presentation in DUS.
 
-Is the IO completion path that has a fair amount of statistics in, maybe
-some of that is usable.
+My suggestion was to track interrupts per device and use the IRQ routing
+to map them to CPUs.
+
+The benchmarking of the approach was done on a UP (or rather, everything
+affinity bound to cpu0) which did obviously not expose this particular
+issue.
+
 
