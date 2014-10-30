@@ -1,42 +1,57 @@
-From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH v2] arm64: psci: fix cpu_suspend to check idle state type for index
-Date: Thu, 30 Oct 2014 17:54:51 +0530
-Message-ID: <1414671891-29448-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:41019 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759267AbaJ3MYk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 08:24:40 -0400
-Received: by mail-pd0-f172.google.com with SMTP id r10so5102878pdi.3
-        for <linux-pm@vger.kernel.org>; Thu, 30 Oct 2014 05:24:39 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / Domains: Change prototype for the ->attach_dev()
+ callback
+Date: Thu, 30 Oct 2014 13:28:36 +0100
+Message-ID: <20141030122836.GA4012@amd>
+References: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>
-Cc: will.deacon@arm.com, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, Vladimir Murzin <vladimir.murzin@arm.com>
 
-This fix rectifies the psci cpu_suspend implementation to check the
-PSCI power state parameter type field associated with the requested idle
-state index.
+On Thu 2014-10-30 13:02:49, Ulf Hansson wrote:
+> Convert the prototype to return and int. This is just an initial step,
+> needed to support error handling.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
----
- arch/arm64/kernel/psci.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
-index 866c1c8..663da77 100644
---- a/arch/arm64/kernel/psci.c
-+++ b/arch/arm64/kernel/psci.c
-@@ -528,7 +528,7 @@ static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
- 	if (WARN_ON_ONCE(!index))
- 		return -EINVAL;
- 
--	if (state->type == PSCI_POWER_STATE_TYPE_STANDBY)
-+	if (state[index - 1].type == PSCI_POWER_STATE_TYPE_STANDBY)
- 		ret = psci_ops.cpu_suspend(state[index - 1], 0);
- 	else
- 		ret = __cpu_suspend(index, psci_suspend_finisher);
+
+> ---
+> 
+> This patch is intended as fix for 3.18 rc[n]. Why?
+> 
+> There are other SOC specific patches around that adds genpd support and which
+> implements the ->attach_dev() callback. To prevent having an "atomic" patch
+> during the next release cycle, let's change the prototype now instead.
+> 
+> Further patches will add the actual error handling in genpd and these can then
+> be reviewed and tested thoroughly.
+> 
+> ---
+>  include/linux/pm_domain.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 73e938b..d44f071 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -72,7 +72,7 @@ struct generic_pm_domain {
+>  	bool max_off_time_changed;
+>  	bool cached_power_down_ok;
+>  	struct gpd_cpuidle_data *cpuidle_data;
+> -	void (*attach_dev)(struct device *dev);
+> +	int (*attach_dev)(struct device *dev);
+>  	void (*detach_dev)(struct device *dev);
+>  };
+>  
+
 -- 
-1.9.1
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
