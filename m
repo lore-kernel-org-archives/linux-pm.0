@@ -1,96 +1,59 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH 3/3] arm64: psci: Add support to call cpu_suspend with
- deepest C state.
-Date: Thu, 30 Oct 2014 10:46:30 +0000
-Message-ID: <20141030104630.GC17843@red-moon>
-References: <1414641338-25279-1-git-send-email-amit.daniel@samsung.com>
- <1414641338-25279-3-git-send-email-amit.daniel@samsung.com>
+From: Andrzej Hajda <a.hajda@samsung.com>
+Subject: Re: [RFC 1/2] PM / Domains: Power on domain early during system resume
+Date: Thu, 30 Oct 2014 12:01:35 +0100
+Message-ID: <54521A8F.5070808@samsung.com>
+References: <1414072090-11293-1-git-send-email-k.kozlowski@samsung.com>
+ <1414072090-11293-2-git-send-email-k.kozlowski@samsung.com>
+ <7hk33iahvu.fsf@deeprootsystems.com> <1414654594.5114.8.camel@AMDC1943>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss-mx-na.foss.arm.com ([217.140.108.86]:50775 "EHLO
-	foss-mx-na.foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758162AbaJ3Kqv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 06:46:51 -0400
-Content-Disposition: inline
-In-Reply-To: <1414641338-25279-3-git-send-email-amit.daniel@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-reply-to: <1414654594.5114.8.camel@AMDC1943>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kevin Hilman <khilman@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, Vladimir Murzin <Vladimir.Murzin@arm.com>, charles.garcia-tobin@arm.com
 
-On Thu, Oct 30, 2014 at 03:55:38AM +0000, Amit Daniel Kachhap wrote:
-> This feature will be useful for system suspend/resume which may
-> intend to invoke cpu_suspend with deepest possible C state level.
-
-We are working on defining system states in the PSCI specification,
-but it is not set in stone yet (Cc'ed Charles).
-
-I guess you are posting this code because you have already an
-implementation that supports system suspend/resume, so I am
-taking an immediate action to come up with an API suitable
-for that asap.
-
-On a side note I do not necessarily like this magic idle index
-logic, I prefer adding an API for that, that translates the call
-into whatever is required by the back-end (ie PSCI) implementation.
-
-Thanks,
-Lorenzo
-
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> ---
->  arch/arm64/include/asm/psci.h | 2 ++
->  arch/arm64/kernel/psci.c      | 8 ++++++++
->  2 files changed, 10 insertions(+)
-> 
-> diff --git a/arch/arm64/include/asm/psci.h b/arch/arm64/include/asm/psci.h
-> index e5312ea..487e52b 100644
-> --- a/arch/arm64/include/asm/psci.h
-> +++ b/arch/arm64/include/asm/psci.h
-> @@ -14,6 +14,8 @@
->  #ifndef __ASM_PSCI_H
->  #define __ASM_PSCI_H
->  
-> +#define CPU_PSCI_IDLE_INDEX_MAX		0xff
-> +
->  int psci_init(void);
->  
->  #endif /* __ASM_PSCI_H */
-> diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
-> index 4ebc146..a761513 100644
-> --- a/arch/arm64/kernel/psci.c
-> +++ b/arch/arm64/kernel/psci.c
-> @@ -70,6 +70,7 @@ enum psci_function {
->  static DEFINE_PER_CPU_READ_MOSTLY(struct psci_power_state *, psci_power_state);
->  
->  static u32 psci_function_id[PSCI_FN_MAX];
-> +static u32 cpu_psci_idle_state_count;
->  
->  static int psci_to_linux_errno(int errno)
->  {
-> @@ -239,6 +240,8 @@ static int __maybe_unused cpu_psci_cpu_init_idle(struct device_node *cpu_node,
->  	if (!count)
->  		return -ENODEV;
->  
-> +	cpu_psci_idle_state_count = count;
-> +
->  	psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
->  	if (!psci_states)
->  		return -ENOMEM;
-> @@ -521,6 +524,11 @@ static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
->  {
->  	int ret;
->  	struct psci_power_state *state = __get_cpu_var(psci_power_state);
-> +
-> +	/* Check and select the deepest idle state */
-> +	if (index == CPU_PSCI_IDLE_INDEX_MAX)
-> +		index = cpu_psci_idle_state_count;
-> +
->  	/*
->  	 * idle state index 0 corresponds to wfi, should never be called
->  	 * from the cpu_suspend operations.
-> -- 
-> 1.9.1
-> 
-> 
+T24gMTAvMzAvMjAxNCAwODozNiBBTSwgS3J6eXN6dG9mIEtvemxvd3NraSB3cm90ZToKPiBPbiDF
+m3JvLCAyMDE0LTEwLTI5IGF0IDEwOjQ2IC0wNzAwLCBLZXZpbiBIaWxtYW4gd3JvdGU6Cj4+IEty
+enlzenRvZiBLb3psb3dza2kgPGsua296bG93c2tpQHNhbXN1bmcuY29tPiB3cml0ZXM6Cj4+Cj4+
+PiBXaGVuIHJlc3VtaW5nIHRoZSBzeXN0ZW0gdGhlIHBvd2VyIGRvbWFpbiBoYXMgdG8gYmUgcG93
+ZXJlZCBvbiBlYXJseSBzbwo+Pj4gYW55IHJ1bnRpbWUgUE0gYXdhcmUgZGV2aWNlcyBjb3VsZCBy
+ZXN1bWUuCj4+Pgo+Pj4gVGhpcyBmaXhlcyBmb2xsb3dpbmcgc2NlbmFyaW8gcmVwcm9kdWNlZCBv
+biBFeHlub3MgRFJNOgo+Pj4gMS4gUG93ZXIgZG9tYWluIGlzIG9mZiBiZWZvcmUgc3VzcGVuZGlu
+ZyB0aGUgc3lzdGVtLgo+Pj4gMi4gU3lzdGVtIGlzIHN1c3BlbmRlZCB0byBSQU0uCj4+PiAzLiBS
+ZXN1bWluZyBzdGFydHMuIFRoZSBFeHlub3MgRFJNIGRyaXZlciByZXN1bWUgY2FsbGJhY2sgaXMg
+Y2FsbGVkLgo+Pj4gNC4gVGhlIEV4eW5vcyBEUk0gZHJpdmVyIGNhbGxzIGRybV9oZWxwZXJfcmVz
+dW1lX2ZvcmNlX21vZGUgd2hpY2ggdHVybnMKPj4+ICAgIHRoZSBzY3JlZW4gb24gYnkgY2FsbGlu
+ZyBleHlub3NfZHNpX2RwbXMgd2l0aCBEUk1fTU9ERV9EUE1TX09OLgo+PiBEdW1iIFE6IGlmIHRo
+ZSBkZXZpY2UgKGFuZCBwb3dlciBkb21haW4pIHdlcmUgb2ZmIGJlZm9yZSAoYW5kIGR1cmluZykK
+Pj4gc3VzcGVuZCwgd2h5IGFyZSB0aGV5IGJlaW5nIHJlc3VtZWQ/Cj4+Cj4+IFNob3VsZG4ndCB0
+aGUgcmVzdW1lIHBhdGggcmVzdG9yZSB0aGluZ3MgdG8gdGhlIHNhbWUgc3RhdGUgdGhleSB3ZXJl
+Cj4+IGJlZm9yZSBzdXNwZW5kPwo+IE9uZSBjb3VsZCBleHBlY3QgdGhhdC4uLiBidXQgdGhlIEV4
+eW5vcyBEUk0gZHJpdmVyIGJlaGF2ZXMgZGlmZmVyZW50bHkKPiAoYW5kIHNvbWUgb3RoZXIgZHJp
+dmVycyBhbHNvKS4gSW4gcmVzdW1lIG1ldGhvZCBpdCBjYWxscwo+IGRybV9oZWxwZXJfcmVzdW1l
+X2ZvcmNlX21vZGUoKSB3aGljaCBmb3JjZXMgcmVzdG9yaW5nIG1vZGUgc2V0dGluZwo+IGNvbmZp
+Z3VyYXRpb24uIEFwcGFyZW50bHkgc2V0dGluZyBhIG1vZGUgbmVlZHMgRFBNUyBvbjoKPiBzdGF0
+aWMgdm9pZCBleHlub3NfZHJtX2NydGNfY29tbWl0KHN0cnVjdCBkcm1fY3J0YyAqY3J0YykKPiB7
+Cj4gCS4uLgo+IAlleHlub3NfZHJtX2NydGNfZHBtcyhjcnRjLCBEUk1fTU9ERV9EUE1TX09OKTsK
+PiAJLi4uCj4KPiBUaGUgcHJldmlvdXMgRFBNUyBzdGF0dXMgKHN0YXR1cyBkdXJpbmcgc3VzcGVu
+ZCkgaXMgY29tcGxldGVseSBpZ25vcmVkCj4gaGVyZS4KClN1c3BlbmQgY2FsbGJhY2sgc3dpdGNo
+ZXMgb2ZmIGFsbCBjb25uZWN0b3JzICh0aHVzIGFsbCBvdGhlciBkZXZzIGluCnRoZWlyIHBpcGVs
+aW5lKSBieSBjYWxsaW5nIGRwbXNfb2ZmLAppbiByZXN0b3JlIGNhbGxiYWNrIGFsbCBkZXZzIGFy
+ZSByZXN0b3JlZCB0byB0aGVpciBwcmV2aW91cyBzdGF0ZSBieQpjYWxsaW5nIGFwcHJvcHJpYXRl
+IGRwbXMuClNvIEkgZ3Vlc3MgZHJtX2hlbHBlcl9yZXN1bWVfZm9yY2VfbW9kZSgpIGNhbGwgYXQg
+dGhlIGVuZCBvZiByZXN1bWUgaXMKaW5jb3JyZWN0LgpPbiB0aGUgb3RoZXIgc2lkZSBpdCBpcyBw
+cmVzZW50IGluIG1hbnkgb3RoZXIgZHJpdmVycywgc28gSSBhbSBhbHNvCmxpdHRsZSBiaXQgY29u
+ZnVzZWQuCgpSZWdhcmRzCkFuZHJ6ZWoKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5m
+cmVlZGVza3RvcC5vcmcKaHR0cDovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3Rp
+bmZvL2RyaS1kZXZlbAo=
