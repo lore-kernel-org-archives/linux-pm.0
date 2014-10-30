@@ -1,62 +1,150 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [RFC 1/2] PM / Domains: Power on domain early during system resume
-Date: Thu, 30 Oct 2014 08:36:34 +0100
-Message-ID: <1414654594.5114.8.camel@AMDC1943>
-References: <1414072090-11293-1-git-send-email-k.kozlowski@samsung.com>
- <1414072090-11293-2-git-send-email-k.kozlowski@samsung.com>
- <7hk33iahvu.fsf@deeprootsystems.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] PM / clock_ops: Fix crash in clocks management code if !CONFIG_PM_RUNTIME
+Date: Thu, 30 Oct 2014 10:06:25 +0100
+Message-ID: <CAMuHMdWCcOa-YLJkr+6F2FhcWYWSYeVrh=HvSN5G2hHyvWO1bw@mail.gmail.com>
+References: <1412188697-15317-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:49286 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751626AbaJ3Hgj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 03:36:39 -0400
-In-reply-to: <7hk33iahvu.fsf@deeprootsystems.com>
+Received: from mail-lb0-f169.google.com ([209.85.217.169]:61289 "EHLO
+	mail-lb0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758053AbaJ3JG2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 05:06:28 -0400
+In-Reply-To: <1412188697-15317-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Inki Dae <inki.dae@samsung.com>, Joonyoung Shim <jy0922.shim@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, David Airlie <airlied@linux.ie>, Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Andrzej Hajda <a.hajda@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: stable <stable@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>
 
-On =C5=9Bro, 2014-10-29 at 10:46 -0700, Kevin Hilman wrote:
-> Krzysztof Kozlowski <k.kozlowski@samsung.com> writes:
->=20
-> > When resuming the system the power domain has to be powered on earl=
-y so
-> > any runtime PM aware devices could resume.
-> >
-> > This fixes following scenario reproduced on Exynos DRM:
-> > 1. Power domain is off before suspending the system.
-> > 2. System is suspended to RAM.
-> > 3. Resuming starts. The Exynos DRM driver resume callback is called=
-=2E
-> > 4. The Exynos DRM driver calls drm_helper_resume_force_mode which t=
-urns
-> >    the screen on by calling exynos_dsi_dpms with DRM_MODE_DPMS_ON.
->=20
-> Dumb Q: if the device (and power domain) were off before (and during)
-> suspend, why are they being resumed?
->=20
-> Shouldn't the resume path restore things to the same state they were
-> before suspend?
+Upstream commit a968bed78b549b4c61d4a46e59161fc1f60f96a6
+Author: Geert Uytterhoeven <geert+renesas@glider.be>
+Date:   Wed Oct 1 20:38:17 2014 +0200
 
-One could expect that... but the Exynos DRM driver behaves differently
-(and some other drivers also). In resume method it calls
-drm_helper_resume_force_mode() which forces restoring mode setting
-configuration. Apparently setting a mode needs DPMS on:
-static void exynos_drm_crtc_commit(struct drm_crtc *crtc)
-{
-	...
-	exynos_drm_crtc_dpms(crtc, DRM_MODE_DPMS_ON);
-	...
-
-The previous DPMS status (status during suspend) is completely ignored
-here.
-
-I dunno why... maybe someone from DRM could share some thoughts?
+    PM / clk: Fix crash in clocks management code if !CONFIG_PM_RUNTIME
 
 
-Best regards,
-Krzysztof
+Simon tried it on mackerel. It did not crash, but caused a warning and
+backtrace:
 
+    WARNING: CPU: 0 PID: 1420 at drivers/sh/clk/core.c:240
+__clk_disable+0x80/0x90()
+    Trying to disable clock c04bd4d8 with 0 usecount
+
+which got fixed by the patch. So I think it should be applied to
+-stable (v3.14 and up).
+
+Thanks!
+
+On Wed, Oct 1, 2014 at 8:38 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> Unlike the clocks management code for runtime PM, the code used for
+> system suspend does not check the pm_clock_entry.status field.
+> If pm_clk_acquire() failed, ce->status will be PCE_STATUS_ERROR, and
+> ce->clk will be a negative error code (e.g. 0xfffffffe = -2 = -ENOENT).
+>
+> Depending on the clock implementation, suspend or resume may crash with:
+>
+>     Unable to handle kernel NULL pointer dereference at virtual address 00000026
+>
+> (CCF clk_disable() has an IS_ERR_OR_NULL() check, while CCF clk_enable()
+>  only has a NULL check; pre-CCF implementations may behave differently)
+>
+> While just checking for PCE_STATUS_ERROR would be sufficient, it doesn't
+> hurt to use the same state machine as is done for runtime PM, as this
+> makes the two versions more similar, and eligible for a future
+> consolidation.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> This crash started to happen on armadillo-legacy during s2ram if
+> CONFIG_PM_RUNTIME is not set after applying "[PATCH v2 07/11] ARM:
+> shmobile: r8a7740/armadillo legacy: Add A4MP pm domain support"
+> (http://www.spinics.net/linux/lists/arm-kernel/msg365438.html), as
+> there's no NULL clock for the HDMI device.
+>
+> Most existing code calling pm_clk_suspend()/pm_clk_resume() is protected
+> by a check for CONFIG_PM_RUNTIME (davinci, keystone, omap1,
+> drivers/sh/pm_runtime.c), so it was not affected by this bug.
+>
+> Exceptions are:
+>   - arch/arm/mach-shmobile/pm-r8a7779.c (marzen),
+>   - arch/arm/mach-shmobile/pm-rmobile.c (r8a7740/armadillo and
+>     sh7372/mackerel),
+> but it's difficult to assess from the code whether the bug is really
+> triggered on these platforms.
+>
+> Grygorii Strashko's "[PATCH v1 2/4] ARM: keystone: pm: switch to use
+> generic pm domains" is not affected, as pm_clk_add_clk() is only called
+> for existing clocks.
+>
+> If it crashes on marzen or mackerel, I think this fix needs to be
+> applied to stable, too. I don't have access to marzen or mackerel boards,
+> though.
+>
+> How to test:
+>   - Build a kernel with CONFIG_PM_SLEEP/CONFIG_SUSPEND enabled, but
+>     CONFIG_PM_RUNTIME disabled,
+>   - echo 0 > /sys/module/printk/parameters/console_suspend,
+>   - echo mem > /sys/power/state,
+>   - wake up using e.g. gpio-keys or serial console activity.
+> ---
+>  drivers/base/power/clock_ops.c | 19 +++++++++++++++----
+>  1 file changed, 15 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+> index b99e6c06ee678ecb..78369305e0698109 100644
+> --- a/drivers/base/power/clock_ops.c
+> +++ b/drivers/base/power/clock_ops.c
+> @@ -368,8 +368,13 @@ int pm_clk_suspend(struct device *dev)
+>
+>         spin_lock_irqsave(&psd->lock, flags);
+>
+> -       list_for_each_entry_reverse(ce, &psd->clock_list, node)
+> -               clk_disable(ce->clk);
+> +       list_for_each_entry_reverse(ce, &psd->clock_list, node) {
+> +               if (ce->status < PCE_STATUS_ERROR) {
+> +                       if (ce->status == PCE_STATUS_ENABLED)
+> +                               clk_disable(ce->clk);
+> +                       ce->status = PCE_STATUS_ACQUIRED;
+> +               }
+> +       }
+>
+>         spin_unlock_irqrestore(&psd->lock, flags);
+>
+> @@ -385,6 +390,7 @@ int pm_clk_resume(struct device *dev)
+>         struct pm_subsys_data *psd = dev_to_psd(dev);
+>         struct pm_clock_entry *ce;
+>         unsigned long flags;
+> +       int ret;
+>
+>         dev_dbg(dev, "%s()\n", __func__);
+>
+> @@ -394,8 +400,13 @@ int pm_clk_resume(struct device *dev)
+>
+>         spin_lock_irqsave(&psd->lock, flags);
+>
+> -       list_for_each_entry(ce, &psd->clock_list, node)
+> -               __pm_clk_enable(dev, ce->clk);
+> +       list_for_each_entry(ce, &psd->clock_list, node) {
+> +               if (ce->status < PCE_STATUS_ERROR) {
+> +                       ret = __pm_clk_enable(dev, ce->clk);
+> +                       if (!ret)
+> +                               ce->status = PCE_STATUS_ENABLED;
+> +               }
+> +       }
+>
+>         spin_unlock_irqrestore(&psd->lock, flags);
+>
+> --
+> 1.9.1
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
