@@ -1,49 +1,31 @@
-From: "Ivan T. Ivanov" <iivanov@mm-sol.com>
-Subject: Re: [PATCH v3] thermal: Add QPNP PMIC temperature alarm driver
-Date: Thu, 30 Oct 2014 15:55:45 +0200
-Message-ID: <1414677345.12674.1.camel@mm-sol.com>
-References: <1412178817-20371-1-git-send-email-iivanov@mm-sol.com>
-	 <20141027201602.GC6088@developer> <1414596776.32383.2.camel@mm-sol.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFD PATCH 00/10] cpuidle: Predict the next events with the IO
+ latencies
+Date: Thu, 30 Oct 2014 15:38:53 +0100
+Message-ID: <20141030143853.GF23531@worktop.programming.kicks-ass.net>
+References: <1413986273-28522-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1414596776.32383.2.camel@mm-sol.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from casper.infradead.org ([85.118.1.10]:53219 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760394AbaJ3Oi6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 10:38:58 -0400
+Content-Disposition: inline
+In-Reply-To: <1413986273-28522-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, axboe@kernel.dk, rafael.j.wysocki@intel.com, mingo@kernel.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, mturquette@linaro.org, tuukka.tikkanen@linaro.org, nicolas.pitre@linaro.org, patches@linaro.org
 
+On Wed, Oct 22, 2014 at 03:57:43PM +0200, Daniel Lezcano wrote:
+> After discussing at the LPC2014 Dusseldorf, it appears the idea is
+> good but the approach is wrong. The latency tracking must be done at
+> the device level, per device and not in the task as what is doing this
+> patchset.
 
-On Wed, 2014-10-29 at 17:32 +0200, Ivan T. Ivanov wrote:
-> 
-+
-> > > +       chip->tz_dev = thermal_zone_device_register(node->name, TRIP_NUM, 0,
-> > > +       chip, &qpnp_tz_ops, NULL,
-> > 
-> > Have you considered using of-thermal instead of doing your own specific thermal
-> > zone registration? Having a glance look in this driver, most of the
-> > operation are covered by of-thermal. Ahy concerns using of-thermal in
-> > your case?
-> > 
-> 
-> I just followed implementation found in "armada_thermal", "db8500-thermal",
-> "dove_thermal", "imx_thermal", "kirkwood_thermal"...
-> 
-> Will look at of-thermal.
-> 
+end_page_writeback()->test_clear_page_writeback()->__bdi_writeout_inc()
 
-Hm, the 15 drivers, which register its own thermal zone, against 4, which 
-use of-thermal registration and one of them is OMAP, which have fallback
-to its own zone registration :-). Anyway. I am afraid that if I use just
-thermal_zone_of_sensor_register(), driver will lost ability to switch off 
-hardware controlled shutdown sequence, which make it useless IMHO.
+Is the IO completion path that has a fair amount of statistics in, maybe
+some of that is usable.
 
-I don't see how driver can benefits from nice things provided by of-thermal.
-There is no colling device associated with PMIC chip, pooling delays are of
-no use, device uses interrupt, trip pints are predefined in hardware...
-
-Please advice.
-
-Regards,
-Ivan
