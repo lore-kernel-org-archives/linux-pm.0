@@ -1,106 +1,91 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH 3/3] arm64: psci: Add support to call cpu_suspend with
- deepest C state.
-Date: Thu, 30 Oct 2014 16:52:14 +0530
-Message-ID: <CADGdYn50gKLRu+izVZDwxFTV6pnV8xvqn-MGzxmCfFQBqigBWw@mail.gmail.com>
-References: <1414641338-25279-1-git-send-email-amit.daniel@samsung.com>
-	<1414641338-25279-3-git-send-email-amit.daniel@samsung.com>
-	<20141030104630.GC17843@red-moon>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 3/4] PM / Domains: Improve error handling while
+ adding/removing devices
+Date: Thu, 30 Oct 2014 12:25:37 +0100
+Message-ID: <CAPDyKFo2n7iW9uPp29TjL0LPCjssCyez588-uCYvbRR4dFs=NA@mail.gmail.com>
+References: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
+	<1414507090-516-4-git-send-email-ulf.hansson@linaro.org>
+	<7h38a65szn.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f179.google.com ([209.85.160.179]:56857 "EHLO
-	mail-yk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758989AbaJ3LWP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 07:22:15 -0400
-Received: by mail-yk0-f179.google.com with SMTP id 131so2190481ykp.10
-        for <linux-pm@vger.kernel.org>; Thu, 30 Oct 2014 04:22:14 -0700 (PDT)
-In-Reply-To: <20141030104630.GC17843@red-moon>
+Received: from mail-qg0-f41.google.com ([209.85.192.41]:61629 "EHLO
+	mail-qg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759337AbaJ3LZi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 07:25:38 -0400
+Received: by mail-qg0-f41.google.com with SMTP id q107so3776211qgd.14
+        for <linux-pm@vger.kernel.org>; Thu, 30 Oct 2014 04:25:38 -0700 (PDT)
+In-Reply-To: <7h38a65szn.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, Vladimir Murzin <Vladimir.Murzin@arm.com>, Charles Garcia-Tobin <charles.garcia-tobin@arm.com>
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
 
-On Thu, Oct 30, 2014 at 4:16 PM, Lorenzo Pieralisi
-<lorenzo.pieralisi@arm.com> wrote:
-> On Thu, Oct 30, 2014 at 03:55:38AM +0000, Amit Daniel Kachhap wrote:
->> This feature will be useful for system suspend/resume which may
->> intend to invoke cpu_suspend with deepest possible C state level.
+On 30 October 2014 00:57, Kevin Hilman <khilman@kernel.org> wrote:
+> Ulf Hansson <ulf.hansson@linaro.org> writes:
 >
-> We are working on defining system states in the PSCI specification,
-> but it is not set in stone yet (Cc'ed Charles).
+>> To improve error handling while adding/removing devices from their PM
+>> domains, we need to restructure the code a bit. Let's do this by moving
+>> the device specific parts into a separate function.
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 >
-> I guess you are posting this code because you have already an
-> implementation that supports system suspend/resume, so I am
-> taking an immediate action to come up with an API suitable
-> for that asap.
-Yes that would be useful. Thanks
+> [...]
 >
-> On a side note I do not necessarily like this magic idle index
-> logic, I prefer adding an API for that, that translates the call
-> into whatever is required by the back-end (ie PSCI) implementation.
-yeah this is a kind of workaround and API will be better.
->
-> Thanks,
-> Lorenzo
->
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->> ---
->>  arch/arm64/include/asm/psci.h | 2 ++
->>  arch/arm64/kernel/psci.c      | 8 ++++++++
->>  2 files changed, 10 insertions(+)
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index 9d511c7..4e5fcd7 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -1358,25 +1358,81 @@ EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweron);
 >>
->> diff --git a/arch/arm64/include/asm/psci.h b/arch/arm64/include/asm/psci.h
->> index e5312ea..487e52b 100644
->> --- a/arch/arm64/include/asm/psci.h
->> +++ b/arch/arm64/include/asm/psci.h
->> @@ -14,6 +14,8 @@
->>  #ifndef __ASM_PSCI_H
->>  #define __ASM_PSCI_H
+>>  #endif /* CONFIG_PM_SLEEP */
 >>
->> +#define CPU_PSCI_IDLE_INDEX_MAX              0xff
->> +
->>  int psci_init(void);
->>
->>  #endif /* __ASM_PSCI_H */
->> diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
->> index 4ebc146..a761513 100644
->> --- a/arch/arm64/kernel/psci.c
->> +++ b/arch/arm64/kernel/psci.c
->> @@ -70,6 +70,7 @@ enum psci_function {
->>  static DEFINE_PER_CPU_READ_MOSTLY(struct psci_power_state *, psci_power_state);
->>
->>  static u32 psci_function_id[PSCI_FN_MAX];
->> +static u32 cpu_psci_idle_state_count;
->>
->>  static int psci_to_linux_errno(int errno)
+>> -static struct generic_pm_domain_data *__pm_genpd_alloc_dev_data(struct device *dev)
+>> +static int genpd_alloc_dev_data(struct generic_pm_domain *genpd,
+>> +                             struct device *dev, struct gpd_timing_data *td)
 >>  {
->> @@ -239,6 +240,8 @@ static int __maybe_unused cpu_psci_cpu_init_idle(struct device_node *cpu_node,
->>       if (!count)
->>               return -ENODEV;
->>
->> +     cpu_psci_idle_state_count = count;
+>>       struct generic_pm_domain_data *gpd_data;
+>> +     int ret;
 >> +
->>       psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
->>       if (!psci_states)
->>               return -ENOMEM;
->> @@ -521,6 +524,11 @@ static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
->>  {
->>       int ret;
->>       struct psci_power_state *state = __get_cpu_var(psci_power_state);
+>> +     dev_dbg(dev, "%s()\n", __func__);
 >> +
->> +     /* Check and select the deepest idle state */
->> +     if (index == CPU_PSCI_IDLE_INDEX_MAX)
->> +             index = cpu_psci_idle_state_count;
+>> +     ret = dev_pm_get_subsys_data(dev);
+>> +     if (ret)
+>> +             return ret;
+>>
+>>       gpd_data = kzalloc(sizeof(*gpd_data), GFP_KERNEL);
+>> -     if (!gpd_data)
+>> -             return NULL;
+>> +     if (!gpd_data) {
+>> +             ret = -ENOMEM;
+>> +             goto err_alloc;
+>> +     }
+>>
+>>       mutex_init(&gpd_data->lock);
+>> +     gpd_data->base.dev = dev;
+>> +     gpd_data->td.constraint_changed = true;
+>> +     gpd_data->td.effective_constraint_ns = -1;
+>>       gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
+>> +     if (td)
+>> +             gpd_data->td = *td;
 >> +
->>       /*
->>        * idle state index 0 corresponds to wfi, should never be called
->>        * from the cpu_suspend operations.
->> --
->> 1.9.1
->>
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> +     spin_lock_irq(&dev->power.lock);
+>> +     if (!dev->power.subsys_data->domain_data)
+>> +             dev->power.subsys_data->domain_data = &gpd_data->base;
+>> +     else
+>> +             ret = -EINVAL;
+>> +     spin_unlock_irq(&dev->power.lock);
+>> +
+>> +     if (ret)
+>> +             goto err_data;
+>> +
+>> +     if (genpd->attach_dev)
+>> +             genpd->attach_dev(dev);
+>
+> To me, it doesn't seem right that the attach is done in the 'alloc'
+> function.  IMO, the attach should stay in _add_device()
+
+That's right! I fix in a v2.
+
+Kind regards
+Uffe
