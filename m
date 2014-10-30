@@ -1,358 +1,42 @@
-From: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Subject: [PATCH v2] PM / Sleep: Timer quiesce in freeze state
-Date: Thu, 30 Oct 2014 10:58:23 +0800
-Message-ID: <5451A94F.1090200@linux.intel.com>
-References: <5446787E.60202@linux.intel.com> <20141024153656.GM12706@worktop.programming.kicks-ass.net> <544DE5CF.9040501@linux.intel.com> <20141027074419.GE10501@worktop.programming.kicks-ass.net> <544F4B31.7050308@linux.intel.com> <20141028082503.GN3337@twins.programming.kicks-ass.net> <5450253B.5020802@linux.intel.com> <20141029082432.GV3337@twins.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Subject: [PATCH 2/3] arm64: psci: fix cpu_suspend to check idle state type for index
+Date: Thu, 30 Oct 2014 09:25:37 +0530
+Message-ID: <1414641338-25279-2-git-send-email-amit.daniel@samsung.com>
+References: <1414641338-25279-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:29770 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751473AbaJ3C6k (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 29 Oct 2014 22:58:40 -0400
-In-Reply-To: <20141029082432.GV3337@twins.programming.kicks-ass.net>
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:60535 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752297AbaJ3Dzn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Oct 2014 23:55:43 -0400
+Received: by mail-pd0-f177.google.com with SMTP id v10so4232822pde.8
+        for <linux-pm@vger.kernel.org>; Wed, 29 Oct 2014 20:55:42 -0700 (PDT)
+In-Reply-To: <1414641338-25279-1-git-send-email-amit.daniel@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, Vladimir Murzin <vladimir.murzin@arm.com>
 
-The patch is based on v3.17, merged with Rafael's pm+acpi-3.18-rc1 tag from
-linux-pm.git tree.
+This fix rectifies the psci cpu_suspend to check the C-state type
+corresponding to the requested index.
 
-The patch is based on the patch PeterZ initially wrote.
+Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
-Freeze is a general power saving state that processes are frozen, devices
-are suspended and CPUs are in idle state. However, when the system enters
-freeze state, there are a few timers keep ticking and hence consumes more
-power unnecessarily. The observed timer events in freeze state are:
-- tick_sched_timer
-- watchdog lockup detector
-- realtime scheduler period timer
+ arch/arm64/kernel/psci.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The system power consumption in freeze state will be reduced significantly
-if we quiesce these timers.
-
-On Baytrail-T(ASUS_T100) platform, when the system is freezed to low power
-idle state(S0ix), quiescing these timers saves 29.8% power(94.48mw -> 66.32mw).
-
-The patch is also tested on:
-- Sandybrdige-EP system, both RTC alarm and power button are able to wake
-  the system up from freeze state.
-- HP laptop EliteBook 8460p, both RTC alarm and power button are able to
-  wake the system up from freeze state.
-
-Signed-off-by: Aubrey Li <aubrey.li@linux.intel.com>
-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Alan Cox <alan@linux.intel.com>
----
- arch/x86/kernel/apic/apic.c        |   8 ++
- drivers/cpuidle/cpuidle.c          |  12 +++
- kernel/power/suspend.c             | 185 +++++++++++++++++++++++++++++++++++--
- kernel/time/timekeeping.c          |   4 +-
- kernel/time/timekeeping_internal.h |   3 +
- 5 files changed, 204 insertions(+), 8 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 6776027..f2bb645 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -917,6 +917,14 @@ static void local_apic_timer_interrupt(void)
- 	 */
- 	inc_irq_stat(apic_timer_irqs);
+diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
+index 2178d6e..4ebc146 100644
+--- a/arch/arm64/kernel/psci.c
++++ b/arch/arm64/kernel/psci.c
+@@ -530,7 +530,7 @@ static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
+ 	if (WARN_ON_ONCE(!index || !state))
+ 		return -EINVAL;
  
-+	/*
-+	 * if timekeeping is suspended, the clock event device will be
-+	 * suspended as well, so we are not supposed to invoke the event
-+	 * handler of clock event device.
-+	 */
-+	if (unlikely(timekeeping_suspended))
-+		return;
-+
- 	evt->event_handler(evt);
- }
- 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index ee9df5e..8f84f40 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -119,6 +119,18 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	ktime_t time_start, time_end;
- 	s64 diff;
- 
-+	/*
-+	 * under the scenario of use deepest idle state, the timekeeping
-+	 * could be suspended as well as the clock source device, so we
-+	 * bypass the idle counter update for this case
-+	 */
-+	if (unlikely(use_deepest_state)) {
-+		entered_state = target_state->enter(dev, drv, index);
-+		if (!cpuidle_state_is_coupled(dev, drv, entered_state))
-+			local_irq_enable();
-+		return entered_state;
-+	}
-+
- 	trace_cpu_idle_rcuidle(index, dev->cpu);
- 	time_start = ktime_get();
- 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 4ca9a33..660fd15 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -28,16 +28,20 @@
- #include <linux/ftrace.h>
- #include <trace/events/power.h>
- #include <linux/compiler.h>
-+#include <linux/stop_machine.h>
-+#include <linux/clockchips.h>
-+#include <linux/hrtimer.h>
- 
- #include "power.h"
-+#include "../time/tick-internal.h"
-+#include "../time/timekeeping_internal.h"
- 
- const char *pm_labels[] = { "mem", "standby", "freeze", NULL };
- const char *pm_states[PM_SUSPEND_MAX];
- 
- static const struct platform_suspend_ops *suspend_ops;
- static const struct platform_freeze_ops *freeze_ops;
--static DECLARE_WAIT_QUEUE_HEAD(suspend_freeze_wait_head);
--static bool suspend_freeze_wake;
-+static int suspend_freeze_wake;
- 
- void freeze_set_ops(const struct platform_freeze_ops *ops)
- {
-@@ -48,22 +52,191 @@ void freeze_set_ops(const struct platform_freeze_ops *ops)
- 
- static void freeze_begin(void)
- {
--	suspend_freeze_wake = false;
-+	suspend_freeze_wake = -1;
-+}
-+
-+enum freezer_state {
-+	FREEZER_NONE,
-+	FREEZER_PICK_TK,
-+	FREEZER_SUSPEND_CLKEVT,
-+	FREEZER_SUSPEND_TK,
-+	FREEZER_IDLE,
-+	FREEZER_RESUME_TK,
-+	FREEZER_RESUME_CLKEVT,
-+	FREEZER_EXIT,
-+};
-+
-+struct freezer_data {
-+	int			thread_num;
-+	atomic_t		thread_ack;
-+	enum freezer_state	state;
-+};
-+
-+static void set_state(struct freezer_data *fd, enum freezer_state state)
-+{
-+	/* set ack counter */
-+	atomic_set(&fd->thread_ack, fd->thread_num);
-+	/* guarantee the write ordering between ack counter and state */
-+	smp_wmb();
-+	fd->state = state;
-+}
-+
-+static void ack_state(struct freezer_data *fd)
-+{
-+	if (atomic_dec_and_test(&fd->thread_ack))
-+		set_state(fd, fd->state + 1);
-+}
-+
-+static void freezer_pick_tk(int cpu)
-+{
-+	if (tick_do_timer_cpu == TICK_DO_TIMER_NONE) {
-+		static DEFINE_SPINLOCK(lock);
-+
-+		spin_lock(&lock);
-+		if (tick_do_timer_cpu == TICK_DO_TIMER_NONE)
-+			tick_do_timer_cpu = cpu;
-+		spin_unlock(&lock);
-+	}
-+}
-+
-+static void freezer_suspend_clkevt(int cpu)
-+{
-+	if (tick_do_timer_cpu == cpu)
-+		return;
-+
-+	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
-+}
-+
-+static void freezer_suspend_tk(int cpu)
-+{
-+	if (tick_do_timer_cpu != cpu)
-+		return;
-+
-+	timekeeping_suspend();
-+
-+}
-+
-+static void freezer_idle(int cpu)
-+{
-+	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
-+	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-+
-+	stop_critical_timings();
-+
-+	while (suspend_freeze_wake == -1) {
-+		int next_state;
-+
-+		/*
-+		 * interrupt must be disabled before cpu enters idle
-+		 */
-+		local_irq_disable();
-+
-+		next_state = cpuidle_select(drv, dev);
-+		if (next_state < 0) {
-+			arch_cpu_idle();
-+			continue;
-+		}
-+		/*
-+		 * cpuidle_enter will return with interrupt enabled
-+		 */
-+		cpuidle_enter(drv, dev, next_state);
-+	}
-+
-+	if (suspend_freeze_wake == cpu)
-+		kick_all_cpus_sync();
-+
-+	/*
-+	 * We disable interrupt here for the rest of resume operations
-+	 */
-+	local_irq_disable();
-+	start_critical_timings();
-+}
-+
-+static void freezer_resume_tk(int cpu)
-+{
-+	if (tick_do_timer_cpu != cpu)
-+		return;
-+
-+	timekeeping_resume();
-+}
-+
-+static void freezer_resume_clkevt(int cpu)
-+{
-+	if (tick_do_timer_cpu == cpu) {
-+		/*
-+		 * Turn on the interrupt on the tick timer CPU as freezer
-+		 * tasks are finished.
-+		 */
-+		local_irq_enable();
-+		return;
-+	}
-+
-+	touch_softlockup_watchdog();
-+	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
-+	hrtimers_resume();
-+	/*
-+	 * Turn on the interrupt on the non-tick-timer CPUs as freezer
-+	 * tasks are finished
-+	 */
-+	local_irq_enable();
-+}
-+
-+typedef void (*freezer_fn)(int);
-+
-+static freezer_fn freezer_func[FREEZER_EXIT] = {
-+	NULL,
-+	freezer_pick_tk,
-+	freezer_suspend_clkevt,
-+	freezer_suspend_tk,
-+	freezer_idle,
-+	freezer_resume_tk,
-+	freezer_resume_clkevt,
-+};
-+
-+static int freezer_stopper_fn(void *arg)
-+{
-+	struct freezer_data *fd = arg;
-+	enum freezer_state state = FREEZER_NONE;
-+	int cpu = smp_processor_id();
-+
-+	do {
-+		cpu_relax();
-+		if (fd->state != state) {
-+			state = fd->state;
-+			if (freezer_func[state])
-+				(*freezer_func[state])(cpu);
-+			ack_state(fd);
-+		}
-+	} while (fd->state != FREEZER_EXIT);
-+
-+	return 0;
- }
- 
- static void freeze_enter(void)
- {
-+	struct freezer_data fd;
-+
- 	cpuidle_use_deepest_state(true);
- 	cpuidle_resume();
--	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
-+
-+	get_online_cpus();
-+
-+	fd.thread_num = num_online_cpus();
-+	set_state(&fd, FREEZER_PICK_TK);
-+
-+	__stop_machine(freezer_stopper_fn, &fd, cpu_online_mask);
-+
-+	put_online_cpus();
-+
- 	cpuidle_pause();
- 	cpuidle_use_deepest_state(false);
- }
- 
- void freeze_wake(void)
- {
--	suspend_freeze_wake = true;
--	wake_up(&suspend_freeze_wait_head);
-+	if (suspend_freeze_wake != -1)
-+		return;
-+	suspend_freeze_wake = smp_processor_id();
- }
- EXPORT_SYMBOL_GPL(freeze_wake);
- 
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index ec1791f..23d8feb 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -1114,7 +1114,7 @@ void timekeeping_inject_sleeptime(struct timespec *delta)
-  * xtime/wall_to_monotonic/jiffies/etc are
-  * still managed by arch specific suspend/resume code.
-  */
--static void timekeeping_resume(void)
-+void timekeeping_resume(void)
- {
- 	struct timekeeper *tk = &tk_core.timekeeper;
- 	struct clocksource *clock = tk->tkr.clock;
-@@ -1195,7 +1195,7 @@ static void timekeeping_resume(void)
- 	hrtimers_resume();
- }
- 
--static int timekeeping_suspend(void)
-+int timekeeping_suspend(void)
- {
- 	struct timekeeper *tk = &tk_core.timekeeper;
- 	unsigned long flags;
-diff --git a/kernel/time/timekeeping_internal.h b/kernel/time/timekeeping_internal.h
-index 4ea005a..ed7a574 100644
---- a/kernel/time/timekeeping_internal.h
-+++ b/kernel/time/timekeeping_internal.h
-@@ -26,4 +26,7 @@ static inline cycle_t clocksource_delta(cycle_t now, cycle_t last, cycle_t mask)
- }
- #endif
- 
-+extern int timekeeping_suspend(void);
-+extern void timekeeping_resume(void);
-+
- #endif /* _TIMEKEEPING_INTERNAL_H */
+-	if (state->type == PSCI_POWER_STATE_TYPE_STANDBY)
++	if (state[index - 1].type == PSCI_POWER_STATE_TYPE_STANDBY)
+ 		ret = psci_ops.cpu_suspend(state[index - 1], 0);
+ 	else
+ 		ret = __cpu_suspend(index, psci_suspend_finisher);
 -- 
 1.9.1
+
