@@ -1,73 +1,43 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH v16 2/5] dt-bindings: document Rockchip thermal
-Date: Thu, 30 Oct 2014 21:17:19 +0100
-Message-ID: <1823150.6k52MgLRcZ@phil>
-References: <1414549959-13699-1-git-send-email-caesar.wang@rock-chips.com> <1414549959-13699-3-git-send-email-caesar.wang@rock-chips.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH] PM / Domains: Change prototype for the ->attach_dev() callback
+Date: Thu, 30 Oct 2014 13:38:30 -0700
+Message-ID: <7h4mul9ttl.fsf@deeprootsystems.com>
+References: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org>
+	<3981560.mBph1QJkfl@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:33368 "EHLO gloria.sntech.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932513AbaJ3URa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 30 Oct 2014 16:17:30 -0400
-In-Reply-To: <1414549959-13699-3-git-send-email-caesar.wang@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <3981560.mBph1QJkfl@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Thu, 30 Oct 2014 21:04:15 +0100")
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <caesar.wang@rock-chips.com>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com
 
-Am Mittwoch, 29. Oktober 2014, 10:32:36 schrieb Caesar Wang:
-> This add the necessary binding documentation for the thermal
-> found on Rockchip SoCs
-> 
-> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
-> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
-> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> ---
->  .../bindings/thermal/rockchip-thermal.txt          | 62
-> ++++++++++++++++++++++ 1 file changed, 62 insertions(+)
->  create mode 100644
-> Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt new file
-> mode 100644
-> index 0000000..3061982
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-> @@ -0,0 +1,62 @@
-> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
-> +
-> +Required properties:
-> +- compatible : "rockchip,rk3288-tsadc"
-> +- reg : physical base address of the controller and length of memory mapped
-> +	region.
-> +- interrupts : The interrupt number to the cpu. The interrupt specifier
-> format +	       depends on the interrupt controller.
-> +- clocks : Must contain an entry for each entry in clock-names.
-> +- clock-names : Shall be "tsadc" for the converter-clock, and "apb_pclk"
-> for +		the peripheral clock.
-> +- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
-> +- hw-shut-temp : The hardware-controlled shutdown temperature value. +-
-> tsadc-tshut-mode : The hardware-controlled shutdown mode 0:CRU 1:GPIO. +-
-> tsadc-tshut-polarity : The hardware-controlled active polarity 0:LOW
-> 1:HIGH. +
-> +Exiample:
-> +tsadc: tsadc@ff280000 {
-> +	compatible = "rockchip,rk3288-tsadc";
-> +	reg = <0xff280000 0x100>;
-> +	interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-> +	clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
-> +	clock-names = "tsadc", "apb_pclk";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&otp_out>;
-> +	#thermal-sensor-cells = <1>;
-> +	hw-shut-temp = <125000>;
-> +	tsadc-tshut-mode = <0>;
-> +	tsadc-tshut-polarity = <0>;
+"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 
-these last 3 seem to be specific to this tsadc so should probably have a 
-"rockchip,"-prefix
+> On Thursday, October 30, 2014 01:02:49 PM Ulf Hansson wrote:
+>> Convert the prototype to return and int. This is just an initial step,
+>> needed to support error handling.
+>> 
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
+Acked-by: Kevin Hilman <khilman@linaro.org>
 
+>> 
+>> This patch is intended as fix for 3.18 rc[n]. Why?
+>> 
+>> There are other SOC specific patches around that adds genpd support and which
+>> implements the ->attach_dev() callback. To prevent having an "atomic" patch
+>> during the next release cycle, let's change the prototype now instead.
+>> 
+>> Further patches will add the actual error handling in genpd and these can then
+>> be reviewed and tested thoroughly.
+>
+> So we have no users of ->attach_dev at the moment, right?
+
+Not in mainline, but there are a couple getting ready to hit -next, so
+we wanted to fix this before they arrive so that adding the error
+handling will be easier.
+
+Kevin
