@@ -1,80 +1,148 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 3/4] PM / Domains: Improve error handling while adding/removing devices
-Date: Wed, 29 Oct 2014 16:57:48 -0700
-Message-ID: <7h38a65szn.fsf@deeprootsystems.com>
-References: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
-	<1414507090-516-4-git-send-email-ulf.hansson@linaro.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 00/33] thermal: exynos: convert the driver to use per-SoC
+ type operations
+Date: Wed, 29 Oct 2014 22:44:29 -0400
+Message-ID: <20141030024426.GA29689@developer>
+References: <1411054070-25757-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1414507090-516-4-git-send-email-ulf.hansson@linaro.org> (Ulf
-	Hansson's message of "Tue, 28 Oct 2014 15:38:09 +0100")
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="r5Pyd7+fXNt84Ff3"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f170.google.com ([209.85.216.170]:50427 "EHLO
+	mail-qc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbaJ3Col (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Oct 2014 22:44:41 -0400
+Content-Disposition: inline
+In-Reply-To: <1411054070-25757-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Naveen Krishna Chatradhi <ch.naveen@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-> To improve error handling while adding/removing devices from their PM
-> domains, we need to restructure the code a bit. Let's do this by moving
-> the device specific parts into a separate function.
->
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+--r5Pyd7+fXNt84Ff3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-[...]
+Bartlomiej,
 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 9d511c7..4e5fcd7 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1358,25 +1358,81 @@ EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweron);
->  
->  #endif /* CONFIG_PM_SLEEP */
->  
-> -static struct generic_pm_domain_data *__pm_genpd_alloc_dev_data(struct device *dev)
-> +static int genpd_alloc_dev_data(struct generic_pm_domain *genpd,
-> +				struct device *dev, struct gpd_timing_data *td)
->  {
->  	struct generic_pm_domain_data *gpd_data;
-> +	int ret;
-> +
-> +	dev_dbg(dev, "%s()\n", __func__);
-> +
-> +	ret = dev_pm_get_subsys_data(dev);
-> +	if (ret)
-> +		return ret;
->  
->  	gpd_data = kzalloc(sizeof(*gpd_data), GFP_KERNEL);
-> -	if (!gpd_data)
-> -		return NULL;
-> +	if (!gpd_data) {
-> +		ret = -ENOMEM;
-> +		goto err_alloc;
-> +	}
->  
->  	mutex_init(&gpd_data->lock);
-> +	gpd_data->base.dev = dev;
-> +	gpd_data->td.constraint_changed = true;
-> +	gpd_data->td.effective_constraint_ns = -1;
->  	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
-> +	if (td)
-> +		gpd_data->td = *td;
-> +
-> +	spin_lock_irq(&dev->power.lock);
-> +	if (!dev->power.subsys_data->domain_data)
-> +		dev->power.subsys_data->domain_data = &gpd_data->base;
-> +	else
-> +		ret = -EINVAL;
-> +	spin_unlock_irq(&dev->power.lock);
-> +
-> +	if (ret)
-> +		goto err_data;
-> +
-> +	if (genpd->attach_dev)
-> +		genpd->attach_dev(dev);
+On Thu, Sep 18, 2014 at 05:27:17PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> Hi,
+>=20
+> This patch series replaces the hardware registers abstractions in
+> the Exynos thermal driver by the usage of per-SoC type operations.
+> Such solution provides simpler, easier to understand code and
+> allows removal of ~250 LOCs (~11% of the whole source code) from
+> the driver.  Some other driver improvements are now also possible
+> thanks to these changes but are scheduled at later time (like
+> consolidating code for clearing IRQs using INTCLEAR register).
+>=20
+> The patchset should not cause any functionality changes.  This
+> means that unless there are some bugs in the patches itself there
+> should be no behavior changes for the driver (this also includes
+> lack of changes in the way hardware is accessed by the driver).
+>=20
+> All testing was done on (Exynos4412 SoC based) ODROID U3 board
+> (some additional patches are needed to make the Exynos thermal
+> driver work on this hardware).
+>=20
+> Depends on:
+> - 'next' branch of linux-soc-thermal.git kernel tree from Eduardo
+> - [PATCH] thermal: exynos: use correct offset for TMU_CONTROL
+>   register on Exynos5260
+>   (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg36529=
+=2Ehtml)
+>=20
 
-To me, it doesn't seem right that the attach is done in the 'alloc'
-function.  IMO, the attach should stay in _add_device()
+Could you please refresh this series?
 
-Kevin
+I checked until patch 09, but patch 10 fails to apply:
+patching file drivers/thermal/samsung/exynos_tmu.c
+Hunk #1 succeeded at 414 (offset 15 lines).
+patching file drivers/thermal/samsung/exynos_tmu.h
+Hunk #1 succeeded at 92 with fuzz 2 (offset -4 lines).
+Hunk #2 succeeded at 117 (offset -8 lines).
+patching file drivers/thermal/samsung/exynos_tmu_data.c
+Hunk #1 FAILED at 422.
+1 out of 1 hunk FAILED -- saving rejects to file
+drivers/thermal/samsung/exynos_tmu_data.c.rej
+
+I also have in my local tree the dependency patch you mention above.
+
+Cheers,
+
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+>=20
+>=20
+> Bartlomiej Zolnierkiewicz (33):
+>   thermal: exynos: remove needless triminfo_data abstraction
+>   thermal: exynos: remove needless tmu_status abstraction
+>   thermal: exynos: remove needless threshold_temp abstraction
+>   thermal: exynos: remove needless triminfo_ctrl abstraction
+>   thermal: exynos: remove needless test_mux_addr_shift abstraction
+>   thermal: exynos: remove needless therm_trip_[mode,mask]_shift
+>     abstractions
+>   thermal: exynos: remove needless therm_trip_en_shift abstraction
+>   thermal: exynos: remove needless emul_temp_shift abstraction
+>   thermal: exynos: remove needless emul_time_shift abstraction
+>   thermal: exynos: replace tmu_irqstatus check by Exynos5440 one
+>   thermal: exynos: replace tmu_pmin check by Exynos5440 one
+>   thermal: exynos: simplify HW_TRIP level setting
+>   thermal: exynos: replace threshold_falling check by Exynos SoC type
+>     one
+>   thermal: exynos: remove TMU_SUPPORT_READY_STATUS flag
+>   thermal: exynos: remove TMU_SUPPORT_TRIM_RELOAD flag
+>   thermal: exynos: add sanitize_temp_error() helper
+>   thermal: exynos: add get_th_reg() helper
+>   thermal: exynos: add ->tmu_initialize method
+>   thermal: exynos: add get_con_reg() helper
+>   thermal: exynos: add ->tmu_control method
+>   thermal: exynos: add ->tmu_read method
+>   thermal: exynos: add get_emul_con_reg() helper
+>   thermal: exynos: add ->tmu_set_emulation method
+>   thermal: exynos: add ->tmu_clear_irqs method
+>   thermal: exynos: remove TMU_SUPPORT_FALLING_TRIP flag
+>   thermal: exynos: remove TMU_SUPPORT_EMUL_TIME flag
+>   thermal: exynos: remove TMU_SUPPORT_EMULATION flag
+>   thermal: exynos: remove TMU_SUPPORT_ADDRESS_MULTIPLE flag
+>   thermal: exynos: remove TMU_SUPPORT_MULTI_INST flag
+>   thermal: exynos: remove test_mux pdata field
+>   thermal: exynos: remove SoC type ifdefs
+>   thermal: exynos: remove __EXYNOS5420_TMU_DATA macro
+>   thermal: exynos: remove exynos_tmu_data.h include
+>=20
+>  drivers/thermal/samsung/exynos_thermal_common.h |   1 -
+>  drivers/thermal/samsung/exynos_tmu.c            | 706 +++++++++++++++++-=
+------
+>  drivers/thermal/samsung/exynos_tmu.h            | 131 +----
+>  drivers/thermal/samsung/exynos_tmu_data.c       | 260 +--------
+>  drivers/thermal/samsung/exynos_tmu_data.h       | 174 ------
+>  5 files changed, 509 insertions(+), 763 deletions(-)
+>  delete mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
+>=20
+> --=20
+> 1.8.2.3
+>=20
+
+--r5Pyd7+fXNt84Ff3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUUaYCAAoJEMLUO4d9pOJWan4H/2YDAd8+bVQmCWRmwXupVsgV
+uGCnV8TPa0lNxHWj49Kt4eWPKmDdn6v7/0aIAUGiAcUpwEd1+KOC+Lb/46GT5Tmn
+mnBS8F5XARBZZmtQvW3eX9i4xoOYEtfCl35Whuud1rdcsJQbRs8eEgJE9Lq/5k15
+tMvmElmZcJJBufQbJ2aBDoEFAFyajjIm3jzvk4WVuDgJ+0vaGvgdv+f86jui3HMg
+hYArjxrKzxX9Vmc9IREPj0qnSkGBUWVwncppD/PfM4ZMsc4R9zukZr2wcUZaPfvN
+rmrOLLJvSrVbmxjyfNkne7LmaOR4LJwZy9drRTCDiATpK5+hskI6srI+RB9pjMU=
+=gdVE
+-----END PGP SIGNATURE-----
+
+--r5Pyd7+fXNt84Ff3--
