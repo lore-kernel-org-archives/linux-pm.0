@@ -1,61 +1,64 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 4/4] PM / Domains: Let the ->attach_dev() callback return
- an error code
-Date: Thu, 30 Oct 2014 12:34:19 +0100
-Message-ID: <CAPDyKFqaZo1mNNO=HVe-6SiCFVqnfZSpJNf=B0SMw6bm9HpaZA@mail.gmail.com>
-References: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
-	<1414507090-516-5-git-send-email-ulf.hansson@linaro.org>
-	<CAMuHMdVn2mfk5v8MQshU0gko+dL9xtCT_zBuqyntHHrmxjwfSA@mail.gmail.com>
-	<7h1tpq7fba.fsf@deeprootsystems.com>
+From: Amit Kachhap <amit.kachhap@gmail.com>
+Subject: Re: [PATCH 1/3] arm64: psci: warn if psci_power_state variable is not initialised
+Date: Thu, 30 Oct 2014 17:05:03 +0530
+Message-ID: <CADGdYn4H_nNhrc7cGXzzVVaL_bT03O05hBjoRCG64dfAxCHxQw@mail.gmail.com>
+References: <1414641338-25279-1-git-send-email-amit.daniel@samsung.com>
+	<20141030102948.GB17843@red-moon>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <7h1tpq7fba.fsf@deeprootsystems.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chip>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f179.google.com ([209.85.160.179]:38537 "EHLO
+	mail-yk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758646AbaJ3LfD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 07:35:03 -0400
+Received: by mail-yk0-f179.google.com with SMTP id 131so2198752ykp.10
+        for <linux-pm@vger.kernel.org>; Thu, 30 Oct 2014 04:35:03 -0700 (PDT)
+In-Reply-To: <20141030102948.GB17843@red-moon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, Vladimir Murzin <Vladimir.Murzin@arm.com>
 
-On 29 October 2014 22:10, Kevin Hilman <khilman@kernel.org> wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
->
->> Hi Ulf, Rafael,
+On Thu, Oct 30, 2014 at 3:59 PM, Lorenzo Pieralisi
+<lorenzo.pieralisi@arm.com> wrote:
+> On Thu, Oct 30, 2014 at 03:55:36AM +0000, Amit Daniel Kachhap wrote:
+>> Without this cpu_suspend may cause crash dump when psci cpuidle
+>> is not initialised and cpu_suspend is called.
 >>
->> On Tue, Oct 28, 2014 at 3:38 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> Typically an ->attach_dev() callback would fetch some PM resourses.
->>>
->>> Those operations, like for example clk_get() may fail with different
->>> errors, including -EPROBE_DEFER. Instead of ignoring these errors and
->>> potentially only print an error message, let's propagate them to give
->>> callers the option to handle them.
->>>
->>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> ---
+>>  arch/arm64/kernel/psci.c | 6 ++++--
+>>  1 file changed, 4 insertions(+), 2 deletions(-)
 >>
->> Given that several patch series using ->attach_dev() are already floating
->> around and will be in -next soon, what is the plan of getting this in?
+>> diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
+>> index 866c1c8..2178d6e 100644
+>> --- a/arch/arm64/kernel/psci.c
+>> +++ b/arch/arm64/kernel/psci.c
+>> @@ -523,9 +523,11 @@ static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
+>>       struct psci_power_state *state = __get_cpu_var(psci_power_state);
+>>       /*
+>>        * idle state index 0 corresponds to wfi, should never be called
+>> -      * from the cpu_suspend operations
+>> +      * from the cpu_suspend operations.
+>> +      * Also psci_power_state variable should have been populated by
+>> +      * above init idle routine.
+>>        */
+>> -     if (WARN_ON_ONCE(!index))
+>> +     if (WARN_ON_ONCE(!index || !state))
+>>               return -EINVAL;
 >
-> Shall we take this as a Reviewed-by or Acked-by for the series?  :)
->
->> Doing it ASAP (in v3.18-rc3)?
->
-> IMO, this isn't at all appropriate for -rc since it's not fixing a
-> regression. Also, this series includes other cleanups that are not
-> really fixes either.  At this point of the -rc cycle, we need to focus
-> only on regression fixes.
->
->> Delaying this to v3.19-rc2, which will require an atomic fixing of its users?
->> Any other option?
->
-> I don't see any users of this in -next yet, so I think doing a simple
-> patch to the prototype and fixing up any users before they hit -next is
-> the right approach.  Errors will be ignored, but that's not change from
-> today. :)
->
-> Then the rest of this cleanup and behavior change stuff can continue to
-> be reviewed and get broader testing before merge.
+> I thought about this when developing the code, at the moment this can't
+> happen so I did not add any check for that. I would wait for the dust
+> to settle on the API usage (and if we need it for something different
+> than idle) before adding checks that might turn out useless, so we will
+> keep this patch on the back-burner for now.
 
-Okay, I will follow your suggestions and send a patch that only change
-the prototype, intended as a fix for rc[n].
+Ok right this fix is not mandatory.
 
-Kind regards
-Uffe
+>
+> Thanks,
+> Lorenzo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
