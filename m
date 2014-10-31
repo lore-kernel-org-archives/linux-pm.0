@@ -1,111 +1,84 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v2] cpufreq: Guard against not-yet-initialized policies in cpufreq_cpu_get()
-Date: Fri, 31 Oct 2014 09:53:52 +0100
-Message-ID: <CAAObsKCGJ1NETGD1vcDzEEREjA=8cZn0PY15+OVyK6cN+eHWhw@mail.gmail.com>
-References: <20141029024426.GA7468@kroah.com> <1414597547-16506-1-git-send-email-tomeu.vizoso@collabora.com>
- <1537896.k4L3VHfc5p@vostro.rjw.lan>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v8 1/5] PM / Runtime: Add getter for querying the IRQ safe
+ option
+Date: Fri, 31 Oct 2014 10:14:55 +0100
+Message-ID: <1414746895.6797.3.camel@AMDC1943>
+References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com>
+ <1413795888-18559-2-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f46.google.com ([209.85.192.46]:51580 "EHLO
-	mail-qg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753923AbaJaIyN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Oct 2014 04:54:13 -0400
-In-Reply-To: <1537896.k4L3VHfc5p@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-reply-to: <1413795888-18559-2-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-On 29 October 2014 22:24, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, October 29, 2014 04:45:47 PM Tomeu Vizoso wrote:
->> There's a substantial window of opportunity from the time the policy objects
->> are created until they are initialized, causing this:
->>
->> WARNING: CPU: 1 PID: 64 at include/linux/kref.h:47 kobject_get+0x64/0x70()
->> Modules linked in:
->> CPU: 1 PID: 64 Comm: irq/77-tegra-ac Not tainted 3.18.0-rc1-next-20141027ccu-00049-g21a0041 #248
->> [<c0016fac>] (unwind_backtrace) from [<c001272c>] (show_stack+0x10/0x14)
->> [<c001272c>] (show_stack) from [<c0601920>] (dump_stack+0x98/0xd8)
->> [<c0601920>] (dump_stack) from [<c00288d8>] (warn_slowpath_common+0x70/0x8c)
->> [<c00288d8>] (warn_slowpath_common) from [<c0028990>] (warn_slowpath_null+0x1c/0x24)
->> [<c0028990>] (warn_slowpath_null) from [<c02227bc>] (kobject_get+0x64/0x70)
->> [<c02227bc>] (kobject_get) from [<c03e5238>] (cpufreq_cpu_get+0x88/0xc8)
->> [<c03e5238>] (cpufreq_cpu_get) from [<c03e52ec>] (cpufreq_get+0xc/0x64)
->> [<c03e52ec>] (cpufreq_get) from [<c0287818>] (actmon_thread_isr+0x140/0x1a4)
->> [<c0287818>] (actmon_thread_isr) from [<c0068a68>] (irq_thread_fn+0x1c/0x40)
->> [<c0068a68>] (irq_thread_fn) from [<c0068d84>] (irq_thread+0x134/0x174)
->> [<c0068d84>] (irq_thread) from [<c0040284>] (kthread+0xdc/0xf4)
->> [<c0040284>] (kthread) from [<c000f4b8>] (ret_from_fork+0x14/0x3c)
->>
->> This commit checks that initialization has finished before trying to do
->> anything with the policy.
->>
->> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
->> ---
->>  drivers/cpufreq/cpufreq.c | 7 ++++++-
->>  1 file changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index 644b54e..7b84d1a 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -48,6 +48,9 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
->>  /* Flag to suspend/resume CPUFreq governors */
->>  static bool cpufreq_suspended;
->>
->> +/* Flag that tells whether initialization is completed */
->> +static atomic_t cpufreq_initialized = ATOMIC_INIT(0);
->> +
->>  static inline bool has_target(void)
->>  {
->>       return cpufreq_driver->target_index || cpufreq_driver->target;
->> @@ -211,7 +214,7 @@ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
->>       /* get the cpufreq driver */
->>       read_lock_irqsave(&cpufreq_driver_lock, flags);
->>
->> -     if (cpufreq_driver) {
->> +     if (atomic_read(&cpufreq_initialized)) {
->
-> The atomics don't help you here, because they don't make race conditions go
-> away.  Memory barriers would be needed for that, but then there should be an
-> alternative way to address the problem at hand.
+On pon, 2014-10-20 at 11:04 +0200, Krzysztof Kozlowski wrote:
+> Add a simple getter pm_runtime_is_irq_safe() for querying whether runtime
+> PM IRQ safe was set or not.
+> 
+> Various bus drivers implementing runtime PM may use choose to suspend
+> differently based on IRQ safeness status of child driver (e.g. do not
+> unprepare the clock if IRQ safe is not set).
+> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Yeah, now I'm not sure that atomic is even needed here, as
-cpufreq_cpu_get is already returning NULL if the cpufreq_driver hasn't
-been registered yet, so the callers should be already retrying.
+Rafael, Len, Pavel,
 
->>               /* get the CPU */
->>               policy = per_cpu(cpufreq_cpu_data, cpu);
->>               if (policy)
->> @@ -1289,6 +1292,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
->>       kobject_uevent(&policy->kobj, KOBJ_ADD);
->>       up_read(&cpufreq_rwsem);
->>
->> +     atomic_set(&cpufreq_initialized, 1);
->> +
->
-> __cpufreq_add_dev() can be run for many times.  Why is the first one only
-> relevant?
+Is proposed API ok? Do you have any comments?
 
-I see now. What about having the flag in struct cpufreq_policy instead?
+I'll upload whole patchset to Russell's patch tracking system. However
+an ack from PM maintainer is probably needed.
 
-TBH, I find the initialization sequence in cpufreq quite daunting, so
-any guidance on this will be appreciated.
+Best regards,
+Krzysztof
 
-Regards,
 
-Tomeu
+> ---
+>  Documentation/power/runtime_pm.txt | 4 ++++
+>  include/linux/pm_runtime.h         | 6 ++++++
+>  2 files changed, 10 insertions(+)
+> 
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index f32ce5419573..397b81593142 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -468,6 +468,10 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
+>      - set the power.irq_safe flag for the device, causing the runtime-PM
+>        callbacks to be invoked with interrupts off
+>  
+> +  bool pm_runtime_is_irq_safe(struct device *dev);
+> +    - return true if power.irq_safe flag was set for the device, causing
+> +      the runtime-PM callbacks to be invoked with interrupts off
+> +
+>    void pm_runtime_mark_last_busy(struct device *dev);
+>      - set the power.last_busy field to the current time
+>  
+> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> index 367f49b9a1c9..44d74f0f182e 100644
+> --- a/include/linux/pm_runtime.h
+> +++ b/include/linux/pm_runtime.h
+> @@ -128,6 +128,11 @@ static inline void pm_runtime_mark_last_busy(struct device *dev)
+>  	ACCESS_ONCE(dev->power.last_busy) = jiffies;
+>  }
+>  
+> +static inline bool pm_runtime_is_irq_safe(struct device *dev)
+> +{
+> +	return dev->power.irq_safe;
+> +}
+> +
+>  #else /* !CONFIG_PM_RUNTIME */
+>  
+>  static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
+> @@ -167,6 +172,7 @@ static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+>  
+>  static inline void pm_runtime_no_callbacks(struct device *dev) {}
+>  static inline void pm_runtime_irq_safe(struct device *dev) {}
+> +static inline bool pm_runtime_is_irq_safe(struct device *dev) { return false; }
+>  
+>  static inline bool pm_runtime_callbacks_present(struct device *dev) { return false; }
+>  static inline void pm_runtime_mark_last_busy(struct device *dev) {}
 
->>       pr_debug("initialization complete\n");
->>
->>       return 0;
->>
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
