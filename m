@@ -1,84 +1,65 @@
-From: Tim Harvey <tharvey@gateworks.com>
-Subject: [PATCH 2/5] regulator: add function to determine if a regulator is in bypass mode
-Date: Thu, 30 Oct 2014 21:27:08 -0700
-Message-ID: <1414729631-11005-3-git-send-email-tharvey@gateworks.com>
-References: <1414729631-11005-1-git-send-email-tharvey@gateworks.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1414729631-11005-1-git-send-email-tharvey@gateworks.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Philipp Zabel <p.zabel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, Shawn Guo <shawn.guo@freescale.com>, Lucas Stach <l.stach@pengutronix.de>, Silvio F <silvio.fricke@gmail.com>, Christian Hemp <c.hemp@phytec.de>, Russell King <rmk+kernel@arm.linux.org.uk>, Iain Paton <ipaton0@gmail.com>, linux-pm@vger.kernel.org
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH v2] cpufreq: allow powersave governor as the default without
+ expert mode
+Date: Thu, 30 Oct 2014 23:15:09 -0700
+Message-ID: <545328ED.20900@intel.com>
+References: <1413322689-6195-1-git-send-email-jgeboski@gmail.com> <1413459431-12355-1-git-send-email-jgeboski@gmail.com> <1463060.7rHn3OIKry@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:38250 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753002AbaJaGPN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Oct 2014 02:15:13 -0400
+In-Reply-To: <1463060.7rHn3OIKry@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, James Geboski <jgeboski@gmail.com>
+Cc: dirk.j.brandewie@intel.com, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 'Dirk Brandewie' <dirk.brandewie@gmail.com>
 
-Regulators can be configured to allow bypass mode and can be told by a consumer 
-that they are allowed to go into bypass mode from that consumer's perspective.
-This adds a function to determine if the regulator actually has gone into
-bypass mode (meaning all consumers allowed it to do so).
+On 10/30/2014 02:18 PM, Rafael J. Wysocki wrote:
+> On Thursday, October 16, 2014 07:37:11 AM James Geboski wrote:
+>> The intel_pstate driver only supports the performance and the powersave
+>> governors. With the performance governor ensuring the highest possible
+>> performance settings, userspace tools fail to make any lasting changes.
+>> In order to allow userspace tools to make modifications to the settings,
+>> the powersave governor must be in use. This makes having the powersave
+>> governor as the default convenient for systems where the intel_pstate
+>> driver is being employed. Having to enable expert mode in the kernel
+>> configuration is just a headache for such a trivial task.
+>>
+>> This patch applies to all kernel versions 2.6.38 or greater after the
+>> migration from CONFIG_EMBEDDED to CONFIG_EXPERT (6a108a14fa35). Most
+>> importantly, this applies to kernel versions 3.9 or greater when the
+>> intel_pstate driver was introduced.
+>>
+>> Signed-off-by: James Geboski <jgeboski@gmail.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> Dirk, any objections?
 
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Tim Harvey <tharvey@gateworks.com>
----
- drivers/regulator/core.c           | 23 +++++++++++++++++++++++
- include/linux/regulator/consumer.h |  6 ++++++
- 2 files changed, 29 insertions(+)
+No objection.
+>
+>> ---
+>> ChangeLog v2:
+>>    - Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>   drivers/cpufreq/Kconfig | 1 -
+>>   1 file changed, 1 deletion(-)
+>>
+>> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+>> index 3489f8f..73df7db 100644
+>> --- a/drivers/cpufreq/Kconfig
+>> +++ b/drivers/cpufreq/Kconfig
+>> @@ -63,7 +63,6 @@ config CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+>>
+>>   config CPU_FREQ_DEFAULT_GOV_POWERSAVE
+>>   	bool "powersave"
+>> -	depends on EXPERT
+>>   	select CPU_FREQ_GOV_POWERSAVE
+>>   	help
+>>   	  Use the CPUFreq governor 'powersave' as default. This sets
+>>
+>
 
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 6d4a627..904c271 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -3150,6 +3150,29 @@ int regulator_allow_bypass(struct regulator *regulator, bool enable)
- EXPORT_SYMBOL_GPL(regulator_allow_bypass);
- 
- /**
-+ * regulator_is_bypass - determine if a regulator is in bypass mode
-+ *
-+ * @regulator: Regulator to configure
-+ *
-+ * return positive if regulator is in bypass mode.
-+ */
-+int regulator_is_bypass(struct regulator *regulator)
-+{
-+	struct regulator_dev *rdev = regulator->rdev;
-+	int ret;
-+
-+	if (!regulator)
-+		return -EINVAL;
-+
-+	mutex_lock(&rdev->mutex);
-+	ret = regulator->bypass ? 1 : 0;
-+	mutex_unlock(&rdev->mutex);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(regulator_is_bypass);
-+
-+/**
-  * regulator_register_notifier - register regulator event notifier
-  * @regulator: regulator source
-  * @nb: notifier block
-diff --git a/include/linux/regulator/consumer.h b/include/linux/regulator/consumer.h
-index 972090a..a766946 100644
---- a/include/linux/regulator/consumer.h
-+++ b/include/linux/regulator/consumer.h
-@@ -237,6 +237,7 @@ unsigned int regulator_get_mode(struct regulator *regulator);
- int regulator_set_optimum_mode(struct regulator *regulator, int load_uA);
- 
- int regulator_allow_bypass(struct regulator *regulator, bool allow);
-+int regulator_is_bypass(struct regulator *regulator);
- 
- struct regmap *regulator_get_regmap(struct regulator *regulator);
- int regulator_get_hardware_vsel_register(struct regulator *regulator,
-@@ -493,6 +494,11 @@ static inline int regulator_allow_bypass(struct regulator *regulator,
- 	return 0;
- }
- 
-+static inline int regulator_is_bypass(struct regulator *regulator)
-+{
-+	return 0;
-+}
-+
- static inline struct regmap *regulator_get_regmap(struct regulator *regulator)
- {
- 	return ERR_PTR(-EOPNOTSUPP);
--- 
-1.8.3.2
