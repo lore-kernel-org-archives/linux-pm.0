@@ -1,110 +1,79 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: Re: [PATCH v16 2/5] dt-bindings: document Rockchip thermal
-Date: Fri, 31 Oct 2014 08:44:25 +0800
-Message-ID: <5452DB69.8030208@rock-chips.com>
-References: <1414549959-13699-1-git-send-email-caesar.wang@rock-chips.com> <1414549959-13699-3-git-send-email-caesar.wang@rock-chips.com> <1823150.6k52MgLRcZ@phil>
+From: jonghwa3.lee@samsung.com
+Subject: Re: [PATCH 01/10] power: charger-manager: Use thermal subsystem
+ interface only to get temperature.
+Date: Fri, 31 Oct 2014 11:25:51 +0900
+Message-ID: <5452F32F.8010103@samsung.com>
+References: <1414672996-28355-1-git-send-email-jonghwa3.lee@samsung.com>
+ <1414672996-28355-2-git-send-email-jonghwa3.lee@samsung.com>
+ <54523907.4030609@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.135]:45421 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161353AbaJaAoi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 20:44:38 -0400
-In-Reply-To: <1823150.6k52MgLRcZ@phil>
+Received: from mailout4.samsung.com ([203.254.224.34]:14352 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161558AbaJaCZy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 22:25:54 -0400
+In-reply-to: <54523907.4030609@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com
+To: =?UTF-8?B?S3J6eXN6dG9mIEtvesWCb3dza2k=?= <k.kozlowski@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, anton@enomsg.org, pavel@ucw.cz, myungjoo.ham@samsung.com, cw00.choi@samsung.com
 
-Heiko,
+Hi,
+On 2014=EB=85=84 10=EC=9B=94 30=EC=9D=BC 22:11, Krzysztof Koz=C5=82owsk=
+i wrote:
 
-=E5=9C=A8 2014=E5=B9=B410=E6=9C=8831=E6=97=A5 04:17, Heiko St=C3=BCbner=
- =E5=86=99=E9=81=93:
-> Am Mittwoch, 29. Oktober 2014, 10:32:36 schrieb Caesar Wang:
->> This add the necessary binding documentation for the thermal
->> found on Rockchip SoCs
+> On 30.10.2014 13:43, Jonghwa Lee wrote:
+>> It drops the way of using power_supply interface to reference batter=
+y's
+>> temperature. Then it tries to use thermal subsystem's only. This mak=
+es driver
+>> more simple and also can remove ifdeferies.
 >>
->> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
->> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
->> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+>> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 >> ---
->>   .../bindings/thermal/rockchip-thermal.txt          | 62
->> ++++++++++++++++++++++ 1 file changed, 62 insertions(+)
->>   create mode 100644
->> Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>>  drivers/power/Kconfig                 |    1 +
+>>  drivers/power/charger-manager.c       |  113 ++++++++--------------=
+-----------
+>>  include/linux/power/charger-manager.h |    3 +-
+>>  3 files changed, 28 insertions(+), 89 deletions(-)
 >>
->> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-ther=
-mal.txt
->> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt new=
- file
->> mode 100644
->> index 0000000..3061982
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->> @@ -0,0 +1,62 @@
->> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
->> +
->> +Required properties:
->> +- compatible : "rockchip,rk3288-tsadc"
->> +- reg : physical base address of the controller and length of memor=
-y mapped
->> +	region.
->> +- interrupts : The interrupt number to the cpu. The interrupt speci=
-fier
->> format +	       depends on the interrupt controller.
->> +- clocks : Must contain an entry for each entry in clock-names.
->> +- clock-names : Shall be "tsadc" for the converter-clock, and "apb_=
-pclk"
->> for +		the peripheral clock.
->> +- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a desc=
-ription.
->> +- hw-shut-temp : The hardware-controlled shutdown temperature value=
-=2E +-
->> tsadc-tshut-mode : The hardware-controlled shutdown mode 0:CRU 1:GPI=
-O. +-
->> tsadc-tshut-polarity : The hardware-controlled active polarity 0:LOW
->> 1:HIGH. +
->> +Exiample:
->> +tsadc: tsadc@ff280000 {
->> +	compatible =3D "rockchip,rk3288-tsadc";
->> +	reg =3D <0xff280000 0x100>;
->> +	interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
->> +	clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
->> +	clock-names =3D "tsadc", "apb_pclk";
->> +	pinctrl-names =3D "default";
->> +	pinctrl-0 =3D <&otp_out>;
->> +	#thermal-sensor-cells =3D <1>;
->> +	hw-shut-temp =3D <125000>;
->> +	tsadc-tshut-mode =3D <0>;
->> +	tsadc-tshut-polarity =3D <0>;
-> these last 3 seem to be specific to this tsadc so should probably hav=
-e a
-> "rockchip,"-prefix
-
-=46ixed.
-
-e.g  sync to driver
-
-rockchip,hw-shut-temp =3D <125000>;
-rockchip,tsadc-tshut-mode =3D <0>;
-rockchip,tsadc-tshut-polarity =3D <0>;
+>> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+>> index 8ff2511..115d153 100644
+>> --- a/drivers/power/Kconfig
+>> +++ b/drivers/power/Kconfig
+>> @@ -317,6 +317,7 @@ config CHARGER_MANAGER
+>>  	bool "Battery charger manager for multiple chargers"
+>>  	depends on REGULATOR
+>>  	select EXTCON
+>> +	select THERMAL
+>=20
+> I think both of "select" here could be dangerous. Select should rathe=
+r
+> be used for non-visible errors. Just use "depends on".
+>=20
+>>  }
+>> @@ -623,7 +594,7 @@ static int cm_check_thermal_status(struct charge=
+r_manager *cm)
+>>  		 * occur hazadous result. We have to handle it
+>>  		 * depending on battery type.
+>>  		 */
+>> -		dev_err(cm->dev, "Failed to get battery temperature\n");
+>> +		dev_dbg(cm->dev, "Failed to get battery temperature\n");
+>=20
+> A valuable change but not strictly related to the commit. Additionall=
+y
+> that is a user-visible change. Could you split it to separate patch?
+>=20
+> Best regards,
+> Krzysztof
+>=20
+>=20
 
 
+All your comments are acceptable. I'll fix them all.
+Thanks for your comments.
 
-I will sent next patch  v17 in 1-2 days if this series patchs haven't=20
-any problems.
-
-Thanks.
-
->
->
->
->
-
---=20
-Best regards,
-Caesar
-
-
+Thanks,
+Jonghwa
