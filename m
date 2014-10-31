@@ -1,38 +1,50 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 4/9] drivercore / platform: Keep PM domain powered
- during ->probe()
-Date: Fri, 31 Oct 2014 10:23:00 +0100
-Message-ID: <CAPDyKFpjYkBcW4XMO0CmgOiLux9=iw2=DEHkBG9OVZh5T5CgQg@mail.gmail.com>
-References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
-	<1413208930-26019-5-git-send-email-ulf.hansson@linaro.org>
-	<7hoast8eu8.fsf@deeprootsystems.com>
-	<20141031000749.GK36444@dtor-ws>
+Subject: Re: [PATCH v8 1/5] PM / Runtime: Add getter for querying the IRQ safe option
+Date: Fri, 31 Oct 2014 10:29:36 +0100
+Message-ID: <CAPDyKFpz2Finv0BUmp1pQtihUzUULCfj7hmOJW3CJ_cWErLySQ@mail.gmail.com>
+References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com>
+	<1413795888-18559-2-git-send-email-k.kozlowski@samsung.com>
+	<1414746895.6797.3.camel@AMDC1943>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20141031000749.GK36444@dtor-ws>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f49.google.com ([209.85.192.49]:48084 "EHLO
+	mail-qg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757175AbaJaJ3g (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Oct 2014 05:29:36 -0400
+Received: by mail-qg0-f49.google.com with SMTP id z60so2506593qgd.36
+        for <linux-pm@vger.kernel.org>; Fri, 31 Oct 2014 02:29:36 -0700 (PDT)
+In-Reply-To: <1414746895.6797.3.camel@AMDC1943>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 31 October 2014 01:07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> On Thu, Oct 30, 2014 at 01:47:27PM -0700, Kevin Hilman wrote:
->> Ulf Hansson <ulf.hansson@linaro.org> writes:
+On 31 October 2014 10:14, Krzysztof Kozlowski <k.kozlowski@samsung.com> wrote:
+> On pon, 2014-10-20 at 11:04 +0200, Krzysztof Kozlowski wrote:
+>> Add a simple getter pm_runtime_is_irq_safe() for querying whether runtime
+>> PM IRQ safe was set or not.
 >>
->> > To sucessfully probe some devices their corresponding PM domains may
->> > need to be powered.
+>> Various bus drivers implementing runtime PM may use choose to suspend
+>> differently based on IRQ safeness status of child driver (e.g. do not
+>> unprepare the clock if IRQ safe is not set).
 >>
->> Isn't that what pm_runtime_get*() is supposed to be doing?  Why isn't
->> that working?
+>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 >
-> Also, I do not understand why we placing device into a power domain only
-> when we probe it. Why if I unbind device from its driver (or do not have
-> a driver for it) it disappears from its power domain? To me power domain
-> and having driver bound to a device are 2 orthogonal concepts.
+> Rafael, Len, Pavel,
+>
+> Is proposed API ok? Do you have any comments?
+>
+> I'll upload whole patchset to Russell's patch tracking system. However
+> an ack from PM maintainer is probably needed.
 
-That's a different discussion, I don't think we want to go there
-within this context.
+I would actually prefer the opposite. It's better if we can take these
+patches through Rafaels tree.
+
+1) I have posted patches for the amba bus, these may have merge
+conflicts with your changes.
+2) We may start using the new runtime PM API within genpd as of now.
 
 Kind regards
 Uffe
