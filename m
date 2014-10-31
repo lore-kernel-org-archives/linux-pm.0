@@ -1,7 +1,7 @@
 From: Tim Harvey <tharvey@gateworks.com>
-Subject: [PATCH 1/5] regulator: add function to determine if 2 regulators are the same
-Date: Thu, 30 Oct 2014 21:27:07 -0700
-Message-ID: <1414729631-11005-2-git-send-email-tharvey@gateworks.com>
+Subject: [PATCH 2/5] regulator: add function to determine if a regulator is in bypass mode
+Date: Thu, 30 Oct 2014 21:27:08 -0700
+Message-ID: <1414729631-11005-3-git-send-email-tharvey@gateworks.com>
 References: <1414729631-11005-1-git-send-email-tharvey@gateworks.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1414729631-11005-1-git-send-email-tharvey@gateworks.com>
@@ -10,70 +10,75 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-arm-kernel@lists.infradead.org, Philipp Zabel <p.zabel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, Shawn Guo <shawn.guo@freescale.com>, Lucas Stach <l.stach@pengutronix.de>, Silvio F <silvio.fricke@gmail.com>, Christian Hemp <c.hemp@phytec.de>, Russell King <rmk+kernel@arm.linux.org.uk>, Iain Paton <ipaton0@gmail.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Regulator structures can point to the same internal regulator dev's but as
-that information is private we need to expose a function to determine if
-two regulators do so.
+Regulators can be configured to allow bypass mode and can be told by a consumer 
+that they are allowed to go into bypass mode from that consumer's perspective.
+This adds a function to determine if the regulator actually has gone into
+bypass mode (meaning all consumers allowed it to do so).
 
 Cc: linux-pm@vger.kernel.org
 Signed-off-by: Tim Harvey <tharvey@gateworks.com>
 ---
- drivers/regulator/core.c           | 17 +++++++++++++++++
- include/linux/regulator/consumer.h |  8 ++++++++
- 2 files changed, 25 insertions(+)
+ drivers/regulator/core.c           | 23 +++++++++++++++++++++++
+ include/linux/regulator/consumer.h |  6 ++++++
+ 2 files changed, 29 insertions(+)
 
 diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index cd87c0c..6d4a627 100644
+index 6d4a627..904c271 100644
 --- a/drivers/regulator/core.c
 +++ b/drivers/regulator/core.c
-@@ -2184,6 +2184,23 @@ int regulator_is_enabled(struct regulator *regulator)
- EXPORT_SYMBOL_GPL(regulator_is_enabled);
+@@ -3150,6 +3150,29 @@ int regulator_allow_bypass(struct regulator *regulator, bool enable)
+ EXPORT_SYMBOL_GPL(regulator_allow_bypass);
  
  /**
-+ * regulator_is_same - are two regulators the same
-+ * @regulator1: regulator source
-+ * @regulator2: regulator source
++ * regulator_is_bypass - determine if a regulator is in bypass mode
 + *
-+ * Returns positive if both regulators point to the same regulator_dev.
++ * @regulator: Regulator to configure
++ *
++ * return positive if regulator is in bypass mode.
 + */
-+int regulator_is_same(struct regulator *regulator1,
-+		      struct regulator *regulator2)
++int regulator_is_bypass(struct regulator *regulator)
 +{
-+	if (!regulator1 || !regulator2)
++	struct regulator_dev *rdev = regulator->rdev;
++	int ret;
++
++	if (!regulator)
 +		return -EINVAL;
 +
-+	return (regulator1->rdev == regulator2->rdev) ? 1 : 0;
++	mutex_lock(&rdev->mutex);
++	ret = regulator->bypass ? 1 : 0;
++	mutex_unlock(&rdev->mutex);
++
++	return ret;
 +}
-+EXPORT_SYMBOL_GPL(regulator_is_same);
++EXPORT_SYMBOL_GPL(regulator_is_bypass);
 +
 +/**
-  * regulator_can_change_voltage - check if regulator can change voltage
+  * regulator_register_notifier - register regulator event notifier
   * @regulator: regulator source
-  *
+  * @nb: notifier block
 diff --git a/include/linux/regulator/consumer.h b/include/linux/regulator/consumer.h
-index d347c80..972090a 100644
+index 972090a..a766946 100644
 --- a/include/linux/regulator/consumer.h
 +++ b/include/linux/regulator/consumer.h
-@@ -200,6 +200,8 @@ int __must_check regulator_enable(struct regulator *regulator);
- int regulator_disable(struct regulator *regulator);
- int regulator_force_disable(struct regulator *regulator);
- int regulator_is_enabled(struct regulator *regulator);
-+int regulator_is_same(struct regulator *regulator1,
-+		      struct regulator *regulator2);
- int regulator_disable_deferred(struct regulator *regulator, int ms);
+@@ -237,6 +237,7 @@ unsigned int regulator_get_mode(struct regulator *regulator);
+ int regulator_set_optimum_mode(struct regulator *regulator, int load_uA);
  
- int __must_check regulator_bulk_get(struct device *dev, int num_consumers,
-@@ -387,6 +389,12 @@ static inline int regulator_is_enabled(struct regulator *regulator)
- 	return 1;
+ int regulator_allow_bypass(struct regulator *regulator, bool allow);
++int regulator_is_bypass(struct regulator *regulator);
+ 
+ struct regmap *regulator_get_regmap(struct regulator *regulator);
+ int regulator_get_hardware_vsel_register(struct regulator *regulator,
+@@ -493,6 +494,11 @@ static inline int regulator_allow_bypass(struct regulator *regulator,
+ 	return 0;
  }
  
-+static inline int regulator_is_same(struct regulator *regulator1,
-+				    struct regulator *regulator2)
++static inline int regulator_is_bypass(struct regulator *regulator)
 +{
 +	return 0;
 +}
 +
- static inline int regulator_bulk_get(struct device *dev,
- 				     int num_consumers,
- 				     struct regulator_bulk_data *consumers)
+ static inline struct regmap *regulator_get_regmap(struct regulator *regulator)
+ {
+ 	return ERR_PTR(-EOPNOTSUPP);
 -- 
 1.8.3.2
