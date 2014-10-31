@@ -1,40 +1,110 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v3 4/9] drivercore / platform: Keep PM domain powered
- during ->probe()
-Date: Thu, 30 Oct 2014 17:07:49 -0700
-Message-ID: <20141031000749.GK36444@dtor-ws>
-References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
- <1413208930-26019-5-git-send-email-ulf.hansson@linaro.org>
- <7hoast8eu8.fsf@deeprootsystems.com>
+From: Caesar Wang <caesar.wang@rock-chips.com>
+Subject: Re: [PATCH v16 2/5] dt-bindings: document Rockchip thermal
+Date: Fri, 31 Oct 2014 08:44:25 +0800
+Message-ID: <5452DB69.8030208@rock-chips.com>
+References: <1414549959-13699-1-git-send-email-caesar.wang@rock-chips.com> <1414549959-13699-3-git-send-email-caesar.wang@rock-chips.com> <1823150.6k52MgLRcZ@phil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f178.google.com ([209.85.213.178]:38770 "EHLO
-	mail-ig0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161331AbaJaAHz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 20:07:55 -0400
-Content-Disposition: inline
-In-Reply-To: <7hoast8eu8.fsf@deeprootsystems.com>
+Received: from regular1.263xmail.com ([211.150.99.135]:45421 "EHLO
+	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161353AbaJaAoi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Oct 2014 20:44:38 -0400
+In-Reply-To: <1823150.6k52MgLRcZ@phil>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
+To: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com
 
-On Thu, Oct 30, 2014 at 01:47:27PM -0700, Kevin Hilman wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
-> 
-> > To sucessfully probe some devices their corresponding PM domains may
-> > need to be powered.
-> 
-> Isn't that what pm_runtime_get*() is supposed to be doing?  Why isn't
-> that working?
+Heiko,
 
-Also, I do not understand why we placing device into a power domain only
-when we probe it. Why if I unbind device from its driver (or do not have
-a driver for it) it disappears from its power domain? To me power domain
-and having driver bound to a device are 2 orthogonal concepts.
+=E5=9C=A8 2014=E5=B9=B410=E6=9C=8831=E6=97=A5 04:17, Heiko St=C3=BCbner=
+ =E5=86=99=E9=81=93:
+> Am Mittwoch, 29. Oktober 2014, 10:32:36 schrieb Caesar Wang:
+>> This add the necessary binding documentation for the thermal
+>> found on Rockchip SoCs
+>>
+>> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
+>> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+>> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+>> ---
+>>   .../bindings/thermal/rockchip-thermal.txt          | 62
+>> ++++++++++++++++++++++ 1 file changed, 62 insertions(+)
+>>   create mode 100644
+>> Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-ther=
+mal.txt
+>> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt new=
+ file
+>> mode 100644
+>> index 0000000..3061982
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>> @@ -0,0 +1,62 @@
+>> +* Temperature Sensor ADC (TSADC) on rockchip SoCs
+>> +
+>> +Required properties:
+>> +- compatible : "rockchip,rk3288-tsadc"
+>> +- reg : physical base address of the controller and length of memor=
+y mapped
+>> +	region.
+>> +- interrupts : The interrupt number to the cpu. The interrupt speci=
+fier
+>> format +	       depends on the interrupt controller.
+>> +- clocks : Must contain an entry for each entry in clock-names.
+>> +- clock-names : Shall be "tsadc" for the converter-clock, and "apb_=
+pclk"
+>> for +		the peripheral clock.
+>> +- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a desc=
+ription.
+>> +- hw-shut-temp : The hardware-controlled shutdown temperature value=
+=2E +-
+>> tsadc-tshut-mode : The hardware-controlled shutdown mode 0:CRU 1:GPI=
+O. +-
+>> tsadc-tshut-polarity : The hardware-controlled active polarity 0:LOW
+>> 1:HIGH. +
+>> +Exiample:
+>> +tsadc: tsadc@ff280000 {
+>> +	compatible =3D "rockchip,rk3288-tsadc";
+>> +	reg =3D <0xff280000 0x100>;
+>> +	interrupts =3D <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
+>> +	clocks =3D <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
+>> +	clock-names =3D "tsadc", "apb_pclk";
+>> +	pinctrl-names =3D "default";
+>> +	pinctrl-0 =3D <&otp_out>;
+>> +	#thermal-sensor-cells =3D <1>;
+>> +	hw-shut-temp =3D <125000>;
+>> +	tsadc-tshut-mode =3D <0>;
+>> +	tsadc-tshut-polarity =3D <0>;
+> these last 3 seem to be specific to this tsadc so should probably hav=
+e a
+> "rockchip,"-prefix
+
+=46ixed.
+
+e.g  sync to driver
+
+rockchip,hw-shut-temp =3D <125000>;
+rockchip,tsadc-tshut-mode =3D <0>;
+rockchip,tsadc-tshut-polarity =3D <0>;
+
+
+
+I will sent next patch  v17 in 1-2 days if this series patchs haven't=20
+any problems.
 
 Thanks.
 
--- 
-Dmitry
+>
+>
+>
+>
+
+--=20
+Best regards,
+Caesar
+
+
