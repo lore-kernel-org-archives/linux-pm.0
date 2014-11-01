@@ -1,47 +1,70 @@
-From: Hans-Christian Egtvedt <egtvedt-BrfabpQBY5qlHtIdYg32fQ@public.gmane.org>
-Subject: Re: [PATCH 33/44] avr32: atngw100: Register with kernel poweroff
- handler
-Date: Sat, 1 Nov 2014 11:16:37 +0100
-Message-ID: <20141101101637.GA5765@samfundet.no>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-34-git-send-email-linux@roeck-us.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: pm_runtime_enable() in ->probe() (was: Re: [PATCH v3 0/9] PM /
+ Domains: Fix race conditions during boot)
+Date: Sat, 1 Nov 2014 11:15:59 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1411011106100.11162-100000@netrider.rowland.org>
+References: <42875843.yieZ2al8Y2@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1412659726-29957-34-git-send-email-linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, adi-buildroot-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lguest-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-alpha-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-am33-list-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-cris-kernel-VrBV9hrLPhE@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hexagon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-m32r-ja-rQhvJZKUsGBRYuoOT4C5/9i2O/JbrIOy@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-s390-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-xtensa-PjhNF2WwrV/0Sa2dR60CXw@public.gmane.org, openipmi-developer-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, user-mode-linux-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-c6x-dev-jPsnJVOj+W6hPH1hqNUYSQ@public.gmane.org, linux-ia64-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-m68k-cunTk1MwBs8S/qaLPR03pWD2FQJk+8+b@public.gmane.org, linux-metag-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-parisc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org, Haavard
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from netrider.rowland.org ([192.131.102.5]:55235 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751626AbaKAPQA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Nov 2014 11:16:00 -0400
+In-Reply-To: <42875843.yieZ2al8Y2@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Around Mon 06 Oct 2014 22:28:35 -0700 or thereabout, Guenter Roeck wrote:
-> Register with kernel poweroff handler instead of setting pm_power_off
-> directly.
+[CC: list drastically trimmed]
+
+On Sat, 1 Nov 2014, Rafael J. Wysocki wrote:
+
+> All that said there is a logical error related to calling pm_runtime_enable()
+> and its derivatives from ->probe() that I've been overlooking pretty much
+> from the start.
 > 
-> Cc: Haavard Skinnemoen <hskinnemoen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> Cc: Hans-Christian Egtvedt <egtvedt-BrfabpQBY5qlHtIdYg32fQ@public.gmane.org>
-> Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-
-Acked-by: Hans-Christian Egtvedt <egtvedt-BrfabpQBY5qlHtIdYg32fQ@public.gmane.org>
-
-> ---
->  arch/avr32/boards/atngw100/mrmt.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Namely, really_probe() sets dev->driver to drv before calling ->probe()
+> for either the bus type or the driver itself, so if the driver's probe
+> calls pm_runtime_enable(), it will execute the driver's own runtime PM
+> resume callback before the driver can check whether or not it wants to handle
+> the device in the first place.  That doesn't sound quite right to me.
 > 
-> diff --git a/arch/avr32/boards/atngw100/mrmt.c b/arch/avr32/boards/atngw100/mrmt.c
-> index 91146b4..54d0c27 100644
-> --- a/arch/avr32/boards/atngw100/mrmt.c
-> +++ b/arch/avr32/boards/atngw100/mrmt.c
-> @@ -274,7 +274,7 @@ static int __init mrmt1_init(void)
->  {
->  	gpio_set_value( PIN_PWR_ON, 1 );	/* Ensure PWR_ON is enabled */
->  
-> -	pm_power_off = mrmt_power_off;
-> +	register_poweroff_handler_simple(mrmt_power_off, 128);
->  
->  	/* Setup USARTS (other than console) */
->  	at32_map_usart(2, 1, 0);	/* USART 2: /dev/ttyS1, RMT1:DB9M */
--- 
-mvh
-Hans-Christian Egtvedt
+> This means we need a different mechanism to ensure that the device will
+> be accessible to the driver and/or the bus type in ->probe().
+> 
+> At one point we had pm_runtime_get_sync() before really_probe() in
+> driver_proble_device() IIRC, but people complained about it, so we dropped it
+> and put a barrier in there instead, but that's not sufficient.  We need to
+> explicitly ensure that the device won't be powered off while ->probe() is
+> in progress *but* we need to avoid calling the driver's runtime PM resume
+> callback before ->probe() returns.
+> 
+> Alan, Kevin, ideas?
+
+I suspect this cannot be handled solely the driver core or the PM core.  
+The bus subsystem has to manage things properly.
+
+For example, take a look at drivers/pci/pci-driver.c:local_pci_probe().  
+That routine doesn't set pci_dev->driver until _after_ doing the
+pm_runtime_get_sync().  Therefore, if a runtime_resume callback does
+occur, the PCI core's runtime_resume handler will see that
+pci_dev->driver isn't set and won't invoke the driver's runtime_resume
+method.
+
+Things become a little more complicated if the driver has to handle 
+everything by itself and the subsystem doesn't support runtime PM.  In 
+that case, the driver's runtime_resume routine would have to check and 
+see whether the device has successfully been bound to the driver (for 
+example, by checking whether dev_get_drvdata() returns a non-NULL 
+pointer) before doing anything else.
+
+Note that a mirror version of this problem exists during unbinding,
+because dev->driver doesn't get cleared until _after_ the driver's
+remove routine has been called.  A runtime suspend callback occurring 
+in between could mistakenly get sent to the driver's runtime_suspend 
+routine.
+
+Alan Stern
+
