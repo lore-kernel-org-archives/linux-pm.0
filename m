@@ -1,52 +1,31 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Patch v7 14/18] x86, irq, ACPI: Introduce a rwsem to protect
- IOAPIC operations from hotplug
-Date: Sat, 1 Nov 2014 19:59:39 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1411011949370.5308@nanos>
-References: <1414387308-27148-1-git-send-email-jiang.liu@linux.intel.com> <1414387308-27148-15-git-send-email-jiang.liu@linux.intel.com>
+Subject: Re: [PATCH v3 30/47] x86: iris: Register with kernel power-off
+ handler
+Date: Sat, 1 Nov 2014 20:41:29 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1411012040510.5308@nanos>
+References: <1414425354-10359-1-git-send-email-linux@roeck-us.net> <1414425354-10359-31-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1414387308-27148-15-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jiang Liu <jiang.liu@linux.intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:47378 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758252AbaKATle (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Nov 2014 15:41:34 -0400
+In-Reply-To: <1414425354-10359-31-git-send-email-linux@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
 
-On Mon, 27 Oct 2014, Jiang Liu wrote:
-> We are going to support ACPI based IOAPIC hotplug, so introduce a rwsem
-> to protect IOAPIC data structures from IOAPIC hotplug. We choose to
-> serialize in ACPI instead of in the IOAPIC core because:
-> 1) currently we are only plan to support ACPI based IOAPIC hotplug
-> 2) it's much more cleaner and easier
-> 3) It does't affect IOAPIC discovered by devicetree, SFI and mpparse.
+On Mon, 27 Oct 2014, Guenter Roeck wrote:
 
-I had a last intensive look at this series as I was about to merge
-it. So I looked at the locking rules here again
- 
-> +/*
-> + * Locks related to IOAPIC hotplug
-> + * Hotplug side:
-> + * 	->lock_device_hotplug()	//device_hotplug_lock
-> + *		->acpi_ioapic_rwsem
-> + *			->ioapic_lock
-> + * Interrupt mapping side:
-> + *	->acpi_ioapic_rwsem
-> + *		->ioapic_mutex
-> + *			->ioapic_lock
-> + */
+> Register with kernel power-off handler instead of setting pm_power_off
+> directly. Register with high priority to reflect that the original code
+> overwrites existing power-off handlers.
 
-This looks sane, but I cannot figure out at all why this needs to be a
-rwsem.
-
-> +static DECLARE_RWSEM(acpi_ioapic_rwsem);
-
-I think it should be a simple mutex because the rwsem does not protect
-against concurrent execution what taken for read.
-
-And the site which takes it for write is in the early boot process
-where nothing runs in parallel AFAICT.
+Acked-by-me for all the x86 parts of that series.
 
 Thanks,
 
 	tglx
+
