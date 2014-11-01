@@ -1,59 +1,47 @@
-From: Michael Tokarev <mjt@tls.msk.ru>
-Subject: Re: resume from hibernation without touching saved image?
-Date: Sat, 01 Nov 2014 08:16:00 +0300
-Message-ID: <54546C90.2000500@msgid.tls.msk.ru>
-References: <545379DA.8070701@msgid.tls.msk.ru> <1517304.61MqM8NHe8@vostro.rjw.lan>
+From: Hans-Christian Egtvedt <egtvedt-BrfabpQBY5qlHtIdYg32fQ@public.gmane.org>
+Subject: Re: [PATCH 33/44] avr32: atngw100: Register with kernel poweroff
+ handler
+Date: Sat, 1 Nov 2014 11:16:37 +0100
+Message-ID: <20141101101637.GA5765@samfundet.no>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-34-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from isrv.corpit.ru ([86.62.121.231]:49312 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752580AbaKAFQD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 1 Nov 2014 01:16:03 -0400
-In-Reply-To: <1517304.61MqM8NHe8@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1412659726-29957-34-git-send-email-linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, adi-buildroot-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lguest-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-alpha-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-am33-list-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-cris-kernel-VrBV9hrLPhE@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hexagon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-m32r-ja-rQhvJZKUsGBRYuoOT4C5/9i2O/JbrIOy@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-s390-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-xtensa-PjhNF2WwrV/0Sa2dR60CXw@public.gmane.org, openipmi-developer-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, user-mode-linux-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-c6x-dev-jPsnJVOj+W6hPH1hqNUYSQ@public.gmane.org, linux-ia64-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-m68k-cunTk1MwBs8S/qaLPR03pWD2FQJk+8+b@public.gmane.org, linux-metag-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-parisc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org, Haavard
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
 
-01.11.2014 02:00, Rafael J. Wysocki wrote:
-> On Friday, October 31, 2014 03:00:26 PM Michael Tokarev wrote:
->> Hello again.
->>
->> Currently, linux kernel is able to resume from a previously saved
->> image, and it basically clears up that image when done, so there's
->> no way to resume from it once more.
+Around Mon 06 Oct 2014 22:28:35 -0700 or thereabout, Guenter Roeck wrote:
+> Register with kernel poweroff handler instead of setting pm_power_off
+> directly.
 > 
-> Which is intentional.
+> Cc: Haavard Skinnemoen <hskinnemoen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> Cc: Hans-Christian Egtvedt <egtvedt-BrfabpQBY5qlHtIdYg32fQ@public.gmane.org>
+> Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
 
-Sure, I understand.
+Acked-by: Hans-Christian Egtvedt <egtvedt-BrfabpQBY5qlHtIdYg32fQ@public.gmane.org>
 
->> Is it possible to _not_ touch the image at all and keep it in the
->> same state as before?  Maybe putting it to a readonly block device
->> (like blockdev --setro, or mdadm readonly array) will help?
+> ---
+>  arch/avr32/boards/atngw100/mrmt.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Keeping an image itself immutable doesn't help, because the state
-> recorded in the image has to match the state recorded in other
-> places, like fs superblocks and such.
-
-As I mentioned before, all the filesystems are readonly so does not
-change no matter how many times you resume, and there's no other state.
-
-The only thing that changes is the swap/image and its signature -- it
-can't be made read-only because it must be read-only for the kernel
-which is being resumed, but it's impossible since it is the kernel who
-writes this image to start with.
-
-> As long as you can't guarantee that all of that is in sync, nothing helps.
-
-No one can guarantee this - eg, usb devices might be removed or added
-while the system is sleeping, and so on.
-
-In my case it is easy to guarantee there's no state changes, because
-there really aren't.  But ofcourse this is a rather rare situation.
-
-Thanks,
-
-/mjt
-
+> diff --git a/arch/avr32/boards/atngw100/mrmt.c b/arch/avr32/boards/atngw100/mrmt.c
+> index 91146b4..54d0c27 100644
+> --- a/arch/avr32/boards/atngw100/mrmt.c
+> +++ b/arch/avr32/boards/atngw100/mrmt.c
+> @@ -274,7 +274,7 @@ static int __init mrmt1_init(void)
+>  {
+>  	gpio_set_value( PIN_PWR_ON, 1 );	/* Ensure PWR_ON is enabled */
+>  
+> -	pm_power_off = mrmt_power_off;
+> +	register_poweroff_handler_simple(mrmt_power_off, 128);
+>  
+>  	/* Setup USARTS (other than console) */
+>  	at32_map_usart(2, 1, 0);	/* USART 2: /dev/ttyS1, RMT1:DB9M */
+-- 
+mvh
+Hans-Christian Egtvedt
