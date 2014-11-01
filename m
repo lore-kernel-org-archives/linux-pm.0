@@ -1,115 +1,120 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v8 3/5] amba: Don't unprepare the clocks if device driver wants IRQ safe runtime PM
-Date: Sat, 01 Nov 2014 01:45:47 +0100
-Message-ID: <1479283.dvHduzBoyf@vostro.rjw.lan>
-References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com> <1413795888-18559-4-git-send-email-k.kozlowski@samsung.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH v8 1/5] PM / Runtime: Add getter for querying the IRQ safe option
+Date: Sat, 01 Nov 2014 02:29:42 +0200
+Message-ID: <3452823.YQ5FR2FtKz@avalon>
+References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com> <20141031142241.GA17547@amd> <1414766416.6537.6.camel@AMDC1943>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1413795888-18559-4-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <1414766416.6537.6.camel@AMDC1943>
 Sender: linux-doc-owner@vger.kernel.org
 To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, October 20, 2014 11:04:46 AM Krzysztof Kozlowski wrote:
-> The AMBA bus driver defines runtime Power Management functions which
-> disable and unprepare AMBA bus clock. This is problematic for runtime PM
-> because unpreparing a clock might sleep so it is not interrupt safe.
-> 
-> However some drivers may want to implement runtime PM functions in
-> interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
-> bus driver should only disable/enable the clock in runtime suspend and
-> resume callbacks.
-> 
-> Detect the device driver behavior after calling its probe function and
-> store it. During runtime suspend/resume deal with clocks according to
-> stored value.
-> 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/amba/bus.c       | 29 +++++++++++++++++++++++++----
->  include/linux/amba/bus.h |  1 +
->  2 files changed, 26 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
-> index 47bbdc1b5be3..474434e1b1b9 100644
-> --- a/drivers/amba/bus.c
-> +++ b/drivers/amba/bus.c
-> @@ -95,8 +95,18 @@ static int amba_pm_runtime_suspend(struct device *dev)
->  	struct amba_device *pcdev = to_amba_device(dev);
->  	int ret = pm_generic_runtime_suspend(dev);
->  
-> -	if (ret == 0 && dev->driver)
-> -		clk_disable_unprepare(pcdev->pclk);
-> +	if (ret == 0 && dev->driver) {
-> +		/*
-> +		 * Drivers should not change pm_runtime_irq_safe()
-> +		 * after probe.
-> +		 */
-> +		WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
-> +
-> +		if (pcdev->irq_safe)
-> +			clk_disable(pcdev->pclk);
-> +		else
-> +			clk_disable_unprepare(pcdev->pclk);
-> +	}
->  
->  	return ret;
->  }
-> @@ -107,7 +117,16 @@ static int amba_pm_runtime_resume(struct device *dev)
->  	int ret;
->  
->  	if (dev->driver) {
-> -		ret = clk_prepare_enable(pcdev->pclk);
-> +		/*
-> +		 * Drivers should not change pm_runtime_irq_safe()
-> +		 * after probe.
-> +		 */
-> +		WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
-> +
-> +		if (pcdev->irq_safe)
-> +			ret = clk_enable(pcdev->pclk);
-> +		else
-> +			ret = clk_prepare_enable(pcdev->pclk);
->  		/* Failure is probably fatal to the system, but... */
->  		if (ret)
->  			return ret;
-> @@ -198,8 +217,10 @@ static int amba_probe(struct device *dev)
->  		pm_runtime_enable(dev);
->  
->  		ret = pcdrv->probe(pcdev, id);
-> -		if (ret == 0)
-> +		if (ret == 0) {
-> +			pcdev->irq_safe = pm_runtime_is_irq_safe(dev);
+Hi Krzysztof,
 
-This looks racy.
+On Friday 31 October 2014 15:40:16 Krzysztof Kozlowski wrote:
+> On pi=C4=85, 2014-10-31 at 15:22 +0100, Pavel Machek wrote:
+> > On Fri 2014-10-31 10:14:55, Krzysztof Kozlowski wrote:
+> >> On pon, 2014-10-20 at 11:04 +0200, Krzysztof Kozlowski wrote:
+> >>> Add a simple getter pm_runtime_is_irq_safe() for querying whether
+> >>> runtime PM IRQ safe was set or not.
+> >>>=20
+> >>> Various bus drivers implementing runtime PM may use choose to sus=
+pend
+> >>> differently based on IRQ safeness status of child driver (e.g. do=
+ not
+> >>> unprepare the clock if IRQ safe is not set).
+> >>>=20
+> >>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> >>> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >>=20
+> >> Rafael, Len, Pavel,
+> >>=20
+> >> Is proposed API ok? Do you have any comments?
+> >>=20
+> >> I'll upload whole patchset to Russell's patch tracking system. How=
+ever
+> >> an ack from PM maintainer is probably needed.
+> >=20
+> > I don't like the API. Having callbacks work in different context (i=
+rq
+> > / noirq) based on what another function reports is ugly.
+> >=20
+> > What is the penalty if we always decide callbacks are not IRQ safe?
+>=20
+> Then pm_runtime_get_sync() could not be called in atomic context. The
+> pl330 runtime PM would have to be completely reworked because one
+> pm_runtime_get_sync() is called in device_issue_pending which cannot
+> sleep (at least in non preemptible kernels). Probably this can be sol=
+ved
+> some way...
 
-Is it guaranteed that runtime PM callbacks won't be run for the device
-after pcdrv->probe() has returned and before setting pcdev->irq_safe?
-If not, inconsistent behavior may ensue.
+Many other drivers suffer from the same problem. While I won't reject y=
+our=20
+proposed fix, I would prefer a more generic approach.
 
->  			break;
-> +		}
->  
->  		pm_runtime_disable(dev);
->  		pm_runtime_set_suspended(dev);
-> diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
-> index ac02f9bd63dc..c4bae79851fb 100644
-> --- a/include/linux/amba/bus.h
-> +++ b/include/linux/amba/bus.h
-> @@ -32,6 +32,7 @@ struct amba_device {
->  	struct clk		*pclk;
->  	unsigned int		periphid;
->  	unsigned int		irq[AMBA_NR_IRQS];
-> +	unsigned int		irq_safe:1;
->  };
->  
->  struct amba_driver {
-> 
+One option that has been discussed previously was to use a work queue t=
+o delay=20
+starting the DMA transfer to an interruptible context where=20
+pm_runtime_get_sync() could be called. However, as Russell pointed out =
+[1],=20
+even that won't work in all cases as the DMA slave might need the trans=
+fer to=20
+be started before enabling part of its hardware (OMAP audio seem to be =
+such a=20
+case).
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+I've heard a rumor of a possible DMA engine rework to forbid calling th=
+e=20
+descriptor preparation API from atomic context. This could be used as a=
+ base=20
+to implement runtime PM, as DMA slave drivers should not prepare descri=
+ptors=20
+if they don't need to use them. However that's a long term plan, and we=
+ need a=20
+solution sooner than that.
+
+I've been toying with the idea of adding explicit open/close (or whatev=
+er we=20
+would call them) operations to the DMA engine API. Those would be used =
+by DMA=20
+slave drivers to signal that they will start/stop using the DMA engine.
+
+If (1) we must start the DMA synchronously with a DMA slave call, (2) n=
+eed to=20
+sleep to handle PM, and (3) don't want to keep the DMA engine powered f=
+or as=20
+long as one channel is requested, then we need to turn at least prepara=
+tion as=20
+not callable in atomic context, or introduce a new operation.
+
+[1] http://www.spinics.net/lists/dmaengine/msg01548.html
+
+> >>> --- a/Documentation/power/runtime_pm.txt
+> >>> +++ b/Documentation/power/runtime_pm.txt
+> >>>=20
+> >>> @@ -468,6 +468,10 @@ drivers/base/power/runtime.c and
+> >>> include/linux/pm_runtime.h:
+> >>>      - set the power.irq_safe flag for the device, causing the
+> >>>      runtime-PM
+> >>>     =20
+> >>>        callbacks to be invoked with interrupts off
+> >>>=20
+> >>> +  bool pm_runtime_is_irq_safe(struct device *dev);
+> >>> +    - return true if power.irq_safe flag was set for the device,
+> >>> causing
+> >>> +      the runtime-PM callbacks to be invoked with interrupts off
+> >>> +
+> >>>=20
+> >>>    void pm_runtime_mark_last_busy(struct device *dev);
+> >>>   =20
+> >>>      - set the power.last_busy field to the current time
+
+--=20
+Regards,
+
+Laurent Pinchart
+
