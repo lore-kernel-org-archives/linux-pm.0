@@ -1,41 +1,59 @@
-From: Caesar Wang <caesar.wang@rock-chips.com>
-Subject: [PATCH v17 5/5] ARM: dts: enable Thermal on rk3288-evb board
-Date: Sat,  1 Nov 2014 10:44:33 +0800
-Message-ID: <1414809873-32227-6-git-send-email-caesar.wang@rock-chips.com>
-References: <1414809873-32227-1-git-send-email-caesar.wang@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1414809873-32227-1-git-send-email-caesar.wang@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: heiko@sntech.de, rui.zhang@intel.com, edubezval@gmail.com
-Cc: zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, fzf@rock-chips.com, Caesar Wang <caesar.wang@rock-chips.com>
+From: Michael Tokarev <mjt@tls.msk.ru>
+Subject: Re: resume from hibernation without touching saved image?
+Date: Sat, 01 Nov 2014 08:16:00 +0300
+Message-ID: <54546C90.2000500@msgid.tls.msk.ru>
+References: <545379DA.8070701@msgid.tls.msk.ru> <1517304.61MqM8NHe8@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from isrv.corpit.ru ([86.62.121.231]:49312 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752580AbaKAFQD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 1 Nov 2014 01:16:03 -0400
+In-Reply-To: <1517304.61MqM8NHe8@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
 
-when a thermal temperature over TSHUT.Default to via
-CRU reset the entire chip on rk3288-evb Board,
-TSHUT is low active on rk3288-evb board.
+01.11.2014 02:00, Rafael J. Wysocki wrote:
+> On Friday, October 31, 2014 03:00:26 PM Michael Tokarev wrote:
+>> Hello again.
+>>
+>> Currently, linux kernel is able to resume from a previously saved
+>> image, and it basically clears up that image when done, so there's
+>> no way to resume from it once more.
+> 
+> Which is intentional.
 
-Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
-Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
----
- arch/arm/boot/dts/rk3288-evb.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
+Sure, I understand.
 
-diff --git a/arch/arm/boot/dts/rk3288-evb.dtsi b/arch/arm/boot/dts/rk3288-evb.dtsi
-index cb83cea..3e067dd 100644
---- a/arch/arm/boot/dts/rk3288-evb.dtsi
-+++ b/arch/arm/boot/dts/rk3288-evb.dtsi
-@@ -148,6 +148,12 @@
- 	status = "okay";
- };
- 
-+&tsadc {
-+	rockchip,hw-tshut-mode = <0>; /* tshut mode 0:CRU 1:GPIO */
-+	rockchip,hw-tshut-polarity = <0>; /* tshut polarity 0:LOW 1:HIGH */
-+	status = "okay";
-+};
-+
- &pinctrl {
- 	backlight {
- 		bl_en: bl-en {
--- 
-1.9.1
+>> Is it possible to _not_ touch the image at all and keep it in the
+>> same state as before?  Maybe putting it to a readonly block device
+>> (like blockdev --setro, or mdadm readonly array) will help?
+> 
+> Keeping an image itself immutable doesn't help, because the state
+> recorded in the image has to match the state recorded in other
+> places, like fs superblocks and such.
+
+As I mentioned before, all the filesystems are readonly so does not
+change no matter how many times you resume, and there's no other state.
+
+The only thing that changes is the swap/image and its signature -- it
+can't be made read-only because it must be read-only for the kernel
+which is being resumed, but it's impossible since it is the kernel who
+writes this image to start with.
+
+> As long as you can't guarantee that all of that is in sync, nothing helps.
+
+No one can guarantee this - eg, usb devices might be removed or added
+while the system is sleeping, and so on.
+
+In my case it is easy to guarantee there's no state changes, because
+there really aren't.  But ofcourse this is a rather rare situation.
+
+Thanks,
+
+/mjt
+
