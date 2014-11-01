@@ -1,32 +1,52 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 33/44] avr32: atngw100: Register with kernel poweroff
- handler
-Date: Sat, 01 Nov 2014 10:02:58 -0700
-Message-ID: <54551242.2020604@roeck-us.net>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net> <1412659726-29957-34-git-send-email-linux@roeck-us.net> <20141101101637.GA5765@samfundet.no>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Patch v7 14/18] x86, irq, ACPI: Introduce a rwsem to protect
+ IOAPIC operations from hotplug
+Date: Sat, 1 Nov 2014 19:59:39 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1411011949370.5308@nanos>
+References: <1414387308-27148-1-git-send-email-jiang.liu@linux.intel.com> <1414387308-27148-15-git-send-email-jiang.liu@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20141101101637.GA5765@samfundet.no>
-Sender: linux-sh-owner@vger.kernel.org
-To: Hans-Christian Egtvedt <egtvedt@samfundet.no>
-Cc: linux-kernel@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, lguest@lists.ozlabs.org, linux-acpi@vger.kernel.org, linux-alpha@vger.kernel.org, linux-am33-list@redhat.com, linux-cris-kernel@axis.com, linux-efi@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-m32r-ja@ml.linux-m32r.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-tegra@vger.kernel.org, linux-xtensa@linux-xtensa.org, openipmi-developer@lists.sourceforge.net, user-mode-linux-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org, linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org, linux-mips@linux-mips.org, linux-parisc@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, xen-devel@lists.xenproject.org, Haavard
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1414387308-27148-15-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11/01/2014 03:16 AM, Hans-Christian Egtvedt wrote:
-> Around Mon 06 Oct 2014 22:28:35 -0700 or thereabout, Guenter Roeck wrote:
->> Register with kernel poweroff handler instead of setting pm_power_off
->> directly.
->>
->> Cc: Haavard Skinnemoen <hskinnemoen@gmail.com>
->> Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
->> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
->
-> Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
->
+On Mon, 27 Oct 2014, Jiang Liu wrote:
+> We are going to support ACPI based IOAPIC hotplug, so introduce a rwsem
+> to protect IOAPIC data structures from IOAPIC hotplug. We choose to
+> serialize in ACPI instead of in the IOAPIC core because:
+> 1) currently we are only plan to support ACPI based IOAPIC hotplug
+> 2) it's much more cleaner and easier
+> 3) It does't affect IOAPIC discovered by devicetree, SFI and mpparse.
 
-Thanks!
+I had a last intensive look at this series as I was about to merge
+it. So I looked at the locking rules here again
+ 
+> +/*
+> + * Locks related to IOAPIC hotplug
+> + * Hotplug side:
+> + * 	->lock_device_hotplug()	//device_hotplug_lock
+> + *		->acpi_ioapic_rwsem
+> + *			->ioapic_lock
+> + * Interrupt mapping side:
+> + *	->acpi_ioapic_rwsem
+> + *		->ioapic_mutex
+> + *			->ioapic_lock
+> + */
 
-Guenter
+This looks sane, but I cannot figure out at all why this needs to be a
+rwsem.
 
+> +static DECLARE_RWSEM(acpi_ioapic_rwsem);
+
+I think it should be a simple mutex because the rwsem does not protect
+against concurrent execution what taken for read.
+
+And the site which takes it for write is in the early boot process
+where nothing runs in parallel AFAICT.
+
+Thanks,
+
+	tglx
