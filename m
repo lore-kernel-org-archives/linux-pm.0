@@ -1,74 +1,115 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v8 1/5] PM / Runtime: Add getter for querying the IRQ safe option
-Date: Sat, 01 Nov 2014 01:42:24 +0100
-Message-ID: <1615499.6LK9Yd7Lr0@vostro.rjw.lan>
-References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com> <32933431.rIxraemF7M@vostro.rjw.lan> <20141031230452.GX27405@n2100.arm.linux.org.uk>
+Subject: Re: [PATCH v8 3/5] amba: Don't unprepare the clocks if device driver wants IRQ safe runtime PM
+Date: Sat, 01 Nov 2014 01:45:47 +0100
+Message-ID: <1479283.dvHduzBoyf@vostro.rjw.lan>
+References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com> <1413795888-18559-4-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54392 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753399AbaKAAVo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Oct 2014 20:21:44 -0400
-In-Reply-To: <20141031230452.GX27405@n2100.arm.linux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1413795888-18559-4-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kevin Hilman <khilman@kernel.org>
 
-On Friday, October 31, 2014 11:04:52 PM Russell King - ARM Linux wrote:
-> On Sat, Nov 01, 2014 at 12:11:05AM +0100, Rafael J. Wysocki wrote:
-> > [CC list trimmed + added Kevin Hilman]
-> > 
-> > On Monday, October 20, 2014 11:04:44 AM Krzysztof Kozlowski wrote:
-> > > Add a simple getter pm_runtime_is_irq_safe() for querying whether runtime
-> > > PM IRQ safe was set or not.
-> > > 
-> > > Various bus drivers implementing runtime PM may use choose to suspend
-> > > differently based on IRQ safeness status of child driver (e.g. do not
-> > > unprepare the clock if IRQ safe is not set).
-> > > 
-> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > 
-> > So why do we need to add the wrapper?
-> > 
-> > And it goes kind of against the intention which was to set irq_safe when
-> > we knew that the callbacks were safe to be executed from interrupt context
-> > and not when we wished that to be the case.
+On Monday, October 20, 2014 11:04:46 AM Krzysztof Kozlowski wrote:
+> The AMBA bus driver defines runtime Power Management functions which
+> disable and unprepare AMBA bus clock. This is problematic for runtime PM
+> because unpreparing a clock might sleep so it is not interrupt safe.
 > 
-> This was provided in the covering email - I quote:
+> However some drivers may want to implement runtime PM functions in
+> interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
+> bus driver should only disable/enable the clock in runtime suspend and
+> resume callbacks.
 > 
-> This patchset adds runtime and system PM to the pl330 driver.
+> Detect the device driver behavior after calling its probe function and
+> store it. During runtime suspend/resume deal with clocks according to
+> stored value.
 > 
-> The runtime PM of pl330 driver requires interrupt safe suspend/resume
-> callbacks which is in conflict with current amba bus driver.
-> The latter also unprepares and prepares the AMBA bus clock which
-> is not safe for atomic context.
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/amba/bus.c       | 29 +++++++++++++++++++++++++----
+>  include/linux/amba/bus.h |  1 +
+>  2 files changed, 26 insertions(+), 4 deletions(-)
 > 
-> The patchset solves this in patch 3/5 by handling clocks in different
-> way if device driver set interrupt safe runtime PM.
+> diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+> index 47bbdc1b5be3..474434e1b1b9 100644
+> --- a/drivers/amba/bus.c
+> +++ b/drivers/amba/bus.c
+> @@ -95,8 +95,18 @@ static int amba_pm_runtime_suspend(struct device *dev)
+>  	struct amba_device *pcdev = to_amba_device(dev);
+>  	int ret = pm_generic_runtime_suspend(dev);
+>  
+> -	if (ret == 0 && dev->driver)
+> -		clk_disable_unprepare(pcdev->pclk);
+> +	if (ret == 0 && dev->driver) {
+> +		/*
+> +		 * Drivers should not change pm_runtime_irq_safe()
+> +		 * after probe.
+> +		 */
+> +		WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
+> +
+> +		if (pcdev->irq_safe)
+> +			clk_disable(pcdev->pclk);
+> +		else
+> +			clk_disable_unprepare(pcdev->pclk);
+> +	}
+>  
+>  	return ret;
+>  }
+> @@ -107,7 +117,16 @@ static int amba_pm_runtime_resume(struct device *dev)
+>  	int ret;
+>  
+>  	if (dev->driver) {
+> -		ret = clk_prepare_enable(pcdev->pclk);
+> +		/*
+> +		 * Drivers should not change pm_runtime_irq_safe()
+> +		 * after probe.
+> +		 */
+> +		WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
+> +
+> +		if (pcdev->irq_safe)
+> +			ret = clk_enable(pcdev->pclk);
+> +		else
+> +			ret = clk_prepare_enable(pcdev->pclk);
+>  		/* Failure is probably fatal to the system, but... */
+>  		if (ret)
+>  			return ret;
+> @@ -198,8 +217,10 @@ static int amba_probe(struct device *dev)
+>  		pm_runtime_enable(dev);
+>  
+>  		ret = pcdrv->probe(pcdev, id);
+> -		if (ret == 0)
+> +		if (ret == 0) {
+> +			pcdev->irq_safe = pm_runtime_is_irq_safe(dev);
 
-So I'm still unsure why we need the wrapper.  IMHO this check in particular:
+This looks racy.
 
-	WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
+Is it guaranteed that runtime PM callbacks won't be run for the device
+after pcdrv->probe() has returned and before setting pcdev->irq_safe?
+If not, inconsistent behavior may ensue.
 
-(and should that be WARN_ON_ONCE(), for that matter?), looks better this way:
+>  			break;
+> +		}
+>  
+>  		pm_runtime_disable(dev);
+>  		pm_runtime_set_suspended(dev);
+> diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
+> index ac02f9bd63dc..c4bae79851fb 100644
+> --- a/include/linux/amba/bus.h
+> +++ b/include/linux/amba/bus.h
+> @@ -32,6 +32,7 @@ struct amba_device {
+>  	struct clk		*pclk;
+>  	unsigned int		periphid;
+>  	unsigned int		irq[AMBA_NR_IRQS];
+> +	unsigned int		irq_safe:1;
+>  };
+>  
+>  struct amba_driver {
+> 
 
-	WARN_ON(pcdev->irq_safe != dev->power.irq_safe);
-
-and so on, pretty much.
-
-Besides, these special "irq safe" code paths in the bus type look
-considerably ugly to me.  I'd probably use an "irq safe" PM domain for
-that device and put it in there instead of doing the
-
-	pcdev->irq_safe = pm_runtime_is_irq_safe(dev);
-
-thing in amba_probe().  But that's just me. :-)
-
-There's one weak point in [3/5], but let me comment it in there.
-
-Rafael
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
