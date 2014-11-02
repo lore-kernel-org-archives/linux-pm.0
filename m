@@ -1,68 +1,71 @@
-From: DIAMOND SWISS LOAN COMPANY <info@gmail.com>
-Subject: lening bieden
-Date: Sun, 02 Nov 2014 12:05:29 -0800
-Message-ID: <379ee33ab715b28dd0b4af4a8cd865e1@188.65.118.34>
-Reply-To: diamondswissloans51@gmail.com
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: [GIT PULL] Ux500 core changes for v3.19
+Date: Sun, 2 Nov 2014 23:17:31 +0100
+Message-ID: <CACRpkda3KMkrCSDeSUycmeDUJTDFVq6hesYfLTfmoeCB3oP6MA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from email1fr.bata.com ([188.65.116.197]:34289 "EHLO
-	batamk.servers.rbl-mer.misp.co.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750990AbaKBV3j (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 2 Nov 2014 16:29:39 -0500
+Received: from mail-ig0-f182.google.com ([209.85.213.182]:43911 "EHLO
+	mail-ig0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751362AbaKBWRc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 2 Nov 2014 17:17:32 -0500
+Received: by mail-ig0-f182.google.com with SMTP id hn18so3695189igb.15
+        for <linux-pm@vger.kernel.org>; Sun, 02 Nov 2014 14:17:31 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "arm@kernel.org" <arm@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
---
-Goede dag,
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
-=C2=A0=C2=A0=C2=A0=C2=A0 We zijn Diamond Zwitserse lening bedrijf het g=
-even van leningen=20
-per post advertentie. Wij bieden verschillende soorten leningen (korte=20
-en lange termijn leningen, persoonlijke leningen, leningen aan=20
-bedrijven etc.) met 3% rente. We geven leningen aan mensen in nood=20
-niet, ongeacht hun locatie, geslacht, burgerlijke staat, opleiding,=20
-status van de taak, maar moet een wettelijke middelen van terugbetaling=
-=20
-hebben. Onze leningen vari=C3=ABren tussen 5.000,00 tot 10.000.000,00 U=
-S=20
-Dollar of Euro of Pond met een maximale duur van 20 jaar. Als u=20
-ge=C3=AFnteresseerd bent in meer informatie, vul dan onderstaand formul=
-ier=20
-in en stuur deze naar ons e-mailadres: diamondswissloans51@gmail.com
+Hi ARM SoC folks,
 
-Gelieve in te vullen:
+please pull in these Ux500 core changes for this kernel development
+cycle: mainly a generic power domain implementation from Ulf Hansson
+that needs to get queued up in -next and tested.
 
-naam:
+Yours,
+Linus Walleij
 
-adres:
+The following changes since commit cac7f2429872d3733dc3f9915857b1691da2eb2f:
 
-leeftijd:
+  Linux 3.18-rc2 (2014-10-26 16:48:41 -0700)
 
-Geslacht:
+are available in the git repository at:
 
-Neem contact-Phone:
+  git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-stericsson.git
+tags/ux500-core-for-arm-soc
 
-beroep:
+for you to fetch changes up to 29417fe80ad2fd4f62f00dcca96c7198870e5642:
 
-Maandelijks inkomen:
+  ARM: ux500: Add i2c devices to the VAPE PM domain (2014-10-28 10:50:46 +0100)
 
-Het benodigde bedrag van de lening:
+----------------------------------------------------------------
+Generic power domains for the Ux500
 
-Duur van de lening:
+----------------------------------------------------------------
+Joe Perches (1):
+      ARM: u300: Convert pr_warning to pr_warn
 
-Het doel van de lening:
+Ulf Hansson (8):
+      dt: bindings: ux500: Add documentation for PM domains
+      dt: bindings: ux500: Add header for PM domains specifiers
+      ARM: ux500: Initial support for PM domains
+      ARM: ux500: Enable Kconfig for the generic PM domain
+      ARM: ux500: Add DT node for ux500 PM domains
+      ARM: ux500: Add sdi devices to the VAPE PM domain
+      ARM: ux500: Add spi and ssp devices to the VAPE PM domain
+      ARM: ux500: Add i2c devices to the VAPE PM domain
 
-land:
-
-Postcode:
-
-
-"Wij tonen u een betere manier om uw financi=C3=ABle vrijheid"
-
-Met vriendelijke groet,
-Mr Diamond Peters (Managing Director).
-De heer Bill Anthony (Marketing Manager).
-
+ .../devicetree/bindings/arm/ux500/power_domain.txt | 35 ++++++++++
+ arch/arm/boot/dts/ste-dbx5x0.dtsi                  | 22 ++++++
+ arch/arm/mach-u300/dummyspichip.c                  | 65 ++++++++----------
+ arch/arm/mach-ux500/Kconfig                        |  1 +
+ arch/arm/mach-ux500/Makefile                       |  1 +
+ arch/arm/mach-ux500/pm.c                           |  4 ++
+ arch/arm/mach-ux500/pm_domains.c                   | 79 ++++++++++++++++++++++
+ arch/arm/mach-ux500/pm_domains.h                   | 17 +++++
+ include/dt-bindings/arm/ux500_pm_domains.h         | 15 ++++
+ 9 files changed, 203 insertions(+), 36 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/ux500/power_domain.txt
+ create mode 100644 arch/arm/mach-ux500/pm_domains.c
+ create mode 100644 arch/arm/mach-ux500/pm_domains.h
+ create mode 100644 include/dt-bindings/arm/ux500_pm_domains.h
