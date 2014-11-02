@@ -1,37 +1,60 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v3 30/47] x86: iris: Register with kernel power-off handler
-Date: Sat, 01 Nov 2014 14:15:49 -0700
-Message-ID: <54554D85.2030308@roeck-us.net>
-References: <1414425354-10359-1-git-send-email-linux@roeck-us.net> <1414425354-10359-31-git-send-email-linux@roeck-us.net> <alpine.DEB.2.11.1411012040510.5308@nanos>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: Re: [Patch v7 14/18] x86, irq, ACPI: Introduce a rwsem to protect
+ IOAPIC operations from hotplug
+Date: Sun, 02 Nov 2014 13:24:04 +0800
+Message-ID: <5455BFF4.6040401@linux.intel.com>
+References: <1414387308-27148-1-git-send-email-jiang.liu@linux.intel.com> <1414387308-27148-15-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.11.1411011949370.5308@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:35867 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760205AbaKAVRA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Nov 2014 17:17:00 -0400
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1Xkg2e-001dri-4H
-	for linux-pm@vger.kernel.org; Sat, 01 Nov 2014 21:17:00 +0000
-In-Reply-To: <alpine.DEB.2.11.1411012040510.5308@nanos>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.11.1411011949370.5308@nanos>
+Sender: linux-acpi-owner@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On 11/01/2014 12:41 PM, Thomas Gleixner wrote:
-> On Mon, 27 Oct 2014, Guenter Roeck wrote:
->
->> Register with kernel power-off handler instead of setting pm_power_off
->> directly. Register with high priority to reflect that the original code
->> overwrites existing power-off handlers.
->
-> Acked-by-me for all the x86 parts of that series.
->
-Thanks!
-
-Guenter
-
-
+On 2014/11/2 2:59, Thomas Gleixner wrote:
+> On Mon, 27 Oct 2014, Jiang Liu wrote:
+>> We are going to support ACPI based IOAPIC hotplug, so introduce a rwsem
+>> to protect IOAPIC data structures from IOAPIC hotplug. We choose to
+>> serialize in ACPI instead of in the IOAPIC core because:
+>> 1) currently we are only plan to support ACPI based IOAPIC hotplug
+>> 2) it's much more cleaner and easier
+>> 3) It does't affect IOAPIC discovered by devicetree, SFI and mpparse.
+> 
+> I had a last intensive look at this series as I was about to merge
+> it. So I looked at the locking rules here again
+>  
+>> +/*
+>> + * Locks related to IOAPIC hotplug
+>> + * Hotplug side:
+>> + * 	->lock_device_hotplug()	//device_hotplug_lock
+>> + *		->acpi_ioapic_rwsem
+>> + *			->ioapic_lock
+>> + * Interrupt mapping side:
+>> + *	->acpi_ioapic_rwsem
+>> + *		->ioapic_mutex
+>> + *			->ioapic_lock
+>> + */
+> 
+> This looks sane, but I cannot figure out at all why this needs to be a
+> rwsem.
+> 
+>> +static DECLARE_RWSEM(acpi_ioapic_rwsem);
+> 
+> I think it should be a simple mutex because the rwsem does not protect
+> against concurrent execution what taken for read.
+> 
+> And the site which takes it for write is in the early boot process
+> where nothing runs in parallel AFAICT.
+Hi Thomas,
+	You are right. It's not on hot path, so a mutex is better than
+a rwsem here. I will send out an updated version soon.
+Regards!
+Gerry
+> 
+> Thanks,
+> 
+> 	tglx
+> 
