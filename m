@@ -1,63 +1,65 @@
 From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch v8 01/18] x86: ACPI: Do not translate GSI number if IOAPIC is disabled
-Date: Sun,  2 Nov 2014 14:04:16 +0800
-Message-ID: <1414908273-7552-2-git-send-email-jiang.liu@linux.intel.com>
+Subject: [Patch v8 03/18] x86, irq, ACPI: Return IRQ instead of GSI in mp_register_gsi()
+Date: Sun,  2 Nov 2014 14:04:18 +0800
+Message-ID: <1414908273-7552-4-git-send-email-jiang.liu@linux.intel.com>
 References: <1414908273-7552-1-git-send-email-jiang.liu@linux.intel.com>
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1414908273-7552-1-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-pci-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
-Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Thomas Richter <thor@math.tu-berlin.de>, rui.zhang@intel.com, linux-pm@vger.kernel.org
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-When IOAPIC is disabled, acpi_gsi_to_irq() should return gsi directly
-instead of calling mp_map_gsi_to_irq() to translate gsi to IRQ by IOAPIC.
-It fixes https://bugzilla.kernel.org/show_bug.cgi?id=84381.
+Function mp_register_gsi() returns blindly the GSI number for the ACPI
+SCI interrupt. That causes a regression when the GSI for ACPI SCI is
+shared with other devices.
 
-This regression was introduced with commit 6b9fb7082409 "x86, ACPI,
-irq: Consolidate algorithm of mapping (ioapic, pin) to IRQ number"
+The regression was caused by commit 84245af7297ced9e8fe "x86, irq, ACPI:
+Change __acpi_register_gsi to return IRQ number instead of GSI" and
+exposed on a SuperMicro system, which shares one GSI between ACPI SCI
+and PCI device, with following failure:
 
-Reported-and-Tested-by: Thomas Richter <thor@math.tu-berlin.de>
+http://sourceforge.net/p/linux1394/mailman/linux1394-user/?viewmonth=201410
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 20 low
+level)
+[    2.699224] firewire_ohci 0000:06:00.0: failed to allocate interrupt
+20
+
+Return mp_map_gsi_to_irq(gsi, 0) instead of the GSI number.
+
+Reported-and-Tested-by: Daniel Robbins <drobbins@funtoo.org>
 Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 Cc: Tony Luck <tony.luck@intel.com>
-Cc: Thomas Richter <thor@math.tu-berlin.de>
-Cc: rui.zhang@intel.com
+Cc: Joerg Roedel <joro@8bytes.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
 Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
 Cc: <stable@vger.kernel.org> # 3.17
-Link: http://lkml.kernel.org/r/1413816327-12850-1-git-send-email-jiang.liu@linux.intel.com
+Link: http://lkml.kernel.org/r/1414387308-27148-4-git-send-email-jiang.liu@linux.intel.com
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/kernel/acpi/boot.c |   13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ arch/x86/kernel/acpi/boot.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index b436fc735aa4..eceba9d9e116 100644
+index eceba9d9e116..e077c080a519 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
-@@ -604,14 +604,19 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
+@@ -397,7 +397,7 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
  
- int acpi_gsi_to_irq(u32 gsi, unsigned int *irqp)
- {
--	int irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
-+	int irq;
+ 	/* Don't set up the ACPI SCI because it's already set up */
+ 	if (acpi_gbl_FADT.sci_interrupt == gsi)
+-		return gsi;
++		return mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC);
  
--	if (irq >= 0) {
-+	if (acpi_irq_model == ACPI_IRQ_MODEL_PIC) {
-+		*irqp = gsi;
-+	} else {
-+		irq = mp_map_gsi_to_irq(gsi,
-+					IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
-+		if (irq < 0)
-+			return -1;
- 		*irqp = irq;
--		return 0;
- 	}
- 
--	return -1;
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(acpi_gsi_to_irq);
- 
+ 	trigger = trigger == ACPI_EDGE_SENSITIVE ? 0 : 1;
+ 	polarity = polarity == ACPI_ACTIVE_HIGH ? 0 : 1;
 -- 
 1.7.10.4
