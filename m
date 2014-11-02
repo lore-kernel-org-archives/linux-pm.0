@@ -1,7 +1,7 @@
 From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch v8 03/18] x86, irq, ACPI: Return IRQ instead of GSI in mp_register_gsi()
-Date: Sun,  2 Nov 2014 14:04:18 +0800
-Message-ID: <1414908273-7552-4-git-send-email-jiang.liu@linux.intel.com>
+Subject: [Patch v8 14/18] x86, irq, ACPI: Introduce a rwsem to protect IOAPIC operations from hotplug
+Date: Sun,  2 Nov 2014 14:04:29 +0800
+Message-ID: <1414908273-7552-15-git-send-email-jiang.liu@linux.intel.com>
 References: <1414908273-7552-1-git-send-email-jiang.liu@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1414908273-7552-1-git-send-email-jiang.liu@linux.intel.com>
@@ -10,56 +10,82 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@lin
 Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Function mp_register_gsi() returns blindly the GSI number for the ACPI
-SCI interrupt. That causes a regression when the GSI for ACPI SCI is
-shared with other devices.
+We are going to support ACPI based IOAPIC hotplug, so introduce a rwsem
+to protect IOAPIC data structures from IOAPIC hotplug. We choose to
+serialize in ACPI instead of in the IOAPIC core because:
+1) currently we are only plan to support ACPI based IOAPIC hotplug
+2) it's much more cleaner and easier
+3) It does't affect IOAPIC discovered by devicetree, SFI and mpparse.
 
-The regression was caused by commit 84245af7297ced9e8fe "x86, irq, ACPI:
-Change __acpi_register_gsi to return IRQ number instead of GSI" and
-exposed on a SuperMicro system, which shares one GSI between ACPI SCI
-and PCI device, with following failure:
-
-http://sourceforge.net/p/linux1394/mailman/linux1394-user/?viewmonth=201410
-[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 20 low
-level)
-[    2.699224] firewire_ohci 0000:06:00.0: failed to allocate interrupt
-20
-
-Return mp_map_gsi_to_irq(gsi, 0) instead of the GSI number.
-
-Reported-and-Tested-by: Daniel Robbins <drobbins@funtoo.org>
 Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Joerg Roedel <joro@8bytes.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Randy Dunlap <rdunlap@infradead.org>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: <stable@vger.kernel.org> # 3.17
-Link: http://lkml.kernel.org/r/1414387308-27148-4-git-send-email-jiang.liu@linux.intel.com
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/kernel/acpi/boot.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/acpi/boot.c |   21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index eceba9d9e116..e077c080a519 100644
+index e077c080a519..96d775580821 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
-@@ -397,7 +397,7 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+@@ -76,6 +76,19 @@ int acpi_fix_pin2_polarity __initdata;
+ static u64 acpi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
+ #endif
  
- 	/* Don't set up the ACPI SCI because it's already set up */
- 	if (acpi_gbl_FADT.sci_interrupt == gsi)
--		return gsi;
-+		return mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC);
++/*
++ * Locks related to IOAPIC hotplug
++ * Hotplug side:
++ * 	->lock_device_hotplug()	//device_hotplug_lock
++ *		->acpi_ioapic_lock
++ *			->ioapic_lock
++ * Interrupt mapping side:
++ *	->acpi_ioapic_lock
++ *		->ioapic_mutex
++ *			->ioapic_lock
++ */
++static DEFINE_MUTEX(acpi_ioapic_lock);
++
+ /* --------------------------------------------------------------------------
+                               Boot-time Configuration
+    -------------------------------------------------------------------------- */
+@@ -609,8 +622,10 @@ int acpi_gsi_to_irq(u32 gsi, unsigned int *irqp)
+ 	if (acpi_irq_model == ACPI_IRQ_MODEL_PIC) {
+ 		*irqp = gsi;
+ 	} else {
++		mutex_lock(&acpi_ioapic_lock);
+ 		irq = mp_map_gsi_to_irq(gsi,
+ 					IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
++		mutex_unlock(&acpi_ioapic_lock);
+ 		if (irq < 0)
+ 			return -1;
+ 		*irqp = irq;
+@@ -651,7 +666,9 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
+ 	int irq = gsi;
  
- 	trigger = trigger == ACPI_EDGE_SENSITIVE ? 0 : 1;
- 	polarity = polarity == ACPI_ACTIVE_HIGH ? 0 : 1;
+ #ifdef CONFIG_X86_IO_APIC
++	mutex_lock(&acpi_ioapic_lock);
+ 	irq = mp_register_gsi(dev, gsi, trigger, polarity);
++	mutex_unlock(&acpi_ioapic_lock);
+ #endif
+ 
+ 	return irq;
+@@ -660,7 +677,9 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
+ static void acpi_unregister_gsi_ioapic(u32 gsi)
+ {
+ #ifdef CONFIG_X86_IO_APIC
++	mutex_lock(&acpi_ioapic_lock);
+ 	mp_unregister_gsi(gsi);
++	mutex_unlock(&acpi_ioapic_lock);
+ #endif
+ }
+ 
+@@ -1186,7 +1205,9 @@ static void __init acpi_process_madt(void)
+ 			/*
+ 			 * Parse MADT IO-APIC entries
+ 			 */
++			mutex_lock(&acpi_ioapic_lock);
+ 			error = acpi_parse_madt_ioapic_entries();
++			mutex_unlock(&acpi_ioapic_lock);
+ 			if (!error) {
+ 				acpi_set_irq_model_ioapic();
+ 
 -- 
 1.7.10.4
