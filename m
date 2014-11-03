@@ -1,34 +1,151 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v8 3/5] amba: Don't unprepare the clocks if device driver wants IRQ safe runtime PM
-Date: Mon, 03 Nov 2014 09:17:08 -0800
-Message-ID: <7hoasoi4q3.fsf@deeprootsystems.com>
-References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com>
-	<1413795888-18559-4-git-send-email-k.kozlowski@samsung.com>
-	<1479283.dvHduzBoyf@vostro.rjw.lan>
-	<20141101005514.GY27405@n2100.arm.linux.org.uk>
-	<20141101010113.GA3831@n2100.arm.linux.org.uk>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v3 19/47] mfd: rk808: Register power-off handler with
+ kernel power-off handler
+Date: Mon, 3 Nov 2014 17:53:46 +0000
+Message-ID: <20141103175346.GI12011@x1>
+References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
+ <1414425354-10359-20-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <20141101010113.GA3831@n2100.arm.linux.org.uk> (Russell King's
-	message of "Sat, 1 Nov 2014 01:01:13 +0000")
-Sender: linux-doc-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f51.google.com ([209.85.192.51]:55834 "EHLO
+	mail-qg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752144AbaKCRxx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 12:53:53 -0500
+Received: by mail-qg0-f51.google.com with SMTP id j5so9252627qga.10
+        for <linux-pm@vger.kernel.org>; Mon, 03 Nov 2014 09:53:52 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1414425354-10359-20-git-send-email-linux@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chris Zhong <zyw@rock-chips.com>, Zhang Qing <zhangqing@rock-chips.com>, Samuel Ortiz <sameo@linux.intel.com>
 
-Russell King - ARM Linux <linux@arm.linux.org.uk> writes:
+On Mon, 27 Oct 2014, Guenter Roeck wrote:
 
-[...]
+> Register with kernel power-off handler instead of setting pm_power_of=
+f
+> directly. Register with low priority to reflect that the original cod=
+e
+> only sets pm_power_off if it was not already set.
+>=20
+> Cc: Chris Zhong <zyw@rock-chips.com>
+> Cc: Zhang Qing <zhangqing@rock-chips.com>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> ---
+> v3:
+> - Replace poweroff in all newly introduced variables and in text
+>   with power_off or power-off as appropriate
+> - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+> v2:
+> - New patch
+>=20
+>  drivers/mfd/rk808.c       | 30 ++++++++++++++++--------------
+>  include/linux/mfd/rk808.h |  2 ++
+>  2 files changed, 18 insertions(+), 14 deletions(-)
 
-> Would another possible solution be to remember the irq-safeness in the
-> suspend handler, and use that in the resume handler?  Resume should
-> /always/ undo what the suspend handler previously did wrt clk API stuff.
+Code looks okay:
 
-This seems more reasonable to me.
+Acked-by: Lee Jones <lee.jones@linaro.org>
 
-Currently, the setting of irq_safe-ness is permanent (there's no exposed
-API to unset it after you set it.) so assuming it to be the same across
-suspend resume is a safe assumption.
+=2E.. but how are you thinking about handling this set?
 
-Kevin
+> diff --git a/drivers/mfd/rk808.c b/drivers/mfd/rk808.c
+> index bd02150..5d5257d 100644
+> --- a/drivers/mfd/rk808.c
+> +++ b/drivers/mfd/rk808.c
+> @@ -21,6 +21,8 @@
+>  #include <linux/mfd/rk808.h>
+>  #include <linux/mfd/core.h>
+>  #include <linux/module.h>
+> +#include <linux/notifier.h>
+> +#include <linux/pm.h>
+>  #include <linux/regmap.h>
+> =20
+>  struct rk808_reg_data {
+> @@ -147,23 +149,19 @@ static struct regmap_irq_chip rk808_irq_chip =3D=
+ {
+>  	.init_ack_masked =3D true,
+>  };
+> =20
+> -static struct i2c_client *rk808_i2c_client;
+> -static void rk808_device_shutdown(void)
+> +static int rk808_device_shutdown(struct notifier_block *this,
+> +				 unsigned long unused1, void *unused2)
+>  {
+> +	struct rk808 *rk808 =3D container_of(this, struct rk808, power_off_=
+nb);
+>  	int ret;
+> -	struct rk808 *rk808 =3D i2c_get_clientdata(rk808_i2c_client);
+> -
+> -	if (!rk808) {
+> -		dev_warn(&rk808_i2c_client->dev,
+> -			 "have no rk808, so do nothing here\n");
+> -		return;
+> -	}
+> =20
+>  	ret =3D regmap_update_bits(rk808->regmap,
+>  				 RK808_DEVCTRL_REG,
+>  				 DEV_OFF_RST, DEV_OFF_RST);
+>  	if (ret)
+> -		dev_err(&rk808_i2c_client->dev, "power off error!\n");
+> +		dev_err(&rk808->i2c->dev, "power off error!\n");
+> +
+> +	return NOTIFY_DONE;
+>  }
+> =20
+>  static int rk808_probe(struct i2c_client *client,
+> @@ -222,9 +220,14 @@ static int rk808_probe(struct i2c_client *client=
+,
+> =20
+>  	pm_off =3D of_property_read_bool(np,
+>  				"rockchip,system-power-controller");
+> -	if (pm_off && !pm_power_off) {
+> -		rk808_i2c_client =3D client;
+> -		pm_power_off =3D rk808_device_shutdown;
+> +	if (pm_off) {
+> +		rk808->power_off_nb.notifier_call =3D rk808_device_shutdown;
+> +		rk808->power_off_nb.priority =3D POWER_OFF_PRIORITY_LOW;
+> +		ret =3D devm_register_power_off_handler(&client->dev,
+> +						      &rk808->power_off_nb);
+> +		if (ret)
+> +			dev_warn(&client->dev,
+> +				 "Failed to register power-off handler\n");
+>  	}
+> =20
+>  	return 0;
+> @@ -240,7 +243,6 @@ static int rk808_remove(struct i2c_client *client=
+)
+> =20
+>  	regmap_del_irq_chip(client->irq, rk808->irq_data);
+>  	mfd_remove_devices(&client->dev);
+> -	pm_power_off =3D NULL;
+> =20
+>  	return 0;
+>  }
+> diff --git a/include/linux/mfd/rk808.h b/include/linux/mfd/rk808.h
+> index fb09312..6308fd4 100644
+> --- a/include/linux/mfd/rk808.h
+> +++ b/include/linux/mfd/rk808.h
+> @@ -19,6 +19,7 @@
+>  #ifndef __LINUX_REGULATOR_rk808_H
+>  #define __LINUX_REGULATOR_rk808_H
+> =20
+> +#include <linux/notifier.h>
+>  #include <linux/regulator/machine.h>
+>  #include <linux/regmap.h>
+> =20
+> @@ -192,5 +193,6 @@ struct rk808 {
+>  	struct i2c_client *i2c;
+>  	struct regmap_irq_chip_data *irq_data;
+>  	struct regmap *regmap;
+> +	struct notifier_block power_off_nb;
+>  };
+>  #endif /* __LINUX_REGULATOR_rk808_H */
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
