@@ -1,26 +1,26 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v3 19/47] mfd: rk808: Register power-off handler with
+Subject: Re: [PATCH v3 20/47] mfd: rn5t618: Register power-off handler with
  kernel power-off handler
-Date: Mon, 3 Nov 2014 17:53:46 +0000
-Message-ID: <20141103175346.GI12011@x1>
+Date: Mon, 3 Nov 2014 17:54:13 +0000
+Message-ID: <20141103175413.GJ12011@x1>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
- <1414425354-10359-20-git-send-email-linux@roeck-us.net>
+ <1414425354-10359-21-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f51.google.com ([209.85.192.51]:55834 "EHLO
-	mail-qg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752144AbaKCRxx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 12:53:53 -0500
-Received: by mail-qg0-f51.google.com with SMTP id j5so9252627qga.10
-        for <linux-pm@vger.kernel.org>; Mon, 03 Nov 2014 09:53:52 -0800 (PST)
+Received: from mail-qa0-f51.google.com ([209.85.216.51]:61317 "EHLO
+	mail-qa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752722AbaKCRyV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 12:54:21 -0500
+Received: by mail-qa0-f51.google.com with SMTP id f12so8740792qad.10
+        for <linux-pm@vger.kernel.org>; Mon, 03 Nov 2014 09:54:20 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1414425354-10359-20-git-send-email-linux@roeck-us.net>
+In-Reply-To: <1414425354-10359-21-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chris Zhong <zyw@rock-chips.com>, Zhang Qing <zhangqing@rock-chips.com>, Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Beniamino Galvani <b.galvani@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>
 
 On Mon, 27 Oct 2014, Guenter Roeck wrote:
 
@@ -30,8 +30,7 @@ f
 e
 > only sets pm_power_off if it was not already set.
 >=20
-> Cc: Chris Zhong <zyw@rock-chips.com>
-> Cc: Zhang Qing <zhangqing@rock-chips.com>
+> Cc: Beniamino Galvani <b.galvani@gmail.com>
 > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 > ---
 > v3:
@@ -41,108 +40,103 @@ e
 > v2:
 > - New patch
 >=20
->  drivers/mfd/rk808.c       | 30 ++++++++++++++++--------------
->  include/linux/mfd/rk808.h |  2 ++
->  2 files changed, 18 insertions(+), 14 deletions(-)
-
-Code looks okay:
+>  drivers/mfd/rn5t618.c       | 32 ++++++++++++++++----------------
+>  include/linux/mfd/rn5t618.h |  2 ++
+>  2 files changed, 18 insertions(+), 16 deletions(-)
 
 Acked-by: Lee Jones <lee.jones@linaro.org>
 
-=2E.. but how are you thinking about handling this set?
-
-> diff --git a/drivers/mfd/rk808.c b/drivers/mfd/rk808.c
-> index bd02150..5d5257d 100644
-> --- a/drivers/mfd/rk808.c
-> +++ b/drivers/mfd/rk808.c
-> @@ -21,6 +21,8 @@
->  #include <linux/mfd/rk808.h>
+> diff --git a/drivers/mfd/rn5t618.c b/drivers/mfd/rn5t618.c
+> index 6668571..ed564d1 100644
+> --- a/drivers/mfd/rn5t618.c
+> +++ b/drivers/mfd/rn5t618.c
+> @@ -15,6 +15,8 @@
 >  #include <linux/mfd/core.h>
+>  #include <linux/mfd/rn5t618.h>
 >  #include <linux/module.h>
 > +#include <linux/notifier.h>
 > +#include <linux/pm.h>
 >  #include <linux/regmap.h>
 > =20
->  struct rk808_reg_data {
-> @@ -147,23 +149,19 @@ static struct regmap_irq_chip rk808_irq_chip =3D=
- {
->  	.init_ack_masked =3D true,
+>  static const struct mfd_cell rn5t618_cells[] =3D {
+> @@ -47,16 +49,20 @@ static const struct regmap_config rn5t618_regmap_=
+config =3D {
+>  	.cache_type	=3D REGCACHE_RBTREE,
 >  };
 > =20
-> -static struct i2c_client *rk808_i2c_client;
-> -static void rk808_device_shutdown(void)
-> +static int rk808_device_shutdown(struct notifier_block *this,
-> +				 unsigned long unused1, void *unused2)
->  {
-> +	struct rk808 *rk808 =3D container_of(this, struct rk808, power_off_=
-nb);
->  	int ret;
-> -	struct rk808 *rk808 =3D i2c_get_clientdata(rk808_i2c_client);
+> -static struct rn5t618 *rn5t618_pm_power_off;
 > -
-> -	if (!rk808) {
-> -		dev_warn(&rk808_i2c_client->dev,
-> -			 "have no rk808, so do nothing here\n");
-> -		return;
-> -	}
-> =20
->  	ret =3D regmap_update_bits(rk808->regmap,
->  				 RK808_DEVCTRL_REG,
->  				 DEV_OFF_RST, DEV_OFF_RST);
->  	if (ret)
-> -		dev_err(&rk808_i2c_client->dev, "power off error!\n");
-> +		dev_err(&rk808->i2c->dev, "power off error!\n");
+> -static void rn5t618_power_off(void)
+> +static int rn5t618_power_off(struct notifier_block *this,
+> +			     unsigned long unused1, void *unused2)
+>  {
+> +	struct rn5t618 *rn5t618 =3D container_of(this, struct rn5t618,
+> +					       power_off_nb);
+> +
+>  	/* disable automatic repower-on */
+> -	regmap_update_bits(rn5t618_pm_power_off->regmap, RN5T618_REPCNT,
+> +	regmap_update_bits(rn5t618->regmap, RN5T618_REPCNT,
+>  			   RN5T618_REPCNT_REPWRON, 0);
+>  	/* start power-off sequence */
+> -	regmap_update_bits(rn5t618_pm_power_off->regmap, RN5T618_SLPCNT,
+> +	regmap_update_bits(rn5t618->regmap, RN5T618_SLPCNT,
+>  			   RN5T618_SLPCNT_SWPWROFF, RN5T618_SLPCNT_SWPWROFF);
 > +
 > +	return NOTIFY_DONE;
 >  }
 > =20
->  static int rk808_probe(struct i2c_client *client,
-> @@ -222,9 +220,14 @@ static int rk808_probe(struct i2c_client *client=
-,
-> =20
->  	pm_off =3D of_property_read_bool(np,
->  				"rockchip,system-power-controller");
-> -	if (pm_off && !pm_power_off) {
-> -		rk808_i2c_client =3D client;
-> -		pm_power_off =3D rk808_device_shutdown;
-> +	if (pm_off) {
-> +		rk808->power_off_nb.notifier_call =3D rk808_device_shutdown;
-> +		rk808->power_off_nb.priority =3D POWER_OFF_PRIORITY_LOW;
-> +		ret =3D devm_register_power_off_handler(&client->dev,
-> +						      &rk808->power_off_nb);
-> +		if (ret)
-> +			dev_warn(&client->dev,
-> +				 "Failed to register power-off handler\n");
+>  static int rn5t618_i2c_probe(struct i2c_client *i2c,
+> @@ -85,23 +91,17 @@ static int rn5t618_i2c_probe(struct i2c_client *i=
+2c,
+>  		return ret;
 >  	}
 > =20
->  	return 0;
-> @@ -240,7 +243,6 @@ static int rk808_remove(struct i2c_client *client=
-)
-> =20
->  	regmap_del_irq_chip(client->irq, rk808->irq_data);
->  	mfd_remove_devices(&client->dev);
-> -	pm_power_off =3D NULL;
+> -	if (!pm_power_off) {
+> -		rn5t618_pm_power_off =3D priv;
+> -		pm_power_off =3D rn5t618_power_off;
+> -	}
+> +	priv->power_off_nb.notifier_call =3D rn5t618_power_off;
+> +	priv->power_off_nb.priority =3D POWER_OFF_PRIORITY_LOW;
+> +	ret =3D devm_register_power_off_handler(&i2c->dev, &priv->power_off=
+_nb);
+> +	if (ret)
+> +		dev_warn(&i2c->dev, "Failed to register power-off handler\n");
 > =20
 >  	return 0;
 >  }
-> diff --git a/include/linux/mfd/rk808.h b/include/linux/mfd/rk808.h
-> index fb09312..6308fd4 100644
-> --- a/include/linux/mfd/rk808.h
-> +++ b/include/linux/mfd/rk808.h
-> @@ -19,6 +19,7 @@
->  #ifndef __LINUX_REGULATOR_rk808_H
->  #define __LINUX_REGULATOR_rk808_H
+> =20
+>  static int rn5t618_i2c_remove(struct i2c_client *i2c)
+>  {
+> -	struct rn5t618 *priv =3D i2c_get_clientdata(i2c);
+> -
+> -	if (priv =3D=3D rn5t618_pm_power_off) {
+> -		rn5t618_pm_power_off =3D NULL;
+> -		pm_power_off =3D NULL;
+> -	}
+> -
+>  	mfd_remove_devices(&i2c->dev);
+>  	return 0;
+>  }
+> diff --git a/include/linux/mfd/rn5t618.h b/include/linux/mfd/rn5t618.=
+h
+> index c72d534..21c9c39 100644
+> --- a/include/linux/mfd/rn5t618.h
+> +++ b/include/linux/mfd/rn5t618.h> @@ -14,6 +14,7 @@
+>  #ifndef __LINUX_MFD_RN5T618_H
+>  #define __LINUX_MFD_RN5T618_H
 > =20
 > +#include <linux/notifier.h>
->  #include <linux/regulator/machine.h>
 >  #include <linux/regmap.h>
 > =20
-> @@ -192,5 +193,6 @@ struct rk808 {
->  	struct i2c_client *i2c;
->  	struct regmap_irq_chip_data *irq_data;
+>  #define RN5T618_LSIVER			0x00
+> @@ -223,6 +224,7 @@ enum {
+> =20
+>  struct rn5t618 {
 >  	struct regmap *regmap;
 > +	struct notifier_block power_off_nb;
 >  };
->  #endif /* __LINUX_REGULATOR_rk808_H */
+> =20
+>  #endif /* __LINUX_MFD_RN5T618_H */
 
 --=20
 Lee Jones
