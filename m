@@ -1,16 +1,16 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v3 17/47] mfd: tps65910: Register with kernel power-off
+Subject: Re: [PATCH v3 16/47] mfd: tps6586x: Register with kernel power-off
  handler
-Date: Mon, 3 Nov 2014 17:54:40 +0000
-Message-ID: <20141103175440.GL12011@x1>
+Date: Mon, 3 Nov 2014 17:54:53 +0000
+Message-ID: <20141103175453.GM12011@x1>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
- <1414425354-10359-18-git-send-email-linux@roeck-us.net>
+ <1414425354-10359-17-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1414425354-10359-18-git-send-email-linux@roeck-us.net>
+In-Reply-To: <1414425354-10359-17-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Guenter Roeck <linux@roeck-us.net>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>
@@ -36,96 +36,95 @@ e
 > - Use define to specify poweroff handler priority
 > - Use dev_warn instead of dev_err
 >=20
->  drivers/mfd/tps65910.c       | 27 ++++++++++++++++++---------
->  include/linux/mfd/tps65910.h |  3 +++
->  2 files changed, 21 insertions(+), 9 deletions(-)
+>  drivers/mfd/tps6586x.c | 31 +++++++++++++++++++++++--------
+>  1 file changed, 23 insertions(+), 8 deletions(-)
 
 Acked-by: Lee Jones <lee.jones@linaro.org>
 
-> diff --git a/drivers/mfd/tps65910.c b/drivers/mfd/tps65910.c
-> index 7612d89..3c94dbf 100644
-> --- a/drivers/mfd/tps65910.c
-> +++ b/drivers/mfd/tps65910.c
-> @@ -23,6 +23,8 @@
->  #include <linux/irq.h>
->  #include <linux/irqdomain.h>
->  #include <linux/mfd/core.h>
+> diff --git a/drivers/mfd/tps6586x.c b/drivers/mfd/tps6586x.c
+> index 8e1dbc4..1e97478 100644
+> --- a/drivers/mfd/tps6586x.c
+> +++ b/drivers/mfd/tps6586x.c
+> @@ -21,10 +21,12 @@
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
 > +#include <linux/notifier.h>
+>  #include <linux/slab.h>
+>  #include <linux/err.h>
+>  #include <linux/i2c.h>
+>  #include <linux/platform_device.h>
 > +#include <linux/pm.h>
 >  #include <linux/regmap.h>
->  #include <linux/mfd/tps65910.h>
 >  #include <linux/of.h>
-> @@ -437,19 +439,20 @@ struct tps65910_board *tps65910_parse_dt(struct=
- i2c_client *client,
->  }
->  #endif
 > =20
-> -static struct i2c_client *tps65910_i2c_client;
-> -static void tps65910_power_off(void)
-> +static int tps65910_power_off(struct notifier_block *this,
+> @@ -133,6 +135,8 @@ struct tps6586x {
+>  	u32			irq_en;
+>  	u8			mask_reg[5];
+>  	struct irq_domain	*irq_domain;
+> +
+> +	struct notifier_block	power_off_nb;
+>  };
+> =20
+>  static inline struct tps6586x *dev_to_tps6586x(struct device *dev)
+> @@ -472,13 +476,18 @@ static const struct regmap_config tps6586x_regm=
+ap_config =3D {
+>  	.cache_type =3D REGCACHE_RBTREE,
+>  };
+> =20
+> -static struct device *tps6586x_dev;
+> -static void tps6586x_power_off(void)
+> +static int tps6586x_power_off(struct notifier_block *this,
 > +			      unsigned long unused1, void *unused2)
 >  {
-> -	struct tps65910 *tps65910;
-> -
-> -	tps65910 =3D dev_get_drvdata(&tps65910_i2c_client->dev);
-> +	struct tps65910 *tps65910 =3D container_of(this, struct tps65910,
-> +						 power_off_nb);
-> =20
->  	if (tps65910_reg_set_bits(tps65910, TPS65910_DEVCTRL,
->  			DEVCTRL_PWR_OFF_MASK) < 0)
+> -	if (tps6586x_clr_bits(tps6586x_dev, TPS6586X_SUPPLYENE, EXITSLREQ_B=
+IT))
 > -		return;
+> +	struct tps6586x *tps6586x =3D container_of(this, struct tps6586x,
+> +						 power_off_nb);
+> +
+> +	if (tps6586x_clr_bits(tps6586x->dev, TPS6586X_SUPPLYENE, EXITSLREQ_=
+BIT))
 > +		return NOTIFY_DONE;
 > =20
->  	tps65910_reg_clear_bits(tps65910, TPS65910_DEVCTRL,
->  			DEVCTRL_DEV_ON_MASK);
+> -	tps6586x_set_bits(tps6586x_dev, TPS6586X_SUPPLYENE, SLEEP_MODE_BIT)=
+;
+> +	tps6586x_set_bits(tps6586x->dev, TPS6586X_SUPPLYENE, SLEEP_MODE_BIT=
+);
 > +
 > +	return NOTIFY_DONE;
 >  }
 > =20
->  static int tps65910_i2c_probe(struct i2c_client *i2c,
-> @@ -505,9 +508,13 @@ static int tps65910_i2c_probe(struct i2c_client =
-*i2c,
->  	tps65910_ck32k_init(tps65910, pmic_plat_data);
->  	tps65910_sleepinit(tps65910, pmic_plat_data);
+>  static void tps6586x_print_version(struct i2c_client *client, int ve=
+rsion)
+> @@ -575,9 +584,13 @@ static int tps6586x_i2c_probe(struct i2c_client =
+*client,
+>  		goto err_add_devs;
+>  	}
 > =20
-> -	if (pmic_plat_data->pm_off && !pm_power_off) {
-> -		tps65910_i2c_client =3D i2c;
-> -		pm_power_off =3D tps65910_power_off;
-> +	if (pmic_plat_data->pm_off) {
-> +		tps65910->power_off_nb.notifier_call =3D tps65910_power_off;
-> +		tps65910->power_off_nb.priority =3D POWER_OFF_PRIORITY_LOW;
-> +		ret =3D register_power_off_handler(&tps65910->power_off_nb);
+> -	if (pdata->pm_off && !pm_power_off) {
+> -		tps6586x_dev =3D &client->dev;
+> -		pm_power_off =3D tps6586x_power_off;
+> +	if (pdata->pm_off) {
+> +		tps6586x->power_off_nb.notifier_call =3D tps6586x_power_off;
+> +		tps6586x->power_off_nb.priority =3D POWER_OFF_PRIORITY_LOW;
+> +		ret =3D register_power_off_handler(&tps6586x->power_off_nb);
 > +		if (ret)
-> +			dev_warn(&i2c->dev,
+> +			dev_warn(&client->dev,
 > +				 "failed to register power-off handler\n");
 >  	}
 > =20
->  	ret =3D mfd_add_devices(tps65910->dev, -1,
-> @@ -527,6 +534,8 @@ static int tps65910_i2c_remove(struct i2c_client =
-*i2c)
+>  	return 0;
+> @@ -594,6 +607,8 @@ static int tps6586x_i2c_remove(struct i2c_client =
+*client)
 >  {
->  	struct tps65910 *tps65910 =3D i2c_get_clientdata(i2c);
+>  	struct tps6586x *tps6586x =3D i2c_get_clientdata(client);
 > =20
-> +	unregister_power_off_handler(&tps65910->power_off_nb);
+> +	unregister_power_off_handler(&tps6586x->power_off_nb);
 > +
->  	tps65910_irq_exit(tps65910);
->  	mfd_remove_devices(tps65910->dev);
-> =20
-> diff --git a/include/linux/mfd/tps65910.h b/include/linux/mfd/tps6591=
-0.h
-> index 6483a6f..94876c4 100644
-> --- a/include/linux/mfd/tps65910.h
-> +++ b/include/linux/mfd/tps65910.h
-> @@ -905,6 +905,9 @@ struct tps65910 {
->  	/* IRQ Handling */
->  	int chip_irq;
->  	struct regmap_irq_chip_data *irq_data;
-> +
-> +	/* Power-off handling */
-> +	struct notifier_block power_off_nb;
->  };
-> =20
->  struct tps65910_platform_data {
+>  	tps6586x_remove_subdevs(tps6586x);
+>  	mfd_remove_devices(tps6586x->dev);
+>  	if (client->irq)
 
 --=20
 Lee Jones
