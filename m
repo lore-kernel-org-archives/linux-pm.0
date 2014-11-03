@@ -1,112 +1,172 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH 04/12] mfd: exynos-pmu: Register exynos-pmu driver as a mfd
- driver
-Date: Mon, 03 Nov 2014 09:23:02 +0530
-Message-ID: <1414986790-11940-5-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH 05/12] arm: exynos: Add platform driver support for power
+ domain driver
+Date: Mon, 03 Nov 2014 09:23:03 +0530
+Message-ID: <1414986790-11940-6-git-send-email-amit.daniel@samsung.com>
 References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: kgene.kim@samsung.com, pankaj.dubey@samsung.com, Amit Daniel Kachhap <amit.daniel@samsung.com>, Lee Jones <lee.jones@linaro.org>
+Cc: kgene.kim@samsung.com, pankaj.dubey@samsung.com, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This can be used later to probe and configure PMU client drivers
-like pm_domain etc.
-A global structure pmu_dev_client_data is created to pass exynos-pmu
-platform data to all the clients. Currently the data passed is register
-base addresses.
-Although the exynos-pmu driver also provides the sysreg interfaces to
-provide register base addresses but this is costlier than readl/writel,
-so both the interfaces are provided to mfd based exynos-pmu client
-drivers.
+This patch modifies Exynos Power Domain driver initialization
+implementation in following way:
 
-Cc: Lee Jones <lee.jones@linaro.org>
+   - Added platform driver support and probe function where Exynos
+     PM Domain driver will register itself as MFD PMU client
+     driver.
+   - This driver will now use the PMU base address with certain offset
+     for power domain register address so reg property is not required.
+     This change will avoid unnecessary ioremap of the power register.
+   - PMU base address is directly accessed and syscon interface is
+     not used as PM Domain driver is quite critical and syscon based
+     lock protected register access(regmap) is not used.
+
+Cc: Kukjin Kim <kgene.kim@samsung.com>
 Reviewed-by: Pankaj Dubey <pankaj.dubey@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- drivers/mfd/exynos-pmu.c               |   25 +++++++++++++++++++++++++
- include/linux/mfd/samsung/exynos-pmu.h |    5 +++++
- 2 files changed, 30 insertions(+)
+ .../bindings/arm/exynos/power_domain.txt           |    8 +--
+ arch/arm/mach-exynos/pm_domains.c                  |   59 ++++++++++++++------
+ 2 files changed, 47 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/mfd/exynos-pmu.c b/drivers/mfd/exynos-pmu.c
-index 07019f0..c46f3f5 100644
---- a/drivers/mfd/exynos-pmu.c
-+++ b/drivers/mfd/exynos-pmu.c
-@@ -11,12 +11,19 @@
+diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+index abde1ea..5599017 100644
+--- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
++++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+@@ -6,8 +6,8 @@ to gate power to one or more peripherals on the processor.
+ Required Properties:
+ - compatible: should be one of the following.
+     * samsung,exynos4210-pd - for exynos4210 type power domain.
+-- reg: physical base address of the controller and length of memory mapped
+-    region.
++- pd-offset: this gives the offset of PM power domain register from
++	     the PMU base address.
+ - #power-domain-cells: number of cells in power domain specifier;
+     must be 0.
  
- #include <linux/io.h>
- #include <linux/of.h>
-+#include <linux/of_address.h>
- #include <linux/platform_device.h>
-+#include <linux/mfd/core.h>
- #include <linux/mfd/samsung/exynos-regs-pmu.h>
- #include <linux/mfd/samsung/exynos-pmu.h>
+@@ -30,13 +30,13 @@ Example:
  
- #define PMU_TABLE_END	(-1U)
+ 	lcd0: power-domain-lcd0 {
+ 		compatible = "samsung,exynos4210-pd";
+-		reg = <0x10023C00 0x10>;
++		pd-offset = <0x3C00>;
+ 		#power-domain-cells = <0>;
+ 	};
  
-+enum pmu_mfd_list {
-+	MFD_POWER_DOMAIN,
-+	MFD_MAX,
-+};
+ 	mfc_pd: power-domain@10044060 {
+ 		compatible = "samsung,exynos4210-pd";
+-		reg = <0x10044060 0x20>;
++		pd-offset = <0x4060>;
+ 		clocks = <&clock CLK_FIN_PLL>, <&clock CLK_MOUT_SW_ACLK333>,
+ 			<&clock CLK_MOUT_USER_ACLK333>;
+ 		clock-names = "oscclk", "pclk0", "clk0";
+diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
+index 20f2671..923eb57 100644
+--- a/arch/arm/mach-exynos/pm_domains.c
++++ b/arch/arm/mach-exynos/pm_domains.c
+@@ -22,6 +22,7 @@
+ #include <linux/of_address.h>
+ #include <linux/of_platform.h>
+ #include <linux/sched.h>
++#include <linux/mfd/samsung/exynos-pmu.h>
+ 
+ #define INT_LOCAL_PWR_EN	0x7
+ #define MAX_CLK_PER_DOMAIN	4
+@@ -105,33 +106,41 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
+ 	return exynos_pd_power(domain, false);
+ }
+ 
+-static __init int exynos4_pm_init_power_domain(void)
++static int exynos_power_domain_probe(struct platform_device *pdev)
+ {
+-	struct platform_device *pdev;
+ 	struct device_node *np;
++	struct pmu_dev_client_data *pdata = NULL;
++	void __iomem *pmu_base_addr;
++	unsigned int offset;
 +
- struct exynos_pmu_conf {
- 	unsigned int offset;
- 	unsigned int val[NUM_SYS_POWERDOWN];
-@@ -33,6 +40,8 @@ struct exynos_pmu_data {
- struct exynos_pmu_context {
- 	struct device *dev;
- 	const struct exynos_pmu_data *pmu_data;
-+	struct mfd_cell cells[MFD_MAX];
-+	struct pmu_dev_client_data mfd_data;
- };
- 
- static void __iomem *pmu_base_addr;
-@@ -482,6 +491,8 @@ static int exynos_pmu_probe(struct platform_device *pdev)
- 	const struct of_device_id *match;
- 	struct device *dev = &pdev->dev;
- 	struct resource *res;
-+	struct mfd_cell *cell;
-+	int ret;
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	pmu_base_addr = devm_ioremap_resource(dev, res);
-@@ -506,6 +517,20 @@ static int exynos_pmu_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, pmu_context);
- 
-+	/* Initialize and invoke mfd clients */
-+	cell = &pmu_context->cells[MFD_POWER_DOMAIN];
-+	cell->name = "exynos-pmu-domain";
-+	pmu_context->mfd_data.mem_base_addr = pmu_base_addr;
-+	pmu_context->mfd_data.mem_size = resource_size(res);
-+	cell->platform_data = &pmu_context->mfd_data;
-+	cell->pdata_size = sizeof(pmu_context->mfd_data);
-+	ret = mfd_add_devices(&pdev->dev, pdev->id, pmu_context->cells, MFD_MAX,
-+				NULL, 0, NULL);
-+	if (ret) {
-+		dev_err(&pdev->dev, "fail to register client devices\n");
-+		return ret;
++	pdata = pdev->dev.platform_data;
++	if (!pdata) {
++		dev_err(&pdev->dev, "No platform data passed\n");
++		return -EINVAL;
 +	}
 +
- 	dev_dbg(dev, "Exynos PMU Driver probe done\n");
++	pmu_base_addr = pdata->mem_base_addr;
+ 
+ 	for_each_compatible_node(np, NULL, "samsung,exynos4210-pd") {
+ 		struct exynos_pm_domain *pd;
+ 		int on, i;
+-		struct device *dev;
+ 
+-		pdev = of_find_device_by_node(np);
+-		dev = &pdev->dev;
+-
+-		pd = kzalloc(sizeof(*pd), GFP_KERNEL);
+-		if (!pd) {
+-			pr_err("%s: failed to allocate memory for domain\n",
+-					__func__);
++		pd = devm_kzalloc(&pdev->dev, sizeof(*pd), GFP_KERNEL);
++		if (!pd)
+ 			return -ENOMEM;
+-		}
+ 
+ 		pd->pd.name = kstrdup(np->name, GFP_KERNEL);
+ 		pd->name = pd->pd.name;
+-		pd->base = of_iomap(np, 0);
++		if (of_property_read_u32(np, "pd-offset", &offset)) {
++			pr_err("%s: failed to find offset for power domain\n",
++					__func__);
++			return -EINVAL;
++		}
++		pd->base = pmu_base_addr + offset;
+ 		pd->pd.power_off = exynos_pd_power_off;
+ 		pd->pd.power_on = exynos_pd_power_on;
+ 
+-		pd->oscclk = clk_get(dev, "oscclk");
++		pd->oscclk = of_clk_get_by_name(np, "oscclk");
+ 		if (IS_ERR(pd->oscclk))
+ 			goto no_clk;
+ 
+@@ -139,11 +148,11 @@ static __init int exynos4_pm_init_power_domain(void)
+ 			char clk_name[8];
+ 
+ 			snprintf(clk_name, sizeof(clk_name), "clk%d", i);
+-			pd->clk[i] = clk_get(dev, clk_name);
++			pd->clk[i] = of_clk_get_by_name(np, clk_name);
+ 			if (IS_ERR(pd->clk[i]))
+ 				break;
+ 			snprintf(clk_name, sizeof(clk_name), "pclk%d", i);
+-			pd->pclk[i] = clk_get(dev, clk_name);
++			pd->pclk[i] = of_clk_get_by_name(np, clk_name);
+ 			if (IS_ERR(pd->pclk[i])) {
+ 				clk_put(pd->clk[i]);
+ 				pd->clk[i] = ERR_PTR(-EINVAL);
+@@ -163,4 +172,22 @@ no_clk:
+ 
  	return 0;
  }
-diff --git a/include/linux/mfd/samsung/exynos-pmu.h b/include/linux/mfd/samsung/exynos-pmu.h
-index a2ab0d5..d2f4083 100644
---- a/include/linux/mfd/samsung/exynos-pmu.h
-+++ b/include/linux/mfd/samsung/exynos-pmu.h
-@@ -19,6 +19,11 @@ enum sys_powerdown {
- 	NUM_SYS_POWERDOWN,
- };
- 
-+struct pmu_dev_client_data {
-+	void __iomem *mem_base_addr;
-+	unsigned int mem_size;
+-arch_initcall(exynos4_pm_init_power_domain);
++
++static const struct platform_device_id exynos_power_domain_id[] = {
++	{ "exynos-pmu-domain"},
++	{ },
 +};
 +
- extern void exynos_sys_powerdown_conf(enum sys_powerdown mode);
- 
- #endif /* __EXYNOS_PMU_H */
++static struct platform_driver exynos_power_domain_driver = {
++	.driver  = {
++		.name   = "exynos-pd",
++	},
++	.probe = exynos_power_domain_probe,
++	.id_table = exynos_power_domain_id,
++};
++
++static int __init exynos_power_domain_init(void)
++{
++	return platform_driver_register(&exynos_power_domain_driver);
++}
++postcore_initcall(exynos_power_domain_init);
 -- 
 1.7.9.5
