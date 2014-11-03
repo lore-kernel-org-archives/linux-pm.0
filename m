@@ -1,16 +1,16 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v3 18/47] mfd: twl4030-power: Register with kernel
- power-off handler
-Date: Mon, 3 Nov 2014 17:54:27 +0000
-Message-ID: <20141103175427.GK12011@x1>
+Subject: Re: [PATCH v3 17/47] mfd: tps65910: Register with kernel power-off
+ handler
+Date: Mon, 3 Nov 2014 17:54:40 +0000
+Message-ID: <20141103175440.GL12011@x1>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
- <1414425354-10359-19-git-send-email-linux@roeck-us.net>
+ <1414425354-10359-18-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1414425354-10359-19-git-send-email-linux@roeck-us.net>
+In-Reply-To: <1414425354-10359-18-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Guenter Roeck <linux@roeck-us.net>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>
@@ -24,10 +24,6 @@ f
 e
 > only sets pm_power_off if it was not already set.
 >=20
-> Make twl4030_power_off static as it is only called from the twl4030-p=
-ower
-> driver. Drop remove function as it is no longer needed.
->=20
 > Cc: Samuel Ortiz <sameo@linux.intel.com>
 > Cc: Lee Jones <lee.jones@linaro.org>
 > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
@@ -39,120 +35,97 @@ ower
 > v2:
 > - Use define to specify poweroff handler priority
 > - Use dev_warn instead of dev_err
-> - Use devm_register_power_off_handler
-> - Drop remove function as it is no longer needed.
 >=20
->  drivers/mfd/twl4030-power.c | 29 +++++++++++++++++++----------
->  include/linux/i2c/twl.h     |  1 -
->  2 files changed, 19 insertions(+), 11 deletions(-)
+>  drivers/mfd/tps65910.c       | 27 ++++++++++++++++++---------
+>  include/linux/mfd/tps65910.h |  3 +++
+>  2 files changed, 21 insertions(+), 9 deletions(-)
 
 Acked-by: Lee Jones <lee.jones@linaro.org>
 
-> diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.=
-c
-> index cf92a6d..e36eea9 100644
-> --- a/drivers/mfd/twl4030-power.c
-> +++ b/drivers/mfd/twl4030-power.c
-> @@ -25,9 +25,10 @@
->   */
-> =20
->  #include <linux/module.h>
-> -#include <linux/pm.h>
+> diff --git a/drivers/mfd/tps65910.c b/drivers/mfd/tps65910.c
+> index 7612d89..3c94dbf 100644
+> --- a/drivers/mfd/tps65910.c
+> +++ b/drivers/mfd/tps65910.c
+> @@ -23,6 +23,8 @@
+>  #include <linux/irq.h>
+>  #include <linux/irqdomain.h>
+>  #include <linux/mfd/core.h>
 > +#include <linux/notifier.h>
->  #include <linux/i2c/twl.h>
->  #include <linux/platform_device.h>
 > +#include <linux/pm.h>
+>  #include <linux/regmap.h>
+>  #include <linux/mfd/tps65910.h>
 >  #include <linux/of.h>
->  #include <linux/of_device.h>
+> @@ -437,19 +439,20 @@ struct tps65910_board *tps65910_parse_dt(struct=
+ i2c_client *client,
+>  }
+>  #endif
 > =20
-> @@ -611,7 +612,8 @@ twl4030_power_configure_resources(const struct tw=
-l4030_power_data *pdata)
->   * After a successful execution, TWL shuts down the power to the SoC
->   * and all peripherals connected to it.
->   */
-> -void twl4030_power_off(void)
-> +static int twl4030_power_off(struct notifier_block *this, unsigned l=
-ong unused1,
-> +			     void *unused2)
+> -static struct i2c_client *tps65910_i2c_client;
+> -static void tps65910_power_off(void)
+> +static int tps65910_power_off(struct notifier_block *this,
+> +			      unsigned long unused1, void *unused2)
 >  {
->  	int err;
+> -	struct tps65910 *tps65910;
+> -
+> -	tps65910 =3D dev_get_drvdata(&tps65910_i2c_client->dev);
+> +	struct tps65910 *tps65910 =3D container_of(this, struct tps65910,
+> +						 power_off_nb);
 > =20
-> @@ -619,8 +621,15 @@ void twl4030_power_off(void)
->  			       TWL4030_PM_MASTER_P1_SW_EVENTS);
->  	if (err)
->  		pr_err("TWL4030 Unable to power off\n");
+>  	if (tps65910_reg_set_bits(tps65910, TPS65910_DEVCTRL,
+>  			DEVCTRL_PWR_OFF_MASK) < 0)
+> -		return;
+> +		return NOTIFY_DONE;
+> =20
+>  	tps65910_reg_clear_bits(tps65910, TPS65910_DEVCTRL,
+>  			DEVCTRL_DEV_ON_MASK);
 > +
 > +	return NOTIFY_DONE;
 >  }
 > =20
-> +static struct notifier_block twl4030_power_off_nb =3D {
-> +	.notifier_call =3D twl4030_power_off,
-> +	.priority =3D POWER_OFF_PRIORITY_LOW,
-> +};
-> +
->  static bool twl4030_power_use_poweroff(const struct twl4030_power_da=
-ta *pdata,
->  					struct device_node *node)
->  {
-> @@ -839,7 +848,9 @@ static int twl4030_power_probe(struct platform_de=
-vice *pdev)
->  	}
+>  static int tps65910_i2c_probe(struct i2c_client *i2c,
+> @@ -505,9 +508,13 @@ static int tps65910_i2c_probe(struct i2c_client =
+*i2c,
+>  	tps65910_ck32k_init(tps65910, pmic_plat_data);
+>  	tps65910_sleepinit(tps65910, pmic_plat_data);
 > =20
->  	/* Board has to be wired properly to use this feature */
-> -	if (twl4030_power_use_poweroff(pdata, node) && !pm_power_off) {
-> +	if (twl4030_power_use_poweroff(pdata, node)) {
-> +		int ret;
-> +
->  		/* Default for SEQ_OFFSYNC is set, lets ensure this */
->  		err =3D twl_i2c_read_u8(TWL_MODULE_PM_MASTER, &val,
->  				      TWL4030_PM_MASTER_CFG_P123_TRANSITION);
-> @@ -856,7 +867,11 @@ static int twl4030_power_probe(struct platform_d=
-evice *pdev)
->  			}
->  		}
-> =20
-> -		pm_power_off =3D twl4030_power_off;
-> +		ret =3D devm_register_power_off_handler(&pdev->dev,
-> +						      &twl4030_power_off_nb);
+> -	if (pmic_plat_data->pm_off && !pm_power_off) {
+> -		tps65910_i2c_client =3D i2c;
+> -		pm_power_off =3D tps65910_power_off;
+> +	if (pmic_plat_data->pm_off) {
+> +		tps65910->power_off_nb.notifier_call =3D tps65910_power_off;
+> +		tps65910->power_off_nb.priority =3D POWER_OFF_PRIORITY_LOW;
+> +		ret =3D register_power_off_handler(&tps65910->power_off_nb);
 > +		if (ret)
-> +			dev_warn(&pdev->dev,
-> +				 "Failed to register power-off handler\n");
+> +			dev_warn(&i2c->dev,
+> +				 "failed to register power-off handler\n");
 >  	}
 > =20
->  relock:
-> @@ -870,11 +885,6 @@ relock:
->  	return err;
->  }
+>  	ret =3D mfd_add_devices(tps65910->dev, -1,
+> @@ -527,6 +534,8 @@ static int tps65910_i2c_remove(struct i2c_client =
+*i2c)
+>  {
+>  	struct tps65910 *tps65910 =3D i2c_get_clientdata(i2c);
 > =20
-> -static int twl4030_power_remove(struct platform_device *pdev)
-> -{
-> -	return 0;
-> -}
-> -
->  static struct platform_driver twl4030_power_driver =3D {
->  	.driver =3D {
->  		.name	=3D "twl4030_power",
-> @@ -882,7 +892,6 @@ static struct platform_driver twl4030_power_drive=
-r =3D {
->  		.of_match_table =3D of_match_ptr(twl4030_power_of_match),
->  	},
->  	.probe		=3D twl4030_power_probe,
-> -	.remove		=3D twl4030_power_remove,
+> +	unregister_power_off_handler(&tps65910->power_off_nb);
+> +
+>  	tps65910_irq_exit(tps65910);
+>  	mfd_remove_devices(tps65910->dev);
+> =20
+> diff --git a/include/linux/mfd/tps65910.h b/include/linux/mfd/tps6591=
+0.h
+> index 6483a6f..94876c4 100644
+> --- a/include/linux/mfd/tps65910.h
+> +++ b/include/linux/mfd/tps65910.h
+> @@ -905,6 +905,9 @@ struct tps65910 {
+>  	/* IRQ Handling */
+>  	int chip_irq;
+>  	struct regmap_irq_chip_data *irq_data;
+> +
+> +	/* Power-off handling */
+> +	struct notifier_block power_off_nb;
 >  };
 > =20
->  module_platform_driver(twl4030_power_driver);
-> diff --git a/include/linux/i2c/twl.h b/include/linux/i2c/twl.h
-> index 8cfb50f..f8544f1 100644
-> --- a/include/linux/i2c/twl.h
-> +++ b/include/linux/i2c/twl.h
-> @@ -680,7 +680,6 @@ struct twl4030_power_data {
->  };
-> =20
->  extern int twl4030_remove_script(u8 flags);
-> -extern void twl4030_power_off(void);
-> =20
->  struct twl4030_codec_data {
->  	unsigned int digimic_delay; /* in ms */
+>  struct tps65910_platform_data {
 
 --=20
 Lee Jones
