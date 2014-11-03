@@ -1,282 +1,47 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v4 6/9] ARM: shmobile: R-Mobile: Store SYSC base address in
- rmobile_pm_domain
-Date: Mon,  3 Nov 2014 16:34:53 +0100
-Message-ID: <1415028896-9005-7-git-send-email-geert+renesas@glider.be>
-References: <1415028896-9005-1-git-send-email-geert+renesas@glider.be>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v8 3/5] amba: Don't unprepare the clocks if device driver
+ wants IRQ safe runtime PM
+Date: Mon, 3 Nov 2014 10:41:02 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1411031036350.1316-100000@iolanthe.rowland.org>
+References: <20141103100442.GB4042@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1415028896-9005-1-git-send-email-geert+renesas@glider.be>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Philipp Zabel <philipp.zabel@gmail.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <20141103100442.GB4042@n2100.arm.linux.org.uk>
+Sender: linux-doc-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Replace the hardcoded addresses for accessing the SYSC PM domain
-registers by register offsets, relative to the SYSC base address stored
-in struct rmobile_pm_domain.
+On Mon, 3 Nov 2014, Russell King - ARM Linux wrote:
 
-In the future, the SYSC base address will come from DT.
+> That makes it pretty horrid from the point of view of having bus
+> management code, because we now have the management of the bus clock
+> split between the bus layer and the device driver.
+> 
+> This is /really/ a problem for runtime PM.  Runtime PM permits there
+> to be a bus layer involved - and runtime PM can also be coupled up
+> to PM domains as well.  For all this stuff, the context which the
+> callbacks are called in depends on whether the driver itself has
+> marked the device as having IRQ-safe callbacks.
+> 
+> That's fine, but the bus and PM domain level code then /really/ needs
+> to know what context they're being called in, so they know whether
+> they can sleep or not, or they must to be written to always use
+> non-sleeping functions so they work in both contexts.  If we assume
+> the former, then that implies that the irq-safe flag must never change
+> state between a suspend and a resume.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
----
-v4:
-  - Add Reviewed-by,
-  - Restore SYSC register definition alignment,
-v3:
-  - No changes,
-v2:
-  - No changes.
----
- arch/arm/mach-shmobile/pm-r8a7740.c | 14 ++++++++++++++
- arch/arm/mach-shmobile/pm-rmobile.c | 24 +++++++++++++-----------
- arch/arm/mach-shmobile/pm-rmobile.h |  1 +
- arch/arm/mach-shmobile/pm-sh7372.c  | 11 +++++++++++
- 4 files changed, 39 insertions(+), 11 deletions(-)
+If a bus subsystem or PM domain is going to allow its drivers to choose
+between IRQ-safe and non-IRQ-safe runtime PM, then it is up to the
+subsystem to come up with a way for drivers to indicate their choice.
 
-diff --git a/arch/arm/mach-shmobile/pm-r8a7740.c b/arch/arm/mach-shmobile/pm-r8a7740.c
-index ac2eecd6f5ea5d9f..34608fcf064808b8 100644
---- a/arch/arm/mach-shmobile/pm-r8a7740.c
-+++ b/arch/arm/mach-shmobile/pm-r8a7740.c
-@@ -9,10 +9,14 @@
-  * for more details.
-  */
- #include <linux/console.h>
-+#include <linux/io.h>
- #include <linux/suspend.h>
-+
- #include "common.h"
- #include "pm-rmobile.h"
- 
-+#define SYSC_BASE	IOMEM(0xe6180000)
-+
- #if defined(CONFIG_PM) && !defined(CONFIG_ARCH_MULTIPLATFORM)
- static int r8a7740_pd_a3sm_suspend(void)
- {
-@@ -45,41 +49,51 @@ static int r8a7740_pd_d4_suspend(void)
- static struct rmobile_pm_domain r8a7740_pm_domains[] = {
- 	{
- 		.genpd.name	= "A4LC",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 1,
- 	}, {
- 		.genpd.name	= "A4MP",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 2,
- 	}, {
- 		.genpd.name	= "D4",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 3,
- 		.gov		= &pm_domain_always_on_gov,
- 		.suspend	= r8a7740_pd_d4_suspend,
- 	}, {
- 		.genpd.name	= "A4R",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 5,
- 	}, {
- 		.genpd.name	= "A3RV",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 6,
- 	}, {
- 		.genpd.name	= "A4S",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 10,
- 		.no_debug	= true,
- 	}, {
- 		.genpd.name	= "A3SP",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 11,
- 		.gov		= &pm_domain_always_on_gov,
- 		.no_debug	= true,
- 		.suspend	= r8a7740_pd_a3sp_suspend,
- 	}, {
- 		.genpd.name	= "A3SM",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 12,
- 		.gov		= &pm_domain_always_on_gov,
- 		.suspend	= r8a7740_pd_a3sm_suspend,
- 	}, {
- 		.genpd.name	= "A3SG",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 13,
- 	}, {
- 		.genpd.name	= "A4SU",
-+		.base		= SYSC_BASE,
- 		.bit_shift	= 20,
- 	},
- };
-diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
-index 6fb86cdb9fa2b3a7..f07e994141685baa 100644
---- a/arch/arm/mach-shmobile/pm-rmobile.c
-+++ b/arch/arm/mach-shmobile/pm-rmobile.c
-@@ -20,9 +20,9 @@
- #include "pm-rmobile.h"
- 
- /* SYSC */
--#define SPDCR		IOMEM(0xe6180008)
--#define SWUCR		IOMEM(0xe6180014)
--#define PSTR		IOMEM(0xe6180080)
-+#define SPDCR		0x08	/* SYS Power Down Control Register */
-+#define SWUCR		0x14	/* SYS Wakeup Control Register */
-+#define PSTR		0x80	/* Power Status Register */
- 
- #define PSTR_RETRIES	100
- #define PSTR_DELAY_US	10
-@@ -39,12 +39,12 @@ static int rmobile_pd_power_down(struct generic_pm_domain *genpd)
- 			return ret;
- 	}
- 
--	if (__raw_readl(PSTR) & mask) {
-+	if (__raw_readl(rmobile_pd->base + PSTR) & mask) {
- 		unsigned int retry_count;
--		__raw_writel(mask, SPDCR);
-+		__raw_writel(mask, rmobile_pd->base + SPDCR);
- 
- 		for (retry_count = PSTR_RETRIES; retry_count; retry_count--) {
--			if (!(__raw_readl(SPDCR) & mask))
-+			if (!(__raw_readl(rmobile_pd->base + SPDCR) & mask))
- 				break;
- 			cpu_relax();
- 		}
-@@ -52,7 +52,8 @@ static int rmobile_pd_power_down(struct generic_pm_domain *genpd)
- 
- 	if (!rmobile_pd->no_debug)
- 		pr_debug("%s: Power off, 0x%08x -> PSTR = 0x%08x\n",
--			 genpd->name, mask, __raw_readl(PSTR));
-+			 genpd->name, mask,
-+			 __raw_readl(rmobile_pd->base + PSTR));
- 
- 	return 0;
- }
-@@ -64,13 +65,13 @@ static int __rmobile_pd_power_up(struct rmobile_pm_domain *rmobile_pd,
- 	unsigned int retry_count;
- 	int ret = 0;
- 
--	if (__raw_readl(PSTR) & mask)
-+	if (__raw_readl(rmobile_pd->base + PSTR) & mask)
- 		goto out;
- 
--	__raw_writel(mask, SWUCR);
-+	__raw_writel(mask, rmobile_pd->base + SWUCR);
- 
- 	for (retry_count = 2 * PSTR_RETRIES; retry_count; retry_count--) {
--		if (!(__raw_readl(SWUCR) & mask))
-+		if (!(__raw_readl(rmobile_pd->base + SWUCR) & mask))
- 			break;
- 		if (retry_count > PSTR_RETRIES)
- 			udelay(PSTR_DELAY_US);
-@@ -82,7 +83,8 @@ static int __rmobile_pd_power_up(struct rmobile_pm_domain *rmobile_pd,
- 
- 	if (!rmobile_pd->no_debug)
- 		pr_debug("%s: Power on, 0x%08x -> PSTR = 0x%08x\n",
--			 rmobile_pd->genpd.name, mask, __raw_readl(PSTR));
-+			 rmobile_pd->genpd.name, mask,
-+			 __raw_readl(rmobile_pd->base + PSTR));
- 
- out:
- 	if (ret == 0 && rmobile_pd->resume && do_resume)
-diff --git a/arch/arm/mach-shmobile/pm-rmobile.h b/arch/arm/mach-shmobile/pm-rmobile.h
-index 8f66b343162b0411..0602130bb260c31d 100644
---- a/arch/arm/mach-shmobile/pm-rmobile.h
-+++ b/arch/arm/mach-shmobile/pm-rmobile.h
-@@ -21,6 +21,7 @@ struct rmobile_pm_domain {
- 	struct dev_power_governor *gov;
- 	int (*suspend)(void);
- 	void (*resume)(void);
-+	void __iomem *base;
- 	unsigned int bit_shift;
- 	bool no_debug;
- };
-diff --git a/arch/arm/mach-shmobile/pm-sh7372.c b/arch/arm/mach-shmobile/pm-sh7372.c
-index 7e5c2676c48902f1..7181a280b3b541af 100644
---- a/arch/arm/mach-shmobile/pm-sh7372.c
-+++ b/arch/arm/mach-shmobile/pm-sh7372.c
-@@ -45,6 +45,8 @@
- #define PLLC01STPCR IOMEM(0xe61500c8)
- 
- /* SYSC */
-+#define SYSC_BASE IOMEM(0xe6180000)
-+
- #define SBAR IOMEM(0xe6180020)
- #define WUPRMSK IOMEM(0xe6180028)
- #define WUPSMSK IOMEM(0xe618002c)
-@@ -118,24 +120,28 @@ static struct rmobile_pm_domain sh7372_pm_domains[] = {
- 		.genpd.name = "A4LC",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 1,
- 	},
- 	{
- 		.genpd.name = "A4MP",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 2,
- 	},
- 	{
- 		.genpd.name = "D4",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 3,
- 	},
- 	{
- 		.genpd.name = "A4R",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 5,
- 		.suspend = sh7372_a4r_pd_suspend,
- 		.resume = sh7372_intcs_resume,
-@@ -144,18 +150,21 @@ static struct rmobile_pm_domain sh7372_pm_domains[] = {
- 		.genpd.name = "A3RV",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 6,
- 	},
- 	{
- 		.genpd.name = "A3RI",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 8,
- 	},
- 	{
- 		.genpd.name = "A4S",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 10,
- 		.gov = &pm_domain_always_on_gov,
- 		.no_debug = true,
-@@ -166,6 +175,7 @@ static struct rmobile_pm_domain sh7372_pm_domains[] = {
- 		.genpd.name = "A3SP",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 11,
- 		.gov = &pm_domain_always_on_gov,
- 		.no_debug = true,
-@@ -175,6 +185,7 @@ static struct rmobile_pm_domain sh7372_pm_domains[] = {
- 		.genpd.name = "A3SG",
- 		.genpd.power_on_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
- 		.genpd.power_off_latency_ns = PM_DOMAIN_ON_OFF_LATENCY_NS,
-+		.base = SYSC_BASE,
- 		.bit_shift = 13,
- 	},
- };
--- 
-1.9.1
+I tend to agree with Rafael that testing dev->power.irq_safe should be 
+good enough, with no real need for a wrapper.  But the subsystem can 
+use a different mechanism if it wants.
+
+Bear in mind, however, that once the irq_safe flag has been set, the 
+runtime PM core offers no way to turn it off again.
+
+Alan Stern
+
