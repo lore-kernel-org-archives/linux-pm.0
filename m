@@ -1,121 +1,56 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v3 00/47] kernel: Add support for power-off handler call
- chain
-Date: Mon, 3 Nov 2014 10:22:13 -0800
-Message-ID: <20141103182213.GA10640@roeck-us.net>
-References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
- <20141103175935.GS27425@saruman>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 03/12] PM / Domains: Add notifier support for power domain transitions
+Date: Mon, 03 Nov 2014 10:23:05 -0800
+Message-ID: <7hmw88gn3q.fsf@deeprootsystems.com>
+References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
+	<1414986790-11940-4-git-send-email-amit.daniel@samsung.com>
+	<1651173.5xzCFxz3LI@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:60909 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752910AbaKCSWT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 13:22:19 -0500
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XlMGg-002HsF-Qb
-	for linux-pm@vger.kernel.org; Mon, 03 Nov 2014 18:22:18 +0000
-Content-Disposition: inline
-In-Reply-To: <20141103175935.GS27425@saruman>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1651173.5xzCFxz3LI@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Mon, 03 Nov 2014 15:54:05 +0100")
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, pankaj.dubey@samsung.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Ulf Hansson <ulf.hansson@linaro.org>, mturquette@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Felipe Balbi <balbi@ti.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Russell King <linux@arm.linux.org.uk>
 
-On Mon, Nov 03, 2014 at 11:59:35AM -0600, Felipe Balbi wrote:
-> Hi,
-> 
-> On Mon, Oct 27, 2014 at 08:55:07AM -0700, Guenter Roeck wrote:
-> > Various drivers implement architecture and/or device specific means to
-> > remove power from the system.  For the most part, those drivers set the
-> > global variable pm_power_off to point to a function within the driver.
-> > 
-> > This mechanism has a number of drawbacks.  Typically only one means
-> > to remove power is supported (at least if pm_power_off is used).
-> > At least in theory there can be multiple means to remove power, some of
-> > which may be less desirable.  For example, one mechanism might power off the
-> > entire system through an I/O port or gpio pin, while another might power off
-> > a board by disabling its power controller. Other mechanisms may really just
-> > execute a restart sequence or drop into the ROM monitor, or put the CPU into
-> > sleep mode.  Using pm_power_off can also be racy if the function pointer is
-> > set from a driver built as module, as the driver may be in the process of
-> > being unloaded when pm_power_off is called.  If there are multiple power-off
-> > handlers in the system, removing a module with such a handler may
-> > inadvertently reset the pointer to pm_power_off to NULL, leaving the system
-> > with no means to remove power.
-> > 
-> > Introduce a system power-off handler call chain to solve the described
-> > problems.  This call chain is expected to be executed from the architecture
-> > specific machine_power_off() function.  Drivers providing system power-off
-> > functionality are expected to register with this call chain.  By using the
-> > priority field in the notifier block, callers can control power-off handler
-> > execution sequence and thus ensure that the power-off handler with the
-> > optimal capabilities to remove power for a given system is called first.
-> > A call chain instead of a single call to the highest priority handler is
-> > used to provide fallback: If multiple power-off handlers are installed,
-> > all handlers will be called until one actually succeeds to power off the
-> > system.
-> > 
-> > Patch 01/47 implements the power-off handler API.
-> > 
-> > Patches 02/47 to 04/47 are cleanup patches to prepare for the move of
-> > pm_power_off to a common location.
-> > 
-> > Patches 05/47 to 07/47 remove references to pm_power_off from devicetree
-> > bindings descriptions.
-> > 
-> > Patch 08/47 moves the pm_power_off variable from architecture code to
-> > kernel/reboot.c. 
-> > 
-> > Patches 09/47 to 34/47 convert various drivers to register with the kernel
-> > power-off handler instead of setting pm_power_off directly.
-> > 
-> > Patches 35/47 to 46/47 do the same for architecture code.
-> > 
-> > Patch 47/47 finally removes pm_power_off.
-> > 
-> > For the most part, the individual patches include explanations why specific
-> > priorities were chosen, at least if the selected priority is not the default
-> > priority. Subsystem and architecture maintainers are encouraged to have a look
-> > at the selected priorities and suggest improvements.
-> > 
-> > I ran the final code through my normal build and qemu tests. Results are
-> > available at http://server.roeck-us.net:8010/builders in the 'poweroff-handler'
-> > column. I also built all available configurations for arm, mips, powerpc,
-> > m68k, and sh architectures.
-> > 
-> > The series is available in branch poweroff-handler of my repository at
-> > git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git.
-> > It is based on 3.18-rc2.
-> > 
-> > A note on Cc: In the initial submission I had way too many Cc:, causing the
-> > patchset to be treated as spam by many mailers and mailing list handlers,
-> > which of course defeated the purpose. This time around I am cutting down
-> > the distribution list down significantly. My apologies to anyone I may have
-> > failed to copy this time around.
-> 
-> you touch every single architecture with this patchset, but you didn't
-> care about Ccing any of the arch-specific mailing lists, like lakml ?
-> 
-What is lakml ? linux-kernel@vger.kernel.org was copied, if that is what you
-refer to. I don't find a reference to lakml anywhere, sorry. I'll be happy to
-add it manually if you provide the address.
++Mike Turquette
 
-Architecture specific mailing lists were copied on individual patches as long
-as those mailing lists are reported by the MAINTAINERS file.
+Hi Amit,
 
-> Please resend with proper people in Cc, IIRC RMK had a few very
-> important comments about the idea behind this series.
-> 
-Felipe,
+"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 
-That doesn't work. I tried with rev 1. The result was that the patch series
-was flagged as spam and got dropped by most mailing lists, as explained above,
-and I got tagged as spammer by Google and several other mail servers,
-preventing me from posting _anything_ for several days.
+> CC: Kevin, Ulf, Geert.
+>
+> On Monday, November 03, 2014 09:23:01 AM Amit Daniel Kachhap wrote:
+>> These power domain transition notifiers will assist in carrying
+>> out some activity associated with domain power on/off such as
+>> some registers which may lose its contents and need save/restore
+>> across domain power off/on.
 
-Please point me to the comments you refer to above in case I missed them.
+The runtime PM framework already provides callbacks that are useful for
+context save/restore for devices.  Could you please describe in more
+detail which registers in which kind of devices need to be
+saved/restored, and why they cannot be saved/restored using existing
+mechanisms.
 
-Thanks,
-Guenter
+Personally, I'm uncomfortable with notifiers like this because it
+suggests that underlying frameworks are not doing the right thing, or
+are not being used.  (I also don't like the implementation here where a
+single global notifier list is maintained by the core, but the notifiers
+are actually triggered by SoC specific code.)
+
+IIUC, the usage in this series seems to be that certain clock related
+registers need to be saved/restored across a power domain transition.
+
+Wouldn't an alternative solution be to add a feature to the clock driver
+such that the state of each clock is saved when the clock is disabled,
+and restored when the clock is enabled?   That would allow any clock
+context to survive any power domain transtion also, correct?
+
+I have some issues with the implementaion as well, but I think we need
+to first sort out the real need for this before going into those
+details.
+
+Kevin
