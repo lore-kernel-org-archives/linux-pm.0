@@ -1,276 +1,111 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH 03/12] PM / Domains: Add notifier support for power domain
- transitions
-Date: Mon, 03 Nov 2014 19:41:04 +0100
-Message-ID: <5457CC40.200@samsung.com>
-References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
- <1414986790-11940-4-git-send-email-amit.daniel@samsung.com>
- <5457C791.1000904@samsung.com>
+From: Felipe Balbi <balbi@ti.com>
+Subject: Re: [PATCH v3 09/47] mfd: palmas: Register with kernel power-off
+ handler
+Date: Mon, 3 Nov 2014 12:43:12 -0600
+Message-ID: <20141103184312.GW27425@saruman>
+References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
+ <1414425354-10359-10-git-send-email-linux@roeck-us.net>
+ <20141103175645.GT12011@x1>
+ <20141103175954.GT27425@saruman>
+ <20141103183653.GA10558@roeck-us.net>
+Reply-To: <balbi@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="i/VKSWANvDZSIhsB"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:39540 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751436AbaKCSlM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 13:41:12 -0500
-In-reply-to: <5457C791.1000904@samsung.com>
+Received: from comal.ext.ti.com ([198.47.26.152]:36622 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752144AbaKCSoJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 3 Nov 2014 13:44:09 -0500
+Content-Disposition: inline
+In-Reply-To: <20141103183653.GA10558@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, pankaj.dubey@samsung.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Beata Michalska <b.michalska@samsung.com>, geert@linux-m68k.org, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Felipe Balbi <balbi@ti.com>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>
 
+--i/VKSWANvDZSIhsB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Now really filling in the CC list, apologies for duplicate
-post.
+On Mon, Nov 03, 2014 at 10:36:53AM -0800, Guenter Roeck wrote:
+> On Mon, Nov 03, 2014 at 11:59:54AM -0600, Felipe Balbi wrote:
+> > On Mon, Nov 03, 2014 at 05:56:45PM +0000, Lee Jones wrote:
+> > > On Mon, 27 Oct 2014, Guenter Roeck wrote:
+> > >=20
+> > > > Register with kernel power-off handler instead of setting pm_power_=
+off
+> > > > directly. Register with low priority to reflect that the original c=
+ode
+> > > > only sets pm_power_off if it was not already set.
+> > > >=20
+> > > > Cc: Samuel Ortiz <sameo@linux.intel.com>
+> > > > Cc: Lee Jones <lee.jones@linaro.org>
+> > > > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> > > > ---
+> > > > v3:
+> > > > - Replace poweroff in all newly introduced variables and in text
+> > > >   with power_off or power-off as appropriate
+> > > > - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+> > > > v2:
+> > > > - Use define to specify poweroff handler priority
+> > > > - Use devm_register_power_off_handler
+> > > > - Use dev_warn instead of dev_err
+> > > >=20
+> > > >  drivers/mfd/palmas.c       | 31 +++++++++++++++++--------------
+> > > >  include/linux/mfd/palmas.h |  3 +++
+> > > >  2 files changed, 20 insertions(+), 14 deletions(-)
+> > >=20
+> > > Acked-by: Lee Jones <lee.jones@linaro.org>
+> >=20
+> > missed lakml and linux-omap.
+> >=20
+> Felipe,
+>=20
+> unfortunately, get_maintainer.pl doesn't give a hint that this and the
+> other affected patches should be sent to linux-omap. How am I supposed
+> to know ?
 
-On 03/11/14 19:21, Sylwester Nawrocki wrote:
-> Hi,
-> 
-> Cc: Ulf, Kevin, Geert.
-> 
-> On 03/11/14 04:53, Amit Daniel Kachhap wrote:
->> These power domain transition notifiers will assist in carrying
->> out some activity associated with domain power on/off such as
->> some registers which may lose its contents and need save/restore
->> across domain power off/on.
-> 
-> Other specific use cases I could add here is gating selected clocks
-> to ensure proper signal propagation for devices attached to a power
-> domain, e.g. ungating selected clocks before the power domain on and
-> restoring them to previous state after the power domain was switched
-> on.
-> 
->> 4 type of notifications are added,
->> GPD_OFF_PRE     - GPD state before power off
->> GPD_OFF_POST    - GPD state after power off
->> GPD_ON_PRE      - GPD state before power off
->> GPD_ON_POST     - GPD state after power off
->>
->> 3 notfication API's are exported.
->> 1) int genpd_register_notifier(struct notifier_block *nb, char *pd_name);
->> 2) int genpd_unregister_notifier(struct notifier_block *nb, char *pd_name);
->> 3) void genpd_invoke_transition_notifier(struct generic_pm_domain *genpd,
->> 			enum gpd_on_off_state state);
->>
->> In this approach the notifiers are registered/unregistered with pd name.
->> The actual invoking of the notfiers will be done by the platform implementing
->> power domain enable/disable low level handlers according to the above
->> defined notification types. This approach will considerably reduce the
->> number of call to notifiers as compared to calling always from core
->> powerdomain subsystem.
->>
->> Also the registered domain's will be managed inside a cache list and not
->> part of the genpd structure. This will help in registration of notifiers from
->> subsystems (such as clock) even when the PD subsystem is still not initialised.
->> This list also filters out the unregistered pd's requesting notification.
-> 
-> This patch is somewhat similar my patch adding power domain state change
-> notifications [1].  I have already a reworked version of that patch, with the
-> notifier list moved to struct generic_pm_domain and using genpd->lock instead
-> of dev->power.lock.  Anyway, while I'd leave the decision about the location
-> from where the notifier chains are supposed to be called to the subsystem's
-> maintainers preference, I'm rather reluctant to having one global notifiers
-> list for all possible power domains and all the notification clients.
-> The possibly long list needs to be traversed at each notifier call and it
-> seems in your implementation any registered user of the notification gets
-> notifications for all possible power domains.
-> 
-> [1] https://lkml.org/lkml/2014/8/5/182
-> 
->> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> Reviewed-by: Pankaj Dubey <pankaj.dubey@samsung.com>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->> ---
->>  drivers/base/power/domain.c |  112 ++++++++++++++++++++++++++++++++++++++++++-
->>  include/linux/pm_domain.h   |   31 ++++++++++++
->>  2 files changed, 142 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index 40bc2f4..e05045e 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -46,10 +46,19 @@
->>  	__retval;								\
->>  })
->>  
->> +struct cache_notify_domains {
->> +	char *name;
->> +	/* Node in the cache pm domain name list */
->> +	struct list_head cache_list_node;
->> +};
->> +
->>  static LIST_HEAD(gpd_list);
->>  static DEFINE_MUTEX(gpd_list_lock);
->> +static LIST_HEAD(domain_notify_list);
->> +static DEFINE_MUTEX(domain_notify_list_lock);
->> +static BLOCKING_NOTIFIER_HEAD(genpd_transition_notifier_list);
->>  
->> -static struct generic_pm_domain *pm_genpd_lookup_name(const char *domain_name)
->> +struct generic_pm_domain *pm_genpd_lookup_name(const char *domain_name)
->>  {
->>  	struct generic_pm_domain *genpd = NULL, *gpd;
->>  
->> @@ -66,6 +75,7 @@ static struct generic_pm_domain *pm_genpd_lookup_name(const char *domain_name)
->>  	mutex_unlock(&gpd_list_lock);
->>  	return genpd;
->>  }
->> +EXPORT_SYMBOL_GPL(pm_genpd_lookup_name);
->>  
->>  struct generic_pm_domain *dev_to_genpd(struct device *dev)
->>  {
->> @@ -1908,6 +1918,106 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
->>  	mutex_unlock(&gpd_list_lock);
->>  }
->>  
->> +/**
->> + * genpd_register_notifier - Register a PM domain for future notification.
->> + * @nb: notification block containing notification handle.
->> + * @pd_name: PM domain name.
->> + */
->> +int genpd_register_notifier(struct notifier_block *nb, char *pd_name)
->> +{
->> +	int ret;
->> +	struct cache_notify_domains *entry;
->> +
->> +	if (!pd_name)
->> +		return -EINVAL;
->> +
->> +	/* Search if the pd is already registered */
->> +	mutex_lock(&domain_notify_list_lock);
->> +	list_for_each_entry(entry, &domain_notify_list, cache_list_node) {
->> +		if (!strcmp(entry->name, pd_name))
->> +			break;
->> +	}
->> +	mutex_unlock(&domain_notify_list_lock);
->> +
->> +	if (entry) {
->> +		pr_err("%s: pd already exists\n", __func__);
->> +		return -EINVAL;
-> 
-> I suspect this code doesn't work as expected. 'entry' will be NULL only
-> in case of an empty domain_notify_list list. Have you tested multiple
-> calls to genpd_register_notifier() ? It looks like only the first call
-> would work.
-> 
->> +	}
->> +
->> +	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
->> +	if (!entry)
->> +		return -ENOMEM;
->> +
->> +	entry->name = pd_name;
->> +
->> +	mutex_lock(&domain_notify_list_lock);
->> +	list_add(&entry->cache_list_node, &domain_notify_list);
->> +	mutex_unlock(&domain_notify_list_lock);
->> +	ret = blocking_notifier_chain_register(
->> +				&genpd_transition_notifier_list, nb);
->> +	return ret;
->> +}
->> +
->> +/**
->> + * genpd_unregister_notifier - Un-register a PM domain for future notification.
->> + * @nb: notification block containing notification handle.
->> + * @pd_name: PM domain name.
->> + */
->> +int genpd_unregister_notifier(struct notifier_block *nb, char *pd_name)
->> +{
->> +	int ret;
->> +	struct cache_notify_domains *entry;
->> +
->> +	mutex_lock(&domain_notify_list_lock);
->> +	list_for_each_entry(entry, &domain_notify_list, cache_list_node) {
->> +		if (!strcmp(entry->name, pd_name))
->> +			break;
->> +	}
->> +	if (!entry) {
->> +		mutex_unlock(&domain_notify_list_lock);
->> +		pr_err("%s: Invalid pd name\n", __func__);
->> +		return -EINVAL;
->> +	}
->> +	list_del(&entry->cache_list_node);
-> 
-> 'entry' will not be NULL even when the requested notification entry
-> was not found above. In such case it looks like last entry in the
-> domain_notify_list list will be removed, not something we would expect.
-> 
->> +	mutex_unlock(&domain_notify_list_lock);
->> +	ret = blocking_notifier_chain_unregister(
->> +				&genpd_transition_notifier_list, nb);
->> +	return ret;
->> +}
->> +
->> +/**
->> + * genpd_invoke_transition_notifier - Calls the matching notification handler.
->> + * @genpd: generic power domain structure.
->> + * @state: can be of type - GPD_OFF_PRE/GPD_OFF_POST/GPD_ON_PRE/GPD_ON_POST.
->> + */
->> +void genpd_invoke_transition_notifier(struct generic_pm_domain *genpd,
->> +			enum gpd_on_off_state state)
->> +{
->> +	struct cache_notify_domains *entry;
->> +
->> +	if (!genpd) {
->> +		pr_err("Invalid genpd parameter\n");
->> +		return;
->> +	}
->> +
->> +	if (state != GPD_OFF_PRE || state != GPD_OFF_POST
->> +			|| state != GPD_ON_PRE || state != GPD_ON_POST) {
->> +		pr_err("Invalid state parameter\n");
->> +		return;
->> +	}
->> +
->> +	mutex_lock(&domain_notify_list_lock);
->> +	list_for_each_entry(entry, &domain_notify_list, cache_list_node) {
->> +		if (!strcmp(entry->name, genpd->name))
->> +			break;
->> +	}
->> +	mutex_unlock(&domain_notify_list_lock);
->> +	if (!entry) /* Simply ignore */
-> 
-> Similar issue here, this condition will only be true when the notifications
-> list is empty.
-> 
->> +		return;
->> +
->> +	blocking_notifier_call_chain(&genpd_transition_notifier_list, state,
->> +				genpd);
-> 
-> And finally regardless of to what power domain the notification user has
-> registered it will get notification for each possible power domain in
-> the system?  Are the notification users supposed to test the 'genpd'
-> argument to react on a specific power domain? If so, how? I guess not by
-> nother strcmp() ?
-> 
->> +}
->>  #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
->>  /*
->>   * Device Tree based PM domain providers.
->> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
->> index 73e938b..659997f 100644
->> --- a/include/linux/pm_domain.h
->> +++ b/include/linux/pm_domain.h
->> @@ -25,6 +25,13 @@ enum gpd_status {
->>  	GPD_STATE_POWER_OFF,	/* PM domain is off */
->>  };
->>  
->> +enum gpd_on_off_state {
->> +	GPD_OFF_PRE = 0,	/* GPD state before power off */
-> 
-> The assignment is not needed.
-> 
->> +	GPD_OFF_POST,		/* GPD state after power off */
->> +	GPD_ON_PRE,		/* GPD state before power on */
->> +	GPD_ON_POST,		/* GPD state after power on */
->> +};
->> +
->>  struct dev_power_governor {
->>  	bool (*power_down_ok)(struct dev_pm_domain *domain);
->>  	bool (*stop_ok)(struct device *dev);
->> @@ -148,6 +155,12 @@ extern int pm_genpd_name_poweron(const char *domain_name);
-> 
-> --
-> Regards,
-> Sylwester
+yeah, just looked and nobody bothered to patch MAINTAINERS when those
+files were added. I just sent a patch adding them under OMAP SUPPORT.
+
+> Note that linux-kernel@vger.kernel.org was copied on the entire series,
+> if that is what you mean with lakml. linux-pm@vger.kernel.org was also
+> copied on all patches. Additional mailing lists were only copied for
+> affected architectures to avoid for the patches to be tagged as spam.
+>=20
+> If there is a list named lakml, I must have missed it, and I seem to be
+> unable to find a reference to it. If that is the case, my apologies,
+> and please provide a link to it.
+
+here it is:
+
+Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>
+
+--=20
+balbi
+
+--i/VKSWANvDZSIhsB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUV8zAAAoJEIaOsuA1yqREZlkP/AgEmVSiTPhI6LRmdH8SB64/
+4NJqbmyyL+f4wVzx+7TUkqv1PFeZbdE6d07cpllXWjuevM0qNF/zmSffQW/oohKU
+UGJ5o+G2i8+ukvdyRkRVquqIt2psoPHFbKW/xnRF2Oe2/ES1D28t6ovf07+0896I
+3HiPBbKVPIuvpuTw8+6aE0o5+jnz4oN8n+M+OOmhvNfkVu89+zPaBZ8wtSs1en66
+Fg/gv6ROCYpsgqqeJdNJZ6yanYO7vZcadT5A6WqzVUFsbg8YfX2Ed5zsyP1t6WZT
+wPszuMc1jWhjldUemRg4QlAdkKNZP0zRhEiwhpqaHWkcVaxGQJR1GPyfLTLnaFWt
+F63xvS8QhqVBtX5zFQm//lWnivUekrFc7FUseQzBjKzs+WqTVk0+fXHQ4f9CRQG1
+pFo0oHu20qyEF6hXpDbYKcnTXjG3uBPILbSWdx+w5jYpfXQkhhdDKT4cNWDZl/Sf
+jQZdk1ipGng+tq+mHZELGAM8ilg3epvKoS7VAfskBNONd/cyHB8nr0+YZnawz4ub
+Xt42yZKyBntFpWTEddrRf1/Ycle7R23QJ0xb0MD0OlOo3UhelbSx2ivc++WdjkN1
+7ksHRZ3c2zAS/xEh17ycmBggG/109gIJoI9/a3vhGk2qYaKb+J2EXjq2LNfn9RqO
+rXB1540hY/Qu5RctDHu+
+=qoUc
+-----END PGP SIGNATURE-----
+
+--i/VKSWANvDZSIhsB--
