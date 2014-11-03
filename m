@@ -1,91 +1,113 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Subject: Re: [PATCH v8 1/5] PM / Runtime: Add getter for querying the IRQ safe
  option
-Date: Mon, 03 Nov 2014 09:51:10 +0100
-Message-ID: <1415004670.4241.11.camel@AMDC1943>
+Date: Mon, 03 Nov 2014 10:36:35 +0100
+Message-ID: <1415007395.4241.18.camel@AMDC1943>
 References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com>
- <32933431.rIxraemF7M@vostro.rjw.lan>
- <20141031230452.GX27405@n2100.arm.linux.org.uk>
- <1615499.6LK9Yd7Lr0@vostro.rjw.lan>
+ <20141031142241.GA17547@amd> <1414766416.6537.6.camel@AMDC1943>
+ <3452823.YQ5FR2FtKz@avalon>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:48978 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbaKCIvO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 03:51:14 -0500
-In-reply-to: <1615499.6LK9Yd7Lr0@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-reply-to: <3452823.YQ5FR2FtKz@avalon>
+Sender: linux-doc-owner@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kevin Hilman <khilman@kernel.org>
 
-On sob, 2014-11-01 at 01:42 +0100, Rafael J. Wysocki wrote:
-> On Friday, October 31, 2014 11:04:52 PM Russell King - ARM Linux wrote:
-> > On Sat, Nov 01, 2014 at 12:11:05AM +0100, Rafael J. Wysocki wrote:
-> > > [CC list trimmed + added Kevin Hilman]
-> > > 
-> > > On Monday, October 20, 2014 11:04:44 AM Krzysztof Kozlowski wrote:
-> > > > Add a simple getter pm_runtime_is_irq_safe() for querying whether runtime
-> > > > PM IRQ safe was set or not.
-> > > > 
-> > > > Various bus drivers implementing runtime PM may use choose to suspend
-> > > > differently based on IRQ safeness status of child driver (e.g. do not
-> > > > unprepare the clock if IRQ safe is not set).
-> > > > 
-> > > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > > > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > > 
-> > > So why do we need to add the wrapper?
-> > > 
-> > > And it goes kind of against the intention which was to set irq_safe when
-> > > we knew that the callbacks were safe to be executed from interrupt context
-> > > and not when we wished that to be the case.
-> > 
-> > This was provided in the covering email - I quote:
-> > 
-> > This patchset adds runtime and system PM to the pl330 driver.
-> > 
-> > The runtime PM of pl330 driver requires interrupt safe suspend/resume
-> > callbacks which is in conflict with current amba bus driver.
-> > The latter also unprepares and prepares the AMBA bus clock which
-> > is not safe for atomic context.
-> > 
-> > The patchset solves this in patch 3/5 by handling clocks in different
-> > way if device driver set interrupt safe runtime PM.
-> 
-> So I'm still unsure why we need the wrapper.  IMHO this check in particular:
-> 
-> 	WARN_ON(pcdev->irq_safe != pm_runtime_is_irq_safe(dev));
-> 
-> (and should that be WARN_ON_ONCE(), for that matter?), looks better this way:
-> 
-> 	WARN_ON(pcdev->irq_safe != dev->power.irq_safe);
-> 
-> and so on, pretty much.
+On sob, 2014-11-01 at 02:29 +0200, Laurent Pinchart wrote:
+> Hi Krzysztof,
+>=20
+> On Friday 31 October 2014 15:40:16 Krzysztof Kozlowski wrote:
+> > On pi=C4=85, 2014-10-31 at 15:22 +0100, Pavel Machek wrote:
+> > > On Fri 2014-10-31 10:14:55, Krzysztof Kozlowski wrote:
+> > >> On pon, 2014-10-20 at 11:04 +0200, Krzysztof Kozlowski wrote:
+> > >>> Add a simple getter pm_runtime_is_irq_safe() for querying wheth=
+er
+> > >>> runtime PM IRQ safe was set or not.
+> > >>>=20
+> > >>> Various bus drivers implementing runtime PM may use choose to s=
+uspend
+> > >>> differently based on IRQ safeness status of child driver (e.g. =
+do not
+> > >>> unprepare the clock if IRQ safe is not set).
+> > >>>=20
+> > >>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > >>> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > >>=20
+> > >> Rafael, Len, Pavel,
+> > >>=20
+> > >> Is proposed API ok? Do you have any comments?
+> > >>=20
+> > >> I'll upload whole patchset to Russell's patch tracking system. H=
+owever
+> > >> an ack from PM maintainer is probably needed.
+> > >=20
+> > > I don't like the API. Having callbacks work in different context =
+(irq
+> > > / noirq) based on what another function reports is ugly.
+> > >=20
+> > > What is the penalty if we always decide callbacks are not IRQ saf=
+e?
+> >=20
+> > Then pm_runtime_get_sync() could not be called in atomic context. T=
+he
+> > pl330 runtime PM would have to be completely reworked because one
+> > pm_runtime_get_sync() is called in device_issue_pending which canno=
+t
+> > sleep (at least in non preemptible kernels). Probably this can be s=
+olved
+> > some way...
+>=20
+> Many other drivers suffer from the same problem. While I won't reject=
+ your=20
+> proposed fix, I would prefer a more generic approach.
+>=20
+> One option that has been discussed previously was to use a work queue=
+ to delay=20
+> starting the DMA transfer to an interruptible context where=20
+> pm_runtime_get_sync() could be called. However, as Russell pointed ou=
+t [1],=20
+> even that won't work in all cases as the DMA slave might need the tra=
+nsfer to=20
+> be started before enabling part of its hardware (OMAP audio seem to b=
+e such a=20
+> case).
+>=20
+> I've heard a rumor of a possible DMA engine rework to forbid calling =
+the=20
+> descriptor preparation API from atomic context. This could be used as=
+ a base=20
+> to implement runtime PM, as DMA slave drivers should not prepare desc=
+riptors=20
+> if they don't need to use them. However that's a long term plan, and =
+we need a=20
+> solution sooner than that.
+>=20
+> I've been toying with the idea of adding explicit open/close (or what=
+ever we=20
+> would call them) operations to the DMA engine API. Those would be use=
+d by DMA=20
+> slave drivers to signal that they will start/stop using the DMA engin=
+e.
+>=20
+> If (1) we must start the DMA synchronously with a DMA slave call, (2)=
+ need to=20
+> sleep to handle PM, and (3) don't want to keep the DMA engine powered=
+ for as=20
+> long as one channel is requested, then we need to turn at least prepa=
+ration as=20
+> not callable in atomic context, or introduce a new operation.
+>=20
+> [1] http://www.spinics.net/lists/dmaengine/msg01548.html
 
-I used the wrapper only to hide the actual code behind interface but it
-don't really matter to me.
+That makes sense. However I am not familiar with DMA core code as much
+as I think it would be needed to make such generic changes :). I'll
+stick to one driver for now.
 
-> Besides, these special "irq safe" code paths in the bus type look
-> considerably ugly to me.  I'd probably use an "irq safe" PM domain for
-> that device and put it in there instead of doing the
-> 
-> 	pcdev->irq_safe = pm_runtime_is_irq_safe(dev);
-> 
-> thing in amba_probe().  But that's just me. :-)
-
-The device is not attached to any domain and there is no hardware domain
-matching.
-
-Thanks for feedback!
-
-Best regards,
+Thanks for comments!
 Krzysztof
 
-> 
-> There's one weak point in [3/5], but let me comment it in there.
-> 
-> Rafael
+
 
