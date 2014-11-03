@@ -1,113 +1,33 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v8 1/5] PM / Runtime: Add getter for querying the IRQ safe
- option
-Date: Mon, 03 Nov 2014 10:36:35 +0100
-Message-ID: <1415007395.4241.18.camel@AMDC1943>
-References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com>
- <20141031142241.GA17547@amd> <1414766416.6537.6.camel@AMDC1943>
- <3452823.YQ5FR2FtKz@avalon>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Patch v8 15/18] x86, irq, ACPI: Implement interface to support
+ ACPI based IOAPIC hot-addition
+Date: Mon, 3 Nov 2014 10:41:09 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1411031039470.5308@nanos>
+References: <1414908273-7552-1-git-send-email-jiang.liu@linux.intel.com> <1414908273-7552-16-git-send-email-jiang.liu@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <3452823.YQ5FR2FtKz@avalon>
-Sender: linux-doc-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:50586 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751006AbaKCJlz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 04:41:55 -0500
+In-Reply-To: <1414908273-7552-16-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Grant Likely <grant.likely@linaro.org>, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 
-On sob, 2014-11-01 at 02:29 +0200, Laurent Pinchart wrote:
-> Hi Krzysztof,
->=20
-> On Friday 31 October 2014 15:40:16 Krzysztof Kozlowski wrote:
-> > On pi=C4=85, 2014-10-31 at 15:22 +0100, Pavel Machek wrote:
-> > > On Fri 2014-10-31 10:14:55, Krzysztof Kozlowski wrote:
-> > >> On pon, 2014-10-20 at 11:04 +0200, Krzysztof Kozlowski wrote:
-> > >>> Add a simple getter pm_runtime_is_irq_safe() for querying wheth=
-er
-> > >>> runtime PM IRQ safe was set or not.
-> > >>>=20
-> > >>> Various bus drivers implementing runtime PM may use choose to s=
-uspend
-> > >>> differently based on IRQ safeness status of child driver (e.g. =
-do not
-> > >>> unprepare the clock if IRQ safe is not set).
-> > >>>=20
-> > >>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > >>> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > >>=20
-> > >> Rafael, Len, Pavel,
-> > >>=20
-> > >> Is proposed API ok? Do you have any comments?
-> > >>=20
-> > >> I'll upload whole patchset to Russell's patch tracking system. H=
-owever
-> > >> an ack from PM maintainer is probably needed.
-> > >=20
-> > > I don't like the API. Having callbacks work in different context =
-(irq
-> > > / noirq) based on what another function reports is ugly.
-> > >=20
-> > > What is the penalty if we always decide callbacks are not IRQ saf=
-e?
-> >=20
-> > Then pm_runtime_get_sync() could not be called in atomic context. T=
-he
-> > pl330 runtime PM would have to be completely reworked because one
-> > pm_runtime_get_sync() is called in device_issue_pending which canno=
-t
-> > sleep (at least in non preemptible kernels). Probably this can be s=
-olved
-> > some way...
->=20
-> Many other drivers suffer from the same problem. While I won't reject=
- your=20
-> proposed fix, I would prefer a more generic approach.
->=20
-> One option that has been discussed previously was to use a work queue=
- to delay=20
-> starting the DMA transfer to an interruptible context where=20
-> pm_runtime_get_sync() could be called. However, as Russell pointed ou=
-t [1],=20
-> even that won't work in all cases as the DMA slave might need the tra=
-nsfer to=20
-> be started before enabling part of its hardware (OMAP audio seem to b=
-e such a=20
-> case).
->=20
-> I've heard a rumor of a possible DMA engine rework to forbid calling =
-the=20
-> descriptor preparation API from atomic context. This could be used as=
- a base=20
-> to implement runtime PM, as DMA slave drivers should not prepare desc=
-riptors=20
-> if they don't need to use them. However that's a long term plan, and =
-we need a=20
-> solution sooner than that.
->=20
-> I've been toying with the idea of adding explicit open/close (or what=
-ever we=20
-> would call them) operations to the DMA engine API. Those would be use=
-d by DMA=20
-> slave drivers to signal that they will start/stop using the DMA engin=
-e.
->=20
-> If (1) we must start the DMA synchronously with a DMA slave call, (2)=
- need to=20
-> sleep to handle PM, and (3) don't want to keep the DMA engine powered=
- for as=20
-> long as one channel is requested, then we need to turn at least prepa=
-ration as=20
-> not callable in atomic context, or introduce a new operation.
->=20
-> [1] http://www.spinics.net/lists/dmaengine/msg01548.html
+On Sun, 2 Nov 2014, Jiang Liu wrote:
+> +	down_write(&acpi_ioapic_rwsem);
 
-That makes sense. However I am not familiar with DMA core code as much
-as I think it would be needed to make such generic changes :). I'll
-stick to one driver for now.
+That wants to be acpi_ioapic_lock. Same issue in the following
+patches. You fixed it up in the last patch.
 
-Thanks for comments!
-Krzysztof
+Please don't resend. I folded the hunks back to the proper places
+already.
 
+Thanks,
+
+	tglx
 
 
