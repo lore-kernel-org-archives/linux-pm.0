@@ -1,71 +1,89 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: [GIT PULL] Ux500 core changes for v3.19
-Date: Sun, 2 Nov 2014 23:17:31 +0100
-Message-ID: <CACRpkda3KMkrCSDeSUycmeDUJTDFVq6hesYfLTfmoeCB3oP6MA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Subject: [PATCH 00/12] soc: samsung: Modify and enhance power domain driver
+Date: Mon, 03 Nov 2014 09:22:58 +0530
+Message-ID: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f182.google.com ([209.85.213.182]:43911 "EHLO
-	mail-ig0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751362AbaKBWRc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 2 Nov 2014 17:17:32 -0500
-Received: by mail-ig0-f182.google.com with SMTP id hn18so3695189igb.15
-        for <linux-pm@vger.kernel.org>; Sun, 02 Nov 2014 14:17:31 -0800 (PST)
+Received: from mailout4.samsung.com ([203.254.224.34]:17541 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbaKCD7W (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 2 Nov 2014 22:59:22 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "arm@kernel.org" <arm@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: kgene.kim@samsung.com, pankaj.dubey@samsung.com, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-Hi ARM SoC folks,
+This patch series[3 - 12] performs several implementations as described below,
 
-please pull in these Ux500 core changes for this kernel development
-cycle: mainly a generic power domain implementation from Ulf Hansson
-that needs to get queued up in -next and tested.
+1) Converts power domain driver to platform driver.
+2) Registers this driver as MFD client driver.
+3) Moves them into driver/soc/samsung folder.
+4) Add new power domain notifier feature.
+5) Uses those notfier from exynos clk.
+6) Adds parent power domain and some other features mostly for exynos7 platforms.
 
-Yours,
-Linus Walleij
+This patch will change the DT representation of all the exynos power domain
+DT nodes which will be posted as a new patch series.
 
-The following changes since commit cac7f2429872d3733dc3f9915857b1691da2eb2f:
+This patch has dependency on following patches posted earlier and most of them are
+already accepted or in final stages of review.
+1) http://www.spinics.net/lists/linux-samsung-soc/msg37050.html
+2) https://lkml.org/lkml/2014/10/6/581
 
-  Linux 3.18-rc2 (2014-10-26 16:48:41 -0700)
+Patches 1-2 are from Pankaj and have been posted earlier.
+(http://lists.infradead.org/pipermail/linux-arm-kernel/2014-July/271555.html
+They are kept in this patch series for completeness after rebase fixes.
 
-are available in the git repository at:
+This complete patch series is rebased on linux-next as it involves many
+subsystems.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-stericsson.git
-tags/ux500-core-for-arm-soc
+Amit Daniel Kachhap (10):
+  PM / Domains: Add notifier support for power domain transitions
+  mfd: exynos-pmu: Register exynos-pmu driver as a mfd driver
+  arm: exynos: Add platform driver support for power domain driver
+  soc: exynos: Move exynos power domain file to driver/soc/samsung
+    folder
+  soc: samsung: pm_domain: Use compatible name for power domain name
+  soc: samsung: pm_domain: Add a new parameter for power configuration
+  soc: samsung: pm_domain: Add support for parent power domain
+  soc: samsung: pm_domain: Use the recently added PM Domain notifiers
+  clk: samsung: save and restore clock registers for power domain
+  arm64: Kconfig: Enable PM_GENERIC_DOMAINS for exynos7
 
-for you to fetch changes up to 29417fe80ad2fd4f62f00dcca96c7198870e5642:
+Pankaj Dubey (2):
+  ARM: EXYNOS: Move pmu specific header files under "linux/mfd/samsung"
+  drivers: mfd: Add support for Exynos PMU driver
 
-  ARM: ux500: Add i2c devices to the VAPE PM domain (2014-10-28 10:50:46 +0100)
+ .../bindings/arm/exynos/power_domain.txt           |   21 +++-
+ arch/arm/mach-exynos/Kconfig                       |    1 +
+ arch/arm/mach-exynos/Makefile                      |    3 +-
+ arch/arm/mach-exynos/exynos.c                      |    2 +-
+ arch/arm/mach-exynos/mcpm-exynos.c                 |    2 +-
+ arch/arm/mach-exynos/platsmp.c                     |    2 +-
+ arch/arm/mach-exynos/pm.c                          |    5 +-
+ arch/arm/mach-exynos/suspend.c                     |    3 +-
+ arch/arm64/Kconfig                                 |    1 +
+ drivers/base/power/domain.c                        |  112 +++++++++++++++++-
+ drivers/clk/samsung/clk.c                          |   66 +++++++++++
+ drivers/clk/samsung/clk.h                          |   14 +++
+ drivers/mfd/Kconfig                                |    9 ++
+ drivers/mfd/Makefile                               |    1 +
+ .../mach-exynos/pmu.c => drivers/mfd/exynos-pmu.c  |   30 ++++-
+ drivers/soc/Kconfig                                |    1 +
+ drivers/soc/Makefile                               |    1 +
+ drivers/soc/samsung/Kconfig                        |   11 ++
+ drivers/soc/samsung/Makefile                       |    1 +
+ .../soc/samsung}/pm_domains.c                      |  124 ++++++++++++++++----
+ .../linux/mfd/samsung}/exynos-pmu.h                |    5 +
+ .../linux/mfd/samsung/exynos-regs-pmu.h            |    0
+ include/linux/pm_domain.h                          |   31 +++++
+ 23 files changed, 409 insertions(+), 37 deletions(-)
+ rename arch/arm/mach-exynos/pmu.c => drivers/mfd/exynos-pmu.c (96%)
+ create mode 100644 drivers/soc/samsung/Kconfig
+ create mode 100644 drivers/soc/samsung/Makefile
+ rename {arch/arm/mach-exynos => drivers/soc/samsung}/pm_domains.c (51%)
+ rename {arch/arm/mach-exynos => include/linux/mfd/samsung}/exynos-pmu.h (86%)
+ rename arch/arm/mach-exynos/regs-pmu.h => include/linux/mfd/samsung/exynos-regs-pmu.h (100%)
 
-----------------------------------------------------------------
-Generic power domains for the Ux500
+-- 
+1.7.9.5
 
-----------------------------------------------------------------
-Joe Perches (1):
-      ARM: u300: Convert pr_warning to pr_warn
-
-Ulf Hansson (8):
-      dt: bindings: ux500: Add documentation for PM domains
-      dt: bindings: ux500: Add header for PM domains specifiers
-      ARM: ux500: Initial support for PM domains
-      ARM: ux500: Enable Kconfig for the generic PM domain
-      ARM: ux500: Add DT node for ux500 PM domains
-      ARM: ux500: Add sdi devices to the VAPE PM domain
-      ARM: ux500: Add spi and ssp devices to the VAPE PM domain
-      ARM: ux500: Add i2c devices to the VAPE PM domain
-
- .../devicetree/bindings/arm/ux500/power_domain.txt | 35 ++++++++++
- arch/arm/boot/dts/ste-dbx5x0.dtsi                  | 22 ++++++
- arch/arm/mach-u300/dummyspichip.c                  | 65 ++++++++----------
- arch/arm/mach-ux500/Kconfig                        |  1 +
- arch/arm/mach-ux500/Makefile                       |  1 +
- arch/arm/mach-ux500/pm.c                           |  4 ++
- arch/arm/mach-ux500/pm_domains.c                   | 79 ++++++++++++++++++++++
- arch/arm/mach-ux500/pm_domains.h                   | 17 +++++
- include/dt-bindings/arm/ux500_pm_domains.h         | 15 ++++
- 9 files changed, 203 insertions(+), 36 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/arm/ux500/power_domain.txt
- create mode 100644 arch/arm/mach-ux500/pm_domains.c
- create mode 100644 arch/arm/mach-ux500/pm_domains.h
- create mode 100644 include/dt-bindings/arm/ux500_pm_domains.h
