@@ -1,118 +1,156 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 1/2] Thermal:Fix memory leak if occur goto unregister
-Date: Mon, 3 Nov 2014 14:35:13 -0400
-Message-ID: <20141103183510.GA441@developer>
-References: <5444C778.8050008@huawei.com>
- <20141020123338.GA3744@developer>
- <4D68720C2E767A4AA6A8796D42C8EB590902F30A@BGSMSX101.gar.corp.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: pm_runtime_enable() in ->probe()
+Date: Tue, 04 Nov 2014 00:55:22 +0100
+Message-ID: <2698247.SaeVHk4A16@vostro.rjw.lan>
+References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org> <3099111.MYm8ByzLAF@vostro.rjw.lan> <7hwq7ci5hu.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="IJpNTDwzlM2Ie8A6"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f51.google.com ([209.85.216.51]:43810 "EHLO
-	mail-qa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751162AbaKCW73 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 17:59:29 -0500
-Content-Disposition: inline
-In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB590902F30A@BGSMSX101.gar.corp.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <7hwq7ci5hu.fsf@deeprootsystems.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aa
 List-Id: linux-pm@vger.kernel.org
-To: "R, Durgadoss" <durgadoss.r@intel.com>
-Cc: Yao Dongdong <yaodongdong@huawei.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-
---IJpNTDwzlM2Ie8A6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hello,
-
-On Mon, Nov 03, 2014 at 06:17:37PM +0000, R, Durgadoss wrote:
-> >-----Original Message-----
-> >From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> >owner@vger.kernel.org] On Behalf Of Eduardo Valentin
-> >Sent: Monday, October 20, 2014 6:04 PM
-> >To: Yao Dongdong
-> >Cc: Zhang, Rui; linux-pm@vger.kernel.org; LKML
-> >Subject: Re: [PATCH 1/2] Thermal:Fix memory leak if occur goto unregister
+On Monday, November 03, 2014 09:00:29 AM Kevin Hilman wrote:
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+> 
+> > On Saturday, November 01, 2014 02:08:57 AM Rafael J. Wysocki wrote:
+> >> On Saturday, November 01, 2014 01:20:38 AM Rafael J. Wysocki wrote:
+> >> > On Friday, October 31, 2014 10:16:14 AM Ulf Hansson wrote:
+> >> > > On 24 October 2014 18:12, Kevin Hilman <khilman@kernel.org> wrote:
+> >> 
+> >> [cut]
+> >> 
+> >> > > 
+> >> > > 1)
+> >> > > It's bad practice to use pm_runtime_get_sync() in the ->probe() path,
+> >> > 
+> >> > Honestly, I'm no longer amused.
+> >> > 
+> >> > > to bring your resources to full power. The consequence would be a
+> >> > > driver that requires CONFIG_PM_RUNTIME to be even functional, which
+> >> > > just isn't acceptable.
+> >> > 
+> >> > Sorry, but this is utter nonsense.
+> >> > 
+> >> > CONFIG_PM_RUNTIME unset means "no runtime PM at all", so all drivers can expect
+> >> > everything they need to be always on.  If that is not the case, then someone is
+> >> > doing runtime PM behind the scenes and therefore cheating.  Or in different
+> >> > words, for CONFIG_PM_RUNTIME unset bus types, platforms etc must ensure that
+> >> > everything is on from the drivers' perspective.
+> >> > 
+> >> > If that is the case, then calling pm_runtime_get_sync() from ->probe
+> >> > for CONFIG_PM_RUNTIME unset simply doesn't matter.
+> >> > 
+> >> > Now, for CONFIG_PM_RUNTIME enabled, if power domains are in use, doing
+> >> > pm_runtime_get_sync() from ->probe is the only way the driver can ensure
+> >> > in a non-racy way that the device will be accessible going forward.
+> >> > 
+> >> > Why?  Simply because the probing need not happen during system initialization.
+> >> > It very well may take places when the other devices in the same domain have
+> >> > beein in use for quite a while and have been using runtime PM (in which
+> >> > case the domain may go off at any time unless it is explicityly prevented from
+> >> > doing that).
+> >> > 
+> >> > One thing that you may be missing is that, for CONFIG_PM_RUNTIME set,
+> >> > runtime PM has to be either enabled or disabled for all devices in one
+> >> > domain (and if it is disabled, then the domain needs to be always on for
+> >> > all practical purposes).  Otherwise you can't just make all of them happy
+> >> > at the same time.  The documentation doesn't cover this, because it had been
+> >> > written before we even started to consider power domains.
+> >> > 
+> >> > > Drivers that behaves well within this context, follows the runtime PM
+> >> > > documentation/recommendation.
+> >> > 
+> >> > So please go to Documentation/power/runtime_pm.txt and read it again.  Quote:
+> >> > 
+> >> > "If the default initial runtime PM status of the device (i.e. 'suspended')
+> >> > reflects the actual state of the device, its bus type's or its driver's
+> >> > ->probe() callback will likely need to wake it up using one of the PM core's
+> >> > helper functions described in Section 4.  In that case, pm_runtime_resume()
+> >> > should be used.  Of course, for this purpose the device's runtime PM has to be
+> >> > enabled earlier by calling pm_runtime_enable()."
+> >> 
+> >> All that said there is a logical error related to calling pm_runtime_enable()
+> >> and its derivatives from ->probe() that I've been overlooking pretty much
+> >> from the start.
+> >> 
+> >> Namely, really_probe() sets dev->driver to drv before calling ->probe()
+> >> for either the bus type or the driver itself, so if the driver's probe
+> >> calls pm_runtime_enable(), it will execute the driver's own runtime PM
+> >> resume callback before the driver can check whether or not it wants to handle
+> >> the device in the first place.  That doesn't sound quite right to me.
+> >> 
+> >> This means we need a different mechanism to ensure that the device will
+> >> be accessible to the driver and/or the bus type in ->probe().
+> >> 
+> >> At one point we had pm_runtime_get_sync() before really_probe() in
+> >> driver_proble_device() IIRC, but people complained about it, so we dropped it
+> >> and put a barrier in there instead, but that's not sufficient.
 > >
-> >Hello,
+> > So we actually had pm_runtime_get_noresume() before the barrier, but then
+> > we dropped it due to complaints.
 > >
-> >On Mon, Oct 20, 2014 at 04:27:36PM +0800, Yao Dongdong wrote:
-> >> Signed-off-by:yaodongdong@huawei.com
+> >> We need to explicitly ensure that the device won't be powered off while
+> >> ->probe() is in progress *but* we need to avoid calling the driver's runtime
+> >> PM resume callback before ->probe() returns.
 > >
-> >Acked-by: Eduardo Valentin <edubezval@gmail.com>
-> >
-> >Rui, would you take care of this?
-> >
->=20
-> If I remember it right, this 'tz' is freed in the thermal_release()
-> function, during device_unregister().
->=20
-> It is similar in all other functions in thermal_core.c
->=20
-> So, Yao, Did you really test this patch ?
-> And did not see any crashes ?
->=20
+> > I wonder, then, if we just need to do pm_runtime_get_sync() instead of the
+> > barrier and then pm_runtime_put() instead of pm_request_idle() in
+> > driver_probe_device()?
+> 
+> Won't we still have the same problems in the case of ->probe failure
+> that were fixed by removing those calls[1]?
 
-Yao, reading the patch change carefully, now I see that Durga is correct
-here.=20
+Well, it looks like that might not be the best way to fix the problem.
 
-> Thanks,
-> Durga
->=20
-> >>
-> >> ---
-> >>  drivers/thermal/thermal_core.c | 1 +
-> >>  1 file changed, 1 insertion(+)
-> >>
-> >> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_=
-core.c
-> >> index 71b0ec0..5b7d466 100644
-> >> --- a/drivers/thermal/thermal_core.c
-> >> +++ b/drivers/thermal/thermal_core.c
-> >> @@ -1574,6 +1574,7 @@ struct thermal_zone_device
-> >*thermal_zone_device_register(const char *type,
-> >>  unregister:
-> >>     release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
-> >>     device_unregister(&tz->device);
-> >> +   kfree(tz);
+First of all, I think that drivers can reasonably expect devices to be
+accessible when ->probe() runs.  This means that the core and possibly
+bus type/PM domain need to make that happen.
 
-The device unregister is called above your kfree call, which will cause
-the thermal_release to be called. Did you test the code for double kfree
-calls? Your patch probably inserts a memory corruption.
+For this purpose it may be necessary to power up the device, but doing
+that from the bus type's ->probe() requires either (a) not using runtime PM
+or (b) bypassing the driver callbacks somehow.  On the other hand, arguably,
+if either the bus type or a PM domain provide meaningful runtime suspend/resume
+callbacks, then they should be available when driver_probe_device() runs
+and it should be fine to run pm_runtime_resume() at that point to trigger
+the power-up at least.
 
-I will revert your patch from my tree until you provide an answer about
-your testing.
+Now, pm_runtime_resume() would have been sufficient to power up the device
+in driver_probe_device() if it hadn't trigger the "idle" check on return.
+So, if you have concerns regarding the reference counting, we could do
+something like
 
-Thanks,
+	/* Grab a referece on dev to prevent runtime idle from being triggered by resume. */
+	pm_runtime_get_sync(dev);
+	/* Drop the reference befor probing to make the driver's life easier. */
+	pm_runtime_put_noidle(dev);
+	ret = really_probe(dev, drv);
+	pm_request_idle(dev);
 
+in there.  But quite frankly, I don't see the point, because
 
-Eduardo Valentin
+	pm_runtime_get_sync(dev);
+	ret = really_probe(dev, drv);
+	pm_runtime_put(dev);
 
-> >>     return ERR_PTR(result);
-> >>  }
-> >>  EXPORT_SYMBOL_GPL(thermal_zone_device_register);
-> >> --
-> >> 1.8.0.1
-> >>
-> >>
+will suspend the device properly anyway after dropping the reference.
 
---IJpNTDwzlM2Ie8A6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+> IOW, after the driver's ->probe returns failure, it's no longer safe to
+> call the driver's runtime PM callbacks, since they may be accessing
+> resources that no longer exits.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Which we don't do anyway, because if ->probe() fails, dev->driver is cleared
+by really_probe().
 
-iQEcBAEBAgAGBQJUV8rCAAoJEMLUO4d9pOJWWo4IAJ/X4Jek2EtwUIzUEOdfr80e
-r4eXVUZ5AsvzGZGYqEXcMXMl8G319qd88TCAhokHWGAkJhfGccSGL2rQ9boiZ8du
-Mbaieb/maAGxxG1cSJ4MRlmVP9crfrGCunLZcjvecq1iKrNJJt2wBB6PFDRaXqg0
-X2QRPCw23cUXfUVy3pNuUds9/mOYV3VPCwIjDWgmUWB1cNfLegAnNe8Gjg838hBn
-G1XfGq2CHl4nb87ryelG61aA2u2hlaNAwWpk2K/U18Oxk0tJlG0vLowywH4xwEKC
-wLnIPP9lvcwPjBTFBULfz+CMlgiMwPk9OJjVQkdqmQdwym67EFakk9r5IgM3vVw=
-=UFIU
------END PGP SIGNATURE-----
+> Hmm, thinking a little more, maybe this kind of failure is a good time
+> for the driver to use pm_runtime_force_suspend(), then later when the PM
+> core does the _put(), it will see the device aleady suspended and there
+> shouldn't be any problems.
 
---IJpNTDwzlM2Ie8A6--
+Well, I rather think that ->probe() should leave the device in a state
+which is as close as reasonably possible to the state it was in before.
+
+Rafael
