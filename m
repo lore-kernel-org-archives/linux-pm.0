@@ -1,150 +1,158 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH v8 1/5] PM / Runtime: Add getter for querying the IRQ safe option
-Date: Mon, 03 Nov 2014 18:59:37 +0200
-Message-ID: <2519900.LRhHM3UCtt@avalon>
-References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com> <3452823.YQ5FR2FtKz@avalon> <20141103162728.GB1870@intel.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: pm_runtime_enable() in ->probe()
+Date: Mon, 03 Nov 2014 09:00:29 -0800
+Message-ID: <7hwq7ci5hu.fsf@deeprootsystems.com>
+References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
+	<5370046.DXkB0EA6xC@vostro.rjw.lan>
+	<42875843.yieZ2al8Y2@vostro.rjw.lan>
+	<3099111.MYm8ByzLAF@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <20141103162728.GB1870@intel.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Vinod Koul <vinod.koul@intel.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:63958 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752209AbaKCRAe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 12:00:34 -0500
+Received: by mail-pa0-f43.google.com with SMTP id eu11so12534225pac.30
+        for <linux-pm@vger.kernel.org>; Mon, 03 Nov 2014 09:00:33 -0800 (PST)
+In-Reply-To: <3099111.MYm8ByzLAF@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Sat, 01 Nov 2014 02:14:14 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
 
-Hi Vinod,
+"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 
-On Monday 03 November 2014 21:57:28 Vinod Koul wrote:
-> On Sat, Nov 01, 2014 at 02:29:42AM +0200, Laurent Pinchart wrote:
-> > On Friday 31 October 2014 15:40:16 Krzysztof Kozlowski wrote:
-> >> On pi=C4=85, 2014-10-31 at 15:22 +0100, Pavel Machek wrote:
-> >>> On Fri 2014-10-31 10:14:55, Krzysztof Kozlowski wrote:
-> >>>> On pon, 2014-10-20 at 11:04 +0200, Krzysztof Kozlowski wrote:
-> >>>>> Add a simple getter pm_runtime_is_irq_safe() for querying wheth=
-er
-> >>>>> runtime PM IRQ safe was set or not.
-> >>>>>=20
-> >>>>> Various bus drivers implementing runtime PM may use choose to
-> >>>>> suspend differently based on IRQ safeness status of child drive=
-r
-> >>>>> (e.g. do not unprepare the clock if IRQ safe is not set).
-> >>>>>=20
-> >>>>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> >>>>> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >>>>=20
-> >>>> Rafael, Len, Pavel,
-> >>>>=20
-> >>>> Is proposed API ok? Do you have any comments?
-> >>>>=20
-> >>>> I'll upload whole patchset to Russell's patch tracking system.
-> >>>> However an ack from PM maintainer is probably needed.
-> >>>=20
-> >>> I don't like the API. Having callbacks work in different context =
-(irq
-> >>> / noirq) based on what another function reports is ugly.
-> >>>=20
-> >>> What is the penalty if we always decide callbacks are not IRQ saf=
-e?
-> >>=20
-> >> Then pm_runtime_get_sync() could not be called in atomic context. =
-The
-> >> pl330 runtime PM would have to be completely reworked because one
-> >> pm_runtime_get_sync() is called in device_issue_pending which cann=
-ot
-> >> sleep (at least in non preemptible kernels). Probably this can be =
-solved
-> >> some way...
-> >=20
-> > Many other drivers suffer from the same problem. While I won't reje=
-ct your
-> > proposed fix, I would prefer a more generic approach.
-> >=20
-> > One option that has been discussed previously was to use a work que=
-ue to
-> > delay starting the DMA transfer to an interruptible context where
-> > pm_runtime_get_sync() could be called. However, as Russell pointed =
-out
-> > [1],
-> > even that won't work in all cases as the DMA slave might need the t=
-ransfer
-> > to be started before enabling part of its hardware (OMAP audio seem=
- to be
-> > such a case).
-> >=20
-> > I've heard a rumor of a possible DMA engine rework to forbid callin=
-g the
-> > descriptor preparation API from atomic context. This could be used =
-as a
-> > base to implement runtime PM, as DMA slave drivers should not prepa=
-re
-> > descriptors if they don't need to use them. However that's a long t=
-erm
-> > plan, and we need a solution sooner than that.
->=20
-> Well it is not a rumour :)
+> On Saturday, November 01, 2014 02:08:57 AM Rafael J. Wysocki wrote:
+>> On Saturday, November 01, 2014 01:20:38 AM Rafael J. Wysocki wrote:
+>> > On Friday, October 31, 2014 10:16:14 AM Ulf Hansson wrote:
+>> > > On 24 October 2014 18:12, Kevin Hilman <khilman@kernel.org> wrote:
+>> 
+>> [cut]
+>> 
+>> > > 
+>> > > 1)
+>> > > It's bad practice to use pm_runtime_get_sync() in the ->probe() path,
+>> > 
+>> > Honestly, I'm no longer amused.
+>> > 
+>> > > to bring your resources to full power. The consequence would be a
+>> > > driver that requires CONFIG_PM_RUNTIME to be even functional, which
+>> > > just isn't acceptable.
+>> > 
+>> > Sorry, but this is utter nonsense.
+>> > 
+>> > CONFIG_PM_RUNTIME unset means "no runtime PM at all", so all drivers can expect
+>> > everything they need to be always on.  If that is not the case, then someone is
+>> > doing runtime PM behind the scenes and therefore cheating.  Or in different
+>> > words, for CONFIG_PM_RUNTIME unset bus types, platforms etc must ensure that
+>> > everything is on from the drivers' perspective.
+>> > 
+>> > If that is the case, then calling pm_runtime_get_sync() from ->probe
+>> > for CONFIG_PM_RUNTIME unset simply doesn't matter.
+>> > 
+>> > Now, for CONFIG_PM_RUNTIME enabled, if power domains are in use, doing
+>> > pm_runtime_get_sync() from ->probe is the only way the driver can ensure
+>> > in a non-racy way that the device will be accessible going forward.
+>> > 
+>> > Why?  Simply because the probing need not happen during system initialization.
+>> > It very well may take places when the other devices in the same domain have
+>> > beein in use for quite a while and have been using runtime PM (in which
+>> > case the domain may go off at any time unless it is explicityly prevented from
+>> > doing that).
+>> > 
+>> > One thing that you may be missing is that, for CONFIG_PM_RUNTIME set,
+>> > runtime PM has to be either enabled or disabled for all devices in one
+>> > domain (and if it is disabled, then the domain needs to be always on for
+>> > all practical purposes).  Otherwise you can't just make all of them happy
+>> > at the same time.  The documentation doesn't cover this, because it had been
+>> > written before we even started to consider power domains.
+>> > 
+>> > > Drivers that behaves well within this context, follows the runtime PM
+>> > > documentation/recommendation.
+>> > 
+>> > So please go to Documentation/power/runtime_pm.txt and read it again.  Quote:
+>> > 
+>> > "If the default initial runtime PM status of the device (i.e. 'suspended')
+>> > reflects the actual state of the device, its bus type's or its driver's
+>> > ->probe() callback will likely need to wake it up using one of the PM core's
+>> > helper functions described in Section 4.  In that case, pm_runtime_resume()
+>> > should be used.  Of course, for this purpose the device's runtime PM has to be
+>> > enabled earlier by calling pm_runtime_enable()."
+>> 
+>> All that said there is a logical error related to calling pm_runtime_enable()
+>> and its derivatives from ->probe() that I've been overlooking pretty much
+>> from the start.
+>> 
+>> Namely, really_probe() sets dev->driver to drv before calling ->probe()
+>> for either the bus type or the driver itself, so if the driver's probe
+>> calls pm_runtime_enable(), it will execute the driver's own runtime PM
+>> resume callback before the driver can check whether or not it wants to handle
+>> the device in the first place.  That doesn't sound quite right to me.
+>> 
+>> This means we need a different mechanism to ensure that the device will
+>> be accessible to the driver and/or the bus type in ->probe().
+>> 
+>> At one point we had pm_runtime_get_sync() before really_probe() in
+>> driver_proble_device() IIRC, but people complained about it, so we dropped it
+>> and put a barrier in there instead, but that's not sufficient.
+>
+> So we actually had pm_runtime_get_noresume() before the barrier, but then
+> we dropped it due to complaints.
+>
+>> We need to explicitly ensure that the device won't be powered off while
+>> ->probe() is in progress *but* we need to avoid calling the driver's runtime
+>> PM resume callback before ->probe() returns.
+>
+> I wonder, then, if we just need to do pm_runtime_get_sync() instead of the
+> barrier and then pm_runtime_put() instead of pm_request_idle() in
+> driver_probe_device()?
 
-I didn't want to put too much pressure on you by quoting you on that :-=
-)
+Won't we still have the same problems in the case of ->probe failure
+that were fixed by removing those calls[1]?
 
-> I have been contemplating that now that async_tx will be killed so we=
- dont
-> have to worry about that usage. For the slave dma usage, we can chang=
-e the
-> prepare API to be non atomic. I think the users will be okay with app=
-roach.
-> This way drivers can use runtime pm calls in prepare.
+IOW, after the driver's ->probe returns failure, it's no longer safe to
+call the driver's runtime PM callbacks, since they may be accessing
+resources that no longer exits.
 
-I'd certainly welcome that. There's a couple of users we will need to f=
-ix as=20
-they call the prepare API from an atomic context. I'm thinking about AS=
-oC=20
-drivers in particular.
+Hmm, thinking a little more, maybe this kind of failure is a good time
+for the driver to use pm_runtime_force_suspend(), then later when the PM
+core does the _put(), it will see the device aleady suspended and there
+shouldn't be any problems.
 
-Do you have any time line in mind ?
+So I think I'm OK with this approach, in theory.
 
-> > I've been toying with the idea of adding explicit open/close (or wh=
-atever
-> > we would call them) operations to the DMA engine API. Those would b=
-e used
-> > by DMA slave drivers to signal that they will start/stop using the =
-DMA
-> > engine.
-> >=20
-> > If (1) we must start the DMA synchronously with a DMA slave call, (=
-2) need
-> > to sleep to handle PM, and (3) don't want to keep the DMA engine po=
-wered
-> > for as long as one channel is requested, then we need to turn at le=
-ast
-> > preparation as not callable in atomic context, or introduce a new
-> > operation.
-> >=20
-> > [1] http://www.spinics.net/lists/dmaengine/msg01548.html
-> >=20
-> > > >>> --- a/Documentation/power/runtime_pm.txt
-> > > >>> +++ b/Documentation/power/runtime_pm.txt
-> > > >>>=20
-> > > >>> @@ -468,6 +468,10 @@ drivers/base/power/runtime.c and
-> > > >>>=20
-> > > >>> include/linux/pm_runtime.h:
-> > > >>>      - set the power.irq_safe flag for the device, causing th=
-e
-> > > >>>        runtime-PM callbacks to be invoked with interrupts off
-> > > >>>=20
-> > > >>> +  bool pm_runtime_is_irq_safe(struct device *dev);
-> > > >>> +    - return true if power.irq_safe flag was set for the dev=
-ice,
-> > > >>> causing
-> > > >>> +      the runtime-PM callbacks to be invoked with interrupts=
- off
-> > > >>> +
-> > > >>>=20
-> > > >>>    void pm_runtime_mark_last_busy(struct device *dev);
-> > > >>>      - set the power.last_busy field to the current time
+Kevin
 
---=20
-Regards,
+[1]
+commit eed5d2150752bd08b22333d739f3120151773d28
+Author: Rafael J. Wysocki <rjw@sisk.pl>
+Date:   Thu Jul 12 11:51:48 2012 +0200
 
-Laurent Pinchart
+    PM / Runtime: Do not increment device usage counts before probing
+
+    The pm_runtime_get_noresume() calls before really_probe() and
+    before executing __device_attach() for each driver on the
+    device's bus cause problems to happen if probing fails and if the
+    driver has enabled runtime PM for the device in its .probe()
+    callback.  Namely, in that case, if the device has been resumed
+    by the driver after enabling its runtime PM and if it turns out that
+    .probe() should return an error, the driver is supposed to suspend
+    the device and disable its runtime PM before exiting .probe().
+    However, because the device's runtime PM usage counter was
+    incremented by the core before calling .probe(), the driver's attempt
+    to suspend the device will not succeed and the device will remain in
+    the full-power state after the failing .probe() has returned.
+
+    To fix this issue, remove the pm_runtime_get_noresume() calls from
+    driver_probe_device() and from device_attach() and replace the
+    corresponding pm_runtime_put_sync() calls with pm_runtime_idle()
+    to preserve the existing behavior (which is to check if the device
+    is idle and to suspend it eventually in that case after probing).
+
+    Reported-and-tested-by: Kevin Hilman <khilman@ti.com>
+    Reviewed-by: Kevin Hilman <khilman@ti.com>
+    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+    Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
