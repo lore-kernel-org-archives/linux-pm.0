@@ -1,173 +1,135 @@
 From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH v3 18/47] mfd: twl4030-power: Register with kernel
- power-off handler
-Date: Mon, 3 Nov 2014 11:56:19 -0600
-Message-ID: <20141103175619.GP27425@saruman>
+Subject: Re: [PATCH v3 17/47] mfd: tps65910: Register with kernel power-off
+ handler
+Date: Mon, 3 Nov 2014 11:57:27 -0600
+Message-ID: <20141103175727.GR27425@saruman>
 References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
- <1414425354-10359-19-git-send-email-linux@roeck-us.net>
- <20141103175427.GK12011@x1>
+ <1414425354-10359-18-git-send-email-linux@roeck-us.net>
 Reply-To: <balbi@ti.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cmVHo2jXx4bdYlgS"
+	protocol="application/pgp-signature"; boundary="19HmC3QOnaNVzKTI"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20141103175427.GK12011@x1>
+In-Reply-To: <1414425354-10359-18-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Tony Lindgren <tony@atomide.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
---cmVHo2jXx4bdYlgS
-Content-Type: text/plain; charset=utf-8
+--19HmC3QOnaNVzKTI
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Mon, Nov 03, 2014 at 05:54:27PM +0000, Lee Jones wrote:
-> On Mon, 27 Oct 2014, Guenter Roeck wrote:
+On Mon, Oct 27, 2014 at 08:55:24AM -0700, Guenter Roeck wrote:
+> Register with kernel power-off handler instead of setting pm_power_off
+> directly. Register with low priority to reflect that the original code
+> only sets pm_power_off if it was not already set.
 >=20
-> > Register with kernel power-off handler instead of setting pm_power_off
-> > directly. Register with low priority to reflect that the original code
-> > only sets pm_power_off if it was not already set.
-> >=20
-> > Make twl4030_power_off static as it is only called from the twl4030-pow=
-er
-> > driver. Drop remove function as it is no longer needed.
-> >=20
-> > Cc: Samuel Ortiz <sameo@linux.intel.com>
-> > Cc: Lee Jones <lee.jones@linaro.org>
-> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> > ---
-> > v3:
-> > - Replace poweroff in all newly introduced variables and in text
-> >   with power_off or power-off as appropriate
-> > - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
-> > v2:
-> > - Use define to specify poweroff handler priority
-> > - Use dev_warn instead of dev_err
-> > - Use devm_register_power_off_handler
-> > - Drop remove function as it is no longer needed.
-> >=20
-> >  drivers/mfd/twl4030-power.c | 29 +++++++++++++++++++----------
-> >  include/linux/i2c/twl.h     |  1 -
-> >  2 files changed, 19 insertions(+), 11 deletions(-)
->=20
-> Acked-by: Lee Jones <lee.jones@linaro.org>
+> Cc: Samuel Ortiz <sameo@linux.intel.com>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 
-this was not sent to lakml or linux-omap. Care to resend ?
+missed lakml and linux-omap here too
 
-> > diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
-> > index cf92a6d..e36eea9 100644
-> > --- a/drivers/mfd/twl4030-power.c
-> > +++ b/drivers/mfd/twl4030-power.c
-> > @@ -25,9 +25,10 @@
-> >   */
-> > =20
-> >  #include <linux/module.h>
-> > -#include <linux/pm.h>
-> > +#include <linux/notifier.h>
-> >  #include <linux/i2c/twl.h>
-> >  #include <linux/platform_device.h>
-> > +#include <linux/pm.h>
-> >  #include <linux/of.h>
-> >  #include <linux/of_device.h>
-> > =20
-> > @@ -611,7 +612,8 @@ twl4030_power_configure_resources(const struct twl4=
-030_power_data *pdata)
-> >   * After a successful execution, TWL shuts down the power to the SoC
-> >   * and all peripherals connected to it.
-> >   */
-> > -void twl4030_power_off(void)
-> > +static int twl4030_power_off(struct notifier_block *this, unsigned lon=
-g unused1,
-> > +			     void *unused2)
-> >  {
-> >  	int err;
-> > =20
-> > @@ -619,8 +621,15 @@ void twl4030_power_off(void)
-> >  			       TWL4030_PM_MASTER_P1_SW_EVENTS);
-> >  	if (err)
-> >  		pr_err("TWL4030 Unable to power off\n");
-> > +
-> > +	return NOTIFY_DONE;
-> >  }
-> > =20
-> > +static struct notifier_block twl4030_power_off_nb =3D {
-> > +	.notifier_call =3D twl4030_power_off,
-> > +	.priority =3D POWER_OFF_PRIORITY_LOW,
-> > +};
-> > +
-> >  static bool twl4030_power_use_poweroff(const struct twl4030_power_data=
- *pdata,
-> >  					struct device_node *node)
-> >  {
-> > @@ -839,7 +848,9 @@ static int twl4030_power_probe(struct platform_devi=
-ce *pdev)
-> >  	}
-> > =20
-> >  	/* Board has to be wired properly to use this feature */
-> > -	if (twl4030_power_use_poweroff(pdata, node) && !pm_power_off) {
-> > +	if (twl4030_power_use_poweroff(pdata, node)) {
-> > +		int ret;
-> > +
-> >  		/* Default for SEQ_OFFSYNC is set, lets ensure this */
-> >  		err =3D twl_i2c_read_u8(TWL_MODULE_PM_MASTER, &val,
-> >  				      TWL4030_PM_MASTER_CFG_P123_TRANSITION);
-> > @@ -856,7 +867,11 @@ static int twl4030_power_probe(struct platform_dev=
-ice *pdev)
-> >  			}
-> >  		}
-> > =20
-> > -		pm_power_off =3D twl4030_power_off;
-> > +		ret =3D devm_register_power_off_handler(&pdev->dev,
-> > +						      &twl4030_power_off_nb);
-> > +		if (ret)
-> > +			dev_warn(&pdev->dev,
-> > +				 "Failed to register power-off handler\n");
-> >  	}
-> > =20
-> >  relock:
-> > @@ -870,11 +885,6 @@ relock:
-> >  	return err;
-> >  }
-> > =20
-> > -static int twl4030_power_remove(struct platform_device *pdev)
-> > -{
-> > -	return 0;
-> > -}
-> > -
-> >  static struct platform_driver twl4030_power_driver =3D {
-> >  	.driver =3D {
-> >  		.name	=3D "twl4030_power",
-> > @@ -882,7 +892,6 @@ static struct platform_driver twl4030_power_driver =
-=3D {
-> >  		.of_match_table =3D of_match_ptr(twl4030_power_of_match),
-> >  	},
-> >  	.probe		=3D twl4030_power_probe,
-> > -	.remove		=3D twl4030_power_remove,
-> >  };
-> > =20
-> >  module_platform_driver(twl4030_power_driver);
-> > diff --git a/include/linux/i2c/twl.h b/include/linux/i2c/twl.h
-> > index 8cfb50f..f8544f1 100644
-> > --- a/include/linux/i2c/twl.h
-> > +++ b/include/linux/i2c/twl.h
-> > @@ -680,7 +680,6 @@ struct twl4030_power_data {
-> >  };
-> > =20
-> >  extern int twl4030_remove_script(u8 flags);
-> > -extern void twl4030_power_off(void);
-> > =20
-> >  struct twl4030_codec_data {
-> >  	unsigned int digimic_delay; /* in ms */
+> ---
+> v3:
+> - Replace poweroff in all newly introduced variables and in text
+>   with power_off or power-off as appropriate
+> - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+> v2:
+> - Use define to specify poweroff handler priority
+> - Use dev_warn instead of dev_err
 >=20
+>  drivers/mfd/tps65910.c       | 27 ++++++++++++++++++---------
+>  include/linux/mfd/tps65910.h |  3 +++
+>  2 files changed, 21 insertions(+), 9 deletions(-)
+>=20
+> diff --git a/drivers/mfd/tps65910.c b/drivers/mfd/tps65910.c
+> index 7612d89..3c94dbf 100644
+> --- a/drivers/mfd/tps65910.c
+> +++ b/drivers/mfd/tps65910.c
+> @@ -23,6 +23,8 @@
+>  #include <linux/irq.h>
+>  #include <linux/irqdomain.h>
+>  #include <linux/mfd/core.h>
+> +#include <linux/notifier.h>
+> +#include <linux/pm.h>
+>  #include <linux/regmap.h>
+>  #include <linux/mfd/tps65910.h>
+>  #include <linux/of.h>
+> @@ -437,19 +439,20 @@ struct tps65910_board *tps65910_parse_dt(struct i2c=
+_client *client,
+>  }
+>  #endif
+> =20
+> -static struct i2c_client *tps65910_i2c_client;
+> -static void tps65910_power_off(void)
+> +static int tps65910_power_off(struct notifier_block *this,
+> +			      unsigned long unused1, void *unused2)
+>  {
+> -	struct tps65910 *tps65910;
+> -
+> -	tps65910 =3D dev_get_drvdata(&tps65910_i2c_client->dev);
+> +	struct tps65910 *tps65910 =3D container_of(this, struct tps65910,
+> +						 power_off_nb);
+> =20
+>  	if (tps65910_reg_set_bits(tps65910, TPS65910_DEVCTRL,
+>  			DEVCTRL_PWR_OFF_MASK) < 0)
+> -		return;
+> +		return NOTIFY_DONE;
+> =20
+>  	tps65910_reg_clear_bits(tps65910, TPS65910_DEVCTRL,
+>  			DEVCTRL_DEV_ON_MASK);
+> +
+> +	return NOTIFY_DONE;
+>  }
+> =20
+>  static int tps65910_i2c_probe(struct i2c_client *i2c,
+> @@ -505,9 +508,13 @@ static int tps65910_i2c_probe(struct i2c_client *i2c,
+>  	tps65910_ck32k_init(tps65910, pmic_plat_data);
+>  	tps65910_sleepinit(tps65910, pmic_plat_data);
+> =20
+> -	if (pmic_plat_data->pm_off && !pm_power_off) {
+> -		tps65910_i2c_client =3D i2c;
+> -		pm_power_off =3D tps65910_power_off;
+> +	if (pmic_plat_data->pm_off) {
+> +		tps65910->power_off_nb.notifier_call =3D tps65910_power_off;
+> +		tps65910->power_off_nb.priority =3D POWER_OFF_PRIORITY_LOW;
+> +		ret =3D register_power_off_handler(&tps65910->power_off_nb);
+> +		if (ret)
+> +			dev_warn(&i2c->dev,
+> +				 "failed to register power-off handler\n");
+>  	}
+> =20
+>  	ret =3D mfd_add_devices(tps65910->dev, -1,
+> @@ -527,6 +534,8 @@ static int tps65910_i2c_remove(struct i2c_client *i2c)
+>  {
+>  	struct tps65910 *tps65910 =3D i2c_get_clientdata(i2c);
+> =20
+> +	unregister_power_off_handler(&tps65910->power_off_nb);
+> +
+>  	tps65910_irq_exit(tps65910);
+>  	mfd_remove_devices(tps65910->dev);
+> =20
+> diff --git a/include/linux/mfd/tps65910.h b/include/linux/mfd/tps65910.h
+> index 6483a6f..94876c4 100644
+> --- a/include/linux/mfd/tps65910.h
+> +++ b/include/linux/mfd/tps65910.h
+> @@ -905,6 +905,9 @@ struct tps65910 {
+>  	/* IRQ Handling */
+>  	int chip_irq;
+>  	struct regmap_irq_chip_data *irq_data;
+> +
+> +	/* Power-off handling */
+> +	struct notifier_block power_off_nb;
+>  };
+> =20
+>  struct tps65910_platform_data {
 > --=20
-> Lee Jones
-> Linaro STMicroelectronics Landing Team Lead
-> Linaro.org =E2=94=82 Open source software for ARM SoCs
-> Follow Linaro: Facebook | Twitter | Blog
+> 1.9.1
+>=20
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
@@ -177,26 +139,26 @@ ice *pdev)
 --=20
 balbi
 
---cmVHo2jXx4bdYlgS
+--19HmC3QOnaNVzKTI
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUV8HDAAoJEIaOsuA1yqREgYsP+wUfij7prQeEL+OjYLZMqjgV
-RX8pfOZ3PEIUaDQjfzCwKofANVoH1F/Q9RVk5BUU/8apOkmtajEsM615d23nTdqg
-TRB17QKWBRmyxrWelGAe7Y9+Qm/2TzYRrlKOja8mOpJFmL03QzXPDnj3rIZT+bRm
-Gi70Ql8Gv6nSC0l3XecnhF8AsTTEm+DLRRVAEiSR5IYgIXDX5gIzuQ8g8zQdubao
-VyuyNiJ3DXEQmpR36qqs6XUVf7F5I3uCi+2m4bTHlngb7WCw+Rbd/Xh4LZhAs/Y5
-SGDCnpQ/CsIlv/sWDLSh0fEwoIB085gef6o1FU0osKujYOdxyQB00Q3M7DJDqU3e
-2fs2CWyDfkS9tu45kmOfibRtgV+SyjHNiQadf4biz278GaCuaF26QoVJ8lIEUUhn
-4LzFpY9XUIrb4HjanfmjjjKP/diPyUadfhvIvGjCnZba0fY6XEiocqIsVdfmHeLz
-hExAWVGk+LJ6eN3x2ohjmuzAR/xZFlk/X5SOZgZD3whZ1oPVnC76134k6uIl9Hd+
-y5u1Y2ikvfGloi7Knx9hlDf0NBGUFa0pm87Dtrok7qi9tJOeVRyli0MN2+28DK2P
-bDkJH6QjIQlgFkUp4NSpHE2vo9NbhChj9jJ08YQx/XOF5g/vMZXACbgl+fLjYl1h
-yCgicG+vhrpJguwIdw5k
-=I+KJ
+iQIcBAEBAgAGBQJUV8IHAAoJEIaOsuA1yqRE6DQQAJfZmeYQX2oBzWdgs4gDi19r
+3kdBZ8+HFTeszmKLZvlSe0rcWw+/UM6YmZAq/hXWFgw4vW90DffqpjsmvRXtU/XA
+8/V/Pauh5Os83nLY4AITjiFyWykqplepDn5c9daiSPmijTIPyxr461pckJBYx2Zl
+G9NKI/3X86Bc9ELEZG2dHnJohrpbcauJNkfmBZwyFlmcRsjsXo8mG7ptJkXaIpbZ
+dFij/RtHoDoL2TV57Nqqs1V041c6FAOjcZK1j+ayCtjkk4RcDbfQbYEFhNhFFtg7
+gXxKzFavxIW/xaMLeuJ4mWnJLniDIZK2frrm10yXBzDb70WmAR87qQS/URZxDmYi
+mDSyPbWU4/T3YvMGtFDRwdOAip4k1DCxSOcTTqV1xfl00YdIO5a+/jI7S1iEDW20
+RSSq5nzZ8/HRUkz1Wa6o3bIfEuOe1bDCYAEsP2XHKsSe0nSAooXM3T07tHKQT4Fd
+kyPIq1VDekTiE3XBX3bdbfXKw4DsPbsMnacZ3Pzq+T8RZ53bPEdCAEWbnb0cjhVO
+jvzvtGDzTHWzM+svqXdDIbnkJQ4NGMcYViiXQURJZp5qq2hbq8QJWr95wVGK2YSi
+wTl+3wFOsi1H+t+ykiLn+fMdw61d86mGWUTcxCPIbCkkEQopRA0el5RZ7fhSqLV+
+gCP6f5S8sw0a3toAPxdy
+=TyJs
 -----END PGP SIGNATURE-----
 
---cmVHo2jXx4bdYlgS--
+--19HmC3QOnaNVzKTI--
