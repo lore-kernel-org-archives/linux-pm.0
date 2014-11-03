@@ -1,52 +1,54 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: Re: [Patch v8 15/18] x86, irq, ACPI: Implement interface to support
- ACPI based IOAPIC hot-addition
-Date: Mon, 03 Nov 2014 17:51:04 +0800
-Message-ID: <54575008.50307@linux.intel.com>
-References: <1414908273-7552-1-git-send-email-jiang.liu@linux.intel.com> <1414908273-7552-16-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.11.1411031039470.5308@nanos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.11.1411031039470.5308@nanos>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Grant Likely <grant.likely@linaro.org>, Prarit Bhargava <prarit@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] Thermal/int3403: Fix thermal hysteresis unit conversion
+Date: Mon,  3 Nov 2014 01:53:01 -0800
+Message-ID: <1415008381-11584-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:11866 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751020AbaKCJyK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 3 Nov 2014 04:54:10 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com
+Cc: tianyu.lan@intel.com, linux-pm@vger.kernel.org
 
-On 2014/11/3 17:41, Thomas Gleixner wrote:
-> On Sun, 2 Nov 2014, Jiang Liu wrote:
->> +	down_write(&acpi_ioapic_rwsem);
-> 
-> That wants to be acpi_ioapic_lock. Same issue in the following
-> patches. You fixed it up in the last patch.
-> 
-> Please don't resend. I folded the hunks back to the proper places
-> already.
-Thanks, Thomas.
+From: "lan,Tianyu" <tianyu.lan@intel.com>
 
-There's no changes for the second patch set "[Patch Part1 v3 00/20]
-Prepare for enabling  hierarchy irqdomain on x86" at
-https://lkml.org/lkml/2014/10/27/122.
+Thermal hysteresis represents a temperature difference.
+But the original code treats it as a temperature value,
+Convert it from tenths of degree Kelvin to Milli-Celsius
+by deducing 273200. This is not right.
 
-It should apply cleanly onto this patch set, so I won't resend it.
+Kelvin and Celsius have same degree size. From temperature
+difference view, the conversion between tenths of degree
+Kelvin unit and Milli-Celsius unit is just to multiply 100.
 
-I have also solved all issues related to interrupt remapping and
-is testing new implementation for third and fourth patch sets.
-Will send them out once passing all tests.
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ drivers/thermal/int340x_thermal/int3403_thermal.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-Regards!
-Gerry
+diff --git a/drivers/thermal/int340x_thermal/int3403_thermal.c b/drivers/thermal/int340x_thermal/int3403_thermal.c
+index d20dba9..6e9fb62 100644
+--- a/drivers/thermal/int340x_thermal/int3403_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3403_thermal.c
+@@ -92,7 +92,13 @@ static int sys_get_trip_hyst(struct thermal_zone_device *tzone,
+ 	if (ACPI_FAILURE(status))
+ 		return -EIO;
+ 
+-	*temp = DECI_KELVIN_TO_MILLI_CELSIUS(hyst, KELVIN_OFFSET);
++	/*
++	 * Thermal hysteresis represents a temperature difference.
++	 * Kelvin and Celsius have same degree size. So the
++	 * conversion here between tenths of degree Kelvin unit
++	 * and Milli-Celsius unit is just to multiply 100.
++	 */
++	*temp = hyst * 100;
+ 
+ 	return 0;
+ }
+-- 
+1.9.1
 
-> 
-> Thanks,
-> 
-> 	tglx
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
