@@ -1,76 +1,118 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v3 19/47] mfd: rk808: Register power-off handler with
- kernel power-off handler
-Date: Mon, 3 Nov 2014 14:52:13 -0800
-Message-ID: <20141103225213.GB18594@roeck-us.net>
-References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
- <1414425354-10359-20-git-send-email-linux@roeck-us.net>
- <20141103175346.GI12011@x1>
- <20141103190602.GE10558@roeck-us.net>
- <20141103224227.GF13359@x1>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 1/2] Thermal:Fix memory leak if occur goto unregister
+Date: Mon, 3 Nov 2014 14:35:13 -0400
+Message-ID: <20141103183510.GA441@developer>
+References: <5444C778.8050008@huawei.com>
+ <20141020123338.GA3744@developer>
+ <4D68720C2E767A4AA6A8796D42C8EB590902F30A@BGSMSX101.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="IJpNTDwzlM2Ie8A6"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f51.google.com ([209.85.216.51]:43810 "EHLO
+	mail-qa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751162AbaKCW73 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 17:59:29 -0500
 Content-Disposition: inline
-In-Reply-To: <20141103224227.GF13359@x1>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chris Zhong <zyw@rock-chips.com>, Zhang Qing <zhangqing@rock-chips.com>, Samuel Ortiz <sameo@linux.intel.com>
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB590902F30A@BGSMSX101.gar.corp.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: Yao Dongdong <yaodongdong@huawei.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Mon, Nov 03, 2014 at 10:42:27PM +0000, Lee Jones wrote:
-> On Mon, 03 Nov 2014, Guenter Roeck wrote:
-> 
-> > On Mon, Nov 03, 2014 at 05:53:46PM +0000, Lee Jones wrote:
-> > > On Mon, 27 Oct 2014, Guenter Roeck wrote:
-> > > 
-> > > > Register with kernel power-off handler instead of setting pm_power_off
-> > > > directly. Register with low priority to reflect that the original code
-> > > > only sets pm_power_off if it was not already set.
-> > > > 
-> > > > Cc: Chris Zhong <zyw@rock-chips.com>
-> > > > Cc: Zhang Qing <zhangqing@rock-chips.com>
-> > > > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> > > > ---
-> > > > v3:
-> > > > - Replace poweroff in all newly introduced variables and in text
-> > > >   with power_off or power-off as appropriate
-> > > > - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
-> > > > v2:
-> > > > - New patch
-> > > > 
-> > > >  drivers/mfd/rk808.c       | 30 ++++++++++++++++--------------
-> > > >  include/linux/mfd/rk808.h |  2 ++
-> > > >  2 files changed, 18 insertions(+), 14 deletions(-)
-> > > 
-> > > Code looks okay:
-> > > 
-> > > Acked-by: Lee Jones <lee.jones@linaro.org>
-> > > 
-> > Thanks!
-> > 
-> > > ... but how are you thinking about handling this set?
-> > > 
-> > 
-> > Plan is to send the entire series directly to Linus in the next
-> > commit window, as suggested by several of the affected maintainers.
-> > 
-> > I am still missing an Ack for patch 1 of the series. If/when I get
-> > that, I'll set up the series except for the last patch to be added
-> > to linux-next for it to get some exposure.
-> > 
-> > Of course, that plan may all fall apart if someone objects. In that case,
-> > the patches would have to be taken over several releases by the individual
-> > maintainers.
-> 
-> Very well.  Either is okay with me.  It might also be worth
-> considering speaking to Linus and requesting permission to send during
-> -rc1 to minimise the risk of a huge number of conflicts.
-> 
-That sounds like a good idea. I may have to split the patches into two
-parts anyway, to catch any new code setting pm_power_off directly. Maybe 
-the first part can go in during the commit window and the final part
-after -rc1.
+
+--IJpNTDwzlM2Ie8A6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hello,
+
+On Mon, Nov 03, 2014 at 06:17:37PM +0000, R, Durgadoss wrote:
+> >-----Original Message-----
+> >From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> >owner@vger.kernel.org] On Behalf Of Eduardo Valentin
+> >Sent: Monday, October 20, 2014 6:04 PM
+> >To: Yao Dongdong
+> >Cc: Zhang, Rui; linux-pm@vger.kernel.org; LKML
+> >Subject: Re: [PATCH 1/2] Thermal:Fix memory leak if occur goto unregister
+> >
+> >Hello,
+> >
+> >On Mon, Oct 20, 2014 at 04:27:36PM +0800, Yao Dongdong wrote:
+> >> Signed-off-by:yaodongdong@huawei.com
+> >
+> >Acked-by: Eduardo Valentin <edubezval@gmail.com>
+> >
+> >Rui, would you take care of this?
+> >
+>=20
+> If I remember it right, this 'tz' is freed in the thermal_release()
+> function, during device_unregister().
+>=20
+> It is similar in all other functions in thermal_core.c
+>=20
+> So, Yao, Did you really test this patch ?
+> And did not see any crashes ?
+>=20
+
+Yao, reading the patch change carefully, now I see that Durga is correct
+here.=20
+
+> Thanks,
+> Durga
+>=20
+> >>
+> >> ---
+> >>  drivers/thermal/thermal_core.c | 1 +
+> >>  1 file changed, 1 insertion(+)
+> >>
+> >> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_=
+core.c
+> >> index 71b0ec0..5b7d466 100644
+> >> --- a/drivers/thermal/thermal_core.c
+> >> +++ b/drivers/thermal/thermal_core.c
+> >> @@ -1574,6 +1574,7 @@ struct thermal_zone_device
+> >*thermal_zone_device_register(const char *type,
+> >>  unregister:
+> >>     release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+> >>     device_unregister(&tz->device);
+> >> +   kfree(tz);
+
+The device unregister is called above your kfree call, which will cause
+the thermal_release to be called. Did you test the code for double kfree
+calls? Your patch probably inserts a memory corruption.
+
+I will revert your patch from my tree until you provide an answer about
+your testing.
 
 Thanks,
-Guenter
+
+
+Eduardo Valentin
+
+> >>     return ERR_PTR(result);
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(thermal_zone_device_register);
+> >> --
+> >> 1.8.0.1
+> >>
+> >>
+
+--IJpNTDwzlM2Ie8A6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUV8rCAAoJEMLUO4d9pOJWWo4IAJ/X4Jek2EtwUIzUEOdfr80e
+r4eXVUZ5AsvzGZGYqEXcMXMl8G319qd88TCAhokHWGAkJhfGccSGL2rQ9boiZ8du
+Mbaieb/maAGxxG1cSJ4MRlmVP9crfrGCunLZcjvecq1iKrNJJt2wBB6PFDRaXqg0
+X2QRPCw23cUXfUVy3pNuUds9/mOYV3VPCwIjDWgmUWB1cNfLegAnNe8Gjg838hBn
+G1XfGq2CHl4nb87ryelG61aA2u2hlaNAwWpk2K/U18Oxk0tJlG0vLowywH4xwEKC
+wLnIPP9lvcwPjBTFBULfz+CMlgiMwPk9OJjVQkdqmQdwym67EFakk9r5IgM3vVw=
+=UFIU
+-----END PGP SIGNATURE-----
+
+--IJpNTDwzlM2Ie8A6--
