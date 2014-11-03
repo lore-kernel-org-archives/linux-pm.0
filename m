@@ -1,57 +1,59 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 02/12] drivers: mfd: Add support for Exynos PMU driver
-Date: Mon, 3 Nov 2014 15:26:04 +0000
-Message-ID: <20141103152604.GA10544@x1>
-References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
- <1414986790-11940-3-git-send-email-amit.daniel@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1414986790-11940-3-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, pankaj.dubey@samsung.com, Sangbeom Kim <sbkim73@samsung.com>, Samuel Ortiz <sameo@linux.intel.com>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v4 1/9] PM / Domains: Change prototype for the ->attach_dev() callback
+Date: Mon,  3 Nov 2014 16:34:48 +0100
+Message-ID: <1415028896-9005-2-git-send-email-geert+renesas@glider.be>
+References: <1415028896-9005-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from baptiste.telenet-ops.be ([195.130.132.51]:42082 "EHLO
+	baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752862AbaKCPfC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 10:35:02 -0500
+In-Reply-To: <1415028896-9005-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-On Mon, 03 Nov 2014, Amit Daniel Kachhap wrote:
+From: Ulf Hansson <ulf.hansson@linaro.org>
 
-> From: Pankaj Dubey <pankaj.dubey@samsung.com>
->=20
-> This patch moves Exynos PMU driver implementation from "arm/mach-exyn=
-os"
-> to "drivers/mfd". This driver is mainly used for setting misc bits of
-> register from PMU IP of Exynos SoC which will be required to configur=
-e
-> before Suspend/Resume. Currently all these settings are done in
-> "arch/arm/mach-exynos/pmu.c" but moving ahead for ARM64 based SoC sup=
-port,
-> there is a need of DT based implementation of PMU driver.
->=20
-> This driver uses already existing DT binding information.
->=20
-> CC: Sangbeom Kim <sbkim73@samsung.com>
-> CC: Samuel Ortiz <sameo@linux.intel.com>
-> CC: Lee Jones <lee.jones@linaro.org>
-> Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> ---
->  arch/arm/mach-exynos/Kconfig                       |    1 +
->  arch/arm/mach-exynos/Makefile                      |    2 +-
->  drivers/mfd/Kconfig                                |    9 +++++++++
->  drivers/mfd/Makefile                               |    1 +
->  .../mach-exynos/pmu.c =3D> drivers/mfd/exynos-pmu.c  |    0
->  5 files changed, 12 insertions(+), 1 deletion(-)
->  rename arch/arm/mach-exynos/pmu.c =3D> drivers/mfd/exynos-pmu.c (100=
-%)
+Convert the prototype to return and int. This is just an initial step,
+needed to support error handling.
 
-I thought we spoke about this already [1]?  What's changed?
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Kevin Hilman <khilman@linaro.org>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+Prerequisite
 
-[1] https://lkml.org/lkml/2014/4/29/193
+Ulf wrote:
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+This patch is intended as fix for 3.18 rc[n]. Why?
+
+There are other SOC specific patches around that adds genpd support and which
+implements the ->attach_dev() callback. To prevent having an "atomic" patch
+during the next release cycle, let's change the prototype now instead.
+
+Further patches will add the actual error handling in genpd and these can then
+be reviewed and tested thoroughly.
+---
+ include/linux/pm_domain.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 73e938b7e9374c68..d44f071988a861ff 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -72,7 +72,7 @@ struct generic_pm_domain {
+ 	bool max_off_time_changed;
+ 	bool cached_power_down_ok;
+ 	struct gpd_cpuidle_data *cpuidle_data;
+-	void (*attach_dev)(struct device *dev);
++	int (*attach_dev)(struct device *dev);
+ 	void (*detach_dev)(struct device *dev);
+ };
+ 
+-- 
+1.9.1
+
