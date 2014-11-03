@@ -1,71 +1,103 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v4 2/9] PM / Domains: Add DT bindings for power-on/off latencies
-Date: Mon,  3 Nov 2014 16:34:49 +0100
-Message-ID: <1415028896-9005-3-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v4 4/9] ARM: shmobile: R-Mobile: Use
+ generic_pm_domain.attach_dev() for pm_clk setup
+Date: Mon,  3 Nov 2014 16:34:51 +0100
+Message-ID: <1415028896-9005-5-git-send-email-geert+renesas@glider.be>
 References: <1415028896-9005-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from albert.telenet-ops.be ([195.130.137.90]:39568 "EHLO
-	albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753000AbaKCPfE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 10:35:04 -0500
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1415028896-9005-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Philipp Zabel <philipp.zabel@gmail.com>, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-PM domain power on/off-latencies are properties of the hardware.
-In legacy code, they're specified from platform code.
-On DT platforms, their values should come from DT.
+Use the just introduced genpd attach/detach callbacks to register the
+devices' module clocks, instead of doing it directly, to make it
+DT-proof.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Kevin Hilman <khilman@linaro.org>
 Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 v4:
   - Add Reviewed-by,
-  - Replace single latency value by list of latencies,
+  - Add missing pm_clk_create()/pm_clk_destroy() calls,
+  - Update for attach_dev() returning an error code again,
 v3:
-  - No changes,
+  - Update for callback signature changes,
 v2:
-  - Add Acked-by.
----
- Documentation/devicetree/bindings/power/power_domain.txt | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+  - New.
 
-diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-index 98c16672ab5f49e0..c4a4afb2ac3b0500 100644
---- a/Documentation/devicetree/bindings/power/power_domain.txt
-+++ b/Documentation/devicetree/bindings/power/power_domain.txt
-@@ -19,16 +19,26 @@ Required properties:
-    providing multiple PM domains (e.g. power controllers), but can be any value
-    as specified by device tree binding documentation of particular provider.
+---
+ arch/arm/mach-shmobile/pm-rmobile.c | 32 ++++++++++++++++++++++++++++++--
+ 1 file changed, 30 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+index 717e6413d29cb998..068608d5f54a9a64 100644
+--- a/arch/arm/mach-shmobile/pm-rmobile.c
++++ b/arch/arm/mach-shmobile/pm-rmobile.c
+@@ -101,6 +101,34 @@ static bool rmobile_pd_active_wakeup(struct device *dev)
+ 	return true;
+ }
  
-+Optional properties:
-+ - power-on-latency: List of power-on latencies (in ns), one for each PM
-+   domain. If all power-on latencies are identical, the list may be shortened
-+   to a single value.
-+ - power-off-latency: List of power-off latencies (in ns), one for each PM
-+   domain. If all power-off latencies are identical, the list may be shortened
-+   to a single value.
++static int rmobile_pd_attach_dev(struct device *dev)
++{
++	int error;
 +
- Example:
++	error = pm_clk_create(dev);
++	if (error) {
++		dev_err(dev, "pm_clk_create failed %d\n", error);
++		return error;
++	}
++
++	error = pm_clk_add(dev, NULL);
++	if (error) {
++		dev_err(dev, "pm_clk_add failed %d\n", error);
++		goto fail;
++	}
++
++	return 0;
++
++fail:
++	pm_clk_destroy(dev);
++	return error;
++}
++
++static void rmobile_pd_detach_dev(struct device *dev)
++{
++	pm_clk_destroy(dev);
++}
++
+ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+ {
+ 	struct generic_pm_domain *genpd = &rmobile_pd->genpd;
+@@ -112,6 +140,8 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+ 	genpd->dev_ops.active_wakeup	= rmobile_pd_active_wakeup;
+ 	genpd->power_off		= rmobile_pd_power_down;
+ 	genpd->power_on			= rmobile_pd_power_up;
++	genpd->attach_dev		= rmobile_pd_attach_dev;
++	genpd->detach_dev		= rmobile_pd_detach_dev;
+ 	__rmobile_pd_power_up(rmobile_pd, false);
+ }
  
- 	power: power-controller@12340000 {
- 		compatible = "foo,power-controller";
- 		reg = <0x12340000 0x1000>;
- 		#power-domain-cells = <1>;
-+		power-on-latency = <250000 400000 180000>;
-+		power-off-latency = <250000 400000 300000>;
- 	};
+@@ -130,8 +160,6 @@ void rmobile_add_device_to_domain_td(const char *domain_name,
+ 	struct device *dev = &pdev->dev;
  
--The node above defines a power controller that is a PM domain provider and
--expects one cell as its phandle argument.
-+The node above defines a power controller that is a PM domain provider for
-+3 PM domains, and expects one cell as its phandle argument.
+ 	__pm_genpd_name_add_device(domain_name, dev, td);
+-	if (pm_clk_no_clocks(dev))
+-		pm_clk_add(dev, NULL);
+ }
  
- ==PM domain consumers==
- 
+ void rmobile_add_devices_to_domains(struct pm_domain_device data[],
 -- 
 1.9.1
-
