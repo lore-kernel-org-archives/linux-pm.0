@@ -1,8 +1,8 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH 07/12] soc: samsung: pm_domain: Use compatible name for power
- domain name
-Date: Mon, 03 Nov 2014 09:23:05 +0530
-Message-ID: <1414986790-11940-8-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH 08/12] soc: samsung: pm_domain: Add a new parameter for power
+ configuration
+Date: Mon, 03 Nov 2014 09:23:06 +0530
+Message-ID: <1414986790-11940-9-git-send-email-amit.daniel@samsung.com>
 References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
@@ -11,67 +11,98 @@ To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, lin
 Cc: kgene.kim@samsung.com, pankaj.dubey@samsung.com, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds support for second optional compatible complate name. If
-this compatible name is present then this name will be used to create
-the Power Domain and not the DT node name.
-The benefit of this approach is to hook the notifier to the correct
-Power Domain.
+This patch adds a new optional parameter "pd-power-conf" to fetch the
+correct power configuration value. In exynos7 soc, this field is
+different from previous exynos soc's.
 
 Cc: Kukjin Kim <kgene.kim@samsung.com>
 Reviewed-by: Pankaj Dubey <pankaj.dubey@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- .../bindings/arm/exynos/power_domain.txt           |    8 ++++++++
- drivers/soc/samsung/pm_domains.c                   |    7 ++++++-
- 2 files changed, 14 insertions(+), 1 deletion(-)
+ .../bindings/arm/exynos/power_domain.txt           |    3 +++
+ drivers/soc/samsung/pm_domains.c                   |   13 +++++++++----
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
 diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-index 5599017..7250a5c 100644
+index 7250a5c..07e4ffe 100644
 --- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
 +++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-@@ -12,6 +12,8 @@ Required Properties:
-     must be 0.
+@@ -24,6 +24,8 @@ Optional Properties:
+ 	- pclkN, clkN: Pairs of parent of input clock and input clock to the
+ 		devices in this power domain. Maximum of 4 pairs (N = 0 to 3)
+ 		are supported currently.
++- pd-power-conf: This optional parameter provides the local power configuration
++	value for the power domain.
  
- Optional Properties:
-+- compatible: This is a second compatible name and gives the complete Power Domain
-+	name like "samsung,exynos7-pd-mfc"
- - clocks: List of clock handles. The parent clocks of the input clocks to the
- 	devices in this power domain are set to oscclk before power gating
- 	and restored back after powering on a domain. This is required for
-@@ -43,5 +45,11 @@ Example:
+ Node of a device using power domains must have a samsung,power-domain property
+ defined with a phandle to respective power domain.
+@@ -48,6 +50,7 @@ Example:
+ 	mfc_pd: power-domain@10044060 {
+ 		compatible = "samsung,exynos4210-pd", "samsung,exynos7-pd-mfc";
+ 		pd-offset = <0x4060>;
++		pd-power-conf = <0xf>;
  		#power-domain-cells = <0>;
  	};
  
-+	mfc_pd: power-domain@10044060 {
-+		compatible = "samsung,exynos4210-pd", "samsung,exynos7-pd-mfc";
-+		pd-offset = <0x4060>;
-+		#power-domain-cells = <0>;
-+	};
-+
- See Documentation/devicetree/bindings/power/power_domain.txt for description
- of consumer-side bindings.
 diff --git a/drivers/soc/samsung/pm_domains.c b/drivers/soc/samsung/pm_domains.c
-index 923eb57..e63d129 100644
+index e63d129..84a3f1f 100644
 --- a/drivers/soc/samsung/pm_domains.c
 +++ b/drivers/soc/samsung/pm_domains.c
-@@ -124,12 +124,17 @@ static int exynos_power_domain_probe(struct platform_device *pdev)
- 	for_each_compatible_node(np, NULL, "samsung,exynos4210-pd") {
- 		struct exynos_pm_domain *pd;
- 		int on, i;
-+		const char *name;
+@@ -34,6 +34,7 @@ struct exynos_pm_domain {
+ 	void __iomem *base;
+ 	char const *name;
+ 	bool is_off;
++	unsigned int pwr_conf_val;
+ 	struct generic_pm_domain pd;
+ 	struct clk *oscclk;
+ 	struct clk *clk[MAX_CLK_PER_DOMAIN];
+@@ -63,13 +64,13 @@ static int exynos_pd_power(struct generic_pm_domain *domain, bool power_on)
+ 		}
+ 	}
  
- 		pd = devm_kzalloc(&pdev->dev, sizeof(*pd), GFP_KERNEL);
- 		if (!pd)
- 			return -ENOMEM;
+-	pwr = power_on ? INT_LOCAL_PWR_EN : 0;
++	pwr = power_on ? pd->pwr_conf_val : 0;
+ 	__raw_writel(pwr, base);
  
--		pd->pd.name = kstrdup(np->name, GFP_KERNEL);
-+		if (of_property_read_string_index(np, "compatible", 1, &name)) {
-+			/* Second entry not found, use the node name*/
-+			name = np->name;
-+		}
-+		pd->pd.name = kstrdup(name, GFP_KERNEL);
- 		pd->name = pd->pd.name;
- 		if (of_property_read_u32(np, "pd-offset", &offset)) {
- 			pr_err("%s: failed to find offset for power domain\n",
+ 	/* Wait max 1ms */
+ 	timeout = 10;
+ 
+-	while ((__raw_readl(base + 0x4) & INT_LOCAL_PWR_EN) != pwr) {
++	while ((__raw_readl(base + 0x4) & pd->pwr_conf_val) != pwr) {
+ 		if (!timeout) {
+ 			op = (power_on) ? "enable" : "disable";
+ 			pr_err("Power domain %s %s failed\n", domain->name, op);
+@@ -111,7 +112,7 @@ static int exynos_power_domain_probe(struct platform_device *pdev)
+ 	struct device_node *np;
+ 	struct pmu_dev_client_data *pdata = NULL;
+ 	void __iomem *pmu_base_addr;
+-	unsigned int offset;
++	unsigned int offset, pwr_conf;
+ 
+ 	pdata = pdev->dev.platform_data;
+ 	if (!pdata) {
+@@ -141,9 +142,13 @@ static int exynos_power_domain_probe(struct platform_device *pdev)
+ 					__func__);
+ 			return -EINVAL;
+ 		}
++		if (of_property_read_u32(np, "pd-power-conf", &pwr_conf))
++			pwr_conf = INT_LOCAL_PWR_EN;
++
+ 		pd->base = pmu_base_addr + offset;
+ 		pd->pd.power_off = exynos_pd_power_off;
+ 		pd->pd.power_on = exynos_pd_power_on;
++		pd->pwr_conf_val = pwr_conf;
+ 
+ 		pd->oscclk = of_clk_get_by_name(np, "oscclk");
+ 		if (IS_ERR(pd->oscclk))
+@@ -169,7 +174,7 @@ static int exynos_power_domain_probe(struct platform_device *pdev)
+ 			clk_put(pd->oscclk);
+ 
+ no_clk:
+-		on = __raw_readl(pd->base + 0x4) & INT_LOCAL_PWR_EN;
++		on = __raw_readl(pd->base + 0x4) & pwr_conf;
+ 
+ 		pm_genpd_init(&pd->pd, NULL, !on);
+ 		of_genpd_add_provider_simple(np, &pd->pd);
 -- 
 1.7.9.5
