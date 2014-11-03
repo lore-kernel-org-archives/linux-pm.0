@@ -1,248 +1,112 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH 03/12] PM / Domains: Add notifier support for power domain
- transitions
-Date: Mon, 03 Nov 2014 09:23:01 +0530
-Message-ID: <1414986790-11940-4-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH 04/12] mfd: exynos-pmu: Register exynos-pmu driver as a mfd
+ driver
+Date: Mon, 03 Nov 2014 09:23:02 +0530
+Message-ID: <1414986790-11940-5-git-send-email-amit.daniel@samsung.com>
 References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: kgene.kim@samsung.com, pankaj.dubey@samsung.com, Amit Daniel Kachhap <amit.daniel@samsung.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: kgene.kim@samsung.com, pankaj.dubey@samsung.com, Amit Daniel Kachhap <amit.daniel@samsung.com>, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-These power domain transition notifiers will assist in carrying
-out some activity associated with domain power on/off such as
-some registers which may lose its contents and need save/restore
-across domain power off/on.
+This can be used later to probe and configure PMU client drivers
+like pm_domain etc.
+A global structure pmu_dev_client_data is created to pass exynos-pmu
+platform data to all the clients. Currently the data passed is register
+base addresses.
+Although the exynos-pmu driver also provides the sysreg interfaces to
+provide register base addresses but this is costlier than readl/writel,
+so both the interfaces are provided to mfd based exynos-pmu client
+drivers.
 
-4 type of notifications are added,
-GPD_OFF_PRE     - GPD state before power off
-GPD_OFF_POST    - GPD state after power off
-GPD_ON_PRE      - GPD state before power off
-GPD_ON_POST     - GPD state after power off
-
-3 notfication API's are exported.
-1) int genpd_register_notifier(struct notifier_block *nb, char *pd_name);
-2) int genpd_unregister_notifier(struct notifier_block *nb, char *pd_name);
-3) void genpd_invoke_transition_notifier(struct generic_pm_domain *genpd,
-			enum gpd_on_off_state state);
-
-In this approach the notifiers are registered/unregistered with pd name.
-The actual invoking of the notfiers will be done by the platform implementing
-power domain enable/disable low level handlers according to the above
-defined notification types. This approach will considerably reduce the
-number of call to notifiers as compared to calling always from core
-powerdomain subsystem.
-
-Also the registered domain's will be managed inside a cache list and not
-part of the genpd structure. This will help in registration of notifiers from
-subsystems (such as clock) even when the PD subsystem is still not initialised.
-This list also filters out the unregistered pd's requesting notification.
-
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Lee Jones <lee.jones@linaro.org>
 Reviewed-by: Pankaj Dubey <pankaj.dubey@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- drivers/base/power/domain.c |  112 ++++++++++++++++++++++++++++++++++++++++++-
- include/linux/pm_domain.h   |   31 ++++++++++++
- 2 files changed, 142 insertions(+), 1 deletion(-)
+ drivers/mfd/exynos-pmu.c               |   25 +++++++++++++++++++++++++
+ include/linux/mfd/samsung/exynos-pmu.h |    5 +++++
+ 2 files changed, 30 insertions(+)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 40bc2f4..e05045e 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -46,10 +46,19 @@
- 	__retval;								\
- })
+diff --git a/drivers/mfd/exynos-pmu.c b/drivers/mfd/exynos-pmu.c
+index 07019f0..c46f3f5 100644
+--- a/drivers/mfd/exynos-pmu.c
++++ b/drivers/mfd/exynos-pmu.c
+@@ -11,12 +11,19 @@
  
-+struct cache_notify_domains {
-+	char *name;
-+	/* Node in the cache pm domain name list */
-+	struct list_head cache_list_node;
+ #include <linux/io.h>
+ #include <linux/of.h>
++#include <linux/of_address.h>
+ #include <linux/platform_device.h>
++#include <linux/mfd/core.h>
+ #include <linux/mfd/samsung/exynos-regs-pmu.h>
+ #include <linux/mfd/samsung/exynos-pmu.h>
+ 
+ #define PMU_TABLE_END	(-1U)
+ 
++enum pmu_mfd_list {
++	MFD_POWER_DOMAIN,
++	MFD_MAX,
 +};
 +
- static LIST_HEAD(gpd_list);
- static DEFINE_MUTEX(gpd_list_lock);
-+static LIST_HEAD(domain_notify_list);
-+static DEFINE_MUTEX(domain_notify_list_lock);
-+static BLOCKING_NOTIFIER_HEAD(genpd_transition_notifier_list);
- 
--static struct generic_pm_domain *pm_genpd_lookup_name(const char *domain_name)
-+struct generic_pm_domain *pm_genpd_lookup_name(const char *domain_name)
- {
- 	struct generic_pm_domain *genpd = NULL, *gpd;
- 
-@@ -66,6 +75,7 @@ static struct generic_pm_domain *pm_genpd_lookup_name(const char *domain_name)
- 	mutex_unlock(&gpd_list_lock);
- 	return genpd;
- }
-+EXPORT_SYMBOL_GPL(pm_genpd_lookup_name);
- 
- struct generic_pm_domain *dev_to_genpd(struct device *dev)
- {
-@@ -1908,6 +1918,106 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 	mutex_unlock(&gpd_list_lock);
- }
- 
-+/**
-+ * genpd_register_notifier - Register a PM domain for future notification.
-+ * @nb: notification block containing notification handle.
-+ * @pd_name: PM domain name.
-+ */
-+int genpd_register_notifier(struct notifier_block *nb, char *pd_name)
-+{
-+	int ret;
-+	struct cache_notify_domains *entry;
-+
-+	if (!pd_name)
-+		return -EINVAL;
-+
-+	/* Search if the pd is already registered */
-+	mutex_lock(&domain_notify_list_lock);
-+	list_for_each_entry(entry, &domain_notify_list, cache_list_node) {
-+		if (!strcmp(entry->name, pd_name))
-+			break;
-+	}
-+	mutex_unlock(&domain_notify_list_lock);
-+
-+	if (entry) {
-+		pr_err("%s: pd already exists\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
-+	if (!entry)
-+		return -ENOMEM;
-+
-+	entry->name = pd_name;
-+
-+	mutex_lock(&domain_notify_list_lock);
-+	list_add(&entry->cache_list_node, &domain_notify_list);
-+	mutex_unlock(&domain_notify_list_lock);
-+	ret = blocking_notifier_chain_register(
-+				&genpd_transition_notifier_list, nb);
-+	return ret;
-+}
-+
-+/**
-+ * genpd_unregister_notifier - Un-register a PM domain for future notification.
-+ * @nb: notification block containing notification handle.
-+ * @pd_name: PM domain name.
-+ */
-+int genpd_unregister_notifier(struct notifier_block *nb, char *pd_name)
-+{
-+	int ret;
-+	struct cache_notify_domains *entry;
-+
-+	mutex_lock(&domain_notify_list_lock);
-+	list_for_each_entry(entry, &domain_notify_list, cache_list_node) {
-+		if (!strcmp(entry->name, pd_name))
-+			break;
-+	}
-+	if (!entry) {
-+		mutex_unlock(&domain_notify_list_lock);
-+		pr_err("%s: Invalid pd name\n", __func__);
-+		return -EINVAL;
-+	}
-+	list_del(&entry->cache_list_node);
-+	mutex_unlock(&domain_notify_list_lock);
-+	ret = blocking_notifier_chain_unregister(
-+				&genpd_transition_notifier_list, nb);
-+	return ret;
-+}
-+
-+/**
-+ * genpd_invoke_transition_notifier - Calls the matching notification handler.
-+ * @genpd: generic power domain structure.
-+ * @state: can be of type - GPD_OFF_PRE/GPD_OFF_POST/GPD_ON_PRE/GPD_ON_POST.
-+ */
-+void genpd_invoke_transition_notifier(struct generic_pm_domain *genpd,
-+			enum gpd_on_off_state state)
-+{
-+	struct cache_notify_domains *entry;
-+
-+	if (!genpd) {
-+		pr_err("Invalid genpd parameter\n");
-+		return;
-+	}
-+
-+	if (state != GPD_OFF_PRE || state != GPD_OFF_POST
-+			|| state != GPD_ON_PRE || state != GPD_ON_POST) {
-+		pr_err("Invalid state parameter\n");
-+		return;
-+	}
-+
-+	mutex_lock(&domain_notify_list_lock);
-+	list_for_each_entry(entry, &domain_notify_list, cache_list_node) {
-+		if (!strcmp(entry->name, genpd->name))
-+			break;
-+	}
-+	mutex_unlock(&domain_notify_list_lock);
-+	if (!entry) /* Simply ignore */
-+		return;
-+
-+	blocking_notifier_call_chain(&genpd_transition_notifier_list, state,
-+				genpd);
-+}
- #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
- /*
-  * Device Tree based PM domain providers.
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 73e938b..659997f 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -25,6 +25,13 @@ enum gpd_status {
- 	GPD_STATE_POWER_OFF,	/* PM domain is off */
+ struct exynos_pmu_conf {
+ 	unsigned int offset;
+ 	unsigned int val[NUM_SYS_POWERDOWN];
+@@ -33,6 +40,8 @@ struct exynos_pmu_data {
+ struct exynos_pmu_context {
+ 	struct device *dev;
+ 	const struct exynos_pmu_data *pmu_data;
++	struct mfd_cell cells[MFD_MAX];
++	struct pmu_dev_client_data mfd_data;
  };
  
-+enum gpd_on_off_state {
-+	GPD_OFF_PRE = 0,	/* GPD state before power off */
-+	GPD_OFF_POST,		/* GPD state after power off */
-+	GPD_ON_PRE,		/* GPD state before power on */
-+	GPD_ON_POST,		/* GPD state after power on */
+ static void __iomem *pmu_base_addr;
+@@ -482,6 +491,8 @@ static int exynos_pmu_probe(struct platform_device *pdev)
+ 	const struct of_device_id *match;
+ 	struct device *dev = &pdev->dev;
+ 	struct resource *res;
++	struct mfd_cell *cell;
++	int ret;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	pmu_base_addr = devm_ioremap_resource(dev, res);
+@@ -506,6 +517,20 @@ static int exynos_pmu_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, pmu_context);
+ 
++	/* Initialize and invoke mfd clients */
++	cell = &pmu_context->cells[MFD_POWER_DOMAIN];
++	cell->name = "exynos-pmu-domain";
++	pmu_context->mfd_data.mem_base_addr = pmu_base_addr;
++	pmu_context->mfd_data.mem_size = resource_size(res);
++	cell->platform_data = &pmu_context->mfd_data;
++	cell->pdata_size = sizeof(pmu_context->mfd_data);
++	ret = mfd_add_devices(&pdev->dev, pdev->id, pmu_context->cells, MFD_MAX,
++				NULL, 0, NULL);
++	if (ret) {
++		dev_err(&pdev->dev, "fail to register client devices\n");
++		return ret;
++	}
++
+ 	dev_dbg(dev, "Exynos PMU Driver probe done\n");
+ 	return 0;
+ }
+diff --git a/include/linux/mfd/samsung/exynos-pmu.h b/include/linux/mfd/samsung/exynos-pmu.h
+index a2ab0d5..d2f4083 100644
+--- a/include/linux/mfd/samsung/exynos-pmu.h
++++ b/include/linux/mfd/samsung/exynos-pmu.h
+@@ -19,6 +19,11 @@ enum sys_powerdown {
+ 	NUM_SYS_POWERDOWN,
+ };
+ 
++struct pmu_dev_client_data {
++	void __iomem *mem_base_addr;
++	unsigned int mem_size;
 +};
 +
- struct dev_power_governor {
- 	bool (*power_down_ok)(struct dev_pm_domain *domain);
- 	bool (*stop_ok)(struct device *dev);
-@@ -148,6 +155,12 @@ extern int pm_genpd_name_poweron(const char *domain_name);
+ extern void exynos_sys_powerdown_conf(enum sys_powerdown mode);
  
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-+
-+struct generic_pm_domain *pm_genpd_lookup_name(const char *domain_name);
-+int genpd_register_notifier(struct notifier_block *nb, char *pd_name);
-+int genpd_unregister_notifier(struct notifier_block *nb, char *pd_name);
-+void genpd_invoke_transition_notifier(struct generic_pm_domain *genpd,
-+			enum gpd_on_off_state state);
- #else
- 
- static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
-@@ -219,6 +232,24 @@ static inline int pm_genpd_name_poweron(const char *domain_name)
- {
- 	return -ENOSYS;
- }
-+static inline struct
-+generic_pm_domain *pm_genpd_lookup_name(const char *domain_name)
-+{
-+	return NULL;
-+}
-+static inline int
-+genpd_register_notifier(struct notifier_block *nb, char *pd_name)
-+{
-+	return 0;
-+}
-+static inline int
-+genpd_unregister_notifier(struct notifier_block *nb, char *pd_name)
-+{
-+	return 0;
-+}
-+static inline void
-+genpd_invoke_transition_notifier(struct generic_pm_domain *genpd,
-+			enum gpd_on_off_state state) { }
- #define simple_qos_governor NULL
- #define pm_domain_always_on_gov NULL
- #endif
+ #endif /* __EXYNOS_PMU_H */
 -- 
 1.7.9.5
