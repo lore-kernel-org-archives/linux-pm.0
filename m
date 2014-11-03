@@ -1,89 +1,165 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH 00/12] soc: samsung: Modify and enhance power domain driver
-Date: Mon, 03 Nov 2014 09:22:58 +0530
-Message-ID: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:17541 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750706AbaKCD7W (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 2 Nov 2014 22:59:22 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 01/12] ARM: EXYNOS: Move pmu specific header files under
+ "linux/mfd/samsung"
+Date: Mon, 03 Nov 2014 09:22:59 +0530
+Message-ID: <1414986790-11940-2-git-send-email-amit.daniel@samsung.com>
+References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: kgene.kim@samsung.com, pankaj.dubey@samsung.com, Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: kgene.kim@samsung.com, pankaj.dubey@samsung.com, Sangbeom Kim <sbkim73@samsung.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch series[3 - 12] performs several implementations as described below,
+From: Pankaj Dubey <pankaj.dubey@samsung.com>
 
-1) Converts power domain driver to platform driver.
-2) Registers this driver as MFD client driver.
-3) Moves them into driver/soc/samsung folder.
-4) Add new power domain notifier feature.
-5) Uses those notfier from exynos clk.
-6) Adds parent power domain and some other features mostly for exynos7 platforms.
+Moving Exynos PMU specific header file into "include/linux/mfd/samsung"
+thus updated affected files under "mach-exynos" to use new location of
+these header files.
 
-This patch will change the DT representation of all the exynos power domain
-DT nodes which will be posted as a new patch series.
-
-This patch has dependency on following patches posted earlier and most of them are
-already accepted or in final stages of review.
-1) http://www.spinics.net/lists/linux-samsung-soc/msg37050.html
-2) https://lkml.org/lkml/2014/10/6/581
-
-Patches 1-2 are from Pankaj and have been posted earlier.
-(http://lists.infradead.org/pipermail/linux-arm-kernel/2014-July/271555.html
-They are kept in this patch series for completeness after rebase fixes.
-
-This complete patch series is rebased on linux-next as it involves many
-subsystems.
-
-Amit Daniel Kachhap (10):
-  PM / Domains: Add notifier support for power domain transitions
-  mfd: exynos-pmu: Register exynos-pmu driver as a mfd driver
-  arm: exynos: Add platform driver support for power domain driver
-  soc: exynos: Move exynos power domain file to driver/soc/samsung
-    folder
-  soc: samsung: pm_domain: Use compatible name for power domain name
-  soc: samsung: pm_domain: Add a new parameter for power configuration
-  soc: samsung: pm_domain: Add support for parent power domain
-  soc: samsung: pm_domain: Use the recently added PM Domain notifiers
-  clk: samsung: save and restore clock registers for power domain
-  arm64: Kconfig: Enable PM_GENERIC_DOMAINS for exynos7
-
-Pankaj Dubey (2):
-  ARM: EXYNOS: Move pmu specific header files under "linux/mfd/samsung"
-  drivers: mfd: Add support for Exynos PMU driver
-
- .../bindings/arm/exynos/power_domain.txt           |   21 +++-
- arch/arm/mach-exynos/Kconfig                       |    1 +
- arch/arm/mach-exynos/Makefile                      |    3 +-
+CC: Sangbeom Kim <sbkim73@samsung.com>
+CC: Samuel Ortiz <sameo@linux.intel.com>
+CC: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
+Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+---
  arch/arm/mach-exynos/exynos.c                      |    2 +-
  arch/arm/mach-exynos/mcpm-exynos.c                 |    2 +-
  arch/arm/mach-exynos/platsmp.c                     |    2 +-
- arch/arm/mach-exynos/pm.c                          |    5 +-
- arch/arm/mach-exynos/suspend.c                     |    3 +-
- arch/arm64/Kconfig                                 |    1 +
- drivers/base/power/domain.c                        |  112 +++++++++++++++++-
- drivers/clk/samsung/clk.c                          |   66 +++++++++++
- drivers/clk/samsung/clk.h                          |   14 +++
- drivers/mfd/Kconfig                                |    9 ++
- drivers/mfd/Makefile                               |    1 +
- .../mach-exynos/pmu.c => drivers/mfd/exynos-pmu.c  |   30 ++++-
- drivers/soc/Kconfig                                |    1 +
- drivers/soc/Makefile                               |    1 +
- drivers/soc/samsung/Kconfig                        |   11 ++
- drivers/soc/samsung/Makefile                       |    1 +
- .../soc/samsung}/pm_domains.c                      |  124 ++++++++++++++++----
- .../linux/mfd/samsung}/exynos-pmu.h                |    5 +
+ arch/arm/mach-exynos/pm.c                          |    5 +++--
+ arch/arm/mach-exynos/pmu.c                         |    5 ++---
+ arch/arm/mach-exynos/suspend.c                     |    3 ++-
+ .../linux/mfd/samsung}/exynos-pmu.h                |    0
  .../linux/mfd/samsung/exynos-regs-pmu.h            |    0
- include/linux/pm_domain.h                          |   31 +++++
- 23 files changed, 409 insertions(+), 37 deletions(-)
- rename arch/arm/mach-exynos/pmu.c => drivers/mfd/exynos-pmu.c (96%)
- create mode 100644 drivers/soc/samsung/Kconfig
- create mode 100644 drivers/soc/samsung/Makefile
- rename {arch/arm/mach-exynos => drivers/soc/samsung}/pm_domains.c (51%)
- rename {arch/arm/mach-exynos => include/linux/mfd/samsung}/exynos-pmu.h (86%)
+ 8 files changed, 10 insertions(+), 9 deletions(-)
+ rename {arch/arm/mach-exynos => include/linux/mfd/samsung}/exynos-pmu.h (100%)
  rename arch/arm/mach-exynos/regs-pmu.h => include/linux/mfd/samsung/exynos-regs-pmu.h (100%)
 
+diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+index a487e59..f6b8cb1 100644
+--- a/arch/arm/mach-exynos/exynos.c
++++ b/arch/arm/mach-exynos/exynos.c
+@@ -20,6 +20,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/pm_domain.h>
+ #include <linux/irqchip.h>
++#include <linux/mfd/samsung/exynos-regs-pmu.h>
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/hardware/cache-l2x0.h>
+@@ -29,7 +30,6 @@
+ 
+ #include "common.h"
+ #include "mfc.h"
+-#include "regs-pmu.h"
+ #include "regs-sys.h"
+ 
+ void __iomem *pmu_base_addr;
+diff --git a/arch/arm/mach-exynos/mcpm-exynos.c b/arch/arm/mach-exynos/mcpm-exynos.c
+index dc9a764..5326b67 100644
+--- a/arch/arm/mach-exynos/mcpm-exynos.c
++++ b/arch/arm/mach-exynos/mcpm-exynos.c
+@@ -15,12 +15,12 @@
+ #include <linux/delay.h>
+ #include <linux/io.h>
+ #include <linux/of_address.h>
++#include <linux/mfd/samsung/exynos-regs-pmu.h>
+ 
+ #include <asm/cputype.h>
+ #include <asm/cp15.h>
+ #include <asm/mcpm.h>
+ 
+-#include "regs-pmu.h"
+ #include "common.h"
+ 
+ #define EXYNOS5420_CPUS_PER_CLUSTER	4
+diff --git a/arch/arm/mach-exynos/platsmp.c b/arch/arm/mach-exynos/platsmp.c
+index adb36a8..16d6acd 100644
+--- a/arch/arm/mach-exynos/platsmp.c
++++ b/arch/arm/mach-exynos/platsmp.c
+@@ -20,6 +20,7 @@
+ #include <linux/smp.h>
+ #include <linux/io.h>
+ #include <linux/of_address.h>
++#include <linux/mfd/samsung/exynos-regs-pmu.h>
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/cp15.h>
+@@ -30,7 +31,6 @@
+ #include <mach/map.h>
+ 
+ #include "common.h"
+-#include "regs-pmu.h"
+ 
+ extern void exynos4_secondary_startup(void);
+ 
+diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+index 86f3ecd..8e0ffc3 100644
+--- a/arch/arm/mach-exynos/pm.c
++++ b/arch/arm/mach-exynos/pm.c
+@@ -18,6 +18,9 @@
+ #include <linux/cpu_pm.h>
+ #include <linux/io.h>
+ #include <linux/err.h>
++#include <linux/clk.h>
++#include <linux/mfd/samsung/exynos-regs-pmu.h>
++#include <linux/mfd/samsung/exynos-pmu.h>
+ 
+ #include <asm/firmware.h>
+ #include <asm/smp_scu.h>
+@@ -26,8 +29,6 @@
+ #include <plat/pm-common.h>
+ 
+ #include "common.h"
+-#include "exynos-pmu.h"
+-#include "regs-pmu.h"
+ #include "regs-sys.h"
+ 
+ static inline void __iomem *exynos_boot_vector_addr(void)
+diff --git a/arch/arm/mach-exynos/pmu.c b/arch/arm/mach-exynos/pmu.c
+index 1993e08..07019f0 100644
+--- a/arch/arm/mach-exynos/pmu.c
++++ b/arch/arm/mach-exynos/pmu.c
+@@ -12,9 +12,8 @@
+ #include <linux/io.h>
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+-
+-#include "exynos-pmu.h"
+-#include "regs-pmu.h"
++#include <linux/mfd/samsung/exynos-regs-pmu.h>
++#include <linux/mfd/samsung/exynos-pmu.h>
+ 
+ #define PMU_TABLE_END	(-1U)
+ 
+diff --git a/arch/arm/mach-exynos/suspend.c b/arch/arm/mach-exynos/suspend.c
+index f5d9773..df979f6 100644
+--- a/arch/arm/mach-exynos/suspend.c
++++ b/arch/arm/mach-exynos/suspend.c
+@@ -20,6 +20,8 @@
+ #include <linux/io.h>
+ #include <linux/irqchip/arm-gic.h>
+ #include <linux/err.h>
++#include <linux/mfd/samsung/exynos-pmu.h>
++#include <linux/mfd/samsung/exynos-regs-pmu.h>
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/hardware/cache-l2x0.h>
+@@ -31,7 +33,6 @@
+ #include <plat/regs-srom.h>
+ 
+ #include "common.h"
+-#include "regs-pmu.h"
+ #include "regs-sys.h"
+ 
+ #define S5P_CHECK_SLEEP 0x00000BAD
+diff --git a/arch/arm/mach-exynos/exynos-pmu.h b/include/linux/mfd/samsung/exynos-pmu.h
+similarity index 100%
+rename from arch/arm/mach-exynos/exynos-pmu.h
+rename to include/linux/mfd/samsung/exynos-pmu.h
+diff --git a/arch/arm/mach-exynos/regs-pmu.h b/include/linux/mfd/samsung/exynos-regs-pmu.h
+similarity index 100%
+rename from arch/arm/mach-exynos/regs-pmu.h
+rename to include/linux/mfd/samsung/exynos-regs-pmu.h
 -- 
 1.7.9.5
-
