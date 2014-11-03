@@ -1,84 +1,149 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [RFC 1/2] PM / Domains: Power on domain early during system resume
-Date: Mon, 03 Nov 2014 08:13:17 -0800
-Message-ID: <7hbnoojm8y.fsf@deeprootsystems.com>
-References: <1414072090-11293-1-git-send-email-k.kozlowski@samsung.com>
-	<1414072090-11293-2-git-send-email-k.kozlowski@samsung.com>
-	<7hk33iahvu.fsf@deeprootsystems.com>
-	<1414654594.5114.8.camel@AMDC1943> <54521A8F.5070808@samsung.com>
+From: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH v8 1/5] PM / Runtime: Add getter for querying the IRQ
+ safe option
+Date: Mon, 3 Nov 2014 21:57:28 +0530
+Message-ID: <20141103162728.GB1870@intel.com>
+References: <1413795888-18559-1-git-send-email-k.kozlowski@samsung.com>
+ <20141031142241.GA17547@amd>
+ <1414766416.6537.6.camel@AMDC1943>
+ <3452823.YQ5FR2FtKz@avalon>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f177.google.com ([209.85.192.177]:64332 "EHLO
-	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752247AbaKCQNV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 11:13:21 -0500
-Received: by mail-pd0-f177.google.com with SMTP id v10so11565728pde.8
-        for <linux-pm@vger.kernel.org>; Mon, 03 Nov 2014 08:13:20 -0800 (PST)
-In-Reply-To: <54521A8F.5070808@samsung.com> (Andrzej Hajda's message of "Thu,
-	30 Oct 2014 12:01:35 +0100")
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <3452823.YQ5FR2FtKz@avalon>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Andrzej Hajda <a.hajda@samsung.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Inki Dae <inki.dae@samsung.com>, Joonyoung Shim <jy0922.shim@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, David Airlie <airlied@linux.ie>, Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Andrzej Hajda <a.hajda@samsung.com> writes:
+On Sat, Nov 01, 2014 at 02:29:42AM +0200, Laurent Pinchart wrote:
+> Hi Krzysztof,
+>=20
+> On Friday 31 October 2014 15:40:16 Krzysztof Kozlowski wrote:
+> > On pi=C4=85, 2014-10-31 at 15:22 +0100, Pavel Machek wrote:
+> > > On Fri 2014-10-31 10:14:55, Krzysztof Kozlowski wrote:
+> > >> On pon, 2014-10-20 at 11:04 +0200, Krzysztof Kozlowski wrote:
+> > >>> Add a simple getter pm_runtime_is_irq_safe() for querying wheth=
+er
+> > >>> runtime PM IRQ safe was set or not.
+> > >>>=20
+> > >>> Various bus drivers implementing runtime PM may use choose to s=
+uspend
+> > >>> differently based on IRQ safeness status of child driver (e.g. =
+do not
+> > >>> unprepare the clock if IRQ safe is not set).
+> > >>>=20
+> > >>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > >>> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > >>=20
+> > >> Rafael, Len, Pavel,
+> > >>=20
+> > >> Is proposed API ok? Do you have any comments?
+> > >>=20
+> > >> I'll upload whole patchset to Russell's patch tracking system. H=
+owever
+> > >> an ack from PM maintainer is probably needed.
+> > >=20
+> > > I don't like the API. Having callbacks work in different context =
+(irq
+> > > / noirq) based on what another function reports is ugly.
+> > >=20
+> > > What is the penalty if we always decide callbacks are not IRQ saf=
+e?
+> >=20
+> > Then pm_runtime_get_sync() could not be called in atomic context. T=
+he
+> > pl330 runtime PM would have to be completely reworked because one
+> > pm_runtime_get_sync() is called in device_issue_pending which canno=
+t
+> > sleep (at least in non preemptible kernels). Probably this can be s=
+olved
+> > some way...
+>=20
+> Many other drivers suffer from the same problem. While I won't reject=
+ your=20
+> proposed fix, I would prefer a more generic approach.
+>=20
+> One option that has been discussed previously was to use a work queue=
+ to delay=20
+> starting the DMA transfer to an interruptible context where=20
+> pm_runtime_get_sync() could be called. However, as Russell pointed ou=
+t [1],=20
+> even that won't work in all cases as the DMA slave might need the tra=
+nsfer to=20
+> be started before enabling part of its hardware (OMAP audio seem to b=
+e such a=20
+> case).
+>=20
+> I've heard a rumor of a possible DMA engine rework to forbid calling =
+the=20
+> descriptor preparation API from atomic context. This could be used as=
+ a base=20
+> to implement runtime PM, as DMA slave drivers should not prepare desc=
+riptors=20
+> if they don't need to use them. However that's a long term plan, and =
+we need a=20
+> solution sooner than that.
 
-> On 10/30/2014 08:36 AM, Krzysztof Kozlowski wrote:
->> On =C5=9Bro, 2014-10-29 at 10:46 -0700, Kevin Hilman wrote:
->>> Krzysztof Kozlowski <k.kozlowski@samsung.com> writes:
->>>
->>>> When resuming the system the power domain has to be powered on ear=
-ly so
->>>> any runtime PM aware devices could resume.
->>>>
->>>> This fixes following scenario reproduced on Exynos DRM:
->>>> 1. Power domain is off before suspending the system.
->>>> 2. System is suspended to RAM.
->>>> 3. Resuming starts. The Exynos DRM driver resume callback is calle=
-d.
->>>> 4. The Exynos DRM driver calls drm_helper_resume_force_mode which =
-turns
->>>>    the screen on by calling exynos_dsi_dpms with DRM_MODE_DPMS_ON.
->>> Dumb Q: if the device (and power domain) were off before (and durin=
-g)
->>> suspend, why are they being resumed?
->>>
->>> Shouldn't the resume path restore things to the same state they wer=
-e
->>> before suspend?
->> One could expect that... but the Exynos DRM driver behaves different=
-ly
->> (and some other drivers also). In resume method it calls
->> drm_helper_resume_force_mode() which forces restoring mode setting
->> configuration. Apparently setting a mode needs DPMS on:
->> static void exynos_drm_crtc_commit(struct drm_crtc *crtc)
->> {
->> 	...
->> 	exynos_drm_crtc_dpms(crtc, DRM_MODE_DPMS_ON);
->> 	...
->>
->> The previous DPMS status (status during suspend) is completely ignor=
-ed
->> here.
->
-> Suspend callback switches off all connectors (thus all other devs in
-> their pipeline) by calling dpms_off,
-> in restore callback all devs are restored to their previous state by
-> calling appropriate dpms.
-> So I guess drm_helper_resume_force_mode() call at the end of resume i=
-s
-> incorrect.
+Well it is not a rumour :)
 
-Though I'm not terribly familiar with DRM, it seems incorrect because I
-expect resume to restore the state of things when suspend happened, not
-forcibly resume everything.
+I have been contemplating that now that async_tx will be killed so we d=
+ont
+have to worry about that usage. For the slave dma usage, we can change =
+the
+prepare API to be non atomic. I think the users will be okay with appro=
+ach.
+This way drivers can use runtime pm calls in prepare.
 
-> On the other side it is present in many other drivers, so I am also
-> little bit confused.
+--=20
+~Vinod
 
-Many other DRM drivers?  or other drivers too?
+>=20
+> I've been toying with the idea of adding explicit open/close (or what=
+ever we=20
+> would call them) operations to the DMA engine API. Those would be use=
+d by DMA=20
+> slave drivers to signal that they will start/stop using the DMA engin=
+e.
+>=20
+> If (1) we must start the DMA synchronously with a DMA slave call, (2)=
+ need to=20
+> sleep to handle PM, and (3) don't want to keep the DMA engine powered=
+ for as=20
+> long as one channel is requested, then we need to turn at least prepa=
+ration as=20
+> not callable in atomic context, or introduce a new operation.
+>=20
+> [1] http://www.spinics.net/lists/dmaengine/msg01548.html
+>=20
+> > >>> --- a/Documentation/power/runtime_pm.txt
+> > >>> +++ b/Documentation/power/runtime_pm.txt
+> > >>>=20
+> > >>> @@ -468,6 +468,10 @@ drivers/base/power/runtime.c and
+> > >>> include/linux/pm_runtime.h:
+> > >>>      - set the power.irq_safe flag for the device, causing the
+> > >>>      runtime-PM
+> > >>>     =20
+> > >>>        callbacks to be invoked with interrupts off
+> > >>>=20
+> > >>> +  bool pm_runtime_is_irq_safe(struct device *dev);
+> > >>> +    - return true if power.irq_safe flag was set for the devic=
+e,
+> > >>> causing
+> > >>> +      the runtime-PM callbacks to be invoked with interrupts o=
+ff
+> > >>> +
+> > >>>=20
+> > >>>    void pm_runtime_mark_last_busy(struct device *dev);
+> > >>>   =20
+> > >>>      - set the power.last_busy field to the current time
+>=20
+> --=20
+> Regards,
+>=20
+> Laurent Pinchart
+>=20
 
-Kevin
-
+--=20
