@@ -1,211 +1,84 @@
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH 2/4] powerpc/powernv: Enable Offline CPUs to enter deep idle states
-Date: Mon,  3 Nov 2014 21:38:28 +0530
-Message-ID: <1415030910-5799-3-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1415030910-5799-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1415030910-5799-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [RFC 1/2] PM / Domains: Power on domain early during system resume
+Date: Mon, 03 Nov 2014 08:13:17 -0800
+Message-ID: <7hbnoojm8y.fsf@deeprootsystems.com>
+References: <1414072090-11293-1-git-send-email-k.kozlowski@samsung.com>
+	<1414072090-11293-2-git-send-email-k.kozlowski@samsung.com>
+	<7hk33iahvu.fsf@deeprootsystems.com>
+	<1414654594.5114.8.camel@AMDC1943> <54521A8F.5070808@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:64332 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752247AbaKCQNV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 11:13:21 -0500
+Received: by mail-pd0-f177.google.com with SMTP id v10so11565728pde.8
+        for <linux-pm@vger.kernel.org>; Mon, 03 Nov 2014 08:13:20 -0800 (PST)
+In-Reply-To: <54521A8F.5070808@samsung.com> (Andrzej Hajda's message of "Thu,
+	30 Oct 2014 12:01:35 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andrzej Hajda <a.hajda@samsung.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Inki Dae <inki.dae@samsung.com>, Joonyoung Shim <jy0922.shim@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, David Airlie <airlied@linux.ie>, Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-From: "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>
+Andrzej Hajda <a.hajda@samsung.com> writes:
 
-The secondary threads should enter deep idle states so as to gain maximum
-powersavings when the entire core is offline. To do so the offline path
-must be made aware of the available deepest idle state. Hence probe the
-device tree for the possible idle states in powernv core code and
-expose the deepest idle state through flags.
+> On 10/30/2014 08:36 AM, Krzysztof Kozlowski wrote:
+>> On =C5=9Bro, 2014-10-29 at 10:46 -0700, Kevin Hilman wrote:
+>>> Krzysztof Kozlowski <k.kozlowski@samsung.com> writes:
+>>>
+>>>> When resuming the system the power domain has to be powered on ear=
+ly so
+>>>> any runtime PM aware devices could resume.
+>>>>
+>>>> This fixes following scenario reproduced on Exynos DRM:
+>>>> 1. Power domain is off before suspending the system.
+>>>> 2. System is suspended to RAM.
+>>>> 3. Resuming starts. The Exynos DRM driver resume callback is calle=
+d.
+>>>> 4. The Exynos DRM driver calls drm_helper_resume_force_mode which =
+turns
+>>>>    the screen on by calling exynos_dsi_dpms with DRM_MODE_DPMS_ON.
+>>> Dumb Q: if the device (and power domain) were off before (and durin=
+g)
+>>> suspend, why are they being resumed?
+>>>
+>>> Shouldn't the resume path restore things to the same state they wer=
+e
+>>> before suspend?
+>> One could expect that... but the Exynos DRM driver behaves different=
+ly
+>> (and some other drivers also). In resume method it calls
+>> drm_helper_resume_force_mode() which forces restoring mode setting
+>> configuration. Apparently setting a mode needs DPMS on:
+>> static void exynos_drm_crtc_commit(struct drm_crtc *crtc)
+>> {
+>> 	...
+>> 	exynos_drm_crtc_dpms(crtc, DRM_MODE_DPMS_ON);
+>> 	...
+>>
+>> The previous DPMS status (status during suspend) is completely ignor=
+ed
+>> here.
+>
+> Suspend callback switches off all connectors (thus all other devs in
+> their pipeline) by calling dpms_off,
+> in restore callback all devs are restored to their previous state by
+> calling appropriate dpms.
+> So I guess drm_helper_resume_force_mode() call at the end of resume i=
+s
+> incorrect.
 
-Since the  device tree is probed by the cpuidle driver as well, move
-the parameters required to discover the idle states into an appropriate
-common place to both the driver and the powernv core code.
+Though I'm not terribly familiar with DRM, it seems incorrect because I
+expect resume to restore the state of things when suspend happened, not
+forcibly resume everything.
 
-Another point is that fastsleep idle state may require workarounds in
-the kernel to function properly. This workaround is introduced in the
-subsequent patches. However neither the cpuidle driver or the hotplug
-path need be bothered about this workaround.
+> On the other side it is present in many other drivers, so I am also
+> little bit confused.
 
-They will be taken care of by the core powernv code.
+Many other DRM drivers?  or other drivers too?
 
-Originally-by: Srivatsa S. Bhat <srivatsa@mit.edu>
-Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
+Kevin
 
----
- arch/powerpc/include/asm/opal.h          |  8 ++++++
- arch/powerpc/platforms/powernv/powernv.h |  2 ++
- arch/powerpc/platforms/powernv/setup.c   | 49 ++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/smp.c     |  7 ++++-
- drivers/cpuidle/cpuidle-powernv.c        |  9 ++----
- 5 files changed, 68 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 9124b0e..f8b95c0 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -155,6 +155,14 @@ struct opal_sg_list {
- #define OPAL_REGISTER_DUMP_REGION		101
- #define OPAL_UNREGISTER_DUMP_REGION		102
- 
-+/* Device tree flags */
-+
-+/* Flags set in power-mgmt nodes in device tree if
-+ * respective idle states are supported in the platform.
-+ */
-+#define OPAL_PM_NAP_ENABLED	0x00010000
-+#define OPAL_PM_SLEEP_ENABLED	0x00020000
-+
- #ifndef __ASSEMBLY__
- 
- #include <linux/notifier.h>
-diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
-index 6c8e2d1..604c48e 100644
---- a/arch/powerpc/platforms/powernv/powernv.h
-+++ b/arch/powerpc/platforms/powernv/powernv.h
-@@ -29,6 +29,8 @@ static inline u64 pnv_pci_dma_get_required_mask(struct pci_dev *pdev)
- }
- #endif
- 
-+extern u32 pnv_get_supported_cpuidle_states(void);
-+
- extern void pnv_lpc_init(void);
- 
- bool cpu_core_split_required(void);
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 3f9546d..34c6665 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -290,6 +290,55 @@ static void __init pnv_setup_machdep_rtas(void)
- }
- #endif /* CONFIG_PPC_POWERNV_RTAS */
- 
-+static u32 supported_cpuidle_states;
-+
-+u32 pnv_get_supported_cpuidle_states(void)
-+{
-+	return supported_cpuidle_states;
-+}
-+
-+static int __init pnv_init_idle_states(void)
-+{
-+	struct device_node *power_mgt;
-+	int dt_idle_states;
-+	const __be32 *idle_state_flags;
-+	u32 len_flags, flags;
-+	int i;
-+
-+	supported_cpuidle_states = 0;
-+
-+	if (cpuidle_disable != IDLE_NO_OVERRIDE)
-+		return 0;
-+
-+	if (!firmware_has_feature(FW_FEATURE_OPALv3))
-+		return 0;
-+
-+	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
-+	if (!power_mgt) {
-+		pr_warn("opal: PowerMgmt Node not found\n");
-+		return 0;
-+	}
-+
-+	idle_state_flags = of_get_property(power_mgt,
-+			"ibm,cpu-idle-state-flags", &len_flags);
-+	if (!idle_state_flags) {
-+		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
-+		return 0;
-+	}
-+
-+	dt_idle_states = len_flags / sizeof(u32);
-+
-+	for (i = 0; i < dt_idle_states; i++) {
-+		flags = be32_to_cpu(idle_state_flags[i]);
-+		supported_cpuidle_states |= flags;
-+	}
-+
-+	return 0;
-+}
-+
-+subsys_initcall(pnv_init_idle_states);
-+
-+
- static int __init pnv_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 4753958..3dc4cec 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -149,6 +149,7 @@ static int pnv_smp_cpu_disable(void)
- static void pnv_smp_cpu_kill_self(void)
- {
- 	unsigned int cpu;
-+	u32 idle_states;
- 
- 	/* Standard hot unplug procedure */
- 	local_irq_disable();
-@@ -159,13 +160,17 @@ static void pnv_smp_cpu_kill_self(void)
- 	generic_set_cpu_dead(cpu);
- 	smp_wmb();
- 
-+	idle_states = pnv_get_supported_cpuidle_states();
- 	/* We don't want to take decrementer interrupts while we are offline,
- 	 * so clear LPCR:PECE1. We keep PECE2 enabled.
- 	 */
- 	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
- 	while (!generic_check_cpu_restart(cpu)) {
- 		ppc64_runlatch_off();
--		power7_nap(1);
-+		if (idle_states & OPAL_PM_SLEEP_ENABLED)
-+			power7_sleep();
-+		else
-+			power7_nap(1);
- 		ppc64_runlatch_on();
- 
- 		/* Clear the IPI that woke us up */
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 7d3a349..0a7d827 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -16,13 +16,10 @@
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-+#include <asm/opal.h>
- #include <asm/runlatch.h>
- 
--/* Flags and constants used in PowerNV platform */
--
- #define MAX_POWERNV_IDLE_STATES	8
--#define IDLE_USE_INST_NAP	0x00010000 /* Use nap instruction */
--#define IDLE_USE_INST_SLEEP	0x00020000 /* Use sleep instruction */
- 
- struct cpuidle_driver powernv_idle_driver = {
- 	.name             = "powernv_idle",
-@@ -198,7 +195,7 @@ static int powernv_add_idle_states(void)
- 		 * target residency to be 10x exit_latency
- 		 */
- 		latency_ns = be32_to_cpu(idle_state_latency[i]);
--		if (flags & IDLE_USE_INST_NAP) {
-+		if (flags & OPAL_PM_NAP_ENABLED) {
- 			/* Add NAP state */
- 			strcpy(powernv_states[nr_idle_states].name, "Nap");
- 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
-@@ -211,7 +208,7 @@ static int powernv_add_idle_states(void)
- 			nr_idle_states++;
- 		}
- 
--		if (flags & IDLE_USE_INST_SLEEP) {
-+		if (flags & OPAL_PM_SLEEP_ENABLED) {
- 			/* Add FASTSLEEP state */
- 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
- 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
--- 
-1.9.3
