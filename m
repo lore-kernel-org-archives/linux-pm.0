@@ -1,153 +1,76 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Subject: Re: [RFC Patch 1/4] mfd: AXP20x: Add power supply bindings
- documentation
-Date: Mon, 3 Nov 2014 21:02:44 +0100
-Message-ID: <20141103210244.1425e0c7@neptune.home>
-References: <20141020221959.2f312906@neptune.home>
-	<20141020223314.0484f795@neptune.home>
-	<20141021101503.GE26842@x1>
-	<20141021180916.432f02e1@neptune.home>
-	<20141021191905.GR21108@lukather>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: pm_runtime_enable() in ->probe()
+Date: Mon, 3 Nov 2014 15:06:44 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1411031501210.8744-100000@iolanthe.rowland.org>
+References: <7hwq7ci5hu.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hygieia.santi-shop.eu ([78.46.175.2]:49716 "EHLO
-	hygieia.santi-shop.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752335AbaKCUC5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 15:02:57 -0500
-In-Reply-To: <20141021191905.GR21108@lukather>
+Received: from iolanthe.rowland.org ([192.131.102.54]:50151 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753393AbaKCUGp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 15:06:45 -0500
+In-Reply-To: <7hwq7ci5hu.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: Lee Jones <lee.jones@linaro.org>, linux-sunxi@googlegroups.com, linux-arm-kernel@lists.infradead.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Olliver Schinagl <oliver+list@schinagl.nl>
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Maxime,
+[CC: list drastically trimmed]
 
-On Tue, 21 October 2014 Maxime Ripard <maxime.ripard@free-electrons.com=
-> wrote:
-> On Tue, Oct 21, 2014 at 06:09:16PM +0200, Bruno Pr=C3=A9mont wrote:
-> > On Tue, 21 October 2014 Lee Jones <lee.jones@linaro.org> wrote:
-> > > On Mon, 20 Oct 2014, Bruno Pr=C3=A9mont wrote:
-> > > > ---
-> > > > Note: the OCV values seem to have some defaults build into the
-> > > > PMIC though may need adjustment if the used battery has a diffe=
-rent
-> > > > open circuit voltage curve.
-> > > > As far as understood (these values are set in vendor driver but=
- not
-> > > > mentioned in chip documentation) they represent charge percenta=
-ge
-> > > > for some predefined voltages.
-> > > >=20
-> > > > If prefixing these values with "x-power," is preferred the foll=
-owing
-> > > > patch should becomes a dependency:
-> > > >   http://lists.infradead.org/pipermail/linux-arm-kernel/2014-Ju=
-ne/267606.html
-> > > > and users in patch 2/4, 4/4 need adjusting.
-> > > >=20
-> > > >=20
-> > > >  Documentation/devicetree/bindings/mfd/axp20x.txt |   20 +
-> > > >  1 files changed, 20 insertions(+), 0 deletion(-)
-> > > >=20
-> > > > diff --git a/Documentation/devicetree/bindings/mfd/axp20x.txt b=
-/Documentation/devicetree/bindings/mfd/axp20x.txt
-> > > > index cc9e01b..8ea681c 100644
-> > > > --- a/Documentation/devicetree/bindings/mfd/axp20x.txt
-> > > > +++ b/Documentation/devicetree/bindings/mfd/axp20x.txt
-> > > > @@ -28,6 +28,20 @@ Required properties:
-> > > >  		      (range: 750-1875). Default: 1.5MHz
-> > > > =20
-> > > >  Optional properties for DCDCs:
-> > > > +- backup: Settings for backup/RTC battery charger
-> > > > +	  (Voltage in =C2=B5V, current in =C2=B5A)
-> > > > +	  If not present, charger will be left untouched
-> > > > +- battery.ocv: OCV capacity curve points (16 data values)
-> > > > +- battery.resistance: internal battery resistance in m=CE=A9
-> > > > +                      (defaults to 100m=CE=A9)
-> > > > +- battery.capacity: Battery capacity in mAh
-> > > > +		    If this attribute is missing, charger will be disabled
-> > > > +		    unless there is a battery connected.
-> > > > +- battery.temp_sensor: Description of temperautre sensor, 3 va=
-lues
-> > > > +		       - driver current (20=C2=B5A, 40=C2=B5A, 60=C2=B5A or =
-80=C2=B5A)
-> > > > +		       - low temperature warning level (in =C2=B5V)
-> > > > +		       - high temperature warning level (in =C2=B5V)
-> > > > +		       If missing, temperature sensor gets disabled
-> > > >  - x-powers,dcdc-workmode: 1 for PWM mode, 0 for AUTO mode
-> > > >  			  Default: AUTO mode
-> > > > =20
-> > > > @@ -49,6 +63,12 @@ axp209: pmic@34 {
-> > > >  	ldo3in-supply =3D <&axp_ipsout_reg>;
-> > > >  	ldo5in-supply =3D <&axp_ipsout_reg>;
-> > > > =20
-> > > > +	backup =3D <3000000 200>;
-> > > > +	battery.ocv =3D <0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0>;
-> > > > +	battery.resistance =3D <0>;
-> > > > +	battery.capacity =3D <2000>;
-> > > > +	battery.temp_sensor =3D <20 1000000 4000000>;
-> > >=20
-> > > Since when do we use '.'s in property names?
-> >=20
-> > I've not found guidelines on this, but whatever is the right way to
-> > name them, I'm open for suggestions.
->=20
-> You can take a look at the ePAPR specs. Even if it's quite outdated,
-> it still puts you in the right mindset.
+On Mon, 3 Nov 2014, Kevin Hilman wrote:
 
-There seems to be some kind of e-mail wall in front of this document.
+> >> All that said there is a logical error related to calling pm_runtime_enable()
+> >> and its derivatives from ->probe() that I've been overlooking pretty much
+> >> from the start.
+> >> 
+> >> Namely, really_probe() sets dev->driver to drv before calling ->probe()
+> >> for either the bus type or the driver itself, so if the driver's probe
+> >> calls pm_runtime_enable(), it will execute the driver's own runtime PM
+> >> resume callback before the driver can check whether or not it wants to handle
+> >> the device in the first place.  That doesn't sound quite right to me.
+> >> 
+> >> This means we need a different mechanism to ensure that the device will
+> >> be accessible to the driver and/or the bus type in ->probe().
+> >> 
+> >> At one point we had pm_runtime_get_sync() before really_probe() in
+> >> driver_proble_device() IIRC, but people complained about it, so we dropped it
+> >> and put a barrier in there instead, but that's not sufficient.
+> >
+> > So we actually had pm_runtime_get_noresume() before the barrier, but then
+> > we dropped it due to complaints.
+> >
+> >> We need to explicitly ensure that the device won't be powered off while
+> >> ->probe() is in progress *but* we need to avoid calling the driver's runtime
+> >> PM resume callback before ->probe() returns.
+> >
+> > I wonder, then, if we just need to do pm_runtime_get_sync() instead of the
+> > barrier and then pm_runtime_put() instead of pm_request_idle() in
+> > driver_probe_device()?
+> 
+> Won't we still have the same problems in the case of ->probe failure
+> that were fixed by removing those calls[1]?
+> 
+> IOW, after the driver's ->probe returns failure, it's no longer safe to
+> call the driver's runtime PM callbacks, since they may be accessing
+> resources that no longer exits.
+> 
+> Hmm, thinking a little more, maybe this kind of failure is a good time
+> for the driver to use pm_runtime_force_suspend(), then later when the PM
+> core does the _put(), it will see the device aleady suspended and there
+> shouldn't be any problems.
+> 
+> So I think I'm OK with this approach, in theory.
 
-> That being said, since they are driver-specific properties, they
-> should be prefixed by the vendor name (here x-powers).
->=20
-> And I think they all belong in a sub-node, just like what's been done
-> for the regulators.
+I still think this needs to be handled at the level of the subsystem 
+and device driver, not at the level of the PM core.  If somebody needs 
+to insure that the device won't be powered off while the probe routine 
+is running, the subsystem/driver should take care of it.
 
-Doing something like this?:
+After all, as Kevin points out, sometimes we really _do_ want the
+device to end up powered-down when the probing is finished.  There's
+no way the PM core can guess what the driver layer will want in the
+end.
 
---- a/arch/arm/boot/dts/sun7i-a20-cubietruck.dts
-+++ b/arch/arm/boot/dts/sun7i-a20-cubietruck.dts
-@@ -126,9 +126,11 @@
-                                interrupt-controller;
-                                #interrupt-cells =3D <1>;
-=20
--                               backup =3D <3000000 200>;
--                               battery.resistance =3D <100>;
--                               battery.capacity =3D <2000>;
-+                               x-powers,backup =3D <3000000 200>;
-+                               battery: battery@0 {
-+                                       x-powers,resistance =3D <100>;
-+                                       x-powers,capacity =3D <2000>;
-+                               };
-                        };
-                };
+Alan Stern
 
-What are the rules to define the label after the colon?
-Looking at the existing nodes it's either some address or a number...
-
-
-and then the following in driver code (also adjusting the other
-property names accessed)?:
-
-@@ -678,11 +677,11 @@ static int axp20x_battery_config(struct platform_=
-device *pdev,
-        if (ret)
-                return ret;
-=20
--       np =3D of_node_get(axp20x->dev->of_node);
-+       np =3D of_find_node_by_name(axp20x->dev->of_node, "battery");
-        if (!np)
-                return -ENODEV;
-=20
--       ret =3D of_property_read_u32_array(np, "battery.ocv", ocv, 16);
-+       ret =3D of_property_read_u32_array(np, "x-powers,ocv", ocv, 16)=
-;
-        for (i =3D 0; ret =3D=3D 0 && i < ARRAY_SIZE(ocv); i++)
-                if (ocv[i] > 100) {
-                        dev_warn(&pdev->dev, "OCV[%d] %u > 100\n", i, o=
-cv[i]);
-
-
-Bruno
