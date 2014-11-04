@@ -1,69 +1,70 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Subject: Re: [RFC Patch 1/4] mfd: AXP20x: Add power supply bindings
- documentation
-Date: Tue, 4 Nov 2014 22:21:24 +0100
-Message-ID: <20141104222124.1bc7e6ec@neptune.home>
-References: <20141020221959.2f312906@neptune.home>
-	<20141020223314.0484f795@neptune.home>
-	<20141021101503.GE26842@x1>
-	<20141021180916.432f02e1@neptune.home>
-	<20141021191905.GR21108@lukather>
-	<20141103210244.1425e0c7@neptune.home>
-	<553e634f-ce75-4409-883c-acbfe773e950@googlegroups.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: Thermal: int340x_thermal: expose acpi thermal relationship
+ tables
+Date: Tue, 4 Nov 2014 15:23:11 -0800
+Message-ID: <20141104152311.39e02f7e@icelake>
+References: <20141013174111.GA8390@mwanda>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hygieia.santi-shop.eu ([78.46.175.2]:34017 "EHLO
-	hygieia.santi-shop.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751129AbaKDVVc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 16:21:32 -0500
-In-Reply-To: <553e634f-ce75-4409-883c-acbfe773e950@googlegroups.com>
+Received: from mga02.intel.com ([134.134.136.20]:30561 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751502AbaKDXXp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 4 Nov 2014 18:23:45 -0500
+In-Reply-To: <20141013174111.GA8390@mwanda>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ezaul Zillmer <ezaulzillmer@gmail.com>
-Cc: linux-sunxi@googlegroups.com, maxime.ripard@free-electrons.com, lee.jones@linaro.org, linux-arm-kernel@lists.infradead.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, oliver+list@schinagl.nl
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: linux-pm@vger.kernel.org, "Zhang, Rui" <rui.zhang@intel.com>
 
-Hi Ezaul,
+On Mon, 13 Oct 2014 20:41:11 +0300
+Dan Carpenter <dan.carpenter@oracle.com> wrote:
 
-On Tue, 04 November 2014 Ezaul Zillmer <ezaulzillmer@gmail.com> wrote:
-> Cubieboard2  + Kernel 3.18-rc3
+> Hello Jacob Pan,
 > 
-> [   15.955655] axp20x-regulator axp20x-regulator: regulators node not found
-> [   15.962580] LDO1: 1300 mV
-> [   15.965732] LDO2: at 3000 mV
-> [   15.969120] LDO3: at 2275 mV
-> [   15.972314] LDO4: at 2800 mV
-> [   15.975700] LDO5: at 2800 mV
-> [   15.979075] DCDC2: at 1400 mV
-> [   15.982555] DCDC3: at 1250 mV
-> [   15.985706] axp20x 0-0034: AXP20X driver loaded
+> The patch 52b1c69d7e3c: "Thermal: int340x_thermal: expose acpi
+> thermal relationship tables" from Sep 3, 2014, leads to the following
+> static checker warning:
 > 
-> What was missing for axp20x work of cubieboard2 dt? 
-> as poderiar do to run this drive? 
+> 	drivers/thermal/int340x_thermal/acpi_thermal_rel.c:327
+> acpi_thermal_rel_ioctl() warn: passing casted pointer '&count' to
+> 'acpi_parse_trt()' 64 vs 32.
+> 
+> drivers/thermal/int340x_thermal/acpi_thermal_rel.c
+>    315  static long acpi_thermal_rel_ioctl(struct file *f, unsigned
+> int cmd, 316                                     unsigned long __arg)
+>    317  {
+>    318          int ret = 0;
+>    319          unsigned long length = 0;
+>    320          unsigned long count = 0;
+>    321          char __user *arg = (void __user *)__arg;
+>    322          struct trt *trts;
+>    323          struct art *arts;
+>    324  
+>    325          switch (cmd) {
+>    326          case ACPI_THERMAL_GET_TRT_COUNT:
+>    327                  ret = acpi_parse_trt(acpi_thermal_rel_handle,
+> (int *)&count, ^^^^^^^^^^^^
+> The reason for the static checker warning is that this will not work
+> on big endian 64 bit systems.  It's most likely not a concern but it's
+> still pretty ugly.
+> 
+> You could just make "count" an int and remove the casting.  The copy
+> to user will still work if it's an int because the user pointer has
+> been casted to unsigned long __user pointer.
+you are right, I will make the change. Thanks for pointing this out and
+sorry for the late response, I was traveling.
 
-Not sure what patches, it at all you have on top of 3.18-rc3.
-As far as I know 3.18 should not have any AXP driver that's
-not already present in 3.17.
+> 
+>    328                                  &trts, false);
+>    329                  kfree(trts);
+>    330                  if (!ret)
+>    331                          return put_user(count, (unsigned long
+> __user *)__arg); 332                  return ret;
+>    333          case ACPI_THERMAL_GET_TRT_LEN:
+> 
+> regards,
+> dan carpenter
 
-The base AXP driver only includes power-off support and bits for
-regulators while the DT part of regulators is missing (at least
-for cubietruck).
-
-My patches, ideally combined with Carlo's patches from June or so
-I mentioned in introduction mail would include power supply and 
-input driver for power button. The regulator DT entries are in some
-other patch (I think Maxime did have them in some of his trees -
-probably defining them causes too much trouble because all uses are
-not yet ready to explicitly use them).
-
-On DT side, on top of my patches, for cubieboard2 you might need to
-add the backup battery property if it has such a battery - I don't
-think the CB2 has a main battery connector but I might be wrong
-(I only have a cubietruck).
-
-Except for that a hwmon driver would be useful to cover some of the
-last bits of the AXP like temprature sensor and main voltage sensor.
-With that about all the features should be covered.
-
-Bruno
+[Jacob Pan]
