@@ -1,38 +1,65 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Subject: Re: [PATCH v8 3/5] amba: Don't unprepare the clocks if device driver
  wants IRQ safe runtime PM
-Date: Tue, 04 Nov 2014 08:59:29 +0100
-Message-ID: <1415087969.2389.10.camel@AMDC1943>
-References: <20141103100442.GB4042@n2100.arm.linux.org.uk>
- <Pine.LNX.4.44L0.1411031036350.1316-100000@iolanthe.rowland.org>
- <20141103154433.GC4042@n2100.arm.linux.org.uk>
+Date: Tue, 04 Nov 2014 09:01:32 +0100
+Message-ID: <1415088092.2389.12.camel@AMDC1943>
+References: <Pine.LNX.4.44L0.1411031036350.1316-100000@iolanthe.rowland.org>
+ <1464221.Cac76ZHBQl@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <20141103154433.GC4042@n2100.arm.linux.org.uk>
+In-reply-to: <1464221.Cac76ZHBQl@vostro.rjw.lan>
 Sender: linux-doc-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On pon, 2014-11-03 at 15:44 +0000, Russell King - ARM Linux wrote:
-> On Mon, Nov 03, 2014 at 10:41:02AM -0500, Alan Stern wrote:
+On wto, 2014-11-04 at 02:57 +0100, Rafael J. Wysocki wrote:
+> On Monday, November 03, 2014 10:41:02 AM Alan Stern wrote:
+> > On Mon, 3 Nov 2014, Russell King - ARM Linux wrote:
+> > 
+> > > That makes it pretty horrid from the point of view of having bus
+> > > management code, because we now have the management of the bus clock
+> > > split between the bus layer and the device driver.
+> > > 
+> > > This is /really/ a problem for runtime PM.  Runtime PM permits there
+> > > to be a bus layer involved - and runtime PM can also be coupled up
+> > > to PM domains as well.  For all this stuff, the context which the
+> > > callbacks are called in depends on whether the driver itself has
+> > > marked the device as having IRQ-safe callbacks.
+> > > 
+> > > That's fine, but the bus and PM domain level code then /really/ needs
+> > > to know what context they're being called in, so they know whether
+> > > they can sleep or not, or they must to be written to always use
+> > > non-sleeping functions so they work in both contexts.  If we assume
+> > > the former, then that implies that the irq-safe flag must never change
+> > > state between a suspend and a resume.
+> > 
+> > If a bus subsystem or PM domain is going to allow its drivers to choose
+> > between IRQ-safe and non-IRQ-safe runtime PM, then it is up to the
+> > subsystem to come up with a way for drivers to indicate their choice.
+> > 
+> > I tend to agree with Rafael that testing dev->power.irq_safe should be 
+> > good enough, with no real need for a wrapper.  But the subsystem can 
+> > use a different mechanism if it wants.
+> > 
 > > Bear in mind, however, that once the irq_safe flag has been set, the 
 > > runtime PM core offers no way to turn it off again.
 > 
-> Ah, I thought it did permit it to change both ways.  In that case, we
-> don't need to validate that it doesn't change state on each call, and
-> we can just get away with checking its value.
+> There is a problem with it, though.  Say, a driver handles a device that
+> may or may not be in a power domain.  Or in other words, the power domain
+> the device is in may or may not be always on.  If the domain is always on,
+> the runtime PM callbacks are IRQ-safe (they depend on the driver only).
+> If it isn't, they may not be IRQ-safe.  How's the driver going to decide
+> whether or not to set power.irq_safe?
 
-It cannot be unset but still it could be *set* during runtime (not only
-in probe). However that shouldn't happen between suspend-resume calls,
-so the solution of undoing suspend's work seems fine.
-
-I'll send a new patch doing this way. Without the wrapper.
+The pl330 driver (being a part of amba bus) always wants IRQ safe
+callbacks. However other amba drivers may not. So actually the driver
+always sets one or another. The dualism is present only in the
+amba/bus.c driver which encapsulates the child drivers.
 
 Best regards,
 Krzysztof
-
 
 
