@@ -1,102 +1,124 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
-Date: Tue, 4 Nov 2014 10:24:35 +0100
-Message-ID: <CAPDyKFrMMnOwOHuVcpxBWNARKUsVyq66yuH+=LcS3K7bBiUTVA@mail.gmail.com>
-References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
-	<5370046.DXkB0EA6xC@vostro.rjw.lan>
-	<CAPDyKFo_sxW8bE=C29fyfsqOO0tk_=eYFRkCVFRWc2kUx_bQHA@mail.gmail.com>
-	<2024276.CFr3nVUAlA@vostro.rjw.lan>
-	<CAPDyKFp=T8Luomeaoz5Y=eLAuFaOfdb+-aoU3QVnpjoDYVKPjg@mail.gmail.com>
-	<20141104090521.GA13219@dtor-glaptop>
+From: Vlastimil Babka <vbabka@suse.cz>
+Subject: Re: [PATCH 0/4] (CMA_AGGRESSIVE) Make CMA memory be more aggressive
+ about allocation
+Date: Tue, 04 Nov 2014 10:29:59 +0100
+Message-ID: <54589C97.4060309@suse.cz>
+References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com> <543F8812.2020002@codeaurora.org> <5450FD15.4000708@suse.cz> <20141104075330.GB23102@bbox>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f44.google.com ([209.85.216.44]:57498 "EHLO
-	mail-qa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752681AbaKDJYg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 04:24:36 -0500
-Received: by mail-qa0-f44.google.com with SMTP id w8so9608489qac.31
-        for <linux-pm@vger.kernel.org>; Tue, 04 Nov 2014 01:24:35 -0800 (PST)
-In-Reply-To: <20141104090521.GA13219@dtor-glaptop>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20141104075330.GB23102@bbox>
+Sender: owner-linux-mm@kvack.org
+To: Minchan Kim <minchan@kernel.org>
+Cc: Laura Abbott <lauraa@codeaurora.org>, Hui Zhu <zhuhui@xiaomi.com>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, m.szyprowski@samsung.com, akpm@linux-foundation.org, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, hannes@cmpxchg.org, riel@redhat.com, mgorman@suse.de, nasa4836@gmail.com, ddstreet@ieee.org, hughd@google.com, mingo@kernel.org, rientjes@google.com, peterz@infradead.org, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, paulmck@linux.vnet.ibm.com, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, akinobu.mita@gmail.com, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron
 
-On 4 November 2014 10:05, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> On Tue, Nov 04, 2014 at 09:54:19AM +0100, Ulf Hansson wrote:
->> [...]
->>
->> > Generally, there are two or even three levels of runtime PM handling,
->> > driver, (possibly) bus type and (possibly) PM domain (and multiple levels
->> > of these are possible in principle).  All of them have to be initialized
->> > at different times.
->> >
->> > Quite arguably, the PM domain and/or bus type runtime PM handling should
->> > be initialized even before registerind the device or during device
->> > registration.  Doing that later may be too late.  When the device has been
->> > registered, runtime PM should work to an extent allowing the driver to access
->> > the device and configure it further after calling pm_runtime_resume().
->> >
->> > Of course, if ->probe() is to call pm_runtime_resume() for this purpose,
->> > it must take the fact that the driver's own ->runtime_resume() may be called
->> > as a result of this into account.  That's why I'm asking whether or not the
->> > core should call pm_runtime_resume() before calling really_probe() in a
->> > followup branch of this thread.
->>
->> I am reading the other thread, let's see.
->>
->> >
->> > The driver's own runtime PM handling must be initialized in the driver and
->> > the only place suitable for that is ->probe().  However, it needs to be done
->> > *before* the driver's own ->runtime_resume() or ->runtime_suspend() callback
->> > is executed.  If that is done properly, it should be possible to cover
->> > both the CONFIG_PM_RUNTIME set/unset cases in that code.
->> >
->> > And I wouldn't recommend anyone to do the runtime PM initialization in
->> > ->runtime_resume() (when it is called for the first time), as that would be
->> > error prone and fragile.
->>
->> Great! That's means we are at least aligned on this topic. :-)
->>
->> >
->> >> The AMBA bus and some of its drivers a good example of how this has
->> >> been implemented:
->> >> driver/amba/bus.c
->> >> drivers/mmc/host/mmci.c
->> >> drivers/spi/spi-pl022.c
->> >>
->> >> This conclusion I have made from this is:
->> >> - Using pm_runtime_get_sync() during the ->probe() path to explicitly
->> >> power up a PM domain, is not suitable as the _common_ solution to
->> >> solve the race condition. It certainly may work for some scenarios,
->> >> but not for those I am looking at.
->> >
->> > I think, however, that it might work if the core calls pm_runtime_get_sync()
->> > from driver_probe_device().
->>
->> Currently this won't work.
->>
->> That's because the buses' ->probe() are invoked in this path and they
->> are doing the attachment of the device to its PM domain.
->>
->> In other words, we can't power up the PM domain using
->> pm_runtime_get_sync(), until the device has been attached to its PM
->> domain. Right?
+On 11/04/2014 08:53 AM, Minchan Kim wrote:
+> Hello,
 >
+> On Wed, Oct 29, 2014 at 03:43:33PM +0100, Vlastimil Babka wrote:
+>> On 10/16/2014 10:55 AM, Laura Abbott wrote:
+>>
+>> Hi,
+>>
+>> did anyone try/suggest the following idea?
+>>
+>> - keep CMA as fallback to MOVABLE as is is now, i.e. non-agressive
+>> - when UNMOVABLE (RECLAIMABLE also?) allocation fails and CMA
+>> pageblocks have space, don't OOM immediately, but first try to
+>> migrate some MOVABLE pages to CMA pageblocks, to make space for the
+>> UNMOVABLE allocation in non-CMA pageblocks
+>> - this should keep CMA pageblocks free as long as possible and
+>> useful for CMA allocations, but without restricting the non-MOVABLE
+>> allocations even though there is free memory (but in CMA pageblocks)
+>> - the fact that a MOVABLE page could be successfully migrated to CMA
+>> pageblock, means it was not pinned or otherwise non-migratable, so
+>> there's a good chance it can be migrated back again if CMA
+>> pageblocks need to be used by CMA allocation
 >
-> I think this is one of the issues that we have there. Why do we conflate
-> probing and placing the device into a power domain? The latter should
-> happen when we register the device. The fact that a device was probed
-> and has a driver bound or not bound to it should have no bearing on
-> whether the device is member of power domain or not.
+> I suggested exactly same idea long time ago.
+>
+>> - it's more complex, but I guess we have most of the necessary
+>> infrastructure in compaction already :)
+>
+> I agree but still, it doesn't solve reclaim problem(ie, VM doesn't
+> need to reclaim CMA pages when memory pressure of unmovable pages
+> happens). Of course, we could make VM be aware of that via introducing
+> new flag of __isolate_lru_page.
 
-Devices that are created while "discoverable buses" are being probed
-can't be attached to a PM domain before the probing is done, because
-those simply doesn't exist.
+Well, if it relaims CMA pages, then it has to be followed by the 
+migration. Is that better or worse than breaking LRU assumptions by 
+reclaiming based on where the page is located? I thought this was 
+basically what lumpy reclaim did, and it was removed.
 
-Now, I haven't yet seen a demand for such a cases, but it seems wrong
-to not consider them. The current solution cover these.
+> However, I'd like to think CMA design from the beginning.
+> It made page allocation logic complicated, even very fragile as we
+> had recently and now we need to add new logics to migrate like you said.
+> As well, we need to fix reclaim path, too.
+>
+> It makes mm complicated day by day even though it doesn't do the role
+> enough well(ie, big latency and frequent allocation failure) so I really
+> want to stop making the mess bloated.
 
-Kind regards
-Uffe
+Yeah that would be great.
+
+> Long time ago, when I saw Joonsoo's CMA agressive allocation patchset
+> (ie, roundrobin allocation between CMA and normal movable pages)
+> it was good to me at a first glance but it needs tweak of allocation
+> path and doesn't solve reclaim path, either. Yes, reclaim path could
+> be solved by another patch but I want to solve it altogether.
+>
+> At that time, I suggested big surgery to Joonsoo in offline that
+> let's move CMA allocation with movable zone allocation. With it,
+> we could make allocation/reclaim path simple but thing is we should
+
+I'm not sure I understand enough from this. You want to introduce a 
+movable zone instead of CMA pageblocks? But how to size it, resize it, 
+would it be possible?
+
+> make VM be aware of overlapping MOVABLE zone which means some of pages
+> in the zone could be part of another zones but I think we already have
+> logics to handle it when I read comment in isolate_freepages so I think
+> the design should work.
+
+Why would it overlap in the first place? Just because it wouldn't be 
+sized on pageblock boundary? Or to make (re)sizing simpler? Yeah we 
+could probably handle that, but it's not completely for free (you 
+iterate over blocks/pages uselessly).
+
+> A thing you guys might worry is bigger CMA latency because it makes
+> CMA memory usage ratio higher than the approach you mentioned but
+> anyone couldn't guarantee it once memory is fully utilized.
+> In addition, we have used fair zone allocator policy so it makes
+> round robin allocation automatically so I believe it should be way
+> to go.
+
+Yeah maybe it could be simpler in the end. Although a new zone type 
+could be a disturbing change, with some overhead to per-cpu structures 
+etc. The allocations in that zone would be somewhat at disadvantage wrt 
+LRU, as CMA allocation would mostly reclaim them instead of migrating 
+away (assuming there wouldn't be so much spare space for migration as 
+when CMA pageblocks are part of a much larger zone). But I guess the 
+same could be said about the DMA zone...
+
+>>
+>> Thoughts?
+>> Vlastimil
+>>
+>>> Thanks,
+>>> Laura
+>>>
+>>
+>> --
+>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>> the body to majordomo@kvack.org.  For more info on Linux MM,
+>> see: http://www.linux-mm.org/ .
+>> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
