@@ -1,8 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH RESEND v2 2/8] power_supply: sysfs: Use power_supply_*() API
- for accessing function attrs
-Date: Tue, 04 Nov 2014 16:01:35 +0100
-Message-ID: <1415113301-25661-3-git-send-email-k.kozlowski@samsung.com>
+Subject: [PATCH RESEND v2 3/8] power: 88pm860x_charger: Use power_supply_*()
+ API for accessing function attrs
+Date: Tue, 04 Nov 2014 16:01:36 +0100
+Message-ID: <1415113301-25661-4-git-send-email-k.kozlowski@samsung.com>
 References: <1415113301-25661-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,45 +27,62 @@ Wrappers provide safe access in case of unregistering the power
 supply (e.g. by removing the driver). Replace:
  - get_property -> power_supply_get_property
  - set_property -> power_supply_set_property
- - property_is_writeable -> power_supply_property_is_writeable
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Acked-by: Jonghwa Lee <jonghwa3.lee@samusng.com>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- drivers/power/power_supply_sysfs.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/power/88pm860x_charger.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-index 62653f50a524..f817aab80813 100644
---- a/drivers/power/power_supply_sysfs.c
-+++ b/drivers/power/power_supply_sysfs.c
-@@ -76,7 +76,7 @@ static ssize_t power_supply_show_property(struct device *dev,
- 	if (off == POWER_SUPPLY_PROP_TYPE) {
- 		value.intval = psy->type;
- 	} else {
--		ret = psy->get_property(psy, off, &value);
-+		ret = power_supply_get_property(psy, off, &value);
+diff --git a/drivers/power/88pm860x_charger.c b/drivers/power/88pm860x_charger.c
+index de029bbc1cc1..534b3e2e3487 100644
+--- a/drivers/power/88pm860x_charger.c
++++ b/drivers/power/88pm860x_charger.c
+@@ -296,12 +296,13 @@ static int set_charging_fsm(struct pm860x_charger_info *info)
+ 	psy = power_supply_get_by_name(pm860x_supplied_to[0]);
+ 	if (!psy)
+ 		return -EINVAL;
+-	ret = psy->get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW, &data);
++	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW,
++			&data);
+ 	if (ret)
+ 		return ret;
+ 	vbatt = data.intval / 1000;
  
- 		if (ret < 0) {
- 			if (ret == -ENODATA)
-@@ -125,7 +125,7 @@ static ssize_t power_supply_store_property(struct device *dev,
- 
- 	value.intval = long_val;
- 
--	ret = psy->set_property(psy, off, &value);
-+	ret = power_supply_set_property(psy, off, &value);
- 	if (ret < 0)
+-	ret = psy->get_property(psy, POWER_SUPPLY_PROP_PRESENT, &data);
++	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_PRESENT, &data);
+ 	if (ret)
  		return ret;
  
-@@ -223,7 +223,7 @@ static umode_t power_supply_attr_is_visible(struct kobject *kobj,
+@@ -430,7 +431,7 @@ static irqreturn_t pm860x_temp_handler(int irq, void *data)
+ 	psy = power_supply_get_by_name(pm860x_supplied_to[0]);
+ 	if (!psy)
+ 		goto out;
+-	ret = psy->get_property(psy, POWER_SUPPLY_PROP_TEMP, &temp);
++	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_TEMP, &temp);
+ 	if (ret)
+ 		goto out;
+ 	value = temp.intval / 10;
+@@ -485,7 +486,8 @@ static irqreturn_t pm860x_done_handler(int irq, void *data)
+ 	psy = power_supply_get_by_name(pm860x_supplied_to[0]);
+ 	if (!psy)
+ 		goto out;
+-	ret = psy->get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW, &val);
++	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW,
++			&val);
+ 	if (ret)
+ 		goto out;
+ 	vbatt = val.intval / 1000;
+@@ -500,7 +502,8 @@ static irqreturn_t pm860x_done_handler(int irq, void *data)
+ 	if (ret < 0)
+ 		goto out;
+ 	if (vbatt > CHARGE_THRESHOLD && ret & STATUS2_CHG)
+-		psy->set_property(psy, POWER_SUPPLY_PROP_CHARGE_FULL, &val);
++		power_supply_set_property(psy, POWER_SUPPLY_PROP_CHARGE_FULL,
++				&val);
  
- 		if (property == attrno) {
- 			if (psy->property_is_writeable &&
--			    psy->property_is_writeable(psy, property) > 0)
-+			    power_supply_property_is_writeable(psy, property) > 0)
- 				mode |= S_IWUSR;
- 
- 			return mode;
+ out:
+ 	mutex_unlock(&info->lock);
 -- 
 1.9.1
