@@ -1,89 +1,113 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 02/12] drivers: mfd: Add support for Exynos PMU driver
-Date: Tue, 4 Nov 2014 08:24:02 +0000
-Message-ID: <20141104082402.GE17577@x1>
-References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
- <1414986790-11940-3-git-send-email-amit.daniel@samsung.com>
- <20141103152604.GA10544@x1>
- <002601cff7de$0f8db7e0$2ea927a0$@samsung.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+Date: Tue, 4 Nov 2014 09:54:19 +0100
+Message-ID: <CAPDyKFp=T8Luomeaoz5Y=eLAuFaOfdb+-aoU3QVnpjoDYVKPjg@mail.gmail.com>
+References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
+	<5370046.DXkB0EA6xC@vostro.rjw.lan>
+	<CAPDyKFo_sxW8bE=C29fyfsqOO0tk_=eYFRkCVFRWc2kUx_bQHA@mail.gmail.com>
+	<2024276.CFr3nVUAlA@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <002601cff7de$0f8db7e0$2ea927a0$@samsung.com>
+In-Reply-To: <2024276.CFr3nVUAlA@vostro.rjw.lan>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Pankaj Dubey <pankaj.dubey@samsung.com>
-Cc: 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, 'Sangbeom Kim' <sbkim73@samsung.com>, 'Samuel Ortiz' <sameo@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 04 Nov 2014, Pankaj Dubey wrote:
-> On Monday, November 03, 2014 8:56 PM, Lee Jones wrote,
-> > Subject: Re: [PATCH 02/12] drivers: mfd: Add support for Exynos PMU=
- driver
-> >=20
-> > On Mon, 03 Nov 2014, Amit Daniel Kachhap wrote:
-> >=20
-> > > From: Pankaj Dubey <pankaj.dubey@samsung.com>
-> > >
-> > > This patch moves Exynos PMU driver implementation from "arm/mach-=
-exynos"
-> > > to "drivers/mfd". This driver is mainly used for setting misc bit=
-s of
-> > > register from PMU IP of Exynos SoC which will be required to conf=
-igure
-> > > before Suspend/Resume. Currently all these settings are done in
-> > > "arch/arm/mach-exynos/pmu.c" but moving ahead for ARM64 based SoC
-> > > support, there is a need of DT based implementation of PMU driver=
-=2E
-> > >
-> > > This driver uses already existing DT binding information.
-> > >
-> > > CC: Sangbeom Kim <sbkim73@samsung.com>
-> > > CC: Samuel Ortiz <sameo@linux.intel.com>
-> > > CC: Lee Jones <lee.jones@linaro.org>
-> > > Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
-> > > Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> > > ---
-> > >  arch/arm/mach-exynos/Kconfig                       |    1 +
-> > >  arch/arm/mach-exynos/Makefile                      |    2 +-
-> > >  drivers/mfd/Kconfig                                |    9 ++++++=
-+++
-> > >  drivers/mfd/Makefile                               |    1 +
-> > >  .../mach-exynos/pmu.c =3D> drivers/mfd/exynos-pmu.c  |    0
-> > >  5 files changed, 12 insertions(+), 1 deletion(-)  rename
-> > > arch/arm/mach-exynos/pmu.c =3D> drivers/mfd/exynos-pmu.c (100%)
-> >=20
-> > I thought we spoke about this already [1]?  What's changed?
-> >=20
-> > [1] https://lkml.org/lkml/2014/4/29/193
-> >=20
->=20
-> Yes correct, we had discussion about this in above post. But at that =
-time I was not having enough points to
-> put forward for keeping Exynos PMU driver in MFD folder.
+[...]
 
-There are no valid points for keeping PMU code in MFD.
+> Generally, there are two or even three levels of runtime PM handling,
+> driver, (possibly) bus type and (possibly) PM domain (and multiple levels
+> of these are possible in principle).  All of them have to be initialized
+> at different times.
+>
+> Quite arguably, the PM domain and/or bus type runtime PM handling should
+> be initialized even before registerind the device or during device
+> registration.  Doing that later may be too late.  When the device has been
+> registered, runtime PM should work to an extent allowing the driver to access
+> the device and configure it further after calling pm_runtime_resume().
+>
+> Of course, if ->probe() is to call pm_runtime_resume() for this purpose,
+> it must take the fact that the driver's own ->runtime_resume() may be called
+> as a result of this into account.  That's why I'm asking whether or not the
+> core should call pm_runtime_resume() before calling really_probe() in a
+> followup branch of this thread.
 
-> At that point there was only one idea behind keeping Exynos PMU that =
-in future it will be reused for ARM64
-> based SoC for PM related functionalities.
-> But in this series we have implemented Exynos Power Domain for Samsun=
-g's ARM64 based SoCs.
->=20
-> As far as I can see this will in following ways -
->=20
-> 1: Moving out PM domain specific code from mach-exynos and reuse of s=
-ame code for ARM64 based SoC also.
-> 2: Since PM domain relies on PMU registers and does not have its own =
-DT binding, MFD client and MFD device
-> is most suitable for making this kind of platform drivers.
+I am reading the other thread, let's see.
 
-MFD can be used to register the device, but the driver must not live
-in MFD.  Please relocate it into drivers/power.
+>
+> The driver's own runtime PM handling must be initialized in the driver and
+> the only place suitable for that is ->probe().  However, it needs to be done
+> *before* the driver's own ->runtime_resume() or ->runtime_suspend() callback
+> is executed.  If that is done properly, it should be possible to cover
+> both the CONFIG_PM_RUNTIME set/unset cases in that code.
+>
+> And I wouldn't recommend anyone to do the runtime PM initialization in
+> ->runtime_resume() (when it is called for the first time), as that would be
+> error prone and fragile.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Great! That's means we are at least aligned on this topic. :-)
+
+>
+>> The AMBA bus and some of its drivers a good example of how this has
+>> been implemented:
+>> driver/amba/bus.c
+>> drivers/mmc/host/mmci.c
+>> drivers/spi/spi-pl022.c
+>>
+>> This conclusion I have made from this is:
+>> - Using pm_runtime_get_sync() during the ->probe() path to explicitly
+>> power up a PM domain, is not suitable as the _common_ solution to
+>> solve the race condition. It certainly may work for some scenarios,
+>> but not for those I am looking at.
+>
+> I think, however, that it might work if the core calls pm_runtime_get_sync()
+> from driver_probe_device().
+
+Currently this won't work.
+
+That's because the buses' ->probe() are invoked in this path and they
+are doing the attachment of the device to its PM domain.
+
+In other words, we can't power up the PM domain using
+pm_runtime_get_sync(), until the device has been attached to its PM
+domain. Right?
+
+[...]
+
+>> For PM domains that are initialized in powered off state, we can't
+>> rely on CONFIG_PM_RUNTIME and thus not on pm_runtime_get_sync() to
+>> power on these PM domains. We need a different mechanism, which is
+>> suggested in this v3 patchset.
+>
+> That is quite simple to address, though.  You can register a bus type
+> notifier that will power up the domain on BUS_NOTIFY_ADD_DEVICE events
+> (where the target device belongs to the domain), and do that only for
+> CONFIG_PM_RUNTIME unset (otherwise runtime PM should take care of this).
+
+I guess we could use notifiers, but I am not sure I see any benefit.
+The code will be more complex and we need error handling as well.
+
+>
+>> The requirement of being able to initialize PM domains in powered off
+>> state, was raised during review of v2 of this patchset. I do realize
+>> that's not easy for you to keep track and remember of all discussions.
+>> I apologize for not providing this as the topmost important argument
+>> to why pm_runtime_get_sync() can't be used, in my reply to Kevin.
+>
+> OK
+>
+> It looks like we need an agreement on what to do and what the expectations
+> should be for each driver core operation at the high level.  That is,
+> what ->probe() should expect, what ->remove() should expect, what the
+> state after executing each of them should be for CONFIG_PM_RUNTIME set and
+> unset etc.  Otherwise we'll always have various bus types doing what *they*
+> think is appropriate and not agreeing with each other.
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+
+Kind regards
+Uffe
