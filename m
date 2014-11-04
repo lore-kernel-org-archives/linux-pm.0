@@ -1,72 +1,114 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 7/7] mfd: ab8500: Decrement the power supply's device
- reference counter
-Date: Tue, 04 Nov 2014 08:50:09 +0100
-Message-ID: <1415087409.2389.2.camel@AMDC1943>
-References: <1413290117-13082-1-git-send-email-k.kozlowski@samsung.com>
- <1413290117-13082-8-git-send-email-k.kozlowski@samsung.com>
- <20141103175945.GV12011@x1> <20141103180059.GW12011@x1>
+From: Minchan Kim <minchan@kernel.org>
+Subject: Re: [PATCH 0/4] (CMA_AGGRESSIVE) Make CMA memory be more aggressive
+ about allocation
+Date: Tue, 4 Nov 2014 16:53:30 +0900
+Message-ID: <20141104075330.GB23102@bbox>
+References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
+ <543F8812.2020002@codeaurora.org>
+ <5450FD15.4000708@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:32049 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750901AbaKDHuP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 02:50:15 -0500
-In-reply-to: <20141103180059.GW12011@x1>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <5450FD15.4000708@suse.cz>
+Sender: owner-linux-mm@kvack.org
+To: Vlastimil Babka <vbabka@suse.cz>
+Cc: Laura Abbott <lauraa@codeaurora.org>, Hui Zhu <zhuhui@xiaomi.com>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, m.szyprowski@samsung.com, akpm@linux-foundation.org, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, hannes@cmpxchg.org, riel@redhat.com, mgorman@suse.de, nasa4836@gmail.com, ddstreet@ieee.org, hughd@google.com, mingo@kernel.org, rientjes@google.com, peterz@infradead.org, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, paulmck@linux.vnet.ibm.com, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, akinobu.mita@gmail.com, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Lv Zheng <lv.zheng@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Anton Vorontsov <anton@enomsg.org>, Pavel Machek <pavel@ucw.cz>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On pon, 2014-11-03 at 18:00 +0000, Lee Jones wrote:
-> On Mon, 03 Nov 2014, Lee Jones wrote:
+Hello,
+
+On Wed, Oct 29, 2014 at 03:43:33PM +0100, Vlastimil Babka wrote:
+> On 10/16/2014 10:55 AM, Laura Abbott wrote:
+> >On 10/15/2014 8:35 PM, Hui Zhu wrote:
+> >
+> >It's good to see another proposal to fix CMA utilization. Do you have
+> >any data about the success rate of CMA contiguous allocation after
+> >this patch series? I played around with a similar approach of using
+> >CMA for MIGRATE_MOVABLE allocations and found that although utilization
+> >did increase, contiguous allocations failed at a higher rate and were
+> >much slower. I see what this series is trying to do with avoiding
+> >allocation from CMA pages when a contiguous allocation is progress.
+> >My concern is that there would still be problems with contiguous
+> >allocation after all the MIGRATE_MOVABLE fallback has happened.
 > 
-> > On Tue, 14 Oct 2014, Krzysztof Kozlowski wrote:
-> > 
-> > > Use power_supply_put() to decrement the power supply's device reference
-> > > counter.
-> > > 
-> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > > ---
-> > >  drivers/mfd/ab8500-sysctrl.c | 2 ++
-> > >  1 file changed, 2 insertions(+)
-> > 
-> > Applied, thanks.
+> Hi,
 > 
-> Whoops, to hasty there -- unapplied.
+> did anyone try/suggest the following idea?
 > 
-> What's going on with this set?
+> - keep CMA as fallback to MOVABLE as is is now, i.e. non-agressive
+> - when UNMOVABLE (RECLAIMABLE also?) allocation fails and CMA
+> pageblocks have space, don't OOM immediately, but first try to
+> migrate some MOVABLE pages to CMA pageblocks, to make space for the
+> UNMOVABLE allocation in non-CMA pageblocks
+> - this should keep CMA pageblocks free as long as possible and
+> useful for CMA allocations, but without restricting the non-MOVABLE
+> allocations even though there is free memory (but in CMA pageblocks)
+> - the fact that a MOVABLE page could be successfully migrated to CMA
+> pageblock, means it was not pinned or otherwise non-migratable, so
+> there's a good chance it can be migrated back again if CMA
+> pageblocks need to be used by CMA allocation
 
-The set should be pulled at once (everything depends on 1st patch).
+I suggested exactly same idea long time ago.
 
-It is still waiting for reviews. I'll resend soon.
+> - it's more complex, but I guess we have most of the necessary
+> infrastructure in compaction already :)
 
-Best regards,
-Krzysztof
+I agree but still, it doesn't solve reclaim problem(ie, VM doesn't
+need to reclaim CMA pages when memory pressure of unmovable pages
+happens). Of course, we could make VM be aware of that via introducing
+new flag of __isolate_lru_page.
+
+However, I'd like to think CMA design from the beginning.
+It made page allocation logic complicated, even very fragile as we
+had recently and now we need to add new logics to migrate like you said.
+As well, we need to fix reclaim path, too.
+
+It makes mm complicated day by day even though it doesn't do the role
+enough well(ie, big latency and frequent allocation failure) so I really
+want to stop making the mess bloated.
+
+Long time ago, when I saw Joonsoo's CMA agressive allocation patchset
+(ie, roundrobin allocation between CMA and normal movable pages)
+it was good to me at a first glance but it needs tweak of allocation
+path and doesn't solve reclaim path, either. Yes, reclaim path could
+be solved by another patch but I want to solve it altogether.
+
+At that time, I suggested big surgery to Joonsoo in offline that
+let's move CMA allocation with movable zone allocation. With it,
+we could make allocation/reclaim path simple but thing is we should
+make VM be aware of overlapping MOVABLE zone which means some of pages
+in the zone could be part of another zones but I think we already have
+logics to handle it when I read comment in isolate_freepages so I think
+the design should work.
+
+A thing you guys might worry is bigger CMA latency because it makes
+CMA memory usage ratio higher than the approach you mentioned but
+anyone couldn't guarantee it once memory is fully utilized.
+In addition, we have used fair zone allocator policy so it makes
+round robin allocation automatically so I believe it should be way
+to go.
 
 > 
-> > > diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctrl.c
-> > > index 93b2d2c32ca3..d05a5719cfc4 100644
-> > > --- a/drivers/mfd/ab8500-sysctrl.c
-> > > +++ b/drivers/mfd/ab8500-sysctrl.c
-> > > @@ -51,6 +51,7 @@ static void ab8500_power_off(void)
-> > >  
-> > >  		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
-> > >  				&val);
-> > > +		power_supply_put(psy);
-> > >  
-> > >  		if (!ret && val.intval) {
-> > >  			charger_present = true;
-> > > @@ -73,6 +74,7 @@ static void ab8500_power_off(void)
-> > >  			       pss[i]);
-> > >  			machine_restart("charging");
-> > >  		}
-> > > +		power_supply_put(psy);
-> > >  	}
-> > >  
-> > >  shutdown:
-> > 
+> Thoughts?
+> Vlastimil
 > 
+> >Thanks,
+> >Laura
+> >
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
+-- 
+Kind regards,
+Minchan Kim
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
