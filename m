@@ -1,97 +1,91 @@
-From: Mathieu Poirier <mathieu.poirier@linaro.org>
-Subject: Re: [PATCH v4 0/9] ARM: shmobile: R-Mobile: DT PM domain support
-Date: Tue, 4 Nov 2014 07:57:14 -0700
-Message-ID: <CANLsYkzAsvJE_TR4AvP6PEXOO-jkcwMQE_GfBD-jS9k5BOmOeg@mail.gmail.com>
-References: <1415028896-9005-1-git-send-email-geert+renesas@glider.be>
-	<CANLsYkzVw_fQQuK9pEomMp6A_z2Qg9L-Hj1f+8b_1o7cFjMiDw@mail.gmail.com>
-	<7hegtj69ex.fsf@deeprootsystems.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <7hegtj69ex.fsf@deeprootsystems.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, linux-pm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH RESEND v2 0/8] power_supply: Add API for safe access of
+ get_property-like function attrs
+Date: Tue, 04 Nov 2014 16:01:33 +0100
+Message-ID: <1415113301-25661-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:57078 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbaKDPBu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 10:01:50 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Anton Vorontsov <anton@enomsg.org>, Guenter Roeck <linux@roeck-us.net>, Pavel Machek <pavel@ucw.cz>, Myungjoo Ham <myungjoo.ham@samsung.com>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-On 3 November 2014 18:28, Kevin Hilman <khilman@kernel.org> wrote:
-> Mathieu Poirier <mathieu.poirier@linaro.org> writes:
->
->> On 3 November 2014 08:34, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
->>>         Hi Rafael, Simon, Magnus,
->>>
->>> This patch series enables DT support for PM domains on Renesas R-Mobile SoCs.
->>>
->>> Currently it's limited to R-Mobile A1 (r8a7740), but given the similarity of
->>> the SYSC System-Controller on the various SH-Mobile/R-Mobile SoCs, and the
->>> abstraction of PM domains in DT, it should be sufficiently generic to handle
->>> other SoCs in the future (e.g. SH-Mobile AP4 (sh7372), SH-Mobile AG5 (sh73a0),
->>> R-Mobile APE6 (r8a73a4)).
->>>
->>> Functionality-wise, this behaves the same as the legacy (non-DT) version
->>> (modulo missing DT support in some device drivers).
->>>
->>> Dependencies:
->>>   - This is based on Simon Horman's renesas-devel-20141030-v3.18-rc2, and
->>>     Rafael J. Wysocki's linux-pm.git#linux-next,
->>>   - This depends on "PM / Domains: Change prototype for the ->attach_dev()
->>>     callback" from Ulf hanson, which is intended to still enter v3.18-rcX
->>>     through the linux-pm tree.
->>>     As this is a one-line change, I included this patch as the first patch of
->>>     this series.  Perhaps it's even acceptable for Simon to (also) apply it, so
->>>     we don't have to wait for the v3.18-rcX that will include it?
->>>
->>> For your convenience, I've also pushed this to
->>> git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git#rmobile-genpd
->>>
->>> Changes compared to v3 (more detailed changelogs in the individual patches):
->>>   - I dropped the patch to add preliminary PM domain latencies, as I want to do
->>>     more measurements for PM domains that are currently never powered off.
->>>     Values seem to range between 8.5 and 26 us, depending on the PM domain.
->>>   - I dropped all patches related to QoS device latencies, as these need more
->>>     discussion,
->>>   - The power-{on,off}-latency properties have been changed from a single value
->>>     to a list,
->>>   - Device save/restore state latencies have been dropped, as they're Linux
->>>     driver-specific, and thus don't belong in DT,
->>>   - Use proper pm_clk_create()/pm_clk_destroy(), and update for attach_dev()
->>>     returning an error code again,
->>>   - New patch to enable module clocks if !CONFIG_PM_RUNTIME,
->>>   - Always keep D4 powered, until the new Coresight code handles runtime
->>>     PM,
->>
->> I took the time to really look at the problems you are experiencing
->> with pm runtime in hw_breackpoint.c this weekend.  The coresight
->> patchset, when supplemented with PM runtime awareness, will fix that
->> problem *only* when traces are activated.  The other obvious condition
->> is that other component using the same power domain are also converted
->> to using runtime PM.
->>
->> That being said, the coresight framework and breakpoint handler code
->> are two different subsystem.  Their only commonality is that they make
->> use of the debug registers (and not even the same ones).  As such (and
->> in my opinion) the code in hw_breakpoint should be getting its own pm
->> runtime reference without relying on the coresight subsystem.  As
->> indicated above, that would only work in some cases.
->>
->> Supplementing hw_breakpoint to interact with the runtime PM may prove
->> trickier than it seems... I'm especially worried about the
->> non-blocking requirement inherent to using "smp_call_function()".  I'm
->> stepping forward to look into that problem but before doing so I need
->> to finish runtime PM on coresight.
->
-> Matthieu, without looking more deeply myself, I'm not sure this is what
-> you need, but have a look at the "IRQ safe" mode of runtime PM.  If you
-> know your devices runtime PM callbacks are IRQ safe, you can call
-> pm_runtime_irq_safe(), and your callbacks will be called with IRQs
-> disabled.
+Hi,
 
-Thanks for the follow up - I will have to dig further into the
-irq_safe() API along with understanding the exact requirements
-stemming from hw_breakpoint.c.  I did a few test yesterday and it
-turns out the "reset_ctrl_regs()" problem in hw_breakpoint.c is
-exactly the same as a corner case popping up on coresight.  As such
-fixing one readily provides a solution for the other.
 
->
-> Kevin
+Resending with some new acks.
+Whole patchset should be taken at once (everything depends on patch 1).
+
+Changes since v1:
+=================
+1. Remove checks for non-NULL in new functions (suggested by
+   Pavel Machek).
+2. Fix typos in commit messages.
+3. Add acks: Pavel Machek, Jonghwa Lee, Lee Jones (only 5/8).
+
+
+Description:
+============
+After fixing issue with referencing old power supply after driver
+unbind in charger manager [1] I noticed that the race condition in such
+case may still exist. It would be harder to trigger but still possible.
+
+The race is between using a reference to power supply (obtained
+with power_supply_get_by_name()) and removing the driver.
+
+This patchset aims to fix the race by introducing wrappers for
+accessing the power supply function attributes.
+
+Patch 1 introduces new API. Other patches replace direct calls in
+drivers.
+
+Rebased on next-20141007.
+Tested on Trats2 board (max77693 + charger manager).
+
+
+Kindly asking for reviewing/testing the drivers, although the changes
+are straightforward.
+
+
+Best regards,
+Krzysztof
+
+
+[1] https://lkml.org/lkml/2014/10/13/272
+
+
+Krzysztof Kozlowski (8):
+  power_supply: Add API for safe access of power supply function attrs
+  power_supply: sysfs: Use power_supply_*() API for accessing function
+    attrs
+  power: 88pm860x_charger: Use power_supply_*() API for accessing
+    function attrs
+  power: ab8500: Use power_supply_*() API for accessing function attrs
+  mfd: ab8500: Use power_supply_*() API for accessing function attrs
+  power: apm_power: Use power_supply_*() API for accessing function
+    attrs
+  power: bq2415x_charger: Use power_supply_*() API for accessing
+    function attrs
+  power: charger-manager: Use power_supply_*() API for accessing
+    function attrs
+
+ drivers/mfd/ab8500-sysctrl.c       |  7 +++--
+ drivers/power/88pm860x_charger.c   | 13 +++++----
+ drivers/power/ab8500_btemp.c       |  2 +-
+ drivers/power/ab8500_charger.c     |  2 +-
+ drivers/power/ab8500_fg.c          |  2 +-
+ drivers/power/abx500_chargalg.c    |  4 +--
+ drivers/power/apm_power.c          |  4 +--
+ drivers/power/bq2415x_charger.c    |  3 +-
+ drivers/power/charger-manager.c    | 37 +++++++++++++------------
+ drivers/power/power_supply_core.c  | 57 ++++++++++++++++++++++++++++++++++++--
+ drivers/power/power_supply_sysfs.c |  6 ++--
+ include/linux/power_supply.h       | 16 +++++++++++
+ 12 files changed, 115 insertions(+), 38 deletions(-)
+
+-- 
+1.9.1
+
