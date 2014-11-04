@@ -1,73 +1,78 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v8 3/5] amba: Don't unprepare the clocks if device driver wants IRQ safe runtime PM
-Date: Tue, 04 Nov 2014 14:59:15 +0100
-Message-ID: <5164575.drMJjOBCMX@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1411031036350.1316-100000@iolanthe.rowland.org> <1464221.Cac76ZHBQl@vostro.rjw.lan> <CAPDyKFozj54qymGyq1QaOp_gLey4GOKtnAJWek+WfieJ-0gPaw@mail.gmail.com>
+From: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v3 0/5] ARM: keystone: pm: switch to use generic pm domains
+Date: Tue, 4 Nov 2014 15:41:05 +0200
+Message-ID: <5458D771.1080109@ti.com>
+References: <1414074182-25980-1-git-send-email-grygorii.strashko@ti.com> <544A99B2.8080507@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFozj54qymGyq1QaOp_gLey4GOKtnAJWek+WfieJ-0gPaw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <544A99B2.8080507-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Santosh Shilimkar <santosh.shilimkar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, November 04, 2014 10:11:35 AM Ulf Hansson wrote:
-> On 4 November 2014 02:57, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Monday, November 03, 2014 10:41:02 AM Alan Stern wrote:
-> >> On Mon, 3 Nov 2014, Russell King - ARM Linux wrote:
-> >>
-> >> > That makes it pretty horrid from the point of view of having bus
-> >> > management code, because we now have the management of the bus clock
-> >> > split between the bus layer and the device driver.
-> >> >
-> >> > This is /really/ a problem for runtime PM.  Runtime PM permits there
-> >> > to be a bus layer involved - and runtime PM can also be coupled up
-> >> > to PM domains as well.  For all this stuff, the context which the
-> >> > callbacks are called in depends on whether the driver itself has
-> >> > marked the device as having IRQ-safe callbacks.
-> >> >
-> >> > That's fine, but the bus and PM domain level code then /really/ needs
-> >> > to know what context they're being called in, so they know whether
-> >> > they can sleep or not, or they must to be written to always use
-> >> > non-sleeping functions so they work in both contexts.  If we assume
-> >> > the former, then that implies that the irq-safe flag must never change
-> >> > state between a suspend and a resume.
-> >>
-> >> If a bus subsystem or PM domain is going to allow its drivers to choose
-> >> between IRQ-safe and non-IRQ-safe runtime PM, then it is up to the
-> >> subsystem to come up with a way for drivers to indicate their choice.
-> >>
-> >> I tend to agree with Rafael that testing dev->power.irq_safe should be
-> >> good enough, with no real need for a wrapper.  But the subsystem can
-> >> use a different mechanism if it wants.
-> >>
-> >> Bear in mind, however, that once the irq_safe flag has been set, the
-> >> runtime PM core offers no way to turn it off again.
-> >
-> > There is a problem with it, though.  Say, a driver handles a device that
-> > may or may not be in a power domain.  Or in other words, the power domain
-> > the device is in may or may not be always on.  If the domain is always on,
-> > the runtime PM callbacks are IRQ-safe (they depend on the driver only).
-> > If it isn't, they may not be IRQ-safe.  How's the driver going to decide
-> > whether or not to set power.irq_safe?
-> 
-> From my point of view; the decision whether the driver will set the
-> IRQ safe flag is in principle a software design choice.
-> 
-> Currently genpd isn't able to power off, if one of its devices are IRQ
-> safe configured. That's a limitation in genpd which we need to fix and
-> it's on my TODO list.
-> 
-> My point is thus, I don't think the driver should care about PM
-> domains at all regarding using the IRQ safe option. Does that make
-> sense?
+Hi Santosh,
 
-Yes, it does, and that's the heart of the problem above.  The driver should
-not care about wherther or not the device is in a power domain, but it needs
-to know that when deciding whether or not to set power.irq_safe.  Catch 22.
+On 10/24/2014 09:25 PM, Santosh Shilimkar wrote:
+> On 10/23/2014 07:22 AM, Grygorii Strashko wrote:
+>> Hi Santosh, Kevin,
+>>
+>> This series switches Keystone 2 PM code to use Generic PM domains
+>> instead of PM clock domains because of the lack of DT support
+>> for the last.
+>> It will finally allow to enable Runtime PM for Keystone 2.
+>>
+>> Patch 1 was reused from [1].
+>>
+>> RFC version of patches can be found at [2].
+>>
+>> Changes in v3:
+>>   - handling of the case when !CONFIG_PM_RUNTIME has been
+>>     moved in PM clock framework.
+>>
+>> Changes in v2:
+>> - minor comments applied and rebased on top of Linux 3.18-rc1.
+>>
+>> Links on previous versions:
+>> v2:  https://lkml.org/lkml/2014/10/20/248
+>> v1:  https://lkml.org/lkml/2014/9/29/382
+>>
+>> [1] "[PATCH/RFC 0/4] of: Register clocks for Runtime PM with PM core"
+>>    https://lkml.org/lkml/2014/4/24/1118
+>>
+>> [2] "[RFC PATCH 0/4] ARM: keystone: pm: switch to use generic pm domains"
+>>    https://lkml.org/lkml/2014/9/25/364
+>>
+>> CC: Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>> CC: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> CC: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> CC: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+>> CC: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>>
+>> Geert Uytterhoeven (1):
+>>    PM / clock_ops: Add pm_clk_add_clk()
+>>
+>> Grygorii Strashko (4):
+>>    PM / clock_ops: make __pm_clk_enable more generic
+>>    PM / clock_ops: add and enable clocks always if !CONFIG_PM_RUNTIME
+>>    ARM: keystone: pm: switch to use generic pm domains
+>>    ARM: dts: keystone: add generic pm controller node
+>>
+> You can split this series. Lets get first 3 patches sorted out as
+> there have been active discussion on those. Once they get direction
+> and merged then you can post the keystone ones which I will be
+> happy to merge.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Sure, will do.
+
+Sorry, for delayed reply - I was ooo last week.
+
+regards,
+-grygorii
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
