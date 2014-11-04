@@ -1,170 +1,89 @@
-From: Romain Perier <romain.perier@gmail.com>
-Subject: Re: [PATCH v2 1/4] of: Rename "poweroff-source" property to "system-power-controller"
-Date: Tue, 4 Nov 2014 09:21:50 +0100
-Message-ID: <CABgxDoKOU_bCEdEFzZZ5THZ5pEMMRNZ7TWAdLDFsAd=d_FR7iw@mail.gmail.com>
-References: <1414568135-8311-1-git-send-email-romain.perier@gmail.com>
-	<1414568135-8311-2-git-send-email-romain.perier@gmail.com>
-	<CABgxDoJkQ_dRd=fkOW1xsGszup7tVETb3aWukpDbafzRUaQcFA@mail.gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 02/12] drivers: mfd: Add support for Exynos PMU driver
+Date: Tue, 4 Nov 2014 08:24:02 +0000
+Message-ID: <20141104082402.GE17577@x1>
+References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
+ <1414986790-11940-3-git-send-email-amit.daniel@samsung.com>
+ <20141103152604.GA10544@x1>
+ <002601cff7de$0f8db7e0$2ea927a0$@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f42.google.com ([209.85.216.42]:36127 "EHLO
-	mail-qa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750985AbaKDIVv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 03:21:51 -0500
-In-Reply-To: <CABgxDoJkQ_dRd=fkOW1xsGszup7tVETb3aWukpDbafzRUaQcFA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <002601cff7de$0f8db7e0$2ea927a0$@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Pankaj Dubey <pankaj.dubey@samsung.com>
+Cc: 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, 'Sangbeom Kim' <sbkim73@samsung.com>, 'Samuel Ortiz' <sameo@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>
-Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, devicetree <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Johan Hovold <johan@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi,
+On Tue, 04 Nov 2014, Pankaj Dubey wrote:
+> On Monday, November 03, 2014 8:56 PM, Lee Jones wrote,
+> > Subject: Re: [PATCH 02/12] drivers: mfd: Add support for Exynos PMU=
+ driver
+> >=20
+> > On Mon, 03 Nov 2014, Amit Daniel Kachhap wrote:
+> >=20
+> > > From: Pankaj Dubey <pankaj.dubey@samsung.com>
+> > >
+> > > This patch moves Exynos PMU driver implementation from "arm/mach-=
+exynos"
+> > > to "drivers/mfd". This driver is mainly used for setting misc bit=
+s of
+> > > register from PMU IP of Exynos SoC which will be required to conf=
+igure
+> > > before Suspend/Resume. Currently all these settings are done in
+> > > "arch/arm/mach-exynos/pmu.c" but moving ahead for ARM64 based SoC
+> > > support, there is a need of DT based implementation of PMU driver=
+=2E
+> > >
+> > > This driver uses already existing DT binding information.
+> > >
+> > > CC: Sangbeom Kim <sbkim73@samsung.com>
+> > > CC: Samuel Ortiz <sameo@linux.intel.com>
+> > > CC: Lee Jones <lee.jones@linaro.org>
+> > > Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
+> > > Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> > > ---
+> > >  arch/arm/mach-exynos/Kconfig                       |    1 +
+> > >  arch/arm/mach-exynos/Makefile                      |    2 +-
+> > >  drivers/mfd/Kconfig                                |    9 ++++++=
++++
+> > >  drivers/mfd/Makefile                               |    1 +
+> > >  .../mach-exynos/pmu.c =3D> drivers/mfd/exynos-pmu.c  |    0
+> > >  5 files changed, 12 insertions(+), 1 deletion(-)  rename
+> > > arch/arm/mach-exynos/pmu.c =3D> drivers/mfd/exynos-pmu.c (100%)
+> >=20
+> > I thought we spoke about this already [1]?  What's changed?
+> >=20
+> > [1] https://lkml.org/lkml/2014/4/29/193
+> >=20
+>=20
+> Yes correct, we had discussion about this in above post. But at that =
+time I was not having enough points to
+> put forward for keeping Exynos PMU driver in MFD folder.
 
-ping all
+There are no valid points for keeping PMU code in MFD.
 
-Romain
+> At that point there was only one idea behind keeping Exynos PMU that =
+in future it will be reused for ARM64
+> based SoC for PM related functionalities.
+> But in this series we have implemented Exynos Power Domain for Samsun=
+g's ARM64 based SoCs.
+>=20
+> As far as I can see this will in following ways -
+>=20
+> 1: Moving out PM domain specific code from mach-exynos and reuse of s=
+ame code for ARM64 based SoC also.
+> 2: Since PM domain relies on PMU registers and does not have its own =
+DT binding, MFD client and MFD device
+> is most suitable for making this kind of platform drivers.
 
-2014-10-30 11:08 GMT+01:00 Romain Perier <romain.perier@gmail.com>:
-> Johan: as you are one of the people who requested the renaming, any
-> suggestions ?
->
-> Romain
->
-> 2014-10-29 8:35 GMT+01:00 Romain Perier <romain.perier@gmail.com>:
->> As discussed on the mailing list, it makes more sense to rename this property
->> to "system-power-controller". Problem being that the word "source" usually tends
->> to be used for inputs and that is out of control of the OS. The poweroff
->> capability is an output which simply turns the system-power off. Also, this
->> property might be used by drivers which power-off the system and power back on
->> subsequent RTC alarms. This seems to suggest to remove "poweroff" from the
->> property name and to choose "system-power-controller" as the more generic name.
->> This patchs adds the required renaming changes and defines an helper function
->> which is compatible with both properties, the old one prefixed by a vendor name
->> and the new one without any prefix.
->>
->> Signed-off-by: Romain Perier <romain.perier@gmail.com>
->> ---
->>  .../devicetree/bindings/power/power-controller.txt | 18 ++++++++++++
->>  .../devicetree/bindings/power/poweroff.txt         | 18 ------------
->>  drivers/of/base.c                                  | 34 ++++++++++++++++++++++
->>  include/linux/of.h                                 | 10 ++-----
->>  4 files changed, 55 insertions(+), 25 deletions(-)
->>  create mode 100644 Documentation/devicetree/bindings/power/power-controller.txt
->>  delete mode 100644 Documentation/devicetree/bindings/power/poweroff.txt
->>
->> diff --git a/Documentation/devicetree/bindings/power/power-controller.txt b/Documentation/devicetree/bindings/power/power-controller.txt
->> new file mode 100644
->> index 0000000..942f955
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/power-controller.txt
->> @@ -0,0 +1,18 @@
->> +* Generic system power control capability
->> +
->> +Power-management integrated circuits or miscellaneous harware components are
->> +sometimes able to control the system power. The device driver associated to these
->> +components might needs to define this capability, which tells to the kernel how
->> +to switch off the system. The corresponding driver must have the standard
->> +property "system-power-controller" in its device node. This property marks the
->> +device as able to controller the system-power. In order to test if this property
->> +is found programmatically, use the helper function "of_is_system_power_controller"
->> +from of.h .
->> +
->> +Example:
->> +
->> +act8846: act8846@5 {
->> +        compatible = "active-semi,act8846";
->> +        status = "okay";
->> +        system-power-controller;
->> +}
->> diff --git a/Documentation/devicetree/bindings/power/poweroff.txt b/Documentation/devicetree/bindings/power/poweroff.txt
->> deleted file mode 100644
->> index 845868b..0000000
->> --- a/Documentation/devicetree/bindings/power/poweroff.txt
->> +++ /dev/null
->> @@ -1,18 +0,0 @@
->> -* Generic Poweroff capability
->> -
->> -Power-management integrated circuits or miscellaneous harware components are
->> -sometimes able to control the system power. The device driver associated to these
->> -components might needs to define poweroff capability, which tells to the kernel
->> -how to switch off the system. The corresponding driver must have the standard
->> -property "poweroff-source" in its device node. This property marks the device as
->> -able to shutdown the system. In order to test if this property is found
->> -programmatically, use the helper function "of_system_has_poweroff_source" from
->> -of.h .
->> -
->> -Example:
->> -
->> -act8846: act8846@5 {
->> -        compatible = "active-semi,act8846";
->> -        status = "okay";
->> -        poweroff-source;
->> -}
->> diff --git a/drivers/of/base.c b/drivers/of/base.c
->> index 74ab1b8..438e405 100644
->> --- a/drivers/of/base.c
->> +++ b/drivers/of/base.c
->> @@ -2260,3 +2260,37 @@ struct device_node *of_graph_get_remote_port(const struct device_node *node)
->>         return of_get_next_parent(np);
->>  }
->>  EXPORT_SYMBOL(of_graph_get_remote_port);
->> +
->> +/**
->> + * of_is_system_power_controller() - Tells if the property for controlling system
->> + * power is found in device_node.
->> + * @np: Pointer to the given device_node
->> + *
->> + * Return: true if present false otherwise
->> + */
->> +bool of_is_system_power_controller(const struct device_node *np)
->> +{
->> +       struct property *pp;
->> +       unsigned long flags;
->> +       char *sep;
->> +       bool found = false;
->> +
->> +       raw_spin_lock_irqsave(&devtree_lock, flags);
->> +       for_each_property_of_node(np, pp) {
->> +               if (of_prop_cmp(pp->name, "system-power-controller") == 0) {
->> +                       found = true;
->> +                       break;
->> +               }
->> +               /* Backward compatibility with previous property "vendor,system-power-controller",
->> +                * we just check that an non-empty vendor-prefix exists here
->> +                */
->> +               sep = strchr(pp->name, ',');
->> +               if (sep && sep - pp->name && of_prop_cmp(sep + 1, "system-power-controller") == 0) {
->> +                       found = true;
->> +                       break;
->> +               }
->> +       }
->> +       raw_spin_unlock_irqrestore(&devtree_lock, flags);
->> +       return found;
->> +}
->> +EXPORT_SYMBOL(of_is_system_power_controller);
->> diff --git a/include/linux/of.h b/include/linux/of.h
->> index 868fdad..e7177b3 100644
->> --- a/include/linux/of.h
->> +++ b/include/linux/of.h
->> @@ -910,15 +910,11 @@ static inline int of_changeset_update_property(struct of_changeset *ocs,
->>  /* CONFIG_OF_RESOLVE api */
->>  extern int of_resolve_phandles(struct device_node *tree);
->>
->> -/**
->> - * of_system_has_poweroff_source - Tells if poweroff-source is found for device_node
->> - * @np: Pointer to the given device_node
->> - *
->> - * return true if present false otherwise
->> - */
->> +bool of_is_system_power_controller(const struct device_node *np);
->> +
->>  static inline bool of_system_has_poweroff_source(const struct device_node *np)
->>  {
->> -       return of_property_read_bool(np, "poweroff-source");
->> +       return of_is_system_power_controller(np);
->>  }
->>
->>  #endif /* _LINUX_OF_H */
->> --
->> 1.9.1
->>
+MFD can be used to register the device, but the driver must not live
+in MFD.  Please relocate it into drivers/power.
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
