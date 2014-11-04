@@ -1,84 +1,72 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH 03/12] PM / Domains: Add notifier support for power domain transitions
-Date: Tue, 4 Nov 2014 12:14:12 +0530
-Message-ID: <CADGdYn5Prbbe6Rz=OfVMXm3dinCPrE-N0fn23dMMhZb8GzXm-Q@mail.gmail.com>
-References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
-	<1414986790-11940-4-git-send-email-amit.daniel@samsung.com>
-	<1651173.5xzCFxz3LI@vostro.rjw.lan>
-	<7hmw88gn3q.fsf@deeprootsystems.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH 7/7] mfd: ab8500: Decrement the power supply's device
+ reference counter
+Date: Tue, 04 Nov 2014 08:50:09 +0100
+Message-ID: <1415087409.2389.2.camel@AMDC1943>
+References: <1413290117-13082-1-git-send-email-k.kozlowski@samsung.com>
+ <1413290117-13082-8-git-send-email-k.kozlowski@samsung.com>
+ <20141103175945.GV12011@x1> <20141103180059.GW12011@x1>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <7hmw88gn3q.fsf@deeprootsystems.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, pankaj.dubey@samsung.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, LAK <linux-arm-kernel@lists.infradead.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:32049 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750901AbaKDHuP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 02:50:15 -0500
+In-reply-to: <20141103180059.GW12011@x1>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Lv Zheng <lv.zheng@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Anton Vorontsov <anton@enomsg.org>, Pavel Machek <pavel@ucw.cz>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Mon, Nov 3, 2014 at 11:53 PM, Kevin Hilman <khilman@kernel.org> wrote:
-> +Mike Turquette
->
-> Hi Amit,
->
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->
->> CC: Kevin, Ulf, Geert.
->>
->> On Monday, November 03, 2014 09:23:01 AM Amit Daniel Kachhap wrote:
->>> These power domain transition notifiers will assist in carrying
->>> out some activity associated with domain power on/off such as
->>> some registers which may lose its contents and need save/restore
->>> across domain power off/on.
->
-> The runtime PM framework already provides callbacks that are useful for
-> context save/restore for devices.  Could you please describe in more
-> detail which registers in which kind of devices need to be
-> saved/restored, and why they cannot be saved/restored using existing
-> mechanisms.
-Basically the requirement is mandated by exynos7 manual. It tells that
-before turning off the power domain, some clock registers need to saved
-and should be restored just after turning the power domain. These clock
-registers are not necessarily gate clocks but could be mux clocks etc.
-The driver may not have all information of these clocks also. I suppose
-these are Soc specific changes but drivers should work across Socs.
-This behavior is almost similar to suspend/resume case where a whole
-list of clock registers are saved/restored.
+On pon, 2014-11-03 at 18:00 +0000, Lee Jones wrote:
+> On Mon, 03 Nov 2014, Lee Jones wrote:
+> 
+> > On Tue, 14 Oct 2014, Krzysztof Kozlowski wrote:
+> > 
+> > > Use power_supply_put() to decrement the power supply's device reference
+> > > counter.
+> > > 
+> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > > ---
+> > >  drivers/mfd/ab8500-sysctrl.c | 2 ++
+> > >  1 file changed, 2 insertions(+)
+> > 
+> > Applied, thanks.
+> 
+> Whoops, to hasty there -- unapplied.
+> 
+> What's going on with this set?
 
-Even earlier post by Sylwester (https://lkml.org/lkml/2014/8/5/182) also points
-to the need of this feature.
->
-> Personally, I'm uncomfortable with notifiers like this because it
-> suggests that underlying frameworks are not doing the right thing, or
-> are not being used.  (I also don't like the implementation here where a
-> single global notifier list is maintained by the core, but the notifiers
-> are actually triggered by SoC specific code.)
-Yes right the global notifier block can be moved to per genpd structure.
-Also SoC trigger can be moved to core files.
->
-> IIUC, the usage in this series seems to be that certain clock related
-> registers need to be saved/restored across a power domain transition.
->
-> Wouldn't an alternative solution be to add a feature to the clock driver
-> such that the state of each clock is saved when the clock is disabled,
-> and restored when the clock is enabled?   That would allow any clock
-> context to survive any power domain transtion also, correct?
-I also thought about same. But the trigger point for this would be
-driver calling
-clk disable/enable and not the power domain. so this will lead to lot of
-save/restore for each power domain child.
->
-> I have some issues with the implementaion as well, but I think we need
-> to first sort out the real need for this before going into those
-> details.
-right :( may be I should have posted this as RFC
-Thanks for the review.
+The set should be pulled at once (everything depends on 1st patch).
 
-Regards,
-Amit D
->
-> Kevin
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+It is still waiting for reviews. I'll resend soon.
+
+Best regards,
+Krzysztof
+
+> 
+> > > diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctrl.c
+> > > index 93b2d2c32ca3..d05a5719cfc4 100644
+> > > --- a/drivers/mfd/ab8500-sysctrl.c
+> > > +++ b/drivers/mfd/ab8500-sysctrl.c
+> > > @@ -51,6 +51,7 @@ static void ab8500_power_off(void)
+> > >  
+> > >  		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
+> > >  				&val);
+> > > +		power_supply_put(psy);
+> > >  
+> > >  		if (!ret && val.intval) {
+> > >  			charger_present = true;
+> > > @@ -73,6 +74,7 @@ static void ab8500_power_off(void)
+> > >  			       pss[i]);
+> > >  			machine_restart("charging");
+> > >  		}
+> > > +		power_supply_put(psy);
+> > >  	}
+> > >  
+> > >  shutdown:
+> > 
+> 
+
