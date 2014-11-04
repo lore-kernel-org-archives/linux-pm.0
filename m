@@ -1,103 +1,82 @@
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [PATCH 0/4] (CMA_AGGRESSIVE) Make CMA memory be more aggressive
- about allocation
-Date: Tue, 4 Nov 2014 11:31:12 +0900
-Message-ID: <20141104023112.GA17804@js1304-P5Q-DELUXE>
-References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
- <20141024052553.GE15243@js1304-P5Q-DELUXE>
- <CANFwon1JUmxP5S_jrEg=k7VRBhrD9DC0cH3ve4FioSVRYK0n4A@mail.gmail.com>
- <20141103080546.GB7052@js1304-P5Q-DELUXE>
+From: Pankaj Dubey <pankaj.dubey@samsung.com>
+Subject: RE: [PATCH 02/12] drivers: mfd: Add support for Exynos PMU driver
+Date: Tue, 04 Nov 2014 08:48:25 +0530
+Message-ID: <002601cff7de$0f8db7e0$2ea927a0$@samsung.com>
+References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
+ <1414986790-11940-3-git-send-email-amit.daniel@samsung.com>
+ <20141103152604.GA10544@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <20141103080546.GB7052@js1304-P5Q-DELUXE>
-Sender: owner-linux-mm@kvack.org
-To: Hui Zhu <teawater@gmail.com>
-Cc: Hui Zhu <zhuhui@xiaomi.com>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, m.szyprowski@samsung.com, Andrew Morton <akpm@linux-foundation.org>, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, hannes@cmpxchg.org, Rik van Riel <riel@redhat.com>, mgorman@suse.de, minchan@kernel.org, nasa4836@gmail.com, ddstreet@ieee.org, Hugh Dickins <hughd@google.com>, mingo@kernel.org, rientjes@google.com, Peter Zijlstra <peterz@infradead.org>, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, Paul McKenney <paulmck@linux.vnet.ibm.com>, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, akinobu.mita@gmail.com, lauraa@codeaurora.org, vbabka@suse.cz, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com, linux-kernel@vger.
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <20141103152604.GA10544@x1>
+Content-language: en-us
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: 'Lee Jones' <lee.jones@linaro.org>, 'Amit Daniel Kachhap' <amit.daniel@samsung.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, 'Sangbeom Kim' <sbkim73@samsung.com>, 'Samuel Ortiz' <sameo@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 03, 2014 at 05:05:46PM +0900, Joonsoo Kim wrote:
-> On Mon, Nov 03, 2014 at 03:28:38PM +0800, Hui Zhu wrote:
-> > On Fri, Oct 24, 2014 at 1:25 PM, Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
-> > > On Thu, Oct 16, 2014 at 11:35:47AM +0800, Hui Zhu wrote:
-> > >> In fallbacks of page_alloc.c, MIGRATE_CMA is the fallback of
-> > >> MIGRATE_MOVABLE.
-> > >> MIGRATE_MOVABLE will use MIGRATE_CMA when it doesn't have a page in
-> > >> order that Linux kernel want.
-> > >>
-> > >> If a system that has a lot of user space program is running, for
-> > >> instance, an Android board, most of memory is in MIGRATE_MOVABLE and
-> > >> allocated.  Before function __rmqueue_fallback get memory from
-> > >> MIGRATE_CMA, the oom_killer will kill a task to release memory when
-> > >> kernel want get MIGRATE_UNMOVABLE memory because fallbacks of
-> > >> MIGRATE_UNMOVABLE are MIGRATE_RECLAIMABLE and MIGRATE_MOVABLE.
-> > >> This status is odd.  The MIGRATE_CMA has a lot free memory but Linux
-> > >> kernel kill some tasks to release memory.
-> > >>
-> > >> This patch series adds a new function CMA_AGGRESSIVE to make CMA memory
-> > >> be more aggressive about allocation.
-> > >> If function CMA_AGGRESSIVE is available, when Linux kernel call function
-> > >> __rmqueue try to get pages from MIGRATE_MOVABLE and conditions allow,
-> > >> MIGRATE_CMA will be allocated as MIGRATE_MOVABLE first.  If MIGRATE_CMA
-> > >> doesn't have enough pages for allocation, go back to allocate memory from
-> > >> MIGRATE_MOVABLE.
-> > >> Then the memory of MIGRATE_MOVABLE can be kept for MIGRATE_UNMOVABLE and
-> > >> MIGRATE_RECLAIMABLE which doesn't have fallback MIGRATE_CMA.
-> > >
-> > > Hello,
-> > >
-> > > I did some work similar to this.
-> > > Please reference following links.
-> > >
-> > > https://lkml.org/lkml/2014/5/28/64
-> > > https://lkml.org/lkml/2014/5/28/57
-> > 
-> > > I tested #1 approach and found the problem. Although free memory on
-> > > meminfo can move around low watermark, there is large fluctuation on free
-> > > memory, because too many pages are reclaimed when kswapd is invoked.
-> > > Reason for this behaviour is that successive allocated CMA pages are
-> > > on the LRU list in that order and kswapd reclaim them in same order.
-> > > These memory doesn't help watermark checking from kwapd, so too many
-> > > pages are reclaimed, I guess.
-> > 
-> > This issue can be handle with some change around shrink code.  I am
-> > trying to integrate  a patch for them.
-> > But I am not sure we met the same issue.  Do you mind give me more
-> > info about this part?
-> 
-> I forgot the issue because there is so big time-gap. I need sometime
-> to bring issue back to my brain. I will answer it soon after some thinking.
+Hi Lee,
 
-Hello,
+On Monday, November 03, 2014 8:56 PM, Lee Jones wrote,
+> Subject: Re: [PATCH 02/12] drivers: mfd: Add support for Exynos PMU d=
+river
+>=20
+> On Mon, 03 Nov 2014, Amit Daniel Kachhap wrote:
+>=20
+> > From: Pankaj Dubey <pankaj.dubey@samsung.com>
+> >
+> > This patch moves Exynos PMU driver implementation from "arm/mach-ex=
+ynos"
+> > to "drivers/mfd". This driver is mainly used for setting misc bits =
+of
+> > register from PMU IP of Exynos SoC which will be required to config=
+ure
+> > before Suspend/Resume. Currently all these settings are done in
+> > "arch/arm/mach-exynos/pmu.c" but moving ahead for ARM64 based SoC
+> > support, there is a need of DT based implementation of PMU driver.
+> >
+> > This driver uses already existing DT binding information.
+> >
+> > CC: Sangbeom Kim <sbkim73@samsung.com>
+> > CC: Samuel Ortiz <sameo@linux.intel.com>
+> > CC: Lee Jones <lee.jones@linaro.org>
+> > Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
+> > Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> > ---
+> >  arch/arm/mach-exynos/Kconfig                       |    1 +
+> >  arch/arm/mach-exynos/Makefile                      |    2 +-
+> >  drivers/mfd/Kconfig                                |    9 ++++++++=
++
+> >  drivers/mfd/Makefile                               |    1 +
+> >  .../mach-exynos/pmu.c =3D> drivers/mfd/exynos-pmu.c  |    0
+> >  5 files changed, 12 insertions(+), 1 deletion(-)  rename
+> > arch/arm/mach-exynos/pmu.c =3D> drivers/mfd/exynos-pmu.c (100%)
+>=20
+> I thought we spoke about this already [1]?  What's changed?
+>=20
+> [1] https://lkml.org/lkml/2014/4/29/193
+>=20
 
-Yes, the issue I mentioned before can be handled by modifying shrink code.
-I didn't dive into the problem so I also didn't know the detail. What
-I know is that there is large fluctuation on memory statistics and
-my guess is that it is caused by order of reclaimable pages. If we use
-#1 approach, the bulk of cma pages used for page cache or something are
-linked together and will be reclaimed all at once, because reclaiming cma
-pages are not counted and watermark check still fails until normal
-pages are reclaimed.
+Yes correct, we had discussion about this in above post. But at that ti=
+me I was not having enough points to
+put forward for keeping Exynos PMU driver in MFD folder.
+At that point there was only one idea behind keeping Exynos PMU that in=
+ future it will be reused for ARM64
+based SoC for PM related functionalities.
+But in this series we have implemented Exynos Power Domain for Samsung'=
+s ARM64 based SoCs.
 
-I think that round-robin approach is better. Reasons are on the
-following:
+As far as I can see this will in following ways -
 
-1) Want to spread CMA freepages to whole users, not specific one user.
-We can modify shirnk code not to reclaim pages on CMA, because it
-doesn't help watermark checking in some cases. In this case, if we
-don't use round-robin, one specific user whose mapping with CMA pages
-can get all the benefit. Others would take all the overhead. I think that
-spreading will make all users fair.
+1: Moving out PM domain specific code from mach-exynos and reuse of sam=
+e code for ARM64 based SoC also.
+2: Since PM domain relies on PMU registers and does not have its own DT=
+ binding, MFD client and MFD device
+is most suitable for making this kind of platform drivers.
 
-2) Using CMA freepages first needlessly imposes overhead to CMA user.
-If the system has enough normal freepages, it is better not to use it
-as much as possible.
-
-Thanks.
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> --
+> Lee Jones
+> Linaro STMicroelectronics Landing Team Lead Linaro.org =E2=94=82 Open=
+ source software
+> for ARM SoCs Follow Linaro: Facebook | Twitter | Blog
