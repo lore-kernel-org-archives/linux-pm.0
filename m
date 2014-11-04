@@ -1,70 +1,102 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: Thermal: int340x_thermal: expose acpi thermal relationship
- tables
-Date: Tue, 4 Nov 2014 15:23:11 -0800
-Message-ID: <20141104152311.39e02f7e@icelake>
-References: <20141013174111.GA8390@mwanda>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] Thermal/int3403: Fix thermal hysteresis unit conversion
+Date: Tue, 4 Nov 2014 19:31:01 -0400
+Message-ID: <20141104233059.GA5243@developer>
+References: <1415008381-11584-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <1415065834.22344.1.camel@rzhang1-toshiba>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:30561 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751502AbaKDXXp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 4 Nov 2014 18:23:45 -0500
-In-Reply-To: <20141013174111.GA8390@mwanda>
+Received: from mail-qc0-f170.google.com ([209.85.216.170]:51018 "EHLO
+	mail-qc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751129AbaKDXaf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 18:30:35 -0500
+Received: by mail-qc0-f170.google.com with SMTP id l6so11951700qcy.1
+        for <linux-pm@vger.kernel.org>; Tue, 04 Nov 2014 15:30:34 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1415065834.22344.1.camel@rzhang1-toshiba>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: linux-pm@vger.kernel.org, "Zhang, Rui" <rui.zhang@intel.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: tianyu.lan@intel.com, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Mon, 13 Oct 2014 20:41:11 +0300
-Dan Carpenter <dan.carpenter@oracle.com> wrote:
 
-> Hello Jacob Pan,
-> 
-> The patch 52b1c69d7e3c: "Thermal: int340x_thermal: expose acpi
-> thermal relationship tables" from Sep 3, 2014, leads to the following
-> static checker warning:
-> 
-> 	drivers/thermal/int340x_thermal/acpi_thermal_rel.c:327
-> acpi_thermal_rel_ioctl() warn: passing casted pointer '&count' to
-> 'acpi_parse_trt()' 64 vs 32.
-> 
-> drivers/thermal/int340x_thermal/acpi_thermal_rel.c
->    315  static long acpi_thermal_rel_ioctl(struct file *f, unsigned
-> int cmd, 316                                     unsigned long __arg)
->    317  {
->    318          int ret = 0;
->    319          unsigned long length = 0;
->    320          unsigned long count = 0;
->    321          char __user *arg = (void __user *)__arg;
->    322          struct trt *trts;
->    323          struct art *arts;
->    324  
->    325          switch (cmd) {
->    326          case ACPI_THERMAL_GET_TRT_COUNT:
->    327                  ret = acpi_parse_trt(acpi_thermal_rel_handle,
-> (int *)&count, ^^^^^^^^^^^^
-> The reason for the static checker warning is that this will not work
-> on big endian 64 bit systems.  It's most likely not a concern but it's
-> still pretty ugly.
-> 
-> You could just make "count" an int and remove the casting.  The copy
-> to user will still work if it's an int because the user pointer has
-> been casted to unsigned long __user pointer.
-you are right, I will make the change. Thanks for pointing this out and
-sorry for the late response, I was traveling.
+--huq684BweRXVnRxX
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
->    328                                  &trts, false);
->    329                  kfree(trts);
->    330                  if (!ret)
->    331                          return put_user(count, (unsigned long
-> __user *)__arg); 332                  return ret;
->    333          case ACPI_THERMAL_GET_TRT_LEN:
-> 
-> regards,
-> dan carpenter
+Rui,
 
-[Jacob Pan]
+On Tue, Nov 04, 2014 at 09:50:34AM +0800, Zhang Rui wrote:
+> On =E4=B8=80, 2014-11-03 at 01:53 -0800, Srinivas Pandruvada wrote:
+> > From: "lan,Tianyu" <tianyu.lan@intel.com>
+> >=20
+> > Thermal hysteresis represents a temperature difference.
+> > But the original code treats it as a temperature value,
+> > Convert it from tenths of degree Kelvin to Milli-Celsius
+> > by deducing 273200. This is not right.
+> >=20
+> > Kelvin and Celsius have same degree size. From temperature
+> > difference view, the conversion between tenths of degree
+> > Kelvin unit and Milli-Celsius unit is just to multiply 100.
+> >=20
+> > Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> > Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+>=20
+> Hi, Eduardo,
+>=20
+> can you please queue this patch for 3.18-rc5?
+>=20
+
+Pulled into my -fixes queue. Thanks.
+
+> thanks,
+> rui
+> > ---
+> >  drivers/thermal/int340x_thermal/int3403_thermal.c | 8 +++++++-
+> >  1 file changed, 7 insertions(+), 1 deletion(-)
+> >=20
+> > diff --git a/drivers/thermal/int340x_thermal/int3403_thermal.c b/driver=
+s/thermal/int340x_thermal/int3403_thermal.c
+> > index d20dba9..6e9fb62 100644
+> > --- a/drivers/thermal/int340x_thermal/int3403_thermal.c
+> > +++ b/drivers/thermal/int340x_thermal/int3403_thermal.c
+> > @@ -92,7 +92,13 @@ static int sys_get_trip_hyst(struct thermal_zone_dev=
+ice *tzone,
+> >  	if (ACPI_FAILURE(status))
+> >  		return -EIO;
+> > =20
+> > -	*temp =3D DECI_KELVIN_TO_MILLI_CELSIUS(hyst, KELVIN_OFFSET);
+> > +	/*
+> > +	 * Thermal hysteresis represents a temperature difference.
+> > +	 * Kelvin and Celsius have same degree size. So the
+> > +	 * conversion here between tenths of degree Kelvin unit
+> > +	 * and Milli-Celsius unit is just to multiply 100.
+> > +	 */
+> > +	*temp =3D hyst * 100;
+> > =20
+> >  	return 0;
+> >  }
+>=20
+>=20
+
+--huq684BweRXVnRxX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUWWGnAAoJEMLUO4d9pOJWwFMH+wd+2m0ObjPWQ+DE40v/25qe
+KjB1yEYqXfBIkZPo8NI8gYJCyHbW+n40xzzhEUd9yr9/qT+VTKHYxnYfPVKUyUV1
+lqXLSjVuFx4Q8AkuyhJhclH9M1IHDgPwzLzl526Ihg3Zj5v+JRzOcQ6wIytcCipm
+LwbRQwktK5RlOFnDOW9buMLXYhyFTuHpInD4Jv00Mu1SQ5WF0FXOdk5MLElCgO1H
+2Qq87HBasN2UBYCyDcYHaLRp1BH7Fw4t5YhnSHh7TBnCjvBRSQip+ke4552Ps+CV
+u6mJymBRGF8i16n8EcKMezoNeh4rKTdqXWR/eVBzz0s6J4C0vIgiWhTe4R2loiY=
+=Wjma
+-----END PGP SIGNATURE-----
+
+--huq684BweRXVnRxX--
