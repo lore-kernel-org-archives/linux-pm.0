@@ -1,121 +1,414 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: pm_runtime_enable() in ->probe()
-Date: Tue, 4 Nov 2014 11:45:31 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1411041122100.966-100000@iolanthe.rowland.org>
-References: <1541129.B9pCFxZjPi@vostro.rjw.lan>
+From: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
+Subject: [PATCH v4] cpufreq: Add SFI based cpufreq driver support
+Date: Tue, 4 Nov 2014 22:30:39 +0530
+Message-ID: <20141104170031.GA25991@intel-desktop>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:51307 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750914AbaKDQpc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 11:45:32 -0500
-In-Reply-To: <1541129.B9pCFxZjPi@vostro.rjw.lan>
+Received: from mga09.intel.com ([134.134.136.24]:50634 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750819AbaKDRAJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 4 Nov 2014 12:00:09 -0500
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: rjw@rjwysocki.net
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, vishwesh.m.rudramuni@intel.com, len.brown@intel.com, srinidhi.kasagar@intel.com
 
-On Tue, 4 Nov 2014, Rafael J. Wysocki wrote:
+This adds the SFI based cpu freq driver for some of the Intel's
+Silvermont based Atom architectures like Z34xx and Z35xx.
 
-> > I still think this needs to be handled at the level of the subsystem 
-> > and device driver, not at the level of the PM core.  If somebody needs 
-> > to insure that the device won't be powered off while the probe routine 
-> > is running, the subsystem/driver should take care of it.
-> 
-> The problem with that is that doing pm_runtime_resume() (or equivalent)
-> anywhere in the bus type's or driver's ->probe() will trigger the driver's
-> PM callbacks (for the majority of bus types).
+Signed-off-by: Rudramuni, Vishwesh M <vishwesh.m.rudramuni@intel.com>
+Signed-off-by: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+v2:
+* rephrase the Kconfig text
+* merge the header file as its not being shared with anyone
+* remove the unnecessary checks in sfi_cpufreq_target
+* style changes in kzalloc
+* fix the potential memory leak sfi_cpufreq_cpu_init
+* move the cpufreq driver flag to the structure definition
+* remove the redundant init of policy->cpu and policy->cur
+* remove the unnecessary check while init the freq table
+* merge the for loops in cpu_init
+* use cpufreq_generic_attr rather than the custom one
 
-If the subsystems do the wrong thing, they should be fixed.
+v3:
+* Add this change log
+* remove the left over not used cached_freq var
+* merge yet another for loop in cpu_init
 
-> PM domains complicate that even further, because they may override bus type
-> callbacks.
-> 
-> > After all, as Kevin points out, sometimes we really _do_ want the
-> > device to end up powered-down when the probing is finished.  There's
-> > no way the PM core can guess what the driver layer will want in the
-> > end.
-> 
-> And as I said in a reply to Kevin, if we do
-> 
-> 	pm_runtime_get_sync(dev);
-> 	ret = really_probe(dev, drv);
-> 	pm_runtime_put(dev);
-> 
-> in driver_probe_device(), then the last statement will power down the device
-> properly, unless the driver's ->probe() bumped up the reference counter.
+v4:
+* remove unnecessary pr_debug
+* rephrase Kconfig text
+* remove unused macro SFI_CPU_MAX
+* Add Viresh's Acked-by
 
-The problem is that the division of labor between the subsystem and the 
-device driver is not clearly defined, and different subsystems handle 
-things in different ways.
+ drivers/cpufreq/Kconfig.x86   |   10 ++
+ drivers/cpufreq/Makefile      |    1 +
+ drivers/cpufreq/sfi-cpufreq.c |  317 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 328 insertions(+)
+ create mode 100644 drivers/cpufreq/sfi-cpufreq.c
 
-Scenario 1:	The subsystem does all the necessary preparation
-		when the device is detected and probed.  The driver
-		doesn't have to worry about runtime PM during either
-		probe or remove.
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index 89ae88f91895..8860e8062b53 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -57,6 +57,16 @@ config X86_ACPI_CPUFREQ_CPB
+ 	  By enabling this option the acpi_cpufreq driver provides the old
+ 	  entry in addition to the new boost ones, for compatibility reasons.
+ 
++config X86_SFI_CPUFREQ
++	tristate "SFI Processor P-States driver"
++	depends on X86_INTEL_MID && SFI
++	help
++	  This adds a CPUFreq driver for some Silvermont based Intel Atom
++	  platforms (like INTEL_MID) which enumerates processor performance
++	  states through SFI.
++
++	  If in doubt, say N.
++
+ config ELAN_CPUFREQ
+ 	tristate "AMD Elan SC400 and SC410"
+ 	depends on MELAN
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index db6d9a2fea4d..c3b51efd4a85 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -41,6 +41,7 @@ obj-$(CONFIG_X86_P4_CLOCKMOD)		+= p4-clockmod.o
+ obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
+ obj-$(CONFIG_X86_INTEL_PSTATE)		+= intel_pstate.o
+ obj-$(CONFIG_X86_AMD_FREQ_SENSITIVITY)	+= amd_freq_sensitivity.o
++obj-$(CONFIG_X86_SFI_CPUFREQ)		+= sfi-cpufreq.o
+ 
+ ##################################################################################
+ # ARM SoC drivers
+diff --git a/drivers/cpufreq/sfi-cpufreq.c b/drivers/cpufreq/sfi-cpufreq.c
+new file mode 100644
+index 000000000000..d5e11dca739d
+--- /dev/null
++++ b/drivers/cpufreq/sfi-cpufreq.c
+@@ -0,0 +1,317 @@
++/*
++ *  SFI Processor P-States Driver
++ *  Based on ACPI Processor P-States Driver
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  Author: Vishwesh M Rudramuni <vishwesh.m.rudramuni@intel.com>
++ *  Author: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
++ */
++
++#include <linux/cpufreq.h>
++#include <linux/cpuidle.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/sfi.h>
++#include <linux/slab.h>
++#include <linux/smp.h>
++
++#include <asm/msr.h>
++#include <asm/processor.h>
++
++#define SFI_FREQ_MAX		32
++#define INTEL_MSR_RANGE		0xffff
++#define INTEL_MSR_BUSRATIO_MASK	0xff00
++
++static DEFINE_PER_CPU(struct sfi_cpufreq_data *, drv_data);
++static DEFINE_MUTEX(performance_mutex);
++static struct sfi_freq_table_entry sfi_cpufreq_array[SFI_FREQ_MAX];
++
++/* sfi_perf_data is a pointer to percpu data. */
++static struct sfi_processor_performance *sfi_perf_data;
++static struct cpufreq_driver sfi_cpufreq_driver;
++static int sfi_cpufreq_num;
++
++/* Performance management */
++struct sfi_processor_px {
++	u32 core_frequency;	/* megahertz */
++	u32 transition_latency;	/* microseconds */
++	u32 control;	/* control value */
++};
++
++struct sfi_processor_performance {
++	unsigned int state;
++	unsigned int state_count;
++	struct sfi_processor_px *states;
++};
++
++struct sfi_cpufreq_data {
++	struct sfi_processor_performance *sfi_data;
++	struct cpufreq_frequency_table *freq_table;
++};
++
++static int parse_freq(struct sfi_table_header *table)
++{
++	struct sfi_table_simple *sb;
++	struct sfi_freq_table_entry *pentry;
++	int total_len;
++
++	sb = (struct sfi_table_simple *)table;
++	if (!sb) {
++		pr_warn("SFI: Unable to map frequency table\n");
++		return -ENODEV;
++	}
++
++	if (!sfi_cpufreq_num) {
++		sfi_cpufreq_num = SFI_GET_NUM_ENTRIES(sb,
++			 struct sfi_freq_table_entry);
++		pentry = (struct sfi_freq_table_entry *)sb->pentry;
++		total_len = sfi_cpufreq_num * sizeof(*pentry);
++		memcpy(sfi_cpufreq_array, pentry, total_len);
++	}
++
++	return 0;
++}
++
++static int sfi_processor_get_performance_states(
++			struct sfi_processor_performance *performance)
++{
++	int result = 0;
++	int i;
++
++	performance->state_count = sfi_cpufreq_num;
++	performance->states =
++	    kmalloc(sizeof(struct sfi_processor_px) * sfi_cpufreq_num,
++		    GFP_KERNEL);
++	if (!performance->states)
++		result = -ENOMEM;
++
++	/* Populate the P-states info from the SFI table */
++	for (i = 0; i < sfi_cpufreq_num; i++) {
++		performance->states[i].core_frequency =
++			sfi_cpufreq_array[i].freq_mhz;
++		performance->states[i].transition_latency =
++			sfi_cpufreq_array[i].latency;
++		performance->states[i].control =
++			sfi_cpufreq_array[i].ctrl_val;
++		pr_debug("State [%d]: core_frequency[%d] transition_latency[%d] control[0x%x]\n",
++			i,
++			(u32) performance->states[i].core_frequency,
++			(u32) performance->states[i].transition_latency,
++			(u32) performance->states[i].control);
++	}
++
++	return result;
++}
++
++static int sfi_processor_register_performance(
++			struct sfi_processor_performance *performance)
++{
++	mutex_lock(&performance_mutex);
++
++	/* parse the freq table from SFI */
++	sfi_cpufreq_num = 0;
++	sfi_table_parse(SFI_SIG_FREQ, NULL, NULL, parse_freq);
++
++	sfi_processor_get_performance_states(performance);
++
++	mutex_unlock(&performance_mutex);
++
++	return 0;
++}
++
++void sfi_processor_unregister_performance(
++			struct sfi_processor_performance *performance)
++{
++	mutex_lock(&performance_mutex);
++	kfree(performance->states);
++	mutex_unlock(&performance_mutex);
++}
++
++static unsigned extract_freq(u32 msr, unsigned int cpu)
++{
++	struct cpufreq_frequency_table *pos;
++	struct sfi_processor_performance *perf;
++	struct sfi_cpufreq_data *data = per_cpu(drv_data, cpu);
++	u32 sfi_ctrl;
++
++	msr &= INTEL_MSR_BUSRATIO_MASK;
++	perf = data->sfi_data;
++
++	cpufreq_for_each_entry(pos, data->freq_table) {
++		sfi_ctrl = perf->states[pos->driver_data].control
++			& INTEL_MSR_BUSRATIO_MASK;
++		if (sfi_ctrl == msr)
++			return pos->frequency;
++	}
++	return data->freq_table[0].frequency;
++}
++
++static u32 get_cur_val(const struct cpumask *mask)
++{
++	u32 val, dummy;
++
++	if (unlikely(cpumask_empty(mask)))
++		return 0;
++
++	rdmsr_on_cpu(cpumask_any(mask), MSR_IA32_PERF_STATUS, &val, &dummy);
++
++	return val;
++}
++
++static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
++{
++	return extract_freq(get_cur_val(cpumask_of(cpu)), cpu);
++}
++
++static int sfi_cpufreq_target(struct cpufreq_policy *policy,
++				unsigned int index)
++{
++	struct sfi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
++	struct sfi_processor_performance *perf;
++	unsigned int next_perf_state = 0; /* Index into perf table */
++	u32 lo, hi;
++
++	perf = data->sfi_data;
++	next_perf_state = data->freq_table[index].driver_data;
++
++	rdmsr_on_cpu(policy->cpu, MSR_IA32_PERF_CTL, &lo, &hi);
++	lo = (lo & ~INTEL_MSR_RANGE) |
++		((u32) perf->states[next_perf_state].control & INTEL_MSR_RANGE);
++	wrmsr_on_cpu(policy->cpu, MSR_IA32_PERF_CTL, lo, hi);
++
++	perf->state = next_perf_state;
++
++	return 0;
++}
++
++static int sfi_cpufreq_cpu_init(struct cpufreq_policy *policy)
++{
++	unsigned int i, result = 0, valid_states = 0;
++	unsigned int cpu = policy->cpu;
++	struct sfi_cpufreq_data *data;
++	struct sfi_processor_performance *perf;
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->sfi_data = per_cpu_ptr(sfi_perf_data, cpu);
++	per_cpu(drv_data, cpu) = data;
++
++	result = sfi_processor_register_performance(data->sfi_data);
++	if (result)
++		goto err_free;
++
++	perf = data->sfi_data;
++	policy->shared_type = CPUFREQ_SHARED_TYPE_HW;
++
++	/* capability check */
++	if (perf->state_count <= 1) {
++		pr_err("No P-States\n");
++		result = -ENODEV;
++		goto err_unreg;
++	}
++
++	data->freq_table = kzalloc(sizeof(*data->freq_table) *
++				(perf->state_count+1), GFP_KERNEL);
++	if (!data->freq_table) {
++		result = -ENOMEM;
++		goto err_unreg;
++	}
++
++	policy->cpuinfo.transition_latency = 0;
++	for (i = 0; i < perf->state_count; i++) {
++		/* detect transition latency */
++		if ((perf->states[i].transition_latency * 1000) >
++		    policy->cpuinfo.transition_latency)
++			policy->cpuinfo.transition_latency =
++				perf->states[i].transition_latency * 1000;
++
++		/* initialize the freq table */
++		data->freq_table[valid_states].driver_data = i;
++		data->freq_table[valid_states].frequency =
++				perf->states[i].core_frequency * 1000;
++		valid_states++;
++
++		pr_debug("     %cP%d: %d MHz, %d uS\n",
++			(i == perf->state ? '*' : ' '), i,
++			(u32) perf->states[i].core_frequency,
++			(u32) perf->states[i].transition_latency);
++	}
++
++	data->freq_table[valid_states].frequency = CPUFREQ_TABLE_END;
++	perf->state = 0;
++
++	result = cpufreq_table_validate_and_show(policy, data->freq_table);
++	if (result)
++		goto err_freqfree;
++
++	pr_debug("CPU%u - SFI performance management activated.\n", cpu);
++
++	return result;
++
++err_freqfree:
++	kfree(data->freq_table);
++err_unreg:
++	sfi_processor_unregister_performance(perf);
++err_free:
++	kfree(data);
++	per_cpu(drv_data, cpu) = NULL;
++
++	return result;
++}
++
++static int sfi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
++{
++	struct sfi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
++
++	per_cpu(drv_data, policy->cpu) = NULL;
++	sfi_processor_unregister_performance(data->sfi_data);
++	kfree(data->freq_table);
++	kfree(data);
++
++	return 0;
++}
++
++static struct cpufreq_driver sfi_cpufreq_driver = {
++	.flags		= CPUFREQ_CONST_LOOPS,
++	.get		= get_cur_freq_on_cpu,
++	.verify		= cpufreq_generic_frequency_table_verify,
++	.target_index	= sfi_cpufreq_target,
++	.init		= sfi_cpufreq_cpu_init,
++	.exit		= sfi_cpufreq_cpu_exit,
++	.name		= "sfi-cpufreq",
++	.attr		= cpufreq_generic_attr,
++};
++
++static int __init sfi_cpufreq_init(void)
++{
++	sfi_perf_data = alloc_percpu(struct sfi_processor_performance);
++	if (!sfi_perf_data) {
++		pr_err("Memory allocation error for sfi_perf_data.\n");
++		return -ENOMEM;
++	}
++
++	return cpufreq_register_driver(&sfi_cpufreq_driver);
++}
++late_initcall(sfi_cpufreq_init);
++
++static void __exit sfi_cpufreq_exit(void)
++{
++	cpufreq_unregister_driver(&sfi_cpufreq_driver);
++	free_percpu(sfi_perf_data);
++}
++module_exit(sfi_cpufreq_exit);
++
++MODULE_AUTHOR("Vishwesh M Rudramuni <vishwesh.m.rudramuni@intel.com>");
++MODULE_DESCRIPTION("SFI P-States Driver");
++MODULE_LICENSE("GPL");
+-- 
+1.7.9.5
 
-		In this case it doesn't much matter what the PM core
-		does.  Your suggestion would work well, and the 
-		existing code is already okay.
 
-Scenario 2:	The subsystem does very little preparation and expects
-		the driver to take care of all the runtime PM.  When
-		the driver's probe routine is called, the device is 
-		still in its initial low-power state.  If the probe
-		fails, the driver wants to leave the device in a low-
-		power state and disabled for runtime PM.
-
-		In this case calling pm_runtime_get_sync() before
-		really_probe() and pm_runtime_put() afterward won't
-		work.  The pm_runtime_put() will fail and the device 
-		will be left at full power, because after the probe
-		routine doesn't succeed, runtime PM is left disabled.
-
-Nothing the PM core can do will work perfectly for both scenarios and 
-relieve the subsystem and driver of their responsibilities.
-
-
-> Suppose that the device is in a power domain that was turned off before
-> probing the driver, whatever the reason.  It needs to but turned on for
-> the driver to be able to access the device in ->probe() and now the question
-> is how to do that.
-
-How did the device get put into the power domain in the first place?  
-If the subsystem put it there, then presumably the subsystem is
-sophisticated enough about runtime PM to handle the requirements
-properly (or to be fixed if it doesn't).
-
-Similarly, power domains need to understand how runtime PM is meant to 
-work.
-
-> The natural way would be to call pm_runtime_get_sync(dev) at the beginning
-> of ->probe(), but that would trigger the driver's own ->runtime_resume() to
-> run and it would require the driver to do some extra checks in that routine.
-> Those checks wouldn't be necessary at any other time.
-> 
-> However, if the core does pm_runtime_get_sync(dev) before calling
-> really_probe(), it may turn on the power domain without invoking runtime
-> PM callbacks from the driver.
-
-What if the device is disabled for runtime PM before really_probe() 
-runs?  Isn't that the default situation?
-
-In general, if the kernel expects a device to operate properly only
-when it is bound to the right driver, then we shouldn't expect runtime
-PM to operate properly if the binding doesn't exist yet or is only
-partially complete.
-
-
-> It looks like we need an agreement on what to do and what the expectations
-> should be for each driver core operation at the high level.  That is,
-> what ->probe() should expect, what ->remove() should expect, what the   
-> state after executing each of them should be for CONFIG_PM_RUNTIME set and
-> unset etc.  Otherwise we'll always have various bus types doing what *they*
-> think is appropriate and not agreeing with each other.
-
-That's a very good idea.  If it can be done... since there is so much 
-variation among all the different subsystems.
-
-Alan Stern
-
+-- 
