@@ -1,109 +1,83 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [RFC 1/2] PM / Domains: Power on domain early during system resume
-Date: Tue, 4 Nov 2014 15:43:24 +0200
-Message-ID: <5458D7FC.2040406@ti.com>
-References: <1414072090-11293-1-git-send-email-k.kozlowski@samsung.com> <1414072090-11293-2-git-send-email-k.kozlowski@samsung.com> <7hk33iahvu.fsf@deeprootsystems.com> <1414654594.5114.8.camel@AMDC1943> <54521A8F.5070808@samsung.com> <7hbnoojm8y.fsf@deeprootsystems.com>
+From: Ezaul Zillmer <ezaulzillmer-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RFC Patch 1/4] mfd: AXP20x: Add power supply
+ bindings documentation
+Date: Tue, 4 Nov 2014 06:09:02 -0800 (PST)
+Message-ID: <553e634f-ce75-4409-883c-acbfe773e950@googlegroups.com>
+References: <20141020221959.2f312906@neptune.home>
+ <20141020223314.0484f795@neptune.home>
+ <20141021101503.GE26842@x1>
+ <20141021180916.432f02e1@neptune.home>
+ <20141021191905.GR21108@lukather>
+ <20141103210244.1425e0c7@neptune.home>
+Reply-To: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:53962 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753894AbaKDNoH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 08:44:07 -0500
-In-Reply-To: <7hbnoojm8y.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_268_1275270479.1415110142073"
+Return-path: <linux-sunxi+bncBD2ILSOUX4CBB7V34ORAKGQE7YOT2DA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+In-Reply-To: <20141103210244.1425e0c7-hY15tx4IgV39zxVx7UNMDg@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Cc: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, oliver+list-dxLnbx3+1qmEVqv0pETR8A@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, Andrzej Hajda <a.hajda@samsung.com>
-Cc: Len Brown <len.brown@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Joonyoung Shim <jy0922.shim@samsung.com>, linux-pm@vger.kernel.org, David Airlie <airlied@linux.ie>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Inki Dae <inki.dae@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, Marek Szyprowski <m.szyprowski@samsung.com>
 
-On 11/03/2014 06:13 PM, Kevin Hilman wrote:
-> Andrzej Hajda <a.hajda@samsung.com> writes:
->=20
->> On 10/30/2014 08:36 AM, Krzysztof Kozlowski wrote:
->>> On =C5=9Bro, 2014-10-29 at 10:46 -0700, Kevin Hilman wrote:
->>>> Krzysztof Kozlowski <k.kozlowski@samsung.com> writes:
->>>>
->>>>> When resuming the system the power domain has to be powered on ea=
-rly so
->>>>> any runtime PM aware devices could resume.
->>>>>
->>>>> This fixes following scenario reproduced on Exynos DRM:
->>>>> 1. Power domain is off before suspending the system.
->>>>> 2. System is suspended to RAM.
->>>>> 3. Resuming starts. The Exynos DRM driver resume callback is call=
-ed.
->>>>> 4. The Exynos DRM driver calls drm_helper_resume_force_mode which=
- turns
->>>>>     the screen on by calling exynos_dsi_dpms with DRM_MODE_DPMS_O=
-N.
->>>> Dumb Q: if the device (and power domain) were off before (and duri=
-ng)
->>>> suspend, why are they being resumed?
->>>>
->>>> Shouldn't the resume path restore things to the same state they we=
-re
->>>> before suspend?
->>> One could expect that... but the Exynos DRM driver behaves differen=
-tly
->>> (and some other drivers also). In resume method it calls
->>> drm_helper_resume_force_mode() which forces restoring mode setting
->>> configuration. Apparently setting a mode needs DPMS on:
->>> static void exynos_drm_crtc_commit(struct drm_crtc *crtc)
->>> {
->>> 	...
->>> 	exynos_drm_crtc_dpms(crtc, DRM_MODE_DPMS_ON);
->>> 	...
->>>
->>> The previous DPMS status (status during suspend) is completely igno=
-red
->>> here.
->>
->> Suspend callback switches off all connectors (thus all other devs in
->> their pipeline) by calling dpms_off,
->> in restore callback all devs are restored to their previous state by
->> calling appropriate dpms.
->> So I guess drm_helper_resume_force_mode() call at the end of resume =
-is
->> incorrect.
->=20
-> Though I'm not terribly familiar with DRM, it seems incorrect because=
- I
-> expect resume to restore the state of things when suspend happened, n=
-ot
-> forcibly resume everything.
->=20
->> On the other side it is present in many other drivers, so I am also
->> little bit confused.
->=20
-> Many other DRM drivers?  or other drivers too?
+------=_Part_268_1275270479.1415110142073
+Content-Type: text/plain; charset=UTF-8
 
-If I understand GPD code right :)
-There is "small" problem :( Now if PM domain is OFF before suspend
-- it's prohibited to turn it on during suspending/resuming.
-   commit 596ba34bcd2978ee9823cc1d84df230576f8ffb9
-   PM / Domains: System-wide transitions support for generic domains (v=
-5)
+Hi Bruno
 
-But, it is possible to have devices which supports few power states, li=
-ke:
-on, sleep/low power, off (for example OMAP devices and also I saw this
-for some I2C devices - can recollect only that it was some sensor and t=
-ouchscreen).=20
-In normal operational mode Runtime PM switches device between on and sl=
-eep/low power states,
-but during suspend device need to be woken up and reconfigured to off s=
-tate.
+Cubieboard2  + Kernel 3.18-rc3
 
-Also I found, that It looks like due to continuous refactoring the call=
- of
-pm_generic_suspend_noirq(dev) was finally dropped from pm_genpd_suspend=
-_noirq(),
-so .suspend_noirq() callback will never be called for devices from GPD.
+[   15.955655] axp20x-regulator axp20x-regulator: regulators node not found
+[   15.962580] LDO1: 1300 mV
+[   15.965732] LDO2: at 3000 mV
+[   15.969120] LDO3: at 2275 mV
+[   15.972314] LDO4: at 2800 mV
+[   15.975700] LDO5: at 2800 mV
+[   15.979075] DCDC2: at 1400 mV
+[   15.982555] DCDC3: at 1250 mV
+[   15.985706] axp20x 0-0034: AXP20X driver loaded
 
-Seems, that is the problem which this patch tries to fix and looks like=
- there are
- will be more such kind of report as GPD is become used widely.
+What was missing for axp20x work of cubieboard2 dt? 
+as poderiar do to run this drive? 
 
-regards,
--grygorii
+I thank you!
+
+-- 
+You received this message because you are subscribed to the Google Groups "linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
+
+------=_Part_268_1275270479.1415110142073
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Hi Bruno<div><br></div><div>Cubieboard2 &nbsp;+ Kernel 3.1=
+8-rc3</div><div><br></div><div>[ &nbsp; 15.955655] axp20x-regulator axp20x-=
+regulator: regulators node not found<br></div><div><div><div>[ &nbsp; 15.96=
+2580] LDO1: 1300 mV</div><div>[ &nbsp; 15.965732] LDO2: at 3000 mV</div><di=
+v>[ &nbsp; 15.969120] LDO3: at 2275 mV</div><div>[ &nbsp; 15.972314] LDO4: =
+at 2800 mV</div><div>[ &nbsp; 15.975700] LDO5: at 2800 mV</div><div>[ &nbsp=
+; 15.979075] DCDC2: at 1400 mV</div><div>[ &nbsp; 15.982555] DCDC3: at 1250=
+ mV</div><div>[ &nbsp; 15.985706] axp20x 0-0034: AXP20X driver loaded</div>=
+</div><div><br></div></div><div><div>What was missing for axp20x work of cu=
+bieboard2 dt?&nbsp;</div><div>as poderiar do to run this drive?&nbsp;</div>=
+<div><br></div><div>I thank you!</div></div></div>
+
+<p></p>
+
+-- <br />
+You received this message because you are subscribed to the Google Groups &=
+quot;linux-sunxi&quot; group.<br />
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to <a href=3D"mailto:linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org">linux-s=
+unxi+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org</a>.<br />
+For more options, visit <a href=3D"https://groups.google.com/d/optout">http=
+s://groups.google.com/d/optout</a>.<br />
+
+------=_Part_268_1275270479.1415110142073--
