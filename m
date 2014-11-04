@@ -1,91 +1,53 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH RESEND v2 0/8] power_supply: Add API for safe access of
- get_property-like function attrs
-Date: Tue, 04 Nov 2014 16:01:33 +0100
-Message-ID: <1415113301-25661-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:57078 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbaKDPBu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 10:01:50 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH RESEND v2 5/8] mfd: ab8500: Use power_supply_*() API for
+ accessing function attrs
+Date: Tue, 04 Nov 2014 16:01:38 +0100
+Message-ID: <1415113301-25661-6-git-send-email-k.kozlowski@samsung.com>
+References: <1415113301-25661-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1415113301-25661-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Anton Vorontsov <anton@enomsg.org>, Guenter Roeck <linux@roeck-us.net>, Pavel Machek <pavel@ucw.cz>, Myungjoo Ham <myungjoo.ham@samsung.com>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Replace direct calls to power supply function attributes with wrappers.
+Wrappers provide safe access in case of unregistering the power
+supply (e.g. by removing the driver). Replace:
+ - get_property -> power_supply_get_property
 
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Acked-by: Jonghwa Lee <jonghwa3.lee@samusng.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+---
+ drivers/mfd/ab8500-sysctrl.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-Resending with some new acks.
-Whole patchset should be taken at once (everything depends on patch 1).
-
-Changes since v1:
-=================
-1. Remove checks for non-NULL in new functions (suggested by
-   Pavel Machek).
-2. Fix typos in commit messages.
-3. Add acks: Pavel Machek, Jonghwa Lee, Lee Jones (only 5/8).
-
-
-Description:
-============
-After fixing issue with referencing old power supply after driver
-unbind in charger manager [1] I noticed that the race condition in such
-case may still exist. It would be harder to trigger but still possible.
-
-The race is between using a reference to power supply (obtained
-with power_supply_get_by_name()) and removing the driver.
-
-This patchset aims to fix the race by introducing wrappers for
-accessing the power supply function attributes.
-
-Patch 1 introduces new API. Other patches replace direct calls in
-drivers.
-
-Rebased on next-20141007.
-Tested on Trats2 board (max77693 + charger manager).
-
-
-Kindly asking for reviewing/testing the drivers, although the changes
-are straightforward.
-
-
-Best regards,
-Krzysztof
-
-
-[1] https://lkml.org/lkml/2014/10/13/272
-
-
-Krzysztof Kozlowski (8):
-  power_supply: Add API for safe access of power supply function attrs
-  power_supply: sysfs: Use power_supply_*() API for accessing function
-    attrs
-  power: 88pm860x_charger: Use power_supply_*() API for accessing
-    function attrs
-  power: ab8500: Use power_supply_*() API for accessing function attrs
-  mfd: ab8500: Use power_supply_*() API for accessing function attrs
-  power: apm_power: Use power_supply_*() API for accessing function
-    attrs
-  power: bq2415x_charger: Use power_supply_*() API for accessing
-    function attrs
-  power: charger-manager: Use power_supply_*() API for accessing
-    function attrs
-
- drivers/mfd/ab8500-sysctrl.c       |  7 +++--
- drivers/power/88pm860x_charger.c   | 13 +++++----
- drivers/power/ab8500_btemp.c       |  2 +-
- drivers/power/ab8500_charger.c     |  2 +-
- drivers/power/ab8500_fg.c          |  2 +-
- drivers/power/abx500_chargalg.c    |  4 +--
- drivers/power/apm_power.c          |  4 +--
- drivers/power/bq2415x_charger.c    |  3 +-
- drivers/power/charger-manager.c    | 37 +++++++++++++------------
- drivers/power/power_supply_core.c  | 57 ++++++++++++++++++++++++++++++++++++--
- drivers/power/power_supply_sysfs.c |  6 ++--
- include/linux/power_supply.h       | 16 +++++++++++
- 12 files changed, 115 insertions(+), 38 deletions(-)
-
+diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctrl.c
+index 94dbcdd2a1ff..f7f44b34896a 100644
+--- a/drivers/mfd/ab8500-sysctrl.c
++++ b/drivers/mfd/ab8500-sysctrl.c
+@@ -49,7 +49,8 @@ static void ab8500_power_off(void)
+ 		if (!psy)
+ 			continue;
+ 
+-		ret = psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &val);
++		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_ONLINE,
++				&val);
+ 
+ 		if (!ret && val.intval) {
+ 			charger_present = true;
+@@ -63,8 +64,8 @@ static void ab8500_power_off(void)
+ 	/* Check if battery is known */
+ 	psy = power_supply_get_by_name("ab8500_btemp");
+ 	if (psy) {
+-		ret = psy->get_property(psy, POWER_SUPPLY_PROP_TECHNOLOGY,
+-					&val);
++		ret = power_supply_get_property(psy,
++				POWER_SUPPLY_PROP_TECHNOLOGY, &val);
+ 		if (!ret && val.intval != POWER_SUPPLY_TECHNOLOGY_UNKNOWN) {
+ 			printk(KERN_INFO
+ 			       "Charger \"%s\" is connected with known battery."
 -- 
 1.9.1
-
