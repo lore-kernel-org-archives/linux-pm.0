@@ -1,78 +1,109 @@
-From: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v3 0/5] ARM: keystone: pm: switch to use generic pm domains
-Date: Tue, 4 Nov 2014 15:41:05 +0200
-Message-ID: <5458D771.1080109@ti.com>
-References: <1414074182-25980-1-git-send-email-grygorii.strashko@ti.com> <544A99B2.8080507@gmail.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [RFC 1/2] PM / Domains: Power on domain early during system resume
+Date: Tue, 4 Nov 2014 15:43:24 +0200
+Message-ID: <5458D7FC.2040406@ti.com>
+References: <1414072090-11293-1-git-send-email-k.kozlowski@samsung.com> <1414072090-11293-2-git-send-email-k.kozlowski@samsung.com> <7hk33iahvu.fsf@deeprootsystems.com> <1414654594.5114.8.camel@AMDC1943> <54521A8F.5070808@samsung.com> <7hbnoojm8y.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <544A99B2.8080507-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Santosh Shilimkar <santosh.shilimkar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:53962 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753894AbaKDNoH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 08:44:07 -0500
+In-Reply-To: <7hbnoojm8y.fsf@deeprootsystems.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>, Andrzej Hajda <a.hajda@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Joonyoung Shim <jy0922.shim@samsung.com>, linux-pm@vger.kernel.org, David Airlie <airlied@linux.ie>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Inki Dae <inki.dae@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, Marek Szyprowski <m.szyprowski@samsung.com>
 
-Hi Santosh,
+On 11/03/2014 06:13 PM, Kevin Hilman wrote:
+> Andrzej Hajda <a.hajda@samsung.com> writes:
+>=20
+>> On 10/30/2014 08:36 AM, Krzysztof Kozlowski wrote:
+>>> On =C5=9Bro, 2014-10-29 at 10:46 -0700, Kevin Hilman wrote:
+>>>> Krzysztof Kozlowski <k.kozlowski@samsung.com> writes:
+>>>>
+>>>>> When resuming the system the power domain has to be powered on ea=
+rly so
+>>>>> any runtime PM aware devices could resume.
+>>>>>
+>>>>> This fixes following scenario reproduced on Exynos DRM:
+>>>>> 1. Power domain is off before suspending the system.
+>>>>> 2. System is suspended to RAM.
+>>>>> 3. Resuming starts. The Exynos DRM driver resume callback is call=
+ed.
+>>>>> 4. The Exynos DRM driver calls drm_helper_resume_force_mode which=
+ turns
+>>>>>     the screen on by calling exynos_dsi_dpms with DRM_MODE_DPMS_O=
+N.
+>>>> Dumb Q: if the device (and power domain) were off before (and duri=
+ng)
+>>>> suspend, why are they being resumed?
+>>>>
+>>>> Shouldn't the resume path restore things to the same state they we=
+re
+>>>> before suspend?
+>>> One could expect that... but the Exynos DRM driver behaves differen=
+tly
+>>> (and some other drivers also). In resume method it calls
+>>> drm_helper_resume_force_mode() which forces restoring mode setting
+>>> configuration. Apparently setting a mode needs DPMS on:
+>>> static void exynos_drm_crtc_commit(struct drm_crtc *crtc)
+>>> {
+>>> 	...
+>>> 	exynos_drm_crtc_dpms(crtc, DRM_MODE_DPMS_ON);
+>>> 	...
+>>>
+>>> The previous DPMS status (status during suspend) is completely igno=
+red
+>>> here.
+>>
+>> Suspend callback switches off all connectors (thus all other devs in
+>> their pipeline) by calling dpms_off,
+>> in restore callback all devs are restored to their previous state by
+>> calling appropriate dpms.
+>> So I guess drm_helper_resume_force_mode() call at the end of resume =
+is
+>> incorrect.
+>=20
+> Though I'm not terribly familiar with DRM, it seems incorrect because=
+ I
+> expect resume to restore the state of things when suspend happened, n=
+ot
+> forcibly resume everything.
+>=20
+>> On the other side it is present in many other drivers, so I am also
+>> little bit confused.
+>=20
+> Many other DRM drivers?  or other drivers too?
 
-On 10/24/2014 09:25 PM, Santosh Shilimkar wrote:
-> On 10/23/2014 07:22 AM, Grygorii Strashko wrote:
->> Hi Santosh, Kevin,
->>
->> This series switches Keystone 2 PM code to use Generic PM domains
->> instead of PM clock domains because of the lack of DT support
->> for the last.
->> It will finally allow to enable Runtime PM for Keystone 2.
->>
->> Patch 1 was reused from [1].
->>
->> RFC version of patches can be found at [2].
->>
->> Changes in v3:
->>   - handling of the case when !CONFIG_PM_RUNTIME has been
->>     moved in PM clock framework.
->>
->> Changes in v2:
->> - minor comments applied and rebased on top of Linux 3.18-rc1.
->>
->> Links on previous versions:
->> v2:  https://lkml.org/lkml/2014/10/20/248
->> v1:  https://lkml.org/lkml/2014/9/29/382
->>
->> [1] "[PATCH/RFC 0/4] of: Register clocks for Runtime PM with PM core"
->>    https://lkml.org/lkml/2014/4/24/1118
->>
->> [2] "[RFC PATCH 0/4] ARM: keystone: pm: switch to use generic pm domains"
->>    https://lkml.org/lkml/2014/9/25/364
->>
->> CC: Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->> CC: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> CC: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> CC: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
->> CC: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
->>
->> Geert Uytterhoeven (1):
->>    PM / clock_ops: Add pm_clk_add_clk()
->>
->> Grygorii Strashko (4):
->>    PM / clock_ops: make __pm_clk_enable more generic
->>    PM / clock_ops: add and enable clocks always if !CONFIG_PM_RUNTIME
->>    ARM: keystone: pm: switch to use generic pm domains
->>    ARM: dts: keystone: add generic pm controller node
->>
-> You can split this series. Lets get first 3 patches sorted out as
-> there have been active discussion on those. Once they get direction
-> and merged then you can post the keystone ones which I will be
-> happy to merge.
+If I understand GPD code right :)
+There is "small" problem :( Now if PM domain is OFF before suspend
+- it's prohibited to turn it on during suspending/resuming.
+   commit 596ba34bcd2978ee9823cc1d84df230576f8ffb9
+   PM / Domains: System-wide transitions support for generic domains (v=
+5)
 
-Sure, will do.
+But, it is possible to have devices which supports few power states, li=
+ke:
+on, sleep/low power, off (for example OMAP devices and also I saw this
+for some I2C devices - can recollect only that it was some sensor and t=
+ouchscreen).=20
+In normal operational mode Runtime PM switches device between on and sl=
+eep/low power states,
+but during suspend device need to be woken up and reconfigured to off s=
+tate.
 
-Sorry, for delayed reply - I was ooo last week.
+Also I found, that It looks like due to continuous refactoring the call=
+ of
+pm_generic_suspend_noirq(dev) was finally dropped from pm_genpd_suspend=
+_noirq(),
+so .suspend_noirq() callback will never be called for devices from GPD.
+
+Seems, that is the problem which this patch tries to fix and looks like=
+ there are
+ will be more such kind of report as GPD is become used widely.
 
 regards,
 -grygorii
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
