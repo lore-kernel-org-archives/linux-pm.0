@@ -1,92 +1,103 @@
-From: Yao Dongdong <yaodongdong@huawei.com>
-Subject: Re: [PATCH 1/2] Thermal:Fix memory leak if occur goto unregister
-Date: Tue, 4 Nov 2014 10:01:19 +0800
-Message-ID: <5458336F.6090600@huawei.com>
-References: <5444C778.8050008@huawei.com> <20141020123338.GA3744@developer> <4D68720C2E767A4AA6A8796D42C8EB590902F30A@BGSMSX101.gar.corp.intel.com> <20141103183510.GA441@developer>
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: Re: [PATCH 0/4] (CMA_AGGRESSIVE) Make CMA memory be more aggressive
+ about allocation
+Date: Tue, 4 Nov 2014 11:31:12 +0900
+Message-ID: <20141104023112.GA17804@js1304-P5Q-DELUXE>
+References: <1413430551-22392-1-git-send-email-zhuhui@xiaomi.com>
+ <20141024052553.GE15243@js1304-P5Q-DELUXE>
+ <CANFwon1JUmxP5S_jrEg=k7VRBhrD9DC0cH3ve4FioSVRYK0n4A@mail.gmail.com>
+ <20141103080546.GB7052@js1304-P5Q-DELUXE>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga01-in.huawei.com ([119.145.14.64]:33382 "EHLO
-	szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751162AbaKDCBi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 21:01:38 -0500
-In-Reply-To: <20141103183510.GA441@developer>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <20141103080546.GB7052@js1304-P5Q-DELUXE>
+Sender: owner-linux-mm@kvack.org
+To: Hui Zhu <teawater@gmail.com>
+Cc: Hui Zhu <zhuhui@xiaomi.com>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, m.szyprowski@samsung.com, Andrew Morton <akpm@linux-foundation.org>, mina86@mina86.com, aneesh.kumar@linux.vnet.ibm.com, hannes@cmpxchg.org, Rik van Riel <riel@redhat.com>, mgorman@suse.de, minchan@kernel.org, nasa4836@gmail.com, ddstreet@ieee.org, Hugh Dickins <hughd@google.com>, mingo@kernel.org, rientjes@google.com, Peter Zijlstra <peterz@infradead.org>, keescook@chromium.org, atomlin@redhat.com, raistlin@linux.it, axboe@fb.com, Paul McKenney <paulmck@linux.vnet.ibm.com>, kirill.shutemov@linux.intel.com, n-horiguchi@ah.jp.nec.com, k.khlebnikov@samsung.com, msalter@redhat.com, deller@gmx.de, tangchen@cn.fujitsu.com, ben@decadent.org.uk, akinobu.mita@gmail.com, lauraa@codeaurora.org, vbabka@suse.cz, sasha.levin@oracle.com, vdavydov@parallels.com, suleiman@google.com, linux-kernel@vger.
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, "R, Durgadoss" <durgadoss.r@intel.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 2014/11/4 2:35, Eduardo Valentin wrote:
-> Hello,
->
-> On Mon, Nov 03, 2014 at 06:17:37PM +0000, R, Durgadoss wrote:
->>> -----Original Message-----
->>> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
->>> owner@vger.kernel.org] On Behalf Of Eduardo Valentin
->>> Sent: Monday, October 20, 2014 6:04 PM
->>> To: Yao Dongdong
->>> Cc: Zhang, Rui; linux-pm@vger.kernel.org; LKML
->>> Subject: Re: [PATCH 1/2] Thermal:Fix memory leak if occur goto unregister
->>>
->>> Hello,
->>>
->>> On Mon, Oct 20, 2014 at 04:27:36PM +0800, Yao Dongdong wrote:
->>>> Signed-off-by:yaodongdong@huawei.com
->>> Acked-by: Eduardo Valentin <edubezval@gmail.com>
->>>
->>> Rui, would you take care of this?
->>>
->> If I remember it right, this 'tz' is freed in the thermal_release()
->> function, during device_unregister().
->>
->> It is similar in all other functions in thermal_core.c
->>
->> So, Yao, Did you really test this patch ?
->> And did not see any crashes ?
->>
-> Yao, reading the patch change carefully, now I see that Durga is correct
-> here. 
->
->> Thanks,
->> Durga
->>
->>>> ---
->>>>  drivers/thermal/thermal_core.c | 1 +
->>>>  1 file changed, 1 insertion(+)
->>>>
->>>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
->>>> index 71b0ec0..5b7d466 100644
->>>> --- a/drivers/thermal/thermal_core.c
->>>> +++ b/drivers/thermal/thermal_core.c
->>>> @@ -1574,6 +1574,7 @@ struct thermal_zone_device
->>> *thermal_zone_device_register(const char *type,
->>>>  unregister:
->>>>     release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
->>>>     device_unregister(&tz->device);
->>>> +   kfree(tz);
-> The device unregister is called above your kfree call, which will cause
-> the thermal_release to be called. Did you test the code for double kfree
-> calls? Your patch probably inserts a memory corruption.
->
-> I will revert your patch from my tree until you provide an answer about
-> your testing.
+On Mon, Nov 03, 2014 at 05:05:46PM +0900, Joonsoo Kim wrote:
+> On Mon, Nov 03, 2014 at 03:28:38PM +0800, Hui Zhu wrote:
+> > On Fri, Oct 24, 2014 at 1:25 PM, Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
+> > > On Thu, Oct 16, 2014 at 11:35:47AM +0800, Hui Zhu wrote:
+> > >> In fallbacks of page_alloc.c, MIGRATE_CMA is the fallback of
+> > >> MIGRATE_MOVABLE.
+> > >> MIGRATE_MOVABLE will use MIGRATE_CMA when it doesn't have a page in
+> > >> order that Linux kernel want.
+> > >>
+> > >> If a system that has a lot of user space program is running, for
+> > >> instance, an Android board, most of memory is in MIGRATE_MOVABLE and
+> > >> allocated.  Before function __rmqueue_fallback get memory from
+> > >> MIGRATE_CMA, the oom_killer will kill a task to release memory when
+> > >> kernel want get MIGRATE_UNMOVABLE memory because fallbacks of
+> > >> MIGRATE_UNMOVABLE are MIGRATE_RECLAIMABLE and MIGRATE_MOVABLE.
+> > >> This status is odd.  The MIGRATE_CMA has a lot free memory but Linux
+> > >> kernel kill some tasks to release memory.
+> > >>
+> > >> This patch series adds a new function CMA_AGGRESSIVE to make CMA memory
+> > >> be more aggressive about allocation.
+> > >> If function CMA_AGGRESSIVE is available, when Linux kernel call function
+> > >> __rmqueue try to get pages from MIGRATE_MOVABLE and conditions allow,
+> > >> MIGRATE_CMA will be allocated as MIGRATE_MOVABLE first.  If MIGRATE_CMA
+> > >> doesn't have enough pages for allocation, go back to allocate memory from
+> > >> MIGRATE_MOVABLE.
+> > >> Then the memory of MIGRATE_MOVABLE can be kept for MIGRATE_UNMOVABLE and
+> > >> MIGRATE_RECLAIMABLE which doesn't have fallback MIGRATE_CMA.
+> > >
+> > > Hello,
+> > >
+> > > I did some work similar to this.
+> > > Please reference following links.
+> > >
+> > > https://lkml.org/lkml/2014/5/28/64
+> > > https://lkml.org/lkml/2014/5/28/57
+> > 
+> > > I tested #1 approach and found the problem. Although free memory on
+> > > meminfo can move around low watermark, there is large fluctuation on free
+> > > memory, because too many pages are reclaimed when kswapd is invoked.
+> > > Reason for this behaviour is that successive allocated CMA pages are
+> > > on the LRU list in that order and kswapd reclaim them in same order.
+> > > These memory doesn't help watermark checking from kwapd, so too many
+> > > pages are reclaimed, I guess.
+> > 
+> > This issue can be handle with some change around shrink code.  I am
+> > trying to integrate  a patch for them.
+> > But I am not sure we met the same issue.  Do you mind give me more
+> > info about this part?
+> 
+> I forgot the issue because there is so big time-gap. I need sometime
+> to bring issue back to my brain. I will answer it soon after some thinking.
 
-Yes, i have checked it and you are right, the patch will double kfree tz.
+Hello,
 
-Thansks Durga for correcting me.
+Yes, the issue I mentioned before can be handled by modifying shrink code.
+I didn't dive into the problem so I also didn't know the detail. What
+I know is that there is large fluctuation on memory statistics and
+my guess is that it is caused by order of reclaimable pages. If we use
+#1 approach, the bulk of cma pages used for page cache or something are
+linked together and will be reclaimed all at once, because reclaiming cma
+pages are not counted and watermark check still fails until normal
+pages are reclaimed.
 
-> Thanks,
->
->
-> Eduardo Valentin
->
->>>>     return ERR_PTR(result);
->>>>  }
->>>>  EXPORT_SYMBOL_GPL(thermal_zone_device_register);
->>>> --
->>>> 1.8.0.1
->>>>
->>>>
+I think that round-robin approach is better. Reasons are on the
+following:
 
+1) Want to spread CMA freepages to whole users, not specific one user.
+We can modify shirnk code not to reclaim pages on CMA, because it
+doesn't help watermark checking in some cases. In this case, if we
+don't use round-robin, one specific user whose mapping with CMA pages
+can get all the benefit. Others would take all the overhead. I think that
+spreading will make all users fair.
 
+2) Using CMA freepages first needlessly imposes overhead to CMA user.
+If the system has enough normal freepages, it is better not to use it
+as much as possible.
+
+Thanks.
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
