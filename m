@@ -1,8 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH RESEND v2 4/7] x86/olpc/xo15/sci: Use newly added
- power_supply_put API
-Date: Tue, 04 Nov 2014 16:10:33 +0100
-Message-ID: <1415113836-26098-5-git-send-email-k.kozlowski@samsung.com>
+Subject: [PATCH RESEND v2 6/7] power: bq2415x_charger: Decrement the power
+ supply's device reference counter
+Date: Tue, 04 Nov 2014 16:10:35 +0100
+Message-ID: <1415113836-26098-7-git-send-email-k.kozlowski@samsung.com>
 References: <1415113836-26098-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1415113836-26098-1-git-send-email-k.kozlowski@samsung.com>
@@ -11,35 +11,40 @@ To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Pe
 Cc: Anton Vorontsov <anton@enomsg.org>, Pavel Machek <pavel@ucw.cz>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Replace direct usage of put_device() with new API: power_supply_put().
+Use power_supply_put() to decrement the power supply's device reference
+counter (increased by power_supply_get_by_name() or
+power_supply_get_by_phandle()).
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- arch/x86/platform/olpc/olpc-xo15-sci.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/power/bq2415x_charger.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/platform/olpc/olpc-xo15-sci.c b/arch/x86/platform/olpc/olpc-xo15-sci.c
-index 08e350e757dc..55130846ac87 100644
---- a/arch/x86/platform/olpc/olpc-xo15-sci.c
-+++ b/arch/x86/platform/olpc/olpc-xo15-sci.c
-@@ -83,7 +83,7 @@ static void battery_status_changed(void)
+diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_charger.c
+index 2f80de0410d9..00809dcdd34e 100644
+--- a/drivers/power/bq2415x_charger.c
++++ b/drivers/power/bq2415x_charger.c
+@@ -1686,6 +1686,8 @@ error_4:
+ error_3:
+ 	bq2415x_power_supply_exit(bq);
+ error_2:
++	if (!IS_ERR(bq->notify_psy))
++		power_supply_put(bq->notify_psy);
+ 	kfree(name);
+ error_1:
+ 	mutex_lock(&bq2415x_id_mutex);
+@@ -1701,8 +1703,10 @@ static int bq2415x_remove(struct i2c_client *client)
+ {
+ 	struct bq2415x_device *bq = i2c_get_clientdata(client);
  
- 	if (psy) {
- 		power_supply_changed(psy);
--		put_device(psy->dev);
-+		power_supply_put(psy);
- 	}
- }
+-	if (bq->notify_psy)
++	if (bq->notify_psy) {
+ 		power_supply_unreg_notifier(&bq->nb);
++		power_supply_put(bq->notify_psy);
++	}
  
-@@ -93,7 +93,7 @@ static void ac_status_changed(void)
- 
- 	if (psy) {
- 		power_supply_changed(psy);
--		put_device(psy->dev);
-+		power_supply_put(psy);
- 	}
- }
- 
+ 	bq2415x_sysfs_exit(bq);
+ 	bq2415x_power_supply_exit(bq);
 -- 
 1.9.1
