@@ -1,60 +1,150 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v8 3/5] amba: Don't unprepare the clocks if device driver
- wants IRQ safe runtime PM
-Date: Tue, 4 Nov 2014 11:42:04 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1411041139370.966-100000@iolanthe.rowland.org>
-References: <1464221.Cac76ZHBQl@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+Date: Tue, 4 Nov 2014 17:42:13 +0100
+Message-ID: <CAPDyKFo-On2MfqHk081o_JZvwbrbi0=n9h6o7A9dJ+X4c8goKg@mail.gmail.com>
+References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
+	<2024276.CFr3nVUAlA@vostro.rjw.lan>
+	<CAPDyKFp=T8Luomeaoz5Y=eLAuFaOfdb+-aoU3QVnpjoDYVKPjg@mail.gmail.com>
+	<17707586.6KbjDf5Kep@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:51302 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750869AbaKDQmF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 11:42:05 -0500
-In-Reply-To: <1464221.Cac76ZHBQl@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <17707586.6KbjDf5Kep@vostro.rjw.lan>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron
+List-Id: linux-pm@vger.kernel.org
 
-[CC: list drastically pruned]
+On 4 November 2014 14:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, November 04, 2014 09:54:19 AM Ulf Hansson wrote:
+>> [...]
+>>
+>> > Generally, there are two or even three levels of runtime PM handling,
+>> > driver, (possibly) bus type and (possibly) PM domain (and multiple levels
+>> > of these are possible in principle).  All of them have to be initialized
+>> > at different times.
+>> >
+>> > Quite arguably, the PM domain and/or bus type runtime PM handling should
+>> > be initialized even before registerind the device or during device
+>> > registration.  Doing that later may be too late.  When the device has been
+>> > registered, runtime PM should work to an extent allowing the driver to access
+>> > the device and configure it further after calling pm_runtime_resume().
+>> >
+>> > Of course, if ->probe() is to call pm_runtime_resume() for this purpose,
+>> > it must take the fact that the driver's own ->runtime_resume() may be called
+>> > as a result of this into account.  That's why I'm asking whether or not the
+>> > core should call pm_runtime_resume() before calling really_probe() in a
+>> > followup branch of this thread.
+>>
+>> I am reading the other thread, let's see.
+>>
+>> >
+>> > The driver's own runtime PM handling must be initialized in the driver and
+>> > the only place suitable for that is ->probe().  However, it needs to be done
+>> > *before* the driver's own ->runtime_resume() or ->runtime_suspend() callback
+>> > is executed.  If that is done properly, it should be possible to cover
+>> > both the CONFIG_PM_RUNTIME set/unset cases in that code.
+>> >
+>> > And I wouldn't recommend anyone to do the runtime PM initialization in
+>> > ->runtime_resume() (when it is called for the first time), as that would be
+>> > error prone and fragile.
+>>
+>> Great! That's means we are at least aligned on this topic. :-)
+>>
+>> >
+>> >> The AMBA bus and some of its drivers a good example of how this has
+>> >> been implemented:
+>> >> driver/amba/bus.c
+>> >> drivers/mmc/host/mmci.c
+>> >> drivers/spi/spi-pl022.c
+>> >>
+>> >> This conclusion I have made from this is:
+>> >> - Using pm_runtime_get_sync() during the ->probe() path to explicitly
+>> >> power up a PM domain, is not suitable as the _common_ solution to
+>> >> solve the race condition. It certainly may work for some scenarios,
+>> >> but not for those I am looking at.
+>> >
+>> > I think, however, that it might work if the core calls pm_runtime_get_sync()
+>> > from driver_probe_device().
+>>
+>> Currently this won't work.
+>>
+>> That's because the buses' ->probe() are invoked in this path and they
+>> are doing the attachment of the device to its PM domain.
+>>
+>> In other words, we can't power up the PM domain using
+>> pm_runtime_get_sync(), until the device has been attached to its PM
+>> domain. Right?
+>
+> Yes, but my point was that those bus types might need to be changed.
+>
+> We can't make everyone happy at the same time if their ideas about what to do
+> are different.
 
-On Tue, 4 Nov 2014, Rafael J. Wysocki wrote:
+Urgh. I fail to understand this comment.
 
-> > > callbacks are called in depends on whether the driver itself has
-> > > marked the device as having IRQ-safe callbacks.
-> > > 
-> > > That's fine, but the bus and PM domain level code then /really/ needs
-> > > to know what context they're being called in, so they know whether
-> > > they can sleep or not, or they must to be written to always use
-> > > non-sleeping functions so they work in both contexts.  If we assume
-> > > the former, then that implies that the irq-safe flag must never change
-> > > state between a suspend and a resume.
-> > 
-> > If a bus subsystem or PM domain is going to allow its drivers to choose
-> > between IRQ-safe and non-IRQ-safe runtime PM, then it is up to the
-> > subsystem to come up with a way for drivers to indicate their choice.
-> > 
-> > I tend to agree with Rafael that testing dev->power.irq_safe should be 
-> > good enough, with no real need for a wrapper.  But the subsystem can 
-> > use a different mechanism if it wants.
-> > 
-> > Bear in mind, however, that once the irq_safe flag has been set, the 
-> > runtime PM core offers no way to turn it off again.
-> 
-> There is a problem with it, though.  Say, a driver handles a device that
-> may or may not be in a power domain.  Or in other words, the power domain
-> the device is in may or may not be always on.  If the domain is always on,
-> the runtime PM callbacks are IRQ-safe (they depend on the driver only).
-> If it isn't, they may not be IRQ-safe.  How's the driver going to decide
-> whether or not to set power.irq_safe?
+Why do we prefer the pm_runtime_get_sync() solution in favour of this
+pathset's approach?
 
-We already handle that sort of problem for devices that don't belong to 
-a power domain.  When the irq_safe flag is turned on, we permanently 
-increment the parent's usage counter.  After that, the parent can never 
-be runtime suspended.
+What are the benefit do we get with pm_runtime_get_sync()?
 
-Something along the same lines should work for power domains.
+>
+>>
+>> [...]
+>>
+>> >> For PM domains that are initialized in powered off state, we can't
+>> >> rely on CONFIG_PM_RUNTIME and thus not on pm_runtime_get_sync() to
+>> >> power on these PM domains. We need a different mechanism, which is
+>> >> suggested in this v3 patchset.
+>> >
+>> > That is quite simple to address, though.  You can register a bus type
+>> > notifier that will power up the domain on BUS_NOTIFY_ADD_DEVICE events
+>> > (where the target device belongs to the domain), and do that only for
+>> > CONFIG_PM_RUNTIME unset (otherwise runtime PM should take care of this).
+>>
+>> I guess we could use notifiers, but I am not sure I see any benefit.
+>> The code will be more complex and we need error handling as well.
+>
+> Like "oh, I can't power up this thing, so I should fail ->probe()"?
+>
+> Then your driver would need to depend on the specific knowledge about the
+> given PM domain, I'm afraid.
+>
+> If you want error handling like that, it needs to be handled by the core,
+> so as to avoid calling the bus type's ->probe() as well in that case.
 
-Alan Stern
+Yes, I want this error handling - but I fail to understand why the bus
+can't handle the errors.
 
+If works perfectly in this patchset's approach.
+
+>
+> So to summarize:
+>
+> - Devices need to be added to power domains before really_probe() is called
+>   for them.  Otherwise we'll have ordering problems all over.
+
+What ordering problems?
+
+>
+> - Runtime PM (if compiled in) needs to be enabled for all devices in power
+>   domains by default.  Otherwise devices may lose power as a result for
+>   power management of the other devices in the same domain.
+>
+> - The core should try to power up domains before calling really_probe() both
+>   for CONFIG_PM_RUNTIME set and unset, so ->probe() can always make the
+>   "device is accessible" assumption.
+
+And how exactly will you then power up the PM domain when
+CONFIG_PM_RUNTIME is unset?
+
+>
+> - Bus types may need to do more on top of that in their ->probe(), so the
+>   driver's ->probe() can make that assumption too in all cases.
+>
+> Does that make sense to you?
+
+I working on fully understanding your idea. :-)
+
+Kind regards
+Uffe
