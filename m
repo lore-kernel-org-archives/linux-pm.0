@@ -1,65 +1,37 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v8 3/5] amba: Don't unprepare the clocks if device driver
- wants IRQ safe runtime PM
-Date: Tue, 04 Nov 2014 09:01:32 +0100
-Message-ID: <1415088092.2389.12.camel@AMDC1943>
-References: <Pine.LNX.4.44L0.1411031036350.1316-100000@iolanthe.rowland.org>
- <1464221.Cac76ZHBQl@vostro.rjw.lan>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+Date: Tue, 4 Nov 2014 09:20:44 +0100
+Message-ID: <CAMuHMdVjzRJUL4EL1VbbYdys35f9Jz67_QSPriYnccSOnm1tQw@mail.gmail.com>
+References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
+	<5370046.DXkB0EA6xC@vostro.rjw.lan>
+	<CAPDyKFo_sxW8bE=C29fyfsqOO0tk_=eYFRkCVFRWc2kUx_bQHA@mail.gmail.com>
+	<2024276.CFr3nVUAlA@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <1464221.Cac76ZHBQl@vostro.rjw.lan>
-Sender: linux-doc-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <2024276.CFr3nVUAlA@vostro.rjw.lan>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun
 List-Id: linux-pm@vger.kernel.org
 
-On wto, 2014-11-04 at 02:57 +0100, Rafael J. Wysocki wrote:
-> On Monday, November 03, 2014 10:41:02 AM Alan Stern wrote:
-> > On Mon, 3 Nov 2014, Russell King - ARM Linux wrote:
-> > 
-> > > That makes it pretty horrid from the point of view of having bus
-> > > management code, because we now have the management of the bus clock
-> > > split between the bus layer and the device driver.
-> > > 
-> > > This is /really/ a problem for runtime PM.  Runtime PM permits there
-> > > to be a bus layer involved - and runtime PM can also be coupled up
-> > > to PM domains as well.  For all this stuff, the context which the
-> > > callbacks are called in depends on whether the driver itself has
-> > > marked the device as having IRQ-safe callbacks.
-> > > 
-> > > That's fine, but the bus and PM domain level code then /really/ needs
-> > > to know what context they're being called in, so they know whether
-> > > they can sleep or not, or they must to be written to always use
-> > > non-sleeping functions so they work in both contexts.  If we assume
-> > > the former, then that implies that the irq-safe flag must never change
-> > > state between a suspend and a resume.
-> > 
-> > If a bus subsystem or PM domain is going to allow its drivers to choose
-> > between IRQ-safe and non-IRQ-safe runtime PM, then it is up to the
-> > subsystem to come up with a way for drivers to indicate their choice.
-> > 
-> > I tend to agree with Rafael that testing dev->power.irq_safe should be 
-> > good enough, with no real need for a wrapper.  But the subsystem can 
-> > use a different mechanism if it wants.
-> > 
-> > Bear in mind, however, that once the irq_safe flag has been set, the 
-> > runtime PM core offers no way to turn it off again.
-> 
-> There is a problem with it, though.  Say, a driver handles a device that
-> may or may not be in a power domain.  Or in other words, the power domain
-> the device is in may or may not be always on.  If the domain is always on,
-> the runtime PM callbacks are IRQ-safe (they depend on the driver only).
-> If it isn't, they may not be IRQ-safe.  How's the driver going to decide
-> whether or not to set power.irq_safe?
+On Tue, Nov 4, 2014 at 2:43 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> That is quite simple to address, though.  You can register a bus type
+> notifier that will power up the domain on BUS_NOTIFY_ADD_DEVICE events
+> (where the target device belongs to the domain), and do that only for
+> CONFIG_PM_RUNTIME unset (otherwise runtime PM should take care of this).
 
-The pl330 driver (being a part of amba bus) always wants IRQ safe
-callbacks. However other amba drivers may not. So actually the driver
-always sets one or another. The dualism is present only in the
-amba/bus.c driver which encapsulates the child drivers.
+Registering a bus type notifier (that will be a platform bus notifier,
+right?) will affect
+all platform devices, not only the on-SoC devices.
 
-Best regards,
-Krzysztof
+Gr{oetje,eeting}s,
 
+                        Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
