@@ -1,94 +1,55 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v4 0/9] ARM: shmobile: R-Mobile: DT PM domain support
-Date: Mon, 03 Nov 2014 17:28:54 -0800
-Message-ID: <7hegtj69ex.fsf@deeprootsystems.com>
-References: <1415028896-9005-1-git-send-email-geert+renesas@glider.be>
-	<CANLsYkzVw_fQQuK9pEomMp6A_z2Qg9L-Hj1f+8b_1o7cFjMiDw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v8 3/5] amba: Don't unprepare the clocks if device driver wants IRQ safe runtime PM
+Date: Tue, 04 Nov 2014 02:57:30 +0100
+Message-ID: <1464221.Cac76ZHBQl@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1411031036350.1316-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:58177 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750901AbaKDB26 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 20:28:58 -0500
-Received: by mail-pa0-f49.google.com with SMTP id lj1so13285938pab.36
-        for <linux-pm@vger.kernel.org>; Mon, 03 Nov 2014 17:28:58 -0800 (PST)
-In-Reply-To: <CANLsYkzVw_fQQuK9pEomMp6A_z2Qg9L-Hj1f+8b_1o7cFjMiDw@mail.gmail.com>
-	(Mathieu Poirier's message of "Mon, 3 Nov 2014 14:02:31 -0700")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1411031036350.1316-100000@iolanthe.rowland.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mathieu Poirier <mathieu.poirier@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, linux-pm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Mathieu Poirier <mathieu.poirier@linaro.org> writes:
+On Monday, November 03, 2014 10:41:02 AM Alan Stern wrote:
+> On Mon, 3 Nov 2014, Russell King - ARM Linux wrote:
+> 
+> > That makes it pretty horrid from the point of view of having bus
+> > management code, because we now have the management of the bus clock
+> > split between the bus layer and the device driver.
+> > 
+> > This is /really/ a problem for runtime PM.  Runtime PM permits there
+> > to be a bus layer involved - and runtime PM can also be coupled up
+> > to PM domains as well.  For all this stuff, the context which the
+> > callbacks are called in depends on whether the driver itself has
+> > marked the device as having IRQ-safe callbacks.
+> > 
+> > That's fine, but the bus and PM domain level code then /really/ needs
+> > to know what context they're being called in, so they know whether
+> > they can sleep or not, or they must to be written to always use
+> > non-sleeping functions so they work in both contexts.  If we assume
+> > the former, then that implies that the irq-safe flag must never change
+> > state between a suspend and a resume.
+> 
+> If a bus subsystem or PM domain is going to allow its drivers to choose
+> between IRQ-safe and non-IRQ-safe runtime PM, then it is up to the
+> subsystem to come up with a way for drivers to indicate their choice.
+> 
+> I tend to agree with Rafael that testing dev->power.irq_safe should be 
+> good enough, with no real need for a wrapper.  But the subsystem can 
+> use a different mechanism if it wants.
+> 
+> Bear in mind, however, that once the irq_safe flag has been set, the 
+> runtime PM core offers no way to turn it off again.
 
-> On 3 November 2014 08:34, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
->>         Hi Rafael, Simon, Magnus,
->>
->> This patch series enables DT support for PM domains on Renesas R-Mobile SoCs.
->>
->> Currently it's limited to R-Mobile A1 (r8a7740), but given the similarity of
->> the SYSC System-Controller on the various SH-Mobile/R-Mobile SoCs, and the
->> abstraction of PM domains in DT, it should be sufficiently generic to handle
->> other SoCs in the future (e.g. SH-Mobile AP4 (sh7372), SH-Mobile AG5 (sh73a0),
->> R-Mobile APE6 (r8a73a4)).
->>
->> Functionality-wise, this behaves the same as the legacy (non-DT) version
->> (modulo missing DT support in some device drivers).
->>
->> Dependencies:
->>   - This is based on Simon Horman's renesas-devel-20141030-v3.18-rc2, and
->>     Rafael J. Wysocki's linux-pm.git#linux-next,
->>   - This depends on "PM / Domains: Change prototype for the ->attach_dev()
->>     callback" from Ulf hanson, which is intended to still enter v3.18-rcX
->>     through the linux-pm tree.
->>     As this is a one-line change, I included this patch as the first patch of
->>     this series.  Perhaps it's even acceptable for Simon to (also) apply it, so
->>     we don't have to wait for the v3.18-rcX that will include it?
->>
->> For your convenience, I've also pushed this to
->> git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git#rmobile-genpd
->>
->> Changes compared to v3 (more detailed changelogs in the individual patches):
->>   - I dropped the patch to add preliminary PM domain latencies, as I want to do
->>     more measurements for PM domains that are currently never powered off.
->>     Values seem to range between 8.5 and 26 us, depending on the PM domain.
->>   - I dropped all patches related to QoS device latencies, as these need more
->>     discussion,
->>   - The power-{on,off}-latency properties have been changed from a single value
->>     to a list,
->>   - Device save/restore state latencies have been dropped, as they're Linux
->>     driver-specific, and thus don't belong in DT,
->>   - Use proper pm_clk_create()/pm_clk_destroy(), and update for attach_dev()
->>     returning an error code again,
->>   - New patch to enable module clocks if !CONFIG_PM_RUNTIME,
->>   - Always keep D4 powered, until the new Coresight code handles runtime
->>     PM,
->
-> I took the time to really look at the problems you are experiencing
-> with pm runtime in hw_breackpoint.c this weekend.  The coresight
-> patchset, when supplemented with PM runtime awareness, will fix that
-> problem *only* when traces are activated.  The other obvious condition
-> is that other component using the same power domain are also converted
-> to using runtime PM.
->
-> That being said, the coresight framework and breakpoint handler code
-> are two different subsystem.  Their only commonality is that they make
-> use of the debug registers (and not even the same ones).  As such (and
-> in my opinion) the code in hw_breakpoint should be getting its own pm
-> runtime reference without relying on the coresight subsystem.  As
-> indicated above, that would only work in some cases.
->
-> Supplementing hw_breakpoint to interact with the runtime PM may prove
-> trickier than it seems... I'm especially worried about the
-> non-blocking requirement inherent to using "smp_call_function()".  I'm
-> stepping forward to look into that problem but before doing so I need
-> to finish runtime PM on coresight.
+There is a problem with it, though.  Say, a driver handles a device that
+may or may not be in a power domain.  Or in other words, the power domain
+the device is in may or may not be always on.  If the domain is always on,
+the runtime PM callbacks are IRQ-safe (they depend on the driver only).
+If it isn't, they may not be IRQ-safe.  How's the driver going to decide
+whether or not to set power.irq_safe?
 
-Matthieu, without looking more deeply myself, I'm not sure this is what
-you need, but have a look at the "IRQ safe" mode of runtime PM.  If you
-know your devices runtime PM callbacks are IRQ safe, you can call
-pm_runtime_irq_safe(), and your callbacks will be called with IRQs
-disabled.
+Rafael
 
-Kevin
