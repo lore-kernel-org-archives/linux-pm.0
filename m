@@ -1,8 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH RESEND v2 5/7] power: 88pm860x_charger: Decrement the power
- supply's device reference counter
-Date: Tue, 04 Nov 2014 16:10:34 +0100
-Message-ID: <1415113836-26098-6-git-send-email-k.kozlowski@samsung.com>
+Subject: [PATCH RESEND v2 4/7] x86/olpc/xo15/sci: Use newly added
+ power_supply_put API
+Date: Tue, 04 Nov 2014 16:10:33 +0100
+Message-ID: <1415113836-26098-5-git-send-email-k.kozlowski@samsung.com>
 References: <1415113836-26098-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1415113836-26098-1-git-send-email-k.kozlowski@samsung.com>
@@ -11,55 +11,35 @@ To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Pe
 Cc: Anton Vorontsov <anton@enomsg.org>, Pavel Machek <pavel@ucw.cz>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Use power_supply_put() to decrement the power supply's device reference
-counter.
+Replace direct usage of put_device() with new API: power_supply_put().
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- drivers/power/88pm860x_charger.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ arch/x86/platform/olpc/olpc-xo15-sci.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/88pm860x_charger.c b/drivers/power/88pm860x_charger.c
-index 534b3e2e3487..48aa0d829cb0 100644
---- a/drivers/power/88pm860x_charger.c
-+++ b/drivers/power/88pm860x_charger.c
-@@ -298,13 +298,18 @@ static int set_charging_fsm(struct pm860x_charger_info *info)
- 		return -EINVAL;
- 	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_VOLTAGE_NOW,
- 			&data);
--	if (ret)
-+	if (ret) {
+diff --git a/arch/x86/platform/olpc/olpc-xo15-sci.c b/arch/x86/platform/olpc/olpc-xo15-sci.c
+index 08e350e757dc..55130846ac87 100644
+--- a/arch/x86/platform/olpc/olpc-xo15-sci.c
++++ b/arch/x86/platform/olpc/olpc-xo15-sci.c
+@@ -83,7 +83,7 @@ static void battery_status_changed(void)
+ 
+ 	if (psy) {
+ 		power_supply_changed(psy);
+-		put_device(psy->dev);
 +		power_supply_put(psy);
- 		return ret;
-+	}
- 	vbatt = data.intval / 1000;
- 
- 	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_PRESENT, &data);
--	if (ret)
-+	if (ret) {
-+		power_supply_put(psy);
- 		return ret;
-+	}
-+	power_supply_put(psy);
- 
- 	mutex_lock(&info->lock);
- 	info->present = data.intval;
-@@ -447,6 +452,7 @@ static irqreturn_t pm860x_temp_handler(int irq, void *data)
- 
- 	set_charging_fsm(info);
- out:
-+	power_supply_put(psy);
- 	return IRQ_HANDLED;
+ 	}
  }
  
-@@ -507,6 +513,7 @@ static irqreturn_t pm860x_done_handler(int irq, void *data)
+@@ -93,7 +93,7 @@ static void ac_status_changed(void)
  
- out:
- 	mutex_unlock(&info->lock);
-+	power_supply_put(psy);
- 	dev_dbg(info->dev, "%s, Allowed: %d\n", __func__, info->allowed);
- 	set_charging_fsm(info);
+ 	if (psy) {
+ 		power_supply_changed(psy);
+-		put_device(psy->dev);
++		power_supply_put(psy);
+ 	}
+ }
  
 -- 
 1.9.1
