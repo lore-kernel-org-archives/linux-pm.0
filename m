@@ -1,55 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v8 3/5] amba: Don't unprepare the clocks if device driver wants IRQ safe runtime PM
-Date: Tue, 04 Nov 2014 02:57:30 +0100
-Message-ID: <1464221.Cac76ZHBQl@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1411031036350.1316-100000@iolanthe.rowland.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] Thermal/int3403: Fix thermal hysteresis unit conversion
+Date: Tue, 04 Nov 2014 09:50:34 +0800
+Message-ID: <1415065834.22344.1.camel@rzhang1-toshiba>
+References: <1415008381-11584-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1411031036350.1316-100000@iolanthe.rowland.org>
-Sender: linux-doc-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:9026 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751218AbaKDBxE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 3 Nov 2014 20:53:04 -0500
+In-Reply-To: <1415008381-11584-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: tianyu.lan@intel.com, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Monday, November 03, 2014 10:41:02 AM Alan Stern wrote:
-> On Mon, 3 Nov 2014, Russell King - ARM Linux wrote:
-> 
-> > That makes it pretty horrid from the point of view of having bus
-> > management code, because we now have the management of the bus clock
-> > split between the bus layer and the device driver.
-> > 
-> > This is /really/ a problem for runtime PM.  Runtime PM permits there
-> > to be a bus layer involved - and runtime PM can also be coupled up
-> > to PM domains as well.  For all this stuff, the context which the
-> > callbacks are called in depends on whether the driver itself has
-> > marked the device as having IRQ-safe callbacks.
-> > 
-> > That's fine, but the bus and PM domain level code then /really/ needs
-> > to know what context they're being called in, so they know whether
-> > they can sleep or not, or they must to be written to always use
-> > non-sleeping functions so they work in both contexts.  If we assume
-> > the former, then that implies that the irq-safe flag must never change
-> > state between a suspend and a resume.
-> 
-> If a bus subsystem or PM domain is going to allow its drivers to choose
-> between IRQ-safe and non-IRQ-safe runtime PM, then it is up to the
-> subsystem to come up with a way for drivers to indicate their choice.
-> 
-> I tend to agree with Rafael that testing dev->power.irq_safe should be 
-> good enough, with no real need for a wrapper.  But the subsystem can 
-> use a different mechanism if it wants.
-> 
-> Bear in mind, however, that once the irq_safe flag has been set, the 
-> runtime PM core offers no way to turn it off again.
+On =E4=B8=80, 2014-11-03 at 01:53 -0800, Srinivas Pandruvada wrote:
+> From: "lan,Tianyu" <tianyu.lan@intel.com>
+>=20
+> Thermal hysteresis represents a temperature difference.
+> But the original code treats it as a temperature value,
+> Convert it from tenths of degree Kelvin to Milli-Celsius
+> by deducing 273200. This is not right.
+>=20
+> Kelvin and Celsius have same degree size. From temperature
+> difference view, the conversion between tenths of degree
+> Kelvin unit and Milli-Celsius unit is just to multiply 100.
+>=20
+> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 
-There is a problem with it, though.  Say, a driver handles a device that
-may or may not be in a power domain.  Or in other words, the power domain
-the device is in may or may not be always on.  If the domain is always on,
-the runtime PM callbacks are IRQ-safe (they depend on the driver only).
-If it isn't, they may not be IRQ-safe.  How's the driver going to decide
-whether or not to set power.irq_safe?
+Hi, Eduardo,
 
-Rafael
+can you please queue this patch for 3.18-rc5?
+
+thanks,
+rui
+> ---
+>  drivers/thermal/int340x_thermal/int3403_thermal.c | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/thermal/int340x_thermal/int3403_thermal.c b/driv=
+ers/thermal/int340x_thermal/int3403_thermal.c
+> index d20dba9..6e9fb62 100644
+> --- a/drivers/thermal/int340x_thermal/int3403_thermal.c
+> +++ b/drivers/thermal/int340x_thermal/int3403_thermal.c
+> @@ -92,7 +92,13 @@ static int sys_get_trip_hyst(struct thermal_zone_d=
+evice *tzone,
+>  	if (ACPI_FAILURE(status))
+>  		return -EIO;
+> =20
+> -	*temp =3D DECI_KELVIN_TO_MILLI_CELSIUS(hyst, KELVIN_OFFSET);
+> +	/*
+> +	 * Thermal hysteresis represents a temperature difference.
+> +	 * Kelvin and Celsius have same degree size. So the
+> +	 * conversion here between tenths of degree Kelvin unit
+> +	 * and Milli-Celsius unit is just to multiply 100.
+> +	 */
+> +	*temp =3D hyst * 100;
+> =20
+>  	return 0;
+>  }
+
 
