@@ -1,127 +1,97 @@
-From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [RFC Patch 1/4] mfd: AXP20x: Add power supply
- bindings documentation
-Date: Tue, 4 Nov 2014 15:31:17 +0100
-Message-ID: <20141104143117.GC26729@lukather>
-References: <20141020221959.2f312906@neptune.home>
- <20141020223314.0484f795@neptune.home>
- <20141021101503.GE26842@x1>
- <20141021180916.432f02e1@neptune.home>
- <20141021191905.GR21108@lukather>
- <20141103210244.1425e0c7@neptune.home>
-Reply-To: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: Mathieu Poirier <mathieu.poirier@linaro.org>
+Subject: Re: [PATCH v4 0/9] ARM: shmobile: R-Mobile: DT PM domain support
+Date: Tue, 4 Nov 2014 07:57:14 -0700
+Message-ID: <CANLsYkzAsvJE_TR4AvP6PEXOO-jkcwMQE_GfBD-jS9k5BOmOeg@mail.gmail.com>
+References: <1415028896-9005-1-git-send-email-geert+renesas@glider.be>
+	<CANLsYkzVw_fQQuK9pEomMp6A_z2Qg9L-Hj1f+8b_1o7cFjMiDw@mail.gmail.com>
+	<7hegtj69ex.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="E13BgyNx05feLLmH"
-Return-path: <linux-sunxi+bncBD2ZNBF5VYJRBF6I4ORAKGQEEKRI7JA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20141103210244.1425e0c7-hY15tx4IgV39zxVx7UNMDg@public.gmane.org>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Olliver Schinagl <oliver+list-dxLnbx3+1qmEVqv0pETR8A@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <7hegtj69ex.fsf@deeprootsystems.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, linux-pm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On 3 November 2014 18:28, Kevin Hilman <khilman@kernel.org> wrote:
+> Mathieu Poirier <mathieu.poirier@linaro.org> writes:
+>
+>> On 3 November 2014 08:34, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+>>>         Hi Rafael, Simon, Magnus,
+>>>
+>>> This patch series enables DT support for PM domains on Renesas R-Mobile SoCs.
+>>>
+>>> Currently it's limited to R-Mobile A1 (r8a7740), but given the similarity of
+>>> the SYSC System-Controller on the various SH-Mobile/R-Mobile SoCs, and the
+>>> abstraction of PM domains in DT, it should be sufficiently generic to handle
+>>> other SoCs in the future (e.g. SH-Mobile AP4 (sh7372), SH-Mobile AG5 (sh73a0),
+>>> R-Mobile APE6 (r8a73a4)).
+>>>
+>>> Functionality-wise, this behaves the same as the legacy (non-DT) version
+>>> (modulo missing DT support in some device drivers).
+>>>
+>>> Dependencies:
+>>>   - This is based on Simon Horman's renesas-devel-20141030-v3.18-rc2, and
+>>>     Rafael J. Wysocki's linux-pm.git#linux-next,
+>>>   - This depends on "PM / Domains: Change prototype for the ->attach_dev()
+>>>     callback" from Ulf hanson, which is intended to still enter v3.18-rcX
+>>>     through the linux-pm tree.
+>>>     As this is a one-line change, I included this patch as the first patch of
+>>>     this series.  Perhaps it's even acceptable for Simon to (also) apply it, so
+>>>     we don't have to wait for the v3.18-rcX that will include it?
+>>>
+>>> For your convenience, I've also pushed this to
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git#rmobile-genpd
+>>>
+>>> Changes compared to v3 (more detailed changelogs in the individual patches):
+>>>   - I dropped the patch to add preliminary PM domain latencies, as I want to do
+>>>     more measurements for PM domains that are currently never powered off.
+>>>     Values seem to range between 8.5 and 26 us, depending on the PM domain.
+>>>   - I dropped all patches related to QoS device latencies, as these need more
+>>>     discussion,
+>>>   - The power-{on,off}-latency properties have been changed from a single value
+>>>     to a list,
+>>>   - Device save/restore state latencies have been dropped, as they're Linux
+>>>     driver-specific, and thus don't belong in DT,
+>>>   - Use proper pm_clk_create()/pm_clk_destroy(), and update for attach_dev()
+>>>     returning an error code again,
+>>>   - New patch to enable module clocks if !CONFIG_PM_RUNTIME,
+>>>   - Always keep D4 powered, until the new Coresight code handles runtime
+>>>     PM,
+>>
+>> I took the time to really look at the problems you are experiencing
+>> with pm runtime in hw_breackpoint.c this weekend.  The coresight
+>> patchset, when supplemented with PM runtime awareness, will fix that
+>> problem *only* when traces are activated.  The other obvious condition
+>> is that other component using the same power domain are also converted
+>> to using runtime PM.
+>>
+>> That being said, the coresight framework and breakpoint handler code
+>> are two different subsystem.  Their only commonality is that they make
+>> use of the debug registers (and not even the same ones).  As such (and
+>> in my opinion) the code in hw_breakpoint should be getting its own pm
+>> runtime reference without relying on the coresight subsystem.  As
+>> indicated above, that would only work in some cases.
+>>
+>> Supplementing hw_breakpoint to interact with the runtime PM may prove
+>> trickier than it seems... I'm especially worried about the
+>> non-blocking requirement inherent to using "smp_call_function()".  I'm
+>> stepping forward to look into that problem but before doing so I need
+>> to finish runtime PM on coresight.
+>
+> Matthieu, without looking more deeply myself, I'm not sure this is what
+> you need, but have a look at the "IRQ safe" mode of runtime PM.  If you
+> know your devices runtime PM callbacks are IRQ safe, you can call
+> pm_runtime_irq_safe(), and your callbacks will be called with IRQs
+> disabled.
 
---E13BgyNx05feLLmH
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks for the follow up - I will have to dig further into the
+irq_safe() API along with understanding the exact requirements
+stemming from hw_breakpoint.c.  I did a few test yesterday and it
+turns out the "reset_ctrl_regs()" problem in hw_breakpoint.c is
+exactly the same as a corner case popping up on coresight.  As such
+fixing one readily provides a solution for the other.
 
-Hi Bruno,
-
-On Mon, Nov 03, 2014 at 09:02:44PM +0100, Bruno Pr=E9mont wrote:=20
-> Doing something like this?:
->=20
-> --- a/arch/arm/boot/dts/sun7i-a20-cubietruck.dts
-> +++ b/arch/arm/boot/dts/sun7i-a20-cubietruck.dts
-> @@ -126,9 +126,11 @@
->                                 interrupt-controller;
->                                 #interrupt-cells =3D <1>;
-> =20
-> -                               backup =3D <3000000 200>;
-> -                               battery.resistance =3D <100>;
-> -                               battery.capacity =3D <2000>;
-> +                               x-powers,backup =3D <3000000 200>;
-
-I don't really remember what was that property used for. Would it make
-sense to put it into the battery node?
-
-> +                               battery: battery@0 {
-> +                                       x-powers,resistance =3D <100>;
-> +                                       x-powers,capacity =3D <2000>;
-> +                               };
->                         };
->                 };
->=20
-> What are the rules to define the label after the colon?
-> Looking at the existing nodes it's either some address or a number...
-
-It's not called the label, but the node name, and it's defined in the
-ePAPR.
-
-It's <device-class>[@<address>]
-
-The address being something to identify the node on a bus, so it can
-be a chip select number, a memory address, an i2c address,
-etc. there's really no absolute answer here.
-
-I don't think you really need one in this case.
-
-> and then the following in driver code (also adjusting the other
-> property names accessed)?:
->=20
-> @@ -678,11 +677,11 @@ static int axp20x_battery_config(struct platform_de=
-vice *pdev,
->         if (ret)
->                 return ret;
-> =20
-> -       np =3D of_node_get(axp20x->dev->of_node);
-> +       np =3D of_find_node_by_name(axp20x->dev->of_node, "battery");
->         if (!np)
->                 return -ENODEV;
-> =20
-> -       ret =3D of_property_read_u32_array(np, "battery.ocv", ocv, 16);
-> +       ret =3D of_property_read_u32_array(np, "x-powers,ocv", ocv, 16);
->         for (i =3D 0; ret =3D=3D 0 && i < ARRAY_SIZE(ocv); i++)
->                 if (ocv[i] > 100) {
->                         dev_warn(&pdev->dev, "OCV[%d] %u > 100\n", i, ocv=
-[i]);
-
-Yep, it looks sensible.
-
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---E13BgyNx05feLLmH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUWOM1AAoJEBx+YmzsjxAg1WwQAMDbMeqLnmCtULwz/x0yQrZN
-9mgu2+JFchfr7zPfWsO0dIQ4uj5bGQgzkswxBKawK/c4MG9BZvlBDF4mSGkbzHLK
-C4FaHBHCjxFcsap8Iy8dl9/9hkJ54ZCYX7eRr69pJ+18Qa3sneNxBM/galD1rzpW
-nP+a0oEtsT2I0BwYXsztQKyQkAbKGGXwHqQrhlNvp6z0nmUlu5ZLKLuGAff1yW3x
-deccGCO51i2zI6+I+Y/1VikSt/4EbsqMqg+lM9ZikGPjOTz5J1s5oa102rJTD9Ij
-ogH0rMD3tmovHzgQHhN4R4o17Cm2wxRFZglFRyLE7vqjdJYhe0L63cVJ3k7Rhjs6
-WMaf1aBF7cjnUtGGiq8U0OxKXSu61Ghq+iAMjBTqaersF6BGy72P2LAovpb5XNcm
-KY8/xhVJmuPE/tcT/Y8sUDL4FPPDF/rXn+Myem/pcJ3diBE24H5yPieveKhIVTQs
-fwke802rQ/UWeQjEkojm0Fv5r0WV/HZOuHbwZHvgT8WJO1Jay/jLMzyD6Xhk8C1+
-3TKrvGKBM/T0rmRybQv9IJEAcdVezdKEiSBneaITIbraCZDDPM0X7Czh9BZ0xjHs
-tXVsDx3tA6D4x9bc9o84V/I2h8Ft/j/DpECIhlXnbNDp4aT0Ysq69DHE3EnxVh80
-7Ke8BxUn4q1woTbAtgwA
-=G5Yt
------END PGP SIGNATURE-----
-
---E13BgyNx05feLLmH--
+>
+> Kevin
