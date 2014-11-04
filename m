@@ -1,110 +1,107 @@
 From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: [PATCH 2/2] ARM: mvebu: Remove thermal quirk for A375 Z1 revision
-Date: Tue,  4 Nov 2014 13:00:39 -0300
-Message-ID: <1415116839-4323-3-git-send-email-ezequiel.garcia@free-electrons.com>
+Subject: [PATCH 1/2] thermal: armada: Remove support for A375-Z1 SoC
+Date: Tue,  4 Nov 2014 13:00:38 -0300
+Message-ID: <1415116839-4323-2-git-send-email-ezequiel.garcia@free-electrons.com>
 References: <1415116839-4323-1-git-send-email-ezequiel.garcia@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:35984 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754658AbaKDQCb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 11:02:31 -0500
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1415116839-4323-1-git-send-email-ezequiel.garcia@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Zhang Rui <rui.zhang@intel.com>, Jason Cooper <jason@lakedaemon.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>
-Cc: linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 The Armada 375 Z1 SoC revision is no longer supported. This commit
-removes the quirk required to "fix" the reg property and the compatible
-string of the thermal devicetree node.
+removes the quirk needed for the thermal sensor.
 
 Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 ---
- arch/arm/mach-mvebu/board-v7.c | 66 +-----------------------------------------
- 1 file changed, 1 insertion(+), 65 deletions(-)
+ .../devicetree/bindings/thermal/armada-thermal.txt   |  8 --------
+ drivers/thermal/armada_thermal.c                     | 20 --------------------
+ 2 files changed, 28 deletions(-)
 
-diff --git a/arch/arm/mach-mvebu/board-v7.c b/arch/arm/mach-mvebu/board-v7.c
-index 6478626..461e726 100644
---- a/arch/arm/mach-mvebu/board-v7.c
-+++ b/arch/arm/mach-mvebu/board-v7.c
-@@ -124,76 +124,12 @@ static void __init i2c_quirk(void)
- 	return;
- }
+diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+index 4cf0249..4698e0e 100644
+--- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+@@ -5,17 +5,9 @@ Required properties:
+ - compatible:	Should be set to one of the following:
+ 		marvell,armada370-thermal
+ 		marvell,armada375-thermal
+-		marvell,armada375-z1-thermal
+ 		marvell,armada380-thermal
+ 		marvell,armadaxp-thermal
  
--#define A375_Z1_THERMAL_FIXUP_OFFSET 0xc
+-		Note: As the name suggests, "marvell,armada375-z1-thermal"
+-		applies for the SoC Z1 stepping only. On such stepping
+-		some quirks need to be done and the register offset differs
+-		from the one in the A0 stepping.
+-		The operating system may auto-detect the SoC stepping and
+-		update the compatible and register offsets at runtime.
 -
--static void __init thermal_quirk(void)
--{
--	struct device_node *np;
--	u32 dev, rev;
--	int res;
+ - reg:		Device's register space.
+ 		Two entries are expected, see the examples below.
+ 		The first one is required for the sensor register;
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 9d1420a..9c8e783 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -35,10 +35,6 @@
+ #define PMU_TDC0_OTF_CAL_MASK		(0x1 << 30)
+ #define PMU_TDC0_START_CAL_MASK		(0x1 << 25)
+ 
+-#define A375_Z1_CAL_RESET_LSB		0x8011e214
+-#define A375_Z1_CAL_RESET_MSB		0x30a88019
+-#define A375_Z1_WORKAROUND_BIT		BIT(9)
 -
--	/*
--	 * The early SoC Z1 revision needs a quirk to be applied in order
--	 * for the thermal controller to work properly. This quirk breaks
--	 * the thermal support if applied on a SoC that doesn't need it,
--	 * so we enforce the SoC revision to be known.
--	 */
--	res = mvebu_get_soc_id(&dev, &rev);
--	if (res < 0 || (res == 0 && rev > ARMADA_375_Z1_REV))
--		return;
--
--	for_each_compatible_node(np, NULL, "marvell,armada375-thermal") {
--		struct property *prop;
--		__be32 newval, *newprop, *oldprop;
--		int len;
--
--		/*
--		 * The register offset is at a wrong location. This quirk
--		 * creates a new reg property as a clone of the previous
--		 * one and corrects the offset.
--		 */
--		oldprop = (__be32 *)of_get_property(np, "reg", &len);
--		if (!oldprop)
--			continue;
--
--		/* Create a duplicate of the 'reg' property */
--		prop = kzalloc(sizeof(*prop), GFP_KERNEL);
--		prop->length = len;
--		prop->name = kstrdup("reg", GFP_KERNEL);
--		prop->value = kzalloc(len, GFP_KERNEL);
--		memcpy(prop->value, oldprop, len);
--
--		/* Fixup the register offset of the second entry */
--		oldprop += 2;
--		newprop = (__be32 *)prop->value + 2;
--		newval = cpu_to_be32(be32_to_cpu(*oldprop) -
--				     A375_Z1_THERMAL_FIXUP_OFFSET);
--		*newprop = newval;
--		of_update_property(np, prop);
--
--		/*
--		 * The thermal controller needs some quirk too, so let's change
--		 * the compatible string to reflect this and allow the driver
--		 * the take the necessary action.
--		 */
--		prop = kzalloc(sizeof(*prop), GFP_KERNEL);
--		prop->name = kstrdup("compatible", GFP_KERNEL);
--		prop->length = sizeof("marvell,armada375-z1-thermal");
--		prop->value = kstrdup("marvell,armada375-z1-thermal",
--						GFP_KERNEL);
--		of_update_property(np, prop);
--	}
--	return;
--}
--
- static void __init mvebu_dt_init(void)
+ #define A375_UNIT_CONTROL_SHIFT		27
+ #define A375_UNIT_CONTROL_MASK		0x7
+ #define A375_READOUT_INVERT		BIT(15)
+@@ -124,24 +120,12 @@ static void armada375_init_sensor(struct platform_device *pdev,
+ 				  struct armada_thermal_priv *priv)
  {
- 	if (of_machine_is_compatible("plathome,openblocks-ax3-4"))
- 		i2c_quirk();
--	if (of_machine_is_compatible("marvell,a375-db")) {
-+	if (of_machine_is_compatible("marvell,a375-db"))
- 		external_abort_quirk();
--		thermal_quirk();
+ 	unsigned long reg;
+-	bool quirk_needed =
+-		!!of_device_is_compatible(pdev->dev.of_node,
+-					  "marvell,armada375-z1-thermal");
+-
+-	if (quirk_needed) {
+-		/* Ensure these registers have the default (reset) values */
+-		writel(A375_Z1_CAL_RESET_LSB, priv->control);
+-		writel(A375_Z1_CAL_RESET_MSB, priv->control + 0x4);
 -	}
  
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
- }
+ 	reg = readl(priv->control + 4);
+ 	reg &= ~(A375_UNIT_CONTROL_MASK << A375_UNIT_CONTROL_SHIFT);
+ 	reg &= ~A375_READOUT_INVERT;
+ 	reg &= ~A375_HW_RESETn;
+ 
+-	if (quirk_needed)
+-		reg |= A375_Z1_WORKAROUND_BIT;
+-
+ 	writel(reg, priv->control + 4);
+ 	mdelay(20);
+ 
+@@ -260,10 +244,6 @@ static const struct of_device_id armada_thermal_id_table[] = {
+ 		.data       = &armada375_data,
+ 	},
+ 	{
+-		.compatible = "marvell,armada375-z1-thermal",
+-		.data       = &armada375_data,
+-	},
+-	{
+ 		.compatible = "marvell,armada380-thermal",
+ 		.data       = &armada380_data,
+ 	},
 -- 
 2.1.0
-
