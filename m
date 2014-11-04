@@ -1,83 +1,121 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] [RFC] cpufreq: Avoid crash in resume on SMP without OPP
-Date: Tue,  4 Nov 2014 17:05:25 +0100
-Message-ID: <1415117125-27069-1-git-send-email-geert+renesas@glider.be>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal management updates for 3.18-rc4
+Date: Tue, 4 Nov 2014 12:17:39 -0400
+Message-ID: <20141104161733.GA1570@developer>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="qDbXVdCdHGoSgWSk"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from michel.telenet-ops.be ([195.130.137.88]:56742 "EHLO
-	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754758AbaKDQFS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 11:05:18 -0500
+Received: from mail-qg0-f53.google.com ([209.85.192.53]:39970 "EHLO
+	mail-qg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753646AbaKDQRc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 11:17:32 -0500
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lucas Stach <l.stach@pengutronix.de>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>
 
-When resuming from s2ram on an SMP system without cpufreq operating
-points (e.g. there's no "operating-points" property for the CPU node in
-DT, or the platform doesn't use DT yet), the kernel crashes when
-bringing CPU 1 online:
 
-    Enabling non-boot CPUs ...
-    CPU1: Booted secondary processor
-    Unable to handle kernel NULL pointer dereference at virtual address 0000003c
-    pgd = ee5e6b00
-    [0000003c] *pgd=6e579003, *pmd=6e588003, *pte=00000000
-    Internal error: Oops: a07 [#1] SMP ARM
-    Modules linked in:
-    CPU: 0 PID: 1246 Comm: s2ram Tainted: G        W      3.18.0-rc3-koelsch-01614-g0377af242bb175c8-dirty #589
-    task: eeec5240 ti: ee704000 task.ti: ee704000
-    PC is at __cpufreq_add_dev.isra.24+0x24c/0x77c
-    LR is at __cpufreq_add_dev.isra.24+0x244/0x77c
-    pc : [<c0298efc>]    lr : [<c0298ef4>]    psr: 60000153
-    sp : ee705d48  ip : ee705d48  fp : ee705d84
-    r10: c04e0450  r9 : 00000000  r8 : 00000001
-    r7 : c05426a8  r6 : 00000001  r5 : 00000001  r4 : 00000000
-    r3 : 00000000  r2 : 00000000  r1 : 20000153  r0 : c0542734
+--qDbXVdCdHGoSgWSk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Verify that policy is not NULL before dereferencing it to fix this.
+Hello Linus,
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-Notes:
-  - Is this the right fix?
+Please pull from
 
-  - Interestingly, the crash is the same as the one reported in
-    http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=c81407fe573d8ac3c7150f5373475598c59197de
-    ("cpufreq: cpufreq-dt: Restore default cpumask_setall(policy->cpus)"),
-    but the cause is different.
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.=
+git fixes
 
-  - The crash was initially observed on sh73a0/kzm9g-legacy, but it can
-    easily be reproduced on e.g. r8a7791/koelsch, by removing the
-    "operating-points" property from the cpu0 node in
-    arch/arm/boot/dts/r8a7791.dtsi, or by any other means to make the
-    call to dev_pm_opp_init_cpufreq_table() in
-    drivers/cpufreq/cpufreq-dt.c:cpufreq_init() fail.
+to receive Thermal Management updates for v3.18-rc4 with top-most=20
 
-  - I did not add
+14015860565a1464193ddb3fbd3f7253a37dfcf9:
 
-	Fixes: 6e2c89d16d987e6e ("cpufreq: move call to __find_governor() to cpufreq_init_policy()")
+  Thermal:Remove usless if(!result) before return tz (2014-11-03 18:59:50 -=
+0400)
 
-    as I couldn't verify that the issue is also present in that (old)
-    version (there have been too many s2ram-related platform and driver
-    fixes since v3.15).
----
- drivers/cpufreq/cpufreq.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+on top of commit cac7f2429872d3733dc3f9915857b1691da2eb2f:
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 644b54e1e7d13e8e..4473eba1d6b0b608 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1022,7 +1022,8 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
- 
- 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
--	policy->governor = NULL;
-+	if (policy)
-+		policy->governor = NULL;
- 
- 	return policy;
- }
--- 
-1.9.1
+  Linux 3.18-rc2 (2014-10-26 16:48:41 -0700)
 
+Specifics:
+
+- I am sending thermal fixes for 3.18-rc4 on behalf of Rui Zhang this
+  time. He is currently unable to send pull requests due to troubles with
+  his machine and he's currently in a business trip.
+
+- In this pull request the changes include:
+  . A few code fixes improving the Exynos code base. They remove
+    dead and unreachable code. No functional changes here;
+  . On Exynos code base, fixes regarding the right usage of
+    features (TRIMINFO and TRIMRELOAD);
+  . Documentation of RCAR thermal;
+  . Fix in the of-thermal, regarding the proper usage
+    of of-APIs; and
+  . Fixes on thermal-core, removal of unreachable code.
+
+BR,
+
+Eduardo Valentin
+
+----------------------------------------------------------------
+Bartlomiej Zolnierkiewicz (10):
+      thermal: exynos: remove unused struct exynos_tmu_registers entries
+      thermal: exynos: remove dead code for HW_MODE calibration
+      thermal: exynos: remove redundant pdata checks from exynos_tmu_initia=
+lize()
+      thermal: exynos: remove redundant threshold_code checks from exynos_t=
+mu_initialize()
+      thermal: exynos: simplify temp_to_code() and code_to_temp()
+      thermal: exynos: cache non_hw_trigger_levels in pdata
+      thermal: exynos: remove redundant pdata checks from exynos_tmu_contro=
+l()
+      thermal: exynos: remove identical values from exynos*_tmu_registers s=
+tructures
+      thermal: samsung: Exynos5260 and Exynos5420 should not use TRIM_RELOA=
+D flag
+      thermal: exynos: fix IRQ clearing on TMU initialization
+
+Chanwoo Choi (2):
+      thermal: exynos: Add support for many TRIMINFO_CTRL registers
+      thermal: exynos: Add support for TRIM_RELOAD feature at Exynos3250
+
+Geert Uytterhoeven (1):
+      thermal: rcar: Add binding docs for new R-Car Gen2 SoCs
+
+Vladimir Zapolskiy (1):
+      thermal: fix multiple disbalanced device node counters
+
+Yao Dongdong (1):
+      Thermal:Remove usless if(!result) before return tz
+
+ .../devicetree/bindings/thermal/rcar-thermal.txt   |   5 +-
+ drivers/thermal/of-thermal.c                       |  40 ++++-
+ drivers/thermal/samsung/exynos_thermal_common.h    |   2 +-
+ drivers/thermal/samsung/exynos_tmu.c               | 170 +++++++----------=
+----
+ drivers/thermal/samsung/exynos_tmu.h               |  89 ++---------
+ drivers/thermal/samsung/exynos_tmu_data.c          | 104 +++----------
+ drivers/thermal/samsung/exynos_tmu_data.h          |  54 +------
+ drivers/thermal/thermal_core.c                     |   3 +-
+ 8 files changed, 133 insertions(+), 334 deletions(-)
+
+--qDbXVdCdHGoSgWSk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUWPwUAAoJEMLUO4d9pOJWElgIAJE9gFZvBCGcwgUNmV3+hrot
+HUi1M6vfEa5RrLx9Z0o+ix7MsU9BzJzhsmYH+5gi8C/NIvw4bRvMQLwRCFrevc1g
+5pnLSmgqP95YcA8DksJG3hLB0DqLUO41s+Dw4S8Q/sTWXYNvwSS+hZVrEgcNXwL7
+VeKoy41TwFvvajxFufqsrlL7gZwROjpjrvGKdTW9KMXu3pCa3eABzHAGLaRwe2ZM
+D4+I524SMa/z4mKhLWfXySxKn6kk6ESy/mc314GbHSdzmYmXWcknQ6w80p62iJoF
+uDGh+n5/MnYrrqeSFoczmRb4eDPpy68ksFWhkYE4uf4L3ygggJMg91DSPBFSzaE=
+=eLak
+-----END PGP SIGNATURE-----
+
+--qDbXVdCdHGoSgWSk--
