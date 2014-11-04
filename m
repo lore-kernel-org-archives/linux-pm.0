@@ -1,68 +1,92 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] Thermal/int3403: Fix thermal hysteresis unit conversion
-Date: Tue, 04 Nov 2014 09:50:34 +0800
-Message-ID: <1415065834.22344.1.camel@rzhang1-toshiba>
-References: <1415008381-11584-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Yao Dongdong <yaodongdong@huawei.com>
+Subject: Re: [PATCH 1/2] Thermal:Fix memory leak if occur goto unregister
+Date: Tue, 4 Nov 2014 10:01:19 +0800
+Message-ID: <5458336F.6090600@huawei.com>
+References: <5444C778.8050008@huawei.com> <20141020123338.GA3744@developer> <4D68720C2E767A4AA6A8796D42C8EB590902F30A@BGSMSX101.gar.corp.intel.com> <20141103183510.GA441@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:9026 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751218AbaKDBxE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 3 Nov 2014 20:53:04 -0500
-In-Reply-To: <1415008381-11584-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from szxga01-in.huawei.com ([119.145.14.64]:33382 "EHLO
+	szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751162AbaKDCBi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Nov 2014 21:01:38 -0500
+In-Reply-To: <20141103183510.GA441@developer>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: tianyu.lan@intel.com, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Eduardo Valentin <edubezval@gmail.com>, "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On =E4=B8=80, 2014-11-03 at 01:53 -0800, Srinivas Pandruvada wrote:
-> From: "lan,Tianyu" <tianyu.lan@intel.com>
->=20
-> Thermal hysteresis represents a temperature difference.
-> But the original code treats it as a temperature value,
-> Convert it from tenths of degree Kelvin to Milli-Celsius
-> by deducing 273200. This is not right.
->=20
-> Kelvin and Celsius have same degree size. From temperature
-> difference view, the conversion between tenths of degree
-> Kelvin unit and Milli-Celsius unit is just to multiply 100.
->=20
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
-> Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+On 2014/11/4 2:35, Eduardo Valentin wrote:
+> Hello,
+>
+> On Mon, Nov 03, 2014 at 06:17:37PM +0000, R, Durgadoss wrote:
+>>> -----Original Message-----
+>>> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+>>> owner@vger.kernel.org] On Behalf Of Eduardo Valentin
+>>> Sent: Monday, October 20, 2014 6:04 PM
+>>> To: Yao Dongdong
+>>> Cc: Zhang, Rui; linux-pm@vger.kernel.org; LKML
+>>> Subject: Re: [PATCH 1/2] Thermal:Fix memory leak if occur goto unregister
+>>>
+>>> Hello,
+>>>
+>>> On Mon, Oct 20, 2014 at 04:27:36PM +0800, Yao Dongdong wrote:
+>>>> Signed-off-by:yaodongdong@huawei.com
+>>> Acked-by: Eduardo Valentin <edubezval@gmail.com>
+>>>
+>>> Rui, would you take care of this?
+>>>
+>> If I remember it right, this 'tz' is freed in the thermal_release()
+>> function, during device_unregister().
+>>
+>> It is similar in all other functions in thermal_core.c
+>>
+>> So, Yao, Did you really test this patch ?
+>> And did not see any crashes ?
+>>
+> Yao, reading the patch change carefully, now I see that Durga is correct
+> here. 
+>
+>> Thanks,
+>> Durga
+>>
+>>>> ---
+>>>>  drivers/thermal/thermal_core.c | 1 +
+>>>>  1 file changed, 1 insertion(+)
+>>>>
+>>>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+>>>> index 71b0ec0..5b7d466 100644
+>>>> --- a/drivers/thermal/thermal_core.c
+>>>> +++ b/drivers/thermal/thermal_core.c
+>>>> @@ -1574,6 +1574,7 @@ struct thermal_zone_device
+>>> *thermal_zone_device_register(const char *type,
+>>>>  unregister:
+>>>>     release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+>>>>     device_unregister(&tz->device);
+>>>> +   kfree(tz);
+> The device unregister is called above your kfree call, which will cause
+> the thermal_release to be called. Did you test the code for double kfree
+> calls? Your patch probably inserts a memory corruption.
+>
+> I will revert your patch from my tree until you provide an answer about
+> your testing.
 
-Hi, Eduardo,
+Yes, i have checked it and you are right, the patch will double kfree tz.
 
-can you please queue this patch for 3.18-rc5?
+Thansks Durga for correcting me.
 
-thanks,
-rui
-> ---
->  drivers/thermal/int340x_thermal/int3403_thermal.c | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/thermal/int340x_thermal/int3403_thermal.c b/driv=
-ers/thermal/int340x_thermal/int3403_thermal.c
-> index d20dba9..6e9fb62 100644
-> --- a/drivers/thermal/int340x_thermal/int3403_thermal.c
-> +++ b/drivers/thermal/int340x_thermal/int3403_thermal.c
-> @@ -92,7 +92,13 @@ static int sys_get_trip_hyst(struct thermal_zone_d=
-evice *tzone,
->  	if (ACPI_FAILURE(status))
->  		return -EIO;
-> =20
-> -	*temp =3D DECI_KELVIN_TO_MILLI_CELSIUS(hyst, KELVIN_OFFSET);
-> +	/*
-> +	 * Thermal hysteresis represents a temperature difference.
-> +	 * Kelvin and Celsius have same degree size. So the
-> +	 * conversion here between tenths of degree Kelvin unit
-> +	 * and Milli-Celsius unit is just to multiply 100.
-> +	 */
-> +	*temp =3D hyst * 100;
-> =20
->  	return 0;
->  }
+> Thanks,
+>
+>
+> Eduardo Valentin
+>
+>>>>     return ERR_PTR(result);
+>>>>  }
+>>>>  EXPORT_SYMBOL_GPL(thermal_zone_device_register);
+>>>> --
+>>>> 1.8.0.1
+>>>>
+>>>>
 
 
