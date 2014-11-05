@@ -1,127 +1,114 @@
-From: Yadwinder Singh Brar <yadi.brar@samsung.com>
-Subject: [PATCH] thermal: cpu_cooling: Update always cpufreq policy with
- thermal constraints
-Date: Wed, 05 Nov 2014 17:46:25 +0530
-Message-ID: <1415189785-18593-1-git-send-email-yadi.brar@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:45541 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753898AbaKEMQv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Nov 2014 07:16:51 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Ezaul Zillmer <ezaulzillmer-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RFC Patch 1/4] mfd: AXP20x: Add power supply
+ bindings documentation
+Date: Wed, 5 Nov 2014 04:29:27 -0800 (PST)
+Message-ID: <83f27c8b-1971-4c7b-b709-479c91dc0fda@googlegroups.com>
+References: <20141020221959.2f312906@neptune.home>
+ <20141020223314.0484f795@neptune.home>
+ <20141021101503.GE26842@x1>
+ <20141021180916.432f02e1@neptune.home>
+ <20141021191905.GR21108@lukather>
+ <20141103210244.1425e0c7@neptune.home>
+ <553e634f-ce75-4409-883c-acbfe773e950@googlegroups.com>
+ <20141104222124.1bc7e6ec@neptune.home>
+Reply-To: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_4140_1276766978.1415190567636"
+Return-path: <linux-sunxi+bncBD2ILSOUX4CBBKFQ5CRAKGQELIS6P7Y-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+In-Reply-To: <20141104222124.1bc7e6ec-hY15tx4IgV39zxVx7UNMDg@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Cc: ezaulzillmer-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, oliver+list-dxLnbx3+1qmEVqv0pETR8A@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: rui.zhang@intel.com, edubezval@gmail.com, amit.daniel@samsung.com, viresh.kumar@linaro.org, linux-samsung-soc@vger.kernel.org, yadi.brar01@gmail.com, Yadwinder Singh Brar <yadi.brar@samsung.com>
 
-Existing code updates cupfreq policy only while executing
-cpufreq_apply_cooling() function (i.e. when notify_device != NOTIFY_INVALID).
-It doesn't apply constraints when cpufreq policy update happens from any other
-place but it should update the cpufreq policy with thermal constraints every
-time when there is a cpufreq policy update, to keep state of
-cpufreq_cooling_device and max_feq of cpufreq policy in sync.
+------=_Part_4140_1276766978.1415190567636
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-This patch modifies code to maintain a global cpufreq_dev_list and get
-corresponding cpufreq_cooling_device for policy's cpu from cpufreq_dev_list
-when there is any policy update.
 
-Signed-off-by: Yadwinder Singh Brar <yadi.brar@samsung.com>
----
- drivers/thermal/cpu_cooling.c |   37 ++++++++++++++++++++-----------------
- 1 files changed, 20 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 1ab0018..5546278 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -50,15 +50,14 @@ struct cpufreq_cooling_device {
- 	unsigned int cpufreq_state;
- 	unsigned int cpufreq_val;
- 	struct cpumask allowed_cpus;
-+	struct list_head node;
- };
- static DEFINE_IDR(cpufreq_idr);
- static DEFINE_MUTEX(cooling_cpufreq_lock);
- 
- static unsigned int cpufreq_dev_count;
- 
--/* notify_table passes value to the CPUFREQ_ADJUST callback function. */
--#define NOTIFY_INVALID NULL
--static struct cpufreq_cooling_device *notify_device;
-+static LIST_HEAD(cpufreq_dev_list);
- 
- /**
-  * get_idr - function to get a unique id.
-@@ -287,15 +286,12 @@ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
- 
- 	cpufreq_device->cpufreq_state = cooling_state;
- 	cpufreq_device->cpufreq_val = clip_freq;
--	notify_device = cpufreq_device;
- 
- 	for_each_cpu(cpuid, mask) {
- 		if (is_cpufreq_valid(cpuid))
- 			cpufreq_update_policy(cpuid);
- 	}
- 
--	notify_device = NOTIFY_INVALID;
--
- 	return 0;
- }
- 
-@@ -316,21 +312,27 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
- {
- 	struct cpufreq_policy *policy = data;
- 	unsigned long max_freq = 0;
-+	struct cpufreq_cooling_device *cpufreq_dev;
- 
--	if (event != CPUFREQ_ADJUST || notify_device == NOTIFY_INVALID)
-+	if (event != CPUFREQ_ADJUST)
- 		return 0;
- 
--	if (cpumask_test_cpu(policy->cpu, &notify_device->allowed_cpus))
--		max_freq = notify_device->cpufreq_val;
--	else
--		return 0;
-+	mutex_lock(&cooling_cpufreq_lock);
-+	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
-+		if (!cpumask_test_cpu(policy->cpu,
-+					&cpufreq_dev->allowed_cpus))
-+			continue;
- 
--	/* Never exceed user_policy.max */
--	if (max_freq > policy->user_policy.max)
--		max_freq = policy->user_policy.max;
-+		max_freq = cpufreq_dev->cpufreq_val;
- 
--	if (policy->max != max_freq)
--		cpufreq_verify_within_limits(policy, 0, max_freq);
-+		/* Never exceed user_policy.max */
-+		if (max_freq > policy->user_policy.max)
-+			max_freq = policy->user_policy.max;
-+
-+		if (policy->max != max_freq)
-+			cpufreq_verify_within_limits(policy, 0, max_freq);
-+	}
-+	mutex_unlock(&cooling_cpufreq_lock);
- 
- 	return 0;
- }
-@@ -486,7 +488,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
- 					  CPUFREQ_POLICY_NOTIFIER);
- 	cpufreq_dev_count++;
--
-+	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
- 	mutex_unlock(&cooling_cpufreq_lock);
- 
- 	return cool_dev;
-@@ -549,6 +551,7 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- 
- 	cpufreq_dev = cdev->devdata;
- 	mutex_lock(&cooling_cpufreq_lock);
-+	list_del(&cpufreq_dev->node);
- 	cpufreq_dev_count--;
- 
- 	/* Unregister the notifier for the last cpufreq cooling device */
--- 
-1.7.0.4
+*Hello Bruno Thank you for your attention sought some more docs just=20
+applying a patch and here is the result.*
 
+*add*
+
+*https://dev.openwrt.org/browser/trunk/target/linux/sunxi/patches-3.14/210-=
+mfd-add-axp20x-pmic-driver.patch?rev=3D42463*
+
+*https://dev.openwrt.org/browser/trunk/target/linux/sunxi/patches-3.14/211-=
+input-add-axp20x-power-enable-key-support.patch?rev=3D42463*
+
+*https://dev.openwrt.org/browser/trunk/target/linux/sunxi/patches-3.14/213-=
+dt-sunxi-add-x-powers.patch?rev=3D42463*
+
+*https://dev.openwrt.org/browser/trunk/target/linux/sunxi/patches-3.14/214-=
+1-dt-sun7i-add-axp209-to-cubieboard2.patch?rev=3D42463*
+
+*[   15.962628] i2c /dev entries driver*
+*[   15.975115] input: axp20x-pek as=20
+/devices/soc@01c00000/1c2ac00.i2c/i2c-0/0-0034/axp20x-pek/input/input0*
+*[   15.985426] LDO1: 1300 mV*
+*[   15.988789] LDO2: 1800 <--> 3300 mV at 3000 mV*
+*[   15.993788] LDO3: 700 <--> 3500 mV at 2275 mV*
+*[   15.998416] LDO4: 1250 <--> 3300 mV at 2800 mV*
+*[   16.003440] LDO5: 1800 <--> 3300 mV at 2800 mV*
+*[   16.008406] DCDC2: 700 <--> 2275 mV at 1400 mV*
+*[   16.013377] DCDC3: 700 <--> 3500 mV at 1250 mV*
+*[   16.018005] axp20x 0-0034: AXP20X driver loaded*
+
+Thank=C2=B4s=20
+
+--=20
+You received this message because you are subscribed to the Google Groups "=
+linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
+
+------=_Part_4140_1276766978.1415190567636
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div><b><div>Hello Bruno&nbsp;</div><div><br></div><div>Th=
+ank you for your attention sought some more docs just applying a patch&nbsp=
+;</div><div>and here is the result.</div></b></div><div><b><br></b></div><d=
+iv><b>add</b></div><div><b>https://dev.openwrt.org/browser/trunk/target/lin=
+ux/sunxi/patches-3.14/210-mfd-add-axp20x-pmic-driver.patch?rev=3D42463<br><=
+/b></div><div><b>https://dev.openwrt.org/browser/trunk/target/linux/sunxi/p=
+atches-3.14/211-input-add-axp20x-power-enable-key-support.patch?rev=3D42463=
+<br></b></div><div><b>https://dev.openwrt.org/browser/trunk/target/linux/su=
+nxi/patches-3.14/213-dt-sunxi-add-x-powers.patch?rev=3D42463<br></b></div><=
+div><b>https://dev.openwrt.org/browser/trunk/target/linux/sunxi/patches-3.1=
+4/214-1-dt-sun7i-add-axp209-to-cubieboard2.patch?rev=3D42463<br></b></div><=
+div><b><br></b></div><div><b>[ &nbsp; 15.962628] i2c /dev entries driver</b=
+></div><div><b>[ &nbsp; 15.975115] input: axp20x-pek as /devices/soc@01c000=
+00/1c2ac00.i2c/i2c-0/0-0034/axp20x-pek/input/input0</b></div><div><b>[ &nbs=
+p; 15.985426] LDO1: 1300 mV</b></div><div><b>[ &nbsp; 15.988789] LDO2: 1800=
+ &lt;--&gt; 3300 mV at 3000 mV</b></div><div><b>[ &nbsp; 15.993788] LDO3: 7=
+00 &lt;--&gt; 3500 mV at 2275 mV</b></div><div><b>[ &nbsp; 15.998416] LDO4:=
+ 1250 &lt;--&gt; 3300 mV at 2800 mV</b></div><div><b>[ &nbsp; 16.003440] LD=
+O5: 1800 &lt;--&gt; 3300 mV at 2800 mV</b></div><div><b>[ &nbsp; 16.008406]=
+ DCDC2: 700 &lt;--&gt; 2275 mV at 1400 mV</b></div><div><b>[ &nbsp; 16.0133=
+77] DCDC3: 700 &lt;--&gt; 3500 mV at 1250 mV</b></div><div><b>[ &nbsp; 16.0=
+18005] axp20x 0-0034: AXP20X driver loaded</b></div><div><br></div><div>Tha=
+nk=C2=B4s&nbsp;</div></div>
+
+<p></p>
+
+-- <br />
+You received this message because you are subscribed to the Google Groups &=
+quot;linux-sunxi&quot; group.<br />
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to <a href=3D"mailto:linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org">linux-s=
+unxi+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org</a>.<br />
+For more options, visit <a href=3D"https://groups.google.com/d/optout">http=
+s://groups.google.com/d/optout</a>.<br />
+
+------=_Part_4140_1276766978.1415190567636--
