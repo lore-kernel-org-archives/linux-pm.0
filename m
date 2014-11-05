@@ -1,72 +1,57 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH] Thermal/int340x: avoid unnecessary pointer casting
-Date: Tue,  4 Nov 2014 15:53:34 -0800
-Message-ID: <1415145214-2986-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] PM / Domains: Change prototype for the ->attach_dev()
+ callback
+Date: Tue, 4 Nov 2014 17:33:53 -0800
+Message-ID: <20141105013353.GA19238@dtor-ws>
+References: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org>
+ <3981560.mBph1QJkfl@vostro.rjw.lan>
+ <7h4mul9ttl.fsf@deeprootsystems.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:58687 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752492AbaKDXyG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 4 Nov 2014 18:54:06 -0500
+Received: from mail-ig0-f177.google.com ([209.85.213.177]:61194 "EHLO
+	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752809AbaKEBd7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Nov 2014 20:33:59 -0500
+Content-Disposition: inline
+In-Reply-To: <7h4mul9ttl.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Dan Carpenter <dan.carpenter@oracle.com>, Zhang Rui <rui.zhang@intel.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
 
-Avoid pointer casting which may also lead to problems on big endian
-64 bit systems.
+On Thu, Oct 30, 2014 at 01:38:30PM -0700, Kevin Hilman wrote:
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+> 
+> > On Thursday, October 30, 2014 01:02:49 PM Ulf Hansson wrote:
+> >> Convert the prototype to return and int. This is just an initial step,
+> >> needed to support error handling.
+> >> 
+> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> 
+> Acked-by: Kevin Hilman <khilman@linaro.org>
+> 
+> >> 
+> >> This patch is intended as fix for 3.18 rc[n]. Why?
+> >> 
+> >> There are other SOC specific patches around that adds genpd support and which
+> >> implements the ->attach_dev() callback. To prevent having an "atomic" patch
+> >> during the next release cycle, let's change the prototype now instead.
+> >> 
+> >> Further patches will add the actual error handling in genpd and these can then
+> >> be reviewed and tested thoroughly.
+> >
+> > So we have no users of ->attach_dev at the moment, right?
+> 
+> Not in mainline, but there are a couple getting ready to hit -next, so
+> we wanted to fix this before they arrive so that adding the error
+> handling will be easier.
 
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/thermal/int340x_thermal/acpi_thermal_rel.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+BTW, while we are at it, can we also pass the domain itself to
+attach_dev() and detach_dev()? If anything it helps with debugging (you
+can print domain name from the callbacks).
 
-diff --git a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
-index 0d8db80..ac5c405 100644
---- a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
-+++ b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
-@@ -317,21 +317,21 @@ static long acpi_thermal_rel_ioctl(struct file *f, unsigned int cmd,
- {
- 	int ret = 0;
- 	unsigned long length = 0;
--	unsigned long count = 0;
-+	int count = 0;
- 	char __user *arg = (void __user *)__arg;
- 	struct trt *trts;
- 	struct art *arts;
- 
- 	switch (cmd) {
- 	case ACPI_THERMAL_GET_TRT_COUNT:
--		ret = acpi_parse_trt(acpi_thermal_rel_handle, (int *)&count,
-+		ret = acpi_parse_trt(acpi_thermal_rel_handle, &count,
- 				&trts, false);
- 		kfree(trts);
- 		if (!ret)
- 			return put_user(count, (unsigned long __user *)__arg);
- 		return ret;
- 	case ACPI_THERMAL_GET_TRT_LEN:
--		ret = acpi_parse_trt(acpi_thermal_rel_handle, (int *)&count,
-+		ret = acpi_parse_trt(acpi_thermal_rel_handle, &count,
- 				&trts, false);
- 		kfree(trts);
- 		length = count * sizeof(union trt_object);
-@@ -341,14 +341,14 @@ static long acpi_thermal_rel_ioctl(struct file *f, unsigned int cmd,
- 	case ACPI_THERMAL_GET_TRT:
- 		return fill_trt(arg);
- 	case ACPI_THERMAL_GET_ART_COUNT:
--		ret = acpi_parse_art(acpi_thermal_rel_handle, (int *)&count,
-+		ret = acpi_parse_art(acpi_thermal_rel_handle, &count,
- 				&arts, false);
- 		kfree(arts);
- 		if (!ret)
- 			return put_user(count, (unsigned long __user *)__arg);
- 		return ret;
- 	case ACPI_THERMAL_GET_ART_LEN:
--		ret = acpi_parse_art(acpi_thermal_rel_handle, (int *)&count,
-+		ret = acpi_parse_art(acpi_thermal_rel_handle, &count,
- 				&arts, false);
- 		kfree(arts);
- 		length = count * sizeof(union art_object);
+Thanks.
+
 -- 
-1.9.1
-
+Dmitry
