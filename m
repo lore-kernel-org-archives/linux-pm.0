@@ -1,7 +1,7 @@
 From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH 2/5] cpufreq, fix locking around CPUFREQ_GOV_POLICY_EXIT calls
-Date: Wed,  5 Nov 2014 09:53:56 -0500
-Message-ID: <1415199239-19019-3-git-send-email-prarit@redhat.com>
+Subject: [PATCH 3/5] cpufreq, dbs_data->usage count must be atomic
+Date: Wed,  5 Nov 2014 09:53:57 -0500
+Message-ID: <1415199239-19019-4-git-send-email-prarit@redhat.com>
 References: <1415199239-19019-1-git-send-email-prarit@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1415199239-19019-1-git-send-email-prarit@redhat.com>
@@ -10,76 +10,84 @@ To: linux-kernel@vger.kernel.org
 Cc: robert.schoene@tu-dresden.de, sboyd@codeaurora.org, Prarit Bhargava <prarit@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-commit 955ef4833574636819cd269cfbae12f79cbde63a (" cpufreq: Drop rwsem
-lock around CPUFREQ_GOV_POLICY_EXIT") opens up a hole in the locking
-scheme for cpufreq.
-
-Simple tests such as rapidly switching the governor between ondemand and
-performance or attempting to read policy values while a governor switch occurs
-now fail with very NULL pointer warnings, sysfs namespace collisions, and
-system hangs.  In short, the locking that policy->rwsem is supposed to provide
-is currently broken.
-
-The identified commit attempts to resolve a lockdep warning by removing
-a lock around a section of code which does a shutdown of the
-existing policy.  The problem is that this is part of the _critical_ section of
-code that switches the governors and must be protected by the lock; without
-locking readers may access now NULL or stale data, and writes may collide with
-each other.
-
-With the previous patch, which now returns -EBUSY during times of
-contention the deadlock reported in
-955ef4833574636819cd269cfbae12f79cbde63a (" cpufreq: Drop rwsem lock
-around CPUFREQ_GOV_POLICY_EXIT") cannot occur, so adding the locks back
-into this section of code is possible.
+The usage_count value can be modified from several cpus concurrently if
+!CPUFREQ_HAVE_GOVERNOR_PER_POLICY.  This leads to a variety of panics in
+which the usage_count is negative or exceeds the number of cpus in the
+system.  It must be switched to atomic_t and protected with a mutex to make sure
+that future read/writes obtain the correct data.
 
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linux-pm@vger.kernel.org
 Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 ---
- drivers/cpufreq/cpufreq.c |    4 ----
- include/linux/cpufreq.h   |    4 ----
- 2 files changed, 8 deletions(-)
+ drivers/cpufreq/cpufreq_governor.c |   16 ++++++++++++----
+ drivers/cpufreq/cpufreq_governor.h |    3 ++-
+ 2 files changed, 14 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 3f09ca9..e33cb15 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2222,9 +2222,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 	/* end old governor */
- 	if (old_gov) {
- 		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
--		up_write(&policy->rwsem);
- 		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
--		down_write(&policy->rwsem);
- 	}
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 1b44496..32ad9db 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -265,7 +265,9 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 		if (have_governor_per_policy()) {
+ 			WARN_ON(dbs_data);
+ 		} else if (dbs_data) {
+-			dbs_data->usage_count++;
++			mutex_lock(&dbs_data->usage_count_mutex);
++			atomic_inc(&dbs_data->usage_count);
++			mutex_unlock(&dbs_data->usage_count_mutex);
+ 			policy->governor_data = dbs_data;
+ 			return 0;
+ 		}
+@@ -277,7 +279,10 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 		}
  
- 	/* start new governor */
-@@ -2233,9 +2231,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 		if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
- 			goto out;
+ 		dbs_data->cdata = cdata;
+-		dbs_data->usage_count = 1;
++		mutex_init(&dbs_data->usage_count_mutex);
++		mutex_lock(&dbs_data->usage_count_mutex);
++		atomic_set(&dbs_data->usage_count, 1);
++		mutex_unlock(&dbs_data->usage_count_mutex);
+ 		rc = cdata->init(dbs_data);
+ 		if (rc) {
+ 			pr_err("%s: POLICY_INIT: init() failed\n", __func__);
+@@ -322,7 +327,8 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
  
--		up_write(&policy->rwsem);
- 		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
--		down_write(&policy->rwsem);
- 	}
+ 		return 0;
+ 	case CPUFREQ_GOV_POLICY_EXIT:
+-		if (!--dbs_data->usage_count) {
++		mutex_lock(&dbs_data->usage_count_mutex);
++		if (atomic_dec_and_test(&dbs_data->usage_count)) {
+ 			sysfs_remove_group(get_governor_parent_kobj(policy),
+ 					get_sysfs_attr(dbs_data));
  
- 	/* new governor failed, so re-start old one */
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 503b085..43909ad 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -100,10 +100,6 @@ struct cpufreq_policy {
- 	 * - Any routine that will write to the policy structure and/or may take away
- 	 *   the policy altogether (eg. CPU hotplug), will hold this lock in write
- 	 *   mode before doing so.
--	 *
--	 * Additional rules:
--	 * - Lock should not be held across
--	 *     __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
- 	 */
- 	struct rw_semaphore	rwsem;
+@@ -338,9 +344,11 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 			}
  
+ 			cdata->exit(dbs_data);
++			mutex_unlock(&dbs_data->usage_count_mutex);
+ 			kfree(dbs_data);
+ 			cdata->gdbs_data = NULL;
+-		}
++		} else
++			mutex_unlock(&dbs_data->usage_count_mutex);
+ 
+ 		policy->governor_data = NULL;
+ 		return 0;
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index cc401d1..53ca449 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -219,7 +219,8 @@ struct common_dbs_data {
+ struct dbs_data {
+ 	struct common_dbs_data *cdata;
+ 	unsigned int min_sampling_rate;
+-	int usage_count;
++	struct mutex usage_count_mutex;
++	atomic_t usage_count;
+ 	void *tuners;
+ 
+ 	/* dbs_mutex protects dbs_enable in governor start/stop */
 -- 
 1.7.9.3
