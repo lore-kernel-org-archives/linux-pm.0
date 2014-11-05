@@ -1,76 +1,118 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2 1/5] sched: idle: cpuidle: Check the latency req before
- idle
-Date: Wed, 05 Nov 2014 22:41:00 +0100
-Message-ID: <545A996C.6030606@linaro.org>
-References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org> <1637800.Fp0noCplzq@vostro.rjw.lan>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH] PM / Domains: Change prototype for the ->attach_dev() callback
+Date: Wed, 05 Nov 2014 14:43:31 -0800
+Message-ID: <7h7fz92rqk.fsf@deeprootsystems.com>
+References: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org>
+	<3981560.mBph1QJkfl@vostro.rjw.lan>
+	<7h4mul9ttl.fsf@deeprootsystems.com> <20141105013353.GA19238@dtor-ws>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f43.google.com ([74.125.82.43]:42769 "EHLO
-	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751115AbaKEVlK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Nov 2014 16:41:10 -0500
-Received: by mail-wg0-f43.google.com with SMTP id y10so1946661wgg.30
-        for <linux-pm@vger.kernel.org>; Wed, 05 Nov 2014 13:41:09 -0800 (PST)
-In-Reply-To: <1637800.Fp0noCplzq@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20141105013353.GA19238@dtor-ws> (Dmitry Torokhov's message of
+	"Tue, 4 Nov 2014 17:33:53 -0800")
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, peterz@infradead.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-On 11/05/2014 10:57 PM, Rafael J. Wysocki wrote:
-> On Thursday, October 23, 2014 11:01:17 AM Daniel Lezcano wrote:
->> When the pmqos latency requirement is set to zero that means "poll i=
-n all the
->> cases".
->>
->> That is correctly implemented on x86 but not on the other archs.
->>
->> As how is written the code, if the latency request is zero, the gove=
-rnor will
->> return zero, so corresponding, for x86, to the poll function, but fo=
-r the
->> others arch the default idle function. For example, on ARM this is w=
-ait-for-
->> interrupt with a latency of '1', so violating the constraint.
->>
->> In order to fix that, do the latency requirement check *before* call=
-ing the
->> cpuidle framework in order to jump to the poll function without ente=
-ring
->> cpuidle. That has several benefits:
->>
->>   1. It clarifies and unifies the code
->>   2. It fixes x86 vs other archs behavior
->>   3. Factors out the call to the same function
->>   4. Prevent to enter the cpuidle framework with its expensive cost =
-in
->>      calculation
->>
->> As the latency_req is needed in all the cases, change the select API=
- to take
->> the latency_req as parameter in case it is not equal to zero.
->>
->> As a positive side effect, it introduces the latency constraint spec=
-ified
->> externally, so one more step to the cpuidle/scheduler integration.
+Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
+
+> On Thu, Oct 30, 2014 at 01:38:30PM -0700, Kevin Hilman wrote:
+>> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+>> 
+>> > On Thursday, October 30, 2014 01:02:49 PM Ulf Hansson wrote:
+>> >> Convert the prototype to return and int. This is just an initial step,
+>> >> needed to support error handling.
+>> >> 
+>> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> 
+>> Acked-by: Kevin Hilman <khilman@linaro.org>
+>> 
+>> >> 
+>> >> This patch is intended as fix for 3.18 rc[n]. Why?
+>> >> 
+>> >> There are other SOC specific patches around that adds genpd support and which
+>> >> implements the ->attach_dev() callback. To prevent having an "atomic" patch
+>> >> during the next release cycle, let's change the prototype now instead.
+>> >> 
+>> >> Further patches will add the actual error handling in genpd and these can then
+>> >> be reviewed and tested thoroughly.
+>> >
+>> > So we have no users of ->attach_dev at the moment, right?
+>> 
+>> Not in mainline, but there are a couple getting ready to hit -next, so
+>> we wanted to fix this before they arrive so that adding the error
+>> handling will be easier.
 >
-> I'm expecting to see a new version of this patchset relatively soon.
->
-> Are you planning to send one?
+> BTW, while we are at it, can we also pass the domain itself to
+> attach_dev() and detach_dev()? If anything it helps with debugging (you
+> can print domain name from the callbacks).
 
-I would like to find an agreement with Preeti. But, yes, I am on it.
+Agreed, and it makes it match the other callbacks (power_off, power_on)
+which currently take struct generic_pm_domain *domain.  
 
-   -- Daniel
+Updated version of $SUBJECT patch below.
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+Kevin
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
 
+----- >8 ------
+>From 353a62ffae2f9228142c8a2093108f9eda8dc6b4 Mon Sep 17 00:00:00 2001
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Thu, 30 Oct 2014 13:02:49 +0100
+Subject: [PATCH] PM / Domains: Change prototype for the ->attach_dev()
+ callback
+
+Convert the prototype to return and int. This is just an initial step,
+needed to support error handling.
+
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+[khilman: added domain as parameter to callbacks, as suggested by Dmitry]
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Kevin Hilman <khilman@linaro.org>
+---
+ drivers/base/power/domain.c | 4 ++--
+ include/linux/pm_domain.h   | 6 ++++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 40bc2f4072cc..b520687046d4 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1437,7 +1437,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	spin_unlock_irq(&dev->power.lock);
+ 
+ 	if (genpd->attach_dev)
+-		genpd->attach_dev(dev);
++		genpd->attach_dev(genpd, dev);
+ 
+ 	mutex_lock(&gpd_data->lock);
+ 	gpd_data->base.dev = dev;
+@@ -1499,7 +1499,7 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+ 	genpd->max_off_time_changed = true;
+ 
+ 	if (genpd->detach_dev)
+-		genpd->detach_dev(dev);
++		genpd->detach_dev(genpd, dev);
+ 
+ 	spin_lock_irq(&dev->power.lock);
+ 
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 73e938b7e937..b3ed7766a291 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -72,8 +72,10 @@ struct generic_pm_domain {
+ 	bool max_off_time_changed;
+ 	bool cached_power_down_ok;
+ 	struct gpd_cpuidle_data *cpuidle_data;
+-	void (*attach_dev)(struct device *dev);
+-	void (*detach_dev)(struct device *dev);
++	int (*attach_dev)(struct generic_pm_domain *domain,
++			  struct device *dev);
++	void (*detach_dev)(struct generic_pm_domain *domain,
++			   struct device *dev);
+ };
+ 
+ static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
+-- 
+2.1.0
