@@ -1,42 +1,132 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH 02/12] drivers: mfd: Add support for Exynos PMU driver
-Date: Wed, 05 Nov 2014 14:47:36 +0100
-Message-ID: <545A2A78.5000901@samsung.com>
-References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
- <1414986790-11940-3-git-send-email-amit.daniel@samsung.com>
- <20141103152604.GA10544@x1> <002601cff7de$0f8db7e0$2ea927a0$@samsung.com>
+From: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH v9 3/4] dma: pl330: add Power Management support
+Date: Wed, 5 Nov 2014 19:31:16 +0530
+Message-ID: <20141105140116.GN1870@intel.com>
+References: <1415105570-7871-1-git-send-email-k.kozlowski@samsung.com>
+ <1415105570-7871-4-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:20839 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751198AbaKENrq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Nov 2014 08:47:46 -0500
-In-reply-to: <002601cff7de$0f8db7e0$2ea927a0$@samsung.com>
+Received: from mga14.intel.com ([192.55.52.115]:56368 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753988AbaKEOBC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 5 Nov 2014 09:01:02 -0500
+Content-Disposition: inline
+In-Reply-To: <1415105570-7871-4-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pankaj Dubey <pankaj.dubey@samsung.com>, 'Lee Jones' <lee.jones@linaro.org>
-Cc: 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, 'Sangbeom Kim' <sbkim73@samsung.com>, 'Samuel Ortiz' <sameo@linux.intel.com>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 04/11/14 04:18, Pankaj Dubey wrote:
-> 2: Since PM domain relies on PMU registers and does not have 
-> its own DT binding, MFD client and MFD device
-> is most suitable for making this kind of platform drivers.
+On Tue, Nov 04, 2014 at 01:52:49PM +0100, Krzysztof Kozlowski wrote:
+>  bool pl330_filter(struct dma_chan *chan, void *param)
+> @@ -2073,6 +2097,7 @@ static int pl330_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd, unsigned
+>  
+>  	switch (cmd) {
+>  	case DMA_TERMINATE_ALL:
+> +		pm_runtime_get_sync(pl330->ddma.dev);
+Why do we need _get() here? If we are terminating then channel is already in
+use so should be active?
 
-We have DT binding for the Exynos power domains:
-Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-In fact the IO memory regions used in the power domain bindings
-fall within the (sparse) PMU registers region.
+>  		spin_lock_irqsave(&pch->lock, flags);
+>  
+>  		spin_lock(&pl330->lock);
+> @@ -2099,10 +2124,15 @@ static int pl330_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd, unsigned
+>  			dma_cookie_complete(&desc->txd);
+>  		}
+>  
+> +		if (!list_empty(&pch->work_list))
+> +			pm_runtime_put(pl330->ddma.dev);
+Well else should be error here, so I would expect loud complains in that
+case here
+> +
+>  		list_splice_tail_init(&pch->submitted_list, &pl330->desc_pool);
+>  		list_splice_tail_init(&pch->work_list, &pl330->desc_pool);
+>  		list_splice_tail_init(&pch->completed_list, &pl330->desc_pool);
+>  		spin_unlock_irqrestore(&pch->lock, flags);
+> +		pm_runtime_mark_last_busy(pl330->ddma.dev);
+> +		pm_runtime_put_autosuspend(pl330->ddma.dev);
+>  		break;
+>  	case DMA_SLAVE_CONFIG:
+>  		slave_config = (struct dma_slave_config *)arg;
+> @@ -2138,6 +2168,7 @@ static void pl330_free_chan_resources(struct dma_chan *chan)
+>  
+>  	tasklet_kill(&pch->task);
+>  
+> +	pm_runtime_get_sync(pch->dmac->ddma.dev);
+Again why do we need _get() in free callback.
 
-There is also DT binding for the PMU subsystem:
-Documentation/devicetree/bindings/arm/samsung/pmu.txt
+>  	spin_lock_irqsave(&pch->lock, flags);
+>  
+>  	pl330_release_channel(pch->thread);
+> @@ -2147,6 +2178,8 @@ static void pl330_free_chan_resources(struct dma_chan *chan)
+>  		list_splice_tail_init(&pch->work_list, &pch->dmac->desc_pool);
+>  
+>  	spin_unlock_irqrestore(&pch->lock, flags);
+> +	pm_runtime_mark_last_busy(pch->dmac->ddma.dev);
+> +	pm_runtime_put_autosuspend(pch->dmac->ddma.dev);
+>  }
 
-I guess a platform device driver in drivers/power would be a better
-fit than drivers/mfd. I doubt introducing an mfd driver now makes
-much sense, we have already DT bindings for PHYs, the power domains,
-etc.
+> +
+> +static int __maybe_unused pl330_resume(struct device *dev)
+> +{
+> +	struct amba_device *pcdev = to_amba_device(dev);
+> +
+> +	amba_pclk_prepare(pcdev);
+> +
+> +	/*
+> +	 * TODO: Idea for future. The device should not be woken up after
+> +	 * system resume if it is not needed. It could stay runtime suspended
+> +	 * waiting for DMA requests. However for safe suspend and resume we
+> +	 * forcibly resume the device here.
+> +	 */
+> +	return pm_runtime_force_resume(dev);
+> +}
+> +
+> +static SIMPLE_DEV_PM_OPS(pl330_pm, pl330_suspend, pl330_resume);
+IIUC this sets .suspend and .resume, aren't you trying to add runtime
+support as well?
+Did you want UNIVERSAL_DEV_PM_OPS() ?
 
---
-Thanks,
-Sylwester
+> +
+>  static int
+>  pl330_probe(struct amba_device *adev, const struct amba_id *id)
+>  {
+> @@ -2738,6 +2815,12 @@ pl330_probe(struct amba_device *adev, const struct amba_id *id)
+>  		pcfg->data_buf_dep, pcfg->data_bus_width / 8, pcfg->num_chan,
+>  		pcfg->num_peri, pcfg->num_events);
+>  
+> +	pm_runtime_irq_safe(&adev->dev);
+> +	pm_runtime_use_autosuspend(&adev->dev);
+> +	pm_runtime_set_autosuspend_delay(&adev->dev, PL330_AUTOSUSPEND_DELAY);
+> +	pm_runtime_mark_last_busy(&adev->dev);
+> +	pm_runtime_put_autosuspend(&adev->dev);
+> +
+>  	return 0;
+>  probe_err3:
+>  	/* Idle the DMAC */
+> @@ -2764,6 +2847,8 @@ static int pl330_remove(struct amba_device *adev)
+>  	struct pl330_dmac *pl330 = amba_get_drvdata(adev);
+>  	struct dma_pl330_chan *pch, *_p;
+>  
+> +	pm_runtime_get_noresume(pl330->ddma.dev);
+> +
+>  	if (adev->dev.of_node)
+>  		of_dma_controller_free(adev->dev.of_node);
+>  
+> @@ -2802,6 +2887,7 @@ static struct amba_driver pl330_driver = {
+>  	.drv = {
+>  		.owner = THIS_MODULE,
+>  		.name = "dma-pl330",
+> +		.pm = &pl330_pm,
+>  	},
+>  	.id_table = pl330_ids,
+>  	.probe = pl330_probe,
+> -- 
+> 1.9.1
+> 
+
+Last please use the right subsystem name, dmaengine is patches.
+
+-- 
+~Vinod
