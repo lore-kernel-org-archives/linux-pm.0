@@ -1,93 +1,285 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH 3/5] cpufreq, dbs_data->usage count must be atomic
-Date: Wed,  5 Nov 2014 09:53:57 -0500
-Message-ID: <1415199239-19019-4-git-send-email-prarit@redhat.com>
-References: <1415199239-19019-1-git-send-email-prarit@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1415199239-19019-1-git-send-email-prarit@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: robert.schoene@tu-dresden.de, sboyd@codeaurora.org, Prarit Bhargava <prarit@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+From: Mahesh Kumar P <mahesh.kumar.p@intel.com>
+Subject: [PATCH] Add North complex power state debug driver for BYT and CHT
+Date: Wed,  5 Nov 2014 20:32:35 +0530
+Message-ID: <1415199755-29605-1-git-send-email-mahesh.kumar.p@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:3934 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755128AbaKEPHd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 5 Nov 2014 10:07:33 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, len.brown@intel.com, aubrey.li@intel.com
+Cc: mahesh.kumar.p@intel.com
 
-The usage_count value can be modified from several cpus concurrently if
-!CPUFREQ_HAVE_GOVERNOR_PER_POLICY.  This leads to a variety of panics in
-which the usage_count is negative or exceeds the number of cpus in the
-system.  It must be switched to atomic_t and protected with a mutex to make sure
-that future read/writes obtain the correct data.
+The patch adds a debug driver which dumps the power states
+of all the North complex devices. This debug interface is
+useful to figure out the NC IPs which blocks the S0ix
+transitions on the platform. This is extremely useful during
+enabling PM on customer platforms and derivatives.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Signed-off-by: Kumar P Mahesh <mahesh.kumar.p@intel.com>
 ---
- drivers/cpufreq/cpufreq_governor.c |   16 ++++++++++++----
- drivers/cpufreq/cpufreq_governor.h |    3 ++-
- 2 files changed, 14 insertions(+), 5 deletions(-)
+ arch/x86/Kconfig                     |    3 -
+ arch/x86/kernel/Makefile             |    1 +
+ arch/x86/kernel/intel_nc_dev_state.c |  186 ++++++++++++++++++++++++++++++++++
+ kernel/power/Kconfig                 |   24 +++++
+ 4 files changed, 211 insertions(+), 3 deletions(-)
+ create mode 100644 arch/x86/kernel/intel_nc_dev_state.c
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 1b44496..32ad9db 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -265,7 +265,9 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 		if (have_governor_per_policy()) {
- 			WARN_ON(dbs_data);
- 		} else if (dbs_data) {
--			dbs_data->usage_count++;
-+			mutex_lock(&dbs_data->usage_count_mutex);
-+			atomic_inc(&dbs_data->usage_count);
-+			mutex_unlock(&dbs_data->usage_count_mutex);
- 			policy->governor_data = dbs_data;
- 			return 0;
- 		}
-@@ -277,7 +279,10 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 		}
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 6e67ad4..ee0ccaf 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -2450,9 +2450,6 @@ config IOSF_MBI
+ 	  Fabric (IOSF) Sideband MailBox Interface (MBI). For MBI platforms
+ 	  enumerable by PCI.
  
- 		dbs_data->cdata = cdata;
--		dbs_data->usage_count = 1;
-+		mutex_init(&dbs_data->usage_count_mutex);
-+		mutex_lock(&dbs_data->usage_count_mutex);
-+		atomic_set(&dbs_data->usage_count, 1);
-+		mutex_unlock(&dbs_data->usage_count_mutex);
- 		rc = cdata->init(dbs_data);
- 		if (rc) {
- 			pr_err("%s: POLICY_INIT: init() failed\n", __func__);
-@@ -322,7 +327,8 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+-config PMC_ATOM
+-	def_bool y
+-        depends on PCI
  
- 		return 0;
- 	case CPUFREQ_GOV_POLICY_EXIT:
--		if (!--dbs_data->usage_count) {
-+		mutex_lock(&dbs_data->usage_count_mutex);
-+		if (atomic_dec_and_test(&dbs_data->usage_count)) {
- 			sysfs_remove_group(get_governor_parent_kobj(policy),
- 					get_sysfs_attr(dbs_data));
+ source "net/Kconfig"
  
-@@ -338,9 +344,11 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 			}
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index ed65a6b..b11786f 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -106,6 +106,7 @@ obj-$(CONFIG_PERF_EVENTS)		+= perf_regs.o
+ obj-$(CONFIG_TRACING)			+= tracepoint.o
+ obj-$(CONFIG_IOSF_MBI)			+= iosf_mbi.o
+ obj-$(CONFIG_PMC_ATOM)          += pmc_atom.o
++obj-$(CONFIG_INTEL_SOC_NC_STATE)	+= intel_nc_dev_state.o
  
- 			cdata->exit(dbs_data);
-+			mutex_unlock(&dbs_data->usage_count_mutex);
- 			kfree(dbs_data);
- 			cdata->gdbs_data = NULL;
--		}
-+		} else
-+			mutex_unlock(&dbs_data->usage_count_mutex);
  
- 		policy->governor_data = NULL;
- 		return 0;
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index cc401d1..53ca449 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -219,7 +219,8 @@ struct common_dbs_data {
- struct dbs_data {
- 	struct common_dbs_data *cdata;
- 	unsigned int min_sampling_rate;
--	int usage_count;
-+	struct mutex usage_count_mutex;
-+	atomic_t usage_count;
- 	void *tuners;
+ ###
+diff --git a/arch/x86/kernel/intel_nc_dev_state.c b/arch/x86/kernel/intel_nc_dev_state.c
+new file mode 100644
+index 0000000..c3d5e40
+--- /dev/null
++++ b/arch/x86/kernel/intel_nc_dev_state.c
+@@ -0,0 +1,186 @@
++/*
++ * Intel SOC North Complex devices state Driver
++ * Copyright (c) 2014, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ */
++
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/device.h>
++#include <linux/debugfs.h>
++#include <linux/seq_file.h>
++#include <linux/io.h>
++
++#include <asm/cpu_device_id.h>
++#include <asm/intel_mid_pcihelpers.h>
++
++#define	DRIVER_NAME	KBUILD_MODNAME
++
++#define PUNIT_PORT		0x04
++#define PWRGT_CNT		0x60
++#define PWRGT_STATUS		0x61
++#define VED_SS_PM0		0x32
++#define ISP_SS_PM0		0x39
++#define MIO_SS_PM		0x3B
++#define SSS_SHIFT		24
++#define RENDER_POS		0
++#define MEDIA_POS		2
++#define DISPLAY_POS		6
++#define DSP_SSS_CHT		0x36
++#define DSP_SSS_POS_CHT		16
++
++#define PMC_D0I3_MASK		3
++
++static char *dstates[] = {"D0", "D0i1", "D0i2", "D0i3"};
++
++struct nc_device {
++	char *name;
++	int reg;
++	int sss_pos;
++};
++
++struct nc_device nc_devices_vlv[] = {
++	{ "GFX RENDER", PWRGT_STATUS,  RENDER_POS },
++	{ "GFX MEDIA", PWRGT_STATUS, MEDIA_POS },
++	{ "DISPLAY", PWRGT_STATUS,  DISPLAY_POS },
++	{ "VED", VED_SS_PM0, SSS_SHIFT},
++	{ "ISP", ISP_SS_PM0, SSS_SHIFT},
++	{ "MIO", MIO_SS_PM, SSS_SHIFT},
++};
++
++struct nc_device nc_devices_cht[] = {
++	{ "GFX RENDER", PWRGT_STATUS,  RENDER_POS },
++	{ "GFX MEDIA", PWRGT_STATUS, MEDIA_POS },
++	{ "DSP", DSP_SSS_CHT,  DSP_SSS_POS_CHT },
++	{ "VED", VED_SS_PM0, SSS_SHIFT},
++	{ "ISP", ISP_SS_PM0, SSS_SHIFT},
++	{ "MIO", MIO_SS_PM, SSS_SHIFT},
++};
++#define NC_NUM_DEVICES 6
++
++#define ICPU(model, cpu) \
++	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_MWAIT, (unsigned long)&cpu }
++
++
++MODULE_DEVICE_TABLE(x86cpu, intel_pmc_cpu_ids);
++
++struct pmc_config {
++	struct nc_device *nc_table;
++	u32 num_nc;
++};
++static const struct pmc_config vlv_config = {
++	.nc_table = nc_devices_vlv,
++	.num_nc = NC_NUM_DEVICES,
++};
++
++static const struct pmc_config cht_config = {
++	.nc_table = nc_devices_cht,
++	.num_nc = NC_NUM_DEVICES,
++};
++
++static const struct pmc_config *icpu;
++
++static const struct x86_cpu_id intel_pmc_cpu_ids[] = {
++	ICPU(0x4c, cht_config),
++	ICPU(0x37, vlv_config),
++	{}
++};
++
++static int nc_dev_state_show(struct seq_file *seq_file, void *unused)
++{
++	struct seq_file *s = (struct seq_file *)seq_file;
++	u32 nc_pwr_sts, nc_reg, nc_val;
++	const struct x86_cpu_id *id;
++	int dev_num, dev_index;
++	static struct nc_device *nc_dev;
++
++	id = x86_match_cpu(intel_pmc_cpu_ids);
++	if (!id)
++		return -ENODEV;
++	icpu = (const struct pmc_config *)id->driver_data;
++
++	if (!icpu->nc_table)
++		return -ENODEV;
++	nc_dev = icpu->nc_table;
++	dev_num = icpu->num_nc;
++
++	seq_puts(s, "\n\nNORTH COMPLEX DEVICES :\n");
++	for (dev_index = 0; dev_index < dev_num; dev_index++) {
++		nc_reg = nc_dev[dev_index].reg;
++		nc_pwr_sts = intel_mid_msgbus_read32(PUNIT_PORT, nc_reg);
++		nc_pwr_sts >>= nc_dev[dev_index].sss_pos;
++		nc_val = nc_pwr_sts & PMC_D0I3_MASK;
++		seq_printf(s, "%9s : %s\n", nc_dev[dev_index].name,
++				dstates[nc_val]);
++	}
++	return 0;
++}
++
++static int nc_dev_state_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, nc_dev_state_show, inode->i_private);
++}
++
++static const struct file_operations nc_dev_state_ops = {
++	.open		= nc_dev_state_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static struct dentry *dbg_file;
++
++static int nc_dbgfs_register(void)
++{
++
++	dbg_file = debugfs_create_dir("nc_atom", NULL);
++	if (!dbg_file)
++		return -ENOMEM;
++
++	dbg_file = debugfs_create_file("nc_dev_state", S_IFREG | S_IRUGO,
++				dbg_file, NULL, &nc_dev_state_ops);
++	if (!dbg_file) {
++		pr_err("nc_dev_state register failed\n");
++		return -ENODEV;
++	}
++	return 0;
++}
++
++static void nc_dbgfs_unregister(void)
++{
++	if (!dbg_file)
++		return;
++
++	debugfs_remove_recursive(dbg_file);
++	dbg_file = NULL;
++}
++
++static int __init nc_dev_state_module_init(void)
++{
++	int ret = nc_dbgfs_register();
++	if (ret < 0)
++		return ret;
++	return 0;
++}
++
++static void __exit nc_dev_state_module_exit(void)
++{
++	nc_dbgfs_unregister();
++}
++
++module_init(nc_dev_state_module_init);
++module_exit(nc_dev_state_module_exit);
++
++MODULE_AUTHOR("Kumar P, Mahesh <mahesh.kumar.p.intel.com>");
++MODULE_DESCRIPTION("Driver for get North Complex devices state");
++MODULE_LICENSE("GPL v2");
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index 6c78fe5..399e192 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -217,6 +217,30 @@ config PM_TRACE
+ 	  dependent, x86 will print the information during a
+ 	  late_initcall.
  
- 	/* dbs_mutex protects dbs_enable in governor start/stop */
++menu "Intel PM Debug Driver"
++
++config INTEL_SOC_NC_STATE
++	bool "North Complex devices power state driver"
++	def_bool y
++	---help---
++		This is a debug driver which gets the power states
++		of all North Complex devices.The power states of
++		each IP is exposed as part of the debugfs
++		interface
++
++config PMC_ATOM
++	bool "South Complex devices power state driver"
++	def_bool y
++        depends on PCI
++	---help---
++		This is a debug driver which gets the power states
++		of all South Complex devices.The driver also dumps
++		the information on S0ix residencies.The power states
++		of each IP is exposed as part of the debugfs
++		interface
++
++endmenu
++
+ config PM_TRACE_RTC
+ 	bool "Suspend/resume event tracing"
+ 	depends on PM_SLEEP_DEBUG
 -- 
-1.7.9.3
+1.7.9.5
+
