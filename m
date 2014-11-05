@@ -1,50 +1,42 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
-Date: Wed, 5 Nov 2014 14:42:19 +0100
-Message-ID: <20141105134219.GD4527@dhcp22.suse.cz>
-References: <1413876435-11720-1-git-send-email-mhocko@suse.cz>
- <2156351.pWp6MNRoWm@vostro.rjw.lan>
- <20141021141159.GE9415@dhcp22.suse.cz>
- <4766859.KSKPTm3b0x@vostro.rjw.lan>
- <20141021142939.GG9415@dhcp22.suse.cz>
- <20141104192705.GA22163@htj.dyndns.org>
- <20141105124620.GB4527@dhcp22.suse.cz>
- <20141105130247.GA14386@htj.dyndns.org>
- <20141105133100.GC4527@dhcp22.suse.cz>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH 02/12] drivers: mfd: Add support for Exynos PMU driver
+Date: Wed, 05 Nov 2014 14:47:36 +0100
+Message-ID: <545A2A78.5000901@samsung.com>
+References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
+ <1414986790-11940-3-git-send-email-amit.daniel@samsung.com>
+ <20141103152604.GA10544@x1> <002601cff7de$0f8db7e0$2ea927a0$@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <20141105133100.GC4527@dhcp22.suse.cz>
-Sender: owner-linux-mm@kvack.org
-To: Tejun Heo <tj@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:20839 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751198AbaKENrq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Nov 2014 08:47:46 -0500
+In-reply-to: <002601cff7de$0f8db7e0$2ea927a0$@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pankaj Dubey <pankaj.dubey@samsung.com>, 'Lee Jones' <lee.jones@linaro.org>
+Cc: 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, 'Sangbeom Kim' <sbkim73@samsung.com>, 'Samuel Ortiz' <sameo@linux.intel.com>
 
-On Wed 05-11-14 14:31:00, Michal Hocko wrote:
-> On Wed 05-11-14 08:02:47, Tejun Heo wrote:
-[...]
-> > Also, why isn't this part of
-> > oom_killer_disable/enable()?  The way they're implemented is really
-> > silly now.  It just sets a flag and returns whether there's a
-> > currently running instance or not.  How were these even useful? 
-> > Why can't you just make disable/enable to what they were supposed to
-> > do from the beginning?
-> 
-> Because then we would block all the potential allocators coming from
-> workqueues or kernel threads which are not frozen yet rather than fail
-> the allocation.
+On 04/11/14 04:18, Pankaj Dubey wrote:
+> 2: Since PM domain relies on PMU registers and does not have 
+> its own DT binding, MFD client and MFD device
+> is most suitable for making this kind of platform drivers.
 
-After thinking about this more it would be doable by using trylock in
-the allocation oom path. I will respin the patch. The API will be
-cleaner this way.
+We have DT binding for the Exynos power domains:
+Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+In fact the IO memory regions used in the power domain bindings
+fall within the (sparse) PMU registers region.
 
--- 
-Michal Hocko
-SUSE Labs
+There is also DT binding for the PMU subsystem:
+Documentation/devicetree/bindings/arm/samsung/pmu.txt
+
+I guess a platform device driver in drivers/power would be a better
+fit than drivers/mfd. I doubt introducing an mfd driver now makes
+much sense, we have already DT bindings for PHYs, the power domains,
+etc.
 
 --
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Thanks,
+Sylwester
