@@ -1,95 +1,83 @@
-From: Chander Kashyap <k.chander@samsung.com>
-Subject: [PATCH v4] arm64: dts: exynos7: add support for cpuidle core power down
-Date: Wed,  5 Nov 2014 18:45:31 +0530
-Message-ID: <1415193331-14790-1-git-send-email-k.chander@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f174.google.com ([209.85.192.174]:57033 "EHLO
-	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754590AbaKENPt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Nov 2014 08:15:49 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
+Date: Wed, 5 Nov 2014 14:31:00 +0100
+Message-ID: <20141105133100.GC4527@dhcp22.suse.cz>
+References: <1413876435-11720-1-git-send-email-mhocko@suse.cz>
+ <2156351.pWp6MNRoWm@vostro.rjw.lan>
+ <20141021141159.GE9415@dhcp22.suse.cz>
+ <4766859.KSKPTm3b0x@vostro.rjw.lan>
+ <20141021142939.GG9415@dhcp22.suse.cz>
+ <20141104192705.GA22163@htj.dyndns.org>
+ <20141105124620.GB4527@dhcp22.suse.cz>
+ <20141105130247.GA14386@htj.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <20141105130247.GA14386@htj.dyndns.org>
+Sender: owner-linux-mm@kvack.org
+To: Tejun Heo <tj@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, daniel.lezcano@linaro.org, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, mark.rutland@arm.com, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <k.chander@samsung.com>
 
-Exynos7 has core power down state where cores can be powered off independently.
-This patch adds support for this state.
+On Wed 05-11-14 08:02:47, Tejun Heo wrote:
+> Hello, Michal.
+> 
+> On Wed, Nov 05, 2014 at 01:46:20PM +0100, Michal Hocko wrote:
+> > As I've said I wasn't entirely happy with this half solution but it helped
+> > the current situation at the time. The full solution would require to
+> 
+> I don't think this helps the situation.  It just makes the bug more
+> obscure and the race window while reduced is still pretty big and
+> there seems to be an actual not too low chance of the bug triggering
+> out in the wild.  How does this level of obscuring help anything?  In
+> addition to making the bug more difficult to reproduce, it also adds a
+> bunch of code which *pretends* to address the issue but ultimately
+> just lowers visibility into what's going on and hinders tracking down
+> the issue when something actually goes wrong.  This is *NOT* making
+> the situation better.  The patch is net negative.
 
-Entry latency for the core power down is calculated as follows:
-1. Time difference is measured between cpuidle entry and exit.
-2. WFI is skipped for measuring the time.
-3. Select the worst case time in the set of 100000 cpuidle transactions,
-   with varying load.
+The patch was a compromise. It was needed to catch the most common
+OOM conditions while the tasks are getting frozen. The race window
+between the counter increment and the check in the PM path is negligible
+compared to the freezing process. And it is safe from OOM point of view
+because nothing can block it away.
 
-Exit latency and target residency are supplied as per HW team
+> > I think the patch below should be safe. Would you prefer this solution
+> > instead? It is race free but there is the risk that exposing a lock which
+> 
+> Yes, this is an a lot saner approach in general.
+> 
+> > completely blocks OOM killer from the allocation path will kick us
+> > later.
+> 
+> Can you please spell it out?  How would it kick us?  We already have
+> oom_killer_disable/enable(), how is this any different in terms of
+> correctness from them? 
 
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
----
-This patch has following dependencies:
-	- [PATCH v5 0/8] arch: arm64: Enable support for Samsung Exynos7 SoC
-		http://www.spinics.net/lists/linux-samsung-soc/msg37047.html
-Changes in v2:
-	- Moved the cpu-idle-state property after reg property
-	- removed the status property.
+As already said in the part of email you haven't quoted.
+oom_killer_disable will cause allocations to _fail_. With the lock you are
+_blocking_ OOM killer completely. This is error prone because no part of
+system should be able to block the last resort memory shortage actions.
 
-Changes in v3:
-	- Added the Entry latency calculation in commit message.
-Changes in v4:
-	- Corrected the commit message.
-	- Corrected the entry latency value.
+> Also, why isn't this part of
+> oom_killer_disable/enable()?  The way they're implemented is really
+> silly now.  It just sets a flag and returns whether there's a
+> currently running instance or not.  How were these even useful? 
+> Why can't you just make disable/enable to what they were supposed to
+> do from the beginning?
 
- arch/arm64/boot/dts/exynos/exynos7.dtsi |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/exynos/exynos7.dtsi b/arch/arm64/boot/dts/exynos/exynos7.dtsi
-index 50ae936..444dde1 100644
---- a/arch/arm64/boot/dts/exynos/exynos7.dtsi
-+++ b/arch/arm64/boot/dts/exynos/exynos7.dtsi
-@@ -37,6 +37,7 @@
- 			compatible = "arm,cortex-a57", "arm,armv8";
- 			enable-method = "psci";
- 			reg = <0x0>;
-+			cpu-idle-states = <&CPU_SLEEP>;
- 		};
- 
- 		cpu@1 {
-@@ -44,6 +45,7 @@
- 			compatible = "arm,cortex-a57", "arm,armv8";
- 			enable-method = "psci";
- 			reg = <0x1>;
-+			cpu-idle-states = <&CPU_SLEEP>;
- 		};
- 
- 		cpu@2 {
-@@ -51,6 +53,7 @@
- 			compatible = "arm,cortex-a57", "arm,armv8";
- 			enable-method = "psci";
- 			reg = <0x2>;
-+			cpu-idle-states = <&CPU_SLEEP>;
- 		};
- 
- 		cpu@3 {
-@@ -58,6 +61,20 @@
- 			compatible = "arm,cortex-a57", "arm,armv8";
- 			enable-method = "psci";
- 			reg = <0x3>;
-+			cpu-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		idle-states {
-+			entry-method = "arm,psci";
-+
-+			CPU_SLEEP: cpu-sleep {
-+				compatible = "arm,idle-state";
-+				local-timer-stop;
-+				arm,psci-suspend-param = <0x0010000>;
-+				entry-latency-us = <34>;
-+				exit-latency-us = <150>;
-+				min-residency-us = <2100>;
-+			};
- 		};
- 	};
- 
+Because then we would block all the potential allocators coming from
+workqueues or kernel threads which are not frozen yet rather than fail
+the allocation. I am not familiar with the PM code and all the paths
+this might get called from enough to tell whether failing the allocation
+is better approach than failing the suspend operation on a timeout.
 -- 
-1.7.9.5
+Michal Hocko
+SUSE Labs
 
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
