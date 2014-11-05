@@ -1,47 +1,95 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 3/4] PM / Domains: Improve error handling while
- adding/removing devices
-Date: Wed, 5 Nov 2014 09:03:05 +0100
-Message-ID: <CAPDyKFoA9oUOtKPvFB1Kex5-x7wn917EBUdv=jYyUwgFth4dvw@mail.gmail.com>
-References: <1414507090-516-1-git-send-email-ulf.hansson@linaro.org>
-	<1414507090-516-4-git-send-email-ulf.hansson@linaro.org>
-	<CAMuHMdWMEaC3=ibf9E8dLcG=zceU5+oE9NnKyRfAM0O36cBAjg@mail.gmail.com>
+Subject: Re: [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+Date: Wed, 5 Nov 2014 09:17:29 +0100
+Message-ID: <CAPDyKFpEPHcJEJJf7HysTbXjR0xFaSqdy0APdOVCqRRz0kboKw@mail.gmail.com>
+References: <1413208930-26019-1-git-send-email-ulf.hansson@linaro.org>
+	<CAPDyKFr7fqwb77Xhnwf7ACFX7skrY2O+_-aB1T_yfShDA1jASA@mail.gmail.com>
+	<20141104182920.GB440@dtor-ws>
+	<22485079.KBJFDeZktT@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdWMEaC3=ibf9E8dLcG=zceU5+oE9NnKyRfAM0O36cBAjg@mail.gmail.com>
+In-Reply-To: <22485079.KBJFDeZktT@vostro.rjw.lan>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron
 List-Id: linux-pm@vger.kernel.org
 
-On 5 November 2014 08:47, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Tue, Oct 28, 2014 at 3:38 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -1358,25 +1358,81 @@ EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweron);
+On 4 November 2014 22:38, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, November 04, 2014 10:29:20 AM Dmitry Torokhov wrote:
+>> On Tue, Nov 04, 2014 at 06:01:44PM +0100, Ulf Hansson wrote:
+>> > >>
+>> > >> Devices that are created while "discoverable buses" are being probed
+>> > >> can't be attached to a PM domain before the probing is done, because
+>> > >> those simply doesn't exist.
+>> > >
+>> > > Honestly, I'm not sure what you're talking about.
+>> > >
+>> > > Devices on a "discoverable* bus (say PCI) are added when the *controller* is
+>> > > probed, not when *they* are probed.
+>> >
+>> > Okay, so maybe "discoverable buses" isn't the proper term.
+>> >
+>> > >
+>> > > You very much need to have a struct device registered to be able to call
+>> > > really_probe() for it.
+>> >
+>> > Yes. But my point is that the struct device may be created dynamically
+>> > at some point in time.
 >>
->>  #endif /* CONFIG_PM_SLEEP */
+>> And that is fine.
 >>
->> -static struct generic_pm_domain_data *__pm_genpd_alloc_dev_data(struct device *dev)
->> +static int genpd_alloc_dev_data(struct generic_pm_domain *genpd,
->> +                               struct device *dev, struct gpd_timing_data *td)
->>  {
+>> >
+>> > This is how mmc/sd/sdio cards are handled. We don't have the
+>> > information about the card and thus not the struct device of it, until
+>> > we have detected it. Maybe we could at that point try to add the
+>> > device to its PM domain?
+>>
+>> Well, I think we need to first define what PM domain they will fall
+>> into. Do they have to be in one? The concept of power domain, as far as I
+>> understand it, is needed when we need to form relations going outside
+>> the standard parent/child relationship. Here we have a controller and
+>> then one or more cards in it. To be able to use card you need to power
+>> up parent and you can not power down parent until all children are
+>> powered down.
+>>
+>> But in any case, device discovery and binding them to drivers are 2
+>> separate steps. You have a PCI bus. You enumerate it - new PCI devices
+>> are created. Some of them may be put in a certain power domain. You then
+>> bind drivers to PCI devices (not strictly 'then' but we could implement
+>> driver core to postpone binding until current round of enumeration is
+>> complete) - and you discover USB controller and maybe i2c controller.
+>> Then you bind drivers to them which causes enumeration of the new bus
+>> and new devices are created. But in all these cases enumeration and
+>> creation of new 'struct device's, and driver binding are logically
+>> separate steps.
+>>
+>> >
+>> > >
+>> > >> Now, I haven't yet seen a demand for such a cases, but it seems wrong
+>> > >> to not consider them. The current solution cover these.
+>> > >
+>> > > Oh dear.  Please rethink this.
+>> >
+>> > Currently, dev_pm_domain_attach() is being invoked at the point when a
+>> > SDIO card has been found. From sdio_add_func(). How would that be
+>> > solved?
+>> >
+>>
+>> It is probably the one place where we currently doing it correctly (form
+>> logical point of view, not implementation wise - implementation wise in
+>> sdio we add device to power domain after calling device_add() which
+>> means that probe() could have been called before we added the new device
+>> to any power domain).
 >
-> [...]
+> I agree.  Ideally, devices should be added to power (or generally PM) domains
+> before registration.  That is, before calling device_add() for them.
 >
->> +       if (genpd->attach_dev)
->> +               genpd->attach_dev(dev);
->
-> Note that dev->pm_domain is not yet set at this point, so the callee
-> can no longer
-> know to which domain the device is being attached.
-> Should we re-add the parameter, or move the attach_dev() back to
-> __pm_genpd_add_device(), like Kevin suggested.
+> That's the first thing to fix here.
 
-I agree.
+It's done in patch 7 in this patchset.
 
-I am working on a new version, which adopts to your suggestions.
+[PATCH v3 7/9] mmc: core: Attach PM domain prior probing of SDIO func driver
 
 Kind regards
 Uffe
