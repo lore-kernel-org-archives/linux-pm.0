@@ -1,208 +1,216 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [PATCH v2 1/4] of: Rename "poweroff-source" property to
- "system-power-controller"
-Date: Wed, 5 Nov 2014 10:42:47 +0100
-Message-ID: <20141105094247.GN31358@localhost>
-References: <1414568135-8311-1-git-send-email-romain.perier@gmail.com>
- <1414568135-8311-2-git-send-email-romain.perier@gmail.com>
+From: Chander Kashyap <k.chander@samsung.com>
+Subject: Re: [PATCH] arm64: dts: exynos7: add support for cpuidle core power down
+Date: Wed, 5 Nov 2014 15:31:02 +0530
+Message-ID: <CADWw7OiD8TdN75G0zecowAL9GniSU9hKLN0_H6UQL85LX1E9Xw@mail.gmail.com>
+References: <1413354920-20165-1-git-send-email-k.chander@samsung.com>
+	<20141015090047.GA26484@red-moon>
+	<CADWw7Ojgttk3cjaac=GGL1D9pejCJw8sJB2JvPFWtyBh3JHYKA@mail.gmail.com>
+	<20141021163341.GB17610@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f54.google.com ([209.85.215.54]:40723 "EHLO
-	mail-la0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753916AbaKEJp5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Nov 2014 04:45:57 -0500
-Content-Disposition: inline
-In-Reply-To: <1414568135-8311-2-git-send-email-romain.perier@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20141021163341.GB17610@e102568-lin.cambridge.arm.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Chander Kashyap <k.chander@samsung.com>, Mark Rutland <Mark.Rutland@arm.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Romain Perier <romain.perier@gmail.com>
-Cc: heiko@sntech.de, grant.likely@linaro.org, robh+dt@kernel.org, devicetree@vger.kernel.org, lgirdwood@gmail.com, broonie@kernel.org, johan@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org
 
-On Wed, Oct 29, 2014 at 07:35:32AM +0000, Romain Perier wrote:
-> As discussed on the mailing list, it makes more sense to rename this property
-> to "system-power-controller". 
+Sorry for very late response. As i was on vacation so couldn=E2=80=99t =
+reply.
 
-Please also refer to the commit in the regulator tree renaming it to
-"poweroff-source", and that this in effect is a revert to the old name
-but without the vendor prefix.
+On Tue, Oct 21, 2014 at 10:03 PM, Lorenzo Pieralisi
+<lorenzo.pieralisi@arm.com> wrote:
+> On Fri, Oct 17, 2014 at 10:43:59AM +0100, Chander Kashyap wrote:
+>> Hi Lorenzo,
+>>
+>> On Wed, Oct 15, 2014 at 2:30 PM, Lorenzo Pieralisi
+>> <lorenzo.pieralisi@arm.com> wrote:
+>> > On Wed, Oct 15, 2014 at 07:35:20AM +0100, Chander Kashyap wrote:
+>> >> Exynos7 has core power down state where cores can be powered off =
+independently.
+>> >> This patch adds support for this state.
+>> >
+>> > Please tell us more about the idle-state values you are adding, in=
+ particular
+>> > entry, exit latencies and min-residency values.
+>>
+>> Entry latency: This value is calculated as follows:
+>>
+>> On entry to arm64_enter_idle_state:
+>> timestamp1 =3D ktimeget();
+>>
+>> after returning from cpu_suspend()
+>>
+>> timestamp2 =3D ktimeget();
+>>
+>> latency =3D timestamp2-timestamp1;
+>>
+>> Cpu is not allowed to enter core powerdown by skipping wfi instructi=
+on at end.
+> This may not be the worst case (because the worst case depends on the=
+ state
+> of the cache in the core unless the latency is power down command dom=
+inated,
+> so at the cost of being pedantic, please make sure that's what you ar=
+e
+> measuring and document it in the commit log).
+>
 
-> Problem being that the word "source" usually tends
-> to be used for inputs and that is out of control of the OS. The poweroff
-> capability is an output which simply turns the system-power off. Also, this
-> property might be used by drivers which power-off the system and power back on
-> subsequent RTC alarms. This seems to suggest to remove "poweroff" from the
-> property name and to choose "system-power-controller" as the more generic name.
-> This patchs adds the required renaming changes and defines an helper function
-> which is compatible with both properties, the old one prefixed by a vendor name
-> and the new one without any prefix.
-> 
-> Signed-off-by: Romain Perier <romain.perier@gmail.com>
+If i understood correctly you are referring to cache flush time.
+The measured entry latency time is averaged time for 100000
+transactions with varying load.
+I will document entry latency calculation in the commit message.
 
-First of all, always run your patches through checpatch.pl before
-submitting. There's a few warnings there for you to fix.
+>> Hence calculated time contains entry time + failure exit time.
+>>
+>>
+>> Regarding
+>> exit-latency and target-residency time, got these values from HW tea=
+m.
+>>
+>> I am using these as initial values and I will be working on optimizi=
+ng
+>> these values with further experiments.
+>> If you could suggest any formal method of deriving these values, i c=
+an
+>> try those methods as well.
+>
+> Well, you have to set the core/cluster in worst case scenario and
+> compute the break-even residency against wfi (since you have two
+> states); it certainly has a dependency on PSCI implementation too amo=
+ng
+> other things.
+>
+> exit-latency should come from HW design even though there is a cache
+> refill factor to be considered too and should be factored in.
 
-> ---
->  .../devicetree/bindings/power/power-controller.txt | 18 ++++++++++++
->  .../devicetree/bindings/power/poweroff.txt         | 18 ------------
->  drivers/of/base.c                                  | 34 ++++++++++++++++++++++
->  include/linux/of.h                                 | 10 ++-----
->  4 files changed, 55 insertions(+), 25 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/power/power-controller.txt
->  delete mode 100644 Documentation/devicetree/bindings/power/poweroff.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/power/power-controller.txt b/Documentation/devicetree/bindings/power/power-controller.txt
-> new file mode 100644
-> index 0000000..942f955
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/power-controller.txt
-> @@ -0,0 +1,18 @@
-> +* Generic system power control capability
-> +
-> +Power-management integrated circuits or miscellaneous harware components are
-> +sometimes able to control the system power. The device driver associated to these
+Exit and target residency are provided by HW team.
 
-s/to/with/
-
-> +components might needs to define this capability, 
-
-s/needs/need/
-
-> which tells to the kernel
-
-s/to the/the/
-
-> howto switch off the system. 
-
-this should be something like "that it can be used to switch off...".
-
-> The corresponding driver must have the standard
-
-It's the device that has the property, not the driver.
-
-> +property "system-power-controller" in its device node. This property marks the
-> +device as able to controller the system-power. In order to test if this property
-
-s/controller/control/
-s/system-power/system power/
-
-> +is found programmatically, use the helper function "of_is_system_power_controller"
-> +from of.h .
-> +
-> +Example:
-> +
-> +act8846: act8846@5 {
-> +	 compatible = "active-semi,act8846";
-> +	 status = "okay";
-> +	 system-power-controller;
-> +}
-> diff --git a/Documentation/devicetree/bindings/power/poweroff.txt b/Documentation/devicetree/bindings/power/poweroff.txt
-> deleted file mode 100644
-> index 845868b..0000000
-> --- a/Documentation/devicetree/bindings/power/poweroff.txt
-> +++ /dev/null
-> @@ -1,18 +0,0 @@
-> -* Generic Poweroff capability
-> -
-> -Power-management integrated circuits or miscellaneous harware components are
-> -sometimes able to control the system power. The device driver associated to these
-> -components might needs to define poweroff capability, which tells to the kernel
-> -how to switch off the system. The corresponding driver must have the standard
-> -property "poweroff-source" in its device node. This property marks the device as
-> -able to shutdown the system. In order to test if this property is found
-> -programmatically, use the helper function "of_system_has_poweroff_source" from
-> -of.h .
-> -
-> -Example:
-> -
-> -act8846: act8846@5 {
-> -	 compatible = "active-semi,act8846";
-> -	 status = "okay";
-> -	 poweroff-source;
-> -}
-> diff --git a/drivers/of/base.c b/drivers/of/base.c
-> index 74ab1b8..438e405 100644
-> --- a/drivers/of/base.c
-> +++ b/drivers/of/base.c
-> @@ -2260,3 +2260,37 @@ struct device_node *of_graph_get_remote_port(const struct device_node *node)
->  	return of_get_next_parent(np);
->  }
->  EXPORT_SYMBOL(of_graph_get_remote_port);
-> +
-> +/**
-> + * of_is_system_power_controller() - Tells if the property for controlling system
-> + * power is found in device_node.
-> + * @np: Pointer to the given device_node
-> + *
-> + * Return: true if present false otherwise
-> + */
-> +bool of_is_system_power_controller(const struct device_node *np)
-> +{
-> +	struct property *pp;
-> +	unsigned long flags;
-> +	char *sep;
-> +	bool found = false;
-> +
-> +	raw_spin_lock_irqsave(&devtree_lock, flags);
-> +	for_each_property_of_node(np, pp) {
-> +		if (of_prop_cmp(pp->name, "system-power-controller") == 0) {
-> +			found = true;
-> +			break;
-> +		}
-> +		/* Backward compatibility with previous property "vendor,system-power-controller",
-> +		 * we just check that an non-empty vendor-prefix exists here
-> +		 */
-> +		sep = strchr(pp->name, ',');
-> +		if (sep && sep - pp->name && of_prop_cmp(sep + 1, "system-power-controller") == 0) {
-> +			found = true;
-> +			break;
-> +		}
-> +	}
-> +	raw_spin_unlock_irqrestore(&devtree_lock, flags);
-> +	return found;
-> +}
-> +EXPORT_SYMBOL(of_is_system_power_controller);
-
-I think this is the wrong approach. This way any driver will recognise
-the old deprecated vendor prefixes. But not only those -- also
-misspelled vendor prefixes.
-
-Keep it simple and only parse the new property name (inline in the
-header file).
-
-If we need to support the old property names with vendor prefix (we have
-dropped vendor prefixes in the past), then you could add a second helper
-
-	of_is_system_power_controller_compat(np, compat_propname)
-
-where you pass in the whole old property name (e.g.
-"ti,system-power-controller") and use that name as a fall back.
-
-This way it will be clear which drivers are still supporting the
-deprecated property names, and we can make sure that no new ones will.
-
-> diff --git a/include/linux/of.h b/include/linux/of.h
-> index 868fdad..e7177b3 100644
-> --- a/include/linux/of.h
-> +++ b/include/linux/of.h
-> @@ -910,15 +910,11 @@ static inline int of_changeset_update_property(struct of_changeset *ocs,
->  /* CONFIG_OF_RESOLVE api */
->  extern int of_resolve_phandles(struct device_node *tree);
->  
-> -/**
-> - * of_system_has_poweroff_source - Tells if poweroff-source is found for device_node
-> - * @np: Pointer to the given device_node
-> - *
-> - * return true if present false otherwise
-> - */
-> +bool of_is_system_power_controller(const struct device_node *np);
-> +
->  static inline bool of_system_has_poweroff_source(const struct device_node *np)
->  {
-> -	return of_property_read_bool(np, "poweroff-source");
-> +	return of_is_system_power_controller(np);
->  }
->  
->  #endif /* _LINUX_OF_H */
-
-Johan
+I will post the V3 with changed commit message.
+>
+> Lorenzo
+>
+>>
+>> >
+>> >> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+>> >> ---
+>> >> This patch has following dependencies:
+>> >>       - [PATCH v5 0/8] arch: arm64: Enable support for Samsung Ex=
+ynos7 SoC
+>> >>               http://www.spinics.net/lists/linux-samsung-soc/msg3=
+7047.html
+>> >>       - [PATCH v9 0/8] ARM generic idle states
+>> >>               http://permalink.gmane.org/gmane.linux.power-manage=
+ment.general/49224
+>> >
+>> > Series above was merged, so dependency is stale.
+>>
+>> i will remove this
+>>
+>> >
+>> >>  arch/arm64/boot/dts/exynos/exynos7.dtsi |   18 +++++++++++++++++=
++
+>> >>  1 file changed, 18 insertions(+)dont
+>> >>
+>> >> diff --git a/arch/arm64/boot/dts/exynos/exynos7.dtsi b/arch/arm64=
+/boot/dts/exynos/exynos7.dtsi
+>> >> index ce221ac..8e0a034 100644
+>> >> --- a/arch/arm64/boot/dts/exynos/exynos7.dtsi
+>> >> +++ b/arch/arm64/boot/dts/exynos/exynos7.dtsi
+>> >> @@ -36,6 +36,7 @@
+>> >>                       device_type =3D "cpu";
+>> >>                       compatible =3D "arm,cortex-a57", "arm,armv8=
+";
+>> >>                       enable-method =3D "psci";
+>> >> +                     cpu-idle-states =3D <&CPU_SLEEP>;
+>> >
+>> > I would add cpu-idle-states phandle after the reg property, as def=
+ined
+>> > in the idle states bindings.
+>>
+>> i will move this after reg property.
+>>
+>> >
+>> >>                       reg =3D <0x0>;
+>> >>               };
+>> >>
+>> >> @@ -43,6 +44,7 @@
+>> >>                       device_type =3D "cpu";
+>> >>                       compatible =3D "arm,cortex-a57", "arm,armv8=
+";
+>> >>                       enable-method =3D "psci";
+>> >> +                     cpu-idle-states =3D <&CPU_SLEEP>;
+>> >>                       reg =3D <0x1>;
+>> >>               };
+>> >>
+>> >> @@ -50,6 +52,7 @@
+>> >>                       device_type =3D "cpu";
+>> >>                       compatible =3D "arm,cortex-a57", "arm,armv8=
+";
+>> >>                       enable-method =3D "psci";
+>> >> +                     cpu-idle-states =3D <&CPU_SLEEP>;
+>> >>                       reg =3D <0x2>;
+>> >>               };
+>> >>
+>> >> @@ -57,8 +60,23 @@
+>> >>                       device_type =3D "cpu";
+>> >>                       compatible =3D "arm,cortex-a57", "arm,armv8=
+";
+>> >>                       enable-method =3D "psci";
+>> >> +                     cpu-idle-states =3D <&CPU_SLEEP>;
+>> >>                       reg =3D <0x3>;
+>> >>               };
+>> >> +
+>> >> +             idle-states {
+>> >> +                     entry-method =3D "arm,psci";
+>> >> +
+>> >> +                     CPU_SLEEP: cpu-sleep {
+>> >> +                             compatible =3D "arm,idle-state";
+>> >> +                             local-timer-stop;
+>> >> +                             arm,psci-suspend-param =3D <0x00100=
+00>;
+>> >> +                             entry-latency-us =3D <20>;
+>> >> +                             exit-latency-us =3D <150>;
+>> >> +                             min-residency-us =3D <2100>;
+>> >> +                             status =3D "enabled";
+>> >
+>> > status ? This is not a documented property. If you need it please =
+explain
+>> > why, define its bindings and we can see how to accommodate it.
+>>
+>> I will add okay for status property. As per the bindings posted by y=
+ou.
+>>
+>> regards,
+>> >
+>> > Thank you,
+>> > Lorenzo
+>> >
+>> >> +                     };
+>> >> +             };
+>> >>       };
+>> >>
+>> >>       psci {
+>> >> --
+>> >> 1.7.9.5
+>> >>
+>> >>
+>> >
+>> >
+>> > _______________________________________________
+>> > linux-arm-kernel mailing list
+>> > linux-arm-kernel@lists.infradead.org
+>> > http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" =
+in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
