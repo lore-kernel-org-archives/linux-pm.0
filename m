@@ -1,7 +1,7 @@
 From: Michal Hocko <mhocko@suse.cz>
 Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
-Date: Wed, 5 Nov 2014 14:31:00 +0100
-Message-ID: <20141105133100.GC4527@dhcp22.suse.cz>
+Date: Wed, 5 Nov 2014 14:42:19 +0100
+Message-ID: <20141105134219.GD4527@dhcp22.suse.cz>
 References: <1413876435-11720-1-git-send-email-mhocko@suse.cz>
  <2156351.pWp6MNRoWm@vostro.rjw.lan>
  <20141021141159.GE9415@dhcp22.suse.cz>
@@ -10,68 +10,35 @@ References: <1413876435-11720-1-git-send-email-mhocko@suse.cz>
  <20141104192705.GA22163@htj.dyndns.org>
  <20141105124620.GB4527@dhcp22.suse.cz>
  <20141105130247.GA14386@htj.dyndns.org>
+ <20141105133100.GC4527@dhcp22.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <owner-linux-mm@kvack.org>
 Content-Disposition: inline
-In-Reply-To: <20141105130247.GA14386@htj.dyndns.org>
+In-Reply-To: <20141105133100.GC4527@dhcp22.suse.cz>
 Sender: owner-linux-mm@kvack.org
 To: Tejun Heo <tj@kernel.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 05-11-14 08:02:47, Tejun Heo wrote:
-> Hello, Michal.
+On Wed 05-11-14 14:31:00, Michal Hocko wrote:
+> On Wed 05-11-14 08:02:47, Tejun Heo wrote:
+[...]
+> > Also, why isn't this part of
+> > oom_killer_disable/enable()?  The way they're implemented is really
+> > silly now.  It just sets a flag and returns whether there's a
+> > currently running instance or not.  How were these even useful? 
+> > Why can't you just make disable/enable to what they were supposed to
+> > do from the beginning?
 > 
-> On Wed, Nov 05, 2014 at 01:46:20PM +0100, Michal Hocko wrote:
-> > As I've said I wasn't entirely happy with this half solution but it helped
-> > the current situation at the time. The full solution would require to
-> 
-> I don't think this helps the situation.  It just makes the bug more
-> obscure and the race window while reduced is still pretty big and
-> there seems to be an actual not too low chance of the bug triggering
-> out in the wild.  How does this level of obscuring help anything?  In
-> addition to making the bug more difficult to reproduce, it also adds a
-> bunch of code which *pretends* to address the issue but ultimately
-> just lowers visibility into what's going on and hinders tracking down
-> the issue when something actually goes wrong.  This is *NOT* making
-> the situation better.  The patch is net negative.
+> Because then we would block all the potential allocators coming from
+> workqueues or kernel threads which are not frozen yet rather than fail
+> the allocation.
 
-The patch was a compromise. It was needed to catch the most common
-OOM conditions while the tasks are getting frozen. The race window
-between the counter increment and the check in the PM path is negligible
-compared to the freezing process. And it is safe from OOM point of view
-because nothing can block it away.
+After thinking about this more it would be doable by using trylock in
+the allocation oom path. I will respin the patch. The API will be
+cleaner this way.
 
-> > I think the patch below should be safe. Would you prefer this solution
-> > instead? It is race free but there is the risk that exposing a lock which
-> 
-> Yes, this is an a lot saner approach in general.
-> 
-> > completely blocks OOM killer from the allocation path will kick us
-> > later.
-> 
-> Can you please spell it out?  How would it kick us?  We already have
-> oom_killer_disable/enable(), how is this any different in terms of
-> correctness from them? 
-
-As already said in the part of email you haven't quoted.
-oom_killer_disable will cause allocations to _fail_. With the lock you are
-_blocking_ OOM killer completely. This is error prone because no part of
-system should be able to block the last resort memory shortage actions.
-
-> Also, why isn't this part of
-> oom_killer_disable/enable()?  The way they're implemented is really
-> silly now.  It just sets a flag and returns whether there's a
-> currently running instance or not.  How were these even useful? 
-> Why can't you just make disable/enable to what they were supposed to
-> do from the beginning?
-
-Because then we would block all the potential allocators coming from
-workqueues or kernel threads which are not frozen yet rather than fail
-the allocation. I am not familiar with the PM code and all the paths
-this might get called from enough to tell whether failing the allocation
-is better approach than failing the suspend operation on a timeout.
 -- 
 Michal Hocko
 SUSE Labs
