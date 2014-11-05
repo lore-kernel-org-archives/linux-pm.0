@@ -1,15 +1,15 @@
 From: Mahesh Kumar P <mahesh.kumar.p@intel.com>
 Subject: [PATCH] Add North complex power state debug driver for BYT and CHT
-Date: Wed,  5 Nov 2014 20:32:35 +0530
-Message-ID: <1415199755-29605-1-git-send-email-mahesh.kumar.p@intel.com>
+Date: Wed,  5 Nov 2014 20:34:12 +0530
+Message-ID: <1415199852-29795-1-git-send-email-mahesh.kumar.p@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:3934 "EHLO mga11.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:25184 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755128AbaKEPHd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 5 Nov 2014 10:07:33 -0500
+	id S1755041AbaKEPLS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 5 Nov 2014 10:11:18 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, len.brown@intel.com, aubrey.li@intel.com
+To: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, len.brown@intel.com, aubrey.li@intel.com, linux-kernel@vger.kernel.org
 Cc: mahesh.kumar.p@intel.com
 
 The patch adds a debug driver which dumps the power states
