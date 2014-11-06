@@ -1,41 +1,54 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH v10 4/5] dmaengine: pl330: add Power Management support
-Date: Thu, 6 Nov 2014 18:15:12 +0530
-Message-ID: <20141106124512.GA1870@intel.com>
-References: <1415263010-7992-1-git-send-email-k.kozlowski@samsung.com>
- <1415263010-7992-5-git-send-email-k.kozlowski@samsung.com>
+From: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
+Date: Thu, 6 Nov 2014 13:49:53 +0100
+Message-ID: <20141106124953.GD7202@dhcp22.suse.cz>
+References: <20141105130247.GA14386@htj.dyndns.org>
+ <20141105133100.GC4527@dhcp22.suse.cz>
+ <20141105134219.GD4527@dhcp22.suse.cz>
+ <20141105154436.GB14386@htj.dyndns.org>
+ <20141105160115.GA28226@dhcp22.suse.cz>
+ <20141105162929.GD14386@htj.dyndns.org>
+ <20141105163956.GD28226@dhcp22.suse.cz>
+ <20141105165428.GF14386@htj.dyndns.org>
+ <20141105174609.GE28226@dhcp22.suse.cz>
+ <20141105175527.GH14386@htj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:2520 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751232AbaKFMop (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 6 Nov 2014 07:44:45 -0500
+Return-path: <owner-linux-mm@kvack.org>
 Content-Disposition: inline
-In-Reply-To: <1415263010-7992-5-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20141105175527.GH14386@htj.dyndns.org>
+Sender: owner-linux-mm@kvack.org
+To: Tejun Heo <tj@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Thu, Nov 06, 2014 at 09:36:49AM +0100, Krzysztof Kozlowski wrote:
-> This patch adds both normal PM suspend/resume support and runtime PM
-> support to pl330 DMA engine driver.
+On Wed 05-11-14 12:55:27, Tejun Heo wrote:
+> On Wed, Nov 05, 2014 at 06:46:09PM +0100, Michal Hocko wrote:
+> > Because out_of_memory can be called from mutliple paths. And
+> > the only interesting one should be the page allocation path.
+> > pagefault_out_of_memory is not interesting because it cannot happen for
+> > the frozen task.
 > 
-> The runtime power management for pl330 DMA driver allows gating of AMBA
-> clock (PDMA) in FSYS clock domain, when the device is not processing any
-> requests. This is necessary to enter low power modes on Exynos SoCs
-> (e.g. LPA on Exynos4x12 or W-AFTR on Exynos3250).
-> 
-> Runtime PM resuming of the device may happen in atomic context (during
-> call device_issue_pending()) so pm_runtime_irq_safe() is used. This will
-> lead only to disabling/enabling of the clock but this is sufficient for
-> gating the clock and for reducing energy usage.
-> 
-> During system sleep the AMBA bus clock is also unprepared.
+> Hmmm.... wouldn't that be broken by definition tho?  So, if the oom
+> killer is invoked from somewhere else than page allocation path, it
+> would proceed ignoring the disabled setting and would race against PM
+> freeze path all the same. 
 
-Acked-by: Vinod Koul <vinod.koul@intel.com>
+Not really because try_to_freeze_tasks doesn't finish until _all_ tasks
+are frozen and a task in the page fault path cannot be frozen, can it?
 
+I mean there shouldn't be any problem to not invoke OOM killer under
+from the page fault path as well but that might lead to looping in the
+page fault path without any progress until freezer enables OOM killer on
+the failure path because the said task cannot be frozen.
+
+Is this preferable?
 -- 
-~Vinod
+Michal Hocko
+SUSE Labs
 
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
