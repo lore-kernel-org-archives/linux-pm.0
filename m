@@ -1,40 +1,49 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH] intel_pstate: Add CPUID for BDW-H CPU
-Date: Thu,  6 Nov 2014 09:50:45 -0800
-Message-ID: <1415296245-4368-1-git-send-email-dirk.j.brandewie@intel.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH v5 00/48] kernel: Add support for power-off handler call chain
+Date: Thu, 6 Nov 2014 10:02:54 -0800
+Message-ID: <CA+55aFxMu_MTfXd-EFG=QJ6aCWpb+OX5tyM-XWZC=WHJ=pFiTA@mail.gmail.com>
+References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
+	<20141106170818.GA30177@roeck-us.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:42054 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750877AbaKFRuy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 12:50:54 -0500
-Received: by mail-pd0-f180.google.com with SMTP id ft15so1547389pdb.25
-        for <linux-pm@vger.kernel.org>; Thu, 06 Nov 2014 09:50:53 -0800 (PST)
+Received: from mail-vc0-f178.google.com ([209.85.220.178]:50438 "EHLO
+	mail-vc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbaKFSCz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 13:02:55 -0500
+In-Reply-To: <20141106170818.GA30177@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On Thu, Nov 6, 2014 at 9:08 AM, Guenter Roeck <linux@roeck-us.net> wrote:
+>>
+>> Merge plan is to send the entire series directly to Linus during the next commit
+>> window, except for the last patch. The last patch would then be part of another
+>> pull request after -rc1, which would include any changes necessary due to newly
+>> merged power-off handling code.
+>
+> I should have added that I plan to have the series (except for the last patch)
+> added to -next shortly.
+>
+> Linus,
+>
+> are you ok with this plan ?
 
-Add BDW-H to the list of supported processors.
+Do people actually agree that the code makes sense at all?
 
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 1 +
- 1 file changed, 1 insertion(+)
+Because quite frankly, every time somebody adds this kind of "register
+callback" stuff, the end result tends to end up being an unmitigated
+disaster. People care about ordering etc, and there seems to be no
+sane support for that. Then people do random ugly hacks for their
+insane platforms. You already did that by having the "priority" thing,
+but that just makes me think that people will pick random priorities.
+TYou seem to even *encourage* that random behavior by spreading out
+the "named" priorities, so that people can randomly say "I'm one
+higher than LOW".
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 27bb6d3..6dafd4f 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -730,6 +730,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
- 	ICPU(0x3f, core_params),
- 	ICPU(0x45, core_params),
- 	ICPU(0x46, core_params),
-+	ICPU(0x47, core_params),
- 	ICPU(0x4c, byt_params),
- 	ICPU(0x4f, core_params),
- 	ICPU(0x56, core_params),
--- 
-1.9.3
+What kind of games are the actual new users already doing wrt this? I
+have a bad feeling about it all.
 
+                        Linus
