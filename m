@@ -1,87 +1,94 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v5 46/48] x86: pmc_atom: Register power-off handler with kernel power-off handler
-Date: Thu,  6 Nov 2014 08:43:30 -0800
-Message-ID: <1415292213-28652-47-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v5 47/48] efi: Register power-off handler with kernel power-off handler
+Date: Thu,  6 Nov 2014 08:43:31 -0800
+Message-ID: <1415292213-28652-48-git-send-email-linux@roeck-us.net>
 References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:56653 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752333AbaKFQpj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 11:45:39 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XmQBm-000Wf0-VC
+	for linux-pm@vger.kernel.org; Thu, 06 Nov 2014 16:45:39 +0000
 In-Reply-To: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Matt Fleming <matt.fleming@intel.com>, linux-efi@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with low priority to reflect that the original code
-only sets pm_power_off if it was not already set.
+directly. Register with low priority since the efi code states that
+this is a power-off handler of last resort.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Matt Fleming <matt.fleming@intel.com>
+Acked-by: Matt Fleming <matt.fleming@intel.com>
+Acked-by: Mark Salter <msalter@redhat.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v5:
 - Rebase to v3.18-rc3
 v4:
-- No change
+- Do not use notifiers but internal functions and data structures to manage
+  the list of power-off handlers. Drop unused parameters from callbacks, and
+  make the power-off function type void
 v3:
 - Replace poweroff in all newly introduced variables and in text
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
 - Use define to specify poweroff handler priority
-- Use dev_warn instead of dev_err
 
- arch/x86/kernel/pmc_atom.c | 16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+ drivers/firmware/efi/reboot.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/pmc_atom.c b/arch/x86/kernel/pmc_atom.c
-index 0ee5025e..acb4e78 100644
---- a/arch/x86/kernel/pmc_atom.c
-+++ b/arch/x86/kernel/pmc_atom.c
-@@ -20,6 +20,7 @@
- #include <linux/pci.h>
- #include <linux/device.h>
- #include <linux/debugfs.h>
+diff --git a/drivers/firmware/efi/reboot.c b/drivers/firmware/efi/reboot.c
+index 9c59d1c..0ddec8f 100644
+--- a/drivers/firmware/efi/reboot.c
++++ b/drivers/firmware/efi/reboot.c
+@@ -3,6 +3,7 @@
+  * Copyright (c) 2014 Red Hat, Inc., Mark Salter <msalter@redhat.com>
+  */
+ #include <linux/efi.h>
 +#include <linux/pm.h>
- #include <linux/seq_file.h>
- #include <linux/io.h>
+ #include <linux/reboot.h>
  
-@@ -92,7 +93,7 @@ static inline void pmc_reg_write(struct pmc_dev *pmc, int reg_offset, u32 val)
- 	writel(val, pmc->regmap + reg_offset);
+ int efi_reboot_quirk_mode = -1;
+@@ -38,19 +39,29 @@ bool __weak efi_poweroff_required(void)
+ 	return false;
  }
  
--static void pmc_power_off(void)
-+static void pmc_power_off(struct power_off_handler_block *this)
+-static void efi_power_off(void)
++static void efi_power_off(struct power_off_handler_block *this)
  {
- 	u16	pm1_cnt_port;
- 	u32	pm1_cnt_value;
-@@ -109,6 +110,11 @@ static void pmc_power_off(void)
- 	outl(pm1_cnt_value, pm1_cnt_port);
+ 	efi.reset_system(EFI_RESET_SHUTDOWN, EFI_SUCCESS, 0, NULL);
  }
  
-+static struct power_off_handler_block pmc_power_off_hb = {
-+	.handler = pmc_power_off,
++static struct power_off_handler_block efi_power_off_hb = {
++	.handler = efi_power_off,
 +	.priority = POWER_OFF_PRIORITY_LOW,
 +};
 +
- static void pmc_hw_reg_setup(struct pmc_dev *pmc)
+ static int __init efi_shutdown_init(void)
  {
- 	/*
-@@ -252,8 +258,12 @@ static int pmc_setup_dev(struct pci_dev *pdev)
- 	acpi_base_addr &= ACPI_BASE_ADDR_MASK;
++	int ret = 0;
++
+ 	if (!efi_enabled(EFI_RUNTIME_SERVICES))
+ 		return -ENODEV;
  
- 	/* Install power off function */
--	if (acpi_base_addr != 0 && pm_power_off == NULL)
--		pm_power_off = pmc_power_off;
-+	if (acpi_base_addr != 0) {
-+		ret = register_power_off_handler(&pmc_power_off_hb);
+-	if (efi_poweroff_required())
+-		pm_power_off = efi_power_off;
++	if (efi_poweroff_required()) {
++		ret = register_power_off_handler(&efi_power_off_hb);
 +		if (ret)
-+			dev_warn(&pdev->dev,
-+				 "Failed to install power-off handler\n");
++			pr_err("efi: Failed to register power-off handler\n");
 +	}
  
- 	pci_read_config_dword(pdev, PMC_BASE_ADDR_OFFSET, &pmc->base_addr);
- 	pmc->base_addr &= PMC_BASE_ADDR_MASK;
+-	return 0;
++	return ret;
+ }
+ late_initcall(efi_shutdown_init);
 -- 
 1.9.1
+
