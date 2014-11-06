@@ -1,32 +1,26 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v5 21/48] ipmi: Register with kernel power-off handler
-Date: Thu,  6 Nov 2014 08:43:05 -0800
-Message-ID: <1415292213-28652-22-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v5 22/48] power/reset: restart-poweroff: Register with kernel power-off handler
+Date: Thu,  6 Nov 2014 08:43:06 -0800
+Message-ID: <1415292213-28652-23-git-send-email-linux@roeck-us.net>
 References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:56263 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752033AbaKFQoc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 11:44:32 -0500
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XmQAh-000TsW-T6
-	for linux-pm@vger.kernel.org; Thu, 06 Nov 2014 16:44:32 +0000
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Corey Minyard <minyard@acm.org>, openipmi-developer@lists.sourceforge.net
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+List-Id: linux-pm@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with high priority to reflect that the original code
-overwrites pm_power_off unconditionally.
+directly.  Register as power-off handler of last resort since the driver
+does not really power off the system but executes a restart.
 
-Register power-off handler after the ipmi system is ready, and unregister
-it prior to cleanup. This avoids having to check for the ready variable
-in the poweroff callback.
+Drop remove function since it is no longer needed.
 
-Reviewed-by: Corey Minyard <minyard@acm.org>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Acked-by: Andrew Lunn <andrew@lunn.ch>
+Acked-by: Sebastian Reichel <sre@kernel.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v5:
@@ -40,89 +34,68 @@ v3:
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- Use define to specify poweroff handler priority
-- Use pr_warn instead of pr_err
-- Call unregister_power_off_handler on exit only if not already unregistered
+- Use define to sepcify poweroff handler priority
+- Use devm_register_power_off_handler
+- Drop remove function since it is no longer needed
 
- drivers/char/ipmi/ipmi_poweroff.c | 25 ++++++++++++++-----------
- 1 file changed, 14 insertions(+), 11 deletions(-)
+ drivers/power/reset/restart-poweroff.c | 29 +++++++++--------------------
+ 1 file changed, 9 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/char/ipmi/ipmi_poweroff.c b/drivers/char/ipmi/ipmi_poweroff.c
-index 9f2e3be..4ae2f22 100644
---- a/drivers/char/ipmi/ipmi_poweroff.c
-+++ b/drivers/char/ipmi/ipmi_poweroff.c
-@@ -63,9 +63,6 @@ static ipmi_user_t ipmi_user;
- static int ipmi_ifnum;
- static void (*specific_poweroff_func)(ipmi_user_t user);
+diff --git a/drivers/power/reset/restart-poweroff.c b/drivers/power/reset/restart-poweroff.c
+index edd707e..ef2a602 100644
+--- a/drivers/power/reset/restart-poweroff.c
++++ b/drivers/power/reset/restart-poweroff.c
+@@ -15,34 +15,24 @@
+ #include <linux/platform_device.h>
+ #include <linux/of_platform.h>
+ #include <linux/module.h>
++#include <linux/pm.h>
+ #include <linux/reboot.h>
+-#include <asm/system_misc.h>
  
--/* Holds the old poweroff function so we can restore it on removal. */
--static void (*old_poweroff_func)(void);
--
- static int set_param_ifnum(const char *val, struct kernel_param *kp)
+-static void restart_poweroff_do_poweroff(void)
++static void restart_poweroff_do_poweroff(struct power_off_handler_block *this)
  {
- 	int rv = param_set_int(val, kp);
-@@ -544,15 +541,17 @@ static struct poweroff_function poweroff_functions[] = {
- 
- 
- /* Called on a powerdown request. */
--static void ipmi_poweroff_function(void)
-+static void ipmi_poweroff_function(struct power_off_handler_block *this)
- {
--	if (!ready)
--		return;
--
- 	/* Use run-to-completion mode, since interrupts may be off. */
- 	specific_poweroff_func(ipmi_user);
+ 	reboot_mode = REBOOT_HARD;
+ 	machine_restart(NULL);
  }
  
-+static struct power_off_handler_block ipmi_power_off_hb = {
-+	.handler = ipmi_poweroff_function,
-+	.priority = POWER_OFF_PRIORITY_HIGH,
+-static int restart_poweroff_probe(struct platform_device *pdev)
+-{
+-	/* If a pm_power_off function has already been added, leave it alone */
+-	if (pm_power_off != NULL) {
+-		dev_err(&pdev->dev,
+-			"pm_power_off function already registered");
+-		return -EBUSY;
+-	}
+-
+-	pm_power_off = &restart_poweroff_do_poweroff;
+-	return 0;
+-}
++static struct power_off_handler_block restart_power_off_handler = {
++	.handler = restart_poweroff_do_poweroff,
++	.priority = POWER_OFF_PRIORITY_FALLBACK,
 +};
-+
- /* Wait for an IPMI interface to be installed, the first one installed
-    will be grabbed by this code and used to perform the powerdown. */
- static void ipmi_po_new_smi(int if_num, struct device *device)
-@@ -631,9 +630,12 @@ static void ipmi_po_new_smi(int if_num, struct device *device)
- 	printk(KERN_INFO PFX "Found a %s style poweroff function\n",
- 	       poweroff_functions[i].platform_type);
- 	specific_poweroff_func = poweroff_functions[i].poweroff_func;
--	old_poweroff_func = pm_power_off;
--	pm_power_off = ipmi_poweroff_function;
-+
- 	ready = 1;
-+
-+	rv = register_power_off_handler(&ipmi_power_off_hb);
-+	if (rv)
-+		pr_warn(PFX "failed to register power-off handler\n");
+ 
+-static int restart_poweroff_remove(struct platform_device *pdev)
++static int restart_poweroff_probe(struct platform_device *pdev)
+ {
+-	if (pm_power_off == &restart_poweroff_do_poweroff)
+-		pm_power_off = NULL;
+-
+-	return 0;
++	return devm_register_power_off_handler(&pdev->dev,
++					      &restart_power_off_handler);
  }
  
- static void ipmi_po_smi_gone(int if_num)
-@@ -644,9 +646,10 @@ static void ipmi_po_smi_gone(int if_num)
- 	if (ipmi_ifnum != if_num)
- 		return;
+ static const struct of_device_id of_restart_poweroff_match[] = {
+@@ -52,7 +42,6 @@ static const struct of_device_id of_restart_poweroff_match[] = {
  
-+	unregister_power_off_handler(&ipmi_power_off_hb);
-+
- 	ready = 0;
- 	ipmi_destroy_user(ipmi_user);
--	pm_power_off = old_poweroff_func;
- }
- 
- static struct ipmi_smi_watcher smi_watcher = {
-@@ -733,11 +736,11 @@ static void __exit ipmi_poweroff_cleanup(void)
- 	ipmi_smi_watcher_unregister(&smi_watcher);
- 
- 	if (ready) {
-+		unregister_power_off_handler(&ipmi_power_off_hb);
- 		rv = ipmi_destroy_user(ipmi_user);
- 		if (rv)
- 			printk(KERN_ERR PFX "could not cleanup the IPMI"
- 			       " user: 0x%x\n", rv);
--		pm_power_off = old_poweroff_func;
- 	}
- }
- module_exit(ipmi_poweroff_cleanup);
+ static struct platform_driver restart_poweroff_driver = {
+ 	.probe = restart_poweroff_probe,
+-	.remove = restart_poweroff_remove,
+ 	.driver = {
+ 		.name = "poweroff-restart",
+ 		.owner = THIS_MODULE,
 -- 
 1.9.1
-
