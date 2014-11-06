@@ -1,80 +1,72 @@
 From: Tejun Heo <tj@kernel.org>
 Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
-Date: Thu, 6 Nov 2014 10:01:21 -0500
-Message-ID: <20141106150121.GA25642@htj.dyndns.org>
-References: <20141105133100.GC4527@dhcp22.suse.cz>
+Date: Thu, 6 Nov 2014 10:09:27 -0500
+Message-ID: <20141106150927.GB25642@htj.dyndns.org>
+References: <20141105130247.GA14386@htj.dyndns.org>
+ <20141105133100.GC4527@dhcp22.suse.cz>
  <20141105134219.GD4527@dhcp22.suse.cz>
  <20141105154436.GB14386@htj.dyndns.org>
  <20141105160115.GA28226@dhcp22.suse.cz>
  <20141105162929.GD14386@htj.dyndns.org>
  <20141105163956.GD28226@dhcp22.suse.cz>
  <20141105165428.GF14386@htj.dyndns.org>
- <20141105174609.GE28226@dhcp22.suse.cz>
- <20141105175527.GH14386@htj.dyndns.org>
- <20141106124953.GD7202@dhcp22.suse.cz>
+ <20141105170111.GG14386@htj.dyndns.org>
+ <20141106130543.GE7202@dhcp22.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f53.google.com ([209.85.216.53]:58103 "EHLO
-	mail-qa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751021AbaKFPBZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 10:01:25 -0500
+Received: from mail-qc0-f176.google.com ([209.85.216.176]:35079 "EHLO
+	mail-qc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751151AbaKFPJb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 10:09:31 -0500
 Content-Disposition: inline
-In-Reply-To: <20141106124953.GD7202@dhcp22.suse.cz>
+In-Reply-To: <20141106130543.GE7202@dhcp22.suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Michal Hocko <mhocko@suse.cz>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu, Nov 06, 2014 at 01:49:53PM +0100, Michal Hocko wrote:
-> On Wed 05-11-14 12:55:27, Tejun Heo wrote:
-> > On Wed, Nov 05, 2014 at 06:46:09PM +0100, Michal Hocko wrote:
-> > > Because out_of_memory can be called from mutliple paths. And
-> > > the only interesting one should be the page allocation path.
-> > > pagefault_out_of_memory is not interesting because it cannot happen for
-> > > the frozen task.
-> > 
-> > Hmmm.... wouldn't that be broken by definition tho?  So, if the oom
-> > killer is invoked from somewhere else than page allocation path, it
-> > would proceed ignoring the disabled setting and would race against PM
-> > freeze path all the same. 
+On Thu, Nov 06, 2014 at 02:05:43PM +0100, Michal Hocko wrote:
+> But this is nothing new. Suspend hasn't been checking for fatal signals
+> nor for TIF_MEMDIE since the OOM disabling was introduced and I suppose
+> even before.
 > 
-> Not really because try_to_freeze_tasks doesn't finish until _all_ tasks
-> are frozen and a task in the page fault path cannot be frozen, can it?
+> This is not harmful though. The previous OOM kill attempt would kick the
+> current TASK and mark it with TIF_MEMDIE and retry the allocation. After
+> OOM is disabled the allocation simply fails. The current will die on its
+> way out of the kernel. Definitely worth fixing. In a separate patch.
 
-We used to have freezing points deep in file system code which may be
-reacheable from page fault.  Please take a step back and look at the
-paragraph above.  Doesn't it sound extremely contrived and brittle
-even if it's not outright broken?  What if somebody adds another oom
-killing site somewhere else?  How can this possibly be a solution that
-we intentionally implement?
+Hah?  Isn't this a new outright A-B B-A deadlock involving the rwsem
+you added?
 
-> I mean there shouldn't be any problem to not invoke OOM killer under
-> from the page fault path as well but that might lead to looping in the
-> page fault path without any progress until freezer enables OOM killer on
-> the failure path because the said task cannot be frozen.
+> > disable() call must be able to fail.
 > 
-> Is this preferable?
+> This would be a way to do it without requiring caller to check for
+> TIF_MEMDIE explicitly. The fewer of them we have the better.
 
-Why would PM freezing make OOM killing fail?  That doesn't make much
-sense.  Sure, it can block it for a finite duration for sync purposes
-but making OOM killing fail seems the wrong way around.  We're doing
-one thing for non-PM freezing and the other way around for PM
-freezing, which indicates one of the two directions is wrong.
+Why the hell would the caller ever even KNOW about this?  This is
+something which must be encapsulated in the OOM killer disable/enable
+interface.
 
-Shouldn't it be that OOM killing happening while PM freezing is in
-progress cancels PM freezing rather than the other way around?  Find a
-point in PM suspend/hibernation operation where everything must be
-stable, disable OOM killing there and check whether OOM killing
-happened inbetween and if so back out.  It seems rather obvious to me
-that OOM killing has to have precedence over PM freezing.
+> +bool oom_killer_disable(void)
+>  {
+> +	bool ret = true;
+> +
+>  	down_write(&oom_sem);
 
-Sure, once the system reaches a point where the whole system must be
-in a stable state for snapshotting or whatever, disabling OOM killing
-is fine but at that point the system is in a very limited execution
-mode and sure won't be processing page faults from userland for
-example and we can actually disable OOM killing knowing that anything
-afterwards is ready to handle memory allocation failures.
+How would this task pass the above down_write() if the OOM killer is
+already read locking oom_sem?  Or is the OOM killer guaranteed to make
+forward progress even if the killed task can't make forward progress?
+But, if so, what are we talking about in this thread?
+
+> +
+> +	/* We might have been killed while waiting for the oom_sem. */
+> +	if (fatal_signal_pending(current) || test_thread_flag(TIF_MEMDIE)) {
+> +		up_write(&oom_sem);
+> +		ret = false;
+> +	}
+
+This is pointless.  What does the above do?
 
 -- 
 tejun
