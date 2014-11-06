@@ -1,145 +1,90 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: Change prototype for the ->attach_dev() callback
-Date: Thu, 6 Nov 2014 10:55:12 +0100
-Message-ID: <CAPDyKFraQAGUU+BnwuEL0+HS_g2YfM_cRjHAeg2qrGkqFW=YVA@mail.gmail.com>
-References: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org>
-	<20141105013353.GA19238@dtor-ws>
-	<7h7fz92rqk.fsf@deeprootsystems.com>
-	<3267963.fqUYb7m9Rv@vostro.rjw.lan>
-	<7hsihx1bvo.fsf@deeprootsystems.com>
+Subject: Re: [PATCH v10 1/5] PM / Runtime: Allow accessing irq_safe if no PM_RUNTIME
+Date: Thu, 6 Nov 2014 11:00:00 +0100
+Message-ID: <CAPDyKFoiAPJu-wp1c1N05tWggOE+2agUMDEV03TnpEjY1S6Jzg@mail.gmail.com>
+References: <1415263010-7992-1-git-send-email-k.kozlowski@samsung.com>
+	<1415263010-7992-2-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f42.google.com ([209.85.216.42]:38104 "EHLO
-	mail-qa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751210AbaKFJzN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 04:55:13 -0500
-Received: by mail-qa0-f42.google.com with SMTP id k15so473801qaq.15
-        for <linux-pm@vger.kernel.org>; Thu, 06 Nov 2014 01:55:12 -0800 (PST)
-In-Reply-To: <7hsihx1bvo.fsf@deeprootsystems.com>
+Received: from mail-qg0-f51.google.com ([209.85.192.51]:43042 "EHLO
+	mail-qg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752274AbaKFKAB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 05:00:01 -0500
+Received: by mail-qg0-f51.google.com with SMTP id j5so457835qga.10
+        for <linux-pm@vger.kernel.org>; Thu, 06 Nov 2014 02:00:00 -0800 (PST)
+In-Reply-To: <1415263010-7992-2-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 6 November 2014 00:11, Kevin Hilman <khilman@kernel.org> wrote:
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+On 6 November 2014 09:36, Krzysztof Kozlowski <k.kozlowski@samsung.com> wrote:
+> Some drivers (e.g. bus drivers) may want to check if power.irq_safe was
+> called by child driver, regardless of CONFIG_PM_RUNTIME.
 >
->> On Wednesday, November 05, 2014 02:43:31 PM Kevin Hilman wrote:
->>> Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
->>>
->>> > On Thu, Oct 30, 2014 at 01:38:30PM -0700, Kevin Hilman wrote:
->>> >> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->>> >>
->>> >> > On Thursday, October 30, 2014 01:02:49 PM Ulf Hansson wrote:
->>> >> >> Convert the prototype to return and int. This is just an initial step,
->>> >> >> needed to support error handling.
->>> >> >>
->>> >> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>> >>
->>> >> Acked-by: Kevin Hilman <khilman@linaro.org>
->>> >>
->>> >> >>
->>> >> >> This patch is intended as fix for 3.18 rc[n]. Why?
->>> >> >>
->>> >> >> There are other SOC specific patches around that adds genpd support and which
->>> >> >> implements the ->attach_dev() callback. To prevent having an "atomic" patch
->>> >> >> during the next release cycle, let's change the prototype now instead.
->>> >> >>
->>> >> >> Further patches will add the actual error handling in genpd and these can then
->>> >> >> be reviewed and tested thoroughly.
->>> >> >
->>> >> > So we have no users of ->attach_dev at the moment, right?
->>> >>
->>> >> Not in mainline, but there are a couple getting ready to hit -next, so
->>> >> we wanted to fix this before they arrive so that adding the error
->>> >> handling will be easier.
->>> >
->>> > BTW, while we are at it, can we also pass the domain itself to
->>> > attach_dev() and detach_dev()? If anything it helps with debugging (you
->>> > can print domain name from the callbacks).
->>>
->>> Agreed, and it makes it match the other callbacks (power_off, power_on)
->>> which currently take struct generic_pm_domain *domain.
->>>
->>> Updated version of $SUBJECT patch below.
->>
->> The subject and changelog need to be updated too IMO.
->>
+> An example scenario is amba/bus.c and dma/pl330.c drivers. The runtime
+> suspend/resume callbacks in amba bus driver act differently if irq_safe
+> was set by child driver (in irq_safe mode bus clock is only disabled).
 >
-> Right.  Here you go.
+> The pl330 driver sets irq_safe and assumes that amba bus driver will
+> only disable the clock in runtime PM. So in system sleep suspend
+> callback the pl330 driver unprepares the clock after calling
+> pm_runtime_force_suspend().
 >
-> Kevin
+> However inconsistency would appear if CONFIG_PM_RUNTIME is not set and
+> child drivers do not want the irq_safe runtime PM. In such case amba bus
+> driver still has to know whether child driver wanted irq_safe - by
+> looking at dev->power.irq_safe field.
+>
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-Thanks for helping out Kevin!
+FWIW: Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 Kind regards
 Uffe
 
->
->
-> ----- >8 ------
-> From c18a6bf3121979c4102ba4f7edb3ac41e3921fc6 Mon Sep 17 00:00:00 2001
-> From: Ulf Hansson <ulf.hansson@linaro.org>
-> Date: Thu, 30 Oct 2014 13:02:49 +0100
-> Subject: [PATCH] PM / Domains: Change prototype for the attach and detach
->  callbacks
->
-> Convert the prototypes to return an int in order to support error
-> handling in these callbacks.
->
-> Also, as suggested by Dmitry Torokhov, pass the domain pointer for use
-> inside the callbacks, and so that they match the existing
-> power_on/power_off callbacks which currently take the domain pointer.
->
-> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> [khilman: added domain as parameter to callbacks, as suggested by Dmitry]
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Kevin Hilman <khilman@linaro.org>
 > ---
->  drivers/base/power/domain.c | 4 ++--
->  include/linux/pm_domain.h   | 6 ++++--
->  2 files changed, 6 insertions(+), 4 deletions(-)
+>  include/linux/pm.h         | 2 +-
+>  include/linux/pm_runtime.h | 5 ++++-
+>  2 files changed, 5 insertions(+), 2 deletions(-)
 >
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 40bc2f4072cc..b520687046d4 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1437,7 +1437,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
->         spin_unlock_irq(&dev->power.lock);
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 383fd68aaee1..b05fa954f50d 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -566,6 +566,7 @@ struct dev_pm_info {
+>         bool                    ignore_children:1;
+>         bool                    early_init:1;   /* Owned by the PM core */
+>         bool                    direct_complete:1;      /* Owned by the PM core */
+> +       unsigned int            irq_safe:1;     /* PM runtime */
+>         spinlock_t              lock;
+>  #ifdef CONFIG_PM_SLEEP
+>         struct list_head        entry;
+> @@ -590,7 +591,6 @@ struct dev_pm_info {
+>         unsigned int            run_wake:1;
+>         unsigned int            runtime_auto:1;
+>         unsigned int            no_callbacks:1;
+> -       unsigned int            irq_safe:1;
+>         unsigned int            use_autosuspend:1;
+>         unsigned int            timer_autosuspends:1;
+>         unsigned int            memalloc_noio:1;
+> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> index 367f49b9a1c9..d94a65662a60 100644
+> --- a/include/linux/pm_runtime.h
+> +++ b/include/linux/pm_runtime.h
+> @@ -166,7 +166,10 @@ static inline bool pm_runtime_suspended_if_enabled(struct device *dev) { return
+>  static inline bool pm_runtime_enabled(struct device *dev) { return false; }
 >
->         if (genpd->attach_dev)
-> -               genpd->attach_dev(dev);
-> +               genpd->attach_dev(genpd, dev);
+>  static inline void pm_runtime_no_callbacks(struct device *dev) {}
+> -static inline void pm_runtime_irq_safe(struct device *dev) {}
+> +static inline void pm_runtime_irq_safe(struct device *dev)
+> +{
+> +       dev->power.irq_safe = 1;
+> +}
 >
->         mutex_lock(&gpd_data->lock);
->         gpd_data->base.dev = dev;
-> @@ -1499,7 +1499,7 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
->         genpd->max_off_time_changed = true;
->
->         if (genpd->detach_dev)
-> -               genpd->detach_dev(dev);
-> +               genpd->detach_dev(genpd, dev);
->
->         spin_lock_irq(&dev->power.lock);
->
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 73e938b7e937..b3ed7766a291 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -72,8 +72,10 @@ struct generic_pm_domain {
->         bool max_off_time_changed;
->         bool cached_power_down_ok;
->         struct gpd_cpuidle_data *cpuidle_data;
-> -       void (*attach_dev)(struct device *dev);
-> -       void (*detach_dev)(struct device *dev);
-> +       int (*attach_dev)(struct generic_pm_domain *domain,
-> +                         struct device *dev);
-> +       void (*detach_dev)(struct generic_pm_domain *domain,
-> +                          struct device *dev);
->  };
->
->  static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
+>  static inline bool pm_runtime_callbacks_present(struct device *dev) { return false; }
+>  static inline void pm_runtime_mark_last_busy(struct device *dev) {}
 > --
-> 2.1.0
+> 1.9.1
 >
