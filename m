@@ -1,55 +1,115 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / Domains: Change prototype for the ->attach_dev() callback
-Date: Thu, 6 Nov 2014 08:36:20 +0100
-Message-ID: <CAMuHMdWRXA6pXob=Hacosfic1jeLmo79T-YCKQ77aJbVisZm-Q@mail.gmail.com>
-References: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org>
-	<20141105013353.GA19238@dtor-ws>
-	<7h7fz92rqk.fsf@deeprootsystems.com>
-	<3267963.fqUYb7m9Rv@vostro.rjw.lan>
-	<7hsihx1bvo.fsf@deeprootsystems.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH v10 0/5] amba/dmaengine: pl330: add Power Management support
+Date: Thu, 06 Nov 2014 09:36:45 +0100
+Message-ID: <1415263010-7992-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f49.google.com ([209.85.215.49]:59523 "EHLO
-	mail-la0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883AbaKFHgW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 02:36:22 -0500
-In-Reply-To: <7hsihx1bvo.fsf@deeprootsystems.com>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:46681 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751779AbaKFIhC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 03:37:02 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>
+Cc: Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-On Thu, Nov 6, 2014 at 12:11 AM, Kevin Hilman <khilman@kernel.org> wrote:
-> From: Ulf Hansson <ulf.hansson@linaro.org>
-> Date: Thu, 30 Oct 2014 13:02:49 +0100
-> Subject: [PATCH] PM / Domains: Change prototype for the attach and detach
->  callbacks
->
-> Convert the prototypes to return an int in order to support error
-> handling in these callbacks.
->
-> Also, as suggested by Dmitry Torokhov, pass the domain pointer for use
-> inside the callbacks, and so that they match the existing
-> power_on/power_off callbacks which currently take the domain pointer.
->
-> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> [khilman: added domain as parameter to callbacks, as suggested by Dmitry]
+Hi,
 
-OK, so back to the signature of the original version...
 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Kevin Hilman <khilman@linaro.org>
+Changes since v9:
+=================
+1. Add patch 1/5: Move dev->power.irq_safe out of CONFIG_PM_RUNTIME.
+   If CONFIG_PM_RUNTIME is not set, amba bus driver must still know
+   whether child driver set irq_safe or not. Suggested by Ulf Hansson.
 
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Changes since v8:
+=================
+1. Remove the pm_runtime_is_irq_safe() wrapper (patch 1).
+2. Patch 2/4 (amba): Store current irq_safe during runtime suspend.
+   Resume will mirror suspend's work. Add a macro for
+   safe access of irq_safe if CONFIG_PM_RUNTIME is unset.
+   Dropped reviewed-by Ulf Hansson (major changes in patch).
 
-Gr{oetje,eeting}s,
+Changes since v7:
+=================
+1. Add reviewed-by Ulf Hansson (patches 3, 4 and 5).
+2. Patch 2/5: Fix missing return in amba_pclk_prepare() (suggested by
+   Ulf Hansson).
+3. Rebased on next-20141020.
 
-                        Geert
+Changes since v6:
+=================
+1. Add patch 5 removing the amba_pclk_*able macros.
+2. Patch 2/5: Remove IS_ERR, use static inline functions instead
+   of macros.
+3. Patch 4/5: Force runtime suspend/resume in system sleep
+   callbacks. Put with autosuspend at end of probe instead of no_idle.
+   Suggested by Ulf Hansson.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Changes since v5:
+=================
+1. Patch 1/4: Add Ulf Hansson's reviewed-by.
+2. Patch 4/4: Use PM runtime autosuspend (suggested by Ulf Hansson).
+3. Rebase on next-20140922. 
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Changes since v4:
+1. Patch 3/4: Explicitly initialize amba_device.irq_safe field after
+   probing driver (suggested by Russell King).
+
+Changes since v3:
+1. Patch 1/4: Document new API in Documentation/power/runtime_pm.txt
+   (pointed by Alan Stern).
+
+Changes since v2:
+1. Add patch 1 (PM / Runtime: Add getter for querying the IRQ safe option)
+2. Add patch 2 (amba: Add helper macros for (un)preparing AMBA clock)
+3. Patch 3/4: Rewrite the idea. If IRQ safe runtime PM is set then
+   do not unprepare/prepare the clocks. Suggested by Russell King.
+4. Patch 4/4: During system sleep unprepare the clock.
+
+Changes since v1:
+1. Add patch 1 (amba: Allow AMBA drivers to use their own runtime PM).
+2. Patch 2/2: Apply Michal Simek's suggestions.
+3. Patch 2/2: Fix atomic context safeness in pl330_issue_pending().
+
+
+Description:
+============
+This patchset adds runtime and system PM to the pl330 driver.
+
+The runtime PM of pl330 driver requires interrupt safe suspend/resume
+callbacks which is in conflict with current amba bus driver.
+The latter also unprepares and prepares the AMBA bus clock which
+is not safe for atomic context.
+
+The patchset solves this in patch 3/5 by handling clocks in different
+way if device driver set interrupt safe runtime PM.
+
+Comments are welcome.
+
+
+Tested on board with pl330 DMA driver:
+ - Trats2 (Exynos4212)
+
+
+Best regards,
+Krzysztof Kozlowski
+
+
+Krzysztof Kozlowski (5):
+  PM / Runtime: Allow accessing irq_safe if no PM_RUNTIME
+  amba: Add helpers for (un)preparing AMBA clock
+  amba: Don't unprepare the clocks if device driver wants IRQ safe
+    runtime PM
+  dmaengine: pl330: add Power Management support
+  amba: Remove unused amba_pclk_enable/disable macros
+
+ drivers/amba/bus.c         | 17 ++++++--
+ drivers/dma/pl330.c        | 96 ++++++++++++++++++++++++++++++++++++++++++++--
+ include/linux/amba/bus.h   | 13 +++++--
+ include/linux/pm.h         |  2 +-
+ include/linux/pm_runtime.h |  4 +-
+ 5 files changed, 118 insertions(+), 14 deletions(-)
+
+-- 
+1.9.1
+
