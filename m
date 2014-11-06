@@ -1,57 +1,131 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
-Date: Thu, 6 Nov 2014 17:58:28 +0100
-Message-ID: <20141106165828.GL7202@dhcp22.suse.cz>
-References: <20141105162929.GD14386@htj.dyndns.org>
- <20141105163956.GD28226@dhcp22.suse.cz>
- <20141105165428.GF14386@htj.dyndns.org>
- <20141105170111.GG14386@htj.dyndns.org>
- <20141106130543.GE7202@dhcp22.suse.cz>
- <20141106150927.GB25642@htj.dyndns.org>
- <20141106160158.GI7202@dhcp22.suse.cz>
- <20141106161211.GC25642@htj.dyndns.org>
- <20141106163124.GK7202@dhcp22.suse.cz>
- <20141106163304.GE25642@htj.dyndns.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <20141106163304.GE25642@htj.dyndns.org>
-Sender: owner-linux-mm@kvack.org
-To: Tejun Heo <tj@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v5 20/48] mfd: rn5t618: Register power-off handler with kernel power-off handler
+Date: Thu,  6 Nov 2014 08:43:04 -0800
+Message-ID: <1415292213-28652-21-git-send-email-linux@roeck-us.net>
+References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:56260 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752021AbaKFQob (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 11:44:31 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XmQAh-000TsB-HU
+	for linux-pm@vger.kernel.org; Thu, 06 Nov 2014 16:44:31 +0000
+In-Reply-To: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Beniamino Galvani <b.galvani@gmail.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
 
-On Thu 06-11-14 11:33:04, Tejun Heo wrote:
-> On Thu, Nov 06, 2014 at 05:31:24PM +0100, Michal Hocko wrote:
-> > On Thu 06-11-14 11:12:11, Tejun Heo wrote:
-[...]
-> > > Draining oom killer then doesn't mean anything, no?  OOM killer may
-> > > have been disabled and drained but the killed tasks might wake up
-> > > after the PM freezer considers them to be frozen, right?  What am I
-> > > missing?
-> > 
-> > The mutual exclusion between OOM and the freezer will cause that the
-> > victim will have TIF_MEMDIE already set when try_to_freeze_tasks even
-> > starts. Then freezing_slow_path wouldn't allow the task to enter the
-> > fridge so the wake up moment is not really that important.
-> 
-> What if it was already in the freezer?
+Register with kernel power-off handler instead of setting pm_power_off
+directly. Register with low priority to reflect that the original code
+only sets pm_power_off if it was not already set.
 
-Good question! You are right that there is a race window until the wake
-up then. I will think about this case some more. There is simply no
-control on when the task wakes up and freezer will see it as frozen
-until then. An immediate way around would be to check for TIF_MEMDIE in
-try_to_freeze_tasks.
+Cc: Beniamino Galvani <b.galvani@gmail.com>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+v5:
+- Rebase to v3.18-rc3
+v4:
+- Do not use notifiers but internal functions and data structures to manage
+  the list of power-off handlers. Drop unused parameters from callbacks, and
+  make the power-off function type void
+v3:
+- Replace poweroff in all newly introduced variables and in text
+  with power_off or power-off as appropriate
+- Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+v2:
+- New patch
 
-I have to call it end of the day unfortunately and will be back on
-Monday.
+ drivers/mfd/rn5t618.c       | 28 ++++++++++++----------------
+ include/linux/mfd/rn5t618.h |  2 ++
+ 2 files changed, 14 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/mfd/rn5t618.c b/drivers/mfd/rn5t618.c
+index 6668571..1492025 100644
+--- a/drivers/mfd/rn5t618.c
++++ b/drivers/mfd/rn5t618.c
+@@ -15,6 +15,7 @@
+ #include <linux/mfd/core.h>
+ #include <linux/mfd/rn5t618.h>
+ #include <linux/module.h>
++#include <linux/pm.h>
+ #include <linux/regmap.h>
+ 
+ static const struct mfd_cell rn5t618_cells[] = {
+@@ -47,15 +48,16 @@ static const struct regmap_config rn5t618_regmap_config = {
+ 	.cache_type	= REGCACHE_RBTREE,
+ };
+ 
+-static struct rn5t618 *rn5t618_pm_power_off;
+-
+-static void rn5t618_power_off(void)
++static void rn5t618_power_off(struct power_off_handler_block *this)
+ {
++	struct rn5t618 *rn5t618 = container_of(this, struct rn5t618,
++					       power_off_hb);
++
+ 	/* disable automatic repower-on */
+-	regmap_update_bits(rn5t618_pm_power_off->regmap, RN5T618_REPCNT,
++	regmap_update_bits(rn5t618->regmap, RN5T618_REPCNT,
+ 			   RN5T618_REPCNT_REPWRON, 0);
+ 	/* start power-off sequence */
+-	regmap_update_bits(rn5t618_pm_power_off->regmap, RN5T618_SLPCNT,
++	regmap_update_bits(rn5t618->regmap, RN5T618_SLPCNT,
+ 			   RN5T618_SLPCNT_SWPWROFF, RN5T618_SLPCNT_SWPWROFF);
+ }
+ 
+@@ -85,23 +87,17 @@ static int rn5t618_i2c_probe(struct i2c_client *i2c,
+ 		return ret;
+ 	}
+ 
+-	if (!pm_power_off) {
+-		rn5t618_pm_power_off = priv;
+-		pm_power_off = rn5t618_power_off;
+-	}
++	priv->power_off_hb.handler = rn5t618_power_off;
++	priv->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
++	ret = devm_register_power_off_handler(&i2c->dev, &priv->power_off_hb);
++	if (ret)
++		dev_warn(&i2c->dev, "Failed to register power-off handler\n");
+ 
+ 	return 0;
+ }
+ 
+ static int rn5t618_i2c_remove(struct i2c_client *i2c)
+ {
+-	struct rn5t618 *priv = i2c_get_clientdata(i2c);
+-
+-	if (priv == rn5t618_pm_power_off) {
+-		rn5t618_pm_power_off = NULL;
+-		pm_power_off = NULL;
+-	}
+-
+ 	mfd_remove_devices(&i2c->dev);
+ 	return 0;
+ }
+diff --git a/include/linux/mfd/rn5t618.h b/include/linux/mfd/rn5t618.h
+index c72d534..87e34b3 100644
+--- a/include/linux/mfd/rn5t618.h
++++ b/include/linux/mfd/rn5t618.h
+@@ -14,6 +14,7 @@
+ #ifndef __LINUX_MFD_RN5T618_H
+ #define __LINUX_MFD_RN5T618_H
+ 
++#include <linux/pm.h>
+ #include <linux/regmap.h>
+ 
+ #define RN5T618_LSIVER			0x00
+@@ -223,6 +224,7 @@ enum {
+ 
+ struct rn5t618 {
+ 	struct regmap *regmap;
++	struct power_off_handler_block power_off_hb;
+ };
+ 
+ #endif /* __LINUX_MFD_RN5T618_H */
 -- 
-Michal Hocko
-SUSE Labs
+1.9.1
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
