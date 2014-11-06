@@ -1,22 +1,14 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v5 15/48] mfd: dm355evm_msp: Register with kernel power-off handler
-Date: Thu,  6 Nov 2014 08:42:59 -0800
-Message-ID: <1415292213-28652-16-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v5 09/48] mfd: palmas: Register with kernel power-off handler
+Date: Thu,  6 Nov 2014 08:42:53 -0800
+Message-ID: <1415292213-28652-10-git-send-email-linux@roeck-us.net>
 References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:56217 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751930AbaKFQoS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 11:44:18 -0500
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XmQAT-000TTa-PB
-	for linux-pm@vger.kernel.org; Thu, 06 Nov 2014 16:44:17 +0000
+Return-path: <linux-omap-owner@vger.kernel.org>
 In-Reply-To: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-omap-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-omap@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
 directly. Register with low priority to reflect that the original code
@@ -24,6 +16,7 @@ only sets pm_power_off if it was not already set.
 
 Cc: Samuel Ortiz <sameo@linux.intel.com>
 Cc: Lee Jones <lee.jones@linaro.org>
+Cc: linux-omap@vger.kernel.org
 Acked-by: Lee Jones <lee.jones@linaro.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
@@ -39,55 +32,101 @@ v3:
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
 - Use define to specify poweroff handler priority
+- Use devm_register_power_off_handler
 - Use dev_warn instead of dev_err
 
- drivers/mfd/dm355evm_msp.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ drivers/mfd/palmas.c       | 28 ++++++++++++++--------------
+ include/linux/mfd/palmas.h |  3 +++
+ 2 files changed, 17 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/mfd/dm355evm_msp.c b/drivers/mfd/dm355evm_msp.c
-index 4c826f7..d9ec1e6 100644
---- a/drivers/mfd/dm355evm_msp.c
-+++ b/drivers/mfd/dm355evm_msp.c
-@@ -14,6 +14,7 @@
- #include <linux/platform_device.h>
- #include <linux/clk.h>
- #include <linux/module.h>
+diff --git a/drivers/mfd/palmas.c b/drivers/mfd/palmas.c
+index 28cb048..60f81ed 100644
+--- a/drivers/mfd/palmas.c
++++ b/drivers/mfd/palmas.c
+@@ -19,6 +19,7 @@
+ #include <linux/i2c.h>
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
 +#include <linux/pm.h>
+ #include <linux/regmap.h>
  #include <linux/err.h>
- #include <linux/gpio.h>
- #include <linux/leds.h>
-@@ -352,14 +353,19 @@ static void dm355evm_command(unsigned command)
- 				command, status);
+ #include <linux/mfd/core.h>
+@@ -425,20 +426,17 @@ static void palmas_dt_to_pdata(struct i2c_client *i2c,
+ 			"ti,system-power-controller");
  }
  
--static void dm355evm_power_off(void)
-+static void dm355evm_power_off(struct power_off_handler_block *this)
+-static struct palmas *palmas_dev;
+-static void palmas_power_off(void)
++static void palmas_power_off(struct power_off_handler_block *this)
  {
- 	dm355evm_command(MSP_COMMAND_POWEROFF);
- }
++	struct palmas *palmas = container_of(this, struct palmas, power_off_hb);
+ 	unsigned int addr;
+ 	int ret, slave;
  
-+static struct power_off_handler_block dm355evm_msp_power_off_hb = {
-+	.handler = dm355evm_power_off,
-+	.priority = POWER_OFF_PRIORITY_LOW,
-+};
+-	if (!palmas_dev)
+-		return;
+-
+ 	slave = PALMAS_BASE_TO_SLAVE(PALMAS_PMU_CONTROL_BASE);
+ 	addr = PALMAS_BASE_TO_REG(PALMAS_PMU_CONTROL_BASE, PALMAS_DEV_CTRL);
+ 
+ 	ret = regmap_update_bits(
+-			palmas_dev->regmap[slave],
++			palmas->regmap[slave],
+ 			addr,
+ 			PALMAS_DEV_CTRL_DEV_ON,
+ 			0);
+@@ -668,9 +666,16 @@ no_irq:
+ 		ret = of_platform_populate(node, NULL, NULL, &i2c->dev);
+ 		if (ret < 0) {
+ 			goto err_irq;
+-		} else if (pdata->pm_off && !pm_power_off) {
+-			palmas_dev = palmas;
+-			pm_power_off = palmas_power_off;
++		} else if (pdata->pm_off) {
++			int ret2;
 +
- static int dm355evm_msp_remove(struct i2c_client *client)
- {
--	pm_power_off = NULL;
-+	unregister_power_off_handler(&dm355evm_msp_power_off_hb);
- 	msp430 = NULL;
++			palmas->power_off_hb.handler = palmas_power_off;
++			palmas->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
++			ret2 = devm_register_power_off_handler(palmas->dev,
++							&palmas->power_off_hb);
++			if (ret2)
++				dev_warn(palmas->dev,
++					 "Failed to register power-off handler");
+ 		}
+ 	}
+ 
+@@ -698,11 +703,6 @@ static int palmas_i2c_remove(struct i2c_client *i2c)
+ 			i2c_unregister_device(palmas->i2c_clients[i]);
+ 	}
+ 
+-	if (palmas == palmas_dev) {
+-		pm_power_off = NULL;
+-		palmas_dev = NULL;
+-	}
+-
  	return 0;
  }
-@@ -398,7 +404,9 @@ dm355evm_msp_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 		goto fail;
  
- 	/* PM hookup */
--	pm_power_off = dm355evm_power_off;
-+	status = register_power_off_handler(&dm355evm_msp_power_off_hb);
-+	if (status)
-+		dev_warn(&client->dev, "Failed to register power-off handler\n");
+diff --git a/include/linux/mfd/palmas.h b/include/linux/mfd/palmas.h
+index fb0390a..7a43f7b 100644
+--- a/include/linux/mfd/palmas.h
++++ b/include/linux/mfd/palmas.h
+@@ -18,6 +18,7 @@
  
- 	return 0;
+ #include <linux/usb/otg.h>
+ #include <linux/leds.h>
++#include <linux/pm.h>
+ #include <linux/regmap.h>
+ #include <linux/regulator/driver.h>
+ #include <linux/extcon.h>
+@@ -68,6 +69,8 @@ struct palmas {
+ 	struct i2c_client *i2c_clients[PALMAS_NUM_CLIENTS];
+ 	struct regmap *regmap[PALMAS_NUM_CLIENTS];
+ 
++	struct power_off_handler_block power_off_hb;
++
+ 	/* Stored chip id */
+ 	int id;
  
 -- 
 1.9.1
