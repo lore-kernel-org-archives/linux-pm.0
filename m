@@ -1,72 +1,131 @@
-From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Subject: [PATCH v5 06/48] gpio-poweroff: Drop reference to pm_power_off from devicetree bindings
-Date: Thu,  6 Nov 2014 08:42:50 -0800
-Message-ID: <1415292213-28652-7-git-send-email-linux@roeck-us.net>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v5 14/48] mfd: tps80031: Register with kernel power-off handler
+Date: Thu,  6 Nov 2014 08:42:58 -0800
+Message-ID: <1415292213-28652-15-git-send-email-linux@roeck-us.net>
 References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1415292213-28652-1-git-send-email-linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:56204 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751714AbaKFQoP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 11:44:15 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XmQAR-000TSA-GK
+	for linux-pm@vger.kernel.org; Thu, 06 Nov 2014 16:44:15 +0000
+In-Reply-To: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-omap@vger.kernel.org
 
-pm_power_off is an implementation detail. Replace it with a more generic
-description of the driver's functionality.
+Register with kernel power-off handler instead of setting pm_power_off
+directly. Register with low priority to reflect that the original code
+only sets pm_power_off if it was not already set.
 
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Acked-by: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Acked-by: Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>
-Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: linux-omap@vger.kernel.org
+Acked-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v5:
 - Rebase to v3.18-rc3
 v4:
-- No change
+- Do not use notifiers but internal functions and data structures to manage
+  the list of power-off handlers. Drop unused parameters from callbacks, and
+  make the power-off function type void
 v3:
 - Replace poweroff in all newly introduced variables and in text
   with power_off or power-off as appropriate
+- Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- No change
+- Use define to specify poweroff handler priority
+- Use dev_warn instead of dev_err
 
- Documentation/devicetree/bindings/gpio/gpio-poweroff.txt | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/mfd/tps80031.c       | 27 +++++++++++++++------------
+ include/linux/mfd/tps80031.h |  2 ++
+ 2 files changed, 17 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/gpio/gpio-poweroff.txt b/Documentation/devicetree/bindings/gpio/gpio-poweroff.txt
-index d4eab92..78262de 100644
---- a/Documentation/devicetree/bindings/gpio/gpio-poweroff.txt
-+++ b/Documentation/devicetree/bindings/gpio/gpio-poweroff.txt
-@@ -2,12 +2,12 @@ Driver a GPIO line that can be used to turn the power off.
+diff --git a/drivers/mfd/tps80031.c b/drivers/mfd/tps80031.c
+index ed6c5b0..996fd7c 100644
+--- a/drivers/mfd/tps80031.c
++++ b/drivers/mfd/tps80031.c
+@@ -147,7 +147,6 @@ static const struct tps80031_pupd_data tps80031_pupds[] = {
+ 	[TPS80031_CTLI2C_SCL]		= PUPD_DATA(4, 0,	BIT(2)),
+ 	[TPS80031_CTLI2C_SDA]		= PUPD_DATA(4, 0,	BIT(3)),
+ };
+-static struct tps80031 *tps80031_power_off_dev;
  
- The driver supports both level triggered and edge triggered power off.
- At driver load time, the driver will request the given gpio line and
--install a pm_power_off handler. If the optional properties 'input' is
--not found, the GPIO line will be driven in the inactive
-+install a handler to power off the system. If the optional properties
-+'input' is not found, the GPIO line will be driven in the inactive
- state. Otherwise its configured as an input.
+ int tps80031_ext_power_req_config(struct device *dev,
+ 		unsigned long ext_ctrl_flag, int preq_bit,
+@@ -209,11 +208,14 @@ int tps80031_ext_power_req_config(struct device *dev,
+ }
+ EXPORT_SYMBOL_GPL(tps80031_ext_power_req_config);
  
--When the pm_power_off is called, the gpio is configured as an output,
--and drive active, so triggering a level triggered power off
-+When the the power-off handler is called, the gpio is configured as an
-+output, and drive active, so triggering a level triggered power off
- condition. This will also cause an inactive->active edge condition, so
- triggering positive edge triggered power off. After a delay of 100ms,
- the GPIO is set to inactive, thus causing an active->inactive edge,
-@@ -24,7 +24,7 @@ Required properties:
+-static void tps80031_power_off(void)
++static void tps80031_power_off(struct power_off_handler_block *this)
+ {
+-	dev_info(tps80031_power_off_dev->dev, "switching off PMU\n");
+-	tps80031_write(tps80031_power_off_dev->dev, TPS80031_SLAVE_ID1,
+-				TPS80031_PHOENIX_DEV_ON, TPS80031_DEVOFF);
++	struct tps80031 *tps80031 = container_of(this, struct tps80031,
++						 power_off_hb);
++
++	dev_info(tps80031->dev, "switching off PMU\n");
++	tps80031_write(tps80031->dev, TPS80031_SLAVE_ID1,
++		       TPS80031_PHOENIX_DEV_ON, TPS80031_DEVOFF);
+ }
  
- Optional properties:
- - input : Initially configure the GPIO line as an input. Only reconfigure
--  it to an output when the pm_power_off function is called. If this optional
-+  it to an output when the power-off handler is called. If this optional
-   property is not specified, the GPIO is initialized as an output in its
-   inactive state.
+ static void tps80031_pupd_init(struct tps80031 *tps80031,
+@@ -501,9 +503,13 @@ static int tps80031_probe(struct i2c_client *client,
+ 		goto fail_mfd_add;
+ 	}
  
+-	if (pdata->use_power_off && !pm_power_off) {
+-		tps80031_power_off_dev = tps80031;
+-		pm_power_off = tps80031_power_off;
++	if (pdata->use_power_off) {
++		tps80031->power_off_hb.handler = tps80031_power_off;
++		tps80031->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
++		ret = register_power_off_handler(&tps80031->power_off_hb);
++		if (ret)
++			dev_warn(&client->dev,
++				 "Failed to register power-off handler\n");
+ 	}
+ 	return 0;
+ 
+@@ -523,10 +529,7 @@ static int tps80031_remove(struct i2c_client *client)
+ 	struct tps80031 *tps80031 = i2c_get_clientdata(client);
+ 	int i;
+ 
+-	if (tps80031_power_off_dev == tps80031) {
+-		tps80031_power_off_dev = NULL;
+-		pm_power_off = NULL;
+-	}
++	unregister_power_off_handler(&tps80031->power_off_hb);
+ 
+ 	mfd_remove_devices(tps80031->dev);
+ 
+diff --git a/include/linux/mfd/tps80031.h b/include/linux/mfd/tps80031.h
+index 2c75c9c..5716077 100644
+--- a/include/linux/mfd/tps80031.h
++++ b/include/linux/mfd/tps80031.h
+@@ -24,6 +24,7 @@
+ #define __LINUX_MFD_TPS80031_H
+ 
+ #include <linux/device.h>
++#include <linux/pm.h>
+ #include <linux/regmap.h>
+ 
+ /* Pull-ups/Pull-downs */
+@@ -513,6 +514,7 @@ struct tps80031 {
+ 	struct i2c_client	*clients[TPS80031_NUM_SLAVES];
+ 	struct regmap		*regmap[TPS80031_NUM_SLAVES];
+ 	struct regmap_irq_chip_data *irq_data;
++	struct power_off_handler_block power_off_hb;
+ };
+ 
+ struct tps80031_pupd_init_data {
 -- 
 1.9.1
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
