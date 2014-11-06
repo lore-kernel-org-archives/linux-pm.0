@@ -1,57 +1,80 @@
-From: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH v3 2/2] dt-bindings: Update documentation for "system-power-controller" and fix misspellings
-Date: Thu,  6 Nov 2014 14:23:03 +0000
-Message-ID: <1415283784-10885-3-git-send-email-romain.perier@gmail.com>
-References: <1415283784-10885-1-git-send-email-romain.perier@gmail.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1415283784-10885-1-git-send-email-romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org
-Cc: grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, balbi-l0cyMroinI0@public.gmane.org
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
+Date: Thu, 6 Nov 2014 10:01:21 -0500
+Message-ID: <20141106150121.GA25642@htj.dyndns.org>
+References: <20141105133100.GC4527@dhcp22.suse.cz>
+ <20141105134219.GD4527@dhcp22.suse.cz>
+ <20141105154436.GB14386@htj.dyndns.org>
+ <20141105160115.GA28226@dhcp22.suse.cz>
+ <20141105162929.GD14386@htj.dyndns.org>
+ <20141105163956.GD28226@dhcp22.suse.cz>
+ <20141105165428.GF14386@htj.dyndns.org>
+ <20141105174609.GE28226@dhcp22.suse.cz>
+ <20141105175527.GH14386@htj.dyndns.org>
+ <20141106124953.GD7202@dhcp22.suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f53.google.com ([209.85.216.53]:58103 "EHLO
+	mail-qa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751021AbaKFPBZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 10:01:25 -0500
+Content-Disposition: inline
+In-Reply-To: <20141106124953.GD7202@dhcp22.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
 
-Signed-off-by: Romain Perier <romain.perier-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
----
- .../devicetree/bindings/power/power-controller.txt   | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+On Thu, Nov 06, 2014 at 01:49:53PM +0100, Michal Hocko wrote:
+> On Wed 05-11-14 12:55:27, Tejun Heo wrote:
+> > On Wed, Nov 05, 2014 at 06:46:09PM +0100, Michal Hocko wrote:
+> > > Because out_of_memory can be called from mutliple paths. And
+> > > the only interesting one should be the page allocation path.
+> > > pagefault_out_of_memory is not interesting because it cannot happen for
+> > > the frozen task.
+> > 
+> > Hmmm.... wouldn't that be broken by definition tho?  So, if the oom
+> > killer is invoked from somewhere else than page allocation path, it
+> > would proceed ignoring the disabled setting and would race against PM
+> > freeze path all the same. 
+> 
+> Not really because try_to_freeze_tasks doesn't finish until _all_ tasks
+> are frozen and a task in the page fault path cannot be frozen, can it?
 
-diff --git a/Documentation/devicetree/bindings/power/power-controller.txt b/Documentation/devicetree/bindings/power/power-controller.txt
-index 845868b..9afa847 100644
---- a/Documentation/devicetree/bindings/power/power-controller.txt
-+++ b/Documentation/devicetree/bindings/power/power-controller.txt
-@@ -1,18 +1,18 @@
--* Generic Poweroff capability
-+* Generic system power control capability
- 
--Power-management integrated circuits or miscellaneous harware components are
--sometimes able to control the system power. The device driver associated to these
--components might needs to define poweroff capability, which tells to the kernel
--how to switch off the system. The corresponding driver must have the standard
--property "poweroff-source" in its device node. This property marks the device as
--able to shutdown the system. In order to test if this property is found
--programmatically, use the helper function "of_system_has_poweroff_source" from
--of.h .
-+Power-management integrated circuits or miscellaneous hardware components are
-+sometimes able to control the system power. The device driver associated with these
-+components might need to define this capability, which tells the kernel that
-+it can be used to switch off the system. The corresponding device must have the
-+standard property "system-power-controller" in its device node. This property
-+marks the device as able to control the system power. In order to test if this
-+property is found programmatically, use the helper function
-+"of_is_system_power_controller" from of.h .
- 
- Example:
- 
- act8846: act8846@5 {
- 	 compatible = "active-semi,act8846";
- 	 status = "okay";
--	 poweroff-source;
-+	 system-power-controller;
- }
+We used to have freezing points deep in file system code which may be
+reacheable from page fault.  Please take a step back and look at the
+paragraph above.  Doesn't it sound extremely contrived and brittle
+even if it's not outright broken?  What if somebody adds another oom
+killing site somewhere else?  How can this possibly be a solution that
+we intentionally implement?
+
+> I mean there shouldn't be any problem to not invoke OOM killer under
+> from the page fault path as well but that might lead to looping in the
+> page fault path without any progress until freezer enables OOM killer on
+> the failure path because the said task cannot be frozen.
+> 
+> Is this preferable?
+
+Why would PM freezing make OOM killing fail?  That doesn't make much
+sense.  Sure, it can block it for a finite duration for sync purposes
+but making OOM killing fail seems the wrong way around.  We're doing
+one thing for non-PM freezing and the other way around for PM
+freezing, which indicates one of the two directions is wrong.
+
+Shouldn't it be that OOM killing happening while PM freezing is in
+progress cancels PM freezing rather than the other way around?  Find a
+point in PM suspend/hibernation operation where everything must be
+stable, disable OOM killing there and check whether OOM killing
+happened inbetween and if so back out.  It seems rather obvious to me
+that OOM killing has to have precedence over PM freezing.
+
+Sure, once the system reaches a point where the whole system must be
+in a stable state for snapshotting or whatever, disabling OOM killing
+is fine but at that point the system is in a very limited execution
+mode and sure won't be processing page faults from userland for
+example and we can actually disable OOM killing knowing that anything
+afterwards is ready to handle memory allocation failures.
+
 -- 
-1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+tejun
