@@ -1,86 +1,55 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH 02/12] drivers: mfd: Add support for Exynos PMU driver
-Date: Thu, 6 Nov 2014 11:47:52 +0530
-Message-ID: <CADGdYn4BjvZnXP6QU_NrOR_UDnXUqMQ=eSeUOD01cZUnt9nfvw@mail.gmail.com>
-References: <000601cff985$5b8911f0$129b35d0$@samsung.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] PM / Domains: Change prototype for the ->attach_dev() callback
+Date: Thu, 6 Nov 2014 08:36:20 +0100
+Message-ID: <CAMuHMdWRXA6pXob=Hacosfic1jeLmo79T-YCKQ77aJbVisZm-Q@mail.gmail.com>
+References: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org>
+	<20141105013353.GA19238@dtor-ws>
+	<7h7fz92rqk.fsf@deeprootsystems.com>
+	<3267963.fqUYb7m9Rv@vostro.rjw.lan>
+	<7hsihx1bvo.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <000601cff985$5b8911f0$129b35d0$@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Pankaj Dubey <pankaj.dubey@samsung.com>
-Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, Lee Jones <lee.jones@linaro.org>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Sangbeom Kim <sbkim73@samsung.com>, Samuel Ortiz <sameo@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f49.google.com ([209.85.215.49]:59523 "EHLO
+	mail-la0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750883AbaKFHgW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 02:36:22 -0500
+In-Reply-To: <7hsihx1bvo.fsf@deeprootsystems.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>
 
-On Thu, Nov 6, 2014 at 11:18 AM, Pankaj Dubey <pankaj.dubey@samsung.com> wrote:
-> On Wednesday, November 05, 2014 7:18 PM, Sylwester Nawrocki wrote:
->> On 04/11/14 04:18, Pankaj Dubey wrote:
->> > 2: Since PM domain relies on PMU registers and does not have its own
->> > DT binding, MFD client and MFD device is most suitable for making
->> > this kind of platform drivers.
->>
->> We have DT binding for the Exynos power domains:
->> Documentation/devicetree/bindings/arm/exynos/power_domain.txt
->> In fact the IO memory regions used in the power domain bindings fall
->> within the
->> (sparse) PMU registers region.
->>
+On Thu, Nov 6, 2014 at 12:11 AM, Kevin Hilman <khilman@kernel.org> wrote:
+> From: Ulf Hansson <ulf.hansson@linaro.org>
+> Date: Thu, 30 Oct 2014 13:02:49 +0100
+> Subject: [PATCH] PM / Domains: Change prototype for the attach and detach
+>  callbacks
 >
-> Correct. But currently there is no platform driver for those DT bindings so we have two options:
-> 1) Register a new platform driver for each of those DT nodes, which are using a very small subset of PMU register region. And we end up getting platform driver's probe for each pd nodes.
-> 2) Register an Exynos power domain driver which will be a client driver of main Exynos PMU driver, and will get platform data from it. And in this probe parse all pd device nodes and populate all related information from those nodes into Exynos_pm_domain struct instances and keep list of these instances. Same has been proposed in Amit's patch.
+> Convert the prototypes to return an int in order to support error
+> handling in these callbacks.
 >
-> I would prefer second method, as next, we can move pm sleep functionality (which also uses PMU register sets) also into such small mfd client driver. And as far as I know for pm sleep currently there is no DT nodes.
+> Also, as suggested by Dmitry Torokhov, pass the domain pointer for use
+> inside the callbacks, and so that they match the existing
+> power_on/power_off callbacks which currently take the domain pointer.
 >
->> There is also DT binding for the PMU subsystem:
->> Documentation/devicetree/bindings/arm/samsung/pmu.txt
->
-> Yes, and currently I have used same binding to convert PMU implementation into a platform driver [1]. Now what we trying to address is same PMU implementation can be reused for ARM64 based SoC if we have to move it into "drivers/mfd/" or "drivers/power/" or may be "drivers/soc".
->
-> [1]: http://www.spinics.net/lists/linux-samsung-soc/msg37572.html
->
-> Currently we moved into "drivers/mfd" and patches from Amit shows an use case where power domain implementation has been converted into platform driver, but its probe will be called by MFD subsystem and will not be bind to DT nodes of pd  as it will be a client device to main PMU device. Please check this [2], [3].
->
-> [2]: http://www.spinics.net/lists/linux-samsung-soc/msg38446.html
-> [3]: http://www.spinics.net/lists/linux-samsung-soc/msg38447.html
->
->>
->> I guess a platform device driver in drivers/power would be a better
->> fit than drivers/mfd. I doubt introducing an mfd driver now makes much
->> sense, we have already DT bindings for PHYs, the power domains, etc.
->>
->
-> The reason behind making it a mfd driver is, to make following design for pm domain and pm sleep functionality.
->                          ----------------------
->                         | Exynos - PMU  |
->                         | MFD device      |
->                         | drivers/mfd/     |
->                         ------------------------
->                                 |
->                   -----------------------------------------------
->                 |                                       |
->           -------------------------------               ------------------------------------
->         |  Exynos -pd                 |         |   Exynos - pm-sleep         |
->         |  PMU's client device        |         |   PMU's client device      |
->         | (drivers/soc/samsung/) |              | (drivers/soc/samsung/) |
->         --------------------------------                ---------------------------------
-I will post this sleep driver shortly. I also suggest to keep
-everything in drivers/soc/samsung as all these drivers very much SoC
-specific.
->
-> As Lee mentioned MFD can be used to register the device ( I am assuming he is referring to use of " mfd_add_devices" from Exynos -PMU driver, to make it a mfd device) but it should be kept outside of "drivers/mfd". I just looked for current users of "mfd_add_devices" but only drivers from "drivers/mfd" only are calling this API, also once we call this API it will become an MFD device then why not keep into "drivers/mfd" or maybe I have little understanding of purpose of "drivers/mfd".
->
-> But still if it's OK to register Exynos -PMU as MFD device even if it's not in "drivers/mfd" folder, then I would suggest better to keep it in "drivers/soc/samsung/" as it's very much SoC specific. As "drivers/power" looks like place to keep external power supply drivers such as batteries, AC, USB etc.
->
-> Thanks,
-> Pankaj Dubey
->
->> --
->> Thanks,
->> Sylwester
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> [khilman: added domain as parameter to callbacks, as suggested by Dmitry]
+
+OK, so back to the signature of the original version...
+
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Kevin Hilman <khilman@linaro.org>
+
+Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
