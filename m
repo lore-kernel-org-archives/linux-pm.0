@@ -1,7 +1,7 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v10 1/5] PM / Runtime: Allow accessing irq_safe if no PM_RUNTIME
-Date: Thu, 06 Nov 2014 09:36:46 +0100
-Message-ID: <1415263010-7992-2-git-send-email-k.kozlowski@samsung.com>
+Subject: [PATCH v10 2/5] amba: Add helpers for (un)preparing AMBA clock
+Date: Thu, 06 Nov 2014 09:36:47 +0100
+Message-ID: <1415263010-7992-3-git-send-email-k.kozlowski@samsung.com>
 References: <1415263010-7992-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1415263010-7992-1-git-send-email-k.kozlowski@samsung.com>
@@ -10,64 +10,35 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pa
 Cc: Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Some drivers (e.g. bus drivers) may want to check if power.irq_safe was
-called by child driver, regardless of CONFIG_PM_RUNTIME.
-
-An example scenario is amba/bus.c and dma/pl330.c drivers. The runtime
-suspend/resume callbacks in amba bus driver act differently if irq_safe
-was set by child driver (in irq_safe mode bus clock is only disabled).
-
-The pl330 driver sets irq_safe and assumes that amba bus driver will
-only disable the clock in runtime PM. So in system sleep suspend
-callback the pl330 driver unprepares the clock after calling
-pm_runtime_force_suspend().
-
-However inconsistency would appear if CONFIG_PM_RUNTIME is not set and
-child drivers do not want the irq_safe runtime PM. In such case amba bus
-driver still has to know whether child driver wanted irq_safe - by
-looking at dev->power.irq_safe field.
+Add amba_pclk_prepare() and amba_pclk_unprepare() inline functions for
+handling the AMBA bus clock by device drivers.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- include/linux/pm.h         | 2 +-
- include/linux/pm_runtime.h | 5 ++++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ include/linux/amba/bus.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 383fd68aaee1..b05fa954f50d 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -566,6 +566,7 @@ struct dev_pm_info {
- 	bool			ignore_children:1;
- 	bool			early_init:1;	/* Owned by the PM core */
- 	bool			direct_complete:1;	/* Owned by the PM core */
-+	unsigned int		irq_safe:1;	/* PM runtime */
- 	spinlock_t		lock;
- #ifdef CONFIG_PM_SLEEP
- 	struct list_head	entry;
-@@ -590,7 +591,6 @@ struct dev_pm_info {
- 	unsigned int		run_wake:1;
- 	unsigned int		runtime_auto:1;
- 	unsigned int		no_callbacks:1;
--	unsigned int		irq_safe:1;
- 	unsigned int		use_autosuspend:1;
- 	unsigned int		timer_autosuspends:1;
- 	unsigned int		memalloc_noio:1;
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 367f49b9a1c9..d94a65662a60 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -166,7 +166,10 @@ static inline bool pm_runtime_suspended_if_enabled(struct device *dev) { return
- static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
+index c324f5700d1a..ac02f9bd63dc 100644
+--- a/include/linux/amba/bus.h
++++ b/include/linux/amba/bus.h
+@@ -97,6 +97,16 @@ void amba_release_regions(struct amba_device *);
+ #define amba_pclk_disable(d)	\
+ 	do { if (!IS_ERR((d)->pclk)) clk_disable((d)->pclk); } while (0)
  
- static inline void pm_runtime_no_callbacks(struct device *dev) {}
--static inline void pm_runtime_irq_safe(struct device *dev) {}
-+static inline void pm_runtime_irq_safe(struct device *dev)
++static inline int amba_pclk_prepare(struct amba_device *dev)
 +{
-+	dev->power.irq_safe = 1;
++	return clk_prepare(dev->pclk);
 +}
- 
- static inline bool pm_runtime_callbacks_present(struct device *dev) { return false; }
- static inline void pm_runtime_mark_last_busy(struct device *dev) {}
++
++static inline void amba_pclk_unprepare(struct amba_device *dev)
++{
++	clk_unprepare(dev->pclk);
++}
++
+ /* Some drivers don't use the struct amba_device */
+ #define AMBA_CONFIG_BITS(a) (((a) >> 24) & 0xff)
+ #define AMBA_REV_BITS(a) (((a) >> 20) & 0x0f)
 -- 
 1.9.1
