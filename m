@@ -1,17 +1,17 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v5 24/48] power/reset: as3722-poweroff: Register with kernel power-off handler
-Date: Thu,  6 Nov 2014 08:43:08 -0800
-Message-ID: <1415292213-28652-25-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v5 23/48] power/reset: gpio-poweroff: Register with kernel power-off handler
+Date: Thu,  6 Nov 2014 08:43:07 -0800
+Message-ID: <1415292213-28652-24-git-send-email-linux@roeck-us.net>
 References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:56322 "EHLO
+Received: from bh-25.webhostbox.net ([208.91.199.152]:56279 "EHLO
 	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751334AbaKFQok (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 11:44:40 -0500
+	with ESMTP id S1751976AbaKFQog (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 11:44:36 -0500
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
 	(envelope-from <linux@roeck-us.net>)
-	id 1XmQAq-000TzB-9X
-	for linux-pm@vger.kernel.org; Thu, 06 Nov 2014 16:44:40 +0000
+	id 1XmQAl-000Tvl-UI
+	for linux-pm@vger.kernel.org; Thu, 06 Nov 2014 16:44:36 +0000
 In-Reply-To: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -22,11 +22,23 @@ Register with kernel power-off handler instead of setting pm_power_off
 directly. Register with low priority to reflect that the original code
 only sets pm_power_off if it was not already set.
 
+Other changes:
+
+Drop note that there can not be an additional instance of this driver.
+The original reason no longer applies, it should be obvious that there
+can only be one instance of the driver if static variables are used to
+reflect its state, and support for multiple instances can now be added
+easily if needed by avoiding static variables.
+
+Do not create an error message if another power-off handler has already
+been registered. This is perfectly normal and acceptable.
+
 Drop remove function since it is no longer needed.
 
 Cc: Sebastian Reichel <sre@kernel.org>
 Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 Cc: David Woodhouse <dwmw2@infradead.org>
+Acked-by: Andrew Lunn <andrew@lunn.ch>
 Acked-by: Sebastian Reichel <sre@kernel.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
@@ -40,87 +52,93 @@ v3:
 - Replace poweroff in all newly introduced variables and in text
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
-v2:
+v2;
 - Use define to specify poweroff handler priority
 - Use devm_register_power_off_handler
-- Drop remove function since it is no longer needed
+- Drop remove function as it is no longer needed
 
- drivers/power/reset/as3722-poweroff.c | 35 +++++++++++------------------------
- 1 file changed, 11 insertions(+), 24 deletions(-)
+ drivers/power/reset/gpio-poweroff.c | 36 +++++++++++++-----------------------
+ 1 file changed, 13 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/power/reset/as3722-poweroff.c b/drivers/power/reset/as3722-poweroff.c
-index 6849711..bd4965b 100644
---- a/drivers/power/reset/as3722-poweroff.c
-+++ b/drivers/power/reset/as3722-poweroff.c
-@@ -20,28 +20,25 @@
- #include <linux/of.h>
- #include <linux/of_device.h>
- #include <linux/platform_device.h>
+diff --git a/drivers/power/reset/gpio-poweroff.c b/drivers/power/reset/gpio-poweroff.c
+index ce849bc..4d480d2 100644
+--- a/drivers/power/reset/gpio-poweroff.c
++++ b/drivers/power/reset/gpio-poweroff.c
+@@ -14,18 +14,16 @@
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/delay.h>
 +#include <linux/pm.h>
- #include <linux/slab.h>
+ #include <linux/platform_device.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/of_platform.h>
+ #include <linux/module.h>
  
- struct as3722_poweroff {
- 	struct device *dev;
- 	struct as3722 *as3722;
-+	struct power_off_handler_block power_off_hb;
- };
+-/*
+- * Hold configuration here, cannot be more than one instance of the driver
+- * since pm_power_off itself is global.
+- */
+ static struct gpio_desc *reset_gpio;
  
--static struct as3722_poweroff *as3722_pm_poweroff;
--
--static void as3722_pm_power_off(void)
-+static void as3722_power_off(struct power_off_handler_block *this)
+-static void gpio_poweroff_do_poweroff(void)
++static void gpio_poweroff_do_poweroff(struct power_off_handler_block *this)
++
  {
-+	struct as3722_poweroff *as3722_poweroff =
-+		container_of(this, struct as3722_poweroff, power_off_hb);
- 	int ret;
+ 	BUG_ON(!reset_gpio);
  
--	if (!as3722_pm_poweroff) {
--		pr_err("AS3722 poweroff is not initialised\n");
--		return;
--	}
--
--	ret = as3722_update_bits(as3722_pm_poweroff->as3722,
-+	ret = as3722_update_bits(as3722_poweroff->as3722,
- 		AS3722_RESET_CONTROL_REG, AS3722_POWER_OFF, AS3722_POWER_OFF);
- 	if (ret < 0)
--		dev_err(as3722_pm_poweroff->dev,
-+		dev_err(as3722_poweroff->dev,
- 			"RESET_CONTROL_REG update failed, %d\n", ret);
+@@ -45,17 +43,15 @@ static void gpio_poweroff_do_poweroff(void)
+ 	WARN_ON(1);
  }
  
-@@ -63,20 +60,11 @@ static int as3722_poweroff_probe(struct platform_device *pdev)
- 
- 	as3722_poweroff->as3722 = dev_get_drvdata(pdev->dev.parent);
- 	as3722_poweroff->dev = &pdev->dev;
--	as3722_pm_poweroff = as3722_poweroff;
--	if (!pm_power_off)
--		pm_power_off = as3722_pm_power_off;
++static struct power_off_handler_block gpio_power_off_hb = {
++	.handler = gpio_poweroff_do_poweroff,
++	.priority = POWER_OFF_PRIORITY_LOW,
++};
++
+ static int gpio_poweroff_probe(struct platform_device *pdev)
+ {
+ 	bool input = false;
 -
+-	/* If a pm_power_off function has already been added, leave it alone */
+-	if (pm_power_off != NULL) {
+-		dev_err(&pdev->dev,
+-			"%s: pm_power_off function already registered",
+-		       __func__);
+-		return -EBUSY;
+-	}
++	int err;
+ 
+ 	reset_gpio = devm_gpiod_get(&pdev->dev, NULL);
+ 	if (IS_ERR(reset_gpio))
+@@ -77,16 +73,11 @@ static int gpio_poweroff_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	pm_power_off = &gpio_poweroff_do_poweroff;
 -	return 0;
 -}
 -
--static int as3722_poweroff_remove(struct platform_device *pdev)
+-static int gpio_poweroff_remove(struct platform_device *pdev)
 -{
--	if (pm_power_off == as3722_pm_power_off)
+-	if (pm_power_off == &gpio_poweroff_do_poweroff)
 -		pm_power_off = NULL;
--	as3722_pm_poweroff = NULL;
-+	as3722_poweroff->power_off_hb.handler = as3722_power_off;
-+	as3722_poweroff->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
++	err = devm_register_power_off_handler(&pdev->dev, &gpio_power_off_hb);
++	if (err)
++		dev_err(&pdev->dev, "Failed to register power-off handler\n");
  
 -	return 0;
-+	return devm_register_power_off_handler(&pdev->dev,
-+					      &as3722_poweroff->power_off_hb);
++	return err;
  }
  
- static struct platform_driver as3722_poweroff_driver = {
-@@ -85,7 +73,6 @@ static struct platform_driver as3722_poweroff_driver = {
- 		.owner = THIS_MODULE,
- 	},
- 	.probe = as3722_poweroff_probe,
--	.remove = as3722_poweroff_remove,
- };
+ static const struct of_device_id of_gpio_poweroff_match[] = {
+@@ -96,7 +87,6 @@ static const struct of_device_id of_gpio_poweroff_match[] = {
  
- module_platform_driver(as3722_poweroff_driver);
+ static struct platform_driver gpio_poweroff_driver = {
+ 	.probe = gpio_poweroff_probe,
+-	.remove = gpio_poweroff_remove,
+ 	.driver = {
+ 		.name = "poweroff-gpio",
+ 		.owner = THIS_MODULE,
 -- 
 1.9.1
 
