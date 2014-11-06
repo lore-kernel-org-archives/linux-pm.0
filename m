@@ -1,148 +1,81 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 1/5] sched: idle: cpuidle: Check the latency req before
- idle
-Date: Thu, 06 Nov 2014 09:38:04 +0530
-Message-ID: <545AF424.2070302@linux.vnet.ibm.com>
-References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org> <CAM4v1pOg1GFW82WD8b6Vas5xhYQrQtdP1STGxyzYtrBNSa+-Pw@mail.gmail.com> <544FE787.8090108@linaro.org> <54504A60.2090908@linux.vnet.ibm.com> <545A3414.7030500@linaro.org>
+From: Pankaj Dubey <pankaj.dubey@samsung.com>
+Subject: RE: [PATCH 02/12] drivers: mfd: Add support for Exynos PMU driver
+Date: Thu, 06 Nov 2014 11:18:48 +0530
+Message-ID: <000601cff985$5b8911f0$129b35d0$@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e32.co.us.ibm.com ([32.97.110.150]:52221 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbaKFEIb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Nov 2014 23:08:31 -0500
-Received: from /spool/local
-	by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Wed, 5 Nov 2014 21:08:31 -0700
-In-Reply-To: <545A3414.7030500@linaro.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:18063 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751725AbaKFFt1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 00:49:27 -0500
+Content-language: en-us
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, patches@linaro.org
+To: 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Lee Jones' <lee.jones@linaro.org>
+Cc: 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, 'Sangbeom Kim' <sbkim73@samsung.com>, 'Samuel Ortiz' <sameo@linux.intel.com>
 
-On 11/05/2014 07:58 PM, Daniel Lezcano wrote:
-> On 10/29/2014 03:01 AM, Preeti U Murthy wrote:
->> On 10/29/2014 12:29 AM, Daniel Lezcano wrote:
->>> On 10/28/2014 04:51 AM, Preeti Murthy wrote:
->>>> Hi Daniel,
->>>>
->>>> On Thu, Oct 23, 2014 at 2:31 PM, Daniel Lezcano
->>>> <daniel.lezcano@linaro.org> wrote:
->>>>> When the pmqos latency requirement is set to zero that means "poll in
->>>>> all the
->>>>> cases".
->>>>>
->>>>> That is correctly implemented on x86 but not on the other archs.
->>>>>
->>>>> As how is written the code, if the latency request is zero, the
->>>>> governor will
->>>>> return zero, so corresponding, for x86, to the poll function, but for
->>>>> the
->>>>> others arch the default idle function. For example, on ARM this is
->>>>> wait-for-
->>>>> interrupt with a latency of '1', so violating the constraint.
->>>>
->>>> This is not true actually. On PowerPC the idle state 0 has an
->>>> exit_latency of 0.
->>>>
->>>>>
->>>>> In order to fix that, do the latency requirement check *before*
->>>>> calling the
->>>>> cpuidle framework in order to jump to the poll function without
->>>>> entering
->>>>> cpuidle. That has several benefits:
->>>>
->>>> Doing so actually hurts on PowerPC. Because the idle loop defined for
->>>> idle state 0 is different from what cpu_relax() does in
->>>> cpu_idle_loop().
->>>> The spinning is more power efficient in the former case. Moreover we
->>>> also set
->>>> certain register values which indicate an idle cpu. The ppc_runlatch
->>>> bits
->>>> do precisely this. These register values are being read by some user
->>>> space
->>>> tools.  So we will end up breaking them with this patch
->>>>
->>>> My suggestion is very well keep the latency requirement check in
->>>> kernel/sched/idle.c
->>>> like your doing in this patch. But before jumping to cpu_idle_loop
->>>> verify if the
->>>> idle state 0 has an exit_latency > 0 in addition to your check on the
->>>> latency_req == 0.
->>>> If not, you can fall through to the regular path of calling into the
->>>> cpuidle driver.
->>>> The scheduler can query the cpuidle_driver structure anyway.
->>>>
->>>> What do you think?
->>>
->>> Thanks for reviewing the patch and spotting this.
->>>
->>> Wouldn't make sense to create:
->>>
->>> void __weak_cpu_idle_poll(void) ?
->>>
->>> and override it with your specific poll function ?
->>>
->>
->> No this would become ugly as far as I can see. A weak function has to be
->> defined under arch/* code. We will either need to duplicate the idle
->> loop that we already have in the drivers or point the weak function to
->> the first idle state defined by our driver. Both of which is not
->> desirable (calling into the driver from arch code is ugly). Another
->> reason why I don't like the idea of a weak function is that if you have
->> missed looking at a specific driver and they have an idle loop with
->> features similar to on powerpc, you will have to spot it yourself and
->> include the arch specific cpu_idle_poll() for them.
+On Wednesday, November 05, 2014 7:18 PM, Sylwester Nawrocki wrote:
+> On 04/11/14 04:18, Pankaj Dubey wrote:
+> > 2: Since PM domain relies on PMU registers and does not have its own 
+> > DT binding, MFD client and MFD device is most suitable for making 
+> > this kind of platform drivers.
 > 
-> Yes, I agree this is a fair point. But actually I don't see the interest
-> of having the poll loop in the cpuidle driver. These cleanups are
+> We have DT binding for the Exynos power domains:
+> Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+> In fact the IO memory regions used in the power domain bindings fall 
+> within the
+> (sparse) PMU registers region.
+> 
 
-We can't do that simply because the idle poll loop has arch specific
-bits on powerpc.
+Correct. But currently there is no platform driver for those DT bindings so we have two options:
+1) Register a new platform driver for each of those DT nodes, which are using a very small subset of PMU register region. And we end up getting platform driver's probe for each pd nodes.
+2) Register an Exynos power domain driver which will be a client driver of main Exynos PMU driver, and will get platform data from it. And in this probe parse all pd device nodes and populate all related information from those nodes into Exynos_pm_domain struct instances and keep list of these instances. Same has been proposed in Amit's patch.
 
-> preparing the removal of the CPUIDLE_DRIVER_STATE_START macro which
-> leads to a lot of mess in the cpuidle code.
+I would prefer second method, as next, we can move pm sleep functionality (which also uses PMU register sets) also into such small mfd client driver. And as far as I know for pm sleep currently there is no DT nodes.
 
-How is the suggestion to check the exit_latency of idle state 0 when
-latency_req  == 0 going to hinder this removal?
+> There is also DT binding for the PMU subsystem:
+> Documentation/devicetree/bindings/arm/samsung/pmu.txt
+
+Yes, and currently I have used same binding to convert PMU implementation into a platform driver [1]. Now what we trying to address is same PMU implementation can be reused for ARM64 based SoC if we have to move it into "drivers/mfd/" or "drivers/power/" or may be "drivers/soc".
+
+[1]: http://www.spinics.net/lists/linux-samsung-soc/msg37572.html
+
+Currently we moved into "drivers/mfd" and patches from Amit shows an use case where power domain implementation has been converted into platform driver, but its probe will be called by MFD subsystem and will not be bind to DT nodes of pd  as it will be a client device to main PMU device. Please check this [2], [3].
+
+[2]: http://www.spinics.net/lists/linux-samsung-soc/msg38446.html
+[3]: http://www.spinics.net/lists/linux-samsung-soc/msg38447.html
 
 > 
-> With the removal of this macro, we should be able to move the select
-> loop from the menu governor and use it everywhere else. Furthermore,
-> this state which is flagged with TIME_VALID, isn't because the local
-> interrupt are enabled so we are measuring the interrupt time processing.
-> Beside that the idle loop for x86 is mostly not used.
+> I guess a platform device driver in drivers/power would be a better 
+> fit than drivers/mfd. I doubt introducing an mfd driver now makes much 
+> sense, we have already DT bindings for PHYs, the power domains, etc.
 > 
-> So the idea would be to extract those idle loop from the drivers and use
-> them directly when:
->  1. the idle selection fails (use the poll loop under certain
-> circumstances we have to redefine)
 
-This behavior will not change as per my suggestion.
+The reason behind making it a mfd driver is, to make following design for pm domain and pm sleep functionality.
+			 ----------------------
+			| Exynos - PMU  |
+			| MFD device      |
+			| drivers/mfd/     |
+			------------------------
+				|
+		  -----------------------------------------------
+		|					|
+	  -------------------------------		------------------------------------
+	|  Exynos -pd		      |		|   Exynos - pm-sleep	      |
+	|  PMU's client device	      |		|   PMU's client device      |  
+	| (drivers/soc/samsung/) |		| (drivers/soc/samsung/) |	
+	--------------------------------		---------------------------------
+ 
+As Lee mentioned MFD can be used to register the device ( I am assuming he is referring to use of " mfd_add_devices" from Exynos -PMU driver, to make it a mfd device) but it should be kept outside of "drivers/mfd". I just looked for current users of "mfd_add_devices" but only drivers from "drivers/mfd" only are calling this API, also once we call this API it will become an MFD device then why not keep into "drivers/mfd" or maybe I have little understanding of purpose of "drivers/mfd".
 
->  2. when the latency req is zero
+But still if it's OK to register Exynos -PMU as MFD device even if it's not in "drivers/mfd" folder, then I would suggest better to keep it in "drivers/soc/samsung/" as it's very much SoC specific. As "drivers/power" looks like place to keep external power supply drivers such as batteries, AC, USB etc.
 
-Its only here that I suggested you also verify state 0's exit_latency.
-For the reason that the arch may have a more optimized idle poll loop,
-which we cannot override with the generic cpuidle poll loop.
+Thanks,
+Pankaj Dubey
 
-Regards
-Preeti U Murthy
-> 
-> That will result in a cleaner code in cpuidle and in the governor.
-> 
-> Do you agree with that ?
-> 
->> But by having a check on the exit_latency, you are claiming that since
->> the driver's 0th idle state is no better than the generic idle loop in
->> cases of 0 latency req, we are better off calling the latter, which
->> looks reasonable. That way you don't have to bother about worsening the
->> idle loop behavior on any other driver.
-> 
-> 
-> 
-> 
-> 
+> --
+> Thanks,
+> Sylwester
 
