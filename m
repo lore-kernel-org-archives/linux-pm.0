@@ -1,214 +1,131 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH RESEND] PM / sleep: Fix racing timers
-Date: Thu, 06 Nov 2014 01:33:36 +0100
-Message-ID: <1803639.rQE0urO8Tr@vostro.rjw.lan>
-References: <1411405623-7869-1-git-send-email-soren.brinkmann@xilinx.com> <1860362.OyoLA3GxVJ@vostro.rjw.lan> <fadb1f7b-82bf-4dbd-bfd4-ca24daca0a8f@BN1AFFO11FD060.protection.gbl>
+Subject: Re: [PATCH] PM / Domains: Change prototype for the ->attach_dev() callback
+Date: Thu, 06 Nov 2014 01:54:36 +0100
+Message-ID: <6900237.LSPrkZ5QMk@vostro.rjw.lan>
+References: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org> <3267963.fqUYb7m9Rv@vostro.rjw.lan> <7hsihx1bvo.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52661 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751184AbaKFAMw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Nov 2014 19:12:52 -0500
-In-Reply-To: <fadb1f7b-82bf-4dbd-bfd4-ca24daca0a8f@BN1AFFO11FD060.protection.gbl>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <7hsihx1bvo.fsf@deeprootsystems.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: =?ISO-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thursday, October 02, 2014 09:01:15 AM S=C3=B6ren Brinkmann wrote:
-> Hi Rafael,
+On Wednesday, November 05, 2014 03:11:23 PM Kevin Hilman wrote:
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+> 
+> > On Wednesday, November 05, 2014 02:43:31 PM Kevin Hilman wrote:
+> >> Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
+> >> 
+> >> > On Thu, Oct 30, 2014 at 01:38:30PM -0700, Kevin Hilman wrote:
+> >> >> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+> >> >> 
+> >> >> > On Thursday, October 30, 2014 01:02:49 PM Ulf Hansson wrote:
+> >> >> >> Convert the prototype to return and int. This is just an initial step,
+> >> >> >> needed to support error handling.
+> >> >> >> 
+> >> >> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >> >> 
+> >> >> Acked-by: Kevin Hilman <khilman@linaro.org>
+> >> >> 
+> >> >> >> 
+> >> >> >> This patch is intended as fix for 3.18 rc[n]. Why?
+> >> >> >> 
+> >> >> >> There are other SOC specific patches around that adds genpd support and which
+> >> >> >> implements the ->attach_dev() callback. To prevent having an "atomic" patch
+> >> >> >> during the next release cycle, let's change the prototype now instead.
+> >> >> >> 
+> >> >> >> Further patches will add the actual error handling in genpd and these can then
+> >> >> >> be reviewed and tested thoroughly.
+> >> >> >
+> >> >> > So we have no users of ->attach_dev at the moment, right?
+> >> >> 
+> >> >> Not in mainline, but there are a couple getting ready to hit -next, so
+> >> >> we wanted to fix this before they arrive so that adding the error
+> >> >> handling will be easier.
+> >> >
+> >> > BTW, while we are at it, can we also pass the domain itself to
+> >> > attach_dev() and detach_dev()? If anything it helps with debugging (you
+> >> > can print domain name from the callbacks).
+> >> 
+> >> Agreed, and it makes it match the other callbacks (power_off, power_on)
+> >> which currently take struct generic_pm_domain *domain.  
+> >> 
+> >> Updated version of $SUBJECT patch below.
+> >
+> > The subject and changelog need to be updated too IMO.
+> >
+> 
+> Right.  Here you go.
 
-Hi,
+I've replaced the Ulf's original with this one, thanks!
 
-Sorry for the huge delay.
+> ----- >8 ------
+> From c18a6bf3121979c4102ba4f7edb3ac41e3921fc6 Mon Sep 17 00:00:00 2001
+> From: Ulf Hansson <ulf.hansson@linaro.org>
+> Date: Thu, 30 Oct 2014 13:02:49 +0100
+> Subject: [PATCH] PM / Domains: Change prototype for the attach and detach
+>  callbacks
+> 
+> Convert the prototypes to return an int in order to support error
+> handling in these callbacks.
+> 
+> Also, as suggested by Dmitry Torokhov, pass the domain pointer for use
+> inside the callbacks, and so that they match the existing
+> power_on/power_off callbacks which currently take the domain pointer.
+> 
+> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> [khilman: added domain as parameter to callbacks, as suggested by Dmitry]
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Kevin Hilman <khilman@linaro.org>
+> ---
+>  drivers/base/power/domain.c | 4 ++--
+>  include/linux/pm_domain.h   | 6 ++++--
+>  2 files changed, 6 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 40bc2f4072cc..b520687046d4 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1437,7 +1437,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+>  	spin_unlock_irq(&dev->power.lock);
+>  
+>  	if (genpd->attach_dev)
+> -		genpd->attach_dev(dev);
+> +		genpd->attach_dev(genpd, dev);
+>  
+>  	mutex_lock(&gpd_data->lock);
+>  	gpd_data->base.dev = dev;
+> @@ -1499,7 +1499,7 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+>  	genpd->max_off_time_changed = true;
+>  
+>  	if (genpd->detach_dev)
+> -		genpd->detach_dev(dev);
+> +		genpd->detach_dev(genpd, dev);
+>  
+>  	spin_lock_irq(&dev->power.lock);
+>  
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 73e938b7e937..b3ed7766a291 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -72,8 +72,10 @@ struct generic_pm_domain {
+>  	bool max_off_time_changed;
+>  	bool cached_power_down_ok;
+>  	struct gpd_cpuidle_data *cpuidle_data;
+> -	void (*attach_dev)(struct device *dev);
+> -	void (*detach_dev)(struct device *dev);
+> +	int (*attach_dev)(struct generic_pm_domain *domain,
+> +			  struct device *dev);
+> +	void (*detach_dev)(struct generic_pm_domain *domain,
+> +			   struct device *dev);
+>  };
+>  
+>  static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
+> 
 
-> On Tue, 2014-09-23 at 01:01AM +0200, Rafael J. Wysocki wrote:
-> > On Monday, September 22, 2014 10:07:03 AM Soren Brinkmann wrote:
-> > > On platforms that do not power off during suspend, successfully e=
-ntering
-> > > suspend races with timers.
-> > >=20
-> > > The race happening in a couple of location is:
-> > >=20
-> > >   1. disable IRQs   		(e.g. arch_suspend_disable_irqs())
-> > >      ...
-> > >   2. syscore_suspend()
-> > >       -> timekeeping_suspend()
-> > >        -> clockevents_notify(SUSPEND)
-> > >         -> tick_suspend()   	(timers are turned off here)
-> > >      ...
-> > >   3. wfi            		(wait for wake-IRQ here)
-> > >=20
-> > > Between steps 1 and 2 the timers can still generate interrupts th=
-at are
-> > > not handled and stay pending until step 3. That pending IRQ cause=
-s an
-> > > immediate - spurious - wake.
-> > >=20
-> > > The solution is to move the clockevents suspend/resume notificati=
-on
-> > > out of the syscore_suspend step and explictly call them at the ap=
-propriate
-> > > time in the suspend/hibernation paths. I.e. timers are suspend _b=
-efore_
-> > > IRQs get disabled. And accordingly in the resume path.
-> > >=20
-> > > Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> > > ---
-> > > Hi,
-> > >=20
-> > > there was not a lot of discussion on the last submission. Just on=
-e comment from
-> > > Rafael (https://lkml.org/lkml/2014/8/26/780), which - as I outlin=
-ed in my
-> > > response, does not apply, IMHO, since the platform does not re-en=
-able
-> > > interrupts.
-> >=20
-> > Well, you just don't agree with it.
-> >=20
-> > The problem with your approach is that timer interrupts aren't actu=
-ally as
-> > special as you think and any other IRQF_NO_SUSPEND interrupts would=
- have caused
-> > similar issues to appear under specific conditions.
-> >=20
-> > The solution I would suggest and that actually covers all IRQF_NO_S=
-USPEND
-> > interrupts would be to use a wait_event() loop like the one in free=
-ze_enter()
-> > (on top of the current linux-next or the pm-genirq branch of linux-=
-pm.git),
-> > but wait for pm_abort_suspend to become true, to implement system s=
-uspend.
->=20
-> sorry, it took me a while since I needed to get some dependencies por=
-ted
-> to the pm-genirq base. Once I had that, it reproduced my original iss=
-ue.
-> So far so good. I then looked into finding a solution following your
-> guidance. I'm not sure I really found what you had in mind, but below=
- is
-> what I came up with, which seems to do it.
-> Please let me know how far off I am.
->=20
-> 	Thanks,
-> 	S=C3=B6ren
->=20
-> -------8<------------------8<----------------8<----------------8<----=
------------
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.=
-c
-> index c2744b30d5d9..a4f9914571f1 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -25,7 +25,7 @@
->  bool events_check_enabled __read_mostly;
-> =20
->  /* If set and the system is suspending, terminate the suspend. */
-> -static bool pm_abort_suspend __read_mostly;
-> +bool pm_abort_suspend __read_mostly;
-> =20
->  /*
->   * Combined counters of registered wakeup events and wakeup events i=
-n progress.
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index 6dadb25cb0d8..e6a6de8f76d0 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -33,6 +33,7 @@
-> =20
->  static const char *pm_labels[] =3D { "mem", "standby", "freeze", };
->  const char *pm_states[PM_SUSPEND_MAX];
-> +extern bool pm_abort_suspend;
-> =20
->  static const struct platform_suspend_ops *suspend_ops;
->  static const struct platform_freeze_ops *freeze_ops;
-> @@ -294,25 +295,27 @@ static int suspend_enter(suspend_state_t state,=
- bool *wakeup)
->  	if (error || suspend_test(TEST_CPUS))
->  		goto Enable_cpus;
-> =20
-> -	arch_suspend_disable_irqs();
-> -	BUG_ON(!irqs_disabled());
-> -
-> -	error =3D syscore_suspend();
-> -	if (!error) {
-> -		*wakeup =3D pm_wakeup_pending();
-> -		if (!(suspend_test(TEST_CORE) || *wakeup)) {
-> -			trace_suspend_resume(TPS("machine_suspend"),
-> -				state, true);
-> -			error =3D suspend_ops->enter(state);
-> -			trace_suspend_resume(TPS("machine_suspend"),
-> -				state, false);
-> -			events_check_enabled =3D false;
-> +	while (!pm_abort_suspend) {
-
-That won't work in general, because pm_abort_suspend may not be set on =
-some
-platforms on wakeup.  It is only set if a wakeup interrupt triggers whi=
-ch
-may not be the case on ACPI systems if the BIOS has woken up the system=
-=2E
-
-But that could be addressed by making those platforms simply set pm_wak=
-eup_pending
-in their BIOS exit path.
-
-> +		arch_suspend_disable_irqs();
-> +		BUG_ON(!irqs_disabled());
-> +
-> +		error =3D syscore_suspend();
-
-Also it shouldn't be necessary to do syscore_suspend()/syscore_resume()=
- in
-every iteration of the loop.
-
-> +		if (!error) {
-> +			*wakeup =3D pm_wakeup_pending();
-
-Plus pm_wakeup_pending() returns true if pm_abort_suspend is set
-
-> +			if (!(suspend_test(TEST_CORE) || *wakeup)) {
-> +				trace_suspend_resume(TPS("machine_suspend"),
-> +					state, true);
-
-Did you try to add the loop here instead of above?  Like:
-
-			for (;;) {
-				*wakeup =3D pm_wakeup_pending();
-				if (*wakeup)
-					break;
-
-> +				error =3D suspend_ops->enter(state);
-
-			}
-
-> +				trace_suspend_resume(TPS("machine_suspend"),
-> +					state, false);
-> +				events_check_enabled =3D false;
-> +			}
-> +			syscore_resume();
->  		}
-> -		syscore_resume();
-> -	}
-> =20
-> -	arch_suspend_enable_irqs();
-> -	BUG_ON(irqs_disabled());
-> +		arch_suspend_enable_irqs();
-> +		BUG_ON(irqs_disabled());
-> +	}
-> =20
->   Enable_cpus:
->  	enable_nonboot_cpus();
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
---=20
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
