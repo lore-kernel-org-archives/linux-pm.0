@@ -1,170 +1,74 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v5 00/48] kernel: Add support for power-off handler call
- chain
-Date: Thu, 6 Nov 2014 09:08:18 -0800
-Message-ID: <20141106170818.GA30177@roeck-us.net>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v5 36/48] arm64: psci: Register with kernel power-off
+ handler
+Date: Thu, 6 Nov 2014 17:22:23 +0000
+Message-ID: <20141106172222.GA15384@leverpostej>
 References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
+ <1415292213-28652-37-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
+In-Reply-To: <1415292213-28652-37-git-send-email-linux@roeck-us.net>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 06, 2014 at 08:42:44AM -0800, Guenter Roeck wrote:
-> Various drivers implement architecture and/or device specific means to
-> remove power from the system.  For the most part, those drivers set the
-> global variable pm_power_off to point to a function within the driver.
+On Thu, Nov 06, 2014 at 04:43:20PM +0000, Guenter Roeck wrote:
+> Register with kernel power-off handler instead of setting pm_power_off
+> directly.
 > 
-> This mechanism has a number of drawbacks.  Typically only one means
-> to remove power is supported (at least if pm_power_off is used).
-> At least in theory there can be multiple means to remove power, some of
-> which may be less desirable.  For example, one mechanism might power off the
-> entire system through an I/O port or gpio pin, while another might power off
-> a board by disabling its power controller. Other mechanisms may really just
-> execute a restart sequence or drop into the ROM monitor, or put the CPU into
-> sleep mode.  Using pm_power_off can also be racy if the function pointer is
-> set from a driver built as module, as the driver may be in the process of
-> being unloaded when pm_power_off is called.  If there are multiple power-off
-> handlers in the system, removing a module with such a handler may
-> inadvertently reset the pointer to pm_power_off to NULL, leaving the system
-> with no means to remove power.
-> 
-> Introduce a system power-off handler call chain to solve the described
-> problems.  This call chain is expected to be executed from the architecture
-> specific machine_power_off() function.  Drivers providing system power-off
-> functionality are expected to register with this call chain.  By using the
-> priority field in the notifier block, callers can control power-off handler
-> execution sequence and thus ensure that the power-off handler with the
-> optimal capabilities to remove power for a given system is called first.
-> A call chain instead of a single call to the highest priority handler is
-> used to provide fallback: If multiple power-off handlers are installed,
-> all handlers will be called until one actually succeeds to power off the
-> system.
-> 
-> Patch 01/48 implements the power-off handler API.
-> 
-> Patches 02/48 to 04/48 are cleanup patches to prepare for the move of
-> pm_power_off to a common location.
-> 
-> Patches 05/48 to 07/48 remove references to pm_power_off from devicetree
-> bindings descriptions.
-> 
-> Patch 08/48 moves the pm_power_off variable from architecture code to
-> kernel/reboot.c. 
-> 
-> Patches 09/48 to 34/48 convert various drivers to register with the kernel
-> power-off handler instead of setting pm_power_off directly.
-> 
-> Patches 35/48 to 47/48 do the same for architecture code.
-> 
-> Patch 48/48 finally removes pm_power_off.
-> 
-> For the most part, the individual patches include explanations why specific
-> priorities were chosen, at least if the selected priority is not the default
-> priority. Subsystem and architecture maintainers are encouraged to have a look
-> at the selected priorities and suggest improvements.
-> 
-> I ran the final code through my normal build and qemu tests. Results are
-> available at http://server.roeck-us.net:8010/builders in the 'poweroff-handler'
-> column. I also built all available configurations for arm, mips, powerpc,
-> m68k, and sh architectures.
-> 
-> The series is available in branch poweroff-handler of my repository at
-> git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git.
-> It is based on 3.18-rc3 plus the power-off tracking branch from
-> git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git (to merge
-> powerpc related power-off changes).
-> 
-> A note on Cc: In the initial submission I had way too many Cc:, causing the
-> patchset to be treated as spam by many mailers and mailing list handlers,
-> which of course defeated the purpose. Starting with v3, the distribution
-> list has been cut down significantly. Copied mailing lists and individuals are
-> for the most part generated from the output of get_maintainer.pl for each
-> individual patch.  My apologies to anyone I may have failed to copy; if you
-> believe that some additional individuals or mailing lists should be copied
-> on the entire series or on individual patches, please let me know.
-> 
-> Merge plan is to send the entire series directly to Linus during the next commit
-> window, except for the last patch. The last patch would then be part of another
-> pull request after -rc1, which would include any changes necessary due to newly
-> merged power-off handling code.
-> 
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 
-I should have added that I plan to have the series (except for the last patch)
-added to -next shortly.
+I just fetched your current poweroff-handler branch and gave it a spin
+on Juno. It looks like this hasn't broken since the last time I tried
+it. :)
 
-Linus,
-
-are you ok with this plan ?
+Tested-by: Mark Rutland <mark.rutland@arm.com>
 
 Thanks,
-Guenter
+Mark.
 
+> ---
 > v5:
-> - Rebased series to v3.18-rc3
-> - Merge remote-tracking branch 'power/topic/pm-power-off'
->   from git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git
->   and implement powerpc conversion (patch 41/48).
+> - Rebase to v3.18-rc3
 > v4:
-> - Do not use notifiers but internal functions and data structures to manage
->   the list of power-off handlers. Drop unused parameters from callbacks, and
->   make the power-off function type void.
->   Code to manage and walk the list of callbacks was derived from notifier.c.
->   Note that only patch 01/47 was sent for review of this version.
+> - No change
 > v3:
-> - Rebased series to v3.18-rc2.
-> - Do not hold any locks while executing the power-off call chain.
->   This ensures that power-off handlers are executed in the state
->   selected by the machine_power_off function for a given architecture,
->   ie without changing the current semantics of power-off callbacks and
->   machine_power_off functions.
->   Power-off handler registration and de-registration is handled in atomic
->   context with interrupts disabled to ensure that those functions are not
->   interrupted by code which powers off the system.
-> - Use [xxx_]power_off[_xxx] instead of [xxx_]poweroff[_xxx] for newly
->   introduced function and variable names.
-> - Use power-off instead of poweroff in descriptive text and comments.
+> - Replace poweroff in all newly introduced variables and in text
+>   with power_off or power-off as appropriate
 > - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
-> - Use ACPI: instead of acpi: for messages in acpi code.
 > v2:
-> - Rebased series to v3.18-rc1.
-> - Use raw notifier with spinlock protection instead of atomic notifiers,
->   since some power-off handlers need to have interrupts enabled.
-> - Renamed API functions from _poweroff to _power_off.
-> - Added various Acks.
-> - Build tested all configurations for arm, powerpc, and mips architectures.
-> - Fixed two compile errors in mips patch.
-> - Replaced dev_err and pr_err with dev_warn and pr_warn if an error is not
->   fatal.
-> - Provide managed resources API and use where appropriate.
-> - Provide and use definitions for standard priorities.
-> - Added patches to convert newly introduced power-off handlers.
-> - Various minor changes.
-> v1 (from RFC):
-> - Move API to new file kernel/power/power_off_handler.c.
-> - Move pm_power_off pointer to kernel/power/power_off_handler.c. Call
->   pm_power_off from do_kernel_power_off, and only call do_kernel_power_off
->   from architecture code instead of calling both pm_power_off and
->   do_kernel_power_off.
-> - Provide additional API function register_power_off_handler_simple
->   to simplify conversion of architecture code.
-> - Provide additional API function have_kernel_power_off to check if
->   a power-off handler was installed.
-> - Convert all drivers and architecture code to use the new API.
-> - Remove pm_power_off as last patch of the series.
+> - Use define to specify poweroff handler priority
 > 
-> Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-> Cc: Alexander Graf <agraf@suse.de>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> cc: Heiko Stuebner <heiko@sntech.de>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Romain Perier <romain.perier@gmail.com>
+>  arch/arm64/kernel/psci.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
+> index 866c1c8..5cab066 100644
+> --- a/arch/arm64/kernel/psci.c
+> +++ b/arch/arm64/kernel/psci.c
+> @@ -359,7 +359,8 @@ static int __init psci_0_2_init(struct device_node *np)
+>  
+>  	arm_pm_restart = psci_sys_reset;
+>  
+> -	pm_power_off = psci_sys_poweroff;
+> +	register_power_off_handler_simple(psci_sys_poweroff,
+> +					  POWER_OFF_PRIORITY_DEFAULT);
+>  
+>  out_put_node:
+>  	of_node_put(np);
+> -- 
+> 1.9.1
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> 
