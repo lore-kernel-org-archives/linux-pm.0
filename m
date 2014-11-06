@@ -1,22 +1,45 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v5 19/48] mfd: rk808: Register power-off handler with kernel power-off handler
-Date: Thu,  6 Nov 2014 08:43:03 -0800
-Message-ID: <1415292213-28652-20-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v5 12/48] mfd: ab8500-sysctrl: Register with kernel power-off
+ handler
+Date: Thu,  6 Nov 2014 08:42:56 -0800
+Message-ID: <1415292213-28652-13-git-send-email-linux@roeck-us.net>
 References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Chris Zhong <zyw@rock-chips.com>, Zhang Qing <zhangqing@rock-chips.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
 directly. Register with low priority to reflect that the original code
 only sets pm_power_off if it was not already set.
 
-Cc: Chris Zhong <zyw@rock-chips.com>
-Cc: Zhang Qing <zhangqing@rock-chips.com>
+sysctrl_dev is set prior to power-off handler registration, and the
+power-off handler is unregistered prior to clearing sysrctrl_dev.
+It is therefore not necessary to check if sysctrl_dev is NULL in the
+power-off handler, and the check was removed. Setting sysctrl_dev to NULL
+in the remove function was also removed as unnecessary. With those changes,
+devm_register_power_off_handler can be used to register the poeroff handler.
+The now empty remove function was retained since the ab8500_restart function,
+which is currently unused, would likely need some cleanup if it was ever used.
+
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
 Acked-by: Lee Jones <lee.jones@linaro.org>
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v5:
@@ -30,95 +53,71 @@ v3:
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- New patch
+- Use define to specify poweroff handler priority
+- Use devm_register_power_off_handler
+- Use dev_warn instead of dev_err
+- Since we use devm_register_power_off_handler,
+  we need to check if sysctrl_dev in the poweroff handler to avoid
+  a race condition on unload, so this check is no longer removed
 
- drivers/mfd/rk808.c       | 26 ++++++++++++--------------
- include/linux/mfd/rk808.h |  2 ++
- 2 files changed, 14 insertions(+), 14 deletions(-)
+ drivers/mfd/ab8500-sysctrl.c | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/mfd/rk808.c b/drivers/mfd/rk808.c
-index bd02150..93ffcf0 100644
---- a/drivers/mfd/rk808.c
-+++ b/drivers/mfd/rk808.c
-@@ -21,6 +21,7 @@
- #include <linux/mfd/rk808.h>
- #include <linux/mfd/core.h>
- #include <linux/module.h>
-+#include <linux/pm.h>
- #include <linux/regmap.h>
+diff --git a/drivers/mfd/ab8500-sysctrl.c b/drivers/mfd/ab8500-sysctrl.c
+index 8e0dae5..bd382de 100644
+--- a/drivers/mfd/ab8500-sysctrl.c
++++ b/drivers/mfd/ab8500-sysctrl.c
+@@ -23,7 +23,7 @@
  
- struct rk808_reg_data {
-@@ -147,23 +148,16 @@ static struct regmap_irq_chip rk808_irq_chip = {
- 	.init_ack_masked = true,
- };
+ static struct device *sysctrl_dev;
  
--static struct i2c_client *rk808_i2c_client;
--static void rk808_device_shutdown(void)
-+static void rk808_device_shutdown(struct power_off_handler_block *this)
+-static void ab8500_power_off(void)
++static void ab8500_power_off(struct power_off_handler_block *this)
  {
-+	struct rk808 *rk808 = container_of(this, struct rk808, power_off_hb);
- 	int ret;
--	struct rk808 *rk808 = i2c_get_clientdata(rk808_i2c_client);
--
--	if (!rk808) {
--		dev_warn(&rk808_i2c_client->dev,
--			 "have no rk808, so do nothing here\n");
--		return;
--	}
- 
- 	ret = regmap_update_bits(rk808->regmap,
- 				 RK808_DEVCTRL_REG,
- 				 DEV_OFF_RST, DEV_OFF_RST);
- 	if (ret)
--		dev_err(&rk808_i2c_client->dev, "power off error!\n");
-+		dev_err(&rk808->i2c->dev, "power off error!\n");
- }
- 
- static int rk808_probe(struct i2c_client *client,
-@@ -222,9 +216,14 @@ static int rk808_probe(struct i2c_client *client,
- 
- 	pm_off = of_property_read_bool(np,
- 				"rockchip,system-power-controller");
--	if (pm_off && !pm_power_off) {
--		rk808_i2c_client = client;
--		pm_power_off = rk808_device_shutdown;
-+	if (pm_off) {
-+		rk808->power_off_hb.handler = rk808_device_shutdown;
-+		rk808->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
-+		ret = devm_register_power_off_handler(&client->dev,
-+						      &rk808->power_off_hb);
-+		if (ret)
-+			dev_warn(&client->dev,
-+				 "Failed to register power-off handler\n");
+ 	sigset_t old;
+ 	sigset_t all;
+@@ -85,6 +85,11 @@ shutdown:
  	}
+ }
  
- 	return 0;
-@@ -240,7 +239,6 @@ static int rk808_remove(struct i2c_client *client)
++static struct power_off_handler_block ab8500_power_off_hb = {
++	.handler = ab8500_power_off,
++	.priority = POWER_OFF_PRIORITY_LOW,
++};
++
+ /*
+  * Use the AB WD to reset the platform. It will perform a hard
+  * reset instead of a soft reset. Write the reset reason to
+@@ -185,6 +190,7 @@ static int ab8500_sysctrl_probe(struct platform_device *pdev)
+ 	struct ab8500 *ab8500 = dev_get_drvdata(pdev->dev.parent);
+ 	struct ab8500_platform_data *plat;
+ 	struct ab8500_sysctrl_platform_data *pdata;
++	int err;
  
- 	regmap_del_irq_chip(client->irq, rk808->irq_data);
- 	mfd_remove_devices(&client->dev);
--	pm_power_off = NULL;
+ 	plat = dev_get_platdata(pdev->dev.parent);
  
+@@ -193,8 +199,10 @@ static int ab8500_sysctrl_probe(struct platform_device *pdev)
+ 
+ 	sysctrl_dev = &pdev->dev;
+ 
+-	if (!pm_power_off)
+-		pm_power_off = ab8500_power_off;
++	err = devm_register_power_off_handler(sysctrl_dev,
++					      &ab8500_power_off_hb);
++	if (err)
++		dev_warn(&pdev->dev, "Failed to register power-off handler\n");
+ 
+ 	pdata = plat->sysctrl;
+ 	if (pdata) {
+@@ -228,9 +236,6 @@ static int ab8500_sysctrl_remove(struct platform_device *pdev)
+ {
+ 	sysctrl_dev = NULL;
+ 
+-	if (pm_power_off == ab8500_power_off)
+-		pm_power_off = NULL;
+-
  	return 0;
  }
-diff --git a/include/linux/mfd/rk808.h b/include/linux/mfd/rk808.h
-index fb09312..a6619f2 100644
---- a/include/linux/mfd/rk808.h
-+++ b/include/linux/mfd/rk808.h
-@@ -19,6 +19,7 @@
- #ifndef __LINUX_REGULATOR_rk808_H
- #define __LINUX_REGULATOR_rk808_H
  
-+#include <linux/pm.h>
- #include <linux/regulator/machine.h>
- #include <linux/regmap.h>
- 
-@@ -192,5 +193,6 @@ struct rk808 {
- 	struct i2c_client *i2c;
- 	struct regmap_irq_chip_data *irq_data;
- 	struct regmap *regmap;
-+	struct power_off_handler_block power_off_hb;
- };
- #endif /* __LINUX_REGULATOR_rk808_H */
 -- 
 1.9.1
