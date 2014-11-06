@@ -1,115 +1,73 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v10 0/5] amba/dmaengine: pl330: add Power Management support
-Date: Thu, 06 Nov 2014 09:36:45 +0100
-Message-ID: <1415263010-7992-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:46681 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751779AbaKFIhC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 03:37:02 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v10 1/5] PM / Runtime: Allow accessing irq_safe if no PM_RUNTIME
+Date: Thu, 06 Nov 2014 09:36:46 +0100
+Message-ID: <1415263010-7992-2-git-send-email-k.kozlowski@samsung.com>
+References: <1415263010-7992-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1415263010-7992-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>
 Cc: Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Some drivers (e.g. bus drivers) may want to check if power.irq_safe was
+called by child driver, regardless of CONFIG_PM_RUNTIME.
 
+An example scenario is amba/bus.c and dma/pl330.c drivers. The runtime
+suspend/resume callbacks in amba bus driver act differently if irq_safe
+was set by child driver (in irq_safe mode bus clock is only disabled).
 
-Changes since v9:
-=================
-1. Add patch 1/5: Move dev->power.irq_safe out of CONFIG_PM_RUNTIME.
-   If CONFIG_PM_RUNTIME is not set, amba bus driver must still know
-   whether child driver set irq_safe or not. Suggested by Ulf Hansson.
+The pl330 driver sets irq_safe and assumes that amba bus driver will
+only disable the clock in runtime PM. So in system sleep suspend
+callback the pl330 driver unprepares the clock after calling
+pm_runtime_force_suspend().
 
-Changes since v8:
-=================
-1. Remove the pm_runtime_is_irq_safe() wrapper (patch 1).
-2. Patch 2/4 (amba): Store current irq_safe during runtime suspend.
-   Resume will mirror suspend's work. Add a macro for
-   safe access of irq_safe if CONFIG_PM_RUNTIME is unset.
-   Dropped reviewed-by Ulf Hansson (major changes in patch).
+However inconsistency would appear if CONFIG_PM_RUNTIME is not set and
+child drivers do not want the irq_safe runtime PM. In such case amba bus
+driver still has to know whether child driver wanted irq_safe - by
+looking at dev->power.irq_safe field.
 
-Changes since v7:
-=================
-1. Add reviewed-by Ulf Hansson (patches 3, 4 and 5).
-2. Patch 2/5: Fix missing return in amba_pclk_prepare() (suggested by
-   Ulf Hansson).
-3. Rebased on next-20141020.
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ include/linux/pm.h         | 2 +-
+ include/linux/pm_runtime.h | 5 ++++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-Changes since v6:
-=================
-1. Add patch 5 removing the amba_pclk_*able macros.
-2. Patch 2/5: Remove IS_ERR, use static inline functions instead
-   of macros.
-3. Patch 4/5: Force runtime suspend/resume in system sleep
-   callbacks. Put with autosuspend at end of probe instead of no_idle.
-   Suggested by Ulf Hansson.
-
-Changes since v5:
-=================
-1. Patch 1/4: Add Ulf Hansson's reviewed-by.
-2. Patch 4/4: Use PM runtime autosuspend (suggested by Ulf Hansson).
-3. Rebase on next-20140922. 
-
-Changes since v4:
-1. Patch 3/4: Explicitly initialize amba_device.irq_safe field after
-   probing driver (suggested by Russell King).
-
-Changes since v3:
-1. Patch 1/4: Document new API in Documentation/power/runtime_pm.txt
-   (pointed by Alan Stern).
-
-Changes since v2:
-1. Add patch 1 (PM / Runtime: Add getter for querying the IRQ safe option)
-2. Add patch 2 (amba: Add helper macros for (un)preparing AMBA clock)
-3. Patch 3/4: Rewrite the idea. If IRQ safe runtime PM is set then
-   do not unprepare/prepare the clocks. Suggested by Russell King.
-4. Patch 4/4: During system sleep unprepare the clock.
-
-Changes since v1:
-1. Add patch 1 (amba: Allow AMBA drivers to use their own runtime PM).
-2. Patch 2/2: Apply Michal Simek's suggestions.
-3. Patch 2/2: Fix atomic context safeness in pl330_issue_pending().
-
-
-Description:
-============
-This patchset adds runtime and system PM to the pl330 driver.
-
-The runtime PM of pl330 driver requires interrupt safe suspend/resume
-callbacks which is in conflict with current amba bus driver.
-The latter also unprepares and prepares the AMBA bus clock which
-is not safe for atomic context.
-
-The patchset solves this in patch 3/5 by handling clocks in different
-way if device driver set interrupt safe runtime PM.
-
-Comments are welcome.
-
-
-Tested on board with pl330 DMA driver:
- - Trats2 (Exynos4212)
-
-
-Best regards,
-Krzysztof Kozlowski
-
-
-Krzysztof Kozlowski (5):
-  PM / Runtime: Allow accessing irq_safe if no PM_RUNTIME
-  amba: Add helpers for (un)preparing AMBA clock
-  amba: Don't unprepare the clocks if device driver wants IRQ safe
-    runtime PM
-  dmaengine: pl330: add Power Management support
-  amba: Remove unused amba_pclk_enable/disable macros
-
- drivers/amba/bus.c         | 17 ++++++--
- drivers/dma/pl330.c        | 96 ++++++++++++++++++++++++++++++++++++++++++++--
- include/linux/amba/bus.h   | 13 +++++--
- include/linux/pm.h         |  2 +-
- include/linux/pm_runtime.h |  4 +-
- 5 files changed, 118 insertions(+), 14 deletions(-)
-
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 383fd68aaee1..b05fa954f50d 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -566,6 +566,7 @@ struct dev_pm_info {
+ 	bool			ignore_children:1;
+ 	bool			early_init:1;	/* Owned by the PM core */
+ 	bool			direct_complete:1;	/* Owned by the PM core */
++	unsigned int		irq_safe:1;	/* PM runtime */
+ 	spinlock_t		lock;
+ #ifdef CONFIG_PM_SLEEP
+ 	struct list_head	entry;
+@@ -590,7 +591,6 @@ struct dev_pm_info {
+ 	unsigned int		run_wake:1;
+ 	unsigned int		runtime_auto:1;
+ 	unsigned int		no_callbacks:1;
+-	unsigned int		irq_safe:1;
+ 	unsigned int		use_autosuspend:1;
+ 	unsigned int		timer_autosuspends:1;
+ 	unsigned int		memalloc_noio:1;
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index 367f49b9a1c9..d94a65662a60 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -166,7 +166,10 @@ static inline bool pm_runtime_suspended_if_enabled(struct device *dev) { return
+ static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+ 
+ static inline void pm_runtime_no_callbacks(struct device *dev) {}
+-static inline void pm_runtime_irq_safe(struct device *dev) {}
++static inline void pm_runtime_irq_safe(struct device *dev)
++{
++	dev->power.irq_safe = 1;
++}
+ 
+ static inline bool pm_runtime_callbacks_present(struct device *dev) { return false; }
+ static inline void pm_runtime_mark_last_busy(struct device *dev) {}
 -- 
 1.9.1
-
