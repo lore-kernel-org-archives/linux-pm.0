@@ -1,100 +1,112 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v10 3/5] amba: Don't unprepare the clocks if device driver wants IRQ safe runtime PM
-Date: Thu, 06 Nov 2014 23:52:03 +0100
-Message-ID: <3262760.d60MN56YDG@vostro.rjw.lan>
-References: <1415263010-7992-1-git-send-email-k.kozlowski@samsung.com> <1415263010-7992-4-git-send-email-k.kozlowski@samsung.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v3] thermal: Add QPNP PMIC temperature alarm driver
+Date: Thu, 6 Nov 2014 19:48:15 -0400
+Message-ID: <20141106234812.GB8176@developer>
+References: <1412178817-20371-1-git-send-email-iivanov@mm-sol.com>
+ <20141027201602.GC6088@developer>
+ <1414596776.32383.2.camel@mm-sol.com>
+ <1414677345.12674.1.camel@mm-sol.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62824 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751302AbaKFWbQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 17:31:16 -0500
-In-Reply-To: <1415263010-7992-4-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="+g7M9IMkV8truYOl"
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1414677345.12674.1.camel@mm-sol.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Thursday, November 06, 2014 09:36:48 AM Krzysztof Kozlowski wrote:
-> The AMBA bus driver defines runtime Power Management functions which
-> disable and unprepare AMBA bus clock. This is problematic for runtime PM
-> because unpreparing a clock might sleep so it is not interrupt safe.
-> 
-> However some drivers may want to implement runtime PM functions in
-> interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
-> bus driver should only disable/enable the clock in runtime suspend and
-> resume callbacks.
-> 
-> Detect the device driver behavior during runtime suspend. During runtime
-> resume deal with clocks according to stored value.
-> 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> ---
->  drivers/amba/bus.c       | 17 +++++++++++++----
->  include/linux/amba/bus.h |  1 +
->  2 files changed, 14 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
-> index 47bbdc1b5be3..356f906c6966 100644
-> --- a/drivers/amba/bus.c
-> +++ b/drivers/amba/bus.c
-> @@ -95,8 +95,14 @@ static int amba_pm_runtime_suspend(struct device *dev)
->  	struct amba_device *pcdev = to_amba_device(dev);
->  	int ret = pm_generic_runtime_suspend(dev);
->  
-> -	if (ret == 0 && dev->driver)
-> -		clk_disable_unprepare(pcdev->pclk);
-> +	if (ret == 0 && dev->driver) {
-> +		pcdev->irq_safe = dev->power.irq_safe;
+
+--+g7M9IMkV8truYOl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, Oct 30, 2014 at 03:55:45PM +0200, Ivan T. Ivanov wrote:
+>=20
+> On Wed, 2014-10-29 at 17:32 +0200, Ivan T. Ivanov wrote:
+> >=20
 > +
-> +		if (pcdev->irq_safe)
-> +			clk_disable(pcdev->pclk);
-> +		else
-> +			clk_disable_unprepare(pcdev->pclk);
-> +	}
->  
->  	return ret;
->  }
-> @@ -107,7 +113,10 @@ static int amba_pm_runtime_resume(struct device *dev)
->  	int ret;
->  
->  	if (dev->driver) {
-> -		ret = clk_prepare_enable(pcdev->pclk);
-> +		if (pcdev->irq_safe)
-> +			ret = clk_enable(pcdev->pclk);
-> +		else
-> +			ret = clk_prepare_enable(pcdev->pclk);
->  		/* Failure is probably fatal to the system, but... */
->  		if (ret)
->  			return ret;
-> @@ -115,7 +124,7 @@ static int amba_pm_runtime_resume(struct device *dev)
->  
->  	return pm_generic_runtime_resume(dev);
->  }
-> -#endif
-> +#endif /* CONFIG_PM */
->  
->  static const struct dev_pm_ops amba_pm = {
->  	.suspend	= pm_generic_suspend,
-> diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
-> index ac02f9bd63dc..c4bae79851fb 100644
-> --- a/include/linux/amba/bus.h
-> +++ b/include/linux/amba/bus.h
-> @@ -32,6 +32,7 @@ struct amba_device {
->  	struct clk		*pclk;
->  	unsigned int		periphid;
->  	unsigned int		irq[AMBA_NR_IRQS];
-> +	unsigned int		irq_safe:1;
+> > > > +       chip->tz_dev =3D thermal_zone_device_register(node->name, T=
+RIP_NUM, 0,
+> > > > +       chip, &qpnp_tz_ops, NULL,
+> > >=20
+> > > Have you considered using of-thermal instead of doing your own specif=
+ic thermal
+> > > zone registration? Having a glance look in this driver, most of the
+> > > operation are covered by of-thermal. Ahy concerns using of-thermal in
+> > > your case?
+> > >=20
+> >=20
+> > I just followed implementation found in "armada_thermal", "db8500-therm=
+al",
+> > "dove_thermal", "imx_thermal", "kirkwood_thermal"...
+> >=20
+> > Will look at of-thermal.
+> >=20
+>=20
+> Hm, the 15 drivers, which register its own thermal zone, against 4, which=
+=20
 
-Why do we need the new flag?  Seems redundant to me.
+Yes, and the reasoning is pretty simple: of-thermal is not imposed
+standard, and not all platform have decided to move to using it.
+However, DT is being used more and more frequently. So, given you
+already have DT support, considering using of-thermal is a good thing to do=
+=2E=20
 
->  };
->  
->  struct amba_driver {
-> 
+Besides, you are with hands on your driver, might make sense to add its
+support while you are there.=20
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> use of-thermal registration and one of them is OMAP, which have fallback
+> to its own zone registration :-). Anyway. I am afraid that if I use just
+
+The fallback is because non-dt booting has not been dropped from OMAP,
+AFAIK.
+
+> thermal_zone_of_sensor_register(), driver will lost ability to switch off=
+=20
+> hardware controlled shutdown sequence, which make it useless IMHO.
+
+Any special sequence or callback you want to consider to improve
+of-thermal support?
+
+
+For instance, getting a callback for mode change events would enable you
+to get a better support for hardware controlled shutdown sequence?
+
+
+>=20
+> I don't see how driver can benefits from nice things provided by of-therm=
+al.
+> There is no colling device associated with PMIC chip, pooling delays are =
+of
+> no use, device uses interrupt, trip pints are predefined in hardware...
+
+I see. However, using it may make this driver even simpler, as you would
+simply describe it in DT and the notification you want would be taken
+care by the core part of the framework.
+
+>=20
+> Please advice.
+>=20
+> Regards,
+> Ivan
+
+--+g7M9IMkV8truYOl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUXAizAAoJEMLUO4d9pOJWTkwH/2XInDMeeJuIOK6CWM5WDUYV
+HCjuNs3AGlNys9Z/m8BAGcMkT+KiQqWN+utfN3ltWI4YlvEmonUEksk/HRc1nyON
+t6Q4UGdNf8O0e9DfuyNESCZUbaleVQEkjgdfOm6EPjna+moUJ0BAzlbAKwGb9JtI
+WMT28qn000QGxVw4aSHzJiftKIEN00txLym727vtmPGebd6ci0lHQQrZ3JCvbj5z
+HMogP7nV6u1ZnVAF7XXqf83WacqxBNBKTT1uYE8EE2PACC+CMFnBr1HH3p5uL+he
+d3GyN2pG1F9XoV6e96G3TPYzzo9c5O6wTiPMClUQsX5XE8N6A3oEf6e7MftRaQY=
+=Emhb
+-----END PGP SIGNATURE-----
+
+--+g7M9IMkV8truYOl--
