@@ -1,174 +1,194 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
-Date: Thu, 6 Nov 2014 14:05:43 +0100
-Message-ID: <20141106130543.GE7202@dhcp22.suse.cz>
-References: <20141105124620.GB4527@dhcp22.suse.cz>
- <20141105130247.GA14386@htj.dyndns.org>
- <20141105133100.GC4527@dhcp22.suse.cz>
- <20141105134219.GD4527@dhcp22.suse.cz>
- <20141105154436.GB14386@htj.dyndns.org>
- <20141105160115.GA28226@dhcp22.suse.cz>
- <20141105162929.GD14386@htj.dyndns.org>
- <20141105163956.GD28226@dhcp22.suse.cz>
- <20141105165428.GF14386@htj.dyndns.org>
- <20141105170111.GG14386@htj.dyndns.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V2 1/5] sched: idle: cpuidle: Check the latency req before
+ idle
+Date: Thu, 06 Nov 2014 14:42:04 +0100
+Message-ID: <545B7AAC.3020309@linaro.org>
+References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org> <CAM4v1pOg1GFW82WD8b6Vas5xhYQrQtdP1STGxyzYtrBNSa+-Pw@mail.gmail.com> <544FE787.8090108@linaro.org> <54504A60.2090908@linux.vnet.ibm.com> <545A3414.7030500@linaro.org> <545AF424.2070302@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <20141105170111.GG14386@htj.dyndns.org>
-Sender: owner-linux-mm@kvack.org
-To: Tejun Heo <tj@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <545AF424.2070302@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 05-11-14 12:01:11, Tejun Heo wrote:
-> On Wed, Nov 05, 2014 at 11:54:28AM -0500, Tejun Heo wrote:
-> > > Still not following. How do you want to detect an on-going OOM without
-> > > any interface around out_of_memory?
-> > 
-> > I thought you were using oom_killer_allowed_start() outside OOM path.
-> > Ugh.... why is everything weirdly structured?  oom_killer_disabled
-> > implies that oom killer may fail, right?  Why is
-> > __alloc_pages_slowpath() checking it directly?  If whether oom killing
-> > failed or not is relevant to its users, make out_of_memory() return an
-> > error code.  There's no reason for the exclusion detail to leak out of
-> > the oom killer proper.  The only interface should be disable/enable
-> > and whether oom killing failed or not.
-> 
-> And what's implemented is wrong.  What happens if oom killing is
-> already in progress and then a task blocks trying to write-lock the
-> rwsem and then that task is selected as the OOM victim?
 
-But this is nothing new. Suspend hasn't been checking for fatal signals
-nor for TIF_MEMDIE since the OOM disabling was introduced and I suppose
-even before.
+Preeti,
 
-This is not harmful though. The previous OOM kill attempt would kick the
-current TASK and mark it with TIF_MEMDIE and retry the allocation. After
-OOM is disabled the allocation simply fails. The current will die on its
-way out of the kernel. Definitely worth fixing. In a separate patch.
+I am wondering if we aren't going to a false debate.
 
-> disable() call must be able to fail.
+If the latency_req is 0, we should just poll and not enter in any idle=20
+state even if one has zero exit latency. With a zero latency req, we=20
+want full reactivity on the system, not enter an idle state with all th=
+e=20
+computation in the menu governor, no ?
 
-This would be a way to do it without requiring caller to check for
-TIF_MEMDIE explicitly. The fewer of them we have the better.
----
->From 3a7e18144a369bfc537c1cda4c7c2c548e9114b8 Mon Sep 17 00:00:00 2001
-From: Michal Hocko <mhocko@suse.cz>
-Date: Thu, 6 Nov 2014 11:51:34 +0100
-Subject: [PATCH] OOM, PM: handle pm freezer as an OOM victim correctly
+I agree this patch changes the behavior on PowerPC, but only if the=20
+latency_req is set to zero. I don't think we are worried about power=20
+saving when setting this value.
 
-PM freezer doesn't check whether it has been killed by OOM killer
-after it disables OOM killer which means that it continues with the
-suspend even though it should die as soon as possible. This has been
-the case ever since PM suspend disables OOM killer and I suppose
-it has ignored OOM even before.
+Couldn't the patch accepted as it is for the sake of consistency on all=
+=20
+the platform and then we optimize cleanly for the special latency zero=20
+case ?
 
-This is not harmful though. The allocation which triggers OOM will
-retry the allocation after a process is killed and the next attempt
-will fail because the OOM killer will be disabled at the time so
-there is no risk of an endless loop because the OOM victim doesn't
-die.
+On 11/06/2014 05:08 AM, Preeti U Murthy wrote:
+> On 11/05/2014 07:58 PM, Daniel Lezcano wrote:
+>> On 10/29/2014 03:01 AM, Preeti U Murthy wrote:
+>>> On 10/29/2014 12:29 AM, Daniel Lezcano wrote:
+>>>> On 10/28/2014 04:51 AM, Preeti Murthy wrote:
+>>>>> Hi Daniel,
+>>>>>
+>>>>> On Thu, Oct 23, 2014 at 2:31 PM, Daniel Lezcano
+>>>>> <daniel.lezcano@linaro.org> wrote:
+>>>>>> When the pmqos latency requirement is set to zero that means "po=
+ll in
+>>>>>> all the
+>>>>>> cases".
+>>>>>>
+>>>>>> That is correctly implemented on x86 but not on the other archs.
+>>>>>>
+>>>>>> As how is written the code, if the latency request is zero, the
+>>>>>> governor will
+>>>>>> return zero, so corresponding, for x86, to the poll function, bu=
+t for
+>>>>>> the
+>>>>>> others arch the default idle function. For example, on ARM this =
+is
+>>>>>> wait-for-
+>>>>>> interrupt with a latency of '1', so violating the constraint.
+>>>>>
+>>>>> This is not true actually. On PowerPC the idle state 0 has an
+>>>>> exit_latency of 0.
+>>>>>
+>>>>>>
+>>>>>> In order to fix that, do the latency requirement check *before*
+>>>>>> calling the
+>>>>>> cpuidle framework in order to jump to the poll function without
+>>>>>> entering
+>>>>>> cpuidle. That has several benefits:
+>>>>>
+>>>>> Doing so actually hurts on PowerPC. Because the idle loop defined=
+ for
+>>>>> idle state 0 is different from what cpu_relax() does in
+>>>>> cpu_idle_loop().
+>>>>> The spinning is more power efficient in the former case. Moreover=
+ we
+>>>>> also set
+>>>>> certain register values which indicate an idle cpu. The ppc_runla=
+tch
+>>>>> bits
+>>>>> do precisely this. These register values are being read by some u=
+ser
+>>>>> space
+>>>>> tools.  So we will end up breaking them with this patch
+>>>>>
+>>>>> My suggestion is very well keep the latency requirement check in
+>>>>> kernel/sched/idle.c
+>>>>> like your doing in this patch. But before jumping to cpu_idle_loo=
+p
+>>>>> verify if the
+>>>>> idle state 0 has an exit_latency > 0 in addition to your check on=
+ the
+>>>>> latency_req =3D=3D 0.
+>>>>> If not, you can fall through to the regular path of calling into =
+the
+>>>>> cpuidle driver.
+>>>>> The scheduler can query the cpuidle_driver structure anyway.
+>>>>>
+>>>>> What do you think?
+>>>>
+>>>> Thanks for reviewing the patch and spotting this.
+>>>>
+>>>> Wouldn't make sense to create:
+>>>>
+>>>> void __weak_cpu_idle_poll(void) ?
+>>>>
+>>>> and override it with your specific poll function ?
+>>>>
+>>>
+>>> No this would become ugly as far as I can see. A weak function has =
+to be
+>>> defined under arch/* code. We will either need to duplicate the idl=
+e
+>>> loop that we already have in the drivers or point the weak function=
+ to
+>>> the first idle state defined by our driver. Both of which is not
+>>> desirable (calling into the driver from arch code is ugly). Another
+>>> reason why I don't like the idea of a weak function is that if you =
+have
+>>> missed looking at a specific driver and they have an idle loop with
+>>> features similar to on powerpc, you will have to spot it yourself a=
+nd
+>>> include the arch specific cpu_idle_poll() for them.
+>>
+>> Yes, I agree this is a fair point. But actually I don't see the inte=
+rest
+>> of having the poll loop in the cpuidle driver. These cleanups are
+>
+> We can't do that simply because the idle poll loop has arch specific
+> bits on powerpc.
+>
+>> preparing the removal of the CPUIDLE_DRIVER_STATE_START macro which
+>> leads to a lot of mess in the cpuidle code.
+>
+> How is the suggestion to check the exit_latency of idle state 0 when
+> latency_req  =3D=3D 0 going to hinder this removal?
+>
+>>
+>> With the removal of this macro, we should be able to move the select
+>> loop from the menu governor and use it everywhere else. Furthermore,
+>> this state which is flagged with TIME_VALID, isn't because the local
+>> interrupt are enabled so we are measuring the interrupt time process=
+ing.
+>> Beside that the idle loop for x86 is mostly not used.
+>>
+>> So the idea would be to extract those idle loop from the drivers and=
+ use
+>> them directly when:
+>>   1. the idle selection fails (use the poll loop under certain
+>> circumstances we have to redefine)
+>
+> This behavior will not change as per my suggestion.
+>
+>>   2. when the latency req is zero
+>
+> Its only here that I suggested you also verify state 0's exit_latency=
+=2E
+> For the reason that the arch may have a more optimized idle poll loop=
+,
+> which we cannot override with the generic cpuidle poll loop.
+>
+> Regards
+> Preeti U Murthy
+>>
+>> That will result in a cleaner code in cpuidle and in the governor.
+>>
+>> Do you agree with that ?
+>>
+>>> But by having a check on the exit_latency, you are claiming that si=
+nce
+>>> the driver's 0th idle state is no better than the generic idle loop=
+ in
+>>> cases of 0 latency req, we are better off calling the latter, which
+>>> looks reasonable. That way you don't have to bother about worsening=
+ the
+>>> idle loop behavior on any other driver.
+>>
+>>
+>>
+>>
+>>
+>
 
-But this is a correctness issue because no task should ignore OOM.
-As suggested by Tejun, oom_killer_disable will return a success status
-now. If the current task is pending fatal signals or TIF_MEMDIE is set
-after oom_sem is taken then the caller should bail out and this is what
-freeze_processes does with this patch.
 
-Signed-off-by: Michal Hocko <mhocko@suse.cz>
----
- include/linux/oom.h    |  4 +++-
- kernel/power/process.c | 16 ++++++++++------
- mm/oom_kill.c          | 12 +++++++++++-
- 3 files changed, 24 insertions(+), 8 deletions(-)
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-diff --git a/include/linux/oom.h b/include/linux/oom.h
-index 4af99a9b543b..a978bf2b02a1 100644
---- a/include/linux/oom.h
-+++ b/include/linux/oom.h
-@@ -77,8 +77,10 @@ extern int unregister_oom_notifier(struct notifier_block *nb);
-  * oom_killer_disable - disable OOM killer in page allocator
-  *
-  * Forces all page allocations to fail rather than trigger OOM killer.
-+ * Returns true on success and fails if the OOM killer couldn't be
-+ * disabled (e.g. because the current task has been killed before)
-  */
--extern void oom_killer_disable(void);
-+extern bool oom_killer_disable(void);
- 
- /**
-  * oom_killer_enable - enable OOM killer
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index 7d08d56cbf3f..0f8b782f9215 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -123,6 +123,16 @@ int freeze_processes(void)
- 	if (error)
- 		return error;
- 
-+	/*
-+	 * Need to exlude OOM killer from triggering while tasks are
-+	 * getting frozen to make sure none of them gets killed after
-+	 * try_to_freeze_tasks is done.
-+	 */
-+	if (!oom_killer_disable()) {
-+		usermodehelper_enable();
-+		return -EBUSY;
-+	}
-+
- 	/* Make sure this task doesn't get frozen */
- 	current->flags |= PF_SUSPEND_TASK;
- 
-@@ -133,12 +143,6 @@ int freeze_processes(void)
- 	printk("Freezing user space processes ... ");
- 	pm_freezing = true;
- 
--	/*
--	 * Need to exlude OOM killer from triggering while tasks are
--	 * getting frozen to make sure none of them gets killed after
--	 * try_to_freeze_tasks is done.
--	 */
--	oom_killer_disable();
- 	error = try_to_freeze_tasks(true);
- 	if (!error) {
- 		__usermodehelper_set_disable_depth(UMH_DISABLED);
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index f80c5b777f05..58ade54ee421 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -600,9 +600,19 @@ void oom_zonelist_unlock(struct zonelist *zonelist, gfp_t gfp_mask)
- 
- static DECLARE_RWSEM(oom_sem);
- 
--void oom_killer_disable(void)
-+bool oom_killer_disable(void)
- {
-+	bool ret = true;
-+
- 	down_write(&oom_sem);
-+
-+	/* We might have been killed while waiting for the oom_sem. */
-+	if (fatal_signal_pending(current) || test_thread_flag(TIF_MEMDIE)) {
-+		up_write(&oom_sem);
-+		ret = false;
-+	}
-+
-+	return ret;
- }
- 
- void oom_killer_enable(void)
--- 
-2.1.1
-
-
--- 
-Michal Hocko
-SUSE Labs
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
