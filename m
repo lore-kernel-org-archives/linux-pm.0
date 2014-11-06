@@ -1,29 +1,29 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v5 38/48] ia64: Register with kernel power-off handler
-Date: Thu,  6 Nov 2014 08:43:22 -0800
-Message-ID: <1415292213-28652-39-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v5 36/48] arm64: psci: Register with kernel power-off handler
+Date: Thu,  6 Nov 2014 08:43:20 -0800
+Message-ID: <1415292213-28652-37-git-send-email-linux@roeck-us.net>
 References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:56485 "EHLO
+Received: from bh-25.webhostbox.net ([208.91.199.152]:56479 "EHLO
 	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752338AbaKFQpR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 11:45:17 -0500
+	with ESMTP id S1752333AbaKFQpP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 11:45:15 -0500
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
 	(envelope-from <linux@roeck-us.net>)
-	id 1XmQBR-000Vfk-31
-	for linux-pm@vger.kernel.org; Thu, 06 Nov 2014 16:45:17 +0000
+	id 1XmQBO-000VdJ-Sf
+	for linux-pm@vger.kernel.org; Thu, 06 Nov 2014 16:45:15 +0000
 In-Reply-To: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, linux-ia64@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org
 
 Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with low priority to reflect that the call is expected
-to be replaced at some point in the future.
+directly.
 
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v5:
@@ -37,29 +37,23 @@ v3:
 v2:
 - Use define to specify poweroff handler priority
 
- arch/ia64/sn/kernel/setup.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/arm64/kernel/psci.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/ia64/sn/kernel/setup.c b/arch/ia64/sn/kernel/setup.c
-index 5f6b6b4..fc9905e 100644
---- a/arch/ia64/sn/kernel/setup.c
-+++ b/arch/ia64/sn/kernel/setup.c
-@@ -488,12 +488,13 @@ void __init sn_setup(char **cmdline_p)
- 	sn_timer_init();
+diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
+index 866c1c8..5cab066 100644
+--- a/arch/arm64/kernel/psci.c
++++ b/arch/arm64/kernel/psci.c
+@@ -359,7 +359,8 @@ static int __init psci_0_2_init(struct device_node *np)
  
- 	/*
--	 * set pm_power_off to a SAL call to allow
-+	 * set power-off handler to a SAL call to allow
- 	 * sn machines to power off. The SAL call can be replaced
- 	 * by an ACPI interface call when ACPI is fully implemented
- 	 * for sn.
- 	 */
--	pm_power_off = ia64_sn_power_down;
-+	register_power_off_handler_simple(ia64_sn_power_down,
-+					  POWER_OFF_PRIORITY_LOW);
- 	current->thread.flags |= IA64_THREAD_MIGRATION;
- }
+ 	arm_pm_restart = psci_sys_reset;
  
+-	pm_power_off = psci_sys_poweroff;
++	register_power_off_handler_simple(psci_sys_poweroff,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ out_put_node:
+ 	of_node_put(np);
 -- 
 1.9.1
 
