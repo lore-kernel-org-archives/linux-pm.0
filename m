@@ -1,108 +1,100 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH 1/3] powercap/rapl: abstract per cpu type functions
-Date: Thu,  6 Nov 2014 10:22:35 -0800
-Message-ID: <1415298157-7615-2-git-send-email-jacob.jun.pan@linux.intel.com>
-References: <1415298157-7615-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v5 00/48] kernel: Add support for power-off handler call
+ chain
+Date: Thu, 6 Nov 2014 10:48:43 -0800
+Message-ID: <20141106184843.GA31712@roeck-us.net>
+References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
+ <20141106170818.GA30177@roeck-us.net>
+ <CA+55aFxMu_MTfXd-EFG=QJ6aCWpb+OX5tyM-XWZC=WHJ=pFiTA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:34219 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbaKFSXN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 6 Nov 2014 13:23:13 -0500
-In-Reply-To: <1415298157-7615-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:44606 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751261AbaKFSsu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 13:48:50 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XmS70-002pJE-Br
+	for linux-pm@vger.kernel.org; Thu, 06 Nov 2014 18:48:50 +0000
+Content-Disposition: inline
+In-Reply-To: <CA+55aFxMu_MTfXd-EFG=QJ6aCWpb+OX5tyM-XWZC=WHJ=pFiTA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
-Cc: Len Brown <len.brown@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Noor U Mubeen <noor.u.mubeen@intel.com>, Ajay Thomas <ajay.thomas.david.rajamanickam@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 
-RAPL implementations may vary slightly between Core and Atom CPUs. There are
-also potential differences among generations of CPUs within the family.
+On Thu, Nov 06, 2014 at 10:02:54AM -0800, Linus Torvalds wrote:
+> On Thu, Nov 6, 2014 at 9:08 AM, Guenter Roeck <linux@roeck-us.net> wrote:
+> >>
+> >> Merge plan is to send the entire series directly to Linus during the next commit
+> >> window, except for the last patch. The last patch would then be part of another
+> >> pull request after -rc1, which would include any changes necessary due to newly
+> >> merged power-off handling code.
+> >
+> > I should have added that I plan to have the series (except for the last patch)
+> > added to -next shortly.
+> >
+> > Linus,
+> >
+> > are you ok with this plan ?
+> 
+> Do people actually agree that the code makes sense at all?
+> 
+The series has Acks from 24 different people, so I would think
+that there is a decent level of agreement.
 
-This patch adds a per model structure to abstract the differences such that
-variations can be handled cleanly.
+> Because quite frankly, every time somebody adds this kind of "register
+> callback" stuff, the end result tends to end up being an unmitigated
+> disaster. People care about ordering etc, and there seems to be no
+> sane support for that. Then people do random ugly hacks for their
+> insane platforms. You already did that by having the "priority" thing,
+> but that just makes me think that people will pick random priorities.
+> TYou seem to even *encourage* that random behavior by spreading out
+> the "named" priorities, so that people can randomly say "I'm one
+> higher than LOW".
+> 
+Yes, that is actually the idea. Keep in mind this is for power-off, so
+(hopefully) only the handler with highest priority will actually be executed.
+The larger number space is an added benefit here, not a disadvantage -
+I _want_ people to be able to say "my priority is one higher than X because
+I _want_ this method to power off the system to be tried first".
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/powercap/intel_rapl.c | 45 +++++++++++++++++++++++++++++++++----------
- 1 file changed, 35 insertions(+), 10 deletions(-)
+> What kind of games are the actual new users already doing wrt this? I
+> have a bad feeling about it all.
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 45e05b3..256efed 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -188,6 +188,15 @@ struct rapl_package {
- 					*/
- 	struct list_head plist;
- };
-+
-+struct rapl_defaults {
-+	int (*check_unit)(struct rapl_package *rp, int cpu);
-+	void (*set_floor_freq)(struct rapl_domain *rd, bool mode);
-+	u64 (*compute_time_window)(struct rapl_package *rp, u64 val,
-+				bool to_raw);
-+};
-+static struct rapl_defaults *rapl_defaults;
-+
- #define PACKAGE_PLN_INT_SAVED   BIT(0)
- #define MAX_PRIM_NAME (32)
- 
-@@ -946,16 +955,28 @@ static void package_power_limit_irq_restore(int package_id)
- 	wrmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
- }
- 
-+static const struct rapl_defaults rapl_defaults_core = {
-+};
-+
-+static const struct rapl_defaults rapl_defaults_atom = {
-+};
-+
-+#define RAPL_CPU(_model, _ops) {			\
-+		.vendor = X86_VENDOR_INTEL,		\
-+		.family = 6,				\
-+		.model = _model,			\
-+		.driver_data = (kernel_ulong_t)&_ops,	\
-+		}
-+
- static const struct x86_cpu_id rapl_ids[] = {
--	{ X86_VENDOR_INTEL, 6, 0x2a},/* Sandy Bridge */
--	{ X86_VENDOR_INTEL, 6, 0x2d},/* Sandy Bridge EP */
--	{ X86_VENDOR_INTEL, 6, 0x37},/* Valleyview */
--	{ X86_VENDOR_INTEL, 6, 0x3a},/* Ivy Bridge */
--	{ X86_VENDOR_INTEL, 6, 0x3c},/* Haswell */
--	{ X86_VENDOR_INTEL, 6, 0x3d},/* Broadwell */
--	{ X86_VENDOR_INTEL, 6, 0x3f},/* Haswell */
--	{ X86_VENDOR_INTEL, 6, 0x45},/* Haswell ULT */
--	/* TODO: Add more CPU IDs after testing */
-+	RAPL_CPU(0x2a, rapl_defaults_core),/* Sandy Bridge */
-+	RAPL_CPU(0x2d, rapl_defaults_core),/* Sandy Bridge EP */
-+	RAPL_CPU(0x37, rapl_defaults_atom),/* Valleyview */
-+	RAPL_CPU(0x3a, rapl_defaults_core),/* Ivy Bridge */
-+	RAPL_CPU(0x3c, rapl_defaults_core),/* Haswell */
-+	RAPL_CPU(0x3d, rapl_defaults_core),/* Broadwell */
-+	RAPL_CPU(0x3f, rapl_defaults_core),/* Haswell */
-+	RAPL_CPU(0x45, rapl_defaults_core),/* Haswell ULT */
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
-@@ -1358,14 +1379,18 @@ static struct notifier_block rapl_cpu_notifier = {
- static int __init rapl_init(void)
- {
- 	int ret = 0;
-+	const struct x86_cpu_id *id;
- 
--	if (!x86_match_cpu(rapl_ids)) {
-+	id = x86_match_cpu(rapl_ids);
-+	if (!id) {
- 		pr_err("driver does not support CPU family %d model %d\n",
- 			boot_cpu_data.x86, boot_cpu_data.x86_model);
- 
- 		return -ENODEV;
- 	}
- 
-+	rapl_defaults = (struct rapl_defaults *)id->driver_data;
-+
- 	cpu_notifier_register_begin();
- 
- 	/* prevent CPU hotplug during detection */
--- 
-1.9.1
+Currently there is a single exported pointer, "pm_power_off", which is set
+by architecture code and various drivers, and called from machine_power_off
+to turn off power. 'git grep "pm_power_off =" | wc' returns 146, so there
+are a lot of those. In linux-next the number is 150, so there are now four
+more (all in drivers if I recall correctly). A patch pending for powerpc,
+which targets the possibility that there can be more than one power-off
+handler for this architecture, will increase the number by another 21.
 
+Sometimes the pm_power_off pointer it is set conditionally if it is non-null,
+sometimes it is set unconditionally. Sometimes it is set from drivers
+and cleared to NULL on unload, sometimes those drivers restore the previous
+setting, sometimes the drivers do not clear the pointer at all on unload.
+
+The point here is that the _current_ solution has a problem, since there can
+be more than one power-off handler in a system, there is no ordering at all,
+and insertion/removal is racy. The priority field is trying to introduce some
+execution order. If multiple handlers install a handler with the same priority,
+it does not matter (much) since all handlers will be executed, and one will
+hopefully succeed to power off the system. Ultimately, the priority is just
+an added benefit - much more importantly, the code is not racy anymore.
+Sure, people can say "my power-off priority is one above LOW", but that only
+means that the code will be executed before the handler(s) with priority "LOW"
+are executed. Hopefully one of them really powers off the system. Note in this
+context that I introduced the named priorities because several reviewers asked
+for it. The original code used notifier callbacks and numbered priorities
+as specified for notifiers.
+
+Having said that, the new solution may not be perfect, but it is the best
+I have been able come up with. If you have a better idea for being able to
+support multiple power-off handlers with different priorities, with non-racy
+registration and unregistration, please let me know, and I'll be happy to
+implement it.
+
+Thanks,
+Guenter
