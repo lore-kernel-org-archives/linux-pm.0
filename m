@@ -1,131 +1,148 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / Domains: Change prototype for the ->attach_dev() callback
-Date: Thu, 06 Nov 2014 01:54:36 +0100
-Message-ID: <6900237.LSPrkZ5QMk@vostro.rjw.lan>
-References: <1414670569-3002-1-git-send-email-ulf.hansson@linaro.org> <3267963.fqUYb7m9Rv@vostro.rjw.lan> <7hsihx1bvo.fsf@deeprootsystems.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 1/5] sched: idle: cpuidle: Check the latency req before
+ idle
+Date: Thu, 06 Nov 2014 09:38:04 +0530
+Message-ID: <545AF424.2070302@linux.vnet.ibm.com>
+References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org> <CAM4v1pOg1GFW82WD8b6Vas5xhYQrQtdP1STGxyzYtrBNSa+-Pw@mail.gmail.com> <544FE787.8090108@linaro.org> <54504A60.2090908@linux.vnet.ibm.com> <545A3414.7030500@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <7hsihx1bvo.fsf@deeprootsystems.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e32.co.us.ibm.com ([32.97.110.150]:52221 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751002AbaKFEIb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Nov 2014 23:08:31 -0500
+Received: from /spool/local
+	by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Wed, 5 Nov 2014 21:08:31 -0700
+In-Reply-To: <545A3414.7030500@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, patches@linaro.org
 
-On Wednesday, November 05, 2014 03:11:23 PM Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+On 11/05/2014 07:58 PM, Daniel Lezcano wrote:
+> On 10/29/2014 03:01 AM, Preeti U Murthy wrote:
+>> On 10/29/2014 12:29 AM, Daniel Lezcano wrote:
+>>> On 10/28/2014 04:51 AM, Preeti Murthy wrote:
+>>>> Hi Daniel,
+>>>>
+>>>> On Thu, Oct 23, 2014 at 2:31 PM, Daniel Lezcano
+>>>> <daniel.lezcano@linaro.org> wrote:
+>>>>> When the pmqos latency requirement is set to zero that means "poll in
+>>>>> all the
+>>>>> cases".
+>>>>>
+>>>>> That is correctly implemented on x86 but not on the other archs.
+>>>>>
+>>>>> As how is written the code, if the latency request is zero, the
+>>>>> governor will
+>>>>> return zero, so corresponding, for x86, to the poll function, but for
+>>>>> the
+>>>>> others arch the default idle function. For example, on ARM this is
+>>>>> wait-for-
+>>>>> interrupt with a latency of '1', so violating the constraint.
+>>>>
+>>>> This is not true actually. On PowerPC the idle state 0 has an
+>>>> exit_latency of 0.
+>>>>
+>>>>>
+>>>>> In order to fix that, do the latency requirement check *before*
+>>>>> calling the
+>>>>> cpuidle framework in order to jump to the poll function without
+>>>>> entering
+>>>>> cpuidle. That has several benefits:
+>>>>
+>>>> Doing so actually hurts on PowerPC. Because the idle loop defined for
+>>>> idle state 0 is different from what cpu_relax() does in
+>>>> cpu_idle_loop().
+>>>> The spinning is more power efficient in the former case. Moreover we
+>>>> also set
+>>>> certain register values which indicate an idle cpu. The ppc_runlatch
+>>>> bits
+>>>> do precisely this. These register values are being read by some user
+>>>> space
+>>>> tools.  So we will end up breaking them with this patch
+>>>>
+>>>> My suggestion is very well keep the latency requirement check in
+>>>> kernel/sched/idle.c
+>>>> like your doing in this patch. But before jumping to cpu_idle_loop
+>>>> verify if the
+>>>> idle state 0 has an exit_latency > 0 in addition to your check on the
+>>>> latency_req == 0.
+>>>> If not, you can fall through to the regular path of calling into the
+>>>> cpuidle driver.
+>>>> The scheduler can query the cpuidle_driver structure anyway.
+>>>>
+>>>> What do you think?
+>>>
+>>> Thanks for reviewing the patch and spotting this.
+>>>
+>>> Wouldn't make sense to create:
+>>>
+>>> void __weak_cpu_idle_poll(void) ?
+>>>
+>>> and override it with your specific poll function ?
+>>>
+>>
+>> No this would become ugly as far as I can see. A weak function has to be
+>> defined under arch/* code. We will either need to duplicate the idle
+>> loop that we already have in the drivers or point the weak function to
+>> the first idle state defined by our driver. Both of which is not
+>> desirable (calling into the driver from arch code is ugly). Another
+>> reason why I don't like the idea of a weak function is that if you have
+>> missed looking at a specific driver and they have an idle loop with
+>> features similar to on powerpc, you will have to spot it yourself and
+>> include the arch specific cpu_idle_poll() for them.
 > 
-> > On Wednesday, November 05, 2014 02:43:31 PM Kevin Hilman wrote:
-> >> Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
-> >> 
-> >> > On Thu, Oct 30, 2014 at 01:38:30PM -0700, Kevin Hilman wrote:
-> >> >> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
-> >> >> 
-> >> >> > On Thursday, October 30, 2014 01:02:49 PM Ulf Hansson wrote:
-> >> >> >> Convert the prototype to return and int. This is just an initial step,
-> >> >> >> needed to support error handling.
-> >> >> >> 
-> >> >> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >> >> 
-> >> >> Acked-by: Kevin Hilman <khilman@linaro.org>
-> >> >> 
-> >> >> >> 
-> >> >> >> This patch is intended as fix for 3.18 rc[n]. Why?
-> >> >> >> 
-> >> >> >> There are other SOC specific patches around that adds genpd support and which
-> >> >> >> implements the ->attach_dev() callback. To prevent having an "atomic" patch
-> >> >> >> during the next release cycle, let's change the prototype now instead.
-> >> >> >> 
-> >> >> >> Further patches will add the actual error handling in genpd and these can then
-> >> >> >> be reviewed and tested thoroughly.
-> >> >> >
-> >> >> > So we have no users of ->attach_dev at the moment, right?
-> >> >> 
-> >> >> Not in mainline, but there are a couple getting ready to hit -next, so
-> >> >> we wanted to fix this before they arrive so that adding the error
-> >> >> handling will be easier.
-> >> >
-> >> > BTW, while we are at it, can we also pass the domain itself to
-> >> > attach_dev() and detach_dev()? If anything it helps with debugging (you
-> >> > can print domain name from the callbacks).
-> >> 
-> >> Agreed, and it makes it match the other callbacks (power_off, power_on)
-> >> which currently take struct generic_pm_domain *domain.  
-> >> 
-> >> Updated version of $SUBJECT patch below.
-> >
-> > The subject and changelog need to be updated too IMO.
-> >
-> 
-> Right.  Here you go.
+> Yes, I agree this is a fair point. But actually I don't see the interest
+> of having the poll loop in the cpuidle driver. These cleanups are
 
-I've replaced the Ulf's original with this one, thanks!
+We can't do that simply because the idle poll loop has arch specific
+bits on powerpc.
 
-> ----- >8 ------
-> From c18a6bf3121979c4102ba4f7edb3ac41e3921fc6 Mon Sep 17 00:00:00 2001
-> From: Ulf Hansson <ulf.hansson@linaro.org>
-> Date: Thu, 30 Oct 2014 13:02:49 +0100
-> Subject: [PATCH] PM / Domains: Change prototype for the attach and detach
->  callbacks
+> preparing the removal of the CPUIDLE_DRIVER_STATE_START macro which
+> leads to a lot of mess in the cpuidle code.
+
+How is the suggestion to check the exit_latency of idle state 0 when
+latency_req  == 0 going to hinder this removal?
+
 > 
-> Convert the prototypes to return an int in order to support error
-> handling in these callbacks.
+> With the removal of this macro, we should be able to move the select
+> loop from the menu governor and use it everywhere else. Furthermore,
+> this state which is flagged with TIME_VALID, isn't because the local
+> interrupt are enabled so we are measuring the interrupt time processing.
+> Beside that the idle loop for x86 is mostly not used.
 > 
-> Also, as suggested by Dmitry Torokhov, pass the domain pointer for use
-> inside the callbacks, and so that they match the existing
-> power_on/power_off callbacks which currently take the domain pointer.
+> So the idea would be to extract those idle loop from the drivers and use
+> them directly when:
+>  1. the idle selection fails (use the poll loop under certain
+> circumstances we have to redefine)
+
+This behavior will not change as per my suggestion.
+
+>  2. when the latency req is zero
+
+Its only here that I suggested you also verify state 0's exit_latency.
+For the reason that the arch may have a more optimized idle poll loop,
+which we cannot override with the generic cpuidle poll loop.
+
+Regards
+Preeti U Murthy
 > 
-> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> [khilman: added domain as parameter to callbacks, as suggested by Dmitry]
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Kevin Hilman <khilman@linaro.org>
-> ---
->  drivers/base/power/domain.c | 4 ++--
->  include/linux/pm_domain.h   | 6 ++++--
->  2 files changed, 6 insertions(+), 4 deletions(-)
+> That will result in a cleaner code in cpuidle and in the governor.
 > 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 40bc2f4072cc..b520687046d4 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1437,7 +1437,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
->  	spin_unlock_irq(&dev->power.lock);
->  
->  	if (genpd->attach_dev)
-> -		genpd->attach_dev(dev);
-> +		genpd->attach_dev(genpd, dev);
->  
->  	mutex_lock(&gpd_data->lock);
->  	gpd_data->base.dev = dev;
-> @@ -1499,7 +1499,7 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
->  	genpd->max_off_time_changed = true;
->  
->  	if (genpd->detach_dev)
-> -		genpd->detach_dev(dev);
-> +		genpd->detach_dev(genpd, dev);
->  
->  	spin_lock_irq(&dev->power.lock);
->  
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 73e938b7e937..b3ed7766a291 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -72,8 +72,10 @@ struct generic_pm_domain {
->  	bool max_off_time_changed;
->  	bool cached_power_down_ok;
->  	struct gpd_cpuidle_data *cpuidle_data;
-> -	void (*attach_dev)(struct device *dev);
-> -	void (*detach_dev)(struct device *dev);
-> +	int (*attach_dev)(struct generic_pm_domain *domain,
-> +			  struct device *dev);
-> +	void (*detach_dev)(struct generic_pm_domain *domain,
-> +			   struct device *dev);
->  };
->  
->  static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
+> Do you agree with that ?
+> 
+>> But by having a check on the exit_latency, you are claiming that since
+>> the driver's 0th idle state is no better than the generic idle loop in
+>> cases of 0 latency req, we are better off calling the latter, which
+>> looks reasonable. That way you don't have to bother about worsening the
+>> idle loop behavior on any other driver.
+> 
+> 
+> 
+> 
 > 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
