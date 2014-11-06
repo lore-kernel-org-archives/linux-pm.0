@@ -1,100 +1,37 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v5 00/48] kernel: Add support for power-off handler call
- chain
-Date: Thu, 6 Nov 2014 10:48:43 -0800
-Message-ID: <20141106184843.GA31712@roeck-us.net>
+Subject: Re: [PATCH v5 36/48] arm64: psci: Register with kernel power-off
+ handler
+Date: Thu, 6 Nov 2014 10:51:58 -0800
+Message-ID: <20141106185158.GC31712@roeck-us.net>
 References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
- <20141106170818.GA30177@roeck-us.net>
- <CA+55aFxMu_MTfXd-EFG=QJ6aCWpb+OX5tyM-XWZC=WHJ=pFiTA@mail.gmail.com>
+ <1415292213-28652-37-git-send-email-linux@roeck-us.net>
+ <20141106172222.GA15384@leverpostej>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:44606 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751261AbaKFSsu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 13:48:50 -0500
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1XmS70-002pJE-Br
-	for linux-pm@vger.kernel.org; Thu, 06 Nov 2014 18:48:50 +0000
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CA+55aFxMu_MTfXd-EFG=QJ6aCWpb+OX5tyM-XWZC=WHJ=pFiTA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20141106172222.GA15384@leverpostej>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 
-On Thu, Nov 06, 2014 at 10:02:54AM -0800, Linus Torvalds wrote:
-> On Thu, Nov 6, 2014 at 9:08 AM, Guenter Roeck <linux@roeck-us.net> wrote:
-> >>
-> >> Merge plan is to send the entire series directly to Linus during the next commit
-> >> window, except for the last patch. The last patch would then be part of another
-> >> pull request after -rc1, which would include any changes necessary due to newly
-> >> merged power-off handling code.
-> >
-> > I should have added that I plan to have the series (except for the last patch)
-> > added to -next shortly.
-> >
-> > Linus,
-> >
-> > are you ok with this plan ?
+On Thu, Nov 06, 2014 at 05:22:23PM +0000, Mark Rutland wrote:
+> On Thu, Nov 06, 2014 at 04:43:20PM +0000, Guenter Roeck wrote:
+> > Register with kernel power-off handler instead of setting pm_power_off
+> > directly.
+> > 
+> > Cc: Catalin Marinas <catalin.marinas@arm.com>
+> > Cc: Will Deacon <will.deacon@arm.com>
+> > Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 > 
-> Do people actually agree that the code makes sense at all?
+> I just fetched your current poweroff-handler branch and gave it a spin
+> on Juno. It looks like this hasn't broken since the last time I tried
+> it. :)
 > 
-The series has Acks from 24 different people, so I would think
-that there is a decent level of agreement.
-
-> Because quite frankly, every time somebody adds this kind of "register
-> callback" stuff, the end result tends to end up being an unmitigated
-> disaster. People care about ordering etc, and there seems to be no
-> sane support for that. Then people do random ugly hacks for their
-> insane platforms. You already did that by having the "priority" thing,
-> but that just makes me think that people will pick random priorities.
-> TYou seem to even *encourage* that random behavior by spreading out
-> the "named" priorities, so that people can randomly say "I'm one
-> higher than LOW".
+> Tested-by: Mark Rutland <mark.rutland@arm.com>
 > 
-Yes, that is actually the idea. Keep in mind this is for power-off, so
-(hopefully) only the handler with highest priority will actually be executed.
-The larger number space is an added benefit here, not a disadvantage -
-I _want_ people to be able to say "my priority is one higher than X because
-I _want_ this method to power off the system to be tried first".
+Thanks a lot!
 
-> What kind of games are the actual new users already doing wrt this? I
-> have a bad feeling about it all.
-
-Currently there is a single exported pointer, "pm_power_off", which is set
-by architecture code and various drivers, and called from machine_power_off
-to turn off power. 'git grep "pm_power_off =" | wc' returns 146, so there
-are a lot of those. In linux-next the number is 150, so there are now four
-more (all in drivers if I recall correctly). A patch pending for powerpc,
-which targets the possibility that there can be more than one power-off
-handler for this architecture, will increase the number by another 21.
-
-Sometimes the pm_power_off pointer it is set conditionally if it is non-null,
-sometimes it is set unconditionally. Sometimes it is set from drivers
-and cleared to NULL on unload, sometimes those drivers restore the previous
-setting, sometimes the drivers do not clear the pointer at all on unload.
-
-The point here is that the _current_ solution has a problem, since there can
-be more than one power-off handler in a system, there is no ordering at all,
-and insertion/removal is racy. The priority field is trying to introduce some
-execution order. If multiple handlers install a handler with the same priority,
-it does not matter (much) since all handlers will be executed, and one will
-hopefully succeed to power off the system. Ultimately, the priority is just
-an added benefit - much more importantly, the code is not racy anymore.
-Sure, people can say "my power-off priority is one above LOW", but that only
-means that the code will be executed before the handler(s) with priority "LOW"
-are executed. Hopefully one of them really powers off the system. Note in this
-context that I introduced the named priorities because several reviewers asked
-for it. The original code used notifier callbacks and numbered priorities
-as specified for notifiers.
-
-Having said that, the new solution may not be perfect, but it is the best
-I have been able come up with. If you have a better idea for being able to
-support multiple power-off handlers with different priorities, with non-racy
-registration and unregistration, please let me know, and I'll be happy to
-implement it.
-
-Thanks,
 Guenter
