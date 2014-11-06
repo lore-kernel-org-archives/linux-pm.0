@@ -1,214 +1,206 @@
-From: Yadwinder Singh Brar <yadi.brar@samsung.com>
-Subject: RE: [PATCH] thermal: cpu_cooling: Update always cpufreq policy with
- thermal constraints
-Date: Thu, 06 Nov 2014 16:26:27 +0530
-Message-ID: <004c01cff9b0$6b450740$41cf15c0$%brar@samsung.com>
-References: <1415189785-18593-1-git-send-email-yadi.brar@samsung.com>
- <20141105204638.GB5243@developer>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V2 1/5] sched: idle: cpuidle: Check the latency req before
+ idle
+Date: Thu, 06 Nov 2014 13:27:30 +0100
+Message-ID: <545B6932.4010308@linaro.org>
+References: <1414054881-17713-1-git-send-email-daniel.lezcano@linaro.org> <CAM4v1pOg1GFW82WD8b6Vas5xhYQrQtdP1STGxyzYtrBNSa+-Pw@mail.gmail.com> <544FE787.8090108@linaro.org> <54504A60.2090908@linux.vnet.ibm.com> <545A3414.7030500@linaro.org> <545AF424.2070302@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20141105204638.GB5243@developer>
-Content-language: en-us
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: 'Eduardo Valentin' <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zhang@intel.com, amit.daniel@samsung.com, viresh.kumar@linaro.org, linux-samsung-soc@vger.kernel.org, yadi.brar01@gmail.com
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f177.google.com ([209.85.212.177]:53323 "EHLO
+	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751054AbaKFM1e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 07:27:34 -0500
+Received: by mail-wi0-f177.google.com with SMTP id ex7so1310694wid.10
+        for <linux-pm@vger.kernel.org>; Thu, 06 Nov 2014 04:27:32 -0800 (PST)
+In-Reply-To: <545AF424.2070302@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, patches@linaro.org
 
-Hello Eduardo Valentin,
+On 11/06/2014 05:08 AM, Preeti U Murthy wrote:
+> On 11/05/2014 07:58 PM, Daniel Lezcano wrote:
+>> On 10/29/2014 03:01 AM, Preeti U Murthy wrote:
+>>> On 10/29/2014 12:29 AM, Daniel Lezcano wrote:
+>>>> On 10/28/2014 04:51 AM, Preeti Murthy wrote:
+>>>>> Hi Daniel,
+>>>>>
+>>>>> On Thu, Oct 23, 2014 at 2:31 PM, Daniel Lezcano
+>>>>> <daniel.lezcano@linaro.org> wrote:
+>>>>>> When the pmqos latency requirement is set to zero that means "po=
+ll in
+>>>>>> all the
+>>>>>> cases".
+>>>>>>
+>>>>>> That is correctly implemented on x86 but not on the other archs.
+>>>>>>
+>>>>>> As how is written the code, if the latency request is zero, the
+>>>>>> governor will
+>>>>>> return zero, so corresponding, for x86, to the poll function, bu=
+t for
+>>>>>> the
+>>>>>> others arch the default idle function. For example, on ARM this =
+is
+>>>>>> wait-for-
+>>>>>> interrupt with a latency of '1', so violating the constraint.
+>>>>>
+>>>>> This is not true actually. On PowerPC the idle state 0 has an
+>>>>> exit_latency of 0.
+>>>>>
+>>>>>>
+>>>>>> In order to fix that, do the latency requirement check *before*
+>>>>>> calling the
+>>>>>> cpuidle framework in order to jump to the poll function without
+>>>>>> entering
+>>>>>> cpuidle. That has several benefits:
+>>>>>
+>>>>> Doing so actually hurts on PowerPC. Because the idle loop defined=
+ for
+>>>>> idle state 0 is different from what cpu_relax() does in
+>>>>> cpu_idle_loop().
+>>>>> The spinning is more power efficient in the former case. Moreover=
+ we
+>>>>> also set
+>>>>> certain register values which indicate an idle cpu. The ppc_runla=
+tch
+>>>>> bits
+>>>>> do precisely this. These register values are being read by some u=
+ser
+>>>>> space
+>>>>> tools.  So we will end up breaking them with this patch
+>>>>>
+>>>>> My suggestion is very well keep the latency requirement check in
+>>>>> kernel/sched/idle.c
+>>>>> like your doing in this patch. But before jumping to cpu_idle_loo=
+p
+>>>>> verify if the
+>>>>> idle state 0 has an exit_latency > 0 in addition to your check on=
+ the
+>>>>> latency_req =3D=3D 0.
+>>>>> If not, you can fall through to the regular path of calling into =
+the
+>>>>> cpuidle driver.
+>>>>> The scheduler can query the cpuidle_driver structure anyway.
+>>>>>
+>>>>> What do you think?
+>>>>
+>>>> Thanks for reviewing the patch and spotting this.
+>>>>
+>>>> Wouldn't make sense to create:
+>>>>
+>>>> void __weak_cpu_idle_poll(void) ?
+>>>>
+>>>> and override it with your specific poll function ?
+>>>>
+>>>
+>>> No this would become ugly as far as I can see. A weak function has =
+to be
+>>> defined under arch/* code. We will either need to duplicate the idl=
+e
+>>> loop that we already have in the drivers or point the weak function=
+ to
+>>> the first idle state defined by our driver. Both of which is not
+>>> desirable (calling into the driver from arch code is ugly). Another
+>>> reason why I don't like the idea of a weak function is that if you =
+have
+>>> missed looking at a specific driver and they have an idle loop with
+>>> features similar to on powerpc, you will have to spot it yourself a=
+nd
+>>> include the arch specific cpu_idle_poll() for them.
+>>
+>> Yes, I agree this is a fair point. But actually I don't see the inte=
+rest
+>> of having the poll loop in the cpuidle driver. These cleanups are
+>
+> We can't do that simply because the idle poll loop has arch specific
+> bits on powerpc.
 
-On Thursday, November 06, 2014 2:17 AM, Eduardo Valentin wrote:
-> Hello Yadwinder,
-> 
-> On Wed, Nov 05, 2014 at 05:46:25PM +0530, Yadwinder Singh Brar wrote:
-> > Existing code updates cupfreq policy only while executing
-> > cpufreq_apply_cooling() function (i.e. when notify_device !=
-> NOTIFY_INVALID).
-> 
-> Correct. The case you mention is when we receive a notification from
-> cpufreq. But also, updates the cpufreq policy when the cooling device
-> changes state, a call from thermal framework.
+I am not sure.
 
-I mentioned thermal framework case only, existing code updates
-cupfreq policy only when (notify_device != NOTIFY_INVALID),
-which happens only when notification comes from cpufreq_update_policy
-while changing cooling device's state(i.e. cpufreq_apply_cooling()).
-In case of other notifications notify_device is always NOTIFY_INVALID.
+Could you describe what is the difference between the arch_cpu_idle=20
+function in arch/arm/powerpc/kernel/idle.c and the 0th power PC idle st=
+ate ?
 
-> 
-> > It doesn't apply constraints when cpufreq policy update happens from
-> > any other place but it should update the cpufreq policy with thermal
-> > constraints every time when there is a cpufreq policy update, to keep
-> > state of cpufreq_cooling_device and max_feq of cpufreq policy in
-> sync.
-> 
-> I am not sure I follow you here. Can you please elaborate on 'any other
-> places'? Could you please mention (also in the commit log) what are the
-> case the current code does not cover? For instance, the
-> cpufreq_apply_cooling gets called on notification coming from thermal
-> subsystem, and for changes in cpufreq subsystem,
-> cpufreq_thermal_notifier is called.
-> 
+Is it kind of duplicate ?
 
-"Other places" mean possible places from where cpufreq_update_policy()
-can be called at runtime, an instance in present kernel is cpufreq_resume().
-But since cpufreq_update_policy() is an exposed API, I think
-for robustness, generic cpu cooling should be able to take care of any
-possible case(in future as well).
+And for polling, do you really want to use while (...); cpu_relax(); as=
+=20
+it is x86 specific ? instead of the powerpc's arch_idle ?
 
-> >
-> > This patch modifies code to maintain a global cpufreq_dev_list and
-> get
-> > corresponding cpufreq_cooling_device for policy's cpu from
-> > cpufreq_dev_list when there is any policy update.
-> 
-> OK. Please give real examples of when the current code fails to catch
-> the event.
-> 
+Today, if latency_req =3D=3D 0, it returns the 0th idle state, so polli=
+ng.
 
-While resuming cpufreq updates cpufreq_policy for boot cpu and it
-restores default policy->usr_policy irrespective of cooling device's
-cpufreq_state since notification gets missed because (notify_device ==
-NOTIFY_INVALID).
-Another thing, Rather I would say an issue, I observed is that
-Userspace is able to change max_freq irrespective of cooling
-device's state, as notification gets missed.
-  
-> 
-> BR,
-> 
-> Eduardo Valentin
-> 
-> >
-> > Signed-off-by: Yadwinder Singh Brar <yadi.brar@samsung.com>
-> > ---
-> >  drivers/thermal/cpu_cooling.c |   37 ++++++++++++++++++++-----------
-> ------
-> >  1 files changed, 20 insertions(+), 17 deletions(-)
-> >
-> > diff --git a/drivers/thermal/cpu_cooling.c
-> > b/drivers/thermal/cpu_cooling.c index 1ab0018..5546278 100644
-> > --- a/drivers/thermal/cpu_cooling.c
-> > +++ b/drivers/thermal/cpu_cooling.c
-> > @@ -50,15 +50,14 @@ struct cpufreq_cooling_device {
-> >  	unsigned int cpufreq_state;
-> >  	unsigned int cpufreq_val;
-> >  	struct cpumask allowed_cpus;
-> > +	struct list_head node;
-> >  };
-> >  static DEFINE_IDR(cpufreq_idr);
-> >  static DEFINE_MUTEX(cooling_cpufreq_lock);
-> >
-> >  static unsigned int cpufreq_dev_count;
-> >
-> > -/* notify_table passes value to the CPUFREQ_ADJUST callback
-> function.
-> > */ -#define NOTIFY_INVALID NULL -static struct cpufreq_cooling_device
-> > *notify_device;
-> > +static LIST_HEAD(cpufreq_dev_list);
-> >
-> >  /**
-> >   * get_idr - function to get a unique id.
-> > @@ -287,15 +286,12 @@ static int cpufreq_apply_cooling(struct
-> > cpufreq_cooling_device *cpufreq_device,
-> >
-> >  	cpufreq_device->cpufreq_state = cooling_state;
-> >  	cpufreq_device->cpufreq_val = clip_freq;
-> > -	notify_device = cpufreq_device;
-> >
-> >  	for_each_cpu(cpuid, mask) {
-> >  		if (is_cpufreq_valid(cpuid))
-> >  			cpufreq_update_policy(cpuid);
-> >  	}
-> >
-> > -	notify_device = NOTIFY_INVALID;
-> > -
-> >  	return 0;
-> >  }
-> >
-> > @@ -316,21 +312,27 @@ static int cpufreq_thermal_notifier(struct
-> > notifier_block *nb,  {
-> >  	struct cpufreq_policy *policy = data;
-> >  	unsigned long max_freq = 0;
-> > +	struct cpufreq_cooling_device *cpufreq_dev;
-> >
-> > -	if (event != CPUFREQ_ADJUST || notify_device == NOTIFY_INVALID)
-> > +	if (event != CPUFREQ_ADJUST)
-> >  		return 0;
-> >
-> > -	if (cpumask_test_cpu(policy->cpu, &notify_device->allowed_cpus))
-> > -		max_freq = notify_device->cpufreq_val;
-> > -	else
-> > -		return 0;
-> > +	mutex_lock(&cooling_cpufreq_lock);
-> > +	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
-> > +		if (!cpumask_test_cpu(policy->cpu,
-> > +					&cpufreq_dev->allowed_cpus))
-> > +			continue;
-> >
-> > -	/* Never exceed user_policy.max */
-> > -	if (max_freq > policy->user_policy.max)
-> > -		max_freq = policy->user_policy.max;
-> > +		max_freq = cpufreq_dev->cpufreq_val;
-> >
+If we jump to the arch_cpu_idle_poll, the result will be the same for=20
+all architecture.
 
-I think I missed to post updated patch,
-Actually it should be :
+>> preparing the removal of the CPUIDLE_DRIVER_STATE_START macro which
+>> leads to a lot of mess in the cpuidle code.
+>
+> How is the suggestion to check the exit_latency of idle state 0 when
+> latency_req  =3D=3D 0 going to hinder this removal?
 
-+	if (!cpufreq_dev->cpufreq_val)
-+		cpufreq_dev->cpufreq_val = get_cpu_frequency(
-+
-cpumask_any(&cpufreq_dev->allowed_cpus),
-+							cpufreq_dev->state);
-+	max_freq = cpufreq_dev->cpufreq_val;
+It sounds a bit hackish. I prefer to sort out the current situation.
 
-I will send another version of patch.
+And by the way, what is the reasoning behind having a target_residency =
+/=20
+exit_latency equal to zero for an idle state ?
 
-> > -	if (policy->max != max_freq)
-> > -		cpufreq_verify_within_limits(policy, 0, max_freq);
-> > +		/* Never exceed user_policy.max */
-> > +		if (max_freq > policy->user_policy.max)
-> > +			max_freq = policy->user_policy.max;
-> > +
-> > +		if (policy->max != max_freq)
-> > +			cpufreq_verify_within_limits(policy, 0, max_freq);
-> > +	}
-> > +	mutex_unlock(&cooling_cpufreq_lock);
-> 
-> So, the problem is when we have several cpu cooling devices and you
-> want to search for the real max among the existing cpu cooling devices?
+All this sounds really fuzzy for me.
+
+>> With the removal of this macro, we should be able to move the select
+>> loop from the menu governor and use it everywhere else. Furthermore,
+>> this state which is flagged with TIME_VALID, isn't because the local
+>> interrupt are enabled so we are measuring the interrupt time process=
+ing.
+>> Beside that the idle loop for x86 is mostly not used.
+>>
+>> So the idea would be to extract those idle loop from the drivers and=
+ use
+>> them directly when:
+>>   1. the idle selection fails (use the poll loop under certain
+>> circumstances we have to redefine)
+>
+> This behavior will not change as per my suggestion.
+>
+>>   2. when the latency req is zero
+>
+> Its only here that I suggested you also verify state 0's exit_latency=
+=2E
+> For the reason that the arch may have a more optimized idle poll loop=
+,
+> which we cannot override with the generic cpuidle poll loop.
+>
+> Regards
+> Preeti U Murthy
+>>
+>> That will result in a cleaner code in cpuidle and in the governor.
+>>
+>> Do you agree with that ?
+>>
+>>> But by having a check on the exit_latency, you are claiming that si=
+nce
+>>> the driver's 0th idle state is no better than the generic idle loop=
+ in
+>>> cases of 0 latency req, we are better off calling the latter, which
+>>> looks reasonable. That way you don't have to bother about worsening=
+ the
+>>> idle loop behavior on any other driver.
+>>
+>>
+>>
+>>
+>>
 >
 
-Sorry I didn't get your question completely I think.
-No, above code doesn't find max among existing cooling devices.
-It simply finds cooling device corresponding to policy's cpu
-and applies updates policy accordingly.
 
-Regards,
-Yadwinder
- 
-> >  	return 0;
-> >  }
-> > @@ -486,7 +488,7 @@ __cpufreq_cooling_register(struct device_node
-> *np,
-> >  		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
-> >  					  CPUFREQ_POLICY_NOTIFIER);
-> >  	cpufreq_dev_count++;
-> > -
-> > +	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
-> >  	mutex_unlock(&cooling_cpufreq_lock);
-> >
-> >  	return cool_dev;
-> > @@ -549,6 +551,7 @@ void cpufreq_cooling_unregister(struct
-> > thermal_cooling_device *cdev)
-> >
-> >  	cpufreq_dev = cdev->devdata;
-> >  	mutex_lock(&cooling_cpufreq_lock);
-> > +	list_del(&cpufreq_dev->node);
-> >  	cpufreq_dev_count--;
-> >
-> >  	/* Unregister the notifier for the last cpufreq cooling device */
-> > --
-> > 1.7.0.4
-> >
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
