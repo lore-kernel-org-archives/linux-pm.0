@@ -1,20 +1,33 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v5 29/48] power/reset: ltc2952-poweroff: Register with kernel power-off handler
-Date: Thu,  6 Nov 2014 08:43:13 -0800
-Message-ID: <1415292213-28652-30-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v5 31/48] x86: apm: Register with kernel power-off handler
+Date: Thu,  6 Nov 2014 08:43:15 -0800
+Message-ID: <1415292213-28652-32-git-send-email-linux@roeck-us.net>
 References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:56399 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752201AbaKFQoz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 11:44:55 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XmQB5-000UW4-8x
+	for linux-pm@vger.kernel.org; Thu, 06 Nov 2014 16:44:55 +0000
 In-Reply-To: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Jiri Kosina <jkosina@suse.cz>, x86@kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with low priority to reflect that the original code
-sets pm_power_off only if it was not already set.
+directly. Register with high priority to reflect that the original code
+overwrites existing power-off handlers.
 
-Acked-by: Sebastian Reichel <sre@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Jiri Kosina <jkosina@suse.cz>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Reviewed-by: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v5:
@@ -28,78 +41,61 @@ v3:
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- Added patch
+- Use define to specify poweroff handler priority
 
- drivers/power/reset/ltc2952-poweroff.c | 24 +++++++++++++++---------
- 1 file changed, 15 insertions(+), 9 deletions(-)
+ arch/x86/kernel/apm_32.c | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
-index 116a1ce..e622824 100644
---- a/drivers/power/reset/ltc2952-poweroff.c
-+++ b/drivers/power/reset/ltc2952-poweroff.c
-@@ -80,6 +80,8 @@ struct ltc2952_poweroff_data {
- 	 * 2: kill
- 	 */
- 	struct gpio_desc *gpio[3];
-+
-+	struct power_off_handler_block power_off_hb;
- };
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index 5848744..04910de 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -981,7 +981,7 @@ recalc:
+  *	on their first cpu.
+  */
  
- static int ltc2952_poweroff_panic;
-@@ -180,7 +182,8 @@ irq_ok:
- 	return IRQ_HANDLED;
+-static void apm_power_off(void)
++static void apm_power_off(struct power_off_handler_block *this)
+ {
+ 	/* Some bioses don't like being called from CPU != 0 */
+ 	if (apm_info.realmode_power_off) {
+@@ -992,6 +992,11 @@ static void apm_power_off(void)
+ 	}
  }
  
--static void ltc2952_poweroff_kill(void)
-+static void ltc2952_poweroff_kill(struct power_off_handler_block *this)
++static struct power_off_handler_block apm_power_off_hb = {
++	.handler = apm_power_off,
++	.priority = POWER_OFF_PRIORITY_HIGH,
++};
 +
- {
- 	gpiod_set_value(ltc2952_data->gpio[POWERPATH_IO_KILL], 1);
- }
-@@ -285,12 +288,7 @@ err_io:
+ #ifdef CONFIG_APM_DO_ENABLE
  
- static int ltc2952_poweroff_probe(struct platform_device *pdev)
- {
--	int ret;
--
--	if (pm_power_off) {
--		dev_err(&pdev->dev, "pm_power_off already registered");
--		return -EBUSY;
--	}
-+	int i, ret;
+ /**
+@@ -1847,8 +1852,11 @@ static int apm(void *unused)
+ 	}
  
- 	ltc2952_data = kzalloc(sizeof(*ltc2952_data), GFP_KERNEL);
- 	if (!ltc2952_data)
-@@ -302,12 +300,20 @@ static int ltc2952_poweroff_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto err;
+ 	/* Install our power off handler.. */
+-	if (power_off)
+-		pm_power_off = apm_power_off;
++	if (power_off) {
++		error = register_power_off_handler(&apm_power_off_hb);
++		if (error)
++			pr_warn("apm: Failed to register power-off handler\n");
++	}
  
--	pm_power_off = &ltc2952_poweroff_kill;
-+	ltc2952_data->power_off_hb.handler = ltc2952_poweroff_kill;
-+	ltc2952_data->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
-+	ret = register_power_off_handler(&ltc2952_data->power_off_hb);
-+	if (ret)
-+		goto err_power;
- 
- 	dev_info(&pdev->dev, "probe successful\n");
- 
- 	return 0;
- 
-+err_power:
-+	free_irq(ltc2952_data->virq, ltc2952_data);
-+	for (i = 0; i < ARRAY_SIZE(ltc2952_data->gpio); i++)
-+		gpiod_put(ltc2952_data->gpio[i]);
- err:
- 	kfree(ltc2952_data);
- 	return ret;
-@@ -317,7 +323,7 @@ static int ltc2952_poweroff_remove(struct platform_device *pdev)
- {
- 	unsigned int i;
- 
--	pm_power_off = NULL;
-+	unregister_power_off_handler(&ltc2952_data->power_off_hb);
- 
- 	if (ltc2952_data) {
- 		free_irq(ltc2952_data->virq, ltc2952_data);
+ 	if (num_online_cpus() == 1 || smp) {
+ #if defined(CONFIG_APM_DISPLAY_BLANK) && defined(CONFIG_VT)
+@@ -2408,9 +2416,8 @@ static void __exit apm_exit(void)
+ 			apm_error("disengage power management", error);
+ 	}
+ 	misc_deregister(&apm_device);
++	unregister_power_off_handler(&apm_power_off_hb);
+ 	remove_proc_entry("apm", NULL);
+-	if (power_off)
+-		pm_power_off = NULL;
+ 	if (kapmd_task) {
+ 		kthread_stop(kapmd_task);
+ 		kapmd_task = NULL;
 -- 
 1.9.1
+
