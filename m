@@ -1,226 +1,141 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Domains: Fix initial default state of the need_restore flag
-Date: Fri,  7 Nov 2014 14:27:27 +0100
-Message-ID: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f178.google.com ([209.85.217.178]:65004 "EHLO
-	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751937AbaKGN1p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 08:27:45 -0500
-Received: by mail-lb0-f178.google.com with SMTP id f15so2972033lbj.9
-        for <linux-pm@vger.kernel.org>; Fri, 07 Nov 2014 05:27:44 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Yadwinder Singh Brar <yadi.brar@samsung.com>
+Subject: [PATCH v2] thermal: cpu_cooling: Update always cpufreq policy with
+ thermal constraints
+Date: Fri, 07 Nov 2014 19:12:29 +0530
+Message-ID: <1415367749-1747-1-git-send-email-yadi.brar@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: rui.zhang@intel.com, edubezval@gmail.com, amit.daniel@samsung.com, viresh.kumar@linaro.org, linux-samsung-soc@vger.kernel.org, yadi.brar01@gmail.com, Yadwinder Singh Brar <yadi.brar@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-The initial state of the device's need_restore flag should'nt depend on
-the current state of the PM domain. For example it should be perfectly
-valid to attach an inactive device to a powered PM domain.
+Existing code updates cupfreq policy only while executing
+cpufreq_apply_cooling() function (i.e. when notify_device != NOTIFY_INVALID).
+It doesn't apply constraints when cpufreq policy update happens from any other
+place but it should update the cpufreq policy with thermal constraints every
+time when there is a cpufreq policy update, to keep state of
+cpufreq_cooling_device and max_feq of cpufreq policy in sync. For instance
+while resuming cpufreq updates cpufreq_policy and it restores default
+policy->usr_policy values irrespective of cooling device's cpufreq_state since
+notification gets missed because (notify_device == NOTIFY_INVALID).
+Another problem, is that userspace is able to change max_freq irrespective of
+cooling device's state, as notification gets missed.
 
-The pm_genpd_dev_need_restore() API allow us to update the need_restore
-flag to somewhat cope with such scenarios. Typically that should have
-been done from drivers/buses ->probe() since it's those that put the
-requirements on the value of the need_restore flag.
+This patch modifies code to maintain a global cpufreq_dev_list and applies
+constraints of all matching cooling devices for policy's cpu when there is any
+policy update(ends up applying the lowest max_freq among the matching cpu
+cooling devices).
 
-Until recently, the Exynos SOCs were the only user of the
-pm_genpd_dev_need_restore() API, though invoking it from a centralized
-location while adding devices to their PM domains.
+This patch also removes redundant check (max_freq > policy->user_policy.max),
+as cpufreq framework takes care of user_policy constraints already where ever
+required, otherwise its causing an issue while increasing max_freq in normal
+scenerio as it restores max_freq with policy->user_policy.max which is old
+(smaller) value.
 
-Due to that Exynos now have swithed to the generic OF-based PM domain
-look-up, it's no longer possible to invoke the API from a centralized
-location. The reason is because devices are now added to their PM
-domains during the probe sequence.
-
-Commit "ARM: exynos: Move to generic PM domain DT bindings"
-did the switch for Exynos to the generic OF-based PM domain look-up,
-but it also removed the call to pm_genpd_dev_need_restore(). This
-caused a regression for some of the Exynos drivers.
-
-To handle things more properly in the generic PM domain, let's change
-the default initial value of the need_restore flag to reflect that the
-state is unknown. As soon as some of the runtime PM callbacks gets
-invoked, update the initial value accordingly.
-
-Moreover, since the generic PM domain is verifying that all device's
-are both runtime PM enabled and suspended, using pm_runtime_suspended()
-while pm_genpd_poweroff() is invoked from the scheduled work, we can be
-sure of that the PM domain won't be powering off while having active
-devices.
-
-Do note that, the generic PM domain can still only know about active
-devices which has been activated through invoking its runtime PM resume
-callback. In other words, buses/drivers using pm_runtime_set_active()
-during ->probe() will still suffer from a race condition, potentially
-probing a device without having its PM domain being powered. That issue
-will have to be solved using a different approach.
-
-This a log from the boot regression for Exynos5, which is being fixed in
-this patch.
-
-------------[ cut here ]------------
-WARNING: CPU: 0 PID: 308 at ../drivers/clk/clk.c:851 clk_disable+0x24/0x30()
-Modules linked in:
-CPU: 0 PID: 308 Comm: kworker/0:1 Not tainted 3.18.0-rc3-00569-gbd9449f-dirty #10
-Workqueue: pm pm_runtime_work
-[<c0013c64>] (unwind_backtrace) from [<c0010dec>] (show_stack+0x10/0x14)
-[<c0010dec>] (show_stack) from [<c03ee4cc>] (dump_stack+0x70/0xbc)
-[<c03ee4cc>] (dump_stack) from [<c0020d34>] (warn_slowpath_common+0x64/0x88)
-[<c0020d34>] (warn_slowpath_common) from [<c0020d74>] (warn_slowpath_null+0x1c/0x24)
-[<c0020d74>] (warn_slowpath_null) from [<c03107b0>] (clk_disable+0x24/0x30)
-[<c03107b0>] (clk_disable) from [<c02cc834>] (gsc_runtime_suspend+0x128/0x160)
-[<c02cc834>] (gsc_runtime_suspend) from [<c0249024>] (pm_generic_runtime_suspend+0x2c/0x38)
-[<c0249024>] (pm_generic_runtime_suspend) from [<c024f44c>] (pm_genpd_default_save_state+0x2c/0x8c)
-[<c024f44c>] (pm_genpd_default_save_state) from [<c024ff2c>] (pm_genpd_poweroff+0x224/0x3ec)
-[<c024ff2c>] (pm_genpd_poweroff) from [<c02501b4>] (pm_genpd_runtime_suspend+0x9c/0xcc)
-[<c02501b4>] (pm_genpd_runtime_suspend) from [<c024a4f8>] (__rpm_callback+0x2c/0x60)
-[<c024a4f8>] (__rpm_callback) from [<c024a54c>] (rpm_callback+0x20/0x74)
-[<c024a54c>] (rpm_callback) from [<c024a930>] (rpm_suspend+0xd4/0x43c)
-[<c024a930>] (rpm_suspend) from [<c024bbcc>] (pm_runtime_work+0x80/0x90)
-[<c024bbcc>] (pm_runtime_work) from [<c0032a9c>] (process_one_work+0x12c/0x314)
-[<c0032a9c>] (process_one_work) from [<c0032cf4>] (worker_thread+0x3c/0x4b0)
-[<c0032cf4>] (worker_thread) from [<c003747c>] (kthread+0xcc/0xe8)
-[<c003747c>] (kthread) from [<c000e738>] (ret_from_fork+0x14/0x3c)
----[ end trace 40cd58bcd6988f12 ]---
-
-Fixes: a4a8c2c4962bb655 (ARM: exynos: Move to generic PM domain DT bindings)
-Reported-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Yadwinder Singh Brar <yadi.brar@samsung.com>
 ---
 
-This patch is intended as fix for 3.18 rc[n] due to the regression for Exynos
-SOCs.
-
-I would also like to call for help in getting this thoroughly tested.
-
-I have tested this on Arndale Dual, Exynos 5250. According the log attached in
-the commit message as well.
-
-I have tested this on UX500, which support for the generic PM domain is about
-to be queued for 3.19. Since UX500 uses the AMBA bus/drivers, which uses
-pm_runtime_set_active() instead of pm_runtime_get_sync() during ->probe(), I
-could also verify that this behavior is maintained.
-
-Finally I have also tested this patchset on UX500 and using the below patchset
-to make sure the approach is suitable long term wise as well.
-[PATCH v3 0/9] PM / Domains: Fix race conditions during boot
-http://www.spinics.net/lists/arm-kernel/msg369409.html
+changes since v1:
+- Updated commit message as suggested by Eduardo Valentin
+- fixed an issue in incresing value of scaling_max_freq from sysfs after
+  decreasing it once in normal thermal conditions also.
 
 ---
- drivers/base/power/domain.c | 38 +++++++++++++++++++++++++++++++-------
- include/linux/pm_domain.h   |  2 +-
- 2 files changed, 32 insertions(+), 8 deletions(-)
+ drivers/thermal/cpu_cooling.c |   37 +++++++++++++++++++++----------------
+ 1 files changed, 21 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index b520687..a9523a3 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -361,9 +361,19 @@ static int __pm_genpd_save_device(struct pm_domain_data *pdd,
- 	struct device *dev = pdd->dev;
- 	int ret = 0;
- 
--	if (gpd_data->need_restore)
-+	if (gpd_data->need_restore == 1)
- 		return 0;
- 
-+	/*
-+	 * If the value of the need_restore flag is still unknown at this point,
-+	 * we trust that pm_genpd_poweroff() has verified that the device is
-+	 * already runtime PM suspended.
-+	 */
-+	if (gpd_data->need_restore == -1) {
-+		gpd_data->need_restore = 1;
-+		return 0;
-+	}
-+
- 	mutex_unlock(&genpd->lock);
- 
- 	genpd_start_dev(genpd, dev);
-@@ -373,7 +383,7 @@ static int __pm_genpd_save_device(struct pm_domain_data *pdd,
- 	mutex_lock(&genpd->lock);
- 
- 	if (!ret)
--		gpd_data->need_restore = true;
-+		gpd_data->need_restore = 1;
- 
- 	return ret;
- }
-@@ -389,13 +399,17 @@ static void __pm_genpd_restore_device(struct pm_domain_data *pdd,
- {
- 	struct generic_pm_domain_data *gpd_data = to_gpd_data(pdd);
- 	struct device *dev = pdd->dev;
--	bool need_restore = gpd_data->need_restore;
-+	int need_restore = gpd_data->need_restore;
- 
--	gpd_data->need_restore = false;
-+	gpd_data->need_restore = 0;
- 	mutex_unlock(&genpd->lock);
- 
- 	genpd_start_dev(genpd, dev);
--	if (need_restore)
-+	/*
-+	 * Make sure to also restore those devices which we until now, didn't
-+	 * know the state for.
-+	 */
-+	if (need_restore != 0)
- 		genpd_restore_dev(genpd, dev);
- 
- 	mutex_lock(&genpd->lock);
-@@ -603,6 +617,7 @@ static void genpd_power_off_work_fn(struct work_struct *work)
- static int pm_genpd_runtime_suspend(struct device *dev)
- {
- 	struct generic_pm_domain *genpd;
-+	struct generic_pm_domain_data *gpd_data;
- 	bool (*stop_ok)(struct device *__dev);
- 	int ret;
- 
-@@ -628,6 +643,15 @@ static int pm_genpd_runtime_suspend(struct device *dev)
- 		return 0;
- 
- 	mutex_lock(&genpd->lock);
-+	/*
-+	 * If we have an unknown state of the need_restore flag, it means none
-+	 * of the runtime PM callbacks has been invoked yet. Let's update the
-+	 * flag to reflect that the current state is active.
-+	 */
-+	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
-+	if (gpd_data->need_restore == -1)
-+		gpd_data->need_restore = 0;
-+
- 	genpd->in_progress++;
- 	pm_genpd_poweroff(genpd);
- 	genpd->in_progress--;
-@@ -1442,7 +1466,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- 	mutex_lock(&gpd_data->lock);
- 	gpd_data->base.dev = dev;
- 	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
--	gpd_data->need_restore = genpd->status == GPD_STATE_POWER_OFF;
-+	gpd_data->need_restore = -1;
- 	gpd_data->td.constraint_changed = true;
- 	gpd_data->td.effective_constraint_ns = -1;
- 	mutex_unlock(&gpd_data->lock);
-@@ -1546,7 +1570,7 @@ void pm_genpd_dev_need_restore(struct device *dev, bool val)
- 
- 	psd = dev_to_psd(dev);
- 	if (psd && psd->domain_data)
--		to_gpd_data(psd->domain_data)->need_restore = val;
-+		to_gpd_data(psd->domain_data)->need_restore = val ? 1 : 0;
- 
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
- }
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index b3ed776..2e0e06d 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -106,7 +106,7 @@ struct generic_pm_domain_data {
- 	struct notifier_block nb;
- 	struct mutex lock;
- 	unsigned int refcount;
--	bool need_restore;
-+	int need_restore;
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 1ab0018..ad09e51 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -50,15 +50,14 @@ struct cpufreq_cooling_device {
+ 	unsigned int cpufreq_state;
+ 	unsigned int cpufreq_val;
+ 	struct cpumask allowed_cpus;
++	struct list_head node;
  };
+ static DEFINE_IDR(cpufreq_idr);
+ static DEFINE_MUTEX(cooling_cpufreq_lock);
  
- #ifdef CONFIG_PM_GENERIC_DOMAINS
+ static unsigned int cpufreq_dev_count;
+ 
+-/* notify_table passes value to the CPUFREQ_ADJUST callback function. */
+-#define NOTIFY_INVALID NULL
+-static struct cpufreq_cooling_device *notify_device;
++static LIST_HEAD(cpufreq_dev_list);
+ 
+ /**
+  * get_idr - function to get a unique id.
+@@ -287,15 +286,12 @@ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
+ 
+ 	cpufreq_device->cpufreq_state = cooling_state;
+ 	cpufreq_device->cpufreq_val = clip_freq;
+-	notify_device = cpufreq_device;
+ 
+ 	for_each_cpu(cpuid, mask) {
+ 		if (is_cpufreq_valid(cpuid))
+ 			cpufreq_update_policy(cpuid);
+ 	}
+ 
+-	notify_device = NOTIFY_INVALID;
+-
+ 	return 0;
+ }
+ 
+@@ -316,21 +312,28 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+ {
+ 	struct cpufreq_policy *policy = data;
+ 	unsigned long max_freq = 0;
++	struct cpufreq_cooling_device *cpufreq_dev;
+ 
+-	if (event != CPUFREQ_ADJUST || notify_device == NOTIFY_INVALID)
++	if (event != CPUFREQ_ADJUST)
+ 		return 0;
+ 
+-	if (cpumask_test_cpu(policy->cpu, &notify_device->allowed_cpus))
+-		max_freq = notify_device->cpufreq_val;
+-	else
+-		return 0;
++	mutex_lock(&cooling_cpufreq_lock);
++	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
++		if (!cpumask_test_cpu(policy->cpu,
++					&cpufreq_dev->allowed_cpus))
++			continue;
++
++		if (!cpufreq_dev->cpufreq_val)
++			cpufreq_dev->cpufreq_val = get_cpu_frequency(
++					cpumask_any(&cpufreq_dev->allowed_cpus),
++					cpufreq_dev->cpufreq_state);
+ 
+-	/* Never exceed user_policy.max */
+-	if (max_freq > policy->user_policy.max)
+-		max_freq = policy->user_policy.max;
++		max_freq = cpufreq_dev->cpufreq_val;
+ 
+-	if (policy->max != max_freq)
+-		cpufreq_verify_within_limits(policy, 0, max_freq);
++		if (policy->max != max_freq)
++			cpufreq_verify_within_limits(policy, 0, max_freq);
++	}
++	mutex_unlock(&cooling_cpufreq_lock);
+ 
+ 	return 0;
+ }
+@@ -486,6 +489,7 @@ __cpufreq_cooling_register(struct device_node *np,
+ 		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
+ 					  CPUFREQ_POLICY_NOTIFIER);
+ 	cpufreq_dev_count++;
++	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
+ 
+ 	mutex_unlock(&cooling_cpufreq_lock);
+ 
+@@ -549,6 +553,7 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ 
+ 	cpufreq_dev = cdev->devdata;
+ 	mutex_lock(&cooling_cpufreq_lock);
++	list_del(&cpufreq_dev->node);
+ 	cpufreq_dev_count--;
+ 
+ 	/* Unregister the notifier for the last cpufreq cooling device */
 -- 
-1.9.1
-
+1.7.0.4
