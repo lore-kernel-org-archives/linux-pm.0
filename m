@@ -1,135 +1,64 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 03/21] thermal: of: Extend of-thermal.c to provide number
- of non critical trip points
-Date: Fri, 07 Nov 2014 11:05:51 +0100
-Message-ID: <20141107110551.5316836f@amdc2363>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1412872737-624-4-git-send-email-l.majewski@samsung.com>
- <20141107014152.GD10180@developer>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 2/5] regulator: rt5033: Add RT5033 Regulator device driver
+Date: Fri, 7 Nov 2014 10:27:52 +0000
+Message-ID: <20141107102752.GC8509@sirena.org.uk>
+References: <1415328727-16245-1-git-send-email-beomho.seo@samsung.com>
+ <1415328727-16245-3-git-send-email-beomho.seo@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20141107014152.GD10180@developer>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Linux PM list <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="wrbmJCjDMpeEYJph"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1415328727-16245-3-git-send-email-beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, jonghwa3.lee-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, geunsik.lim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sw0312.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eduardo,
 
-> On Thu, Oct 09, 2014 at 06:38:39PM +0200, Lukasz Majewski wrote:
-> > This patch extends the of-thermal.c to provide information about
-> > number of available non critical (i.e. non HW) trip points in the
-> > system.
-> > 
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > ---
-> >  drivers/thermal/of-thermal.c   | 12 ++++++++++++
-> >  drivers/thermal/thermal_core.h |  5 +++++
-> >  2 files changed, 17 insertions(+)
-> > 
-> > diff --git a/drivers/thermal/of-thermal.c
-> > b/drivers/thermal/of-thermal.c index 23c8d6c..cd74e64 100644
-> > --- a/drivers/thermal/of-thermal.c
-> > +++ b/drivers/thermal/of-thermal.c
-> > @@ -128,6 +128,18 @@ int of_thermal_is_trip_en(struct
-> > thermal_zone_device *tz, int trip) return 1;
-> >  }
-> >  
-> > +int of_thermal_get_non_crit_ntrips(struct thermal_zone_device *tz)
-> > +{
-> > +	struct __thermal_zone *data = tz->devdata;
-> > +	int i;
-> > +
-> > +	for (i = 0; i < data->ntrips; i++)
-> > +		if (data->trips[i].type != THERMAL_TRIP_CRITICAL)
-> > +			continue;
-> > +
-> > +	return --i;
-> > +}
-> > +
-> 
-> 
-> 
-> I am not against this addition. But looks like we start to spread some
-> specific APIs that may not be used to other drivers.
+--wrbmJCjDMpeEYJph
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Why do you think that this is a specific API? In the thermal OF we can
-define trip point as "active", "passive", "hot" and "critical".
+On Fri, Nov 07, 2014 at 11:52:04AM +0900, Beomho Seo wrote:
 
-With the first three we can handle them and properly react. For the last
-one SoC's PMU will power down the board.
+> +static int rt5033_regulator_dt_parse_data(struct device *dev)
+> +{
+> +	int ret;
+> +	struct device_node *np;
+> +
+> +	np = of_get_child_by_name(dev->parent->of_node, "regulators");
+> +	if  (!np) {
+> +		dev_err(dev, "Failed to get child node for regulators\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	ret = of_regulator_match(dev, np, rt5033_regulator_matches,
+> +					ARRAY_SIZE(rt5033_regulator_matches));
+> +	if (ret < 0)
+> +		return ret;
 
-Do you know if any board (e.g. from TI) is NOT supposed to shut down
-when "critical" temperature is passed?
+Please convert this to use regulators_node in the descriptor to match
+the regulators, then you don't need any specific code.
 
-The real problem here is the accessibility to __thermal_trip and
-__thermal_bind arrays.
+--wrbmJCjDMpeEYJph
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Use case:
-In the Exynos driver we do need to initialize TMU registers with
-threshold temperatures.
-The temperature is read via tz->ops->get_trip_temp() [1] (from
-of-thermal.c).
-Unfortunately, the current API is not exporting the number of
-non-critical trip points to know how many times call [1].
-Of course we could by hand instantiate [1] n times, but this looks for
-me a bit clumsy.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Additionally, we now have implicit assumption about the order of defined
-temperatures for trip points, but I think this is not a big issue.
+iQEcBAEBAgAGBQJUXJ6oAAoJECTWi3JdVIfQUkoH/ifR7qwAjlZHw8+a1r4K0rQF
+100JcX1rnNiWYQx5zXGCcFPkFz2YRKhSgE4Qxis50AjeZD3kAyylg4W7u6C3IQqs
+aoXGfeRk/G8KhuFVwrvN36LOcLiF3vPj1iAgMYVZCoDSnX586eW8570zrTXv55xu
+eBkLj8esRI/2Zc565QDdpNVTa91JpB960jXsvKk2M2uBy+aLsWGWnEqOQEbMd3zI
+FmaxjkI16TD91xB8ExH4PFDGjeYTo3/Rvsc53S/NanoMot2D1rlUZTSeqiAbP3DC
+tA2oLNjfqbJ4RM29dgUzwIRe3j03hKYMsKnUzNODt1MoHj3QQ3/gf5HZ3L0PK6c=
+=GEe3
+-----END PGP SIGNATURE-----
 
-> Maybe having a
-> single API to provide a read-only copy the list / array of trips might
-> be a better approach. I will think of a better way.
-
-Definitely. Exporting available trip points is crucial.
-
-> 
-> I also request you to document it accordingly.
-
-Ok, I will do that.
-
-> 
-> 
-> >  static int of_thermal_get_trend(struct thermal_zone_device *tz,
-> > int trip, enum thermal_trend *trend)
-> >  {
-> > diff --git a/drivers/thermal/thermal_core.h
-> > b/drivers/thermal/thermal_core.h index ed8ff05..334a7be 100644
-> > --- a/drivers/thermal/thermal_core.h
-> > +++ b/drivers/thermal/thermal_core.h
-> > @@ -83,6 +83,7 @@ int of_parse_thermal_zones(void);
-> >  void of_thermal_destroy_zones(void);
-> >  int of_thermal_get_ntrips(struct thermal_zone_device *);
-> >  int of_thermal_is_trip_en(struct thermal_zone_device *, int);
-> > +int of_thermal_get_non_crit_ntrips(struct thermal_zone_device *);
-> >  #else
-> >  static inline int of_parse_thermal_zones(void) { return 0; }
-> >  static inline void of_thermal_destroy_zones(void) { }
-> > @@ -94,6 +95,10 @@ int of_thermal_is_trip_en(struct
-> > thermal_zone_device *, int) {
-> >  	return 0;
-> >  }
-> > +int of_thermal_get_non_crit_ntrips(struct thermal_zone_device *)
-> here, it is supposed to be static inline.
-> 
-> > +{
-> > +	return 0;
-> > +}
-> >  #endif
-> >  
-> >  #endif /* __THERMAL_CORE_H__ */
-> > -- 
-> > 2.0.0.rc2
-> > 
-
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+--wrbmJCjDMpeEYJph--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
