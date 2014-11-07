@@ -1,108 +1,72 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH v2 1/3] powercap/rapl: abstract per cpu type functions
-Date: Fri,  7 Nov 2014 09:29:25 -0800
-Message-ID: <1415381367-16693-2-git-send-email-jacob.jun.pan@linux.intel.com>
-References: <1415381367-16693-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:16068 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751788AbaKGR34 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 7 Nov 2014 12:29:56 -0500
-In-Reply-To: <1415381367-16693-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 0/2] cpuidle: exynos: add coupled cpuidle support for Exynos4210
+Date: Fri, 07 Nov 2014 19:00:49 +0100
+Message-ID: <1415383252-20118-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Colin Cross <ccross@google.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
-Cc: Len Brown <len.brown@intel.com>, Ajay Thomas <ajay.thomas.david.rajamanickam@intel.com>, Noor U Mubeen <noor.u.mubeen@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-RAPL implementations may vary slightly between Core and Atom CPUs. There are
-also potential differences among generations of CPUs within the family.
+Hi,
 
-This patch adds a per model structure to abstract the differences such that
-variations can be handled cleanly.
+The following patchset adds coupled cpuidle support for Exynos4210
+to an existing cpuidle-exynos driver.  As a result it enables AFTR
+mode to be used by default on Exynos4210 without the need to hot
+unplug CPU1 first.
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/powercap/intel_rapl.c | 45 +++++++++++++++++++++++++++++++++----------
- 1 file changed, 35 insertions(+), 10 deletions(-)
+This work is heavily based on earlier cpuidle-exynos4210 driver from
+Daniel Lezcano:
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 45e05b3..256efed 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -188,6 +188,15 @@ struct rapl_package {
- 					*/
- 	struct list_head plist;
- };
-+
-+struct rapl_defaults {
-+	int (*check_unit)(struct rapl_package *rp, int cpu);
-+	void (*set_floor_freq)(struct rapl_domain *rd, bool mode);
-+	u64 (*compute_time_window)(struct rapl_package *rp, u64 val,
-+				bool to_raw);
-+};
-+static struct rapl_defaults *rapl_defaults;
-+
- #define PACKAGE_PLN_INT_SAVED   BIT(0)
- #define MAX_PRIM_NAME (32)
- 
-@@ -946,16 +955,28 @@ static void package_power_limit_irq_restore(int package_id)
- 	wrmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
- }
- 
-+static const struct rapl_defaults rapl_defaults_core = {
-+};
-+
-+static const struct rapl_defaults rapl_defaults_atom = {
-+};
-+
-+#define RAPL_CPU(_model, _ops) {			\
-+		.vendor = X86_VENDOR_INTEL,		\
-+		.family = 6,				\
-+		.model = _model,			\
-+		.driver_data = (kernel_ulong_t)&_ops,	\
-+		}
-+
- static const struct x86_cpu_id rapl_ids[] = {
--	{ X86_VENDOR_INTEL, 6, 0x2a},/* Sandy Bridge */
--	{ X86_VENDOR_INTEL, 6, 0x2d},/* Sandy Bridge EP */
--	{ X86_VENDOR_INTEL, 6, 0x37},/* Valleyview */
--	{ X86_VENDOR_INTEL, 6, 0x3a},/* Ivy Bridge */
--	{ X86_VENDOR_INTEL, 6, 0x3c},/* Haswell */
--	{ X86_VENDOR_INTEL, 6, 0x3d},/* Broadwell */
--	{ X86_VENDOR_INTEL, 6, 0x3f},/* Haswell */
--	{ X86_VENDOR_INTEL, 6, 0x45},/* Haswell ULT */
--	/* TODO: Add more CPU IDs after testing */
-+	RAPL_CPU(0x2a, rapl_defaults_core),/* Sandy Bridge */
-+	RAPL_CPU(0x2d, rapl_defaults_core),/* Sandy Bridge EP */
-+	RAPL_CPU(0x37, rapl_defaults_atom),/* Valleyview */
-+	RAPL_CPU(0x3a, rapl_defaults_core),/* Ivy Bridge */
-+	RAPL_CPU(0x3c, rapl_defaults_core),/* Haswell */
-+	RAPL_CPU(0x3d, rapl_defaults_core),/* Broadwell */
-+	RAPL_CPU(0x3f, rapl_defaults_core),/* Haswell */
-+	RAPL_CPU(0x45, rapl_defaults_core),/* Haswell ULT */
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
-@@ -1358,14 +1379,18 @@ static struct notifier_block rapl_cpu_notifier = {
- static int __init rapl_init(void)
- {
- 	int ret = 0;
-+	const struct x86_cpu_id *id;
- 
--	if (!x86_match_cpu(rapl_ids)) {
-+	id = x86_match_cpu(rapl_ids);
-+	if (!id) {
- 		pr_err("driver does not support CPU family %d model %d\n",
- 			boot_cpu_data.x86, boot_cpu_data.x86_model);
- 
- 		return -ENODEV;
- 	}
- 
-+	rapl_defaults = (struct rapl_defaults *)id->driver_data;
-+
- 	cpu_notifier_register_begin();
- 
- 	/* prevent CPU hotplug during detection */
+http://www.spinics.net/lists/linux-samsung-soc/msg28134.html
+
+Changes from Daniel's code include:
+- porting code to current kernels
+- fixing it to work on my setup (by using S5P_INFORM register
+  instead of S5P_VA_SYSRAM one on Revison 1.1 and retrying poking
+  CPU1 out of the BOOT ROM if necessary)
+- fixing rare lockup caused by waiting for CPU1 to get stuck in
+  the BOOT ROM (CPU hotplug code in arch/arm/mach-exynos/platsmp.c
+  doesn't require this and works fine)
+- moving Exynos specific code to arch/arm/mach-exynos/pm.c
+- using cpu_boot_reg_base() helper instead of BOOT_VECTOR macro
+- using exynos_cpu_*() helpers instead of accessing registers
+  directly
+- using arch_send_wakeup_ipi_mask() instead of dsb_sev()
+  (this matches CPU hotplug code in arch/arm/mach-exynos/platsmp.c)
+- integrating separate exynos4210-cpuidle driver into existing
+  exynos-cpuidle one
+
+patch #1 is a fix for Exynos platform PM code preparing it for
+coupled cpuidle support
+
+patch #2 adds coupled cpuidle AFTR mode for Exynos4210
+
+The patchset depends on:
+- 'next-20141031' branch of linux-next kernel tree (it also applies
+  fine to for-next branch of linux-samsung.git tree from today)
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (2):
+  ARM: EXYNOS: apply S5P_CENTRAL_SEQ_OPTION fix only when necessary
+  cpuidle: exynos: add coupled cpuidle support for Exynos4210
+
+ arch/arm/mach-exynos/common.h                |   4 +
+ arch/arm/mach-exynos/exynos.c                |   4 +
+ arch/arm/mach-exynos/platsmp.c               |   2 +-
+ arch/arm/mach-exynos/pm.c                    | 133 ++++++++++++++++++++++++++-
+ arch/arm/mach-exynos/suspend.c               |   4 +
+ drivers/cpuidle/Kconfig.arm                  |   1 +
+ drivers/cpuidle/cpuidle-exynos.c             |  62 ++++++++++++-
+ include/linux/platform_data/cpuidle-exynos.h |  20 ++++
+ 8 files changed, 220 insertions(+), 10 deletions(-)
+ create mode 100644 include/linux/platform_data/cpuidle-exynos.h
+
 -- 
-1.9.1
-
+1.8.2.3
