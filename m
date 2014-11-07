@@ -1,97 +1,52 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v17 1/5] thermal: rockchip: add driver for thermal
-Date: Thu, 6 Nov 2014 17:57:28 -0800
-Message-ID: <20141107015728.GF34214@dtor-ws>
-References: <1414809873-32227-1-git-send-email-caesar.wang@rock-chips.com>
- <1414809873-32227-2-git-send-email-caesar.wang@rock-chips.com>
- <20141107013017.GA10180@developer>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: [PATCH 0/5] mfd: rt5033: Add Richtek RT5033 drivers
+Date: Fri, 07 Nov 2014 11:52:02 +0900
+Message-ID: <1415328727-16245-1-git-send-email-beomho.seo@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f179.google.com ([209.85.223.179]:53583 "EHLO
-	mail-ie0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbaKGB5d (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 20:57:33 -0500
-Content-Disposition: inline
-In-Reply-To: <20141107013017.GA10180@developer>
+Received: from mailout2.samsung.com ([203.254.224.25]:27654 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751069AbaKGCwM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 21:52:12 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Caesar Wang <caesar.wang@rock-chips.com>, heiko@sntech.de, rui.zhang@intel.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, fzf@rock-chips.com
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: sameo@linux.intel.com, lee.jones@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, kyungmin.park@samsung.com, cw00.choi@samsung.com, jonghwa3.lee@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Beomho Seo <beomho.seo@samsung.com>
 
-Hi Eduardo,
+ This patchset adds driver for Richtek rt5033 chip The chip contains
+switching charge mode Li-Ion/Li-Polymer battery charger, fuelgauge, regulators.
+This patchset provides common support for accessing the device.
+This patchset have been tested base on exynos board.
 
-On Thu, Nov 06, 2014 at 09:30:20PM -0400, Eduardo Valentin wrote:
-> Hello Caesar,
-> 
-> On Sat, Nov 01, 2014 at 10:44:29AM +0800, Caesar Wang wrote:
-> > Thermal is TS-ADC Controller module supports
-> > user-defined mode and automatic mode.
-> > 
-> > User-defined mode refers,TSADC all the control signals entirely by
-> > software writing to register for direct control.
-> > 
-> > Automaic mode refers to the module automatically poll TSADC output,
-> > and the results were checked.If you find that the temperature High
-> > in a period of time,an interrupt is generated to the processor
-> > down-measures taken;If the temperature over a period of time High,
-> > the resulting TSHUT gave CRU module,let it reset the entire chip,
-> > or via GPIO give PMIC.
-> > 
-> 
-> First thing, very good progress in this driver! 
-> 
-> > Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
-> > Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
-> > Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> 
-> Just for the sake of code / documentation history, this patch, which
-> adds the driver, should come after patch 2, which adds dt documentation.
-> 
-> > ---
-> >  drivers/thermal/Kconfig            |   9 +
-> >  drivers/thermal/Makefile           |   1 +
-> >  drivers/thermal/rockchip_thermal.c | 711 +++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 721 insertions(+)
-> >  create mode 100644 drivers/thermal/rockchip_thermal.c
-> 
-> <big cut>
-> 
-> > +static int
-> > +rockchip_thermal_register_sensor(struct platform_device *pdev,
-> > +				 struct rockchip_thermal_data *thermal,
-> > +				 struct rockchip_thermal_sensor *sensor,
-> > +				 enum sensor_id id)
-> > +{
-> > +	const struct rockchip_tsadc_chip *tsadc = thermal->chip;
-> > +	int error;
-> > +
-> > +	tsadc->set_tshut_mode(id, thermal->regs, thermal->tshut_mode);
-> > +	tsadc->set_tshut_temp(id, thermal->regs, thermal->tshut_temp);
-> > +
-> > +	sensor->thermal = thermal;
-> > +	sensor->id = id;
-> > +	sensor->tzd = thermal_zone_of_sensor_register(&pdev->dev, id, sensor,
-> > +						rockchip_thermal_get_temp,
-> > +						NULL,
-> > +						rockchip_thermal_set_trips);
-> 
-> So, did I miss something here? Looks like you have extended the of
-> thermal, and I haven't seen the patch.
->   CC [M]  drivers/thermal/rockchip_thermal.o
->   drivers/thermal/rockchip_thermal.c: In function
->   `rockchip_thermal_register_sensor':
->   drivers/thermal/rockchip_thermal.c:482:7: error: too many arguments to
->   function `thermal_zone_of_sensor_register'
->          rockchip_thermal_set_trips);
+Beomho Seo (5):
+  mfd: rt5033: Add Rictek RT5033 driver core.
+  regulator: rt5033: Add RT5033 Regulator device driver
+  power: rt5033_battery: Add RT5033 Fuel gauge device driver
+  power: rt5033_charger: Add RT5033 charger device driver
+  Documentation: Add documentation for rt5033 multifunction device
 
-Yes, it relies on patch by Mikko Perttunen adding support for
-hardware-supported trip points. It allows us to reduce polling frequency
-while still being able to react when we cross the tripping point.
-
-See https://lkml.org/lkml/2014/6/27/76
-
-Thanks.
+ Documentation/devicetree/bindings/mfd/rt5033.txt   |  115 +++++
+ .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+ drivers/mfd/Kconfig                                |   11 +
+ drivers/mfd/Makefile                               |    1 +
+ drivers/mfd/rt5033.c                               |  157 +++++++
+ drivers/power/Kconfig                              |   16 +
+ drivers/power/Makefile                             |    2 +
+ drivers/power/rt5033_battery.c                     |  189 ++++++++
+ drivers/power/rt5033_charger.c                     |  485 ++++++++++++++++++++
+ drivers/regulator/Kconfig                          |    8 +
+ drivers/regulator/Makefile                         |    1 +
+ drivers/regulator/rt5033-regulator.c               |  154 +++++++
+ include/linux/mfd/rt5033-private.h                 |  255 ++++++++++
+ include/linux/mfd/rt5033.h                         |   64 +++
+ 14 files changed, 1459 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/rt5033.txt
+ create mode 100644 drivers/mfd/rt5033.c
+ create mode 100644 drivers/power/rt5033_battery.c
+ create mode 100644 drivers/power/rt5033_charger.c
+ create mode 100644 drivers/regulator/rt5033-regulator.c
+ create mode 100644 include/linux/mfd/rt5033-private.h
+ create mode 100644 include/linux/mfd/rt5033.h
 
 -- 
-Dmitry
+1.7.9.5
+
