@@ -1,159 +1,119 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3] imx: thermal: imx_get_temp might be called before
- sensor clock is prepared
-Date: Fri, 7 Nov 2014 14:18:46 -0400
-Message-ID: <20141107181837.GA23972@developer>
-References: <543C3B4B.6080700@web.de>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 03/12] PM / Domains: Add notifier support for power domain transitions
+Date: Fri, 07 Nov 2014 10:45:20 -0800
+Message-ID: <7h8ujmsvcv.fsf@deeprootsystems.com>
+References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
+	<1414986790-11940-4-git-send-email-amit.daniel@samsung.com>
+	<1651173.5xzCFxz3LI@vostro.rjw.lan>
+	<7hmw88gn3q.fsf@deeprootsystems.com>
+	<CADGdYn5Prbbe6Rz=OfVMXm3dinCPrE-N0fn23dMMhZb8GzXm-Q@mail.gmail.com>
+	<5458B1FA.7050401@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="h31gzZEtNLTqOjlF"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f182.google.com ([209.85.216.182]:48603 "EHLO
-	mail-qc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751655AbaKGSTD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 13:19:03 -0500
-Received: by mail-qc0-f182.google.com with SMTP id m20so2991911qcx.13
-        for <linux-pm@vger.kernel.org>; Fri, 07 Nov 2014 10:19:02 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <543C3B4B.6080700@web.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <5458B1FA.7050401@samsung.com> (Sylwester Nawrocki's message of
+	"Tue, 04 Nov 2014 12:01:14 +0100")
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: amit daniel kachhap <amit.daniel@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, pankaj.dubey@samsung.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, LAK <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Heiner Kallweit <heiner.kallweit@web.de>
-Cc: linux-pm@vger.kernel.org
 
+Sylwester Nawrocki <s.nawrocki@samsung.com> writes:
 
---h31gzZEtNLTqOjlF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On 04/11/14 07:44, amit daniel kachhap wrote:
+>> On Mon, Nov 3, 2014 at 11:53 PM, Kevin Hilman <khilman@kernel.org> wrote:
+>>> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+>>>> On Monday, November 03, 2014 09:23:01 AM Amit Daniel Kachhap wrote:
+>>>>> These power domain transition notifiers will assist in carrying
+>>>>> out some activity associated with domain power on/off such as
+>>>>> some registers which may lose its contents and need save/restore
+>>>>> across domain power off/on.
+>>>
+>>> The runtime PM framework already provides callbacks that are useful for
+>>> context save/restore for devices.  Could you please describe in more
+>>> detail which registers in which kind of devices need to be
+>>> saved/restored, and why they cannot be saved/restored using existing
+>>> mechanisms.
+>>
+>> Basically the requirement is mandated by exynos7 manual. It tells that
+>> before turning off the power domain, some clock registers need to saved
+>> and should be restored just after turning the power domain. These clock
+>> registers are not necessarily gate clocks but could be mux clocks etc.
+>> The driver may not have all information of these clocks also. I suppose
+>> these are Soc specific changes but drivers should work across Socs.
+>> This behavior is almost similar to suspend/resume case where a whole
+>> list of clock registers are saved/restored.
+>
+> Indeed, the somehow complicated power domain power on/off sequences
+> are SoC specific.  They involve not only groups of clocks (usually
+> gate, mux clock registers of all devices in a power domain) but also
+> SoC-specific PMU (Power Management Unit) registers.
+> I assume it would be inappropriate to push such details to device 
+> drivers.  Moreover, a device driver could not be even loaded.
+>
+> Since the clocks' state is already maintained by clk driver we came 
+> up with an idea of having generic calls from power domain driver back 
+> to the clock controller driver.
 
+For the clock tree, it still seems to me that this is better handled in
+the SoC clock driver.  For example, when a power domain is about to be
+gated, all the devices in that domain are runtime suspended, and
+presumably all of their gate clocks are disabled.  Now, doesn't the
+clock driver know the clock tree parent-child hierarchy and shouldn't it
+be capable of saving the state of parent clocks (like mux clocks) etc?
 
-Hello Heiner,
+Stated diffrently, it still seems to me like we're pushing functionality
+in PM core notifiers that should be the responsibility of subsystem
+drivers. 
 
-On Mon, Oct 13, 2014 at 10:51:23PM +0200, Heiner Kallweit wrote:
-> imx_get_temp might be called before the sensor clock is prepared
-> thus resulting in a timeout of the first attempt to read temp:
-> thermal thermal_zone0: failed to read out thermal zone 0
-> Happened to me on a Utilite Standard with IMX6 Dual SoC.
->=20
-> Reason is that in imx_thermal_probe thermal_zone_device_register
-> is called before the sensor clock is prepared.
-> thermal_zone_device_register however calls
-> thermal_zone_device_update which eventually calls imx_get_temp.
->=20
-> Fix this by preparing the clock before calling
-> thermal_zone_device_register.
->=20
-> Signed-off-by: Heiner Kallweit <heiner.kallweit@web.de>
-> ---
-> v2: revised error path. Bail out and tidy up properly if we can't
->     get the clock or fail to enable it
-> v3: don't print error message if getting clock returns EPROBE_DEFER
-> ---
->  drivers/thermal/imx_thermal.c | 41 +++++++++++++++++++++++++------------=
-----
->  1 file changed, 25 insertions(+), 16 deletions(-)
->=20
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index 461bf3d..0e8ef55 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -521,6 +521,30 @@ static int imx_thermal_probe(struct platform_device =
-*pdev)
->                 return ret;
->         }
->=20
-> +       data->thermal_clk =3D devm_clk_get(&pdev->dev, NULL);
-> +       if (IS_ERR(data->thermal_clk)) {
-> +               ret =3D PTR_ERR(data->thermal_clk);
-> +               if (ret !=3D -EPROBE_DEFER)
-> +                       dev_err(&pdev->dev,
-> +                               "failed to get thermal clk: %d\n", ret);
-> +               cpufreq_cooling_unregister(data->cdev);
-> +               return ret;
-> +       }
-> +
-> +       /*
-> +        * Thermal sensor needs clk on to get correct value, normally
-> +        * we should enable its clk before taking measurement and disable
-> +        * clk after measurement is done, but if alarm function is enable=
-d,
-> +        * hardware will auto measure the temperature periodically, so we
-> +        * need to keep the clk always on for alarm function.
-> +        */
-> +       ret =3D clk_prepare_enable(data->thermal_clk);
-> +       if (ret) {
-> +               dev_err(&pdev->dev, "failed to enable thermal clk: %d\n",=
- ret);
-> +               cpufreq_cooling_unregister(data->cdev);
-> +               return ret;
-> +       }
-> +
->         data->tz =3D thermal_zone_device_register("imx_thermal_zone",
->                                                 IMX_TRIP_NUM,
->                                                 BIT(IMX_TRIP_PASSIVE), da=
-ta,
-> @@ -531,26 +555,11 @@ static int imx_thermal_probe(struct platform_device=
- *pdev)
->                 ret =3D PTR_ERR(data->tz);
->                 dev_err(&pdev->dev,
->                         "failed to register thermal zone device %d\n", re=
-t);
-> +               clk_disable_unprepare(data->thermal_clk);
->                 cpufreq_cooling_unregister(data->cdev);
->                 return ret;
->         }
->=20
-> -       data->thermal_clk =3D devm_clk_get(&pdev->dev, NULL);
-> -       if (IS_ERR(data->thermal_clk)) {
-> -               dev_warn(&pdev->dev, "failed to get thermal clk!\n");
-> -       } else {
-> -               /*
-> -                * Thermal sensor needs clk on to get correct value, norm=
-ally
-> -                * we should enable its clk before taking measurement and=
- disable
-> -                * clk after measurement is done, but if alarm function i=
-s enabled,
-> -                * hardware will auto measure the temperature periodicall=
-y, so we
-> -                * need to keep the clk always on for alarm function.
-> -                */
-> -               ret =3D clk_prepare_enable(data->thermal_clk);
-> -               if (ret)
-> -                       dev_warn(&pdev->dev, "failed to enable thermal cl=
-k: %d\n", ret);
-> -       }
-> -
->         /* Enable measurements at ~ 10 Hz */
->         regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
->         measure_freq =3D DIV_ROUND_UP(32768, 10); /* 10 Hz */
+> It might not to be the prettiest solution, nevertheless I couldn't come 
+> up with a better one which would satisfy all the requirements.  The power
+> domain should only be provided for use with all the clk/PMU sequences 
+> handling in place.
+>
+> Clocks need to also be touched before a power domain switch on or off,
+> so attaching the clock controller to some power domain wouldn't help,
+> unless we modify/add to existing power domain related callbacks for 
+> devices.  Another issue is the clock controller device would need to 
+> be attached to multiple power domains, and for each power domain the 
+> power on/off sequence is usually slightly different.
+>
+> There are also hierarchical power domains where each: the master and
+> the sub-domain need they own sequence and device usually is attached
+> only to a sub-domain.  
+>
+>> Even earlier post by Sylwester (https://lkml.org/lkml/2014/8/5/182) 
+>> also points to the need of this feature.
+>>>
+>>> Personally, I'm uncomfortable with notifiers like this because it
+>>> suggests that underlying frameworks are not doing the right thing, or
+>>> are not being used.  (I also don't like the implementation here where a
+>>> single global notifier list is maintained by the core, but the notifiers
+>>> are actually triggered by SoC specific code.)
+>>
+>> Yes right the global notifier block can be moved to per genpd structure.
+>> Also SoC trigger can be moved to core files.
+>>>
+>>> IIUC, the usage in this series seems to be that certain clock related
+>>> registers need to be saved/restored across a power domain transition.
+>>>
+>>> Wouldn't an alternative solution be to add a feature to the clock driver
+>>> such that the state of each clock is saved when the clock is disabled,
+>>> and restored when the clock is enabled?   That would allow any clock
+>>> context to survive any power domain transtion also, correct?
+>>
+>> I also thought about same. But the trigger point for this would be
+>> driver calling clk disable/enable and not the power domain. so this 
+>> will lead to lot of save/restore for each power domain child.
+>
+> Even though we would have saved/restored at that points still the power
+> domain driver would need to enforce some specific clock/PMU registers 
+> state before/after a power domain state transition. And this is what I 
+> found difficult with the existing APIs.
 
+This is what I'm not understanding.
 
-While here, do you need to move up also the configuration of the
-measurements at ~ 10 Hz? Or would still the first readings be correct
-while at the reset value?
+Why can't the power domain driver's power_on/power_off callback just
+call the PMU APIs and/or the clk_enable/_disable calls it needs?
 
-Cheers,
-
-Eduardo Valentin
-> --
-> 2.1.2
-
---h31gzZEtNLTqOjlF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUXQz0AAoJEMLUO4d9pOJWGEEH/286lEalaa7L1o0HhLBlz07Q
-fiCT/DUdzEEcXE77YyjMvRYfYp80cnaS7oI30YuC+AKE2Hn5h2fjZGB8pLlSDkOw
-YKQ1RzlzzbKVtWsmpJSYC4vnuBa2pZNtKfsW9y558ApLz5Fxf2oHr5a7aGFaHwvN
-rNEG+vnIT7xa0FOHGWQQuc63zXmv4IlfIwJ3vWvp6RFGdXOC7Faku7ox8s7d8Y+Q
-lUi9NaltmN8J9y+2Z9a4jI992nqlXRB6Spr3L3MajrAqBkFHj8nUaOUkOJBOVWih
-fxQnsWL9MC+uJyJKLdp58TAqa8ivexlTsPlhn0imPOhI5arcCfbgJ5cPyuQrvAU=
-=kANE
------END PGP SIGNATURE-----
-
---h31gzZEtNLTqOjlF--
+Kevin
