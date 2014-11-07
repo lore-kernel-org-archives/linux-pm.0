@@ -1,116 +1,226 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v9 2/4] amba: Don't unprepare the clocks if device driver
- wants IRQ safe runtime PM
-Date: Fri, 07 Nov 2014 14:21:48 +0100
-Message-ID: <1415366508.31102.10.camel@AMDC1943>
-References: <1415105570-7871-1-git-send-email-k.kozlowski@samsung.com>
- <1415105570-7871-3-git-send-email-k.kozlowski@samsung.com>
- <20141104201834.GC15071@amd> <1415176978.15850.11.camel@AMDC1943>
- <20141107121320.GA20419@amd> <1415362683.31102.6.camel@AMDC1943>
- <20141107122850.GB20419@amd>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] PM / Domains: Fix initial default state of the need_restore flag
+Date: Fri,  7 Nov 2014 14:27:27 +0100
+Message-ID: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:33775 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752610AbaKGNVx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 08:21:53 -0500
-In-reply-to: <20141107122850.GB20419@amd>
+Received: from mail-lb0-f178.google.com ([209.85.217.178]:65004 "EHLO
+	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751937AbaKGN1p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 08:27:45 -0500
+Received: by mail-lb0-f178.google.com with SMTP id f15so2972033lbj.9
+        for <linux-pm@vger.kernel.org>; Fri, 07 Nov 2014 05:27:44 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On pi=C4=85, 2014-11-07 at 13:28 +0100, Pavel Machek wrote:
-> On Fri 2014-11-07 13:18:03, Krzysztof Kozlowski wrote:
-> > On pi=C4=85, 2014-11-07 at 13:13 +0100, Pavel Machek wrote:
-> > > On Wed 2014-11-05 09:42:58, Krzysztof Kozlowski wrote:
-> > > > On wto, 2014-11-04 at 21:18 +0100, Pavel Machek wrote:
-> > > > > On Tue 2014-11-04 13:52:48, Krzysztof Kozlowski wrote:
-> > > > > > The AMBA bus driver defines runtime Power Management functi=
-ons which
-> > > > > > disable and unprepare AMBA bus clock. This is problematic f=
-or runtime PM
-> > > > > > because unpreparing a clock might sleep so it is not interr=
-upt safe.
-> > > > > >=20
-> > > > > > However some drivers may want to implement runtime PM funct=
-ions in
-> > > > > > interrupt-safe way (see pm_runtime_irq_safe()). In such cas=
-e the AMBA
-> > > > > > bus driver should only disable/enable the clock in runtime =
-suspend and
-> > > > > > resume callbacks.
-> > > > >=20
-> > > > >=20
-> > > > >=20
-> > > > > >  /*
-> > > > > >   * Hooks to provide runtime PM of the pclk (bus clock).  I=
-t is safe to
-> > > > > >   * enable/disable the bus clock at runtime PM suspend/resu=
-me as this
-> > > > > > @@ -95,8 +102,14 @@ static int amba_pm_runtime_suspend(stru=
-ct device *dev)
-> > > > > >  	struct amba_device *pcdev =3D to_amba_device(dev);
-> > > > > >  	int ret =3D pm_generic_runtime_suspend(dev);
-> > > > > > =20
-> > > > > > -	if (ret =3D=3D 0 && dev->driver)
-> > > > > > -		clk_disable_unprepare(pcdev->pclk);
-> > > > > > +	if (ret =3D=3D 0 && dev->driver) {
-> > > > > > +		pcdev->irq_safe =3D get_pm_runtime_irq_safe(dev);
-> > > > > > +
-> > > > > > +		if (pcdev->irq_safe)
-> > > > > > +			clk_disable(pcdev->pclk);
-> > > > > > +		else
-> > > > > > +			clk_disable_unprepare(pcdev->pclk);
-> > > > > > +	}
-> > > > >=20
-> > > > > So you can handle the case of !pcdev->irq_safe. What is the p=
-enalty
-> > > > > for always assuming !pcdev->irq_safe?
-> > > >=20
-> > > > The penalty (for pl330 driver) would be that the runtime resume=
-/suspend
-> > > > cannot happen from atomic context
-> > > >   =3D> pm_runtime_get_sync() cannot be called from atomic conte=
-xt
-> > > >     =3D> complete rework of runtime PM for pl330 DMA driver bec=
-ause now
-> > > >        one of pm_runtime_get_sync() calls is in device_issue_pe=
-nding
-> > > >        callback which may not sleep. And by "rework" I also mea=
-n that
-> > > >        I do not know how to do this... yet.
-> > >=20
-> > > I still don't get it. You say that you don't know how to handle
-> > > !pcdev->irq_safe case... Yet have code above that tries to handle=
- it.
-> > >=20
-> > > If that case can't be sanely handled, I'd expect
-> > > BUG_ON(!pcdev->irq_safe).
-> >=20
-> > Hmmm... I could misunderstand your question. The amba/bus.c driver =
-can
-> > handle both cases. However this varies for child drivers (which use
-> > these runtime PM callbacks too). For pl330 cannot handle non-irq-sa=
-fe.
-> > Other drivers can.
->=20
-> Ok, so pl330 can't handle non-irq-safe callbacks. What about the othe=
-r
-> solution preserving consistency -- can we make sure all callbacks are
-> irq-safe with acceptable penalty?
+The initial state of the device's need_restore flag should'nt depend on
+the current state of the PM domain. For example it should be perfectly
+valid to attach an inactive device to a powered PM domain.
 
-Aaahhh, I get it. We could revert 5303c0f46c87 ("ARM: 7916/1: amba: Add
-clk_prepare|unprepare in runtime PM callbacks"). After quick grep
-through amba drivers it seems that this should work and the only impact
-would be that less energy could be saved on other drivers (clock only
-disabled, not unprepared).
+The pm_genpd_dev_need_restore() API allow us to update the need_restore
+flag to somewhat cope with such scenarios. Typically that should have
+been done from drivers/buses ->probe() since it's those that put the
+requirements on the value of the need_restore flag.
 
-However someone more experienced in amba drivers should confirm this.
+Until recently, the Exynos SOCs were the only user of the
+pm_genpd_dev_need_restore() API, though invoking it from a centralized
+location while adding devices to their PM domains.
 
-Best regards,
-Krzysztof
+Due to that Exynos now have swithed to the generic OF-based PM domain
+look-up, it's no longer possible to invoke the API from a centralized
+location. The reason is because devices are now added to their PM
+domains during the probe sequence.
 
+Commit "ARM: exynos: Move to generic PM domain DT bindings"
+did the switch for Exynos to the generic OF-based PM domain look-up,
+but it also removed the call to pm_genpd_dev_need_restore(). This
+caused a regression for some of the Exynos drivers.
+
+To handle things more properly in the generic PM domain, let's change
+the default initial value of the need_restore flag to reflect that the
+state is unknown. As soon as some of the runtime PM callbacks gets
+invoked, update the initial value accordingly.
+
+Moreover, since the generic PM domain is verifying that all device's
+are both runtime PM enabled and suspended, using pm_runtime_suspended()
+while pm_genpd_poweroff() is invoked from the scheduled work, we can be
+sure of that the PM domain won't be powering off while having active
+devices.
+
+Do note that, the generic PM domain can still only know about active
+devices which has been activated through invoking its runtime PM resume
+callback. In other words, buses/drivers using pm_runtime_set_active()
+during ->probe() will still suffer from a race condition, potentially
+probing a device without having its PM domain being powered. That issue
+will have to be solved using a different approach.
+
+This a log from the boot regression for Exynos5, which is being fixed in
+this patch.
+
+------------[ cut here ]------------
+WARNING: CPU: 0 PID: 308 at ../drivers/clk/clk.c:851 clk_disable+0x24/0x30()
+Modules linked in:
+CPU: 0 PID: 308 Comm: kworker/0:1 Not tainted 3.18.0-rc3-00569-gbd9449f-dirty #10
+Workqueue: pm pm_runtime_work
+[<c0013c64>] (unwind_backtrace) from [<c0010dec>] (show_stack+0x10/0x14)
+[<c0010dec>] (show_stack) from [<c03ee4cc>] (dump_stack+0x70/0xbc)
+[<c03ee4cc>] (dump_stack) from [<c0020d34>] (warn_slowpath_common+0x64/0x88)
+[<c0020d34>] (warn_slowpath_common) from [<c0020d74>] (warn_slowpath_null+0x1c/0x24)
+[<c0020d74>] (warn_slowpath_null) from [<c03107b0>] (clk_disable+0x24/0x30)
+[<c03107b0>] (clk_disable) from [<c02cc834>] (gsc_runtime_suspend+0x128/0x160)
+[<c02cc834>] (gsc_runtime_suspend) from [<c0249024>] (pm_generic_runtime_suspend+0x2c/0x38)
+[<c0249024>] (pm_generic_runtime_suspend) from [<c024f44c>] (pm_genpd_default_save_state+0x2c/0x8c)
+[<c024f44c>] (pm_genpd_default_save_state) from [<c024ff2c>] (pm_genpd_poweroff+0x224/0x3ec)
+[<c024ff2c>] (pm_genpd_poweroff) from [<c02501b4>] (pm_genpd_runtime_suspend+0x9c/0xcc)
+[<c02501b4>] (pm_genpd_runtime_suspend) from [<c024a4f8>] (__rpm_callback+0x2c/0x60)
+[<c024a4f8>] (__rpm_callback) from [<c024a54c>] (rpm_callback+0x20/0x74)
+[<c024a54c>] (rpm_callback) from [<c024a930>] (rpm_suspend+0xd4/0x43c)
+[<c024a930>] (rpm_suspend) from [<c024bbcc>] (pm_runtime_work+0x80/0x90)
+[<c024bbcc>] (pm_runtime_work) from [<c0032a9c>] (process_one_work+0x12c/0x314)
+[<c0032a9c>] (process_one_work) from [<c0032cf4>] (worker_thread+0x3c/0x4b0)
+[<c0032cf4>] (worker_thread) from [<c003747c>] (kthread+0xcc/0xe8)
+[<c003747c>] (kthread) from [<c000e738>] (ret_from_fork+0x14/0x3c)
+---[ end trace 40cd58bcd6988f12 ]---
+
+Fixes: a4a8c2c4962bb655 (ARM: exynos: Move to generic PM domain DT bindings)
+Reported-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+
+This patch is intended as fix for 3.18 rc[n] due to the regression for Exynos
+SOCs.
+
+I would also like to call for help in getting this thoroughly tested.
+
+I have tested this on Arndale Dual, Exynos 5250. According the log attached in
+the commit message as well.
+
+I have tested this on UX500, which support for the generic PM domain is about
+to be queued for 3.19. Since UX500 uses the AMBA bus/drivers, which uses
+pm_runtime_set_active() instead of pm_runtime_get_sync() during ->probe(), I
+could also verify that this behavior is maintained.
+
+Finally I have also tested this patchset on UX500 and using the below patchset
+to make sure the approach is suitable long term wise as well.
+[PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+http://www.spinics.net/lists/arm-kernel/msg369409.html
+
+---
+ drivers/base/power/domain.c | 38 +++++++++++++++++++++++++++++++-------
+ include/linux/pm_domain.h   |  2 +-
+ 2 files changed, 32 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index b520687..a9523a3 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -361,9 +361,19 @@ static int __pm_genpd_save_device(struct pm_domain_data *pdd,
+ 	struct device *dev = pdd->dev;
+ 	int ret = 0;
+ 
+-	if (gpd_data->need_restore)
++	if (gpd_data->need_restore == 1)
+ 		return 0;
+ 
++	/*
++	 * If the value of the need_restore flag is still unknown at this point,
++	 * we trust that pm_genpd_poweroff() has verified that the device is
++	 * already runtime PM suspended.
++	 */
++	if (gpd_data->need_restore == -1) {
++		gpd_data->need_restore = 1;
++		return 0;
++	}
++
+ 	mutex_unlock(&genpd->lock);
+ 
+ 	genpd_start_dev(genpd, dev);
+@@ -373,7 +383,7 @@ static int __pm_genpd_save_device(struct pm_domain_data *pdd,
+ 	mutex_lock(&genpd->lock);
+ 
+ 	if (!ret)
+-		gpd_data->need_restore = true;
++		gpd_data->need_restore = 1;
+ 
+ 	return ret;
+ }
+@@ -389,13 +399,17 @@ static void __pm_genpd_restore_device(struct pm_domain_data *pdd,
+ {
+ 	struct generic_pm_domain_data *gpd_data = to_gpd_data(pdd);
+ 	struct device *dev = pdd->dev;
+-	bool need_restore = gpd_data->need_restore;
++	int need_restore = gpd_data->need_restore;
+ 
+-	gpd_data->need_restore = false;
++	gpd_data->need_restore = 0;
+ 	mutex_unlock(&genpd->lock);
+ 
+ 	genpd_start_dev(genpd, dev);
+-	if (need_restore)
++	/*
++	 * Make sure to also restore those devices which we until now, didn't
++	 * know the state for.
++	 */
++	if (need_restore != 0)
+ 		genpd_restore_dev(genpd, dev);
+ 
+ 	mutex_lock(&genpd->lock);
+@@ -603,6 +617,7 @@ static void genpd_power_off_work_fn(struct work_struct *work)
+ static int pm_genpd_runtime_suspend(struct device *dev)
+ {
+ 	struct generic_pm_domain *genpd;
++	struct generic_pm_domain_data *gpd_data;
+ 	bool (*stop_ok)(struct device *__dev);
+ 	int ret;
+ 
+@@ -628,6 +643,15 @@ static int pm_genpd_runtime_suspend(struct device *dev)
+ 		return 0;
+ 
+ 	mutex_lock(&genpd->lock);
++	/*
++	 * If we have an unknown state of the need_restore flag, it means none
++	 * of the runtime PM callbacks has been invoked yet. Let's update the
++	 * flag to reflect that the current state is active.
++	 */
++	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
++	if (gpd_data->need_restore == -1)
++		gpd_data->need_restore = 0;
++
+ 	genpd->in_progress++;
+ 	pm_genpd_poweroff(genpd);
+ 	genpd->in_progress--;
+@@ -1442,7 +1466,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	mutex_lock(&gpd_data->lock);
+ 	gpd_data->base.dev = dev;
+ 	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
+-	gpd_data->need_restore = genpd->status == GPD_STATE_POWER_OFF;
++	gpd_data->need_restore = -1;
+ 	gpd_data->td.constraint_changed = true;
+ 	gpd_data->td.effective_constraint_ns = -1;
+ 	mutex_unlock(&gpd_data->lock);
+@@ -1546,7 +1570,7 @@ void pm_genpd_dev_need_restore(struct device *dev, bool val)
+ 
+ 	psd = dev_to_psd(dev);
+ 	if (psd && psd->domain_data)
+-		to_gpd_data(psd->domain_data)->need_restore = val;
++		to_gpd_data(psd->domain_data)->need_restore = val ? 1 : 0;
+ 
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+ }
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index b3ed776..2e0e06d 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -106,7 +106,7 @@ struct generic_pm_domain_data {
+ 	struct notifier_block nb;
+ 	struct mutex lock;
+ 	unsigned int refcount;
+-	bool need_restore;
++	int need_restore;
+ };
+ 
+ #ifdef CONFIG_PM_GENERIC_DOMAINS
+-- 
+1.9.1
 
