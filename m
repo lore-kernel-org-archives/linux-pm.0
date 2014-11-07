@@ -1,92 +1,51 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH 03/21] thermal: of: Extend of-thermal.c to provide number
- of non critical trip points
-Date: Fri, 7 Nov 2014 15:04:11 -0800
-Message-ID: <CAKdAkRRnWu3fCdviQyByCAjCDqUX-3_CWhKpYH65YnqmXH1b4Q@mail.gmail.com>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
-	<1412872737-624-4-git-send-email-l.majewski@samsung.com>
-	<20141107014152.GD10180@developer>
-	<20141107110551.5316836f@amdc2363>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v10 1/5] PM / Runtime: Allow accessing irq_safe if no PM_RUNTIME
+Date: Sat, 08 Nov 2014 00:45:52 +0100
+Message-ID: <7655201.9JqC82S5EB@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1411070948180.1214-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f174.google.com ([209.85.217.174]:35829 "EHLO
-	mail-lb0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751762AbaKGXEN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 18:04:13 -0500
-In-Reply-To: <20141107110551.5316836f@amdc2363>
+Received: from v094114.home.net.pl ([79.96.170.134]:57603 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752699AbaKGXZE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 18:25:04 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1411070948180.1214-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Linux PM list <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Hi Lukasz,
+On Friday, November 07, 2014 09:50:58 AM Alan Stern wrote:
+> On Fri, 7 Nov 2014, Krzysztof Kozlowski wrote:
+> 
+> > > Well, that is a good reason to introduce a wrapper around power.irq_safe in my
+> > > view.
+> > > 
+> > > And define the wrapper so that it always returns false for CONFIG_PM_RUNTIME
+> > > unset.
+> > > 
+> > > This way not only you wouldn't need to move the flag from under the #ifdef,
+> > > but also you would make the compiler skip the relevant pieces of code
+> > > entiretly for CONFIG_PM_RUNTIME unset.
+> > 
+> > Few days ago I would be happy with your opinion :), but know I think
+> > this is better solution than wrapper. Consider case:
+> > 1. PM_RUNTIME unset.
+> > 2. System suspends.
+> > 3. The pl330 in its suspend callback calls force_runtime_suspend which
+> > leads us to amba/bus.
+> > 4. The amba/bus.c in runtime suspend checks for irq_safe (it is FALSE),
+> > so it disables and unprepares the clock.
+> > 5. The pl330 in probe requested irq_safe so it assumes amba/bus will
+> > only disable the clock. So the pl330 unprepares the clock. Again.
+> 
+> To me, this sounds like a good reason to avoid using 
+> force_runtime_suspend().  In fact, it sounds like a good reason to 
+> avoid relying on the runtime PM mechanism to handle non-runtime-PM 
+> things (like a system suspend callback).  If CONFIG_PM_RUNTIME isn't 
+> enabled then the runtime PM stack simply should not be used.
 
-On Fri, Nov 7, 2014 at 2:05 AM, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> Hi Eduardo,
->
->> On Thu, Oct 09, 2014 at 06:38:39PM +0200, Lukasz Majewski wrote:
->> > This patch extends the of-thermal.c to provide information about
->> > number of available non critical (i.e. non HW) trip points in the
->> > system.
->> >
->> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->> > ---
->> >  drivers/thermal/of-thermal.c   | 12 ++++++++++++
->> >  drivers/thermal/thermal_core.h |  5 +++++
->> >  2 files changed, 17 insertions(+)
->> >
->> > diff --git a/drivers/thermal/of-thermal.c
->> > b/drivers/thermal/of-thermal.c index 23c8d6c..cd74e64 100644
->> > --- a/drivers/thermal/of-thermal.c
->> > +++ b/drivers/thermal/of-thermal.c
->> > @@ -128,6 +128,18 @@ int of_thermal_is_trip_en(struct
->> > thermal_zone_device *tz, int trip) return 1;
->> >  }
->> >
->> > +int of_thermal_get_non_crit_ntrips(struct thermal_zone_device *tz)
->> > +{
->> > +   struct __thermal_zone *data = tz->devdata;
->> > +   int i;
->> > +
->> > +   for (i = 0; i < data->ntrips; i++)
->> > +           if (data->trips[i].type != THERMAL_TRIP_CRITICAL)
->> > +                   continue;
->> > +
->> > +   return --i;
->> > +}
->> > +
->>
->>
->>
->> I am not against this addition. But looks like we start to spread some
->> specific APIs that may not be used to other drivers.
->
-> Why do you think that this is a specific API? In the thermal OF we can
-> define trip point as "active", "passive", "hot" and "critical".
->
-> With the first three we can handle them and properly react. For the last
-> one SoC's PMU will power down the board.
->
-> Do you know if any board (e.g. from TI) is NOT supposed to shut down
-> when "critical" temperature is passed?
->
-> The real problem here is the accessibility to __thermal_trip and
-> __thermal_bind arrays.
->
-> Use case:
-> In the Exynos driver we do need to initialize TMU registers with
-> threshold temperatures.
+Amen.
 
-Is this indeed plural or you want to program the next trip point as your
-alarm temperature? If so, there was another patch floating around adding
-set_trips() callback that would get passed in the low and high trip points for
-the current temperature reading and you can use that data to program
-alarms. Rockchip thermal driver uses it.
-
-https://lkml.org/lkml/2014/6/27/76
-
-Thanks.
-
--- 
-Dmitry
