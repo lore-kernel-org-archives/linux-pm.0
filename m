@@ -1,305 +1,120 @@
-From: Yadwinder Singh Brar <yadi.brar@samsung.com>
-Subject: RE: [PATCH] thermal: cpu_cooling: Update always cpufreq policy with
- thermal constraints
-Date: Fri, 07 Nov 2014 17:03:05 +0530
-Message-ID: <001001cffa7e$a8419f90$f8c4deb0$%brar@samsung.com>
-References: <1415189785-18593-1-git-send-email-yadi.brar@samsung.com>
- <20141105204638.GB5243@developer>
- <004c01cff9b0$6b450740$41cf15c0$%brar@samsung.com>
- <20141106074907.GA8176@developer>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v4] arm64: dts: exynos7: add support for cpuidle core
+ power down
+Date: Fri, 7 Nov 2014 11:58:45 +0000
+Message-ID: <20141107115845.GA2062@red-moon>
+References: <1415193331-14790-1-git-send-email-k.chander@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:30162 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751681AbaKGLdL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 06:33:11 -0500
-In-reply-to: <20141106074907.GA8176@developer>
-Content-language: en-us
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1415193331-14790-1-git-send-email-k.chander@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chander Kashyap <k.chander@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: 'Eduardo Valentin' <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zhang@intel.com, amit.daniel@samsung.com, viresh.kumar@linaro.org, linux-samsung-soc@vger.kernel.org, yadi.brar01@gmail.com
 
-Hello Eduardo Valentin, 
+On Wed, Nov 05, 2014 at 01:15:31PM +0000, Chander Kashyap wrote:
+> Exynos7 has core power down state where cores can be powered off independently.
 
-On Thursday, November 06, 2014 1:19 PM, Eduardo Valentin wrote:
-> Hello Yadwinder,
-> 
-> On Thu, Nov 06, 2014 at 04:26:27PM +0530, Yadwinder Singh Brar wrote:
-> > Hello Eduardo Valentin,
-> >
-> > On Thursday, November 06, 2014 2:17 AM, Eduardo Valentin wrote:
-> > > Hello Yadwinder,
-> > >
-> > > On Wed, Nov 05, 2014 at 05:46:25PM +0530, Yadwinder Singh Brar
-> wrote:
-> > > > Existing code updates cupfreq policy only while executing
-> > > > cpufreq_apply_cooling() function (i.e. when notify_device !=
-> > > NOTIFY_INVALID).
-> > >
-> > > Correct. The case you mention is when we receive a notification
-> from
-> > > cpufreq. But also, updates the cpufreq policy when the cooling
-> > > device changes state, a call from thermal framework.
-> >
-> > I mentioned thermal framework case only, existing code updates
-> cupfreq
-> > policy only when (notify_device != NOTIFY_INVALID), which happens
-> only
-> > when notification comes from cpufreq_update_policy while changing
-> > cooling device's state(i.e. cpufreq_apply_cooling()).
-> > In case of other notifications notify_device is always
-> NOTIFY_INVALID.
-> 
-> I see your point.
-> 
-> >
-> > >
-> > > > It doesn't apply constraints when cpufreq policy update happens
-> > > > from any other place but it should update the cpufreq policy with
-> > > > thermal constraints every time when there is a cpufreq policy
-> > > > update, to keep state of cpufreq_cooling_device and max_feq of
-> > > > cpufreq policy in
-> > > sync.
-> > >
-> > > I am not sure I follow you here. Can you please elaborate on 'any
-> > > other places'? Could you please mention (also in the commit log)
-> > > what are the case the current code does not cover? For instance,
-> the
-> > > cpufreq_apply_cooling gets called on notification coming from
-> > > thermal subsystem, and for changes in cpufreq subsystem,
-> > > cpufreq_thermal_notifier is called.
-> > >
-> >
-> > "Other places" mean possible places from where
-> cpufreq_update_policy()
-> > can be called at runtime, an instance in present kernel is
-> cpufreq_resume().
-> > But since cpufreq_update_policy() is an exposed API, I think for
-> > robustness, generic cpu cooling should be able to take care of any
-> > possible case(in future as well).
-> >
-> 
-> OK. I understand now. Can you please improve your commit message by
-> adding the descriptions you mentioned here?
->
+"...has a core power down idle state..."
 
-Sure, will post updated patch.
- 
-> > > >
-> > > > This patch modifies code to maintain a global cpufreq_dev_list
-> and
-> > > get
-> > > > corresponding cpufreq_cooling_device for policy's cpu from
-> > > > cpufreq_dev_list when there is any policy update.
-> > >
-> > > OK. Please give real examples of when the current code fails to
-> > > catch the event.
-> > >
-> >
-> > While resuming cpufreq updates cpufreq_policy for boot cpu and it
-> > restores default policy->usr_policy irrespective of cooling device's
-> > cpufreq_state since notification gets missed because (notify_device
-> ==
-> > NOTIFY_INVALID).
-> > Another thing, Rather I would say an issue, I observed is that
-> > Userspace is able to change max_freq irrespective of cooling device's
-> > state, as notification gets missed.
-> >
-> 
-> Include also the examples above you gave.
-> 
-> Have you verified if with this patch the issue with userland goes away?
-> 
+> This patch adds support for this state.
 
-Yes, Userspace is not able to set scaling_max_freq more than the
-cooling device constraint(cpufreq_val).
+"...for this idle state."
 
-But I have a question here, Is it OK to silently set scaling_max_freq
-less than the requested value from userspace ? 
+> Entry latency for the core power down is calculated as follows:
+> 1. Time difference is measured between cpuidle entry and exit.
+> 2. WFI is skipped for measuring the time.
+> 3. Select the worst case time in the set of 100000 cpuidle transactions,
+>    with varying load.
+> 
+> Exit latency and target residency are supplied as per HW team
 
-> > >
-> > > BR,
-> > >
-> > > Eduardo Valentin
-> > >
-> > > >
-> > > > Signed-off-by: Yadwinder Singh Brar <yadi.brar@samsung.com>
-> > > > ---
-> > > >  drivers/thermal/cpu_cooling.c |   37 ++++++++++++++++++++-------
-> ----
-> > > ------
-> > > >  1 files changed, 20 insertions(+), 17 deletions(-)
-> > > >
-> > > > diff --git a/drivers/thermal/cpu_cooling.c
-> > > > b/drivers/thermal/cpu_cooling.c index 1ab0018..5546278 100644
-> > > > --- a/drivers/thermal/cpu_cooling.c
-> > > > +++ b/drivers/thermal/cpu_cooling.c
-> > > > @@ -50,15 +50,14 @@ struct cpufreq_cooling_device {
-> > > >  	unsigned int cpufreq_state;
-> > > >  	unsigned int cpufreq_val;
-> > > >  	struct cpumask allowed_cpus;
-> > > > +	struct list_head node;
-> > > >  };
-> > > >  static DEFINE_IDR(cpufreq_idr);
-> > > >  static DEFINE_MUTEX(cooling_cpufreq_lock);
-> > > >
-> > > >  static unsigned int cpufreq_dev_count;
-> > > >
-> > > > -/* notify_table passes value to the CPUFREQ_ADJUST callback
-> > > function.
-> > > > */ -#define NOTIFY_INVALID NULL -static struct
-> > > > cpufreq_cooling_device *notify_device;
-> > > > +static LIST_HEAD(cpufreq_dev_list);
-> > > >
-> > > >  /**
-> > > >   * get_idr - function to get a unique id.
-> > > > @@ -287,15 +286,12 @@ static int cpufreq_apply_cooling(struct
-> > > > cpufreq_cooling_device *cpufreq_device,
-> > > >
-> > > >  	cpufreq_device->cpufreq_state = cooling_state;
-> > > >  	cpufreq_device->cpufreq_val = clip_freq;
-> > > > -	notify_device = cpufreq_device;
-> > > >
-> > > >  	for_each_cpu(cpuid, mask) {
-> > > >  		if (is_cpufreq_valid(cpuid))
-> > > >  			cpufreq_update_policy(cpuid);
-> > > >  	}
-> > > >
-> > > > -	notify_device = NOTIFY_INVALID;
-> > > > -
-> > > >  	return 0;
-> > > >  }
-> > > >
-> > > > @@ -316,21 +312,27 @@ static int cpufreq_thermal_notifier(struct
-> > > > notifier_block *nb,  {
-> > > >  	struct cpufreq_policy *policy = data;
-> > > >  	unsigned long max_freq = 0;
-> > > > +	struct cpufreq_cooling_device *cpufreq_dev;
-> > > >
-> > > > -	if (event != CPUFREQ_ADJUST || notify_device ==
-> NOTIFY_INVALID)
-> > > > +	if (event != CPUFREQ_ADJUST)
-> > > >  		return 0;
-> > > >
-> > > > -	if (cpumask_test_cpu(policy->cpu, &notify_device-
-> >allowed_cpus))
-> > > > -		max_freq = notify_device->cpufreq_val;
-> > > > -	else
-> > > > -		return 0;
-> > > > +	mutex_lock(&cooling_cpufreq_lock);
-> > > > +	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
-> > > > +		if (!cpumask_test_cpu(policy->cpu,
-> > > > +					&cpufreq_dev->allowed_cpus))
-> > > > +			continue;
-> > > >
-> > > > -	/* Never exceed user_policy.max */
-> > > > -	if (max_freq > policy->user_policy.max)
-> > > > -		max_freq = policy->user_policy.max;
-> > > > +		max_freq = cpufreq_dev->cpufreq_val;
-> > > >
-> >
-> > I think I missed to post updated patch, Actually it should be :
-> >
-> > +	if (!cpufreq_dev->cpufreq_val)
-> > +		cpufreq_dev->cpufreq_val = get_cpu_frequency(
-> > +
-> > cpumask_any(&cpufreq_dev->allowed_cpus),
-> > +							cpufreq_dev->state);
-> > +	max_freq = cpufreq_dev->cpufreq_val;
-> >
-> > I will send another version of patch.
-> 
-> ok.
-> 
-> >
-> > > > -	if (policy->max != max_freq)
-> > > > -		cpufreq_verify_within_limits(policy, 0, max_freq);
-> > > > +		/* Never exceed user_policy.max */
-> > > > +		if (max_freq > policy->user_policy.max)
-> > > > +			max_freq = policy->user_policy.max;
-> > > > +
-> > > > +		if (policy->max != max_freq)
-> > > > +			cpufreq_verify_within_limits(policy, 0,
-> max_freq);
-> > > > +	}
-> > > > +	mutex_unlock(&cooling_cpufreq_lock);
-> > >
-> > > So, the problem is when we have several cpu cooling devices and you
-> > > want to search for the real max among the existing cpu cooling
-> devices?
-> > >
-> 
-> By max, I meant the maximun constraint (lowest frequency).
-> 
-> >
-> > Sorry I didn't get your question completely I think.
-> > No, above code doesn't find max among existing cooling devices.
-> > It simply finds cooling device corresponding to policy's cpu and
-> > applies updates policy accordingly.
-> 
-> yeah, that's what it does, but for all matching devices, correct?
-> 
+"Exit latency and min residency values are supplied by the HW team."
 
-Exactly !! though in existing kernel we don't have multiple devices yet.
+Target residency is a kernel naming scheme, non-existent in the idle state
+bindings.
 
-> well, in fact your code is going through all cpu cooling devices that
-> match the cpu ids and applying their max allowed freq, when they differ
-> from policy->max. cpufreq_verify_within_limits will update the policy
-> if your request is lower than policy max. Then you will, in the end,
-> apply the lowest among the existing matching cpu cooling devices.
+Please take time to write proper commit logs, thanks.
+
+> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+> ---
+> This patch has following dependencies:
+> 	- [PATCH v5 0/8] arch: arm64: Enable support for Samsung Exynos7 SoC
+> 		http://www.spinics.net/lists/linux-samsung-soc/msg37047.html
+> Changes in v2:
+> 	- Moved the cpu-idle-state property after reg property
+> 	- removed the status property.
 > 
-
-yes ..
-
-> Which, turns out to be the correct thing to do, since we are not doing
-> it per request in single cooling devices.
+> Changes in v3:
+> 	- Added the Entry latency calculation in commit message.
+> Changes in v4:
+> 	- Corrected the commit message.
+> 	- Corrected the entry latency value.
 > 
-> Can you please also add a comment about this strategy?
+>  arch/arm64/boot/dts/exynos/exynos7.dtsi |   17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
 > 
+> diff --git a/arch/arm64/boot/dts/exynos/exynos7.dtsi b/arch/arm64/boot/dts/exynos/exynos7.dtsi
+> index 50ae936..444dde1 100644
+> --- a/arch/arm64/boot/dts/exynos/exynos7.dtsi
+> +++ b/arch/arm64/boot/dts/exynos/exynos7.dtsi
+> @@ -37,6 +37,7 @@
+>  			compatible = "arm,cortex-a57", "arm,armv8";
+>  			enable-method = "psci";
 
-Sure.
+enable-method should be after reg, it is not an ordering issues added
+by this patch but I still do not like that.
 
-Best Regards,
-Yadwinder
+Other than that, please take some time to rewrite the commit log and
+ask to fix the ordering above, you can add my:
 
+Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+
+>  			reg = <0x0>;
+> +			cpu-idle-states = <&CPU_SLEEP>;
+>  		};
+>  
+>  		cpu@1 {
+> @@ -44,6 +45,7 @@
+>  			compatible = "arm,cortex-a57", "arm,armv8";
+>  			enable-method = "psci";
+>  			reg = <0x1>;
+> +			cpu-idle-states = <&CPU_SLEEP>;
+>  		};
+>  
+>  		cpu@2 {
+> @@ -51,6 +53,7 @@
+>  			compatible = "arm,cortex-a57", "arm,armv8";
+>  			enable-method = "psci";
+>  			reg = <0x2>;
+> +			cpu-idle-states = <&CPU_SLEEP>;
+>  		};
+>  
+>  		cpu@3 {
+> @@ -58,6 +61,20 @@
+>  			compatible = "arm,cortex-a57", "arm,armv8";
+>  			enable-method = "psci";
+>  			reg = <0x3>;
+> +			cpu-idle-states = <&CPU_SLEEP>;
+> +		};
+> +
+> +		idle-states {
+> +			entry-method = "arm,psci";
+> +
+> +			CPU_SLEEP: cpu-sleep {
+> +				compatible = "arm,idle-state";
+> +				local-timer-stop;
+> +				arm,psci-suspend-param = <0x0010000>;
+> +				entry-latency-us = <34>;
+> +				exit-latency-us = <150>;
+> +				min-residency-us = <2100>;
+> +			};
+>  		};
+>  	};
+>  
+> -- 
+> 1.7.9.5
 > 
-> BR,
 > 
-> Eduardo Valentin
-> 
-> >
-> > Regards,
-> > Yadwinder
-> >
-> > > >  	return 0;
-> > > >  }
-> > > > @@ -486,7 +488,7 @@ __cpufreq_cooling_register(struct device_node
-> > > *np,
-> > > >
-> 	cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
-> > > >  					  CPUFREQ_POLICY_NOTIFIER);
-> > > >  	cpufreq_dev_count++;
-> > > > -
-> > > > +	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
-> > > >  	mutex_unlock(&cooling_cpufreq_lock);
-> > > >
-> > > >  	return cool_dev;
-> > > > @@ -549,6 +551,7 @@ void cpufreq_cooling_unregister(struct
-> > > > thermal_cooling_device *cdev)
-> > > >
-> > > >  	cpufreq_dev = cdev->devdata;
-> > > >  	mutex_lock(&cooling_cpufreq_lock);
-> > > > +	list_del(&cpufreq_dev->node);
-> > > >  	cpufreq_dev_count--;
-> > > >
-> > > >  	/* Unregister the notifier for the last cpufreq cooling
-> device
-> > > > */
-> > > > --
-> > > > 1.7.0.4
-> > > >
-> >
-
