@@ -1,128 +1,92 @@
-From: Heiner Kallweit <heiner.kallweit@web.de>
-Subject: Re: [PATCH v3] imx: thermal: imx_get_temp might be called before
- sensor clock is prepared
-Date: Fri, 07 Nov 2014 23:43:15 +0100
-Message-ID: <545D4B03.6080400@web.de>
-References: <543C3B4B.6080700@web.de> <20141107181837.GA23972@developer>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH 03/21] thermal: of: Extend of-thermal.c to provide number
+ of non critical trip points
+Date: Fri, 7 Nov 2014 15:04:11 -0800
+Message-ID: <CAKdAkRRnWu3fCdviQyByCAjCDqUX-3_CWhKpYH65YnqmXH1b4Q@mail.gmail.com>
+References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
+	<1412872737-624-4-git-send-email-l.majewski@samsung.com>
+	<20141107014152.GD10180@developer>
+	<20141107110551.5316836f@amdc2363>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.web.de ([212.227.15.3]:55141 "EHLO mout.web.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751757AbaKGWn1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 7 Nov 2014 17:43:27 -0500
-In-Reply-To: <20141107181837.GA23972@developer>
+Received: from mail-lb0-f174.google.com ([209.85.217.174]:35829 "EHLO
+	mail-lb0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751762AbaKGXEN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 18:04:13 -0500
+In-Reply-To: <20141107110551.5316836f@amdc2363>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Linux PM list <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Am 07.11.2014 um 19:18 schrieb Eduardo Valentin:
-> 
-> Hello Heiner,
-> 
-> On Mon, Oct 13, 2014 at 10:51:23PM +0200, Heiner Kallweit wrote:
->> imx_get_temp might be called before the sensor clock is prepared
->> thus resulting in a timeout of the first attempt to read temp:
->> thermal thermal_zone0: failed to read out thermal zone 0
->> Happened to me on a Utilite Standard with IMX6 Dual SoC.
->>
->> Reason is that in imx_thermal_probe thermal_zone_device_register
->> is called before the sensor clock is prepared.
->> thermal_zone_device_register however calls
->> thermal_zone_device_update which eventually calls imx_get_temp.
->>
->> Fix this by preparing the clock before calling
->> thermal_zone_device_register.
->>
->> Signed-off-by: Heiner Kallweit <heiner.kallweit@web.de>
->> ---
->> v2: revised error path. Bail out and tidy up properly if we can't
->>     get the clock or fail to enable it
->> v3: don't print error message if getting clock returns EPROBE_DEFER
->> ---
->>  drivers/thermal/imx_thermal.c | 41 +++++++++++++++++++++++++----------------
->>  1 file changed, 25 insertions(+), 16 deletions(-)
->>
->> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
->> index 461bf3d..0e8ef55 100644
->> --- a/drivers/thermal/imx_thermal.c
->> +++ b/drivers/thermal/imx_thermal.c
->> @@ -521,6 +521,30 @@ static int imx_thermal_probe(struct platform_device *pdev)
->>                 return ret;
->>         }
->>
->> +       data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
->> +       if (IS_ERR(data->thermal_clk)) {
->> +               ret = PTR_ERR(data->thermal_clk);
->> +               if (ret != -EPROBE_DEFER)
->> +                       dev_err(&pdev->dev,
->> +                               "failed to get thermal clk: %d\n", ret);
->> +               cpufreq_cooling_unregister(data->cdev);
->> +               return ret;
->> +       }
->> +
->> +       /*
->> +        * Thermal sensor needs clk on to get correct value, normally
->> +        * we should enable its clk before taking measurement and disable
->> +        * clk after measurement is done, but if alarm function is enabled,
->> +        * hardware will auto measure the temperature periodically, so we
->> +        * need to keep the clk always on for alarm function.
->> +        */
->> +       ret = clk_prepare_enable(data->thermal_clk);
->> +       if (ret) {
->> +               dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
->> +               cpufreq_cooling_unregister(data->cdev);
->> +               return ret;
->> +       }
->> +
->>         data->tz = thermal_zone_device_register("imx_thermal_zone",
->>                                                 IMX_TRIP_NUM,
->>                                                 BIT(IMX_TRIP_PASSIVE), data,
->> @@ -531,26 +555,11 @@ static int imx_thermal_probe(struct platform_device *pdev)
->>                 ret = PTR_ERR(data->tz);
->>                 dev_err(&pdev->dev,
->>                         "failed to register thermal zone device %d\n", ret);
->> +               clk_disable_unprepare(data->thermal_clk);
->>                 cpufreq_cooling_unregister(data->cdev);
->>                 return ret;
->>         }
->>
->> -       data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
->> -       if (IS_ERR(data->thermal_clk)) {
->> -               dev_warn(&pdev->dev, "failed to get thermal clk!\n");
->> -       } else {
->> -               /*
->> -                * Thermal sensor needs clk on to get correct value, normally
->> -                * we should enable its clk before taking measurement and disable
->> -                * clk after measurement is done, but if alarm function is enabled,
->> -                * hardware will auto measure the temperature periodically, so we
->> -                * need to keep the clk always on for alarm function.
->> -                */
->> -               ret = clk_prepare_enable(data->thermal_clk);
->> -               if (ret)
->> -                       dev_warn(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
->> -       }
->> -
->>         /* Enable measurements at ~ 10 Hz */
->>         regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
->>         measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
-> 
-> 
-> While here, do you need to move up also the configuration of the
-> measurements at ~ 10 Hz? Or would still the first readings be correct
-> while at the reset value?
-When imx_get_temp is called from thermal_zone_device_register data->mode still is
-THERMAL_DEVICE_DISABLED. imx_get_temp therefore will power on the sensor and
-trigger a single measurement.
-IMHO this is fully ok and I don't think we have to relocate the setup of the
-scheduled measurements.
-> 
-> Cheers,
-> 
-> Eduardo Valentin
->> --
->> 2.1.2
-Rgds, Heiner
+Hi Lukasz,
 
+On Fri, Nov 7, 2014 at 2:05 AM, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> Hi Eduardo,
+>
+>> On Thu, Oct 09, 2014 at 06:38:39PM +0200, Lukasz Majewski wrote:
+>> > This patch extends the of-thermal.c to provide information about
+>> > number of available non critical (i.e. non HW) trip points in the
+>> > system.
+>> >
+>> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+>> > ---
+>> >  drivers/thermal/of-thermal.c   | 12 ++++++++++++
+>> >  drivers/thermal/thermal_core.h |  5 +++++
+>> >  2 files changed, 17 insertions(+)
+>> >
+>> > diff --git a/drivers/thermal/of-thermal.c
+>> > b/drivers/thermal/of-thermal.c index 23c8d6c..cd74e64 100644
+>> > --- a/drivers/thermal/of-thermal.c
+>> > +++ b/drivers/thermal/of-thermal.c
+>> > @@ -128,6 +128,18 @@ int of_thermal_is_trip_en(struct
+>> > thermal_zone_device *tz, int trip) return 1;
+>> >  }
+>> >
+>> > +int of_thermal_get_non_crit_ntrips(struct thermal_zone_device *tz)
+>> > +{
+>> > +   struct __thermal_zone *data = tz->devdata;
+>> > +   int i;
+>> > +
+>> > +   for (i = 0; i < data->ntrips; i++)
+>> > +           if (data->trips[i].type != THERMAL_TRIP_CRITICAL)
+>> > +                   continue;
+>> > +
+>> > +   return --i;
+>> > +}
+>> > +
+>>
+>>
+>>
+>> I am not against this addition. But looks like we start to spread some
+>> specific APIs that may not be used to other drivers.
+>
+> Why do you think that this is a specific API? In the thermal OF we can
+> define trip point as "active", "passive", "hot" and "critical".
+>
+> With the first three we can handle them and properly react. For the last
+> one SoC's PMU will power down the board.
+>
+> Do you know if any board (e.g. from TI) is NOT supposed to shut down
+> when "critical" temperature is passed?
+>
+> The real problem here is the accessibility to __thermal_trip and
+> __thermal_bind arrays.
+>
+> Use case:
+> In the Exynos driver we do need to initialize TMU registers with
+> threshold temperatures.
+
+Is this indeed plural or you want to program the next trip point as your
+alarm temperature? If so, there was another patch floating around adding
+set_trips() callback that would get passed in the low and high trip points for
+the current temperature reading and you can use that data to program
+alarms. Rockchip thermal driver uses it.
+
+https://lkml.org/lkml/2014/6/27/76
+
+Thanks.
+
+-- 
+Dmitry
