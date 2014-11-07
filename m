@@ -1,180 +1,305 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 04/21] thermal: of: Extend current of-thermal.c code to
- allow setting emulated temp
-Date: Fri, 07 Nov 2014 12:20:35 +0100
-Message-ID: <20141107122035.2973ad20@amdc2363>
-References: <1412872737-624-1-git-send-email-l.majewski@samsung.com>
- <1412872737-624-5-git-send-email-l.majewski@samsung.com>
- <20141107014448.GE10180@developer>
+From: Yadwinder Singh Brar <yadi.brar@samsung.com>
+Subject: RE: [PATCH] thermal: cpu_cooling: Update always cpufreq policy with
+ thermal constraints
+Date: Fri, 07 Nov 2014 17:03:05 +0530
+Message-ID: <001001cffa7e$a8419f90$f8c4deb0$%brar@samsung.com>
+References: <1415189785-18593-1-git-send-email-yadi.brar@samsung.com>
+ <20141105204638.GB5243@developer>
+ <004c01cff9b0$6b450740$41cf15c0$%brar@samsung.com>
+ <20141106074907.GA8176@developer>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20141107014448.GE10180@developer>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Linux PM list <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:30162 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751681AbaKGLdL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 06:33:11 -0500
+In-reply-to: <20141106074907.GA8176@developer>
+Content-language: en-us
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Eduardo Valentin' <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zhang@intel.com, amit.daniel@samsung.com, viresh.kumar@linaro.org, linux-samsung-soc@vger.kernel.org, yadi.brar01@gmail.com
 
-Hi Eduardo,
+Hello Eduardo Valentin, 
 
-> Hello,
+On Thursday, November 06, 2014 1:19 PM, Eduardo Valentin wrote:
+> Hello Yadwinder,
 > 
-> On Thu, Oct 09, 2014 at 06:38:40PM +0200, Lukasz Majewski wrote:
-> > Before this change it was only possible to set get_temp() and
-> > get_trend() methods to be used in the common code handling passing
-> > parameters via device tree to "cpu-thermal" CPU thermal zone device.
-> > 
-> > Now it is possible to also set emulated value of temperature for
-> > debug purposes.
-> > 
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > ---
-> >  drivers/thermal/of-thermal.c | 25 ++++++++++++++++++++++---
-> >  include/linux/thermal.h      |  6 ++++--
-> >  2 files changed, 26 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/thermal/of-thermal.c
-> > b/drivers/thermal/of-thermal.c index cd74e64..f206375 100644
-> > --- a/drivers/thermal/of-thermal.c
-> > +++ b/drivers/thermal/of-thermal.c
-> > @@ -98,10 +98,22 @@ struct __thermal_zone {
-> >  	void *sensor_data;
-> >  	int (*get_temp)(void *, long *);
-> >  	int (*get_trend)(void *, long *);
-> > +	int (*set_emul_temp)(void *, unsigned long);
-> >  };
-> >  
-> >  /***   DT thermal zone device callbacks   ***/
-> >  
-> > +static int of_thermal_set_emul_temp(struct thermal_zone_device *tz,
-> > +				    unsigned long temp)
-> > +{
-> > +	struct __thermal_zone *data = tz->devdata;
-> > +
-> > +	if (!data->set_emul_temp)
-> > +		return -EINVAL;
-> > +
-> > +	return data->set_emul_temp(data->sensor_data, temp);
-> > +}
-> > +
-> >  static int of_thermal_get_temp(struct thermal_zone_device *tz,
-> >  			       unsigned long *temp)
-> >  {
-> > @@ -352,7 +364,8 @@ static struct thermal_zone_device *
-> >  thermal_zone_of_add_sensor(struct device_node *zone,
-> >  			   struct device_node *sensor, void *data,
-> >  			   int (*get_temp)(void *, long *),
-> > -			   int (*get_trend)(void *, long *))
-> > +			   int (*get_trend)(void *, long *),
-> > +			   int (*set_emul_temp)(void *, unsigned
-> > long))
+> On Thu, Nov 06, 2014 at 04:26:27PM +0530, Yadwinder Singh Brar wrote:
+> > Hello Eduardo Valentin,
+> >
+> > On Thursday, November 06, 2014 2:17 AM, Eduardo Valentin wrote:
+> > > Hello Yadwinder,
+> > >
+> > > On Wed, Nov 05, 2014 at 05:46:25PM +0530, Yadwinder Singh Brar
+> wrote:
+> > > > Existing code updates cupfreq policy only while executing
+> > > > cpufreq_apply_cooling() function (i.e. when notify_device !=
+> > > NOTIFY_INVALID).
+> > >
+> > > Correct. The case you mention is when we receive a notification
+> from
+> > > cpufreq. But also, updates the cpufreq policy when the cooling
+> > > device changes state, a call from thermal framework.
+> >
+> > I mentioned thermal framework case only, existing code updates
+> cupfreq
+> > policy only when (notify_device != NOTIFY_INVALID), which happens
+> only
+> > when notification comes from cpufreq_update_policy while changing
+> > cooling device's state(i.e. cpufreq_apply_cooling()).
+> > In case of other notifications notify_device is always
+> NOTIFY_INVALID.
 > 
-> Thanks for improving the API. However, looking at what is above, it
-> starts to be pretty ugly. And for sure, this is not the last callback
-> to be added.
+> I see your point.
+> 
+> >
+> > >
+> > > > It doesn't apply constraints when cpufreq policy update happens
+> > > > from any other place but it should update the cpufreq policy with
+> > > > thermal constraints every time when there is a cpufreq policy
+> > > > update, to keep state of cpufreq_cooling_device and max_feq of
+> > > > cpufreq policy in
+> > > sync.
+> > >
+> > > I am not sure I follow you here. Can you please elaborate on 'any
+> > > other places'? Could you please mention (also in the commit log)
+> > > what are the case the current code does not cover? For instance,
+> the
+> > > cpufreq_apply_cooling gets called on notification coming from
+> > > thermal subsystem, and for changes in cpufreq subsystem,
+> > > cpufreq_thermal_notifier is called.
+> > >
+> >
+> > "Other places" mean possible places from where
+> cpufreq_update_policy()
+> > can be called at runtime, an instance in present kernel is
+> cpufreq_resume().
+> > But since cpufreq_update_policy() is an exposed API, I think for
+> > robustness, generic cpu cooling should be able to take care of any
+> > possible case(in future as well).
+> >
+> 
+> OK. I understand now. Can you please improve your commit message by
+> adding the descriptions you mentioned here?
+>
 
-Presumably there would be some more callbacks.
+Sure, will post updated patch.
+ 
+> > > >
+> > > > This patch modifies code to maintain a global cpufreq_dev_list
+> and
+> > > get
+> > > > corresponding cpufreq_cooling_device for policy's cpu from
+> > > > cpufreq_dev_list when there is any policy update.
+> > >
+> > > OK. Please give real examples of when the current code fails to
+> > > catch the event.
+> > >
+> >
+> > While resuming cpufreq updates cpufreq_policy for boot cpu and it
+> > restores default policy->usr_policy irrespective of cooling device's
+> > cpufreq_state since notification gets missed because (notify_device
+> ==
+> > NOTIFY_INVALID).
+> > Another thing, Rather I would say an issue, I observed is that
+> > Userspace is able to change max_freq irrespective of cooling device's
+> > state, as notification gets missed.
+> >
+> 
+> Include also the examples above you gave.
+> 
+> Have you verified if with this patch the issue with userland goes away?
+> 
 
-> I believe it is time to add a .ops in the of-thermal.
-> While in here, do you mind adding the .ops in a separated patch, then
-> add the .set_emul_temp in the .ops field?
+Yes, Userspace is not able to set scaling_max_freq more than the
+cooling device constraint(cpufreq_val).
 
-I will add an option to pass .ops with thermal_zone_of_add_sensor().
+But I have a question here, Is it OK to silently set scaling_max_freq
+less than the requested value from userspace ? 
 
-I'm only concerned a bit about testing other users of of-thermal. 
-I have only beaglebone black (BBB) for testing, which on-soc bandgap
-thermal sensor is very inaccurate and hence not supported even at BBB
-github linux kernel repository (v3.14).
+> > >
+> > > BR,
+> > >
+> > > Eduardo Valentin
+> > >
+> > > >
+> > > > Signed-off-by: Yadwinder Singh Brar <yadi.brar@samsung.com>
+> > > > ---
+> > > >  drivers/thermal/cpu_cooling.c |   37 ++++++++++++++++++++-------
+> ----
+> > > ------
+> > > >  1 files changed, 20 insertions(+), 17 deletions(-)
+> > > >
+> > > > diff --git a/drivers/thermal/cpu_cooling.c
+> > > > b/drivers/thermal/cpu_cooling.c index 1ab0018..5546278 100644
+> > > > --- a/drivers/thermal/cpu_cooling.c
+> > > > +++ b/drivers/thermal/cpu_cooling.c
+> > > > @@ -50,15 +50,14 @@ struct cpufreq_cooling_device {
+> > > >  	unsigned int cpufreq_state;
+> > > >  	unsigned int cpufreq_val;
+> > > >  	struct cpumask allowed_cpus;
+> > > > +	struct list_head node;
+> > > >  };
+> > > >  static DEFINE_IDR(cpufreq_idr);
+> > > >  static DEFINE_MUTEX(cooling_cpufreq_lock);
+> > > >
+> > > >  static unsigned int cpufreq_dev_count;
+> > > >
+> > > > -/* notify_table passes value to the CPUFREQ_ADJUST callback
+> > > function.
+> > > > */ -#define NOTIFY_INVALID NULL -static struct
+> > > > cpufreq_cooling_device *notify_device;
+> > > > +static LIST_HEAD(cpufreq_dev_list);
+> > > >
+> > > >  /**
+> > > >   * get_idr - function to get a unique id.
+> > > > @@ -287,15 +286,12 @@ static int cpufreq_apply_cooling(struct
+> > > > cpufreq_cooling_device *cpufreq_device,
+> > > >
+> > > >  	cpufreq_device->cpufreq_state = cooling_state;
+> > > >  	cpufreq_device->cpufreq_val = clip_freq;
+> > > > -	notify_device = cpufreq_device;
+> > > >
+> > > >  	for_each_cpu(cpuid, mask) {
+> > > >  		if (is_cpufreq_valid(cpuid))
+> > > >  			cpufreq_update_policy(cpuid);
+> > > >  	}
+> > > >
+> > > > -	notify_device = NOTIFY_INVALID;
+> > > > -
+> > > >  	return 0;
+> > > >  }
+> > > >
+> > > > @@ -316,21 +312,27 @@ static int cpufreq_thermal_notifier(struct
+> > > > notifier_block *nb,  {
+> > > >  	struct cpufreq_policy *policy = data;
+> > > >  	unsigned long max_freq = 0;
+> > > > +	struct cpufreq_cooling_device *cpufreq_dev;
+> > > >
+> > > > -	if (event != CPUFREQ_ADJUST || notify_device ==
+> NOTIFY_INVALID)
+> > > > +	if (event != CPUFREQ_ADJUST)
+> > > >  		return 0;
+> > > >
+> > > > -	if (cpumask_test_cpu(policy->cpu, &notify_device-
+> >allowed_cpus))
+> > > > -		max_freq = notify_device->cpufreq_val;
+> > > > -	else
+> > > > -		return 0;
+> > > > +	mutex_lock(&cooling_cpufreq_lock);
+> > > > +	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
+> > > > +		if (!cpumask_test_cpu(policy->cpu,
+> > > > +					&cpufreq_dev->allowed_cpus))
+> > > > +			continue;
+> > > >
+> > > > -	/* Never exceed user_policy.max */
+> > > > -	if (max_freq > policy->user_policy.max)
+> > > > -		max_freq = policy->user_policy.max;
+> > > > +		max_freq = cpufreq_dev->cpufreq_val;
+> > > >
+> >
+> > I think I missed to post updated patch, Actually it should be :
+> >
+> > +	if (!cpufreq_dev->cpufreq_val)
+> > +		cpufreq_dev->cpufreq_val = get_cpu_frequency(
+> > +
+> > cpumask_any(&cpufreq_dev->allowed_cpus),
+> > +							cpufreq_dev->state);
+> > +	max_freq = cpufreq_dev->cpufreq_val;
+> >
+> > I will send another version of patch.
+> 
+> ok.
+> 
+> >
+> > > > -	if (policy->max != max_freq)
+> > > > -		cpufreq_verify_within_limits(policy, 0, max_freq);
+> > > > +		/* Never exceed user_policy.max */
+> > > > +		if (max_freq > policy->user_policy.max)
+> > > > +			max_freq = policy->user_policy.max;
+> > > > +
+> > > > +		if (policy->max != max_freq)
+> > > > +			cpufreq_verify_within_limits(policy, 0,
+> max_freq);
+> > > > +	}
+> > > > +	mutex_unlock(&cooling_cpufreq_lock);
+> > >
+> > > So, the problem is when we have several cpu cooling devices and you
+> > > want to search for the real max among the existing cpu cooling
+> devices?
+> > >
+> 
+> By max, I meant the maximun constraint (lowest frequency).
+> 
+> >
+> > Sorry I didn't get your question completely I think.
+> > No, above code doesn't find max among existing cooling devices.
+> > It simply finds cooling device corresponding to policy's cpu and
+> > applies updates policy accordingly.
+> 
+> yeah, that's what it does, but for all matching devices, correct?
+> 
 
-Because of above I would need your support for testing.
+Exactly !! though in existing kernel we don't have multiple devices yet.
+
+> well, in fact your code is going through all cpu cooling devices that
+> match the cpu ids and applying their max allowed freq, when they differ
+> from policy->max. cpufreq_verify_within_limits will update the policy
+> if your request is lower than policy max. Then you will, in the end,
+> apply the lowest among the existing matching cpu cooling devices.
+> 
+
+yes ..
+
+> Which, turns out to be the correct thing to do, since we are not doing
+> it per request in single cooling devices.
+> 
+> Can you please also add a comment about this strategy?
+> 
+
+Sure.
+
+Best Regards,
+Yadwinder
 
 > 
-> >  {
-> >  	struct thermal_zone_device *tzd;
-> >  	struct __thermal_zone *tz;
-> > @@ -366,10 +379,12 @@ thermal_zone_of_add_sensor(struct device_node
-> > *zone, mutex_lock(&tzd->lock);
-> >  	tz->get_temp = get_temp;
-> >  	tz->get_trend = get_trend;
-> > +	tz->set_emul_temp = set_emul_temp;
-> >  	tz->sensor_data = data;
-> >  
-> >  	tzd->ops->get_temp = of_thermal_get_temp;
-> >  	tzd->ops->get_trend = of_thermal_get_trend;
-> > +	tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
-> >  	mutex_unlock(&tzd->lock);
-> >  
-> >  	return tzd;
-> > @@ -411,7 +426,8 @@ thermal_zone_of_add_sensor(struct device_node
-> > *zone, struct thermal_zone_device *
-> >  thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
-> >  				void *data, int (*get_temp)(void
-> > *, long *),
-> > -				int (*get_trend)(void *, long *))
-> > +				int (*get_trend)(void *, long *),
-> > +				int (*set_emul_temp)(void *,
-> > unsigned long)) {
-> >  	struct device_node *np, *child, *sensor_np;
-> >  
-> > @@ -453,7 +469,8 @@ thermal_zone_of_sensor_register(struct device
-> > *dev, int sensor_id, return thermal_zone_of_add_sensor(child,
-> > sensor_np, data,
-> >  							  get_temp,
-> > -
-> > get_trend);
-> > +
-> > get_trend,
-> > +
-> > set_emul_temp); }
-> >  	}
-> >  	of_node_put(np);
-> > @@ -494,9 +511,11 @@ void thermal_zone_of_sensor_unregister(struct
-> > device *dev, mutex_lock(&tzd->lock);
-> >  	tzd->ops->get_temp = NULL;
-> >  	tzd->ops->get_trend = NULL;
-> > +	tzd->ops->set_emul_temp = NULL;
-> >  
-> >  	tz->get_temp = NULL;
-> >  	tz->get_trend = NULL;
-> > +	tz->set_emul_temp = NULL;
-> >  	tz->sensor_data = NULL;
-> >  	mutex_unlock(&tzd->lock);
-> >  }
-> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> > index 0305cde..36010e9 100644
-> > --- a/include/linux/thermal.h
-> > +++ b/include/linux/thermal.h
-> > @@ -290,14 +290,16 @@ struct thermal_genl_event {
-> >  struct thermal_zone_device *
-> >  thermal_zone_of_sensor_register(struct device *dev, int id,
-> >  				void *data, int (*get_temp)(void
-> > *, long *),
-> > -				int (*get_trend)(void *, long *));
-> > +				int (*get_trend)(void *, long *),
-> > +				int (*set_emul_temp)(void *,
-> > unsigned long)); void thermal_zone_of_sensor_unregister(struct
-> > device *dev, struct thermal_zone_device *tz);
-> >  #else
-> >  static inline struct thermal_zone_device *
-> >  thermal_zone_of_sensor_register(struct device *dev, int id,
-> >  				void *data, int (*get_temp)(void
-> > *, long *),
-> > -				int (*get_trend)(void *, long *))
-> > +				int (*get_trend)(void *, long *),
-> > +				int (*set_emul_temp)(void *,
-> > unsigned long)) {
-> >  	return NULL;
-> >  }
-> > -- 
-> > 2.0.0.rc2
-> > 
+> BR,
+> 
+> Eduardo Valentin
+> 
+> >
+> > Regards,
+> > Yadwinder
+> >
+> > > >  	return 0;
+> > > >  }
+> > > > @@ -486,7 +488,7 @@ __cpufreq_cooling_register(struct device_node
+> > > *np,
+> > > >
+> 	cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
+> > > >  					  CPUFREQ_POLICY_NOTIFIER);
+> > > >  	cpufreq_dev_count++;
+> > > > -
+> > > > +	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
+> > > >  	mutex_unlock(&cooling_cpufreq_lock);
+> > > >
+> > > >  	return cool_dev;
+> > > > @@ -549,6 +551,7 @@ void cpufreq_cooling_unregister(struct
+> > > > thermal_cooling_device *cdev)
+> > > >
+> > > >  	cpufreq_dev = cdev->devdata;
+> > > >  	mutex_lock(&cooling_cpufreq_lock);
+> > > > +	list_del(&cpufreq_dev->node);
+> > > >  	cpufreq_dev_count--;
+> > > >
+> > > >  	/* Unregister the notifier for the last cpufreq cooling
+> device
+> > > > */
+> > > > --
+> > > > 1.7.0.4
+> > > >
+> >
 
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
