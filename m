@@ -1,227 +1,227 @@
-From: Beomho Seo <beomho.seo@samsung.com>
-Subject: [PATCH 2/5] regulator: rt5033: Add RT5033 Regulator device driver
-Date: Fri, 07 Nov 2014 11:52:04 +0900
-Message-ID: <1415328727-16245-3-git-send-email-beomho.seo@samsung.com>
-References: <1415328727-16245-1-git-send-email-beomho.seo@samsung.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v5 01/48] kernel: Add support for power-off handler call
+ chain
+Date: Thu, 06 Nov 2014 19:00:03 -0800
+Message-ID: <545C35B3.30902@roeck-us.net>
+References: <1415292213-28652-1-git-send-email-linux@roeck-us.net> <3183593.9HaIZKjCKr@vostro.rjw.lan> <20141106222703.GA6377@roeck-us.net> <6901931.ThbbTy3BuF@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:27654 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbaKGCwN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 21:52:13 -0500
-In-reply-to: <1415328727-16245-1-git-send-email-beomho.seo@samsung.com>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:38490 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbaKGDBU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 22:01:20 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1XmZnI-000gni-4L
+	for linux-pm@vger.kernel.org; Fri, 07 Nov 2014 03:01:00 +0000
+In-Reply-To: <6901931.ThbbTy3BuF@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: sameo@linux.intel.com, lee.jones@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, kyungmin.park@samsung.com, cw00.choi@samsung.com, jonghwa3.lee@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Beomho Seo <beomho.seo@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, =?UTF-8?B?UGhpbGlwcGUgUsOpdG9ybmF6?= <philippe.retornaz@gmail.com>, Romain Perier <romain.perier@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>
 
-This patch add device driver of Richtek RT5033 PMIC.
-The driver support multiple regulator like LDO and synchronous Buck.
-The integrated synchronous buck converter is designed to provide 0.6 A
-application with high efficiency. Two LDOs are integrated. One safe LDO is
-for 60mA and the other one LDO is for 150 mA.
+On 11/06/2014 04:16 PM, Rafael J. Wysocki wrote:
+> On Thursday, November 06, 2014 02:27:03 PM Guenter Roeck wrote:
+>> On Thu, Nov 06, 2014 at 11:30:59PM +0100, Rafael J. Wysocki wrote:
+>>> On Thursday, November 06, 2014 08:42:45 AM Guenter Roeck wrote:
+>>>> Various drivers implement architecture and/or device specific mean=
+s to
+>>>> power off the system.  For the most part, those drivers set the gl=
+obal
+>>>> variable pm_power_off to point to a function within the driver.
+>>>>
+>>>> This mechanism has a number of drawbacks.  Typically only one sche=
+me
+>>>> to remove power is supported (at least if pm_power_off is used).
+>>>> At least in theory there can be multiple means remove power, some =
+of
+>>>> which may be less desirable. For example, some mechanisms may only
+>>>> power off the CPU or the CPU card, while another may power off the
+>>>> entire system.  Others may really just execute a restart sequence
+>>>> or drop into the ROM monitor. Using pm_power_off can also be racy
+>>>> if the function pointer is set from a driver built as module, as t=
+he
+>>>> driver may be in the process of being unloaded when pm_power_off i=
+s
+>>>> called. If there are multiple power-off handlers in the system, re=
+moving
+>>>> a module with such a handler may inadvertently reset the pointer t=
+o
+>>>> pm_power_off to NULL, leaving the system with no means to remove p=
+ower.
+>>>>
+>>>> Introduce a system power-off handler call chain to solve the descr=
+ibed
+>>>> problems.  This call chain is expected to be executed from the arc=
+hitecture
+>>>> specific machine_power_off() function.  Drivers and architeceture =
+code
+>>>> providing system power-off functionality are expected to register =
+with
+>>>> this call chain.  When registering a power-off handler, callers ca=
+n
+>>>> provide a priority to control power-off handler execution sequence
+>>>> and thus ensure that the power-off handler with the optimal capabi=
+lities
+>>>> to remove power for a given system is called first.
+>>>>
+>>>> Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+>>>> Cc: Alexander Graf <agraf@suse.de>
+>>>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>>>> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+>>>> Cc: Heiko Stuebner <heiko@sntech.de>
+>>>> Cc: Lee Jones <lee.jones@linaro.org>
+>>>> Cc: Len Brown <len.brown@intel.com>
+>>>> Cc: Pavel Machek <pavel@ucw.cz>
+>>>> Cc: Philippe R=C3=A9tornaz <philippe.retornaz@gmail.com>
+>>>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>>>> Cc: Romain Perier <romain.perier@gmail.com>
+>>>> Acked-by: Pavel Machek <pavel@ucw.cz>
+>>>> Acked-by: Heiko Stuebner <heiko@sntech.de>
+>>>> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+>>>> ---
+>>>> v5:
+>>>> - Rebase to v3.18-rc3
+>>>> v4:
+>>>> - Do not use notifiers but internal functions and data structures =
+to manage
+>>>>    the list of power-off handlers. Drop unused parameters from cal=
+lbacks, and
+>>>>    make the power-off function type void.
+>>>>    Code to manage and walk the list of callbacks is derived from n=
+otifier.c.
+>>>> v3:
+>>>> - Rename new file to power_off_handler.c
+>>>> - Replace poweroff in all newly introduced variables and in text
+>>>>    with power_off or power-off as appropriate
+>>>> - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+>>>> - Execute power-off handlers without any locks held
+>>>> v2:
+>>>> - poweroff -> power_off
+>>>> - Add defines for default priorities
+>>>> - Use raw notifiers protected by spinlocks instead of atomic notif=
+iers
+>>>> - Add register_poweroff_handler_simple
+>>>> - Add devm_register_power_off_handler
+>>>>
+>>>>   include/linux/pm.h               |  28 ++++
+>>>>   kernel/power/Makefile            |   1 +
+>>>>   kernel/power/power_off_handler.c | 293 +++++++++++++++++++++++++=
+++++++++++++++
+>>>>   3 files changed, 322 insertions(+)
+>>>>   create mode 100644 kernel/power/power_off_handler.c
+>>>>
+>>>> diff --git a/include/linux/pm.h b/include/linux/pm.h
+>>>> index 383fd68..a4d6bf8 100644
+>>>> --- a/include/linux/pm.h
+>>>> +++ b/include/linux/pm.h
+>>>> @@ -35,6 +35,34 @@ extern void (*pm_power_off)(void);
+>>>>   extern void (*pm_power_off_prepare)(void);
+>>>>
+>>>>   struct device; /* we have a circular dep with device.h */
+>>>> +
+>>>> +/*
+>>>> + * Data structures and callbacks to manage power-off handlers
+>>>> + */
+>>>> +
+>>>> +struct power_off_handler_block {
+>>>> +	void (*handler)(struct power_off_handler_block *);
+>>>> +	struct power_off_handler_block __rcu *next;
+>>>> +	int priority;
+>>>> +};
+>>>> +
+>>>> +int register_power_off_handler(struct power_off_handler_block *);
+>>>> +int devm_register_power_off_handler(struct device *,
+>>>> +				    struct power_off_handler_block *);
+>>>> +int register_power_off_handler_simple(void (*function)(void), int=
+ priority);
+>>>> +int unregister_power_off_handler(struct power_off_handler_block *=
+);
+>>>> +void do_kernel_power_off(void);
+>>>> +bool have_kernel_power_off(void);
+>>>> +
+>>>> +/*
+>>>> + * Pre-defined power-off handler priorities
+>>>> + */
+>>>> +#define POWER_OFF_PRIORITY_FALLBACK	0
+>>>> +#define POWER_OFF_PRIORITY_LOW		64
+>>>> +#define POWER_OFF_PRIORITY_DEFAULT	128
+>>>> +#define POWER_OFF_PRIORITY_HIGH		192
+>>>> +#define POWER_OFF_PRIORITY_HIGHEST	255
+>>>
+>>> I'm not sure why we need these gaps in the priority space.
+>>>
+>>> I guess it might be possible to use
+>>>
+>>> enum power_off_priority {
+>>> 	POWER_OFF_PRIORITY_FALLBACK =3D 0,
+>>> 	POWER_OFF_PRIORITY_LOW,
+>>> 	POWER_OFF_PRIORITY_DEFAULT,
+>>> 	POWER_OFF_PRIORITY_HIGH,
+>>> 	POWER_OFF_PRIORITY_HIGHEST,
+>>> 	POWER_OFF_PRIORITY_LIMIT,
+>>> };
+>>
+>> I retained the large number space on purpose, specifically to permit=
+ in-between
+>> priorities. In other words, I want people to be able to say "priorit=
+y for this
+>> handler is higher than low but lower than default". After all, the d=
+efines were
+>> intended as hints, not as a "Thou shall use those and only those pri=
+orities".
+>
+> Problem with that is how they are supposed to know what priority to u=
+se then.
+>
+> How do I know if my priority is between DEFAULT and HIGH and whether =
+it is
+> closer to HIGH or closer to DEFAULT?  What are the rules?
+>
+Guess there is too much of a Libertarian in me to make up such rules.
+Or, in other words, I didn't think that more explicit rules than the on=
+es
+provided were needed.
 
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>
-Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/regulator/Kconfig            |    8 ++
- drivers/regulator/Makefile           |    1 +
- drivers/regulator/rt5033-regulator.c |  154 ++++++++++++++++++++++++++++++++++
- 3 files changed, 163 insertions(+)
- create mode 100644 drivers/regulator/rt5033-regulator.c
+> The only rule that seems to be there is "this handler should be tried=
+ before
+> that one, so it needs to have a higher priority".  But now the questi=
+on is
+> how people are going to know which handlers they are competing with a=
+nd whether
+> or not they are more "important".
+>
+Keep in mind those are power-off handlers. The "rule", if one is needed=
+,
+would be that the power-off handler which powers off more parts of the =
+system
+should get higher priority. Which one that is is depends on the platfor=
+m.
+I would think that it is in people's interest not to shoot themselves
+into the foot, but maybe I am wrong.
 
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index 55d7b7b..8558e1b 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -521,6 +521,14 @@ config REGULATOR_RN5T618
- 	help
- 	  Say y here to support the regulators found on Ricoh RN5T618 PMIC.
- 
-+config REGULATOR_RT5033
-+	tristate "Richtek RT5033 Regulators"
-+	depends on MFD_RT5033
-+	help
-+	  This adds support for voltage and current regulators in Richtek
-+	  RT5033 PMIC. The device supports multiple regulators like
-+	  current source, LDO and Buck.
-+
- config REGULATOR_S2MPA01
- 	tristate "Samsung S2MPA01 voltage regulator"
- 	depends on MFD_SEC_CORE
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index 1029ed3..1f28ebf 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -69,6 +69,7 @@ obj-$(CONFIG_REGULATOR_PCF50633) += pcf50633-regulator.o
- obj-$(CONFIG_REGULATOR_RC5T583)  += rc5t583-regulator.o
- obj-$(CONFIG_REGULATOR_RK808)   += rk808-regulator.o
- obj-$(CONFIG_REGULATOR_RN5T618) += rn5t618-regulator.o
-+obj-$(CONFIG_REGULATOR_RT5033)	+= rt5033-regulator.o
- obj-$(CONFIG_REGULATOR_S2MPA01) += s2mpa01.o
- obj-$(CONFIG_REGULATOR_S2MPS11) += s2mps11.o
- obj-$(CONFIG_REGULATOR_S5M8767) += s5m8767.o
-diff --git a/drivers/regulator/rt5033-regulator.c b/drivers/regulator/rt5033-regulator.c
-new file mode 100644
-index 0000000..87571d8
---- /dev/null
-+++ b/drivers/regulator/rt5033-regulator.c
-@@ -0,0 +1,154 @@
-+/*
-+ * Regulator driver for the Richtek RT5033
-+ *
-+ * Copyright (C) 2014 Samsung Electronics, Co., Ltd.
-+ * Beomho Seo <beomho.seo@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published bythe Free Software Foundation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regulator/driver.h>
-+#include <linux/mfd/rt5033.h>
-+#include <linux/mfd/rt5033-private.h>
-+#include <linux/regulator/of_regulator.h>
-+
-+static struct regulator_ops rt5033_safe_ldo_ops = {
-+	.is_enabled		= regulator_is_enabled_regmap,
-+	.enable			= regulator_enable_regmap,
-+	.disable		= regulator_disable_regmap,
-+	.list_voltage		= regulator_list_voltage_linear,
-+};
-+
-+static struct regulator_ops rt5033_buck_ops = {
-+	.is_enabled		= regulator_is_enabled_regmap,
-+	.enable			= regulator_enable_regmap,
-+	.disable		= regulator_disable_regmap,
-+	.list_voltage		= regulator_list_voltage_linear,
-+	.map_voltage		= regulator_map_voltage_linear,
-+	.get_voltage_sel	= regulator_get_voltage_sel_regmap,
-+	.set_voltage_sel	= regulator_set_voltage_sel_regmap,
-+};
-+
-+static const struct regulator_desc rt5033_supported_regulators[] = {
-+	[RT5033_BUCK] = {
-+		.name		= "BUCK",
-+		.id		= RT5033_BUCK,
-+		.ops		= &rt5033_buck_ops,
-+		.type		= REGULATOR_VOLTAGE,
-+		.owner		= THIS_MODULE,
-+		.n_voltages	= RT5033_REGULATOR_BUCK_VOLTAGE_STEP_NUM,
-+		.min_uV		= RT5033_REGULATOR_BUCK_VOLTAGE_MIN,
-+		.uV_step	= RT5033_REGULATOR_BUCK_VOLTAGE_STEP,
-+		.enable_reg	= RT5033_REG_CTRL,
-+		.enable_mask	= RT5033_CTRL_EN_BUCK_MASK,
-+		.vsel_reg	= RT5033_REG_BUCK_CTRL,
-+		.vsel_mask	= RT5033_BUCK_CTRL_MASK,
-+	},
-+	[RT5033_LDO] = {
-+		.name		= "LDO",
-+		.id		= RT5033_LDO,
-+		.ops		= &rt5033_buck_ops,
-+		.type		= REGULATOR_VOLTAGE,
-+		.owner		= THIS_MODULE,
-+		.n_voltages	= RT5033_REGULATOR_LDO_VOLTAGE_STEP_NUM,
-+		.min_uV		= RT5033_REGULATOR_LDO_VOLTAGE_MIN,
-+		.uV_step	= RT5033_REGULATOR_LDO_VOLTAGE_STEP,
-+		.enable_reg	= RT5033_REG_CTRL,
-+		.enable_mask	= RT5033_CTRL_EN_LDO_MASK,
-+		.vsel_reg	= RT5033_REG_LDO_CTRL,
-+		.vsel_mask	= RT5033_LDO_CTRL_MASK,
-+	},
-+	[RT5033_SAFE_LDO] = {
-+		.name		= "SAFE_LDO",
-+		.id		= RT5033_SAFE_LDO,
-+		.ops		= &rt5033_safe_ldo_ops,
-+		.type		= REGULATOR_VOLTAGE,
-+		.owner		= THIS_MODULE,
-+		.n_voltages	= 1,
-+		.min_uV		= RT5033_REGULATOR_SAFE_LDO_VOLTAGE,
-+		.enable_reg	= RT5033_REG_CTRL,
-+		.enable_mask	= RT5033_CTRL_EN_SAFE_LDO_MASK,
-+	},
-+};
-+
-+static struct of_regulator_match rt5033_regulator_matches[] = {
-+	{ .name = "BUCK", },
-+	{ .name = "LDO", },
-+	{ .name = "SAFE_LDO", },
-+};
-+
-+static int rt5033_regulator_dt_parse_data(struct device *dev)
-+{
-+	int ret;
-+	struct device_node *np;
-+
-+	np = of_get_child_by_name(dev->parent->of_node, "regulators");
-+	if  (!np) {
-+		dev_err(dev, "Failed to get child node for regulators\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = of_regulator_match(dev, np, rt5033_regulator_matches,
-+					ARRAY_SIZE(rt5033_regulator_matches));
-+	if (ret < 0)
-+		return ret;
-+
-+	return ret;
-+}
-+
-+static int rt5033_regulator_probe(struct platform_device *pdev)
-+{
-+	struct rt5033_dev *rt5033 = dev_get_drvdata(pdev->dev.parent);
-+	int ret, i;
-+	struct regulator_config config = {};
-+
-+	ret = rt5033_regulator_dt_parse_data(&pdev->dev);
-+	if (ret < 0)
-+		return ret;
-+
-+	config.dev = &pdev->dev;
-+	config.driver_data = rt5033;
-+
-+	for (i = 0; i < ARRAY_SIZE(rt5033_supported_regulators); i++) {
-+		struct regulator_dev *regulator;
-+
-+		config.init_data = rt5033_regulator_matches[i].init_data;
-+		config.of_node = rt5033_regulator_matches[i].of_node;
-+		config.regmap = rt5033->regmap;
-+
-+		regulator = devm_regulator_register(&pdev->dev,
-+				&rt5033_supported_regulators[i], &config);
-+		if (IS_ERR(regulator)) {
-+			ret = PTR_ERR(regulator);
-+			dev_err(&pdev->dev,
-+				"Regulator init failed %d: with error: %d\n",
-+				i, ret);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct platform_device_id rt5033_regulator_id[] = {
-+	{ "rt5033-regulator", },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(platform, rt5033_regulator_id);
-+
-+static struct platform_driver rt5033_regulator_driver = {
-+	.driver = {
-+		.name = "rt5033-regulator",
-+	},
-+	.probe		= rt5033_regulator_probe,
-+	.id_table	= rt5033_regulator_id,
-+};
-+module_platform_driver(rt5033_regulator_driver);
-+
-+MODULE_DESCRIPTION("Richtek RT5033 Regulator driver");
-+MODULE_AUTHOR("Beomho Seo <beomho.seo@samsung.com>");
-+MODULE_LICENSE("GPL");
--- 
-1.7.9.5
+>> Having said that, the important part is to get the series accepted, =
+so I won't
+>> argue if that is what it takes to get an Ack. Let me know.
+>
+> This isn't worth fighting over in my view, so I won't if everyone els=
+e is fine
+> with it.
+>
+
+Linus raised pretty much the same or a similar concern. Everyone else, =
+as far
+as I can see, doesn't seem to care. Given that, and since I don't have =
+a strong
+opinion either, I'll change it to an enum in the next version. If there=
+ is anyone
+who disagrees with that, the time to speak up is now.
+
+Please let me know if you have any other concerns.
+
+Thanks,
+Guenter
 
