@@ -1,200 +1,110 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 01/48] kernel: Add support for power-off handler call chain
-Date: Fri, 07 Nov 2014 01:16:54 +0100
-Message-ID: <6901931.ThbbTy3BuF@vostro.rjw.lan>
-References: <1415292213-28652-1-git-send-email-linux@roeck-us.net> <3183593.9HaIZKjCKr@vostro.rjw.lan> <20141106222703.GA6377@roeck-us.net>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v17 1/5] thermal: rockchip: add driver for thermal
+Date: Thu, 6 Nov 2014 21:30:20 -0400
+Message-ID: <20141107013017.GA10180@developer>
+References: <1414809873-32227-1-git-send-email-caesar.wang@rock-chips.com>
+ <1414809873-32227-2-git-send-email-caesar.wang@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64830 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751182AbaKFX4I convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 18:56:08 -0500
-In-Reply-To: <20141106222703.GA6377@roeck-us.net>
+Received: from mail-qc0-f175.google.com ([209.85.216.175]:60521 "EHLO
+	mail-qc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750926AbaKGBah (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 20:30:37 -0500
+Content-Disposition: inline
+In-Reply-To: <1414809873-32227-2-git-send-email-caesar.wang@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Philippe =?ISO-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>, Romain Perier <romain.perier@gmail.com>
+To: Caesar Wang <caesar.wang@rock-chips.com>
+Cc: heiko@sntech.de, rui.zhang@intel.com, zyf@rock-chips.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, cf@rock-chips.com, dmitry.torokhov@gmail.com, dbasehore@chromium.org, huangtao@rock-chips.com, cjf@rock-chips.com, zhengsq@rock-chips.com, fzf@rock-chips.com
 
-On Thursday, November 06, 2014 02:27:03 PM Guenter Roeck wrote:
-> On Thu, Nov 06, 2014 at 11:30:59PM +0100, Rafael J. Wysocki wrote:
-> > On Thursday, November 06, 2014 08:42:45 AM Guenter Roeck wrote:
-> > > Various drivers implement architecture and/or device specific mea=
-ns to
-> > > power off the system.  For the most part, those drivers set the g=
-lobal
-> > > variable pm_power_off to point to a function within the driver.
-> > >=20
-> > > This mechanism has a number of drawbacks.  Typically only one sch=
-eme
-> > > to remove power is supported (at least if pm_power_off is used).
-> > > At least in theory there can be multiple means remove power, some=
- of
-> > > which may be less desirable. For example, some mechanisms may onl=
-y
-> > > power off the CPU or the CPU card, while another may power off th=
-e
-> > > entire system.  Others may really just execute a restart sequence
-> > > or drop into the ROM monitor. Using pm_power_off can also be racy
-> > > if the function pointer is set from a driver built as module, as =
-the
-> > > driver may be in the process of being unloaded when pm_power_off =
-is
-> > > called. If there are multiple power-off handlers in the system, r=
-emoving
-> > > a module with such a handler may inadvertently reset the pointer =
-to
-> > > pm_power_off to NULL, leaving the system with no means to remove =
-power.
-> > >=20
-> > > Introduce a system power-off handler call chain to solve the desc=
-ribed
-> > > problems.  This call chain is expected to be executed from the ar=
-chitecture
-> > > specific machine_power_off() function.  Drivers and architeceture=
- code
-> > > providing system power-off functionality are expected to register=
- with
-> > > this call chain.  When registering a power-off handler, callers c=
-an
-> > > provide a priority to control power-off handler execution sequenc=
-e
-> > > and thus ensure that the power-off handler with the optimal capab=
-ilities
-> > > to remove power for a given system is called first.
-> > >=20
-> > > Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-> > > Cc: Alexander Graf <agraf@suse.de>
-> > > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > > Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> > > Cc: Heiko Stuebner <heiko@sntech.de>
-> > > Cc: Lee Jones <lee.jones@linaro.org>
-> > > Cc: Len Brown <len.brown@intel.com>
-> > > Cc: Pavel Machek <pavel@ucw.cz>
-> > > Cc: Philippe R=C3=A9tornaz <philippe.retornaz@gmail.com>
-> > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > > Cc: Romain Perier <romain.perier@gmail.com>
-> > > Acked-by: Pavel Machek <pavel@ucw.cz>
-> > > Acked-by: Heiko Stuebner <heiko@sntech.de>
-> > > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> > > ---
-> > > v5:
-> > > - Rebase to v3.18-rc3
-> > > v4:
-> > > - Do not use notifiers but internal functions and data structures=
- to manage
-> > >   the list of power-off handlers. Drop unused parameters from cal=
-lbacks, and
-> > >   make the power-off function type void.
-> > >   Code to manage and walk the list of callbacks is derived from n=
-otifier.c.
-> > > v3:
-> > > - Rename new file to power_off_handler.c
-> > > - Replace poweroff in all newly introduced variables and in text
-> > >   with power_off or power-off as appropriate
-> > > - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
-> > > - Execute power-off handlers without any locks held
-> > > v2:
-> > > - poweroff -> power_off
-> > > - Add defines for default priorities
-> > > - Use raw notifiers protected by spinlocks instead of atomic noti=
-fiers
-> > > - Add register_poweroff_handler_simple
-> > > - Add devm_register_power_off_handler
-> > >=20
-> > >  include/linux/pm.h               |  28 ++++
-> > >  kernel/power/Makefile            |   1 +
-> > >  kernel/power/power_off_handler.c | 293 +++++++++++++++++++++++++=
-++++++++++++++
-> > >  3 files changed, 322 insertions(+)
-> > >  create mode 100644 kernel/power/power_off_handler.c
-> > >=20
-> > > diff --git a/include/linux/pm.h b/include/linux/pm.h
-> > > index 383fd68..a4d6bf8 100644
-> > > --- a/include/linux/pm.h
-> > > +++ b/include/linux/pm.h
-> > > @@ -35,6 +35,34 @@ extern void (*pm_power_off)(void);
-> > >  extern void (*pm_power_off_prepare)(void);
-> > > =20
-> > >  struct device; /* we have a circular dep with device.h */
-> > > +
-> > > +/*
-> > > + * Data structures and callbacks to manage power-off handlers
-> > > + */
-> > > +
-> > > +struct power_off_handler_block {
-> > > +	void (*handler)(struct power_off_handler_block *);
-> > > +	struct power_off_handler_block __rcu *next;
-> > > +	int priority;
-> > > +};
-> > > +
-> > > +int register_power_off_handler(struct power_off_handler_block *)=
-;
-> > > +int devm_register_power_off_handler(struct device *,
-> > > +				    struct power_off_handler_block *);
-> > > +int register_power_off_handler_simple(void (*function)(void), in=
-t priority);
-> > > +int unregister_power_off_handler(struct power_off_handler_block =
-*);
-> > > +void do_kernel_power_off(void);
-> > > +bool have_kernel_power_off(void);
-> > > +
-> > > +/*
-> > > + * Pre-defined power-off handler priorities
-> > > + */
-> > > +#define POWER_OFF_PRIORITY_FALLBACK	0
-> > > +#define POWER_OFF_PRIORITY_LOW		64
-> > > +#define POWER_OFF_PRIORITY_DEFAULT	128
-> > > +#define POWER_OFF_PRIORITY_HIGH		192
-> > > +#define POWER_OFF_PRIORITY_HIGHEST	255
-> >=20
-> > I'm not sure why we need these gaps in the priority space.
-> >=20
-> > I guess it might be possible to use
-> >=20
-> > enum power_off_priority {
-> > 	POWER_OFF_PRIORITY_FALLBACK =3D 0,
-> > 	POWER_OFF_PRIORITY_LOW,
-> > 	POWER_OFF_PRIORITY_DEFAULT,
-> > 	POWER_OFF_PRIORITY_HIGH,
-> > 	POWER_OFF_PRIORITY_HIGHEST,
-> > 	POWER_OFF_PRIORITY_LIMIT,
-> > };
+
+--6TrnltStXW4iwmi0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hello Caesar,
+
+On Sat, Nov 01, 2014 at 10:44:29AM +0800, Caesar Wang wrote:
+> Thermal is TS-ADC Controller module supports
+> user-defined mode and automatic mode.
 >=20
-> I retained the large number space on purpose, specifically to permit =
-in-between
-> priorities. In other words, I want people to be able to say "priority=
- for this
-> handler is higher than low but lower than default". After all, the de=
-fines were
-> intended as hints, not as a "Thou shall use those and only those prio=
-rities".
+> User-defined mode refers,TSADC all the control signals entirely by
+> software writing to register for direct control.
+>=20
+> Automaic mode refers to the module automatically poll TSADC output,
+> and the results were checked.If you find that the temperature High
+> in a period of time,an interrupt is generated to the processor
+> down-measures taken;If the temperature over a period of time High,
+> the resulting TSHUT gave CRU module,let it reset the entire chip,
+> or via GPIO give PMIC.
+>=20
 
-Problem with that is how they are supposed to know what priority to use=
- then.
+First thing, very good progress in this driver!=20
 
-How do I know if my priority is between DEFAULT and HIGH and whether it=
- is
-closer to HIGH or closer to DEFAULT?  What are the rules?
+> Signed-off-by: zhaoyifeng <zyf@rock-chips.com>
+> Signed-off-by: Caesar Wang <caesar.wang@rock-chips.com>
+> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-The only rule that seems to be there is "this handler should be tried b=
-efore
-that one, so it needs to have a higher priority".  But now the question=
- is
-how people are going to know which handlers they are competing with and=
- whether
-or not they are more "important".
+Just for the sake of code / documentation history, this patch, which
+adds the driver, should come after patch 2, which adds dt documentation.
 
-> Having said that, the important part is to get the series accepted, s=
-o I won't
-> argue if that is what it takes to get an Ack. Let me know.
+> ---
+>  drivers/thermal/Kconfig            |   9 +
+>  drivers/thermal/Makefile           |   1 +
+>  drivers/thermal/rockchip_thermal.c | 711 +++++++++++++++++++++++++++++++=
+++++++
+>  3 files changed, 721 insertions(+)
+>  create mode 100644 drivers/thermal/rockchip_thermal.c
 
-This isn't worth fighting over in my view, so I won't if everyone else =
-is fine
-with it.
+<big cut>
 
-Just feel free to ignore this concern if you don't think it is valid.
+> +static int
+> +rockchip_thermal_register_sensor(struct platform_device *pdev,
+> +				 struct rockchip_thermal_data *thermal,
+> +				 struct rockchip_thermal_sensor *sensor,
+> +				 enum sensor_id id)
+> +{
+> +	const struct rockchip_tsadc_chip *tsadc =3D thermal->chip;
+> +	int error;
+> +
+> +	tsadc->set_tshut_mode(id, thermal->regs, thermal->tshut_mode);
+> +	tsadc->set_tshut_temp(id, thermal->regs, thermal->tshut_temp);
+> +
+> +	sensor->thermal =3D thermal;
+> +	sensor->id =3D id;
+> +	sensor->tzd =3D thermal_zone_of_sensor_register(&pdev->dev, id, sensor,
+> +						rockchip_thermal_get_temp,
+> +						NULL,
+> +						rockchip_thermal_set_trips);
 
-Rafael
+So, did I miss something here? Looks like you have extended the of
+thermal, and I haven't seen the patch.
+  CC [M]  drivers/thermal/rockchip_thermal.o
+  drivers/thermal/rockchip_thermal.c: In function
+  `rockchip_thermal_register_sensor':
+  drivers/thermal/rockchip_thermal.c:482:7: error: too many arguments to
+  function `thermal_zone_of_sensor_register'
+         rockchip_thermal_set_trips);
 
+
+
+--6TrnltStXW4iwmi0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUXCCHAAoJEMLUO4d9pOJWleQIAJ6EwZupFBB6tPWGOH22wHu9
+sbk39SNWEjaX1AejKiRrbOvFp9FMugIKfDX1VQVKpT8glFLsvhQo1YH7JCgRG9rh
+PJKEWmOEvnNZOtjURbS+eRxwnuL1ocVZQFBSoiXPgASjj7xT8L+1bd23OwM18T38
+7ix7IO0r6EcbTVmDntg+4wa8hsP7Yg78/h3XzljB6qdWHhjfKrBWGaPvHG06v2Lm
+XnTklL30SDS5SXY04i7r3PTTbK8r6fnfNk+luAxo04EhwB4xygZdwUAFK8chP7j2
+JW6S2a9GFi5GUlZPvRCFrh1kt6VPcVM9O4LXIief6TsXYs1cNed8uWpSWt23iw0=
+=tbh4
+-----END PGP SIGNATURE-----
+
+--6TrnltStXW4iwmi0--
