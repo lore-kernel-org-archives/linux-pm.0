@@ -1,120 +1,75 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v4] arm64: dts: exynos7: add support for cpuidle core
- power down
-Date: Fri, 7 Nov 2014 11:58:45 +0000
-Message-ID: <20141107115845.GA2062@red-moon>
-References: <1415193331-14790-1-git-send-email-k.chander@samsung.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v9 2/4] amba: Don't unprepare the clocks if device driver
+ wants IRQ safe runtime PM
+Date: Fri, 7 Nov 2014 13:13:20 +0100
+Message-ID: <20141107121320.GA20419@amd>
+References: <1415105570-7871-1-git-send-email-k.kozlowski@samsung.com>
+ <1415105570-7871-3-git-send-email-k.kozlowski@samsung.com>
+ <20141104201834.GC15071@amd>
+ <1415176978.15850.11.camel@AMDC1943>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47344 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751421AbaKGMNW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 07:13:22 -0500
 Content-Disposition: inline
-In-Reply-To: <1415193331-14790-1-git-send-email-k.chander@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chander Kashyap <k.chander@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>
+In-Reply-To: <1415176978.15850.11.camel@AMDC1943>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Wed, Nov 05, 2014 at 01:15:31PM +0000, Chander Kashyap wrote:
-> Exynos7 has core power down state where cores can be powered off independently.
-
-"...has a core power down idle state..."
-
-> This patch adds support for this state.
-
-"...for this idle state."
-
-> Entry latency for the core power down is calculated as follows:
-> 1. Time difference is measured between cpuidle entry and exit.
-> 2. WFI is skipped for measuring the time.
-> 3. Select the worst case time in the set of 100000 cpuidle transactions,
->    with varying load.
+On Wed 2014-11-05 09:42:58, Krzysztof Kozlowski wrote:
+> On wto, 2014-11-04 at 21:18 +0100, Pavel Machek wrote:
+> > On Tue 2014-11-04 13:52:48, Krzysztof Kozlowski wrote:
+> > > The AMBA bus driver defines runtime Power Management functions which
+> > > disable and unprepare AMBA bus clock. This is problematic for runtime PM
+> > > because unpreparing a clock might sleep so it is not interrupt safe.
+> > > 
+> > > However some drivers may want to implement runtime PM functions in
+> > > interrupt-safe way (see pm_runtime_irq_safe()). In such case the AMBA
+> > > bus driver should only disable/enable the clock in runtime suspend and
+> > > resume callbacks.
+> > 
+> > 
+> > 
+> > >  /*
+> > >   * Hooks to provide runtime PM of the pclk (bus clock).  It is safe to
+> > >   * enable/disable the bus clock at runtime PM suspend/resume as this
+> > > @@ -95,8 +102,14 @@ static int amba_pm_runtime_suspend(struct device *dev)
+> > >  	struct amba_device *pcdev = to_amba_device(dev);
+> > >  	int ret = pm_generic_runtime_suspend(dev);
+> > >  
+> > > -	if (ret == 0 && dev->driver)
+> > > -		clk_disable_unprepare(pcdev->pclk);
+> > > +	if (ret == 0 && dev->driver) {
+> > > +		pcdev->irq_safe = get_pm_runtime_irq_safe(dev);
+> > > +
+> > > +		if (pcdev->irq_safe)
+> > > +			clk_disable(pcdev->pclk);
+> > > +		else
+> > > +			clk_disable_unprepare(pcdev->pclk);
+> > > +	}
+> > 
+> > So you can handle the case of !pcdev->irq_safe. What is the penalty
+> > for always assuming !pcdev->irq_safe?
 > 
-> Exit latency and target residency are supplied as per HW team
+> The penalty (for pl330 driver) would be that the runtime resume/suspend
+> cannot happen from atomic context
+>   => pm_runtime_get_sync() cannot be called from atomic context
+>     => complete rework of runtime PM for pl330 DMA driver because now
+>        one of pm_runtime_get_sync() calls is in device_issue_pending
+>        callback which may not sleep. And by "rework" I also mean that
+>        I do not know how to do this... yet.
 
-"Exit latency and min residency values are supplied by the HW team."
+I still don't get it. You say that you don't know how to handle
+!pcdev->irq_safe case... Yet have code above that tries to handle it.
 
-Target residency is a kernel naming scheme, non-existent in the idle state
-bindings.
-
-Please take time to write proper commit logs, thanks.
-
-> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
-> ---
-> This patch has following dependencies:
-> 	- [PATCH v5 0/8] arch: arm64: Enable support for Samsung Exynos7 SoC
-> 		http://www.spinics.net/lists/linux-samsung-soc/msg37047.html
-> Changes in v2:
-> 	- Moved the cpu-idle-state property after reg property
-> 	- removed the status property.
-> 
-> Changes in v3:
-> 	- Added the Entry latency calculation in commit message.
-> Changes in v4:
-> 	- Corrected the commit message.
-> 	- Corrected the entry latency value.
-> 
->  arch/arm64/boot/dts/exynos/exynos7.dtsi |   17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/exynos/exynos7.dtsi b/arch/arm64/boot/dts/exynos/exynos7.dtsi
-> index 50ae936..444dde1 100644
-> --- a/arch/arm64/boot/dts/exynos/exynos7.dtsi
-> +++ b/arch/arm64/boot/dts/exynos/exynos7.dtsi
-> @@ -37,6 +37,7 @@
->  			compatible = "arm,cortex-a57", "arm,armv8";
->  			enable-method = "psci";
-
-enable-method should be after reg, it is not an ordering issues added
-by this patch but I still do not like that.
-
-Other than that, please take some time to rewrite the commit log and
-ask to fix the ordering above, you can add my:
-
-Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-
->  			reg = <0x0>;
-> +			cpu-idle-states = <&CPU_SLEEP>;
->  		};
->  
->  		cpu@1 {
-> @@ -44,6 +45,7 @@
->  			compatible = "arm,cortex-a57", "arm,armv8";
->  			enable-method = "psci";
->  			reg = <0x1>;
-> +			cpu-idle-states = <&CPU_SLEEP>;
->  		};
->  
->  		cpu@2 {
-> @@ -51,6 +53,7 @@
->  			compatible = "arm,cortex-a57", "arm,armv8";
->  			enable-method = "psci";
->  			reg = <0x2>;
-> +			cpu-idle-states = <&CPU_SLEEP>;
->  		};
->  
->  		cpu@3 {
-> @@ -58,6 +61,20 @@
->  			compatible = "arm,cortex-a57", "arm,armv8";
->  			enable-method = "psci";
->  			reg = <0x3>;
-> +			cpu-idle-states = <&CPU_SLEEP>;
-> +		};
-> +
-> +		idle-states {
-> +			entry-method = "arm,psci";
-> +
-> +			CPU_SLEEP: cpu-sleep {
-> +				compatible = "arm,idle-state";
-> +				local-timer-stop;
-> +				arm,psci-suspend-param = <0x0010000>;
-> +				entry-latency-us = <34>;
-> +				exit-latency-us = <150>;
-> +				min-residency-us = <2100>;
-> +			};
->  		};
->  	};
->  
-> -- 
-> 1.7.9.5
-> 
-> 
+If that case can't be sanely handled, I'd expect
+BUG_ON(!pcdev->irq_safe).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
