@@ -1,98 +1,52 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [GIT PULL] ARM DT idle states updates
-Date: Fri, 07 Nov 2014 11:43:29 +0100
-Message-ID: <545CA251.2040007@linaro.org>
-References: <20141104123013.GA16832@red-moon> <545CA1E7.5050203@linaro.org>
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: running wpa_supplicant during saving hibernation image
+Date: Fri, 07 Nov 2014 12:13:08 +0100
+Message-ID: <87ioirmfgb.fsf@lant.ki.iif.hu>
+References: <8761ex1via.fsf@lant.ki.iif.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f48.google.com ([74.125.82.48]:45527 "EHLO
-	mail-wg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbaKGKnd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 05:43:33 -0500
-Received: by mail-wg0-f48.google.com with SMTP id m15so3371992wgh.7
-        for <linux-pm@vger.kernel.org>; Fri, 07 Nov 2014 02:43:32 -0800 (PST)
-In-Reply-To: <545CA1E7.5050203@linaro.org>
+Received: from listserv2.niif.hu ([193.225.14.155]:58509 "EHLO
+	listserv2.niif.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751303AbaKGLNT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 06:13:19 -0500
+Received: from business-188-142-225-206.business.broadband.hu ([188.142.225.206] helo=lant.ki.iif.hu)
+	by listserv2.niif.hu with esmtpsa (TLS1.2:DHE_RSA_AES_128_CBC_SHA1:128)
+	(Exim 4.80)
+	(envelope-from <wferi@niif.hu>)
+	id 1XmhTe-0000bO-OB
+	for linux-pm@vger.kernel.org; Fri, 07 Nov 2014 12:13:14 +0100
+Received: from wferi by lant.ki.iif.hu with local (Exim 4.80)
+	(envelope-from <wferi@lant.ki.iif.hu>)
+	id 1XmhTZ-0006tC-0O
+	for linux-pm@vger.kernel.org; Fri, 07 Nov 2014 12:13:09 +0100
+In-Reply-To: <8761ex1via.fsf@lant.ki.iif.hu> (Ferenc Wagner's message of "Sun,
+	02 Nov 2014 16:18:21 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-pm@vger.kernel.org
 
-On 11/07/2014 11:41 AM, Daniel Lezcano wrote:
-> On 11/04/2014 01:30 PM, Lorenzo Pieralisi wrote:
->> Hi Daniel,
->>
->> please consider pulling the three patches below for 3.19.
->>
->> First two are updates on idle states bindings and parsing code to ad=
-d
->> states descriptions and status property, the last one is just a clea=
-n-up
->> patch, to remove leftovers from the last merge window.
->
-> Hi Lorenzo,
->
-> could you please send these three patches along with this pull reques=
-t ?
+Ferenc Wagner <wferi@niif.hu> writes:
 
-Please ignore. I saw the three patches :)
+> I'm running an iSCSI rooted system over WPA authenticated wireless
+> network.  I'd like to enable hibernation on it (restore from S3 seems
+> unreliable on this Acer Aspire 2920 notebook).  The problem is that to
+> have network access for saving the hibernation image, wpa_supplicant
+> must be running, but as a user space process, it's frozen before
+> creating the hibernation snapshot.  Is there a way to thaw it after
+> taking the snapshot, or to skip freezing it?  I found no interface for
+> setting the corresponding task flag, but I may have missed something.
+> It's running from rootfs, so I guess either would be safe.  -- Well,
+> currently it's logging into a tmpfs file, is that permissible (being
+> swappable)?
 
-Sorry for the noise.
-
-   -- Daniel
-
->>
->> Thanks a lot,
->> Lorenzo
->>
->> The following changes since commit
->> 0df1f2487d2f0d04703f142813d53615d62a1da4:
->>
->>    Linux 3.18-rc3 (2014-11-02 15:01:51 -0800)
->>
->> are available in the git repository at:
->>
->>    git://linux-arm.org/linux-2.6-lp.git
->> for-upstream/dt-idle-states-updates
->>
->> for you to fetch changes up to 6e13873494078ac26862144ca2345546ca905=
-c41:
->>
->>    drivers: cpuidle: remove cpuidle-arm64 duplicate error messages
->> (2014-11-04 12:09:27 +0000)
->>
->> ----------------------------------------------------------------
->> Lorenzo Pieralisi (3):
->>        drivers: cpuidle: add status property to ARM idle states
->>        drivers: cpuidle: add idle-state-name description to ARM idle
->> states
->>        drivers: cpuidle: remove cpuidle-arm64 duplicate error messag=
-es
->>
->>   .../devicetree/bindings/arm/idle-states.txt          | 20
->> ++++++++++++++++++++
->>   drivers/cpuidle/cpuidle-arm64.c                      | 13 ++------=
------
->>   drivers/cpuidle/dt_idle_states.c                     | 10 ++++++++=
-+-
->>   3 files changed, 31 insertions(+), 12 deletions(-)
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" =
-in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
->
->
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+I suppose the lack of replies means there's no such interface, so I'm
+considering writing a module for setting the PF_NOFREEZE task flag of a
+given process.  How can I soundly implement this?  Sched.h says "only
+the _current_ task can read/write to tsk->flags", but that would be
+inconvenient, requiring modification of wpa_supplicant as well.  Is
+there a way around, besides ptrace?  Why isn't flipping a flag bit
+atomic, anyway?  Or am I completely off the map with this whole idea?
+-- 
+Thanks,
+Feri.
