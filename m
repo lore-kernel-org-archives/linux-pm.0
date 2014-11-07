@@ -1,102 +1,64 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v4] Add LTC2941/LTC2943 Battery Gauge Driver
-Date: Mon, 27 Oct 2014 05:14:17 +0100
-Message-ID: <20141027041417.GB21264@xo-6d-61-c0.localdomain>
-References: <1412748300-3915-1-git-send-email-mike.looijmans@topic.nl>
- <1414067918-6688-1-git-send-email-mike.looijmans@topic.nl>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: (bisected) Lock up on sh73a0/kzm9g on cpuidle initialization
+Date: Fri, 7 Nov 2014 08:59:25 +0100
+Message-ID: <CAMuHMdXQr65g4He0D0ZRN923OJ2A7WNgwbiTru_1dGWnvbvCJA@mail.gmail.com>
+References: <CAMuHMdXaaa2t6+sH2egGacVxkAPeTUkAgwdYsOnMnEPnuLdB5Q@mail.gmail.com>
+	<545BE1DE.6060900@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35002 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751054AbaKGHOw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 02:14:52 -0500
-Content-Disposition: inline
-In-Reply-To: <1414067918-6688-1-git-send-email-mike.looijmans@topic.nl>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <545BE1DE.6060900@linaro.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Ingo Molnar <mingo@kernel.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mike Looijmans <mike.looijmans@topic.nl>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
 
-Hi!
+Hi Daniel,
 
-> +++ b/drivers/power/ltc2941-battery-gauge.c
-> @@ -0,0 +1,547 @@
-> +/*
-> + * I2C client/driver for the Linear Technology LTC2941 and LTC2943
-> + * Battery Gas Gauge IC
-> + *
-> + * Copyright (C) 2014 Topic Embedded Systems
-> + *
+On Thu, Nov 6, 2014 at 10:02 PM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> On 11/06/2014 09:38 PM, Geert Uytterhoeven wrote:
+>> When CONFIG_CPU_IDLE=y, the kernel locks up during cpuidle initialization
+>> on Renesas sh73a0/kzm9g-reference, which has a dual-core Cortex-A9.
+>>
+>> Last message is:
+>>
+>>      DMA: preallocated 256 KiB pool for atomic coherent allocations
+>>
+>> After this it's supposed to print:
+>>
+>>      cpuidle: using governor ladder
+>>      cpuidle: using governor menu
+>>
+>> I've bisected this to commit 442bf3aaf55a91ebfec71da46a4ee10a3c905bcc
+>> ("sched: Let the scheduler see CPU idle states").
+>>
+>> Reverting that commit, and commit 83a0a96a5f26d974580fd7251043ff70c8f1823d
+>> ("sched/fair: Leverage the idle state info when choosing the "idlest"
+>> cpu") which
+>> depends on it, fixes the problem.
+>>
+>> I saw the discussion "lockdep splat in CPU hotplug", so I enabled lockdep
+>> debugging, but didn't see a lockdep splat.
+>
+> Did you try the fix attached ?
+>
+> https://lkml.org/lkml/2014/10/22/722
 
-NOrmally GPL notice would go here.
+Thanks, I didn't try that.
 
-> + * Author: Auryn Verwegen
-> + * Author: Mike Looijmans
-> + */
+However, this patch seems to be in v3.18-rc3, so I'm already using it.
+Hence it doesn't fix the problem for me.
 
-Do you want to add yourself as a maintainers?
+On another board, with a dual Cortex-A15, the problem doesn't show up.
 
-> +{
-> +	int ret;
-> +	struct i2c_msg msgs[2] = { };
-> +	u8 reg_start = reg;
-> +
-> +	msgs[0].addr	= client->addr;
-> +	msgs[0].len	= 1;
-> +	msgs[0].buf	= &reg_start;
-> +
-> +	msgs[1].addr	= client->addr;
-> +	msgs[1].len	= num_regs;
-> +	msgs[1].buf	= buf;
-> +	msgs[1].flags	= I2C_M_RD;
-> +
-> +	ret = i2c_transfer(client->adapter, &msgs[0], 2);
+Gr{oetje,eeting}s,
 
-Here you send byte from kernel stack to i2c device. I'd add msg[0].flags = 0.
+                        Geert
 
-> +		ret = ltc294x_write_regs(info->client,
-> +			LTC294X_REG_CONTROL, &control, 1);
-> +		if (ret < 0) {
-> +			dev_err(&info->client->dev,
-> +				"Could not write register\n");
-> +			goto error_exit;
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-return ret; No need to goto when you have nothing to clean up.
-
-> +		}
-> +	}
-> +
-> +	return 0;
-> +
-> +error_exit:
-> +	return ret;
-> +}
-
-> +	if (info->Qlsb < 0)
-> +		value += 0xFFFF;
-
-q_lsb?
-
-> +	dataw[0] = I16_MSB(value);
-> +	dataw[1] = I16_LSB(value);
-> +	ret = ltc294x_write_regs(info->client,
-> +		LTC294X_REG_ACC_CHARGE_MSB, &dataw[0], 2);
-> +	if (ret < 0)
-> +		goto error_exit;
-> +	/* Enable analog section */
-> +error_exit:
-
-Interesting use of goto... remove?
-
-> +	ret = of_property_read_u32(np, "prescaler-exponent", &prescaler_exp);
-> +	if (ret < 0) {
-> +		dev_err(&client->dev,
-> +			"PrescalerExponent not in devicetree, assume max\n");
-
-assuming?
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
