@@ -1,108 +1,117 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v9 2/4] amba: Don't unprepare the clocks if device driver
- wants IRQ safe runtime PM
-Date: Fri, 7 Nov 2014 13:28:51 +0100
-Message-ID: <20141107122850.GB20419@amd>
-References: <1415105570-7871-1-git-send-email-k.kozlowski@samsung.com>
- <1415105570-7871-3-git-send-email-k.kozlowski@samsung.com>
- <20141104201834.GC15071@amd>
- <1415176978.15850.11.camel@AMDC1943>
- <20141107121320.GA20419@amd>
- <1415362683.31102.6.camel@AMDC1943>
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: Re: [PATCH 1/2] thermal: armada: Remove support for A375-Z1 SoC
+Date: Fri, 07 Nov 2014 09:41:19 -0300
+Message-ID: <545CBDEF.6050502@free-electrons.com>
+References: <1415116839-4323-1-git-send-email-ezequiel.garcia@free-electrons.com> <1415116839-4323-2-git-send-email-ezequiel.garcia@free-electrons.com> <20141107032619.GD3698@titan.lakedaemon.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="CDfTBk3FhrnL4FWXT4hc36VDMFcrvpKeK"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48327 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752380AbaKGM2x (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 07:28:53 -0500
-Content-Disposition: inline
-In-Reply-To: <1415362683.31102.6.camel@AMDC1943>
+Received: from down.free-electrons.com ([37.187.137.238]:58203 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751694AbaKGMnY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 07:43:24 -0500
+In-Reply-To: <20141107032619.GD3698@titan.lakedaemon.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Jason Cooper <jason@lakedaemon.net>
+Cc: Zhang Rui <rui.zhang@intel.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org
 
-On Fri 2014-11-07 13:18:03, Krzysztof Kozlowski wrote:
-> On pi=C4=85, 2014-11-07 at 13:13 +0100, Pavel Machek wrote:
-> > On Wed 2014-11-05 09:42:58, Krzysztof Kozlowski wrote:
-> > > On wto, 2014-11-04 at 21:18 +0100, Pavel Machek wrote:
-> > > > On Tue 2014-11-04 13:52:48, Krzysztof Kozlowski wrote:
-> > > > > The AMBA bus driver defines runtime Power Management function=
-s which
-> > > > > disable and unprepare AMBA bus clock. This is problematic for=
- runtime PM
-> > > > > because unpreparing a clock might sleep so it is not interrup=
-t safe.
-> > > > >=20
-> > > > > However some drivers may want to implement runtime PM functio=
-ns in
-> > > > > interrupt-safe way (see pm_runtime_irq_safe()). In such case =
-the AMBA
-> > > > > bus driver should only disable/enable the clock in runtime su=
-spend and
-> > > > > resume callbacks.
-> > > >=20
-> > > >=20
-> > > >=20
-> > > > >  /*
-> > > > >   * Hooks to provide runtime PM of the pclk (bus clock).  It =
-is safe to
-> > > > >   * enable/disable the bus clock at runtime PM suspend/resume=
- as this
-> > > > > @@ -95,8 +102,14 @@ static int amba_pm_runtime_suspend(struct=
- device *dev)
-> > > > >  	struct amba_device *pcdev =3D to_amba_device(dev);
-> > > > >  	int ret =3D pm_generic_runtime_suspend(dev);
-> > > > > =20
-> > > > > -	if (ret =3D=3D 0 && dev->driver)
-> > > > > -		clk_disable_unprepare(pcdev->pclk);
-> > > > > +	if (ret =3D=3D 0 && dev->driver) {
-> > > > > +		pcdev->irq_safe =3D get_pm_runtime_irq_safe(dev);
-> > > > > +
-> > > > > +		if (pcdev->irq_safe)
-> > > > > +			clk_disable(pcdev->pclk);
-> > > > > +		else
-> > > > > +			clk_disable_unprepare(pcdev->pclk);
-> > > > > +	}
-> > > >=20
-> > > > So you can handle the case of !pcdev->irq_safe. What is the pen=
-alty
-> > > > for always assuming !pcdev->irq_safe?
-> > >=20
-> > > The penalty (for pl330 driver) would be that the runtime resume/s=
-uspend
-> > > cannot happen from atomic context
-> > >   =3D> pm_runtime_get_sync() cannot be called from atomic context
-> > >     =3D> complete rework of runtime PM for pl330 DMA driver becau=
-se now
-> > >        one of pm_runtime_get_sync() calls is in device_issue_pend=
-ing
-> > >        callback which may not sleep. And by "rework" I also mean =
-that
-> > >        I do not know how to do this... yet.
-> >=20
-> > I still don't get it. You say that you don't know how to handle
-> > !pcdev->irq_safe case... Yet have code above that tries to handle i=
-t.
-> >=20
-> > If that case can't be sanely handled, I'd expect
-> > BUG_ON(!pcdev->irq_safe).
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--CDfTBk3FhrnL4FWXT4hc36VDMFcrvpKeK
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
+
+On 11/07/2014 12:26 AM, Jason Cooper wrote:
+> Ezequiel,
 >=20
-> Hmmm... I could misunderstand your question. The amba/bus.c driver ca=
-n
-> handle both cases. However this varies for child drivers (which use
-> these runtime PM callbacks too). For pl330 cannot handle non-irq-safe=
-=2E
-> Other drivers can.
+> On Tue, Nov 04, 2014 at 01:00:38PM -0300, Ezequiel Garcia wrote:
+>> The Armada 375 Z1 SoC revision is no longer supported. This commit
+>> removes the quirk needed for the thermal sensor.
+>>
+>> Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+>> ---
+>>  .../devicetree/bindings/thermal/armada-thermal.txt   |  8 --------
+>>  drivers/thermal/armada_thermal.c                     | 20 -----------=
+---------
+>>  2 files changed, 28 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.=
+txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+>> index 4cf0249..4698e0e 100644
+>> --- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+>> +++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+>> @@ -5,17 +5,9 @@ Required properties:
+>>  - compatible:	Should be set to one of the following:
+>>  		marvell,armada370-thermal
+>>  		marvell,armada375-thermal
+>> -		marvell,armada375-z1-thermal
+>>  		marvell,armada380-thermal
+>>  		marvell,armadaxp-thermal
+>> =20
+>> -		Note: As the name suggests, "marvell,armada375-z1-thermal"
+>> -		applies for the SoC Z1 stepping only. On such stepping
+>> -		some quirks need to be done and the register offset differs
+>> -		from the one in the A0 stepping.
+>> -		The operating system may auto-detect the SoC stepping and
+>> -		update the compatible and register offsets at runtime.
+>> -
+>>  - reg:		Device's register space.
+>>  		Two entries are expected, see the examples below.
+>>  		The first one is required for the sensor register;
+>=20
+> I've no problem with removing support for the z1 stepping from the
+> kernel.  However, I don't think we should erase it from binding docs.
+> I'm not sure what the DT maintainers think is the appropriate action
+> here, but I'm thinking we could add a 'Deprecated' section at the end o=
+f
+> the doc and move these hunks there.  With a little rewording of course.=
 
-Ok, so pl330 can't handle non-irq-safe callbacks. What about the other
-solution preserving consistency -- can we make sure all callbacks are
-irq-safe with acceptable penalty?
+>=20
+> I'm primarily concerned about users with older dtbs looking to upgrade,=
 
-									Pavel
+> "Hey, wtf is marvell,armada375-z1-thermal?  I looked in the binding doc=
+s
+> and there's nothing there, do I replace it with marvell,armada375-therm=
+al?"
+>=20
+
+We can do that if you think it's really useful. However, I think we've
+designed this so *nobody* would actually have to put the z1 compatible
+string. The mvebu quirk (tries) to auto-detect it from the revision
+register and hot fix the compatible string.
+
+Moreover, I'm not at all sure *anyone* would have a Z1 board except
+early developers like us. Am I being too naive here?
+
 --=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
+Ezequiel Garc=EDa, Free Electrons
+Embedded Linux, Kernel and Android Engineering
+http://free-electrons.com
+
+
+--CDfTBk3FhrnL4FWXT4hc36VDMFcrvpKeK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJUXL3zAAoJEIOKbhOEIHKiQ4QQAIhrmYyrEQ3/oAFGbnIGGeMN
+XuwCblfudnFIf0x4F2ILoilcR66uNbDXGAYl8yDMk6+qiYpzY91PvdDgE1IrZR0q
+sKt6xgriBXZ5DP5z3T+80ghyo3Jggk4Ot/QQpBneugOalb/If45bKHvL/Zur4syS
+V6tlegdf7T0XAK/DaIunC4Sq2SUrUoCoObI/BDiYikxxGwp5NUmwJnqSUZc1l8dn
+hW7muycwArCbwCTr6Oyp5WJ/ybafB/VWGGYPAyIhgTyyad/2StW+3rKMdr73tcEB
+s85x+Q7/rWuuRQGHKXyedQKnxwy50fkEoU8XCyD74ao0SHTaxIiJKhOnyoEWankE
+CH4DAfPk28eK/bFB79JlAbtYilc5iFhTMj57ywF8F2zczYlG61qg+T+IXDUknLoC
+L6gxBopHAYL78MPuwVv9fYP3LmQk4vErr7t+XjoAstC5VepH1z6xInQ/ICgy4w/A
+1EyLYWS+2z5MyBM2DMbZYy+CZIzCEBFenDqtx3z9lA/dzwLj9iD59BDrg3eeV8Aa
+Z0Y2Kcj7fJBJgQ/T9xT5Iy5VI2ZMatR/+uLPlLYOUgghgHGDDxahQ/QKYBVepUvq
+XquL4qihVb00IzmTvQkgWWwRUhClCEVQB5XJUEZ39QLAmuDEAS3Ymefou6IaBf9U
+t8KD2VYfcMNwAO+4yDmI
+=cUza
+-----END PGP SIGNATURE-----
+
+--CDfTBk3FhrnL4FWXT4hc36VDMFcrvpKeK--
