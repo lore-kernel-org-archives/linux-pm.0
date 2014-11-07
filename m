@@ -1,238 +1,83 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V3 2/6] sched: idle: cpuidle: Check the latency req before idle
-Date: Fri,  7 Nov 2014 15:31:23 +0100
-Message-ID: <1415370687-18688-3-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH V3 1/6] sched: idle: Add a weak arch_cpu_idle_poll function
+Date: Fri,  7 Nov 2014 15:31:22 +0100
+Message-ID: <1415370687-18688-2-git-send-email-daniel.lezcano@linaro.org>
 References: <1415370687-18688-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f53.google.com ([74.125.82.53]:64563 "EHLO
-	mail-wg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752737AbaKGObk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 09:31:40 -0500
-Received: by mail-wg0-f53.google.com with SMTP id b13so3872267wgh.12
-        for <linux-pm@vger.kernel.org>; Fri, 07 Nov 2014 06:31:38 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1415370687-18688-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net
 Cc: preeti@linux.vnet.ibm.com, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, peterz@infradead.org, linaro-kernel@lists.linaro.org, patches@linaro.org, lenb@kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-When the pmqos latency requirement is set to zero that means "poll in all the
-cases".
+The poll function is called when a timer expired or if we force to poll when
+the cpu_idle_force_poll option is set.
 
-That is correctly implemented on x86 but not on the other archs.
+The poll function does:
 
-As how is written the code, if the latency request is zero, the governor will
-return zero, so corresponding, for x86, to the poll function, but for the
-others arch the default idle function. For example, on ARM this is wait-for-
-interrupt with a latency of '1', so violating the constraint.
+       local_irq_enable();
+       while (!tif_need_resched())
+               cpu_relax();
 
-In order to fix that, do the latency requirement check *before* calling the
-cpuidle framework in order to jump to the poll function without entering
-cpuidle. That has several benefits:
+This default poll function suits for the x86 arch because its rep; nop;
+hardware power optimization. But on other archs, this optimization does not
+exists and we are not saving power. The arch specific bits may want to
+optimize this loop by adding their own optimization.
 
- 1. It clarifies and unifies the code
- 2. It fixes x86 vs other archs behavior
- 3. Factors out the call to the same function
- 4. Prevent to enter the cpuidle framework with its expensive cost in
-    calculation
-
-As the latency_req is needed in all the cases, change the select API to take
-the latency_req as parameter in case it is not equal to zero.
-
-As a positive side effect, it introduces the latency constraint specified
-externally, so one more step to the cpuidle/scheduler integration.
+Give an opportunity to the different platform to specify their own polling
+loop by adding a weak cpu_idle_poll_loop function.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Nicolas Pitre <nico@linaro.org>
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Reviewed-by: Len Brown <len.brown@intel.com>
 ---
- drivers/cpuidle/cpuidle.c          |  6 ++++--
- drivers/cpuidle/governors/ladder.c |  9 +--------
- drivers/cpuidle/governors/menu.c   |  8 ++------
- include/linux/cpuidle.h            |  7 ++++---
- kernel/sched/idle.c                | 18 ++++++++++++++----
- 5 files changed, 25 insertions(+), 23 deletions(-)
+ kernel/sched/idle.c | 29 +++++++++++++++++------------
+ 1 file changed, 17 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 125150d..86f6cb8 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -155,10 +155,12 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
-  *
-  * @drv: the cpuidle driver
-  * @dev: the cpuidle device
-+ * @latency_req: the latency constraint when choosing an idle state
-  *
-  * Returns the index of the idle state.
-  */
--int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
-+int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
-+		   int latency_req)
- {
- 	if (off || !initialized)
- 		return -ENODEV;
-@@ -169,7 +171,7 @@ int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 	if (unlikely(use_deepest_state))
- 		return cpuidle_find_deepest_state(drv, dev);
- 
--	return cpuidle_curr_governor->select(drv, dev);
-+	return cpuidle_curr_governor->select(drv, dev, latency_req);
- }
- 
- /**
-diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-index 06b57c4..53113c2 100644
---- a/drivers/cpuidle/governors/ladder.c
-+++ b/drivers/cpuidle/governors/ladder.c
-@@ -64,18 +64,11 @@ static inline void ladder_do_selection(struct ladder_device *ldev,
-  * @dev: the CPU
-  */
- static int ladder_select_state(struct cpuidle_driver *drv,
--				struct cpuidle_device *dev)
-+			       struct cpuidle_device *dev, int latency_req)
- {
- 	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
- 	struct ladder_device_state *last_state;
- 	int last_residency, last_idx = ldev->last_state_idx;
--	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
--
--	/* Special case when user has set very strict latency requirement */
--	if (unlikely(latency_req == 0)) {
--		ladder_do_selection(ldev, last_idx, 0);
--		return 0;
--	}
- 
- 	last_state = &ldev->states[last_idx];
- 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 710a233..9b7c0b9 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -287,10 +287,10 @@ again:
-  * @drv: cpuidle driver containing state data
-  * @dev: the CPU
-  */
--static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
-+static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
-+		       int latency_req)
- {
- 	struct menu_device *data = this_cpu_ptr(&menu_devices);
--	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
- 	int i;
- 	unsigned int interactivity_req;
- 	unsigned long nr_iowaiters, cpu_load;
-@@ -302,10 +302,6 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 
- 	data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
- 
--	/* Special case when user has set very strict latency requirement */
--	if (unlikely(latency_req == 0))
--		return 0;
--
- 	/* determine the expected residency time, round up */
- 	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length());
- 
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 25e0df6..fb465c1 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -122,7 +122,7 @@ struct cpuidle_driver {
- extern void disable_cpuidle(void);
- 
- extern int cpuidle_select(struct cpuidle_driver *drv,
--			  struct cpuidle_device *dev);
-+			  struct cpuidle_device *dev, int latency_req);
- extern int cpuidle_enter(struct cpuidle_driver *drv,
- 			 struct cpuidle_device *dev, int index);
- extern void cpuidle_reflect(struct cpuidle_device *dev, int index);
-@@ -150,7 +150,7 @@ extern struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev)
- #else
- static inline void disable_cpuidle(void) { }
- static inline int cpuidle_select(struct cpuidle_driver *drv,
--				 struct cpuidle_device *dev)
-+				 struct cpuidle_device *dev, int latency_req)
- {return -ENODEV; }
- static inline int cpuidle_enter(struct cpuidle_driver *drv,
- 				struct cpuidle_device *dev, int index)
-@@ -205,7 +205,8 @@ struct cpuidle_governor {
- 					struct cpuidle_device *dev);
- 
- 	int  (*select)		(struct cpuidle_driver *drv,
--					struct cpuidle_device *dev);
-+				 struct cpuidle_device *dev,
-+				 int latency_req);
- 	void (*reflect)		(struct cpuidle_device *dev, int index);
- 
- 	struct module 		*owner;
 diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index ea65bbae..189e80a 100644
+index c47fce7..ea65bbae 100644
 --- a/kernel/sched/idle.c
 +++ b/kernel/sched/idle.c
-@@ -5,6 +5,7 @@
- #include <linux/cpu.h>
- #include <linux/cpuidle.h>
- #include <linux/tick.h>
-+#include <linux/pm_qos.h>
- #include <linux/mm.h>
- #include <linux/stackprotector.h>
+@@ -42,18 +42,6 @@ static int __init cpu_idle_nopoll_setup(char *__unused)
+ __setup("hlt", cpu_idle_nopoll_setup);
+ #endif
  
-@@ -79,7 +80,7 @@ static inline int cpu_idle_poll(void)
-  * set, and it returns with polling set.  If it ever stops polling, it
-  * must clear the polling bit.
-  */
--static void cpuidle_idle_call(void)
-+static void cpuidle_idle_call(unsigned int latency_req)
- {
- 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
- 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-@@ -112,7 +113,7 @@ static void cpuidle_idle_call(void)
- 	 * Ask the cpuidle framework to choose a convenient idle state.
- 	 * Fall back to the default arch idle method on errors.
- 	 */
--	next_state = cpuidle_select(drv, dev);
-+	next_state = cpuidle_select(drv, dev, latency_req);
- 	if (next_state < 0) {
- use_default:
- 		/*
-@@ -193,6 +194,8 @@ exit_idle:
-  */
- static void cpu_idle_loop(void)
- {
-+	unsigned int latency_req;
+-static inline int cpu_idle_poll(void)
+-{
+-	rcu_idle_enter();
+-	trace_cpu_idle_rcuidle(0, smp_processor_id());
+-	local_irq_enable();
+-	while (!tif_need_resched())
+-		cpu_relax();
+-	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
+-	rcu_idle_exit();
+-	return 1;
+-}
+-
+ /* Weak implementations for optional arch specific functions */
+ void __weak arch_cpu_idle_prepare(void) { }
+ void __weak arch_cpu_idle_enter(void) { }
+@@ -65,6 +53,23 @@ void __weak arch_cpu_idle(void)
+ 	local_irq_enable();
+ }
+ 
++void __weak arch_cpu_idle_poll(void)
++{
++	local_irq_enable();
++	while (!tif_need_resched())
++		cpu_relax();
++}
 +
- 	while (1) {
- 		/*
- 		 * If the arch has a polling bit, we maintain an invariant:
-@@ -216,19 +219,26 @@ static void cpu_idle_loop(void)
- 			local_irq_disable();
- 			arch_cpu_idle_enter();
- 
-+			latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
++static inline int cpu_idle_poll(void)
++{
++	rcu_idle_enter();
++	trace_cpu_idle_rcuidle(0, smp_processor_id());
++	arch_cpu_idle_poll();
++	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
++	rcu_idle_exit();
++	return 1;
++}
 +
- 			/*
- 			 * In poll mode we reenable interrupts and spin.
- 			 *
-+			 * If the latency req is zero, we don't want to
-+			 * enter any idle state and we jump to the poll
-+			 * function directly
-+			 *
- 			 * Also if we detected in the wakeup from idle
- 			 * path that the tick broadcast device expired
- 			 * for us, we don't want to go deep idle as we
- 			 * know that the IPI is going to arrive right
- 			 * away
- 			 */
--			if (cpu_idle_force_poll || tick_check_broadcast_expired())
-+			if (!latency_req || cpu_idle_force_poll ||
-+			    tick_check_broadcast_expired())
- 				cpu_idle_poll();
- 			else
--				cpuidle_idle_call();
-+				cpuidle_idle_call(latency_req);
- 
- 			arch_cpu_idle_exit();
- 		}
+ /**
+  * cpuidle_idle_call - the main idle function
+  *
 -- 
 1.9.1
-
