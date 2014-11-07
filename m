@@ -1,87 +1,113 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2] thermal: imx: correct driver load sequence for cpu
- cooling
-Date: Fri, 7 Nov 2014 14:47:58 -0400
-Message-ID: <20141107184749.GB23972@developer>
-References: <1413263527-31102-1-git-send-email-B51503@freescale.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH] PM / Domains: Fix initial default state of the
+ need_restore flag
+Date: Fri, 07 Nov 2014 19:52:39 +0100
+Message-ID: <545D14F7.9060309@samsung.com>
+References: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="24zk1gE8NUlDmwG9"
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f49.google.com ([209.85.192.49]:46470 "EHLO
-	mail-qg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038AbaKGSsH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 13:48:07 -0500
-Received: by mail-qg0-f49.google.com with SMTP id z60so2824403qgd.36
-        for <linux-pm@vger.kernel.org>; Fri, 07 Nov 2014 10:48:06 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1413263527-31102-1-git-send-email-B51503@freescale.com>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:47099 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752505AbaKGSwv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 13:52:51 -0500
+In-reply-to: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bai Ping <B51503@freescale.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>
 
-
---24zk1gE8NUlDmwG9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hello Bai,
-
-On Tue, Oct 14, 2014 at 01:12:07PM +0800, Bai Ping wrote:
-> From: Bai Ping <b51503@freescale.com>
->=20
-> thermal driver should be regisetered after cpufreq driver has
-> been registered and probed. Doing so is to make sure that thermal
-> driver can get the max cpu cooling states correctly when calling
-> get_property.
->=20
-> Signed-off-by: Bai Ping <b51503@freescale.com>
+On 07/11/14 14:27, Ulf Hansson wrote:
+[...]
+> To handle things more properly in the generic PM domain, let's change
+> the default initial value of the need_restore flag to reflect that the
+> state is unknown. As soon as some of the runtime PM callbacks gets
+> invoked, update the initial value accordingly.
+> 
+> Moreover, since the generic PM domain is verifying that all device's
+> are both runtime PM enabled and suspended, using pm_runtime_suspended()
+> while pm_genpd_poweroff() is invoked from the scheduled work, we can be
+> sure of that the PM domain won't be powering off while having active
+> devices.
+> 
+> Do note that, the generic PM domain can still only know about active
+> devices which has been activated through invoking its runtime PM resume
+> callback. In other words, buses/drivers using pm_runtime_set_active()
+> during ->probe() will still suffer from a race condition, potentially
+> probing a device without having its PM domain being powered. That issue
+> will have to be solved using a different approach.
+> 
+> This a log from the boot regression for Exynos5, which is being fixed in
+> this patch.
+> 
+> ------------[ cut here ]------------
+> WARNING: CPU: 0 PID: 308 at ../drivers/clk/clk.c:851 clk_disable+0x24/0x30()
+> Modules linked in:
+> CPU: 0 PID: 308 Comm: kworker/0:1 Not tainted 3.18.0-rc3-00569-gbd9449f-dirty #10
+> Workqueue: pm pm_runtime_work
+> [<c0013c64>] (unwind_backtrace) from [<c0010dec>] (show_stack+0x10/0x14)
+> [<c0010dec>] (show_stack) from [<c03ee4cc>] (dump_stack+0x70/0xbc)
+> [<c03ee4cc>] (dump_stack) from [<c0020d34>] (warn_slowpath_common+0x64/0x88)
+> [<c0020d34>] (warn_slowpath_common) from [<c0020d74>] (warn_slowpath_null+0x1c/0x24)
+> [<c0020d74>] (warn_slowpath_null) from [<c03107b0>] (clk_disable+0x24/0x30)
+> [<c03107b0>] (clk_disable) from [<c02cc834>] (gsc_runtime_suspend+0x128/0x160)
+> [<c02cc834>] (gsc_runtime_suspend) from [<c0249024>] (pm_generic_runtime_suspend+0x2c/0x38)
+> [<c0249024>] (pm_generic_runtime_suspend) from [<c024f44c>] (pm_genpd_default_save_state+0x2c/0x8c)
+> [<c024f44c>] (pm_genpd_default_save_state) from [<c024ff2c>] (pm_genpd_poweroff+0x224/0x3ec)
+> [<c024ff2c>] (pm_genpd_poweroff) from [<c02501b4>] (pm_genpd_runtime_suspend+0x9c/0xcc)
+> [<c02501b4>] (pm_genpd_runtime_suspend) from [<c024a4f8>] (__rpm_callback+0x2c/0x60)
+> [<c024a4f8>] (__rpm_callback) from [<c024a54c>] (rpm_callback+0x20/0x74)
+> [<c024a54c>] (rpm_callback) from [<c024a930>] (rpm_suspend+0xd4/0x43c)
+> [<c024a930>] (rpm_suspend) from [<c024bbcc>] (pm_runtime_work+0x80/0x90)
+> [<c024bbcc>] (pm_runtime_work) from [<c0032a9c>] (process_one_work+0x12c/0x314)
+> [<c0032a9c>] (process_one_work) from [<c0032cf4>] (worker_thread+0x3c/0x4b0)
+> [<c0032cf4>] (worker_thread) from [<c003747c>] (kthread+0xcc/0xe8)
+> [<c003747c>] (kthread) from [<c000e738>] (ret_from_fork+0x14/0x3c)
+> ---[ end trace 40cd58bcd6988f12 ]---
+> 
+> Fixes: a4a8c2c4962bb655 (ARM: exynos: Move to generic PM domain DT bindings)
+> Reported-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 > ---
-> Changes for v2
-> -Address the comments from Eduardo Valentin
->=20
+> 
+> This patch is intended as fix for 3.18 rc[n] due to the regression for Exynos
+> SOCs.
+> 
+> I would also like to call for help in getting this thoroughly tested.
+> 
+> I have tested this on Arndale Dual, Exynos 5250. According the log attached in
+> the commit message as well.
 
-Thanks for addressing the comments. Applied in my -fixes queue.
+Thanks Ulf, I've tested this patch on top of v3.18-rc3 on Exynos4412 Trats2
+board and it seems the unbalanced runtime_suspend() call issue is gone.
 
->  drivers/thermal/imx_thermal.c | 4 ++++
->  1 file changed, 4 insertions(+)
->=20
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index 2c516f2..8697caf 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -406,6 +406,10 @@ static int imx_thermal_probe(struct platform_device =
-*pdev)
->  	int measure_freq;
->  	int ret;
-> =20
-> +	if (!cpufreq_get_current_driver()) {
-> +		dev_dbg(&pdev->dev, "no cpufreq driver!");
-> +		return -EPROBE_DEFER;
-> +	}
->  	data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
->  	if (!data)
->  		return -ENOMEM;
-> --=20
-> 1.9.1
->=20
+> I have tested this on UX500, which support for the generic PM domain is about
+> to be queued for 3.19. Since UX500 uses the AMBA bus/drivers, which uses
+> pm_runtime_set_active() instead of pm_runtime_get_sync() during ->probe(), I
+> could also verify that this behavior is maintained.
 
---24zk1gE8NUlDmwG9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+I had some issues with such configuration, after modifying the drivers to
+call pm_runtime_set_active() (instead of pm_runtime_get_sync()) in probe().
+It looked like there is some access to the hardware with corresponding
+power domain disabled. Couldn't debug it in reasonable time due to system
+hanging, will try to get back to this on Wednesday.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+> Finally I have also tested this patchset on UX500 and using the below patchset
+> to make sure the approach is suitable long term wise as well.
+> [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+> http://www.spinics.net/lists/arm-kernel/msg369409.html
 
-iQEcBAEBAgAGBQJUXRPHAAoJEMLUO4d9pOJWLswH/0yLGywtU2Z9i3L/Mc4NRmpf
-lmwbIBvVzeoT/KG8LUYFpRgFy8tJ74//VGhSSUdE1641o2AMrw+/sVCrgNogj2Tv
-/zn4enezRb0y+GdR7OxLAsftYtu+3Zp8+wpzr+tgqYC77TdRL5oiFYKERzORMcHX
-F+umloq8lxJhX/VBE2erdd3sFOUBTy0QRbP2xCRcRRFzqVu2laD6NI/LonmNFxUm
-L3+tDcG9ztC8gJk0mi0UafGNj8fwhuBoTVW95SIj+JlP+pCJXbN8pMUr61VMVVcO
-hHv6ROjtVYzN/QyxZIys9kGZl8LA2uyjvHg8GHdh4vcNVIkgC1oV2wKItBESC78=
-=VVoq
------END PGP SIGNATURE-----
+And with that additional patch series and the drivers modified everything
+seemed to work too.
 
---24zk1gE8NUlDmwG9--
+The patch looks good to me as a fix for v3.18, if others don't report
+regressions feel free to add my:
+
+Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+(On Exynos4412 Trats2 board)
+Tested-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+
+-- 
+Regards,
+Sylwester
