@@ -1,105 +1,103 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v5 34/48] acpi: Register power-off handler with kernel
- power-off handler
-Date: Fri, 7 Nov 2014 11:47:28 -0800
-Message-ID: <20141107194728.GB18609@roeck-us.net>
-References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
- <1415292213-28652-35-git-send-email-linux@roeck-us.net>
- <2274417.WekTW87bGm@vostro.rjw.lan>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH] PM / Domains: Fix initial default state of the need_restore flag
+Date: Fri, 07 Nov 2014 11:47:53 -0800
+Message-ID: <7hr3xerdw6.fsf@deeprootsystems.com>
+References: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2274417.WekTW87bGm@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org> (Ulf
+	Hansson's message of "Fri, 7 Nov 2014 14:27:27 +0100")
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 06, 2014 at 11:32:26PM +0100, Rafael J. Wysocki wrote:
-> On Thursday, November 06, 2014 08:43:18 AM Guenter Roeck wrote:
-> > Register with kernel power-off handler instead of setting pm_power_off
-> > directly. Register with high priority to reflect that the driver explicitly
-> > overrides existing power-off handlers.
-> > 
-> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > Cc: Len Brown <lenb@kernel.org>
-> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> 
-> That's fine by me.
-> 
-I'll record that as an Acked-by: unless I hear otherwise from you.
+Ulf Hansson <ulf.hansson@linaro.org> writes:
+
+> The initial state of the device's need_restore flag should'nt depend on
+> the current state of the PM domain. For example it should be perfectly
+> valid to attach an inactive device to a powered PM domain.
+>
+> The pm_genpd_dev_need_restore() API allow us to update the need_restore
+> flag to somewhat cope with such scenarios. Typically that should have
+> been done from drivers/buses ->probe() since it's those that put the
+> requirements on the value of the need_restore flag.
+>
+> Until recently, the Exynos SOCs were the only user of the
+> pm_genpd_dev_need_restore() API, though invoking it from a centralized
+> location while adding devices to their PM domains.
+>
+> Due to that Exynos now have swithed to the generic OF-based PM domain
+> look-up, it's no longer possible to invoke the API from a centralized
+> location. The reason is because devices are now added to their PM
+> domains during the probe sequence.
+>
+> Commit "ARM: exynos: Move to generic PM domain DT bindings"
+> did the switch for Exynos to the generic OF-based PM domain look-up,
+> but it also removed the call to pm_genpd_dev_need_restore(). This
+> caused a regression for some of the Exynos drivers.
+>
+> To handle things more properly in the generic PM domain, let's change
+> the default initial value of the need_restore flag to reflect that the
+> state is unknown. As soon as some of the runtime PM callbacks gets
+> invoked, update the initial value accordingly.
+>
+> Moreover, since the generic PM domain is verifying that all device's
+> are both runtime PM enabled and suspended, using pm_runtime_suspended()
+> while pm_genpd_poweroff() is invoked from the scheduled work, we can be
+> sure of that the PM domain won't be powering off while having active
+> devices.
+>
+> Do note that, the generic PM domain can still only know about active
+> devices which has been activated through invoking its runtime PM resume
+> callback. In other words, buses/drivers using pm_runtime_set_active()
+> during ->probe() will still suffer from a race condition, potentially
+> probing a device without having its PM domain being powered. That issue
+> will have to be solved using a different approach.
+>
+> This a log from the boot regression for Exynos5, which is being fixed in
+> this patch.
+>
+> ------------[ cut here ]------------
+> WARNING: CPU: 0 PID: 308 at ../drivers/clk/clk.c:851 clk_disable+0x24/0x30()
+> Modules linked in:
+> CPU: 0 PID: 308 Comm: kworker/0:1 Not tainted 3.18.0-rc3-00569-gbd9449f-dirty #10
+> Workqueue: pm pm_runtime_work
+> [<c0013c64>] (unwind_backtrace) from [<c0010dec>] (show_stack+0x10/0x14)
+> [<c0010dec>] (show_stack) from [<c03ee4cc>] (dump_stack+0x70/0xbc)
+> [<c03ee4cc>] (dump_stack) from [<c0020d34>] (warn_slowpath_common+0x64/0x88)
+> [<c0020d34>] (warn_slowpath_common) from [<c0020d74>] (warn_slowpath_null+0x1c/0x24)
+> [<c0020d74>] (warn_slowpath_null) from [<c03107b0>] (clk_disable+0x24/0x30)
+> [<c03107b0>] (clk_disable) from [<c02cc834>] (gsc_runtime_suspend+0x128/0x160)
+> [<c02cc834>] (gsc_runtime_suspend) from [<c0249024>] (pm_generic_runtime_suspend+0x2c/0x38)
+> [<c0249024>] (pm_generic_runtime_suspend) from [<c024f44c>] (pm_genpd_default_save_state+0x2c/0x8c)
+> [<c024f44c>] (pm_genpd_default_save_state) from [<c024ff2c>] (pm_genpd_poweroff+0x224/0x3ec)
+> [<c024ff2c>] (pm_genpd_poweroff) from [<c02501b4>] (pm_genpd_runtime_suspend+0x9c/0xcc)
+> [<c02501b4>] (pm_genpd_runtime_suspend) from [<c024a4f8>] (__rpm_callback+0x2c/0x60)
+> [<c024a4f8>] (__rpm_callback) from [<c024a54c>] (rpm_callback+0x20/0x74)
+> [<c024a54c>] (rpm_callback) from [<c024a930>] (rpm_suspend+0xd4/0x43c)
+> [<c024a930>] (rpm_suspend) from [<c024bbcc>] (pm_runtime_work+0x80/0x90)
+> [<c024bbcc>] (pm_runtime_work) from [<c0032a9c>] (process_one_work+0x12c/0x314)
+> [<c0032a9c>] (process_one_work) from [<c0032cf4>] (worker_thread+0x3c/0x4b0)
+> [<c0032cf4>] (worker_thread) from [<c003747c>] (kthread+0xcc/0xe8)
+> [<c003747c>] (kthread) from [<c000e738>] (ret_from_fork+0x14/0x3c)
+> ---[ end trace 40cd58bcd6988f12 ]---
+>
+> Fixes: a4a8c2c4962bb655 (ARM: exynos: Move to generic PM domain DT bindings)
+> Reported-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Reviewed-by: Kevin Hilman <khilman@linaro.org>
+
+And looks like we need this for v3.18-rc since it does fix the
+regression.
+
+A minor nit: you add a few new multi-line comment blocks which should
+have a new empty line before them, but currently they're right up
+against the previous code.  Please add a blank line for separation and
+to be consisitent with the rest of the file.
 
 Thanks,
-Guenter
 
-> Rafael
-> 
-> 
-> > ---
-> > v5:
-> > - Rebase to v3.18-rc3
-> > v4:
-> > - Do not use notifiers but internal functions and data structures to manage
-> >   the list of power-off handlers. Drop unused parameters from callbacks, and
-> >   make the power-off function type void
-> > v3:
-> > - Replace poweroff in all newly introduced variables and in text
-> >   with power_off or power-off as appropriate
-> > - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
-> > - Replace acpi: with ACPI: in log message
-> > v2:
-> > - Use define to specify poweroff handler priority
-> > - Use pr_warn instead of pr_err
-> > 
-> >  drivers/acpi/sleep.c | 11 +++++++++--
-> >  1 file changed, 9 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-> > index 05a31b5..a73cfad 100644
-> > --- a/drivers/acpi/sleep.c
-> > +++ b/drivers/acpi/sleep.c
-> > @@ -16,6 +16,7 @@
-> >  #include <linux/device.h>
-> >  #include <linux/interrupt.h>
-> >  #include <linux/suspend.h>
-> > +#include <linux/pm.h>
-> >  #include <linux/reboot.h>
-> >  #include <linux/acpi.h>
-> >  #include <linux/module.h>
-> > @@ -827,7 +828,7 @@ static void acpi_power_off_prepare(void)
-> >  	acpi_disable_all_gpes();
-> >  }
-> >  
-> > -static void acpi_power_off(void)
-> > +static void acpi_power_off(struct power_off_handler_block *this)
-> >  {
-> >  	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
-> >  	printk(KERN_DEBUG "%s called\n", __func__);
-> > @@ -835,6 +836,11 @@ static void acpi_power_off(void)
-> >  	acpi_enter_sleep_state(ACPI_STATE_S5);
-> >  }
-> >  
-> > +static struct power_off_handler_block acpi_power_off_hb = {
-> > +	.handler = acpi_power_off,
-> > +	.priority = POWER_OFF_PRIORITY_HIGH,
-> > +};
-> > +
-> >  int __init acpi_sleep_init(void)
-> >  {
-> >  	char supported[ACPI_S_STATE_COUNT * 3 + 1];
-> > @@ -851,7 +857,8 @@ int __init acpi_sleep_init(void)
-> >  	if (acpi_sleep_state_supported(ACPI_STATE_S5)) {
-> >  		sleep_states[ACPI_STATE_S5] = 1;
-> >  		pm_power_off_prepare = acpi_power_off_prepare;
-> > -		pm_power_off = acpi_power_off;
-> > +		if (register_power_off_handler(&acpi_power_off_hb))
-> > +			pr_warn("ACPI: Failed to register power-off handler\n");
-> >  	}
-> >  
-> >  	supported[0] = 0;
-> > 
-> 
-> -- 
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+Kevin
