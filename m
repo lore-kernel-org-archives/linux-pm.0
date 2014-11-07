@@ -1,64 +1,63 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/5] regulator: rt5033: Add RT5033 Regulator device driver
-Date: Fri, 7 Nov 2014 10:27:52 +0000
-Message-ID: <20141107102752.GC8509@sirena.org.uk>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 5/5] Documentation: Add documentation for rt5033
+ multifunction device
+Date: Fri, 7 Nov 2014 10:34:40 +0000
+Message-ID: <20141107103440.GD8509@sirena.org.uk>
 References: <1415328727-16245-1-git-send-email-beomho.seo@samsung.com>
- <1415328727-16245-3-git-send-email-beomho.seo@samsung.com>
+ <1415328727-16245-6-git-send-email-beomho.seo@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="wrbmJCjDMpeEYJph"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="c9D8mOo1KWOdrF7C"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:48170 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173AbaKGKgT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 05:36:19 -0500
 Content-Disposition: inline
-In-Reply-To: <1415328727-16245-3-git-send-email-beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Beomho Seo <beomho.seo-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, jonghwa3.lee-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, geunsik.lim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sw0312.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+In-Reply-To: <1415328727-16245-6-git-send-email-beomho.seo@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sameo@linux.intel.com, lee.jones@linaro.org, lgirdwood@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, kyungmin.park@samsung.com, cw00.choi@samsung.com, jonghwa3.lee@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com
 
 
---wrbmJCjDMpeEYJph
+--c9D8mOo1KWOdrF7C
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Fri, Nov 07, 2014 at 11:52:04AM +0900, Beomho Seo wrote:
+On Fri, Nov 07, 2014 at 11:52:07AM +0900, Beomho Seo wrote:
 
-> +static int rt5033_regulator_dt_parse_data(struct device *dev)
-> +{
-> +	int ret;
-> +	struct device_node *np;
+> +Required properties:
+> +- compatible = Must be "richtek,rt5033-regulator"
 > +
-> +	np = of_get_child_by_name(dev->parent->of_node, "regulators");
-> +	if  (!np) {
-> +		dev_err(dev, "Failed to get child node for regulators\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	ret = of_regulator_match(dev, np, rt5033_regulator_matches,
-> +					ARRAY_SIZE(rt5033_regulator_matches));
-> +	if (ret < 0)
-> +		return ret;
+> +	regulators {
+> +		compatible = "richtek,rt5033-regulator";
 
-Please convert this to use regulators_node in the descriptor to match
-the regulators, then you don't need any specific code.
+There should be no need for this extra compatible, it's not adding
+anything we didn't know from the fact that it's part of the MFD.
 
---wrbmJCjDMpeEYJph
+> +		regulator-name {
+> +			regulator-name = LDO/BUCK
+> +			standard regulator constraints...
+> +		};
+
+Better to just say something like "regulator subnodes called X, Y and Z"
+described using the standard regulator binding in...
+
+--c9D8mOo1KWOdrF7C
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUXJ6oAAoJECTWi3JdVIfQUkoH/ifR7qwAjlZHw8+a1r4K0rQF
-100JcX1rnNiWYQx5zXGCcFPkFz2YRKhSgE4Qxis50AjeZD3kAyylg4W7u6C3IQqs
-aoXGfeRk/G8KhuFVwrvN36LOcLiF3vPj1iAgMYVZCoDSnX586eW8570zrTXv55xu
-eBkLj8esRI/2Zc565QDdpNVTa91JpB960jXsvKk2M2uBy+aLsWGWnEqOQEbMd3zI
-FmaxjkI16TD91xB8ExH4PFDGjeYTo3/Rvsc53S/NanoMot2D1rlUZTSeqiAbP3DC
-tA2oLNjfqbJ4RM29dgUzwIRe3j03hKYMsKnUzNODt1MoHj3QQ3/gf5HZ3L0PK6c=
-=GEe3
+iQEcBAEBAgAGBQJUXKA/AAoJECTWi3JdVIfQY6UH/A8e87VSq+PaEhtP9e5W4t15
+HAHi/FjSL9yhX8N3I1Inh1UHmJc2Vjy+U9nN2h1+Zb1izihrMRozYkEg2JL5n0X7
+GMAE7KftmbZj+mTaemTcVL5GCzTO4i067iA0f38FTq11fhB+YCeIIu+xIglRvEj1
+dSzkr456EWUS5XenR/i2oJQ+eTg47FVudF01HD68A80p00weI0iYwrqQCHvYPCnI
+YV+mY7YpG6crGGmlXadxxu7v70rakHFjRwLdUme5tWWA2KwGEUT1Iv8ryN9Hxu8S
+EAfmN92Dj8ZpePXn6RJVR3LLW40Wco+OYPIoxomX9+68ZsyylVNGf3UqelL94eY=
+=28B+
 -----END PGP SIGNATURE-----
 
---wrbmJCjDMpeEYJph--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--c9D8mOo1KWOdrF7C--
