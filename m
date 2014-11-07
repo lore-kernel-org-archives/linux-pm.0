@@ -1,112 +1,200 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3] thermal: Add QPNP PMIC temperature alarm driver
-Date: Thu, 6 Nov 2014 19:48:15 -0400
-Message-ID: <20141106234812.GB8176@developer>
-References: <1412178817-20371-1-git-send-email-iivanov@mm-sol.com>
- <20141027201602.GC6088@developer>
- <1414596776.32383.2.camel@mm-sol.com>
- <1414677345.12674.1.camel@mm-sol.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v5 01/48] kernel: Add support for power-off handler call chain
+Date: Fri, 07 Nov 2014 01:16:54 +0100
+Message-ID: <6901931.ThbbTy3BuF@vostro.rjw.lan>
+References: <1415292213-28652-1-git-send-email-linux@roeck-us.net> <3183593.9HaIZKjCKr@vostro.rjw.lan> <20141106222703.GA6377@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+g7M9IMkV8truYOl"
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1414677345.12674.1.camel@mm-sol.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64830 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751182AbaKFX4I convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Nov 2014 18:56:08 -0500
+In-Reply-To: <20141106222703.GA6377@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Philippe =?ISO-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>, Romain Perier <romain.perier@gmail.com>
 
-
---+g7M9IMkV8truYOl
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Oct 30, 2014 at 03:55:45PM +0200, Ivan T. Ivanov wrote:
->=20
-> On Wed, 2014-10-29 at 17:32 +0200, Ivan T. Ivanov wrote:
-> >=20
-> +
-> > > > +       chip->tz_dev =3D thermal_zone_device_register(node->name, T=
-RIP_NUM, 0,
-> > > > +       chip, &qpnp_tz_ops, NULL,
+On Thursday, November 06, 2014 02:27:03 PM Guenter Roeck wrote:
+> On Thu, Nov 06, 2014 at 11:30:59PM +0100, Rafael J. Wysocki wrote:
+> > On Thursday, November 06, 2014 08:42:45 AM Guenter Roeck wrote:
+> > > Various drivers implement architecture and/or device specific mea=
+ns to
+> > > power off the system.  For the most part, those drivers set the g=
+lobal
+> > > variable pm_power_off to point to a function within the driver.
 > > >=20
-> > > Have you considered using of-thermal instead of doing your own specif=
-ic thermal
-> > > zone registration? Having a glance look in this driver, most of the
-> > > operation are covered by of-thermal. Ahy concerns using of-thermal in
-> > > your case?
+> > > This mechanism has a number of drawbacks.  Typically only one sch=
+eme
+> > > to remove power is supported (at least if pm_power_off is used).
+> > > At least in theory there can be multiple means remove power, some=
+ of
+> > > which may be less desirable. For example, some mechanisms may onl=
+y
+> > > power off the CPU or the CPU card, while another may power off th=
+e
+> > > entire system.  Others may really just execute a restart sequence
+> > > or drop into the ROM monitor. Using pm_power_off can also be racy
+> > > if the function pointer is set from a driver built as module, as =
+the
+> > > driver may be in the process of being unloaded when pm_power_off =
+is
+> > > called. If there are multiple power-off handlers in the system, r=
+emoving
+> > > a module with such a handler may inadvertently reset the pointer =
+to
+> > > pm_power_off to NULL, leaving the system with no means to remove =
+power.
 > > >=20
+> > > Introduce a system power-off handler call chain to solve the desc=
+ribed
+> > > problems.  This call chain is expected to be executed from the ar=
+chitecture
+> > > specific machine_power_off() function.  Drivers and architeceture=
+ code
+> > > providing system power-off functionality are expected to register=
+ with
+> > > this call chain.  When registering a power-off handler, callers c=
+an
+> > > provide a priority to control power-off handler execution sequenc=
+e
+> > > and thus ensure that the power-off handler with the optimal capab=
+ilities
+> > > to remove power for a given system is called first.
+> > >=20
+> > > Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+> > > Cc: Alexander Graf <agraf@suse.de>
+> > > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > > Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> > > Cc: Heiko Stuebner <heiko@sntech.de>
+> > > Cc: Lee Jones <lee.jones@linaro.org>
+> > > Cc: Len Brown <len.brown@intel.com>
+> > > Cc: Pavel Machek <pavel@ucw.cz>
+> > > Cc: Philippe R=C3=A9tornaz <philippe.retornaz@gmail.com>
+> > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > > Cc: Romain Perier <romain.perier@gmail.com>
+> > > Acked-by: Pavel Machek <pavel@ucw.cz>
+> > > Acked-by: Heiko Stuebner <heiko@sntech.de>
+> > > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> > > ---
+> > > v5:
+> > > - Rebase to v3.18-rc3
+> > > v4:
+> > > - Do not use notifiers but internal functions and data structures=
+ to manage
+> > >   the list of power-off handlers. Drop unused parameters from cal=
+lbacks, and
+> > >   make the power-off function type void.
+> > >   Code to manage and walk the list of callbacks is derived from n=
+otifier.c.
+> > > v3:
+> > > - Rename new file to power_off_handler.c
+> > > - Replace poweroff in all newly introduced variables and in text
+> > >   with power_off or power-off as appropriate
+> > > - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
+> > > - Execute power-off handlers without any locks held
+> > > v2:
+> > > - poweroff -> power_off
+> > > - Add defines for default priorities
+> > > - Use raw notifiers protected by spinlocks instead of atomic noti=
+fiers
+> > > - Add register_poweroff_handler_simple
+> > > - Add devm_register_power_off_handler
+> > >=20
+> > >  include/linux/pm.h               |  28 ++++
+> > >  kernel/power/Makefile            |   1 +
+> > >  kernel/power/power_off_handler.c | 293 +++++++++++++++++++++++++=
+++++++++++++++
+> > >  3 files changed, 322 insertions(+)
+> > >  create mode 100644 kernel/power/power_off_handler.c
+> > >=20
+> > > diff --git a/include/linux/pm.h b/include/linux/pm.h
+> > > index 383fd68..a4d6bf8 100644
+> > > --- a/include/linux/pm.h
+> > > +++ b/include/linux/pm.h
+> > > @@ -35,6 +35,34 @@ extern void (*pm_power_off)(void);
+> > >  extern void (*pm_power_off_prepare)(void);
+> > > =20
+> > >  struct device; /* we have a circular dep with device.h */
+> > > +
+> > > +/*
+> > > + * Data structures and callbacks to manage power-off handlers
+> > > + */
+> > > +
+> > > +struct power_off_handler_block {
+> > > +	void (*handler)(struct power_off_handler_block *);
+> > > +	struct power_off_handler_block __rcu *next;
+> > > +	int priority;
+> > > +};
+> > > +
+> > > +int register_power_off_handler(struct power_off_handler_block *)=
+;
+> > > +int devm_register_power_off_handler(struct device *,
+> > > +				    struct power_off_handler_block *);
+> > > +int register_power_off_handler_simple(void (*function)(void), in=
+t priority);
+> > > +int unregister_power_off_handler(struct power_off_handler_block =
+*);
+> > > +void do_kernel_power_off(void);
+> > > +bool have_kernel_power_off(void);
+> > > +
+> > > +/*
+> > > + * Pre-defined power-off handler priorities
+> > > + */
+> > > +#define POWER_OFF_PRIORITY_FALLBACK	0
+> > > +#define POWER_OFF_PRIORITY_LOW		64
+> > > +#define POWER_OFF_PRIORITY_DEFAULT	128
+> > > +#define POWER_OFF_PRIORITY_HIGH		192
+> > > +#define POWER_OFF_PRIORITY_HIGHEST	255
 > >=20
-> > I just followed implementation found in "armada_thermal", "db8500-therm=
-al",
-> > "dove_thermal", "imx_thermal", "kirkwood_thermal"...
+> > I'm not sure why we need these gaps in the priority space.
 > >=20
-> > Will look at of-thermal.
+> > I guess it might be possible to use
 > >=20
+> > enum power_off_priority {
+> > 	POWER_OFF_PRIORITY_FALLBACK =3D 0,
+> > 	POWER_OFF_PRIORITY_LOW,
+> > 	POWER_OFF_PRIORITY_DEFAULT,
+> > 	POWER_OFF_PRIORITY_HIGH,
+> > 	POWER_OFF_PRIORITY_HIGHEST,
+> > 	POWER_OFF_PRIORITY_LIMIT,
+> > };
 >=20
-> Hm, the 15 drivers, which register its own thermal zone, against 4, which=
-=20
+> I retained the large number space on purpose, specifically to permit =
+in-between
+> priorities. In other words, I want people to be able to say "priority=
+ for this
+> handler is higher than low but lower than default". After all, the de=
+fines were
+> intended as hints, not as a "Thou shall use those and only those prio=
+rities".
 
-Yes, and the reasoning is pretty simple: of-thermal is not imposed
-standard, and not all platform have decided to move to using it.
-However, DT is being used more and more frequently. So, given you
-already have DT support, considering using of-thermal is a good thing to do=
-=2E=20
+Problem with that is how they are supposed to know what priority to use=
+ then.
 
-Besides, you are with hands on your driver, might make sense to add its
-support while you are there.=20
+How do I know if my priority is between DEFAULT and HIGH and whether it=
+ is
+closer to HIGH or closer to DEFAULT?  What are the rules?
 
-> use of-thermal registration and one of them is OMAP, which have fallback
-> to its own zone registration :-). Anyway. I am afraid that if I use just
+The only rule that seems to be there is "this handler should be tried b=
+efore
+that one, so it needs to have a higher priority".  But now the question=
+ is
+how people are going to know which handlers they are competing with and=
+ whether
+or not they are more "important".
 
-The fallback is because non-dt booting has not been dropped from OMAP,
-AFAIK.
+> Having said that, the important part is to get the series accepted, s=
+o I won't
+> argue if that is what it takes to get an Ack. Let me know.
 
-> thermal_zone_of_sensor_register(), driver will lost ability to switch off=
-=20
-> hardware controlled shutdown sequence, which make it useless IMHO.
+This isn't worth fighting over in my view, so I won't if everyone else =
+is fine
+with it.
 
-Any special sequence or callback you want to consider to improve
-of-thermal support?
+Just feel free to ignore this concern if you don't think it is valid.
 
+Rafael
 
-For instance, getting a callback for mode change events would enable you
-to get a better support for hardware controlled shutdown sequence?
-
-
->=20
-> I don't see how driver can benefits from nice things provided by of-therm=
-al.
-> There is no colling device associated with PMIC chip, pooling delays are =
-of
-> no use, device uses interrupt, trip pints are predefined in hardware...
-
-I see. However, using it may make this driver even simpler, as you would
-simply describe it in DT and the notification you want would be taken
-care by the core part of the framework.
-
->=20
-> Please advice.
->=20
-> Regards,
-> Ivan
-
---+g7M9IMkV8truYOl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUXAizAAoJEMLUO4d9pOJWTkwH/2XInDMeeJuIOK6CWM5WDUYV
-HCjuNs3AGlNys9Z/m8BAGcMkT+KiQqWN+utfN3ltWI4YlvEmonUEksk/HRc1nyON
-t6Q4UGdNf8O0e9DfuyNESCZUbaleVQEkjgdfOm6EPjna+moUJ0BAzlbAKwGb9JtI
-WMT28qn000QGxVw4aSHzJiftKIEN00txLym727vtmPGebd6ci0lHQQrZ3JCvbj5z
-HMogP7nV6u1ZnVAF7XXqf83WacqxBNBKTT1uYE8EE2PACC+CMFnBr1HH3p5uL+he
-d3GyN2pG1F9XoV6e96G3TPYzzo9c5O6wTiPMClUQsX5XE8N6A3oEf6e7MftRaQY=
-=Emhb
------END PGP SIGNATURE-----
-
---+g7M9IMkV8truYOl--
