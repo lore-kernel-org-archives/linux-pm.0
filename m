@@ -1,45 +1,110 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / Hibernate: Migrate to ktime_t
-Date: Sat, 08 Nov 2014 02:47:29 +0100
-Message-ID: <2442680.y0UEcXlDY6@vostro.rjw.lan>
-References: <20141030180453.GA55907@localhost> <3436721.isgG5Fql2m@wuerfel>
+Subject: Re: [PATCH 3/5] cpufreq, dbs_data->usage count must be atomic
+Date: Sat, 08 Nov 2014 02:57:41 +0100
+Message-ID: <11902650.Ha3YdDNSQe@vostro.rjw.lan>
+References: <1415199239-19019-1-git-send-email-prarit@redhat.com> <1415199239-19019-4-git-send-email-prarit@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3436721.isgG5Fql2m@wuerfel>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, Tina Ruchandani <ruchandani.tina@gmail.com>
-Cc: pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, opw-kernel@googlegroups.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:62625 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752442AbaKHBgx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 20:36:53 -0500
+In-Reply-To: <1415199239-19019-4-git-send-email-prarit@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: linux-kernel@vger.kernel.org, robert.schoene@tu-dresden.de, sboyd@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-On Thursday, October 30, 2014 08:08:17 PM Arnd Bergmann wrote:
-> On Thursday 30 October 2014 11:04:53 Tina Ruchandani wrote:
-> > This patch migrates swsusp_show_speed and its callers to using ktime_t instead
-> > of 'struct timeval' which suffers from the y2038 problem.
-> > 
-> > Changes to swsusp_show_speed:
-> >         - use ktime_t for start and stop times
-> >         - pass start and stop times by value
-> > Calling functions affected:
-> >         - load_image
-> >         - load_image_lzo
-> >         - save_image
-> >         - save_image_lzo
-> >         - hibernate_preallocate_memory
-> > Design decisions:
-> >         - use ktime_t to preserve same granularity of reporting as before
-> >         - use centisecs logic as before to avoid 'div by zero' issues caused by
-> >           using seconds and nanoseconds directly
-> >         - use monotonic time (ktime_get()) since we only care about elapsed time.
-> > 
-> > Signed-off-by: Tina Ruchandani <ruchandani.tina@gmail.com>
-> > Suggested-by: Arnd Bergmann <arnd@arndb.de>
+On Wednesday, November 05, 2014 09:53:57 AM Prarit Bhargava wrote:
+> The usage_count value can be modified from several cpus concurrently if
+> !CPUFREQ_HAVE_GOVERNOR_PER_POLICY.  This leads to a variety of panics in
+> which the usage_count is negative or exceeds the number of cpus in the
+> system.  It must be switched to atomic_t and protected with a mutex to make sure
+> that future read/writes obtain the correct data.
+
+Why do you need to use a new mutex and atomic_t at the same time?  Most likely
+one of them is redundant.
+
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+> ---
+>  drivers/cpufreq/cpufreq_governor.c |   16 ++++++++++++----
+>  drivers/cpufreq/cpufreq_governor.h |    3 ++-
+>  2 files changed, 14 insertions(+), 5 deletions(-)
 > 
-> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 1b44496..32ad9db 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -265,7 +265,9 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  		if (have_governor_per_policy()) {
+>  			WARN_ON(dbs_data);
+>  		} else if (dbs_data) {
+> -			dbs_data->usage_count++;
+> +			mutex_lock(&dbs_data->usage_count_mutex);
+> +			atomic_inc(&dbs_data->usage_count);
+> +			mutex_unlock(&dbs_data->usage_count_mutex);
+>  			policy->governor_data = dbs_data;
+>  			return 0;
+>  		}
+> @@ -277,7 +279,10 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  		}
+>  
+>  		dbs_data->cdata = cdata;
+> -		dbs_data->usage_count = 1;
+> +		mutex_init(&dbs_data->usage_count_mutex);
+> +		mutex_lock(&dbs_data->usage_count_mutex);
+> +		atomic_set(&dbs_data->usage_count, 1);
+> +		mutex_unlock(&dbs_data->usage_count_mutex);
 
-Patch queued up for 3.19-rc1, thanks!
+The locking here isn't necessary (if it was, someone could be using an
+uninitialized mutex).
 
+>  		rc = cdata->init(dbs_data);
+>  		if (rc) {
+>  			pr_err("%s: POLICY_INIT: init() failed\n", __func__);
+> @@ -322,7 +327,8 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  
+>  		return 0;
+>  	case CPUFREQ_GOV_POLICY_EXIT:
+> -		if (!--dbs_data->usage_count) {
+> +		mutex_lock(&dbs_data->usage_count_mutex);
+> +		if (atomic_dec_and_test(&dbs_data->usage_count)) {
+>  			sysfs_remove_group(get_governor_parent_kobj(policy),
+>  					get_sysfs_attr(dbs_data));
+>  
+> @@ -338,9 +344,11 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  			}
+>  
+>  			cdata->exit(dbs_data);
+> +			mutex_unlock(&dbs_data->usage_count_mutex);
+>  			kfree(dbs_data);
+>  			cdata->gdbs_data = NULL;
+> -		}
+> +		} else
+> +			mutex_unlock(&dbs_data->usage_count_mutex);
+>  
+>  		policy->governor_data = NULL;
+>  		return 0;
+> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> index cc401d1..53ca449 100644
+> --- a/drivers/cpufreq/cpufreq_governor.h
+> +++ b/drivers/cpufreq/cpufreq_governor.h
+> @@ -219,7 +219,8 @@ struct common_dbs_data {
+>  struct dbs_data {
+>  	struct common_dbs_data *cdata;
+>  	unsigned int min_sampling_rate;
+> -	int usage_count;
+> +	struct mutex usage_count_mutex;
+> +	atomic_t usage_count;
+>  	void *tuners;
+>  
+>  	/* dbs_mutex protects dbs_enable in governor start/stop */
+> 
 
 -- 
 I speak only for myself.
