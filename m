@@ -1,107 +1,108 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch Part3 v3 36/38] ACPI, irq, x86: Kill private function mp_register_gsi()/ mp_unregister_gsi()
-Date: Sun,  9 Nov 2014 02:13:36 +0800
-Message-ID: <1415470418-10874-37-git-send-email-jiang.liu@linux.intel.com>
-References: <1415470418-10874-1-git-send-email-jiang.liu@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1415470418-10874-1-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
-Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+From: Heiner Kallweit <heiner.kallweit@web.de>
+Subject: [PATCH v4] imx: thermal: imx_get_temp might be called before sensor
+ clock is prepared
+Date: Sat, 08 Nov 2014 20:35:54 +0100
+Message-ID: <545E709A.5000905@web.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.web.de ([212.227.15.3]:65310 "EHLO mout.web.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751231AbaKHTmo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 8 Nov 2014 14:42:44 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Eduardo Valentin <edubezval@gmail.com>
 
-Function mp_register_gsi() is only called once, so fold it into caller
-acpi_register_gsi_ioapic(). Do the same for mp_unregister_gsi().
+imx_get_temp might be called before the sensor clock is prepared
+thus resulting in a timeout of the first attempt to read temp:
+thermal thermal_zone0: failed to read out thermal zone 0
+Happened to me on a Utilite Standard with IMX6 Dual SoC.
 
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+Reason is that in imx_thermal_probe thermal_zone_device_register
+is called before the sensor clock is prepared.
+thermal_zone_device_register however calls
+thermal_zone_device_update which eventually calls imx_get_temp.
+
+Fix this by preparing the clock before calling
+thermal_zone_device_register.
+
+Signed-off-by: Heiner Kallweit <heiner.kallweit@web.de>
 ---
- arch/x86/kernel/acpi/boot.c |   57 ++++++++++++++-----------------------------
- 1 file changed, 18 insertions(+), 39 deletions(-)
+v2: revised error path. Bail out and tidy up properly if we can't
+    get the clock or fail to enable it
+v3: don't print error message if getting clock returns EPROBE_DEFER
+v4: rebase on Eduardo's -fixes branch
+---
+ drivers/thermal/imx_thermal.c | 41 +++++++++++++++++++++++++----------------
+ 1 file changed, 25 insertions(+), 16 deletions(-)
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 509a48f49fc7..e54a8d72ae6e 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -400,42 +400,6 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
- 	return 0;
- }
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index 0e35999..5a1f107 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -525,6 +525,30 @@ static int imx_thermal_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
  
--static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
--			   int polarity)
--{
--	int irq, node;
--	struct irq_alloc_info info;
--
--	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
--		return gsi;
--
--	trigger = trigger == ACPI_EDGE_SENSITIVE ? 0 : 1;
--	polarity = polarity == ACPI_ACTIVE_HIGH ? 0 : 1;
--	node = dev ? dev_to_node(dev) : NUMA_NO_NODE;
--	ioapic_set_alloc_attr(&info, node, trigger, polarity);
--	irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC, &info);
--	if (irq < 0)
--		return irq;
--
--	/* Don't set up the ACPI SCI because it's already set up */
--	if (enable_update_mptable && acpi_gbl_FADT.sci_interrupt != gsi)
--		mp_config_acpi_gsi(dev, gsi, trigger, polarity);
--
--	return irq;
--}
--
--static void mp_unregister_gsi(u32 gsi)
--{
--	int irq;
--
--	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
--		return;
--
--	irq = mp_map_gsi_to_irq(gsi, 0, NULL);
--	if (irq > 0)
--		mp_unmap_irq(irq);
--}
--
- static struct irq_domain_ops acpi_irqdomain_ops = {
- 	.alloc = mp_irqdomain_alloc,
- 	.free = mp_irqdomain_free,
-@@ -657,10 +621,21 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
- 				    int trigger, int polarity)
- {
- 	int irq = gsi;
--
- #ifdef CONFIG_X86_IO_APIC
-+	int node;
-+	struct irq_alloc_info info;
++	data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
++	if (IS_ERR(data->thermal_clk)) {
++		ret = PTR_ERR(data->thermal_clk);
++		if (ret != -EPROBE_DEFER)
++			dev_err(&pdev->dev,
++				"failed to get thermal clk: %d\n", ret);
++		cpufreq_cooling_unregister(data->cdev);
++		return ret;
++	}
 +
-+	node = dev ? dev_to_node(dev) : NUMA_NO_NODE;
-+	trigger = trigger == ACPI_EDGE_SENSITIVE ? 0 : 1;
-+	polarity = polarity == ACPI_ACTIVE_HIGH ? 0 : 1;
-+	ioapic_set_alloc_attr(&info, node, trigger, polarity);
++	/*
++	 * Thermal sensor needs clk on to get correct value, normally
++	 * we should enable its clk before taking measurement and disable
++	 * clk after measurement is done, but if alarm function is enabled,
++	 * hardware will auto measure the temperature periodically, so we
++	 * need to keep the clk always on for alarm function.
++	 */
++	ret = clk_prepare_enable(data->thermal_clk);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
++		cpufreq_cooling_unregister(data->cdev);
++		return ret;
++	}
 +
- 	mutex_lock(&acpi_ioapic_lock);
--	irq = mp_register_gsi(dev, gsi, trigger, polarity);
-+	irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC, &info);
-+	/* Don't set up the ACPI SCI because it's already set up */
-+	if (irq >= 0 && enable_update_mptable &&
-+	    acpi_gbl_FADT.sci_interrupt != gsi)
-+		mp_config_acpi_gsi(dev, gsi, trigger, polarity);
- 	mutex_unlock(&acpi_ioapic_lock);
- #endif
+ 	data->tz = thermal_zone_device_register("imx_thermal_zone",
+ 						IMX_TRIP_NUM,
+ 						BIT(IMX_TRIP_PASSIVE), data,
+@@ -535,26 +559,11 @@ static int imx_thermal_probe(struct platform_device *pdev)
+ 		ret = PTR_ERR(data->tz);
+ 		dev_err(&pdev->dev,
+ 			"failed to register thermal zone device %d\n", ret);
++		clk_disable_unprepare(data->thermal_clk);
+ 		cpufreq_cooling_unregister(data->cdev);
+ 		return ret;
+ 	}
  
-@@ -670,8 +645,12 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
- static void acpi_unregister_gsi_ioapic(u32 gsi)
- {
- #ifdef CONFIG_X86_IO_APIC
-+	int irq;
-+
- 	mutex_lock(&acpi_ioapic_lock);
--	mp_unregister_gsi(gsi);
-+	irq = mp_map_gsi_to_irq(gsi, 0, NULL);
-+	if (irq > 0)
-+		mp_unmap_irq(irq);
- 	mutex_unlock(&acpi_ioapic_lock);
- #endif
- }
+-	data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
+-	if (IS_ERR(data->thermal_clk)) {
+-		dev_warn(&pdev->dev, "failed to get thermal clk!\n");
+-	} else {
+-		/*
+-		 * Thermal sensor needs clk on to get correct value, normally
+-		 * we should enable its clk before taking measurement and disable
+-		 * clk after measurement is done, but if alarm function is enabled,
+-		 * hardware will auto measure the temperature periodically, so we
+-		 * need to keep the clk always on for alarm function.
+-		 */
+-		ret = clk_prepare_enable(data->thermal_clk);
+-		if (ret)
+-			dev_warn(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
+-	}
+-
+ 	/* Enable measurements at ~ 10 Hz */
+ 	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
+ 	measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
 -- 
-1.7.10.4
+2.1.2
+
+
