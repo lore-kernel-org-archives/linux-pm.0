@@ -1,195 +1,243 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3] imx: thermal: imx_get_temp might be called before
- sensor clock is prepared
-Date: Fri, 7 Nov 2014 19:47:10 -0400
-Message-ID: <20141107234707.GB27665@developer>
-References: <543C3B4B.6080700@web.de>
- <20141107181837.GA23972@developer>
- <545D4B03.6080400@web.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / Domains: Fix initial default state of the need_restore flag
+Date: Sat, 08 Nov 2014 01:58:11 +0100
+Message-ID: <2249636.0fLzKsxspd@vostro.rjw.lan>
+References: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="NMuMz9nt05w80d4+"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f43.google.com ([209.85.216.43]:39171 "EHLO
-	mail-qa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752284AbaKGXsc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 18:48:32 -0500
-Received: by mail-qa0-f43.google.com with SMTP id j7so3070155qaq.16
-        for <linux-pm@vger.kernel.org>; Fri, 07 Nov 2014 15:48:31 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <545D4B03.6080400@web.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron Lu <aaron.lu@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Heiner Kallweit <heiner.kallweit@web.de>
-Cc: linux-pm@vger.kernel.org
 
+On Friday, November 07, 2014 02:27:27 PM Ulf Hansson wrote:
+> The initial state of the device's need_restore flag should'nt depend on
+> the current state of the PM domain. For example it should be perfectly
+> valid to attach an inactive device to a powered PM domain.
+> 
+> The pm_genpd_dev_need_restore() API allow us to update the need_restore
+> flag to somewhat cope with such scenarios. Typically that should have
+> been done from drivers/buses ->probe() since it's those that put the
+> requirements on the value of the need_restore flag.
+> 
+> Until recently, the Exynos SOCs were the only user of the
+> pm_genpd_dev_need_restore() API, though invoking it from a centralized
+> location while adding devices to their PM domains.
+> 
+> Due to that Exynos now have swithed to the generic OF-based PM domain
+> look-up, it's no longer possible to invoke the API from a centralized
+> location. The reason is because devices are now added to their PM
+> domains during the probe sequence.
+> 
+> Commit "ARM: exynos: Move to generic PM domain DT bindings"
+> did the switch for Exynos to the generic OF-based PM domain look-up,
+> but it also removed the call to pm_genpd_dev_need_restore(). This
+> caused a regression for some of the Exynos drivers.
+> 
+> To handle things more properly in the generic PM domain, let's change
+> the default initial value of the need_restore flag to reflect that the
+> state is unknown. As soon as some of the runtime PM callbacks gets
+> invoked, update the initial value accordingly.
+> 
+> Moreover, since the generic PM domain is verifying that all device's
+> are both runtime PM enabled and suspended, using pm_runtime_suspended()
+> while pm_genpd_poweroff() is invoked from the scheduled work, we can be
+> sure of that the PM domain won't be powering off while having active
+> devices.
+> 
+> Do note that, the generic PM domain can still only know about active
+> devices which has been activated through invoking its runtime PM resume
+> callback. In other words, buses/drivers using pm_runtime_set_active()
+> during ->probe() will still suffer from a race condition, potentially
+> probing a device without having its PM domain being powered. That issue
+> will have to be solved using a different approach.
+> 
+> This a log from the boot regression for Exynos5, which is being fixed in
+> this patch.
+> 
+> ------------[ cut here ]------------
+> WARNING: CPU: 0 PID: 308 at ../drivers/clk/clk.c:851 clk_disable+0x24/0x30()
+> Modules linked in:
+> CPU: 0 PID: 308 Comm: kworker/0:1 Not tainted 3.18.0-rc3-00569-gbd9449f-dirty #10
+> Workqueue: pm pm_runtime_work
+> [<c0013c64>] (unwind_backtrace) from [<c0010dec>] (show_stack+0x10/0x14)
+> [<c0010dec>] (show_stack) from [<c03ee4cc>] (dump_stack+0x70/0xbc)
+> [<c03ee4cc>] (dump_stack) from [<c0020d34>] (warn_slowpath_common+0x64/0x88)
+> [<c0020d34>] (warn_slowpath_common) from [<c0020d74>] (warn_slowpath_null+0x1c/0x24)
+> [<c0020d74>] (warn_slowpath_null) from [<c03107b0>] (clk_disable+0x24/0x30)
+> [<c03107b0>] (clk_disable) from [<c02cc834>] (gsc_runtime_suspend+0x128/0x160)
+> [<c02cc834>] (gsc_runtime_suspend) from [<c0249024>] (pm_generic_runtime_suspend+0x2c/0x38)
+> [<c0249024>] (pm_generic_runtime_suspend) from [<c024f44c>] (pm_genpd_default_save_state+0x2c/0x8c)
+> [<c024f44c>] (pm_genpd_default_save_state) from [<c024ff2c>] (pm_genpd_poweroff+0x224/0x3ec)
+> [<c024ff2c>] (pm_genpd_poweroff) from [<c02501b4>] (pm_genpd_runtime_suspend+0x9c/0xcc)
+> [<c02501b4>] (pm_genpd_runtime_suspend) from [<c024a4f8>] (__rpm_callback+0x2c/0x60)
+> [<c024a4f8>] (__rpm_callback) from [<c024a54c>] (rpm_callback+0x20/0x74)
+> [<c024a54c>] (rpm_callback) from [<c024a930>] (rpm_suspend+0xd4/0x43c)
+> [<c024a930>] (rpm_suspend) from [<c024bbcc>] (pm_runtime_work+0x80/0x90)
+> [<c024bbcc>] (pm_runtime_work) from [<c0032a9c>] (process_one_work+0x12c/0x314)
+> [<c0032a9c>] (process_one_work) from [<c0032cf4>] (worker_thread+0x3c/0x4b0)
+> [<c0032cf4>] (worker_thread) from [<c003747c>] (kthread+0xcc/0xe8)
+> [<c003747c>] (kthread) from [<c000e738>] (ret_from_fork+0x14/0x3c)
+> ---[ end trace 40cd58bcd6988f12 ]---
+> 
+> Fixes: a4a8c2c4962bb655 (ARM: exynos: Move to generic PM domain DT bindings)
+> Reported-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+> 
+> This patch is intended as fix for 3.18 rc[n] due to the regression for Exynos
+> SOCs.
+> 
+> I would also like to call for help in getting this thoroughly tested.
+> 
+> I have tested this on Arndale Dual, Exynos 5250. According the log attached in
+> the commit message as well.
+> 
+> I have tested this on UX500, which support for the generic PM domain is about
+> to be queued for 3.19. Since UX500 uses the AMBA bus/drivers, which uses
+> pm_runtime_set_active() instead of pm_runtime_get_sync() during ->probe(), I
+> could also verify that this behavior is maintained.
+> 
+> Finally I have also tested this patchset on UX500 and using the below patchset
+> to make sure the approach is suitable long term wise as well.
+> [PATCH v3 0/9] PM / Domains: Fix race conditions during boot
+> http://www.spinics.net/lists/arm-kernel/msg369409.html
 
---NMuMz9nt05w80d4+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'm generally fine with the approach, but ->
 
-Heiner,
+> ---
+>  drivers/base/power/domain.c | 38 +++++++++++++++++++++++++++++++-------
+>  include/linux/pm_domain.h   |  2 +-
+>  2 files changed, 32 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index b520687..a9523a3 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -361,9 +361,19 @@ static int __pm_genpd_save_device(struct pm_domain_data *pdd,
+>  	struct device *dev = pdd->dev;
+>  	int ret = 0;
+>  
+> -	if (gpd_data->need_restore)
+> +	if (gpd_data->need_restore == 1)
 
-On Fri, Nov 07, 2014 at 11:43:15PM +0100, Heiner Kallweit wrote:
-> Am 07.11.2014 um 19:18 schrieb Eduardo Valentin:
-> >=20
-> > Hello Heiner,
-> >=20
-> > On Mon, Oct 13, 2014 at 10:51:23PM +0200, Heiner Kallweit wrote:
-> >> imx_get_temp might be called before the sensor clock is prepared
-> >> thus resulting in a timeout of the first attempt to read temp:
-> >> thermal thermal_zone0: failed to read out thermal zone 0
-> >> Happened to me on a Utilite Standard with IMX6 Dual SoC.
-> >>
-> >> Reason is that in imx_thermal_probe thermal_zone_device_register
-> >> is called before the sensor clock is prepared.
-> >> thermal_zone_device_register however calls
-> >> thermal_zone_device_update which eventually calls imx_get_temp.
-> >>
-> >> Fix this by preparing the clock before calling
-> >> thermal_zone_device_register.
-> >>
-> >> Signed-off-by: Heiner Kallweit <heiner.kallweit@web.de>
-> >> ---
-> >> v2: revised error path. Bail out and tidy up properly if we can't
-> >>     get the clock or fail to enable it
-> >> v3: don't print error message if getting clock returns EPROBE_DEFER
-> >> ---
-> >>  drivers/thermal/imx_thermal.c | 41 +++++++++++++++++++++++++---------=
--------
-> >>  1 file changed, 25 insertions(+), 16 deletions(-)
-> >>
-> >> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_therm=
-al.c
-> >> index 461bf3d..0e8ef55 100644
-> >> --- a/drivers/thermal/imx_thermal.c
-> >> +++ b/drivers/thermal/imx_thermal.c
-> >> @@ -521,6 +521,30 @@ static int imx_thermal_probe(struct platform_devi=
-ce *pdev)
-> >>                 return ret;
-> >>         }
-> >>
-> >> +       data->thermal_clk =3D devm_clk_get(&pdev->dev, NULL);
-> >> +       if (IS_ERR(data->thermal_clk)) {
-> >> +               ret =3D PTR_ERR(data->thermal_clk);
-> >> +               if (ret !=3D -EPROBE_DEFER)
-> >> +                       dev_err(&pdev->dev,
-> >> +                               "failed to get thermal clk: %d\n", ret=
-);
-> >> +               cpufreq_cooling_unregister(data->cdev);
-> >> +               return ret;
-> >> +       }
-> >> +
-> >> +       /*
-> >> +        * Thermal sensor needs clk on to get correct value, normally
-> >> +        * we should enable its clk before taking measurement and disa=
-ble
-> >> +        * clk after measurement is done, but if alarm function is ena=
-bled,
-> >> +        * hardware will auto measure the temperature periodically, so=
- we
-> >> +        * need to keep the clk always on for alarm function.
-> >> +        */
-> >> +       ret =3D clk_prepare_enable(data->thermal_clk);
-> >> +       if (ret) {
-> >> +               dev_err(&pdev->dev, "failed to enable thermal clk: %d\=
-n", ret);
-> >> +               cpufreq_cooling_unregister(data->cdev);
-> >> +               return ret;
-> >> +       }
-> >> +
-> >>         data->tz =3D thermal_zone_device_register("imx_thermal_zone",
-> >>                                                 IMX_TRIP_NUM,
-> >>                                                 BIT(IMX_TRIP_PASSIVE),=
- data,
-> >> @@ -531,26 +555,11 @@ static int imx_thermal_probe(struct platform_dev=
-ice *pdev)
-> >>                 ret =3D PTR_ERR(data->tz);
-> >>                 dev_err(&pdev->dev,
-> >>                         "failed to register thermal zone device %d\n",=
- ret);
-> >> +               clk_disable_unprepare(data->thermal_clk);
-> >>                 cpufreq_cooling_unregister(data->cdev);
-> >>                 return ret;
-> >>         }
-> >>
-> >> -       data->thermal_clk =3D devm_clk_get(&pdev->dev, NULL);
-> >> -       if (IS_ERR(data->thermal_clk)) {
-> >> -               dev_warn(&pdev->dev, "failed to get thermal clk!\n");
-> >> -       } else {
-> >> -               /*
-> >> -                * Thermal sensor needs clk on to get correct value, n=
-ormally
-> >> -                * we should enable its clk before taking measurement =
-and disable
-> >> -                * clk after measurement is done, but if alarm functio=
-n is enabled,
-> >> -                * hardware will auto measure the temperature periodic=
-ally, so we
-> >> -                * need to keep the clk always on for alarm function.
-> >> -                */
-> >> -               ret =3D clk_prepare_enable(data->thermal_clk);
-> >> -               if (ret)
-> >> -                       dev_warn(&pdev->dev, "failed to enable thermal=
- clk: %d\n", ret);
-> >> -       }
-> >> -
-> >>         /* Enable measurements at ~ 10 Hz */
-> >>         regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FRE=
-Q);
-> >>         measure_freq =3D DIV_ROUND_UP(32768, 10); /* 10 Hz */
-> >=20
-> >=20
-> > While here, do you need to move up also the configuration of the
-> > measurements at ~ 10 Hz? Or would still the first readings be correct
-> > while at the reset value?
-> When imx_get_temp is called from thermal_zone_device_register data->mode =
-still is
-> THERMAL_DEVICE_DISABLED. imx_get_temp therefore will power on the sensor =
-and
-> trigger a single measurement.
-> IMHO this is fully ok and I don't think we have to relocate the setup of =
-the
-> scheduled measurements.
+-> I'd prefer checks for the sign rather than for a specific value, like
 
+	if (gpd_data->need_restore > 0)
 
-OK. I see.=20
+>  		return 0;
+>  
 
-In this case, can you please re-post this patch on top of my -fixes
-patches? I am planing to send it in the -rc cycles.
+and so on.
 
-I've just merged another fix on imx driver and looks like your
-patch needs refreshing now.=20
+> +	/*
+> +	 * If the value of the need_restore flag is still unknown at this point,
+> +	 * we trust that pm_genpd_poweroff() has verified that the device is
+> +	 * already runtime PM suspended.
+> +	 */
+> +	if (gpd_data->need_restore == -1) {
+> +		gpd_data->need_restore = 1;
+> +		return 0;
+> +	}
+> +
+>  	mutex_unlock(&genpd->lock);
+>  
+>  	genpd_start_dev(genpd, dev);
+> @@ -373,7 +383,7 @@ static int __pm_genpd_save_device(struct pm_domain_data *pdd,
+>  	mutex_lock(&genpd->lock);
+>  
+>  	if (!ret)
+> -		gpd_data->need_restore = true;
+> +		gpd_data->need_restore = 1;
+>  
+>  	return ret;
+>  }
+> @@ -389,13 +399,17 @@ static void __pm_genpd_restore_device(struct pm_domain_data *pdd,
+>  {
+>  	struct generic_pm_domain_data *gpd_data = to_gpd_data(pdd);
+>  	struct device *dev = pdd->dev;
+> -	bool need_restore = gpd_data->need_restore;
+> +	int need_restore = gpd_data->need_restore;
+>  
+> -	gpd_data->need_restore = false;
+> +	gpd_data->need_restore = 0;
+>  	mutex_unlock(&genpd->lock);
+>  
+>  	genpd_start_dev(genpd, dev);
+> -	if (need_restore)
+> +	/*
+> +	 * Make sure to also restore those devices which we until now, didn't
+> +	 * know the state for.
+> +	 */
+> +	if (need_restore != 0)
 
+and here you can do
 
-Thanks,
+	if (need_restore)
 
-Eduardo Valentin
+>  		genpd_restore_dev(genpd, dev);
+>  
+>  	mutex_lock(&genpd->lock);
+> @@ -603,6 +617,7 @@ static void genpd_power_off_work_fn(struct work_struct *work)
+>  static int pm_genpd_runtime_suspend(struct device *dev)
+>  {
+>  	struct generic_pm_domain *genpd;
+> +	struct generic_pm_domain_data *gpd_data;
+>  	bool (*stop_ok)(struct device *__dev);
+>  	int ret;
+>  
+> @@ -628,6 +643,15 @@ static int pm_genpd_runtime_suspend(struct device *dev)
+>  		return 0;
+>  
+>  	mutex_lock(&genpd->lock);
+> +	/*
+> +	 * If we have an unknown state of the need_restore flag, it means none
+> +	 * of the runtime PM callbacks has been invoked yet. Let's update the
+> +	 * flag to reflect that the current state is active.
+> +	 */
+> +	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
+> +	if (gpd_data->need_restore == -1)
+> +		gpd_data->need_restore = 0;
+> +
+>  	genpd->in_progress++;
+>  	pm_genpd_poweroff(genpd);
+>  	genpd->in_progress--;
+> @@ -1442,7 +1466,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+>  	mutex_lock(&gpd_data->lock);
+>  	gpd_data->base.dev = dev;
+>  	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
+> -	gpd_data->need_restore = genpd->status == GPD_STATE_POWER_OFF;
+> +	gpd_data->need_restore = -1;
+>  	gpd_data->td.constraint_changed = true;
+>  	gpd_data->td.effective_constraint_ns = -1;
+>  	mutex_unlock(&gpd_data->lock);
+> @@ -1546,7 +1570,7 @@ void pm_genpd_dev_need_restore(struct device *dev, bool val)
+>  
+>  	psd = dev_to_psd(dev);
+>  	if (psd && psd->domain_data)
+> -		to_gpd_data(psd->domain_data)->need_restore = val;
+> +		to_gpd_data(psd->domain_data)->need_restore = val ? 1 : 0;
+>  
+>  	spin_unlock_irqrestore(&dev->power.lock, flags);
+>  }
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index b3ed776..2e0e06d 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -106,7 +106,7 @@ struct generic_pm_domain_data {
+>  	struct notifier_block nb;
+>  	struct mutex lock;
+>  	unsigned int refcount;
+> -	bool need_restore;
+> +	int need_restore;
+>  };
+>  
+>  #ifdef CONFIG_PM_GENERIC_DOMAINS
+> 
 
-> >=20
-> > Cheers,
-> >=20
-> > Eduardo Valentin
-> >> --
-> >> 2.1.2
-> Rgds, Heiner
->=20
-
---NMuMz9nt05w80d4+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUXVnuAAoJEMLUO4d9pOJWlwYH/1o3DdqvzFucmM2Xt23CYTCV
-CshWA4vVKoMdHdBKIZu/s7Z7Q+izMjo/AoXHDCV90OcwZE4ddZfuQRPJZCqa+26Y
-B6Uc3Opyg9Jt6zy4HYYF+Ifnl45R4eYEoryTZgUiFPCaTD0B6oNZhu+3dDkgUn4U
-dysfiP1D3AFnY3CU1MegV470umwNwQ01aIaD4QBXjAn+pbaZYBJampmq7Ui3p716
-ox4+ZEJI2OhK78/EoaGqZ7rCdpk6xuGlgelQqBpFPT7mjrftYuEfBPAx816tBZ85
-m1rdK9FAhKUGSi4R9XQIPFjAr2h94wA0k9uBPy3RyAMPmp8p5dYml4wFiJ0gA94=
-=z+ow
------END PGP SIGNATURE-----
-
---NMuMz9nt05w80d4+--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
