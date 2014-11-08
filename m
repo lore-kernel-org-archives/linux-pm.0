@@ -1,45 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 0/2] cpufreq: cpufreq-dt: Improvements for set_target()
-Date: Sat, 08 Nov 2014 02:40:58 +0100
-Message-ID: <1818822.DxWyK5LNBq@vostro.rjw.lan>
-References: <1413583789-24294-1-git-send-email-stefan.wahren@i2se.com> <CAKohpokjczrGvZ6e7JOwkPtq1-MC0Cr_s+bp=wwKt4x+FdumWQ@mail.gmail.com> <5449FDE0.9020101@i2se.com>
+Subject: Re: [PATCH] PM / Hibernate: Migrate to ktime_t
+Date: Sat, 08 Nov 2014 02:47:29 +0100
+Message-ID: <2442680.y0UEcXlDY6@vostro.rjw.lan>
+References: <20141030180453.GA55907@localhost> <3436721.isgG5Fql2m@wuerfel>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60544 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752442AbaKHBUI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Nov 2014 20:20:08 -0500
-In-Reply-To: <5449FDE0.9020101@i2se.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3436721.isgG5Fql2m@wuerfel>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>, Tina Ruchandani <ruchandani.tina@gmail.com>
+Cc: pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, opw-kernel@googlegroups.com
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Friday, October 24, 2014 09:21:04 AM Stefan Wahren wrote:
-> Am 20.10.2014 um 06:43 schrieb Viresh Kumar:
-> > On 18 October 2014 03:39, Stefan Wahren <stefan.wahren@i2se.com> wrote:
-> >> This patch series contains 2 improvements for set_target().
-> >>
-> >> changes in V2:
-> >>   - rebase because of name change cpufreq-cpu0 to cpufreq-dt
-> >>
-> >> Stefan Wahren (2):
-> >>   cpufreq: cpufreq-dt: Improve debug about matching OPP
-> >>   cpufreq: cpufreq-dt: Handle regulator_get_voltage() failure
-> >>
-> >>  drivers/cpufreq/cpufreq-dt.c |    9 +++++++--
-> >>  1 file changed, 7 insertions(+), 2 deletions(-)
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Thursday, October 30, 2014 08:08:17 PM Arnd Bergmann wrote:
+> On Thursday 30 October 2014 11:04:53 Tina Ruchandani wrote:
+> > This patch migrates swsusp_show_speed and its callers to using ktime_t instead
+> > of 'struct timeval' which suffers from the y2038 problem.
+> > 
+> > Changes to swsusp_show_speed:
+> >         - use ktime_t for start and stop times
+> >         - pass start and stop times by value
+> > Calling functions affected:
+> >         - load_image
+> >         - load_image_lzo
+> >         - save_image
+> >         - save_image_lzo
+> >         - hibernate_preallocate_memory
+> > Design decisions:
+> >         - use ktime_t to preserve same granularity of reporting as before
+> >         - use centisecs logic as before to avoid 'div by zero' issues caused by
+> >           using seconds and nanoseconds directly
+> >         - use monotonic time (ktime_get()) since we only care about elapsed time.
+> > 
+> > Signed-off-by: Tina Ruchandani <ruchandani.tina@gmail.com>
+> > Suggested-by: Arnd Bergmann <arnd@arndb.de>
 > 
-> Thanks. But maybe the patch series won't apply anymore.
-> 
-> Should i rebase again?
+> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
 
-No need, it still applies. :-)
-
-Queued up for 3.19-rc1, thanks!
+Patch queued up for 3.19-rc1, thanks!
 
 
 -- 
