@@ -1,108 +1,134 @@
-From: Heiner Kallweit <heiner.kallweit@web.de>
-Subject: [PATCH v4] imx: thermal: imx_get_temp might be called before sensor
- clock is prepared
-Date: Sat, 08 Nov 2014 20:35:54 +0100
-Message-ID: <545E709A.5000905@web.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 5/5] cpufreq, add BUG() messages in critical paths to aid debugging failures
+Date: Sat, 08 Nov 2014 22:46:31 +0100
+Message-ID: <1874335.TzunrgXvuB@vostro.rjw.lan>
+References: <1415199239-19019-1-git-send-email-prarit@redhat.com> <1908314.5SSPFg5MrY@vostro.rjw.lan> <545E1BAF.4060801@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.web.de ([212.227.15.3]:65310 "EHLO mout.web.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751231AbaKHTmo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 8 Nov 2014 14:42:44 -0500
+Received: from v094114.home.net.pl ([79.96.170.134]:55708 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752682AbaKHVZn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 8 Nov 2014 16:25:43 -0500
+In-Reply-To: <545E1BAF.4060801@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Eduardo Valentin <edubezval@gmail.com>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: linux-kernel@vger.kernel.org, robert.schoene@tu-dresden.de, sboyd@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-imx_get_temp might be called before the sensor clock is prepared
-thus resulting in a timeout of the first attempt to read temp:
-thermal thermal_zone0: failed to read out thermal zone 0
-Happened to me on a Utilite Standard with IMX6 Dual SoC.
+On Saturday, November 08, 2014 08:33:35 AM Prarit Bhargava wrote:
+> 
+> On 11/07/2014 09:00 PM, Rafael J. Wysocki wrote:
+> > On Wednesday, November 05, 2014 09:53:59 AM Prarit Bhargava wrote:
+> >> Add some additional debug to capture failures in the locking scheme for
+> >> cpufreq.  Instead of just a NULL pointer, these warnings will capture failure
+> >> points if the locking scheme for cpufreq is broken.
+> >>
+> >> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> >> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> >> Cc: linux-pm@vger.kernel.org
+> >> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+> >> ---
+> >>  drivers/cpufreq/cpufreq_governor.c |   32 +++++++++++++++++++++++++++-----
+> >>  1 file changed, 27 insertions(+), 5 deletions(-)
+> >>
+> >> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> >> index b1ee597..f158882 100644
+> >> --- a/drivers/cpufreq/cpufreq_governor.c
+> >> +++ b/drivers/cpufreq/cpufreq_governor.c
+> >> @@ -161,9 +161,18 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+> >>  EXPORT_SYMBOL_GPL(dbs_check_cpu);
+> >>  
+> >>  static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
+> >> -		unsigned int delay)
+> >> +				    unsigned int delay,
+> >> +				    struct cpufreq_policy *policy)
+> >>  {
+> >> -	struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
+> >> +	struct cpu_dbs_common_info *cdbs;
+> >> +
+> >> +	if (!dbs_data->cdata) {
+> >> +		pr_emerg("common_dbs_data is NULL for %s but initialized = %d",
+> >> +			 policy->governor->name,
+> >> +			 atomic_read(&policy->governor->initialized));
+> >> +		BUG();
+> > 
+> > Is it necessary to crash the kernel here?
+> 
+> Yes.  dbs_data->cdata is referenced right below.
+> 
+> > 
+> >> +	}
+> >> +	cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
+> 
+> and we'll NULL pointer panic right here without any of the debug info above :(
 
-Reason is that in imx_thermal_probe thermal_zone_device_register
-is called before the sensor clock is prepared.
-thermal_zone_device_register however calls
-thermal_zone_device_update which eventually calls imx_get_temp.
+Can we possibly avoid the panic?
 
-Fix this by preparing the clock before calling
-thermal_zone_device_register.
+Adding BUG() instead of a NULL pointer deref is not much improvement.
 
-Signed-off-by: Heiner Kallweit <heiner.kallweit@web.de>
----
-v2: revised error path. Bail out and tidy up properly if we can't
-    get the clock or fail to enable it
-v3: don't print error message if getting clock returns EPROBE_DEFER
-v4: rebase on Eduardo's -fixes branch
----
- drivers/thermal/imx_thermal.c | 41 +++++++++++++++++++++++++----------------
- 1 file changed, 25 insertions(+), 16 deletions(-)
+> 
+> >>  
+> >>  	mod_delayed_work_on(cpu, system_wq, &cdbs->work, delay);
+> >>  }
+> >> @@ -185,10 +194,11 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+> >>  		 * those works are canceled during CPU_DOWN_PREPARE so they
+> >>  		 * can't possibly run on any other CPU.
+> >>  		 */
+> >> -		__gov_queue_work(raw_smp_processor_id(), dbs_data, delay);
+> >> +		__gov_queue_work(raw_smp_processor_id(), dbs_data, delay,
+> >> +				 policy);
+> >>  	} else {
+> >>  		for_each_cpu(i, policy->cpus)
+> >> -			__gov_queue_work(i, dbs_data, delay);
+> >> +			__gov_queue_work(i, dbs_data, delay, policy);
+> >>  	}
+> >>  
+> >>  out_unlock:
+> >> @@ -258,7 +268,13 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+> >>  	else
+> >>  		dbs_data = cdata->gdbs_data;
+> >>  
+> >> -	WARN_ON(!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT));
+> >> +	if (!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT)) {
+> >> +		pr_emerg("governor_data is NULL but governor %s is initialized = %d [governor_enabled = %d event = %u]\n",
+> >> +			 policy->governor->name,
+> >> +			 atomic_read(&policy->governor->initialized),
+> >> +			 policy->governor_enabled, event);
+> >> +		BUG();
+> > 
+> > And here?
+> > 
+> 
+> Ditto -- dbs_data is dereferenced in the call path and will NULL pointer panic.
+> 
+> P.
+> 
+> >> +	}
+> >>  
+> >>  	switch (event) {
+> >>  	case CPUFREQ_GOV_POLICY_INIT:
+> >> @@ -329,6 +345,12 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+> >>  	case CPUFREQ_GOV_POLICY_EXIT:
+> >>  		mutex_lock(&dbs_data->usage_count_mutex);
+> >>  		if (atomic_dec_and_test(&dbs_data->usage_count)) {
+> >> +			if (atomic_read(&policy->governor->initialized) > 1) {
+> >> +				pr_emerg("Removing governor %s but initialized = %d, dbs_data->usage_count = 0\n",
+> >> +					 policy->governor->name,
+> >> +				   atomic_read(&policy->governor->initialized));
+> >> +				BUG();
+> >> +			}
+> >>  			sysfs_remove_group(get_governor_parent_kobj(policy),
+> >>  					get_sysfs_attr(dbs_data));
+> >>  
+> >>
+> > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 0e35999..5a1f107 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -525,6 +525,30 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
-+	data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(data->thermal_clk)) {
-+		ret = PTR_ERR(data->thermal_clk);
-+		if (ret != -EPROBE_DEFER)
-+			dev_err(&pdev->dev,
-+				"failed to get thermal clk: %d\n", ret);
-+		cpufreq_cooling_unregister(data->cdev);
-+		return ret;
-+	}
-+
-+	/*
-+	 * Thermal sensor needs clk on to get correct value, normally
-+	 * we should enable its clk before taking measurement and disable
-+	 * clk after measurement is done, but if alarm function is enabled,
-+	 * hardware will auto measure the temperature periodically, so we
-+	 * need to keep the clk always on for alarm function.
-+	 */
-+	ret = clk_prepare_enable(data->thermal_clk);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
-+		cpufreq_cooling_unregister(data->cdev);
-+		return ret;
-+	}
-+
- 	data->tz = thermal_zone_device_register("imx_thermal_zone",
- 						IMX_TRIP_NUM,
- 						BIT(IMX_TRIP_PASSIVE), data,
-@@ -535,26 +559,11 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 		ret = PTR_ERR(data->tz);
- 		dev_err(&pdev->dev,
- 			"failed to register thermal zone device %d\n", ret);
-+		clk_disable_unprepare(data->thermal_clk);
- 		cpufreq_cooling_unregister(data->cdev);
- 		return ret;
- 	}
- 
--	data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
--	if (IS_ERR(data->thermal_clk)) {
--		dev_warn(&pdev->dev, "failed to get thermal clk!\n");
--	} else {
--		/*
--		 * Thermal sensor needs clk on to get correct value, normally
--		 * we should enable its clk before taking measurement and disable
--		 * clk after measurement is done, but if alarm function is enabled,
--		 * hardware will auto measure the temperature periodically, so we
--		 * need to keep the clk always on for alarm function.
--		 */
--		ret = clk_prepare_enable(data->thermal_clk);
--		if (ret)
--			dev_warn(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
--	}
--
- 	/* Enable measurements at ~ 10 Hz */
- 	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
- 	measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
 -- 
-2.1.2
-
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
