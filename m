@@ -1,23 +1,49 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH] Documentation: power: Fix typo in Documentation/power
-Date: Sat, 8 Nov 2014 09:15:33 -0500
-Message-ID: <20141108091533.4b7b0bb7@lwn.net>
-References: <1415436891-28182-1-git-send-email-standby24x7@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1415436891-28182-1-git-send-email-standby24x7@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Masanari Iida <standby24x7@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: [PATCH] Fix entering suspend-to-IDLE if no freeze_oops is set
+Date: Sat,  8 Nov 2014 19:17:13 +0300
+Message-ID: <1415463433-5267-1-git-send-email-dbaryshkov@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:58753 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753725AbaKHQR3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 8 Nov 2014 11:17:29 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-On Sat,  8 Nov 2014 17:54:51 +0900
-Masanari Iida <standby24x7@gmail.com> wrote:
+If no freeze_ops is set, trying to enter suspend-to-IDLE will cause a
+nice oops in platform_suspend_prepare_late(). Add respective checks to
+platform_suspend_prepare_late() and platform_resume_early() functions.
 
-> This patch fix spelling typos found in Documentation/power.
+Fixes: a8d46b9e (ACPI / sleep: Rework the handling of ACPI GPE wakeup ...)
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ kernel/power/suspend.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Applied to the docs tree, thanks.
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 4ca9a33..c347e3c 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -146,7 +146,7 @@ static int platform_suspend_prepare(suspend_state_t state)
+ 
+ static int platform_suspend_prepare_late(suspend_state_t state)
+ {
+-	return state == PM_SUSPEND_FREEZE && freeze_ops->prepare ?
++	return state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->prepare ?
+ 		freeze_ops->prepare() : 0;
+ }
+ 
+@@ -164,7 +164,7 @@ static void platform_resume_noirq(suspend_state_t state)
+ 
+ static void platform_resume_early(suspend_state_t state)
+ {
+-	if (state == PM_SUSPEND_FREEZE && freeze_ops->restore)
++	if (state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->restore)
+ 		freeze_ops->restore();
+ }
+ 
+-- 
+2.1.1
 
-jon
