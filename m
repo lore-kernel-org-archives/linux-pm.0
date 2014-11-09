@@ -1,65 +1,119 @@
-From: Olof Johansson <olof@lixom.net>
-Subject: Re: [GIT PULL] Ux500 core changes for v3.19
-Date: Sat, 8 Nov 2014 16:53:14 -0800
-Message-ID: <20141109005314.GA13855@quad.lixom.net>
-References: <CACRpkda3KMkrCSDeSUycmeDUJTDFVq6hesYfLTfmoeCB3oP6MA@mail.gmail.com>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCH 1/2] thermal: armada: Remove support for A375-Z1 SoC
+Date: Sat, 8 Nov 2014 22:16:46 -0500
+Message-ID: <20141109031646.GO3698@titan.lakedaemon.net>
+References: <1415116839-4323-1-git-send-email-ezequiel.garcia@free-electrons.com>
+ <1415116839-4323-2-git-send-email-ezequiel.garcia@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f179.google.com ([209.85.192.179]:35651 "EHLO
-	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753259AbaKIAxQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 8 Nov 2014 19:53:16 -0500
-Received: by mail-pd0-f179.google.com with SMTP id g10so5592232pdj.10
-        for <linux-pm@vger.kernel.org>; Sat, 08 Nov 2014 16:53:15 -0800 (PST)
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:29249 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229AbaKIDRA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 8 Nov 2014 22:17:00 -0500
 Content-Disposition: inline
-In-Reply-To: <CACRpkda3KMkrCSDeSUycmeDUJTDFVq6hesYfLTfmoeCB3oP6MA@mail.gmail.com>
+In-Reply-To: <1415116839-4323-2-git-send-email-ezequiel.garcia@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: "arm@kernel.org" <arm@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org
 
-On Sun, Nov 02, 2014 at 11:17:31PM +0100, Linus Walleij wrote:
-> Hi ARM SoC folks,
+On Tue, Nov 04, 2014 at 01:00:38PM -0300, Ezequiel Garcia wrote:
+> The Armada 375 Z1 SoC revision is no longer supported. This commit
+> removes the quirk needed for the thermal sensor.
 > 
-> please pull in these Ux500 core changes for this kernel development
-> cycle: mainly a generic power domain implementation from Ulf Hansson
-> that needs to get queued up in -next and tested.
-> 
-> Yours,
-> Linus Walleij
-> 
-> The following changes since commit cac7f2429872d3733dc3f9915857b1691da2eb2f:
-> 
->   Linux 3.18-rc2 (2014-10-26 16:48:41 -0700)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-stericsson.git
-> tags/ux500-core-for-arm-soc
-> 
-> for you to fetch changes up to 29417fe80ad2fd4f62f00dcca96c7198870e5642:
-> 
->   ARM: ux500: Add i2c devices to the VAPE PM domain (2014-10-28 10:50:46 +0100)
-> 
-> ----------------------------------------------------------------
-> Generic power domains for the Ux500
-> 
-> ----------------------------------------------------------------
-> Joe Perches (1):
->       ARM: u300: Convert pr_warning to pr_warn
-> 
-> Ulf Hansson (8):
->       dt: bindings: ux500: Add documentation for PM domains
->       dt: bindings: ux500: Add header for PM domains specifiers
->       ARM: ux500: Initial support for PM domains
->       ARM: ux500: Enable Kconfig for the generic PM domain
->       ARM: ux500: Add DT node for ux500 PM domains
->       ARM: ux500: Add sdi devices to the VAPE PM domain
->       ARM: ux500: Add spi and ssp devices to the VAPE PM domain
->       ARM: ux500: Add i2c devices to the VAPE PM domain
+> Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+> ---
+>  .../devicetree/bindings/thermal/armada-thermal.txt   |  8 --------
+>  drivers/thermal/armada_thermal.c                     | 20 --------------------
+>  2 files changed, 28 deletions(-)
 
-Merged, thanks.
+As Thomas and Ezequiel rightfully mentioned, the compatible string below
+has never been in a dts file.  Our arch code detected the Z1, and
+changed the compatible on the fly.  As a result, there shouldn't be any
+dtbs in the wild with this compatible string.  If there are, it will be
+held by the few developers (Marvell, partners) that know what they are
+doing.
 
+Acked-by: Jason Cooper <jason@lakedaemon.net>
 
--Olof
+thx,
+
+Jason.
+
+> diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+> index 4cf0249..4698e0e 100644
+> --- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+> @@ -5,17 +5,9 @@ Required properties:
+>  - compatible:	Should be set to one of the following:
+>  		marvell,armada370-thermal
+>  		marvell,armada375-thermal
+> -		marvell,armada375-z1-thermal
+>  		marvell,armada380-thermal
+>  		marvell,armadaxp-thermal
+>  
+> -		Note: As the name suggests, "marvell,armada375-z1-thermal"
+> -		applies for the SoC Z1 stepping only. On such stepping
+> -		some quirks need to be done and the register offset differs
+> -		from the one in the A0 stepping.
+> -		The operating system may auto-detect the SoC stepping and
+> -		update the compatible and register offsets at runtime.
+> -
+>  - reg:		Device's register space.
+>  		Two entries are expected, see the examples below.
+>  		The first one is required for the sensor register;
+> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+> index 9d1420a..9c8e783 100644
+> --- a/drivers/thermal/armada_thermal.c
+> +++ b/drivers/thermal/armada_thermal.c
+> @@ -35,10 +35,6 @@
+>  #define PMU_TDC0_OTF_CAL_MASK		(0x1 << 30)
+>  #define PMU_TDC0_START_CAL_MASK		(0x1 << 25)
+>  
+> -#define A375_Z1_CAL_RESET_LSB		0x8011e214
+> -#define A375_Z1_CAL_RESET_MSB		0x30a88019
+> -#define A375_Z1_WORKAROUND_BIT		BIT(9)
+> -
+>  #define A375_UNIT_CONTROL_SHIFT		27
+>  #define A375_UNIT_CONTROL_MASK		0x7
+>  #define A375_READOUT_INVERT		BIT(15)
+> @@ -124,24 +120,12 @@ static void armada375_init_sensor(struct platform_device *pdev,
+>  				  struct armada_thermal_priv *priv)
+>  {
+>  	unsigned long reg;
+> -	bool quirk_needed =
+> -		!!of_device_is_compatible(pdev->dev.of_node,
+> -					  "marvell,armada375-z1-thermal");
+> -
+> -	if (quirk_needed) {
+> -		/* Ensure these registers have the default (reset) values */
+> -		writel(A375_Z1_CAL_RESET_LSB, priv->control);
+> -		writel(A375_Z1_CAL_RESET_MSB, priv->control + 0x4);
+> -	}
+>  
+>  	reg = readl(priv->control + 4);
+>  	reg &= ~(A375_UNIT_CONTROL_MASK << A375_UNIT_CONTROL_SHIFT);
+>  	reg &= ~A375_READOUT_INVERT;
+>  	reg &= ~A375_HW_RESETn;
+>  
+> -	if (quirk_needed)
+> -		reg |= A375_Z1_WORKAROUND_BIT;
+> -
+>  	writel(reg, priv->control + 4);
+>  	mdelay(20);
+>  
+> @@ -260,10 +244,6 @@ static const struct of_device_id armada_thermal_id_table[] = {
+>  		.data       = &armada375_data,
+>  	},
+>  	{
+> -		.compatible = "marvell,armada375-z1-thermal",
+> -		.data       = &armada375_data,
+> -	},
+> -	{
+>  		.compatible = "marvell,armada380-thermal",
+>  		.data       = &armada380_data,
+>  	},
+> -- 
+> 2.1.0
+> 
