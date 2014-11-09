@@ -1,146 +1,462 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH 5/5] cpufreq, add BUG() messages in critical paths to
- aid debugging failures
-Date: Sun, 09 Nov 2014 09:12:42 -0500
-Message-ID: <545F765A.3040007@redhat.com>
-References: <1415199239-19019-1-git-send-email-prarit@redhat.com> <1908314.5SSPFg5MrY@vostro.rjw.lan> <545E1BAF.4060801@redhat.com> <1874335.TzunrgXvuB@vostro.rjw.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/2] cpuidle: exynos: add coupled cpuidle support for
+ Exynos4210
+Date: Sun, 09 Nov 2014 16:57:51 +0100
+Message-ID: <545F8EFF.7030704@linaro.org>
+References: <1415383252-20118-1-git-send-email-b.zolnierkie@samsung.com> <1415383252-20118-3-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:55853 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751728AbaKIONA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 9 Nov 2014 09:13:00 -0500
-In-Reply-To: <1874335.TzunrgXvuB@vostro.rjw.lan>
+Received: from mail-wg0-f47.google.com ([74.125.82.47]:50920 "EHLO
+	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbaKIP5z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 10:57:55 -0500
+Received: by mail-wg0-f47.google.com with SMTP id a1so7071357wgh.20
+        for <linux-pm@vger.kernel.org>; Sun, 09 Nov 2014 07:57:53 -0800 (PST)
+In-Reply-To: <1415383252-20118-3-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, robert.schoene@tu-dresden.de, sboyd@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Colin Cross <ccross@google.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+
+On 11/07/2014 07:00 PM, Bartlomiej Zolnierkiewicz wrote:
+> The following patch adds coupled cpuidle support for Exynos4210 to
+> an existing cpuidle-exynos driver.  As a result it enables AFTR mode
+> to be used by default on Exynos4210 without the need to hot unplug
+> CPU1 first.
+>
+> The patch is heavily based on earlier cpuidle-exynos4210 driver from
+> Daniel Lezcano:
+>
+> http://www.spinics.net/lists/linux-samsung-soc/msg28134.html
+>
+> Changes from Daniel's code include:
+> - porting code to current kernels
+> - fixing it to work on my setup (by using S5P_INFORM register
+>    instead of S5P_VA_SYSRAM one on Revison 1.1 and retrying poking
+>    CPU1 out of the BOOT ROM if necessary)
+> - fixing rare lockup caused by waiting for CPU1 to get stuck in
+>    the BOOT ROM (CPU hotplug code in arch/arm/mach-exynos/platsmp.c
+>    doesn't require this and works fine)
+> - moving Exynos specific code to arch/arm/mach-exynos/pm.c
+> - using cpu_boot_reg_base() helper instead of BOOT_VECTOR macro
+> - using exynos_cpu_*() helpers instead of accessing registers
+>    directly
+> - using arch_send_wakeup_ipi_mask() instead of dsb_sev()
+>    (this matches CPU hotplug code in arch/arm/mach-exynos/platsmp.c)
+
+I am curious. You experienced very rare hangs after running the tests a=
+=20
+few hours, right ? Is the SEV replaced by the IPI solving the issue ? I=
+f=20
+yes, how did you catch it ?
+
+>- integrating separate exynos4210-cpuidle driver into existing
+>    exynos-cpuidle one
+>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Colin Cross <ccross@google.com>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Cc: Tomasz Figa <tomasz.figa@gmail.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+A few comments below:
+
+> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+> ---
+>   arch/arm/mach-exynos/common.h                |   4 +
+>   arch/arm/mach-exynos/exynos.c                |   4 +
+>   arch/arm/mach-exynos/platsmp.c               |   2 +-
+>   arch/arm/mach-exynos/pm.c                    | 122 ++++++++++++++++=
++++++++++++
+>   drivers/cpuidle/Kconfig.arm                  |   1 +
+>   drivers/cpuidle/cpuidle-exynos.c             |  62 ++++++++++++--
+>   include/linux/platform_data/cpuidle-exynos.h |  20 +++++
+>   7 files changed, 209 insertions(+), 6 deletions(-)
+>   create mode 100644 include/linux/platform_data/cpuidle-exynos.h
+>
+> diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/com=
+mon.h
+> index d4d09bc..f208a60 100644
+> --- a/arch/arm/mach-exynos/common.h
+> +++ b/arch/arm/mach-exynos/common.h
+> @@ -14,6 +14,7 @@
+>
+>   #include <linux/reboot.h>
+>   #include <linux/of.h>
+> +#include <linux/platform_data/cpuidle-exynos.h>
+>
+>   #define EXYNOS3250_SOC_ID	0xE3472000
+>   #define EXYNOS3_SOC_MASK	0xFFFFF000
+> @@ -168,8 +169,11 @@ extern void exynos_pm_central_suspend(void);
+>   extern int exynos_pm_central_resume(void);
+>   extern void exynos_enter_aftr(void);
+>
+> +extern struct cpuidle_exynos_data cpuidle_coupled_exynos_data;
+> +
+>   extern void s5p_init_cpu(void __iomem *cpuid_addr);
+>   extern unsigned int samsung_rev(void);
+> +extern void __iomem *cpu_boot_reg_base(void);
+>
+>   static inline void pmu_raw_writel(u32 val, u32 offset)
+>   {
+> diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exy=
+nos.c
+> index a487e59..4f4eb9e 100644
+> --- a/arch/arm/mach-exynos/exynos.c
+> +++ b/arch/arm/mach-exynos/exynos.c
+> @@ -317,6 +317,10 @@ static void __init exynos_dt_machine_init(void)
+>   	if (!IS_ENABLED(CONFIG_SMP))
+>   		exynos_sysram_init();
+>
+> +#ifdef CONFIG_ARM_EXYNOS_CPUIDLE
+> +	if (of_machine_is_compatible("samsung,exynos4210"))
+> +		exynos_cpuidle.dev.platform_data =3D &cpuidle_coupled_exynos_data;
+> +#endif
+
+You should not add those #ifdef.
+
+>   	if (of_machine_is_compatible("samsung,exynos4210") ||
+>   	    of_machine_is_compatible("samsung,exynos4212") ||
+>   	    (of_machine_is_compatible("samsung,exynos4412") &&
+> diff --git a/arch/arm/mach-exynos/platsmp.c b/arch/arm/mach-exynos/pl=
+atsmp.c
+> index adb36a8..0e3ffc9 100644
+> --- a/arch/arm/mach-exynos/platsmp.c
+> +++ b/arch/arm/mach-exynos/platsmp.c
+> @@ -182,7 +182,7 @@ int exynos_cluster_power_state(int cluster)
+>   		S5P_CORE_LOCAL_PWR_EN);
+>   }
+>
+> -static inline void __iomem *cpu_boot_reg_base(void)
+> +void __iomem *cpu_boot_reg_base(void)
+>   {
+>   	if (soc_is_exynos4210() && samsung_rev() =3D=3D EXYNOS4210_REV_1_1=
+)
+>   		return pmu_base_addr + S5P_INFORM5;
+> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+> index 4b36ab5..44cc08a 100644
+> --- a/arch/arm/mach-exynos/pm.c
+> +++ b/arch/arm/mach-exynos/pm.c
+> @@ -178,3 +178,125 @@ void exynos_enter_aftr(void)
+>
+>   	cpu_pm_exit();
+>   }
+> +
+> +static atomic_t cpu1_wakeup =3D ATOMIC_INIT(0);
+> +
+> +static int exynos_cpu0_enter_aftr(void)
+> +{
+> +	int ret =3D -1;
+> +
+> +	/*
+> +	 * If the other cpu is powered on, we have to power it off, because
+> +	 * the AFTR state won't work otherwise
+> +	 */
+> +	if (cpu_online(1)) {
+> +		/*
+> +		 * We reach a sync point with the coupled idle state, we know
+> +		 * the other cpu will power down itself or will abort the
+> +		 * sequence, let's wait for one of these to happen
+> +		 */
+> +		while (exynos_cpu_power_state(1)) {
+> +			/*
+> +			 * The other cpu may skip idle and boot back
+> +			 * up again
+> +			 */
+> +			if (atomic_read(&cpu1_wakeup))
+> +				goto abort;
+> +
+> +			/*
+> +			 * The other cpu may bounce through idle and
+> +			 * boot back up again, getting stuck in the
+> +			 * boot rom code
+> +			 */
+> +			if (__raw_readl(cpu_boot_reg_base()) =3D=3D 0)
+> +				goto abort;
+> +
+> +			cpu_relax();
+> +		}
+> +	}
+> +
+> +	exynos_enter_aftr();
+> +	ret =3D 0;
+> +
+> +abort:
+> +	if (cpu_online(1)) {
+> +		/*
+> +		 * Set the boot vector to something non-zero
+> +		 */
+> +		__raw_writel(virt_to_phys(exynos_cpu_resume),
+> +			     cpu_boot_reg_base());
+> +		dsb();
+> +
+> +		/*
+> +		 * Turn on cpu1 and wait for it to be on
+> +		 */
+> +		exynos_cpu_power_up(1);
+> +		while (exynos_cpu_power_state(1) !=3D S5P_CORE_LOCAL_PWR_EN)
+> +			cpu_relax();
+> +
+> +		while (!atomic_read(&cpu1_wakeup)) {
+> +			/*
+> +			 * Poke cpu1 out of the boot rom
+> +			 */
+> +			__raw_writel(virt_to_phys(exynos_cpu_resume),
+> +				     cpu_boot_reg_base());
+> +
+> +			arch_send_wakeup_ipi_mask(cpumask_of(1));
+> +		}
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int exynos_wfi_finisher(unsigned long flags)
+> +{
+> +	cpu_do_idle();
+> +
+> +	return -1;
+> +}
+> +
+> +static int exynos_cpu1_powerdown(void)
+> +{
+> +	int ret =3D -1;
+> +
+> +	/*
+> +	 * Idle sequence for cpu1
+> +	 */
+> +	if (cpu_pm_enter())
+> +		goto cpu1_aborted;
+> +
+> +	/*
+> +	 * Turn off cpu 1
+> +	 */
+> +	exynos_cpu_power_down(1);
+> +
+> +	ret =3D cpu_suspend(0, exynos_wfi_finisher);
+> +
+> +	cpu_pm_exit();
+> +
+> +cpu1_aborted:
+> +	dsb();
+> +	/*
+> +	 * Notify cpu 0 that cpu 1 is awake
+> +	 */
+> +	atomic_set(&cpu1_wakeup, 1);
+> +
+> +	return ret;
+> +}
+> +
+> +static void exynos_pre_enter_aftr(void)
+> +{
+> +	__raw_writel(virt_to_phys(exynos_cpu_resume), cpu_boot_reg_base());
+> +}
+> +
+> +static void exynos_post_enter_aftr(void)
+> +{
+> +	atomic_set(&cpu1_wakeup, 0);
+> +}
+> +
+> +struct cpuidle_exynos_data cpuidle_coupled_exynos_data =3D {
+> +	.cpu0_enter_aftr		=3D exynos_cpu0_enter_aftr,
+> +	.cpu1_powerdown		=3D exynos_cpu1_powerdown,
+> +	.pre_enter_aftr		=3D exynos_pre_enter_aftr,
+> +	.post_enter_aftr		=3D exynos_post_enter_aftr,
+> +};
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
+m
+> index 8c16ab2..8e07c94 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -55,6 +55,7 @@ config ARM_AT91_CPUIDLE
+>   config ARM_EXYNOS_CPUIDLE
+>   	bool "Cpu Idle Driver for the Exynos processors"
+>   	depends on ARCH_EXYNOS
+> +	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
+>   	help
+>   	  Select this to enable cpuidle for Exynos processors
+>
+> diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuid=
+le-exynos.c
+> index ba9b34b..4700d5d 100644
+> --- a/drivers/cpuidle/cpuidle-exynos.c
+> +++ b/drivers/cpuidle/cpuidle-exynos.c
+> @@ -1,8 +1,11 @@
+> -/* linux/arch/arm/mach-exynos/cpuidle.c
+> - *
+> - * Copyright (c) 2011 Samsung Electronics Co., Ltd.
+> +/*
+> + * Copyright (c) 2011-2014 Samsung Electronics Co., Ltd.
+>    *		http://www.samsung.com
+>    *
+> + * Coupled cpuidle support based on the work of:
+> + *	Colin Cross <ccross@android.com>
+> + *	Daniel Lezcano <daniel.lezcano@linaro.org>
+> + *
+>    * This program is free software; you can redistribute it and/or mo=
+dify
+>    * it under the terms of the GNU General Public License version 2 a=
+s
+>    * published by the Free Software Foundation.
+> @@ -13,13 +16,49 @@
+>   #include <linux/export.h>
+>   #include <linux/module.h>
+>   #include <linux/platform_device.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_data/cpuidle-exynos.h>
+>
+>   #include <asm/proc-fns.h>
+>   #include <asm/suspend.h>
+>   #include <asm/cpuidle.h>
+>
+> +static atomic_t exynos_idle_barrier;
+> +
+> +static struct cpuidle_exynos_data *exynos_cpuidle_pdata;
+>   static void (*exynos_enter_aftr)(void);
+>
+> +static int exynos_enter_coupled_lowpower(struct cpuidle_device *dev,
+> +					 struct cpuidle_driver *drv,
+> +					 int index)
+> +{
+> +	int ret;
+> +
+> +	exynos_cpuidle_pdata->pre_enter_aftr();
+> +
+> +	/*
+> +	 * Waiting all cpus to reach this point at the same moment
+> +	 */
+> +	cpuidle_coupled_parallel_barrier(dev, &exynos_idle_barrier);
+> +
+> +	/*
+> +	 * Both cpus will reach this point at the same time
+> +	 */
+> +	ret =3D dev->cpu ? exynos_cpuidle_pdata->cpu1_powerdown()
+> +		       : exynos_cpuidle_pdata->cpu0_enter_aftr();
+> +	if (ret)
+> +		index =3D ret;
+> +
+> +	/*
+> +	 * Waiting all cpus to finish the power sequence before going furth=
+er
+> +	 */
+> +	cpuidle_coupled_parallel_barrier(dev, &exynos_idle_barrier);
+> +
+> +	exynos_cpuidle_pdata->post_enter_aftr();
+> +
+> +	return index;
+> +}
+> +
+>   static int exynos_enter_lowpower(struct cpuidle_device *dev,
+>   				struct cpuidle_driver *drv,
+>   				int index)
+> @@ -58,11 +97,24 @@ static struct cpuidle_driver exynos_idle_driver =3D=
+ {
+>
+>   static int exynos_cpuidle_probe(struct platform_device *pdev)
+>   {
+> +	const struct cpumask *coupled_cpus =3D NULL;
+>   	int ret;
+>
+> -	exynos_enter_aftr =3D (void *)(pdev->dev.platform_data);
+> +	if (of_machine_is_compatible("samsung,exynos4210")) {
+> +		exynos_cpuidle_pdata =3D pdev->dev.platform_data;
+> +
+> +		exynos_idle_driver.states[1].enter =3D
+> +						exynos_enter_coupled_lowpower;
+> +		exynos_idle_driver.states[1].exit_latency =3D 5000;
+> +		exynos_idle_driver.states[1].target_residency =3D 10000;
+> +		exynos_idle_driver.states[1].flags |=3D CPUIDLE_FLAG_COUPLED |
+> +						      CPUIDLE_FLAG_TIMER_STOP;
+
+I tried to remove those dynamic state allocation everywhere in the=20
+different drivers. I would prefer to have another cpuidle_driver to be=20
+registered with its states instead of overwriting the existing idle sta=
+te.
+
+struct cpuidle_driver exynos4210_idle_driver =3D {
+	.name =3D "exynos4210_idle",
+	.owner =3D THIS_MODULE,
+	.states =3D {
+		[0] =3D ARM_CPUIDLE_WFI_STATE,
+                 [1] =3D {
+                         .enter =3D exynos_enter_coupled_lowpower,
+                         .exit_latency =3D 5000,
+                         .target_residency =3D 10000,
+			.flags =3D CPUIDLE_FLAG_TIME_VALID |
+				CPUIDLE_FLAG_COUPLED |
+				CPUIDLE_FLAG_TIMER_STOP,
+                         .name =3D "C1",
+                         .desc =3D "ARM power down",
+                 },
+	}
+};
 
 
+and then:
 
-On 11/08/2014 04:46 PM, Rafael J. Wysocki wrote:
-> On Saturday, November 08, 2014 08:33:35 AM Prarit Bhargava wrote:
->>
->> On 11/07/2014 09:00 PM, Rafael J. Wysocki wrote:
->>> On Wednesday, November 05, 2014 09:53:59 AM Prarit Bhargava wrote:
->>>> Add some additional debug to capture failures in the locking scheme for
->>>> cpufreq.  Instead of just a NULL pointer, these warnings will capture failure
->>>> points if the locking scheme for cpufreq is broken.
->>>>
->>>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->>>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->>>> Cc: linux-pm@vger.kernel.org
->>>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
->>>> ---
->>>>  drivers/cpufreq/cpufreq_governor.c |   32 +++++++++++++++++++++++++++-----
->>>>  1 file changed, 27 insertions(+), 5 deletions(-)
->>>>
->>>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
->>>> index b1ee597..f158882 100644
->>>> --- a/drivers/cpufreq/cpufreq_governor.c
->>>> +++ b/drivers/cpufreq/cpufreq_governor.c
->>>> @@ -161,9 +161,18 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->>>>  EXPORT_SYMBOL_GPL(dbs_check_cpu);
->>>>  
->>>>  static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
->>>> -		unsigned int delay)
->>>> +				    unsigned int delay,
->>>> +				    struct cpufreq_policy *policy)
->>>>  {
->>>> -	struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
->>>> +	struct cpu_dbs_common_info *cdbs;
->>>> +
->>>> +	if (!dbs_data->cdata) {
->>>> +		pr_emerg("common_dbs_data is NULL for %s but initialized = %d",
->>>> +			 policy->governor->name,
->>>> +			 atomic_read(&policy->governor->initialized));
->>>> +		BUG();
->>>
->>> Is it necessary to crash the kernel here?
->>
->> Yes.  dbs_data->cdata is referenced right below.
->>
->>>
->>>> +	}
->>>> +	cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
->>
->> and we'll NULL pointer panic right here without any of the debug info above :(
-> 
-> Can we possibly avoid the panic?
-> 
-> Adding BUG() instead of a NULL pointer deref is not much improvement.
+if (of_machine_is_compatible("samsung,exynos4210")) {
+	...
+	ret =3D cpuidle_register(&exynos4210_idle_driver,
+				cpu_online_mask);
+	...
+}
+=2E..
 
-(sorry  for the lowercase typing.  i fractured my elbow and have resorted to
-single hand typing ....)
+If we can reuse this mechanism, which I believe it is possible to, for=20
+4420 and 5250. Then we will be able to refactor this out again.
 
-rafael, i understand your concern and my description is clearly lacking for this
-patch.  this patch is not meant to be a fix but is meant to capture debug info
-for future issues in this code.  i thought about only doing the pr_emerg() but
-that results in situations where other threads may continue processing and i
-lose state in crashdump :(.   bug() is a good idea here imo.
+> +
+> +		coupled_cpus =3D cpu_possible_mask;
+> +	} else
+> +		exynos_enter_aftr =3D (void *)(pdev->dev.platform_data);
+>
+> -	ret =3D cpuidle_register(&exynos_idle_driver, NULL);
+> +	ret =3D cpuidle_register(&exynos_idle_driver, coupled_cpus);
+>   	if (ret) {
+>   		dev_err(&pdev->dev, "failed to register cpuidle driver\n");
+>   		return ret;
+> diff --git a/include/linux/platform_data/cpuidle-exynos.h b/include/l=
+inux/platform_data/cpuidle-exynos.h
+> new file mode 100644
+> index 0000000..bfa40e4
+> --- /dev/null
+> +++ b/include/linux/platform_data/cpuidle-exynos.h
+> @@ -0,0 +1,20 @@
+> +/*
+> + * Copyright (c) 2014 Samsung Electronics Co., Ltd.
+> + *              http://www.samsung.com
+> + *
+> + * This program is free software; you can redistribute it and/or mod=
+ify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> +*/
+> +
+> +#ifndef __CPUIDLE_EXYNOS_H
+> +#define __CPUIDLE_EXYNOS_H
+> +
+> +struct cpuidle_exynos_data {
+> +	int (*cpu0_enter_aftr)(void);
+> +	int (*cpu1_powerdown)(void);
+> +	void (*pre_enter_aftr)(void);
+> +	void (*post_enter_aftr)(void);
+> +};
+> +
+> +#endif
+>
 
-P.
-> 
->>
->>>>  
->>>>  	mod_delayed_work_on(cpu, system_wq, &cdbs->work, delay);
->>>>  }
->>>> @@ -185,10 +194,11 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
->>>>  		 * those works are canceled during CPU_DOWN_PREPARE so they
->>>>  		 * can't possibly run on any other CPU.
->>>>  		 */
->>>> -		__gov_queue_work(raw_smp_processor_id(), dbs_data, delay);
->>>> +		__gov_queue_work(raw_smp_processor_id(), dbs_data, delay,
->>>> +				 policy);
->>>>  	} else {
->>>>  		for_each_cpu(i, policy->cpus)
->>>> -			__gov_queue_work(i, dbs_data, delay);
->>>> +			__gov_queue_work(i, dbs_data, delay, policy);
->>>>  	}
->>>>  
->>>>  out_unlock:
->>>> @@ -258,7 +268,13 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->>>>  	else
->>>>  		dbs_data = cdata->gdbs_data;
->>>>  
->>>> -	WARN_ON(!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT));
->>>> +	if (!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT)) {
->>>> +		pr_emerg("governor_data is NULL but governor %s is initialized = %d [governor_enabled = %d event = %u]\n",
->>>> +			 policy->governor->name,
->>>> +			 atomic_read(&policy->governor->initialized),
->>>> +			 policy->governor_enabled, event);
->>>> +		BUG();
->>>
->>> And here?
->>>
->>
->> Ditto -- dbs_data is dereferenced in the call path and will NULL pointer panic.
->>
->> P.
->>
->>>> +	}
->>>>  
->>>>  	switch (event) {
->>>>  	case CPUFREQ_GOV_POLICY_INIT:
->>>> @@ -329,6 +345,12 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->>>>  	case CPUFREQ_GOV_POLICY_EXIT:
->>>>  		mutex_lock(&dbs_data->usage_count_mutex);
->>>>  		if (atomic_dec_and_test(&dbs_data->usage_count)) {
->>>> +			if (atomic_read(&policy->governor->initialized) > 1) {
->>>> +				pr_emerg("Removing governor %s but initialized = %d, dbs_data->usage_count = 0\n",
->>>> +					 policy->governor->name,
->>>> +				   atomic_read(&policy->governor->initialized));
->>>> +				BUG();
->>>> +			}
->>>>  			sysfs_remove_group(get_governor_parent_kobj(policy),
->>>>  					get_sysfs_attr(dbs_data));
->>>>  
->>>>
->>>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
