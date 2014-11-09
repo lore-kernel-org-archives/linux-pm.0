@@ -1,46 +1,53 @@
-From: =?windows-1252?Q?Andreas_F=E4rber?= <afaerber-l3A5Bk7waGM@public.gmane.org>
+From: Guenter Roeck <linux@roeck-us.net>
 Subject: Re: [PATCH v5 33/48] staging: nvec: Register with kernel power-off
  handler
-Date: Mon, 10 Nov 2014 00:06:19 +0100
-Message-ID: <545FF36B.6060801@suse.de>
-References: <1415292213-28652-1-git-send-email-linux@roeck-us.net> <1415292213-28652-34-git-send-email-linux@roeck-us.net> <5008744.rVN94atT9b@ax5200p>
+Date: Sun, 09 Nov 2014 15:54:53 -0800
+Message-ID: <545FFECD.9050600@roeck-us.net>
+References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
+ <1415292213-28652-34-git-send-email-linux@roeck-us.net>
+ <5008744.rVN94atT9b@ax5200p>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
 In-Reply-To: <5008744.rVN94atT9b@ax5200p>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Marc Dietrich <Marc.Dietrich-wkdnK3oF/XPYtB+G+YtuwQgYPMzSbZxj@public.gmane.org>
-Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>, devel@driverdev.osuosl.org
+Cc: linux-tegra@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Am 09.11.2014 um 22:41 schrieb Marc Dietrich:
+On 11/09/2014 01:41 PM, Marc Dietrich wrote:
 > Am Donnerstag 06 November 2014, 08:43:17 schrieb Guenter Roeck:
->> Register with kernel power-off handler instead of setting pm_power_o=
-ff
->> directly. Register with default priority since we don't know any bet=
-ter.
+>> Register with kernel power-off handler instead of setting pm_power_off
+>> directly. Register with default priority since we don't know any better.
 >>
->> Cc: Julian Andres Klode <jak-4HMq4SXA452hPH1hqNUYSQ@public.gmane.org>
->> Cc: Marc Dietrich <marvin24-Mmb7MZpHnFY@public.gmane.org>
->> Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
->> Acked-by: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
->> Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org
->=20
-> ok, this version (V5) actually switches the device off in contrast to=
- the=20
-> first implementation. Somehow I have to find out why it works at all =
-without=20
+>> Cc: Julian Andres Klode <jak@jak-linux.org>
+>> Cc: Marc Dietrich <marvin24@gmx.de>
+>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>> Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>> Signed-off-by: Guenter Roeck <linux@roeck-us.net
+>
+> ok, this version (V5) actually switches the device off in contrast to the
+> first implementation. Somehow I have to find out why it works at all without
 > irqs.
->=20
-> Acked-by: Marc Dietrich <mavin24-Mmb7MZpHnFY@public.gmane.org>
+>
+> Acked-by: Marc Dietrich <mavin24@gmx.de>
+>
 
-'r' missing in email? :)
+Hi Marc,
 
-Cheers,
-Andreas
+The most recent version does not turn off interrupts as long as the
+infrastructure (architecture code, ie machine_power_off) doesn't
+turn it off.
 
---=20
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 N=FCrnberg, Germany
-GF: Jeff Hawn, Jennifer Guild, Felix Imend=F6rffer; HRB 21284 AG N=FCrn=
-berg
+Thanks a lot for (re-)testing.
+
+Guenter
