@@ -1,73 +1,146 @@
-From: Martin Steigerwald <Martin@lichtvoll.de>
-Subject: Re: Linux Suspend Bug
-Date: Sun, 09 Nov 2014 11:38:31 +0100
-Message-ID: <2106186.JibaY09ivf@merkaba>
-References: <545EB306.6040207@gmail.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH 5/5] cpufreq, add BUG() messages in critical paths to
+ aid debugging failures
+Date: Sun, 09 Nov 2014 09:12:42 -0500
+Message-ID: <545F765A.3040007@redhat.com>
+References: <1415199239-19019-1-git-send-email-prarit@redhat.com> <1908314.5SSPFg5MrY@vostro.rjw.lan> <545E1BAF.4060801@redhat.com> <1874335.TzunrgXvuB@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:54942 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbaKIKry convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 05:47:54 -0500
-In-Reply-To: <545EB306.6040207@gmail.com>
+Received: from mx1.redhat.com ([209.132.183.28]:55853 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751728AbaKIONA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 9 Nov 2014 09:13:00 -0500
+In-Reply-To: <1874335.TzunrgXvuB@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tabor Kvasnicka <kamakwazee@gmail.com>
-Cc: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, robert.schoene@tu-dresden.de, sboyd@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-Am Samstag, 8. November 2014, 18:19:18 schrieb Tabor Kvasnicka:
-> The mainline upstream version of the kernel has a bug that won't allo=
-w
-> for my computer to fully suspend.
->=20
-> Link to bug: https://bugzilla.kernel.org/show_bug.cgi?id=3D87961
->=20
-> I have provided information based on the bug reporting instructions, =
-but
-> I will provide any other information you need to help fix this proble=
-m.
 
-I did not take time to report any of this already, but I randomly see t=
-he=20
-following with 3.18-rc2/3 with a ThinkPad T520:
 
-1) On hibernating the ThinkPad sometimes does not switched of. The powe=
-r LED=20
-is blinking as if its still suspending. It completely saves the hiberna=
-tion=20
-image tough, cause if I switch it off hardly then it comes up with the=20
-hibernation image just nice. This happened several times, but not it do=
-esn=C2=B4t=20
-happen always.
+On 11/08/2014 04:46 PM, Rafael J. Wysocki wrote:
+> On Saturday, November 08, 2014 08:33:35 AM Prarit Bhargava wrote:
+>>
+>> On 11/07/2014 09:00 PM, Rafael J. Wysocki wrote:
+>>> On Wednesday, November 05, 2014 09:53:59 AM Prarit Bhargava wrote:
+>>>> Add some additional debug to capture failures in the locking scheme for
+>>>> cpufreq.  Instead of just a NULL pointer, these warnings will capture failure
+>>>> points if the locking scheme for cpufreq is broken.
+>>>>
+>>>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>>>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>>>> Cc: linux-pm@vger.kernel.org
+>>>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>>>> ---
+>>>>  drivers/cpufreq/cpufreq_governor.c |   32 +++++++++++++++++++++++++++-----
+>>>>  1 file changed, 27 insertions(+), 5 deletions(-)
+>>>>
+>>>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+>>>> index b1ee597..f158882 100644
+>>>> --- a/drivers/cpufreq/cpufreq_governor.c
+>>>> +++ b/drivers/cpufreq/cpufreq_governor.c
+>>>> @@ -161,9 +161,18 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>>>>  EXPORT_SYMBOL_GPL(dbs_check_cpu);
+>>>>  
+>>>>  static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
+>>>> -		unsigned int delay)
+>>>> +				    unsigned int delay,
+>>>> +				    struct cpufreq_policy *policy)
+>>>>  {
+>>>> -	struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
+>>>> +	struct cpu_dbs_common_info *cdbs;
+>>>> +
+>>>> +	if (!dbs_data->cdata) {
+>>>> +		pr_emerg("common_dbs_data is NULL for %s but initialized = %d",
+>>>> +			 policy->governor->name,
+>>>> +			 atomic_read(&policy->governor->initialized));
+>>>> +		BUG();
+>>>
+>>> Is it necessary to crash the kernel here?
+>>
+>> Yes.  dbs_data->cdata is referenced right below.
+>>
+>>>
+>>>> +	}
+>>>> +	cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
+>>
+>> and we'll NULL pointer panic right here without any of the debug info above :(
+> 
+> Can we possibly avoid the panic?
+> 
+> Adding BUG() instead of a NULL pointer deref is not much improvement.
 
-2) Today on resuming from hibernating I just got a black screen. I swit=
-ched off=20
-manually and the machine booted regularily after switching it on again.
+(sorry  for the lowercase typing.  i fractured my elbow and have resorted to
+single hand typing ....)
 
-I didn=C2=B4t report any of this, cause I fear this would take a lot of=
- time to=20
-bisect or debug properly. And I am not willing to spend that time curre=
-ntly=20
-since there are more important things for me to attend to.
+rafael, i understand your concern and my description is clearly lacking for this
+patch.  this patch is not meant to be a fix but is meant to capture debug info
+for future issues in this code.  i thought about only doing the pr_emerg() but
+that results in situations where other threads may continue processing and i
+lose state in crashdump :(.   bug() is a good idea here imo.
 
-Maybe if there is an easy way to have it in text console and give all m=
-essages=20
-so I can make a photo from the display. But right now=E2=80=A6 all I ha=
-ve is either=20
-desktop lock screen or black screen without any ability to interact wit=
-h the=20
-machine. Well=E2=80=A6 I didn=C2=B4t try SSHing to it, from another lap=
-top so far. At least=20
-for the second scenario this might work, but I am quite sure it wouldn=C2=
-=B4t work=20
-for the first.
-
-I think there is some regression regarding hibernation with 3.18 over 3=
-=2E17.
-
-Ciao,
---=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+P.
+> 
+>>
+>>>>  
+>>>>  	mod_delayed_work_on(cpu, system_wq, &cdbs->work, delay);
+>>>>  }
+>>>> @@ -185,10 +194,11 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+>>>>  		 * those works are canceled during CPU_DOWN_PREPARE so they
+>>>>  		 * can't possibly run on any other CPU.
+>>>>  		 */
+>>>> -		__gov_queue_work(raw_smp_processor_id(), dbs_data, delay);
+>>>> +		__gov_queue_work(raw_smp_processor_id(), dbs_data, delay,
+>>>> +				 policy);
+>>>>  	} else {
+>>>>  		for_each_cpu(i, policy->cpus)
+>>>> -			__gov_queue_work(i, dbs_data, delay);
+>>>> +			__gov_queue_work(i, dbs_data, delay, policy);
+>>>>  	}
+>>>>  
+>>>>  out_unlock:
+>>>> @@ -258,7 +268,13 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>>>>  	else
+>>>>  		dbs_data = cdata->gdbs_data;
+>>>>  
+>>>> -	WARN_ON(!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT));
+>>>> +	if (!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT)) {
+>>>> +		pr_emerg("governor_data is NULL but governor %s is initialized = %d [governor_enabled = %d event = %u]\n",
+>>>> +			 policy->governor->name,
+>>>> +			 atomic_read(&policy->governor->initialized),
+>>>> +			 policy->governor_enabled, event);
+>>>> +		BUG();
+>>>
+>>> And here?
+>>>
+>>
+>> Ditto -- dbs_data is dereferenced in the call path and will NULL pointer panic.
+>>
+>> P.
+>>
+>>>> +	}
+>>>>  
+>>>>  	switch (event) {
+>>>>  	case CPUFREQ_GOV_POLICY_INIT:
+>>>> @@ -329,6 +345,12 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>>>>  	case CPUFREQ_GOV_POLICY_EXIT:
+>>>>  		mutex_lock(&dbs_data->usage_count_mutex);
+>>>>  		if (atomic_dec_and_test(&dbs_data->usage_count)) {
+>>>> +			if (atomic_read(&policy->governor->initialized) > 1) {
+>>>> +				pr_emerg("Removing governor %s but initialized = %d, dbs_data->usage_count = 0\n",
+>>>> +					 policy->governor->name,
+>>>> +				   atomic_read(&policy->governor->initialized));
+>>>> +				BUG();
+>>>> +			}
+>>>>  			sysfs_remove_group(get_governor_parent_kobj(policy),
+>>>>  					get_sysfs_attr(dbs_data));
+>>>>  
+>>>>
+>>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
