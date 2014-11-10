@@ -1,91 +1,72 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v5 18/48] mfd: twl4030-power: Register with kernel power-off
- handler
-Date: Mon, 10 Nov 2014 06:49:53 -0800
-Message-ID: <5460D091.3000509@roeck-us.net>
-References: <1415292213-28652-1-git-send-email-linux@roeck-us.net> <1415292213-28652-19-git-send-email-linux@roeck-us.net> <20141110084600.GA2582@amd> <5460C70D.1000206@roeck-us.net>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: [PATCH v4 0/2] ARM: keystone: pm: switch to use generic pm domains
+Date: Mon, 10 Nov 2014 16:59:15 +0200
+Message-ID: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <5460C70D.1000206@roeck-us.net>
-Sender: linux-omap-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-omap@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:35861 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752545AbaKJO75 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 10 Nov 2014 09:59:57 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org
+Cc: linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On 11/10/2014 06:09 AM, Guenter Roeck wrote:
-> On 11/10/2014 12:46 AM, Pavel Machek wrote:
->> Hi!
->>
->>> @@ -611,7 +611,7 @@ twl4030_power_configure_resources(const struct twl4030_power_data *pdata)
->>>    * After a successful execution, TWL shuts down the power to the SoC
->>>    * and all peripherals connected to it.
->>>    */
->>> -void twl4030_power_off(void)
->>> +static void twl4030_power_off(struct power_off_handler_block *this)
->>>   {
->>>       int err;
->>>
->>> @@ -621,6 +621,11 @@ void twl4030_power_off(void)
->>>           pr_err("TWL4030 Unable to power off\n");
->>>   }
->>>
->>> +static struct power_off_handler_block twl4030_power_off_hb = {
->>> +    .handler = twl4030_power_off,
->>> +    .priority = POWER_OFF_PRIORITY_LOW,
->>> +};
->>> +
->>>   static bool twl4030_power_use_poweroff(const struct twl4030_power_data *pdata,
->>>                       struct device_node *node)
->>>   {
->>> @@ -839,7 +844,9 @@ static int twl4030_power_probe(struct platform_device *pdev)
->>>       }
->>>
->>>       /* Board has to be wired properly to use this feature */
->>> -    if (twl4030_power_use_poweroff(pdata, node) && !pm_power_off) {
->>> +    if (twl4030_power_use_poweroff(pdata, node)) {
->>> +        int ret;
->>> +
->>>           /* Default for SEQ_OFFSYNC is set, lets ensure this */
->>>           err = twl_i2c_read_u8(TWL_MODULE_PM_MASTER, &val,
->>>                         TWL4030_PM_MASTER_CFG_P123_TRANSITION);
->>> @@ -856,7 +863,11 @@ static int twl4030_power_probe(struct platform_device *pdev)
->>>               }
->>>           }
->>>
->>> -        pm_power_off = twl4030_power_off;
->>> +        ret = devm_register_power_off_handler(&pdev->dev,
->>> +                              &twl4030_power_off_hb);
->>> +        if (ret)
->>> +            dev_warn(&pdev->dev,
->>> +                 "Failed to register power-off handler\n");
->>>       }
->>>
->>
->> Could we get rid of the "struct power_off_handler_block" and guarantee
->> that register_power_off never fails (or print message from the
->> register_power_off...)? That way, your patch would be an cleanup.
->>
->> You could then add priorities if they turn out to be really
->> neccessary, later...
->
-> Priorities are necessary. We had _that_ discussion before.
-> Priorities solve the problem where multiple handlers are installed,
-> either conditionally or unconditionally. If I take priorities away,
-> a substantial part of the patch set's value gets lost, and I might
-> as well drop it.
->
-I have an idea: Instead of dropping the priority, drop
-power_off_handler_block and add two parameters to register_power_off_handler
-and devm_register_power_off_handler instead: the priority and a context.
-At the same time, declare that those two functions must be called
-with the memory subsystem initialized (register_power_off_handler_simple
-must be used otherwise).
+Hi Santosh, Kevin,
 
-With this change, the registration functions can still fail due to memory
-allocation errors, but we can get rid of the data structure and simplify
-the calling code while retaining functionality. I'll explore that for v7.
+This series switches Keystone 2 PM code to use Generic PM domains
+instead of PM clock domains because of the lack of DT support
+for the last.
+It will finally allow to enable Runtime PM for Keystone 2.
 
-Guenter
+This series based on top 
+
+Changes in v4:
+ - changes for Generic clock manipulation PM callbacks (clock_ops.c) 
+   were separated in standalone series [3] and Keystone 2 specific
+   patches were rebased on top of it.
+
+Changes in v3:
+ - handling of the case when !CONFIG_PM_RUNTIME has been
+   moved in PM clock framework.
+
+Changes in v2:
+- minor comments applied and rebased on top of Linux 3.18-rc1.
+
+Links on previous versions:
+v2:  https://lkml.org/lkml/2014/10/20/248
+v1:  https://lkml.org/lkml/2014/9/29/382
+
+RFC version of patches can be found at [2].
+
+[1] "[PATCH/RFC 0/4] of: Register clocks for Runtime PM with PM core"
+  https://lkml.org/lkml/2014/4/24/1118
+
+[2] "[RFC PATCH 0/4] ARM: keystone: pm: switch to use generic pm domains"
+  https://lkml.org/lkml/2014/9/25/364
+
+[3] "[PATCH v4 0/3] PM / clock_ops: add pm_clk_add_clk()"
+  https://lkml.org/lkml/2014/11/6/319
+
+CC: Santosh Shilimkar <ssantosh@kernel.org>
+CC: Kevin Hilman <khilman@linaro.org>
+CC: Ulf Hansson <ulf.hansson@linaro.org>
+CC: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+
+Grygorii Strashko (2):
+  ARM: keystone: pm: switch to use generic pm domains
+  ARM: dts: keystone: add generic pm controller node
+
+ .../bindings/power/ti,keystone-powerdomain.txt     |  31 ++++++
+ arch/arm/boot/dts/keystone.dtsi                    |   6 ++
+ arch/arm/mach-keystone/Kconfig                     |   1 +
+ arch/arm/mach-keystone/pm_domain.c                 | 106 ++++++++++++++-------
+ 4 files changed, 107 insertions(+), 37 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
+
+-- 
+1.9.1
 
