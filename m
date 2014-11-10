@@ -1,78 +1,133 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v5 18/48] mfd: twl4030-power: Register with kernel
- power-off handler
-Date: Mon, 10 Nov 2014 09:46:00 +0100
-Message-ID: <20141110084600.GA2582@amd>
-References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
- <1415292213-28652-19-git-send-email-linux@roeck-us.net>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH 03/12] PM / Domains: Add notifier support for power domain transitions
+Date: Mon, 10 Nov 2014 14:38:27 +0530
+Message-ID: <CADGdYn4_aDB3bhMw0o5w4Jb8+GttSLYUOpxM=7sQnLy4-vDAuQ@mail.gmail.com>
+References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
+	<1414986790-11940-4-git-send-email-amit.daniel@samsung.com>
+	<1651173.5xzCFxz3LI@vostro.rjw.lan>
+	<7hmw88gn3q.fsf@deeprootsystems.com>
+	<CADGdYn5Prbbe6Rz=OfVMXm3dinCPrE-N0fn23dMMhZb8GzXm-Q@mail.gmail.com>
+	<5458B1FA.7050401@samsung.com>
+	<7h8ujmsvcv.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37067 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbaKJIqD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 03:46:03 -0500
-Content-Disposition: inline
-In-Reply-To: <1415292213-28652-19-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <7h8ujmsvcv.fsf@deeprootsystems.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>, Mike Turquette <mturquette@linaro.org>
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Pankaj Dubey <pankaj.dubey@samsung.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, LAK <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-omap@vger.kernel.org
 
-Hi!
+On Sat, Nov 8, 2014 at 12:15 AM, Kevin Hilman <khilman@kernel.org> wrote:
+> Sylwester Nawrocki <s.nawrocki@samsung.com> writes:
+>
+>> On 04/11/14 07:44, amit daniel kachhap wrote:
+>>> On Mon, Nov 3, 2014 at 11:53 PM, Kevin Hilman <khilman@kernel.org> wrote:
+>>>> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+>>>>> On Monday, November 03, 2014 09:23:01 AM Amit Daniel Kachhap wrote:
+>>>>>> These power domain transition notifiers will assist in carrying
+>>>>>> out some activity associated with domain power on/off such as
+>>>>>> some registers which may lose its contents and need save/restore
+>>>>>> across domain power off/on.
+>>>>
+>>>> The runtime PM framework already provides callbacks that are useful for
+>>>> context save/restore for devices.  Could you please describe in more
+>>>> detail which registers in which kind of devices need to be
+>>>> saved/restored, and why they cannot be saved/restored using existing
+>>>> mechanisms.
+>>>
+>>> Basically the requirement is mandated by exynos7 manual. It tells that
+>>> before turning off the power domain, some clock registers need to saved
+>>> and should be restored just after turning the power domain. These clock
+>>> registers are not necessarily gate clocks but could be mux clocks etc.
+>>> The driver may not have all information of these clocks also. I suppose
+>>> these are Soc specific changes but drivers should work across Socs.
+>>> This behavior is almost similar to suspend/resume case where a whole
+>>> list of clock registers are saved/restored.
+>>
+>> Indeed, the somehow complicated power domain power on/off sequences
+>> are SoC specific.  They involve not only groups of clocks (usually
+>> gate, mux clock registers of all devices in a power domain) but also
+>> SoC-specific PMU (Power Management Unit) registers.
+>> I assume it would be inappropriate to push such details to device
+>> drivers.  Moreover, a device driver could not be even loaded.
+>>
+>> Since the clocks' state is already maintained by clk driver we came
+>> up with an idea of having generic calls from power domain driver back
+>> to the clock controller driver.
+>
+> For the clock tree, it still seems to me that this is better handled in
+> the SoC clock driver.  For example, when a power domain is about to be
+> gated, all the devices in that domain are runtime suspended, and
+> presumably all of their gate clocks are disabled.  Now, doesn't the
+> clock driver know the clock tree parent-child hierarchy and shouldn't it
+> be capable of saving the state of parent clocks (like mux clocks) etc?
+>
+> Stated diffrently, it still seems to me like we're pushing functionality
+> in PM core notifiers that should be the responsibility of subsystem
+> drivers.
+>
+>> It might not to be the prettiest solution, nevertheless I couldn't come
+>> up with a better one which would satisfy all the requirements.  The power
+>> domain should only be provided for use with all the clk/PMU sequences
+>> handling in place.
+>>
+>> Clocks need to also be touched before a power domain switch on or off,
+>> so attaching the clock controller to some power domain wouldn't help,
+>> unless we modify/add to existing power domain related callbacks for
+>> devices.  Another issue is the clock controller device would need to
+>> be attached to multiple power domains, and for each power domain the
+>> power on/off sequence is usually slightly different.
+>>
+>> There are also hierarchical power domains where each: the master and
+>> the sub-domain need they own sequence and device usually is attached
+>> only to a sub-domain.
+>>
+>>> Even earlier post by Sylwester (https://lkml.org/lkml/2014/8/5/182)
+>>> also points to the need of this feature.
+>>>>
+>>>> Personally, I'm uncomfortable with notifiers like this because it
+>>>> suggests that underlying frameworks are not doing the right thing, or
+>>>> are not being used.  (I also don't like the implementation here where a
+>>>> single global notifier list is maintained by the core, but the notifiers
+>>>> are actually triggered by SoC specific code.)
+>>>
+>>> Yes right the global notifier block can be moved to per genpd structure.
+>>> Also SoC trigger can be moved to core files.
+>>>>
+>>>> IIUC, the usage in this series seems to be that certain clock related
+>>>> registers need to be saved/restored across a power domain transition.
+>>>>
+>>>> Wouldn't an alternative solution be to add a feature to the clock driver
+>>>> such that the state of each clock is saved when the clock is disabled,
+>>>> and restored when the clock is enabled?   That would allow any clock
+>>>> context to survive any power domain transtion also, correct?
+>>>
+>>> I also thought about same. But the trigger point for this would be
+>>> driver calling clk disable/enable and not the power domain. so this
+>>> will lead to lot of save/restore for each power domain child.
+>>
+>> Even though we would have saved/restored at that points still the power
+>> domain driver would need to enforce some specific clock/PMU registers
+>> state before/after a power domain state transition. And this is what I
+>> found difficult with the existing APIs.
+>
+> This is what I'm not understanding.
+>
+> Why can't the power domain driver's power_on/power_off callback just
+> call the PMU APIs and/or the clk_enable/_disable calls it needs?
+This looks possible for clock enable/disable at least. Will further
+check the implementation
+feasibility and reply.
 
-> @@ -611,7 +611,7 @@ twl4030_power_configure_resources(const struct twl4030_power_data *pdata)
->   * After a successful execution, TWL shuts down the power to the SoC
->   * and all peripherals connected to it.
->   */
-> -void twl4030_power_off(void)
-> +static void twl4030_power_off(struct power_off_handler_block *this)
->  {
->  	int err;
->  
-> @@ -621,6 +621,11 @@ void twl4030_power_off(void)
->  		pr_err("TWL4030 Unable to power off\n");
->  }
->  
-> +static struct power_off_handler_block twl4030_power_off_hb = {
-> +	.handler = twl4030_power_off,
-> +	.priority = POWER_OFF_PRIORITY_LOW,
-> +};
-> +
->  static bool twl4030_power_use_poweroff(const struct twl4030_power_data *pdata,
->  					struct device_node *node)
->  {
-> @@ -839,7 +844,9 @@ static int twl4030_power_probe(struct platform_device *pdev)
->  	}
->  
->  	/* Board has to be wired properly to use this feature */
-> -	if (twl4030_power_use_poweroff(pdata, node) && !pm_power_off) {
-> +	if (twl4030_power_use_poweroff(pdata, node)) {
-> +		int ret;
-> +
->  		/* Default for SEQ_OFFSYNC is set, lets ensure this */
->  		err = twl_i2c_read_u8(TWL_MODULE_PM_MASTER, &val,
->  				      TWL4030_PM_MASTER_CFG_P123_TRANSITION);
-> @@ -856,7 +863,11 @@ static int twl4030_power_probe(struct platform_device *pdev)
->  			}
->  		}
->  
-> -		pm_power_off = twl4030_power_off;
-> +		ret = devm_register_power_off_handler(&pdev->dev,
-> +						      &twl4030_power_off_hb);
-> +		if (ret)
-> +			dev_warn(&pdev->dev,
-> +				 "Failed to register power-off handler\n");
->  	}
->  
-
-Could we get rid of the "struct power_off_handler_block" and guarantee
-that register_power_off never fails (or print message from the
-register_power_off...)? That way, your patch would be an cleanup.
-
-You could then add priorities if they turn out to be really
-neccessary, later...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Regards,
+Amit
+>
+> Kevin
+>
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
