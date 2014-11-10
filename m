@@ -1,69 +1,46 @@
 From: Vince Hsu <vinceh@nvidia.com>
-Subject: [PATCH V2] cpufreq: respect the min/max settings from user space
-Date: Mon, 10 Nov 2014 14:14:50 +0800
-Message-ID: <1415600090-14233-1-git-send-email-vinceh@nvidia.com>
+Subject: Re: [PATCH] cpufreq: respect the min/max settings from user space
+Date: Mon, 10 Nov 2014 14:18:00 +0800
+Message-ID: <54605898.3020402@nvidia.com>
+References: <1412232900-11238-1-git-send-email-vinceh@nvidia.com>	<CAKohpon=dwc--SSbwjREdrALfXH=7QCw8UJnyVX5x3TCKB=7Bw@mail.gmail.com>	<54321F90.2010103@nvidia.com>	<544F0C8C.3090003@nvidia.com> <CAKohpo=jZAmqvdYr+0uUY8xBi5bK0isADS4o5xsaK+rxALcVHQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:12238 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbaKJGOK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 01:14:10 -0500
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:15059 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbaKJGRT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 01:17:19 -0500
+In-Reply-To: <CAKohpo=jZAmqvdYr+0uUY8xBi5bK0isADS4o5xsaK+rxALcVHQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, =bilhuang@nvidia.com, dgreid@google.com, olofj@chromium.org, Vince Hsu <vinceh@nvidia.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bill Huang <bilhuang@nvidia.com>, Dylan Reid <dgreid@google.com>, olofj@chromium.org
 
-When the user space tries to set scaling_(max|min)_freq through
-sysfs, the cpufreq_set_policy() asks other driver's opinions
-for the max/min frequencies. Some device drivers, like Tegra
-CPU EDP which is not upstreamed yet though, may constrain the
-CPU maximum frequency dynamically because of board design.
-So if the user space access happens and some driver is capping
-the cpu frequency at the same time, the user_policy->(max|min)
-is overridden by the capped value, and that's not expected by
-the user space. And if the user space is not invoked again,
-the CPU will always be capped by the user_policy->(max|min)
-even no drivers limit the CPU frequency any more.
+Hi Viresh,
 
-This patch preserves the user specified min/max settings, so that
-every time the cpufreq policy is updated, the new max/min can
-be re-evaluated correctly based on the user's expection and
-the present device drivers' status.
+Just sent v2 with your ACK. :)
 
-Signed-off-by: Vince Hsu <vinceh@nvidia.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-v2: added Viresh's Acked-by
+Hi Rafael,
 
- drivers/cpufreq/cpufreq.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Could you please apply the v2? Thanks!
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 644b54e1e7d1..0721ab352e2a 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -535,7 +535,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- static ssize_t store_##file_name					\
- (struct cpufreq_policy *policy, const char *buf, size_t count)		\
- {									\
--	int ret;							\
-+	int ret, temp;							\
- 	struct cpufreq_policy new_policy;				\
- 									\
- 	ret = cpufreq_get_policy(&new_policy, policy->cpu);		\
-@@ -546,8 +546,10 @@ static ssize_t store_##file_name					\
- 	if (ret != 1)							\
- 		return -EINVAL;						\
- 									\
-+	temp = new_policy.object;					\
- 	ret = cpufreq_set_policy(policy, &new_policy);		\
--	policy->user_policy.object = policy->object;			\
-+	if (!ret)							\
-+		policy->user_policy.object = temp;			\
- 									\
- 	return ret ? ret : count;					\
- }
--- 
-1.9.1
+Vince
+
+On 11/10/2014 01:09 PM, Viresh Kumar wrote:
+> On 28 October 2014 08:55, Vince Hsu <vinceh@nvidia.com> wrote:
+>> Hi Viresh,
+>>
+>> Could you remind me where can I find this patch upstream? It seems this was
+>> missed?
+> Rafael hasn't picked it up. You can normally look at the tree Rafael
+> manages:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+>
+> Can you please resend it to Rafael ?
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
