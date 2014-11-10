@@ -1,21 +1,33 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v6 38/48] ia64: Register with kernel power-off handler
-Date: Sun,  9 Nov 2014 17:42:55 -0800
-Message-ID: <1415583785-6980-39-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v6 31/48] x86: apm: Register with kernel power-off handler
+Date: Sun,  9 Nov 2014 17:42:48 -0800
+Message-ID: <1415583785-6980-32-git-send-email-linux@roeck-us.net>
 References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-ia64-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:39117 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752457AbaKJBof (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:44:35 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1Xne1y-000VZE-Pv
+	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 01:44:34 +0000
 In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Sender: linux-ia64-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, linux-ia64@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Jiri Kosina <jkosina@suse.cz>, x86@kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with low priority to reflect that the call is expected
-to be replaced at some point in the future.
+directly. Register with high priority to reflect that the original code
+overwrites existing power-off handlers.
 
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Jiri Kosina <jkosina@suse.cz>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Reviewed-by: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v6:
@@ -24,7 +36,9 @@ v6:
 v5:
 - Rebase to v3.18-rc3
 v4:
-- No change
+- Do not use notifiers but internal functions and data structures to manage
+  the list of power-off handlers. Drop unused parameters from callbacks, and
+  make the power-off function type void
 v3:
 - Replace poweroff in all newly introduced variables and in text
   with power_off or power-off as appropriate
@@ -32,29 +46,59 @@ v3:
 v2:
 - Use define to specify poweroff handler priority
 
- arch/ia64/sn/kernel/setup.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/x86/kernel/apm_32.c | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
 
-diff --git a/arch/ia64/sn/kernel/setup.c b/arch/ia64/sn/kernel/setup.c
-index 5f6b6b4..fc9905e 100644
---- a/arch/ia64/sn/kernel/setup.c
-+++ b/arch/ia64/sn/kernel/setup.c
-@@ -488,12 +488,13 @@ void __init sn_setup(char **cmdline_p)
- 	sn_timer_init();
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index 5848744..04910de 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -981,7 +981,7 @@ recalc:
+  *	on their first cpu.
+  */
  
- 	/*
--	 * set pm_power_off to a SAL call to allow
-+	 * set power-off handler to a SAL call to allow
- 	 * sn machines to power off. The SAL call can be replaced
- 	 * by an ACPI interface call when ACPI is fully implemented
- 	 * for sn.
- 	 */
--	pm_power_off = ia64_sn_power_down;
-+	register_power_off_handler_simple(ia64_sn_power_down,
-+					  POWER_OFF_PRIORITY_LOW);
- 	current->thread.flags |= IA64_THREAD_MIGRATION;
+-static void apm_power_off(void)
++static void apm_power_off(struct power_off_handler_block *this)
+ {
+ 	/* Some bioses don't like being called from CPU != 0 */
+ 	if (apm_info.realmode_power_off) {
+@@ -992,6 +992,11 @@ static void apm_power_off(void)
+ 	}
  }
  
++static struct power_off_handler_block apm_power_off_hb = {
++	.handler = apm_power_off,
++	.priority = POWER_OFF_PRIORITY_HIGH,
++};
++
+ #ifdef CONFIG_APM_DO_ENABLE
+ 
+ /**
+@@ -1847,8 +1852,11 @@ static int apm(void *unused)
+ 	}
+ 
+ 	/* Install our power off handler.. */
+-	if (power_off)
+-		pm_power_off = apm_power_off;
++	if (power_off) {
++		error = register_power_off_handler(&apm_power_off_hb);
++		if (error)
++			pr_warn("apm: Failed to register power-off handler\n");
++	}
+ 
+ 	if (num_online_cpus() == 1 || smp) {
+ #if defined(CONFIG_APM_DISPLAY_BLANK) && defined(CONFIG_VT)
+@@ -2408,9 +2416,8 @@ static void __exit apm_exit(void)
+ 			apm_error("disengage power management", error);
+ 	}
+ 	misc_deregister(&apm_device);
++	unregister_power_off_handler(&apm_power_off_hb);
+ 	remove_proc_entry("apm", NULL);
+-	if (power_off)
+-		pm_power_off = NULL;
+ 	if (kapmd_task) {
+ 		kthread_stop(kapmd_task);
+ 		kapmd_task = NULL;
 -- 
 1.9.1
 
