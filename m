@@ -1,64 +1,39 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH 2/5] cpufreq, fix locking around CPUFREQ_GOV_POLICY_EXIT
- calls
-Date: Mon, 10 Nov 2014 07:26:42 -0500
-Message-ID: <5460AF02.9010907@redhat.com>
-References: <1415199239-19019-1-git-send-email-prarit@redhat.com> <1415199239-19019-3-git-send-email-prarit@redhat.com> <CAKohpomZNwZWjmi8hkZ6QXUeDTaXTwzx_fPz1_byh3xmmkPNrQ@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH V3 1/6] sched: idle: Add a weak arch_cpu_idle_poll
+ function
+Date: Mon, 10 Nov 2014 13:29:54 +0100
+Message-ID: <20141110122954.GM3337@twins.programming.kicks-ass.net>
+References: <1415370687-18688-1-git-send-email-daniel.lezcano@linaro.org>
+ <1415370687-18688-2-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:55926 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751926AbaKJM05 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 10 Nov 2014 07:26:57 -0500
-In-Reply-To: <CAKohpomZNwZWjmi8hkZ6QXUeDTaXTwzx_fPz1_byh3xmmkPNrQ@mail.gmail.com>
+Received: from casper.infradead.org ([85.118.1.10]:57963 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbaKJMaC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 07:30:02 -0500
+Content-Disposition: inline
+In-Reply-To: <1415370687-18688-2-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, preeti@linux.vnet.ibm.com, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, lenb@kernel.org
 
-
-
-On 11/10/2014 05:44 AM, Viresh Kumar wrote:
-> On 5 November 2014 20:23, Prarit Bhargava <prarit@redhat.com> wrote:
->> commit 955ef4833574636819cd269cfbae12f79cbde63a (" cpufreq: Drop rwsem
->> lock around CPUFREQ_GOV_POLICY_EXIT") opens up a hole in the locking
->> scheme for cpufreq.
->>
->> Simple tests such as rapidly switching the governor between ondemand and
->> performance or attempting to read policy values while a governor switch occurs
->> now fail with very NULL pointer warnings, sysfs namespace collisions, and
->> system hangs.  In short, the locking that policy->rwsem is supposed to provide
->> is currently broken.
->>
->> The identified commit attempts to resolve a lockdep warning by removing
->> a lock around a section of code which does a shutdown of the
->> existing policy.  The problem is that this is part of the _critical_ section of
->> code that switches the governors and must be protected by the lock; without
->> locking readers may access now NULL or stale data, and writes may collide with
->> each other.
->>
->> With the previous patch, which now returns -EBUSY during times of
->> contention the deadlock reported in
->> 955ef4833574636819cd269cfbae12f79cbde63a (" cpufreq: Drop rwsem lock
->> around CPUFREQ_GOV_POLICY_EXIT") cannot occur, so adding the locks back
->> into this section of code is possible.
+On Fri, Nov 07, 2014 at 03:31:22PM +0100, Daniel Lezcano wrote:
+> The poll function is called when a timer expired or if we force to poll when
+> the cpu_idle_force_poll option is set.
 > 
-> I still fail to understand why ? What will the _trylock() change ?
-
-viresh, afaict read_trylock will return 0 when busy with write:
-
-static inline int queue_read_trylock(struct qrwlock *lock)
-{
-        u32 cnts;
-
-        cnts = atomic_read(&lock->cnts);
-        if (likely(!(cnts & _QW_WMASK))) {
-
-so the deadlock will not occur.  the show() is opened, write lock is taken, and
-if the thread is rescheduled and takes read lock the trylock will return 0, and
-the thread will return -EBUSY to userspace avoiding the deadlock.
-
-P.
+> The poll function does:
 > 
+>        local_irq_enable();
+>        while (!tif_need_resched())
+>                cpu_relax();
+> 
+> This default poll function suits for the x86 arch because its rep; nop;
+> hardware power optimization. But on other archs, this optimization does not
+> exists and we are not saving power. The arch specific bits may want to
+> optimize this loop by adding their own optimization.
+
+This doesn't make sense to me; should an arch not either implement an
+actual idle driver or implement cpu_relax() properly, why allow for a
+third weird option?
