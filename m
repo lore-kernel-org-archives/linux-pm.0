@@ -1,133 +1,115 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH 03/12] PM / Domains: Add notifier support for power domain transitions
-Date: Mon, 10 Nov 2014 14:38:27 +0530
-Message-ID: <CADGdYn4_aDB3bhMw0o5w4Jb8+GttSLYUOpxM=7sQnLy4-vDAuQ@mail.gmail.com>
-References: <1414986790-11940-1-git-send-email-amit.daniel@samsung.com>
-	<1414986790-11940-4-git-send-email-amit.daniel@samsung.com>
-	<1651173.5xzCFxz3LI@vostro.rjw.lan>
-	<7hmw88gn3q.fsf@deeprootsystems.com>
-	<CADGdYn5Prbbe6Rz=OfVMXm3dinCPrE-N0fn23dMMhZb8GzXm-Q@mail.gmail.com>
-	<5458B1FA.7050401@samsung.com>
-	<7h8ujmsvcv.fsf@deeprootsystems.com>
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC 0/2] CPU frequency scaled from a task's load on an idle
+ wakeup
+Date: Mon, 10 Nov 2014 14:49:29 +0530
+Message-ID: <54608321.5080602@linux.vnet.ibm.com>
+References: <1415598358-26505-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <7h8ujmsvcv.fsf@deeprootsystems.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, Mike Turquette <mturquette@linaro.org>
-Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Pankaj Dubey <pankaj.dubey@samsung.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, LAK <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1415598358-26505-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, mturquette@linaro.org, amit.kucheria@linaro.org, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Morten.Rasmussen@arm.com, efault@gmx.de, nicolas.pitre@linaro.org, dietmar.eggemann@arm.com, pjt@google.com, bsegall@google.com, peterz@infradead.org, mingo@kernel.org, linaro-kernel@lists.linaro.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Nov 8, 2014 at 12:15 AM, Kevin Hilman <khilman@kernel.org> wrote:
-> Sylwester Nawrocki <s.nawrocki@samsung.com> writes:
->
->> On 04/11/14 07:44, amit daniel kachhap wrote:
->>> On Mon, Nov 3, 2014 at 11:53 PM, Kevin Hilman <khilman@kernel.org> wrote:
->>>> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->>>>> On Monday, November 03, 2014 09:23:01 AM Amit Daniel Kachhap wrote:
->>>>>> These power domain transition notifiers will assist in carrying
->>>>>> out some activity associated with domain power on/off such as
->>>>>> some registers which may lose its contents and need save/restore
->>>>>> across domain power off/on.
->>>>
->>>> The runtime PM framework already provides callbacks that are useful for
->>>> context save/restore for devices.  Could you please describe in more
->>>> detail which registers in which kind of devices need to be
->>>> saved/restored, and why they cannot be saved/restored using existing
->>>> mechanisms.
->>>
->>> Basically the requirement is mandated by exynos7 manual. It tells that
->>> before turning off the power domain, some clock registers need to saved
->>> and should be restored just after turning the power domain. These clock
->>> registers are not necessarily gate clocks but could be mux clocks etc.
->>> The driver may not have all information of these clocks also. I suppose
->>> these are Soc specific changes but drivers should work across Socs.
->>> This behavior is almost similar to suspend/resume case where a whole
->>> list of clock registers are saved/restored.
->>
->> Indeed, the somehow complicated power domain power on/off sequences
->> are SoC specific.  They involve not only groups of clocks (usually
->> gate, mux clock registers of all devices in a power domain) but also
->> SoC-specific PMU (Power Management Unit) registers.
->> I assume it would be inappropriate to push such details to device
->> drivers.  Moreover, a device driver could not be even loaded.
->>
->> Since the clocks' state is already maintained by clk driver we came
->> up with an idea of having generic calls from power domain driver back
->> to the clock controller driver.
->
-> For the clock tree, it still seems to me that this is better handled in
-> the SoC clock driver.  For example, when a power domain is about to be
-> gated, all the devices in that domain are runtime suspended, and
-> presumably all of their gate clocks are disabled.  Now, doesn't the
-> clock driver know the clock tree parent-child hierarchy and shouldn't it
-> be capable of saving the state of parent clocks (like mux clocks) etc?
->
-> Stated diffrently, it still seems to me like we're pushing functionality
-> in PM core notifiers that should be the responsibility of subsystem
-> drivers.
->
->> It might not to be the prettiest solution, nevertheless I couldn't come
->> up with a better one which would satisfy all the requirements.  The power
->> domain should only be provided for use with all the clk/PMU sequences
->> handling in place.
->>
->> Clocks need to also be touched before a power domain switch on or off,
->> so attaching the clock controller to some power domain wouldn't help,
->> unless we modify/add to existing power domain related callbacks for
->> devices.  Another issue is the clock controller device would need to
->> be attached to multiple power domains, and for each power domain the
->> power on/off sequence is usually slightly different.
->>
->> There are also hierarchical power domains where each: the master and
->> the sub-domain need they own sequence and device usually is attached
->> only to a sub-domain.
->>
->>> Even earlier post by Sylwester (https://lkml.org/lkml/2014/8/5/182)
->>> also points to the need of this feature.
->>>>
->>>> Personally, I'm uncomfortable with notifiers like this because it
->>>> suggests that underlying frameworks are not doing the right thing, or
->>>> are not being used.  (I also don't like the implementation here where a
->>>> single global notifier list is maintained by the core, but the notifiers
->>>> are actually triggered by SoC specific code.)
->>>
->>> Yes right the global notifier block can be moved to per genpd structure.
->>> Also SoC trigger can be moved to core files.
->>>>
->>>> IIUC, the usage in this series seems to be that certain clock related
->>>> registers need to be saved/restored across a power domain transition.
->>>>
->>>> Wouldn't an alternative solution be to add a feature to the clock driver
->>>> such that the state of each clock is saved when the clock is disabled,
->>>> and restored when the clock is enabled?   That would allow any clock
->>>> context to survive any power domain transtion also, correct?
->>>
->>> I also thought about same. But the trigger point for this would be
->>> driver calling clk disable/enable and not the power domain. so this
->>> will lead to lot of save/restore for each power domain child.
->>
->> Even though we would have saved/restored at that points still the power
->> domain driver would need to enforce some specific clock/PMU registers
->> state before/after a power domain state transition. And this is what I
->> found difficult with the existing APIs.
->
-> This is what I'm not understanding.
->
-> Why can't the power domain driver's power_on/power_off callback just
-> call the PMU APIs and/or the clk_enable/_disable calls it needs?
-This looks possible for clock enable/disable at least. Will further
-check the implementation
-feasibility and reply.
+Experimental Results:
 
-Regards,
-Amit
->
-> Kevin
->
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Tested on a powerpc machine with 16 cores and obtained following results with
+patchset.
+
+I ran a modified version of ebizzy called sleeping-ebizzy which runs ebizzy at
+various levels of utilization. The following results were found by running
+ebizzy with 1 thread for 30s.
+
+  Utilization(%)	Difference(%) in records/s with patch
+  --------------        -------------------------------------
+	10			-0.5516335445
+	20			+0.0196049675
+	30			+0.2222333684
+	40			+0.3205441843
+	50			-0.0103332452
+	60			-0.3525380134
+	70			+0.428654342
+	80			+0.1527132862
+	90			+0.0758061406
+
+Thanks and Regards,
+Shilpa
+
+On 11/10/2014 11:15 AM, Shilpasri G Bhat wrote:
+> This patch set aims to solve a problem in cpufreq governor's CPU
+> load calculation logic when the CPU wakes up after an idle period.
+> In the current logic when a CPU wakes up from an idle state the
+> 'previous load' of the CPU is used as its current load on the
+> alternate wakeups.
+> 
+> A latency-sensitive-bursty task will be benefited from this logic if
+> it wakes up on a CPU on which it was initially running, with a
+> non-compromised CPU 'previous load' i.e, the 'previous load' holds
+> the last calculated CPU load before the task went to sleep. In such
+> a case, the cpufreq governor will account to high previous CPU load
+> and decides to run at high frequency.
+> 
+> The problem in this logic is that the 'previous load' which is meant
+> to help certain latency-sensitive-bursty tasks can get used by some
+> periodic-small tasks(like kernel daemons) to its advantage if the
+> small task woke up first on the CPU. This will deprive the the
+> latency-sensitive-bursty tasks from running at high frequency until
+> the cpufreq governor notices the 100% CPU utilization. If this pattern
+> gets repeated in the due course of bursty task's execution we will
+> land on the same problem which 'prev_load' had originally set forth to 
+> solve.
+> 
+> Probably we could reduce these inefficiencies if the cpufreq
+> governor was aware of the task's nature, while calculating the load
+> during an idle-wakeup scenario. So instead of using the previous
+> load for the CPU , the load can be deduced on the basis of incoming
+> task's load.
+> 
+> In this patch we use a metric built on top of 'load_avg_contrib'.
+> 'load_avg_contrib' of a task's sched entity can describe the nature
+> of the task in terms of its CPU utilization. The properties of this
+> metric to encapsulate the CPU utilization of a task makes it a
+> potential candidate for scaling CPU frequency. However, due to the
+> nature of its design 'load_avg_contrib' cannot pick up the task's
+> load rapidly after a wakeup. As we are trying to solve the problem
+> on idle-wakeup case we cannot use this metric value as is to scale
+> the frequency. So we measure the cumulative moving average of
+> 'load_avg_contrib'.
+> 
+> The cumulative average of 'load_avg_contrib' at a given point is the
+> average of all the values of 'load_avg_contrib' up until that point.
+> The current average of a new 'load_avg_contrib' value is as below:
+> 
+> Cumulative_average(n+1) = x(n+1) + Cumulative_average(n) * n
+>                         ---------------------------------------
+>                                         n+1
+> where,
+> Cumulative_average(n+1) is the current cumulative average
+> x(n+1) is the latest 'load_avg_contrib' value
+> Cumulative_average(n) is the previous cumulative average
+> n+1 is the number of 'load_avg_contrib' values so far
+> 
+> The cumulative average of 'load_avg_contrib' will help us smooth out
+> the short-term fluctuations and highlight long-term trend of
+> 'load-avg_contrib' metric. So cumulative average of the task can
+> depict the nature of the task more effectively. Thus we can scale CPU
+> frequency based on the cumulative average of the task and make
+> calculative decisions whether to decrease or increase the frequency
+> depending on the nature of the task.
+> 
+> Shilpasri G Bhat (2):
+>   sched/fair: Add cumulative average of load_avg_contrib to a task
+>   cpufreq: governor: CPU frequency scaled from task's cumulative-load on
+>     an idle wakeup
+> 
+>  drivers/cpufreq/cpufreq_governor.c | 39 +++++++++++++++-----------------------
+>  drivers/cpufreq/cpufreq_governor.h |  9 ++-------
+>  include/linux/sched.h              |  4 ++++
+>  kernel/sched/core.c                | 35 ++++++++++++++++++++++++++++++++++
+>  kernel/sched/fair.c                |  6 +++++-
+>  kernel/sched/sched.h               |  2 +-
+>  6 files changed, 62 insertions(+), 33 deletions(-)
+> 
