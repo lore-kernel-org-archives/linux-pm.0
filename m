@@ -1,64 +1,53 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v10 1/5] PM / Runtime: Allow accessing irq_safe if no
- PM_RUNTIME
-Date: Mon, 10 Nov 2014 13:59:29 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1411101346430.13641-100000@netrider.rowland.org>
-References: <CAPDyKFp+cZa6PrAwQHbQE4xEzmRKBwN5J_uRByOdM0h8yoV2vg@mail.gmail.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2 2/5] regulator: rt5033: Add RT5033 Regulator device
+ driver
+Date: Mon, 10 Nov 2014 19:04:03 +0000
+Message-ID: <20141110190403.GH3815@sirena.org.uk>
+References: <1415603987-32475-1-git-send-email-beomho.seo@samsung.com>
+ <1415603987-32475-3-git-send-email-beomho.seo@samsung.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="inJ2Z4oiSrNaWWYu"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:51290 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751590AbaKJS7b (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 13:59:31 -0500
-In-Reply-To: <CAPDyKFp+cZa6PrAwQHbQE4xEzmRKBwN5J_uRByOdM0h8yoV2vg@mail.gmail.com>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:57626 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751305AbaKJTFR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 14:05:17 -0500
+Content-Disposition: inline
+In-Reply-To: <1415603987-32475-3-git-send-email-beomho.seo@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, cw00.choi@samsung.com, geunsik.lim@samsung.com, inki.dae@samsung.com, sw0312.kim@samsung.com, Liam Girdwood <lgirdwood@gmail.com>
 
-[CC: list severely trimmed]
 
-On Mon, 10 Nov 2014, Ulf Hansson wrote:
+--inJ2Z4oiSrNaWWYu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> >> There are an important advantage of using the pm_runtime_force_suspend() here.
-> >>
-> >> For the driver to handle clock gating at system PM suspend, it first
-> >> needs to bring the device into full power, through
-> >> pm_runtime_get_sync(). Otherwise it's not safe to gate the clock,
-> >> since it may already be gated.
-> >
-> > That's fine, but it has nothing to do with pm_runtime_force_suspend().
-> >
-> > Besides, if the real question is whether or not to gate the clock (or
-> > in other words, has the clock already been gated), why not just store a
-> > "clock_is_gated" flag somewhere?
-> 
-> You could do that, but it's easier to not.
+On Mon, Nov 10, 2014 at 04:19:44PM +0900, Beomho Seo wrote:
+> This patch add device driver of Richtek RT5033 PMIC.
+> The driver support multiple regulator like LDO and synchronous Buck.
+> The integrated synchronous buck converter is designed to provide 0.6 A
+> application with high efficiency. Two LDOs are integrated. One safe LDO is
+> for 60mA and the other one LDO is for 150 mA.
 
-I'm not convinced.  And you haven't said how this is related to
-pm_runtime_force_suspend().
+I'm missing all the other patches in this series...
 
-> You will need to update the runtime PM status and disable runtime PM
-> anyway, done by the API.
+--inJ2Z4oiSrNaWWYu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-So what?  And what API are you referring to: the runtime PM API or 
-something else?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-I get the feeling that I'm missing a lot of important points here.  
-What have you left out?
+iQEcBAEBAgAGBQJUYQwiAAoJECTWi3JdVIfQSlgH/AqqlkSGfWEO1tS+I28W9i/Y
+HN/zL6+FjNHA/qNeNyvjxGuezLKymEnwiFpKWatvYWOu+7N+7SJSgY8CU72NsqR/
+/I9ZwxCb9anwANFANdh0oLzSBubKWYx359MSgYGPW6ume35J2ZVwgjndjSmbQjQv
+8cWH6gyQukU4+7NXizz9UwTk+GZRTJOZKffwUsQQOlCQjqo2b+x2oAk+OOr8hdFm
+kaJ23hqezfTlK4m7qAigcr+cxYFVqtX3qAMRbKGbBNWt7uQB1+AmhrDtxThiq7cz
+qg5iJxKraiGd67SxlGb1w4wQQHZUqMY9AFKpWhEBaOgZwqCe6KAxpQTpsWkTtfw=
+=9fdp
+-----END PGP SIGNATURE-----
 
-As I understand the problem, you've got a bus type where some of the
-drivers have IRQ-safe runtime PM (and therefore carry out their
-suspend/resume operations in interrupt context) and others don't.  The
-subsystem core wants to maximize the power saving by deconfiguring some
-clocks whenever a device is suspended, but this requires a process
-context and so it can't be done directly when IRQ-safe runtime PM is
-used.
-
-Is that a good summary?  If it is, there are ways of dealing with this 
-that don't involve messing around with the runtime PM internals, or 
-using pm_runtime_force_suspend().
-
-Alan Stern
-
+--inJ2Z4oiSrNaWWYu--
