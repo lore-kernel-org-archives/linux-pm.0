@@ -1,55 +1,36 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/3] drivers: cpuidle: add status property to ARM idle
- states
-Date: Mon, 10 Nov 2014 08:45:32 +0100
-Message-ID: <54606D1C.3000300@linaro.org>
-References: <1413467997-32131-1-git-send-email-lorenzo.pieralisi@arm.com> <7hbnp6e81x.fsf@deeprootsystems.com> <20141021162058.GA17610@e102568-lin.cambridge.arm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v6 00/48] kernel: Add support for power-off handler call
+ chain
+Date: Mon, 10 Nov 2014 09:33:48 +0100
+Message-ID: <20141110083347.GA29543@amd>
+References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20141021162058.GA17610-7AyDDHkRsp3ZROr8t4l/smS4ubULX0JqMm0uRHvK7Nw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Chander Kashyap <k.chander-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36345 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbaKJIdv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 03:33:51 -0500
+Content-Disposition: inline
+In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
 
-On 10/21/2014 06:20 PM, Lorenzo Pieralisi wrote:
-> On Mon, Oct 20, 2014 at 10:38:02PM +0100, Kevin Hilman wrote:
->> Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org> writes:
->>
->>> On some platforms the device tree bindings must provide the kernel
->>> with a status flag for idle states, that defines whether the idle
->>> state is operational or not in the current configuration.
->>>
->>> This patch adds a status property to the ARM idle states compliant
->>> with ePAPR v1.1 and updates the DT parsing code accordingly.
->>>
->>> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
->>
->> For the series:
->>
->> Acked-by: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->
-> Thanks ! I will queue it for 3.19 then.
+Hi!
 
-Applied to my tree for 3.19.
+> Introduce a system power-off handler call chain to solve the described
+> problems.  This call chain is expected to be executed from the architecture
+> specific machine_power_off() function.  Drivers providing system power-off
+> functionality are expected to register with this call chain.  By using the
+> priority field in the notifier block, callers can control power-off
+> handler
 
-Thanks
-   -- Daniel
+Linus rather disliked the idea of notifier chains for this... And I
+don't see how it got addressed.
 
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
