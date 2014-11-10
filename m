@@ -1,30 +1,23 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v6 20/48] mfd: rn5t618: Register power-off handler with kernel power-off handler
-Date: Sun,  9 Nov 2014 17:42:37 -0800
-Message-ID: <1415583785-6980-21-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v6 17/48] mfd: tps65910: Register with kernel power-off handler
+Date: Sun,  9 Nov 2014 17:42:34 -0800
+Message-ID: <1415583785-6980-18-git-send-email-linux@roeck-us.net>
 References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:39025 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752320AbaKJBoK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:44:10 -0500
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1Xne1Z-000V1X-Jz
-	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 01:44:09 +0000
+Return-path: <linux-omap-owner@vger.kernel.org>
 In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-omap-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Beniamino Galvani <b.galvani@gmail.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-omap@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
 directly. Register with low priority to reflect that the original code
 only sets pm_power_off if it was not already set.
 
-Cc: Beniamino Galvani <b.galvani@gmail.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: linux-omap@vger.kernel.org
 Acked-by: Lee Jones <lee.jones@linaro.org>
-Tested-by: Beniamino Galvani <b.galvani@gmail.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v6:
@@ -41,95 +34,89 @@ v3:
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- New patch
+- Use define to specify poweroff handler priority
+- Use dev_warn instead of dev_err
 
- drivers/mfd/rn5t618.c       | 28 ++++++++++++----------------
- include/linux/mfd/rn5t618.h |  2 ++
- 2 files changed, 14 insertions(+), 16 deletions(-)
+ drivers/mfd/tps65910.c       | 21 +++++++++++++--------
+ include/linux/mfd/tps65910.h |  4 ++++
+ 2 files changed, 17 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/mfd/rn5t618.c b/drivers/mfd/rn5t618.c
-index 6668571..1492025 100644
---- a/drivers/mfd/rn5t618.c
-+++ b/drivers/mfd/rn5t618.c
-@@ -15,6 +15,7 @@
+diff --git a/drivers/mfd/tps65910.c b/drivers/mfd/tps65910.c
+index 7612d89..b312b92 100644
+--- a/drivers/mfd/tps65910.c
++++ b/drivers/mfd/tps65910.c
+@@ -23,6 +23,7 @@
+ #include <linux/irq.h>
+ #include <linux/irqdomain.h>
  #include <linux/mfd/core.h>
- #include <linux/mfd/rn5t618.h>
- #include <linux/module.h>
 +#include <linux/pm.h>
  #include <linux/regmap.h>
- 
- static const struct mfd_cell rn5t618_cells[] = {
-@@ -47,15 +48,16 @@ static const struct regmap_config rn5t618_regmap_config = {
- 	.cache_type	= REGCACHE_RBTREE,
- };
- 
--static struct rn5t618 *rn5t618_pm_power_off;
--
--static void rn5t618_power_off(void)
-+static void rn5t618_power_off(struct power_off_handler_block *this)
- {
-+	struct rn5t618 *rn5t618 = container_of(this, struct rn5t618,
-+					       power_off_hb);
-+
- 	/* disable automatic repower-on */
--	regmap_update_bits(rn5t618_pm_power_off->regmap, RN5T618_REPCNT,
-+	regmap_update_bits(rn5t618->regmap, RN5T618_REPCNT,
- 			   RN5T618_REPCNT_REPWRON, 0);
- 	/* start power-off sequence */
--	regmap_update_bits(rn5t618_pm_power_off->regmap, RN5T618_SLPCNT,
-+	regmap_update_bits(rn5t618->regmap, RN5T618_SLPCNT,
- 			   RN5T618_SLPCNT_SWPWROFF, RN5T618_SLPCNT_SWPWROFF);
+ #include <linux/mfd/tps65910.h>
+ #include <linux/of.h>
+@@ -437,12 +438,10 @@ struct tps65910_board *tps65910_parse_dt(struct i2c_client *client,
  }
+ #endif
  
-@@ -85,23 +87,17 @@ static int rn5t618_i2c_probe(struct i2c_client *i2c,
- 		return ret;
+-static struct i2c_client *tps65910_i2c_client;
+-static void tps65910_power_off(void)
++static void tps65910_power_off(struct power_off_handler_block *this)
+ {
+-	struct tps65910 *tps65910;
+-
+-	tps65910 = dev_get_drvdata(&tps65910_i2c_client->dev);
++	struct tps65910 *tps65910 = container_of(this, struct tps65910,
++						 power_off_hb);
+ 
+ 	if (tps65910_reg_set_bits(tps65910, TPS65910_DEVCTRL,
+ 			DEVCTRL_PWR_OFF_MASK) < 0)
+@@ -505,9 +504,13 @@ static int tps65910_i2c_probe(struct i2c_client *i2c,
+ 	tps65910_ck32k_init(tps65910, pmic_plat_data);
+ 	tps65910_sleepinit(tps65910, pmic_plat_data);
+ 
+-	if (pmic_plat_data->pm_off && !pm_power_off) {
+-		tps65910_i2c_client = i2c;
+-		pm_power_off = tps65910_power_off;
++	if (pmic_plat_data->pm_off) {
++		tps65910->power_off_hb.handler = tps65910_power_off;
++		tps65910->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
++		ret = register_power_off_handler(&tps65910->power_off_hb);
++		if (ret)
++			dev_warn(&i2c->dev,
++				 "failed to register power-off handler\n");
  	}
  
--	if (!pm_power_off) {
--		rn5t618_pm_power_off = priv;
--		pm_power_off = rn5t618_power_off;
--	}
-+	priv->power_off_hb.handler = rn5t618_power_off;
-+	priv->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
-+	ret = devm_register_power_off_handler(&i2c->dev, &priv->power_off_hb);
-+	if (ret)
-+		dev_warn(&i2c->dev, "Failed to register power-off handler\n");
- 
- 	return 0;
- }
- 
- static int rn5t618_i2c_remove(struct i2c_client *i2c)
+ 	ret = mfd_add_devices(tps65910->dev, -1,
+@@ -527,6 +530,8 @@ static int tps65910_i2c_remove(struct i2c_client *i2c)
  {
--	struct rn5t618 *priv = i2c_get_clientdata(i2c);
--
--	if (priv == rn5t618_pm_power_off) {
--		rn5t618_pm_power_off = NULL;
--		pm_power_off = NULL;
--	}
--
- 	mfd_remove_devices(&i2c->dev);
- 	return 0;
- }
-diff --git a/include/linux/mfd/rn5t618.h b/include/linux/mfd/rn5t618.h
-index c72d534..87e34b3 100644
---- a/include/linux/mfd/rn5t618.h
-+++ b/include/linux/mfd/rn5t618.h
-@@ -14,6 +14,7 @@
- #ifndef __LINUX_MFD_RN5T618_H
- #define __LINUX_MFD_RN5T618_H
+ 	struct tps65910 *tps65910 = i2c_get_clientdata(i2c);
  
++	unregister_power_off_handler(&tps65910->power_off_hb);
++
+ 	tps65910_irq_exit(tps65910);
+ 	mfd_remove_devices(tps65910->dev);
+ 
+diff --git a/include/linux/mfd/tps65910.h b/include/linux/mfd/tps65910.h
+index 6483a6f..a85ad0f 100644
+--- a/include/linux/mfd/tps65910.h
++++ b/include/linux/mfd/tps65910.h
+@@ -18,6 +18,7 @@
+ #define __LINUX_MFD_TPS65910_H
+ 
+ #include <linux/gpio.h>
 +#include <linux/pm.h>
  #include <linux/regmap.h>
  
- #define RN5T618_LSIVER			0x00
-@@ -223,6 +224,7 @@ enum {
- 
- struct rn5t618 {
- 	struct regmap *regmap;
+ /* TPS chip id list */
+@@ -905,6 +906,9 @@ struct tps65910 {
+ 	/* IRQ Handling */
+ 	int chip_irq;
+ 	struct regmap_irq_chip_data *irq_data;
++
++	/* Power-off handling */
 +	struct power_off_handler_block power_off_hb;
  };
  
- #endif /* __LINUX_MFD_RN5T618_H */
+ struct tps65910_platform_data {
 -- 
 1.9.1
 
