@@ -1,35 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: respect the min/max settings from user space
-Date: Mon, 10 Nov 2014 10:39:25 +0530
-Message-ID: <CAKohpo=jZAmqvdYr+0uUY8xBi5bK0isADS4o5xsaK+rxALcVHQ@mail.gmail.com>
-References: <1412232900-11238-1-git-send-email-vinceh@nvidia.com>
-	<CAKohpon=dwc--SSbwjREdrALfXH=7QCw8UJnyVX5x3TCKB=7Bw@mail.gmail.com>
-	<54321F90.2010103@nvidia.com>
-	<544F0C8C.3090003@nvidia.com>
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: Re: [PATCH 5/5] Documentation: Add documentation for rt5033
+ multifunction device
+Date: Mon, 10 Nov 2014 14:40:57 +0900
+Message-ID: <54604FE9.8070902@samsung.com>
+References: <1415328727-16245-1-git-send-email-beomho.seo@samsung.com>
+ <1415328727-16245-6-git-send-email-beomho.seo@samsung.com>
+ <20141107103440.GD8509@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f41.google.com ([209.85.218.41]:49972 "EHLO
-	mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750941AbaKJFJ0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 00:09:26 -0500
-Received: by mail-oi0-f41.google.com with SMTP id e131so4902892oig.28
-        for <linux-pm@vger.kernel.org>; Sun, 09 Nov 2014 21:09:25 -0800 (PST)
-In-Reply-To: <544F0C8C.3090003@nvidia.com>
+Received: from mailout2.samsung.com ([203.254.224.25]:34596 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751264AbaKJFlI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 00:41:08 -0500
+In-reply-to: <20141107103440.GD8509@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vince Hsu <vinceh@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bill Huang <bilhuang@nvidia.com>, Dylan Reid <dgreid@google.com>, olofj@chromium.org
+To: Mark Brown <broonie@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On 28 October 2014 08:55, Vince Hsu <vinceh@nvidia.com> wrote:
-> Hi Viresh,
->
-> Could you remind me where can I find this patch upstream? It seems this was
-> missed?
+Thank you for your advice.
+I'll fix them and send v2 patch soon.
 
-Rafael hasn't picked it up. You can normally look at the tree Rafael
-manages:
+On 11/07/2014 07:34 PM, Mark Brown wrote:
+> On Fri, Nov 07, 2014 at 11:52:07AM +0900, Beomho Seo wrote:
+> 
+>> +Required properties:
+>> +- compatible = Must be "richtek,rt5033-regulator"
+>> +
+>> +	regulators {
+>> +		compatible = "richtek,rt5033-regulator";
+> 
+> There should be no need for this extra compatible, it's not adding
+> anything we didn't know from the fact that it's part of the MFD.
+> 
+>> +		regulator-name {
+>> +			regulator-name = LDO/BUCK
+>> +			standard regulator constraints...
+>> +		};
+> 
+> Better to just say something like "regulator subnodes called X, Y and Z"
+> described using the standard regulator binding in...
+> 
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-
-Can you please resend it to Rafael ?
+Best regards,
+Beomho Seo
