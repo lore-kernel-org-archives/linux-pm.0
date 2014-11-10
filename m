@@ -1,53 +1,64 @@
-From: "santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org" <santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v4 0/2] ARM: keystone: pm: switch to use generic pm domains
-Date: Mon, 10 Nov 2014 10:51:10 -0800
-Message-ID: <5461091E.6090708@oracle.com>
-References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <5460D601.70504@ti.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v10 1/5] PM / Runtime: Allow accessing irq_safe if no
+ PM_RUNTIME
+Date: Mon, 10 Nov 2014 13:59:29 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1411101346430.13641-100000@netrider.rowland.org>
+References: <CAPDyKFp+cZa6PrAwQHbQE4xEzmRKBwN5J_uRByOdM0h8yoV2vg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <5460D601.70504-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from netrider.rowland.org ([192.131.102.5]:51290 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751590AbaKJS7b (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 13:59:31 -0500
+In-Reply-To: <CAPDyKFp+cZa6PrAwQHbQE4xEzmRKBwN5J_uRByOdM0h8yoV2vg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 11/10/14 7:13 AM, Grygorii Strashko wrote:
-> Hi Santosh,
->
-> On 11/10/2014 04:59 PM, Grygorii Strashko wrote:
->> Hi Santosh, Kevin,
->>
->> This series switches Keystone 2 PM code to use Generic PM domains
->> instead of PM clock domains because of the lack of DT support
->> for the last.
->> It will finally allow to enable Runtime PM for Keystone 2.
->>
->> This series based on top
->>
->> Changes in v4:
->>    - changes for Generic clock manipulation PM callbacks (clock_ops.c)
->>      were separated in standalone series [3] and Keystone 2 specific
->>      patches were rebased on top of it.
->
-> I've just found that prerequisite patches have been taken by Rafael in linux-pm.git/linux-next,
-> first two patches from series:
->   "[PATCH v4 0/3] PM / clock_ops: add pm_clk_add_clk()"
->   https://lkml.org/lkml/2014/11/6/319
->
-> Thanks a lot Rafael.
->
-> So, if no complains, this series is ready.
->
-Thanks for the note and good to see the series is converged. To avoid
-dependency issues, I will merge them immediately after the upcoming
-merge window. Meanwhile please continue to sort out any outstanding
-comments/concerns like the one you are discussing with Arnd.
+[CC: list severely trimmed]
 
-regards,
-Santosh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Mon, 10 Nov 2014, Ulf Hansson wrote:
+
+> >> There are an important advantage of using the pm_runtime_force_suspend() here.
+> >>
+> >> For the driver to handle clock gating at system PM suspend, it first
+> >> needs to bring the device into full power, through
+> >> pm_runtime_get_sync(). Otherwise it's not safe to gate the clock,
+> >> since it may already be gated.
+> >
+> > That's fine, but it has nothing to do with pm_runtime_force_suspend().
+> >
+> > Besides, if the real question is whether or not to gate the clock (or
+> > in other words, has the clock already been gated), why not just store a
+> > "clock_is_gated" flag somewhere?
+> 
+> You could do that, but it's easier to not.
+
+I'm not convinced.  And you haven't said how this is related to
+pm_runtime_force_suspend().
+
+> You will need to update the runtime PM status and disable runtime PM
+> anyway, done by the API.
+
+So what?  And what API are you referring to: the runtime PM API or 
+something else?
+
+I get the feeling that I'm missing a lot of important points here.  
+What have you left out?
+
+As I understand the problem, you've got a bus type where some of the
+drivers have IRQ-safe runtime PM (and therefore carry out their
+suspend/resume operations in interrupt context) and others don't.  The
+subsystem core wants to maximize the power saving by deconfiguring some
+clocks whenever a device is suspended, but this requires a process
+context and so it can't be done directly when IRQ-safe runtime PM is
+used.
+
+Is that a good summary?  If it is, there are ways of dealing with this 
+that don't involve messing around with the runtime PM internals, or 
+using pm_runtime_force_suspend().
+
+Alan Stern
+
