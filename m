@@ -1,35 +1,22 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v6 21/48] ipmi: Register with kernel
-	power-off handler
-Date: Sun,  9 Nov 2014 17:42:38 -0800
-Message-ID: <1415583785-6980-22-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v6 11/48] mfd: retu: Register with kernel power-off handler
+Date: Sun,  9 Nov 2014 17:42:28 -0800
+Message-ID: <1415583785-6980-12-git-send-email-linux@roeck-us.net>
 References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <openipmi-developer-bounces@lists.sourceforge.net>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/openipmi-developer>,
-	<mailto:openipmi-developer-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=openipmi-developer>
-List-Post: <mailto:openipmi-developer@lists.sourceforge.net>
-List-Help: <mailto:openipmi-developer-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/openipmi-developer>,
-	<mailto:openipmi-developer-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: openipmi-developer-bounces@lists.sourceforge.net
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: openipmi-developer@lists.sourceforge.net, Corey Minyard <minyard@acm.org>, Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with high priority to reflect that the original code
-overwrites pm_power_off unconditionally.
+directly. Register with low priority to reflect that the original code
+only sets pm_power_off if it was not already set.
 
-Register power-off handler after the ipmi system is ready, and unregister
-it prior to cleanup. This avoids having to check for the ready variable
-in the poweroff callback.
-
-Reviewed-by: Corey Minyard <minyard@acm.org>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Acked-by: Lee Jones <lee.jones@linaro.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v6:
@@ -47,90 +34,96 @@ v3:
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
 - Use define to specify poweroff handler priority
-- Use pr_warn instead of pr_err
-- Call unregister_power_off_handler on exit only if not already unregistered
+- Use devm_register_power_off_handler
+- Use dev_warn instead of dev_err
 
- drivers/char/ipmi/ipmi_poweroff.c | 25 ++++++++++++++-----------
- 1 file changed, 14 insertions(+), 11 deletions(-)
+ drivers/mfd/retu-mfd.c | 29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/char/ipmi/ipmi_poweroff.c b/drivers/char/ipmi/ipmi_poweroff.c
-index 9f2e3be..4ae2f22 100644
---- a/drivers/char/ipmi/ipmi_poweroff.c
-+++ b/drivers/char/ipmi/ipmi_poweroff.c
-@@ -63,9 +63,6 @@ static ipmi_user_t ipmi_user;
- static int ipmi_ifnum;
- static void (*specific_poweroff_func)(ipmi_user_t user);
+diff --git a/drivers/mfd/retu-mfd.c b/drivers/mfd/retu-mfd.c
+index 663f8a3..30e746b 100644
+--- a/drivers/mfd/retu-mfd.c
++++ b/drivers/mfd/retu-mfd.c
+@@ -22,6 +22,7 @@
+ #include <linux/slab.h>
+ #include <linux/mutex.h>
+ #include <linux/module.h>
++#include <linux/pm.h>
+ #include <linux/regmap.h>
+ #include <linux/mfd/core.h>
+ #include <linux/mfd/retu.h>
+@@ -43,6 +44,7 @@ struct retu_dev {
+ 	struct device			*dev;
+ 	struct mutex			mutex;
+ 	struct regmap_irq_chip_data	*irq_data;
++	struct power_off_handler_block	power_off_hb;
+ };
  
--/* Holds the old poweroff function so we can restore it on removal. */
--static void (*old_poweroff_func)(void);
+ static struct resource retu_pwrbutton_res[] = {
+@@ -81,9 +83,6 @@ static struct regmap_irq_chip retu_irq_chip = {
+ 	.ack_base	= RETU_REG_IDR,
+ };
+ 
+-/* Retu device registered for the power off. */
+-static struct retu_dev *retu_pm_power_off;
 -
- static int set_param_ifnum(const char *val, struct kernel_param *kp)
+ static struct resource tahvo_usb_res[] = {
+ 	{
+ 		.name	= "tahvo-usb",
+@@ -165,12 +164,13 @@ int retu_write(struct retu_dev *rdev, u8 reg, u16 data)
+ }
+ EXPORT_SYMBOL_GPL(retu_write);
+ 
+-static void retu_power_off(void)
++static void retu_power_off(struct power_off_handler_block *this)
  {
- 	int rv = param_set_int(val, kp);
-@@ -544,15 +541,17 @@ static struct poweroff_function poweroff_functions[] = {
+-	struct retu_dev *rdev = retu_pm_power_off;
++	struct retu_dev *rdev = container_of(this, struct retu_dev,
++					     power_off_hb);
+ 	int reg;
  
+-	mutex_lock(&retu_pm_power_off->mutex);
++	mutex_lock(&rdev->mutex);
  
- /* Called on a powerdown request. */
--static void ipmi_poweroff_function(void)
-+static void ipmi_poweroff_function(struct power_off_handler_block *this)
- {
--	if (!ready)
--		return;
--
- 	/* Use run-to-completion mode, since interrupts may be off. */
- 	specific_poweroff_func(ipmi_user);
+ 	/* Ignore power button state */
+ 	regmap_read(rdev->regmap, RETU_REG_CC1, &reg);
+@@ -183,7 +183,7 @@ static void retu_power_off(void)
+ 	for (;;)
+ 		cpu_relax();
+ 
+-	mutex_unlock(&retu_pm_power_off->mutex);
++	mutex_unlock(&rdev->mutex);
  }
  
-+static struct power_off_handler_block ipmi_power_off_hb = {
-+	.handler = ipmi_poweroff_function,
-+	.priority = POWER_OFF_PRIORITY_HIGH,
-+};
-+
- /* Wait for an IPMI interface to be installed, the first one installed
-    will be grabbed by this code and used to perform the powerdown. */
- static void ipmi_po_new_smi(int if_num, struct device *device)
-@@ -631,9 +630,12 @@ static void ipmi_po_new_smi(int if_num, struct device *device)
- 	printk(KERN_INFO PFX "Found a %s style poweroff function\n",
- 	       poweroff_functions[i].platform_type);
- 	specific_poweroff_func = poweroff_functions[i].poweroff_func;
--	old_poweroff_func = pm_power_off;
--	pm_power_off = ipmi_poweroff_function;
-+
- 	ready = 1;
-+
-+	rv = register_power_off_handler(&ipmi_power_off_hb);
-+	if (rv)
-+		pr_warn(PFX "failed to register power-off handler\n");
- }
- 
- static void ipmi_po_smi_gone(int if_num)
-@@ -644,9 +646,10 @@ static void ipmi_po_smi_gone(int if_num)
- 	if (ipmi_ifnum != if_num)
- 		return;
- 
-+	unregister_power_off_handler(&ipmi_power_off_hb);
-+
- 	ready = 0;
- 	ipmi_destroy_user(ipmi_user);
--	pm_power_off = old_poweroff_func;
- }
- 
- static struct ipmi_smi_watcher smi_watcher = {
-@@ -733,11 +736,11 @@ static void __exit ipmi_poweroff_cleanup(void)
- 	ipmi_smi_watcher_unregister(&smi_watcher);
- 
- 	if (ready) {
-+		unregister_power_off_handler(&ipmi_power_off_hb);
- 		rv = ipmi_destroy_user(ipmi_user);
- 		if (rv)
- 			printk(KERN_ERR PFX "could not cleanup the IPMI"
- 			       " user: 0x%x\n", rv);
--		pm_power_off = old_poweroff_func;
+ static int retu_regmap_read(void *context, const void *reg, size_t reg_size,
+@@ -279,9 +279,14 @@ static int retu_probe(struct i2c_client *i2c, const struct i2c_device_id *id)
+ 		return ret;
  	}
- }
- module_exit(ipmi_poweroff_cleanup);
+ 
+-	if (i2c->addr == 1 && !pm_power_off) {
+-		retu_pm_power_off = rdev;
+-		pm_power_off	  = retu_power_off;
++	if (i2c->addr == 1) {
++		rdev->power_off_hb.handler = retu_power_off;
++		rdev->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
++		ret = devm_register_power_off_handler(rdev->dev,
++						      &rdev->power_off_hb);
++		if (ret)
++			dev_warn(rdev->dev,
++				 "Failed to register power-off handler\n");
+ 	}
+ 
+ 	return 0;
+@@ -291,10 +296,6 @@ static int retu_remove(struct i2c_client *i2c)
+ {
+ 	struct retu_dev *rdev = i2c_get_clientdata(i2c);
+ 
+-	if (retu_pm_power_off == rdev) {
+-		pm_power_off	  = NULL;
+-		retu_pm_power_off = NULL;
+-	}
+ 	mfd_remove_devices(rdev->dev);
+ 	regmap_del_irq_chip(i2c->irq, rdev->irq_data);
+ 
 -- 
 1.9.1
-
-
-------------------------------------------------------------------------------
