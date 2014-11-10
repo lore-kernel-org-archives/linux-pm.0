@@ -1,62 +1,42 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v6 02/48] memory: emif: Use API function to determine power-off capability
-Date: Sun,  9 Nov 2014 17:42:19 -0800
-Message-ID: <1415583785-6980-3-git-send-email-linux@roeck-us.net>
-References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
+From: "Tc, Jenny" <jenny.tc@intel.com>
+Subject: RE: [PATCH 1/3] power: core: Add generic interface to get battery
+ specification.
+Date: Mon, 10 Nov 2014 03:41:04 +0000
+Message-ID: <20ADAB092842284E95860F279283C5642ED9B294@BGSMSX104.gar.corp.intel.com>
+References: <1412679518-21499-1-git-send-email-jonghwa3.lee@samsung.com>
+ <1412679518-21499-2-git-send-email-jonghwa3.lee@samsung.com>
+ <20ADAB092842284E95860F279283C5642ED8AE04@BGSMSX104.gar.corp.intel.com>
+ <5460109E.9060603@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:38846 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751867AbaKJBnT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:43:19 -0500
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1Xne0l-000TUC-Et
-	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 01:43:19 +0000
-In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
+Received: from mga01.intel.com ([192.55.52.88]:60476 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751853AbaKJDl4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 9 Nov 2014 22:41:56 -0500
+In-Reply-To: <5460109E.9060603@samsung.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>
+To: "jonghwa3.lee@samsung.com" <jonghwa3.lee@samsung.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>, "pavel@ucw.cz" <pavel@ucw.cz>
 
-Use have_kernel_power_off() to determine if the kernel is able
-to power off the system.
-
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
-v6:
-- No change.
-v5:
-- Rebase to v3.18-rc3
-v4:
-- No change
-v3:
-- Replace poweroff in all newly introduced variables and in text
-  with power_off or power-off as appropriate
-v2:
-- poweroff -> power_off
-
- drivers/memory/emif.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/memory/emif.c b/drivers/memory/emif.c
-index 04644e7..317d49f 100644
---- a/drivers/memory/emif.c
-+++ b/drivers/memory/emif.c
-@@ -1053,10 +1053,10 @@ static irqreturn_t emif_threaded_isr(int irq, void *dev_id)
- 		dev_emerg(emif->dev, "SDRAM temperature exceeds operating limit.. Needs shut down!!!\n");
- 
- 		/* If we have Power OFF ability, use it, else try restarting */
--		if (pm_power_off) {
-+		if (have_kernel_power_off()) {
- 			kernel_power_off();
- 		} else {
--			WARN(1, "FIXME: NO pm_power_off!!! trying restart\n");
-+			WARN(1, "FIXME: NO kernel power-off capability!!! trying restart\n");
- 			kernel_restart("SDRAM Over-temp Emergency restart");
- 		}
- 		return IRQ_HANDLED;
--- 
-1.9.1
-
+PiANCj4gPj4gK0FUT01JQ19OT1RJRklFUl9IRUFEKHBzeV9iYXR0ZXJ5X2luZm9fbm90aWZpZXIp
+Ow0KPiA+DQo+ID4gIElzbid0IGl0IGdvb2QgdG8gcmV1c2UgdGhlIGV4aXN0aW5nIHBvd2VyX3N1
+cHBseV9ub3RpZmllciBmb3IgdGhpcz8NCj4gPg0KPiA+PiArZW51bSBiYXR0ZXJ5X2luZm9fbm90
+aWZpZXJfZXZlbnRzIHsNCj4gPj4gKwlQU1lfQkFUVF9JTkZPX1JFR0lTVEVSRUQsDQo+ID4+ICsJ
+UFNZX0JBVFRfSU5GT19VTlJFR0lTVEVSRUQsDQo+ID4+ICt9Ow0KPiA+DQo+ID4gSWYgd2UgdXNl
+IHRoZSBwb3dlcl9zdXBwbHlfbm90aWZpZXIsIHRoZW4gdGhpcyBjYW4gYmUgbW92ZWQgdG8NCj4g
+PiBlbnVtIHBvd2VyX3N1cHBseV9ub3RpZmllcl9ldmVudHMNCj4gPg0KPiANCj4gDQo+IEl0IGRv
+ZXNuJ3QgdXNlIHBvd2VyX3N1cHBseV9ub3RpZmllciwgcmF0aGVyIHRoYW4gaXQgdXNlcyBuZXds
+eSBpbnRyb2R1Y2VkDQo+IG5vdGlmaWVyIGZvciBiYXR0ZXJ5IGluZm9ybWF0aW9uLiBJbnRlbnRp
+b24gb2YgbWFraW5nIG9mIG5ldyBub3RpZmllciBibG9jayBoZXJlDQo+IGlzIHRvIGV4dGluZ3Vp
+c2ggZXZlbnQgZnJvbSBwb3dlcl9zdXBwbHlfY2hhbmdlZCB3aGljaCBtaWdodCBiZSBub2lzeSBm
+b3INCj4gYmF0dGVyeSBpbmZvcm1hdGlvbiBjb25zdW1lci4gSG93ZXZlciwgSWYgaXQgbG9va3Mg
+d2FzdGVmdWwgY29kZSwgaXQncyBub3QgYSBiaWcNCj4gZGVhbCB0byB1c2UgZXhpc3RlZCBwb3dl
+cl9zdXBwbHlfbm90aWZpZXIuDQoNClVzaW5nIHRoZSBwb3dlcl9zdXBwbHlfbm90aWZpZXIgaGVs
+cHMgdG8gZ2V0IGFsbCBwb3dlciBzdXBwbHkgbm90aWZpY2F0aW9ucw0KKHBvd2VyX3N1cHBseV9j
+aG5hZ2VkLCBiYXR0ZXJ5IGluZm8gcmVnaXN0ZXIvdW5yZWdpc3RlciwgLi4pIHVzaW5nIGEgc2lu
+Z2xlIG5vdGlmaWVyLiBUaGUNCmNvbnN1bWVycyBjYW4gaWdub3JlIHRoZSB1bndhbnRlZCBldmVu
+dHMuDQo=
