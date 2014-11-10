@@ -1,202 +1,53 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] PM / Domains: Extract code to power off/on a PM domain
-Date: Mon, 10 Nov 2014 19:39:19 +0100
-Message-ID: <1415644759-2616-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from baptiste.telenet-ops.be ([195.130.132.51]:57115 "EHLO
-	baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751408AbaKJSjM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 13:39:12 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: "santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org" <santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH v4 0/2] ARM: keystone: pm: switch to use generic pm domains
+Date: Mon, 10 Nov 2014 10:51:10 -0800
+Message-ID: <5461091E.6090708@oracle.com>
+References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <5460D601.70504@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5460D601.70504-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-PM domains are powered on/off from various places. Some callers do
-latency measurements, others don't. Consolidate using two helper
-functions, which always measure the latencies, and update the stored
-latencies when needed.
+On 11/10/14 7:13 AM, Grygorii Strashko wrote:
+> Hi Santosh,
+>
+> On 11/10/2014 04:59 PM, Grygorii Strashko wrote:
+>> Hi Santosh, Kevin,
+>>
+>> This series switches Keystone 2 PM code to use Generic PM domains
+>> instead of PM clock domains because of the lack of DT support
+>> for the last.
+>> It will finally allow to enable Runtime PM for Keystone 2.
+>>
+>> This series based on top
+>>
+>> Changes in v4:
+>>    - changes for Generic clock manipulation PM callbacks (clock_ops.c)
+>>      were separated in standalone series [3] and Keystone 2 specific
+>>      patches were rebased on top of it.
+>
+> I've just found that prerequisite patches have been taken by Rafael in linux-pm.git/linux-next,
+> first two patches from series:
+>   "[PATCH v4 0/3] PM / clock_ops: add pm_clk_add_clk()"
+>   https://lkml.org/lkml/2014/11/6/319
+>
+> Thanks a lot Rafael.
+>
+> So, if no complains, this series is ready.
+>
+Thanks for the note and good to see the series is converged. To avoid
+dependency issues, I will merge them immediately after the upcoming
+merge window. Meanwhile please continue to sort out any outstanding
+comments/concerns like the one you are discussing with Arnd.
 
-Other minor changes:
-  - Use pr_warn() instead of pr_warning(),
-  - There's no need to check genpd->name, %s handles NULL pointers fine,
-  - Make the warning format strings identical, to save memory.
-
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Reviewed-by: Kevin Hilman <khilman@linaro.org>
----
-v2:
-  - s/do_genpd_power_on/genpd_power_on/
-  - s/do_genpd_power_off/genpd_power_off/
-  - Add Reviewed-by
----
- drivers/base/power/domain.c | 101 ++++++++++++++++++++++++++------------------
- 1 file changed, 60 insertions(+), 41 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index a841bab441147b3d..2fccf2c2575e4fa3 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -151,6 +151,59 @@ static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
- 	genpd->cpuidle_data->idle_state->exit_latency = usecs64;
- }
- 
-+static int genpd_power_on(struct generic_pm_domain *genpd)
-+{
-+	ktime_t time_start;
-+	s64 elapsed_ns;
-+	int ret;
-+
-+	if (!genpd->power_on)
-+		return 0;
-+
-+	time_start = ktime_get();
-+	ret = genpd->power_on(genpd);
-+	if (ret)
-+		return ret;
-+
-+	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
-+	if (elapsed_ns <= genpd->power_on_latency_ns)
-+		return ret;
-+
-+	genpd->power_on_latency_ns = elapsed_ns;
-+	genpd->max_off_time_changed = true;
-+	genpd_recalc_cpu_exit_latency(genpd);
-+	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
-+		genpd->name, "on", elapsed_ns);
-+
-+	return ret;
-+}
-+
-+static int genpd_power_off(struct generic_pm_domain *genpd)
-+{
-+	ktime_t time_start;
-+	s64 elapsed_ns;
-+	int ret;
-+
-+	if (!genpd->power_off)
-+		return 0;
-+
-+	time_start = ktime_get();
-+	ret = genpd->power_off(genpd);
-+	if (ret == -EBUSY)
-+		return ret;
-+
-+	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
-+	if (elapsed_ns <= genpd->power_off_latency_ns)
-+		return ret;
-+
-+	genpd->power_off_latency_ns = elapsed_ns;
-+	genpd->max_off_time_changed = true;
-+	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
-+		genpd->name, "off", elapsed_ns);
-+
-+	return ret;
-+}
-+
- /**
-  * __pm_genpd_poweron - Restore power to a given PM domain and its masters.
-  * @genpd: PM domain to power up.
-@@ -222,25 +275,9 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
- 		}
- 	}
- 
--	if (genpd->power_on) {
--		ktime_t time_start = ktime_get();
--		s64 elapsed_ns;
--
--		ret = genpd->power_on(genpd);
--		if (ret)
--			goto err;
--
--		elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
--		if (elapsed_ns > genpd->power_on_latency_ns) {
--			genpd->power_on_latency_ns = elapsed_ns;
--			genpd->max_off_time_changed = true;
--			genpd_recalc_cpu_exit_latency(genpd);
--			if (genpd->name)
--				pr_warning("%s: Power-on latency exceeded, "
--					"new value %lld ns\n", genpd->name,
--					elapsed_ns);
--		}
--	}
-+	ret = genpd_power_on(genpd);
-+	if (ret)
-+		goto err;
- 
-  out:
- 	genpd_set_active(genpd);
-@@ -529,16 +566,11 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 	}
- 
- 	if (genpd->power_off) {
--		ktime_t time_start;
--		s64 elapsed_ns;
--
- 		if (atomic_read(&genpd->sd_count) > 0) {
- 			ret = -EBUSY;
- 			goto out;
- 		}
- 
--		time_start = ktime_get();
--
- 		/*
- 		 * If sd_count > 0 at this point, one of the subdomains hasn't
- 		 * managed to call pm_genpd_poweron() for the master yet after
-@@ -547,21 +579,11 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 		 * the pm_genpd_poweron() restore power for us (this shouldn't
- 		 * happen very often).
- 		 */
--		ret = genpd->power_off(genpd);
-+		ret = genpd_power_off(genpd);
- 		if (ret == -EBUSY) {
- 			genpd_set_active(genpd);
- 			goto out;
- 		}
--
--		elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
--		if (elapsed_ns > genpd->power_off_latency_ns) {
--			genpd->power_off_latency_ns = elapsed_ns;
--			genpd->max_off_time_changed = true;
--			if (genpd->name)
--				pr_warning("%s: Power-off latency exceeded, "
--					"new value %lld ns\n", genpd->name,
--					elapsed_ns);
--		}
- 	}
- 
- 	genpd->status = GPD_STATE_POWER_OFF;
-@@ -796,8 +818,7 @@ static void pm_genpd_sync_poweroff(struct generic_pm_domain *genpd)
- 	    || atomic_read(&genpd->sd_count) > 0)
- 		return;
- 
--	if (genpd->power_off)
--		genpd->power_off(genpd);
-+	genpd_power_off(genpd);
- 
- 	genpd->status = GPD_STATE_POWER_OFF;
- 
-@@ -828,8 +849,7 @@ static void pm_genpd_sync_poweron(struct generic_pm_domain *genpd)
- 		genpd_sd_counter_inc(link->master);
- 	}
- 
--	if (genpd->power_on)
--		genpd->power_on(genpd);
-+	genpd_power_on(genpd);
- 
- 	genpd->status = GPD_STATE_ACTIVE;
- }
-@@ -1251,8 +1271,7 @@ static int pm_genpd_restore_noirq(struct device *dev)
- 			 * If the domain was off before the hibernation, make
- 			 * sure it will be off going forward.
- 			 */
--			if (genpd->power_off)
--				genpd->power_off(genpd);
-+			genpd_power_off(genpd);
- 
- 			return 0;
- 		}
--- 
-1.9.1
-
+regards,
+Santosh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
