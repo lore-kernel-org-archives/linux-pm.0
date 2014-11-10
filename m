@@ -1,89 +1,46 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: Guard against not-yet-initialized policies in cpufreq_cpu_get()
-Date: Mon, 10 Nov 2014 15:24:32 +0530
-Message-ID: <CAKohpokhS=+HpGuiM6GxJfCA4zknzpQ9N6LDREPXsURy-yxWWg@mail.gmail.com>
-References: <20141029024426.GA7468@kroah.com>
-	<1414597547-16506-1-git-send-email-tomeu.vizoso@collabora.com>
+Subject: Re: [PATCH 2/5] cpufreq, fix locking around CPUFREQ_GOV_POLICY_EXIT calls
+Date: Mon, 10 Nov 2014 16:14:57 +0530
+Message-ID: <CAKohpomZNwZWjmi8hkZ6QXUeDTaXTwzx_fPz1_byh3xmmkPNrQ@mail.gmail.com>
+References: <1415199239-19019-1-git-send-email-prarit@redhat.com>
+	<1415199239-19019-3-git-send-email-prarit@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f43.google.com ([209.85.192.43]:40253 "EHLO
-	mail-qg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752056AbaKJJyc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 04:54:32 -0500
-Received: by mail-qg0-f43.google.com with SMTP id f51so5187964qge.16
-        for <linux-pm@vger.kernel.org>; Mon, 10 Nov 2014 01:54:32 -0800 (PST)
-In-Reply-To: <1414597547-16506-1-git-send-email-tomeu.vizoso@collabora.com>
+Received: from mail-oi0-f44.google.com ([209.85.218.44]:50479 "EHLO
+	mail-oi0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752204AbaKJKo6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 05:44:58 -0500
+Received: by mail-oi0-f44.google.com with SMTP id h136so5205607oig.31
+        for <linux-pm@vger.kernel.org>; Mon, 10 Nov 2014 02:44:57 -0800 (PST)
+In-Reply-To: <1415199239-19019-3-git-send-email-prarit@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?Q?Robert_Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 29 October 2014 21:15, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
-> There's a substantial window of opportunity from the time the policy objects
-> are created until they are initialized, causing this:
+On 5 November 2014 20:23, Prarit Bhargava <prarit@redhat.com> wrote:
+> commit 955ef4833574636819cd269cfbae12f79cbde63a (" cpufreq: Drop rwsem
+> lock around CPUFREQ_GOV_POLICY_EXIT") opens up a hole in the locking
+> scheme for cpufreq.
 >
-> WARNING: CPU: 1 PID: 64 at include/linux/kref.h:47 kobject_get+0x64/0x70()
-> Modules linked in:
-> CPU: 1 PID: 64 Comm: irq/77-tegra-ac Not tainted 3.18.0-rc1-next-20141027ccu-00049-g21a0041 #248
-> [<c0016fac>] (unwind_backtrace) from [<c001272c>] (show_stack+0x10/0x14)
-> [<c001272c>] (show_stack) from [<c0601920>] (dump_stack+0x98/0xd8)
-> [<c0601920>] (dump_stack) from [<c00288d8>] (warn_slowpath_common+0x70/0x8c)
-> [<c00288d8>] (warn_slowpath_common) from [<c0028990>] (warn_slowpath_null+0x1c/0x24)
-> [<c0028990>] (warn_slowpath_null) from [<c02227bc>] (kobject_get+0x64/0x70)
-> [<c02227bc>] (kobject_get) from [<c03e5238>] (cpufreq_cpu_get+0x88/0xc8)
-> [<c03e5238>] (cpufreq_cpu_get) from [<c03e52ec>] (cpufreq_get+0xc/0x64)
-> [<c03e52ec>] (cpufreq_get) from [<c0287818>] (actmon_thread_isr+0x140/0x1a4)
-> [<c0287818>] (actmon_thread_isr) from [<c0068a68>] (irq_thread_fn+0x1c/0x40)
-> [<c0068a68>] (irq_thread_fn) from [<c0068d84>] (irq_thread+0x134/0x174)
-> [<c0068d84>] (irq_thread) from [<c0040284>] (kthread+0xdc/0xf4)
-> [<c0040284>] (kthread) from [<c000f4b8>] (ret_from_fork+0x14/0x3c)
+> Simple tests such as rapidly switching the governor between ondemand and
+> performance or attempting to read policy values while a governor switch occurs
+> now fail with very NULL pointer warnings, sysfs namespace collisions, and
+> system hangs.  In short, the locking that policy->rwsem is supposed to provide
+> is currently broken.
 >
-> This commit checks that initialization has finished before trying to do
-> anything with the policy.
+> The identified commit attempts to resolve a lockdep warning by removing
+> a lock around a section of code which does a shutdown of the
+> existing policy.  The problem is that this is part of the _critical_ section of
+> code that switches the governors and must be protected by the lock; without
+> locking readers may access now NULL or stale data, and writes may collide with
+> each other.
 >
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 644b54e..7b84d1a 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -48,6 +48,9 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
->  /* Flag to suspend/resume CPUFreq governors */
->  static bool cpufreq_suspended;
->
-> +/* Flag that tells whether initialization is completed */
-> +static atomic_t cpufreq_initialized = ATOMIC_INIT(0);
-> +
->  static inline bool has_target(void)
->  {
->         return cpufreq_driver->target_index || cpufreq_driver->target;
-> @@ -211,7 +214,7 @@ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
->         /* get the cpufreq driver */
->         read_lock_irqsave(&cpufreq_driver_lock, flags);
->
-> -       if (cpufreq_driver) {
-> +       if (atomic_read(&cpufreq_initialized)) {
->                 /* get the CPU */
->                 policy = per_cpu(cpufreq_cpu_data, cpu);
->                 if (policy)
-> @@ -1289,6 +1292,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
->         kobject_uevent(&policy->kobj, KOBJ_ADD);
->         up_read(&cpufreq_rwsem);
->
-> +       atomic_set(&cpufreq_initialized, 1);
-> +
->         pr_debug("initialization complete\n");
+> With the previous patch, which now returns -EBUSY during times of
+> contention the deadlock reported in
+> 955ef4833574636819cd269cfbae12f79cbde63a (" cpufreq: Drop rwsem lock
+> around CPUFREQ_GOV_POLICY_EXIT") cannot occur, so adding the locks back
+> into this section of code is possible.
 
-Instead of all these:
-
-Move:
-
-        ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
-                                   &dev->kobj, "cpufreq");
-
-from cpufreq_add_dev_interface() to __cpufreq_add_dev() before
-setting                 per_cpu(cpufreq_cpu_data, j) = policy;
+I still fail to understand why ? What will the _trylock() change ?
