@@ -1,37 +1,79 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] PM / Domains: Fix initial default state of the need_restore flag
-Date: Mon, 10 Nov 2014 12:33:15 -0800
-Message-ID: <F09FA55F-7246-4E9F-B54D-7CB984E10161@gmail.com>
-References: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org> <7hr3xerdw6.fsf@deeprootsystems.com> <20141107215751.GA4439@dtor-ws> <CAPDyKFot-LZjazq190cY3-tawB_-ukdsmrLcD3vtidLvX68FOg@mail.gmail.com> <20141110183224.GA5626@dtor-ws> <20141110193931.GN3815@sirena.org.uk>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
+Date: Mon, 10 Nov 2014 21:36:55 +0100
+Message-ID: <1600093.60yAP0Qpua@wuerfel>
+References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <5331397.OQCQmJO78C@wuerfel> <5460F806.3040305@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
- charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:42814 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218AbaKJUdY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 15:33:24 -0500
-In-Reply-To: <20141110193931.GN3815@sirena.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5460F806.3040305@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaro
 
-On November 10, 2014 11:39:31 AM PST, Mark Brown <broonie@kernel.org> wrote:
->On Mon, Nov 10, 2014 at 10:32:24AM -0800, Dmitry Torokhov wrote:
->
->> - I do not see why sirincling platform specific code around i2c, spi,
->>   etc bus code (which is not platform-specific) is OK, but a no-no
->for
->>   the driver ocre.
->
->sirincling?
+On Monday 10 November 2014 19:38:14 Grygorii Strashko wrote:
+> Hi Arnd,
+> 
+> On 11/10/2014 05:06 PM, Arnd Bergmann wrote:
+> > On Monday 10 November 2014 16:59:16 Grygorii Strashko wrote:
+> >> --- /dev/null
+> >> +++ b/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
+> >> @@ -0,0 +1,31 @@
+> >> +* TI Keystone 2 Generic PM Controller
+> >> +
+> >> +The TI Keystone 2 Generic PM Controller is responsible for Clock gating
+> >> +for each controlled IP module.
+> >> +
+> >> +Required properties:
+> >> +- compatible: Should be "ti,keystone-powerdomain"
+> >> +- #power-domain-cells: Should be 0, see below:
+> >> +
+> >> +The PM Controller node is a PM domain as documented in
+> >> +Documentation/devicetree/bindings/power/power_domain.txt.
+> >> +
+> >> +Example:
+> >> +
+> >> +       pm_controller: pm-controller {
+> >> +               compatible = "ti,keystone-powerdomain";
+> >> +               #power-domain-cells = <0>;
+> >> +       };
+> >> +
+> >> +       netcp: netcp@2090000 {
+> >> +               reg = <0x2620110 0x8>;
+> >> +               reg-names = "efuse";
+> >> +               ...
+> >> +               #address-cells = <1>;
+> >> +               #size-cells = <1>;
+> >> +               ranges;
+> >> +               power-domains = <&pm_controller>;
+> >> +
+> >> +               clocks = <&clkpa>, <&clkcpgmac>, <&chipclk12>;
+> >> +               dma-coherent;
+> >> +       }
+> > 
+> > I don't get it. What keystone specific about a "ti,keystone-powerdomain"
+> > device? It seems that the device has no registers whatsoever and the
+> > driver doesn't really do anything that relates to the platform.
+> 
+> That's true. but it was the only one acceptable way  to enable
+> Generic clock manipulation PM callbacks for the DT-boot case.
+> After several unsuccessful attempts the idea to use GPD
+> was introduced by Kevin there:
+>   https://lkml.org/lkml/2014/9/8/643
+> 
+> So, The Keystone 2 Generic PM Controller is just a proxy PM layer here between
+> device and Generic clock manipulation PM callbacks.
+> It fills per-device clock list when device is attached to GPD and
+> ensures that all clocks from that list enabled/disabled when device is
+> started/stopped.
 
-Sorry, I was going for "sprinkling" but failed spectacularly.
+The idea of such a generic power domain implementation sounds useful, but
+it has absolutely no business in platform specific code.
 
+I suggest you either remove the power domain proxy from your drivers
+and use the clocks directly, or come up with an implementation that can
+be used across other platforms and CPU architectures.
 
-Thanks.
-
--- 
-Dmitry
+	Arnd
