@@ -1,34 +1,28 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v6 18/48] mfd: twl4030-power: Register with kernel power-off handler
-Date: Sun,  9 Nov 2014 17:42:35 -0800
-Message-ID: <1415583785-6980-19-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v6 28/48] power/reset: at91-poweroff: Register with kernel power-off handler
+Date: Sun,  9 Nov 2014 17:42:45 -0800
+Message-ID: <1415583785-6980-29-git-send-email-linux@roeck-us.net>
 References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:39010 "EHLO
+Received: from bh-25.webhostbox.net ([208.91.199.152]:39095 "EHLO
 	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752188AbaKJBoF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:44:05 -0500
+	with ESMTP id S1752457AbaKJBo1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:44:27 -0500
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
 	(envelope-from <linux@roeck-us.net>)
-	id 1Xne1U-000UyX-QM
-	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 01:44:04 +0000
+	id 1Xne1r-000VVi-As
+	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 01:44:27 +0000
 In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-omap@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>
 
 Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with low priority to reflect that the original code
-only sets pm_power_off if it was not already set.
+directly. Select default priority to reflect that the original code sets
+pm_power_off unconditionally.
 
-Make twl4030_power_off static as it is only called from the twl4030-power
-driver. Drop remove function as it is no longer needed.
-
-Cc: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Lee Jones <lee.jones@linaro.org>
-Cc: linux-omap@vger.kernel.org
-Acked-by: Lee Jones <lee.jones@linaro.org>
+Acked-by: Sebastian Reichel <sre@kernel.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v6:
@@ -45,107 +39,52 @@ v3:
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- Use define to specify poweroff handler priority
-- Use dev_warn instead of dev_err
-- Use devm_register_power_off_handler
-- Drop remove function as it is no longer needed.
+- Added patch
 
- drivers/mfd/twl4030-power.c | 25 +++++++++++++++----------
- include/linux/i2c/twl.h     |  1 -
- 2 files changed, 15 insertions(+), 11 deletions(-)
+ drivers/power/reset/at91-poweroff.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
-index cf92a6d..88fd33c 100644
---- a/drivers/mfd/twl4030-power.c
-+++ b/drivers/mfd/twl4030-power.c
-@@ -25,9 +25,9 @@
-  */
- 
+diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at91-poweroff.c
+index c610003..6fc5944 100644
+--- a/drivers/power/reset/at91-poweroff.c
++++ b/drivers/power/reset/at91-poweroff.c
+@@ -14,6 +14,7 @@
  #include <linux/module.h>
--#include <linux/pm.h>
- #include <linux/i2c/twl.h>
+ #include <linux/of.h>
  #include <linux/platform_device.h>
 +#include <linux/pm.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
+ #include <linux/printk.h>
  
-@@ -611,7 +611,7 @@ twl4030_power_configure_resources(const struct twl4030_power_data *pdata)
-  * After a successful execution, TWL shuts down the power to the SoC
-  * and all peripherals connected to it.
-  */
--void twl4030_power_off(void)
-+static void twl4030_power_off(struct power_off_handler_block *this)
- {
- 	int err;
- 
-@@ -621,6 +621,11 @@ void twl4030_power_off(void)
- 		pr_err("TWL4030 Unable to power off\n");
+ #define AT91_SHDW_CR	0x00		/* Shut Down Control Register */
+@@ -66,11 +67,16 @@ static void __init at91_wakeup_status(void)
+ 	pr_info("AT91: Wake-Up source: %s\n", reason);
  }
  
-+static struct power_off_handler_block twl4030_power_off_hb = {
-+	.handler = twl4030_power_off,
-+	.priority = POWER_OFF_PRIORITY_LOW,
+-static void at91_poweroff(void)
++static void at91_poweroff(struct power_off_handler_block *this)
+ {
+ 	writel(AT91_SHDW_KEY | AT91_SHDW_SHDW, at91_shdwc_base + AT91_SHDW_CR);
+ }
+ 
++static struct power_off_handler_block at91_power_off_hb = {
++	.handler = at91_poweroff,
++	.priority = POWER_OFF_PRIORITY_DEFAULT,
 +};
 +
- static bool twl4030_power_use_poweroff(const struct twl4030_power_data *pdata,
- 					struct device_node *node)
+ const enum wakeup_type at91_poweroff_get_wakeup_mode(struct device_node *np)
  {
-@@ -839,7 +844,9 @@ static int twl4030_power_probe(struct platform_device *pdev)
- 	}
+ 	const char *pm;
+@@ -134,9 +140,7 @@ static int at91_poweroff_probe(struct platform_device *pdev)
+ 	if (pdev->dev.of_node)
+ 		at91_poweroff_dt_set_wakeup_mode(pdev);
  
- 	/* Board has to be wired properly to use this feature */
--	if (twl4030_power_use_poweroff(pdata, node) && !pm_power_off) {
-+	if (twl4030_power_use_poweroff(pdata, node)) {
-+		int ret;
-+
- 		/* Default for SEQ_OFFSYNC is set, lets ensure this */
- 		err = twl_i2c_read_u8(TWL_MODULE_PM_MASTER, &val,
- 				      TWL4030_PM_MASTER_CFG_P123_TRANSITION);
-@@ -856,7 +863,11 @@ static int twl4030_power_probe(struct platform_device *pdev)
- 			}
- 		}
- 
--		pm_power_off = twl4030_power_off;
-+		ret = devm_register_power_off_handler(&pdev->dev,
-+						      &twl4030_power_off_hb);
-+		if (ret)
-+			dev_warn(&pdev->dev,
-+				 "Failed to register power-off handler\n");
- 	}
- 
- relock:
-@@ -870,11 +881,6 @@ relock:
- 	return err;
+-	pm_power_off = at91_poweroff;
+-
+-	return 0;
++	return devm_register_power_off_handler(&pdev->dev, &at91_power_off_hb);
  }
  
--static int twl4030_power_remove(struct platform_device *pdev)
--{
--	return 0;
--}
--
- static struct platform_driver twl4030_power_driver = {
- 	.driver = {
- 		.name	= "twl4030_power",
-@@ -882,7 +888,6 @@ static struct platform_driver twl4030_power_driver = {
- 		.of_match_table = of_match_ptr(twl4030_power_of_match),
- 	},
- 	.probe		= twl4030_power_probe,
--	.remove		= twl4030_power_remove,
- };
- 
- module_platform_driver(twl4030_power_driver);
-diff --git a/include/linux/i2c/twl.h b/include/linux/i2c/twl.h
-index 8cfb50f..f8544f1 100644
---- a/include/linux/i2c/twl.h
-+++ b/include/linux/i2c/twl.h
-@@ -680,7 +680,6 @@ struct twl4030_power_data {
- };
- 
- extern int twl4030_remove_script(u8 flags);
--extern void twl4030_power_off(void);
- 
- struct twl4030_codec_data {
- 	unsigned int digimic_delay; /* in ms */
+ static struct of_device_id at91_poweroff_of_match[] = {
 -- 
 1.9.1
 
