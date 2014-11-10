@@ -1,27 +1,26 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v6 28/48] power/reset: at91-poweroff: Register with kernel power-off handler
-Date: Sun,  9 Nov 2014 17:42:45 -0800
-Message-ID: <1415583785-6980-29-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v6 25/48] power/reset: qnap-poweroff: Register with kernel power-off handler
+Date: Sun,  9 Nov 2014 17:42:42 -0800
+Message-ID: <1415583785-6980-26-git-send-email-linux@roeck-us.net>
 References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:39095 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752457AbaKJBo1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:44:27 -0500
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1Xne1r-000VVi-As
-	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 01:44:27 +0000
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+List-Id: linux-pm@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
-directly. Select default priority to reflect that the original code sets
-pm_power_off unconditionally.
+directly. Register with default priority to reflect that the original
+code generates an error if another power-off handler has already been
+registered when the driver is loaded.
 
+Drop remove function since it is no longer needed.
+
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Acked-by: Andrew Lunn <andrew@lunn.ch>
 Acked-by: Sebastian Reichel <sre@kernel.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
@@ -39,52 +38,81 @@ v3:
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- Added patch
+- Use define to specify poweroff handler priority
+- Use devm_register_power_off_handler
+- Drop remove function since it is no longer needed
 
- drivers/power/reset/at91-poweroff.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/power/reset/qnap-poweroff.c | 28 ++++++++--------------------
+ 1 file changed, 8 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at91-poweroff.c
-index c610003..6fc5944 100644
---- a/drivers/power/reset/at91-poweroff.c
-+++ b/drivers/power/reset/at91-poweroff.c
-@@ -14,6 +14,7 @@
+diff --git a/drivers/power/reset/qnap-poweroff.c b/drivers/power/reset/qnap-poweroff.c
+index a75db7f..0f39564 100644
+--- a/drivers/power/reset/qnap-poweroff.c
++++ b/drivers/power/reset/qnap-poweroff.c
+@@ -17,6 +17,7 @@
+ #include <linux/kernel.h>
  #include <linux/module.h>
- #include <linux/of.h>
  #include <linux/platform_device.h>
 +#include <linux/pm.h>
- #include <linux/printk.h>
+ #include <linux/serial_reg.h>
+ #include <linux/kallsyms.h>
+ #include <linux/of.h>
+@@ -55,7 +56,7 @@ static void __iomem *base;
+ static unsigned long tclk;
+ static const struct power_off_cfg *cfg;
  
- #define AT91_SHDW_CR	0x00		/* Shut Down Control Register */
-@@ -66,11 +67,16 @@ static void __init at91_wakeup_status(void)
- 	pr_info("AT91: Wake-Up source: %s\n", reason);
- }
- 
--static void at91_poweroff(void)
-+static void at91_poweroff(struct power_off_handler_block *this)
+-static void qnap_power_off(void)
++static void qnap_power_off(struct power_off_handler_block *this)
  {
- 	writel(AT91_SHDW_KEY | AT91_SHDW_SHDW, at91_shdwc_base + AT91_SHDW_CR);
+ 	const unsigned divisor = ((tclk + (8 * cfg->baud)) / (16 * cfg->baud));
+ 
+@@ -74,12 +75,16 @@ static void qnap_power_off(void)
+ 	writel(cfg->cmd, UART1_REG(TX));
  }
  
-+static struct power_off_handler_block at91_power_off_hb = {
-+	.handler = at91_poweroff,
++static struct power_off_handler_block qnap_power_off_hb = {
++	.handler = qnap_power_off,
 +	.priority = POWER_OFF_PRIORITY_DEFAULT,
 +};
 +
- const enum wakeup_type at91_poweroff_get_wakeup_mode(struct device_node *np)
+ static int qnap_power_off_probe(struct platform_device *pdev)
  {
- 	const char *pm;
-@@ -134,9 +140,7 @@ static int at91_poweroff_probe(struct platform_device *pdev)
- 	if (pdev->dev.of_node)
- 		at91_poweroff_dt_set_wakeup_mode(pdev);
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct resource *res;
+ 	struct clk *clk;
+-	char symname[KSYM_NAME_LEN];
  
--	pm_power_off = at91_poweroff;
+ 	const struct of_device_id *match =
+ 		of_match_node(qnap_power_off_of_match_table, np);
+@@ -106,28 +111,11 @@ static int qnap_power_off_probe(struct platform_device *pdev)
+ 
+ 	tclk = clk_get_rate(clk);
+ 
+-	/* Check that nothing else has already setup a handler */
+-	if (pm_power_off) {
+-		lookup_symbol_name((ulong)pm_power_off, symname);
+-		dev_err(&pdev->dev,
+-			"pm_power_off already claimed %p %s",
+-			pm_power_off, symname);
+-		return -EBUSY;
+-	}
+-	pm_power_off = qnap_power_off;
 -
 -	return 0;
-+	return devm_register_power_off_handler(&pdev->dev, &at91_power_off_hb);
+-}
+-
+-static int qnap_power_off_remove(struct platform_device *pdev)
+-{
+-	pm_power_off = NULL;
+-	return 0;
++	return devm_register_power_off_handler(&pdev->dev, &qnap_power_off_hb);
  }
  
- static struct of_device_id at91_poweroff_of_match[] = {
+ static struct platform_driver qnap_power_off_driver = {
+ 	.probe	= qnap_power_off_probe,
+-	.remove	= qnap_power_off_remove,
+ 	.driver	= {
+ 		.owner	= THIS_MODULE,
+ 		.name	= "qnap_power_off",
 -- 
 1.9.1
-
