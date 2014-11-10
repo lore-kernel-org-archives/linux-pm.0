@@ -1,28 +1,35 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: qoriq: Make the driver usable on all QorIQ platforms
-Date: Mon, 10 Nov 2014 10:26:32 +0530
-Message-ID: <CAKohpokOorF82EDwTyvCcEhpQJvMOXfLzotxj+E9Ys6Jydbk5g@mail.gmail.com>
-References: <1413515616-15874-1-git-send-email-B29983@freescale.com>
-	<CAKohpokotKSvQ13uU4MnCer+qzBUUbGVTd19y7xswCAEKk3nGQ@mail.gmail.com>
-	<6aaa50ef5f234fe2896f1c66eb646dfb@DM2PR03MB574.namprd03.prod.outlook.com>
-	<CAKohpokSuKOwZ3-OWFtU0z7E1fsMg4tyPiUoFUfw26pD9Py=MA@mail.gmail.com>
-	<c94b68be09dd4bfaa8a80d9877362fb5@DM2PR03MB574.namprd03.prod.outlook.com>
+Subject: Re: [PATCH] cpufreq: respect the min/max settings from user space
+Date: Mon, 10 Nov 2014 10:39:25 +0530
+Message-ID: <CAKohpo=jZAmqvdYr+0uUY8xBi5bK0isADS4o5xsaK+rxALcVHQ@mail.gmail.com>
+References: <1412232900-11238-1-git-send-email-vinceh@nvidia.com>
+	<CAKohpon=dwc--SSbwjREdrALfXH=7QCw8UJnyVX5x3TCKB=7Bw@mail.gmail.com>
+	<54321F90.2010103@nvidia.com>
+	<544F0C8C.3090003@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f49.google.com ([209.85.218.49]:50276 "EHLO
-	mail-oi0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbaKJE4c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 23:56:32 -0500
-Received: by mail-oi0-f49.google.com with SMTP id u20so4846787oif.36
-        for <linux-pm@vger.kernel.org>; Sun, 09 Nov 2014 20:56:32 -0800 (PST)
-In-Reply-To: <c94b68be09dd4bfaa8a80d9877362fb5@DM2PR03MB574.namprd03.prod.outlook.com>
+Received: from mail-oi0-f41.google.com ([209.85.218.41]:49972 "EHLO
+	mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750941AbaKJFJ0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 00:09:26 -0500
+Received: by mail-oi0-f41.google.com with SMTP id e131so4902892oig.28
+        for <linux-pm@vger.kernel.org>; Sun, 09 Nov 2014 21:09:25 -0800 (PST)
+In-Reply-To: <544F0C8C.3090003@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yuantian Tang <Yuantian.Tang@freescale.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Vince Hsu <vinceh@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bill Huang <bilhuang@nvidia.com>, Dylan Reid <dgreid@google.com>, olofj@chromium.org
 
-On 27 October 2014 09:09, Yuantian Tang <Yuantian.Tang@freescale.com> wrote:
-> Do we have a conclusion yet?
+On 28 October 2014 08:55, Vince Hsu <vinceh@nvidia.com> wrote:
+> Hi Viresh,
+>
+> Could you remind me where can I find this patch upstream? It seems this was
+> missed?
 
-No. You can keep your initial duplication of Kconfig entries for the time being.
+Rafael hasn't picked it up. You can normally look at the tree Rafael
+manages:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+
+Can you please resend it to Rafael ?
