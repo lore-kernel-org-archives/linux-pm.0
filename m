@@ -1,42 +1,77 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v10 1/5] PM / Runtime: Allow accessing irq_safe if no
- PM_RUNTIME
-Date: Mon, 10 Nov 2014 11:36:10 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1411101133100.5793-100000@netrider.rowland.org>
-References: <CAPDyKFpCx9XZu7xWt+koY-iLmiX4+XPu+2hGow2hrz3AR8Cb=A@mail.gmail.com>
+From: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [PATCH 3/4] OOM, PM: OOM killed task shouldn't escape PM suspend
+Date: Mon, 10 Nov 2014 17:30:55 +0100
+Message-ID: <20141110163055.GC18373@dhcp22.suse.cz>
+References: <20141105160115.GA28226@dhcp22.suse.cz>
+ <20141105162929.GD14386@htj.dyndns.org>
+ <20141105163956.GD28226@dhcp22.suse.cz>
+ <20141105165428.GF14386@htj.dyndns.org>
+ <20141105174609.GE28226@dhcp22.suse.cz>
+ <20141105175527.GH14386@htj.dyndns.org>
+ <20141106124953.GD7202@dhcp22.suse.cz>
+ <20141106150121.GA25642@htj.dyndns.org>
+ <20141106160223.GJ7202@dhcp22.suse.cz>
+ <20141106162845.GD25642@htj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:33510 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750993AbaKJQgL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 11:36:11 -0500
-In-Reply-To: <CAPDyKFpCx9XZu7xWt+koY-iLmiX4+XPu+2hGow2hrz3AR8Cb=A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20141106162845.GD25642@htj.dyndns.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Cong Wang <xiyou.wangcong@gmail.com>, David Rientjes <rientjes@google.com>, Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Mon, 10 Nov 2014, Ulf Hansson wrote:
-
-> > To me, this sounds like a good reason to avoid using
-> > force_runtime_suspend().  In fact, it sounds like a good reason to
-> > avoid relying on the runtime PM mechanism to handle non-runtime-PM
-> > things (like a system suspend callback).  If CONFIG_PM_RUNTIME isn't
-> > enabled then the runtime PM stack simply should not be used.
+On Thu 06-11-14 11:28:45, Tejun Heo wrote:
+> On Thu, Nov 06, 2014 at 05:02:23PM +0100, Michal Hocko wrote:
+[...]
+> > > We're doing one thing for non-PM freezing and the other way around for
+> > > PM freezing, which indicates one of the two directions is wrong.
+> > 
+> > Because those two paths are quite different in their requirements. The
+> > cgroup freezer only cares about freezing tasks and it doesn't have to
+> > care about tasks accessing a possibly half suspended device on their way
+> > out.
 > 
-> There are an important advantage of using the pm_runtime_force_suspend() here.
+> I don't think the fundamental relationship between freezing and oom
+> killing are different between the two and the failure to recognize
+> that is what's leading to these weird issues.
+
+I do not understand the above. Could you be more specific, please?
+AFAIU cgroup freezer requires that no task will leak into userspace
+while the cgroup is frozen. This is naturally true for the OOM path
+whether the two are synchronized or not.
+The PM freezer, on the other hand, requires that no task is _woken up_
+after all tasks are frozen. This requires synchronization between the
+freezer and OOM path because allocations are allowed also after tasks
+are frozen.
+What am I missing?
+
+> > > Shouldn't it be that OOM killing happening while PM freezing is in
+> > > progress cancels PM freezing rather than the other way around?  Find a
+> > > point in PM suspend/hibernation operation where everything must be
+> > > stable, disable OOM killing there and check whether OOM killing
+> > > happened inbetween and if so back out. 
+> > 
+> > This is freeze_processes AFAIU. I might be wrong of course but this is
+> > the time since when nobody should be waking processes up because they
+> > could access half suspended devices.
 > 
-> For the driver to handle clock gating at system PM suspend, it first
-> needs to bring the device into full power, through
-> pm_runtime_get_sync(). Otherwise it's not safe to gate the clock,
-> since it may already be gated.
+> No, you're doing it before freezing starts.  The system is in no way
+> in a quiescent state at that point.
 
-That's fine, but it has nothing to do with pm_runtime_force_suspend().
+You are right! Userspace shouldn't see any unexpected allocation
+failures just because PM freezing is in progress. This whole process
+should be transparent from userspace POV.
 
-Besides, if the real question is whether or not to gate the clock (or 
-in other words, has the clock already been gated), why not just store a 
-"clock_is_gated" flag somewhere?
+I am getting back to
+	oom_killer_lock();
+	error = try_to_freeze_tasks();
+	if (!error)
+		oom_killer_disable();
+	oom_killer_unlock();
 
-Alan Stern
-
+Thanks!
+-- 
+Michal Hocko
+SUSE Labs
