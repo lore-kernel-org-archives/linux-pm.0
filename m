@@ -1,473 +1,107 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v6 01/48] kernel: Add support for power-off handler call chain
-Date: Sun,  9 Nov 2014 17:42:18 -0800
-Message-ID: <1415583785-6980-2-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v6 10/48] mfd: axp20x: Register with kernel power-off handler
+Date: Sun,  9 Nov 2014 17:42:27 -0800
+Message-ID: <1415583785-6980-11-git-send-email-linux@roeck-us.net>
 References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, =?UTF-8?q?Philippe=20R=C3=A9tornaz?= <philippe.retornaz@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Various drivers implement architecture and/or device specific means to
-power off the system.  For the most part, those drivers set the global
-variable pm_power_off to point to a function within the driver.
+Register with kernel power-off handler instead of setting pm_power_off
+directly. Register with low priority to reflect that the original code
+only sets pm_power_off if it was not already set.
 
-This mechanism has a number of drawbacks.  Typically only one scheme
-to remove power is supported (at least if pm_power_off is used).
-At least in theory there can be multiple means remove power, some of
-which may be less desirable. For example, some mechanisms may only
-power off the CPU or the CPU card, while another may power off the
-entire system.  Others may really just execute a restart sequence
-or drop into the ROM monitor. Using pm_power_off can also be racy
-if the function pointer is set from a driver built as module, as the
-driver may be in the process of being unloaded when pm_power_off is
-called. If there are multiple power-off handlers in the system, removin=
-g
-a module with such a handler may inadvertently reset the pointer to
-pm_power_off to NULL, leaving the system with no means to remove power.
-
-Introduce a system power-off handler call chain to solve the described
-problems.  This call chain is expected to be executed from the architec=
-ture
-specific machine_power_off() function.  Drivers and architeceture code
-providing system power-off functionality are expected to register with
-this call chain.  When registering a power-off handler, callers can
-provide a priority to control power-off handler execution sequence
-and thus ensure that the power-off handler with the optimal capabilitie=
-s
-to remove power for a given system is called first.
-
-Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-Cc: Alexander Graf <agraf@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Heiko Stuebner <heiko@sntech.de>
 Cc: Lee Jones <lee.jones@linaro.org>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Philippe R=C3=A9tornaz <philippe.retornaz@gmail.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Romain Perier <romain.perier@gmail.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Acked-by: Heiko Stuebner <heiko@sntech.de>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Acked-by: Lee Jones <lee.jones@linaro.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v6:
-- Replaced priority defines with enum.
+- This patch: No change.
+  Global: Replaced priority defines with enum.
 v5:
 - Rebase to v3.18-rc3
 v4:
-- Do not use notifiers but internal functions and data structures to ma=
-nage
-  the list of power-off handlers. Drop unused parameters from callbacks=
-, and
-  make the power-off function type void.
-  Code to manage and walk the list of callbacks is derived from notifie=
-r.c.
+- Do not use notifiers but internal functions and data structures to manage
+  the list of power-off handlers. Drop unused parameters from callbacks, and
+  make the power-off function type void
 v3:
-- Rename new file to power_off_handler.c
 - Replace poweroff in all newly introduced variables and in text
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
-- Execute power-off handlers without any locks held
 v2:
-- poweroff -> power_off
-- Add defines for default priorities
-- Use raw notifiers protected by spinlocks instead of atomic notifiers
-- Add register_poweroff_handler_simple
-- Add devm_register_power_off_handler
+- Use define to specify powroff handler priority
+- Use devm_register_power_off_handler
+- Use dev_warn instead of dev_err
 
- include/linux/pm.h               |  27 ++++
- kernel/power/Makefile            |   1 +
- kernel/power/power_off_handler.c | 312 +++++++++++++++++++++++++++++++=
-++++++++
- 3 files changed, 340 insertions(+)
- create mode 100644 kernel/power/power_off_handler.c
+ drivers/mfd/axp20x.c       | 24 +++++++++++-------------
+ include/linux/mfd/axp20x.h |  1 +
+ 2 files changed, 12 insertions(+), 13 deletions(-)
 
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 383fd68..1d2298b 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -35,6 +35,33 @@ extern void (*pm_power_off)(void);
- extern void (*pm_power_off_prepare)(void);
-=20
- struct device; /* we have a circular dep with device.h */
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index 6231adb..e2430e6 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -150,11 +150,13 @@ static struct mfd_cell axp20x_cells[] = {
+ 	},
+ };
+ 
+-static struct axp20x_dev *axp20x_pm_power_off;
+-static void axp20x_power_off(void)
++static void axp20x_power_off(struct power_off_handler_block *this)
 +
-+/*
-+ * Data structures and callbacks to manage power-off handlers
-+ */
-+enum power_off_priority {
-+	POWER_OFF_PRIORITY_FALLBACK =3D 0,
-+	POWER_OFF_PRIORITY_LOW,
-+	POWER_OFF_PRIORITY_DEFAULT,
-+	POWER_OFF_PRIORITY_HIGH,
-+	POWER_OFF_PRIORITY_HIGHEST
-+};
+ {
+-	regmap_write(axp20x_pm_power_off->regmap, AXP20X_OFF_CTRL,
+-		     AXP20X_OFF);
++	struct axp20x_dev *axp20x = container_of(this, struct axp20x_dev,
++						 power_off_hb);
 +
-+struct power_off_handler_block {
-+	void (*handler)(struct power_off_handler_block *);
-+	struct power_off_handler_block __rcu *next;
-+	enum power_off_priority priority;
-+};
-+
-+int register_power_off_handler(struct power_off_handler_block *);
-+int devm_register_power_off_handler(struct device *,
-+				    struct power_off_handler_block *);
-+int register_power_off_handler_simple(void (*function)(void),
-+				      enum power_off_priority priority);
-+int unregister_power_off_handler(struct power_off_handler_block *);
-+void do_kernel_power_off(void);
-+bool have_kernel_power_off(void);
-+
- #ifdef CONFIG_VT_CONSOLE_SLEEP
- extern void pm_vt_switch_required(struct device *dev, bool required);
- extern void pm_vt_switch_unregister(struct device *dev);
-diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-index 29472bf..567eda5 100644
---- a/kernel/power/Makefile
-+++ b/kernel/power/Makefile
-@@ -2,6 +2,7 @@
- ccflags-$(CONFIG_PM_DEBUG)	:=3D -DDEBUG
-=20
- obj-y				+=3D qos.o
-+obj-y				+=3D power_off_handler.o
- obj-$(CONFIG_PM)		+=3D main.o
- obj-$(CONFIG_VT_CONSOLE_SLEEP)	+=3D console.o
- obj-$(CONFIG_FREEZER)		+=3D process.o
-diff --git a/kernel/power/power_off_handler.c b/kernel/power/power_off_=
-handler.c
-new file mode 100644
-index 0000000..c19e72b
---- /dev/null
-+++ b/kernel/power/power_off_handler.c
-@@ -0,0 +1,312 @@
-+/*
-+ * kernel/power/power_off_handler.c - Power-off handling functions
-+ *
-+ * Copyright (c) 2014 Guenter Roeck
-+ *
-+ * List management code derived from kernel/notifier.c.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public Licence
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the Licence, or (at your option) any later version.
-+ */
-+
-+#define pr_fmt(fmt)	"power-off: " fmt
-+
-+#include <linux/ctype.h>
-+#include <linux/device.h>
-+#include <linux/export.h>
-+#include <linux/kallsyms.h>
-+#include <linux/pm.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/types.h>
-+
-+/*
-+ * List of handlers for kernel code which wants to be called
-+ * to power off the system.
-+ */
-+static struct power_off_handler_block __rcu *power_off_handler_list;
-+static DEFINE_SPINLOCK(power_off_handler_lock);
-+
-+/*
-+ * Internal function to register power-off handler.
-+ * Must be called with power-off spinlock acquired.
-+ */
-+static void _register_power_off_handler(struct power_off_handler_block=
- *p)
-+{
-+	struct power_off_handler_block **pl =3D &power_off_handler_list;
-+
-+	WARN_ON(p->priority < POWER_OFF_PRIORITY_FALLBACK ||
-+		p->priority > POWER_OFF_PRIORITY_HIGHEST);
-+
-+	while ((*pl) !=3D NULL) {
-+		if (p->priority > (*pl)->priority)
-+			break;
-+		pl =3D &((*pl)->next);
-+	}
-+	p->next =3D *pl;
-+	rcu_assign_pointer(*pl, p);
-+}
-+
-+/*
-+ * Internal function to unregister a power-off handler.
-+ * Must be called with power-off spinlock acquired.
-+ */
-+static int _unregister_power_off_handler(struct power_off_handler_bloc=
-k *p)
-+{
-+	struct power_off_handler_block **pl =3D &power_off_handler_list;
-+
-+	while ((*pl) !=3D NULL) {
-+		if ((*pl) =3D=3D p) {
-+			rcu_assign_pointer(*pl, p->next);
-+			return 0;
-+		}
-+		pl =3D &((*pl)->next);
-+	}
-+	return -ENOENT;
-+}
-+
-+/**
-+ *	register_power_off_handler - Register function to be called to powe=
-r off
-+ *				     the system
-+ *	@pb: Info about handler function to be called
-+ *	@pb->handler:	Power-off handler function.
-+ *	@pb->priority:	Handler priority.
-+ *			The following priorities are available.
-+ *			%POWER_OFF_PRIORITY_FALLBACK
-+ *				Power-off handler of last resort,
-+ *				with limited or no power-off capabilities,
-+ *				such as power-off handlers which do not
-+ *				really power off the system but loop forever
-+ *				or stop the CPU.
-+ *			%POWER_OFF_PRIORITY_LOW
-+ *				Secondary power-off handler. Use if multiple
-+ *				power-off handlers may exist in the system
-+ *				and this one is expected to be used as
-+ *				back-up or if the primary power-off handler
-+ *				fails for some reason.
-+ *			%POWER_OFF_PRIORITY_DEFAULT
-+ *				Default power-off handler; use if no other
-+ *				power-off handler is expected to be available,
-+ *				and/or if power-off functionality is
-+ *				sufficient to power off the entire system.
-+ *			%POWER_OFF_PRIORITY_HIGH
-+ *				Preferred power-off handler. Use if multiple
-+ *				power-off handlers may exist in the system
-+ *				and this one is expected to be called in
-+ *				this case.
-+ *			%POWER_OFF_PRIORITY_HIGHEST
-+ *				Highest priority power-off handler, will
-+ *				preempt all other power-off handlers.
-+ *
-+ *	Registers a function with code to be called to power off the
-+ *	system.
-+ *
-+ *	Registered functions will be called from machine_power_off as last
-+ *	step of the power-off sequence. Registered functions are expected
-+ *	to power off the system immediately. If more than one function is
-+ *	registered, the power-off handler priority selects which function
-+ *	will be called first.
-+ *
-+ *	Power-off handlers may be registered from architecture code or from
-+ *	drivers. A typical use case would be a system where power off
-+ *	functionality is provided through a multi-function chip or through
-+ *	a programmable power controller. Multiple power-off handlers may ex=
-ist;
-+ *	for example, one power-off handler might power off the entire syste=
-m,
-+ *	while another only powers off the CPU card. In such cases, the
-+ *	power-off handler which only powers off part of the hardware is
-+ *	expected to register with low priority to ensure that it only
-+ *	runs if no other means to power off the system are available.
-+ *
-+ *	Always returns zero.
-+ */
-+int register_power_off_handler(struct power_off_handler_block *pb)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&power_off_handler_lock, flags);
-+	_register_power_off_handler(pb);
-+	spin_unlock_irqrestore(&power_off_handler_lock, flags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(register_power_off_handler);
-+
-+/**
-+ *	unregister_power_off_handler - Unregister previously registered
-+ *				       power-off handler
-+ *	@pb: Hook to be unregistered
-+ *
-+ *	Unregisters a previously registered power-off handler function.
-+ *
-+ *	Returns zero on success, or -%ENOENT on failure.
-+ */
-+int unregister_power_off_handler(struct power_off_handler_block *pb)
-+{
-+	unsigned long flags;
-+	int ret;
-+
-+	spin_lock_irqsave(&power_off_handler_lock, flags);
-+	ret =3D _unregister_power_off_handler(pb);
-+	spin_unlock_irqrestore(&power_off_handler_lock, flags);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(unregister_power_off_handler);
-+
-+struct _power_off_handler_data {
-+	void (*handler)(void);
-+	struct power_off_handler_block power_off_hb;
-+};
-+
-+static void _power_off_handler(struct power_off_handler_block *this)
-+{
-+	struct _power_off_handler_data *poh =3D
-+		container_of(this, struct _power_off_handler_data,
-+			     power_off_hb);
-+
-+	poh->handler();
-+}
-+
-+static struct _power_off_handler_data power_off_handler_data;
-+
-+/**
-+ *	register_power_off_handler_simple - Register function to be called
-+ *					    to power off the system
-+ *	@handler:	Function to be called to power off the system
-+ *	@priority:	Handler priority. For available priorities see
-+ *			register_power_off_handler.
-+ *
-+ *	This is a simplified version of register_power_off_handler. It does
-+ *	not take a power-off handler as argument, but a function pointer.
-+ *	The function registers a power-off handler with specified priority.
-+ *	Power-off handlers registered with this function can not be
-+ *	unregistered, and only a single power-off handler can be installed
-+ *	using it.
-+ *
-+ *	This function must not be called from modules and is therefore
-+ *	not exported.
-+ *
-+ *	Returns -%EBUSY if a power-off handler has already been registered
-+ *	using register_power_off_handler_simple. Otherwise returns zero.
-+ */
-+int register_power_off_handler_simple(void (*handler)(void),
-+				      enum power_off_priority priority)
-+{
-+	unsigned long flags;
-+	int ret =3D 0;
-+
-+	spin_lock_irqsave(&power_off_handler_lock, flags);
-+
-+	if (power_off_handler_data.handler) {
-+		pr_warn("Power-off function already registered (%ps), cannot registe=
-r %ps",
-+			power_off_handler_data.handler, handler);
-+		ret =3D -EBUSY;
-+		goto abort;
-+	}
-+
-+	power_off_handler_data.handler =3D handler;
-+	power_off_handler_data.power_off_hb.handler =3D _power_off_handler;
-+	power_off_handler_data.power_off_hb.priority =3D priority;
-+
-+	_register_power_off_handler(&power_off_handler_data.power_off_hb);
-+abort:
-+	spin_unlock_irqrestore(&power_off_handler_lock, flags);
-+	return ret;
-+}
-+
-+/* Device managed power-off handler registration */
-+
-+static void devm_power_off_release(struct device *dev, void *res)
-+{
-+	struct power_off_handler_block *pb;
-+
-+	pb =3D *(struct power_off_handler_block **)res;
-+	unregister_power_off_handler(pb);
-+}
-+
-+/**
-+ *	devm_register_power_off_handler - Register function to be called
-+ *					  to power off the system
-+ *	@dev:		The device registering the power-off handler.
-+ *	@pb:		Structure providing a pointer to the power-off
-+ *			handler function as well as the power-off handler
-+ *			priority.
-+ *
-+ *	This is the device managed version of register_power_off_handler.
-+ *
-+ *	Returns -%EINVAL if dev is NULL. Returns -%ENOMEM if the system is
-+ *	out of memory. Otherwise returns zero.
-+ */
-+int devm_register_power_off_handler(struct device *dev,
-+				    struct power_off_handler_block *pb)
-+{
-+	struct power_off_handler_block **ptr;
-+	unsigned long flags;
-+
-+	if (!dev)
-+		return -EINVAL;
-+
-+	ptr =3D devres_alloc(devm_power_off_release, sizeof(*ptr), GFP_KERNEL=
-);
-+	if (!ptr)
-+		return -ENOMEM;
-+
-+	spin_lock_irqsave(&power_off_handler_lock, flags);
-+	_register_power_off_handler(pb);
-+	spin_unlock_irqrestore(&power_off_handler_lock, flags);
-+
-+	*ptr =3D pb;
-+	devres_add(dev, ptr);
-+	return 0;
-+}
-+EXPORT_SYMBOL(devm_register_power_off_handler);
-+
-+/**
-+ *	do_kernel_power_off - Execute kernel power-off handler call chain
-+ *
-+ *	Calls functions registered with register_power_off_handler.
-+ *
-+ *	Expected to be called from machine_power_off as last step of
-+ *	the power-off sequence.
-+ *
-+ *	Powers the system off immediately if a power-off handler function
-+ *	has been registered. Otherwise does nothing.
-+ */
-+void do_kernel_power_off(void)
-+{
-+	struct power_off_handler_block *p, *next_p;
-+
-+	/*
-+	 * No locking. This code can be called from both atomic and non-atomi=
-c
-+	 * context, with interrupts enabled or disabled, depending on the
-+	 * architecture and platform.
-+	 *
-+	 * Power-off handler registration and de-registration are executed in
-+	 * atomic context with interrupts disabled, which guarantees that
-+	 * do_kernel_power_off() will not be called while a power-off handler
-+	 * is installed or removed.
-+	 * There is a theoretic risc that a power-off handler is installed or
-+	 * removed while the call chain is traversed, but we'll have to accep=
-t
-+	 * that risk.
-+	 */
-+
-+	p =3D rcu_dereference_raw(power_off_handler_list);
-+	while (p) {
-+		next_p =3D rcu_dereference_raw(p->next);
-+		p->handler(p);
-+		p =3D next_p;
-+	}
-+}
-+
-+/**
-+ * have_kernel_power_off() - Check if kernel power-off handler is avai=
-lable
-+ *
-+ * Returns true if a kernel power-off handler is available, false othe=
-rwise.
-+ */
-+bool have_kernel_power_off(void)
-+{
-+	return pm_power_off !=3D NULL ||
-+			rcu_dereference_raw(power_off_handler_list) !=3D NULL;
-+}
-+EXPORT_SYMBOL(have_kernel_power_off);
---=20
++	regmap_write(axp20x->regmap, AXP20X_OFF_CTRL, AXP20X_OFF);
+ }
+ 
+ static int axp20x_i2c_probe(struct i2c_client *i2c,
+@@ -204,10 +206,11 @@ static int axp20x_i2c_probe(struct i2c_client *i2c,
+ 		return ret;
+ 	}
+ 
+-	if (!pm_power_off) {
+-		axp20x_pm_power_off = axp20x;
+-		pm_power_off = axp20x_power_off;
+-	}
++	axp20x->power_off_hb.handler = axp20x_power_off;
++	axp20x->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
++	ret = devm_register_power_off_handler(&i2c->dev, &axp20x->power_off_hb);
++	if (ret)
++		dev_warn(&i2c->dev, "failed to register power-off handler\n");
+ 
+ 	dev_info(&i2c->dev, "AXP20X driver loaded\n");
+ 
+@@ -218,11 +221,6 @@ static int axp20x_i2c_remove(struct i2c_client *i2c)
+ {
+ 	struct axp20x_dev *axp20x = i2c_get_clientdata(i2c);
+ 
+-	if (axp20x == axp20x_pm_power_off) {
+-		axp20x_pm_power_off = NULL;
+-		pm_power_off = NULL;
+-	}
+-
+ 	mfd_remove_devices(axp20x->dev);
+ 	regmap_del_irq_chip(axp20x->i2c_client->irq, axp20x->regmap_irqc);
+ 
+diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+index d0e31a2..8f330af 100644
+--- a/include/linux/mfd/axp20x.h
++++ b/include/linux/mfd/axp20x.h
+@@ -175,6 +175,7 @@ struct axp20x_dev {
+ 	struct regmap			*regmap;
+ 	struct regmap_irq_chip_data	*regmap_irqc;
+ 	long				variant;
++	struct power_off_handler_block	power_off_hb;
+ };
+ 
+ #endif /* __LINUX_MFD_AXP20X_H */
+-- 
 1.9.1
