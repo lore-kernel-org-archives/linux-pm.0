@@ -1,29 +1,33 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v6 15/48] mfd: dm355evm_msp: Register with kernel power-off handler
-Date: Sun,  9 Nov 2014 17:42:32 -0800
-Message-ID: <1415583785-6980-16-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v6 18/48] mfd: twl4030-power: Register with kernel power-off handler
+Date: Sun,  9 Nov 2014 17:42:35 -0800
+Message-ID: <1415583785-6980-19-git-send-email-linux@roeck-us.net>
 References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:38982 "EHLO
+Received: from bh-25.webhostbox.net ([208.91.199.152]:39010 "EHLO
 	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234AbaKJBn6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:43:58 -0500
+	with ESMTP id S1752188AbaKJBoF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:44:05 -0500
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
 	(envelope-from <linux@roeck-us.net>)
-	id 1Xne1O-000UZk-9W
-	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 01:43:58 +0000
+	id 1Xne1U-000UyX-QM
+	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 01:44:04 +0000
 In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-omap@vger.kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
 directly. Register with low priority to reflect that the original code
 only sets pm_power_off if it was not already set.
 
+Make twl4030_power_off static as it is only called from the twl4030-power
+driver. Drop remove function as it is no longer needed.
+
 Cc: Samuel Ortiz <sameo@linux.intel.com>
 Cc: Lee Jones <lee.jones@linaro.org>
+Cc: linux-omap@vger.kernel.org
 Acked-by: Lee Jones <lee.jones@linaro.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
@@ -43,55 +47,105 @@ v3:
 v2:
 - Use define to specify poweroff handler priority
 - Use dev_warn instead of dev_err
+- Use devm_register_power_off_handler
+- Drop remove function as it is no longer needed.
 
- drivers/mfd/dm355evm_msp.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ drivers/mfd/twl4030-power.c | 25 +++++++++++++++----------
+ include/linux/i2c/twl.h     |  1 -
+ 2 files changed, 15 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/mfd/dm355evm_msp.c b/drivers/mfd/dm355evm_msp.c
-index 4c826f7..d9ec1e6 100644
---- a/drivers/mfd/dm355evm_msp.c
-+++ b/drivers/mfd/dm355evm_msp.c
-@@ -14,6 +14,7 @@
- #include <linux/platform_device.h>
- #include <linux/clk.h>
+diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
+index cf92a6d..88fd33c 100644
+--- a/drivers/mfd/twl4030-power.c
++++ b/drivers/mfd/twl4030-power.c
+@@ -25,9 +25,9 @@
+  */
+ 
  #include <linux/module.h>
+-#include <linux/pm.h>
+ #include <linux/i2c/twl.h>
+ #include <linux/platform_device.h>
 +#include <linux/pm.h>
- #include <linux/err.h>
- #include <linux/gpio.h>
- #include <linux/leds.h>
-@@ -352,14 +353,19 @@ static void dm355evm_command(unsigned command)
- 				command, status);
- }
+ #include <linux/of.h>
+ #include <linux/of_device.h>
  
--static void dm355evm_power_off(void)
-+static void dm355evm_power_off(struct power_off_handler_block *this)
+@@ -611,7 +611,7 @@ twl4030_power_configure_resources(const struct twl4030_power_data *pdata)
+  * After a successful execution, TWL shuts down the power to the SoC
+  * and all peripherals connected to it.
+  */
+-void twl4030_power_off(void)
++static void twl4030_power_off(struct power_off_handler_block *this)
  {
- 	dm355evm_command(MSP_COMMAND_POWEROFF);
+ 	int err;
+ 
+@@ -621,6 +621,11 @@ void twl4030_power_off(void)
+ 		pr_err("TWL4030 Unable to power off\n");
  }
  
-+static struct power_off_handler_block dm355evm_msp_power_off_hb = {
-+	.handler = dm355evm_power_off,
++static struct power_off_handler_block twl4030_power_off_hb = {
++	.handler = twl4030_power_off,
 +	.priority = POWER_OFF_PRIORITY_LOW,
 +};
 +
- static int dm355evm_msp_remove(struct i2c_client *client)
+ static bool twl4030_power_use_poweroff(const struct twl4030_power_data *pdata,
+ 					struct device_node *node)
  {
--	pm_power_off = NULL;
-+	unregister_power_off_handler(&dm355evm_msp_power_off_hb);
- 	msp430 = NULL;
- 	return 0;
+@@ -839,7 +844,9 @@ static int twl4030_power_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/* Board has to be wired properly to use this feature */
+-	if (twl4030_power_use_poweroff(pdata, node) && !pm_power_off) {
++	if (twl4030_power_use_poweroff(pdata, node)) {
++		int ret;
++
+ 		/* Default for SEQ_OFFSYNC is set, lets ensure this */
+ 		err = twl_i2c_read_u8(TWL_MODULE_PM_MASTER, &val,
+ 				      TWL4030_PM_MASTER_CFG_P123_TRANSITION);
+@@ -856,7 +863,11 @@ static int twl4030_power_probe(struct platform_device *pdev)
+ 			}
+ 		}
+ 
+-		pm_power_off = twl4030_power_off;
++		ret = devm_register_power_off_handler(&pdev->dev,
++						      &twl4030_power_off_hb);
++		if (ret)
++			dev_warn(&pdev->dev,
++				 "Failed to register power-off handler\n");
+ 	}
+ 
+ relock:
+@@ -870,11 +881,6 @@ relock:
+ 	return err;
  }
-@@ -398,7 +404,9 @@ dm355evm_msp_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 		goto fail;
  
- 	/* PM hookup */
--	pm_power_off = dm355evm_power_off;
-+	status = register_power_off_handler(&dm355evm_msp_power_off_hb);
-+	if (status)
-+		dev_warn(&client->dev, "Failed to register power-off handler\n");
+-static int twl4030_power_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+ static struct platform_driver twl4030_power_driver = {
+ 	.driver = {
+ 		.name	= "twl4030_power",
+@@ -882,7 +888,6 @@ static struct platform_driver twl4030_power_driver = {
+ 		.of_match_table = of_match_ptr(twl4030_power_of_match),
+ 	},
+ 	.probe		= twl4030_power_probe,
+-	.remove		= twl4030_power_remove,
+ };
  
- 	return 0;
+ module_platform_driver(twl4030_power_driver);
+diff --git a/include/linux/i2c/twl.h b/include/linux/i2c/twl.h
+index 8cfb50f..f8544f1 100644
+--- a/include/linux/i2c/twl.h
++++ b/include/linux/i2c/twl.h
+@@ -680,7 +680,6 @@ struct twl4030_power_data {
+ };
  
+ extern int twl4030_remove_script(u8 flags);
+-extern void twl4030_power_off(void);
+ 
+ struct twl4030_codec_data {
+ 	unsigned int digimic_delay; /* in ms */
 -- 
 1.9.1
 
