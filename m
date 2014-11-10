@@ -1,45 +1,30 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v6 23/48] power/reset: gpio-poweroff: Register with kernel power-off handler
-Date: Sun,  9 Nov 2014 17:42:40 -0800
-Message-ID: <1415583785-6980-24-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v6 20/48] mfd: rn5t618: Register power-off handler with kernel power-off handler
+Date: Sun,  9 Nov 2014 17:42:37 -0800
+Message-ID: <1415583785-6980-21-git-send-email-linux@roeck-us.net>
 References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:39045 "EHLO
+Received: from bh-25.webhostbox.net ([208.91.199.152]:39025 "EHLO
 	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752357AbaKJBoQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:44:16 -0500
+	with ESMTP id S1752320AbaKJBoK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:44:10 -0500
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
 	(envelope-from <linux@roeck-us.net>)
-	id 1Xne1g-000V6k-E9
-	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 01:44:16 +0000
+	id 1Xne1Z-000V1X-Jz
+	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 01:44:09 +0000
 In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Beniamino Galvani <b.galvani@gmail.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
 
 Register with kernel power-off handler instead of setting pm_power_off
 directly. Register with low priority to reflect that the original code
 only sets pm_power_off if it was not already set.
 
-Other changes:
-
-Drop note that there can not be an additional instance of this driver.
-The original reason no longer applies, it should be obvious that there
-can only be one instance of the driver if static variables are used to
-reflect its state, and support for multiple instances can now be added
-easily if needed by avoiding static variables.
-
-Do not create an error message if another power-off handler has already
-been registered. This is perfectly normal and acceptable.
-
-Drop remove function since it is no longer needed.
-
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Acked-by: Andrew Lunn <andrew@lunn.ch>
-Acked-by: Sebastian Reichel <sre@kernel.org>
+Cc: Beniamino Galvani <b.galvani@gmail.com>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+Tested-by: Beniamino Galvani <b.galvani@gmail.com>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v6:
@@ -55,93 +40,96 @@ v3:
 - Replace poweroff in all newly introduced variables and in text
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
-v2;
-- Use define to specify poweroff handler priority
-- Use devm_register_power_off_handler
-- Drop remove function as it is no longer needed
+v2:
+- New patch
 
- drivers/power/reset/gpio-poweroff.c | 36 +++++++++++++-----------------------
- 1 file changed, 13 insertions(+), 23 deletions(-)
+ drivers/mfd/rn5t618.c       | 28 ++++++++++++----------------
+ include/linux/mfd/rn5t618.h |  2 ++
+ 2 files changed, 14 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/power/reset/gpio-poweroff.c b/drivers/power/reset/gpio-poweroff.c
-index ce849bc..4d480d2 100644
---- a/drivers/power/reset/gpio-poweroff.c
-+++ b/drivers/power/reset/gpio-poweroff.c
-@@ -14,18 +14,16 @@
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/delay.h>
-+#include <linux/pm.h>
- #include <linux/platform_device.h>
- #include <linux/gpio/consumer.h>
- #include <linux/of_platform.h>
+diff --git a/drivers/mfd/rn5t618.c b/drivers/mfd/rn5t618.c
+index 6668571..1492025 100644
+--- a/drivers/mfd/rn5t618.c
++++ b/drivers/mfd/rn5t618.c
+@@ -15,6 +15,7 @@
+ #include <linux/mfd/core.h>
+ #include <linux/mfd/rn5t618.h>
  #include <linux/module.h>
++#include <linux/pm.h>
+ #include <linux/regmap.h>
  
--/*
-- * Hold configuration here, cannot be more than one instance of the driver
-- * since pm_power_off itself is global.
-- */
- static struct gpio_desc *reset_gpio;
+ static const struct mfd_cell rn5t618_cells[] = {
+@@ -47,15 +48,16 @@ static const struct regmap_config rn5t618_regmap_config = {
+ 	.cache_type	= REGCACHE_RBTREE,
+ };
  
--static void gpio_poweroff_do_poweroff(void)
-+static void gpio_poweroff_do_poweroff(struct power_off_handler_block *this)
-+
+-static struct rn5t618 *rn5t618_pm_power_off;
+-
+-static void rn5t618_power_off(void)
++static void rn5t618_power_off(struct power_off_handler_block *this)
  {
- 	BUG_ON(!reset_gpio);
- 
-@@ -45,17 +43,15 @@ static void gpio_poweroff_do_poweroff(void)
- 	WARN_ON(1);
++	struct rn5t618 *rn5t618 = container_of(this, struct rn5t618,
++					       power_off_hb);
++
+ 	/* disable automatic repower-on */
+-	regmap_update_bits(rn5t618_pm_power_off->regmap, RN5T618_REPCNT,
++	regmap_update_bits(rn5t618->regmap, RN5T618_REPCNT,
+ 			   RN5T618_REPCNT_REPWRON, 0);
+ 	/* start power-off sequence */
+-	regmap_update_bits(rn5t618_pm_power_off->regmap, RN5T618_SLPCNT,
++	regmap_update_bits(rn5t618->regmap, RN5T618_SLPCNT,
+ 			   RN5T618_SLPCNT_SWPWROFF, RN5T618_SLPCNT_SWPWROFF);
  }
  
-+static struct power_off_handler_block gpio_power_off_hb = {
-+	.handler = gpio_poweroff_do_poweroff,
-+	.priority = POWER_OFF_PRIORITY_LOW,
-+};
-+
- static int gpio_poweroff_probe(struct platform_device *pdev)
- {
- 	bool input = false;
--
--	/* If a pm_power_off function has already been added, leave it alone */
--	if (pm_power_off != NULL) {
--		dev_err(&pdev->dev,
--			"%s: pm_power_off function already registered",
--		       __func__);
--		return -EBUSY;
--	}
-+	int err;
- 
- 	reset_gpio = devm_gpiod_get(&pdev->dev, NULL);
- 	if (IS_ERR(reset_gpio))
-@@ -77,16 +73,11 @@ static int gpio_poweroff_probe(struct platform_device *pdev)
- 		}
+@@ -85,23 +87,17 @@ static int rn5t618_i2c_probe(struct i2c_client *i2c,
+ 		return ret;
  	}
  
--	pm_power_off = &gpio_poweroff_do_poweroff;
--	return 0;
--}
--
--static int gpio_poweroff_remove(struct platform_device *pdev)
--{
--	if (pm_power_off == &gpio_poweroff_do_poweroff)
--		pm_power_off = NULL;
-+	err = devm_register_power_off_handler(&pdev->dev, &gpio_power_off_hb);
-+	if (err)
-+		dev_err(&pdev->dev, "Failed to register power-off handler\n");
+-	if (!pm_power_off) {
+-		rn5t618_pm_power_off = priv;
+-		pm_power_off = rn5t618_power_off;
+-	}
++	priv->power_off_hb.handler = rn5t618_power_off;
++	priv->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
++	ret = devm_register_power_off_handler(&i2c->dev, &priv->power_off_hb);
++	if (ret)
++		dev_warn(&i2c->dev, "Failed to register power-off handler\n");
  
--	return 0;
-+	return err;
+ 	return 0;
  }
  
- static const struct of_device_id of_gpio_poweroff_match[] = {
-@@ -96,7 +87,6 @@ static const struct of_device_id of_gpio_poweroff_match[] = {
+ static int rn5t618_i2c_remove(struct i2c_client *i2c)
+ {
+-	struct rn5t618 *priv = i2c_get_clientdata(i2c);
+-
+-	if (priv == rn5t618_pm_power_off) {
+-		rn5t618_pm_power_off = NULL;
+-		pm_power_off = NULL;
+-	}
+-
+ 	mfd_remove_devices(&i2c->dev);
+ 	return 0;
+ }
+diff --git a/include/linux/mfd/rn5t618.h b/include/linux/mfd/rn5t618.h
+index c72d534..87e34b3 100644
+--- a/include/linux/mfd/rn5t618.h
++++ b/include/linux/mfd/rn5t618.h
+@@ -14,6 +14,7 @@
+ #ifndef __LINUX_MFD_RN5T618_H
+ #define __LINUX_MFD_RN5T618_H
  
- static struct platform_driver gpio_poweroff_driver = {
- 	.probe = gpio_poweroff_probe,
--	.remove = gpio_poweroff_remove,
- 	.driver = {
- 		.name = "poweroff-gpio",
- 		.owner = THIS_MODULE,
++#include <linux/pm.h>
+ #include <linux/regmap.h>
+ 
+ #define RN5T618_LSIVER			0x00
+@@ -223,6 +224,7 @@ enum {
+ 
+ struct rn5t618 {
+ 	struct regmap *regmap;
++	struct power_off_handler_block power_off_hb;
+ };
+ 
+ #endif /* __LINUX_MFD_RN5T618_H */
 -- 
 1.9.1
 
