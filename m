@@ -1,85 +1,79 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC 1/2] sched/fair: Add cumulative average of load_avg_contrib
- to a task
-Date: Mon, 10 Nov 2014 14:49:11 +0100
-Message-ID: <20141110134911.GG29390@twins.programming.kicks-ass.net>
-References: <1415598358-26505-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1415598358-26505-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v5 18/48] mfd: twl4030-power: Register with kernel power-off
+ handler
+Date: Mon, 10 Nov 2014 06:09:17 -0800
+Message-ID: <5460C70D.1000206@roeck-us.net>
+References: <1415292213-28652-1-git-send-email-linux@roeck-us.net> <1415292213-28652-19-git-send-email-linux@roeck-us.net> <20141110084600.GA2582@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:46544 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752431AbaKJNt3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 08:49:29 -0500
-Content-Disposition: inline
-In-Reply-To: <1415598358-26505-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20141110084600.GA2582@amd>
+Sender: linux-omap-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mturquette@linaro.org, amit.kucheria@linaro.org, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Morten.Rasmussen@arm.com, efault@gmx.de, nicolas.pitre@linaro.org, dietmar.eggemann@arm.com, pjt@google.com, bsegall@google.com, mingo@kernel.org, linaro-kernel@lists.linaro.org
 
-On Mon, Nov 10, 2014 at 11:15:57AM +0530, Shilpasri G Bhat wrote:
-> +/**
-> + * task_cumulative_load - return the cumulative load of
-> + * the previous task if cpu is the current cpu OR the
-> + * cumulative load of current task on the cpu. If cpu
-> + * is idle then return 0.
-> + *
-> + * Invoked by the cpufreq governor to calculate the
-> + * load when the CPU is woken from an idle state.
-> + *
-> + */
-> +unsigned int task_cumulative_load(int cpu)
-> +{
-> +	struct rq *rq = cpu_rq(cpu);
-> +	struct task_struct *p;
-> +
-> +	if (cpu == smp_processor_id()) {
-> +		if (rq->prev == rq->idle)
-> +			goto idle;
-> +		p = rq->prev;
-> +	} else {
-> +		if (rq->curr == rq->idle)
-> +			goto idle;
-> +		p = rq->curr;
-> +	}
-> +	/*
-> +	 * Removing the priority as we are interested in CPU
-> +	 * utilization of the task
-> +	 */
-> +	return (100 * p->se.avg.cumulative_avg / p->se.load.weight);
-> +idle:
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(task_cumulative_load);
+On 11/10/2014 12:46 AM, Pavel Machek wrote:
+> Hi!
+>
+>> @@ -611,7 +611,7 @@ twl4030_power_configure_resources(const struct twl4030_power_data *pdata)
+>>    * After a successful execution, TWL shuts down the power to the SoC
+>>    * and all peripherals connected to it.
+>>    */
+>> -void twl4030_power_off(void)
+>> +static void twl4030_power_off(struct power_off_handler_block *this)
+>>   {
+>>   	int err;
+>>
+>> @@ -621,6 +621,11 @@ void twl4030_power_off(void)
+>>   		pr_err("TWL4030 Unable to power off\n");
+>>   }
+>>
+>> +static struct power_off_handler_block twl4030_power_off_hb = {
+>> +	.handler = twl4030_power_off,
+>> +	.priority = POWER_OFF_PRIORITY_LOW,
+>> +};
+>> +
+>>   static bool twl4030_power_use_poweroff(const struct twl4030_power_data *pdata,
+>>   					struct device_node *node)
+>>   {
+>> @@ -839,7 +844,9 @@ static int twl4030_power_probe(struct platform_device *pdev)
+>>   	}
+>>
+>>   	/* Board has to be wired properly to use this feature */
+>> -	if (twl4030_power_use_poweroff(pdata, node) && !pm_power_off) {
+>> +	if (twl4030_power_use_poweroff(pdata, node)) {
+>> +		int ret;
+>> +
+>>   		/* Default for SEQ_OFFSYNC is set, lets ensure this */
+>>   		err = twl_i2c_read_u8(TWL_MODULE_PM_MASTER, &val,
+>>   				      TWL4030_PM_MASTER_CFG_P123_TRANSITION);
+>> @@ -856,7 +863,11 @@ static int twl4030_power_probe(struct platform_device *pdev)
+>>   			}
+>>   		}
+>>
+>> -		pm_power_off = twl4030_power_off;
+>> +		ret = devm_register_power_off_handler(&pdev->dev,
+>> +						      &twl4030_power_off_hb);
+>> +		if (ret)
+>> +			dev_warn(&pdev->dev,
+>> +				 "Failed to register power-off handler\n");
+>>   	}
+>>
+>
+> Could we get rid of the "struct power_off_handler_block" and guarantee
+> that register_power_off never fails (or print message from the
+> register_power_off...)? That way, your patch would be an cleanup.
+>
+> You could then add priorities if they turn out to be really
+> neccessary, later...
 
-This doesn't make any sense, its wrong and also its broken.
+Priorities are necessary. We had _that_ discussion before.
+Priorities solve the problem where multiple handlers are installed,
+either conditionally or unconditionally. If I take priorities away,
+a substantial part of the patch set's value gets lost, and I might
+as well drop it.
 
-This doesn't make any sense, because the load of a cpu is unrelated to
-whatever task ran there last. You want to look at the task that is
-waking now.
+Guenter
 
-It is wrong because dividing out the load.weight doesn't quite work
-right. Also there's patches that introduce unweighted stats like you
-want, you could have used those.
-
-It it broken because who says rq->prev still exists?
-
-> @@ -2476,11 +2478,13 @@ static inline void update_rq_runnable_avg(struct rq *rq, int runnable) {}
->  static inline void __update_task_entity_contrib(struct sched_entity *se)
->  {
->  	u32 contrib;
-> -
->  	/* avoid overflowing a 32-bit type w/ SCHED_LOAD_SCALE */
->  	contrib = se->avg.runnable_avg_sum * scale_load_down(se->load.weight);
->  	contrib /= (se->avg.runnable_avg_period + 1);
->  	se->avg.load_avg_contrib = scale_load(contrib);
-> +	se->avg.cumulative_avg *= se->avg.cumulative_avg_count;
-> +	se->avg.cumulative_avg += se->avg.load_avg_contrib;
-> +	se->avg.cumulative_avg /= ++se->avg.cumulative_avg_count;
->  }
-
-This is not a numerically stable algorithm. Look what happens when
-cumulative_avg_count gets large. Also, whatever made you choose an
-absolute decay filter like that?
