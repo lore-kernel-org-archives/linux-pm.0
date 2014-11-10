@@ -1,53 +1,62 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH] PM / Domains: Fix initial default state of the
- need_restore flag
-Date: Mon, 10 Nov 2014 19:39:31 +0000
-Message-ID: <20141110193931.GN3815@sirena.org.uk>
-References: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org>
- <7hr3xerdw6.fsf@deeprootsystems.com>
- <20141107215751.GA4439@dtor-ws>
- <CAPDyKFot-LZjazq190cY3-tawB_-ukdsmrLcD3vtidLvX68FOg@mail.gmail.com>
- <20141110183224.GA5626@dtor-ws>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH V3 2/6] sched: idle: cpuidle: Check the latency req
+ before idle
+Date: Mon, 10 Nov 2014 20:48:20 +0100
+Message-ID: <20141110194820.GD10501@worktop.programming.kicks-ass.net>
+References: <1415370687-18688-1-git-send-email-daniel.lezcano@linaro.org>
+ <1415370687-18688-3-git-send-email-daniel.lezcano@linaro.org>
+ <20141110124111.GN3337@twins.programming.kicks-ass.net>
+ <5460D5EF.2000805@linaro.org>
+ <20141110152803.GX10501@worktop.programming.kicks-ass.net>
+ <5460E0A5.9040508@linaro.org>
+ <20141110161530.GB10501@worktop.programming.kicks-ass.net>
+ <5460F386.1050109@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="PrbR2RMKSe7tzlp9"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20141110183224.GA5626@dtor-ws>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaro
-List-Id: linux-pm@vger.kernel.org
-
-
---PrbR2RMKSe7tzlp9
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:41860 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751410AbaKJTs0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 14:48:26 -0500
 Content-Disposition: inline
+In-Reply-To: <5460F386.1050109@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, preeti@linux.vnet.ibm.com, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, lenb@kernel.org
 
-On Mon, Nov 10, 2014 at 10:32:24AM -0800, Dmitry Torokhov wrote:
+On Mon, Nov 10, 2014 at 06:19:02PM +0100, Daniel Lezcano wrote:
+> >I really don't get why the governors should know about this though, its
+> >just another state, they should iterate all states and pick the best,
+> >given the power usage this state should really never be eligible unless
+> >we're QoS forced or whatnot.
+> 
+> The governors just don't use the poll state at all, except for a couple of
+> cases in menu.c defined above in the previous email. What is the rational of
+> adding a state in the cpuidle driver and do everything we can to avoid using
+> it ? From my POV, the poll state is a special state, we should remove from
+> the driver's idle states like the arch_cpu_idle() is a specific idle state
+> only used in idle.c (but which may overlap with an idle state in different
+> archs eg. cpu_do_idle() and the 0th idle state).
 
-> - I do not see why sirincling platform specific code around i2c, spi,
->   etc bus code (which is not platform-specific) is OK, but a no-no for
->   the driver ocre.
+So I disagree, I think poll-idle is an idle mode just like all the
+others. It should be an available state to the governor and it should
+treat it like any other.
 
-sirincling?  In the case of I2C and SPI the buses don't define any sort
-of power management or power domain so any management is going to be
-device or system specific.
+I don't tihnk the whole ARCH_HAS_CPU_RELAX thing makes any kind of
+sense, _every_ arch has some definition of it, the generic polling loop
+is always a valid idle implementation.
 
---PrbR2RMKSe7tzlp9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+What we can do is always populate the idle state table with it before
+calling the regular drivers.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+If the arch drivers have a 'better' latency_req==0 idle routine -- note
+my argument on the ppc issue, I think its wrong -- it can replace the
+existing one.
 
-iQEcBAEBAgAGBQJUYRRyAAoJECTWi3JdVIfQSV4H/03djnyX8cEbZgLueUjpEZmq
-/wqWq1iEWdh9gD/kc7TT/44U2f940mDZcArfTw//TQ7TgZ16+ZvOFJ1uGPjVbIy6
-ofXKasafjlgL4UAGDTB6X077vPbPSFT4UimHuIyQ2T1iEJYVV32oIm4EtbNDkoF4
-lP4JzboxWM6JYKMHqmTX17ZJ/F00SDWn6k2dWM0CdYWAGvn44qsPnZKLnnzjWrqh
-9nLXTPHRshoZ7LrgxBpg/NOoTgmCCFyOCkXEXcN6YepAxqFhb9SzIkje8Mvx9dO9
-iwfo3BAi1D0uS+XcDAnpSeYvvOVR/JPfx/luLpT/Cfx7w8MEtgna0RwsXiX7DrI=
-=MpIf
------END PGP SIGNATURE-----
+We should further remove all the special casing in the governors, its
+always a valid state, but it should hardly ever be the most desirable
+state.
 
---PrbR2RMKSe7tzlp9--
+I think the whole arch specific idle loop is a mistake, we already have
+an (arch) interface into the idle routines, we don't need yet another.
