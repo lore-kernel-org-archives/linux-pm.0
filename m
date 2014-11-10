@@ -1,88 +1,71 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH v4 0/2] ARM: keystone: pm: switch to use generic pm domains
-Date: Mon, 10 Nov 2014 17:13:05 +0200
-Message-ID: <5460D601.70504@ti.com>
-References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V3 3/6] sched: idle: Get the next timer event and pass
+ it the cpuidle framework
+Date: Mon, 10 Nov 2014 16:15:50 +0100
+Message-ID: <5460D6A6.9070501@linaro.org>
+References: <1415370687-18688-1-git-send-email-daniel.lezcano@linaro.org> <1415370687-18688-4-git-send-email-daniel.lezcano@linaro.org> <20141110124353.GO3337@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:40827 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752760AbaKJPNl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 10:13:41 -0500
-In-Reply-To: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com>
+Received: from mail-wg0-f53.google.com ([74.125.82.53]:60234 "EHLO
+	mail-wg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753422AbaKJPP4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 10:15:56 -0500
+Received: by mail-wg0-f53.google.com with SMTP id b13so9070977wgh.40
+        for <linux-pm@vger.kernel.org>; Mon, 10 Nov 2014 07:15:54 -0800 (PST)
+In-Reply-To: <20141110124353.GO3337@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ssantosh@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, khilman@linaro.org
-Cc: linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, grant.likely@secretlab.ca, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: rjw@rjwysocki.net, preeti@linux.vnet.ibm.com, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, lenb@kernel.org
 
-Hi Santosh,
+On 11/10/2014 01:43 PM, Peter Zijlstra wrote:
+> On Fri, Nov 07, 2014 at 03:31:24PM +0100, Daniel Lezcano wrote:
+>>   static void cpu_idle_loop(void)
+>>   {
+>> -	unsigned int latency_req;
+>> +	unsigned int latency_req, next_timer_event;
+>>
+>>   	while (1) {
+>>   		/*
+>> @@ -221,6 +222,9 @@ static void cpu_idle_loop(void)
+>>
+>>   			latency_req =3D pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+>>
+>> +			next_timer_event =3D
+>> +				ktime_to_us(tick_nohz_get_sleep_length());
+>> +
+>>   			/*
+>>   			 * In poll mode we reenable interrupts and spin.
+>>   			 *
+>> @@ -238,7 +242,8 @@ static void cpu_idle_loop(void)
+>>   			    tick_check_broadcast_expired())
+>>   				cpu_idle_poll();
+>>   			else
+>> -				cpuidle_idle_call(latency_req);
+>> +				cpuidle_idle_call(latency_req,
+>> +						  next_timer_event);
+>>
+>>   			arch_cpu_idle_exit();
+>>   		}
+>
+> Why do we want to query the next timer in the poll case? Afaict the
+> other patches don't make use of this either.
 
-On 11/10/2014 04:59 PM, Grygorii Strashko wrote:
-> Hi Santosh, Kevin,
-> 
-> This series switches Keystone 2 PM code to use Generic PM domains
-> instead of PM clock domains because of the lack of DT support
-> for the last.
-> It will finally allow to enable Runtime PM for Keystone 2.
-> 
-> This series based on top
-> 
-> Changes in v4:
->   - changes for Generic clock manipulation PM callbacks (clock_ops.c)
->     were separated in standalone series [3] and Keystone 2 specific
->     patches were rebased on top of it.
+Well, the direction I am taking when writing those cleanups is to have=20
+something like:
 
-I've just found that prerequisite patches have been taken by Rafael in linux-pm.git/linux-next,
-first two patches from series:
- "[PATCH v4 0/3] PM / clock_ops: add pm_clk_add_clk()"
- https://lkml.org/lkml/2014/11/6/319 
+"I will sleep X usec, I have Y usec latency constraints". Grouping the=20
+latency req and the next timer allows to stick to the next changes.
 
-Thanks a lot Rafael.
 
-So, if no complains, this series is ready.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-> 
-> Changes in v3:
->   - handling of the case when !CONFIG_PM_RUNTIME has been
->     moved in PM clock framework.
-> 
-> Changes in v2:
-> - minor comments applied and rebased on top of Linux 3.18-rc1.
-> 
-> Links on previous versions:
-> v2:  https://lkml.org/lkml/2014/10/20/248
-> v1:  https://lkml.org/lkml/2014/9/29/382
-> 
-> RFC version of patches can be found at [2].
-> 
-> [1] "[PATCH/RFC 0/4] of: Register clocks for Runtime PM with PM core"
->    https://lkml.org/lkml/2014/4/24/1118
-> 
-> [2] "[RFC PATCH 0/4] ARM: keystone: pm: switch to use generic pm domains"
->    https://lkml.org/lkml/2014/9/25/364
-> 
-> [3] "[PATCH v4 0/3] PM / clock_ops: add pm_clk_add_clk()"
->    https://lkml.org/lkml/2014/11/6/319
-> 
-> CC: Santosh Shilimkar <ssantosh@kernel.org>
-> CC: Kevin Hilman <khilman@linaro.org>
-> CC: Ulf Hansson <ulf.hansson@linaro.org>
-> CC: Geert Uytterhoeven <geert@linux-m68k.org>
-> CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> 
-> Grygorii Strashko (2):
->    ARM: keystone: pm: switch to use generic pm domains
->    ARM: dts: keystone: add generic pm controller node
-> 
->   .../bindings/power/ti,keystone-powerdomain.txt     |  31 ++++++
->   arch/arm/boot/dts/keystone.dtsi                    |   6 ++
->   arch/arm/mach-keystone/Kconfig                     |   1 +
->   arch/arm/mach-keystone/pm_domain.c                 | 106 ++++++++++++++-------
->   4 files changed, 107 insertions(+), 37 deletions(-)
->   create mode 100644 Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
-> 
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-regards,
--grygorii
