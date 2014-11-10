@@ -1,45 +1,72 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v6 00/48] kernel: Add support for power-off handler call
- chain
-Date: Mon, 10 Nov 2014 06:12:35 -0800
-Message-ID: <5460C7D3.10505@roeck-us.net>
-References: <1415583785-6980-1-git-send-email-linux@roeck-us.net> <20141110083347.GA29543@amd>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 1/6] sched: idle: Add a weak arch_cpu_idle_poll function
+Date: Mon, 10 Nov 2014 19:50:22 +0530
+Message-ID: <5460C9A6.6080103@linux.vnet.ibm.com>
+References: <1415370687-18688-1-git-send-email-daniel.lezcano@linaro.org> <1415370687-18688-2-git-send-email-daniel.lezcano@linaro.org> <20141110122954.GM3337@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:58715 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752014AbaKJONY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 09:13:24 -0500
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
-	(envelope-from <linux@roeck-us.net>)
-	id 1Xnpie-003MT0-DQ
-	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 14:13:24 +0000
-In-Reply-To: <20141110083347.GA29543@amd>
+Received: from e31.co.us.ibm.com ([32.97.110.149]:36285 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752316AbaKJOVk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 09:21:40 -0500
+Received: from /spool/local
+	by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Mon, 10 Nov 2014 07:21:40 -0700
+In-Reply-To: <20141110122954.GM3337@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, lenb@kernel.org
 
-On 11/10/2014 12:33 AM, Pavel Machek wrote:
-> Hi!
->
->> Introduce a system power-off handler call chain to solve the described
->> problems.  This call chain is expected to be executed from the architecture
->> specific machine_power_off() function.  Drivers providing system power-off
->> functionality are expected to register with this call chain.  By using the
->> priority field in the notifier block, callers can control power-off
->> handler
->
-> Linus rather disliked the idea of notifier chains for this... And I
-> don't see how it got addressed.
->
-As I understand, Linus primarily disliked the idea of callbacks, which is
-what the code does, only with no order or protection against race conditions.
+Hi Peter,
 
-Frankly I have no idea how to solve the power-off problem without callbacks.
-If you have one, please let me know.
+On 11/10/2014 05:59 PM, Peter Zijlstra wrote:
+> On Fri, Nov 07, 2014 at 03:31:22PM +0100, Daniel Lezcano wrote:
+>> The poll function is called when a timer expired or if we force to poll when
+>> the cpu_idle_force_poll option is set.
+>>
+>> The poll function does:
+>>
+>>        local_irq_enable();
+>>        while (!tif_need_resched())
+>>                cpu_relax();
+>>
+>> This default poll function suits for the x86 arch because its rep; nop;
+>> hardware power optimization. But on other archs, this optimization does not
+>> exists and we are not saving power. The arch specific bits may want to
+>> optimize this loop by adding their own optimization.
+> 
+> This doesn't make sense to me; should an arch not either implement an
+> actual idle driver or implement cpu_relax() properly, why allow for a
+> third weird option?
+> 
 
-Guenter
+The previous version of this patch simply invoked cpu_idle_loop() for
+cases where latency_req was 0. This would have changed the behavior
+on PowerPC wherein earlier the 0th idle index was returned which is also
+a polling loop but differs from cpu_idle_loop() in two ways:
+
+a. It polls at a relatively lower power state than cpu_relax().
+b. We set certain registers to indicate that the cpu is idle.
+
+Hence for all such cases wherein the cpu is required to poll while idle
+(only for cases such as force poll, broadcast ipi to arrive soon and
+latency_req = 0), we should be able to call into cpuidle_idle_loop()
+only if the cpuidle driver's 0th idle state has an exit_latency > 0.
+(The 0th idle state is expected to be a polling loop with
+exit_latency = 0).
+
+If otherwise, it would mean the driver has an optimized polling loop
+when idle. But instead of adding in the logic of checking the
+exit_latency, we thought it would be simpler to call into an arch
+defined polling idle loop under the above circumstances. If that is no
+better we could fall back to cpuidle_idle_loop().
+
+Regards
+Preeti U Murthy
+
+
 
