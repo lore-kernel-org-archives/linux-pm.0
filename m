@@ -1,76 +1,76 @@
-From: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v4 1/2] ARM: keystone: pm: switch to use generic pm domains
-Date: Mon, 10 Nov 2014 19:38:14 +0200
-Message-ID: <5460F806.3040305@ti.com>
-References: <1415631557-22897-1-git-send-email-grygorii.strashko@ti.com> <1415631557-22897-2-git-send-email-grygorii.strashko@ti.com> <5331397.OQCQmJO78C@wuerfel>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] PM / Domains: Fix initial default state of the
+ need_restore flag
+Date: Mon, 10 Nov 2014 10:32:24 -0800
+Message-ID: <20141110183224.GA5626@dtor-ws>
+References: <1415366847-4807-1-git-send-email-ulf.hansson@linaro.org>
+ <7hr3xerdw6.fsf@deeprootsystems.com>
+ <20141107215751.GA4439@dtor-ws>
+ <CAPDyKFot-LZjazq190cY3-tawB_-ukdsmrLcD3vtidLvX68FOg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <5331397.OQCQmJO78C@wuerfel>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Cc: ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFot-LZjazq190cY3-tawB_-ukdsmrLcD3vtidLvX68FOg@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <tomasz.figa@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Russell King <linux@arm.linux.org.uk>, Jack Dai <jack.dai@rock-chips.com>, Jinkun Hong <jinkun.hong@rock-chips.com>, Aaron
 List-Id: linux-pm@vger.kernel.org
 
-Hi Arnd,
-
-On 11/10/2014 05:06 PM, Arnd Bergmann wrote:
-> On Monday 10 November 2014 16:59:16 Grygorii Strashko wrote:
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/ti,keystone-powerdomain.txt
->> @@ -0,0 +1,31 @@
->> +* TI Keystone 2 Generic PM Controller
->> +
->> +The TI Keystone 2 Generic PM Controller is responsible for Clock gating
->> +for each controlled IP module.
->> +
->> +Required properties:
->> +- compatible: Should be "ti,keystone-powerdomain"
->> +- #power-domain-cells: Should be 0, see below:
->> +
->> +The PM Controller node is a PM domain as documented in
->> +Documentation/devicetree/bindings/power/power_domain.txt.
->> +
->> +Example:
->> +
->> +       pm_controller: pm-controller {
->> +               compatible = "ti,keystone-powerdomain";
->> +               #power-domain-cells = <0>;
->> +       };
->> +
->> +       netcp: netcp@2090000 {
->> +               reg = <0x2620110 0x8>;
->> +               reg-names = "efuse";
->> +               ...
->> +               #address-cells = <1>;
->> +               #size-cells = <1>;
->> +               ranges;
->> +               power-domains = <&pm_controller>;
->> +
->> +               clocks = <&clkpa>, <&clkcpgmac>, <&chipclk12>;
->> +               dma-coherent;
->> +       }
+On Mon, Nov 10, 2014 at 04:18:50PM +0100, Ulf Hansson wrote:
+> [...]
 > 
-> I don't get it. What keystone specific about a "ti,keystone-powerdomain"
-> device? It seems that the device has no registers whatsoever and the
-> driver doesn't really do anything that relates to the platform.
+> > I guess we do need it for 3.18, but when we are talking about 3.19,
+> > before we make any more changes can we outline how power domains are
+> > supposed to work?
+> >
+> > 1. How do we attach a device to power domain? Right now it seems that
+> > individual buses are responsible for attaching their devices to power
+> > domains. Should we move it into driver core (device_pm_add?) so that
+> > device starts its life in its proper power domain?
+> 
+> That was the initial approach.
+> 
+> To my understanding, Rafael's primary reason for not accepting that
+> was that it's not common, but it's platform-specific.
+> http://marc.info/?l=linux-pm&m=140243462304669&w=2
 
-That's true. but it was the only one acceptable way  to enable
-Generic clock manipulation PM callbacks for the DT-boot case.
-After several unsuccessful attempts the idea to use GPD
-was introduced by Kevin there:
-  https://lkml.org/lkml/2014/9/8/643
+I am not sure I agree with Rafael there:
 
-So, The Keystone 2 Generic PM Controller is just a proxy PM layer here between
-device and Generic clock manipulation PM callbacks.
-It fills per-device clock list when device is attached to GPD and
-ensures that all clocks from that list enabled/disabled when device is
-started/stopped.
+ - when we are talking about the latest incarnation of power domains it
+   is not really platform specific anymore (as it was when we were
+   dealing with ACPI only case);
 
-Regards,
--grygorii
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+- I do not see why sirincling platform specific code around i2c, spi,
+  etc bus code (which is not platform-specific) is OK, but a no-no for
+  the driver ocre.
+
+> 
+> Now, even if we would reconsider doing as you propose, what would the
+> actual benefit be? Obviously, we would get less amount of code to
+> maintain, which is one reason, but are there more?
+
+I think so - you would have complete picture of your power domain,
+including data exposed in debugfs, etc.
+
+> 
+> >
+> > 2. When do we power up the devices (and the domains)? Right now devices
+> > in ACPI power domain are powered when they are attached to the power
+> > domain (which coincides with probing), but generic power domains do not
+> > do that. Can we add a separate API to explicitly power up the device (and
+> > its domain if it is powered down) and do it again, either in device core
+> > or in individual buses. This way, regardless of runtime PM or not, we
+> > will have devices powered on when driver tries to bind to them. If
+> > binding fails we can power down the device.
+> 
+> Isn't that exactly what I implemented in [1], what am I missing?
+
+Hm, OK. I guess the title of the patch series thrown me off because as
+far as I am concerned it is not a race, we simply were not powering the
+domain properly for probing.
+
+Thanks.
+
+-- 
+Dmitry
