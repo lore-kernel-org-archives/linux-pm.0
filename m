@@ -1,20 +1,31 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v6 29/48] power/reset: ltc2952-poweroff: Register with kernel power-off handler
-Date: Sun,  9 Nov 2014 17:42:46 -0800
-Message-ID: <1415583785-6980-30-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v6 30/48] x86: iris: Register with kernel power-off handler
+Date: Sun,  9 Nov 2014 17:42:47 -0800
+Message-ID: <1415583785-6980-31-git-send-email-linux@roeck-us.net>
 References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:39110 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752477AbaKJBoc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:44:32 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1Xne1w-000VXy-GM
+	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 01:44:32 +0000
 In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
 
 Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with low priority to reflect that the original code
-sets pm_power_off only if it was not already set.
+directly. Register with high priority to reflect that the original code
+overwrites existing power-off handlers.
 
-Acked-by: Sebastian Reichel <sre@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v6:
@@ -31,78 +42,67 @@ v3:
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- Added patch
+- Use define to specify poweroff handler priority
+- Use devm_register_power_off_handler
 
- drivers/power/reset/ltc2952-poweroff.c | 24 +++++++++++++++---------
- 1 file changed, 15 insertions(+), 9 deletions(-)
+ arch/x86/platform/iris/iris.c | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
-index 116a1ce..e622824 100644
---- a/drivers/power/reset/ltc2952-poweroff.c
-+++ b/drivers/power/reset/ltc2952-poweroff.c
-@@ -80,6 +80,8 @@ struct ltc2952_poweroff_data {
- 	 * 2: kill
- 	 */
- 	struct gpio_desc *gpio[3];
-+
-+	struct power_off_handler_block power_off_hb;
- };
+diff --git a/arch/x86/platform/iris/iris.c b/arch/x86/platform/iris/iris.c
+index 4d171e8..7152814 100644
+--- a/arch/x86/platform/iris/iris.c
++++ b/arch/x86/platform/iris/iris.c
+@@ -47,15 +47,18 @@ static bool force;
+ module_param(force, bool, 0);
+ MODULE_PARM_DESC(force, "Set to one to force poweroff handler installation.");
  
- static int ltc2952_poweroff_panic;
-@@ -180,7 +182,8 @@ irq_ok:
- 	return IRQ_HANDLED;
- }
- 
--static void ltc2952_poweroff_kill(void)
-+static void ltc2952_poweroff_kill(struct power_off_handler_block *this)
-+
- {
- 	gpiod_set_value(ltc2952_data->gpio[POWERPATH_IO_KILL], 1);
- }
-@@ -285,12 +288,7 @@ err_io:
- 
- static int ltc2952_poweroff_probe(struct platform_device *pdev)
- {
--	int ret;
+-static void (*old_pm_power_off)(void);
 -
--	if (pm_power_off) {
--		dev_err(&pdev->dev, "pm_power_off already registered");
--		return -EBUSY;
--	}
-+	int i, ret;
- 
- 	ltc2952_data = kzalloc(sizeof(*ltc2952_data), GFP_KERNEL);
- 	if (!ltc2952_data)
-@@ -302,12 +300,20 @@ static int ltc2952_poweroff_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto err;
- 
--	pm_power_off = &ltc2952_poweroff_kill;
-+	ltc2952_data->power_off_hb.handler = ltc2952_poweroff_kill;
-+	ltc2952_data->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
-+	ret = register_power_off_handler(&ltc2952_data->power_off_hb);
-+	if (ret)
-+		goto err_power;
- 
- 	dev_info(&pdev->dev, "probe successful\n");
- 
- 	return 0;
- 
-+err_power:
-+	free_irq(ltc2952_data->virq, ltc2952_data);
-+	for (i = 0; i < ARRAY_SIZE(ltc2952_data->gpio); i++)
-+		gpiod_put(ltc2952_data->gpio[i]);
- err:
- 	kfree(ltc2952_data);
- 	return ret;
-@@ -317,7 +323,7 @@ static int ltc2952_poweroff_remove(struct platform_device *pdev)
+-static void iris_power_off(void)
++static void iris_power_off(struct power_off_handler_block *this)
  {
- 	unsigned int i;
+ 	outb(IRIS_GIO_PULSE, IRIS_GIO_OUTPUT);
+ 	msleep(850);
+ 	outb(IRIS_GIO_REST, IRIS_GIO_OUTPUT);
+ }
  
--	pm_power_off = NULL;
-+	unregister_power_off_handler(&ltc2952_data->power_off_hb);
++static struct power_off_handler_block iris_power_off_hb = {
++	.handler = iris_power_off,
++	.priority = POWER_OFF_PRIORITY_HIGH,
++};
++
+ /*
+  * Before installing the power_off handler, try to make sure the OS is
+  * running on an Iris.  Since Iris does not support DMI, this is done
+@@ -65,20 +68,25 @@ static void iris_power_off(void)
+ static int iris_probe(struct platform_device *pdev)
+ {
+ 	unsigned char status = inb(IRIS_GIO_INPUT);
++	int ret;
++
+ 	if (status == IRIS_GIO_NODEV) {
+ 		printk(KERN_ERR "This machine does not seem to be an Iris. "
+ 			"Power off handler not installed.\n");
+ 		return -ENODEV;
+ 	}
+-	old_pm_power_off = pm_power_off;
+-	pm_power_off = &iris_power_off;
++
++	ret = devm_register_power_off_handler(&pdev->dev, &iris_power_off_hb);
++	if (ret) {
++		dev_err(&pdev->dev, "Failed to register power-off handler\n");
++		return ret;
++	}
+ 	printk(KERN_INFO "Iris power_off handler installed.\n");
+ 	return 0;
+ }
  
- 	if (ltc2952_data) {
- 		free_irq(ltc2952_data->virq, ltc2952_data);
+ static int iris_remove(struct platform_device *pdev)
+ {
+-	pm_power_off = old_pm_power_off;
+ 	printk(KERN_INFO "Iris power_off handler uninstalled.\n");
+ 	return 0;
+ }
 -- 
 1.9.1
+
