@@ -1,27 +1,64 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2] PM / Sleep: Timer quiesce in freeze state
-Date: Mon, 10 Nov 2014 12:49:28 +0100
-Message-ID: <20141110114928.GK3337@twins.programming.kicks-ass.net>
-References: <5446787E.60202@linux.intel.com>
- <20141029082432.GV3337@twins.programming.kicks-ass.net>
- <5451A94F.1090200@linux.intel.com>
- <4545011.reftWMuc6g@vostro.rjw.lan>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH 2/5] cpufreq, fix locking around CPUFREQ_GOV_POLICY_EXIT
+ calls
+Date: Mon, 10 Nov 2014 07:26:42 -0500
+Message-ID: <5460AF02.9010907@redhat.com>
+References: <1415199239-19019-1-git-send-email-prarit@redhat.com> <1415199239-19019-3-git-send-email-prarit@redhat.com> <CAKohpomZNwZWjmi8hkZ6QXUeDTaXTwzx_fPz1_byh3xmmkPNrQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:39050 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752076AbaKJLti (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 06:49:38 -0500
-Content-Disposition: inline
-In-Reply-To: <4545011.reftWMuc6g@vostro.rjw.lan>
+Received: from mx1.redhat.com ([209.132.183.28]:55926 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751926AbaKJM05 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 10 Nov 2014 07:26:57 -0500
+In-Reply-To: <CAKohpomZNwZWjmi8hkZ6QXUeDTaXTwzx_fPz1_byh3xmmkPNrQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Li, Aubrey" <aubrey.li@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, "Brown, Len" <len.brown@intel.com>, "alan@linux.intel.com" <alan@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, "linux-pm@vger.kernel.org >> Linux PM list" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Sat, Nov 08, 2014 at 03:05:56AM +0100, Rafael J. Wysocki wrote:
-> Peter, Thomas, any comments here?
 
-I'm fine with this; but Thomas needs to ack, lets give him a few more
-days to reply with this reminder.
+
+On 11/10/2014 05:44 AM, Viresh Kumar wrote:
+> On 5 November 2014 20:23, Prarit Bhargava <prarit@redhat.com> wrote:
+>> commit 955ef4833574636819cd269cfbae12f79cbde63a (" cpufreq: Drop rwsem
+>> lock around CPUFREQ_GOV_POLICY_EXIT") opens up a hole in the locking
+>> scheme for cpufreq.
+>>
+>> Simple tests such as rapidly switching the governor between ondemand and
+>> performance or attempting to read policy values while a governor switch occurs
+>> now fail with very NULL pointer warnings, sysfs namespace collisions, and
+>> system hangs.  In short, the locking that policy->rwsem is supposed to provide
+>> is currently broken.
+>>
+>> The identified commit attempts to resolve a lockdep warning by removing
+>> a lock around a section of code which does a shutdown of the
+>> existing policy.  The problem is that this is part of the _critical_ section of
+>> code that switches the governors and must be protected by the lock; without
+>> locking readers may access now NULL or stale data, and writes may collide with
+>> each other.
+>>
+>> With the previous patch, which now returns -EBUSY during times of
+>> contention the deadlock reported in
+>> 955ef4833574636819cd269cfbae12f79cbde63a (" cpufreq: Drop rwsem lock
+>> around CPUFREQ_GOV_POLICY_EXIT") cannot occur, so adding the locks back
+>> into this section of code is possible.
+> 
+> I still fail to understand why ? What will the _trylock() change ?
+
+viresh, afaict read_trylock will return 0 when busy with write:
+
+static inline int queue_read_trylock(struct qrwlock *lock)
+{
+        u32 cnts;
+
+        cnts = atomic_read(&lock->cnts);
+        if (likely(!(cnts & _QW_WMASK))) {
+
+so the deadlock will not occur.  the show() is opened, write lock is taken, and
+if the thread is rescheduled and takes read lock the trylock will return 0, and
+the thread will return -EBUSY to userspace avoiding the deadlock.
+
+P.
+> 
