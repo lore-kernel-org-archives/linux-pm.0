@@ -1,22 +1,28 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v6 19/48] mfd: rk808: Register power-off handler with kernel power-off handler
-Date: Sun,  9 Nov 2014 17:42:36 -0800
-Message-ID: <1415583785-6980-20-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v6 26/48] power/reset: msm-poweroff: Register with kernel power-off handler
+Date: Sun,  9 Nov 2014 17:42:43 -0800
+Message-ID: <1415583785-6980-27-git-send-email-linux@roeck-us.net>
 References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:39079 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752372AbaKJBoX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:44:23 -0500
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+	(envelope-from <linux@roeck-us.net>)
+	id 1Xne1n-000VRm-0P
+	for linux-pm@vger.kernel.org; Mon, 10 Nov 2014 01:44:23 +0000
 In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Chris Zhong <zyw@rock-chips.com>, Zhang Qing <zhangqing@rock-chips.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>
 
 Register with kernel power-off handler instead of setting pm_power_off
-directly. Register with low priority to reflect that the original code
-only sets pm_power_off if it was not already set.
+directly. Select fallback priority since the code does not really poweroff
+the system but resets it instead.
 
-Cc: Chris Zhong <zyw@rock-chips.com>
-Cc: Zhang Qing <zhangqing@rock-chips.com>
-Acked-by: Lee Jones <lee.jones@linaro.org>
+Acked-by: Sebastian Reichel <sre@kernel.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v6:
@@ -33,95 +39,69 @@ v3:
   with power_off or power-off as appropriate
 - Replace POWEROFF_PRIORITY_xxx with POWER_OFF_PRIORITY_xxx
 v2:
-- New patch
+- Use define to specify poweroff handler priority
+- Fix headline and description
+- Merge with restart handler code now used in same driver
+- Use dev_warn instead of dev_err
 
- drivers/mfd/rk808.c       | 26 ++++++++++++--------------
- include/linux/mfd/rk808.h |  2 ++
- 2 files changed, 14 insertions(+), 14 deletions(-)
+ drivers/power/reset/msm-poweroff.c | 24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/mfd/rk808.c b/drivers/mfd/rk808.c
-index bd02150..93ffcf0 100644
---- a/drivers/mfd/rk808.c
-+++ b/drivers/mfd/rk808.c
-@@ -21,6 +21,7 @@
- #include <linux/mfd/rk808.h>
- #include <linux/mfd/core.h>
- #include <linux/module.h>
-+#include <linux/pm.h>
- #include <linux/regmap.h>
+diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
+index 4702efd..822f358 100644
+--- a/drivers/power/reset/msm-poweroff.c
++++ b/drivers/power/reset/msm-poweroff.c
+@@ -23,11 +23,17 @@
+ #include <linux/pm.h>
  
- struct rk808_reg_data {
-@@ -147,23 +148,16 @@ static struct regmap_irq_chip rk808_irq_chip = {
- 	.init_ack_masked = true,
- };
- 
--static struct i2c_client *rk808_i2c_client;
--static void rk808_device_shutdown(void)
-+static void rk808_device_shutdown(struct power_off_handler_block *this)
+ static void __iomem *msm_ps_hold;
+-static int do_msm_restart(struct notifier_block *nb, unsigned long action,
+-			   void *data)
++
++static void _do_msm_restart(void)
  {
-+	struct rk808 *rk808 = container_of(this, struct rk808, power_off_hb);
- 	int ret;
--	struct rk808 *rk808 = i2c_get_clientdata(rk808_i2c_client);
--
--	if (!rk808) {
--		dev_warn(&rk808_i2c_client->dev,
--			 "have no rk808, so do nothing here\n");
--		return;
--	}
+ 	writel(0, msm_ps_hold);
+ 	mdelay(10000);
++}
++
++static int do_msm_restart(struct notifier_block *nb, unsigned long action,
++			  void *data)
++{
++	_do_msm_restart();
  
- 	ret = regmap_update_bits(rk808->regmap,
- 				 RK808_DEVCTRL_REG,
- 				 DEV_OFF_RST, DEV_OFF_RST);
- 	if (ret)
--		dev_err(&rk808_i2c_client->dev, "power off error!\n");
-+		dev_err(&rk808->i2c->dev, "power off error!\n");
+ 	return NOTIFY_DONE;
  }
- 
- static int rk808_probe(struct i2c_client *client,
-@@ -222,9 +216,14 @@ static int rk808_probe(struct i2c_client *client,
- 
- 	pm_off = of_property_read_bool(np,
- 				"rockchip,system-power-controller");
--	if (pm_off && !pm_power_off) {
--		rk808_i2c_client = client;
--		pm_power_off = rk808_device_shutdown;
-+	if (pm_off) {
-+		rk808->power_off_hb.handler = rk808_device_shutdown;
-+		rk808->power_off_hb.priority = POWER_OFF_PRIORITY_LOW;
-+		ret = devm_register_power_off_handler(&client->dev,
-+						      &rk808->power_off_hb);
-+		if (ret)
-+			dev_warn(&client->dev,
-+				 "Failed to register power-off handler\n");
- 	}
- 
- 	return 0;
-@@ -240,7 +239,6 @@ static int rk808_remove(struct i2c_client *client)
- 
- 	regmap_del_irq_chip(client->irq, rk808->irq_data);
- 	mfd_remove_devices(&client->dev);
--	pm_power_off = NULL;
- 
- 	return 0;
- }
-diff --git a/include/linux/mfd/rk808.h b/include/linux/mfd/rk808.h
-index fb09312..a6619f2 100644
---- a/include/linux/mfd/rk808.h
-+++ b/include/linux/mfd/rk808.h
-@@ -19,6 +19,7 @@
- #ifndef __LINUX_REGULATOR_rk808_H
- #define __LINUX_REGULATOR_rk808_H
- 
-+#include <linux/pm.h>
- #include <linux/regulator/machine.h>
- #include <linux/regmap.h>
- 
-@@ -192,5 +193,6 @@ struct rk808 {
- 	struct i2c_client *i2c;
- 	struct regmap_irq_chip_data *irq_data;
- 	struct regmap *regmap;
-+	struct power_off_handler_block power_off_hb;
+@@ -37,12 +43,17 @@ static struct notifier_block restart_nb = {
+ 	.priority = 128,
  };
- #endif /* __LINUX_REGULATOR_rk808_H */
+ 
+-static void do_msm_poweroff(void)
++static void do_msm_power_off(struct power_off_handler_block *this)
+ {
+-	/* TODO: Add poweroff capability */
+-	do_msm_restart(&restart_nb, 0, NULL);
++	/* TODO: Add power-off capability */
++	_do_msm_restart();
+ }
+ 
++static struct power_off_handler_block power_off_hb = {
++	.handler = do_msm_power_off,
++	.priority = POWER_OFF_PRIORITY_FALLBACK,
++};
++
+ static int msm_restart_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+@@ -55,7 +66,8 @@ static int msm_restart_probe(struct platform_device *pdev)
+ 
+ 	register_restart_handler(&restart_nb);
+ 
+-	pm_power_off = do_msm_poweroff;
++	if (register_power_off_handler(&power_off_hb))
++		dev_warn(&pdev->dev, "Failed to register power-off handler\n");
+ 
+ 	return 0;
+ }
 -- 
 1.9.1
+
