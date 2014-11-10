@@ -1,35 +1,77 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v6 00/48] kernel: Add support for power-off handler call
- chain
-Date: Mon, 10 Nov 2014 09:33:48 +0100
-Message-ID: <20141110083347.GA29543@amd>
-References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
+Subject: Re: [PATCH v5 18/48] mfd: twl4030-power: Register with kernel
+ power-off handler
+Date: Mon, 10 Nov 2014 09:46:00 +0100
+Message-ID: <20141110084600.GA2582@amd>
+References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
+ <1415292213-28652-19-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36345 "EHLO
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37067 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbaKJIdv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 03:33:51 -0500
+	with ESMTP id S1750930AbaKJIqD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 03:46:03 -0500
 Content-Disposition: inline
-In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
+In-Reply-To: <1415292213-28652-19-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Alexander Graf <agraf@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Heiko Stuebner <heiko@sntech.de>, Lee Jones <lee.jones@linaro.org>, Len Brown <len.brown@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Romain Perier <romain.perier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-omap@vger.kernel.org
 
 Hi!
 
-> Introduce a system power-off handler call chain to solve the described
-> problems.  This call chain is expected to be executed from the architecture
-> specific machine_power_off() function.  Drivers providing system power-off
-> functionality are expected to register with this call chain.  By using the
-> priority field in the notifier block, callers can control power-off
-> handler
+> @@ -611,7 +611,7 @@ twl4030_power_configure_resources(const struct twl4030_power_data *pdata)
+>   * After a successful execution, TWL shuts down the power to the SoC
+>   * and all peripherals connected to it.
+>   */
+> -void twl4030_power_off(void)
+> +static void twl4030_power_off(struct power_off_handler_block *this)
+>  {
+>  	int err;
+>  
+> @@ -621,6 +621,11 @@ void twl4030_power_off(void)
+>  		pr_err("TWL4030 Unable to power off\n");
+>  }
+>  
+> +static struct power_off_handler_block twl4030_power_off_hb = {
+> +	.handler = twl4030_power_off,
+> +	.priority = POWER_OFF_PRIORITY_LOW,
+> +};
+> +
+>  static bool twl4030_power_use_poweroff(const struct twl4030_power_data *pdata,
+>  					struct device_node *node)
+>  {
+> @@ -839,7 +844,9 @@ static int twl4030_power_probe(struct platform_device *pdev)
+>  	}
+>  
+>  	/* Board has to be wired properly to use this feature */
+> -	if (twl4030_power_use_poweroff(pdata, node) && !pm_power_off) {
+> +	if (twl4030_power_use_poweroff(pdata, node)) {
+> +		int ret;
+> +
+>  		/* Default for SEQ_OFFSYNC is set, lets ensure this */
+>  		err = twl_i2c_read_u8(TWL_MODULE_PM_MASTER, &val,
+>  				      TWL4030_PM_MASTER_CFG_P123_TRANSITION);
+> @@ -856,7 +863,11 @@ static int twl4030_power_probe(struct platform_device *pdev)
+>  			}
+>  		}
+>  
+> -		pm_power_off = twl4030_power_off;
+> +		ret = devm_register_power_off_handler(&pdev->dev,
+> +						      &twl4030_power_off_hb);
+> +		if (ret)
+> +			dev_warn(&pdev->dev,
+> +				 "Failed to register power-off handler\n");
+>  	}
+>  
 
-Linus rather disliked the idea of notifier chains for this... And I
-don't see how it got addressed.
+Could we get rid of the "struct power_off_handler_block" and guarantee
+that register_power_off never fails (or print message from the
+register_power_off...)? That way, your patch would be an cleanup.
 
+You could then add priorities if they turn out to be really
+neccessary, later...
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
