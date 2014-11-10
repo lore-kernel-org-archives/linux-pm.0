@@ -1,89 +1,42 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH V3 2/6] sched: idle: cpuidle: Check the latency req
- before idle
-Date: Mon, 10 Nov 2014 17:15:30 +0100
-Message-ID: <20141110161530.GB10501@worktop.programming.kicks-ass.net>
-References: <1415370687-18688-1-git-send-email-daniel.lezcano@linaro.org>
- <1415370687-18688-3-git-send-email-daniel.lezcano@linaro.org>
- <20141110124111.GN3337@twins.programming.kicks-ass.net>
- <5460D5EF.2000805@linaro.org>
- <20141110152803.GX10501@worktop.programming.kicks-ass.net>
- <5460E0A5.9040508@linaro.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v10 1/5] PM / Runtime: Allow accessing irq_safe if no
+ PM_RUNTIME
+Date: Mon, 10 Nov 2014 11:36:10 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1411101133100.5793-100000@netrider.rowland.org>
+References: <CAPDyKFpCx9XZu7xWt+koY-iLmiX4+XPu+2hGow2hrz3AR8Cb=A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5460E0A5.9040508@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@rjwysocki.net, preeti@linux.vnet.ibm.com, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, lenb@kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from netrider.rowland.org ([192.131.102.5]:33510 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750993AbaKJQgL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 11:36:11 -0500
+In-Reply-To: <CAPDyKFpCx9XZu7xWt+koY-iLmiX4+XPu+2hGow2hrz3AR8Cb=A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Michal Simek <michal.simek@xilinx.com>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Mon, Nov 10, 2014 at 04:58:29PM +0100, Daniel Lezcano wrote:
-> >I don't get it, I've clearly not stared at it long enough, but why is
-> >that STATE_START crap needed anywhere?
-> 
-> Excellent question :)
-> 
-> On x86, the config option ARCH_HAS_CPU_RELAX is set (x86 is the only one).
-> That leads to the macro CPUIDLE_DRIVER_STATE_START equal 1.
-> 
-> https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/tree/include/linux/cpuidle.h#n221
-> 
-> Then the acpi cpuidle driver and the intel_driver begin to fill the idle
-> state at index == CPUIDLE_DRIVER_STATE_START, so leaving the 0th idle state
-> empty.
-> 
-> https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/tree/drivers/idle/intel_idle.c#n848
-> 
-> https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/tree/drivers/acpi/processor_idle.c#n953
-> 
-> Then when the driver is registered and if ARCH_HAS_CPU_RELAX is set, the
-> cpuidle framework insert the 0th with the poll state (reminder : only for
-> x86).
+On Mon, 10 Nov 2014, Ulf Hansson wrote:
 
-Appears to me part of the problem is right there, the intel_idle and
-proessor_idle should register the poll state themselves. That
-immediately makes this weirdness go away.
-
-Registering states from two places is not something that's sane or
-desired I think.
-
-> https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/tree/drivers/cpuidle/driver.c#n195
+> > To me, this sounds like a good reason to avoid using
+> > force_runtime_suspend().  In fact, it sounds like a good reason to
+> > avoid relying on the runtime PM mechanism to handle non-runtime-PM
+> > things (like a system suspend callback).  If CONFIG_PM_RUNTIME isn't
+> > enabled then the runtime PM stack simply should not be used.
 > 
-> If you look at the ladder governor (which I believe nobody is still using
-> it), or at the menu governor, all the indexes begin at
-> CPUIDLE_DRIVER_STATE_START, so all the code is preventing to use the 0th
-> state ... :)
+> There are an important advantage of using the pm_runtime_force_suspend() here.
 > 
-> So why is needed the poll state ?
-> 
-> 1. When the latency_req is 0 (it returns 0, so the poll state)
+> For the driver to handle clock gating at system PM suspend, it first
+> needs to bring the device into full power, through
+> pm_runtime_get_sync(). Otherwise it's not safe to gate the clock,
+> since it may already be gated.
 
-Right, that makes sense.
+That's fine, but it has nothing to do with pm_runtime_force_suspend().
 
-> 2. When the select's menu governor fails to find a state *and* if the next
-> timer is before 5us
+Besides, if the real question is whether or not to gate the clock (or 
+in other words, has the clock already been gated), why not just store a 
+"clock_is_gated" flag somewhere?
 
-That seems rather arbitrary. Why would it fail to find a state?
+Alan Stern
 
-> https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/tree/drivers/cpuidle/driver.c#n195
-> 
-> And when we investigate the same code but on the other archs, the
-> CPUIDLE_DRIVER_STATE_START dance makes things slightly different.
-> 
-> So the conclusion is, we are inserting a state in the idle state array but
-> we do everything to prevent to use it :)
-> 
-> For me it appears logical to just kill this state from the x86 idle drivers
-> and move it in the idle_mainloop in case an idle state selection fails.
-
-But why, ppc has a latency_req==0 state too, right?
-
-I agree that we should shoot STATE_START in the head, but I feel we
-should do it by fixing the state registration.
-
-I really don't get why the governors should know about this though, its
-just another state, they should iterate all states and pick the best,
-given the power usage this state should really never be eligible unless
-we're QoS forced or whatnot.
