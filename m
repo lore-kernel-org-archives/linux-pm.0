@@ -1,42 +1,39 @@
-From: "Tc, Jenny" <jenny.tc@intel.com>
-Subject: RE: [PATCH 1/3] power: core: Add generic interface to get battery
- specification.
-Date: Mon, 10 Nov 2014 03:41:04 +0000
-Message-ID: <20ADAB092842284E95860F279283C5642ED9B294@BGSMSX104.gar.corp.intel.com>
-References: <1412679518-21499-1-git-send-email-jonghwa3.lee@samsung.com>
- <1412679518-21499-2-git-send-email-jonghwa3.lee@samsung.com>
- <20ADAB092842284E95860F279283C5642ED8AE04@BGSMSX104.gar.corp.intel.com>
- <5460109E.9060603@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 12/16] cpufreq: tegra: Rename tegra-cpufreq to tegra20-cpufreq
+Date: Mon, 10 Nov 2014 10:22:15 +0530
+Message-ID: <CAKohpo=Kdh2vuvSoQBLdWfZJn3xDezpNBjqM389u45_BdizPXQ@mail.gmail.com>
+References: <1414161563-16812-1-git-send-email-mikko.perttunen@kapsi.fi>
+	<1414161563-16812-13-git-send-email-mikko.perttunen@kapsi.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:60476 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751853AbaKJDl4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 9 Nov 2014 22:41:56 -0500
-In-Reply-To: <5460109E.9060603@samsung.com>
-Content-Language: en-US
+Received: from mail-ob0-f180.google.com ([209.85.214.180]:39223 "EHLO
+	mail-ob0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751805AbaKJEwQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 23:52:16 -0500
+Received: by mail-ob0-f180.google.com with SMTP id wp4so5070372obc.39
+        for <linux-pm@vger.kernel.org>; Sun, 09 Nov 2014 20:52:15 -0800 (PST)
+In-Reply-To: <1414161563-16812-13-git-send-email-mikko.perttunen@kapsi.fi>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "jonghwa3.lee@samsung.com" <jonghwa3.lee@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>, "pavel@ucw.cz" <pavel@ucw.cz>
+To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mike Turquette <mturquette@linaro.org>, Paul Walmsley <pwalmsley@nvidia.com>, Vince Hsu <vinceh@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>, Tuomas Tynkkynen <ttynkkynen@nvidia.com>
 
-PiANCj4gPj4gK0FUT01JQ19OT1RJRklFUl9IRUFEKHBzeV9iYXR0ZXJ5X2luZm9fbm90aWZpZXIp
-Ow0KPiA+DQo+ID4gIElzbid0IGl0IGdvb2QgdG8gcmV1c2UgdGhlIGV4aXN0aW5nIHBvd2VyX3N1
-cHBseV9ub3RpZmllciBmb3IgdGhpcz8NCj4gPg0KPiA+PiArZW51bSBiYXR0ZXJ5X2luZm9fbm90
-aWZpZXJfZXZlbnRzIHsNCj4gPj4gKwlQU1lfQkFUVF9JTkZPX1JFR0lTVEVSRUQsDQo+ID4+ICsJ
-UFNZX0JBVFRfSU5GT19VTlJFR0lTVEVSRUQsDQo+ID4+ICt9Ow0KPiA+DQo+ID4gSWYgd2UgdXNl
-IHRoZSBwb3dlcl9zdXBwbHlfbm90aWZpZXIsIHRoZW4gdGhpcyBjYW4gYmUgbW92ZWQgdG8NCj4g
-PiBlbnVtIHBvd2VyX3N1cHBseV9ub3RpZmllcl9ldmVudHMNCj4gPg0KPiANCj4gDQo+IEl0IGRv
-ZXNuJ3QgdXNlIHBvd2VyX3N1cHBseV9ub3RpZmllciwgcmF0aGVyIHRoYW4gaXQgdXNlcyBuZXds
-eSBpbnRyb2R1Y2VkDQo+IG5vdGlmaWVyIGZvciBiYXR0ZXJ5IGluZm9ybWF0aW9uLiBJbnRlbnRp
-b24gb2YgbWFraW5nIG9mIG5ldyBub3RpZmllciBibG9jayBoZXJlDQo+IGlzIHRvIGV4dGluZ3Vp
-c2ggZXZlbnQgZnJvbSBwb3dlcl9zdXBwbHlfY2hhbmdlZCB3aGljaCBtaWdodCBiZSBub2lzeSBm
-b3INCj4gYmF0dGVyeSBpbmZvcm1hdGlvbiBjb25zdW1lci4gSG93ZXZlciwgSWYgaXQgbG9va3Mg
-d2FzdGVmdWwgY29kZSwgaXQncyBub3QgYSBiaWcNCj4gZGVhbCB0byB1c2UgZXhpc3RlZCBwb3dl
-cl9zdXBwbHlfbm90aWZpZXIuDQoNClVzaW5nIHRoZSBwb3dlcl9zdXBwbHlfbm90aWZpZXIgaGVs
-cHMgdG8gZ2V0IGFsbCBwb3dlciBzdXBwbHkgbm90aWZpY2F0aW9ucw0KKHBvd2VyX3N1cHBseV9j
-aG5hZ2VkLCBiYXR0ZXJ5IGluZm8gcmVnaXN0ZXIvdW5yZWdpc3RlciwgLi4pIHVzaW5nIGEgc2lu
-Z2xlIG5vdGlmaWVyLiBUaGUNCmNvbnN1bWVycyBjYW4gaWdub3JlIHRoZSB1bndhbnRlZCBldmVu
-dHMuDQo=
+On 24 October 2014 20:09, Mikko Perttunen <mikko.perttunen@kapsi.fi> wrote:
+> From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+>
+> The Tegra124 will use a different driver for frequency scaling, so
+> rename the old driver (which handles only Tegra20) appropriately.
+>
+> Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+> Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+> ---
+>  drivers/cpufreq/Kconfig.arm       |   6 +-
+>  drivers/cpufreq/Makefile          |   2 +-
+>  drivers/cpufreq/tegra-cpufreq.c   | 218 --------------------------------------
+>  drivers/cpufreq/tegra20-cpufreq.c | 218 ++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 222 insertions(+), 222 deletions(-)
+>  delete mode 100644 drivers/cpufreq/tegra-cpufreq.c
+>  create mode 100644 drivers/cpufreq/tegra20-cpufreq.c
+
+Its just not readable enough.. You should have used: git format-patch -C -M
