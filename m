@@ -1,72 +1,91 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 1/6] sched: idle: Add a weak arch_cpu_idle_poll function
-Date: Mon, 10 Nov 2014 19:50:22 +0530
-Message-ID: <5460C9A6.6080103@linux.vnet.ibm.com>
-References: <1415370687-18688-1-git-send-email-daniel.lezcano@linaro.org> <1415370687-18688-2-git-send-email-daniel.lezcano@linaro.org> <20141110122954.GM3337@twins.programming.kicks-ass.net>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v5 18/48] mfd: twl4030-power: Register with kernel power-off
+ handler
+Date: Mon, 10 Nov 2014 06:49:53 -0800
+Message-ID: <5460D091.3000509@roeck-us.net>
+References: <1415292213-28652-1-git-send-email-linux@roeck-us.net> <1415292213-28652-19-git-send-email-linux@roeck-us.net> <20141110084600.GA2582@amd> <5460C70D.1000206@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e31.co.us.ibm.com ([32.97.110.149]:36285 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316AbaKJOVk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Nov 2014 09:21:40 -0500
-Received: from /spool/local
-	by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Mon, 10 Nov 2014 07:21:40 -0700
-In-Reply-To: <20141110122954.GM3337@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <5460C70D.1000206@roeck-us.net>
+Sender: linux-omap-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@rjwysocki.net, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, lenb@kernel.org
 
-Hi Peter,
-
-On 11/10/2014 05:59 PM, Peter Zijlstra wrote:
-> On Fri, Nov 07, 2014 at 03:31:22PM +0100, Daniel Lezcano wrote:
->> The poll function is called when a timer expired or if we force to poll when
->> the cpu_idle_force_poll option is set.
+On 11/10/2014 06:09 AM, Guenter Roeck wrote:
+> On 11/10/2014 12:46 AM, Pavel Machek wrote:
+>> Hi!
 >>
->> The poll function does:
+>>> @@ -611,7 +611,7 @@ twl4030_power_configure_resources(const struct twl4030_power_data *pdata)
+>>>    * After a successful execution, TWL shuts down the power to the SoC
+>>>    * and all peripherals connected to it.
+>>>    */
+>>> -void twl4030_power_off(void)
+>>> +static void twl4030_power_off(struct power_off_handler_block *this)
+>>>   {
+>>>       int err;
+>>>
+>>> @@ -621,6 +621,11 @@ void twl4030_power_off(void)
+>>>           pr_err("TWL4030 Unable to power off\n");
+>>>   }
+>>>
+>>> +static struct power_off_handler_block twl4030_power_off_hb = {
+>>> +    .handler = twl4030_power_off,
+>>> +    .priority = POWER_OFF_PRIORITY_LOW,
+>>> +};
+>>> +
+>>>   static bool twl4030_power_use_poweroff(const struct twl4030_power_data *pdata,
+>>>                       struct device_node *node)
+>>>   {
+>>> @@ -839,7 +844,9 @@ static int twl4030_power_probe(struct platform_device *pdev)
+>>>       }
+>>>
+>>>       /* Board has to be wired properly to use this feature */
+>>> -    if (twl4030_power_use_poweroff(pdata, node) && !pm_power_off) {
+>>> +    if (twl4030_power_use_poweroff(pdata, node)) {
+>>> +        int ret;
+>>> +
+>>>           /* Default for SEQ_OFFSYNC is set, lets ensure this */
+>>>           err = twl_i2c_read_u8(TWL_MODULE_PM_MASTER, &val,
+>>>                         TWL4030_PM_MASTER_CFG_P123_TRANSITION);
+>>> @@ -856,7 +863,11 @@ static int twl4030_power_probe(struct platform_device *pdev)
+>>>               }
+>>>           }
+>>>
+>>> -        pm_power_off = twl4030_power_off;
+>>> +        ret = devm_register_power_off_handler(&pdev->dev,
+>>> +                              &twl4030_power_off_hb);
+>>> +        if (ret)
+>>> +            dev_warn(&pdev->dev,
+>>> +                 "Failed to register power-off handler\n");
+>>>       }
+>>>
 >>
->>        local_irq_enable();
->>        while (!tif_need_resched())
->>                cpu_relax();
+>> Could we get rid of the "struct power_off_handler_block" and guarantee
+>> that register_power_off never fails (or print message from the
+>> register_power_off...)? That way, your patch would be an cleanup.
 >>
->> This default poll function suits for the x86 arch because its rep; nop;
->> hardware power optimization. But on other archs, this optimization does not
->> exists and we are not saving power. The arch specific bits may want to
->> optimize this loop by adding their own optimization.
-> 
-> This doesn't make sense to me; should an arch not either implement an
-> actual idle driver or implement cpu_relax() properly, why allow for a
-> third weird option?
-> 
+>> You could then add priorities if they turn out to be really
+>> neccessary, later...
+>
+> Priorities are necessary. We had _that_ discussion before.
+> Priorities solve the problem where multiple handlers are installed,
+> either conditionally or unconditionally. If I take priorities away,
+> a substantial part of the patch set's value gets lost, and I might
+> as well drop it.
+>
+I have an idea: Instead of dropping the priority, drop
+power_off_handler_block and add two parameters to register_power_off_handler
+and devm_register_power_off_handler instead: the priority and a context.
+At the same time, declare that those two functions must be called
+with the memory subsystem initialized (register_power_off_handler_simple
+must be used otherwise).
 
-The previous version of this patch simply invoked cpu_idle_loop() for
-cases where latency_req was 0. This would have changed the behavior
-on PowerPC wherein earlier the 0th idle index was returned which is also
-a polling loop but differs from cpu_idle_loop() in two ways:
+With this change, the registration functions can still fail due to memory
+allocation errors, but we can get rid of the data structure and simplify
+the calling code while retaining functionality. I'll explore that for v7.
 
-a. It polls at a relatively lower power state than cpu_relax().
-b. We set certain registers to indicate that the cpu is idle.
-
-Hence for all such cases wherein the cpu is required to poll while idle
-(only for cases such as force poll, broadcast ipi to arrive soon and
-latency_req = 0), we should be able to call into cpuidle_idle_loop()
-only if the cpuidle driver's 0th idle state has an exit_latency > 0.
-(The 0th idle state is expected to be a polling loop with
-exit_latency = 0).
-
-If otherwise, it would mean the driver has an optimized polling loop
-when idle. But instead of adding in the logic of checking the
-exit_latency, we thought it would be simpler to call into an arch
-defined polling idle loop under the above circumstances. If that is no
-better we could fall back to cpuidle_idle_loop().
-
-Regards
-Preeti U Murthy
-
-
+Guenter
 
