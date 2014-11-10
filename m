@@ -1,53 +1,51 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v5 33/48] staging: nvec: Register with kernel power-off
- handler
-Date: Sun, 09 Nov 2014 15:54:53 -0800
-Message-ID: <545FFECD.9050600@roeck-us.net>
-References: <1415292213-28652-1-git-send-email-linux@roeck-us.net>
- <1415292213-28652-34-git-send-email-linux@roeck-us.net>
- <5008744.rVN94atT9b@ax5200p>
+From: jonghwa3.lee@samsung.com
+Subject: Re: [PATCH 1/3] power: core: Add generic interface to get battery
+ specification.
+Date: Mon, 10 Nov 2014 10:10:54 +0900
+Message-ID: <5460109E.9060603@samsung.com>
+References: <1412679518-21499-1-git-send-email-jonghwa3.lee@samsung.com>
+ <1412679518-21499-2-git-send-email-jonghwa3.lee@samsung.com>
+ <20ADAB092842284E95860F279283C5642ED8AE04@BGSMSX104.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <5008744.rVN94atT9b@ax5200p>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>, devel@driverdev.osuosl.org
-Cc: linux-tegra@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:31777 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbaKJBK5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Nov 2014 20:10:57 -0500
+In-reply-to: <20ADAB092842284E95860F279283C5642ED8AE04@BGSMSX104.gar.corp.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Tc, Jenny" <jenny.tc@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>, "pavel@ucw.cz" <pavel@ucw.cz>
 
-On 11/09/2014 01:41 PM, Marc Dietrich wrote:
-> Am Donnerstag 06 November 2014, 08:43:17 schrieb Guenter Roeck:
->> Register with kernel power-off handler instead of setting pm_power_off
->> directly. Register with default priority since we don't know any better.
->>
->> Cc: Julian Andres Klode <jak@jak-linux.org>
->> Cc: Marc Dietrich <marvin24@gmx.de>
->> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> Signed-off-by: Guenter Roeck <linux@roeck-us.net
->
-> ok, this version (V5) actually switches the device off in contrast to the
-> first implementation. Somehow I have to find out why it works at all without
-> irqs.
->
-> Acked-by: Marc Dietrich <mavin24@gmx.de>
->
+On 2014=EB=85=84 11=EC=9B=94 08=EC=9D=BC 19:13, Tc, Jenny wrote:
 
-Hi Marc,
+>> +ATOMIC_NOTIFIER_HEAD(psy_battery_info_notifier);
+>=20
+>  Isn't it good to reuse the existing power_supply_notifier for this?
+>=20
+>> +enum battery_info_notifier_events {
+>> +	PSY_BATT_INFO_REGISTERED,
+>> +	PSY_BATT_INFO_UNREGISTERED,
+>> +};
+>=20
+> If we use the power_supply_notifier, then this can be moved to
+> enum power_supply_notifier_events
+>=20
 
-The most recent version does not turn off interrupts as long as the
-infrastructure (architecture code, ie machine_power_off) doesn't
-turn it off.
 
-Thanks a lot for (re-)testing.
+It doesn't use power_supply_notifier, rather than it uses newly introdu=
+ced
+notifier for battery information. Intention of making of new notifier b=
+lock here
+is to extinguish event from power_supply_changed which might be noisy f=
+or
+battery information consumer. However, If it looks wasteful code, it's =
+not a big
+deal to use existed power_supply_notifier.
 
-Guenter
+Thanks,
+Jonghwa
+
