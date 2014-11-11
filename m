@@ -1,54 +1,135 @@
-From: "Tc, Jenny" <jenny.tc@intel.com>
-Subject: RE: [PATCH 2/3] power: core: Add variables related temperature to
- power_supply_info.
-Date: Tue, 11 Nov 2014 04:56:31 +0000
-Message-ID: <20ADAB092842284E95860F279283C5642EDB8431@BGSMSX104.gar.corp.intel.com>
-References: <1412679518-21499-1-git-send-email-jonghwa3.lee@samsung.com>
- <1412679518-21499-3-git-send-email-jonghwa3.lee@samsung.com>
- <20ADAB092842284E95860F279283C5642ED9EDE3@BGSMSX104.gar.corp.intel.com>
- <546158A0.5000707@samsung.com>
+From: Chander Kashyap <k.chander@samsung.com>
+Subject: Re: [PATCH v4] arm64: dts: exynos7: add support for cpuidle core
+ power down
+Date: Tue, 11 Nov 2014 10:46:53 +0530
+Message-ID: <CADWw7Oh_A9PTHKLDNKHBwAvS5pNe34CqZusQ9WxKCZo_YjO=4A@mail.gmail.com>
+References: <1415193331-14790-1-git-send-email-k.chander@samsung.com>
+	<20141107115845.GA2062@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:43505 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751221AbaKKE4h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 10 Nov 2014 23:56:37 -0500
-In-Reply-To: <546158A0.5000707@samsung.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20141107115845.GA2062@red-moon>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Chander Kashyap <k.chander@samsung.com>, Mark Rutland <Mark.Rutland@arm.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "jonghwa3.lee@samsung.com" <jonghwa3.lee@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "anton@enomsg.org" <anton@enomsg.org>, "pavel@ucw.cz" <pavel@ucw.cz>
 
-PiA+IFRoZSBDQyxDViBhbmQgcmVzdGFydCB0aHJlc2hvbGQgd291bGQgdmFyeSBiYXNlZCBvbiB0
-aGUgYmF0dGVyeSB0ZW1wZXJhdHVyZQ0KPiA+IFNvIEkgd291bGQgc3VnZ2VzdCB0byBoYXZlIHRl
-bXBlcmF0dXJlIHpvbmUgdGFibGUgYXMgcGFydCAgb2YgYmF0dGVyeSBpbmZvDQo+ID4gYWxvbmcg
-d2l0aCBvdGhlciBhdHRyaWJ1dGVzLg0KPiA+DQo+ID4gaW50IGl0ZXJtOyAvL2NoYXJnZSB0ZXJt
-aW5hdGlvbiBjdXJyZW50ICh1c2VkIHRvIHN0b3AgY2hhcmdpbmcpDQo+ID4gaW50IHRlbXBfem9u
-ZV9jb3VudDsgLy8gbnVtYmVyIG9mIHRlbXBlcmF0dXJlIHpvbmUgdGFibGVzIHByZXNlbnQNCj4g
-PiBzdHJ1Y3QgYmF0dF90ZW1wX21vbl90YWJsZSB0ZW1wX21vbl90YmxbTUFYX1RFTVBfTU9OX1RB
-QkxFXTsNCj4gLy90ZW1wZXJhdHVyZSB6b25lIHRhYmxlIGFycmF5DQo+ID4NCj4gPiBzdHJ1Y3Qg
-IGJhdHRfdGVtcF9tb25fdGFibGUgew0KPiA+IAkgc2hvcnQgaW50IHRlbXBfbWF4Ow0KPiA+IAkg
-c2hvcnQgaW50IGNjOw0KPiA+IAkgc2hvcnQgaW50IGN2Ow0KPiA+IAkgc2hvcnQgaW50IHZiYXRf
-dmNoa19kcm9wX3V2Ow0KPiA+IAkgc2hvcnQgaW50IHRlbXBfbWluOw0KPiA+IH07DQo+ID4NCj4g
-DQo+IA0KPiBJTU8sIHRocm90dGxpbmcgY2MvY3YgYWNjb3JkaW5nIHRoZSB0ZW1wZXJhdHVyZSBj
-YW4gYmUgZG9uZSB2aWEgdGhlcm1hbCBmdw0KPiBpbnRlcmZhY2UuIEhvd2V2ZXIgdm9sdGFnZSBk
-cm9wIGFuZCBjaGFyZ2luZyB0ZXJtaW5hdGlvbiBjdXJyZW50IGNhbiBiZSBhZGRlZCBoZXJlLg0K
-DQpUaGUgQ0MvQ1YgZm9yIGVhY2ggYmF0dGVyeSB0ZW1wZXJhdHVyZSB6b25lIGlzIGRlZmluZWQg
-YXMgcGFydCBvZiBiYXR0ZXJ5IHNwZWMuIFRoaXMgaXMNCmFzIHBlciB0aGUgSkVJVEEvUFNFIHN0
-YW5kYXJkcy4gU28gSU1PLCB0aGlzIGlzIGEgYmF0dGVyeSBjaGFyZ2luZyBpbmZvcm1hdGlvbg0K
-KGNoYXJnaW5nIG9iamVjdCkgcmF0aGVyIHRoYW4gYSB0aGVybWFsIHRocm90dGxpbmcgaW5mb3Jt
-YXRpb24uDQoNCkFsc28gdGhlIGJhdHRlcnkgaW5mb3JtYXRpb24gbWF5IG5vdCBmaXQgaW50byBh
-IHN0YW5kYXJkIGZvcm1hdC4gRGlmZmVyZW50IHN0YW5kYXJkcyBoYXZlDQpkaWZmZXJlbnQgZm9y
-bWF0IGZvciBjaGFyZ2luZyBvYmplY3QuIFNvIEkgd291bGQgc3VnZ2VzdCB0byBtYWtlIGl0IGZs
-ZXhpYmxlIGVub3VnaCB0bw0Kc3VwcG9ydCBkaWZmZXJlbnQgY2hhcmdpbmcgb2JqZWN0IGZvcm1h
-dC4gRm9yIGV4YW1wbGUgTUlQSSBCSUYgY2hhcmdpbmcgb2JqZWN0IGZvcm1hdA0KKGh0dHBzOi8v
-bWVtYmVycy5taXBpLm9yZy93Zy9CSUYvZG9jdW1lbnQvMTE1MTgpIGFuZCBNSVBJIEJJRiBSdWxl
-IGJhc2VkIGNoYXJnaW5nIGFsZ29yaXRobQ0KKGh0dHA6Ly9taXBpLm9yZy9zaXRlcy9kZWZhdWx0
-L2ZpbGVzL21pcGlfQklGX3J1bGUtYmFzZWQtY2hhcmdpbmdfd2hpdGUtcGFwZXJfMS5wZGYpDQpo
-YXMgZGlmZmVyZW50IGNoYXJnaW5nIG9iamVjdCBmb3JtYXQuIFRoaXMgaXMgd2h5IHRoZSBwYXRj
-aCAgaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTQvOC8xMy8zNTUNCmhhcyBvcHRpb24gdG8gc3Vw
-cG9ydCBkaWZmZXJlbnQgY2hhcmdpbmcgb2JqZWN0cyBhbmQgZGlmZmVyZW50IGNoYXJnaW5nIGFs
-Z29yaXRobXMuDQoNCi1KZW5ueQ0K
+On Fri, Nov 7, 2014 at 5:28 PM, Lorenzo Pieralisi
+<lorenzo.pieralisi@arm.com> wrote:
+> On Wed, Nov 05, 2014 at 01:15:31PM +0000, Chander Kashyap wrote:
+>> Exynos7 has core power down state where cores can be powered off independently.
+>
+> "...has a core power down idle state..."
+>
+>> This patch adds support for this state.
+>
+> "...for this idle state."
+>
+>> Entry latency for the core power down is calculated as follows:
+>> 1. Time difference is measured between cpuidle entry and exit.
+>> 2. WFI is skipped for measuring the time.
+>> 3. Select the worst case time in the set of 100000 cpuidle transactions,
+>>    with varying load.
+>>
+>> Exit latency and target residency are supplied as per HW team
+>
+> "Exit latency and min residency values are supplied by the HW team."
+>
+> Target residency is a kernel naming scheme, non-existent in the idle state
+> bindings.
+>
+> Please take time to write proper commit logs, thanks.
+>
+>> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+>> ---
+>> This patch has following dependencies:
+>>       - [PATCH v5 0/8] arch: arm64: Enable support for Samsung Exynos7 SoC
+>>               http://www.spinics.net/lists/linux-samsung-soc/msg37047.html
+>> Changes in v2:
+>>       - Moved the cpu-idle-state property after reg property
+>>       - removed the status property.
+>>
+>> Changes in v3:
+>>       - Added the Entry latency calculation in commit message.
+>> Changes in v4:
+>>       - Corrected the commit message.
+>>       - Corrected the entry latency value.
+>>
+>>  arch/arm64/boot/dts/exynos/exynos7.dtsi |   17 +++++++++++++++++
+>>  1 file changed, 17 insertions(+)
+>>
+>> diff --git a/arch/arm64/boot/dts/exynos/exynos7.dtsi b/arch/arm64/boot/dts/exynos/exynos7.dtsi
+>> index 50ae936..444dde1 100644
+>> --- a/arch/arm64/boot/dts/exynos/exynos7.dtsi
+>> +++ b/arch/arm64/boot/dts/exynos/exynos7.dtsi
+>> @@ -37,6 +37,7 @@
+>>                       compatible = "arm,cortex-a57", "arm,armv8";
+>>                       enable-method = "psci";
+>
+> enable-method should be after reg, it is not an ordering issues added
+> by this patch but I still do not like that.
+
+This is being taken care in new patch for Exynos7 support.
+
+>
+> Other than that, please take some time to rewrite the commit log and
+> ask to fix the ordering above, you can add my:
+>
+
+Yes i will change as suggested.
+
+Thanks for the review.
+
+> Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>
+>>                       reg = <0x0>;
+>> +                     cpu-idle-states = <&CPU_SLEEP>;
+>>               };
+>>
+>>               cpu@1 {
+>> @@ -44,6 +45,7 @@
+>>                       compatible = "arm,cortex-a57", "arm,armv8";
+>>                       enable-method = "psci";
+>>                       reg = <0x1>;
+>> +                     cpu-idle-states = <&CPU_SLEEP>;
+>>               };
+>>
+>>               cpu@2 {
+>> @@ -51,6 +53,7 @@
+>>                       compatible = "arm,cortex-a57", "arm,armv8";
+>>                       enable-method = "psci";
+>>                       reg = <0x2>;
+>> +                     cpu-idle-states = <&CPU_SLEEP>;
+>>               };
+>>
+>>               cpu@3 {
+>> @@ -58,6 +61,20 @@
+>>                       compatible = "arm,cortex-a57", "arm,armv8";
+>>                       enable-method = "psci";
+>>                       reg = <0x3>;
+>> +                     cpu-idle-states = <&CPU_SLEEP>;
+>> +             };
+>> +
+>> +             idle-states {
+>> +                     entry-method = "arm,psci";
+>> +
+>> +                     CPU_SLEEP: cpu-sleep {
+>> +                             compatible = "arm,idle-state";
+>> +                             local-timer-stop;
+>> +                             arm,psci-suspend-param = <0x0010000>;
+>> +                             entry-latency-us = <34>;
+>> +                             exit-latency-us = <150>;
+>> +                             min-residency-us = <2100>;
+>> +                     };
+>>               };
+>>       };
+>>
+>> --
+>> 1.7.9.5
+>>
+>>
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
